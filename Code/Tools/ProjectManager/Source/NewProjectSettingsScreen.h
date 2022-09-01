@@ -10,6 +10,9 @@
 #if !defined(Q_MOC_RUN)
 #include <ProjectSettingsScreen.h>
 #include <ProjectTemplateInfo.h>
+#include <DownloadController.h>
+#include <TemplateButtonWidget.h>
+#include <QPointer>
 #include <QVector>
 #endif
 
@@ -28,7 +31,7 @@ namespace O3DE::ProjectManager
         Q_OBJECT
 
     public:
-        explicit NewProjectSettingsScreen(QWidget* parent = nullptr);
+        explicit NewProjectSettingsScreen(DownloadController* downloadController, QWidget* parent = nullptr);
         ~NewProjectSettingsScreen() = default;
         ProjectManagerScreen GetScreenEnum() override;
 
@@ -40,6 +43,11 @@ namespace O3DE::ProjectManager
 
     signals:
         void OnTemplateSelectionChanged(int oldIndex, int newIndex);
+
+    public slots:
+        void StartTemplateDownload(const QString& templateName);
+        void HandleDownloadResult(const QString& projectName, bool succeeded);
+        void HandleDownloadProgress(const QString& projectName, DownloadController::DownloadObjectType objectType, int bytesDownloaded, int totalBytes);
 
     protected:
         void OnProjectNameUpdated() override;
@@ -55,11 +63,15 @@ namespace O3DE::ProjectManager
         QButtonGroup* m_projectTemplateButtonGroup;
         QLabel* m_templateDisplayName;
         QLabel* m_templateSummary;
+        QPushButton* m_downloadTemplateButton;
         TagContainerWidget* m_templateIncludedGems;
         QVector<ProjectTemplateInfo> m_templates;
+        QVector<TemplateButton*> m_templateButtons;
         FlowLayout* m_templateFlowLayout = nullptr;
         int m_selectedTemplateIndex = -1;
         bool m_userChangedProjectPath = false;
+
+        QPointer<DownloadController> m_downloadController = nullptr;
 
         inline constexpr static int s_spacerSize = 20;
         inline constexpr static int s_templateDetailsContentMargin = 20;

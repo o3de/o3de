@@ -1338,6 +1338,11 @@ void CLog::LogStringToFile(AZStd::string_view message, ELogType logType, bool ap
                 m_logFileHandle.Write(timeStr.size(), timeStr.data());
             }
             m_logFileHandle.Write(message.size(), message.data());
+            if (!message.ends_with('\n'))
+            {
+                constexpr AZStd::string_view newline("\n");
+                m_logFileHandle.Write(newline.size(), newline.data());
+            }
 
 #if !defined(KEEP_LOG_FILE_OPEN)
             CloseLogFile();

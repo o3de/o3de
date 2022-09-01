@@ -12,6 +12,7 @@ set(FILES
     Source/Artifact/Factory/TestImpactPythonTestTargetMetaMapFactory.cpp
     Source/Artifact/Factory/TestImpactPythonTestTargetMetaMapFactory.h
     Source/Artifact/Static/TestImpactPythonTestTargetMeta.h
+    Source/Dependency/TestImpactPythonTestSelectorAndPrioritizer.h
     Source/Target/Python/TestImpactPythonProductionTarget.h
     Source/Target/Python/TestImpactPythonTestTarget.cpp
     Source/Target/Python/TestImpactPythonTestTarget.h

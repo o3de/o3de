@@ -13,7 +13,7 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzCore/IO/FileIO.h>
-#include <Tests/AZTestShared/Utils/Utils.h>
+#include <AZTestShared/Utils/Utils.h>
 #include <AzToolsFramework/Archive/ArchiveAPI.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/Archive/ArchiveAPI.h>
@@ -25,7 +25,6 @@
 #include <QStandardPaths>
 #include <QTemporaryDir>
 #include <QTextStream>
-#include <Utils/Utils.h>
 
 namespace UnitTest
 {
@@ -148,12 +147,11 @@ namespace UnitTest
             }
 
             AZStd::unique_ptr<ToolsTestApplication> m_app;
-            UnitTest::ScopedTemporaryDirectory m_tempDir;
+            AZ::Test::ScopedAutoTempDirectory m_tempDir;
         };
 
         TEST_F(ArchiveComponentTest, CreateArchive_FilesAtThreeDepths_ArchiveCreated)
         {
-            EXPECT_TRUE(m_tempDir.IsValid());
             CreateArchiveFolder();
 
             AZ_TEST_START_TRACE_SUPPRESSION;
@@ -165,7 +163,6 @@ namespace UnitTest
 
         TEST_F(ArchiveComponentTest, ListFilesInArchive_FilesAtThreeDepths_FilesFound)
         {
-            EXPECT_TRUE(m_tempDir.IsValid());
             CreateArchiveFolder();
 
             AZ_TEST_START_TRACE_SUPPRESSION;

@@ -27,6 +27,8 @@ class PersistentStorage(ABC):
     LAST_COMMIT_HASH_KEY = "last_commit_hash"
     COVERAGE_DATA_KEY = "coverage_data"
     PREVIOUS_TEST_RUNS_KEY = "previous_test_runs"
+    RUNTIME_ARTIFACT_DIRECTORY = "RuntimeArtifacts"
+    RUNTIME_COVERAGE_DIRECTORY = "RuntimeCoverage"
 
     def __init__(self, config: dict, suite: str, commit: str, active_workspace: str, unpacked_coverage_data_file_path: str, previous_test_run_data_file_path: str):
         """
@@ -86,8 +88,9 @@ class PersistentStorage(ABC):
                 logger.info(f"No prior sequence data found for any commits.")
 
             # Test runs for the previous sequence associated with the last commit hash
-            if self.PREVIOUS_TEST_RUNS_KEY in self._historic_data:
-                logger.info(f"Previous test run data for a sequence of '{len(self._historic_data[self.PREVIOUS_TEST_RUNS_KEY])}' test targets found.")
+            previous_test_runs = self._historic_data.get(self.PREVIOUS_TEST_RUNS_KEY, None)
+            if previous_test_runs:
+                logger.info(f"Previous test run data for a sequence of '{len(previous_test_runs)}' test targets found.")
             else:
                 self._historic_data[self.PREVIOUS_TEST_RUNS_KEY] = {}
                 logger.info("No previous test run data found.")
@@ -177,7 +180,35 @@ class PersistentStorage(ABC):
 
         else:
             logger.info("The historic data could not be successfully stored.")
+    
+    def store_artifacts(self, runtime_artifact_dir, runtime_coverage_dir):
+        """
+        Store the runtime artifacts and runtime coverage artifacts stored in the specified directories.
 
+        @param runtime_artifact_dir: The directory containing the runtime artifacts to store.
+        @param runtime_coverage_dir: The directory contianing the runtime coverage artifacts to store.
+        """
+        self._store_runtime_artifacts(runtime_artifact_dir)
+        self._store_coverage_artifacts(runtime_coverage_dir)
+
+    @abstractmethod
+    def _store_runtime_artifacts(self, runtime_artifact_dir):
+        """
+        Store the runtime artifacts in the designated persistent storage location.
+
+        @param runtime_artifact_dir: The directory containing the runtime artifacts to store.
+        """
+        pass
+
+    @abstractmethod
+    def _store_coverage_artifacts(self, runtime_coverage_dir):
+        """
+        Store the coverage artifacts in the designated persistent storage location.
+
+        @param runtime_coverage_dir: The directory contianing the runtime coverage artifacts to store.
+        """
+        pass
+    
     @property
     def has_historic_data(self):
         """

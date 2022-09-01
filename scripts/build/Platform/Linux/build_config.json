@@ -30,7 +30,6 @@
   },
   "validation_pipe": {
     "TAGS": [
-      "default",
       "snapshot"
     ],
     "steps": [

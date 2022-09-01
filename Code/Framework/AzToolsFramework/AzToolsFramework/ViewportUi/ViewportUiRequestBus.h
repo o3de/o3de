@@ -104,7 +104,11 @@ namespace AzToolsFramework::ViewportUi
         virtual void SetTextFieldVisible(TextFieldId textFieldId, bool visible) = 0;
         //! Create the highlight border with optional back button to exit the given editor mode.
         virtual void CreateViewportBorder(const AZStd::string& borderTitle, AZStd::optional<ViewportUiBackButtonCallback> backButtonCallback) = 0;
-        //! Remove the highlight border.
+        //! Returns if the viewport border is visible.
+        virtual bool GetViewportBorderVisible() const = 0;
+        //! Changes the text on the viewport border while in component mode.
+        virtual void ChangeViewportBorderText(const AZStd::string& borderTitle) = 0;
+        //! Remove the viewport border.
         virtual void RemoveViewportBorder() = 0;
         //! Invoke a button press on a cluster.
         virtual void PressButton(ClusterId clusterId, ButtonId buttonId) = 0;

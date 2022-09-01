@@ -266,6 +266,16 @@ namespace AzToolsFramework::ViewportUi
         m_viewportUi->CreateViewportBorder(borderTitle, backButtonCallback);
     }
 
+    bool ViewportUiManager::GetViewportBorderVisible() const
+    {
+        return m_viewportUi->GetViewportBorderVisible();
+    }
+
+    void ViewportUiManager::ChangeViewportBorderText(const AZStd::string& borderTitle)
+    {
+        m_viewportUi->ChangeViewportBorderText(borderTitle.c_str());
+    }
+
     void ViewportUiManager::RemoveViewportBorder()
     {
         m_viewportUi->RemoveViewportBorder();

@@ -31,7 +31,7 @@ echo.
 set DCCSI_PYTHON_INSTALL=%O3DE_DEV%\Python
 echo     DCCSI_PYTHON_INSTALL = %DCCSI_PYTHON_INSTALL%
 
-:: Warning, many DCC tools (like Maya) include thier own versioned python interpretter.
+:: Warning, many DCC tools (like Maya) include thier own versioned python interpreter.
 :: Some apps may not operate correctly if PYTHONHOME is set/propogated.
 :: This is definitely the case with Maya, doing so causes Maya to not boot.
 FOR /F "tokens=* USEBACKQ" %%F IN (`%DCCSI_PYTHON_INSTALL%\python.cmd %DCCSI_PYTHON_INSTALL%\get_python_path.py`) DO (SET PYTHONHOME=%%F)

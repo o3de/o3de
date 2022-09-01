@@ -313,13 +313,23 @@ namespace AzToolsFramework::ViewportUi::Internal
         m_uiOverlayLayout.setContentsMargins(
             HighlightBorderSize + ViewportUiOverlayMargin, ViewportUiTopBorderSize + ViewportUiOverlayMargin,
             HighlightBorderSize + ViewportUiOverlayMargin, HighlightBorderSize + ViewportUiOverlayMargin);
+        m_viewportBorderText.setAlignment(Qt::AlignCenter);
+
         m_viewportBorderText.show();
-        m_viewportBorderText.setText(borderTitle.c_str());
-        UpdateUiOverlayGeometry();
+        ChangeViewportBorderText(borderTitle.c_str());
 
         // only display the back button if a callback was provided
         m_viewportBorderBackButtonCallback = backButtonCallback;
         m_viewportBorderBackButton.setVisible(m_viewportBorderBackButtonCallback.has_value());
+    }
+
+    void ViewportUiDisplay::ChangeViewportBorderText(
+        const char* borderTitle)
+    {
+        // when the text changes if the width is different it will flicker as it changes,
+        // this sets the width to the entire overlay to avoid that
+        m_viewportBorderText.setFixedWidth(m_uiOverlay.width());
+        m_viewportBorderText.setText(borderTitle);
     }
 
     void ViewportUiDisplay::RemoveViewportBorder()
@@ -331,6 +341,11 @@ namespace AzToolsFramework::ViewportUi::Internal
             ViewportUiOverlayMargin);
         m_viewportBorderBackButtonCallback.reset();
         m_viewportBorderBackButton.hide();
+    }
+
+    bool ViewportUiDisplay::GetViewportBorderVisible() const
+    {
+        return m_viewportBorderText.isVisible();
     }
 
     void ViewportUiDisplay::PositionViewportUiElementFromWorldSpace(ViewportUiElementId elementId, const AZ::Vector3& pos)
@@ -450,6 +465,14 @@ namespace AzToolsFramework::ViewportUi::Internal
             region -= QRect(
                 QPoint(m_uiOverlay.rect().left() + HighlightBorderSize, m_uiOverlay.rect().top() + ViewportUiTopBorderSize),
                 QPoint(m_uiOverlay.rect().right() - HighlightBorderSize, m_uiOverlay.rect().bottom() - HighlightBorderSize));
+            
+            // if the user changes the size of their window, release the width of the border so the
+            // overlay can resize
+            if (m_viewportBorderText.width() != m_renderOverlay->width())
+            {
+                m_viewportBorderText.setMinimumWidth(0);
+                m_viewportBorderText.setMaximumWidth(m_renderOverlay->width());
+            }
         }
 
         // add all children widget regions

@@ -218,9 +218,8 @@ namespace AzToolsFramework
                             continue;
                         }
 
-                        bool instanceDomGenerated = m_instanceDomGeneratorInterface->GenerateInstanceDom(
-                            instanceToUpdate, instanceDom);
-                        if (!instanceDomGenerated)
+                        // Generates instance DOM for a given instance object.
+                        if (!m_instanceDomGeneratorInterface->GenerateInstanceDom(instanceDom, *instanceToUpdate))
                         {
                             AZ_Assert(
                                 false,
@@ -231,6 +230,7 @@ namespace AzToolsFramework
                             continue;
                         }
 
+                        // Loads instance obejct from the generated instance DOM.
                         EntityList newEntities;
                         if (PrefabDomUtils::LoadInstanceFromPrefabDom(*instanceToUpdate, newEntities, instanceDom,
                             PrefabDomUtils::LoadFlags::UseSelectiveDeserialization))

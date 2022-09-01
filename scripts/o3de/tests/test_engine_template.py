@@ -204,8 +204,6 @@ def test_create_template(tmpdir,
         else:
             assert s_data == templated_contents_without_license
 
-        platform_template_folder = engine_root / 'Windows/Templates'
-
         new_platform_default_name_bus_file = template_content_folder / 'Code/Include/Platform/Windows/${Name}Bus.h'
         assert new_platform_default_name_bus_file.is_file()
         with new_platform_default_name_bus_file.open('r') as s:
@@ -221,7 +219,7 @@ class TestCreateTemplate:
                                      concrete_contents, templated_contents,
                                      keep_license_text, force, expect_failure,
                                      template_json_contents, template_file_creation_map = {},
-                                     **create_from_template_kwargs):
+                                     **create_from_template_kwargs) -> pathlib.Path or None:
         # Use a SHA-1 Hash of the destination_name for every Random_Uuid for determinism in the test
         concrete_contents = string.Template(concrete_contents).safe_substitute(
             {
@@ -275,6 +273,8 @@ class TestCreateTemplate:
                                                **create_from_template_kwargs)
         if expect_failure:
             assert result != 0
+
+            return None
         else:
             assert result == 0
 
@@ -295,6 +295,8 @@ class TestCreateTemplate:
             with platform_default_name_bus_file.open('r') as s:
                 s_data = s.read()
             assert s_data == concrete_contents
+
+            return test_folder
 
 
     # Use a SHA-1 Hash of the destination_name for every Random_Uuid for determinism in the test
@@ -356,22 +358,45 @@ class TestCreateTemplate:
     @pytest.mark.parametrize(
         "concrete_contents, templated_contents,"
         " keep_license_text, force, expect_failure,"
-        " template_json_contents", [
+        " template_json_contents,"
+        " display_name, summary, requirements, license, license_url,"
+        " origin, origin_url, user_tags, icon_path, documentation_url, repo_uri,"
+        " expected_tags", [
             pytest.param(TEST_CONCRETE_TESTGEM_TEMPLATE_CONTENT_WITH_LICENSE, TEST_TEMPLATED_CONTENT_WITH_LICENSE,
                          True, True, False,
-                         TEST_TEMPLATE_JSON_CONTENTS),
+                         TEST_TEMPLATE_JSON_CONTENTS,
+                         "Test Gem", "Test Summary", "Test Requirements", "Test License", "https://o3de.org/license", 
+                         "Test Origin", "https://o3de.org", "tag1", "preview.png", "https://o3de.org/docs", "https://o3de.org/repo",
+                         ["tag1","TestGem"] ),
             pytest.param(TEST_CONCRETE_TESTGEM_TEMPLATE_CONTENT_WITHOUT_LICENSE, TEST_TEMPLATED_CONTENT_WITH_LICENSE,
                          False, True, False,
-                         TEST_TEMPLATE_JSON_CONTENTS)
+                         TEST_TEMPLATE_JSON_CONTENTS,
+                         "Test Gem2", "Test Summary2", "Test Requirements2", "Test License2", "https://o3de.org/license2", 
+                         "Test Origin2", "https://o3de.org/2", "tag2 tag3  tag4", "preview2.png", "https://o3de.org/docs2", "https://o3de.org/repo2",
+                         ["tag2","tag3","tag4","TestGem"] ),
         ]
     )
     def test_create_gem(self, tmpdir, concrete_contents, templated_contents, keep_license_text, force,
-                                  expect_failure, template_json_contents):
+                                  expect_failure, template_json_contents,
+                                  display_name, summary, requirements, license, license_url,
+                                  origin, origin_url, user_tags, icon_path, documentation_url, repo_uri,
+                                  expected_tags):
         # Create a gem.json file in the template folder
         template_file_map = {'gem.json':
                                  '''
                                   {
-                                   "gem_name": "${Name}"
+                                   "gem_name": "${Name}",
+                                   "display_name": "${DisplayName}",
+                                   "summary": "${Summary}",
+                                   "requirements": "${Requirements}",
+                                   "license": "${License}",
+                                   "license_url": "${LicenseURL}",
+                                   "origin": "${Origin}",
+                                   "origin_url": "${OriginURL}",
+                                   "user_tags": ["${UserTags}"],
+                                   "icon_path": "${IconPath}",
+                                   "documentation_url": "${DocumentationURL}",
+                                   "repo_uri": "${RepoURI}"
                                   }
                                   '''}
 
@@ -384,6 +409,28 @@ class TestCreateTemplate:
             })
         #Convert dict back to string
         template_json_contents = json.dumps(template_json_dict, indent=4)
-        self.instantiate_template_wrapper(tmpdir, engine_template.create_gem, 'TestGem', concrete_contents,
+        test_folder = self.instantiate_template_wrapper(tmpdir, engine_template.create_gem, "TestGem", concrete_contents,
                                           templated_contents, keep_license_text, force, expect_failure,
-                                          template_json_contents, template_file_map, gem_name='TestGem', no_register=True)
+                                          template_json_contents, template_file_map, gem_name="TestGem", 
+                                          display_name=display_name, summary=summary, requirements=requirements,
+                                          license=license, license_url=license_url, origin=origin, origin_url=origin_url,
+                                          user_tags=user_tags, icon_path=icon_path, documentation_url=documentation_url,
+                                          repo_uri=repo_uri, no_register=True)
+        if not expect_failure:
+            test_gem_manifest = test_folder / 'gem.json'
+            assert test_gem_manifest.is_file()
+            with test_gem_manifest.open('r') as f:
+                json_data = json.load(f)
+
+                assert json_data['gem_name'] == "TestGem"
+                assert json_data['display_name'] == display_name
+                assert json_data['summary'] == summary
+                assert json_data['requirements'] == requirements
+                assert json_data['license'] == license 
+                assert json_data['license_url'] == license_url 
+                assert json_data['origin'] == origin
+                assert json_data['origin_url'] == origin_url
+                assert set(json_data['user_tags']) == set(expected_tags)
+                assert json_data['icon_path'] == icon_path
+                assert json_data['documentation_url'] == documentation_url
+                assert json_data['repo_uri'] == repo_uri
