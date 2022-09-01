@@ -17,19 +17,17 @@
 #if !defined(Q_MOC_RUN)
 #include <AzCore/PlatformIncl.h>
 #include <QMainWindow>
-#include <AssetImporterDocument.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
-#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/Math/Guid.h>
 #include <SceneAPI/SceneUI/CommonWidgets/OverlayWidget.h>
 #include <SceneAPI/SceneUI/CommonWidgets/SceneSettingsCard.h>
 #endif
 
+
 namespace AzQtComponents
 {
     class Card;
     class StyledDetailsTableModel;
-    class StyledDetailsTableView;
     class TableView;
 }
 
@@ -49,6 +47,11 @@ namespace AZ
 
     namespace SceneAPI
     {
+        namespace Containers
+        {
+            class Scene;
+        }
+
         namespace DataTypes
         {
             class IScriptProcessorRule;
@@ -56,13 +59,13 @@ namespace AZ
     }
 }
 
+class AssetImporterDocument;
 class ImporterRootDisplay;
 class QCloseEvent;
 class QMenu;
 class QAction;
 class QVBoxLayout;
 class QScrollArea;
-class SceneSettingsCard;
 
 class AssetImporterWindow
     : public QMainWindow

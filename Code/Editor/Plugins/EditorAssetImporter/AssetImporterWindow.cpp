@@ -11,16 +11,14 @@
 #include <AssetImporterPlugin.h>
 #include <ImporterRootDisplay.h>
 
-#include <QTimer>
+#include <QCloseEvent>
+#include <QDesktopServices>
+#include <QDockWidget>
 #include <QFile>
 #include <QFileDialog>
-#include <QCloseEvent>
-#include <QMessageBox>
-#include <QDesktopServices>
-#include <QUrl>
-#include <QDockWidget>
 #include <QLabel>
-#include <QVBoxLayout>
+#include <QMessageBox>
+#include <QTimer>
 
 class IXMLDOMDocumentPtr; // Needed for settings.h
 class CXTPDockingPaneLayout; // Needed for settings.h
@@ -28,29 +26,28 @@ class CXTPDockingPaneLayout; // Needed for settings.h
 
 #include <QScrollArea>
 
-#include <AzQtComponents/Components/StyledDetailsTableModel.h>
-#include <AzQtComponents/Components/StyledDetailsTableView.h>
-#include <AzQtComponents/Components/StylesheetPreprocessor.h>
-#include <AzQtComponents/Components/Widgets/TableView.h>
-#include <AzToolsFramework/SourceControl/SourceControlAPI.h>
+#include <ActionOutput.h>
+#include <AssetImporterDocument.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/functional.h>
+#include <AzCore/std/string/conversions.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
-#include <AzCore/std/string/conversions.h>
+#include <AzToolsFramework/SourceControl/SourceControlAPI.h>
+#include <AzQtComponents/Components/StyledDetailsTableModel.h>
+#include <AzQtComponents/Components/StylesheetPreprocessor.h>
+#include <AzQtComponents/Components/Widgets/TableView.h>
 #include <Util/PathUtil.h>
-#include <ActionOutput.h>
 
-#include <SceneAPI/SceneUI/Handlers/ProcessingHandlers/AsyncOperationProcessingHandler.h>
-#include <SceneAPI/SceneUI/Handlers/ProcessingHandlers/ExportJobProcessingHandler.h>
-#include <SceneAPI/SceneUI/SceneWidgets/ManifestWidget.h>
-#include <SceneAPI/SceneUI/SceneWidgets/SceneGraphInspectWidget.h>
+#include <SceneAPI/SceneCore/Containers/Utilities/Filters.h>
+#include <SceneAPI/SceneCore/DataTypes/Rules/IScriptProcessorRule.h>
 #include <SceneAPI/SceneCore/Events/AssetImportRequest.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <SceneAPI/SceneData/Rules/ScriptProcessorRule.h>
-#include <SceneAPI/SceneCore/DataTypes/Rules/IScriptProcessorRule.h>
-#include <SceneAPI/SceneCore/Containers/Utilities/Filters.h>
+#include <SceneAPI/SceneUI/Handlers/ProcessingHandlers/AsyncOperationProcessingHandler.h>
+#include <SceneAPI/SceneUI/Handlers/ProcessingHandlers/ExportJobProcessingHandler.h>
+#include <SceneAPI/SceneUI/SceneWidgets/SceneGraphInspectWidget.h>
 
 const char* AssetImporterWindow::s_documentationWebAddress = "https://www.o3de.org/docs/user-guide/assets/scene-settings/";
 const AZ::Uuid AssetImporterWindow::s_browseTag = AZ::Uuid::CreateString("{C240D2E1-BFD2-4FFA-BB5B-CC0FA389A5D3}");
@@ -167,10 +164,6 @@ void AssetImporterWindow::Init()
 
     ResetMenuAccess(WindowState::InitialNothingLoaded);
 
-    //m_notificationRootWidget = new QWidget(ui->m_cardAreaLayoutWidget);
-    //m_notificationLayout = new QVBoxLayout(ui->m_cardAreaLayoutWidget);
-    //ui->m_cardAreaLayout->addWidget(m_notificationRootWidget);
-
     m_logDetailsCard = new AzQtComponents::Card(this);
     m_logDetailsCard->setTitle(tr("Additional Log Details"));
     m_logDetailsCard->header()->setHasContextMenu(false);
@@ -186,7 +179,6 @@ void AssetImporterWindow::Init()
     m_logDetailsView->setModel(m_logDetailsModel);
     m_logDetailsCard->setContentWidget(m_logDetailsView);
     
-
     // Setup the overlay system, and set the root to be the root display. The root display has the browse,
     //  the Import button & the cancel button, which are handled here by the window.
     m_overlay.reset(aznew AZ::SceneAPI::UI::OverlayWidget(this));
@@ -198,19 +190,6 @@ void AssetImporterWindow::Init()
 
     m_overlay->SetRoot(m_rootDisplay.data());
     ui->m_settingsAreaLayout->addWidget(m_overlay.data());
-
-    //ui->m_sceneDetailsCard->setTitle("Scene Details");
-    
-    /* AzQtComponents::StyledDetailsTableModel* m_reportModel = new AzQtComponents::StyledDetailsTableModel();
-    m_reportModel->AddColumn("Status", AzQtComponents::StyledDetailsTableModel::StatusIcon);
-    m_reportModel->AddColumn("Message");
-    m_reportModel->AddColumnAlias("message", "Message");
-
-    
-    AzQtComponents::StyledDetailsTableView* m_reportView = new AzQtComponents::StyledDetailsTableView();
-    m_reportView->setModel(m_reportModel);*/
-
-    //ui->m_sceneDetailsCard->setContentWidget(m_reportView);
 
     // Filling the initial browse prompt text to be programmatically set from available extensions
     AZStd::unordered_set<AZStd::string> extensions;
@@ -305,7 +284,8 @@ SceneSettingsCard* AssetImporterWindow::CreateSceneSettingsCard(
     connect(card, &QObject::destroyed, this, &AssetImporterWindow::SceneSettingsCardDestroyed);
 
     connect(card, &SceneSettingsCard::ProcessingCompleted, this, &AssetImporterWindow::SceneSettingsCardProcessingCompleted);
-    
+
+    // Not passing in a QLabel to display because with a QLabel it won't darken the rest of the interface, which is preferred.
     m_sceneSettingsCardOverlay = m_overlay->PushLayer(nullptr, nullptr, "Waiting for file to finish processing", AzQtComponents::OverlayWidgetButtonList());
     return card;
 }
