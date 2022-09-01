@@ -23,12 +23,12 @@ namespace Multiplayer
         return m_owner.GetNetEntityId();
     }
 
-    bool MultiplayerController::IsAuthority() const
+    bool MultiplayerController::IsNetEntityRoleAuthority() const
     {
         return GetNetBindComponent() ? GetNetBindComponent()->IsNetEntityRoleAuthority() : false;
     }
 
-    bool MultiplayerController::IsAutonomous() const
+    bool MultiplayerController::IsNetEntityRoleAutonomous() const
     {
         return GetNetBindComponent() ? GetNetBindComponent()->IsNetEntityRoleAutonomous() : false;
     }
