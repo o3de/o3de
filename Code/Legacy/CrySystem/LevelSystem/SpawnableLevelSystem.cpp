@@ -195,7 +195,7 @@ namespace LegacyLevelSystem
     {
         if (gEnv->IsEditor())
         {
-            AZ_TracePrintf("CrySystem::CLevelSystem", "LoadLevel for %s was called in the editor - not actually loading.\n", levelName);
+            AZ_TracePrintf("CrySystem::SpawnableLevelSystem", "LoadLevel for %s was called in the editor - not actually loading.\n", levelName);
             return false;
         }
 
@@ -232,6 +232,25 @@ namespace LegacyLevelSystem
         if (validLevelName.empty())
         {
             OnLevelNotFound(levelName);
+            return false;
+        }
+
+        // This is a valid level, find out if any systems need to stop level loading before proceeding
+        bool blockLoading = false;
+        AzFramework::LevelSystemLifecycleRequestBus::EnumerateHandlers(
+            [&blockLoading, &validLevelName](AzFramework::LevelSystemLifecycleRequests* handler)->bool
+            {
+                if (handler->ShouldBlockLevelLoading(validLevelName.c_str()))
+                {
+                    blockLoading = true;
+                    return false; // Stop iterating handlers. This level should be blocked.
+                }
+                return true;
+            });
+
+        if (blockLoading)
+        {
+            AZ_TracePrintf("CrySystem::SpawnableLevelSystem", "LoadLevel for %s was blocked.\n", validLevelName.c_str());
             return false;
         }
 
@@ -385,6 +404,9 @@ namespace LegacyLevelSystem
         {
             listener->OnPrepareNextLevel(levelName);
         }
+
+        AzFramework::LevelSystemLifecycleNotificationBus::Broadcast(
+            &AzFramework::LevelSystemLifecycleNotifications::OnPrepareNextLevel, levelName);
     }
 
     //------------------------------------------------------------------------
@@ -396,6 +418,9 @@ namespace LegacyLevelSystem
         {
             listener->OnLevelNotFound(levelName);
         }
+
+        AzFramework::LevelSystemLifecycleNotificationBus::Broadcast(
+            &AzFramework::LevelSystemLifecycleNotifications::OnLevelNotFound, levelName);
     }
 
     //------------------------------------------------------------------------
@@ -417,6 +442,9 @@ namespace LegacyLevelSystem
         {
             listener->OnLoadingStart(levelName);
         }
+
+        AzFramework::LevelSystemLifecycleNotificationBus::Broadcast(
+            &AzFramework::LevelSystemLifecycleNotifications::OnLoadingStart, levelName);
     }
 
     //------------------------------------------------------------------------
@@ -428,6 +456,9 @@ namespace LegacyLevelSystem
         {
             listener->OnLoadingError(levelName, error);
         }
+
+        AzFramework::LevelSystemLifecycleNotificationBus::Broadcast(
+            &AzFramework::LevelSystemLifecycleNotifications::OnLoadingError, levelName, error);
     }
 
     //------------------------------------------------------------------------
@@ -450,6 +481,9 @@ namespace LegacyLevelSystem
             listener->OnLoadingComplete(levelName);
         }
 
+        AzFramework::LevelSystemLifecycleNotificationBus::Broadcast(
+            &AzFramework::LevelSystemLifecycleNotifications::OnLoadingComplete, levelName);
+
     #if AZ_LOADSCREENCOMPONENT_ENABLED
         EBUS_EVENT(LoadScreenBus, Stop);
     #endif // if AZ_LOADSCREENCOMPONENT_ENABLED
@@ -464,6 +498,9 @@ namespace LegacyLevelSystem
         {
             listener->OnLoadingProgress(levelName, progressAmount);
         }
+
+        AzFramework::LevelSystemLifecycleNotificationBus::Broadcast(
+            &AzFramework::LevelSystemLifecycleNotifications::OnLoadingProgress, levelName, progressAmount);
     }
 
     //------------------------------------------------------------------------
@@ -473,6 +510,9 @@ namespace LegacyLevelSystem
         {
             listener->OnUnloadComplete(levelName);
         }
+
+        AzFramework::LevelSystemLifecycleNotificationBus::Broadcast(
+            &AzFramework::LevelSystemLifecycleNotifications::OnUnloadComplete, levelName);
 
         AZ_TracePrintf("LevelSystem", "Level unload complete: '%s'\n", levelName);
     }
