@@ -846,7 +846,7 @@ namespace O3DE::ProjectManager
                     "requirements"_a = QString_To_Py_String(gemInfo.m_requirement),
                     "license"_a = QString_To_Py_String(gemInfo.m_licenseText),
                     "license_url"_a = QString_To_Py_String(gemInfo.m_licenseLink),
-                    "origin"_a = QString_To_Py_String(gemInfo.m_creator),
+                    "origin"_a = QString_To_Py_String(gemInfo.m_origin),
                     "origin_url"_a = QString_To_Py_String(gemInfo.m_originURL),
                     "user_tags"_a = QString_To_Py_String(gemInfo.m_features.join(",")),
                     "icon_path"_a = QString_To_Py_Path(gemInfo.m_iconPath),
@@ -905,7 +905,7 @@ namespace O3DE::ProjectManager
                 gemInfo.m_lastUpdatedDate = Py_To_String_Optional(data, "last_updated", gemInfo.m_lastUpdatedDate);
                 gemInfo.m_binarySizeInKB = Py_To_Int_Optional(data, "binary_size", gemInfo.m_binarySizeInKB);
                 gemInfo.m_requirement = Py_To_String_Optional(data, "requirements", "");
-                gemInfo.m_creator = Py_To_String_Optional(data, "origin", "");
+                gemInfo.m_origin = Py_To_String_Optional(data, "origin", "");
                 gemInfo.m_originURL = Py_To_String_Optional(data, "origin_url", "");
                 gemInfo.m_documentationLink = Py_To_String_Optional(data, "documentation_url", "");
                 gemInfo.m_iconPath = Py_To_String_Optional(data, "icon_path", "preview.png");
@@ -913,7 +913,7 @@ namespace O3DE::ProjectManager
                 gemInfo.m_licenseLink = Py_To_String_Optional(data, "license_url", "");
                 gemInfo.m_repoUri = Py_To_String_Optional(data, "repo_uri", "");
 
-                if (gemInfo.m_creator.contains("Open 3D Engine"))
+                if (gemInfo.m_origin.contains("Open 3D Engine"))
                 {
                     gemInfo.m_gemOrigin = GemInfo::GemOrigin::Open3DEngine;
                 }
@@ -1432,7 +1432,7 @@ namespace O3DE::ProjectManager
                 // required
                 gemRepoInfo.m_repoUri = Py_To_String(data["repo_uri"]);
                 gemRepoInfo.m_name = Py_To_String(data["repo_name"]);
-                gemRepoInfo.m_creator = Py_To_String(data["origin"]);
+                gemRepoInfo.m_origin = Py_To_String(data["origin"]);
 
                 // optional
                 gemRepoInfo.m_summary = Py_To_String_Optional(data, "summary", "No summary provided.");

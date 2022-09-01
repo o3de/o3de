@@ -24,7 +24,7 @@ namespace O3DE::ProjectManager
     QT_FORWARD_DECLARE_CLASS(ProjectGemCatalogScreen)
     QT_FORWARD_DECLARE_CLASS(GemRepoScreen)
     QT_FORWARD_DECLARE_CLASS(DownloadController)
-    QT_FORWARD_DECLARE_CLASS(CreateAGemScreen)
+    QT_FORWARD_DECLARE_CLASS(CreateGem)
 
     class UpdateProjectCtrl
         : public ScreenWidget
@@ -63,7 +63,7 @@ namespace O3DE::ProjectManager
         UpdateProjectSettingsScreen* m_updateSettingsScreen = nullptr;
         ProjectGemCatalogScreen* m_projectGemCatalogScreen = nullptr;
         GemRepoScreen* m_gemRepoScreen = nullptr;
-        CreateAGemScreen* m_createAGemScreen = nullptr;
+        CreateGem* m_createGem = nullptr;
 
         QPushButton* m_backButton = nullptr;
         QPushButton* m_nextButton = nullptr;
