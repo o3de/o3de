@@ -59,6 +59,8 @@ namespace AzToolsFramework::ViewportUi
         bool GetViewportBorderVisible() const override;
         void PressButton(ClusterId clusterId, ButtonId buttonId) override;
         void PressButton(SwitcherId switcherId, ButtonId buttonId) override;
+        bool HideSwitcher(SwitcherId switcherId) override;
+        bool ShowSwitcher(SwitcherId switcherId) override;
 
         //! Connects to the correct viewportId bus address.
         void ConnectViewportUiBus(const int viewportId);

@@ -41,6 +41,7 @@ namespace AzToolsFramework::ComponentModeFramework
         ViewportEditorModeNotificationsBus::Handler::BusConnect(GetEntityContextId());
         EntityCompositionNotificationBus::Handler::BusConnect();
         ToolsApplicationNotificationBus::Handler::BusConnect();
+        AzFramework::ViewportImGuiNotificationBus::Handler::BusConnect();
 
         // create the switcher
         ViewportUi::ViewportUiRequestBus::EventResult(
@@ -95,6 +96,7 @@ namespace AzToolsFramework::ComponentModeFramework
 
     ComponentModeSwitcher::~ComponentModeSwitcher()
     {
+        AzFramework::ViewportImGuiNotificationBus::Handler::BusDisconnect();
         ToolsApplicationNotificationBus::Handler::BusDisconnect();
         EntityCompositionNotificationBus::Handler::BusDisconnect();
         ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
@@ -263,6 +265,7 @@ namespace AzToolsFramework::ComponentModeFramework
         AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::BroadcastResult(
             inComponentMode, &ComponentModeSystemRequests::InComponentMode);
 
+        // if already in component mode, end current mode and switch active button to the selected component
         if (inComponentMode)
         {
             AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
@@ -284,7 +287,7 @@ namespace AzToolsFramework::ComponentModeFramework
         if (mode == ViewportEditorMode::Component)
         {
             // when component mode ends, change the active button to transform
-            // this waits one frame incase component mode is switching to another component
+            // this waits one frame in case component mode is switching to another component
             // instead of ending
             QTimer::singleShot(
                 1,
@@ -306,7 +309,6 @@ namespace AzToolsFramework::ComponentModeFramework
                         m_activeSwitcherComponent = nullptr;
                     }
                 });
-            
         }
     }
 
@@ -438,5 +440,17 @@ namespace AzToolsFramework::ComponentModeFramework
                     }
                 }
             });
+    }
+
+    void ComponentModeSwitcher::OnImGuiDropDownDisplayed()
+    {
+        ViewportUi::ViewportUiRequestBus::Event(
+            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::HideSwitcher, m_switcherId);
+    }
+
+    void ComponentModeSwitcher::OnImGuiDropDownHidden()
+    {
+        ViewportUi::ViewportUiRequestBus::Event(
+            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::ShowSwitcher, m_switcherId);
     }
 } // namespace AzToolsFramework::ComponentModeFramework
