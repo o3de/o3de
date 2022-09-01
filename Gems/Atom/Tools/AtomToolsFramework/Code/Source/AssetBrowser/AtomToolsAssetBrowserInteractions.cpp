@@ -100,8 +100,8 @@ namespace AtomToolsFramework
             });
 
         QMenu* scriptsMenu = menu->addMenu(QObject::tr("Python Scripts"));
-        AZStd::vector<AZStd::string_view> pythonArgs{ entry->GetFullPath() };
-        AddRegisteredScriptToMenu(scriptsMenu, "/O3DE/AtomToolsFramework/AssetBrowser/ContextMenuScripts", pythonArgs);
+        const AZStd::vector<AZStd::string> arguments{ entry->GetFullPath() };
+        AddRegisteredScriptToMenu(scriptsMenu, "/O3DE/AtomToolsFramework/AssetBrowser/ContextMenuScripts", arguments);
     }
 
     void AtomToolsAssetBrowserInteractions::AddContextMenuActionsForFolderEntries(
