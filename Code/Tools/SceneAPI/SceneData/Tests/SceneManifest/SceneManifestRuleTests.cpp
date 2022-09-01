@@ -269,7 +269,9 @@ namespace AZ
             EXPECT_FALSE(scene.GetManifest().IsEmpty());
 
             auto scriptProcessorRuleBehavior =  AZ::SceneAPI::Behaviors::ScriptProcessorRuleBehavior();
+            scriptProcessorRuleBehavior.Activate();
             auto update = scriptProcessorRuleBehavior.UpdateManifest(scene, AssetImportRequest::Update, AssetImportRequest::Generic);
+            scriptProcessorRuleBehavior.Deactivate();
             EXPECT_EQ(update, ProcessingResult::Ignored);
         }
 

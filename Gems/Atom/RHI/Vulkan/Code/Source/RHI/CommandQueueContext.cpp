@@ -10,7 +10,7 @@
 #include <RHI/CommandQueueContext.h>
 #include <RHI/Device.h>
 #include <RHI/Semaphore.h>
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/SwapChain.h>
 
 namespace AZ

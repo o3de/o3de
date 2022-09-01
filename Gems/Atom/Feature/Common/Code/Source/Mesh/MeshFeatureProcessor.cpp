@@ -466,6 +466,15 @@ namespace AZ
             }
         }
 
+        bool MeshFeatureProcessor::GetVisible(const MeshHandle& meshHandle) const
+        {
+            if (meshHandle.IsValid())
+            {
+                return meshHandle->m_visible;
+            }
+            return false;
+        }
+
         void MeshFeatureProcessor::SetVisible(const MeshHandle& meshHandle, bool visible)
         {
             if (meshHandle.IsValid())

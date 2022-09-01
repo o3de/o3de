@@ -48,6 +48,16 @@ namespace AZStd
     class intrusive_ptr;
     template<class T>
     class shared_ptr;
+
+    inline namespace AssociativeInternal
+    {
+        // SFINAE expression to determine whether an associative container is an actual map with a corresponding value for each key,
+        // or is simply a keyed container, like a set or an unordered_set
+        template<class T, class = void>
+        constexpr bool IsMapType_v = false;
+        template<class T>
+        constexpr bool IsMapType_v<T, enable_if_t<Internal::sfinae_trigger_v<typename T::mapped_type>>> = true;
+    }
 }
 
 namespace AZ
@@ -787,7 +797,7 @@ namespace AZ
             {
                 (void)classElement;
                 T* containerPtr = reinterpret_cast<T*>(instance);
-                return new(containerPtr->get_allocator().allocate(sizeof(ValueType), AZStd::alignment_of<ValueType>::value))ValueType;
+                return new (containerPtr->get_allocator().allocate(sizeof(ValueType), AZStd::alignment_of<ValueType>::value)) ValueType{};
             }
 
         protected:
@@ -824,6 +834,31 @@ namespace AZ
                 T* containerPtr = reinterpret_cast<T*>(instance);
                 auto elementIterator = containerPtr->find(*reinterpret_cast<const KeyType*>(key));
                 return (elementIterator != containerPtr->end()) ? &(*elementIterator) : nullptr;
+            }
+
+            /// Get the mapped value's address by its key. If there is no mapped value (like in a set<>) the value returned is
+            /// the key itself
+            virtual void* GetValueByKey(void* instance, const void* key) override
+            {
+                void* value = nullptr;
+                T* containerPtr = reinterpret_cast<T*>(instance);
+                auto elementIterator = containerPtr->find(*reinterpret_cast<const KeyType*>(key));
+
+                if constexpr (AZStd::AssociativeInternal::IsMapType_v<T>)
+                {
+                    if (elementIterator != containerPtr->end())
+                    {
+                        value = &(elementIterator->second);
+                    }
+                }
+                else
+                {
+                    if (elementIterator != containerPtr->end())
+                    {
+                        value = &(*elementIterator);
+                    }
+                }
+                return value;
             }
 
             /// Store element

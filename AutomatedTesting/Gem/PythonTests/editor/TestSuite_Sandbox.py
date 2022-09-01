@@ -20,3 +20,6 @@ class TestAutomationAutoTestMode(EditorTestSuite):
 
     class test_ComponentCRUD_Add_Delete_Components(EditorSingleTest):
         from .EditorScripts import ComponentCRUD_Add_Delete_Components as test_module
+
+    class test_Menus_FileMenuOptions_Work(EditorSingleTest):
+        from .EditorScripts import Menus_FileMenuOptions as test_module

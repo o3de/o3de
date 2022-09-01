@@ -346,6 +346,12 @@ namespace AZ::SettingsRegistryMergeUtils
     //! IsPathAncestorDescendantOrEqual("/Amazon/AzCore/Bootstrap", "") = true
     bool IsPathAncestorDescendantOrEqual(AZStd::string_view candidatePath, AZStd::string_view inputPath);
 
+    //! Check if the supplied input path is a descendant or exactly equal to the candidate path
+    //! @param candidatePath Path which is being checked for the descendant relationship
+    //! @param inputPath Path which is checked to determine if it is equal or a descendant of the candidate path
+    //! @return true if the input path is an descendant or equal to the candidate path
+    bool IsPathDescendantOrEqual(AZStd::string_view candidatePath, AZStd::string_view inputPath);
+
     //! Callback signature which VisitActiveGems invokes for each Gem found underneath the ActiveGems root key
     //! @param gem_name value of "gem_name" field
     //! @param gemPath absolute path to the directory containing the gem.json

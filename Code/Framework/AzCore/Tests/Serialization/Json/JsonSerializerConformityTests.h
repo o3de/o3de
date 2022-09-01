@@ -173,6 +173,10 @@ namespace JsonSerializationTests
         //! If the target type doesn't support arrays or requires more than one entry this can be ignored and
         //! tests using this value will be skipped.
         virtual AZStd::string_view GetJsonForSingleArrayDefaultInstance() { return "[{}]"; }
+        //! Get the json that represents an empty array that has only defaults.
+        //! If the target type doesn't support arrays, this can be ignored and
+        //! tests using this value will be skipped.
+        virtual AZStd::string_view GetJsonForEmptyArrayDefaultInstance() { return "[]"; }
         //! Get the json where additional values are added to the json file.
         //! If this function is not overloaded, but features.m_supportsInjection is enabled then
         //! the Json Serializer Conformity Tests will inject extra values in the json for a fully.
@@ -1157,7 +1161,7 @@ namespace JsonSerializationTests
 
             EXPECT_EQ(Processing::Completed, result.GetProcessing());
             EXPECT_EQ(Outcomes::Success, result.GetOutcome());
-            this->Expect_DocStrEq("[]");
+            this->Expect_DocStrEq(this->m_description.GetJsonForEmptyArrayDefaultInstance());
         }
     }
 

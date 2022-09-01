@@ -229,6 +229,10 @@ set(FILES
     Manipulators/ManipulatorSnapping.h
     Manipulators/ManipulatorSpace.cpp
     Manipulators/ManipulatorSpace.h
+    Manipulators/PaintBrushManipulator.cpp
+    Manipulators/PaintBrushManipulator.h
+    Manipulators/PaintBrushNotificationBus.h
+    Manipulators/PaintBrushRequestBus.h
     Manipulators/PlanarManipulator.cpp
     Manipulators/PlanarManipulator.h
     Manipulators/RotationManipulators.cpp
@@ -368,6 +372,9 @@ set(FILES
     UI/DocumentPropertyEditor/PropertyHandlerWidget.h
     UI/DocumentPropertyEditor/DocumentPropertyEditor.cpp
     UI/DocumentPropertyEditor/DocumentPropertyEditor.h
+    UI/DocumentPropertyEditor/KeyQueryDPE.cpp
+    UI/DocumentPropertyEditor/KeyQueryDPE.h
+    UI/DocumentPropertyEditor/KeyQueryDPE.ui
     UI/DPEDebugViewer/DPEDebugModel.cpp
     UI/DPEDebugViewer/DPEDebugModel.h
     UI/DPEDebugViewer/DPEDebugTextView.cpp
@@ -705,6 +712,8 @@ set(FILES
     Prefab/PrefabDomTypes.h
     Prefab/PrefabDomUtils.h
     Prefab/PrefabDomUtils.cpp
+    Prefab/PrefabEditorPreferences.h
+    Prefab/PrefabEditorPreferences.cpp
     Prefab/PrefabFocusHandler.h
     Prefab/PrefabFocusHandler.cpp
     Prefab/PrefabFocusInterface.h

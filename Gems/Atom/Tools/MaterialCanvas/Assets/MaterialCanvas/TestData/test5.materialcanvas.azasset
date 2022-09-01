@@ -8,6 +8,19 @@
                 "Key": 1,
                 "Value": {
                     "$type": "DynamicNode",
+                    "m_propertySlots": [
+                        {
+                            "Key": {
+                                "m_name": "inDescription"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": ""
+                                }
+                            }
+                        }
+                    ],
                     "m_inputDataSlots": [
                         {
                             "Key": {
@@ -94,7 +107,7 @@
                     "toolId": {
                         "Value": 2034248906
                     },
-                    "configId": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/ExamplePBR/example_pbr2.materialcanvasnode"
+                    "configId": "{B352A2E4-D6A6-4178-9406-57716051024F}"
                 }
             },
             {
@@ -122,7 +135,7 @@
                     "toolId": {
                         "Value": 2034248906
                     },
-                    "configId": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/constant_float4.materialcanvasnode"
+                    "configId": "{643F25FA-FB10-4AF6-9657-2E1BDC2AC219}"
                 }
             },
             {
@@ -150,7 +163,7 @@
                     "toolId": {
                         "Value": 2034248906
                     },
-                    "configId": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/constant_float4.materialcanvasnode"
+                    "configId": "{643F25FA-FB10-4AF6-9657-2E1BDC2AC219}"
                 }
             },
             {
@@ -160,7 +173,7 @@
                     "toolId": {
                         "Value": 2034248906
                     },
-                    "configId": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/time.materialcanvasnode"
+                    "configId": "{5559A2B1-331C-4E52-8F3E-916CD114F41D}"
                 }
             },
             {
@@ -188,7 +201,7 @@
                     "toolId": {
                         "Value": 2034248906
                     },
-                    "configId": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/sin.materialcanvasnode"
+                    "configId": "{ACFD2852-1C39-4E11-9F48-56618DF90689}"
                 }
             },
             {
@@ -248,7 +261,7 @@
                     "toolId": {
                         "Value": 2034248906
                     },
-                    "configId": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/lerp.materialcanvasnode"
+                    "configId": "{8DD887CA-DA8E-4F55-9DFE-1B89EA0310AB}"
                 }
             },
             {
@@ -276,7 +289,7 @@
                     "toolId": {
                         "Value": 2034248906
                     },
-                    "configId": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/abs.materialcanvasnode"
+                    "configId": "{2E53F7CC-3C6D-4737-B092-2FB41204ECAC}"
                 }
             },
             {
@@ -320,7 +333,7 @@
                     "toolId": {
                         "Value": 2034248906
                     },
-                    "configId": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/multiply.materialcanvasnode"
+                    "configId": "{7DE0F2F0-1ADC-4B4B-ADDB-CA21B8D97816}"
                 }
             },
             {
@@ -348,7 +361,7 @@
                     "toolId": {
                         "Value": 2034248906
                     },
-                    "configId": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/cos.materialcanvasnode"
+                    "configId": "{3F152CFF-504F-43FE-9102-3DB8A6DB3C12}"
                 }
             },
             {
@@ -376,7 +389,7 @@
                     "toolId": {
                         "Value": 2034248906
                     },
-                    "configId": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/ceil.materialcanvasnode"
+                    "configId": "{39509794-1EC9-477C-B882-FDEA2439FE3B}"
                 }
             }
         ],

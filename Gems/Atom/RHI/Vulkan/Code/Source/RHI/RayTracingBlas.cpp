@@ -8,7 +8,7 @@
 
 #include <RHI/RayTracingBlas.h>
 #include <RHI/Buffer.h>
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Device.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/BufferPool.h>

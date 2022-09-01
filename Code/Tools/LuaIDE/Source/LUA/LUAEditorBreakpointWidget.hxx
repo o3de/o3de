@@ -46,12 +46,12 @@ namespace LUAEditor
         void RemoveBreakpoint(int lineNumber);
         void ClearBreakpoints();
 
-        AZStd::function<void(int lineNumber)> OnToggleBreakpoint;
-        //called if the line a breakpoint is on is moved. users should probably move the breakpoint in response to this.
-        AZStd::function<void(int fromLineNumber, int toLineNumber)> OnBreakpointLineMoved;
-        AZStd::function<void(int fromLineNumber)> OnBreakpointLineDeleted;
-
         void SetFont(QFont font);
+    signals:
+
+        void toggleBreakpoint(int lineNumber);
+        void breakpointLineMove(int fromLineNumber, int toLineNumber);
+        void breakpointDelete(int lineNumber);
 
     private:
         void paintEvent(QPaintEvent*) override;
