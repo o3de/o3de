@@ -260,8 +260,9 @@ namespace Multiplayer
         return m_netEntityMigration;
     }
 
-    bool NetBindComponent::ValidatePropertyRead(NetEntityRole replicateFrom, NetEntityRole replicateTo) const
+    bool NetBindComponent::ValidatePropertyRead(const char* propertyName, NetEntityRole replicateFrom, NetEntityRole replicateTo) const
     {
+        bool isValid(false);
         if (replicateFrom == NetEntityRole::Authority)
         {
             // Things that replicate to clients are readable by all network entity roles
@@ -270,20 +271,32 @@ namespace Multiplayer
             const bool isHost = (IsNetEntityRoleAuthority() || IsNetEntityRoleServer());
             // Things that replicate to Autonomous can't be read by clients
             const bool isAutonomous = ((replicateTo == NetEntityRole::Autonomous) && !IsNetEntityRoleClient());
-            return replicatesToClient || isHost || isAutonomous;
+            isValid = replicatesToClient || isHost || isAutonomous;
         }
         else
         {
             // Autonomous can only replicate to Authority, and won't replicate to servers, it's meant for client authoritative values like basic client metrics
             AZ_Assert(replicateTo == NetEntityRole::Authority, "The only valid case where properties replicate from a non-authority is in autonomous to authority");
-            return IsNetEntityRoleAuthority() || IsNetEntityRoleAutonomous();
+            isValid = IsNetEntityRoleAuthority() || IsNetEntityRoleAutonomous();
         }
+
+        if (!isValid)
+        {
+            AZLOG_INFO("%s is not replicated to role %s, property read will return invalid data.", propertyName, GetEnumString(GetNetEntityRole()));
+        }
+        return isValid;
     }
 
-    bool NetBindComponent::ValidatePropertyWrite(NetEntityRole replicateFrom, [[maybe_unused]] NetEntityRole replicateTo, bool isPredictable) const
+    bool NetBindComponent::ValidatePropertyWrite(const char* propertyName, NetEntityRole replicateFrom, [[maybe_unused]] NetEntityRole replicateTo, bool isPredictable) const
     {
-        return (replicateFrom == GetNetEntityRole())
-            || (isPredictable && IsNetEntityRoleAutonomous());
+        bool isValid = (replicateFrom == GetNetEntityRole())
+                    || (isPredictable && IsNetEntityRoleAutonomous());
+
+        if (!isValid)
+        {
+            AZLOG_INFO("%s can't be written by role %s, property set will desync network state.", propertyName, GetEnumString(GetNetEntityRole()));
+        }
+        return isValid;
     }
 
     bool NetBindComponent::HasController() const

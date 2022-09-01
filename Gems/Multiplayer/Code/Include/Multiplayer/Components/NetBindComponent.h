@@ -88,17 +88,19 @@ namespace Multiplayer
         EntityMigration GetAllowEntityMigration() const;
 
         //! This is a helper that validates the owning entity is in the correct role to read from a network property that matches the relicateFrom and replicateTo parameters.
+        //! @oaram propertyName  the name of the property, for logging and debugging purposes
         //! @param replicateFrom the network entity role that the property replicates from
         //! @param replicateTo   the network entity role that the property replicates to
         //! @return boolean true if the read is valid, false if nothing is replicated to the target and invalid data will be read
-        bool ValidatePropertyRead(NetEntityRole replicateFrom, NetEntityRole replicateTo) const;
+        bool ValidatePropertyRead(const char* propertyName, NetEntityRole replicateFrom, NetEntityRole replicateTo) const;
 
         //! This is a helper that validates the owning entity is in the correct role to write to a network property that matches the relicateFrom, replicateTo parameters, and isPredictable parameters.
+        //! @oaram propertyName  the name of the property, for logging and debugging purposes
         //! @param replicateFrom the network entity role that the property replicates from
         //! @param replicateTo   the network entity role that the property replicates to
         //! @param isPredictable true if the property is predictable, false otherwise
         //! @return boolean true if the write is valid, false if the write will desync the network property
-        bool ValidatePropertyWrite(NetEntityRole replicateFrom, NetEntityRole replicateTo, bool isPredictable) const;
+        bool ValidatePropertyWrite(const char* propertyName, NetEntityRole replicateFrom, NetEntityRole replicateTo, bool isPredictable) const;
 
         //! Returns whether or not a controller exists for the bound network entity.
         //! Warning, this function is dangerous to use in game code as it makes it easy to write logic that will function incorrectly within multihost environments. Use carefully.
