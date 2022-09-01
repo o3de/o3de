@@ -85,10 +85,18 @@ def TerrainNodes_DependentComponentsAdded():
     # Terrain node mapping with the key being the node name and the value is the
     # expected Components that should be added to the Entity created for the node
     areas = {
+        'TerrainMacroMaterialNode': [
+            'Terrain Macro Material',
+            'Axis Aligned Box Shape'
+        ],
         'TerrainLayerSpawnerNode': [
             'Terrain Layer Spawner',
             'Axis Aligned Box Shape'
-        ]
+        ],
+        'TerrainSurfaceMaterialsListNode': [
+            'Terrain Surface Materials List',
+            'Axis Aligned Box Shape'
+        ],
     }
 
     # Retrieve a mapping of the TypeIds for all the components
