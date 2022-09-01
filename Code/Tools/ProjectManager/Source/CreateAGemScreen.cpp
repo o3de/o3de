@@ -230,7 +230,8 @@ namespace O3DE::ProjectManager
         m_requirements = new FormLineEditWidget(tr("Requirements"), "", tr("Notice of any requirements your Gem. i.e. This requires X other gem"), "");
         gemDetailsLayout->addWidget(m_requirements);
 
-        m_license = new FormLineEditWidget(tr("License*"), "", tr("License uses goes here: i.e. Apache-2.0 or MIT"), "");
+        m_license = new FormLineEditWidget(
+            tr("License*"), "", tr("License uses goes here: i.e. Apache-2.0 or MIT"), tr("License details are required."));
         gemDetailsLayout->addWidget(m_license);
 
         m_licenseURL = new FormLineEditWidget(tr("License URL"), "", tr("Link to the license web site i.e. https://opensource.org/licenses/Apache-2.0"), "");
@@ -318,17 +319,11 @@ namespace O3DE::ProjectManager
         return gemSystemNameIsValid;
     }
 
-    bool CreateGem::ValidateLicenseName()
+    bool CreateGem::ValidateFormNotEmpty(FormLineEditWidget* form)
     {
-        bool licenseNameIsValid = true;
-        if (m_license->lineEdit()->text().isEmpty())
-        {
-            licenseNameIsValid = false;
-            m_license->setErrorLabelText(tr("License details are required."));
-        }
-
-        m_license->setErrorLabelVisible(!licenseNameIsValid);
-        return licenseNameIsValid;
+        bool formIsValid = !form->lineEdit()->text().isEmpty();
+        form->setErrorLabelVisible(!formIsValid);
+        return formIsValid;
     }
 
     bool CreateGem::ValidateRepositoryURL()
@@ -370,8 +365,9 @@ namespace O3DE::ProjectManager
         {
             bool gemNameValid = ValidateGemName();
             bool gemDisplayNameValid = ValidateGemDisplayName();
-            bool licenseValid = ValidateLicenseName();
-            if (gemNameValid && gemDisplayNameValid && licenseValid)
+            bool licenseValid = ValidateFormNotEmpty(m_license);
+            bool gemPathValid = ValidateFormNotEmpty(m_gemLocation);
+            if (gemNameValid && gemDisplayNameValid && licenseValid && gemPathValid)
             {
                 m_createGemInfo.m_displayName = m_gemDisplayName->lineEdit()->text();
                 m_createGemInfo.m_name = m_gemName->lineEdit()->text();
@@ -379,7 +375,6 @@ namespace O3DE::ProjectManager
                 m_createGemInfo.m_requirement = m_requirements->lineEdit()->text();
                 m_createGemInfo.m_licenseText = m_license->lineEdit()->text();
                 m_createGemInfo.m_licenseLink = m_licenseURL->lineEdit()->text();
-                m_createGemInfo.m_licenseText = m_license->lineEdit()->text();
                 m_createGemInfo.m_documentationLink = m_documentationURL->lineEdit()->text();
                 m_createGemInfo.m_path = m_gemLocation->lineEdit()->text();
                 m_createGemInfo.m_features = m_userDefinedGemTags->lineEdit()->text().split(',');
@@ -390,13 +385,24 @@ namespace O3DE::ProjectManager
         }
         else if (m_tabWidget->currentIndex() == 2)
         {
+            bool originIsValid = ValidateFormNotEmpty(m_origin);
             bool repoURLIsValid = ValidateRepositoryURL();
-            if (repoURLIsValid)
+            if (originIsValid && repoURLIsValid)
             {
                 m_createGemInfo.m_origin = m_origin->lineEdit()->text();
                 m_createGemInfo.m_originURL = m_originURL->lineEdit()->text();
                 m_createGemInfo.m_repoUri = m_repositoryURL->lineEdit()->text();
-                auto result = PythonBindingsInterface::Get()->CreateGem(m_gemTemplateLocation->lineEdit()->text(), m_createGemInfo);
+                QString templateLocation;
+                if (m_formFolderRadioButton->isChecked())
+                {
+                    templateLocation = m_gemTemplateLocation->lineEdit()->text();
+                }
+                else
+                {
+                    int templateID = m_radioButtonGroup->checkedId();
+                    templateLocation = m_gemTemplates[templateID].m_path;
+                }
+                auto result = PythonBindingsInterface::Get()->CreateGem(templateLocation, m_createGemInfo);
                 if (result.IsSuccess())
                 {
                     emit CreateButtonPressed();
