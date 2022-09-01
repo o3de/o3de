@@ -1358,8 +1358,8 @@ namespace AzToolsFramework
                 // to update the template.
                 PrefabDomPath entityDomInOwningTemplatePath(entityAliasPath.c_str());
                 PrefabDomValue* removedEntityDomPtr = entityDomInOwningTemplatePath.Get(commonOwningTemplateDom);
-                removedEntityDomList.emplace_back(PrefabDom());
-                removedEntityAliasPathList.emplace_back(AZStd::move(entityAliasPath));
+                removedEntityDomList.emplace_back();
+                removedEntityAliasPathList.push_back(AZStd::move(entityAliasPath));
                 if (removedEntityDomPtr)
                 {
                     PrefabDom& domAdded = removedEntityDomList.back();
