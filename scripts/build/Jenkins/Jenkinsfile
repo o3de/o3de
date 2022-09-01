@@ -268,13 +268,21 @@ def GetCrashArtifactDir() {
     }
 }
 
-def GetRemoteConfig(remoteConfigs, repositoryName, repositoryUrl) {
+def GetRemoteConfig(repositoryName, repositoryUrl) {
     def theRemoteConfig = [
         name: repositoryName,
         url: repositoryUrl,
-        credentialsId: remoteConfigs.credentialsId[0]
+        credentialsId: scm.userRemoteConfigs.credentialsId[0]
     ]
     return theRemoteConfig
+}
+
+def GetEngineRemoteConfig() {
+    return GetRemoteConfig(ENGINE_REPOSITORY_NAME, ENGINE_URL)
+}
+
+def GetExtrasRemoteConfig() {
+    return GetRemoteConfig(EXTRAS_REPOSITORY_NAME, EXTRAS_URL)
 }
 
 def UnInstallGitLFS() {
@@ -312,7 +320,7 @@ def CheckoutEngineBootstrapScripts(String branchName) {
             [$class: 'CloneOption', noTags: false, reference: '', shallow: false]
         ],
         submoduleCfg: [],
-        userRemoteConfigs: scm.userRemoteConfigs
+        userRemoteConfigs: GetEngineRemoteConfig()
     ])
 }
 
@@ -438,7 +446,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
             UnInstallGitLFS() // Prevent git from pulling lfs objects during checkout
 
             //checkout the engine branch
-            CheckoutRepo(the_branch, [[url: ENGINE_URL, name: ENGINE_REPOSITORY_NAME, credentialsId: scm.userRemoteConfigs.credentialsId[0]]], disableSubmodules, setEnvCommit)
+            CheckoutRepo(the_branch, GetEngineRemoteConfig(), disableSubmodules, setEnvCommit)
 
             // Get python
             dir(pipelineConfig.PYTHON_DIR) {
@@ -469,7 +477,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
             UnInstallGitLFS() // Prevent git from pulling lfs objects during checkout
 
             //checkout the engine branch
-            CheckoutRepo(the_branch, [[url: EXTRAS_URL, name: EXTRAS_REPOSITORY_NAME, credentialsId: scm.userRemoteConfigs.credentialsId[0]]], disableSubmodules, setEnvCommit)
+            CheckoutRepo(the_branch, GetExtrasRemoteConfig(), disableSubmodules, setEnvCommit)
 
             InstallAndPullGitLFS()
         }
@@ -489,7 +497,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
                 UnInstallGitLFS() // Prevent git from pulling lfs objects during checkout
 
                 //checkout the branch
-                CheckoutRepo(the_branch, [[url: repo.URL, name: repo.REPOSITORY_NAME, credentialsId: scm.userRemoteConfigs.credentialsId[0]]], disableSubmodules, setEnvCommit)
+                CheckoutRepo(the_branch, GetRemoteConfig(repo.REPOSITORY_NAME, repo.URL), disableSubmodules, setEnvCommit)
 
                 InstallAndPullGitLFS()
             }
