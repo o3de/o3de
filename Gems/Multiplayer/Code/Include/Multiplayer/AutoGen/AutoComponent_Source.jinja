@@ -9,11 +9,19 @@ const Multiplayer::RewindableArray<{{ Property.attrib['Type'] }}, {{ Property.at
 const AZStd::array<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>& {{ ClassName }}::Get{{ UpperFirst(Property.attrib['Name']) }}Array() const
 {%          endif %}
 {
+    if (const Multiplayer::NetBindComponent* netBindComponent = GetNetBindComponent())
+    {
+        netBindComponent->ValidatePropertyRead(Multiplayer::NetEntityRole::{{ Property.attrib['ReplicateFrom'] }}, Multiplayer::NetEntityRole::{{ Property.attrib['ReplicateTo'] }});
+    }
     return {{ Prefix }}m_{{ LowerFirst(Property.attrib['Name']) }};
 }
 
 const {{ Property.attrib['Type'] }}& {{ ClassName }}::Get{{ UpperFirst(Property.attrib['Name']) }}(int32_t index) const
 {
+    if (const Multiplayer::NetBindComponent* netBindComponent = GetNetBindComponent())
+    {
+        netBindComponent->ValidatePropertyRead(Multiplayer::NetEntityRole::{{ Property.attrib['ReplicateFrom'] }}, Multiplayer::NetEntityRole::{{ Property.attrib['ReplicateTo'] }});
+    }
     return {{ Prefix }}m_{{ LowerFirst(Property.attrib['Name']) }}[index];
 }
 
@@ -31,11 +39,19 @@ const RewindableFixedVector<{{ Property.attrib['Type'] }}, {{ Property.attrib['C
 const AZStd::fixed_vector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>& {{ ClassName }}::Get{{ UpperFirst(Property.attrib['Name']) }}Vector() const
 {%          endif %}
 {
+    if (const Multiplayer::NetBindComponent* netBindComponent = GetNetBindComponent())
+    {
+        netBindComponent->ValidatePropertyRead(Multiplayer::NetEntityRole::{{ Property.attrib['ReplicateFrom'] }}, Multiplayer::NetEntityRole::{{ Property.attrib['ReplicateTo'] }});
+    }
     return {{ Prefix }}m_{{ LowerFirst(Property.attrib['Name']) }};
 }
 
 const {{ Property.attrib['Type'] }}& {{ ClassName }}::Get{{ UpperFirst(Property.attrib['Name']) }}(int32_t index) const
 {
+    if (const Multiplayer::NetBindComponent* netBindComponent = GetNetBindComponent())
+    {
+        netBindComponent->ValidatePropertyRead(Multiplayer::NetEntityRole::{{ Property.attrib['ReplicateFrom'] }}, Multiplayer::NetEntityRole::{{ Property.attrib['ReplicateTo'] }});
+    }
     return {{ Prefix }}m_{{ LowerFirst(Property.attrib['Name']) }}[index];
 }
 
@@ -48,11 +64,19 @@ void {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}AddEvent(AZ::Even
 {%          endif %}
 const {{ Property.attrib['Type'] }}& {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}GetBack() const
 {
+    if (const Multiplayer::NetBindComponent* netBindComponent = GetNetBindComponent())
+    {
+        netBindComponent->ValidatePropertyRead(Multiplayer::NetEntityRole::{{ Property.attrib['ReplicateFrom'] }}, Multiplayer::NetEntityRole::{{ Property.attrib['ReplicateTo'] }});
+    }
     return {{ Prefix }}m_{{ LowerFirst(Property.attrib['Name']) }}.back();
 }
 
 uint32_t {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}GetSize() const
 {
+    if (const Multiplayer::NetBindComponent* netBindComponent = GetNetBindComponent())
+    {
+        netBindComponent->ValidatePropertyRead(Multiplayer::NetEntityRole::{{ Property.attrib['ReplicateFrom'] }}, Multiplayer::NetEntityRole::{{ Property.attrib['ReplicateTo'] }});
+    }
     return {{ Prefix }}m_{{ LowerFirst(Property.attrib['Name']) }}.size();
 }
 
@@ -66,11 +90,19 @@ void {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}SizeChangedAddEve
 {%     else %}
 const {{ Property.attrib['Type'] }}& {{ ClassName }}::Get{{ UpperFirst(Property.attrib['Name']) }}() const
 {
+    if (const Multiplayer::NetBindComponent* netBindComponent = GetNetBindComponent())
+    {
+        netBindComponent->ValidatePropertyRead(Multiplayer::NetEntityRole::{{ Property.attrib['ReplicateFrom'] }}, Multiplayer::NetEntityRole::{{ Property.attrib['ReplicateTo'] }});
+    }
     return {{ Prefix }}m_{{ LowerFirst(Property.attrib['Name']) }};
 }
 {%          if Property.attrib['IsRewindable']|booleanTrue %}
 const {{ Property.attrib['Type'] }}& {{ ClassName }}::Get{{ UpperFirst(Property.attrib['Name']) }}Previous() const
 {
+    if (const Multiplayer::NetBindComponent* netBindComponent = GetNetBindComponent())
+    {
+        netBindComponent->ValidatePropertyRead(Multiplayer::NetEntityRole::{{ Property.attrib['ReplicateFrom'] }}, Multiplayer::NetEntityRole::{{ Property.attrib['ReplicateTo'] }});
+    }
     return {{ Prefix }}m_{{ LowerFirst(Property.attrib['Name']) }}.GetPrevious();
 }
 {%          endif %}
@@ -87,9 +119,15 @@ void {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}AddEvent(AZ::Even
 
 #}
 {% macro DefineNetworkPropertySet(Component, ReplicateFrom, ReplicateTo, ClassName, Property) %}
+{% set IsPredictable = "true" if Property.attrib['IsPredictable']|booleanTrue else "false" %}
 {%     if Property.attrib['Container'] == 'Array' %}
 void {{ ClassName }}::Set{{ UpperFirst(Property.attrib['Name']) }}(int32_t index, const {{ Property.attrib['Type'] }}& value)
 {
+    if (const Multiplayer::NetBindComponent* netBindComponent = GetNetBindComponent())
+    {
+        netBindComponent->ValidatePropertyWrite(Multiplayer::NetEntityRole::{{ Property.attrib['ReplicateFrom'] }}, Multiplayer::NetEntityRole::{{ Property.attrib['ReplicateTo'] }}, {{ IsPredictable }});
+    }
+
     if (GetParent().m_{{ LowerFirst(Property.attrib['Name']) }}[index] != value)
     {
         Modify{{ UpperFirst(Property.attrib['Name']) }}(index) = value;
@@ -98,107 +136,11 @@ void {{ ClassName }}::Set{{ UpperFirst(Property.attrib['Name']) }}(int32_t index
 
 {{ Property.attrib['Type'] }}& {{ ClassName }}::Modify{{ UpperFirst(Property.attrib['Name']) }}(int32_t index)
 {
-    int32_t bitIndex = index + static_cast<int32_t>({{ AutoComponentMacros.GetNetPropertiesQualifiedPropertyDirtyEnum(Component.attrib['Name'], ReplicateFrom, ReplicateTo, Property, 'Start') }});
-    GetParent().m_currentRecord->m_{{ LowerFirst(AutoComponentMacros.GetNetPropertiesSetName(ReplicateFrom, ReplicateTo)) }}.SetBit(bitIndex, true);
-    GetParent().MarkDirty();
-    return GetParent().m_{{ LowerFirst(Property.attrib['Name']) }}[index];
-}
-
-{%     elif Property.attrib['Container'] == 'Vector' %}
-void {{ ClassName }}::Set{{ UpperFirst(Property.attrib['Name']) }}(int32_t index, const {{ Property.attrib['Type'] }}& value)
-{
-    if (GetParent().m_{{ LowerFirst(Property.attrib['Name']) }}[index] != value)
+    if (const Multiplayer::NetBindComponent* netBindComponent = GetNetBindComponent())
     {
-        Modify{{ UpperFirst(Property.attrib['Name']) }}(index) = value;
+        netBindComponent->ValidatePropertyWrite(Multiplayer::NetEntityRole::{{ Property.attrib['ReplicateFrom'] }}, Multiplayer::NetEntityRole::{{ Property.attrib['ReplicateTo'] }}, {{ IsPredictable }});
     }
-}
 
-{{ Property.attrib['Type'] }}& {{ ClassName }}::Modify{{ UpperFirst(Property.attrib['Name']) }}(int32_t index)
-{
-    int32_t bitIndex = index + static_cast<int32_t>({{ AutoComponentMacros.GetNetPropertiesQualifiedPropertyDirtyEnum(Component.attrib['Name'], ReplicateFrom, ReplicateTo, Property, 'Start') }});
-    GetParent().m_currentRecord->m_{{ LowerFirst(AutoComponentMacros.GetNetPropertiesSetName(ReplicateFrom, ReplicateTo)) }}.SetBit(bitIndex, true);
-    GetParent().MarkDirty();
-    return GetParent().m_{{ LowerFirst(Property.attrib['Name']) }}[index];
-}
-
-bool {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}PushBack(const {{ Property.attrib['Type'] }} &value)
-{
-    int32_t indexToSet = GetParent().m_{{ LowerFirst(Property.attrib['Name']) }}.size();
-    if (indexToSet < {{ Property.attrib['Count'] }})
-    {
-        GetParent().m_{{ LowerFirst(Property.attrib['Name']) }}.push_back(value);
-        int32_t bitIndex = indexToSet + static_cast<int32_t>({{ AutoComponentMacros.GetNetPropertiesQualifiedPropertyDirtyEnum(Component.attrib['Name'], ReplicateFrom, ReplicateTo, Property, 'Start') }});
-        GetParent().m_currentRecord->m_{{ LowerFirst(AutoComponentMacros.GetNetPropertiesSetName(ReplicateFrom, ReplicateTo)) }}.SetBit(bitIndex, true);
-        GetParent().m_currentRecord->m_{{ LowerFirst(AutoComponentMacros.GetNetPropertiesSetName(ReplicateFrom, ReplicateTo)) }}.SetBit(aznumeric_cast<uint32_t>({{ AutoComponentMacros.GetNetPropertiesQualifiedPropertyDirtyEnum(Component.attrib['Name'], ReplicateFrom, ReplicateTo, Property, 'Size') }}), true);
-        GetParent().MarkDirty();
-        return true;
-    }
-    return false;
-}
-
-bool {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}PopBack(const Multiplayer::NetworkInput&)
-{
-    if (!GetParent().m_{{ LowerFirst(Property.attrib['Name']) }}.empty())
-    {
-        GetParent().m_{{ LowerFirst(Property.attrib['Name']) }}.pop_back();
-        GetParent().m_currentRecord->m_{{ LowerFirst(AutoComponentMacros.GetNetPropertiesSetName(ReplicateFrom, ReplicateTo)) }}.SetBit(aznumeric_cast<uint32_t>({{ AutoComponentMacros.GetNetPropertiesQualifiedPropertyDirtyEnum(Component.attrib['Name'], ReplicateFrom, ReplicateTo, Property, 'Size') }}), true);
-        GetParent().MarkDirty();
-        return true;
-    }
-    return false;
-}
-
-void {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}Clear(const Multiplayer::NetworkInput&)
-{
-    GetParent().m_currentRecord->m_{{ LowerFirst(AutoComponentMacros.GetNetPropertiesSetName(ReplicateFrom, ReplicateTo)) }}.SetBit(static_cast<int32_t>({{ AutoComponentMacros.GetNetPropertiesQualifiedPropertyDirtyEnum(Component.attrib['Name'], ReplicateFrom, ReplicateTo, Property, 'Size') }}), true);
-    GetParent().m_{{ LowerFirst(Property.attrib['Name']) }}.clear();
-    GetParent().MarkDirty();
-}
-
-{%     elif Property.attrib['Container'] == 'Object' %}
-void {{ ClassName }}::Set{{ UpperFirst(Property.attrib['Name']) }}(const {{ Property.attrib['Type'] }}& value)
-{
-    if (GetParent().m_{{ LowerFirst(Property.attrib['Name']) }} != value)
-    {
-        Modify{{ UpperFirst(Property.attrib['Name']) }}() = value;
-    }
-}
-
-{{ Property.attrib['Type'] }}& {{ ClassName }}::Modify{{ UpperFirst(Property.attrib['Name']) }}()
-{
-    GetParent().m_currentRecord->m_{{ LowerFirst(AutoComponentMacros.GetNetPropertiesSetName(ReplicateFrom, ReplicateTo)) }}.SetBit(static_cast<int32_t>({{ AutoComponentMacros.GetNetPropertiesQualifiedPropertyDirtyEnum(Component.attrib['Name'], ReplicateFrom, ReplicateTo, Property) }}), true);
-    GetParent().MarkDirty();
-    return GetParent().m_{{ LowerFirst(Property.attrib['Name']) }}{% if Property.attrib['IsRewindable']|booleanTrue %}.Modify(){% endif %};
-}
-
-{%     else %}
-void {{ ClassName }}::Set{{ UpperFirst(Property.attrib['Name']) }}(const {{ Property.attrib['Type'] }}& value)
-{
-    if (GetParent().m_{{ LowerFirst(Property.attrib['Name']) }} != value)
-    {
-        GetParent().m_{{ LowerFirst(Property.attrib['Name']) }} = value;
-        GetParent().m_currentRecord->m_{{ LowerFirst(AutoComponentMacros.GetNetPropertiesSetName(ReplicateFrom, ReplicateTo)) }}.SetBit(static_cast<int32_t>({{ AutoComponentMacros.GetNetPropertiesQualifiedPropertyDirtyEnum(Component.attrib['Name'], ReplicateFrom, ReplicateTo, Property) }}), true);
-        GetParent().MarkDirty();
-    }
-}
-
-{%     endif %}
-{% endmacro %}
-{#
-
-#}
-{% macro DefineNetworkPropertySet(Component, ReplicateFrom, ReplicateTo, ClassName, Property) %}
-{%     if Property.attrib['Container'] == 'Array' %}
-void {{ ClassName }}::Set{{ UpperFirst(Property.attrib['Name']) }}(int32_t index, const {{ Property.attrib['Type'] }}& value)
-{
-    if (GetParent().m_{{ LowerFirst(Property.attrib['Name']) }}[index] != value)
-    {
-        Modify{{ UpperFirst(Property.attrib['Name']) }}(index) = value;
-    }
-}
-
-{{ Property.attrib['Type'] }}& {{ ClassName }}::Modify{{ UpperFirst(Property.attrib['Name']) }}(int32_t index)
-{
     int32_t bitIndex = index + static_cast<int32_t>({{ AutoComponentMacros.GetNetPropertiesQualifiedPropertyDirtyEnum(Component.attrib['Name'], ReplicateFrom, ReplicateTo, Property, 'Start') }});
     GetParent().m_currentRecord->m_{{ LowerFirst(AutoComponentMacros.GetNetPropertiesSetName(ReplicateFrom, ReplicateTo)) }}.SetBit(bitIndex, true);
     GetParent().MarkDirty();
@@ -208,6 +150,11 @@ void {{ ClassName }}::Set{{ UpperFirst(Property.attrib['Name']) }}(int32_t index
 {%     elif Property.attrib['Container'] == 'Vector' %}
 void {{ ClassName }}::Set{{ UpperFirst(Property.attrib['Name']) }}(int32_t index, const {{ Property.attrib['Type'] }}& value)
 {
+    if (const Multiplayer::NetBindComponent* netBindComponent = GetNetBindComponent())
+    {
+        netBindComponent->ValidatePropertyWrite(Multiplayer::NetEntityRole::{{ Property.attrib['ReplicateFrom'] }}, Multiplayer::NetEntityRole::{{ Property.attrib['ReplicateTo'] }}, {{ IsPredictable }});
+    }
+
     if (GetParent().m_{{ LowerFirst(Property.attrib['Name']) }}[index] != value)
     {
         Modify{{ UpperFirst(Property.attrib['Name']) }}(index) = value;
@@ -216,6 +163,11 @@ void {{ ClassName }}::Set{{ UpperFirst(Property.attrib['Name']) }}(int32_t index
 
 {{ Property.attrib['Type'] }}& {{ ClassName }}::Modify{{ UpperFirst(Property.attrib['Name']) }}(int32_t index)
 {
+    if (const Multiplayer::NetBindComponent* netBindComponent = GetNetBindComponent())
+    {
+        netBindComponent->ValidatePropertyWrite(Multiplayer::NetEntityRole::{{ Property.attrib['ReplicateFrom'] }}, Multiplayer::NetEntityRole::{{ Property.attrib['ReplicateTo'] }}, {{ IsPredictable }});
+    }
+
     int32_t bitIndex = index + static_cast<int32_t>({{ AutoComponentMacros.GetNetPropertiesQualifiedPropertyDirtyEnum(Component.attrib['Name'], ReplicateFrom, ReplicateTo, Property, 'Start') }});
     GetParent().m_currentRecord->m_{{ LowerFirst(AutoComponentMacros.GetNetPropertiesSetName(ReplicateFrom, ReplicateTo)) }}.SetBit(bitIndex, true);
     GetParent().MarkDirty();
@@ -224,6 +176,11 @@ void {{ ClassName }}::Set{{ UpperFirst(Property.attrib['Name']) }}(int32_t index
 
 bool {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}PushBack(const {{ Property.attrib['Type'] }} &value)
 {
+    if (const Multiplayer::NetBindComponent* netBindComponent = GetNetBindComponent())
+    {
+        netBindComponent->ValidatePropertyWrite(Multiplayer::NetEntityRole::{{ Property.attrib['ReplicateFrom'] }}, Multiplayer::NetEntityRole::{{ Property.attrib['ReplicateTo'] }}, {{ IsPredictable }});
+    }
+
     int32_t indexToSet = GetParent().m_{{ LowerFirst(Property.attrib['Name']) }}.size();
     if (indexToSet < {{ Property.attrib['Count'] }})
     {
@@ -239,6 +196,11 @@ bool {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}PushBack(const {{
 
 bool {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}PopBack()
 {
+    if (const Multiplayer::NetBindComponent* netBindComponent = GetNetBindComponent())
+    {
+        netBindComponent->ValidatePropertyWrite(Multiplayer::NetEntityRole::{{ Property.attrib['ReplicateFrom'] }}, Multiplayer::NetEntityRole::{{ Property.attrib['ReplicateTo'] }}, {{ IsPredictable }});
+    }
+
     if (!GetParent().m_{{ LowerFirst(Property.attrib['Name']) }}.empty())
     {
         GetParent().m_{{ LowerFirst(Property.attrib['Name']) }}.pop_back();
@@ -251,6 +213,11 @@ bool {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}PopBack()
 
 void {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}Clear()
 {
+    if (const Multiplayer::NetBindComponent* netBindComponent = GetNetBindComponent())
+    {
+        netBindComponent->ValidatePropertyWrite(Multiplayer::NetEntityRole::{{ Property.attrib['ReplicateFrom'] }}, Multiplayer::NetEntityRole::{{ Property.attrib['ReplicateTo'] }}, {{ IsPredictable }});
+    }
+
     GetParent().m_currentRecord->m_{{ LowerFirst(AutoComponentMacros.GetNetPropertiesSetName(ReplicateFrom, ReplicateTo)) }}.SetBit(aznumeric_cast<uint32_t>({{ AutoComponentMacros.GetNetPropertiesQualifiedPropertyDirtyEnum(Component.attrib['Name'], ReplicateFrom, ReplicateTo, Property, 'Size') }}), true);
     GetParent().m_{{ LowerFirst(Property.attrib['Name']) }}.clear();
     GetParent().MarkDirty();
@@ -259,6 +226,11 @@ void {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}Clear()
 {%     elif Property.attrib['Container'] == 'Object' %}
 void {{ ClassName }}::Set{{ UpperFirst(Property.attrib['Name']) }}(const {{ Property.attrib['Type'] }}& value)
 {
+    if (const Multiplayer::NetBindComponent* netBindComponent = GetNetBindComponent())
+    {
+        netBindComponent->ValidatePropertyWrite(Multiplayer::NetEntityRole::{{ Property.attrib['ReplicateFrom'] }}, Multiplayer::NetEntityRole::{{ Property.attrib['ReplicateTo'] }}, {{ IsPredictable }});
+    }
+
     if (GetParent().m_{{ LowerFirst(Property.attrib['Name']) }} != value)
     {
         Modify{{ UpperFirst(Property.attrib['Name']) }}() = value;
@@ -267,6 +239,11 @@ void {{ ClassName }}::Set{{ UpperFirst(Property.attrib['Name']) }}(const {{ Prop
 
 {{ Property.attrib['Type'] }}& {{ ClassName }}::Modify{{ UpperFirst(Property.attrib['Name']) }}()
 {
+    if (const Multiplayer::NetBindComponent* netBindComponent = GetNetBindComponent())
+    {
+        netBindComponent->ValidatePropertyWrite(Multiplayer::NetEntityRole::{{ Property.attrib['ReplicateFrom'] }}, Multiplayer::NetEntityRole::{{ Property.attrib['ReplicateTo'] }}, {{ IsPredictable }});
+    }
+
     GetParent().m_currentRecord->m_{{ LowerFirst(AutoComponentMacros.GetNetPropertiesSetName(ReplicateFrom, ReplicateTo)) }}.SetBit(static_cast<int32_t>({{ AutoComponentMacros.GetNetPropertiesQualifiedPropertyDirtyEnum(Component.attrib['Name'], ReplicateFrom, ReplicateTo, Property) }}), true);
     GetParent().MarkDirty();
     return static_cast<{{ Property.attrib['Type'] }}&>(GetParent().m_{{ LowerFirst(Property.attrib['Name']) }}{% if Property.attrib['IsRewindable']|booleanTrue %}.Modify(){% endif %});
@@ -275,6 +252,11 @@ void {{ ClassName }}::Set{{ UpperFirst(Property.attrib['Name']) }}(const {{ Prop
 {%     else %}
 void {{ ClassName }}::Set{{ UpperFirst(Property.attrib['Name']) }}(const {{ Property.attrib['Type'] }}& value)
 {
+    if (const Multiplayer::NetBindComponent* netBindComponent = GetNetBindComponent())
+    {
+        netBindComponent->ValidatePropertyWrite(Multiplayer::NetEntityRole::{{ Property.attrib['ReplicateFrom'] }}, Multiplayer::NetEntityRole::{{ Property.attrib['ReplicateTo'] }}, {{ IsPredictable }});
+    }
+
     if (GetParent().m_{{ LowerFirst(Property.attrib['Name']) }} != value)
     {
         GetParent().m_{{ LowerFirst(Property.attrib['Name']) }} = value;

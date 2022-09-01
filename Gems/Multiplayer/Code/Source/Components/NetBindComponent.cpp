@@ -260,6 +260,32 @@ namespace Multiplayer
         return m_netEntityMigration;
     }
 
+    bool NetBindComponent::ValidatePropertyRead(NetEntityRole replicateFrom, NetEntityRole replicateTo) const
+    {
+        if (replicateFrom == NetEntityRole::Authority)
+        {
+            // Things that replicate to clients are readable by all network entity roles
+            const bool replicatesToClient = (replicateTo == NetEntityRole::Client);
+            // Things that replicate from Authority can be read by all hosts
+            const bool isHost = (IsNetEntityRoleAuthority() || IsNetEntityRoleServer());
+            // Things that replicate to Autonomous can't be read by clients
+            const bool isAutonomous = ((replicateTo == NetEntityRole::Autonomous) && !IsNetEntityRoleClient());
+            return replicatesToClient || isHost || isAutonomous;
+        }
+        else
+        {
+            // Autonomous can only replicate to Authority, and won't replicate to servers, it's meant for client authoritative values like basic client metrics
+            AZ_Assert(replicateTo == NetEntityRole::Authority, "The only valid case where properties replicate from a non-authority is in autonomous to authority");
+            return IsNetEntityRoleAuthority() || IsNetEntityRoleAutonomous();
+        }
+    }
+
+    bool NetBindComponent::ValidatePropertyWrite(NetEntityRole replicateFrom, [[maybe_unused]] NetEntityRole replicateTo, bool isPredictable) const
+    {
+        return (replicateFrom == GetNetEntityRole())
+            || (isPredictable && IsNetEntityRoleAutonomous());
+    }
+
     bool NetBindComponent::HasController() const
     {
         return (m_netEntityRole == NetEntityRole::Authority)
