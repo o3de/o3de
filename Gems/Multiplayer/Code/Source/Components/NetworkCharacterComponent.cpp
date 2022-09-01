@@ -187,7 +187,7 @@ namespace Multiplayer
     AZ::Vector3 NetworkCharacterComponentController::TryMoveWithVelocity(const AZ::Vector3& velocity, [[maybe_unused]] float deltaTime)
     {
         // Ensure any entities that we might interact with are properly synchronized to their rewind state
-        if (IsAuthority())
+        if (IsNetEntityRoleAuthority())
         {
             const AZ::Aabb entityStartBounds = AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->GetEntityWorldBoundsUnion(GetEntity()->GetId());
             const AZ::Aabb entityFinalBounds = entityStartBounds.GetTranslated(velocity);

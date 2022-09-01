@@ -9,6 +9,7 @@
 
 #include <AzQtComponents/Components/Widgets/ElidingLabel.h>
 #include <QCheckBox>
+#include <QDialog>
 #include <QLineEdit>
 #include <QTimer>
 #include <QVBoxLayout>
@@ -18,9 +19,10 @@
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorSystem.h>
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
-#include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
 #include <AzToolsFramework/UI/DPEDebugViewer/DPEDebugModel.h>
 #include <AzToolsFramework/UI/DPEDebugViewer/DPEDebugWindow.h>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/KeyQueryDPE.h>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
 
 AZ_CVAR(
     bool,
@@ -32,7 +34,6 @@ AZ_CVAR(
 
 namespace AzToolsFramework
 {
-
     DPELayout::DPELayout(int depth, QWidget* parentWidget)
         : QHBoxLayout(parentWidget)
         , m_depth(depth)
@@ -121,7 +122,6 @@ namespace AzToolsFramework
         {
             return m_cachedMinLayoutSize;
         }
-
 
         int cumulativeWidth = 0;
         int minimumHeight = 0;
@@ -381,7 +381,8 @@ namespace AzToolsFramework
             DocumentPropertyEditor* dpe = GetDPE();
             // propertyHandlers own their widgets, so don't destroy them here. Set them free!
             for (auto propertyWidgetIter = m_widgetToPropertyHandler.begin(), endIter = m_widgetToPropertyHandler.end();
-                 propertyWidgetIter != endIter; ++propertyWidgetIter)
+                 propertyWidgetIter != endIter;
+                 ++propertyWidgetIter)
             {
                 QWidget* propertyWidget = propertyWidgetIter->first;
                 auto toRemove = AZStd::remove(m_domOrderedChildren.begin(), m_domOrderedChildren.end(), propertyWidget);
@@ -870,6 +871,13 @@ namespace AzToolsFramework
             });
         m_adapter->ConnectChangedHandler(m_changedHandler);
 
+        m_domMessageHandler = AZ::DocumentPropertyEditor::DocumentAdapter::MessageEvent::Handler(
+            [this](const AZ::DocumentPropertyEditor::AdapterMessage& message, AZ::Dom::Value& value)
+            {
+                this->HandleDomMessage(message, value);
+            });
+        m_adapter->ConnectMessageHandler(m_domMessageHandler);
+
         // populate the view from the full adapter contents, just like a reset
         HandleReset();
     }
@@ -1170,6 +1178,28 @@ namespace AzToolsFramework
                 rowWidget->HandleOperationAtPath(*operationIterator, pathDepth);
             }
         }
+    }
+
+    void DocumentPropertyEditor::HandleDomMessage(
+        const AZ::DocumentPropertyEditor::AdapterMessage& message, [[maybe_unused]] AZ::Dom::Value& value)
+    {
+        // message match for QueryKey
+        auto showKeyQueryDialog = [&](AZ::DocumentPropertyEditor::DocumentAdapterPtr* adapter, AZ::Dom::Path containerPath)
+        {
+            KeyQueryDPE keyQueryUi(adapter);
+            if (keyQueryUi.exec() == QDialog::Accepted)
+            {
+                AZ::DocumentPropertyEditor::Nodes::Adapter::AddContainerKey.InvokeOnDomNode(
+                    m_adapter->GetContents(), adapter, containerPath);
+            }
+            else
+            {
+                AZ::DocumentPropertyEditor::Nodes::Adapter::RejectContainerKey.InvokeOnDomNode(
+                    m_adapter->GetContents(), adapter, containerPath);
+            }
+        };
+
+        message.Match(AZ::DocumentPropertyEditor::Nodes::Adapter::QueryKey, showKeyQueryDialog);
     }
 
     void DocumentPropertyEditor::CleanupReleasedHandlers()
