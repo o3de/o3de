@@ -252,6 +252,7 @@ set(FILES
     ShaderLib/Atom/Features/PBR/Surfaces/DualSpecularSurface.azsli
     ShaderLib/Atom/Features/PBR/Surfaces/EyeSurface.azsli
     ShaderLib/Atom/Features/PBR/Surfaces/SkinSurface.azsli
+    ShaderLib/Atom/Features/PBR/Surfaces/StandardSurface.azsli
     ShaderLib/Atom/Features/PBR/Surfaces/TransmissionSurfaceData.azsli
     ShaderLib/Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli
     ShaderLib/Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli
@@ -417,9 +418,17 @@ set(FILES
     Shaders/Materials/NewPBR/NewPBR_LowEndForward.shader
     Shaders/Materials/NewPBR/NewPBR_Surface.azsli
     Shaders/Materials/NewPBR/NewPBR_SurfaceData.azsli
-    Shaders/Materials/Skin/Skin.azsl
-    Shaders/Materials/Skin/Skin.shader
-    Shaders/Materials/Skin/Skin_Common.azsli
+    Shaders/Materials/Skin/Skin.azsli
+    Shaders/Materials/Skin/Skin_ForwardPass.azsl
+    Shaders/Materials/Skin/Skin_ForwardPass.shader
+    Shaders/Materials/Skin/Skin_LightingModel.azsli
+    Shaders/Materials/Skin/Skin_MaterialSrg.azsli
+    Shaders/Materials/Skin/Skin_PixelGeometry.azsli
+    Shaders/Materials/Skin/Skin_PixelGeometryData.azsli
+    Shaders/Materials/Skin/Skin_Surface.azsli
+    Shaders/Materials/Skin/Skin_SurfaceData.azsli
+    Shaders/Materials/Skin/Skin_Vertex.azsli
+    Shaders/Materials/Skin/Skin_VertexData.azsli
     Shaders/Materials/StandardPBR/StandardPBR.azsli
     Shaders/Materials/StandardPBR/StandardPBR_Common.azsli
     Shaders/Materials/StandardPBR/StandardPBR_DepthPass_WithPS.azsl

@@ -76,7 +76,13 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 
     // --- Subsurface ---
 #if OUTPUT_SUBSURFACE
-    if(o_enableSubsurfaceScattering && o_opacity_mode != OpacityMode::Blended && o_opacity_mode != OpacityMode::TintedTransparent)
+    bool applySubsurfaceScattering = o_enableSubsurfaceScattering;
+
+#ifndef FORCE_OPAQUE
+    applySubsurfaceScattering = applySubsurfaceScattering && o_opacity_mode != OpacityMode::Blended && o_opacity_mode != OpacityMode::TintedTransparent;
+#endif
+
+    if(applySubsurfaceScattering)
     {
         OUT.m_diffuseColor.a = surface.GetSubsurfaceScatteringFactorAndQuality();
         OUT.m_scatterDistance = surface.scatterDistance;

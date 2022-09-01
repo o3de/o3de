@@ -9,8 +9,6 @@
 #pragma once 
 
 #include <Atom/Features/SrgSemantics.azsli>
-#include <viewsrg.srgi>
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 
 #include "../MaterialInputs/BaseColorInput.azsli"
 #include "../MaterialInputs/RoughnessInput.azsli"
@@ -85,5 +83,3 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
     Texture2D m_wrinkle_normal_texture3;
     Texture2D m_wrinkle_normal_texture4;
 }
-
-

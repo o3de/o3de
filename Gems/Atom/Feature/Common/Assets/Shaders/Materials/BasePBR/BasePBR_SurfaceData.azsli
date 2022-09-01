@@ -37,7 +37,7 @@ class SurfaceData_BasePBR
     void CalculateRoughnessA();
 
     //! Sets albedo, base color, specularF0, and metallic properties using metallic workflow
-    void SetAlbedoAndSpecularF0(float3 baseColor, float specularF0Factor, float metallic);
+    void SetAlbedoAndSpecularF0(float3 newBaseColor, float specularF0Factor, float newMetallic);
 };
 
 void SurfaceData_BasePBR::CalculateRoughnessA()

@@ -1,5 +1,5 @@
 {
-    "Source" : "Skin.azsl",
+    "Source" : "Skin_ForwardPass.azsl",
 
     "DepthStencilState" :
     {
@@ -25,17 +25,17 @@
 
     "ProgramSettings":
     {
-      "EntryPoints":
-      [
-        {
-          "name": "SkinVS",
-          "type": "Vertex"
-        },
-        {
-          "name": "SkinPS",
-          "type": "Fragment"
-        }
-      ]
+        "EntryPoints":
+        [
+            {
+                "name": "VertexShader",
+                "type": "Vertex"
+            },
+            {
+                "name": "PixelShader",
+                "type": "Fragment"
+            }
+        ]
     },
 
     "DrawList" : "forwardWithSubsurfaceOutput"
