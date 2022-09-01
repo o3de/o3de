@@ -51,7 +51,7 @@ namespace AzToolsFramework::ViewportUi::Internal
 
     //! Creates a transparent widget over a viewport render overlay, and adds/manages other Qt widgets
     //! to display on top of the viewport.
-    class ViewportUiDisplay : private AzFramework::ViewportImGuiNotificationsBus::Handler
+    class ViewportUiDisplay : private AzFramework::ViewportImGuiNotificationBus::Handler
     {
     public:
         ViewportUiDisplay(QWidget* parent, QWidget* renderOverlay);
@@ -70,6 +70,8 @@ namespace AzToolsFramework::ViewportUi::Internal
         void RemoveSwitcherButton(ViewportUiElementId switcherId, ButtonId buttonId);
         void UpdateSwitcher(ViewportUiElementId switcherId);
         void SetSwitcherActiveButton(ViewportUiElementId switcherId, ButtonId buttonId);
+        const bool HideSwitcher(ViewportUiElementId switcherId);
+        const bool ShowSwitcher(ViewportUiElementId switcherId);
 
         void AddTextField(AZStd::shared_ptr<TextField> textField);
         void UpdateTextField(ViewportUiElementId textFieldId);
@@ -108,7 +110,8 @@ namespace AzToolsFramework::ViewportUi::Internal
         void PrepareWidgetForViewportUi(QPointer<QWidget> widget);
 
         // ViewportImGuiNotificationsBus overrides ...
-        void ImGuiActive(bool active) override;
+        void OnImGuiActivated() override;
+        void OnImGuiDeactivated() override;
 
         ViewportUiElementId AddViewportUiElement(AZStd::shared_ptr<QWidget> widget);
         ViewportUiElementId GetViewportUiElementId(QPointer<QWidget> widget);
@@ -117,7 +120,8 @@ namespace AzToolsFramework::ViewportUi::Internal
         void PositionViewportUiElementAnchored(ViewportUiElementId elementId, const Qt::Alignment alignment);
         void PositionUiOverlayOverRenderViewport();
 
-        QMargins CalculateViewportElementMargins() const;
+        //! Returns the margin required for Viewport elements.
+        QMargins ViewportElementMargins() const;
         bool UiDisplayEnabled() const;
         void SetUiOverlayContents(QPointer<QWidget> widget);
         void SetUiOverlayContentsAnchored(QPointer<QWidget>, Qt::Alignment aligment);

@@ -247,11 +247,16 @@ void ImGuiManager::Render()
 {
     if (m_clientMenuBarState == DisplayState::Hidden && m_editorWindowState == DisplayState::Hidden)
     {
-        if (!m_deactivationBroadcasted)
+        // the first frame that this is true means that it has been deactivated, the following condtional is to avoid
+        // continuous bus notifications
+        if (m_ImGuiBroadcastState.m_deactivationBroadcasted == ImGuiActivationBroadcast::DeactivationNotBroadcasted)
         {
-            AzFramework::ViewportImGuiNotificationsBus::Broadcast(&AzFramework::ViewportImGuiNotificationsBus::Events::ImGuiActive, false);
-            m_deactivationBroadcasted = true;
-            m_activationBroadcasted = false;
+            AzFramework::ViewportImGuiNotificationBus::Broadcast(&AzFramework::ViewportImGuiNotificationBus::Events::OnImGuiDeactivated);
+            m_ImGuiBroadcastState.m_deactivationBroadcasted = ImGuiActivationBroadcast::DeactivationBroadcasted;
+
+            // reset the following state to ActivationNotBroadcasted so when ImGui is first activated,
+            // it sends the activation bus notification
+            m_ImGuiBroadcastState.m_activationBroadcasted = ImGuiActivationBroadcast::ActivationNotBroadcasted;
         } 
         return;
     }
@@ -391,11 +396,11 @@ void ImGuiManager::Render()
     // Render!
     RenderImGuiBuffers(scaleRects);
 
-    if (!m_activationBroadcasted)
+    if (m_ImGuiBroadcastState.m_activationBroadcasted == ImGuiActivationBroadcast::ActivationNotBroadcasted)
     {
-        AzFramework::ViewportImGuiNotificationsBus::Broadcast(&AzFramework::ViewportImGuiNotificationsBus::Events::ImGuiActive, true);
-        m_activationBroadcasted = true;
-        m_deactivationBroadcasted = false;
+        AzFramework::ViewportImGuiNotificationBus::Broadcast(&AzFramework::ViewportImGuiNotificationBus::Events::OnImGuiActivated);
+        m_ImGuiBroadcastState.m_activationBroadcasted = ImGuiActivationBroadcast::ActivationBroadcasted;
+        m_ImGuiBroadcastState.m_deactivationBroadcasted = ImGuiActivationBroadcast::DeactivationNotBroadcasted;
     }
 
     // Clear the simulated backspace key

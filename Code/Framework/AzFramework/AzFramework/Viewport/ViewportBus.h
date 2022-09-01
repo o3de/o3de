@@ -78,16 +78,30 @@ namespace AzFramework
 
     using ViewportBorderRequestBus = AZ::EBus<ViewportBorderRequests>;
 
+    //! Provides a bus to notify about different states of the ImGui.
     class ViewportImGuiNotifications : public AZ::EBusTraits
     {
     public:
-        /*!
-         * Notification that the ImGui menu bar has been activated or deactivated.
-         *
-         * \param active True/False when ImGui is activated/deactivated.
-         */
-        virtual void ImGuiActive(const bool /*active*/){};
+        //! Notification that the ImGui menu bar has been activated.
+        virtual void OnImGuiActivated()
+        {
+        }
+
+        //! Notification that the ImGui menu bar has been deactivated.
+        virtual void OnImGuiDeactivated()
+        {
+        }
+
+        //! Notification that ImGui menu dropdown is activated.
+        virtual void OnImGuiDropDownDisplayed()
+        {
+        }
+
+        //! Notification that ImGui menu dropdown is deactivated.
+        virtual void OnImGuiDropDownHidden()
+        {
+        }
     };
 
-    using ViewportImGuiNotificationsBus = AZ::EBus<ViewportImGuiNotifications>;
+    using ViewportImGuiNotificationBus = AZ::EBus<ViewportImGuiNotifications>;
 } // namespace AzFramework

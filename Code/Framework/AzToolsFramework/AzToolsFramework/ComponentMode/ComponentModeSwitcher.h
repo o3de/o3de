@@ -15,6 +15,8 @@
 #include <AzToolsFramework/ViewportUi/Button.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
 
+#include <AzFramework/Viewport/ViewportBus.h>
+
 namespace AZ
 {
     class Component;
@@ -51,6 +53,7 @@ namespace AzToolsFramework
             , private ViewportEditorModeNotificationsBus::Handler
             , private EntityCompositionNotificationBus::Handler
             , private ToolsApplicationNotificationBus::Handler
+            , private AzFramework::ViewportImGuiNotificationBus::Handler
         {
         public:
             ComponentModeSwitcher();
@@ -105,6 +108,10 @@ namespace AzToolsFramework
             void AfterEntitySelectionChanged(
                 const EntityIdList& newlySelectedEntities, const EntityIdList& newlyDeselectedEntities) override;
             void AfterUndoRedo() override;
+
+            // ViewportImGuiNotificationBus overrides ...
+            void OnImGuiDropDownDisplayed() override;
+            void OnImGuiDropDownHidden() override;
 
             // Member variables
             AZ::Component* m_activeSwitcherComponent = nullptr; //!< The component that is currently in component mode

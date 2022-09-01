@@ -66,12 +66,12 @@ namespace AzToolsFramework::ViewportUi::Internal
         , m_viewportBorderText(&m_uiOverlay)
         , m_viewportBorderBackButton(&m_uiOverlay)
     {
-        AzFramework::ViewportImGuiNotificationsBus::Handler::BusConnect();
+        AzFramework::ViewportImGuiNotificationBus::Handler::BusConnect();
     }
 
     ViewportUiDisplay::~ViewportUiDisplay()
     {
-        AzFramework::ViewportImGuiNotificationsBus::Handler::BusDisconnect();
+        AzFramework::ViewportImGuiNotificationBus::Handler::BusDisconnect();
         UnparentWidgets(m_viewportUiElements);
     }
 
@@ -164,6 +164,28 @@ namespace AzToolsFramework::ViewportUi::Internal
         {
             switcher->Update();
         }
+    }
+
+    const bool ViewportUiDisplay::HideSwitcher(ViewportUiElementId switcherId)
+    {
+        if (auto switcher = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(switcherId).get()))
+        {
+            bool hidden = switcher->HideSwitcher();
+            return hidden;
+        }
+        // return false if switcher not found
+        return false;
+    }
+
+    const bool ViewportUiDisplay::ShowSwitcher(ViewportUiElementId switcherId)
+    {
+        if (auto switcher = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(switcherId).get()))
+        {
+            bool shown = switcher->ShowSwitcher();
+            return shown;
+        }
+        // return false if switcher not found
+        return false;
     }
 
     void ViewportUiDisplay::SetSwitcherActiveButton(ViewportUiElementId switcherId, ButtonId buttonId)
@@ -305,29 +327,15 @@ namespace AzToolsFramework::ViewportUi::Internal
         return false;
     }
 
-    QMargins ViewportUiDisplay::CalculateViewportElementMargins() const
+    QMargins ViewportUiDisplay::ViewportElementMargins() const
     {
         if (m_imGuiActive)
         {
-            if (GetViewportBorderVisible())
-            {
-                return ViewportUiOverlayImGuiBorderMargin;
-            }
-            else
-            {
-                return ViewportUiOverlayImGuiMargin;
-            }
+            return GetViewportBorderVisible() ? ViewportUiOverlayImGuiBorderMargin : ViewportUiOverlayImGuiMargin;
         }
         else
         {
-            if (GetViewportBorderVisible())
-            {
-                return ViewportUiOverlayBorderMargin;
-            }
-            else
-            {
-                return ViewportUiOverlayDefaultMargin;
-            }
+            return GetViewportBorderVisible() ? ViewportUiOverlayBorderMargin : ViewportUiOverlayDefaultMargin;
         }
     }
 
@@ -342,7 +350,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         m_viewportBorderText.setAlignment(Qt::AlignCenter);
 
         m_viewportBorderText.show();
-        m_uiOverlayLayout.setContentsMargins(CalculateViewportElementMargins());
+        m_uiOverlayLayout.setContentsMargins(ViewportElementMargins());
         ChangeViewportBorderText(borderTitle.c_str());
 
         // only display the back button if a callback was provided
@@ -358,18 +366,16 @@ namespace AzToolsFramework::ViewportUi::Internal
         m_viewportBorderText.setText(borderTitle);
     }
 
-    void ViewportUiDisplay::ImGuiActive(bool active)
+    void ViewportUiDisplay::OnImGuiActivated()
     {
-        if (active)
-        {
-            m_imGuiActive = true;
-        }
-        else
-        {
-            m_imGuiActive = false;
-        }
+        m_imGuiActive = true;
+        m_uiOverlayLayout.setContentsMargins(ViewportElementMargins());
+    };
 
-        m_uiOverlayLayout.setContentsMargins(CalculateViewportElementMargins());
+    void ViewportUiDisplay::OnImGuiDeactivated()
+    {
+        m_imGuiActive = false;
+        m_uiOverlayLayout.setContentsMargins(ViewportElementMargins());
     };
 
 
@@ -377,7 +383,7 @@ namespace AzToolsFramework::ViewportUi::Internal
     {
         m_viewportBorderText.hide();
         m_uiOverlay.setStyleSheet("border: none;");
-        m_uiOverlayLayout.setContentsMargins(CalculateViewportElementMargins());
+        m_uiOverlayLayout.setContentsMargins(ViewportElementMargins());
         m_viewportBorderBackButtonCallback.reset();
         m_viewportBorderBackButton.hide();
     }

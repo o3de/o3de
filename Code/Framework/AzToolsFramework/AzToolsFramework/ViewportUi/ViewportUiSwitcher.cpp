@@ -186,4 +186,25 @@ namespace AzToolsFramework::ViewportUi::Internal
             action->setToolTip(QString((tooltip).c_str()));
         }
     }
+
+    const bool ViewportUiSwitcher::ShowSwitcher()
+    {
+        if (!isVisible())
+        {
+            setVisible(true);
+            Update();
+            return true;
+        }
+        return false;
+    }
+
+    const bool ViewportUiSwitcher::HideSwitcher()
+    {
+        if (isVisible())
+        {
+            setVisible(false);
+            return true;
+        }
+        return false;
+    }
 } // namespace AzToolsFramework::ViewportUi::Internal

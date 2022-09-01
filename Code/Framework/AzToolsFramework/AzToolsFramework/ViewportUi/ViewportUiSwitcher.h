@@ -38,6 +38,10 @@ namespace AzToolsFramework::ViewportUi::Internal
         void SetActiveButton(ButtonId buttonId);
         //! Updates the button's tooltip to the passed string.
         void SetButtonTooltip(ButtonId buttonId, const AZStd::string& tooltip);
+        //! Hides the switcher.
+        const bool HideSwitcher();
+        //! Displays the switcher.
+        const bool ShowSwitcher();
 
     private:
         QToolButton* m_activeButton; //!< The first button in the toolbar. Only button with a label/text.

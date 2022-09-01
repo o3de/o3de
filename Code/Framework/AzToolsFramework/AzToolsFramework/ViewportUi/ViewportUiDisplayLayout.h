@@ -28,19 +28,19 @@ namespace AzToolsFramework::ViewportUi
     //! Complete margin for the Viewport UI Overlay
     constexpr QMargins ViewportUiOverlayDefaultMargin =
         QMargins(ViewportUiOverlayMargin, ViewportUiOverlayMargin, ViewportUiOverlayMargin, ViewportUiOverlayMargin);
-    //! Complete magin for Viewport UI Overlay with border
+    //! Complete margin for Viewport UI Overlay with border
     constexpr QMargins ViewportUiOverlayBorderMargin = QMargins(
         ViewportUiLeftRightBottomBorderSize + ViewportUiOverlayMargin,
         ViewportUiOverlayMargin + ViewportUiTopBorderSize,
         ViewportUiLeftRightBottomBorderSize + ViewportUiOverlayMargin,
         ViewportUiLeftRightBottomBorderSize + ViewportUiOverlayMargin);
-    //! Complete magin for Viewport UI Overlay with ImGui
+    //! Complete margin for Viewport UI Overlay with ImGui
     constexpr QMargins ViewportUiOverlayImGuiMargin = QMargins(
         ViewportUiOverlayMargin,
         ViewportUiOverlayMargin + ViewportUiOverlayTopMarginPadding,
         ViewportUiOverlayMargin,
         ViewportUiOverlayMargin);
-    //! Complete magin for Viewport UI Overlay with ImGui + border
+    //! Complete margin for Viewport UI Overlay with ImGui + border
     constexpr QMargins ViewportUiOverlayImGuiBorderMargin = QMargins(
         ViewportUiLeftRightBottomBorderSize + ViewportUiOverlayMargin,
         ViewportUiTopBorderSize + ViewportUiOverlayMargin + ViewportUiOverlayTopMarginPadding,
