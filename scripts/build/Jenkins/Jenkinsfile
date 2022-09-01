@@ -38,41 +38,32 @@ echo "matcher.group(2) = COMMIT_ORGANIZATION_NAME = ${COMMIT_ORGANIZATION_NAME}"
 COMMIT_REPOSITORY_NAME = matcher.group(3)
 echo "matcher.group(3) = COMMIT_REPOSITORY_NAME = ${COMMIT_REPOSITORY_NAME}"
 
-//if this is an engine commit
 def isEngineCommit = false
 def isExtrasCommit = false
 def engineUrl = ''
 def extrasUrl = ''
 echo 'here'
 if (COMMIT_REPOSITORY_NAME == ENGINE_REPOSITORY_NAME) {
+    //if this is an engine commit
     echo "Engine Commit"
     isEngineCommit = true
     engineUrl = commitUrl
     extrasUrl = "https://${COMMIT_DOMAIN_NAME}/${COMMIT_ORGANIZATION_NAME}/${EXTRAS_REPOSITORY_NAME}.git"
 }
 else if (COMMIT_REPOSITORY_NAME == EXTRAS_REPOSITORY_NAME) {
+    //if this is an extras commit
     echo "Extras Commit"
     isExtrasCommit = true
     extrasUrl = commitUrl
     engineUrl = "https://${COMMIT_DOMAIN_NAME}/${COMMIT_ORGANIZATION_NAME}/${ENGINE_REPOSITORY_NAME}.git"
 } else {
+    //if this is some other repo
     echo "External - Default Organization"
     extrasUrl = "https://${COMMIT_DOMAIN_NAME}/${DEFAULT_ORGANIZATION_NAME}/${EXTRAS_REPOSITORY_NAME}.git"
     engineUrl = "https://${COMMIT_DOMAIN_NAME}/${DEFAULT_ORGANIZATION_NAME}/${ENGINE_REPOSITORY_NAME}.git"
 }
 echo 'now here'
-def engineRemoteConfigs = [
-    name: ENGINE_REPOSITORY_NAME,
-    url: engineUrl,
-    credentialsId: scm.userRemoteConfigs.credentialsId[0]
-]
 
-def extrasRemoteConfigs = [
-    name: EXTRAS_REPOSITORY_NAME,
-    url: extrasUrl,
-    credentialsId: scm.userRemoteConfigs.credentialsId[0]
-]
-echo 'and here'
 // Branches with build snapshots
 BUILD_SNAPSHOTS = ['development', 'stabilization/2110']
 
