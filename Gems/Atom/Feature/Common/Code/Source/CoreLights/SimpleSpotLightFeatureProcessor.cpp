@@ -228,160 +228,26 @@ namespace AZ
             return m_lightBufferHandler.GetElementCount();
         }
 
-        void DebugDrawFrustum(const AZ::Frustum& f, RPI::AuxGeomDraw* auxGeom, const AZ::Color color, [[maybe_unused]] AZ::u8 lineWidth = 1)
-        {
-            using namespace ShapeIntersection;
-
-            enum CornerIndices {
-                NearTopLeft, NearTopRight, NearBottomLeft, NearBottomRight,
-                FarTopLeft, FarTopRight, FarBottomLeft, FarBottomRight
-            };
-            Vector3 corners[8];
-
-            if (IntersectThreePlanes(f.GetPlane(Frustum::PlaneId::Near), f.GetPlane(Frustum::PlaneId::Top), f.GetPlane(Frustum::PlaneId::Left), corners[NearTopLeft]) &&
-                IntersectThreePlanes(f.GetPlane(Frustum::PlaneId::Near), f.GetPlane(Frustum::PlaneId::Top), f.GetPlane(Frustum::PlaneId::Right), corners[NearTopRight]) &&
-                IntersectThreePlanes(f.GetPlane(Frustum::PlaneId::Near), f.GetPlane(Frustum::PlaneId::Bottom), f.GetPlane(Frustum::PlaneId::Left), corners[NearBottomLeft]) &&
-                IntersectThreePlanes(f.GetPlane(Frustum::PlaneId::Near), f.GetPlane(Frustum::PlaneId::Bottom), f.GetPlane(Frustum::PlaneId::Right), corners[NearBottomRight]) &&
-                IntersectThreePlanes(f.GetPlane(Frustum::PlaneId::Far), f.GetPlane(Frustum::PlaneId::Top), f.GetPlane(Frustum::PlaneId::Left), corners[FarTopLeft]) &&
-                IntersectThreePlanes(f.GetPlane(Frustum::PlaneId::Far), f.GetPlane(Frustum::PlaneId::Top), f.GetPlane(Frustum::PlaneId::Right), corners[FarTopRight]) &&
-                IntersectThreePlanes(f.GetPlane(Frustum::PlaneId::Far), f.GetPlane(Frustum::PlaneId::Bottom), f.GetPlane(Frustum::PlaneId::Left), corners[FarBottomLeft]) &&
-                IntersectThreePlanes(f.GetPlane(Frustum::PlaneId::Far), f.GetPlane(Frustum::PlaneId::Bottom), f.GetPlane(Frustum::PlaneId::Right), corners[FarBottomRight]))
-            {
-
-                uint32_t lineIndices[24]{
-                    //near plane
-                    NearTopLeft, NearTopRight,
-                    NearTopRight, NearBottomRight,
-                    NearBottomRight, NearBottomLeft,
-                    NearBottomLeft, NearTopLeft,
-
-                    //Far plane
-                    FarTopLeft, FarTopRight,
-                    FarTopRight, FarBottomRight,
-                    FarBottomRight, FarBottomLeft,
-                    FarBottomLeft, FarTopLeft,
-
-                    //Near-to-Far connecting lines
-                    NearTopLeft, FarTopLeft,
-                    NearTopRight, FarTopRight,
-                    NearBottomLeft, FarBottomLeft,
-                    NearBottomRight, FarBottomRight
-                };
-                RPI::AuxGeomDraw::AuxGeomDynamicIndexedDrawArguments drawArgs;
-                drawArgs.m_verts = corners;
-                drawArgs.m_vertCount = 8;
-                drawArgs.m_indices = lineIndices;
-                drawArgs.m_indexCount = 24;
-                drawArgs.m_colors = &color;
-                drawArgs.m_colorCount = 1;
-                auxGeom->DrawLines(drawArgs);
-
-                uint32_t triangleIndices[36]{
-                    //near
-                    NearBottomLeft, NearTopLeft, NearTopRight,
-                    NearBottomLeft, NearTopRight, NearBottomRight,
-
-                    //far
-                    FarBottomRight, FarTopRight, FarTopLeft,
-                    FarBottomRight, FarTopLeft, FarBottomLeft,
-
-                    //left
-                    FarBottomLeft, NearBottomLeft, NearTopLeft,
-                    FarBottomLeft, NearTopLeft, FarTopLeft,
-
-                    //right
-                    NearBottomRight, NearTopRight, FarTopRight,
-                    NearBottomRight, FarTopRight, FarBottomRight,
-
-                    //bottom
-                    FarBottomLeft, NearBottomLeft, NearBottomRight,
-                    FarBottomLeft, NearBottomRight, FarBottomRight,
-
-                    //top
-                    NearTopLeft, FarTopLeft, FarTopRight,
-                    NearTopLeft, FarTopRight, NearTopRight
-                };
-                Color transparentColor(color.GetR(), color.GetG(), color.GetB(), color.GetA() * 0.3f);
-                drawArgs.m_indices = triangleIndices;
-                drawArgs.m_indexCount = 36;
-                drawArgs.m_colors = &transparentColor;
-                auxGeom->DrawTriangles(drawArgs);
-
-                // plane normals
-                Vector3 planeNormals[] =
-                {
-                    //near
-                    0.25f * (corners[NearBottomLeft] + corners[NearBottomRight] + corners[NearTopLeft] + corners[NearTopRight]),
-                    0.25f * (corners[NearBottomLeft] + corners[NearBottomRight] + corners[NearTopLeft] + corners[NearTopRight]) + f.GetPlane(Frustum::PlaneId::Near).GetNormal(),
-
-                    //far
-                    0.25f * (corners[FarBottomLeft] + corners[FarBottomRight] + corners[FarTopLeft] + corners[FarTopRight]),
-                    0.25f * (corners[FarBottomLeft] + corners[FarBottomRight] + corners[FarTopLeft] + corners[FarTopRight]) + f.GetPlane(Frustum::PlaneId::Far).GetNormal(),
-
-                    //left
-                    0.5f * (corners[NearBottomLeft] + corners[NearTopLeft]),
-                    0.5f * (corners[NearBottomLeft] + corners[NearTopLeft]) + f.GetPlane(Frustum::PlaneId::Left).GetNormal(),
-
-                    //right
-                    0.5f * (corners[NearBottomRight] + corners[NearTopRight]),
-                    0.5f * (corners[NearBottomRight] + corners[NearTopRight]) + f.GetPlane(Frustum::PlaneId::Right).GetNormal(),
-
-                    //bottom
-                    0.5f * (corners[NearBottomLeft] + corners[NearBottomRight]),
-                    0.5f * (corners[NearBottomLeft] + corners[NearBottomRight]) + f.GetPlane(Frustum::PlaneId::Bottom).GetNormal(),
-
-                    //top
-                    0.5f * (corners[NearTopLeft] + corners[NearTopRight]),
-                    0.5f * (corners[NearTopLeft] + corners[NearTopRight]) + f.GetPlane(Frustum::PlaneId::Top).GetNormal(),
-                };
-                Color planeNormalColors[] =
-                {
-                    Colors::Red, Colors::Red,       //near
-                    Colors::Green, Colors::Green,   //far
-                    Colors::Blue, Colors::Blue,     //left
-                    Colors::Orange, Colors::Orange, //right
-                    Colors::Pink, Colors::Pink,     //bottom
-                    Colors::MediumPurple, Colors::MediumPurple, //top
-                };
-                RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments planeNormalLineArgs;
-                planeNormalLineArgs.m_verts = planeNormals;
-                planeNormalLineArgs.m_vertCount = 12;
-                planeNormalLineArgs.m_colors = planeNormalColors;
-                planeNormalLineArgs.m_colorCount = planeNormalLineArgs.m_vertCount;
-                planeNormalLineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
-                auxGeom->DrawLines(planeNormalLineArgs);
-            }
-            else
-            {
-                AZ_Assert(false, "invalid frustum, cannot draw");
-            }
-        }
-
         void SimpleSpotLightFeatureProcessor::UpdateFrustum(LightHandle handle)
         {
             SimpleSpotLightData data = m_lightData.GetData<0>(handle.GetIndex());
 
             ViewFrustumAttributes desc;
             desc.m_aspectRatio = 1.0f;
-            desc.m_nearClip = data.m_radius * 0.1f;
-            desc.m_farClip = data.m_radius;
-            desc.m_verticalFovRadians = data.m_fovRadians;
+
+            float radius = GetMax(data.m_radius, 0.001f);
+            desc.m_nearClip = radius * 0.1f;
+            desc.m_farClip = radius;
+            desc.m_verticalFovRadians = GetMax(data.m_fovRadians, 0.001f);
 
             AZ::Vector3 position = AZ::Vector3::CreateFromFloat3(data.m_position.data());
             AZ::Vector3 normal = AZ::Vector3::CreateFromFloat3(data.m_direction.data());
             desc.m_worldTransform = AZ::Transform::CreateLookAt(position, position + normal);
 
-            m_lightData.GetData<1>(handle.GetIndex()).Set(AZ::Frustum(desc));
-
-            // debug
-
-            AZ::Frustum& frustum = m_lightData.GetData<1>(handle.GetIndex());
-            AuxGeomFeatureProcessor* auxGeoFeatureProcessor = GetParentScene()->GetFeatureProcessor<AuxGeomFeatureProcessor>();
-            if (auxGeoFeatureProcessor)
-            {
-                DebugDrawFrustum(frustum, auxGeoFeatureProcessor->GetDrawQueue().get(), AZ::Color::CreateOne());
-            }
-
+            AZ::Frustum frustum = AZ::Frustum(desc);
+            // Move the near plane onto the point of the light (the frustum can't be constructed this way due to divide by zero issues).
+            frustum.SetPlane(AZ::Frustum::Near, AZ::Plane::CreateFromNormalAndPoint(desc.m_worldTransform.GetBasisY(), position));
+            m_lightData.GetData<1>(handle.GetIndex()).Set(frustum);
         }
 
     } // namespace Render
