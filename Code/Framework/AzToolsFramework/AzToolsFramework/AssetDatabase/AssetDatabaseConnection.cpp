@@ -1204,10 +1204,10 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
         //SourceFileDependencyEntry
 
-        SourceFileDependencyEntry::SourceFileDependencyEntry(AZ::Uuid builderGuid, AZ::Uuid sourceGuid, const char* dependsOnSource, SourceFileDependencyEntry::TypeOfDependency dependencyType, AZ::u32 fromAssetId, const char* subIds)
+        SourceFileDependencyEntry::SourceFileDependencyEntry(AZ::Uuid builderGuid, AZ::Uuid sourceGuid, PathOrUuid dependsOnSource, SourceFileDependencyEntry::TypeOfDependency dependencyType, AZ::u32 fromAssetId, const char* subIds)
             : m_builderGuid(builderGuid)
             , m_sourceGuid(sourceGuid)
-            , m_dependsOnSource(dependsOnSource)
+            , m_dependsOnSource(AZStd::move(dependsOnSource))
             , m_typeOfDependency(dependencyType)
             , m_fromAssetId(fromAssetId)
             , m_subIds(subIds)
@@ -1223,7 +1223,7 @@ namespace AzToolsFramework
                 static_cast<int64_t>(m_sourceDependencyID),
                 m_builderGuid.ToFixedString().c_str(),
                 m_sourceGuid.ToFixedString().c_str(),
-                m_dependsOnSource.c_str(),
+                m_dependsOnSource.ToString().c_str(),
                 m_typeOfDependency == DEP_SourceToSource ? "source" : "job",
                 m_fromAssetId,
                 m_subIds.c_str());

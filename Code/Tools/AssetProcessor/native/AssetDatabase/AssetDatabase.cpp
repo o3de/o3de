@@ -486,7 +486,7 @@ namespace AssetProcessor
         static const auto s_InsertSourceDependencyQuery = MakeSqlQuery(INSERT_SOURCE_DEPENDENCY, INSERT_SOURCE_DEPENDENCY_STATEMENT, LOG_NAME,
             SqlParam<AZ::Uuid>(":builderGuid"),
             SqlParam<AZ::Uuid>(":source"),
-            SqlParam<const char*>(":dependsOnSource"),
+            SqlParam<PathOrUuid>(":dependsOnSource"),
             SqlParam<AZ::s32>(":typeofdependency"),
             SqlParam<AZ::s32>(":fromAssetId"),
             SqlParam<const char*>(":subIds"));
@@ -2607,7 +2607,7 @@ namespace AssetProcessor
     bool AssetDatabaseConnection::SetSourceFileDependency(SourceFileDependencyEntry& entry)
     {
         //first make sure its not already in the database
-        if (!s_InsertSourceDependencyQuery.BindAndStep(*m_databaseConnection, entry.m_builderGuid, entry.m_sourceGuid, entry.m_dependsOnSource.c_str(), entry.m_typeOfDependency, entry.m_fromAssetId, entry.m_subIds.c_str()))
+        if (!s_InsertSourceDependencyQuery.BindAndStep(*m_databaseConnection, entry.m_builderGuid, entry.m_sourceGuid, entry.m_dependsOnSource, entry.m_typeOfDependency, entry.m_fromAssetId, entry.m_subIds.c_str()))
         {
             return false;
         }

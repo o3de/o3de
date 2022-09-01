@@ -18,6 +18,7 @@
 
 // At the time of writing, AZStd::function does not support RVALUE-Refs.  We use std::function instead.
 #include <functional>
+#include <SQLite/SQLiteQuery.h>
 
 namespace AzToolsFramework
 {
@@ -212,7 +213,7 @@ namespace AzToolsFramework
             };
 
             SourceFileDependencyEntry() = default;
-            SourceFileDependencyEntry(AZ::Uuid builderGuid, AZ::Uuid sourceGuid, const char* dependsOnSource, TypeOfDependency dependencyType, AZ::u32 fromAssetId, const char* subIds);
+            SourceFileDependencyEntry(AZ::Uuid builderGuid, AZ::Uuid sourceGuid, PathOrUuid dependsOnSource, TypeOfDependency dependencyType, AZ::u32 fromAssetId, const char* subIds);
 
             AZStd::string ToString() const;
             auto GetColumns();
@@ -221,7 +222,7 @@ namespace AzToolsFramework
             AZ::Uuid m_builderGuid = AZ::Uuid::CreateNull();
             TypeOfDependency m_typeOfDependency = DEP_SourceToSource;
             AZ::Uuid m_sourceGuid = AZ::Uuid::CreateNull();
-            AZStd::string m_dependsOnSource;
+            PathOrUuid m_dependsOnSource;
             AZ::u32 m_fromAssetId = false; // Indicates if the dependency was converted from an AssetId into a path before being stored in the DB
             AZStd::string m_subIds;
         };

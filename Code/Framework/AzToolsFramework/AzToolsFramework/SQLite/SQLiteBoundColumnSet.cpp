@@ -58,6 +58,12 @@ namespace AzToolsFramework
             }
 
             template<>
+            AzToolsFramework::AssetDatabase::PathOrUuid GetColumnValue(SQLite::Statement* statement, int index)
+            {
+                return AzToolsFramework::AssetDatabase::PathOrUuid::Create(statement->GetColumnText(index));
+            }
+
+            template<>
             AZStd::string GetColumnValue(SQLite::Statement* statement, int index)
             {
                 return statement->GetColumnText(index);

@@ -213,17 +213,30 @@ namespace AssetProcessor
                 // Only add a button to link to rows that actually exist.
 
                 AzToolsFramework::AssetDatabase::SourceDatabaseEntry dependencyDetails;
-                assetDatabaseConnection.QuerySourceBySourceName(
-                    sourceFileDependencyEntry.m_dependsOnSource.c_str(),
-                    [&](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry)
-                    {
-                        dependencyDetails = sourceEntry;
-                        return false;
-                    });
 
+                if (sourceFileDependencyEntry.m_dependsOnSource.IsUuid())
+                {
+                    assetDatabaseConnection.QuerySourceBySourceGuid(
+                        sourceFileDependencyEntry.m_dependsOnSource.GetUuid(),
+                        [&dependencyDetails](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
+                        {
+                            dependencyDetails = entry;
+                            return false;
+                        });
+                }
+                else
+                {
+                    assetDatabaseConnection.QuerySourceBySourceName(
+                        sourceFileDependencyEntry.m_dependsOnSource.GetPath().c_str(),
+                        [&](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry)
+                        {
+                            dependencyDetails = sourceEntry;
+                            return false;
+                        });
+                }
 
                 SourceAssetTreeModel* treeModel = dependencyDetails.m_scanFolderPK == 1 ? m_intermediateTreeModel : m_sourceTreeModel;
-                QModelIndex goToIndex = treeModel->GetIndexForSource(sourceFileDependencyEntry.m_dependsOnSource);
+                QModelIndex goToIndex = treeModel->GetIndexForSource(dependencyDetails.m_sourceName);
                 if (goToIndex.isValid())
                 {
                     // Qt handles cleanup automatically, setting this as the parent means
@@ -234,12 +247,12 @@ namespace AssetProcessor
                         &QPushButton::clicked,
                         [=]
                         {
-                            GoToSource(sourceFileDependencyEntry.m_dependsOnSource);
+                            GoToSource(dependencyDetails.m_sourceName);
                         });
                     m_ui->outgoingSourceDependenciesTable->setCellWidget(sourceDependencyCount, 0, rowGoToButton);
                 }
 
-                QTableWidgetItem* rowName = new QTableWidgetItem(sourceFileDependencyEntry.m_dependsOnSource.c_str());
+                QTableWidgetItem* rowName = new QTableWidgetItem(dependencyDetails.m_sourceName.c_str());
                 m_ui->outgoingSourceDependenciesTable->setItem(sourceDependencyCount, 1, rowName);
                 ++sourceDependencyCount;
                 return true;
