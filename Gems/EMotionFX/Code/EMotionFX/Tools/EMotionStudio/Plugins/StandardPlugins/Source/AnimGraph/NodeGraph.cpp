@@ -499,50 +499,32 @@ namespace EMStudio
 
     void NodeGraph::DrawSmoothedLineFast(QPainter& painter, int32 x1, int32 y1, int32 x2, int32 y2, int32 stepSize)
     {
-        if (x2 >= x1)
+        // special case where there is just one line up
+        if (x1 == x2 || y1 == y2)
         {
-            // find the min and max points
-            int32 minX, maxX, startY, endY;
-            if (x1 <= x2)
-            {
-                minX    = x1;
-                maxX    = x2;
-                startY  = y1;
-                endY    = y2;
-            }
-            else
-            {
-                minX    = x2;
-                maxX    = x1;
-                startY  = y2;
-                endY    = y1;
-            }
-
+            painter.drawLine(x1, y1, x2, y2);
+        }
+        else if (x2 > x1)
+        {
             // draw the lines
-            int32 lastX = minX;
-            int32 lastY = startY;
+            int32 lastX = x2;
+            int32 lastY = y2;
+            int32 x = x2;
 
-            if (minX != maxX)
+            while (x < x1)
             {
-                int32 x = minX;
-                while (x < maxX)
-                {
-                    const float t = MCore::CalcCosineInterpolationWeight((x - minX) / (float)(maxX - minX)); // calculate the smooth interpolated value
-                    const int32 y = aznumeric_cast<int32>(startY + (endY - startY) * t); // calculate the y coordinate
-                    painter.drawLine(lastX, lastY, x, y);       // draw the line
-                    lastX = x;
-                    lastY = y;
-                    x += stepSize;
-                }
+                const float t =
+                    MCore::CalcCosineInterpolationWeight((x - x2) / (float)(x1 - x2)); // calculate the smooth interpolated value
+                const int32 y = aznumeric_cast<int32>(y2 + (y1 - y2) * t); // calculate the y coordinate
+                painter.drawLine(lastX, lastY, x, y); // draw the line
+                lastX = x;
+                lastY = y;
+                x += stepSize;
+            }
 
-                const float t = MCore::CalcCosineInterpolationWeight(1.0f); // calculate the smooth interpolated value
-                const int32 y = aznumeric_cast<int32>(startY + (endY - startY) * t); // calculate the y coordinate
-                painter.drawLine(lastX, lastY, maxX, y);        // draw the line
-            }
-            else // special case where there is just one line up
-            {
-                painter.drawLine(x1, y1, x2, y2);
-            }
+            const float t = MCore::CalcCosineInterpolationWeight(1.0f); // calculate the smooth interpolated value
+            const int32 y = aznumeric_cast<int32>(y2 + (y1 - y2) * t); // calculate the y coordinate
+            painter.drawLine(lastX, lastY, x1, y); // draw the line
         }
         else
         {
@@ -550,47 +532,40 @@ namespace EMStudio
             int32 minY, maxY, startX, endX;
             if (y1 <= y2)
             {
-                minY    = y1;
-                maxY    = y2;
-                startX  = x1;
-                endX    = x2;
+                minY = y1;
+                maxY = y2;
+                startX = x1;
+                endX = x2;
             }
             else
             {
-                minY    = y2;
-                maxY    = y1;
-                startX  = x2;
-                endX    = x1;
+                minY = y2;
+                maxY = y1;
+                startX = x2;
+                endX = x1;
             }
 
             // draw the lines
             int32 lastY = minY;
             int32 lastX = startX;
 
-            if (minY != maxY)
+            int32 y = minY;
+            while (y < maxY)
             {
-                int32 y = minY;
-                while (y < maxY)
-                {
-                    const float t = MCore::CalcCosineInterpolationWeight((y - minY) / (float)(maxY - minY)); // calculate the smooth interpolated value
-                    const int32 x = aznumeric_cast<int32>(startX + (endX - startX) * t); // calculate the y coordinate
-                    painter.drawLine(lastX, lastY, x, y);       // draw the line
-                    lastX = x;
-                    lastY = y;
-                    y += stepSize;
-                }
-
-                const float t = MCore::CalcCosineInterpolationWeight(1.0f); // calculate the smooth interpolated value
+                const float t =
+                    MCore::CalcCosineInterpolationWeight((y - minY) / (float)(maxY - minY)); // calculate the smooth interpolated value
                 const int32 x = aznumeric_cast<int32>(startX + (endX - startX) * t); // calculate the y coordinate
-                painter.drawLine(lastX, lastY, x, maxY);        // draw the line
+                painter.drawLine(lastX, lastY, x, y); // draw the line
+                lastX = x;
+                lastY = y;
+                y += stepSize;
             }
-            else // special case where there is just one line up
-            {
-                painter.drawLine(x1, y1, x2, y2);
-            }
+
+            const float t = MCore::CalcCosineInterpolationWeight(1.0f); // calculate the smooth interpolated value
+            const int32 x = aznumeric_cast<int32>(startX + (endX - startX) * t); // calculate the y coordinate
+            painter.drawLine(lastX, lastY, x, maxY); // draw the line
         }
     }
-
 
     void NodeGraph::UpdateNodesAndConnections(int32 width, int32 height, const QPoint& mousePos)
     {
