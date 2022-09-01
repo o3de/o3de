@@ -306,11 +306,9 @@ namespace AtomToolsFramework
             const QString name = tr("New %1 Document...").arg(documentType.m_documentTypeName.c_str());
             CreateActionAtPosition(parentMenu, insertPostion, name, [documentType, toolId = m_toolId, this]() {
                 // Open the create document dialog with labels and filters configured from the document type info.
-                CreateDocumentDialog dialog(
-                    documentType,
-                    AZStd::string::format("%s/Assets", AZ::Utils::GetProjectPath().c_str()).c_str(),
-                    const_cast<AtomToolsDocumentMainWindow*>(this));
-                dialog.adjustSize();
+                    CreateDocumentDialog dialog(
+                        documentType, AZStd::string::format("%s/Assets", AZ::Utils::GetProjectPath().c_str()).c_str(), this);
+                    dialog.adjustSize();
 
                 if (dialog.exec() == QDialog::Accepted)
                 {
