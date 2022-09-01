@@ -128,10 +128,14 @@ set(FILES
     Source/Editor/Nodes/Terrain/TerrainHeightGradientListNode.h
     Source/Editor/Nodes/Terrain/TerrainLayerSpawnerNode.cpp
     Source/Editor/Nodes/Terrain/TerrainLayerSpawnerNode.h
+    Source/Editor/Nodes/Terrain/TerrainMacroMaterialNode.cpp
+    Source/Editor/Nodes/Terrain/TerrainMacroMaterialNode.h
     Source/Editor/Nodes/Terrain/TerrainPhysicsHeightfieldColliderNode.cpp
     Source/Editor/Nodes/Terrain/TerrainPhysicsHeightfieldColliderNode.h
     Source/Editor/Nodes/Terrain/TerrainSurfaceGradientListNode.cpp
     Source/Editor/Nodes/Terrain/TerrainSurfaceGradientListNode.h
+    Source/Editor/Nodes/Terrain/TerrainSurfaceMaterialsListNode.cpp
+    Source/Editor/Nodes/Terrain/TerrainSurfaceMaterialsListNode.h
     Source/Editor/Nodes/UI/GradientPreviewThumbnailItem.cpp
     Source/Editor/Nodes/UI/GradientPreviewThumbnailItem.h
 )
