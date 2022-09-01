@@ -478,7 +478,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
             dir(repo.REPOSITORY_NAME) {
                 def setEnvCommit = false
                 def the_branch = branchName
-                if(!isEngineCommit && !EXTRAS_COMMIT) {
+                if(!ENGINE_COMMIT && !EXTRAS_COMMIT) {
                     //the pr is for the this repo, so we want to use the passed in branch name and record the change id and change date
                     setEnvCommit = true
                 } else {
