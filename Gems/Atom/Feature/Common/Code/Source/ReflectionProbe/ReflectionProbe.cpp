@@ -105,7 +105,6 @@ namespace AZ
             AZ_Error("ReflectionProbeFeatureProcessor", m_renderInnerSrg.get(), "Failed to create render inner reflection shader resource group");
 
             // setup culling
-            m_cullable.m_cullData.m_scene = m_scene;
             m_cullable.SetDebugName(AZ::Name("ReflectionProbe Volume"));
         }
 

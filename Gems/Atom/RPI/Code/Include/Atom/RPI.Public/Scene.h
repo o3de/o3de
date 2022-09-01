@@ -34,6 +34,11 @@
 #include <AzFramework/Scene/Scene.h>
 #include <AzFramework/Scene/SceneSystemInterface.h>
 
+namespace AzFramework
+{
+    class IVisibilityScene;
+}
+
 namespace AZ
 {
     namespace RPI
@@ -158,10 +163,9 @@ namespace AZ
 
             bool HasOutputForPipelineState(RHI::DrawListTag drawListTag) const;
 
-            AZ::RPI::CullingScene* GetCullingScene()
-            {
-                return m_cullingScene;
-            }
+            AzFramework::IVisibilityScene* GetVisibilityScene() const { return m_visibilityScene; }
+
+            AZ::RPI::CullingScene* GetCullingScene() const { return m_cullingScene; }
 
             RenderPipelinePtr FindRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle);
 
@@ -245,6 +249,7 @@ namespace AZ
             // CPU simulation job completion for track all feature processors' simulation jobs
             AZ::JobCompletion* m_simulationCompletion = nullptr;
 
+            AzFramework::IVisibilityScene* m_visibilityScene;
             AZ::RPI::CullingScene* m_cullingScene;
 
             // Cached views for current rendering frame. It gets re-built every frame.

@@ -65,11 +65,13 @@ namespace AZ
 
         void MeshFeatureProcessor::Deactivate()
         {
+            m_flagRegistry.reset();
+
             m_handleGlobalShaderOptionUpdate.Disconnect();
 
             DisableSceneNotification();
             AZ_Warning("MeshFeatureProcessor", m_modelData.size() == 0,
-                "Deactivaing the MeshFeatureProcessor, but there are still outstanding mesh handles.\n"
+                "Deactivating the MeshFeatureProcessor, but there are still outstanding mesh handles.\n"
             );
             m_transformService = nullptr;
             m_forceRebuildDrawPackets = false;
@@ -512,6 +514,16 @@ namespace AZ
                 }
             }
         }
+
+
+        RHI::Ptr<MeshFeatureProcessor::FlagRegistry> MeshFeatureProcessor::GetFlagRegistry()
+        {
+            if (m_flagRegistry == nullptr)
+            {
+                m_flagRegistry = FlagRegistry::Create();
+            }
+            return m_flagRegistry;
+        };
 
         void MeshFeatureProcessor::ForceRebuildDrawPackets([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
         {
@@ -1307,8 +1319,6 @@ namespace AZ
             {
                 cullData.m_hideFlags |= RPI::View::UsageReflectiveCubeMap;
             }
-
-            cullData.m_scene = m_scene;     //[GFX_TODO][ATOM-13796] once the IVisibilitySystem supports multiple octree scenes, remove this
 
 #ifdef AZ_CULL_DEBUG_ENABLED
             m_cullable.SetDebugName(AZ::Name(AZStd::string::format("%s - objectId: %u", m_model->GetModelAsset()->GetName().GetCStr(), m_objectId.GetIndex())));

@@ -8,7 +8,7 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
-#include <AzCore/std/containers/unordered_set.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 
 namespace AtomToolsFramework
@@ -18,7 +18,7 @@ namespace AtomToolsFramework
     {
     public:
         //! Get a list of custom feature processors to register with preview image renderer
-        virtual void GetRequiredFeatureProcessors(AZStd::unordered_set<AZStd::string>& featureProcessors) const = 0;
+        virtual void GetRequiredFeatureProcessors(AZStd::vector<AZStd::string>& featureProcessors) const = 0;
     };
 
     using PreviewerFeatureProcessorProviderBus = AZ::EBus<PreviewerFeatureProcessorProviderRequests>;

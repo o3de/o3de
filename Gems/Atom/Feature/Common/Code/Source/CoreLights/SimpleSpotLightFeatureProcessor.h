@@ -8,10 +8,11 @@
 
 #pragma once
 
+#include <AzCore/Math/Frustum.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
 #include <Atom/Feature/CoreLights/SimpleSpotLightFeatureProcessorInterface.h>
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
-#include <Atom/Feature/Utils/IndexedDataVector.h>
+#include <Atom/Feature/Utils/MultiIndexedDataVector.h>
 
 namespace AZ
 {
@@ -32,8 +33,8 @@ namespace AZ
 
             float m_affectsGIFactor = 1.0f;
             bool m_affectsGI = true;
-            float m_padding0 = 0.0f;
-            float m_padding1 = 0.0f;
+            float m_radius = 0.0f; // Not needed in shader, but useful when updating frustum
+            float m_fovRadians = 0.0f; // Not needed in shader, but useful when updating frustum
         };
 
         class SimpleSpotLightFeatureProcessor final
@@ -71,10 +72,13 @@ namespace AZ
         private:
             SimpleSpotLightFeatureProcessor(const SimpleSpotLightFeatureProcessor&) = delete;
 
+            void UpdateFrustum(LightHandle handle);
+
             static constexpr const char* FeatureProcessorName = "SimpleSpotLightFeatureProcessor";
 
-            IndexedDataVector<SimpleSpotLightData> m_pointLightData;
+            MultiIndexedDataVector<SimpleSpotLightData, AZ::Frustum> m_lightData;
             GpuBufferHandler m_lightBufferHandler;
+            RHI::Handle<uint32_t> m_lightMeshFlag;
             bool m_deviceBufferNeedsUpdate = false;
         };
     } // namespace Render
