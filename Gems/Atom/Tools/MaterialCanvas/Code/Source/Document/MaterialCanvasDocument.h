@@ -31,7 +31,7 @@ namespace MaterialCanvas
         , public GraphCanvas::SceneNotificationBus::Handler
     {
     public:
-        AZ_RTTI(MaterialCanvasDocument, "{C60CA7B2-D9FA-4E20-AD7D-D8A661902A7D}", AtomToolsFramework::AtomToolsDocument);
+        AZ_RTTI(MaterialCanvasDocument, "{16A936E3-6510-4E8F-8229-6BD7366A8D4B}", AtomToolsFramework::AtomToolsDocument);
         AZ_CLASS_ALLOCATOR(MaterialCanvasDocument, AZ::SystemAllocator, 0);
         AZ_DISABLE_COPY_MOVE(MaterialCanvasDocument);
 

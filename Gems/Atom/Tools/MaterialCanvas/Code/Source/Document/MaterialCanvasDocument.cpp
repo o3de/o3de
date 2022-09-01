@@ -219,7 +219,7 @@ namespace MaterialCanvas
             return false;
         }
 
-        AZ_Error("MaterialCanvasDocument", m_graph, "Attempting to save invalid graph objeTt. ");
+        AZ_Error("MaterialCanvasDocument", m_graph, "Attempting to save invalid graph object.");
         if (!m_graph || !AZ::JsonSerializationUtils::SaveObjectToFile(m_graph.get(), m_savePathNormalized))
         {
             return SaveFailed();
@@ -240,7 +240,7 @@ namespace MaterialCanvas
             return false;
         }
 
-        AZ_Error("MaterialCanvasDocument", m_graph, "Attempting to save invalid graph objeTt. ");
+        AZ_Error("MaterialCanvasDocument", m_graph, "Attempting to save invalid graph object.");
         if (!m_graph || !AZ::JsonSerializationUtils::SaveObjectToFile(m_graph.get(), m_savePathNormalized))
         {
             return SaveFailed();
