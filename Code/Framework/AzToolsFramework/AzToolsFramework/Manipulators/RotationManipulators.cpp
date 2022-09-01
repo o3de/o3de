@@ -15,7 +15,7 @@ namespace AzToolsFramework
     RotationManipulators::RotationManipulators(const AZ::Transform& worldFromLocal)
         : m_viewAngularManipulator { AngularManipulator::MakeShared(worldFromLocal) }
     {
-        const auto saveMostRecentActionCb = [this](const AngularManipulator::Action& action)
+        const auto saveActionFn = [this](const AngularManipulator::Action& action)
         {
             m_angularManipulatorFeedback.m_mostRecentAction = action;
         };
@@ -23,21 +23,21 @@ namespace AzToolsFramework
         for (size_t manipulatorIndex = 0; manipulatorIndex < m_localAngularManipulators.size(); ++manipulatorIndex)
         {
             auto angularManipulator = AngularManipulator::MakeShared(worldFromLocal);
-            angularManipulator->InstallLeftMouseDownCallback(saveMostRecentActionCb);
-            angularManipulator->InstallLeftMouseUpCallback(saveMostRecentActionCb);
-            angularManipulator->InstallMouseMoveCallback(saveMostRecentActionCb);
+            angularManipulator->InstallLeftMouseDownCallback(saveActionFn);
+            angularManipulator->InstallLeftMouseUpCallback(saveActionFn);
+            angularManipulator->InstallMouseMoveCallback(saveActionFn);
             m_localAngularManipulators[manipulatorIndex] = angularManipulator;
         }
 
         m_manipulatorSpaceWithLocalTransform.SetSpace(worldFromLocal);
-        m_viewAngularManipulator->InstallLeftMouseDownCallback(saveMostRecentActionCb);
-        m_viewAngularManipulator->InstallLeftMouseUpCallback(saveMostRecentActionCb);
-        m_viewAngularManipulator->InstallMouseMoveCallback(saveMostRecentActionCb);
+        m_viewAngularManipulator->InstallLeftMouseDownCallback(saveActionFn);
+        m_viewAngularManipulator->InstallLeftMouseUpCallback(saveActionFn);
+        m_viewAngularManipulator->InstallMouseMoveCallback(saveActionFn);
     }
 
     void RotationManipulators::InstallLeftMouseDownCallback(const AngularManipulator::MouseActionCallback& onMouseDownCallback)
     {
-        const auto saveMostRecentActionHookCb = [this, onMouseDownCallback](const AngularManipulator::Action& action)
+        const auto saveActionAndCallOnMouseDownCallbackFn = [this, onMouseDownCallback](const AngularManipulator::Action& action)
         {
             m_angularManipulatorFeedback.m_mostRecentAction = action;
             onMouseDownCallback(action);
@@ -45,15 +45,15 @@ namespace AzToolsFramework
 
         for (AZStd::shared_ptr<AngularManipulator>& manipulator : m_localAngularManipulators)
         {
-            manipulator->InstallLeftMouseDownCallback(saveMostRecentActionHookCb);
+            manipulator->InstallLeftMouseDownCallback(saveActionAndCallOnMouseDownCallbackFn);
         }
 
-        m_viewAngularManipulator->InstallLeftMouseDownCallback(saveMostRecentActionHookCb);
+        m_viewAngularManipulator->InstallLeftMouseDownCallback(saveActionAndCallOnMouseDownCallbackFn);
     }
 
     void RotationManipulators::InstallMouseMoveCallback(const AngularManipulator::MouseActionCallback& onMouseMoveCallback)
     {
-        const auto saveMostRecentActionHookCb = [this, onMouseMoveCallback](const AngularManipulator::Action& action)
+        const auto saveActionAndCallOnMouseMoveCallbackFn = [this, onMouseMoveCallback](const AngularManipulator::Action& action)
         {
             m_angularManipulatorFeedback.m_mostRecentAction = action;
             onMouseMoveCallback(action);
@@ -61,15 +61,15 @@ namespace AzToolsFramework
 
         for (AZStd::shared_ptr<AngularManipulator>& manipulator : m_localAngularManipulators)
         {
-            manipulator->InstallMouseMoveCallback(saveMostRecentActionHookCb);
+            manipulator->InstallMouseMoveCallback(saveActionAndCallOnMouseMoveCallbackFn);
         }
 
-        m_viewAngularManipulator->InstallMouseMoveCallback(saveMostRecentActionHookCb);
+        m_viewAngularManipulator->InstallMouseMoveCallback(saveActionAndCallOnMouseMoveCallbackFn);
     }
 
     void RotationManipulators::InstallLeftMouseUpCallback(const AngularManipulator::MouseActionCallback& onMouseUpCallback)
     {
-        const auto saveMostRecentActionHookCb = [this, onMouseUpCallback](const AngularManipulator::Action& action)
+        const auto saveActionAndCallOnMouseUpCallbackFn = [this, onMouseUpCallback](const AngularManipulator::Action& action)
         {
             m_angularManipulatorFeedback.m_mostRecentAction = action;
             onMouseUpCallback(action);
@@ -77,10 +77,10 @@ namespace AzToolsFramework
 
         for (AZStd::shared_ptr<AngularManipulator>& manipulator : m_localAngularManipulators)
         {
-            manipulator->InstallLeftMouseUpCallback(saveMostRecentActionHookCb);
+            manipulator->InstallLeftMouseUpCallback(saveActionAndCallOnMouseUpCallbackFn);
         }
 
-        m_viewAngularManipulator->InstallLeftMouseUpCallback(saveMostRecentActionHookCb);
+        m_viewAngularManipulator->InstallLeftMouseUpCallback(saveActionAndCallOnMouseUpCallbackFn);
     }
 
     void RotationManipulators::SetLocalTransformImpl(const AZ::Transform& localTransform)
