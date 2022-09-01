@@ -27,12 +27,12 @@ EXTRAS_DEVELOPMENT_BRANCH = 'development'
 COMMIT_DOMAIN_NAME = ''
 COMMIT_ORGANIZATION_NAME = ''
 COMMIT_REPOSITORY_NAME = ''
-EXTRAS_URL = ''
+def httpsPattern = ~'https://(.+)/(.+)/(.+).git'
+def commitUrl = scm.userRemoteConfigs.url[0]
 @NonCPS
 def doit()
 {
-    def httpsPattern = ~'https://(.+)/(.+)/(.+).git'
-    def commitUrl = scm.userRemoteConfigs.url[0]
+
     def matcher = commitUrl =~ httpsPattern
     echo "matcher ${commitUrl} =~ ${httpsPattern}"
     matcher.find()
@@ -42,8 +42,6 @@ def doit()
     echo "matcher.group(2) = COMMIT_ORGANIZATION_NAME = ${COMMIT_ORGANIZATION_NAME}"
     COMMIT_REPOSITORY_NAME = matcher.group(3)
     echo "matcher.group(3) = COMMIT_REPOSITORY_NAME = ${COMMIT_REPOSITORY_NAME}"
-    EXTRAS_URL = "https://${COMMIT_DOMAIN_NAME}/${COMMIT_ORGANIZATION_NAME}/${EXTRAS_REPOSITORY_NAME}.git"
-    echo "EXTRAS_URL = ${EXTRAS_URL}"
 }
 doit()
 
