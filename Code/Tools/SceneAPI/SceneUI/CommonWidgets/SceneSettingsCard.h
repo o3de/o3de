@@ -118,7 +118,7 @@ private:
     bool ShouldProcessMessage();
     void UpdateCompletionState(CompletionState newState);
     void CopyTraceContext(AzQtComponents::StyledDetailsTableModel::TableEntry& entry) const;
-    QString GetTimeAsString();
+    QString GetTimeNowAsString();
     void AddEmptyLogDetailsForRow();
 
     QVector<QVector<QPair<QString, QString>>> m_additionalLogDetails;
@@ -131,6 +131,7 @@ private:
     AZStd::shared_ptr<AZ::SceneAPI::SceneUI::ProcessingHandler> m_targetHandler;
     SceneSettingsCardHeader* m_settingsHeader = nullptr;
     CompletionState m_completionState = CompletionState::Success;
+    State m_sceneCardState = State::Loading;
     QString m_fileTracked;
     int m_warningCount = 0;
     int m_errorCount = 0;

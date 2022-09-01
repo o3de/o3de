@@ -141,26 +141,17 @@ void SceneSettingsCard::AddLogEntry(const AzToolsFramework::Logging::LogEntry& l
 
     QVector<QPair<QString, QString>> detailsForLogLine;
 
-    bool hasStatus = false;
     for (auto& field : logEntry.GetFields())
     {
-        size_t offset = 0;
-        hasStatus = hasStatus || AzFramework::StringFunc::Equal("status", field.second.m_name.c_str());
         if (AzFramework::StringFunc::Equal("message", field.second.m_name.c_str()) ||
             AzFramework::StringFunc::Equal("window", field.second.m_name.c_str()))
         {
-            if (field.second.m_value.length() > 2)
-            {
-                // Removing the prefixes such as "W: " and "E: ".
-                if (field.second.m_value[1] == ':' && field.second.m_value[2] == ' ')
-                {
-                    offset = 3;
-                }
-            }
-            reportEntry.Add(field.second.m_name.c_str(), field.second.m_value.c_str() + offset);
+            // Add the message and window to the direct log
+            reportEntry.Add(field.second.m_name.c_str(), field.second.m_value.c_str());
         }
         else
         {
+            // All other fields, add to the additional details view.
             detailsForLogLine.push_back(QPair<QString, QString>(field.second.m_name.c_str(), field.second.m_value.c_str()));
         }
     }
@@ -174,20 +165,17 @@ void SceneSettingsCard::AddLogEntry(const AzToolsFramework::Logging::LogEntry& l
         AddEmptyLogDetailsForRow();
     }
     
-    if (!hasStatus)
+    if (logEntry.GetSeverity() == AzToolsFramework::Logging::LogEntry::Severity::Error)
     {
-        if (logEntry.GetSeverity() == AzToolsFramework::Logging::LogEntry::Severity::Error)
-        {
-            reportEntry.Add("Status", AzQtComponents::StyledDetailsTableModel::StatusError);
-            UpdateCompletionState(CompletionState::Error);
-        }
-        else if (logEntry.GetSeverity() == AzToolsFramework::Logging::LogEntry::Severity::Warning)
-        {
-            reportEntry.Add("Status", AzQtComponents::StyledDetailsTableModel::StatusWarning);
-            UpdateCompletionState(CompletionState::Warning);
-        }
+        reportEntry.Add("Status", AzQtComponents::StyledDetailsTableModel::StatusError);
+        UpdateCompletionState(CompletionState::Error);
     }
-    reportEntry.Add("Time", GetTimeAsString());
+    else if (logEntry.GetSeverity() == AzToolsFramework::Logging::LogEntry::Severity::Warning)
+    {
+        reportEntry.Add("Status", AzQtComponents::StyledDetailsTableModel::StatusWarning);
+        UpdateCompletionState(CompletionState::Warning);
+    }
+    reportEntry.Add("Time", GetTimeNowAsString());
 
     m_reportModel->AddEntry(reportEntry);
 }
@@ -197,7 +185,7 @@ void SceneSettingsCard::OnProcessingComplete()
     AzQtComponents::StyledDetailsTableModel::TableEntry entry;
     entry.Add("Message", "Asset processing completed.");
     entry.Add("Status", AzQtComponents::StyledDetailsTableModel::StatusSuccess);
-    entry.Add("Time", GetTimeAsString());
+    entry.Add("Time", GetTimeNowAsString());
     AddEmptyLogDetailsForRow();    
     m_reportModel->AddEntry(entry);
     
@@ -209,7 +197,7 @@ void SceneSettingsCard::OnSetStatusMessage(const AZStd::string& message)
     AzQtComponents::StyledDetailsTableModel::TableEntry entry;
     entry.Add("Message", message.c_str());
     entry.Add("Status", AzQtComponents::StyledDetailsTableModel::StatusSuccess);
-    entry.Add("Time", GetTimeAsString());
+    entry.Add("Time", GetTimeNowAsString());
     AddEmptyLogDetailsForRow();
     m_reportModel->AddEntry(entry);
 }
@@ -242,7 +230,7 @@ bool SceneSettingsCard::OnPrintf(const char* window, const char* message)
         return false;
     }
     entry.Add("Message", message);
-    entry.Add("Time", GetTimeAsString());
+    entry.Add("Time", GetTimeNowAsString());
     CopyTraceContext(entry);
     AddEmptyLogDetailsForRow();
     m_reportModel->AddEntry(entry);
@@ -259,7 +247,7 @@ bool SceneSettingsCard::OnError(const char* window, const char* message)
     AzQtComponents::StyledDetailsTableModel::TableEntry entry;
     entry.Add("Message", message);
     entry.Add("Status", AzQtComponents::StyledDetailsTableModel::StatusError);
-    entry.Add("Time", GetTimeAsString());
+    entry.Add("Time", GetTimeNowAsString());
     CopyTraceContext(entry);
     m_reportModel->AddEntry(entry);
     
@@ -277,7 +265,7 @@ bool SceneSettingsCard::OnWarning(const char* window, const char* message)
     AzQtComponents::StyledDetailsTableModel::TableEntry entry;
     entry.Add("Message", message);
     entry.Add("Status", AzQtComponents::StyledDetailsTableModel::StatusWarning);
-    entry.Add("Time", GetTimeAsString());
+    entry.Add("Time", GetTimeNowAsString());
     CopyTraceContext(entry);
     m_reportModel->AddEntry(entry);
     
@@ -294,7 +282,7 @@ bool SceneSettingsCard::OnAssert(const char* message)
     AzQtComponents::StyledDetailsTableModel::TableEntry entry;
     entry.Add("Message", message);
     entry.Add("Status", AzQtComponents::StyledDetailsTableModel::StatusError);
-    entry.Add("Time", GetTimeAsString());
+    entry.Add("Time", GetTimeNowAsString());
     CopyTraceContext(entry);
     m_reportModel->AddEntry(entry);
     UpdateCompletionState(CompletionState::Error);
@@ -315,13 +303,23 @@ void SceneSettingsCard::SetState(State newState)
         break;
     case State::Done:
         {
-            QString errorsAndWarningsString("");
+            QString errorsAndWarningsString;
             if (m_warningCount > 0 || m_errorCount > 0)
             {
                 errorsAndWarningsString = tr(" with %1 warning(s), %2 error(s)").arg(m_warningCount).arg(m_errorCount);
             }
 
-            setTitle(tr("Processing %1 completed at %2%3").arg(m_fileTracked).arg(GetTimeAsString()).arg(errorsAndWarningsString));
+            QString previousStateString;
+            switch (m_sceneCardState)
+            {
+            case State::Loading:
+                previousStateString = tr("Loading ");
+                break;
+            case State::Processing:
+                previousStateString = tr("Processing ");
+                break;
+                }
+            setTitle(tr("%1%2 completed at %3%4").arg(previousStateString).arg(m_fileTracked).arg(GetTimeNowAsString()).arg(errorsAndWarningsString));
             m_settingsHeader->SetCanClose(true);
 
             switch (m_completionState)
@@ -342,6 +340,7 @@ void SceneSettingsCard::SetState(State newState)
         }
         break;
     }
+    m_sceneCardState = newState;
 }
 
 bool SceneSettingsCard::ShouldProcessMessage()
@@ -397,7 +396,7 @@ void SceneSettingsCard::CopyTraceContext(AzQtComponents::StyledDetailsTableModel
     }
 }
 
-QString SceneSettingsCard::GetTimeAsString()
+QString SceneSettingsCard::GetTimeNowAsString()
 {
     return QDateTime::currentDateTime().toString(tr("hh:mm:ss ap"));
 }
@@ -414,14 +413,12 @@ void SceneSettingsCard::OnLogLineSelected()
     const QModelIndexList indexes = m_reportView->selectionModel()->selectedIndexes();
     if (indexes.isEmpty())
     {
-        // TODO: Clear the view?
         return;
     }
 
     int logRow = indexes.front().row();
     if (logRow > m_additionalLogDetails.count())
     {
-        // TODO: Clear the view?
         return;
     }
 
@@ -442,5 +439,4 @@ void SceneSettingsCard::OnLogLineSelected()
         entry.Add("Message", logDetail.second);
         m_logDetailsModel->AddEntry(entry);
     }
-    //ui->nameLineEdit->setText(NameForIndex(indexes.first()));
 }
