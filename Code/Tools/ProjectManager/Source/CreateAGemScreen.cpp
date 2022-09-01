@@ -274,7 +274,8 @@ namespace O3DE::ProjectManager
         thirdRightPaneHeader->setText(tr("Enter your Details"));
         gemCreatorLayout->addWidget(thirdRightPaneHeader);
 
-        m_origin = new FormLineEditWidget(tr("Creator Name*"), "", tr("The name of the gem creator or originator goes here. i.e. O3DE"), "");
+        m_origin =
+            new FormLineEditWidget(tr("Creator Name*"), "", tr("The name of the gem creator or originator goes here. i.e. O3DE"), tr("You must provide a creator name."));
         gemCreatorLayout->addWidget(m_origin);
 
         m_originURL = new FormLineEditWidget(tr("Origin URL"), "", tr("The primary website for your Gem. i.e. http://o3de.org"), "");
@@ -366,8 +367,7 @@ namespace O3DE::ProjectManager
             bool gemNameValid = ValidateGemName();
             bool gemDisplayNameValid = ValidateGemDisplayName();
             bool licenseValid = ValidateFormNotEmpty(m_license);
-            bool gemPathValid = ValidateFormNotEmpty(m_gemLocation);
-            if (gemNameValid && gemDisplayNameValid && licenseValid && gemPathValid)
+            if (gemNameValid && gemDisplayNameValid && licenseValid)
             {
                 m_createGemInfo.m_displayName = m_gemDisplayName->lineEdit()->text();
                 m_createGemInfo.m_name = m_gemName->lineEdit()->text();
