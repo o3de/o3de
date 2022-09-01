@@ -50,7 +50,7 @@ namespace O3DE::ProjectManager
         bool ValidateGemTemplateLocation();
         bool ValidateGemDisplayName();
         bool ValidateGemName();
-        bool ValidateLicenseName();
+        bool ValidateFormNotEmpty(FormLineEditWidget* form);
         bool ValidateRepositoryURL();
 
         //Gem Setup
