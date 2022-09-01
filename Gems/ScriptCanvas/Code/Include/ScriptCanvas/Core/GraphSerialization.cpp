@@ -148,7 +148,7 @@ namespace ScriptCanvas
                 result.m_errors = "JSON (and failsafe XML) deserialize attempt failed.\n";
                 result.m_errors += "The error might be caused by deprecated Spawnable Nodes in your target scriptcanvas file.\n";
                 result.m_errors += "If so, please run UpdateSpawnableNodes python script for the scriptcanvas file to see if the error is resolved.\n";
-                result.m_errors += "(Run 'python {Your o3de engine folder}\Gems\ScriptCanvas\SourceModificationScripts\UpdateSpawnableNodes.py {Your target scriptcanvas file}')";
+                result.m_errors += "(Run 'python {Your o3de engine folder}\\Gems\\ScriptCanvas\\SourceModificationScripts\\UpdateSpawnableNodes.py {Your target scriptcanvas file}')";
 
                 return result;
             }
