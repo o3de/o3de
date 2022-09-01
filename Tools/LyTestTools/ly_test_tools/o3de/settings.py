@@ -247,7 +247,7 @@ def _edit_text_settings_file(settings_file, setting, value, comment_char=""):
     """
 
     if not os.path.isfile(settings_file):
-        raise exceptions.LyTestToolsFrameworkException(IOError(f"Invalid file and/or path {settings_file}."))
+        raise exceptions.LyTestToolsFrameworkException(f"Invalid file and/or path {settings_file}.")
 
     match_obj = None
     document = None

@@ -919,7 +919,8 @@ class MultiTestSuite(object):
 
         parallel_executables = self._get_number_parallel_executables(request)
         if not parallel_executables > 0:
-            raise EditorToolsFrameworkException("Must have at least one executable")
+            logger.warning("Expected 1 or more parallel_executables, found 0. Setting to 1.")
+            parallel_executables = 1
 
         # If there are more tests than max parallel executables, we will split them into multiple consecutive runs.
         num_iterations = int(math.ceil(len(test_spec_list) / parallel_executables))
@@ -934,7 +935,8 @@ class MultiTestSuite(object):
                         results = self._exec_single_test(
                             request, workspace, current_executable, index + 1, self._log_name, test_spec, extra_cmdline_args)
                         if results is None:
-                            raise EditorToolsFrameworkException("Results were None")
+                            raise EditorToolsFrameworkException(f"Results were None. Current log name is "
+                                                                f"{self._log_name} and test is {str(test_spec)}")
                         results_per_thread[index] = results
                     return run
 
@@ -1003,7 +1005,9 @@ class MultiTestSuite(object):
 
         total_threads = self._get_number_parallel_executables(request)
         if not total_threads > 0:
-            raise EditorToolsFrameworkException("Must have at least one executable")
+            logger.warning("Expected 1 or more total_threads, found 0. Setting to 1.")
+            total_threads = 1
+
         threads = []
         tests_per_executable = int(math.ceil(len(test_spec_list) / total_threads))
         results_per_thread = [None] * total_threads
@@ -1018,7 +1022,9 @@ class MultiTestSuite(object):
                             request, workspace, current_executable, index + 1, self._log_name,
                             test_spec_list_for_executable, extra_cmdline_args)
                         if results is None:
-                            raise EditorToolsFrameworkException("Results were None")
+                            raise EditorToolsFrameworkException(f"Results were None. Current log name is "
+                                                                f"{self._log_name} and tests are "
+                                                                f"{str(test_spec_list_for_executable)}")
                     else:
                         results = {}
                     results_per_thread[index] = results
