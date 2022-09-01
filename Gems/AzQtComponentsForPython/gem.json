@@ -6,7 +6,7 @@
     "origin": "Open 3D Engine - o3de.org",
     "origin_url": "https://github.com/o3de/o3de",
     "type": "Code",
-    "summary": "This gem provides the ability to use the AzQtComponents library from Python.",
+    "summary": "This gem provides a library to use the AzQtComponents library from Python.",
     "canonical_tags": [
         "Gem"
     ],

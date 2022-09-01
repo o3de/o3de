@@ -18,6 +18,10 @@
 */
 
 //#include <AzQtComponents/Components/AutoCustomWindowDecorations.h>
+
+// Ensure the correct AZ_VE_NUM_ARGS macro is used inside variadic.h
+#define FORCE_VA_OPT_ARG 1
+///////////////////////
 #include <AzQtComponents/Components/ButtonDivider.h>
 #include <AzQtComponents/Components/ButtonStripe.h>
 #include <AzQtComponents/Components/ConfigHelpers.h>

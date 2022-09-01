@@ -9,9 +9,6 @@
 set(WRAPPED_FILES
     ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtpyside_module_wrapper.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_wrapper.cpp
-    # ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/az_wrapper.cpp
-    
-    # ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/az_color_wrapper.cpp
                                                       
     ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_buttondivider_wrapper.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_buttonstripe_wrapper.cpp
@@ -88,7 +85,6 @@ set(WRAPPED_FILES
     ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_checkbox_wrapper.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_checkbox_config_wrapper.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_colorlabel_wrapper.cpp
-    # ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_colorpicker_wrapper.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_comboboxvalidator_wrapper.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_combobox_wrapper.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_combobox_config_wrapper.cpp
@@ -106,7 +102,6 @@ set(WRAPPED_FILES
     ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_gradientslider_wrapper.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_lineedit_wrapper.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_lineedit_config_wrapper.cpp
-    # ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_logicaltaborderingwidget_wrapper.cpp
     
     ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_menu_wrapper.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_menu_margins_wrapper.cpp
@@ -135,7 +130,6 @@ set(WRAPPED_FILES
     ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_segmentbar_wrapper.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_segmentcontrol_wrapper.cpp
     
-    # ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_customslider_wrapper.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_slider_wrapper.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_slider_border_wrapper.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_slider_gradientsliderconfig_wrapper.cpp
@@ -180,26 +174,4 @@ set(WRAPPED_FILES
     ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_vectorinput_wrapper.cpp
     
     ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_internal_wrapper.cpp
-    
-    
-    # ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_colorcomponentedit_wrapper.cpp
-    # ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_hslsliders_wrapper.cpp
-    # ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_hsvsliders_wrapper.cpp
-    # ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_rgbsliders_wrapper.cpp
-    # ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_colorcomponentsliders_wrapper.cpp
-    # ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_internal_colorcontroller_wrapper.cpp
-    # ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_colorgrid_wrapper.cpp
-    # ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_colorhexedit_wrapper.cpp
-    # ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_colorhexedit_parsedcolor_wrapper.cpp
-    # ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_colorpreview_wrapper.cpp
-    # ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_colorrgbaedit_wrapper.cpp
-    # ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_colorwarning_wrapper.cpp
-    # ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_gammaedit_wrapper.cpp
-    # ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_palette_wrapper.cpp
-    # ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_palettecardbase_wrapper.cpp
-    # ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_palettecard_wrapper.cpp
-    # ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_quickpalettecard_wrapper.cpp
-    # ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_palettecardcollection_wrapper.cpp
-    # ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_paletteview_wrapper.cpp
-    # ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_swatch_wrapper.cpp
 )

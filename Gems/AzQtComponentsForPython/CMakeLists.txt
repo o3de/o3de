@@ -9,18 +9,13 @@
 cmake_minimum_required(VERSION 3.20)
 
 # The name of the Python import module we're generating.
-set(bindings_library "azqtpyside")
+set(BINDINGS_LIBRARY "azqtpyside")
 
 # Header file containing all the types/classes we're exposing to Python.
 set(wrapped_header ${CMAKE_CURRENT_LIST_DIR}/bindings_azqtcomponents.h)
 
 # Typesystem xml.
 set(typesystem_file ${CMAKE_CURRENT_LIST_DIR}/bindings_azqtcomponents.xml)
-
-# Do not use RPATH to affect install_name on macOS.
-if(POLICY CMP0068)
-  cmake_policy(SET CMP0068 NEW)
-endif()
 
 # Allow AUTOMOC/AUTOUIC on generated files.
 if(POLICY CMP0071)
@@ -32,7 +27,7 @@ set(CMAKE_AUTOMOC ON)
 find_package(Qt5 5.12 REQUIRED COMPONENTS Core Gui Widgets)
              
 # The library we're creating bindings for.
-set(azqtcomponents_library "AzQtComponents")
+set(AZQTCOMPONENTS_LIBRARY "AzQtComponents")
 
 # Check we have a valid version of Python.
 if(NOT python_interpreter)
@@ -43,83 +38,62 @@ if(NOT python_interpreter)
     message(FATAL_ERROR "Error: Failed to locate Python installation.")
 endif()
 
+set(LIB_EXTENSION "cp310-win_amd64")
+
 # Find the paths for the pyside2/shiboken modules.
-ly_get_package_association("pyside2" pyside_package_name)
-ly_package_get_target_folder(${pyside_package_name} pyside2_DOWNLOAD_LOCATION)
-set(pyside2_module_dir ${pyside2_DOWNLOAD_LOCATION}/${pyside_package_name}/pyside2)
-
-set(pyside2_path "${pyside2_module_dir}/PySide2")
-set(pyside2_include_dir "${pyside2_path}/include")
-set(pyside2_typesystem_path "${pyside2_path}/typesystems")
-set(pyside2_bin_path "${pyside2_path}/bin")
-   
-set(shiboken_generator_dir "${pyside2_module_dir}/shiboken2_generator")   
-set(shiboken_generator_exe_path "${shiboken_generator_dir}/shiboken2${CMAKE_EXECUTABLE_SUFFIX}") 
-
-if(NOT EXISTS ${shiboken_generator_exe_path})
-    message(FATAL_ERROR "Shiboken executable not found at path: ${shiboken_generator_dir}")
-endif()
-  
-set(shiboken_module_path "${pyside2_module_dir}/shiboken2")
-
-set(shiboken_lib_name "shiboken2.cp37-win_amd64")
-set(shiboken_lib_name_d "shiboken2_d.cp37-win_amd64")
-
-
-set(shiboken_include_dir "${shiboken_generator_dir}/include")
-set(shiboken_shared_libraries "${shiboken_module_path}/${shiboken_lib_name}.lib")
-set(shiboken_dll "${shiboken_module_path}/${shiboken_lib_name}.dll")
-set(shiboken_shared_libraries_d "${shiboken_module_path}/${shiboken_lib_name_d}.lib")
-set(shiboken_dll_d "${shiboken_module_path}/${shiboken_lib_name_d}.dll")
-
-set(pyside_lib_name "pyside2.cp37-win_amd64")
-set(pyside_lib_name_d "pyside2_d.cp37-win_amd64")
-
-set(pyside2_shared_libraries "${pyside2_path}/${pyside_lib_name}.lib")
-set(pyside2_dll "${pyside2_path}/${pyside_lib_name}.dll")
-set(pyside2_shared_libraries_d "${pyside2_path}/${pyside_lib_name_d}.lib")
-set(pyside2_dll_d "${pyside2_path}/${pyside_lib_name_d}.dll")
+ly_get_package_association("pyside2" PYSIDE_PACKAGE_NAME)
+ly_package_get_target_folder(${PYSIDE_PACKAGE_NAME} PYSIDE2_DOWNLOAD_LOCATION)
+set(PYSIDE2_MODULE_DIR ${PYSIDE2_DOWNLOAD_LOCATION}/${PYSIDE_PACKAGE_NAME})
 
 # Find the qt package location.
-ly_get_package_association("Qt" qt_package_name)
-ly_package_get_target_folder(${qt_package_name} qt_DOWNLOAD_LOCATION)
-set(qt_module_dir ${qt_DOWNLOAD_LOCATION}/${qt_package_name}/qt)
+ly_get_package_association("Qt" QT_PACKAGE_NAME)
+ly_package_get_target_folder(${QT_PACKAGE_NAME} QT_DOWNLOAD_LOCATION)
+set(QT_MODULE_DIR ${QT_DOWNLOAD_LOCATION}/${QT_PACKAGE_NAME}/qt)
+
+set(PYSIDE2_PATH "${PYSIDE2_MODULE_DIR}/pyside2")
+set(INCLUDE_DIR "${PYSIDE2_PATH}/include")
+set(PYSIDE2_SHARE_PATH "${PYSIDE2_PATH}/share/PySide2")
+set(PYSIDE2_TYPESYSTEM_PATH "${PYSIDE2_SHARE_PATH}/typesystems")
+set(PYSIDE2_BIN_PATH "${PYSIDE2_PATH}/bin")
+set(PYSIDE2_INCLUDE_DIR ${INCLUDE_DIR}/PySide2)
+set(SHIBOKEN_GENERATOR_EXE_PATH "${PYSIDE2_BIN_PATH}/shiboken2${CMAKE_EXECUTABLE_SUFFIX}") 
+
+if(NOT EXISTS ${SHIBOKEN_GENERATOR_EXE_PATH})
+    message(FATAL_ERROR "Shiboken executable not found at path: ${SHIBOKEN_GENERATOR_EXE_PATH}")
+endif()
+  
+set(SHIBOKEN_MODULE_PATH "${PYSIDE2_MODULE_DIR}/pyside2/lib/site-packages/shiboken2")
+
+set(SHIBOKEN_INCLUDE_DIR "${INCLUDE_DIR}/shiboken2")
+set(SHIBOKEN_SHARED_LIBRARIES "${SHIBOKEN_MODULE_PATH}/shiboken2.abi3.lib")
+set(SHIBOKEN_DLL "${SHIBOKEN_MODULE_PATH}/shiboken2.abi3.dll")
+set(SHIBOKEN_SHARED_LIBRARIES_D "${SHIBOKEN_MODULE_PATH}/shiboken2_d.${LIB_EXTENSION}.lib")
+set(SHIBOKEN_DLL_D "${SHIBOKEN_MODULE_PATH}/shiboken2_d.${LIB_EXTENSION}.dll")
+
+set(PYSIDE2_LIB_DIR ${PYSIDE2_PATH}/lib/site-packages/PySide2)
+
+set(PYSIDE2_SHARED_LIBRARIES "${PYSIDE2_LIB_DIR}/pyside2.abi3.lib")
+set(PYSIDE2_SHARED_LIBRARIES_D "${PYSIDE2_LIB_DIR}/pyside2_d.${LIB_EXTENSION}.lib")
+
+set(PYSIDE2_DLL "${PYSIDE2_LIB_DIR}/pyside2.abi3.dll")
+set(PYSIDE2_DLL_D "${PYSIDE2_LIB_DIR}/pyside2_d.${LIB_EXTENSION}.dll")
   
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-set(CMAKE_INSTALL_RPATH ${shiboken_module_path} ${CMAKE_CURRENT_SOURCE_DIR})
+set(CMAKE_INSTALL_RPATH ${SHIBOKEN_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR})
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
-ly_download_associated_package(Qt) 
-
-# MacOS: handle paths differently if Qt is being used from a framework.
-get_target_property(QtCore_is_framework Qt5::Core FRAMEWORK)
-if (QtCore_is_framework)
-    get_target_property(qt_core_library_location Qt5::Core LOCATION)
-    get_filename_component(qt_core_library_location_dir "${qt_core_library_location}" DIRECTORY)
-    get_filename_component(lib_dir "${qt_core_library_location_dir}/../" ABSOLUTE)
-    list(APPEND INCLUDES "--framework-include-paths=${lib_dir}")
-endif()
-
-# Add the pyside2 include subdirectories to the include path.
-set(pyside2_additional_includes "")
-foreach(INCLUDE_DIR ${pyside2_include_dir})
-    list(APPEND pyside2_additional_includes "${INCLUDE_DIR}/QtCore")
-    list(APPEND pyside2_additional_includes "${INCLUDE_DIR}/QtGui")
-    list(APPEND pyside2_additional_includes "${INCLUDE_DIR}/QtWidgets")
-endforeach()
-
 # Define the shared library for which we will create bindings.
-set_property(TARGET ${azqtcomponents_library} PROPERTY PREFIX "")
+set_property(TARGET ${AZQTCOMPONENTS_LIBRARY} PROPERTY PREFIX "")
 
-set(license_file ${CMAKE_CURRENT_LIST_DIR}/license_header.txt)
-message ("license set to ${license_file}")
+# Ensure the generated wrapper files have the correct header.
+set(LICENSE_FILE ${CMAKE_CURRENT_LIST_DIR}/license_header.txt)
 
 # Set up the options to pass to shiboken.
 set(shiboken_options --generator-set=shiboken --enable-parent-ctor-heuristic
     --enable-pyside-extensions --enable-return-value-heuristic --use-isnull-as-nb_nonzero
     --avoid-protected-hack --language-level=c++17
-    --license-file=${license_file}
+    --license-file=${LICENSE_FILE}
     ${INCLUDES}
     -I${CMAKE_SOURCE_DIR}
     -I${CMAKE_CURRENT_LIST_DIR}/..
@@ -127,37 +101,36 @@ set(shiboken_options --generator-set=shiboken --enable-parent-ctor-heuristic
     -I"${LY_ROOT_FOLDER}/code/Framework/AzQtComponents"
     -I"${PROJECT_BINARY_DIR}/../AzQtComponents_autogen/include"
     -I"${LY_ROOT_FOLDER}/code/Framework/AzCore/Platform/${PAL_PLATFORM_NAME}"
-    -I${pyside2_include_dir}
-    -I"${shiboken_include_dir}"
-    -I"${pyside2_include_dir}/QtWidgets"
-    -I"${pyside2_include_dir}/QtCore"
-    -I"${pyside2_include_dir}/QtGui"
-    -I"${pyside2_path}/typesystems"   
-    -I"${qt_module_dir}/include"
-    -I"${qt_module_dir}/include/QtWidgets"
-    -I"${qt_module_dir}/include/QtCore"
-    -I"${qt_module_dir}/include/QtGui"
-    -T"${pyside2_path}/typesystems"
-    -T"${pyside2_path}"
-    -T${shiboken_include_dir}
+    -I"${PYSIDE2_INCLUDE_DIR}"
+    -I"${SHIBOKEN_INCLUDE_DIR}"
+    -I"${PYSIDE2_INCLUDE_DIR}/QtWidgets"
+    -I"${PYSIDE2_INCLUDE_DIR}/QtCore"
+    -I"${PYSIDE2_INCLUDE_DIR}/QtGui"
+    -I"${PYSIDE2_TYPESYSTEM_PATH}"   
+    -I"${QT_MODULE_DIR}/include"
+    -I"${QT_MODULE_DIR}/include/QtWidgets"
+    -I"${QT_MODULE_DIR}/include/QtCore"
+    -I"${QT_MODULE_DIR}/include/QtGui"
+    -T"${PYSIDE2_PATH}/typesystems"
+    -T"${PYSIDE2_PATH}"
+    -T"${SHIBOKEN_INCLUDE_DIR}"
+    -T"${PYSIDE2_TYPESYSTEM_PATH}"
+    -T"${PYSIDE2_SHARE_PATH}"
     --output-directory=${CMAKE_CURRENT_BINARY_DIR}
 )
 
 set(generated_sources_dependencies ${wrapped_header} ${typesystem_file})
 
 # Dummy library to run the custom shiboken command.
-# Shiboken needs to be run before the build process in the final bindings library
-# which according to the cmake docs, is only possible in visual studio. On
-# other platforms, the PRE_BUILD step happens directly before PRE_LINK.
 ly_add_target(
-    NAME ${bindings_library}.bindings STATIC
+    NAME ${BINDINGS_LIBRARY}.bindings STATIC
     NAMESPACE Gem
     FILES_CMAKE
         dummy_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
             ${CMAKE_CURRENT_LIST_DIR}/..
-            ${pyside2_include_dir}
+            ${PYSIDE2_INCLUDE_DIR}
     BUILD_DEPENDENCIES
         PUBLIC
             AZ::AzQtComponents
@@ -165,95 +138,87 @@ ly_add_target(
 )
 
 # Add the custom shiboken command to the dummy library.
-add_custom_command(TARGET ${bindings_library}.bindings
+add_custom_command(TARGET ${BINDINGS_LIBRARY}.bindings
                     POST_BUILD
-                    COMMAND ${shiboken_generator_exe_path} ${shiboken_options} ${wrapped_header} ${typesystem_file}
+                    COMMAND ${SHIBOKEN_GENERATOR_EXE_PATH} ${shiboken_options} ${wrapped_header} ${typesystem_file}
                     DEPENDS ${generated_sources_dependencies} 
                         Gem::AzQtComponentsForPython.WrappedFiles
                     COMMENT "Running generator for ${typesystem_file}.")
     
-# Set up the project for building the code generated by shiboken.    
+# Create dummy wrapper files so the second project has something to work with while being created.
+include(wrapped_files.cmake)
+foreach(WRAPPER_FILE ${WRAPPED_FILES})
+    if(NOT EXISTS "${WRAPPER_FILE}")
+        file(WRITE ${WRAPPER_FILE} "")
+    endif()
+endforeach()
+    
+# Set up the project for building the code generated by shiboken.
 ly_add_target(
-    NAME ${bindings_library} SHARED
+    NAME ${BINDINGS_LIBRARY} SHARED
     NAMESPACE Gem
     FILES_CMAKE
         wrapped_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
-            ${pyside2_additional_includes}
-            ${pyside2_include_dir}
-            ${python_include_dir}
-            ${shiboken_include_dir}
-            "${pyside2_include_dir}\\QtCore"
-            "${pyside2_include_dir}\\QtGui"
-            "${pyside2_include_dir}\\QtWidgets"
-            "${pyside2_include_dir}\\QtNetwork"
+            ${PYSIDE2_INCLUDE_DIR}
+            ${PYTHON_INCLUDE_DIR}
+            ${SHIBOKEN_INCLUDE_DIR}
+            "${PYSIDE2_INCLUDE_DIR}\\QtCore"
+            "${PYSIDE2_INCLUDE_DIR}\\QtGui"
+            "${PYSIDE2_INCLUDE_DIR}\\QtWidgets"
+            "${PYSIDE2_INCLUDE_DIR}\\QtNetwork"
     BUILD_DEPENDENCIES
         PUBLIC
             Qt5::Widgets
             Qt5::Core
             Qt5::Widgets
             Qt5::Gui
-            ${azqtcomponents_library}
-            ${bindings_library}.bindings
+            ${AZQTCOMPONENTS_LIBRARY}
+            ${BINDINGS_LIBRARY}.bindings
 )
 
-target_link_libraries( ${bindings_library} PRIVATE 
-    debug ${pyside2_shared_libraries_d}
-    optimized ${pyside2_shared_libraries}
+target_link_libraries( ${BINDINGS_LIBRARY} PRIVATE 
+    debug ${PYSIDE2_SHARED_LIBRARIES_D}
+    optimized ${PYSIDE2_SHARED_LIBRARIES}
 )
 
-target_link_libraries( ${bindings_library} PRIVATE 
-    debug ${shiboken_shared_libraries_d}
-    optimized ${shiboken_shared_libraries}
+target_link_libraries( ${BINDINGS_LIBRARY} PRIVATE 
+    debug ${SHIBOKEN_SHARED_LIBRARIES_D}
+    optimized ${SHIBOKEN_SHARED_LIBRARIES}
 )
 
-
-
-# Add the wrapped files here: they can't be added to the FILES_CMAKE section as they don't exist yet.
-include(wrapped_files.cmake)
-target_sources(${bindings_library} PRIVATE ${WRAPPED_FILES})
+target_sources(${BINDINGS_LIBRARY} PRIVATE ${WRAPPED_FILES})
 
 # Building the wrapper files will not work with a unity build.
-set_target_properties(${bindings_library} PROPERTIES UNITY_BUILD OFF)
+set_target_properties(${BINDINGS_LIBRARY} PROPERTIES UNITY_BUILD OFF)
 
 # Append _d to the module name in a debug build.
-set_target_properties(${bindings_library} PROPERTIES DEBUG_POSTFIX "_d")
+set_target_properties(${BINDINGS_LIBRARY} PROPERTIES DEBUG_POSTFIX "_d")
 
 # Disable various warnings in shiboken generated wrapper code.
 #"conditional expression is constant"
 #"unreferenced formal parameter"
 #"declaration of 'x' hides previous local declaration."
 #"declaration of 'x' hides class member."
-target_compile_options(${bindings_library} PRIVATE /wd4127 /wd4100 /wd4456 /wd4458)
+target_compile_options(${BINDINGS_LIBRARY} PRIVATE /wd4127 /wd4100 /wd4456 /wd4458)
 
 # Fix the name of the module.
-set_property(TARGET ${bindings_library} PROPERTY PREFIX "")
-set_property(TARGET ${bindings_library} PROPERTY OUTPUT_NAME
-             "${bindings_library}${PYTHON_EXTENSION_SUFFIX}")
-if(WIN32)
-    set_property(TARGET ${bindings_library} PROPERTY SUFFIX ".pyd")
+set_property(TARGET ${BINDINGS_LIBRARY} PROPERTY PREFIX "")
+set_property(TARGET ${BINDINGS_LIBRARY} PROPERTY OUTPUT_NAME
+             "${BINDINGS_LIBRARY}${PYTHON_EXTENSION_SUFFIX}")
+set_property(TARGET ${BINDINGS_LIBRARY} PROPERTY SUFFIX ".pyd")
+
+# Ensure linking doesn't happen against the wrong libraries during #pragma comment(lib)
+if (CMAKE_BUILD_TYPE STREQUAL "debug")
+    set(python_additional_link_flags "/NODEFAULTLIB:\"python37_d.lib\"")
+    set(python_additional_link_flags ${python_additional_link_flags} "/NODEFAULTLIB:\"python37_d.lib\"")
+else()
+    set(python_additional_link_flags "/NODEFAULTLIB:\"python37.lib\"")
+    set(python_additional_link_flags ${python_additional_link_flags} "/NODEFAULTLIB:\"python37.lib\"")
 endif()
 
-# Make sure the linker doesn't complain about not finding Python symbols on MacOS.
-if(APPLE)
-  set_target_properties(${bindings_library} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
-endif(APPLE)
-
-set(windows_shiboken_shared_libraries)
-
-if(WIN32)   
-    # Ensure linking doesn't happen against the wrong libraries during #pragma comment(lib)
-    if (CMAKE_BUILD_TYPE STREQUAL "debug")
-        set(python_additional_link_flags "/NODEFAULTLIB:\"python37_d.lib\"")
-        set(python_additional_link_flags ${python_additional_link_flags} "/NODEFAULTLIB:\"python37_d.lib\"")
-    else()
-        set(python_additional_link_flags "/NODEFAULTLIB:\"python37.lib\"")
-        set(python_additional_link_flags ${python_additional_link_flags} "/NODEFAULTLIB:\"python37.lib\"")
-    endif()
-
-    set_target_properties(${bindings_library} PROPERTIES LINK_FLAGS "${python_additional_link_flags}")
-endif()
+set_target_properties(${BINDINGS_LIBRARY} PROPERTIES LINK_FLAGS "${python_additional_link_flags}")
 
 
         

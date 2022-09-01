@@ -5,19 +5,11 @@
     <load-typesystem name="typesystem_core.xml" generate="no"/>
     <load-typesystem name="typesystem_gui.xml" generate="no"/>
     
-    <!--smart-pointer-type name="QPointer" type="shared" getter="data" /-->
     <primitive-type name="uint32_t" target-lang-api-name="PyLong"/>
     
     <!-- Declaring this prevents addition of broken code by Shiboken.-->
     <object-type name="QTabWidget" generate="no"/>
     <object-type name="QSlider" generate="no"/>
-      
-   
-    
-    <!--object-type name="Ui_FilteredSearchWidget"/>
-    <namespace-type name="Ui" generate="no">
-        <object-type name="FilteredSearchWidget"/>
-    </namespace-type-->
     
     <object-type name="FlowLayout">
         <inject-code class="native" position="beginning" file="glue/qtwidgets.cpp" snippet="qlayout-help-functions"/>
@@ -25,71 +17,8 @@
      
      <!-- Remove drawFrame class to prevent broken wrapping in BrowseEdit-->
     <rejection class="QFrame" function-name="drawFrame"/>
-    
-    <!--namespace-type name="AzQtComponents" generate="no">
-        <object-type name="ColorValidator"/>
-        <object-type name="SearchTypeSelectorTreeView"/>
-        <object-type name="SearchTypeSelectorFilterModel"/>
-        <object-type name="CustomSlider"/>
-    </namespace-type-->
-    
-    <namespace-type name="AzQtComponents" generate="yes">
-    
-        
-        
-        <!--ColorPicker-->
-        <!--object-type name="ColorComponentEdit"/>
-        <object-type name="HSLSliders">
-            <enum-type name="Mode"/>
-        </object-type>
-        <object-type name="HSVSliders">
-            <enum-type name="Mode"/>
-        </object-type>
-        <object-type name="RGBSliders"/>
-        
-        <namespace-type name="internal" generate="no">
-            <custom-type name="SpinBoxLineEdit"/>
-        </namespace-type>
-        
-        <namespace-type name="Internal" generate="no">
-            <object-type name="ColorController"/-->
-            
-            <!--object-type name="AddSwatch"/-->
-        <!--/namespace-type>
-        
-        <object-type name="ColorHexEdit">
-            <object-type name="ParsedColor"/>
-        </object-type>
-                
-        <object-type name="ColorRGBAEdit">
-            <enum-type name="Mode"/>
-        </object-type>
-        
-        <object-type name="ColorPreview"/>
-                
-        <object-type name="ColorWarning">
-            <enum-type name="Mode"/>
-        </object-type>
-        
-        <object-type name="GammaEdit"/-->
-        
-        <!--custom-type name="MIME_TYPE_PALETTE"/-->
-        
-        <!--object-type name="Palette"/>
-        
-        <object-type name="PaletteCardBase"/>
-        <object-type name="PaletteCard"/>
-        <object-type name="QuickPaletteCard"/-->
-        
-        <!--object-type name="PaletteCardCollection"/-->
-        
-        <!--object-type name="PaletteView">
-            <object-type name="DropIndicator"/>
-            <object-type name="Config"/>
-        </object-type-->
-        
-        <!--object-type name="Swatch"/-->
-                
+  
+    <namespace-type name="AzQtComponents" generate="yes">                
         <!--Components-->
         <object-type name="ButtonDivider"/>
         <object-type name="ButtonStripe"/>
@@ -112,8 +41,6 @@
         <object-type name="DockTabWidget"/>
         <object-type name="ExtendedLabel"/>   
 
-        
-        
         <object-type name="FancyDocking">
             <object-type name="WidgetGrab"/>
         </object-type>
@@ -212,14 +139,12 @@
             <object-type name="Config"/>
         </object-type>
         
-        
         <object-type name="BrowseEdit"/>
 
         <object-type name="Card">
             <object-type name="Config"/>
         </object-type>
         
-        <!--rejection class="CardHeader" field-name="s_iconSize"/-->
         <object-type name="CardHeader">
             <enum-type name="ContextMenuIcon"/>
             <value-type name="s_iconSize"/>
@@ -230,17 +155,7 @@
             <object-type name="Config"/>
         </object-type>
         <object-type name="ColorLabel"/>
-        
-        <!--namespace-type name="Internal" generate="yes">
-            <object-type name="ColorLibrarySettings"/>
-        </namespace-type>
-        <object-type name="ColorPicker">
-            <enum-type name="Configuration"/>
-            <object-type name="ColorGridConfig"/>
-            <object-type name="DialogButtonsConfig"/>
-            <object-type name="Config"/>
-        </object-type-->
-        
+                
         <object-type name="ComboBoxValidator"/>
         <object-type name="ComboBox">
             <object-type name="Config"/>
@@ -290,13 +205,7 @@
         <object-type name="LineEdit">
             <object-type name="Config"/>
         </object-type>
-        
-        <!--LogicalTabOrderingWidget will not bind as it's a template class-->
-        <!--namespace-type name="LogicalTabOrderingInternal" generate="yes">
-            <object-type name="TabKeyEntry"/>
-        </namespace-type>
-        <object-type name="LogicalTabOrderingWidget"/-->
-        
+                
         <object-type name="Menu">
             <object-type name="Margins"/>
             <object-type name="Config"/>
@@ -336,7 +245,6 @@
             <enum-type name="TabPosition"/>
         </object-type>
         
-        <!--object-type name="CustomSlider"/-->
         <object-type name="Slider">
             <object-type name="Border"/>
             <object-type name="GradientSliderConfig"/>
@@ -352,9 +260,6 @@
         <object-type name="SliderCombo"/>
         <object-type name="SliderDoubleCombo"/>
         
-        <namespace-type name="internal" generate="no">
-            <!--object-type name="SpinBoxLineEdit"/-->
-        </namespace-type>
         <object-type name="SpinBox">
             <object-type name="Config"/>
         </object-type>
@@ -371,7 +276,6 @@
         </object-type>
         <object-type name="TableViewItemDelegate"/>
          
-
         <object-type name="TabWidget">
             <object-type name="Config"/>
         </object-type>
@@ -379,7 +283,6 @@
         <object-type name="TabBar"/>
         
         <object-type name="TabWidgetActionToolBar"/>
-        
         
         <object-type name="Text">
             <object-type name="Config"/>
@@ -409,8 +312,5 @@
             <enum-type name="Coordinate"/>
         </object-type>
         <object-type name="VectorInput"/>
-        
-        
-        
-    </namespace-type>
+    </namespace-type> <!--AzQtComponents-->
 </typesystem>
