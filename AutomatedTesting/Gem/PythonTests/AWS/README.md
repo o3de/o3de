@@ -6,7 +6,8 @@
 3. AWS CLI is installed and AWS credentials are configured via [environment variables](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html) or [default profile](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html).
 4. [AWS Cloud Development Kit (CDK)](https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html#getting_started_install) is installed.
 
-> Note: ALl the AWS Gems CDK applications have been updated to CDKv2. Ensure you set CDK_VERSION to the desired CDKv2 version. See https://docs.aws.amazon.com/cdk/api/versions.html for the latest CDKv2 version.
+> Note: All the AWS Gems CDK applications have been updated to CDK v2. Ensure you set CDK_VERSION to the desired CDK v2 version. See https://docs.aws.amazon.com/cdk/api/versions.html for the latest CDK v2 version information.
+
 
 > Support for the CDKv1 applications has been deprecated.
 
