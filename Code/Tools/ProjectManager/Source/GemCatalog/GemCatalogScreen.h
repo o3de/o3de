@@ -68,7 +68,7 @@ namespace O3DE::ProjectManager
 
     private slots:
         void HandleOpenGemRepo();
-        void HandleCreateAGem();
+        void HandleCreateGem();
         void UpdateAndShowGemCart(QWidget* cartWidget);
         void ShowInspector();
 

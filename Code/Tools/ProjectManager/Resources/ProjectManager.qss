@@ -35,7 +35,7 @@ QTabBar::tab:text {
     text-align:left;
 }
 
-#createAGemTab QTabBar::tab {
+#createGemTab QTabBar::tab {
     background-color: #444444;
     font-size:16px;
     min-height:230px;
@@ -44,11 +44,11 @@ QTabBar::tab:text {
 
 }
 
-QTabWidget#createAGemTab::tab-bar {
+QTabWidget#createGemTab::tab-bar {
     left: 0px;
 }
 
-QTabBar#createAGemTab::tab:text {
+QTabBar#createGemTab::tab:text {
     text-align:left;
 }
 
@@ -79,7 +79,7 @@ QTabBar::tab:focus {
     color: #4082eb;
 }
 
-#createAGemTab #formFrame {
+#createGemTab #formFrame {
     margin-left: 0px;
 }
 

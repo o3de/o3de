@@ -44,11 +44,11 @@ namespace O3DE::ProjectManager
         m_updateSettingsScreen = new UpdateProjectSettingsScreen();
         m_projectGemCatalogScreen = new ProjectGemCatalogScreen(downloadController);
         m_gemRepoScreen = new GemRepoScreen(this);
-        m_createAGemScreen = new CreateAGemScreen();
+        m_createGem = new CreateGem();
 
         connect(m_projectGemCatalogScreen, &ScreenWidget::ChangeScreenRequest, this, &UpdateProjectCtrl::OnChangeScreenRequest);
         connect(m_gemRepoScreen, &GemRepoScreen::OnRefresh, m_projectGemCatalogScreen, &ProjectGemCatalogScreen::Refresh);
-        connect(m_createAGemScreen, &CreateAGemScreen::CreateButtonPressed, this, &UpdateProjectCtrl::HandleBackButton);
+        connect(m_createGem, &CreateGem::CreateButtonPressed, this, &UpdateProjectCtrl::HandleBackButton);
 
         m_stack = new QStackedWidget(this);
         m_stack->setObjectName("body");
@@ -76,7 +76,7 @@ namespace O3DE::ProjectManager
         m_stack->addWidget(topBarFrameWidget);
         m_stack->addWidget(m_projectGemCatalogScreen);
         m_stack->addWidget(m_gemRepoScreen);
-        m_stack->addWidget(m_createAGemScreen);
+        m_stack->addWidget(m_createGem);
 
         QDialogButtonBox* backNextButtons = new QDialogButtonBox();
         backNextButtons->setObjectName("footer");
@@ -137,9 +137,9 @@ namespace O3DE::ProjectManager
             m_stack->setCurrentWidget(m_updateSettingsScreen);
             Update();
         }
-        else if (screen == ProjectManagerScreen::CreateAGem)
+        else if (screen == ProjectManagerScreen::CreateGem)
         {
-            m_stack->setCurrentWidget(m_createAGemScreen);
+            m_stack->setCurrentWidget(m_createGem);
             Update();
         }
         else

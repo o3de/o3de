@@ -15,84 +15,24 @@
 #include <FormComboBoxWidget.h>
 #include <GemCatalog/GemInfo.h>
 #include <PythonBindings.h>
-
-#include <QHash>
-#include <QApplication>
-#include <QStyleOptionTab>
-#include <QStylePainter>
-#include <QTabBar>
-#include <QTabWidget>
-#include <QButtonGroup>
-#include <QDialogButtonBox>
-#include <QRadioButton>
-#include <QPushButton>
-#include <QScrollArea>
-#include <QComboBox>
-#include <QVBoxLayout>
 #endif
+
+class QButtonGroup;
+class QDialogButtonBox;
+class QRadioButton;
+class QScrollArea;
+class QVBoxLayout;
 
 namespace O3DE::ProjectManager
 {
-    class TabBar : public QTabBar
-    {
-    public:
-        QSize tabSizeHint(int index) const
-        {
-            QSize s = QTabBar::tabSizeHint(index);
-            s.transpose();
-            return s;
-        }
+    class TabWidget;
 
-    protected:
-        void paintEvent(QPaintEvent*)
-        {
-            QStylePainter painter(this);
-            QStyleOptionTab opt;
-
-            QPoint currentTopPosition(115, 175);
-
-            QStringList strs = { "1. Gem Setup", "2. Gem Details", "3. Creator Details" };
-            for (int i = 0; i < count(); i++)
-            {
-                initStyleOption(&opt, i);
-                painter.drawControl(QStyle::CE_TabBarTabShape, opt);
-                painter.save();
-                QSize s = opt.rect.size();
-                s.transpose();
-                s.setWidth(130);
-                QRect r(QPoint(), s);
-                r.moveCenter(opt.rect.center());
-                opt.rect = r;
-                QPoint c = tabRect(i).center();
-                QPoint leftJustify(currentTopPosition);
-                leftJustify.setX(30 + (int)(0.5 * opt.rect.width()));
-                painter.translate(leftJustify);
-                currentTopPosition.setY(currentTopPosition.y() + 55);
-                painter.setFont(QFont("Open Sans", 12));
-                painter.translate(-c);
-                painter.drawItemText(r, Qt::AlignLeft, QApplication::palette(), true, strs.at(i));
-                painter.restore();
-            }
-        }
-    };
-
-    class TabWidget : public QTabWidget
-    {
-    public:
-        TabWidget(QWidget* parent = 0)
-            : QTabWidget(parent)
-        {
-            setTabBar(new TabBar);
-            setTabPosition(QTabWidget::West);
-        }
-    };
-
-    class CreateAGemScreen : public ScreenWidget
+    class CreateGem : public ScreenWidget
     {
         Q_OBJECT
     public:
-        explicit CreateAGemScreen(QWidget* parent = nullptr);
-        ~CreateAGemScreen() = default;
+        explicit CreateGem(QWidget* parent = nullptr);
+        ~CreateGem() = default;
 
     signals:
         void CreateButtonPressed();
@@ -103,47 +43,38 @@ namespace O3DE::ProjectManager
         void UpdateNextButtonToCreate();
 
     private:
-        void LoadButtonsFromGemTemplatePaths(QVBoxLayout* firstScreen);
-        QScrollArea* CreateFirstScreen();
-        QScrollArea* CreateSecondScreen();
-        QScrollArea* CreateThirdScreen();
+        void LoadButtonsFromGemTemplatePaths(QVBoxLayout* gemSetupLayout);
+        QScrollArea* CreateGemSetupScrollArea();
+        QScrollArea* CreateGemDetailsScrollArea();
+        QScrollArea* CreateGemCreatorScrollArea();
         bool ValidateGemTemplateLocation();
         bool ValidateGemDisplayName();
-        bool ValidateGemSystemName();
+        bool ValidateGemName();
         bool ValidateLicenseName();
-        bool ValidateGlobalGemTag();
-        bool ValidateOptionalGemTags();
-        bool ValidateCreatorName();
         bool ValidateRepositoryURL();
-        void AddDropdownActions(FormComboBoxWidget* dropdown);
 
-        //First Screen
+        //Gem Setup
         QVector<TemplateInfo> m_gemTemplates;
         QButtonGroup* m_radioButtonGroup;
         QRadioButton* m_formFolderRadioButton = nullptr;
         FormFolderBrowseEditWidget* m_gemTemplateLocation = nullptr;
 
-        //Second Screen
+        //Gem Details
         FormLineEditWidget* m_gemDisplayName = nullptr;
-        FormLineEditWidget* m_gemSystemName = nullptr;
+        FormLineEditWidget* m_gemName = nullptr;
         FormLineEditWidget* m_gemSummary = nullptr;
         FormLineEditWidget* m_requirements = nullptr;
         FormLineEditWidget* m_license = nullptr;
         FormLineEditWidget* m_licenseURL = nullptr;
-        FormLineEditWidget* m_origin = nullptr;
-        FormLineEditWidget* m_originURL = nullptr;
         FormLineEditWidget* m_userDefinedGemTags = nullptr;
         FormFolderBrowseEditWidget* m_gemLocation = nullptr;
-        FormComboBoxWidget* m_firstDropdown = nullptr;
-        FormComboBoxWidget* m_secondDropdown = nullptr;
-        FormComboBoxWidget* m_thirdDropdown = nullptr;
-        FormFolderBrowseEditWidget* m_gemIconPath = nullptr;
+        FormLineEditWidget* m_gemIconPath = nullptr;
         FormLineEditWidget* m_documentationURL = nullptr;
 
-        //Third Screen
-        FormLineEditWidget* m_creatorName = nullptr;
+        //Gem Creator
+        FormLineEditWidget* m_origin = nullptr;
+        FormLineEditWidget* m_originURL = nullptr;
         FormLineEditWidget* m_repositoryURL = nullptr;
-        
 
         TabWidget* m_tabWidget;
 
@@ -151,7 +82,7 @@ namespace O3DE::ProjectManager
         QPushButton* m_backButton = nullptr;
         QPushButton* m_nextButton = nullptr;
 
-        GemInfo m_createAGemInfo;
+        GemInfo m_createGemInfo;
     };
 
 

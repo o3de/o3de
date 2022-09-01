@@ -523,7 +523,7 @@ namespace O3DE::ProjectManager
         gemMenu->addAction( tr("Show Gem Repos"), [this]() { emit OpenGemsRepo(); });
         gemMenu->addSeparator();
         gemMenu->addAction( tr("Add Existing Gem"), [this]() { emit AddGem(); });
-        gemMenu->addAction( tr("Create a new Gem.."), [this]() { emit CreateANewGem(); });
+        gemMenu->addAction( tr("Create a new Gem.."), [this]() { emit CreateGem(); });
 
         QPushButton* gemMenuButton = new QPushButton(this);
         gemMenuButton->setObjectName("gemCatalogMenuButton");

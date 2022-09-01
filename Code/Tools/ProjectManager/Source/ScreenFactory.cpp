@@ -62,8 +62,8 @@ namespace O3DE::ProjectManager
         case (ProjectManagerScreen::GemRepos):
             newScreen = new GemRepoScreen(parent);
             break;
-        case (ProjectManagerScreen::CreateAGem):
-            newScreen = new CreateAGemScreen(parent);
+        case (ProjectManagerScreen::CreateGem):
+            newScreen = new CreateGem(parent);
             break;
         case (ProjectManagerScreen::Empty):
         default:
