@@ -45,7 +45,7 @@ void CalculateLighting_BasePBR(Surface surface, float4 screenPosition, inout Lig
     ApplyIBL(surface, lightingData);
 
     // Finalize Lighting
-    lightingData.FinalizeLighting();
+    lightingData.FinalizeLighting(surface);
 }
 
 LightingData EvaluateLighting_BasePBR(Surface surface, float4 screenPosition)

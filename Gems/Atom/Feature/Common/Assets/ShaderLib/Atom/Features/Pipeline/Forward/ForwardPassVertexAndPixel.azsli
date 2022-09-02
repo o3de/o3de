@@ -101,10 +101,12 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
                     geoData.tangents[MaterialSrg::m_normalMapUvIndex], geoData.bitangents[MaterialSrg::m_normalMapUvIndex],
                     surface.baseColor, surface.albedo, surface.roughnessLinear, surface.metallic);
 
+#if ENABLE_SHADER_DEBUGGING
     if(any(customDebugFloats))
     {
         OUT.m_diffuseColor.rgb *= customDebugFloats.rgb;
     }
+#endif
 
     return OUT;
 }

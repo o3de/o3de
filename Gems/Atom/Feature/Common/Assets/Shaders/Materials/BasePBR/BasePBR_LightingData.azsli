@@ -59,7 +59,7 @@ class LightingData_BasePBR
 
     void Init(float3 positionWS, float3 normal, float roughnessLinear);
     void CalculateMultiscatterCompensation(float3 specularF0, bool enabled);
-    void FinalizeLighting();
+    void FinalizeLighting(Surface surface);
 };
 
 void LightingData_BasePBR::Init(float3 positionWS, float3 normal, float roughnessLinear)
@@ -87,7 +87,7 @@ void LightingData_BasePBR::CalculateMultiscatterCompensation(float3 specularF0, 
     multiScatterCompensation = GetMultiScatterCompensation(specularF0, brdf, enabled);
 }
 
-void LightingData_BasePBR::FinalizeLighting()
+void LightingData_BasePBR::FinalizeLighting(Surface surface)
 {
     specularLighting *= specularOcclusion;
     specularLighting += emissiveLighting;
@@ -100,4 +100,12 @@ void LightingData_BasePBR::FinalizeLighting()
     {
         diffuseLighting = float3(0, 0, 0);
     }
+
+    // Transmitted light
+#if ENABLE_TRANSMISSION
+    if(o_transmission_mode != TransmissionMode::None)
+    {
+        diffuseLighting += translucentBackLighting * surface.transmission.tint;
+    }
+#endif
 }
