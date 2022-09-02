@@ -477,7 +477,7 @@ namespace AzToolsFramework
             ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterVisible, clusterId, visible);
     }
 
-    [[maybe_unused]] static void SetViewportUiSwitcherVisible(const ViewportUi::SwitcherId switcherId, const bool visible)
+    static void SetViewportUiSwitcherVisible(const ViewportUi::SwitcherId switcherId, const bool visible)
     {
         ViewportUi::ViewportUiRequestBus::Event(
             ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherVisible, switcherId, visible);
