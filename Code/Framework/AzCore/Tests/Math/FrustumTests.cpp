@@ -698,7 +698,7 @@ namespace UnitTest
         {
             for (uint32_t j = i + 1; j < corners.size(); ++j)
             {
-                EXPECT_FALSE(corners.at(i).IsClose(corners.at(j)));
+                EXPECT_THAT(corners.at(i), testing::Not(IsClose(corners.at(j))));
             }
         }
 
@@ -708,8 +708,8 @@ namespace UnitTest
             uint32_t onPlaneCount = 0;
             for (uint32_t planeId = 0; planeId < AZ::Frustum::PlaneId::MAX; ++planeId)
             {
-                float distanceToPlane = viewFrustum.GetPlane(AZ::Frustum::PlaneId(planeId)).GetPointDist(corner);
-                if (abs(distanceToPlane) < 0.001f)
+                const float distanceToPlane = viewFrustum.GetPlane(AZ::Frustum::PlaneId(planeId)).GetPointDist(corner);
+                if (AZStd::abs(distanceToPlane) < 0.001f)
                 {
                     ++onPlaneCount;
                 }

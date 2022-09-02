@@ -262,7 +262,7 @@ namespace AZ
             //! @param frustum       The frustum
             //! @param color         The color to draw the frustum
             //! @param drawNormals   If true, frustum plane normals will be drawn as lines
-            //! @param style         The draw style (point, wireframe, solid, shaded etc)
+            //! @param style         The draw style (point, wireframe, solid) Shaded not currently supported.
             //! @param depthTest     If depth testing should be enabled
             //! @param depthWrite    If depth writing should be enabled
             //! @param faceCull      Which (if any) facing triangles should be culled

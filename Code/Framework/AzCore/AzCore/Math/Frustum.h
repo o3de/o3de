@@ -70,7 +70,8 @@ namespace AZ
             False,
         };
 
-        enum CornerIndices {
+        enum CornerIndices
+        {
             NearTopLeft, NearTopRight, NearBottomLeft, NearBottomRight,
             FarTopLeft, FarTopRight, FarBottomLeft, FarBottomRight,
             Count,

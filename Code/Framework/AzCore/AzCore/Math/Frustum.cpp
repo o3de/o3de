@@ -240,7 +240,7 @@ namespace AZ
 
     bool Frustum::GetCorners(CornerVertexArray& corners) const
     {
-        using namespace ShapeIntersection;
+        using ShapeIntersection::IntersectThreePlanes;
 
         return
             IntersectThreePlanes(GetPlane(Near), GetPlane(Top), GetPlane(Left), corners[NearTopLeft]) &&

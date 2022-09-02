@@ -613,17 +613,18 @@ namespace AZ
                     FarBottomLeft = Frustum::CornerIndices::FarBottomLeft,
                     FarBottomRight = Frustum::CornerIndices::FarBottomRight,
                 };
-                
+
+                RPI::AuxGeomDraw::AuxGeomDynamicIndexedDrawArguments drawArgs;
+                drawArgs.m_verts = corners.data();
+                drawArgs.m_vertCount = 8;
+                drawArgs.m_colors = &color;
+                drawArgs.m_colorCount = 1;
+                drawArgs.m_depthTest = depthTest;
+                drawArgs.m_depthWrite = depthWrite;
+                drawArgs.m_viewProjectionOverrideIndex = viewProjOverrideIndex;
+
                 if (style == DrawStyle::Point)
                 {
-                    RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments drawArgs;
-                    drawArgs.m_verts = corners.data();
-                    drawArgs.m_vertCount = 8;
-                    drawArgs.m_colors = &color;
-                    drawArgs.m_colorCount = 1;
-                    drawArgs.m_depthTest = depthTest;
-                    drawArgs.m_depthWrite = depthWrite;
-                    drawArgs.m_viewProjectionOverrideIndex = viewProjOverrideIndex;
                     DrawPoints(drawArgs);
                 }
                 else
@@ -649,16 +650,8 @@ namespace AZ
                         NearBottomRight, FarBottomRight,
                     };
 
-                    RPI::AuxGeomDraw::AuxGeomDynamicIndexedDrawArguments drawArgs;
-                    drawArgs.m_verts = corners.data();
-                    drawArgs.m_vertCount = 8;
                     drawArgs.m_indices = lineIndices;
                     drawArgs.m_indexCount = 24;
-                    drawArgs.m_colors = &color;
-                    drawArgs.m_colorCount = 1;
-                    drawArgs.m_depthTest = depthTest;
-                    drawArgs.m_depthWrite = depthWrite;
-                    drawArgs.m_viewProjectionOverrideIndex = viewProjOverrideIndex;
                     DrawLines(drawArgs);
 
                     if (style == DrawStyle::Solid || style == DrawStyle::Shaded)
@@ -696,7 +689,6 @@ namespace AZ
                         drawArgs.m_indices = triangleIndices;
                         drawArgs.m_indexCount = 36;
                         drawArgs.m_colors = &transparentColor;
-                        drawArgs.m_opacityType = OpacityType::Translucent;
                         DrawTriangles(drawArgs, faceCull);
                     }
                 }
@@ -745,7 +737,7 @@ namespace AZ
                     planeNormalLineArgs.m_vertCount = 12;
                     planeNormalLineArgs.m_colors = planeNormalColors;
                     planeNormalLineArgs.m_colorCount = planeNormalLineArgs.m_vertCount;
-                    planeNormalLineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
+                    planeNormalLineArgs.m_depthTest = depthTest;
                     DrawLines(planeNormalLineArgs);
                 }
             }
