@@ -1192,10 +1192,19 @@ namespace AZ
 
             // set the raytracing transparency from the material opacity factor
             float opacity = 1.0f;
-            propertyIndex = material->FindPropertyIndex(AZ::Name("opacity.factor"));
+            propertyIndex = material->FindPropertyIndex(AZ::Name("opacity.mode"));
             if (propertyIndex.IsValid())
             {
-                opacity = material->GetPropertyValue<float>(propertyIndex);
+                // only query the opacity factor if it's a non-Opaque mode
+                uint32_t mode = material->GetPropertyValue<uint32_t>(propertyIndex);
+                if (mode > 0)
+                {
+                    propertyIndex = material->FindPropertyIndex(AZ::Name("opacity.factor"));
+                    if (propertyIndex.IsValid())
+                    {
+                        opacity = material->GetPropertyValue<float>(propertyIndex);
+                    }
+                }
             }
 
             subMesh.m_irradianceColor.SetA(opacity);
