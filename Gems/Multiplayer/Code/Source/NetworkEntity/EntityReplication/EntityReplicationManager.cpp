@@ -554,6 +554,7 @@ namespace Multiplayer
             if (entityReplicator->IsMarkedForRemoval())
             {
                 AZLOG(NET_RepDeletes, "Got a replicator delete message that is a duplicate id %llu remote host %s", static_cast<AZ::u64>(updateMessage.GetEntityId()), GetRemoteHostId().GetString().c_str());
+                return true;
             }
             else if (entityReplicator->OwnsReplicatorLifetime())
             {
