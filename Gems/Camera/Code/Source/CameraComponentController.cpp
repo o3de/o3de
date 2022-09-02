@@ -390,8 +390,9 @@ namespace Camera
         UpdateCamera();
     }
 
-    void CameraComponentController::SetStereoscopicView([[maybe_unused]] const AZ::Quaternion& viewQuat, [[maybe_unused]] uint32_t xrViewIndex)
+    void CameraComponentController::SetXRViewQuaternion([[maybe_unused]] const AZ::Quaternion& viewQuat, [[maybe_unused]] uint32_t xrViewIndex)
     {
+        AZ_Assert(false, "Not implemented");
         // todo:: Needs implementation
     }
 
@@ -516,6 +517,7 @@ namespace Camera
     AZ::RPI::ViewPtr CameraComponentController::GetStereoscopicView([[maybe_unused]] uint32_t viewIndex) const
     {
         //todo:: Needs implementation
+        AZ_Assert(false, "Not implemented");
         return nullptr;
     }
 

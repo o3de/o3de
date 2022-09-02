@@ -86,7 +86,7 @@ namespace AZ
             void SetCameraTransform(const AZ::Matrix3x4& cameraTransform);
 
             //! Sets the viewToClip matrix and recalculates the other matrices
-            void SetViewToClipMatrix(const AZ::Matrix4x4& viewToClip, bool reverseDepth = true);
+            void SetViewToClipMatrix(const AZ::Matrix4x4& viewToClip);
 
             //! Sets the viewToClip matrix and recalculates the other matrices for stereoscopic projection
             void SetStereoscopicViewToClipMatrix(const AZ::Matrix4x4& viewToClip, bool reverseDepth = true);

@@ -114,7 +114,7 @@ namespace Camera
         //! Sets the Quaternion related to a stereoscopic view for a camera with the provided view index related to your eye.
         //! @params viewQuat Used to cache view orientation data from the XR device
         //! @params xrViewIndex View index related to the pipeline associated with a specific eye
-        virtual void SetStereoscopicView(const AZ::Quaternion& viewQuat, uint32_t xrViewIndex) = 0;
+        virtual void SetXRViewQuaternion(const AZ::Quaternion& viewQuat, uint32_t xrViewIndex) = 0;
 
         //! Makes the camera the active view
         virtual void MakeActiveView() = 0;

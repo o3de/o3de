@@ -173,7 +173,7 @@ namespace AZ
             m_onWorldToClipMatrixChange.Signal(m_worldToClipMatrix);
         }        
 
-        void View::SetViewToClipMatrix(const AZ::Matrix4x4& viewToClip, bool reverseDepth)
+        void View::SetViewToClipMatrix(const AZ::Matrix4x4& viewToClip)
         {
             m_viewToClipMatrix = viewToClip;
             m_clipToViewMatrix = m_viewToClipMatrix.GetInverseFull();
@@ -181,35 +181,24 @@ namespace AZ
             m_clipToWorldMatrix = m_worldToClipMatrix.GetInverseFull();
 
             // Update z depth constant simultaneously
-            if (reverseDepth)
-            {
-                // zNear -> n, zFar -> f
-                // A = n / (f - n), B = nf / (f - n) 
-                // the formula of A and B should be the same as projection matrix's definition 
-                // currently defined in MakePerspectiveFovMatrixRH in MatrixUtil.cpp
-                double A = m_viewToClipMatrix.GetElement(2, 2);
-                double B = m_viewToClipMatrix.GetElement(2, 3);
+            // zNear -> n, zFar -> f
+            // A = f / (n - f), B = nf / (n - f)
+            double A = m_viewToClipMatrix.GetElement(2, 2);
+            double B = m_viewToClipMatrix.GetElement(2, 3);
 
-                // Based on linearZ = 2fn / (depth*(f-n) - n)
-                m_linearizeDepthConstants.SetX(float(B / A));  //<----f
-                m_linearizeDepthConstants.SetY(float(B / (A + 1.0)));  //<----n
-                m_linearizeDepthConstants.SetZ(float((B * B) / (A * (A + 1.0))));  //<----nf
-                m_linearizeDepthConstants.SetW(float(-B / (A * (A + 1.0))));  //<-----f-n
-            }
-            else
-            {
-                // Update z depth constant simultaneously
-                // zNear -> n, zFar -> f
-                // A = f / (n - f), B = nf / (n - f)
-                double A = m_viewToClipMatrix.GetElement(2, 2);
-                double B = m_viewToClipMatrix.GetElement(2, 3);
+            // Based on linearZ = fn / (depth*(f-n) - f)
+            m_linearizeDepthConstants.SetX(float(B / A)); //<------------n
+            m_linearizeDepthConstants.SetY(float(B / (A + 1.0))); //<---------f
+            m_linearizeDepthConstants.SetZ(float((B * B) / (A * (A + 1.0)))); //<-----nf
+            m_linearizeDepthConstants.SetW(float(-B / (A * (A + 1.0)))); //<------f-n
 
-                // Based on linearZ = 2fn / (depth*(n-f) - f)
-                m_linearizeDepthConstants.SetX(float(B / A));  //<------------n
-                m_linearizeDepthConstants.SetY(float(B / (A + 1.0)));  //<---------f
-                m_linearizeDepthConstants.SetZ(float((B * B) / (A * (A + 1.0))));  //<-----nf
-                m_linearizeDepthConstants.SetW(float(-B / (A * (A + 1.0)))); //<------n - f
-            }
+            // For reverse depth the expression we dont have to do anything different as m_linearizeDepthConstants works out to be the same.
+            // A = n / (f - n), B = nf / (f - n)
+            // Based on linearZ = fn / (depth*(n-f) - n)
+            //m_linearizeDepthConstants.SetX(float(B / A)); //<----f
+            //m_linearizeDepthConstants.SetY(float(B / (A + 1.0))); //<----n
+            //m_linearizeDepthConstants.SetZ(float((B * B) / (A * (A + 1.0)))); //<----nf
+            //m_linearizeDepthConstants.SetW(float(-B / (A * (A + 1.0)))); //<-----n-f
 
             double tanHalfFovX = m_clipToViewMatrix.GetElement(0, 0);
             double tanHalfFovY = m_clipToViewMatrix.GetElement(1, 1);
@@ -245,11 +234,11 @@ namespace AZ
                 double A = m_viewToClipMatrix.GetElement(2, 2);
                 double B = m_viewToClipMatrix.GetElement(2, 3);
 
-                // Based on linearZ = 2fn / (depth*(f-n) - 2n)
+                // Based on linearZ = 2fn / (depth*(n-f) - 2n)
                 m_linearizeDepthConstants.SetX(float(B / A)); //<----f
                 m_linearizeDepthConstants.SetY(float((2 * B) / (A + 2.0))); //<--- 2n
                 m_linearizeDepthConstants.SetZ(float((2 * B * B) / (A * (A + 2.0)))); //<-----2fn
-                m_linearizeDepthConstants.SetW(float((-2 * B) / (A * (A + 2.0)))); //<------f-n
+                m_linearizeDepthConstants.SetW(float((-2 * B) / (A * (A + 2.0)))); //<------n-f
             }
             else
             {
@@ -257,11 +246,11 @@ namespace AZ
                 double A = m_viewToClipMatrix.GetElement(2, 2);
                 double B = m_viewToClipMatrix.GetElement(2, 3);
 
-                //Based on linearZ = 2fn / (depth*(n-f) - (f+n))
+                //Based on linearZ = 2fn / (depth*(f-n) - (-f-n))
                 m_linearizeDepthConstants.SetX(float(B / (A + 1.0))); //<----f
-                m_linearizeDepthConstants.SetY(float((2 * B * A)/ ((A + 1.0) * (A - 1.0)))); //<--- f+n
+                m_linearizeDepthConstants.SetY(float((-2 * B * A)/ ((A + 1.0) * (A - 1.0)))); //<--- -f-n
                 m_linearizeDepthConstants.SetZ(float((2 * B * B) / ((A - 1.0) * (A + 1.0)))); //<-----2fn
-                m_linearizeDepthConstants.SetW(float(B / ((A - 1.0) * (A + 1.0)))); //<------n-f
+                m_linearizeDepthConstants.SetW(float((-2 * B) / ((A - 1.0) * (A + 1.0)))); //<------f-n
             }     
 
             // The constants below try to remap 0---1 to -1---+1 and multiply with inverse of projection.

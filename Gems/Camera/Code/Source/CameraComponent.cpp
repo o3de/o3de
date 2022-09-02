@@ -106,7 +106,7 @@ namespace Camera
                 ->Event("SetOrthographic", &CameraRequestBus::Events::SetOrthographic)
                 ->Event("GetOrthographicHalfWidth", &CameraRequestBus::Events::GetOrthographicHalfWidth)
                 ->Event("SetOrthographicHalfWidth", &CameraRequestBus::Events::SetOrthographicHalfWidth)
-                ->Event("SetStereoscopicView", &CameraRequestBus::Events::SetStereoscopicView)
+                ->Event("SetXRViewQuaternion", &CameraRequestBus::Events::SetXRViewQuaternion)
                 ->Event("ScreenToWorld", &CameraRequestBus::Events::ScreenToWorld)
                 ->Event("ScreenNdcToWorld", &CameraRequestBus::Events::ScreenNdcToWorld)
                 ->Event("WorldToScreen", &CameraRequestBus::Events::WorldToScreen)

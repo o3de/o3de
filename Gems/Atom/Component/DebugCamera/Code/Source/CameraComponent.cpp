@@ -270,7 +270,7 @@ namespace AZ
             return 0.0f;
         }
 
-        void CameraComponent::SetStereoscopicView(const AZ::Quaternion& viewQuat, uint32_t xrViewIndex)
+        void CameraComponent::SetXRViewQuaternion(const AZ::Quaternion& viewQuat, uint32_t xrViewIndex)
         {
             AZ_Assert(xrViewIndex < AZ::RPI::XRNumControllers, "Xr view index is out of range.");
             m_stereoscopicViewQuats[xrViewIndex] = viewQuat;
@@ -398,7 +398,7 @@ namespace AZ
                 m_componentConfig.m_depthNear,
                 m_componentConfig.m_depthFar,
                 reverseDepth);
-            m_cameraViews[static_cast<uint32_t>(ViewType::Default)]->SetViewToClipMatrix(viewToClipMatrix, reverseDepth);
+            m_cameraViews[static_cast<uint32_t>(ViewType::Default)]->SetViewToClipMatrix(viewToClipMatrix);
 
             //Update stereoscopic projection matrix
             if (m_xrSystem)

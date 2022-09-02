@@ -104,7 +104,7 @@ namespace AZ
             void SetFrustumHeight(float height) override;
             void SetOrthographic(bool orthographic) override;
             void SetOrthographicHalfWidth(float halfWidth) override;
-            void SetStereoscopicView(const AZ::Quaternion& viewQuat, uint32_t xrViewIndex) override;
+            void SetXRViewQuaternion(const AZ::Quaternion& viewQuat, uint32_t xrViewIndex) override;
 
             void MakeActiveView() override;
             bool IsActiveView() override;
