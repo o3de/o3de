@@ -307,17 +307,22 @@ namespace AZ
                     ->Event("CaptureScreenshot", &FrameCaptureRequestBus::Events::CaptureScreenshot)
                     ->Event("CaptureScreenshotWithPreview", &FrameCaptureRequestBus::Events::CaptureScreenshotWithPreview)
                     ->Event("CapturePassAttachment", &FrameCaptureRequestBus::Events::CapturePassAttachment)
-                    ->Event("SetScreenshotFolder", &FrameCaptureRequestBus::Events::SetScreenshotFolder)
-                    ->Event("SetTestEnvPath", &FrameCaptureRequestBus::Events::SetTestEnvPath)
-                    ->Event("SetOfficialBaselineImageFolder", &FrameCaptureRequestBus::Events::SetOfficialBaselineImageFolder)
-                    ->Event("SetLocalBaselineImageFolder", &FrameCaptureRequestBus::Events::SetLocalBaselineImageFolder)
-                    ->Event("BuildScreenshotFilePath", &FrameCaptureRequestBus::Events::BuildScreenshotFilePath)
-                    ->Event("BuildOfficialBaselineFilePath", &FrameCaptureRequestBus::Events::BuildOfficialBaselineFilePath)
-                    ->Event("BuildLocalBaselineFilePath", &FrameCaptureRequestBus::Events::BuildLocalBaselineFilePath)
                     ->Event("CompareScreenshots", &FrameCaptureRequestBus::Events::CompareScreenshots)
                     ;
 
                 FrameCaptureNotificationBusHandler::Reflect(context);
+
+                behaviorContext->EBus<FrameCapturePathManagementRequestBus>("FrameCapturePathManagementRequestBus")
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                    ->Attribute(AZ::Script::Attributes::Module, "atom")
+                    ->Event("SetScreenshotFolder", &FrameCapturePathManagementRequestBus::Events::SetScreenshotFolder)
+                    ->Event("SetTestEnvPath", &FrameCapturePathManagementRequestBus::Events::SetTestEnvPath)
+                    ->Event("SetOfficialBaselineImageFolder", &FrameCapturePathManagementRequestBus::Events::SetOfficialBaselineImageFolder)
+                    ->Event("SetLocalBaselineImageFolder", &FrameCapturePathManagementRequestBus::Events::SetLocalBaselineImageFolder)
+                    ->Event("BuildScreenshotFilePath", &FrameCapturePathManagementRequestBus::Events::BuildScreenshotFilePath)
+                    ->Event("BuildOfficialBaselineFilePath", &FrameCapturePathManagementRequestBus::Events::BuildOfficialBaselineFilePath)
+                    ->Event("BuildLocalBaselineFilePath", &FrameCapturePathManagementRequestBus::Events::BuildLocalBaselineFilePath)
+                    ;
             }
         }
 

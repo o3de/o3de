@@ -16,6 +16,7 @@
 #include <AzCore/std/parallel/atomic.h>
 
 #include <Atom/Feature/Utils/FrameCaptureBus.h>
+#include <Atom/Feature/Utils/FrameCapturePathManagementBus.h>
 
 #include <Atom/RPI.Public/Pass/AttachmentReadback.h>
 
@@ -27,6 +28,7 @@ namespace AZ
         class FrameCaptureSystemComponent final
             : public AZ::Component
             , public FrameCaptureRequestBus::Handler
+            , public FrameCapturePathManagementRequestBus::Handler
             , public AZ::SystemTickBus::Handler
         {
         public:
