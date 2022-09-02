@@ -242,7 +242,7 @@ namespace AtomToolsFramework
         m_menuTools->addSeparator();
 
         BuildLayoutsMenu();
-        m_menuTools->addSeparator();
+        m_menuView->addSeparator();
 
         m_menuTools->addAction(tr("&Settings..."), [this]() {
             OpenSettingsDialog();
@@ -405,7 +405,7 @@ namespace AtomToolsFramework
 
     void AtomToolsMainWindow::BuildLayoutsMenu()
     {
-        QMenu* layoutSettingsMenu = m_menuTools->addMenu(tr("Layouts"));
+        QMenu* layoutSettingsMenu = m_menuView->addMenu(tr("Layouts"));
         connect(
             layoutSettingsMenu,
             &QMenu::aboutToShow,

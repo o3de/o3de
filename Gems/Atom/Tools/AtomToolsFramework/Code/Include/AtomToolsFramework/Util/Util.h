@@ -204,5 +204,5 @@ namespace AtomToolsFramework
     // @param menu The menu where the actions will be inserted
     // @param registryKey The path to the registry setting where script categories are registered
     // @param arguments The list of arguments passed into the script when executed
-    void AddRegisteredScriptToMenu(QMenu* menu, const AZStd::string& registryKey, const AZStd::vector<AZStd::string_view>& arguments);
+    void AddRegisteredScriptToMenu(QMenu* menu, const AZStd::string& registryKey, const AZStd::vector<AZStd::string>& arguments);
 } // namespace AtomToolsFramework

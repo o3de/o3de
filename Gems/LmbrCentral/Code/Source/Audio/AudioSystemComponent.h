@@ -11,10 +11,7 @@
 #include <AzCore/Component/Component.h>
 
 #include <LmbrCentral/Audio/AudioSystemComponentBus.h>
-
-#include <CrySystemBus.h>
-#include <IAudioInterfacesCommonData.h>
-#include <ILevelSystem.h>
+#include <AzFramework/API/ApplicationAPI.h>
 
 namespace LmbrCentral
 {
@@ -26,8 +23,7 @@ namespace LmbrCentral
     class AudioSystemComponent
         : public AZ::Component
         , protected AudioSystemComponentRequestBus::Handler
-        , public CrySystemEventBus::Handler
-        , public ILevelSystemListener
+        , protected AzFramework::LevelSystemLifecycleNotificationBus::Handler
     {
     public:
         AZ_COMPONENT(AudioSystemComponent, "{666E28D2-FC99-4D41-861D-3758C5070653}");
@@ -65,12 +61,7 @@ namespace LmbrCentral
         void LevelUnloadAudio() override;
 
         ////////////////////////////////////////////////////////////////////////
-        // CrySystemEventBus::Handler interface implementation
-        void OnCrySystemInitialized(ISystem&, const SSystemInitParams&) override;
-        void OnCrySystemShutdown(ISystem&) override;
-
-        ////////////////////////////////////////////////////////////////////////
-        // ILevelSystemListener interface implementation
+        // AzFramework::LevelSystemLifecycleNotificationBus::Handler implementation
         void OnLoadingStart(const char* levelName) override;
         void OnUnloadComplete(const char* levelName) override;
     };
