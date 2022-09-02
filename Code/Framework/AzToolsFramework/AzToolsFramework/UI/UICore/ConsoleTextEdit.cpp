@@ -6,8 +6,8 @@
  *
  */
 
-#include <AzToolsFramework/UI/UICore/ConsoleTextEdit.hxx>
 #include <AzCore/Debug/Trace.h>
+#include <AzToolsFramework/UI/UICore/ConsoleTextEdit.hxx>
 #include <QMenu>
 
 namespace AzToolsFramework
@@ -41,7 +41,14 @@ namespace AzToolsFramework
         deleteAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         deleteAction->setShortcut(QKeySequence::Delete);
         deleteAction->setEnabled(false);
-        connect(deleteAction, &QAction::triggered, this, [=]() { textCursor().removeSelectedText(); } );
+        connect(
+            deleteAction,
+            &QAction::triggered,
+            this,
+            [=]()
+            {
+                textCursor().removeSelectedText();
+            });
         addAction(deleteAction);
 
         QAction* clearAction = m_contextMenu->addAction(tr("Clear"));
@@ -60,7 +67,11 @@ namespace AzToolsFramework
 
         connect(this, &QPlainTextEdit::copyAvailable, copyAction, &QAction::setEnabled);
         connect(this, &QPlainTextEdit::copyAvailable, deleteAction, &QAction::setEnabled);
-        connect(this, &QPlainTextEdit::textChanged, selectAllAction, [=]
+        connect(
+            this,
+            &QPlainTextEdit::textChanged,
+            selectAllAction,
+            [=]
             {
                 if (document() && !document()->isEmpty())
                 {
@@ -75,7 +86,7 @@ namespace AzToolsFramework
             });
     }
 
-    bool ConsoleTextEdit::searchEnabled() 
+    bool ConsoleTextEdit::searchEnabled()
     {
         AZ_Assert(m_searchAction, "Search action is missing.");
         return m_searchAction->isVisible();
@@ -110,8 +121,8 @@ namespace AzToolsFramework
         return QPlainTextEdit::event(theEvent);
     }
 
-    void ConsoleTextEdit::showContextMenu(const QPoint &pt)
+    void ConsoleTextEdit::showContextMenu(const QPoint& pt)
     {
         m_contextMenu->exec(mapToGlobal(pt));
     }
-}
+} // namespace AzToolsFramework

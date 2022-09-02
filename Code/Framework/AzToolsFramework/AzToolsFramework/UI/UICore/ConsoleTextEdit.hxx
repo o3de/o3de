@@ -10,8 +10,8 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QPlainTextEdit>
-#include <QScopedPointer>
 #include <QPointer>
+#include <QScopedPointer>
 
 #endif
 
@@ -19,25 +19,23 @@ class QMenu;
 
 namespace AzToolsFramework
 {
-class ConsoleTextEdit
-    : public QPlainTextEdit
-{
-    Q_OBJECT
-    Q_PROPERTY(bool searchEnabled READ searchEnabled WRITE setSearchEnabled)
-public:
+    class ConsoleTextEdit : public QPlainTextEdit
+    {
+        Q_OBJECT
+        Q_PROPERTY(bool searchEnabled READ searchEnabled WRITE setSearchEnabled)
+    public:
+        explicit ConsoleTextEdit(QWidget* parent = nullptr);
+        virtual bool event(QEvent* theEvent) override;
 
-    explicit ConsoleTextEdit( QWidget* parent = nullptr);
-    virtual bool event(QEvent* theEvent) override;
+        bool searchEnabled();
+        void setSearchEnabled(bool enabled);
+    Q_SIGNALS:
+        void searchBarRequested();
 
-    bool searchEnabled();
-    void setSearchEnabled(bool enabled);
-Q_SIGNALS:
-    void searchBarRequested();
+    private:
+        void showContextMenu(const QPoint& pt);
 
-private:
-    void showContextMenu(const QPoint& pt);
-    
-    QScopedPointer<QMenu> m_contextMenu;
-    QPointer<QAction> m_searchAction;
-};
-}
+        QScopedPointer<QMenu> m_contextMenu;
+        QPointer<QAction> m_searchAction;
+    };
+} // namespace AzToolsFramework
