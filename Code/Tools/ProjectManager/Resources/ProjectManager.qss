@@ -41,7 +41,6 @@ QTabBar::tab:text {
     min-height:230px;
     margin: 0px;
     text-align:left;
-
 }
 
 QTabWidget#createGemTab::tab-bar {
@@ -148,12 +147,7 @@ QTabBar::tab:focus {
 }
 
 #createAGem #formFrame {
-    max-width: 840px;
-    background-color: #444444;
-    border:1px solid #dddddd;
-    border-radius: 4px;
-    padding: 0px 10px 2px 6px;
-    margin-top:10px;
+    margin-left: 0px;
 }
 
 #formFrame[Focus="true"] {
@@ -261,6 +255,7 @@ QTabBar::tab:focus {
 #createAGemRightPane {
     padding-top: 25px;
     padding-left: 60px;
+    min-width: 660;
 }
 
 #createAGem #QRadioButton{

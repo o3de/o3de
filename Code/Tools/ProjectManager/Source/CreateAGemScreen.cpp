@@ -76,7 +76,7 @@ namespace O3DE::ProjectManager
     class TabWidget : public QTabWidget
     {
     public:
-        TabWidget(QWidget* parent = 0)
+        TabWidget(QWidget* parent = nullptr)
             : QTabWidget(parent)
         {
             setTabBar(new TabBar());
@@ -134,15 +134,14 @@ namespace O3DE::ProjectManager
             m_gemTemplates = templatesResult.GetValue();
             for (int index = 0; index < m_gemTemplates.size(); ++index)
             {
-                ProjectTemplateInfo gemTemplate = m_gemTemplates.at(index);
+                const ProjectTemplateInfo& gemTemplate = m_gemTemplates.at(index);
 
                 QRadioButton* button = new QRadioButton(gemTemplate.m_displayName);
                 button->setObjectName("createAGem");
                 m_radioButtonGroup->addButton(button, index);
 
-                QLabel* buttonSubtext = new QLabel();
+                QLabel* buttonSubtext = new QLabel(gemTemplate.m_summary);
                 buttonSubtext->setObjectName("createAGemRadioButtonSubtext");
-                buttonSubtext->setText(gemTemplate.m_summary);
                 if (index == 0)
                 {
                     button->click();
@@ -157,7 +156,6 @@ namespace O3DE::ProjectManager
     {
         QScrollArea* gemSetupScrollArea = new QScrollArea();
         gemSetupScrollArea->setWidgetResizable(true);
-        gemSetupScrollArea->setMinimumWidth(660);
         gemSetupScrollArea->setObjectName("createAGemRightPane");
         QFrame* gemSetupFrame = new QFrame();
 
@@ -168,12 +166,10 @@ namespace O3DE::ProjectManager
         gemSetupLayout->setAlignment(Qt::AlignTop);
         gemSetupLayout->addWidget(gemSetupFrame);
         gemSetupScrollWidget->setLayout(gemSetupLayout);
-        QLabel* rightPaneHeader = new QLabel();
+        QLabel* rightPaneHeader = new QLabel(tr("Please Choose a Gem Template"));
         rightPaneHeader->setObjectName("rightPaneHeader");
-        rightPaneHeader->setText(tr("Please Choose a Gem Template"));
-        QLabel* rightPaneSubheader = new QLabel();
+        QLabel* rightPaneSubheader = new QLabel(tr("Gems can contain assets new functionality and such as scripts, animations, meshes, textures, and more."));
         rightPaneSubheader->setObjectName("rightPaneSubheader");
-        rightPaneSubheader->setText(tr("Gems can contain assets new functionality and such as scripts, animations, meshes, textures, and more."));
         gemSetupLayout->addWidget(rightPaneHeader);
         gemSetupLayout->addWidget(rightPaneSubheader);
 
@@ -192,9 +188,8 @@ namespace O3DE::ProjectManager
 
     QScrollArea* CreateGem::CreateGemDetailsScrollArea()
     {
-        QScrollArea* gemDetailsScrollArea = new QScrollArea(this);
+        QScrollArea* gemDetailsScrollArea = new QScrollArea();
         gemDetailsScrollArea->setWidgetResizable(true);
-        gemDetailsScrollArea->setMinimumWidth(660);
         gemDetailsScrollArea->setObjectName("createAGemRightPane");
         QFrame* gemDetailsFrame = new QFrame();
 
@@ -206,9 +201,8 @@ namespace O3DE::ProjectManager
         gemDetailsLayout->addWidget(gemDetailsFrame);
         gemDetailsScrollWidget->setLayout(gemDetailsLayout);
 
-        QLabel* secondRightPaneHeader = new QLabel();
+        QLabel* secondRightPaneHeader = new QLabel(tr("Enter Gem Details"));
         secondRightPaneHeader->setObjectName("rightPaneHeader");
-        secondRightPaneHeader->setText(tr("Enter Gem Details"));
         gemDetailsLayout->addWidget(secondRightPaneHeader);
 
         m_gemName = new FormLineEditWidget(
@@ -255,9 +249,8 @@ namespace O3DE::ProjectManager
 
     QScrollArea* CreateGem::CreateGemCreatorScrollArea()
     {
-        QScrollArea* gemCreatorScrollArea = new QScrollArea(this);
+        QScrollArea* gemCreatorScrollArea = new QScrollArea();
         gemCreatorScrollArea->setWidgetResizable(true);
-        gemCreatorScrollArea->setMinimumWidth(660);
         gemCreatorScrollArea->setObjectName("createAGemRightPane");
         QFrame* gemCreatorFrame = new QFrame();
 
@@ -269,9 +262,8 @@ namespace O3DE::ProjectManager
         gemCreatorLayout->addWidget(gemCreatorFrame);
         gemCreatorScrollWidget->setLayout(gemCreatorLayout);
 
-        QLabel* thirdRightPaneHeader = new QLabel(this);
+        QLabel* thirdRightPaneHeader = new QLabel(tr("Enter your Details"));
         thirdRightPaneHeader->setObjectName("rightPaneHeader");
-        thirdRightPaneHeader->setText(tr("Enter your Details"));
         gemCreatorLayout->addWidget(thirdRightPaneHeader);
 
         m_origin =

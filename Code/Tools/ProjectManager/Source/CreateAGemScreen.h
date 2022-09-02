@@ -55,7 +55,7 @@ namespace O3DE::ProjectManager
 
         //Gem Setup
         QVector<TemplateInfo> m_gemTemplates;
-        QButtonGroup* m_radioButtonGroup;
+        QButtonGroup* m_radioButtonGroup = nullptr;
         QRadioButton* m_formFolderRadioButton = nullptr;
         FormFolderBrowseEditWidget* m_gemTemplateLocation = nullptr;
 
