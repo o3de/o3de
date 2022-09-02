@@ -82,7 +82,9 @@ def TerrainNodes_EntityCreatedOnNodeAdd():
     # Terrain node mapping with the key being the node name and the value is the
     # expected Component that should be added to the Entity created for the node
     areas = {
-        'TerrainLayerSpawnerNode': 'Terrain Layer Spawner'
+        'TerrainMacroMaterialNode': 'Terrain Macro Material',
+        'TerrainLayerSpawnerNode': 'Terrain Layer Spawner',
+        'TerrainSurfaceMaterialsListNode': 'Terrain Surface Materials List',
     }
 
     # Retrieve a mapping of the TypeIds for all the components

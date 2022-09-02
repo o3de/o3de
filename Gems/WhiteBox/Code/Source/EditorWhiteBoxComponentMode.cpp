@@ -359,7 +359,7 @@ namespace WhiteBox
         }
 
         debugDisplay.DepthTestOn();
-        debugDisplay.SetColor(cl_whiteBoxEdgeUserColor);
+        debugDisplay.SetColor(ed_whiteBoxEdgeDefault);
         debugDisplay.SetLineWidth(4.0f);
 
         AZStd::visit(

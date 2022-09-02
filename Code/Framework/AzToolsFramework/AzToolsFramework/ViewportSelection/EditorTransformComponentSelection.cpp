@@ -1423,10 +1423,6 @@ namespace AzToolsFramework
             RotationManipulatorRadius(), AzFramework::ViewportColors::XAxisColor, AzFramework::ViewportColors::YAxisColor,
             AzFramework::ViewportColors::ZAxisColor);
 
-        AZStd::shared_ptr<AngularManipulatorCircleViewFeedback> angularManipulatorCircleViewFeedback =
-            AZStd::make_shared<AngularManipulatorCircleViewFeedback>();
-        rotationManipulators->m_angularManipulatorFeedback = angularManipulatorCircleViewFeedback;
-
         struct SharedRotationState
         {
             AZ::Quaternion m_savedOrientation = AZ::Quaternion::CreateIdentity();
@@ -1438,11 +1434,9 @@ namespace AzToolsFramework
         AZStd::shared_ptr<SharedRotationState> sharedRotationState = AZStd::make_shared<SharedRotationState>();
 
         rotationManipulators->InstallLeftMouseDownCallback(
-            [this, sharedRotationState,
-             angularManipulatorCircleViewFeedback]([[maybe_unused]] const AngularManipulator::Action& action) mutable
+            [this, sharedRotationState](
+                [[maybe_unused]] const AngularManipulator::Action& action) mutable
             {
-                angularManipulatorCircleViewFeedback->m_mostRecentAction = action;
-
                 sharedRotationState->m_savedOrientation = AZ::Quaternion::CreateIdentity();
                 sharedRotationState->m_referenceFrameAtMouseDown = m_referenceFrame;
                 // important to sort entityIds based on hierarchy order when updating transforms
@@ -1458,11 +1452,8 @@ namespace AzToolsFramework
             });
 
         rotationManipulators->InstallMouseMoveCallback(
-            [this, prevModifiers = ViewportInteraction::KeyboardModifiers(), sharedRotationState,
-             angularManipulatorCircleViewFeedback](const AngularManipulator::Action& action) mutable
+            [this, prevModifiers = ViewportInteraction::KeyboardModifiers(), sharedRotationState](const AngularManipulator::Action& action) mutable
             {
-                angularManipulatorCircleViewFeedback->m_mostRecentAction = action;
-
                 const ReferenceFrame referenceFrame = m_spaceCluster.m_spaceLock.value_or(ReferenceFrameFromModifiers(action.m_modifiers));
                 const Influence influence = InfluenceFromModifiers(action.m_modifiers);
 
@@ -1554,10 +1545,8 @@ namespace AzToolsFramework
             });
 
         rotationManipulators->InstallLeftMouseUpCallback(
-            [this, sharedRotationState, angularManipulatorCircleViewFeedback]([[maybe_unused]] const AngularManipulator::Action& action)
+            [this, sharedRotationState]([[maybe_unused]] const AngularManipulator::Action& action)
             {
-                angularManipulatorCircleViewFeedback->m_mostRecentAction = action;
-
                 AzToolsFramework::EditorTransformChangeNotificationBus::Broadcast(
                     &AzToolsFramework::EditorTransformChangeNotificationBus::Events::OnEntityTransformChanged,
                     sharedRotationState->m_entityIds);
