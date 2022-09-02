@@ -948,11 +948,10 @@ void EditorViewportWidget::SetViewportId(int id)
     m_editorViewportSettingsCallbacks->SetAngleSnappingChangedEvent(m_angleSnappingHandler);
 
     m_perspectiveChangeHandler = SandboxEditor::PerspectiveChangedEvent::Handler(
-        [this]()
+        [this](const float fovRadians)
         {
             if (m_viewSourceType == ViewSourceType::None)
             {
-                const float fovRadians = SandboxEditor::CameraDefaultFovRadians();
                 if (m_viewPane)
                 {
                     m_viewPane->OnFOVChanged(fovRadians);

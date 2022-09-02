@@ -20,7 +20,7 @@ namespace SandboxEditor
 {
     using AngleSnappingChangedEvent = AZ::Event<bool>;
     using GridSnappingChangedEvent = AZ::Event<bool>;
-    using PerspectiveChangedEvent = AZ::Event<>;
+    using PerspectiveChangedEvent = AZ::Event<float>;
     using NearFarPlaneChangedEvent = AZ::Event<float>;
 
     //! Set callbacks to listen for editor settings change events.

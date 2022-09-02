@@ -117,7 +117,7 @@ namespace SandboxEditor
                     {
                         if (IsPathAncestorDescendantOrEqual(CameraFovSetting, notifyEventArgs.m_jsonKeyPath))
                         {
-                            m_perspectiveChanged.Signal();
+                            m_perspectiveChanged.Signal(CameraDefaultFovRadians());
                         }
                     });
             }
