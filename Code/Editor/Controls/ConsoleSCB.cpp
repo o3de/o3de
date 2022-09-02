@@ -418,12 +418,10 @@ void CConsoleSCB::RefreshStyle()
         m_colorTable[6] = QColor(0xff, 0xaa, 0x22);     // Warning (Yellow)
     }
 
-    const bool uiAndDark = !GetIEditor()->IsInConsolewMode() && CConsoleSCB::GetCreatedInstance() && m_backgroundTheme == AzToolsFramework::ConsoleColorTheme::Dark;
-
     QColor bgColor;
     if (!GetIEditor()->IsInConsolewMode() && CConsoleSCB::GetCreatedInstance() && m_backgroundTheme == AzToolsFramework::ConsoleColorTheme::Dark)
     {
-        bgColor = Qt::black;
+        bgColor = QColor(0x22, 0x22, 0x22);
         AzQtComponents::ScrollBar::applyLightStyle(ui->textEdit);
     }
     else
@@ -436,8 +434,7 @@ void CConsoleSCB::RefreshStyle()
     m_colorTable[0] = textColor;
     m_colorTable[1] = textColor;
 
-    ui->textEdit->setBackgroundVisible(!uiAndDark);
-    ui->textEdit->setStyleSheet(uiAndDark ? QString() : QString("QPlainTextEdit{ background: %1 }").arg(bgColor.name(QColor::HexRgb)));
+    ui->textEdit->setStyleSheet(QString("background: %1").arg(bgColor.name(QColor::HexRgb)));
 
     // Clear out the console text when we change our background color since
     // some of the previous text colors may not be appropriate for the
