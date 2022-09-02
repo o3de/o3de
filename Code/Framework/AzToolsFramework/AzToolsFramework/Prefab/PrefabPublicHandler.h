@@ -56,6 +56,7 @@ namespace AzToolsFramework
             bool IsOwnedByProceduralPrefabInstance(AZ::EntityId entityId) const override;
             bool IsInstanceContainerEntity(AZ::EntityId entityId) const override;
             bool IsLevelInstanceContainerEntity(AZ::EntityId entityId) const override;
+            bool EntitiesBelongToSameInstance(const EntityIdList& entityIds) const;
             AZ::EntityId GetInstanceContainerEntityId(AZ::EntityId entityId) const override;
             AZ::EntityId GetLevelInstanceContainerEntityId() const override;
             AZ::IO::Path GetOwningInstancePrefabPath(AZ::EntityId entityId) const override;
@@ -82,7 +83,6 @@ namespace AzToolsFramework
             EntityIdList SanitizeEntityIdList(const EntityIdList& entityIds) const;
 
             InstanceOptionalReference GetOwnerInstanceByEntityId(AZ::EntityId entityId) const;
-            bool EntitiesBelongToSameInstance(const EntityIdList& entityIds) const;
             void AddNewEntityToSortOrder(Instance& owningInstance, PrefabDom& domToAddEntityUnder,
                 const EntityAlias& parentEntityAlias, const EntityAlias& entityToAddAlias);
 
