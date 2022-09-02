@@ -222,7 +222,7 @@ namespace UnitTest
 
     protected:
 
-        void PrepareTable(int seed) override
+        void PrepareTable([[maybe_unused]] int seed) override
         {
             AZStd::array<int, 256> randtable;
             std::iota(randtable.begin(), randtable.end(), 0);
