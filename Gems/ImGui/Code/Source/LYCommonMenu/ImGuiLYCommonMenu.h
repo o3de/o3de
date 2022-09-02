@@ -21,7 +21,7 @@ namespace ImGui
     //! ImGuiDropDownState refers to the state of dropdowns of the main menu bar.
     enum class ImGuiDropdownState
     {
-        Displayed,
+        Shown,
         Hidden
     };
 
@@ -60,7 +60,7 @@ namespace ImGui
         bool m_showDeltaTimeGraphs = false;
         ImGui::LYImGuiUtils::HistogramContainer m_deltaTimeHistogram;
         ImGuiDropdownState m_dropdownState = ImGuiDropdownState::Hidden; //!< Keeps the state of the ImGui main menu dropdowns.
-        //! Mark the dropdown for being hiding - this is used to prevent broadcasting that the dropdowns have been hidden
+        //! Mark the dropdown for being hidden - this is used to prevent broadcasting that the dropdowns have been hidden
         //! in the case that the ImGui dropdown context has switched options.
         bool m_markedForHiding = false; 
     };

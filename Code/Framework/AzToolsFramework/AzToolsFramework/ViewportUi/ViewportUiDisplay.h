@@ -70,8 +70,6 @@ namespace AzToolsFramework::ViewportUi::Internal
         void RemoveSwitcherButton(ViewportUiElementId switcherId, ButtonId buttonId);
         void UpdateSwitcher(ViewportUiElementId switcherId);
         void SetSwitcherActiveButton(ViewportUiElementId switcherId, ButtonId buttonId);
-        const bool HideSwitcher(ViewportUiElementId switcherId);
-        const bool ShowSwitcher(ViewportUiElementId switcherId);
 
         void AddTextField(AZStd::shared_ptr<TextField> textField);
         void UpdateTextField(ViewportUiElementId textFieldId);
@@ -104,7 +102,7 @@ namespace AzToolsFramework::ViewportUi::Internal
     private:
         void PrepareWidgetForViewportUi(QPointer<QWidget> widget);
 
-        // ViewportImGuiNotificationsBus overrides ...
+        // ViewportImGuiNotificationBus overrides ...
         void OnImGuiActivated() override;
         void OnImGuiDeactivated() override;
 

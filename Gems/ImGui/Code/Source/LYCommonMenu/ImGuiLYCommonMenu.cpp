@@ -132,11 +132,11 @@ namespace ImGui
         {
             m_markedForHiding = false;
             // this conditional stops the notification from repeatedly broadcasting
-            if (m_dropdownState != ImGuiDropdownState::Displayed)
+            if (m_dropdownState != ImGuiDropdownState::Shown)
             {
-                m_dropdownState = ImGuiDropdownState::Displayed;
+                m_dropdownState = ImGuiDropdownState::Shown;
                 AzFramework::ViewportImGuiNotificationBus::Broadcast(
-                    &AzFramework::ViewportImGuiNotificationBus::Events::OnImGuiDropDownDisplayed);
+                    &AzFramework::ViewportImGuiNotificationBus::Events::OnImGuiDropDownShown);
             }
         }
         else

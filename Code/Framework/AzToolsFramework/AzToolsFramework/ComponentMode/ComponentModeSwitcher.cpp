@@ -442,15 +442,42 @@ namespace AzToolsFramework::ComponentModeFramework
             });
     }
 
-    void ComponentModeSwitcher::OnImGuiDropDownDisplayed()
+    void ComponentModeSwitcher::OnImGuiDropDownShown()
     {
         ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::HideSwitcher, m_switcherId);
+            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherVisible, m_switcherId, false);
+        m_hiddenByImGui = true;
     }
 
     void ComponentModeSwitcher::OnImGuiDropDownHidden()
     {
-        ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::ShowSwitcher, m_switcherId);
+        if (m_hiddenByImGui)
+        {
+            ViewportUi::ViewportUiRequestBus::Event(
+                ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherVisible, m_switcherId, true);
+            // reset hiddenByImGui variable
+            m_hiddenByImGui = false;
+        }
+    }
+
+    void ComponentModeSwitcher::OnImGuiDeactivated()
+    {
+        // when the switcher is hidden by the ImGui, if ImGui is deactivated the drop down is still present and the switcher will
+        // remain hidden, this makes the switcher visible while ImGui is deactivated
+        if (m_hiddenByImGui)
+        {
+            ViewportUi::ViewportUiRequestBus::Event(
+                ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherVisible, m_switcherId, true);
+        }
+    }
+
+    void ComponentModeSwitcher::OnImGuiActivated()
+    {
+        // when the ImGui menu bar gets reactivated, hide the  switcher again
+        if (m_hiddenByImGui)
+        {
+            ViewportUi::ViewportUiRequestBus::Event(
+                ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherVisible, m_switcherId, false);
+        }
     }
 } // namespace AzToolsFramework::ComponentModeFramework

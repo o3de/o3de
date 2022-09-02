@@ -166,28 +166,6 @@ namespace AzToolsFramework::ViewportUi::Internal
         }
     }
 
-    const bool ViewportUiDisplay::HideSwitcher(ViewportUiElementId switcherId)
-    {
-        if (auto switcher = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(switcherId).get()))
-        {
-            bool hidden = switcher->HideSwitcher();
-            return hidden;
-        }
-        // return false if switcher not found
-        return false;
-    }
-
-    const bool ViewportUiDisplay::ShowSwitcher(ViewportUiElementId switcherId)
-    {
-        if (auto switcher = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(switcherId).get()))
-        {
-            bool shown = switcher->ShowSwitcher();
-            return shown;
-        }
-        // return false if switcher not found
-        return false;
-    }
-
     void ViewportUiDisplay::SetSwitcherActiveButton(ViewportUiElementId switcherId, ButtonId buttonId)
     {
         if (auto viewportUiSwitcher = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(switcherId).get()))
