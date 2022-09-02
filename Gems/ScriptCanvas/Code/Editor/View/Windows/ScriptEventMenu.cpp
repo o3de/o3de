@@ -69,8 +69,9 @@ namespace ScriptEvents
                     auto deserializeResult = Deserialize(loadOutcome.GetValue().GetScriptCanvasSerializationData(), MakeInternalGraphEntitiesUnique::Yes);
                     if (deserializeResult.m_isSuccessful)
                     {
+
                         // success
-                        return { SourceHandle(deserializeResult.m_graphDataPtr, path), "" };
+                        return { SourceHandle::FromRelativePath(deserializeResult.m_graphDataPtr, path.Filename()), "" };
                     }
                     else
                     {
@@ -82,12 +83,8 @@ namespace ScriptEvents
                     errorMessage = "Failed to load selected file.";
                 }
             }
-            else
-            {
-                errorMessage = "Failed to select file.";
-            }
 
-            // failure
+            // failure or canceled
             return { SourceHandle(), errorMessage };
         }
 

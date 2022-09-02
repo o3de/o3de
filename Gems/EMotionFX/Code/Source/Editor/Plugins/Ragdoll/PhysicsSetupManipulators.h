@@ -33,8 +33,10 @@ namespace EMotionFX
         bool HasColliders() const;
         bool HasCapsuleCollider() const;
         bool HasJointLimit() const;
+        AZ::Transform GetJointParentFrameWorld() const;
 
         AZ::Transform m_nodeWorldTransform = AZ::Transform::CreateIdentity();
+        AZ::Transform m_parentWorldTransform = AZ::Transform::CreateIdentity();
         Physics::CharacterColliderNodeConfiguration* m_colliderNodeConfiguration = nullptr;
         AzPhysics::JointConfiguration* m_jointConfiguration = nullptr;
         Actor* m_actor = nullptr;
@@ -71,5 +73,16 @@ namespace EMotionFX
         void SetViewportId(AZ::s32 viewportId);
     protected:
         AZ::s32 m_viewportId;
+    };
+
+    //! Used when null mode is selected.
+    class PhysicsSetupManipulatorsNull
+        : public PhysicsSetupManipulatorsBase
+    {
+    public:
+        void Setup([[maybe_unused]] const PhysicsSetupManipulatorData& physicsSetupManipulatorData) override {};
+        void Refresh() override {};
+        void Teardown() override {};
+        void ResetValues() override {};
     };
 } // namespace EMotionFX

@@ -20,7 +20,6 @@
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/Shader/ShaderSystem.h>
-#include <Atom/RPI.Public/Shader/Metrics/ShaderMetricsSystem.h>
 #include <Atom/RPI.Public/GpuQuery/GpuQuerySystem.h>
 #include <Atom/RPI.Public/ViewportContextManager.h>
 
@@ -94,10 +93,12 @@ namespace AZ
             // AZ::Debug::TraceMessageBus::Handler overrides...
             bool OnPreAssert(const char* fileName, int line, const char* func, const char* message) override;
 
-            //Register/Unregister xr system with RPI and RHI
+            // Register/Unregister xr system with RPI and RHI
             void RegisterXRSystem(XRRenderingInterface* xrSystemInterface);
-            void UnRegisterXRSystem();
+            void UnregisterXRSystem();
 
+            // Get the Xr system
+            XRRenderingInterface* GetXRSystem() const override;
         private:
             // Initializes the system assets for tests. Should only be called from tests
             void InitializeSystemAssetsForTests();
@@ -114,7 +115,6 @@ namespace AZ
             MaterialSystem m_materialSystem;
             ModelSystem m_modelSystem;
             ShaderSystem m_shaderSystem;
-            ShaderMetricsSystem m_shaderMetricsSystem;
             BufferSystem m_bufferSystem;
             ImageSystem m_imageSystem;
             PassSystem m_passSystem;

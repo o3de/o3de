@@ -40,6 +40,8 @@ namespace AtomToolsFramework
         //! @returns True if the operation succeeded, otherwise false
         bool Load(const AZStd::string& path);
 
+        //! Globally unique identifier for referencing this node config inside of DynamicNodeManager and graphs
+        AZ::Uuid m_id = AZ::Uuid::CreateRandom();
         //! The category will be used by the DynamicNodeManager to sort and group node palette tree items
         AZStd::string m_category;
         //! Title will be displayed at the top of every DynamicNode in the graph view 
@@ -48,11 +50,11 @@ namespace AtomToolsFramework
         AZStd::string m_subTitle;
         //! Settings is a container of key value string pairs that can be used for any custom or application specific data
         DynamicNodeSettingsMap m_settings;
+        //! Property slots is a container of DynamicNodeSlotConfig for property widgets that appear directly on the node
+        AZStd::vector<DynamicNodeSlotConfig> m_propertySlots;
         //! Input slots is a container of DynamicNodeSlotConfig for all inputs into a node 
         AZStd::vector<DynamicNodeSlotConfig> m_inputSlots;
         //! Output slots is a container of DynamicNodeSlotConfig for all outputs from a node 
         AZStd::vector<DynamicNodeSlotConfig> m_outputSlots;
-        //! Property slots is a container of DynamicNodeSlotConfig for property widgets that appear directly on the node 
-        AZStd::vector<DynamicNodeSlotConfig> m_propertySlots;
     };
 } // namespace AtomToolsFramework

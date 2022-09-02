@@ -8,8 +8,8 @@
 
 #include <gtest/gtest.h>
 
+#include <QModelIndex>
 #include <QPushButton>
-#include <QAction>
 #include <QtTest>
 
 #include <Tests/UI/AnimGraphUIFixture.h>
@@ -21,6 +21,8 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendGraphViewWidget.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendGraphWidget.h>
+
+#include <GraphCanvas/Widgets/NodePalette/NodePaletteTreeView.h>
 
 namespace EMotionFX
 {
@@ -41,10 +43,13 @@ namespace EMotionFX
         const AZStd::vector<EMotionFX::AnimGraphNode*> selectedAnimGraphNodes = nodeGraph->GetSelectedAnimGraphNodes();
         m_blendGraphWidget->OnContextMenuEvent(m_blendGraphWidget, QPoint(0, 0), QPoint(0, 0), m_animGraphPlugin, selectedAnimGraphNodes, true, false, m_animGraphPlugin->GetActionFilter());
 
-        // Fire the Add Reference Node action.
-        QAction* addReferenceNodeAction = GetNamedAction(m_blendGraphWidget, "Reference");
-        ASSERT_TRUE(addReferenceNodeAction) << "No Create Reference Node action found";
-        addReferenceNodeAction->trigger();
+        // Add the Reference node through the context menu.
+        auto* tree = UIFixture::GetFirstChildOfType<GraphCanvas::NodePaletteTreeView>(m_blendGraphWidget);
+        ASSERT_TRUE(tree);
+        const QModelIndex idx = UIFixture::GetIndexFromName(tree, "Reference");
+        ASSERT_TRUE(idx.isValid());
+        // Selection should spawn the node
+        tree->setCurrentIndex(idx);
 
         // Check the expected node now exists.
         size_t numNodesAfter = currentNode->GetNumChildNodes();

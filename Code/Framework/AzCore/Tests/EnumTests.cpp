@@ -13,6 +13,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Script/ScriptContext.h>
 
 AZ_ENUM_CLASS(GlobalScopeTestEnum, Foo, Bar);
 AZ_ENUM_DEFINE_REFLECT_UTILITIES(GlobalScopeTestEnum)
@@ -50,6 +51,12 @@ namespace UnitTest
 
     class EnumTests : public AllocatorsTestFixture
     {
+    };
+
+    struct TypeWithEnumMember
+    {
+        AZ_TYPE_INFO(TypeWithEnumMember, "{1ACB4CCC-8070-4D21-8A52-37FD4391EFF5}");
+        TestEnum m_testEnum;
     };
 
     TEST_F(EnumTests, BasicProperties_AreConstexpr)
@@ -133,7 +140,7 @@ namespace UnitTest
 
     TEST_F(EnumTests, TraitsBehaviorRegular)
     {
-        static_assert(AzEnumTraits<TestEnum>::Members.size() == 26);
+        static_assert(AZ::AzEnumTraits<TestEnum>::Members.size() == 26);
     }
 
 }
@@ -178,14 +185,67 @@ namespace UnitTest
         TestEnumReflect(context);
         OtherEnumTestNamespace::TestEnumReflect(context, "OtherTestEnum");
 
-        EXPECT_TRUE(context.m_properties.find("GlobalScopeTestEnum_Foo") != context.m_properties.end());
-        EXPECT_TRUE(context.m_properties.find("GlobalScopeTestEnum_Bar") != context.m_properties.end());
+        EXPECT_NE(context.m_properties.end(), context.m_properties.find("GlobalScopeTestEnum_Foo"));
+        EXPECT_NE(context.m_properties.end(), context.m_properties.find("GlobalScopeTestEnum_Bar"));
 
-        EXPECT_TRUE(context.m_properties.find("TestEnum_A") != context.m_properties.end());
-        EXPECT_TRUE(context.m_properties.find("TestEnum_Z") != context.m_properties.end());
+        EXPECT_NE(context.m_properties.end(), context.m_properties.find("TestEnum_A"));
+        EXPECT_NE(context.m_properties.end(), context.m_properties.find("TestEnum_Z"));
 
-        EXPECT_TRUE(context.m_properties.find("OtherTestEnum_Walk") != context.m_properties.end());
-        EXPECT_TRUE(context.m_properties.find("OtherTestEnum_Run") != context.m_properties.end());
-        EXPECT_TRUE(context.m_properties.find("OtherTestEnum_Fly") != context.m_properties.end());
+        EXPECT_NE(context.m_properties.end(), context.m_properties.find("OtherTestEnum_Walk"));
+        EXPECT_NE(context.m_properties.end(), context.m_properties.find("OtherTestEnum_Run"));
+        EXPECT_NE(context.m_properties.end(), context.m_properties.find("OtherTestEnum_Fly"));
+    }
+
+    TEST_F(EnumTests, BehaviorContextReflect_Contains_BehaviorClassOfEnum)
+    {
+        AZ::BehaviorContext context;
+
+        TestEnumReflect(context);
+
+        // Validate that the enum type is reflected as a BehaviorClass on the BehaviorContext
+        auto enumClassIter = context.m_classes.find("UnitTest::TestEnum");
+        ASSERT_NE(context.m_classes.end(), enumClassIter);
+
+        // Verify that the enum type BehaviorClass contains properties for the enum options
+        AZ::BehaviorClass* enumClass = enumClassIter->second;
+        auto VerifyEnumOptionReflectionOnEnumType = [&properties = enumClass->m_properties]
+        (TestEnum expectedValue, AZStd::string_view enumOptionName)
+        {
+            auto propertyIt = properties.find(enumOptionName);
+            ASSERT_NE(properties.end(), propertyIt);
+            TestEnum testValue{};
+            EXPECT_TRUE(propertyIt->second->m_getter->InvokeResult(testValue));
+            EXPECT_EQ(expectedValue, testValue);
+        };
+        AZ::AzEnumTraits<TestEnum>::Visit(VerifyEnumOptionReflectionOnEnumType);
+
+        // Verify that the enum options are also available as global constants on the BehaviorContext
+        auto VerifyEnumOptionReflectionAsGlobalConstant = [&properties = context.m_properties]
+        (TestEnum expectedValue, AZStd::string_view enumOptionName)
+        {
+            // Compose the combinded global enum option name
+            auto qualifiedOptionName = AZStd::fixed_string<256>::format("TestEnum_%.*s",
+                AZ_STRING_ARG(enumOptionName));
+            auto propertyIt = properties.find(AZStd::string_view(qualifiedOptionName));
+            ASSERT_NE(properties.end(), propertyIt);
+            TestEnum testValue{};
+            EXPECT_TRUE(propertyIt->second->m_getter->InvokeResult(testValue));
+            EXPECT_EQ(expectedValue, testValue);
+        };
+        AZ::AzEnumTraits<TestEnum>::Visit(VerifyEnumOptionReflectionAsGlobalConstant);
+    }
+
+    TEST_F(EnumTests, ScriptContext_BindTo_BehaviorContext_DoesNotAssert_WithEnumType_ReflectedAsProperty)
+    {
+        AZ::BehaviorContext context;
+
+        TestEnumReflect(context);
+
+        context.Class<TypeWithEnumMember>()
+            ->Property("testenum", BehaviorValueProperty(&TypeWithEnumMember::m_testEnum))
+            ;
+
+        AZ::ScriptContext scriptContext;
+        scriptContext.BindTo(&context);
     }
 }

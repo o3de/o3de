@@ -83,7 +83,6 @@ AZ_POP_DISABLE_WARNING
 #include <ScriptCanvas/Core/Connection.h>
 #include <ScriptCanvas/Utils/NodeUtils.h>
 #include <ScriptCanvas/Variable/VariableBus.h>
-#include <ScriptCanvas/Libraries/UnitTesting/UnitTestingLibrary.h>
 
     AZ_CVAR(bool, g_disableDeprecatedNodeUpdates, false, {}, AZ::ConsoleFunctorFlags::Null,
         "Disables automatic update attempts of deprecated nodes, so that graphs that require and update can be viewed in their original form");
@@ -1398,7 +1397,7 @@ namespace ScriptCanvasEditor
             ? *AZStd::any_cast<AZ::EntityId>(connectionUserData)
             : AZ::EntityId();
 
-        if (ScriptCanvas::Connection* connection = AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Connection>(scConnectionId))
+        if (AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Connection>(scConnectionId))
         {
             ScriptCanvas::GraphNotificationBus::Event
                 ( GetScriptCanvasId()
@@ -1419,6 +1418,7 @@ namespace ScriptCanvasEditor
             {
                 data->m_scriptCanvasEntity.reset(entity);
                 graph->MarkOwnership(*data);
+                graph->MarkVersion();
                 entity->Init();
                 entity->Activate();
                 return data;
@@ -1547,7 +1547,7 @@ namespace ScriptCanvasEditor
                 GraphCanvas::DataInterface* dataInterface = nullptr;
                 GraphCanvas::NodePropertyDisplay* dataDisplay = nullptr;
 
-                if (auto comboBoxPropertyInterface = azrtti_cast<ScriptCanvas::ComboBoxPropertyInterface*>(propertyInterface))
+                if (azrtti_cast<ScriptCanvas::ComboBoxPropertyInterface*>(propertyInterface))
                 {
                     GraphCanvas::ComboBoxDataInterface* comboBoxInterface = nullptr;
 
@@ -1623,12 +1623,18 @@ namespace ScriptCanvasEditor
             return nullptr;
         }
 
+        if (!slot->CanHaveInputField())
+        {
+            return nullptr;
+        }
+
         // ScriptCanvas has access to better typing information regarding the slots than is exposed to GraphCanvas.
         // So let ScriptCanvas check the types based on it's own information rather than relying on the information passed back from GraphCanvas.
+
         ScriptCanvas::Data::Type slotType = slot->GetDataType();
+        GraphCanvas::DataInterface* dataInterface = nullptr;
 
         {
-            GraphCanvas::DataInterface* dataInterface = nullptr;
             GraphCanvas::NodePropertyDisplay* dataDisplay = nullptr;
 
             if (slotType.IS_A(ScriptCanvas::Data::Type::Boolean()))
@@ -1710,7 +1716,7 @@ namespace ScriptCanvasEditor
 
     void EditorGraph::SignalDirty()
     {
-        SourceHandle handle(m_owner, {}, {});
+        SourceHandle handle(m_owner, AZ::Uuid::CreateNull());
         GeneralRequestBus::Broadcast(&GeneralRequests::SignalSceneDirty, handle);
     }
 

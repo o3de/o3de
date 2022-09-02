@@ -58,8 +58,11 @@ set(ENABLED_GEMS
     Terrain
     Profiler
     Multiplayer
+    TestAssetBuilder
     DevTextures
     PrimitiveAssets
     Stars
     RecastNavigation
+    ScriptAutomation
+    DiffuseProbeGrid
 )

@@ -41,7 +41,7 @@ namespace AZ
                     editContext->Class<EditorMeshComponent>(
                         "Mesh", "The mesh component is the primary method of adding visual geometry to entities")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                            ->Attribute(AZ::Edit::Attributes::Category, "Atom")
+                            ->Attribute(AZ::Edit::Attributes::Category, "Graphics/Mesh")
                             ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Mesh.svg")
                             ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Mesh.svg")
                             ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
@@ -263,7 +263,7 @@ namespace AZ
             // This is a bug with AssetManager [LYN-2249]
             auto temp = m_controller.m_configuration.m_modelAsset;
 
-            m_stats.m_meshStatsForLod.swap({});
+            m_stats.m_meshStatsForLod = {};
             SetDirty();
 
             return BaseClass::OnConfigurationChanged();

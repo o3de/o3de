@@ -255,7 +255,10 @@ void AssetImporterWindow::OpenFileInternal(const AZStd::string& filePath)
         [this, filePath]()
         {
             m_assetImporterDocument->LoadScene(filePath);
-            UpdateSceneDisplay({});
+
+            // Update the UI on the main thread.
+            QTimer::singleShot(0, [&]() { UpdateSceneDisplay({}); });
+            
         },
         [this]()
         {
@@ -276,12 +279,51 @@ bool AssetImporterWindow::IsAllowedToChangeSourceFile()
         return true;
     }
 
-    QMessageBox messageBox(QMessageBox::Icon::NoIcon, "Unsaved changes",
-        "You have unsaved changes. Do you want to discard those changes?",
-        QMessageBox::StandardButton::Discard | QMessageBox::StandardButton::Cancel, this);
-    messageBox.exec();
-    QMessageBox::StandardButton choice = static_cast<QMessageBox::StandardButton>(messageBox.result());
-    return choice == QMessageBox::StandardButton::Discard;
+    const int result = QMessageBox::question(
+        this,
+        tr("Save Changes?"),
+        tr("Changes have been made to the asset during this session. Would you like to save prior to closing?"),
+        QMessageBox::Yes,
+        QMessageBox::No,
+        QMessageBox::Cancel);
+
+    if (result == QMessageBox::Cancel)
+    {
+        return false;
+    }
+    else if (result == QMessageBox::No)
+    {
+        return true;
+    }
+
+    AZStd::shared_ptr<AZ::ActionOutput> output = AZStd::make_shared<AZ::ActionOutput>();
+    m_assetImporterDocument->SaveScene(
+        output,
+        [this](bool wasSuccessful)
+        {
+            if(wasSuccessful)
+            {
+                m_isClosed = true;
+
+                // Delete the parent, because this window is nested inside another, dockable window.
+                // Just deleting this will leave the dockable window open.
+                // Requesting the panel that this is docked in to close, will result in issues on some re-open states,
+                // if only the panel is closed, then the next time it's opened, the scene settings won't be correctly loaded.
+                this->parent()->deleteLater();
+            }
+            else
+            {
+                QMessageBox messageBox(
+                    QMessageBox::Icon::Warning,
+                    tr("Failed to save"),
+                    tr("An error has been encountered saving this file. See the logs for details."));
+                messageBox.exec();
+            }
+        });
+
+    // Don't close yet, in case the save fails.
+    // Scene saving is asynchronous, and will close the panel if it's successful.
+    return false;
 }
 
 void AssetImporterWindow::UpdateClicked()
@@ -558,9 +600,11 @@ void AssetImporterWindow::SetTitle(const char* filePath)
 
 void AssetImporterWindow::UpdateSceneDisplay(const AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene> scene) const
 {
-    AZ::IO::FixedMaxPath projectPath = AZ::Utils::GetProjectPath();
-    AZ::IO::FixedMaxPath relativeSourcePath = AZ::IO::PathView(m_fullSourcePath).LexicallyProximate(projectPath);
-    auto sceneHeaderText = QString::fromUtf8(relativeSourcePath.c_str(), static_cast<int>(relativeSourcePath.Native().size()));
+    QString sceneHeaderText;
+    if(scene.get())
+    {
+        sceneHeaderText = QString::fromUtf8(scene->GetManifestFilename().c_str(), static_cast<int>(scene->GetManifestFilename().size()));
+    }
     if (!m_scriptProcessorRuleFilename.empty())
     {
         sceneHeaderText.append("\n Assigned Python builder script (")

@@ -66,10 +66,6 @@ class TestAutomation(EditorTestSuite):
     class test_LandscapeCanvas_GraphUpdates_UpdateComponents(EditorSharedTest):
         from .EditorScripts import GraphUpdates_UpdateComponents as test_module
 
-    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/10127")
-    class test_LandscapeCanvas_LayerBlender_NodeConstruction(EditorSharedTest):
-        from .EditorScripts import LayerBlender_NodeConstruction as test_module
-
     class test_LandscapeCanvas_LayerExtenderNodes_ComponentEntitySync(EditorSharedTest):
         from .EditorScripts import LayerExtenderNodes_ComponentEntitySync as test_module
 
@@ -87,3 +83,12 @@ class TestAutomation(EditorTestSuite):
 
     class test_LandscapeCanvas_SlotConnections_UpdateComponentReferences(EditorSharedTest):
         from .EditorScripts import SlotConnections_UpdateComponentReferences as test_module
+
+    class test_LandscapeCanvas_TerrainExtenderNodes_ComponentEntitySync(EditorSharedTest):
+        from .EditorScripts import TerrainExtenderNodes_ComponentEntitySync as test_module
+
+    class test_LandscapeCanvas_TerrainNodes_DependentComponentsAdded(EditorSharedTest):
+        from .EditorScripts import TerrainNodes_DependentComponentsAdded as test_module
+
+    class test_LandscapeCanvas_TerrainNodes_EntityCreatedOnNodeAdd(EditorSharedTest):
+        from .EditorScripts import TerrainNodes_EntityCreatedOnNodeAdd as test_module

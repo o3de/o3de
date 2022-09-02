@@ -63,6 +63,7 @@ namespace AzToolsFramework::ViewportUi::Internal
 
         void AddSwitcher(AZStd::shared_ptr<ButtonGroup> buttonGroup, Alignment alignment);
         void AddSwitcherButton(ViewportUiElementId switcherId, Button* button);
+        void SetSwitcherButtonTooltip(ViewportUiElementId clusterId, ButtonId buttonId, const AZStd::string& tooltip);
         void RemoveSwitcherButton(ViewportUiElementId switcherId, ButtonId buttonId);
         void UpdateSwitcher(ViewportUiElementId switcherId);
         void SetSwitcherActiveButton(ViewportUiElementId switcherId, ButtonId buttonId);
@@ -91,7 +92,9 @@ namespace AzToolsFramework::ViewportUi::Internal
         bool IsViewportUiElementVisible(ViewportUiElementId elementId);
 
         void CreateViewportBorder(const AZStd::string& borderTitle, AZStd::optional<ViewportUiBackButtonCallback> backButtonCallback);
+        void ChangeViewportBorderText(const char* borderTitle);
         void RemoveViewportBorder();
+        bool GetViewportBorderVisible() const;
 
     private:
         void PrepareWidgetForViewportUi(QPointer<QWidget> widget);

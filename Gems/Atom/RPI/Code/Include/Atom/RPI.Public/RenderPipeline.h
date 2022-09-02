@@ -11,12 +11,14 @@
 #include <Atom/RHI/DrawList.h>
 
 #include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/PipelinePassChanges.h>
 #include <Atom/RPI.Public/Pass/PassTree.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 
 #include <Atom/RPI.Reflect/Pass/PassAsset.h>
 #include <Atom/RPI.Reflect/Pass/PassTemplate.h>
 #include <Atom/RPI.Reflect/System/RenderPipelineDescriptor.h>
+#include <Atom/RPI.Public/WindowContext.h>
 
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/map.h>
@@ -35,7 +37,6 @@ namespace AZ
         class Scene;
         class ShaderResourceGroup;
         class AnyAsset;
-        class WindowContext;
 
         enum class PipelineViewType
         {
@@ -91,11 +92,13 @@ namespace AZ
 
             static RenderPipelinePtr CreateRenderPipelineFromAsset(Data::Asset<AnyAsset> pipelineAsset);
 
-            static RenderPipelinePtr CreateRenderPipelineForWindow(const RenderPipelineDescriptor& desc, const WindowContext& windowContext);
+            static RenderPipelinePtr CreateRenderPipelineForWindow(const RenderPipelineDescriptor& desc, const WindowContext& windowContext,
+                                                                   const WindowContext::SwapChainMode swapchainMode = WindowContext::SwapChainMode::Default);
             static RenderPipelinePtr CreateRenderPipelineForWindow(Data::Asset<AnyAsset> pipelineAsset, const WindowContext& windowContext);
 
             // Data type for render pipeline's views' information
             using PipelineViewMap = AZStd::map<PipelineViewTag, PipelineViews, AZNameSortAscending>;
+            using ViewToViewTagMap = AZStd::map<const View*, PipelineViewTag>;
 
             //! Assign a view for a PipelineViewTag used in this pipeline. 
             //! This reference of this view will be saved until it's replaced in another SetPersistentView call.
@@ -139,19 +142,17 @@ namespace AZ
 
             const Ptr<ParentPass>& GetRootPass() const;
 
+            //! Returns the flags indicating the pipeline pass changes that occured this past frame
+            u32 GetPipelinePassChanges() const { return m_pipelinePassChanges; }
+
             //! Processes passes in the pipeline that are queued for build, initialization or removal
             void ProcessQueuedPassChanges();
 
-            //! This function need to be called by Pass class when any passes are added/removed in this pipeline's pass tree.
-            void SetPassModified();
-
-            //! Notifies the pipeline it needs to recreate passes. Typical use case is for pass asset hot reloading.
-            void SetPassNeedsRecreate();
+            //! This function signals the render pipeline that modifications have been made to the pipeline passes
+            void MarkPipelinePassChanges(u32 passChangeFlags);
             
-            //! Update passes and views when any pass was modified which may affect pipeline views.
-            //! This function is automatically called when frame starts. User may call it manually when they expect to get up to date view information
-            //! after any pass changes.
-            void OnPassModified();
+            //! Update passes and views that are affected by any modifed passes. Called at the start of each frame.
+            void UpdatePasses();
 
             //! Check if this pipeline should be removed after a single execution.
             bool IsExecuteOnce();
@@ -233,6 +234,9 @@ namespace AZ
             // Retrieves a previously added pipeline global connection via name
             const PipelineGlobalBinding* GetPipelineGlobalConnection(const Name& globalName) const;
 
+            // Checks if the view is already registered with a different viewTag
+            bool CanRegisterView(const PipelineViewTag& allowedViewTag, const View* view) const;
+
             // Clears the lists of global attachments and binding that passes use to reference attachments in a global manner
             // This is called from the pipeline root pass during the pass reset phase
             void ClearGlobalBindings();
@@ -284,15 +288,17 @@ namespace AZ
             AZStd::vector<PipelineGlobalBinding> m_pipelineGlobalConnections;
 
             PipelineViewMap m_pipelineViewsByTag;
-            
+            ViewToViewTagMap m_persistentViewsByViewTag;
+            ViewToViewTagMap m_transientViewsByViewTag;
+
             // RenderPipeline's name id, it will be used to identify the render pipeline when it's added to a Scene
             RenderPipelineId m_nameId;
-            
-            // Whether the pass tree was modified. It's used to trigger rebuild pipeline views when frame starts
-            bool m_wasPassModified = false;
 
             // Whether the pipeline should recreate it's pass tree, for example in the case of pass asset hot reloading.
             bool m_needsPassRecreate = false;
+
+            // Set of flags to track what changes have been made to the pipeline's passes
+            u32 m_pipelinePassChanges = PipelinePassChanges::NoPassChanges;
 
             PipelineViewTag m_mainViewTag;
 

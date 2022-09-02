@@ -602,6 +602,13 @@ namespace AZ
         {
             retVal.push_back(currentIter->second);
         }
+
+        findResult = m_deprecatedNameToTypeIdMap.equal_range(classNameCrc);
+        for (auto&& currentIter = findResult.first; currentIter != findResult.second; ++currentIter)
+        {
+            AZ_TracePrintf("Serialize", "Found TypeId using deprecated class name CRC value of %u", static_cast<AZ::u32>(classNameCrc));
+            retVal.push_back(currentIter->second);
+        }
         return retVal;
     }
 
@@ -2307,8 +2314,7 @@ namespace AZ
                 AZ_Assert(false, "A deprecated element with a data converter was passed to CloneObject, this is not supported.");
             }
             // push a dummy node in the stack
-            cloneData->m_parentStack.push_back();
-            ObjectCloneData::ParentInfo& parentInfo = cloneData->m_parentStack.back();
+            ObjectCloneData::ParentInfo& parentInfo = cloneData->m_parentStack.emplace_back();
             parentInfo.m_ptr = destPtr;
             parentInfo.m_reservePtr = reservePtr;
             parentInfo.m_classData = classData;
@@ -2369,8 +2375,7 @@ namespace AZ
             // There is no valid destination pointer so a dummy node is added to the clone data parent stack
             // and further descendent type iteration is halted
             // An error has been reported to the supplied errorHandler in the code above
-            cloneData->m_parentStack.push_back();
-            ObjectCloneData::ParentInfo& parentInfo = cloneData->m_parentStack.back();
+            ObjectCloneData::ParentInfo& parentInfo = cloneData->m_parentStack.emplace_back();
             parentInfo.m_ptr = destPtr;
             parentInfo.m_reservePtr = reservePtr;
             parentInfo.m_classData = classData;
@@ -2422,8 +2427,7 @@ namespace AZ
         }
 
         // push this node in the stack
-        cloneData->m_parentStack.push_back();
-        ObjectCloneData::ParentInfo& parentInfo = cloneData->m_parentStack.back();
+        ObjectCloneData::ParentInfo& parentInfo = cloneData->m_parentStack.emplace_back();
         parentInfo.m_ptr = destPtr;
         parentInfo.m_reservePtr = reservePtr;
         parentInfo.m_classData = classData;
@@ -2784,6 +2788,10 @@ namespace AZ
 
             // if we get here, its a FLG_POINTER
             const void* dataPtr = *reinterpret_cast<void* const*>(element);
+            if (dataPtr == nullptr)
+            {
+                return; // Pointer element is nullptr, nothing to delete
+            }
             if (classData->m_factory)
             {
                 classData->m_factory->Destroy(dataPtr);

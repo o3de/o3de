@@ -65,8 +65,6 @@ set(FILES
     Source/NodeSelectionWindow.h
     Source/MotionSetSelectionWindow.cpp
     Source/MotionSetSelectionWindow.h
-    Source/RenderPlugin/ManipulatorCallbacks.cpp
-    Source/RenderPlugin/ManipulatorCallbacks.h
     Source/RenderPlugin/RenderOptions.cpp
     Source/RenderPlugin/RenderOptions.h
 )

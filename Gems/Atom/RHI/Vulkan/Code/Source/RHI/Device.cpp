@@ -18,7 +18,7 @@
 #include <RHI/AsyncUploadQueue.h>
 #include <RHI/Buffer.h>
 #include <RHI/BufferPool.h>
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/CommandList.h>
 #include <RHI/CommandQueue.h>
 #include <RHI/Device.h>
@@ -220,6 +220,23 @@ namespace AZ
                 deviceInfo.pNext = &descriptorIndexingFeatures;
             }
 
+#if defined(USE_NSIGHT_AFTERMATH)
+            requiredExtensions.push_back(VK_NV_DEVICE_DIAGNOSTICS_CONFIG_EXTENSION_NAME);
+
+            // Set up device creation info for Aftermath feature flag configuration.
+            VkDeviceDiagnosticsConfigFlagsNV aftermathFlags =
+                VK_DEVICE_DIAGNOSTICS_CONFIG_ENABLE_RESOURCE_TRACKING_BIT_NV | // Enable tracking of resources.
+                VK_DEVICE_DIAGNOSTICS_CONFIG_ENABLE_AUTOMATIC_CHECKPOINTS_BIT_NV | // Capture call stacks for all draw calls, compute
+                                                                                   // dispatches, and resource copies.
+                VK_DEVICE_DIAGNOSTICS_CONFIG_ENABLE_SHADER_DEBUG_INFO_BIT_NV; // Generate debug information for shaders.
+
+            VkDeviceDiagnosticsConfigCreateInfoNV aftermathInfo = {};
+            aftermathInfo.sType = VK_STRUCTURE_TYPE_DEVICE_DIAGNOSTICS_CONFIG_CREATE_INFO_NV;
+            aftermathInfo.flags = aftermathFlags;
+            aftermathInfo.pNext = deviceInfo.pNext;
+            deviceInfo.pNext = &aftermathInfo;
+#endif
+
             // set raytracing features if we are running Vulkan >= 1.2
             VkPhysicalDeviceAccelerationStructureFeaturesKHR accelerationStructureFeatures = {};
             VkPhysicalDeviceRayTracingPipelineFeaturesKHR rayTracingPipelineFeatures = {};
@@ -245,33 +262,40 @@ namespace AZ
             deviceInfo.pEnabledFeatures = &m_enabledDeviceFeatures;
 
             RHI::XRRenderingInterface* xrSystem = RHI::RHISystemInterface::Get()->GetXRSystem();
+            Instance& instance = Instance::GetInstance();
             if (xrSystem)
             {
                 //If a XR system is registered with RHI try to get the xr compatible Vk device from XR::Vulkan module
-                RHI::Ptr<XRDeviceDescriptor> xrDevicDescriptor = aznew XRDeviceDescriptor();
-                xrDevicDescriptor->m_inputData.m_deviceCreateInfo = &deviceInfo;
-                AZ::RHI::ResultCode result = xrSystem->CreateDevice(xrDevicDescriptor.get());
+                XRDeviceDescriptor xrDevicDescriptor;
+                xrDevicDescriptor.m_inputData.m_deviceCreateInfo = &deviceInfo;
+                AZ::RHI::ResultCode result = xrSystem->CreateDevice(&xrDevicDescriptor);
                 AZ_Assert(result == RHI::ResultCode::Success, "Xr Vk device creation was not successful");
-                m_nativeDevice = xrDevicDescriptor->m_outputData.m_xrVkDevice;
+                m_nativeDevice = xrDevicDescriptor.m_outputData.m_xrVkDevice;
                 RETURN_RESULT_IF_UNSUCCESSFUL(result);
+                m_isXrNativeDevice = true;
             }
             else
             {
-                const VkResult vkResult = vkCreateDevice(physicalDevice.GetNativePhysicalDevice(), &deviceInfo, nullptr, &m_nativeDevice);
+                const VkResult vkResult =
+                    instance.GetContext().CreateDevice(physicalDevice.GetNativePhysicalDevice(), &deviceInfo, nullptr, &m_nativeDevice);
                 AssertSuccess(vkResult);
                 RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(vkResult));
             }
-           
+
             for (const VkDeviceQueueCreateInfo& queueInfo : queueCreationInfo)
             {
                 delete[] queueInfo.pQueuePriorities;
             }
 
-            Instance& instance = Instance::GetInstance();
-            instance.GetFunctionLoader().LoadProcAddresses(instance.GetNativeInstance(), physicalDevice.GetNativePhysicalDevice(), m_nativeDevice);
+            if (!instance.GetFunctionLoader().LoadProcAddresses(
+                    &m_context, instance.GetNativeInstance(), physicalDevice.GetNativePhysicalDevice(), m_nativeDevice))
+            {
+                AZ_Warning("Vulkan", false, "Could not initialized function loader.");
+                return RHI::ResultCode::Fail;
+            }
 
             //Load device features now that we have loaded all extension info
-            physicalDevice.LoadSupportedFeatures();
+            physicalDevice.LoadSupportedFeatures(m_context);
             return RHI::ResultCode::Success;
         }
 
@@ -329,6 +353,22 @@ namespace AZ
                 RETURN_RESULT_IF_UNSUCCESSFUL(result);
             }
 
+            // Create XR session and XR swapchain if XR system is active
+            RHI::XRRenderingInterface* xrSystem = RHI::RHISystemInterface::Get()->GetXRSystem();
+            if (xrSystem)
+            {
+                XRSessionDescriptor xrSessionDescriptor;
+                xrSessionDescriptor.m_inputData.m_graphicsBinding.m_queueFamilyIndex =
+                    m_commandQueueContext.GetCommandQueue(RHI::HardwareQueueClass::Graphics).GetQueueDescriptor().m_familyIndex;
+                xrSessionDescriptor.m_inputData.m_graphicsBinding.m_queueIndex =
+                    m_commandQueueContext.GetCommandQueue(RHI::HardwareQueueClass::Graphics).GetQueueDescriptor().m_queueIndex;
+                result = xrSystem->CreateSession(&xrSessionDescriptor);
+                AZ_Assert(result == RHI::ResultCode::Success, "Xr Session creation was not successful");
+
+                result = xrSystem->CreateSwapChain();
+                AZ_Assert(result == RHI::ResultCode::Success, "Xr Session creation was not successful");
+            }
+
             SetName(GetName());
             return result;
         }
@@ -336,6 +376,11 @@ namespace AZ
         VkDevice Device::GetNativeDevice() const
         {
             return m_nativeDevice;
+        }
+
+        const GladVulkanContext& Device::GetContext() const
+        {
+            return m_context;
         }
 
         uint32_t Device::FindMemoryTypeIndex(VkMemoryPropertyFlags memoryPropertyFlags, uint32_t memoryTypeBits) const
@@ -393,7 +438,7 @@ namespace AZ
                 VkBuffer vkBuffer = CreateBufferResouce(descriptor);
                 AZ_Assert(vkBuffer != VK_NULL_HANDLE, "Failed to get memory requirements");
                 VkMemoryRequirements memoryRequirements = {};
-                vkGetBufferMemoryRequirements(GetNativeDevice(), vkBuffer, &memoryRequirements);
+                m_context.GetBufferMemoryRequirements(GetNativeDevice(), vkBuffer, &memoryRequirements);
                 auto it2 = cache.insert(hash, memoryRequirements);
                 DestroyBufferResource(vkBuffer);
                 return it2.first->second;
@@ -551,27 +596,57 @@ namespace AZ
             m_bufferMemoryRequirementsCache.Clear();
 
             // Only destroy VkDevice if created locally and not passed in by a XR module
-            bool isXrDeviceActive = RHI::RHISystemInterface::Get()->GetXRSystem() != nullptr;
-            if (!isXrDeviceActive)
+            if (!m_isXrNativeDevice)
             {
                 if (m_nativeDevice != VK_NULL_HANDLE)
                 {
-                    vkDestroyDevice(m_nativeDevice, nullptr);
+                    m_context.DestroyDevice(m_nativeDevice, nullptr);
                     m_nativeDevice = VK_NULL_HANDLE;
                 }
             }
         }
 
-        void Device::BeginFrameInternal() 
+        RHI::ResultCode Device::BeginFrameInternal() 
         {
             // We call to collect on the release queue on the begin frame because some objects (like resource pools)
             // cannot be shutdown during the frame scheduler execution. At this point the frame has not yet started.
             m_releaseQueue.Collect();
             m_commandQueueContext.Begin();
+
+            RHI::XRRenderingInterface* xrSystem = RHI::RHISystemInterface::Get()->GetXRSystem();
+            if (xrSystem)
+            {
+                // Begin Frame can make XR related calls which we need to make sure happens
+                // from the thread related to the presentation queue or drivers will complain
+                auto& presentationQueue = m_commandQueueContext.GetPresentationCommandQueue();
+                auto presentCommand = [xrSystem](void*)
+                {
+                    xrSystem->BeginFrame();
+                };
+
+                presentationQueue.QueueCommand(AZStd::move(presentCommand));
+                presentationQueue.FlushCommands();
+            }
+            return RHI::ResultCode::Success;
         }
         
         void Device::EndFrameInternal() 
         {
+            RHI::XRRenderingInterface* xrSystem = RHI::RHISystemInterface::Get()->GetXRSystem();
+            if (xrSystem)
+            {
+                // End Frame can make XR related calls which we need to make sure happens
+                // from the thread related to the presentation queue or drivers will complain
+                auto& presentationQueue = m_commandQueueContext.GetPresentationCommandQueue();
+                auto presentCommand = [xrSystem](void*)
+                {
+                    xrSystem->EndFrame();
+                };
+
+                presentationQueue.QueueCommand(AZStd::move(presentCommand));
+                presentationQueue.FlushCommands();
+            }
+
             m_commandQueueContext.End();
             m_commandListAllocator.Collect();
             m_semaphoreAllocator.Collect();
@@ -586,7 +661,7 @@ namespace AZ
         void Device::CompileMemoryStatisticsInternal(RHI::MemoryStatisticsBuilder& builder) 
         {
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(GetPhysicalDevice());
-            physicalDevice.CompileMemoryStatistics(builder);
+            physicalDevice.CompileMemoryStatistics(m_context, builder);
         }
 
         void Device::UpdateCpuTimingStatisticsInternal() const
@@ -606,7 +681,8 @@ namespace AZ
             }
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(GetPhysicalDevice());
             uint32_t surfaceFormatCount = 0;
-            AssertSuccess(vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice.GetNativePhysicalDevice(), surface->GetNativeSurface(), &surfaceFormatCount, nullptr));
+            AssertSuccess(m_context.GetPhysicalDeviceSurfaceFormatsKHR(
+                physicalDevice.GetNativePhysicalDevice(), surface->GetNativeSurface(), &surfaceFormatCount, nullptr));
             if (surfaceFormatCount == 0)
             {
                 AZ_Assert(false, "Surface support no format.");
@@ -614,7 +690,8 @@ namespace AZ
             }
 
             AZStd::vector<VkSurfaceFormatKHR> surfaceFormats(surfaceFormatCount);
-            AssertSuccess(vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice.GetNativePhysicalDevice(), surface->GetNativeSurface(), &surfaceFormatCount, surfaceFormats.data()));
+            AssertSuccess(m_context.GetPhysicalDeviceSurfaceFormatsKHR(
+                physicalDevice.GetNativePhysicalDevice(), surface->GetNativeSurface(), &surfaceFormatCount, surfaceFormats.data()));
 
             AZStd::set<RHI::Format> formats;
             for (const VkSurfaceFormatKHR& surfaceFormat : surfaceFormats)
@@ -771,15 +848,18 @@ namespace AZ
 
         void Device::BuildDeviceQueueInfo(const PhysicalDevice& physicalDevice)
         {
+            Instance& instance = Instance::GetInstance();
+
             m_queueFamilyProperties.clear();
             VkPhysicalDevice nativePhysicalDevice = physicalDevice.GetNativePhysicalDevice();
 
             uint32_t queueFamilyCount = 0;
-            vkGetPhysicalDeviceQueueFamilyProperties(nativePhysicalDevice, &queueFamilyCount, nullptr);
+            instance.GetContext().GetPhysicalDeviceQueueFamilyProperties(nativePhysicalDevice, &queueFamilyCount, nullptr);
             AZ_Assert(queueFamilyCount, "No queue families were found for physical device %s", physicalDevice.GetName().GetCStr());
 
             m_queueFamilyProperties.resize(queueFamilyCount);
-            vkGetPhysicalDeviceQueueFamilyProperties(nativePhysicalDevice, &queueFamilyCount, m_queueFamilyProperties.data());            
+            instance.GetContext().GetPhysicalDeviceQueueFamilyProperties(
+                nativePhysicalDevice, &queueFamilyCount, m_queueFamilyProperties.data());
         }
 
         RHI::Ptr<Memory> Device::AllocateMemory(uint64_t sizeInBytes, const uint32_t memoryTypeMask, const VkMemoryPropertyFlags flags, const RHI::BufferBindFlags bufferBindFlags)
@@ -882,14 +962,14 @@ namespace AZ
             createInfo.pQueueFamilyIndices = queueFamilies.empty() ? nullptr : queueFamilies.data();
 
             VkBuffer vkBuffer = VK_NULL_HANDLE;
-            VkResult vkResult = vkCreateBuffer(GetNativeDevice(), &createInfo, nullptr, &vkBuffer);
+            VkResult vkResult = m_context.CreateBuffer(GetNativeDevice(), &createInfo, nullptr, &vkBuffer);
             AssertSuccess(vkResult);
             return vkBuffer;
         }
 
         void Device::DestroyBufferResource(VkBuffer vkBuffer) const
         {
-            vkDestroyBuffer(GetNativeDevice(), vkBuffer, nullptr);
+            m_context.DestroyBuffer(GetNativeDevice(), vkBuffer, nullptr);
         }
     }
 }

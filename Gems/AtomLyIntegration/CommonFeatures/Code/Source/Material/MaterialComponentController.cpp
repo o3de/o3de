@@ -102,7 +102,7 @@ namespace AZ
 
         void MaterialComponentController::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC_CE("MaterialReceiverService"));
+            required.push_back(AZ_CRC_CE("MaterialConsumerService"));
         }
 
         MaterialComponentController::MaterialComponentController(const MaterialComponentConfig& config)
@@ -117,14 +117,14 @@ namespace AZ
             m_queuedMaterialUpdateNotification = false;
 
             MaterialComponentRequestBus::Handler::BusConnect(m_entityId);
-            MaterialReceiverNotificationBus::Handler::BusConnect(m_entityId);
+            MaterialConsumerNotificationBus::Handler::BusConnect(m_entityId);
             LoadMaterials();
         }
 
         void MaterialComponentController::Deactivate()
         {
             MaterialComponentRequestBus::Handler::BusDisconnect();
-            MaterialReceiverNotificationBus::Handler::BusDisconnect();
+            MaterialConsumerNotificationBus::Handler::BusDisconnect();
 
             ReleaseMaterials();
 
@@ -156,7 +156,7 @@ namespace AZ
             InitializeMaterialInstance(asset);
         }
 
-        void MaterialComponentController::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+        void MaterialComponentController::OnSystemTick()
         {
             if (m_queuedLoadMaterials)
             {
@@ -191,7 +191,7 @@ namespace AZ
                     MaterialComponentNotificationBus::Event(m_entityId, &MaterialComponentNotifications::OnMaterialsUpdated, m_configuration.m_materials);
                 }
 
-                TickBus::Handler::BusDisconnect();
+                SystemTickBus::Handler::BusDisconnect();
             }
         }
 
@@ -203,8 +203,8 @@ namespace AZ
             // Clear any previously loaded or queued material assets, instances, or notifications
             ReleaseMaterials();
 
-            MaterialReceiverRequestBus::EventResult(
-                m_defaultMaterialMap, m_entityId, &MaterialReceiverRequestBus::Events::GetDefautMaterialMap);
+            MaterialConsumerRequestBus::EventResult(
+                m_defaultMaterialMap, m_entityId, &MaterialConsumerRequestBus::Events::GetDefautMaterialMap);
 
             // Build tables of all referenced materials so that we can load and look up defaults
             for (const auto& [materialAssignmentId, materialAssignment] : m_defaultMaterialMap)
@@ -290,7 +290,7 @@ namespace AZ
 
         void MaterialComponentController::ReleaseMaterials()
         {
-            TickBus::Handler::BusDisconnect();
+            SystemTickBus::Handler::BusDisconnect();
             Data::AssetBus::MultiHandler::BusDisconnect();
 
             m_defaultMaterialMap.clear();
@@ -312,8 +312,8 @@ namespace AZ
             const MaterialAssignmentLodIndex lod, const AZStd::string& label) const
         {
             MaterialAssignmentId materialAssignmentId;
-            MaterialReceiverRequestBus::EventResult(
-                materialAssignmentId, m_entityId, &MaterialReceiverRequestBus::Events::FindMaterialAssignmentId, lod, label);
+            MaterialConsumerRequestBus::EventResult(
+                materialAssignmentId, m_entityId, &MaterialConsumerRequestBus::Events::FindMaterialAssignmentId, lod, label);
             return materialAssignmentId;
         }
 
@@ -326,7 +326,7 @@ namespace AZ
         AZStd::string MaterialComponentController::GetMaterialLabel(const MaterialAssignmentId& materialAssignmentId) const
         {
             MaterialAssignmentLabelMap labels;
-            MaterialReceiverRequestBus::EventResult(labels, m_entityId, &MaterialReceiverRequestBus::Events::GetMaterialLabels);
+            MaterialConsumerRequestBus::EventResult(labels, m_entityId, &MaterialConsumerRequestBus::Events::GetMaterialLabels);
 
             auto labelIt = labels.find(materialAssignmentId);
             return labelIt != labels.end() ? labelIt->second : "<unknown>";
@@ -762,27 +762,27 @@ namespace AZ
         void MaterialComponentController::QueuePropertyChanges(const MaterialAssignmentId& materialAssignmentId)
         {
             m_materialsWithDirtyProperties.emplace(materialAssignmentId);
-            if (!TickBus::Handler::BusIsConnected())
+            if (!SystemTickBus::Handler::BusIsConnected())
             {
-                TickBus::Handler::BusConnect();
+                SystemTickBus::Handler::BusConnect();
             }
         }
 
         void MaterialComponentController::QueueMaterialUpdateNotification()
         {
             m_queuedMaterialUpdateNotification = true;
-            if (!TickBus::Handler::BusIsConnected())
+            if (!SystemTickBus::Handler::BusIsConnected())
             {
-                TickBus::Handler::BusConnect();
+                SystemTickBus::Handler::BusConnect();
             }
         }
 
         void MaterialComponentController::QueueLoadMaterials()
         {
             m_queuedLoadMaterials = true;
-            if (!TickBus::Handler::BusIsConnected())
+            if (!SystemTickBus::Handler::BusIsConnected())
             {
-                TickBus::Handler::BusConnect();
+                SystemTickBus::Handler::BusConnect();
             }
         }
 

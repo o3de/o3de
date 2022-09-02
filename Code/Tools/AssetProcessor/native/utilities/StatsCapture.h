@@ -12,7 +12,7 @@
 // This is not meant to be used anywhere except in AssetProcessor.
 
 #pragma once
-
+#include <AzCore/std/optional.h>
 #include <AzCore/std/string/string_view.h>
 
 namespace AssetProcessor
@@ -29,7 +29,9 @@ namespace AssetProcessor
         void BeginCaptureStat(AZStd::string_view statName);
 
         //! Stop the clock running for a particular stat name.
-        void EndCaptureStat(AZStd::string_view statName);
+        //! Return this run's duration in milliseconds. If there is no such stat name, 
+        //! or if BeginCaptureStat was not called before, no duration is returned.
+        AZStd::optional<AZStd::sys_time_t> EndCaptureStat(AZStd::string_view statName, bool persistToDb = false);
 
         //! Do additional processing and then write the cumulative stats to log.
         //! Note that since this is an AP-specific system, the analysis done in the dump function

@@ -78,6 +78,7 @@ namespace EMotionFX
             AZ::Uuid GetComponentTypeId() const override;
             const char* GetAssetTypeDisplayName() const override;
             const char* GetBrowserIcon() const override;
+            int GetAssetTypeDragAndDropCreationPriority() const override;
         };
     } // namespace Integration
 
@@ -88,5 +89,4 @@ namespace AZ
 {
     AZ_TYPE_INFO_SPECIALIZE(EMotionFX::Integration::EMotionFXPtr<EMotionFX::Integration::ActorAsset>, "{3F60D391-F1C8-4A40-9946-A2637D088C48}");
     AZ_TYPE_INFO_SPECIALIZE(EMotionFX::Integration::EMotionFXPtr<EMotionFX::ActorInstance>, "{169ACF47-3DEF-482A-AB7D-4CC11934D932}");
-    AZ_TYPE_INFO_SPECIALIZE(EMotionFX::ActorInstance, "{280A0170-EB6A-4E90-B2F1-E18D8EAEFB36}");
 }

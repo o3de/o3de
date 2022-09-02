@@ -30,8 +30,6 @@ namespace EMotionFX
         , private PhysicsSetupManipulatorRequestBus::Handler
     {
     public:
-        JointTwistLimitManipulators();
-        ~JointTwistLimitManipulators();
         void Setup(const PhysicsSetupManipulatorData& physicsSetupManipulatorData) override;
         void Refresh() override;
         void Teardown() override;

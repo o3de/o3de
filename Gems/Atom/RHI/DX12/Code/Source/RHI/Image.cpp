@@ -31,7 +31,7 @@ namespace AZ
 
         bool Image::IsTiled() const
         {
-            return !m_tiles.empty();
+            return m_tileLayout.m_tileCount > 0;
         }
 
         void Image::SetNameInternal(const AZStd::string_view& name)
@@ -47,6 +47,27 @@ namespace AZ
             imageStats->m_name = GetName();
             imageStats->m_bindFlags = descriptor.m_bindFlags;
             imageStats->m_sizeInBytes = m_residentSizeInBytes;
+        }
+
+        void Image::UpdateResidentTilesSizeInBytes(uint32_t sizePerTile)
+        {
+            if (IsTiled())
+            {
+                uint32_t tileCount = 0;
+                for (const auto& heapTilesGroups : m_heapTiles)
+                {
+                    for (const HeapTiles& heapTiles: heapTilesGroups.second)
+                    {
+                        tileCount += heapTiles.m_totalTileCount;
+                    }
+                }
+
+                m_residentSizeInBytes = tileCount * sizePerTile;
+            }
+            else
+            {
+                AZ_Assert(IsTiled(), "Size won't be updated for non-tiled image ");
+            }
         }
 
         void Image::GenerateSubresourceLayouts()

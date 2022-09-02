@@ -75,7 +75,6 @@ set(FILES
     Asset/Benchmark/BenchmarkCommands.h
     Asset/Benchmark/BenchmarkSettingsAsset.cpp
     Asset/Benchmark/BenchmarkSettingsAsset.h
-    AutoGen/AzFramework.AutoPackets.xml
     CommandLine/CommandLine.h
     CommandLine/CommandRegistrationBus.h
     Viewport/ViewportBus.h
@@ -153,6 +152,8 @@ set(FILES
     DocumentPropertyEditor/CvarAdapter.h
     DocumentPropertyEditor/RoutingAdapter.cpp
     DocumentPropertyEditor/RoutingAdapter.h
+    DocumentPropertyEditor/SettingsRegistryAdapter.cpp
+    DocumentPropertyEditor/SettingsRegistryAdapter.h
     DocumentPropertyEditor/ReflectionAdapter.cpp
     DocumentPropertyEditor/ReflectionAdapter.h
     DocumentPropertyEditor/Reflection/Attribute.h
@@ -179,6 +180,8 @@ set(FILES
     Metrics/MetricsPlainTextNameRegistration.h
     Network/AssetProcessorConnection.cpp
     Network/AssetProcessorConnection.h
+    Network/IRemoteTools.h
+    Network/IRemoteTools.inl
     Network/SocketConnection.cpp
     Network/SocketConnection.h
     Logging/LogFile.cpp
@@ -203,6 +206,7 @@ set(FILES
     Script/ScriptDebugMsgReflection.h
     Script/ScriptRemoteDebugging.cpp
     Script/ScriptRemoteDebugging.h
+    Script/ScriptRemoteDebuggingConstants.h
     StreamingInstall/StreamingInstall.h
     StreamingInstall/StreamingInstall.cpp
     StreamingInstall/StreamingInstallRequests.h
@@ -430,10 +434,6 @@ set(FILES
     Input/Utils/AdjustAnalogInputForDeadZone.h
     Input/Utils/IsAnyKeyOrButton.h
     Input/Utils/ProcessRawInputEventQueues.h
-    TargetManagement/NeighborhoodAPI.h
-    TargetManagement/TargetManagementAPI.h
-    TargetManagement/TargetManagementComponent.cpp
-    TargetManagement/TargetManagementComponent.h
     FileTag/FileTag.h
     FileTag/FileTag.cpp
     FileTag/FileTagBus.h

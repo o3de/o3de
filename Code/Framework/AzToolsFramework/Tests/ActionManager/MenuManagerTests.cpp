@@ -27,6 +27,12 @@ namespace UnitTest
         EXPECT_FALSE(outcome.IsSuccess());
     }
 
+    TEST_F(ActionManagerFixture, VerifyMenuIsRegistered)
+    {
+        auto outcome = m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
+        EXPECT_TRUE(m_menuManagerInterface->IsMenuRegistered("o3de.menu.test"));
+    }
+
     TEST_F(ActionManagerFixture, RegisterMenuBar)
     {
         auto outcome = m_menuManagerInterface->RegisterMenuBar("o3de.menubar.test");
@@ -69,10 +75,76 @@ namespace UnitTest
         auto outcome = m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test", 42);
         EXPECT_FALSE(outcome.IsSuccess());
     }
+    
+    TEST_F(ActionManagerFixture, AddActionsToMenu)
+    {
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test2", {}, []{});
+        m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
+
+        AZStd::vector<AZStd::pair<AZStd::string, int>> actions;
+        actions.push_back(AZStd::make_pair("o3de.action.test", 42));
+        actions.push_back(AZStd::make_pair("o3de.action.test2", 1));
+
+        auto outcome = m_menuManagerInterface->AddActionsToMenu("o3de.menu.test", actions);
+        EXPECT_TRUE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, RemoveActionFromMenu)
+    {
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+        m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
+
+        m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test", 42);
+
+        auto outcome = m_menuManagerInterface->RemoveActionFromMenu("o3de.menu.test", "o3de.action.test");
+        EXPECT_TRUE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, RemoveMissingActionFromMenu)
+    {
+        m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
+        
+        auto outcome = m_menuManagerInterface->RemoveActionFromMenu("o3de.menu.test", "o3de.action.test");
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
+    
+    TEST_F(ActionManagerFixture, RemoveActionsFromMenu)
+    {
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test2", {}, []{});
+        m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
+
+        AZStd::vector<AZStd::pair<AZStd::string, int>> actions;
+        actions.push_back(AZStd::make_pair("o3de.action.test", 42));
+        actions.push_back(AZStd::make_pair("o3de.action.test2", 1));
+        m_menuManagerInterface->AddActionsToMenu("o3de.menu.test", actions);
+
+        auto outcome = m_menuManagerInterface->RemoveActionsFromMenu("o3de.menu.test", { "o3de.action.test", "o3de.action.test2" });
+        EXPECT_TRUE(outcome.IsSuccess());
+    }
+    
+    TEST_F(ActionManagerFixture, RemoveMissingActionsFromMenu)
+    {
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test2", {}, []{});
+        m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
+
+        AZStd::vector<AZStd::pair<AZStd::string, int>> actions;
+        actions.push_back(AZStd::make_pair("o3de.action.test", 42));
+        m_menuManagerInterface->AddActionsToMenu("o3de.menu.test", actions);
+
+        auto outcome = m_menuManagerInterface->RemoveActionsFromMenu("o3de.menu.test", { "o3de.action.test", "o3de.action.test2" });
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
 
     TEST_F(ActionManagerFixture, GetUnregisteredMenu)
     {
-        QMenu* menu = m_menuManagerInterface->GetMenu("o3de.menu.test");
+        QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.test");
         EXPECT_TRUE(menu == nullptr);
     }
 
@@ -80,7 +152,7 @@ namespace UnitTest
     {
         m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
 
-        QMenu* menu = m_menuManagerInterface->GetMenu("o3de.menu.test");
+        QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.test");
         EXPECT_TRUE(menu != nullptr);
     }
 
@@ -88,13 +160,16 @@ namespace UnitTest
     {
         // Register menu, get it and verify it's empty.
         m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
-        QMenu* menu = m_menuManagerInterface->GetMenu("o3de.menu.test");
+        QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.test");
         EXPECT_EQ(menu->actions().size(), 0);
 
         // Register a new action and add it to the menu.
         m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
         m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test", 42);
+
+        // Manually trigger Menu refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenus();
 
         // Verify the action is now in the menu.
         EXPECT_EQ(menu->actions().size(), 1);
@@ -104,7 +179,7 @@ namespace UnitTest
     {
         // Register menu, get it and verify it's empty.
         m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
-        QMenu* menu = m_menuManagerInterface->GetMenu("o3de.menu.test");
+        QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.test");
         EXPECT_EQ(menu->actions().size(), 0);
 
         // Register a new action and add it to the menu.
@@ -114,12 +189,15 @@ namespace UnitTest
         m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test2", 42);
         m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test1", 1);
 
+        // Manually trigger Menu refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenus();
+
         // Verify the actions are now in the menu.
         EXPECT_EQ(menu->actions().size(), 2);
 
         // Verify the order is correct.
-        QAction* test1 = m_actionManagerInterface->GetAction("o3de.action.test1");
-        QAction* test2 = m_actionManagerInterface->GetAction("o3de.action.test2");
+        QAction* test1 = m_actionManagerInternalInterface->GetAction("o3de.action.test1");
+        QAction* test2 = m_actionManagerInternalInterface->GetAction("o3de.action.test2");
 
         const auto& actions = menu->actions();
         EXPECT_EQ(actions[0], test1);
@@ -130,7 +208,7 @@ namespace UnitTest
     {
         // Register menu, get it and verify it's empty.
         m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
-        QMenu* menu = m_menuManagerInterface->GetMenu("o3de.menu.test");
+        QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.test");
         EXPECT_EQ(menu->actions().size(), 0);
 
         // Register a new action and add it to the menu.
@@ -140,12 +218,15 @@ namespace UnitTest
         m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test2", 42);
         m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test1", 42);
 
+        // Manually trigger Menu refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenus();
+
         // Verify the actions are now in the menu.
         EXPECT_EQ(menu->actions().size(), 2);
 
         // Verify the order is correct (when a collision happens, items should be in order of addition).
-        QAction* test1 = m_actionManagerInterface->GetAction("o3de.action.test1");
-        QAction* test2 = m_actionManagerInterface->GetAction("o3de.action.test2");
+        QAction* test1 = m_actionManagerInternalInterface->GetAction("o3de.action.test1");
+        QAction* test2 = m_actionManagerInternalInterface->GetAction("o3de.action.test2");
 
         const auto& actions = menu->actions();
         EXPECT_EQ(actions[0], test2);
@@ -156,11 +237,14 @@ namespace UnitTest
     {
         // Register menu, get it and verify it's empty.
         m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
-        QMenu* menu = m_menuManagerInterface->GetMenu("o3de.menu.test");
+        QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.test");
         EXPECT_EQ(menu->actions().size(), 0);
 
         // Add a separator to the menu.
         m_menuManagerInterface->AddSeparatorToMenu("o3de.menu.test", 42);
+
+        // Manually trigger Menu refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenus();
 
         // Verify the separator is now in the menu.
         const auto& actions = menu->actions();
@@ -178,9 +262,12 @@ namespace UnitTest
         // Add the sub-menu to the menu.
         m_menuManagerInterface->AddSubMenuToMenu("o3de.menu.testMenu", "o3de.menu.testSubMenu", 42);
 
+        // Manually trigger Menu refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenus();
+
         // Verify the sub-menu is now in the menu.
-        QMenu* menu = m_menuManagerInterface->GetMenu("o3de.menu.testMenu");
-        QMenu* submenu = m_menuManagerInterface->GetMenu("o3de.menu.testSubMenu");
+        QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.testMenu");
+        QMenu* submenu = m_menuManagerInternalInterface->GetMenu("o3de.menu.testSubMenu");
         const auto& actions = menu->actions();
 
         EXPECT_EQ(actions.size(), 1);
@@ -198,28 +285,146 @@ namespace UnitTest
         auto outcome = m_menuManagerInterface->AddSubMenuToMenu("o3de.menu.testMenu", "o3de.menu.testSubMenu", 42);
         EXPECT_FALSE(outcome.IsSuccess());
     }
-
-    TEST_F(ActionManagerFixture, AddNullWidgetInMenu)
+    
+    TEST_F(ActionManagerFixture, AddSubMenusToMenu)
     {
-        // Register menu.
-        m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
+        // Register menu and submenus.
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testMenu", {});
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testSubMenu1", {});
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testSubMenu2", {});
 
-        // Try to add a nullptr widget.
-        auto outcome = m_menuManagerInterface->AddWidgetToMenu("o3de.menu.test", nullptr, 42);
+        // Add the sub-menus to the menu.
+        AZStd::vector<AZStd::pair<AZStd::string, int>> testMenus;
+        testMenus.emplace_back("o3de.menu.testSubMenu1", 100);
+        testMenus.emplace_back("o3de.menu.testSubMenu2", 200);
+
+        m_menuManagerInterface->AddSubMenusToMenu("o3de.menu.testMenu", testMenus);
+
+        // Manually trigger Menu refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenus();
+
+        // Verify the sub-menus are now in the menu.
+        QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.testMenu");
+        QMenu* submenu1 = m_menuManagerInternalInterface->GetMenu("o3de.menu.testSubMenu1");
+        QMenu* submenu2 = m_menuManagerInternalInterface->GetMenu("o3de.menu.testSubMenu2");
+        const auto& actions = menu->actions();
+
+        EXPECT_EQ(actions.size(), 2);
+        EXPECT_EQ(actions[0]->menu(), submenu1);
+        EXPECT_EQ(actions[1]->menu(), submenu2);
+    }
+
+    TEST_F(ActionManagerFixture, RemoveSubMenuFromMenu)
+    {
+        // Register menu and submenu.
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testMenu", {});
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testSubMenu", {});
+
+        // Add the sub-menu to the menu.
+        m_menuManagerInterface->AddSubMenuToMenu("o3de.menu.testMenu", "o3de.menu.testSubMenu", 42);
+
+        // Remove the sub-menu from the menu.
+        m_menuManagerInterface->RemoveSubMenuFromMenu("o3de.menu.testMenu", "o3de.menu.testSubMenu");
+
+        // Manually trigger Menu refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenus();
+
+        // Verify the sub-menu is not in the menu.
+        QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.testMenu");
+        const auto& actions = menu->actions();
+
+        EXPECT_EQ(actions.size(), 0);
+    }
+
+    TEST_F(ActionManagerFixture, RemoveSubMenuFromMenuWithoutAdding)
+    {
+        // Register menu and submenu.
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testMenu", {});
+
+        // Remove the sub-menu from the menu.
+        auto outcome = m_menuManagerInterface->RemoveSubMenuFromMenu("o3de.menu.testMenu", "o3de.menu.testSubMenu");
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, RemoveSubMenuFromMenuTwice)
+    {
+        // Register menu and submenu.
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testMenu", {});
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testSubMenu", {});
+
+        // Add the sub-menu to the menu.
+        m_menuManagerInterface->AddSubMenuToMenu("o3de.menu.testMenu", "o3de.menu.testSubMenu", 42);
+
+        // Remove the sub-menu from the menu twice.
+        m_menuManagerInterface->RemoveSubMenuFromMenu("o3de.menu.testMenu", "o3de.menu.testSubMenu");
+        auto outcome = m_menuManagerInterface->RemoveSubMenuFromMenu("o3de.menu.testMenu", "o3de.menu.testSubMenu");
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
+    
+    TEST_F(ActionManagerFixture, RemoveSubMenusFromMenu)
+    {
+        // Register menu and submenus.
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testMenu", {});
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testSubMenu1", {});
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testSubMenu2", {});
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testSubMenu3", {});
+
+        // Add the sub-menus to the menu.
+        AZStd::vector<AZStd::pair<AZStd::string, int>> testMenuAdds;
+        testMenuAdds.emplace_back("o3de.menu.testSubMenu1", 100);
+        testMenuAdds.emplace_back("o3de.menu.testSubMenu2", 200);
+        testMenuAdds.emplace_back("o3de.menu.testSubMenu3", 300);
+
+        m_menuManagerInterface->AddSubMenusToMenu("o3de.menu.testMenu", testMenuAdds);
+
+        // Remove two sub-menus from the menu.
+        AZStd::vector<AZStd::string> testMenuRemoves;
+        testMenuRemoves.emplace_back("o3de.menu.testSubMenu1");
+        testMenuRemoves.emplace_back("o3de.menu.testSubMenu2");
+        m_menuManagerInterface->RemoveSubMenusFromMenu("o3de.menu.testMenu", testMenuRemoves);
+
+        // Manually trigger Menu refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenus();
+
+        // Verify only one sub-menu is now in the menu.
+        QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.testMenu");
+        QMenu* submenu3 = m_menuManagerInternalInterface->GetMenu("o3de.menu.testSubMenu3");
+        const auto& actions = menu->actions();
+
+        EXPECT_EQ(actions.size(), 1);
+        EXPECT_EQ(actions[0]->menu(), submenu3);
+    }
+
+    TEST_F(ActionManagerFixture, AddUnregisteredWidgetInMenu)
+    {
+        // Try to add a widget without registering it.
+        auto outcome = m_menuManagerInterface->AddWidgetToMenu("o3de.menu.test", "someUnregisteredWidgetIdentifier", 42);
         EXPECT_FALSE(outcome.IsSuccess());
     }
 
     TEST_F(ActionManagerFixture, VerifyWidgetInMenu)
     {
-        // Register menu and create a QWidget.
+        // Register menu and widget action.
         m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
+
         QWidget* widget = new QWidget();
+        m_actionManagerInterface->RegisterWidgetAction(
+            "o3de.widgetAction.test", {}, [widget]()
+            {
+                // Note: the WidgetAction generator function should create a new widget every time it's called.
+                // This implementation is technically incorrect, but it allows us to test the correct behavior.
+                return widget;
+            }
+        );
 
         // Add the widget to the menu.
-        m_menuManagerInterface->AddWidgetToMenu("o3de.menu.test", widget, 42);
+        m_menuManagerInterface->AddWidgetToMenu("o3de.menu.test", "o3de.widgetAction.test", 42);
+
+        // Manually trigger Menu refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenus();
 
         // Verify the widget is now in the menu.
-        QMenu* menu = m_menuManagerInterface->GetMenu("o3de.menu.test");
+        QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.test");
         const auto& actions = menu->actions();
 
         EXPECT_EQ(actions.size(), 1);
@@ -253,11 +458,14 @@ namespace UnitTest
         m_menuManagerInterface->AddActionToMenu("o3de.menu.testMenu", "o3de.action.test1", 11);
         m_menuManagerInterface->AddSeparatorToMenu("o3de.menu.testMenu", 18);
 
+        // Manually trigger Menu refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenus();
+
         // Verify the actions are now in the menu in the expected order.
-        QMenu* menu = m_menuManagerInterface->GetMenu("o3de.menu.testMenu");
-        QMenu* submenu = m_menuManagerInterface->GetMenu("o3de.menu.testSubMenu");
-        QAction* test1 = m_actionManagerInterface->GetAction("o3de.action.test1");
-        QAction* test2 = m_actionManagerInterface->GetAction("o3de.action.test2");
+        QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.testMenu");
+        QMenu* submenu = m_menuManagerInternalInterface->GetMenu("o3de.menu.testSubMenu");
+        QAction* test1 = m_actionManagerInternalInterface->GetAction("o3de.action.test1");
+        QAction* test2 = m_actionManagerInternalInterface->GetAction("o3de.action.test2");
 
         // Note: separators and sub-menus are still QActions in the context of the menu.
         EXPECT_EQ(menu->actions().size(), 4);
@@ -304,7 +512,7 @@ namespace UnitTest
     {
         m_menuManagerInterface->RegisterMenuBar("o3de.menubar.test");
 
-        QMenuBar* menuBar = m_menuManagerInterface->GetMenuBar("o3de.menubar.test");
+        QMenuBar* menuBar = m_menuManagerInternalInterface->GetMenuBar("o3de.menubar.test");
         EXPECT_TRUE(menuBar != nullptr);
     }
 
@@ -317,9 +525,12 @@ namespace UnitTest
         // Add the menu to the menu bar.
         m_menuManagerInterface->AddMenuToMenuBar("o3de.menubar.test", "o3de.menu.test", 42);
 
+        // Manually trigger MenuBar refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenuBars();
+
         // Verify the submenu is now in the menu.
-        QMenuBar* menubar = m_menuManagerInterface->GetMenuBar("o3de.menubar.test");
-        QMenu* menu = m_menuManagerInterface->GetMenu("o3de.menu.test");
+        QMenuBar* menubar = m_menuManagerInternalInterface->GetMenuBar("o3de.menubar.test");
+        QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.test");
         const auto& actions = menubar->actions();
 
         EXPECT_EQ(actions.size(), 1);
@@ -343,11 +554,14 @@ namespace UnitTest
         m_menuManagerInterface->AddMenuToMenuBar("o3de.menubar.test", "o3de.menu.testMenu3", 42);
         m_menuManagerInterface->AddMenuToMenuBar("o3de.menubar.test", "o3de.menu.testMenu1", 16);
 
+        // Manually trigger MenuBar refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenuBars();
+
         // Verify the menus are now in the menu bar in the expected order.
-        QMenuBar* menubar = m_menuManagerInterface->GetMenuBar("o3de.menubar.test");
-        QMenu* testMenu1 = m_menuManagerInterface->GetMenu("o3de.menu.testMenu1");
-        QMenu* testMenu2 = m_menuManagerInterface->GetMenu("o3de.menu.testMenu2");
-        QMenu* testMenu3 = m_menuManagerInterface->GetMenu("o3de.menu.testMenu3");
+        QMenuBar* menubar = m_menuManagerInternalInterface->GetMenuBar("o3de.menubar.test");
+        QMenu* testMenu1 = m_menuManagerInternalInterface->GetMenu("o3de.menu.testMenu1");
+        QMenu* testMenu2 = m_menuManagerInternalInterface->GetMenu("o3de.menu.testMenu2");
+        QMenu* testMenu3 = m_menuManagerInternalInterface->GetMenu("o3de.menu.testMenu3");
 
         // Note: menus are represented via a QAction with a submenu property in Qt.
         EXPECT_EQ(menubar->actions().size(), 3);
@@ -427,6 +641,53 @@ namespace UnitTest
         EXPECT_FALSE(outcome.IsSuccess());
     }
 
+    TEST_F(ActionManagerFixture, GetSortKeyOfWidgetInMenu)
+    {
+        m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
+        m_actionManagerInterface->RegisterWidgetAction(
+            "o3de.widgetAction.test",
+            {},
+            []() -> QWidget*
+            {
+                return nullptr;
+            }
+        );
+
+        // Add the widget to the menu.
+        m_menuManagerInterface->AddWidgetToMenu("o3de.menu.test", "o3de.widgetAction.test", 42);
+
+        // Verify the API returns the correct sort key.
+        auto outcome = m_menuManagerInterface->GetSortKeyOfWidgetInMenu("o3de.menu.test", "o3de.widgetAction.test");
+        EXPECT_TRUE(outcome.IsSuccess());
+        EXPECT_EQ(outcome.GetValue(), 42);
+    }
+
+    TEST_F(ActionManagerFixture, GetSortKeyOfUnregisteredWidgetInMenu)
+    {
+        m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
+
+        // Verify the API fails as the widget is not registered.
+        auto outcome = m_menuManagerInterface->GetSortKeyOfWidgetInMenu("o3de.menu.test", "o3de.widgetAction.test");
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, GetSortKeyOfWidgetNotInMenu)
+    {
+        m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
+        m_actionManagerInterface->RegisterWidgetAction(
+            "o3de.widgetAction.test",
+            {},
+            []() -> QWidget*
+            {
+                return nullptr;
+            }
+        );
+
+        // Verify the API fails as the widget is registered but was not added to the menu.
+        auto outcome = m_menuManagerInterface->GetSortKeyOfWidgetInMenu("o3de.menu.test", "o3de.widgetAction.test");
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
+
     TEST_F(ActionManagerFixture, GetSortKeyOfMenuInMenuBar)
     {
         m_menuManagerInterface->RegisterMenuBar("o3de.menubar.test");
@@ -458,6 +719,87 @@ namespace UnitTest
         // Verify the API fails as the menu is registered but was not added to the menu bar.
         auto outcome = m_menuManagerInterface->GetSortKeyOfActionInMenu("o3de.menubar.test", "o3de.menu.test");
         EXPECT_FALSE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, VerifyHideFromMenusWhenDisabledTrue)
+    {
+        // Register menu, get it and verify it's empty.
+        m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
+        QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.test");
+        EXPECT_EQ(menu->actions().size(), 0);
+
+        // Register a new action and add it to the menu. HideFromMenusWhenDisabled is set to true by default.
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+        m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test", 42);
+
+        // Add enabled state callback.
+        bool enabledState = true;
+        m_actionManagerInterface->InstallEnabledStateCallback(
+            "o3de.action.test",
+            [&]()
+            {
+                return enabledState;
+            }
+        );
+
+        // Manually trigger Menu refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenus();
+
+        // Verify the action is now in the menu.
+        EXPECT_EQ(menu->actions().size(), 1);
+
+        // Set the action as disabled.
+        enabledState = false;
+        m_actionManagerInterface->UpdateAction("o3de.action.test");
+
+        // Manually trigger Menu refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenus();
+
+        // Verify the action is no longer in the menu.
+        EXPECT_EQ(menu->actions().size(), 0);
+    }
+
+    TEST_F(ActionManagerFixture, VerifyHideFromMenusWhenDisabledFalse)
+    {
+        // Register menu, get it and verify it's empty.
+        m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
+        QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.test");
+        EXPECT_EQ(menu->actions().size(), 0);
+
+        // Register a new action and add it to the menu. Have HideFromMenusWhenDisabled set to true.
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_hideFromMenusWhenDisabled = false;
+
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", actionProperties, []{});
+        m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test", 42);
+
+        // Add enabled state callback.
+        bool enabledState = true;
+        m_actionManagerInterface->InstallEnabledStateCallback(
+            "o3de.action.test",
+            [&]()
+            {
+                return enabledState;
+            }
+        );
+
+        // Manually trigger Menu refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenus();
+
+        // Verify the action is now in the menu.
+        EXPECT_EQ(menu->actions().size(), 1);
+
+        // Set the action as disabled.
+        enabledState = false;
+        m_actionManagerInterface->UpdateAction("o3de.action.test");
+
+        // Manually trigger Menu refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenus();
+
+        // Verify the action is still in the menu.
+        EXPECT_EQ(menu->actions().size(), 1);
     }
 
 } // namespace UnitTest

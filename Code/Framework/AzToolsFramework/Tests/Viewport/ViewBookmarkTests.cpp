@@ -49,7 +49,7 @@ namespace UnitTest
             auto persistentSetReg = AZStd::make_shared<LocalPersistentSettingsRegistry>();
             bookmarkPersistInterface->OverrideStreamWriteFn(
                 [persistentSetReg](
-                    [[maybe_unused]] const AZStd::string& localBookmarksFileName, const AZStd::string& stringBuffer,
+                    const AZ::IO::PathView&, AZStd::string_view stringBuffer,
                     AZStd::function<bool(AZ::IO::GenericStream&, const AZStd::string&)> write)
                 {
                     persistentSetReg->m_buffer.resize(stringBuffer.size() + 1);
@@ -63,14 +63,13 @@ namespace UnitTest
                 });
 
             bookmarkPersistInterface->OverrideStreamReadFn(
-                [persistentSetReg]([[maybe_unused]] const AZStd::string& localBookmarksFileName)
+                [persistentSetReg](const AZ::IO::PathView&)
                 {
-                    [[maybe_unused]] auto debugString = AZStd::string(persistentSetReg->m_buffer);
                     return persistentSetReg->m_buffer;
                 });
 
             bookmarkPersistInterface->OverrideFileExistsFn(
-                [exists = false](const AZStd::string&) mutable
+                [exists = false](const AZ::IO::PathView&) mutable
                 {
                     // initially does not exist and is then created
                     return AZStd::exchange(exists, true);

@@ -8,7 +8,6 @@
 
 set(FILES
     DPEDebugViewStandalone/main.cpp
-    DPEDebugViewStandalone/DPEDebugWindow.ui
     DPEDebugViewStandalone/ExampleAdapter.cpp
     DPEDebugViewStandalone/ExampleAdapter.h
 )

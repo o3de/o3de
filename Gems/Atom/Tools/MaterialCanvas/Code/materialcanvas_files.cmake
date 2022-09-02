@@ -15,9 +15,8 @@ set(FILES
 
     Source/Document/MaterialCanvasDocument.cpp
     Source/Document/MaterialCanvasDocument.h
+    Source/Document/MaterialCanvasDocumentNotificationBus.h
     Source/Document/MaterialCanvasDocumentRequestBus.h
-    Source/Document/MaterialCanvasGraphDataTypes.cpp
-    Source/Document/MaterialCanvasGraphDataTypes.h
 
     Source/Window/MaterialCanvas.qrc
     Source/Window/MaterialCanvasGraphView.cpp

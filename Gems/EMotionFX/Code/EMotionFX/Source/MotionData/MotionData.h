@@ -20,6 +20,7 @@
 #include <EMotionFX/Source/EventHandler.h>
 #include <EMotionFX/Source/Transform.h>
 #include <EMotionFX/Source/MotionData/MotionDataSampleSettings.h>
+#include <EMotionFX/Source/MotionData/RootMotionExtractionData.h>
 
 namespace MCore
 {
@@ -132,6 +133,13 @@ namespace EMotionFX
         {
             MCore::Endian::EEndianType m_targetEndianType = MCore::Endian::EEndianType::ENDIAN_LITTLE;
             bool m_logDetails = false;
+        };
+
+        struct RootMotionExtractionSettings
+        {
+            bool m_transitionZeroXAxis = false;
+            bool m_transitionZeroYAxis = false;
+            AZStd::string m_sampleJoint = "Hip";
         };
 
         MotionData() = default;
@@ -269,6 +277,8 @@ namespace EMotionFX
         void SetJointStaticScale(size_t jointDataIndex, const AZ::Vector3& scale);
         void SetJointBindPoseScale(size_t jointDataIndex, const AZ::Vector3& scale);
 #endif
+
+        virtual void ExtractRootMotion(size_t sampleJointDataIndex, size_t rootJointDataIndex, const RootMotionExtractionData& data);
 
         static AZStd::string ReadStringFromStream(MCore::Stream* stream, MCore::Endian::EEndianType sourceEndianType);
 

@@ -14,7 +14,7 @@ def DeleteEntity_UnderLevelPrefab():
     """
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
-    from editor_python_test_tools.prefab_utils import wait_for_propagation
+    from editor_python_test_tools.wait_utils import PrefabWaiter
     import Prefab.tests.PrefabTestUtils as prefab_test_utils
 
     prefab_test_utils.open_base_tests_level()
@@ -28,20 +28,20 @@ def DeleteEntity_UnderLevelPrefab():
     entity.delete()
 
     # Wait till prefab propagation finishes before validating entity deletion.
-    wait_for_propagation()
+    PrefabWaiter.wait_for_propagation()
     level_container_child_entities_count = len(level_container_entity.get_children_ids())
     assert level_container_child_entities_count == 0, f"The level still has {level_container_child_entities_count}" \
                                                       f" children when it should have 0."
 
     # Test undo/redo on entity delete
     azlmbr.legacy.general.undo()
-    wait_for_propagation()
+    PrefabWaiter.wait_for_propagation()
     level_container_child_entities_count = len(level_container_entity.get_children_ids())
     assert level_container_child_entities_count == 1, f"{level_container_child_entities_count} entities " \
                                                       f"found in level after Undo operation, when there should " \
                                                       f"be 1 entity"
     azlmbr.legacy.general.redo()
-    wait_for_propagation()
+    PrefabWaiter.wait_for_propagation()
     level_container_child_entities_count = len(level_container_entity.get_children_ids())
     assert level_container_child_entities_count == 0, f"{level_container_child_entities_count} entities " \
                                                       f"found in level after Redo operation, when there should " \

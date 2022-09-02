@@ -44,7 +44,7 @@ namespace AZ
             {
                 serializeContext
                     ->Class<MeshFeatureProcessor, FeatureProcessor>()
-                    ->Version(0);
+                    ->Version(1);
             }
         }
 
@@ -183,6 +183,7 @@ namespace AZ
             meshDataHandle->m_scene = GetParentScene();
             meshDataHandle->m_materialAssignments = materials;
             meshDataHandle->m_objectId = m_transformService->ReserveObjectId();
+            meshDataHandle->m_rayTracingUuid = AZ::Uuid::CreateRandom();
             meshDataHandle->m_originalModelAsset = descriptor.m_modelAsset;
             meshDataHandle->m_meshLoader = AZStd::make_unique<ModelDataInstance::MeshLoader>(descriptor.m_modelAsset, &*meshDataHandle);
 
@@ -315,7 +316,7 @@ namespace AZ
                 // ray tracing data needs to be updated with the new transform
                 if (m_rayTracingFeatureProcessor)
                 {
-                    m_rayTracingFeatureProcessor->SetMeshTransform(meshHandle->m_objectId, transform, nonUniformScale);
+                    m_rayTracingFeatureProcessor->SetMeshTransform(meshHandle->m_rayTracingUuid, transform, nonUniformScale);
                 }
             }
         }
@@ -443,7 +444,7 @@ namespace AZ
                     // remove from ray tracing
                     if (m_rayTracingFeatureProcessor)
                     {
-                        m_rayTracingFeatureProcessor->RemoveMesh(meshHandle->m_objectId);
+                        m_rayTracingFeatureProcessor->RemoveMesh(meshHandle->m_rayTracingUuid);
                     }
                 }
 
@@ -465,6 +466,15 @@ namespace AZ
             }
         }
 
+        bool MeshFeatureProcessor::GetVisible(const MeshHandle& meshHandle) const
+        {
+            if (meshHandle.IsValid())
+            {
+                return meshHandle->m_visible;
+            }
+            return false;
+        }
+
         void MeshFeatureProcessor::SetVisible(const MeshHandle& meshHandle, bool visible)
         {
             if (meshHandle.IsValid())
@@ -474,7 +484,7 @@ namespace AZ
                 if (m_rayTracingFeatureProcessor && meshHandle->m_descriptor.m_isRayTracingEnabled)
                 {
                     // always remove from ray tracing first
-                    m_rayTracingFeatureProcessor->RemoveMesh(meshHandle->m_objectId);
+                    m_rayTracingFeatureProcessor->RemoveMesh(meshHandle->m_rayTracingUuid);
 
                     // now add if it's visible
                     if (visible)
@@ -1045,7 +1055,11 @@ namespace AZ
                 subMeshes.push_back(subMesh);
             }
 
-            rayTracingFeatureProcessor->SetMesh(m_objectId, m_model->GetModelAsset()->GetId(), subMeshes);
+            TransformServiceFeatureProcessor* transformServiceFeatureProcessor = m_scene->GetFeatureProcessor<TransformServiceFeatureProcessor>();
+            AZ::Transform transform = transformServiceFeatureProcessor->GetTransformForId(m_objectId);
+            AZ::Vector3 nonUniformScale = transformServiceFeatureProcessor->GetNonUniformScaleForId(m_objectId);
+
+            rayTracingFeatureProcessor->AddMesh(m_rayTracingUuid, m_model->GetModelAsset()->GetId(), subMeshes, transform, nonUniformScale);
         }
 
         void ModelDataInstance::SetIrradianceData(
@@ -1183,7 +1197,7 @@ namespace AZ
             RayTracingFeatureProcessor* rayTracingFeatureProcessor = m_scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
             if (rayTracingFeatureProcessor)
             {
-                rayTracingFeatureProcessor->RemoveMesh(m_objectId);
+                rayTracingFeatureProcessor->RemoveMesh(m_rayTracingUuid);
             }
         }
 
@@ -1319,6 +1333,8 @@ namespace AZ
 
             localAabb.GetTransformedAabb(localToWorld).GetAsSphere(center, radius);
 
+            m_cullable.m_lodData.m_lodSelectionRadius = 0.5f*localAabb.GetExtents().GetMaxElement();
+
             m_cullable.m_cullData.m_boundingSphere = Sphere(center, radius);
             m_cullable.m_cullData.m_boundingObb = localAabb.GetTransformedObb(localToWorld);
             m_cullable.m_cullData.m_visibilityEntry.m_boundingVolume = localAabb.GetTransformedAabb(localToWorld);
@@ -1379,7 +1395,7 @@ namespace AZ
                         // take the last handle from the list, which will be the smallest (most influential) probe
                         ReflectionProbeHandle handle = reflectionProbeHandles.back();
 
-                        objectSrg->SetConstant(modelToWorldConstantIndex, reflectionProbeFeatureProcessor->GetTransform(handle));
+                        objectSrg->SetConstant(modelToWorldConstantIndex, Matrix3x4::CreateFromTransform(reflectionProbeFeatureProcessor->GetTransform(handle)));
                         objectSrg->SetConstant(modelToWorldInverseConstantIndex, Matrix3x4::CreateFromTransform(reflectionProbeFeatureProcessor->GetTransform(handle)).GetInverseFull());
                         objectSrg->SetConstant(outerObbHalfLengthsConstantIndex, reflectionProbeFeatureProcessor->GetOuterObbWs(handle).GetHalfLengths());
                         objectSrg->SetConstant(innerObbHalfLengthsConstantIndex, reflectionProbeFeatureProcessor->GetInnerObbWs(handle).GetHalfLengths());

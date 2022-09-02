@@ -52,7 +52,7 @@ namespace AzToolsFramework
             virtual AZStd::vector<ViewportUi::ClusterId> PopulateViewportUi() = 0;
 
             /// The name for the ComponentMode to be displayed.
-            virtual AZStd::string GetComponentModeName() const { return "Edit Mode"; }
+            virtual AZStd::string GetComponentModeName() const = 0;
         };
 
         /// Alias for builder/factory function that is responsible for creating a new ComponentMode.
@@ -141,6 +141,9 @@ namespace AzToolsFramework
             /// If the user has a multiple selection where each entity in the selection
             /// has the same Component on it, move all Components into ComponentMode.
             virtual void AddSelectedComponentModesOfType(const AZ::Uuid& componentType) = 0;
+
+            /// Switches to the ComponentMode of input component type immediately.
+            virtual void ChangeComponentMode(const AZ::Uuid& componentType) = 0;
 
             /// Move to the next active ComponentMode so the Actions for that mode
             /// become available (it is now 'selected').
@@ -258,6 +261,5 @@ namespace AzToolsFramework
 
             return inComponentMode;
         }
-
     } // namespace ComponentModeFramework
 } // namespace AzToolsFramework

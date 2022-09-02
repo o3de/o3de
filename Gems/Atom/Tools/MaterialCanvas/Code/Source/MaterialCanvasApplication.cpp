@@ -6,12 +6,23 @@
  *
  */
 
+#include <Atom/RPI.Edit/Shader/ShaderSourceData.h>
+#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
+#include <AtomToolsFramework/Document/AtomToolsAnyDocument.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
+#include <AzCore/Math/Color.h>
+#include <AzCore/Math/Vector2.h>
+#include <AzCore/Math/Vector3.h>
+#include <AzCore/Math/Vector4.h>
+#include <AzCore/RTTI/RTTI.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <Document/MaterialCanvasDocument.h>
-#include <Document/MaterialCanvasGraphDataTypes.h>
+#include <GraphModel/Model/DataType.h>
 #include <MaterialCanvasApplication.h>
 #include <Window/MaterialCanvasGraphView.h>
 #include <Window/MaterialCanvasMainWindow.h>
+
+#include <QLabel>
 
 void InitMaterialCanvasResources()
 {
@@ -37,7 +48,7 @@ namespace MaterialCanvas
         InitMaterialCanvasResources();
 
         QApplication::setOrganizationName("O3DE");
-        QApplication::setApplicationName("O3DE Material Canvas PROTOTYPE WIP");
+        QApplication::setApplicationName("O3DE Material Canvas (Experimental)");
         QApplication::setWindowIcon(QIcon(":/Icons/application.svg"));
 
         AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
@@ -70,17 +81,35 @@ namespace MaterialCanvas
     {
         Base::StartCommon(systemEntity);
 
-        m_graphContext = AZStd::make_shared<GraphModel::GraphContext>("Material Canvas", ".materialcanvas", CreateAllDataTypes());
+        // Instantiate the dynamic node manager to register all dynamic node configurations and data types used in this tool
+        m_dynamicNodeManager.reset(aznew AtomToolsFramework::DynamicNodeManager(m_toolId));
+
+        // Register all data types required by material canvas nodes with the dynamic node manager
+        m_dynamicNodeManager->RegisterDataTypes({
+            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("bool"), bool{}, "bool"),
+            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("int"), int32_t{}, "int"),
+            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("uint"), uint32_t{}, "uint"),
+            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("float"), float{}, "float"),
+            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("float2"), AZ::Vector2::CreateZero(), "float2"),
+            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("float3"), AZ::Vector3::CreateZero(), "float3"),
+            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("float4"), AZ::Vector4::CreateZero(), "float4"),
+            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("color"), AZ::Color::CreateOne(), "color"),
+            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("string"), AZStd::string{}, "string"),
+            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("image"), AZ::Data::Asset<AZ::RPI::StreamingImageAsset>{}, "image"),
+        });
+
+        // Search the project and gems for dynamic node configurations and register them with the manager
+        m_dynamicNodeManager->LoadConfigFiles("materialcanvasnode");
+
+        // Each graph document creates its own graph context but we want to use a shared graph context instead to avoid data duplication
+        m_graphContext = AZStd::make_shared<GraphModel::GraphContext>(
+            "Material Canvas", ".materialcanvas.azasset", m_dynamicNodeManager->GetRegisteredDataTypes());
         m_graphContext->CreateModuleGraphManager();
 
-        // Instantiate the dynamic node manager, giving it an extension to enumerate and load node configurations
-        m_dynamicNodeManager.reset(aznew AtomToolsFramework::DynamicNodeManager(m_toolId));
-        m_dynamicNodeManager->LoadConfigFiles({ "materialcanvasnode.azasset" });
-
-        // This callback is passed into the main window and views to populate nude palette items from the dynamic node manager
+        // This configuration data is passed through the main window and graph views to setup translation data, styling, and node palettes
         AtomToolsFramework::GraphViewConfig graphViewConfig;
         graphViewConfig.m_translationPath = "@products@/translation/materialcanvas_en_us.qm";
-        graphViewConfig.m_styleManagerPath = "MaterialCanvas/StyleSheet/graphcanvas_style.json";
+        graphViewConfig.m_styleManagerPath = "MaterialCanvas/StyleSheet/materialcanvas_style.json";
         graphViewConfig.m_nodeMimeType = "MaterialCanvas/node-palette-mime-event";
         graphViewConfig.m_nodeSaveIdentifier = "MaterialCanvas/ContextMenu";
         graphViewConfig.m_createNodeTreeItemsFn = [](const AZ::Crc32& toolId)
@@ -91,11 +120,12 @@ namespace MaterialCanvas
             return rootTreeItem;
         };
 
-        // Overriding default document type info to provide a custom view
+        // Acquiring default material canvas document type info so that it can be customized before registration
         auto documentTypeInfo = MaterialCanvasDocument::BuildDocumentTypeInfo();
 
         // Overriding default document factory function to pass in a shared graph context
-        documentTypeInfo.m_documentFactoryCallback = [this](const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo)
+        documentTypeInfo.m_documentFactoryCallback =
+            [this](const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo)
         {
             return aznew MaterialCanvasDocument(toolId, documentTypeInfo, m_graphContext);
         };
@@ -109,6 +139,38 @@ namespace MaterialCanvas
         AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
             m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::RegisterDocumentType, documentTypeInfo);
 
+        // Register document type for editing material canvas node configurations. This document type does not have a central view widget
+        // and will show a label directing users to the inspector.
+        documentTypeInfo = AtomToolsFramework::AtomToolsAnyDocument::BuildDocumentTypeInfo(
+            "Material Canvas Node Config",
+            { "materialcanvasnode" },
+            AZStd::any(AtomToolsFramework::DynamicNodeConfig()),
+            AZ::Uuid::CreateNull()); // Null ID because JSON file contains type info and can be loaded directly into AZStd::any
+
+        documentTypeInfo.m_documentViewFactoryCallback = [this]([[maybe_unused]] const AZ::Crc32& toolId, const AZ::Uuid& documentId) {
+            auto viewWidget = new QLabel("Material Canvas Node Config properties can be edited in the inspector.", m_window.get());
+            viewWidget->setAlignment(Qt::AlignCenter);
+            return m_window->AddDocumentTab(documentId, viewWidget);
+        };
+        AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::RegisterDocumentType, documentTypeInfo);
+
+        // Register document type for editing shader source data and template files. This document type also does not have a central view
+        // and will display a label widget that directs users to the property inspector.
+        documentTypeInfo = AtomToolsFramework::AtomToolsAnyDocument::BuildDocumentTypeInfo(
+            "Shader Source Data",
+            { "shader", "shader.template" },
+            AZStd::any(AZ::RPI::ShaderSourceData()),
+            AZ::RPI::ShaderSourceData::TYPEINFO_Uuid()); // Supplying ID because it is not included in the JSON file
+
+        documentTypeInfo.m_documentViewFactoryCallback = [this]([[maybe_unused]] const AZ::Crc32& toolId, const AZ::Uuid& documentId) {
+            auto viewWidget = new QLabel("Shader Source Data properties can be edited in the inspector.", m_window.get());
+            viewWidget->setAlignment(Qt::AlignCenter);
+            return m_window->AddDocumentTab(documentId, viewWidget);
+        };
+        AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::RegisterDocumentType, documentTypeInfo);
+
         m_viewportSettingsSystem.reset(aznew AtomToolsFramework::EntityPreviewViewportSettingsSystem(m_toolId));
 
         m_window.reset(aznew MaterialCanvasMainWindow(m_toolId, graphViewConfig));
@@ -119,13 +181,14 @@ namespace MaterialCanvas
     {
         m_window.reset();
         m_viewportSettingsSystem.reset();
+        m_graphContext.reset();
         m_dynamicNodeManager.reset();
         Base::Destroy();
     }
 
     AZStd::vector<AZStd::string> MaterialCanvasApplication::GetCriticalAssetFilters() const
     {
-        return AZStd::vector<AZStd::string>({ "passes/", "config/", "MaterialCanvas/" });
+        return AZStd::vector<AZStd::string>({ "passes/", "config/"});
     }
 
     QWidget* MaterialCanvasApplication::GetAppMainWindow()

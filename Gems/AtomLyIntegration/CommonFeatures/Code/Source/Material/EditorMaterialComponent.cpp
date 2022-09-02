@@ -86,7 +86,7 @@ namespace AZ
                     editContext->Class<EditorMaterialComponent>(
                         "Material", "The material component specifies the material to use for this entity")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                            ->Attribute(AZ::Edit::Attributes::Category, "Atom")
+                            ->Attribute(AZ::Edit::Attributes::Category, "Graphics/Mesh")
                             ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg")
                             ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.svg")
                             ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
@@ -144,13 +144,11 @@ namespace AZ
         {
             BaseClass::Activate();
             MaterialComponentNotificationBus::Handler::BusConnect(GetEntityId());
-            EditorMaterialSystemComponentNotificationBus::Handler::BusConnect();
             UpdateMaterialSlots();
         }
 
         void EditorMaterialComponent::Deactivate()
         {
-            EditorMaterialSystemComponentNotificationBus::Handler::BusDisconnect();
             MaterialComponentNotificationBus::Handler::BusDisconnect();
             BaseClass::Deactivate();
         }
@@ -286,18 +284,6 @@ namespace AZ
             if (materialAssignment.m_materialInstance)
             {
                 materialAssignment.m_materialInstance->SetPsoHandlingOverride(AZ::RPI::MaterialPropertyPsoHandling::Allowed);
-            }
-        }
-
-        void EditorMaterialComponent::OnRenderMaterialPreviewComplete(
-            [[maybe_unused]] const AZ::EntityId& entityId,
-            [[maybe_unused]] const AZ::Render::MaterialAssignmentId& materialAssignmentId,
-            [[maybe_unused]] const QPixmap& pixmap)
-        {
-            if (entityId == GetEntityId())
-            {
-                AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-                    &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
             }
         }
 

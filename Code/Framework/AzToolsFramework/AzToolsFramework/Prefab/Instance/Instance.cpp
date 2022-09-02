@@ -844,6 +844,11 @@ namespace AzToolsFramework
             return AZStd::nullopt;
         }
 
+        bool Instance::HasParentInstance() const
+        {
+            return m_parent != nullptr;
+        }
+
         const InstanceAlias& Instance::GetInstanceAlias() const
         {
             return m_alias;

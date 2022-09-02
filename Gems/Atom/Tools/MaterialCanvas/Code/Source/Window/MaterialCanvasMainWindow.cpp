@@ -27,9 +27,9 @@ namespace MaterialCanvas
         m_toolBar = new AtomToolsFramework::EntityPreviewViewportToolBar(m_toolId, this);
         addToolBar(m_toolBar);
 
-        m_materialInspector = new AtomToolsFramework::AtomToolsDocumentInspector(m_toolId, this);
-        m_materialInspector->SetDocumentSettingsPrefix("/O3DE/Atom/MaterialCanvas/MaterialInspector");
-        AddDockWidget("Inspector", m_materialInspector, Qt::RightDockWidgetArea);
+        m_documentInspector = new AtomToolsFramework::AtomToolsDocumentInspector(m_toolId, this);
+        m_documentInspector->SetDocumentSettingsPrefix("/O3DE/Atom/MaterialCanvas/DocumentInspector");
+        AddDockWidget("Inspector", m_documentInspector, Qt::RightDockWidgetArea);
 
         // Set up the dockable viewport widget
         m_materialViewport = new AtomToolsFramework::EntityPreviewViewportWidget(m_toolId, this);
@@ -51,16 +51,18 @@ namespace MaterialCanvas
         // Inject the entity context, scene, content, and controller into the viewport widget
         m_materialViewport->Init(entityContext, viewportScene, viewportContent, viewportController);
 
-        AddDockWidget("Viewport", m_materialViewport, Qt::RightDockWidgetArea);
+        AddDockWidget("Viewport", m_materialViewport, Qt::BottomDockWidgetArea);
 
         m_viewportSettingsInspector = new AtomToolsFramework::EntityPreviewViewportSettingsInspector(m_toolId, this);
         AddDockWidget("Viewport Settings", m_viewportSettingsInspector, Qt::LeftDockWidgetArea);
         SetDockWidgetVisible("Viewport Settings", false);
 
-        AddDockWidget("MiniMap", aznew GraphCanvas::MiniMapDockWidget(m_toolId, this), Qt::RightDockWidgetArea);
-
         m_bookmarkDockWidget = aznew GraphCanvas::BookmarkDockWidget(m_toolId, this);
         AddDockWidget("Bookmarks", m_bookmarkDockWidget, Qt::BottomDockWidgetArea);
+        SetDockWidgetVisible("Bookmarks", false);
+
+        AddDockWidget("MiniMap", aznew GraphCanvas::MiniMapDockWidget(m_toolId, this), Qt::BottomDockWidgetArea);
+        SetDockWidgetVisible("MiniMap", false);
 
         GraphCanvas::NodePaletteConfig nodePaletteConfig;
         nodePaletteConfig.m_rootTreeItem = m_graphViewConfig.m_createNodeTreeItemsFn(m_toolId);
@@ -98,19 +100,7 @@ namespace MaterialCanvas
     void MaterialCanvasMainWindow::OnDocumentOpened(const AZ::Uuid& documentId)
     {
         Base::OnDocumentOpened(documentId);
-        m_materialInspector->SetDocumentId(documentId);
-    }
-
-    void MaterialCanvasMainWindow::OnDocumentCleared(const AZ::Uuid& documentId)
-    {
-        Base::OnDocumentCleared(documentId);
-        m_materialInspector->SetDocumentId(documentId);
-    }
-
-    void MaterialCanvasMainWindow::OnDocumentError(const AZ::Uuid& documentId)
-    {
-        Base::OnDocumentError(documentId);
-        m_materialInspector->SetDocumentId(documentId);
+        m_documentInspector->SetDocumentId(documentId);
     }
 
     void MaterialCanvasMainWindow::ResizeViewportRenderTarget(uint32_t width, uint32_t height)
@@ -145,23 +135,17 @@ namespace MaterialCanvas
         m_materialViewport->UnlockRenderTargetSize();
     }
 
-    void MaterialCanvasMainWindow::OpenSettings()
+    AZStd::string MaterialCanvasMainWindow::GetHelpDialogText() const
     {
-    }
-
-    void MaterialCanvasMainWindow::OpenHelp()
-    {
-        QMessageBox::information(
-            this, windowTitle(),
-            R"(<html><head/><body>
+        return R"(<html><head/><body>
             <p><h3><u>Camera Controls</u></h3></p>
             <p><b>LMB</b> - rotate camera</p>
             <p><b>RMB</b> or <b>Alt+LMB</b> - orbit camera around target</p>
-            <p><b>MMB</b> or <b>Alt+MMB</b> - pan camera on its xy plane</p>
+            <p><b>MMB</b> - pan camera on its xy plane</p>
             <p><b>Alt+RMB</b> or <b>LMB+RMB</b> - dolly camera on its z axis</p>
             <p><b>Ctrl+LMB</b> - rotate model</p>
             <p><b>Shift+LMB</b> - rotate environment</p>
-            </body></html>)");
+            </body></html>)";
     }
 } // namespace MaterialCanvas
 

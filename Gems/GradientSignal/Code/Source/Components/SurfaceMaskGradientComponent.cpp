@@ -127,6 +127,7 @@ namespace GradientSignal
     void SurfaceMaskGradientComponent::Activate()
     {
         m_dependencyMonitor.Reset();
+        m_dependencyMonitor.SetRegionChangedEntityNotificationFunction();
         m_dependencyMonitor.ConnectOwner(GetEntityId());
         SurfaceMaskGradientRequestBus::Handler::BusConnect(GetEntityId());
 
@@ -280,8 +281,11 @@ namespace GradientSignal
 
         if (changedTagAffectsGradient)
         {
+            AZ::Aabb expandedBounds(oldBounds);
+            expandedBounds.AddAabb(newBounds);
+
             LmbrCentral::DependencyNotificationBus::Event(
-                GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
+                GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionRegionChanged, expandedBounds);
         }
     }
 

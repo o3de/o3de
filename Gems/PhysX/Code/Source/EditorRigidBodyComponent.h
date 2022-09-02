@@ -8,19 +8,18 @@
 
 #pragma once
 
-#include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
-
+#include <AzCore/Component/NonUniformScaleBus.h>
+#include <AzCore/Component/TransformBus.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
-#include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
-#include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
-
-#include <AzCore/Component/TransformBus.h>
-#include <AzCore/Component/NonUniformScaleBus.h>
+#include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
+#include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
+#include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <PhysX/ColliderComponentBus.h>
 #include <PhysX/Debug/PhysXDebugConfiguration.h>
 #include <PhysX/Debug/PhysXDebugInterface.h>
+#include <Source/RigidBody.h>
 
 namespace PhysX
 {
@@ -57,25 +56,24 @@ namespace PhysX
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("PhysicsWorldBodyService", 0x944da0cc));
-            provided.push_back(AZ_CRC("PhysXRigidBodyService", 0x1d4c64a8));
+            provided.push_back(AZ_CRC_CE("PhysicsWorldBodyService"));
+            provided.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("PhysXRigidBodyService", 0x1d4c64a8));
-            incompatible.push_back(AZ_CRC("PhysicsService", 0xa7350d22));
-            incompatible.push_back(AZ_CRC("LegacyCryPhysicsService", 0xbb370351));
+            incompatible.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
+            incompatible.push_back(AZ_CRC_CE("PhysicsStaticRigidBodyService"));
         }
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+            required.push_back(AZ_CRC_CE("TransformService"));
         }
 
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
-            dependent.push_back(AZ_CRC("PhysXColliderService", 0x4ff43f7c));
+            dependent.push_back(AZ_CRC_CE("PhysicsColliderService"));
             dependent.push_back(AZ_CRC_CE("NonUniformScaleService"));
         }
 
@@ -124,7 +122,9 @@ namespace PhysX
 
         Debug::DebugDisplayDataChangedEvent::Handler m_debugDisplayDataChangeHandler;
 
-        EditorRigidBodyConfiguration m_config;
+        EditorRigidBodyConfiguration m_config; //!< Generic properties from AzPhysics.
+        RigidBodyConfiguration
+            m_physxSpecificConfig; //!< Properties specific to PhysX which might not have exact equivalents in other physics engines.
         AzPhysics::SimulatedBodyHandle m_editorRigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
         AzPhysics::SceneHandle m_editorSceneHandle = AzPhysics::InvalidSceneHandle;
 

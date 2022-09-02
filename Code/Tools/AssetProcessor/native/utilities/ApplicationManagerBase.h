@@ -56,7 +56,7 @@ class ApplicationManagerBase
     , public AssetProcessor::AssetBuilderRegistrationBus::Handler
     , public AZ::Debug::TraceMessageBus::Handler
     , protected AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Handler
-    , public AssetProcessor::DiskSpaceInfoBus::Handler
+    , public AZ::Interface<AssetProcessor::IDiskSpaceInfo>::Registrar
     , protected AzToolsFramework::SourceControlNotificationBus::Handler
     , public AssetProcessor::MessageInfoBus::Handler
 {
@@ -104,8 +104,8 @@ public:
     //! TraceMessageBus Interface
     bool OnError(const char* window, const char* message) override;
 
-    //! DiskSpaceInfoBus::Handler
-    bool CheckSufficientDiskSpace(const QString& savePath, qint64 requiredSpace, bool shutdownIfInsufficient) override;
+    //! IDiskSpaceInfo Interface
+    bool CheckSufficientDiskSpace(qint64 requiredSpace, bool shutdownIfInsufficient) override;
 
     //! AzFramework::SourceControlNotificationBus::Handler
     void ConnectivityStateChanged(const AzToolsFramework::SourceControlState newState) override;
@@ -237,11 +237,6 @@ protected:
     QAtomicInt m_connectionsAwaitingAssetCatalogSave = 0;
     int m_remainingAPMJobs = 0;
     bool m_assetProcessorManagerIsReady = false;
-
-    // When job priority and escalation is equal, jobs sort in order by job key.
-    // This switches that behavior to instead sort by the DB source name, which
-    // allows automated tests to get deterministic behavior out of Asset Processor.
-    bool m_sortJobsByDBSourceName = false;
 
     unsigned int m_highestConnId = 0;
     AzToolsFramework::Ticker* m_ticker = nullptr; // for ticking the tickbus.

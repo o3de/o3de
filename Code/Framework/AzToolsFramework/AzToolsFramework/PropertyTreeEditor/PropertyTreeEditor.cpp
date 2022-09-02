@@ -914,7 +914,14 @@ namespace AzToolsFramework
 
             bool addChildren = true;
             auto editMetaData = node.GetElementEditMetadata();
-            if (editMetaData)
+
+            AZ_Warning("PropertyTreeEditor",
+                !editMetaData || editMetaData->m_name,
+                "Found ElementData with no name on node \"%s\" with path\"%s\", skipping.",
+                node.GetElementMetadata() && node.GetElementMetadata()->m_name ? node.GetElementMetadata()->m_name : "",
+                path.c_str());
+
+            if (editMetaData && editMetaData->m_name)
             {
                 if (!path.empty())
                 {

@@ -9,11 +9,13 @@
 #include <EditorPythonBindings/CustomTypeBindingBus.h>
 #include <Source/ActionManager/ActionManagerBus.h>
 #include <Source/ActionManager/MenuManagerBus.h>
+#include <Source/ActionManager/ToolBarManagerBus.h>
 
 namespace AzToolsFramework
 {
     class ActionManagerInterface;
     class MenuManagerInterface;
+    class ToolBarManagerInterface;
 }
 
 namespace EditorPythonBindings
@@ -24,6 +26,7 @@ namespace EditorPythonBindings
     class PythonActionManagerHandler final
         : public ActionManagerRequestBus::Handler
         , public MenuManagerRequestBus::Handler
+        , public ToolBarManagerRequestBus::Handler
         , private EditorPythonBindings::CustomTypeBindingNotificationBus::Handler
     {
     public:
@@ -61,6 +64,32 @@ namespace EditorPythonBindings
         AzToolsFramework::MenuManagerOperationResult AddSubMenuToMenu(
             const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier, int sortIndex) override;
 
+        // ToolBarManagerRequestBus overrides ...
+        AzToolsFramework::ToolBarManagerOperationResult RegisterToolBar(
+            const AZStd::string& toolBarIdentifier, const AzToolsFramework::ToolBarProperties& properties) override;
+        AzToolsFramework::ToolBarManagerOperationResult AddActionToToolBar(
+            const AZStd::string& toolBarIdentifier, const AZStd::string& actionIdentifier, int sortIndex) override;
+        AzToolsFramework::ToolBarManagerOperationResult AddActionWithSubMenuToToolBar(
+            const AZStd::string& toolBarIdentifier,
+            const AZStd::string& actionIdentifier,
+            const AZStd::string& subMenuIdentifier,
+            int sortIndex) override;
+        AzToolsFramework::ToolBarManagerOperationResult AddActionsToToolBar(
+            const AZStd::string& toolBarIdentifier, const AZStd::vector<AZStd::pair<AZStd::string, int>>& actions) override;
+        AzToolsFramework::ToolBarManagerOperationResult RemoveActionFromToolBar(
+            const AZStd::string& toolBarIdentifier, const AZStd::string& actionIdentifier) override;
+        AzToolsFramework::ToolBarManagerOperationResult RemoveActionsFromToolBar(
+            const AZStd::string& toolBarIdentifier, const AZStd::vector<AZStd::string>& actionIdentifiers) override;
+        AzToolsFramework::ToolBarManagerOperationResult AddSeparatorToToolBar(
+            const AZStd::string& toolBarIdentifier, int sortIndex) override;
+        AzToolsFramework::ToolBarManagerOperationResult AddWidgetToToolBar(
+            const AZStd::string& toolBarIdentifier, const AZStd::string& widgetActionIdentifier, int sortIndex) override;
+        QToolBar* GetToolBar(const AZStd::string& toolBarIdentifier) override;
+        AzToolsFramework::ToolBarManagerIntegerResult GetSortKeyOfActionInToolBar(
+            const AZStd::string& toolBarIdentifier, const AZStd::string& actionIdentifier) const override;
+        AzToolsFramework::ToolBarManagerIntegerResult GetSortKeyOfWidgetInToolBar(
+            const AZStd::string& toolBarIdentifier, const AZStd::string& widgetActionIdentifier) const override;
+
     private:
         AZStd::unordered_map<void*, AZ::TypeId> m_allocationMap;
 
@@ -90,6 +119,7 @@ namespace EditorPythonBindings
 
         AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
         AzToolsFramework::MenuManagerInterface* m_menuManagerInterface = nullptr;
+        AzToolsFramework::ToolBarManagerInterface* m_toolBarManagerInterface = nullptr;
     };
 
 } // namespace EditorPythonBindings

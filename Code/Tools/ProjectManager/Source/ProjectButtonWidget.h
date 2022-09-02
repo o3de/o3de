@@ -9,6 +9,7 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <EngineInfo.h>
 #include <ProjectInfo.h>
 #include <AzCore/std/functional.h>
 
@@ -26,6 +27,11 @@ QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
 QT_FORWARD_DECLARE_CLASS(QEvent)
 QT_FORWARD_DECLARE_CLASS(QMenu)
 
+namespace AzQtComponents
+{
+    QT_FORWARD_DECLARE_CLASS(ElidingLabel)
+}
+
 namespace O3DE::ProjectManager
 {
     class LabelButton
@@ -40,6 +46,7 @@ namespace O3DE::ProjectManager
         QLabel* GetMessageLabel();
         QLabel* GetSubMessageLabel();
         QLabel* GetWarningIcon();
+        QLabel* GetCloudIcon();
         QSpacerItem* GetWarningSpacer();
         QLabel* GetBuildingAnimationLabel();
         QPushButton* GetOpenEditorButton();
@@ -47,6 +54,9 @@ namespace O3DE::ProjectManager
         QPushButton* GetActionCancelButton();
         QPushButton* GetShowLogsButton();
         QLabel* GetDarkenOverlay();
+        QProgressBar* GetProgressBar();
+        QLabel* GetProgressPercentage();
+        QLabel* GetDownloadMessageLabel();
 
     public slots:
         void mousePressEvent(QMouseEvent* event) override;
@@ -65,7 +75,13 @@ namespace O3DE::ProjectManager
         QLabel* m_warningIcon = nullptr;
         QSpacerItem* m_warningSpacer = nullptr;
 
+        QLabel* m_cloudIcon = nullptr;
+
         QLabel* m_buildingAnimation = nullptr;
+        QLabel* m_downloadMessageLabel = nullptr;
+
+        QProgressBar* m_progessBar = nullptr;
+        QLabel* m_progressMessageLabel = nullptr;
 
         QPushButton* m_openEditorButton = nullptr;
         QPushButton* m_actionButton = nullptr;
@@ -79,7 +95,10 @@ namespace O3DE::ProjectManager
         Launching,
         NeedsToBuild,
         Building,
-        BuildFailed
+        BuildFailed,
+        NotDownloaded,
+        Downloading,
+        DownloadFailed
     };
 
     class ProjectButton
@@ -88,15 +107,19 @@ namespace O3DE::ProjectManager
         Q_OBJECT
 
     public:
-        explicit ProjectButton(const ProjectInfo& m_projectInfo, QWidget* parent = nullptr);
-        ~ProjectButton() = default;
+        ProjectButton(const ProjectInfo& projectInfo, const EngineInfo& engineInfo, QWidget* parent = nullptr);
+        ~ProjectButton();
 
         const ProjectInfo& GetProjectInfo() const;
 
+        void SetEngine(const EngineInfo& engine);
+        void SetProject(const ProjectInfo& project);
         void SetState(enum ProjectButtonState state);
 
         void SetProjectButtonAction(const QString& text, AZStd::function<void()> lambda);
         void SetBuildLogsLink(const QUrl& logUrl);
+
+        void SetProgressBarPercentage(const float percent);
 
         void SetContextualText(const QString& text);
 
@@ -124,6 +147,9 @@ namespace O3DE::ProjectManager
         void ShowBuildRequiredState();
         void ShowBuildingState();
         void ShowBuildFailedState();
+        void ShowNotDownloadedState();
+        void ShowDownloadingState();
+        void ResetButtonWidgets();
         void ShowMessage(const QString& message = {}, const QString& submessage = {});
         void ShowWarning(const QString& warning = {});
         void ShowBuildButton();
@@ -133,11 +159,14 @@ namespace O3DE::ProjectManager
 
         QMenu* CreateProjectMenu();
 
+        EngineInfo m_engineInfo;
         ProjectInfo m_projectInfo;
 
         LabelButton* m_projectImageLabel = nullptr;
         QPushButton* m_projectMenuButton = nullptr;
         QLayout* m_requiresBuildLayout = nullptr;
+        AzQtComponents::ElidingLabel* m_projectNameLabel = nullptr;
+        AzQtComponents::ElidingLabel* m_engineNameLabel = nullptr;
 
         QMetaObject::Connection m_actionButtonConnection;
 

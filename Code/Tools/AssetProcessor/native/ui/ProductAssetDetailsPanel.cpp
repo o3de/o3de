@@ -446,8 +446,7 @@ namespace AssetProcessor
             productItemData->m_databaseInfo.m_productID,
             [&](AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry& entry)
         {
-            existingDependencies.push_back();
-            existingDependencies.back() = AZStd::move(entry);
+            existingDependencies.emplace_back() = AZStd::move(entry);
             return true; // return true to keep iterating over further rows.
         });
 

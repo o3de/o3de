@@ -11,6 +11,7 @@
 
 #include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/IO/SystemFile_Platform.h>
+#include <AzCore/std/containers/span.h>
 #include <AzCore/std/function/function_fwd.h>
 #include <AzCore/std/string/fixed_string.h>
 
@@ -175,6 +176,59 @@ namespace AZ
             int m_sourceFileDescriptor = -1;
             int m_dupSourceFileDescriptor = -1;
             int m_redirectionFileDescriptor = -1;
+        };
+
+        /**
+         * Utility class for capturing the output of file descriptor redirection using with RAII behavior.
+         * Example:
+         *
+         *   printf("Test"); // prints to stdout
+         *   AZ::IO::FileDescriptorCapturer redirectStdoutToFile(1);
+         *   redirectStdoutToFile.Start();
+         *   printf("Test"); // capture stdout as part of pipe
+         *   bool testWasOutput{};
+         *   auto StdoutVisitor [&testWasOutput](AZStd::span<const AZStd::byte> capturedBytes)
+         *   {
+         *       AZStd::string_view capturedString(reinterpret_cast<const char*>(capturedBytes.data()), captureBytes.size());
+         *       testWasOutput = capturedString.contains("Test");
+         *   };
+         *   redirectStdout.Stop(StdoutVisitor); // Invokes visitor 0 or more times with captured data
+         *   EXPECT_TRUE(testWasOutput);
+         */
+        class FileDescriptorCapturer 
+        {
+        public:
+
+            // 64 KiB for the default pipe size
+            inline static constexpr int DefaultPipeSize = (1 << 16);
+
+            FileDescriptorCapturer(int sourceDescriptor);
+            ~FileDescriptorCapturer();
+
+            // Starts capture of file descriptor
+            void Start(int pipeSize = DefaultPipeSize);
+
+            //! Redirects file descriptor to a visitor callback
+            //! Internally a pipe is used to send output to the visitor
+            using OutputRedirectVisitor = AZStd::function<void(AZStd::span<AZStd::byte>)>;
+
+            //! Reads all the data from the pipe and sends it to the visitor
+            void Flush(const OutputRedirectVisitor& redirectCallback);
+
+            //! Stops capture of file descriptor and reset it back to it's previous value
+            void Stop(const OutputRedirectVisitor& redirectCallback);
+
+            // Writes to the original source descriptor, bypassing the capture
+            int WriteBypassingCapture(const void* data, unsigned int size);
+
+        private:
+            void Reset();
+            int m_sourceDescriptor = -1;
+            int m_dupSourceDescriptor = -1;
+            inline static constexpr int ReadEnd = 0;
+            inline static constexpr int WriteEnd = 1;
+            int m_pipe[2]{ -1, -1 };
+            bool m_redirectToPipe{};
         };
     }
 }

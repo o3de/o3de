@@ -18,7 +18,7 @@ namespace Multiplayer
     class NetBindComponent;
 
     //! @class NetworkEntityTracker
-    //! @brief The responsibly of this class is to allow entity netEntityId's to be looked up.
+    //! @brief This class allows entity netEntityIds to be looked up.
     class NetworkEntityTracker
     {
     public:

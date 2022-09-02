@@ -30,17 +30,20 @@ namespace AzToolsFramework
                 "Instance Entity Mapper Interface could not be found. "
                 "Check that it is being correctly initialized.");
 
-
             //use system component to grab template dom
             m_prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
             AZ_Assert(m_prefabSystemComponentInterface,
                 "Prefab - InstanceToTemplateInterface - "
                 "Prefab System Component Interface could not be found. "
                 "Check that it is being correctly initialized.");
+
+            m_instanceDomGenerator.RegisterInstanceDomGeneratorInterface();
         }
 
         void InstanceToTemplatePropagator::UnregisterInstanceToTemplateInterface()
         {
+            m_instanceDomGenerator.UnregisterInstanceDomGeneratorInterface();
+
             AZ::Interface<InstanceToTemplateInterface>::Unregister(this);
         }
 
@@ -62,8 +65,8 @@ namespace AzToolsFramework
             return PrefabDomUtils::StoreInstanceInPrefabDom(instance, generatedInstanceDom);
         }
 
-        bool InstanceToTemplatePropagator::GeneratePatch(PrefabDom& generatedPatch, const PrefabDom& initialState,
-            const PrefabDom& modifiedState)
+        bool InstanceToTemplatePropagator::GeneratePatch(
+            PrefabDom& generatedPatch, const PrefabDomValue& initialState, const PrefabDomValue& modifiedState)
         {
             //generate patch using json serialization CreatePatch
             AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::CreatePatch(generatedPatch,
@@ -137,7 +140,7 @@ namespace AzToolsFramework
             return AZStd::move(entityAliasPath);
         }
 
-        void InstanceToTemplatePropagator::AppendEntityAliasToPatchPaths(PrefabDom& providedPatch, const AZ::EntityId& entityId)
+        void InstanceToTemplatePropagator::AppendEntityAliasToPatchPaths(PrefabDom& providedPatch, AZ::EntityId entityId, AZStd::string prefix)
         {
             if (!providedPatch.IsArray())
             {
@@ -145,7 +148,7 @@ namespace AzToolsFramework
                 return;
             }
 
-            AZStd::string prefix = GenerateEntityAliasPath(entityId);
+            prefix += GenerateEntityAliasPath(entityId);
 
             if (prefix.empty())
             {

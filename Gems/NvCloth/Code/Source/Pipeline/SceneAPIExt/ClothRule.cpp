@@ -12,6 +12,7 @@
 
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IMeshData.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IMeshVertexColorData.h>
+#include <SceneAPI/SceneData/Groups/MeshGroup.h>
 
 #include <Pipeline/SceneAPIExt/ClothRule.h>
 
@@ -39,11 +40,9 @@ namespace NvCloth
         {
             const AZ::SceneAPI::Containers::SceneGraph::NodeIndex meshNodeIndex = [this, &graph]()
             {
-                if (const auto index = graph.Find(GetMeshNodeName() + AZStd::string(AZ::SceneAPI::Utilities::OptimizedMeshSuffix)); index.IsValid())
-                {
-                    return index;
-                }
-                return graph.Find(GetMeshNodeName());
+                const auto originalMeshIndex = graph.Find(GetMeshNodeName());
+                return AZ::SceneAPI::Utilities::SceneGraphSelector::RemapToOptimizedMesh(
+                    graph, originalMeshIndex);
             }();
 
             if (!meshNodeIndex.IsValid())
@@ -340,8 +339,8 @@ namespace NvCloth
             if (classElement.GetVersion() <= 1)
             {
                 AZStd::string vertexColorStreamName;
-                classElement.FindSubElementAndGetData(AZ_CRC("vertexColorStreamName", 0xc5921188), vertexColorStreamName);
-                classElement.RemoveElementByName(AZ_CRC("vertexColorStreamName", 0xc5921188));
+                classElement.FindSubElementAndGetData(AZ_CRC_CE("vertexColorStreamName"), vertexColorStreamName);
+                classElement.RemoveElementByName(AZ_CRC_CE("vertexColorStreamName"));
                 classElement.AddElementWithData(context, "inverseMassesStreamName", vertexColorStreamName.empty() ? AZStd::string(DefaultInverseMassesString) : vertexColorStreamName);
                 classElement.AddElementWithData(context, "motionConstraintsStreamName", AZStd::string(DefaultMotionConstraintsString));
                 classElement.AddElementWithData(context, "backstopStreamName", AZStd::string(DefaultBackstopString));

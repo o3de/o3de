@@ -17,7 +17,7 @@ namespace AZ
         class SceneCoreStandaloneAllocator
         {
         public:
-            SCENE_CORE_API static void Initialize(AZ::EnvironmentInstance environment);
+            SCENE_CORE_API static void Initialize();
             SCENE_CORE_API static void TearDown();
 
         private:

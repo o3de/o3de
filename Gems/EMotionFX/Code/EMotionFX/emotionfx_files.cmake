@@ -49,8 +49,6 @@ set(FILES
     Source/KeyTrackLinearDynamic.h
     Source/KeyTrackLinearDynamic.inl
     Source/LayerPass.h
-    Source/Material.cpp
-    Source/Material.h
     Source/MemoryCategories.h
     Source/Mesh.cpp
     Source/Mesh.h
@@ -119,6 +117,8 @@ set(FILES
     Source/SimulatedObjectBus.h
     Source/SimulatedObjectSetup.cpp
     Source/SimulatedObjectSetup.h
+    Source/SimulatedObjectSetup_Impl.inl
+    Source/SimulatedObjectSetup_Interface.inl
     Source/SingleThreadScheduler.cpp
     Source/SingleThreadScheduler.h
     Source/Skeleton.cpp
@@ -131,8 +131,6 @@ set(FILES
     Source/SoftSkinManager.h
     Source/SpringSolver.cpp
     Source/SpringSolver.h
-    Source/StandardMaterial.cpp
-    Source/StandardMaterial.h
     Source/SubMesh.cpp
     Source/SubMesh.h
     Source/ThreadData.cpp
@@ -354,6 +352,8 @@ set(FILES
     Source/MotionData/NonUniformMotionData.h
     Source/MotionData/UniformMotionData.cpp
     Source/MotionData/UniformMotionData.h
+    Source/MotionData/RootMotionExtractionData.h
+    Source/MotionData/RootMotionExtractionData.cpp
     Source/MotionEvent.cpp
     Source/MotionEvent.h
     Source/MotionEventTable.cpp

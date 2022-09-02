@@ -314,7 +314,7 @@ namespace AzManipulatorTestFramework
     DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::DebugBreak()
     {
         Log("Breaking to debugger");
-        AZ::Debug::Trace::Break();
+        AZ::Debug::Trace::Instance().Break();
         return static_cast<DerivedDispatcherT*>(this);
     }
 

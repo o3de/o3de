@@ -95,7 +95,7 @@ namespace GraphCanvas
         QSizeF sizeHint(Qt::SizeHint which, const QSizeF& constraint = QSizeF()) const override;
         ////
 
-    private:        
+    private:
 
         Qt::Alignment   m_defaultAlignment;
         bool m_elide;

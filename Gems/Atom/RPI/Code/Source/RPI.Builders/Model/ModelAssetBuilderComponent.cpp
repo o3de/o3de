@@ -45,6 +45,7 @@
 #include <SceneAPI/SceneCore/Containers/Utilities/SceneUtilities.h>
 #include <SceneAPI/SceneCore/Containers/Utilities/Filters.h>
 
+static constexpr AZStd::string_view MismatchedVertexLayoutsAreErrorsKey{ "/O3DE/SceneAPI/ModelBuilder/MismatchedVertexLayoutsAreErrors" };
  /**
   * DEBUG DEFINES!
   * These are useful for debugging bad behavior from the builder.
@@ -98,12 +99,22 @@ namespace AZ
     {
         static const uint64_t s_invalidMaterialUid = 0;
 
+        static bool MismatchedVertexLayoutsAreErrors()
+        {
+            bool mismatchedVertexStreamsAreErrors = false;
+            if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+            {
+                settingsRegistry->Get(mismatchedVertexStreamsAreErrors, MismatchedVertexLayoutsAreErrorsKey);
+            }
+            return mismatchedVertexStreamsAreErrors;
+        }
+
         void ModelAssetBuilderComponent::Reflect(ReflectContext* context)
         {
             if (auto* serialize = azrtti_cast<SerializeContext*>(context))
             {
                 serialize->Class<ModelAssetBuilderComponent, SceneAPI::SceneCore::ExportingComponent>()
-                    ->Version(32);  // Updating morph targets to be per-mesh instead of per-lod
+                    ->Version(34);  // Fix vertex welding
             }
         }
 
@@ -201,16 +212,18 @@ namespace AZ
                 selectedMeshPathsByLod.resize(lodRule->GetLodCount());
                 for (size_t lod = 0; lod < lodRule->GetLodCount(); ++lod)
                 {
-                    selectedMeshPathsByLod[lod] = SceneAPI::Utilities::SceneGraphSelector::GenerateTargetNodes(sceneGraph,
-                        lodRule->GetSceneNodeSelectionList(lod), isNonOptimizedMesh, SceneAPI::Utilities::SceneGraphSelector::RemapToOptimizedMesh);
+                    selectedMeshPathsByLod[lod] = SceneAPI::Utilities::SceneGraphSelector::GenerateTargetNodes(
+                        sceneGraph, lodRule->GetSceneNodeSelectionList(lod), isNonOptimizedMesh,
+                        SceneAPI::Utilities::SceneGraphSelector::RemapToOptimizedMesh);
                 }
             }
 
             // Gather the list of nodes in the graph that are selected as part of this
             // MeshGroup defined in context.m_group, then remap to the optimized mesh
             // nodes, if they exist.
-            AZStd::vector<AZStd::string> selectedMeshPaths = SceneAPI::Utilities::SceneGraphSelector::GenerateTargetNodes(sceneGraph,
-                context.m_group.GetSceneNodeSelectionList(), isNonOptimizedMesh, SceneAPI::Utilities::SceneGraphSelector::RemapToOptimizedMesh);
+            AZStd::vector<AZStd::string> selectedMeshPaths = SceneAPI::Utilities::SceneGraphSelector::GenerateTargetNodes(
+                sceneGraph, context.m_group.GetSceneNodeSelectionList(), isNonOptimizedMesh,
+                SceneAPI::Utilities::SceneGraphSelector::RemapToOptimizedMesh);
 
             // Iterate over the downwards, breadth-first view into the scene.
             // First we have to split the source mesh data up by lod.
@@ -299,23 +312,23 @@ namespace AZ
                     // Gather mesh content
                     SourceMeshContent sourceMesh;
 
-                    // Although the nodes used to gather mesh content are the optimized ones (when found), to make
-                    // this process transparent for the end-asset generated, the name assigned to the source mesh
-                    // content will not include the "_optimized" prefix.
-                    AZStd::string_view sourceMeshName = meshName;
-                    if (sourceMeshName.ends_with(SceneAPI::Utilities::OptimizedMeshSuffix))
-                    {
-                        sourceMeshName.remove_suffix(SceneAPI::Utilities::OptimizedMeshSuffix.size());
-                    }
-                    sourceMesh.m_name = sourceMeshName;
+                    
 
                     const auto node = sceneGraph.Find(meshPath);
                     sourceMesh.m_worldTransform = AZ::SceneAPI::Utilities::DetermineWorldTransform(scene, node, context.m_group.GetRuleContainerConst());
+                    
+                    SceneAPI::Containers::SceneGraph::NodeIndex originalUnoptimizedMeshIndex =
+                        SceneAPI::Utilities::SceneGraphSelector::RemapToOriginalUnoptimizedMesh(sceneGraph, node);
+                    // Although the nodes used to gather mesh content are the optimized ones (when found), to make
+                    // this process transparent for the end-asset generated, the name assigned to the source mesh
+                    // content will not include the "_optimized" prefix or the group name.
+                    sourceMesh.m_name = sceneGraph.GetNodeName(originalUnoptimizedMeshIndex).GetName();
 
-                    auto sibling = sceneGraph.GetNodeChild(node);
-
+                    // Add the MeshData to the source mesh
                     AddToMeshContent(viewIt.second, sourceMesh);
 
+                    // Iterate over the immediate children of the mesh node, looking for additional data like uvs, tangents, etc.
+                    auto sibling = sceneGraph.GetNodeChild(node);
                     bool traversing = true;
                     while (traversing)
                     {
@@ -323,7 +336,12 @@ namespace AZ
                         {
                             auto siblingContent = sceneGraph.GetNodeContent(sibling);
 
-                            AddToMeshContent(siblingContent, sourceMesh);
+                            // If a sibling is MeshData, that indicates a separate mesh node
+                            // that should not add to or overwrite the MeshData for the current node
+                            if (!azrtti_istypeof<MeshData>(siblingContent.get()))
+                            {
+                                AddToMeshContent(siblingContent, sourceMesh);
+                            }
 
                             sibling = sceneGraph.GetNodeSibling(sibling);
                         }
@@ -338,7 +356,10 @@ namespace AZ
                     // Get the cloth data (only for full mesh LOD 0).
                     sourceMesh.m_meshClothData = (lodIndex == 0)
                         ? SceneAPI::DataTypes::IClothRule::FindClothData(
-                            sceneGraph, node, sourceMesh.m_meshData->GetVertexCount(), context.m_group.GetRuleContainerConst())
+                                                                       sceneGraph,
+                                                                       originalUnoptimizedMeshIndex,
+                                                                       sourceMesh.m_meshData->GetVertexCount(),
+                                                                       context.m_group.GetRuleContainerConst())
                         : AZStd::vector<AZ::Color>{};
 
                     // We've traversed this node and all its children that hold
@@ -373,7 +394,14 @@ namespace AZ
                 lodAssetCreator.Begin(CreateAssetId(lodAssetName));
 
                 {
-                    ProductMeshContentList lodMeshes = SourceMeshListToProductMeshList(context, sourceMeshContentList, jointNameToIndexMap, morphTargetMetaCreator);
+                    AZ::Outcome<ProductMeshContentList> productMeshListOutcome =
+                        SourceMeshListToProductMeshList(context, sourceMeshContentList, jointNameToIndexMap, morphTargetMetaCreator);
+
+                    if (!productMeshListOutcome.IsSuccess())
+                    {
+                        return AZ::SceneAPI::Events::ProcessingResult::Failure;
+                    }
+                    ProductMeshContentList lodMeshes = productMeshListOutcome.GetValue();
 
                     PadVerticesForSkinning(lodMeshes);
 
@@ -404,7 +432,13 @@ namespace AZ
 
                     if (canMergeMeshes)
                     {
-                        lodMeshes = MergeMeshesByMaterialUid(lodMeshes);
+                        productMeshListOutcome = MergeMeshesByMaterialUid(lodMeshes);
+
+                        if (!productMeshListOutcome.IsSuccess())
+                        {
+                            return AZ::SceneAPI::Events::ProcessingResult::Failure;
+                        }
+                        lodMeshes = productMeshListOutcome.GetValue();
                     }
 
 #if defined(AZ_RPI_MESHES_SHARE_COMMON_BUFFERS)
@@ -562,7 +596,7 @@ namespace AZ
             }
         }
 
-        ModelAssetBuilderComponent::ProductMeshContentList ModelAssetBuilderComponent::SourceMeshListToProductMeshList(
+        AZ::Outcome<ModelAssetBuilderComponent::ProductMeshContentList> ModelAssetBuilderComponent::SourceMeshListToProductMeshList(
             const ModelAssetBuilderContext& context,
             const SourceMeshContentList& sourceMeshList,
             AZStd::unordered_map<AZStd::string, uint16_t>& jointNameToIndexMap,
@@ -692,6 +726,10 @@ namespace AZ
                     // that we have so that they start at 0 and are contiguous. 
                     AZStd::map<uint32_t, uint32_t> oldToNewIndices;
                     uint32_t newIndex = 0;
+
+                    // Keep track of the highest value of old indices to validate vertex stream size
+                    uint32_t maxOldIndex = 0;
+
                     for (uint32_t& index : productMesh.m_indices)
                     {
                         if (oldToNewIndices.find(index) == oldToNewIndices.end())
@@ -699,7 +737,7 @@ namespace AZ
                             oldToNewIndices[index] = newIndex;
                             newIndex++;
                         }
-
+                        maxOldIndex = AZStd::max(maxOldIndex, index);
                         index = oldToNewIndices[index];
                     }
 
@@ -719,10 +757,20 @@ namespace AZ
 
                     if (sourceMesh.m_meshTangents)
                     {
+                        if (maxOldIndex >= sourceMesh.m_meshTangents->GetCount())
+                        {
+                            AZ_Assert(false, "Out of bounds access of mesh tangents.");
+                            return AZ::Failure();
+                        }
                         tangents.reserve(vertexCount * TangentFloatsPerVert);
 
                         if (sourceMesh.m_meshBitangents)
                         {
+                            if (maxOldIndex >= sourceMesh.m_meshBitangents->GetCount())
+                            {
+                                AZ_Assert(false, "Out of bounds access of mesh bitangents.");
+                                return AZ::Failure();
+                            }
                             bitangents.reserve(vertexCount * BitangentFloatsPerVert);
                         }
                     }
@@ -730,6 +778,11 @@ namespace AZ
                     uvNames.reserve(uvSetCount);
                     for (auto& uvContent : uvContentCollection)
                     {
+                        if (maxOldIndex >= uvContent->GetCount())
+                        {
+                            AZ_Assert(false, "Out of bounds access of uvs.");
+                            return AZ::Failure();
+                        }
                         uvNames.push_back(uvContent->GetCustomName());
                     }
 
@@ -742,6 +795,11 @@ namespace AZ
                     colorNames.reserve(colorSetCount);
                     for (auto& colorContent : colorContentCollection)
                     {
+                        if (maxOldIndex >= colorContent->GetCount())
+                        {
+                            AZ_Assert(false, "Out of bounds access of colors.");
+                            return AZ::Failure();
+                        }
                         colorNames.push_back(colorContent->GetCustomName());
                     }
 
@@ -754,8 +812,11 @@ namespace AZ
                     const bool hasClothData = !sourceMesh.m_meshClothData.empty();
                     if (hasClothData)
                     {
-                        AZ_Assert(sourceMesh.m_meshClothData.size() == vertexCount,
-                            "Vertex Count %d does not match mesh cloth data size %d", vertexCount, sourceMesh.m_meshClothData.size());
+                        if (sourceMesh.m_meshClothData.size() != vertexCount)
+                        {
+                            AZ_Assert(false, "Vertex Count %d does not match mesh cloth data size %d", vertexCount, sourceMesh.m_meshClothData.size());
+                            return AZ::Failure();
+                        }
                         clothData.reserve(vertexCount * ClothDataFloatsPerVert);
                     }
 
@@ -904,7 +965,7 @@ namespace AZ
                 }// for each product mesh in productsByMaterialUid
             }// for each product in productList (for each source mesh)
 
-            return productMeshList;
+            return AZ::Success(productMeshList);
         }
 
         void ModelAssetBuilderComponent::PadVerticesForSkinning(ProductMeshContentList& productMeshList)
@@ -1028,7 +1089,8 @@ namespace AZ
             }
         }
 
-        ModelAssetBuilderComponent::ProductMeshContentList ModelAssetBuilderComponent::MergeMeshesByMaterialUid(const ProductMeshContentList& productMeshList)
+        AZ::Outcome<ModelAssetBuilderComponent::ProductMeshContentList> ModelAssetBuilderComponent::MergeMeshesByMaterialUid(
+            const ProductMeshContentList& productMeshList)
         {
             ProductMeshContentList finalMeshList;
             {
@@ -1068,15 +1130,43 @@ namespace AZ
 
                 const size_t mergedMeshCount = meshesByMatUid.size();
                 finalMeshList.reserve(mergedMeshCount + unmergeableMeshCount);
+                bool mismatchedVertexLayoutsAreErrors = MismatchedVertexLayoutsAreErrors();
 
                 // Add the merged meshes
-                for (const auto& it : meshesByMatUid)
+                for (auto& it : meshesByMatUid)
                 {
-                    const ProductMeshContentList& meshList = it.second;
+                    ProductMeshContentList& meshList = it.second;
+
+                    for (auto meshIter = meshList.begin(); meshIter < meshList.end() - 1;)
+                    {
+                        // Any mesh that doesn't match the others will not be merged and will just be added directly to the final mesh list
+                        // This could result in multiple meshes that do not match the one before them, but still match each other, not
+                        // getting merged. But it's not worth over complicating things by trying to sort and split the meshList when the
+                        // common case is that everything assigned to the same material uid likely matches already anyways
+                        if (!VertexStreamLayoutMatches(*meshIter, *(meshIter + 1)))
+                        {
+                            if (mismatchedVertexLayoutsAreErrors)
+                            {
+                                return AZ::Failure();
+                            }
+
+                            // Don't merge the next mesh in the list if it doesn't match the current one
+                            finalMeshList.emplace_back(*(meshIter + 1));
+                            meshList.erase(meshIter + 1);
+                        }
+                        else
+                        {
+                            meshIter++;
+                        }
+                    }
 
                     ProductMeshContent mergedMesh = MergeMeshList(meshList, RemapIndices);
                     mergedMesh.m_materialUid = it.first;
-                    ValidateStreamAlignment(mergedMesh);
+
+                    if(!ValidateStreamAlignment(mergedMesh))
+                    {
+                        return AZ::Failure();
+                    }
 
                     finalMeshList.emplace_back(AZStd::move(mergedMesh));
                 }
@@ -1086,59 +1176,156 @@ namespace AZ
                 {
                     if (!mesh.CanBeMerged())
                     {
-                        ValidateStreamAlignment(mesh);
+                        if(!ValidateStreamAlignment(mesh))
+                        {
+                            return AZ::Failure();
+                        }
+
                         finalMeshList.emplace_back(mesh);
                     }
                 }
             }
 
-            return finalMeshList;
+            return AZ::Success(finalMeshList);
+        }
+
+        bool ModelAssetBuilderComponent::VertexStreamLayoutMatches(const ProductMeshContent& lhs, const ProductMeshContent& rhs) const
+        {
+            [[maybe_unused]] bool mismatchedVertexLayoutsAreErrors = MismatchedVertexLayoutsAreErrors();
+
+            // Check that the stream counts and types match
+            bool layoutMatches =
+                lhs.m_positions.empty() == rhs.m_positions.empty() &&
+                lhs.m_normals.empty() == rhs.m_normals.empty() &&
+                lhs.m_tangents.empty() == rhs.m_tangents.empty() &&
+                lhs.m_bitangents.empty() == rhs.m_bitangents.empty() &&
+                lhs.m_clothData.empty() == rhs.m_clothData.empty() &&
+                lhs.m_skinJointIndices.empty() == rhs.m_skinJointIndices.empty() &&
+                lhs.m_skinWeights.empty() == rhs.m_skinWeights.empty() &&
+                lhs.m_uvSets.size() == rhs.m_uvSets.size() &&
+                lhs.m_colorSets.size() == rhs.m_colorSets.size();
+
+            if (layoutMatches)
+            {
+                // For the streams that come with names, make sure the names match
+                bool namesMatch = true;
+                for (size_t i = 0; i < lhs.m_uvCustomNames.size(); ++i)
+                {
+                    if (lhs.m_uvCustomNames[i] != rhs.m_uvCustomNames[i])
+                    {
+                        namesMatch = false;
+                        AZStd::string errorMessage = AZStd::string::format(
+                            "Two meshes have the same material assignment, but the uv names don't match. "
+                            "Mesh '%s' uv '%zu' is named '%s'. "
+                            "Mesh '%s' uv '%zu' is named '%s'. "
+                            "Consider re-naming the uvs to match. "
+                            "They will not be merged, but will still show up as a single material slot for material assignments. ",
+                            lhs.m_name.GetCStr(),
+                            i,
+                            lhs.m_uvCustomNames[i].GetCStr(),
+                            rhs.m_name.GetCStr(),
+                            i,
+                            rhs.m_uvCustomNames[i].GetCStr());
+                        
+                        AZ_Error(s_builderName, !mismatchedVertexLayoutsAreErrors, "%s", errorMessage.c_str());
+                        AZ_Warning(s_builderName, mismatchedVertexLayoutsAreErrors, "%s", errorMessage.c_str());
+                    }
+                }
+                for (size_t i = 0; i < lhs.m_colorCustomNames.size(); ++i)
+                {
+                    if (lhs.m_colorCustomNames[i] != rhs.m_colorCustomNames[i])
+                    {
+                        namesMatch = false;
+                        AZStd::string errorMessage = AZStd::string::format(
+                            "Two meshes have the same material assignment, but the color names don't match. "
+                            "Mesh '%s' color '%zu' is named '%s'. "
+                            "Mesh '%s' color '%zu' is named '%s'. "
+                            "Consider re-naming the colors to match. "
+                            "They will not be merged, but will still show up as a single material slot for material assignments.",
+                            lhs.m_name.GetCStr(),
+                            i,
+                            lhs.m_colorCustomNames[i].GetCStr(),
+                            rhs.m_name.GetCStr(),
+                            i,
+                            rhs.m_colorCustomNames[i].GetCStr());
+
+                        AZ_Error(s_builderName, !mismatchedVertexLayoutsAreErrors, "%s", errorMessage.c_str());
+                        AZ_Warning(s_builderName, mismatchedVertexLayoutsAreErrors, "%s", errorMessage.c_str());
+                    }
+                }
+                layoutMatches = namesMatch;
+            }
+            else
+            {
+                AZStd::string errorMessage = AZStd::string::format(
+                    "Mesh '%s' and '%s' have the same material assignment, but don't have matching vertex streams. "
+                    "Consider giving them the same vertex streams in the source file or assigning a unique material to each of them. "
+                    "They will not be merged, but will still show up as a single material slot for material assignments.",
+                    lhs.m_name.GetCStr(),
+                    rhs.m_name.GetCStr());
+
+                AZ_Error(s_builderName, !mismatchedVertexLayoutsAreErrors, "%s", errorMessage.c_str());
+                AZ_Warning(s_builderName, mismatchedVertexLayoutsAreErrors, "%s", errorMessage.c_str());
+            }
+
+            return layoutMatches;
         }
 
         template<typename T>
-        void ModelAssetBuilderComponent::ValidateStreamSize([[maybe_unused]] size_t expectedVertexCount, [[maybe_unused]] const AZStd::vector<T>& bufferData, [[maybe_unused]] AZ::RHI::Format format, [[maybe_unused]] const char* streamName) const
+        bool ModelAssetBuilderComponent::ValidateStreamSize([[maybe_unused]] size_t expectedVertexCount, [[maybe_unused]] const AZStd::vector<T>& bufferData, [[maybe_unused]] AZ::RHI::Format format, [[maybe_unused]] const char* streamName) const
         {
-#if defined(AZ_ENABLE_TRACING)
             size_t actualVertexCount = (bufferData.size() * sizeof(T)) / RHI::GetFormatSize(format);
-#endif
-            AZ_Error(s_builderName, expectedVertexCount == actualVertexCount, "VertexStream '%s' does not match the expected vertex count. This typically means multiple sub-meshes have mis-matched vertex stream layouts (such as one having more uv sets than the other) but are assigned the same material in the dcc tool so they were merged.", streamName);
+            bool vertexCountMatchesExpected = expectedVertexCount == actualVertexCount;
+            AZ_Error(
+                s_builderName, vertexCountMatchesExpected,
+                "VertexStream '%s' does not match the expected vertex count. This typically means multiple sub-meshes have mis-matched "
+                "vertex stream layouts (such as one having more uv sets than the other) but are assigned the same material in the dcc tool "
+                "so they were merged.",
+                streamName);
+            return vertexCountMatchesExpected;
         }
 
-        void ModelAssetBuilderComponent::ValidateStreamAlignment(const ProductMeshContent& mesh) const
+        bool ModelAssetBuilderComponent::ValidateStreamAlignment(const ProductMeshContent& mesh) const
         {
+            bool success = true;
             size_t expectedVertexCount = mesh.m_positions.size() * sizeof(mesh.m_positions[0]) / RHI::GetFormatSize(PositionFormat);
             if (!mesh.m_normals.empty())
             {
-                ValidateStreamSize(expectedVertexCount, mesh.m_normals, NormalFormat, "NORMAL");
+                success &= ValidateStreamSize(expectedVertexCount, mesh.m_normals, NormalFormat, "NORMAL");
             }
             if (!mesh.m_tangents.empty())
             {
-                ValidateStreamSize(expectedVertexCount, mesh.m_tangents, TangentFormat, "TANGENT");
+                success &= ValidateStreamSize(expectedVertexCount, mesh.m_tangents, TangentFormat, "TANGENT");
             }
             if (!mesh.m_bitangents.empty())
             {
-                ValidateStreamSize(expectedVertexCount, mesh.m_bitangents, BitangentFormat, "BITANGENT");
+                success &= ValidateStreamSize(expectedVertexCount, mesh.m_bitangents, BitangentFormat, "BITANGENT");
             }
             for (size_t i = 0; i < mesh.m_uvSets.size(); ++i)
             {
-                ValidateStreamSize(expectedVertexCount, mesh.m_uvSets[i], UVFormat, mesh.m_uvCustomNames[i].GetCStr());
+                success &= ValidateStreamSize(expectedVertexCount, mesh.m_uvSets[i], UVFormat, mesh.m_uvCustomNames[i].GetCStr());
             }
             for (size_t i = 0; i < mesh.m_colorSets.size(); ++i)
             {
-                ValidateStreamSize(expectedVertexCount, mesh.m_colorSets[i], ColorFormat, mesh.m_colorCustomNames[i].GetCStr());
+                success &= ValidateStreamSize(expectedVertexCount, mesh.m_colorSets[i], ColorFormat, mesh.m_colorCustomNames[i].GetCStr());
             }
             if (!mesh.m_clothData.empty())
             {
-                ValidateStreamSize(expectedVertexCount, mesh.m_clothData, ClothDataFormat, ShaderSemanticName_ClothData);
+                success &= ValidateStreamSize(expectedVertexCount, mesh.m_clothData, ClothDataFormat, ShaderSemanticName_ClothData);
             }
             if (!mesh.m_skinJointIndices.empty())
             {
-                ValidateStreamSize(expectedVertexCount * mesh.m_influencesPerVertex, mesh.m_skinJointIndices, AZ::RHI::Format::R16_UINT, ShaderSemanticName_SkinJointIndices);
+                success &= ValidateStreamSize(
+                    expectedVertexCount * mesh.m_influencesPerVertex, mesh.m_skinJointIndices, AZ::RHI::Format::R16_UINT,
+                    ShaderSemanticName_SkinJointIndices);
             }
             if (!mesh.m_skinWeights.empty())
             {
-                ValidateStreamSize(expectedVertexCount * mesh.m_influencesPerVertex, mesh.m_skinWeights, SkinWeightFormat, ShaderSemanticName_SkinWeights);
+                success &= ValidateStreamSize(
+                    expectedVertexCount * mesh.m_influencesPerVertex, mesh.m_skinWeights, SkinWeightFormat, ShaderSemanticName_SkinWeights);
             }
+
+            return success;
         }
 
         ModelAssetBuilderComponent::ProductMeshView ModelAssetBuilderComponent::CreateViewToEntireMesh(const ProductMeshContent& mesh)

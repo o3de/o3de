@@ -8,21 +8,21 @@
 
 #include <AzToolsFramework/ActionManager/Menu/EditorMenuBar.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInternalInterface.h>
 
 #include <QMenuBar>
 
 namespace AzToolsFramework
 {
     EditorMenuBar::EditorMenuBar()
-        : m_menuBar(new QMenuBar())
+        : m_menuBar(new QMenuBar(m_defaultParentWidget))
     {
     }
     
     void EditorMenuBar::AddMenu(int sortKey, AZStd::string menuIdentifier)
     {
         m_menuToSortKeyMap.insert(AZStd::make_pair(menuIdentifier, sortKey));
-        m_menus.insert({ sortKey, AZStd::move(menuIdentifier) });
-        RefreshMenuBar();
+        m_menus[sortKey].push_back(AZStd::move(menuIdentifier));
     }
     
     bool EditorMenuBar::ContainsMenu(const AZStd::string& menuIdentifier) const
@@ -55,19 +55,35 @@ namespace AzToolsFramework
     {
         m_menuBar->clear();
 
-        for (const auto& elem : m_menus)
+        for (const auto& vectorIterator : m_menus)
         {
-            if(QMenu* menu = m_menuManagerInterface->GetMenu(elem.second))
+            for (const auto& menuIdentifier : vectorIterator.second)
             {
-                m_menuBar->addMenu(menu);
+                if (QMenu* menu = m_menuManagerInternalInterface->GetMenu(menuIdentifier))
+                {
+                    m_menuBar->addMenu(menu);
+                }
             }
         }
     }
 
-    void EditorMenuBar::Initialize()
+    void EditorMenuBar::Initialize(QWidget* defaultParentWidget)
     {
+        m_defaultParentWidget = defaultParentWidget;
+
         m_menuManagerInterface = AZ::Interface<MenuManagerInterface>::Get();
         AZ_Assert(m_menuManagerInterface, "EditorMenuBar - Could not retrieve instance of MenuManagerInterface");
+
+        m_menuManagerInternalInterface = AZ::Interface<MenuManagerInternalInterface>::Get();
+        AZ_Assert(m_menuManagerInternalInterface, "EditorMenuBar - Could not retrieve instance of MenuManagerInternalInterface");
+    }
+
+    void EditorMenuBar::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<EditorMenuBar>()->Field("Menus", &EditorMenuBar::m_menus);
+        }
     }
 
 } // namespace AzToolsFramework

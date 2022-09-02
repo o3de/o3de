@@ -418,8 +418,6 @@ set(FILES
     Memory/SystemAllocator.h
     Module/DynamicModuleHandle.cpp
     Module/DynamicModuleHandle.h
-    Module/Environment.cpp
-    Module/Environment.h
     Module/Module.cpp
     Module/Module.h
     Module/ModuleManagerBus.h
@@ -518,6 +516,8 @@ set(FILES
     Serialization/DataPatchBus.h
     Serialization/DataPatchUpgradeManager.h
     Serialization/DataPatchUpgradeManager.cpp
+    Serialization/Json/AnySerializer.h
+    Serialization/Json/AnySerializer.cpp
     Serialization/Json/ArraySerializer.h
     Serialization/Json/ArraySerializer.cpp
     Serialization/Json/BaseJsonSerializer.h
@@ -585,6 +585,8 @@ set(FILES
     Settings/SettingsRegistryImpl.h
     Settings/SettingsRegistryMergeUtils.cpp
     Settings/SettingsRegistryMergeUtils.h
+    Settings/SettingsRegistryOriginTracker.cpp
+    Settings/SettingsRegistryOriginTracker.h
     Settings/SettingsRegistryScriptUtils.cpp
     Settings/SettingsRegistryScriptUtils.h
     Settings/SettingsRegistryVisitorUtils.cpp

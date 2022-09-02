@@ -100,6 +100,9 @@ namespace PhysX
         AzPhysics::CollisionGroup GetCollisionGroupById(const AzPhysics::CollisionGroups::Id& groupId) override;
         void SetCollisionLayerName(int index, const AZStd::string& layerName) override;
         void CreateCollisionGroup(const AZStd::string& groupName, const AzPhysics::CollisionGroup& group) override;
+        bool ShouldCollide(
+            const Physics::ColliderConfiguration& colliderConfigurationA,
+            const Physics::ColliderConfiguration& colliderConfigurationB) override;
 
         // AZ::Component overrides...
         void Init() override;

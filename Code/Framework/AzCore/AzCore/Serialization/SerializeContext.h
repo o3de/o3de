@@ -783,6 +783,8 @@ namespace AZ
                 virtual void*   GetElementByKey(void* instance, const ClassElement* classElement, const void* key) = 0;
                 /// Populates element with key (for associative containers). Not used for serialization.
                 virtual void    SetElementKey(void* element, void* key) = 0;
+                /// Get the mapped value's address by its key. If there is no mapped value (like in a set<>) the value returned is the key itself
+                virtual void* GetValueByKey(void* instance, const void* key) = 0;
             };
 
             /// Return default element generic name (used by most containers).
@@ -1357,7 +1359,8 @@ namespace AZ
     private:
         EditContext* m_editContext;  ///< Pointer to optional edit context.
         UuidToClassMap  m_uuidMap;      ///< Map for all class in this serialize context
-        AZStd::unordered_multimap<AZ::Crc32, AZ::Uuid> m_classNameToUuid;  /// Map all class names to their uuid
+        AZStd::unordered_multimap<AZ::Crc32, AZ::Uuid> m_classNameToUuid;  ///< Map all class names to their uuid
+        AZStd::unordered_multimap<AZ::Crc32, AZ::Uuid> m_deprecatedNameToTypeIdMap;  ///< Stores a mapping of deprecated type names that a type exposes through the AzDeprecatedTypeNameVisitor
         AZStd::unordered_multimap<Uuid, GenericClassInfo*>  m_uuidGenericMap;      ///< Uuid to ClassData map of reflected classes with GenericTypeInfo
         AZStd::unordered_multimap<Uuid, Uuid> m_legacySpecializeTypeIdToTypeIdMap; ///< Keep a map of old legacy specialized typeids of template classes to new specialized typeids
         AZStd::unordered_map<Uuid, CreateAnyFunc>  m_uuidAnyCreationMap;      ///< Uuid to Any creation function map
@@ -1922,6 +1925,26 @@ namespace AZ
             {
                 RemoveClassData(&mapIt->second);
 
+
+                // Remove the deprecated type name -> typeid mapping
+                auto RemoveDeprecatedNames = [this, &typeUuid](AZStd::string_view deprecatedName)
+                {
+                    auto deprecatedNameRange = m_deprecatedNameToTypeIdMap.equal_range(Crc32(deprecatedName));
+                    for (auto classNameRangeIter = deprecatedNameRange.first; classNameRangeIter != deprecatedNameRange.second;)
+                    {
+                        if (classNameRangeIter->second == typeUuid)
+                        {
+                            classNameRangeIter = m_deprecatedNameToTypeIdMap.erase(classNameRangeIter);
+                        }
+                        else
+                        {
+                            ++classNameRangeIter;
+                        }
+                    }
+                };
+                DeprecatedTypeNameVisitor<T>(RemoveDeprecatedNames);
+
+                // Remove the current class name -> typeid mapping
                 auto classNameRange = m_classNameToUuid.equal_range(Crc32(name));
                 for (auto classNameRangeIter = classNameRange.first; classNameRangeIter != classNameRange.second;)
                 {
@@ -1941,6 +1964,13 @@ namespace AZ
         }
         else
         {
+            // Add any the deprecated type names to the deprecated type name to type id map
+            auto AddDeprecatedNames = [this, &typeUuid](AZStd::string_view deprecatedName)
+            {
+                m_deprecatedNameToTypeIdMap.emplace(deprecatedName, typeUuid);
+            };
+            DeprecatedTypeNameVisitor<T>(AddDeprecatedNames);
+
             m_classNameToUuid.emplace(AZ::Crc32(name), typeUuid);
             UuidToClassMap::pair_iter_bool result = m_uuidMap.insert(AZStd::make_pair(typeUuid, ClassData::Create<T>(name, typeUuid, factory)));
             AZ_Assert(result.second, "This class type %s could not be registered with duplicated Uuid: %s.", name, typeUuid.ToString<AZStd::string>().c_str());

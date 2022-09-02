@@ -88,7 +88,6 @@ ly_add_target(
             AZ::AzQtComponents
         PUBLIC
             AUTOMOC
-            AUTOUIC
 )
 
 ################################################################################

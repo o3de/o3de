@@ -7,24 +7,38 @@
  */
 
 #include <ProjectManagerWindow.h>
+#include <PythonBindingsInterface.h>
 #include <ScreensCtrl.h>
+#include <DownloadController.h>
 
 namespace O3DE::ProjectManager
 {
     ProjectManagerWindow::ProjectManagerWindow(QWidget* parent, const AZ::IO::PathView& projectPath, ProjectManagerScreen startScreen)
         : QMainWindow(parent)
     {
-        setWindowTitle(tr("O3DE Project Manager"));
+        if (auto engineInfoOutcome = PythonBindingsInterface::Get()->GetEngineInfo(); engineInfoOutcome)
+        {
+            auto engineInfo = engineInfoOutcome.GetValue<EngineInfo>();
+            setWindowTitle(QString("%1 %2 %3").arg(engineInfo.m_name.toUpper(), engineInfo.m_version, tr("Project Manager")));
+        }
+        else
+        {
+            setWindowTitle(QString("O3DE %1").arg(tr("Project Manager")));
+        }
 
-        ScreensCtrl* screensCtrl = new ScreensCtrl();
+        m_downloadController = new DownloadController(this);
+
+        ScreensCtrl* screensCtrl = new ScreensCtrl(nullptr, m_downloadController);
 
         // currently the tab order on the home page is based on the order of this list
         QVector<ProjectManagerScreen> screenEnums =
         {
             ProjectManagerScreen::Projects,
+            ProjectManagerScreen::GemCatalog,
             ProjectManagerScreen::Engine,
             ProjectManagerScreen::CreateProject,
-            ProjectManagerScreen::UpdateProject
+            ProjectManagerScreen::UpdateProject,
+            ProjectManagerScreen::GemsGemRepos
         };
         screensCtrl->BuildScreens(screenEnums);
 

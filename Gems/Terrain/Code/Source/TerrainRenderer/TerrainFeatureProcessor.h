@@ -11,6 +11,7 @@
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 
 #include <TerrainRenderer/BindlessImageArrayHandler.h>
+#include <TerrainRenderer/Passes/TerrainClipmapComputePass.h>
 #include <TerrainRenderer/TerrainDetailMaterialManager.h>
 #include <TerrainRenderer/TerrainMacroMaterialManager.h>
 #include <TerrainRenderer/TerrainClipmapManager.h>
@@ -54,6 +55,7 @@ namespace Terrain
 
         void SetDetailMaterialConfiguration(const DetailMaterialConfiguration& config);
         void SetMeshConfiguration(const MeshConfiguration& config);
+        void SetClipmapConfiguration(const ClipmapConfiguration& config);
 
         const AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> GetTerrainShaderResourceGroup() const;
         const AZ::Data::Instance<AZ::RPI::Material> GetMaterial() const;
@@ -89,8 +91,6 @@ namespace Terrain
 
         void PrepareMaterialData();
 
-        void TerrainHeightOrSettingsUpdated(const AZ::Aabb& dirtyRegion);
-
         void ProcessSurfaces(const FeatureProcessor::RenderPacket& process);
 
         void CachePasses();
@@ -109,10 +109,9 @@ namespace Terrain
 
         AZ::RHI::ShaderInputNameIndex m_worldDataIndex = "m_terrainWorldData";
 
-        AZ::Vector2 m_zBounds{ AZ::Vector2::CreateZero() };
+        AzFramework::Terrain::FloatRange m_zBounds;
         AZ::Aabb m_dirtyRegion{ AZ::Aabb::CreateNull() };
         
-        float m_sampleSpacing{ 0.0f };
         bool m_terrainBoundsNeedUpdate{ false };
 
         AZStd::vector<AZ::RPI::RenderPass*> m_passes;

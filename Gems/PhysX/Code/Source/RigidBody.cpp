@@ -9,6 +9,7 @@
 #include <Source/RigidBody.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/utility/as_const.h>
 #include <AzCore/Math/MathStringConversions.h>
@@ -46,6 +47,39 @@ namespace PhysX
                 || geometryType == physx::PxGeometryType::eBOX
                 || geometryType == physx::PxGeometryType::eCAPSULE
                 || geometryType == physx::PxGeometryType::eCONVEXMESH;
+        }
+    }
+
+    void RigidBodyConfiguration::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<PhysX::RigidBodyConfiguration>()
+                ->Version(1)
+                ->Field("SolverPositionIterations", &PhysX::RigidBodyConfiguration::m_solverPositionIterations)
+                ->Field("SolverVelocityIterations", &PhysX::RigidBodyConfiguration::m_solverVelocityIterations)
+                ;
+
+            if (auto* editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<PhysX::RigidBodyConfiguration>("PhysX-specific Rigid Body Configuration",
+                    "Additional Rigid Body settings specific to PhysX.")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &PhysX::RigidBodyConfiguration::m_solverPositionIterations,
+                        "Solver Position Iterations",
+                        "Higher values can improve stability at the cost of performance.")
+                    ->Attribute(AZ::Edit::Attributes::Min, 1)
+                    ->Attribute(AZ::Edit::Attributes::Max, 255)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &PhysX::RigidBodyConfiguration::m_solverVelocityIterations,
+                        "Solver Velocity Iterations",
+                        "Higher values can improve stability at the cost of performance.")
+                    ->Attribute(AZ::Edit::Attributes::Min, 1)
+                    ->Attribute(AZ::Edit::Attributes::Max, 255)
+                    ;
+            }
         }
     }
 
@@ -332,6 +366,31 @@ namespace PhysX
         return AZ::Vector3::CreateZero();
     }
 
+    AZ::Matrix3x3 RigidBody::GetInertiaWorld() const
+    {
+        if (m_pxRigidActor)
+        {
+            PHYSX_SCENE_READ_LOCK(m_pxRigidActor->getScene());
+            AZ::Vector3 inertiaDiagonal = PxMathConvert(m_pxRigidActor->getMassSpaceInertiaTensor());
+            AZ::Matrix3x3 rotationToWorld = AZ::Matrix3x3::CreateFromQuaternion(PxMathConvert(m_pxRigidActor->getGlobalPose().q.getConjugate()));
+            return Physics::Utils::DiagonalMatrixLocalToWorld(inertiaDiagonal, rotationToWorld);
+        }
+
+        return AZ::Matrix3x3::CreateZero();
+    }
+
+    AZ::Matrix3x3 RigidBody::GetInertiaLocal() const
+    {
+        if (m_pxRigidActor)
+        {
+            PHYSX_SCENE_READ_LOCK(m_pxRigidActor->getScene());
+            physx::PxVec3 inertiaDiagonal = m_pxRigidActor->getMassSpaceInertiaTensor();
+            return AZ::Matrix3x3::CreateDiagonal(PxMathConvert(inertiaDiagonal));
+        }
+
+        return AZ::Matrix3x3::CreateZero();
+    }
+
     AZ::Matrix3x3 RigidBody::GetInverseInertiaWorld() const
     {
         if (m_pxRigidActor)
@@ -339,7 +398,7 @@ namespace PhysX
             PHYSX_SCENE_READ_LOCK(m_pxRigidActor->getScene());
             AZ::Vector3 inverseInertiaDiagonal = PxMathConvert(m_pxRigidActor->getMassSpaceInvInertiaTensor());
             AZ::Matrix3x3 rotationToWorld = AZ::Matrix3x3::CreateFromQuaternion(PxMathConvert(m_pxRigidActor->getGlobalPose().q.getConjugate()));
-            return Physics::Utils::InverseInertiaLocalToWorld(inverseInertiaDiagonal, rotationToWorld);
+            return Physics::Utils::DiagonalMatrixLocalToWorld(inverseInertiaDiagonal, rotationToWorld);
         }
 
         return AZ::Matrix3x3::CreateZero();
@@ -555,6 +614,27 @@ namespace PhysX
     {
         if (m_pxRigidActor)
         {
+            if (!isKinematic)
+            {
+                // check if any of the shapes on the rigid body would prevent switching to dynamic
+                const bool allShapesCanComputeMassProperties = AZStd::all_of(
+                    m_shapes.begin(),
+                    m_shapes.end(),
+                    [](const AZStd::shared_ptr<PhysX::Shape>& shape)
+                    {
+                        return CanShapeComputeMassProperties(*shape->GetPxShape());
+                    });
+                if (!allShapesCanComputeMassProperties)
+                {
+                    AZ_Warning(
+                        "PhysX Rigid Body",
+                        false,
+                        "Cannot set kinematic to false, because body has triangle mesh, plane or heightfield shapes attached. Name: %s",
+                        GetName().c_str());
+                    return;
+                }
+            }
+
             PHYSX_SCENE_WRITE_LOCK(m_pxRigidActor->getScene());
             m_pxRigidActor->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, isKinematic);
         }
