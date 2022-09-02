@@ -491,14 +491,6 @@ namespace AzToolsFramework
             }
         }
 
-        void AssetBrowserTreeView::mouseDoubleClickEvent(QMouseEvent* ev)
-        {
-            if (ev->button() == Qt::MouseButton::LeftButton)
-            {
-                emit doubleClickedSignal(QModelIndex());
-            }
-        }
-
         void AssetBrowserTreeView::Update()
         {
             update();
