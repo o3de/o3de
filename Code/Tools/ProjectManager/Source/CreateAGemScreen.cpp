@@ -142,13 +142,12 @@ namespace O3DE::ProjectManager
 
                 QLabel* buttonSubtext = new QLabel(gemTemplate.m_summary);
                 buttonSubtext->setObjectName("createAGemRadioButtonSubtext");
-                if (index == 0)
-                {
-                    button->click();
-                }
+
                 gemSetupLayout->addWidget(button);
                 gemSetupLayout->addWidget(buttonSubtext);
             }
+            QAbstractButton* firstButton = m_radioButtonGroup->button(0);
+            firstButton->setChecked(true);
         }
     }
 
