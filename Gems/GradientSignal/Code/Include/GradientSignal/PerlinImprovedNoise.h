@@ -17,7 +17,7 @@ namespace GradientSignal
     * Implementation of the Perlin improved noise algorithm
     * Perlin noise can be used for any sort of wave-like deterministic patterns
     */
-    class PerlinImprovedNoise final
+    class PerlinImprovedNoise
     {
     public:
         AZ_CLASS_ALLOCATOR(PerlinImprovedNoise, AZ::SystemAllocator, 0);
@@ -26,6 +26,7 @@ namespace GradientSignal
         * Prepares the permutation table with a given random seed
         */          
         PerlinImprovedNoise(int seed);
+        virtual ~PerlinImprovedNoise() = default;
 
         /**
         * Creates a Perlin 'natural' noise factor values based on a position with smoothing parameters
@@ -38,9 +39,8 @@ namespace GradientSignal
         float GenerateNoise(float x, float y, float z);
 
     protected:
-        void PrepareTable(int seed);
+        virtual void PrepareTable(int seed);
 
-    private:
         AZStd::array<int, 512> m_permutationTable;
     };
 

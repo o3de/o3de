@@ -6,6 +6,8 @@
  *
  */
 
+#include <numeric>
+#include <random> // std::mt19937 std::random_device
 
 #include <Tests/GradientSignalTestFixtures.h>
 
@@ -139,11 +141,7 @@ namespace UnitTest
         EXPECT_EQ(expectedOutput, gradientSampler.GetValue({}));
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_GRADIENT_SIGNAL_TESTS
-    TEST_F(GradientSignalTestGeneratorFixture, DISABLED_PerlinGradientComponent_GoldenTest)
-#else
     TEST_F(GradientSignalTestGeneratorFixture, PerlinGradientComponent_GoldenTest)
-#endif // AZ_TRAIT_DISABLE_FAILED_GRADIENT_SIGNAL_TESTS
     {
         // Make sure PerlinGradientComponent generates a set of values that
         // matches a previously-calculated "golden" set of values.
@@ -156,10 +154,16 @@ namespace UnitTest
         config.m_amplitude = 3.0f;
         config.m_frequency = 1.13f;
 
-        AZStd::vector<float> expectedOutput = { AZ_TRAIT_UNIT_TEST_PERLINE_GRADIANT_GOLDEN_VALUES_7878 };
+        AZStd::vector<float> expectedOutput = 
+        {
+            0.5000f,0.5660f,0.5509f,0.5301f,
+            0.4826f,0.5056f,0.4352f,0.5666f,
+            0.4681f,0.4964f,0.5297f,0.5068f,
+            0.3976f,0.5625f,0.4449f,0.5133f
+        };
 
         auto entity = CreateEntity();
-        entity->CreateComponent<GradientSignal::PerlinGradientComponent>(config);
+        entity->CreateComponent<MockGradientSignal>(config);
 
         GradientSignal::GradientTransformConfig gradientTransformConfig;
         entity->CreateComponent<GradientSignal::GradientTransformComponent>(gradientTransformConfig);

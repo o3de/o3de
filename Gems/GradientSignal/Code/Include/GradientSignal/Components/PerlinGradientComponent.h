@@ -61,7 +61,7 @@ namespace GradientSignal
 
         PerlinGradientComponent(const PerlinGradientConfig& configuration);
         PerlinGradientComponent() = default;
-        ~PerlinGradientComponent() = default;
+        virtual ~PerlinGradientComponent() = default;
 
         // AZ::Component overrides...
         void Activate() override;
@@ -73,9 +73,10 @@ namespace GradientSignal
         float GetValue(const GradientSampleParams& sampleParams) const override;
         void GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const override;
 
-    private:
+    protected:
         PerlinGradientConfig m_configuration;
         AZStd::unique_ptr<PerlinImprovedNoise> m_perlinImprovedNoise;
+    private:
         GradientTransform m_gradientTransform;
         mutable AZStd::shared_mutex m_queryMutex;
 

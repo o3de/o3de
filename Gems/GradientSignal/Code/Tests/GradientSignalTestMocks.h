@@ -7,6 +7,9 @@
  */
 #pragma once
 
+#include <numeric>
+#include <random>
+
 #include <AzTest/AzTest.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Casting/lossy_cast.h>
@@ -17,6 +20,7 @@
 #include <AzCore/std/hash.h>
 #include <AzCore/UnitTest/TestTypes.h>
 
+#include <GradientSignal/Components/PerlinGradientComponent.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Ebuses/GradientPreviewContextRequestBus.h>
 #include <GradientSignal/GradientSampler.h>
@@ -201,4 +205,52 @@ namespace UnitTest
         SurfaceData::SurfaceDataRegistryHandle m_providerHandle = SurfaceData::InvalidSurfaceDataRegistryHandle;
     };
 
+
+    // The following Mock class of GradientSignal::PerlinImprovedNoise eliminates the random shuffling of the initial permutation
+    // table since the randomness function (std::mt19937) is only deterministic per platform or std c++ library implementation.
+    // By taking out the randomness, this makes the perlin test deterministic across all platforms
+    class MockPerlinImprovedNoise : public GradientSignal::PerlinImprovedNoise
+    {
+    public:
+        MockPerlinImprovedNoise(int seed) :
+            GradientSignal::PerlinImprovedNoise(seed)
+        {
+            PrepareTable(seed);
+        }
+
+        virtual ~MockPerlinImprovedNoise() = default;
+
+    protected:
+
+        void PrepareTable(int seed) override
+        {
+            AZStd::array<int, 256> randtable;
+            std::iota(randtable.begin(), randtable.end(), 0);
+            // Normally the following random shuffle occurs, but suppress it for unit testing
+            // std::shuffle(randtable.begin(), randtable.end(), std::mt19937(seed));
+            for (int x = 0; x < 256; ++x)
+            {
+                m_permutationTable[x] = randtable[x];
+                m_permutationTable[x + 256] = randtable[x];
+            }
+        }
+    };
+
+    // Mock the GradientSignal::PerlinGradientComponent so that its activation uses the mocked PerlinImprovedNoise class above
+    class MockGradientSignal : public GradientSignal::PerlinGradientComponent
+    {
+    public:
+        MockGradientSignal(const GradientSignal::PerlinGradientConfig& configuration) :
+            GradientSignal::PerlinGradientComponent(configuration)
+        {
+        }
+
+        ~MockGradientSignal() = default;
+
+        void Activate() override
+        {
+            GradientSignal::PerlinGradientComponent::Activate();
+            m_perlinImprovedNoise.reset(aznew MockPerlinImprovedNoise(AZ::GetMax(m_configuration.m_randomSeed, 1)));
+        }
+    };
 }
