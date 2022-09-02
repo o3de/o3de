@@ -166,28 +166,6 @@ namespace AzToolsFramework::ViewportUi
         }
     }
 
-    bool ViewportUiManager::ShowSwitcher(SwitcherId switcherId)
-    {
-        if (auto switcherIt = m_switcherButtonGroups.find(switcherId); switcherIt != m_switcherButtonGroups.end())
-        {
-            bool shown = m_viewportUi->ShowSwitcher(switcherIt->second->GetViewportUiElementId());
-            return shown;
-        }
-        // return false if switcher not found
-        return false;
-    }
-
-    bool ViewportUiManager::HideSwitcher(SwitcherId switcherId)
-    {
-        if (auto switcherIt = m_switcherButtonGroups.find(switcherId); switcherIt != m_switcherButtonGroups.end())
-        {
-            bool shown = m_viewportUi->HideSwitcher(switcherIt->second->GetViewportUiElementId());
-            return shown;
-        }
-        // return false if switcher not found
-        return false;
-    }
-
     void ViewportUiManager::RemoveSwitcherButton(SwitcherId switcherId, ButtonId buttonId)
     {
         if (auto switcherIt = m_switcherButtonGroups.find(switcherId); switcherIt != m_switcherButtonGroups.end())

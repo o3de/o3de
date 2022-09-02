@@ -78,7 +78,7 @@ namespace AzFramework
 
     using ViewportBorderRequestBus = AZ::EBus<ViewportBorderRequests>;
 
-    //! Provides a bus to notify about different states of the ImGui.
+    //! Provides an interface to notify about different states of the ImGui.
     class ViewportImGuiNotifications : public AZ::EBusTraits
     {
     public:
@@ -93,7 +93,7 @@ namespace AzFramework
         }
 
         //! Notification that ImGui menu dropdown is activated.
-        virtual void OnImGuiDropDownDisplayed()
+        virtual void OnImGuiDropDownShown()
         {
         }
 

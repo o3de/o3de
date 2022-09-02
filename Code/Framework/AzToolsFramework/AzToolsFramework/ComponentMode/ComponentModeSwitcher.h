@@ -62,18 +62,23 @@ namespace AzToolsFramework
             size_t GetComponentCount() const
             {
                 return m_addedComponents.size();
-            };
+            }
 
             // Returns a null pointer if not in component mode
             const AZ::Component* GetActiveComponent() const
             {
                 return m_activeSwitcherComponent;
-            };
+            }
 
             AZ::Component* GetActiveComponent()
             {
                 return m_activeSwitcherComponent;
-            };
+            }
+
+            const ViewportUi::SwitcherId GetSwitcherId() const
+            {
+                return m_switcherId;
+            }
 
         private:
             //! Calls ViewportUiRequestBus to create switcher button, helper for AddComponentButton.
@@ -110,8 +115,10 @@ namespace AzToolsFramework
             void AfterUndoRedo() override;
 
             // ViewportImGuiNotificationBus overrides ...
-            void OnImGuiDropDownDisplayed() override;
+            void OnImGuiDropDownShown() override;
             void OnImGuiDropDownHidden() override;
+            void OnImGuiActivated() override;
+            void OnImGuiDeactivated() override;
 
             // Member variables
             AZ::Component* m_activeSwitcherComponent = nullptr; //!< The component that is currently in component mode
@@ -122,6 +129,7 @@ namespace AzToolsFramework
             ViewportUi::SwitcherId m_switcherId; //!< Id of linked switcher.
             AZ::EntityComponentIdPair m_componentModePair; //!< The component mode pair in onEntityCompositionChanged.
             AddOrRemoveComponent m_addOrRemove; //!< Setting to either add or remove component.
+            bool m_hiddenByImGui = false; //!< Protects the switcher from being opened by OnImGuiDropDownShown if it has been hidden elsewhere.
         };
 
     } // namespace ComponentModeFramework

@@ -89,6 +89,8 @@ namespace AzToolsFramework::ViewportUi
         virtual void RemoveSwitcherButton(SwitcherId switcherId, ButtonId buttonId) = 0;
         //! Sets the visibility of the cluster.
         virtual void SetClusterVisible(ClusterId clusterId, bool visible) = 0;
+        //! Sets the visibility of the switcher.
+        virtual void SetSwitcherVisible(SwitcherId switcherId, bool visible) = 0;
         //! Sets the visibility of multiple clusters.
         virtual void SetClusterGroupVisible(const AZStd::vector<ClusterId>& clusterGroup, bool visible) = 0;
         //! Creates and registers a text field with the Viewport UI system.
@@ -114,10 +116,6 @@ namespace AzToolsFramework::ViewportUi
         virtual void PressButton(ClusterId clusterId, ButtonId buttonId) = 0;
         //! Invoke a button press on a switcher.
         virtual void PressButton(SwitcherId switcherId, ButtonId buttonId) = 0;
-        //! Hides the given switcher.
-        virtual bool HideSwitcher(SwitcherId switcherId) = 0;
-        //! Shows the given switcher.
-        virtual bool ShowSwitcher(SwitcherId switcherId) = 0;
     };
 
     /// The EBusTraits for ViewportInteractionRequests.
