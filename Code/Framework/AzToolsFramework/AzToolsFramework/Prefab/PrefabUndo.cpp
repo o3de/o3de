@@ -107,39 +107,39 @@ namespace AzToolsFramework
         }
 
         void PrefabUndoRemoveEntities::Capture(
-            const AZStd::vector<PrefabDom>& entityDoms, const AZStd::vector<AZStd::string>& patchPaths, TemplateId templateId)
+            const AZStd::vector<AZStd::pair<const PrefabDomValue*, AZStd::string>>& entityDomAndPathList, TemplateId templateId)
         {
-            AZ_Assert(entityDoms.size() == patchPaths.size(),
-                "Prefab - PrefabUndoRemoveEntities::Capture - Number of removed entity DOMs should be equal to the number of patch paths.");
-
             m_templateId = templateId;
 
             m_redoPatch.SetArray();
             m_undoPatch.SetArray();
 
-            for (size_t i = 0; i < entityDoms.size(); ++i)
+            for (const auto& entityDomAndPath : entityDomAndPathList)
             {
-                const AZStd::string& patchPath = patchPaths[i];
+                if (entityDomAndPath.first)
+                {
+                    const AZStd::string& entityAliasPath = entityDomAndPath.second;
 
-                // Create redo patch.
-                PrefabDomValue redoPatch(rapidjson::kObjectType);
-                rapidjson::Value path =
-                    rapidjson::Value(patchPath.data(), aznumeric_caster(patchPath.length()), m_redoPatch.GetAllocator());
+                    // Create redo patch.
+                    PrefabDomValue redoPatch(rapidjson::kObjectType);
+                    rapidjson::Value path =
+                        rapidjson::Value(entityAliasPath.data(), aznumeric_caster(entityAliasPath.length()), m_redoPatch.GetAllocator());
 
-                redoPatch.AddMember(rapidjson::StringRef("op"), rapidjson::StringRef("remove"), m_redoPatch.GetAllocator())
-                    .AddMember(rapidjson::StringRef("path"), AZStd::move(path), m_redoPatch.GetAllocator());
-                m_redoPatch.PushBack(redoPatch.Move(), m_redoPatch.GetAllocator());
+                    redoPatch.AddMember(rapidjson::StringRef("op"), rapidjson::StringRef("remove"), m_redoPatch.GetAllocator())
+                        .AddMember(rapidjson::StringRef("path"), AZStd::move(path), m_redoPatch.GetAllocator());
+                    m_redoPatch.PushBack(redoPatch.Move(), m_redoPatch.GetAllocator());
 
-                // Create undo patch.
-                PrefabDomValue undoPatch(rapidjson::kObjectType);
-                path = rapidjson::Value(patchPath.data(), aznumeric_caster(patchPath.length()), m_undoPatch.GetAllocator());
+                    // Create undo patch.
+                    PrefabDomValue undoPatch(rapidjson::kObjectType);
+                    path = rapidjson::Value(entityAliasPath.data(), aznumeric_caster(entityAliasPath.length()), m_undoPatch.GetAllocator());
 
-                rapidjson::Value patchValue;
-                patchValue.CopyFrom(entityDoms[i], m_undoPatch.GetAllocator(), true);
-                undoPatch.AddMember(rapidjson::StringRef("op"), rapidjson::StringRef("add"), m_undoPatch.GetAllocator())
-                    .AddMember(rapidjson::StringRef("path"), AZStd::move(path), m_undoPatch.GetAllocator())
-                    .AddMember(rapidjson::StringRef("value"), AZStd::move(patchValue), m_undoPatch.GetAllocator());
-                m_undoPatch.PushBack(undoPatch.Move(), m_undoPatch.GetAllocator());
+                    rapidjson::Value patchValue;
+                    patchValue.CopyFrom(*(entityDomAndPath.first), m_undoPatch.GetAllocator(), true);
+                    undoPatch.AddMember(rapidjson::StringRef("op"), rapidjson::StringRef("add"), m_undoPatch.GetAllocator())
+                        .AddMember(rapidjson::StringRef("path"), AZStd::move(path), m_undoPatch.GetAllocator())
+                        .AddMember(rapidjson::StringRef("value"), AZStd::move(patchValue), m_undoPatch.GetAllocator());
+                    m_undoPatch.PushBack(undoPatch.Move(), m_undoPatch.GetAllocator());
+                }
             }
         }
 

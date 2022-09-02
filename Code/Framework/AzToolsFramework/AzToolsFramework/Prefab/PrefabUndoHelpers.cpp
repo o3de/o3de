@@ -64,14 +64,13 @@ namespace AzToolsFramework
             }
 
             void RemoveEntities(
-                const AZStd::vector<PrefabDom>& removedEntityDoms,
-                const AZStd::vector<AZStd::string>& patchPaths,
+                const AZStd::vector<AZStd::pair<const PrefabDomValue*, AZStd::string>>& entityDomAndPathList,
                 TemplateId templateId,
                 UndoSystem::URSequencePoint* undoBatch)
             {
                 PrefabUndoRemoveEntities* removeEntitiesUndoState = aznew PrefabUndoRemoveEntities("Undo Removing Entities");
                 removeEntitiesUndoState->SetParent(undoBatch);
-                removeEntitiesUndoState->Capture(removedEntityDoms, patchPaths, templateId);
+                removeEntitiesUndoState->Capture(entityDomAndPathList, templateId);
                 removeEntitiesUndoState->Redo();
             }
 

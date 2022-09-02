@@ -76,7 +76,7 @@ namespace AzToolsFramework
         public:
             explicit PrefabUndoRemoveEntities(const AZStd::string& undoOperationName);
 
-            void Capture(const AZStd::vector<PrefabDom>& entityDoms, const AZStd::vector<AZStd::string>& patchPaths,
+            void Capture(const AZStd::vector<AZStd::pair<const PrefabDomValue*, AZStd::string>>& entityDomAndPathList,
                 TemplateId templateId);
 
             void Undo() override;
