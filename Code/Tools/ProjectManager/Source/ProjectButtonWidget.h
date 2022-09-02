@@ -119,7 +119,7 @@ namespace O3DE::ProjectManager
         const ProjectButtonState& GetState() const
         {
             return m_currentState;
-         }
+        }
 
         void SetProjectButtonAction(const QString& text, AZStd::function<void()> lambda);
         void SetBuildLogsLink(const QUrl& logUrl);
