@@ -563,7 +563,7 @@ def Build(Map pipelineConfig, String platform, String type, String workspace) {
                 def restrictedExist = false
                 def engineRepo = false
                 def projectRepo = false
-                def gemsRepo = false
+                def gemRepo = false
                 def templateRepo = false
                 def restrictedRepo = false
 
