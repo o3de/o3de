@@ -9,5 +9,4 @@
 set(FILES
     BuiltInPackages_linux.cmake
     Wwise_linux.cmake
-    OpenSSL_linux.cmake
 )

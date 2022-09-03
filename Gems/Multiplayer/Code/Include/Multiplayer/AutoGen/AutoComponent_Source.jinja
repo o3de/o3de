@@ -324,6 +324,23 @@ void {{ ClassName }}::Set{{ UpperFirst(Property.attrib['Name']) }}(const {{ Prop
 {{     AutoComponentMacros.ParseRpcParams(Property, paramNames, paramTypes, paramDefines) }}
 void {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}({{ PrintRpcParameters('', paramDefines) }})
 {
+{% if (InvokeFrom == 'Authority') %}
+{#  InvokeFrom Authority inserts the invocation into the controller, not the component #}
+    if (!IsNetEntityRoleAuthority())
+{% elif (InvokeFrom == 'Autonomous') %}
+{#  InvokeFrom Authority inserts the invocation into the controller, not the component #}
+    if (!IsNetEntityRoleAutonomous())
+{% elif (InvokeFrom == 'Server') %}
+    if (!IsNetEntityRoleServer())
+{% elif (InvokeFrom == 'Client') %}
+    if (!IsNetEntityRoleClient())
+{% endif %}
+    {
+        const char* currentRoleString = GetNetBindComponent() ? GetEnumString(GetNetBindComponent()->GetNetEntityRole()) : "an undetermined role, NetBindComponent is nullptr";
+        AZLOG_INFO("RPC %s invoked from wrong network role, expected %s but invoked from %s", "{{ UpperFirst(Property.attrib['Name']) }}", "{{ InvokeFrom }}", currentRoleString);
+        return;
+    }
+
     constexpr Multiplayer::RpcIndex rpcId = static_cast<Multiplayer::RpcIndex>({{ UpperFirst(Component.attrib['Name']) }}Internal::RemoteProcedure::{{ UpperFirst(Property.attrib['Name']) }});
 {% if Property.attrib['IsReliable']|booleanTrue %}
     constexpr AzNetworking::ReliabilityType isReliable = Multiplayer::ReliabilityType::Reliable;
@@ -331,7 +348,7 @@ void {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}({{ PrintRpcParam
     constexpr AzNetworking::ReliabilityType isReliable = Multiplayer::ReliabilityType::Unreliable;
 {% endif %}
 
-{%     if InvokeFrom == 'Server' or InvokeFrom =='Client' %}
+{%     if InvokeFrom == 'Server' or InvokeFrom == 'Client' %}
     const Multiplayer::NetComponentId netComponentId = GetNetComponentId();
 {%     else %}
     const Multiplayer::NetComponentId netComponentId = GetParent().GetNetComponentId();
