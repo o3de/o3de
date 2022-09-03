@@ -55,6 +55,7 @@ namespace AZ
             Data::Instance<RPI::Shader> m_rayTracingShader;
             Data::Instance<RPI::Shader> m_missShader;
             Data::Instance<RPI::Shader> m_closestHitShader;
+            Data::Instance<RPI::Shader> m_anyHitShader;
             RHI::Ptr<RHI::RayTracingPipelineState> m_rayTracingPipelineState;
 
             // ray tracing shader table

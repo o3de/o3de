@@ -108,6 +108,7 @@ namespace AZ
             uint32_t m_hitGroupIndex = 0;
             AZ::Transform m_transform = AZ::Transform::CreateIdentity();
             AZ::Vector3 m_nonUniformScale = AZ::Vector3::CreateOne();
+            bool m_transparent = false;
             RHI::Ptr<RHI::RayTracingBlas> m_blas;
         };
         using RayTracingTlasInstanceVector = AZStd::vector<RayTracingTlasInstance>;
@@ -152,6 +153,7 @@ namespace AZ
             RayTracingTlasDescriptor* HitGroupIndex(uint32_t hitGroupIndex);
             RayTracingTlasDescriptor* Transform(const AZ::Transform& transform);
             RayTracingTlasDescriptor* NonUniformScale(const AZ::Vector3& nonUniformScale);
+            RayTracingTlasDescriptor* Transparent(bool transparent);
             RayTracingTlasDescriptor* Blas(RHI::Ptr<RHI::RayTracingBlas>& blas);
             RayTracingTlasDescriptor* InstancesBuffer(RHI::Ptr<RHI::Buffer>& tlasInstances);
             RayTracingTlasDescriptor* NumInstances(uint32_t numInstancesInBuffer);
