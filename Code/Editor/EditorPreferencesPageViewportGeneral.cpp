@@ -84,7 +84,6 @@ void CEditorPreferencesPage_ViewportGeneral::Reflect(AZ::SerializeContext& seria
         editContext->Class<General>("General Viewport Settings", "")
             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &General::m_sync2DViews, "Synchronize 2D Viewports", "Synchronize 2D Viewports")
             ->DataElement(AZ::Edit::UIHandlers::SpinBox, &General::m_defaultFOV, "Perspective View FOV", "Perspective View FOV")
-            ->Attribute("Multiplier", RAD2DEG(1))
             ->Attribute(AZ::Edit::Attributes::Min, 1.0f)
             ->Attribute(AZ::Edit::Attributes::Max, 120.0f)
             ->DataElement(AZ::Edit::UIHandlers::SpinBox, &General::m_defaultNearPlane, "Perspective Near Plane", "Perspective Near Plane")
@@ -218,11 +217,11 @@ void CEditorPreferencesPage_ViewportGeneral::OnApply()
     CDisplaySettings* ds = GetIEditor()->GetDisplaySettings();
 
     gSettings.viewports.fDefaultAspectRatio = m_general.m_defaultAspectRatio;
-    gSettings.viewports.fDefaultFov = m_general.m_defaultFOV;
     gSettings.viewports.bEnableContextMenu = m_general.m_contextMenuEnabled;
     gSettings.viewports.bSync2DViews = m_general.m_sync2DViews;
     SandboxEditor::SetStickySelectEnabled(m_general.m_stickySelectEnabled);
 
+    SandboxEditor::SetCameraDefaultFovDegrees(m_general.m_defaultFOV);
     SandboxEditor::SetCameraDefaultNearPlaneDistance(m_general.m_defaultNearPlane);
     SandboxEditor::SetCameraDefaultFarPlaneDistance(m_general.m_defaultFarPlane);
 
@@ -282,9 +281,10 @@ void CEditorPreferencesPage_ViewportGeneral::InitializeSettings()
     CDisplaySettings* ds = GetIEditor()->GetDisplaySettings();
 
     m_general.m_defaultAspectRatio = gSettings.viewports.fDefaultAspectRatio;
-    m_general.m_defaultFOV = gSettings.viewports.fDefaultFov;
     m_general.m_defaultNearPlane = SandboxEditor::CameraDefaultNearPlaneDistance();
     m_general.m_defaultFarPlane = SandboxEditor::CameraDefaultFarPlaneDistance();
+    m_general.m_defaultFOV = SandboxEditor::CameraDefaultFovDegrees();
+    
     m_general.m_contextMenuEnabled = gSettings.viewports.bEnableContextMenu;
     m_general.m_sync2DViews = gSettings.viewports.bSync2DViews;
     m_general.m_stickySelectEnabled = SandboxEditor::StickySelectEnabled();
