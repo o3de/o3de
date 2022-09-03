@@ -422,11 +422,6 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
 
     dir(workspace) {
 
-        def ext = ''
-        if(env.IS_UNIX) {
-            ext += '.sh'
-        }
-
         // Add folder where we will store the 3rdParty downloads and packages
         dir('3rdParty') {
         }
@@ -449,18 +444,22 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
             //checkout the engine branch
             CheckoutRepo(the_branch, GetEngineRemoteConfig(), disableSubmodules, setEnvCommit)
 
-            // Get python
-            dir(pipelineConfig.PYTHON_DIR) {
-                PlatformSh("get_python${ext}", "Getting Python")
-            }
-
+            // Get python and clean.
             // Always run the clean step, the scripts detect what variables were set, but it also cleans if
             // the NODE_LABEL has changed
-            def command = "${pipelineConfig.PYTHON_DIR}/python"
-            if(env.IS_UNIX) command += '.sh'
-            else command += '.cmd'
-            command += " -u ${pipelineConfig.BUILD_ENTRY_POINT} --platform ${platform} --type clean"
-            PlatformSh(command, "Running ${platform} clean")
+            dir(pipelineConfig.PYTHON_DIR) {
+                if(env.IS_UNIX) {
+                    sh label: 'Getting python',
+                       script: './get_python.sh'
+                    sh label: "Running ${platform} clean",
+                       script: "./python.sh -u ${pipelineConfig.BUILD_ENTRY_POINT} --platform ${platform} --type clean"
+                } else {
+                    bat label: 'Getting python',
+                        script: 'get_python.bat'
+                    bat label: "Running ${platform} clean",
+                        script: "python.cmd -u ${pipelineConfig.BUILD_ENTRY_POINT} --platform ${platform} --type clean"
+                }
+            }
 
             InstallAndPullGitLFS()
         }
