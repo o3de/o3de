@@ -517,14 +517,14 @@ def Build(Map pipelineConfig, String platform, String type, String workspace) {
         command += " -u ${pipelineConfig.BUILD_ENTRY_POINT} --platform ${platform} --type ${type}"
 
         dir(workspace) {
+            def automatedTestingControlFile = {}
+            dir(EXTRAS_REPOSITORY_NAME) {
+                echo 'Loading Extras .automatedtesting.json'
+                automatedTestingControlFile = readJSON file: '.automatedtesting.json'
+            }
             dir(ENGINE_REPOSITORY_NAME) {
                 //register the engine
                 PlatformSh("scripts/o3de${ext} register --this-engine", "Registering this engine, will generate the o3de_manifest")
-            }
-            dir(EXTRAS_REPOSITORY_NAME) {
-                echo 'Loading Extras .automatedtesting.json'
-                def automatedTestingControlFile = {}
-                automatedTestingControlFile = readJSON file: '.automatedtesting.json'
 
                 //register all the objects specified in this repos .automatedtesting.json
                 automatedTestingControlFile.REGISTER_ENGINES.each { engineName ->
