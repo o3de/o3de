@@ -8,6 +8,7 @@
 
 
 #include "MultiplayerConnectionViewportMessageSystemComponent.h"
+
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <AzCore/Console/IConsole.h>
@@ -33,6 +34,74 @@ namespace Multiplayer
 
     AZ_CVAR_EXTERNED(bool, sv_isDedicated);
 
+
+   enum EAuxGeomPublicRenderflagBitMasks
+    {
+        e_Mode2D3DShift = 31,
+        e_Mode2D3DMask = 0x1 << e_Mode2D3DShift,
+
+        e_AlphaBlendingShift = 29,
+        e_AlphaBlendingMask = 0x3 << e_AlphaBlendingShift,
+
+        e_DrawInFrontShift = 28,
+        e_DrawInFrontMask = 0x1 << e_DrawInFrontShift,
+
+        e_FillModeShift = 26,
+        e_FillModeMask = 0x3 << e_FillModeShift,
+
+        e_CullModeShift = 24,
+        e_CullModeMask = 0x3 << e_CullModeShift,
+
+        e_DepthWriteShift = 23,
+        e_DepthWriteMask = 0x1 << e_DepthWriteShift,
+
+        e_DepthTestShift = 22,
+        e_DepthTestMask = 0x1 << e_DepthTestShift,
+
+        e_PublicParamsMask =
+            e_Mode2D3DMask | e_AlphaBlendingMask | e_DrawInFrontMask | e_FillModeMask | e_CullModeMask | e_DepthWriteMask | e_DepthTestMask
+    };
+
+    enum EAuxGeomPublicRenderflags_Mode2D3D
+    {
+        e_Mode3D = 0x0 << e_Mode2D3DShift,
+        e_Mode2D = 0x1 << e_Mode2D3DShift,
+    };
+
+    enum EAuxGeomPublicRenderflags_AlphaBlendMode
+    {
+        e_AlphaNone = 0x0 << e_AlphaBlendingShift,
+        e_AlphaAdditive = 0x1 << e_AlphaBlendingShift,
+        e_AlphaBlended = 0x2 << e_AlphaBlendingShift,
+    };
+
+      enum EAuxGeomPublicRenderflags_FillMode
+    {
+        e_FillModeSolid = 0x0 << e_FillModeShift,
+        e_FillModeWireframe = 0x1 << e_FillModeShift,
+        e_FillModePoint = 0x2 << e_FillModeShift,
+    };
+
+    enum EAuxGeomPublicRenderflags_CullMode
+    {
+        e_CullModeNone = 0x0 << e_CullModeShift,
+        e_CullModeFront = 0x1 << e_CullModeShift,
+        e_CullModeBack = 0x2 << e_CullModeShift,
+    };
+
+
+    enum EAuxGeomPublicRenderflags_DepthWrite
+    {
+        e_DepthWriteOn = 0x0 << e_DepthWriteShift,
+        e_DepthWriteOff = 0x1 << e_DepthWriteShift,
+    };
+
+    enum EAuxGeomPublicRenderflags_DepthTest
+    {
+        e_DepthTestOn = 0x0 << e_DepthTestShift,
+        e_DepthTestOff = 0x1 << e_DepthTestShift,
+    };
+
     void MultiplayerConnectionViewportMessageSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -52,10 +121,16 @@ namespace Multiplayer
         AZ::RPI::ViewportContextNotificationBus::Handler::BusConnect(
             AZ::RPI::ViewportContextRequests::Get()->GetDefaultViewportContextName());
         MultiplayerEditorServerNotificationBus::Handler::BusConnect();
+
+        if (auto multiplayerSystemComponent = AZ::Interface<IMultiplayer>::Get())
+        {
+            multiplayerSystemComponent->AddLevelLoadBlockedHandler(m_levelLoadBlockedHandler);
+        }
     }
 
     void MultiplayerConnectionViewportMessageSystemComponent::Deactivate()
     {
+        m_levelLoadBlockedHandler.Disconnect();
         MultiplayerEditorServerNotificationBus::Handler::BusDisconnect();
         AZ::RPI::ViewportContextNotificationBus::Handler::BusDisconnect();
     }
@@ -93,7 +168,10 @@ namespace Multiplayer
 
         // Display the custom center viewport text
         if (!m_centerViewportDebugText.empty())
-        {            
+        {
+            const float scrimAlpha = 0.6f;
+            DrawScrim(scrimAlpha);
+
             const float center_screenposition_x = 0.5f*viewportSize.m_width;
             const float center_screenposition_y = 0.5f*viewportSize.m_height;
 
@@ -195,6 +273,44 @@ namespace Multiplayer
                 GetEnumString(agentType));
             break;
         }
+
+        // Display the viewport toast text
+        if (!m_centerViewportDebugToastText.empty())
+        {
+            const float center_screenposition_x = 0.5f * viewportSize.m_width;
+            const float center_screenposition_y = 0.5f * viewportSize.m_height;
+
+            // Fade out the toast over time
+            const AZ::TimeMs currentTime = static_cast<AZ::TimeMs>(AZStd::GetTimeUTCMilliSecond());
+            const AZ::TimeMs remainingTime = CenterViewportDebugToastTime - (currentTime - m_centerViewportDebugToastStartTime);
+            const float alpha = AZStd::clamp(aznumeric_cast<float>(remainingTime) / aznumeric_cast<float>(CenterViewportDebugToastTimeFade), 0.0f, 1.0f);
+
+            if (alpha > 0.01f)
+            {
+                // Draw background for text contrast
+                DrawScrim(alpha);
+
+                // Draw title
+                const float textHeight = m_fontDrawInterface->GetTextSize(m_drawParams, CenterViewportToastTitle).GetY();
+                const float screenposition_title_y = center_screenposition_y - textHeight * 0.5f;
+                m_drawParams.m_position = AZ::Vector3(center_screenposition_x, screenposition_title_y, 1.0f);
+                m_drawParams.m_hAlign = AzFramework::TextHorizontalAlignment::Center;
+                m_drawParams.m_color = AZ::Colors::Red;
+                m_drawParams.m_color.SetA(alpha);
+                m_fontDrawInterface->DrawScreenAlignedText2d(m_drawParams, CenterViewportToastTitle);
+
+                // Draw toast text under the title
+                // Calculate line spacing based on the font's actual line height
+                m_drawParams.m_color = AZ::Colors::White;
+                m_drawParams.m_color.SetA(alpha);
+                m_drawParams.m_position.SetY(m_drawParams.m_position.GetY() + textHeight + m_lineSpacing);
+                m_fontDrawInterface->DrawScreenAlignedText2d(m_drawParams, m_centerViewportDebugToastText.c_str());
+            }
+            else // Completed faded now, clear the toast.
+            {
+                m_centerViewportDebugToastText.clear();
+            }
+        }
     }
 
     void MultiplayerConnectionViewportMessageSystemComponent::DrawConnectionStatus(AzNetworking::ConnectionState connectionState, const AzNetworking::IpAddress& hostIpAddress)
@@ -252,6 +368,45 @@ namespace Multiplayer
         m_drawParams.m_position.SetY(m_drawParams.m_position.GetY() - textHeight - m_lineSpacing);
     }
 
+    void MultiplayerConnectionViewportMessageSystemComponent::DrawScrim(float alphaMultiplier) const
+    {
+        AZ::RPI::ViewportContextPtr viewport = AZ::RPI::ViewportContextRequests::Get()->GetDefaultViewportContext();
+        if (!viewport)
+        {
+            return;
+        }
+
+        AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
+        AzFramework::DebugDisplayRequestBus::Bind(debugDisplayBus, viewport->GetId());
+        AzFramework::DebugDisplayRequests*  debugDisplay = AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
+        if (!debugDisplay)
+        {
+            return;
+        }
+
+        const AZ::u32 previousState = debugDisplay->GetState();
+        debugDisplay->SetState(
+            e_Mode2D | e_AlphaBlended | e_FillModeSolid | e_CullModeBack | e_DepthWriteOff | static_cast<AZ::u32>(e_DepthTestOff));
+
+        debugDisplay->DrawQuadGradient(
+            AZ::Vector3(0, 0, 0),
+            AZ::Vector3(1.f, 0, 0),
+            AZ::Vector3(1.f, 0.5f, 0),
+            AZ::Vector3(0, 0.5f, 0),
+            AZ::Vector4(0, 0, 0, 0),
+            AZ::Vector4(0, 0, 0, ScrimAlpha * alphaMultiplier));
+
+        debugDisplay->DrawQuadGradient(
+            AZ::Vector3(0, 0.5f, 0),
+            AZ::Vector3(1.f, 0.5f, 0),
+            AZ::Vector3(1.f, 1.f, 0),
+            AZ::Vector3(0, 1.f, 0),
+            AZ::Vector4(0, 0, 0, ScrimAlpha * alphaMultiplier),
+            AZ::Vector4(0, 0, 0, 0));
+
+        debugDisplay->SetState(previousState);
+    }
+
     void MultiplayerConnectionViewportMessageSystemComponent::OnServerLaunched()
     {
         m_centerViewportDebugTextColor = AZ::Colors::Yellow;
@@ -304,4 +459,9 @@ namespace Multiplayer
         m_centerViewportDebugText = OnEditorServerStoppedUnexpectedly;
     }
 
+    void MultiplayerConnectionViewportMessageSystemComponent::OnBlockedLevelLoad()
+    {
+        m_centerViewportDebugToastStartTime = static_cast<AZ::TimeMs>(AZStd::GetTimeUTCMilliSecond());
+        m_centerViewportDebugToastText = OnBlockedLevelLoadMessage;
+    }
 }
