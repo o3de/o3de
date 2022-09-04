@@ -26,6 +26,14 @@ namespace GradientSignal
         * Prepares the permutation table with a given random seed
         */          
         PerlinImprovedNoise(int seed);
+
+
+        /**
+         * Initializes the permutation table from a preset table
+         */
+        PerlinImprovedNoise(const AZStd::array<int, 512>& permutationTable);
+
+
         virtual ~PerlinImprovedNoise() = default;
 
         /**
