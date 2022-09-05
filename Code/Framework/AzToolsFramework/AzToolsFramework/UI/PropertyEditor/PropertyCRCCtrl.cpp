@@ -7,14 +7,15 @@
  */
 #include "PropertyCRCCtrl.h"
 #include "PropertyQTConstants.h"
+
+#include <AzCore/Math/Crc.h>
+
 #include <QRegExp>
 #include <QRegExpValidator>
 #include <QLineEdit>
-AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'QLayoutItem::align': class 'QFlags<Qt::AlignmentFlag>' needs to have dll-interface to be used by clients of class 'QLayoutItem'
 #include <QHBoxLayout>
-AZ_POP_DISABLE_WARNING
 #include <QString>
-#include <QtCore/QEvent>
+#include <QEvent>
 
 namespace AzToolsFramework
 {
@@ -137,25 +138,6 @@ namespace AzToolsFramework
         Q_UNUSED(debugName)
     }
 
-    AZ::u32 U32CRCHandler::GetHandlerName() const
-    {
-        return AZ::Edit::UIHandlers::Crc;
-    }
-
-    QWidget* U32CRCHandler::GetFirstInTabOrder(PropertyCRCCtrl* widget)
-    {
-        return widget->GetFirstInTabOrder();
-    }
-    QWidget* U32CRCHandler::GetLastInTabOrder(PropertyCRCCtrl* widget)
-    {
-        return widget->GetLastInTabOrder();
-    }
-
-    void U32CRCHandler::UpdateWidgetInternalTabbing(PropertyCRCCtrl* widget)
-    {
-        widget->UpdateTabOrder();
-    }
-
     QWidget* U32CRCHandler::CreateGUI(QWidget* pParent)
     {
         PropertyCRCCtrl* newCtrl = aznew PropertyCRCCtrl(pParent);
@@ -171,7 +153,7 @@ namespace AzToolsFramework
         return newCtrl;
     }
 
-    void U32CRCHandler::WriteGUIValuesIntoProperty(size_t index, PropertyCRCCtrl* GUI, AZ::u32& instance, InstanceDataNode* node)
+    void U32CRCHandler::WriteGUIValuesIntoProperty(size_t index, PropertyCRCCtrl* GUI, property_t& instance, InstanceDataNode* node)
     {
         AZ_UNUSED(index);
         AZ_UNUSED(node);
@@ -179,7 +161,7 @@ namespace AzToolsFramework
         instance = static_cast<property_t>(val);
     }
 
-    bool U32CRCHandler::ReadValuesIntoGUI(size_t index, PropertyCRCCtrl* GUI, const AZ::u32& instance, InstanceDataNode* node)
+    bool U32CRCHandler::ReadValuesIntoGUI(size_t index, PropertyCRCCtrl* GUI, const property_t& instance, InstanceDataNode* node)
     {
         AZ_UNUSED(index);
         AZ_UNUSED(node);
@@ -187,9 +169,51 @@ namespace AzToolsFramework
         return false;
     }
 
+    void CRC32Handler::ConsumeAttribute(PropertyCRCCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName)
+    {
+        Q_UNUSED(GUI)
+        Q_UNUSED(attrib)
+        Q_UNUSED(attrValue)
+        Q_UNUSED(debugName)
+    }
+
+    QWidget* CRC32Handler::CreateGUI(QWidget* pParent)
+    {
+        PropertyCRCCtrl* newCtrl = aznew PropertyCRCCtrl(pParent);
+
+        auto requestWriteCall = [newCtrl](AZ::u32)
+        {
+            EBUS_EVENT(PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, newCtrl);
+        };
+
+        QObject::connect(newCtrl, &PropertyCRCCtrl::valueChanged, this, requestWriteCall);
+
+        return newCtrl;
+    }
+
+    void CRC32Handler::WriteGUIValuesIntoProperty(size_t index, PropertyCRCCtrl* GUI, property_t& instance, InstanceDataNode* node)
+    {
+        AZ_UNUSED(index);
+        AZ_UNUSED(node);
+        AZ::u32 val = GUI->value();
+        instance = static_cast<property_t>(AZ::Crc32(val));
+    }
+
+    bool CRC32Handler::ReadValuesIntoGUI(size_t index, PropertyCRCCtrl* GUI, const property_t& instance, InstanceDataNode* node)
+    {
+        AZ_UNUSED(index);
+        AZ_UNUSED(node);
+        GUI->setValue(static_cast<property_t>(instance));
+        return false;
+    }
+
+
     void RegisterCrcHandler()
     {
-        EBUS_EVENT(PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew U32CRCHandler());
+        PropertyTypeRegistrationMessageBus::Broadcast(&PropertyTypeRegistrationMessages::RegisterPropertyType, aznew U32CRCHandler());
+        PropertyTypeRegistrationMessageBus::Broadcast(&PropertyTypeRegistrationMessages::RegisterPropertyType, aznew CRC32Handler());
+        
     }
 }
 

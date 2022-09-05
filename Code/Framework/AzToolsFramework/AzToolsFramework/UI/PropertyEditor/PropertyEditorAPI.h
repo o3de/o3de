@@ -289,6 +289,8 @@ namespace AzToolsFramework
         virtual PropertyHandlerBase* ResolvePropertyHandler(AZ::u32 handlerName, const AZ::Uuid& handlerType) = 0;
     };
 
+    using PropertyTypeRegistrationMessageBus = AZ::EBus<PropertyTypeRegistrationMessages>;
+
     /**
      * Events/bus for listening externally for property changes on a specific entity.
      */
