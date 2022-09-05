@@ -250,6 +250,7 @@ class BaseTestImpact(ABC):
         RUNTIME_ARTIFACT_DIR_KEY = "run_artifact_dir"
         RUNTIME_COVERAGE_DIR_KEY = "coverage_artifact_dir"
         REPORT_KEY = "reports"
+        CHANGE_LIST_KEY = "change_list"
 
         logger.info(
             f"Attempting to parse configuration file '{config_file}'...")
@@ -275,7 +276,8 @@ class BaseTestImpact(ABC):
                 self._historic_workspace = config[self.runtime_type][WORKSPACE_KEY][HISTORIC_KEY][ROOT_KEY]
                 self._temp_workspace = config[self.runtime_type][WORKSPACE_KEY][TEMP_KEY][ROOT_KEY]
                 self._report_path = config[self.runtime_type][WORKSPACE_KEY][TEMP_KEY][REPORT_KEY]
-
+                self._change_list_workspace = config[self.runtime_type][WORKSPACE_KEY][TEMP_KEY][CHANGE_LIST_KEY]
+                
                 # Data file paths
                 self._unpacked_coverage_data_file = config[self.runtime_type][
                     WORKSPACE_KEY][ACTIVE_KEY][RELATIVE_PATHS_KEY][TEST_IMPACT_DATA_FILE_KEY]
