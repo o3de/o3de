@@ -213,9 +213,18 @@ namespace UnitTest
         {
         }
 
+        void Activate() override
+        {
+            GradientSignal::PerlinGradientComponent::Activate();
+
+            m_perlinImprovedNoise.reset(aznew GradientSignal::PerlinImprovedNoise(m_testPermutationTable));
+        }
+
         void SetPerlinNoisePermutationTableForTest(const AZStd::array<int, 512>& permutationTable)
         {
-            m_perlinImprovedNoise.reset(aznew GradientSignal::PerlinImprovedNoise(permutationTable));
+            AZStd::copy(permutationTable.cbegin(), permutationTable.cend(), m_testPermutationTable.begin());
         }
+
+        AZStd::array<int, 512>  m_testPermutationTable;
     };
 }
