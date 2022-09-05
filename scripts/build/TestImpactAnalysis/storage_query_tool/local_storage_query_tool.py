@@ -105,23 +105,31 @@ class LocalStorageQueryTool(StorageQueryTool):
         @param file: File to store.
         @param storage_location: Location to store the file.
         """
-        if self._file_type == self.FileType.JSON:
-            try:
+        if not self._check_object_exists(str(storage_location)):
+            self._handle_file_writing(file, storage_location)
+        else:
+            logger.info("Cancelling update, as file does not exist")
+
+    def _handle_file_writing(self, file: str, storage_location: str):
+        """
+        Write the passed through file to the provided storage location. Format of written file is determined by this objects file_type property.
+
+        @param file: File to store.
+        @param storage_location: Location to store the file.
+        """
+        try:
+            if self._file_type == self.FileType.JSON:
                 json_obj = json.loads(file)
-                if not self._check_object_exists(str(storage_location)):
-                    self._write_json_file(json_obj, storage_location)
-                else:
-                    logger.info("Cancelling create, as file exists already")
-            except json.JSONDecodeError:
-                logger.error("The historic data does not contain valid json")
-        elif self._file_type == self.FileType.ZIP:
-            if not self._check_object_exists(str(storage_location)):
+                self._write_json_file(json_obj, storage_location)
+            elif self._file_type == self.FileType.ZIP:
                 self._write_zip_file(file, storage_location)
             else:
-                logger.info("Cancelling create, as file exists already")
-        else:
-            raise SystemError(
-                "File type not specified or otherwise not passed through to SQT")
+                raise SystemError(
+                    "File type not specified or otherwise not passed through to SQT")
+        except json.JSONDecodeError:
+            logger.error("The historic data does not contain valid json")
+        except OSError as e:
+            logger.error(e)
 
     def _update(self, file: str, storage_location: str):
         """
@@ -130,23 +138,10 @@ class LocalStorageQueryTool(StorageQueryTool):
         @param file: File to store.
         @param storage_location: Location to store the file.
         """
-        if self._file_type == self.FileType.JSON:
-            try:
-                json_obj = json.loads(file)
-                if self._check_object_exists(storage_location):
-                    self._write_json_file(json_obj, storage_location)
-                else:
-                    logger.info("Cancelling update, as file does not exist")
-            except json.JSONDecodeError:
-                logger.error("The historic data does not contain valid json")
-        elif self._file_type == self.FileType.ZIP:
-            try:
-                if self._check_object_exists(str(storage_location)):
-                    self._write_zip_file(file, storage_location)
-                else:
-                    logger.info("Cancelling create, as file exists already")
-            except OSError as e:
-                logger.error(e)
+        if self._check_object_exists(str(storage_location)):
+            self._handle_file_writing(file, storage_location)
+        else:
+            logger.info("Cancelling update, as file does not exist")
 
     def _write_json_file(self, json_obj, storage_location):
         """
