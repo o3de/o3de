@@ -16,6 +16,7 @@
 #include <QFileDialog>
 #include <QUrl>
 #include <QWindow>
+#include <QMessageBox>
 
 namespace ShaderManagementConsole
 {
@@ -36,6 +37,59 @@ namespace ShaderManagementConsole
     {
         Base::OnDocumentOpened(documentId);
         m_documentInspector->SetDocumentId(documentId);
+    }
+
+    void ShaderManagementConsoleWindow::OnDocumentModified(const AZ::Uuid& documentId)
+    {
+        Base::OnDocumentModified(documentId);
+        m_documentInspector->SetDocumentId(documentId);
+    }
+
+    AZStd::string ShaderManagementConsoleWindow::GetSaveDocumentParams(const AZStd::string& initialPath) const
+    {
+        AZStd::string fullPath;
+        if (initialPath.compare(""))
+        {
+            fullPath = initialPath;
+        }
+        else
+        {
+            // This is a generated shader variant list without a file path
+            AZ::RPI::ShaderVariantListSourceData shaderVariantList = {};
+            ShaderManagementConsoleDocumentRequestBus::EventResult(
+                shaderVariantList,
+                m_documentInspector->GetDocumentId(),
+                &ShaderManagementConsoleDocumentRequestBus::Events::GetShaderVariantListSourceData);
+            fullPath = AZ::RPI::AssetUtils::ResolvePathReference(initialPath, shaderVariantList.m_shaderFilePath);
+            AzFramework::StringFunc::Path::ReplaceExtension(fullPath, "shadervariantlist");
+        }
+
+        QMessageBox msgBox;
+        msgBox.setText("Where do you want to save the list?");
+        QPushButton* projectBtn = msgBox.addButton(QObject::tr("Save to project"), QMessageBox::YesRole);
+        QPushButton* engineBtn = msgBox.addButton(QObject::tr("Save to engine"), QMessageBox::NoRole);
+        msgBox.exec();
+
+        AZStd::string result;
+        if (msgBox.clickedButton() == projectBtn)
+        {
+            char projectRoot[AZ_MAX_PATH_LEN];
+            AZ::IO::FileIOBase::GetInstance()->ResolvePath("@projectroot@", projectRoot, AZ_MAX_PATH_LEN);
+
+            AZStd::string shaderName;
+            AZStd::string shaderPath;
+            AzFramework::StringFunc::Path::Split(fullPath.c_str(), nullptr, &shaderPath, &shaderName);
+            AZStd::string relativePath = shaderPath.substr(shaderPath.find("Assets"), shaderPath.length());
+            AzFramework::StringFunc::Path::StripComponent(relativePath);
+            result = AZStd::string::format("%s\\ShaderVariants\\%s\\%s.shadervariantlist", projectRoot, relativePath.c_str(), shaderName.c_str());
+            AzFramework::StringFunc::Path::Normalize(result);
+        }
+        else if(msgBox.clickedButton() == engineBtn)
+        {
+            result = fullPath;
+        }
+
+        return result;
     }
 } // namespace ShaderManagementConsole
 
