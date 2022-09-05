@@ -43,7 +43,7 @@ namespace GradientSignal
         float GenerateNoise(float x, float y, float z);
 
     private:
-        virtual void PrepareTable(int seed);
+        void PrepareTable(int seed);
 
         AZStd::array<int, 512> m_permutationTable;
     };
