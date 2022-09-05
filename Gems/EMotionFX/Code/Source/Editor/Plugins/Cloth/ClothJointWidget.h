@@ -33,7 +33,8 @@ namespace EMotionFX
         ~ClothJointWidget() = default;
 
         static Physics::CharacterColliderNodeConfiguration* GetNodeConfig(const QModelIndex& modelIndex);
-
+        virtual QString GetCardTitle() const override { return "Cloth Colliders"; }
+        virtual QColor GetColor() const override { return QColor{"#a675ff"}; }
     public slots:
         void OnAddCollider(const AZ::TypeId& colliderType);
         void OnCopyCollider(size_t colliderIndex);
@@ -48,7 +49,6 @@ namespace EMotionFX
 
         Physics::CharacterColliderNodeConfiguration* GetNodeConfig() const;
 
-        AddColliderButton*          m_addColliderButton;
         ColliderContainerWidget*    m_collidersWidget;
     };
 } // namespace EMotionFX

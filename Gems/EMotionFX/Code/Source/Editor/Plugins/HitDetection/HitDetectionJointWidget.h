@@ -32,6 +32,8 @@ namespace EMotionFX
         HitDetectionJointWidget(QWidget* parent = nullptr);
         ~HitDetectionJointWidget() = default;
 
+        virtual QString GetCardTitle() const override { return "Hit Detectiion"; }
+        virtual QColor GetColor() const override { return QColor{"#4A90E2"};}
     public slots:
         void OnAddCollider(const AZ::TypeId& colliderType);
         void OnCopyCollider(size_t colliderIndex);
@@ -46,7 +48,6 @@ namespace EMotionFX
 
         Physics::CharacterColliderNodeConfiguration* GetNodeConfig();
 
-        AddColliderButton*          m_addColliderButton;
         ColliderContainerWidget*    m_collidersWidget;
     };
 } // namespace EMotionFX

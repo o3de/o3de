@@ -35,6 +35,8 @@ namespace EMotionFX
     public:
         SimulatedObjectColliderWidget(QWidget* parent = nullptr);
 
+        virtual QString GetCardTitle() const override { return "Object Collider "; }
+        virtual QColor GetColor() const override { return QColor{"#1ad092"}; }
     public slots:
         void OnAddCollider(const AZ::TypeId& colliderType);
         void OnCopyCollider(size_t colliderIndex);

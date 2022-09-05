@@ -9,6 +9,7 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <AzQtComponents/Components/Widgets/Card.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <EMotionFX/Source/ActorInstance.h>
 #include <QWidget>
@@ -21,6 +22,7 @@ QT_FORWARD_DECLARE_CLASS(QLabel)
 namespace EMotionFX
 {
     class Actor;
+    class ActorInstance;
     class Node;
 
     class SkeletonModelJointWidget
@@ -38,6 +40,8 @@ namespace EMotionFX
 
         void showEvent(QShowEvent* event) override;
 
+        virtual QString GetCardTitle() const = 0;
+        virtual QColor GetColor() const = 0;
     protected:
         Actor* GetActor() const;
         ActorInstance* GetActorInstance();
@@ -53,12 +57,13 @@ namespace EMotionFX
         void OnModelReset();
 
     protected:
+        AzQtComponents::Card*   m_contentCard;
+
         QLabel*         m_jointNameLabel;
         static int      s_jointLabelSpacing;
         static int      s_jointNameSpacing;
 
     private:
-        QWidget*        m_contentsWidget;
         QWidget*        m_noSelectionWidget;
     };
 } // namespace EMotionFX

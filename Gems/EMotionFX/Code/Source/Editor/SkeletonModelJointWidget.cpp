@@ -11,6 +11,8 @@
 #include <Editor/SkeletonModelJointWidget.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerBus.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
+#include "AzQtComponents/Components/Widgets/CardHeader.h"
+#include "EMotionFX/Source/ActorInstance.h"
 #include <QLabel>
 #include <QItemSelectionModel>
 #include <QModelIndex>
@@ -25,7 +27,6 @@ namespace EMotionFX
     SkeletonModelJointWidget::SkeletonModelJointWidget(QWidget* parent)
         : QWidget(parent)
         , m_jointNameLabel(nullptr)
-        , m_contentsWidget(nullptr)
         , m_noSelectionWidget(nullptr)
     {
     }
@@ -38,36 +39,26 @@ namespace EMotionFX
         mainLayout->setSizeConstraint(QLayout::SetMinimumSize);
         mainLayout->setSizeConstraint(QLayout::SetMinimumSize);
 
-        // Contents widget
-        m_contentsWidget = new QWidget();
-        m_contentsWidget->setVisible(false);
+        // Contents Card
+        m_contentCard = new AzQtComponents::Card{this};
+        AzQtComponents::Card::applyContainerStyle(m_contentCard);
+        m_contentCard->setTitle(GetCardTitle());
+        m_contentCard->header()->setHasContextMenu(false);
+        m_contentCard->header()->setUnderlineColor(GetColor());
+        //m_contentCard->setVisible(false);
+
+        auto* content = new QWidget{m_contentCard};
         QVBoxLayout* contentsLayout = new QVBoxLayout();
-        contentsLayout->setSpacing(ColliderContainerWidget::s_layoutSpacing);
+        // contentsLayout->setSpacing(ColliderContainerWidget::s_layoutSpacing);
+        m_contentCard->setLayout(contentsLayout);
 
-        // Joint name
-        QHBoxLayout* jointNameLayout = new QHBoxLayout();
-        jointNameLayout->setAlignment(Qt::AlignLeft);
-        jointNameLayout->setMargin(0);
-        jointNameLayout->setSpacing(0);
-        contentsLayout->addLayout(jointNameLayout);
-
-        jointNameLayout->addSpacerItem(new QSpacerItem(s_jointLabelSpacing, 0, QSizePolicy::Fixed));
-        QLabel* tempLabel = new QLabel("Joint name");
-        tempLabel->setStyleSheet("font-weight: bold;");
-        jointNameLayout->addWidget(tempLabel);
-
-        jointNameLayout->addSpacerItem(new QSpacerItem(s_jointNameSpacing, 0, QSizePolicy::Fixed));
-        m_jointNameLabel = new QLabel();
-        jointNameLayout->addWidget(m_jointNameLabel);
-        jointNameLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::Ignored));
-
-        contentsLayout->addWidget(CreateContentWidget(m_contentsWidget));
-
-        m_contentsWidget->setLayout(contentsLayout);
-        mainLayout->addWidget(m_contentsWidget);
+        content->setLayout(contentsLayout);
+        contentsLayout->addWidget(CreateContentWidget(m_contentCard));
+        m_contentCard->setContentWidget(content);
+        mainLayout->addWidget(m_contentCard);
 
         // No selection widget
-        m_noSelectionWidget = CreateNoSelectionWidget(m_contentsWidget);
+        m_noSelectionWidget = CreateNoSelectionWidget(m_contentCard);
         mainLayout->addWidget(m_noSelectionWidget);
 
         setLayout(mainLayout);
@@ -99,29 +90,20 @@ namespace EMotionFX
             bool onlyRootSelected = selectedModelIndices.size() == 1 && SkeletonModel::IndicesContainRootNode(selectedModelIndices);
             if (!selectedModelIndices.isEmpty() && !onlyRootSelected)
             {
-                if (selectedModelIndices.size() == 1)
-                {
-                    m_jointNameLabel->setText(GetNode()->GetName());
-                }
-                else
-                {
-                    m_jointNameLabel->setText(QString("%1 joints selected").arg(selectedModelIndices.size()));
-                }
-
                 m_noSelectionWidget->hide();
                 InternalReinit();
-                m_contentsWidget->show();
+                m_contentCard->show();
             }
             else
             {
-                m_contentsWidget->hide();
+                m_contentCard->hide();
                 InternalReinit();
                 m_noSelectionWidget->show();
             }
         }
         else
         {
-            m_contentsWidget->hide();
+            m_contentCard->hide();
             InternalReinit();
             m_noSelectionWidget->hide();
         }

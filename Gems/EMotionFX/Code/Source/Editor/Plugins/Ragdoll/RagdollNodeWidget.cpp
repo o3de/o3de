@@ -49,9 +49,7 @@ namespace EMotionFX
         : SkeletonModelJointWidget(parent)
         , m_ragdollNodeCard(nullptr)
         , m_ragdollNodeEditor(nullptr)
-        , m_addRemoveButton(nullptr)
         , m_jointLimitWidget(nullptr)
-        , m_addColliderButton(nullptr)
         , m_collidersWidget(nullptr)
     {
     }
@@ -79,17 +77,13 @@ namespace EMotionFX
         layout->addWidget(m_ragdollNodeCard);
 
         // Buttons
-        QVBoxLayout* buttonLayout = new QVBoxLayout();
-        layout->addLayout(buttonLayout);
+//        QVBoxLayout* buttonLayout = new QVBoxLayout();
+//        layout->addLayout(buttonLayout);
 
-        m_addColliderButton = new AddColliderButton("Add ragdoll collider", result, PhysicsSetup::ColliderConfigType::Ragdoll);
-        connect(m_addColliderButton, &AddColliderButton::AddCollider, this, &RagdollNodeWidget::OnAddCollider);
-        buttonLayout->addWidget(m_addColliderButton);
-
-        m_addRemoveButton = new QPushButton(result);
-        m_addRemoveButton->setObjectName("EMFX.RagdollNodeWidget.PushButton.RagdollAddRemoveButton");
-        connect(m_addRemoveButton, &QPushButton::clicked, this, &RagdollNodeWidget::OnAddRemoveRagdollNode);
-        buttonLayout->addWidget(m_addRemoveButton);
+//        m_addRemoveButton = new QPushButton(result);
+//        m_addRemoveButton->setObjectName("EMFX.RagdollNodeWidget.PushButton.RagdollAddRemoveButton");
+//        connect(m_addRemoveButton, &QPushButton::clicked, this, &RagdollNodeWidget::OnAddRemoveRagdollNode);
+//        buttonLayout->addWidget(m_addRemoveButton);
 
         // Joint limit
         m_jointLimitWidget = new RagdollJointLimitWidget(m_copiedJointLimit, result);
@@ -142,8 +136,7 @@ namespace EMotionFX
                     jointLimitConfig->SetPropertyVisibility(AzPhysics::JointConfiguration::PropertyVisibility::ChildLocalRotation, jointLimitConfig);
                 }
 
-                m_addColliderButton->show();
-                m_addRemoveButton->setText("Remove from ragdoll");
+                //m_addRemoveButton->setText("Remove from ragdoll");
 
                 m_ragdollNodeEditor->AddInstance(ragdollNodeConfig, azrtti_typeid(ragdollNodeConfig));
 
@@ -196,8 +189,7 @@ namespace EMotionFX
             }
             else
             {
-                m_addColliderButton->hide();
-                m_addRemoveButton->setText("Add to ragdoll");
+                //m_addRemoveButton->setText("Add to ragdoll");
                 m_collidersWidget->Reset();
                 m_ragdollNodeCard->hide();
                 m_jointLimitWidget->Update(QModelIndex());

@@ -57,6 +57,8 @@ namespace EMotionFX
         bool HasCopiedJointLimits() const { return !m_copiedJointLimit.empty(); }
         const AZStd::string& GetCopiedJointLimits() const { return m_copiedJointLimit; }
 
+        virtual QString GetCardTitle() const override { return "Ragdoll"; }
+        virtual QColor GetColor() const override { return QColor{"#f5a623"}; }
     public slots:
         void OnAddRemoveRagdollNode();
 
@@ -78,13 +80,12 @@ namespace EMotionFX
         // Ragdoll node
         AzQtComponents::Card*         m_ragdollNodeCard;
         EMotionFX::ObjectEditor*      m_ragdollNodeEditor;
-        QPushButton*                  m_addRemoveButton;
+        //QPushButton*                  m_addRemoveButton;
 
         // Joint limit
         RagdollJointLimitWidget*      m_jointLimitWidget;
 
         // Colliders
-        AddColliderButton*            m_addColliderButton;
         ColliderContainerWidget*      m_collidersWidget;
 
         AZStd::string                 m_copiedJointLimit;

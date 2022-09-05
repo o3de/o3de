@@ -27,7 +27,6 @@ namespace EMotionFX
 {
     HitDetectionJointWidget::HitDetectionJointWidget(QWidget* parent)
         : SkeletonModelJointWidget(parent)
-        , m_addColliderButton(nullptr)
         , m_collidersWidget(nullptr)
     {
     }
@@ -39,11 +38,6 @@ namespace EMotionFX
         layout->setMargin(0);
         layout->setSpacing(ColliderContainerWidget::s_layoutSpacing);
         result->setLayout(layout);
-
-        // Add collider button
-        m_addColliderButton = new AddColliderButton("Add hit detection collider", result, PhysicsSetup::ColliderConfigType::HitDetection);
-        connect(m_addColliderButton, &AddColliderButton::AddCollider, this, &HitDetectionJointWidget::OnAddCollider);
-        layout->addWidget(m_addColliderButton);
 
         // Colliders
         m_collidersWidget = new ColliderContainerWidget(QIcon(SkeletonModel::s_hitDetectionColliderIconPath), result);
@@ -57,10 +51,7 @@ namespace EMotionFX
 
     QWidget* HitDetectionJointWidget::CreateNoSelectionWidget(QWidget* parent)
     {
-        QLabel* noSelectionLabel = new QLabel("Select a joint from the Skeleton Outliner", parent);
-        noSelectionLabel->setWordWrap(true);
-
-        return noSelectionLabel;
+        return new QWidget{parent};
     }
 
     void HitDetectionJointWidget::InternalReinit()

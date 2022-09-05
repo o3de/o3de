@@ -27,6 +27,8 @@ namespace EMStudio
 
 namespace EMotionFX
 {
+    class AddCollidersButton;
+
     //! A Widget in the Inspector Pane displaying Attributes of selected Nodes in a Skeleton
     class JointPropertyWidget
             : public QWidget
@@ -39,10 +41,42 @@ namespace EMotionFX
 
     public slots:
         void Reset();
+
+    private slots:
+        void OnAddCollider(PhysicsSetup::ColliderConfigType configType, AZ::TypeId colliderType);
+        void OnAddToRagdoll();
+
     private:
         AzToolsFramework::ReflectedPropertyEditor* m_propertyWidget{nullptr};
+        AddCollidersButton* m_addCollidersButton{nullptr};
+
+        ClothJointWidget* m_clothJointWidget{nullptr};
+        HitDetectionJointWidget* m_hitDetectionJointWidget{nullptr};
+        RagdollNodeWidget* m_ragdollJointWidget{nullptr};
+
         AZStd::unique_ptr<EMStudio::ActorInfo> m_actorInfo;
         AZStd::unique_ptr<EMStudio::NodeInfo> m_nodeInfo;
     };
 
-} // ns EMotionFX
+
+    class AddCollidersButton : public QPushButton
+    {
+        Q_OBJECT
+    public:
+        AddCollidersButton(QWidget* parent=nullptr);
+        AZStd::string GetNameForColliderType(AZ::TypeId colliderType) const;
+    public slots:
+        void OnAddColliderActionTriggered();
+    signals:
+        void AddCollider(PhysicsSetup::ColliderConfigType configType, AZ::TypeId colliderType);
+        void AddToRagdoll();
+    protected slots:
+        void OnCreateContextMenu();
+    protected:
+        const AZStd::vector<AZ::TypeId> m_supportedColliderTypes = {
+            azrtti_typeid<Physics::BoxShapeConfiguration>(),
+            azrtti_typeid<Physics::CapsuleShapeConfiguration>(),
+            azrtti_typeid<Physics::SphereShapeConfiguration>()};
+    };
+
+} // ns EmotionFX

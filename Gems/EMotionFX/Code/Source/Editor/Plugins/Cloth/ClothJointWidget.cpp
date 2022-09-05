@@ -28,7 +28,6 @@ namespace EMotionFX
 {
     ClothJointWidget::ClothJointWidget(QWidget* parent)
         : SkeletonModelJointWidget(parent)
-        , m_addColliderButton(nullptr)
         , m_collidersWidget(nullptr)
     {
     }
@@ -40,14 +39,6 @@ namespace EMotionFX
         layout->setMargin(0);
         layout->setSpacing(ColliderContainerWidget::s_layoutSpacing);
         result->setLayout(layout);
-
-        // Add collider button
-        m_addColliderButton = new AddColliderButton("Add cloth collider", result,
-            PhysicsSetup::ColliderConfigType::Cloth,
-            {azrtti_typeid<Physics::CapsuleShapeConfiguration>(),
-             azrtti_typeid<Physics::SphereShapeConfiguration>()});
-        connect(m_addColliderButton, &AddColliderButton::AddCollider, this, &ClothJointWidget::OnAddCollider);
-        layout->addWidget(m_addColliderButton);
 
         // Colliders
         m_collidersWidget = new ColliderContainerWidget(QIcon(SkeletonModel::s_clothColliderIconPath), result);
@@ -61,10 +52,7 @@ namespace EMotionFX
 
     QWidget* ClothJointWidget::CreateNoSelectionWidget(QWidget* parent)
     {
-        QLabel* noSelectionLabel = new QLabel("Select a joint from the Skeleton Outliner", parent);
-        noSelectionLabel->setWordWrap(true);
-
-        return noSelectionLabel;
+        return new QWidget(parent);
     }
 
     void ClothJointWidget::InternalReinit()

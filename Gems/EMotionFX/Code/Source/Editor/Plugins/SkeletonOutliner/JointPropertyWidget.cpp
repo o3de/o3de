@@ -13,8 +13,11 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/NodeWindow/NodeInfo.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/NodeWindow/ActorInfo.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/NodeWindow/NodeGroupInfo.h>
+#include <EMotionFX/CommandSystem/Source/RagdollCommands.h>
+#include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <Editor/SkeletonModel.h>
 #include <Editor/InspectorBus.h>
+#include <Editor/ColliderHelpers.h>
 #include <UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <QItemSelectionModel>
 #include <QBoxLayout>
@@ -22,6 +25,19 @@
 
 namespace EMotionFX
 {
+    struct HLine : public QVBoxLayout
+    {
+        HLine(QWidget* parent = nullptr)
+        {
+            setContentsMargins(0, 5, 0, 5);
+            auto* frame = new QFrame{parent};
+            frame->setFrameShape(QFrame::HLine);
+            frame->setFrameShadow(QFrame::Sunken);
+            addWidget(frame);
+        }
+    };
+
+
     JointPropertyWidget::JointPropertyWidget(QWidget* parent)
         :QWidget(parent)
     {
@@ -49,10 +65,31 @@ namespace EMotionFX
         {
             connect(skeletonModel, &SkeletonModel::dataChanged, this, &JointPropertyWidget::Reset);
             connect(skeletonModel, &SkeletonModel::modelReset, this, &JointPropertyWidget::Reset);
-            connect(&skeletonModel->GetSelectionModel(), &QItemSelectionModel::selectionChanged,
-                    this, &JointPropertyWidget::Reset);
+            connect(&skeletonModel->GetSelectionModel(), &QItemSelectionModel::selectionChanged, this, &JointPropertyWidget::Reset);
         }
 
+        m_clothJointWidget = new ClothJointWidget;
+        m_hitDetectionJointWidget = new HitDetectionJointWidget;
+        m_ragdollJointWidget = new RagdollNodeWidget;
+        m_clothJointWidget->CreateGUI();
+        m_hitDetectionJointWidget->CreateGUI();
+        m_ragdollJointWidget->CreateGUI();
+
+        // create Add Component button
+        m_addCollidersButton = new AddCollidersButton(propertyCard);
+        connect(m_addCollidersButton, &AddCollidersButton::AddCollider, this, &JointPropertyWidget::OnAddCollider);
+        connect(m_addCollidersButton, &AddCollidersButton::AddToRagdoll, this, &JointPropertyWidget::OnAddToRagdoll);
+        auto* marginLayout = new QVBoxLayout{this};
+        marginLayout->setContentsMargins(10, 0, 10, 10);
+        marginLayout->addWidget(m_addCollidersButton);
+        mainLayout->addLayout(marginLayout);
+
+        mainLayout->addLayout(new HLine);
+        mainLayout->addWidget(m_clothJointWidget);
+        mainLayout->addLayout(new HLine);
+        mainLayout->addWidget(m_hitDetectionJointWidget);
+        mainLayout->addLayout(new HLine);
+        mainLayout->addWidget(m_ragdollJointWidget);
     }
 
     JointPropertyWidget::~JointPropertyWidget()
@@ -111,4 +148,134 @@ namespace EMotionFX
         m_propertyWidget->ExpandAll();
         m_propertyWidget->InvalidateAll();
     }
+
+    void JointPropertyWidget::OnAddCollider(PhysicsSetup::ColliderConfigType configType, AZ::TypeId colliderType)
+    {
+        AZ::Outcome<const QModelIndexList&> indicesOutcome;
+        SkeletonOutlinerRequestBus::BroadcastResult(indicesOutcome, &SkeletonOutlinerRequests::GetSelectedRowIndices);
+        if (indicesOutcome.IsSuccess())
+        {
+            ColliderHelpers::AddCollider(indicesOutcome.GetValue(), configType, colliderType);
+        }
+    }
+
+    void JointPropertyWidget::OnAddToRagdoll()
+    {
+        AZ::Outcome<const QModelIndexList&> indicesOutcome;
+        SkeletonOutlinerRequestBus::BroadcastResult(indicesOutcome, &SkeletonOutlinerRequests::GetSelectedRowIndices);
+        if (!indicesOutcome.IsSuccess())
+        {
+            return;
+        }
+        auto indices = indicesOutcome.GetValue();
+
+        const AZStd::string groupName = AZStd::string::format("Add joint%s to ragdoll",
+                indices.size() > 1 ? "s" : "");
+        MCore::CommandGroup commandGroup(groupName);
+
+
+        AZStd::vector<AZStd::string> jointNames;
+        jointNames.reserve(indices.size());
+
+        // All the actor pointers should be the same
+        const uint32 actorId = indices[0].data(SkeletonModel::ROLE_ACTOR_POINTER).value<Actor*>()->GetID();
+
+        for (const QModelIndex& selectedIndex : indices)
+        {
+            const Node* joint = selectedIndex.data(SkeletonModel::ROLE_POINTER).value<Node*>();
+
+            jointNames.emplace_back(joint->GetNameString());
+        }
+
+        CommandRagdollHelpers::AddJointsToRagdoll(actorId, jointNames, &commandGroup);
+
+        AZStd::string result;
+        if (!CommandSystem::GetCommandManager()->ExecuteCommandGroup(commandGroup, result))
+        {
+            AZ_Error("EMotionFX", false, result.c_str());
+        }
+//        // All the actor pointers should be the same
+//        const uint32 actorId = modelIndices[0].data(SkeletonModel::ROLE_ACTOR_POINTER).value<Actor*>()->GetID();
+
+//        for (const QModelIndex& selectedIndex : modelIndices)
+//        {
+//            const Node* joint = selectedIndex.data(SkeletonModel::ROLE_POINTER).value<Node*>();
+
+//            jointNames.emplace_back(joint->GetNameString());
+//        }
+//        CommandRagdollHelpers::AddJointsToRagdoll(actorId, jointNames, &commandGroup);
+
+//        AZStd::string result;
+//        if (!CommandSystem::GetCommandManager()->ExecuteCommandGroup(commandGroup, result))
+//        {
+//            AZ_Error("EMotionFX", false, result.c_str());
+//        }
+    }
+
+    // AddCollidersButton
+    AddCollidersButton::AddCollidersButton(QWidget *parent)
+        :QPushButton(parent)
+    {
+        setText("Add Collider");
+        connect(this, &QPushButton::clicked, this, &AddCollidersButton::OnCreateContextMenu);
+    }
+
+    void AddCollidersButton::OnCreateContextMenu()
+    {
+        QMenu* contextMenu = new QMenu(this);
+        contextMenu->setObjectName("EMFX.AddCollidersButton.ContextMenu");
+
+        AZStd::string actionName;
+        auto sections = QList<QPair<PhysicsSetup::ColliderConfigType, QString>>{{PhysicsSetup::ColliderConfigType::Cloth, "Cloth"},
+                         {PhysicsSetup::ColliderConfigType::HitDetection, "Hit Detection"}};
+        for (const auto& s : sections)
+        {
+            auto& configType = s.first;
+            contextMenu->addSection(s.second);
+
+            for (auto& typeId : m_supportedColliderTypes)
+            {
+                actionName = AZStd::string::format("Add %s %s", s.second.toStdString().c_str() ,GetNameForColliderType(typeId).c_str());
+                auto* action = contextMenu->addAction(actionName.c_str());
+                action->setProperty("typeId", typeId.ToString<AZStd::string>().c_str());
+                action->setProperty("configType", static_cast<int>(configType));
+                connect(action, &QAction::triggered, this, &AddCollidersButton::OnAddColliderActionTriggered);
+            }
+        }
+        contextMenu->addSeparator();
+        auto* action = contextMenu->addAction("Add to Ragdoll");
+        connect(action, &QAction::triggered, this, &AddCollidersButton::AddToRagdoll);
+
+        contextMenu->setFixedWidth(width());
+        contextMenu->popup(mapToGlobal(QPoint{0, height()}));
+        connect(contextMenu, &QMenu::triggered, contextMenu, &QMenu::deleteLater);
+    }
+
+    void AddCollidersButton::OnAddColliderActionTriggered()
+    {
+        auto* action = static_cast<QAction*>(sender());
+        auto configType = static_cast<PhysicsSetup::ColliderConfigType>(action->property("configType").toInt());
+        auto colliderType = AZ::TypeId{action->property("typeId").toString().toStdString().c_str()};
+
+        emit AddCollider(configType, colliderType);
+    }
+
+    AZStd::string AddCollidersButton::GetNameForColliderType(AZ::TypeId colliderType) const
+    {
+        if (colliderType == azrtti_typeid<Physics::BoxShapeConfiguration>())
+        {
+            return "box";
+        }
+        else if (colliderType == azrtti_typeid<Physics::CapsuleShapeConfiguration>())
+        {
+            return "capsule";
+        }
+        else if (colliderType == azrtti_typeid<Physics::SphereShapeConfiguration>())
+        {
+            return "sphere";
+        }
+
+        return colliderType.ToString<AZStd::string>();
+    }
+
 } // ns EMotionFX

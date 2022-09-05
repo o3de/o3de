@@ -35,6 +35,7 @@ namespace EMotionFX
 
         virtual void DataChanged([[maybe_unused]] const QModelIndex& modelIndex) {}
         virtual void DataListChanged([[maybe_unused]] const QModelIndexList& modelIndexList) {}
+
     };
 
     using SkeletonOutlinerRequestBus = AZ::EBus<SkeletonOutlinerRequests>;
