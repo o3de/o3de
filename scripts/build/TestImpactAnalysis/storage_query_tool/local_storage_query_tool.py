@@ -108,7 +108,7 @@ class LocalStorageQueryTool(StorageQueryTool):
         if not self._check_object_exists(str(storage_location)):
             self._handle_file_writing(file, storage_location)
         else:
-            logger.info("Cancelling update, as file does not exist")
+            logger.info("Cancelling create, as file already exists")
 
     def _handle_file_writing(self, file: str, storage_location: str):
         """

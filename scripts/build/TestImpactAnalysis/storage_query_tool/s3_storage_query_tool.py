@@ -196,7 +196,7 @@ class S3StorageQueryTool(StorageQueryTool):
         if not self._check_object_exists(bucket_name, storage_location):
             self._handle_file_writing(bucket_name, file, storage_location)
         else:
-            logger.info("Cancelling put, as file exists already")
+            logger.info("Cancelling create, as file exists already")
 
     def _update(self, bucket_name: str, file: str, storage_location: str):
         """

@@ -151,7 +151,7 @@ class TestTIAFToolsLocalJSON():
         file_in.write_text(source_json_str)
         assert os.path.exists(file_in)
 
-        test_string = "Cancelling create, as file exists already"
+        test_string = "Cancelling create, as file already exists"
         
         target = tmp_path_factory.mktemp("test") / "historic_data.json"
         target_json_list = ['success']
