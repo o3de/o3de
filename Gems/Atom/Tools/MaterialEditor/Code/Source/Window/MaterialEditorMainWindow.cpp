@@ -62,18 +62,6 @@ namespace MaterialEditor
         m_documentInspector->SetDocumentId(documentId);
     }
 
-    void MaterialEditorMainWindow::OnDocumentCleared(const AZ::Uuid& documentId)
-    {
-        Base::OnDocumentCleared(documentId);
-        m_documentInspector->SetDocumentId(documentId);
-    }
-
-    void MaterialEditorMainWindow::OnDocumentError(const AZ::Uuid& documentId)
-    {
-        Base::OnDocumentError(documentId);
-        m_documentInspector->SetDocumentId(documentId);
-    }
-
     void MaterialEditorMainWindow::ResizeViewportRenderTarget(uint32_t width, uint32_t height)
     {
         QSize requestedViewportSize = QSize(width, height) / devicePixelRatioF();

@@ -14,7 +14,7 @@
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/Asset/AssetCatalog.h>
 #include <AzFramework/StringFunc/StringFunc.h>
-#include <Tests/AZTestShared/Utils/Utils.h>
+#include <AZTestShared/Utils/Utils.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/Asset/AssetBundler.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -23,7 +23,6 @@
 #include <AzToolsFramework/AssetCatalog/PlatformAddressedAssetCatalog.h>
 #include <AzToolsFramework/UnitTest/ToolsTestApplication.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
-#include <Utils/Utils.h>
 
 namespace // anonymous
 {
@@ -753,7 +752,7 @@ namespace UnitTest
         }
 
         ToolsTestApplication* m_application = nullptr;
-        UnitTest::ScopedTemporaryDirectory m_tempDir;
+        AZ::Test::ScopedAutoTempDirectory m_tempDir;
         AzToolsFramework::PlatformAddressedAssetCatalog* m_catalog = nullptr;
         AZ::IO::FileIOStream m_fileStreams[TotalAssets];
         AZ::Data::AssetId m_assets[TotalAssets];

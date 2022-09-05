@@ -165,17 +165,17 @@ namespace SettingsRegistryTests
         void Visit(const AZStd::vector<RegistryEntry>& expected, AZStd::string_view path = "")
         {
             size_t counter = 0;
-            auto callback = [&expected, &counter](AZStd::string_view path, AZStd::string_view valueName,
-                AZ::SettingsRegistryInterface::VisitAction action, AZ::SettingsRegistryInterface::Type type)
+            auto callback = [&expected, &counter](const AZ::SettingsRegistryInterface::VisitArgs& visitArgs,
+                AZ::SettingsRegistryInterface::VisitAction action)
             {
                 EXPECT_LT(counter, expected.size());
                 if (counter < expected.size())
                 {
                     const RegistryEntry& entry = expected[counter];
-                    EXPECT_STREQ(entry.m_path.data(), path.data());
-                    EXPECT_STREQ(entry.m_valueName.data(), valueName.data());
+                    EXPECT_STREQ(entry.m_path.data(), visitArgs.m_jsonKeyPath.data());
+                    EXPECT_STREQ(entry.m_valueName.data(), visitArgs.m_fieldName.data());
                     EXPECT_EQ(entry.m_action, action);
-                    EXPECT_EQ(entry.m_type, type);
+                    EXPECT_EQ(entry.m_type, visitArgs.m_type);
                     counter++;
                     return entry.m_response;
                 }
@@ -426,10 +426,10 @@ namespace SettingsRegistryTests
             using AZ::SettingsRegistryInterface::Visitor::Visit;
 
             using ValueType [[maybe_unused]] = typename SettingsType<TypeParam>::ValueType;
-            void Visit([[maybe_unused]] AZStd::string_view path, [[maybe_unused]] AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type type, ValueType value) override
+            void Visit(const AZ::SettingsRegistryInterface::VisitArgs& visitArgs, ValueType value) override
             {
                 AZ::SettingsRegistryInterface::Type expectedType = SettingsType<TypeParam>::s_type;
-                EXPECT_EQ(expectedType, type);
+                EXPECT_EQ(expectedType, visitArgs.m_type);
                 SettingsType<TypeParam>::ExpectEq(SettingsType<TypeParam>::GetStoredValue(), value);
                 m_counter++;
             }
@@ -457,10 +457,10 @@ namespace SettingsRegistryTests
             using AZ::SettingsRegistryInterface::Visitor::Visit;
 
             using ValueType [[maybe_unused]] = typename SettingsType<TypeParam>::ValueType;
-            void Visit([[maybe_unused]] AZStd::string_view path, [[maybe_unused]] AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type type, ValueType value) override
+            void Visit(const AZ::SettingsRegistryInterface::VisitArgs& visitArgs, ValueType value) override
             {
                 AZ::SettingsRegistryInterface::Type expectedType = SettingsType<TypeParam>::s_type;
-                EXPECT_EQ(expectedType, type);
+                EXPECT_EQ(expectedType, visitArgs.m_type);
                 SettingsType<TypeParam>::ExpectEq(SettingsType<TypeParam>::GetStoredValue(), value);
                 m_counter++;
             }
@@ -487,9 +487,9 @@ namespace SettingsRegistryTests
         struct : public AZ::SettingsRegistryInterface::Visitor
         {
             using AZ::SettingsRegistryInterface::Visitor::Visit;
-            void Visit([[maybe_unused]] AZStd::string_view path, [[maybe_unused]] AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type type, AZ::s64 value) override
+            void Visit(const AZ::SettingsRegistryInterface::VisitArgs& visitArgs, AZ::s64 value) override
             {
-                EXPECT_EQ(AZ::SettingsRegistryInterface::Type::Integer, type);
+                EXPECT_EQ(AZ::SettingsRegistryInterface::Type::Integer, visitArgs.m_type);
                 AZ::u64 testValue = reinterpret_cast<AZ::u64&>(value);
                 EXPECT_EQ(expectedValue, testValue);
                 
@@ -516,17 +516,17 @@ namespace SettingsRegistryTests
 
         struct : public AZ::SettingsRegistryInterface::Visitor
         {
-            AZ::SettingsRegistryInterface::VisitResponse Traverse(AZStd::string_view path, AZStd::string_view valueName,
-                AZ::SettingsRegistryInterface::VisitAction, AZ::SettingsRegistryInterface::Type) override
+            AZ::SettingsRegistryInterface::VisitResponse Traverse(const AZ::SettingsRegistryInterface::VisitArgs& visitArgs,
+                AZ::SettingsRegistryInterface::VisitAction) override
             {
-                EXPECT_TRUE(path.ends_with(valueName));
+                EXPECT_TRUE(visitArgs.m_jsonKeyPath.ends_with(visitArgs.m_fieldName));
                 return AZ::SettingsRegistryInterface::VisitResponse::Continue;
             }
 
             using AZ::SettingsRegistryInterface::Visitor::Visit;
-            void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type , AZStd::string_view)override
+            void Visit(const AZ::SettingsRegistryInterface::VisitArgs& visitArgs, AZStd::string_view)override
             {
-                EXPECT_TRUE(path.ends_with(valueName));
+                EXPECT_TRUE(visitArgs.m_jsonKeyPath.ends_with(visitArgs.m_fieldName));
             }
         } visitor;
 
@@ -1032,8 +1032,8 @@ namespace SettingsRegistryTests
 
     TEST_F(SettingsRegistryTest, VisitWithCallback_InvalidPath_ReturnsFalse)
     {
-        auto callback = [](AZStd::string_view, AZStd::string_view,
-            AZ::SettingsRegistryInterface::VisitAction, AZ::SettingsRegistryInterface::Type)
+        auto callback = [](const AZ::SettingsRegistryInterface::VisitArgs&,
+            AZ::SettingsRegistryInterface::VisitAction)
         {
             return AZ::SettingsRegistryInterface::VisitResponse::Continue;
         };
@@ -1043,8 +1043,8 @@ namespace SettingsRegistryTests
 
     TEST_F(SettingsRegistryTest, VisitWithCallback_UnknownPath_ReturnsFalse)
     {
-        auto callback = [](AZStd::string_view, AZStd::string_view,
-            AZ::SettingsRegistryInterface::VisitAction, AZ::SettingsRegistryInterface::Type)
+        auto callback = [](const AZ::SettingsRegistryInterface::VisitArgs&,
+            AZ::SettingsRegistryInterface::VisitAction)
         {
             return AZ::SettingsRegistryInterface::VisitResponse::Continue;
         };
@@ -1054,8 +1054,8 @@ namespace SettingsRegistryTests
 
     TEST_F(SettingsRegistryTest, VisitWithCallback_WithEmptyStringViewPath_DoesNotCrash)
     {
-        auto callback = [](AZStd::string_view, AZStd::string_view,
-            AZ::SettingsRegistryInterface::VisitAction, AZ::SettingsRegistryInterface::Type)
+        auto callback = [](const AZ::SettingsRegistryInterface::VisitArgs&,
+            AZ::SettingsRegistryInterface::VisitAction)
         {
             return AZ::SettingsRegistryInterface::VisitResponse::Continue;
         };

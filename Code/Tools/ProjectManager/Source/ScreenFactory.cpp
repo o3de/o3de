@@ -32,7 +32,7 @@ namespace O3DE::ProjectManager
             newScreen = new CreateProjectCtrl(downloadController, parent);
             break;
         case (ProjectManagerScreen::NewProjectSettings):
-            newScreen = new NewProjectSettingsScreen(parent);
+            newScreen = new NewProjectSettingsScreen(downloadController, parent);
             break;
         case (ProjectManagerScreen::GemCatalog):
             newScreen = new GemCatalogScreen(downloadController, true, parent);

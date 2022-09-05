@@ -22,18 +22,21 @@
 #include <AzFramework/FileFunc/FileFunc.h>
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
-#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
+#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 #include <AzToolsFramework/ToolsComponents/EditorAssetMimeDataContainer.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QApplication>
+#include <QMenu>
 #include <QMessageBox>
 #include <QMimeData>
 #include <QProcess>
+#include <QTimer>
 AZ_POP_DISABLE_WARNING
 
 namespace AtomToolsFramework
@@ -76,17 +79,33 @@ namespace AtomToolsFramework
         return mainWindow;
     }
 
-    AZStd::string GetDisplayNameFromPath(const AZStd::string& path)
+    AZStd::string GetSymbolNameFromText(const AZStd::string& text)
     {
-        QFileInfo fileInfo(path.c_str());
-        QString fileName = fileInfo.baseName();
-        fileName.replace(QRegExp("[^a-zA-Z\\d]"), " ");
-        QStringList fileNameParts = fileName.split(' ', Qt::SkipEmptyParts);
-        for (QString& part : fileNameParts)
+        QString symbolName(text.c_str());
+        symbolName.replace(QRegExp("[^a-zA-Z\\d]"), " ");
+        symbolName.replace(QRegExp("([a-z\\d])([A-Z])"), "\\1 \\2");
+        symbolName.replace(QRegExp("\\A(\\d)"), "_\\1");
+        symbolName.replace(QRegExp("\\s+"), "_");
+        return symbolName.toLower().toUtf8().constData();
+    }
+
+    AZStd::string GetDisplayNameFromText(const AZStd::string& text)
+    {
+        QString displayName(text.c_str());
+        displayName.replace(QRegExp("[^a-zA-Z\\d]"), " ");
+        displayName.replace(QRegExp("([a-z\\d])([A-Z])"), "\\1 \\2");
+        QStringList displayNameParts = displayName.split(QRegExp("\\s"), Qt::SkipEmptyParts);
+        for (QString& part : displayNameParts)
         {
             part.replace(0, 1, part[0].toUpper());
         }
-        return fileNameParts.join(" ").toUtf8().constData();
+        return displayNameParts.join(" ").toUtf8().constData();
+    }
+
+    AZStd::string GetDisplayNameFromPath(const AZStd::string& path)
+    {
+        QFileInfo fileInfo(path.c_str());
+        return GetDisplayNameFromText(fileInfo.baseName().toUtf8().constData());
     }
 
     AZStd::string GetSaveFilePath(const AZStd::string& initialPath, const AZStd::string& title)
@@ -421,5 +440,65 @@ namespace AtomToolsFramework
             }
         }
         return results;
+    }
+
+    void AddRegisteredScriptToMenu(QMenu* menu, const AZStd::string& registryKey, const AZStd::vector<AZStd::string>& arguments)
+    {
+        // Map containing vectors of script file paths organized by category
+        using ScriptsSettingsMap = AZStd::map<AZStd::string, AZStd::vector<AZStd::string>>;
+
+        // Retrieve and iterate over all of the registered script settings to add them to the menu
+        for (const auto& [scriptCategoryName, scriptPathVec] : GetSettingsObject(registryKey, ScriptsSettingsMap()))
+        {
+            // Create a parent category menu group to contain all of the individual script menu actions.
+            QMenu* scriptCategoryMenu = menu;
+            if (!scriptCategoryName.empty())
+            {
+                scriptCategoryMenu = menu->findChild<QMenu*>(scriptCategoryName.c_str());
+                if (!scriptCategoryMenu)
+                {
+                    scriptCategoryMenu = menu->addMenu(scriptCategoryName.c_str());
+                }
+            }
+
+            // Create menu actions for executing the individual scripts.
+            for (AZStd::string scriptPath : scriptPathVec)
+            {
+                // Removing the alias for the path so that we can check for its existence and add it to the menu.
+                scriptPath = GetPathWithoutAlias(scriptPath);
+                if (QFile::exists(scriptPath.c_str()))
+                {
+                    // Use the file name instead of the full path as the display name for the menu action.
+                    AZStd::string filename;
+                    AZ::StringFunc::Path::GetFullFileName(scriptPath.c_str(), filename);
+
+                    scriptCategoryMenu->addAction(filename.c_str(), [scriptPath, arguments]() {
+                        // Delay execution of the script until the next frame.
+                        QTimer::singleShot(0, [scriptPath, arguments]() {
+                            AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(
+                                &AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilenameWithArgs,
+                                scriptPath,
+                                AZStd::vector<AZStd::string_view>(arguments.begin(), arguments.end()));
+                            });
+                    });
+                }
+            }
+        }
+
+        // Create menu action for running arbitrary Python script.
+        menu->addAction(QObject::tr("&Run Python Script..."), [arguments]() {
+            const QString scriptPath = QFileDialog::getOpenFileName(
+                GetToolMainWindow(), QObject::tr("Run Python Script"), QString(AZ::Utils::GetProjectPath().c_str()), QString("*.py"));
+            if (!scriptPath.isEmpty())
+            {
+                // Delay execution of the script until the next frame.
+                QTimer::singleShot(0, [scriptPath, arguments]() {
+                    AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(
+                        &AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilenameWithArgs,
+                        scriptPath.toUtf8().constData(),
+                        AZStd::vector<AZStd::string_view>(arguments.begin(), arguments.end()));
+                });
+            }
+        });
     }
 } // namespace AtomToolsFramework

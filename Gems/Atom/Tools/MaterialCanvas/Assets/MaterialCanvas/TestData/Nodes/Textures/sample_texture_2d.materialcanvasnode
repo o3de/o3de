@@ -5,20 +5,13 @@
     "ClassData": {
         "id": "{C0ADB0F0-39DD-48D9-A4D2-58B40C76C285}",
         "category": "Texturing",
-        "title": "Sample Texture 2D",
+        "title": "Sample Texture 2d",
         "settings": {
             "instructions": [
                 "float4 NODEID_outColor = MaterialSrg::NODEINPUTID.Sample(MaterialSrg::NODEINPUTID_sampler, NODEID_inUV);"
             ],
             "materialInputs": [
-                "Texture2D NODEINPUTID;",
-                "Sampler NODEINPUTID_sampler",
-                "{",
-                "    MaxAnisotropy = 16;",
-                "    AddressU = Wrap;",
-                "    AddressV = Wrap;",
-                "    AddressW = Wrap;",
-                "};"
+                "Texture2D NODEINPUTID;\nSampler NODEINPUTID_sampler\n{\n    MaxAnisotropy = 16;\n    AddressU = Wrap;\n    AddressV = Wrap;\n    AddressW = Wrap;\n};\n"
             ]
         },
         "propertySlots": [

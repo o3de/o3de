@@ -29,6 +29,8 @@ namespace O3DE::ProjectManager
         QString m_name;
         QString m_path;
         QString m_summary;
+        QString m_requirements;
+        QString m_license;
         QStringList m_canonicalTags;
         QStringList m_userTags;
         bool m_isRemote = false;

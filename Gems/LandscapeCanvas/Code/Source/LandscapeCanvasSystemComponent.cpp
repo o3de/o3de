@@ -78,9 +78,13 @@
 #include <Editor/Nodes/Shapes/ReferenceShapeNode.h>
 #include <Editor/Nodes/Shapes/SphereShapeNode.h>
 #include <Editor/Nodes/Shapes/TubeShapeNode.h>
+#include <Editor/Nodes/Terrain/PhysXHeightfieldColliderNode.h>
 #include <Editor/Nodes/Terrain/TerrainHeightGradientListNode.h>
 #include <Editor/Nodes/Terrain/TerrainLayerSpawnerNode.h>
+#include <Editor/Nodes/Terrain/TerrainMacroMaterialNode.h>
+#include <Editor/Nodes/Terrain/TerrainPhysicsHeightfieldColliderNode.h>
 #include <Editor/Nodes/Terrain/TerrainSurfaceGradientListNode.h>
+#include <Editor/Nodes/Terrain/TerrainSurfaceMaterialsListNode.h>
 
 namespace LandscapeCanvas
 {
@@ -94,9 +98,13 @@ namespace LandscapeCanvas
         // ourselves since we can't rely on the headers being there.
         namespace Terrain
         {
+            static constexpr const char* EditorPhysXHeightfieldColliderComponentTypeId = "{C388C3DB-8D2E-4D26-96D3-198EDC799B77}";
             static constexpr const char* EditorTerrainHeightGradientListComponentTypeId = "{2D945B90-ADAB-4F9A-A113-39E714708068}";
             static constexpr const char* EditorTerrainLayerSpawnerComponentTypeId = "{9403FC94-FA38-4387-BEFD-A728C7D850C1}";
+            static constexpr const char* EditorTerrainMacroMaterialComponentTypeId = "{24D87D5F-6845-4F1F-81DC-05B4CEBA3EF4}";
+            static constexpr const char* EditorTerrainPhysicsHeightfieldColliderComponentTypeId = "{C43FAB8F-3968-46A6-920E-E84AEDED3DF5}";
             static constexpr const char* EditorTerrainSurfaceGradientListComponentTypeId = "{49831E91-A11F-4EFF-A824-6D85C284B934}";
+            static constexpr const char* EditorTerrainSurfaceMaterialsListComponentTypeId = "{335CDED5-2E76-4342-8675-A60F66C471BF}";
         }
 
         // The Vegetation gem is optional, so we need to keep track of the component type IDs
@@ -157,9 +165,13 @@ namespace LandscapeCanvas
     VISITOR_FUNCTION<SphereShapeNode>(LmbrCentral::EditorSphereShapeComponentTypeId, ##__VA_ARGS__);     \
     VISITOR_FUNCTION<TubeShapeNode>(LmbrCentral::EditorTubeShapeComponentTypeId, ##__VA_ARGS__);     \
     /* Terrain nodes */    \
+    VISITOR_FUNCTION<PhysXHeightfieldColliderNode>(Internal::Terrain::EditorPhysXHeightfieldColliderComponentTypeId, ##__VA_ARGS__);     \
     VISITOR_FUNCTION<TerrainHeightGradientListNode>(Internal::Terrain::EditorTerrainHeightGradientListComponentTypeId, ##__VA_ARGS__);     \
     VISITOR_FUNCTION<TerrainLayerSpawnerNode>(Internal::Terrain::EditorTerrainLayerSpawnerComponentTypeId, ##__VA_ARGS__);     \
+    VISITOR_FUNCTION<TerrainMacroMaterialNode>(Internal::Terrain::EditorTerrainMacroMaterialComponentTypeId, ##__VA_ARGS__);     \
+    VISITOR_FUNCTION<TerrainPhysicsHeightfieldColliderNode>(Internal::Terrain::EditorTerrainPhysicsHeightfieldColliderComponentTypeId, ##__VA_ARGS__);     \
     VISITOR_FUNCTION<TerrainSurfaceGradientListNode>(Internal::Terrain::EditorTerrainSurfaceGradientListComponentTypeId, ##__VA_ARGS__);     \
+    VISITOR_FUNCTION<TerrainSurfaceMaterialsListNode>(Internal::Terrain::EditorTerrainSurfaceMaterialsListComponentTypeId, ##__VA_ARGS__);     \
     /* Gradient generator nodes */    \
     VISITOR_FUNCTION<FastNoiseGradientNode>(Internal::EditorFastNoiseGradientComponentTypeId, ##__VA_ARGS__);     \
     VISITOR_FUNCTION<PerlinNoiseGradientNode>(GradientSignal::EditorPerlinGradientComponentTypeId, ##__VA_ARGS__);     \
