@@ -131,7 +131,8 @@ class S3StorageQueryTool(StorageQueryTool):
             elif self._file_type == self.FileType.ZIP:
                 self._save_as_zip_file(file_stream, destination)
             else:
-                raise SystemError("File type not specified or otherwise not passed through to SQT")
+                raise SystemError(
+                    "File type not specified or otherwise not passed through to SQT")
 
     def _save_as_zip_file(self, file_stream, destination: str):
         """
@@ -166,6 +167,24 @@ class S3StorageQueryTool(StorageQueryTool):
         except json.JSONDecodeError:
             logger.error("The historic data does not contain valid JSON.")
 
+    def _handle_file_writing(self, bucket_name, file, storage_location: str):
+        """
+        Writes the provided file to the storage location in the provided bucket. Storage format is decided by this objects file_type property.
+
+        @param bucket-name: Bucket to store data in.
+        @param file: File to store in bucket.
+        @param storage_location: Location to store the file.
+        """
+        if self._file_type == self.FileType.JSON:
+            data = BytesIO(zlib.compress(bytes(file, "UTF-8")))
+        if self._file_type == self.FileType.ZIP:
+            data = file
+        logger.info(
+            f"Uploading data to: {storage_location} in bucket: {bucket_name}")
+        self._s3_client.put_object(
+            Bucket=bucket_name, Key=storage_location, Body=data)
+        logger.info(f"Upload complete")
+
     def _put(self, bucket_name: str, file: str, storage_location: str):
         """
         Put the specified file in the specified location.
@@ -175,15 +194,7 @@ class S3StorageQueryTool(StorageQueryTool):
         @param storage_location: Location to store the file.
         """
         if not self._check_object_exists(bucket_name, storage_location):
-            if self._file_type == self.FileType.JSON:
-                data = BytesIO(zlib.compress(bytes(file, "UTF-8")))
-            if self._file_type == self.FileType.ZIP:
-                data = file
-            logger.info(
-                f"Uploading data to: {storage_location} in bucket: {bucket_name}")
-            self._s3_client.put_object(
-                Bucket=bucket_name, Key=storage_location, Body=data)
-            logger.info(f"Upload complete")
+            self._handle_file_writing(bucket_name, file, storage_location)
         else:
             logger.info("Cancelling put, as file exists already")
 
@@ -196,14 +207,6 @@ class S3StorageQueryTool(StorageQueryTool):
         @param storage_location: Location to store the file.
         """
         if self._check_object_exists(bucket_name, storage_location):
-            if self._file_type == self.FileType.JSON:
-                data = BytesIO(zlib.compress(bytes(file, "UTF-8")))
-            if self._file_type == self.FileType.ZIP:
-                data = file
-            logger.info(
-                f"Uploading data to: {storage_location} in bucket: {bucket_name}")
-            self._s3_client.put_object(
-                Bucket=bucket_name, Key=storage_location, Body=data)
-            logger.info("Upload complete")
+            self._handle_file_writing(bucket_name, file, storage_location)
         else:
             logger.info("Cancelling update, as file does not already exist")
