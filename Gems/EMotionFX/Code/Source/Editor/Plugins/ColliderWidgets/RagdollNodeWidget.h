@@ -12,9 +12,10 @@
 #include <AzFramework/Physics/Ragdoll.h>
 #include <AzQtComponents/Components/Widgets/Card.h>
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
+#include <Editor/Plugins/ColliderWidgets/RagdollOutlinerNotificationHandler.h>
+#include <Editor/Plugins/Ragdoll/PhysicsSetupViewportUiCluster.h>
 #include <Editor/SkeletonModelJointWidget.h>
 #include <QWidget>
-#include <Editor/Plugins/Ragdoll/PhysicsSetupViewportUiCluster.h>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QPushButton)
@@ -31,31 +32,43 @@ namespace EMotionFX
     class ColliderContainerWidget;
     class RagdollJointLimitWidget;
 
-    class RagdollCardHeader
-        : public AzQtComponents::CardHeader
+    class RagdollCardHeader : public AzQtComponents::CardHeader
     {
     public:
         RagdollCardHeader(QWidget* parent = nullptr);
     };
 
-    class RagdollCard
-        : public AzQtComponents::Card
+    class RagdollCard : public AzQtComponents::Card
     {
     public:
         RagdollCard(QWidget* parent = nullptr);
     };
 
-    class RagdollNodeWidget
-        : public SkeletonModelJointWidget
+    class RagdollNodeWidget : public SkeletonModelJointWidget
     {
-        Q_OBJECT //AUTOMOC
+        Q_OBJECT // AUTOMOC
 
     public:
         RagdollNodeWidget(QWidget* parent = nullptr);
         ~RagdollNodeWidget() = default;
 
-        bool HasCopiedJointLimits() const { return !m_copiedJointLimit.empty(); }
-        const AZStd::string& GetCopiedJointLimits() const { return m_copiedJointLimit; }
+        bool HasCopiedJointLimits() const
+        {
+            return !m_copiedJointLimit.empty();
+        }
+        const AZStd::string& GetCopiedJointLimits() const
+        {
+            return m_copiedJointLimit;
+        }
+
+        QString GetCardTitle() const override
+        {
+            return "Ragdoll";
+        }
+        QColor GetColor() const override
+        {
+            return QColor{ "#f5a623" };
+        }
 
     public slots:
         void OnAddRemoveRagdollNode();
@@ -65,10 +78,14 @@ namespace EMotionFX
         void OnPasteCollider(size_t colliderIndex, bool replace);
         void OnRemoveCollider(size_t colliderIndex);
 
+    public:
+        RagdollOutlinerNotificationHandler m_handler;
+
+        int WidgetCount() const override;
+
     private:
         // SkeletonModelJointWidget
         QWidget* CreateContentWidget(QWidget* parent) override;
-        QWidget* CreateNoSelectionWidget(QWidget* parent) override;
         void InternalReinit() override;
 
         Physics::RagdollConfiguration* GetRagdollConfig() const;
@@ -76,19 +93,16 @@ namespace EMotionFX
         Physics::RagdollNodeConfiguration* GetRagdollNodeConfig() const;
 
         // Ragdoll node
-        AzQtComponents::Card*         m_ragdollNodeCard;
-        EMotionFX::ObjectEditor*      m_ragdollNodeEditor;
-        QPushButton*                  m_addRemoveButton;
+        AzQtComponents::Card* m_ragdollNodeCard;
+        EMotionFX::ObjectEditor* m_ragdollNodeEditor;
 
         // Joint limit
-        RagdollJointLimitWidget*      m_jointLimitWidget;
+        RagdollJointLimitWidget* m_jointLimitWidget;
 
-        // Colliders
-        AddColliderButton*            m_addColliderButton;
-        ColliderContainerWidget*      m_collidersWidget;
-
-        AZStd::string                 m_copiedJointLimit;
+        AZStd::string m_copiedJointLimit;
 
         PhysicsSetupViewportUiCluster m_physicsSetupViewportUiCluster;
+
+        int m_widgetCount = 0;
     };
 } // namespace EMotionFX

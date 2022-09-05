@@ -7,56 +7,43 @@
  */
 
 #include <AzFramework/Physics/SystemBus.h>
+#include <MCore/Source/AzCoreConversions.h>
+#include <UI/Notifications/ToastBus.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.h>
+#include <Editor/Plugins/ColliderWidgets/HitDetectionJointWidget.h>
+#include <Editor/SkeletonModel.h>
 #include <Editor/ColliderContainerWidget.h>
 #include <Editor/ColliderHelpers.h>
-#include <Editor/SkeletonModel.h>
-#include <Editor/Plugins/HitDetection/HitDetectionJointInspectorPlugin.h>
-#include <Editor/Plugins/HitDetection/HitDetectionJointWidget.h>
+#include <Editor/Plugins/ColliderWidgets/HitDetectionOutlinerNotificationHandler.h>
+#include <Editor/Plugins/ColliderWidgets/HitDetectionJointWidget.h>
+#include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
 #include <Integration/Rendering/RenderActorSettings.h>
 #include <QScrollArea>
-#include <MCore/Source/AzCoreConversions.h>
+#include <QTimer>
 
 
 namespace EMotionFX
 {
-    HitDetectionJointInspectorPlugin::HitDetectionJointInspectorPlugin()
-        : EMStudio::DockWidgetPlugin()
-        , m_nodeWidget(nullptr)
+    HitDetectionOutlinerNotificationHandler::HitDetectionOutlinerNotificationHandler(HitDetectionJointWidget* jointWidget)
+        :m_nodeWidget(jointWidget)
     {
-    }
 
-    HitDetectionJointInspectorPlugin::~HitDetectionJointInspectorPlugin()
+        if (!ColliderHelpers::AreCollidersReflected())
+        {
+            m_nodeWidget->ErrorNotification("PhysX disabled",
+                                            "Hit detection collider editor depends on the PhysX gem. Please enable it in the Project Manager.");
+
+            return;
+        }
+         EMotionFX::SkeletonOutlinerNotificationBus::Handler::BusConnect();
+
+    }
+    HitDetectionOutlinerNotificationHandler::~HitDetectionOutlinerNotificationHandler()
     {
         EMotionFX::SkeletonOutlinerNotificationBus::Handler::BusDisconnect();
     }
 
-    bool HitDetectionJointInspectorPlugin::Init()
-    {
-        if (ColliderHelpers::AreCollidersReflected())
-        {
-            m_nodeWidget = new HitDetectionJointWidget();
-            m_nodeWidget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
-            m_nodeWidget->CreateGUI();
-
-            QScrollArea* scrollArea = new QScrollArea();
-            scrollArea->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
-            scrollArea->setWidget(m_nodeWidget);
-            scrollArea->setWidgetResizable(true);
-
-            m_dock->setWidget(scrollArea);
-
-            EMotionFX::SkeletonOutlinerNotificationBus::Handler::BusConnect();
-        }
-        else
-        {
-            m_dock->setWidget(CreateErrorContentWidget("Hit detection collider editor depends on the PhysX gem. Please enable it in the Project Manager."));
-        }
-
-        return true;
-    }
-
-    void HitDetectionJointInspectorPlugin::OnContextMenu(QMenu* menu, const QModelIndexList& selectedRowIndices)
+    void HitDetectionOutlinerNotificationHandler::OnContextMenu(QMenu* menu, const QModelIndexList& selectedRowIndices)
     {
         if (selectedRowIndices.empty())
         {
@@ -94,15 +81,14 @@ namespace EMotionFX
 
             QAction* addBoxAction = addColliderMenu->addAction("Add box");
             addBoxAction->setProperty("typeId", azrtti_typeid<Physics::BoxShapeConfiguration>().ToString<AZStd::string>().c_str());
-            connect(addBoxAction, &QAction::triggered, this, &HitDetectionJointInspectorPlugin::OnAddCollider);
-
+            connect(addBoxAction, &QAction::triggered, this, &HitDetectionOutlinerNotificationHandler::OnAddCollider);
             QAction* addCapsuleAction = addColliderMenu->addAction("Add capsule");
             addCapsuleAction->setProperty("typeId", azrtti_typeid<Physics::CapsuleShapeConfiguration>().ToString<AZStd::string>().c_str());
-            connect(addCapsuleAction, &QAction::triggered, this, &HitDetectionJointInspectorPlugin::OnAddCollider);
+            connect(addCapsuleAction, &QAction::triggered, this, &HitDetectionOutlinerNotificationHandler::OnAddCollider);
 
             QAction* addSphereAction = addColliderMenu->addAction("Add sphere");
             addSphereAction->setProperty("typeId", azrtti_typeid<Physics::SphereShapeConfiguration>().ToString<AZStd::string>().c_str());
-            connect(addSphereAction, &QAction::triggered, this, &HitDetectionJointInspectorPlugin::OnAddCollider);
+            connect(addSphereAction, &QAction::triggered, this, &HitDetectionOutlinerNotificationHandler::OnAddCollider);
 
 
             ColliderHelpers::AddCopyFromMenu(this, contextMenu, PhysicsSetup::ColliderConfigType::HitDetection, selectedRowIndices);
@@ -111,11 +97,11 @@ namespace EMotionFX
         if (numJointsWithColliders > 0)
         {
             QAction* removeCollidersAction = contextMenu->addAction("Remove colliders");
-            connect(removeCollidersAction, &QAction::triggered, this, &HitDetectionJointInspectorPlugin::OnClearColliders);
+            connect(removeCollidersAction, &QAction::triggered, this, &HitDetectionOutlinerNotificationHandler::OnClearColliders);
         }
     }
 
-    void HitDetectionJointInspectorPlugin::OnAddCollider()
+    void HitDetectionOutlinerNotificationHandler::OnAddCollider()
     {
         AZ::Outcome<QModelIndexList> selectedRowIndicesOutcome;
         SkeletonOutlinerRequestBus::BroadcastResult(selectedRowIndicesOutcome, &SkeletonOutlinerRequests::GetSelectedRowIndices);
@@ -137,7 +123,7 @@ namespace EMotionFX
         ColliderHelpers::AddCollider(selectedRowIndices, PhysicsSetup::HitDetection, colliderType);
     }
 
-    void HitDetectionJointInspectorPlugin::OnClearColliders()
+    void HitDetectionOutlinerNotificationHandler::OnClearColliders()
     {
         AZ::Outcome<QModelIndexList> selectedRowIndicesOutcome;
         SkeletonOutlinerRequestBus::BroadcastResult(selectedRowIndicesOutcome, &SkeletonOutlinerRequests::GetSelectedRowIndices);

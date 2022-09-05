@@ -19,8 +19,8 @@
 #include <Editor/ObjectEditor.h>
 #include <Editor/SkeletonModel.h>
 #include <Editor/Plugins/Ragdoll/RagdollJointLimitWidget.h>
-#include <Editor/Plugins/Ragdoll/RagdollNodeInspectorPlugin.h>
-#include <Editor/Plugins/Ragdoll/RagdollNodeWidget.h>
+#include <Editor/Plugins/ColliderWidgets/RagdollOutlinerNotificationHandler.h>
+#include <Editor/Plugins/ColliderWidgets/RagdollNodeWidget.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerBus.h>
 #include <Integration/System/CVars.h>
 #include <QLabel>
@@ -47,12 +47,10 @@ namespace EMotionFX
 
     RagdollNodeWidget::RagdollNodeWidget(QWidget* parent)
         : SkeletonModelJointWidget(parent)
+        , m_handler(this)
         , m_ragdollNodeCard(nullptr)
         , m_ragdollNodeEditor(nullptr)
-        , m_addRemoveButton(nullptr)
         , m_jointLimitWidget(nullptr)
-        , m_addColliderButton(nullptr)
-        , m_collidersWidget(nullptr)
     {
     }
 
@@ -78,19 +76,6 @@ namespace EMotionFX
         cardHeader->setHasContextMenu(false);
         layout->addWidget(m_ragdollNodeCard);
 
-        // Buttons
-        QVBoxLayout* buttonLayout = new QVBoxLayout();
-        layout->addLayout(buttonLayout);
-
-        m_addColliderButton = new AddColliderButton("Add ragdoll collider", result, PhysicsSetup::ColliderConfigType::Ragdoll);
-        connect(m_addColliderButton, &AddColliderButton::AddCollider, this, &RagdollNodeWidget::OnAddCollider);
-        buttonLayout->addWidget(m_addColliderButton);
-
-        m_addRemoveButton = new QPushButton(result);
-        m_addRemoveButton->setObjectName("EMFX.RagdollNodeWidget.PushButton.RagdollAddRemoveButton");
-        connect(m_addRemoveButton, &QPushButton::clicked, this, &RagdollNodeWidget::OnAddRemoveRagdollNode);
-        buttonLayout->addWidget(m_addRemoveButton);
-
         // Joint limit
         m_jointLimitWidget = new RagdollJointLimitWidget(m_copiedJointLimit, result);
         connect(m_jointLimitWidget, &RagdollJointLimitWidget::JointLimitCopied, [this](const AZStd::string& serializedJointLimits)
@@ -115,16 +100,9 @@ namespace EMotionFX
         return result;
     }
 
-    QWidget* RagdollNodeWidget::CreateNoSelectionWidget(QWidget* parent)
-    {
-        QLabel* noSelectionLabel = new QLabel("Select joints from the Skeleton Outliner and add it to the ragdoll using the right-click menu", parent);
-        noSelectionLabel->setWordWrap(true);
-
-        return noSelectionLabel;
-    }
-
     void RagdollNodeWidget::InternalReinit()
     {
+        m_widgetCount = 0;
         const QModelIndexList& selectedModelIndices = GetSelectedModelIndices();
         Node* selectedNode = GetNode();
 
@@ -142,9 +120,6 @@ namespace EMotionFX
                     jointLimitConfig->SetPropertyVisibility(AzPhysics::JointConfiguration::PropertyVisibility::ChildLocalRotation, jointLimitConfig);
                 }
 
-                m_addColliderButton->show();
-                m_addRemoveButton->setText("Remove from ragdoll");
-
                 m_ragdollNodeEditor->AddInstance(ragdollNodeConfig, azrtti_typeid(ragdollNodeConfig));
 
                 AZ::SerializeContext* serializeContext = nullptr;
@@ -153,10 +128,13 @@ namespace EMotionFX
 
                 if (colliderNodeConfig)
                 {
+                    m_widgetCount = colliderNodeConfig->m_shapes.size() + 2;
                     m_collidersWidget->Update(GetActor(), GetNode(), PhysicsSetup::ColliderConfigType::Ragdoll, colliderNodeConfig->m_shapes, serializeContext);
+                    m_widgetCount = colliderNodeConfig->m_shapes.size() + 2;
                 }
                 else
                 {
+                    m_widgetCount = 0;
                     m_collidersWidget->Reset();
                 }
 
@@ -196,8 +174,6 @@ namespace EMotionFX
             }
             else
             {
-                m_addColliderButton->hide();
-                m_addRemoveButton->setText("Add to ragdoll");
                 m_collidersWidget->Reset();
                 m_ragdollNodeCard->hide();
                 m_jointLimitWidget->Update(QModelIndex());
@@ -213,6 +189,13 @@ namespace EMotionFX
             m_collidersWidget->Reset();
             m_physicsSetupViewportUiCluster.UpdateClusters(PhysicsSetupManipulatorData());
         }
+
+        emit WidgetCountChanged();
+    }
+
+    int RagdollNodeWidget::WidgetCount() const
+    {
+        return m_widgetCount;
     }
 
     void RagdollNodeWidget::OnAddRemoveRagdollNode()
@@ -221,12 +204,12 @@ namespace EMotionFX
         if (GetRagdollNodeConfig())
         {
             // The node is present in the ragdoll, remove it.
-            RagdollNodeInspectorPlugin::RemoveFromRagdoll(selectedModelIndices);
+            ColliderHelpers::RemoveFromRagdoll(selectedModelIndices);
         }
         else
         {
             // The node is not part of the ragdoll, add it.
-            RagdollNodeInspectorPlugin::AddToRagdoll(selectedModelIndices);
+            ColliderHelpers::AddToRagdoll(selectedModelIndices);
         }
     }
 
