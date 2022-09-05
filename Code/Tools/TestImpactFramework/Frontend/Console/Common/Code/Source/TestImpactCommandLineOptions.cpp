@@ -510,8 +510,8 @@ namespace TestImpact
             "                                                                production targets in the dependency graph(if no dependency graph data \n"
             "                                                                available, no prioritization will occur).\n"
             "    -safemode=<on,off>                                          Flag to specify a safe mode sequence where the set of unselected \n"
-            "    -testrunner=<live,null>                                     Whether to use the null test runner (on) or run the tests(off). \n"
-            "                                                                If not set, defaults to running tests.                          \n"
+            "    -testrunner=<live,null>                                     Whether to use the null test runner (on) or run the tests (off). \n"
+            "                                                                If not set, defaults to running the tests.                          \n"
             "    -suite=<main, periodic, sandbox, awsi>                      The test suite to select from for this test sequence.";
 
         return help;

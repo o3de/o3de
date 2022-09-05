@@ -128,8 +128,8 @@ namespace TestImpact
             AZStd::chrono::milliseconds duration,
             TestRunResult result,
             AZStd::vector<Test>&& tests,
-            const AZStd::string& test_namespace)
-            : TestRunBase(test_namespace, name, commandString, startTime, duration, result)
+            const AZStd::string& testNamespace)
+            : TestRunBase(testNamespace, name, commandString, startTime, duration, result)
             , m_tests(AZStd::move(tests))
         {
             AZStd::tie(m_totalNumPassingTests, m_totalNumFailingTests, m_totalNumDisabledTests) = CalculateTestCaseMetrics(m_tests);

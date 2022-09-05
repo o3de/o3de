@@ -99,7 +99,7 @@ namespace TestImpact
         return ParseBinaryStateOption(optionName, BinaryStateOption<T>{ { "abort", states.first }, { "continue", states.second } }, cmd);
     }
 
-    //! Attempts to pass a specialization of the binary state option where the command lien values are "live" and "null".
+    //! Attempts to pass a specialization of the binary state option where the command line values are "live" and "null".
     template<typename T>
     AZStd::optional<T> ParseLiveNullOption(const AZStd::string& optionName, const AZStd::pair<T, T>& states, const AZ::CommandLine& cmd)
     {
