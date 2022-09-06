@@ -50,12 +50,34 @@ namespace rapidjson_ly_internal
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #endif
 
-#if defined(AZ_COMPILER_MSVC)
-// windows defines may or may not be present for unity builds, so ensure StrCmp resolves to StrCmpW to avoid conflicts
-#define StrCmp StrCmpW
+// Detect what is available in the compiler and enable those features in RapidJSON.
+// Note that RapidJSON will use the combination of any of these to determine its final
+// set of instructions to use, so its best to set all that are applicable:
+#if defined(__SSE4_2__)
+#define RAPIDJSON_SSE42
 #endif
 
-// Make you have available rapidjson/include folder. Currently 3rdParty\rapidjson\rapidjson-1.1.0\include
+#if defined(__SSE2__)
+#define RAPIDJSON_SSE2
+#endif
+
+#if defined(__ARM_NEON__) || defined(__ARM_NEON) // older compilers define __ARM_NEON
+#define RAPIDJSON_NEON
+#endif
+
+#if defined(AZ_COMPILER_MSVC)
+    // windows defines may or may not be present for unity builds, so ensure StrCmp resolves to StrCmpW to avoid conflicts
+    #define StrCmp StrCmpW
+
+    // MSVC compiler does not necessarily specify any of the above macros.
+    // if we're compiling for a X64 target we can target SSE2.x at the very least.
+    #if defined(_M_AMD64)
+        #define RAPIDJSON_SSE2
+    #endif
+#endif
+
+// Now that all of the above is declared, bring the RapidJSON headers in.
+// If you add additional definitions or configuration options, add them above.
 #include <rapidjson/rapidjson.h>
 
 #if AZ_TRAIT_JSON_CLANG_IGNORE_UNKNOWN_WARNING && defined(AZ_COMPILER_CLANG)

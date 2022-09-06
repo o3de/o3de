@@ -10,39 +10,6 @@
 
 namespace WhiteBox
 {
-    AZ_CVAR(
-        AZ::Color, cl_whiteBoxEdgeHoveredColor, AZ::Color::CreateFromRgba(255, 100, 0, 255), nullptr,
-        AZ::ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(
-        AZ::Color, cl_whiteBoxEdgeMeshColor, AZ::Color::CreateFromRgba(127, 127, 127, 76), nullptr,
-        AZ::ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(
-        AZ::Color, cl_whiteBoxEdgeUserColor, AZ::Color::CreateFromRgba(0, 0, 0, 76), nullptr,
-        AZ::ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(
-        AZ::Color, cl_whiteBoxPolygonHoveredColor, AZ::Color::CreateFromRgba(255, 175, 0, 127), nullptr,
-        AZ::ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(
-        AZ::Color, cl_whiteBoxPolygonHoveredOutlineColor, AZ::Color::CreateFromRgba(255, 100, 0, 255), nullptr,
-        AZ::ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(
-        AZ::Color, cl_whiteBoxSelectedModifierColor, AZ::Color::CreateFromRgba(0, 150, 255, 255), nullptr,
-        AZ::ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(
-        AZ::Color, cl_whiteBoxVertexDeselectedColor, AZ::Color::CreateFromRgba(25, 100, 255, 150), nullptr,
-        AZ::ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(
-        AZ::Color, cl_whiteBoxVertexHiddenRestoreColor, AZ::Color::CreateFromRgba(200, 200, 200, 255), nullptr,
-        AZ::ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(
-        AZ::Color, cl_whiteBoxVertexHoveredColor, AZ::Color::CreateFromRgba(255, 100, 0, 255), nullptr,
-        AZ::ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(
-        AZ::Color, cl_whiteBoxVertexRestoreColor, AZ::Color::CreateFromRgba(50, 50, 50, 150), nullptr,
-        AZ::ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(
-        AZ::Color, cl_whiteBoxVertexSelectedModifierColor, AZ::Color::CreateFromRgba(0, 150, 255, 200), nullptr,
-        AZ::ConsoleFunctorFlags::Null, "");
 
     AZ_CVAR(float, cl_whiteBoxVertexManipulatorSize, 0.125f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
     AZ_CVAR(float, cl_whiteBoxMouseClickDeltaThreshold, 0.001f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
@@ -52,10 +19,19 @@ namespace WhiteBox
     AZ_CVAR(float, cl_whiteBoxSelectedEdgeVisualWidth, 6.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
 
     AZ_CVAR(float, ed_whiteBoxPolygonViewOverlapOffset, 0.004f, nullptr, AZ::ConsoleFunctorFlags::Null, "The offset highlighted polygon");
+
+    AZ_CVAR(AZ::Color, ed_whiteBoxVertexHiddenColor, AZ::Color::CreateFromRgba(200, 200, 200, 255), nullptr, AZ::ConsoleFunctorFlags::Null, "Color of the polygon when hovered over");
+    AZ_CVAR(AZ::Color, ed_whiteBoxVertexRestoredColor,AZ::Color::CreateFromRgba(50, 50, 50, 150), nullptr, AZ::ConsoleFunctorFlags::Null, "Color of the outline when hovered over");   
+
+    AZ_CVAR(AZ::Color, ed_whiteBoxVertexUnselected, AZ::Color::CreateFromRgba(0, 100, 255, 150), nullptr, AZ::ConsoleFunctorFlags::Null, "Color of the verticies when selected");
+    AZ_CVAR(AZ::Color, ed_whiteBoxEdgeUnselected, AZ::Color::CreateFromRgba(127, 127, 127, 76), nullptr, AZ::ConsoleFunctorFlags::Null, "Color of the verticies when selected");
+    AZ_CVAR(AZ::Color, ed_whiteBoxEdgeDefault, AZ::Color::CreateFromRgba(0, 0, 0, 76), nullptr, AZ::ConsoleFunctorFlags::Null, "Color of the verticies when selected");
+    
     AZ_CVAR(AZ::Color, ed_whiteBoxVertexHover, AZ::Color::CreateFromRgba(0, 150, 255, 200), nullptr, AZ::ConsoleFunctorFlags::Null, "Color of the verticies when selected");
     AZ_CVAR(AZ::Color, ed_whiteBoxPolygonHover, AZ::Color::CreateFromRgba(255, 175, 0, 127), nullptr, AZ::ConsoleFunctorFlags::Null, "Color of the polygon when hovered over");
     AZ_CVAR(AZ::Color, ed_whiteBoxOutlineHover, AZ::Color::CreateFromRgba(255, 100, 0, 255), nullptr, AZ::ConsoleFunctorFlags::Null, "Color of the outline when hovered over");
-    AZ_CVAR(AZ::Color, ed_whiteBoxPolygonSelection, AZ::Color::CreateFromRgba(0, 150, 255, 200), nullptr, AZ::ConsoleFunctorFlags::Null, "Color of the polygon when selected");
+   
+    AZ_CVAR(AZ::Color, ed_whiteBoxPolygonSelection, AZ::Color::CreateFromRgba(0, 150, 255, 127), nullptr, AZ::ConsoleFunctorFlags::Null, "Color of the polygon when selected");
     AZ_CVAR(AZ::Color, ed_whiteBoxVertexSelection, AZ::Color::CreateFromRgba(0, 150, 255, 200), nullptr, AZ::ConsoleFunctorFlags::Null, "Color of the verticies when selected");
-    AZ_CVAR(AZ::Color, ed_whiteBoxOutlineSelection, AZ::Color::CreateFromRgba(0, 150, 255, 127), nullptr, AZ::ConsoleFunctorFlags::Null, "Color of the outline when selected");
+    AZ_CVAR(AZ::Color, ed_whiteBoxOutlineSelection, AZ::Color::CreateFromRgba(0, 150, 255, 255), nullptr, AZ::ConsoleFunctorFlags::Null, "Color of the outline when selected");
 } // namespace WhiteBox

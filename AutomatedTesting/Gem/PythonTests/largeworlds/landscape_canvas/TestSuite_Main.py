@@ -83,3 +83,12 @@ class TestAutomation(EditorTestSuite):
 
     class test_LandscapeCanvas_SlotConnections_UpdateComponentReferences(EditorSharedTest):
         from .EditorScripts import SlotConnections_UpdateComponentReferences as test_module
+
+    class test_LandscapeCanvas_TerrainExtenderNodes_ComponentEntitySync(EditorSharedTest):
+        from .EditorScripts import TerrainExtenderNodes_ComponentEntitySync as test_module
+
+    class test_LandscapeCanvas_TerrainNodes_DependentComponentsAdded(EditorSharedTest):
+        from .EditorScripts import TerrainNodes_DependentComponentsAdded as test_module
+
+    class test_LandscapeCanvas_TerrainNodes_EntityCreatedOnNodeAdd(EditorSharedTest):
+        from .EditorScripts import TerrainNodes_EntityCreatedOnNodeAdd as test_module

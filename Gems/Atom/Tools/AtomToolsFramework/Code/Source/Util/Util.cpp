@@ -79,17 +79,33 @@ namespace AtomToolsFramework
         return mainWindow;
     }
 
-    AZStd::string GetDisplayNameFromPath(const AZStd::string& path)
+    AZStd::string GetSymbolNameFromText(const AZStd::string& text)
     {
-        QFileInfo fileInfo(path.c_str());
-        QString fileName = fileInfo.baseName();
-        fileName.replace(QRegExp("[^a-zA-Z\\d]"), " ");
-        QStringList fileNameParts = fileName.split(' ', Qt::SkipEmptyParts);
-        for (QString& part : fileNameParts)
+        QString symbolName(text.c_str());
+        symbolName.replace(QRegExp("[^a-zA-Z\\d]"), " ");
+        symbolName.replace(QRegExp("([a-z\\d])([A-Z])"), "\\1 \\2");
+        symbolName.replace(QRegExp("\\A(\\d)"), "_\\1");
+        symbolName.replace(QRegExp("\\s+"), "_");
+        return symbolName.toLower().toUtf8().constData();
+    }
+
+    AZStd::string GetDisplayNameFromText(const AZStd::string& text)
+    {
+        QString displayName(text.c_str());
+        displayName.replace(QRegExp("[^a-zA-Z\\d]"), " ");
+        displayName.replace(QRegExp("([a-z\\d])([A-Z])"), "\\1 \\2");
+        QStringList displayNameParts = displayName.split(QRegExp("\\s"), Qt::SkipEmptyParts);
+        for (QString& part : displayNameParts)
         {
             part.replace(0, 1, part[0].toUpper());
         }
-        return fileNameParts.join(" ").toUtf8().constData();
+        return displayNameParts.join(" ").toUtf8().constData();
+    }
+
+    AZStd::string GetDisplayNameFromPath(const AZStd::string& path)
+    {
+        QFileInfo fileInfo(path.c_str());
+        return GetDisplayNameFromText(fileInfo.baseName().toUtf8().constData());
     }
 
     AZStd::string GetSaveFilePath(const AZStd::string& initialPath, const AZStd::string& title)
@@ -426,7 +442,7 @@ namespace AtomToolsFramework
         return results;
     }
 
-    void AddRegisteredScriptToMenu(QMenu* menu, const AZStd::string& registryKey, const AZStd::vector<AZStd::string_view>& arguments)
+    void AddRegisteredScriptToMenu(QMenu* menu, const AZStd::string& registryKey, const AZStd::vector<AZStd::string>& arguments)
     {
         // Map containing vectors of script file paths organized by category
         using ScriptsSettingsMap = AZStd::map<AZStd::string, AZStd::vector<AZStd::string>>;
@@ -462,7 +478,7 @@ namespace AtomToolsFramework
                             AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(
                                 &AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilenameWithArgs,
                                 scriptPath,
-                                arguments);
+                                AZStd::vector<AZStd::string_view>(arguments.begin(), arguments.end()));
                             });
                     });
                 }
@@ -480,7 +496,7 @@ namespace AtomToolsFramework
                     AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(
                         &AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilenameWithArgs,
                         scriptPath.toUtf8().constData(),
-                        arguments);
+                        AZStd::vector<AZStd::string_view>(arguments.begin(), arguments.end()));
                 });
             }
         });

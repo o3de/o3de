@@ -27,6 +27,10 @@ namespace AZ
             template<typename T>
             bool DoesSceneGraphContainDataLike(const Containers::Scene& scene, bool checkVirtualTypes);
             SCENE_CORE_API DataTypes::MatrixType BuildWorldTransform(const Containers::SceneGraph& graph, Containers::SceneGraph::NodeIndex nodeIndex);
+            // Searches only the immediate children of nodeIndex for a child node that matches the specified type.
+            // Returns the NodeIndex if it exists, or and invalid NodeIndex if it doesn't
+            SCENE_CORE_API Containers::SceneGraph::NodeIndex GetImmediateChildOfType(
+                const Containers::SceneGraph& graph, const Containers::SceneGraph::NodeIndex& nodeIndex, const AZ::TypeId& typeId);
         } // Utilities
     } // SceneAPI
 } // AZ
