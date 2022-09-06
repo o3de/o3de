@@ -8,7 +8,6 @@
 
 
 #include "MultiplayerConnectionViewportMessageSystemComponent.h"
-
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <AzCore/Console/IConsole.h>
@@ -34,8 +33,11 @@ namespace Multiplayer
 
     AZ_CVAR_EXTERNED(bool, sv_isDedicated);
 
-
-   enum EAuxGeomPublicRenderflagBitMasks
+    // Notes:
+    //   Don't change any of the following enum values, they need to match the values from legacy cry rendering.
+    //   These are just here in order to not have to pull in Legacy::CryCommon project dependency.
+    //   See CryCommon/IRenderAuxGeom.h for all available flags.
+    enum EAuxGeomPublicRenderflagBitMasks
     {
         e_Mode2D3DShift = 31,
         e_Mode2D3DMask = 0x1 << e_Mode2D3DShift,
