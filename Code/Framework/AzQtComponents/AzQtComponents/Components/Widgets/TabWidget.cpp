@@ -43,7 +43,8 @@ namespace AzQtComponents
     static int g_closeButtonPadding = -1;
     static int g_closeButtonMinTabWidth = -1;
     static int g_toolTipTabWidthThreshold = -1;
-    static int g_overflowSpacing = -1;   
+    static int g_overflowSpacing = -1;
+    static QString g_secondaryStyleClass = QStringLiteral("Secondary");
     static QString g_borderedStyleClass = QStringLiteral("Bordered");
     static QString g_emptyStyleClass = QStringLiteral("Empty");
 
@@ -75,8 +76,8 @@ namespace AzQtComponents
 
     void TabWidget::applySecondaryStyle(TabWidget* tabWidget, bool bordered)
     {
-        Style::addClass(tabWidget, Style::SecondaryStyleClass);
-        Style::addClass(tabWidget->tabBar(), Style::SecondaryStyleClass);
+        Style::addClass(tabWidget, g_secondaryStyleClass);
+        Style::addClass(tabWidget->tabBar(), g_secondaryStyleClass);
 
         if (bordered)
         {
@@ -86,7 +87,7 @@ namespace AzQtComponents
 
         if (tabWidget->actionToolBar())
         {
-            Style::addClass(tabWidget->actionToolBar(), Style::SecondaryStyleClass);
+            Style::addClass(tabWidget->actionToolBar(), g_secondaryStyleClass);
         }
     }
 
@@ -186,16 +187,6 @@ namespace AzQtComponents
         // HACK: implicitly reset QTabWidgetPrivate::layoutDirty
         // Force recomputing tab width with new overflow settings
         tabBar()->setIconSize(tabBar()->iconSize());
-    }
-
-    void TabWidget::setExpandTabsToFillTabBar(bool expand)
-    {
-        auto tabBarWidget = qobject_cast<TabBar*>(tabBar());
-
-        if (tabBarWidget)
-        {
-            tabBarWidget->setExpandTabsToFillTabBar(expand);
-        }
     }
 
     void TabWidget::tabInserted(int index)
@@ -615,11 +606,6 @@ namespace AzQtComponents
         resetOverflow();
     }
 
-    void TabBar::setExpandTabsToFillTabBar(bool expand)
-    {
-        m_expandTabsToFill = expand;
-    }
-
     void TabBar::showCloseButtonAt(int index)
     {
         if (m_movingTab)
@@ -734,7 +720,7 @@ namespace AzQtComponents
             return false;
         }
 
-        if (!Style::hasClass(widget, Style::SecondaryStyleClass))
+        if (!Style::hasClass(widget, g_secondaryStyleClass))
         {
             // Tear icon drawing can't be done properly using QSS only because text and image can't be positioned differently
             if (tabBar->isMovable() && (option->state & (QStyle::State_MouseOver | QStyle::State_Sunken)))
@@ -767,6 +753,36 @@ namespace AzQtComponents
             
             QString labelText = painter->fontMetrics().elidedText(tabOption->text, Qt::ElideRight, textRect.width());
             painter->drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter, labelText);
+        }
+        else if (Style::hasClass(widget, g_secondaryStyleClass))
+        {
+            QRect fullTextRect = style->subElementRect(QStyle::SE_TabBarTabText, option, widget);
+
+            // Give the text a little more space on the left.
+            int extraSpacing = 10;
+            fullTextRect.setLeft(fullTextRect.left() - extraSpacing);
+
+            // The full text rect is used to calculate the spacing needed to center the text. The rect available to write in might
+            // be smaller if the close button is visible, but we don't want the text to jump when moving the cursor.
+            fullTextRect.setWidth(fullTextRect.width() + config.closeButtonSize);
+
+            QRect useableTextRect = fullTextRect;
+
+            if (option->state & QStyle::State_MouseOver)
+            {
+                useableTextRect.setWidth(useableTextRect.width() - (config.closeButtonSize / 4) * 3);
+            }
+
+            QString labelText = painter->fontMetrics().elidedText(tabOption->text, Qt::ElideRight, fullTextRect.width());
+
+            const QRect fontRect = painter->fontMetrics().boundingRect(labelText);
+            int spacerWidth = fullTextRect.width() - fontRect.width();
+
+            // Recalculate the elided text based on the available rect.
+            labelText = painter->fontMetrics().elidedText(tabOption->text, Qt::ElideRight, useableTextRect.width());
+
+            fullTextRect.setLeft(fullTextRect.left() + spacerWidth / 2);
+            painter->drawText(fullTextRect, Qt::AlignLeft | Qt::AlignVCenter, labelText);
         }
         else
         {
@@ -846,7 +862,7 @@ namespace AzQtComponents
 
         if (!overflowing || (tabOption->state & QStyle::State_Selected))
         {
-            if (tabBar->m_expandTabsToFill)
+            if (Style::hasClass(tabWidget, g_secondaryStyleClass))
             {
                 size.setWidth(AZStd::max<int>(minButtonWidth, availableWidth / tabBar->count()));
             }

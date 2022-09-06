@@ -838,16 +838,7 @@ namespace AzToolsFramework
 
         void AssetEditorTab::ApplyStatusText()
         {
-            QString statusString;
-
-            if (m_dirty)
-            {
-                statusString = QString("%1*");
-            }
-            else
-            {
-                statusString = QString("%1");
-            }
+            QString statusString = QStringLiteral("%1");
 
             statusString = statusString.arg(m_currentAsset).arg(m_queuedAssetStatus);
 

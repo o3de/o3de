@@ -6,15 +6,9 @@ AzQtComponents--TabWidget > AzQtComponents--TabWidgetActionToolBarContainer
     border: 0;
 }
 
-AzQtComponents--TabWidgetActionToolBarContainer QToolButton
-{
-    color: 0xff0000;
-    background: #0000ff;
-}
-
 AzQtComponents--TabWidget.Secondary > AzQtComponents--TabWidgetActionToolBarContainer
 {
-    background: transparent;
+    background: #111111;
 }
 
 AzQtComponents--TabWidgetActionToolBar

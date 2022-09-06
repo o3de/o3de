@@ -48,8 +48,6 @@ namespace AzQtComponents
         struct Data;
 
     public:
-        static constexpr const char* const SecondaryStyleClass = "Secondary";
-
         enum
         {
             CORNER_RECTANGLE = -1

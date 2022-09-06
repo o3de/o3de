@@ -100,8 +100,6 @@ namespace AzQtComponents
         //! Overrides the QTabWidget resizeEvent function to account for tab sizing.
         void resizeEvent(QResizeEvent* resizeEvent) override;
 
-        void setExpandTabsToFillTabBar(bool expand);
-
         void setOverflowMenuVisible(bool visible);
     protected:
         void tabInserted(int index) override;
@@ -177,8 +175,6 @@ namespace AzQtComponents
         //! Handler to be called after a new tab is removed at position index.
         void tabRemoved(int index) override;
 
-        void setExpandTabsToFillTabBar(bool expand);
-
     protected:
         explicit TabBar(QWidget* parent = nullptr);
 
@@ -203,7 +199,6 @@ namespace AzQtComponents
 
         bool m_handleOverflow = true;
         bool m_useMaxWidth = false;
-        bool m_expandTabsToFill = false;
         Overflow m_overflowing = OverflowUnchecked;
         int m_hoveredTab = -1;
         bool m_movingTab = false;

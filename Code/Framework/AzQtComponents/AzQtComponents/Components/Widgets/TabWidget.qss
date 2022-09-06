@@ -137,8 +137,3 @@ AzQtComponents--TabBar.Secondary::tab:pressed
 {
     background-color: #444444
 }
-
-QToolButton#tabWidgetOverflowButton
-{
-    color: 0xff0000;
-}
