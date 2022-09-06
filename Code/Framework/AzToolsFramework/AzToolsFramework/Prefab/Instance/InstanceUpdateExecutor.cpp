@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Memory/AllocatorManager.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
@@ -284,6 +285,10 @@ namespace AzToolsFramework
                     // Notify Propagation has ended, then update selection (which is frozen during propagation, so this order matters)
                     PrefabPublicNotificationBus::Broadcast(&PrefabPublicNotifications::OnPrefabInstancePropagationEnd);
                     ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, selectedEntityIds);
+
+                    // after an instance update operation finishes, garbage collect to reclaim memory.
+                    AZ::AllocatorManager::Instance().GarbageCollect();
+                    AZ_MALLOC_TRIM(0);
                 }
 
                 m_updatingTemplateInstancesInQueue = false;

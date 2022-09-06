@@ -69,6 +69,7 @@ namespace TestImpact
             if (m_testCompleteCallback.has_value())
             {
                 Client::TestRunBase testRun(
+                    testJob.GetTestTarget()->GetNamespace(),
                     testJob.GetTestTarget()->GetName(),
                     testJob.GetCommandString(),
                     testJob.GetStartTime(),
@@ -333,7 +334,11 @@ namespace TestImpact
                 AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(testJob.GetStartTime() - startTime);
 
             Client::TestRunBase clientTestRun(
-                testJob.GetTestTarget()->GetName(), testJob.GetCommandString(), relativeStartTime, testJob.GetDuration(),
+                testJob.GetTestTarget()->GetNamespace(),
+                testJob.GetTestTarget()->GetName(),
+                testJob.GetCommandString(),
+                relativeStartTime,
+                testJob.GetDuration(),
                 testJob.GetTestResult());
 
             switch (testJob.GetTestResult())

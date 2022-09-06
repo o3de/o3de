@@ -39,15 +39,16 @@ namespace TestImpact
 
     PythonRuntime::PythonRuntime(
         PythonRuntimeConfig&& config,
-        [[maybe_unused]] const AZStd::optional<RepoPath>& dataFile,
+        const AZStd::optional<RepoPath>& dataFile,
         [[maybe_unused]] const AZStd::optional<RepoPath>& previousRunDataFile,
-        [[maybe_unused]] const AZStd::vector<ExcludedTarget>& testsToExclude,
-        [[maybe_unused]] SuiteType suiteFilter,
-        [[maybe_unused]] Policy::ExecutionFailure executionFailurePolicy,
-        [[maybe_unused]] Policy::FailedTestCoverage failedTestCoveragePolicy,
-        [[maybe_unused]] Policy::TestFailure testFailurePolicy,
-        [[maybe_unused]] Policy::IntegrityFailure integrationFailurePolicy,
-        [[maybe_unused]] Policy::TargetOutputCapture targetOutputCapture)
+        const AZStd::vector<ExcludedTarget>& testsToExclude,
+        SuiteType suiteFilter,
+        Policy::ExecutionFailure executionFailurePolicy,
+        Policy::FailedTestCoverage failedTestCoveragePolicy,
+        Policy::TestFailure testFailurePolicy,
+        Policy::IntegrityFailure integrationFailurePolicy,
+        Policy::TargetOutputCapture targetOutputCapture,
+        Policy::TestRunner testRunnerPolicy)
         : m_config(AZStd::move(config))
         , m_suiteFilter(suiteFilter)
         , m_executionFailurePolicy(executionFailurePolicy)
@@ -55,6 +56,7 @@ namespace TestImpact
         , m_testFailurePolicy(testFailurePolicy)
         , m_integrationFailurePolicy(integrationFailurePolicy)
         , m_targetOutputCapture(targetOutputCapture)
+        , m_testRunnerPolicy(testRunnerPolicy)
     {
         // Construct the build targets from the build target descriptors
         auto targetDescriptors = ReadTargetDescriptorFiles(m_config.m_commonConfig.m_buildTargetDescriptor);
@@ -90,7 +92,7 @@ namespace TestImpact
             m_config.m_commonConfig.m_repo.m_root,
             m_config.m_commonConfig.m_repo.m_build,
             m_config.m_workspace.m_temp,
-            true);
+            m_testRunnerPolicy);
 
         try
         {

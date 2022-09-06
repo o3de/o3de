@@ -142,11 +142,23 @@ namespace TestImpact
             return AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(timePoint.time_since_epoch()).count();
         }
 
+        AZStd::string GetNameSpaceOrTargetName(const Client::TestRunBase& testRun)
+        {
+            if (const auto testNamespace = testRun.GetTestNamespace(); !testNamespace.empty())
+            {
+                return testNamespace + "_" + testRun.GetTargetName();
+            }
+            else
+            {
+                return testRun.GetTargetName();
+            }
+        }
+
         void SerializeTestRunMembers(const Client::TestRunBase& testRun, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer)
         {
             // Name
             writer.Key(SequenceReportFields::Keys[SequenceReportFields::Name]);
-            writer.String(testRun.GetTargetName().c_str());
+            writer.String(GetNameSpaceOrTargetName(testRun).c_str());
 
             // Command string
             writer.Key(SequenceReportFields::Keys[SequenceReportFields::CommandArgs]);
@@ -626,6 +638,7 @@ namespace TestImpact
     Client::TestRunBase DeserializeTestRunBase(const rapidjson::Value& serialTestRun)
     {
         return Client::TestRunBase(
+            "",
             serialTestRun[SequenceReportFields::Keys[SequenceReportFields::Name]].GetString(),
             serialTestRun[SequenceReportFields::Keys[SequenceReportFields::CommandArgs]].GetString(),
             TimePointFromMsInt64(serialTestRun[SequenceReportFields::Keys[SequenceReportFields::StartTime]].GetInt64()),
