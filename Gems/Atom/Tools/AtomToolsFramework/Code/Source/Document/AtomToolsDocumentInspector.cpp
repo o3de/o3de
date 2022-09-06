@@ -30,11 +30,6 @@ namespace AtomToolsFramework
         Populate();
     }
 
-    const AZ::Uuid& AtomToolsDocumentInspector::GetDocumentId()
-    {
-        return m_documentId;
-    }
-
     void AtomToolsDocumentInspector::SetDocumentSettingsPrefix(const AZStd::string& prefix)
     {
         m_documentSettingsPrefix = prefix;

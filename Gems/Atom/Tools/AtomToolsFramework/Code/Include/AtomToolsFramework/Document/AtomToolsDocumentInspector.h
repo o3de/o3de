@@ -34,7 +34,6 @@ namespace AtomToolsFramework
 
         //! Set the ID of the document that will be used to populate the inspector 
         void SetDocumentId(const AZ::Uuid& documentId);
-        const AZ::Uuid& GetDocumentId();
 
         //! Set a prefix string for storing registry settings 
         void SetDocumentSettingsPrefix(const AZStd::string& prefix);

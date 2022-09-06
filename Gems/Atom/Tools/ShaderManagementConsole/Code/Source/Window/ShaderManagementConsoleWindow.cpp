@@ -39,12 +39,6 @@ namespace ShaderManagementConsole
         m_documentInspector->SetDocumentId(documentId);
     }
 
-    void ShaderManagementConsoleWindow::OnDocumentModified(const AZ::Uuid& documentId)
-    {
-        Base::OnDocumentModified(documentId);
-        m_documentInspector->SetDocumentId(documentId);
-    }
-
     AZStd::string ShaderManagementConsoleWindow::GetSaveDocumentParams(const AZStd::string& initialPath) const
     {
         // Get shader file path
@@ -52,7 +46,7 @@ namespace ShaderManagementConsole
         AZ::RPI::ShaderVariantListSourceData shaderVariantList = {};
         ShaderManagementConsoleDocumentRequestBus::EventResult(
             shaderVariantList,
-            m_documentInspector->GetDocumentId(),
+            GetCurrentDocumentId(),
             &ShaderManagementConsoleDocumentRequestBus::Events::GetShaderVariantListSourceData);
         shaderFullPath = AZ::RPI::AssetUtils::ResolvePathReference(initialPath, shaderVariantList.m_shaderFilePath);
         
@@ -65,16 +59,12 @@ namespace ShaderManagementConsole
         AZStd::string result;
         if (msgBox.clickedButton() == projectBtn)
         {
-            char projectRoot[AZ_MAX_PATH_LEN];
-            AZ::IO::FileIOBase::GetInstance()->ResolvePath("@projectroot@", projectRoot, AZ_MAX_PATH_LEN);
-
-            AZStd::string shaderName;
-            AZStd::string shaderPath;
+            AZ::IO::FixedMaxPath projectPath = AZ::Utils::GetProjectPath();
+            AZStd::string shaderName, shaderPath;
             AzFramework::StringFunc::Path::Split(shaderFullPath.c_str(), nullptr, &shaderPath, &shaderName);
             AZStd::string relativePath = shaderPath.substr(shaderPath.find("Assets"), shaderPath.length());
             AzFramework::StringFunc::Path::StripComponent(relativePath);
-            result = AZStd::string::format("%s\\ShaderVariants\\%s\\%s.shadervariantlist", projectRoot, relativePath.c_str(), shaderName.c_str());
-            AzFramework::StringFunc::Path::Normalize(result);
+            result = AZStd::string::format("%s\\ShaderVariants\\%s\\%s.shadervariantlist", projectPath.c_str(), relativePath.c_str(), shaderName.c_str());
         }
         else if(msgBox.clickedButton() == engineBtn)
         {
