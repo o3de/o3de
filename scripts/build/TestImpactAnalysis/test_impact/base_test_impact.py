@@ -128,7 +128,7 @@ class BaseTestImpact(ABC):
                         # Ignore integrity failures for non coverage updating branches as our confidence in the
                         args[ARG_INTEGRATION_POLICY] = "continue"
         # Store sequence and report into args so that our argument enum can be used to apply all relevant arguments.
-        args[ARG_SEQUENCE] = args.get(ARG_SEQUENCE_OVERRIDE, sequence_type)
+        args[ARG_SEQUENCE] = args.get(ARG_SEQUENCE_OVERRIDE) or sequence_type
         self._report_file = PurePath(self._temp_workspace).joinpath(
             f"report.{self._instance_id}.json")
         args[ARG_REPORT] = self._report_file
