@@ -289,6 +289,8 @@ namespace AzToolsFramework::ComponentModeFramework
             // when component mode ends, change the active button to transform
             // this waits one frame in case component mode is switching to another component
             // instead of ending
+            m_activeSwitcherComponent = nullptr;
+
             QTimer::singleShot(
                 1,
                 nullptr,
@@ -305,8 +307,6 @@ namespace AzToolsFramework::ComponentModeFramework
                             &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton,
                             m_switcherId,
                             m_transformButtonId);
-
-                        m_activeSwitcherComponent = nullptr;
                     }
                 });
         }
