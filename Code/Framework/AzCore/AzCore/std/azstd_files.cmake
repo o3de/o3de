@@ -35,6 +35,7 @@ set(FILES
     iterator/common_iterator.h
     iterator/const_iterator.h
     iterator/counted_iterator.h
+    iterator/move_iterator.h
     iterator/move_sentinel.h
     iterator/unreachable_sentinel.h
     iterator/iterator_primitives.h

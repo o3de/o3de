@@ -347,6 +347,17 @@ namespace UnitTest
         EXPECT_NE(AZStd::ranges::end(testString), AZStd::unreachable_sentinel);
     }
 
+    TEST_F(Iterators, MoveIterator_SupportsCpp17IteratorTraits_Compiles)
+    {
+        using MoveIterator = AZStd::move_iterator<int*>;
+        using MoveIteratorTraits = AZStd::iterator_traits<MoveIterator>;
+        static_assert(AZStd::Internal::sfinae_trigger_v<typename MoveIteratorTraits::value_type>);
+        static_assert(AZStd::Internal::sfinae_trigger_v<typename MoveIteratorTraits::difference_type>);
+        static_assert(AZStd::Internal::sfinae_trigger_v<typename MoveIteratorTraits::iterator_category>);
+        static_assert(AZStd::Internal::sfinae_trigger_v<typename MoveIteratorTraits::pointer>);
+        static_assert(AZStd::Internal::sfinae_trigger_v<typename MoveIteratorTraits::reference>);
+    }
+
     TEST_F(Iterators, MoveSentinel_ComparableToMoveIterator_Succeeds)
     {
         AZStd::array testStringArray{ AZStd::string("Hello"), AZStd::string("World") };
