@@ -11,14 +11,7 @@
                 "float4 NODEID_outColor = MaterialSrg::NODEINPUTID.Sample(MaterialSrg::NODEINPUTID_sampler, NODEID_inUV);"
             ],
             "materialInputs": [
-                "Texture2D NODEINPUTID;",
-                "Sampler NODEINPUTID_sampler",
-                "{",
-                "    MaxAnisotropy = 16;",
-                "    AddressU = Wrap;",
-                "    AddressV = Wrap;",
-                "    AddressW = Wrap;",
-                "};"
+                "Texture2D NODEINPUTID;\nSampler NODEINPUTID_sampler\n{\n    MaxAnisotropy = 16;\n    AddressU = Wrap;\n    AddressV = Wrap;\n    AddressW = Wrap;\n};\n"
             ]
         },
         "propertySlots": [

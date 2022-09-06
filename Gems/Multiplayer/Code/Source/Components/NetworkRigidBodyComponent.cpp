@@ -118,7 +118,7 @@ namespace Multiplayer
     void NetworkRigidBodyComponentController::OnActivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
     {
         GetParent().m_physicsRigidBodyComponent->SetKinematic(false);
-        if (IsAuthority())
+        if (IsNetEntityRoleAuthority())
         {
             if (AzPhysics::RigidBody* rigidBody = GetParent().m_physicsRigidBodyComponent->GetRigidBody())
             {

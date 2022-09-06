@@ -442,7 +442,7 @@ namespace AtomToolsFramework
         return results;
     }
 
-    void AddRegisteredScriptToMenu(QMenu* menu, const AZStd::string& registryKey, const AZStd::vector<AZStd::string_view>& arguments)
+    void AddRegisteredScriptToMenu(QMenu* menu, const AZStd::string& registryKey, const AZStd::vector<AZStd::string>& arguments)
     {
         // Map containing vectors of script file paths organized by category
         using ScriptsSettingsMap = AZStd::map<AZStd::string, AZStd::vector<AZStd::string>>;
@@ -478,7 +478,7 @@ namespace AtomToolsFramework
                             AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(
                                 &AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilenameWithArgs,
                                 scriptPath,
-                                arguments);
+                                AZStd::vector<AZStd::string_view>(arguments.begin(), arguments.end()));
                             });
                     });
                 }
@@ -496,7 +496,7 @@ namespace AtomToolsFramework
                     AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(
                         &AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilenameWithArgs,
                         scriptPath.toUtf8().constData(),
-                        arguments);
+                        AZStd::vector<AZStd::string_view>(arguments.begin(), arguments.end()));
                 });
             }
         });
