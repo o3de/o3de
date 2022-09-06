@@ -86,8 +86,11 @@ def PhysX_ColliderFamily_Component_CRUD():
     import azlmbr.bus as bus
     import azlmbr.physics as physics
 
-    from editor_python_test_tools import hydra_editor_utils as hydra
+    import editor_python_test_tools.hydra_editor_utils as hydra
+
+
     from editor_python_test_tools.editor_entity_utils import EditorEntity
+    from editor_python_test_tools.editor_entity_utils import EditorComponent
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
     from editor_python_test_tools.utils import Tracer
@@ -123,7 +126,7 @@ def PhysX_ColliderFamily_Component_CRUD():
         physx_collider_box_shape_component = add_validated_component(physx_collider_box_entity, PHYSX_COLLIDER, Tests.create_physx_collider_component)
         physx_collider_capsule_shape_component = add_validated_component(physx_collider_capsule_entity, PHYSX_COLLIDER, Tests.create_physx_collider_component)
         physx_collider_sphere_shape_component = add_validated_component(physx_collider_sphere_entity, PHYSX_COLLIDER, Tests.create_physx_collider_component)
-        physx_collider_box_shape_component = add_validated_component(physx_collider_physicsasset_entity, PHYSX_COLLIDER, Tests.create_physx_collider_component)
+        physx_collider_physicsasset_component = add_validated_component(physx_collider_physicsasset_entity, PHYSX_COLLIDER, Tests.create_physx_collider_component)
 
         physx_shape_collider_box_component = add_validated_component(physx_shape_collider_box_entity, PHYSX_SHAPE_COLLIDER, Tests.add_box_shape_component)
         physx_shape_collider_capsule_component = add_validated_component(physx_shape_collider_capsule_entity, PHYSX_SHAPE_COLLIDER, Tests.add_capsule_shape_component)
@@ -146,15 +149,32 @@ def PhysX_ColliderFamily_Component_CRUD():
         sphere_shape_component = add_validated_component(physx_shape_collider_sphere_entity, SPHERE_SHAPE_COMPONENT, Tests.add_sphere_shape_component)
 
         # 6) PhysX Collider PhysicsAsset Mesh Support
-        proptree = physx_shape_collider_box_component.get_property_tree()
+        #proptree = physx_collider_physicsasset_component.get_property_tree(True)
+        #proptree_count = proptree.get_container_count()
+        #proptree_list = physx_collider_physicsasset_component.get_property_type_visibility()
 
-        # Apparently proptrees aren't iterable with a for loop. Need to figure out how to iterate over the proptery tree to get the componenet proptery paths,
-        # or find another way to iterate through property paths to successfully write this test.
-        # output = []
+        # test_entity = EditorEntity.create_editor_entity("Test")
+        # test_component = test_entity.add_component("PhysX Collider")
+        # has_component = test_entity.has_component("PhysX Collider")
         #
-        # for prop in proptree:
-        #     output.append(prop)
-        #Report.critical_result(output, False)
+        # print(test_component.get_property_type_visibility())
+
+        # test_entity = EditorEntity.create_editor_entity("Test")
+        # test_component = test_entity.add_component("PhysX Collider")
+        # has_component = test_entity.has_component("PhysX Collider")
+        #
+        # test_tree = test_component.get_property_tree()
+        #
+        # print(test_tree.build_paths_list())
+        # print(has_component)
+
+        test_entity = EditorEntity.create_editor_entity("Test")
+        test_component = add_validated_component(test_entity, "PhysX Shape Collider", ["Test Componenet Added", "Test Component Failed."])
+
+        print(test_component.get_property_type_visibility())
+        output = ["", "Proptree: " + str(test_component.get_property_type_visibility())]
+
+        Report.critical_result(output, False)
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report

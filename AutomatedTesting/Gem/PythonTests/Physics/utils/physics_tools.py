@@ -12,13 +12,15 @@ from editor_python_test_tools.utils import Report
 
 from .physics_constants import WAIT_TIME_1
 
+
 def create_validated_entity(name, test_message):
     entity = EditorEntity.create_editor_entity(name)
     Report.critical_result(test_message, helper.wait_for_condition(lambda: entity.id.IsValid(), WAIT_TIME_1))
 
     return entity
 
-def add_validated_component(parent_entity, component, test_message):
+
+def add_validated_component(parent_entity: EditorEntity, component: str, test_message: tuple):
     created_component = parent_entity.add_component(component)
     Report.critical_result(test_message, helper.wait_for_condition(lambda: parent_entity.has_component(component), WAIT_TIME_1))
 
