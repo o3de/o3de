@@ -100,12 +100,28 @@ namespace O3DE::ProjectManager
         // Gems
 
         /**
+         * Create a Gem from the Create A Gem Wizard
+         * @param templatePath the path to the gem template to use
+         * @param gemInfo the gem info to use
+         * @param registerGem whether to register the gem or not
+         * @return an outcome with GemInfo on success
+         */
+        virtual AZ::Outcome<GemInfo> CreateGem(const QString& templatePath, const GemInfo& gemInfo, bool registerGem = true) = 0;
+
+        /**
          * Get info about a Gem.
          * @param path The absolute path to the Gem
          * @param projectPath (Optional) The absolute path to the Gem project
          * @return an outcome with GemInfo on success 
          */
         virtual AZ::Outcome<GemInfo> GetGemInfo(const QString& path, const QString& projectPath = {}) = 0;
+
+        /**
+         * Get info about all known gem templates
+         * @return an outcome with a vector of TemplateInfos on success
+         */
+        virtual AZ::Outcome<QVector<TemplateInfo>> GetGemTemplates() = 0;
+
 
         /**
          * Get all available gem infos. This concatenates gems registered by the engine and the project.
@@ -154,7 +170,7 @@ namespace O3DE::ProjectManager
          * @return an outcome with ProjectInfo on success 
          */
         virtual AZ::Outcome<ProjectInfo> CreateProject(const QString& projectTemplatePath, const ProjectInfo& projectInfo, bool registerProject = true) = 0;
-        
+
         /**
          * Get info about a project 
          * @param path the absolute path to the project 
@@ -230,7 +246,13 @@ namespace O3DE::ProjectManager
          * Get info about all known project templates
          * @return an outcome with ProjectTemplateInfos on success 
          */
-        virtual AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplates(const QString& projectPath = {}) = 0;
+        virtual AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplates() = 0;
+
+        /**
+         * Gathers all project templates for all templates registered from repos.
+         * @return An outcome with a list of all ProjectTemplateInfos on success
+         */
+        virtual AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplatesForAllRepos() = 0;
 
         // Gem Repos
 
@@ -328,11 +350,6 @@ namespace O3DE::ProjectManager
          * @param The error string to be displayed.
          */
         virtual void AddErrorString(AZStd::string errorString) = 0;
-
-        /**
-         * Clears the current list of error strings.
-         */
-        virtual void ClearErrorStrings() = 0;
     };
 
     using PythonBindingsInterface = AZ::Interface<IPythonBindings>;

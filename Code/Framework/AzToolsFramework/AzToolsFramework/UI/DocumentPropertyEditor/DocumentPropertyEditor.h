@@ -41,6 +41,12 @@ namespace AzToolsFramework
         void SetExpanderShown(bool shouldShow);
         void SetExpanded(bool expanded);
         bool IsExpanded() const;
+        void SharePriorColumn(QWidget* previousWidget);
+        void SetSharePrior(bool sharePrior);
+        bool ShouldSharePrior();
+        int SharedWidgetCount();
+        void WidgetAlignment(QWidget* alignedWidget, Qt::Alignment widgetAlignment);
+
 
         // QLayout overrides
         void invalidate() override;
@@ -60,6 +66,18 @@ namespace AzToolsFramework
         bool m_showExpander = false;
         bool m_expanded = true;
         QCheckBox* m_expanderWidget = nullptr;
+
+        //! boolean to keep track of whether we should add to an existing shared column or create a new shared column.
+        bool m_shouldSharePrior = false;
+
+        //! Vector containing pairs of widgets and integers, where each pair in the vector represents a unique shared column layout.
+        //! Each widget in a pair will be the first widget in the shared column,
+        //! while the integer in a pair represents the number of widgets in the shared column. 
+        AZStd::vector<AZStd::pair<QWidget*, int>> m_sharePriorColumn;
+
+        //! Map containing all widgets that have special alignment.
+        //! Each widget will be aligned according to its value, where 0 = LEFT align, 1 = CENTER align, and 2 = RIGHT align.
+        AZStd::unordered_map<QWidget*, Qt::Alignment> m_widgetAlignment;
 
     private:
         // These cached sizes must be mutable since they are set inside of an overidden const function
@@ -161,11 +179,14 @@ namespace AzToolsFramework
 
         void HandleReset();
         void HandleDomChange(const AZ::Dom::Patch& patch);
+        void HandleDomMessage(const AZ::DocumentPropertyEditor::AdapterMessage& message, AZ::Dom::Value& value);
         void CleanupReleasedHandlers();
 
         AZ::DocumentPropertyEditor::DocumentAdapterPtr m_adapter;
         AZ::DocumentPropertyEditor::DocumentAdapter::ResetEvent::Handler m_resetHandler;
         AZ::DocumentPropertyEditor::DocumentAdapter::ChangedEvent::Handler m_changedHandler;
+        AZ::DocumentPropertyEditor::DocumentAdapter::MessageEvent::Handler m_domMessageHandler;
+
         QVBoxLayout* m_layout = nullptr;
 
         bool m_spawnDebugView = false;
