@@ -10,8 +10,12 @@
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <Prefab/Benchmark/Link/SingleInstanceMultiplePatchesBenchmarks.h>
 
-#define REGISTER_MULTIPLE_PATCHES_BENCHMARK(BaseClass, Method)                                                                              \
-    BENCHMARK_REGISTER_F(BaseClass, Method)->RangeMultiplier(10)->Range(100, 10000)->Unit(benchmark::kMillisecond);
+#define REGISTER_MULTIPLE_PATCHES_BENCHMARK(BaseClass, Method)                                                                             \
+    BENCHMARK_REGISTER_F(BaseClass, Method)                                                                                                \
+        ->RangeMultiplier(10)                                                                                                              \
+        ->Range(100, 10000)                                                                                                                \
+        ->ArgNames({ "PatchesCount" })                                                                                                     \
+        ->Unit(benchmark::kMillisecond);
 
 namespace Benchmark
 {
@@ -24,7 +28,10 @@ namespace Benchmark
         const unsigned int numEntities = static_cast<unsigned int>(state.range());
 
         AZStd::vector<AZ::Entity*> entities;
-        for (unsigned int i = 0; i < numEntities; i++)
+
+        // The patch array generated in this function on transform component has 2 elements. To keep the patch count match the range,
+        // we are only creating half the number of entities; (1 entity * 2 patches * n/2) = n patches, where n is the range.
+        for (unsigned int i = 0; i < numEntities / 2; i++)
         {
             entities.emplace_back(CreateEntity("Entity"));
         }
@@ -70,7 +77,6 @@ namespace Benchmark
 
         LinkReference link = m_prefabSystemComponent->FindLink(m_linkId);
         AZ_Assert(link.has_value(), "Link between prefabs is missing.");
-
         
         m_linkDomToSet->AddMember(
             rapidjson::StringRef(PrefabDomUtils::SourceName), rapidjson::StringRef(m_paths.front().c_str()), m_linkDomToSet->GetAllocator());
