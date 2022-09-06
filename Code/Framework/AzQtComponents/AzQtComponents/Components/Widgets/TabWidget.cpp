@@ -775,8 +775,8 @@ namespace AzQtComponents
 
             QString labelText = painter->fontMetrics().elidedText(tabOption->text, Qt::ElideRight, fullTextRect.width());
 
-            const QRect fontRect = painter->fontMetrics().boundingRect(labelText);
-            int spacerWidth = fullTextRect.width() - fontRect.width();
+            const int textW = painter->fontMetrics().horizontalAdvance(labelText);
+            int spacerWidth = fullTextRect.width() - textW;
 
             // Recalculate the elided text based on the available rect.
             labelText = painter->fontMetrics().elidedText(tabOption->text, Qt::ElideRight, useableTextRect.width());
