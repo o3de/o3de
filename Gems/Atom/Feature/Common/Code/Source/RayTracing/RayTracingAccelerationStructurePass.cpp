@@ -76,6 +76,7 @@ namespace AZ
                             ->Blas(subMesh.m_blas)
                             ->Transform(subMesh.m_mesh->m_transform)
                             ->NonUniformScale(subMesh.m_mesh->m_nonUniformScale)
+                            ->Transparent(subMesh.m_irradianceColor.GetA() < 1.0f)
                             ;
 
                         instanceIndex++;

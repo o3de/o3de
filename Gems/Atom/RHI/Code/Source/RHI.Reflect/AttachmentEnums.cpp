@@ -83,6 +83,8 @@ namespace AZ
                 return "Resolve";
             case ScopeAttachmentUsage::Predication:
                 return "Predication";
+            case ScopeAttachmentUsage::Indirect:
+                return "Indirect";
             case ScopeAttachmentUsage::InputAssembly:
                 return "InputAssembly";
             case ScopeAttachmentUsage::Uninitialized:
@@ -148,6 +150,13 @@ namespace AZ
                 return access;
             case ScopeAttachmentUsage::Predication:
                 return access;
+
+            case ScopeAttachmentUsage::Indirect:
+                AZ_Error(
+                    "ScopeAttachment",
+                    !RHI::CheckBitsAll(access, ScopeAttachmentAccess::Write),
+                    "ScopeAttachmentAccess cannot be 'Write' when usage is 'Indirect'.");
+                return ScopeAttachmentAccess::Read;
 
             case ScopeAttachmentUsage::Uninitialized:
                 return access;
