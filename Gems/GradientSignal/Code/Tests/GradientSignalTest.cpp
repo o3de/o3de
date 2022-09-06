@@ -151,12 +151,16 @@ namespace UnitTest
         config.m_amplitude = 3.0f;
         config.m_frequency = 1.13f;
 
-        // The random seed to generate the input for the permutation table is platform specific, but
-        // is deterministic per platform due to the inconsistent implementaion of the mersenne twister
-        // engine in different standard libraries. Instead we will pregenerate the permutation table
-        // using the above 7878 seed and the results of the permutation generation based on the windows
-        // implementation of the RNG, so we can have a fixed value to compare against the results to validate
-        // the perlin component.
+        // The random seed to generate the input for the permutation table is platform independent, but
+        // is not deterministic per platform due to the inconsistent implementaion of the mersenne twister
+        // engine in different standard libraries. This will lead to deterministic results by platform,
+        // so the values cannot be relied upon per platform. In order to generate consistent values, we
+        // will pregenerate the permutation table using the above 7878 seed and the results of the
+        // permutation generation based on the windows implementation of the RNG, so we can have a fixed
+        // value to compare against the results to validate the perlin component.
+        //
+        // The values below represent the original permutation table that was representative of this test
+        // based on the windows RNG.
         AZStd::array<int, 512> testPerlinPermutationTable =
         {
             0x5e, 0xdd, 0x95, 0xf6, 0x43, 0x0f, 0x7e, 0x20, 0xf7, 0xb7, 0x82, 0x98, 0x73, 0x58, 0xf5, 0xa0,
