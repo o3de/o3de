@@ -128,7 +128,7 @@ class BaseTestImpact(ABC):
                         args[ARG_INTEGRATION_POLICY] = "continue"
         # Store sequence and report into args so that our argument enum can be used to apply all relevant arguments.
         args[ARG_SEQUENCE] = args.get(ARG_SEQUENCE_OVERRIDE) or sequence_type
-        self._report_file = PurePath(self._temp_workspace).joinpath(
+        self._report_file = PurePath(self._report_workspace).joinpath(
             f"report.{self._instance_id}.json")
         args[ARG_REPORT] = self._report_file
         self._parse_arguments_to_runtime(
@@ -275,7 +275,7 @@ class BaseTestImpact(ABC):
                 self._active_workspace = config[self.runtime_type][WORKSPACE_KEY][ACTIVE_KEY][ROOT_KEY]
                 self._historic_workspace = config[self.runtime_type][WORKSPACE_KEY][HISTORIC_KEY][ROOT_KEY]
                 self._temp_workspace = config[self.runtime_type][WORKSPACE_KEY][TEMP_KEY][ROOT_KEY]
-                self._report_path = config[self.runtime_type][WORKSPACE_KEY][TEMP_KEY][REPORT_KEY]
+                self._report_workspace = config[self.runtime_type][WORKSPACE_KEY][TEMP_KEY][REPORT_KEY]
                 self._change_list_workspace = config[self.runtime_type][WORKSPACE_KEY][TEMP_KEY][CHANGE_LIST_KEY]
                 
                 # Data file paths
@@ -330,7 +330,7 @@ class BaseTestImpact(ABC):
                 # Attempt to generate a diff between the src and dst commits
                 logger.info(
                     f"Source '{self._src_commit}' and destination '{self._dst_commit}' will be diff'd.")
-                diff_path = Path(PurePath(self._temp_workspace).joinpath(
+                diff_path = Path(PurePath(self._change_list_workspace).joinpath(
                     f"changelist.{self._instance_id}.diff"))
                 self._repo.create_diff_file(
                     self._src_commit, self._dst_commit, diff_path, multi_branch)
