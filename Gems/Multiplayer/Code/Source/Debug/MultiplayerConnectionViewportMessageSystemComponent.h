@@ -58,7 +58,6 @@ namespace Multiplayer
         static constexpr char CenterViewportToastTitle[] = "Multiplayer Alert";
         static constexpr char OnBlockedLevelLoadMessage[] = "Blocked level load; see log for details.";
 
-
         AZ_COMPONENT(MultiplayerConnectionViewportMessageSystemComponent, "{7600cfcf-e380-4876-aa90-8120e57205e9}");
 
         static void Reflect(AZ::ReflectContext* context);
