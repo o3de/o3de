@@ -8,12 +8,15 @@
 #include <AzCore/std/algorithm.h>
 #include <AzQtComponents/Components/Widgets/ElidingLabel.h>
 
+#include <QApplication>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QPainter>
 #include <QStyle>
 #include <QTextCursor>
 #include <QTextDocument>
+#include <QThread>
+#include <QTimer>
 
 namespace AzQtComponents
 {
@@ -39,8 +42,24 @@ namespace AzQtComponents
         m_metricsLabel->setText(m_text);
         
         m_elidedText.clear();
-        elide();
-        updateGeometry();
+
+        if (QThread::currentThread() != QApplication::instance()->thread())
+        {
+            // If setText is called from a thread other than the main thread,
+            // fontMetrics().elidedText() will result in a crash.
+            QTimer::singleShot(
+                0,
+                [&]()
+                {
+                    elide();
+                    updateGeometry();
+                });
+        }
+        else
+        {
+            elide();
+            updateGeometry();
+        }
     }
 
     void ElidingLabel::setDescription(const QString& description)
