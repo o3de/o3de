@@ -103,7 +103,7 @@ namespace AzFramework
         virtual AZ::u32 GetState() { return 0; }
 
         /// Sets the render state which will affect proceeding draw calls.
-        /// For example, if you want draws to happen in 2D screen-space, you can turn off the e_Mode3D flag and turn on the e_Mode3D flag.
+        /// For example, if you want draws to happen in 2D screen-space, you can turn off the e_Mode3D flag and turn on the e_Mode2D flag.
         /// @param state is the bit field used to set render attributes. See CryCommon/IRenderAuxGeom.h for available bit flags.
         /// @return the current state
         virtual AZ::u32 SetState(AZ::u32 state) { (void)state; return 0; }
