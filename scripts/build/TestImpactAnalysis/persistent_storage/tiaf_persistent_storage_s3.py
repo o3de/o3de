@@ -27,7 +27,7 @@ class PersistentStorageS3(PersistentStorage):
     META_KEY = "meta"
     BUILD_CONFIG_KEY = "build_config"
 
-    def __init__(self, config: dict, suite: str, commit: str, s3_bucket: str, root_dir: str, branch: str, active_workspace: str, unpacked_coverage_data_file_path: str, previous_test_run_data_file_path: str):
+    def __init__(self, config: dict, suite: str, commit: str, s3_bucket: str, root_dir: str, branch: str, active_workspace: str, unpacked_coverage_data_file_path: str, previous_test_run_data_file_path: str, temp_workspace: str):
         """
         Initializes the persistent storage with the specified s3 bucket.
 
@@ -39,7 +39,7 @@ class PersistentStorageS3(PersistentStorage):
         @branch branch:   The branch to retrieve the historic data for.
         """
 
-        super().__init__(config, suite, commit, active_workspace, unpacked_coverage_data_file_path, previous_test_run_data_file_path)
+        super().__init__(config, suite, commit, active_workspace, unpacked_coverage_data_file_path, previous_test_run_data_file_path, temp_workspace)
 
         self.s3_bucket = s3_bucket
         self.root_dir = root_dir
@@ -151,9 +151,8 @@ class PersistentStorageS3(PersistentStorage):
         @param target_directory: Name for the uploaded object.
         """
         artifact_key = f"{self._historic_data_dir}/{object_name}.zip"
-        temp_directory = tempfile.mkdtemp()
         try:
-            compressed_directory = shutil.make_archive(f"{temp_directory}/compressed_artifacts", 'zip', source_directory)
+            compressed_directory = shutil.make_archive(f"{self._temp_workspace}/compressed_artifacts", 'zip', source_directory)
             self._s3.upload_file(compressed_directory, Bucket=self.s3_bucket, Key=artifact_key,ExtraArgs={
                                 'ACL': 'bucket-owner-full-control'})
         except botocore.exceptions.BotoCoreError as e:
@@ -161,4 +160,4 @@ class PersistentStorageS3(PersistentStorage):
         except botocore.exceptions.ClientError as e:
             logger.error(f"There was a problem with the s3 client: {e}")
         finally:
-            os.unlink(temp_directory)
+            os.unlink(compressed_directory)
