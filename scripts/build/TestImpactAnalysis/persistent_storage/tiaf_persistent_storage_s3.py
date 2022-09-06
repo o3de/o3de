@@ -151,13 +151,17 @@ class PersistentStorageS3(PersistentStorage):
         @param target_directory: Name for the uploaded object.
         """
         artifact_key = f"{self._historic_data_dir}/{object_name}.zip"
+        compressed_file_path = pathlib.Path(self._temp_workspace).joinpath("compressed_artifacts.zip")
         try:
-            compressed_directory = shutil.make_archive(f"{self._temp_workspace}/compressed_artifacts", 'zip', source_directory)
+            compressed_directory = shutil.make_archive(compressed_file_path.with_suffix(""), 'zip', source_directory)
             self._s3.upload_file(compressed_directory, Bucket=self.s3_bucket, Key=artifact_key,ExtraArgs={
                                 'ACL': 'bucket-owner-full-control'})
         except botocore.exceptions.BotoCoreError as e:
             logger.error(f"There was a problem with the s3 bucket: {e}")
         except botocore.exceptions.ClientError as e:
             logger.error(f"There was a problem with the s3 client: {e}")
+        except OSError as e:
+            logger.warn(e)
         finally:
-            os.unlink(compressed_directory)
+            if compressed_file_path.is_file():
+                os.unlink(compressed_file_path)
