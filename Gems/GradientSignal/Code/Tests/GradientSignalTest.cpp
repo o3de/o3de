@@ -6,9 +6,6 @@
  *
  */
 
-#include <numeric>
-#include <random> // std::mt19937 std::random_device
-
 #include <Tests/GradientSignalTestFixtures.h>
 
 #include <GradientSignal/PerlinImprovedNoise.h>

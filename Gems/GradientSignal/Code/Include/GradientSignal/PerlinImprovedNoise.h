@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <AzCore/std/containers/array.h>
+#include <AzCore/std/containers/span.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
@@ -30,7 +30,7 @@ namespace GradientSignal
         /**
          * Initializes the permutation table from a preset table
          */
-        PerlinImprovedNoise(const AZStd::array<int, 512>& permutationTable);
+        PerlinImprovedNoise(const AZStd::span<int, 512>& permutationTable);
 
         /**
         * Creates a Perlin 'natural' noise factor values based on a position with smoothing parameters

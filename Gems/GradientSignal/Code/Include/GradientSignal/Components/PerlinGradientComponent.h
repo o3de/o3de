@@ -61,7 +61,7 @@ namespace GradientSignal
 
         PerlinGradientComponent(const PerlinGradientConfig& configuration);
         PerlinGradientComponent() = default;
-        virtual ~PerlinGradientComponent() = default;
+        ~PerlinGradientComponent() = default;
 
         // AZ::Component overrides...
         void Activate() override;
