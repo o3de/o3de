@@ -26,18 +26,16 @@
 
 namespace ImGui
 {
-    enum class ImGuiActivationBroadcast
+    enum class ImGuiStateBroadcast
     {
-        ActivationBroadcast,
-        ActivationNotBroadcast,
-        DeactivationBroadcast,
-        DeactivationNotBroadcast
+        Broadcast,
+        NotBroadcast,
     };
 
     struct ImGuiBroadcastState
     {
-        ImGuiActivationBroadcast m_activationBroadcastStatus = ImGuiActivationBroadcast::ActivationNotBroadcast;
-        ImGuiActivationBroadcast m_deactivationBroadcastStatus = ImGuiActivationBroadcast::DeactivationNotBroadcast;
+        ImGuiStateBroadcast m_activationBroadcastStatus = ImGuiStateBroadcast::NotBroadcast;
+        ImGuiStateBroadcast m_deactivationBroadcastStatus = ImGuiStateBroadcast::NotBroadcast;
     };
 
     class ImGuiManager
