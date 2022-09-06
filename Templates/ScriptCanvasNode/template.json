@@ -15,15 +15,15 @@
     "icon_path": "preview.png",
     "copyFiles": [
         {
-            "file": "${Name}.cpp",
+            "file": "Source/${Name}.cpp",
             "isTemplated": true
         },
         {
-            "file": "${Name}.h",
+            "file": "Include/${Name}.h",
             "isTemplated": true
         },
         {
-            "file": "${Name}.ScriptCanvasNodeable.xml",
+            "file": "Source/${Name}.ScriptCanvasNodeable.xml",
             "isTemplated": true
         },
         {
@@ -40,5 +40,11 @@
         }
     ],
     "createDirectories": [
+        {
+            "dir": "Include"
+        },
+        {
+            "dir": "Source"
+        }
     ]
 }
