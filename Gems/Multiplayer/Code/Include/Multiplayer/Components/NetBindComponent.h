@@ -88,14 +88,14 @@ namespace Multiplayer
         EntityMigration GetAllowEntityMigration() const;
 
         //! This is a helper that validates the owning entity is in the correct role to read from a network property that matches the relicateFrom and replicateTo parameters.
-        //! @oaram propertyName  the name of the property, for logging and debugging purposes
+        //! @param propertyName  the name of the property, for logging and debugging purposes
         //! @param replicateFrom the network entity role that the property replicates from
         //! @param replicateTo   the network entity role that the property replicates to
         //! @return boolean true if the read is valid, false if nothing is replicated to the target and invalid data will be read
         bool ValidatePropertyRead(const char* propertyName, NetEntityRole replicateFrom, NetEntityRole replicateTo) const;
 
         //! This is a helper that validates the owning entity is in the correct role to write to a network property that matches the relicateFrom, replicateTo parameters, and isPredictable parameters.
-        //! @oaram propertyName  the name of the property, for logging and debugging purposes
+        //! @param propertyName  the name of the property, for logging and debugging purposes
         //! @param replicateFrom the network entity role that the property replicates from
         //! @param replicateTo   the network entity role that the property replicates to
         //! @param isPredictable true if the property is predictable, false otherwise
@@ -104,6 +104,7 @@ namespace Multiplayer
 
         //! Returns whether or not a controller exists for the bound network entity.
         //! Warning, this function is dangerous to use in game code as it makes it easy to write logic that will function incorrectly within multihost environments. Use carefully.
+        //! The recommended solution for communicating from proxy level to a controller is to use a Server to Authority RPC, as the network layer can route the RPC appropriately.
         //! @return boolean true if a controller exists, false otherwise
         bool HasController() const;
 
