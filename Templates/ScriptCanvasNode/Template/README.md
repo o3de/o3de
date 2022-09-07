@@ -6,7 +6,7 @@ Use this template to produce a Script Canvas project that may hold Script Canvas
 This guide will assume that you have created a gem called: `YourGem` using the command: 
 
 ```
-scripts\o3de create-gem -gn YourGem -gp Gems\YourGem
+scripts\o3de create-gem -gn YourGem -gp <PATH\TO\YourGem>
 ```
 
 From the o3de folder call this command:
