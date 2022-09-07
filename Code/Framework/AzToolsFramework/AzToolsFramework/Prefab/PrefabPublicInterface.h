@@ -122,7 +122,15 @@ namespace AzToolsFramework
              * @return True if the entity is the container entity for the level prefab instance, false otherwise.
              */
             virtual bool IsLevelInstanceContainerEntity(AZ::EntityId entityId) const = 0;
-            
+
+            /**
+             * Detects if a list of entities are under the same instance. The instance of
+             * a container entity is special cased to be the parent instance of its instance.
+             * @param entityIds The list of entities to query.
+             * @return True if all entities in the list have the same instance, false otherwise.
+             */
+            virtual bool EntitiesBelongToSameInstance(const EntityIdList& entityIds) const = 0;
+
             /**
              * Gets the entity id for the instance container of the owning instance.
              * @param entityId The id of the entity to query.
