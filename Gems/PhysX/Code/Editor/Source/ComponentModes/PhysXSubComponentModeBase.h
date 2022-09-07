@@ -45,4 +45,15 @@ namespace PhysX
         virtual void HandleMouseInteraction(
             [[maybe_unused]] const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction) {};
     };
+
+    //! NullObject implementation
+    class NullColliderComponentMode : public PhysXSubComponentModeBase
+    {
+    public:
+        void Setup([[maybe_unused]] const AZ::EntityComponentIdPair& idPair) override {}
+        void Refresh([[maybe_unused]] const AZ::EntityComponentIdPair& idPair) override{}
+        void Teardown([[maybe_unused]] const AZ::EntityComponentIdPair& idPair) override{}
+        void ResetValues([[maybe_unused]] const AZ::EntityComponentIdPair& idPair) override{}
+    };
+
 } // namespace PhysX

@@ -47,6 +47,7 @@ namespace PhysX
             serializeContext->Class<EditorProxyCylinderShapeConfig>()
                 ->Version(1)
                 ->Field("Configuration", &EditorProxyCylinderShapeConfig::m_configuration)
+                ->Field("Subdivision", &EditorProxyCylinderShapeConfig::m_subdivisionCount)
                 ->Field("Height", &EditorProxyCylinderShapeConfig::m_height)
                 ->Field("Radius", &EditorProxyCylinderShapeConfig::m_radius)
             ;
@@ -63,9 +64,10 @@ namespace PhysX
                         "PhysX cylinder collider configuration.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
 
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyCylinderShapeConfig::m_subdivisionCount,
+                        "Subdivision", "Cylinder subdivision count.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyCylinderShapeConfig::m_height, "Height", "Cylinder height.")
-
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyCylinderShapeConfig::m_radius, "Height", "Cylinder height.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyCylinderShapeConfig::m_radius, "Radius", "Cylinder radius.")
 
                     ;
             }
@@ -102,6 +104,7 @@ namespace PhysX
     void EditorProxyShapeConfig::Reflect(AZ::ReflectContext* context)
     {
         EditorProxyAssetShapeConfig::Reflect(context);
+        EditorProxyCylinderShapeConfig::Reflect(context);
 
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
@@ -111,6 +114,7 @@ namespace PhysX
                 ->Field("Sphere", &EditorProxyShapeConfig::m_sphere)
                 ->Field("Box", &EditorProxyShapeConfig::m_box)
                 ->Field("Capsule", &EditorProxyShapeConfig::m_capsule)
+                ->Field("Cylinder", &EditorProxyShapeConfig::m_cylinder)
                 ->Field("PhysicsAsset", &EditorProxyShapeConfig::m_physicsAsset)
                 ->Field("HasNonUniformScale", &EditorProxyShapeConfig::m_hasNonUniformScale)
                 ->Field("SubdivisionLevel", &EditorProxyShapeConfig::m_subdivisionLevel)
@@ -139,6 +143,9 @@ namespace PhysX
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorProxyShapeConfig::OnConfigurationChanged)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyShapeConfig::m_capsule, "Capsule", "Configuration of capsule shape.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &EditorProxyShapeConfig::IsCapsuleConfig)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorProxyShapeConfig::OnConfigurationChanged)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyShapeConfig::m_cylinder, "Cylinder", "Configuration of cylinder shape.")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &EditorProxyShapeConfig::IsCylinderConfig)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorProxyShapeConfig::OnConfigurationChanged)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyShapeConfig::m_physicsAsset, "Asset", "Configuration of asset shape.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &EditorProxyShapeConfig::IsAssetConfig)
@@ -380,6 +387,8 @@ namespace PhysX
             return AZStd::make_shared<Physics::SphereShapeConfiguration>(m_sphere);
         case Physics::ShapeType::Capsule:
             return AZStd::make_shared<Physics::CapsuleShapeConfiguration>(m_capsule);
+        case Physics::ShapeType::Cylinder:
+            return AZStd::make_shared<Physics::CookedMeshShapeConfiguration>(m_cylinder.m_configuration);
         case Physics::ShapeType::PhysicsAsset:
             return AZStd::make_shared<Physics::PhysicsAssetShapeConfiguration>(m_physicsAsset.m_configuration);
         case Physics::ShapeType::CookedMesh:
@@ -454,7 +463,9 @@ namespace PhysX
         {
             UpdateMeshAsset();
         }
-        UpdateShapeConfigurationScale();
+
+        UpdateShapeConfiguration();
+
         CreateStaticEditorCollider();
 
         Physics::ColliderComponentEventBus::Event(GetEntityId(), &Physics::ColliderComponentEvents::OnColliderChanged);
@@ -505,7 +516,7 @@ namespace PhysX
             &AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests::Refresh,
             AZ::EntityComponentIdPair(GetEntityId(), GetId()));
 
-        UpdateShapeConfigurationScale();
+        UpdateShapeConfiguration();
         CreateStaticEditorCollider();
         ValidateRigidBodyMeshGeometryType();
 
@@ -601,7 +612,7 @@ namespace PhysX
         case Physics::ShapeType::Cylinder:
             colliderComponent = gameEntity->CreateComponent<BaseColliderComponent>();
             colliderComponent->SetShapeConfigurationList({ AZStd::make_pair(
-                sharedColliderConfig, AZStd::make_shared<Physics::CookedMeshShapeConfiguration>(m_shapeConfiguration.m_cookedMesh)) });
+                sharedColliderConfig, AZStd::make_shared<Physics::CookedMeshShapeConfiguration>(m_shapeConfiguration.m_cylinder.m_configuration)) });
             break;
         case Physics::ShapeType::CookedMesh:
             colliderComponent = gameEntity->CreateComponent<BaseColliderComponent>();
@@ -932,7 +943,14 @@ namespace PhysX
         else
         {
             const AZ::u32 shapeIndex = 0; // There's only one mesh gets built from the primitive collider, hence use geomIndex 0.
-            if (!m_hasNonUniformScale)
+            if (m_shapeConfiguration.IsCylinderConfig())
+            {
+                physx::PxGeometryHolder pxGeometryHolder;
+                Utils::CreatePxGeometryFromConfig(
+                    m_shapeConfiguration.m_cylinder.m_configuration, pxGeometryHolder); // this will cause the native mesh to be cached
+                m_colliderDebugDraw.BuildMeshes(m_shapeConfiguration.m_cylinder.m_configuration, shapeIndex);
+            }
+            else if (!m_hasNonUniformScale)
             {
                 m_colliderDebugDraw.BuildMeshes(m_shapeConfiguration.GetCurrent(), shapeIndex);
             }
@@ -975,6 +993,13 @@ namespace PhysX
             break;
         case Physics::ShapeType::Capsule:
             m_colliderDebugDraw.DrawCapsule(debugDisplay, m_configuration, m_shapeConfiguration.m_capsule);
+            break;
+        case Physics::ShapeType::Cylinder:
+            const AZ::u32 shapeIndex = 0;
+            m_colliderDebugDraw.DrawMesh(debugDisplay, m_configuration,
+                m_shapeConfiguration.m_cylinder.m_configuration,
+                AZ::Vector3(GetWorldTM().GetUniformScale()),
+                shapeIndex);
             break;
         }
     }
@@ -1117,7 +1142,7 @@ namespace PhysX
         }
         m_cachedWorldTransform = world;
 
-        UpdateShapeConfigurationScale();
+        UpdateShapeConfiguration();
         CreateStaticEditorCollider();
     }
 
@@ -1125,7 +1150,7 @@ namespace PhysX
     {
         m_cachedNonUniformScale = nonUniformScale;
 
-        UpdateShapeConfigurationScale();
+        UpdateShapeConfiguration();
         CreateStaticEditorCollider();
     }
 
@@ -1442,6 +1467,31 @@ namespace PhysX
         return m_shapeConfiguration.m_physicsAsset.m_configuration.m_assetScale;
     }
 
+    void EditorColliderComponent::UpdateShapeConfiguration()
+    {
+        UpdateShapeConfigurationScale();
+
+        if (m_shapeConfiguration.IsCylinderConfig())
+        {
+            // Create cooked cylinder convex
+            UpdateCylinderCookedMesh();
+        }
+    }
+
+    void EditorColliderComponent::UpdateCylinderCookedMesh()
+    {
+        AZ::Vector3 scale = m_shapeConfiguration.m_cylinder.m_configuration.m_scale;
+
+        AZ::u8 subdivisionCount = m_shapeConfiguration.m_cylinder.m_subdivisionCount;
+        float height = m_shapeConfiguration.m_cylinder.m_height;
+        float radius = m_shapeConfiguration.m_cylinder.m_radius;
+
+        Utils::Geometry::PointList samplePoints = Utils::CreatePointsAtFrustumExtents(height, radius, radius, subdivisionCount).value();
+
+        m_shapeConfiguration.m_cylinder.m_configuration
+            = Utils::CreatePxCookedMeshConfiguration(samplePoints, scale).value();
+    }
+
     void EditorColliderComponentDescriptor::Reflect(AZ::ReflectContext* reflection) const
     {
         EditorColliderComponent::Reflect(reflection);
@@ -1471,5 +1521,4 @@ namespace PhysX
             warnings = editorColliderComponent->GetComponentWarnings();
         }
     }
-
 } // namespace PhysX

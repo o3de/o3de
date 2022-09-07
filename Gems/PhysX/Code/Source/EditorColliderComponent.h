@@ -151,6 +151,9 @@ namespace PhysX
         AZ_DISABLE_COPY_MOVE(EditorColliderComponent)
         // AZ::Component
         void Activate() override;
+
+        void UpdateShapeConfiguration();
+
         void Deactivate() override;
 
         //! AzToolsFramework::EntitySelectionEvents
@@ -235,6 +238,9 @@ namespace PhysX
         // Mesh collider
         void UpdateMeshAsset();
         bool IsAssetConfig() const;
+
+        // Cylinder collider
+        void UpdateCylinderCookedMesh();
 
         void CreateStaticEditorCollider();
         void ClearStaticEditorCollider();
