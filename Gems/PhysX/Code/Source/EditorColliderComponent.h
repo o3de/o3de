@@ -60,10 +60,12 @@ namespace PhysX
         AZ_TYPE_INFO(EditorProxyCylinderShapeConfig, "{2394B3D0-E7A1-4B66-8C42-0FFDC1FCAA26}");
         static void Reflect(AZ::ReflectContext* context);
 
+        //! Cylinder specific parameters
         AZ::u8 m_subdivisionCount = 16;
-        float m_height = 1.0f; //!< Caches height for capsule, cylinder and polygon prism shapes.
-        float m_radius = 1.0f; //!< Caches radius for capsule, cylinder and sphere shapes.
+        float m_height = 1.0f;
+        float m_radius = 1.0f;
 
+        //! Configuration stores the convex geometry for the cylinder and shape scale
         Physics::CookedMeshShapeConfiguration m_configuration;
     };
 
