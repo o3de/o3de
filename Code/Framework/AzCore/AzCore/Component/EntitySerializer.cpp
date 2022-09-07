@@ -98,11 +98,12 @@ namespace AZ
         ContinueLoadingFromJsonObjectField(&entityInstance->m_isRuntimeActiveByDefault,
             azrtti_typeid<decltype(entityInstance->m_isRuntimeActiveByDefault)>(),
             inputValue, "IsRuntimeActive", context);
-
-        return context.Report(
-            result,
-            result.GetProcessing() != JSR::Processing::Halted ? "Successfully loaded entity information."
-                                                              : "Failed to load entity information.");
+ 
+        AZStd::string_view message =
+            result.GetProcessing() == JSR::Processing::Completed ? "Successfully loaded entity information." :
+            result.GetProcessing() != JSR::Processing::Halted ? "Partially loaded entity information." :
+            "Failed to load entity information.";
+        return context.Report(result, message);
     }
 
     JsonSerializationResult::Result JsonEntitySerializer::Store(rapidjson::Value& outputValue,
