@@ -16,7 +16,7 @@
 
 #include <Utils/Utils.h>
 #include <Utils/ImGuiSidebar.h>
-#include <Utils/ImGuiMaterialDetails.h>
+#include <Atom/Utils/ImGuiMaterialDetails.h>
 #include <Utils/ImGuiAssetBrowser.h>
 
 #include <Atom/Bootstrap/DefaultWindowBus.h>
@@ -128,7 +128,7 @@ namespace AtomSampleViewer
         AZ::Data::Instance<AZ::RPI::Material> m_groundPlaneMaterial;
 
         ImGuiSidebar m_imguiSidebar;
-        ImGuiMaterialDetails m_imguiMaterialDetails;
+        AZ::Render::ImGuiMaterialDetails m_imguiMaterialDetails;
         ImGuiAssetBrowser m_materialBrowser;
         ImGuiAssetBrowser m_modelBrowser;
     };

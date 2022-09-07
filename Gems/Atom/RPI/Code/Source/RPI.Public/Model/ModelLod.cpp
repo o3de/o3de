@@ -108,6 +108,7 @@ namespace AZ
                 const ModelMaterialSlot& materialSlot = modelAsset->FindMaterialSlot(mesh.GetMaterialSlotId());
 
                 meshInstance.m_materialSlotStableId = materialSlot.m_stableId;
+                meshInstance.m_materialSlotName = materialSlot.m_displayName;
 
                 if (materialSlot.m_defaultMaterialAsset.IsReady())
                 {

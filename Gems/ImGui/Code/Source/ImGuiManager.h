@@ -74,6 +74,7 @@ namespace ImGui
         float GetDpiScalingFactor() const override;
         void Render() override;
         void ToggleThroughImGuiVisibleState() override;
+        void ToggleToImGuiVisibleState(DisplayState state) override;
         // -- ImGuiManagerBus Interface -------------------------------------------------------------------
 
         // -- AzFramework::InputChannelEventListener and AzFramework::InputTextEventListener Interface ------------
