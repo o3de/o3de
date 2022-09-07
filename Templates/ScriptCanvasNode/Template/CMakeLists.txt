@@ -33,5 +33,10 @@ ly_add_target(
 set (dependent_targets ${GemName}.Private.Object;${GemName};${GemName}.Editor)
 
 foreach (dependent_target IN LISTS dependent_targets)
-    target_link_libraries(${dependent_target} PRIVATE ScriptCanvasNodes::${Name}.Object)
+    if (TARGET ${dependent_target})
+        target_link_libraries(${dependent_target} PRIVATE ScriptCanvasNodes::${Name}.Object)
+    else()
+        message(FATAL_ERROR "The target ${dependent_target} was not found, if the gem was not created using scripts/o3de create-gem"
+            " you may update dependent_targets to match the corresponding targets in your gem")
+    endif()
 endforeach()

@@ -2,7 +2,12 @@
 
 Use this template to produce a Script Canvas project that may hold Script Canvas nodes. 
 
-This guide will assume that you have created a gem called: `YourGem`
+
+This guide will assume that you have created a gem called: `YourGem` using the command: 
+
+```
+scripts\o3de create-gem -gn YourGem -gp Gems\YourGem
+```
 
 From the o3de folder call this command:
 
