@@ -198,7 +198,7 @@ namespace PhysX
         AZ::Aabb GetColliderShapeAabb() override;
         bool IsTrigger() override;
 
-        // PhysX::EditorColliderComponentBus
+        // PhysX::EditorColliderComponentRequestBus
         void SetColliderOffset(const AZ::Vector3& offset) override;
         AZ::Vector3 GetColliderOffset() override;
         void SetColliderRotation(const AZ::Quaternion& rotation) override;
@@ -212,6 +212,12 @@ namespace PhysX
         float GetCapsuleRadius() override;
         void SetCapsuleHeight(float height) override;
         float GetCapsuleHeight() override;
+        void SetCylinderRadius(float radius) override;
+        float GetCylinderRadius() override;
+        void SetCylinderHeight(float height) override;
+        float GetCylinderHeight() override;
+        void SetCylinderSubdivisionCount(AZ::u8 subdivisionCount) override;
+        AZ::u8 GetCylinderSubdivisionCount() override;
         void SetAssetScale(const AZ::Vector3& scale) override;
         AZ::Vector3 GetAssetScale() override;
 

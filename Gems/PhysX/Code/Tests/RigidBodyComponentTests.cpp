@@ -93,4 +93,51 @@ namespace PhysXEditorTests
         EXPECT_THAT(finalAabb.GetMax(), UnitTest::IsClose((originalAabb.GetMax() + offset) * scale));
         EXPECT_THAT(finalAabb.GetMin(), UnitTest::IsClose((originalAabb.GetMin() + offset) * scale));
     }
+
+    TEST_F(PhysXEditorFixture, EditorRigidBodyComponent_CylinderShapeTypeInEditorCollider_ActorWithConvexMeshTypeCreated)
+    {
+        // Create editor entity
+        EntityPtr editorEntity = CreateInactiveEditorEntity("Entity");
+
+        const auto* rigidBodyComponent = editorEntity->CreateComponent<PhysX::EditorRigidBodyComponent>();
+        const auto* colliderComponent = editorEntity->CreateComponent<PhysX::EditorColliderComponent>();
+
+        editorEntity->Activate();
+
+        AZ::EntityComponentIdPair idPair(editorEntity->GetId(), colliderComponent->GetId());
+
+        // Set collider to be a cylinder
+        const Physics::ShapeType shapeType = Physics::ShapeType::Cylinder;
+        PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetShapeType, shapeType);
+
+        // Set collider cylinder radius and height
+        const float cylinderRadius = 0.5f;
+        PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetCylinderRadius, cylinderRadius);
+
+        const float cylinderHeight = 4.0f;
+        PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetCylinderHeight, cylinderHeight);
+
+        // Notify listeners that collider has changed
+        Physics::ColliderComponentEventBus::Event(editorEntity->GetId(), &Physics::ColliderComponentEvents::OnColliderChanged);
+
+        auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
+
+        // Update editor world to let updates to be applied
+        physicsSystem->Simulate(0.1f);
+
+        const AzPhysics::RigidBody* rigidBody = rigidBodyComponent->GetRigidBody();
+        ASSERT_EQ(rigidBody->GetShapeCount(), 1);
+
+        const AZ::Aabb bodyAabb = rigidBodyComponent->GetRigidBody()->GetAabb();
+
+        // X and Y extents of the AABB should be equal to the cylinder diameter while the Z one is the height.
+        EXPECT_TRUE(AZ::IsClose(bodyAabb.GetXExtent(), cylinderRadius * 2.0f));
+        EXPECT_TRUE(AZ::IsClose(bodyAabb.GetYExtent(), cylinderRadius * 2.0f));
+        EXPECT_TRUE(AZ::IsClose(bodyAabb.GetZExtent(), cylinderHeight));
+
+        AZStd::shared_ptr<const Physics::Shape> shape = rigidBody->GetShape(0);
+        const physx::PxShape* pxShape = static_cast<const physx::PxShape*>(shape->GetNativePointer());
+        // Check the geometry is a type of Convex
+        EXPECT_EQ(pxShape->getGeometryType(), physx::PxGeometryType::eCONVEXMESH);
+    }
 } // namespace PhysXEditorTests

@@ -62,6 +62,12 @@ namespace UnitTest
         float GetCapsuleRadius() override { return m_capsuleRadius; }
         void SetCapsuleHeight(float height) override { m_capsuleHeight = height; }
         float GetCapsuleHeight() override { return m_capsuleHeight; }
+        void SetCylinderRadius(float radius) override { m_cylinderRadius = radius; }
+        float GetCylinderRadius() override { return m_cylinderRadius; }
+        void SetCylinderHeight(float height) override { m_cylinderHeight = height; }
+        float GetCylinderHeight() override { return m_cylinderHeight; }
+        void SetCylinderSubdivisionCount(AZ::u8 subdivisionCount) override { m_subdivisionCount = subdivisionCount; }
+        AZ::u8 GetCylinderSubdivisionCount() override { return m_subdivisionCount; }
         void SetAssetScale(const AZ::Vector3& scale) override { m_assetScale = scale; }
         AZ::Vector3 GetAssetScale() override { return m_assetScale; }
 
@@ -74,6 +80,9 @@ namespace UnitTest
         float m_sphereRadius = 0.5f;
         float m_capsuleHeight = 1.0f;
         float m_capsuleRadius = 0.25f;
+        float m_cylinderHeight = 1.0f;
+        float m_cylinderRadius = 0.25f;
+        AZ::u8 m_subdivisionCount = 16;
         AZ::Vector3 m_assetScale = AZ::Vector3::CreateOne();
     };
 } // namespace UnitTest

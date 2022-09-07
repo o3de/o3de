@@ -1415,6 +1415,12 @@ namespace PhysX
     void EditorColliderComponent::SetShapeType(Physics::ShapeType shapeType)
     {
         m_shapeConfiguration.m_shapeType = shapeType;
+
+        if (shapeType == Physics::ShapeType::Cylinder)
+        {
+            UpdateCylinderCookedMesh();
+        }
+
         CreateStaticEditorCollider();
     }
 
@@ -1454,6 +1460,42 @@ namespace PhysX
     float EditorColliderComponent::GetCapsuleHeight()
     {
         return m_shapeConfiguration.m_capsule.m_height;
+    }
+
+    void EditorColliderComponent::SetCylinderRadius(float radius)
+    {
+        m_shapeConfiguration.m_cylinder.m_radius = radius;
+        UpdateCylinderCookedMesh();
+        CreateStaticEditorCollider();
+    }
+
+    float EditorColliderComponent::GetCylinderRadius()
+    {
+        return m_shapeConfiguration.m_cylinder.m_radius;
+    }
+
+    void EditorColliderComponent::SetCylinderHeight(float height)
+    {
+        m_shapeConfiguration.m_cylinder.m_height = height;
+        UpdateCylinderCookedMesh();
+        CreateStaticEditorCollider();
+    }
+
+    float EditorColliderComponent::GetCylinderHeight()
+    {
+        return m_shapeConfiguration.m_cylinder.m_height;
+    }
+
+    void EditorColliderComponent::SetCylinderSubdivisionCount(AZ::u8 subdivisionCount)
+    {
+        m_shapeConfiguration.m_cylinder.m_subdivisionCount = subdivisionCount;
+        UpdateCylinderCookedMesh();
+        CreateStaticEditorCollider();
+    }
+
+    AZ::u8 EditorColliderComponent::GetCylinderSubdivisionCount()
+    {
+        return m_shapeConfiguration.m_cylinder.m_subdivisionCount;
     }
 
     void EditorColliderComponent::SetAssetScale(const AZ::Vector3& scale)

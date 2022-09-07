@@ -64,6 +64,30 @@ namespace PhysX
         /// @return The height of the capsule collider.
         virtual float GetCapsuleHeight() = 0;
 
+        /// Set the radius of the cylinder collider.
+        /// @param radius The radius of the cylinder collider.
+        virtual void SetCylinderRadius(float radius) = 0;
+
+        /// Gets the radius of the cylinder collider.
+        /// @return The radius of the cylinder collider.
+        virtual float GetCylinderRadius() = 0;
+
+        /// Set the height of the cylinder collider.
+        /// @param radius The height of the cylinder collider.
+        virtual void SetCylinderHeight(float height) = 0;
+
+        /// Gets the height of the cylinder collider.
+        /// @return The height of the cylinder collider.
+        virtual float GetCylinderHeight() = 0;
+
+        /// Set the subdivision count of the cylinder collider.
+        /// @param radius The subdivision count of the cylinder collider.
+        virtual void SetCylinderSubdivisionCount(AZ::u8 subdivisionCount) = 0;
+
+        /// Gets the subdivision count of the cylinder collider.
+        /// @return The subdivision count of the cylinder collider.
+        virtual AZ::u8 GetCylinderSubdivisionCount() = 0;
+
         /// Sets the scale of the asset collider.
         /// @param The scale of the asset collider.
         virtual void SetAssetScale(const AZ::Vector3&) = 0;
