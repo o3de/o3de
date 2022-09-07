@@ -6,7 +6,9 @@
         PreferredClassName="${SanitizedCppName}"
         Category="${Name} Nodes"
         Namespace="ScriptCanvas"
-        Description="">
+        Description="Simple Script Canvas node example">
+
+        <Input Name="In" OutputName="Out" Description="Entry point into the node"/>
 
     </Class>
 </ScriptCanvas>

@@ -1,9 +1,9 @@
 ## How to use this template
 
-Use this template to produce a Script Canvas project that may hold Script Canvas nodes. 
+Use this template to produce a build target that may hold a library of Script Canvas nodes. 
 
 
-This guide will assume that you have created a gem called: `YourGem` using the command: 
+This guide will assume that you have created a gem called `YourGem` using the command: 
 
 ```
 scripts\o3de create-gem -gn YourGem -gp <PATH\TO\YourGem>
