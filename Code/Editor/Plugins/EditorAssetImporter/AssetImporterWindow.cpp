@@ -163,22 +163,7 @@ void AssetImporterWindow::Init()
     }
 
     ResetMenuAccess(WindowState::InitialNothingLoaded);
-
-    m_logDetailsCard = new AzQtComponents::Card(this);
-    m_logDetailsCard->setTitle(tr("Additional Log Details"));
-    m_logDetailsCard->header()->setHasContextMenu(false);
-    ui->m_notificationAreaLayout->addWidget(m_logDetailsCard);
-    // Only show if there is at least one card up
-    m_logDetailsCard->hide();
-
-    m_logDetailsModel = new AzQtComponents::StyledDetailsTableModel(m_logDetailsCard);
-    m_logDetailsModel->AddColumn("Title");
-    m_logDetailsModel->AddColumn("Message");
-
-    m_logDetailsView = new AzQtComponents::TableView(m_logDetailsCard);
-    m_logDetailsView->setModel(m_logDetailsModel);
-    m_logDetailsCard->setContentWidget(m_logDetailsView);
-    
+        
     // Setup the overlay system, and set the root to be the root display. The root display has the browse,
     //  the Import button & the cancel button, which are handled here by the window.
     m_overlay.reset(aznew AZ::SceneAPI::UI::OverlayWidget(this));
@@ -268,16 +253,10 @@ SceneSettingsCard* AssetImporterWindow::CreateSceneSettingsCard(
     SceneSettingsCard::Layout layout,
     SceneSettingsCard::State state)
 {
-    SceneSettingsCard* card = new SceneSettingsCard(s_browseTag, fileName, layout, m_logDetailsModel, ui->m_cardAreaLayoutWidget);
+    SceneSettingsCard* card = new SceneSettingsCard(s_browseTag, fileName, layout, ui->m_cardAreaLayoutWidget);
     
     card->setExpanded(false);
-    if (m_logDetailsCard->isHidden())
-    {
-        // On first display, make sure it's not expanded
-        m_logDetailsCard->setExpanded(false);
-    }
     ui->m_notificationAreaLayoutWidget->show();
-    m_logDetailsCard->show();
     card->SetState(state);
     ui->m_cardAreaLayout->addWidget(card);
     ++m_openSceneSettingsCards;
@@ -302,11 +281,6 @@ void AssetImporterWindow::SceneSettingsCardDestroyed()
     }
     if (m_openSceneSettingsCards <= 0)
     {
-        if (m_logDetailsModel->rowCount() > 0)
-        {
-            m_logDetailsModel->removeRows(0, m_logDetailsModel->rowCount());
-        }
-        m_logDetailsCard->hide();
         ui->m_notificationAreaLayoutWidget->hide();
     }
 }

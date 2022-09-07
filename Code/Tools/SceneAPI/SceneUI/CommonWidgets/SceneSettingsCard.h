@@ -78,7 +78,7 @@ public:
         Exporting
     };
 
-    SceneSettingsCard(AZ::Uuid traceTag, QString fileTracked, Layout layout, AzQtComponents::StyledDetailsTableModel* logDetailsModel, QWidget* parent = nullptr);
+    SceneSettingsCard(AZ::Uuid traceTag, QString fileTracked, Layout layout, QWidget* parent = nullptr);
     ~SceneSettingsCard();
 
     void SetAndStartProcessingHandler(const AZStd::shared_ptr<AZ::SceneAPI::SceneUI::ProcessingHandler>& handler);
@@ -101,7 +101,6 @@ public Q_SLOTS:
     void AddLogEntry(const AzToolsFramework::Logging::LogEntry& logEntry);
     void OnSetStatusMessage(const AZStd::string& message);
     void OnProcessingComplete();
-    void OnLogLineSelected();
     
 signals:
     void ProcessingCompleted();
@@ -119,10 +118,9 @@ private:
     void UpdateCompletionState(CompletionState newState);
     void CopyTraceContext(AzQtComponents::StyledDetailsTableModel::TableEntry& entry) const;
     QString GetTimeNowAsString();
-    void AddEmptyLogDetailsForRow();
+    void ShowLogContextMenu(const QPoint& pos);
 
     QVector<QVector<QPair<QString, QString>>> m_additionalLogDetails;
-    AzQtComponents::StyledDetailsTableModel* m_logDetailsModel = nullptr;
     
     AzToolsFramework::Debug::TraceContextMultiStackHandler m_traceStackHandler;
     AZ::Uuid m_traceTag;

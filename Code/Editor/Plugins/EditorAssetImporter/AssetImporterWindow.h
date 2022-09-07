@@ -27,8 +27,6 @@
 namespace AzQtComponents
 {
     class Card;
-    class StyledDetailsTableModel;
-    class TableView;
 }
 
 namespace AZStd
@@ -133,15 +131,8 @@ private:
     QScopedPointer<Ui::AssetImporterWindow> ui;
     QScopedPointer<AssetImporterDocument> m_assetImporterDocument;
     QScopedPointer<AZ::SceneAPI::UI::OverlayWidget> m_overlay;
-    AzQtComponents::Card* m_logDetailsCard = nullptr;
     int m_openSceneSettingsCards = 0;
     int m_sceneSettingsCardOverlay = AZ::SceneAPI::UI::OverlayWidget::s_invalidOverlayIndex;
-
-    // Output logs can have a lot of additional details,
-    // this table displays that information when you select
-    // a log message in one of the status cards.
-    AzQtComponents::StyledDetailsTableModel* m_logDetailsModel = nullptr;
-    AzQtComponents::TableView* m_logDetailsView = nullptr;
 
     AZ::SerializeContext* m_serializeContext;
     AZStd::string m_fullSourcePath;

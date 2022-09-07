@@ -11,7 +11,10 @@
 #include <QDateTime>
 #include <QHeaderView>
 #include <QHBoxLayout>
+#include <QListWidget>
+#include <QMenu>
 #include <QPushButton>
+#include <QWidgetAction>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/Debug/TraceContextLogFormatter.h>
 #include <AzToolsFramework/Debug/TraceContextStack.h>
@@ -60,11 +63,10 @@ void SceneSettingsCardHeader::SetCanClose(bool canClose)
     m_busyLabel->setHidden(canClose);
 }
 
-SceneSettingsCard::SceneSettingsCard(AZ::Uuid traceTag, QString fileTracked, Layout layout, AzQtComponents::StyledDetailsTableModel* logDetailsModel, QWidget* parent /* = nullptr */)
+SceneSettingsCard::SceneSettingsCard(AZ::Uuid traceTag, QString fileTracked, Layout layout, QWidget* parent /* = nullptr */)
     :
     AzQtComponents::Card(new SceneSettingsCardHeader(), parent),
     m_traceTag(traceTag),
-    m_logDetailsModel(logDetailsModel),
     m_fileTracked(fileTracked)
 {
     m_settingsHeader = qobject_cast<SceneSettingsCardHeader*>(header());
@@ -101,11 +103,10 @@ SceneSettingsCard::SceneSettingsCard(AZ::Uuid traceTag, QString fileTracked, Lay
     m_reportView->header()->setSectionResizeMode(timeColumn, QHeaderView::ResizeToContents);
     setContentWidget(m_reportView);
     
-
-    connect(m_reportView->selectionModel(), &QItemSelectionModel::selectionChanged,
-        this, &SceneSettingsCard::OnLogLineSelected);
-
     AZ::Debug::TraceMessageBus::Handler::BusConnect();
+    
+    m_reportView->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(m_reportView, &AzQtComponents::TableView::customContextMenuRequested, this, &SceneSettingsCard::ShowLogContextMenu);
 }
 
 SceneSettingsCard::~SceneSettingsCard()
@@ -160,10 +161,6 @@ void SceneSettingsCard::AddLogEntry(const AzToolsFramework::Logging::LogEntry& l
     {
         m_additionalLogDetails.push_back(detailsForLogLine);
     }
-    else
-    {
-        AddEmptyLogDetailsForRow();
-    }
     
     if (logEntry.GetSeverity() == AzToolsFramework::Logging::LogEntry::Severity::Error)
     {
@@ -186,7 +183,6 @@ void SceneSettingsCard::OnProcessingComplete()
     entry.Add("Message", "Asset processing completed.");
     entry.Add("Status", AzQtComponents::StyledDetailsTableModel::StatusSuccess);
     entry.Add("Time", GetTimeNowAsString());
-    AddEmptyLogDetailsForRow();    
     m_reportModel->AddEntry(entry);
     
     SetState(SceneSettingsCard::State::Done);
@@ -198,7 +194,6 @@ void SceneSettingsCard::OnSetStatusMessage(const AZStd::string& message)
     entry.Add("Message", message.c_str());
     entry.Add("Status", AzQtComponents::StyledDetailsTableModel::StatusSuccess);
     entry.Add("Time", GetTimeNowAsString());
-    AddEmptyLogDetailsForRow();
     m_reportModel->AddEntry(entry);
 }
 
@@ -232,7 +227,6 @@ bool SceneSettingsCard::OnPrintf(const char* window, const char* message)
     entry.Add("Message", message);
     entry.Add("Time", GetTimeNowAsString());
     CopyTraceContext(entry);
-    AddEmptyLogDetailsForRow();
     m_reportModel->AddEntry(entry);
     return false;
 }
@@ -401,42 +395,51 @@ QString SceneSettingsCard::GetTimeNowAsString()
     return QDateTime::currentDateTime().toString(tr("hh:mm:ss ap"));
 }
 
-void SceneSettingsCard::AddEmptyLogDetailsForRow()
+void SceneSettingsCard::ShowLogContextMenu(const QPoint& pos)
 {
-    QVector<QPair<QString, QString>> detailsForLogLine;
-    detailsForLogLine.push_back(QPair<QString, QString>(tr("Info"), tr("No additional details available.")));
-    m_additionalLogDetails.push_back(detailsForLogLine);
-}
-
-void SceneSettingsCard::OnLogLineSelected()
-{
-    const QModelIndexList indexes = m_reportView->selectionModel()->selectedIndexes();
-    if (indexes.isEmpty())
+    const QModelIndex selectedIndex = m_reportView->indexAt(pos);
+    if (!selectedIndex.isValid())
+    {
+        return;
+    }
+    
+    int logRow = selectedIndex.row();
+    if (logRow <= 0)
     {
         return;
     }
 
-    int logRow = indexes.front().row();
-    if (logRow > m_additionalLogDetails.count())
+    int additionalLogCount = m_additionalLogDetails[logRow].count();
+
+    if (additionalLogCount <= 0)
     {
         return;
     }
 
-    if (m_logDetailsModel->rowCount() > 0)
-    {
-        bool removeRowResult = m_logDetailsModel->removeRows(0, m_logDetailsModel->rowCount());
+    QMenu menu;
+    menu.setToolTipsVisible(true);
+    QAction* contextMenuTitleAction = menu.addAction("Additional log context");
+    contextMenuTitleAction->setToolTip(tr("Additional log information for the selected line"));
+    menu.addSeparator();
+    
+    QWidgetAction* logMenuListAction = new QWidgetAction(&menu);
+        
+    QListWidget* logDetailsWidget = new QListWidget(&menu);
+    logDetailsWidget->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
+    logDetailsWidget->setTextElideMode(Qt::ElideLeft);
+    logDetailsWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    logDetailsWidget->setSelectionMode(QAbstractItemView::NoSelection);
 
-        if (!removeRowResult)
-        {
-            return;
-        }
+    logMenuListAction->setDefaultWidget(logDetailsWidget);
+
+    for (const auto& logDetail : m_additionalLogDetails[logRow])
+    {
+        logDetailsWidget->addItem(tr("%1 - %2").arg(logDetail.first).arg(logDetail.second));
     }
 
-    for(const auto& logDetail : m_additionalLogDetails[logRow])
-    {
-        AzQtComponents::StyledDetailsTableModel::TableEntry entry;
-        entry.Add("Title", logDetail.first);
-        entry.Add("Message", logDetail.second);
-        m_logDetailsModel->AddEntry(entry);
-    }
+    logDetailsWidget->setFixedHeight(additionalLogCount * logDetailsWidget->sizeHintForRow(0));
+    logDetailsWidget->setFixedWidth(logDetailsWidget->sizeHintForColumn(0));
+    menu.addAction(logMenuListAction);
+
+    menu.exec(m_reportView->viewport()->mapToGlobal(pos));
 }
