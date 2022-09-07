@@ -4,8 +4,10 @@ Use this template to produce a Script Canvas project that may hold Script Canvas
 
 This guide will assume that you have created a gem called: `YourGem`
 
+From the o3de folder call this command:
+
 ```
-scripts\o3de create-from-template -tp C:\dev\o3de\Templates\ScriptCanvasNode -dp C:\dev\o3de\Gems\YourGem\Code\Source\MyScriptCanvasNodes -r gem_name YourGem
+scripts\o3de create-from-template -tp Templates\ScriptCanvasNode -dp Gems\YourGem\Code\Source\MyScriptCanvasNodes -r gem_name YourGem
 ```
 
 ## Steps after using this template
@@ -14,10 +16,10 @@ After running this template, there are still some manual steps needed in order t
 
 ### Step 1.
 
-Add the following AT THE END of Gems/`YourGem`/Code/CMakeLists.txt
+Run the following command to register the newly created Script Canvas nodes project:
 
 ```
-add_subdirectory(Source/${Name})
+scripts\o3de register -esgp Gems\gem_name -es Gems\gem_name\Code\Source\${Name}
 ```
 
 ### Step 2.
