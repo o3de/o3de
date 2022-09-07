@@ -30,7 +30,13 @@ class BuildFailureRCAValidator(CommitValidator):
                     break
                 
                 with open(file_name, 'r', encoding='utf8') as fh:
-                    data = json.load(fh)
+                    try:
+                        data = json.load(fh)
+                    except json.decoder.JSONDecodeError:
+                        error_message = str(f'{file_name}::{self.__class__.__name__} FAILED - JSON format error.\n')
+                        if VERBOSE: print(error_message)
+                        errors.append(error_message)
+                        continue
                     for item in data['indications']:
                         for test_case in item['log_testcases']:
                             for pattern in item['log_patterns']:
@@ -41,8 +47,8 @@ class BuildFailureRCAValidator(CommitValidator):
                                 if regex.search(test_case):
                                     break
                             else:
-                                error_message = str(f'{file_name}::{self.__class__.__name__} FAILED - \n'
-                                                f'    {item["name"]}: Unmatched test case ({test_case})')
+                                error_message = str(f'{file_name}::{self.__class__.__name__} FAILED - Unmatched test case {item["name"]}:\n'
+                                                f'    ({test_case})')
                                 if VERBOSE: print(error_message)
                                 errors.append(error_message)
         return (not errors)
