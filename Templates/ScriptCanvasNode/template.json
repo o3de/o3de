@@ -4,7 +4,7 @@
     "origin_url": "https://github.com/o3de/o3de",
     "license": "Apache-2.0 or MIT",
     "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
-    "display_name": "Default Component Template",
+    "display_name": "Minimal Script Canvas Node Template",
     "summary": "A template for a minimal Script Canvas node",
     "canonical_tags": [
         "Template"
