@@ -50,6 +50,9 @@ FRMT_LOG_SHRT = "[%(asctime)s][%(name)s][%(levelname)s] >> %(message)s"
 # allow package to capture warnings
 _logging.captureWarnings(capture=True)
 
+# set this manually if you want to raise exceptions/warnings
+DCCSI_STRICT = False
+
 # default loglevel to info unless set
 ENVAR_DCCSI_LOGLEVEL = 'DCCSI_LOGLEVEL'
 DCCSI_LOGLEVEL = int(os.getenv(ENVAR_DCCSI_LOGLEVEL, _logging.INFO))
@@ -81,7 +84,6 @@ __all__ = ['globals', # global state module
 _MODULE_PATH = Path(__file__)
 _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH}')
 # -------------------------------------------------------------------------
-
 
 
 # -------------------------------------------------------------------------
@@ -130,13 +132,19 @@ PATH_DCCSIG = _MODULE_PATH.parents[0].resolve()
 # this allows the dccsi gem location to be overridden in the external env
 PATH_DCCSIG = Path(os.getenv(ENVAR_PATH_DCCSIG,
                               PATH_DCCSIG.as_posix()))
-try: # validate (if envar is bad)
+# validate (if envar is bad)
+try:
     PATH_DCCSIG.resolve(strict=True)
-    _LOGGER.debug(f'{ENVAR_PATH_DCCSIG}: {PATH_DCCSIG.as_posix()}')
+    add_site_dir(PATH_DCCSIG)
+    _LOGGER.info(f'{ENVAR_PATH_DCCSIG} is: {PATH_DCCSIG.as_posix()}')
 except NotADirectoryError as e:
-    _LOGGER.error(f'{ENVAR_PATH_DCCSIG} failed: {PATH_DCCSIG.as_posix()}',
-                  exc_info=True)
-    raise NotADirectoryError
+    # this should not happen, unless envar override could not resolve
+    _LOGGER.warning(f'{ENVAR_PATH_DCCSIG} failed: {PATH_DCCSIG.as_posix()}')
+    _LOGGER.error(f'{e} , traceback =', exc_info=True)
+    PATH_DCCSIG = None
+    if DCCSI_STRICT:
+        _LOGGER.exception(f'{e} , traceback =', exc_info=True)
+        raise e
 
 # < dccsi >\3rdParty bootstrapping area for installed site-packages
 # dcc tools on a different version of python will import from here.
@@ -149,17 +157,31 @@ STR_DCCSI_PYTHON_LIB = (f'{PATH_DCCSIG.as_posix()}' +
                         f'\\{sys.version_info[0]}.x' +
                         f'\\{sys.version_info[0]}.{sys.version_info[1]}.x' +
                         f'\\site-packages')
-
+# build path
 PATH_DCCSI_PYTHON_LIB = Path(STR_DCCSI_PYTHON_LIB)
+
+# allow location to be set/overriden from env
+PATH_DCCSI_PYTHON_LIB = Path(os.getenv(ENVAR_PATH_DCCSI_PYTHON_LIB,
+                                       PATH_DCCSI_PYTHON_LIB.as_posix()))
+
+# validate, because we checked envar
 try:
-    PATH_DCCSI_PYTHON_LIB = Path(PATH_DCCSI_PYTHON_LIB).resolve(strict=True)
-    _LOGGER.debug(f'{ENVAR_PATH_DCCSI_PYTHON_LIB} is: {PATH_DCCSI_PYTHON_LIB.as_posix()}')
+    PATH_DCCSI_PYTHON_LIB.resolve(strict=True)
+    add_site_dir(PATH_DCCSI_PYTHON_LIB)
+    _LOGGER.info(f'{ENVAR_PATH_DCCSI_PYTHON_LIB} is: {PATH_DCCSI_PYTHON_LIB.as_posix()}')
 except NotADirectoryError as e:
     _LOGGER.warning(f'{ENVAR_PATH_DCCSI_PYTHON_LIB} does not exist:' +
                     f'{PATH_DCCSI_PYTHON_LIB.as_Posix()}')
-    _LOGGER.error(f'Try using foundation.py', exc_info=True)
-    # dependencies are required to exist
-    raise NotADirectoryError
+    _LOGGER.warning(f'Pkg dependancies may not be available for import')
+    _LOGGER.warning(f'Try using foundation.py to install pkg dependancies for the target python runtime')
+    PATH_DCCSI_PYTHON_LIB = None
+    _LOGGER.error(f'{e} , traceback =', exc_info=True)
+    PATH_DCCSIG = None
+    if DCCSI_STRICT:
+        _LOGGER.exception(f'{e} , traceback =', exc_info=True)
+        raise e
+
+_LOGGER.debug(STR_CROSSBAR)
 # -------------------------------------------------------------------------
 
 
@@ -195,6 +217,9 @@ except ImportError as e:
     _LOGGER.warning(f'{e}')
     _LOGGER.warning(f'Not running o3do, no: azlmbr.paths')
     _LOGGER.warning(f'Using fallbacks ...')
+#     if DCCSI_STRICT:
+#         _LOGGER.exception(f'{e} , traceback =', exc_info=True)
+#         raise e
 # -------------------------------------------------------------------------
 
 
@@ -203,7 +228,7 @@ except ImportError as e:
 PATH_ENV_DEV = Path(PATH_DCCSIG, 'Tools', 'Dev', 'Windows', 'Env_Dev.bat')
 
 # a local settings file to overrides envars in config.py
-DCCSI_SETTINGS_LOCAL_FILENAME = 'setting.local.json'
+DCCSI_SETTINGS_LOCAL_FILENAME = 'settings.local.json'
 PATH_DCCSI_SETTINGS_LOCAL = Path(PATH_DCCSIG, DCCSI_SETTINGS_LOCAL_FILENAME)
 
 # the o3de manifest data
@@ -234,9 +259,11 @@ O3DE_BOOTSTRAP_PATH = Path(USER_HOME,
 # a suggestion would be for us to refactor from _O3DE_DEV to _O3DE_ROOT
 # dev is a legacy Lumberyard concept, as the engine sandbox folder was /dev
 ENVAR_O3DE_DEV = 'O3DE_DEV'
+_LOGGER.debug(STR_CROSSBAR)
+_LOGGER.debug(f'---- Finding {ENVAR_O3DE_DEV}')
 
 if not O3DE_DEV:
-    # we could also check the .o3de\o3de_manifest.json?
+    # fallback 1, check the .o3de\o3de_manifest.json
     # most end users likely only have one engine install?
     try:
         # the manifest doesn't exist until you run o3de.exe for the first time
@@ -254,11 +281,11 @@ if not O3DE_DEV:
             with open(O3DE_MANIFEST_PATH, "r") as data:
                 O3DE_MANIFEST_DATA = json.load(data)
         except IOError as e:
-            _LOGGER.error(f'Cannot read manifest: {O3DE_MANIFEST_PATH} ')
-            pass
+            _LOGGER.warning(f'Cannot read manifest: {O3DE_MANIFEST_PATH} ')
+            _LOGGER.error(f'{e} , traceback =', exc_info=True)
 
     if O3DE_MANIFEST_DATA:
-        _LOGGER.warning(f'O3DE Manifest found: {O3DE_MANIFEST_PATH}')
+        _LOGGER.debug(f'O3DE Manifest found: {O3DE_MANIFEST_PATH}')
         # what if there are multiple "engines_path"s? We don't know which to use
         ENGINES_PATH = O3DE_MANIFEST_DATA['engines_path']
 
@@ -266,59 +293,64 @@ if not O3DE_DEV:
             O3DE_ENGINENAME = list(ENGINES_PATH.items())[0][0]
             O3DE_DEV = Path(list(ENGINES_PATH.items())[0][1])
         else:
-            _LOGGER.warning('--------')
             _LOGGER.warning(f'Manifest defines more then one engine: {O3DE_DEV.as_posix()}')
             _LOGGER.warning(f'Not sure which to use? We suggest...')
             _LOGGER.warning(f"Put 'set {ENVAR_O3DE_DEV}=c:\\path\\to\\o3de' in: {PATH_ENV_DEV}")
             _LOGGER.warning(f"And '{ENVAR_O3DE_DEV}:c:\\path\\to\\o3de' in: {PATH_DCCSI_SETTINGS_LOCAL}")
-            _LOGGER.warning('--------')
 
         try:
             O3DE_DEV.resolve(strict=True) # make sure the found engine exists
             _LOGGER.debug(f'O3DE Manifest {ENVAR_O3DE_DEV} is: {O3DE_DEV.as_posix()}')
         except NotADirectoryError as e:
-            _LOGGER.warning('--------')
             _LOGGER.warning(f'Manifest engine does not exist: {O3DE_DEV.as_posix()}')
             _LOGGER.warning(f'Make sure the engine is installed, and run O3DE.exe')
             _LOGGER.warning(f'Or build from source and and register the engine ')
             _LOGGER.warning(f'CMD > c:\\path\\to\\o3de\\scripts\\o3de register --this-engine')
-            _LOGGER.warning('--------')
+            _LOGGER.error(f'{e} , traceback =', exc_info=True)
             O3DE_DEV = None
 
-    # obvious fallback 1, just walk up ...
+    # obvious fallback 2, assume root from dccsi, just walk up ...
     # unless the dev has the dccsi somewhere else this should work fine
-    # if we move the dccsi out of the engine later we can refactor
-    if not O3DE_DEV: # fallback 1, assume root from dccsi
+    # or if we move the dccsi out of the engine later we can refactor
+    if not O3DE_DEV:
         O3DE_DEV = PATH_DCCSIG.parents[3]
         try:
             O3DE_DEV.resolve(strict=True)
             _LOGGER.debug(f'{ENVAR_O3DE_DEV} is: {O3DE_DEV.as_posix()}')
         except NotADirectoryError as e:
+            _LOGGER.warning(f'{ENVAR_O3DE_DEV} does not exist: {O3DE_DEV.as_posix()}')
+            _LOGGER.error(f'{e} , traceback =', exc_info=True)
             O3DE_DEV = None
-            _LOGGER.error(f'{ENVAR_O3DE_DEV} does not exist: {O3DE_DEV.as_posix()}',
-                          exc_info=True)
-            raise NotADirectoryError
 
 # but it's always best to just be explicit?
 # fallback 2, check if a dev set it in env and allow override
 O3DE_DEV = os.getenv(ENVAR_O3DE_DEV, O3DE_DEV)
-if O3DE_DEV: # could still end up None
+
+if O3DE_DEV: # could still end up None?
+    O3DE_DEV = Path(O3DE_DEV)
     try:
-        O3DE_DEV = Path(O3DE_DEV).resolve(strict=True)
-        _LOGGER.debug(f'Final {ENVAR_O3DE_DEV} is: {O3DE_DEV.as_posix()}')
-        # should we implement a safe way to manage adding paths
-        # to make sure we are not adding paths already there?
+        O3DE_DEV.resolve(strict=True)
         O3DE_DEV = add_site_dir(O3DE_DEV)
+        _LOGGER.info(f'Final {ENVAR_O3DE_DEV} is: {O3DE_DEV.as_posix()}')
     except NotADirectoryError as e:
-        _LOGGER.warning(f'{ENVAR_O3DE_DEV} does not exist: {O3DE_DEV.as_posix()}')
-        _LOGGER.warning(f"Put 'set = c:\\path\\to\\o3de' in: {PATH_ENV_DEV}")
-        _LOGGER.warning(f"And '{ENVAR_O3DE_DEV}:c:\\path\\to\\o3de' in: " +
-                        f"{PATH_DCCSI_SETTINGS_LOCAL}")
-        _LOGGER.warning('--------')
+        _LOGGER.warning(f'{ENVAR_O3DE_DEV} may not exist: {O3DE_DEV.as_posix()}')
         O3DE_DEV = None
-else:
-    _LOGGER.error(f'{ENVAR_O3DE_DEV} not defined', exc_info=True)
-    raise NotADirectoryError
+        if DCCSI_STRICT:
+            _LOGGER.exception(f'{e} , traceback =', exc_info=True)
+            raise e
+
+try:
+    O3DE_DEV.resolve(strict=True)
+    # this shouldn't be possible because of fallback 1,
+    # unless a bad envar override didn't validate above?
+except Exception as e:
+    _LOGGER.warning(f'{ENVAR_O3DE_DEV} not defined: {O3DE_DEV}')
+    _LOGGER.warning(f'Put "set {ENVAR_O3DE_DEV}=C:\\path\\to\\o3de" in: {PATH_ENV_DEV}')
+    _LOGGER.warning(f'And "{ENVAR_O3DE_DEV}":"C:\\path\\to\\o3de" in: {PATH_DCCSI_SETTINGS_LOCAL}')
+    _LOGGER.error(f'{e} , traceback =', exc_info=True)
+    if DCCSI_STRICT:
+        _LOGGER.exception(f'{e} , traceback =', exc_info=True)
+        raise e
 # -------------------------------------------------------------------------
 
 
@@ -326,10 +358,13 @@ else:
 # o3de game project
 # this is a problem of multiple projects
 # we can get the local project root if we are running in a o3de exe
-O3DE_PROJECT = None# str name of the project
+O3DE_PROJECT = None # str name of the project
 
 ENVAR_PATH_O3DE_PROJECT = 'PATH_O3DE_PROJECT' # project path
 ENVAR_O3DE_PROJECT = 'O3DE_PROJECT' # project name
+
+_LOGGER.debug(STR_CROSSBAR)
+_LOGGER.debug(f'---- Finding {ENVAR_PATH_O3DE_PROJECT}')
 
 # 2, we could also check the .o3de\o3de_manifest.json?
 if not PATH_O3DE_PROJECT:
@@ -340,12 +375,10 @@ if not PATH_O3DE_PROJECT:
         if len(PROJECTS) == 1: # there can only be one
             PATH_O3DE_PROJECT = PROJECTS[0]
         else:
-            _LOGGER.warning('--------')
             _LOGGER.warning(f'Manifest defines more then one project')
             _LOGGER.warning(f'Not sure which to use? We suggest...')
-            _LOGGER.warning(f"Put 'set {ENVAR_PATH_O3DE_PROJECT}=c:\\path\\to\\o3de\\project' in: {PATH_ENV_DEV}")
-            _LOGGER.warning(f"And '{ENVAR_O3DE_DEV}:c:\\path\\to\\o3de\\project' in: {PATH_DCCSI_SETTINGS_LOCAL}")
-            _LOGGER.warning('--------')
+            _LOGGER.warning(f'Put "set {ENVAR_PATH_O3DE_PROJECT}=C:\\path\\to\\o3de\\project" in: {PATH_ENV_DEV}')
+            _LOGGER.warning(f'And "{ENVAR_PATH_O3DE_PROJECT}":"C:\\path\\to\\o3de\\project" in: {PATH_DCCSI_SETTINGS_LOCAL}')
 
 # 3, we can see if a global project is set as the default
 if not PATH_O3DE_PROJECT:
@@ -355,64 +388,68 @@ if not PATH_O3DE_PROJECT:
             with open(O3DE_BOOTSTRAP_PATH, "r") as data:
                 O3DE_BOOTSTRAP_DATA = json.load(data)
         except IOError as e:
-            _LOGGER.error(f'Cannot read bootstrap: {O3DE_BOOTSTRAP_PATH} ')
-            pass
+            _LOGGER.warning(f'Cannot read bootstrap: {O3DE_BOOTSTRAP_PATH} ')
+            _LOGGER.error(f'{e}')
+            if DCCSI_STRICT:
+                _LOGGER.exception(f'{e} , traceback =', exc_info=True)
+                raise e
+
     else:
-        _LOGGER.debug(f'Bootstrap does not exist: {O3DE_BOOTSTRAP_PATH}')
+        _LOGGER.warning(f'o3de engine Bootstrap does not exist: {O3DE_BOOTSTRAP_PATH}')
 
     if O3DE_BOOTSTRAP_DATA:
         try:
             PATH_O3DE_PROJECT = Path(O3DE_BOOTSTRAP_DATA['Amazon']['AzCore']['Bootstrap']['project_path'])
         except KeyError as e:
-            _LOGGER.warning(f'Bootstrap error: {e}')
+            _LOGGER.warning(f'Bootstrap key error: {e}')
+            _LOGGER.error(f'{e}')
             PATH_O3DE_PROJECT = None
 
     if PATH_O3DE_PROJECT: # we got one
-        if PATH_O3DE_PROJECT.resolve(strict=True): #validate
-            pass
-        else:
+        try:
+            PATH_O3DE_PROJECT.resolve(strict=True)
+        except NotADirectoryError as e:
+            _LOGGER.warning(f'Project does not exist: {PATH_O3DE_PROJECT}')
+            _LOGGER.error(f'{e}')
             PATH_O3DE_PROJECT = None
 
 # 4, we can fallback to the DCCsi as the project
 # 5, be explicit, and allow it to be set/overridden from the env
-if not PATH_O3DE_PROJECT:
-    PATH_O3DE_PROJECT = Path(os.getenv(ENVAR_PATH_O3DE_PROJECT, PATH_DCCSIG))
+PATH_O3DE_PROJECT = os.getenv(ENVAR_PATH_O3DE_PROJECT, PATH_DCCSIG)
 
+if PATH_O3DE_PROJECT:  # could still end up None?
     # note: if you are a developer, and launching via the dccsi windows .bat files
     # the DccScriptingInterface gets set in the env as the default project
     # which would in this case override the other options above
     # when running from a cli in that env, or a IDE launched in that env
 
-    if not os.environ.get(ENVAR_O3DE_PROJECT):
-        _LOGGER.warning('--------')
-        _LOGGER.warning(f"envar '{ENVAR_O3DE_PROJECT}' does not exist")
-        _LOGGER.warning(f"Put 'set {ENVAR_O3DE_PROJECT}= c:\\path\\to\\o3de' in: {PATH_ENV_DEV}")
-        _LOGGER.warning(f"And '{ENVAR_O3DE_PROJECT}:c:\\path\\to\\o3de' in: "
-                        + f"{PATH_DCCSI_SETTINGS_LOCAL}")
-        _LOGGER.warning('--------')
+    try:
+        PATH_O3DE_PROJECT = Path(PATH_O3DE_PROJECT).resolve(strict=True)
+    except NotADirectoryError as e:
+        _LOGGER.warning(f'{e}')
+        _LOGGER.warning(f'envar {ENVAR_O3DE_PROJECT} may not exist: {ENVAR_O3DE_PROJECT}')
+        _LOGGER.warning(f'Put "set {ENVAR_O3DE_PROJECT}=C:\\path\\to\\o3de" in : {PATH_ENV_DEV}')
+        _LOGGER.warning(f'And "{ENVAR_O3DE_PROJECT}":"C:\\path\\to\\o3de" in: {PATH_DCCSI_SETTINGS_LOCAL}')
 
-        try:
-            PATH_O3DE_PROJECT.resolve(strict=True)
-        except NotADirectoryError as e:
-            _LOGGER.warning(f'{e}')
-            _LOGGER.warning(f'path is bad: {PATH_O3DE_PROJECT}')
-            PATH_O3DE_PROJECT = PATH_DCCSIG # ultimate fallback
+        PATH_O3DE_PROJECT = PATH_DCCSIG # ultimate fallback
 
 # log the final results
-_LOGGER.warning(f'Default {ENVAR_PATH_O3DE_PROJECT}: {PATH_O3DE_PROJECT.as_posix()}')
+_LOGGER.info(f'Default {ENVAR_PATH_O3DE_PROJECT}: {PATH_O3DE_PROJECT.as_posix()}')
 
 # the projects name, suggestion we should extend this to actually retrieve
 # the project name, from a root data file such as project.json or gem.json
 O3DE_PROJECT = str(os.getenv(ENVAR_O3DE_PROJECT,
                              PATH_O3DE_PROJECT.name))
 
-_LOGGER.warning(f'Default {ENVAR_O3DE_PROJECT}: {O3DE_PROJECT}')
+_LOGGER.info(f'Default {ENVAR_O3DE_PROJECT}: {O3DE_PROJECT}')
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
 # default o3de engine bin folder
 ENVAR_PATH_O3DE_BIN = 'PATH_O3DE_BIN'
+_LOGGER.debug(STR_CROSSBAR)
+_LOGGER.debug(f'---- Finding {ENVAR_PATH_O3DE_BIN}')
 
 # suggestion, create a discovery.py module for the dccsi to find o3de
 
@@ -498,32 +535,41 @@ if not PATH_O3DE_BIN:
     PATH_O3DE_BIN = os.environ.get(ENVAR_PATH_O3DE_BIN)
 
 # if nothing else worked, try using the slow search method
-if not PATH_O3DE_BIN and O3DE_DEV:
-    import DccScriptingInterface.azpy.config_utils as dccsi_config_utils
-    PATH_O3DE_BUILD = dccsi_config_utils.get_o3de_build_path(O3DE_DEV,'CMakeCache.txt')
+# this will re-trigger this init because of import
+# so it's better to move this check into config.py
+# if not PATH_O3DE_BIN and O3DE_DEV:
+#     import DccScriptingInterface.azpy.config_utils as dccsi_config_utils
+#     PATH_O3DE_BIN = dccsi_config_utils.get_o3de_build_path(O3DE_DEV, 'CMakeCache.txt')
 
 if PATH_O3DE_BIN:
     PATH_O3DE_BIN = Path(PATH_O3DE_BIN)
     try:
         PATH_O3DE_BIN = PATH_O3DE_BIN.resolve(strict=True)
-        _LOGGER.debug(f'Final {ENVAR_PATH_O3DE_BIN} is: {PATH_O3DE_BIN.as_posix()}')
-        # should we implement a safe way to manage adding paths
-        # to make sure we are not adding paths already there?
+        _LOGGER.info(f'Final {ENVAR_PATH_O3DE_BIN} is: {PATH_O3DE_BIN.as_posix()}')
         add_site_dir(PATH_O3DE_BIN)
     except NotADirectoryError as e:
-        _LOGGER.warning(f'{ENVAR_PATH_O3DE_BIN} does not exist: {PATH_O3DE_BIN.as_posix()}')
-        _LOGGER.warning(f"Put 'set {ENVAR_PATH_O3DE_BIN}= c:\\path\\to\\o3de' in: {PATH_ENV_DEV}")
-        _LOGGER.warning(f"And '{ENVAR_PATH_O3DE_BIN}:c:\\path\\to\\o3de' in: " +
-                        f"{PATH_DCCSI_SETTINGS_LOCAL}")
-        _LOGGER.warning('--------')
+        _LOGGER.warning(f'{ENVAR_PATH_O3DE_BIN} may not exist: {PATH_O3DE_BIN.as_posix()}')
+        _LOGGER.error(f'{e} , traceback =', exc_info=True)
         PATH_O3DE_BIN = None
-else:
-    _LOGGER.error(f'{ENVAR_PATH_O3DE_BIN} not defined', exc_info=True)
-    #raise NotADirectoryError
+        if DCCSI_STRICT:
+            _LOGGER.exception(f'{e} , traceback =', exc_info=True)
+            raise e
+
+try:
+    PATH_O3DE_BIN.resolve(strict=True)
+except Exception as e:
+    _LOGGER.warning(f'{ENVAR_PATH_O3DE_BIN} not defined: {PATH_O3DE_BIN}')
+    _LOGGER.warning(f'Put "set {ENVAR_PATH_O3DE_BIN}=C:\\path\\to\\o3de" in: {PATH_ENV_DEV}')
+    _LOGGER.warning(f'And "{ENVAR_PATH_O3DE_BIN}":"C:\\path\\to\\o3de" in: {PATH_DCCSI_SETTINGS_LOCAL}')
+    _LOGGER.error(f'{e} , traceback =', exc_info=True)
+    if DCCSI_STRICT:
+        _LOGGER.exception(f'{e} , traceback =', exc_info=True)
+        raise e
 
 _MODULE_END = timeit.default_timer() - _MODULE_START
-_LOGGER.debug(f'DCCsi init complete')
+_LOGGER.debug(f'{_PACKAGENAME}.init complete')
 _LOGGER.debug(f'{_PACKAGENAME}.init took: {_MODULE_END} sec')
+_LOGGER.debug(STR_CROSSBAR)
 # -------------------------------------------------------------------------
 
 

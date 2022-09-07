@@ -24,7 +24,7 @@ from DccScriptingInterface import _PACKAGENAME, STR_CROSSBAR
 _MODULENAME = f'{_PACKAGENAME}.globals'
 _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
-_MODULE_PATH = Path(__file__) # thos module should not be used as an entry
+_MODULE_PATH = Path(__file__) # this module should not be used as an entry
 # -------------------------------------------------------------------------
 # global state to be shared
 from DccScriptingInterface import ENVAR_PATH_DCCSIG
@@ -39,15 +39,15 @@ sys.path.append(PATH_DCCSIG.as_posix())
 site.addsitedir(PATH_DCCSIG.as_posix())
 _LOGGER.debug(f'{ENVAR_PATH_DCCSIG}: {PATH_DCCSIG.as_posix()}') # debug tracking
 
-# propogate the lib bootstrap folder path
-# ensure package dependancies are accessible, by python sys version
+# propagate the lib bootstrap folder path
+# ensure package dependencies are accessible, by python sys version
 # other pkgs and modules may depend on them
 # this is transient (per-session) so we don't override in env
 from DccScriptingInterface import PATH_DCCSI_PYTHON_LIB
 PATH_DCCSI_PYTHON_LIB = Path(PATH_DCCSI_PYTHON_LIB).resolve()
 site.addsitedir(PATH_DCCSI_PYTHON_LIB.as_posix())
 
-# propogate the o3de engine root
+# propagate the o3de engine root
 from DccScriptingInterface import ENVAR_O3DE_DEV
 from DccScriptingInterface import O3DE_DEV
 # this allows env to override the folder path location externally
@@ -72,9 +72,9 @@ from DccScriptingInterface.constants import FRMT_LOG_LONG
 # from DccScriptingInterface.azpy import foo
 from DccScriptingInterface.azpy.env_bool import env_bool
 
-# global state init and storage, can be overriden from external env
-# retreive the dccsi global debug flag
-# this adds additional debug behaviour and inspection, more verbose
+# global state init and storage, can be overridden from external env
+# retrieve the dccsi global debug flag
+# this adds additional debug behavior and inspection, more verbose
 DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 
 # suggestion, it might be an improvement to pack all of these into
@@ -88,20 +88,20 @@ DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 # from DccScriptingInterface.globals import *
 # if DCCSI_DEV_MODE: print('foo')
 
-# retreive the dccsi global developer mode flag
+# retrieve the dccsi global developer mode flag
 # enables early auto-debugger attachment
 DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 
-# retreive the dccsi global ide debugger type
+# retrieve the dccsi global ide debugger type
 # Wing Pro 8 is currently the only one set up
 DCCSI_GDEBUGGER = env_bool(ENVAR_DCCSI_GDEBUGGER, 'WING')
 
-# retreive the dccsi global log level
+# retrieve the dccsi global log level
 # you can for example enable debug logging without global debug or dev mode flags
 DCCSI_LOGLEVEL = int(env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO))
 
-# retreive the dccsi global test mode flag
-# when enabled additional interal tests are run, like forcing cascaded imports
+# retrieve the dccsi global test mode flag
+# when enabled additional internal tests are run, like forcing cascaded imports
 DCCSI_TESTS = env_bool(ENVAR_DCCSI_TESTS, False)
 
 if DCCSI_GDEBUG or DCCSI_DEV_MODE:
@@ -117,7 +117,7 @@ _logging.basicConfig(level=DCCSI_LOGLEVEL,
 _LOGGER = _logging.getLogger(_MODULENAME)
 
 # default settings file path
-DCCSI_SETTIBGS_LOCAL_PATH = Path(DCCSI_SETTINGS_LOCAL_FILENAME).resolve()
+DCCSI_SETTINGS_LOCAL_PATH = Path(DCCSI_SETTINGS_LOCAL_FILENAME).resolve()
 
 # default / temp log path
 DCCSI_O3DE_USER_HOME_LOG = Path(PATH_DCCSI_LOG_PATH).resolve()
@@ -141,7 +141,7 @@ if __name__ == '__main__':
     """Run as main, perform additional debug and module tests"""
 
     # some simple logger tests
-    # evoke the filehandlers and test writting to the log file
+    # evoke the filehandlers and test writing to the log file
     if DCCSI_GDEBUG:
         _LOGGER.debug('Forced Info! for {0}.'.format({_MODULENAME}))
         _LOGGER.error('Forced ERROR! for {0}.'.format({_MODULENAME}))

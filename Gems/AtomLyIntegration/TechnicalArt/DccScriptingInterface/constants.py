@@ -22,7 +22,7 @@ import logging as _logging
 _MODULENAME = 'DCCsi.constants'
 _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug(f'Initializing: {_MODULENAME}')
-_MODULE_PATH = Path(__file__) # thos module should not be used as an entry
+_MODULE_PATH = Path(__file__) # this module should not be used as an entry
 PATH_DCCSIG = _MODULE_PATH.parents[0].resolve()
 sys.path.append(PATH_DCCSIG)
 # -------------------------------------------------------------------------
@@ -45,11 +45,18 @@ from DccScriptingInterface import ENVAR_DCCSI_LOGLEVEL
 # envar to get/set/override the engine root
 from DccScriptingInterface import ENVAR_O3DE_DEV
 
-# a str path constructor for the dccsi 3rdPary site-dir
+# a str path constructor for the dccsi 3rdParty site-dir
 from DccScriptingInterface import STR_DCCSI_PYTHON_LIB
 
-# envar to get/set/override  the location of the dccsi gem
+# envar to get/set/override the location of the dccsi gem
 from DccScriptingInterface import ENVAR_PATH_DCCSIG
+
+# envar to get/set/override the location of DCCsi
+# 3rdParty package dependencies (site-directory)
+from DccScriptingInterface import ENVAR_PATH_DCCSI_PYTHON_LIB
+
+# a path string constructor for that site-dir location
+from DccScriptingInterface import STR_DCCSI_PYTHON_LIB
 
 # envar to get/set/override project path
 from DccScriptingInterface import ENVAR_PATH_O3DE_PROJECT
@@ -73,10 +80,10 @@ from DccScriptingInterface import SLUG_MANIFEST_FILENAME
 # # {user_home}\.o3de\registry\bootstrap.setreg
 from DccScriptingInterface import SLUG_BOOTSTRAP_FILENAME
 
-# resolves the windows progam install directory
+# resolves the windows program install directory
 ENVAR_PROGRAMFILES_X86 = 'PROGRAMFILES(X86)'
 PATH_PROGRAMFILES_X86 = os.environ[ENVAR_PROGRAMFILES_X86]
-# resolves the windows progam install directory
+# resolves the windows program install directory
 ENVAR_PROGRAMFILES_X64 = 'PROGRAMFILES'
 PATH_PROGRAMFILES_X64 = os.environ[ENVAR_PROGRAMFILES_X64]
 
@@ -93,16 +100,16 @@ PATH_DCCSI_LOG_PATH = (f'{PATH_USER_O3DE}\\Cache\\log' +
                        f'\\{SLUG_DCCSI_SHORT}' +
                        f'\\{SLUG_DCCSI_SHORT}.log')
 
-# enavar to get/set the < dccsi>/tools folder
+# envar to get/set the < dccsi>/tools folder
 ENVAR_PATH_DCCSI_TOOLS = 'PATH_DCCSI_TOOLS'
 
-# enavar to get/set the < dccsi>/tools/IDE folder
+# envar to get/set the < dccsi>/tools/IDE folder
 ENVAR_PATH_DCCSI_TOOLS_IDE = 'PATH_DCCSI_TOOLS_IDE'
 
-# enavar to get/set the < dccsi>/tools/IDE/Wing folder
+# envar to get/set the < dccsi>/tools/IDE/Wing folder
 ENVAR_PATH_DCCSI_TOOLS_IDE_WING = 'PATH_DCCSI_TOOLS_IDE_WING'
 
-# envar to get/set bool for global DCCSI_GDEBUG behaviour
+# envar to get/set bool for global DCCSI_GDEBUG behavior
 ENVAR_DCCSI_GDEBUG = 'DCCSI_GDEBUG'
 
 # envar to get/set bool for developer mode (debugging)

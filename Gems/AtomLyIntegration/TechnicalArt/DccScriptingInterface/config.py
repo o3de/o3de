@@ -16,7 +16,7 @@
 This module handles core configuration of the dccsi
 -   It initializes and generates a dynamic, and synthetic, environment context,
     and settings.
--   ConfigCore class, inherets from DccScriptingInterface.azpy.config_class.ConfigClass (not yet)
+-   ConfigCore class, inherits from DccScriptingInterface.azpy.config_class.ConfigClass (not yet)
 -   This module uses dynaconf (a dynamic configuration and settings package)
 
 This config.py synthetic env can be overridden or extended with a local .env
@@ -28,7 +28,7 @@ Example, create such as file:
     across the dccsi modules which draw from this core config.py
     See: example.env.tmp (copy and rename to .env)
 
-    This file should not be commited
+    This file should not be committed
 
 The second way to locally override or persist settings, is to make changes in
 the file:
@@ -94,11 +94,11 @@ import DccScriptingInterface.azpy.config_utils
 from DccScriptingInterface.azpy.config_utils import attach_debugger
 
 if DCCSI_DEV_MODE:
-    # if dev mode, this will attemp to auto-attach the debugger
+    # if dev mode, this will attempt to auto-attach the debugger
     # at the earliest possible point in this module
     attach_debugger(debugger_type=DCCSI_GDEBUGGER)
 
-# we should be able to import dccsi pkg dependancies now
+# we should be able to import dccsi pkg dependencies now
 from dynaconf import Dynaconf
 # -------------------------------------------------------------------------
 
@@ -107,7 +107,7 @@ from dynaconf import Dynaconf
 # going to optimize config to speed things up
 
 # the fastest way to know the engine root is to ...
-# see if the engine is runnint (azlmbr.paths.engroot)
+# see if the engine is running (azlmbr.paths.engroot)
 # or check if dev set in env, both those things happen here
 from DccScriptingInterface import ENVAR_O3DE_DEV
 from DccScriptingInterface import O3DE_DEV
@@ -115,9 +115,6 @@ from DccScriptingInterface import O3DE_DEV
 
 # this call with search fallback will be deprecated
 #O3DE_DEV = DccScriptingInterface.azpy.config_utils.get_o3de_engine_root()
-
-
-
 # -------------------------------------------------------------------------
 
 
@@ -131,7 +128,6 @@ class CoreConfig(ConfigClass):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         _LOGGER.info(f'Initializing: {self.get_classname()}')
-
 # -------------------------------------------------------------------------
 
 
@@ -521,10 +517,10 @@ def init_o3de_core(engine_path=O3DE_DEV,
     # There are numerous ways to build, e.g. project-centric or engine-centric
 
     # when using the installer with pre-built engine (CMakeCache doesn't exist)
-    # conundrum, if not built yet this retrusn None and no fallback
+    # conundrum, if not built yet this returns None and no fallback
     # suggestion, we should default to a known good (installer bin)
     # that should work for majority of end users but maybe not devs
-    # need to trap error for devs ... egine needs to be built
+    # need to trap error for devs ... engine needs to be built
     try:
         # if this fails, can't find a build / bin path
         _PATH_O3DE_BUILD = DccScriptingInterface.azpy.config_utils.get_o3de_build_path(O3DE_DEV,
