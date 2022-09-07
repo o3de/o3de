@@ -625,6 +625,27 @@ bool ImGuiManager::OnInputTextEventFiltered(const AZStd::string& textUTF8)
     return io.WantTextInput && m_clientMenuBarState == DisplayState::Visible;;
 }
 
+void ImGuiManager::ToggleToImGuiVisibleState(DisplayState state)
+{
+    if (state != m_clientMenuBarState)
+    {
+        DisplayState initialState = m_clientMenuBarState;
+
+        while (m_clientMenuBarState != state)
+        {
+            ToggleThroughImGuiVisibleState();
+
+            // Prevent infinite loop if the Toggle function can't get to the desired state naturally
+            if (m_clientMenuBarState == initialState)
+            {
+                AZ_Warning("ImGuiManager", false, "SetClientMenuBarState failed to naturally enter the reguested state");
+                m_clientMenuBarState = state;
+                break;
+            }
+        }
+    }
+}
+
 void ImGuiManager::ToggleThroughImGuiVisibleState()
 {
     ImGui::ImGuiContextScope contextScope(m_imguiContext);

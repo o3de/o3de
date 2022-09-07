@@ -58,6 +58,7 @@ def storage_config(runtime_type, config_data):
         ACTIVE_KEY][RELATIVE_PATHS_KEY][PREVIOUS_TEST_RUN_DATA_FILE_KEY]
     args_from_config['historic_data_file'] = config_data[runtime_type][WORKSPACE_KEY][
         HISTORIC_KEY][RELATIVE_PATHS_KEY][HISTORIC_DATA_FILE_KEY]
+    args_from_config['temp_workspace'] = config_data[runtime_type][WORKSPACE_KEY][TEMP_KEY][ROOT_KEY]
     return args_from_config
 
 

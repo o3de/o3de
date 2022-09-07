@@ -17,6 +17,7 @@ from weakref import KeyedRef
 
 import ly_test_tools._internal.pytest_plugin
 import ly_test_tools.environment.file_system
+import ly_test_tools._internal.exceptions as exceptions
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +43,7 @@ def _find_engine_root(initial_path):
         else:  # explicit else avoids aberrant behavior from following filesystem links
             current_dir = os.path.abspath(os.path.join(current_dir, os.path.pardir))
 
-    raise OSError(f"Unable to find engine root directory. Verify root file '{root_file}' exists")
+    raise exceptions.LyTestToolsFrameworkException(f"Unable to find engine root directory. Verify root file '{root_file}' exists")
 
 
 def _find_project_json(engine_root, project):

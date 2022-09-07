@@ -613,8 +613,18 @@ namespace ImGui
                     ImGui::EndMenu();
                 }
 
+                if (ImGui::MenuItem("ImGui Demo"))
+                {
+                    m_showImGuiDemo = true;
+                }
+
                 // End LY Common Tools menu
                 ImGui::EndMenu();
+            }
+
+            if (m_showImGuiDemo)
+            {
+                ImGui::ShowDemoWindow(&m_showImGuiDemo);
             }
 
             const float labelSize = dpiAwareSizeFn(100.0f + viewportBorderPadding.m_right) + rightAlignedBorderOffset;

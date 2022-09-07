@@ -52,6 +52,8 @@ namespace ImGui
         ImGuiLYEntityOutliner m_entityOutliner;
         bool m_showDeltaTimeGraphs = false;
         ImGui::LYImGuiUtils::HistogramContainer m_deltaTimeHistogram;
+
+        bool m_showImGuiDemo = false;
     };
 }
 
