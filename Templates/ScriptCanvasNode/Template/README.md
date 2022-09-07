@@ -28,4 +28,4 @@ Configure & Generate your projects
 
 ### Step 3. 
 
-Build
+Build & Run
