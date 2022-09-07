@@ -40,6 +40,7 @@ namespace AzToolsFramework
 
     Q_SIGNALS:
         void valueChanged(AZ::u32 newValue);
+        void finishedEditing(AZ::u32 newValue);
 
     public Q_SLOTS:
         void setValue(AZ::u32 val);
@@ -51,9 +52,6 @@ namespace AzToolsFramework
 
         void UpdateValueText();
         AZ::u32 TextToValue();
-
-    protected:
-        void FocusChangedEdit(bool hasFocus);
         
     };
 
@@ -62,7 +60,6 @@ namespace AzToolsFramework
     {
     public:
         AZ::u32 GetHandlerName(void) const override { return AZ::Edit::UIHandlers::Crc; }
-        bool IsDefaultHandler() const override { return true; }
         QWidget* GetFirstInTabOrder(PropertyCRCCtrl* widget) override { return widget->GetFirstInTabOrder(); }
         QWidget* GetLastInTabOrder(PropertyCRCCtrl* widget) override { return widget->GetLastInTabOrder(); }
         void UpdateWidgetInternalTabbing(PropertyCRCCtrl* widget) override { widget->UpdateTabOrder(); }
@@ -76,6 +73,7 @@ namespace AzToolsFramework
         AZ_CLASS_ALLOCATOR(U32CRCHandler, AZ::SystemAllocator, 0);
 
         QWidget* CreateGUI(QWidget* pParent) override;
+        bool IsDefaultHandler() const override { return false; }
         void ConsumeAttribute(PropertyCRCCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override;
         void WriteGUIValuesIntoProperty(size_t index, PropertyCRCCtrl* GUI, property_t& instance, InstanceDataNode* node) override;
         bool ReadValuesIntoGUI(size_t index, PropertyCRCCtrl* GUI, const property_t& instance, InstanceDataNode* node) override;
@@ -89,6 +87,7 @@ namespace AzToolsFramework
         AZ_CLASS_ALLOCATOR(CRC32Handler, AZ::SystemAllocator, 0);
 
         QWidget* CreateGUI(QWidget* pParent) override;
+        bool IsDefaultHandler() const override { return true; }
         void ConsumeAttribute(PropertyCRCCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override;
         void WriteGUIValuesIntoProperty(size_t index, PropertyCRCCtrl* GUI, property_t& instance, InstanceDataNode* node) override;
         bool ReadValuesIntoGUI(size_t index, PropertyCRCCtrl* GUI, const property_t& instance, InstanceDataNode* node) override;

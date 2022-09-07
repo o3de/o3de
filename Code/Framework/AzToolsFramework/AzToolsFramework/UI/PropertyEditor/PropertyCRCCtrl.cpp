@@ -33,7 +33,7 @@ namespace AzToolsFramework
         m_lineEdit->setFixedHeight(PropertyQTConstant_DefaultHeight);
         m_lineEdit->setFocusPolicy(Qt::StrongFocus);
         m_lineEdit->setValidator(validator);
-        connect(m_lineEdit, SIGNAL(textChanged(QString)), this, SLOT(onLineEditChange(QString)));
+        connect(m_lineEdit, &QLineEdit::textChanged, this, &PropertyCRCCtrl::onLineEditChange);
 
         QHBoxLayout* pLayout = new QHBoxLayout(this);
         pLayout->setSpacing(4);
@@ -49,13 +49,19 @@ namespace AzToolsFramework
     {
         if (target == m_lineEdit)
         {
-            if (event->type() == QEvent::FocusIn)
-            {
-                FocusChangedEdit(true);
-            }
-            else if (event->type() == QEvent::FocusOut)
-            {
-                FocusChangedEdit(false);
+            switch(event->type()) {
+                case QEvent::FocusIn:
+                    m_lineEdit->selectAll();
+                    break;
+                case QEvent::FocusOut: 
+                {
+                    QSignalBlocker sb(m_lineEdit);
+                    UpdateValueText();
+                    Q_EMIT finishedEditing(m_currentValue);
+                    break;
+                }
+                default:
+                    break;
             }
         }
         return QWidget::eventFilter(target, event);
@@ -77,30 +83,14 @@ namespace AzToolsFramework
 
     void PropertyCRCCtrl::setValue(AZ::u32 value)
     {
-        m_lineEdit->blockSignals(true);
+        QSignalBlocker sb(m_lineEdit);
         m_currentValue = value;
         UpdateValueText();
-        m_lineEdit->blockSignals(false);
     }
 
     void PropertyCRCCtrl::UpdateValueText()
     {
-        QString textRepresentation = QString("0x%1").arg(m_currentValue, 8, 16, QChar('0'));
-        m_lineEdit->setText(textRepresentation);
-    }
-
-    void PropertyCRCCtrl::FocusChangedEdit(bool hasFocusNow)
-    {
-        if (hasFocusNow)
-        {
-            m_lineEdit->selectAll();
-        }
-        else
-        {
-            m_lineEdit->blockSignals(true);
-            UpdateValueText();
-            m_lineEdit->blockSignals(false);
-        }
+        m_lineEdit->setText(QString("0x%1").arg(m_currentValue, 8, 16, QChar('0')));
     }
 
     AZ::u32 PropertyCRCCtrl::value() const
@@ -112,13 +102,13 @@ namespace AzToolsFramework
     {
         // parse newText.
         QRegExp hexes("(0x)?([0-9a-fA-F]{1,8})", Qt::CaseInsensitive);
-        if ((hexes.exactMatch(newText) && hexes.captureCount() > 1))
+        if (hexes.exactMatch(newText) && hexes.captureCount() > 1)
         {
             QString actualCap = hexes.cap(2);
             // this will be a string like FF11BB
             bool ok = false;
             AZ::u32 newValue = actualCap.toUInt(&ok, 16);
-            if ((ok) && (m_currentValue != newValue))
+            if (ok && m_currentValue != newValue)
             {
                 m_currentValue = newValue;
                 Q_EMIT valueChanged(m_currentValue);
@@ -142,13 +132,20 @@ namespace AzToolsFramework
     {
         PropertyCRCCtrl* newCtrl = aznew PropertyCRCCtrl(pParent);
 
-        auto requestWriteCall = [newCtrl](AZ::u32)
-        {
-            EBUS_EVENT(PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
-            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, newCtrl);
-        };
-
-        QObject::connect(newCtrl, &PropertyCRCCtrl::valueChanged, this, requestWriteCall);
+        QObject::connect(
+            newCtrl,
+            &PropertyCRCCtrl::finishedEditing,
+            this,
+            [newCtrl](AZ::u32)
+            {
+                PropertyEditorGUIMessagesBus::Broadcast(
+                    [](PropertyEditorGUIMessages* editorGuiMessages, QWidget* editorGUI)
+                    {
+                        editorGuiMessages->RequestWrite(editorGUI);
+                        editorGuiMessages->OnEditingFinished(editorGUI);
+                    },
+                    newCtrl);
+            });
 
         return newCtrl;
     }
@@ -181,13 +178,20 @@ namespace AzToolsFramework
     {
         PropertyCRCCtrl* newCtrl = aznew PropertyCRCCtrl(pParent);
 
-        auto requestWriteCall = [newCtrl](AZ::u32)
-        {
-            EBUS_EVENT(PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
-            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, newCtrl);
-        };
-
-        QObject::connect(newCtrl, &PropertyCRCCtrl::valueChanged, this, requestWriteCall);
+        QObject::connect(
+            newCtrl,
+            &PropertyCRCCtrl::finishedEditing,
+            this,
+            [newCtrl](AZ::u32)
+            {
+                PropertyEditorGUIMessagesBus::Broadcast(
+                    [](PropertyEditorGUIMessages* editorGuiMessages, QWidget* editorGUI)
+                    {
+                        editorGuiMessages->RequestWrite(editorGUI);
+                        editorGuiMessages->OnEditingFinished(editorGUI);
+                    },
+                    newCtrl);
+            });
 
         return newCtrl;
     }
@@ -213,7 +217,6 @@ namespace AzToolsFramework
     {
         PropertyTypeRegistrationMessageBus::Broadcast(&PropertyTypeRegistrationMessages::RegisterPropertyType, aznew U32CRCHandler());
         PropertyTypeRegistrationMessageBus::Broadcast(&PropertyTypeRegistrationMessages::RegisterPropertyType, aznew CRC32Handler());
-        
     }
 }
 
