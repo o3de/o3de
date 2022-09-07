@@ -57,18 +57,13 @@ namespace PhysX
                 editContext->Class<EditorProxyCylinderShapeConfig>("EditorProxyCylinderShapeConfig", "Proxy structure to wrap cylinder data")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default,
-                        &EditorProxyCylinderShapeConfig::m_configuration,
-                        "Configuration",
-                        "PhysX cylinder collider configuration.")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyCylinderShapeConfig::m_configuration,
+                        "Configuration", "PhysX cylinder collider configuration.")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyCylinderShapeConfig::m_subdivisionCount,
                         "Subdivision", "Cylinder subdivision count.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyCylinderShapeConfig::m_height, "Height", "Cylinder height.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyCylinderShapeConfig::m_radius, "Radius", "Cylinder radius.")
-
                     ;
             }
         }
@@ -312,9 +307,6 @@ namespace PhysX
             break;
         case Physics::ShapeType::Capsule:
             m_capsule = static_cast<const Physics::CapsuleShapeConfiguration&>(shapeConfiguration);
-            break;
-        case Physics::ShapeType::Cylinder:
-            AZ_Warning("EditorProxyShapeConfig", false, "Cylinder shape configuration isn't implemented!");
             break;
         case Physics::ShapeType::PhysicsAsset:
             m_physicsAsset.m_configuration = static_cast<const Physics::PhysicsAssetShapeConfiguration&>(shapeConfiguration);
