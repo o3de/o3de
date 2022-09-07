@@ -384,9 +384,9 @@ def register_external_subdirectory(json_data: dict,
     # If a gem path, project path or engine path has not been supplied auto detect which manifest to register the input path with
     if not gem_path:
         gem_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('gem.json'), external_subdir_path)
-    if not project_path:
+    elif not project_path:
         project_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('project.json'), external_subdir_path)
-    if not engine_path:
+    elif not engine_path:
         engine_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('engine.json'), external_subdir_path)
     return register_o3de_object_path(json_data, external_subdir_path, 'external_subdirectories', '', None, remove,
                                      pathlib.Path(engine_path).resolve() if engine_path else None,
