@@ -1,0 +1,54 @@
+#
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
+#
+
+import binascii
+import fnmatch
+import json
+import re
+from typing import Type, List
+
+from commit_validation.commit_validation import Commit, CommitValidator, SOURCE_FILE_EXTENSIONS, EXCLUDED_VALIDATION_PATTERNS, VERBOSE
+
+RCA_PATTERN_PATH = '*/scripts/build/build_failure_rca/rca_patterns/*'
+
+class BuildFailureRCAValidator(CommitValidator):
+    """A file-level validator that makes sure a file does not contain an invalid CRC"""
+
+    def run(self, commit: Commit, errors: List[str]) -> bool:
+        for file_name in commit.get_files():
+            for pattern in EXCLUDED_VALIDATION_PATTERNS:
+                if fnmatch.fnmatch(file_name, pattern):
+                    if VERBOSE: print(f'{file_name}::{self.__class__.__name__} SKIPPED - Validation pattern excluded on path.')
+                    break
+            else:
+                if fnmatch.fnmatch(file_name, RCA_PATTERN_PATH):
+                    if VERBOSE: print(f'{file_name}::{self.__class__.__name__} SKIPPED - Validation pattern excluded on path.')
+                    break
+                
+                with open(file_name, 'r', encoding='utf8') as fh:
+                    data = json.load(fh)
+                    for item in data['indications']:
+                        for test_case in item['log_testcases']:
+                            for pattern in item['log_patterns']:
+                                if item['single_line']:
+                                    regex = re.compile(pattern)
+                                else:
+                                    regex = re.compile(pattern, re.DOTALL)
+                                if regex.search(test_case):
+                                    break
+                            else:
+                                error_message = str(f'{file_name}::{self.__class__.__name__} FAILED - \n'
+                                                f'    {item["name"]}: Unmatched test case ({test_case})')
+                                if VERBOSE: print(error_message)
+                                errors.append(error_message)
+        return (not errors)
+
+
+def get_validator() -> Type[BuildFailureRCAValidator]:
+    """Returns the validator class for this module"""
+    return BuildFailureRCAValidator
