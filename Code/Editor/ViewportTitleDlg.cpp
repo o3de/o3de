@@ -619,7 +619,7 @@ void CViewportTitleDlg::AddFOVMenus(QMenu* menu, std::function<void(float)> call
                 break;
             }
 
-            float fov = gSettings.viewports.fDefaultFov;
+            float fov = SandboxEditor::CameraDefaultFovRadians();
             bool ok;
             float f = customPreset.toFloat(&ok);
             if (ok)

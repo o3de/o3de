@@ -116,8 +116,6 @@ struct SViewportsSettings
     bool bAlwaysShowRadiuses;
     //! True if 2D viewports will be synchronized with same view and origin.
     bool bSync2DViews;
-    //! Camera FOV for perspective View.
-    float fDefaultFov;
     //! Camera Aspect Ratio for perspective View.
     float fDefaultAspectRatio;
     //! Show safe frame.

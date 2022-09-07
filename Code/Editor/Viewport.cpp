@@ -32,6 +32,7 @@
 #include "PluginManager.h"
 #include "GameEngine.h"
 #include "Settings.h"
+#include <Editor/EditorViewportSettings.h>
 
 #ifdef LoadCursor
 #undef LoadCursor
@@ -128,7 +129,7 @@ void QtViewport::dragLeaveEvent(QDragLeaveEvent* event)
 //////////////////////////////////////////////////////////////////////////
 float CViewport::GetFOV() const
 {
-    return gSettings.viewports.fDefaultFov;
+    return SandboxEditor::CameraDefaultFovRadians();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1234,7 +1235,7 @@ void QtViewport::OnRawInput([[maybe_unused]] UINT wParam, HRAWINPUT lParam)
 //////////////////////////////////////////////////////////////////////////
 float QtViewport::GetFOV() const
 {
-    return gSettings.viewports.fDefaultFov;
+    return SandboxEditor::CameraDefaultFovRadians();
 }
 
 //////////////////////////////////////////////////////////////////////////

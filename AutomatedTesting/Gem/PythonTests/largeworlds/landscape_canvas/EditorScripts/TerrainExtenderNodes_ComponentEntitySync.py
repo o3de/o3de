@@ -89,10 +89,12 @@ def TerrainExtenderNodes_ComponentEntitySync():
     # The heightfield colliders are a special case where they add each-other to make
     # the workflow easier since they depend on each-other
     extenders = {
+        'TerrainMacroMaterialNode': ['Terrain Macro Material'],
         'PhysXHeightfieldColliderNode': ['PhysX Heightfield Collider', 'Terrain Physics Heightfield Collider'],
         'TerrainPhysicsHeightfieldColliderNode': ['Terrain Physics Heightfield Collider', 'PhysX Heightfield Collider'],
         'TerrainSurfaceGradientListNode': ['Terrain Surface Gradient List'],
         'TerrainHeightGradientListNode': ['Terrain Height Gradient List'],
+        'TerrainSurfaceMaterialsListNode': ['Terrain Surface Materials List'],
     }
 
     # Retrieve a mapping of the TypeIds for all the components
