@@ -6,18 +6,17 @@
 #
 #
 
-import binascii
 import fnmatch
 import json
 import re
 from typing import Type, List
 
-from commit_validation.commit_validation import Commit, CommitValidator, SOURCE_FILE_EXTENSIONS, EXCLUDED_VALIDATION_PATTERNS, VERBOSE
+from commit_validation.commit_validation import Commit, CommitValidator, EXCLUDED_VALIDATION_PATTERNS, VERBOSE
 
 RCA_PATTERN_PATH = '*/scripts/build/build_failure_rca/rca_patterns/*'
 
 class BuildFailureRCAValidator(CommitValidator):
-    """A file-level validator that makes sure a file does not contain an invalid CRC"""
+    """A file-level validator that makes sure build failure RCA patterns can catch all the test cases"""
 
     def run(self, commit: Commit, errors: List[str]) -> bool:
         for file_name in commit.get_files():
