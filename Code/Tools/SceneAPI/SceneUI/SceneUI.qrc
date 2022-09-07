@@ -18,8 +18,6 @@
       <file alias="AssertIcon.png">../../../../Assets/Editor/Icons/Assets/Lua.png</file>
       <file alias="ExpandIcon.png">../../../../Assets/Editor/Icons/PropertyEditor/group_closed.png</file>
       <file alias="CollapseIcon.png">../../../../Assets/Editor/Icons/PropertyEditor/group_open.png</file>
-      <file alias="CloseIcon.png">../../../../Assets/Editor/Icons/PropertyEditor/tool_cancel.png</file>
-      <file alias="CloseIconDisable.png">../../../../Assets/Editor/Icons/PropertyEditor/tool_cancel_highlight.png</file>
-      <file alias="CloseIconActive.png">../../../../Assets/Editor/Icons/PropertyEditor/tool_cancel_hover.png</file>
+      <file alias="CloseIcon.svg">../../../Framework/AzQtComponents/AzQtComponents/Components/img/close.svg</file>
     </qresource>
 </RCC>
