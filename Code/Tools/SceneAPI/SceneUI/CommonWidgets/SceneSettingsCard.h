@@ -119,6 +119,7 @@ private:
     void CopyTraceContext(AzQtComponents::StyledDetailsTableModel::TableEntry& entry) const;
     QString GetTimeNowAsString();
     void ShowLogContextMenu(const QPoint& pos);
+    void AddLogTableEntry(AzQtComponents::StyledDetailsTableModel::TableEntry& entry);
 
     QVector<QVector<QPair<QString, QString>>> m_additionalLogDetails;
     

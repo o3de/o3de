@@ -85,6 +85,7 @@ SceneSettingsCard::SceneSettingsCard(AZ::Uuid traceTag, QString fileTracked, Lay
     m_reportModel->AddColumn("Message");
     m_reportModel->AddColumnAlias("message", "Message");
     m_reportView = new AzQtComponents::TableView(this);
+    m_reportView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_reportView->setModel(m_reportModel);
 
     if (platformColumn > 0)
@@ -104,6 +105,7 @@ SceneSettingsCard::SceneSettingsCard(AZ::Uuid traceTag, QString fileTracked, Lay
     
     m_reportView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(m_reportView, &AzQtComponents::TableView::customContextMenuRequested, this, &SceneSettingsCard::ShowLogContextMenu);
+    
 }
 
 SceneSettingsCard::~SceneSettingsCard()
@@ -170,8 +172,7 @@ void SceneSettingsCard::AddLogEntry(const AzToolsFramework::Logging::LogEntry& l
         UpdateCompletionState(CompletionState::Warning);
     }
     reportEntry.Add("Time", GetTimeNowAsString());
-
-    m_reportModel->AddEntry(reportEntry);
+    AddLogTableEntry(reportEntry);
 }
 
 void SceneSettingsCard::OnProcessingComplete()
@@ -180,7 +181,7 @@ void SceneSettingsCard::OnProcessingComplete()
     entry.Add("Message", "Asset processing completed.");
     entry.Add("Status", AzQtComponents::StyledDetailsTableModel::StatusSuccess);
     entry.Add("Time", GetTimeNowAsString());
-    m_reportModel->AddEntry(entry);
+    AddLogTableEntry(entry);
     
     SetState(SceneSettingsCard::State::Done);
 }
@@ -191,7 +192,7 @@ void SceneSettingsCard::OnSetStatusMessage(const AZStd::string& message)
     entry.Add("Message", message.c_str());
     entry.Add("Status", AzQtComponents::StyledDetailsTableModel::StatusSuccess);
     entry.Add("Time", GetTimeNowAsString());
-    m_reportModel->AddEntry(entry);
+    AddLogTableEntry(entry);
 }
 
 
@@ -223,8 +224,7 @@ bool SceneSettingsCard::OnPrintf(const char* window, const char* message)
     }
     entry.Add("Message", message);
     entry.Add("Time", GetTimeNowAsString());
-    CopyTraceContext(entry);
-    m_reportModel->AddEntry(entry);
+    AddLogTableEntry(entry);
     return false;
 }
 
@@ -239,8 +239,7 @@ bool SceneSettingsCard::OnError(const char* window, const char* message)
     entry.Add("Message", message);
     entry.Add("Status", AzQtComponents::StyledDetailsTableModel::StatusError);
     entry.Add("Time", GetTimeNowAsString());
-    CopyTraceContext(entry);
-    m_reportModel->AddEntry(entry);
+    AddLogTableEntry(entry);
     
     UpdateCompletionState(CompletionState::Error);
     return false;
@@ -257,9 +256,7 @@ bool SceneSettingsCard::OnWarning(const char* window, const char* message)
     entry.Add("Message", message);
     entry.Add("Status", AzQtComponents::StyledDetailsTableModel::StatusWarning);
     entry.Add("Time", GetTimeNowAsString());
-    CopyTraceContext(entry);
-    m_reportModel->AddEntry(entry);
-    
+    AddLogTableEntry(entry);    
     UpdateCompletionState(CompletionState::Warning);
     return false;
 }
@@ -274,8 +271,7 @@ bool SceneSettingsCard::OnAssert(const char* message)
     entry.Add("Message", message);
     entry.Add("Status", AzQtComponents::StyledDetailsTableModel::StatusError);
     entry.Add("Time", GetTimeNowAsString());
-    CopyTraceContext(entry);
-    m_reportModel->AddEntry(entry);
+    AddLogTableEntry(entry);
     UpdateCompletionState(CompletionState::Error);
     return false;
 }
@@ -384,6 +380,19 @@ void SceneSettingsCard::CopyTraceContext(AzQtComponents::StyledDetailsTableModel
                 value.clear();
             }
         }
+    }
+}
+
+void SceneSettingsCard::AddLogTableEntry(AzQtComponents::StyledDetailsTableModel::TableEntry& entry)
+{
+    CopyTraceContext(entry);
+    m_reportModel->AddEntry(entry);
+    // Set the height of the view, so the cards expand more vertically.
+    // Clamp that max height at a point so it doesn't try to pull too much height from containing window.
+    int rowCount = m_reportModel->rowCount();
+    if(rowCount < 10)
+    {
+        m_reportView->setMinimumHeight(m_reportView->sizeHintForRow(0) * (rowCount + 1));
     }
 }
 
