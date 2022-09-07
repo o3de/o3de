@@ -3,7 +3,7 @@
     "restricted": "o3de",
     "FileVersion": 1,
     "O3DEVersion": "0.1.0.0",
-    "O3DECopyrightYear": 2021,
+    "O3DECopyrightYear": 2022,
     "O3DEBuildNumber": 0,
     "external_subdirectories": [
         "Gems/Achievements",
