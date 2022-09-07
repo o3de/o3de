@@ -77,7 +77,7 @@ namespace AZ
 
             // RPI::ViewProviderBus::Handler overrides...
             RPI::ViewPtr GetView() const override;
-            RPI::ViewPtr GetStereoscopicView(uint32_t viewIndex) const override;
+            RPI::ViewPtr GetStereoscopicView(RPI::ViewType viewType) const override;
 
         private:
             // AZ::Component overrides...
@@ -119,20 +119,14 @@ namespace AZ
             void UpdateAspectRatio();
             void UpdateViewToClipMatrix();
 
-            //! Enum to describe view type
-            enum class ViewType : uint32_t
-            {
-                Default = 0,
-                XrLeft,
-                XrRight,
-                Count
-            };
+            // A vector to hold all the camera views. Stereoscopic and non-stereoscopic.
+            // This will allow us to render to PC window as well as a XR device at the same time 
             AZStd::vector<RPI::ViewPtr> m_cameraViews;
 
             // Stereoscopic view related data
             RPI::XRRenderingInterface* m_xrSystem = nullptr;
             AZ::u32 m_numXrViews = 0;
-            AZStd::fixed_vector<AZ::Quaternion, AZ::RPI::XRNumControllers> m_stereoscopicViewQuats;
+            AZStd::fixed_vector<AZ::Quaternion, AZ::RPI::XRMaxNumViews> m_stereoscopicViewQuats;
             // Boolean used to indicate when the stereoscopic view was updated
             bool m_stereoscopicViewUpdate = false;
 

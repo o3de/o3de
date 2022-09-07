@@ -265,10 +265,10 @@ namespace AZ
             }
         }
 
-        void RenderPipeline::SetDefaultStereoscopicViewFromEntity(EntityId entityId, uint32_t viewIndex)
+        void RenderPipeline::SetDefaultStereoscopicViewFromEntity(EntityId entityId, RPI::ViewType viewType)
         {
             ViewPtr cameraView;
-            ViewProviderBus::EventResult(cameraView, entityId, &ViewProvider::GetStereoscopicView, viewIndex);
+            ViewProviderBus::EventResult(cameraView, entityId, &ViewProvider::GetStereoscopicView, viewType);
             if (cameraView)
             {
                 SetDefaultView(cameraView);

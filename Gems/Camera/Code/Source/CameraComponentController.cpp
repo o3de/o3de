@@ -514,7 +514,7 @@ namespace Camera
         return m_atomCamera;
     }
 
-    AZ::RPI::ViewPtr CameraComponentController::GetStereoscopicView([[maybe_unused]] uint32_t viewIndex) const
+    AZ::RPI::ViewPtr CameraComponentController::GetStereoscopicView([[maybe_unused]] AZ::RPI::ViewType viewType) const
     {
         //todo:: Needs implementation
         AZ_Assert(false, "Not implemented");

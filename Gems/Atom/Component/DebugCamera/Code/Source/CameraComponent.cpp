@@ -74,7 +74,7 @@ namespace AZ
                 AZ::Name(AZStd::string::format("Camera View (entity: \"%s\")", GetEntity()->GetName().c_str())) :
                 AZ::Name("Camera view (unknown entity)");
             
-            uint32_t defaultViewIndex = static_cast<uint32_t>(ViewType::Default);
+            uint32_t defaultViewIndex = static_cast<uint32_t>(RPI::ViewType::Default);
             if (defaultViewIndex < m_cameraViews.size())
             {
                 m_cameraViews[defaultViewIndex] = RPI::View::CreateView(viewName, RPI::View::UsageCamera);
@@ -89,10 +89,11 @@ namespace AZ
             if (m_xrSystem)
             {
                 m_numXrViews = m_xrSystem->GetNumViews();
-                AZ_Assert(m_numXrViews <= AZ::RPI::XRNumControllers, "Atom only supports two XR views");
+                AZ_Assert(m_numXrViews <= AZ::RPI::XRMaxNumViews, "Atom only supports two XR views");
                 for (AZ::u32 i = 0; i < m_numXrViews; i++)
                 {
-                    uint32_t xrViewIndex = i == 0 ? static_cast<uint32_t>(ViewType::XrLeft) : static_cast<uint32_t>(ViewType::XrRight);
+                    uint32_t xrViewIndex =
+                        i == 0 ? static_cast<uint32_t>(RPI::ViewType::XrLeft) : static_cast<uint32_t>(RPI::ViewType::XrRight);
                     if (xrViewIndex < m_cameraViews.size())
                     {
                         m_cameraViews[xrViewIndex] = RPI::View::CreateView(viewName, RPI::View::UsageCamera | RPI::View::UsageXR);
@@ -104,7 +105,7 @@ namespace AZ
                 }
             }
 
-            for (uint16_t i = 0; i < AZ::RPI::XRNumControllers; i++)
+            for (uint16_t i = 0; i < AZ::RPI::XRMaxNumViews; i++)
             {
                 m_stereoscopicViewQuats.insert(m_stereoscopicViewQuats.begin() + i, AZ::Quaternion::CreateIdentity());
             }
@@ -137,7 +138,7 @@ namespace AZ
 
             if (m_auxGeomFeatureProcessor)
             {
-                m_auxGeomFeatureProcessor->ReleaseDrawQueueForView(m_cameraViews[static_cast<uint32_t>(ViewType::Default)].get());
+                m_auxGeomFeatureProcessor->ReleaseDrawQueueForView(m_cameraViews[static_cast<uint32_t>(RPI::ViewType::Default)].get());
             }
             
             for (auto& cameraView : m_cameraViews)
@@ -150,13 +151,13 @@ namespace AZ
         RPI::ViewPtr CameraComponent::GetView() const
         {
             AZ_Assert(aznumeric_cast<uint32_t>(m_cameraViews.size()) > 0, "No views available");
-            return m_cameraViews[static_cast<uint32_t>(ViewType::Default)];
+            return m_cameraViews[static_cast<uint32_t>(RPI::ViewType::Default)];
         }
 
-        RPI::ViewPtr CameraComponent::GetStereoscopicView(uint32_t viewIndex) const
+        RPI::ViewPtr CameraComponent::GetStereoscopicView(RPI::ViewType viewType) const
         {
-            uint32_t xrViewIndex = viewIndex == 0 ? static_cast<uint32_t>(ViewType::XrLeft) : static_cast<uint32_t>(ViewType::XrRight);
-            AZ_Assert(xrViewIndex < aznumeric_cast<uint32_t>(m_cameraViews.size()), "View with index %i does not exist", viewIndex);    
+            uint32_t xrViewIndex = static_cast<uint32_t>(viewType);
+            AZ_Assert(xrViewIndex < aznumeric_cast<uint32_t>(m_cameraViews.size()), "View with index %i does not exist", xrViewIndex);    
             return m_cameraViews[xrViewIndex];
         }
 
@@ -197,7 +198,7 @@ namespace AZ
             //Apply transform to stereoscopic views
             for (AZ::u32 i = 0; i < m_numXrViews; i++)
             {
-                uint32_t xrViewIndex = i == 0 ? static_cast<uint32_t>(ViewType::XrLeft) : static_cast<uint32_t>(ViewType::XrRight);
+                uint32_t xrViewIndex = i == 0 ? static_cast<uint32_t>(RPI::ViewType::XrLeft) : static_cast<uint32_t>(RPI::ViewType::XrRight);
 
                 if (m_stereoscopicViewUpdate)
                 {
@@ -218,12 +219,12 @@ namespace AZ
             {
                 //Handle the case when we have a PC window showing the view of the left eye
                 AZ::Matrix3x4 worldTransform = AZ::Matrix3x4::CreateFromQuaternionAndTranslation(
-                    m_stereoscopicViewQuats[static_cast<uint32_t>(ViewType::XrLeft)], world.GetTranslation());
-                m_cameraViews[static_cast<uint32_t>(ViewType::Default)]->SetCameraTransform(worldTransform);
+                    m_stereoscopicViewQuats[static_cast<uint32_t>(RPI::ViewType::XrLeft)], world.GetTranslation());
+                m_cameraViews[static_cast<uint32_t>(RPI::ViewType::Default)]->SetCameraTransform(worldTransform);
             }
             else
             {
-                m_cameraViews[static_cast<uint32_t>(ViewType::Default)]->SetCameraTransform(AZ::Matrix3x4::CreateFromTransform(world));
+                m_cameraViews[static_cast<uint32_t>(RPI::ViewType::Default)]->SetCameraTransform(AZ::Matrix3x4::CreateFromTransform(world));
             }
             m_stereoscopicViewUpdate = false;
 
@@ -272,7 +273,7 @@ namespace AZ
 
         void CameraComponent::SetXRViewQuaternion(const AZ::Quaternion& viewQuat, uint32_t xrViewIndex)
         {
-            AZ_Assert(xrViewIndex < AZ::RPI::XRNumControllers, "Xr view index is out of range.");
+            AZ_Assert(xrViewIndex < AZ::RPI::XRMaxNumViews, "Xr view index is out of range.");
             m_stereoscopicViewQuats[xrViewIndex] = viewQuat;
             m_stereoscopicViewUpdate = true;
         }
@@ -398,7 +399,7 @@ namespace AZ
                 m_componentConfig.m_depthNear,
                 m_componentConfig.m_depthFar,
                 reverseDepth);
-            m_cameraViews[static_cast<uint32_t>(ViewType::Default)]->SetViewToClipMatrix(viewToClipMatrix);
+            m_cameraViews[static_cast<uint32_t>(RPI::ViewType::Default)]->SetViewToClipMatrix(viewToClipMatrix);
 
             //Update stereoscopic projection matrix
             if (m_xrSystem)
@@ -406,7 +407,7 @@ namespace AZ
                 AZ::Matrix4x4 projection = AZ::Matrix4x4::CreateIdentity();
                 for (AZ::u32 i = 0; i < m_numXrViews; i++)
                 {
-                    uint32_t xrViewIndex = i == 0 ? static_cast<uint32_t>(ViewType::XrLeft) : static_cast<uint32_t>(ViewType::XrRight);
+                    uint32_t xrViewIndex = i == 0 ? static_cast<uint32_t>(RPI::ViewType::XrLeft) : static_cast<uint32_t>(RPI::ViewType::XrRight);
                     AZ::RPI::FovData fovData;
                     AZ::RPI::PoseData poseData;
                     [[maybe_unused]] AZ::RHI::ResultCode resultCode = m_xrSystem->GetViewFov(i, fovData);

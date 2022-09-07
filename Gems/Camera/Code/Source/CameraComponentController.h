@@ -126,7 +126,7 @@ namespace Camera
 
         // AZ::RPI::ViewProviderBus::Handler interface
         AZ::RPI::ViewPtr GetView() const override;
-        AZ::RPI::ViewPtr GetStereoscopicView(uint32_t viewIndex) const override;
+        AZ::RPI::ViewPtr GetStereoscopicView(AZ::RPI::ViewType viewType) const override;
 
     private:
         AZ_DISABLE_COPY(CameraComponentController);

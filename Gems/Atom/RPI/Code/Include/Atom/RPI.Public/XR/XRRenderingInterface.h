@@ -20,7 +20,8 @@ namespace AZ::RHI
 
 namespace AZ::RPI
 {
-    static const int XRNumControllers = 2;
+    static const int XRMaxNumControllers = 2;
+    static const int XRMaxNumViews = 2;
 
     //! XR View specific Fov data (in radians).
     struct FovData
