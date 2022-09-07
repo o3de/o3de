@@ -60,11 +60,25 @@ namespace ShaderManagementConsole
         if (msgBox.clickedButton() == projectBtn)
         {
             AZ::IO::FixedMaxPath projectPath = AZ::Utils::GetProjectPath();
-            AZStd::string shaderName, shaderPath;
-            AzFramework::StringFunc::Path::Split(shaderFullPath.c_str(), nullptr, &shaderPath, &shaderName);
-            AZStd::string relativePath = shaderPath.substr(shaderPath.find("Assets"), shaderPath.length());
-            AzFramework::StringFunc::Path::StripComponent(relativePath);
-            result = AZStd::string::format("%s\\ShaderVariants\\%s\\%s.shadervariantlist", projectPath.c_str(), relativePath.c_str(), shaderName.c_str());
+            AZStd::string relativePath, rootFolder;
+            bool pathFound;
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                pathFound,
+                &AzToolsFramework::AssetSystemRequestBus::Events::GenerateRelativeSourcePath,
+                shaderFullPath,
+                relativePath,
+                rootFolder);
+
+            if (pathFound)
+            {
+                AzFramework::StringFunc::Path::ReplaceExtension(relativePath, "shadervariantlist");
+                result = AZStd::string::format("%s\\ShaderVariants\\%s", projectPath.c_str(), relativePath.c_str());
+                AzFramework::StringFunc::Path::Normalize(result);
+            }
+            else
+            {
+                AZ_Error("ShaderManagementConsoleWindow", false, "Can not find a relative path from the shader: '%s'.", shaderFullPath.c_str());
+            }
         }
         else if(msgBox.clickedButton() == engineBtn)
         {
