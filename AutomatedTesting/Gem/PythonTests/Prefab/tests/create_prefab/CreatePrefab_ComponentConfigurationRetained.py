@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 
-def CreatePrefab_WithComponents():
+def CreatePrefab_ComponentConfigurationRetained():
     """
     Test description:
     - Creates an entity with components set to specific values.
@@ -57,4 +57,4 @@ def CreatePrefab_WithComponents():
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
-    Report.start_test(CreatePrefab_WithComponents)
+    Report.start_test(CreatePrefab_ComponentConfigurationRetained)

@@ -74,6 +74,3 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
 
     class test_PrefabNotifications_RootPrefabLoadedNotificationsReceived(EditorSharedTest):
         from .tests.prefab_notifications import PrefabNotifications_RootPrefabLoadedNotificationsReceived as test_module
-
-    class test_CreatePrefab_WithComponents(EditorSharedTest):
-        from .tests.create_prefab import CreatePrefab_WithComponents as test_module
