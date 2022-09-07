@@ -317,13 +317,13 @@ void SceneSettingsCard::SetState(State newState)
             {
             case CompletionState::Error:
             case CompletionState::Failure:
-                m_settingsHeader->setIcon(QIcon(":/stylesheet/img/table_error.png"));
+                m_settingsHeader->setIcon(QIcon(":/SceneUI/Common/ErrorIcon.svg"));
                 break;
             case CompletionState::Warning:
-                m_settingsHeader->setIcon(QIcon(":/stylesheet/img/table_warning.png"));
+                m_settingsHeader->setIcon(QIcon(":/SceneUI/Common/WarningIcon.svg"));
                 break;
             default:
-                m_settingsHeader->setIcon(QIcon(":/stylesheet/img/table_success.png"));
+                m_settingsHeader->setIcon(QIcon(":/SceneUI/Common/SuccessIcon.svg"));
                 break;
             }
             AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
