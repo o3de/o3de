@@ -246,7 +246,7 @@ class ScreenshotHelper:
         frameCaptureId = azlmbr.atom.FrameCaptureRequestBus(azlmbr.bus.Broadcast, "CaptureScreenshot", filename)
         if frameCaptureId != -1:
             self.handler = azlmbr.atom.FrameCaptureNotificationBusHandler()
-            self.handler.connect()
+            self.handler.connect(frameCaptureId)
             self.handler.add_callback("OnCaptureFinished", self.on_screenshot_captured)
             self.wait_until_screenshot()
             print("Screenshot taken.")
