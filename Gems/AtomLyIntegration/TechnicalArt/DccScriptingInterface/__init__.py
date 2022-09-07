@@ -29,7 +29,7 @@ DCCSI_INFO = {
     "doc_url": DCCSI_DOCS_URL
 }
 import timeit
-_MODULE_START = timeit.default_timer()  # start tracking
+__MODULE_START = timeit.default_timer()  # start tracking
 # -------------------------------------------------------------------------
 # standard imports
 import os
@@ -103,7 +103,7 @@ def add_site_dir(site_dir):
     _prev_sys_paths = pathify(list(sys.path)) # copy
 
     # if passing a Path object cast to string value
-    site.addsitedir(site_dir.as_posix())
+    site.addsitedir(str(site_dir))
 
     # new entries have precedence, front of sys.path
     for p in pathify(list(sys.path)):
@@ -130,13 +130,13 @@ ENVAR_PATH_DCCSIG = 'PATH_DCCSIG'
 PATH_DCCSIG = _MODULE_PATH.parents[0].resolve()
 
 # this allows the dccsi gem location to be overridden in the external env
-PATH_DCCSIG = Path(os.getenv(ENVAR_PATH_DCCSIG,
-                              PATH_DCCSIG.as_posix()))
+PATH_DCCSIG = Path(os.getenv(ENVAR_PATH_DCCSIG, str(PATH_DCCSIG)))
+
 # validate (if envar is bad)
 try:
     PATH_DCCSIG.resolve(strict=True)
     add_site_dir(PATH_DCCSIG)
-    _LOGGER.info(f'{ENVAR_PATH_DCCSIG} is: {PATH_DCCSIG.as_posix()}')
+    _LOGGER.debug(f'{ENVAR_PATH_DCCSIG} is: {PATH_DCCSIG.as_posix()}')
 except NotADirectoryError as e:
     # this should not happen, unless envar override could not resolve
     _LOGGER.warning(f'{ENVAR_PATH_DCCSIG} failed: {PATH_DCCSIG.as_posix()}')
@@ -162,13 +162,13 @@ PATH_DCCSI_PYTHON_LIB = Path(STR_DCCSI_PYTHON_LIB)
 
 # allow location to be set/overriden from env
 PATH_DCCSI_PYTHON_LIB = Path(os.getenv(ENVAR_PATH_DCCSI_PYTHON_LIB,
-                                       PATH_DCCSI_PYTHON_LIB.as_posix()))
+                                       str(PATH_DCCSI_PYTHON_LIB)))
 
 # validate, because we checked envar
 try:
     PATH_DCCSI_PYTHON_LIB.resolve(strict=True)
     add_site_dir(PATH_DCCSI_PYTHON_LIB)
-    _LOGGER.info(f'{ENVAR_PATH_DCCSI_PYTHON_LIB} is: {PATH_DCCSI_PYTHON_LIB.as_posix()}')
+    _LOGGER.debug(f'{ENVAR_PATH_DCCSI_PYTHON_LIB} is: {PATH_DCCSI_PYTHON_LIB.as_posix()}')
 except NotADirectoryError as e:
     _LOGGER.warning(f'{ENVAR_PATH_DCCSI_PYTHON_LIB} does not exist:' +
                     f'{PATH_DCCSI_PYTHON_LIB.as_Posix()}')
@@ -186,12 +186,54 @@ _LOGGER.debug(STR_CROSSBAR)
 
 
 # -------------------------------------------------------------------------
+# a developer file for setting envars and overrides
+PATH_ENV_DEV = Path(PATH_DCCSIG, 'Tools', 'Dev', 'Windows', 'Env_Dev.bat')
+
+# a local settings file to overrides envars in config.py
+DCCSI_SETTINGS_LOCAL_FILENAME = 'settings.local.json'
+PATH_DCCSI_SETTINGS_LOCAL = Path.joinpath(PATH_DCCSIG,
+                                          DCCSI_SETTINGS_LOCAL_FILENAME)
+
+# the o3de manifest data
+TAG_USER_O3DE = '.o3de'
+SLUG_MANIFEST_FILENAME = 'o3de_manifest.json'
+USER_HOME = Path.home()
+
+_user_home_parts = os.path.split(USER_HOME)
+
+if str(_user_home_parts[1].lower()) == 'documents':
+    USER_HOME = _user_home_parts[0]
+    _LOGGER.debug(f'user home CORRECTED: {USER_HOME}')
+
+O3DE_MANIFEST_PATH = USER_HOME.joinpath(f'{TAG_USER_O3DE}',
+                                        SLUG_MANIFEST_FILENAME)
+
+# {user_home}\.o3de\registry\bootstrap.setreg
+SLUG_BOOTSTRAP_FILENAME = 'bootstrap.setreg'
+O3DE_BOOTSTRAP_PATH = Path(USER_HOME,
+                      TAG_USER_O3DE,
+                      'Registry',
+                      SLUG_BOOTSTRAP_FILENAME)
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
 # paths we can retrieve easily from o3de
 O3DE_LOG_FOLDER = None # empty containers
 O3DE_CACHE = None
+
+ENVAR_PATH_O3DE_PROJECT = 'PATH_O3DE_PROJECT' # project path
+ENVAR_O3DE_PROJECT = 'O3DE_PROJECT' # project name
 PATH_O3DE_PROJECT = None
+
+ENVAR_O3DE_DEV = 'O3DE_DEV'
 O3DE_DEV = None
+
+ENVAR_PATH_O3DE_BIN = 'PATH_O3DE_BIN'
 PATH_O3DE_BIN = None
+
+# envar for the 3rdParty
+ENVAR_PATH_O3DE_3RDPARTY = 'PATH_O3DE_3RDPARTY'
 
 try:
     import azlmbr.paths
@@ -224,33 +266,62 @@ except ImportError as e:
 
 
 # -------------------------------------------------------------------------
-# a developer file for setting envars and overrides
-PATH_ENV_DEV = Path(PATH_DCCSIG, 'Tools', 'Dev', 'Windows', 'Env_Dev.bat')
+# next early fallback, check if dev set in settings.local.json
+try:
+    # the manifest doesn't exist until you run o3de.exe for the first time
+    PATH_DCCSI_SETTINGS_LOCAL = PATH_DCCSI_SETTINGS_LOCAL.resolve(strict=True)
+except FileExistsError as e:
+    _LOGGER.warning(f'O3DE DCCsi settings does not exist: {PATH_DCCSI_SETTINGS_LOCAL}')
+    PATH_DCCSI_SETTINGS_LOCAL = None
 
-# a local settings file to overrides envars in config.py
-DCCSI_SETTINGS_LOCAL_FILENAME = 'settings.local.json'
-PATH_DCCSI_SETTINGS_LOCAL = Path(PATH_DCCSIG, DCCSI_SETTINGS_LOCAL_FILENAME)
+DCCSI_SETTINGS_DATA = None
+if PATH_DCCSI_SETTINGS_LOCAL:
+    try:
+        with open(PATH_DCCSI_SETTINGS_LOCAL, "r") as data:
+            DCCSI_SETTINGS_DATA = json.load(data)
+    except IOError as e:
+        _LOGGER.warning(f'Cannot read manifest: {PATH_DCCSI_SETTINGS_LOCAL} ')
+        _LOGGER.error(f'{e} , traceback =', exc_info=True)
 
-# the o3de manifest data
-TAG_USER_O3DE = '.o3de'
-SLUG_MANIFEST_FILENAME = 'o3de_manifest.json'
-USER_HOME = Path.home()
+if DCCSI_SETTINGS_DATA:
+    _LOGGER.debug(f'O3DE {DCCSI_SETTINGS_LOCAL_FILENAME} found: {PATH_DCCSI_SETTINGS_LOCAL}')
 
-_user_home_parts = os.path.split(USER_HOME)
+    for k, v in DCCSI_SETTINGS_DATA.items():
 
-if str(_user_home_parts[1].lower()) == 'documents':
-    USER_HOME = _user_home_parts[0]
-    _LOGGER.debug(f'user home CORRECTED: {USER_HOME}')
+        if k == ENVAR_O3DE_DEV:
+            O3DE_DEV = Path(v)
 
-O3DE_MANIFEST_PATH = USER_HOME.joinpath(f'{TAG_USER_O3DE}',
-                                        SLUG_MANIFEST_FILENAME)
+        elif k == ENVAR_PATH_O3DE_BIN:
+            PATH_O3DE_BIN = Path(v)
 
-# {user_home}\.o3de\registry\bootstrap.setreg
-SLUG_BOOTSTRAP_FILENAME = 'bootstrap.setreg'
-O3DE_BOOTSTRAP_PATH = Path(USER_HOME,
-                      TAG_USER_O3DE,
-                      'Registry',
-                      SLUG_BOOTSTRAP_FILENAME)
+        elif k == ENVAR_PATH_O3DE_3RDPARTY:
+            PATH_O3DE_3RDPARTY = Path(v)
+
+        else:
+            pass
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+# o3de manifest data
+try:
+    # the manifest doesn't exist until you run o3de.exe for the first time
+    O3DE_MANIFEST_PATH.resolve(strict=True)
+except FileExistsError as e:
+    _LOGGER.warning(f'O3DE Manifest does not exist: {O3DE_MANIFEST_PATH}')
+    _LOGGER.warning(f'Make sure the engine is installed, and run O3DE.exe')
+    _LOGGER.warning(f'Or build from source and and register the engine ')
+    _LOGGER.warning(f'CMD > c:\\path\\to\\o3de\\scripts\\o3de register --this-engine')
+    O3DE_MANIFEST_PATH = None
+
+O3DE_MANIFEST_DATA = None
+if O3DE_MANIFEST_PATH:
+    try:
+        with open(O3DE_MANIFEST_PATH, "r") as data:
+            O3DE_MANIFEST_DATA = json.load(data)
+    except IOError as e:
+        _LOGGER.warning(f'Cannot read manifest: {O3DE_MANIFEST_PATH} ')
+        _LOGGER.error(f'{e} , traceback =', exc_info=True)
 # -------------------------------------------------------------------------
 
 
@@ -258,31 +329,12 @@ O3DE_BOOTSTRAP_PATH = Path(USER_HOME,
 # default o3de engine location
 # a suggestion would be for us to refactor from _O3DE_DEV to _O3DE_ROOT
 # dev is a legacy Lumberyard concept, as the engine sandbox folder was /dev
-ENVAR_O3DE_DEV = 'O3DE_DEV'
 _LOGGER.debug(STR_CROSSBAR)
 _LOGGER.debug(f'---- Finding {ENVAR_O3DE_DEV}')
 
 if not O3DE_DEV:
     # fallback 1, check the .o3de\o3de_manifest.json
     # most end users likely only have one engine install?
-    try:
-        # the manifest doesn't exist until you run o3de.exe for the first time
-        O3DE_MANIFEST_PATH.resolve(strict=True)
-    except FileExistsError as e:
-        _LOGGER.warning(f'O3DE Manifest does not exist: {O3DE_MANIFEST_PATH}')
-        _LOGGER.warning(f'Make sure the engine is installed, and run O3DE.exe')
-        _LOGGER.warning(f'Or build from source and and register the engine ')
-        _LOGGER.warning(f'CMD > c:\\path\\to\\o3de\\scripts\\o3de register --this-engine')
-        O3DE_MANIFEST_PATH = None
-
-    O3DE_MANIFEST_DATA = None
-    if O3DE_MANIFEST_PATH:
-        try:
-            with open(O3DE_MANIFEST_PATH, "r") as data:
-                O3DE_MANIFEST_DATA = json.load(data)
-        except IOError as e:
-            _LOGGER.warning(f'Cannot read manifest: {O3DE_MANIFEST_PATH} ')
-            _LOGGER.error(f'{e} , traceback =', exc_info=True)
 
     if O3DE_MANIFEST_DATA:
         _LOGGER.debug(f'O3DE Manifest found: {O3DE_MANIFEST_PATH}')
@@ -324,14 +376,14 @@ if not O3DE_DEV:
 
 # but it's always best to just be explicit?
 # fallback 2, check if a dev set it in env and allow override
-O3DE_DEV = os.getenv(ENVAR_O3DE_DEV, O3DE_DEV)
+O3DE_DEV = os.getenv(ENVAR_O3DE_DEV, str(O3DE_DEV))
 
 if O3DE_DEV: # could still end up None?
     O3DE_DEV = Path(O3DE_DEV)
     try:
         O3DE_DEV.resolve(strict=True)
         O3DE_DEV = add_site_dir(O3DE_DEV)
-        _LOGGER.info(f'Final {ENVAR_O3DE_DEV} is: {O3DE_DEV.as_posix()}')
+        _LOGGER.debug(f'Final {ENVAR_O3DE_DEV} is: {O3DE_DEV.as_posix()}')
     except NotADirectoryError as e:
         _LOGGER.warning(f'{ENVAR_O3DE_DEV} may not exist: {O3DE_DEV.as_posix()}')
         O3DE_DEV = None
@@ -359,10 +411,6 @@ except Exception as e:
 # this is a problem of multiple projects
 # we can get the local project root if we are running in a o3de exe
 O3DE_PROJECT = None # str name of the project
-
-ENVAR_PATH_O3DE_PROJECT = 'PATH_O3DE_PROJECT' # project path
-ENVAR_O3DE_PROJECT = 'O3DE_PROJECT' # project name
-
 _LOGGER.debug(STR_CROSSBAR)
 _LOGGER.debug(f'---- Finding {ENVAR_PATH_O3DE_PROJECT}')
 
@@ -415,7 +463,7 @@ if not PATH_O3DE_PROJECT:
 
 # 4, we can fallback to the DCCsi as the project
 # 5, be explicit, and allow it to be set/overridden from the env
-PATH_O3DE_PROJECT = os.getenv(ENVAR_PATH_O3DE_PROJECT, PATH_DCCSIG)
+PATH_O3DE_PROJECT = os.getenv(ENVAR_PATH_O3DE_PROJECT, str(PATH_DCCSIG))
 
 if PATH_O3DE_PROJECT:  # could still end up None?
     # note: if you are a developer, and launching via the dccsi windows .bat files
@@ -434,20 +482,19 @@ if PATH_O3DE_PROJECT:  # could still end up None?
         PATH_O3DE_PROJECT = PATH_DCCSIG # ultimate fallback
 
 # log the final results
-_LOGGER.info(f'Default {ENVAR_PATH_O3DE_PROJECT}: {PATH_O3DE_PROJECT.as_posix()}')
+_LOGGER.debug(f'Default {ENVAR_PATH_O3DE_PROJECT}: {PATH_O3DE_PROJECT.as_posix()}')
 
 # the projects name, suggestion we should extend this to actually retrieve
 # the project name, from a root data file such as project.json or gem.json
 O3DE_PROJECT = str(os.getenv(ENVAR_O3DE_PROJECT,
                              PATH_O3DE_PROJECT.name))
 
-_LOGGER.info(f'Default {ENVAR_O3DE_PROJECT}: {O3DE_PROJECT}')
+_LOGGER.debug(f'Default {ENVAR_O3DE_PROJECT}: {O3DE_PROJECT}')
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
 # default o3de engine bin folder
-ENVAR_PATH_O3DE_BIN = 'PATH_O3DE_BIN'
 _LOGGER.debug(STR_CROSSBAR)
 _LOGGER.debug(f'---- Finding {ENVAR_PATH_O3DE_BIN}')
 
@@ -545,7 +592,7 @@ if PATH_O3DE_BIN:
     PATH_O3DE_BIN = Path(PATH_O3DE_BIN)
     try:
         PATH_O3DE_BIN = PATH_O3DE_BIN.resolve(strict=True)
-        _LOGGER.info(f'Final {ENVAR_PATH_O3DE_BIN} is: {PATH_O3DE_BIN.as_posix()}')
+        _LOGGER.debug(f'Final {ENVAR_PATH_O3DE_BIN} is: {PATH_O3DE_BIN.as_posix()}')
         add_site_dir(PATH_O3DE_BIN)
     except NotADirectoryError as e:
         _LOGGER.warning(f'{ENVAR_PATH_O3DE_BIN} may not exist: {PATH_O3DE_BIN.as_posix()}')
@@ -565,8 +612,101 @@ except Exception as e:
     if DCCSI_STRICT:
         _LOGGER.exception(f'{e} , traceback =', exc_info=True)
         raise e
+# -------------------------------------------------------------------------
 
-_MODULE_END = timeit.default_timer() - _MODULE_START
+
+# -------------------------------------------------------------------------
+# QtForPython (PySide2) is a DCCsi Gem dependancy
+# Can't be initialized in the dev env, because Wing 9 is a Qt5 app
+# and this causes interference, so replicate here
+
+if not PATH_O3DE_3RDPARTY:
+    # default path, matches o3de installer builds
+    try:
+        PATH_O3DE_3RDPARTY = USER_HOME.joinpath(f'{TAG_USER_O3DE}',
+                                                '3rdparty').resolve(strict=True)
+    except NotADirectoryError as e:
+        _LOGGER.warning(f'The engine may not be built yet ...')
+        _LOGGER.warning(f'Or User is not using an installer build ...')
+        _LOGGER.error(f'{e} , traceback =', exc_info=True)
+        PATH_O3DE_3RDPARTY = None
+
+    # attempt to get from env
+    PATH_O3DE_3RDPARTY = os.environ.get(ENVAR_PATH_O3DE_3RDPARTY)
+
+    try:
+        PATH_O3DE_3RDPARTY = Path(PATH_O3DE_3RDPARTY).resolve(strict=True)
+    except Exception as e:
+        _LOGGER.warning(f'{ENVAR_PATH_O3DE_3RDPARTY} will not resolve: {PATH_O3DE_3RDPARTY}')
+        _LOGGER.warning(f'Put "set {ENVAR_PATH_O3DE_3RDPARTY}=C:\\path\\to\\o3de" in: {PATH_ENV_DEV}')
+        _LOGGER.warning(f'And "{ENVAR_PATH_O3DE_3RDPARTY}":"C:\\path\\to\\o3de" in: {PATH_DCCSI_SETTINGS_LOCAL}')
+        _LOGGER.error(f'{e} , traceback =', exc_info=True)
+        if DCCSI_STRICT:
+            _LOGGER.exception(f'{e} , traceback =', exc_info=True)
+            raise e
+
+
+_LOGGER.debug(f'Final {ENVAR_PATH_O3DE_3RDPARTY} is: {PATH_O3DE_3RDPARTY.as_posix()}')
+
+# first check if we can get from o3de
+ENVAR_QT_PLUGIN_PATH = 'QT_PLUGIN_PATH'
+try:
+    import azlmbr
+    import azlmbr.bus
+    params = azlmbr.qt.QtForPythonRequestBus(azlmbr.bus.Broadcast, 'GetQtBootstrapParameters')
+    QT_PLUGIN_PATH = Path(params.qtPluginsFolder)
+except:
+    QT_PLUGIN_PATH = None
+
+if not QT_PLUGIN_PATH:
+    # fallback, not future proof without editing file
+    # modify to be a grep?
+    # path constructor
+    QT_PLUGIN_PATH = Path(PATH_O3DE_3RDPARTY,
+                            'packages',
+                            'pyside2-5.15.2.1-py3.10-rev3-windows',
+                            'pyside2',
+                            'lib',
+                            'site-packages')
+
+try:
+    QT_PLUGIN_PATH = QT_PLUGIN_PATH.resolve(strict=True)
+    os.environ[ENVAR_QT_PLUGIN_PATH] = str(QT_PLUGIN_PATH)
+    add_site_dir(QT_PLUGIN_PATH)
+except Exception as e:
+    _LOGGER.warning(f'{ENVAR_QT_PLUGIN_PATH} will not resolve: {QT_PLUGIN_PATH}')
+    _LOGGER.error(f'{e} , traceback =', exc_info=True)
+    if DCCSI_STRICT:
+        _LOGGER.exception(f'{e} , traceback =', exc_info=True)
+        raise e
+
+try:
+    import azlmbr
+    import azlmbr.bus
+    params = azlmbr.qt.QtForPythonRequestBus(azlmbr.bus.Broadcast, 'GetQtBootstrapParameters')
+    O3DE_QT_BIN = Path(params.qtBinaryFolder)
+except:
+    O3DE_QT_BIN = PATH_O3DE_BIN
+
+if len(str(O3DE_QT_BIN)) and sys.platform.startswith('win'):
+    path = os.environ['PATH']
+    new_path = ''
+    new_path += str(O3DE_QT_BIN) + os.pathsep
+    new_path += path
+    os.environ['PATH'] = new_path
+    add_site_dir(O3DE_QT_BIN)
+
+try:
+    from PySide2.QtWidgets import QPushButton
+    _LOGGER.debug('PySide2 bootstrapped PATH for Windows.')
+except ImportError as e:
+    _LOGGER.debug('Cannot import PySide2.')
+    _LOGGER.error(f'{e} , traceback =', exc_info=True)
+    if DCCSI_STRICT:
+        _LOGGER.exception(f'{e} , traceback =', exc_info=True)
+        raise e
+
+_MODULE_END = timeit.default_timer() - __MODULE_START
 _LOGGER.debug(f'{_PACKAGENAME}.init complete')
 _LOGGER.debug(f'{_PACKAGENAME}.init took: {_MODULE_END} sec')
 _LOGGER.debug(STR_CROSSBAR)

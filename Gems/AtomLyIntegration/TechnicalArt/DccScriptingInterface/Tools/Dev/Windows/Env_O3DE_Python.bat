@@ -83,6 +83,9 @@ echo     DCCSI_PY_DEFAULT = %DCCSI_PY_DEFAULT%
 IF "%DCCSI_PY_IDE%"=="" (set "DCCSI_PY_IDE=%O3DE_PYTHONHOME%\python.exe")
 echo     DCCSI_PY_IDE = %DCCSI_PY_IDE%
 
+:: O3DE installs additional python pkgs from 3rd party and other locations
+:: See: C:\path\to\o3de\python\runtime\python-x.x.x-revX-windows\python\Lib\site-packages\easy-install.pth
+
 ::ENDLOCAL
 
 :: Set flag so we don't initialize dccsi environment twice
