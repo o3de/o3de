@@ -23,7 +23,7 @@ _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug(f'Initializing: {_MODULENAME}')
 # -------------------------------------------------------------------------
 # dccsi imports here
-from DccScriptingInterface.constants import PATH_USER_HOME
+from DccScriptingInterface.constants import USER_HOME
 # wing is a x86 program, this pulls the constant for that (not a Path object)
 from DccScriptingInterface.constants import PATH_PROGRAMFILES_X86
 from DccScriptingInterface.Tools.IDE.Wing import PATH_DCCSI_TOOLS_IDE_WING
@@ -76,7 +76,7 @@ PATH_DCCSI_TOOLS_IDE_WING_PROJ = (f'{PATH_DCCSI_TOOLS_IDE_WING}' +
 ENVAR_WING_APPDATA = 'WING_APPDATA'
 
 # path string constructor, userhome where wingstubdb.py can live
-PATH_WING_APPDATA = (f'{PATH_USER_HOME}' +
+PATH_WING_APPDATA = (f'{USER_HOME}' +
                      f'\\AppData' +
                      f'\\Roaming' +
                      f'\\{SLUG_DCCSI_WING_TYPE} {str(SLUG_DCCSI_WING_VERSION_MAJOR)}')

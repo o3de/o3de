@@ -17,7 +17,6 @@ Commonly used global constants and default values.
 import os
 import sys
 from pathlib import Path
-from os.path import expanduser
 import logging as _logging
 # -------------------------------------------------------------------------
 _MODULENAME = 'DCCsi.constants'
@@ -34,6 +33,46 @@ sys.path.append(PATH_DCCSIG)
 
 # ENVAR_ denotes a common key string
 
+# name of o3de folder in user home, TAG_USER_O3DE = '.o3de'
+from DccScriptingInterface import TAG_USER_O3DE
+
+# the user home
+from DccScriptingInterface import USER_HOME
+
+# envar to get/set/override the logging level
+from DccScriptingInterface import ENVAR_DCCSI_LOGLEVEL
+
+# envar to get/set/override the engine root
+from DccScriptingInterface import ENVAR_O3DE_DEV
+
+# a str path constructor for the dccsi 3rdPary site-dir
+from DccScriptingInterface import STR_DCCSI_PYTHON_LIB
+
+# envar to get/set/override  the location of the dccsi gem
+from DccScriptingInterface import ENVAR_PATH_DCCSIG
+
+# envar to get/set/override project path
+from DccScriptingInterface import ENVAR_PATH_O3DE_PROJECT
+
+# envar to get/set/override project name
+from DccScriptingInterface import ENVAR_O3DE_PROJECT
+
+# envar to get/set/override the \bin executables folder
+from DccScriptingInterface import ENVAR_PATH_O3DE_BIN
+
+# the common filename.ext for local/override settings file
+from DccScriptingInterface import DCCSI_SETTINGS_LOCAL_FILENAME
+
+# common logging formatting strings
+from DccScriptingInterface import FRMT_LOG_SHRT
+from DccScriptingInterface import FRMT_LOG_LONG
+
+# manifest filename, 'o3de_manifest.json'
+from DccScriptingInterface import SLUG_MANIFEST_FILENAME
+
+# # {user_home}\.o3de\registry\bootstrap.setreg
+from DccScriptingInterface import SLUG_BOOTSTRAP_FILENAME
+
 # resolves the windows progam install directory
 ENVAR_PROGRAMFILES_X86 = 'PROGRAMFILES(X86)'
 PATH_PROGRAMFILES_X86 = os.environ[ENVAR_PROGRAMFILES_X86]
@@ -41,20 +80,8 @@ PATH_PROGRAMFILES_X86 = os.environ[ENVAR_PROGRAMFILES_X86]
 ENVAR_PROGRAMFILES_X64 = 'PROGRAMFILES'
 PATH_PROGRAMFILES_X64 = os.environ[ENVAR_PROGRAMFILES_X64]
 
-# resolves the os user directory
-PATH_USER_HOME = expanduser("~")
-_LOGGER.debug(f'user home: {PATH_USER_HOME}')
-# special case, make sure didn't return <user>\documents
-_user_home_parts = os.path.split(PATH_USER_HOME)
-
-if str(_user_home_parts[1].lower()) == 'documents':
-    PATH_USER_HOME = _user_home_parts[0]
-    _LOGGER.debug(f'user home CORRECTED: {PATH_USER_HOME}')
-
-# construct the o3de user home location
-SLUG_O3DE_FOLDER = '.o3de'
 # path string constructor
-PATH_USER_O3DE = f'{PATH_USER_HOME}\\{SLUG_O3DE_FOLDER}'
+PATH_USER_O3DE = f'{USER_HOME}\\{TAG_USER_O3DE}'
 # user home o3se registry
 SLUG_DIR_REGISTRY = 'Registry'
 # path string constructor
@@ -65,26 +92,6 @@ SLUG_DCCSI_SHORT = 'DCCsi'
 PATH_DCCSI_LOG_PATH = (f'{PATH_USER_O3DE}\\Cache\\log' +
                        f'\\{SLUG_DCCSI_SHORT}' +
                        f'\\{SLUG_DCCSI_SHORT}.log')
-
-# bootstrap site-packages by version
-# it is suggested that in a future iteration, these are moved from
-# a dccsi nested location, to a location in user home o3de
-
-# path string constructor
-# refactored so __init__ is not pulling from constants module
-from DccScriptingInterface import ENVAR_O3DE_DEV
-from DccScriptingInterface import ENVAR_PATH_DCCSIG
-from DccScriptingInterface import PATH_DCCSI_PYTHON_LIB
-
-# Note: some constants may simply define and implicit part of a default
-# all of the logic, such as dynamic configuration and settings (config.py)
-# is actually soft-coded, which constant is the envar Key may be hard,
-# however the setting derived from that envar is soft,
-# and the defaults can be overridden
-
-# the envars for init paths are all here
-# we aware that other constants are nested within folder structure
-# envar to get/set the path for the DccScriptingInterface Gem (DCCSI)
 
 # enavar to get/set the < dccsi>/tools folder
 ENVAR_PATH_DCCSI_TOOLS = 'PATH_DCCSI_TOOLS'
@@ -104,28 +111,16 @@ ENVAR_DCCSI_DEV_MODE = 'DCCSI_DEV_MODE'
 # envar to get/set the ide debugger str/slug (only 'WING' implemented)
 ENVAR_DCCSI_GDEBUGGER = 'DCCSI_GDEBUGGER'
 
-# refactored to DccScriptingInterface.__init__
-from DccScriptingInterface import ENVAR_DCCSI_LOGLEVEL
-
 # envar to get/set bool for running extra local tests
 ENVAR_DCCSI_TESTS = 'DCCSI_TESTS'
 
 # a str prefix for dynamic settings
 DCCSI_DYNAMIC_PREFIX = 'DYNACONF'
 
-# the common filename.ext for local/override settings file
-DCCSI_SETTINGS_LOCAL_FILENAME = 'setting.local.json'
-
 # utility: constants, like pretty print strings
 from DccScriptingInterface import STR_CROSSBAR
 STR_CROSSBAR_RL = f'{STR_CROSSBAR}\r'
 STR_CROSSBAR_NL = f'{STR_CROSSBAR}\n'
-
-# Log formating
-# refactored into DccScriptingInterface.__init__
-from DccScriptingInterface import FRMT_LOG_LONG
-
-FRMT_LOG_SHRT = "[%(asctime)s][%(name)s][%(levelname)s] >> %(message)s"
 # -------------------------------------------------------------------------
 
 

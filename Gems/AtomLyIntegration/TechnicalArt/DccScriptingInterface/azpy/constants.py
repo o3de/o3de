@@ -66,25 +66,25 @@ from azpy.config_utils import get_stub_check_path
 ENVAR_DCCSI_GDEBUG = str('DCCSI_GDEBUG')
 ENVAR_DCCSI_DEV_MODE = str('DCCSI_DEV_MODE')
 ENVAR_DCCSI_GDEBUGGER = str('DCCSI_GDEBUGGER')
-ENVAR_DCCSI_LOGLEVEL = str('DCCSI_LOGLEVEL')
+from DccScriptingInterface import ENVAR_DCCSI_LOGLEVEL
 ENVAR_DCCSI_TESTS = str('DCCSI_TESTS')
 
 # defaults, can be overriden/forced here for development
 _DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
-_DCCSI_LOGLEVEL = env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO)
+from DccScriptingInterface import DCCSI_LOGLEVEL
 _DCCSI_GDEBUGGER = env_bool(ENVAR_DCCSI_GDEBUGGER, 'WING')
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
 # utility: constants, like pretty print strings
-STR_CROSSBAR = str('{0}'.format('-' * 74))
+from DccScriptingInterface import STR_CROSSBAR
 STR_CROSSBAR_RL = str('{0}\r'.format(STR_CROSSBAR))
 STR_CROSSBAR_NL = str('{0}\n'.format(STR_CROSSBAR))
 # Log formating
-FRMT_LOG_LONG = "[%(name)s][%(levelname)s] >> %(message)s (%(asctime)s; %(filename)s:%(lineno)d)"
-FRMT_LOG_SHRT = "[%(asctime)s][%(name)s][%(levelname)s] >> %(message)s"
+from DccScriptingInterface import FRMT_LOG_LONG
+from DccScriptingInterface import FRMT_LOG_SHRT
 # -------------------------------------------------------------------------
 
 
@@ -128,7 +128,7 @@ TAG_DIR_O3DE_BUILD_FOLDER = str('build')
 TAG_O3DE_FOLDER = str('.o3de')
 TAG_O3DE_BOOTSTRAP = str('bootstrap.setreg')
 TAG_DCCSI_CONFIG = str('dccsi_configuration.setreg')
-TAG_DCCSI_LOCAL_SETTINGS_SLUG = str('settings.local.json')
+from DccScriptingInterface import DCCSI_SETTINGS_LOCAL_FILENAME
 
 # py path string, parts, etc.
 TAG_DEFAULT_PY = str('Launch_pyBASE.bat')
@@ -206,7 +206,7 @@ ENVAR_PATH_O3DE_PROJECT = str('PATH_O3DE_PROJECT') # path to project
 ENVAR_O3DE_DEV = str('O3DE_DEV')
 
 # DCCSI
-ENVAR_PATH_DCCSIG = str('PATH_DCCSIG')
+from DccScriptingInterface import ENVAR_PATH_DCCSIG
 ENVAR_DCCSI_AZPY_PATH = str('DCCSI_AZPY_PATH')
 ENVAR_PATH_DCCSI_TOOLS = str('PATH_DCCSI_TOOLS')
 ENVAR_DCCSI_LOG_PATH = str('DCCSI_LOG_PATH')
@@ -219,7 +219,7 @@ ENVAR_DCCSI_PYTHONPATH = str('DCCSI_PYTHONPATH')
 ENVAR_DCCSI_PY_VERSION_MAJOR = str('DCCSI_PY_VERSION_MAJOR')
 ENVAR_DCCSI_PY_VERSION_MINOR = str('DCCSI_PY_VERSION_MINOR')
 ENVAR_PATH_DCCSI_PYTHON = str('PATH_DCCSI_PYTHON')
-ENVAR_PATH_DCCSI_PYTHON_LIB = str('PATH_DCCSI_PYTHON_LIB')
+from DccScriptingInterface import ENVAR_PATH_DCCSI_PYTHON_LIB
 ENVAR_DCCSI_PY_BASE = str('DCCSI_PY_BASE')
 ENVAR_DCCSI_PY_DCCSI = str('DCCSI_PY_DCCSI')
 ENVAR_DCCSI_PY_DEFAULT = str('DCCSI_PY_DEFAULT')
@@ -287,8 +287,8 @@ DCCSI_IMAGE_TYPES = ['.tif', '.tiff', '.png', '.jpg', '.jpeg', '.tga']
 # -------------------------------------------------------------------------
 # To Do: these should not be here
 # Let's avoid the need for constants.py to call other modules!
-PATH_O3DE_DEV = str(return_stub_dir(STUB_O3DE_DEV))
-PATH_DCCSIG = str(return_stub_dir(STUB_O3DE_ROOT_DCCSI))
+from DccScriptingInterface import O3DE_DEV
+from DccScriptingInterface import PATH_DCCSIG
 PATH_DCCSI_AZPY_PATH = str(return_stub_dir(STUB_O3DE_DCCSI_AZPY))
 # -------------------------------------------------------------------------
 
@@ -305,7 +305,7 @@ PATH_DCCSI_LOG_PATH = str('{PATH_O3DE_PROJECT}\\user\\log\{TAG_DCCSI_NICKNAME}')
 
 # dev \ <build> \
 STR_CONSTRUCT_PATH_O3DE_BUILD = str('{0}\\{1}')
-PATH_O3DE_BUILD = str(STR_CONSTRUCT_PATH_O3DE_BUILD.format(PATH_O3DE_DEV,
+PATH_O3DE_BUILD = str(STR_CONSTRUCT_PATH_O3DE_BUILD.format(O3DE_DEV,
                                                             TAG_DIR_O3DE_BUILD_FOLDER))
 
 # ENVAR_QT_PLUGIN_PATH = TAG_QT_PLUGIN_PATH
@@ -314,9 +314,9 @@ STR_QTFORPYTHON_PATH = str('{0}\\Gems\\QtForPython\\3rdParty\\pyside2\\windows\\
 STR_PATH_O3DE_BIN = str('{0}\\bin\\profile')
 
 STR_PATH_O3DE_BUILD = str('{0}\\{1}')
-PATH_O3DE_BUILD = STR_PATH_O3DE_BUILD.format(PATH_O3DE_DEV, TAG_DIR_O3DE_BUILD_FOLDER)
+PATH_O3DE_BUILD = STR_PATH_O3DE_BUILD.format(O3DE_DEV, TAG_DIR_O3DE_BUILD_FOLDER)
 
-PATH_QTFORPYTHON_PATH = str(STR_QTFORPYTHON_PATH.format(PATH_O3DE_DEV))
+PATH_QTFORPYTHON_PATH = str(STR_QTFORPYTHON_PATH.format(O3DE_DEV))
 PATH_QT_PLUGIN_PATH = str(STR_QTPLUGIN_DIR).format(PATH_O3DE_BUILD)
 PATH_O3DE_BIN = str(STR_PATH_O3DE_BIN).format(PATH_O3DE_BUILD)
 
@@ -328,7 +328,7 @@ PATH_USER_O3DE_BOOTSTRAP = str(STR_USER_O3DE_BOOTSTRAP_PATH).format(reg=PATH_USE
                                                                     file=TAG_O3DE_BOOTSTRAP)
 
 STR_CONSTRUCT_PATH_O3DE_PYTHON_INSTALL = str('{0}\\{1}\\{2}.{3}.{4}\\{5}')
-PATH_DCCSI_PYTHON = str(STR_CONSTRUCT_PATH_O3DE_PYTHON_INSTALL.format(PATH_O3DE_DEV,
+PATH_DCCSI_PYTHON = str(STR_CONSTRUCT_PATH_O3DE_PYTHON_INSTALL.format(O3DE_DEV,
                                                                        TAG_TOOLS_DIR,
                                                                        TAG_DCCSI_PY_VERSION_MAJOR,
                                                                        TAG_DCCSI_PY_VERSION_MINOR,
@@ -338,10 +338,7 @@ PATH_DCCSI_PY_BASE = str('{0}\\{1}').format(PATH_DCCSI_PYTHON, TAG_PYTHON_EXE)
 PATH_DCCSI_PY_DEFAULT = PATH_DCCSI_PY_BASE
 
 # bootstrap site-packages by version
-STR_PATH_DCCSI_PYTHON_LIB = str('{0}\\3rdParty\\Python\\Lib\\{1}.x\\{1}.{2}.x\\site-packages')
-PATH_DCCSI_PYTHON_LIB = STR_PATH_DCCSI_PYTHON_LIB.format(PATH_DCCSIG,
-                                                              TAG_PY_MAJOR,
-                                                              TAG_PY_MINOR)
+from DccScriptingInterface import PATH_DCCSI_PYTHON_LIB
 
 
 PATH_SAT_INSTALL_PATH = str('{0}\\{1}\\{2}\\{3}\\{4}'
@@ -389,7 +386,7 @@ if __name__ == '__main__':
     from pathlib import Path
 
     _stash_dict = {}
-    _stash_dict['O3DE_DEV'] = Path(PATH_O3DE_DEV)
+    _stash_dict['O3DE_DEV'] = Path(O3DE_DEV)
     _stash_dict['PATH_DCCSIG'] = Path(PATH_DCCSIG)
     _stash_dict['DCCSI_AZPY_PATH'] = Path(PATH_DCCSI_AZPY_PATH)
     _stash_dict['PATH_DCCSI_TOOLS'] = Path(PATH_DCCSI_TOOLS)

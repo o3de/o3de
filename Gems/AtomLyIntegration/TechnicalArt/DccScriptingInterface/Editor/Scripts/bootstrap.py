@@ -93,12 +93,26 @@ _LOGGER = _logging.getLogger(_MODULENAME)
 import azlmbr
 import azlmbr.bus
 import azlmbr.paths
+
+# path devs might be interested in retreiving
+_LOGGER.debug(f'engroot: {azlmbr.paths.engroot}')
+_LOGGER.debug(f'executableFolder: {azlmbr.paths.executableFolder}')
+_LOGGER.debug(f'log: {azlmbr.paths.log}')
+_LOGGER.debug(f'products: {azlmbr.paths.products}')
+_LOGGER.debug(f'projectroot: {azlmbr.paths.projectroot}')
+
 # the DCCsi Gem expects QtForPython Gem is active
 try:
     azlmbr.qt.QtForPythonRequestBus(azlmbr.bus.Broadcast, 'IsActive')
 except Exception as e:
     _LOGGER.error(f'O3DE Qt / PySide2 not available, exception: {e}')
     raise e
+
+# debug logging, these are where Qt lives
+params = azlmbr.qt.QtForPythonRequestBus(azlmbr.bus.Broadcast, 'GetQtBootstrapParameters')
+_LOGGER.debug(f'qtPluginsFolder: {params.qtPluginsFolder}')
+_LOGGER.debug(f'qtBinaryFolder: {params.qtBinaryFolder}')
+
 #PySide2 imports
 from PySide2 import QtWidgets
 from PySide2.QtWidgets import QMenuBar, QMenu, QAction
@@ -232,7 +246,15 @@ def bootstrap_Editor():
 
 # -------------------------------------------------------------------------
 def bootstrap_MaterialEditor():
-    """Put bootstrapping code here to execute in O3DE MaterialEdito.exe"""
+    """Put bootstrapping code here to execute in O3DE MaterialEditor.exe"""
+    pass
+    return None
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+def bootstrap_MaterialCanvas():
+    """Put bootstrapping code here to execute in O3DE MaterialCanvas.exe"""
     pass
     return None
 # -------------------------------------------------------------------------
@@ -272,6 +294,9 @@ if __name__ == '__main__':
         _settings = bootstrap_Editor()
 
     elif O3DE_EDITOR.stem.lower() == "materialeditor":
+        _settings = bootstrap_MaterialEditor()
+
+    elif O3DE_EDITOR.stem.lower() == "materialcanvas":
         _settings = bootstrap_MaterialEditor()
 
     elif O3DE_EDITOR.stem.lower() == "assetprocessor":

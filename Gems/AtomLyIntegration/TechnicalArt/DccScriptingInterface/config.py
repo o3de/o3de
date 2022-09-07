@@ -187,9 +187,6 @@ site.addsitedir(_PATH_O3DE_PYTHON_SCRIPTS.as_posix())
 # -------------------------------------------------------------------------
 
 
-
-
-
 # -------------------------------------------------------------------------
 # An improvement would be to move this to azpy.config_utils
 # and be refactored to utilize py3+ fstrings
@@ -719,12 +716,12 @@ def get_config_settings(engine_path=O3DE_DEV,
 
 # -------------------------------------------------------------------------
 # get file name slug for exporting/caching local setting
-from DccScriptingInterface.azpy.constants import TAG_DCCSI_LOCAL_SETTINGS_SLUG
+from DccScriptingInterface.azpy.constants import DCCSI_SETTINGS_LOCAL_FILENAME
 
 def export_settings(settings,
                     dccsi_sys_path=_DCCSI_SYS_PATH,
                     dccsi_pythonpath=_DCCSI_PYTHONPATH,
-                    settings_filepath=TAG_DCCSI_LOCAL_SETTINGS_SLUG,
+                    settings_filepath=DCCSI_SETTINGS_LOCAL_FILENAME,
                     use_dynabox=False,
                     env=None,
                     merge=False,

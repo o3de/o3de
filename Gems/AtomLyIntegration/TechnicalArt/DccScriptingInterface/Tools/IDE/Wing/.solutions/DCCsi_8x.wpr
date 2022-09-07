@@ -89,6 +89,12 @@ proj.directory-list = [{'dirloc': loc('../../../..'),
                         'filter': '*',
                         'include_hidden': False,
                         'recursive': True,
+                        'watch_for_changes': True},
+                       {'dirloc': loc('../../../../../../../QtForPython'),
+                        'excludes': (),
+                        'filter': '*',
+                        'include_hidden': False,
+                        'recursive': True,
                         'watch_for_changes': True}]
 proj.file-type = 'shared'
 proj.launch-config = {loc('../../../../../../../../../sample-code-gems/py_gems/PyShapeExample/Editor/Scripts/bootstrap.py'): ('project',

@@ -23,7 +23,7 @@ import logging as _logging
 from DccScriptingInterface import _PACKAGENAME, STR_CROSSBAR
 _MODULENAME = f'{_PACKAGENAME}.globals'
 _LOGGER = _logging.getLogger(_MODULENAME)
-_LOGGER.info('Initializing: {0}.'.format({_MODULENAME}))
+_LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 _MODULE_PATH = Path(__file__) # thos module should not be used as an entry
 # -------------------------------------------------------------------------
 # global state to be shared
@@ -124,7 +124,6 @@ DCCSI_O3DE_USER_HOME_LOG = Path(PATH_DCCSI_LOG_PATH).resolve()
 
 # putting these here, allows us to pull them from globals
 # and reduce boilerplate in other modules
-_LOGGER.info(STR_CROSSBAR)
 _LOGGER.debug(f'This MODULE_PATH: {_MODULE_PATH}')
 _LOGGER.debug(f'Default {ENVAR_PATH_DCCSIG}: {PATH_DCCSIG}') # debug tracking
 _LOGGER.debug(f'Default {ENVAR_O3DE_DEV}: {O3DE_DEV}')
@@ -133,7 +132,7 @@ _LOGGER.debug(f'{ENVAR_DCCSI_DEV_MODE}: {DCCSI_DEV_MODE}')
 _LOGGER.debug(f'{ENVAR_DCCSI_GDEBUGGER}: {DCCSI_GDEBUGGER}')
 _LOGGER.debug(f'{ENVAR_DCCSI_LOGLEVEL}: {DCCSI_LOGLEVEL}')
 _LOGGER.debug(f'{ENVAR_DCCSI_TESTS}: {DCCSI_TESTS}')
-_LOGGER.info(STR_CROSSBAR)
+_LOGGER.debug(STR_CROSSBAR)
 
 ###########################################################################
 # Main Code Block, runs this script as main (testing)
@@ -144,7 +143,7 @@ if __name__ == '__main__':
     # some simple logger tests
     # evoke the filehandlers and test writting to the log file
     if DCCSI_GDEBUG:
-        _LOGGER.info('Forced Info! for {0}.'.format({_MODULENAME}))
+        _LOGGER.debug('Forced Info! for {0}.'.format({_MODULENAME}))
         _LOGGER.error('Forced ERROR! for {0}.'.format({_MODULENAME}))
 
     pass
