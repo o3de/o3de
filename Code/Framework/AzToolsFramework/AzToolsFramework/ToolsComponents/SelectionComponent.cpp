@@ -17,8 +17,11 @@ namespace AzToolsFramework
     namespace Components
     {
         static constexpr const char* const SelectionComponentRemovalNotice =
-            "[INFORMATION] The editor SelectionComponent is being removed from .prefab data. Please edit and save the level to persist "
-            "the change.";
+            "[INFORMATION] The editor SelectionComponent is being removed from .prefab data. Please edit and save the level "
+            "and its nested prefabs to persist the change.";
+
+        static constexpr const char* const SelectionComponentLoadMessage =
+            "The editor SelectionComponent is being skipped during loading because it is obsolete.";
 
         class SelectionComponentSerializer : public AZ::BaseJsonSerializer
         {
@@ -44,8 +47,13 @@ namespace AzToolsFramework
             [[maybe_unused]] const rapidjson::Value& inputValue,
             AZ::JsonDeserializerContext& context)
         {
+            // Inform the user that they should resave their prefabs to reflect the removal of this component
+            AZ_WarningOnce("JSON Serialization", false, "%s", SelectionComponentRemovalNotice);
+
+            // Report to the deserializer that we are skipping this component. This will result in a "completed"
+            // precessing outcome and avoid further associated warnings
             namespace JSR = AZ::JsonSerializationResult;
-            return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Unavailable, SelectionComponentRemovalNotice);
+            return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Skipped, SelectionComponentLoadMessage);
         }
 
         void SelectionComponent::Reflect(AZ::ReflectContext* context)
