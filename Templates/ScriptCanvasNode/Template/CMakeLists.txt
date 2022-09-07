@@ -30,7 +30,7 @@ ly_add_target(
         *.ScriptCanvasNodeable.xml,ScriptCanvasNodeableRegistry_Source.jinja,$path/$fileprefix_Nodeables.generated.cpp
 )
 
-set (dependent_targets gem_name.Private.Object;gem_name;gem_name.Editor)
+set (dependent_targets ${GemName}.Private.Object;${GemName};${GemName}.Editor)
 
 foreach (dependent_target IN LISTS dependent_targets)
     target_link_libraries(${dependent_target} PRIVATE ScriptCanvasNodes::${Name}.Object)

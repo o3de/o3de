@@ -7,7 +7,7 @@ This guide will assume that you have created a gem called: `YourGem`
 From the o3de folder call this command:
 
 ```
-scripts\o3de create-from-template -tp Templates\ScriptCanvasNode -dp Gems\YourGem\Code\Source\MyScriptCanvasNodes -r gem_name YourGem
+scripts\o3de create-from-template -tp Templates\ScriptCanvasNode -dp Gems\YourGem\Code\Source\MyScriptCanvasNodes -r ${GemName} YourGem
 ```
 
 ## Steps after using this template
@@ -19,7 +19,7 @@ After running this template, there are still some manual steps needed in order t
 Run the following command to register the newly created Script Canvas nodes project:
 
 ```
-scripts\o3de register -esgp Gems\gem_name -es Gems\gem_name\Code\Source\${Name}
+scripts\o3de register -esgp Gems\${GemName} -es Gems\${GemName}\Code\Source\${Name}
 ```
 
 ### Step 2.
