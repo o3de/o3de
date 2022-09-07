@@ -19,10 +19,10 @@ namespace AZ
 namespace LmbrCentral
 {
     //! Type ID for DiskShapeComponent
-    static const AZ::Uuid DiskShapeComponentTypeId = "{A3E6BE21-29B7-46AA-8B0E-1D8372DADA3F}";
+    inline constexpr AZ::TypeId DiskShapeComponentTypeId{ "{A3E6BE21-29B7-46AA-8B0E-1D8372DADA3F}" };
 
     //! Type ID for EditorDiskShapeComponent
-    static const AZ::Uuid EditorDiskShapeComponentTypeId = "{5CD2459F-9D51-4FA3-9D35-D1A2C65ED272}";
+    inline constexpr AZ::TypeId EditorDiskShapeComponentTypeId{ "{5CD2459F-9D51-4FA3-9D35-D1A2C65ED272}" };
 
     //! Configuration data for DiskShapeComponent
     class DiskShapeConfig
