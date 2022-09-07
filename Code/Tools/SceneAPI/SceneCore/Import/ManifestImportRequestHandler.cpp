@@ -8,20 +8,19 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/IO/FileIO.h>
-#include <AzCore/IO/SystemFile.h>
 #include <AzCore/IO/GenericStreams.h>
+#include <AzCore/IO/SystemFile.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/Utils/Utils.h>
-#include <AzFramework/API/ApplicationAPI.h>
-#include <AzFramework/StringFunc/StringFunc.h>
-#include <SceneAPI/SceneCore/Import/ManifestImportRequestHandler.h>
-#include <SceneAPI/SceneCore/Containers/Scene.h>
-#include <SceneAPI/SceneCore/Containers/SceneManifest.h>
-#include <SceneAPI/SceneCore/Utilities/Reporting.h>
-
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
-#include <AzCore/Utils/Utils.h>
+#include <AzFramework/API/ApplicationAPI.h>
+#include <AzFramework/StringFunc/StringFunc.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <SceneAPI/SceneCore/Containers/Scene.h>
+#include <SceneAPI/SceneCore/Containers/SceneManifest.h>
+#include <SceneAPI/SceneCore/Import/ManifestImportRequestHandler.h>
+#include <SceneAPI/SceneCore/Utilities/Reporting.h>
+
 
 namespace AZ
 {
@@ -47,7 +46,7 @@ namespace AZ
                 SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
                 if (serializeContext)
                 {
-                    serializeContext->Class<ManifestImportRequestHandler, BehaviorComponent>()->Version(1);
+                    serializeContext->Class<ManifestImportRequestHandler, BehaviorComponent>()->Version(2);
                 }
             }
 
@@ -85,16 +84,21 @@ namespace AZ
                     filename += s_generated;
 
                     AZStd::string altManifestFolder = path;
-                    AzFramework::ApplicationRequests::Bus::Broadcast(
-                        &AzFramework::ApplicationRequests::Bus::Events::MakePathRelative,
-                        altManifestFolder,
-                        AZ::Utils::GetProjectPath().c_str());
 
+                    bool pathFound = false;
+                    AZStd::string rootFolder;
+                    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                        pathFound, &AzToolsFramework::AssetSystemRequestBus::Events::GenerateRelativeSourcePath, altManifestFolder, altManifestFolder,
+                        rootFolder);
                     AZ::StringFunc::Path::GetFolderPath(altManifestFolder.c_str(), altManifestFolder);
 
                     AZStd::string generatedAssetInfoPath;
-                    AZ::StringFunc::Path::Join(assetCacheRoot.c_str(), altManifestFolder.c_str(), generatedAssetInfoPath);
-                    AZ::StringFunc::Path::ConstructFull(generatedAssetInfoPath.c_str(), filename.c_str(), generatedAssetInfoPath);
+                    if (pathFound)
+                    {
+                        // Can't call Path::Join with an absolute path, so only call this if the relative path was found.
+                        AZ::StringFunc::Path::Join(assetCacheRoot.c_str(), altManifestFolder.c_str(), generatedAssetInfoPath);
+                        AZ::StringFunc::Path::ConstructFull(generatedAssetInfoPath.c_str(), filename.c_str(), generatedAssetInfoPath);
+                    }
 
                     if (!AZ::IO::FileIOBase::GetInstance()->Exists(generatedAssetInfoPath.c_str()))
                     {
