@@ -95,3 +95,21 @@ def create_material_editor(workspace, launcher_platform=ly_test_tools.HOST_OS_MA
                     f"as no option is available for '{launcher_platform}'")
         launcher_class = ly_test_tools.LAUNCHERS.get(ly_test_tools.HOST_OS_MATERIAL_EDITOR)
     return launcher_class(workspace, args)
+
+
+def create_material_canvas(workspace, launcher_platform=ly_test_tools.HOST_OS_MATERIAL_CANVAS, args=None):
+    # type: (workspace_manager.AbstractWorkspaceManager, str, list[str]) -> base_launcher.Launcher
+    """
+    Create a MaterialCanvas compatible with the specified workspace.
+    MaterialCanvas is only officially supported on the Windows Platform.
+    :param workspace: lumberyard workspace to use
+    :param launcher_platform: the platform to target for a launcher (i.e. 'windows_dedicated' for DedicatedWinLauncher)
+    :param args: List of arguments to pass to the launcher's 'args' argument during construction
+    :return: MaterialCanvas instance
+    """
+    launcher_class = ly_test_tools.LAUNCHERS.get(launcher_platform)
+    if not launcher_class:
+        log.warning(f"Using default MaterialEditor launcher for '{ly_test_tools.HOST_OS_MATERIAL_CANVAS}' "
+                    f"as no option is available for '{launcher_platform}'")
+        launcher_class = ly_test_tools.LAUNCHERS.get(ly_test_tools.HOST_OS_MATERIAL_CANVAS)
+    return launcher_class(workspace, args)

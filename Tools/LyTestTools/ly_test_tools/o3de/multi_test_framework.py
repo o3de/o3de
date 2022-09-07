@@ -42,8 +42,8 @@ from ly_test_tools._internal.managers.workspace import AbstractWorkspaceManager
 from ly_test_tools._internal.exceptions import EditorToolsFrameworkException, TestResultException
 from ly_test_tools.launchers import launcher_helper
 from ly_test_tools.launchers.exceptions import WaitTimeoutError
-from ly_test_tools.launchers.platforms.linux.launcher import LinuxEditor, LinuxMaterialEditor
-from ly_test_tools.launchers.platforms.win.launcher import WinEditor, WinMaterialEditor
+from ly_test_tools.launchers.platforms.linux.launcher import LinuxEditor, LinuxMaterialEditor, LinuxMaterialCanvas
+from ly_test_tools.launchers.platforms.win.launcher import WinEditor, WinMaterialEditor, WinMaterialCanvas
 
 logger = logging.getLogger(__name__)
 
@@ -787,9 +787,9 @@ class MultiTestSuite(object):
                        f"-pythontestcase={test_case_name}",
                        "-logfile", f"@log@/{log_name}",
                        "-project-log-path", log_path_function(run_id, workspace)] + test_cmdline_args
-        elif type(executable) in [WinMaterialEditor, LinuxMaterialEditor]:
-            log_path_function = editor_utils.retrieve_material_editor_log_path
-            log_content_function = editor_utils.retrieve_material_editor_log_content
+        elif type(executable) in [WinMaterialEditor, LinuxMaterialEditor, WinMaterialCanvas, LinuxMaterialCanvas]:
+            log_path_function = editor_utils.retrieve_non_editor_log_path
+            log_content_function = editor_utils.retrieve_non_editor_log_content
             cmdline = ["-runpythontest", test_filename,
                        "-logfile", os.path.join(log_path_function(run_id, workspace), log_name)] + test_cmdline_args
         executable.args.extend(cmdline)
@@ -1139,9 +1139,9 @@ class MultiTestSuite(object):
                        "-logfile", f"@log@/{log_name}",
                        "-project-log-path", log_path_function(run_id, workspace)] + test_cmdline_args
         # MaterialEditor
-        elif type(executable) in [WinMaterialEditor, LinuxMaterialEditor]:
-            log_path_function = editor_utils.retrieve_material_editor_log_path
-            log_content_function = editor_utils.retrieve_material_editor_log_content
+        elif type(executable) in [WinMaterialEditor, LinuxMaterialEditor, WinMaterialCanvas, LinuxMaterialCanvas]:
+            log_path_function = editor_utils.retrieve_non_editor_log_path
+            log_content_function = editor_utils.retrieve_non_editor_log_content
             test_filenames_str = ";".join(
                 editor_utils.get_testcase_module_filepath(test_spec.test_module) for test_spec in test_spec_list)
             cmdline = ["-runpythontest", test_filenames_str,
@@ -1163,7 +1163,7 @@ class MultiTestSuite(object):
                 if type(executable) in [WinEditor, LinuxEditor]:
                     destination_path = workspace.artifact_manager.save_artifact(path_to_artifact, full_log_name)
                     editor_utils.split_batched_editor_log_file(workspace, path_to_artifact, destination_path)
-                elif type(executable) in [WinMaterialEditor, LinuxMaterialEditor]:
+                elif type(executable) in [WinMaterialEditor, LinuxMaterialEditor, WinMaterialCanvas, LinuxMaterialCanvas]:
                     workspace.artifact_manager.save_artifact(path_to_artifact, full_log_name)
 
             except FileNotFoundError:

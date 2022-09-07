@@ -265,3 +265,17 @@ class LinuxMaterialEditor(LinuxLauncher):
         """
         assert self.workspace.project is not None
         return os.path.join(self.workspace.paths.build_directory(), "MaterialEditor")
+
+
+class LinuxMaterialCanvas(LinuxLauncher):
+
+    def __init__(self, build, args=None):
+        super(LinuxMaterialCanvas, self).__init__(build, args)
+
+    def binary_path(self):
+        """
+        Return full path to the MaterialCanvas for this build's configuration and project
+        :return: full path to MaterialCanvas
+        """
+        assert self.workspace.project is not None
+        return os.path.join(self.workspace.paths.build_directory(), "MaterialCanvas")
