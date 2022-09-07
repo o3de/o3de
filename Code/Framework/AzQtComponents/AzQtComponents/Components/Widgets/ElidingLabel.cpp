@@ -43,23 +43,15 @@ namespace AzQtComponents
         
         m_elidedText.clear();
 
-        if (QThread::currentThread() != QApplication::instance()->thread())
-        {
-            // If setText is called from a thread other than the main thread,
-            // fontMetrics().elidedText() will result in a crash.
-            QTimer::singleShot(
-                0,
-                [&]()
-                {
-                    elide();
-                    updateGeometry();
-                });
-        }
-        else
-        {
-            elide();
-            updateGeometry();
-        }
+        // If setText is called from a thread other than the main thread,
+        // fontMetrics().elidedText() will result in a crash.
+        QTimer::singleShot(
+            0,
+            [&]()
+            {
+                elide();
+                updateGeometry();
+            });
     }
 
     void ElidingLabel::setDescription(const QString& description)
