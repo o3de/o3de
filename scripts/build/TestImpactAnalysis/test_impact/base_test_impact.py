@@ -195,10 +195,10 @@ class BaseTestImpact(ABC):
         try:
             if s3_bucket:
                 return PersistentStorageS3(
-                    self._config, suite, self._dst_commit, s3_bucket, self._compile_s3_top_level_dir_name(s3_top_level_dir), self._source_of_truth_branch, self._active_workspace, self._unpacked_coverage_data_file, self._previous_test_run_data_file)
+                    self._config, suite, self._dst_commit, s3_bucket, self._compile_s3_top_level_dir_name(s3_top_level_dir), self._source_of_truth_branch, self._active_workspace, self._unpacked_coverage_data_file, self._previous_test_run_data_file, self._temp_workspace)
             else:
                 return PersistentStorageLocal(
-                    self._config, suite, self._dst_commit, self._active_workspace, self._unpacked_coverage_data_file, self._previous_test_run_data_file, self._historic_workspace, self._historic_data_file)
+                    self._config, suite, self._dst_commit, self._active_workspace, self._unpacked_coverage_data_file, self._previous_test_run_data_file, self._historic_workspace, self._historic_data_file, self._temp_workspace)
         except SystemError as e:
             logger.warning(
                 f"The persistent storage encountered an irrecoverable error, test impact analysis will be disabled: '{e}'")

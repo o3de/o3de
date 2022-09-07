@@ -7,8 +7,5 @@
 #
 
 set(FILES
-    Source/AtomImGuiToolsSystemComponent.cpp
-    Source/AtomImGuiToolsSystemComponent.h
-    Source/MaterialShaderDetailsController.cpp
-    Source/MaterialShaderDetailsController.h
+    Include/AtomLyIntegration/AtomImGuiTools/AtomImGuiToolsBus.h
 )
