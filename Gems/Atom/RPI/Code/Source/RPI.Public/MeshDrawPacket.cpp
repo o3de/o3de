@@ -55,6 +55,7 @@ namespace AZ
         
         const ModelLod::Mesh& MeshDrawPacket::GetMesh() const
         {
+            AZ_Assert(m_modelLodMeshIndex < m_modelLod->GetMeshes().size(), "m_modelLodMeshIndex %zu is out of range %zu", m_modelLodMeshIndex, m_modelLod->GetMeshes().size());
             return m_modelLod->GetMeshes()[m_modelLodMeshIndex];
         }
 

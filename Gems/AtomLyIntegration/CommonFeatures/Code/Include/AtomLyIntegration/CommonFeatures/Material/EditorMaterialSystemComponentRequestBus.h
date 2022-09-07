@@ -40,7 +40,7 @@ namespace AZ
                 const AZ::EntityId& primaryEntityId,
                 const AzToolsFramework::EntityIdSet& entityIdsToEdit,
                 const AZ::Render::MaterialAssignmentId& materialAssignmentId) = 0;
-            
+
             //! Generate a material preview image for a specific entity and material slot with material and property overrides applied 
             virtual void RenderMaterialPreview(
                 const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId) = 0;

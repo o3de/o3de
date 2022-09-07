@@ -305,7 +305,7 @@ namespace AZ
             EditorMaterialSystemComponentRequestBus::Broadcast(
                 &EditorMaterialSystemComponentRequestBus::Events::OpenMaterialInspector, m_entityId, entityIdsToEdit, m_id);
         }
-        
+
         void EditorMaterialComponentSlot::OpenUvNameMapInspector(const AzToolsFramework::EntityIdSet& entityIdsToEdit)
         {
             if (GetActiveAssetId().IsValid())
@@ -357,7 +357,7 @@ namespace AZ
 
             action = menu.addAction("Edit Material Instance UV Map...", [this, entityIdsToEdit]() { OpenUvNameMapInspector(entityIdsToEdit); });
             action->setEnabled(GetActiveAssetId().IsValid() && hasMatchingMaterialTypes);
-            
+
             menu.addSeparator();
 
             action = menu.addAction("Clear Material Instance Overrides", [this, entityIdsToEdit]() {

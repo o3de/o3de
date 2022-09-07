@@ -191,7 +191,7 @@ namespace AZ
                 }
             }
         }
-        
+
         void EditorMaterialSystemComponent::RenderMaterialPreview(
             const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId)
         {
