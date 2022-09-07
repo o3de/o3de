@@ -16,6 +16,7 @@ def load_module_by_path(module_name, module_path):
     location = importlib.util.module_from_spec(spec)
     sys.modules[module_name] = location
     spec.loader.exec_module(location)
+    return location
 
 
 def test_import(target_module: str, set_variable=None, import_module=False):

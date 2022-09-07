@@ -21,13 +21,10 @@ class Setup(QtWidgets.QWidget):
     def __init__(self, model):
         super(Setup, self).__init__()
 
-        _LOGGER.info('Setup Page added to content layout')
         self.model = model
         self.content_layout = QtWidgets.QHBoxLayout(self)
         self.content_layout.setContentsMargins(10, 3, 0, 0)
         self.content_frame = QtWidgets.QFrame(self)
-
-
         self.dcc_paths = {}
         self.dynaconf_environment_values = {}
         self.environment_key_structure = {}
@@ -35,10 +32,8 @@ class Setup(QtWidgets.QWidget):
         self.environment_list = []
         self.settings_file = Path(settings.get('PATH_DCCSIG')) / 'settings.json'
         self.supported_ides = ['vscode', 'pycharm', 'wing']
-
         self.add_button_group = QtWidgets.QButtonGroup()
         self.add_button_group.idClicked.connect(self.add_button_clicked)
-
         self.page_splitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
         self.page_splitter.setSizes([200, 540, 540])
         self.content_layout.addWidget(self.page_splitter)
@@ -197,7 +192,6 @@ class Setup(QtWidgets.QWidget):
 
         self.dev_mode_checkbox = QtWidgets.QCheckBox('Dev Mode')
         self.logging_levels_layout.addWidget(self.dev_mode_checkbox)
-        # self.left_column_container.addSpacing(3)
 
         # IDE Panel #######################################################
         self.ide_panel_layout = QtWidgets.QVBoxLayout()
@@ -260,7 +254,6 @@ class Setup(QtWidgets.QWidget):
 
         # --> Path Settings Title Bar
         self.path_settings_title_layout = QtWidgets.QHBoxLayout()
-
         self.path_settings_widget = utilities.get_title_bar_widget(self.path_settings_title_layout,
                                                                    'Dynaconf Environment Values')
         self.dynaconf_settings_layout.addWidget(self.path_settings_widget)

@@ -25,6 +25,7 @@
 from dynaconf import settings
 from SDK.Python import general_utilities as helpers
 from azpy.o3de.utils import markdown_conversion
+from Tools.Launcher.data import project_constants as constants
 from pathlib import Path
 import box
 from box import Box
@@ -38,7 +39,7 @@ _LOGGER = logging.getLogger('Launcher.model')
 class LauncherModel:
     def __init__(self):
         self.launcher_base_path = Path(settings.get('PATH_DCCSI_TOOLS')) / 'Launcher'
-        self.launcher_sections = ['Tools', 'Projects', 'Output', 'Setup', 'Help']
+        self.launcher_sections = ['Splash', 'Tools', 'Projects', 'Output', 'Setup', 'Help']
         self.db_path = (self.launcher_base_path / 'data/launcher.db').as_posix()
         self.database_path = None
         self.icon_path = None
@@ -53,43 +54,6 @@ class LauncherModel:
             'projects':     self.projects,
             'applications': self.applications
         }
-        self.projects_categories = [
-            'REGISTERED_PROJECTS',
-            'REGISTERED_ENGINE',
-            'BOOTSTRAP_LOCATION',
-            'CURRENT_PROJECT',
-            'CURRENT_ENGINE_PROJECTS',
-            'CURRENT_ENGINE_GEMS',
-            'ENGINE_EXTERNAL_DIRECTORIES',
-            'O3DE_MANIFEST'
-        ]
-        self.tools_categories = [
-            'O3DE',
-            'Utilities',
-            'Maya',
-            'Blender',
-            '3dsMax',
-            'Painter',
-            'Designer',
-            'Houdini',
-            'SAT'
-        ]
-        self.tools_headers = [
-            'toolId',
-            'toolSection',
-            'toolPlacement',
-            'toolName',
-            'toolDescription',
-            'toolStartFile',
-            'toolCategory',
-            'toolMarkdown',
-            'toolDocumentation'
-        ]
-        self.projects_headers = [
-            'projectName',
-            'projectPath',
-            'projectLevels'
-        ]
         self.initialize_db_values()
 
     def initialize_db_values(self):
@@ -114,12 +78,12 @@ class LauncherModel:
     def extract_db_values(self):
         database_values = helpers.get_database_values(self.cursor, [*self.tables])
         for key, values in database_values.items():
-            categories = self.tools_categories if key == 'tools' else self.projects_categories
+            categories = constants.TOOLS_CATEGORIES if key == 'tools' else constants.PROJECTS_CATEGORIES
             self.tables[key] = {item: {} for item in categories}
             for entry in values:
                 temp_dict = {}
                 for index, attribute_value in enumerate(entry):
-                    temp_dict[self.tools_headers[index]] = attribute_value
+                    temp_dict[constants.TOOLS_HEADERS[index]] = attribute_value
                 self.tables[key][temp_dict['toolSection']][temp_dict['toolName']] = temp_dict
         self.close_database()
 
@@ -147,17 +111,19 @@ class LauncherModel:
             if 'tools' not in existing_tables:
                 self.create_tool_table()
             _LOGGER.info(f'Adding tool data: {data}')
-            helpers.create_table_entry(self.db, 'tools', tuple(self.tools_headers), tuple(data))
+            helpers.create_table_entry(self.db, 'tools', tuple(constants.TOOLS_HEADERS), tuple(data))
+            return True
+        return False
 
     def set_project(self):
         pass
 
     def get_projects(self):
-        for category in self.projects_categories:
+        for category in constants.PROJECTS_CATEGORIES:
             self.tables['projects'][category] = settings.get(category)
 
     def get_tools(self):
-        for tool_type in self.tools_categories:
+        for tool_type in constants.TOOLS_CATEGORIES:
             try:
                 self.tools[tool_type] = self.tables['tools'][tool_type]
             except box.exceptions.BoxKeyError:
@@ -197,9 +163,6 @@ class LauncherModel:
     def get_table_names(self) -> list:
         return [*self.tables]
 
-    def get_tools_categories(self) -> list:
-        return self.tools_categories
-
     def get_stored_values(self, target_table) -> dict:
         stored_tables = helpers.get_tables(self.db)
         if stored_tables and target_table in stored_tables:
@@ -218,4 +181,8 @@ class LauncherModel:
     @staticmethod
     def format_for_query(value):
         return f"\'{value}\'"
+
+    @staticmethod
+    def get_tools_categories() -> list:
+        return constants.TOOLS_CATEGORIES
 

@@ -46,27 +46,45 @@
 import config
 import logging
 from dynaconf import settings
+from PySide2 import QtWidgets
 
 # Logging Formatting
 _MODULENAME = 'Tools.Python.MockTool.main'
 _LOGGER = logging.getLogger(_MODULENAME)
-_LOGGER.info('This is an example log statement')
 
 
-# To get values from single environment (and default). This is to loop through all values, but to
-# target individual values just use the "from_env(<target_environment>)"
-for key, value in settings.items():
-    if key in settings.from_env('maya'):
-        _LOGGER.info(f"Key: {key}  Value: {value}")
+class MockTool(QtWidgets.QWidget):
+    def __init__(self, *args, **kwargs):
+        super(MockTool, self).__init__()
+        _LOGGER.info('MockTool Added')
+        self.main_container = QtWidgets.QVBoxLayout(self)
+        self.test_button = QtWidgets.QPushButton('Hello')
+        self.main_container.addWidget(self.test_button)
+
+    @staticmethod
+    def get_environment_values(target_environment=None):
+        """ Gather environment variables stored in Dynaconf """
+        for key, value in settings.items():
+            if target_environment:
+                if key in settings.from_env(target_environment):
+                    _LOGGER.info(f"Key: {key}  Value: {value}")
+            else:
+                _LOGGER.info(f"Key: {key}  Value: {value}")
+
+    @staticmethod
+    def get_env_value():
+        """ Access variables from the .env file """
+
+        # Get Settings Value
+        _LOGGER.info(f"Access the DYNACONF_ICON_PATH value from the .env file: {settings.get('ICON_PATH')}")
+        _LOGGER.info(f"Access the DYNACONF_DB_PATH value from the .env file: {settings.get('DB_PATH')}")
+
+        # Check if Settings Value is present - if it isn't will return the second value (in this case "404")
+        _LOGGER.info(f"Accessing Dynaconf Base Directory Variable: {settings.get('NO_KEY_AVAILABLE', 404)}")
 
 
-# Access variables from the .env file
-_LOGGER.info(f"Access the DYNACONF_ICON_PATH value from the .env file: {settings.get('ICON_PATH')}")
-_LOGGER.info(f"Access the DYNACONF_DB_PATH value from the .env file: {settings.get('DB_PATH')}")
-
-
-# Check if a value is present- if it isn't will return the second value (in this case "404")
-_LOGGER.info(f"Accessing Dynaconf Base Directory Variable: {settings.get('NO_KEY_AVAILABLE', 404)}")
-
+def get_tool(*args, **kwargs):
+    _LOGGER.info('Get tool fired')
+    return MockTool(*args, **kwargs)
 
 

@@ -1,7 +1,6 @@
 import config
 from dynaconf import settings
 from Tools.Launcher.main import ContentContainer
-from Tools.Launcher.data.configuration import Configuration
 from Tools.Launcher.data.model import LauncherModel
 from PySide2 import QtWidgets, QtCore, QtGui
 from pathlib import Path
@@ -30,14 +29,8 @@ class Launcher(QtWidgets.QMainWindow):
         self.setWindowIcon(QtGui.QIcon(self.icon_path))
         self.isTopLevel()
         self.model = LauncherModel()
-        self.configuration = Configuration()
         self.content = ContentContainer(self.model)
         self.setCentralWidget(self.content)
-
-        for key, values in self.model.tables.items():
-            _LOGGER.info(f'TargetDict [{key}] ::: {values}')
-            # self.configuration.set_variables({k: v for k, v in target_dict.items()})
-
         self.status_bar = QtWidgets.QStatusBar()
         self.status_bar.setVisible(False)
         self.status_bar.setStyleSheet('background-color: rgb(35, 35, 35)')
