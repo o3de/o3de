@@ -407,7 +407,7 @@ def register_gem_path(json_data: dict,
     return register_o3de_object_path(json_data, gem_path, 'external_subdirectories', 'gem.json',
                                      validation.valid_o3de_gem_json, remove,
                                      pathlib.Path(engine_path).resolve() if engine_path else None,
-                                     pathlib.Path(project_path).resolve() if project_path else None,)
+                                     pathlib.Path(project_path).resolve() if project_path else None)
 
 
 def register_project_path(json_data: dict,
