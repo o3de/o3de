@@ -119,10 +119,13 @@ def check_for_animation_actions():
     for animations in bpy.data.actions:
         actions.append(animations.name)
     # Look for Active Animation Action
-    if not obj.animation_data == None:
-        active_action_name = obj.animation_data.action.name
-    else:
-        active_action_name = ""
+    try:
+        if not obj.animation_data == None:
+            active_action_name = obj.animation_data.action.name
+        else:
+            active_action_name = ""
+    except AttributeError:
+        pass
     return active_action_name, len(actions)
 
 def check_if_valid_path(file_path):
@@ -423,6 +426,8 @@ def add_remove_modifier(modifier_name, add):
                     bpy.context.view_layer.objects.active = selected_obj
                     # Add Modifier
                     bpy.ops.object.modifier_add(type=modifier_name)
+                    if modifier_name == "TRIANGULATE":
+                        bpy.context.object.modifiers["Triangulate"].keep_custom_normals = True
                 else:
                     # Set the mesh active
                     bpy.context.view_layer.objects.active = selected_obj
