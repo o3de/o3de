@@ -14,6 +14,7 @@ import re
 import os
 
 import ly_test_tools.environment.file_system
+import ly_test_tools._internal.exceptions as exceptions
 
 logger = logging.getLogger(__name__)
 
@@ -246,7 +247,7 @@ def _edit_text_settings_file(settings_file, setting, value, comment_char=""):
     """
 
     if not os.path.isfile(settings_file):
-        raise IOError(f"Invalid file and/or path {settings_file}.")
+        raise exceptions.LyTestToolsFrameworkException(f"Invalid file and/or path {settings_file}.")
 
     match_obj = None
     document = None
@@ -277,7 +278,8 @@ def _edit_text_settings_file(settings_file, setting, value, comment_char=""):
                 print(line)
 
     except PermissionError as error:
-        logger.warning(f"PermissionError, possibly due to ({settings_file}) already being open. Error: {error}")
+        logger.warning(f"PermissionError originating from LyTT, possibly due to ({settings_file}) already being open. "
+                       f"Error: {error}")
     finally:
         if document is not None:
             document.close()
