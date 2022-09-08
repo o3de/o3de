@@ -826,7 +826,7 @@ namespace AzToolsFramework
                 Link& link = findLinkResult->get();
 
                 PrefabDomPath instancePath = link.GetInstancePath();
-                PrefabDom& linkDom = link.GetLinkDom();
+                PrefabDom linkDom = link.GetLinkDom();
 
                 // Get the instance value of the Template copy
                 // This currently stores a fully realized nested Template Dom
@@ -843,9 +843,9 @@ namespace AzToolsFramework
                     return false;
                 }
 
-                // Copy the contents of the Link to overwrite our Template Dom copies Instance
+                // Swap the contents of the Link dom with our nested instances dom in the template.
                 // The instance is now "collapsed" as it contains the file reference and patches from the link
-                instanceValue->CopyFrom(linkDom, prefabDom.GetAllocator());
+                instanceValue->Swap(linkDom);
             }
 
             // Remove Source parameter from the dom. It will be added on file load, and should not be stored to disk.

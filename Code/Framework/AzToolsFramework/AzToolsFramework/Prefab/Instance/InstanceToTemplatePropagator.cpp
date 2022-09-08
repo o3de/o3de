@@ -85,11 +85,9 @@ namespace AzToolsFramework
                 AZ_Assert(false, "Link with id %llu couldn't be found. Patch cannot be generated.", linkId);
                 return false;
             }
-            
-            Link& link = findLinkResult->get();
 
-            AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::CreatePatch(generatedPatch,
-                link.GetLinkDom().GetAllocator(), initialState, modifiedState, AZ::JsonMergeApproach::JsonPatch);
+            AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::CreatePatch(
+                generatedPatch, generatedPatch.GetAllocator(), initialState, modifiedState, AZ::JsonMergeApproach::JsonPatch);
 
             return result.GetProcessing() != AZ::JsonSerializationResult::Processing::Halted;
         }
@@ -248,10 +246,10 @@ namespace AzToolsFramework
                 PrefabDomValueReference patchPathReference = PrefabDomUtils::FindPrefabDomValue(*patchIterator, "path");
                 AZStd::string patchPathString = patchPathReference->get().GetString();
                 patchPathString.insert(0, patchPrefix);
-                patchPathReference->get().SetString(patchPathString.c_str(), linkToApplyPatches.GetLinkDom().GetAllocator());
+                patchPathReference->get().SetString(patchPathString.c_str(), patches.GetAllocator());
             }
 
-            AddPatchesToLink(patches, linkToApplyPatches);
+            linkToApplyPatches.AddPatchesToLink(patches);
             linkToApplyPatches.UpdateTarget();
 
             m_prefabSystemComponentInterface->SetTemplateDirtyFlag(linkToApplyPatches.GetTargetTemplateId(), true);
@@ -274,20 +272,6 @@ namespace AzToolsFramework
             }
 
             return parentInstance;
-        }
-
-        void InstanceToTemplatePropagator::AddPatchesToLink(const PrefabDom& patches, Link& link)
-        {
-            PrefabDom& linkDom = link.GetLinkDom();
-
-            /*
-            If the original allocator the patches were created with gets destroyed, then the patches would become garbage in the
-            linkDom. Since we cannot guarantee the lifecycle of the patch allocators, we are doing a copy of the patches here to
-            associate them with the linkDom's allocator.
-            */
-            PrefabDom patchesCopy;
-            patchesCopy.CopyFrom(patches, linkDom.GetAllocator());
-            linkDom.AddMember(rapidjson::StringRef(PrefabDomUtils::PatchesName), patchesCopy, linkDom.GetAllocator());
         }
     }
 }

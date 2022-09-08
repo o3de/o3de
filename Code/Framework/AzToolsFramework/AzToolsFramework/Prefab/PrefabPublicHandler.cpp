@@ -157,14 +157,7 @@ namespace AzToolsFramework
                     auto linkRef = m_prefabSystemComponentInterface->FindLink(detachingInstanceLinkId);
                     AZ_Assert(linkRef.has_value(), "Unable to find link with id '%llu' during prefab creation.", detachingInstanceLinkId);
 
-                    PrefabDomValueReference linkPatches = linkRef->get().GetLinkPatches();
-                    AZ_Assert(
-                        linkPatches.has_value(), "Unable to get patches on link with id '%llu' during prefab creation.",
-                        detachingInstanceLinkId);
-
-                    PrefabDom linkPatchesCopy;
-                    linkPatchesCopy.CopyFrom(linkPatches->get(), linkPatchesCopy.GetAllocator());
-                    nestedInstanceLinkPatchesMap.emplace(nestedInstance, AZStd::move(linkPatchesCopy));
+                    nestedInstanceLinkPatchesMap.emplace(nestedInstance, AZStd::move(linkRef->get().GetLinkPatches()));
 
                     RemoveLink(outInstance, commonRootEntityOwningInstance->get().GetTemplateId(), undoBatch.GetUndoBatch());
 
@@ -549,15 +542,12 @@ namespace AzToolsFramework
                 "A valid link was not found for one of the instances provided as input for the CreatePrefab operation.");    
 
             PrefabDom patchesCopyForUndoSupport;
-            PrefabDomReference nestedInstanceLinkDom = nestedInstanceLink->get().GetLinkDom();
-            if (nestedInstanceLinkDom.has_value())
+            PrefabDom nestedInstanceLinkDom = nestedInstanceLink->get().GetLinkDom();
+            PrefabDomValueConstReference nestedInstanceLinkPatches =
+                PrefabDomUtils::FindPrefabDomValue(nestedInstanceLinkDom, PrefabDomUtils::PatchesName);
+            if (nestedInstanceLinkPatches.has_value())
             {
-                PrefabDomValueReference nestedInstanceLinkPatches =
-                    PrefabDomUtils::FindPrefabDomValue(nestedInstanceLinkDom->get(), PrefabDomUtils::PatchesName);
-                if (nestedInstanceLinkPatches.has_value())
-                {
-                    patchesCopyForUndoSupport.CopyFrom(nestedInstanceLinkPatches->get(), patchesCopyForUndoSupport.GetAllocator());
-                }
+                patchesCopyForUndoSupport.CopyFrom(nestedInstanceLinkPatches->get(), patchesCopyForUndoSupport.GetAllocator());
             }
 
             PrefabUndoHelpers::RemoveLink(
@@ -895,11 +885,7 @@ namespace AzToolsFramework
 
                     if (linkRef.has_value())
                     {
-                        auto patches = linkRef->get().GetLinkPatches();
-                        if (patches.has_value())
-                        {
-                            oldLinkPatches.CopyFrom(patches->get(), oldLinkPatches.GetAllocator());
-                        }
+                        oldLinkPatches = linkRef->get().GetLinkPatches();
                     }
 
                     auto nestedInstanceUniquePtr = beforeOwningInstance->get().DetachNestedInstance(nestedInstance->GetInstanceAlias());
@@ -1166,13 +1152,7 @@ namespace AzToolsFramework
                         linkRef.has_value(), "Unable to find link with id '%llu' during instance duplication.",
                         oldLinkId);
 
-                    PrefabDomValueReference linkPatches = linkRef->get().GetLinkPatches();
-                    AZ_Assert(
-                        linkPatches.has_value(), "Link with id '%llu' is missing patches.",
-                        oldLinkId);
-
-                    PrefabDom linkPatchesCopy;
-                    linkPatchesCopy.CopyFrom(linkPatches->get(), linkPatchesCopy.GetAllocator());
+                    PrefabDom linkPatches = linkRef->get().GetLinkPatches();
 
                     // If the instance was duplicated as part of an ancestor's nested hierarchy, the container's parent patch
                     // will need to be refreshed to point to the new duplicated parent entity
@@ -1190,19 +1170,21 @@ namespace AzToolsFramework
                             // Get the dom into a QString for search/replace purposes
                             rapidjson::StringBuffer buffer;
                             rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-                            linkPatchesCopy.Accept(writer);
+                            linkPatches.Accept(writer);
 
                             QString linkPatchesString(buffer.GetString());
 
                             ReplaceOldAliases(linkPatchesString, oldParentAlias->get(), duplicateEntityAliasMap[oldParentAlias->get()]);
 
-                            linkPatchesCopy.Parse(linkPatchesString.toUtf8().constData());
+                            linkPatches.Parse(linkPatchesString.toUtf8().constData());
                         }
                     }
 
                     PrefabUndoHelpers::CreateLink(
                         oldInstance->GetTemplateId(), commonOwningInstance->get().GetTemplateId(),
-                        AZStd::move(linkPatchesCopy), newInstanceAlias, undoBatch.GetUndoBatch());
+                        AZStd::move(linkPatches),
+                        newInstanceAlias,
+                        undoBatch.GetUndoBatch());
                 }
 
                 // Select the duplicated entities/instances

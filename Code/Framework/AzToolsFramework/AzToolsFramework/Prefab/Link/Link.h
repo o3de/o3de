@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/DOM/DomPrefixTree.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzToolsFramework/Prefab/PrefabDomTypes.h>
@@ -31,10 +32,44 @@ namespace AzToolsFramework
             AZ_CLASS_ALLOCATOR(Link, AZ::SystemAllocator, 0);
             AZ_RTTI(Link, "{49230756-7BAA-4456-8DFE-0E18CB887DB5}");
 
+            struct PrefabOverrideMetadata
+            {
+                PrefabOverrideMetadata(PrefabDom&& patch, AZ::u32 patchIndex) noexcept
+                    : m_patch(AZStd::move(patch))
+                    , m_patchIndex(patchIndex)
+                {
+                }
+
+                PrefabOverrideMetadata(PrefabOverrideMetadata&& other) noexcept
+                    : m_patch(AZStd::move(other.m_patch))
+                    , m_patchIndex(other.m_patchIndex)
+                {
+                }
+
+                PrefabOverrideMetadata& operator=(PrefabOverrideMetadata&& other) noexcept
+                {
+                    if (this != &other)
+                    {
+                        m_patch = AZStd::move(other.m_patch);
+                        m_patchIndex = other.m_patchIndex;
+                    }
+
+                    return *this;
+                }
+
+                bool operator<(const PrefabOverrideMetadata& other) const
+                {
+                    return (this->m_patchIndex < other.m_patchIndex);
+                }
+
+                PrefabDom m_patch;
+                AZ::u32 m_patchIndex;
+            };
+
             Link();
             Link(LinkId linkId);
-            Link(const Link& other);
-            Link& operator=(const Link& other);
+            Link(const Link& other) = delete;
+            Link& operator=(const Link& other) = delete;
 
             Link(Link&& other) noexcept;
             Link& operator=(Link&& other) noexcept;
@@ -44,6 +79,7 @@ namespace AzToolsFramework
             void SetSourceTemplateId(TemplateId id);
             void SetTargetTemplateId(TemplateId id);
             void SetLinkDom(const PrefabDomValue& linkDom);
+            void AddPatchesToLink(const PrefabDom& patches);
             void SetInstanceName(const char* instanceName);
 
             bool IsValid() const;
@@ -53,8 +89,7 @@ namespace AzToolsFramework
 
             LinkId GetId() const;
 
-            PrefabDom& GetLinkDom();
-            const PrefabDom& GetLinkDom() const;
+            PrefabDom GetLinkDom() const;
 
             PrefabDomPath GetInstancePath() const;
             const AZStd::string& GetInstanceName() const;
@@ -75,7 +110,7 @@ namespace AzToolsFramework
              */
             void AddLinkIdToInstanceDom(PrefabDomValue& instanceDomValue);
 
-            PrefabDomValueReference GetLinkPatches();
+            PrefabDom GetLinkPatches();
 
         private:
 
@@ -87,14 +122,15 @@ namespace AzToolsFramework
              */
             void AddLinkIdToInstanceDom(PrefabDomValue& instanceDomValue, PrefabDom::AllocatorType& allocator);
 
+            PrefabDom ConstructLinkDomFromPatches() const;
+
+            AZ::Dom::DomPrefixTree<PrefabOverrideMetadata> m_linkPatchesTree;
+
             // Target template id for propagation during updating templates.
             TemplateId m_targetTemplateId = InvalidTemplateId;
 
             // Source template id for unlink templates if needed.
             TemplateId m_sourceTemplateId = InvalidTemplateId;
-
-            // JSON patches for overrides in Template.
-            PrefabDom m_linkDom;
 
             // Name of the nested instance of target Template.
             AZStd::string m_instanceName;
