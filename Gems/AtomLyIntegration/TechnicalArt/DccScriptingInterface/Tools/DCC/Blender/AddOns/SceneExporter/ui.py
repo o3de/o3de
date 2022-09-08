@@ -260,6 +260,7 @@ class ReportCardButton(bpy.types.Operator):
         """
         bpy.ops.report_card.popup('INVOKE_DEFAULT')
         return{'FINISHED'}
+
 class WikiButton(bpy.types.Operator):
     """!
     This Class is for the UI Wiki Button
@@ -273,6 +274,7 @@ class WikiButton(bpy.types.Operator):
         """
         webbrowser.open(constants.WIKI_URL)
         return{'FINISHED'}
+
 class CustomProjectPath(bpy.types.Operator, ImportHelper):
     """!
     This Class is for setting a custom project path
@@ -340,7 +342,6 @@ class AddLODMesh(bpy.types.Operator):
         bpy.types.Scene.pop_up_type = "UDP"
         bpy.ops.message_confirm.popup('INVOKE_DEFAULT')
         return{'FINISHED'}
-
 
 class ProjectsListDropDown(bpy.types.Operator):
     """!
@@ -449,7 +450,7 @@ class ExportOptionsListDropDown(bpy.types.Operator):
         else:
             bpy.types.Scene.export_textures_folder = None
         return {'FINISHED'}
-
+        
 class AnimationOptionsListDropDown(bpy.types.Operator):
     """!
     This Class is for the O3DE Export Animations UI List Drop Down
