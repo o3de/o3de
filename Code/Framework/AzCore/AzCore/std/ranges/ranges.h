@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/std/concepts/concepts.h>
+#include <AzCore/std/iterator/const_iterator.h>
 #include <AzCore/std/typetraits/add_pointer.h>
 #include <AzCore/std/typetraits/is_convertible.h>
 #include <AzCore/std/typetraits/is_lvalue_reference.h>
@@ -45,6 +46,11 @@ namespace AZStd::ranges
         constexpr bool is_lvalue_or_borrowable = disjunction_v<is_lvalue_reference<T>, bool_constant<enable_borrowed_range<remove_cv_t<T>>>>;
 
         //! begin
+        template<class T>
+        void begin(T&) = delete;
+        template<class T>
+        void begin(const T&) = delete;
+
         template <class T, typename = void>
         constexpr bool has_member_begin = false;
         template <class T>
@@ -59,11 +65,6 @@ namespace AZStd::ranges
             sfinae_trigger<decltype(begin(declval<T&>()))>
             >>> = true;
 
-        template<class T>
-        void begin(T&) = delete;
-        template<class T>
-        void begin(const T&) = delete;
-
         struct begin_fn
         {
             template<class T>
@@ -74,26 +75,22 @@ namespace AZStd::ranges
                 return t + 0;
             }
 
-            template<class T>
-            constexpr auto operator()(T&& t) const noexcept(noexcept(AZStd::forward<T>(t).begin())) ->
-                enable_if_t<conjunction_v<
-                bool_constant<input_or_output_iterator<decltype(AZStd::forward<T>(t).begin())>>,
+            template<class T, class = enable_if_t<conjunction_v<
+                bool_constant<input_or_output_iterator<decltype(declval<T&>().begin())>>,
                 bool_constant<is_lvalue_or_borrowable<T>>,
                 bool_constant<!is_array_v<T>>,
-                bool_constant<has_member_begin<T>>>,
-                decltype(AZStd::forward<T>(t).begin())>
+                bool_constant<has_member_begin<T>>>>>
+            constexpr auto operator()(T&& t) const noexcept(noexcept(AZStd::forward<T>(t).begin()))
             {
                 return AZStd::forward<T>(t).begin();
             }
 
-            template<class T>
-            constexpr auto operator()(T&& t) const noexcept(noexcept(begin(AZStd::forward<T>(t)))) ->
-                enable_if_t<conjunction_v<
-                bool_constant<input_or_output_iterator<decltype(begin(AZStd::forward<T>(t)))>>,
+            template<class T, enable_if_t<conjunction_v<
+                bool_constant<input_or_output_iterator<decltype(begin(declval<T&>()))>>,
                 bool_constant<is_lvalue_or_borrowable<T>>,
                 bool_constant<!is_array_v<T>>,
-                bool_constant<has_unqualified_begin<T>>>,
-                decltype(begin(AZStd::forward<T>(t)))>
+                bool_constant<has_unqualified_begin<T>>>>* = nullptr>
+            constexpr auto operator()(T&& t) const noexcept(noexcept(begin(AZStd::forward<T>(t))))
             {
                 return begin(AZStd::forward<T>(t));
             }
@@ -109,10 +106,12 @@ namespace AZStd::ranges
 
     namespace Internal
     {
-        template <class T>
-        constexpr bool has_iterator_t = has_member_begin<T>;
-
         //! end
+        template<class T>
+        void end(T&) = delete;
+        template<class T>
+        void end(const T&) = delete;
+
         template <class T, typename = void>
         constexpr bool has_member_end = false;
         template <class T>
@@ -127,11 +126,6 @@ namespace AZStd::ranges
             sfinae_trigger<decltype(end(declval<T&>()))>
             >>> = true;
 
-        template<class T>
-        void end(T&) = delete;
-        template<class T>
-        void end(const T&) = delete;
-
         struct end_fn
         {
             template<class T>
@@ -142,26 +136,22 @@ namespace AZStd::ranges
                 return t + extent_v<T>;
             }
 
-            template<class T>
-            constexpr auto operator()(T&& t) const noexcept(noexcept(AZStd::forward<T>(t).end())) ->
-                enable_if_t<conjunction_v<
-                bool_constant<sentinel_for<decltype(AZStd::forward<T>(t).end()), iterator_t<T>>>,
+            template<class T, class = enable_if_t<conjunction_v<
+                bool_constant<sentinel_for<decltype(declval<T&>().end()), iterator_t<T>>>,
                 bool_constant<is_lvalue_or_borrowable<T>>,
                 bool_constant<!is_array_v<T>>,
-                bool_constant<has_member_end<T>>>,
-                decltype(AZStd::forward<T>(t).end())>
+                bool_constant<has_member_end<T>>>>>
+            constexpr auto operator()(T&& t) const noexcept(noexcept(AZStd::forward<T>(t).end()))
             {
                 return AZStd::forward<T>(t).end();
             }
 
-            template<class T>
-            constexpr auto operator()(T&& t) const noexcept(noexcept(end(AZStd::forward<T>(t)))) ->
-                enable_if_t<conjunction_v<
-                bool_constant<sentinel_for<decltype(end(AZStd::forward<T>(t))), iterator_t<T>>>,
+            template<class T, enable_if_t<conjunction_v<
+                bool_constant<sentinel_for<decltype(end(declval<T&>())), iterator_t<T>>>,
                 bool_constant<is_lvalue_or_borrowable<T>>,
                 bool_constant<!is_array_v<T>>,
-                bool_constant<has_unqualified_end<T>>>,
-                decltype(end(AZStd::forward<T>(t)))>
+                bool_constant<has_unqualified_end<T>>>>* = nullptr>
+            constexpr auto operator()(T&& t) const noexcept(noexcept(end(AZStd::forward<T>(t))))
             {
                 return end(AZStd::forward<T>(t));
             }
@@ -174,57 +164,12 @@ namespace AZStd::ranges
 
     namespace Internal
     {
-        //! cbegin
-        struct cbegin_fn
-        {
-            template<class T>
-            constexpr auto operator()(T&& t) const noexcept(noexcept(ranges::begin(static_cast<const T&>(t))))
-                ->enable_if_t<is_lvalue_reference_v<T>, decltype(ranges::begin(static_cast<const T&>(t)))>
-            {
-                return ranges::begin(static_cast<const T&>(t));
-            }
-
-            template<class T>
-            constexpr auto operator()(T&& t) const noexcept(noexcept(ranges::begin(static_cast<const T&>(t)))) ->
-                enable_if_t<!is_lvalue_reference_v<T>, decltype(ranges::begin(static_cast<const T&&>(t)))>
-            {
-                return ranges::begin(static_cast<const T&&>(t));
-            }
-        };
-    }
-    inline namespace customization_point_object
-    {
-        inline constexpr Internal::cbegin_fn cbegin{};
-    }
-
-    namespace Internal
-    {
-        //! cend
-        struct cend_fn
-        {
-            template<class T>
-            constexpr auto operator()(T&& t) const noexcept(noexcept(ranges::end(static_cast<const T&>(t))))
-                ->enable_if_t<is_lvalue_reference_v<T>, decltype(ranges::end(static_cast<const T&>(t)))>
-            {
-                return ranges::end(static_cast<const T&>(t));
-            }
-
-            template<class T>
-            constexpr auto operator()(T&& t) const noexcept(noexcept(ranges::end(static_cast<const T&>(t)))) ->
-                enable_if_t<!is_lvalue_reference_v<T>, decltype(ranges::end(static_cast<const T&&>(t)))>
-            {
-                return ranges::end(static_cast<const T&&>(t));
-            }
-        };
-    }
-    inline namespace customization_point_object
-    {
-        inline constexpr Internal::cend_fn cend{};
-    }
-
-    namespace Internal
-    {
         //! rbegin
+        template<class T>
+        void rbegin(T&) = delete;
+        template<class T>
+        void rbegin(const T&) = delete;
+
         template <class T, class = void>
         constexpr bool has_member_rbegin = false;
         template <class T>
@@ -250,40 +195,28 @@ namespace AZStd::ranges
             bool_constant<bidirectional_iterator<decltype(ranges::end(declval<T&>()))>>
             >>> = true;
 
-
-        template<class T>
-        void rbegin(T&) = delete;
-        template<class T>
-        void rbegin(const T&) = delete;
-
         struct rbegin_fn
         {
-            template<class T>
-            constexpr auto operator()(T&& t) const noexcept(noexcept(AZStd::forward<T>(t).rbegin())) ->
-                enable_if_t<conjunction_v<
-                bool_constant<input_or_output_iterator<decltype(AZStd::forward<T>(t).rbegin())>>,
+            template<class T, class = enable_if_t<conjunction_v<
+                bool_constant<input_or_output_iterator<decltype(declval<T&>().rbegin())>>,
                 bool_constant<is_lvalue_or_borrowable<T>>,
-                bool_constant<has_member_rbegin<T>>>,
-                decltype(AZStd::forward<T>(t).rbegin())>
+                bool_constant<has_member_rbegin<T>>>>>
+            constexpr auto operator()(T&& t) const noexcept(noexcept(AZStd::forward<T>(t).rbegin()))
             {
                 return AZStd::forward<T>(t).rbegin();
             }
 
-            template<class T>
-            constexpr auto operator()(T&& t) const noexcept(noexcept(rbegin(AZStd::forward<T>(t)))) ->
-                enable_if_t<conjunction_v<
-                bool_constant<input_or_output_iterator<decltype(rbegin(AZStd::forward<T>(t)))>>,
+            template<class T, enable_if_t<conjunction_v<
+                bool_constant<input_or_output_iterator<decltype(rbegin(declval<T&>()))>>,
                 bool_constant<is_lvalue_or_borrowable<T>>,
-                bool_constant<has_unqualified_rbegin<T>>>,
-                decltype(rbegin(AZStd::forward<T>(t)))>
+                bool_constant<has_unqualified_rbegin<T>>>>* = nullptr>
+            constexpr auto operator()(T&& t) const noexcept(noexcept(rbegin(AZStd::forward<T>(t))))
             {
                 return rbegin(AZStd::forward<T>(t));
             }
 
-            template<class T>
-            constexpr auto operator()(T&& t) const noexcept(noexcept(AZStd::make_reverse_iterator(ranges::end(AZStd::forward<T>(t))))) ->
-                enable_if_t<has_bidirectional_rbegin<T>,
-                decltype(AZStd::make_reverse_iterator(ranges::end(AZStd::forward<T>(t))))>
+            template<class T, enable_if_t<has_bidirectional_rbegin<T>, int> = 0>
+            constexpr auto operator()(T&& t) const noexcept(noexcept(AZStd::make_reverse_iterator(ranges::end(AZStd::forward<T>(t)))))
             {
                 return AZStd::make_reverse_iterator(ranges::end(AZStd::forward<T>(t)));
             }
@@ -298,6 +231,11 @@ namespace AZStd::ranges
     namespace Internal
     {
         //! rend
+        template<class T>
+        void rend(T&) = delete;
+        template<class T>
+        void rend(const T&) = delete;
+
         template <class T, class = void>
         constexpr bool has_member_rend = false;
         template <class T>
@@ -323,39 +261,28 @@ namespace AZStd::ranges
             bool_constant<bidirectional_iterator<decltype(ranges::end(declval<T&>()))>>
             >>> = true;
 
-        template<class T>
-        void rend(T&) = delete;
-        template<class T>
-        void rend(const T&) = delete;
-
         struct rend_fn
         {
-            template<class T>
-            constexpr auto operator()(T&& t) const noexcept(noexcept(AZStd::forward<T>(t).rend())) ->
-                enable_if_t<conjunction_v<
-                bool_constant<sentinel_for<decltype(t.rend()), decltype(ranges::rbegin(AZStd::forward<T>(t)))>>,
+            template<class T, class = enable_if_t<conjunction_v<
+                bool_constant<sentinel_for<decltype(declval<T>().rend()), decltype(ranges::rbegin(declval<T>()))>>,
                 bool_constant<is_lvalue_or_borrowable<T>>,
-                bool_constant<has_member_rend<T>>>,
-                decltype(AZStd::forward<T>(t).rend())>
+                bool_constant<has_member_rend<T>>>>>
+            constexpr auto operator()(T&& t) const noexcept(noexcept(AZStd::forward<T>(t).rend()))
             {
                 return AZStd::forward<T>(t).rend();
             }
 
-            template<class T>
-            constexpr auto operator()(T&& t) const noexcept(noexcept(rend(AZStd::forward<T>(t)))) ->
-                enable_if_t<conjunction_v<
-                bool_constant<sentinel_for<decltype(rend(t)), decltype(ranges::rbegin(AZStd::forward<T>(t)))>>,
+            template<class T, enable_if_t<conjunction_v<
+                bool_constant<sentinel_for<decltype(rend(declval<T>())), decltype(ranges::rbegin(declval<T>()))>>,
                 bool_constant<is_lvalue_or_borrowable<T>>,
-                bool_constant<has_unqualified_rend<T>>>,
-                decltype(rend(AZStd::forward<T>(t)))>
+                bool_constant<has_unqualified_rend<T>>>>* = nullptr>
+            constexpr auto operator()(T&& t) const noexcept(noexcept(rend(AZStd::forward<T>(t))))
             {
                 return rend(AZStd::forward<T>(t));
             }
 
-            template<class T>
-            constexpr auto operator()(T&& t) const noexcept(noexcept(AZStd::make_reverse_iterator(ranges::begin(AZStd::forward<T>(t))))) ->
-                enable_if_t<has_bidirectional_rend<T>,
-                decltype(AZStd::make_reverse_iterator(ranges::begin(AZStd::forward<T>(t))))>
+            template<class T, enable_if_t<has_bidirectional_rend<T>, int> = 0>
+            constexpr auto operator()(T&& t) const noexcept(noexcept(AZStd::make_reverse_iterator(ranges::begin(AZStd::forward<T>(t)))))
             {
                 return AZStd::make_reverse_iterator(ranges::begin(AZStd::forward<T>(t)));
             }
@@ -369,57 +296,12 @@ namespace AZStd::ranges
 
     namespace Internal
     {
-        //! crbegin
-        struct crbegin_fn
-        {
-            template<class T>
-            constexpr auto operator()(T&& t) const noexcept(noexcept(ranges::rbegin(static_cast<const T&>(t))))
-                ->enable_if_t<is_lvalue_reference_v<T>, decltype(ranges::rbegin(static_cast<const T&>(t)))>
-            {
-                return ranges::rbegin(static_cast<const T&>(t));
-            }
-
-            template<class T>
-            constexpr auto operator()(T&& t) const noexcept(noexcept(ranges::rbegin(static_cast<const T&>(t)))) ->
-                enable_if_t<!is_lvalue_reference_v<T>, decltype(ranges::rbegin(static_cast<const T&&>(t)))>
-            {
-                return ranges::rbegin(static_cast<const T&&>(t));
-            }
-        };
-    }
-    inline namespace customization_point_object
-    {
-        inline constexpr Internal::crbegin_fn crbegin{};
-    }
-
-    namespace Internal
-    {
-        //! crend
-        struct crend_fn
-        {
-            template<class T>
-            constexpr auto operator()(T&& t) const noexcept(noexcept(ranges::rend(static_cast<const T&>(t))))
-                ->enable_if_t<is_lvalue_reference_v<T>, decltype(ranges::rend(static_cast<const T&>(t)))>
-            {
-                return ranges::rend(static_cast<const T&>(t));
-            }
-
-            template<class T>
-            constexpr auto operator()(T&& t) const noexcept(noexcept(ranges::rend(static_cast<const T&>(t)))) ->
-                enable_if_t<!is_lvalue_reference_v<T>, decltype(ranges::rend(static_cast<const T&&>(t)))>
-            {
-                return ranges::rend(static_cast<const T&&>(t));
-            }
-        };
-    }
-    inline namespace customization_point_object
-    {
-        inline constexpr Internal::crend_fn crend{};
-    }
-
-    namespace Internal
-    {
         //! size
+        template<class T>
+        void size(T&) = delete;
+        template<class T>
+        void size(const T&) = delete;
+
         template <class T, class = void>
         constexpr bool has_member_size = false;
         template <class T>
@@ -443,10 +325,12 @@ namespace AZStd::ranges
             bool_constant<!has_unqualified_size<T>>
             >>> = true;
 
-        template<class T>
-        void size(T&) = delete;
-        template<class T>
-        void size(const T&) = delete;
+        template<class IntType>
+        constexpr auto to_unsigned_like(IntType value)
+        {
+            using unsigned_t = make_unsigned_t<decltype(value)>;
+            return static_cast<unsigned_t>(value);
+        }
 
         struct size_fn
         {
@@ -486,8 +370,7 @@ namespace AZStd::ranges
                 bool_constant<forward_iterator<decltype(ranges::begin(AZStd::forward<T>(t)))>>>,
                 AZStd::make_unsigned_t<decltype(ranges::end(AZStd::forward<T>(t)) - ranges::begin(AZStd::forward<T>(t)))>>
             {
-                using size_type = AZStd::make_unsigned_t<decltype(ranges::end(AZStd::forward<T>(t)) - ranges::begin(AZStd::forward<T>(t)))>;
-                return static_cast<size_type>(ranges::end(AZStd::forward<T>(t)) - ranges::begin(AZStd::forward<T>(t)));
+                return to_unsigned_like(ranges::end(AZStd::forward<T>(t)) - ranges::begin(AZStd::forward<T>(t)));
             }
         };
     }
@@ -659,9 +542,14 @@ namespace AZStd::ranges
     template<class T>
     /*concept*/ constexpr bool range = Internal::range_impl<T>;
 
-    // sentinal type can now be defined after the range concept has been modeled
+    // sentinel type can now be defined after the range concept has been modeled
     template<class R>
     using sentinel_t = enable_if_t<range<R>, decltype(ranges::end(declval<R&>()))>;
+
+
+    // const_iterator concept is now definable, with the range concept and iterator_t type alias available
+    template<class R>
+    using const_iterator_t = enable_if_t<range<R>, const_iterator<iterator_t<R>>>;
 
     // Models borrowed range concept
     template<class T>
@@ -711,7 +599,6 @@ namespace AZStd::ranges
         constexpr bool output_range_impl = false;
         template<class R, class T>
         constexpr bool output_range_impl<R, T, enable_if_t<conjunction_v<
-            bool_constant<has_iterator_t<R>>,
             bool_constant<range<R>>,
             bool_constant<output_iterator<iterator_t<R>, T>>
             >>> = true;
@@ -726,7 +613,6 @@ namespace AZStd::ranges
         constexpr bool input_range_impl = false;
         template<class T>
         constexpr bool input_range_impl<T, enable_if_t<conjunction_v<
-            bool_constant<has_iterator_t<T>>,
             bool_constant<range<T>>,
             bool_constant<input_iterator<iterator_t<T>>>
             >>> = true;
@@ -741,7 +627,6 @@ namespace AZStd::ranges
         constexpr bool forward_range_impl = false;
         template<class T>
         constexpr bool forward_range_impl<T, enable_if_t<conjunction_v<
-            bool_constant<has_iterator_t<T>>,
             bool_constant<input_range<T>>,
             bool_constant<forward_iterator<iterator_t<T>>>
             >>> = true;
@@ -756,7 +641,6 @@ namespace AZStd::ranges
         constexpr bool bidirectional_range_impl = false;
         template<class T>
         constexpr bool bidirectional_range_impl<T, enable_if_t<conjunction_v<
-            bool_constant<has_iterator_t<T>>,
             bool_constant<forward_range<T>>,
             bool_constant<bidirectional_iterator<iterator_t<T>>>
             >>> = true;
@@ -771,7 +655,6 @@ namespace AZStd::ranges
         constexpr bool random_access_range_impl = false;
         template<class T>
         constexpr bool random_access_range_impl<T, enable_if_t<conjunction_v<
-            bool_constant<has_iterator_t<T>>,
             bool_constant<bidirectional_range<T>>,
             bool_constant<random_access_iterator<iterator_t<T>>>
             >>> = true;
@@ -810,6 +693,102 @@ namespace AZStd::ranges
     template<class T>
     /*concept*/ constexpr bool common_range = conjunction_v<bool_constant<range<T>>,
         bool_constant<same_as<iterator_t<T>, sentinel_t<T>>>>;
+
+    template<class T>
+    /*concept*/ constexpr bool constant_range = conjunction_v<bool_constant<input_range<T>>,
+        bool_constant<::AZStd::Internal::constant_iterator<iterator_t<T>>> >;
+
+    namespace Internal
+    {
+        template<class R, class = enable_if_t<input_range<R>>>
+        constexpr auto& possibly_const_range(R& r)
+        {
+            if constexpr (constant_range<const R> && !constant_range<R>)
+            {
+                return const_cast<const R&>(r);
+            }
+            else
+            {
+                return r;
+            }
+        }
+    }
+}
+
+namespace AZStd::ranges
+{
+    // cbegin / cend can only be defined after possibly_const_range function is defined
+    namespace Internal
+    {
+        //! cbegin
+        struct cbegin_fn
+        {
+            template<class T, class = enable_if_t<is_lvalue_or_borrowable<T>>>
+            constexpr decltype(auto) operator()(T&& t) const noexcept(noexcept(ranges::begin(possibly_const_range(declval<T&>()))))
+            {
+                using iterator_type = decltype(ranges::begin(possibly_const_range(t)));
+                return const_iterator<iterator_type>(ranges::begin(possibly_const_range(t)));
+            }
+        };
+    }
+    inline namespace customization_point_object
+    {
+        inline constexpr Internal::cbegin_fn cbegin{};
+    }
+
+    namespace Internal
+    {
+        //! cend
+        struct cend_fn
+        {
+            template<class T, class = enable_if_t<is_lvalue_or_borrowable<T>>>
+            constexpr decltype(auto) operator()(T&& t) const noexcept(noexcept(ranges::end(possibly_const_range(declval<T&>()))))
+            {
+                using sentinel_type = decltype(ranges::end(possibly_const_range(t)));
+                return const_sentinel<sentinel_type>(ranges::end(possibly_const_range(t)));
+            }
+        };
+    }
+    inline namespace customization_point_object
+    {
+        inline constexpr Internal::cend_fn cend{};
+    }
+
+    namespace Internal
+    {
+        //! crbegin
+        struct crbegin_fn
+        {
+            template<class T, class = enable_if_t<is_lvalue_or_borrowable<T>>>
+            constexpr auto operator()(T&& t) const noexcept(noexcept(ranges::rbegin(possibly_const_range(declval<T&>()))))
+            {
+                using iterator_type = decltype(ranges::rbegin(possibly_const_range(t)));
+                return const_iterator<iterator_type>(ranges::rbegin(possibly_const_range(t)));
+            }
+        };
+    }
+    inline namespace customization_point_object
+    {
+        inline constexpr Internal::crbegin_fn crbegin{};
+    }
+
+    namespace Internal
+    {
+        //! crend
+        struct crend_fn
+        {
+            template<class T, class = enable_if_t<is_lvalue_or_borrowable<T>>>
+            constexpr auto operator()(T&& t) const noexcept(noexcept(ranges::rend(possibly_const_range(declval<T&>()))))
+            {
+                using sentinel_type = decltype(ranges::rend(possibly_const_range(t)));
+                return const_sentinel<sentinel_type>(ranges::rend(possibly_const_range(t)));
+            }
+        };
+    }
+    inline namespace customization_point_object
+    {
+        inline constexpr Internal::crend_fn crend{};
+    }
 }
 
 namespace AZStd::ranges
@@ -1212,7 +1191,7 @@ namespace AZStd::ranges
             >>> = true;
 
         template<class T, class U>
-        /*concept*/ constexpr bool different_from = !same_as<remove_cvref_t<T>, remove_cvref_t<U>>;
+        /*concept*/ constexpr bool different_from = ::AZStd::Internal::different_from<T, U>;
     }
 }
 

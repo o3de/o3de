@@ -1450,3 +1450,33 @@ namespace AZ
 */
 #define AZ_TYPE_INFO_TEMPLATE(_Template, _Uuid, ...) AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_PREFIX_UUID(_Template, #_Template, _Uuid, __VA_ARGS__)
 
+
+// Adds typeinfo specialization for tuple type
+// Done outside of tuple.h to avoid it including TypeInfo.h which cause a circular include in fixed_string.inl
+// since it indirectly includes tuple.h via common_view.h -> all_view.h -> owning_view.h -> ranges_adaptor.h -> tuple.h
+namespace AZ
+{
+    // Specialize the AzDeprcatedTypeNameVisitor for tuple to make sure their
+    // is a mapping of the old type name to current type id
+    inline namespace DeprecatedTypeNames
+    {
+        template<typename... Types>
+        struct AzDeprecatedTypeNameVisitor<AZStd::tuple<Types...>>
+        {
+            template<class Functor>
+            constexpr void operator()(Functor&& visitCallback) const
+            {
+                // AZStd::tuple previous name was place into a buffer of size 128
+                AZStd::array<char, 128> deprecatedName{};
+
+                AZ::Internal::AzTypeInfoSafeCat(deprecatedName.data(), deprecatedName.size(), "tuple<");
+                (AggregateTypeNameOld<Types>(deprecatedName.data(), deprecatedName.size()), ...);
+                AZ::Internal::AzTypeInfoSafeCat(deprecatedName.data(), deprecatedName.size(), ">");
+
+                AZStd::invoke(AZStd::forward<Functor>(visitCallback), deprecatedName.data());
+            }
+        };
+    }
+
+    AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_PREFIX_UUID(AZStd::tuple, "AZStd::tuple", "{F99F9308-DC3E-4384-9341-89CBF1ABD51E}", AZ_TYPE_INFO_INTERNAL_TYPENAME_VARARGS);
+}
