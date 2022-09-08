@@ -31,7 +31,7 @@ class BuildFailureRCAValidator(CommitValidator):
                 
                 with open(file_name, 'r', encoding='utf8') as fh:
                     try:
-                        data = json.load(fh)
+                        data = json.loads(fh.read())
                     except json.decoder.JSONDecodeError:
                         error_message = str(f'{file_name}::{self.__class__.__name__} FAILED - JSON format error.\n')
                         if VERBOSE: print(error_message)
