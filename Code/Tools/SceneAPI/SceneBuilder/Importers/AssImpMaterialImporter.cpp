@@ -199,7 +199,7 @@ namespace AZ
                     // However, if a second person on the team's machine has the project at D:\path2\to2\MyProject,
                     // the same logic won't resolve.
                     AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow,
-                        "Material %.*s has a texture with absolute path '%.*s'. This path will not be resolved.",
+                        "Material %.*s has a texture with absolute path '%.*s'. This path will not be resolved, this texture will not be found or used by this material.",
                         AZ_STRING_ARG(materialName), AZ_STRING_ARG(textureFilePath));
                     return textureFilePath;
                 }
@@ -214,7 +214,7 @@ namespace AZ
                 {
                     // Not checking for the file existing because it may not be there yet.
                     AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow,
-                        "Material %.*s has a texture '%.*s' with a directory change marker. This may not resolve correctly.",
+                        "Material %.*s has a texture '%.*s' with a directory change marker. This may not resolve correctly, the texture may not be found or used by this material.",
                         AZ_STRING_ARG(materialName), AZ_STRING_ARG(textureFilePath));
                     return texturePathRelativeToScene;
                 }
