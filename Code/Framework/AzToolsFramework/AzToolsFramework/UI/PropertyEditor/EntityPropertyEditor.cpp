@@ -4950,7 +4950,6 @@ namespace AzToolsFramework
 
         AZ_Assert(m_reorderRowWidgetEditor, "Missing editor for row widget drag.");
 
-        // May or may not have to change this
         IPropertyEditor* editor = m_reorderRowWidgetEditor->GetPropertyEditor();
         if (auto reflectedPropertyEditor = azdynamic_cast<ReflectedPropertyEditor*>(editor))
         {
@@ -5095,7 +5094,6 @@ namespace AzToolsFramework
 
         for (auto componentEditor : componentEditors)
         {
-            // May or may not need to handle this for the DPE
             IPropertyEditor* editor = componentEditor->GetPropertyEditor();
             if (auto reflectedPropertyEditor = azdynamic_cast<ReflectedPropertyEditor*>(editor))
             {
@@ -5160,7 +5158,6 @@ namespace AzToolsFramework
         {
             for (auto componentEditor : componentEditors)
             {
-                // May or may not need to handle this in the DPE
                 IPropertyEditor* editor = componentEditor->GetPropertyEditor();
                 if (auto reflectedPropertyEditor = azdynamic_cast<ReflectedPropertyEditor*>(editor))
                 {
