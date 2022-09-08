@@ -35,8 +35,8 @@ namespace AZStd
     // Bring in std utility functions into AZStd namespace
     using std::forward;
 
-    // forward declare iterator_traits to avoid iterator.h include
-    template <class I>
+    // forward declare iterator_traits to avoid circular include with iterator.h
+    template <class I, class = void>
     struct iterator_traits;
 }
 
@@ -143,10 +143,10 @@ namespace AZStd::Internal
         using difference_type = typename T::difference_type;
     };
     template <typename T>
-    struct incrementable_requires<T, enable_if_t< conjunction_v<
+    struct incrementable_requires<T, enable_if_t<conjunction_v<
         bool_constant<is_primary_template_v<iterator_traits<T>>>,
         bool_constant<!has_difference_type_v<T>>,
-        bool_constant<integral<decltype(declval<T>() - declval<T>())>>> >>
+        bool_constant<integral<decltype(declval<const T&>() - declval<const T&>())>>> >>
     {
         using difference_type = make_signed_t<decltype(declval<T>() - declval<T>())>;
     };
@@ -206,6 +206,11 @@ namespace AZStd
     template <typename T>
     using iter_common_reference_t = enable_if_t<Internal::indirectly_readable_impl<T>,
         common_reference_t<iter_reference_t<T>, iter_value_t<T>&>>;
+
+    template<class It>
+    using iter_const_reference_t = enable_if_t<Internal::indirectly_readable_impl<It>,
+        common_reference_t<const iter_value_t<It>&&, iter_reference_t<It>>>;
+
 }
 
 namespace AZStd
