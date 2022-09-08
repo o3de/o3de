@@ -35,6 +35,8 @@ namespace AzQtComponents
 
     void ElidingLabel::handleElision(bool geometryUpdateRequired)
     {
+        m_elidedText.clear();
+
         elide();
 
         if (geometryUpdateRequired)
@@ -51,9 +53,7 @@ namespace AzQtComponents
         }
 
         m_text = text;
-        m_metricsLabel->setText(m_text);
-        
-        m_elidedText.clear();
+        m_metricsLabel->setText(m_text);    
 
         emit elisionRequired(true);
     }
