@@ -30,7 +30,7 @@ def has_compatible_version(name_and_version_specifier_list:list, object_name:str
 
     return False 
 
-def get_object_name_and_version_specifier(input:str) -> tuple[str, str] or None:
+def get_object_name_and_version_specifier(input:str):
     # accepts input in the form <name><version specifier(s)>, for example:
     # o3de>=1.0.0.0
     # o3de-sdk==2205.01,~=2201.10
