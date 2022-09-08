@@ -285,7 +285,7 @@ namespace AZ
                         "The class %s supports version %d. Found file class %s with version %d during deserializing, which is a newer version than the code supports. "
                         "First, check if you've built latest, your C++ code could be out of date. "
                         "It is possible that the class version has been reset. Please check if the team provides a conversion tool. "
-                        "To resolve you'll either need to get the proper new version of this class, or you'll need to roll back this change.",
+                        "To resolve you'll either need to get the latest version of this class, use any provided migration tools or resync to an early commit",
                         childClass->m_name,
                         childClass->m_version,
                         childNode.m_element.m_name,
