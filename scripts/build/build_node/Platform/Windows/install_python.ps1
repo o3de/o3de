@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 #>
 
 choco install -y python2 --version=2.7.15
-choco install -y python3 --version=3.7.5
+choco install -y python3 --version=3.10.5
 
 # Ensure Python paths are set
 [Environment]::SetEnvironmentVariable(
