@@ -52,7 +52,7 @@ namespace AZ::Render
     {
         if (m_inFocusMode)
         {
-            m_inFocusMode = !(mode == AzToolsFramework::ViewportEditorMode::Focus);
+            m_inFocusMode = mode != AzToolsFramework::ViewportEditorMode::Focus;
         }
     }
 
