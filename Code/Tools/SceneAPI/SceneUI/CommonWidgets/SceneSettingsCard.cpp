@@ -14,12 +14,13 @@
 #include <QListWidget>
 #include <QMenu>
 #include <QPushButton>
+#include <QSvgWidget>
+#include <QSvgRenderer>
 #include <QWidgetAction>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/Debug/TraceContextLogFormatter.h>
 #include <AzToolsFramework/Debug/TraceContextStack.h>
 #include <AzToolsFramework/UI/Logging/LogEntry.h>
-#include <AzQtComponents/Components/StyledBusyLabel.h>
 #include <AzQtComponents/Components/StyledDetailsTableView.h>
 #include <AzQtComponents/Components/Widgets/TableView.h>
 #include <SceneAPI/SceneUI/Handlers/ProcessingHandlers/ProcessingHandler.h>
@@ -27,10 +28,13 @@
 SceneSettingsCardHeader::SceneSettingsCardHeader(QWidget* parent /* = nullptr */)
     : AzQtComponents::CardHeader(parent)
 {
-    m_busyLabel = new AzQtComponents::StyledBusyLabel(this);
-    m_busyLabel->SetIsBusy(true);
-    m_busyLabel->SetBusyIconSize(14);
-    m_backgroundLayout->insertWidget(1, m_busyLabel);
+    m_busySpinner = new QSvgWidget(":/stylesheet/img/loading.svg", this);
+    m_busySpinner->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    m_busySpinner->setMinimumSize(20, 20);
+    m_busySpinner->setMaximumSize(20, 20);
+    m_busySpinner->setBaseSize(20, 20);
+    m_backgroundLayout->insertWidget(1, m_busySpinner);
+    m_busySpinner->setStyleSheet("background-color: rgba(0,0,0,0)");
 
     m_closeButton = new QPushButton(this);
     m_closeButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
@@ -57,7 +61,7 @@ void SceneSettingsCardHeader::SetCanClose(bool canClose)
 {
     m_closeButton->setEnabled(canClose);
     // If this card can be closed, it's not busy
-    m_busyLabel->setHidden(canClose);
+    m_busySpinner->setHidden(canClose);
 }
 
 SceneSettingsCard::SceneSettingsCard(AZ::Uuid traceTag, QString fileTracked, Layout layout, QWidget* parent /* = nullptr */)

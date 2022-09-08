@@ -19,9 +19,10 @@
 #include <SceneAPI/SceneUI/SceneUIConfiguration.h>
 #endif
 
+class QSvgWidget;
+
 namespace AzQtComponents
 {
-    class StyledBusyLabel;
     class StyledDetailsTableView;
     class TableView;
 }
@@ -59,8 +60,8 @@ public:
 private:
     void triggerCloseButton();
 
-    AzQtComponents::StyledBusyLabel* m_busyLabel = nullptr;
     QPushButton* m_closeButton = nullptr;
+    QSvgWidget* m_busySpinner = nullptr;
 };
 
 AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
