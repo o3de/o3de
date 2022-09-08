@@ -15,6 +15,7 @@
 #include <Atom/RHI/DrawPacketBuilder.h>
 
 #include <AzCore/Math/Obb.h>
+#include <AzCore/std/containers/fixed_vector.h>
 
 
 namespace AZ
@@ -30,8 +31,10 @@ namespace AZ
             struct ShaderData
             {
                 Data::Instance<Shader> m_shader;
+                Name m_shaderTag;
                 ShaderVariantId m_requestedShaderVariantId;
                 ShaderVariantId m_activeShaderVariantId;
+                ShaderVariantStableId m_activeShaderVariantStableId;
             };
 
             using ShaderList = AZStd::vector<ShaderData>;
@@ -56,6 +59,7 @@ namespace AZ
             bool SetShaderOption(const Name& shaderOptionName, RPI::ShaderOptionValue value);
 
             Data::Instance<Material> GetMaterial() const;
+            const ModelLod::Mesh& GetMesh() const;
             const ShaderList& GetActiveShaderList() const { return m_activeShaders; }
 
         private:
@@ -104,5 +108,9 @@ namespace AZ
             typedef AZStd::vector<ShaderOptionPair> ShaderOptionVector;
             ShaderOptionVector m_shaderOptions;
         };
+        
+        using MeshDrawPacketList = AZStd::vector<RPI::MeshDrawPacket>;
+        using MeshDrawPacketLods = AZStd::fixed_vector<MeshDrawPacketList, RPI::ModelLodAsset::LodCountMax>;
+
     } // namespace RPI
 } // namespace AZ

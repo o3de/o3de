@@ -66,21 +66,41 @@ namespace AZ
 
         void EditorModeFeatureProcessor::OnRenderPipelineRemoved(RPI::RenderPipeline* pipeline)
         {
+            if (!m_editorStatePassSystem)
+            {
+                return;
+            }
+
             m_editorStatePassSystem->RemoveStatePassesForPipeline(pipeline);
         }
 
         void EditorModeFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
         {
+            if (!m_editorStatePassSystem)
+            {
+                return;
+            }
+
             m_editorStatePassSystem->ConfigureStatePassesForPipeline(pipeline.get());
         }
 
         void EditorModeFeatureProcessor::OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline)
         {
+            if (!m_editorStatePassSystem)
+            {
+                return;
+            }
+
             m_editorStatePassSystem->ConfigureStatePassesForPipeline(renderPipeline);
         }
 
         void EditorModeFeatureProcessor::ApplyRenderPipelineChange(RPI::RenderPipeline* renderPipeline)
         {
+            if (!m_editorStatePassSystem)
+            {
+                return;
+            }
+
             m_editorStatePassSystem->AddPassesToRenderPipeline(renderPipeline);
 
             if(!m_maskRenderers.empty())
@@ -98,6 +118,11 @@ namespace AZ
 
         void EditorModeFeatureProcessor::Render([[maybe_unused]] const RenderPacket& packet)
         {
+            if (!m_editorStatePassSystem)
+            {
+                return;
+            }
+
             const auto entityMaskMap = m_editorStatePassSystem->GetEntitiesForEditorStates();
             for (const auto& [mask, entities] : entityMaskMap)
             {
@@ -111,6 +136,11 @@ namespace AZ
 
         void EditorModeFeatureProcessor::Simulate([[maybe_unused]] const SimulatePacket& packet)
         {
+            if (!m_editorStatePassSystem)
+            {
+                return;
+            }
+
             m_editorStatePassSystem->Update();
         }
     } // namespace Render

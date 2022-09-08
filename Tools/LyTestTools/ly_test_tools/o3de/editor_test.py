@@ -55,16 +55,12 @@ class EditorSingleTest(SingleTest):
     @staticmethod
     def setup(instance: EditorTestSuite.MultiTestCollector,
               request: _pytest.fixtures.FixtureRequest,
-              workspace: AbstractWorkspaceManager,
-              editor_test_results: EditorTestSuite.TestData,
-              launcher_platform: str) -> None:
+              workspace: AbstractWorkspaceManager) -> None:
         """
         User-overrideable setup function, which will run before the test.
         :param instance: Parent EditorTestSuite.MultiTestCollector instance executing the test
         :param request: PyTest request object
         :param workspace: LyTestTools workspace manager
-        :param editor_test_results: Currently recorded editor test results
-        :param launcher_platform: user-parameterized string for LyTestTools
         """
         pass
 
@@ -72,8 +68,7 @@ class EditorSingleTest(SingleTest):
     def wrap_run(instance: EditorTestSuite.MultiTestCollector,
                  request: _pytest.fixtures.FixtureRequest,
                  workspace: AbstractWorkspaceManager,
-                 editor_test_results: EditorTestSuite.TestData,
-                 launcher_platform: str) -> None:
+                 editor_test_results: EditorTestSuite.TestData) -> None:
         """
         User-overrideable wrapper function, which will run both before and after test.
         Any code before the 'yield' statement will run before the test. With code after yield run after the test.
@@ -81,8 +76,7 @@ class EditorSingleTest(SingleTest):
         :param instance: Parent EditorTestSuite.MultiTestCollector instance executing the test
         :param request: PyTest request object
         :param workspace: LyTestTools workspace manager
-        :param editor_test_results: Currently recorded EditorTest results
-        :param launcher_platform: user-parameterized string for LyTestTools
+        :param editor_test_results: results container, which will be updated after yield
         """
         yield
 
@@ -90,15 +84,13 @@ class EditorSingleTest(SingleTest):
     def teardown(instance: EditorTestSuite.MultiTestCollector,
                  request: _pytest.fixtures.FixtureRequest,
                  workspace: AbstractWorkspaceManager,
-                 editor_test_results: EditorTestSuite.TestData,
-                 launcher_platform: str) -> None:
+                 editor_test_results: EditorTestSuite.TestData) -> None:
         """
         User-overrideable teardown function, which will run after the test
         :param instance: Parent EditorTestSuite.MultiTestCollector instance executing the test
         :param request: PyTest request object
         :param workspace: LyTestTools workspace manager
-        :param editor_test_results: Currently recorded editor test results
-        :param launcher_platform: user-parameterized string for LyTestTools
+        :param editor_test_results: results from the test that executed
         """
         pass
 

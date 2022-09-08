@@ -41,6 +41,16 @@ namespace AtomToolsFramework
     //! @returns a pointer to the application main window 
     QWidget* GetToolMainWindow();
 
+    //! Converts input text into a code-friendly symbol name, removing special characters and replacing whitespace with underscores.
+    //! @param text Input text that will be converted into a symbol name
+    //! @returns the symbol name generated from the text
+    AZStd::string GetSymbolNameFromText(const AZStd::string& text);
+
+    //! Converts input text into a user-friendly display name, splitting words at camelcase and non-word character boundaries.
+    //! @param text Input text that will be converted into a display name
+    //! @returns the display name generated from the text
+    AZStd::string GetDisplayNameFromText(const AZStd::string& text);
+
     //! Returns a sanitized display name by removing the path, extension, and replacing special characters in a filename
     //! @param path File path that will be converted into a display name
     //! @returns the display name generated from the file path
@@ -194,5 +204,5 @@ namespace AtomToolsFramework
     // @param menu The menu where the actions will be inserted
     // @param registryKey The path to the registry setting where script categories are registered
     // @param arguments The list of arguments passed into the script when executed
-    void AddRegisteredScriptToMenu(QMenu* menu, const AZStd::string& registryKey, const AZStd::vector<AZStd::string_view>& arguments);
+    void AddRegisteredScriptToMenu(QMenu* menu, const AZStd::string& registryKey, const AZStd::vector<AZStd::string>& arguments);
 } // namespace AtomToolsFramework

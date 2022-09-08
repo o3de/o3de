@@ -73,6 +73,19 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             Atom
     )
     ly_add_pytest(
+        NAME AutomatedTesting::Atom_TestSuite_Smoke_GPU
+        TEST_SUITE smoke
+        TEST_REQUIRES gpu
+        TEST_SERIAL
+        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Smoke_GPU.py
+        RUNTIME_DEPENDENCIES
+            AssetProcessor
+            AutomatedTesting.Assets
+            Editor
+        COMPONENT
+            Atom
+    )
+    ly_add_pytest(
         NAME AutomatedTesting::Atom_TestSuite_Main_GPU
         TEST_SUITE main
         TEST_REQUIRES gpu

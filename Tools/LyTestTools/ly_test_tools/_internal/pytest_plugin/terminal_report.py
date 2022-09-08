@@ -8,6 +8,7 @@ import os
 import re
 
 import ly_test_tools._internal.pytest_plugin.failed_test_rerun_command as rerun
+import ly_test_tools.cli.codeowners_hint as hint
 
 UNKNOWN_TEST_RESULT = "Indeterminate test result interpreted as failure, possible cause:"
 
@@ -30,6 +31,19 @@ def _add_commands(terminalreporter, header, test_path, node_ids):
         terminalreporter.ensure_newline()
     else:
         terminalreporter.write_line("Error: Cannot provide rerun commands because test node id list is empty!")
+
+
+def _add_ownership(terminalreporter, test_path):
+    """
+    :param terminalreporter: Pytest's TerminalReporter object that contains test result information
+    :param test_path: File or directory that contains the test(s) that were run
+    """
+    test_path = os.path.abspath(test_path)
+    matched_path, owner_aliases, codeowners_path = hint.get_codeowners(test_path)
+    if owner_aliases and matched_path and codeowners_path:
+        hint._pretty_print_success(terminalreporter.write_line, codeowners_path, matched_path, owner_aliases)
+    else:
+        hint._pretty_print_failure(terminalreporter.write_line, codeowners_path, matched_path, test_path)
 
 
 def pytest_terminal_summary(terminalreporter, exitstatus, config):
@@ -84,3 +98,5 @@ def pytest_terminal_summary(terminalreporter, exitstatus, config):
                 "Use the following commands to re-run each test that had errors locally\n"
                 "(NOTE: The 'PYTHON' or 'PYTHONPATH' environment variables need values for accurate commands): ",
                 test_path, nodeids)
+
+        _add_ownership(terminalreporter, test_path)

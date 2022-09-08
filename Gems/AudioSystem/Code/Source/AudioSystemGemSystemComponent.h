@@ -11,7 +11,6 @@
 #include <AzCore/Component/Component.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <IAudioSystem.h>
-#include <ISystem.h>
 
 #if defined(AUDIO_SYSTEM_EDITOR)
     #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -26,8 +25,8 @@ namespace AudioSystemGem
 {
     class AudioSystemGemSystemComponent
         : public AZ::Component
-        , public ISystemEventListener
-        , public AzFramework::ApplicationLifecycleEvents::Bus::Handler
+        , protected AzFramework::LevelSystemLifecycleNotificationBus::Handler
+        , protected AzFramework::ApplicationLifecycleEvents::Bus::Handler
         , protected Audio::Gem::SystemRequestBus::Handler
     #if defined(AUDIO_SYSTEM_EDITOR)
         , private AzToolsFramework::EditorEvents::Bus::Handler
@@ -61,8 +60,9 @@ namespace AudioSystemGem
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////
-        // ISystemEventListener
-        void OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam) override;
+        // AzFramework::LevelSystemLifecycleNotifications interface implementation
+        void OnLoadingStart(const char* levelName) override;
+        void OnUnloadComplete(const char* levelName) override;
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////

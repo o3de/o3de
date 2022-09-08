@@ -134,9 +134,12 @@ namespace ScriptCanvas
             , source
             , result.m_jsonResults
             , &settings);
+
         if (!loadResult.IsSuccess())
         {
             // ...try legacy xml as a failsafe
+            result.m_fromObjectStreamXML = true;
+
             AZ::IO::MemoryStream stream(source.data(), source.length());
             if (!AZ::Utils::LoadObjectFromStreamInPlace
                 ( stream
@@ -145,7 +148,11 @@ namespace ScriptCanvas
                 , AZ::ObjectStream::FilterDescriptor(nullptr, AZ::ObjectStream::FILTERFLAG_IGNORE_UNKNOWN_CLASSES)))
             {
                 result.m_isSuccessful = false;
-                result.m_errors = "JSON (and failsafe XML) deserialize attempt failed.";
+                result.m_errors = "JSON (and failsafe XML) deserialize attempt failed.\n";
+                result.m_errors += "The error might be caused by deprecated Spawnable Nodes in your target scriptcanvas file.\n";
+                result.m_errors += "If so, please run UpdateSpawnableNodes python script for the scriptcanvas file to see if the error is resolved.\n";
+                result.m_errors += "(Run 'python {Your o3de engine folder}\\Gems\\ScriptCanvas\\SourceModificationScripts\\UpdateSpawnableNodes.py {Your target scriptcanvas file}')";
+
                 return result;
             }
         }
