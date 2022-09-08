@@ -1464,6 +1464,14 @@ namespace AZ
         bl = (block_header*)((char*)bl + offs);
         bl->link_after(prev);
         bl->set_unused();
+
+        // Shifting this block increased the size of the previous block. If
+        // that block is in use, add that extra offset to the total in use
+        // bytes for the tree
+        if (prev->used())
+        {
+            mTotalAllocatedSizeTree += offs;
+        }
         return bl;
     }
 
