@@ -14,7 +14,7 @@
 namespace AzToolsFramework
 {
     class IPropertyEditor
-	{
+    {
         public:
             virtual void SetValueComparisonFunction([[maybe_unused]] const InstanceDataHierarchy::ValueComparisonFunction& valueComparisonFunction){};
 
@@ -88,6 +88,6 @@ namespace AzToolsFramework
             }
 
             // todo: Also bypassed a GetWidgets() method in the EntityPropertyEditor we should look into
-	};
+    };
 
 } // namespace AzToolsFramework
