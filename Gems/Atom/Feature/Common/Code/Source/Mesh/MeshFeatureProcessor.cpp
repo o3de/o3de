@@ -552,7 +552,62 @@ namespace AZ
             }
         }
 
+        void MeshFeatureProcessor::ReportShaderOptionFlags([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
+        {
+            AZStd::map<FlagRegistry::TagType, AZ::Name> tags;
+            AZStd::string registeredFoundMessage = "Registered flags: ";
+
+            auto gatherTags = [&](const Name& name, FlagRegistry::TagType tag)
+            {
+                tags[tag] = name;
+                registeredFoundMessage.append(name.GetCStr() + AZStd::string(", "));
+            };
+
+            m_flagRegistry->VisitTags(gatherTags);
+
+            registeredFoundMessage.erase(registeredFoundMessage.end() - 2);
+
+            AZ_Printf("MeshFeatureProcessor", registeredFoundMessage.c_str());
+
+            AZStd::map<uint32_t, uint32_t> flagStats;
+
+            for (auto& model : m_modelData)
+            {
+                ++flagStats[model.m_cullable.m_flags.load()];
+            }
+
+            for (auto [flag, references] : flagStats)
+            {
+                AZStd::string flagList;
+
+                if (flag == 0)
+                {
+                    flagList = "(None)";
+                }
+                else
+                {
+                    for (auto [tag, name] : tags)
+                    {
+                        if ((tag.GetIndex() & flag) > 0)
+                        {
+                            flagList.append(name.GetCStr());
+                            flagList.append(", ");
+                        }
+                    }
+                    flagList.erase(flagList.end() - 2);
+                }
+
+                AZ_Printf("MeshFeatureProcessor", "Found %u references to [%s]", references, flagList.c_str());
+            }
+        }
+
+        MeshFeatureProcessorInterface::ModelChangedEvent& ModelDataInstance::MeshLoader::GetModelChangedEvent()
+        {
+            return m_modelChangedEvent;
+        }
+
         // ModelDataInstance::MeshLoader...
+
         ModelDataInstance::MeshLoader::MeshLoader(const Data::Asset<RPI::ModelAsset>& modelAsset, ModelDataInstance* parent)
             : m_modelAsset(modelAsset)
             , m_parent(parent)
@@ -578,10 +633,7 @@ namespace AZ
             Data::AssetBus::Handler::BusDisconnect();
         }
 
-        MeshFeatureProcessorInterface::ModelChangedEvent& ModelDataInstance::MeshLoader::GetModelChangedEvent()
-        {
-            return m_modelChangedEvent;
-        }
+        // ModelDataInstance...
 
         //! AssetBus::Handler overrides...
         void ModelDataInstance::MeshLoader::OnAssetReady(Data::Asset<Data::AssetData> asset)
@@ -676,8 +728,6 @@ namespace AZ
                     });
             }
         }
-
-        // ModelDataInstance...
 
         void ModelDataInstance::DeInit()
         {

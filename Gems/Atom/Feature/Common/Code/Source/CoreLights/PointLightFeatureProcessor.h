@@ -8,10 +8,11 @@
 
 #pragma once
 
+#include <AzCore/Math/Sphere.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
 #include <Atom/Feature/CoreLights/PointLightFeatureProcessorInterface.h>
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
-#include <Atom/Feature/Utils/IndexedDataVector.h>
+#include <Atom/Feature/Utils/MultiIndexedDataVector.h>
 #include <Shadows/ProjectedShadowFeatureProcessor.h>
 
 namespace AZ
@@ -71,8 +72,10 @@ namespace AZ
             void SetShadowSetting(LightHandle handle, Functor&&, ParamType&& param);
             ProjectedShadowFeatureProcessor* m_shadowFeatureProcessor = nullptr;
 
-            IndexedDataVector<PointLightData> m_pointLightData;
+            MultiIndexedDataVector<PointLightData, AZ::Sphere> m_lightData;
             GpuBufferHandler m_lightBufferHandler;
+            RHI::Handle<uint32_t> m_lightMeshFlag;
+            RHI::Handle<uint32_t> m_shadowMeshFlag;
             bool m_deviceBufferNeedsUpdate = false;
 
             AZStd::array<AZ::Transform, PointLightData::NumShadowFaces> m_pointShadowTransforms;

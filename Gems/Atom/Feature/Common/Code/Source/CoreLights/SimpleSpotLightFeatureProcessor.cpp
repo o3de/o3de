@@ -22,15 +22,6 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 
-
-
-
-
-#include <Atom/RPI.Public/AuxGeom/AuxGeomDraw.h>
-#include <Atom/Feature/AuxGeom/AuxGeomFeatureProcessor.h>
-
-
-
 namespace AZ
 {
     namespace Render
@@ -125,7 +116,7 @@ namespace AZ
                 m_lightBufferHandler.UpdateBuffer(m_lightData.GetDataVector<0>());
                 m_deviceBufferNeedsUpdate = false;
             }
-            LightCommon::MarkMeshesWithLightType(GetParentScene(), AZStd::span<const AZ::Frustum>(m_lightData.GetDataVector<1>()), m_lightMeshFlag.GetIndex());
+            LightCommon::MarkMeshesWithLightType(GetParentScene(), AZStd::span(m_lightData.GetDataVector<1>()), m_lightMeshFlag.GetIndex());
         }
 
         void SimpleSpotLightFeatureProcessor::Render(const SimpleSpotLightFeatureProcessor::RenderPacket& packet)

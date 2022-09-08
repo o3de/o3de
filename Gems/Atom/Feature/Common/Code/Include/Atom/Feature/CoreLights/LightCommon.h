@@ -15,32 +15,38 @@
 namespace AZ::Render::LightCommon
 {
     template <typename BoundsType>
-    static void MarkMeshesWithLightType(AZ::RPI::Scene* scene, AZStd::span<const BoundsType> bounds, AZ::RPI::Cullable::FlagType flag);
+    struct EmptyFilter
+    {
+        constexpr bool operator()(BoundsType) const { return true; }
+    };
 
-    template <typename BoundsType>
-    void MarkMeshesWithLightType(AZ::RPI::Scene* scene, AZStd::span<const BoundsType> bounds, AZ::RPI::Cullable::FlagType flag)
+    template <typename BoundsType, class Filter = EmptyFilter<BoundsType>>
+    void MarkMeshesWithLightType(AZ::RPI::Scene* scene, AZStd::span<const BoundsType> bounds, AZ::RPI::Cullable::FlagType flag, Filter filter = {})
     {
         AzFramework::IVisibilityScene* visScene = scene->GetVisibilityScene();
 
         for (const BoundsType& lightBounds : bounds)
         {
-            visScene->Enumerate(lightBounds, [flag, &lightBounds = lightBounds](const AzFramework::IVisibilityScene::NodeData& nodeData)
-                {
-                    bool nodeIsContainedInFrustum = ShapeIntersection::Contains(lightBounds, nodeData.m_bounds);
-                    for (auto* visibleEntry : nodeData.m_entries)
+            if (filter(lightBounds))
+            {
+                visScene->Enumerate(lightBounds, [flag, &lightBounds = lightBounds](const AzFramework::IVisibilityScene::NodeData& nodeData)
                     {
-                        if (visibleEntry->m_typeFlags == AzFramework::VisibilityEntry::TYPE_RPI_Cullable)
+                        bool nodeIsContainedInFrustum = ShapeIntersection::Contains(lightBounds, nodeData.m_bounds);
+                        for (auto* visibleEntry : nodeData.m_entries)
                         {
-                            RPI::Cullable* cullable = static_cast<RPI::Cullable*>(visibleEntry->m_userData);
-
-                            if (nodeIsContainedInFrustum || ShapeIntersection::Overlaps(lightBounds, cullable->m_cullData.m_boundingSphere))
+                            if (visibleEntry->m_typeFlags == AzFramework::VisibilityEntry::TYPE_RPI_Cullable)
                             {
-                                cullable->m_flags.fetch_or(flag);
+                                RPI::Cullable* cullable = static_cast<RPI::Cullable*>(visibleEntry->m_userData);
+
+                                if (nodeIsContainedInFrustum || ShapeIntersection::Overlaps(lightBounds, cullable->m_cullData.m_boundingSphere))
+                                {
+                                    cullable->m_flags.fetch_or(flag);
+                                }
                             }
                         }
                     }
-                }
-            );
+                );
+            }
         }
     }
 

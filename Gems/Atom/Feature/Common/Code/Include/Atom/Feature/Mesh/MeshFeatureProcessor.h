@@ -133,6 +133,8 @@ namespace AZ
 
             AZ_RTTI(AZ::Render::MeshFeatureProcessor, "{6E3DFA1D-22C7-4738-A3AE-1E10AB88B29B}", AZ::Render::MeshFeatureProcessorInterface);
 
+            AZ_CONSOLEFUNC(MeshFeatureProcessor, ReportShaderOptionFlags, AZ::ConsoleFunctorFlags::Null, "Dump octreeSystemComponent stats to the console window");
+
             using FlagRegistry = RHI::TagBitRegistry<RPI::Cullable::FlagType>;
 
             static void Reflect(AZ::ReflectContext* context);
@@ -197,6 +199,9 @@ namespace AZ
 
             // called when reflection probes are modified in the editor so that meshes can re-evaluate their probes
             void UpdateMeshReflectionProbes();
+
+            void ReportShaderOptionFlags(const AZ::ConsoleCommandContainer& arguments);
+
         private:
             void ForceRebuildDrawPackets(const AZ::ConsoleCommandContainer& arguments);
             AZ_CONSOLEFUNC(MeshFeatureProcessor,

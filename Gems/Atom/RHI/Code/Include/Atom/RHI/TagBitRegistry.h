@@ -56,6 +56,9 @@ namespace AZ
             //! Returns the number of allocated tags in the registry.
             size_t GetAllocatedTagCount() const { return m_tagRegistry.GetAllocatedTagCount(); };
 
+            template <class TagVisitor>
+            void VisitTags(TagVisitor visitor);
+
         private:
             TagBitRegistry() = default;
             static TagType ConvertToUnderlyingType(TagType tag);
@@ -103,6 +106,17 @@ namespace AZ
         auto TagBitRegistry<IndexType>::ConvertFromUnderlyingType(TagType tag) -> TagType
         {
             return tag.IsValid() ? TagType(1 << tag.GetIndex()) : tag;
+        }
+
+        template<typename IndexType>
+        template<class TagVisitor>
+        void TagBitRegistry<IndexType>::VisitTags(TagVisitor visitor)
+        {
+            auto tagConverter = [&](const Name& name, TagType tag)
+            {
+                visitor(name, ConvertFromUnderlyingType(tag));
+            };
+            m_tagRegistry.VisitTags(tagConverter);
         }
     }
 }
