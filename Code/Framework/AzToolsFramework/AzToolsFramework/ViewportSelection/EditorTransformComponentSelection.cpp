@@ -4444,13 +4444,20 @@ namespace AzToolsFramework
     {
         SetAllViewportUiVisible(false);
         // this is called seperately because the above method disables the switcher in component mode
-        SetViewportUiSwitcherVisible(m_componentModeSwitcher->GetSwitcherId(), false);
+        if (m_componentModeSwitcher != nullptr)
+        {
+            SetViewportUiSwitcherVisible(m_componentModeSwitcher->GetSwitcherId(), false);
+        }
     }
 
     void EditorTransformComponentSelection::OnStopPlayInEditor()
     {
         SetAllViewportUiVisible(true);
-        SetViewportUiSwitcherVisible(m_componentModeSwitcher->GetSwitcherId(), true);
+
+        if (m_componentModeSwitcher != nullptr)
+        {
+            SetViewportUiSwitcherVisible(m_componentModeSwitcher->GetSwitcherId(), true);
+        }
     }
 
     void EditorTransformComponentSelection::OnGridSnappingChanged([[maybe_unused]] const bool enabled)
