@@ -31,17 +31,15 @@ namespace AZ
             AZStd::unordered_map<AZStd::string, AZ::Component*>& componentMapOut);
     };
 
-    /**
-     * Helper class to track components that have been skipped during loading.
-     * When this class is added to the metadata of a Json deserializer setting,
-     * custom component serializers can add themselves to the list so users
-     * can be informed of component deprecation upon load completion
-     */
+    //! Helper class to track components that have been skipped during loading.
+    //! When this class is added to the metadata of a Json deserializer setting,
+    //! custom component serializers can add themselves to the list so users
+    //! can be informed of component deprecation upon load completion
     class DeprecatedComponentMetadata
     {
     public:
         AZ_RTTI(DeprecatedComponentMetadata, "{3D5F5EAE-BDA9-43AA-958E-E87158BAFB9F}");
-        virtual ~DeprecatedComponentMetadata() {}
+        virtual ~DeprecatedComponentMetadata() = default;
 
         void AddComponent(const TypeId& componentType);
         AZStd::vector<AZStd::string> GetComponentNames() const;

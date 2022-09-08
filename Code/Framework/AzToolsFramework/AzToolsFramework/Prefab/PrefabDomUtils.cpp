@@ -293,7 +293,7 @@ namespace AzToolsFramework
                     auto deprecatedComponents = settings.m_metadata.Find<AZ::DeprecatedComponentMetadata>();
                     if (deprecatedComponents)
                     {
-                        for (auto componentName : deprecatedComponents->GetComponentNames())
+                        for (const auto& componentName : deprecatedComponents->GetComponentNames())
                         {
                             AZ_Warning("JSON Serialization", false, Internal::ComponentRemovalNotice, componentName.c_str(),
                                 instance.GetTemplateSourcePath().Filename().Native().data());

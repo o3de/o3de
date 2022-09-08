@@ -18,7 +18,7 @@ namespace AzToolsFramework
     namespace Components
     {
         static constexpr const char* const SelectionComponentLoadMessage =
-            "The editor SelectionComponent is being skipped during loading because it has been deprecated.";
+            "The editor SelectionComponent is being skipped and will be removed from the .prefab file the next time it is saved.";
 
         class SelectionComponentSerializer : public AZ::BaseJsonSerializer
         {
