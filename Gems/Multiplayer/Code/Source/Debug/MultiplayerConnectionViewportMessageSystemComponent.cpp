@@ -33,76 +33,6 @@ namespace Multiplayer
 
     AZ_CVAR_EXTERNED(bool, sv_isDedicated);
 
-    // Notes:
-    //   Don't change any of the following enum values, they need to match the values from legacy cry rendering.
-    //   These are just here in order to not have to pull in Legacy::CryCommon project dependency.
-    //   See CryCommon/IRenderAuxGeom.h for all available flags.
-    enum EAuxGeomPublicRenderflagBitMasks
-    {
-        e_Mode2D3DShift = 31,
-        e_Mode2D3DMask = 0x1 << e_Mode2D3DShift,
-
-        e_AlphaBlendingShift = 29,
-        e_AlphaBlendingMask = 0x3 << e_AlphaBlendingShift,
-
-        e_DrawInFrontShift = 28,
-        e_DrawInFrontMask = 0x1 << e_DrawInFrontShift,
-
-        e_FillModeShift = 26,
-        e_FillModeMask = 0x3 << e_FillModeShift,
-
-        e_CullModeShift = 24,
-        e_CullModeMask = 0x3 << e_CullModeShift,
-
-        e_DepthWriteShift = 23,
-        e_DepthWriteMask = 0x1 << e_DepthWriteShift,
-
-        e_DepthTestShift = 22,
-        e_DepthTestMask = 0x1 << e_DepthTestShift,
-
-        e_PublicParamsMask =
-            e_Mode2D3DMask | e_AlphaBlendingMask | e_DrawInFrontMask | e_FillModeMask | e_CullModeMask | e_DepthWriteMask | e_DepthTestMask
-    };
-
-    enum EAuxGeomPublicRenderflags_Mode2D3D
-    {
-        e_Mode3D = 0x0 << e_Mode2D3DShift,
-        e_Mode2D = 0x1 << e_Mode2D3DShift,
-    };
-
-    enum EAuxGeomPublicRenderflags_AlphaBlendMode
-    {
-        e_AlphaNone = 0x0 << e_AlphaBlendingShift,
-        e_AlphaAdditive = 0x1 << e_AlphaBlendingShift,
-        e_AlphaBlended = 0x2 << e_AlphaBlendingShift,
-    };
-
-      enum EAuxGeomPublicRenderflags_FillMode
-    {
-        e_FillModeSolid = 0x0 << e_FillModeShift,
-        e_FillModeWireframe = 0x1 << e_FillModeShift,
-        e_FillModePoint = 0x2 << e_FillModeShift,
-    };
-
-    enum EAuxGeomPublicRenderflags_CullMode
-    {
-        e_CullModeNone = 0x0 << e_CullModeShift,
-        e_CullModeFront = 0x1 << e_CullModeShift,
-        e_CullModeBack = 0x2 << e_CullModeShift,
-    };
-
-
-    enum EAuxGeomPublicRenderflags_DepthWrite
-    {
-        e_DepthWriteOn = 0x0 << e_DepthWriteShift,
-        e_DepthWriteOff = 0x1 << e_DepthWriteShift,
-    };
-
-    enum EAuxGeomPublicRenderflags_DepthTest
-    {
-        e_DepthTestOn = 0x0 << e_DepthTestShift,
-        e_DepthTestOff = 0x1 << e_DepthTestShift,
-    };
 
     void MultiplayerConnectionViewportMessageSystemComponent::Reflect(AZ::ReflectContext* context)
     {
@@ -386,27 +316,25 @@ namespace Multiplayer
             return;
         }
 
-        const AZ::u32 previousState = debugDisplay->GetState();
-        debugDisplay->SetState(
-            e_Mode2D | e_AlphaBlended | e_FillModeSolid | e_CullModeBack | e_DepthWriteOff | static_cast<AZ::u32>(e_DepthTestOff));
+        debugDisplay->DepthWriteOff();
+        debugDisplay->DepthTestOff();
+        debugDisplay->DrawQuad2dGradient(
+            AZ::Vector2(0, 0),
+            AZ::Vector2(1.f, 0),
+            AZ::Vector2(1.f, 0.5f),
+            AZ::Vector2(0, 0.5f),
+            0,
+            AZ::Color(0.f, 0.f, 0.f, 0.f),
+            AZ::Color(0, 0, 0, ScrimAlpha * alphaMultiplier));
 
-        debugDisplay->DrawQuadGradient(
-            AZ::Vector3(0, 0, 0),
-            AZ::Vector3(1.f, 0, 0),
-            AZ::Vector3(1.f, 0.5f, 0),
-            AZ::Vector3(0, 0.5f, 0),
-            AZ::Vector4(0, 0, 0, 0),
-            AZ::Vector4(0, 0, 0, ScrimAlpha * alphaMultiplier));
-
-        debugDisplay->DrawQuadGradient(
-            AZ::Vector3(0, 0.5f, 0),
-            AZ::Vector3(1.f, 0.5f, 0),
-            AZ::Vector3(1.f, 1.f, 0),
-            AZ::Vector3(0, 1.f, 0),
-            AZ::Vector4(0, 0, 0, ScrimAlpha * alphaMultiplier),
-            AZ::Vector4(0, 0, 0, 0));
-
-        debugDisplay->SetState(previousState);
+        debugDisplay->DrawQuad2dGradient(
+            AZ::Vector2(0, 0.5f),
+            AZ::Vector2(1.f, 0.5f),
+            AZ::Vector2(1.f, 1.f),
+            AZ::Vector2(0, 1.f),
+            0,
+            AZ::Color(0, 0, 0, ScrimAlpha * alphaMultiplier),
+            AZ::Color(0.f, 0.f, 0.f, 0.f));
     }
 
     void MultiplayerConnectionViewportMessageSystemComponent::OnServerLaunched()
