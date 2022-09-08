@@ -693,23 +693,28 @@ namespace AzToolsFramework
             static const char* QUERY_SOURCEDEPENDENCY_BY_DEPENDSONSOURCE = "AzToolsFramework::AssetDatabase::QuerySourceDependencyByDependsOnSource";
             static const char* QUERY_SOURCEDEPENDENCY_BY_DEPENDSONSOURCE_STATEMENT =
                 "SELECT * from SourceDependency WHERE "
-                "DependsOnSource = :dependsOnSource AND "
+                "DependsOnSource IN (:relativepath, :absolutepath, :uuid) AND "
                 "TypeOfDependency & :typeOfDependency;";
 
-            static const auto s_querySourcedependencyByDependsonsource = MakeSqlQuery(QUERY_SOURCEDEPENDENCY_BY_DEPENDSONSOURCE, QUERY_SOURCEDEPENDENCY_BY_DEPENDSONSOURCE_STATEMENT, LOG_NAME,
-                SqlParam<const char*>(":dependsOnSource"),
+            static const auto s_querySourceDependencyByDependsOnSource = MakeSqlQuery(QUERY_SOURCEDEPENDENCY_BY_DEPENDSONSOURCE, QUERY_SOURCEDEPENDENCY_BY_DEPENDSONSOURCE_STATEMENT, LOG_NAME,
+                SqlParam<const char*>(":uuid"), // DependsOnSource is a text field, so UUIDs are stored as text with no dashes or brackets
+                SqlParam<const char*>(":relativepath"),
+                SqlParam<const char*>(":absolutepath"),
                 SqlParam<AZ::u32>(":typeOfDependency"));
 
+            // Query handles finding files which depend on "this" by: relative path (w or w/o wildcard), absolute path (w or w/o wildcard), or UUID
             static const char* QUERY_SOURCEDEPENDENCY_BY_DEPENDSONSOURCE_WILDCARD = "AzToolsFramework::AssetDatabase::QuerySourceDependencyByDependsOnSourceWildcard";
             static const char* QUERY_SOURCEDEPENDENCY_BY_DEPENDSONSOURCE_WILDCARD_STATEMENT =
                 "SELECT * from SourceDependency WHERE "
-                "((TypeOfDependency & :typeOfDependency AND "
-                "DependsOnSource = :dependsOnSource) OR "
+                "(TypeOfDependency & :typeOfDependency AND "
+                "DependsOnSource IN (:relativepath, :absolutepath, :uuid)) OR "
                 "(TypeOfDependency = :wildCardDependency AND "
-                ":dependsOnSource LIKE DependsOnSource));";
+                "(:relativepath LIKE DependsOnSource OR :absolutepath LIKE DependsOnSource));";
 
-            static const auto s_querySourcedependencyByDependsonsourceWildcard = MakeSqlQuery(QUERY_SOURCEDEPENDENCY_BY_DEPENDSONSOURCE_WILDCARD, QUERY_SOURCEDEPENDENCY_BY_DEPENDSONSOURCE_WILDCARD_STATEMENT, LOG_NAME,
-                SqlParam<const char*>(":dependsOnSource"),
+            static const auto s_querySourceDependencyByDependsOnSourceWildcard = MakeSqlQuery(QUERY_SOURCEDEPENDENCY_BY_DEPENDSONSOURCE_WILDCARD, QUERY_SOURCEDEPENDENCY_BY_DEPENDSONSOURCE_WILDCARD_STATEMENT, LOG_NAME,
+                SqlParam<const char*>(":uuid"), // DependsOnSource is a text field, so UUIDs are stored as text with no dashes or brackets
+                SqlParam<const char*>(":relativepath"),
+                SqlParam<const char*>(":absolutepath"),
                 SqlParam<AZ::u32>(":typeOfDependency"),
                 SqlParam<AZ::u32>(":wildCardDependency"));
 
@@ -729,11 +734,9 @@ namespace AzToolsFramework
             static const char* QUERY_DEPENDSONSOURCE_BY_SOURCE_STATEMENT =
                 "SELECT * from SourceDependency WHERE "
                 "SourceGuid = :source AND "
-                "TypeOfDependency & :typeOfDependency AND "
-                "DependsOnSource LIKE :dependencyFilter;";
+                "TypeOfDependency & :typeOfDependency;";
             static const auto s_queryDependsOnSourceBySource = MakeSqlQuery(QUERY_DEPENDSONSOURCE_BY_SOURCE, QUERY_DEPENDSONSOURCE_BY_SOURCE_STATEMENT, LOG_NAME,
                 SqlParam<AZ::Uuid>(":source"),
-                SqlParam<const char*>(":dependencyFilter"),
                 SqlParam<AZ::u32>(":typeOfDependency"));
 
             static const char* QUERY_PRODUCTDEPENDENCY_BY_PRODUCTDEPENDENCYID = "AzToolsFramework::AssetDatabase::QueryProductDependencyByProductDependencyID";
@@ -1887,8 +1890,8 @@ namespace AzToolsFramework
             AddStatement(m_databaseConnection, s_queryCombinedLikeProductnamePlatform);
 
             AddStatement(m_databaseConnection, s_querySourcedependencyBySourcedependencyid);
-            AddStatement(m_databaseConnection, s_querySourcedependencyByDependsonsource);
-            AddStatement(m_databaseConnection, s_querySourcedependencyByDependsonsourceWildcard);
+            AddStatement(m_databaseConnection, s_querySourceDependencyByDependsOnSource);
+            AddStatement(m_databaseConnection, s_querySourceDependencyByDependsOnSourceWildcard);
             AddStatement(m_databaseConnection, s_queryDependsOnSourceBySource);
 
             AddStatement(m_databaseConnection, s_queryProductdependencyByProductdependencyid);
@@ -2542,26 +2545,32 @@ namespace AzToolsFramework
             return s_querySourcedependencyBySourcedependencyid.BindAndQuery(*m_databaseConnection, handler, &GetSourceDependencyResult, sourceDependencyID);
         }
 
-        bool AssetDatabaseConnection::QuerySourceDependencyByDependsOnSource(const char* dependsOnSource, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency dependencyType, sourceFileDependencyHandler handler)
+        bool AssetDatabaseConnection::QuerySourceDependencyByDependsOnSource(
+            AZ::Uuid sourceGuid,
+            const char* sourceName,
+            const char* absolutePath,
+            AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency dependencyType,
+            sourceFileDependencyHandler handler)
         {
             if (dependencyType & AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch)
             {
-                return QuerySourceDependencyByDependsOnSourceWildcard(dependsOnSource, handler);
+                return QuerySourceDependencyByDependsOnSourceWildcard(sourceGuid, sourceName, absolutePath, handler);
             }
-            return s_querySourcedependencyByDependsonsource.BindAndQuery(*m_databaseConnection, handler, &GetSourceDependencyResult, dependsOnSource, dependencyType);
+
+            return s_querySourceDependencyByDependsOnSource.BindAndQuery(*m_databaseConnection, handler, &GetSourceDependencyResult, sourceGuid.ToFixedString(false, false).c_str(), sourceName, absolutePath, dependencyType);
         }
 
-        bool AssetDatabaseConnection::QuerySourceDependencyByDependsOnSourceWildcard(const char* dependsOnSource, sourceFileDependencyHandler handler)
+        bool AssetDatabaseConnection::QuerySourceDependencyByDependsOnSourceWildcard(AZ::Uuid sourceGuid, const char* sourceName, const char* absolutePath, sourceFileDependencyHandler handler)
         {
             SourceFileDependencyEntry::TypeOfDependency matchDependency = SourceFileDependencyEntry::TypeOfDependency::DEP_SourceOrJob;
             SourceFileDependencyEntry::TypeOfDependency wildcardDependency = SourceFileDependencyEntry::TypeOfDependency::DEP_SourceLikeMatch;
 
-            return s_querySourcedependencyByDependsonsourceWildcard.BindAndQuery(*m_databaseConnection, handler, &GetSourceDependencyResult, dependsOnSource, matchDependency, wildcardDependency);
+            return s_querySourceDependencyByDependsOnSourceWildcard.BindAndQuery(*m_databaseConnection, handler, &GetSourceDependencyResult, sourceGuid.ToFixedString(false, false).c_str(), sourceName, absolutePath, matchDependency, wildcardDependency);
         }
 
-        bool AssetDatabaseConnection::QueryDependsOnSourceBySourceDependency(AZ::Uuid sourceGuid, const char* dependencyFilter, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency dependencyType, sourceFileDependencyHandler handler)
+        bool AssetDatabaseConnection::QueryDependsOnSourceBySourceDependency(AZ::Uuid sourceGuid, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency dependencyType, sourceFileDependencyHandler handler)
         {
-            return s_queryDependsOnSourceBySource.BindAndQuery(*m_databaseConnection, handler, &GetSourceDependencyResult, sourceGuid, dependencyFilter == nullptr ? "%" : dependencyFilter, dependencyType);
+            return s_queryDependsOnSourceBySource.BindAndQuery(*m_databaseConnection, handler, &GetSourceDependencyResult, sourceGuid, dependencyType);
         }
 
         bool AzToolsFramework::AssetDatabase::AssetDatabaseConnection::QueryProductDependenciesThatDependOnProductBySourceId(AZ::s64 sourceId, productDependencyHandler handler)

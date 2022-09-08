@@ -74,7 +74,6 @@ namespace AzToolsFramework
 
     AssetDatabase::PathOrUuid::PathOrUuid(AZStd::string path): m_path(AZStd::move(path))
     {
-        AZ_TracePrintf("PathOrUuid", "Created with path: %s\n", m_path.c_str());
     }
 
     AssetDatabase::PathOrUuid::PathOrUuid(AZ::Uuid uuid): m_uuid(AZStd::move(uuid))
@@ -82,8 +81,10 @@ namespace AzToolsFramework
         // Store the stringified version of the UUID in m_path
         // We need to do this because when serializing the value to sqlite, the string needs to be stored somewhere for the entire duration of the query
         // If we were to return a temporary, it would go out of scope before the query is finalized
-        m_path = m_uuid.ToFixedString();
-        AZ_TracePrintf("PathOrUuid", "Created with UUID: %s\n", m_uuid.ToFixedString().c_str())
+        // We don't want to store with brackets or dashes because this allows sqlite compatibility:
+        // hex(UUID_BLOB) returns a string of hex without any dashes or brackets, allowing for queries like
+        // select * from sources join sourcedependencies on hex(sourceguid) = dependsonsource
+        m_path = m_uuid.ToFixedString(false, false);
     }
 
     AssetDatabase::PathOrUuid AssetDatabase::PathOrUuid::Create(AZStd::string val)

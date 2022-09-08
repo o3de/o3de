@@ -4335,7 +4335,6 @@ namespace AssetProcessor
         AZStd::unordered_set<AZ::s64> oldDependencies;
         m_stateData->QueryDependsOnSourceBySourceDependency(
             entry.m_sourceFileInfo.m_uuid, // find all rows in the database where this is the source column
-            nullptr, // no filter
             SourceFileDependencyEntry::DEP_Any, // significant line in this code block
             [&](SourceFileDependencyEntry& existingEntry)
             {
@@ -4621,30 +4620,16 @@ namespace AssetProcessor
             return true;
         };
 
-        auto callbackFunctionAbsoluteCheck = [&callbackFunction](SourceFileDependencyEntry& entry)
-        {
-            if (!entry.m_dependsOnSource.IsUuid() && AZ::IO::PathView(entry.m_dependsOnSource.GetPath().c_str()).IsAbsolute())
-            {
-                return callbackFunction(entry);
-            }
-
-            return true;
-        };
-
-        // convert to a database path so that the standard function can be called.
-
         if (m_platformConfig->ConvertToRelativePath(sourcePath, databasePath, scanFolder))
         {
-           m_stateData->QuerySourceDependencyByDependsOnSource(databasePath.toUtf8().constData(), SourceFileDependencyEntry::DEP_Any, callbackFunction);
+            AZ::Uuid uuid = AssetUtilities::CreateSafeSourceUUIDFromName(databasePath.toUtf8().constData());
+            m_stateData->QuerySourceDependencyByDependsOnSource(
+                uuid,
+                databasePath.toUtf8().constData(),
+                sourcePath.toUtf8().constData(),
+                SourceFileDependencyEntry::DEP_Any,
+                callbackFunction);
         }
-
-        // Also try with the UUID:
-        AZ::Uuid uuid = AssetUtilities::CreateSafeSourceUUIDFromName(databasePath.toUtf8().constData());
-        m_stateData->QuerySourceDependencyByDependsOnSource(uuid.ToFixedString().c_str(), SourceFileDependencyEntry::DEP_Any, callbackFunction);
-
-        // We'll also check with the absolute path, because we support absolute path dependencies
-        m_stateData->QuerySourceDependencyByDependsOnSource(
-            sourcePath.toUtf8().constData(), SourceFileDependencyEntry::DEP_Any, callbackFunctionAbsoluteCheck);
 
         return absoluteSourceFilePathQueue.values();
     }
@@ -5135,7 +5120,7 @@ namespace AssetProcessor
                 return true;
             };
 
-            m_stateData->QueryDependsOnSourceBySourceDependency(toSearch, nullptr, dependencyType, callbackFunction);
+            m_stateData->QueryDependsOnSourceBySourceDependency(toSearch, dependencyType, callbackFunction);
         }
 
         for (AZ::Uuid dep : results)

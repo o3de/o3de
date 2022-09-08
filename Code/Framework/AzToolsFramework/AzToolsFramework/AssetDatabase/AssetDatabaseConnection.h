@@ -612,19 +612,22 @@ namespace AzToolsFramework
             /// direct query - look up table row by row ID
             bool QuerySourceDependencyBySourceDependencyId(AZ::s64 sourceDependencyID, sourceFileDependencyHandler handler);
 
-            //! Query sources which depend on 'dependsOnSource'.
+            //! Query sources which depend on 'dependsOnSource'
             //! Reverse dependencies are incoming dependencies: what assets depend on me?
-            //! Optional nullable 'dependentFilter' filters it to only resulting sources which are LIKE the filter.
-            bool QuerySourceDependencyByDependsOnSource(const char* dependsOnSource, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency dependencyType, sourceFileDependencyHandler handler);
+            bool QuerySourceDependencyByDependsOnSource(
+                AZ::Uuid sourceGuid,
+                const char* sourceName,
+                const char* scanFolderPath,
+                AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency dependencyType,
+                sourceFileDependencyHandler handler);
 
             //! Attempt to match either DEP_SourcetoSource or DEP_JobToJob
             //! Then allow DEP_SourceLikeMatch with Wildcard characters
-            //! Optional nullable 'dependentFilter' filters it to only resulting sources which are LIKE the filter.
-            bool QuerySourceDependencyByDependsOnSourceWildcard(const char* dependsOnSource, sourceFileDependencyHandler handler);
+            bool QuerySourceDependencyByDependsOnSourceWildcard(AZ::Uuid sourceGuid, const char* sourceName, const char* absolutePath, sourceFileDependencyHandler handler);
 
             //! Query everything 'sourceDependency' depends on.
             //! Optional nullable 'dependentFilter' filters it to only resulting dependencies which are LIKE the filter.
-            bool QueryDependsOnSourceBySourceDependency(AZ::Uuid sourceGuid, const char* dependencyFilter, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency dependencyType, sourceFileDependencyHandler handler);
+            bool QueryDependsOnSourceBySourceDependency(AZ::Uuid sourceGuid, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency dependencyType, sourceFileDependencyHandler handler);
 
             // Returns all sources who's products depend on any of the products of the specified source
             bool QueryProductDependenciesThatDependOnProductBySourceId(AZ::s64 sourceId, productDependencyHandler handler);

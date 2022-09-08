@@ -2651,7 +2651,7 @@ namespace AssetProcessor
     bool AssetDatabaseConnection::GetSourceFileDependenciesByBuilderGUIDAndSource(const AZ::Uuid& builderGuid, AZ::Uuid sourceGuid, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency typeOfDependency, SourceFileDependencyEntryContainer& container)
     {
         bool found = false;
-        bool succeeded = QueryDependsOnSourceBySourceDependency(sourceGuid, nullptr, typeOfDependency,
+        bool succeeded = QueryDependsOnSourceBySourceDependency(sourceGuid, typeOfDependency,
             [&](SourceFileDependencyEntry& entry)
         {
             if (builderGuid == entry.m_builderGuid)
@@ -2664,10 +2664,10 @@ namespace AssetProcessor
         return found && succeeded;
     }
 
-    bool AssetDatabaseConnection::GetSourceFileDependenciesByDependsOnSource(const QString& dependsOnSource, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency typeOfDependency, SourceFileDependencyEntryContainer& container)
+    bool AssetDatabaseConnection::GetSourceFileDependenciesByDependsOnSource(AZ::Uuid sourceGuid, const char* sourceName, const char* absolutePath, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency typeOfDependency, SourceFileDependencyEntryContainer& container)
     {
         bool found = false;
-        bool succeeded = QuerySourceDependencyByDependsOnSource(dependsOnSource.toUtf8().constData(), typeOfDependency,
+        bool succeeded = QuerySourceDependencyByDependsOnSource(sourceGuid, sourceName, absolutePath,typeOfDependency,
             [&](SourceFileDependencyEntry& entry)
         {
             found = true;
@@ -2683,7 +2683,7 @@ namespace AssetProcessor
         AzToolsFramework::AssetDatabase::SourceFileDependencyEntryContainer& container)
     {
         bool found = false;
-        bool succeeded = QueryDependsOnSourceBySourceDependency(sourceUuid, nullptr, typeOfDependency,
+        bool succeeded = QueryDependsOnSourceBySourceDependency(sourceUuid, typeOfDependency,
             [&](SourceFileDependencyEntry& entry)
         {
             found = true;

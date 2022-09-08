@@ -452,7 +452,7 @@ Please note that only those seed files will get updated that are active for your
     {
         for (auto& relocationInfo : relocationContainer)
         {
-            m_stateData->QuerySourceDependencyByDependsOnSource(relocationInfo.m_sourceEntry.m_sourceName.c_str(),
+            m_stateData->QuerySourceDependencyByDependsOnSource(relocationInfo.m_sourceEntry.m_sourceGuid, relocationInfo.m_sourceEntry.m_sourceName.c_str(), relocationInfo.m_oldAbsolutePath.c_str(),
                 AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_Any, [&relocationInfo](AzToolsFramework::AssetDatabase::SourceFileDependencyEntry& dependencyEntry)
                 {
                     relocationInfo.m_sourceDependencyEntries.push_back(dependencyEntry);
