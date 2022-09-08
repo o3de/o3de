@@ -960,6 +960,17 @@ namespace PhysX
         }
     }
 
+    void EditorColliderComponent::DisplayCylinderCollider(AzFramework::DebugDisplayRequests& debugDisplay) const
+    {
+        const AZ::u32 shapeIndex = 0;
+        m_colliderDebugDraw.DrawMesh(
+            debugDisplay,
+            m_configuration,
+            m_shapeConfiguration.m_cylinder.m_configuration,
+            m_shapeConfiguration.m_cylinder.m_configuration.m_scale,
+            shapeIndex);
+    }
+
     void EditorColliderComponent::DisplayScaledPrimitiveCollider(AzFramework::DebugDisplayRequests& debugDisplay) const
     {
         if (m_scaledPrimitive.has_value())
@@ -985,13 +996,6 @@ namespace PhysX
             break;
         case Physics::ShapeType::Capsule:
             m_colliderDebugDraw.DrawCapsule(debugDisplay, m_configuration, m_shapeConfiguration.m_capsule);
-            break;
-        case Physics::ShapeType::Cylinder:
-            const AZ::u32 shapeIndex = 0;
-            m_colliderDebugDraw.DrawMesh(debugDisplay, m_configuration,
-                m_shapeConfiguration.m_cylinder.m_configuration,
-                AZ::Vector3(GetWorldTM().GetUniformScale()),
-                shapeIndex);
             break;
         }
     }
@@ -1081,7 +1085,11 @@ namespace PhysX
             {
                 DisplayMeshCollider(debugDisplay);
             }
-            else
+            else if (m_shapeConfiguration.IsCylinderConfig())
+            {
+                DisplayCylinderCollider(debugDisplay);
+            }
+            else 
             {
                 if (m_hasNonUniformScale)
                 {

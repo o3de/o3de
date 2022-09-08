@@ -166,6 +166,7 @@ namespace PhysX
         void Display(const AzFramework::ViewportInfo& viewportInfo,
             AzFramework::DebugDisplayRequests& debugDisplay) const override;
 
+        void DisplayCylinderCollider(AzFramework::DebugDisplayRequests& debugDisplay) const;
         void DisplayMeshCollider(AzFramework::DebugDisplayRequests& debugDisplay) const;
         void DisplayUnscaledPrimitiveCollider(AzFramework::DebugDisplayRequests& debugDisplay) const;
         void DisplayScaledPrimitiveCollider(AzFramework::DebugDisplayRequests& debugDisplay) const;
