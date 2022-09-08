@@ -208,4 +208,28 @@ namespace AZ
             }
         }
     }
+
+    void DeprecatedComponentMetadata::AddComponent(const TypeId& componentType)
+    {
+        m_componentTypes.insert(componentType);
+    }
+
+    AZStd::vector<AZStd::string> DeprecatedComponentMetadata::GetComponentNames() const
+    {
+        AZStd::vector<AZStd::string> componentNames;
+
+        componentNames.reserve(m_componentTypes.size());
+        for (auto componentType : m_componentTypes)
+        {
+            AZ::ComponentDescriptor* descriptor = nullptr;
+            AZ::ComponentDescriptorBus::EventResult(descriptor, componentType, &AZ::ComponentDescriptorBus::Events::GetDescriptor);
+            if (descriptor)
+            {
+                componentNames.push_back(descriptor->GetName());
+            }
+        }
+
+        return componentNames;
+    }
+
 } // namespace AZ

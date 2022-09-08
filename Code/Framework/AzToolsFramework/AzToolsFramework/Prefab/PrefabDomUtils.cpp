@@ -10,6 +10,7 @@
 #include <AzCore/Asset/AssetJsonSerializer.h>
 #include <AzCore/JSON/prettywriter.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
+#include <AzCore/Component/EntitySerializer.h>
 
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
@@ -28,6 +29,10 @@ namespace AzToolsFramework
         {
             namespace Internal
             {
+                static constexpr const char* const ComponentRemovalNotice =
+                    "[INFORMATION] Component '%s' is being removed from .prefab data. Please edit and save '%s' "
+                    "to persist the change.";
+
                 static AZ::JsonSerializationResult::ResultCode JsonIssueReporter(AZStd::string& scratchBuffer,
                     AZStd::string_view message, AZ::JsonSerializationResult::ResultCode result, AZStd::string_view path)
                 {
@@ -277,7 +282,26 @@ namespace AzToolsFramework
             bool LoadInstanceFromPrefabDom(Instance& instance, const PrefabDom& prefabDom, LoadFlags flags)
             {
                 AZ::JsonDeserializerSettings settings;
-                return Internal::LoadInstanceHelper(instance, prefabDom, flags, settings);
+
+                // Add metadata to track components that were skipped
+                settings.m_metadata.Create<AZ::DeprecatedComponentMetadata>();
+
+                bool result = Internal::LoadInstanceHelper(instance, prefabDom, flags, settings);
+                if (result)
+                {
+                    // Display a message for skipped components
+                    auto deprecatedComponents = settings.m_metadata.Find<AZ::DeprecatedComponentMetadata>();
+                    if (deprecatedComponents)
+                    {
+                        for (auto componentName : deprecatedComponents->GetComponentNames())
+                        {
+                            AZ_Warning("JSON Serialization", false, Internal::ComponentRemovalNotice, componentName.c_str(),
+                                instance.GetTemplateSourcePath().Filename().Native().data());
+                        }
+                    }
+                }
+
+                return result;
             }
 
             bool LoadInstanceFromPrefabDom(

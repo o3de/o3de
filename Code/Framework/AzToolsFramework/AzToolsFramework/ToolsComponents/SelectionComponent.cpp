@@ -11,17 +11,14 @@
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
+#include <AzCore/Component/EntitySerializer.h>
 
 namespace AzToolsFramework
 {
     namespace Components
     {
-        static constexpr const char* const SelectionComponentRemovalNotice =
-            "[INFORMATION] The editor SelectionComponent is being removed from .prefab data. Please edit and save the level "
-            "and its nested prefabs to persist the change.";
-
         static constexpr const char* const SelectionComponentLoadMessage =
-            "The editor SelectionComponent is being skipped during loading because it is obsolete.";
+            "The editor SelectionComponent is being skipped during loading because it has been deprecated.";
 
         class SelectionComponentSerializer : public AZ::BaseJsonSerializer
         {
@@ -47,8 +44,12 @@ namespace AzToolsFramework
             [[maybe_unused]] const rapidjson::Value& inputValue,
             AZ::JsonDeserializerContext& context)
         {
-            // Inform the user that they should resave their prefabs to reflect the removal of this component
-            AZ_WarningOnce("JSON Serialization", false, "%s", SelectionComponentRemovalNotice);
+            // Mark this component as deprecated to inform the user that it was skipped
+            AZ::DeprecatedComponentMetadata* deprecatedComponents = context.GetMetadata().Find<AZ::DeprecatedComponentMetadata>();
+            if (deprecatedComponents)
+            {
+                deprecatedComponents->AddComponent(outputValueTypeId);
+            }
 
             // Report to the deserializer that we are skipping this component. This will result in a "completed"
             // precessing outcome and avoid further associated warnings
