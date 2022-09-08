@@ -25,8 +25,8 @@ AZ_POP_DISABLE_WARNING
 
 namespace AWSNativeSDKInit
 {
-    // Entry point for Open 3D Engine managing the AWSNativeSDK's initialization and shutdown requirements
-    // Use an AZ::Environment variable to enforce only one init and shutdown
+    //! Entry point for Open 3D Engine managing the AWSNativeSDK's initialization and shutdown requirements
+    //! Use an AZ::Environment variable to enforce only one init and shutdown
     class InitializationManager
     {
     public:
@@ -35,16 +35,19 @@ namespace AWSNativeSDKInit
         InitializationManager();
         ~InitializationManager();
 
-        // Call to guarantee that the API is initialized with proper Open 3D Engine settings.
-        // It's fine to call this from every module which needs to use the NativeSDK
-        // Creates a static shared pointer using the AZ EnvironmentVariable system.
-        // This will prevent a the AWS SDK from going through the shutdown routine until all references are gone, or
-        // the AZ::EnvironmentVariable system is brought down.
+        //! Call to guarantee that the API is initialized with proper Open 3D Engine settings.
+        //! It's fine to call this from every module which needs to use the NativeSDK
+        //! Creates a static shared pointer using the AZ EnvironmentVariable system.
+        //! This will prevent a the AWS SDK from going through the shutdown routine until all references are gone, or
+        //! the AZ::EnvironmentVariable system is brought down.
         static void InitAwsApi();
+
+        //! Returns true if the AWS SDK is initialized and ready to be used.
         static bool IsInitialized();
 
-        // Remove our reference
+        //! Remove reference, if final reference then shut down SDK.
         static void Shutdown();
+
     private:    
         void InitializeAwsApiInternal();
         void ShutdownAwsApiInternal();
