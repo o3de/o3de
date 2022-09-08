@@ -15,7 +15,7 @@ namespace AZStd::ranges
     template<class View, class Func, class = enable_if_t<conjunction_v<
         bool_constant<input_range<View>>,
         bool_constant<view<View>>,
-        bool_constant<copy_constructible<Func>>,
+        bool_constant<move_constructible<Func>>,
         is_object<Func>,
         bool_constant<regular_invocable<Func&, range_reference_t<View>>>,
         bool_constant<AZStd::Internal::can_reference<invoke_result_t<Func&, range_reference_t<View>>>>
@@ -142,7 +142,7 @@ namespace AZStd::ranges
 
     private:
         View m_base{};
-        Internal::copyable_box<Func> m_func{};
+        Internal::movable_box<Func> m_func{};
     };
 
     // deduction guides
