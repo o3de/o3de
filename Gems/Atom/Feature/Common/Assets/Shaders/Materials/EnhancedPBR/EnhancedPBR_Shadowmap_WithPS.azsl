@@ -9,9 +9,14 @@
 #define SHADOWMAP 1
 #define ENABLE_ALPHA_CLIP 1
 
+// Shader Resource Groups
+#include <Atom/Features/SrgSemantics.azsli>
 #include <scenesrg.srgi>
-#include "EnhancedPBR_Common.azsli"
+#include <viewsrg.srgi>
+#include "EnhancedPBR_MaterialSrg.azsli"
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+
 #include <Atom/Features/ParallaxMapping.azsli>
 #include <Atom/Features/MatrixUtility.azsli>
 #include <Atom/Features/Shadow/Shadow.azsli>
@@ -19,9 +24,6 @@
 #include "../MaterialInputs/AlphaInput.azsli"
 #include "../MaterialInputs/ParallaxInput.azsli"
 
-#include "../MaterialFunctions/StandardGetObjectToWorld.azsli"
-#include "../MaterialFunctions/StandardGetNormalToWorld.azsli"
-#include "../MaterialFunctions/StandardTransformUvs.azsli"
 #include "../MaterialFunctions/EvaluateTangentFrame.azsli"
 #include "../MaterialFunctions/ParallaxDepth.azsli"
 #include "../MaterialFunctions/StandardGetAlphaAndClip.azsli"

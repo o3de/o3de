@@ -22,11 +22,12 @@
 
 // ------- Shader Resource Groups -------
 
+#include <Atom/Features/SrgSemantics.azsli>
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
-#include <Atom/Features/Skin/SkinObjectSrg.azsli>
 #include "Skin_MaterialSrg.azsli"
+#include <Atom/Features/Skin/SkinObjectSrg.azsli>
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 
 
 // ------- Material Options -------

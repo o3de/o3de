@@ -19,13 +19,16 @@
 #include <Atom/Features/ShaderQualityOptions.azsli>
 #include <Atom/Features/PBR/LightingOptions.azsli>
 
-// ------- Object SRG -------
 
+// ------- Shader Resource Groups -------
+
+#include <Atom/Features/SrgSemantics.azsli>
+#include <scenesrg.srgi>
+#include <viewsrg.srgi>
+#include "BasePBR_MaterialSrg.azsli"
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 
-// ------- Material SRG -------
-
-#include "BasePBR_Common.azsli"
 
 // ------- Material Options -------
 

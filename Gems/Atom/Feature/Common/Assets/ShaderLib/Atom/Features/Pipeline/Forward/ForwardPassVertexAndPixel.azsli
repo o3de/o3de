@@ -98,7 +98,7 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
     // --- Debug Output ---
 
     DebugModifyOutput(OUT.m_diffuseColor, OUT.m_specularColor, OUT.m_albedo, OUT.m_specularF0, surface.normal,
-                    geoData.tangents[MaterialSrg::m_normalMapUvIndex], geoData.bitangents[MaterialSrg::m_normalMapUvIndex],
+                    geoData.tangents[0], geoData.bitangents[0],
                     surface.baseColor, surface.albedo, surface.roughnessLinear, surface.metallic);
 
 #if ENABLE_SHADER_DEBUGGING

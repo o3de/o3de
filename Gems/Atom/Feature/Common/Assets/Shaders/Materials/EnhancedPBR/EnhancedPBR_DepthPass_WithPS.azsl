@@ -6,12 +6,14 @@
  *
  */
 
-#include "./EnhancedPBR_Common.azsli"
+// Shader Resource Groups
+#include <Atom/Features/SrgSemantics.azsli>
+#include <scenesrg.srgi>
+#include <viewsrg.srgi>
+#include "EnhancedPBR_MaterialSrg.azsli"
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 
-#include "../MaterialFunctions/StandardGetObjectToWorld.azsli"
-#include "../MaterialFunctions/StandardGetNormalToWorld.azsli"
-#include "../MaterialFunctions/StandardTransformUvs.azsli"
 #include "../MaterialFunctions/EvaluateTangentFrame.azsli"
 #include "../MaterialFunctions/ParallaxDepth.azsli"
 #include "../MaterialFunctions/StandardGetAlphaAndClip.azsli"

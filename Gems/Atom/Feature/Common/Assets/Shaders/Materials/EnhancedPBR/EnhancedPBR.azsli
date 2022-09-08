@@ -18,13 +18,18 @@
 #include <Atom/Features/ShaderQualityOptions.azsli>
 #include <Atom/Features/PBR/LightingOptions.azsli>
 
-// ------- Object SRG -------
 
+// ------- Shader Resource Groups -------
+
+#include <Atom/Features/SrgSemantics.azsli>
+#include <scenesrg.srgi>
+#include <viewsrg.srgi>
+#include "EnhancedPBR_MaterialSrg.azsli"
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 
-// ------- Material SRG -------
 
-#include "EnhancedPBR_Common.azsli"
+// ------- Material Options -------
 
 // Alpha
 #include "../MaterialInputs/AlphaInput.azsli"
@@ -34,9 +39,6 @@
 
 // Transmission
 #include "../MaterialInputs/TransmissionInput.azsli"
-
-
-// ------- Material Options -------
 
 COMMON_OPTIONS_BASE_COLOR()
 COMMON_OPTIONS_ROUGHNESS()

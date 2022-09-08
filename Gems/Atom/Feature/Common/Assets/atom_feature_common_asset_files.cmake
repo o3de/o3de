@@ -342,7 +342,6 @@ set(FILES
     Shaders/LightCulling/LightCullingTilePrepare.shader
     Shaders/Materials/DepthPass_WithPS.azsli
     Shaders/Materials/BasePBR/BasePBR.azsli
-    Shaders/Materials/BasePBR/BasePBR_Common.azsli
     Shaders/Materials/BasePBR/BasePBR_ForwardPass.azsl
     Shaders/Materials/BasePBR/BasePBR_ForwardPass.shader
     Shaders/Materials/BasePBR/BasePBR_Lighting.azsli
@@ -350,6 +349,7 @@ set(FILES
     Shaders/Materials/BasePBR/BasePBR_LightingModel.azsli
     Shaders/Materials/BasePBR/BasePBR_LowEndForward.azsl
     Shaders/Materials/BasePBR/BasePBR_LowEndForward.shader
+    Shaders/Materials/BasePBR/BasePBR_MaterialSrg.azsli
     Shaders/Materials/BasePBR/BasePBR_PixelGeometry.azsli
     Shaders/Materials/BasePBR/BasePBR_PixelGeometryData.azsli
     Shaders/Materials/BasePBR/BasePBR_Surface.azsli
@@ -357,7 +357,6 @@ set(FILES
     Shaders/Materials/BasePBR/BasePBR_Vertex.azsli
     Shaders/Materials/BasePBR/BasePBR_VertexData.azsli
     Shaders/Materials/EnhancedPBR/EnhancedPBR.azsli
-    Shaders/Materials/EnhancedPBR/EnhancedPBR_Common.azsli
     Shaders/Materials/EnhancedPBR/EnhancedPBR_DepthPass_WithPS.azsl
     Shaders/Materials/EnhancedPBR/EnhancedPBR_DepthPass_WithPS.shader
     Shaders/Materials/EnhancedPBR/EnhancedPBR_ForwardPass.azsl
@@ -365,6 +364,7 @@ set(FILES
     Shaders/Materials/EnhancedPBR/EnhancedPBR_ForwardPass_EDS.shader
     Shaders/Materials/EnhancedPBR/EnhancedPBR_Lighting.azsli
     Shaders/Materials/EnhancedPBR/EnhancedPBR_LightingModel.azsli
+    Shaders/Materials/EnhancedPBR/EnhancedPBR_MaterialSrg.azsli
     Shaders/Materials/EnhancedPBR/EnhancedPBR_PixelGeometry.azsli
     Shaders/Materials/EnhancedPBR/EnhancedPBR_PixelGeometryData.azsli
     Shaders/Materials/EnhancedPBR/EnhancedPBR_Shadowmap_WithPS.azsl
@@ -430,7 +430,6 @@ set(FILES
     Shaders/Materials/Skin/Skin_Vertex.azsli
     Shaders/Materials/Skin/Skin_VertexData.azsli
     Shaders/Materials/StandardPBR/StandardPBR.azsli
-    Shaders/Materials/StandardPBR/StandardPBR_Common.azsli
     Shaders/Materials/StandardPBR/StandardPBR_DepthPass_WithPS.azsl
     Shaders/Materials/StandardPBR/StandardPBR_DepthPass_WithPS.shader
     Shaders/Materials/StandardPBR/StandardPBR_ForwardPass.azsl
@@ -441,6 +440,7 @@ set(FILES
     Shaders/Materials/StandardPBR/StandardPBR_LowEndForward.azsl
     Shaders/Materials/StandardPBR/StandardPBR_LowEndForward.shader
     Shaders/Materials/StandardPBR/StandardPBR_LowEndForward_EDS.shader
+    Shaders/Materials/StandardPBR/StandardPBR_MaterialSrg.azsli
     Shaders/Materials/StandardPBR/StandardPBR_PixelGeometry.azsli
     Shaders/Materials/StandardPBR/StandardPBR_PixelGeometryData.azsli
     Shaders/Materials/StandardPBR/StandardPBR_Shadowmap_WithPS.azsl

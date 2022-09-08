@@ -20,87 +20,13 @@
 // Decals
 #include <Atom/Features/PBR/Decals.azsli>
 
-// ---------- Vertex Shader ----------
-
-struct VSInput
-{
-    // Base fields (required by the template azsli file)...
-    float3 m_position : POSITION;
-    float3 m_normal : NORMAL;
-    float4 m_tangent : TANGENT; 
-    float3 m_bitangent : BITANGENT; 
- 
-    // Extended fields (only referenced in this azsl file)...
-    float2 m_uv0_tiled : UV0;
-    float2 m_uv1_unwrapped : UV1;
-};
-
-struct VSOutput
-{
-    // Base fields (required by the template azsli file)...
-    precise linear centroid float4 m_position : SV_Position;
-    float3 m_normal: NORMAL;
-    float3 m_tangent : TANGENT; 
-    float3 m_bitangent : BITANGENT; 
-    float3 m_worldPosition : UV0;
-    float2 m_uv[UvSetCount] : UV1;
-
-    // Used for eye refraction
-    float3 m_localPosition : UV3;
-    
-    float3 m_shadowCoords[ViewSrg::MaxCascadeCount] : UV4;
-};
-
-#include <Atom/Features/Vertex/VertexHelper.azsli>
-
-VSOutput EyeVS(VSInput IN)
-{
-    VSOutput OUT;
- 
-    float3 worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_position, 1.0)).xyz;
- 
-    // UV0 is for tiled UVs. 
-    // Even though the "unwrapped" stream is considered the main stream from a material perspective, we
-    // still define UV0 in order to match the default UV set order in most DCC tools for higher compatibility.
-    OUT.m_uv[0] = IN.m_uv0_tiled;
-
-    // UV1 is for unwrapped UVs. The main textures in the Eye material will almost always use this UV set.
-    OUT.m_uv[1] = IN.m_uv1_unwrapped;
-
-    VertexHelper(IN, OUT, worldPosition, false);
-    OUT.m_localPosition = IN.m_position.xyz;
-
-    return OUT;
-}
 
 
 // ---------- Pixel Shader ----------
 
 PbrLightingOutput EyePS_Common(VSOutput IN)
 {
-    const bool isFrontFace = true;
 
-    // ------- Tangents & Bitangets -------
-    float3 tangents[UvSetCount] = { IN.m_tangent.xyz, IN.m_tangent.xyz };
-    float3 bitangents[UvSetCount] = { IN.m_bitangent.xyz, IN.m_bitangent.xyz };
-
-    if (o_iris_o_normal_useTexture || o_sclera_o_normal_useTexture)
-    {
-        for (int i = 0; i != UvSetCount; ++i)
-        {
-            EvaluateTangentFrame(
-                IN.m_normal,
-                IN.m_worldPosition, 
-                isFrontFace,
-                IN.m_uv[i],
-                i,
-                IN.m_tangent,
-                IN.m_bitangent,
-                tangents[i],
-                bitangents[i]);
-        }
-    }
-    
     Surface surface;
     surface.position = IN.m_worldPosition;
 
@@ -120,9 +46,6 @@ PbrLightingOutput EyePS_Common(VSOutput IN)
 
     // ------- Lighting Calculation -------
 
-    surface.clearCoat.factor = 0.0;
-    surface.clearCoat.roughness = 0.0;
-    surface.clearCoat.normal = float3(0.0, 0.0, 0.0);
 
     // Apply Direct Lighting
     ApplyDirectLighting(surface, lightingData, IN.m_position);

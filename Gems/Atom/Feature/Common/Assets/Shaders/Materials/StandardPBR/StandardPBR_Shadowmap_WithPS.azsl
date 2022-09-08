@@ -9,9 +9,13 @@
 #define SHADOWMAP 1 
 #define ENABLE_ALPHA_CLIP 1
 
+// Shader Resource Groups
+#include <Atom/Features/SrgSemantics.azsli>
 #include <scenesrg.srgi>
-#include "StandardPBR_Common.azsli"
+#include <viewsrg.srgi>
+#include "StandardPBR_MaterialSrg.azsli"
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 
 #include "../MaterialFunctions/StandardGetAlphaAndClip.azsli"
 #include "../MaterialFunctions/EvaluateTangentFrame.azsli"
