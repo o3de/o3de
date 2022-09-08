@@ -10,7 +10,6 @@
           "^.*CMake Error at .*$"
         ],
         "log_testcases": [
-          "CMake Error at CMakeLists.txt"
         ],
         "owners": []
       }

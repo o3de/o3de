@@ -25,20 +25,26 @@ class BuildFailureRCAValidator(CommitValidator):
                     if VERBOSE: print(f'{file_name}::{self.__class__.__name__} SKIPPED - Validation pattern excluded on path.')
                     break
             else:
-                if fnmatch.fnmatch(file_name, RCA_PATTERN_PATH):
+                if not fnmatch.fnmatch(file_name, RCA_PATTERN_PATH):
                     if VERBOSE: print(f'{file_name}::{self.__class__.__name__} SKIPPED - Validation pattern excluded on path.')
                     break
                 
                 with open(file_name, 'r', encoding='utf8') as fh:
                     try:
-                        data = json.loads(fh.read())
+                        data = json.load(fh)
                     except json.decoder.JSONDecodeError:
                         error_message = str(f'{file_name}::{self.__class__.__name__} FAILED - JSON format error.\n')
                         if VERBOSE: print(error_message)
                         errors.append(error_message)
                         continue
                     for item in data['indications']:
-                        for test_case in item['log_testcases']:
+                        test_cases = item['log_testcases']
+                        if not test_cases:
+                            error_message = str(f'{file_name}::{self.__class__.__name__} FAILED - No test cases found ({item["name"]}):\n')
+                            if VERBOSE: print(error_message)
+                            errors.append(error_message)
+                            continue
+                        for test_case in test_cases:
                             for pattern in item['log_patterns']:
                                 if item['single_line']:
                                     regex = re.compile(pattern)
@@ -47,7 +53,7 @@ class BuildFailureRCAValidator(CommitValidator):
                                 if regex.search(test_case):
                                     break
                             else:
-                                error_message = str(f'{file_name}::{self.__class__.__name__} FAILED - Unmatched test case {item["name"]}:\n'
+                                error_message = str(f'{file_name}::{self.__class__.__name__} FAILED - Unmatched test case ({item["name"]}):\n'
                                                 f'    ({test_case})')
                                 if VERBOSE: print(error_message)
                                 errors.append(error_message)
