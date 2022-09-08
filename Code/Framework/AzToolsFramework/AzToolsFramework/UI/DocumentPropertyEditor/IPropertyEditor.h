@@ -13,7 +13,7 @@
 
 namespace AzToolsFramework
 {
-	class IPropertyEditor
+    class IPropertyEditor
 	{
         public:
             virtual void SetValueComparisonFunction([[maybe_unused]] const InstanceDataHierarchy::ValueComparisonFunction& valueComparisonFunction){};
