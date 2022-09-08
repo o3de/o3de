@@ -39,9 +39,9 @@ namespace ShaderManagementConsole
         m_documentInspector->SetDocumentId(documentId);
     }
 
-    void ShaderManagementConsoleWindow::CreateMenus(QMenuBar* menuBar)
+    void ShaderManagementConsoleWindow::UpdateMenus(QMenuBar* menuBar)
     {
-        Base::CreateMenus(menuBar);
+        Base::UpdateMenus(menuBar);
         m_actionSaveAsChild->setVisible(false);
     }
 
