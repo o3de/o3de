@@ -316,6 +316,8 @@ namespace Multiplayer
             return;
         }
 
+        // we're going to alter the state of depth write and test, store it here so we can restore when we're done drawing.
+        const AZ::u32 previousState = debugDisplay->GetState();
         debugDisplay->DepthWriteOff();
         debugDisplay->DepthTestOff();
         debugDisplay->DrawQuad2dGradient(
@@ -335,6 +337,8 @@ namespace Multiplayer
             0,
             AZ::Color(0, 0, 0, ScrimAlpha * alphaMultiplier),
             AZ::Color(0.f, 0.f, 0.f, 0.f));
+
+        debugDisplay->SetState(previousState);
     }
 
     void MultiplayerConnectionViewportMessageSystemComponent::OnServerLaunched()

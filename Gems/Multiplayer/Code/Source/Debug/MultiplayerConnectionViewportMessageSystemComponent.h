@@ -26,7 +26,7 @@ namespace Multiplayer
     public:
         static constexpr int MaxMessageLength = 256;
         static constexpr float ScrimAlpha = 0.6f;
-        static constexpr AZ::TimeMs CenterViewportDebugToastTime = AZ::TimeMs{ 3000 }; // Milliseconds toast is up on screen
+        static constexpr AZ::TimeMs CenterViewportDebugToastTime = AZ::TimeMs{ 4000 }; // Milliseconds toast is up on screen
         static constexpr AZ::TimeMs CenterViewportDebugToastTimeFade = AZ::TimeMs{ 1000 }; // Milliseconds toast takes to fade out
 
         // Messaging for client during editor play mode
