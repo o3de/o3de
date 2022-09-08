@@ -20,8 +20,9 @@ void SampleMacroTexture(float2 worldPosition, float2 positionDdx, float2 positio
     int macroGridResolution = TerrainSrg::m_macroMaterialGridInfo.m_tileCount1D;
     float macroTileSize = TerrainSrg::m_macroMaterialGridInfo.m_tileSize;
     int2 macroTileWorldCoord = int2(floor(worldPosition / macroTileSize));
-    int2 macroLocalCoordSigned = abs(macroTileWorldCoord) % macroGridResolution;
-    macroLocalCoordSigned *= sign(macroTileWorldCoord);
+
+    // Only do modulus math on positive numbers for platform consistency.
+    int2 macroLocalCoordSigned = (abs(macroTileWorldCoord) % macroGridResolution) * sign(macroTileWorldCoord);
     uint2 macroLocalCoord = uint2(macroLocalCoordSigned + macroGridResolution) % macroGridResolution;
 
     uint macroTileIndex = macroGridResolution * macroLocalCoord.y + macroLocalCoord.x;
