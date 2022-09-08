@@ -8,8 +8,8 @@
 
 #pragma once
 #include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
-#include <QtCore/QSet>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyRowWidget.hxx>
+#include <QSet>
 
 namespace AzToolsFramework
 {

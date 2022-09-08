@@ -13,8 +13,8 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
-#include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyHandlerWidget.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/IPropertyEditor.h>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyHandlerWidget.h>
 
 #include <QHBoxLayout>
 #include <QScrollArea>
