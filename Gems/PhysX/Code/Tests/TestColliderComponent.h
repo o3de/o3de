@@ -50,26 +50,26 @@ namespace UnitTest
         }
 
         void SetColliderOffset(const AZ::Vector3& offset) override { m_offset = offset; }
-        AZ::Vector3 GetColliderOffset() override { return m_offset; }
+        AZ::Vector3 GetColliderOffset() const override { return m_offset; }
         void SetColliderRotation(const AZ::Quaternion& rotation) override { m_rotation = rotation; }
-        AZ::Quaternion GetColliderRotation() override { return m_rotation; }
-        AZ::Transform GetColliderWorldTransform() override { return m_transform; }
+        AZ::Quaternion GetColliderRotation() const override { return m_rotation; }
+        AZ::Transform GetColliderWorldTransform() const override { return m_transform; }
         void SetShapeType(Physics::ShapeType shapeType) override { m_shapeType = shapeType; }
-        Physics::ShapeType GetShapeType() override { return m_shapeType; }
+        Physics::ShapeType GetShapeType() const override { return m_shapeType; }
         void SetSphereRadius(float radius) override { m_sphereRadius = radius; }
-        float GetSphereRadius() override { return m_sphereRadius; }
+        float GetSphereRadius() const override { return m_sphereRadius; }
         void SetCapsuleRadius(float radius) override { m_capsuleRadius = radius; }
-        float GetCapsuleRadius() override { return m_capsuleRadius; }
+        float GetCapsuleRadius() const override { return m_capsuleRadius; }
         void SetCapsuleHeight(float height) override { m_capsuleHeight = height; }
-        float GetCapsuleHeight() override { return m_capsuleHeight; }
+        float GetCapsuleHeight() const override { return m_capsuleHeight; }
         void SetCylinderRadius(float radius) override { m_cylinderRadius = radius; }
-        float GetCylinderRadius() override { return m_cylinderRadius; }
+        float GetCylinderRadius() const override { return m_cylinderRadius; }
         void SetCylinderHeight(float height) override { m_cylinderHeight = height; }
-        float GetCylinderHeight() override { return m_cylinderHeight; }
+        float GetCylinderHeight() const override { return m_cylinderHeight; }
         void SetCylinderSubdivisionCount(AZ::u8 subdivisionCount) override { m_subdivisionCount = subdivisionCount; }
-        AZ::u8 GetCylinderSubdivisionCount() override { return m_subdivisionCount; }
+        AZ::u8 GetCylinderSubdivisionCount() const override { return m_subdivisionCount; }
         void SetAssetScale(const AZ::Vector3& scale) override { m_assetScale = scale; }
-        AZ::Vector3 GetAssetScale() override { return m_assetScale; }
+        AZ::Vector3 GetAssetScale() const override { return m_assetScale; }
 
     private:
         AzToolsFramework::ComponentModeFramework::ComponentModeDelegate m_componentModeDelegate;

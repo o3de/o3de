@@ -46,7 +46,8 @@ namespace PhysX
             [[maybe_unused]] const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction) {};
     };
 
-    //! NullObject implementation
+    //! NullObject implementation.
+    //! Use it as a placeholder for unimplemented component modes
     class NullColliderComponentMode : public PhysXSubComponentModeBase
     {
     public:

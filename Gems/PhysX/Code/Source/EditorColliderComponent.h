@@ -44,6 +44,7 @@ namespace AzPhysics
 
 namespace PhysX
 {
+    //! Edit context wrapper for the physics asset and asset specific parameters in the shape configuration.
     struct EditorProxyAssetShapeConfig
     {
         AZ_CLASS_ALLOCATOR(EditorProxyAssetShapeConfig, AZ::SystemAllocator, 0);
@@ -54,18 +55,19 @@ namespace PhysX
         Physics::PhysicsAssetShapeConfiguration m_configuration;
     };
 
+    //! Edit context wrapper for cylinder specific parameters and cached geometry.
     struct EditorProxyCylinderShapeConfig
     {
         AZ_CLASS_ALLOCATOR(EditorProxyCylinderShapeConfig, AZ::SystemAllocator, 0);
         AZ_TYPE_INFO(EditorProxyCylinderShapeConfig, "{2394B3D0-E7A1-4B66-8C42-0FFDC1FCAA26}");
         static void Reflect(AZ::ReflectContext* context);
 
-        //! Cylinder specific parameters
+        //! Cylinder specific parameters.
         AZ::u8 m_subdivisionCount = 16;
         float m_height = 1.0f;
         float m_radius = 1.0f;
 
-        //! Configuration stores the convex geometry for the cylinder and shape scale
+        //! Configuration stores the convex geometry for the cylinder and shape scale.
         Physics::CookedMeshShapeConfiguration m_configuration;
     };
 
@@ -203,26 +205,26 @@ namespace PhysX
 
         // PhysX::EditorColliderComponentRequestBus
         void SetColliderOffset(const AZ::Vector3& offset) override;
-        AZ::Vector3 GetColliderOffset() override;
+        AZ::Vector3 GetColliderOffset() const override;
         void SetColliderRotation(const AZ::Quaternion& rotation) override;
-        AZ::Quaternion GetColliderRotation() override;
-        AZ::Transform GetColliderWorldTransform() override;
+        AZ::Quaternion GetColliderRotation() const override;
+        AZ::Transform GetColliderWorldTransform() const override;
         void SetShapeType(Physics::ShapeType shapeType) override;
-        Physics::ShapeType GetShapeType() override;
+        Physics::ShapeType GetShapeType() const override;
         void SetSphereRadius(float radius) override;
-        float GetSphereRadius() override;
+        float GetSphereRadius() const override;
         void SetCapsuleRadius(float radius) override;
-        float GetCapsuleRadius() override;
+        float GetCapsuleRadius() const override;
         void SetCapsuleHeight(float height) override;
-        float GetCapsuleHeight() override;
+        float GetCapsuleHeight() const override;
         void SetCylinderRadius(float radius) override;
-        float GetCylinderRadius() override;
+        float GetCylinderRadius() const override;
         void SetCylinderHeight(float height) override;
-        float GetCylinderHeight() override;
+        float GetCylinderHeight() const override;
         void SetCylinderSubdivisionCount(AZ::u8 subdivisionCount) override;
-        AZ::u8 GetCylinderSubdivisionCount() override;
+        AZ::u8 GetCylinderSubdivisionCount() const override;
         void SetAssetScale(const AZ::Vector3& scale) override;
-        AZ::Vector3 GetAssetScale() override;
+        AZ::Vector3 GetAssetScale() const override;
 
         // PhysX::EditorColliderValidationRequestBus overrides ...
         void ValidateRigidBodyMeshGeometryType() override;

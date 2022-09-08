@@ -42,7 +42,7 @@ namespace PhysX
 {
     void EditorProxyCylinderShapeConfig::Reflect(AZ::ReflectContext* context)
     {
-        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EditorProxyCylinderShapeConfig>()
                 ->Version(1)
@@ -52,7 +52,7 @@ namespace PhysX
                 ->Field("Radius", &EditorProxyCylinderShapeConfig::m_radius)
             ;
 
-            if (auto editContext = serializeContext->GetEditContext())
+            if (auto* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<EditorProxyCylinderShapeConfig>("EditorProxyCylinderShapeConfig", "Proxy structure to wrap cylinder data")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
@@ -71,7 +71,7 @@ namespace PhysX
 
     void EditorProxyAssetShapeConfig::Reflect(AZ::ReflectContext* context)
     {
-        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EditorProxyAssetShapeConfig>()
                 ->Version(1)
@@ -79,7 +79,7 @@ namespace PhysX
                 ->Field("Configuration", &EditorProxyAssetShapeConfig::m_configuration)
                 ;
 
-            if (auto editContext = serializeContext->GetEditContext())
+            if (auto* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<EditorProxyAssetShapeConfig>("EditorProxyShapeConfig", "PhysX Base collider.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
@@ -101,7 +101,7 @@ namespace PhysX
         EditorProxyAssetShapeConfig::Reflect(context);
         EditorProxyCylinderShapeConfig::Reflect(context);
 
-        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EditorProxyShapeConfig>()
                 ->Version(2, &PhysX::ClassConverters::EditorProxyShapeConfigVersionConverter)
@@ -115,7 +115,7 @@ namespace PhysX
                 ->Field("SubdivisionLevel", &EditorProxyShapeConfig::m_subdivisionLevel)
                 ;
 
-            if (auto editContext = serializeContext->GetEditContext())
+            if (auto* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<EditorProxyShapeConfig>(
                     "EditorProxyShapeConfig", "PhysX Base shape collider")
@@ -1257,7 +1257,7 @@ namespace PhysX
         CreateStaticEditorCollider();
     }
 
-    AZ::Vector3 EditorColliderComponent::GetColliderOffset()
+    AZ::Vector3 EditorColliderComponent::GetColliderOffset() const
     {
         return m_configuration.m_position;
     }
@@ -1268,12 +1268,12 @@ namespace PhysX
         CreateStaticEditorCollider();
     }
 
-    AZ::Quaternion EditorColliderComponent::GetColliderRotation()
+    AZ::Quaternion EditorColliderComponent::GetColliderRotation() const
     {
         return m_configuration.m_rotation;
     }
 
-    AZ::Transform EditorColliderComponent::GetColliderWorldTransform()
+    AZ::Transform EditorColliderComponent::GetColliderWorldTransform() const
     {
         return GetWorldTM() * GetColliderLocalTransform();
     }
@@ -1424,7 +1424,7 @@ namespace PhysX
         CreateStaticEditorCollider();
     }
 
-    Physics::ShapeType EditorColliderComponent::GetShapeType()
+    Physics::ShapeType EditorColliderComponent::GetShapeType() const
     {
         return m_shapeConfiguration.GetCurrent().GetShapeType();
     }
@@ -1435,7 +1435,7 @@ namespace PhysX
         CreateStaticEditorCollider();
     }
 
-    float EditorColliderComponent::GetSphereRadius()
+    float EditorColliderComponent::GetSphereRadius() const
     {
         return m_shapeConfiguration.m_sphere.m_radius;
     }
@@ -1446,7 +1446,7 @@ namespace PhysX
         CreateStaticEditorCollider();
     }
 
-    float EditorColliderComponent::GetCapsuleRadius()
+    float EditorColliderComponent::GetCapsuleRadius() const
     {
         return m_shapeConfiguration.m_capsule.m_radius;
     }
@@ -1457,7 +1457,7 @@ namespace PhysX
         CreateStaticEditorCollider();
     }
 
-    float EditorColliderComponent::GetCapsuleHeight()
+    float EditorColliderComponent::GetCapsuleHeight() const
     {
         return m_shapeConfiguration.m_capsule.m_height;
     }
@@ -1469,7 +1469,7 @@ namespace PhysX
         CreateStaticEditorCollider();
     }
 
-    float EditorColliderComponent::GetCylinderRadius()
+    float EditorColliderComponent::GetCylinderRadius() const
     {
         return m_shapeConfiguration.m_cylinder.m_radius;
     }
@@ -1481,7 +1481,7 @@ namespace PhysX
         CreateStaticEditorCollider();
     }
 
-    float EditorColliderComponent::GetCylinderHeight()
+    float EditorColliderComponent::GetCylinderHeight() const
     {
         return m_shapeConfiguration.m_cylinder.m_height;
     }
@@ -1493,7 +1493,7 @@ namespace PhysX
         CreateStaticEditorCollider();
     }
 
-    AZ::u8 EditorColliderComponent::GetCylinderSubdivisionCount()
+    AZ::u8 EditorColliderComponent::GetCylinderSubdivisionCount() const
     {
         return m_shapeConfiguration.m_cylinder.m_subdivisionCount;
     }
@@ -1504,7 +1504,7 @@ namespace PhysX
         CreateStaticEditorCollider();
     }
 
-    AZ::Vector3 EditorColliderComponent::GetAssetScale()
+    AZ::Vector3 EditorColliderComponent::GetAssetScale() const
     {
         return m_shapeConfiguration.m_physicsAsset.m_configuration.m_assetScale;
     }
@@ -1522,14 +1522,12 @@ namespace PhysX
 
     void EditorColliderComponent::UpdateCylinderCookedMesh()
     {
-        AZ::Vector3 scale = m_shapeConfiguration.m_cylinder.m_configuration.m_scale;
-
-        AZ::u8 subdivisionCount = m_shapeConfiguration.m_cylinder.m_subdivisionCount;
-        float height = m_shapeConfiguration.m_cylinder.m_height;
-        float radius = m_shapeConfiguration.m_cylinder.m_radius;
-
+        const AZ::u8 subdivisionCount = m_shapeConfiguration.m_cylinder.m_subdivisionCount;
+        const float height = m_shapeConfiguration.m_cylinder.m_height;
+        const float radius = m_shapeConfiguration.m_cylinder.m_radius;
         Utils::Geometry::PointList samplePoints = Utils::CreatePointsAtFrustumExtents(height, radius, radius, subdivisionCount).value();
 
+        const AZ::Vector3 scale = m_shapeConfiguration.m_cylinder.m_configuration.m_scale;
         m_shapeConfiguration.m_cylinder.m_configuration
             = Utils::CreatePxCookedMeshConfiguration(samplePoints, scale).value();
     }
