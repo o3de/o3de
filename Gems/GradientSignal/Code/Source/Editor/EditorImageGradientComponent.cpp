@@ -121,7 +121,7 @@ namespace GradientSignal
                     // Either show the "Create" options or the "use image" options based on how this is set.
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorImageGradientComponent::m_creationSelectionChoice,
                         "Source Type", "Select whether to create a new image or use an existing image.")
-                        ->Attribute(AZ::Edit::Attributes::EnumValues, &SupportedImageOptions)
+                        ->Attribute(AZ::Edit::Attributes::EnumValues, &EditorImageGradientComponent::SupportedImageOptions)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &EditorImageGradientComponent::InComponentMode)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorImageGradientComponent::RefreshCreationSelectionChoice)
 
