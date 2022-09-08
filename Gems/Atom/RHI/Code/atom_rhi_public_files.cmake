@@ -199,6 +199,7 @@ set(FILES
     Include/Atom/RHI/interval_map.h
     Include/Atom/RHI/ImageProperty.h
     Include/Atom/RHI/BufferProperty.h
+    Include/Atom/RHI/TagBitRegistry.h
     Include/Atom/RHI/TagRegistry.h
     Include/Atom/RHI/XRRenderingInterface.h
 )

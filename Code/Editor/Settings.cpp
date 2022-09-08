@@ -130,7 +130,7 @@ SEditorSettings::SEditorSettings()
     viewports.bAlwaysShowRadiuses = false;
     viewports.bSync2DViews = false;
     viewports.fDefaultAspectRatio = 800.0f / 600.0f;
-    viewports.fDefaultFov = DEG2RAD(60); // 60 degrees (to fit with current game)
+    
     viewports.bShowSafeFrame = false;
     viewports.bHighlightSelectedGeometry = false;
     viewports.bHighlightSelectedVegetation = true;
@@ -471,7 +471,6 @@ void SEditorSettings::Save(bool isEditorClosing)
     //////////////////////////////////////////////////////////////////////////
     SaveValue("Settings", "AlwaysShowRadiuses", viewports.bAlwaysShowRadiuses);
     SaveValue("Settings", "Sync2DViews", viewports.bSync2DViews);
-    SaveValue("Settings", "DefaultFov", viewports.fDefaultFov);
     SaveValue("Settings", "AspectRatio", viewports.fDefaultAspectRatio);
     SaveValue("Settings", "ShowSafeFrame", viewports.bShowSafeFrame);
     SaveValue("Settings", "HighlightSelectedGeometry", viewports.bHighlightSelectedGeometry);
@@ -667,7 +666,6 @@ void SEditorSettings::Load()
     //////////////////////////////////////////////////////////////////////////
     LoadValue("Settings", "AlwaysShowRadiuses", viewports.bAlwaysShowRadiuses);
     LoadValue("Settings", "Sync2DViews", viewports.bSync2DViews);
-    LoadValue("Settings", "DefaultFov", viewports.fDefaultFov);
     LoadValue("Settings", "AspectRatio", viewports.fDefaultAspectRatio);
     LoadValue("Settings", "ShowSafeFrame", viewports.bShowSafeFrame);
     LoadValue("Settings", "HighlightSelectedGeometry", viewports.bHighlightSelectedGeometry);

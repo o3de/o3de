@@ -35,6 +35,7 @@ namespace AZ
             , public AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
             , public AzToolsFramework::EditorMenuNotificationBus::Handler
             , public AzToolsFramework::EditorEvents::Bus::Handler
+            , public AzToolsFramework::ToolsApplicationNotificationBus::Handler
             , public AZ::SystemTickBus::Handler
         {
         public:
@@ -87,6 +88,9 @@ namespace AZ
 
             // AztoolsFramework::EditorEvents::Bus::Handler overrides...
             void NotifyRegisterViews() override;
+
+            // AzToolsFramework::ToolsApplicationNotificationBus::Handler overrides...
+            void AfterEntitySelectionChanged(const AzToolsFramework::EntityIdList& newlySelectedEntities, const AzToolsFramework::EntityIdList&) override;
 
             void PurgePreviews();
 

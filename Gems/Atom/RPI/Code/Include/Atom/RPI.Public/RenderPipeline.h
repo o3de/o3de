@@ -18,6 +18,7 @@
 #include <Atom/RPI.Reflect/Pass/PassAsset.h>
 #include <Atom/RPI.Reflect/Pass/PassTemplate.h>
 #include <Atom/RPI.Reflect/System/RenderPipelineDescriptor.h>
+#include <Atom/RPI.Public/ViewProviderBus.h>
 #include <Atom/RPI.Public/WindowContext.h>
 
 #include <AzCore/std/containers/vector.h>
@@ -112,6 +113,10 @@ namespace AZ
             //! Set a view to the default view tag. 
             //! It's the same as SetPersistentView(GetMainViewTag(), view)
             void SetDefaultView(ViewPtr view);
+
+            //! Set a stereoscopic view to the default view tag.
+            //! It's the same as SetPersistentView(GetMainViewTag(), view)
+            void SetDefaultStereoscopicViewFromEntity(EntityId entityId, RPI::ViewType viewType);
 
             //! Get the view for the default view tag. 
             //! It's the same as GetViews(GetMainViewTag()) and using first element.

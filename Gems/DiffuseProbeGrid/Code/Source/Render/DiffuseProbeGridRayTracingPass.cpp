@@ -71,6 +71,14 @@ namespace AZ
             RHI::PipelineStateDescriptorForRayTracing closestHitShaderDescriptor;
             closestHitShaderVariant.ConfigurePipelineState(closestHitShaderDescriptor);
 
+            // any hit shader
+            AZStd::string anyHitShaderFilePath = "Shaders/DiffuseGlobalIllumination/DiffuseProbeGridRayTracingAnyHit.azshader";
+            m_anyHitShader = RPI::LoadCriticalShader(anyHitShaderFilePath);
+
+            auto anyHitShaderVariant = m_anyHitShader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId);
+            RHI::PipelineStateDescriptorForRayTracing anyHitShaderDescriptor;
+            anyHitShaderVariant.ConfigurePipelineState(anyHitShaderDescriptor);
+
             // miss shader
             AZStd::string missShaderFilePath = "Shaders/DiffuseGlobalIllumination/DiffuseProbeGridRayTracingMiss.azshader";
             m_missShader = RPI::LoadCriticalShader(missShaderFilePath);
@@ -90,17 +98,21 @@ namespace AZ
             RHI::RayTracingPipelineStateDescriptor descriptor;
             descriptor.Build()
                 ->PipelineState(m_globalPipelineState.get())
-                ->MaxPayloadSize(64)
+                ->MaxPayloadSize(96)
                 ->MaxAttributeSize(32)
-                ->MaxRecursionDepth(2)
+                ->MaxRecursionDepth(16)
                 ->ShaderLibrary(rayGenerationShaderDescriptor)
                     ->RayGenerationShaderName(AZ::Name("RayGen"))
                 ->ShaderLibrary(missShaderDescriptor)
                     ->MissShaderName(AZ::Name("Miss"))
                 ->ShaderLibrary(closestHitShaderDescriptor)
                     ->ClosestHitShaderName(AZ::Name("ClosestHit"))
+                ->ShaderLibrary(anyHitShaderDescriptor)
+                    ->AnyHitShaderName(AZ::Name("AnyHit"))
                 ->HitGroup(AZ::Name("HitGroup"))
-                    ->ClosestHitShaderName(AZ::Name("ClosestHit"));
+                    ->ClosestHitShaderName(AZ::Name("ClosestHit"))
+                    ->AnyHitShaderName(AZ::Name("AnyHit"))
+            ;
 
             // create the ray tracing pipeline state object
             m_rayTracingPipelineState = RHI::Factory::Get().CreateRayTracingPipelineState();
