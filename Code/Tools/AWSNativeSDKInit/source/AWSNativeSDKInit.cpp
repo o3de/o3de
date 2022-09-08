@@ -85,7 +85,7 @@ namespace AWSNativeSDKInit
         // Default to preventing calls to the Amazon EC2 instance metadata service (IMDS), unless environment var has been configured.
         // AWS C++ SDK may reach out to EC2 IMDS for region, config or credentials, but unless code is running on EC2 compute
         // such calls will fail and waste network resources.
-        // Note: AWS C++ SDK explicitly only checks if lower case version of AWS_EC2_METADATA_DISABLED == "true", other it will enable the
+        // Note: AWS C++ SDK explicitly only checks if lower case version of AWS_EC2_METADATA_DISABLED == "true", otherwise it will enable the
         // EC2 metadata service calls.
         const auto ec2MetadataDisabled = Aws::Environment::GetEnv(AWS_EC2_METADATA_DISABLED);
         if (ec2MetadataDisabled.empty())
