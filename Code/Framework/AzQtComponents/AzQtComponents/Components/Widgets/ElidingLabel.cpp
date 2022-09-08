@@ -25,10 +25,22 @@ namespace AzQtComponents
         , m_elideMode(Qt::ElideRight)
         , m_metricsLabel(new QLabel(this))
     {
+        connect(this, &ElidingLabel::elisionRequired, this, &ElidingLabel::handleElision);
+
         // Used to return the default sizeHint for a the un-elided text.
         // Should not be displayed.
         m_metricsLabel->hide();
         setText(text);
+    }
+
+    void ElidingLabel::handleElision(bool geometryUpdateRequired)
+    {
+        elide();
+
+        if (geometryUpdateRequired)
+        {
+            updateGeometry();
+        }
     }
 
     void ElidingLabel::setText(const QString& text)
@@ -43,15 +55,7 @@ namespace AzQtComponents
         
         m_elidedText.clear();
 
-        // If setText is called from a thread other than the main thread,
-        // fontMetrics().elidedText() will result in a crash.
-        QTimer::singleShot(
-            0,
-            [&]()
-            {
-                elide();
-                updateGeometry();
-            });
+        emit elisionRequired(true);
     }
 
     void ElidingLabel::setDescription(const QString& description)
@@ -73,7 +77,7 @@ namespace AzQtComponents
     void ElidingLabel::resizeEvent(QResizeEvent* event)
     {
         QWidget::resizeEvent(event);
-        elide();
+        emit elisionRequired(false);
     }
 
     void ElidingLabel::elide()
