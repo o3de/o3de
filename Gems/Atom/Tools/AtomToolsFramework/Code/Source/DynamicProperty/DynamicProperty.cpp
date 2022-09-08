@@ -137,6 +137,14 @@ namespace AtomToolsFramework
             AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::EnumValues, &DynamicProperty::GetEnumValues);
             AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::ChangeNotify, &DynamicProperty::OnDataChanged);
 
+            // Moving the attributes outside of the switch statement for specific types because the dynamic property is moving away from
+            // using the enum. Even though these attributes only apply to specific property types, they can safely be applied to all
+            // property types because each property control will only process attributes they recognize.
+            AddEditDataAttribute(AZ_CRC_CE("ColorEditorConfiguration"), AZ::RPI::ColorUtils::GetRgbEditorConfig());
+            AddEditDataAttribute(AZ_CRC_CE("Thumbnail"), m_config.m_showThumbnail);
+            AddEditDataAttribute(AZ_CRC_CE("SupportedAssetTypes"), m_config.m_supportedAssetTypes);
+            AddEditDataAttribute(AZ::Edit::Attributes::ShowProductAssetFileName, false);
+
             if (m_config.m_customHandler)
             {
                 AddEditDataAttribute(AZ::Edit::Attributes::Handler, m_config.m_customHandler);
@@ -163,7 +171,6 @@ namespace AtomToolsFramework
                 ApplyRangeEditDataAttributes<float>();
                 break;
             case DynamicPropertyType::Color:
-                AddEditDataAttribute(AZ_CRC_CE("ColorEditorConfiguration"), AZ::RPI::ColorUtils::GetRgbEditorConfig());
                 break;
             case DynamicPropertyType::Enum:
                 m_editData.m_elementId = AZ::Edit::UIHandlers::ComboBox;
@@ -172,11 +179,8 @@ namespace AtomToolsFramework
                 m_editData.m_elementId = AZ::Edit::UIHandlers::LineEdit;
                 break;
             case DynamicPropertyType::Asset:
-                AddEditDataAttribute(AZ::Edit::Attributes::ShowProductAssetFileName, false);
-                AddEditDataAttribute(AZ_CRC_CE("Thumbnail"), m_config.m_showThumbnail);
-                AddEditDataAttribute(AZ_CRC_CE("SupportedAssetTypes"), m_config.m_supportedAssetTypes);
                 break;
-            case DynamicPropertyType::Invalid:
+            case DynamicPropertyType::Unspecified:
                 break;
             }
         }
