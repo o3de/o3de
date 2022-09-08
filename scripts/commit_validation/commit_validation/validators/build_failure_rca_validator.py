@@ -27,7 +27,7 @@ class BuildFailureRCAValidator(CommitValidator):
             else:
                 if not fnmatch.fnmatch(file_name, RCA_PATTERN_PATH):
                     if VERBOSE: print(f'{file_name}::{self.__class__.__name__} SKIPPED - Validation pattern excluded on path.')
-                    break
+                    continue
                 
                 with open(file_name, 'r', encoding='utf8') as fh:
                     try:
