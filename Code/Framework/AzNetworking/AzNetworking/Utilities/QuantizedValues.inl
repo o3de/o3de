@@ -300,12 +300,12 @@ namespace AzNetworking
         static inline void DecodeQuantizedValues(SelfType& quantizedValues)
         {
             constexpr double maximumInt     = static_cast<double>(MaxSerializedIntValue);
-            constexpr double minimumFloat   = static_cast<double>(MIN_VALUE);
+            constexpr float minimumFloat   =  static_cast<float>(MIN_VALUE);
             constexpr double convertToFloat = static_cast<double>(MAX_VALUE - MIN_VALUE) / maximumInt;
             for (int32_t i = 0; i < static_cast<int32_t>(NUM_ELEMENTS); ++i)
             {
                 const double quantized = static_cast<double>(quantizedValues.m_serializeValues[i]);
-                quantizedValues.m_quantizedValues[i] = static_cast<float>(minimumFloat + quantized * convertToFloat);
+                quantizedValues.m_quantizedValues[i] = minimumFloat + static_cast<float>(quantized * convertToFloat);
             }
         }
     };
