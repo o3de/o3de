@@ -62,9 +62,6 @@ namespace AzToolsFramework
             AZ::IO::Path GetOwningInstancePrefabPath(AZ::EntityId entityId) const override;
             PrefabRequestResult HasUnsavedChanges(AZ::IO::Path prefabFilePath) const override;
 
-            //! [DEPRECATION]--This function is marked for deprecation. Please use DeleteEntitiesAndAllDescendantsInInstance instead.
-            PrefabOperationResult DeleteEntitiesInInstance(const EntityIdList& entityIds) override;
-
             PrefabOperationResult DeleteEntitiesAndAllDescendantsInInstance(const EntityIdList& entityIds) override;
             DuplicatePrefabResult DuplicateEntitiesInInstance(const EntityIdList& entityIds) override;
 
