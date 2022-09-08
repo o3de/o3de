@@ -283,7 +283,7 @@ namespace AZ
                 {
                     AZ_Error("Error", childNode.m_element.m_version <= childClass->m_version,
                         "The class %s supports version %d. Found file class %s with version %d during deserializing, which is a newer version than the code supports. "
-                        "First, check if you've built latest, your C++ could be out of date. "
+                        "First, check if you've built latest, your C++ code could be out of date. "
                         "It is possible that the class version has been reset. Please check if the team provides a conversion tool. "
                         "To resolve you'll either need to get the proper new version of this class, or you'll need to roll back this change.",
                         childClass->m_name,
