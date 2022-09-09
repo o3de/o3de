@@ -144,6 +144,8 @@ namespace AzToolsFramework
         virtual void OnEditingFinished([[maybe_unused]] QWidget* editorGUI) {}
     }; 
 
+    using PropertyEditorGUIMessagesBus = AZ::EBus<PropertyEditorGUIMessages>;
+
     // A GenericPropertyHandler may be used to register a widget for a property handler ID that is always used, regardless of the underlying
     // type This is useful for UI elements that don't have any specific underlying storage, like buttons
     template<class WidgetType>
@@ -288,6 +290,8 @@ namespace AzToolsFramework
         // you probably don't need to use this, but you can.  Given a name and type it will return the property handler responsible were that type and name
         virtual PropertyHandlerBase* ResolvePropertyHandler(AZ::u32 handlerName, const AZ::Uuid& handlerType) = 0;
     };
+
+    using PropertyTypeRegistrationMessageBus = AZ::EBus<PropertyTypeRegistrationMessages>;
 
     /**
      * Events/bus for listening externally for property changes on a specific entity.
