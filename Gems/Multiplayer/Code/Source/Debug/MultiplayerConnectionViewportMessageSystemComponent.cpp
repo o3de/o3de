@@ -57,11 +57,13 @@ namespace Multiplayer
         if (auto multiplayerSystemComponent = AZ::Interface<IMultiplayer>::Get())
         {
             multiplayerSystemComponent->AddLevelLoadBlockedHandler(m_levelLoadBlockedHandler);
+            multiplayerSystemComponent->AddNoLevelOnConnectHandler(m_noLevelOnConnectHandler);
         }
     }
 
     void MultiplayerConnectionViewportMessageSystemComponent::Deactivate()
     {
+        m_noLevelOnConnectHandler.Disconnect();
         m_levelLoadBlockedHandler.Disconnect();
         MultiplayerEditorServerNotificationBus::Handler::BusDisconnect();
         AZ::RPI::ViewportContextNotificationBus::Handler::BusDisconnect();
@@ -213,8 +215,10 @@ namespace Multiplayer
             const float center_screenposition_y = 0.5f * viewportSize.m_height;
 
             // Fade out the toast over time
+            const size_t wordCount = m_centerViewportDebugToastText.find(' ') + 1; // Word count estimated by counting the number of spaces and adding 1.
+            const AZ::TimeMs toastDuration = static_cast<AZ::TimeMs>(wordCount) * CenterViewportDebugToastTimePerWord + CenterViewportDebugToastTimePrefix + CenterViewportDebugToastTimeFade;
             const AZ::TimeMs currentTime = static_cast<AZ::TimeMs>(AZStd::GetTimeUTCMilliSecond());
-            const AZ::TimeMs remainingTime = CenterViewportDebugToastTime - (currentTime - m_centerViewportDebugToastStartTime);
+            const AZ::TimeMs remainingTime = toastDuration - (currentTime - m_centerViewportDebugToastStartTime);
             const float alpha = AZStd::clamp(aznumeric_cast<float>(remainingTime) / aznumeric_cast<float>(CenterViewportDebugToastTimeFade), 0.0f, 1.0f);
 
             if (alpha > 0.01f)
@@ -397,5 +401,25 @@ namespace Multiplayer
     {
         m_centerViewportDebugToastStartTime = static_cast<AZ::TimeMs>(AZStd::GetTimeUTCMilliSecond());
         m_centerViewportDebugToastText = OnBlockedLevelLoadMessage;
+    }
+
+    void MultiplayerConnectionViewportMessageSystemComponent::OnNoLevelOnConnectEvent()
+    {
+        const auto multiplayerSystemComponent = AZ::Interface<IMultiplayer>::Get();
+        if (!multiplayerSystemComponent)
+        {
+            return;
+        }
+
+        const MultiplayerAgentType agentType = multiplayerSystemComponent->GetAgentType();
+        if (agentType == MultiplayerAgentType::Client)
+        {
+            m_centerViewportDebugToastText = OnNoLevelOnConnectMessageClientSide;
+        }
+        else
+        {
+            m_centerViewportDebugToastText = OnNoLevelOnConnectMessageServerSide;
+        }
+        m_centerViewportDebugToastStartTime = static_cast<AZ::TimeMs>(AZStd::GetTimeUTCMilliSecond());
     }
 }

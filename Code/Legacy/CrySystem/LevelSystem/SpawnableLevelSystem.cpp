@@ -82,6 +82,7 @@ namespace LegacyLevelSystem
         }
 
         AzFramework::RootSpawnableNotificationBus::Handler::BusConnect();
+        AzFramework::LevelSystemLifecycleRequestBus::Handler::BusConnect();
 
         // If there were LoadLevel command invocations before the creation of the level system
         // then those invocations were queued.
@@ -105,6 +106,7 @@ namespace LegacyLevelSystem
     //------------------------------------------------------------------------
     SpawnableLevelSystem::~SpawnableLevelSystem()
     {
+        AzFramework::LevelSystemLifecycleRequestBus::Handler::BusDisconnect();
         AzFramework::RootSpawnableNotificationBus::Handler::BusDisconnect();
     }
 
@@ -118,9 +120,9 @@ namespace LegacyLevelSystem
         return m_bLevelLoaded;
     }
 
-    const char* SpawnableLevelSystem::GetCurrentLevelName() const
+    AZStd::string SpawnableLevelSystem::GetCurrentLevelName()
     {
-        return m_bLevelLoaded ? m_lastLevelName.c_str() : "";
+        return m_bLevelLoaded ? m_lastLevelName : "";
     }
 
     // If the level load failed then we need to have a different shutdown procedure vs when a level is naturally unloaded
@@ -237,8 +239,8 @@ namespace LegacyLevelSystem
 
         // This is a valid level, find out if any systems need to stop level loading before proceeding
         bool blockLoading = false;
-        AzFramework::LevelSystemLifecycleRequestBus::EnumerateHandlers(
-            [&blockLoading, &validLevelName](AzFramework::LevelSystemLifecycleRequests* handler)->bool
+        AzFramework::LevelLoadBlockerBus::EnumerateHandlers(
+            [&blockLoading, &validLevelName](AzFramework::LevelLoadBlockerRequests* handler) -> bool
             {
                 if (handler->ShouldBlockLevelLoading(validLevelName.c_str()))
                 {
@@ -357,11 +359,6 @@ namespace LegacyLevelSystem
         }
 
         GetISystem()->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_LOAD_END, 0, 0);
-
-        if (auto cvar = gEnv->pConsole->GetCVar("sv_map"); cvar)
-        {
-            cvar->Set(levelName);
-        }
 
         gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_PRECACHE_START, 0, 0);
 

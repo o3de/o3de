@@ -193,7 +193,18 @@ namespace AzFramework
         : public AZ::EBusTraits
     {
     public:
-        // Bus Configuration
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+
+        // Returns the name of the currently loaded level.
+        virtual AZStd::string GetCurrentLevelName() = 0;
+    };
+    using LevelSystemLifecycleRequestBus = AZ::EBus<LevelSystemLifecycleRequests>;
+
+    class LevelLoadBlockerRequests
+        : public AZ::EBusTraits
+    {
+    public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
 
@@ -201,7 +212,7 @@ namespace AzFramework
         // Return true to stop loading.
         virtual bool ShouldBlockLevelLoading([[maybe_unused]]const char* levelName) { return false; }
     };
-    using LevelSystemLifecycleRequestBus = AZ::EBus<LevelSystemLifecycleRequests>;
+    using LevelLoadBlockerBus = AZ::EBus<LevelLoadBlockerRequests>;
 
     class LevelSystemLifecycleNotifications
         : public AZ::EBusTraits

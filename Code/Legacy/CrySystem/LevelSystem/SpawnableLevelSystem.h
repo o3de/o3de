@@ -20,12 +20,14 @@ namespace LegacyLevelSystem
 class SpawnableLevelSystem
         : public ILevelSystem
         , public AzFramework::RootSpawnableNotificationBus::Handler
+        , AzFramework::LevelSystemLifecycleRequestBus::Handler
     {
     public:
         explicit SpawnableLevelSystem(ISystem* pSystem);
         ~SpawnableLevelSystem() override;
 
-        // ILevelSystem
+        //! ILevelSystem overrides.
+        //! @{
         void Release() override;
 
         void AddListener(ILevelSystemListener* pListener) override;
@@ -34,7 +36,6 @@ class SpawnableLevelSystem
         bool LoadLevel(const char* levelName) override;
         void UnloadLevel() override;
         bool IsLevelLoaded() override;
-        const char* GetCurrentLevelName() const override;
 
         // If the level load failed then we need to have a different shutdown procedure vs when a level is naturally unloaded
         void SetLevelLoadFailed(bool loadFailed) override;
@@ -48,6 +49,12 @@ class SpawnableLevelSystem
         int GetLevelCount() override;
         ILevelInfo* GetLevelInfo([[maybe_unused]] int level) override;
         ILevelInfo* GetLevelInfo([[maybe_unused]] const char* levelName) override;
+        //! @}
+        
+        //! AzFramework::LevelSystemLifecycleRequestBus overrides.
+        //! @{
+        AZStd::string GetCurrentLevelName() override;
+        //! @}
 
     private:
         void OnRootSpawnableAssigned(AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable, uint32_t generation) override;

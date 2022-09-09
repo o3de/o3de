@@ -26,7 +26,9 @@ namespace Multiplayer
     public:
         static constexpr int MaxMessageLength = 256;
         static constexpr float ScrimAlpha = 0.6f;
-        static constexpr AZ::TimeMs CenterViewportDebugToastTime = AZ::TimeMs{ 4000 }; // Milliseconds toast is up on screen
+
+        static constexpr AZ::TimeMs CenterViewportDebugToastTimePerWord = AZ::TimeMs{ 240 }; // Average reading speed is 250 words per minute (240 ms)
+        static constexpr AZ::TimeMs CenterViewportDebugToastTimePrefix = AZ::TimeMs{ 1500 }; // Give viewers 1.5 seconds to notice the toast
         static constexpr AZ::TimeMs CenterViewportDebugToastTimeFade = AZ::TimeMs{ 1000 }; // Milliseconds toast takes to fade out
 
         // Messaging for client during editor play mode
@@ -57,6 +59,8 @@ namespace Multiplayer
         // Toast Messages
         static constexpr char CenterViewportToastTitle[] = "Multiplayer Alert";
         static constexpr char OnBlockedLevelLoadMessage[] = "Blocked level load; see log for details.";
+        static constexpr char OnNoLevelOnConnectMessageClientSide[] = "Server accept message did not provide a level.\nEnsure server has level loaded before connecting.";
+        static constexpr char OnNoLevelOnConnectMessageServerSide[] = "Client has connected, but we're not in a level.\nPlease load a valid multiplayer level before accepting clients.";
 
         AZ_COMPONENT(MultiplayerConnectionViewportMessageSystemComponent, "{7600cfcf-e380-4876-aa90-8120e57205e9}");
 
@@ -93,6 +97,9 @@ namespace Multiplayer
         //! @{
         void OnBlockedLevelLoad();
         LevelLoadBlockedEvent::Handler m_levelLoadBlockedHandler = LevelLoadBlockedEvent::Handler([this](){OnBlockedLevelLoad();});
+
+        void OnNoLevelOnConnectEvent();
+        NoLevelOnConnectEvent::Handler m_noLevelOnConnectHandler = NoLevelOnConnectEvent::Handler([this](){OnNoLevelOnConnectEvent();});
         //! @}
 
         void DrawConnectionStatus(AzNetworking::ConnectionState connectionState, const AzNetworking::IpAddress& hostAddress);
