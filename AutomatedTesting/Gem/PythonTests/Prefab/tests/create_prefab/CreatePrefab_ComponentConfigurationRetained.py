@@ -22,12 +22,14 @@ def CreatePrefab_ComponentConfigurationRetained():
     from editor_python_test_tools.prefab_utils import Prefab
     import Prefab.tests.PrefabTestUtils as prefab_test_utils
 
-    TEST_PREFAB_FILE_NAME = Path(__file__).stem + '_prefab3'
+    TEST_PREFAB_FILE_NAME = Path(__file__).stem + '_prefab'
+    TEST_ENTITY_NAME = "TestEntity"
+
     prefab_test_utils.open_base_tests_level()
 
     # Creates a new Entity at the root level
     # Asserts if creation didn't succeed
-    test_entity = EditorEntity.create_editor_entity("TestEntity")
+    test_entity = EditorEntity.create_editor_entity(TEST_ENTITY_NAME)
     original_parent_id = test_entity.get_parent_id()
     assert test_entity.id.IsValid(), "Couldn't create parent entity"
 
@@ -43,7 +45,7 @@ def CreatePrefab_ComponentConfigurationRetained():
     test_prefab, test_instance = Prefab.create_prefab([test_entity], TEST_PREFAB_FILE_NAME)
 
     # Validate that the Box Shape component properties persist after prefab creation
-    test_entity = test_instance.get_direct_child_entity_by_name("TestEntity")
+    test_entity = test_instance.get_direct_child_entity_by_name(TEST_ENTITY_NAME)
     box_shape_component = test_entity.get_components_of_type(["Box Shape"])[0]
     prefab_box_shape_dimensions = box_shape_component.get_component_property_value(
         "Box Shape|Box Configuration|Dimensions")
