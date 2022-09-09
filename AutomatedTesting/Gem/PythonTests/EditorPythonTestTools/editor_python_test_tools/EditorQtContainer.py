@@ -4,11 +4,11 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
-Qt Object pojo
+Object to house all the Qt Objects used when testing and manipulating the O3DE UI
 """
 
 
-class QtObject:
+class EditorQtContainer:
 
     def __init__(self):
         editor_main_window = None

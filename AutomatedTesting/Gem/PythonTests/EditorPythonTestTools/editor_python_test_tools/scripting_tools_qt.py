@@ -64,17 +64,21 @@ def save_script_event_file(self, file_path):
     label = self.asset_editor.findChild(QtWidgets.QLabel, "textEdit")
     return helper.wait_for_condition(lambda: "*" not in label.text(), WAIT_TIME_3)
 
-def initialize_editor_object(QtObject):
-    QtObject.editor_main_window = pyside_utils.get_editor_main_window()
+def initialize_editor_object(EditorQtContainer):
+    EditorQtContainer.editor_main_window = pyside_utils.get_editor_main_window()
 
-def initialize_sc_editor_objects(QtObject):
-    QtObject.sc_editor = QtObject.editor_main_window.findChild(QtWidgets.QDockWidget, SCRIPT_CANVAS_UI)
-    QtObject.sc_editor_main_window = QtObject.sc_editor.findChild(QtWidgets.QMainWindow)
+def initialize_sc_editor_objects(EditorQtContainer):
+    EditorQtContainer.sc_editor = EditorQtContainer.editor_main_window.findChild(QtWidgets.QDockWidget, SCRIPT_CANVAS_UI)
+    EditorQtContainer.sc_editor_main_window = EditorQtContainer.sc_editor.findChild(QtWidgets.QMainWindow)
 
-def initialize_sc_editor_objects(QtObject):
-    QtObject.sc_editor = QtObject.editor_main_window.findChild(QtWidgets.QDockWidget, SCRIPT_CANVAS_UI)
-    QtObject.sc_editor_main_window = QtObject.sc_editor.findChild(QtWidgets.QMainWindow)
+def initialize_sc_editor_objects(EditorQtContainer):
+    EditorQtContainer.sc_editor = EditorQtContainer.editor_main_window.findChild(QtWidgets.QDockWidget, SCRIPT_CANVAS_UI)
+    EditorQtContainer.sc_editor_main_window = EditorQtContainer.sc_editor.findChild(QtWidgets.QMainWindow)
 
+def initialize_variable_manager_object(EditorQtContainer):
+    EditorQtContainer.variable_manager = EditorQtContainer.sc_editor.findChild(QtWidgets.QDockWidget, VARIABLE_MANAGER_QT)
+    if not EditorQtContainer.variable_manager.isVisible():
+        EditorQtContainer.click_menu_option(EditorQtContainer.sc_editor, VARIABLE_MANAGER_QT)
 
 def initialize_asset_editor_object(self):
     """
@@ -221,7 +225,7 @@ def get_node_inspector_node_titles(self, sc_graph_node_inspector, sc_graph):
     titles = []
     for background in node_inspector_backgrounds:
         background_title = background.findChild(QtWidgets.QLabel, NODE_INSPECTOR_TITLE_KEY)
-        if background_title.text() is not "":
+        if background_title.text() != "":
             titles.append(background_title.text())
     return titles
 
@@ -254,7 +258,7 @@ def create_new_sc_graph(sc_editor_main_window):
     create_new_graph_action.trigger()
 
 
-def create_new_variable(QtObject, new_variable_type):
+def create_new_variable(EditorQtContainer, new_variable_type):
     """
     function for creating a new SC variable through variable manager
 
@@ -274,12 +278,12 @@ def create_new_variable(QtObject, new_variable_type):
     if not valid_type:
         Report.critical_result(["Invalid variable type provided", ""], False)
 
-    add_new_variable_button = QtObject.variable_manager.findChild(QtWidgets.QPushButton, ADD_BUTTON_QT)
+    add_new_variable_button = EditorQtContainer.variable_manager.findChild(QtWidgets.QPushButton, ADD_BUTTON_QT)
     add_new_variable_button.click()  # Click on Create Variable button
     helper.wait_for_condition((
-        lambda: QtObject.variable_manager.findChild(QtWidgets.QTableView, VARIABLE_PALETTE_QT) is not None), WAIT_TIME_3)
+        lambda: EditorQtContainer.variable_manager.findChild(QtWidgets.QTableView, VARIABLE_PALETTE_QT) is not None), WAIT_TIME_3)
     # Select variable type
-    table_view = QtObject.variable_manager.findChild(QtWidgets.QTableView, VARIABLE_PALETTE_QT)
+    table_view = EditorQtContainer.variable_manager.findChild(QtWidgets.QTableView, VARIABLE_PALETTE_QT)
     model_index = pyside_utils.find_child_by_pattern(table_view, new_variable_type)
     # Click on it to create variable
     pyside_utils.item_view_index_mouse_click(table_view, model_index)

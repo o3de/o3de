@@ -62,43 +62,43 @@ def EditMenu_Default_UndoRedo():
     from editor_python_test_tools.utils import Report
     import azlmbr.legacy.general as general
     import pyside_utils
-    import scripting_utils.qtobject as qtobj
-    import scripting_utils.scripting_tools as scripting_tools_qt
+    import editor_python_test_tools.EditorQtContainer as qtContainer
+    import editor_python_test_tools.scripting_tools_qt as scripting_tools_qt
     from scripting_utils.scripting_constants import (WAIT_TIME_3, SCRIPT_CANVAS_UI, VARIABLE_TYPES,
                                                      GRAPH_VARIABLES_QT)
 
-    QtObject = qtobj.QtObject()
+    qtObjects = qtContainer.EditorQtContainer()
 
     general.idle_enable(True)
-    scripting_tools_qt.initialize_editor_object(QtObject)
+    scripting_tools_qt.initialize_editor_object(qtObjects)
 
     # 1) Open Script Canvas window and initialize the qt SC objects
     general.open_pane(SCRIPT_CANVAS_UI)
     helper.wait_for_condition(lambda: general.is_pane_visible(SCRIPT_CANVAS_UI), WAIT_TIME_3)
-    scripting_tools_qt.initialize_sc_editor_objects(QtObject)
+    scripting_tools_qt.initialize_sc_editor_objects(qtObjects)
 
     # 2) Open Variable Manager if not opened already
-    scripting_tools_qt.initialize_variable_manager_object(QtObject)
+    scripting_tools_qt.initialize_variable_manager_object(qtObjects)
 
     # 3) Create Graph
-    scripting_tools_qt.create_new_sc_graph(QtObject.sc_editor_main_window)
+    scripting_tools_qt.create_new_sc_graph(qtObjects.sc_editor_main_window)
 
     # 4) Create and verify the new variable exists in variable manager
-    scripting_tools_qt.create_new_variable(QtObject, VARIABLE_TYPES[0])
-    graph_variables = QtObject.variable_manager.findChild(QtWidgets.QTableView, GRAPH_VARIABLES_QT)
+    scripting_tools_qt.create_new_variable(qtObjects, VARIABLE_TYPES[0])
+    graph_variables = qtObjects.variable_manager.findChild(QtWidgets.QTableView, GRAPH_VARIABLES_QT)
     row_count = 1
     Report.result(Tests.variable_created, helper.wait_for_condition(
         lambda: get_graph_variables_row_count(graph_variables, QtCore) == row_count, WAIT_TIME_3))
 
     # 5) Trigger Undo action and verify if variable is removed in Variable Manager
-    undo_redo_action = QtObject.sc_editor.findChild(QtWidgets.QAction, "action_Undo")
+    undo_redo_action = qtObjects.sc_editor.findChild(QtWidgets.QAction, "action_Undo")
     undo_redo_action.trigger()
     row_count = 0
     Report.result(Tests.undo_worked, helper.wait_for_condition(
         lambda: get_graph_variables_row_count(graph_variables, QtCore) == row_count, WAIT_TIME_3))
 
     # 6) Trigger Redo action and verify if variable is re-added in Variable Manager
-    undo_redo_action = QtObject.sc_editor.findChild(QtWidgets.QAction, "action_Redo")
+    undo_redo_action = qtObjects.sc_editor.findChild(QtWidgets.QAction, "action_Redo")
     undo_redo_action.trigger()
     row_count = 1
     Report.result(Tests.redo_worked, helper.wait_for_condition(
