@@ -184,6 +184,14 @@ namespace AzToolsFramework
 
         void ComponentModeDelegate::OnComponentModeEnterButtonPressed()
         {
+            // Check the entity hasn't been deselected but we haven't been told yet.
+            bool isSelected = false;
+            ToolsApplicationRequests::Bus::BroadcastResult(isSelected, &ToolsApplicationRequests::IsSelected, m_entityComponentIdPair.GetEntityId());
+            if (!isSelected)
+            {
+                return;
+            }
+
             // ensure we aren't already in ComponentMode and are not also attempting to enter game mode
             if (!InComponentMode() && !EditorRequestingGame())
             {
