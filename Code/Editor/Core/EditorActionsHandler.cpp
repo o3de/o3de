@@ -1567,7 +1567,7 @@ void EditorActionsHandler::OnToolBarBindingHook()
 
 void EditorActionsHandler::OnPostActionManagerRegistrationHook()
 {
-        // Ensure the layouts menu is refreshed when the layouts list changes.
+    // Ensure the layouts menu is refreshed when the layouts list changes.
     QObject::connect(
         m_mainWindow->m_viewPaneManager, &QtViewPaneManager::savedLayoutsChanged, m_mainWindow,
         [&]()
