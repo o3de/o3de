@@ -12,6 +12,7 @@ from editor_python_test_tools.utils import Report
 import pyside_utils
 import editor_python_test_tools.hydra_editor_utils as hydra
 from editor_python_test_tools.editor_entity_utils import EditorEntity
+import editor_python_test_tools.EditorQtContainer as qtContainer
 import azlmbr.editor as editor
 import azlmbr.math as math
 import azlmbr.bus as bus
@@ -64,21 +65,22 @@ def save_script_event_file(self, file_path):
     label = self.asset_editor.findChild(QtWidgets.QLabel, "textEdit")
     return helper.wait_for_condition(lambda: "*" not in label.text(), WAIT_TIME_3)
 
-def initialize_editor_object(EditorQtContainer):
-    EditorQtContainer.editor_main_window = pyside_utils.get_editor_main_window()
+def initialize_script_qt_canvas_objects():
 
-def initialize_sc_editor_objects(EditorQtContainer):
-    EditorQtContainer.sc_editor = EditorQtContainer.editor_main_window.findChild(QtWidgets.QDockWidget, SCRIPT_CANVAS_UI)
-    EditorQtContainer.sc_editor_main_window = EditorQtContainer.sc_editor.findChild(QtWidgets.QMainWindow)
+    editorqtcontainer = qtContainer.EditorQtContainer()
 
-def initialize_sc_editor_objects(EditorQtContainer):
-    EditorQtContainer.sc_editor = EditorQtContainer.editor_main_window.findChild(QtWidgets.QDockWidget, SCRIPT_CANVAS_UI)
-    EditorQtContainer.sc_editor_main_window = EditorQtContainer.sc_editor.findChild(QtWidgets.QMainWindow)
+    editorqtcontainer.editor_main_window = pyside_utils.get_editor_main_window()
+    editorqtcontainer.sc_editor = editorqtcontainer.editor_main_window.findChild(QtWidgets.QDockWidget,
+                                                                                 SCRIPT_CANVAS_UI)
+    editorqtcontainer.sc_editor_main_window = editorqtcontainer.sc_editor.findChild(QtWidgets.QMainWindow)
 
-def initialize_variable_manager_object(EditorQtContainer):
-    EditorQtContainer.variable_manager = EditorQtContainer.sc_editor.findChild(QtWidgets.QDockWidget, VARIABLE_MANAGER_QT)
-    if not EditorQtContainer.variable_manager.isVisible():
-        EditorQtContainer.click_menu_option(EditorQtContainer.sc_editor, VARIABLE_MANAGER_QT)
+    editorqtcontainer.variable_manager = editorqtcontainer.sc_editor.findChild(QtWidgets.QDockWidget,
+                                                                               VARIABLE_MANAGER_QT)
+    if not editorqtcontainer.variable_manager.isVisible():
+        editorqtcontainer.click_menu_option(editorqtcontainer.sc_editor, VARIABLE_MANAGER_QT)
+
+    return editorqtcontainer
+
 
 def initialize_asset_editor_object(self):
     """

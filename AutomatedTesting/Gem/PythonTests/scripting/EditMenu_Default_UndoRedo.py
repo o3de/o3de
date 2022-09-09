@@ -67,18 +67,12 @@ def EditMenu_Default_UndoRedo():
     from scripting_utils.scripting_constants import (WAIT_TIME_3, SCRIPT_CANVAS_UI, VARIABLE_TYPES,
                                                      GRAPH_VARIABLES_QT)
 
-    qtObjects = qtContainer.EditorQtContainer()
-
     general.idle_enable(True)
-    scripting_tools_qt.initialize_editor_object(qtObjects)
 
     # 1) Open Script Canvas window and initialize the qt SC objects
     general.open_pane(SCRIPT_CANVAS_UI)
     helper.wait_for_condition(lambda: general.is_pane_visible(SCRIPT_CANVAS_UI), WAIT_TIME_3)
-    scripting_tools_qt.initialize_sc_editor_objects(qtObjects)
-
-    # 2) Open Variable Manager if not opened already
-    scripting_tools_qt.initialize_variable_manager_object(qtObjects)
+    qtObjects = scripting_tools_qt.initialize_script_qt_canvas_objects()
 
     # 3) Create Graph
     scripting_tools_qt.create_new_sc_graph(qtObjects.sc_editor_main_window)
