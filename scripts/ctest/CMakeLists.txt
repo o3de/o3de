@@ -18,20 +18,21 @@ endif()
 ################################################################################
 
 if(PAL_TRAIT_TEST_PYTEST_SUPPORTED)
-    foreach(suite_name ${LY_TEST_GLOBAL_KNOWN_SUITE_NAMES})
-        ly_add_pytest(
-            NAME pytest_sanity_${suite_name}_no_gpu
-            PATH ${CMAKE_CURRENT_LIST_DIR}/sanity_test.py
-            TEST_SUITE ${suite_name}
-        )
+    # Disabled due to intermittent XML error in https://github.com/o3de/o3de/issues/11667
+    # foreach(suite_name ${LY_TEST_GLOBAL_KNOWN_SUITE_NAMES})
+    #     ly_add_pytest(
+    #         NAME pytest_sanity_${suite_name}_no_gpu
+    #         PATH ${CMAKE_CURRENT_LIST_DIR}/sanity_test.py
+    #         TEST_SUITE ${suite_name}
+    #     )
 
-        ly_add_pytest(
-            NAME pytest_sanity_${suite_name}_requires_gpu
-            PATH ${CMAKE_CURRENT_LIST_DIR}/sanity_test.py
-            TEST_SUITE ${suite_name}
-            TEST_REQUIRES gpu
-        )
-    endforeach()
+    #     ly_add_pytest(
+    #         NAME pytest_sanity_${suite_name}_requires_gpu
+    #         PATH ${CMAKE_CURRENT_LIST_DIR}/sanity_test.py
+    #         TEST_SUITE ${suite_name}
+    #         TEST_REQUIRES gpu
+    #     )
+    # endforeach()
 
     # add a custom test which makes sure that the test filtering works!
     ly_add_test(
