@@ -157,7 +157,9 @@ namespace AzToolsFramework
                     auto linkRef = m_prefabSystemComponentInterface->FindLink(detachingInstanceLinkId);
                     AZ_Assert(linkRef.has_value(), "Unable to find link with id '%llu' during prefab creation.", detachingInstanceLinkId);
 
-                    nestedInstanceLinkPatchesMap.emplace(nestedInstance, AZStd::move(linkRef->get().GetLinkPatches()));
+                    PrefabDom linkPatches;
+                    linkRef->get().GetLinkPatches(linkPatches, linkPatches.GetAllocator());
+                    nestedInstanceLinkPatchesMap.emplace(nestedInstance, AZStd::move(linkPatches));
 
                     RemoveLink(outInstance, commonRootEntityOwningInstance->get().GetTemplateId(), undoBatch.GetUndoBatch());
 
@@ -219,7 +221,7 @@ namespace AzToolsFramework
                     // Retrieve the previous patch if it exists
                     if (nestedInstanceLinkPatchesMap.contains(nestedInstance.get()))
                     {
-                        previousPatch = AZStd::move(nestedInstanceLinkPatchesMap[nestedInstance.get()]);
+                        previousPatch.Swap(nestedInstanceLinkPatchesMap[nestedInstance.get()]);
                         UpdateLinkPatchesWithNewEntityAliases(previousPatch, oldEntityAliases, instanceToCreate->get());
                     }
 
@@ -542,7 +544,8 @@ namespace AzToolsFramework
                 "A valid link was not found for one of the instances provided as input for the CreatePrefab operation.");    
 
             PrefabDom patchesCopyForUndoSupport;
-            PrefabDom nestedInstanceLinkDom = nestedInstanceLink->get().GetLinkDom();
+            PrefabDom nestedInstanceLinkDom;
+            nestedInstanceLink->get().GetLinkDom(nestedInstanceLinkDom, nestedInstanceLinkDom.GetAllocator());
             PrefabDomValueConstReference nestedInstanceLinkPatches =
                 PrefabDomUtils::FindPrefabDomValue(nestedInstanceLinkDom, PrefabDomUtils::PatchesName);
             if (nestedInstanceLinkPatches.has_value())
@@ -885,7 +888,7 @@ namespace AzToolsFramework
 
                     if (linkRef.has_value())
                     {
-                        oldLinkPatches = linkRef->get().GetLinkPatches();
+                        linkRef->get().GetLinkPatches(oldLinkPatches, oldLinkPatches.GetAllocator());
                     }
 
                     auto nestedInstanceUniquePtr = beforeOwningInstance->get().DetachNestedInstance(nestedInstance->GetInstanceAlias());
@@ -1152,7 +1155,8 @@ namespace AzToolsFramework
                         linkRef.has_value(), "Unable to find link with id '%llu' during instance duplication.",
                         oldLinkId);
 
-                    PrefabDom linkPatches = linkRef->get().GetLinkPatches();
+                    PrefabDom linkPatches;
+                    linkRef->get().GetLinkPatches(linkPatches, linkPatches.GetAllocator());
 
                     // If the instance was duplicated as part of an ancestor's nested hierarchy, the container's parent patch
                     // will need to be refreshed to point to the new duplicated parent entity

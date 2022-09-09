@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
+#pragma optimize("", off)
 #include <AzToolsFramework/Prefab/PrefabLoader.h>
 
 #include <AzCore/Component/Entity.h>
@@ -826,7 +826,8 @@ namespace AzToolsFramework
                 Link& link = findLinkResult->get();
 
                 PrefabDomPath instancePath = link.GetInstancePath();
-                PrefabDom linkDom = link.GetLinkDom();
+                PrefabDom linkDom;
+                link.GetLinkDom(linkDom, output.GetAllocator());
 
                 // Get the instance value of the Template copy
                 // This currently stores a fully realized nested Template Dom
@@ -1003,3 +1004,4 @@ namespace AzToolsFramework
 
     } // namespace Prefab
 } // namespace AzToolsFramework
+#pragma optimize("", on)

@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
+#pragma optimize("", off)
 #include <AzToolsFramework/Prefab/Link/Link.h>
 
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
@@ -132,10 +132,9 @@ namespace AzToolsFramework
             return m_id;
         }
 
-        PrefabDom Link::GetLinkDom() const
+        void Link::GetLinkDom(PrefabDom& linkDom, PrefabDom::AllocatorType& allocator) const
         {
-            PrefabDom linkDomFromValues = ConstructLinkDomFromPatches();
-            return AZStd::move(linkDomFromValues);
+            return ConstructLinkDomFromPatches(linkDom, allocator);
         }
 
         PrefabDomPath Link::GetInstancePath() const
@@ -159,7 +158,8 @@ namespace AzToolsFramework
             sourceTemplateDomCopy.CopyFrom(sourceTemplatePrefabDom, sourceTemplatePrefabDom.GetAllocator());
 
             
-            PrefabDom patchesDom = ConstructLinkDomFromPatches();
+            PrefabDom patchesDom;
+            ConstructLinkDomFromPatches(patchesDom, patchesDom.GetAllocator());
             PrefabDomValueReference patchesReference = PrefabDomUtils::FindPrefabDomValue(patchesDom, PrefabDomUtils::PatchesName);
             if (!patchesReference.has_value())
             {
@@ -208,11 +208,11 @@ namespace AzToolsFramework
 
         PrefabDomValue& Link::GetLinkedInstanceDom()
         {
-            AZ_Assert(IsValid(), "Link::GetLinkDom - Trying to get DOM of an invalid link.");
+            AZ_Assert(IsValid(), "Link::GetLinkedInstanceDom - Trying to get DOM of an invalid link.");
             PrefabDom& targetTemplatePrefabDom = m_prefabSystemComponentInterface->FindTemplateDom(m_targetTemplateId);
             PrefabDomPath instancePath = GetInstancePath();
             PrefabDomValue* instanceValue = instancePath.Get(targetTemplatePrefabDom);
-            AZ_Assert(instanceValue,"Link::GetLinkDom - Invalid value for instance pointed by the link in template with id '%u'.",
+            AZ_Assert(instanceValue,"Link::GetLinkedInstanceDom - Invalid value for instance pointed by the link in template with id '%u'.",
                     m_targetTemplateId);
             return *instanceValue;
         }
@@ -237,23 +237,34 @@ namespace AzToolsFramework
             }
         }
 
-        PrefabDom Link::ConstructLinkDomFromPatches() const
+        void Link::ConstructLinkDomFromPatches(PrefabDom& linkDom, PrefabDom::AllocatorType& allocator) const
         {
-            PrefabDom linkDom;
             linkDom.SetObject();
 
             TemplateReference sourceTemplate = m_prefabSystemComponentInterface->FindTemplate(m_sourceTemplateId);
             if (!sourceTemplate.has_value())
             {
                 AZ_Assert(false, "Failed to fetch sourct template from link");
-                return AZStd::move(linkDom);
+                return;
             }
 
             linkDom.AddMember(
                 rapidjson::StringRef(PrefabDomUtils::SourceName),
-                PrefabDomValue(sourceTemplate->get().GetFilePath().c_str(), linkDom.GetAllocator()),
-                linkDom.GetAllocator());
+                PrefabDomValue(sourceTemplate->get().GetFilePath().c_str(), allocator),
+                allocator);
 
+            PrefabDom patchesArray;
+
+            GetLinkPatches(patchesArray, allocator);
+
+            if (patchesArray.Size() != 0)
+            {
+                linkDom.AddMember(rapidjson::StringRef(PrefabDomUtils::PatchesName), AZStd::move(patchesArray), allocator);
+            }
+        }
+
+        void Link::GetLinkPatches(PrefabDom& patchesDom, PrefabDom::AllocatorType& allocator) const
+        {
             // Use a set to sort the patches based on their patch indices. This will make sure that entities are
             // retrieved from the tree in the same order as they are inserted in.
             AZStd::set<const PrefabOverrideMetadata*> patchesSet;
@@ -264,31 +275,17 @@ namespace AzToolsFramework
                 return true;
             };
 
+            patchesDom.SetArray();
             m_linkPatchesTree.VisitPath(AZ::Dom::Path(), visitorFn, AZ::Dom::PrefixTreeTraversalFlags::ExcludeExactPath);
-            PrefabDomValue patchesArrray;
-            patchesArrray.SetArray();
 
             for (auto patchesSetIterator = patchesSet.begin(); patchesSetIterator != patchesSet.end(); ++patchesSetIterator)
             {
-                PrefabDomValue patch((*patchesSetIterator)->m_patch, linkDom.GetAllocator());
-                patchesArrray.PushBack(patch.Move(), linkDom.GetAllocator());
+                PrefabDomValue patch;
+                patch.CopyFrom((*patchesSetIterator)->m_patch, allocator);
+                patchesDom.PushBack(patch.Move(), allocator);
             }
-
-            if (patchesArrray.Size() != 0)
-            {
-                linkDom.AddMember(rapidjson::StringRef(PrefabDomUtils::PatchesName), patchesArrray.Move(), linkDom.GetAllocator());
-            }
-
-            return AZStd::move(linkDom);
-        }
-
-        PrefabDom Link::GetLinkPatches()
-        {
-            PrefabDom linkDom = ConstructLinkDomFromPatches();
-            PrefabDom patchesDom;
-            patchesDom.Swap(linkDom[PrefabDomUtils::PatchesName]);
-            return AZStd::move(patchesDom);
         }
 
     } // namespace Prefab
 } // namespace AzToolsFramework
+#pragma optimize("", on)

@@ -299,7 +299,7 @@ namespace AzToolsFramework
 
             if (link.has_value())
             {
-                m_linkDomPrevious.CopyFrom(link->get().GetLinkDom(), m_linkDomPrevious.GetAllocator());
+                link->get().GetLinkDom(m_linkDomPrevious, m_linkDomPrevious.GetAllocator());
             }
 
             //get source templateDom

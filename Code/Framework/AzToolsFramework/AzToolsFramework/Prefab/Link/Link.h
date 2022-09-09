@@ -88,8 +88,8 @@ namespace AzToolsFramework
             TemplateId GetTargetTemplateId() const;
 
             LinkId GetId() const;
-
-            PrefabDom GetLinkDom() const;
+            void GetLinkPatches(PrefabDom& patchesDom, PrefabDom::AllocatorType& allocator) const;
+            void GetLinkDom(PrefabDom& linkDom, PrefabDom::AllocatorType& allocator) const;
 
             PrefabDomPath GetInstancePath() const;
             const AZStd::string& GetInstanceName() const;
@@ -110,8 +110,6 @@ namespace AzToolsFramework
              */
             void AddLinkIdToInstanceDom(PrefabDomValue& instanceDomValue);
 
-            PrefabDom GetLinkPatches();
-
         private:
 
             /**
@@ -122,7 +120,7 @@ namespace AzToolsFramework
              */
             void AddLinkIdToInstanceDom(PrefabDomValue& instanceDomValue, PrefabDom::AllocatorType& allocator);
 
-            PrefabDom ConstructLinkDomFromPatches() const;
+            void ConstructLinkDomFromPatches(PrefabDom& linkDom, PrefabDom::AllocatorType& allocator) const;
 
             AZ::Dom::DomPrefixTree<PrefabOverrideMetadata> m_linkPatchesTree;
 
