@@ -553,7 +553,7 @@ namespace Multiplayer
         {
             if (entityReplicator->IsMarkedForRemoval())
             {
-                AZ_Warning("NET_RepDeletes", false, "Got a replicator delete message that is a duplicate id %llu remote host %s", static_cast<AZ::u64>(updateMessage.GetEntityId()), GetRemoteHostId().GetString().c_str());
+                AZ_Warning("NET_RepDeletes", false, "Entity replicator for id %llu is already marked for deletion on remote host %s", static_cast<AZ::u64>(updateMessage.GetEntityId()), GetRemoteHostId().GetString().c_str());
                 return true;
             }
             else if (entityReplicator->OwnsReplicatorLifetime())
