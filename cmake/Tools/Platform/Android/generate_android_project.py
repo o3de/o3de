@@ -126,6 +126,8 @@ ALL_ASSET_MODES = [ASSET_MODE_PAK, ASSET_MODE_LOOSE, ASSET_MODE_VFS]
 ASSET_TYPE_ARGUMENT_NAME = '--asset-type'
 DEFAULT_ASSET_TYPE = 'android'
 
+DEFAULT_3RD_PARTY_PATH = str(pathlib.Path(os.path.expanduser('~')) / '.o3de' / '3rdParty')
+
 
 def wrap_parsed_args(parsed_args):
     """
@@ -164,8 +166,8 @@ def main(args):
                         required=True)
 
     parser.add_argument('--third-party-path',
-                        help='The path to the 3rd Party root directory',
-                        required=True)
+                        help=f'The path to the 3rd Party root directory (defaults to {DEFAULT_3RD_PARTY_PATH})',
+                        default=DEFAULT_3RD_PARTY_PATH)
 
     parser.add_argument(ANDROID_SDK_ARGUMENT_NAME,
                         help='The path to the android SDK',
