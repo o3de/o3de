@@ -76,12 +76,12 @@ def test_verify_gradle(tmpdir, from_override, version_str, expected_result):
 
 @pytest.mark.parametrize(
     "from_override, version_str, expected_result", [
-        pytest.param(False, b"cmake version 3.17.0\nKit Ware", LooseVersion('3.17.0'), id='equalMinVersion'),
-        pytest.param(False, b"cmake version 4.0.0\nKit Ware", LooseVersion('4.0.0'), id='greaterThanMinVersion'),
-        pytest.param(False, b"cmake version 1.0.0\nKit Ware", common.LmbrCmdError('error', common.ERROR_CODE_ENVIRONMENT_ERROR), id='lessThanMinVersion'),
-        pytest.param(True, b"cmake version 3.17.0\nKit Ware", LooseVersion('3.17.0'), id='override_equalMinVersion'),
-        pytest.param(True, b"cmake version 4.0.0\nKit Ware", LooseVersion('4.0.0'), id='override_greaterThanMinVersion'),
-        pytest.param(True, b"cmake version 1.0.0\nKit Ware", common.LmbrCmdError('error', common.ERROR_CODE_ENVIRONMENT_ERROR), id='override_lessThanMinVersion'),
+        pytest.param(False, f"cmake version {generate_android_project.CMAKE_MIN_VERSION}\nKit Ware", generate_android_project.CMAKE_MIN_VERSION, id='equalMinVersion'),
+        pytest.param(False, "cmake version 4.0.0\nKit Ware", LooseVersion('4.0.0'), id='greaterThanMinVersion'),
+        pytest.param(False, "cmake version 1.0.0\nKit Ware", common.LmbrCmdError('error', common.ERROR_CODE_ENVIRONMENT_ERROR), id='lessThanMinVersion'),
+        pytest.param(True, f"cmake version {generate_android_project.CMAKE_MIN_VERSION}\nKit Ware", generate_android_project.CMAKE_MIN_VERSION, id='override_equalMinVersion'),
+        pytest.param(True, "cmake version 4.0.0\nKit Ware", LooseVersion('4.0.0'), id='override_greaterThanMinVersion'),
+        pytest.param(True, "cmake version 1.0.0\nKit Ware", common.LmbrCmdError('error', common.ERROR_CODE_ENVIRONMENT_ERROR), id='override_lessThanMinVersion'),
     ]
 )
 def test_verify_cmake(tmpdir, from_override, version_str, expected_result):
@@ -95,14 +95,14 @@ def test_verify_cmake(tmpdir, from_override, version_str, expected_result):
     else:
         override_cmake_install_path = None
 
-    def _mock_check_output(args, shell):
+    def _mock_check_output(args, shell, stderr):
         assert args
         assert shell is True
         if from_override:
             assert args[0] == os.path.normpath(f'{override_cmake_install_path}/bin/{cmake_exe}')
         assert args[1] == '--version'
 
-        return version_str
+        return version_str.encode('utf-8', 'ignore')
 
     subprocess.check_output = _mock_check_output
 
@@ -141,7 +141,7 @@ def test_verify_ninja(tmpdir, from_override, version_str, expected_result):
     else:
         override_cmake_install_path = None
 
-    def _mock_check_output(args, shell):
+    def _mock_check_output(args, shell, stderr):
         assert args
         assert shell is True
         if from_override:

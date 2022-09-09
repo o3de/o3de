@@ -78,7 +78,8 @@ def test_resolve_adb_tool(tmpdir):
     dummy_adb_file.write('adb')
 
     result = android_deployment.AndroidDeployment.resolve_adb_tool(pathlib.Path(tmpdir.join(sdk_path).realpath()))
-    assert pathlib.Path(dummy_adb_file.realpath()) == result
+    adb_name = os.path.basename(result).lower()
+    assert adb_name == adb_target
 
 
 @patch('subprocess.check_output', return_value=b'PASS')
