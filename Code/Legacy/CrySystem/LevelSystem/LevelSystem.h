@@ -103,6 +103,15 @@ public:
         return "";
     }
 
+    const char* GetCurrentLevelName() const override
+    {
+        if (m_pCurrentLevel && m_pCurrentLevel->GetLevelInfo())
+        {
+            return m_pCurrentLevel->GetLevelInfo()->GetName();
+        }
+        return "";
+    }
+
     // If the level load failed then we need to have a different shutdown procedure vs when a level is naturally unloaded
     void SetLevelLoadFailed(bool loadFailed) override { m_levelLoadFailed = loadFailed; }
     bool GetLevelLoadFailed() override { return m_levelLoadFailed; }

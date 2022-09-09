@@ -125,6 +125,11 @@ namespace LegacyLevelSystem
         return m_bLevelLoaded ? m_lastLevelName : "";
     }
 
+    const char* SpawnableLevelSystem::GetCurrentLevelName() const
+    {
+        return m_bLevelLoaded ? m_lastLevelName.c_str() : "";
+    }
+
     // If the level load failed then we need to have a different shutdown procedure vs when a level is naturally unloaded
     void SpawnableLevelSystem::SetLevelLoadFailed(bool loadFailed)
     {

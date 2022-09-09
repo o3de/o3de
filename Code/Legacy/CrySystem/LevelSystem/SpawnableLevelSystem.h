@@ -42,8 +42,10 @@ class SpawnableLevelSystem
         bool GetLevelLoadFailed() override;
         AZ::Data::AssetType GetLevelAssetType() const override;
 
-        // The following methods are deprecated from ILevelSystem and will be removed once slice support is removed.
+        // Deprecated. Use AzFramework::LevelSystemLifecycleRequests::GetCurrentLevelName instead.
+        const char* GetCurrentLevelName() const override;
 
+        // The following methods are deprecated from ILevelSystem and will be removed once slice support is removed.
         // [LYN-2376] Remove once legacy slice support is removed
         void Rescan([[maybe_unused]] const char* levelsFolder) override;
         int GetLevelCount() override;
