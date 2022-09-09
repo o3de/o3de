@@ -31,8 +31,6 @@ DEFAULT_BUILD_SNAPSHOT = BUILD_SNAPSHOTS_WITH_EMPTY.get(0)
 // Branches with build snapshots as comma separated value string
 env.BUILD_SNAPSHOTS = BUILD_SNAPSHOTS.join(",")
 
-VALIDATION_PIPELINE = /validation_pipe/
-
 def pipelineProperties = []
 
 def pipelineParameters = [
@@ -42,7 +40,8 @@ def pipelineParameters = [
     booleanParam(defaultValue: false, description: 'Deletes the contents of the output directories of the AssetProcessor before building.', name: 'CLEAN_ASSETS'),
     booleanParam(defaultValue: false, description: 'Deletes the contents of the workspace and forces a complete pull.', name: 'CLEAN_WORKSPACE'),
     booleanParam(defaultValue: false, description: 'Recreates the volume used for the workspace. The volume will be created out of a snapshot taken from main.', name: 'RECREATE_VOLUME'),
-    booleanParam(defaultValue: false, description: 'Cancels AR immediately on any failure in the pipeline and marks it as failed', name: 'FAIL_FAST')
+    booleanParam(defaultValue: false, description: 'Cancels AR immediately on any failure in the pipeline and marks it as failed', name: 'FAIL_FAST'),
+    booleanParam(defaultValue: false, description: 'Deletes the volume used for the workspace after the pipeline steps are completed.', name: 'DISCARD_VOLUME')
 ]
 
 def palSh(cmd, lbl = '', winSlashReplacement = true, winCharReplacement = true) {
@@ -507,7 +506,7 @@ def UploadCrashArtifacts(String platform) {
     }
 }
 
-def PostBuildCommonSteps(String workspace, Map params, boolean mount = true) {
+def PostBuildCommonSteps(String workspace, Map params, String projectName, String pipelineName, String branchName, String platform, String buildType, boolean mount = true) {
     echo 'Starting post-build common steps...'
     if (params && params.containsKey('OUTPUT_DIRECTORY')){
         dir([workspace, ENGINE_REPOSITORY_NAME, params.OUTPUT_DIRECTORY].join('/')){
@@ -526,7 +525,11 @@ def PostBuildCommonSteps(String workspace, Map params, boolean mount = true) {
 
         try {
             timeout(5) {
-                palSh("${pythonCmd} ${INCREMENTAL_BUILD_SCRIPT_PATH} --action unmount", 'Unmounting volume')
+                if (env.DISCARD_VOLUME?.toBoolean()) {
+                    palSh("${pythonCmd} ${INCREMENTAL_BUILD_SCRIPT_PATH} --action delete --repository_name ${env.REPOSITORY_NAME} --project ${projectName} --pipeline ${pipelineName} --branch ${branchName} --platform ${platform} --build_type ${buildType}", 'Deleting volume', winSlashReplacement=false)
+                } else {
+                    palSh("${pythonCmd} ${INCREMENTAL_BUILD_SCRIPT_PATH} --action unmount", 'Unmounting volume')
+                }
             }
         } catch (Exception e) {
             echo "Unmount script error ${e}"
@@ -616,10 +619,10 @@ def CreateUploadCrashArtifactStage(String jobName, String platform) {
     }
 }
 
-def CreateTeardownStage(Map environmentVars, Map params) {
+def CreateTeardownStage(Map environmentVars, Map params, String projectName, String pipelineName, String branchName, String platformName, String buildType) {
     return {
         stage('Teardown') {
-            PostBuildCommonSteps(environmentVars['WORKSPACE'], params, environmentVars['MOUNT_VOLUME'])
+            PostBuildCommonSteps(environmentVars['WORKSPACE'], params, projectName, pipelineName, branchName, platformName, buildType, environmentVars['MOUNT_VOLUME'])
         }
     }
 }
@@ -695,13 +698,13 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                         if (params && params.containsKey('TEST_RESULTS') && params.TEST_RESULTS == 'True') {
                             CreateExportTestResultsStage(pipelineConfig, platform.key, build_job_name, envVars, params).call()
                         }
-                        if (!(build_job.key ==~ "${VALIDATION_PIPELINE}") && fileExists(GetCrashArtifactDir())) {
+                        if (fileExists(GetCrashArtifactDir())) {
                             CreateUploadCrashArtifactStage(build_job_name, platform.key).call()
                         }
                         if (params && params.containsKey('TEST_SCREENSHOTS') && params.TEST_SCREENSHOTS == 'True' && currentResult == 'FAILURE') {
                             CreateExportTestScreenshotsStage(pipelineConfig, branchName, platform.key, build_job_name, envVars, params).call()
                         }
-                        CreateTeardownStage(envVars, params).call()
+                        CreateTeardownStage(envVars, params, projectName, pipelineName, branchName, platform.key, build_job.key).call()
                         if (envVars['CREATE_SNAPSHOT']?.toBoolean()) {
                             CreateSnapshotStage(repositoryName, projectName, pipelineName, branchName, platform.key, build_job.key, build_job_name).call()
                         }
@@ -919,7 +922,6 @@ try {
 
         // Build and Post-Build Testing Stage
         def buildConfigs = [:]
-        def validateConfig = [:] 
 
         // Platform Builds run on EC2
         pipelineConfig.platforms.each { platform ->
@@ -929,26 +931,12 @@ try {
                     envVars['JENKINS_JOB_NAME'] = env.JOB_NAME // Save original Jenkins job name to JENKINS_JOB_NAME
                     envVars['JOB_NAME'] = "${branchName}_${platform.key}_${build_job.key}" // backwards compatibility, some scripts rely on this
                     someBuildHappened = true
-                    if ("${build_job.key}" ==~ "${VALIDATION_PIPELINE}") {
-                        validateConfig["${platform.key} [${build_job.key}]"] = CreateBuildJobs(pipelineConfig, platform, build_job, envVars, branchName, pipelineName, repositoryName, projectName)
-                    }
-                    else {
-                        buildConfigs["${platform.key} [${build_job.key}]"] = CreateBuildJobs(pipelineConfig, platform, build_job, envVars, branchName, pipelineName, repositoryName, projectName)
-                    }
+                    buildConfigs["${platform.key} [${build_job.key}]"] = CreateBuildJobs(pipelineConfig, platform, build_job, envVars, branchName, pipelineName, repositoryName, projectName)
                 }
             }
         }
 
         timestamps {
-            stage('Validate') {
-                try {
-                    parallel validateConfig
-                }
-                catch (Exception e) {
-                    echo "Exception block: ${e}"
-                }
-            }
-
             stage('Build') {
                 if (params.FAIL_FAST) {
                     echo "Fail fast option enabled"

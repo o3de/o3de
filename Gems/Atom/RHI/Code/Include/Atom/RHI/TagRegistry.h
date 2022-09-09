@@ -27,13 +27,18 @@ namespace AZ
         //!   - FindTag is provided to search for a tag reference without taking ownership.
         //!   - Names are case sensitive.
         //!
-        template<typename TagType, size_t MaxTagCount>
+        template<typename IndexType, size_t MaxTagCount>
         class TagRegistry final
             : public AZStd::intrusive_base
         {
         public:
             AZ_CLASS_ALLOCATOR(TagRegistry, AZ::SystemAllocator, 0);
             AZ_DISABLE_COPY_MOVE(TagRegistry);
+
+            template<typename>
+            friend class TagBitRegistry;
+
+            using TagType = Handle<IndexType>;
 
             static Ptr<TagRegistry> Create();
 
@@ -74,22 +79,22 @@ namespace AZ
             size_t m_allocatedTagCount = 0;
         };
 
-        template<typename TagType, size_t MaxTagCount>
-        Ptr<TagRegistry<TagType, MaxTagCount>> TagRegistry<TagType, MaxTagCount>::Create()
+        template<typename IndexType, size_t MaxTagCount>
+        Ptr<TagRegistry<IndexType, MaxTagCount>> TagRegistry<IndexType, MaxTagCount>::Create()
         {
-            return aznew TagRegistry<TagType, MaxTagCount>();
+            return aznew TagRegistry<IndexType, MaxTagCount>();
         }
 
-        template<typename TagType, size_t MaxTagCount>
-        void TagRegistry<TagType, MaxTagCount>::Reset()
+        template<typename IndexType, size_t MaxTagCount>
+        void TagRegistry<IndexType, MaxTagCount>::Reset()
         {
             AZStd::unique_lock<AZStd::shared_mutex> lock(m_mutex);
             m_entriesByTag.fill({});
             m_allocatedTagCount = 0;
         }
 
-        template<typename TagType, size_t MaxTagCount>
-        TagType TagRegistry<TagType, MaxTagCount>::AcquireTag(const Name& tagName)
+        template<typename IndexType, size_t MaxTagCount>
+        auto TagRegistry<IndexType, MaxTagCount>::AcquireTag(const Name& tagName) -> TagType
         {
             if (tagName.IsEmpty())
             {
@@ -129,8 +134,8 @@ namespace AZ
             return tag;
         }
 
-        template<typename TagType, size_t MaxTagCount>
-        void TagRegistry<TagType, MaxTagCount>::ReleaseTag(TagType tag)
+        template<typename IndexType, size_t MaxTagCount>
+        void TagRegistry<IndexType, MaxTagCount>::ReleaseTag(TagType tag)
         {
             if (tag.IsValid())
             {
@@ -148,8 +153,8 @@ namespace AZ
             }
         }
 
-        template<typename TagType, size_t MaxTagCount>
-        TagType TagRegistry<TagType, MaxTagCount>::FindTag(const Name& tagName) const
+        template<typename IndexType, size_t MaxTagCount>
+        auto TagRegistry<IndexType, MaxTagCount>::FindTag(const Name& tagName) const -> TagType
         {
             AZStd::shared_lock<AZStd::shared_mutex> lock(m_mutex);
             for (size_t i = 0; i < m_entriesByTag.size(); ++i)
@@ -162,8 +167,8 @@ namespace AZ
             return {};
         }
 
-        template<typename TagType, size_t MaxTagCount>
-        Name TagRegistry<TagType, MaxTagCount>::GetName(TagType tag) const
+        template<typename IndexType, size_t MaxTagCount>
+        Name TagRegistry<IndexType, MaxTagCount>::GetName(TagType tag) const
         {
             if (tag.GetIndex() < m_entriesByTag.size())
             {
@@ -175,8 +180,8 @@ namespace AZ
             }
         }
 
-        template<typename TagType, size_t MaxTagCount>
-        size_t TagRegistry<TagType, MaxTagCount>::GetAllocatedTagCount() const
+        template<typename IndexType, size_t MaxTagCount>
+        size_t TagRegistry<IndexType, MaxTagCount>::GetAllocatedTagCount() const
         {
             return m_allocatedTagCount;
         }

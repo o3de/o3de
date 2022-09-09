@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>150</width>
-    <height>20</height>
+    <height>61</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -16,58 +16,133 @@
     <verstretch>20</verstretch>
    </sizepolicy>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout">
-   <property name="leftMargin">
-    <number>0</number>
-   </property>
-   <property name="topMargin">
-    <number>0</number>
-   </property>
-   <property name="rightMargin">
-    <number>0</number>
-   </property>
-   <property name="bottomMargin">
-    <number>0</number>
-   </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QLabel" name="m_icon">
+    <widget class="QWidget" name="m_headerLineSpacer" native="true">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-       <horstretch>16</horstretch>
-       <verstretch>16</verstretch>
-      </sizepolicy>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLabel" name="m_nameLabel">
-     <property name="text">
-      <string>Name label</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QToolButton" name="m_deleteButton">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-       <horstretch>16</horstretch>
-       <verstretch>16</verstretch>
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>6</verstretch>
       </sizepolicy>
      </property>
      <property name="minimumSize">
       <size>
-       <width>16</width>
-       <height>16</height>
+       <width>0</width>
+       <height>6</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
-       <width>16</width>
-       <height>16</height>
+       <width>16777215</width>
+       <height>6</height>
       </size>
      </property>
-     <property name="toolTip">
-      <string>Delete this entry</string>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <property name="spacing">
+      <number>6</number>
+     </property>
+     <item>
+      <widget class="QLabel" name="m_icon">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>16</horstretch>
+         <verstretch>16</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16</width>
+         <height>16</height>
+        </size>
+       </property>
+       <property name="baseSize">
+        <size>
+         <width>16</width>
+         <height>16</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="m_nameLabel">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>18</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>18</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Name label</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="m_deleteButton">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>16</horstretch>
+         <verstretch>16</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>16</width>
+         <height>16</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16</width>
+         <height>16</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>Delete this entry</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="Line" name="m_headerLine">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>1</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>1</height>
+      </size>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(126, 126, 126);</string>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Plain</enum>
+     </property>
+     <property name="lineWidth">
+      <number>2</number>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
      </property>
     </widget>
    </item>

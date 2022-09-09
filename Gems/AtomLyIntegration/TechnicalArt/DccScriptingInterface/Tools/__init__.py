@@ -8,8 +8,11 @@
 #
 #
 # -------------------------------------------------------------------------
-"""! @brief
-<DCCsi>/Tools/__init__.py
+"""! O3DE DCCsi Tools package
+
+:file: < DCCsi >/Tools/__init__.py
+:Status: Prototype
+:Version: 0.0.1
 
 This init allows us to treat the Tools folder as a package.
 """
@@ -24,78 +27,61 @@ import logging as _logging
 
 # -------------------------------------------------------------------------
 # global scope
-_PACKAGENAME = 'Tools'
-_LOGGER = _logging.getLogger(_PACKAGENAME)
+_PACKAGENAME = 'DCCsi.Tools'
 
 __all__ = ['DCC',
+           'IDE',
            'Python']  # to do: add others when they are set up
           #'Foo',
+
+_LOGGER = _logging.getLogger(_PACKAGENAME)
+_LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
 # we need to set up basic access to the DCCsi
-_MODULE_PATH = Path(__file__)  # To Do: what if frozen?
-
-_PATH_DCCSI_TOOLS = Path(_MODULE_PATH.parent)
-_PATH_DCCSI_TOOLS = Path(os.getenv('PATH_DCCSI_TOOLS',
-                                       _PATH_DCCSI_TOOLS.as_posix()))
-site.addsitedir(_PATH_DCCSI_TOOLS.as_posix())
-
-_PATH_DCCSIG = Path(_PATH_DCCSI_TOOLS.parent)
-_PATH_DCCSIG = Path(os.getenv('PATH_DCCSIG', _PATH_DCCSIG.as_posix()))
-site.addsitedir(_PATH_DCCSIG.as_posix())
-# -------------------------------------------------------------------------
-
-
-# -------------------------------------------------------------------------
-# now we have access to the DCCsi code and azpy
-from azpy.env_bool import env_bool
-from azpy.constants import ENVAR_DCCSI_GDEBUG
-from azpy.constants import ENVAR_DCCSI_DEV_MODE
-from azpy.constants import ENVAR_DCCSI_LOGLEVEL
-from azpy.constants import ENVAR_DCCSI_GDEBUGGER
-from azpy.constants import FRMT_LOG_LONG
-
-#  global space
-_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
-_DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
-_DCCSI_GDEBUGGER = env_bool(ENVAR_DCCSI_GDEBUGGER, 'WING')
-
-# default loglevel to info unless set
-_DCCSI_LOGLEVEL = int(env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO))
-if _DCCSI_GDEBUG:
-    # override loglevel if runnign debug
-    _DCCSI_LOGLEVEL = _logging.DEBUG
-    _logging.basicConfig(level=_DCCSI_LOGLEVEL,
-                        format=FRMT_LOG_LONG,
-                        datefmt='%m-%d %H:%M')
-    _LOGGER = _logging.getLogger(_PACKAGENAME)
-# -------------------------------------------------------------------------
-
-from azpy.config_utils import attach_debugger
-
-# -------------------------------------------------------------------------
-# message collection
-_LOGGER.debug(f'Initializing: {_PACKAGENAME}')
+_MODULE_PATH = Path(__file__)
 _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH}')
-_LOGGER.debug(f'PATH_DCCSIG: {_PATH_DCCSIG}')
-_LOGGER.debug(f'PATH_DCCSI_TOOLS: {_PATH_DCCSI_TOOLS}')
+
+# turtles all the way down, the paths from there to here
+from DccScriptingInterface import PATH_O3DE_TECHART_GEMS
+from DccScriptingInterface import PATH_DCCSIG
+# this makes sure nothing asserts higher up
+from DccScriptingInterface.globals import *
+
+from DccScriptingInterface.constants import ENVAR_PATH_DCCSI_TOOLS
+
+# the path to this < dccsi >/Tools pkg
+PATH_DCCSI_TOOLS = Path(_MODULE_PATH.parent)
+# this allows the Tool location to be overriden in the external env
+PATH_DCCSI_TOOLS = Path(os.getenv(ENVAR_PATH_DCCSI_TOOLS,
+                                   PATH_DCCSI_TOOLS.as_posix()))
+site.addsitedir(PATH_DCCSI_TOOLS.as_posix())
+_LOGGER.debug(f'{ENVAR_PATH_DCCSI_TOOLS}: {PATH_DCCSI_TOOLS}')
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-if _DCCSI_DEV_MODE:
-    from azpy.shared.utils.init import test_imports
-    # If in dev mode this will test imports of __all__
+from azpy.config_utils import attach_debugger
+from azpy import test_imports
+
+# suggestion would be to turn this into a method to reduce boilerplate
+# but where to put it that makes sense?
+if DCCSI_DEV_MODE:
+    # if dev mode, this will attemp to auto-attach the debugger
+    # at the earliest possible point in this module
+    attach_debugger(debugger_type=DCCSI_GDEBUGGER)
+
     _LOGGER.debug(f'Testing Imports from {_PACKAGENAME}')
-    test_imports(_all=__all__,_pkg=_PACKAGENAME,_logger=_LOGGER)
-# -------------------------------------------------------------------------
 
+    # If in dev mode and test is flagged this will force imports of __all__
+    # although slower and verbose, this can help detect cyclical import
+    # failure and other issues
 
-###########################################################################
-# Main Code Block, runs this script as main (testing)
+    # the DCCSI_TESTS flag needs to be properly added in .bat env
+    if DCCSI_TESTS:
+        test_imports(_all=__all__,
+                     _pkg=_PACKAGENAME,
+                     _logger=_LOGGER)
 # -------------------------------------------------------------------------
-if __name__ == '__main__':
-    """Run as main, perform debug and tests"""
-    pass

@@ -255,7 +255,10 @@ void AssetImporterWindow::OpenFileInternal(const AZStd::string& filePath)
         [this, filePath]()
         {
             m_assetImporterDocument->LoadScene(filePath);
-            UpdateSceneDisplay({});
+
+            // Update the UI on the main thread.
+            QTimer::singleShot(0, [&]() { UpdateSceneDisplay({}); });
+            
         },
         [this]()
         {
@@ -597,9 +600,11 @@ void AssetImporterWindow::SetTitle(const char* filePath)
 
 void AssetImporterWindow::UpdateSceneDisplay(const AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene> scene) const
 {
-    AZ::IO::FixedMaxPath projectPath = AZ::Utils::GetProjectPath();
-    AZ::IO::FixedMaxPath relativeSourcePath = AZ::IO::PathView(m_fullSourcePath).LexicallyProximate(projectPath);
-    auto sceneHeaderText = QString::fromUtf8(relativeSourcePath.c_str(), static_cast<int>(relativeSourcePath.Native().size()));
+    QString sceneHeaderText;
+    if(scene.get())
+    {
+        sceneHeaderText = QString::fromUtf8(scene->GetManifestFilename().c_str(), static_cast<int>(scene->GetManifestFilename().size()));
+    }
     if (!m_scriptProcessorRuleFilename.empty())
     {
         sceneHeaderText.append("\n Assigned Python builder script (")

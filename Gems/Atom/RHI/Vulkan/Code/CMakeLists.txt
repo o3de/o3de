@@ -86,7 +86,6 @@ ly_add_target(
         PRIVATE
             Source
             ${pal_source_dir}
-            Include/Atom/RHI.Loader/Glad
         PUBLIC
             Include
             ${pal_include_dir}
@@ -94,7 +93,7 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             Gem::Atom_RHI.Reflect
-            3rdParty::glad_vulkan
+            Gem::Atom_RHI_Vulkan.Glad.Static
 )
 
 ly_add_target(
@@ -120,7 +119,6 @@ ly_add_target(
             Gem::Atom_RHI.Reflect
             Gem::Atom_RHI_Vulkan.Reflect
             Gem::Atom_RHI_Vulkan.Glad.Static
-            3rdParty::glad_vulkan
             ${AFTERMATH_BUILD_DEPENDENCY}
     COMPILE_DEFINITIONS 
         PRIVATE
@@ -150,6 +148,7 @@ ly_add_target(
     NAMESPACE Gem
     FILES_CMAKE
         atom_rhi_vulkan_glad_files.cmake
+        ${pal_include_dir}/platform_glad_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
         ${pal_source_dir}/platform_glad_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     INCLUDE_DIRECTORIES
         PUBLIC

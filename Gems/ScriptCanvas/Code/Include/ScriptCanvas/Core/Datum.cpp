@@ -2109,6 +2109,8 @@ namespace ScriptCanvas
             {
                 editContext->Class<Datum>("Datum", "Datum")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "Datum")
+                    ->Attribute(AZ::Edit::Attributes::ChildNameLabelOverride, &Datum::GetLabel)
+                    ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &Datum::GetLabel)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &Datum::GetVisibility)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &Datum::m_storage, "Datum", "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &Datum::GetDatumVisibility)
@@ -2177,14 +2179,7 @@ namespace ScriptCanvas
 
     AZ::Crc32 Datum::GetDatumVisibility() const
     {
-        if (IS_A<Data::QuaternionType>())
-        {
-            return AZ::Edit::PropertyVisibility::Hide;
-        }
-        else
-        {
-            return AZ::Edit::PropertyVisibility::ShowChildrenOnly;
-        }
+        return AZ::Edit::PropertyVisibility::ShowChildrenOnly;
     }
 
     void Datum::SetNotificationsTarget(AZ::EntityId notificationId)

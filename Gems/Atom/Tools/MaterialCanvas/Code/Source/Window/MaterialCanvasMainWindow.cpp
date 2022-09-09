@@ -51,16 +51,18 @@ namespace MaterialCanvas
         // Inject the entity context, scene, content, and controller into the viewport widget
         m_materialViewport->Init(entityContext, viewportScene, viewportContent, viewportController);
 
-        AddDockWidget("Viewport", m_materialViewport, Qt::RightDockWidgetArea);
+        AddDockWidget("Viewport", m_materialViewport, Qt::BottomDockWidgetArea);
 
         m_viewportSettingsInspector = new AtomToolsFramework::EntityPreviewViewportSettingsInspector(m_toolId, this);
         AddDockWidget("Viewport Settings", m_viewportSettingsInspector, Qt::LeftDockWidgetArea);
         SetDockWidgetVisible("Viewport Settings", false);
 
-        AddDockWidget("MiniMap", aznew GraphCanvas::MiniMapDockWidget(m_toolId, this), Qt::RightDockWidgetArea);
-
         m_bookmarkDockWidget = aznew GraphCanvas::BookmarkDockWidget(m_toolId, this);
         AddDockWidget("Bookmarks", m_bookmarkDockWidget, Qt::BottomDockWidgetArea);
+        SetDockWidgetVisible("Bookmarks", false);
+
+        AddDockWidget("MiniMap", aznew GraphCanvas::MiniMapDockWidget(m_toolId, this), Qt::BottomDockWidgetArea);
+        SetDockWidgetVisible("MiniMap", false);
 
         GraphCanvas::NodePaletteConfig nodePaletteConfig;
         nodePaletteConfig.m_rootTreeItem = m_graphViewConfig.m_createNodeTreeItemsFn(m_toolId);
@@ -98,18 +100,6 @@ namespace MaterialCanvas
     void MaterialCanvasMainWindow::OnDocumentOpened(const AZ::Uuid& documentId)
     {
         Base::OnDocumentOpened(documentId);
-        m_documentInspector->SetDocumentId(documentId);
-    }
-
-    void MaterialCanvasMainWindow::OnDocumentCleared(const AZ::Uuid& documentId)
-    {
-        Base::OnDocumentCleared(documentId);
-        m_documentInspector->SetDocumentId(documentId);
-    }
-
-    void MaterialCanvasMainWindow::OnDocumentError(const AZ::Uuid& documentId)
-    {
-        Base::OnDocumentError(documentId);
         m_documentInspector->SetDocumentId(documentId);
     }
 

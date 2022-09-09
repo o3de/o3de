@@ -32,6 +32,7 @@ namespace TestImpact
             // If this build target has an associated test artifact then it is a test target, otherwise it is a production target
             if (auto&& testTargetMeta = testTargetMetaMap.find(descriptor.m_name); testTargetMeta != testTargetMetaMap.end())
             {
+                AZ_TestImpact_Eval(descriptor.m_type == TargetType::TestTarget, ArtifactException, "Target has associated target meta but is a production target");
                 testTargets.emplace_back(AZStd::move(descriptor), AZStd::move(testTargetMeta->second));
             }
             else

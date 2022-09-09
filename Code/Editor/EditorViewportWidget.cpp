@@ -947,14 +947,35 @@ void EditorViewportWidget::SetViewportId(int id)
     );
     m_editorViewportSettingsCallbacks->SetAngleSnappingChangedEvent(m_angleSnappingHandler);
 
-    m_nearFarPlaneDistanceHandler = SandboxEditor::NearFarPlaneChangedEvent::Handler(
-        [this](float /*nearFarPlaneDistance*/)
+    m_perspectiveChangeHandler = SandboxEditor::PerspectiveChangedEvent::Handler(
+        [this](const float fovRadians)
+        {
+            if (m_viewSourceType == ViewSourceType::None)
+            {
+                if (m_viewPane)
+                {
+                    m_viewPane->OnFOVChanged(fovRadians);
+                }
+                SetFOV(fovRadians);
+            }
+        });
+    m_editorViewportSettingsCallbacks->SetPerspectiveChangedEvent(m_perspectiveChangeHandler);
+
+    m_nearPlaneDistanceHandler = SandboxEditor::NearFarPlaneChangedEvent::Handler(
+        [this]([[maybe_unused]] float nearPlaneDistance)
         {
             OnDefaultCameraNearFarChanged();
         }
     );
-    m_editorViewportSettingsCallbacks->SetFarPlaneDistanceChangedEvent(m_nearFarPlaneDistanceHandler);
-    m_editorViewportSettingsCallbacks->SetNearPlaneDistanceChangedEvent(m_nearFarPlaneDistanceHandler);
+    m_editorViewportSettingsCallbacks->SetNearPlaneDistanceChangedEvent(m_nearPlaneDistanceHandler);
+
+    m_farPlaneDistanceHandler = SandboxEditor::NearFarPlaneChangedEvent::Handler(
+        [this]([[maybe_unused]] float farPlaneDistance)
+        {
+            OnDefaultCameraNearFarChanged();
+        }
+    );
+    m_editorViewportSettingsCallbacks->SetFarPlaneDistanceChangedEvent(m_farPlaneDistanceHandler);
 }
 
 void EditorViewportWidget::ConnectViewportInteractionRequestBus()
@@ -1931,9 +1952,9 @@ void EditorViewportWidget::SetDefaultCamera()
     // synchronize the configured editor viewport FOV to the default camera
     if (m_viewPane)
     {
-        const float fov = gSettings.viewports.fDefaultFov;
-        m_viewPane->OnFOVChanged(fov);
-        SetFOV(fov);
+        const float fovRadians = SandboxEditor::CameraDefaultFovRadians();
+        m_viewPane->OnFOVChanged(fovRadians);
+        SetFOV(fovRadians);
     }
 
     // Update camera matrix according to near / far values

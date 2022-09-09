@@ -21,6 +21,7 @@
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Threading/ThreadSafeDeque.h>
 #include <AzCore/std/string/string.h>
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzNetworking/ConnectionLayer/IConnectionListener.h>
 
 namespace AzFramework
@@ -44,6 +45,7 @@ namespace Multiplayer
         , public AzNetworking::IConnectionListener
         , public IMultiplayer
         , AzFramework::RootSpawnableNotificationBus::Handler
+        , AzFramework::LevelSystemLifecycleRequestBus::Handler
     {
     public:
         AZ_COMPONENT(MultiplayerSystemComponent, "{7C99C4C1-1103-43F9-AD62-8B91CF7C1981}");
@@ -114,7 +116,7 @@ namespace Multiplayer
         void Terminate(AzNetworking::DisconnectReason reason) override;
         void AddClientMigrationStartEventHandler(ClientMigrationStartEvent::Handler& handler) override;
         void AddClientMigrationEndEventHandler(ClientMigrationEndEvent::Handler& handler) override;
-        void AddEndpointDisonnectedHandler(EndpointDisonnectedEvent::Handler& handler) override;
+        void AddEndpointDisconnectedHandler(EndpointDisconnectedEvent::Handler& handler) override;
         void AddNotifyClientMigrationHandler(NotifyClientMigrationEvent::Handler& handler) override;
         void AddNotifyEntityMigrationEventHandler(NotifyEntityMigrationEvent::Handler& handler) override;
         void AddConnectionAcquiredHandler(ConnectionAcquiredEvent::Handler& handler) override;
@@ -144,6 +146,11 @@ namespace Multiplayer
         void OnRootSpawnableReady(AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable, uint32_t generation) override;
         //! @}
 
+        //! AzFramework::LevelSystemLifecycleRequestBus::Handler overrides.
+        //! @{
+        bool ShouldBlockLevelLoading(const char* levelName) override;
+        //! @}
+
     private:
 
         void TickVisibleNetworkEntities(float deltaTime, float serverRateSeconds);
@@ -169,7 +176,7 @@ namespace Multiplayer
         SessionShutdownEvent m_shutdownEvent;
         ConnectionAcquiredEvent m_connectionAcquiredEvent;
         ServerAcceptanceReceivedEvent m_serverAcceptanceReceivedEvent;
-        EndpointDisonnectedEvent m_endpointDisonnectedEvent;
+        EndpointDisconnectedEvent m_endpointDisconnectedEvent;
         ClientMigrationStartEvent m_clientMigrationStartEvent;
         ClientMigrationEndEvent m_clientMigrationEndEvent;
         NotifyClientMigrationEvent m_notifyClientMigrationEvent;
@@ -203,6 +210,7 @@ namespace Multiplayer
         };
 
         AZStd::vector<PlayerWaitingToBeSpawned> m_playersWaitingToBeSpawned;
+        bool m_blockClientLoadLevel = true;
 
 #if !defined(AZ_RELEASE_BUILD)
         MultiplayerEditorConnection m_editorConnectionListener;

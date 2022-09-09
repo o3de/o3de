@@ -172,6 +172,7 @@ namespace AzToolsFramework::ViewportUi
         {
             auto switcher = switcherIt->second;
             m_viewportUi->RemoveSwitcherButton(switcher->GetViewportUiElementId(), buttonId);
+            m_viewportUi->UpdateSwitcher(switcher->GetViewportUiElementId());
         }
     }
 
@@ -263,6 +264,16 @@ namespace AzToolsFramework::ViewportUi
         const AZStd::string& borderTitle, AZStd::optional<ViewportUiBackButtonCallback> backButtonCallback)
     {
         m_viewportUi->CreateViewportBorder(borderTitle, backButtonCallback);
+    }
+
+    bool ViewportUiManager::GetViewportBorderVisible() const
+    {
+        return m_viewportUi->GetViewportBorderVisible();
+    }
+
+    void ViewportUiManager::ChangeViewportBorderText(const AZStd::string& borderTitle)
+    {
+        m_viewportUi->ChangeViewportBorderText(borderTitle.c_str());
     }
 
     void ViewportUiManager::RemoveViewportBorder()

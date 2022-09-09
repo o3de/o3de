@@ -23,6 +23,7 @@
 #include <AzFramework/Input/Devices/Gamepad/InputDeviceGamepad.h>
 #include <AzFramework/Input/Devices/Touch/InputDeviceTouch.h>
 #include <AzFramework/Input/Devices/VirtualKeyboard/InputDeviceVirtualKeyboard.h>
+#include <AzFramework/Viewport/ViewportBus.h>
 #include <IConsole.h>
 #include <imgui/imgui_internal.h>
 #include <sstream>
@@ -246,6 +247,17 @@ void ImGuiManager::Render()
 {
     if (m_clientMenuBarState == DisplayState::Hidden && m_editorWindowState == DisplayState::Hidden)
     {
+        // the first frame that this is true means that it has been deactivated, the following condtional is to avoid
+        // continuous bus notifications
+        if (m_imGuiBroadcastState.m_deactivationBroadcastStatus == ImGuiStateBroadcast::NotBroadcast)
+        {
+            AzFramework::ViewportImGuiNotificationBus::Broadcast(&AzFramework::ViewportImGuiNotificationBus::Events::OnImGuiDeactivated);
+            m_imGuiBroadcastState.m_deactivationBroadcastStatus = ImGuiStateBroadcast::Broadcast;
+
+            // reset the following state to ActivationNotBroadcasted so when ImGui is first activated,
+            // it sends the activation bus notification
+            m_imGuiBroadcastState.m_activationBroadcastStatus = ImGuiStateBroadcast::NotBroadcast;
+        } 
         return;
     }
 
@@ -383,6 +395,13 @@ void ImGuiManager::Render()
 
     // Render!
     RenderImGuiBuffers(scaleRects);
+
+    if (m_imGuiBroadcastState.m_activationBroadcastStatus == ImGuiStateBroadcast::NotBroadcast)
+    {
+        AzFramework::ViewportImGuiNotificationBus::Broadcast(&AzFramework::ViewportImGuiNotificationBus::Events::OnImGuiActivated);
+        m_imGuiBroadcastState.m_activationBroadcastStatus = ImGuiStateBroadcast::Broadcast;
+        m_imGuiBroadcastState.m_deactivationBroadcastStatus = ImGuiStateBroadcast::NotBroadcast;
+    }
 
     // Clear the simulated backspace key
     if (m_simulateBackspaceKeyPressed)
@@ -623,6 +642,27 @@ bool ImGuiManager::OnInputTextEventFiltered(const AZStd::string& textUTF8)
     }
 
     return io.WantTextInput && m_clientMenuBarState == DisplayState::Visible;;
+}
+
+void ImGuiManager::ToggleToImGuiVisibleState(DisplayState state)
+{
+    if (state != m_clientMenuBarState)
+    {
+        DisplayState initialState = m_clientMenuBarState;
+
+        while (m_clientMenuBarState != state)
+        {
+            ToggleThroughImGuiVisibleState();
+
+            // Prevent infinite loop if the Toggle function can't get to the desired state naturally
+            if (m_clientMenuBarState == initialState)
+            {
+                AZ_Warning("ImGuiManager", false, "SetClientMenuBarState failed to naturally enter the reguested state");
+                m_clientMenuBarState = state;
+                break;
+            }
+        }
+    }
 }
 
 void ImGuiManager::ToggleThroughImGuiVisibleState()

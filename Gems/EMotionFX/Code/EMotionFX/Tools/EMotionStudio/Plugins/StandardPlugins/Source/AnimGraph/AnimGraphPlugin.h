@@ -28,6 +28,8 @@
 #include <EMotionFX/Source/Recorder.h>
 #include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphActionManager.h>
 
+#include <GraphCanvas/Editor/EditorTypes.h>
+
 #include <QDockWidget>
 #include <QStackedWidget>
 
@@ -62,6 +64,8 @@ namespace EMStudio
     class AnimGraphPlugin;
     class TimeViewPlugin;
     class NavigationHistory;
+
+    static constexpr GraphCanvas::EditorId AnimGraphEditorId = AZ_CRC_CE("AnimGraphEditor");
 
     // our anim graph event handler
     class AnimGraphEventHandler

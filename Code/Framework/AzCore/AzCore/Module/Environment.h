@@ -8,6 +8,7 @@
 #ifndef AZCORE_ENVIRONMENT_INCLUDE_H
 #define AZCORE_ENVIRONMENT_INCLUDE_H 1
 
+#include <AzCore/std/concepts/concepts_assignable.h>
 #include <AzCore/std/parallel/lock.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/spin_mutex.h>
@@ -16,7 +17,7 @@
 #include <AzCore/std/typetraits/alignment_of.h>
 #include <AzCore/std/typetraits/config.h>
 #include <AzCore/std/typetraits/has_virtual_destructor.h>
-#include <AzCore/std/concepts/concepts_assignable.h>
+#include <AzCore/O3DEKernelConfiguration.h>
 
 namespace AZ
 {

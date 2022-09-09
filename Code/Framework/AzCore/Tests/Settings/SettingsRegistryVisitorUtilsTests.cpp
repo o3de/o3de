@@ -19,9 +19,6 @@ namespace SettingsRegistryVisitorUtilsTests
     struct VisitCallbackParams
     {
         AZStd::string_view m_inputJsonDocument;
-        using VisitFieldFunction = bool(*)(AZ::SettingsRegistryInterface&,
-            const AZ::SettingsRegistryVisitorUtils::VisitorCallback&,
-            AZStd::string_view);
 
         static inline constexpr size_t MaxFieldCount = 10;
         using ObjectFields = AZStd::fixed_vector<AZStd::pair<AZStd::string_view, AZStd::string_view>, MaxFieldCount>;
@@ -59,11 +56,12 @@ namespace SettingsRegistryVisitorUtilsTests
         ASSERT_TRUE(m_registry->MergeSettings(visitParams.m_inputJsonDocument, AZ::SettingsRegistryInterface::Format::JsonMergePatch));
 
         AZStd::fixed_vector<AZStd::string, VisitCallbackParams::MaxFieldCount> testArrayFields;
-        auto visitorCallback = [this, &testArrayFields](AZStd::string_view path, AZStd::string_view, AZ::SettingsRegistryInterface::Type)
+        auto visitorCallback = [this, &testArrayFields](const AZ::SettingsRegistryInterface::VisitArgs& visitArgs)
         {
             AZStd::string fieldValue;
-            EXPECT_TRUE(m_registry->Get(fieldValue, path));
+            EXPECT_TRUE(m_registry->Get(fieldValue, visitArgs.m_jsonKeyPath));
             testArrayFields.emplace_back(AZStd::move(fieldValue));
+            return AZ::SettingsRegistryInterface::VisitResponse::Skip;
         };
 
         AZ::SettingsRegistryVisitorUtils::VisitField(*m_registry, visitorCallback, "/Test/Array");
@@ -80,11 +78,12 @@ namespace SettingsRegistryVisitorUtilsTests
         ASSERT_TRUE(m_registry->MergeSettings(visitParams.m_inputJsonDocument, AZ::SettingsRegistryInterface::Format::JsonMergePatch));
 
         AZStd::fixed_vector<AZStd::pair<AZStd::string, AZStd::string>, VisitCallbackParams::MaxFieldCount> testObjectFields;
-        auto visitorCallback = [this, &testObjectFields](AZStd::string_view path, AZStd::string_view fieldName, AZ::SettingsRegistryInterface::Type)
+        auto visitorCallback = [this, &testObjectFields](const AZ::SettingsRegistryInterface::VisitArgs& visitArgs)
         {
             AZStd::string fieldValue;
-            EXPECT_TRUE(m_registry->Get(fieldValue, path));
-            testObjectFields.emplace_back(fieldName, AZStd::move(fieldValue));
+            EXPECT_TRUE(m_registry->Get(fieldValue, visitArgs.m_jsonKeyPath));
+            testObjectFields.emplace_back(visitArgs.m_fieldName, AZStd::move(fieldValue));
+            return AZ::SettingsRegistryInterface::VisitResponse::Skip;
         };
 
         AZ::SettingsRegistryVisitorUtils::VisitField(*m_registry, visitorCallback, "/Test/Object");
@@ -101,11 +100,12 @@ namespace SettingsRegistryVisitorUtilsTests
         ASSERT_TRUE(m_registry->MergeSettings(visitParams.m_inputJsonDocument, AZ::SettingsRegistryInterface::Format::JsonMergePatch));
 
         AZStd::fixed_vector<AZStd::string, VisitCallbackParams::MaxFieldCount> testArrayFields;
-        auto visitorCallback = [this, &testArrayFields](AZStd::string_view path, AZStd::string_view, AZ::SettingsRegistryInterface::Type)
+        auto visitorCallback = [this, &testArrayFields](const AZ::SettingsRegistryInterface::VisitArgs& visitArgs)
         {
             AZStd::string fieldValue;
-            EXPECT_TRUE(m_registry->Get(fieldValue, path));
+            EXPECT_TRUE(m_registry->Get(fieldValue, visitArgs.m_jsonKeyPath));
             testArrayFields.emplace_back(AZStd::move(fieldValue));
+            return AZ::SettingsRegistryInterface::VisitResponse::Skip;
         };
 
         AZ::SettingsRegistryVisitorUtils::VisitArray(*m_registry, visitorCallback, "/Test/Array");
@@ -122,11 +122,12 @@ namespace SettingsRegistryVisitorUtilsTests
         ASSERT_TRUE(m_registry->MergeSettings(visitParams.m_inputJsonDocument, AZ::SettingsRegistryInterface::Format::JsonMergePatch));
 
         AZStd::fixed_vector<AZStd::string, VisitCallbackParams::MaxFieldCount> testArrayFields;
-        auto visitorCallback = [this, &testArrayFields](AZStd::string_view path, AZStd::string_view, AZ::SettingsRegistryInterface::Type)
+        auto visitorCallback = [this, &testArrayFields](const AZ::SettingsRegistryInterface::VisitArgs& visitArgs)
         {
             AZStd::string fieldValue;
-            EXPECT_TRUE(m_registry->Get(fieldValue, path));
+            EXPECT_TRUE(m_registry->Get(fieldValue, visitArgs.m_jsonKeyPath));
             testArrayFields.emplace_back(AZStd::move(fieldValue));
+            return AZ::SettingsRegistryInterface::VisitResponse::Skip;
         };
 
         AZ::SettingsRegistryVisitorUtils::VisitArray(*m_registry, visitorCallback, "/Test/Object");
@@ -141,11 +142,12 @@ namespace SettingsRegistryVisitorUtilsTests
         ASSERT_TRUE(m_registry->MergeSettings(visitParams.m_inputJsonDocument, AZ::SettingsRegistryInterface::Format::JsonMergePatch));
 
         AZStd::fixed_vector<AZStd::pair<AZStd::string, AZStd::string>, VisitCallbackParams::MaxFieldCount> testObjectFields;
-        auto visitorCallback = [this, &testObjectFields](AZStd::string_view path, AZStd::string_view fieldName, AZ::SettingsRegistryInterface::Type)
+        auto visitorCallback = [this, &testObjectFields](const AZ::SettingsRegistryInterface::VisitArgs& visitArgs)
         {
             AZStd::string fieldValue;
-            EXPECT_TRUE(m_registry->Get(fieldValue, path));
-            testObjectFields.emplace_back(fieldName, AZStd::move(fieldValue));
+            EXPECT_TRUE(m_registry->Get(fieldValue, visitArgs.m_jsonKeyPath));
+            testObjectFields.emplace_back(visitArgs.m_fieldName, AZStd::move(fieldValue));
+            return AZ::SettingsRegistryInterface::VisitResponse::Skip;
         };
 
         AZ::SettingsRegistryVisitorUtils::VisitObject(*m_registry, visitorCallback, "/Test/Array");
@@ -160,11 +162,12 @@ namespace SettingsRegistryVisitorUtilsTests
         ASSERT_TRUE(m_registry->MergeSettings(visitParams.m_inputJsonDocument, AZ::SettingsRegistryInterface::Format::JsonMergePatch));
 
         AZStd::fixed_vector<AZStd::pair<AZStd::string, AZStd::string>, VisitCallbackParams::MaxFieldCount> testObjectFields;
-        auto visitorCallback = [this, &testObjectFields](AZStd::string_view path, AZStd::string_view fieldName, AZ::SettingsRegistryInterface::Type)
+        auto visitorCallback = [this, &testObjectFields](const AZ::SettingsRegistryInterface::VisitArgs& visitArgs)
         {
             AZStd::string fieldValue;
-            EXPECT_TRUE(m_registry->Get(fieldValue, path));
-            testObjectFields.emplace_back(fieldName, AZStd::move(fieldValue));
+            EXPECT_TRUE(m_registry->Get(fieldValue, visitArgs.m_jsonKeyPath));
+            testObjectFields.emplace_back(visitArgs.m_fieldName, AZStd::move(fieldValue));
+            return AZ::SettingsRegistryInterface::VisitResponse::Skip;
         };
 
         AZ::SettingsRegistryVisitorUtils::VisitObject(*m_registry, visitorCallback, "/Test/Object");

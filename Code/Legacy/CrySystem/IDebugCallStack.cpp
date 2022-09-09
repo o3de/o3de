@@ -50,7 +50,7 @@ void IDebugCallStack::FileCreationCallback(void (* postBackupProcess)())
 //////////////////////////////////////////////////////////////////////////
 void IDebugCallStack::LogCallstack()
 {
-    AZ::Debug::Trace::PrintCallstack("", 2);
+    AZ::Debug::Trace::Instance().PrintCallstack("", 2);
 }
 
 const char* IDebugCallStack::TranslateExceptionCode(DWORD dwExcept)

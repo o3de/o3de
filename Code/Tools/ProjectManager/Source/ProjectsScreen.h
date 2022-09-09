@@ -14,10 +14,10 @@
 #include <EngineInfo.h>
 #include <ProjectInfo.h>
 
+#include <DownloadController.h>
+
 #include <QQueue>
 #endif
-
-// #define ADD_REMOTE_PROJECT_ENABLED
 
 QT_FORWARD_DECLARE_CLASS(QPaintEvent)
 QT_FORWARD_DECLARE_CLASS(QFrame)
@@ -30,13 +30,14 @@ namespace O3DE::ProjectManager
 {
     QT_FORWARD_DECLARE_CLASS(ProjectBuilderController);
     QT_FORWARD_DECLARE_CLASS(ProjectButton);
+    QT_FORWARD_DECLARE_CLASS(DownloadController);
 
     class ProjectsScreen
         : public ScreenWidget
     {
 
     public:
-        explicit ProjectsScreen(QWidget* parent = nullptr);
+        explicit ProjectsScreen(DownloadController* downloadController, QWidget* parent = nullptr);
         ~ProjectsScreen();
 
         ProjectManagerScreen GetScreenEnum() override;
@@ -62,6 +63,10 @@ namespace O3DE::ProjectManager
         void QueueBuildProject(const ProjectInfo& projectInfo);
         void UnqueueBuildProject(const ProjectInfo& projectInfo);
 
+        void StartProjectDownload(const QString& projectName);
+        void HandleDownloadProgress(const QString& projectName, DownloadController::DownloadObjectType objectType, int bytesDownloaded, int totalBytes);
+        void HandleDownloadResult(const QString& projectName, bool succeeded);
+
         void ProjectBuildDone(bool success = true);
 
         void paintEvent(QPaintEvent* event) override;
@@ -83,9 +88,7 @@ namespace O3DE::ProjectManager
 
         QAction* m_createNewProjectAction = nullptr;
         QAction* m_addExistingProjectAction = nullptr;
-#ifdef ADD_REMOTE_PROJECT_ENABLED
         QAction* m_addRemoteProjectAction = nullptr;
-#endif
         QPixmap m_background;
         QFrame* m_firstTimeContent = nullptr;
         QFrame* m_projectsContent = nullptr;
@@ -96,6 +99,7 @@ namespace O3DE::ProjectManager
         QList<ProjectInfo> m_requiresBuild;
         QQueue<ProjectInfo> m_buildQueue;
         ProjectBuilderController* m_currentBuilder = nullptr;
+        DownloadController* m_downloadController = nullptr;
 
         inline constexpr static int s_contentMargins = 80;
         inline constexpr static int s_spacerSize = 20;
