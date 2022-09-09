@@ -25,8 +25,12 @@ from scripting_utils.scripting_constants import (SCRIPT_CANVAS_UI, ASSET_EDITOR_
                                                  VARIABLE_PALETTE_QT, ADD_BUTTON_QT, VARIABLE_TYPES, EVENTS_QT, DEFAULT_SCRIPT_EVENT,
                                                  SCRIPT_EVENT_FILE_PATH, PARAMETERS_QT, VARIABLE_MANAGER_QT, NODE_INSPECTOR_QT,
                                                  NODE_INSPECTOR_UI, VARIABLE_PALETTE_QT, ADD_BUTTON_QT, VARIABLE_TYPES,
-                                                 SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, ENTITY_STATES)
+                                                 SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, ENTITY_STATES, GRAPH_VARIABLES_QT)
 
+"""
+Editor Qt Object container for easy access
+"""
+EDITOR_QT_CONTAINER = qtContainer.EditorQtContainer()
 
 class Tests():
     new_event_created = ("New Script Event created", "Failed to create a new event")
@@ -65,21 +69,22 @@ def save_script_event_file(self, file_path):
     label = self.asset_editor.findChild(QtWidgets.QLabel, "textEdit")
     return helper.wait_for_condition(lambda: "*" not in label.text(), WAIT_TIME_3)
 
-def initialize_script_qt_canvas_objects():
+def initialize_qt_script_canvas_objects():
 
-    editorqtcontainer = qtContainer.EditorQtContainer()
+    EDITOR_QT_CONTAINER.editor_main_window = pyside_utils.get_editor_main_window()
 
-    editorqtcontainer.editor_main_window = pyside_utils.get_editor_main_window()
-    editorqtcontainer.sc_editor = editorqtcontainer.editor_main_window.findChild(QtWidgets.QDockWidget,
+    EDITOR_QT_CONTAINER.sc_editor = EDITOR_QT_CONTAINER.editor_main_window.findChild(QtWidgets.QDockWidget,
                                                                                  SCRIPT_CANVAS_UI)
-    editorqtcontainer.sc_editor_main_window = editorqtcontainer.sc_editor.findChild(QtWidgets.QMainWindow)
 
-    editorqtcontainer.variable_manager = editorqtcontainer.sc_editor.findChild(QtWidgets.QDockWidget,
+    EDITOR_QT_CONTAINER.sc_editor_main_window = EDITOR_QT_CONTAINER.sc_editor.findChild(QtWidgets.QMainWindow)
+
+    EDITOR_QT_CONTAINER.variable_manager = EDITOR_QT_CONTAINER.sc_editor.findChild(QtWidgets.QDockWidget,
                                                                                VARIABLE_MANAGER_QT)
-    if not editorqtcontainer.variable_manager.isVisible():
-        editorqtcontainer.click_menu_option(editorqtcontainer.sc_editor, VARIABLE_MANAGER_QT)
 
-    return editorqtcontainer
+    if not EDITOR_QT_CONTAINER.variable_manager.isVisible():
+        EDITOR_QT_CONTAINER.click_menu_option(EDITOR_QT_CONTAINER.sc_editor, VARIABLE_MANAGER_QT)
+
+    return EDITOR_QT_CONTAINER
 
 
 def initialize_asset_editor_object(self):
@@ -158,6 +163,28 @@ def open_asset_editor():
     general.open_pane(ASSET_EDITOR_UI)
     result = helper.wait_for_condition(lambda: general.is_pane_visible(ASSET_EDITOR_UI), WAIT_TIME_3)
     return result
+
+
+def script_canvas_undo_action():
+    """
+    function for performing an undo action in the script canvas editor
+
+    returns None
+    """
+
+    undo_redo_action = EDITOR_QT_CONTAINER.sc_editor.findChild(QtWidgets.QAction, "action_Undo")
+    undo_redo_action.trigger()
+
+
+def script_canvas_redo_action():
+    """
+    function for performing a redo action in the script canvas editor
+
+    returns None
+    """
+
+    undo_redo_action = EDITOR_QT_CONTAINER.sc_editor.findChild(QtWidgets.QAction, "action_Redo")
+    undo_redo_action.trigger()
 
 def canvas_node_palette_search(self, node_name, number_of_retries):
     """
@@ -245,7 +272,7 @@ def get_main_sc_window_qt_object():
     return sc_editor.findChild(QtWidgets.QMainWindow)
 
 
-def create_new_sc_graph(sc_editor_main_window):
+def create_new_sc_graph():
     """
     function for opening a new script canvas graph file. uses the sc editor window to trigger a new file action
 
@@ -255,12 +282,12 @@ def create_new_sc_graph(sc_editor_main_window):
     returns: none
     """
     create_new_graph_action = pyside_utils.find_child_by_pattern(
-        sc_editor_main_window, {"objectName": "action_New_Script", "type": QtWidgets.QAction}
+        EDITOR_QT_CONTAINER.sc_editor_main_window, {"objectName": "action_New_Script", "type": QtWidgets.QAction}
     )
     create_new_graph_action.trigger()
 
 
-def create_new_variable(EditorQtContainer, new_variable_type):
+def create_new_SC_variable(new_variable_type):
     """
     function for creating a new SC variable through variable manager
 
@@ -280,15 +307,29 @@ def create_new_variable(EditorQtContainer, new_variable_type):
     if not valid_type:
         Report.critical_result(["Invalid variable type provided", ""], False)
 
-    add_new_variable_button = EditorQtContainer.variable_manager.findChild(QtWidgets.QPushButton, ADD_BUTTON_QT)
+    add_new_variable_button = EDITOR_QT_CONTAINER.variable_manager.findChild(QtWidgets.QPushButton, ADD_BUTTON_QT)
     add_new_variable_button.click()  # Click on Create Variable button
     helper.wait_for_condition((
-        lambda: EditorQtContainer.variable_manager.findChild(QtWidgets.QTableView, VARIABLE_PALETTE_QT) is not None), WAIT_TIME_3)
+        lambda: EDITOR_QT_CONTAINER.variable_manager.findChild(QtWidgets.QTableView, VARIABLE_PALETTE_QT) is not None), WAIT_TIME_3)
     # Select variable type
-    table_view = EditorQtContainer.variable_manager.findChild(QtWidgets.QTableView, VARIABLE_PALETTE_QT)
+    table_view = EDITOR_QT_CONTAINER.variable_manager.findChild(QtWidgets.QTableView, VARIABLE_PALETTE_QT)
     model_index = pyside_utils.find_child_by_pattern(table_view, new_variable_type)
     # Click on it to create variable
     pyside_utils.item_view_index_mouse_click(table_view, model_index)
+
+
+def verify_SC_variable_count(expected):
+    """
+    function to check if the current number of variables in variable manager matches the user provided input
+
+    param expected: the expected number of variables in the variable manager
+
+    returns true if the actual number of variables in the variable manager matches the expected number
+    """
+    graph_variables = EDITOR_QT_CONTAINER.variable_manager.findChild(QtWidgets.QTableView, GRAPH_VARIABLES_QT)
+    row_count = graph_variables.model().rowCount(QtCore.QModelIndex())
+
+    return expected == row_count
 
 
 def get_sc_editor_node_inspector(sc_editor):

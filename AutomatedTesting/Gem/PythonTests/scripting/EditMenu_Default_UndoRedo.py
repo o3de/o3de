@@ -21,9 +21,8 @@ class Tests():
     redo_worked      = ("Redo action working",  "Redo action did not work")
 # fmt: on
 
-
-def get_graph_variables_row_count(graph_variables, QtCore):
-    return graph_variables.model().rowCount(QtCore.QModelIndex())
+VARIABLE_COUNT_BEFORE = 1
+VARIABLE_COUNT_AFTER = 0
 
 def EditMenu_Default_UndoRedo():
     """
@@ -38,13 +37,12 @@ def EditMenu_Default_UndoRedo():
      The last undone action is redone upon selecting Redo.
 
     Test Steps:
-     1) Open Script Canvas window (Tools > Script Canvas)
-     2) Open Variable Manager if not opened already
-     3) Create Graph
-     4) Create and verify the new variable exists in variable manager
-     5) Trigger Undo action and verify if variable is removed in Variable Manager
-     6) Trigger Redo action and verify if variable is re-added in Variable Manager
-     7) Close SC window
+     1) Open Script Canvas window
+     2) Create Graph
+     3) Create and verify the new variable exists in variable manager
+     4) Trigger Undo action and verify if variable is removed in Variable Manager
+     5) Trigger Redo action and verify if variable is re-added in Variable Manager
+     6) Close SC window
 
     Note:
      - This test file must be called from the Open 3D Engine Editor command terminal
@@ -63,42 +61,39 @@ def EditMenu_Default_UndoRedo():
     import azlmbr.legacy.general as general
     import pyside_utils
     import editor_python_test_tools.EditorQtContainer as qtContainer
-    import editor_python_test_tools.scripting_tools_qt as scripting_tools_qt
+    import editor_python_test_tools.script_canvas_tools_qt as SC_tools_qt
     from scripting_utils.scripting_constants import (WAIT_TIME_3, SCRIPT_CANVAS_UI, VARIABLE_TYPES,
                                                      GRAPH_VARIABLES_QT)
 
     general.idle_enable(True)
 
-    # 1) Open Script Canvas window and initialize the qt SC objects
+    # 1) Open Script Canvas window
     general.open_pane(SCRIPT_CANVAS_UI)
     helper.wait_for_condition(lambda: general.is_pane_visible(SCRIPT_CANVAS_UI), WAIT_TIME_3)
-    qtObjects = scripting_tools_qt.initialize_script_qt_canvas_objects()
+    qtObjects = SC_tools_qt.initialize_qt_script_canvas_objects()
 
-    # 3) Create Graph
-    scripting_tools_qt.create_new_sc_graph(qtObjects.sc_editor_main_window)
+    # 2) Create Graph
+    SC_tools_qt.create_new_sc_graph()
 
-    # 4) Create and verify the new variable exists in variable manager
-    scripting_tools_qt.create_new_variable(qtObjects, VARIABLE_TYPES[0])
-    graph_variables = qtObjects.variable_manager.findChild(QtWidgets.QTableView, GRAPH_VARIABLES_QT)
-    row_count = 1
+    # 3) Create and verify the new variable exists in variable manager
+    SC_tools_qt.create_new_SC_variable(VARIABLE_TYPES[0])
+    row_count = SC_tools_qt.verify_SC_variable_count(VARIABLE_COUNT_BEFORE)
     Report.result(Tests.variable_created, helper.wait_for_condition(
-        lambda: get_graph_variables_row_count(graph_variables, QtCore) == row_count, WAIT_TIME_3))
+        lambda: row_count, WAIT_TIME_3))
 
-    # 5) Trigger Undo action and verify if variable is removed in Variable Manager
-    undo_redo_action = qtObjects.sc_editor.findChild(QtWidgets.QAction, "action_Undo")
-    undo_redo_action.trigger()
-    row_count = 0
+    # 4) Trigger Undo action and verify if variable is removed in Variable Manager
+    SC_tools_qt.script_canvas_undo_action()
+    row_count = SC_tools_qt.verify_SC_variable_count(VARIABLE_COUNT_AFTER)
     Report.result(Tests.undo_worked, helper.wait_for_condition(
-        lambda: get_graph_variables_row_count(graph_variables, QtCore) == row_count, WAIT_TIME_3))
+        lambda: row_count, WAIT_TIME_3))
 
-    # 6) Trigger Redo action and verify if variable is re-added in Variable Manager
-    undo_redo_action = qtObjects.sc_editor.findChild(QtWidgets.QAction, "action_Redo")
-    undo_redo_action.trigger()
-    row_count = 1
+    # 5) Trigger Redo action and verify if variable is re-added in Variable Manager
+    SC_tools_qt.script_canvas_redo_action()
+    row_count = SC_tools_qt.verify_SC_variable_count(VARIABLE_COUNT_BEFORE)
     Report.result(Tests.redo_worked, helper.wait_for_condition(
-        lambda: get_graph_variables_row_count(graph_variables, QtCore) == row_count, WAIT_TIME_3))
+        lambda: row_count, WAIT_TIME_3))
 
-    # 7) Close SC window
+    # 6) Close SC window
     general.close_pane(SCRIPT_CANVAS_UI)
 
 
