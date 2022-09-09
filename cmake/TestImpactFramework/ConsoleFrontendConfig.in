@@ -1,86 +1,142 @@
 {
-  "meta": {
-    "platform": "${platform}",
-    "timestamp": "${timestamp}",
-    "build_config": "${build_config}"
-  },
-  "jenkins": {
-    "use_test_impact_analysis": ${use_tiaf}
-  },
-  "repo": {
-    "root": "${repo_dir}",
-    "tiaf_bin": "${tiaf_bin}"
-  },
-  "workspace": {
-    "temp": {
-      "root": "${temp_dir}",
-      "relative_paths": {
-        "artifact_dir": "RuntimeArtifact",
-        "enumeration_cache_dir": "EnumerationCache"
-      }
+  "common": {
+    "meta": {
+      "platform": "${platform}",
+      "timestamp": "${timestamp}",
+      "build_config": "${build_config}"
     },
-    "active": {
-      "root": "${active_dir}",
-      "relative_paths": {
-        "test_impact_data_file": "TestImpactData.spartia"
-      }
+    "jenkins": {
+      "use_test_impact_analysis": ${use_tiaf}
     },
-    "historic": {
-      "root": "${historic_dir}",
-      "relative_paths": {
-        "data": "historic_data.json"
-      }
-    }
-  },
-  "artifacts": {
-    "static": {
-      "build_target_descriptor": {
-        "dir": "${source_target_mapping_dir}",
-        "target_sources": {
-          "static": {
-            "include_filters": [
-              ".h", ".hpp", ".hxx", ".inl", ".c", ".cpp", ".cxx"
-            ]
-          },
-          "autogen": {
-            "input_output_pairer": "(.*)\\..*",
-            "input": {
+    "repo": {
+      "root": "${repo_dir}",
+      "build": "${bin_dir}"
+    },
+    "artifacts": {
+      "static": {
+        "build_target_descriptor": {
+          "dir": "${source_target_mapping_dir}",
+          "target_sources": {
+            "static": {
               "include_filters": [
-                ".xml"
+                ".h", ".hpp", ".hxx", ".inl", ".c", ".cpp", ".cxx", ".py"
               ]
-            }
-          } 
+            },
+            "autogen": {
+              "input_output_pairer": "(.*)\\..*",
+              "input": {
+                "include_filters": [
+                  ".xml"
+                ]
+              }
+            } 
+          }
+        },
+        "dependency_graph_data": {
+          "dir": "${target_dependency_dir}",
+          "matchers": {
+            "target_dependency_file": "target\\.(.*)\\.(dependers)?",
+            "target_vertex": "(?:(.*)\\n|(.*)"
+          }
+        },
+        "test_target_meta": {
+          "file": "${test_target_type_file}"
+        },
+        "gem_target": {
+          "file": "${gem_target_file}"
         }
-      },
-      "dependency_graph_data": {
-        "dir": "${target_dependency_dir}",
-        "matchers": {
-          "target_dependency_file": "target\\.(.*)\\.(dependers)?",
-          "target_vertex": "(?:(.*)\\n|(.*)"
-        }
-      },
-      "test_target_meta": {
-        "file": "${test_target_type_file}"
-      },
-      "gem_target": {
-        "file": "${gem_target_file}"
       }
     }
   },
-  "test_engine": {
-    "test_runner": {
-        "bin": "${test_runner_bin}"
+  "native": {
+    "workspace": {
+      "temp": {
+        "root": "${native_temp_dir}",
+        "run_artifact_dir": "${LY_TEST_IMPACT_NATIVE_TEST_RUN_DIR}",
+        "coverage_artifact_dir": "${native_temp_dir}/Coverage",
+        "enumeration_cache_dir": "${native_temp_dir}/EnumerationCache",
+        "change_list" : "${native_temp_dir}/Changelists",
+        "reports" : "${native_temp_dir}/Reports"
+      },
+      "active": {
+        "root": "${native_active_dir}",
+        "relative_paths": {
+          "test_impact_data_file": "TestImpactData.spartia",
+          "previous_test_run_data_file": "PreviousTestRunData.json"
+        }
+      },
+      "historic": {
+        "root": "${native_historic_dir}",
+        "relative_paths": {
+          "data": "historic_data.json"
+        }
+      }
     },
-    "instrumentation": {
-      "bin": "${instrumentation_bin}"
+    "runtime_bin": "${native_runtime_bin}",
+    "test_engine": {
+      "test_runner": {
+          "bin": "${native_test_runner_bin}"
+      },
+      "instrumentation": {
+        "bin": "${instrumentation_bin}"
+      }
+    },
+    "target": {
+      "dir": "${bin_dir}",
+      "exclude": {
+        "regular": [
+        ],
+        "instrumented": [
+          {
+            "target": "AzCore.Tests",
+            "tests": [
+              "Components.EntityIdGeneration"
+            ]
+          }
+        ]
+      },
+      "shard": [
+      ]
     }
   },
-  "target": {
-    "dir": "${bin_dir}",
-    "exclude": [
-     
-    ],
-    "shard": [
-    ]
+  "python": {
+    "workspace": {
+      "temp": {
+        "root": "${python_temp_dir}",
+        "run_artifact_dir": "${LY_TEST_IMPACT_PYTHON_TEST_RUN_DIR}",
+        "coverage_artifact_dir": "${python_temp_dir}/Coverage",
+        "enumeration_cache_dir": "${python_temp_dir}/EnumerationCache",
+        "change_list" : "${python_temp_dir}/Changelists",
+        "reports" : "${python_temp_dir}/Reports"
+      },
+      "active": {
+        "root": "${python_active_dir}",
+        "relative_paths": {
+          "test_impact_data_file": "TestImpactData.spartia",
+          "previous_test_run_data_file": "PreviousTestRunData.json"
+        }
+      },
+      "historic": {
+        "root": "${python_historic_dir}",
+        "relative_paths": {
+          "data": "historic_data.json"
+        }
+      }
+    },
+    "runtime_bin": "${python_runtime_bin}",
+    "test_engine": {
+      "test_runner": {
+          "bin": "${python_cmd}"
+      }
+    },
+    "target": {
+      "exclude": [
+        {
+          "target": "cli_test_driver",
+          "tests": [
+          ]
+        }
+      ]
+    }
   }
 }

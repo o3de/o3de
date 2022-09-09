@@ -131,9 +131,6 @@ echo     MAYA_VP2_DEVICE_OVERRIDE = %MAYA_VP2_DEVICE_OVERRIDE%
 Set MAYA_SHOW_OUTPUT_WINDOW=True
 echo     MAYA_SHOW_OUTPUT_WINDOW = %MAYA_SHOW_OUTPUT_WINDOW%
 
-echo.
-echo ~    Not setting up PATH or PYTHONPATH (each launcher should!)
-
 ::ENDLOCAL
 
 :: Set flag so we don't initialize dccsi environment twice

@@ -9,7 +9,7 @@
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayout.h>
 #include <AzCore/Utils/TypeHash.h>
 #include <AzCore/std/parallel/lock.h>
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/DescriptorPool.h>
 #include <RHI/DescriptorSet.h>
 #include <RHI/DescriptorSetLayout.h>

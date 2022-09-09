@@ -309,7 +309,7 @@ namespace ScriptCanvas
             case Data::eType::Quaternion:
                 if (datum.IsDefaultValue())
                 {
-                    return "Quaternion()";
+                    return "Quaternion(0, 0, 0, 1)";
                 }
                 else
                 {

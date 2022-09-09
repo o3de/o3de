@@ -116,8 +116,6 @@ struct SViewportsSettings
     bool bAlwaysShowRadiuses;
     //! True if 2D viewports will be synchronized with same view and origin.
     bool bSync2DViews;
-    //! Camera FOV for perspective View.
-    float fDefaultFov;
     //! Camera Aspect Ratio for perspective View.
     float fDefaultAspectRatio;
     //! Show safe frame.
@@ -182,12 +180,6 @@ struct SSelectObjectDialogSettings
 //////////////////////////////////////////////////////////////////////////
 struct SGUI_Settings
 {
-    bool bWindowsVista;        // true when running on windows Vista
-    QFont hSystemFont;         // Default system GUI font.
-    QFont hSystemFontBold;     // Default system GUI bold font.
-    QFont hSystemFontItalic;   // Default system GUI italic font.
-    int nDefaultFontHieght;    // Default font height for 8 logical units.
-
     int nToolbarIconSize;      // Override size of the toolbar icons
 };
 

@@ -10,6 +10,7 @@
 #include <Atom/RHI/PhysicalDevice.h>
 #include <AzCore/std/containers/bitset.h>
 #include <Atom/RHI.Reflect/Format.h>
+#include <RHI/Vulkan.h>
 
 namespace AZ
 {
@@ -91,10 +92,10 @@ namespace AZ
             StringList GetDeviceLayerNames() const;
             StringList GetDeviceExtensionNames(const char* layerName = nullptr) const;
             bool IsFormatSupported(RHI::Format format, VkImageTiling tiling, VkFormatFeatureFlags features) const;
-            void LoadSupportedFeatures();
+            void LoadSupportedFeatures(const GladVulkanContext& context);
             //! Filter optional extensions based on what the physics device support.
             RawStringList FilterSupportedOptionalExtensions();
-            void CompileMemoryStatistics(RHI::MemoryStatisticsBuilder& builder) const;
+            void CompileMemoryStatistics(const GladVulkanContext& context, RHI::MemoryStatisticsBuilder& builder) const;
 
         private:
             

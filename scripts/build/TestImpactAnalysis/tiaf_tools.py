@@ -9,9 +9,8 @@
 import argparse
 import pathlib
 from tiaf_logger import get_logger
-from s3_storage_query_tool import S3StorageQueryTool
-from local_storage_query_tool import LocalStorageQueryTool
-import sys
+from storage_query_tool import S3StorageQueryTool
+from storage_query_tool import LocalStorageQueryTool
 logger = get_logger(__file__)
 
 
@@ -69,8 +68,15 @@ def parse_args():
     parser.add_argument(
         "--file-out",
         type=valid_path,
-        help="Path to store file in when downloading.",
+        help="Path to directory store file in when downloading.",
         required=False
+    )
+
+    parser.add_argument(
+        "--file-type",
+        choices=["json", "zip"],
+        help="What file type SQT should expect to be interacting with. Current options are zip and json.",
+        required=True
     )
 
     return parser.parse_args()
@@ -87,12 +93,14 @@ def run(args: dict):
             elif args.get('full_address'):
                 sqt = LocalStorageQueryTool(**args)
             else:
-                logger.error("You must define a repository to search in when searching locally")
+                logger.error(
+                    "You must define a repository to search in when searching locally")
 
     except Exception as e:
         logger.error(type(e).__name__)
         logger.error(e.args)
         logger.error(f"Exception caught by TIAF Tools: '{e}'.")
+
 
 if __name__ == "__main__":
     parsed_args = vars(parse_args())

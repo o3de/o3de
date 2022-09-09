@@ -237,7 +237,7 @@ namespace Multiplayer
     bool NetBindComponent::IsNetEntityRoleAutonomous() const
     {
         return (m_netEntityRole == NetEntityRole::Autonomous)
-            || (m_netEntityRole == NetEntityRole::Authority) && m_allowAutonomy;
+            || (m_netEntityRole == NetEntityRole::Authority) && m_playerHostAutonomyEnabled;
     }
 
     bool NetBindComponent::IsNetEntityRoleServer() const
@@ -258,6 +258,45 @@ namespace Multiplayer
     EntityMigration NetBindComponent::GetAllowEntityMigration() const
     {
         return m_netEntityMigration;
+    }
+
+    bool NetBindComponent::ValidatePropertyRead(const char* propertyName, NetEntityRole replicateFrom, NetEntityRole replicateTo) const
+    {
+        bool isValid(false);
+        if (replicateFrom == NetEntityRole::Authority)
+        {
+            // Things that replicate to clients are readable by all network entity roles
+            const bool replicatesToClient = (replicateTo == NetEntityRole::Client);
+            // Things that replicate from Authority can be read by all hosts
+            const bool isHost = (IsNetEntityRoleAuthority() || IsNetEntityRoleServer());
+            // Things that replicate to Autonomous can't be read by clients
+            const bool isAutonomous = ((replicateTo == NetEntityRole::Autonomous) && !IsNetEntityRoleClient());
+            isValid = replicatesToClient || isHost || isAutonomous;
+        }
+        else
+        {
+            // Autonomous can only replicate to Authority, and won't replicate to servers, it's meant for client authoritative values like basic client metrics
+            AZ_Assert(replicateTo == NetEntityRole::Authority, "The only valid case where properties replicate from a non-authority is in autonomous to authority");
+            isValid = IsNetEntityRoleAuthority() || IsNetEntityRoleAutonomous();
+        }
+
+        if (!isValid)
+        {
+            AZLOG_INFO("%s is not replicated to role %s, property read will return invalid data.", propertyName, GetEnumString(GetNetEntityRole()));
+        }
+        return isValid;
+    }
+
+    bool NetBindComponent::ValidatePropertyWrite(const char* propertyName, NetEntityRole replicateFrom, [[maybe_unused]] NetEntityRole replicateTo, bool isPredictable) const
+    {
+        bool isValid = (replicateFrom == GetNetEntityRole())
+                    || (isPredictable && IsNetEntityRoleAutonomous());
+
+        if (!isValid)
+        {
+            AZLOG_INFO("%s can't be written by role %s, property set will desync network state.", propertyName, GetEnumString(GetNetEntityRole()));
+        }
+        return isValid;
     }
 
     bool NetBindComponent::HasController() const
@@ -305,10 +344,53 @@ namespace Multiplayer
         return m_owningConnectionId;
     }
 
-    void NetBindComponent::SetAllowAutonomy(bool value)
+    void NetBindComponent::EnablePlayerHostAutonomy(bool enabled)
     {
-        // This flag allows a player host to autonomously control their player entity, even though the entity is in an authority role
-        m_allowAutonomy = value;
+        if (m_playerHostAutonomyEnabled == enabled)
+        {
+            return; // nothing to change
+        }
+
+        if (!IsNetEntityRoleAuthority())
+        {
+            AZ_Error("NetBindComponent", false,
+                "Failed to enable player host autonomy for network entity (%s). Entity has incorrect network role (%s). This method only allows a player host to autonomously control their player entity.",
+                GetEntity()->GetName().c_str(),
+                GetEnumString(GetNetEntityRole()));
+            return;
+        }
+
+        // If the entity is already activated then deactivate all of the entity's multiplayer controllers before changing autonomy.
+        // Multiplayer controllers will commonly perform different logic during their "OnActivate" depending on if the entity is autonomous.
+        if (GetEntity()->GetState() == AZ::Entity::State::Active)
+        {
+            // deactivate controllers in reverse dependency order
+            const AZ::Entity::ComponentArrayType& components = GetEntity()->GetComponents();
+            for (auto componentIter = components.rbegin(); componentIter != components.rend(); ++componentIter)
+            {
+                if (auto multiplayerComponent = azrtti_cast<MultiplayerComponent*>(*componentIter))
+                {
+                    multiplayerComponent->GetController()->Deactivate(EntityIsMigrating::False);
+                }
+            }
+
+            // This flag allows a player host to autonomously control their player entity, even though the entity is in an authority role
+            m_playerHostAutonomyEnabled = enabled;
+
+            // reactivate the controllers now that allow autonomy is true
+            for (auto component : components)
+            {
+                if (auto multiplayerComponent = azrtti_cast<MultiplayerComponent*>(component))
+                {
+                    multiplayerComponent->GetController()->Activate(EntityIsMigrating::False);
+                }
+            }
+        }
+        else // This entity isn't activated yet, so there's no need to refresh its multiplayer component controllers
+        {
+            // This flag allows a player host to autonomously control their player entity, even though the entity is in an authority role
+            m_playerHostAutonomyEnabled = enabled;
+        }
     }
 
     MultiplayerComponentInputVector NetBindComponent::AllocateComponentInputs()

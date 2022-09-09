@@ -18,6 +18,17 @@ echo Configuring environment settings
 # Enable coredumps - Will be written to /var/lib/apport/coredump
 ulimit -c unlimited
 
+# Configure NTP sync - This is necessary to prevent mtime drift between input and output files 
+systemctl stop systemd-timesyncd
+systemctl disable systemd-timesyncd
+apt install -y chrony
+
+if [ $(curl -LI http://169.254.169.254/latest/meta-data/ -o /dev/null -w '%{http_code}\n' -s) == "200" ]; then
+    echo EC2 instance detected. Setting NTP address to AWS NTP
+    sed -i '1s/^/server 169.254.169.123 prefer iburst minpoll 4 maxpoll 4\n/' /etc/chrony/chrony.conf
+fi
+/etc/init.d/chrony restart
+
 echo Installing packages and tools for O3DE development
 
 # Install awscli

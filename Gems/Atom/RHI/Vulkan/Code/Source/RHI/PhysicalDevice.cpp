@@ -8,7 +8,7 @@
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/string/conversions.h>
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Instance.h>
 #include <RHI/PhysicalDevice.h>
 #include <Vulkan_Traits_Platform.h>
@@ -231,24 +231,24 @@ namespace AZ
             }
         }
 
-        void PhysicalDevice::LoadSupportedFeatures()
+        void PhysicalDevice::LoadSupportedFeatures(const GladVulkanContext& context)
         {
             uint32_t majorVersion = VK_VERSION_MAJOR(m_deviceProperties.apiVersion);
             uint32_t minorVersion = VK_VERSION_MINOR(m_deviceProperties.apiVersion);
 
             m_features.reset();
-            m_features.set(static_cast<size_t>(DeviceFeature::Compatible2dArrayTexture), (majorVersion >= 1 && minorVersion >= 1) || VK_DEVICE_EXTENSION_SUPPORTED(KHR_maintenance1));
-            m_features.set(static_cast<size_t>(DeviceFeature::CustomSampleLocation), VK_DEVICE_EXTENSION_SUPPORTED(EXT_sample_locations));
-            m_features.set(static_cast<size_t>(DeviceFeature::Predication), VK_DEVICE_EXTENSION_SUPPORTED(EXT_conditional_rendering));
-            m_features.set(static_cast<size_t>(DeviceFeature::ConservativeRaster), VK_DEVICE_EXTENSION_SUPPORTED(EXT_conservative_rasterization));
-            m_features.set(static_cast<size_t>(DeviceFeature::DepthClipEnable), VK_DEVICE_EXTENSION_SUPPORTED(EXT_depth_clip_enable) && m_dephClipEnableFeatures.depthClipEnable);
-            m_features.set(static_cast<size_t>(DeviceFeature::DrawIndirectCount), (majorVersion >= 1 && minorVersion >= 2 && m_vulkan12Features.drawIndirectCount) || VK_DEVICE_EXTENSION_SUPPORTED(KHR_draw_indirect_count));
-            m_features.set(static_cast<size_t>(DeviceFeature::NullDescriptor), m_robutness2Features.nullDescriptor && VK_DEVICE_EXTENSION_SUPPORTED(EXT_robustness2));
+            m_features.set(static_cast<size_t>(DeviceFeature::Compatible2dArrayTexture), (majorVersion >= 1 && minorVersion >= 1) || VK_DEVICE_EXTENSION_SUPPORTED(context, KHR_maintenance1));
+            m_features.set(static_cast<size_t>(DeviceFeature::CustomSampleLocation), VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_sample_locations));
+            m_features.set(static_cast<size_t>(DeviceFeature::Predication), VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_conditional_rendering));
+            m_features.set(static_cast<size_t>(DeviceFeature::ConservativeRaster), VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_conservative_rasterization));
+            m_features.set(static_cast<size_t>(DeviceFeature::DepthClipEnable), VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_depth_clip_enable) && m_dephClipEnableFeatures.depthClipEnable);
+            m_features.set(static_cast<size_t>(DeviceFeature::DrawIndirectCount), (majorVersion >= 1 && minorVersion >= 2 && m_vulkan12Features.drawIndirectCount) || VK_DEVICE_EXTENSION_SUPPORTED(context, KHR_draw_indirect_count));
+            m_features.set(static_cast<size_t>(DeviceFeature::NullDescriptor), m_robutness2Features.nullDescriptor && VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_robustness2));
             m_features.set(static_cast<size_t>(DeviceFeature::SeparateDepthStencil),
-                (m_separateDepthStencilFeatures.separateDepthStencilLayouts && VK_DEVICE_EXTENSION_SUPPORTED(KHR_separate_depth_stencil_layouts)) ||
+                (m_separateDepthStencilFeatures.separateDepthStencilLayouts && VK_DEVICE_EXTENSION_SUPPORTED(context, KHR_separate_depth_stencil_layouts)) ||
                 (m_vulkan12Features.separateDepthStencilLayouts));
-            m_features.set(static_cast<size_t>(DeviceFeature::DescriptorIndexing), VK_DEVICE_EXTENSION_SUPPORTED(EXT_descriptor_indexing));
-            m_features.set(static_cast<size_t>(DeviceFeature::BufferDeviceAddress), VK_DEVICE_EXTENSION_SUPPORTED(EXT_buffer_device_address));
+            m_features.set(static_cast<size_t>(DeviceFeature::DescriptorIndexing), VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_descriptor_indexing));
+            m_features.set(static_cast<size_t>(DeviceFeature::BufferDeviceAddress), VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_buffer_device_address));
         }
 
         RawStringList PhysicalDevice::FilterSupportedOptionalExtensions()
@@ -300,9 +300,9 @@ namespace AZ
             return filteredOptionalExtensions;
         }
 
-        void PhysicalDevice::CompileMemoryStatistics(RHI::MemoryStatisticsBuilder& builder) const
+        void PhysicalDevice::CompileMemoryStatistics(const GladVulkanContext& context, RHI::MemoryStatisticsBuilder& builder) const
         {
-            if constexpr (VK_DEVICE_EXTENSION_SUPPORTED(KHR_get_physical_device_properties2) && VK_DEVICE_EXTENSION_SUPPORTED(EXT_memory_budget))
+            if (VK_DEVICE_EXTENSION_SUPPORTED(context, KHR_get_physical_device_properties2) && VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_memory_budget))
             {
                 VkPhysicalDeviceMemoryBudgetPropertiesEXT budget = {};
                 budget.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_BUDGET_PROPERTIES_EXT;
@@ -329,7 +329,7 @@ namespace AZ
             m_vkPhysicalDevice = vkPhysicalDevice;
             const auto& context = Instance::GetInstance().GetContext();
 
-            if constexpr (VK_INSTANCE_EXTENSION_SUPPORTED(KHR_get_physical_device_properties2))
+            if (VK_INSTANCE_EXTENSION_SUPPORTED(context, KHR_get_physical_device_properties2))
             {
                 // features
                 VkPhysicalDeviceDescriptorIndexingFeaturesEXT& descriptorIndexingFeatures = m_descriptorIndexingFeatures;

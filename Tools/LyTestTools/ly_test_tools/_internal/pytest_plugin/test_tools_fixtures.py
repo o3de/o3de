@@ -12,9 +12,7 @@ import getpass
 import logging
 import os
 import socket
-import time
 from datetime import datetime
-from warnings import warn
 
 import pytest
 
@@ -256,50 +254,17 @@ def _launcher(request, workspace, launcher_platform, level=""):
 
 
 @pytest.fixture(scope="function")
-def dedicated_launcher(request, workspace, crash_log_watchdog):
+def material_editor(workspace, request, crash_log_watchdog):
     # type: (...) -> ly_test_tools.launchers.platforms.base.Launcher
-
-    warn("This method is deprecated and will be removed on 3/31/22. Please use create_game_launcher instead.",
-         DeprecationWarning, stacklevel=2)
-    return _dedicated_launcher(
+    return _material_editor(
         request=request,
         workspace=workspace,
-        launcher_platform=get_fixture_argument(request, 'launcher_platform', HOST_OS_DEDICATED_SERVER),
-        level=get_fixture_argument(request, 'level', ''))
+        launcher_platform=get_fixture_argument(request, 'launcher_platform', HOST_OS_PLATFORM))
 
 
-def _dedicated_launcher(request, workspace, launcher_platform, level=""):
+def _material_editor(request, workspace, launcher_platform):
     """Separate implementation to call directly during unit tests"""
-
-    warn("This method is deprecated and will be removed on 3/31/22. Please use create_game_launcher instead.",
-         DeprecationWarning, stacklevel=2)
-    if not level:
-        launcher = ly_test_tools.launchers.launcher_helper.create_server_launcher(
-            workspace, launcher_platform)
-    else:
-        launcher = ly_test_tools.launchers.launcher_helper.create_server_launcher(
-            workspace, launcher_platform, ['+LoadLevel', level])
-
-    def teardown():
-        launcher.stop()
-
-    request.addfinalizer(teardown)
-
-    return launcher
-
-
-@pytest.fixture(scope="function")
-def generic_launcher(workspace, request, crash_log_watchdog):
-    # type: (...) -> ly_test_tools.launchers.platforms.base.Launcher
-    return _generic_launcher(
-        workspace=workspace,
-        launcher_platform=get_fixture_argument(request, 'launcher_platform', HOST_OS_GENERIC_EXECUTABLE),
-        exe_file_name=get_fixture_argument(request, 'exe_file_name', ''))
-
-
-def _generic_launcher(workspace, launcher_platform, exe_file_name):
-    """Separate implementation to call directly during unit tests"""
-    return ly_test_tools.launchers.launcher_helper.create_generic_launcher(workspace, launcher_platform, exe_file_name)
+    return ly_test_tools.launchers.launcher_helper.create_material_editor(workspace, launcher_platform)
 
 
 @pytest.fixture
@@ -396,7 +361,7 @@ def _workspace(request,  # type: _pytest.fixtures.SubRequest
 
         py_logging_util.terminate_logging()
 
-        workspace.artifact_manager.set_test_name()  # Reset log name for this test
+        workspace.artifact_manager.set_dest_path()  # Reset log name for this test
         helpers.teardown_builtin_workspace(workspace)
 
     request.addfinalizer(teardown)

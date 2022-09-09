@@ -58,6 +58,25 @@ namespace Terrain
 
     bool TerrainClipmapDebugPass::IsEnabled() const
     {
-        return AZ::RPI::Pass::IsEnabled() && r_terrainClipmapDebugEnable;
+        if (!AZ::RPI::Pass::IsEnabled())
+        {
+            return false;
+        }
+
+        AZ::RPI::Scene* scene = m_pipeline->GetScene();
+        TerrainFeatureProcessor* terrainFeatureProcessor = scene->GetFeatureProcessor<TerrainFeatureProcessor>();
+        if (!terrainFeatureProcessor)
+        {
+            return false;
+        }
+
+        const TerrainClipmapManager& clipmapManager = terrainFeatureProcessor->GetClipmapManager();
+
+        if (!clipmapManager.IsClipmapEnabled())
+        {
+            return false;
+        }
+
+        return r_terrainClipmapDebugEnable;
     }
 }

@@ -55,13 +55,13 @@ namespace AZStd::ranges::views
     namespace Internal
     {
         template <class R, class = void>
-        struct all_t {};
+        struct all_view {};
         template <class R>
-        struct all_t<R, enable_if_t<ranges::viewable_range<R>>>
+        struct all_view<R, enable_if_t<ranges::viewable_range<R>>>
         {
             using type = decltype(views::all(declval<R>()));
         };
     }
     template<class R>
-    using all_t = typename Internal::all_t<R>::type;
+    using all_t = typename Internal::all_view<R>::type;
 }

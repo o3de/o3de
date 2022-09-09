@@ -45,7 +45,11 @@ namespace UnitTest
         AZ::Outcome<AZStd::string, AZStd::string> outcome = AZ::RHI::LoadFileString(testFilePath.c_str());
         EXPECT_TRUE(outcome.IsSuccess());
         auto& str = outcome.GetValue();
-        str.erase(AZStd::remove(str.begin(), str.end(), '\r'));
+        auto itr = AZStd::remove(str.begin(), str.end(), '\r');
+        if (itr != str.end())
+        {
+            str.erase(itr);
+        }
         EXPECT_EQ(AZStd::string("Hello World!\n"), str);
     }
 
@@ -56,7 +60,11 @@ namespace UnitTest
         EXPECT_TRUE(outcome.IsSuccess());
         AZStd::string expectedText = "Hello World!\n";
         auto& str = outcome.GetValue();
-        str.erase(AZStd::remove(str.begin(), str.end(), '\r'));
+        auto itr = AZStd::remove(str.begin(), str.end(), '\r');
+        if (itr != str.end())
+        {
+            str.erase(itr);
+        }
         EXPECT_EQ(AZStd::vector<uint8_t>(expectedText.begin(), expectedText.end()), str);
     }
 

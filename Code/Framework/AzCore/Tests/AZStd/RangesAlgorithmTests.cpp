@@ -164,6 +164,23 @@ namespace UnitTest
         EXPECT_EQ(testVector.end(), foundIt);
     }
 
+    TEST_F(RangesAlgorithmTestFixture, RangesFindLast_LocatesLastMatchInContainer_Succeeds)
+    {
+        AZStd::vector testVector{ 5, 1, 22, 47, -8, -5, 1000, 687, 22, -8, 1000, 45 };
+
+        auto foundSubrange = AZStd::ranges::find_last(testVector, 22);
+        ASSERT_NE(testVector.begin() + 7, foundSubrange.begin());
+        EXPECT_EQ(22, *foundSubrange.begin());
+
+        foundSubrange = AZStd::ranges::find_last_if(testVector, [](int value) { return value < 0; });
+        ASSERT_NE(testVector.begin() + 8, foundSubrange.begin());
+        EXPECT_EQ(-8, *foundSubrange.begin());
+
+        foundSubrange = AZStd::ranges::find_last_if_not(testVector, [](int value) { return value < 1000; });
+        ASSERT_NE(testVector.begin() + 9, foundSubrange.begin());
+        EXPECT_EQ(1000, *foundSubrange.begin());
+    }
+
     TEST_F(RangesAlgorithmTestFixture, RangesSearch_LocatesElementInContainer_Succeeds)
     {
         AZStd::vector testVector{ 5, 1, 22, 47, -8, -5, 1000, 687, 22, -8, -8, 1000, 45 };
@@ -248,18 +265,25 @@ namespace UnitTest
         }
     }
 
-    TEST_F(RangesAlgorithmTestFixture, RangesAllOfReturnsTrueForMatchingViews)
+    TEST_F(RangesAlgorithmTestFixture, RangesAllOf_ReturnsTrueForMatchingViews)
     {
         constexpr AZStd::array numbers {0, 1, 2, 3, 4, 5};
         EXPECT_TRUE(AZStd::ranges::all_of(numbers, [](int i) { return i < 6; })) << "All numbers should be less than 6";
         EXPECT_FALSE(AZStd::ranges::all_of(numbers, [](int i) { return i < 5; })) << "At least one number should be greater than or equal to 5";
     }
 
-    TEST_F(RangesAlgorithmTestFixture, RangesAnyOfReturnsTrueForMatchingViews)
+    TEST_F(RangesAlgorithmTestFixture, RangesAnyOf_ReturnsTrueForMatchingViews)
     {
         constexpr AZStd::array numbers {0, 1, 2, 3, 4, 5};
         EXPECT_TRUE(AZStd::ranges::any_of(numbers, [](int i) { return i == 3; })) << "At least one number should equal 3";
         EXPECT_FALSE(AZStd::ranges::any_of(numbers, [](int i) { return i == 6; })) << "No number should equal 6";
+    }
+
+    TEST_F(RangesAlgorithmTestFixture, RangesNoneOf_ReturnsTrueForNoMatchingViews)
+    {
+        constexpr AZStd::array numbers{ 0, 1, 2, 3, 4, 5 };
+        EXPECT_TRUE(AZStd::ranges::none_of(numbers, [](int i) { return i == 10; })) << "No number should equal 10";
+        EXPECT_FALSE(AZStd::ranges::none_of(numbers, [](int i) { return i == 4; })) << "At least one number should equal 4";
     }
 
     TEST_F(RangesAlgorithmTestFixture, RangesForEach_LoopsOverElements_Success)
@@ -287,7 +311,7 @@ namespace UnitTest
             EXPECT_EQ(expectedForEachString, resultString);
         }
     }
-    TEST_F(RangesAlgorithmTestFixture, RangesCount_CountsCharactes_Success)
+    TEST_F(RangesAlgorithmTestFixture, RangesCount_CountsCharacters_Succeeds)
     {
         constexpr AZStd::string_view sourceString = "HelloWorldLongString";
         constexpr size_t expectedChar_o_count = 3;
@@ -312,5 +336,168 @@ namespace UnitTest
             auto CountLetter_r = [](char elem) { return elem == 'r'; };
             EXPECT_EQ(expectedChar_r_count, AZStd::ranges::count_if(sourceString, AZStd::move(CountLetter_r)));
         }
+    }
+
+    TEST_F(RangesAlgorithmTestFixture, RangesCopy_CopyRangeIntoOutputIterator_Succeeds)
+    {
+        constexpr AZStd::string_view sourceString = "HelloWorld";
+
+        AZStd::vector<char> charVector;
+        AZStd::ranges::copy(sourceString, AZStd::back_inserter(charVector));
+        EXPECT_THAT(charVector, ::testing::ElementsAre('H', 'e', 'l', 'l', 'o', 'W', 'o', 'r', 'l', 'd'));
+        charVector.clear();
+
+        AZStd::ranges::copy(sourceString.begin(), sourceString.end(), AZStd::back_inserter(charVector));
+        EXPECT_THAT(charVector, ::testing::ElementsAre('H', 'e', 'l', 'l', 'o', 'W', 'o', 'r', 'l', 'd'));
+
+        auto SkipCapitalLetters = [](const char elem) -> bool
+        {
+            return islower(elem);
+        };
+        charVector.clear();
+        AZStd::ranges::copy_if(sourceString, AZStd::back_inserter(charVector), SkipCapitalLetters);
+        EXPECT_THAT(charVector, ::testing::ElementsAre('e', 'l', 'l', 'o', 'o', 'r', 'l', 'd'));
+        charVector.clear();
+        AZStd::ranges::copy_if(sourceString.begin(), sourceString.end(), AZStd::back_inserter(charVector), SkipCapitalLetters);
+        EXPECT_THAT(charVector, ::testing::ElementsAre('e', 'l', 'l', 'o', 'o', 'r', 'l', 'd'));
+
+        charVector.clear();
+        AZStd::ranges::copy_n(sourceString.begin(), 5, AZStd::back_inserter(charVector));
+        EXPECT_THAT(charVector, ::testing::ElementsAre('H', 'e', 'l', 'l', 'o'));
+
+        charVector.clear();
+        charVector.resize_no_construct(sourceString.size());
+        AZStd::ranges::copy_backward(sourceString, charVector.end());
+        EXPECT_THAT(charVector, ::testing::ElementsAre('H', 'e', 'l', 'l', 'o', 'W', 'o', 'r', 'l', 'd'));
+        charVector.clear();
+        charVector.resize_no_construct(sourceString.size());
+        AZStd::ranges::copy_backward(sourceString.begin(), sourceString.end(), charVector.end());
+        EXPECT_THAT(charVector, ::testing::ElementsAre('H', 'e', 'l', 'l', 'o', 'W', 'o', 'r', 'l', 'd'));
+    }
+
+    TEST_F(RangesAlgorithmTestFixture, RangesMove_MoveElementsIntoOutputIterator_Succeeds)
+    {
+        struct MoveOpRemoveContents
+        {
+            MoveOpRemoveContents() = default;
+            MoveOpRemoveContents(const MoveOpRemoveContents&) = default;
+            MoveOpRemoveContents& operator=(const MoveOpRemoveContents&) = default;
+
+            MoveOpRemoveContents(char elem)
+                : m_elem{elem}
+            {}
+            MoveOpRemoveContents(MoveOpRemoveContents&& other)
+                : m_elem{ other.m_elem }
+            {
+                // Reset the other element the NUL character
+                other.m_elem = {};
+            }
+            MoveOpRemoveContents& operator=(MoveOpRemoveContents&& other)
+            {
+                m_elem = other.m_elem;
+                other.m_elem = {};
+                return *this;
+            }
+
+            char m_elem{};
+
+            bool operator==(const MoveOpRemoveContents& other) const
+            {
+                return m_elem == other.m_elem;
+            }
+            bool operator!=(const MoveOpRemoveContents& other) const
+            {
+                return !operator==(other);
+            }
+        };
+
+        // testString will be moved several times in this test
+        // So it the contents need to be re-initialized after each ranges::move* call
+        AZStd::vector<MoveOpRemoveContents> testString{ 'H', 'e', 'l', 'l', 'o', 'W', 'o', 'r', 'l', 'd' };
+
+        AZStd::vector<MoveOpRemoveContents> charVector;
+        AZStd::ranges::move(testString, AZStd::back_inserter(charVector));
+        EXPECT_THAT(charVector, ::testing::ElementsAre('H', 'e', 'l', 'l', 'o', 'W', 'o', 'r', 'l', 'd'));
+        EXPECT_THAT(testString, ::testing::ElementsAre('\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0'));
+
+        charVector.clear();
+        testString = AZStd::vector<MoveOpRemoveContents>{ 'H', 'e', 'l', 'l', 'o', 'W', 'o', 'r', 'l', 'd' };
+        AZStd::ranges::move(testString.begin(), testString.end(), AZStd::back_inserter(charVector));
+        EXPECT_THAT(charVector, ::testing::ElementsAre('H', 'e', 'l', 'l', 'o', 'W', 'o', 'r', 'l', 'd'));
+        EXPECT_THAT(testString, ::testing::ElementsAre('\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0'));
+
+        charVector.clear();
+        testString = AZStd::vector<MoveOpRemoveContents>{ 'H', 'e', 'l', 'l', 'o', 'W', 'o', 'r', 'l', 'd' };
+        charVector.resize_no_construct(testString.size());
+        AZStd::ranges::move_backward(testString, charVector.end());
+        EXPECT_THAT(charVector, ::testing::ElementsAre('H', 'e', 'l', 'l', 'o', 'W', 'o', 'r', 'l', 'd'));
+        EXPECT_THAT(testString, ::testing::ElementsAre('\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0'));
+
+        charVector.clear();
+        testString = AZStd::vector<MoveOpRemoveContents>{ 'H', 'e', 'l', 'l', 'o', 'W', 'o', 'r', 'l', 'd' };
+        charVector.resize_no_construct(testString.size());
+        AZStd::ranges::move_backward(testString.begin(), testString.end(), charVector.end());
+        EXPECT_THAT(charVector, ::testing::ElementsAre('H', 'e', 'l', 'l', 'o', 'W', 'o', 'r', 'l', 'd'));
+        EXPECT_THAT(testString, ::testing::ElementsAre('\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0'));
+    }
+
+    TEST_F(RangesAlgorithmTestFixture, RangesContains_LocatesElementInContainer_Succeeds)
+    {
+        AZStd::vector testVector{ 5, 1, 22, 47, -8, -5, 1000, 687, 22, -8, 1000, 45 };
+
+        EXPECT_TRUE(AZStd::ranges::contains(testVector, 22));
+        EXPECT_TRUE(AZStd::ranges::contains(testVector.begin(), testVector.end(), 1000));
+        EXPECT_FALSE(AZStd::ranges::contains(testVector, -19));
+    }
+
+    TEST_F(RangesAlgorithmTestFixture, RangesContains_LocatesSubrangeInContainer_Succeeds)
+    {
+        AZStd::vector testVector{ 5, 1, 22, 47, -8, -5, 1000, 687, 22, -8, 1000, 45 };
+
+        constexpr AZStd::array searchRange{ 687, 22 };
+        EXPECT_TRUE(AZStd::ranges::contains_subrange(testVector, searchRange));
+        EXPECT_TRUE(AZStd::ranges::contains_subrange(testVector.begin(), testVector.end(),
+            searchRange.begin(), searchRange.end()));
+        EXPECT_FALSE(AZStd::ranges::contains_subrange(testVector, AZStd::array{735, 32}));
+        constexpr AZStd::array<int, 0> emptyRange{};
+        EXPECT_FALSE(AZStd::ranges::contains_subrange(testVector, emptyRange));
+    }
+
+    TEST_F(RangesAlgorithmTestFixture, RangesStartsWith_FindsSubrangeAtStart)
+    {
+        AZStd::vector testVector{ 5, 1, 22, 47, -8, -5, 1000, 687, 22, -8, -8, 1000, 45 };
+        AZStd::vector longerVector{ 5, 1, 22, 47, -8, -5, 1000, 687, 22, -8, -8, 1000, 45, 929 };
+        AZStd::vector shorterVector{ 5, 1, 22, 47, -8, -5, 1000, 687, 22, -8, -8, 1000 };
+        AZStd::vector unequalVector{ 5, 1, 22, 47, -8, -5, 1000, 14, 22, -8, -8, 1000, 25 };
+        AZStd::vector<int> emptyVector;
+
+        EXPECT_TRUE(AZStd::ranges::starts_with(testVector, emptyVector));
+        EXPECT_TRUE(AZStd::ranges::starts_with(emptyVector, emptyVector));
+
+        EXPECT_TRUE(AZStd::ranges::starts_with(testVector, testVector));
+        EXPECT_FALSE(AZStd::ranges::starts_with(testVector, longerVector));
+        EXPECT_TRUE(AZStd::ranges::starts_with(longerVector, testVector));
+
+        EXPECT_TRUE(AZStd::ranges::starts_with(testVector, shorterVector));
+        EXPECT_FALSE(AZStd::ranges::starts_with(shorterVector, testVector));
+        EXPECT_FALSE(AZStd::ranges::starts_with(testVector, unequalVector));
+    }
+
+    TEST_F(RangesAlgorithmTestFixture, RangesEndsWith_FindsSubrangeAtEnd)
+    {
+        AZStd::vector testVector{ 4, 5, 6, 7, 8, 9 };
+        AZStd::vector longerVector{ 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+        AZStd::vector shorterVector{ 7, 8, 9 };
+        AZStd::vector<int> emptyVector;
+
+        EXPECT_TRUE(AZStd::ranges::ends_with(testVector, emptyVector));
+        EXPECT_TRUE(AZStd::ranges::ends_with(emptyVector, emptyVector));
+
+        EXPECT_TRUE(AZStd::ranges::ends_with(testVector, testVector));
+        EXPECT_FALSE(AZStd::ranges::ends_with(testVector, longerVector));
+        EXPECT_TRUE(AZStd::ranges::ends_with(longerVector, testVector));
+
+        EXPECT_TRUE(AZStd::ranges::ends_with(testVector, shorterVector));
+        EXPECT_FALSE(AZStd::ranges::ends_with(shorterVector, testVector));
     }
 }

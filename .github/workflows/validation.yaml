@@ -1,0 +1,16 @@
+name: Validation
+
+on: [pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Run Validation
+        run: |
+          python -u scripts/commit_validation/validate_file_or_folder.py

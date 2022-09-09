@@ -130,7 +130,7 @@ SEditorSettings::SEditorSettings()
     viewports.bAlwaysShowRadiuses = false;
     viewports.bSync2DViews = false;
     viewports.fDefaultAspectRatio = 800.0f / 600.0f;
-    viewports.fDefaultFov = DEG2RAD(60); // 60 degrees (to fit with current game)
+    
     viewports.bShowSafeFrame = false;
     viewports.bHighlightSelectedGeometry = false;
     viewports.bHighlightSelectedVegetation = true;
@@ -217,15 +217,7 @@ SEditorSettings::SEditorSettings()
     //////////////////////////////////////////////////////////////////////////
     // Initialize GUI settings.
     //////////////////////////////////////////////////////////////////////////
-    gui.bWindowsVista = QOperatingSystemVersion::current() >= QOperatingSystemVersion(QOperatingSystemVersion::Windows7);
-
     gui.nToolbarIconSize = static_cast<int>(AzQtComponents::ToolBar::ToolBarIconSize::Default);
-
-    int lfHeight = 8;// -MulDiv(8, GetDeviceCaps(GetDC(nullptr), LOGPIXELSY), 72);
-    gui.nDefaultFontHieght = lfHeight;
-    gui.hSystemFont = QFont("Ms Shell Dlg 2", lfHeight, QFont::Normal);
-    gui.hSystemFontBold = QFont("Ms Shell Dlg 2", lfHeight, QFont::Bold);
-    gui.hSystemFontItalic = QFont("Ms Shell Dlg 2", lfHeight, QFont::Normal, true);
 
     backgroundUpdatePeriod = 0;
     g_TemporaryLevelName = nullptr;
@@ -479,7 +471,6 @@ void SEditorSettings::Save(bool isEditorClosing)
     //////////////////////////////////////////////////////////////////////////
     SaveValue("Settings", "AlwaysShowRadiuses", viewports.bAlwaysShowRadiuses);
     SaveValue("Settings", "Sync2DViews", viewports.bSync2DViews);
-    SaveValue("Settings", "DefaultFov", viewports.fDefaultFov);
     SaveValue("Settings", "AspectRatio", viewports.fDefaultAspectRatio);
     SaveValue("Settings", "ShowSafeFrame", viewports.bShowSafeFrame);
     SaveValue("Settings", "HighlightSelectedGeometry", viewports.bHighlightSelectedGeometry);
@@ -675,7 +666,6 @@ void SEditorSettings::Load()
     //////////////////////////////////////////////////////////////////////////
     LoadValue("Settings", "AlwaysShowRadiuses", viewports.bAlwaysShowRadiuses);
     LoadValue("Settings", "Sync2DViews", viewports.bSync2DViews);
-    LoadValue("Settings", "DefaultFov", viewports.fDefaultFov);
     LoadValue("Settings", "AspectRatio", viewports.fDefaultAspectRatio);
     LoadValue("Settings", "ShowSafeFrame", viewports.bShowSafeFrame);
     LoadValue("Settings", "HighlightSelectedGeometry", viewports.bHighlightSelectedGeometry);

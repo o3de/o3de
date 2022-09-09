@@ -52,6 +52,13 @@ namespace O3DE::ProjectManager
 
         // Engine
 
+
+        /**
+         * Get info about all registered engines
+         * @return an outcome with a vector of EngineInfos on success
+         */
+        virtual AZ::Outcome<QVector<EngineInfo>> GetAllEngineInfos() = 0;
+
         /**
          * Get info about the current engine 
          * @return an outcome with EngineInfo on success
@@ -66,6 +73,13 @@ namespace O3DE::ProjectManager
         virtual AZ::Outcome<EngineInfo> GetEngineInfo(const QString& engineName) = 0;
 
         /**
+         * Get info about an engine the provided project is registered with 
+         * @param projectPath The path of the project 
+         * @return an outcome with EngineInfo on success
+         */
+        virtual AZ::Outcome<EngineInfo> GetProjectEngine(const QString& projectPath) = 0;
+
+        /**
          * Set info about the engine 
          * @param force True to force registration even if an engine with the same name is already registered
          * @param engineInfo an EngineInfo object 
@@ -73,7 +87,26 @@ namespace O3DE::ProjectManager
          */
         virtual DetailedOutcome SetEngineInfo(const EngineInfo& engineInfo, bool force = false) = 0;
 
+
+        // Remote source
+
+        /**
+         * Validates a repository without adding it.
+         * @param repoUri the absolute filesystem path or url to the repo.
+         * @return bool, true if the repository is valid
+         */
+        virtual bool ValidateRepository(const QString& repoUri) = 0;
+
         // Gems
+
+        /**
+         * Create a Gem from the Create A Gem Wizard
+         * @param templatePath the path to the gem template to use
+         * @param gemInfo the gem info to use
+         * @param registerGem whether to register the gem or not
+         * @return an outcome with GemInfo on success
+         */
+        virtual AZ::Outcome<GemInfo> CreateGem(const QString& templatePath, const GemInfo& gemInfo, bool registerGem = true) = 0;
 
         /**
          * Get info about a Gem.
@@ -82,6 +115,13 @@ namespace O3DE::ProjectManager
          * @return an outcome with GemInfo on success 
          */
         virtual AZ::Outcome<GemInfo> GetGemInfo(const QString& path, const QString& projectPath = {}) = 0;
+
+        /**
+         * Get info about all known gem templates
+         * @return an outcome with a vector of TemplateInfos on success
+         */
+        virtual AZ::Outcome<QVector<TemplateInfo>> GetGemTemplates() = 0;
+
 
         /**
          * Get all available gem infos. This concatenates gems registered by the engine and the project.
@@ -130,7 +170,7 @@ namespace O3DE::ProjectManager
          * @return an outcome with ProjectInfo on success 
          */
         virtual AZ::Outcome<ProjectInfo> CreateProject(const QString& projectTemplatePath, const ProjectInfo& projectInfo, bool registerProject = true) = 0;
-        
+
         /**
          * Get info about a project 
          * @param path the absolute path to the project 
@@ -143,6 +183,19 @@ namespace O3DE::ProjectManager
          * @return an outcome with ProjectInfos on success 
          */
         virtual AZ::Outcome<QVector<ProjectInfo>> GetProjects() = 0;
+
+        /**
+         * Gathers all projects from the provided repo
+         * @param repoUri the absolute filesystem path or url to the gem repo.
+         * @return A list of project infos or an error string on failure.
+         */
+        virtual AZ::Outcome<QVector<ProjectInfo>, AZStd::string> GetProjectsForRepo(const QString& repoUri) = 0;
+
+        /**
+         * Gathers all projects from all registered repos
+         * @return A list of project infos or an error string on failure.
+         */
+        virtual AZ::Outcome<QVector<ProjectInfo>, AZStd::string> GetProjectsForAllRepos() = 0;
         
         /**
          * Adds existing project on disk
@@ -193,7 +246,13 @@ namespace O3DE::ProjectManager
          * Get info about all known project templates
          * @return an outcome with ProjectTemplateInfos on success 
          */
-        virtual AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplates(const QString& projectPath = {}) = 0;
+        virtual AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplates() = 0;
+
+        /**
+         * Gathers all project templates for all templates registered from repos.
+         * @return An outcome with a list of all ProjectTemplateInfos on success
+         */
+        virtual AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplatesForAllRepos() = 0;
 
         // Gem Repos
 
@@ -254,6 +313,26 @@ namespace O3DE::ProjectManager
             const QString& gemName, std::function<void(int, int)> gemProgressCallback, bool force = false) = 0;
 
         /**
+         * Downloads and registers a project.
+         * @param gemName the name of the project to download.
+         * @param projectProgressCallback a callback function that is called with an int percentage download value.
+         * @param force should we forcibly overwrite the old version of the project.
+         * @return an outcome with a pair of string error and detailed messages on failure.
+         */
+        virtual DetailedOutcome DownloadProject(
+            const QString& projectName, std::function<void(int, int)> projectProgressCallback, bool force = false) = 0;
+
+        /**
+         * Downloads and registers a template.
+         * @param gemName the name of the template to download.
+         * @param templateProgressCallback a callback function that is called with an int percentage download value.
+         * @param force should we forcibly overwrite the old version of the template.
+         * @return an outcome with a pair of string error and detailed messages on failure.
+         */
+        virtual DetailedOutcome DownloadTemplate(
+            const QString& templateName, std::function<void(int, int)> templateProgressCallback, bool force = false) = 0;
+
+        /**
          * Cancels the current download.
          */
         virtual void CancelDownload() = 0;
@@ -271,11 +350,6 @@ namespace O3DE::ProjectManager
          * @param The error string to be displayed.
          */
         virtual void AddErrorString(AZStd::string errorString) = 0;
-
-        /**
-         * Clears the current list of error strings.
-         */
-        virtual void ClearErrorStrings() = 0;
     };
 
     using PythonBindingsInterface = AZ::Interface<IPythonBindings>;

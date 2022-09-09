@@ -150,9 +150,9 @@ The following will install those requirements into a sandbox area that we can bo
 
 ![image](https://user-images.githubusercontent.com/23222931/155037710-79bee421-1355-484b-8c96-f672157da40a.png)
 
-### Maya 2022 (Python 3.7.7)
+### Maya 2022 (Python 3.10.5)
 
-This also is not very different, you just need to modify some of the commands. Also because O3DE is also on a version of py3.7.x, we can re-use the requirements.txt file that is in the root of the DccScriptingInterface gem folder.
+This also is not very different, you just need to modify some of the commands. Also because O3DE is also on a version of py3.10.x, we can re-use the requirements.txt file that is in the root of the DccScriptingInterface gem folder.
 
     C:\WINDOWS\system32>
 
@@ -168,8 +168,8 @@ This command will upgrade pip (for instance if a secutiry patch is released)
 
     C:\Program Files\Autodesk\Maya2020\bin>mayapy -m ensurepip --upgrade
 
-The following will install those requirements into a sandbox area that we can boostrap in DCC tools running py3.7.x 
+The following will install those requirements into a sandbox area that we can boostrap in DCC tools running py3.10.x 
 
-    mayapy -m pip install -r C:\Depot\o3de-dev\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\requirements.txt -t C:\Depot\o3de-dev\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\3rdParty\Python\Lib\3.x\3.7.x\site-packages
+    mayapy -m pip install -r C:\Depot\o3de-dev\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\requirements.txt -t C:\Depot\o3de-dev\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\3rdParty\Python\Lib\3.x\3.10.x\site-packages
 
 ![image](https://user-images.githubusercontent.com/23222931/155037723-8f514a85-194f-46e8-b726-55a04f0860bb.png)

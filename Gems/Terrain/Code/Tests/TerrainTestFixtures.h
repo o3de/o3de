@@ -90,9 +90,9 @@ namespace UnitTest
         // on a test-by-test basis.
         AZStd::unique_ptr<Terrain::TerrainSystem> CreateAndActivateTerrainSystem(
             float queryResolution = 1.0f,
-            AZ::Aabb worldBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-128.0f), AZ::Vector3(128.0f))) const;
+            AzFramework::Terrain::FloatRange heightBounds = {-128.0f, 128.0f}) const;
         AZStd::unique_ptr<Terrain::TerrainSystem> CreateAndActivateTerrainSystem(
-            float heightQueryResolution, float surfaceQueryResolution, AZ::Aabb worldBounds) const;
+            float heightQueryResolution, float surfaceQueryResolution, const AzFramework::Terrain::FloatRange& heightBounds) const;
 
         void CreateTestTerrainSystem(const AZ::Aabb& worldBounds, float queryResolution, uint32_t numSurfaces);
         void CreateTestTerrainSystemWithSurfaceGradients(const AZ::Aabb& worldBounds, float queryResolution);

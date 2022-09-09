@@ -192,20 +192,20 @@ namespace UnitTest
     // Create a terrain system with reasonable defaults for testing, but with the ability to override the defaults
     // on a test-by-test basis.
     AZStd::unique_ptr<Terrain::TerrainSystem> TerrainBaseFixture::CreateAndActivateTerrainSystem(
-        float queryResolution, AZ::Aabb worldBounds) const
+        float queryResolution, AzFramework::Terrain::FloatRange heightBounds) const
     {
         const float defaultSurfaceQueryResolution = 1.0f;
-        return CreateAndActivateTerrainSystem(queryResolution, defaultSurfaceQueryResolution, worldBounds);
+        return CreateAndActivateTerrainSystem(queryResolution, defaultSurfaceQueryResolution, heightBounds);
     }
 
     // Create a terrain system with reasonable defaults for testing, but with the ability to override the defaults
     // on a test-by-test basis.
     AZStd::unique_ptr<Terrain::TerrainSystem> TerrainBaseFixture::CreateAndActivateTerrainSystem(
-        float heightQueryResolution, float surfaceQueryResolution, AZ::Aabb worldBounds) const
+        float heightQueryResolution, float surfaceQueryResolution, const AzFramework::Terrain::FloatRange& heightBounds) const
     {
         // Create the terrain system and give it one tick to fully initialize itself.
         auto terrainSystem = AZStd::make_unique<Terrain::TerrainSystem>();
-        terrainSystem->SetTerrainAabb(worldBounds);
+        terrainSystem->SetTerrainHeightBounds(heightBounds);
         terrainSystem->SetTerrainHeightQueryResolution(heightQueryResolution);
         terrainSystem->SetTerrainSurfaceDataQueryResolution(surfaceQueryResolution);
         terrainSystem->Activate();
@@ -243,7 +243,8 @@ namespace UnitTest
 
         // Create the terrain system (do this after creating the terrain layer entity to ensure that we don't need any data refreshes)
         // Also ensure to do this after creating the global JobManager.
-        m_terrainSystem = CreateAndActivateTerrainSystem(queryResolution, worldBounds);
+        AzFramework::Terrain::FloatRange heightBounds = { worldBounds.GetMin().GetZ(), worldBounds.GetMax().GetZ() };
+        m_terrainSystem = CreateAndActivateTerrainSystem(queryResolution, heightBounds);
     }
 
     void TerrainBaseFixture::DestroyTestTerrainSystem()
@@ -388,7 +389,8 @@ namespace UnitTest
 
         // Create the terrain system (do this after creating the terrain layer entity to ensure that we don't need any data refreshes)
         // Also ensure to do this after creating the global JobManager.
-        m_terrainSystem = CreateAndActivateTerrainSystem(queryResolution, worldBounds);
+        AzFramework::Terrain::FloatRange heightBounds = { worldBounds.GetMin().GetZ(), worldBounds.GetMax().GetZ() };
+        m_terrainSystem = CreateAndActivateTerrainSystem(queryResolution, heightBounds);
     }
 
     TerrainSystemTestFixture::TerrainSystemTestFixture()

@@ -455,8 +455,7 @@ namespace AZ
             for (uint32_t index = startIndex; index < endIndex; ++index, ++it)
             {
                 const RHI::DispatchItem* dispatchItem = *it;
-                dispatchItem->m_submitIndex = index;
-                commandList->Submit(*dispatchItem);
+                commandList->Submit(*dispatchItem, index);
             }
         }
 
@@ -469,8 +468,7 @@ namespace AZ
             for (uint32_t index = startIndex; index < endIndex; ++index, ++it)
             {
                 const RHI::DispatchItem* dispatchItem = *it;
-                dispatchItem->m_submitIndex = index;
-                commandList->Submit(*dispatchItem);
+                commandList->Submit(*dispatchItem, index);
             }
         }
 

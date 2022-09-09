@@ -67,6 +67,7 @@ namespace AzToolsFramework
 
             QAction* deleteAction = new QAction("Delete Action", this);
             deleteAction->setShortcut(QKeySequence::Delete);
+            deleteAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
             connect(
                 deleteAction, &QAction::triggered, this, [this]()
                 {
@@ -76,6 +77,7 @@ namespace AzToolsFramework
 
             QAction* renameAction = new QAction("Rename Action", this);
             renameAction->setShortcut(Qt::Key_F2);
+            renameAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
             connect(
                 renameAction, &QAction::triggered, this, [this]()
                 {
@@ -85,6 +87,7 @@ namespace AzToolsFramework
 
             QAction* duplicateAction = new QAction("Duplicate Action", this);
             duplicateAction->setShortcut(QKeySequence("Ctrl+D"));
+            duplicateAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
             connect(
                 duplicateAction, &QAction::triggered, this, [this]()
                 {
@@ -126,7 +129,7 @@ namespace AzToolsFramework
             CaptureTreeViewSnapshot();
         }
 
-        AZStd::vector<AssetBrowserEntry*> AssetBrowserTreeView::GetSelectedAssets() const
+        AZStd::vector<AssetBrowserEntry*> AssetBrowserTreeView::GetSelectedAssets(bool includeProducts) const
         {
             const QModelIndexList& selectedIndexes = selectionModel()->selectedRows();
             QModelIndexList sourceIndexes;
@@ -137,6 +140,20 @@ namespace AzToolsFramework
 
             AZStd::vector<AssetBrowserEntry*> entries;
             m_assetBrowserModel->SourceIndexesToAssetDatabaseEntries(sourceIndexes, entries);
+
+            if (!includeProducts)
+            {
+                entries.erase(
+                    AZStd::remove_if(
+                        entries.begin(),
+                        entries.end(),
+                        [&](AssetBrowserEntry* entry) -> bool
+                        {
+                            return entry->GetEntryType() == AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntryType::Product;
+                        }),
+                    entries.end());
+            }
+
             return entries;
         }
 
@@ -305,6 +322,21 @@ namespace AzToolsFramework
             return GetEntryFromIndex<SourceAssetBrowserEntry>(index) == nullptr;
         }
 
+        void AssetBrowserTreeView::OpenItemForEditing(const QModelIndex& index)
+        {
+            QModelIndex proxyIndex = m_assetBrowserSortFilterProxyModel->mapFromSource(index);
+
+            if (proxyIndex.isValid())
+            {
+                selectionModel()->select(proxyIndex, QItemSelectionModel::ClearAndSelect);
+                setCurrentIndex(proxyIndex);
+
+                scrollTo(proxyIndex, QAbstractItemView::ScrollHint::PositionAtCenter);
+
+                RenameEntry();
+            }
+        }
+
         bool AssetBrowserTreeView::SelectProduct(const QModelIndex& idxParent, AZ::Data::AssetId assetID)
         {
             int elements = model()->rowCount(idxParent);
@@ -319,6 +351,7 @@ namespace AzToolsFramework
                     setCurrentIndex(rowIdx);
                     return true;
                 }
+
                 if (SelectProduct(rowIdx, assetID))
                 {
                     expand(rowIdx);
@@ -465,7 +498,12 @@ namespace AzToolsFramework
 
         void AssetBrowserTreeView::DeleteEntries()
         {
-            auto entries = GetSelectedAssets();
+            auto entries = GetSelectedAssets(false); // do not include products, you cannot delete those!
+
+            if (entries.empty())
+            {
+                return;
+            }
 
             // Create the callback to pass to the SourceControlAPI
             AzToolsFramework::SourceControlResponseCallback callback =
@@ -497,7 +535,8 @@ namespace AzToolsFramework
 
         void AssetBrowserTreeView::RenameEntry()
         {
-            auto entries = GetSelectedAssets();
+            auto entries = GetSelectedAssets(false); // you cannot rename product files.
+            // you may not rename products.
             if (entries.size() == 1)
             {
                 edit(currentIndex());
@@ -505,7 +544,7 @@ namespace AzToolsFramework
         }
         void AssetBrowserTreeView::DuplicateEntries()
         {
-            auto entries = GetSelectedAssets();
+            auto entries = GetSelectedAssets(false); // you may not duplicate product files.
             for (auto entry : entries)
             {
                 using namespace AZ::IO;

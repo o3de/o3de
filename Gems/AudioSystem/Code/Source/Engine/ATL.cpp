@@ -817,17 +817,17 @@ namespace Audio
 
         m_implSubPath.clear();
 
-        EAudioRequestStatus eResult = EAudioRequestStatus::Failure;
-        AudioSystemImplementationRequestBus::BroadcastResult(eResult, &AudioSystemImplementationRequestBus::Events::ShutDown);
+        if (AudioSystemImplementationRequestBus::HasHandlers())
+        {
+            EAudioRequestStatus result = EAudioRequestStatus::Failure;
+            AudioSystemImplementationRequestBus::BroadcastResult(result, &AudioSystemImplementationRequestBus::Events::ShutDown);
+            AZ_Error("ATL", result == EAudioRequestStatus::Success,
+                "ATL ReleaseImplComponent - Shutting down the audio implementation failed!");
 
-        // If we allow developers to change the audio implementation module at run-time, these should be at Warning level.
-        // If we ever revoke that functionality, these should be promoted to Asserts.
-        AZ_Warning("ATL", eResult == EAudioRequestStatus::Success,
-            "ATL ReleaseImplComponent - Shutting down the audio implementation failed!");
-
-        AudioSystemImplementationRequestBus::BroadcastResult(eResult, &AudioSystemImplementationRequestBus::Events::Release);
-        AZ_Warning("ATL", eResult == EAudioRequestStatus::Success,
-            "ATL ReleaseImplComponent - Releasing the audio implementation failed!");
+            AudioSystemImplementationRequestBus::BroadcastResult(result, &AudioSystemImplementationRequestBus::Events::Release);
+            AZ_Error("ATL", result == EAudioRequestStatus::Success,
+                "ATL ReleaseImplComponent - Releasing the audio implementation failed!");
+        }
 
         m_nFlags &= ~eAIS_AUDIO_MIDDLEWARE_SHUTTING_DOWN;
     }

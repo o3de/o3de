@@ -76,6 +76,10 @@ namespace EditorPythonBindings
         //! Gets the wrapped object's __str__
         pybind11::object GetWrappedObjectStr();
 
+        //! Gets the wrapped object's __hash__
+        pybind11::ssize_t GetWrappedObjectHash();
+
+
     protected:
         void PrepareWrappedObject(const AZ::BehaviorClass& behaviorClass);
         void ReleaseWrappedObject();

@@ -20,7 +20,7 @@ It installs based on the python version into a location (such as):
 
 This is to ensure that we are not modifying the users DCC tools install directly.
 
-For this script to function on windows you may need Administrator privledges.
+For this script to function on windows you may need Administrator privileges.
 ^ You only have to start with Admin rights if you are running foundation.py
 to install/update packages and other functions that write to disk.
 
@@ -31,7 +31,7 @@ to (windows): '/Users/<Username>/AppData/Local/Programs/'
 Open an admin elevated cmd prompt here:
     '<o3de>/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface'
 
-The following would execute this script, the default behaviour is to check
+The following would execute this script, the default behavior is to check
 the o3de python and install the requirements.txt for that python version,
 
   >python.cmd foundation.py
@@ -90,8 +90,8 @@ _PATH_DCCSI_PYTHON_LIB = Path(STR_PATH_DCCSI_PYTHON_LIB.format(_PATH_DCCSIG,
 # this is the shared default requirements.txt file to install for python 3.6.x+
 _DCCSI_PYTHON_REQUIREMENTS = Path(_PATH_DCCSIG, 'requirements.txt')
 
-# this will default to the python interpretter running this script (probably o3de)
-# this should be relaced by the target interpretter python exe, like mayapy.exe
+# this will default to the python interpreter running this script (probably o3de)
+# this should be replaced by the target interpreter python exe, like mayapy.exe
 _PYTHON_EXE = Path(sys.executable)
 # -------------------------------------------------------------------------
 
@@ -116,10 +116,10 @@ def check_pip(python_exe=_PYTHON_EXE):
 def ensurepip(python_exe=_PYTHON_EXE, upgrade=False):
     """Will use ensurepip method to ensure pip is installed"""
 
-    # note: this doesn't work with python 3.7 which is the version o3de is on
+    # note: this doesn't work with python 3.10 which is the version o3de is on
     # luckily o3de comes with working pip
     # if this errors out with an exception and "ValueError: bad marshal data (unknown type code)"
-    # you should try to install pip using dfoundation.install_pip() method
+    # you should try to install pip using foundation.install_pip() method
 
     result = 0
 
@@ -227,7 +227,7 @@ def install_pip(python_exe=_PYTHON_EXE, download=True, upgrade=True, getpip=_PIP
 
 
 # -------------------------------------------------------------------------
-# version of requirements.txt to installa
+# version of requirements.txt to install
 if sys.version_info.major >= 3 and sys.version_info.minor >= 7:
     _REQUIREMENTS = _DCCSI_PYTHON_REQUIREMENTS
 elif sys.version_info.major == 2 and sys.version_info.minor >= 7:
@@ -244,7 +244,7 @@ else:
 def install_requirements(python_exe=_PYTHON_EXE,
                          requirements=_REQUIREMENTS,
                          target_loc=_PATH_DCCSI_PYTHON_LIB.as_posix()):
-    """Installs the DCCsi requirments.txt"""
+    """Installs the DCCsi requirements.txt"""
 
     python_exe = Path(python_exe)
     requirements = Path(requirements)
@@ -318,7 +318,7 @@ def get_version(_PYTHON_EXE):
         _out = _out.replace("\r\n", "")  # clean
         _LOGGER.info(f'Python Version is: {_out}')
         _ver = _out.split(" ")[-1]  # split by space, take version
-        _ver = _ver.split('.')  # splity by . to list
+        _ver = _ver.split('.')  # split by . to list
         return _ver
     else:
         _LOGGER.error(f'Python exe does not exist: {_PYTHON_EXE.as_posix()}')
@@ -330,7 +330,7 @@ def get_version(_PYTHON_EXE):
 # Main Code Block, runs this script as main (testing)
 # -------------------------------------------------------------------------
 if __name__ == '__main__':
-    """Run this file as main(external commandline)"""
+    """Run this file as main(external command line)"""
 
     STR_CROSSBAR = f"{'-' * 74}"
 
@@ -341,7 +341,7 @@ if __name__ == '__main__':
     _DCCSI_LOGLEVEL = _logging.INFO
 
     if _DCCSI_GDEBUG:
-        # override loglevel if runnign debug
+        # override loglevel if running debug
         _DCCSI_LOGLEVEL = _logging.DEBUG
 
     FRMT_LOG_LONG = "[%(name)s][%(levelname)s] >> %(message)s (%(asctime)s; %(filename)s:%(lineno)d)"
@@ -363,7 +363,7 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser(
-        description='O3DE DCCsi Setup (aka Foundation). Will install DCCsi python package dependancies, for various DCC tools.',
+        description='O3DE DCCsi Setup (aka Foundation). Will install DCCsi python package dependencies, for various DCC tools.',
         epilog="It is suggested to use '-py' or '--python_exe' to pass in the python exe for the target dcc tool.")
 
     parser.add_argument('-gd', '--global-debug',
@@ -385,7 +385,7 @@ if __name__ == '__main__':
     parser.add_argument('-py', '--python_exe',
                         type=str,
                         required=False,
-                        help='The python interpretter you want to run in the subprocess')
+                        help='The python interpreter you want to run in the subprocess')
 
     parser.add_argument('-cp', '--check_pip',
                         required=False,
@@ -408,7 +408,7 @@ if __name__ == '__main__':
     parser.add_argument('-ex', '--exit',
                         type=bool,
                         required=False,
-                        help='Exits python. Do not exit if you want to be in interactive interpretter after config')
+                        help='Exits python. Do not exit if you want to be in interactive interpreter after config')
 
     args = parser.parse_args()
 
@@ -447,7 +447,7 @@ if __name__ == '__main__':
             _LOGGER.error(f'This py exe does not exist:{_PYTHON_EXE}')
             sys.exit()
 
-    # this will verify pip is installed for the target python interpretter/env
+    # this will verify pip is installed for the target python interpreter/env
     if arg_bool(args.check_pip, desc='args.check_pip'):
         _LOGGER.info(f'calling foundation.check_pip()')
         result = check_pip(_PYTHON_EXE)
@@ -463,7 +463,7 @@ if __name__ == '__main__':
         _LOGGER.info(f'calling foundation.install_pip()')
         install_pip(_PYTHON_EXE)
 
-    # installing the requirments.txt is enabled by default
+    # installing the requirements.txt is enabled by default
     if arg_bool(args.install_requirements, desc='args.check_pip'):
         _LOGGER.info(f'calling foundation.install_requirements( {_PYTHON_EXE}, target_loc = {_PATH_DCCSI_PYTHON_LIB.as_posix()} )')
         install_requirements(_PYTHON_EXE, target_loc = _PATH_DCCSI_PYTHON_LIB.as_posix())

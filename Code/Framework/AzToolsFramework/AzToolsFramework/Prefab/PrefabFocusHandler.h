@@ -29,6 +29,8 @@ namespace AzToolsFramework
 namespace AzToolsFramework::Prefab
 {
     class InstanceEntityMapperInterface;
+    class InstanceToTemplateInterface;
+    class InstanceUpdateExecutorInterface;
     class PrefabSystemComponentInterface;
 
     //! Handles Prefab Focus mode, determining which prefab file entity changes will target.
@@ -42,16 +44,18 @@ namespace AzToolsFramework::Prefab
     public:
         AZ_CLASS_ALLOCATOR(PrefabFocusHandler, AZ::SystemAllocator, 0);
 
-        PrefabFocusHandler();
-        ~PrefabFocusHandler();
+        void RegisterPrefabFocusInterface();
+        void UnregisterPrefabFocusInterface();
 
         static void Reflect(AZ::ReflectContext* context);
 
         // PrefabFocusInterface overrides ...
         void InitializeEditorInterfaces() override;
+
         PrefabFocusOperationResult FocusOnPrefabInstanceOwningEntityId(AZ::EntityId entityId) override;
         TemplateId GetFocusedPrefabTemplateId(AzFramework::EntityContextId entityContextId) const override;
         InstanceOptionalReference GetFocusedPrefabInstance(AzFramework::EntityContextId entityContextId) const override;
+        LinkId AppendPathFromFocusedInstanceToPatchPaths(PrefabDom& providedPatch, AZ::EntityId entityId) const override;
 
         // PrefabFocusPublicInterface and PrefabFocusPublicRequestBus overrides ...
         PrefabFocusOperationResult FocusOnOwningPrefab(AZ::EntityId entityId) override;
@@ -95,9 +99,12 @@ namespace AzToolsFramework::Prefab
         //! The current focus mode.
         PrefabEditScope m_prefabEditScope = PrefabEditScope::HIDE_NESTED_INSTANCES_CONTENT;
 
+        InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
+        InstanceUpdateExecutorInterface* m_instanceUpdateExecutorInterface = nullptr;
+        InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
+
         ContainerEntityInterface* m_containerEntityInterface = nullptr;
         FocusModeInterface* m_focusModeInterface = nullptr;
-        InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
         ReadOnlyEntityQueryInterface* m_readOnlyEntityQueryInterface = nullptr;
     };
 

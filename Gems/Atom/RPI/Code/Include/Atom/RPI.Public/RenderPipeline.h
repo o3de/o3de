@@ -18,6 +18,7 @@
 #include <Atom/RPI.Reflect/Pass/PassAsset.h>
 #include <Atom/RPI.Reflect/Pass/PassTemplate.h>
 #include <Atom/RPI.Reflect/System/RenderPipelineDescriptor.h>
+#include <Atom/RPI.Public/ViewProviderBus.h>
 #include <Atom/RPI.Public/WindowContext.h>
 
 #include <AzCore/std/containers/vector.h>
@@ -98,6 +99,7 @@ namespace AZ
 
             // Data type for render pipeline's views' information
             using PipelineViewMap = AZStd::map<PipelineViewTag, PipelineViews, AZNameSortAscending>;
+            using ViewToViewTagMap = AZStd::map<const View*, PipelineViewTag>;
 
             //! Assign a view for a PipelineViewTag used in this pipeline. 
             //! This reference of this view will be saved until it's replaced in another SetPersistentView call.
@@ -111,6 +113,10 @@ namespace AZ
             //! Set a view to the default view tag. 
             //! It's the same as SetPersistentView(GetMainViewTag(), view)
             void SetDefaultView(ViewPtr view);
+
+            //! Set a stereoscopic view to the default view tag.
+            //! It's the same as SetPersistentView(GetMainViewTag(), view)
+            void SetDefaultStereoscopicViewFromEntity(EntityId entityId, RPI::ViewType viewType);
 
             //! Get the view for the default view tag. 
             //! It's the same as GetViews(GetMainViewTag()) and using first element.
@@ -233,6 +239,9 @@ namespace AZ
             // Retrieves a previously added pipeline global connection via name
             const PipelineGlobalBinding* GetPipelineGlobalConnection(const Name& globalName) const;
 
+            // Checks if the view is already registered with a different viewTag
+            bool CanRegisterView(const PipelineViewTag& allowedViewTag, const View* view) const;
+
             // Clears the lists of global attachments and binding that passes use to reference attachments in a global manner
             // This is called from the pipeline root pass during the pass reset phase
             void ClearGlobalBindings();
@@ -284,7 +293,9 @@ namespace AZ
             AZStd::vector<PipelineGlobalBinding> m_pipelineGlobalConnections;
 
             PipelineViewMap m_pipelineViewsByTag;
-            
+            ViewToViewTagMap m_persistentViewsByViewTag;
+            ViewToViewTagMap m_transientViewsByViewTag;
+
             // RenderPipeline's name id, it will be used to identify the render pipeline when it's added to a Scene
             RenderPipelineId m_nameId;
 

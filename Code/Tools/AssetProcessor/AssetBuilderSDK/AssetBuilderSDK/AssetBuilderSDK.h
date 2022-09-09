@@ -38,6 +38,14 @@ namespace AZ
     class Entity;
 }
 
+namespace AzToolsFramework
+{
+    namespace AssetDatabase
+    {
+        class ProductDatabaseEntry;
+    }
+}
+
 // This needs to be up here because it needs to be defined before the hash definition, and the hash needs to be defined before the first use (which occurs further down in this file)
 namespace AssetBuilderSDK
 {
@@ -638,6 +646,8 @@ namespace AssetBuilderSDK
         IntermediateAsset = 2 // Indicates this JobProduct is an intermediate asset which should be output to the intermediate asset folder.  Must be used with the Common platform.
     };
 
+    bool IsProductOutputFlagSet(const AzToolsFramework::AssetDatabase::ProductDatabaseEntry& product, ProductOutputFlags flag);
+
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(ProductOutputFlags);
 
     using ProductPathDependencySet = AZStd::unordered_set<AssetBuilderSDK::ProductPathDependency>;
@@ -729,7 +739,7 @@ namespace AssetBuilderSDK
         JobDescriptor m_jobDescription; ///! job descriptor for this job.  Note that this still contains the job parameters from when you emitted it during CreateJobs
         PlatformInfo m_platformInfo; ///! the information about the platform that this job was emitted for.
         AZStd::string m_tempDirPath; // temp directory that the builder should use to create job outputs for this job request
-        AZ::u64 m_jobId; ///! job id for this job, this is also the address for the JobCancelListener
+        AZ::u64 m_jobId{}; ///! job id for this job, this is also the address for the JobCancelListener
         AZ::Uuid m_sourceFileUUID; ///! the UUID of the source file.  Will be used as the uuid of the AssetID of the product when combined with the subID.
         AZStd::vector<SourceFileDependency> m_sourceFileDependencyList;
 

@@ -10,7 +10,6 @@
 #include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/Matrix4x4.h>
 #include <AzCore/Math/Transform.h>
-#include <AzCore/Math/VectorConversions.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
@@ -27,7 +26,7 @@ namespace UnitTest
         const auto worldResult =
             AzFramework::ScreenNdcToWorld(ndcPoint, InverseCameraView(cameraState), InverseCameraProjection(cameraState));
         const auto ndcResult = AzFramework::WorldToScreenNdc(worldResult, CameraView(cameraState), CameraProjection(cameraState));
-        return AZ::Vector3ToVector2(ndcResult);
+        return AZ::Vector2(ndcResult);
     }
 
     // transform a point from screen space to world space, and then from world space back to screen space

@@ -75,6 +75,8 @@ namespace O3DE::ProjectManager
         QString m_displayName;
         QString m_creator = "Unknown Creator";
         GemOrigin m_gemOrigin = Local;
+        QString m_originURL;
+        QString m_iconPath;
         bool m_isAdded = false; //! Is the gem explicitly added (not a dependency) and enabled in the project?
         QString m_summary = "No summary provided.";
         Platforms m_platforms;
