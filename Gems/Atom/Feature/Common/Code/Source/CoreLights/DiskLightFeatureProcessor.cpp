@@ -13,6 +13,8 @@
 #include <AzCore/Math/Vector3.h>
 
 #include <Atom/Feature/CoreLights/CoreLightsConstants.h>
+#include <Atom/Feature/CoreLights/LightCommon.h>
+#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 
 #include <Atom/RHI/Factory.h>
 
@@ -51,17 +53,24 @@ namespace AZ
 
             m_lightBufferHandler = GpuBufferHandler(desc);
             m_shadowFeatureProcessor = GetParentScene()->GetFeatureProcessor<ProjectedShadowFeatureProcessor>();
+
+            MeshFeatureProcessor* meshFeatureProcessor = GetParentScene()->GetFeatureProcessor<MeshFeatureProcessor>();
+            if (meshFeatureProcessor)
+            {
+                m_lightMeshFlag = meshFeatureProcessor->GetFlagRegistry()->AcquireTag(AZ::Name("DisktLight"));
+                m_shadowMeshFlag = meshFeatureProcessor->GetFlagRegistry()->AcquireTag(AZ::Name("DiskLightShadow"));
+            }
         }
 
         void DiskLightFeatureProcessor::Deactivate()
         {
-            m_diskLightData.Clear();
+            m_lightData.Clear();
             m_lightBufferHandler.Release();
         }
 
         DiskLightFeatureProcessor::LightHandle DiskLightFeatureProcessor::AcquireLight()
         {
-            uint16_t id = m_diskLightData.GetFreeSlotIndex();
+            uint16_t id = m_lightData.GetFreeSlotIndex();
 
             if (id == IndexedDataVector<DiskLightData>::NoFreeSlot)
             {
@@ -78,12 +87,12 @@ namespace AZ
         {
             if (handle.IsValid())
             {
-                ShadowId shadowId = ShadowId(m_diskLightData.GetData(handle.GetIndex()).m_shadowIndex);
+                ShadowId shadowId = ShadowId(m_lightData.GetData<0>(handle.GetIndex()).m_shadowIndex);
                 if (shadowId.IsValid())
                 {
                     m_shadowFeatureProcessor->ReleaseShadow(shadowId);
                 }
-                m_diskLightData.RemoveIndex(handle.GetIndex());
+                m_lightData.RemoveIndex(handle.GetIndex());
                 m_deviceBufferNeedsUpdate = true;
                 handle.Reset();
                 return true;
@@ -99,9 +108,10 @@ namespace AZ
             if (handle.IsValid())
             {
                 // Get a reference to the new light
-                DiskLightData& light = m_diskLightData.GetData(handle.GetIndex());
+                DiskLightData& light = m_lightData.GetData<0>(handle.GetIndex());
                 // Copy data from the source light on top of it.
-                light = m_diskLightData.GetData(sourceLightHandle.GetIndex());
+                light = m_lightData.GetData<0>(sourceLightHandle.GetIndex());
+                m_lightData.GetData<1>(handle.GetIndex()) = m_lightData.GetData<1>(sourceLightHandle.GetIndex());
 
                 ShadowId shadowId = ShadowId(light.m_shadowIndex);
                 if (shadowId.IsValid())
@@ -125,9 +135,27 @@ namespace AZ
 
             if (m_deviceBufferNeedsUpdate)
             {
-                m_lightBufferHandler.UpdateBuffer(m_diskLightData.GetDataVector());
+                m_lightBufferHandler.UpdateBuffer(m_lightData.GetDataVector<0>());
                 m_deviceBufferNeedsUpdate = false;
             }
+
+            auto hasShadow = [&](const AZ::Frustum& frustum) -> bool
+            {
+                LightHandle::IndexType index = m_lightData.GetIndexForData<1>(&frustum);
+                ShadowId shadowId = ShadowId(m_lightData.GetData<0>(index).m_shadowIndex);
+                return shadowId.IsValid();
+            };
+            auto noShadow = [&](const AZ::Frustum& frustum) -> bool
+            {
+                return !hasShadow(frustum);
+            };
+
+            // Mark meshes that have point lights without shadow using only the light flag.
+            LightCommon::MarkMeshesWithLightType(GetParentScene(), AZStd::span(m_lightData.GetDataVector<1>()), m_lightMeshFlag.GetIndex(), noShadow);
+
+            // Mark meshes that have point lights with shadow using a combination of light and shadow flags.
+            uint32_t lightAndShadow = m_lightMeshFlag.GetIndex() | m_shadowMeshFlag.GetIndex();
+            LightCommon::MarkMeshesWithLightType(GetParentScene(), AZStd::span(m_lightData.GetDataVector<1>()), lightAndShadow, hasShadow);
         }
 
         void DiskLightFeatureProcessor::Render(const DiskLightFeatureProcessor::RenderPacket& packet)
@@ -146,7 +174,7 @@ namespace AZ
 
             auto transformedColor = AZ::RPI::TransformColor(lightRgbIntensity, AZ::RPI::ColorSpaceId::LinearSRGB, AZ::RPI::ColorSpaceId::ACEScg);
 
-            AZStd::array<float, 3>& rgbIntensity = m_diskLightData.GetData(handle.GetIndex()).m_rgbIntensity;
+            AZStd::array<float, 3>& rgbIntensity = m_lightData.GetData<0>(handle.GetIndex()).m_rgbIntensity;
             rgbIntensity[0] = transformedColor.GetR();
             rgbIntensity[1] = transformedColor.GetG();
             rgbIntensity[2] = transformedColor.GetB();
@@ -158,22 +186,26 @@ namespace AZ
         {
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to DiskLightFeatureProcessor::SetPosition().");
 
-            AZStd::array<float, 3>& position = m_diskLightData.GetData(handle.GetIndex()).m_position;
+            AZStd::array<float, 3>& position = m_lightData.GetData<0>(handle.GetIndex()).m_position;
             lightPosition.StoreToFloat3(position.data());
 
-            m_deviceBufferNeedsUpdate = true;
+            UpdateFrustum(handle);
             UpdateShadow(handle);
+
+            m_deviceBufferNeedsUpdate = true;
         }
 
         void DiskLightFeatureProcessor::SetDirection(LightHandle handle, const AZ::Vector3& lightDirection)
         {
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to DiskLightFeatureProcessor::SetDirection().");
 
-            AZStd::array<float, 3>& direction = m_diskLightData.GetData(handle.GetIndex()).m_direction;
+            AZStd::array<float, 3>& direction = m_lightData.GetData<0>(handle.GetIndex()).m_direction;
             lightDirection.StoreToFloat3(direction.data());
 
-            m_deviceBufferNeedsUpdate = true;
+            UpdateFrustum(handle);
             UpdateShadow(handle);
+
+            m_deviceBufferNeedsUpdate = true;
         }
 
         void DiskLightFeatureProcessor::SetAttenuationRadius(LightHandle handle, float attenuationRadius)
@@ -181,10 +213,10 @@ namespace AZ
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to DiskLightFeatureProcessor::SetAttenuationRadius().");
 
             attenuationRadius = AZStd::max<float>(attenuationRadius, 0.001f); // prevent divide by zero.
-            DiskLightData& light = m_diskLightData.GetData(handle.GetIndex());
+            DiskLightData& light = m_lightData.GetData<0>(handle.GetIndex());
             light.m_invAttenuationRadiusSquared = 1.0f / (attenuationRadius * attenuationRadius);
-            
-            m_deviceBufferNeedsUpdate = true;
+
+            UpdateFrustum(handle);
 
             // Update the shadow near far planes if necessary
             ShadowId shadowId = ShadowId(light.m_shadowIndex);
@@ -193,27 +225,34 @@ namespace AZ
                 m_shadowFeatureProcessor->SetNearFarPlanes(ShadowId(light.m_shadowIndex),
                     light.m_bulbPositionOffset, attenuationRadius + light.m_bulbPositionOffset);
             }
+
+            m_deviceBufferNeedsUpdate = true;
+
         }
 
         void DiskLightFeatureProcessor::SetDiskRadius(LightHandle handle, float radius)
         {
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to DiskLightFeatureProcessor::SetDiskRadius().");
             
-            DiskLightData& light = m_diskLightData.GetData(handle.GetIndex());
+            DiskLightData& light = m_lightData.GetData<0>(handle.GetIndex());
             light.m_diskRadius = radius;
+
             UpdateBulbPositionOffset(light);
-            m_deviceBufferNeedsUpdate = true;
+            UpdateFrustum(handle);
             UpdateShadow(handle);
+
+            m_deviceBufferNeedsUpdate = true;
         }
 
         void DiskLightFeatureProcessor::SetConstrainToConeLight(LightHandle handle, bool useCone)
         {
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to DiskLightFeatureProcessor::SetDiskRadius().");
 
-            uint32_t& flags = m_diskLightData.GetData(handle.GetIndex()).m_flags;
+            uint32_t& flags = m_lightData.GetData<0>(handle.GetIndex()).m_flags;
             useCone ? flags |= DiskLightData::Flags::UseConeAngle : flags &= ~DiskLightData::Flags::UseConeAngle;
-            m_deviceBufferNeedsUpdate = true;
             UpdateShadow(handle);
+
+            m_deviceBufferNeedsUpdate = true;
         }
         
         void DiskLightFeatureProcessor::SetConeAngles(LightHandle handle, float innerRadians, float outerRadians)
@@ -228,7 +267,7 @@ namespace AZ
         
         void DiskLightFeatureProcessor::ValidateAndSetConeAngles(LightHandle handle, float innerRadians, float outerRadians)
         {
-            DiskLightData& light = m_diskLightData.GetData(handle.GetIndex());
+            DiskLightData& light = m_lightData.GetData<0>(handle.GetIndex());
 
             // Assume if the cone angles are being set that the user wants to constrain to a cone angle
             SetConstrainToConeLight(handle, true);
@@ -250,16 +289,18 @@ namespace AZ
         {
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to DiskLightFeatureProcessor::SetDiskData().");
 
-            m_diskLightData.GetData(handle.GetIndex()) = data;
-            m_deviceBufferNeedsUpdate = true;
+            m_lightData.GetData<0>(handle.GetIndex()) = data;
             UpdateShadow(handle);
+            UpdateFrustum(handle);
+
+            m_deviceBufferNeedsUpdate = true;
         }
 
         const DiskLightData&  DiskLightFeatureProcessor::GetDiskData(LightHandle handle) const
         {
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to DiskLightFeatureProcessor::GetDiskData().");
 
-            return m_diskLightData.GetData(handle.GetIndex());
+            return m_lightData.GetData<0>(handle.GetIndex());
         }
 
         const Data::Instance<RPI::Buffer> DiskLightFeatureProcessor::GetLightBuffer()const
@@ -274,7 +315,7 @@ namespace AZ
 
         void DiskLightFeatureProcessor::SetShadowsEnabled(LightHandle handle, bool enabled)
         {
-            DiskLightData& light = m_diskLightData.GetData(handle.GetIndex());
+            DiskLightData& light = m_lightData.GetData<0>(handle.GetIndex());
             ShadowId shadowId = ShadowId(light.m_shadowIndex);
             if (shadowId.IsValid() && enabled == false)
             {
@@ -303,7 +344,7 @@ namespace AZ
         {
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to DiskLightFeatureProcessor::SetShadowSetting().");
             
-            DiskLightData& light = m_diskLightData.GetData(handle.GetIndex());
+            DiskLightData& light = m_lightData.GetData<0>(handle.GetIndex());
             ShadowId shadowId = ShadowId(light.m_shadowIndex);
 
             AZ_Assert(shadowId.IsValid(), "Attempting to set a shadow property when shadows are not enabled.");
@@ -347,7 +388,7 @@ namespace AZ
         {
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to DiskLightFeatureProcessor::SetAffectsGI().");
 
-            m_diskLightData.GetData(handle.GetIndex()).m_affectsGI = affectsGI;
+            m_lightData.GetData<0>(handle.GetIndex()).m_affectsGI = affectsGI;
             m_deviceBufferNeedsUpdate = true;
         }
 
@@ -355,13 +396,13 @@ namespace AZ
         {
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to DiskLightFeatureProcessor::SetAffectsGIFactor().");
 
-            m_diskLightData.GetData(handle.GetIndex()).m_affectsGIFactor = affectsGIFactor;
+            m_lightData.GetData<0>(handle.GetIndex()).m_affectsGIFactor = affectsGIFactor;
             m_deviceBufferNeedsUpdate = true;
         }
 
         void DiskLightFeatureProcessor::UpdateShadow(LightHandle handle)
         {
-            const DiskLightData& diskLight = m_diskLightData.GetData(handle.GetIndex());
+            const DiskLightData& diskLight = m_lightData.GetData<0>(handle.GetIndex());
             ShadowId shadowId = ShadowId(diskLight.m_shadowIndex);
             if (shadowId.IsNull())
             {
@@ -392,14 +433,7 @@ namespace AZ
 
             desc.m_aspectRatio = 1.0f;
             desc.m_nearPlaneDistance = diskLight.m_bulbPositionOffset;
-            
-            const float invRadiusSquared = diskLight.m_invAttenuationRadiusSquared;
-            if (invRadiusSquared <= 0.f)
-            {
-                AZ_Assert(false, "Attenuation radius must be set before using the light.");
-                return;
-            }
-            const float attenuationRadius = sqrtf(1.f / invRadiusSquared);
+            const float attenuationRadius = LightCommon::GetRadiusFromInvRadiusSquared(diskLight.m_invAttenuationRadiusSquared);
             desc.m_farPlaneDistance = attenuationRadius + diskLight.m_bulbPositionOffset;
 
             m_shadowFeatureProcessor->SetShadowProperties(shadowId, desc);
@@ -411,7 +445,27 @@ namespace AZ
             // light stores the cosine of outerConeRadians, making the equation (radius * tan(pi/2 - acosf(cosConeRadians)).
             // This simplifies to the equation below.
             float cosConeRadians = light.m_cosOuterConeAngle;
-            light.m_bulbPositionOffset = light.m_diskRadius * cosConeRadians / sqrt(1 - cosConeRadians * cosConeRadians);
+            light.m_bulbPositionOffset = light.m_diskRadius * cosConeRadians / sqrt(1.0f - cosConeRadians * cosConeRadians);
         }
+
+        void DiskLightFeatureProcessor::UpdateFrustum(LightHandle handle)
+        {
+            DiskLightData data = m_lightData.GetData<0>(handle.GetIndex());
+
+            ViewFrustumAttributes desc;
+            desc.m_aspectRatio = 1.0f;
+
+            desc.m_nearClip = data.m_bulbPositionOffset;
+            desc.m_farClip = data.m_bulbPositionOffset + LightCommon::GetRadiusFromInvRadiusSquared(data.m_invAttenuationRadiusSquared);
+            desc.m_verticalFovRadians = GetMax(0.001f, acosf(data.m_cosOuterConeAngle) * 2.0f);
+
+            AZ::Vector3 position = AZ::Vector3::CreateFromFloat3(data.m_position.data());
+            AZ::Vector3 normal = AZ::Vector3::CreateFromFloat3(data.m_direction.data());
+            desc.m_worldTransform = AZ::Transform::CreateLookAt(position, position + normal);
+
+            AZ::Frustum frustum = AZ::Frustum(desc);
+            m_lightData.GetData<1>(handle.GetIndex()).Set(frustum);
+        }
+
     } // namespace Render
 } // namespace AZ

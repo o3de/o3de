@@ -172,7 +172,6 @@ namespace AZ
             SimpleSpotLightData& data = m_lightData.GetData<0>(handle.GetIndex());
             data.m_cosInnerConeAngle = cosf(innerRadians);
             data.m_cosOuterConeAngle = cosf(outerRadians);
-            data.m_fovRadians = outerRadians * 2.0f;
 
             UpdateFrustum(handle);
         }
@@ -186,7 +185,6 @@ namespace AZ
 
             SimpleSpotLightData& data = m_lightData.GetData<0>(handle.GetIndex());
             data.m_invAttenuationRadiusSquared = invAttenuationRadiusSquared;
-            data.m_radius = attenuationRadius;
 
             UpdateFrustum(handle);
 
@@ -226,16 +224,17 @@ namespace AZ
             ViewFrustumAttributes desc;
             desc.m_aspectRatio = 1.0f;
 
-            float radius = GetMax(data.m_radius, 0.001f);
-            desc.m_nearClip = radius * 0.1f;
+            float radius = LightCommon::GetRadiusFromInvRadiusSquared(data.m_invAttenuationRadiusSquared);
+            desc.m_nearClip = radius * 0.1f; // near clip will be moved to the light position later
             desc.m_farClip = radius;
-            desc.m_verticalFovRadians = GetMax(data.m_fovRadians, 0.001f);
+            desc.m_verticalFovRadians = GetMax(0.001f, acosf(data.m_cosOuterConeAngle) * 2.0f);
 
             AZ::Vector3 position = AZ::Vector3::CreateFromFloat3(data.m_position.data());
             AZ::Vector3 normal = AZ::Vector3::CreateFromFloat3(data.m_direction.data());
             desc.m_worldTransform = AZ::Transform::CreateLookAt(position, position + normal);
 
             AZ::Frustum frustum = AZ::Frustum(desc);
+
             // Move the near plane onto the point of the light (the frustum can't be constructed this way due to divide by zero issues).
             frustum.SetPlane(AZ::Frustum::Near, AZ::Plane::CreateFromNormalAndPoint(desc.m_worldTransform.GetBasisY(), position));
             m_lightData.GetData<1>(handle.GetIndex()).Set(frustum);

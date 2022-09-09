@@ -185,6 +185,8 @@ namespace AZ
             AZStd::array<float, 3>& position = m_lightData.GetData<0>(handle.GetIndex()).m_position;
             lightPosition.StoreToFloat3(position.data());
 
+            m_lightData.GetData<1>(handle.GetIndex()).SetCenter(lightPosition);
+
             m_deviceBufferNeedsUpdate = true;
             UpdateShadow(handle);
         }
@@ -195,6 +197,8 @@ namespace AZ
 
             attenuationRadius = AZStd::max<float>(attenuationRadius, 0.001f); // prevent divide by zero.
             m_lightData.GetData<0>(handle.GetIndex()).m_invAttenuationRadiusSquared = 1.0f / (attenuationRadius * attenuationRadius);
+            m_lightData.GetData<1>(handle.GetIndex()).SetRadius(attenuationRadius);
+
             m_deviceBufferNeedsUpdate = true;
         }
 
@@ -246,6 +250,10 @@ namespace AZ
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to PointLightFeatureProcessor::SetPointData().");
 
             m_lightData.GetData<0>(handle.GetIndex()) = data;
+
+            AZ::Vector3 position = AZ::Vector3::CreateFromFloat3(data.m_position.data());
+            float radius = LightCommon::GetRadiusFromInvRadiusSquared(data.m_invAttenuationRadiusSquared);
+            m_lightData.GetData<1>(handle.GetIndex()).Set(AZ::Sphere(position, radius));
             m_deviceBufferNeedsUpdate = true;
             UpdateShadow(handle);
         }

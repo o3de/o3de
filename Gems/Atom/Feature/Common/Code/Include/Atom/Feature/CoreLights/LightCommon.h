@@ -50,5 +50,10 @@ namespace AZ::Render::LightCommon
         }
     }
 
+    inline float GetRadiusFromInvRadiusSquared(float invRadiusSqaured)
+    {
+        return (invRadiusSqaured <= 0.0f) ? 1.0f : sqrt(1.0f / invRadiusSqaured);
+    }
+
 } // namespace AZ::Render::LightCommon
 
