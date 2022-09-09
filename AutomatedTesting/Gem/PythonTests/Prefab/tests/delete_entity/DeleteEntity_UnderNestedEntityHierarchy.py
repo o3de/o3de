@@ -26,14 +26,15 @@ def DeleteEntity_UnderNestedEntityHierarchy():
 
     ENTITY_POS = math.Vector3(0.0, 0.0, 0.0)
     NUM_NESTED_ENTITY_LEVELS = 10
+    NESTED_ENTITY_PREFIX = "TestEntity_"
 
     def validate_nested_entity_deletion(num_expected_deleted_entities, first_deleted_entity_suffix,
                                         last_deleted_entity_suffix):
         for i in range(first_deleted_entity_suffix, last_deleted_entity_suffix):
             search_filter = entity.SearchFilter()
-            search_filter.names = [f"TestEntity_{i}"]
+            search_filter.names = [f"{NESTED_ENTITY_PREFIX}{i}"]
             nested_entities = entity.SearchBus(bus.Broadcast, 'SearchEntities', search_filter)
-            assert len(nested_entities) == 0, f"Unexpectedly found TestEntity_{i} when it should be deleted"
+            assert len(nested_entities) == 0, f"Unexpectedly found {NESTED_ENTITY_PREFIX}{i} when it should be deleted"
         prefab_test_utils.validate_linear_nested_entities(nested_entities_root,
                                                           NUM_NESTED_ENTITY_LEVELS - num_expected_deleted_entities,
                                                           ENTITY_POS)
@@ -42,14 +43,14 @@ def DeleteEntity_UnderNestedEntityHierarchy():
 
     # Creates new nested entities at the root level
     # Asserts if creation didn't succeed
-    nested_entities_root = prefab_test_utils.create_linear_nested_entities("TestEntity_", NUM_NESTED_ENTITY_LEVELS,
-                                                                           ENTITY_POS)
+    nested_entities_root = prefab_test_utils.create_linear_nested_entities(NESTED_ENTITY_PREFIX,
+                                                                           NUM_NESTED_ENTITY_LEVELS, ENTITY_POS)
     nested_entities_root_parent = nested_entities_root.get_parent_id()
     prefab_test_utils.validate_linear_nested_entities(nested_entities_root, NUM_NESTED_ENTITY_LEVELS, ENTITY_POS)
 
     # Find an entity in the hierarchy, delete it, and validate Undo/Redo functionality
     search_filter = entity.SearchFilter()
-    search_filter.names = ["TestEntity_5"]
+    search_filter.names = [f"{NESTED_ENTITY_PREFIX}5"]
     entity_to_delete = EditorEntity(entity.SearchBus(bus.Broadcast, 'SearchEntities', search_filter)[0])
     entity_to_delete.delete()
 
