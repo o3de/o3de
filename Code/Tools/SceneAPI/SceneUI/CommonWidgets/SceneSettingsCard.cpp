@@ -160,10 +160,7 @@ void SceneSettingsCard::AddLogEntry(const AzToolsFramework::Logging::LogEntry& l
         }
     }
 
-    if (!detailsForLogLine.empty())
-    {
-        m_additionalLogDetails.push_back(detailsForLogLine);
-    }
+    m_additionalLogDetails.push_back(detailsForLogLine);
     
     if (logEntry.GetSeverity() == AzToolsFramework::Logging::LogEntry::Severity::Error)
     {
@@ -419,9 +416,20 @@ void SceneSettingsCard::ShowLogContextMenu(const QPoint& pos)
         return;
     }
 
+    if (logRow > m_additionalLogDetails.count())
+    {
+        return;
+    }
+
     int additionalLogCount = m_additionalLogDetails[logRow].count();
 
     if (additionalLogCount <= 0)
+    {
+        return;
+    }
+
+    // If the log message for the first row is empty, skip. This happens when there was no log details at all.
+    if (additionalLogCount == 1 && m_additionalLogDetails[logRow][0].second.isEmpty())
     {
         return;
     }
