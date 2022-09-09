@@ -8,15 +8,12 @@
 #include <AzCore/std/algorithm.h>
 #include <AzQtComponents/Components/Widgets/ElidingLabel.h>
 
-#include <QApplication>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QPainter>
 #include <QStyle>
 #include <QTextCursor>
 #include <QTextDocument>
-#include <QThread>
-#include <QTimer>
 
 namespace AzQtComponents
 {

@@ -612,7 +612,7 @@ void AssetImporterWindow::UpdateSceneDisplay(const AZStd::shared_ptr<AZ::SceneAP
 
      if (scene)
     {
-         m_rootDisplay->SetSceneDisplay(sceneHeaderText, scene);
+        m_rootDisplay->SetSceneDisplay(sceneHeaderText, scene);
     }
     else
     {
