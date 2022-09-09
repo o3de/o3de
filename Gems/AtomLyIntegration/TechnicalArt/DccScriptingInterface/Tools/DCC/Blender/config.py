@@ -1,5 +1,3 @@
-# coding:utf-8
-#!/usr/bin/python
 #
 # Copyright (c) Contributors to the Open 3D Engine Project.
 # For complete copyright and license terms please see the LICENSE at the root of this distribution.
@@ -8,24 +6,20 @@
 #
 #
 # -------------------------------------------------------------------------
-"""! @brief
-Module Documentation:
-    < DCCsi >:: Tools//DCC//Blender//config.py
+"""! This module manages the dynamic config and settings for bootstrapping
+Blender DCC app integration with o3de inter-op, scripts, extensions, etc.
 
-This module manages the dynamic config and settings for bootstrapping Blender
+:file: DccScriptingInterface\\Tools\\DCC\\Blender\\config.py
+:Status: Prototype
+:Version: 0.0.1
+:Future: is unknown
+:Notice:
 """
 # -------------------------------------------------------------------------
 import timeit
 _MODULE_START = timeit.default_timer()  # start tracking
 
 # standard imports
-import sys
-import os
-import site
-import re
-import timeit
-import importlib.util
-import pathlib
 from pathlib import Path
 import logging as _logging
 # -------------------------------------------------------------------------
@@ -37,135 +31,117 @@ import logging as _logging
 
 # -------------------------------------------------------------------------
 # global scope
-_MODULENAME = 'Tools.DCC.Blender.config'
+from DccScriptingInterface.Tools.DCC.Blender import _PACKAGENAME
+_MODULENAME = f'{_PACKAGENAME}.config'
 _LOGGER = _logging.getLogger(_MODULENAME)
-_LOGGER.debug(f'Initializing: {_MODULENAME}')
+_LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 
-_MODULE_PATH = Path(__file__)  # To Do: what if frozen?
+_MODULE_PATH = Path(__file__)
 _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH.as_posix()}')
 
-# This sets up basic code access to the DCCsi
-# <o3de>/Gems/AtomLyIntegration/TechnicalArt/<DCCsi>
-_PATH_DCCSIG = Path(_MODULE_PATH, '../../../..').resolve()
-site.addsitedir(_PATH_DCCSIG.as_posix())
+# ensure dccsi and o3de core access
+# in a future iteration it is suggested that the core config
+# be rewritten from ConfigClass, then BlenderConfig inherits core
+import DccScriptingInterface.config as dccsi_core_config
 
-# set envar so DCCsi synthetic env bootstraps with it (config.py)
-from azpy.constants import ENVAR_PATH_DCCSIG
-os.environ[ENVAR_PATH_DCCSIG] = str(_PATH_DCCSIG.as_posix())
-_LOGGER.debug(f'PATH_DCCSIG: {_PATH_DCCSIG.as_posix()}')
+_settings_core = dccsi_core_config.get_config_settings(enable_o3de_python=True,
+                                                       enable_o3de_pyside2=False,
+                                                       set_env=True)
 
-# now we have dccsi azpy api access
-import azpy.config_utils
+# local dccsi imports
+# this accesses common global state, e.g. DCCSI_GDEBUG (is True or False)
+from DccScriptingInterface.globals import *
 
-# these must be imported explicitly, they are not defined in __all__
-from azpy.config_utils import ENVAR_DCCSI_GDEBUG
-from azpy.config_utils import ENVAR_DCCSI_DEV_MODE
-from azpy.config_utils import ENVAR_DCCSI_LOGLEVEL
-from azpy.config_utils import ENVAR_DCCSI_GDEBUGGER
-from azpy.config_utils import FRMT_LOG_LONG
-from azpy.config_utils import STR_CROSSBAR
+# this will auto-attach ide debugging at the earliest possible point in module
+from azpy.config_utils import attach_debugger
+if DCCSI_DEV_MODE: # from DccScriptingInterface.globals
+    attach_debugger(debugger_type=DCCSI_GDEBUGGER)
 
-# defaults, can be overridden/forced here for development
-# they should be committed in an off/False state
-from azpy.env_bool import env_bool
-_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
-_DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
-_DCCSI_LOGLEVEL = env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO)
-_DCCSI_GDEBUGGER = env_bool(ENVAR_DCCSI_GDEBUGGER, 'WING')
-# you can also set in a persistent manner externally
-# method 1: set envar within Env_Dev.bat file
-#    this would set in env prior to running anything within that env context
-# method 2: override in settings.local.json
-#    this is the preferred manner, dynaconf will always load this by default
-#    so these values will always be last and take precedence within code
-#    that is executed after:
-#        from dynaconf import settings
-#        settings.setenv()
+# if the dccsi core config and it's settings are loaded this should pass
+try:
+    _settings_core.DCCSI_CONFIG_CORE
+except EnvironmentError as e:
+    _LOGGER.error('Setting does not exist: DCCSI_CONFIG_CORE')
+    _LOGGER.warning(f'EnvironmentError: {e}')
 
-# this will boostrap access to the dccsi managed package dependencies
-# <DCCsi>\3rdParty\Python\Lib\3.x\3.x.x (based on python version)
-_PATH_DCCSI_PYTHON_LIB = azpy.config_utils.bootstrap_dccsi_py_libs()
-site.addsitedir(_PATH_DCCSI_PYTHON_LIB.as_posix())
-# ^ we don't add this to dynaconf env, or it will end up in settings.local.json
-# and we don't want that, since this LIB location is transient/procedural
-# to ensure we are always bootstrapping the correct path based on python version running
+# this is the root path for the wing pkg
+from DccScriptingInterface.Tools.DCC.Blender import ENVAR_PATH_DCCSI_TOOLS_DCC_BLENDER
+from DccScriptingInterface.Tools.DCC.Blender import PATH_DCCSI_TOOLS_DCC_BLENDER
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-# early debugging
-if _DCCSI_DEV_MODE:
-    azpy.config_utils.attach_debugger(_DCCSI_GDEBUGGER)
+# now we build the wing config class
+from DccScriptingInterface.azpy.config_class import ConfigClass
 
-# This will import and retreive the core <dccsi>/config.py and settings
-_DCCSI_CORE_CONFIG = azpy.config_utils.get_dccsi_config(_PATH_DCCSIG)
+# blender_config is a class object of BlenderConfig
+# BlenderConfig is a child class of ConfigClass
+class BlenderConfig(ConfigClass):
+    """Extend ConfigClass with new blender functionality"""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        _LOGGER.info(f'Initializing: {self.get_classname()}')
 
-# now standalone we can validate the config, env, settings.
-# Qt/PySide2 is disabled here, as it will cause some Qt5 apps to fail
-# one of those apps is Wing ide...
-# suggestion is to refactor this Blender\config.py with ConfigClass
-# and provide a way to toggle access,
-# so it can be disabled to start wing,
-# but Blender\boostrap.py can reenable
-_SETTINGS = _DCCSI_CORE_CONFIG.get_config_settings(enable_o3de_python=False,
-                                                  enable_o3de_pyside2=False,
-                                                  set_env=True)
+# build config object
+blender_config = BlenderConfig(config_name='dccsi_dcc_blender', auto_set=True)
 
-# we don't init the O3DE python env settings!
-# that will cause conflicts with the DCC tools python!!!
-# we are enabling the O3DE PySide2 (aka QtForPython) access for Blender
-# it is just not utilized yet
+# in another module someone could work this way
+# from DccScriptingInterface.Tools.IDE.Wing.config import wing_config
+# settings = wing_config.get_settings(set_env=True)
+# or
+# if wing_config.settings.THIS_SETTING: do this
 
-# This could be improved by running o3de Qt in a thread in blender, similar to this
-# https://github.com/friedererdmann/blender_pyside2_example
-# -------------------------------------------------------------------------
-
-
-# -------------------------------------------------------------------------
-# global scope
-# start locally prepping known default values for dynamic environment settings
-# these global variables are passed as defaults into methods within the module
-
-# special, a global home for stashing PATHs for managed settings
-_DCCSI_SYS_PATH = _DCCSI_CORE_CONFIG._DCCSI_SYS_PATH
-
-# special, a global home for stashing PYTHONPATHs for managed settings
-_DCCSI_PYTHONPATH = _DCCSI_CORE_CONFIG._DCCSI_PYTHONPATH
-
-# special, stash local PYTHONPATHs in a non-managed way (won't end up in settings.local.json)
-DCCSI_PYTHONPATH_EXCLUDE = _DCCSI_CORE_CONFIG._DCCSI_PYTHONPATH_EXCLUDE
-
-# this is a dict bucket to store none-managed settings (fully local to module)
-_DCCSI_LOCAL_SETTINGS = _DCCSI_CORE_CONFIG._DCCSI_LOCAL_SETTINGS
-# -------------------------------------------------------------------------
-
-
-# -------------------------------------------------------------------------
 # now we can extend the environment specific to Blender
 # start by grabbing the constants we want to work with as envars
-
-# import them all, but below are the ones we will use directly
+# a managed setting to track the wing config is enabled
+from Tools.DCC.Blender.constants import ENVAR_DCCSI_CONFIG_DCC_BLENDER
+blender_config.add_setting(ENVAR_DCCSI_CONFIG_DCC_BLENDER, True)
 
 from Tools.DCC.Blender.constants import ENVAR_PATH_DCCSI_TOOLS
 from Tools.DCC.Blender.constants import PATH_PATH_DCCSI_TOOLS
+PATH_PATH_DCCSI_TOOLS = Path(PATH_PATH_DCCSI_TOOLS).resolve()
+blender_config.add_setting(ENVAR_PATH_DCCSI_TOOLS,
+                           PATH_PATH_DCCSI_TOOLS.as_posix())
 
 from Tools.DCC.Blender.constants import ENVAR_DCCSI_TOOLS_BLENDER
 from Tools.DCC.Blender.constants import PATH_DCCSI_TOOLS_BLENDER
+PATH_DCCSI_TOOLS_BLENDER = Path(PATH_DCCSI_TOOLS_BLENDER).resolve()
+blender_config.add_setting(ENVAR_DCCSI_TOOLS_BLENDER,
+                           PATH_DCCSI_TOOLS_BLENDER.as_posix())
 
 from Tools.DCC.Blender.constants import ENVAR_PATH_DCCSI_BLENDER_SCRIPTS
 from Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_SCRIPTS
+PATH_DCCSI_BLENDER_SCRIPTS = Path(PATH_DCCSI_BLENDER_SCRIPTS).resolve()
+blender_config.add_setting(ENVAR_PATH_DCCSI_BLENDER_SCRIPTS,
+                           PATH_DCCSI_BLENDER_SCRIPTS.as_posix(),
+                           set_sys_path=True,
+                           set_pythonpath=True)
 
 from Tools.DCC.Blender.constants import ENVAR_PATH_DCCSI_BLENDER_LOC
 from Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_LOC
+PATH_DCCSI_BLENDER_LOC = Path(PATH_DCCSI_BLENDER_LOC).resolve()
+blender_config.add_setting(ENVAR_PATH_DCCSI_BLENDER_LOC,
+                           PATH_DCCSI_BLENDER_LOC.as_posix(),
+                           set_sys_path=True)
 
 from Tools.DCC.Blender.constants import ENVAR_PATH_DCCSI_BLENDER_EXE
 from Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_EXE
+PATH_DCCSI_BLENDER_EXE = Path(PATH_DCCSI_BLENDER_EXE).resolve()
+blender_config.add_setting(ENVAR_PATH_DCCSI_BLENDER_EXE,
+                           PATH_DCCSI_BLENDER_EXE.as_posix())
 
 from Tools.DCC.Blender.constants import ENVAR_DCCSI_BLENDER_LAUNCHER_EXE
 from Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_LAUNCHER_EXE
+PATH_DCCSI_BLENDER_LAUNCHER_EXE = Path(PATH_DCCSI_BLENDER_LAUNCHER_EXE).resolve()
+blender_config.add_setting(ENVAR_DCCSI_BLENDER_LAUNCHER_EXE,
+                           PATH_DCCSI_BLENDER_LAUNCHER_EXE.as_posix())
 
 from Tools.DCC.Blender.constants import ENVAR_DCCSI_BLENDER_PYTHON_LOC
 from Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_PYTHON_LOC
+PATH_DCCSI_BLENDER_PYTHON_LOC = Path(PATH_DCCSI_BLENDER_PYTHON_LOC).resolve()
+blender_config.add_setting(ENVAR_DCCSI_BLENDER_PYTHON_LOC,
+                           PATH_DCCSI_BLENDER_PYTHON_LOC.as_posix(),
+                           set_sys_path=True)
 
 from Tools.DCC.Blender.constants import ENVAR_DCCSI_BLENDER_PY_EXE
 from Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_PY_EXE

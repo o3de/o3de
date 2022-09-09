@@ -59,7 +59,8 @@ _MODULENAME = f'{_PACKAGENAME}.config_utils'
 _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug('Initializing: {}.'.format({_MODULENAME}))
 
-__all__ = ['attach_debugger',
+__all__ = ['check_is_ascii',
+           'attach_debugger',
            'get_os',
            'return_stub_dir',
            'get_stub_check_path',
@@ -154,6 +155,17 @@ except Exception as e:
     _LOGGER.warning("Other code in this module with fail!!!")
     _LOGGER.error(e)
     pass  # fail gracefully, note: code accesing Path will fail!
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+def check_is_ascii(value):
+    """checks that passed value is ascii str"""
+    try:
+        value.encode('ascii')
+        return True
+    except (AttributeError, UnicodeEncodeError):
+        return False
 # -------------------------------------------------------------------------
 
 

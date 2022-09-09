@@ -88,6 +88,21 @@ if DCCSI_DEV_MODE: # from DccScriptingInterface.globals
 import DccScriptingInterface.config as dccsi_core_config
 # note: if you used win_launch_wingide.bat, settings will be over populated
 # because of the .bat file env chain that includes active apps
+
+# note: initializing the config PySide2 access here may not be ideal
+# it will set envars that may propogate, and have have the side effect
+# of interfering with apps like Wing because it is a Qt5 app and the
+# envars set cause a boot failure
+
+# if your tool is running inside of o3de you already have PySide2/Qt
+
+# if you are launching a standalone tool that does need access,
+# that application will need to run and manage config on it's own
+
+# # to do: refactor config.py and implement ConfigClass
+# from DccScriptingInterface.config import ConfigClass
+# dccsi_config = ConfigClass(config_name='dccsi', auto_set=True)
+# for now, use the legacy code, until CoreConfig class is complete
 _settings_core = dccsi_core_config.get_config_settings(enable_o3de_python=False,
                                                        enable_o3de_pyside2=False,
                                                        set_env=True)
@@ -110,6 +125,9 @@ _LOGGER = _logging.getLogger(_MODULENAME)
 
 
 # -------------------------------------------------------------------------
+O3DE_EDITOR = Path(sys.executable).resolve() # executible
+_LOGGER.debug(f'The sys.executable is: {O3DE_EDITOR}')
+
 # O3DE imports
 import azlmbr
 import azlmbr.bus
@@ -121,6 +139,11 @@ _LOGGER.debug(f'executableFolder: {azlmbr.paths.executableFolder}')
 _LOGGER.debug(f'log: {azlmbr.paths.log}')
 _LOGGER.debug(f'products: {azlmbr.paths.products}')
 _LOGGER.debug(f'projectroot: {azlmbr.paths.projectroot}')
+
+# base paths
+O3DE_DEV = Path(azlmbr.paths.engroot).resolve()
+PATH_O3DE_BIN = Path(azlmbr.paths.executableFolder).resolve()
+PATH_O3DE_PROJECT = Path(azlmbr.paths.projectroot).resolve()
 
 # the DCCsi Gem expects QtForPython Gem is active
 try:
@@ -144,24 +167,19 @@ from shiboken2 import wrapInstance, getCppPointer
 # import additional O3DE QtForPython Gem modules
 import az_qt_helpers
 
-# additional DCCsi imports
+# additional DCCsi imports that utilize PySide2
 from DccScriptingInterface.azpy.shared.ui.samples import SampleUI
 # -------------------------------------------------------------------------
 
 
-# -------------------------------------------------------------------------
-O3DE_EDITOR = Path(sys.executable).resolve() # executible
-_LOGGER.debug(f'The sys.executable is: {O3DE_EDITOR}')
+# ---- dccsi app modules --------------------------------------------------
+# Blender
+from DccScriptingInterface.Tools.DCC.Blender.config import blender_config
+import DccScriptingInterface.Tools.DCC.Blender.start as blender_start
 
-# base paths and config
-O3DE_DEV = Path(azlmbr.paths.engroot).resolve()
-PATH_O3DE_BIN = Path(azlmbr.paths.executableFolder).resolve()
-PATH_O3DE_PROJECT = Path(azlmbr.paths.projectroot).resolve()
-
-# # to do: refactor config.py and implement ConfigClass
-# from DccScriptingInterface.config import ConfigClass
-# # build config for this module
-# dccsi_config = ConfigClass(config_name='dccsi', auto_set=True)
+# Wing
+from DccScriptingInterface.Tools.IDE.Wing.config import wing_config
+import DccScriptingInterface.Tools.IDE.Wing.start as wing_start
 # -------------------------------------------------------------------------
 
 
@@ -193,6 +211,12 @@ def create_menu(parent: QMenu, title: str = 'StudioTools') -> QMenu:
 # as the list of slots/actions grows, refactor into sub-modules
 @Slot()
 def click_action_sampleui():
+    """! Creates a sandalone sample ui with button, this is provided for
+    Technicl Artists learning, as one of the purposes of the dccsi is
+    onboarding TAs to the editor extensibility experience.
+
+    :return: returns the created ui
+    """
     _LOGGER.debug(f'Clicked: click_action_sampleui')
 
     ui = SampleUI(parent=az_qt_helpers.get_editor_main_window(),
@@ -202,17 +226,21 @@ def click_action_sampleui():
 # -------------------------------------------------------------------------
 
 
-# - slot ------------------------------------------------------------------
-# as the list of slots/actions grows, refactor into sub-modules
-@Slot()
-def click_action_start_wing(method = 'two'):
-    _LOGGER.debug(f'Clicked: click_action_start_wing')
+# -------------------------------------------------------------------------
+# the common o3de python.exe used to launch external services
+_DCCSI_PY_BASE = Path(_settings_core.DCCSI_PY_BASE).resolve()
 
-    wing_proc = None
+def start_service(py_file: Path,
+                  py_exe: Path = _DCCSI_PY_BASE,
+                  debug: bool = DCCSI_LOCAL_DEBUG) -> subprocess:
+    """! Common method to start the external application start script
 
-    # doesn't matter which method we use, we need the module
-    from DccScriptingInterface.Tools.IDE.Wing.config import wing_config
-    import DccScriptingInterface.Tools.IDE.Wing.start as wing_start
+    :param : The UI text str for the submenu
+    :return: returns the created submenu
+    """
+    _LOGGER.debug(f'Starting: {py_file}')
+
+    cmd = [str(py_exe), str(py_file)]
 
     # there are at least three ways to go about this ...
     # the first, is to call the function
@@ -235,26 +263,49 @@ def click_action_start_wing(method = 'two'):
 #     except Exception as e:
 #         _LOGGER.error(f'{e} , traceback =', exc_info=True)
 #         return None
-    # tries to execute but fails to do so
+    # tries to execute but fails to do so correctly
 
-    py_exe = Path(wing_config.settings.DCCSI_PY_BASE).resolve()
-    py_file = Path(wing_config.settings.PATH_DCCSI_TOOLS_IDE_WING, 'start.py').resolve()
-
-    if DCCSI_LOCAL_DEBUG:
-        p = subprocess.Popen([str(py_exe), str(py_file)],
+    if debug:
+        # This approach will block the editor but can return a callstack
+        # tThis is valuable to debug boot issues with start.py code itself
+        # You must manually enable this flag near beginning of this module
+        p = subprocess.Popen(cmd,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
         out, err = p.communicate()
-        print('out', out)
-        print('err', err)
-        print('returncode', p.returncode)
-        print('EXIT')
+        _LOGGER.debug('out', out)
+        _LOGGER.error('err', err)
+        _LOGGER.debug('returncode', p.returncode)
+        _LOGGER.debug('EXIT')
 
     else:
-        p = subprocess.Popen([str(py_exe), str(py_file)])
-        print('pid', p.pid)
-        print('EXIT')
-    return
+        # This is non-blocking, but if it fails can be difficult to debug
+        p = subprocess.Popen(cmd)
+        _LOGGER.debug('pid', p.pid)
+        _LOGGER.debug('EXIT')
+
+    return p
+# -------------------------------------------------------------------------
+
+
+# - slot ------------------------------------------------------------------
+# as the list of slots/actions grows, refactor into sub-modules
+@Slot()
+def click_action_start_blender(py_exe: Path = _DCCSI_PY_BASE) -> start_service:
+    """Start Blender DCC application"""
+    _LOGGER.debug(f'Clicked: click_action_start_blender')
+    py_file = Path(blender_config.settings.PATH_DCCSI_TOOLS_DCC_BLENDER, 'start.py').resolve()
+    return start_service(py_exe, py_file)
+# -------------------------------------------------------------------------
+
+
+# - slot ------------------------------------------------------------------
+@Slot()
+def click_action_start_wing(py_exe: Path = _DCCSI_PY_BASE) -> start_service:
+    """Start Wing IDE"""
+    _LOGGER.debug(f'Clicked: click_action_start_wing')
+    py_file = Path(wing_config.settings.PATH_DCCSI_TOOLS_IDE_WING, 'start.py').resolve()
+    return start_service(py_exe, py_file)
 # -------------------------------------------------------------------------
 
 
@@ -291,24 +342,24 @@ def add_action(parent: QMenu,
 def bootstrap_Editor():
     """! Put bootstrapping code here to execute in O3DE Editor.exe"""
 
-    # for now, use the legacy code
-    import DccScriptingInterface.config as core_config
-
-    # note: initializing the config PySide2 access
-    # will interfere with apps like Wing because it is a Qt5 app
-    # and the envars set cause a boot failure
-
-    # if your tool is running inside of o3de you already have PySide2/Qt
-
-    # if you are launching a standalone tool that does need access,
-    # that application will need to run and manage config on it's own
-
-    # ditor main window (should work with any standalone o3de editor exe)
+    # Editor main window (should work with any standalone o3de editor exe)
     EDITOR_MAIN_WINDOW = az_qt_helpers.get_editor_main_window()
 
     menubar = EDITOR_MAIN_WINDOW.menuBar()
 
     dccsi_menu = create_menu(parent=menubar, title ='StudioTools')
+
+    # Editor MenuBar, Studio Tools > DCC
+    # nest a menu with hooks to start python DCC apps like Blender
+    dccsi_dcc_menu = create_menu(parent=dccsi_menu, title="DCC")
+
+    # Editor MenuBar, Studio Tools > DCC > Blender
+    # Action manager should make it easier for each tool to
+    # inject themselves, instead of this module manually
+    # bootstrapping each. Suggestion for a follow up PR.
+    action_start_blender = add_action(parent=dccsi_dcc_menu,
+                                      title="Blender",
+                                      action_slot = click_action_start_blender)
 
     # Editor MenuBar, Studio Tools > IDE
     # nest a menu with hooks to start python IDE tools like Wing

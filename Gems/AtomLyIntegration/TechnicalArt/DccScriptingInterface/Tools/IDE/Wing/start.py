@@ -8,11 +8,21 @@
 #
 """! O3DE DCCsi Wing Pro 8+ IDE start module
 
-:file: < DCCsi >/Tools/IDE/Wing/start.py
+There are severl ways this can be used:
+1. From cli
+    - open a cmd
+    - change directory > cd c:\\path\\to\\DccScriptingInterface
+    - run command > python Tools\\IDE\\Wing\\start.py
+
+2. The O3DE editor uses this module to launch from menu and editor systems
+
+:file: DccScriptingInterface\\Tools\\IDE\\Wing\\start.py
 :Status: Prototype
 :Version: 0.0.1
-
-Notice: This module is an entrypoint and has a cli
+:Entrypoint: entrypoint, configures logging, includes cli
+:Notice:
+    Currently windows only (not tested on other platforms)
+    Currently only tested with Wing Pro 8 in Windows
 """
 # -------------------------------------------------------------------------
 import timeit
@@ -29,10 +39,7 @@ import logging as _logging
 # -------------------------------------------------------------------------
 # global scope
 _MODULENAME = 'DCCsi.Tools.IDE.Wing.start'
-_LOGGER = _logging.getLogger(_MODULENAME)
-_LOGGER.debug(f'Initializing: {_MODULENAME}')
 _MODULE_PATH = Path(__file__)
-_LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH}')
 
 # this is an entry point, we must self bootstrap
 PATH_O3DE_TECHART_GEMS = _MODULE_PATH.parents[4].resolve()
@@ -42,11 +49,17 @@ os.chdir(PATH_O3DE_TECHART_GEMS.as_posix())
 from DccScriptingInterface import add_site_dir
 add_site_dir(PATH_O3DE_TECHART_GEMS)
 
-# get access
-from DccScriptingInterface import PATH_DCCSI_PYTHON_LIB
-
 # get the global dccsi state
 from DccScriptingInterface.globals import *
+
+from azpy.constants import FRMT_LOG_LONG
+_logging.basicConfig(level=_logging.DEBUG,
+                     format=FRMT_LOG_LONG,
+                    datefmt='%m-%d %H:%M')
+
+_LOGGER = _logging.getLogger(_MODULENAME)
+_LOGGER.debug(f'Initializing: {_MODULENAME}')
+_LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH.as_posix()}')
 
 # retreive the wing_config class object and it's settings
 from DccScriptingInterface.Tools.IDE.Wing.config import wing_config
@@ -55,16 +68,13 @@ wing_config.settings.setenv() # ensure env is set
 # alternatively, you could get the settings via this wrapped method
 # settings = wing_config.get_settings(set_env=True)
 
+# or the standard dynaconf way, this will walk to find and exec config.py
+#from dynaconf import settings
+
 # if you want to directly work with settings
 # foo = wing_config.settings.WING_PROJ
 
-def check_is_ascii(value):
-    """checks that passed value is ascii str"""
-    try:
-        value.encode('ascii')
-        return True
-    except (AttributeError, UnicodeEncodeError):
-        return False
+from DccScriptingInterface.azpy.config_utils import check_is_ascii
 
 # the subprocess call needs an environment
 # if we try to pass this, we get a failure to launch
@@ -85,9 +95,9 @@ wing_env = os.environ.copy()
 # hopefully we don't loose anything vital (that isn't procedurally derived later)
 wing_env = {key: value for key, value in wing_env.items() if check_is_ascii(key) and check_is_ascii(value)}
 
-# if we are trying to start an app via script from an app like o3de,
+# if we are trying to start an app via script or from an app like o3de,
 # the environ will propogate Qt related envars like 'QT_PLUGIN_PATH'
-# wing is a Qt5 application (as are DCC tools) and this can cause a boot failure
+# Wing is a Qt5 application (as are some DCC tools) and this can cause a boot failure
 # in this case, the most straightforward approach is to just prune them
 wing_env = {key: value for key, value in wing_env.items() if not key.startswith("QT_")}
 
@@ -124,27 +134,30 @@ def popen(exe = wing_config.settings.WING_EXE,
 
     return wing_proc
 
-def call(exe = wing_config.settings.WING_EXE,
-         project_file = wing_config.settings.WING_PROJ):
-    """Method to call, to start Wing IDE
-    """
+# the above method works, so will deprecate this call version
+# should find out if a run variant is the prefered way to go py3?
 
-    _LOGGER.debug(f'Attempting to start wing ...')
-
-    try:
-        wing_proc = subprocess.call([exe, project_file],
-                                     env = wing_env,
-                                     shell=True,
-                                     close_fds=True)
-    except Exception as e:
-        _LOGGER.error(f'Wing did not start ...')
-        _LOGGER.error(f'{err}')
-        return None
-
-    else:
-        _LOGGER.info(f'Success: Wing started correctly!')
-
-    return wing_proc
+# def call(exe = wing_config.settings.WING_EXE,
+#          project_file = wing_config.settings.WING_PROJ):
+#     """Method to call, to start Wing IDE
+#     """
+#
+#     _LOGGER.debug(f'Attempting to start wing ...')
+#
+#     try:
+#         wing_proc = subprocess.call([exe, project_file],
+#                                      env = wing_env,
+#                                      shell=True,
+#                                      close_fds=True)
+#     except Exception as e:
+#         _LOGGER.error(f'Wing did not start ...')
+#         _LOGGER.error(f'{err}')
+#         return None
+#
+#     else:
+#         _LOGGER.info(f'Success: Wing started correctly!')
+#
+#     return wing_proc
 # --- END -----------------------------------------------------------------
 
 

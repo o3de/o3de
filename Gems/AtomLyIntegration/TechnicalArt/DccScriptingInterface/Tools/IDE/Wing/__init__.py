@@ -93,8 +93,8 @@ framework is broken and inoperable.
 """
 # -------------------------------------------------------------------------
 # standard imports
+import sys
 import os
-import site
 from pathlib import Path
 import logging as _logging
 # -------------------------------------------------------------------------
@@ -126,11 +126,11 @@ _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH}')
 from DccScriptingInterface.Tools.IDE import PATH_DCCSI_TOOLS
 from DccScriptingInterface.Tools.IDE import PATH_DCCSI_TOOLS_IDE
 from DccScriptingInterface.globals import *
+from DccScriptingInterface import add_site_dir
 
 # set up access to this Wing IDE folder as a pkg
-_MODULE_PATH = Path(__file__)  # To Do: what if frozen?
 _DCCSI_TOOLS_IDE_WING = Path(_MODULE_PATH.parent)
-site.addsitedir(_DCCSI_TOOLS_IDE_WING.as_posix())
+add_site_dir(_DCCSI_TOOLS_IDE_WING.as_posix())
 
 from DccScriptingInterface.constants import ENVAR_PATH_DCCSI_TOOLS_IDE_WING
 
@@ -138,7 +138,7 @@ from DccScriptingInterface.constants import ENVAR_PATH_DCCSI_TOOLS_IDE_WING
 PATH_DCCSI_TOOLS_IDE_WING = Path(_MODULE_PATH.parent)
 PATH_DCCSI_TOOLS_IDE_WING = Path(os.getenv(ENVAR_PATH_DCCSI_TOOLS_IDE_WING,
                                            PATH_DCCSI_TOOLS_IDE_WING.as_posix()))
-site.addsitedir(PATH_DCCSI_TOOLS_IDE_WING.as_posix())
+add_site_dir(PATH_DCCSI_TOOLS_IDE_WING.as_posix())
 _LOGGER.debug(f'{ENVAR_PATH_DCCSI_TOOLS_IDE_WING}: {PATH_DCCSI_TOOLS_IDE_WING}')
 _LOGGER.debug(STR_CROSSBAR)
 # -------------------------------------------------------------------------

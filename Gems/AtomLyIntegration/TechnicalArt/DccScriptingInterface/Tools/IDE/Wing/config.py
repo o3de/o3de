@@ -11,7 +11,7 @@
 """! This module manages the dynamic config and settings for bootstrapping
 Wing Pro 8 IDE integration with o3de inter-op, scripts, extensions, etc.
 
-:file: < DCCsi >/Tools/IDE/Wing/config.py
+:file: DccScriptingInterfac\\Tools\\IDE\\Wing\\config.py
 :Status: Prototype
 :Version: 0.0.1
 :Future: is unknown
@@ -23,7 +23,8 @@ from pathlib import Path
 import logging as _logging
 # -------------------------------------------------------------------------
 # global scope
-_MODULENAME = 'DCCsi.Tools.IDE.Wing.config'
+from DccScriptingInterface.Tools.IDE.Wing import _PACKAGENAME
+_MODULENAME = f'{_PACKAGENAME}.config'
 _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 
@@ -97,7 +98,7 @@ from DccScriptingInterface.azpy.config_class import ConfigClass
 # as a ConfigClass, that the WingConfig inherits from that instead
 
 
-# wing_class is a class object of WingConfig
+# wing_config is a class object of WingConfig
 # WingConfig is a child class of ConfigClass
 class WingConfig(ConfigClass):
     """Extend ConfigClass with new wing functionality"""
@@ -112,7 +113,7 @@ wing_config = WingConfig(config_name='dccsi_ide_wing', auto_set=True)
 # from DccScriptingInterface.Tools.IDE.Wing.config import wing_config
 # settings = wing_config.get_settings(set_env=True)
 
-# a managed setting to track the eing config is enabled
+# a managed setting to track the wing config is enabled
 from Tools.IDE.Wing.constants import ENVAR_DCCSI_CONFIG_IDE_WING
 wing_config.add_setting(ENVAR_DCCSI_CONFIG_IDE_WING, True)
 

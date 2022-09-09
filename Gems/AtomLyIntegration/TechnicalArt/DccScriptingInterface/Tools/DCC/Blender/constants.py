@@ -1,5 +1,3 @@
-# coding:utf-8
-#!/usr/bin/python
 #
 # Copyright (c) Contributors to the Open 3D Engine Project.
 # For complete copyright and license terms please see the LICENSE at the root of this distribution.
@@ -8,15 +6,11 @@
 #
 #
 # -------------------------------------------------------------------------
-"""! @brief
-Module Documentation:
-    < DCCsi >:: Tools//DCC//Blender//constants.py
+"""Common constants for the dccsi blender dcc app integration
 
-This module contains default values for commonly used constants & strings.
-We can make an update here easily that is propagated elsewhere.
-
-Notice: this module should not actually set ENVARs in the os.environ
-That would be the responsibility of a module like config.py
+:file: DccScriptingInterface\\Tools\\DCC\\Blender\\constants.py
+:Status: Prototype
+:Version: 0.0.1
 """
 # -------------------------------------------------------------------------
 import timeit
@@ -49,9 +43,9 @@ USER_HOME = Path.home()
 _MODULE_PATH = Path(os.path.abspath(inspect.getfile(inspect.currentframe())))
 _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH}')
 
-ENVAR_PATH_DCCSI_TOOLS_BLENDER = "PATH_DCCSI_TOOLS_BLENDER"
+ENVAR_PATH_DCCSI_TOOLS_DCC_BLENDER = "PATH_DCCSI_TOOLS_DCC_BLENDER"
 _PATH_DCCSI_TOOLS_BLENDER = Path(_MODULE_PATH.parent)
-_PATH_DCCSI_TOOLS_BLENDER = Path(os.getenv(ENVAR_PATH_DCCSI_TOOLS_BLENDER,
+_PATH_DCCSI_TOOLS_BLENDER = Path(os.getenv(ENVAR_PATH_DCCSI_TOOLS_DCC_BLENDER,
                                            _PATH_DCCSI_TOOLS_BLENDER.as_posix()))
 
 ENVAR_PATH_DCCSI_TOOLS_DCC = "PATH_DCCSI_TOOLS_DCC"
@@ -96,8 +90,10 @@ PATH_DCCSI_TOOLS_BLENDER = _PATH_DCCSI_TOOLS_BLENDER
 # Note: we've developed and tested with Blender 3.0 (experimental)
 # change at your own risk, we are just future proofing.
 
+ENVAR_DCCSI_CONFIG_DCC_BLENDER = 'DCCSI_CONFIG_DCC_BLENDER'
+
 # our dccsi location for substance designer <DCCsi>\Tools\DCC\Blender
-ENVAR_DCCSI_TOOLS_BLENDER = "DCCSI_TOOLS_BLENDER"
+ENVAR_DCCSI_TOOLS_BLENDER = 'DCCSI_TOOLS_BLENDER'
 PATH_DCCSI_TOOLS_BLENDER = Path(_MODULE_PATH.parent)
 PATH_DCCSI_TOOLS_BLENDER = Path(os.getenv(ENVAR_DCCSI_TOOLS_BLENDER,
                                           PATH_DCCSI_TOOLS_BLENDER.as_posix()))
