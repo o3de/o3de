@@ -6,7 +6,9 @@
  *
  */
 
+#include <Atom/RPI.Edit/Shader/ShaderSourceData.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
+#include <AtomToolsFramework/Document/AtomToolsAnyDocument.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Vector2.h>
@@ -19,6 +21,8 @@
 #include <MaterialCanvasApplication.h>
 #include <Window/MaterialCanvasGraphView.h>
 #include <Window/MaterialCanvasMainWindow.h>
+
+#include <QLabel>
 
 void InitMaterialCanvasResources()
 {
@@ -120,7 +124,8 @@ namespace MaterialCanvas
         auto documentTypeInfo = MaterialCanvasDocument::BuildDocumentTypeInfo();
 
         // Overriding default document factory function to pass in a shared graph context
-        documentTypeInfo.m_documentFactoryCallback = [this](const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo)
+        documentTypeInfo.m_documentFactoryCallback =
+            [this](const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo)
         {
             return aznew MaterialCanvasDocument(toolId, documentTypeInfo, m_graphContext);
         };
@@ -131,6 +136,38 @@ namespace MaterialCanvas
             return m_window->AddDocumentTab(documentId, aznew MaterialCanvasGraphView(toolId, documentId, graphViewConfig));
         };
 
+        AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::RegisterDocumentType, documentTypeInfo);
+
+        // Register document type for editing material canvas node configurations. This document type does not have a central view widget
+        // and will show a label directing users to the inspector.
+        documentTypeInfo = AtomToolsFramework::AtomToolsAnyDocument::BuildDocumentTypeInfo(
+            "Material Canvas Node Config",
+            { "materialcanvasnode" },
+            AZStd::any(AtomToolsFramework::DynamicNodeConfig()),
+            AZ::Uuid::CreateNull()); // Null ID because JSON file contains type info and can be loaded directly into AZStd::any
+
+        documentTypeInfo.m_documentViewFactoryCallback = [this]([[maybe_unused]] const AZ::Crc32& toolId, const AZ::Uuid& documentId) {
+            auto viewWidget = new QLabel("Material Canvas Node Config properties can be edited in the inspector.", m_window.get());
+            viewWidget->setAlignment(Qt::AlignCenter);
+            return m_window->AddDocumentTab(documentId, viewWidget);
+        };
+        AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::RegisterDocumentType, documentTypeInfo);
+
+        // Register document type for editing shader source data and template files. This document type also does not have a central view
+        // and will display a label widget that directs users to the property inspector.
+        documentTypeInfo = AtomToolsFramework::AtomToolsAnyDocument::BuildDocumentTypeInfo(
+            "Shader Source Data",
+            { "shader", "shader.template" },
+            AZStd::any(AZ::RPI::ShaderSourceData()),
+            AZ::RPI::ShaderSourceData::TYPEINFO_Uuid()); // Supplying ID because it is not included in the JSON file
+
+        documentTypeInfo.m_documentViewFactoryCallback = [this]([[maybe_unused]] const AZ::Crc32& toolId, const AZ::Uuid& documentId) {
+            auto viewWidget = new QLabel("Shader Source Data properties can be edited in the inspector.", m_window.get());
+            viewWidget->setAlignment(Qt::AlignCenter);
+            return m_window->AddDocumentTab(documentId, viewWidget);
+        };
         AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
             m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::RegisterDocumentType, documentTypeInfo);
 

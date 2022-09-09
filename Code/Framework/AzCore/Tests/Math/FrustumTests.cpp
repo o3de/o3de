@@ -674,4 +674,47 @@ namespace UnitTest
         // the aabb is contained within the frustum
         EXPECT_TRUE(AZ::ShapeIntersection::Contains(viewFrustum, aabb));
     }
+
+    TEST(MATH_Frustum, FrustumCorners)
+    {
+        // position the frustum slightly along the x-axis looking down the negative x-axis
+        const AZ::Vector3 frustumOrigin = AZ::Vector3(5.0f, 0.0f, 0.0f);
+        const AZ::Quaternion frustumOrientation = AZ::Quaternion::CreateRotationZ(AZ::DegToRad(90.0f));
+        const AZ::Transform frustumTransform =
+            AZ::Transform::CreateFromQuaternionAndTranslation(frustumOrientation, frustumOrigin);
+
+        const AZ::Frustum viewFrustum = AZ::Frustum(
+            AZ::ViewFrustumAttributes(frustumTransform, 1920.0f / 1080.0f, AZ::DegToRad(60.0f), 0.1f, 100.0f));
+
+        AZ::Frustum::CornerVertexArray corners;
+        bool valid = viewFrustum.GetCorners(corners);
+
+        EXPECT_TRUE(valid);
+
+        // 8 unique positions all on 3 planes must be the 8 corners of the frustum.
+
+        // The various corners should all be unique
+        for (uint32_t i = 0; i < corners.size(); ++i)
+        {
+            for (uint32_t j = i + 1; j < corners.size(); ++j)
+            {
+                EXPECT_THAT(corners.at(i), testing::Not(IsClose(corners.at(j))));
+            }
+        }
+
+        // The various corners should all lie on exactly 3 planes of the frustum
+        for (auto corner : corners)
+        {
+            uint32_t onPlaneCount = 0;
+            for (uint32_t planeId = 0; planeId < AZ::Frustum::PlaneId::MAX; ++planeId)
+            {
+                const float distanceToPlane = viewFrustum.GetPlane(AZ::Frustum::PlaneId(planeId)).GetPointDist(corner);
+                if (AZStd::abs(distanceToPlane) < 0.001f)
+                {
+                    ++onPlaneCount;
+                }
+            }
+            EXPECT_EQ(onPlaneCount, 3);
+        }
+    }
 } // namespace UnitTest

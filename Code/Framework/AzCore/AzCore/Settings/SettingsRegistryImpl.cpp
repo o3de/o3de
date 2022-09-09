@@ -16,14 +16,14 @@
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/StackedString.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
-#include <AzCore/std/containers/variant.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/std/parallel/scoped_lock.h>
 #include <AzCore/std/ranges/ranges_algorithm.h>
+#include <AzCore/std/ranges/split_view.h>
 
 namespace AZ::SettingsRegistryImplInternal
 {
-    AZ::SettingsRegistryInterface::Type RapidjsonToSettingsRegistryType(const rapidjson::Value& value)
+    [[nodiscard]] AZ::SettingsRegistryInterface::Type RapidjsonToSettingsRegistryType(const rapidjson::Value& value)
     {
         using Type = AZ::SettingsRegistryInterface::Type;
         switch (value.GetType())
@@ -232,7 +232,9 @@ namespace AZ
                 if (!path.empty())
                 {
                     path.remove_prefix(1); // Remove the leading slash as the StackedString will add this back in.
-                    jsonPath.Push(path);
+                    // Push each JSON pointer reference token to avoid '/' being encoded
+                    AZStd::ranges::for_each(path | AZStd::views::split(JsonPointerReferenceTokenPrefix),
+                        [&jsonPath](AZStd::string_view refToken) { jsonPath.Push(refToken); });
                 }
                 // Extract the last token of the JSON pointer to use as the valueName
                 AZStd::string_view valueName;
@@ -255,9 +257,9 @@ namespace AZ
         {
             explicit CallbackVisitor(const VisitorCallback& callback) : m_callback(callback) {};
 
-            VisitResponse Traverse(AZStd::string_view path, AZStd::string_view valueName, VisitAction action, Type type) override
+            VisitResponse Traverse(const AZ::SettingsRegistryInterface::VisitArgs& visitArgs, VisitAction action) override
             {
-                return m_callback(path, valueName, action, type);
+                return m_callback(visitArgs, action);
             }
 
             const VisitorCallback& m_callback;
@@ -327,7 +329,7 @@ namespace AZ
         m_postMergeEvent.DisconnectAllHandlers();
     }
 
-    void SettingsRegistryImpl::SignalNotifier(AZStd::string_view jsonPath, Type type)
+    void SettingsRegistryImpl::SignalNotifier(AZStd::string_view jsonPath, SettingsType type)
     {
         // Move the Notifier AZ::Event to a local AZ::Event in order to allow
         // the notifier handlers to be signaled outside of the notifier mutex
@@ -384,11 +386,11 @@ namespace AZ
         }
     }
 
-    SettingsRegistryInterface::SettingsType SettingsRegistryImpl::GetType(AZStd::string_view path) const
+    [[nodiscard]] SettingsRegistryInterface::SettingsType SettingsRegistryImpl::GetType(AZStd::string_view path) const
     {
         if (path.empty())
         {
-            //rapidjson::Pointer asserts that the supplied string
+            // rapidjson::Pointer asserts that the supplied string
             // is not nullptr even if the supplied size is 0
             // Setting to empty string to prevent assert
             path = "";
@@ -398,6 +400,23 @@ namespace AZ
         if (pointer.IsValid())
         {
             AZStd::scoped_lock lock(m_settingMutex);
+            return GetTypeNoLock(path);
+        }
+        return SettingsType{};
+    }
+
+    [[nodiscard]] SettingsRegistryInterface::SettingsType SettingsRegistryImpl::GetTypeNoLock(AZStd::string_view path) const
+    {
+        if (path.empty())
+        {
+            // rapidjson::Pointer asserts that the supplied string
+            // is not nullptr even if the supplied size is 0
+            // Setting to empty string to prevent assert
+            path = "";
+        }
+        rapidjson::Pointer pointer(path.data(), path.length());
+        if (pointer.IsValid())
+        {
             if (const rapidjson::Value* value = pointer.Get(m_settings); value != nullptr)
             {
                 SettingsType type;
@@ -483,7 +502,7 @@ namespace AZ
         {
             return false;
         }
-        SignalNotifier(path, Type::Boolean);
+        SignalNotifier(path, { Type::Boolean });
         return true;
     }
 
@@ -493,7 +512,7 @@ namespace AZ
         {
             return false;
         }
-        SignalNotifier(path, Type::Integer);
+        SignalNotifier(path, { Type::Integer, Signedness::Signed });
         return true;
     }
 
@@ -503,7 +522,7 @@ namespace AZ
         {
             return false;
         }
-        SignalNotifier(path, Type::Integer);
+        SignalNotifier(path, { Type::Integer, Signedness::Unsigned });
         return true;
     }
 
@@ -513,7 +532,7 @@ namespace AZ
         {
             return false;
         }
-        SignalNotifier(path, Type::FloatingPoint);
+        SignalNotifier(path, { Type::FloatingPoint });
         return true;
     }
 
@@ -523,7 +542,7 @@ namespace AZ
         {
             return false;
         }
-        SignalNotifier(path, Type::String);
+        SignalNotifier(path, SettingsType{ Type::String });
         return true;
     }
 
@@ -550,12 +569,12 @@ namespace AZ
                 value, nullptr, valueTypeID, m_serializationSettings);
             if (jsonResult.GetProcessing() != JsonSerializationResult::Processing::Halted)
             {
-                auto anchorType = Type::NoType;
+                SettingsType anchorType;
                 {
                     AZStd::scoped_lock lock(m_settingMutex);
                     rapidjson::Value& setting = pointer.Create(m_settings, m_settings.GetAllocator());
                     setting = AZStd::move(store);
-                    anchorType = SettingsRegistryImplInternal::RapidjsonToSettingsRegistryType(setting);
+                    anchorType = GetTypeNoLock(path);
                 }
                 SignalNotifier(path, anchorType);
                 return true;
@@ -751,7 +770,7 @@ namespace AZ
             };
         }
 
-        auto anchorType = AZ::SettingsRegistryInterface::Type::NoType;
+        SettingsType anchorType;
         {
             AZStd::scoped_lock lock(m_settingMutex);
             rapidjson::Value& anchorRoot = anchorPath.IsValid() ? anchorPath.Create(m_settings, m_settings.GetAllocator())
@@ -766,7 +785,7 @@ namespace AZ
             }
 
             // The settings have been successfully merged, query the type at the anchor key
-            anchorType = SettingsRegistryImplInternal::RapidjsonToSettingsRegistryType(anchorRoot);
+            anchorType = GetTypeNoLock(anchorKey);
         }
 
         SignalNotifier(anchorKey, anchorType);
@@ -991,27 +1010,40 @@ namespace AZ
         const rapidjson::Value& value) const
     {
         VisitResponse result;
+        VisitArgs visitArgs(*this);
         switch (value.GetType())
         {
         case rapidjson::Type::kNullType:
-            result = visitor.Traverse(path, valueName, VisitAction::Value, Type::Null);
+            visitArgs.m_jsonKeyPath = path;
+            visitArgs.m_fieldName = valueName;
+            visitArgs.m_type = { Type::Null };
+            result = visitor.Traverse(visitArgs, VisitAction::Value);
             break;
         case rapidjson::Type::kFalseType:
-            result = visitor.Traverse(path, valueName, VisitAction::Value, Type::Boolean);
+            visitArgs.m_jsonKeyPath = path;
+            visitArgs.m_fieldName = valueName;
+            visitArgs.m_type = { Type::Boolean };
+            result = visitor.Traverse(visitArgs, VisitAction::Value);
             if (result == VisitResponse::Continue)
             {
-                visitor.Visit(path, valueName, Type::Boolean, false);
+                visitor.Visit(visitArgs, false);
             }
             break;
         case rapidjson::Type::kTrueType:
-            result = visitor.Traverse(path, valueName, VisitAction::Value, Type::Boolean);
+            visitArgs.m_jsonKeyPath = path;
+            visitArgs.m_fieldName = valueName;
+            visitArgs.m_type = { Type::Boolean };
+            result = visitor.Traverse(visitArgs, VisitAction::Value);
             if (result == VisitResponse::Continue)
             {
-                visitor.Visit(path, valueName, Type::Boolean, true);
+                visitor.Visit(visitArgs, true);
             }
             break;
         case rapidjson::Type::kObjectType:
-            result = visitor.Traverse(path, valueName, VisitAction::Begin, Type::Object);
+            visitArgs.m_jsonKeyPath = path;
+            visitArgs.m_fieldName = valueName;
+            visitArgs.m_type = { Type::Object };
+            result = visitor.Traverse(visitArgs, VisitAction::Begin);
             if (result == VisitResponse::Continue)
             {
                 for (const auto& member : value.GetObject())
@@ -1024,14 +1056,22 @@ namespace AZ
                     }
                     path.Pop();
                 }
-                if (visitor.Traverse(path, valueName, VisitAction::End, Type::Object) == VisitResponse::Done)
+
+                // Must refresh the m_jsonKeyPath string view as the for loop would modify the StackedString
+                // and therefore invalidate the string_view
+                visitArgs.m_jsonKeyPath = path;
+                visitArgs.m_fieldName = valueName;
+                if (visitor.Traverse(visitArgs, VisitAction::End) == VisitResponse::Done)
                 {
                     return VisitResponse::Done;
                 }
             }
             break;
         case rapidjson::Type::kArrayType:
-            result = visitor.Traverse(path, valueName, VisitAction::Begin, Type::Array);
+            visitArgs.m_jsonKeyPath = path;
+            visitArgs.m_fieldName = valueName;
+            visitArgs.m_type = { Type::Array };
+            result = visitor.Traverse(visitArgs, VisitAction::Begin);
             if (result == VisitResponse::Continue)
             {
                 size_t counter = 0;
@@ -1050,42 +1090,56 @@ namespace AZ
                     counter++;
                     path.Pop();
                 }
-                if (visitor.Traverse(path, valueName, VisitAction::End, Type::Array) == VisitResponse::Done)
+
+                // Must refresh the m_jsonKeyPath string view as the for loop would modify the StackedString
+                // and therefore invalidate the string_view
+                visitArgs.m_jsonKeyPath = path;
+                visitArgs.m_fieldName = valueName;
+                if (visitor.Traverse(visitArgs, VisitAction::End) == VisitResponse::Done)
                 {
                     return VisitResponse::Done;
                 }
             }
             break;
         case rapidjson::Type::kStringType:
-            result = visitor.Traverse(path, valueName, VisitAction::Value, Type::String);
+            visitArgs.m_jsonKeyPath = path;
+            visitArgs.m_fieldName = valueName;
+            visitArgs.m_type = { Type::String };
+            result = visitor.Traverse(visitArgs, VisitAction::Value);
             if (result == VisitResponse::Continue)
             {
-                visitor.Visit(path, valueName, Type::String, AZStd::string_view(value.GetString(), value.GetStringLength()));
+                visitor.Visit(visitArgs, AZStd::string_view(value.GetString(), value.GetStringLength()));
             }
             break;
         case rapidjson::Type::kNumberType:
             if (value.IsDouble())
             {
-                result = visitor.Traverse(path, valueName, VisitAction::Value, Type::FloatingPoint);
+                visitArgs.m_jsonKeyPath = path;
+                visitArgs.m_fieldName = valueName;
+                visitArgs.m_type = { Type::FloatingPoint };
+                result = visitor.Traverse(visitArgs, VisitAction::Value);
                 if (result == VisitResponse::Continue)
                 {
-                    visitor.Visit(path, valueName, Type::FloatingPoint, value.GetDouble());
+                    visitor.Visit(visitArgs, value.GetDouble());
                 }
             }
             else
             {
-                result = visitor.Traverse(path, valueName, VisitAction::Value, Type::Integer);
+                visitArgs.m_jsonKeyPath = path;
+                visitArgs.m_fieldName = valueName;
+                visitArgs.m_type = { Type::Integer, value.IsInt64() ? Signedness::Signed : Signedness::Unsigned };
+                result = visitor.Traverse(visitArgs, VisitAction::Value);
                 if (result == VisitResponse::Continue)
                 {
-                    if (value.IsInt64())
+                    if (visitArgs.m_type.m_signedness == Signedness::Signed)
                     {
                         s64 integerValue = value.GetInt64();
-                        visitor.Visit(path, valueName, Type::Integer, integerValue);
+                        visitor.Visit(visitArgs, integerValue);
                     }
                     else
                     {
                         u64 integerValue = value.GetUint64();
-                        visitor.Visit(path, valueName, Type::Integer, integerValue);
+                        visitor.Visit(visitArgs, integerValue);
                     }
                 }
             }
@@ -1393,12 +1447,12 @@ namespace AZ
 
         ScopedMergeEvent scopedMergeEvent(*this, { path, rootKey });
         JsonSerializationResult::ResultCode mergeResult(JsonSerializationResult::Tasks::Merge);
-        auto anchorType = Type::NoType;
+        SettingsType anchorType;
         if (rootKey.empty())
         {
             AZStd::scoped_lock lock(m_settingMutex);
             mergeResult = JsonSerialization::ApplyPatch(m_settings, m_settings.GetAllocator(), jsonPatch, mergeApproach, applyPatchSettings);
-            anchorType = SettingsRegistryImplInternal::RapidjsonToSettingsRegistryType(m_settings);
+            anchorType = GetTypeNoLock(rootKey);
         }
         else
         {
@@ -1408,7 +1462,7 @@ namespace AZ
                 AZStd::scoped_lock lock(m_settingMutex);
                 Value& rootValue = root.Create(m_settings, m_settings.GetAllocator());
                 mergeResult = JsonSerialization::ApplyPatch(rootValue, m_settings.GetAllocator(), jsonPatch, mergeApproach, applyPatchSettings);
-                anchorType = SettingsRegistryImplInternal::RapidjsonToSettingsRegistryType(rootValue);
+                anchorType = GetTypeNoLock(rootKey);
             }
             else
             {

@@ -797,7 +797,7 @@ namespace AZ
             {
                 (void)classElement;
                 T* containerPtr = reinterpret_cast<T*>(instance);
-                return new(containerPtr->get_allocator().allocate(sizeof(ValueType), AZStd::alignment_of<ValueType>::value))ValueType;
+                return new (containerPtr->get_allocator().allocate(sizeof(ValueType), AZStd::alignment_of<ValueType>::value)) ValueType{};
             }
 
         protected:

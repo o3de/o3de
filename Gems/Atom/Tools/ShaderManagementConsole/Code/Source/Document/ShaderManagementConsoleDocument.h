@@ -42,7 +42,6 @@ namespace ShaderManagementConsole
         bool Save() override;
         bool SaveAsCopy(const AZStd::string& savePath) override;
         bool SaveAsChild(const AZStd::string& savePath) override;
-        bool IsOpen() const override;
         bool IsModified() const override;
         bool BeginEdit() override;
         bool EndEdit() override;
@@ -65,12 +64,6 @@ namespace ShaderManagementConsole
 
         // Read shader source data from JSON then find all references to to populate the shader variant list and initialize the document
         bool LoadShaderVariantListSourceData();
-
-        // Find all material assets that reference material types using shaderFilePath
-        AZStd::vector<AZ::Data::AssetId> FindMaterialAssetsUsingShader(const AZStd::string& shaderFilePath);
-
-        // Retrieve all of the shader collection items from a material instance created from materialAssetId
-        AZStd::vector<AZ::RPI::ShaderCollection::Item> GetMaterialInstanceShaderItems(const AZ::Data::AssetId& materialAssetId);
 
         // Source data for shader variant list
         AZ::RPI::ShaderVariantListSourceData m_shaderVariantListSourceData;

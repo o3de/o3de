@@ -10,7 +10,7 @@
 
 #include <sstream>
 #include <AzCore/Console/ConsoleTypeHelpers.h>
-
+#include <AzCore/RTTI/TypeInfo.h>
 
 namespace AZ
 {

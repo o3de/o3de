@@ -89,7 +89,7 @@ namespace AZ
             bool MaterialRequiresForwardPassIblSpecular(Data::Instance<RPI::Material> material) const;
             void SetVisible(bool isVisible);
             
-            MeshDrawPacketLods m_drawPacketListsByLod;
+            RPI::MeshDrawPacketLods m_drawPacketListsByLod;
 
             RPI::Cullable m_cullable;
             MaterialAssignmentMap m_materialAssignments;
@@ -156,7 +156,7 @@ namespace AZ
 
             Data::Instance<RPI::Model> GetModel(const MeshHandle& meshHandle) const override;
             Data::Asset<RPI::ModelAsset> GetModelAsset(const MeshHandle& meshHandle) const override;
-            const MeshDrawPacketLods& GetDrawPackets(const MeshHandle& meshHandle) const override;
+            const RPI::MeshDrawPacketLods& GetDrawPackets(const MeshHandle& meshHandle) const override;
             const AZStd::vector<Data::Instance<RPI::ShaderResourceGroup>>& GetObjectSrgs(const MeshHandle& meshHandle) const override;
             void QueueObjectSrgForCompile(const MeshHandle& meshHandle) const override;
             void SetMaterialAssignmentMap(const MeshHandle& meshHandle, const Data::Instance<RPI::Material>& material) override;
@@ -206,7 +206,7 @@ namespace AZ
             TransformServiceFeatureProcessor* m_transformService;
             RayTracingFeatureProcessor* m_rayTracingFeatureProcessor = nullptr;
             AZ::RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler m_handleGlobalShaderOptionUpdate;
-            MeshDrawPacketLods m_emptyDrawPacketLods;
+            RPI::MeshDrawPacketLods m_emptyDrawPacketLods;
             bool m_forceRebuildDrawPackets = false;
         };
     } // namespace Render

@@ -542,6 +542,11 @@ namespace AzFramework
                 const xcb_focus_in_event_t* focusInEvent = reinterpret_cast<const xcb_focus_in_event_t*>(event);
                 if (m_focusWindow != focusInEvent->event)
                 {
+                    if (m_focusWindow != XCB_WINDOW_NONE)
+                    {
+                        HandleCursorState(m_focusWindow, SystemCursorState::UnconstrainedAndVisible);
+                    }
+
                     m_focusWindow = focusInEvent->event;
                     HandleCursorState(m_focusWindow, m_systemCursorState);
                 }

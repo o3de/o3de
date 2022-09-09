@@ -12,10 +12,14 @@ set(FILES
     Include/Atom/Utils/ImGuiCullingDebug.h
     Include/Atom/Utils/ImGuiCullingDebug.inl
     Include/Atom/Utils/ImGuiGpuProfiler.h
+    Include/Atom/Utils/ImGuiMaterialDetails.h
+    Include/Atom/Utils/ImGuiMaterialDetails.inl
     Include/Atom/Utils/ImGuiPassTree.h
     Include/Atom/Utils/ImGuiPassTree.inl
     Include/Atom/Utils/ImGuiFrameVisualizer.h
     Include/Atom/Utils/ImGuiFrameVisualizer.inl
+    Include/Atom/Utils/ImGuiShaderUtils.h
+    Include/Atom/Utils/ImGuiShaderUtils.inl
     Include/Atom/Utils/ImGuiTransientAttachmentProfiler.h
     Include/Atom/Utils/ImGuiTransientAttachmentProfiler.inl
     Include/Atom/Utils/MaterialUtils.h

@@ -65,6 +65,14 @@ namespace AtomToolsFramework
 
         void BuildDockingMenu();
         void BuildLayoutsMenu();
+        void BuildScriptsMenu();
+
+        static constexpr const char* ToolLayoutSettingsKey = "/O3DE/AtomToolsFramework/MainWindow/Layouts/Tool";
+        static constexpr const char* UserLayoutSettingsKey = "/O3DE/AtomToolsFramework/MainWindow/Layouts/User";
+        using LayoutSettingsMap = AZStd::map<AZStd::string, AZStd::string>;
+
+        void RestoreDefaultLayout();
+        void RestoreSavedLayout();
 
         virtual void SetupMetrics();
         virtual void UpdateMetrics();
