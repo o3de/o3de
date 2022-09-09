@@ -45,7 +45,6 @@ def DeleteEntity_UnderNestedEntityHierarchy():
     # Asserts if creation didn't succeed
     nested_entities_root = prefab_test_utils.create_linear_nested_entities(NESTED_ENTITY_PREFIX,
                                                                            NUM_NESTED_ENTITY_LEVELS, ENTITY_POS)
-    nested_entities_root_parent = nested_entities_root.get_parent_id()
     prefab_test_utils.validate_linear_nested_entities(nested_entities_root, NUM_NESTED_ENTITY_LEVELS, ENTITY_POS)
 
     # Find an entity in the hierarchy, delete it, and validate Undo/Redo functionality
