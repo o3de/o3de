@@ -41,12 +41,6 @@ ImporterRootDisplay::ImporterRootDisplay(AZ::SerializeContext* serializeContext,
 
     ui->m_fullPathText->SetElideMode(Qt::TextElideMode::ElideMiddle);
 
-    AzQtComponents::Text::addTitleStyle(ui->m_filePathText);
-    AzQtComponents::Text::addTitleStyle(ui->m_fullPathText);
-    
-    AzQtComponents::Text::addSubtitleStyle(ui->locationLabel);
-    AzQtComponents::Text::addSubtitleStyle(ui->nameLabel);
-
     connect(ui->m_updateButton, &QPushButton::clicked, this, &ImporterRootDisplay::UpdateClicked);
 
     ui->m_showInExplorer->setEnabled(false);
@@ -68,8 +62,8 @@ AZ::SceneAPI::UI::ManifestWidget* ImporterRootDisplay::GetManifestWidget()
 void ImporterRootDisplay::SetSceneHeaderText(const QString& headerText)
 {
     QFileInfo fileInfo(headerText);
-    ui->m_filePathText->setText(fileInfo.fileName());
-    QString fullPath = QString("%1%2").arg(QDir::toNativeSeparators(fileInfo.path())).arg(QDir::separator());
+    ui->m_filePathText->setText(tr("<b>%1</b>").arg(fileInfo.fileName()));
+    QString fullPath = tr("<b>%1%2</b>").arg(QDir::toNativeSeparators(fileInfo.path())).arg(QDir::separator());
     ui->m_fullPathText->setText(fullPath);
     
     ui->m_showInExplorer->setEnabled(true);
