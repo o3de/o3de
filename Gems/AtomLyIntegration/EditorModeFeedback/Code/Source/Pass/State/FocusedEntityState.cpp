@@ -49,8 +49,11 @@ namespace AZ::Render
     }
     void FocusedEntityState::OnEditorModeDeactivated(
         [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode)
-    {   
-        m_inFocusMode = !(mode == AzToolsFramework::ViewportEditorMode::Focus);
+    {
+        if (m_inFocusMode)
+        {
+            m_inFocusMode = mode != AzToolsFramework::ViewportEditorMode::Focus;
+        }
     }
 
     bool FocusedEntityState::IsEnabled() const

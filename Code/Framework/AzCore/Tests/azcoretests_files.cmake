@@ -75,7 +75,6 @@ set(FILES
     XML.cpp
     Debug/LocalFileEventLoggerTests.cpp
     Debug/Trace.cpp
-    Debug/UnhandledExceptions.cpp
     Name/NameJsonSerializerTests.cpp
     Name/NameBenchmarks.cpp
     Name/NameTests.cpp
