@@ -14,14 +14,37 @@
 
 namespace UnitTest
 {
-    void ScopeForUnitTest(AZ::AttributeArray& attributes)
+    void RemoveAttributePair(AZ::AttributeArray& attributes, AZ::AttributeId attributeId)
     {
         using namespace AZ::Script;
-        attributes.erase(AZStd::remove_if(attributes.begin(), attributes.end(), [](const AZ::AttributePair& pair)
+        auto attributePair = AZStd::find_if(attributes.begin(), attributes.end(), [attributeId](const AZ::AttributePair& pair)
+        {
+            return pair.first == attributeId;
+        });
+        if (attributePair != attributes.end())
+        {
+            // clean up the old attribute value
+            if (attributePair->second)
             {
-                return pair.first == Attributes::Scope;
-            }));
-        auto* attributeData = aznew AZ::AttributeData<Attributes::ScopeFlags>(Attributes::ScopeFlags::Common);
-        attributes.push_back(AZStd::make_pair(Attributes::Scope, attributeData));
+                delete attributePair->second;
+            }
+            attributes.erase(attributePair);
+        }
+    }
+
+    void ScopeForUnitTest(AZ::AttributeArray& attributes)
+    {
+        RemoveAttributePair(attributes, AZ::Script::Attributes::Scope);
+        attributes.push_back(AZStd::make_pair(
+            AZ::Script::Attributes::Scope,
+            aznew AZ::AttributeData<AZ::Script::Attributes::ScopeFlags>(AZ::Script::Attributes::ScopeFlags::Common)));
+    }
+
+    void ApplyStorageForUnitTest(AZ::AttributeArray& attributes)
+    {
+        RemoveAttributePair(attributes, AZ::Script::Attributes::Storage);
+        attributes.push_back(AZStd::make_pair(
+            AZ::Script::Attributes::Storage,
+            aznew AZ::AttributeData<AZ::Script::Attributes::StorageType>(AZ::Script::Attributes::StorageType::Value)));
     }
 }

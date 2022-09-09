@@ -493,6 +493,8 @@ namespace AZ::SceneAPI::Containers
             UnitTest::ScopeForUnitTest(m_behaviorContext->m_classes.find("Scene")->second->m_attributes);
             UnitTest::ScopeForUnitTest(m_behaviorContext->m_classes.find("ExportProduct")->second->m_attributes);
             UnitTest::ScopeForUnitTest(m_behaviorContext->m_classes.find("ExportProductList")->second->m_attributes);
+            UnitTest::ScopeForUnitTest(m_behaviorContext->m_classes.find("GraphObjectProxy")->second->m_attributes);
+            UnitTest::ApplyStorageForUnitTest(m_behaviorContext->m_classes.find("GraphObjectProxy")->second->m_attributes);
 
             m_scriptContext = AZStd::make_unique<AZ::ScriptContext>();
             m_scriptContext->BindTo(m_behaviorContext.get());

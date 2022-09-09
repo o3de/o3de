@@ -39,6 +39,7 @@ namespace AZ
                 static void Reflect(AZ::ReflectContext* context);
 
                 GraphObjectProxy(AZStd::shared_ptr<const DataTypes::IGraphObject> graphObject);
+                GraphObjectProxy(const GraphObjectProxy&);
                 ~GraphObjectProxy();
 
                 bool CastWithTypeName(const AZStd::string& classTypeName);
@@ -53,7 +54,7 @@ namespace AZ
             private:
                 AZStd::shared_ptr<const DataTypes::IGraphObject> m_graphObject;
                 const AZ::BehaviorClass* m_behaviorClass = nullptr;
-                AZStd::shared_ptr<Python::PythonBehaviorInfo> m_pythonBehaviorInfo;
+                Python::PythonBehaviorInfo* m_pythonBehaviorInfo = nullptr;
             };
 
         } // Containers

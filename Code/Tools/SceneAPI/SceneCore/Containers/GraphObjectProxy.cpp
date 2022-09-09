@@ -185,7 +185,7 @@ namespace AZ
                     behaviorContext->Class<DataTypes::IGraphObject>();
 
                     behaviorContext->Class<GraphObjectProxy>()
-                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                         ->Attribute(AZ::Script::Attributes::Module, "scene.graph")
                         ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                         ->Method("CastWithTypeName", &GraphObjectProxy::CastWithTypeName)
@@ -195,12 +195,12 @@ namespace AZ
                             {
                                 if (self.m_pythonBehaviorInfo)
                                 {
-                                    return self.m_pythonBehaviorInfo.get();
+                                    return self.m_pythonBehaviorInfo;
                                 }
                                 if (self.m_behaviorClass)
                                 {
-                                    self.m_pythonBehaviorInfo = AZStd::make_shared<Python::PythonBehaviorInfo>(self.m_behaviorClass);
-                                    return self.m_pythonBehaviorInfo.get();
+                                    self.m_pythonBehaviorInfo = aznew Python::PythonBehaviorInfo(self.m_behaviorClass);
+                                    return self.m_pythonBehaviorInfo;
                                 }
                                 return nullptr;
                             })
@@ -213,8 +213,20 @@ namespace AZ
                 m_graphObject = graphObject;
             }
 
+            GraphObjectProxy::GraphObjectProxy(const GraphObjectProxy& other)
+            {
+                m_graphObject = other.m_graphObject;
+                m_behaviorClass = other.m_behaviorClass;
+                m_pythonBehaviorInfo = other.m_pythonBehaviorInfo;
+            }
+
             GraphObjectProxy::~GraphObjectProxy()
             {
+                if (m_pythonBehaviorInfo)
+                {
+                    delete m_pythonBehaviorInfo;
+                    m_pythonBehaviorInfo = nullptr;
+                }
                 m_graphObject.reset();
                 m_behaviorClass = nullptr;
             }
