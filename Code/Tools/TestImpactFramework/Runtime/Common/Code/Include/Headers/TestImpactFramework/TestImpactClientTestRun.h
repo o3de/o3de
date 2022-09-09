@@ -37,6 +37,7 @@ namespace TestImpact
             //! @param duration The duration that this test run took to complete.
             //! @param result The result of the run.
             TestRunBase(
+                const AZStd::string& testNamespace,
                 const AZStd::string& name,
                 const AZStd::string& commandString,
                 AZStd::chrono::high_resolution_clock::time_point startTime,
@@ -47,6 +48,9 @@ namespace TestImpact
 
             //! Returns the test target name.
             const AZStd::string& GetTargetName() const;
+
+            //! Returns the test target namespace.
+            const AZStd::string& GetTestNamespace() const;
 
             //! Returns the test run result.
             TestRunResult GetResult() const;
@@ -66,6 +70,7 @@ namespace TestImpact
         private:
             AZStd::string m_targetName;
             AZStd::string m_commandString;
+            AZStd::string m_testNamespace;
             TestRunResult m_result;
             AZStd::chrono::high_resolution_clock::time_point m_startTime;
             AZStd::chrono::milliseconds m_duration;
@@ -142,7 +147,8 @@ namespace TestImpact
                 AZStd::chrono::high_resolution_clock::time_point startTime,
                 AZStd::chrono::milliseconds duration,
                 TestRunResult result,
-                AZStd::vector<Test>&& tests);
+                AZStd::vector<Test>&& tests,
+                const AZStd::string& testNamespace);
 
             //! Constructs the test run from the specified test target executaion data.
             CompletedTestRun(TestRunBase&& testRun, AZStd::vector<Test>&& tests);

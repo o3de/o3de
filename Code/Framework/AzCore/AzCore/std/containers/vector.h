@@ -11,6 +11,8 @@
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/allocator_traits.h>
 #include <AzCore/std/createdestroy.h>
+#include <AzCore/std/ranges/common_view.h>
+#include <AzCore/std/ranges/as_rvalue_view.h>
 #include <AzCore/std/typetraits/alignment_of.h>
 #include <AzCore/std/typetraits/is_integral.h>
 
@@ -45,8 +47,6 @@ namespace AZStd
 
         typedef T&                                      reference;
         typedef const T&                                const_reference;
-        typedef typename Allocator::difference_type     difference_type;
-        typedef typename Allocator::size_type           size_type;
 
         typedef pointer                                 iterator_impl;
         typedef const_pointer                           const_iterator_impl;
@@ -57,6 +57,8 @@ namespace AZStd
         typedef iterator_impl                           iterator;
         typedef const_iterator_impl                     const_iterator;
 #endif
+        using difference_type = iter_difference_t<iterator>;
+        using size_type = make_unsigned_t<difference_type>;
         typedef AZStd::reverse_iterator<iterator>       reverse_iterator;
         typedef AZStd::reverse_iterator<const_iterator> const_reverse_iterator;
         typedef T                                       value_type;
@@ -628,11 +630,13 @@ namespace AZStd
         {
             if constexpr (is_lvalue_reference_v<R>)
             {
-                assign_iter(ranges::begin(rg), ranges::end(rg), false_type{});
+                auto rangeView = AZStd::forward<R>(rg) | views::common;
+                assign_iter(ranges::begin(rangeView), ranges::end(rangeView), false_type{});
             }
             else
             {
-                assign_iter(make_move_iterator(ranges::begin(rg)), make_move_iterator(ranges::end(rg)), false_type{});
+                auto rangeView = AZStd::forward<R>(rg) | views::as_rvalue | views::common;
+                assign_iter(ranges::begin(rangeView), ranges::end(rangeView), false_type{});
             }
         }
 
@@ -834,11 +838,13 @@ namespace AZStd
         {
             if constexpr (is_lvalue_reference_v<R>)
             {
-                return insert_impl(insertPos, ranges::begin(rg), ranges::end(rg), false_type{});
+                auto rangeView = AZStd::forward<R>(rg) | views::common;
+                return insert_impl(insertPos, ranges::begin(rangeView), ranges::end(rangeView), false_type{});
             }
             else
             {
-                return insert_impl(insertPos, make_move_iterator(ranges::begin(rg)), make_move_iterator(ranges::end(rg)), false_type{});
+                auto rangeView = AZStd::forward<R>(rg) | views::as_rvalue | views::common;
+                return insert_impl(insertPos, ranges::begin(rangeView), ranges::end(rangeView), false_type{});
             }
         }
 
@@ -1150,7 +1156,7 @@ namespace AZStd
                 pointer insertPosPtr = const_cast<pointer>(insertPos);
 #endif
 
-                size_type numElements = distance(first, last);
+                difference_type numElements = distance(first, last);
                 if (numElements == 0)
                 {
                     return AZStd::ranges::next(begin(), offset);
@@ -1215,13 +1221,13 @@ namespace AZStd
                     m_last = newLast;
                     m_end = m_start + capacity;
                 }
-                else if (size_type(m_last - insertPosPtr) < numElements)
+                else if (m_last - insertPosPtr < numElements)
                 {
                     // Copy the elements after insert position.
                     pointer newLast = AZStd::uninitialized_move(insertPosPtr, m_last, insertPosPtr + numElements);
 
                     // Number of elements we can assign.
-                    size_type numInitializedToFill = size_type(m_last - insertPosPtr);
+                    auto numInitializedToFill = static_cast<iter_difference_t<Iterator>>(m_last - insertPosPtr);
 
                     // get last iterator to fill
                     Iterator lastToAssign = first;

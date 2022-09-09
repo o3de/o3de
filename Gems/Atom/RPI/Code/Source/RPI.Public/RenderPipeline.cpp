@@ -265,6 +265,16 @@ namespace AZ
             }
         }
 
+        void RenderPipeline::SetDefaultStereoscopicViewFromEntity(EntityId entityId, RPI::ViewType viewType)
+        {
+            ViewPtr cameraView;
+            ViewProviderBus::EventResult(cameraView, entityId, &ViewProvider::GetStereoscopicView, viewType);
+            if (cameraView)
+            {
+                SetDefaultView(cameraView);
+            }
+        }
+
         void RenderPipeline::AddTransientView(const PipelineViewTag& viewTag, ViewPtr view)
         {
             // If a view is registered for multiple viewTags, it gets only the PassesByDrawList of whatever
