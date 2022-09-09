@@ -14,7 +14,7 @@
 
 from dynaconf import settings
 from PySide2 import QtWidgets, QtCore, QtGui
-from PySide2.QtWidgets import QMessageBox
+from PySide2.QtWidgets import QMessageBox, QFrame, QStyle
 from Tools.Launcher.data import project_constants as constants
 from pathlib import Path
 from box import Box
@@ -41,7 +41,7 @@ class Tools(QtWidgets.QWidget):
         self.tool_button = None
         self.content_layout = QtWidgets.QVBoxLayout(self)
         self.content_layout.setContentsMargins(5, 0, 5, 5)
-        self.content_frame = QtWidgets.QFrame(self)
+        self.content_frame = QFrame(self)
         self.content_frame.setGeometry(0, 0, 5000, 5000)
         self.section_tabs = QtWidgets.QTabBar()
         self.section_tabs.setShape(QtWidgets.QTabBar.RoundedNorth)
@@ -81,7 +81,7 @@ class Tools(QtWidgets.QWidget):
         self.get_started_layout = QtWidgets.QVBoxLayout()
         self.get_started_panel = QtWidgets.QWidget()
         self.get_started_panel.setLayout(self.get_started_layout)
-        self.get_started_frame = QtWidgets.QFrame(self.get_started_panel)
+        self.get_started_frame = QFrame(self.get_started_panel)
         self.get_started_frame.setStyleSheet('background-color: rgb(50, 50, 50);')
         self.get_started_frame.setGeometry(0, 0, 200, 5000)
         self.center_column_container.addWidget(self.get_started_panel)
@@ -96,7 +96,7 @@ class Tools(QtWidgets.QWidget):
         self.add_tool_layout = QtWidgets.QVBoxLayout()
         self.add_tool_panel = QtWidgets.QWidget()
         self.add_tool_panel.setLayout(self.add_tool_layout)
-        self.add_tool_frame = QtWidgets.QFrame(self.add_tool_panel)
+        self.add_tool_frame = QFrame(self.add_tool_panel)
         self.add_tool_frame.setStyleSheet('background-color: rgb(50, 50, 50);')
         self.add_tool_frame.setGeometry(0, 0, 200, 5000)
         self.center_column_container.addWidget(self.add_tool_panel)
@@ -162,10 +162,11 @@ class Tools(QtWidgets.QWidget):
         self.top_bracket_widget = QtWidgets.QWidget()
         self.top_bracket_widget.setFixedSize(200, 60)
         self.top_bracket_widget.setLayout(self.top_bracket_layout)
-        self.top_bracket_frame = QtWidgets.QFrame(self.top_bracket_widget)
+        self.top_bracket_frame = QFrame(self.top_bracket_widget)
         self.top_bracket_frame.setGeometry(0, 0, 200, 60)
         self.top_bracket_frame.setStyleSheet("QFrame { background-color: qlineargradient(spread:pad, x1:1, y1:0, x2:1, "
                                              "y2:1, stop:0 rgba(55, 55, 55, 255), stop:1 rgba(15, 15, 15, 255));}")
+        self.listings_panel_container.addSpacing(5)
         self.listings_panel_container.addWidget(self.top_bracket_widget)
 
         # Add Tool Button
@@ -188,19 +189,10 @@ class Tools(QtWidgets.QWidget):
         self.tool_listings_panel.setLayout(self.tool_listings_layout)
         self.tool_listings_layout.setContentsMargins(0, 0, 0, 0)
         self.tool_listings_layout.setSpacing(0)
-        self.panel_frame = QtWidgets.QFrame(self.tool_listings_panel)
+        self.panel_frame = QFrame(self.tool_listings_panel)
         self.panel_frame.setStyleSheet('background-color: rgb(50, 50, 50);')
         self.panel_frame.setGeometry(0, 0, 200, 5000)
         self.listings_panel_container.addWidget(self.tool_listings_panel)
-
-        # Bottom Bracket --------------------->>
-        # self.bottom_bracket_layout = QtWidgets.QVBoxLayout()
-        # self.bottom_bracket_layout.setAlignment(QtCore.Qt.AlignTop)
-        # self.bottom_bracket_layout.setContentsMargins(0, 0, 0, 0)
-        # self.bottom_bracket_widget = QtWidgets.QWidget()
-        # self.bottom_bracket_widget.setFixedSize(200, 50)
-        # self.bottom_bracket_widget.setLayout(self.bottom_bracket_layout)
-        # self.listings_panel_container.addWidget(self.bottom_bracket_widget)
 
         # +++++++++++++++++++++++--->>>
         # CONTENT AREA WIDGETS +---->>>
@@ -215,15 +207,13 @@ class Tools(QtWidgets.QWidget):
         # SPLASH PAGE #
         ###############
 
-        # self.splash_page_container = QtWidgets.QHBoxLayout()
-        # self.splash_page_container.setAlignment(QtCore.Qt.AlignCenter)
         self.splash_page_layout = QtWidgets.QVBoxLayout()
         self.splash_page_layout.setAlignment(QtCore.Qt.AlignCenter)
         self.splash_page_widget = QtWidgets.QWidget()
         self.splash_page_widget.setLayout(self.splash_page_layout)
-        self.panel_frame = QtWidgets.QFrame(self.splash_page_widget)
+        self.panel_frame = QFrame(self.splash_page_widget)
         self.panel_frame.setStyleSheet('background-color: #000000;')
-        self.panel_frame.setGeometry(0, 0, 5000, 5000)
+        self.panel_frame.setGeometry(0, 5, 5000, 5000)
         self.stacked_layout.addWidget(self.splash_page_widget)
 
         # ++++++++++++++++++++++++
@@ -236,7 +226,7 @@ class Tools(QtWidgets.QWidget):
         self.tool_info_layout.setAlignment(QtCore.Qt.AlignTop)
         self.tool_info_widget = QtWidgets.QWidget()
         self.tool_info_widget.setLayout(self.tool_info_layout)
-        self.tool_info_frame = QtWidgets.QFrame(self.tool_info_widget)
+        self.tool_info_frame = QFrame(self.tool_info_widget)
         self.tool_info_frame.setStyleSheet('background-color: rgb(50, 50, 50)')
         self.tool_info_frame.setGeometry(0, 0, 1000, 1000)
         self.tool_info_widget.setFixedSize(800, 450)
@@ -249,7 +239,7 @@ class Tools(QtWidgets.QWidget):
         self.blue_border_widget = QtWidgets.QWidget()
         self.blue_border_widget.setFixedSize(800, 105)
         self.blue_border_widget.setLayout(self.blue_border_layout)
-        self.blue_border_frame = QtWidgets.QFrame(self.blue_border_widget)
+        self.blue_border_frame = QFrame(self.blue_border_widget)
         self.blue_border_frame.setGeometry(0, 0, 1000, 1000)
         self.blue_border_frame.setStyleSheet('background-color: rgb(27, 105, 221)')
         self.tool_info_layout.addWidget(self.blue_border_widget)
@@ -316,7 +306,7 @@ class Tools(QtWidgets.QWidget):
         self.description_header_widget = QtWidgets.QWidget()
         self.description_header_widget.setLayout(self.description_header_layout)
         self.description_header_widget.setFixedSize(800, 25)
-        self.black_header_frame = QtWidgets.QFrame(self.description_header_widget)
+        self.black_header_frame = QFrame(self.description_header_widget)
         self.black_header_frame.setGeometry(0, 0, 1000, 1000)
         self.black_header_frame.setStyleSheet('background-color: rgb(25, 25, 25);')
         self.description_label = QtWidgets.QLabel('Description')
@@ -371,13 +361,46 @@ class Tools(QtWidgets.QWidget):
         self.tool_name_field = QtWidgets.QLineEdit()
         self.tool_name_field.setFixedHeight(25)
         self.add_tool_layout.addWidget(self.tool_name_field)
+        self.add_tool_layout.addSpacing(6)
+        
+        # Python Distribution
+        self.distribution_row_controls = QtWidgets.QHBoxLayout()
+        self.add_tool_layout.addLayout(self.distribution_row_controls)
+
+        self.python_distribution_layout = QtWidgets.QVBoxLayout()
+        self.distribution_row_controls.addLayout(self.python_distribution_layout)
+        self.python_distribution_label_layout = QtWidgets.QHBoxLayout()
+        self.python_distribution_label_layout.setAlignment(QtCore.Qt.AlignLeft)
+        self.python_distribution_layout.addLayout(self.python_distribution_label_layout)
+
+        self.python_distribution_label = QtWidgets.QLabel('Python Distribution')
+        self.python_distribution_label_layout.addWidget(self.python_distribution_label)
+        self.help_button = QtWidgets.QPushButton()
+        self.help_button.setToolTip('Set this if running Python\nTools designed for specific\nDCC Applications')
+        self.help_button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.help_button.setFixedSize(20, 20)
+        self.help_button.setStyleSheet('border: None;')
+        pixmapi = QStyle.SP_MessageBoxQuestion
+        self.help_icon = self.style().standardIcon(pixmapi)
+        self.help_button.setIcon(self.help_icon)
+        self.python_distribution_label_layout.addWidget(self.help_button)
+
+        self.python_distribution_combobox = QtWidgets.QComboBox()
+        self.python_distribution_combobox.setFixedHeight(25)
+        self.python_distributions = (
+            'O3DE Python',
+            'Maya Python',
+            'Blender Python',
+            'Houdini Python',
+            '3dsMax Python'
+        )
+        self.python_distribution_layout.addWidget(self.python_distribution_combobox)
+        self.python_distribution_combobox.addItems(self.python_distributions)
+        self.distribution_row_controls.addSpacing(40)
 
         # Category
-        self.category_placement_layout = QtWidgets.QHBoxLayout()
-        self.add_tool_layout.addLayout(self.category_placement_layout)
-
         self.tool_category_layout = QtWidgets.QVBoxLayout()
-        self.category_placement_layout.addLayout(self.tool_category_layout)
+        self.distribution_row_controls.addLayout(self.tool_category_layout)
         self.tool_category_label = QtWidgets.QLabel('Category')
         self.tool_category_layout.addWidget(self.tool_category_label)
         self.tool_category_combobox = QtWidgets.QComboBox()
@@ -390,12 +413,12 @@ class Tools(QtWidgets.QWidget):
         )
         self.tool_category_layout.addWidget(self.tool_category_combobox)
         self.tool_category_combobox.addItems(self.tool_categories)
-        self.category_placement_layout.addSpacing(40)
+        self.distribution_row_controls.addSpacing(40)
 
         # Tool window placement
         self.align_window_layout = QtWidgets.QVBoxLayout()
         self.align_window_layout.setAlignment(QtCore.Qt.AlignBottom)
-        self.category_placement_layout.addLayout(self.align_window_layout)
+        self.distribution_row_controls.addLayout(self.align_window_layout)
         self.tool_window_layout = QtWidgets.QHBoxLayout()
         self.align_window_layout.addLayout(self.tool_window_layout)
         self.tool_ui_label = QtWidgets.QLabel('Tool Window Placement:')
@@ -414,12 +437,14 @@ class Tools(QtWidgets.QWidget):
         self.standalone_radio_button.setFixedWidth(140)
         self.window_radio_layout.addWidget(self.standalone_radio_button)
         self.window_radio_button_group.addButton(self.standalone_radio_button)
+        self.add_tool_layout.addSpacing(6)
 
         # Description
         self.tool_description_label = QtWidgets.QLabel('Description')
         self.add_tool_layout.addWidget(self.tool_description_label)
         self.tool_description_field = QtWidgets.QTextEdit()
         self.add_tool_layout.addWidget(self.tool_description_field)
+        self.add_tool_layout.addSpacing(6)
 
         # Location
         self.tool_location_label = QtWidgets.QLabel('Start File Location')
@@ -500,11 +525,28 @@ class Tools(QtWidgets.QWidget):
         # TOOL CONTAINER #
         ##################
 
-        # Add Tool Container Layer
+        self.tool_layout = QtWidgets.QHBoxLayout()
+        self.tool_layout.setContentsMargins(0, 5, 0, 0)
+        self.tool_widget = QtWidgets.QWidget()
+        self.tool_widget.setLayout(self.tool_layout)
+        self.stacked_layout.addWidget(self.tool_widget)
+        tiling_image = (settings.get('PATH_DCCSI_TOOLS') / 'Launcher/images/checker_background.png').as_posix()
+
+        # Left Margin Spacer ----->>
+        self.left_tool_frame = QFrame()
+        self.left_tool_frame.setFrameStyle(QFrame.StyledPanel)
+        self.left_tool_frame.setStyleSheet(f'background-image: url({tiling_image})')
+        self.left_container_layout = QtWidgets.QVBoxLayout(self.left_tool_frame)
+        self.tool_layout.addWidget(self.left_tool_frame)
+        #  Loaded Tool Container ----->>
         self.tool_container_layout = QtWidgets.QVBoxLayout()
-        self.tool_container_widget = QtWidgets.QWidget()
-        self.tool_container_widget.setLayout(self.tool_container_layout)
-        self.stacked_layout.addWidget(self.tool_container_widget)
+        self.tool_layout.addLayout(self.tool_container_layout)
+        # Right Margin Spacer ----->>
+        self.right_tool_frame = QFrame()
+        self.right_tool_frame.setFrameStyle(QFrame.StyledPanel)
+        self.right_tool_frame.setStyleSheet(f'background-image: url({tiling_image})')
+        self.right_container_layout = QtWidgets.QVBoxLayout(self.right_tool_frame)
+        self.tool_layout.addWidget(self.right_tool_frame)
 
     def open_section(self):
         """ Initializes Tools Window """

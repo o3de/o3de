@@ -39,7 +39,7 @@ _LOGGER = logging.getLogger('Launcher.model')
 class LauncherModel:
     def __init__(self):
         self.launcher_base_path = Path(settings.get('PATH_DCCSI_TOOLS')) / 'Launcher'
-        self.launcher_sections = ['Splash', 'Tools', 'Projects', 'Output', 'Setup', 'Help']
+        self.launcher_sections = ['Splash', 'Tools', 'Projects', 'Output', 'Setup', 'Help', 'Database']
         self.db_path = (self.launcher_base_path / 'data/launcher.db').as_posix()
         self.database_path = None
         self.icon_path = None

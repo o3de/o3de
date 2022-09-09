@@ -32,7 +32,7 @@ import logging
 from PySide2 import QtWidgets, QtCore, QtGui
 from PySide2.QtCore import Slot
 from Tools.Launcher.navigation import Navigation
-from Tools.Launcher.sections import splash, tools, projects, output, setup, help
+from Tools.Launcher.sections import splash, tools, projects, output, setup, help, database
 from box import Box
 
 
@@ -78,6 +78,7 @@ class ContentContainer(QtWidgets.QWidget):
         self.sections['output'] = [output.Output(self.model), 3]
         self.sections['setup'] = [setup.Setup(self.model), 4]
         self.sections['help'] = [help.Help(self.model), 5]
+        self.sections['database'] = [database.Database(self.model), 6]
         for section in self.sections.values():
             self.sections_layout.addWidget(section[0])
 

@@ -45,8 +45,11 @@
 # Required Imports
 import config
 import logging
+from pathlib import Path
 from dynaconf import settings
-from PySide2 import QtWidgets
+# from dynaconf import Dynaconf
+from PySide2 import QtWidgets, QtCore, QtGui
+from SDK.Python import general_utilities as utils
 
 # Logging Formatting
 _MODULENAME = 'Tools.Python.MockTool.main'
@@ -58,8 +61,52 @@ class MockTool(QtWidgets.QWidget):
         super(MockTool, self).__init__()
         _LOGGER.info('MockTool Added')
         self.main_container = QtWidgets.QVBoxLayout(self)
-        self.test_button = QtWidgets.QPushButton('Hello')
+        self.main_container.setAlignment(QtCore.Qt.AlignTop)
+        self.setFixedSize(400, 1000)
+        self.main_container.addSpacing(15)
+
+        # Example Widgets
+        self.sample_text = Path(settings.get('PATH_DCCSI_TOOLS') / 'Python/MockTool/Resources/sample_text.txt')
+        self.env_file_location = Path(settings.get('PATH_DCCSI_TOOLS') / 'Python/MockTool/.env')
+        self.example_text_edit = QtWidgets.QLabel(self.get_sample_text())
+        self.example_text_edit.setWordWrap(True)
+        self.main_container.addWidget(self.example_text_edit)
+        self.main_container.addSpacing(15)
+
+        self.test_button = QtWidgets.QPushButton('Sample Button using O3DE Stylesheet')
+        self.test_button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.test_button.setFixedHeight(25)
+        self.test_button.setObjectName('Primary')
         self.main_container.addWidget(self.test_button)
+
+        # These access environment variables
+        self.get_env_value()
+        self.get_environment_values('maya')
+
+    def get_sample_text(self):
+        _LOGGER.info(utils.get_txt_data(self.sample_text))
+        return utils.get_txt_data(self.sample_text)
+
+    def get_env_value(self):
+        """! Access variables from the .env file. If this tool is launched by the Launcher tool, Dynaconf will
+         not know to to read and add in .env values, which is provided for below.
+         """
+
+        # Extract .env values manually if tool run through DCCsi Launcher. Set 'env_file_location'
+        # class attribute path accordingly for your tool's location
+        if Path.cwd().parts[-1] == 'DccScriptingInterface':
+            envars = utils.parse_env_file(self.env_file_location)
+            for key, values in envars.items():
+                _LOGGER.info(f'Setting [{key}] ::: {values}')
+                target_path = Path(settings.get(values[0])) / values[1]
+                settings.set(key, target_path)
+
+        # Get Settings Value
+        _LOGGER.info(f"Access the DYNACONF_ICON_PATH value from the .env file: {settings.get('ICON_PATH')}")
+        _LOGGER.info(f"Access the DYNACONF_DB_PATH value from the .env file: {settings.get('DB_PATH')}")
+
+        # Check if Settings Value is present - if it isn't will return the second value (in this case "404")
+        _LOGGER.info(f"Accessing Dynaconf Base Directory Variable: {settings.get('NO_KEY_AVAILABLE', 404)}")
 
     @staticmethod
     def get_environment_values(target_environment=None):
@@ -71,20 +118,15 @@ class MockTool(QtWidgets.QWidget):
             else:
                 _LOGGER.info(f"Key: {key}  Value: {value}")
 
-    @staticmethod
-    def get_env_value():
-        """ Access variables from the .env file """
 
-        # Get Settings Value
-        _LOGGER.info(f"Access the DYNACONF_ICON_PATH value from the .env file: {settings.get('ICON_PATH')}")
-        _LOGGER.info(f"Access the DYNACONF_DB_PATH value from the .env file: {settings.get('DB_PATH')}")
-
-        # Check if Settings Value is present - if it isn't will return the second value (in this case "404")
-        _LOGGER.info(f"Accessing Dynaconf Base Directory Variable: {settings.get('NO_KEY_AVAILABLE', 404)}")
 
 
 def get_tool(*args, **kwargs):
     _LOGGER.info('Get tool fired')
     return MockTool(*args, **kwargs)
+
+
+if __name__ == '__main__':
+    MockTool()
 
 

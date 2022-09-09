@@ -77,6 +77,14 @@ def get_json_data(target_path: Path) -> dict:
         raise Exception(f'File [{target_path}] not found.')
 
 
+def get_txt_data(target_path: Path) -> str:
+    try:
+        with open(target_path) as txt_file:
+            return txt_file.read()
+    except IOError:
+        raise Exception(f'File [{target_path}] not found.')
+
+
 def get_commented_json_data(target_path: Path) -> dict:
     try:
         with open(target_path) as json_file:
@@ -122,10 +130,42 @@ def set_json_data(target_path: Path, json_data: Box):
         json.dump(json_data, json_file, indent=4)
 
 
+####################
+# DYNACONF HELPERS #
+####################
+
+def parse_env_file(target_path: Path) -> dict:
+    """ Only parses Dynaconf env paths currently. Should translate all value types."""
+    envars = {}
+    with open(target_path) as env_file:
+        for line in env_file:
+            target_key = None
+            target_path = []
+            # Find Key --------->>
+            envar_keys = re.findall(r"[a-zA-Z]+(?:_[a-zA-Z]+)+", line)
+            if envar_keys:
+                for key in envar_keys:
+                    if key.startswith('DYNACONF_'):
+                        target_key = '_'.join(key.split('_')[1:])
+            # Find Paths ------->>
+            env_path = re.findall("""([^"]*)""", line)
+            if env_path:
+                for path in env_path:
+                    if path.startswith('@format '):
+                        filter_pass_one = path.replace('@format {this.', '')
+                        dynaconf_variable = filter_pass_one.split('\\')[0][:-1]
+                        target_path.append(dynaconf_variable)
+                        target_path.append('/'.join(path.split('\\')[1:]))
+                        break
+            # If key, value pair is parsed, add to envars ------->>
+            if target_key and target_path:
+                envars[target_key] = target_path
+    return envars
+
+
 ###########################
 # SQLITE DATABASE HELPERS #
 ###########################
-
 
 def get_database(database_path: str) -> sqlite3.Connection:
     try:
