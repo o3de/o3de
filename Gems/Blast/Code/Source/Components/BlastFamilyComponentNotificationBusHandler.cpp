@@ -29,9 +29,9 @@ namespace Blast
         }
     }
 
-    void BlastFamilyComponentNotificationBusHandler::Disconnect()
+    void BlastFamilyComponentNotificationBusHandler::Disconnect(AZ::BehaviorArgument* id)
     {
-        BusDisconnect();
+        AZ::Internal::EBusConnector<BlastFamilyComponentNotificationBusHandler>::Disconnect(this, id);
     }
 
     bool BlastFamilyComponentNotificationBusHandler::Connect(AZ::BehaviorArgument* id)
