@@ -21,7 +21,7 @@ class PersistentStorageLocal(PersistentStorage):
     HISTORIC_KEY = "historic"
     DATA_KEY = "data"
 
-    def __init__(self, config: str, suite: str, commit: str, active_workspace: str, unpacked_coverage_data_file_path: str, previous_test_run_data_file_path: str, historic_workspace: str, historic_data_file_path: str):
+    def __init__(self, config: dict, suite: str, commit: str, active_workspace: str, unpacked_coverage_data_file_path: str, previous_test_run_data_file_path: str, historic_workspace: str, historic_data_file_path: str, temp_workspace: str):
         """
         Initializes the persistent storage with any local historic data available.
 
@@ -30,7 +30,7 @@ class PersistentStorageLocal(PersistentStorage):
         @param commit: The commit hash for this build.
         """
 
-        super().__init__(config, suite, commit, active_workspace, unpacked_coverage_data_file_path, previous_test_run_data_file_path)
+        super().__init__(config, suite, commit, active_workspace, unpacked_coverage_data_file_path, previous_test_run_data_file_path, temp_workspace)
         self._retrieve_historic_data(config, historic_workspace, historic_data_file_path)
 
     def _store_historic_data(self, historic_data_json: str):

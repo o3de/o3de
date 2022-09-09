@@ -25,19 +25,34 @@ namespace AzToolsFramework
                 PrefabDom linkPatches, UndoSystem::URSequencePoint* undoBatch);
 
             //! Helper function for adding an entity to a prefab template with undo-redo support.
-            //! @param parentEntityDomBeforeAddingEntity The DOM of the parent entity before adding a new entity under it.
-            //! @param parentEntityDomAfterAddingEntity The DOM of the parent entity after adding a new entity under it.
-            //! @param entityId The id of the entity to be added.
-            //! @param parentEntityId The id of the parent entity under which the new entity is added.
+            //! @param newEntityDom The DOM of the added entity.
+            //! @param entityId The id of the added entity.
             //! @param templateId The id of the prefab template under which the new entity DOM will live.
-            //! @param undoBatch The undo batch node to register the add-entity undo nodes to. 
+            //! @param undoBatch The undo batch node to register the add-entity undo node to.
             void AddEntity(
-                const PrefabDomValue& parentEntityDomBeforeAddingEntity,
-                const PrefabDomValue& parentEntityDomAfterAddingEntity,
                 const PrefabDomValue& newEntityDom,
                 AZ::EntityId entityId,
-                AZ::EntityId parentEntityId,
                 TemplateId templateId,
+                UndoSystem::URSequencePoint* undoBatch);
+
+            //! Helper function for removing entities to a prefab template with undo-redo support.
+            //! @param entityDomAndPathList The list of pairs of entity DOM before removal and its alias path in template.
+            //! @param templateId The id of the prefab template under which the removed entity DOMs will live.
+            //! @param undoBatch The undo batch node to register the remove-entities undo node to.
+            void RemoveEntities(                
+                const AZStd::vector<AZStd::pair<const PrefabDomValue*, AZStd::string>>& entityDomAndPathList,
+                TemplateId templateId,
+                UndoSystem::URSequencePoint* undoBatch);
+
+            //! Helper function for updating an entity to a prefab template with undo-redo support.
+            //! @param entityDomBeforeUpdatingEntity The DOM of the entity before updating.
+            //! @param entityDomAfterUpdatingEntity The DOM of the entity after updating.
+            //! @param entityId The id of the entity.
+            //! @param undoBatch The undo batch node to register the update-entity undo node to.
+            void UpdateEntity(
+                const PrefabDomValue& entityDomBeforeUpdatingEntity,
+                const PrefabDomValue& entityDomAfterUpdatingEntity,
+                AZ::EntityId entityId,
                 UndoSystem::URSequencePoint* undoBatch);
         }
     } // namespace Prefab

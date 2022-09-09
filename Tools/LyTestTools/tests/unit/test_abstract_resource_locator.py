@@ -13,6 +13,8 @@ import pytest
 
 import ly_test_tools._internal.managers.abstract_resource_locator as abstract_resource_locator
 
+from ly_test_tools._internal.exceptions import LyTestToolsFrameworkException
+
 pytestmark = pytest.mark.SUITE_smoke
 
 mock_initial_path = "mock_initial_path"
@@ -43,7 +45,7 @@ class TestFindEngineRoot(object):
         mock_path_exists.return_value = False
         mock_abspath.return_value = mock_engine_root
 
-        with pytest.raises(OSError):
+        with pytest.raises(LyTestToolsFrameworkException):
             abstract_resource_locator._find_engine_root(mock_initial_path)
 
 
