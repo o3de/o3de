@@ -28,6 +28,7 @@ namespace AzToolsFramework
         class Instance;
         class InstanceEntityMapperInterface;
         class InstanceToTemplateInterface;
+        class InstanceDomGeneratorInterface;
         class PrefabLoaderInterface;
         class PrefabSystemComponentInterface;
 
@@ -194,6 +195,7 @@ namespace AzToolsFramework
 
             InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
             InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
+            InstanceDomGeneratorInterface* m_instanceDomGeneratorInterface = nullptr;
             PrefabFocusInterface* m_prefabFocusInterface = nullptr;
             PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
             PrefabLoaderInterface* m_prefabLoaderInterface = nullptr;
