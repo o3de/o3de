@@ -80,7 +80,7 @@ namespace AZ
                 bool IsValid() {return m_captureStateIndex != InvalidCaptureHandle;};
                 bool IsNull() {return m_captureStateIndex == InvalidCaptureHandle;};
             private:
-                static constexpr uint32_t InvalidCaptureHandle = FrameCaptureRequests::s_InvalidFrameCaptureId;
+                static constexpr uint32_t InvalidCaptureHandle = InvalidFrameCaptureId;
 
                 FrameCaptureSystemComponent* const m_frameCaptureSystemComponent;
                 const uint32_t m_captureStateIndex = InvalidCaptureHandle;
@@ -104,7 +104,7 @@ namespace AZ
 
             AZStd::shared_mutex m_handleLock; // Use a shared_mutex so we can protect against the allCaptures vector being resized and moving the CaptureStates in memory.
             AZStd::deque<CaptureHandle> m_idleCaptures; // fifo for idle captures
-            AZStd::deque<CaptureHandle> m_inProgressCaptures; // uses a deque so we can maintain order, order created == order OnCaptureFinished sent
+            AZStd::deque<CaptureHandle> m_inProgressCaptures; // uses a deque so we can maintain order, order created == order OnFrameCaptureFinished sent
             AZStd::vector<CaptureState> m_allCaptures;
         };
     }
