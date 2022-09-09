@@ -165,7 +165,6 @@ namespace AzToolsFramework
                 return false;
             }
             const Instance& owningInstance = owningInstanceRef->get();
-            const TemplateId owningTemplateId = owningInstance.GetTemplateId();
 
             // Climbs up from the owning instance to root instance, but stops at the focused instance if they can meet.
             const InstanceClimbUpResult climbUpResult = PrefabInstanceUtils::ClimbUpToTargetOrRootInstance(owningInstance, focusedInstancePtr);
