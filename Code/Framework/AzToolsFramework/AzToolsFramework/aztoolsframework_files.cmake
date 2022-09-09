@@ -7,6 +7,7 @@
 #
 
 set(FILES
+    ActionManager/ActionManagerRegistrationNotificationBus.h
     ActionManager/ActionManagerSystemComponent.cpp
     ActionManager/ActionManagerSystemComponent.h
     ActionManager/Action/ActionManager.cpp
