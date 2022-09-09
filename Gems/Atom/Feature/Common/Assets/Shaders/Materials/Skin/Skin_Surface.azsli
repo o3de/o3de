@@ -63,7 +63,7 @@ Surface EvaluateSurface_Skin(
     float3 vertexNormal,
     float3 tangents[UvSetCount],
     float3 bitangents[UvSetCount],
-    float2 uv[UvSetCount],
+    float2 uvs[UvSetCount],
     float2 detailUv,
     float4 wrinkleBlendFactors,
     bool isFrontFace)
@@ -75,14 +75,14 @@ Surface EvaluateSurface_Skin(
     
     // When the detail maps and the detail blend mask are on the same UV, they both use the transformed detail UVs because they are 'attached' to each other
     const float2 detailBlendMaskUv = (MaterialSrg::m_detail_blendMask_uvIndex == MaterialSrg::m_detail_allMapsUvIndex) ?
-                                     detailUv : uv[MaterialSrg::m_detail_blendMask_uvIndex];
+                                     detailUv : uvs[MaterialSrg::m_detail_blendMask_uvIndex];
         
     const float detailLayerBlendFactor = GetDetailLayerBlendFactor( MaterialSrg::m_detail_blendMask_texture, MaterialSrg::m_sampler,
                                                                     detailBlendMaskUv, o_detail_blendMask_useTexture, MaterialSrg::m_detail_blendFactor);
   
     // ------- Wrinkle Map Setup -------
 
-    float2 normalUv = uv[MaterialSrg::m_normalMapUvIndex];
+    float2 normalUv = uvs[MaterialSrg::m_normalMapUvIndex];
 
     if(o_wrinkleLayers_enabled)
     {
@@ -143,7 +143,7 @@ Surface EvaluateSurface_Skin(
 
     //--------------------- Base Color ----------------------
         
-    float2 baseColorUv = uv[MaterialSrg::m_baseColorMapUvIndex];
+    float2 baseColorUv = uvs[MaterialSrg::m_baseColorMapUvIndex];
     float detailLayerBaseColorFactor = MaterialSrg::m_detail_baseColor_factor * detailLayerBlendFactor;
     
     float3 baseColor = GetBaseColorInput(MaterialSrg::m_baseColorMap, MaterialSrg::m_sampler, baseColorUv, MaterialSrg::m_baseColor, o_baseColor_useTexture);
@@ -184,28 +184,28 @@ Surface EvaluateSurface_Skin(
 
     // ------- Specular -------
 
-    float2 specularUv = uv[MaterialSrg::m_specularF0MapUvIndex];
+    float2 specularUv = uvs[MaterialSrg::m_specularF0MapUvIndex];
     float specularF0Factor = GetSpecularInput(MaterialSrg::m_specularF0Map, MaterialSrg::m_sampler, specularUv, MaterialSrg::m_specularF0Factor, o_specularF0_useTexture);
 
     surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor);
 
     // ------- Roughness -------
 
-    float2 roughnessUv = uv[MaterialSrg::m_roughnessMapUvIndex];
+    float2 roughnessUv = uvs[MaterialSrg::m_roughnessMapUvIndex];
     surface.roughnessLinear = GetRoughnessInput(MaterialSrg::m_roughnessMap, MaterialSrg::m_sampler, roughnessUv, MaterialSrg::m_roughnessFactor,
                                         MaterialSrg::m_roughnessLowerBound, MaterialSrg::m_roughnessUpperBound, o_roughness_useTexture);
     surface.CalculateRoughnessA();
 
     // ------- Subsurface -------
 
-    float2 subsurfaceUv = uv[MaterialSrg::m_subsurfaceScatteringInfluenceMapUvIndex];
+    float2 subsurfaceUv = uvs[MaterialSrg::m_subsurfaceScatteringInfluenceMapUvIndex];
     surface.subsurfaceScatteringFactor = GetSubsurfaceInput(MaterialSrg::m_subsurfaceScatteringInfluenceMap, MaterialSrg::m_sampler, subsurfaceUv, MaterialSrg::m_subsurfaceScatteringFactor);
     surface.subsurfaceScatteringQuality = MaterialSrg::m_subsurfaceScatteringQuality;
     surface.scatterDistance = MaterialSrg::m_scatterDistance;
 
     // ------- Transmission -------
 
-    float2 transmissionUv = uv[MaterialSrg::m_transmissionThicknessMapUvIndex];
+    float2 transmissionUv = uvs[MaterialSrg::m_transmissionThicknessMapUvIndex];
     float4 transmissionTintThickness = GeTransmissionInput(MaterialSrg::m_transmissionThicknessMap, MaterialSrg::m_sampler, transmissionUv, MaterialSrg::m_transmissionTintThickness);
     surface.transmission.tint = transmissionTintThickness.rgb;
     surface.transmission.thickness = transmissionTintThickness.w;
@@ -222,7 +222,7 @@ Surface EvaluateSurface_Skin(PixelGeometryData geoData)
         geoData.vertexNormal,
         geoData.tangents,
         geoData.bitangents,
-        geoData.uv,
+        geoData.uvs,
         geoData.detailUv,
         geoData.wrinkleBlendFactors,
         geoData.isFrontFace);

@@ -30,7 +30,7 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 
     Surface surface = EvaluateSurface(geoData);
 
-    LightingData lightingData = EvaluateLighting(surface, IN.m_position);
+    LightingData lightingData = EvaluateLighting(surface, IN.position);
 
     // ------- Output -------
 

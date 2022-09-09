@@ -22,7 +22,7 @@ Surface EvaluateSurface_Eye(
     float3 vertexNormal,
     float3 tangents[UvSetCount],
     float3 bitangents[UvSetCount],
-    float2 uv[UvSetCount],
+    float2 uvs[UvSetCount],
     float3 localPosition,
     bool isFrontFace)
 {
@@ -42,11 +42,11 @@ Surface EvaluateSurface_Eye(
     surface.vertexNormal = normalize(vertexNormal);
     
     // Get surface normal for each layer (iris/sclera) and blend using the mask defined above
-    float2 irisNormalUv = uv[MaterialSrg::m_iris_m_normalMapUvIndex];
+    float2 irisNormalUv = uvs[MaterialSrg::m_iris_m_normalMapUvIndex];
     float3 irisNormal = GetNormalInputWS(MaterialSrg::m_iris_m_normalMap, MaterialSrg::m_sampler, irisNormalUv, MaterialSrg::m_iris_m_flipNormalX, MaterialSrg::m_iris_m_flipNormalY, isFrontFace, surface.vertexNormal,
                                     tangents[MaterialSrg::m_iris_m_normalMapUvIndex], bitangents[MaterialSrg::m_iris_m_normalMapUvIndex], uvMatrix, o_iris_o_normal_useTexture, MaterialSrg::m_iris_m_normalFactor);
     
-    float2 scleraNormalUv = uv[MaterialSrg::m_sclera_m_normalMapUvIndex];
+    float2 scleraNormalUv = uvs[MaterialSrg::m_sclera_m_normalMapUvIndex];
     float3 scleraNormal = GetNormalInputWS(MaterialSrg::m_sclera_m_normalMap, MaterialSrg::m_sampler, scleraNormalUv, MaterialSrg::m_sclera_m_flipNormalX, MaterialSrg::m_sclera_m_flipNormalY, isFrontFace, surface.vertexNormal,
                                     tangents[MaterialSrg::m_sclera_m_normalMapUvIndex], bitangents[MaterialSrg::m_sclera_m_normalMapUvIndex], uvMatrix, o_sclera_o_normal_useTexture, MaterialSrg::m_sclera_m_normalFactor);
     
@@ -91,18 +91,18 @@ Surface EvaluateSurface_Eye(
     // Apply offset to the current UVs
     for (int uvIdx = 0; uvIdx < UvSetCount; uvIdx++)
     {
-        uv[uvIdx] += refractionUVOffset;
+        uvs[uvIdx] += refractionUVOffset;
     }
 
     //--------------------- Base Color ----------------------
 
     // Sample iris color map and blend with the base iris color 
-    float2 irisBaseColorUv = uv[MaterialSrg::m_iris_m_baseColorMapUvIndex];
+    float2 irisBaseColorUv = uvs[MaterialSrg::m_iris_m_baseColorMapUvIndex];
     float3 irisSampledColor = GetBaseColorInput(MaterialSrg::m_iris_m_baseColorMap, MaterialSrg::m_sampler, irisBaseColorUv, MaterialSrg::m_iris_m_baseColor, o_iris_o_baseColor_useTexture);    
     float3 irisColor = BlendBaseColor(irisSampledColor, MaterialSrg::m_iris_m_baseColor, MaterialSrg::m_iris_m_baseColorFactor, o_iris_o_baseColorTextureBlendMode, o_iris_o_baseColor_useTexture);
     
     // Sample sclera color map and blend with the base sclera color 
-    float2 scleraBaseColorUv = uv[MaterialSrg::m_sclera_m_baseColorMapUvIndex];
+    float2 scleraBaseColorUv = uvs[MaterialSrg::m_sclera_m_baseColorMapUvIndex];
     float3 scleraSampledColor = GetBaseColorInput(MaterialSrg::m_sclera_m_baseColorMap, MaterialSrg::m_sampler, scleraBaseColorUv, MaterialSrg::m_sclera_m_baseColor, o_sclera_o_baseColor_useTexture);    
     float3 scleraColor = BlendBaseColor(scleraSampledColor, MaterialSrg::m_sclera_m_baseColor, MaterialSrg::m_sclera_m_baseColorFactor, o_sclera_o_baseColorTextureBlendMode, o_sclera_o_baseColor_useTexture);
     
@@ -111,7 +111,7 @@ Surface EvaluateSurface_Eye(
 
     // ------- Specular -------
 
-    float2 specularUv = uv[MaterialSrg::m_specularF0MapUvIndex];
+    float2 specularUv = uvs[MaterialSrg::m_specularF0MapUvIndex];
     float specularF0Factor = GetSpecularInput(MaterialSrg::m_specularF0Map, MaterialSrg::m_sampler, specularUv, MaterialSrg::m_specularF0Factor, o_specularF0_useTexture);
 
     surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor);
@@ -119,11 +119,11 @@ Surface EvaluateSurface_Eye(
     // ------- Roughness -------
 
     // Get surface roughness for each layer (iris/sclera) and blend using the mask defined above
-    float2 irisRoughnessUv = uv[MaterialSrg::m_iris_m_roughnessMapUvIndex];
+    float2 irisRoughnessUv = uvs[MaterialSrg::m_iris_m_roughnessMapUvIndex];
     float irisRoughnessLinear = GetRoughnessInput(MaterialSrg::m_iris_m_roughnessMap, MaterialSrg::m_sampler, irisRoughnessUv, MaterialSrg::m_iris_m_roughnessFactor,
                                         MaterialSrg::m_iris_m_roughnessLowerBound, MaterialSrg::m_iris_m_roughnessUpperBound, o_iris_o_roughness_useTexture);
 
-    float2 scleraRoughnessUv = uv[MaterialSrg::m_sclera_m_roughnessMapUvIndex];
+    float2 scleraRoughnessUv = uvs[MaterialSrg::m_sclera_m_roughnessMapUvIndex];
     float scleraRoughnessLinear = GetRoughnessInput(MaterialSrg::m_sclera_m_roughnessMap, MaterialSrg::m_sampler, scleraRoughnessUv, MaterialSrg::m_sclera_m_roughnessFactor,
                                         MaterialSrg::m_sclera_m_roughnessLowerBound, MaterialSrg::m_sclera_m_roughnessUpperBound, o_sclera_o_roughness_useTexture);
 
@@ -132,14 +132,14 @@ Surface EvaluateSurface_Eye(
 
     // ------- Subsurface -------
 
-    float2 subsurfaceUv = uv[MaterialSrg::m_subsurfaceScatteringInfluenceMapUvIndex];
+    float2 subsurfaceUv = uvs[MaterialSrg::m_subsurfaceScatteringInfluenceMapUvIndex];
     surface.subsurfaceScatteringFactor = GetSubsurfaceInput(MaterialSrg::m_subsurfaceScatteringInfluenceMap, MaterialSrg::m_sampler, subsurfaceUv, MaterialSrg::m_subsurfaceScatteringFactor);
     surface.subsurfaceScatteringQuality = MaterialSrg::m_subsurfaceScatteringQuality;
     surface.scatterDistance = MaterialSrg::m_scatterDistance;
 
     // ------- Transmission -------
 
-    float2 transmissionUv = uv[MaterialSrg::m_transmissionThicknessMapUvIndex];
+    float2 transmissionUv = uvs[MaterialSrg::m_transmissionThicknessMapUvIndex];
     float4 transmissionTintThickness = GeTransmissionInput(MaterialSrg::m_transmissionThicknessMap, MaterialSrg::m_sampler, transmissionUv, MaterialSrg::m_transmissionTintThickness);
     surface.transmission.tint = transmissionTintThickness.rgb;
     surface.transmission.thickness = transmissionTintThickness.w;
@@ -156,7 +156,7 @@ Surface EvaluateSurface_Eye(PixelGeometryData geoData)
         geoData.vertexNormal,
         geoData.tangents,
         geoData.bitangents,
-        geoData.uv,
+        geoData.uvs,
         geoData.localPosition,
         geoData.isFrontFace);
 }

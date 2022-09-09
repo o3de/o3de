@@ -34,8 +34,8 @@ VsOutput EvaluateVertexGeometry_Skin(
 
     float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
     float4 worldPosition = mul(objectToWorld, float4(position, 1.0));
-    output.m_worldPosition = worldPosition.xyz;
-    output.m_position = mul(ViewSrg::m_viewProjectionMatrix, worldPosition);
+    output.worldPosition = worldPosition.xyz;
+    output.position = mul(ViewSrg::m_viewProjectionMatrix, worldPosition);
 
     // UV0 is for tiled UVs. This will almost always be used exclusively with the detail layer, but it is still available
     // for the main layer to use if needed. Unlike StandardPBR etc, we don't provide a transform for this stream on the main layer, 
@@ -44,27 +44,27 @@ VsOutput EvaluateVertexGeometry_Skin(
     // Note, even though the "unwrapped" stream is considered the main stream from a material perspective (it is the default), we
     // still use UV0 for "tiled" because UV0 has pre-generated tangent vectors which is important for detail maps, which usually
     // use the "tiled" stream, and need better quality tangents because of the high frequency.
-    output.m_uv[0] = uv0_tiled;
+    output.uvs[0] = uv0_tiled;
 
     // UV1 is for unwrapped UVs. The main textures in a skin material will almost always use this UV set.
-    output.m_uv[1] = uv1_unwrapped;
+    output.uvs[1] = uv1_unwrapped;
     
     // The detail layer has a dedicated UV transform which we apply here. The detail layer does have the option of using
     // either UV0 or UV1, in either case we apply the transform.
-    output.m_detailUv = MaterialSrg::m_detail_allMapsUvIndex == 0 ? uv0_tiled : uv1_unwrapped;
-    output.m_detailUv = mul(MaterialSrg::m_detailUvMatrix, float3(output.m_detailUv, 1.0)).xy;
+    output.detailUv = MaterialSrg::m_detail_allMapsUvIndex == 0 ? uv0_tiled : uv1_unwrapped;
+    output.detailUv = mul(MaterialSrg::m_detailUvMatrix, float3(output.detailUv, 1.0)).xy;
     
     if(o_blendMask_isBound)
     {
-        output.m_wrinkleBlendFactors = optionalBlendMask;
+        output.wrinkleBlendFactors = optionalBlendMask;
     }
     else
     {
-        output.m_wrinkleBlendFactors = float4(0,0,0,0);
+        output.wrinkleBlendFactors = float4(0,0,0,0);
     }
 
     float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
-    ConstructTBN(normal, tangent, bitangent, objectToWorld, objectToWorldIT, output.m_normal, output.m_tangent, output.m_bitangent);
+    ConstructTBN(normal, tangent, bitangent, objectToWorld, objectToWorldIT, output.normal, output.tangent, output.bitangent);
 
     return output;
 }
@@ -72,11 +72,11 @@ VsOutput EvaluateVertexGeometry_Skin(
 VsOutput EvaluateVertexGeometry_Skin(VsInput IN)
 {
     return EvaluateVertexGeometry_Skin(
-        IN.m_position,
-        IN.m_normal,
-        IN.m_tangent,
-        IN.m_bitangent,
-        IN.m_uv0_tiled,
-        IN.m_uv1_unwrapped,
+        IN.position,
+        IN.normal,
+        IN.tangent,
+        IN.bitangent,
+        IN.uv0_tiled,
+        IN.uv1_unwrapped,
         IN.m_optional_blendMask);
 }

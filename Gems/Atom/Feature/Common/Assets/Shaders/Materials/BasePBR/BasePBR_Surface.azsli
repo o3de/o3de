@@ -22,7 +22,7 @@ Surface EvaluateSurface_BasePBR(
     float3 vertexNormal,
     float3 tangents[UvSetCount],
     float3 bitangents[UvSetCount],
-    float2 uv[UvSetCount],
+    float2 uvs[UvSetCount],
     bool isFrontFace)
 {
     Surface surface;
@@ -31,32 +31,32 @@ Surface EvaluateSurface_BasePBR(
     // ------- Normal -------
 
     surface.vertexNormal = vertexNormal;
-    float2 normalUv = uv[MaterialSrg::m_normalMapUvIndex];
+    float2 normalUv = uvs[MaterialSrg::m_normalMapUvIndex];
     float3x3 uvMatrix = MaterialSrg::m_normalMapUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3(); // By design, only UV0 is allowed to apply transforms.
     surface.normal = GetNormalInputWS(MaterialSrg::m_normalMap, MaterialSrg::m_sampler, normalUv, MaterialSrg::m_flipNormalX, MaterialSrg::m_flipNormalY, isFrontFace, vertexNormal,
                                        tangents[MaterialSrg::m_normalMapUvIndex], bitangents[MaterialSrg::m_normalMapUvIndex], uvMatrix, o_normal_useTexture, MaterialSrg::m_normalFactor);
 
     // ------- Base Color -------
 
-    float2 baseColorUv = uv[MaterialSrg::m_baseColorMapUvIndex];
+    float2 baseColorUv = uvs[MaterialSrg::m_baseColorMapUvIndex];
     float3 sampledColor = GetBaseColorInput(MaterialSrg::m_baseColorMap, MaterialSrg::m_sampler, baseColorUv, MaterialSrg::m_baseColor.rgb, o_baseColor_useTexture);
     float3 baseColor = BlendBaseColor(sampledColor, MaterialSrg::m_baseColor.rgb, MaterialSrg::m_baseColorFactor, o_baseColorTextureBlendMode, o_baseColor_useTexture);
     
     // ------- Metallic -------
 
-    float2 metallicUv = uv[MaterialSrg::m_metallicMapUvIndex];
+    float2 metallicUv = uvs[MaterialSrg::m_metallicMapUvIndex];
     float metallic = GetMetallicInput(MaterialSrg::m_metallicMap, MaterialSrg::m_sampler, metallicUv, MaterialSrg::m_metallicFactor, o_metallic_useTexture);
 
     // ------- Specular -------
 
-    float2 specularUv = uv[MaterialSrg::m_specularF0MapUvIndex];
+    float2 specularUv = uvs[MaterialSrg::m_specularF0MapUvIndex];
     float specularF0Factor = GetSpecularInput(MaterialSrg::m_specularF0Map, MaterialSrg::m_sampler, specularUv, MaterialSrg::m_specularF0Factor, o_specularF0_useTexture);
 
     surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
 
     // ------- Roughness -------
 
-    float2 roughnessUv = uv[MaterialSrg::m_roughnessMapUvIndex];
+    float2 roughnessUv = uvs[MaterialSrg::m_roughnessMapUvIndex];
     surface.roughnessLinear = GetRoughnessInput(MaterialSrg::m_roughnessMap, MaterialSrg::m_sampler, roughnessUv, MaterialSrg::m_roughnessFactor,
                                         MaterialSrg::m_roughnessLowerBound, MaterialSrg::m_roughnessUpperBound, o_roughness_useTexture);
     surface.CalculateRoughnessA();
@@ -71,6 +71,6 @@ Surface EvaluateSurface_BasePBR(PixelGeometryData geoData)
         geoData.vertexNormal,
         geoData.tangents,
         geoData.bitangents,
-        geoData.uv,
+        geoData.uvs,
         geoData.isFrontFace);
 }

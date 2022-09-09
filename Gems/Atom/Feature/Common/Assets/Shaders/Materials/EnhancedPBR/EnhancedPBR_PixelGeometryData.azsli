@@ -23,7 +23,7 @@
 
     class PixelGeometryData_EnhancedPBR : PixelGeometryData_StandardPBR 
     {
-        float2 detailUv[UvSetCount];
+        float2 detailUvs[UvSetCount];
     };
 
 #else
@@ -32,8 +32,8 @@
     {
         float3 positionWS;
         float3 vertexNormal;
-        float2 uv[UvSetCount];
-        float2 detailUv[UvSetCount];
+        float2 uvs[UvSetCount];
+        float2 detailUvs[UvSetCount];
         float3 tangents[UvSetCount];
         float3 bitangents[UvSetCount];
         bool isFrontFace;

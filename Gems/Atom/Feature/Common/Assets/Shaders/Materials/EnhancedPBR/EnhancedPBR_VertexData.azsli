@@ -20,7 +20,7 @@
 
     struct VsOutput_EnhancedPBR : VsOutput_BasePBR
     {
-        float2 m_detailUv[UvSetCount] : UV3;
+        float2 m_detailUvs[UvSetCount] : UV3;
     }
 
 #else
@@ -28,15 +28,16 @@
     struct VsOutput_EnhancedPBR
     {
         // Base fields (required by the template azsli file)...
-        precise linear centroid float4 m_position : SV_Position;
-        float3 m_normal: NORMAL;
-        float3 m_tangent : TANGENT; 
-        float3 m_bitangent : BITANGENT; 
-        float3 m_worldPosition : UV0;
+        precise linear centroid
+        float4 position : SV_Position;
+        float3 normal: NORMAL;
+        float3 tangent : TANGENT; 
+        float3 bitangent : BITANGENT; 
+        float3 worldPosition : UV0;
 
         // Extended fields (only referenced in this azsl file)...
-        float2 m_uv[UvSetCount] : UV1;
-        float2 m_detailUv[UvSetCount] : UV3;
+        float2 uvs[UvSetCount] : UV1;
+        float2 detailUvs[UvSetCount] : UV3;
     };
 
 #endif

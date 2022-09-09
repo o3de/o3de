@@ -175,8 +175,8 @@ Surface EvaluateSurface_EnhancedPBR(PixelGeometryData geoData)
         geoData.vertexNormal,
         geoData.tangents,
         geoData.bitangents,
-        geoData.uv,
-        geoData.detailUv,
+        geoData.uvs,
+        geoData.detailUvs,
         geoData.isFrontFace,
         geoData.isDisplacementClipped);
 }

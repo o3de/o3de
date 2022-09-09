@@ -26,11 +26,11 @@ PixelGeometryData EvaluatePixelGeometry_StandardPBR(
     float3 normal,
     float3 tangent,
     float3 bitangent,
-    float2 uv[UvSetCount],
+    float2 uvs[UvSetCount],
     bool isFrontFace)
 {
     bool evaluateTangentFrame = ShouldHandleParallax() || o_normal_useTexture || (o_clearCoat_enabled && o_clearCoat_normal_useTexture);
-    PixelGeometryData geoData = EvaluatePixelGeometry_BasePBR(positionWS, normal, tangent, bitangent, uv, isFrontFace, evaluateTangentFrame);
+    PixelGeometryData geoData = EvaluatePixelGeometry_BasePBR(positionWS, normal, tangent, bitangent, uvs, isFrontFace, evaluateTangentFrame);
 
     // ------- Parallax -------
 
@@ -39,7 +39,7 @@ PixelGeometryData EvaluatePixelGeometry_StandardPBR(
     if(ShouldHandleParallax())
     {
         SetPixelDepth(geoData.positionWS, geoData.vertexNormal, geoData.tangents, geoData.bitangents,
-                      geoData.uv, isFrontFace, positionSV.z, positionSV.w, geoData.isDisplacementClipped);
+                      geoData.uvs, isFrontFace, positionSV.z, positionSV.w, geoData.isDisplacementClipped);
     }
 
     return geoData;
@@ -48,11 +48,11 @@ PixelGeometryData EvaluatePixelGeometry_StandardPBR(
 PixelGeometryData EvaluatePixelGeometry_StandardPBR(inout VsOutput IN, bool isFrontFace)
 {
     return EvaluatePixelGeometry_StandardPBR(
-        IN.m_position,
-        IN.m_worldPosition,
-        IN.m_normal,
-        IN.m_tangent,
-        IN.m_bitangent,
-        IN.m_uv,
+        IN.position,
+        IN.worldPosition,
+        IN.normal,
+        IN.tangent,
+        IN.bitangent,
+        IN.uvs,
         isFrontFace);
 }

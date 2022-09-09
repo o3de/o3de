@@ -30,8 +30,8 @@ VsOutput EvaluateVertexGeometry_EnhancedPBR(
     VsOutput output = EvaluateVertexGeometry_BasePBR(position, normal, tangent, bitangent, uv0, uv1);
 
     // Detail UVs
-    float2 detailUv[UvSetCount] = { uv0, uv1 };
-    TransformDetailUvs(detailUv, output.m_detailUv);
+    float2 detailUvs[UvSetCount] = { uv0, uv1 };
+    TransformDetailUvs(detailUvs, output.detailUvs);
 
     return output;
 }
@@ -39,10 +39,10 @@ VsOutput EvaluateVertexGeometry_EnhancedPBR(
 VsOutput EvaluateVertexGeometry_EnhancedPBR(VsInput IN)
 {
     return EvaluateVertexGeometry_EnhancedPBR(
-        IN.m_position,
-        IN.m_normal,
-        IN.m_tangent,
-        IN.m_bitangent,
-        IN.m_uv0,
-        IN.m_uv1);
+        IN.position,
+        IN.normal,
+        IN.tangent,
+        IN.bitangent,
+        IN.uv0,
+        IN.uv1);
 }

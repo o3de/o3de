@@ -29,15 +29,15 @@ VsOutput EvaluateVertexGeometry_BasePBR(
 
     float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
     float4 worldPosition = mul(objectToWorld, float4(position, 1.0));
-    output.m_worldPosition = worldPosition.xyz;
-    output.m_position = mul(ViewSrg::m_viewProjectionMatrix, worldPosition);
+    output.worldPosition = worldPosition.xyz;
+    output.position = mul(ViewSrg::m_viewProjectionMatrix, worldPosition);
 
     // By design, only UV0 is allowed to apply transforms.
-    output.m_uv[0] = mul(MaterialSrg::m_uvMatrix, float3(uv0, 1.0)).xy;
-    output.m_uv[1] = uv1;
+    output.uvs[0] = mul(MaterialSrg::m_uvMatrix, float3(uv0, 1.0)).xy;
+    output.uvs[1] = uv1;
 
     float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
-    ConstructTBN(normal, tangent, bitangent, objectToWorld, objectToWorldIT, output.m_normal, output.m_tangent, output.m_bitangent);
+    ConstructTBN(normal, tangent, bitangent, objectToWorld, objectToWorldIT, output.normal, output.tangent, output.bitangent);
 
     return output;
 }
@@ -45,10 +45,10 @@ VsOutput EvaluateVertexGeometry_BasePBR(
 VsOutput EvaluateVertexGeometry_BasePBR(VsInput IN)
 {
     return EvaluateVertexGeometry_BasePBR(
-        IN.m_position,
-        IN.m_normal,
-        IN.m_tangent,
-        IN.m_bitangent,
-        IN.m_uv0,
-        IN.m_uv1);
+        IN.position,
+        IN.normal,
+        IN.tangent,
+        IN.bitangent,
+        IN.uv0,
+        IN.uv1);
 }

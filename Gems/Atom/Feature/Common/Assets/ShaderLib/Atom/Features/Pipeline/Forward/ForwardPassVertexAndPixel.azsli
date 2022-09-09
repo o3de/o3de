@@ -34,7 +34,7 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 
     Surface surface = EvaluateSurface(geoData);
 
-    LightingData lightingData = EvaluateLighting(surface, IN.m_position);
+    LightingData lightingData = EvaluateLighting(surface, IN.position);
 
     // ------- Output -------
 
@@ -92,7 +92,7 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
     // --- Depth ---
 #if OUTPUT_DEPTH
     // Can be modified in Parallax calculations in EvaluatePixelGeometry
-    OUT.m_depth = IN.m_position.z;
+    OUT.m_depth = IN.position.z;
 #endif
 
     // --- Debug Output ---

@@ -19,7 +19,6 @@ set(FILES
     Materials/Types/EnhancedPBR_Anisotropy.lua
     Materials/Types/EnhancedPBR_SubsurfaceState.lua
     Materials/Types/Eye.materialtype
-    Materials/Types/NewPBR.materialtype
     Materials/Types/Skin.materialtype
     Materials/Types/Skin_SpecularF0.lua
     Materials/Types/Skin_WrinkleMaps.lua
@@ -224,12 +223,8 @@ set(FILES
     ShaderLib/Atom/Features/PBR/LightingUtils.azsli
     ShaderLib/Atom/Features/PBR/MaterialUtils.azsli
     ShaderLib/Atom/Features/PBR/SpecularAA.azsli
-    ShaderLib/Atom/Features/PBR/Lighting/BaseLighting.azsli
     ShaderLib/Atom/Features/PBR/Lighting/DualSpecularLighting.azsli
-    ShaderLib/Atom/Features/PBR/Lighting/EnhancedLighting.azsli
-    ShaderLib/Atom/Features/PBR/Lighting/EyeLighting.azsli
     ShaderLib/Atom/Features/PBR/Lighting/LightingData.azsli
-    ShaderLib/Atom/Features/PBR/Lighting/SkinLighting.azsli
     ShaderLib/Atom/Features/PBR/Lighting/StandardLighting.azsli
     ShaderLib/Atom/Features/PBR/Lights/CapsuleLight.azsli
     ShaderLib/Atom/Features/PBR/Lights/DirectionalLight.azsli
@@ -247,11 +242,8 @@ set(FILES
     ShaderLib/Atom/Features/PBR/Microfacet/Fresnel.azsli
     ShaderLib/Atom/Features/PBR/Microfacet/Ggx.azsli
     ShaderLib/Atom/Features/PBR/Surfaces/AnisotropicSurfaceData.azsli
-    ShaderLib/Atom/Features/PBR/Surfaces/BasePbrSurfaceData.azsli
     ShaderLib/Atom/Features/PBR/Surfaces/ClearCoatSurfaceData.azsli
     ShaderLib/Atom/Features/PBR/Surfaces/DualSpecularSurface.azsli
-    ShaderLib/Atom/Features/PBR/Surfaces/EyeSurface.azsli
-    ShaderLib/Atom/Features/PBR/Surfaces/SkinSurface.azsli
     ShaderLib/Atom/Features/PBR/Surfaces/StandardSurface.azsli
     ShaderLib/Atom/Features/PBR/Surfaces/TransmissionSurfaceData.azsli
     ShaderLib/Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli
@@ -373,14 +365,18 @@ set(FILES
     Shaders/Materials/EnhancedPBR/EnhancedPBR_SurfaceData.azsli
     Shaders/Materials/EnhancedPBR/EnhancedPBR_Vertex.azsli
     Shaders/Materials/EnhancedPBR/EnhancedPBR_VertexData.azsli
-    Shaders/Materials/EnhancedPBR/EnhancedSurface_ForwardPass.azsli
-    Shaders/Materials/Eye/Eye.azsl
-    Shaders/Materials/Eye/Eye.shader
-    Shaders/Materials/Eye/EyeSurface_ForwardPass.azsli
-    Shaders/Materials/Eye/Eye_Common.azsli
+    Shaders/Materials/Eye/Eye.azsli
+    Shaders/Materials/Eye/Eye_ForwardPass.azsl
+    Shaders/Materials/Eye/Eye_ForwardPass.shader
+    Shaders/Materials/Eye/Eye_LightingModel.azsli
+    Shaders/Materials/Eye/Eye_MaterialSrg.azsli
+    Shaders/Materials/Eye/Eye_PixelGeometry.azsli
+    Shaders/Materials/Eye/Eye_PixelGeometryData.azsli
+    Shaders/Materials/Eye/Eye_Surface.azsli
+    Shaders/Materials/Eye/Eye_SurfaceData.azsli
+    Shaders/Materials/Eye/Eye_Vertex.azsli
+    Shaders/Materials/Eye/Eye_VertexData.azsli
     Shaders/Materials/MaterialFunctions/EnhancedParallaxDepth.azsli
-    Shaders/Materials/MaterialFunctions/EvaluateEnhancedSurface.azsli
-    Shaders/Materials/MaterialFunctions/EvaluateEyeSurface.azsli
     Shaders/Materials/MaterialFunctions/EvaluateTangentFrame.azsli
     Shaders/Materials/MaterialFunctions/MultilayerParallaxDepth.azsli
     Shaders/Materials/MaterialFunctions/ParallaxDepth.azsli
@@ -409,15 +405,6 @@ set(FILES
     Shaders/Materials/MultilayerPBR/StandardMultilayerPBR_ForwardPass_EDS.shader
     Shaders/Materials/MultilayerPBR/StandardMultilayerPBR_Shadowmap_WithPS.azsl
     Shaders/Materials/MultilayerPBR/StandardMultilayerPBR_Shadowmap_WithPS.shader
-    Shaders/Materials/NewPBR/NewPBR.azsli
-    Shaders/Materials/NewPBR/NewPBR_Common.azsli
-    Shaders/Materials/NewPBR/NewPBR_ForwardPass.azsl
-    Shaders/Materials/NewPBR/NewPBR_ForwardPass.shader
-    Shaders/Materials/NewPBR/NewPBR_Lighting.azsli
-    Shaders/Materials/NewPBR/NewPBR_LowEndForward.azsl
-    Shaders/Materials/NewPBR/NewPBR_LowEndForward.shader
-    Shaders/Materials/NewPBR/NewPBR_Surface.azsli
-    Shaders/Materials/NewPBR/NewPBR_SurfaceData.azsli
     Shaders/Materials/Skin/Skin.azsli
     Shaders/Materials/Skin/Skin_ForwardPass.azsl
     Shaders/Materials/Skin/Skin_ForwardPass.shader

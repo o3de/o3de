@@ -8,7 +8,6 @@
 
 #pragma once
 
-
 // ------- Options -------
 
 #define ENABLE_CLEAR_COAT       1

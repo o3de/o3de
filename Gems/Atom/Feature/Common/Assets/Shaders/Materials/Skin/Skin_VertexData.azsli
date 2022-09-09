@@ -24,14 +24,14 @@
 struct VsInput_Skin
 {
     // Base fields (required by the template azsli file)...
-    float3 m_position : POSITION;
-    float3 m_normal : NORMAL;
-    float4 m_tangent : TANGENT; 
-    float3 m_bitangent : BITANGENT; 
+    float3 position : POSITION;
+    float3 normal : NORMAL;
+    float4 tangent : TANGENT; 
+    float3 bitangent : BITANGENT; 
  
     // Extended fields (only referenced in this azsl file)...
-    float2 m_uv0_tiled : UV0;
-    float2 m_uv1_unwrapped : UV1;
+    float2 uv0_tiled : UV0;
+    float2 uv1_unwrapped : UV1;
     
     // This gets set automatically by the system at runtime only if it's available.
     // There is a soft naming convention that associates this with o_blendMask_isBound, which will be set to true whenever m_optional_blendMask is available.
@@ -43,15 +43,16 @@ struct VsInput_Skin
 struct VsOutput_Skin
 {
     // Base fields (required by the template azsli file)...
-    precise linear centroid float4 m_position : SV_Position;
-    float3 m_normal: NORMAL;
-    float3 m_tangent : TANGENT; 
-    float3 m_bitangent : BITANGENT; 
-    float3 m_worldPosition : UV0;
+    precise linear centroid
+    float4 position : SV_Position;
+    float3 normal: NORMAL;
+    float3 tangent : TANGENT; 
+    float3 bitangent : BITANGENT; 
+    float3 worldPosition : UV0;
 
     // Extended fields (only referenced in this azsl file)...
-    float2 m_uv[UvSetCount] : UV1;
-    float2 m_detailUv : UV3;
+    float2 uvs[UvSetCount] : UV1;
+    float2 detailUv : UV3;
     
-    float4 m_wrinkleBlendFactors : UV8;
+    float4 wrinkleBlendFactors : UV8;
 };
