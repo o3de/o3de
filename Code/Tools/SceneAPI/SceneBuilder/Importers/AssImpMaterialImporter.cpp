@@ -175,7 +175,7 @@ namespace AZ
                 return combinedMaterialImportResults.GetResult();
             }
 
-            AZStd::string AssImpMaterialImporter::ResolveTexturePath(const AZStd::string& materialName, const AZStd::string& sceneFilePath, const AZStd::string& textureFilePath) const
+            AZStd::string AssImpMaterialImporter::ResolveTexturePath([[maybe_unused]] const AZStd::string& materialName, const AZStd::string& sceneFilePath, const AZStd::string& textureFilePath) const
             {
                 if (textureFilePath.empty())
                 {
