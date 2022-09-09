@@ -48,7 +48,7 @@ namespace ShaderManagementConsole
     AZStd::string ShaderManagementConsoleWindow::GetSaveDocumentParams(const AZStd::string& initialPath) const
     {
         // Get shader file path
-        AZStd::string shaderFullPath;
+        AZ::IO::Path shaderFullPath;
         AZ::RPI::ShaderVariantListSourceData shaderVariantList = {};
         ShaderManagementConsoleDocumentRequestBus::EventResult(
             shaderVariantList,
@@ -62,24 +62,24 @@ namespace ShaderManagementConsole
         QPushButton* engineBtn = msgBox.addButton(QObject::tr("Save to engine"), QMessageBox::NoRole);
         msgBox.exec();
 
-        AZStd::string result;
+        AZ::IO::Path result;
         if (msgBox.clickedButton() == projectBtn)
         {
             AZ::IO::FixedMaxPath projectPath = AZ::Utils::GetProjectPath();
-            AZStd::string relativePath, rootFolder;
-            bool pathFound;
+            AZ::IO::Path relativePath, rootFolder;
+            bool pathFound = false;
             AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
                 pathFound,
                 &AzToolsFramework::AssetSystemRequestBus::Events::GenerateRelativeSourcePath,
-                shaderFullPath,
-                relativePath,
-                rootFolder);
+                shaderFullPath.Native(),
+                relativePath.Native(),
+                rootFolder.Native());
 
             if (pathFound)
             {
-                AzFramework::StringFunc::Path::ReplaceExtension(relativePath, "shadervariantlist");
-                result = AZStd::string::format("%s\\ShaderVariants\\%s", projectPath.c_str(), relativePath.c_str());
-                AzFramework::StringFunc::Path::Normalize(result);
+                relativePath.ReplaceExtension("shadervariantlist");
+                projectPath /= AZ::IO::Path ("ShaderVariants") / relativePath;
+                result = projectPath.LexicallyNormal();
             }
             else
             {
@@ -88,11 +88,11 @@ namespace ShaderManagementConsole
         }
         else if(msgBox.clickedButton() == engineBtn)
         {
-            AzFramework::StringFunc::Path::ReplaceExtension(shaderFullPath, "shadervariantlist");
+            shaderFullPath.ReplaceExtension("shadervariantlist");
             result = shaderFullPath;
         }
 
-        return result;
+        return result.Native();
     }
 } // namespace ShaderManagementConsole
 
