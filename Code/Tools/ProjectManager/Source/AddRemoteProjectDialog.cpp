@@ -201,11 +201,12 @@ namespace O3DE::ProjectManager
             }
         }
 
+        const bool isValidProjectRepo = validRepository && containsProjects;
         m_repoPath->SetValidationState(
-            (validRepository && containsProjects) ? FormLineEditWidget::ValidationState::ValidationSuccess
-                                                  : FormLineEditWidget::ValidationState::ValidationFailed);
-        m_repoPath->setErrorLabelVisible(!(validRepository && containsProjects));
-        SetDialogReady(validRepository && containsProjects);
+            isValidProjectRepo ? FormLineEditWidget::ValidationState::ValidationSuccess
+                               : FormLineEditWidget::ValidationState::ValidationFailed);
+        m_repoPath->setErrorLabelVisible(!isValidProjectRepo);
+        SetDialogReady(isValidProjectRepo);
     }
 
     void AddRemoteProjectDialog::DownloadObject()

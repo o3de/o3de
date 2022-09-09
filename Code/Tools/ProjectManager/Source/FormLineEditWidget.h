@@ -66,7 +66,7 @@ namespace O3DE::ProjectManager
         QLabel* m_processingSpinner = nullptr;
         QLabel* m_validationErrorIcon = nullptr;
         QLabel* m_validationSuccessIcon = nullptr;
-        ValidationState m_validationState;
+        ValidationState m_validationState = ValidationState::NotValidating;
 
     private slots:
         void flavorChanged();

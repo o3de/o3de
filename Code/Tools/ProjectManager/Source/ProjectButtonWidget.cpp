@@ -419,7 +419,7 @@ namespace O3DE::ProjectManager
         m_projectNameLabel->refreshStyle(); // important for styles to work correctly
     }
 
-    void ProjectButton::SetState(enum ProjectButtonState state)
+    void ProjectButton::SetState(ProjectButtonState state)
     {
         m_currentState = state;
         ResetButtonWidgets();
