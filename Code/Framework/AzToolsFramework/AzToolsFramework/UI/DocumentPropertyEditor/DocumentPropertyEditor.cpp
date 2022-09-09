@@ -227,8 +227,10 @@ namespace AzToolsFramework
                         }
                         sharedColumnLayout->addItem(itemAt(layoutIndex + sharedWidgetIndex));
 
-                        // If a widget should be expanded, stretch it
-                        if (itemAt(layoutIndex + sharedWidgetIndex)->minimumSize().width() > 18)
+                        //! Stretch labels and large widgets to fill the space they are given,
+                        //! overrides alignment since the stretched widget acts as a spacer
+                        auto* elidingLabel = qobject_cast<AzQtComponents::ElidingLabel*>(currentWidget);
+                        if (itemAt(layoutIndex + sharedWidgetIndex)->minimumSize().width() > 18 || elidingLabel)
                         {
                             sharedColumnLayout->setStretch(sharedColumnLayout->count() - 1, 1);
                             stretchWidget = true;
