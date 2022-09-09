@@ -27,7 +27,7 @@ namespace AZ::Vulkan
         const uint32_t rwTextureIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteTexture);
         const uint32_t roBufferIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadBuffer);
         const uint32_t rwBufferIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteBuffer);
-        const uint32_t tlasIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::RTAccelerationStructure);
+        // const uint32_t tlasIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::RTAccelerationStructure);
         const uint32_t MaxBindlessIndices = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::Count) - 1; //-1 because we dont have unbounded tlas array
 
         {
@@ -104,7 +104,7 @@ namespace AZ::Vulkan
             layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
             layoutInfo.pBindings = bindings;
 
-            vkCreateDescriptorSetLayout(m_device->GetNativeDevice(), &layoutInfo, nullptr, &m_descriptorSetLayout);
+            m_device->GetContext().CreateDescriptorSetLayout(m_device->GetNativeDevice(), &layoutInfo, nullptr, &m_descriptorSetLayout);
 
             VkDescriptorSetAllocateInfo allocInfo{};
             allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -112,7 +112,7 @@ namespace AZ::Vulkan
             allocInfo.descriptorSetCount = 1;
             allocInfo.pSetLayouts = &m_descriptorSetLayout;
 
-            vkAllocateDescriptorSets(m_device->GetNativeDevice(), &allocInfo, &m_set);
+            m_device->GetContext().AllocateDescriptorSets(m_device->GetNativeDevice(), &allocInfo, &m_set);
         }
 
         for (size_t i = 0; i != MaxBindlessIndices; ++i)
@@ -128,8 +128,8 @@ namespace AZ::Vulkan
 
     void BindlessDescriptorPool::Shutdown()
     {
-        vkFreeDescriptorSets(m_device->GetNativeDevice(), m_pool->GetNativeDescriptorPool(), 1, &m_set);
-        vkDestroyDescriptorSetLayout(m_device->GetNativeDevice(), m_descriptorSetLayout, nullptr);
+        m_device->GetContext().FreeDescriptorSets(m_device->GetNativeDevice(), m_pool->GetNativeDescriptorPool(), 1, &m_set);
+        m_device->GetContext().DestroyDescriptorSetLayout(m_device->GetNativeDevice(), m_descriptorSetLayout, nullptr);
 
         m_pool.reset();
     }
@@ -158,7 +158,7 @@ namespace AZ::Vulkan
         imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         imageInfo.imageView = view->GetNativeImageView();
         write.pImageInfo = &imageInfo;
-        vkUpdateDescriptorSets(m_device->GetNativeDevice(), 1, &write, 0, nullptr);
+        m_device->GetContext().UpdateDescriptorSets(m_device->GetNativeDevice(), 1, &write, 0, nullptr);
 
         return index;
     }
@@ -174,7 +174,7 @@ namespace AZ::Vulkan
         imageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
         imageInfo.imageView = view->GetNativeImageView();
         write.pImageInfo = &imageInfo;
-        vkUpdateDescriptorSets(m_device->GetNativeDevice(), 1, &write, 0, nullptr);
+        m_device->GetContext().UpdateDescriptorSets(m_device->GetNativeDevice(), 1, &write, 0, nullptr);
 
         return index;
     }
@@ -194,7 +194,7 @@ namespace AZ::Vulkan
         bufferInfo.offset = bufferMemoryView.GetOffset() + viewDesc.m_elementSize * viewDesc.m_elementOffset;
         bufferInfo.range = viewDesc.m_elementSize * viewDesc.m_elementCount;
         write.pBufferInfo = &bufferInfo;
-        vkUpdateDescriptorSets(m_device->GetNativeDevice(), 1, &write, 0, nullptr);
+        m_device->GetContext().UpdateDescriptorSets(m_device->GetNativeDevice(), 1, &write, 0, nullptr);
 
         return index;
     }
@@ -214,7 +214,7 @@ namespace AZ::Vulkan
         bufferInfo.offset = bufferMemoryView.GetOffset() + viewDesc.m_elementSize * viewDesc.m_elementOffset;
         bufferInfo.range = viewDesc.m_elementSize * viewDesc.m_elementCount;
         write.pBufferInfo = &bufferInfo;
-        vkUpdateDescriptorSets(m_device->GetNativeDevice(), 1, &write, 0, nullptr);
+        m_device->GetContext().UpdateDescriptorSets(m_device->GetNativeDevice(), 1, &write, 0, nullptr);
 
         return index;
     }
@@ -242,7 +242,7 @@ namespace AZ::Vulkan
         bufferInfo.range = viewDesc.m_elementSize * viewDesc.m_elementCount;
         write.pBufferInfo = &bufferInfo;
         write.pNext = &tlasInfo;
-        vkUpdateDescriptorSets(m_device->GetNativeDevice(), 1, &write, 0, nullptr);
+        m_device->GetContext().UpdateDescriptorSets(m_device->GetNativeDevice(), 1, &write, 0, nullptr);
 
         return index;
     }
