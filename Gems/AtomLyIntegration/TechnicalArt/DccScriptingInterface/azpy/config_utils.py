@@ -176,8 +176,6 @@ def attach_debugger(debugger_type=_DCCSI_GDEBUGGER):
     # we only support wing right now
     # the default version is Wing Pro 8 (others not tested)
 
-    from DccScriptingInterface.Tools.IDE.Wing.config import wing_config
-    settings = wing_config.get_settings()
 
     # WINGHOME defaults to Wing Pro 8.x (other versions not tested)
     # Assumes the default install path: "C:\Program Files (x86)\Wing Pro WING_VERSION_MAJOR"
@@ -191,15 +189,6 @@ def attach_debugger(debugger_type=_DCCSI_GDEBUGGER):
 
     # or alternatively you can manually edit the copy in the ide install location.
     # such as: "WINGHOME": "C:\Program Files (x86)\Wing Pro 8\wingdbstub.py"
-
-    # ensure it's searchable on the sys.path
-    sys.path.append(settings.WING_APPDATA)
-
-    _DCCSI_GDEBUG = True
-    os.environ["DCCSI_GDEBUG"] = str(_DCCSI_GDEBUG)  # cast bools
-
-    _DCCSI_DEV_MODE = True
-    os.environ["DCCSI_DEV_MODE"] = str(_DCCSI_DEV_MODE)
 
     if debugger_type == 'WING':
         from azpy.test.entry_test import connect_wing

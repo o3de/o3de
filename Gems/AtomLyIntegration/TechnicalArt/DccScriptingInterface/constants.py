@@ -45,6 +45,12 @@ from DccScriptingInterface import ENVAR_DCCSI_LOGLEVEL
 # envar to get/set/override the engine root
 from DccScriptingInterface import ENVAR_O3DE_DEV
 
+# envar to get/set/override the o3de 3rdParty location
+from DccScriptingInterface import ENVAR_PATH_O3DE_3RDPARTY
+
+# envar related to PySide2 bootstrapping
+from DccScriptingInterface import ENVAR_QT_PLUGIN_PATH
+
 # a str path constructor for the dccsi 3rdParty site-dir
 from DccScriptingInterface import STR_DCCSI_PYTHON_LIB
 
@@ -79,6 +85,8 @@ from DccScriptingInterface import SLUG_MANIFEST_FILENAME
 
 # # {user_home}\.o3de\registry\bootstrap.setreg
 from DccScriptingInterface import SLUG_BOOTSTRAP_FILENAME
+
+from DccScriptingInterface import ENVAR_QT_PLUGIN_PATH
 
 # resolves the windows program install directory
 ENVAR_PROGRAMFILES_X86 = 'PROGRAMFILES(X86)'

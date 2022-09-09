@@ -53,6 +53,9 @@ _logging.captureWarnings(capture=True)
 # set this manually if you want to raise exceptions/warnings
 DCCSI_STRICT = False
 
+# set manually to allow this module to test PySide2 imports
+DCCSI_TEST_PYSIDE = False
+
 # default loglevel to info unless set
 ENVAR_DCCSI_LOGLEVEL = 'DCCSI_LOGLEVEL'
 DCCSI_LOGLEVEL = int(os.getenv(ENVAR_DCCSI_LOGLEVEL, _logging.INFO))
@@ -234,6 +237,7 @@ PATH_O3DE_BIN = None
 
 # envar for the 3rdParty
 ENVAR_PATH_O3DE_3RDPARTY = 'PATH_O3DE_3RDPARTY'
+PATH_O3DE_3RDPARTY = None
 
 try:
     import azlmbr.paths
@@ -645,66 +649,94 @@ if not PATH_O3DE_3RDPARTY:
             _LOGGER.exception(f'{e} , traceback =', exc_info=True)
             raise e
 
+_LOGGER.debug(f'Final {ENVAR_PATH_O3DE_3RDPARTY} is: {str(PATH_O3DE_3RDPARTY)}')
+# -------------------------------------------------------------------------
 
-_LOGGER.debug(f'Final {ENVAR_PATH_O3DE_3RDPARTY} is: {PATH_O3DE_3RDPARTY.as_posix()}')
 
+# -------------------------------------------------------------------------
 # first check if we can get from o3de
 ENVAR_QT_PLUGIN_PATH = 'QT_PLUGIN_PATH'
-try:
-    import azlmbr
-    import azlmbr.bus
-    params = azlmbr.qt.QtForPythonRequestBus(azlmbr.bus.Broadcast, 'GetQtBootstrapParameters')
-    QT_PLUGIN_PATH = Path(params.qtPluginsFolder)
-except:
-    QT_PLUGIN_PATH = None
 
-if not QT_PLUGIN_PATH:
-    # fallback, not future proof without editing file
-    # modify to be a grep?
-    # path constructor
-    QT_PLUGIN_PATH = Path(PATH_O3DE_3RDPARTY,
-                            'packages',
-                            'pyside2-5.15.2.1-py3.10-rev3-windows',
-                            'pyside2',
-                            'lib',
-                            'site-packages')
+if DCCSI_TEST_PYSIDE:
+    try:
+        import azlmbr
+        import azlmbr.bus
+        params = azlmbr.qt.QtForPythonRequestBus(azlmbr.bus.Broadcast, 'GetQtBootstrapParameters')
+        QT_PLUGIN_PATH = Path(params.qtPluginsFolder)
+    except:
+        QT_PLUGIN_PATH = None
 
-try:
-    QT_PLUGIN_PATH = QT_PLUGIN_PATH.resolve(strict=True)
-    os.environ[ENVAR_QT_PLUGIN_PATH] = str(QT_PLUGIN_PATH)
-    add_site_dir(QT_PLUGIN_PATH)
-except Exception as e:
-    _LOGGER.warning(f'{ENVAR_QT_PLUGIN_PATH} will not resolve: {QT_PLUGIN_PATH}')
-    _LOGGER.error(f'{e} , traceback =', exc_info=True)
-    if DCCSI_STRICT:
-        _LOGGER.exception(f'{e} , traceback =', exc_info=True)
-        raise e
+    if not QT_PLUGIN_PATH:
+        # fallback, not future proof without editing file
+        # modify to be a grep?
+        # path constructor
+        QT_PLUGIN_PATH = Path(PATH_O3DE_3RDPARTY,
+                                'packages',
+                                'pyside2-5.15.2.1-py3.10-rev3-windows',
+                                'pyside2',
+                                'lib',
+                                'site-packages')
 
-try:
-    import azlmbr
-    import azlmbr.bus
-    params = azlmbr.qt.QtForPythonRequestBus(azlmbr.bus.Broadcast, 'GetQtBootstrapParameters')
-    O3DE_QT_BIN = Path(params.qtBinaryFolder)
-except:
-    O3DE_QT_BIN = PATH_O3DE_BIN
+    try:
+        QT_PLUGIN_PATH = QT_PLUGIN_PATH.resolve(strict=True)
+        os.environ[ENVAR_QT_PLUGIN_PATH] = str(QT_PLUGIN_PATH)
+        add_site_dir(QT_PLUGIN_PATH)
+    except Exception as e:
+        _LOGGER.warning(f'{ENVAR_QT_PLUGIN_PATH} will not resolve: {QT_PLUGIN_PATH}')
+        _LOGGER.error(f'{e} , traceback =', exc_info=True)
+        if DCCSI_STRICT:
+            _LOGGER.exception(f'{e} , traceback =', exc_info=True)
+            raise e
 
-if len(str(O3DE_QT_BIN)) and sys.platform.startswith('win'):
-    path = os.environ['PATH']
-    new_path = ''
-    new_path += str(O3DE_QT_BIN) + os.pathsep
-    new_path += path
-    os.environ['PATH'] = new_path
-    add_site_dir(O3DE_QT_BIN)
+    try:
+        import azlmbr
+        import azlmbr.bus
+        params = azlmbr.qt.QtForPythonRequestBus(azlmbr.bus.Broadcast, 'GetQtBootstrapParameters')
+        O3DE_QT_BIN = Path(params.qtBinaryFolder)
+    except:
+        O3DE_QT_BIN = PATH_O3DE_BIN
 
-try:
-    from PySide2.QtWidgets import QPushButton
-    _LOGGER.debug('PySide2 bootstrapped PATH for Windows.')
-except ImportError as e:
-    _LOGGER.debug('Cannot import PySide2.')
-    _LOGGER.error(f'{e} , traceback =', exc_info=True)
-    if DCCSI_STRICT:
-        _LOGGER.exception(f'{e} , traceback =', exc_info=True)
-        raise e
+    if len(str(O3DE_QT_BIN)) and sys.platform.startswith('win'):
+        path = os.environ['PATH']
+        new_path = ''
+        new_path += str(O3DE_QT_BIN) + os.pathsep
+        new_path += path
+        os.environ['PATH'] = new_path
+        add_site_dir(O3DE_QT_BIN)
+
+    try:
+        import PySide2
+        from PySide2.QtWidgets import QPushButton
+        _LOGGER.debug('PySide2 bootstrapped PATH for Windows.')
+    except ImportError as e:
+        _LOGGER.debug('Cannot import PySide2.')
+        _LOGGER.error(f'{e} , traceback =', exc_info=True)
+        if DCCSI_STRICT:
+            _LOGGER.exception(f'{e} , traceback =', exc_info=True)
+            raise e
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+from dynaconf import LazySettings
+
+# settings = LazySettings(
+#     # Loaded first
+#     PRELOAD_FOR_DYNACONF=["/path/*", "other/settings.toml"],
+#     # Loaded second (the main file)
+#     SETTINGS_FILE_FOR_DYNACONF="/etc/foo/settings.py",
+#     #Loaded at the end
+#     INCLUDES_FOR_DYNACONF=["other.module.settings", "other/settings.yaml"]
+#     )
+
+PATH_DCCSIG_SETTINGS = PATH_DCCSIG.joinpath('settings.json').resolve()
+PATH_DCCSIG_LOCAL_SETTINGS = PATH_DCCSIG.joinpath('settings.local.json').resolve()
+settings = LazySettings(
+    SETTINGS_FILE_FOR_DYNACONF=PATH_DCCSIG_SETTINGS.as_posix(),
+    INCLUDES_FOR_DYNACONF=[PATH_DCCSIG_LOCAL_SETTINGS.as_posix()]
+)
+settings.setenv()
+# -------------------------------------------------------------------------
 
 _MODULE_END = timeit.default_timer() - __MODULE_START
 _LOGGER.debug(f'{_PACKAGENAME}.init complete')

@@ -56,6 +56,8 @@ sys.path.append(O3DE_DEV.as_posix())
 site.addsitedir(O3DE_DEV.as_posix())
 _LOGGER.debug(f'{ENVAR_O3DE_DEV}: {O3DE_DEV.as_posix()}') # debug tracking
 
+from DccScriptingInterface import DCCSI_STRICT
+
 from DccScriptingInterface.constants import ENVAR_DCCSI_GDEBUG
 from DccScriptingInterface.constants import ENVAR_DCCSI_DEV_MODE
 from DccScriptingInterface.constants import ENVAR_DCCSI_GDEBUGGER

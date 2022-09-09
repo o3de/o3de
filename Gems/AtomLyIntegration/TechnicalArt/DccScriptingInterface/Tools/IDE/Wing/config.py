@@ -38,6 +38,13 @@ import DccScriptingInterface.config as dccsi_core_config
 # this will initialize the core dynamic config, settings and env
 # if the Qt/PySide envars are set, it can cause some Qt based apps to fail
 # wing happens to be one of them, this is disabled for wing\start.py to perform
+
+# we also don't want o3de python to mesh with wings python?
+# any module, or tool, the need them can reinit the config
+# the problem with not doing it, is then we are not passing o3de python
+# info to wing, such as launch interpretter DCCSI_PY_IDE
+# wing's default interpretter won't have access to o3de packages, etc.
+# but maybe they could be installed into wing with foundation.py?
 _settings_core = dccsi_core_config.get_config_settings(enable_o3de_python=True,
                                                        enable_o3de_pyside2=False,
                                                        set_env=True)
@@ -68,6 +75,7 @@ if DCCSI_TESTS: # from DccScriptingInterface.globals
     pass
 
 # this is the root path for the wing pkg
+from DccScriptingInterface.Tools.IDE.Wing import ENVAR_PATH_DCCSI_TOOLS_IDE_WING
 from DccScriptingInterface.Tools.IDE.Wing import PATH_DCCSI_TOOLS_IDE_WING
 # -------------------------------------------------------------------------
 
@@ -87,18 +95,30 @@ from DccScriptingInterface.azpy.config_class import ConfigClass
 
 # but it is suggested that when the core <dccsi>\config.py is re-written
 # as a ConfigClass, that the WingConfig inherits from that instead
+
+
+# wing_class is a class object of WingConfig
+# WingConfig is a child class of ConfigClass
 class WingConfig(ConfigClass):
-    """doc string"""
+    """Extend ConfigClass with new wing functionality"""
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         _LOGGER.info(f'Initializing: {self.get_classname()}')
 
-# build config
+# build config object
 wing_config = WingConfig(config_name='dccsi_ide_wing', auto_set=True)
+
+# in another module someone could work this way
+# from DccScriptingInterface.Tools.IDE.Wing.config import wing_config
+# settings = wing_config.get_settings(set_env=True)
 
 # a managed setting to track the eing config is enabled
 from Tools.IDE.Wing.constants import ENVAR_DCCSI_CONFIG_IDE_WING
 wing_config.add_setting(ENVAR_DCCSI_CONFIG_IDE_WING, True)
+
+# path to the Tools\IDE\Wing location
+wing_config.add_setting(ENVAR_PATH_DCCSI_TOOLS_IDE_WING,
+                        PATH_DCCSI_TOOLS_IDE_WING)
 
 # a managed envar for wing version
 from Tools.IDE.Wing.constants import ENVAR_DCCSI_WING_VERSION_MAJOR

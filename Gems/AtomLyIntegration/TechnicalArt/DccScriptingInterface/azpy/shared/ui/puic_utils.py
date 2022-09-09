@@ -36,9 +36,11 @@ _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH.as_posix()}')
 # be rewritten from ConfigClass, then WingConfig inherits core
 import DccScriptingInterface.config as dccsi_core_config
 
-_settings_core = dccsi_core_config.get_config_settings(enable_o3de_python=True,
-                                                       enable_o3de_pyside2=True,
-                                                       set_env=True)
+# this is currently disabled while trying to get wing to boot from o3de
+# Qt/PySide2 envars are propogating from o3de and cause a wing boot failure
+# _settings_core = dccsi_core_config.get_config_settings(enable_o3de_python=True,
+#                                                        enable_o3de_pyside2=True,
+#                                                        set_env=True)
 
 # ensure api access to the optional inclusion of pyside2tools
 from DccScriptingInterface.azpy.shared.ui import PATH_DCCSI_PYTHON_LIB
