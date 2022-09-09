@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#pragma optimize("", off)
+
 #include <AzToolsFramework/Prefab/Link/Link.h>
 
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
@@ -288,4 +288,3 @@ namespace AzToolsFramework
 
     } // namespace Prefab
 } // namespace AzToolsFramework
-#pragma optimize("", on)
