@@ -31,7 +31,7 @@ namespace O3DE::ProjectManager
         Q_OBJECT
 
     public:
-        explicit FormLineEditWidget(
+        FormLineEditWidget(
             const QString& labelText,
             const QString& valueText,
             const QString& placeholderText,

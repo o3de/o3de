@@ -348,12 +348,16 @@ namespace O3DE::ProjectManager
 
     void CreateGem::HandleNextButton()
     {
-        if (m_tabWidget->currentIndex() == 0 && ValidateGemTemplateLocation())
+        const int gemTemplateSelectionScreen = 0;
+        const int gemDetailsScreen = 1;
+        const int gemCreatorDetailsScreen = 2;
+
+        if (m_tabWidget->currentIndex() == gemTemplateSelectionScreen && ValidateGemTemplateLocation())
         {
             m_backButton->setVisible(true);
-            m_tabWidget->setCurrentIndex(1);
+            m_tabWidget->setCurrentIndex(gemDetailsScreen);
         }
-        else if (m_tabWidget->currentIndex() == 1)
+        else if (m_tabWidget->currentIndex() == gemDetailsScreen)
         {
             bool gemNameValid = ValidateGemName();
             bool gemDisplayNameValid = ValidateGemDisplayName();
@@ -370,11 +374,11 @@ namespace O3DE::ProjectManager
                 m_createGemInfo.m_path = m_gemLocation->lineEdit()->text();
                 m_createGemInfo.m_features = m_userDefinedGemTags->lineEdit()->text().split(',');
 
-                m_tabWidget->setCurrentIndex(2);
+                m_tabWidget->setCurrentIndex(gemCreatorDetailsScreen);
                 m_nextButton->setText(tr("Create"));
             }
         }
-        else if (m_tabWidget->currentIndex() == 2)
+        else if (m_tabWidget->currentIndex() == gemCreatorDetailsScreen)
         {
             bool originIsValid = ValidateFormNotEmpty(m_origin);
             bool repoURLIsValid = ValidateRepositoryURL();

@@ -20,7 +20,7 @@ namespace O3DE::ProjectManager
         Q_OBJECT
 
     public:
-        explicit FormFolderBrowseEditWidget(
+        FormFolderBrowseEditWidget(
             const QString& labelText,
             const QString& valueText,
             const QString& placeholderText,
