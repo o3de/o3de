@@ -1134,23 +1134,29 @@ namespace AzToolsFramework
             const auto& patchPath = operationIterator->GetDestinationPath();
             if (patchPath.Size() == 0)
             {
-                // If we're operating on the entire tree, go ahead and just reset
-                HandleReset();
+                // an empty path indicates a change to the top-level of the DOM, which is the adapter.
+                // Currently, this is meaningless to the DPE so just return.
                 return;
             }
             auto firstAddressEntry = patchPath[0];
 
-            AZ_Assert(
-                firstAddressEntry.IsIndex() || firstAddressEntry.IsEndOfArray(),
-                "first entry in a DPE patch must be the index of the first row");
+            const bool isIndex = (firstAddressEntry.IsIndex() || firstAddressEntry.IsEndOfArray());
+            AZ_Assert(isIndex, "first entry in a DPE patch must be the index of the first row");
             auto rowIndex = (firstAddressEntry.IsIndex() ? firstAddressEntry.GetIndex() : m_domOrderedRows.size());
-            AZ_Assert(
-                rowIndex < m_domOrderedRows.size() ||
-                    (rowIndex <= m_domOrderedRows.size() && operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Add),
-                "received a patch for a row that doesn't exist");
 
-            // if the patch points at our root, this operation is for the top level layout
-            if (patchPath.IsEmpty())
+            const bool indexInRange =
+                (rowIndex < m_domOrderedRows.size() ||
+                 (rowIndex <= m_domOrderedRows.size() && operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Add));
+            AZ_Assert(indexInRange, "received a patch for a row that doesn't exist");
+
+            if (!(isIndex && indexInRange))
+            {
+                // invalid input, bail
+                return;
+            }
+
+            // if there is only one level in the path, this operation is for the top layout
+            if (patchPath.Size() == 1)
             {
                 if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Add)
                 {

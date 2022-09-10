@@ -290,28 +290,33 @@ namespace AZ::Dom::Utils
 
     void* TryMarshalValueToPointer(const AZ::Dom::Value& value, const AZ::TypeId& expectedType)
     {
-        if (!value.IsObject())
+        if (value.IsObject())
         {
-            return nullptr;
-        }
-        auto typeIdIt = value.FindMember(TypeFieldName);
-        if (typeIdIt != value.MemberEnd() && typeIdIt->second.GetString() == PointerTypeName.GetStringView())
-        {
-            if (!expectedType.IsNull())
+            auto typeIdIt = value.FindMember(TypeFieldName);
+            if (typeIdIt != value.MemberEnd() && typeIdIt->second.GetString() == PointerTypeName.GetStringView())
             {
-                auto typeFieldIt = value.FindMember(PointerTypeFieldName);
-                if (typeFieldIt == value.MemberEnd())
+                if (!expectedType.IsNull())
                 {
-                    return nullptr;
+                    auto typeFieldIt = value.FindMember(PointerTypeFieldName);
+                    if (typeFieldIt == value.MemberEnd())
+                    {
+                        return nullptr;
+                    }
+                    AZ::TypeId actualTypeId = DomValueToTypeId(typeFieldIt->second);
+                    if (actualTypeId != expectedType)
+                    {
+                        return nullptr;
+                    }
                 }
-                AZ::TypeId actualTypeId = DomValueToTypeId(typeFieldIt->second);
-                if (actualTypeId != expectedType)
-                {
-                    return nullptr;
-                }
+                return reinterpret_cast<void*>(value[PointerValueFieldName].GetUint64());
             }
-            return reinterpret_cast<void*>(value[PointerValueFieldName].GetUint64());
         }
+        else if (value.IsOpaqueValue())
+        {
+            // the const_cast here isn't pretty, but it's necessary to get to a void* needed in so many places.
+            return AZStd::any_cast<void>(const_cast<AZStd::any*>(&value.GetOpaqueValue()));
+        }
+
         return nullptr;
     }
 
