@@ -296,7 +296,7 @@ namespace AZ
                 T* arrayPtr = reinterpret_cast<T*>(instance);
                 // forward_list can only erase the element after the found one
                 // so keep track of the element before the last
-                typename T::iterator prevIter{};
+                [[maybe_unused]] typename T::iterator prevIter{};
                 if constexpr (IsForwardList_v<T>)
                 {
                     prevIter = arrayPtr->before_begin();

@@ -7805,7 +7805,7 @@ namespace UnitTest
         DataType::Reflect(*this->GetSerializeContext());
 
         // Add 3 items to the container
-        typename TypeParam::iterator insertIter{};
+        [[maybe_unused]] typename TypeParam::iterator insertIter{};
         if constexpr (AZStd::same_as<TypeParam, AZStd::forward_list<int>>)
         {
             insertIter = this->m_holder.m_data.before_begin();

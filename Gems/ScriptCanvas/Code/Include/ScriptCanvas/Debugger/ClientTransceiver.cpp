@@ -168,7 +168,7 @@ namespace ScriptCanvas
         AzFramework::RemoteToolsEndpointInfo ClientTransceiver::GetNetworkTarget()
         {
             AzFramework::RemoteToolsEndpointInfo targetInfo;
-            if (AzFramework::IRemoteTools* remoteTools = RemoteToolsInterface::Get())
+            if (RemoteToolsInterface::Get())
             {
                 targetInfo = RemoteToolsInterface::Get()->GetDesiredEndpoint(ScriptCanvas::RemoteToolsKey);
             }
