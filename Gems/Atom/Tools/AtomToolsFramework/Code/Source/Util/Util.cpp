@@ -303,7 +303,6 @@ namespace AtomToolsFramework
 
         AZ::IO::FixedMaxPath referencePathWithoutAlias;
         AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(referencePathWithoutAlias, AZ::IO::PathView{ referencePath });
-        const AZ::IO::PathView referenceFolder = referencePathWithoutAlias.ParentPath();
 
         // If both paths are contained underneath the same watch folder hierarchy then attempt to construct a relative path between them.
         if (GetWatchFolder(exportPath) == GetWatchFolder(referencePath))
