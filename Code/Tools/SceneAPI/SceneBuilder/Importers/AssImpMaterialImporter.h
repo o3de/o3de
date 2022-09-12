@@ -31,7 +31,7 @@ namespace AZ
                 Events::ProcessingResult ImportMaterials(AssImpSceneNodeAppendedContext& context);
 
             private:
-                AZStd::string ResolveTexturePath(const AZStd::string& sceneFilePath, const AZStd::string& textureFilePath) const;
+                AZStd::string ResolveTexturePath(const AZStd::string& materialName, const AZStd::string& sceneFilePath, const AZStd::string& textureFilePath) const;
             };
         } // namespace SceneBuilder
     } // namespace SceneAPI

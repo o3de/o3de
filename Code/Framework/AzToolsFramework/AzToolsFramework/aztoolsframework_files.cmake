@@ -372,6 +372,7 @@ set(FILES
     UI/DocumentPropertyEditor/PropertyHandlerWidget.h
     UI/DocumentPropertyEditor/DocumentPropertyEditor.cpp
     UI/DocumentPropertyEditor/DocumentPropertyEditor.h
+    UI/DocumentPropertyEditor/IPropertyEditor.h
     UI/DocumentPropertyEditor/KeyQueryDPE.cpp
     UI/DocumentPropertyEditor/KeyQueryDPE.h
     UI/DocumentPropertyEditor/KeyQueryDPE.ui
