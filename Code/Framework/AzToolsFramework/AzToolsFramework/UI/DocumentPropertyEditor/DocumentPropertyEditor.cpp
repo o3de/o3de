@@ -185,6 +185,8 @@ namespace AzToolsFramework
 
             // used to iterate through the vector containing a shared column's first widget and size
             int sharedVectorIndex = 0;
+            // maximum width of small widgets, such as ContainerActionButtons
+            constexpr int maxWidth = 18;
             // iterate over each item, laying them left to right
             int layoutIndex = 0;
             const int itemCountActual = count();
@@ -230,7 +232,7 @@ namespace AzToolsFramework
                         //! Stretch labels and large widgets to fill the space they are given,
                         //! overrides alignment since the stretched widget acts as a spacer
                         auto* elidingLabel = qobject_cast<AzQtComponents::ElidingLabel*>(currentWidget);
-                        if (itemAt(layoutIndex + sharedWidgetIndex)->minimumSize().width() > 18 || elidingLabel)
+                        if (itemAt(layoutIndex + sharedWidgetIndex)->minimumSize().width() > maxWidth || elidingLabel)
                         {
                             sharedColumnLayout->setStretch(sharedColumnLayout->count() - 1, 1);
                             stretchWidget = true;
