@@ -196,7 +196,9 @@ namespace AzFramework
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
 
-        // Returns the name of the currently loaded level.
+        //! Returns the name of the currently loaded level.
+        //! Note: for spawnable level system, this is the cache folder path to the level asset. Example: levels/mylevel/mylevel.spawnable
+        //! @return Level name or empty string if no level loaded.
         virtual AZStd::string GetCurrentLevelName() = 0;
     };
     using LevelSystemLifecycleRequestBus = AZ::EBus<LevelSystemLifecycleRequests>;
@@ -208,8 +210,9 @@ namespace AzFramework
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
 
-        // Gives handlers the opportunity to block the loadlevel command.
-        // Return true to stop loading.
+        //! Gives handlers the opportunity to block the loadlevel command.
+        //! There can be multiple handlers for this bus; if any one of them return true the loadlevel command will be stopped.
+        //! @return Return true to stop loading.
         virtual bool ShouldBlockLevelLoading([[maybe_unused]]const char* levelName) { return false; }
     };
     using LevelLoadBlockerBus = AZ::EBus<LevelLoadBlockerRequests>;
