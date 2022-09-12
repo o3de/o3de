@@ -558,8 +558,9 @@ def test_get_device_file_timestamp_bad_timestamp_file(mock_adb_shell):
 
 def test_update_device_file_timestamp(tmpdir):
 
-    cache_dir = f'{TEST_DEV_ROOT}/{TEST_GAME_NAME}/Cache/{TEST_ASSET_TYPE}'
-    tmpdir.ensure(f'{cache_dir}/foo.txt')
+    tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_BUILD_DIR}/app/src/assets/deploy.timestamp").ensure()
+
+    # C:\Users\spham\AppData\Local\Temp\pytest-of-spham\pytest-168\test_update_device_file_timest0\Foo\android_gradle_test\app\src\assets\deploy.timestamp
 
     mock_dev_root = tmpdir.join(TEST_DEV_ROOT).realpath()
 
@@ -573,7 +574,7 @@ def test_update_device_file_timestamp(tmpdir):
                                                     game_name=TEST_GAME_NAME,
                                                     asset_mode=TEST_ASSET_MODE,
                                                     asset_type=TEST_ASSET_TYPE,
-                                                    embedded_assets=True,
+                                                    embedded_assets=False,
                                                     android_device_filter=None,
                                                     clean_deploy=False,
                                                     deployment_type=android_deployment.AndroidDeployment.DEPLOY_ASSETS_ONLY,
@@ -605,8 +606,8 @@ def test_execute_success(tmpdir, test_config, test_package_name, test_device_sto
     tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_BUILD_DIR}/app/build/outputs/apk/{test_config}/app-{test_config}.apk").ensure()
     expected_apk_path = str(tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_BUILD_DIR}/app/build/outputs/apk/{test_config}/app-{test_config}.apk").realpath())
 
-    tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_GAME_NAME}/Cache/{TEST_ASSET_TYPE}/dummy.txt").ensure()
-    expected_asset_path = str(tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_GAME_NAME}/Cache/{TEST_ASSET_TYPE}").realpath())
+    tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_BUILD_DIR}/app/src/assets/dummy.txt").ensure()
+    expected_asset_path = str(tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_BUILD_DIR}/app/src/assets").realpath())
 
     tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_BUILD_DIR}/app/src/main/assets/Registry/dummy.txt").ensure()
     expected_registry_path = str(tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_BUILD_DIR}/app/src/main/assets/Registry").realpath())
@@ -624,9 +625,17 @@ def test_execute_success(tmpdir, test_config, test_package_name, test_device_sto
                 return "SUCCESS"
             elif match_arg_list(arg_list, ['install', '-t', '-r', expected_apk_path]):
                 return "SUCCESS"
-            elif match_arg_list(arg_list, ['push', expected_asset_path, f'{test_device_storage_path}/Android/data/{test_package_name}/files']):
+            elif match_arg_list(arg_list, ['push', f'{expected_asset_path}/.', f'{test_device_storage_path}/Android/data/{test_package_name}/files']):
                 return "SUCCESS"
             elif match_arg_list(arg_list, ['push', expected_registry_path, expected_storage_registry_path]):
+                return "SUCCESS"
+            elif match_arg_list(arg_list, ['shell', 'cmd', 'package', 'list', 'packages', test_package_name]):
+                return "SUCCESS"
+            elif match_arg_list(arg_list, ['shell', f'mkdir {test_device_storage_path}/Android/data/{test_package_name}']):
+                return "SUCCESS"
+            elif match_arg_list(arg_list, ['shell', f'mkdir {test_device_storage_path}/Android/data/{test_package_name}/files']):
+                return "SUCCESS"
+            elif match_arg_list(arg_list, ['shell', f'mkdir {test_device_storage_path}/Android/data/{test_package_name}/files']):
                 return "SUCCESS"
 
         raise AssertionError
@@ -638,7 +647,7 @@ def test_execute_success(tmpdir, test_config, test_package_name, test_device_sto
          patch.object(android_deployment.AndroidDeployment, 'read_android_settings', return_value={'package_name': test_package_name}), \
          patch.object(android_deployment.AndroidDeployment, 'resolve_adb_tool', return_value=pathlib.Path("Foo")), \
          patch.object(android_deployment.AndroidDeployment, 'adb_call', wraps=_mock_adb_call) as mock_adb_call, \
-         patch.object(pathlib.Path, 'glob', return_value=["foo.bar"]):
+         patch.object(pathlib.Path, 'glob', return_value=[pathlib.Path("foo.bar")]):
 
         inst = android_deployment.AndroidDeployment(dev_root=mock_dev_root,
                                                     build_dir=TEST_BUILD_DIR,
@@ -655,7 +664,7 @@ def test_execute_success(tmpdir, test_config, test_package_name, test_device_sto
         inst.execute()
 
         mock_update_device_file_timestamp.assert_called_once()
-        assert mock_adb_call.call_count == 5
+        assert mock_adb_call.call_count == 6
 
 
 @pytest.mark.parametrize(
@@ -677,10 +686,9 @@ def test_execute_clean_deploy_success(tmpdir, test_game_name, test_config, test_
     tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_BUILD_DIR}/app/build/outputs/apk/{test_config}/app-{test_config}.apk").ensure()
     expected_apk_path = str(tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_BUILD_DIR}/app/build/outputs/apk/{test_config}/app-{test_config}.apk").realpath())
 
-    tmpdir.join(f"{TEST_DEV_ROOT}/{test_game_name}/Cache/{test_asset_type}/dummy.txt").ensure()
-    expected_asset_path = str(tmpdir.join(f"{TEST_DEV_ROOT}/{test_game_name}/Cache/{test_asset_type}").realpath())
+    tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_BUILD_DIR}/app/src/assets/Registry/dummy.txt").ensure()
+    expected_asset_path = str(tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_BUILD_DIR}/app/src/assets").realpath())
 
-    tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_BUILD_DIR}/app/src/main/assets/Registry/dummy.txt").ensure()
     expected_registry_path = str(tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_BUILD_DIR}/app/src/main/assets/Registry").realpath())
 
     expected_storage_path = f'{test_device_storage_path}/Android/data/{test_package_name}/files'
@@ -703,15 +711,18 @@ def test_execute_clean_deploy_success(tmpdir, test_game_name, test_config, test_
                 return test_package_name
             elif match_arg_list(arg_list, ['uninstall', test_package_name]):
                 return "SUCCESS"
-            elif match_arg_list(arg_list, ['push', expected_asset_path, expected_storage_path]):
+            elif match_arg_list(arg_list, ['push', f'{expected_asset_path}/.', expected_storage_path]):
                 return "SUCCESS"
             elif match_arg_list(arg_list, ['push', expected_registry_path, expected_storage_registry_path]):
                 return "SUCCESS"
+            elif match_arg_list(arg_list, ['push', expected_registry_path, expected_storage_registry_path]):
+                return "SUCCESS"
+            #['push', 'C:\\Users\\spham\\AppData\\Local\\Temp\\pytest-of-spham\\pytest-156\\test_execute_clean_deploy_succ0\\Foo\\android_gradle_test\\app\\src\\assets/.', '/data/fool_storage/Android/data/org.o3de.foo/files']
 
         raise AssertionError
 
     def _mock_adb_shell(command, device_id):
-        assert command.startswith('rm -rf')
+        assert command.startswith('rm -rf') or command.startswith('mkdir')
 
     def _mock_adb_ls(path, device_id, args=None):
         if path == "/foo/bar":
@@ -730,7 +741,7 @@ def test_execute_clean_deploy_success(tmpdir, test_game_name, test_config, test_
          patch.object(android_deployment.AndroidDeployment, 'adb_call', wraps=_mock_adb_call) as mock_adb_call, \
          patch.object(android_deployment.AndroidDeployment, 'adb_shell', wraps=_mock_adb_shell) as mock_adb_shell, \
          patch.object(android_deployment.AndroidDeployment, 'adb_ls', wraps=_mock_adb_ls), \
-         patch.object(pathlib.Path, 'glob', return_value=["foo.bar"]):
+         patch.object(pathlib.Path, 'glob', return_value=[pathlib.Path("foo.bar")]):
 
         inst = android_deployment.AndroidDeployment(dev_root=mock_dev_root,
                                                     build_dir=TEST_BUILD_DIR,
@@ -746,8 +757,8 @@ def test_execute_clean_deploy_success(tmpdir, test_game_name, test_config, test_
 
         inst.execute()
 
-        assert mock_adb_call.call_count == 7
-        mock_adb_shell.assert_called_once()
+        assert mock_adb_call.call_count == 6
+        mock_adb_shell.assert_called()
         mock_update_device_file_timestamp.assert_called_once()
         mock_get_device_file_timestamp.assert_called_once()
         mock_detect_device_storage_path.assert_called_once()
@@ -773,9 +784,11 @@ def test_execute_incremental_deploy_success(tmpdir, test_config, test_package_na
     tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_BUILD_DIR}/app/build/outputs/apk/{test_config}/app-{test_config}.apk").ensure()
     expected_apk_path = str(tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_BUILD_DIR}/app/build/outputs/apk/{test_config}/app-{test_config}.apk").realpath())
 
-    tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_GAME_NAME}/Cache/{TEST_ASSET_TYPE}/dummy.txt").ensure()
+    #tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_GAME_NAME}/Cache/{TEST_ASSET_TYPE}/dummy.txt").ensure()
+    #tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_BUILD_DIR}/app/src/assets/Registry/dummy.txt").ensure()
+    # "C:\Users\spham\AppData\Local\Temp\pytest-of-spham\pytest-150\test_execute_incremental_deplo0\Foo\android_gradle_test\app\src\assets"
 
-    tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_BUILD_DIR}/app/src/main/assets/Registry/dummy.txt").ensure()
+    tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_BUILD_DIR}/app/src/assets/Registry/dummy.txt").ensure()
     expected_registry_path = str(tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_BUILD_DIR}/app/src/main/assets/Registry").realpath())
 
     expected_storage_registry_path = f'{test_device_storage_path}/Android/data/{test_package_name}/files/Registry'
@@ -791,6 +804,12 @@ def test_execute_incremental_deploy_success(tmpdir, test_config, test_package_na
             elif match_arg_list(arg_list, ['install', '-t', '-r', expected_apk_path]):
                 return "SUCCESS"
             elif match_arg_list(arg_list, ['push', expected_registry_path, expected_storage_registry_path]):
+                return "SUCCESS"
+            elif match_arg_list(arg_list, ['shell', 'cmd', 'package', 'list', 'packages', test_package_name]):
+                return "SUCCESS"
+            elif match_arg_list(arg_list, ['shell', f'mkdir {test_device_storage_path}/Android/data/{test_package_name}']):
+                return "SUCCESS"
+            elif match_arg_list(arg_list, ['shell', f'mkdir {test_device_storage_path}/Android/data/{test_package_name}/files']):
                 return "SUCCESS"
             elif len(arg_list) == 3 and arg_list[0] == 'push' and arg_list[1] == 'foo.bar':
                 return "SUCCESS"
@@ -808,7 +827,7 @@ def test_execute_incremental_deploy_success(tmpdir, test_config, test_package_na
          patch.object(android_deployment.AndroidDeployment, 'resolve_adb_tool', return_value=pathlib.Path("Foo")), \
          patch.object(android_deployment.AndroidDeployment, 'adb_call', wraps=_mock_adb_call) as mock_adb_call, \
          patch.object(android_deployment.AndroidDeployment, 'should_copy_file', wraps=_mock_should_copy_file), \
-         patch.object(pathlib.Path, 'glob', return_value=["foo.bar", "no.bar"]):
+         patch.object(pathlib.Path, 'glob', return_value=[pathlib.Path("foo.bar"), pathlib.Path("no.bar")]):
 
         inst = android_deployment.AndroidDeployment(dev_root=mock_dev_root,
                                                     build_dir=TEST_BUILD_DIR,
