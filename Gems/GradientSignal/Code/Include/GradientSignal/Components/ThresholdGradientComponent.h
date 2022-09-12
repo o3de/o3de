@@ -34,7 +34,7 @@ namespace GradientSignal
         float m_threshold = 0.5f;
     };
 
-    static const AZ::Uuid ThresholdGradientComponentTypeId = "{CCE70521-E2D8-4304-B748-1E37A6DC57BF}";
+    inline constexpr AZ::TypeId ThresholdGradientComponentTypeId{ "{CCE70521-E2D8-4304-B748-1E37A6DC57BF}" };
 
     /**
     * calculates a gradient value by converting values from another gradient to 0 or 1

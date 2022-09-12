@@ -24,8 +24,7 @@ namespace ImageProcessingAtom
     const char* TextureSettings::ExtensionName = ".assetinfo";
 
     TextureSettings::TextureSettings()
-        : m_presetId(0)
-        , m_sizeReduceLevel(0)
+        : m_sizeReduceLevel(0)
         , m_suppressEngineReduce(false)
         , m_enableMipmap(true)
         , m_maintainAlphaCoverage(false)
@@ -231,7 +230,7 @@ namespace ImageProcessingAtom
 
         // If the suggested preset doesn't exist (or was failed to be loaded), return empty texture settings
         if (BuilderSettingManager::Instance()->GetPreset(suggestedPreset) == nullptr)
-        {            
+        {
             AZ_Error("Image Processing", false, "Failed to find suggested preset [%s]", suggestedPreset.GetCStr());
             return settings;
         }
@@ -273,7 +272,7 @@ namespace ImageProcessingAtom
         {
             textureSettingsOut = baseTextureSettings;
         }
-        
+
         return STRING_OUTCOME_SUCCESS;
     }
 

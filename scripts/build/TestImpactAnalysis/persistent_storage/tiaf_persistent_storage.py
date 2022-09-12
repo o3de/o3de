@@ -97,7 +97,7 @@ class PersistentStorage(ABC):
                 logger.info("No previous test run data found.")
 
             # Create the active workspace directory for the unpacked historic data files so they are accessible by the runtime
-            self._active_workspace.mkdir(exist_ok=True)
+            self._active_workspace.mkdir(exist_ok=True, parents=True)
 
             # Coverage file
             logger.info(f"Writing coverage data to '{self._unpacked_coverage_data_file}'.")

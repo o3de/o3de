@@ -29,6 +29,7 @@ ly_add_target(
             3rdParty::Qt::Core
             3rdParty::Qt::Widgets
             AZ::AzCore
+            AZ::AzQtComponents
             AZ::AzToolsFramework
             AZ::SceneCore
             AZ::SceneUI

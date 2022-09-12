@@ -18,7 +18,7 @@ namespace AZ
     {
         namespace ChromaticAberration
         {
-            static constexpr const char* const EditorChromaticAberrationComponentTypeId = "{2F6115F3-C6C4-47ED-8F06-11006F190A68}";
+            inline constexpr AZ::TypeId EditorChromaticAberrationComponentTypeId{ "{2F6115F3-C6C4-47ED-8F06-11006F190A68}" };
         }
 
         class EditorChromaticAberrationComponent final

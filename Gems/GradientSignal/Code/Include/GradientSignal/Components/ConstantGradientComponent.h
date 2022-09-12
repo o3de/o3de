@@ -31,7 +31,7 @@ namespace GradientSignal
         float m_value = 1.0f;
     };
 
-    static const AZ::Uuid ConstantGradientComponentTypeId = "{08785CA9-FD25-4036-B8A0-E0ED65C6E54B}";
+    inline constexpr AZ::TypeId ConstantGradientComponentTypeId{ "{08785CA9-FD25-4036-B8A0-E0ED65C6E54B}" };
 
     /**
     * always returns a constant value as a gradient

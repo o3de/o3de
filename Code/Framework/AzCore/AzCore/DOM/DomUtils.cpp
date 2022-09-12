@@ -328,7 +328,7 @@ namespace AZ::Dom::Utils
         return result;
     }
 
-    const AZ::TypeId& GetValueTypeId(const Dom::Value& value)
+    AZ::TypeId GetValueTypeId(const Dom::Value& value)
     {
         switch (value.GetType())
         {

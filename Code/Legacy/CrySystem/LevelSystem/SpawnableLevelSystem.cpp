@@ -203,7 +203,7 @@ namespace LegacyLevelSystem
         AZStd::string validLevelName;
         AZ::Data::AssetId rootSpawnableAssetId;
         AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-            rootSpawnableAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, levelName, nullptr, false);
+            rootSpawnableAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, levelName, AZ::Data::AssetType{}, false);
 
         if (rootSpawnableAssetId.IsValid())
         {
@@ -220,7 +220,7 @@ namespace LegacyLevelSystem
 
                 AZ::Data::AssetCatalogRequestBus::BroadcastResult(
                     rootSpawnableAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, possibleLevelAssetPath.c_str(),
-                    nullptr, false);
+                    AZ::Data::AssetType{}, false);
 
                 if (rootSpawnableAssetId.IsValid())
                 {
@@ -281,7 +281,7 @@ namespace LegacyLevelSystem
 
         AZ::Data::AssetId rootSpawnableAssetId;
         AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-            rootSpawnableAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, levelName, nullptr, false);
+            rootSpawnableAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, levelName, AZ::Data::AssetType{}, false);
         if (!rootSpawnableAssetId.IsValid())
         {
             OnLoadingError(levelName, "AssetCatalog has no entry for the requested level.");
@@ -373,7 +373,7 @@ namespace LegacyLevelSystem
     {
         AZ::Data::AssetId rootSpawnableAssetId;
         AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-            rootSpawnableAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, levelName, nullptr, false);
+            rootSpawnableAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, levelName, AZ::Data::AssetType{}, false);
         if (!rootSpawnableAssetId.IsValid())
         {
             // alert the listener
