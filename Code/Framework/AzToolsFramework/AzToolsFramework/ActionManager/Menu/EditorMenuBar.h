@@ -36,10 +36,10 @@ namespace AzToolsFramework
 
         void AddMenu(int sortKey, AZStd::string menuIdentifier);
         
-        // Returns whether the menu queried is contained in this menu.
+        // Returns whether the menu queried is contained in this menu bar.
         bool ContainsMenu(const AZStd::string& menuIdentifier) const;
 
-        // Returns the sort key for the queried menu, or 0 if it's not found.
+        // Returns the sort key for the queried menu, or AZStd::nullopt if it's not found.
         AZStd::optional<int> GetMenuSortKey(const AZStd::string& menuIdentifier) const;
         
         // Returns the pointer to the menu bar.

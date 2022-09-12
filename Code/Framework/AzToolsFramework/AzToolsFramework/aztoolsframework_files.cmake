@@ -34,6 +34,8 @@ set(FILES
     ActionManager/Menu/MenuManagerInternalInterface.h
     ActionManager/ToolBar/EditorToolBar.cpp
     ActionManager/ToolBar/EditorToolBar.h
+    ActionManager/ToolBar/EditorToolBarArea.cpp
+    ActionManager/ToolBar/EditorToolBarArea.h
     ActionManager/ToolBar/ToolBarManager.cpp
     ActionManager/ToolBar/ToolBarManager.h
     ActionManager/ToolBar/ToolBarManagerInterface.h
