@@ -27,3 +27,11 @@ class EditorQtContainer:
 
         self.variable_manager = wapper_variable_manager.WrapperQTVariableManager(self.wrapper_sc_editor.sc_editor)
 
+    def get_SC_editor_wrapper(self):
+
+        return self.wrapper_sc_editor
+
+    def get_variable_manager(self):
+
+        return self.variable_manager
+

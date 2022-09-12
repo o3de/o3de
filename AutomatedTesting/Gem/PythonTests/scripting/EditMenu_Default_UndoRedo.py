@@ -58,20 +58,20 @@ def EditMenu_Default_UndoRedo():
     from editor_python_test_tools.utils import Report
     import azlmbr.legacy.general as general
     import editor_python_test_tools.script_canvas_tools_qt as SC_tools_qt
-    from scripting_utils.scripting_constants import (WAIT_TIME_3, SCRIPT_CANVAS_UI, VARIABLE_TYPES)
+    from scripting_utils.scripting_constants import (WAIT_TIME_3, SCRIPT_CANVAS_UI)
 
     general.idle_enable(True)
 
     # 1) Open Script Canvas window
-    general.open_pane(SCRIPT_CANVAS_UI)
-    helper.wait_for_condition(lambda: general.is_pane_visible(SCRIPT_CANVAS_UI), WAIT_TIME_3)
+    SC_tools_qt.open_script_canvas()
     SC_tools_qt.initialize_qt_script_canvas_objects()
 
     # 2) Create Graph
     SC_tools_qt.create_new_sc_graph()
 
     # 3) Create and verify the new variable exists in variable manager
-    SC_tools_qt.create_new_SC_variable(VARIABLE_TYPES[0])
+    variable_types = SC_tools_qt.get_variable_types()
+    SC_tools_qt.create_new_SC_variable(variable_types.Boolean)
     row_count = SC_tools_qt.verify_SC_variable_count(VARIABLE_COUNT_BEFORE)
     Report.result(Tests.variable_created, helper.wait_for_condition(
         lambda: row_count, WAIT_TIME_3))
@@ -89,7 +89,7 @@ def EditMenu_Default_UndoRedo():
         lambda: row_count, WAIT_TIME_3))
 
     # 6) Close SC window
-    general.close_pane(SCRIPT_CANVAS_UI)
+    SC_tools_qt.close_script_canvas()
 
 
 if __name__ == "__main__":

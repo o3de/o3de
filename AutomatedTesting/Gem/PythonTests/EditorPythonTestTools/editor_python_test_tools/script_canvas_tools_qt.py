@@ -13,6 +13,7 @@ import pyside_utils
 import editor_python_test_tools.hydra_editor_utils as hydra
 from editor_python_test_tools.editor_entity_utils import EditorEntity
 import editor_python_test_tools.EditorQtContainer as qtContainer
+from types import SimpleNamespace
 import azlmbr.editor as editor
 import azlmbr.math as math
 import azlmbr.bus as bus
@@ -24,7 +25,7 @@ from scripting_utils.scripting_constants import (SCRIPT_CANVAS_UI, ASSET_EDITOR_
                                                  VARIABLE_MANAGER_QT, NODE_INSPECTOR_QT, NODE_INSPECTOR_UI, SCRIPT_EVENT_UI,
                                                  VARIABLE_PALETTE_QT, ADD_BUTTON_QT, VARIABLE_TYPES, EVENTS_QT, DEFAULT_SCRIPT_EVENT,
                                                  SCRIPT_EVENT_FILE_PATH, PARAMETERS_QT, VARIABLE_MANAGER_QT, NODE_INSPECTOR_QT,
-                                                 NODE_INSPECTOR_UI, VARIABLE_PALETTE_QT, ADD_BUTTON_QT, VARIABLE_TYPES,
+                                                 NODE_INSPECTOR_UI, VARIABLE_PALETTE_QT, ADD_BUTTON_QT, VARIABLE_TYPES_DICT,
                                                  SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, ENTITY_STATES, GRAPH_VARIABLES_QT)
 
 """
@@ -73,8 +74,18 @@ def initialize_qt_script_canvas_objects():
 
     EDITOR_QT_CONTAINER.initialize_SC_objects()
     EDITOR_QT_CONTAINER.initialize_variable_manager()
-    #EDITOR_QT_CONTAINER.variable_manager = EDITOR_QT_CONTAINER.sc_editor.findChild(QtWidgets.QDockWidget, VARIABLE_MANAGER_QT)
     return EDITOR_QT_CONTAINER
+
+
+def get_variable_types():
+    """
+    function for getting easy to use container of variable types off the constants file
+
+    returns: simple namespace container that allows you to access variable types (strings) using dot notation
+    """
+    simple_namespace = SimpleNamespace(**VARIABLE_TYPES_DICT)
+
+    return simple_namespace
 
 
 def initialize_asset_editor_object(self):
@@ -144,6 +155,16 @@ def open_script_canvas():
     result = helper.wait_for_condition(lambda: general.is_pane_visible(SCRIPT_CANVAS_UI), WAIT_TIME_3)
     return result
 
+def close_script_canvas():
+    """
+    function for closing the script canvas UI
+
+    returns true / false result of helper function's attempt
+    """
+    general.close_pane(SCRIPT_CANVAS_UI)
+    result = helper.wait_for_condition(lambda: general.is_pane_visible(SCRIPT_CANVAS_UI) is False, WAIT_TIME_3)
+    return result
+
 def open_asset_editor():
     """
     function for opening the asset editor UI
@@ -162,7 +183,8 @@ def script_canvas_undo_action():
     returns None
     """
 
-    EDITOR_QT_CONTAINER.wrapper_sc_editor.trigger_undo_action()
+    wrapper_sc_editor = EDITOR_QT_CONTAINER.get_SC_editor_wrapper()
+    wrapper_sc_editor.trigger_undo_action()
 
 
 def script_canvas_redo_action():
@@ -171,8 +193,8 @@ def script_canvas_redo_action():
 
     returns None
     """
-
-    EDITOR_QT_CONTAINER.wrapper_sc_editor.trigger_redo_action()
+    wrapper_sc_editor = EDITOR_QT_CONTAINER.get_SC_editor_wrapper()
+    wrapper_sc_editor.trigger_redo_action()
 
 def canvas_node_palette_search(self, node_name, number_of_retries):
     """
@@ -283,7 +305,7 @@ def create_new_SC_variable(new_variable_type):
     returns: none
     """
 
-    variable_manager = EDITOR_QT_CONTAINER.variable_manager
+    variable_manager = EDITOR_QT_CONTAINER.get_variable_manager()
     variable_manager.make_new_variable(new_variable_type)
 
 
@@ -295,7 +317,8 @@ def verify_SC_variable_count(expected):
 
     returns true if the actual number of variables in the variable manager matches the expected number
     """
-    row_count = EDITOR_QT_CONTAINER.variable_manager.get_variable_count()
+    variable_manager = EDITOR_QT_CONTAINER.get_variable_manager()
+    row_count = variable_manager.get_variable_count()
 
     return expected == row_count
 
