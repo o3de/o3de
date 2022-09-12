@@ -167,7 +167,7 @@ namespace AssetProcessor
             }
         }
 
-        AZ::IO::Path outputPath = AZ::IO::Path(request.m_tempDirPath) / "bootstrap.game";
+        AZ::IO::Path outputPath = AZ::IO::Path(request.m_tempDirPath) / "bootstrap.game.";
         size_t extensionOffset = outputPath.Native().size();
 
         if (!platformCodes.empty())
