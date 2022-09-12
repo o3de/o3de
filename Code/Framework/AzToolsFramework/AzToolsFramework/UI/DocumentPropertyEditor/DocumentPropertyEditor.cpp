@@ -185,8 +185,6 @@ namespace AzToolsFramework
 
             // used to iterate through the vector containing a shared column's first widget and size
             int sharedVectorIndex = 0;
-            // maximum width of small widgets, such as ContainerActionButtons
-            constexpr int maxWidth = 18;
             // iterate over each item, laying them left to right
             int layoutIndex = 0;
             const int itemCountActual = count();
@@ -201,7 +199,9 @@ namespace AzToolsFramework
                     int numItems = m_sharePriorColumn[sharedVectorIndex].second;
                     int sharedWidgetIndex = 0;
                     // values used to remember the alignment of each widget
-                    bool startSpacer = false, endSpacer = false, stretchWidget = false;
+                    bool startSpacer = false, endSpacer = false;
+                    // number of widgets that should be set to their minimum size
+                    int minWidthCount = 0;
 
                     // Iterate over each item in the current shared column, adding them to a single layout
                     while (sharedWidgetIndex < numItems)
@@ -229,28 +229,33 @@ namespace AzToolsFramework
                         }
                         sharedColumnLayout->addItem(itemAt(layoutIndex + sharedWidgetIndex));
 
-                        //! Stretch labels and large widgets to fill the space they are given,
-                        //! overrides alignment since the stretched widget acts as a spacer
-                        auto* elidingLabel = qobject_cast<AzQtComponents::ElidingLabel*>(currentWidget);
-                        if (itemAt(layoutIndex + sharedWidgetIndex)->minimumSize().width() > maxWidth || elidingLabel)
+                        // If a widget should only take up its minimum width, do not stretch it
+                        if (m_minimumWidthWidgets.contains(currentWidget))
+                        {
+                            minWidthCount++;
+                        }
+                        else
                         {
                             sharedColumnLayout->setStretch(sharedColumnLayout->count() - 1, 1);
-                            stretchWidget = true;
                         }
                         sharedWidgetIndex++;
                     }
-                    // If all widgets in a column should be right aligned or center aligned
-                    if (startSpacer && !stretchWidget)
+
+                    // if all widgets in this shared column take up only their minimum width, set the appropriate alignment with spacers
+                    if (minWidthCount == numItems)
                     {
-                        QSpacerItem* spacer = new QSpacerItem(perItemWidth, 1, QSizePolicy::Expanding, QSizePolicy::Fixed);
-                        sharedColumnLayout->insertSpacerItem(0, spacer);
+                        if (startSpacer)
+                        {
+                            QSpacerItem* spacer = new QSpacerItem(perItemWidth, 1, QSizePolicy::Expanding, QSizePolicy::Fixed);
+                            sharedColumnLayout->insertSpacerItem(0, spacer);
+                        }
+                        if (endSpacer)
+                        {
+                            QSpacerItem* spacer = new QSpacerItem(perItemWidth, 1, QSizePolicy::Expanding, QSizePolicy::Fixed);
+                            sharedColumnLayout->addSpacerItem(spacer);
+                        }
                     }
-                    // If all widgets in a column should be left aligned or center aligned
-                    if (endSpacer && !stretchWidget)
-                    {
-                        QSpacerItem* spacer = new QSpacerItem(perItemWidth, 1, QSizePolicy::Expanding, QSizePolicy::Fixed);
-                        sharedColumnLayout->addSpacerItem(spacer);
-                    }
+
                     // Special case if this is the first column in a row
                     if (layoutIndex == 0)
                     {
@@ -360,6 +365,11 @@ namespace AzToolsFramework
     void DPELayout::WidgetAlignment(QWidget* alignedWidget, Qt::Alignment widgetAlignment)
     {
         m_widgetAlignment[alignedWidget] = widgetAlignment;
+    }
+
+    void DPELayout::AddMinimumWidthWidget(QWidget* widget)
+    {
+        m_minimumWidthWidgets.insert(widget);
     }
 
     DPERowWidget::DPERowWidget(int depth, DPERowWidget* parentRow)
@@ -531,7 +541,7 @@ namespace AzToolsFramework
                     m_columnLayout->WidgetAlignment(addedWidget, widgetAlignment);
                 }
 
-                //! If the sharePrior attribute is present, add the previous widget to the column layout.
+                //! If the SharePrior attribute is present, add the previous widget to the column layout.
                 //! Set the SharePrior boolean so we know to create a new shared column layout, or add to an existing one
                 auto sharePrior = AZ::Dpe::Nodes::PropertyEditor::SharePriorColumn.ExtractFromDomNode(childValue);
                 if (sharePrior.has_value() && sharePrior.value())
@@ -542,6 +552,13 @@ namespace AzToolsFramework
                 else
                 {
                     m_columnLayout->SetSharePrior(false);
+                }
+
+                // If the UseMinimumWidth attribute is present, add the widget to set of widgets using their minimum width
+                auto minimumWidth = AZ::Dpe::Nodes::PropertyEditor::UseMinimumWidth.ExtractFromDomNode(childValue);
+                if (sharePrior.has_value() && sharePrior.value())
+                {
+                    m_columnLayout->AddMinimumWidthWidget(addedWidget);
                 }
 
                 m_columnLayout->insertWidget(priorColumnIndex + 1, addedWidget);
