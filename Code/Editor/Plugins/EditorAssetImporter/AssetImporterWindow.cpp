@@ -234,11 +234,11 @@ void AssetImporterWindow::OpenFileInternal(const AZStd::string& filePath)
         {
             m_assetImporterDocument->LoadScene(filePath);
 
-            UpdateSceneDisplay({}); 
+            QTimer::singleShot(0, [&]() { UpdateSceneDisplay({}); });
         },
         [this]()
         {
-            HandleAssetLoadingCompleted();
+            QTimer::singleShot(0, [&]() { HandleAssetLoadingCompleted();});
         }, this);
         
     QFileInfo fileInfo(filePath.c_str());
