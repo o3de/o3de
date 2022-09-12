@@ -7,12 +7,13 @@
  */
 
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
-#include <AzFramework/StringFunc/StringFunc.h>
-#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzCore/IO/IOUtils.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/IO/FileIO.h>
 #include <AzCore/std/string/regex.h>
+#include <AzFramework/StringFunc/StringFunc.h>
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
 namespace AZ
 {
@@ -36,77 +37,95 @@ namespace AZ
                 AZStd::string sourcePath;
                 if (assetId.IsValid())
                 {
-                    const AZStd::string& productPath = GetProductPathByAssetId(assetId);
-                    if (!productPath.empty())
+                    bool sourceFileFound = false;
+                    AZ::Data::AssetInfo assetInfo;
+                    AZStd::string watchFolder;
+
+                    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                        sourceFileFound,
+                        &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourceUUID,
+                        assetId.m_guid,
+                        assetInfo,
+                        watchFolder);
+
+                    if (sourceFileFound)
                     {
-                        bool sourceFileFound = false;
-                        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(sourceFileFound, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetFullSourcePathFromRelativeProductPath, productPath, sourcePath);
-                        AZ::StringFunc::Path::Normalize(sourcePath);
+                        AzFramework::StringFunc::Path::ConstructFull(
+                            watchFolder.c_str(), assetInfo.m_relativePath.c_str(), sourcePath, true);
                     }
                 }
                 return sourcePath;
             }
 
-            AZStd::string ResolvePathReference(const AZStd::string& originatingSourceFilePath, const AZStd::string& referencedSourceFilePath)
+            AZStd::string ResolvePathReference(
+                const AZStd::string& originatingSourceFilePath, const AZStd::string& referencedSourceFilePath)
             {
-                // The IsAbsolute part prevents "second join parameter is an absolute path" warnings in StringFunc::Path::Join below
-                if (referencedSourceFilePath.empty() || AZ::IO::PathView{referencedSourceFilePath}.IsAbsolute())
+                // Convert incoming paths containing aliases into absolute paths
+                AZ::IO::FixedMaxPath originatingPath;
+                AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(originatingPath, AZ::IO::PathView{ originatingSourceFilePath });
+                AZ::IO::FixedMaxPath referencedPath;
+                AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(referencedPath, AZ::IO::PathView{ referencedSourceFilePath });
+
+                // If the referenced path is empty or absolute then the path does not need to be resolved and can be returned immediately
+                if (referencedPath.empty() || referencedPath.IsAbsolute())
                 {
-                    return referencedSourceFilePath;
+                    return referencedPath.LexicallyNormal().String();
                 }
 
-                AZStd::string normalizedReferencedPath = referencedSourceFilePath;
-                AzFramework::StringFunc::Path::Normalize(normalizedReferencedPath);
-
-                AZStd::string originatingSourceFolder = originatingSourceFilePath;
-                AzFramework::StringFunc::Path::StripFullName(originatingSourceFolder);
-
-                AZStd::string pathFromOriginatingFolder;
-                AzFramework::StringFunc::Path::Join(originatingSourceFolder.c_str(), referencedSourceFilePath.c_str(), pathFromOriginatingFolder);
+                // Compose a path from the originating source file folder to the referenced source file
+                AZ::IO::FixedMaxPath combinedPath = originatingPath.ParentPath();
+                combinedPath /= referencedPath;
 
                 bool assetFound = false;
                 AZ::Data::AssetInfo sourceInfo;
                 AZStd::string watchFolder;
 
                 // Try to find the source file starting at the originatingSourceFilePath, and return the full path
-                AzToolsFramework::AssetSystemRequestBus::BroadcastResult(assetFound, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath, pathFromOriginatingFolder.c_str(), sourceInfo, watchFolder);
+                AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                    assetFound,
+                    &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath,
+                    combinedPath.c_str(),
+                    sourceInfo,
+                    watchFolder);
                 if (assetFound)
                 {
-                    AZStd::string fullSourcePath;
-                    // Construct fails if either of the watchFolder (root) or the pathFromOriginatingFolder is empty.
+                    // Construct fails if either of the watchFolder (root) or the combinedPath is empty.
                     // For some testing purposes, root can be empty.
-                    if (AzFramework::StringFunc::Path::ConstructFull(watchFolder.c_str(), pathFromOriginatingFolder.c_str(), fullSourcePath, true))
+                    AZStd::string fullSourcePath;
+                    if (AzFramework::StringFunc::Path::ConstructFull(watchFolder.c_str(), combinedPath.c_str(), fullSourcePath, true))
                     {
                         return fullSourcePath;
                     }
-                    else
-                    {
-                        return pathFromOriginatingFolder;
-                    }
+
+                    return combinedPath.LexicallyNormal().String();
                 }
 
                 // Try to find the source file starting at the asset root, and return the full path
-                AzToolsFramework::AssetSystemRequestBus::BroadcastResult(assetFound, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath, normalizedReferencedPath.c_str(), sourceInfo, watchFolder);
+                AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                    assetFound,
+                    &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath,
+                    referencedPath.c_str(),
+                    sourceInfo,
+                    watchFolder);
                 if (assetFound)
                 {
-                    AZStd::string fullSourcePath;
-                    // Construct fails if either of the watchFolder (root) or the normalizedReferencedPath is empty.
+                    // Construct fails if either of the watchFolder (root) or the referencedPath is empty.
                     // For some testing purposes, root can be empty.
-                    if (AzFramework::StringFunc::Path::ConstructFull(watchFolder.c_str(), normalizedReferencedPath.c_str(), fullSourcePath, true))
+                    AZStd::string fullSourcePath;
+                    if (AzFramework::StringFunc::Path::ConstructFull(watchFolder.c_str(), referencedPath.c_str(), fullSourcePath, true))
                     {
                         return fullSourcePath;
                     }
-                    else
-                    {
-                        return normalizedReferencedPath;
-                    }
+
+                    return referencedPath.LexicallyNormal().String();
                 }
 
-                // If no source file could be found, just return the original reference path. Something else will probably fail and report errors.
-                return normalizedReferencedPath;
+                // If no source file was found, return the original reference path. Something else will probably fail and report errors.
+                return referencedPath.LexicallyNormal().String();
             }
 
-            AZStd::vector<AZStd::string> GetPossibleDepenencyPaths(const AZStd::string& originatingSourceFilePath, const AZStd::string& referencedSourceFilePath)
+            AZStd::vector<AZStd::string> GetPossibleDepenencyPaths(
+                const AZStd::string& originatingSourceFilePath, const AZStd::string& referencedSourceFilePath)
             {
                 AZStd::vector<AZStd::string> results;
 

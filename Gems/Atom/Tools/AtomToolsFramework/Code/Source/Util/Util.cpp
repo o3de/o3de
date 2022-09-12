@@ -271,40 +271,53 @@ namespace AtomToolsFramework
         return QProcess::startDetached(launchPath.c_str(), arguments, engineRoot.c_str());
     }
 
-    AZStd::string GetPathToExteralReference(
-        const AZStd::string& exportPath, const AZStd::string& referencePath, const bool relativeToExportPath)
+    AZStd::string GetWatchFolder(const AZStd::string& sourcePath)
     {
+        bool sourcePathFound = false;
+        AZ::Data::AssetInfo sourcePathInfo;
+        AZStd::string sourcePathWatchFolder;
+
+        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+            sourcePathFound,
+            &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath,
+            sourcePath.c_str(),
+            sourcePathInfo,
+            sourcePathWatchFolder);
+
+        return sourcePathWatchFolder;
+    }
+
+    AZStd::string GetPathToExteralReference(const AZStd::string& exportPath, const AZStd::string& referencePath)
+    {
+        // An empty reference path signifies that there is no external reference and we can return immediately.
         if (referencePath.empty())
         {
             return {};
         }
 
-        const AZStd::string exportPathWithoutAlias = GetPathWithoutAlias(exportPath);
-        const AZStd::string referencePathWithoutAlias = GetPathWithoutAlias(referencePath);
+        // Path aliases should be supported wherever possible to allow referencing files between different gems and projects. De-alias the
+        // paths to compare them and attempt to generate a relative path.
+        AZ::IO::FixedMaxPath exportPathWithoutAlias;
+        AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(exportPathWithoutAlias, AZ::IO::PathView{ exportPath });
+        const AZ::IO::PathView exportFolder = exportPathWithoutAlias.ParentPath();
 
-        if (!relativeToExportPath)
+        AZ::IO::FixedMaxPath referencePathWithoutAlias;
+        AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(referencePathWithoutAlias, AZ::IO::PathView{ referencePath });
+        const AZ::IO::PathView referenceFolder = referencePathWithoutAlias.ParentPath();
+
+        // If both paths are contained underneath the same watch folder hierarchy then attempt to construct a relative path between them.
+        if (GetWatchFolder(exportPath) == GetWatchFolder(referencePath))
         {
-            AZStd::string relativePath;
-            AZStd::string watchFolder;
-            AZ::Data::AssetInfo assetInfo;
-            bool relativePathFound = false;
-            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-                relativePathFound,
-                &AzToolsFramework::AssetSystemRequestBus::Events::GenerateRelativeSourcePath,
-                referencePathWithoutAlias.c_str(),
-                relativePath,
-                watchFolder);
-
-            if (relativePathFound)
+            const auto relativePath = referencePathWithoutAlias.LexicallyRelative(exportFolder);
+            if (!relativePath.empty())
             {
-                return relativePath;
+                return relativePath.StringAsPosix();
             }
         }
 
-        AZ::IO::BasicPath<AZStd::string> exportFolder(exportPathWithoutAlias);
-        exportFolder.RemoveFilename();
-
-        return AZ::IO::PathView(referencePathWithoutAlias).LexicallyRelative(exportFolder).StringAsPosix();
+        // If a relative path could not be constructed from the export path to the reference path then return the aliased path for the
+        // reference.
+        return GetPathWithAlias(referencePath);
     }
 
     bool SaveSettingsToFile(const AZ::IO::FixedMaxPath& savePath, const AZStd::vector<AZStd::string>& filters)
@@ -357,14 +370,16 @@ namespace AtomToolsFramework
 
     AZStd::string GetPathWithoutAlias(const AZStd::string& path)
     {
-        auto convertedPath = AZ::IO::FileIOBase::GetInstance()->ResolvePath(AZ::IO::PathView{ path });
-        return convertedPath ? convertedPath->StringAsPosix() : path;
+        AZ::IO::FixedMaxPath pathWithoutAlias;
+        AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(pathWithoutAlias, AZ::IO::PathView{ path });
+        return pathWithoutAlias.StringAsPosix();
     }
 
     AZStd::string GetPathWithAlias(const AZStd::string& path)
     {
-        auto convertedPath = AZ::IO::FileIOBase::GetInstance()->ConvertToAlias(AZ::IO::PathView{ path });
-        return convertedPath ? convertedPath->StringAsPosix() : path;
+        AZ::IO::FixedMaxPath pathWithAlias;
+        AZ::IO::FileIOBase::GetInstance()->ConvertToAlias(pathWithAlias, AZ::IO::PathView{ path });
+        return pathWithAlias.StringAsPosix();
     }
 
     AZStd::set<AZStd::string> GetPathsFromMimeData(const QMimeData* mimeData)
