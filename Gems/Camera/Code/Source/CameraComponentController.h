@@ -107,6 +107,7 @@ namespace Camera
         void SetFrustumHeight(float height) override;
         void SetOrthographic(bool orthographic) override;
         void SetOrthographicHalfWidth(float halfWidth) override;
+        void SetXRViewQuaternion(const AZ::Quaternion& viewQuat, uint32_t xrViewIndex) override;
 
         void MakeActiveView() override;
         bool IsActiveView() override;
@@ -125,6 +126,7 @@ namespace Camera
 
         // AZ::RPI::ViewProviderBus::Handler interface
         AZ::RPI::ViewPtr GetView() const override;
+        AZ::RPI::ViewPtr GetStereoscopicView(AZ::RPI::ViewType viewType) const override;
 
     private:
         AZ_DISABLE_COPY(CameraComponentController);

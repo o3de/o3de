@@ -185,7 +185,7 @@ namespace PhysX
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 AssetColliderConfiguration::Reflect(context);
-                serializeContext->ClassDeprecate("MeshAssetCookedData", "{82955F2F-4DA1-4AEF-ACEF-0AE16BA20EF4}");
+                serializeContext->ClassDeprecate("MeshAssetCookedData", AZ::Uuid("{82955F2F-4DA1-4AEF-ACEF-0AE16BA20EF4}"));
 
                 serializeContext->Class<MeshAssetData>()
                     ->Version(2)

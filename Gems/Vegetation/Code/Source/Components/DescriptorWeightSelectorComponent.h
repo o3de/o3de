@@ -34,7 +34,7 @@ namespace Vegetation
         GradientSignal::GradientSampler m_gradientSampler;
     };
 
-    static const AZ::Uuid DescriptorWeightSelectorComponentTypeId = "{D282AF06-4D89-4353-B4E5-92E5389C8EF7}";
+    inline constexpr AZ::TypeId DescriptorWeightSelectorComponentTypeId{ "{D282AF06-4D89-4353-B4E5-92E5389C8EF7}" };
 
     /**
     * Default placement logic for vegetation in an area

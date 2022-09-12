@@ -37,7 +37,7 @@ namespace AZ::IO
             {
                 // Read in the appropriate number of bytes on every loop iteration.
                 // (ex:  515 bytes requested will read 256 bytes, 256 bytes, and 3 bytes)
-                SizeType transferBytes = AZ::GetMin(bytes - windowOffset, aznumeric_cast<SizeType>(StreamToStreamCopyBufferSize));
+                SizeType transferBytes = AZStd::GetMin(bytes - windowOffset, aznumeric_cast<SizeType>(StreamToStreamCopyBufferSize));
 
                 SizeType bytesRead = inputStream->Read(transferBytes, tempBuffer);
                 if (bytesRead > 0)
