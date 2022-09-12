@@ -10,6 +10,7 @@
 #include <AzToolsFramework/ViewportUi/ViewportUiSwitcher.h>
 
 #include <QBitmap>
+#include <QPainter>
 
 namespace AzToolsFramework::ViewportUi::Internal
 {

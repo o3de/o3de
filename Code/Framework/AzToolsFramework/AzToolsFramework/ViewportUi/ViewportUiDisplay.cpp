@@ -356,7 +356,6 @@ namespace AzToolsFramework::ViewportUi::Internal
         m_uiOverlayLayout.setContentsMargins(ViewportElementMargins());
     };
 
-
     void ViewportUiDisplay::RemoveViewportBorder()
     {
         m_viewportBorderText.hide();
@@ -488,7 +487,7 @@ namespace AzToolsFramework::ViewportUi::Internal
             region -= QRect(
                 QPoint(m_uiOverlay.rect().left() + HighlightBorderSize, m_uiOverlay.rect().top() + ViewportUiTopBorderSize),
                 QPoint(m_uiOverlay.rect().right() - HighlightBorderSize, m_uiOverlay.rect().bottom() - HighlightBorderSize));
-            
+
             // if the user changes the size of their window, release the width of the border so the
             // overlay can resize
             if (m_viewportBorderText.width() != m_renderOverlay->width())

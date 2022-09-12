@@ -64,7 +64,6 @@ namespace ImGui
         //! in the case that the ImGui dropdown context has switched options.
         bool m_markedForHiding = false;
         bool m_showImGuiDemo = false;
-
     };
 }
 
