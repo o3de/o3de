@@ -61,16 +61,15 @@ def EditMenu_Default_UndoRedo():
     from scripting_utils.scripting_constants import (WAIT_TIME_3, SCRIPT_CANVAS_UI)
 
     general.idle_enable(True)
+    variable_types = SC_tools_qt.get_variable_types()
 
     # 1) Open Script Canvas window
     SC_tools_qt.open_script_canvas()
-    SC_tools_qt.initialize_qt_script_canvas_objects()
 
     # 2) Create Graph
     SC_tools_qt.create_new_sc_graph()
 
     # 3) Create and verify the new variable exists in variable manager
-    variable_types = SC_tools_qt.get_variable_types()
     SC_tools_qt.create_new_SC_variable(variable_types.Boolean)
     row_count = SC_tools_qt.verify_SC_variable_count(VARIABLE_COUNT_BEFORE)
     Report.result(Tests.variable_created, helper.wait_for_condition(

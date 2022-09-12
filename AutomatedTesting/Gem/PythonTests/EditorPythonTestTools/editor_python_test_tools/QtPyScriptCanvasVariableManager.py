@@ -13,7 +13,11 @@ from scripting_utils.scripting_constants import (VARIABLE_MANAGER_QT, VARIABLE_T
                                                  ADD_BUTTON_QT, WAIT_TIME_3, GRAPH_VARIABLES_QT)
 from editor_python_test_tools.utils import Report
 
-class WrapperQTVariableManager:
+
+class QtPyScriptCanvasVariableManager:
+    """
+    QtPy class for handling the behavior of the script canvas variable manager
+    """
 
     def __init__(self, sc_editor):
         self.variable_manager = sc_editor.findChild(QtWidgets.QDockWidget, VARIABLE_MANAGER_QT)

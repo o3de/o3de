@@ -9,7 +9,15 @@ Object to house all the Qt Objects used when testing and manipulating the O3DE U
 from PySide2 import QtWidgets
 from scripting_utils.scripting_constants import (SCRIPT_CANVAS_UI)
 
-class WrapperQTSCEditor:
+
+class QtPyScriptCanvasEditor:
+    """
+    QtPy class for handling the behavior of the Script Canvas editor.
+
+    Note: This class contains a reference to the SC editor's main window AND the SC editor itself. This was done because the other
+    QtPy elements such as the SC variable manager can be toggled on and off by the user but the main pane cannot. If a need
+    to separate the two objects is discovered the main pane object will be put into its own QtPy class
+    """
 
     def __init__(self, editor_main_window):
         self.sc_editor = editor_main_window.findChild(QtWidgets.QDockWidget, SCRIPT_CANVAS_UI)

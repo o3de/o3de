@@ -12,7 +12,7 @@ from editor_python_test_tools.utils import Report
 import pyside_utils
 import editor_python_test_tools.hydra_editor_utils as hydra
 from editor_python_test_tools.editor_entity_utils import EditorEntity
-import editor_python_test_tools.EditorQtContainer as qtContainer
+import editor_python_test_tools.QtPyWidgetContainer as qtContainer
 from types import SimpleNamespace
 import azlmbr.editor as editor
 import azlmbr.math as math
@@ -31,7 +31,7 @@ from scripting_utils.scripting_constants import (SCRIPT_CANVAS_UI, ASSET_EDITOR_
 """
 Editor Qt Object container for easy access
 """
-EDITOR_QT_CONTAINER = qtContainer.EditorQtContainer()
+EDITOR_QT_CONTAINER = qtContainer.QtPyWidgetContainer()
 
 class Tests():
     new_event_created = ("New Script Event created", "Failed to create a new event")
@@ -153,6 +153,9 @@ def open_script_canvas():
     """
     general.open_pane(SCRIPT_CANVAS_UI)
     result = helper.wait_for_condition(lambda: general.is_pane_visible(SCRIPT_CANVAS_UI), WAIT_TIME_3)
+
+    initialize_qt_script_canvas_objects()
+
     return result
 
 def close_script_canvas():
