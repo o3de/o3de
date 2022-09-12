@@ -148,6 +148,6 @@ namespace AzToolsFramework
 
     bool ComponentSwitcherEnabled()
     {
-        return GetRegistry(ComponentSwitcherEnabledSetting, false);
+        return GetRegistry(ComponentSwitcherEnabledSetting, true);
     }
 } // namespace AzToolsFramework
