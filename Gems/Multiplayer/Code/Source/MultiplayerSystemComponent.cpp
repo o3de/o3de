@@ -628,7 +628,7 @@ namespace Multiplayer
         if (currentLevel.empty())
         {
             AZLOG_WARN("Server does not have a multiplayer level loaded! Make sure the server has a level loaded before accepting clients.");
-            m_noLevelOnConnectEvent.Signal();
+            m_noServerLevelLoadedEvent.Signal();
         }
 
         if (connection->SendReliablePacket(MultiplayerPackets::Accept(currentLevel.c_str())))
@@ -658,7 +658,7 @@ namespace Multiplayer
             if (packet.GetMap().empty())
             {
                 AZLOG_WARN("Server did not provide a valid level to load! Make sure the server has a level loaded before connecting.");
-                m_noLevelOnConnectEvent.Signal();
+                m_noServerLevelLoadedEvent.Signal();
             }
             else
             {
@@ -1099,9 +1099,9 @@ namespace Multiplayer
         handler.Connect(m_levelLoadBlockedEvent);
     }
 
-    void MultiplayerSystemComponent::AddNoLevelOnConnectHandler(NoLevelOnConnectEvent::Handler& handler)
+    void MultiplayerSystemComponent::AddNoServerLevelLoadedHandler(NoServerLevelLoadedEvent::Handler& handler)
     {
-        handler.Connect(m_noLevelOnConnectEvent);
+        handler.Connect(m_noServerLevelLoadedEvent);
     }
 
     void MultiplayerSystemComponent::SendNotifyClientMigrationEvent(AzNetworking::ConnectionId connectionId, const HostId& hostId, uint64_t userIdentifier, ClientInputId lastClientInputId, NetEntityId controlledEntityId)

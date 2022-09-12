@@ -3101,13 +3101,6 @@ CCryEditApp::ECreateLevelResult CCryEditApp::CreateLevel(const QString& levelNam
         m_pDocManager->OnFileNew();
     }
 
-    ICVar* sv_map = gEnv->pConsole->GetCVar("sv_map");
-    if (sv_map)
-    {
-        sv_map->Set(levelName.toUtf8().data());
-    }
-
-
     GetIEditor()->GetDocument()->InitEmptyLevel(128, 1);
 
     GetIEditor()->SetStatusText("Creating Level...");

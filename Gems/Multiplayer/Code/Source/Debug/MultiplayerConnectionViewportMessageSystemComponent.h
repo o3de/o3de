@@ -59,8 +59,8 @@ namespace Multiplayer
         // Toast Messages
         static constexpr char CenterViewportToastTitle[] = "Multiplayer Alert";
         static constexpr char OnBlockedLevelLoadMessage[] = "Blocked level load; see log for details.";
-        static constexpr char OnNoLevelOnConnectMessageClientSide[] = "Server accept message did not provide a level.\nEnsure server has level loaded before connecting.";
-        static constexpr char OnNoLevelOnConnectMessageServerSide[] = "Client has connected, but we're not in a level.\nPlease load a valid multiplayer level before accepting clients.";
+        static constexpr char OnNoServerLevelLoadedMessageClientSide[] = "Server accept message did not provide a level.\nEnsure server has level loaded before connecting.";
+        static constexpr char OnNoServerLevelLoadedMessageServerSide[] = "A client has connected, but we're not in a level.\nPlease load a valid multiplayer level before accepting clients.";
 
         AZ_COMPONENT(MultiplayerConnectionViewportMessageSystemComponent, "{7600cfcf-e380-4876-aa90-8120e57205e9}");
 
@@ -98,8 +98,8 @@ namespace Multiplayer
         void OnBlockedLevelLoad();
         LevelLoadBlockedEvent::Handler m_levelLoadBlockedHandler = LevelLoadBlockedEvent::Handler([this](){OnBlockedLevelLoad();});
 
-        void OnNoLevelOnConnectEvent();
-        NoLevelOnConnectEvent::Handler m_noLevelOnConnectHandler = NoLevelOnConnectEvent::Handler([this](){OnNoLevelOnConnectEvent();});
+        void OnNoServerLevelLoadedEvent();
+        NoServerLevelLoadedEvent::Handler m_noServerLevelLoadedHandler = NoServerLevelLoadedEvent::Handler([this](){OnNoServerLevelLoadedEvent();});
         //! @}
 
         void DrawConnectionStatus(AzNetworking::ConnectionState connectionState, const AzNetworking::IpAddress& hostAddress);

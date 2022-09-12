@@ -641,11 +641,6 @@ ILevel* CLevelSystem::LoadLevelInternal(const char* _levelName)
 
     GetISystem()->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_LOAD_END, 0, 0);
 
-    if (auto cvar = gEnv->pConsole->GetCVar("sv_map"); cvar)
-    {
-        cvar->Set(levelName);
-    }
-
     gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_PRECACHE_START, 0, 0);
 
     return m_pCurrentLevel;

@@ -349,16 +349,6 @@ void CCryEditDoc::Load(TDocMultiArchive& arrXmlAr, const QString& szFilename)
     CLogFile::FormatLine("Loading from %s...", szFilename.toUtf8().data());
     QString szLevelPath = Path::GetPath(szFilename);
 
-    {
-        // Set game g_levelname variable to the name of current level.
-        QString szGameLevelName = Path::GetFileName(szFilename);
-        ICVar* sv_map = gEnv->pConsole->GetCVar("sv_map");
-        if (sv_map)
-        {
-            sv_map->Set(szGameLevelName.toUtf8().data());
-        }
-    }
-
     // Starts recording the opening of files using the level category
     if (auto archive = AZ::Interface<AZ::IO::IArchive>::Get(); archive && archive->GetRecordFileOpenList() == AZ::IO::IArchive::RFOM_EngineStartup)
     {

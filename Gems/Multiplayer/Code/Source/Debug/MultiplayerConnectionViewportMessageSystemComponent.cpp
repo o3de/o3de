@@ -57,13 +57,13 @@ namespace Multiplayer
         if (auto multiplayerSystemComponent = AZ::Interface<IMultiplayer>::Get())
         {
             multiplayerSystemComponent->AddLevelLoadBlockedHandler(m_levelLoadBlockedHandler);
-            multiplayerSystemComponent->AddNoLevelOnConnectHandler(m_noLevelOnConnectHandler);
+            multiplayerSystemComponent->AddNoServerLevelLoadedHandler(m_noServerLevelLoadedHandler);
         }
     }
 
     void MultiplayerConnectionViewportMessageSystemComponent::Deactivate()
     {
-        m_noLevelOnConnectHandler.Disconnect();
+        m_noServerLevelLoadedHandler.Disconnect();
         m_levelLoadBlockedHandler.Disconnect();
         MultiplayerEditorServerNotificationBus::Handler::BusDisconnect();
         AZ::RPI::ViewportContextNotificationBus::Handler::BusDisconnect();
@@ -403,7 +403,7 @@ namespace Multiplayer
         m_centerViewportDebugToastText = OnBlockedLevelLoadMessage;
     }
 
-    void MultiplayerConnectionViewportMessageSystemComponent::OnNoLevelOnConnectEvent()
+    void MultiplayerConnectionViewportMessageSystemComponent::OnNoServerLevelLoadedEvent()
     {
         const auto multiplayerSystemComponent = AZ::Interface<IMultiplayer>::Get();
         if (!multiplayerSystemComponent)
@@ -414,11 +414,11 @@ namespace Multiplayer
         const MultiplayerAgentType agentType = multiplayerSystemComponent->GetAgentType();
         if (agentType == MultiplayerAgentType::Client)
         {
-            m_centerViewportDebugToastText = OnNoLevelOnConnectMessageClientSide;
+            m_centerViewportDebugToastText = OnNoServerLevelLoadedMessageClientSide;
         }
         else
         {
-            m_centerViewportDebugToastText = OnNoLevelOnConnectMessageServerSide;
+            m_centerViewportDebugToastText = OnNoServerLevelLoadedMessageServerSide;
         }
         m_centerViewportDebugToastStartTime = static_cast<AZ::TimeMs>(AZStd::GetTimeUTCMilliSecond());
     }
