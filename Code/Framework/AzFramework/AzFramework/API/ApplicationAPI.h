@@ -200,6 +200,10 @@ namespace AzFramework
         //! Note: for spawnable level system, this is the cache folder path to the level asset. Example: levels/mylevel/mylevel.spawnable
         //! @return Level name or empty string if no level loaded.
         virtual AZStd::string GetCurrentLevelName() = 0;
+
+        //! Returns true if a level is currently loaded.
+        //! @return True if level is loaded; otherwise false.
+        virtual bool IsLevelLoaded() = 0;
     };
     using LevelSystemLifecycleRequestBus = AZ::EBus<LevelSystemLifecycleRequests>;
 
