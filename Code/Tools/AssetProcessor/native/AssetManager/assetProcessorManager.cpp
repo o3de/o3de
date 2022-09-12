@@ -3624,6 +3624,28 @@ namespace AssetProcessor
                 continue;
             }
 
+            if(!sourceFileDependency.m_sourceFileDependencyUUID.IsNull())
+            {
+                SourceInfo info;
+                if(SearchSourceInfoBySourceUUID(sourceFileDependency.m_sourceFileDependencyUUID, info))
+                {
+                    databaseSourceName = info.m_sourceDatabaseName;
+                }
+                else
+                {
+                    AZ_Warning(
+                        AssetProcessor::DebugChannel,
+                        false,
+                        "Unable to resolve job dependency for job (%s, %s, %s)\n",
+                        job.m_jobEntry.m_databaseSourceName.toUtf8().data(),
+                        job.m_jobEntry.m_jobKey.toUtf8().data(),
+                        job.m_jobEntry.m_platformInfo.m_identifier.c_str(),
+                        sourceFileDependency.m_sourceFileDependencyUUID.ToString<AZStd::string>().c_str());
+                    job.m_jobDependencyList.erase(jobDependencyInternal);
+                    continue;
+                }
+            }
+
             sourceFileDependency.m_sourceFileDependencyPath = AssetUtilities::NormalizeFilePath(databaseSourceName).toUtf8().data();
 
             if (jobDependencyInternal->m_jobDependency.m_type == AssetBuilderSDK::JobDependencyType::OrderOnce)
@@ -3647,7 +3669,8 @@ namespace AssetProcessor
 
             {
                 // Listing all the builderUuids that have the same (sourcefile,platform,jobKey) for this job dependency
-                JobDesc jobDesc(jobDependencyInternal->m_jobDependency.m_sourceFile.m_sourceFileDependencyPath,
+                JobDesc jobDesc(
+                    sourceFileDependency.m_sourceFileDependencyPath,
                     jobDependencyInternal->m_jobDependency.m_jobKey, jobDependencyInternal->m_jobDependency.m_platformIdentifier);
                 auto buildersFound = m_jobDescToBuilderUuidMap.find(jobDesc);
 
