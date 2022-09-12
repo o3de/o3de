@@ -55,20 +55,29 @@ namespace AZ
 
         enum PlaneId
         {
-            Near
-        ,   Far
-        ,   Left
-        ,   Right
-        ,   Top
-        ,   Bottom
-        ,   MAX
+            Near,
+            Far,
+            Left,
+            Right,
+            Top,
+            Bottom,
+            MAX,
         };
 
         enum class ReverseDepth
         {
-            True
-        ,   False
+            True,
+            False,
         };
+
+        enum CornerIndices
+        {
+            NearTopLeft, NearTopRight, NearBottomLeft, NearBottomRight,
+            FarTopLeft, FarTopRight, FarBottomLeft, FarBottomRight,
+            Count,
+        };
+
+        using CornerVertexArray = AZStd::array<AZ::Vector3, CornerIndices::Count>;
 
         //! AzCore Reflection.
         //! @param context reflection context
@@ -145,6 +154,10 @@ namespace AZ
         //! Returns true if the current frustum and provided frustum are close to identical.
         //! @param rhs the frustum to compare against for closeness
         bool IsClose(const Frustum& rhs, float tolerance = Constants::Tolerance) const;
+
+        //! Fills an array with corner vertices and returns true for valid Frustums.
+        //! @param corners The array of corner vertices to fill.
+        bool GetCorners(CornerVertexArray& corners) const;
 
         //! Returns the corresponding view volume attributes for the frustum.
         ViewFrustumAttributes CalculateViewFrustumAttributes() const;

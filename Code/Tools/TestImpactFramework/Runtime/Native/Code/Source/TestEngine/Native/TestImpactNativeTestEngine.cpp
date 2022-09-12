@@ -11,7 +11,7 @@
 #include <Target/Native/TestImpactNativeTestTarget.h>
 #include <TestEngine/Common/TestImpactTestEngineException.h>
 #include <TestEngine/Native/TestImpactNativeTestEngine.h>
-#include <TestEngine/Native/TestImpactNativeErrorCodeChecker.h>
+#include <TestRunner/Native/TestImpactNativeErrorCodeChecker.h>
 #include <TestRunner/Native/TestImpactNativeTestEnumerator.h>
 #include <TestRunner/Native/TestImpactNativeInstrumentedTestRunner.h>
 #include <TestRunner/Native/TestImpactNativeRegularTestRunner.h>

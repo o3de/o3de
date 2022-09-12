@@ -14,6 +14,7 @@ import time
 
 import ly_test_tools.environment.process_utils as process_utils
 import ly_test_tools.environment.waiter as waiter
+from ly_test_tools._internal.exceptions import EditorToolsFrameworkException
 from ly_test_tools.o3de.asset_processor import AssetProcessor
 
 logger = logging.getLogger(__name__)
@@ -349,4 +350,4 @@ def prepare_asset_processor(workspace: ly_test_tools._internal.managers.workspac
             collected_test_data.asset_processor.start()
     except Exception as ex:
         collected_test_data.asset_processor = None
-        raise ex
+        raise EditorToolsFrameworkException from ex
