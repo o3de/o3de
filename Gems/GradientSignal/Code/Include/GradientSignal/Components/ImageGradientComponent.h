@@ -107,7 +107,7 @@ namespace GradientSignal
         AZStd::string m_imageAssetPropertyLabel = "Image Asset";
     };
 
-    static const AZ::Uuid ImageGradientComponentTypeId = "{4741F079-157F-457E-93E0-D6BA4EAF76FE}";
+    inline constexpr AZ::TypeId ImageGradientComponentTypeId{ "{4741F079-157F-457E-93E0-D6BA4EAF76FE}" };
 
     /**
     * calculates a gradient value based on image data

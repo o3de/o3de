@@ -13,10 +13,10 @@
 namespace LmbrCentral
 {
     /// Type ID for CapsuleShapeComponent
-    static const AZ::Uuid CapsuleShapeComponentTypeId = "{967EC13D-364D-4696-AB5C-C00CC05A2305}";
+    inline constexpr AZ::TypeId CapsuleShapeComponentTypeId{ "{967EC13D-364D-4696-AB5C-C00CC05A2305}" };
 
     /// Type ID for EditorCapsuleShapeComponent
-    static const AZ::Uuid EditorCapsuleShapeComponentTypeId = "{06B6C9BE-3648-4DA2-9892-755636EF6E19}";
+    inline constexpr AZ::TypeId EditorCapsuleShapeComponentTypeId{ "{06B6C9BE-3648-4DA2-9892-755636EF6E19}" };
 
     /// Configuration data for CapsuleShapeComponent
     class CapsuleShapeConfig

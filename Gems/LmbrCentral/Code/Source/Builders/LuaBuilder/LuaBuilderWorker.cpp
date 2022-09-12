@@ -44,6 +44,7 @@ namespace LuaBuilder
                     AZStd::string watchFolder;
                     AZ::Data::AssetInfo assetInfo;
                     AZ::IO::Path path(dependency.m_dependencyPath);
+                    bool isLuaDependency = !path.HasExtension() || path.Extension() == ".lua" || path.Extension() == ".luac";
                     auto sourcePath = path.ReplaceExtension(".lua");
 
                     if (assetSystem->GetSourceInfoBySourcePath(sourcePath.c_str(), assetInfo, watchFolder)
@@ -56,9 +57,16 @@ namespace LuaBuilder
                         asset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
                         assets.push_back(asset);
                     }
-                    else
+                    else if(isLuaDependency)
                     {
                         AZ_Error("LuaBuilder", false, "Did not find dependency %s referenced by script.", dependency.m_dependencyPath.c_str());
+                    }
+                    else
+                    {
+                        AZ_Error("LuaBuilder", false, "%s referenced by script does not appear to be a lua file.\n"
+                            "References to assets should be handled using Property slots and AssetIds to ensure proper dependency tracking.\n"
+                            "This file will not be tracked as a dependency.",
+                            dependency.m_dependencyPath.c_str());
                     }
                 }
             }
@@ -108,7 +116,7 @@ namespace LuaBuilder
         ParseDependencies(path.c_str(), dependencySet);
         auto dependentAssets = ConvertToAssets(dependencySet);
 
-        
+
 
 
         for (const AssetBuilderSDK::PlatformInfo& info : request.m_enabledPlatforms)
@@ -132,7 +140,7 @@ namespace LuaBuilder
                 jobDependency.m_platformIdentifier = info.m_identifier;
                 jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
                 descriptor.m_jobDependencyList.emplace_back(AZStd::move(jobDependency));
-            }    
+            }
 
             response.m_createJobOutputs.push_back(descriptor);
         }
@@ -203,7 +211,7 @@ namespace LuaBuilder
             LB_VERIFY
                 ( AZ::Utils::SaveObjectToStream<AZ::LuaScriptData>(outputStream, AZ::ObjectStream::ST_BINARY, &assetData, serializeContext)
                 , "Failed to write asset data to disk");
-        }        
+        }
 
         AssetBuilderSDK::JobProduct compileProduct{ destFileName, azrtti_typeid<AZ::ScriptAsset>(), AZ::ScriptAsset::CompiledAssetSubId };
 
