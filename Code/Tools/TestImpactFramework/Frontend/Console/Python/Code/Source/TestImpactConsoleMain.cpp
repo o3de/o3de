@@ -50,7 +50,8 @@ namespace TestImpact::Console
                 options.GetFailedTestCoveragePolicy(),
                 options.GetTestFailurePolicy(),
                 options.GetIntegrityFailurePolicy(),
-                options.GetTargetOutputCapture());
+                options.GetTargetOutputCapture(),
+                options.GetTestRunnerPolicy());
 
             if (runtime.HasImpactAnalysisData())
             {

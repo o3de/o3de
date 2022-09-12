@@ -241,15 +241,15 @@ namespace AZ
         }
 
         class FrameCaptureNotificationBusHandler final
-            : public FrameCaptureNotificationBus::Handler
+            : public FrameCaptureNotificationBus::MultiHandler // Use multi handler as it has to handle all use cases
             , public AZ::BehaviorEBusHandler
         {
         public:
-            AZ_EBUS_BEHAVIOR_BINDER(FrameCaptureNotificationBusHandler, "{68D1D94C-7055-4D32-8E22-BEEEBA0940C4}", AZ::SystemAllocator, OnCaptureFinished);
+            AZ_EBUS_BEHAVIOR_BINDER(FrameCaptureNotificationBusHandler, "{68D1D94C-7055-4D32-8E22-BEEEBA0940C4}", AZ::SystemAllocator, OnFrameCaptureFinished);
 
-            void OnCaptureFinished(uint32_t captureId, FrameCaptureResult result, const AZStd::string& info) override
+            void OnFrameCaptureFinished(FrameCaptureResult result, const AZStd::string& info) override
             {
-                Call(FN_OnCaptureFinished, captureId, result, info);
+                Call(FN_OnFrameCaptureFinished, result, info);
             }
 
             static void Reflect(AZ::ReflectContext* context)
@@ -390,21 +390,21 @@ namespace AZ
         {
             if (!CanCapture())
             {
-                return FrameCaptureRequests::s_InvalidFrameCaptureId;
+                return InvalidFrameCaptureId;
             }
 
             CaptureHandle captureHandle = InitCapture();
             if (captureHandle.IsNull())
             {
                 AZ_Assert(false, "Failed to allocate a capture");
-                return FrameCaptureRequests::s_InvalidFrameCaptureId;
+                return InvalidFrameCaptureId;
             }
             AZStd::scoped_lock<CaptureHandle> scope_lock(captureHandle);
             CaptureState* capture = captureHandle.GetCaptureState();
             if (!capture) // failed to get the capture state ptr, abort
             {
                 m_idleCaptures.push_back(captureHandle);
-                return FrameCaptureRequests::s_InvalidFrameCaptureId;
+                return InvalidFrameCaptureId;
             }
 
             // Find SwapChainPass for the window handle
@@ -413,14 +413,14 @@ namespace AZ
             {
                 AZ_Warning("FrameCaptureSystemComponent", false, "Failed to find SwapChainPass for the window");
                 m_idleCaptures.push_back(captureHandle);
-                return FrameCaptureRequests::s_InvalidFrameCaptureId;
+                return InvalidFrameCaptureId;
             }
 
             if (!capture->m_readback->IsReady())
             {
                 AZ_Assert(false, "Failed to capture attachment since the readback is not ready");
                 m_idleCaptures.push_back(captureHandle);
-                return FrameCaptureRequests::s_InvalidFrameCaptureId;
+                return InvalidFrameCaptureId;
             }
             capture->m_readback->SetUserIdentifier(captureHandle.GetCaptureStateIndex());
             capture->m_readback->SetCallback(AZStd::bind(&FrameCaptureSystemComponent::CaptureAttachmentCallback, this, AZStd::placeholders::_1));
@@ -440,35 +440,35 @@ namespace AZ
                 return CaptureScreenshotForWindow(filePath, windowHandle);
             }
 
-            return FrameCaptureRequests::s_InvalidFrameCaptureId;
+            return InvalidFrameCaptureId;
         }
 
         uint32_t FrameCaptureSystemComponent::CaptureScreenshotWithPreview(const AZStd::string& outputFilePath)
         {
             if (!CanCapture())
             {
-                return FrameCaptureRequests::s_InvalidFrameCaptureId;
+                return InvalidFrameCaptureId;
             }
 
             CaptureHandle captureHandle = InitCapture();
             if (captureHandle.IsNull())
             {
                 AZ_Assert(false, "Failed to allocate a capture");
-                return FrameCaptureRequests::s_InvalidFrameCaptureId;
+                return InvalidFrameCaptureId;
             }
             AZStd::scoped_lock<CaptureHandle> scope_lock(captureHandle);
             CaptureState* capture = captureHandle.GetCaptureState();
             if (!capture) // failed to get the capture state ptr, abort
             {
                 m_idleCaptures.push_back(captureHandle);
-                return FrameCaptureRequests::s_InvalidFrameCaptureId;
+                return InvalidFrameCaptureId;
             }
 
             if (!capture->m_readback->IsReady())
             {
                 AZ_Assert(false, "Failed to capture attachment since the readback is not ready");
                 m_idleCaptures.push_back(captureHandle);
-                return FrameCaptureRequests::s_InvalidFrameCaptureId;
+                return InvalidFrameCaptureId;
             }
             capture->m_readback->SetUserIdentifier(captureHandle.GetCaptureStateIndex());
             capture->m_readback->SetCallback(AZStd::bind(&FrameCaptureSystemComponent::CaptureAttachmentCallback, this, AZStd::placeholders::_1));
@@ -491,7 +491,7 @@ namespace AZ
             {
                 m_idleCaptures.push_back(captureHandle);
                 AZ_Warning("FrameCaptureSystemComponent", false, "Failed to find an ImageAttachmentPreviewPass");
-                return FrameCaptureRequests::s_InvalidFrameCaptureId;
+                return InvalidFrameCaptureId;
             }
 
             bool result = previewPass->ReadbackOutput(capture->m_readback);
@@ -503,7 +503,7 @@ namespace AZ
 
             AZ_Warning("FrameCaptureSystemComponent", false, "CaptureScreenshotWithPreview. Failed to readback output from the ImageAttachmentPreviewPass");
             m_idleCaptures.push_back(captureHandle);
-            return FrameCaptureRequests::s_InvalidFrameCaptureId;
+            return InvalidFrameCaptureId;
         }
 
         FrameCaptureSystemComponent::CaptureHandle FrameCaptureSystemComponent::InternalCapturePassAttachment(
@@ -584,12 +584,12 @@ namespace AZ
                 CaptureState* capture = captureHandle.GetCaptureState();
                 if (!capture)
                 {
-                    return FrameCaptureRequests::s_InvalidFrameCaptureId;
+                    return InvalidFrameCaptureId;
                 }
                 m_inProgressCaptures.push_back(captureHandle);
                 return captureHandle.GetCaptureStateIndex();
             }
-            return FrameCaptureRequests::s_InvalidFrameCaptureId;
+            return InvalidFrameCaptureId;
         }
 
         uint32_t FrameCaptureSystemComponent::CapturePassAttachmentWithCallback(
@@ -616,12 +616,12 @@ namespace AZ
                 CaptureState* capture = captureHandle.GetCaptureState();
                 if (!capture)
                 {
-                    return FrameCaptureRequests::s_InvalidFrameCaptureId;
+                    return InvalidFrameCaptureId;
                 }
                 m_inProgressCaptures.push_back(captureHandle);
                 return captureHandle.GetCaptureStateIndex();
             }
-            return FrameCaptureRequests::s_InvalidFrameCaptureId;
+            return InvalidFrameCaptureId;
         }
 
         void FrameCaptureSystemComponent::OnSystemTick()
@@ -643,7 +643,7 @@ namespace AZ
                 {
                     break;
                 }
-                FrameCaptureNotificationBus::Broadcast(&FrameCaptureNotificationBus::Events::OnCaptureFinished, captureHandle.GetCaptureStateIndex(), capture->m_result, capture->m_latestCaptureInfo.c_str());
+                FrameCaptureNotificationBus::Event(captureHandle.GetCaptureStateIndex(), &FrameCaptureNotificationBus::Events::OnFrameCaptureFinished, capture->m_result, capture->m_latestCaptureInfo.c_str());
                 m_inProgressCaptures.pop_front();
                 m_idleCaptures.push_back(captureHandle);
             }

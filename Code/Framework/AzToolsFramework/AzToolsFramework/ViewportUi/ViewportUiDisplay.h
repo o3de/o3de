@@ -14,10 +14,13 @@
 #include <AzToolsFramework/ViewportUi/ViewportUiDisplayLayout.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
 
+#include <AzFramework/Viewport/ViewportBus.h>
+
 #include <QLabel>
 #include <QMainWindow>
 #include <QPointer>
 #include <QToolButton>
+#include <QMargins>
 
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
 #include <QGridLayout>
@@ -48,7 +51,7 @@ namespace AzToolsFramework::ViewportUi::Internal
 
     //! Creates a transparent widget over a viewport render overlay, and adds/manages other Qt widgets
     //! to display on top of the viewport.
-    class ViewportUiDisplay
+    class ViewportUiDisplay : private AzFramework::ViewportImGuiNotificationBus::Handler
     {
     public:
         ViewportUiDisplay(QWidget* parent, QWidget* renderOverlay);
@@ -92,10 +95,16 @@ namespace AzToolsFramework::ViewportUi::Internal
         bool IsViewportUiElementVisible(ViewportUiElementId elementId);
 
         void CreateViewportBorder(const AZStd::string& borderTitle, AZStd::optional<ViewportUiBackButtonCallback> backButtonCallback);
+        void ChangeViewportBorderText(const char* borderTitle);
         void RemoveViewportBorder();
+        bool GetViewportBorderVisible() const;
 
     private:
         void PrepareWidgetForViewportUi(QPointer<QWidget> widget);
+
+        // ViewportImGuiNotificationBus overrides ...
+        void OnImGuiActivated() override;
+        void OnImGuiDeactivated() override;
 
         ViewportUiElementId AddViewportUiElement(AZStd::shared_ptr<QWidget> widget);
         ViewportUiElementId GetViewportUiElementId(QPointer<QWidget> widget);
@@ -104,6 +113,8 @@ namespace AzToolsFramework::ViewportUi::Internal
         void PositionViewportUiElementAnchored(ViewportUiElementId elementId, const Qt::Alignment alignment);
         void PositionUiOverlayOverRenderViewport();
 
+        //! Returns the margin required for Viewport elements.
+        QMargins ViewportElementMargins() const;
         bool UiDisplayEnabled() const;
         void SetUiOverlayContents(QPointer<QWidget> widget);
         void SetUiOverlayContentsAnchored(QPointer<QWidget>, Qt::Alignment aligment);
@@ -124,6 +135,8 @@ namespace AzToolsFramework::ViewportUi::Internal
         QPointer<QWidget> m_fullScreenWidget; //!< Reference to the widget attached to m_fullScreenLayout if any.
         int64_t m_numViewportElements = 0;
         int m_viewportId = 0;
+
+        bool m_imGuiActive = false;
 
         ViewportUiElementIdInfoLookup m_viewportUiElements;
     };

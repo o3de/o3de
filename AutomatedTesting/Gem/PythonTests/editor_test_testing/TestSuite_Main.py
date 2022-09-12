@@ -10,12 +10,14 @@ import pytest
 import os
 import sys
 import importlib
+import unittest.mock as mock
 
 import ly_test_tools
 import ly_test_tools.environment.process_utils as process_utils
 from ly_test_tools.o3de.editor_test import EditorSingleTest, EditorSharedTest, EditorTestSuite
 from ly_test_tools.o3de.multi_test_framework import Result
 from ly_test_tools.o3de.asset_processor import AssetProcessor
+
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
@@ -29,10 +31,12 @@ def get_editor_launcher_platform():
         return None
 
 
+# Other plugins can create cross-object reference issues due these tests executing nonstandard pytest-within-pytest
+@mock.patch('ly_test_tools._internal.pytest_plugin.terminal_report._add_ownership', mock.MagicMock())
 @pytest.mark.parametrize("launcher_platform", [get_editor_launcher_platform()])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestEditorTest:
-    
+
     args = []
     path = None
 
@@ -113,7 +117,7 @@ class TestEditorTest:
         # TODO: For the python 3.10.5 update on windows, a crashed test results in a fail, but on linux it results in an Unknown
         #       We will need to investigate the appropriate assertion here
         assert isinstance(extracted_result, Result.Unknown) or isinstance(extracted_result, Result.Fail)
-    
+
     @classmethod
     def _run_shared_test(cls, testdir, workspace, module_class_code, extra_cmd_line=None):
         if not extra_cmd_line:
@@ -176,7 +180,7 @@ class TestEditorTest:
         )
         # 1 Fail, 1 Passes +1(batch runner)
         result.assert_outcomes(passed=2, failed=1)
-    
+
     def test_batched_1_pass_1_fail_1_crash(self, request, workspace, launcher_platform, testdir):
         result = self._run_shared_test(testdir, workspace,
             """
@@ -211,7 +215,7 @@ class TestEditorTest:
         )
         # 2 Passes +1(parallel runner)
         result.assert_outcomes(passed=3)
-    
+
     def test_parallel_1_pass_1_fail_1_crash(self, request, workspace, launcher_platform, testdir):
         result = self._run_shared_test(testdir, workspace,
             """
@@ -244,7 +248,7 @@ class TestEditorTest:
         )
         # 2 Passes +1(batched+parallel runner)
         result.assert_outcomes(passed=3)
-    
+
     def test_parallel_batched_1_pass_1_fail_1_crash(self, request, workspace, launcher_platform, testdir):
         result = self._run_shared_test(testdir, workspace,
             """

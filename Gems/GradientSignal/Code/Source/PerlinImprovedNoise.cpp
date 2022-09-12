@@ -67,6 +67,11 @@ namespace GradientSignal
         PrepareTable(seed);
     }
 
+    PerlinImprovedNoise::PerlinImprovedNoise(const AZStd::span<int, 512>& permutationTable)
+    {
+        AZStd::copy(permutationTable.begin(), permutationTable.end(), m_permutationTable.begin());
+    }
+
     float PerlinImprovedNoise::GenerateOctaveNoise(float x, float y, float z, int octaves, float persistence, float initialFrequency)
     {
         float total = 0.0f;

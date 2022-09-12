@@ -92,7 +92,28 @@ namespace AZ::DocumentPropertyEditor
 
                 const AZ::SerializeContext::ClassElement* containerClassElement =
                     m_container->GetElement(m_container->GetDefaultElementNameCrc());
+
+                // dataAddress is allocated instance of key type. Get the key type and send it with the dataAddress in the
+                // message, then skip the store element below until we get an AddContainerKey message back from the DPE UI
                 void* dataAddress = m_container->ReserveElement(m_instance, containerClassElement);
+
+                auto associativeContainer = m_container->GetAssociativeContainerInterface();
+                if (associativeContainer)
+                {
+                    auto keyTypeAttribute = containerClassElement->FindAttribute(AZ_CRC_CE("KeyType"));
+                    if (keyTypeAttribute)
+                    {
+                        auto* keyTypeData = azdynamic_cast<const AZ::Edit::AttributeData<AZ::Uuid>*>(keyTypeAttribute);
+                        if (keyTypeData)
+                        {
+                            auto keyType = keyTypeData->Get(nullptr);
+                            DocumentAdapterPtr reflectionAdapter = AZStd::make_shared<ReflectionAdapter>(dataAddress, keyType);
+                            Nodes::Adapter::QueryKey.InvokeOnDomNode(impl->m_adapter->GetContents(), &reflectionAdapter, path);
+                            return; // key queried; don't store the actual entry until the DPE handles the QueryKey message
+                        }
+                    }
+                }
+
                 m_container->StoreElement(m_instance, dataAddress);
 
                 auto containerNode = GetContainerNode(impl, path);
@@ -219,7 +240,9 @@ namespace AZ::DocumentPropertyEditor
         void VisitPrimitive(T& value, const Reflection::IAttributes& attributes)
         {
             VisitValue(
-                Dom::Utils::ValueFromType(value), &value, attributes,
+                Dom::Utils::ValueFromType(value),
+                &value,
+                attributes,
                 [&value](const Dom::Value& newValue)
                 {
                     AZStd::optional<T> extractedValue = Dom::Utils::ValueToType<T>(newValue);
@@ -311,7 +334,7 @@ namespace AZ::DocumentPropertyEditor
                 if (!parentContainer->IsFixedSize())
                 {
                     m_builder.BeginPropertyEditor<Nodes::ContainerActionButton>();
-                    m_builder.Attribute(Nodes::PropertyEditor::Alignment, Nodes::PropertyEditor::Align::AlignRight);
+                    m_builder.Attribute(Nodes::PropertyEditor::SharePriorColumn, true);
                     m_builder.Attribute(Nodes::ContainerActionButton::Action, Nodes::ContainerAction::RemoveElement);
                     m_builder.AddMessageHandler(m_adapter, Nodes::ContainerActionButton::OnActivate.GetName());
                     m_builder.EndPropertyEditor();
@@ -345,7 +368,9 @@ namespace AZ::DocumentPropertyEditor
                 ExtractLabel(attributes);
                 AZStd::string& value = *reinterpret_cast<AZStd::string*>(access.Get());
                 VisitValue(
-                    Dom::Utils::ValueFromType(value), &value, attributes,
+                    Dom::Utils::ValueFromType(value),
+                    &value,
+                    attributes,
                     [&value](const Dom::Value& newValue)
                     {
                         value = newValue.GetString();
@@ -388,12 +413,12 @@ namespace AZ::DocumentPropertyEditor
                     if (!container->IsFixedSize())
                     {
                         m_builder.BeginPropertyEditor<Nodes::ContainerActionButton>();
-                        m_builder.Attribute(Nodes::PropertyEditor::Alignment, Nodes::PropertyEditor::Align::AlignRight);
                         m_builder.Attribute(Nodes::ContainerActionButton::Action, Nodes::ContainerAction::AddElement);
                         m_builder.AddMessageHandler(m_adapter, Nodes::ContainerActionButton::OnActivate.GetName());
                         m_builder.EndPropertyEditor();
 
                         m_builder.BeginPropertyEditor<Nodes::ContainerActionButton>();
+                        m_builder.Attribute(Nodes::PropertyEditor::SharePriorColumn, true);
                         m_builder.Attribute(Nodes::PropertyEditor::Alignment, Nodes::PropertyEditor::Align::AlignRight);
                         m_builder.Attribute(Nodes::ContainerActionButton::Action, Nodes::ContainerAction::Clear);
                         m_builder.AddMessageHandler(m_adapter, Nodes::ContainerActionButton::OnActivate.GetName());
@@ -529,6 +554,9 @@ namespace AZ::DocumentPropertyEditor
     Dom::Value ReflectionAdapter::GenerateContents()
     {
         m_impl->m_builder.BeginAdapter();
+        m_impl->m_builder.AddMessageHandler(this, Nodes::Adapter::QueryKey);
+        m_impl->m_builder.AddMessageHandler(this, Nodes::Adapter::AddContainerKey);
+        m_impl->m_builder.AddMessageHandler(this, Nodes::Adapter::RejectContainerKey);
         m_impl->m_onChangedCallbacks.Clear();
         m_impl->m_containers.Clear();
         if (m_instance != nullptr)
@@ -541,8 +569,7 @@ namespace AZ::DocumentPropertyEditor
 
     Dom::Value ReflectionAdapter::HandleMessage(const AdapterMessage& message)
     {
-        auto handlePropertyEditorChanged =
-            [&](const Dom::Value& valueFromEditor, Nodes::ValueChangeType changeType)
+        auto handlePropertyEditorChanged = [&](const Dom::Value& valueFromEditor, Nodes::ValueChangeType changeType)
         {
             auto changeHandler = m_impl->m_onChangedCallbacks.ValueAtPath(message.m_messageOrigin, AZ::Dom::PrefixTreeMatch::ExactPath);
             if (changeHandler != nullptr)
@@ -583,6 +610,26 @@ namespace AZ::DocumentPropertyEditor
                 }
             }
         };
+        auto addKeyToContainer = [&](AZ::DocumentPropertyEditor::DocumentAdapterPtr* adapter, AZ::Dom::Path containerPath)
+        {
+            ReflectionAdapter* actualAdapter = static_cast<ReflectionAdapter*>(adapter->get());
+            auto containerEntry = m_impl->m_containers.ValueAtPath(containerPath, AZ::Dom::PrefixTreeMatch::ParentsOnly);
+            void* keyInstance = actualAdapter->GetInstance();
+
+            containerEntry->m_container->StoreElement(containerEntry->m_instance, keyInstance);
+            auto containerNode = containerEntry->GetContainerNode(m_impl.get(), containerPath);
+            Nodes::PropertyEditor::AddNotify.InvokeOnDomNode(containerNode);
+            Nodes::PropertyEditor::ChangeNotify.InvokeOnDomNode(containerNode);
+            NotifyResetDocument();
+        };
+
+        auto rejectKeyToContainer = [&](AZ::DocumentPropertyEditor::DocumentAdapterPtr * adapter, AZ::Dom::Path containerPath)
+        {
+            ReflectionAdapter* actualAdapter = static_cast<ReflectionAdapter*>(adapter->get());
+            auto containerEntry = m_impl->m_containers.ValueAtPath(containerPath, AZ::Dom::PrefixTreeMatch::ParentsOnly);
+            void* keyInstance = actualAdapter->GetInstance();
+            containerEntry->m_container->FreeReservedElement(containerEntry->m_instance, keyInstance, m_impl->m_serializeContext);
+        };
 
         auto handleTreeUpdate = [&](Nodes::PropertyRefreshLevel)
         {
@@ -594,6 +641,8 @@ namespace AZ::DocumentPropertyEditor
         return message.Match(
             Nodes::PropertyEditor::OnChanged, handlePropertyEditorChanged,
             Nodes::ContainerActionButton::OnActivate, handleContainerOperation,
-            Nodes::PropertyEditor::RequestTreeUpdate, handleTreeUpdate);
+            Nodes::PropertyEditor::RequestTreeUpdate, handleTreeUpdate,
+            Nodes::Adapter::AddContainerKey, addKeyToContainer,
+            Nodes::Adapter::RejectContainerKey, rejectKeyToContainer);
     }
 } // namespace AZ::DocumentPropertyEditor

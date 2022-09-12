@@ -16,10 +16,10 @@ namespace AZ
 {
     namespace Render
     {
-        static constexpr const char* const AreaLightComponentTypeId = "{744B3961-6242-4461-983F-2817D9D29C30}";
-        static constexpr const char* const EditorAreaLightComponentTypeId = "{8B605C0C-9027-4E0B-BA8C-19E396F8F262}";
-        static constexpr const char* const DirectionalLightComponentTypeId = "{13054592-2753-46C2-B19E-59670D4CE03D}";
-        static constexpr const char* const EditorDirectionalLightComponentTypeId = "{45B97527-6E72-411B-BC23-00068CF01580}";
+        inline constexpr AZ::TypeId AreaLightComponentTypeId{ "{744B3961-6242-4461-983F-2817D9D29C30}" };
+        inline constexpr AZ::TypeId EditorAreaLightComponentTypeId{ "{8B605C0C-9027-4E0B-BA8C-19E396F8F262}" };
+        inline constexpr AZ::TypeId DirectionalLightComponentTypeId{ "{13054592-2753-46C2-B19E-59670D4CE03D}" };
+        inline constexpr AZ::TypeId EditorDirectionalLightComponentTypeId{ "{45B97527-6E72-411B-BC23-00068CF01580}" };
 
         enum class LightAttenuationRadiusMode : uint8_t
         {
