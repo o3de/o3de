@@ -140,7 +140,5 @@ private:
     QScopedPointer<ImporterRootDisplay> m_rootDisplay;
     bool m_isClosed;
 
-    int m_processingOverlayIndex;
-
     AZStd::string m_scriptProcessorRuleFilename;
 };
