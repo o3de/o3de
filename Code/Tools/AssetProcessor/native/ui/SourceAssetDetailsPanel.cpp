@@ -282,7 +282,6 @@ namespace AssetProcessor
                     });
                 m_ui->incomingSourceDependenciesTable->setCellWidget(sourceDependencyCount, 0, rowGoToButton);
 
-                // TODO: Replace with source name lookup
                 QTableWidgetItem* rowName = new QTableWidgetItem(QString(sourceName.c_str()));
                 m_ui->incomingSourceDependenciesTable->setItem(sourceDependencyCount, 1, rowName);
 

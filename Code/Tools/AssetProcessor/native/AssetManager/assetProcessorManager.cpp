@@ -1863,7 +1863,6 @@ namespace AssetProcessor
         bool deleteFailure = false;
         AzToolsFramework::AssetDatabase::SourceDatabaseEntryContainer sources;
 
-        // TODO: This function makes no sense, there can only be 1 result
         if (m_stateData->GetSourcesBySourceName(databaseSourceFile, sources))
         {
             for (const auto& source : sources)
