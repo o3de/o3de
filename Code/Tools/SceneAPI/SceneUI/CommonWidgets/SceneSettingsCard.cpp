@@ -229,13 +229,12 @@ bool SceneSettingsCard::OnPrintf(const char* window, const char* message)
     return false;
 }
 
-bool SceneSettingsCard::OnError(const char* window, const char* message)
+bool SceneSettingsCard::OnError(const char* /*window*/, const char* message)
 {
     if (!ShouldProcessMessage())
     {
         return false;
     }
-    (void*)window;
     AzQtComponents::StyledDetailsTableModel::TableEntry entry;
     entry.Add("Message", message);
     entry.Add("Status", AzQtComponents::StyledDetailsTableModel::StatusError);
@@ -246,13 +245,12 @@ bool SceneSettingsCard::OnError(const char* window, const char* message)
     return false;
 }
 
-bool SceneSettingsCard::OnWarning(const char* window, const char* message)
+bool SceneSettingsCard::OnWarning(const char* /*window*/, const char* message)
 {
     if (!ShouldProcessMessage())
     {
         return false;
     }
-    (void*)window;
     AzQtComponents::StyledDetailsTableModel::TableEntry entry;
     entry.Add("Message", message);
     entry.Add("Status", AzQtComponents::StyledDetailsTableModel::StatusWarning);
