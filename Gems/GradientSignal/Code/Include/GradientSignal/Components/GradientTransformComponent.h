@@ -70,7 +70,7 @@ namespace GradientSignal
         bool m_is3d = false;
     };
 
-    static const AZ::Uuid GradientTransformComponentTypeId = "{F0A8F968-F642-4982-8282-8FB8560FDB67}";
+    inline constexpr AZ::TypeId GradientTransformComponentTypeId{ "{F0A8F968-F642-4982-8282-8FB8560FDB67}" };
 
     class GradientTransformComponent
         : public AZ::Component

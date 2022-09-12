@@ -61,7 +61,7 @@ namespace GradientSignal
         }
     };
 
-    static const AZ::Uuid SurfaceSlopeGradientComponentTypeId = "{F480A866-6296-4F2D-B97C-E80C7409EF61}";
+    inline constexpr AZ::TypeId SurfaceSlopeGradientComponentTypeId{ "{F480A866-6296-4F2D-B97C-E80C7409EF61}" };
 
     /**
     * Component implementing GradientRequestBus based on slope

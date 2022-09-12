@@ -42,7 +42,7 @@ namespace GradientSignal
         void AddTag(AZStd::string tag);
     };
 
-    static const AZ::Uuid SurfaceMaskGradientComponentTypeId = "{4661F063-7126-4BE1-886F-5A6FFC6DAC71}";
+    inline constexpr AZ::TypeId SurfaceMaskGradientComponentTypeId{ "{4661F063-7126-4BE1-886F-5A6FFC6DAC71}" };
 
     /**
     * calculates a gradient value based on percent contribution from surface tags

@@ -13,6 +13,7 @@
 #include <AzCore/std/ranges/ranges_functional.h>
 #include <AzCore/std/ranges/subrange.h>
 #include <AzCore/std/reference_wrapper.h>
+#include <AzCore/std/utility/as_const.h>
 
 namespace AZStd::ranges
 {
@@ -61,7 +62,6 @@ namespace AZStd::ranges
         }
     };
 
-
     template<class I, class O>
     struct in_out_result
     {
@@ -81,6 +81,50 @@ namespace AZStd::ranges
         }
     };
 
+    template<class I1, class I2, class O>
+    struct in_in_out_result
+    {
+        AZ_NO_UNIQUE_ADDRESS I1 in1;
+        AZ_NO_UNIQUE_ADDRESS I2 in2;
+        AZ_NO_UNIQUE_ADDRESS O out;
+
+        template<class II1, class II2, class OO, class = enable_if_t<
+            convertible_to<const I1&, II1>
+            && convertible_to<const I2&, II2>
+            && convertible_to<const O&, OO>>>
+        constexpr operator in_in_out_result<II1, II2, OO>() const&
+        {
+            return { in1, in2, out };
+        }
+
+        template<class II1, class II2, class OO, class = enable_if_t<
+            convertible_to<I1, II1>
+            && convertible_to<I2, II2>
+            && convertible_to<O, OO>>>
+        constexpr operator in_in_out_result<II1, II2, OO>() &&
+        {
+            return { AZStd::move(in1), AZStd::move(in2), AZStd::move(out) };
+        }
+    };
+
+    template<class O, class T>
+    struct out_value_result
+    {
+        AZ_NO_UNIQUE_ADDRESS O out;
+        AZ_NO_UNIQUE_ADDRESS T value;
+
+        template<class O2, class T2, class = enable_if_t<convertible_to<const O&, O2> && convertible_to<const T&, T2>>>
+        constexpr operator out_value_result<O2, T2>() const&
+        {
+            return { out, value };
+        }
+
+        template<class O2, class T2, class = enable_if_t<convertible_to<O, O2> && convertible_to<T, T2>>>
+        constexpr operator out_value_result<O2, T2>() &&
+        {
+            return { AZStd::move(out), AZStd::move(value) };
+        }
+    };
 
     namespace Internal
     {
@@ -1024,6 +1068,59 @@ namespace AZStd::ranges
 
     namespace Internal
     {
+        struct lexicographical_compare_fn
+        {
+            template<class I1, class S1, class I2, class S2, class Comp = ranges::less, class Proj1 = identity, class Proj2 = identity,
+                class = enable_if_t<conjunction_v<
+                bool_constant<input_iterator<I1>>,
+                bool_constant<sentinel_for<S1, I1>>,
+                bool_constant<input_iterator<I2>>,
+                bool_constant<sentinel_for<S2, I2>>,
+                bool_constant<indirect_strict_weak_order<Comp, projected<I1, Proj1>, projected<I2, Proj2>>>
+                >>>
+                constexpr bool operator()(I1 first1, S1 last1, I2 first2, S2 last2,
+                    Comp compd = {},
+                    Proj1 proj1 = {}, Proj2 proj2 = {}) const
+            {
+                for (; first1 != last1 && first2 != last2; ++first1, ++first2)
+                {
+                    if (AZStd::invoke(compd, AZStd::invoke(proj1, *first1), AZStd::invoke(proj2, *first2)))
+                    {
+                        return true;
+                    }
+                    if (AZStd::invoke(compd, AZStd::invoke(proj2, *first2), AZStd::invoke(proj1, *first1)))
+                    {
+                        return false;
+                    }
+                }
+
+                // Each element in min(last1 - first1, last2 - first2) are not lexicographically less than each other
+                // The first sequence legnth is then check to see if it is smaller than the second sequence length
+                return first1 == last1 && first2 != last2;
+            }
+
+            template<class R1, class R2, class Comp = ranges::less, class Proj1 = identity, class Proj2 = identity,
+                class = enable_if_t<conjunction_v<
+                bool_constant<input_range<R1>>,
+                bool_constant<input_range<R2>>,
+                bool_constant<indirect_strict_weak_order<Comp, projected<iterator_t<R1>, Proj1>, projected<iterator_t<R2>, Proj2>>>
+                >>>
+                constexpr bool operator()(R1&& r1, R2&& r2, Comp compd = {},
+                    Proj1 proj1 = {}, Proj2 proj2 = {}) const
+            {
+                return operator()(ranges::begin(r1), ranges::end(r1),
+                    ranges::begin(r2), ranges::end(r2),
+                    AZStd::move(compd), AZStd::move(proj1), AZStd::move(proj2));
+            }
+        };
+    }
+    inline namespace customization_point_object
+    {
+        constexpr Internal::lexicographical_compare_fn lexicographical_compare{};
+    }
+
+    namespace Internal
+    {
         struct search_fn
         {
             template<class I1, class S1, class I2, class S2, class Pred = equal_to, class Proj1 = identity, class Proj2 = identity,
@@ -1666,6 +1763,93 @@ namespace AZStd::ranges
         constexpr Internal::move_backward_fn move_backward{};
     }
 
+    // ranges::transform
+    template<class I, class O>
+    using unary_transform_result = in_out_result<I, O>;
+    template<class I1, class I2, class O>
+    using binary_transform_result = in_in_out_result<I1, I2, O>;
+
+    namespace Internal
+    {
+        struct transform_fn
+        {
+            template<class I, class S, class O, class F, class Proj = identity>
+            constexpr auto operator()(I first1, S last1, O result, F op, Proj proj = {}) const
+                -> enable_if_t<conjunction_v<
+                bool_constant<input_iterator<I>>,
+                bool_constant<sentinel_for<S, I>>,
+                bool_constant<weakly_incrementable<O>>,
+                bool_constant<copy_constructible<F>>,
+                bool_constant<indirectly_writable<O, indirect_result_t<F&, projected<I, Proj>>>>
+                >, unary_transform_result<I, O>>
+            {
+                for (; first1 != last1; ++first1, ++result)
+                {
+                    *result = AZStd::invoke(op, AZStd::invoke(proj, *first1));
+                }
+
+                return { first1, result };
+            }
+
+            template<class R, class O, class F, class Proj = identity>
+            constexpr auto operator()(R&& r, O result, F op, Proj proj = {}) const
+                -> enable_if_t<conjunction_v<
+                bool_constant<input_range<R>>,
+                bool_constant<weakly_incrementable<O>>,
+                bool_constant<copy_constructible<F>>,
+                bool_constant<indirectly_writable<O, indirect_result_t<F&, projected<iterator_t<R>, Proj>>>>
+                >, unary_transform_result<borrowed_iterator_t<R>, O>>
+            {
+                return operator()(AZStd::ranges::begin(r), AZStd::ranges::end(r), result,
+                    AZStd::move(op), AZStd::move(proj));
+            }
+
+            template<class I1, class S1, class I2, class S2, class O, class F,
+                class Proj1 = identity, class Proj2 = identity>
+            constexpr auto operator()(I1 first1, S1 last1, I2 first2, S2 last2, O result, F binary_op,
+                Proj1 proj1 = {}, Proj2 proj2 = {}) const
+                -> enable_if_t<conjunction_v<
+                bool_constant<input_iterator<I1>>,
+                bool_constant<sentinel_for<S1, I1>>,
+                bool_constant<input_iterator<I2>>,
+                bool_constant<sentinel_for<S2, I2>>,
+                bool_constant<weakly_incrementable<O>>,
+                bool_constant<copy_constructible<F>>,
+                bool_constant<indirectly_writable<O, indirect_result_t<F&, projected<I1, Proj1>, projected<I2, Proj2>>>>
+                >, binary_transform_result<I1, I2, O>>
+            {
+                for (; first1 != last1 && first2 != last2; ++first1, ++first2, ++result)
+                {
+                    *result = AZStd::invoke(binary_op, AZStd::invoke(proj1, *first1), AZStd::invoke(proj2, *first2));
+                }
+
+                return { first1, first2, result };
+            }
+
+            template<class R1, class R2, class O, class F,
+                class Proj1 = identity, class Proj2 = identity>
+            constexpr auto operator()(R1&& r1, R2&& r2, O result, F binary_op,
+                Proj1 proj1 = {}, Proj2 proj2 = {}) const
+                -> enable_if_t<conjunction_v<
+                bool_constant<input_range<R1>>,
+                bool_constant<input_range<R2>>,
+                bool_constant<weakly_incrementable<O>>,
+                bool_constant<copy_constructible<F>>,
+                bool_constant<indirectly_writable<O,
+                    indirect_result_t<F&, projected<iterator_t<R1>, Proj1>, projected<iterator_t<R2>, Proj2>>>>
+                >, binary_transform_result<borrowed_iterator_t<R1>, borrowed_iterator_t<R2>, O>>
+            {
+                return operator()(AZStd::ranges::begin(r1), AZStd::ranges::end(r1),
+                    AZStd::ranges::begin(r2), AZStd::ranges::end(r2), AZStd::move(result),
+                    AZStd::move(binary_op), AZStd::move(proj1), AZStd::move(proj2));
+            }
+        };
+    }
+    inline namespace customization_point_object
+    {
+        constexpr Internal::transform_fn transform{};
+    }
+
     // ranges::contains
     // ranges::contains_subrange
     namespace Internal
@@ -1747,7 +1931,7 @@ namespace AZStd::ranges
                 bool_constant<sentinel_for<S2, I2>>,
                 bool_constant<indirectly_comparable<I1, I2, Pred, Proj1, Proj2>>
                 >>>
-                constexpr bool operator()(I1 first1, S1 last1, I2 first2, S2 last2,
+            constexpr bool operator()(I1 first1, S1 last1, I2 first2, S2 last2,
                     Pred pred = {},
                     Proj1 proj1 = {}, Proj2 proj2 = {}) const
             {
@@ -1762,7 +1946,7 @@ namespace AZStd::ranges
                 bool_constant<input_range<R2>>,
                 bool_constant<indirectly_comparable<iterator_t<R1>, iterator_t<R2>, Pred, Proj1, Proj2>>
                 >>>
-                constexpr bool operator()(R1&& r1, R2&& r2, Pred pred = {},
+            constexpr bool operator()(R1&& r1, R2&& r2, Pred pred = {},
                     Proj1 proj1 = {}, Proj2 proj2 = {}) const
             {
                 return operator()(ranges::begin(r1), ranges::end(r1),
@@ -1781,7 +1965,7 @@ namespace AZStd::ranges
                 bool_constant<sentinel_for<S2, I2>>,
                 bool_constant<indirectly_comparable<I1, I2, Pred, Proj1, Proj2>>
                 >>>
-                constexpr auto operator()(I1 first1, S1 last1, I2 first2, S2 last2,
+            constexpr auto operator()(I1 first1, S1 last1, I2 first2, S2 last2,
                     Pred pred = {}, Proj1 proj1 = {}, Proj2 proj2 = {}) const
                 -> enable_if_t<(forward_iterator<I1> || sized_sentinel_for<S1, I1>) &&
                     (forward_iterator<I2> || sized_sentinel_for<S2, I2>), bool>
@@ -1800,7 +1984,7 @@ namespace AZStd::ranges
                 bool_constant<input_range<R2>>,
                 bool_constant<indirectly_comparable<iterator_t<R1>, iterator_t<R2>, Pred, Proj1, Proj2>>
                 >>>
-                constexpr auto operator()(R1&& r1, R2&& r2,
+            constexpr auto operator()(R1&& r1, R2&& r2,
                     Pred pred = {}, Proj1 proj1 = {}, Proj2 proj2 = {}) const
                 -> enable_if_t<(forward_range<R1> || sized_range<R1>) &&
                     (forward_range<R2> || sized_range<R2>), bool>
@@ -1815,5 +1999,50 @@ namespace AZStd::ranges
     {
         constexpr Internal::starts_with_fn starts_with{};
         constexpr Internal::ends_with_fn ends_with{};
+    }
+
+    //! Constrained numeric algorithms
+    // ranges::iota
+
+    template<class O, class T>
+    using iota_result = out_value_result<O, T>;
+
+    namespace Internal
+    {
+        struct iota_fn
+        {
+            template<class O, class S, class T,
+                class = enable_if_t<conjunction_v<
+                bool_constant<input_or_output_iterator<O>>,
+                bool_constant<sentinel_for<S, O>>,
+                bool_constant<weakly_incrementable<T>>,
+                bool_constant<indirectly_writable<O, const T&>>
+                >>>
+            constexpr iota_result<O, T> operator()(O first, S last, T value) const
+            {
+                while( first != last)
+                {
+                    *first = as_const(value);
+                    ++first;
+                    ++value;
+                }
+
+                return { AZStd::move(first), AZStd::move(value) };
+            }
+
+            template<class T, class R,
+                class = enable_if_t<conjunction_v<
+                bool_constant<weakly_incrementable<T>>,
+                bool_constant<output_range<R, const T&>>
+                >>>
+            constexpr iota_result<borrowed_iterator_t<R>, T> operator()(R&& r, T value) const
+            {
+                return operator()(ranges::begin(r), ranges::end(r), AZStd::move(value));
+            }
+        };
+    }
+    inline namespace customization_point_object
+    {
+        constexpr Internal::iota_fn iota{};
     }
 } // namespace AZStd::ranges
