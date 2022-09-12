@@ -11,7 +11,7 @@ def AddEntity_UnderPrefab():
     - Creates an entity.
     - Creates a prefab out of the above entity.
     - Focuses on the created prefab and adds a new child entity.
-    Checks that the entity is correctly added.
+    - Checks that the entity is correctly added.
     """
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity

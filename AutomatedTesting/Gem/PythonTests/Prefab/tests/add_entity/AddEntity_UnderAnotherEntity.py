@@ -8,8 +8,8 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 def AddEntity_UnderAnotherEntity():
     """
     Test description:
-    - Creates two entities, parent and child. Child entity has Parent entity as its parent.
-    - Creates a prefab of the child entity.
+    - Creates an entity at the root level
+    - Creates a child entity of the root entity
     - Verifies Undo/Redo.
     """
 
@@ -24,10 +24,12 @@ def AddEntity_UnderAnotherEntity():
     parent_entity = EditorEntity.create_editor_entity_at((100.0, 100.0, 100.0))
     assert parent_entity.id.IsValid(), "Couldn't create parent entity"
 
+
     # Creates a new child Entity
     # Asserts if creation didn't succeed
     child_entity = EditorEntity.create_editor_entity(parent_id=parent_entity.id)
     assert child_entity.id.IsValid(), "Couldn't create child entity"
+    assert parent_entity.get_children_ids()[0] == child_entity.id, "Couldn't create child entity of parent entity"
 
     PrefabWaiter.wait_for_propagation()
 

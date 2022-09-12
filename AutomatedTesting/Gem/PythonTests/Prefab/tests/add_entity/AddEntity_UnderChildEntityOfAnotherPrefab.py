@@ -43,7 +43,7 @@ def AddEntity_UnderChildEntityOfAnotherPrefab():
 
     # Wait till prefab propagation finishes before validating add child entity
     PrefabWaiter.wait_for_propagation()
-
+    assert second_child_entity.id.IsValid(), "Couldn't create second child entity"
 
     # Test undo/redo on add child entity
     azlmbr.legacy.general.undo()
@@ -56,7 +56,6 @@ def AddEntity_UnderChildEntityOfAnotherPrefab():
     child_entity_ids_inside_prefab = child_entity_inside_prefab.get_children()
     assert len(child_entity_ids_inside_prefab) == 1, f"{len(child_entity_ids_inside_prefab)} entities found inside prefab" \
                                               f" after Redo operation, when there should have been 1 entity"
-
 
 
 if __name__ == "__main__":
