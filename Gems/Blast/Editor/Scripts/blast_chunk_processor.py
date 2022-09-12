@@ -22,7 +22,7 @@ import azlmbr.bus
 #
 # SceneAPI Processor
 #
-blastChunksAssetType = azlmbr.math.Uuid_CreateString('{993F0B0F-37D9-48C6-9CC2-E27D3F3E343E}', 0)
+blastChunksAssetType = azlmbr.math.Uuid_CreateString('{993F0B0F-37D9-48C6-9CC2-E27D3F3E343E}')
 
 def log_exception_traceback():
     """

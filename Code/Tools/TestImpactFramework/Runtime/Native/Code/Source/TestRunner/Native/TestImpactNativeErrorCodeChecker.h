@@ -15,6 +15,23 @@
 
 namespace TestImpact
 {
+    // Known error codes for test runner and test library
+    namespace ErrorCodes
+    {
+        namespace GTest
+        {
+            inline constexpr ReturnCode Unsuccessful = 1;
+        } // namespace GTest
+
+        namespace AZTestRunner
+        {
+            inline constexpr ReturnCode InvalidArgs = 101;
+            inline constexpr ReturnCode FailedToFindTargetBinary = 102;
+            inline constexpr ReturnCode SymbolNotFound = 103;
+            inline constexpr ReturnCode ModuleSkipped = 104;
+        } // namespace AZTestRunner
+    } // namespace ErrorCodes
+
     //! Returns the error code for native instrumentation error codes.
     AZStd::optional<Client::TestRunResult> CheckNativeInstrumentationErrorCode(ReturnCode returnCode);
 
