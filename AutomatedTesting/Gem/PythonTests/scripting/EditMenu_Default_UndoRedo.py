@@ -54,23 +54,18 @@ def EditMenu_Default_UndoRedo():
 
 
     # Preconditions
-    from PySide2 import QtWidgets
-    import PySide2.QtCore as QtCore
     from editor_python_test_tools.utils import TestHelper as helper
     from editor_python_test_tools.utils import Report
     import azlmbr.legacy.general as general
-    import pyside_utils
-    import editor_python_test_tools.EditorQtContainer as qtContainer
     import editor_python_test_tools.script_canvas_tools_qt as SC_tools_qt
-    from scripting_utils.scripting_constants import (WAIT_TIME_3, SCRIPT_CANVAS_UI, VARIABLE_TYPES,
-                                                     GRAPH_VARIABLES_QT)
+    from scripting_utils.scripting_constants import (WAIT_TIME_3, SCRIPT_CANVAS_UI, VARIABLE_TYPES)
 
     general.idle_enable(True)
 
     # 1) Open Script Canvas window
     general.open_pane(SCRIPT_CANVAS_UI)
     helper.wait_for_condition(lambda: general.is_pane_visible(SCRIPT_CANVAS_UI), WAIT_TIME_3)
-    qtObjects = SC_tools_qt.initialize_qt_script_canvas_objects()
+    SC_tools_qt.initialize_qt_script_canvas_objects()
 
     # 2) Create Graph
     SC_tools_qt.create_new_sc_graph()

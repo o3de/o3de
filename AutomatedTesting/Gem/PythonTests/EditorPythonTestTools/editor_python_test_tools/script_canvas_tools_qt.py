@@ -71,19 +71,9 @@ def save_script_event_file(self, file_path):
 
 def initialize_qt_script_canvas_objects():
 
-    EDITOR_QT_CONTAINER.editor_main_window = pyside_utils.get_editor_main_window()
-
-    EDITOR_QT_CONTAINER.sc_editor = EDITOR_QT_CONTAINER.editor_main_window.findChild(QtWidgets.QDockWidget,
-                                                                                 SCRIPT_CANVAS_UI)
-
-    EDITOR_QT_CONTAINER.sc_editor_main_window = EDITOR_QT_CONTAINER.sc_editor.findChild(QtWidgets.QMainWindow)
-
-    EDITOR_QT_CONTAINER.variable_manager = EDITOR_QT_CONTAINER.sc_editor.findChild(QtWidgets.QDockWidget,
-                                                                               VARIABLE_MANAGER_QT)
-
-    if not EDITOR_QT_CONTAINER.variable_manager.isVisible():
-        EDITOR_QT_CONTAINER.click_menu_option(EDITOR_QT_CONTAINER.sc_editor, VARIABLE_MANAGER_QT)
-
+    EDITOR_QT_CONTAINER.initialize_SC_objects()
+    EDITOR_QT_CONTAINER.initialize_variable_manager()
+    #EDITOR_QT_CONTAINER.variable_manager = EDITOR_QT_CONTAINER.sc_editor.findChild(QtWidgets.QDockWidget, VARIABLE_MANAGER_QT)
     return EDITOR_QT_CONTAINER
 
 
@@ -172,8 +162,7 @@ def script_canvas_undo_action():
     returns None
     """
 
-    undo_redo_action = EDITOR_QT_CONTAINER.sc_editor.findChild(QtWidgets.QAction, "action_Undo")
-    undo_redo_action.trigger()
+    EDITOR_QT_CONTAINER.wrapper_sc_editor.trigger_undo_action()
 
 
 def script_canvas_redo_action():
@@ -183,8 +172,7 @@ def script_canvas_redo_action():
     returns None
     """
 
-    undo_redo_action = EDITOR_QT_CONTAINER.sc_editor.findChild(QtWidgets.QAction, "action_Redo")
-    undo_redo_action.trigger()
+    EDITOR_QT_CONTAINER.wrapper_sc_editor.trigger_redo_action()
 
 def canvas_node_palette_search(self, node_name, number_of_retries):
     """
@@ -289,33 +277,14 @@ def create_new_sc_graph():
 
 def create_new_SC_variable(new_variable_type):
     """
-    function for creating a new SC variable through variable manager
+    function for creating a new SC variable through variable manager qt object
 
-    param self: the script objecting calling this function
     param variable_type: The variable data type to create as a string. i.e "Boolean"
     returns: none
     """
 
-    if type(new_variable_type) is not str:
-        Report.critical_result(["Invalid variable type provided", ""], False)
-
-    valid_type = False
-    for this_type in VARIABLE_TYPES:
-        if new_variable_type == this_type:
-            valid_type = True
-
-    if not valid_type:
-        Report.critical_result(["Invalid variable type provided", ""], False)
-
-    add_new_variable_button = EDITOR_QT_CONTAINER.variable_manager.findChild(QtWidgets.QPushButton, ADD_BUTTON_QT)
-    add_new_variable_button.click()  # Click on Create Variable button
-    helper.wait_for_condition((
-        lambda: EDITOR_QT_CONTAINER.variable_manager.findChild(QtWidgets.QTableView, VARIABLE_PALETTE_QT) is not None), WAIT_TIME_3)
-    # Select variable type
-    table_view = EDITOR_QT_CONTAINER.variable_manager.findChild(QtWidgets.QTableView, VARIABLE_PALETTE_QT)
-    model_index = pyside_utils.find_child_by_pattern(table_view, new_variable_type)
-    # Click on it to create variable
-    pyside_utils.item_view_index_mouse_click(table_view, model_index)
+    variable_manager = EDITOR_QT_CONTAINER.variable_manager
+    variable_manager.make_new_variable(new_variable_type)
 
 
 def verify_SC_variable_count(expected):
@@ -326,8 +295,7 @@ def verify_SC_variable_count(expected):
 
     returns true if the actual number of variables in the variable manager matches the expected number
     """
-    graph_variables = EDITOR_QT_CONTAINER.variable_manager.findChild(QtWidgets.QTableView, GRAPH_VARIABLES_QT)
-    row_count = graph_variables.model().rowCount(QtCore.QModelIndex())
+    row_count = EDITOR_QT_CONTAINER.variable_manager.get_variable_count()
 
     return expected == row_count
 
