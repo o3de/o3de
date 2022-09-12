@@ -7,14 +7,14 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import logging
 import pytest
 
-from ly_test_tools.o3de.material_editor_test import MaterialCanvasBatchedTest, MaterialCanvasTestSuite
+from ly_test_tools.o3de.material_canvas_test import MaterialCanvasBatchedTest, MaterialCanvasTestSuite
 
 logger = logging.getLogger(__name__)
 
 
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("launcher_platform", ['windows_material_canvas'])
-class TestMaterialEditor(MaterialCanvasTestSuite):
+class TestMaterialCanvas(MaterialCanvasTestSuite):
 
     class MaterialEditor_Atom_LaunchMaterialCanvas_1(MaterialCanvasBatchedTest):
 

@@ -22,20 +22,22 @@ def MaterialCanvas_Launched_SuccessfullyLaunched():
     The MaterialCanvas executable can be launched and doesn't cause any crashes or errors.
 
     Test Steps:
-    1) # TODO: Figure out steps
+    1) Verify Material Inspector pane visibility to confirm the MaterialCanvas launched.
     2) Look for errors and asserts.
 
     :return: None
     """
 
-    # TODO: Make sure this import works for MaterialCanvas also. If it doesn't make a new utils file.
-    import Atom.atom_utils.material_editor_utils as material_editor
+    import Atom.atom_utils.material_canvas_utils as material_canvas
 
     from editor_python_test_tools.utils import Report, Tracer, TestHelper
 
     with Tracer() as error_tracer:
-        # 1. TODO: Figure it out.
-        # Tests.material_canvas_launched
+        # 1. Verify Material Inspector pane visibility to confirm the MaterialCanvas launched.
+        material_canvas.set_pane_visibility("Inspector", True)
+        Report.result(
+            Tests.material_canvas_launched,
+            material_canvas.is_pane_visible("Inspector") is True)
 
         # 2. Look for errors and asserts.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)

@@ -1219,7 +1219,7 @@ class MultiTestSuite(object):
                         crash_error = editor_utils.retrieve_crash_output(run_id, workspace, self._timeout_crash_log)
                         editor_utils.cycle_crash_report(run_id, workspace)
                         results[test_spec_name] = Result.Crash(
-                            crashed_result.test_spec, output, return_code, crash_error, crashed_result.log_output)
+                            result.test_spec, output, return_code, crash_error, result.log_output)
         except WaitTimeoutError:
             executable.stop()
             output = executable.get_output()
