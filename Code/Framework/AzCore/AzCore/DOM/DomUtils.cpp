@@ -313,12 +313,18 @@ namespace AZ::Dom::Utils
         }
         else if (value.IsOpaqueValue())
         {
-            // the const_cast here isn't pretty, but it's necessary to get to a void* needed in so many places.
-            return AZStd::any_cast<void>(const_cast<AZStd::any*>(&value.GetOpaqueValue()));
+            const auto& opaqueAny = value.GetOpaqueValue();
+            if (opaqueAny.type() == expectedType)
+            {
+                return AZStd::any_cast<void>(const_cast<AZStd::any*>(&opaqueAny));
+            }
         }
 
         return nullptr;
     }
+
+    // remove dangerous implementation that could result in dangling references
+    void* TryMarshalValueToPointer(AZ::Dom::Value&& value, const AZ::TypeId& expectedType) = delete;
 
     Dom::Value MarshalTypedPointerToValue(void* value, const AZ::TypeId& typeId)
     {
