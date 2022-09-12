@@ -12,12 +12,14 @@
 
 #include <native/tests/AssetProcessorTest.h>
 #include <native/AssetDatabase/AssetDatabase.h>
+#include <AzToolsFramework/SQLite/SQLiteQuery.cpp>
 
 namespace UnitTests
 {
     using namespace testing;
     using ::testing::NiceMock;
     using namespace AssetProcessor;
+    using namespace AzToolsFramework::AssetDatabase;
 
     using AzToolsFramework::AssetDatabase::ProductDatabaseEntry;
     using AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry;
@@ -32,6 +34,7 @@ namespace UnitTests
     using AzToolsFramework::AssetDatabase::FileDatabaseEntry;
     using AzToolsFramework::AssetDatabase::StatDatabaseEntry;
     using AzToolsFramework::AssetDatabase::StatDatabaseEntryContainer;
+
 
     class AssetDatabaseTestMockDatabaseLocationListener : public AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Handler
     {
@@ -2046,7 +2049,7 @@ namespace UnitTests
         for (AZ::u32 sourceIndex = 0; sourceIndex < 20000; ++sourceIndex)
         {
             AZStd::string dependentFile = AZStd::string::format("otherfile%i.txt", sourceIndex);
-            SourceFileDependencyEntry entry(builderGuid, originUuid, dependentFile.c_str(), SourceFileDependencyEntry::DEP_SourceToSource, true, "");
+            SourceFileDependencyEntry entry(builderGuid, originUuid, PathOrUuid(dependentFile), SourceFileDependencyEntry::DEP_SourceToSource, true, "");
             resultSourceDependencies.emplace_back(AZStd::move(entry));
         }
 
@@ -2068,17 +2071,18 @@ namespace UnitTests
 
         AZ::Uuid file1Uuid{ "{5AA73EF6-5E14-41F3-B458-4FA19D495696}" };
         AZ::Uuid file2Uuid{ "{A3FF1BD5-7D6F-4241-8398-1DC6239AD97A}" };
+        AZ::Uuid file1DependsOn1Uuid{ "{33338E41-985A-40DF-A1CC-87BDBC17EC7A}" };
 
         SourceFileDependencyEntryContainer entries;
 
         // add the two different kinds of dependencies.
-        entries.push_back(SourceFileDependencyEntry(builderGuid1, file1Uuid, "file1dependson1.txt", SourceFileDependencyEntry::DEP_SourceToSource, true, ""));
-        entries.push_back(SourceFileDependencyEntry(builderGuid2, file1Uuid, "file1dependson2.txt", SourceFileDependencyEntry::DEP_SourceToSource, true, ""));
-        entries.push_back(SourceFileDependencyEntry(builderGuid1, file1Uuid, "file1dependson1job.txt", SourceFileDependencyEntry::DEP_JobToJob, true, ""));
-        entries.push_back(SourceFileDependencyEntry(builderGuid2, file1Uuid, "file1dependson2job.txt", SourceFileDependencyEntry::DEP_JobToJob, true, ""));
+        entries.push_back(SourceFileDependencyEntry(builderGuid1, file1Uuid, PathOrUuid("file1dependson1.txt"), SourceFileDependencyEntry::DEP_SourceToSource, true, ""));
+        entries.push_back(SourceFileDependencyEntry(builderGuid2, file1Uuid, PathOrUuid("file1dependson2.txt"), SourceFileDependencyEntry::DEP_SourceToSource, true, ""));
+        entries.push_back(SourceFileDependencyEntry(builderGuid1, file1Uuid, PathOrUuid("file1dependson1job.txt"), SourceFileDependencyEntry::DEP_JobToJob, true, ""));
+        entries.push_back(SourceFileDependencyEntry(builderGuid2, file1Uuid, PathOrUuid("file1dependson2job.txt"), SourceFileDependencyEntry::DEP_JobToJob, true, ""));
 
-        entries.push_back(SourceFileDependencyEntry(builderGuid1, file2Uuid, "file2dependson1.txt", SourceFileDependencyEntry::DEP_SourceToSource, true, ""));
-        entries.push_back(SourceFileDependencyEntry(builderGuid1, file2Uuid, "file2dependson1job.txt", SourceFileDependencyEntry::DEP_JobToJob, true, ""));
+        entries.push_back(SourceFileDependencyEntry(builderGuid1, file2Uuid, PathOrUuid("file2dependson1.txt"), SourceFileDependencyEntry::DEP_SourceToSource, true, ""));
+        entries.push_back(SourceFileDependencyEntry(builderGuid1, file2Uuid, PathOrUuid("file2dependson1job.txt"), SourceFileDependencyEntry::DEP_JobToJob, true, ""));
 
         ASSERT_TRUE(m_data->m_connection.SetSourceFileDependencies(entries));
 
@@ -2087,7 +2091,7 @@ namespace UnitTests
         AZStd::string searchFor;
         auto SearchPredicate = [&searchFor](const SourceFileDependencyEntry& element)
         {
-            return element.m_dependsOnSource == searchFor;
+            return element.m_dependsOnSource.GetPath() == searchFor;
         };
 
         AZ::Uuid searchUuid;
@@ -2143,19 +2147,19 @@ namespace UnitTests
         resultEntries.clear();
 
         // now ask for the reverse dependencies - we should find one source-to-source
-        EXPECT_TRUE(m_data->m_connection.GetSourceFileDependenciesByDependsOnSource("file1dependson1.txt", SourceFileDependencyEntry::DEP_SourceToSource, resultEntries));
+        EXPECT_TRUE(m_data->m_connection.GetSourceFileDependenciesByDependsOnSource(file1DependsOn1Uuid, "file1dependson1.txt", "c:/root/file1dependson1.txt", SourceFileDependencyEntry::DEP_SourceToSource, resultEntries));
         EXPECT_EQ(resultEntries.size(), 1);
         searchUuid = file1Uuid;
         EXPECT_NE(AZStd::find_if(resultEntries.begin(), resultEntries.end(), SearchPredicateReverse), resultEntries.end());
         resultEntries.clear();
 
         // now ask for the reverse dependencies - we should find no job-to-job for this:
-        EXPECT_FALSE(m_data->m_connection.GetSourceFileDependenciesByDependsOnSource("file1dependson1.txt", SourceFileDependencyEntry::DEP_JobToJob, resultEntries));
+        EXPECT_FALSE(m_data->m_connection.GetSourceFileDependenciesByDependsOnSource(file1DependsOn1Uuid, "file1dependson1.txt", "c:/root/file1dependson1.txt", SourceFileDependencyEntry::DEP_JobToJob, resultEntries));
         EXPECT_EQ(resultEntries.size(), 0);
         resultEntries.clear();
 
         // now ask for the reverse dependencies - we should find one 'any' type.
-        EXPECT_TRUE(m_data->m_connection.GetSourceFileDependenciesByDependsOnSource("file1dependson1.txt", SourceFileDependencyEntry::DEP_Any, resultEntries));
+        EXPECT_TRUE(m_data->m_connection.GetSourceFileDependenciesByDependsOnSource(file1DependsOn1Uuid, "file1dependson1.txt", "c:/root/file1dependson1.txt", SourceFileDependencyEntry::DEP_Any, resultEntries));
         EXPECT_EQ(resultEntries.size(), 1);
         searchUuid = file1Uuid;
         EXPECT_NE(AZStd::find_if(resultEntries.begin(), resultEntries.end(), SearchPredicateReverse), resultEntries.end());
@@ -2175,7 +2179,7 @@ namespace UnitTests
         EXPECT_EQ(resultEntries[0].m_builderGuid, builderGuid1);
         EXPECT_EQ(resultEntries[0].m_sourceGuid, file2Uuid);
         EXPECT_NE(resultEntries[0].m_sourceDependencyID, AzToolsFramework::AssetDatabase::InvalidEntryId);
-        EXPECT_STREQ(resultEntries[0].m_dependsOnSource.c_str(), "file2dependson1job.txt");
+        EXPECT_STREQ(resultEntries[0].m_dependsOnSource.GetPath().c_str(), "file2dependson1job.txt");
         EXPECT_EQ(resultEntries[0].m_typeOfDependency,  SourceFileDependencyEntry::DEP_JobToJob);
         AZ::s64 entryIdJob = resultEntries[0].m_sourceDependencyID;
         resultEntries.clear();
@@ -2185,14 +2189,14 @@ namespace UnitTests
         EXPECT_EQ(resultValue.m_sourceDependencyID, entryIdSource);
         EXPECT_EQ(resultValue.m_typeOfDependency, SourceFileDependencyEntry::DEP_SourceToSource);
         EXPECT_EQ(resultValue.m_sourceGuid, file2Uuid);
-        EXPECT_STREQ(resultValue.m_dependsOnSource.c_str(), "file2dependson1.txt");
+        EXPECT_STREQ(resultValue.m_dependsOnSource.GetPath().c_str(), "file2dependson1.txt");
         EXPECT_EQ(resultValue.m_builderGuid, builderGuid1);
 
         EXPECT_TRUE(m_data->m_connection.GetSourceFileDependencyBySourceDependencyId(entryIdJob, resultValue));
         EXPECT_EQ(resultValue.m_sourceDependencyID, entryIdJob);
         EXPECT_EQ(resultValue.m_typeOfDependency, SourceFileDependencyEntry::DEP_JobToJob);
         EXPECT_EQ(resultValue.m_sourceGuid, file2Uuid);
-        EXPECT_STREQ(resultValue.m_dependsOnSource.c_str(), "file2dependson1job.txt");
+        EXPECT_STREQ(resultValue.m_dependsOnSource.GetPath().c_str(), "file2dependson1job.txt");
         EXPECT_EQ(resultValue.m_builderGuid, builderGuid1);
 
         // removal of source

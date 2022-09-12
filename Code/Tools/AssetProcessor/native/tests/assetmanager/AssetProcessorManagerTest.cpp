@@ -811,19 +811,19 @@ TEST_F(AssetProcessorManagerTest, QueryAbsolutePathDependenciesRecursive_BasicTe
     newEntry1.m_sourceDependencyID = AzToolsFramework::AssetDatabase::InvalidEntryId;
     newEntry1.m_builderGuid = AZ::Uuid::CreateRandom();
     newEntry1.m_sourceGuid = m_aUuid;
-    newEntry1.m_dependsOnSource = "b.txt";
+    newEntry1.m_dependsOnSource = PathOrUuid(m_bUuid);
 
     SourceFileDependencyEntry newEntry2; // b depends on C
     newEntry2.m_sourceDependencyID = AzToolsFramework::AssetDatabase::InvalidEntryId;
     newEntry2.m_builderGuid = AZ::Uuid::CreateRandom();
     newEntry2.m_sourceGuid = m_bUuid;
-    newEntry2.m_dependsOnSource = "c.txt";
+    newEntry2.m_dependsOnSource = PathOrUuid("c.txt");
 
     SourceFileDependencyEntry newEntry3;  // b also depends on D
     newEntry3.m_sourceDependencyID = AzToolsFramework::AssetDatabase::InvalidEntryId;
     newEntry3.m_builderGuid = AZ::Uuid::CreateRandom();
     newEntry3.m_sourceGuid = m_bUuid;
-    newEntry3.m_dependsOnSource = "d.txt";
+    newEntry3.m_dependsOnSource = PathOrUuid("d.txt");
 
     ASSERT_TRUE(m_assetProcessorManager->m_stateData->SetSourceFileDependency(newEntry1));
     ASSERT_TRUE(m_assetProcessorManager->m_stateData->SetSourceFileDependency(newEntry2));
@@ -865,7 +865,7 @@ TEST_F(AssetProcessorManagerTest, QueryAbsolutePathDependenciesRecursive_BasicTe
 TEST_F(AssetProcessorManagerTest, QueryAbsolutePathDependenciesRecursive_WithDifferentTypes_BasicTest)
 {
     // test to make sure that different TYPES of dependencies work as expected.
-    using SourceFileDependencyEntry = AzToolsFramework::AssetDatabase::SourceFileDependencyEntry;
+    using namespace AzToolsFramework::AssetDatabase;
 
     QDir tempPath(m_tempDir.path());
 
@@ -878,21 +878,21 @@ TEST_F(AssetProcessorManagerTest, QueryAbsolutePathDependenciesRecursive_WithDif
     newEntry1.m_sourceDependencyID = AzToolsFramework::AssetDatabase::InvalidEntryId;
     newEntry1.m_builderGuid = AZ::Uuid::CreateRandom();
     newEntry1.m_sourceGuid = m_aUuid;
-    newEntry1.m_dependsOnSource = "b.txt";
+    newEntry1.m_dependsOnSource = PathOrUuid(m_bUuid);
     newEntry1.m_typeOfDependency = SourceFileDependencyEntry::DEP_SourceToSource;
 
     SourceFileDependencyEntry newEntry2; // b depends on C as a JOB dependency
     newEntry2.m_sourceDependencyID = AzToolsFramework::AssetDatabase::InvalidEntryId;
     newEntry2.m_builderGuid = AZ::Uuid::CreateRandom();
     newEntry2.m_sourceGuid = m_bUuid;
-    newEntry2.m_dependsOnSource = "c.txt";
+    newEntry2.m_dependsOnSource = PathOrUuid("c.txt");
     newEntry2.m_typeOfDependency = SourceFileDependencyEntry::DEP_JobToJob;
 
     SourceFileDependencyEntry newEntry3;  // b also depends on D as a SOURCE dependency
     newEntry3.m_sourceDependencyID = AzToolsFramework::AssetDatabase::InvalidEntryId;
     newEntry3.m_builderGuid = AZ::Uuid::CreateRandom();
     newEntry3.m_sourceGuid = m_bUuid;
-    newEntry3.m_dependsOnSource = "d.txt";
+    newEntry3.m_dependsOnSource = PathOrUuid("d.txt");
     newEntry3.m_typeOfDependency = SourceFileDependencyEntry::DEP_SourceToSource;
 
     ASSERT_TRUE(m_assetProcessorManager->m_stateData->SetSourceFileDependency(newEntry1));
@@ -930,7 +930,7 @@ TEST_F(AssetProcessorManagerTest, QueryAbsolutePathDependenciesRecursive_WithDif
 // still do a best guess at absolute path, when they are missing.
 TEST_F(AssetProcessorManagerTest, QueryAbsolutePathDependenciesRecursive_MissingFiles_ReturnsNoPathWithPlaceholders)
 {
-    using SourceFileDependencyEntry = AzToolsFramework::AssetDatabase::SourceFileDependencyEntry;
+    using namespace AzToolsFramework::AssetDatabase;
 
     //  A depends on B, which depends on both C and D
 
@@ -951,19 +951,19 @@ TEST_F(AssetProcessorManagerTest, QueryAbsolutePathDependenciesRecursive_Missing
     newEntry1.m_sourceDependencyID = AzToolsFramework::AssetDatabase::InvalidEntryId;
     newEntry1.m_builderGuid = AZ::Uuid::CreateRandom();
     newEntry1.m_sourceGuid = m_aUuid;
-    newEntry1.m_dependsOnSource = "b.txt";
+    newEntry1.m_dependsOnSource = PathOrUuid(m_bUuid);
 
     SourceFileDependencyEntry newEntry2; // b depends on C
     newEntry2.m_sourceDependencyID = AzToolsFramework::AssetDatabase::InvalidEntryId;
     newEntry2.m_builderGuid = AZ::Uuid::CreateRandom();
     newEntry2.m_sourceGuid = m_bUuid;
-    newEntry2.m_dependsOnSource = "c.txt";
+    newEntry2.m_dependsOnSource = PathOrUuid("c.txt");
 
     SourceFileDependencyEntry newEntry3;  // b also depends on D
     newEntry3.m_sourceDependencyID = AzToolsFramework::AssetDatabase::InvalidEntryId;
     newEntry3.m_builderGuid = AZ::Uuid::CreateRandom();
     newEntry3.m_sourceGuid = m_bUuid;
-    newEntry3.m_dependsOnSource = "d.txt";
+    newEntry3.m_dependsOnSource = PathOrUuid("d.txt");
 
     ASSERT_TRUE(m_assetProcessorManager->m_stateData->SetSourceFileDependency(newEntry1));
     ASSERT_TRUE(m_assetProcessorManager->m_stateData->SetSourceFileDependency(newEntry2));
@@ -2886,10 +2886,10 @@ void SourceFileDependenciesTest::SetupData(
     {
         // note that we have to "prime" the map with the UUIDs to the source info for this to work:
         m_assetProcessorManager->m_sourceUUIDToSourceInfoMap[job.m_sourceFileInfo.m_uuid] = { m_watchFolderPath, job.m_sourceFileInfo.m_databasePath, job.m_sourceFileInfo.m_databasePath };
-        m_assetProcessorManager->m_sourceUUIDToSourceInfoMap[m_uuidOfA] = { m_watchFolderPath, "a.txt", "a.txt" };
-        m_assetProcessorManager->m_sourceUUIDToSourceInfoMap[m_uuidOfB] = { m_watchFolderPath, "b.txt", "b.txt" };
-        m_assetProcessorManager->m_sourceUUIDToSourceInfoMap[m_uuidOfC] = { m_watchFolderPath, "c.txt", "c.txt" };
-        m_assetProcessorManager->m_sourceUUIDToSourceInfoMap[m_uuidOfD] = { m_watchFolderPath, "d.txt", "d.txt" };
+        //m_assetProcessorManager->m_sourceUUIDToSourceInfoMap[m_uuidOfA] = { m_watchFolderPath, "a.txt", "a.txt" };
+        //m_assetProcessorManager->m_sourceUUIDToSourceInfoMap[m_uuidOfB] = { m_watchFolderPath, "b.txt", "b.txt" };
+        //m_assetProcessorManager->m_sourceUUIDToSourceInfoMap[m_uuidOfC] = { m_watchFolderPath, "c.txt", "c.txt" };
+        //m_assetProcessorManager->m_sourceUUIDToSourceInfoMap[m_uuidOfD] = { m_watchFolderPath, "d.txt", "d.txt" };
     }
 
     for (const auto& sourceFileDependency : sourceFileDependencies)
@@ -2959,7 +2959,7 @@ auto SourceFileDependenciesTest::GetDependencyList()
 
     for (auto&& entry : deps)
     {
-        list.push_back(entry.m_dependsOnSource);
+        list.push_back(entry.m_dependsOnSource.ToString());
     }
 
     return list;
@@ -3142,10 +3142,6 @@ TEST_F(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_MissingF
     EXPECT_NE(deps.find(m_absPath.toUtf8().constData()), deps.end());
     EXPECT_NE(deps.find(m_dependsOnFile1_Job.toUtf8().constData()), deps.end());  // c
 
-    // in addition, we expect to have the original file that depends on B appear in the analysis queue, since something it depends on appeared:
-    QString normalizedSourcePath = AssetUtilities::NormalizeFilePath(m_absPath);
-    EXPECT_TRUE(m_assetProcessorManager->m_alreadyActiveFiles.contains(normalizedSourcePath));
-
     // now make d exist too and pretend a job came in to process it:
     ASSERT_TRUE(UnitTestUtils::CreateDummyFile(m_dependsOnFile2_Job, QString("tempdata\n"))); // create file D
     AssetProcessorManager::JobToProcessEntry job3;
@@ -3183,12 +3179,13 @@ TEST_F(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_MissingF
     // now that the database has placeholders, we expect them to resolve themselves when we provide the actual files:
     ASSERT_TRUE(UnitTestUtils::CreateDummyFile(m_dependsOnFile1_Source, QString("tempdata\n")));
     // now that A exists, we pretend a job came in to process a. (it doesn't require dependencies to be declared)
-    AZ::Uuid uuidOfA = AssetUtilities::CreateSafeSourceUUIDFromName("a.txt");
     AssetProcessorManager::JobToProcessEntry job2;
     job2.m_sourceFileInfo.m_databasePath = "a.txt";
     job2.m_sourceFileInfo.m_pathRelativeToScanFolder = "a.txt";
     job2.m_sourceFileInfo.m_scanFolder = m_scanFolder;
-    job2.m_sourceFileInfo.m_uuid = uuidOfA;
+    job2.m_sourceFileInfo.m_uuid = m_uuidOfA;
+    m_assetProcessorManager->m_sourceUUIDToSourceInfoMap[m_uuidOfA] = { m_watchFolderPath, "a.txt", "a.txt" };
+
     m_assetProcessorManager.get()->UpdateSourceFileDependenciesDatabase(job2);
 
     // a should no longer be a placeholder
@@ -3205,10 +3202,6 @@ TEST_F(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_MissingF
     EXPECT_NE(deps.find(m_absPath.toUtf8().constData()), deps.end());
     EXPECT_NE(deps.find(m_dependsOnFile2_Job.toUtf8().constData()), deps.end());  // d
 
-    // in addition, we expect to have the original file that depends on A appear in the analysis queue, since something it depends on appeared:
-    QString normalizedSourcePath = AssetUtilities::NormalizeFilePath(m_absPath);
-    EXPECT_TRUE(m_assetProcessorManager->m_alreadyActiveFiles.contains(normalizedSourcePath));
-
     // now make c exist too and pretend a job came in to process it:
     ASSERT_TRUE(UnitTestUtils::CreateDummyFile(m_dependsOnFile1_Job, QString("tempdata\n")));
     AZ::Uuid uuidOfC = AssetUtilities::CreateSafeSourceUUIDFromName("c.txt");
@@ -3217,6 +3210,7 @@ TEST_F(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_MissingF
     job3.m_sourceFileInfo.m_pathRelativeToScanFolder = "c.txt";
     job3.m_sourceFileInfo.m_scanFolder = m_scanFolder;
     job3.m_sourceFileInfo.m_uuid = uuidOfC;
+    m_assetProcessorManager->m_sourceUUIDToSourceInfoMap[m_uuidOfC] = { m_watchFolderPath, "c.txt", "c.txt" };
 
     m_assetProcessorManager.get()->UpdateSourceFileDependenciesDatabase(job3);
 
@@ -3245,8 +3239,7 @@ TEST_F(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_Duplicat
     auto actualDependencies = GetDependencyList();
 
     EXPECT_THAT(actualDependencies, ::testing::UnorderedElementsAre(
-        "a.txt",
-        "b.txt"
+            "a.txt", m_uuidOfA.ToFixedString(false, false).c_str(), m_uuidOfB.ToFixedString(false, false).c_str()
     ));
 }
 
@@ -3263,7 +3256,10 @@ TEST_F(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_Duplicat
 
     auto actualDependencies = GetDependencyList();
 
-    EXPECT_THAT(actualDependencies, ::testing::UnorderedElementsAre("c.txt", "d.txt"));
+    EXPECT_THAT(
+        actualDependencies,
+        ::testing::UnorderedElementsAre(
+            "c.txt", m_uuidOfC.ToFixedString(false, false).c_str(), m_uuidOfD.ToFixedString(false, false).c_str()));
 }
 
 TEST_F(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_JobAndSourceDependenciesDuplicated)
@@ -3282,7 +3278,10 @@ TEST_F(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_JobAndSo
 
     auto actualDependencies = GetDependencyList();
 
-    EXPECT_THAT(actualDependencies, ::testing::UnorderedElementsAre("a.txt", "b.txt"));
+    EXPECT_THAT(
+        actualDependencies,
+        ::testing::UnorderedElementsAre(
+            "a.txt", m_uuidOfA.ToFixedString(false, false).c_str(), "b.txt", m_uuidOfB.ToFixedString(false, false).c_str()));
 }
 
 TEST_F(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_SourceDependenciesDuplicatedWildcard)
@@ -3297,7 +3296,7 @@ TEST_F(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_SourceDe
 
     auto actualDependencies = GetDependencyList();
 
-    EXPECT_THAT(actualDependencies, ::testing::UnorderedElementsAre("a.txt", "a.t%t", "b.txt"));
+    EXPECT_THAT(actualDependencies, ::testing::UnorderedElementsAre("a.txt", "a.t%t", m_uuidOfB.ToFixedString(false, false).c_str()));
 }
 
 TEST_F(AssetProcessorManagerTest, JobDependencyOrderOnce_MultipleJobs_EmitOK)
@@ -3774,11 +3773,11 @@ TEST_F(AssetProcessorManagerTest, UpdateSourceFileDependenciesDatabase_WildcardM
     AZStd::vector<AZStd::string> wildcardDeps;
     auto callbackFunction = [&wildcardDeps](AzToolsFramework::AssetDatabase::SourceFileDependencyEntry& entry)
     {
-        wildcardDeps.push_back(entry.m_dependsOnSource.c_str());
+        wildcardDeps.push_back(entry.m_dependsOnSource.ToString());
         return true;
     };
 
-    m_assetProcessorManager.get()->m_stateData->QueryDependsOnSourceBySourceDependency(wildcardTestUuid, nullptr, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, callbackFunction);
+    m_assetProcessorManager.get()->m_stateData->QueryDependsOnSourceBySourceDependency(wildcardTestUuid, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, callbackFunction);
     EXPECT_EQ(wildcardDeps.size(), 2);
 
     // The database should have the wildcard record and the individual dependency on b and c at this point, now we add new files
@@ -4341,6 +4340,8 @@ AZStd::vector<AZStd::string> WildcardSourceDependencyTest::FileAddedTest(const Q
 
 void WildcardSourceDependencyTest::SetUp()
 {
+    using namespace AzToolsFramework::AssetDatabase;
+
     AssetProcessorManagerTest::SetUp();
 
     QDir tempPath(m_tempDir.path());
@@ -4399,21 +4400,21 @@ void WildcardSourceDependencyTest::SetUp()
 
     // Relative path wildcard dependency
     dependencies.push_back(AzToolsFramework::AssetDatabase::SourceFileDependencyEntry(
-        AZ::Uuid::CreateRandom(), aUuid, "%a.foo",
+        AZ::Uuid::CreateRandom(), aUuid, PathOrUuid("%a.foo"),
         AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0, ""));
 
     // Absolute path wildcard dependency
     dependencies.push_back(AzToolsFramework::AssetDatabase::SourceFileDependencyEntry(
-        AZ::Uuid::CreateRandom(), bUuid, tempPath.absoluteFilePath("%b.foo").toUtf8().constData(),
+        AZ::Uuid::CreateRandom(), bUuid, PathOrUuid(tempPath.absoluteFilePath("%b.foo").toUtf8().constData()),
         AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0, ""));
 
     // Test what happens when we have 2 dependencies on the same file
     dependencies.push_back(AzToolsFramework::AssetDatabase::SourceFileDependencyEntry(
-        AZ::Uuid::CreateRandom(), dUuid, "%c.foo",
+        AZ::Uuid::CreateRandom(), dUuid, PathOrUuid("%c.foo"),
         AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0, ""));
 
     dependencies.push_back(AzToolsFramework::AssetDatabase::SourceFileDependencyEntry(
-        AZ::Uuid::CreateRandom(), dUuid, tempPath.absoluteFilePath("%c.foo").toUtf8().constData(),
+        AZ::Uuid::CreateRandom(), dUuid, PathOrUuid(tempPath.absoluteFilePath("%c.foo").toUtf8().constData()),
         AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0, ""));
 
 #ifdef AZ_PLATFORM_WINDOWS
@@ -4425,7 +4426,7 @@ void WildcardSourceDependencyTest::SetUp()
     auto test = (tempPath.absolutePath().left(1) + "%.foo");
     dependencies.push_back(AzToolsFramework::AssetDatabase::SourceFileDependencyEntry(
         AZ::Uuid::CreateRandom(), dUuid,
-        (test).toUtf8().constData(),
+        PathOrUuid(test.toUtf8().constData()),
         AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0, ""));
 #endif
 
