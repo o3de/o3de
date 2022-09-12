@@ -234,9 +234,7 @@ void AssetImporterWindow::OpenFileInternal(const AZStd::string& filePath)
         {
             m_assetImporterDocument->LoadScene(filePath);
 
-            // Update the UI on the main thread.
-            QTimer::singleShot(0, [&]() { UpdateSceneDisplay({}); });
-            
+            UpdateSceneDisplay({}); 
         },
         [this]()
         {
@@ -607,7 +605,7 @@ void AssetImporterWindow::UpdateSceneDisplay(const AZStd::shared_ptr<AZ::SceneAP
         sceneHeaderText = QString::fromUtf8(scene->GetManifestFilename().c_str(), static_cast<int>(scene->GetManifestFilename().size()));
     }
 
-    if (scene)
+     if (scene)
     {
         m_rootDisplay->SetSceneDisplay(sceneHeaderText, scene);
     }

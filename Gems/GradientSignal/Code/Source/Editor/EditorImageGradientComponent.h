@@ -76,6 +76,9 @@ namespace GradientSignal
             CreateNewImage
         };
 
+        AZStd::vector<AZ::Edit::EnumConstant<ImageCreationOrSelection>> SupportedImageOptions() const;
+        bool IsPaintFeatureEnabled() const;
+
         // EditorImageGradientRequestBus overrides ...
         void StartImageModification() override;
         void EndImageModification() override;
