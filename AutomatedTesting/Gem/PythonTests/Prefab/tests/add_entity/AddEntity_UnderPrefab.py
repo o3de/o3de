@@ -5,14 +5,13 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-def AddEntity_UnderChildEntityOfAnotherPrefab():
+def AddEntity_UnderPrefab():
     """
     Test description:
     - Creates an entity.
     - Creates a prefab out of the above entity.
     - Focuses on the created prefab and adds a new child entity.
-    - Creates a child entity under the above child entity of the created prefab.
-    - Checks that the entity is correctly added.
+    Checks that the entity is correctly added.
     """
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
@@ -36,29 +35,19 @@ def AddEntity_UnderChildEntityOfAnotherPrefab():
     assert len(child_entity_ids_inside_prefab) == 1, f"{len(child_entity_ids_inside_prefab)} entities found inside prefab" \
                                               f" when there should have been just 1 entity"
 
-    child_entity_inside_prefab = child_entity_ids_inside_prefab[0]
-    child_entity_inside_prefab.focus_on_owning_prefab()
-
-    second_child_entity = child_entity_inside_prefab.create_editor_entity(parent_id=child_entity_inside_prefab.id)
-
-    # Wait till prefab propagation finishes before validating add child entity
-    PrefabWaiter.wait_for_propagation()
-
-
     # Test undo/redo on add child entity
     azlmbr.legacy.general.undo()
     PrefabWaiter.wait_for_propagation()
-    child_entity_ids_inside_prefab = child_entity_inside_prefab.get_children()
+    child_entity_ids_inside_prefab = child_instance.get_direct_child_entities()
     assert len(child_entity_ids_inside_prefab) == 0, f"{len(child_entity_ids_inside_prefab)} entities found inside prefab" \
-                                              f" after Undo operation, when there should have been 0 entity"
+                                              f" after Undo operation, when there should have been 0 entities"
     azlmbr.legacy.general.redo()
     PrefabWaiter.wait_for_propagation()
-    child_entity_ids_inside_prefab = child_entity_inside_prefab.get_children()
+    child_entity_ids_inside_prefab = child_instance.get_direct_child_entities()
     assert len(child_entity_ids_inside_prefab) == 1, f"{len(child_entity_ids_inside_prefab)} entities found inside prefab" \
                                               f" after Redo operation, when there should have been 1 entity"
 
 
-
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
-    Report.start_test(AddEntity_UnderChildEntityOfAnotherPrefab)
+    Report.start_test(AddEntity_UnderPrefab)
