@@ -705,7 +705,7 @@ namespace AzToolsFramework
             // Query handles finding files which depend on "this" by: relative path (w or w/o wildcard), absolute path (w or w/o wildcard), or UUID
             static const char* QUERY_SOURCEDEPENDENCY_BY_DEPENDSONSOURCE_WILDCARD = "AzToolsFramework::AssetDatabase::QuerySourceDependencyByDependsOnSourceWildcard";
             static const char* QUERY_SOURCEDEPENDENCY_BY_DEPENDSONSOURCE_WILDCARD_STATEMENT =
-                "SELECT * from SourceDependency WHERE "
+                "SELECT *, CASE WHEN :relativepath LIKE DependsOnSource THEN 0 ELSE 1 END as AbsolutePath from SourceDependency WHERE "
                 "(TypeOfDependency & :typeOfDependency AND "
                 "DependsOnSource IN (:relativepath, :absolutepath, :uuid)) OR "
                 "(TypeOfDependency = :wildCardDependency AND "
@@ -976,6 +976,7 @@ namespace AzToolsFramework
             bool GetSourceResult(const char* callName, SQLite::Statement* statement, AssetDatabaseConnection::sourceHandler handler);
             bool GetSourceAndScanfolderResult(const char* callName, SQLite::Statement* statement, AssetDatabaseConnection::combinedSourceScanFolderHandler handler);
             bool GetSourceDependencyResult(const char* callName, SQLite::Statement* statement, AssetDatabaseConnection::sourceFileDependencyHandler handler);
+            bool GetWildcardSourceDependencyResult(const char* callName, SQLite::Statement* statement, AssetDatabaseConnection::sourceFileDependencyHandler handler);
             bool GetJobResultSimple(const char* name, SQLite::Statement* statement, AssetDatabaseConnection::jobHandler handler);
             bool GetJobResult(
                 const char* callName,
@@ -2565,7 +2566,15 @@ namespace AzToolsFramework
             SourceFileDependencyEntry::TypeOfDependency matchDependency = SourceFileDependencyEntry::TypeOfDependency::DEP_SourceOrJob;
             SourceFileDependencyEntry::TypeOfDependency wildcardDependency = SourceFileDependencyEntry::TypeOfDependency::DEP_SourceLikeMatch;
 
-            return s_querySourceDependencyByDependsOnSourceWildcard.BindAndQuery(*m_databaseConnection, handler, &GetSourceDependencyResult, sourceGuid.ToFixedString(false, false).c_str(), sourceName, absolutePath, matchDependency, wildcardDependency);
+            return s_querySourceDependencyByDependsOnSourceWildcard.BindAndQuery(
+                *m_databaseConnection,
+                handler,
+                &GetWildcardSourceDependencyResult,
+                sourceGuid.ToFixedString(false, false).c_str(),
+                sourceName,
+                absolutePath,
+                matchDependency,
+                wildcardDependency);
         }
 
         bool AssetDatabaseConnection::QueryDependsOnSourceBySourceDependency(AZ::Uuid sourceGuid, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency dependencyType, sourceFileDependencyHandler handler)
@@ -2936,6 +2945,52 @@ namespace AzToolsFramework
             bool GetSourceDependencyResult(const char* callName, SQLite::Statement* statement, AssetDatabaseConnection::sourceFileDependencyHandler handler)
             {
                 return GetResult(callName, statement, handler);
+            }
+
+            bool GetWildcardSourceDependencyResult(const char* callName, SQLite::Statement* statement, AssetDatabaseConnection::sourceFileDependencyHandler handler)
+            {
+                AZ_UNUSED(callName); // AZ_Error may be compiled out entirely in release builds.
+
+                Statement::SqlStatus result = statement->Step();
+
+                SourceFileDependencyEntry entry;
+                int absolutePathMatch;
+                auto boundColumns = CombineColumns(entry.GetColumns(), MakeColumns(MakeColumn("AbsolutePath", absolutePathMatch)));
+
+                bool validResult = result == Statement::SqlDone;
+                while (result == Statement::SqlOK)
+                {
+                    if (!boundColumns.Fetch(statement))
+                    {
+                        return false;
+                    }
+
+                    // Its possible for certain relative wildcard dependencies to match an absolute path (ex c%.foo matches c:/bar.foo)
+                    // If that happens, skip this result and move on to the next one
+                    if(!entry.m_dependsOnSource.IsUuid() && absolutePathMatch == 1 && !AZ::IO::PathView(entry.m_dependsOnSource.GetPath()).IsAbsolute())
+                    {
+                        result = statement->Step();
+                        continue;
+                    }
+
+                    if (handler(entry))
+                    {
+                        result = statement->Step();
+                    }
+                    else
+                    {
+                        result = Statement::SqlDone;
+                    }
+                    validResult = true;
+                }
+
+                if (result == Statement::SqlError)
+                {
+                    AZ_Warning(LOG_NAME, false, "Error occurred while stepping %s", callName);
+                    return false;
+                }
+
+                return validResult;
             }
 
             bool GetProductDependencyResult(const char* callName, Statement* statement, AssetDatabaseConnection::productDependencyHandler handler)

@@ -51,7 +51,7 @@ namespace AzToolsFramework
             AZ::Uuid GetColumnValue(SQLite::Statement* statement, int index);
 
             template<>
-            AssetDatabase::PathOrUuid GetColumnValue(SQLite::Statement* statement, int index);
+            AzToolsFramework::AssetDatabase::PathOrUuid GetColumnValue(SQLite::Statement* statement, int index);
 
             template<>
             double GetColumnValue(SQLite::Statement* statement, int index);

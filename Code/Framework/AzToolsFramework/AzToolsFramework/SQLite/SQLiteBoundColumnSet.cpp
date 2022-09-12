@@ -8,6 +8,7 @@
 
 #include "SQLiteBoundColumnSet.h"
 #include "AzCore/std/containers/bitset.h"
+#include <AzToolsFramework/SQLite/SQLiteQuery.h>
 
 namespace AzToolsFramework
 {

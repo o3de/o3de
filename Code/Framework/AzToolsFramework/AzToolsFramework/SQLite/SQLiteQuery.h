@@ -19,10 +19,7 @@ namespace AzToolsFramework
     {
         class PathOrUuid;
     }
-}
 
-namespace AzToolsFramework
-{
     namespace SQLite
     {
         struct SqlBlob;
@@ -45,7 +42,7 @@ namespace AzToolsFramework
         public:
             PathOrUuid() = default;
             explicit PathOrUuid(AZStd::string path);
-
+            explicit PathOrUuid(const char* path);
             explicit PathOrUuid(AZ::Uuid uuid);
 
             static PathOrUuid Create(AZStd::string val);
