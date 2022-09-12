@@ -46,44 +46,6 @@ then
 fi
 
 #
-# If the linux distro is 20.04 (focal), we need libffi.so.6, which is not part of the focal distro. We 
-# will install it from the bionic distro manually into focal. This is needed since Ubuntu 20.04 supports
-# python 3.8 out of the box, but we are using 3.7
-#
-LIBFFI6_COUNT=$(apt list --installed 2>/dev/null | grep libffi6 | wc -l)
-if [ "$UBUNTU_DISTRO" == "focal" ] && [ $LIBFFI6_COUNT -eq 0 ]
-then
-    echo "Installing libffi for Ubuntu 20.04"
-
-    pushd /tmp >/dev/null
-
-    LIBFFI_PACKAGE_NAME=libffi6_3.2.1-8_amd64.deb
-    LIBFFI_PACKAGE_URL=http://mirrors.kernel.org/ubuntu/pool/main/libf/libffi/
-
-    curl --location $LIBFFI_PACKAGE_URL/$LIBFFI_PACKAGE_NAME -o $LIBFFI_PACKAGE_NAME
-    if [ $? -ne 0 ]
-    then
-        echo Unable to download $LIBFFI_PACKAGE_URL/$LIBFFI_PACKAGE_NAME
-        popd
-        exit 1
-    fi
-
-    apt install ./$LIBFFI_PACKAGE_NAME -y
-    if [ $? -ne 0 ]
-    then
-        echo Unable to install $LIBFFI_PACKAGE_NAME
-        rm -f ./$LIBFFI_PACKAGE_NAME
-        popd
-        exit 1
-    fi
-
-    rm -f ./$LIBFFI_PACKAGE_NAME
-    popd
-    echo "libffi.so.6 installed"
-fi
-
-
-#
 # Add the kitware repository for cmake if necessary
 #
 
