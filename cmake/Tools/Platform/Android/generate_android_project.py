@@ -23,6 +23,14 @@ if ROOT_DEV_PATH not in sys.path:
 from cmake.Tools import common
 from cmake.Tools.Platform.Android import android_support
 
+
+O3DE_SCRIPTS_PATH = os.path.join(ROOT_DEV_PATH, 'scripts', 'o3de')
+if O3DE_SCRIPTS_PATH not in sys.path:
+    sys.path.append(O3DE_SCRIPTS_PATH)
+
+from o3de import manifest
+
+
 GRADLE_ARGUMENT_NAME = '--gradle-install-path'
 GRADLE_MIN_VERSION = Version('6.5')
 GRADLE_MAX_VERSION = Version('7.0.2')
@@ -126,8 +134,8 @@ ALL_ASSET_MODES = [ASSET_MODE_PAK, ASSET_MODE_LOOSE, ASSET_MODE_VFS]
 ASSET_TYPE_ARGUMENT_NAME = '--asset-type'
 DEFAULT_ASSET_TYPE = 'android'
 
-DEFAULT_3RD_PARTY_PATH = str(pathlib.Path(os.path.expanduser('~')) / '.o3de' / '3rdParty')
-
+manifest_json = manifest.load_o3de_manifest()
+DEFAULT_3RD_PARTY_PATH = manifest_json.get('default_third_party_folder', manifest.get_o3de_third_party_folder())
 
 def wrap_parsed_args(parsed_args):
     """
