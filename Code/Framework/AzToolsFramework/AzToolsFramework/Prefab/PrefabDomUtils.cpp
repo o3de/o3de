@@ -190,7 +190,8 @@ namespace AzToolsFramework
                         if (deprecatedComponents)
                         {
                             const char* prefabName = instance.GetTemplateSourcePath().Filename().Native().data();
-                            for (const auto& componentName : deprecatedComponents->GetComponentNames())
+                            AZStd::vector<AZStd::string> componentNames = deprecatedComponents->GetComponentNames();
+                            for (const auto& componentName : componentNames)
                             {
                                 AZ_Warning(
                                     "JSON Serialization",
@@ -322,8 +323,8 @@ namespace AzToolsFramework
                 // instantiating a prefab
                 AZStd::string scratchBuffer;
                 auto issueReportingCallback = [&scratchBuffer](
-                                                    AZStd::string_view message, AZ::JsonSerializationResult::ResultCode result,
-                                                    AZStd::string_view path) -> AZ::JsonSerializationResult::ResultCode
+                    AZStd::string_view message, AZ::JsonSerializationResult::ResultCode result,
+                    AZStd::string_view path) -> AZ::JsonSerializationResult::ResultCode
                 {
                     return Internal::JsonIssueReporter(scratchBuffer, message, result, path);
                 };

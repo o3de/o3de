@@ -99,10 +99,11 @@ namespace AZ
             azrtti_typeid<decltype(entityInstance->m_isRuntimeActiveByDefault)>(),
             inputValue, "IsRuntimeActive", context);
  
-        AZStd::string_view message =
-            result.GetProcessing() == JSR::Processing::Completed ? "Successfully loaded entity information." :
-            result.GetProcessing() != JSR::Processing::Halted ? "Partially loaded entity information." :
-            "Failed to load entity information.";
+        AZStd::string_view message = result.GetProcessing() == JSR::Processing::Completed
+            ? "Successfully loaded entity information."
+            : (result.GetProcessing() != JSR::Processing::Halted ? "Partially loaded entity information."
+                                                                 : "Failed to load entity information.");
+
         return context.Report(result, message);
     }
 
