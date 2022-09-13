@@ -784,10 +784,6 @@ def test_execute_incremental_deploy_success(tmpdir, test_config, test_package_na
     tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_BUILD_DIR}/app/build/outputs/apk/{test_config}/app-{test_config}.apk").ensure()
     expected_apk_path = str(tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_BUILD_DIR}/app/build/outputs/apk/{test_config}/app-{test_config}.apk").realpath())
 
-    #tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_GAME_NAME}/Cache/{TEST_ASSET_TYPE}/dummy.txt").ensure()
-    #tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_BUILD_DIR}/app/src/assets/Registry/dummy.txt").ensure()
-    # "C:\Users\spham\AppData\Local\Temp\pytest-of-spham\pytest-150\test_execute_incremental_deplo0\Foo\android_gradle_test\app\src\assets"
-
     tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_BUILD_DIR}/app/src/assets/Registry/dummy.txt").ensure()
     expected_registry_path = str(tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_BUILD_DIR}/app/src/main/assets/Registry").realpath())
 
