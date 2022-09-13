@@ -135,7 +135,8 @@ ASSET_TYPE_ARGUMENT_NAME = '--asset-type'
 DEFAULT_ASSET_TYPE = 'android'
 
 manifest_json = manifest.load_o3de_manifest()
-DEFAULT_3RD_PARTY_PATH = manifest_json.get('default_third_party_folder', manifest.get_o3de_third_party_folder())
+DEFAULT_3RD_PARTY_PATH = pathlib.Path(manifest_json.get('default_third_party_folder', manifest.get_o3de_third_party_folder()))
+
 
 def wrap_parsed_args(parsed_args):
     """
@@ -175,6 +176,7 @@ def main(args):
 
     parser.add_argument('--third-party-path',
                         help=f'The path to the 3rd Party root directory (defaults to {DEFAULT_3RD_PARTY_PATH})',
+                        type=pathlib.Path,
                         default=DEFAULT_3RD_PARTY_PATH)
 
     parser.add_argument(ANDROID_SDK_ARGUMENT_NAME,
