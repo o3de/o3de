@@ -47,7 +47,7 @@ namespace AtomToolsFramework
 
         void PoseContent();
 
-        uint32_t StartCapture();
+        AZ::Render::FrameCaptureId StartCapture();
         void EndCapture();
 
     private:
