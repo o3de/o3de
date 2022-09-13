@@ -39,6 +39,7 @@
 
 #include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/CvarEditor.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyHandlerWidget.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
 
@@ -249,8 +250,11 @@ int main(int argc, char** argv)
     debugViewer->AddAdapterToList("Example Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::ExampleAdapter>());
     debugViewer->AddAdapterToList("Settings Registry Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::SettingsRegistryAdapter>());
 
+
+    QPointer<AzToolsFramework::CvarEditor> cvarEditor = new AzToolsFramework::CvarEditor(nullptr);
     debugViewer->show();
     dpeInstance->show();
+    cvarEditor->show();
 
     return qtApp.exec();
 }
