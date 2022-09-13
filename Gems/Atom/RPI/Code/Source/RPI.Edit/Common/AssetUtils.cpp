@@ -129,42 +129,59 @@ namespace AZ
             {
                 AZStd::vector<AZStd::string> results;
 
+                // Convert incoming paths containing aliases into absolute paths
+                AZ::IO::FixedMaxPath originatingPath;
+                AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(originatingPath, AZ::IO::PathView{ originatingSourceFilePath });
+                AZ::IO::FixedMaxPath referencedPath;
+                AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(referencedPath, AZ::IO::PathView{ referencedSourceFilePath });
+
                 // Use the referencedSourceFilePath as a relative path starting at originatingSourceFilePath
-                AZStd::string combinedPath = originatingSourceFilePath;
-                AzFramework::StringFunc::Path::StripFullName(combinedPath);
-                AzFramework::StringFunc::Path::Join(combinedPath.c_str(), referencedSourceFilePath.c_str(), combinedPath);
-                results.push_back(combinedPath);
+                AZ::IO::FixedMaxPath combinedPath = originatingPath.ParentPath();
+                combinedPath /= referencedPath;
+
+                results.push_back(combinedPath.LexicallyNormal().String());
 
                 // Use the referencedSourceFilePath as a standard asset path
-                results.push_back(referencedSourceFilePath);
+                results.push_back(referencedPath.LexicallyNormal().String());
 
                 return results;
             }
 
             Outcome<Data::AssetId> MakeAssetId(const AZStd::string& sourcePath, uint32_t productSubId, TraceLevel reporting)
             {
+                AZ::IO::FixedMaxPath sourcePathNoAlias;
+                AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(sourcePathNoAlias, AZ::IO::PathView{ sourcePath });
+
                 bool assetFound = false;
                 AZ::Data::AssetInfo sourceInfo;
                 AZStd::string watchFolder;
-                AzToolsFramework::AssetSystemRequestBus::BroadcastResult(assetFound, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath, sourcePath.c_str(), sourceInfo, watchFolder);
+                AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                    assetFound,
+                    &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath,
+                    sourcePathNoAlias.c_str(),
+                    sourceInfo,
+                    watchFolder);
 
                 if (!assetFound)
                 {
-                    AssetUtilsInternal::ReportIssue(reporting, AZStd::string::format("Could not find asset [%s]", sourcePath.c_str()).c_str());
+                    AssetUtilsInternal::ReportIssue(
+                        reporting, AZStd::string::format("Could not find asset [%s]", sourcePath.c_str()).c_str());
                     return AZ::Failure();
                 }
-                else
-                {
-                    return AZ::Success(AZ::Data::AssetId(sourceInfo.m_assetId.m_guid, productSubId));
-                }
+
+                return AZ::Success(AZ::Data::AssetId(sourceInfo.m_assetId.m_guid, productSubId));
             }
 
-            Outcome<Data::AssetId> MakeAssetId(const AZStd::string& originatingSourcePath, const AZStd::string& referencedSourceFilePath, uint32_t productSubId, TraceLevel reporting)
+            Outcome<Data::AssetId> MakeAssetId(
+                const AZStd::string& originatingSourcePath,
+                const AZStd::string& referencedSourceFilePath,
+                uint32_t productSubId,
+                TraceLevel reporting)
             {
-                AZStd::string resolvedPath = ResolvePathReference(originatingSourcePath, referencedSourceFilePath);
+                const AZStd::string resolvedPath = ResolvePathReference(originatingSourcePath, referencedSourceFilePath);
                 return MakeAssetId(resolvedPath, productSubId, reporting);
             }
-            
+
             AZStd::string SanitizeFileName(AZStd::string filename)
             {
                 filename = AZStd::regex_replace(filename, AZStd::regex{R"([^a-zA-Z0-9_\-\.]+)"}, "_"); // Replace unsupported characters
