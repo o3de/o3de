@@ -16,7 +16,7 @@
 #include <AzCore/std/parallel/atomic.h>
 
 #include <Atom/Feature/Utils/FrameCaptureBus.h>
-#include <Atom/Feature/Utils/FrameCapturePathManagementBus.h>
+#include <Atom/Feature/Utils/FrameCaptureTestBus.h>
 
 #include <Atom/RPI.Public/Pass/AttachmentReadback.h>
 
@@ -28,7 +28,7 @@ namespace AZ
         class FrameCaptureSystemComponent final
             : public AZ::Component
             , public FrameCaptureRequestBus::Handler
-            , public FrameCapturePathManagementRequestBus::Handler
+            , public FrameCaptureTestRequestBus::Handler
             , public AZ::SystemTickBus::Handler
         {
         public:
@@ -48,21 +48,21 @@ namespace AZ
                 RPI::PassAttachmentReadbackOption option) override;
             uint32_t CapturePassAttachmentWithCallback(const AZStd::vector<AZStd::string>& passHierarchy, const AZStd::string& slotName
                 , RPI::AttachmentReadback::CallbackFunction callback, RPI::PassAttachmentReadbackOption option) override;
+
+            // FrameCaptureTestRequestBus overrides ...
+            void SetScreenshotFolder(const AZStd::string& screenshotFolder) override;
+            void SetTestEnvPath(const AZStd::string& envPath) override;
+            void SetOfficialBaselineImageFolder(const AZStd::string& baselineFolder) override;
+            void SetLocalBaselineImageFolder(const AZStd::string& baselineFolder) override;
+            AZStd::string BuildScreenshotFilePath(const AZStd::string& imageName, bool useEnvPath) override;
+            AZStd::string BuildOfficialBaselineFilePath(const AZStd::string& imageName, bool useEnvPath) override;
+            AZStd::string BuildLocalBaselineFilePath(const AZStd::string& imageName, bool useEnvPath) override;
             bool CompareScreenshots(
                 const AZStd::string& filePathA,
                 const AZStd::string& filePathB,
                 float* diffScore,
                 float* filteredDiffScore,
                 float minDiffFilter) override;
-
-            // FrameCapturePathManagementRequestBus overrides ...
-            void SetScreenshotFolder(const AZStd::string& screenshotFolder) override;
-            void SetTestEnvPath(const AZStd::string& envPath) override;
-            void SetOfficialBaselineImageFolder(const AZStd::string& baselineFolder) override;
-            void SetLocalBaselineImageFolder(const AZStd::string& baselineFolder) override;
-            AZStd::string BuildScreenshotFilePath(const AZStd::string& imageName) override;
-            AZStd::string BuildOfficialBaselineFilePath(const AZStd::string& imageName) override;
-            AZStd::string BuildLocalBaselineFilePath(const AZStd::string& imageName) override;
 
         private:
             // Wrap the state necessary for 1 capture

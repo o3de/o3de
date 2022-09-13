@@ -307,21 +307,21 @@ namespace AZ
                     ->Event("CaptureScreenshot", &FrameCaptureRequestBus::Events::CaptureScreenshot)
                     ->Event("CaptureScreenshotWithPreview", &FrameCaptureRequestBus::Events::CaptureScreenshotWithPreview)
                     ->Event("CapturePassAttachment", &FrameCaptureRequestBus::Events::CapturePassAttachment)
-                    ->Event("CompareScreenshots", &FrameCaptureRequestBus::Events::CompareScreenshots)
                     ;
 
                 FrameCaptureNotificationBusHandler::Reflect(context);
 
-                behaviorContext->EBus<FrameCapturePathManagementRequestBus>("FrameCapturePathManagementRequestBus")
+                behaviorContext->EBus<FrameCaptureTestRequestBus>("FrameCaptureTestRequestBus")
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                     ->Attribute(AZ::Script::Attributes::Module, "atom")
-                    ->Event("SetScreenshotFolder", &FrameCapturePathManagementRequestBus::Events::SetScreenshotFolder)
-                    ->Event("SetTestEnvPath", &FrameCapturePathManagementRequestBus::Events::SetTestEnvPath)
-                    ->Event("SetOfficialBaselineImageFolder", &FrameCapturePathManagementRequestBus::Events::SetOfficialBaselineImageFolder)
-                    ->Event("SetLocalBaselineImageFolder", &FrameCapturePathManagementRequestBus::Events::SetLocalBaselineImageFolder)
-                    ->Event("BuildScreenshotFilePath", &FrameCapturePathManagementRequestBus::Events::BuildScreenshotFilePath)
-                    ->Event("BuildOfficialBaselineFilePath", &FrameCapturePathManagementRequestBus::Events::BuildOfficialBaselineFilePath)
-                    ->Event("BuildLocalBaselineFilePath", &FrameCapturePathManagementRequestBus::Events::BuildLocalBaselineFilePath)
+                    ->Event("SetScreenshotFolder", &FrameCaptureTestRequestBus::Events::SetScreenshotFolder)
+                    ->Event("SetTestEnvPath", &FrameCaptureTestRequestBus::Events::SetTestEnvPath)
+                    ->Event("SetOfficialBaselineImageFolder", &FrameCaptureTestRequestBus::Events::SetOfficialBaselineImageFolder)
+                    ->Event("SetLocalBaselineImageFolder", &FrameCaptureTestRequestBus::Events::SetLocalBaselineImageFolder)
+                    ->Event("BuildScreenshotFilePath", &FrameCaptureTestRequestBus::Events::BuildScreenshotFilePath)
+                    ->Event("BuildOfficialBaselineFilePath", &FrameCaptureTestRequestBus::Events::BuildOfficialBaselineFilePath)
+                    ->Event("BuildLocalBaselineFilePath", &FrameCaptureTestRequestBus::Events::BuildLocalBaselineFilePath)
+                    ->Event("CompareScreenshots", &FrameCaptureTestRequestBus::Events::CompareScreenshots)
                     ;
             }
         }
@@ -329,6 +329,7 @@ namespace AZ
         void FrameCaptureSystemComponent::Activate()
         {
             FrameCaptureRequestBus::Handler::BusConnect();
+            FrameCaptureTestRequestBus::Handler::BusConnect();
             SystemTickBus::Handler::BusConnect();
         }
 
@@ -366,6 +367,7 @@ namespace AZ
         void FrameCaptureSystemComponent::Deactivate()
         {
             FrameCaptureRequestBus::Handler::BusDisconnect();
+            FrameCaptureTestRequestBus::Handler::BusDisconnect();
             SystemTickBus::Handler::BusDisconnect();
             m_idleCaptures.clear();
             m_inProgressCaptures.clear();
@@ -859,19 +861,40 @@ namespace AZ
             m_localBaselineImageFolder = ResolvePath(baselineFolder);
         }
 
-        AZStd::string FrameCaptureSystemComponent::BuildScreenshotFilePath(const AZStd::string& imageName)
+        AZStd::string FrameCaptureSystemComponent::BuildScreenshotFilePath(const AZStd::string& imageName, bool useEnvPath)
         {
-            return ResolvePath(AZStd::string::format("%s/%s/%s", m_screenshotFolder.c_str(), m_testEnvPath.c_str(), imageName.c_str()));
+            if (useEnvPath)
+            {
+                return ResolvePath(AZStd::string::format("%s/%s/%s", m_screenshotFolder.c_str(), m_testEnvPath.c_str(), imageName.c_str()));
+            }
+            else
+            {
+                return ResolvePath(AZStd::string::format("%s/%s", m_screenshotFolder.c_str(), imageName.c_str()));
+            }
         }
 
-        AZStd::string FrameCaptureSystemComponent::BuildOfficialBaselineFilePath(const AZStd::string& imageName)
+        AZStd::string FrameCaptureSystemComponent::BuildOfficialBaselineFilePath(const AZStd::string& imageName, bool useEnvPath)
         {
-            return ResolvePath(AZStd::string::format("%s/%s", m_officialBaselineImageFolder.c_str(), imageName.c_str()));
+            if (useEnvPath)
+            {
+                return ResolvePath(AZStd::string::format("%s/%s/%s", m_officialBaselineImageFolder.c_str(), m_testEnvPath.c_str(), imageName.c_str()));
+            }
+            else
+            {
+                return ResolvePath(AZStd::string::format("%s/%s", m_officialBaselineImageFolder.c_str(), imageName.c_str()));
+            }
         }
 
-        AZStd::string FrameCaptureSystemComponent::BuildLocalBaselineFilePath(const AZStd::string& imageName)
+        AZStd::string FrameCaptureSystemComponent::BuildLocalBaselineFilePath(const AZStd::string& imageName, bool useEnvPath)
         {
-            return ResolvePath(AZStd::string::format("%s/%s/%s", m_localBaselineImageFolder.c_str(), m_testEnvPath.c_str(), imageName.c_str()));
+            if (useEnvPath)
+            {
+                return ResolvePath(AZStd::string::format("%s/%s/%s", m_localBaselineImageFolder.c_str(), m_testEnvPath.c_str(), imageName.c_str()));
+            }
+            else
+            {
+                return ResolvePath(AZStd::string::format("%s/%s", m_localBaselineImageFolder.c_str(), imageName.c_str()));
+            }
         }
 
         bool FrameCaptureSystemComponent::CompareScreenshots(

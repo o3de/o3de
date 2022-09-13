@@ -79,20 +79,6 @@ namespace AZ
             //! @return value is the frame capture Id, on failure it will return InvalidFrameCaptureId
             virtual FrameCaptureId CapturePassAttachmentWithCallback(const AZStd::vector<AZStd::string>& passHierarchy, const AZStd::string& slotName
                 , RPI::AttachmentReadback::CallbackFunction callback, RPI::PassAttachmentReadbackOption option) = 0;
-
-            //! Compare 2 screenshots files and give scores (using root mean square RMS) for the difference.
-            //! @param filePathA the full path of screenshot A
-            //! @param filePathB the full path of screenshot B
-            //! @param diffScore [out] the RMS result
-            //! @param filteredDiff [out] an alternate RMS value calculated after removing any diffs less than @minDiffFilter.
-            //! @param minDiffFilter diff values less than this will be filtered out before calculating @filteredDiff.
-            //! @return if the comparison is successfully performed
-            virtual bool CompareScreenshots(
-                const AZStd::string& filePathA,
-                const AZStd::string& filePathB,
-                float* diffScore,
-                float* filteredDiffScore,
-                float minDiffFilter) = 0;
         };
         using FrameCaptureRequestBus = EBus<FrameCaptureRequests>;
 
