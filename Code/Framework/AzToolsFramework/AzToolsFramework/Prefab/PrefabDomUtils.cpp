@@ -183,6 +183,7 @@ namespace AzToolsFramework
 
                     AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::Load(instance, prefabDom, settings);
                     bool succeeded = (result.GetProcessing() != AZ::JsonSerializationResult::Processing::Halted);
+#ifdef AZ_ENABLE_TRACING
                     if (succeeded)
                     {
                         // Display a message for skipped components
@@ -211,6 +212,7 @@ namespace AzToolsFramework
                             "Failed to de-serialize Prefab Instance from Prefab DOM. "
                             "Unable to proceed.");
                     }
+#endif // AZ_ENABLE_TRACING
 
                     AZ::Data::AssetManager::Instance().ResumeAssetRelease();
 
