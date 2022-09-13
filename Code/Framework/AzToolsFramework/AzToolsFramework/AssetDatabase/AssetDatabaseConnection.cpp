@@ -731,7 +731,7 @@ namespace AzToolsFramework
                 "SourceGuid = :source AND "
                 "TypeOfDependency & :typeOfDependency AND "
                 "DependsOnSource LIKE :dependencyFilter;";
-            static const auto s_queryDependsonsourceBySource = MakeSqlQuery(QUERY_DEPENDSONSOURCE_BY_SOURCE, QUERY_DEPENDSONSOURCE_BY_SOURCE_STATEMENT, LOG_NAME,
+            static const auto s_queryDependsOnSourceBySource = MakeSqlQuery(QUERY_DEPENDSONSOURCE_BY_SOURCE, QUERY_DEPENDSONSOURCE_BY_SOURCE_STATEMENT, LOG_NAME,
                 SqlParam<AZ::Uuid>(":source"),
                 SqlParam<const char*>(":dependencyFilter"),
                 SqlParam<AZ::u32>(":typeOfDependency"));
@@ -1889,7 +1889,7 @@ namespace AzToolsFramework
             AddStatement(m_databaseConnection, s_querySourcedependencyBySourcedependencyid);
             AddStatement(m_databaseConnection, s_querySourcedependencyByDependsonsource);
             AddStatement(m_databaseConnection, s_querySourcedependencyByDependsonsourceWildcard);
-            AddStatement(m_databaseConnection, s_queryDependsonsourceBySource);
+            AddStatement(m_databaseConnection, s_queryDependsOnSourceBySource);
 
             AddStatement(m_databaseConnection, s_queryProductdependencyByProductdependencyid);
             AddStatement(m_databaseConnection, s_queryProductdependencyByProductid);
@@ -2561,7 +2561,7 @@ namespace AzToolsFramework
 
         bool AssetDatabaseConnection::QueryDependsOnSourceBySourceDependency(AZ::Uuid sourceGuid, const char* dependencyFilter, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency dependencyType, sourceFileDependencyHandler handler)
         {
-            return s_queryDependsonsourceBySource.BindAndQuery(*m_databaseConnection, handler, &GetSourceDependencyResult, sourceGuid, dependencyFilter == nullptr ? "%" : dependencyFilter, dependencyType);
+            return s_queryDependsOnSourceBySource.BindAndQuery(*m_databaseConnection, handler, &GetSourceDependencyResult, sourceGuid, dependencyFilter == nullptr ? "%" : dependencyFilter, dependencyType);
         }
 
         bool AzToolsFramework::AssetDatabase::AssetDatabaseConnection::QueryProductDependenciesThatDependOnProductBySourceId(AZ::s64 sourceId, productDependencyHandler handler)

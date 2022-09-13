@@ -216,6 +216,11 @@ namespace AzToolsFramework
             return false;
         });
 
+        if (sourceUuid.IsNull())
+        {
+            return false;
+        }
+
         bool succeeded = m_databaseConnection->QueryDependsOnSourceBySourceDependency(
             sourceUuid, "%.slice",
             AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceOrJob,

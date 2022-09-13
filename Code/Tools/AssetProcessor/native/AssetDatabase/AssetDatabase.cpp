@@ -1130,6 +1130,7 @@ namespace AssetProcessor
             // Do nothing so the whole database is dropped.
             // Unfortunately we have to reprocess all assets because of the way the fingerprinting algorithm works,
             // changing from storing the path to the UUID changes the fingerprint, resulting in all assets reprocessing anyway
+            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Asset database version updated to ChangedSourceDependencySourceColumn, database will be cleared as migration is not possible for this update\n", foundVersion);
         }
 
         if (foundVersion == CurrentDatabaseVersion())
