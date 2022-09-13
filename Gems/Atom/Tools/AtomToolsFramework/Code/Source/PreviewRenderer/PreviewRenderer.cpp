@@ -183,7 +183,7 @@ namespace AtomToolsFramework
         m_currentCaptureRequest.m_content->Update();
     }
 
-    uint32_t PreviewRenderer::StartCapture()
+    AZ::Render::FrameCaptureId PreviewRenderer::StartCapture()
     {
         auto captureCompleteCallback = m_currentCaptureRequest.m_captureCompleteCallback;
         auto captureFailedCallback = m_currentCaptureRequest.m_captureFailedCallback;
