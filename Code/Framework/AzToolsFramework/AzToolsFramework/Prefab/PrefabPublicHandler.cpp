@@ -729,23 +729,20 @@ namespace AzToolsFramework
             }
 
             PrefabDom beforeState;
-            bool isBeforeStateValid = m_instanceDomGeneratorInterface->GenerateEntityDom(beforeState, *entity);
+            m_instanceDomGeneratorInterface->GenerateEntityDom(beforeState, *entity);
             AZ::EntityId beforeParentId;
             m_prefabUndoCache.Retrieve(entityId, beforeParentId);
 
             PrefabDom afterState;
             AZ::EntityId afterParentId;
             AZ::TransformBus::EventResult(afterParentId, entityId, &AZ::TransformBus::Events::GetParentId);
-            bool isAfterStateValid = m_instanceToTemplateInterface->GenerateDomForEntity(afterState, *entity);
+            m_instanceToTemplateInterface->GenerateDomForEntity(afterState, *entity);
 
             PrefabDom patch;
-            if (isBeforeStateValid && isAfterStateValid)
-            {
-                m_instanceToTemplateInterface->GeneratePatch(patch, beforeState, afterState);
-                m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(patch, entityId);
-            }
+            m_instanceToTemplateInterface->GeneratePatch(patch, beforeState, afterState);
+            m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(patch, entityId);
 
-            if (patch.IsArray() && !patch.Empty())
+            if (patch.IsArray() && !patch.Empty() && beforeState.IsObject())
             {
                 bool isNewParentOwnedByDifferentInstance = false;
 
