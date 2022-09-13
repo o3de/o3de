@@ -81,6 +81,15 @@ def ComponentCRUD_Add_Delete_Components():
             popup = await pyside_utils.wait_for_popup_widget()
             tree = popup.findChild(QtWidgets.QTreeView, "Tree")
             component_index = pyside_utils.find_child_by_pattern(tree, component_name)
+            # Handle Mesh component which has both a named section of components along with a named Mesh component
+            if component_name == "Mesh":
+                mesh_component_index = pyside_utils.find_child_by_pattern(component_index, component_name)
+                if mesh_component_index.isValid():
+                    Report.info(f"{component_name} found")
+                tree.expand(mesh_component_index)
+                tree.setCurrentIndex(mesh_component_index)
+                QtTest.QTest.keyClick(tree, Qt.Key_Enter, Qt.NoModifier)
+            # Handle other components
             if component_index.isValid():
                 Report.info(f"{component_name} found")
             tree.expand(component_index)
