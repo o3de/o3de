@@ -39,7 +39,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString ReferenceShapeNode::TITLE = QObject::tr("Shape Reference");
+    const char* ReferenceShapeNode::TITLE = "Shape Reference";
 
     ReferenceShapeNode::ReferenceShapeNode(GraphModel::GraphPtr graph)
         : BaseNode(graph)
@@ -50,12 +50,12 @@ namespace LandscapeCanvas
 
     const char* ReferenceShapeNode::GetTitle() const
     {
-        return TITLE.toUtf8().constData();
+        return TITLE;
     }
 
     const char* ReferenceShapeNode::GetSubTitle() const
     {
-        return BaseShapeNode::SHAPE_CATEGORY_TITLE.toUtf8().constData();
+        return BaseShapeNode::SHAPE_CATEGORY_TITLE;
     }
 
     const BaseNode::BaseNodeType ReferenceShapeNode::GetBaseNodeType() const

@@ -1056,13 +1056,6 @@ namespace AzToolsFramework
             return AZ::Success(m_prefabSystemComponentInterface->IsTemplateDirty(templateId));
         }
 
-        PrefabOperationResult PrefabPublicHandler::DeleteEntitiesInInstance(const EntityIdList& entityIds)
-        {
-            AZ_Warning(
-                "Prefab", false, "This function is marked for deprecation. Please use DeleteEntitiesAndAllDescendantsInInstance instead.");
-            return DeleteFromInstance(entityIds);
-        }
-
         PrefabOperationResult PrefabPublicHandler::DeleteEntitiesAndAllDescendantsInInstance(const EntityIdList& entityIds)
         {
             return DeleteFromInstance(entityIds);
