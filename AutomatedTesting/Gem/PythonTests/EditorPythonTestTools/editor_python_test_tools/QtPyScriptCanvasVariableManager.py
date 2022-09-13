@@ -9,8 +9,9 @@ Object to house all the Qt Objects used when testing and manipulating the O3DE U
 from editor_python_test_tools.utils import TestHelper as helper
 from PySide2 import QtWidgets, QtCore
 import pyside_utils
-from consts.scripting import (VARIABLE_MANAGER_QT, VARIABLE_TYPES, VARIABLE_PALETTE_QT, ADD_BUTTON_QT,
-                                        WAIT_TIME_3, GRAPH_VARIABLES_QT)
+from consts.scripting import (VARIABLE_MANAGER_QT, VARIABLE_TYPES, VARIABLE_PALETTE_QT, ADD_BUTTON_QT, WAIT_TIME_3,
+                              GRAPH_VARIABLES_QT)
+from consts.general import (WAIT_TIME_3)
 from editor_python_test_tools.utils import Report
 
 

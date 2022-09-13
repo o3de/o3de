@@ -16,7 +16,8 @@ SAVE_ASSET_AS = "SaveAssetAs"
 DEFAULT_SCRIPT_EVENT = "EventName"
 DEFAULT_METHOD_NAME = "MethodName"
 PARAMETER_NAME = "ParameterName"
-
+EVENTS_QT = "Events"
+EVENT_NAME_QT = "EventName"
 
 SCRIPT_EVENT_FILE_PATH = os.path.join(paths.projectroot, "ScriptCanvas", "test_file.scriptevent")
 

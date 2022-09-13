@@ -19,13 +19,11 @@ import azlmbr.math as math
 import azlmbr.bus as bus
 import azlmbr.legacy.general as general
 import azlmbr.scriptcanvas as scriptcanvas
-from consts.scripting import (SCRIPT_CANVAS_UI, ASSET_EDITOR_UI, NODE_PALETTE_UI, NODE_PALETTE_QT,
-                                        TREE_VIEW_QT, SEARCH_FRAME_QT, SEARCH_FILTER_QT, SAVE_STRING, NAME_STRING,
-                                        SAVE_ASSET_AS, WAIT_TIME_3, NODE_INSPECTOR_TITLE_KEY, WAIT_FRAMES,
-                                        SCRIPT_EVENT_UI, EVENTS_QT, DEFAULT_SCRIPT_EVENT, PARAMETERS_QT,
-                                        NODE_INSPECTOR_QT, NODE_INSPECTOR_UI, VARIABLE_TYPES_DICT,
-                                        SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, ENTITY_STATES)
-
+from consts.general import (SAVE_STRING, NAME_STRING,  WAIT_TIME_3,VARIABLE_TYPES_DICT, WAIT_FRAMES, ENTITY_STATES)
+from consts.scripting import (SCRIPT_CANVAS_UI, ASSET_EDITOR_UI, NODE_PALETTE_UI, NODE_PALETTE_QT, TREE_VIEW_QT,
+                              SEARCH_FRAME_QT, SEARCH_FILTER_QT,  NODE_INSPECTOR_TITLE_KEY, SCRIPT_EVENT_UI,
+                              PARAMETERS_QT, NODE_INSPECTOR_QT, NODE_INSPECTOR_UI, SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
+from consts.asset_editor import (EVENTS_QT, DEFAULT_SCRIPT_EVENT, SAVE_ASSET_AS)
 """
 Editor Qt Object container for easy access
 """
