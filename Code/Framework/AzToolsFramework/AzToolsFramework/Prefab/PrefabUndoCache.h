@@ -50,8 +50,7 @@ namespace AzToolsFramework
             void Store(const AZ::EntityId& entityId, const AZ::EntityId& parentId);
 
         private:
-            using EntityCache = AZStd::unordered_map<AZ::EntityId, AZ::EntityId>;
-            EntityCache m_entitySavedParentCache;
+            AZStd::unordered_map<AZ::EntityId, AZ::EntityId> m_parentEntityCache;
 
             InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
             InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;

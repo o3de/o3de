@@ -103,7 +103,7 @@ namespace AzToolsFramework
             // Clear out newly generated data and
             // replace with original data to ensure debug mode has the same data as profile/release
             // in the event of the consistency check failing.
-            m_entitySavedParentCache[entityId] = oldParentId;
+            m_parentEntityCache[entityId] = oldParentId;
 
 #endif // ENABLE_UNDOCACHE_CONSISTENCY_CHECKS
         }
@@ -138,7 +138,7 @@ namespace AzToolsFramework
             AZ::TransformBus::EventResult(parentId, entityId, &AZ::TransformBus::Events::GetParentId);
 
             // Capture it
-            m_entitySavedParentCache[entityId] = parentId;
+            m_parentEntityCache[entityId] = parentId;
 
             AZLOG("Prefab Undo", "Correctly cached parent id for entity id %llu (%s)", static_cast<AZ::u64>(entityId), entity->GetName().c_str());
 
@@ -147,31 +147,31 @@ namespace AzToolsFramework
 
         void PrefabUndoCache::PurgeCache(const AZ::EntityId& entityId)
         {
-            m_entitySavedParentCache.erase(entityId);
+            m_parentEntityCache.erase(entityId);
         }
 
         bool PrefabUndoCache::Retrieve(const AZ::EntityId& entityId, AZ::EntityId& parentId)
         {
-            auto it = m_entitySavedParentCache.find(entityId);
+            auto it = m_parentEntityCache.find(entityId);
 
-            if (it == m_entitySavedParentCache.end())
+            if (it == m_parentEntityCache.end())
             {
                 return false;
             }
 
-            parentId = m_entitySavedParentCache[entityId];
-            m_entitySavedParentCache.erase(entityId);
+            parentId = m_parentEntityCache[entityId];
+            m_parentEntityCache.erase(entityId);
             return true;
         }
 
         void PrefabUndoCache::Store(const AZ::EntityId& entityId, const AZ::EntityId& parentId)
         {
-            m_entitySavedParentCache[entityId] = parentId;
+            m_parentEntityCache[entityId] = parentId;
         }
 
         void PrefabUndoCache::Clear()
         {
-            m_entitySavedParentCache.clear();
+            m_parentEntityCache.clear();
         }
 
     } // namespace Prefab
