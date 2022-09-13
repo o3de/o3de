@@ -1570,27 +1570,27 @@ class AndroidSDKResolver(object):
     Class that manages the Android SDK tool to validate, install packages (e.g. built tools, sdk platforms, ndk, etc)
     """
 
-    class InstalledPackage(object):
+    class BasePackage(object):
+        def __init__(self, components):
+            self.path = components[0]
+            self.version = Version(components[1].strip().replace(' ', '.'))  # Fix for versions that have spaces between the version number and potential non-numeric versioning (PEP-0440)
+            self.description = components[2]
+
+    class InstalledPackage(BasePackage):
         def __init__(self, installed_package_components):
+            super().__init__(installed_package_components)
             assert len(installed_package_components) == 4, '4 sections expected for installed package components (path, version, description, location)'
-            self.path = installed_package_components[0]
-            self.version = Version(installed_package_components[1].strip().replace(' ', '.'))  # Fix for versions that have spaces between the version number and potential non-numeric versioning (PEP-0440)
-            self.description = installed_package_components[2]
             self.location = installed_package_components[3]
 
-    class AvailablePackage(object):
+    class AvailablePackage(BasePackage):
         def __init__(self, available_package_components):
+            super().__init__(available_package_components)
             assert len(available_package_components) == 3, '3 sections expected for installed package components (path, version, description)'
-            self.path = available_package_components[0]
-            self.version = Version(available_package_components[1].strip().replace(' ', '.')) # Fix for versions that have spaces between the version number and potential non-numeric versioning (PEP-0440)
-            self.description = available_package_components[2]
 
-    class AvailableUpdate(object):
+    class AvailableUpdate(BasePackage):
         def __init__(self, available_update_components):
+            super().__init__(available_update_components)
             assert len(available_update_components) == 3, '3 sections expected for installed package components (path, version, available)'
-            self.path = available_update_components[0]
-            self.version = Version(available_update_components[1].strip().replace(' ', '.')) # Fix for versions that have spaces between the version number and potential non-numeric versioning (PEP-0440)
-            self.available = available_update_components[2]
 
     def __init__(self, android_sdk_path, command_line_tools_version):
 
