@@ -27,7 +27,6 @@ This bootstrap file requires azlmbr and thus only runs within O3DE.
 import sys
 import os
 import site
-import timeit
 import subprocess
 from pathlib import Path
 import logging as _logging
@@ -107,9 +106,6 @@ _settings_core = dccsi_core_config.get_config_settings(enable_o3de_python=False,
                                                        enable_o3de_pyside2=False,
                                                        set_env=True)
 
-if DCCSI_GDEBUG: # provides some basic profiling to ensure dccsi speediness
-    _START = timeit.default_timer() # start tracking
-
 # configure basic logger
 # it is suggested that this be replaced with a common logging module later
 if DCCSI_GDEBUG or DCCSI_DEV_MODE:
@@ -180,6 +176,8 @@ import DccScriptingInterface.Tools.DCC.Blender.start as blender_start
 # Wing
 from DccScriptingInterface.Tools.IDE.Wing.config import wing_config
 import DccScriptingInterface.Tools.IDE.Wing.start as wing_start
+
+# Maya, not implemented yet
 # -------------------------------------------------------------------------
 
 
@@ -227,11 +225,7 @@ def click_action_sampleui():
 
 
 # -------------------------------------------------------------------------
-# the common o3de python.exe used to launch external services
-_DCCSI_PY_BASE = Path(_settings_core.DCCSI_PY_BASE).resolve()
-
-def start_service(py_file: Path,
-                  py_exe: Path = _DCCSI_PY_BASE,
+def start_service(py_file: Path = None,
                   debug: bool = DCCSI_LOCAL_DEBUG) -> subprocess:
     """! Common method to start the external application start script
 
@@ -240,7 +234,7 @@ def start_service(py_file: Path,
     """
     _LOGGER.debug(f'Starting: {py_file}')
 
-    cmd = [str(py_exe), str(py_file)]
+    cmd = [str(_settings_core.DCCSI_PY_BASE), str(py_file)]
 
     # there are at least three ways to go about this ...
     # the first, is to call the function
@@ -291,21 +285,21 @@ def start_service(py_file: Path,
 # - slot ------------------------------------------------------------------
 # as the list of slots/actions grows, refactor into sub-modules
 @Slot()
-def click_action_start_blender(py_exe: Path = _DCCSI_PY_BASE) -> start_service:
+def click_action_start_blender() -> start_service:
     """Start Blender DCC application"""
     _LOGGER.debug(f'Clicked: click_action_start_blender')
     py_file = Path(blender_config.settings.PATH_DCCSI_TOOLS_DCC_BLENDER, 'start.py').resolve()
-    return start_service(py_exe, py_file)
+    return start_service(py_file)
 # -------------------------------------------------------------------------
 
 
 # - slot ------------------------------------------------------------------
 @Slot()
-def click_action_start_wing(py_exe: Path = _DCCSI_PY_BASE) -> start_service:
+def click_action_start_wing() -> start_service:
     """Start Wing IDE"""
     _LOGGER.debug(f'Clicked: click_action_start_wing')
     py_file = Path(wing_config.settings.PATH_DCCSI_TOOLS_IDE_WING, 'start.py').resolve()
-    return start_service(py_exe, py_file)
+    return start_service(py_file)
 # -------------------------------------------------------------------------
 
 
@@ -457,6 +451,4 @@ if __name__ == '__main__':
 
     else:
         _LOGGER.warning(f'Non-windows platforms not implemented or tested.')
-
-    _LOGGER.debug('{0} took: {1} sec'.format(_MODULENAME, timeit.default_timer() - _START))
     # -------------------------------------------------------------------------

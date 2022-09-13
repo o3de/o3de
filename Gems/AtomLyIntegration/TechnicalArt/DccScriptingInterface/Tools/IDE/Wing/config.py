@@ -18,6 +18,9 @@ Wing Pro 8 IDE integration with o3de inter-op, scripts, extensions, etc.
 :Notice:
 """
 # -------------------------------------------------------------------------
+import timeit
+_MODULE_START = timeit.default_timer()  # start tracking
+
 # standard imports
 from pathlib import Path
 import logging as _logging
@@ -78,6 +81,8 @@ if DCCSI_TESTS: # from DccScriptingInterface.globals
 # this is the root path for the wing pkg
 from DccScriptingInterface.Tools.IDE.Wing import ENVAR_PATH_DCCSI_TOOLS_IDE_WING
 from DccScriptingInterface.Tools.IDE.Wing import PATH_DCCSI_TOOLS_IDE_WING
+from DccScriptingInterface.Tools.IDE.Wing import PATH_DCCSI_TOOLS_IDE_WING_SETTINGS
+from DccScriptingInterface.Tools.IDE.Wing import PATH_DCCSI_TOOLS_IDE_WING_LOCAL_SETTINGS
 # -------------------------------------------------------------------------
 
 
@@ -107,7 +112,10 @@ class WingConfig(ConfigClass):
         _LOGGER.info(f'Initializing: {self.get_classname()}')
 
 # build config object
-wing_config = WingConfig(config_name='dccsi_ide_wing', auto_set=True)
+wing_config = WingConfig(config_name='dccsi_ide_wing',
+                               settings_filepath = PATH_DCCSI_TOOLS_IDE_WING_SETTINGS,
+                               settings_local_filepath = PATH_DCCSI_TOOLS_IDE_WING_LOCAL_SETTINGS,
+                               auto_set=True)
 
 # in another module someone could work this way
 # from DccScriptingInterface.Tools.IDE.Wing.config import wing_config
@@ -170,21 +178,27 @@ wing_config.add_setting(ENVAR_WING_APPDATA,
 # it is suggested the in the future, there be a project setreg for wing
 # whose settings describe which DCC tools to activate on start
 
-# blender config
-import DccScriptingInterface.Tools.DCC.Blender.config as blender_config
-blender_settings = blender_config.get_config_settings()
+# Bolt On blender config
+from DccScriptingInterface.Tools.DCC.Blender.config import blender_config
 
 # prefix for defining IDE interpreters 'DCCSI_PY_'
 wing_config.add_setting('DCCSI_PY_BLENDER',
-                        blender_settings.DCCSI_BLENDER_PY_EXE,
+                        blender_config.settings.DCCSI_BLENDER_PY_EXE,
                         set_envar=True)
 
-# maya config
+# Bolt On maya config
 # not implemented yet
 
-# other DCC tools
+# Bolt On other DCC tools
 # also not yet implemented
 # -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+_MODULE_END = timeit.default_timer() - _MODULE_START
+_LOGGER.debug(f'{_MODULENAME} took: {_MODULE_END} sec')
+# -------------------------------------------------------------------------
+
 
 ###########################################################################
 # Main Code Block, runs this script as main (testing)
@@ -201,9 +215,11 @@ if __name__ == '__main__':
     except:
         _LOGGER.error('Setting does not exist')
 
-    _LOGGER.info(f'{ENVAR_DCCSI_WING_VERSION_MAJOR} is: {settings.DCCSI_WING_VERSION_MAJOR}')
-    _LOGGER.info(f'{ENVAR_WINGHOME} is: {settings.WINGHOME}')
-    _LOGGER.info(f'{ENVAR_WING_EXE} is: {settings.WING_EXE}')
-    _LOGGER.info(f'{ENVAR_WING_PROJ} is: {settings.WING_PROJ}')
-    _LOGGER.info(f'{ENVAR_WING_APPDATA} is: {settings.WING_APPDATA}')
+    _LOGGER.info(f'Exporting local settings: {PATH_DCCSI_TOOLS_IDE_WING_LOCAL_SETTINGS}')
+
+    try:
+        wing_config.export_settings(set_env=True,
+                                       log_settings=True)
+    except Exception as e:
+        _LOGGER.error(f'{e}')
 # --- END -----------------------------------------------------------------

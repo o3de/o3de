@@ -272,7 +272,7 @@ except ImportError as e:
 # -------------------------------------------------------------------------
 # next early fallback, check if dev set in settings.local.json
 try:
-    # the manifest doesn't exist until you run o3de.exe for the first time
+    # The settings.local.json might not exist initially
     PATH_DCCSI_SETTINGS_LOCAL = PATH_DCCSI_SETTINGS_LOCAL.resolve(strict=True)
 except FileExistsError as e:
     _LOGGER.warning(f'O3DE DCCsi settings does not exist: {PATH_DCCSI_SETTINGS_LOCAL}')
@@ -729,8 +729,11 @@ from dynaconf import LazySettings
 #     INCLUDES_FOR_DYNACONF=["other.module.settings", "other/settings.yaml"]
 #     )
 
-PATH_DCCSIG_SETTINGS = PATH_DCCSIG.joinpath('settings.json').resolve()
-PATH_DCCSIG_LOCAL_SETTINGS = PATH_DCCSIG.joinpath('settings.local.json').resolve()
+SETTINGS_FILE_SLUG = 'settings.json'
+LOCAL_SETTINGS_FILE_SLUG = 'settings.local.json'
+
+PATH_DCCSIG_SETTINGS = PATH_DCCSIG.joinpath(SETTINGS_FILE_SLUG).resolve()
+PATH_DCCSIG_LOCAL_SETTINGS = PATH_DCCSIG.joinpath(LOCAL_SETTINGS_FILE_SLUG).resolve()
 settings = LazySettings(
     SETTINGS_FILE_FOR_DYNACONF=PATH_DCCSIG_SETTINGS.as_posix(),
     INCLUDES_FOR_DYNACONF=[PATH_DCCSIG_LOCAL_SETTINGS.as_posix()]

@@ -10,7 +10,7 @@
 # -------------------------------------------------------------------------
 """Common constants for the dccsi wing pro ide integration
 
-:file: < DCCsi >/Tools/IDE/Wing/constants.py
+:file: DccScriptingInterface\\Tools\\IDE\\Wing\\constants.py
 :Status: Prototype
 :Version: 0.0.1
 """

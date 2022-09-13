@@ -38,13 +38,15 @@ import inspect
 import subprocess
 from pathlib import Path
 import logging as _logging
+from typing import Union
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
 #os.environ['PYTHONINSPECT'] = 'True'
 # global scope
-_MODULENAME = 'DCCsi.Tools.DCC.Blender.start'
+from DccScriptingInterface.Tools.DCC.Blender import _PACKAGENAME
+_MODULENAME = f'{_PACKAGENAME}.start'
 _MODULE_PATH = Path(__file__)
 
 # this is an entry point, we must self bootstrap
@@ -69,12 +71,7 @@ _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH.as_posix()}')
 
 # retreive the blender_config class object and it's settings
 from DccScriptingInterface.Tools.DCC.Blender.config import blender_config
-
-# Blender config needs to be refactored to use ConfigClass in future PR
-# See DccScriptingInterface.Tools.IDE.Wing.config
-# blender_config.settings.setenv() # ensure env is set
-# use legacy code for now
-settings = blender_config.get_config_settings()
+blender_config.settings.setenv() # ensure env is set
 
 from DccScriptingInterface.azpy.config_utils import check_is_ascii
 
@@ -118,21 +115,32 @@ if DCCSI_GDEBUG:
 # from cmd, enable addons, load file, start script
 #    ./blender -b --addons animation_nodes,meshlint [file] --python [myscript.py]
 
+_BLENDER_EXE = Path(blender_config.settings.PATH_DCCSI_BLENDER_EXE)
+
+# this ensures we are in blenders location
+#os.chdir(_BLENDER_EXE.parent)
+
+_DEFAULT_BOOTSTRAP = Path(blender_config.settings.PATH_DCCSI_BLENDER_BOOTSTRAP)
+
 # default launch command
-_LAUNCH_COMMAND = [blender_exe, f"--python {bootstrap}"]
+_LAUNCH_COMMAND = [f'{str(_BLENDER_EXE)}',
+                   f'--python', # this must be seperate from the .py file
+                   f'{str(_DEFAULT_BOOTSTRAP)}']
+
+# command args but be seperated properly
+#https://blender.stackexchange.com/questions/169259/issue-running-blender-command-line-arguments-using-python-subprocess
 
 # suggestion for future PR is to refactor this method into something like
 # DccScriptingInterface.azpy.utils.start.popen()
+def popen(command: list = _LAUNCH_COMMAND,
+          env: dict = blender_env) -> subprocess:
 
-def popen(env: dict = blender_env,
-          launch_command: list = _LAUNCH_COMMAND,
-          app_name: str = 'Blender') -> subprocess:
+    f"""Method call to start the DCC app {_PACKAGENAME}"""
 
-    f"""Method call to start the DCC app {app_name}"""
+    _LOGGER.info(f'Attempting to start {_PACKAGENAME} ...')
+    _LOGGER.info(f'Command args: {command}')
 
-    _LOGGER.debug(f'Attempting to start {app_name} ...')
-
-    process = subprocess.Popen(launch_command,
+    process = subprocess.Popen(args = command,
                                env = env,
                                shell=True,
                                stdout = subprocess.PIPE,
@@ -141,14 +149,21 @@ def popen(env: dict = blender_env,
 
     out, err = process.communicate()
 
-    if wing_proc.returncode != 0:
-        _LOGGER.error(f'{app_name} did not start ...')
+    if process.returncode != 0:
+        _LOGGER.error(f'{_PACKAGENAME} did not start ...')
+        _LOGGER.error(f'{out}')
         _LOGGER.error(f'{err}')
         return None
     else:
-        _LOGGER.info(f'Success: {app_name} started correctly!')
+        _LOGGER.info(f'Success: {_PACKAGENAME} started correctly!')
 
     return process
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+#
+#https://docs.blender.org/manual/en/2.79/advanced/command_line/introduction.html#:~:text=Microsoft%20Windows&text=To%20display%20the%20console%20again,Window%20%E2%80%A3%20Toggle%20System%20Console.&text=Blender's%20Console%20Window%20on%20Microsoft,along%20with%20the%20relevant%20messages.
 # -------------------------------------------------------------------------
 
 
@@ -176,16 +191,15 @@ if __name__ == '__main__':
     # log global state to cli
     _LOGGER.debug(STR_CROSSBAR)
     _LOGGER.debug(f'_MODULENAME: {_MODULENAME}')
-    _LOGGER.debug(f'{ENVAR_DCCSI_GDEBUG}: {wing_config.settings.DCCSI_GDEBUG}')
-    _LOGGER.debug(f'{ENVAR_DCCSI_DEV_MODE}: {wing_config.settings.DCCSI_DEV_MODE}')
-    _LOGGER.debug(f'{ENVAR_DCCSI_LOGLEVEL}: {wing_config.settings.DCCSI_LOGLEVEL}')
+    _LOGGER.debug(f'{ENVAR_DCCSI_GDEBUG}: {blender_config.settings.DCCSI_GDEBUG}')
+    _LOGGER.debug(f'{ENVAR_DCCSI_DEV_MODE}: {blender_config.settings.DCCSI_DEV_MODE}')
+    _LOGGER.debug(f'{ENVAR_DCCSI_LOGLEVEL}: {blender_config.settings.DCCSI_LOGLEVEL}')
 
     # commandline interface
     import argparse
     parser = argparse.ArgumentParser(
         description=f'O3DE {_MODULENAME}',
-        epilog=(f"Attempts to start {}"
-                "with the DCCsi and O3DE bootstrapping"))
+        epilog=(f"Attempts to start Blender with the DCCsi and O3DE bootstrapping"))
 
     parser.add_argument('-gd', '--global-debug',
                         type=bool,
@@ -204,13 +218,14 @@ if __name__ == '__main__':
     # easy overrides
     if args.global_debug:
         # you can modify/oerrive any setting simply by re-adding it with new values
-        wing_config.add_setting(ENVAR_DCCSI_GDEBUG, True)
+        blender_config.add_setting(ENVAR_DCCSI_GDEBUG, True)
 
     # fetch modified settings and set the env
-    settings = wing_config.get_settings(set_env=True)
+    settings = blender_config.get_settings(set_env=True)
 
     try:
-        wing_proc = popen(wing_config.settings.WING_EXE, wing_config.settings.WING_PROJ)
+        process = popen(command = _LAUNCH_COMMAND,
+                        env = blender_env)
     except Exception as e:
         _LOGGER.warning(f'Could not start Wing')
         _LOGGER.error(f'{e} , traceback =', exc_info=True)

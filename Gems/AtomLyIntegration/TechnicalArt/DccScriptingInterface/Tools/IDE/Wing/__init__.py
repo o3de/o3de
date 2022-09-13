@@ -127,6 +127,8 @@ from DccScriptingInterface.Tools.IDE import PATH_DCCSI_TOOLS
 from DccScriptingInterface.Tools.IDE import PATH_DCCSI_TOOLS_IDE
 from DccScriptingInterface.globals import *
 from DccScriptingInterface import add_site_dir
+from DccScriptingInterface import SETTINGS_FILE_SLUG
+from DccScriptingInterface import LOCAL_SETTINGS_FILE_SLUG
 
 # set up access to this Wing IDE folder as a pkg
 _DCCSI_TOOLS_IDE_WING = Path(_MODULE_PATH.parent)
@@ -141,6 +143,18 @@ PATH_DCCSI_TOOLS_IDE_WING = Path(os.getenv(ENVAR_PATH_DCCSI_TOOLS_IDE_WING,
 add_site_dir(PATH_DCCSI_TOOLS_IDE_WING.as_posix())
 _LOGGER.debug(f'{ENVAR_PATH_DCCSI_TOOLS_IDE_WING}: {PATH_DCCSI_TOOLS_IDE_WING}')
 _LOGGER.debug(STR_CROSSBAR)
+
+from dynaconf import LazySettings
+
+PATH_DCCSI_TOOLS_IDE_WING_SETTINGS = PATH_DCCSI_TOOLS_IDE_WING.joinpath(SETTINGS_FILE_SLUG).resolve()
+PATH_DCCSI_TOOLS_IDE_WING_LOCAL_SETTINGS = PATH_DCCSI_TOOLS_IDE_WING.joinpath(LOCAL_SETTINGS_FILE_SLUG).resolve()
+
+settings = LazySettings(
+    SETTINGS_FILE_FOR_DYNACONF=PATH_DCCSI_TOOLS_IDE_WING.as_posix(),
+    INCLUDES_FOR_DYNACONF=[PATH_DCCSI_TOOLS_IDE_WING_LOCAL_SETTINGS.as_posix()]
+)
+
+settings.setenv()
 # -------------------------------------------------------------------------
 
 

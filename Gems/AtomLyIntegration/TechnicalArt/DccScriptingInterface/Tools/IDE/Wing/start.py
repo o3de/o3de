@@ -127,6 +127,7 @@ def popen(exe = wing_config.settings.WING_EXE,
 
     if wing_proc.returncode != 0:
         _LOGGER.error(f'Wing did not start ...')
+        _LOGGER.error(f'{out}')
         _LOGGER.error(f'{err}')
         return None
     else:

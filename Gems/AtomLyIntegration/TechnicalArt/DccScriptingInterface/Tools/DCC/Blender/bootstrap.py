@@ -9,4 +9,6 @@
 #
 # -------------------------------------------------------------------------
 
-print('Not Implemented')
+from DccScriptingInterface.Tools.DCC.Blender.config import blender_config
+
+print('O3DE support, not implemented yet!')

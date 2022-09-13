@@ -45,14 +45,20 @@ _MODULE_PATH = Path(__file__)
 _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH}')
 
 # last two parents
+from DccScriptingInterface import add_site_dir
+
+from DccScriptingInterface import SETTINGS_FILE_SLUG
+from DccScriptingInterface import LOCAL_SETTINGS_FILE_SLUG
+
 from DccScriptingInterface.Tools.DCC import PATH_DCCSI_TOOLS
 from DccScriptingInterface.Tools.DCC import PATH_DCCSI_TOOLS_DCC
+
 from DccScriptingInterface.globals import *
-from DccScriptingInterface import add_site_dir
 
 _DCCSI_TOOLS_BLENDER_PATH = Path(_MODULE_PATH.parent)
 add_site_dir(_DCCSI_TOOLS_BLENDER_PATH.as_posix())
 
+# our dccsi location for substance designer <DCCsi>\Tools\DCC\Blender
 ENVAR_PATH_DCCSI_TOOLS_DCC_BLENDER = "PATH_DCCSI_TOOLS_DCC_BLENDER"
 
 # the path to this < dccsi >/Tools/IDE pkg
@@ -62,6 +68,23 @@ PATH_DCCSI_TOOLS_DCC_BLENDER = Path(os.getenv(ENVAR_PATH_DCCSI_TOOLS_DCC_BLENDER
 add_site_dir(PATH_DCCSI_TOOLS_DCC_BLENDER.as_posix())
 _LOGGER.debug(f'{ENVAR_PATH_DCCSI_TOOLS_DCC_BLENDER}: {PATH_DCCSI_TOOLS_DCC_BLENDER}')
 _LOGGER.debug(STR_CROSSBAR)
+
+# pulled from constants
+PATH_DCCSI_TOOLS_DCC_BLENDER = _MODULE_PATH.parent
+PATH_DCCSI_TOOLS_DCC = PATH_DCCSI_TOOLS_DCC_BLENDER.parent
+PATH_DCCSI_TOOLS = PATH_DCCSI_TOOLS_DCC.parent
+
+from dynaconf import LazySettings
+
+PATH_DCCSI_TOOLS_DCC_BLENDER_SETTINGS = PATH_DCCSI_TOOLS_DCC_BLENDER.joinpath(SETTINGS_FILE_SLUG).resolve()
+PATH_DCCSI_TOOLS_DCC_BLENDER_LOCAL_SETTINGS = PATH_DCCSI_TOOLS_DCC_BLENDER.joinpath(LOCAL_SETTINGS_FILE_SLUG).resolve()
+
+settings = LazySettings(
+    SETTINGS_FILE_FOR_DYNACONF=PATH_DCCSI_TOOLS_DCC_BLENDER_SETTINGS.as_posix(),
+    INCLUDES_FOR_DYNACONF=[PATH_DCCSI_TOOLS_DCC_BLENDER_LOCAL_SETTINGS.as_posix()]
+)
+
+settings.setenv()
 # -------------------------------------------------------------------------
 
 

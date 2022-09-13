@@ -136,6 +136,12 @@ DCCSI_DYNAMIC_PREFIX = 'DYNACONF'
 from DccScriptingInterface import STR_CROSSBAR
 STR_CROSSBAR_RL = f'{STR_CROSSBAR}\r'
 STR_CROSSBAR_NL = f'{STR_CROSSBAR}\n'
+
+# settings file paths
+from DccScriptingInterface import SETTINGS_FILE_SLUG
+from DccScriptingInterface import LOCAL_SETTINGS_FILE_SLUG
+from DccScriptingInterface import PATH_DCCSIG_SETTINGS
+from DccScriptingInterface import PATH_DCCSIG_LOCAL_SETTINGS
 # -------------------------------------------------------------------------
 
 

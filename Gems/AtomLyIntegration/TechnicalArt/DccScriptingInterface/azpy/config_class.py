@@ -50,12 +50,14 @@ from DccScriptingInterface.azpy.env_bool import env_bool
 # -------------------------------------------------------------------------
 # global constants here
 from DccScriptingInterface.constants import DCCSI_DYNAMIC_PREFIX
+from DccScriptingInterface.constants import SETTINGS_FILE_SLUG
+from DccScriptingInterface.constants import LOCAL_SETTINGS_FILE_SLUG
+from DccScriptingInterface.constants import PATH_DCCSIG_SETTINGS
+from DccScriptingInterface.constants import PATH_DCCSIG_LOCAL_SETTINGS
 
 from DccScriptingInterface.azpy.constants import ENVAR_PATH_DCCSIG
 from DccScriptingInterface.azpy.constants import ENVAR_DCCSI_SYS_PATH
 from DccScriptingInterface.azpy.constants import ENVAR_DCCSI_PYTHONPATH
-
-_default_settings_filepath = Path('setting.local.json')
 # -------------------------------------------------------------------------
 
 
@@ -85,6 +87,8 @@ class ConfigClass(object):
     def __init__(self,
                  config_name=None,
                  auto_set=True,
+                 settings_filepath = PATH_DCCSIG_SETTINGS,
+                 settings_local_filepath = PATH_DCCSIG_LOCAL_SETTINGS,
                  dyna_prefix: str = DCCSI_DYNAMIC_PREFIX,
                  *args, **kwargs):
         '''! The ConfigClass base class initializer.'''
@@ -95,6 +99,8 @@ class ConfigClass(object):
 
         # dynaconf, dynamic settings
         self._settings = dict()
+        self._settings_file = settings_filepath
+        self._settings_local_file = settings_local_filepath
 
         # all settings storage (if tracked)
         self._tracked_settings = dict()
@@ -221,6 +227,43 @@ class ConfigClass(object):
     def pythonpath(self):
         ''':return: a list for PYTHONPATH, site.addsitedir()'''
         return self._pythonpath
+
+    @property
+    def settings_filepath(self):
+        ''':Class property: filepath for exporting settings, default settings.json'''
+        return self._settings_file
+
+    @settings_filepath.setter
+    def settings_filepath(self,
+                          filepath: Union[str, Path] = PATH_DCCSIG_SETTINGS) -> Path:
+        ''':param new_dict: sets the default filepath for this config to
+        export settings, default settings.json'''
+        self._settings_file = Path(filepath).resolve()
+        return self._settings_file
+
+    @settings_filepath.getter
+    def settings_filepath(self) -> Path:
+        ''':return: settings_filepath, default settings.json'''
+        return self._settings_file
+
+    @property
+    def settings_local_filepath(self):
+        ''':Class property: filepath for exporting settings,
+        default settings.local.json'''
+        return self._settings_local_file
+
+    @settings_local_filepath.setter
+    def settings_local_filepath(self,
+                          filepath: Union[str, Path] = PATH_DCCSIG_LOCAL_SETTINGS) -> Path:
+        ''':param new_dict: sets the default filepath for this config to
+        export settings, settings.local.json'''
+        self._settings_local_file = Path(filepath).resolve()
+        return self._settings_local_file
+
+    @settings_local_filepath.getter
+    def settings_local_filepath(self):
+        ''':return: settings_local_filepath, settings.local.json'''
+        return self._settings_local_file
     # ---------------------------------------------------------------------
 
     # --method-set---------------------------------------------------------
@@ -425,7 +468,7 @@ class ConfigClass(object):
 
     # -----------------------------------------------------------------
     def export_settings(self,
-                        settings_filepath: Path = _default_settings_filepath,
+                        settings_filepath: Union[str, Path] = None,
                         prefix: str = DCCSI_DYNAMIC_PREFIX,
                         set_env: bool = True,
                         use_dynabox: bool = False,
@@ -482,6 +525,11 @@ class ConfigClass(object):
         # It would be an improvement to add malformed json validation
         # and pre-check the settings.local.json to report warnings
         # this can easily cause a bad error that is deep and hard to debug
+
+        if settings_filepath is None:
+            settings_filepath = self.settings_local_filepath
+
+        settings_filepath = Path(settings_filepath).resolve()
 
         # all ConfigClass objects that export settings, will generate this
         # value. When inspecting settings we will always know that local

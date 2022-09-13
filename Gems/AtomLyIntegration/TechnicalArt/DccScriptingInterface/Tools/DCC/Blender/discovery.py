@@ -8,12 +8,12 @@
 #
 #
 # -------------------------------------------------------------------------
-"""! A module to discover installed versions of wing pro for selection
+"""! A module to discover installed versions of Blender for selection
 
-:file: < DCCsi >/Tools/IDE/Wing/discovery.py
+:file: < DCCsi >/Tools/DCC/Blender/discovery.py
 :Status: Prototype, very bare bones
 :Version: 0.0.1
-Future: provide a variety of ways to discover wing, i.e. use winreg
+Future: provide a variety of ways to discover Blender, i.e. use winreg
 """
 # -------------------------------------------------------------------------
 # standard imports
@@ -22,24 +22,26 @@ from typing import Union
 import logging as _logging
 # -------------------------------------------------------------------------
 # global scope
-from DccScriptingInterface.Tools.IDE.Wing import _PACKAGENAME
+from DccScriptingInterface.Tools.DCC.Blender import _PACKAGENAME
 _MODULENAME = f'{_PACKAGENAME}.discovery'
 _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 # -------------------------------------------------------------------------
 # dccsi imports
 # the default and currently only supported discovery path
-from DccScriptingInterface.Tools.IDE.Wing.constants import PATH_WINGHOME
+from DccScriptingInterface.Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_LOCATION
 # -------------------------------------------------------------------------
-# currently we only support the default win install path for Wing Pro 8
-def get_default_install(winghome: Union[str, Path] = PATH_WINGHOME) -> Path:
+# currently we only support the default win install path for 
+# for Blender 3.1, you can modify constants.py or you can
+# override the envar/path in
+def get_default_install(default_app_home: Union[str, Path] = PATH_DCCSI_BLENDER_LOCATION) -> Path:
     """! validates then returns the default dccsi winghome
-    :return: Path(winghome), or None"""
-    winghome = Path(winghome).resolve()
-    if winghome.exists():
-        return winghome
+    :return: Path(default_app_home), or None"""
+    default_app_home = Path(default_app_home).resolve()
+    if default_app_home.exists():
+        return default_app_home
     else:
-        _LOGGER.error(f'WINGHOME not valid: {winghome.as_posix()}')
+        _LOGGER.error(f'default_app_home not valid: {default_app_home.as_posix()}')
         return None
 
 # in the future, we might want to help the user find all installs
@@ -62,7 +64,7 @@ def find_all_installs() -> list:
 # then during configuration (from cli or otherwise), present the installs
 # to the user and allow them to select which install to use
 # this would potentially end up in a couple of places:
-# <dccsi>\Tools\IDE\Wing\settings.local.json for a developer
+# <dccsi>\Tools\DCC\Blender\settings.local.json for a developer
 # <project>\registry\dccsi_config_wing.json for a project configuration
 # --- END -----------------------------------------------------------------
 
