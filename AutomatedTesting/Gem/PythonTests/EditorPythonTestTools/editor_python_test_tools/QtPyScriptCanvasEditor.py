@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 Object to house all the Qt Objects used when testing and manipulating the O3DE UI
 """
 from PySide2 import QtWidgets
-from consts.scripting_constants import (SCRIPT_CANVAS_UI)
+from consts.scripting import (SCRIPT_CANVAS_UI)
 
 
 class QtPyScriptCanvasEditor:

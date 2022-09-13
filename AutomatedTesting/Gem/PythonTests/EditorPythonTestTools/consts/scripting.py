@@ -38,13 +38,6 @@ NODE_TEST_METHOD = "test_method_name"
 Constants for Node Inspector
 """
 NODE_INSPECTOR_TITLE_KEY = "Title"
-"""
-Constants for Asset Editor
-"""
-SAVE_ASSET_AS = "SaveAssetAs"
-DEFAULT_SCRIPT_EVENT = "EventName"
-DEFAULT_METHOD_NAME = "MethodName"
-PARAMETER_NAME = "ParameterName"
 
 """
 Constants for QtWidgets.
@@ -72,8 +65,7 @@ NAME_STRING = "Name"
 WAIT_FRAMES = 200
 WAIT_TIME_3 = 3
 WAIT_TIME_5 = 5
-#We are deprecating VARIABLE_TYPES in favor of the dictionary since we can access the dictionary nicely with dot notation instead of indices
-VARIABLE_TYPES = ["Boolean", "Color", "EntityId", "Number", "String", "Transform", "Vector2", "Vector3", "Vector4"]
+
 VARIABLE_TYPES_DICT = {"Boolean": "Boolean", "Color": "Color", "EntityId": "EntityId", "Number": "Number", "String": "String",
                   "Transform": "Transform", "Vector2": "Vector2", "Vector3": "Vector3", "Vector4": "Vector4"}
 ENTITY_STATES = {
@@ -87,3 +79,18 @@ File Paths
 """
 SCRIPT_EVENT_FILE_PATH = os.path.join(paths.projectroot, "ScriptCanvas", "test_file.scriptevent")
 SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH = "Configuration|Source"
+
+"""
+deprecated constants. delete these once associated references have been updated to appropriate files
+"""
+"""
+Constants for Asset Editor
+"""
+SAVE_ASSET_AS = "SaveAssetAs"
+DEFAULT_SCRIPT_EVENT = "EventName"
+DEFAULT_METHOD_NAME = "MethodName"
+
+PARAMETER_NAME = "ParameterName"
+
+#We are deprecating VARIABLE_TYPES in favor of the dictionary since we can access the dictionary nicely with dot notation instead of indices
+VARIABLE_TYPES = ["Boolean", "Color", "EntityId", "Number", "String", "Transform", "Vector2", "Vector3", "Vector4"]
