@@ -556,7 +556,7 @@ namespace AzToolsFramework
 
                 // If the UseMinimumWidth attribute is present, add the widget to set of widgets using their minimum width
                 auto minimumWidth = AZ::Dpe::Nodes::PropertyEditor::UseMinimumWidth.ExtractFromDomNode(childValue);
-                if (sharePrior.has_value() && sharePrior.value())
+                if (minimumWidth.has_value() && minimumWidth.value())
                 {
                     m_columnLayout->AddMinimumWidthWidget(addedWidget);
                 }
