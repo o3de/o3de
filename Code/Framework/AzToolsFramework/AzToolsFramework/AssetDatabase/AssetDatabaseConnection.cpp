@@ -1218,7 +1218,7 @@ namespace AzToolsFramework
         AZStd::string SourceFileDependencyEntry::ToString() const
         {
             return AZStd::string::format(
-                "SourceFileDependencyEntry id:%" PRId64 " builderGuid: %s source: % " PRId64
+                "SourceFileDependencyEntry id:%" PRId64 " builderGuid: %s source: %s "
                 " dependsOnSource: %s type: %s fromAssetId: %u subIds: %s",
                 static_cast<int64_t>(m_sourceDependencyID),
                 m_builderGuid.ToFixedString().c_str(),
