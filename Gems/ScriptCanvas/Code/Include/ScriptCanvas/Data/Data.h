@@ -9,6 +9,7 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/EntityId.h>
+#include <AzCore/Component/NamedEntityId.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Crc.h>
@@ -24,6 +25,8 @@
 #include <AzCore/Math/Vector4.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/Debug/Budget.h>
+
 #include <ScriptCanvas/Core/Core.h>
 
 AZ_DECLARE_BUDGET(ScriptCanvas);
@@ -31,6 +34,7 @@ AZ_DECLARE_BUDGET(ScriptCanvas);
 namespace AZ
 {
     class ReflectContext;
+    struct BehaviorParameter;
 }
 
 namespace ScriptCanvas

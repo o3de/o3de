@@ -79,11 +79,6 @@ set(FILES
     Include/ScriptCanvas/Core/Contracts/SlotTypeContract.h
     Include/ScriptCanvas/Core/Contracts/SupportsMethodContract.h
     Include/ScriptCanvas/Core/Contracts/TypeContract.h
-    Include/ScriptCanvas/Data/BehaviorContextObject.h
-    Include/ScriptCanvas/Data/BehaviorContextObjectPtr.h
-    Include/ScriptCanvas/Data/Data.h
-    Include/ScriptCanvas/Data/DataMacros.h
-    Include/ScriptCanvas/Data/DataRegistry.h
     Include/ScriptCanvas/Data/NumericData.h
     Include/ScriptCanvas/Deprecated/VariableDatumBase.h
     Include/ScriptCanvas/Deprecated/VariableDatum.h
@@ -141,7 +136,6 @@ set(FILES
     Include/ScriptCanvas/Libraries/Core/AzEventHandler.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Core/BinaryOperator.h
     Include/ScriptCanvas/Libraries/Core/CoreLibrary.h
-    Include/ScriptCanvas/Libraries/Core/ContainerTypeReflection.h
     Include/ScriptCanvas/Libraries/Core/EBusEventHandler.h
     Include/ScriptCanvas/Libraries/Core/EBusEventHandler.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Core/ExtractProperty.h
@@ -377,6 +371,10 @@ set(FILES
     Include/ScriptCanvas/Serialization/BehaviorContextObjectSerializer.h
     Include/ScriptCanvas/Serialization/DatumSerializer.h
     Include/ScriptCanvas/Serialization/RuntimeVariableSerializer.h
+    Include/ScriptCanvas/Data/BehaviorContextObject.h
+    Include/ScriptCanvas/Data/BehaviorContextObjectPtr.h
+    Include/ScriptCanvas/Data/Data.h
+    Include/ScriptCanvas/Data/DataRegistry.h
     Include/ScriptCanvas/Data/DataTrait.h
     Include/ScriptCanvas/Data/PropertyTraits.h
     Include/ScriptCanvas/Data/Traits.h

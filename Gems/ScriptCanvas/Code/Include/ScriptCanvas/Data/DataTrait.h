@@ -8,11 +8,9 @@
 
 #pragma once
 
-#include <Data/BehaviorContextObjectPtr.h>
-#include <Data/Data.h>
-
-//#include <AzFramework/Entity/EntityContextBus.h>
-//#include <AzFramework/Slice/SliceInstantiationTicket.h>
+#include <ScriptCanvas/Data/BehaviorContextObjectPtr.h>
+#include <ScriptCanvas/Data/Constants.h>
+#include <ScriptCanvas/Data/Data.h>
 
 namespace ScriptCanvas
 {

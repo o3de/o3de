@@ -57,10 +57,6 @@ set(FILES
     Include/ScriptCanvas/Core/Contracts/SlotTypeContract.cpp
     Include/ScriptCanvas/Core/Contracts/SupportsMethodContract.cpp
     Include/ScriptCanvas/Core/Contracts/TypeContract.cpp
-    Include/ScriptCanvas/Data/BehaviorContextObject.cpp
-    Include/ScriptCanvas/Data/BehaviorContextObjectPtr.cpp
-    Include/ScriptCanvas/Data/Data.cpp
-    Include/ScriptCanvas/Data/DataRegistry.cpp
     Include/ScriptCanvas/Deprecated/VariableDatumBase.cpp
     Include/ScriptCanvas/Deprecated/VariableDatum.cpp
     Include/ScriptCanvas/Deprecated/VariableHelpers.cpp
@@ -204,6 +200,10 @@ set(FILES
     Include/ScriptCanvas/Serialization/BehaviorContextObjectSerializer.cpp
     Include/ScriptCanvas/Serialization/DatumSerializer.cpp
     Include/ScriptCanvas/Serialization/RuntimeVariableSerializer.cpp
+    Include/ScriptCanvas/Data/BehaviorContextObject.cpp
+    Include/ScriptCanvas/Data/BehaviorContextObjectPtr.cpp
+    Include/ScriptCanvas/Data/Data.cpp
+    Include/ScriptCanvas/Data/DataRegistry.cpp
     Include/ScriptCanvas/Data/DataTrait.cpp
     Include/ScriptCanvas/Data/PropertyTraits.cpp
     Include/ScriptCanvas/Variable/GraphVariable.cpp
