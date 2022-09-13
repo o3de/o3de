@@ -40,6 +40,7 @@ set(FILES
     Include/Atom/Feature/SphericalHarmonics/SphericalHarmonicsUtility.inl
     Include/Atom/Feature/TransformService/TransformServiceFeatureProcessor.h
     Include/Atom/Feature/Utils/FrameCaptureBus.h
+    Include/Atom/Feature/Utils/FrameCaptureTestBus.h
     Include/Atom/Feature/Utils/GpuBufferHandler.h
     Include/Atom/Feature/Utils/IndexedDataVector.h
     Include/Atom/Feature/Utils/IndexedDataVector.inl
