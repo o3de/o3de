@@ -185,10 +185,7 @@ namespace AzToolsFramework
         void ComponentModeDelegate::OnComponentModeEnterButtonPressed()
         {
             // Check the entity hasn't been deselected but we haven't been told yet.
-            bool isSelected = false;
-
-            isSelected = IsSelected(m_entityComponentIdPair.GetEntityId());
-            if (!isSelected)
+            if (!IsSelected(m_entityComponentIdPair.GetEntityId())
             {
                 return;
             }
