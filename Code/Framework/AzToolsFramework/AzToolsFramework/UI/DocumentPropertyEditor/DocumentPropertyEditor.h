@@ -179,7 +179,7 @@ namespace AzToolsFramework
 
     protected:
         QVBoxLayout* GetVerticalLayout();
-        void AddRowFromValue(const AZ::Dom::Value& domValue, int rowIndex);
+        void AddRowFromValue(const AZ::Dom::Value& domValue, size_t rowIndex);
         AZStd::vector<size_t> GetPathToRoot(DPERowWidget* row) const;
 
         void HandleReset();

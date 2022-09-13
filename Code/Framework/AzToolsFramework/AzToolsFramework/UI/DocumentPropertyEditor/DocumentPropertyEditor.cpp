@@ -595,7 +595,14 @@ namespace AzToolsFramework
     {
         const auto& fullPath = domOperation.GetDestinationPath();
         auto pathEntry = fullPath[pathIndex];
-        AZ_Assert(pathEntry.IsIndex() || pathEntry.IsEndOfArray(), "the direct children of a row must be referenced by index");
+
+        const bool isValidIndex = pathEntry.IsIndex() || pathEntry.IsEndOfArray();
+        AZ_Assert(isValidIndex, "the direct children of a row must be referenced by index");
+        if (!isValidIndex)
+        {
+            return;
+        }
+
         auto childCount = m_domOrderedChildren.size();
 
         // if we're on the last entry in the path, this row widget is the direct owner
@@ -605,11 +612,14 @@ namespace AzToolsFramework
             if (pathEntry.IsIndex())
             {
                 // remove and replace operations must match an existing index. Add operations can be one past the current end.
-                AZ_Assert(
-                    (domOperation.GetType() == AZ::Dom::PatchOperation::Type::Add ? childIndex <= childCount : childIndex < childCount),
-                    "patch index is beyond the array bounds!");
-
                 childIndex = aznumeric_cast<int>(pathEntry.GetIndex());
+                const bool indexValid =
+                    (domOperation.GetType() == AZ::Dom::PatchOperation::Type::Add ? childIndex <= childCount : childIndex < childCount);
+                AZ_Assert(indexValid, "patch index is beyond the array bounds!");
+                if (!indexValid)
+                {
+                    return;
+                }
             }
             else if (domOperation.GetType() == AZ::Dom::PatchOperation::Type::Add)
             {
@@ -1054,7 +1064,7 @@ namespace AzToolsFramework
         return m_layout;
     }
 
-    void DocumentPropertyEditor::AddRowFromValue(const AZ::Dom::Value& domValue, int rowIndex)
+    void DocumentPropertyEditor::AddRowFromValue(const AZ::Dom::Value& domValue, size_t rowIndex)
     {
         const bool indexInRange = (rowIndex <= m_domOrderedRows.size());
         AZ_Assert(indexInRange, "rowIndex cannot be more than one past the existing end!")
@@ -1122,7 +1132,7 @@ namespace AzToolsFramework
 
             if (isRow)
             {
-                AddRowFromValue(rowValue, aznumeric_cast<int>(arrayIndex));
+                AddRowFromValue(rowValue, arrayIndex);
             }
         }
         m_layout->addStretch();
@@ -1140,31 +1150,43 @@ namespace AzToolsFramework
             }
             auto firstAddressEntry = patchPath[0];
 
-            const bool isIndex = (firstAddressEntry.IsIndex() || firstAddressEntry.IsEndOfArray());
-            AZ_Assert(isIndex, "first entry in a DPE patch must be the index of the first row");
-            auto rowIndex = (firstAddressEntry.IsIndex() ? firstAddressEntry.GetIndex() : m_domOrderedRows.size());
+            const auto numRows = m_domOrderedRows.size();
+            size_t rowIndex = numRows - 1;
 
-            const bool indexInRange =
-                (rowIndex < m_domOrderedRows.size() ||
-                 (rowIndex <= m_domOrderedRows.size() && operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Add));
-            AZ_Assert(indexInRange, "received a patch for a row that doesn't exist");
-
-            if (!(isIndex && indexInRange))
+            const bool isValidIndex = firstAddressEntry.IsIndex() || firstAddressEntry.IsEndOfArray();
+            AZ_Assert(isValidIndex, "the direct children of the adapter must be referenced by index");
+            if (!isValidIndex)
             {
-                // invalid input, bail
                 return;
             }
+            if (firstAddressEntry.IsIndex())
+            {
+                // remove and replace operations must match an existing index. Add operations can be one past the current end.
+                rowIndex = firstAddressEntry.GetIndex();
+                const bool inBounds =
+                    (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Add ? rowIndex <= numRows : rowIndex < numRows);
+                AZ_Assert(inBounds, "patch index is beyond the array bounds!");
+                if (!inBounds)
+                {
+                    return;
+                }
+            }
+            else if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Add)
+            {
+                rowIndex = numRows;
+            }
+            // otherwise keep the initialized value of (numRows - 1), because this must be IsEndOfArray and a replace or remove
 
             // if there is only one level in the path, this operation is for the top layout
             if (patchPath.Size() == 1)
             {
                 if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Add)
                 {
-                    AddRowFromValue(operationIterator->GetValue(), aznumeric_cast<int>(rowIndex));
+                    AddRowFromValue(operationIterator->GetValue(), rowIndex);
                 }
                 else
                 {
-                    auto& rowWidget = m_domOrderedRows[aznumeric_cast<int>(firstAddressEntry.GetIndex())];
+                    auto& rowWidget = m_domOrderedRows[rowIndex];
                     if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Replace)
                     {
                         rowWidget->SetValueFromDom(operationIterator->GetValue());
@@ -1179,7 +1201,7 @@ namespace AzToolsFramework
             else
             {
                 // delegate the action to the rowWidget, which will, in turn, delegate to the next row in the path, if available
-                auto rowWidget = m_domOrderedRows[aznumeric_cast<int>(firstAddressEntry.GetIndex())];
+                auto rowWidget = m_domOrderedRows[rowIndex];
                 constexpr size_t pathDepth = 1; // top level has been handled, start the next operation at path depth 1
                 rowWidget->HandleOperationAtPath(*operationIterator, pathDepth);
             }

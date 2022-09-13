@@ -70,8 +70,11 @@ namespace AZ::DocumentPropertyEditor
         {
             for (auto* childNode : parentNode->m_childMatchState)
             {
-                UpdateMatchState(childNode);
-                updateChildren(childNode);
+                if (childNode)
+                {
+                    UpdateMatchState(childNode);
+                    updateChildren(childNode);
+                }
             }
         };
 
@@ -143,7 +146,7 @@ namespace AZ::DocumentPropertyEditor
         auto sourceContents = m_sourceAdapter->GetContents();
 
         // we can assume all direct children of an adapter must be rows; populate each of them
-        for (size_t topIndex = 0; topIndex > sourceContents.ArraySize(); ++topIndex)
+        for (size_t topIndex = 0; topIndex < sourceContents.ArraySize(); ++topIndex)
         {
             PopulateNodesAtPath(Dom::Path({Dom::PathEntry(topIndex)}));
         }
@@ -289,29 +292,22 @@ namespace AZ::DocumentPropertyEditor
             [&](MatchInfoNode* matchState, const Dom::Value& value)
             {
                 // precondition: value is a node of type row, matchState is blank, other than its m_parentNode
-                if (value.IsArray())
+                CacheDomInfoForNode(value, matchState);
+
+                const auto childCount = value.ArraySize();
+                matchState->m_childMatchState.resize(childCount, nullptr);
+                for (size_t arrayIndex = 0; arrayIndex < childCount; ++arrayIndex)
                 {
-                    // recurse into children first, so each child can be guaranteed that its parent is set up already
-                    const auto childCount = value.ArraySize();
-                    matchState->m_childMatchState.resize(childCount, nullptr);
-                    for (size_t arrayIndex = 0; arrayIndex < childCount; ++arrayIndex)
+                    auto& childValue = value[arrayIndex];
+                    if (IsRow(childValue))
                     {
-                        auto& childValue = value[arrayIndex];
-                        if (IsRow(childValue))
-                        {
-                            matchState->m_childMatchState[arrayIndex] = NewMatchInfoNode(matchState);
-                            auto& addedChild = matchState->m_childMatchState[arrayIndex];
-                            recursivelyRegenerateMatches(addedChild, childValue);
-                            if (addedChild->m_matchesSelf || !addedChild->m_matchingDescendents.empty())
-                            {
-                                matchState->m_matchingDescendents.insert(addedChild);
-                            }
-                        }
+                        matchState->m_childMatchState[arrayIndex] = NewMatchInfoNode(matchState);
+                        auto& addedChild = matchState->m_childMatchState[arrayIndex];
+                        recursivelyRegenerateMatches(addedChild, childValue);
                     }
                 }
-                // cache our own matching info and record whether this node matches the filter
-                CacheDomInfoForNode(value, matchState);
-                matchState->m_matchesSelf = MatchesFilter(matchState);
+                // update ours and our ancestors' matching states
+                UpdateMatchState(matchState);
             };
 
             // we should start with the parentPath, so peel off the new index from the end of the address
@@ -335,9 +331,6 @@ namespace AZ::DocumentPropertyEditor
             // recursively add descendents and cache their match status
             auto sourceContents = m_sourceAdapter->GetContents();
             recursivelyRegenerateMatches(addedChild, sourceContents[sourcePath]);
-            
-            // update upwards!
-            UpdateMatchState(parentMatchState);
         }
     }
 
@@ -412,8 +405,8 @@ namespace AZ::DocumentPropertyEditor
         if (m_filterString != filterString)
         {
             m_filterString = std::move(filterString);
-            SetFilterActive(!filterString.isEmpty());
             InvalidateFilter();
+            SetFilterActive(!m_filterString.isEmpty());
         }
     }
 
@@ -429,32 +422,28 @@ namespace AZ::DocumentPropertyEditor
         AZ_Assert(nodeIsRow, "Only row nodes should be cached by a RowFilterAdapter");
         if (nodeIsRow)
         {            
-            for (auto childIter = domValue.ArrayBegin(), endIter = domValue.ArrayBegin(); childIter != endIter; ++childIter)
+            for (auto childIter = domValue.ArrayBegin(), endIter = domValue.ArrayEnd(); childIter != endIter; ++childIter)
             {
                 auto& currChild = *childIter;
-                 if (currChild.IsNode())
+                if (currChild.IsNode())
                 {
-                    auto childName = domValue.GetNodeName();
+                    auto childName = currChild.GetNodeName();
                     if (childName != Dpe::GetNodeName<Dpe::Nodes::Row>()) // don't cache child rows, they have they're own entries
                     {
-                        domValue.GetNodeValue();
-                        if (currChild.IsNode())
+                        static const Name valueName("Value");
+                        auto foundValue = currChild.FindMember(valueName);
+                        if (foundValue != currChild.MemberEnd())
                         {
-                            static const Name valueName("Value");
-                            auto foundValue = currChild.FindMember(valueName);
-                            if (foundValue != currChild.MemberEnd())
-                            {
-                                actualNode->AddStringifyValue(foundValue->second);
-                            }
+                            actualNode->AddStringifyValue(foundValue->second);
+                        }
 
-                            if (m_includeDescriptions)
+                        if (m_includeDescriptions)
+                        {
+                            static const Name descriptionName("Description");
+                            auto foundDescription = currChild.FindMember(descriptionName);
+                            if (foundDescription != currChild.MemberEnd())
                             {
-                                static const Name descriptionName("Description");
-                                auto foundDescription = currChild.FindMember(descriptionName);
-                                if (foundDescription != currChild.MemberEnd())
-                                {
-                                    actualNode->AddStringifyValue(foundDescription->second);
-                                }
+                                actualNode->AddStringifyValue(foundDescription->second);
                             }
                         }
                     }
@@ -466,7 +455,7 @@ namespace AZ::DocumentPropertyEditor
     bool ValueStringFilter::MatchesFilter(MatchInfoNode* matchNode)
     {
         auto actualNode = static_cast<StringMatchNode*>(matchNode);
-        return m_filterString.contains(actualNode->m_matchableDomTerms, Qt::CaseInsensitive);
+        return (m_filterString.isEmpty() || actualNode->m_matchableDomTerms.contains(m_filterString, Qt::CaseInsensitive));
     }
 
     void ValueStringFilter::StringMatchNode::AddStringifyValue(const Dom::Value& domValue)
