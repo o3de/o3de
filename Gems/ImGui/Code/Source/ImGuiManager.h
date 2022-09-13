@@ -26,6 +26,18 @@
 
 namespace ImGui
 {
+    enum class ImGuiStateBroadcast
+    {
+        Broadcast,
+        NotBroadcast,
+    };
+
+    struct ImGuiBroadcastState
+    {
+        ImGuiStateBroadcast m_activationBroadcastStatus = ImGuiStateBroadcast::NotBroadcast;
+        ImGuiStateBroadcast m_deactivationBroadcastStatus = ImGuiStateBroadcast::NotBroadcast;
+    };
+
     class ImGuiManager
         : public AzFramework::InputChannelEventListener
         , public AzFramework::InputTextEventListener
@@ -103,6 +115,8 @@ namespace ImGui
         float m_lastPrimaryTouchPosition[2] = { 0.0f, 0.0f };
         bool m_useLastPrimaryTouchPosition = false;
         bool m_simulateBackspaceKeyPressed = false;
+
+        ImGuiBroadcastState m_imGuiBroadcastState;
 
 #if defined(LOAD_IMGUI_LIB_DYNAMICALLY)  && !defined(AZ_MONOLITHIC_BUILD)
         AZStd::unique_ptr<AZ::DynamicModuleHandle>  m_imgSharedLib;
