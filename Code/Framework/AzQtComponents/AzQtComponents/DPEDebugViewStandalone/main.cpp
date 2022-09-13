@@ -43,6 +43,8 @@
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyHandlerWidget.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
 
+#include <AzToolsFramework/UI/DocumentPropertyEditor/FilterAdapter.h>
+
 namespace DPEDebugView
 {
     void Button1()
@@ -130,7 +132,7 @@ namespace DPEDebugView
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_vector, "vector<string>", "")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_map, "map<string, float>", "")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                        //->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(
                             AZ::Edit::UIHandlers::Default, &TestContainer::m_unorderedMap, "unordered_map<pair<int, double>, int>", "")
@@ -245,7 +247,15 @@ int main(int argc, char** argv)
         debugViewer.data(), &AzToolsFramework::DPEDebugWindow::AdapterChanged, dpeInstance,
         &AzToolsFramework::DocumentPropertyEditor::SetAdapter);
 
-    debugViewer->AddAdapterToList("Reflection Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::ReflectionAdapter>(&testContainer, azrtti_typeid<DPEDebugView::TestContainer>()));
+    auto reflectionAdapter =
+        AZStd::make_shared<AZ::DocumentPropertyEditor::ReflectionAdapter>(&testContainer, azrtti_typeid<DPEDebugView::TestContainer>());
+    
+    /*
+    auto stringFilterAdapter = AZStd::make_shared<AZ::DocumentPropertyEditor::ValueStringFilter>();
+    stringFilterAdapter->SetSourceAdapter(reflectionAdapter);
+    debugViewer->AddAdapterToList("Filtered Adapter", stringFilterAdapter); */
+    
+    debugViewer->AddAdapterToList("Reflection Adapter", reflectionAdapter);
     debugViewer->AddAdapterToList("CVar Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::CvarAdapter>());
     debugViewer->AddAdapterToList("Example Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::ExampleAdapter>());
     debugViewer->AddAdapterToList("Settings Registry Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::SettingsRegistryAdapter>());

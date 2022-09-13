@@ -368,6 +368,8 @@ set(FILES
     UI/DocumentPropertyEditor/CvarEditor.cpp
     UI/DocumentPropertyEditor/CvarEditor.h
     UI/DocumentPropertyEditor/CvarEditor.ui
+    UI/DocumentPropertyEditor/FilterAdapter.cpp
+    UI/DocumentPropertyEditor/FilterAdapter.h
     UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h
     UI/DocumentPropertyEditor/PropertyEditorToolsSystem.cpp
     UI/DocumentPropertyEditor/PropertyEditorToolsSystem.h
