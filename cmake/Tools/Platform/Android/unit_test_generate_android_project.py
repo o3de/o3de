@@ -12,7 +12,7 @@ import platform
 import subprocess
 import sys
 
-from distutils.version import LooseVersion
+from packaging.version import Version
 
 ROOT_DEV_PATH = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..'))
 if ROOT_DEV_PATH not in sys.path:
@@ -23,12 +23,12 @@ from cmake.Tools.Platform.Android import android_support, generate_android_proje
 
 @pytest.mark.parametrize(
     "from_override, version_str, expected_result", [
-        pytest.param(False, b"Gradle 4.10.1", LooseVersion('4.10.1'), id='equalMinVersion'),
-        pytest.param(False, b"Gradle 5.6.4", LooseVersion('5.6.4'), id='equalMaxVersion'),
+        pytest.param(False, b"Gradle 4.10.1", Version('4.10.1'), id='equalMinVersion'),
+        pytest.param(False, b"Gradle 5.6.4", Version('5.6.4'), id='equalMaxVersion'),
         pytest.param(False, b"Gradle 1.0", common.LmbrCmdError('error', common.ERROR_CODE_ENVIRONMENT_ERROR), id='lessThanMinVersion'),
         pytest.param(False, b"Gradle 26.3", common.LmbrCmdError('error', common.ERROR_CODE_ENVIRONMENT_ERROR), id='greaterThanMaxVersion'),
-        pytest.param(True, b"Gradle 4.10.1", LooseVersion('4.10.1')),
-        pytest.param(True, b"Gradle 5.6.4", LooseVersion('5.6.4')),
+        pytest.param(True, b"Gradle 4.10.1", Version('4.10.1')),
+        pytest.param(True, b"Gradle 5.6.4", Version('5.6.4')),
         pytest.param(True, b"Gradle 1.0", common.LmbrCmdError('error', common.ERROR_CODE_ENVIRONMENT_ERROR)),
         pytest.param(True, b"Gradle 26.3", common.LmbrCmdError('error', common.ERROR_CODE_ENVIRONMENT_ERROR))
     ]
@@ -57,7 +57,7 @@ def test_verify_gradle(tmpdir, from_override, version_str, expected_result):
 
     try:
         result_version, result_override_path = generate_android_project.verify_gradle(override_gradle_install_path)
-        assert isinstance(expected_result, LooseVersion)
+        assert isinstance(expected_result, Version)
         assert result_version == expected_result
         if from_override:
             assert os.path.normpath(result_override_path) == os.path.normpath(os.path.join(override_gradle_install_path, 'bin', gradle_script))
@@ -77,10 +77,10 @@ def test_verify_gradle(tmpdir, from_override, version_str, expected_result):
 @pytest.mark.parametrize(
     "from_override, version_str, expected_result", [
         pytest.param(False, f"cmake version {generate_android_project.CMAKE_MIN_VERSION}\nKit Ware", generate_android_project.CMAKE_MIN_VERSION, id='equalMinVersion'),
-        pytest.param(False, "cmake version 4.0.0\nKit Ware", LooseVersion('4.0.0'), id='greaterThanMinVersion'),
+        pytest.param(False, "cmake version 4.0.0\nKit Ware", Version('4.0.0'), id='greaterThanMinVersion'),
         pytest.param(False, "cmake version 1.0.0\nKit Ware", common.LmbrCmdError('error', common.ERROR_CODE_ENVIRONMENT_ERROR), id='lessThanMinVersion'),
         pytest.param(True, f"cmake version {generate_android_project.CMAKE_MIN_VERSION}\nKit Ware", generate_android_project.CMAKE_MIN_VERSION, id='override_equalMinVersion'),
-        pytest.param(True, "cmake version 4.0.0\nKit Ware", LooseVersion('4.0.0'), id='override_greaterThanMinVersion'),
+        pytest.param(True, "cmake version 4.0.0\nKit Ware", Version('4.0.0'), id='override_greaterThanMinVersion'),
         pytest.param(True, "cmake version 1.0.0\nKit Ware", common.LmbrCmdError('error', common.ERROR_CODE_ENVIRONMENT_ERROR), id='override_lessThanMinVersion'),
     ]
 )
@@ -108,7 +108,7 @@ def test_verify_cmake(tmpdir, from_override, version_str, expected_result):
 
     try:
         result_version, result_override_path = generate_android_project.verify_cmake(override_cmake_install_path)
-        assert isinstance(expected_result, LooseVersion)
+        assert isinstance(expected_result, Version)
         assert result_version == expected_result
         if from_override:
             assert os.path.normpath(result_override_path) == os.path.normpath(os.path.join(override_cmake_install_path, 'bin', cmake_exe))
@@ -124,10 +124,10 @@ def test_verify_cmake(tmpdir, from_override, version_str, expected_result):
 
 @pytest.mark.parametrize(
     "from_override, version_str, expected_result", [
-        pytest.param(False, b"1.0.0", LooseVersion('1.0.0')),
-        pytest.param(False, b"1.10.0", LooseVersion('1.10.0')),
-        pytest.param(True, b"1.0.0", LooseVersion('1.0.0')),
-        pytest.param(True, b"1.10.0", LooseVersion('1.10.0'))
+        pytest.param(False, b"1.0.0", Version('1.0.0')),
+        pytest.param(False, b"1.10.0", Version('1.10.0')),
+        pytest.param(True, b"1.0.0", Version('1.0.0')),
+        pytest.param(True, b"1.10.0", Version('1.10.0'))
     ]
 )
 def test_verify_ninja(tmpdir, from_override, version_str, expected_result):
@@ -154,7 +154,7 @@ def test_verify_ninja(tmpdir, from_override, version_str, expected_result):
 
     try:
         result_version, result_override_path = generate_android_project.verify_ninja(override_cmake_install_path)
-        assert isinstance(expected_result, LooseVersion)
+        assert isinstance(expected_result, Version)
         assert result_version == expected_result
         if from_override:
             assert os.path.normpath(result_override_path) == os.path.normpath(os.path.join(override_cmake_install_path, ninja_exe))
