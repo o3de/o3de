@@ -26,7 +26,7 @@ namespace PhysX
 
         /// Gets the offset of the collider relative to the entity position.
         /// @param offset The offset of the collider
-        virtual AZ::Vector3 GetColliderOffset() = 0;
+        virtual AZ::Vector3 GetColliderOffset() const = 0;
 
         /// Gets the rotation of the collider relative to the entity rotation.
         /// @param rotation The rotation of the collider
@@ -34,35 +34,59 @@ namespace PhysX
 
         /// Gets the rotation of the collider relative to the entity rotation.
         /// @param rotation The rotation of the collider
-        virtual AZ::Quaternion GetColliderRotation() = 0;
+        virtual AZ::Quaternion GetColliderRotation() const = 0;
 
         /// Gets the world transform of the collider.
         /// @return The world transform of the collider.
-        virtual AZ::Transform GetColliderWorldTransform() = 0;
+        virtual AZ::Transform GetColliderWorldTransform() const = 0;
         
-        /// Set the radius of the sphere collider.
+        /// Sets the radius of the sphere collider.
         /// @param radius The radius of the sphere collider.
         virtual void SetSphereRadius(float radius) = 0;
 
         /// Gets the radius of the sphere collider.
         /// @return The radius of the sphere collider.
-        virtual float GetSphereRadius() = 0;
+        virtual float GetSphereRadius() const = 0;
 
-        /// Set the radius of the capsule collider.
+        /// Sets the radius of the capsule collider.
         /// @param radius The radius of the capsule collider.
         virtual void SetCapsuleRadius(float radius) = 0;
 
         /// Gets the radius of the capsule collider.
         /// @return The radius of the capsule collider.
-        virtual float GetCapsuleRadius() = 0;
+        virtual float GetCapsuleRadius() const = 0;
 
-        /// Set the height of the capsule collider.
+        /// Sets the height of the capsule collider.
         /// @param radius The height of the capsule collider.
         virtual void SetCapsuleHeight(float height) = 0;
 
         /// Gets the height of the capsule collider.
         /// @return The height of the capsule collider.
-        virtual float GetCapsuleHeight() = 0;
+        virtual float GetCapsuleHeight() const = 0;
+
+        /// Sets the radius of the cylinder collider.
+        /// @param radius The radius of the cylinder collider.
+        virtual void SetCylinderRadius(float radius) = 0;
+
+        /// Gets the radius of the cylinder collider.
+        /// @return The radius of the cylinder collider.
+        virtual float GetCylinderRadius() const = 0;
+
+        /// Sets the height of the cylinder collider.
+        /// @param radius The height of the cylinder collider.
+        virtual void SetCylinderHeight(float height) = 0;
+
+        /// Gets the height of the cylinder collider.
+        /// @return The height of the cylinder collider.
+        virtual float GetCylinderHeight() const = 0;
+
+        /// Sets the subdivision count of the cylinder collider.
+        /// @param radius The subdivision count of the cylinder collider.
+        virtual void SetCylinderSubdivisionCount(AZ::u8 subdivisionCount) = 0;
+
+        /// Gets the subdivision count of the cylinder collider.
+        /// @return The subdivision count of the cylinder collider.
+        virtual AZ::u8 GetCylinderSubdivisionCount() const = 0;
 
         /// Sets the scale of the asset collider.
         /// @param The scale of the asset collider.
@@ -70,7 +94,7 @@ namespace PhysX
 
         /// Gets the scale of the asset collider.
         /// @return The scale of the asset collider.
-        virtual AZ::Vector3 GetAssetScale() = 0;
+        virtual AZ::Vector3 GetAssetScale() const = 0;
 
         /// Sets the shape type on the collider.
         /// @param The collider's shape type.
@@ -78,7 +102,7 @@ namespace PhysX
 
         /// Gets the shape type from the collider.
         /// @return The collider's shape type.
-        virtual Physics::ShapeType GetShapeType() = 0;
+        virtual Physics::ShapeType GetShapeType() const = 0;
     };
 
     using EditorColliderComponentRequestBus = AZ::EBus<EditorColliderComponentRequests>;

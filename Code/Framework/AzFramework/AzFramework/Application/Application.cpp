@@ -749,7 +749,7 @@ namespace AzFramework
 
     bool Application::IsEditorModeFeedbackEnabled() const
     {
-        bool value = false;
+        bool value = true;
         if (auto* registry = AZ::SettingsRegistry::Get())
         {
             registry->Get(value, ApplicationInternal::s_editorModeFeedbackKey);
