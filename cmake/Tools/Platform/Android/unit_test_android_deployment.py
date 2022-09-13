@@ -560,8 +560,6 @@ def test_update_device_file_timestamp(tmpdir):
 
     tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_BUILD_DIR}/app/src/assets/deploy.timestamp").ensure()
 
-    # C:\Users\spham\AppData\Local\Temp\pytest-of-spham\pytest-168\test_update_device_file_timest0\Foo\android_gradle_test\app\src\assets\deploy.timestamp
-
     mock_dev_root = tmpdir.join(TEST_DEV_ROOT).realpath()
 
     with patch.object(android_deployment.AndroidDeployment, 'read_android_settings', return_value={}), \
@@ -717,8 +715,6 @@ def test_execute_clean_deploy_success(tmpdir, test_game_name, test_config, test_
                 return "SUCCESS"
             elif match_arg_list(arg_list, ['push', expected_registry_path, expected_storage_registry_path]):
                 return "SUCCESS"
-            #['push', 'C:\\Users\\spham\\AppData\\Local\\Temp\\pytest-of-spham\\pytest-156\\test_execute_clean_deploy_succ0\\Foo\\android_gradle_test\\app\\src\\assets/.', '/data/fool_storage/Android/data/org.o3de.foo/files']
-
         raise AssertionError
 
     def _mock_adb_shell(command, device_id):
