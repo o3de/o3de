@@ -74,8 +74,8 @@ void CAnimComponentNode::OnResetHard()
 
 //////////////////////////////////////////////////////////////////////////
 CAnimParamType CAnimComponentNode::GetParamType(unsigned int nIndex) const
-{ 
-    (void)nIndex; 
+{
+    (void)nIndex;
     return AnimParamType::Invalid;
 };
 
@@ -85,7 +85,7 @@ void CAnimComponentNode::SetComponent(AZ::ComponentId componentId, const AZ::Uui
     m_componentId = componentId;
     m_componentTypeId = componentTypeId;
 
-    // call OnReset() to update dynamic params 
+    // call OnReset() to update dynamic params
     // (i.e. virtual properties from the exposed EBuses from the BehaviorContext)
     OnReset();
 }
@@ -426,7 +426,7 @@ Quat CAnimComponentNode::GetRotate(float time)
     {
         rotTrack->GetValue(time, worldRot);
 
-        // Track values are always stored as relative to the parent (local), so convert to world.        
+        // Track values are always stored as relative to the parent (local), so convert to world.
         ConvertBetweenWorldAndLocalRotation(worldRot, eTransformConverstionDirection_toWorldSpace);
     }
     else
@@ -492,7 +492,7 @@ Vec3 CAnimComponentNode::GetScale()
 void CAnimComponentNode::Activate(bool bActivate)
 {
     // Connect to EditorSequenceAgentComponentNotificationBus. The Sequence Agent Component
-    // is always added to the Entity that is being animated aka the entity at GetParentAzEntityId(). 
+    // is always added to the Entity that is being animated aka the entity at GetParentAzEntityId().
     if (bActivate)
     {
         Maestro::EditorSequenceAgentComponentNotificationBus::Handler::BusConnect(GetParentAzEntityId());
@@ -568,7 +568,7 @@ void CAnimComponentNode::Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoa
         xmlNode->getAttr("ComponentId", m_componentId);
         if (xmlNode->getAttr("ComponentTypeId", uuidString))
         {
-            m_componentTypeId = uuidString.c_str();
+            m_componentTypeId = AZ::Uuid::CreateString(uuidString);
         }
         else
         {
@@ -660,7 +660,7 @@ void CAnimComponentNode::UpdateDynamicParams_Editor()
     IAnimNode::AnimParamInfos animatableParams;
 
     // add all parameters supported by the component
-    Maestro::EditorSequenceComponentRequestBus::Event(m_pSequence->GetSequenceEntityId(), &Maestro::EditorSequenceComponentRequestBus::Events::GetAllAnimatablePropertiesForComponent, 
+    Maestro::EditorSequenceComponentRequestBus::Event(m_pSequence->GetSequenceEntityId(), &Maestro::EditorSequenceComponentRequestBus::Events::GetAllAnimatablePropertiesForComponent,
                                                           animatableParams, GetParentAzEntityId(), m_componentId);
 
     for (int i = 0; i < animatableParams.size(); i++)
@@ -751,7 +751,7 @@ void CAnimComponentNode::InitializeTrackDefaultValue(IAnimTrack* pTrack, const C
 
                     Maestro::SequenceComponentRequestBus::Event(m_pSequence->GetSequenceEntityId(), &Maestro::SequenceComponentRequestBus::Events::GetAnimatedPropertyValue, defaultValue, GetParentAzEntityId(), address);
                     defaultValue.GetValue(vector3Value);
-                    
+
                     pTrack->SetValue(0, Vec3(clamp_tpl((float)vector3Value.GetX(), .0f, 1.0f), clamp_tpl((float)vector3Value.GetY(), .0f, 1.0f), clamp_tpl((float)vector3Value.GetZ(), .0f, 1.0f)), /*setDefault=*/ true, /*applyMultiplier=*/ true);
                     break;
                 }
@@ -815,7 +815,7 @@ void CAnimComponentNode::Animate(SAnimContext& ac)
                 {
                     m_characterTrackAnimator = new CCharacterTrackAnimator;
                 }
-                
+
                 if (characterAnimationLayer < MAX_CHARACTER_TRACKS + ADDITIVE_LAYERS_OFFSET)
                 {
                     int index = characterAnimationLayer;
@@ -834,7 +834,7 @@ void CAnimComponentNode::Animate(SAnimContext& ac)
                     }
                     ++characterAnimationLayer;
                     ++characterAnimationTrackIdx;
-                }   
+                }
             }
             else
             {
@@ -890,7 +890,7 @@ void CAnimComponentNode::Animate(SAnimContext& ac)
                             AZ::Vector3 vector3PrevValue;
                             prevValue.GetValue(vector3PrevValue);
 
-                            // Check sub-tracks for keys. If there are none, use the prevValue for that track (essentially making a non-keyed track a no-op)                    
+                            // Check sub-tracks for keys. If there are none, use the prevValue for that track (essentially making a non-keyed track a no-op)
                             vector3Value.Set(pTrack->GetSubTrack(0)->HasKeys() ? vector3Value.GetX() : vector3PrevValue.GetX(),
                                 pTrack->GetSubTrack(1)->HasKeys() ? vector3Value.GetY() : vector3PrevValue.GetY(),
                                 pTrack->GetSubTrack(2)->HasKeys() ? vector3Value.GetZ() : vector3PrevValue.GetZ());

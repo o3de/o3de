@@ -20,7 +20,7 @@ namespace AZ
     struct TYPEINFO_Enable{}; \
     struct TypeNameInternal { constexpr const char* operator()() const { return #_ClassName; } }; \
     static constexpr const char* TYPEINFO_Name() { return TypeNameInternal{}(); } \
-    static const AZ::TypeId& TYPEINFO_Uuid() { static AZ::TypeId s_uuid(_ClassUuid); return s_uuid; }
+    static constexpr AZ::TypeId TYPEINFO_Uuid() { return AZ::TypeId(_ClassUuid); }
 
 #define AZ_TYPE_INFO_1 AZ_TYPE_INFO_INTERNAL_1
 #define AZ_TYPE_INFO_2 AZ_TYPE_INFO_INTERNAL_2
