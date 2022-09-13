@@ -17,6 +17,9 @@
 #include <AzQtComponents/Components/Widgets/Card.h>
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
 #include <SceneAPI/SceneUI/SceneUIConfiguration.h>
+#include <QPair>
+#include <QString>
+#include <QVector>
 #endif
 
 class QSvgWidget;
