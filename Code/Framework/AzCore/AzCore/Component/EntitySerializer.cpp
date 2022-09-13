@@ -209,9 +209,17 @@ namespace AZ
         }
     }
 
+    void DeprecatedComponentMetadata::SetShouldTrackDeprecatedCallback(ShouldTrackDeprecatedCallback callback)
+    {
+        m_shouldTrackDeprecatedCallback = callback;
+    }
+
     void DeprecatedComponentMetadata::AddComponent(const TypeId& componentType)
     {
-        m_componentTypes.insert(componentType);
+        if (!m_shouldTrackDeprecatedCallback || m_shouldTrackDeprecatedCallback())
+        {
+            m_componentTypes.insert(componentType);
+        }
     }
 
     AZStd::vector<AZStd::string> DeprecatedComponentMetadata::GetComponentNames() const

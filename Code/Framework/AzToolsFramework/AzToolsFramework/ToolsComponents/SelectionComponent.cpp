@@ -51,10 +51,9 @@ namespace AzToolsFramework
                 deprecatedComponents->AddComponent(outputValueTypeId);
             }
 
-            // Report to the deserializer that we are skipping this component. This will result in a "completed"
-            // precessing outcome and avoid further associated warnings
+            // Report to the deserializer that this component should no longer be part of the data
             namespace JSR = AZ::JsonSerializationResult;
-            return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Skipped, SelectionComponentLoadMessage);
+            return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Unavailable, SelectionComponentLoadMessage);
         }
 
         void SelectionComponent::Reflect(AZ::ReflectContext* context)

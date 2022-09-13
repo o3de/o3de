@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Memory/Memory.h>
+#include <AzCore/Component/Entity.h>
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
 
 namespace AZ
@@ -38,13 +39,17 @@ namespace AZ
     class DeprecatedComponentMetadata
     {
     public:
-        AZ_RTTI(DeprecatedComponentMetadata, "{3D5F5EAE-BDA9-43AA-958E-E87158BAFB9F}");
-        virtual ~DeprecatedComponentMetadata() = default;
+        AZ_TYPE_INFO(DeprecatedComponentMetadata, "{3D5F5EAE-BDA9-43AA-958E-E87158BAFB9F}");
+        using ShouldTrackDeprecatedCallback = AZStd::function<bool()>;
 
+        ~DeprecatedComponentMetadata() = default;
+
+        void SetShouldTrackDeprecatedCallback(ShouldTrackDeprecatedCallback callback);
         void AddComponent(const TypeId& componentType);
         AZStd::vector<AZStd::string> GetComponentNames() const;
 
     private:
         AZStd::unordered_set<AZ::TypeId> m_componentTypes;
+        ShouldTrackDeprecatedCallback m_shouldTrackDeprecatedCallback;
     };
 }

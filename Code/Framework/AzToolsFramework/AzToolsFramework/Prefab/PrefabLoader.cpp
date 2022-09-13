@@ -603,7 +603,8 @@ namespace AzToolsFramework
             }
 
             Instance loadedPrefabInstance;
-            if (!PrefabDomUtils::LoadInstanceFromPrefabDom(loadedPrefabInstance, loadedTemplateDom->get()))
+            PrefabDomUtils::LoadFlags flags = PrefabDomUtils::LoadFlags::ReportDeprecatedComponents;
+            if (!PrefabDomUtils::LoadInstanceFromPrefabDom(loadedPrefabInstance, loadedTemplateDom->get(), flags))
             {
                 return false;
             }

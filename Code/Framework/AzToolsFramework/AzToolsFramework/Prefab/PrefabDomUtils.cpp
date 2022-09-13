@@ -30,8 +30,8 @@ namespace AzToolsFramework
             namespace Internal
             {
                 static constexpr const char* const ComponentRemovalNotice =
-                    "[INFORMATION] Component '%s' is being removed from .prefab data. Please edit and save '%s' "
-                    "to persist the change.";
+                    "[INFORMATION] %s data has been altered to remove component '%s'. "
+                    "Please edit and save %s to persist the change.";
 
                 static AZ::JsonSerializationResult::ResultCode JsonIssueReporter(AZStd::string& scratchBuffer,
                     AZStd::string_view message, AZ::JsonSerializationResult::ResultCode result, AZStd::string_view path)
@@ -166,21 +166,54 @@ namespace AzToolsFramework
                         settings.m_metadata.Create<InstanceDomMetadata>();
                     }
 
+                    // Returns whether to track deprecated components for the instance being deserialized
+                    auto shouldTrackDeprecated = [&instance, &entityIdMapper]()
+                    {
+                        // Only track the instance that was passed in
+                        return (&instance == entityIdMapper.GetLoadingInstance());
+                    }; 
+
+                    if ((flags & LoadFlags::ReportDeprecatedComponents) == LoadFlags::ReportDeprecatedComponents)
+                    {
+                        // Add metadata to track components that are deprecated
+                        auto deprecationTracker = AZ::DeprecatedComponentMetadata{};
+                        deprecationTracker.SetShouldTrackDeprecatedCallback(shouldTrackDeprecated);
+                        settings.m_metadata.Add(deprecationTracker);
+                    }
+
                     AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::Load(instance, prefabDom, settings);
+                    bool succeeded = (result.GetProcessing() != AZ::JsonSerializationResult::Processing::Halted);
+                    if (succeeded)
+                    {
+                        // Display a message for skipped components
+                        auto deprecatedComponents = settings.m_metadata.Find<AZ::DeprecatedComponentMetadata>();
+                        if (deprecatedComponents)
+                        {
+                            const char* prefabName = instance.GetTemplateSourcePath().Filename().Native().data();
+                            for (const auto& componentName : deprecatedComponents->GetComponentNames())
+                            {
+                                AZ_Warning(
+                                    "JSON Serialization",
+                                    false,
+                                    Internal::ComponentRemovalNotice,
+                                    prefabName,
+                                    componentName.c_str(),
+                                    instance.GetTemplateSourcePath().c_str());
+                            }
+                        }
+                    }
+                    else
+                    {
+                        AZ_Error(
+                            "Prefab",
+                            false,
+                            "Failed to de-serialize Prefab Instance from Prefab DOM. "
+                            "Unable to proceed.");
+                    }
 
                     AZ::Data::AssetManager::Instance().ResumeAssetRelease();
 
-                    if (result.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
-                    {
-                        AZ_Error(
-                            "Prefab", false,
-                            "Failed to de-serialize Prefab Instance from Prefab DOM. "
-                            "Unable to proceed.");
-
-                        return false;
-                    }
-
-                    return true;
+                    return succeeded;
                 }
 
                 //! Identifies instance members to be added or removed by inspecting the patch entry provided.
@@ -283,25 +316,20 @@ namespace AzToolsFramework
             {
                 AZ::JsonDeserializerSettings settings;
 
-                // Add metadata to track components that were skipped
-                settings.m_metadata.Create<AZ::DeprecatedComponentMetadata>();
-
-                bool result = Internal::LoadInstanceHelper(instance, prefabDom, flags, settings);
-                if (result)
+                // Set a custom Json reporting handler to only report "Processing::Halted" warnings
+                // and skip any "Processing::Altered" warnings which end up spamming the logs when
+                // a component has been deprecated. This aligns with the same behavior as saving and
+                // instantiating a prefab
+                AZStd::string scratchBuffer;
+                auto issueReportingCallback = [&scratchBuffer](
+                                                    AZStd::string_view message, AZ::JsonSerializationResult::ResultCode result,
+                                                    AZStd::string_view path) -> AZ::JsonSerializationResult::ResultCode
                 {
-                    // Display a message for skipped components
-                    auto deprecatedComponents = settings.m_metadata.Find<AZ::DeprecatedComponentMetadata>();
-                    if (deprecatedComponents)
-                    {
-                        for (const auto& componentName : deprecatedComponents->GetComponentNames())
-                        {
-                            AZ_Warning("JSON Serialization", false, Internal::ComponentRemovalNotice, componentName.c_str(),
-                                instance.GetTemplateSourcePath().Filename().Native().data());
-                        }
-                    }
-                }
+                    return Internal::JsonIssueReporter(scratchBuffer, message, result, path);
+                };
+                settings.m_reporting = AZStd::move(issueReportingCallback);
 
-                return result;
+                return Internal::LoadInstanceHelper(instance, prefabDom, flags, settings);
             }
 
             bool LoadInstanceFromPrefabDom(
