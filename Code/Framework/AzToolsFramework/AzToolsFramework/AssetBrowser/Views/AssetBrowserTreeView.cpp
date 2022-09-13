@@ -624,9 +624,30 @@ namespace AzToolsFramework
                         {
                             AZ_Assert(false, "AssetChangeReportRequest failed ");
                         }
-                        for (int i = 0 ; i < response.m_lines.size(); ++i)
+                        AZStd::string message;
+                        for (int i = 0; i < response.m_lines.size(); ++i)
                         {
                             AZ_TracePrintf("JJS", "%s\n", response.m_lines[i].c_str());
+                            message += response.m_lines[i];
+                        }
+
+                        if (message.size())
+                        {
+                            QMessageBox msgBox(this);
+                            msgBox.setWindowTitle("Pre-Move Report");
+                            msgBox.setIcon(QMessageBox::Warning);
+                            msgBox.setText("The asset you are moving may be referenced in other assets.");
+                            msgBox.setInformativeText("More information can be found by pressing \"Show Details...\".");
+                            QAbstractButton* moveButton = (QAbstractButton*)msgBox.addButton("Move", QMessageBox::YesRole);
+                            msgBox.setStandardButtons(QMessageBox::Cancel);
+                            msgBox.setDefaultButton(QMessageBox::Yes);
+                            msgBox.setDetailedText(message.c_str());
+                            msgBox.exec();
+
+                            if (msgBox.clickedButton() == moveButton)
+                            {
+                                //                            useReferencedEntities = true;
+                            }
                         }
                     }
                 }

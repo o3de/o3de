@@ -92,7 +92,7 @@ namespace
 
                         // The report can be too long for the AZ_Printf buffer, so split it into individual lines
                         AZStd::string report =
-                            relocationInterface->BuildReport(success.m_relocationContainer, success.m_updateTasks, true, false);
+                            relocationInterface->BuildChangeReport(success.m_relocationContainer, success.m_updateTasks);
                         AzFramework::StringFunc::Tokenize(report.c_str(), lines, "\n");
 
                         for (const AZStd::string& line : lines)
