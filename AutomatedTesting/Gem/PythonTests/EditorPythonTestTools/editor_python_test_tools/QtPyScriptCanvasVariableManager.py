@@ -30,10 +30,7 @@ class QtPyScriptCanvasVariableManager:
 
         returns: None
         """
-        if type(new_variable_type) is not str:
-            Report.critical_result(["Invalid variable type provided", ""], False)
-
-        self.validate_new_variable(new_variable_type)
+        self.__validate_new_variable(new_variable_type)
 
         add_new_variable_button = self.variable_manager.findChild(QtWidgets.QPushButton, ADD_BUTTON_QT)
         add_new_variable_button.click()  # Click on Create Variable button
@@ -45,10 +42,13 @@ class QtPyScriptCanvasVariableManager:
         # Click on it to create variable
         pyside_utils.item_view_index_mouse_click(table_view, model_index)
 
-    def validate_new_variable(self, new_variable_type):
+    def __validate_new_variable(self, new_variable_type):
         """
         function for checking the provided variable type for validity
         """
+        if type(new_variable_type) is not str:
+            Report.critical_result(["Invalid variable type provided", ""], False)
+
         valid_type = False
         for this_type in VARIABLE_TYPES:
             if new_variable_type == this_type:

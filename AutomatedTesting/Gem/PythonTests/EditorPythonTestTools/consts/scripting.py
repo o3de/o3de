@@ -22,7 +22,6 @@ VARIABLE_MANAGER_UI = "Variable Manager"
 
 """
 Constants for Variable Manager
-
 """
 RESTORE_DEFAULT_LAYOUT = "Restore Default Layout"
 
@@ -46,8 +45,6 @@ Different from window/tab names because they do not have spaces
 NODE_PALETTE_QT = "NodePalette"
 NODE_INSPECTOR_QT = "NodeInspector"
 TREE_VIEW_QT = "treeView"
-EVENTS_QT = "Events"
-EVENT_NAME_QT = "EventName"
 VARIABLE_PALETTE_QT = "variablePalette"
 VARIABLE_MANAGER_QT = "VariableManager"
 GRAPH_VARIABLES_QT = "graphVariables"
@@ -55,6 +52,37 @@ ADD_BUTTON_QT = "addButton"
 SEARCH_FRAME_QT ="searchFrame"
 SEARCH_FILTER_QT = "searchFilter"
 PARAMETERS_QT = "Parameters"
+
+"""
+File Paths
+"""
+SCRIPT_EVENT_FILE_PATH = os.path.join(paths.projectroot, "ScriptCanvas", "test_file.scriptevent")
+SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH = "Configuration|Source"
+
+
+"""
+DEPRECATED CONSTANTS SECTION. delete these once associated references have been updated to appropriate files
+"""
+"""
+Constants for Asset Editor
+"""
+SAVE_ASSET_AS = "SaveAssetAs"
+DEFAULT_SCRIPT_EVENT = "EventName"
+DEFAULT_METHOD_NAME = "MethodName"
+
+PARAMETER_NAME = "ParameterName"
+
+#We are deprecating VARIABLE_TYPES in favor of the dictionary since we can access the dictionary nicely with dot notation instead of indices
+VARIABLE_TYPES = ["Boolean", "Color", "EntityId", "Number", "String", "Transform", "Vector2", "Vector3", "Vector4"]
+
+EVENTS_QT = "Events"
+EVENT_NAME_QT = "EventName"
+
+ENTITY_STATES = {
+        "active": 0,
+        "inactive": 1,
+        "editor": 2,
+    }
 
 """
 General constants
@@ -68,29 +96,3 @@ WAIT_TIME_5 = 5
 
 VARIABLE_TYPES_DICT = {"Boolean": "Boolean", "Color": "Color", "EntityId": "EntityId", "Number": "Number", "String": "String",
                   "Transform": "Transform", "Vector2": "Vector2", "Vector3": "Vector3", "Vector4": "Vector4"}
-ENTITY_STATES = {
-        "active": 0,
-        "inactive": 1,
-        "editor": 2,
-    }
-
-"""
-File Paths
-"""
-SCRIPT_EVENT_FILE_PATH = os.path.join(paths.projectroot, "ScriptCanvas", "test_file.scriptevent")
-SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH = "Configuration|Source"
-
-"""
-deprecated constants. delete these once associated references have been updated to appropriate files
-"""
-"""
-Constants for Asset Editor
-"""
-SAVE_ASSET_AS = "SaveAssetAs"
-DEFAULT_SCRIPT_EVENT = "EventName"
-DEFAULT_METHOD_NAME = "MethodName"
-
-PARAMETER_NAME = "ParameterName"
-
-#We are deprecating VARIABLE_TYPES in favor of the dictionary since we can access the dictionary nicely with dot notation instead of indices
-VARIABLE_TYPES = ["Boolean", "Color", "EntityId", "Number", "String", "Transform", "Vector2", "Vector3", "Vector4"]

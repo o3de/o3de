@@ -58,7 +58,7 @@ def EditMenu_Default_UndoRedo():
     from editor_python_test_tools.utils import Report
     import azlmbr.legacy.general as general
     import editor_python_test_tools.script_canvas_tools_qt as SC_tools_qt
-    from consts.scripting import (WAIT_TIME_3)
+    from consts.general import (WAIT_TIME_3)
 
     general.idle_enable(True)
     variable_types = SC_tools_qt.get_variable_types()
