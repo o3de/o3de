@@ -233,4 +233,16 @@ namespace PhysX
                 ;
         }
     }
+
+    void PrismaticJointConfiguration::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<PrismaticJointConfiguration, AzPhysics::JointConfiguration>()
+                ->Version(1)
+                ->Field("Generic Properties", &HingeJointConfiguration::m_genericProperties)
+                ->Field("Limit Properties", &HingeJointConfiguration::m_limitProperties)
+                ;
+        }
+    }
 } // namespace PhysX

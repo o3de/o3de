@@ -32,6 +32,9 @@ namespace PhysX
     const float EditorJointLimitConeConfig::s_angleMax = 180.0f;
     const float EditorJointLimitConeConfig::s_angleMin = 0.1f;
 
+    const float EditorJointLimitLinearPairConfig::s_linearLimitMax = 1000.0f;
+    const float EditorJointLimitLinearPairConfig::s_linearLimitMin = -1000.0f;
+
     const float EditorJointConfig::s_breakageMax = 10000000.0f;
     const float EditorJointConfig::s_breakageMin = 0.01f;
 
@@ -156,6 +159,61 @@ namespace PhysX
             , m_standardLimitConfig.m_stiffness
             , m_standardLimitConfig.m_tolerance);
     }
+
+    void EditorJointLimitLinearPairConfig::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<EditorJointLimitLinearPairConfig>()
+                ->Version(1)
+                ->Field("Standard Limit Configuration", &EditorJointLimitLinearPairConfig::m_standardLimitConfig)
+                ->Field("Lower Limit", &EditorJointLimitLinearPairConfig::m_limitLower)
+                ->Field("Upper Limit", &EditorJointLimitLinearPairConfig::m_limitUpper)
+                ;
+
+            if (auto* editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<PhysX::EditorJointLimitLinearPairConfig>("Linear Limit", "Limitation on linear motion.")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->DataElement(
+                        0,
+                        &PhysX::EditorJointLimitLinearPairConfig::m_standardLimitConfig,
+                        "Standard limit configuration",
+                        "Common limit parameters to all joint types.")
+                    ->DataElement(
+                        0, &PhysX::EditorJointLimitLinearPairConfig::m_limitLower, "Lower linear limit", "Lower limit of linear motion.")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorJointLimitPairConfig::IsLimited)
+                    ->Attribute(AZ::Edit::Attributes::Max, s_linearLimitMax)
+                    ->Attribute(AZ::Edit::Attributes::Min, s_linearLimitMin)
+                    ->DataElement(
+                        0, &PhysX::EditorJointLimitLinearPairConfig::m_limitUpper, "Upper linear limit", "Upper limit of linear motion.")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorJointLimitPairConfig::IsLimited)
+                    ->Attribute(AZ::Edit::Attributes::Max, s_linearLimitMax)
+                    ->Attribute(AZ::Edit::Attributes::Min, s_linearLimitMin);
+            }
+        }
+    }
+
+    bool EditorJointLimitLinearPairConfig::IsLimited() const
+    {
+        return m_standardLimitConfig.m_isLimited;
+    }
+
+    JointLimitProperties EditorJointLimitLinearPairConfig::ToGameTimeConfig() const
+    {
+        return JointLimitProperties(
+            m_standardLimitConfig.m_isLimited,
+            m_standardLimitConfig.m_isSoftLimit,
+            m_standardLimitConfig.m_damping,
+            m_limitUpper,
+            m_limitLower,
+            m_standardLimitConfig.m_stiffness,
+            m_standardLimitConfig.m_tolerance);
+    }
+
+
 
     void EditorJointLimitConeConfig::Reflect(AZ::ReflectContext* context)
     {

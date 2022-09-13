@@ -30,6 +30,7 @@ namespace PhysX
     {
         EditorJointLimitConfig::Reflect(context);
         EditorJointLimitPairConfig::Reflect(context);
+        EditorJointLimitLinearPairConfig::Reflect(context);
         EditorJointLimitConeConfig::Reflect(context);
         EditorJointConfig::Reflect(context);
 
