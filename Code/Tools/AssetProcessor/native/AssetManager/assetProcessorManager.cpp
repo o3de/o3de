@@ -644,8 +644,10 @@ namespace AssetProcessor
 
         QString absolutePathToFile = jobEntry.GetAbsoluteSourcePath();
         AZ_Error(AssetProcessor::ConsoleChannel, !m_lfsPointerFileValidator->IsLfsPointerFile(absolutePathToFile.toUtf8().constData()),
-            "%s is an LFS pointer file. Please sync all of the files from the LFS endpoint "
-            "following https://www.o3de.org/docs/welcome-guide/setup/setup-from-github/#fork-and-clone.",
+            "%s is a git large file storage (LFS) file. "
+            "This is a placeholder file used by the git source control system to manage content. "
+            "This issue most happens if you've downloaded all of O3DE as a zip file. "
+            "Please sync all of the files from the LFS endpoint following https://www.o3de.org/docs/welcome-guide/setup/setup-from-github/#fork-and-clone.",
             jobEntry.GetAbsoluteSourcePath().toUtf8().constData());
 
         // wipe the times so that it will try again next time.
