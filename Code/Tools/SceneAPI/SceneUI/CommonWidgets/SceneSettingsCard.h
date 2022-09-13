@@ -125,6 +125,7 @@ private:
     void ShowLogContextMenu(const QPoint& pos);
     void AddLogTableEntry(AzQtComponents::StyledDetailsTableModel::TableEntry& entry);
 
+AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     QVector<QVector<QPair<QString, QString>>> m_additionalLogDetails;
     
     AzToolsFramework::Debug::TraceContextMultiStackHandler m_traceStackHandler;
@@ -132,6 +133,7 @@ private:
     AzQtComponents::StyledDetailsTableModel* m_reportModel = nullptr;
     AzQtComponents::TableView* m_reportView = nullptr;
     AZStd::shared_ptr<AZ::SceneAPI::SceneUI::ProcessingHandler> m_targetHandler;
+AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     SceneSettingsCardHeader* m_settingsHeader = nullptr;
     CompletionState m_completionState = CompletionState::Success;
     State m_sceneCardState = State::Loading;
