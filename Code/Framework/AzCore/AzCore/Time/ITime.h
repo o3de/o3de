@@ -65,6 +65,16 @@ namespace AZ
         //! @return The number of microseconds that have elapsed since application start.
         virtual TimeUs GetRealElapsedTimeUs() const = 0;
 
+        //! Sets the number of milliseconds since application start.
+        //! For debug purposes only.
+        //! @param The number of milliseconds that have elapsed since application start.
+        virtual void SetElapsedTimeMsDebug(TimeMs time) = 0;
+
+        //! Sets the number of microseconds since application start.
+        //! For debug purposes only.
+        //! @param The number of microseconds that have elapsed since application start.
+        virtual void SetElapsedTimeUsDebug(TimeUs time) = 0;
+
         //! Returns the current simulation tick delta time.
         //! This is affected by the cvars t_simulationTickScale, t_simulationTickDeltaOverride, and t_maxGameTickDelta.
         //! @return The number of microseconds elapsed since the last game tick.

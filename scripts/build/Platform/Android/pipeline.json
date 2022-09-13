@@ -10,17 +10,24 @@
     },
     "PIPELINE_ENV_OVERRIDE": {
         "daily-pipeline-metrics": {
-            "CLEAN_WORKSPACE": true
+            "CLEAN_WORKSPACE": true,
+            "DISCARD_VOLUME": true
         },
         "periodic-clean-weekly": {
-            "CLEAN_WORKSPACE": true
+            "CLEAN_WORKSPACE": true,
+            "DISCARD_VOLUME": true
         },
         "periodic-clean-weekly-internal": {
-            "CLEAN_WORKSPACE": true
+            "CLEAN_WORKSPACE": true,
+            "DISCARD_VOLUME": true
+        },
+        "periodic-incremental-daily": {
+            "DISCARD_VOLUME": true
         },
         "snapshot": {
             "CLEAN_WORKSPACE": true,
-            "CREATE_SNAPSHOT": true
+            "CREATE_SNAPSHOT": true,
+            "DISCARD_VOLUME": true
         }
     }
 }

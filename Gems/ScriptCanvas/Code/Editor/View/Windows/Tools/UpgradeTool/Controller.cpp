@@ -131,6 +131,7 @@ namespace ScriptCanvasEditor
 
             ScanConfiguration config;
             config.reportFilteredGraphs = !m_view->onlyShowOutdated->isChecked();
+            config.onlyIncludeLegacyXML = m_view->onlyShowXMLFiles->isChecked();
             config.filter = isUpToDate;
 
             SetLoggingPreferences();

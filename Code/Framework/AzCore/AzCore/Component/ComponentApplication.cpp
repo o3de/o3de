@@ -1256,17 +1256,15 @@ namespace AZ
             bool m_autoLoad{ true };
         };
 
-
         using FixedValueString = SettingsRegistryInterface::FixedValueString;
-        using Type = SettingsRegistryInterface::Type;
         AZStd::vector<GemModuleLoadData> modulesLoadData;
         auto GemModuleVisitor = [&settingsRegistry = *m_settingsRegistry, &modulesLoadData]
-        (AZStd::string_view gemRootObjectPath, AZStd::string_view, Type)
+        (const AZ::SettingsRegistryInterface::VisitArgs& activeGemArgs)
         {
-            auto VisitGemObjectFields = [&settingsRegistry, &modulesLoadData](AZStd::string_view jsonPath,
-                AZStd::string_view fieldName, Type)
+            auto VisitGemObjectFields = [&settingsRegistry, &modulesLoadData](
+                const AZ::SettingsRegistryInterface::VisitArgs& gemTargetArgs)
             {
-                AZStd::string_view gemModuleName = fieldName;
+                AZStd::string_view gemModuleName = gemTargetArgs.m_fieldName;
                 auto FindGemModuleLoadEntry = [gemModuleName](const GemModuleLoadData& moduleLoadData)
                 {
                     return gemModuleName == moduleLoadData.m_gemModuleName;
@@ -1280,7 +1278,7 @@ namespace AZ
                 // By default the auto load option is true
                 // So auto load is turned off if option "AutoLoad" key exist and has a value of false
                 auto autoLoadJsonPath = FixedValueString::format("%.*s/AutoLoad",
-                    AZ_STRING_ARG(jsonPath));
+                    AZ_STRING_ARG(gemTargetArgs.m_jsonKeyPath));
                 if (bool autoLoadModule{}; settingsRegistry.Get(autoLoadModule, autoLoadJsonPath) && !autoLoadModule)
                 {
                     moduleLoadData.m_autoLoad = false;
@@ -1288,20 +1286,26 @@ namespace AZ
 
                 // Locate the Module paths within the Gem Target Name object
                 auto AppendDynamicModulePaths = [&settingsRegistry, &moduleLoadData]
-                (AZStd::string_view gemModuleJsonPath, AZStd::string_view, Type)
+                (const AZ::SettingsRegistryInterface::VisitArgs& visitArgs)
                 {
-                    if (AZ::IO::Path modulePath; settingsRegistry.Get(modulePath.Native(), gemModuleJsonPath))
+                    if (AZ::IO::Path modulePath; settingsRegistry.Get(modulePath.Native(), visitArgs.m_jsonKeyPath))
                     {
                         moduleLoadData.m_dynamicLibraryPaths.emplace_back(AZStd::move(modulePath.Native()));
                     }
+
+                    return AZ::SettingsRegistryInterface::VisitResponse::Skip;
                 };
                 auto gemModulesJsonPath = FixedValueString::format("%.*s/Modules",
-                    AZ_STRING_ARG(jsonPath));
+                    AZ_STRING_ARG(gemTargetArgs.m_jsonKeyPath));
                 AZ::SettingsRegistryVisitorUtils::VisitArray(settingsRegistry, AppendDynamicModulePaths, gemModulesJsonPath);
+
+                return AZ::SettingsRegistryInterface::VisitResponse::Skip;
             };
 
             AZ::SettingsRegistryVisitorUtils::VisitField(settingsRegistry, VisitGemObjectFields,
-                FixedValueString::format("%.*s/Targets", AZ_STRING_ARG(gemRootObjectPath)));
+                FixedValueString::format("%.*s/Targets", AZ_STRING_ARG(activeGemArgs.m_jsonKeyPath)));
+
+            return AZ::SettingsRegistryInterface::VisitResponse::Skip;
         };
 
         ModuleDescriptorList gemModules;

@@ -22,49 +22,45 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendGraphWidget.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/NodePaletteWidget.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MotionSetsWindow/MotionSetsWindowPlugin.h>
+#include <GraphCanvas/Widgets/NodePalette/TreeItems/NodePaletteTreeItem.h>
+#include <GraphCanvas/Widgets/NodePalette/NodePaletteWidget.h>
 #include <QMenu>
+#include <QWidgetAction>
 
 
 namespace EMStudio
 {
-    // Fill the given menu with anim graph objects that can be created inside the current given object and category.
-    void BlendGraphWidget::AddAnimGraphObjectCategoryMenu(AnimGraphPlugin* plugin, QMenu* parentMenu,
-        EMotionFX::AnimGraphObject::ECategory category, EMotionFX::AnimGraphObject* focusedGraphObject)
+    // Fill the node palette tree view with the anim graph objects that can be created inside the current given object and category.
+    void BlendGraphWidget::AddCategoryToNodePalette(EMotionFX::AnimGraphNode::ECategory category, GraphCanvas::NodePaletteTreeItem* rootNode,
+        EMotionFX::AnimGraphObject* focusedGraphObject)
     {
-        // Check if any object of the given category can be created in the currently focused and shown graph.
-        bool isEmpty = true;
-        const AZStd::vector<EMotionFX::AnimGraphObject*>& objectPrototypes = plugin->GetAnimGraphObjectFactory()->GetUiObjectPrototypes();
-        for (EMotionFX::AnimGraphObject* objectPrototype : objectPrototypes)
-        {
-            if (m_plugin->CheckIfCanCreateObject(focusedGraphObject, objectPrototype, category))
-            {
-                isEmpty = false;
-                break;
-            }
-        }
-
-        // If the category will be empty, return directly and skip adding a category sub-menu.
-        if (isEmpty)
+        const AZStd::vector<EMotionFX::AnimGraphObject*>& objectPrototypes = m_plugin->GetAnimGraphObjectFactory()->GetUiObjectPrototypes();
+        // If the category is empty, don't add a node for it
+        if (objectPrototypes.empty())
         {
             return;
         }
-
         const char* categoryName = EMotionFX::AnimGraphObject::GetCategoryName(category);
-        QMenu* menu = parentMenu->addMenu(categoryName);
 
+        auto* categoryNode = rootNode->CreateChildNode<GraphCanvas::NodePaletteTreeItem>(categoryName, AnimGraphEditorId);
+        bool categoryEnabled = false;
         for (const EMotionFX::AnimGraphObject* objectPrototype : objectPrototypes)
         {
-            if (m_plugin->CheckIfCanCreateObject(focusedGraphObject, objectPrototype, category))
+            if (objectPrototype->GetPaletteCategory() != category)
             {
-                const EMotionFX::AnimGraphNode* nodePrototype = static_cast<const EMotionFX::AnimGraphNode*>(objectPrototype);
-                QAction* action = menu->addAction(nodePrototype->GetPaletteName());
-                action->setWhatsThis(azrtti_typeid(nodePrototype).ToString<QString>());
-                action->setData(QVariant(nodePrototype->GetPaletteName()));
-                connect(action, &QAction::triggered, plugin->GetGraphWidget(), &BlendGraphWidget::OnContextMenuCreateNode);
+                continue;
             }
-        }
-    }
 
+            bool active = m_plugin->CheckIfCanCreateObject(focusedGraphObject, objectPrototype, category);
+            categoryEnabled |= active;
+            const EMotionFX::AnimGraphNode* nodePrototype = static_cast<const EMotionFX::AnimGraphNode*>(objectPrototype);
+
+            const QString typeString = azrtti_typeid(nodePrototype).ToString<QString>();
+            auto* node = categoryNode->CreateChildNode<BlendGraphNodePaletteTreeItem>(nodePrototype->GetPaletteName(), typeString, AnimGraphEditorId);
+            node->SetEnabled(active);
+        }
+        categoryNode->SetEnabled(categoryEnabled);
+    }
 
     void BlendGraphWidget::AddNodeGroupSubmenu(QMenu* menu, EMotionFX::AnimGraph* animGraph, const AZStd::vector<EMotionFX::AnimGraphNode*>& selectedNodes)
     {
@@ -188,8 +184,6 @@ namespace EMStudio
 
                 if (actionFilter.m_createNodes)
                 {
-                    QMenu* createNodeMenu = menu->addMenu("Create Node");
-
                     const AZStd::vector<EMotionFX::AnimGraphNode::ECategory> categories =
                     {
                         EMotionFX::AnimGraphNode::CATEGORY_SOURCES,
@@ -201,12 +195,35 @@ namespace EMStudio
                         EMotionFX::AnimGraphNode::CATEGORY_MISC
                     };
 
-                    // Create sub-menus for each of the categories that are possible to be added to the currently focused graph.
+                    // Create nodes in palette view for each of the categories that are possible to be added to the currently focused graph.
                     EMotionFX::AnimGraphNode* currentNode = nodeGraph->GetModelIndex().data(AnimGraphModel::ROLE_NODE_POINTER).value<EMotionFX::AnimGraphNode*>();
+
+                    auto* action = new QWidgetAction(menu);
+                    auto* rootItem = new GraphCanvas::NodePaletteTreeItem("root", AnimGraphEditorId);
+                    GraphCanvas::NodePaletteConfig config;
+                    config.m_rootTreeItem = rootItem;
+                    config.m_isInContextMenu = true;
+                    auto* paletteWidget = new GraphCanvas::NodePaletteWidget(nullptr);
+                    paletteWidget->SetupNodePalette(config);
+                    action->setDefaultWidget(paletteWidget);
+                    menu->addAction(action);
+
                     for (const EMotionFX::AnimGraphNode::ECategory category: categories)
                     {
-                        AddAnimGraphObjectCategoryMenu(plugin, createNodeMenu, category, currentNode);
+                        AddCategoryToNodePalette(category, rootItem, currentNode);
                     }
+
+                    connect(menu, &QMenu::aboutToShow, paletteWidget, [=](){
+                        paletteWidget->FocusOnSearchFilter();
+                    });
+                    connect(paletteWidget, &GraphCanvas::NodePaletteWidget::OnCreateSelection, paletteWidget, [=]() {
+                            auto* event = static_cast<BlendGraphMimeEvent*>(paletteWidget->GetContextMenuEvent());
+                            if (event)
+                            {
+                                m_plugin->GetGraphWidget()->OnContextMenuCreateNode(event);
+                                menu->close();
+                            }
+                    });
                 }
 
                 connect(menu, &QMenu::triggered, menu, &QMenu::deleteLater);

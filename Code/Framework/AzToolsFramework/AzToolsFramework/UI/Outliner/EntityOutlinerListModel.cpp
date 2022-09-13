@@ -47,7 +47,10 @@
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
+#include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/FocusMode/FocusModeInterface.h>
+#include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
 #include <AzToolsFramework/ToolsComponents/ComponentAssetMimeDataContainer.h>
 #include <AzToolsFramework/ToolsComponents/ComponentMimeData.h>
 #include <AzToolsFramework/ToolsComponents/EditorEntityIdContainer.h>
@@ -850,6 +853,34 @@ namespace AzToolsFramework
             return false;
         }
 
+        // Check if we're in focus mode
+        auto entityContextId = AzFramework::EntityContextId::CreateNull();
+        EditorEntityContextRequestBus::BroadcastResult(entityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
+        AZ::EntityId focusRoot = m_focusModeInterface->GetFocusRoot(entityContextId);
+        if (focusRoot.IsValid())
+        {
+            // Only allow reparenting the selected entities if they are all under the same instance.
+            // We check the parent entity separately because it may be a container entity and
+            // container entities consider their owning instance to be the parent instance
+            auto prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
+            if (prefabPublicInterface && !prefabPublicInterface->EntitiesBelongToSameInstance(selectedEntityIds))
+            {
+                return false;
+            }
+
+            // Disable parenting to a different owning instance
+            auto instanceEntityMapperInterface = AZ::Interface<AzToolsFramework::Prefab::InstanceEntityMapperInterface>::Get();
+            if (instanceEntityMapperInterface)
+            {
+                auto parentInstanceReference = instanceEntityMapperInterface->FindOwningInstance(newParentId);
+                auto selectedInstanceReference = instanceEntityMapperInterface->FindOwningInstance(selectedEntityIds.front());
+                if (&(parentInstanceReference->get()) != &(selectedInstanceReference->get()))
+                {
+                    return false;
+                }
+            }
+        }
+
         // Ignore entities not owned by the editor context. It is assumed that all entities belong
         // to the same context since multiple selection doesn't span across views.
         for (const AZ::EntityId& entityId : selectedEntityIds)
@@ -1226,18 +1257,32 @@ namespace AzToolsFramework
 
     void EntityOutlinerListModel::OnContainerEntityStatusChanged(AZ::EntityId entityId, [[maybe_unused]] bool open)
     {
-        // Trigger a refresh of all direct children so that they can be shown or hidden appropriately.
-        QueueEntityUpdate(entityId);
-
-        EntityIdList children;
-        EditorEntityInfoRequestBus::EventResult(children, entityId, &EditorEntityInfoRequestBus::Events::GetChildren);
-        for (auto childId : children)
+        if (!Prefab::IsPrefabOverridesUxEnabled())
         {
-            QueueEntityUpdate(childId);
-        }
+            // Trigger a refresh of all direct children so that they can be shown or hidden appropriately.
+            QueueEntityUpdate(entityId);
 
-        // Always expand containers
-        QueueEntityToExpand(entityId, true);
+            EntityIdList children;
+            EditorEntityInfoRequestBus::EventResult(children, entityId, &EditorEntityInfoRequestBus::Events::GetChildren);
+            for (auto childId : children)
+            {
+                QueueEntityUpdate(childId);
+            }
+
+            // Always expand containers
+            QueueEntityToExpand(entityId, true);
+        }
+        else
+        {
+            QModelIndex changedIndex = GetIndexFromEntity(entityId);
+
+            // Trigger a refresh of all direct children so that they can be shown or hidden appropriately.
+            int numChildren = rowCount(changedIndex);
+            if (numChildren > 0)
+            {
+                emit dataChanged(index(0, 0, changedIndex), index(numChildren - 1, ColumnCount - 1, changedIndex));
+            }
+        } 
     }
 
     void EntityOutlinerListModel::OnEntityInfoUpdatedRemoveChildBegin([[maybe_unused]] AZ::EntityId parentId, [[maybe_unused]] AZ::EntityId childId)

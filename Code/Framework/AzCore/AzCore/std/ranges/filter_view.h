@@ -16,7 +16,6 @@ namespace AZStd::ranges
     template<class View, class Pred, class = enable_if_t<conjunction_v<
         bool_constant<input_range<View>>,
         bool_constant<view<View>>,
-        bool_constant<copy_constructible<Pred>>,
         is_object<Pred>,
         bool_constant<indirect_unary_predicate<Pred, iterator_t<View>>>
         >
@@ -112,7 +111,7 @@ namespace AZStd::ranges
 
     private:
         View m_base{};
-        Internal::copyable_box<Pred> m_func{};
+        Internal::movable_box<Pred> m_func{};
     };
 
     // deduction guides

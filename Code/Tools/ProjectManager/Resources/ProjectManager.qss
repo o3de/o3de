@@ -914,3 +914,13 @@ QProgressBar::chunk {
     font-size: 16px;
     color: #FFFFFF;
 }
+
+/************** Download object dialogs **************/
+
+#addRemoteTemplateDialog #formFrame {
+    margin-left: 0px;
+}
+
+#addRemoteProjectDialog #formFrame {
+    margin-left: 0px;
+}

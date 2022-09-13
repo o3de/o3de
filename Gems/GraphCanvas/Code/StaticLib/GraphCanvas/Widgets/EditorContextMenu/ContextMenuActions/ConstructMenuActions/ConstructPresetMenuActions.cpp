@@ -52,8 +52,11 @@ namespace GraphCanvas
         QPixmap* pixmap = preset->GetDisplayIcon(contextMenu->GetEditorId());
 
         if (pixmap)
-        {
-            setIcon(QIcon((*pixmap)));
+        {     
+            QIcon icon;
+            icon.addPixmap(*pixmap, QIcon::Normal);
+            icon.addPixmap(*pixmap, QIcon::Active);
+            setIcon(icon);
         }
 
         m_isInToolbar = contextMenu->IsToolBarMenu();
@@ -124,7 +127,10 @@ namespace GraphCanvas
 
         if (pixmap)
         {
-            setIcon(QIcon((*pixmap)));
+            QIcon icon;
+            icon.addPixmap(*pixmap, QIcon::Normal);
+            icon.addPixmap(*pixmap, QIcon::Active);
+            setIcon(icon);
         }
     }
 

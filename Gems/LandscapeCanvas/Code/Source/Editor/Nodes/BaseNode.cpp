@@ -73,6 +73,11 @@ namespace LandscapeCanvas
         m_componentId = componentId;
     }
 
+    AZ::ComponentDescriptor::DependencyArrayType BaseNode::GetOptionalRequiredServices() const
+    {
+        return {};
+    }
+
     AZ::Component* BaseNode::GetComponent() const
     {
         AZ::Entity* gradientEntity = nullptr;

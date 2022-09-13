@@ -37,19 +37,6 @@ namespace ShaderManagementConsole
         Base::OnDocumentOpened(documentId);
         m_documentInspector->SetDocumentId(documentId);
     }
-
-    void ShaderManagementConsoleWindow::OnDocumentCleared(const AZ::Uuid& documentId)
-    {
-        Base::OnDocumentCleared(documentId);
-        m_documentInspector->SetDocumentId(documentId);
-    }
-
-    void ShaderManagementConsoleWindow::OnDocumentError(const AZ::Uuid& documentId)
-    {
-        Base::OnDocumentError(documentId);
-        m_documentInspector->SetDocumentId(documentId);
-    }
-
 } // namespace ShaderManagementConsole
 
 #include <Window/moc_ShaderManagementConsoleWindow.cpp>

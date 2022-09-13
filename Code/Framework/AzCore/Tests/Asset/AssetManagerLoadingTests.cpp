@@ -687,8 +687,8 @@ namespace UnitTest
         // Dispatched event leads to another blocking load of asset B
 
         // Setup
-        constexpr char AssetNoRefA[] = "{EC5E3E4F-518C-4B03-A8BF-C9966CF763EB}";
-        constexpr char AssetNoRefB[] = "{C07E55B5-E60C-4575-AE07-32DD3DC68B1A}";
+        constexpr auto AssetNoRefA = AZ::Uuid("{EC5E3E4F-518C-4B03-A8BF-C9966CF763EB}");
+        constexpr auto AssetNoRefB = AZ::Uuid("{C07E55B5-E60C-4575-AE07-32DD3DC68B1A}");
 
         {
             m_assetHandlerAndCatalog->AddAsset<AssetWithSerializedData>(AssetNoRefA, "a.txt");
@@ -2004,21 +2004,21 @@ namespace UnitTest
         : public DisklessAssetManagerBase
     {
     public:
-        static inline const AZ::Uuid MyAsset1Id{ "{5B29FE2B-6B41-48C9-826A-C723951B0560}" };
-        static inline const AZ::Uuid MyAsset2Id{ "{BD354AE5-B5D5-402A-A12E-BE3C96F6522B}" };
-        static inline const AZ::Uuid MyAsset3Id{ "{622C3FC9-5AE2-4E52-AFA2-5F7095ADAB53}" };
-        static inline const AZ::Uuid MyAsset4Id{ "{EE99215B-7AB4-4757-B8AF-F78BD4903AC4}" };
-        static inline const AZ::Uuid MyAsset5Id{ "{D9CDAB04-D206-431E-BDC0-1DD615D56197}" };
-        static inline const AZ::Uuid MyAsset6Id{ "{B2F139C3-5032-4B52-ADCA-D52A8F88E043}" };
+        static inline constexpr AZ::Uuid MyAsset1Id{ "{5B29FE2B-6B41-48C9-826A-C723951B0560}" };
+        static inline constexpr AZ::Uuid MyAsset2Id{ "{BD354AE5-B5D5-402A-A12E-BE3C96F6522B}" };
+        static inline constexpr AZ::Uuid MyAsset3Id{ "{622C3FC9-5AE2-4E52-AFA2-5F7095ADAB53}" };
+        static inline constexpr AZ::Uuid MyAsset4Id{ "{EE99215B-7AB4-4757-B8AF-F78BD4903AC4}" };
+        static inline constexpr AZ::Uuid MyAsset5Id{ "{D9CDAB04-D206-431E-BDC0-1DD615D56197}" };
+        static inline constexpr AZ::Uuid MyAsset6Id{ "{B2F139C3-5032-4B52-ADCA-D52A8F88E043}" };
 
 
         // Initialize the Job Manager with 2 threads for the Asset Manager to use.
         size_t GetNumJobManagerThreads() const override { return 2; }
 
-        static constexpr inline char MyAssetAId[] = "{C5B08D5D-8589-4706-A53F-96248CFDCE73}";
-        static constexpr inline char MyAssetBId[] = "{E1DECFB8-6FAC-4FE4-BD54-3A4A4E6616A5}";
-        static constexpr inline char MyAssetCId[] = "{F7091500-A220-4407-BEF4-B658D8D24289}";
-        static constexpr inline char MyAssetDId[] = "{1BB6CA5B-CE56-497B-B721-9460365E1125}";
+        static constexpr inline AZ::Uuid MyAssetAId{ "{C5B08D5D-8589-4706-A53F-96248CFDCE73}" };
+        static constexpr inline AZ::Uuid MyAssetBId{ "{E1DECFB8-6FAC-4FE4-BD54-3A4A4E6616A5}" };
+        static constexpr inline AZ::Uuid MyAssetCId{ "{F7091500-A220-4407-BEF4-B658D8D24289}" };
+        static constexpr inline AZ::Uuid MyAssetDId{ "{1BB6CA5B-CE56-497B-B721-9460365E1125}" };
 
         void SetupAssets(DataDrivenHandlerAndCatalog* catalog)
         {
@@ -3195,7 +3195,7 @@ namespace UnitTest
         EXPECT_TRUE(nestedDependentAsset.IsReady());
     }
 
-    TEST_F(AssetManagerClearAssetReferenceTests, ReloadTest)
+    TEST_F(AssetManagerClearAssetReferenceTests, ReloadTest_SUITE_sandbox)
     {
         // Regression test - there was a bug where rapid reloads could get stuck due to the owning container being invalidated
         // Note that for this bug to occur, the loaded asset needs to have dependencies
@@ -3307,7 +3307,7 @@ namespace UnitTest
         AssetManager::Instance().DispatchEvents();
     }
 
-    TEST_F(AssetManagerClearAssetReferenceTests, ReleaseOldReferenceWhileLoadingNewReference_DoesNotDeleteContainer)
+    TEST_F(AssetManagerClearAssetReferenceTests, ReleaseOldReferenceWhileLoadingNewReference_DoesNotDeleteContainer_SUITE_sandbox)
     {
         // Regression test very similar to the above test but this time it occurs when releasing an old asset reference while *loading* (not reloading) the same asset
         // Order of events to reproduce:
@@ -3502,7 +3502,7 @@ namespace UnitTest
         SignallingAssetManager* m_assetManager{};
     };
 
-    TEST_F(AssetManagerEbusSafety, OnAssetReady_GetAsset_DoesNotDeadlock)
+    TEST_F(AssetManagerEbusSafety, OnAssetReady_GetAsset_DoesNotDeadlock_SUITE_sandbox)
     {
         // Regression test
         // Steps to repro:
