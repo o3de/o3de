@@ -17,6 +17,7 @@
 #include <AzFramework/Spawnable/SpawnableAssetHandler.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesContainer.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesManager.h>
+#include <AzFramework/Spawnable/SpawnableBus.h>
 
 namespace AzFramework
 {
@@ -26,6 +27,7 @@ namespace AzFramework
         , public AZ::SystemTickBus::Handler
         , public RootSpawnableInterface::Registrar
         , public RootSpawnableNotificationBus::Handler
+        , protected SpawnableNotificationBus::Handler
     {
     public:
         AZ_COMPONENT(SpawnableSystemComponent, "{12D0DA52-BB86-4AC3-8862-9493E0D0E207}");
@@ -77,6 +79,16 @@ namespace AzFramework
         void OnRootSpawnableReady(AZ::Data::Asset<Spawnable> rootSpawnable, uint32_t generation) override;
         void OnRootSpawnableReleased(uint32_t generation) override;
 
+        //
+        // SpawnableNotifications
+        //
+
+        //! Sent any time a SpawnEntityTicket is created through script
+        void OnSpawnEntityTicketCreated(EntitySpawnTicket spawnTicket) override;
+
+        //! Sent when the ScriptMediator system shuts down
+        void ClearEntityTickets() override;
+
     protected:
         void Activate() override;
         void Deactivate() override;
@@ -90,5 +102,11 @@ namespace AzFramework
 
         AZ::Data::AssetId m_rootSpawnableId;
         AZ::SettingsRegistryInterface::NotifyEventHandler m_criticalAssetsHandler;
+
+        // Cache of EntitySpawnTickets created from script, they are tracked to avoid
+        // refcounting issues at runtime
+        AZStd::unordered_set<EntitySpawnTicket> m_spawnedEntityTickets;
+
     };
 } // namespace AzFramework
+

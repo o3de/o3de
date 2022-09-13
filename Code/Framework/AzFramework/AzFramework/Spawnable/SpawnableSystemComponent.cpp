@@ -149,6 +149,16 @@ namespace AzFramework
         AZ_TracePrintf("Spawnables", "Generation %i of the root spawnable has been released.\n", generation);
     }
 
+    void SpawnableSystemComponent::ClearEntityTickets()
+    {
+        m_spawnedEntityTickets.clear();
+    }
+
+    void SpawnableSystemComponent::OnSpawnEntityTicketCreated(EntitySpawnTicket spawnTicket)
+    {
+        m_spawnedEntityTickets.insert(spawnTicket);
+    }
+
     void SpawnableSystemComponent::Activate()
     {
         // Register with AssetDatabase
@@ -175,6 +185,7 @@ namespace AzFramework
 
         RootSpawnableNotificationBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
+        SpawnableNotificationBus::Handler::BusConnect();
 
         m_registryChangeHandler = settingsRegistry->RegisterNotifier([this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
             {
@@ -193,6 +204,7 @@ namespace AzFramework
 
         AZ::TickBus::Handler::BusDisconnect();
         RootSpawnableNotificationBus::Handler::BusDisconnect();
+        SpawnableNotificationBus::Handler::BusDisconnect();
 
         // Unregister Lifecycle event handler
         m_criticalAssetsHandler = {};

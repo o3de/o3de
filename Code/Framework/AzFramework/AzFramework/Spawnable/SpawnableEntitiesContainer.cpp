@@ -8,7 +8,7 @@
 
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesContainer.h>
-
+#include <AzFramework/Spawnable/SpawnableBus.h>
 namespace AzFramework
 {
     SpawnableEntitiesContainer::SpawnableEntitiesContainer(AZ::Data::Asset<Spawnable> spawnable)
@@ -40,8 +40,7 @@ namespace AzFramework
     void SpawnableEntitiesContainer::SpawnEntities(AZStd::vector<uint32_t> entityIndices)
     {
         AZ_Assert(m_threadData, "Calling SpawnEntities on a Spawnable container that's not set.");
-        SpawnableEntitiesInterface::Get()->SpawnEntities(
-            m_threadData->m_spawnedEntitiesTicket, AZStd::move(entityIndices));
+        SpawnableEntitiesInterface::Get()->SpawnEntities(m_threadData->m_spawnedEntitiesTicket, AZStd::move(entityIndices));
     }
 
     void SpawnableEntitiesContainer::DespawnAllEntities()

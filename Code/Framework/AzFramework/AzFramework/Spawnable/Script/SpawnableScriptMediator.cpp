@@ -12,6 +12,8 @@
 #include <AzFramework/Spawnable/Script/SpawnableScriptMediator.h>
 #include <AzFramework/Spawnable/Script/SpawnableScriptNotificationsHandler.h>
 
+#include <AzFramework/Spawnable/SpawnableBus.h>
+
 namespace AzFramework::Scripts
 {
     void SpawnableScriptMediator::Reflect(AZ::ReflectContext* context)
@@ -66,7 +68,9 @@ namespace AzFramework::Scripts
 
     EntitySpawnTicket SpawnableScriptMediator::CreateSpawnTicket(const SpawnableScriptAssetRef& spawnableAsset)
     {
-        return EntitySpawnTicket(spawnableAsset.GetAsset());
+        EntitySpawnTicket ticket = EntitySpawnTicket(spawnableAsset.GetAsset());
+        SpawnableNotificationBus::Broadcast(&SpawnableNotifications::OnSpawnEntityTicketCreated, ticket);
+        return ticket;
     }
 
     bool SpawnableScriptMediator::Spawn(EntitySpawnTicket spawnTicket)
@@ -185,6 +189,8 @@ namespace AzFramework::Scripts
 
     void SpawnableScriptMediator::Clear()
     {
+        SpawnableNotificationBus::Broadcast(&SpawnableNotifications::ClearEntityTickets);
+
         m_resultCommands.clear();
         AZ::TickBus::Handler::BusDisconnect();
     }
