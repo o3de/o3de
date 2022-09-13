@@ -87,6 +87,7 @@ namespace AssetProcessor
     class PlatformConfiguration;
     class ScanFolderInfo;
     class PathDependencyManager;
+    class LfsPointerFileValidator;
 
     //! The Asset Processor Manager is the heart of the pipeline
     //! It is what makes the critical decisions about what should and should not be processed
@@ -516,6 +517,7 @@ namespace AssetProcessor
 
         AZStd::unique_ptr<PathDependencyManager> m_pathDependencyManager;
         AZStd::unique_ptr<SourceFileRelocator> m_sourceFileRelocator;
+        AZStd::unique_ptr<LfsPointerFileValidator> m_lfsPointerFileValidator;
 
         JobDiagnosticTracker m_jobDiagnosticTracker{};
 

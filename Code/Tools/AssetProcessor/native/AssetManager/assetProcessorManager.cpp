@@ -24,6 +24,7 @@
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
 
 #include <native/AssetManager/PathDependencyManager.h>
+#include <native/AssetManager/LfsPointerFileValidator.h>
 #include <native/utilities/BuilderConfigurationBus.h>
 #include <native/utilities/StatsCapture.h>
 
@@ -636,6 +637,17 @@ namespace AssetProcessor
             return;
         }
 
+        if (!m_lfsPointerFileValidator)
+        {
+            m_lfsPointerFileValidator = AZStd::make_unique<LfsPointerFileValidator>();
+        }
+
+        QString absolutePathToFile = jobEntry.GetAbsoluteSourcePath();
+        AZ_Error(AssetProcessor::ConsoleChannel, !m_lfsPointerFileValidator->IsLfsPointerFile(absolutePathToFile.toUtf8().constData()),
+            "%s is an LFS pointer file. Please sync all of the files from the LFS endpoint "
+            "following https://www.o3de.org/docs/welcome-guide/setup/setup-from-github/#fork-and-clone.",
+            jobEntry.GetAbsoluteSourcePath().toUtf8().constData());
+
         // wipe the times so that it will try again next time.
         // note:  Leave the prior successful products where they are, though.
 
@@ -645,7 +657,6 @@ namespace AssetProcessor
         //create/update the source record for this job
         AzToolsFramework::AssetDatabase::SourceDatabaseEntry source;
         AzToolsFramework::AssetDatabase::SourceDatabaseEntryContainer sources;
-        QString absolutePathToFile = jobEntry.GetAbsoluteSourcePath();
         if (m_stateData->GetSourcesBySourceName(jobEntry.m_databaseSourceName, sources))
         {
             AZ_Assert(sources.size() == 1, "Should have only found one source!!!");
