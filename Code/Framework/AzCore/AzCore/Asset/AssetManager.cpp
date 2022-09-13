@@ -1684,9 +1684,26 @@ namespace AZ::Data
                     m_reloads.erase(reloadInfo);
                 }
             }
+
             // Call reloaded before we can call ReloadAsset below to preserve order
             AssetLoadBus::Event(asset.GetId(), &AssetLoadBus::Events::OnAssetReloaded, asset); // Broadcast to any containers first
             AssetBus::Event(assetId, &AssetBus::Events::OnAssetReloaded, asset);
+
+            AZ::Outcome<AZStd::unordered_set<AssetId>, AZStd::string> result = AZ::Failure(AZStd::string("No handler"));
+            AssetCatalogRequestBus::BroadcastResult(result, &AssetCatalogRequestBus::Events::GetAllReverseProductDependencies, asset.GetId());
+
+            if (result)
+            {
+                for (const auto& dependency : result.GetValue())
+                {
+                    AssetBus::Event(dependency, &AssetBus::Events::OnAssetDependencyReloaded, asset);
+                }
+            }
+            else
+            {
+                AZ_Error("AssetManager", false, result.GetError().c_str());
+            }
+
             // Release the lock before we call reload
             if (requeue)
             {

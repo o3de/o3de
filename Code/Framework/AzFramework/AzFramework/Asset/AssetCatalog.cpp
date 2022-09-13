@@ -318,10 +318,39 @@ namespace AzFramework
 
         return AZ::Success(itr->second);
     }
-    
+
     AZ::Outcome<AZStd::vector<AZ::Data::ProductDependency>, AZStd::string> AssetCatalog::GetAllProductDependencies(const AZ::Data::AssetId& id)
     {
         return GetAllProductDependenciesFilter(id, {}, {});
+    }
+
+    AZ::Outcome<AZStd::unordered_set<AZ::Data::AssetId>, AZStd::string> AssetCatalog::GetAllReverseProductDependencies(const AZ::Data::AssetId& id)
+    {
+        AZStd::vector<AZ::Data::AssetId> queue;
+        AZStd::unordered_set<AZ::Data::AssetId> output;
+
+        queue.push_back(id);
+
+        // Use a standard loop since we're appending to the end of the vector as we go
+        for (int i = 0; i < queue.size(); ++i)
+        {
+            const auto& queuedDependency = queue[i];
+            auto itr = m_registry->m_reverseAssetDependencies.find(queuedDependency);
+
+            if (itr != m_registry->m_reverseAssetDependencies.end())
+            {
+                for (const auto& dependency : itr->second)
+                {
+                    if (!output.contains(dependency))
+                    {
+                        queue.push_back(dependency);
+                        output.insert(dependency);
+                    }
+                }
+            }
+        }
+
+        return AZ::Success(output);
     }
 
     AZ::Outcome<AZStd::vector<AZ::Data::ProductDependency>, AZStd::string> AssetCatalog::GetAllProductDependenciesFilter(const AZ::Data::AssetId& id, const AZStd::unordered_set<AZ::Data::AssetId>& exclusionList, const AZStd::vector<AZStd::string>& wildcardPatternExclusionList)
@@ -405,7 +434,7 @@ namespace AzFramework
         return AZStd::wildcard_match(wildcardPattern, relativePath);
     }
 
-    bool AssetCatalog::DoesAssetIdMatchWildcardPattern(const AZ::Data::AssetId& assetId, const AZStd::string& wildcardPattern) 
+    bool AssetCatalog::DoesAssetIdMatchWildcardPattern(const AZ::Data::AssetId& assetId, const AZStd::string& wildcardPattern)
     {
         return DoesAssetIdMatchWildcardPatternInternal(assetId, wildcardPattern);
     }
@@ -542,7 +571,7 @@ namespace AzFramework
     {
         bool shouldBroadcast = false;
         {
-            // this scope controls the below lock guard, do not remove this scope.  
+            // this scope controls the below lock guard, do not remove this scope.
             // the lock must expire before we send out notifications to other systems.
             AZStd::lock_guard<AZStd::recursive_mutex> lock(m_registryMutex);
 
@@ -821,7 +850,7 @@ namespace AzFramework
         {
             bool isNewAsset = false;
             {
-                // this scope controls the below lock guard, do not remove this scope.  
+                // this scope controls the below lock guard, do not remove this scope.
                 // the lock must expire before we send out notifications to other systems.
                 AZStd::lock_guard<AZStd::recursive_mutex> lock(m_registryMutex);
 
@@ -867,7 +896,7 @@ namespace AzFramework
                     {
                         AzFramework::AssetCatalogEventBus::Broadcast(&AzFramework::AssetCatalogEventBus::Events::OnCatalogAssetChanged, mapping);
                     });
-                    
+
                 }
             }
             else
@@ -886,7 +915,7 @@ namespace AzFramework
             }
 
             AzFramework::LegacyAssetEventBus::QueueEvent(AZ::Crc32(extension.c_str()), &AzFramework::LegacyAssetEventBus::Events::OnFileChanged, relativePath);
-            
+
             if (AZ::Data::AssetManager::IsReady())
             {
                 AZ::SystemTickBus::QueueFunction([assetId]()
@@ -974,7 +1003,7 @@ namespace AzFramework
     //=========================================================================
     bool AssetCatalog::LoadCatalog(const char* catalogRegistryFile)
     {
-        // right before we load the catalog, make sure you are listening for update events, so that you don't miss any in the gap 
+        // right before we load the catalog, make sure you are listening for update events, so that you don't miss any in the gap
         // that happens AFTER the catalog is saved but BEFORE you start monitoring them:
         StartMonitoringAssets();
         {
@@ -988,7 +1017,7 @@ namespace AzFramework
     // ClearCatalog
     //=========================================================================
     void AssetCatalog::ClearCatalog()
-    {   
+    {
         {
             AZStd::lock_guard<AZStd::recursive_mutex> lock(m_deltaCatalogMutex);
             m_deltaCatalogList.clear();
@@ -1050,7 +1079,7 @@ namespace AzFramework
         m_deltaCatalogList.insert(m_deltaCatalogList.begin() + catalogIndex, deltaCatalog);
     }
 
-    AZStd::shared_ptr<AzFramework::AssetRegistry> AssetCatalog::LoadCatalogFromFile(const char* catalogFile) 
+    AZStd::shared_ptr<AzFramework::AssetRegistry> AssetCatalog::LoadCatalogFromFile(const char* catalogFile)
     {
         AZStd::shared_ptr<AzFramework::AssetRegistry> deltaCatalog;
         deltaCatalog.reset(AZ::Utils::LoadObjectFromFile<AzFramework::AssetRegistry>(catalogFile));
@@ -1081,7 +1110,7 @@ namespace AzFramework
     // InsertDeltaCatalog
     //=========================================================================
     bool AssetCatalog::InsertDeltaCatalogBefore(AZStd::shared_ptr<AzFramework::AssetRegistry> deltaCatalog, AZStd::shared_ptr<AzFramework::AssetRegistry> nextCatalog)
-    { 
+    {
         if (!nextCatalog)
         {
             AddDeltaCatalog(deltaCatalog);
@@ -1275,7 +1304,7 @@ namespace AzFramework
             for (const AZ::Data::ProductDependency& dependency : dependencyResult.GetValue())
             {
                 deltaRegistry.RegisterAssetDependency(asset, dependency);
-            }            
+            }
         }
         for (auto legacyToRealPair : m_registry->GetLegacyMappingSubsetFromRealIds(deltaPakAssetIds))
         {

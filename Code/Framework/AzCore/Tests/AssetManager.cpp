@@ -174,12 +174,12 @@ namespace UnitTest
 
             AssetWithCustomData::Reflect(*m_serializeContext);
 
-            m_assetHandlerAndCatalog->AddAsset<AssetWithCustomData>(MyAsset1Id, "MyAsset1.txt");
-            m_assetHandlerAndCatalog->AddAsset<AssetWithCustomData>(MyAsset2Id, "MyAsset2.txt");
-            m_assetHandlerAndCatalog->AddAsset<AssetWithCustomData>(MyAsset3Id, "MyAsset3.txt");
-            m_assetHandlerAndCatalog->AddAsset<AssetWithCustomData>(MyAsset4Id, "MyAsset4.txt");
-            m_assetHandlerAndCatalog->AddAsset<AssetWithCustomData>(MyAsset5Id, "MyAsset5.txt");
-            m_assetHandlerAndCatalog->AddAsset<AssetWithCustomData>(MyAsset6Id, "MyAsset6.txt");
+            AssetDefinition::Create<AssetWithCustomData>(MyAsset1Id, "MyAsset1.txt").Store(*m_assetHandlerAndCatalog);
+            AssetDefinition::Create<AssetWithCustomData>(MyAsset2Id, "MyAsset2.txt").Store(*m_assetHandlerAndCatalog);
+            AssetDefinition::Create<AssetWithCustomData>(MyAsset3Id, "MyAsset3.txt").Store(*m_assetHandlerAndCatalog);
+            AssetDefinition::Create<AssetWithCustomData>(MyAsset4Id, "MyAsset4.txt").Store(*m_assetHandlerAndCatalog);
+            AssetDefinition::Create<AssetWithCustomData>(MyAsset5Id, "MyAsset5.txt").Store(*m_assetHandlerAndCatalog);
+            AssetDefinition::Create<AssetWithCustomData>(MyAsset6Id, "MyAsset6.txt").Store(*m_assetHandlerAndCatalog);
 
             AZStd::vector<AssetType> types;
             m_assetHandlerAndCatalog->GetHandledAssetTypes(types);
@@ -405,9 +405,9 @@ namespace UnitTest
             AssetWithCustomData::Reflect(*m_serializeContext);
             EmptyAssetWithInstanceCount::Reflect(*m_serializeContext);
 
-            m_assetHandlerAndCatalog->AddAsset<AssetWithCustomData>(MyAsset1Id, "MyAsset1.txt");
-            m_assetHandlerAndCatalog->AddAsset<AssetWithCustomData>(MyAsset2Id, "MyAsset2.txt");
-            m_assetHandlerAndCatalog->AddAsset<EmptyAssetWithInstanceCount>(MyAsset3Id, "MyAsset3.txt");
+            AssetDefinition::Create<AssetWithCustomData>(MyAsset1Id, "MyAsset1.txt").Store(*m_assetHandlerAndCatalog);
+            AssetDefinition::Create<AssetWithCustomData>(MyAsset2Id, "MyAsset2.txt").Store(*m_assetHandlerAndCatalog);
+            AssetDefinition::Create<EmptyAssetWithInstanceCount>(MyAsset3Id, "MyAsset3.txt").Store(*m_assetHandlerAndCatalog);
             AZStd::vector<AssetType> types;
             m_assetHandlerAndCatalog->GetHandledAssetTypes(types);
             for (const auto& type : types)
@@ -530,7 +530,7 @@ namespace UnitTest
     TEST_F(AssetManagerTest, AssetSerializerAssetReferenceTest)
     {
         auto assetId = AssetId("{3E971FD2-DB5F-4617-9061-CCD3606124D0}", 0);
-        
+
         SerializeContext context;
         AssetWithAssetReference::Reflect(context);
         char memBuffer[4096];
@@ -796,7 +796,7 @@ namespace UnitTest
         EXPECT_NE(assets.find(MyAsset1Id), assets.end());
 
         AssetManager::Instance().ResumeAssetRelease();
-        
+
         // Sleep to allow for the assets to release
         int retryCount = 100;
         while ((--retryCount>0) && assets.size() > 0)

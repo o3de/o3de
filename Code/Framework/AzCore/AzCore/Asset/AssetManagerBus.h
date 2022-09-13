@@ -120,10 +120,10 @@ namespace AZ
 
             /// Write out our existing catalog to the given file.
             virtual bool SaveCatalog(const char* /*outputFile*/) { return false; }
-            
+
             /// Load a catalog file on top of our existing catalog data
             virtual bool AddDeltaCatalog(AZStd::shared_ptr<AzFramework::AssetRegistry> /*deltaCatalog*/) { return true; }
-            /// Insert a new delta catalog at a particular index  
+            /// Insert a new delta catalog at a particular index
             virtual bool InsertDeltaCatalog(AZStd::shared_ptr<AzFramework::AssetRegistry> /*deltaCatalog*/, size_t /* slotNum */) { return true; }
             /// Insert a new delta catalog before the given next unique catalog name
             virtual bool InsertDeltaCatalogBefore(AZStd::shared_ptr<AzFramework::AssetRegistry> /*deltaCatalog*/, AZStd::shared_ptr<AzFramework::AssetRegistry> /*nextDeltaCatalog*/) { return true; }
@@ -151,7 +151,7 @@ namespace AZ
             virtual AZ::Data::AssetType GetAssetTypeByDisplayName(const AZStd::string_view /*displayName*/) { return AZ::Data::AssetType();  }
 
             /// Adds an asset to the catalog.
-            /// \param id - the id to assign the asset. 
+            /// \param id - the id to assign the asset.
             /// \param info - the information to assign to that ID
             virtual void RegisterAsset(const AZ::Data::AssetId& /*id*/, AZ::Data::AssetInfo& /*info*/) {}
 
@@ -191,6 +191,14 @@ namespace AZ
             /// \param id - the id of the asset to look up the dependencies for
             /// \return AZ::Success containing a list of dependencies
             virtual AZ::Outcome<AZStd::vector<ProductDependency>, AZStd::string> GetAllProductDependencies(const AssetId& /*id*/) { return AZ::Failure<AZStd::string>("Not implemented"); }
+
+            /// Retrieves a list of all products that depend on the given (product) asset (recursively).
+            /// \param id - the id of the asset to look up the dependencies for
+            /// \return AZ::Success containing a list of reverse dependencies (products that depend on the given product)
+            virtual AZ::Outcome<AZStd::unordered_set<AssetId>, AZStd::string> GetAllReverseProductDependencies(const AssetId& /*id*/)
+            {
+                return AZ::Failure<AZStd::string>("Not implemented");
+            }
 
             /// Retrieves a list of products the given (product) asset depends on (recursively) which are not flagged as NoLoad.
             /// NoLoad dependencies will be returned in the noload set for the caller to load on demand if desired

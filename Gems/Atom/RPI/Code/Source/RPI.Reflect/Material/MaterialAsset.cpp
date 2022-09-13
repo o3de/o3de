@@ -49,7 +49,6 @@ namespace AZ
 
         MaterialAsset::~MaterialAsset()
         {
-            MaterialReloadNotificationBus::Handler::BusDisconnect();
             Data::AssetBus::Handler::BusDisconnect();
             AssetInitBus::Handler::BusDisconnect();
         }
@@ -103,7 +102,7 @@ namespace AZ
         {
             return m_materialTypeAsset->GetMaterialPropertiesLayout();
         }
-        
+
         bool MaterialAsset::WasPreFinalized() const
         {
             return m_wasPreFinalized;
@@ -128,7 +127,7 @@ namespace AZ
                     AZ_Warning(s_debugTraceName, false, "%s", message);
                 };
             }
-            
+
             if (!reportError)
             {
                 reportError = []([[maybe_unused]] const char* message)
@@ -211,10 +210,10 @@ namespace AZ
             Finalize();
 
             AZ_Assert(GetMaterialPropertiesLayout() && m_propertyValues.size() == GetMaterialPropertiesLayout()->GetPropertyCount(), "MaterialAsset should be finalized but does not have the right number of property values.");
-        
+
             return m_propertyValues;
         }
-        
+
         const AZStd::vector<AZStd::pair<Name, MaterialPropertyValue>>& MaterialAsset::GetRawPropertyValues() const
         {
             return m_rawPropertyValues;
@@ -241,29 +240,13 @@ namespace AZ
             else
             {
                 Data::AssetBus::Handler::BusConnect(m_materialTypeAsset.GetId());
-                MaterialReloadNotificationBus::Handler::BusConnect(m_materialTypeAsset.GetId());
-                
+
                 AssetInitBus::Handler::BusDisconnect();
 
                 return true;
             }
         }
 
-        void MaterialAsset::OnMaterialTypeAssetReinitialized(const Data::Asset<MaterialTypeAsset>& materialTypeAsset)
-        {
-            // When reloads occur, it's possible for old Asset objects to hang around and report reinitialization,
-            // so we can reduce unnecessary reinitialization in that case.
-            if (materialTypeAsset.Get() == m_materialTypeAsset.Get())
-            {
-                ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->MaterialAsset::OnMaterialTypeAssetReinitialized %s", this, materialTypeAsset.GetHint().c_str());
-
-                // MaterialAsset doesn't need to reinitialize any of its own data when MaterialTypeAsset reinitializes,
-                // because all it depends on is the MaterialTypeAsset reference, rather than the data inside it.
-                // Ultimately it's the Material that cares about these changes, so we just forward any signal we get.
-                MaterialReloadNotificationBus::Event(GetId(), &MaterialReloadNotifications::OnMaterialAssetReinitialized, Data::Asset<MaterialAsset>{this, AZ::Data::AssetLoadBehavior::PreLoad});
-            }
-        }
-        
         void MaterialAsset::ApplyVersionUpdates(AZStd::function<void(const char*)> reportError)
         {
             if (m_materialTypeVersion == m_materialTypeAsset->GetVersion())
@@ -321,9 +304,6 @@ namespace AZ
                     m_isFinalized = false;
                     m_propertyValues.clear();
                 }
-
-                // Notify interested parties that this MaterialAsset is changed and may require other data to reinitialize as well
-                MaterialReloadNotificationBus::Event(GetId(), &MaterialReloadNotifications::OnMaterialAssetReinitialized, Data::Asset<MaterialAsset>{this, AZ::Data::AssetLoadBehavior::PreLoad});
             }
         }
 

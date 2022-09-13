@@ -603,6 +603,9 @@ namespace AZ
             /// Called when an asset has been reloaded (usually in tool mode and loose more). It should not be called in final build.
             virtual void OnAssetReloaded(Asset<AssetData> asset) { (void)asset; }
 
+            /// Called when a dependency has been reloaded.  The assetId is the id of the dependency that was reloaded.
+            virtual void OnAssetDependencyReloaded([[maybe_unused]] Asset<AssetData> asset){}
+
             /// Called when an asset failed to reload.
             virtual void OnAssetReloadError(Asset<AssetData> asset) { (void)asset; }
 

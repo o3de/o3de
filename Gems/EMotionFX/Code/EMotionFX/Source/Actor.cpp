@@ -1280,7 +1280,7 @@ namespace EMotionFX
         return morphTargetMetaAssetInfo.m_assetId.IsValid();
     }
 
-    void Actor::Finalize(LoadRequirement loadReq)
+    void Actor::Finalize([[maybe_unused]]LoadRequirement loadReq)
     {
         AZStd::scoped_lock<AZStd::recursive_mutex> lock(m_mutex);
 

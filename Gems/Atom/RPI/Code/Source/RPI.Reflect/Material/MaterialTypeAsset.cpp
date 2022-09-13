@@ -203,7 +203,7 @@ namespace AZ
                 assetToReplace = newAsset;
             }
         }
-        
+
         void MaterialTypeAsset::ReinitializeAsset(Data::Asset<Data::AssetData> asset)
         {
             // The order of asset reloads is non-deterministic. If the MaterialTypeAsset reloads before these
@@ -213,9 +213,6 @@ namespace AZ
             {
                 TryReplaceAsset(shaderItem.m_shaderAsset, asset);
             }
-
-            // Notify interested parties that this MaterialTypeAsset is changed and may require other data to reinitialize as well
-            MaterialReloadNotificationBus::Event(GetId(), &MaterialReloadNotifications::OnMaterialTypeAssetReinitialized, Data::Asset<MaterialTypeAsset>{this, AZ::Data::AssetLoadBehavior::PreLoad});
         }
 
         void MaterialTypeAsset::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
@@ -223,7 +220,7 @@ namespace AZ
             ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->MaterialTypeAsset::OnAssetReloaded %s", this, asset.GetHint().c_str());
             ReinitializeAsset(asset);
         }
-        
+
         void MaterialTypeAsset::OnAssetReady(Data::Asset<Data::AssetData> asset)
         {
             // Regarding why we listen to both OnAssetReloaded and OnAssetReady, see explanation in ShaderAsset::OnAssetReady.
