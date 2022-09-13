@@ -8,10 +8,13 @@
 
 #include <Atom/RPI.Edit/Shader/ShaderSourceData.h>
 #include <Atom/RPI.Edit/Shader/ShaderVariantListSourceData.h>
+#include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzCore/Utils/Utils.h>
 #include <Window/ShaderManagementConsoleWindow.h>
+#include <Document/ShaderManagementConsoleDocumentRequestBus.h>
 
 #include <QFileDialog>
 #include <QUrl>
