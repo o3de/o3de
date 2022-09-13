@@ -71,6 +71,25 @@ namespace PhysX
         float m_limitNegative = -45.0f;
     };
 
+    /// Pair (linear) limits for joints.
+    class EditorJointLimitLinearPairConfig : public EditorJointLimitBase
+    {
+    public:
+        static const float s_linearLimitMin;
+        static const float s_linearLimitMax;
+
+        bool IsLimited() const;
+        JointLimitProperties ToGameTimeConfig() const;
+
+        AZ_CLASS_ALLOCATOR(EditorJointLimitLinearPairConfig, AZ::SystemAllocator, 0);
+        AZ_TYPE_INFO(EditorJointLimitLinearPairConfig, "{20A3AE4C-1B92-4541-ACA7-5FA2BFDDEDC0}");
+        static void Reflect(AZ::ReflectContext* context);
+
+        EditorJointLimitConfig m_standardLimitConfig;
+        float m_limitLower = -1.0f;
+        float m_limitUpper = 1.0f;
+    };
+
     /// Cone (swing) limits for joints.
     class EditorJointLimitConeConfig : public EditorJointLimitBase
     {

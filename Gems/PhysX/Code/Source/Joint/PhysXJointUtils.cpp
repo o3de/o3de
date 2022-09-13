@@ -181,6 +181,34 @@ namespace PhysX::Utils
         nativeJoint->setRevoluteJointFlag(physx::PxRevoluteJointFlag::eLIMIT_ENABLED, true);
     }
 
+    void InitializePrismaticLimitProperties(const JointLimitProperties& properties, physx::PxPrismaticJoint* nativeJoint)
+    {
+        if (!nativeJoint)
+        {
+            return;
+        }
+
+        if (!properties.m_isLimited)
+        {
+            nativeJoint->setPrismaticJointFlag(physx::PxPrismaticJointFlag::eLIMIT_ENABLED, false);
+            return;
+        }
+
+        const float limitLower = AZ::GetMin(properties.m_limitFirst, properties.m_limitSecond);
+        const float limitUpper = AZ::GetMax(properties.m_limitFirst, properties.m_limitSecond);
+
+        physx::PxJointLinearLimitPair limitPair(physx::PxTolerancesScale(), limitLower, limitUpper, properties.m_tolerance);
+
+        if (properties.m_isSoftLimit)
+        {
+            limitPair.stiffness = properties.m_stiffness;
+            limitPair.damping = properties.m_damping;
+        }
+
+        nativeJoint->setLimit(limitPair);
+        nativeJoint->setPrismaticJointFlag(physx::PxPrismaticJointFlag::eLIMIT_ENABLED, true);
+    }
+
     namespace PxJointFactories
     {
         PxJointUniquePtr CreatePxD6Joint(
@@ -347,6 +375,41 @@ namespace PhysX::Utils
             }
 
             InitializeRevoluteLimitProperties(configuration.m_limitProperties, joint);
+            InitializeGenericProperties(
+                configuration.m_genericProperties,
+                static_cast<physx::PxJoint*>(joint));
+
+            return Utils::PxJointUniquePtr(joint, ReleasePxJoint);
+        }
+
+        PxJointUniquePtr CreatePxPrismaticJoint(
+            const PhysX::PrismaticJointConfiguration& configuration,
+            AzPhysics::SceneHandle sceneHandle,
+            AzPhysics::SimulatedBodyHandle parentBodyHandle,
+            AzPhysics::SimulatedBodyHandle childBodyHandle)
+        {
+            PxJointActorData actorData = GetJointPxActors(sceneHandle, parentBodyHandle, childBodyHandle);
+
+            // only check the child actor, as a null parent actor means this joint is a global constraint.
+            if (!actorData.childActor)
+            {
+                return nullptr;
+            }
+
+            physx::PxPrismaticJoint* joint;
+            const AZ::Transform parentLocalTM = AZ::Transform::CreateFromQuaternionAndTranslation(
+                configuration.m_parentLocalRotation, configuration.m_parentLocalPosition);
+            const AZ::Transform childLocalTM = AZ::Transform::CreateFromQuaternionAndTranslation(
+                configuration.m_childLocalRotation, configuration.m_childLocalPosition);
+
+            {
+                PHYSX_SCENE_READ_LOCK(actorData.childActor->getScene());
+                joint = physx::PxPrismaticJointCreate(PxGetPhysics(),
+                    actorData.parentActor, PxMathConvert(parentLocalTM),
+                    actorData.childActor, PxMathConvert(childLocalTM));
+            }
+
+            InitializePrismaticLimitProperties(configuration.m_limitProperties, joint);
             InitializeGenericProperties(
                 configuration.m_genericProperties,
                 static_cast<physx::PxJoint*>(joint));

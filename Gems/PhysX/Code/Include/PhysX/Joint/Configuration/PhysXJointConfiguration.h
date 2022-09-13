@@ -112,4 +112,14 @@ namespace PhysX
         JointGenericProperties m_genericProperties;
         JointLimitProperties m_limitProperties;
     };
+
+    struct PrismaticJointConfiguration : public AzPhysics::JointConfiguration
+    {
+        AZ_CLASS_ALLOCATOR(PrismaticJointConfiguration, AZ::SystemAllocator, 0);
+        AZ_RTTI(PrismaticJointConfiguration, "{66CA235F-FBDF-4E91-B7A0-39132BD4399D}", AzPhysics::JointConfiguration);
+        static void Reflect(AZ::ReflectContext* context);
+
+        JointGenericProperties m_genericProperties;
+        JointLimitProperties m_limitProperties;
+    };
 } // namespace PhysX
