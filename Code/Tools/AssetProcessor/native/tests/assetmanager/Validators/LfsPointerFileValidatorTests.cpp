@@ -5,7 +5,7 @@
 * SPDX-License-Identifier: Apache-2.0 OR MIT
 *
 */
-#include <native/tests/assetmanager/LfsPointerFileValidatorTests.h>
+#include <native/tests/assetmanager/Validators/LfsPointerFileValidatorTests.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Utils/Utils.h>
 
@@ -15,10 +15,6 @@ namespace UnitTests
     {
         AssetManagerTestingBase::SetUp();
 
-        // Set engine root to the temporary test folder to avoid reading the actual .gitattributes file under the engine directory.
-        m_settingsRegistry->Get(m_enginePath, AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
-        m_settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder, m_tempDir.GetDirectory());
-
         m_tempFolder = m_tempDir.GetDirectory();
         CreateTestFile((m_tempFolder / ".gitattributes").Native(),
             "#\n"
@@ -27,14 +23,12 @@ namespace UnitTests
             "*.test filter=lfs diff=lfs merge=lfs -text\n"
         );
 
-        m_validator = AssetProcessor::LfsPointerFileValidator();
+        m_validator = AssetProcessor::LfsPointerFileValidator({ m_tempDir.GetDirectory() });
     }
 
     void LfsPointerFileValidatorTests::TearDown()
     {
         RemoveTestFile((m_tempFolder / ".gitattributes").Native());
-        m_settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder, m_enginePath);
-
         AssetManagerTestingBase::TearDown();
     }
 
@@ -76,7 +70,7 @@ namespace UnitTests
             "oid sha256:ee4799379bfcfa99e95afd6494da51fbeda95f21ea71d267ae7102f048edec85\n"
             "size 63872\n");
 
-        ASSERT_TRUE(AssetProcessor::LfsPointerFileValidator().IsLfsPointerFile(testFilePath));
+        ASSERT_TRUE(m_validator.IsLfsPointerFile(testFilePath));
 
         RemoveTestFile(testFilePath);
     }
@@ -89,7 +83,7 @@ namespace UnitTests
             "oid sha256:ee4799379bfcfa99e95afd6494da51fbeda95f21ea71d267ae7102f048edec85\n"
             "size 63872\n");
 
-        ASSERT_FALSE(AssetProcessor::LfsPointerFileValidator().IsLfsPointerFile(testFilePath));
+        ASSERT_FALSE(m_validator.IsLfsPointerFile(testFilePath));
 
         RemoveTestFile(testFilePath);
     }
@@ -102,7 +96,7 @@ namespace UnitTests
             "size 63872\n"
             "version https://git-lfs.github.com/spec/v1\n");
 
-        ASSERT_FALSE(AssetProcessor::LfsPointerFileValidator().IsLfsPointerFile(testFilePath));
+        ASSERT_FALSE(m_validator.IsLfsPointerFile(testFilePath));
 
         RemoveTestFile(testFilePath);
     }
@@ -115,7 +109,7 @@ namespace UnitTests
             "oid+ sha256:ee4799379bfcfa99e95afd6494da51fbeda95f21ea71d267ae7102f048edec85\n"
             "size 63872\n");
 
-        ASSERT_FALSE(AssetProcessor::LfsPointerFileValidator().IsLfsPointerFile(testFilePath));
+        ASSERT_FALSE(m_validator.IsLfsPointerFile(testFilePath));
 
         RemoveTestFile(testFilePath);
     }
@@ -128,7 +122,7 @@ namespace UnitTests
             "size 63872\n"
             "oid sha256:ee4799379bfcfa99e95afd6494da51fbeda95f21ea71d267ae7102f048edec85\n");
 
-        ASSERT_FALSE(AssetProcessor::LfsPointerFileValidator().IsLfsPointerFile(testFilePath));
+        ASSERT_FALSE(m_validator.IsLfsPointerFile(testFilePath));
 
         RemoveTestFile(testFilePath);
     }
@@ -141,7 +135,7 @@ namespace UnitTests
             "bla 63872\n"
             "oid sha256:ee4799379bfcfa99e95afd6494da51fbeda95f21ea71d267ae7102f048edec85\n");
 
-        ASSERT_FALSE(AssetProcessor::LfsPointerFileValidator().IsLfsPointerFile(testFilePath));
+        ASSERT_FALSE(m_validator.IsLfsPointerFile(testFilePath));
 
         RemoveTestFile(testFilePath);
     }

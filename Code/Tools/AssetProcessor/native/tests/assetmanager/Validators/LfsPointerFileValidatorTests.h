@@ -9,7 +9,7 @@
 #pragma once
 
 #include <native/tests/assetmanager/AssetManagerTestingBase.h>
-#include <native/AssetManager/LfsPointerFileValidator.h>
+#include <native/AssetManager/Validators/LfsPointerFileValidator.h>
 
 namespace UnitTests
 {
@@ -22,7 +22,6 @@ namespace UnitTests
         bool CreateTestFile(const AZStd::string& filePath, const AZStd::string& content);
         bool RemoveTestFile(const AZStd::string& filePath);
 
-        AZ::IO::FixedMaxPathString m_enginePath;
         AZ::IO::Path m_tempFolder;
         AssetProcessor::LfsPointerFileValidator m_validator;
     };

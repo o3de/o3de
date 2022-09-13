@@ -6,7 +6,7 @@
 *
 */
 
-#include <native/AssetManager/LfsPointerFileValidator.h>
+#include <native/AssetManager/Validators/LfsPointerFileValidator.h>
 #include <native/assetprocessor.h>
 
 #include <AzFramework/FileFunc/FileFunc.h>
@@ -14,27 +14,11 @@
 
 namespace AssetProcessor
 {
-    LfsPointerFileValidator::LfsPointerFileValidator()
+    LfsPointerFileValidator::LfsPointerFileValidator(const AZStd::vector<AZStd::string>& scanDirectories)
     {
-        CollectLfsPointerFilePathPatterns();
-    }
-
-    void LfsPointerFileValidator::CollectLfsPointerFilePathPatterns()
-    {
-        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        for (const AZStd::string& directory : scanDirectories)
         {
-            // Parse the .gitattributes file in the engine directory to retrieve LFS pointer file path patterns
-            ParseGitAttributesFile(AZ::Utils::GetEnginePath(settingsRegistry).c_str());
-            // Parse the .gitattributes file in the project directory to retrieve LFS pointer file path patterns
-            ParseGitAttributesFile(AZ::Utils::GetProjectPath(settingsRegistry).c_str());
-
-            // Parse the .gitattributes file in the active gem directories to retrieve LFS pointer file path patterns
-            auto ParseGitAttributesFileForGems = [this](AZStd::string_view, AZStd::string_view gemPath)
-            {
-                ParseGitAttributesFile(gemPath.data());
-            };
-
-            AZ::SettingsRegistryMergeUtils::VisitActiveGems(*settingsRegistry, ParseGitAttributesFileForGems);
+            ParseGitAttributesFile(directory.c_str());
         }
     }
 
@@ -42,8 +26,12 @@ namespace AssetProcessor
     {
         constexpr const char* gitAttributesFileName = ".gitattributes";
         AZStd::string gitAttributesFilePath = AZStd::string::format("%s/%s", directory.c_str(), gitAttributesFileName);
-        AZ_Error(AssetProcessor::DebugChannel, AzFramework::StringFunc::Path::Normalize(gitAttributesFilePath),
-            "Failed to normalize %s file path %s.",  gitAttributesFileName, gitAttributesFilePath.c_str());
+        if (!AzFramework::StringFunc::Path::Normalize(gitAttributesFilePath))
+        {
+            AZ_Error(AssetProcessor::DebugChannel, false,
+                "Failed to normalize %s file path %s.", gitAttributesFileName, gitAttributesFilePath.c_str());
+        }
+
         if (!AZ::IO::FileIOBase::GetInstance()->Exists(gitAttributesFilePath.c_str()))
         {
             return;

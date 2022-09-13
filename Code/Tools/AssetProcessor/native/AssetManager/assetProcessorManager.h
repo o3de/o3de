@@ -460,6 +460,9 @@ namespace AssetProcessor
 
         void UpdateForCacheServer(JobDetails& jobDetails);
 
+        //! Check whether the specified file is an LFS pointer file.
+        bool IsLfsPointerFile(const AZStd::string& filePath);
+
         AssetProcessor::PlatformConfiguration* m_platformConfig = nullptr;
 
         bool m_queuedExamination = false;
