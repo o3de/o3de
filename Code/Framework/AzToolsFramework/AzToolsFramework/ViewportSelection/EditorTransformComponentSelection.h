@@ -16,6 +16,7 @@
 #include <AzFramework/Components/CameraBus.h>
 #include <AzFramework/Viewport/ClickDetector.h>
 #include <AzFramework/Viewport/CursorState.h>
+#include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/API/EntityCompositionNotificationBus.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
@@ -141,6 +142,7 @@ namespace AzToolsFramework
     //! Provide a suite of functionality for manipulating entities, primarily through their TransformComponent.
     class EditorTransformComponentSelection
         : public ViewportInteraction::ViewportSelectionRequests
+        , public ActionManagerRegistrationNotificationBus::Handler
         , public EditorContextMenuBus::Handler
         , private EditorEventsBus::Handler
         , private EditorTransformComponentSelectionRequestBus::Handler
@@ -220,6 +222,11 @@ namespace AzToolsFramework
         void RegisterActions();
         void UnregisterActions();
 
+        // ActionManagerRegistrationNotificationBus overrides ...
+        void OnActionUpdaterRegistrationHook() override;
+        void OnActionRegistrationHook() override;
+        void OnMenuBindingHook() override;
+
         void BeginRecordManipulatorCommand();
         void EndRecordManipulatorCommand();
 
@@ -266,7 +273,6 @@ namespace AzToolsFramework
 
         // EditorEventsBus overrides ...
         void OnEscape() override;
-        void NotifyMainWindowInitialized(QMainWindow* mainWindow) override;
 
         // ToolsApplicationNotificationBus overrides ...
         void BeforeEntitySelectionChanged() override;

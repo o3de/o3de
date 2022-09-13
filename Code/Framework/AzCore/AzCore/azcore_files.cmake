@@ -359,6 +359,7 @@ set(FILES
     Math/TransformSerializer.h
     Math/Uuid.cpp
     Math/Uuid.h
+    Math/Uuid.inl
     Math/UuidSerializer.h
     Math/UuidSerializer.cpp
     Math/Vector2.cpp
