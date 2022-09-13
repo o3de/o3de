@@ -1194,7 +1194,7 @@ namespace AzToolsFramework
                     else if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Remove)
                     {
                         delete rowWidget;
-                        rowWidget = nullptr;
+                        m_domOrderedRows.erase(m_domOrderedRows.begin() + rowIndex);
                     }
                 }
             }
