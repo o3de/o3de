@@ -390,6 +390,12 @@ namespace Camera
         UpdateCamera();
     }
 
+    void CameraComponentController::SetXRViewQuaternion([[maybe_unused]] const AZ::Quaternion& viewQuat, [[maybe_unused]] uint32_t xrViewIndex)
+    {
+        AZ_Assert(false, "Not implemented");
+        // todo:: Needs implementation
+    }
+
     void CameraComponentController::MakeActiveView()
     {
         if (IsActiveView())
@@ -506,6 +512,13 @@ namespace Camera
     AZ::RPI::ViewPtr CameraComponentController::GetView() const
     {
         return m_atomCamera;
+    }
+
+    AZ::RPI::ViewPtr CameraComponentController::GetStereoscopicView([[maybe_unused]] AZ::RPI::ViewType viewType) const
+    {
+        //todo:: Needs implementation
+        AZ_Assert(false, "Not implemented");
+        return nullptr;
     }
 
     void CameraComponentController::UpdateCamera()

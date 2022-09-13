@@ -122,6 +122,7 @@ namespace Multiplayer
         void AddConnectionAcquiredHandler(ConnectionAcquiredEvent::Handler& handler) override;
         void AddSessionInitHandler(SessionInitEvent::Handler& handler) override;
         void AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler) override;
+        void AddLevelLoadBlockedHandler(LevelLoadBlockedEvent::Handler& handler) override;
         void AddServerAcceptanceReceivedHandler(ServerAcceptanceReceivedEvent::Handler& handler) override;
         void SendNotifyClientMigrationEvent(AzNetworking::ConnectionId connectionId, const HostId& hostId, uint64_t userIdentifier, ClientInputId lastClientInputId, NetEntityId controlledEntityId) override;
         void SendNotifyEntityMigrationEvent(const ConstNetworkEntityHandle& entityHandle, const HostId& remoteHostId) override;
@@ -181,6 +182,7 @@ namespace Multiplayer
         ClientMigrationEndEvent m_clientMigrationEndEvent;
         NotifyClientMigrationEvent m_notifyClientMigrationEvent;
         NotifyEntityMigrationEvent m_notifyEntityMigrationEvent;
+        LevelLoadBlockedEvent m_levelLoadBlockedEvent;
         AZ::Event<NetEntityId>::Handler m_autonomousEntityReplicatorCreatedHandler;
 
         AZStd::queue<AZStd::string> m_pendingConnectionTickets;

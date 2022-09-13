@@ -56,7 +56,7 @@ namespace AZ
             if (iter == m_materialfunctorMap.end())
             {
                 AZ_Warning("Material Functor", false, "Material functor name \"%s\" was NOT registered!", functorName.c_str());
-                return 0;
+                return {};
             }
             return iter->second;
         }

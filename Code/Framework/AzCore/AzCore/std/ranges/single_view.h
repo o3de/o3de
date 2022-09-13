@@ -35,7 +35,7 @@ namespace AZStd::ranges
 
     template<class T>
     class single_view
-        : public enable_if_t<copy_constructible<T> && is_object_v<T>, view_interface<single_view<T>>>
+        : public enable_if_t<move_constructible<T> && is_object_v<T>, view_interface<single_view<T>>>
     {
     public:
 
@@ -81,7 +81,7 @@ namespace AZStd::ranges
             return m_value.operator->();
         }
     private:
-        Internal::copyable_box<T> m_value;
+        Internal::movable_box<T> m_value;
     };
 
     template<class T>

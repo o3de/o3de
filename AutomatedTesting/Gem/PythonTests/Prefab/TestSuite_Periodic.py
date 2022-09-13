@@ -23,3 +23,9 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
 
     class test_ReparentEntity_UnderEntityHierarchies(EditorSharedTest):
         from .tests.reparent_prefab import ReparentEntity_UnderEntityHierarchies as test_module
+
+    class test_CreatePrefab_ComponentConfigurationRetained(EditorSharedTest):
+        from .tests.create_prefab import CreatePrefab_ComponentConfigurationRetained as test_module
+
+    class test_DeleteEntity_UnderNestedEntityHierarchy(EditorSharedTest):
+        from .tests.delete_entity import DeleteEntity_UnderNestedEntityHierarchy as test_module

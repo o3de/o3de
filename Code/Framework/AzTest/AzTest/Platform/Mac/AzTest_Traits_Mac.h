@@ -19,9 +19,3 @@
 #define AZ_TRAIT_DISABLE_FAILED_DLL_TESTS true
 #define AZ_TRAIT_DISABLE_FAILED_MODULE_TESTS true
 #define AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_TESTS true
-
-// Golden perline gradiant values for random seed 7878 for this platform
-#define AZ_TRAIT_UNIT_TEST_PERLINE_GRADIANT_GOLDEN_VALUES_7878  0.5000f, 0.5276f, 0.5341f, 0.4801f, \
-                                                                0.5220f, 0.5162f, 0.4828f, 0.5431f, \
-                                                                0.4799f, 0.4486f, 0.5054f, 0.4129f, \
-                                                                0.6023f, 0.5029f, 0.4529f, 0.4428f,

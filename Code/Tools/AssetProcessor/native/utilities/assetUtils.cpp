@@ -1061,7 +1061,7 @@ namespace AssetUtilities
         }
 
         AZ::Sha1 sha;
-        sha.ProcessBytes(fingerprintString.data(), fingerprintString.size());
+        sha.ProcessBytes(AZStd::as_bytes(AZStd::span(fingerprintString)));
         AZ::u32 digest[5];
         sha.GetDigest(digest);
 

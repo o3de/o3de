@@ -53,7 +53,7 @@ namespace Vegetation
         void AddExclusiveTag(AZStd::string tag);
     };
 
-    static const AZ::Uuid SurfaceMaskFilterComponentTypeId = "{62AAAD68-DF4F-4551-8F78-2C72CEF79ED6}";
+    inline constexpr AZ::TypeId SurfaceMaskFilterComponentTypeId{ "{62AAAD68-DF4F-4551-8F78-2C72CEF79ED6}" };
 
     /**
     * Accepts the placement of vegetation based on surface tags and/or depth between two surface tags

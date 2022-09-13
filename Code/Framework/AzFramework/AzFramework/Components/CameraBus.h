@@ -111,6 +111,11 @@ namespace Camera
         //! The height is calculated automatically based on the aspect ratio.
         virtual void SetOrthographicHalfWidth(float halfWidth) = 0;
 
+        //! Sets the Quaternion related to a stereoscopic view for a camera with the provided view index related to your eye.
+        //! @params viewQuat Used to cache view orientation data from the XR device
+        //! @params xrViewIndex View index related to the pipeline associated with a specific eye
+        virtual void SetXRViewQuaternion(const AZ::Quaternion& viewQuat, uint32_t xrViewIndex) = 0;
+
         //! Makes the camera the active view
         virtual void MakeActiveView() = 0;
 
@@ -255,7 +260,7 @@ namespace Camera
     };
     using CameraNotificationBus = AZ::EBus<CameraNotifications>;
 
-#define CameraComponentTypeId "{E2DC7EB8-02D1-4E6D-BFE4-CE652FCB7C7F}"
-#define EditorCameraComponentTypeId "{CA11DA46-29FF-4083-B5F6-E02C3A8C3A3D}"
+#define CameraComponentTypeId AZ::TypeId("{E2DC7EB8-02D1-4E6D-BFE4-CE652FCB7C7F}")
+#define EditorCameraComponentTypeId AZ::TypeId("{CA11DA46-29FF-4083-B5F6-E02C3A8C3A3D}")
 
 } // namespace Camera
