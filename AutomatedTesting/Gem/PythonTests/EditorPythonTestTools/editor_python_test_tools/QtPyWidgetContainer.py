@@ -8,7 +8,7 @@ Object to house all the Qt Objects used when testing and manipulating the O3DE U
 """
 import pyside_utils
 import editor_python_test_tools.QtPyScriptCanvasEditor as wrapper_sc_editor
-import editor_python_test_tools.QtPyScriptCanvasVariableManager as wapper_variable_manager
+import editor_python_test_tools.QtPyScriptCanvasVariableManager as wrapper_variable_manager
 
 
 class QtPyWidgetContainer:
@@ -36,7 +36,7 @@ class QtPyWidgetContainer:
         """
         function for instantiating the variable manager tool's QtPy object.
         """
-        self.variable_manager = wapper_variable_manager.QtPyScriptCanvasVariableManager(self.wrapper_sc_editor.sc_editor)
+        self.variable_manager = wrapper_variable_manager.QtPyScriptCanvasVariableManager(self.wrapper_sc_editor.sc_editor)
 
     def get_SC_editor_wrapper(self):
         """

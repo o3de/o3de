@@ -9,9 +9,10 @@ Object to house all the Qt Objects used when testing and manipulating the O3DE U
 from editor_python_test_tools.utils import TestHelper as helper
 from PySide2 import QtWidgets, QtCore
 import pyside_utils
+from types import SimpleNamespace
 from consts.scripting import (VARIABLE_MANAGER_QT, VARIABLE_TYPES, VARIABLE_PALETTE_QT, ADD_BUTTON_QT, WAIT_TIME_3,
                               GRAPH_VARIABLES_QT)
-from consts.general import (WAIT_TIME_3)
+from consts.general import (WAIT_TIME_3, VARIABLE_TYPES_DICT)
 from editor_python_test_tools.utils import Report
 
 
@@ -35,11 +36,14 @@ class QtPyScriptCanvasVariableManager:
 
         add_new_variable_button = self.variable_manager.findChild(QtWidgets.QPushButton, ADD_BUTTON_QT)
         add_new_variable_button.click()  # Click on Create Variable button
+
         helper.wait_for_condition((
             lambda: self.variable_manager.findChild(QtWidgets.QTableView, VARIABLE_PALETTE_QT) is not None), WAIT_TIME_3)
+
         # Select variable type
         table_view = self.variable_manager.findChild(QtWidgets.QTableView, VARIABLE_PALETTE_QT)
         model_index = pyside_utils.find_child_by_pattern(table_view, new_variable_type)
+
         # Click on it to create variable
         pyside_utils.item_view_index_mouse_click(table_view, model_index)
 
@@ -57,6 +61,16 @@ class QtPyScriptCanvasVariableManager:
 
         if not valid_type:
             Report.critical_result(["Invalid variable type provided", ""], False)
+
+    def get_basic_variable_types(self):
+        """
+        function for getting easy to use container of variable types off the general constants file
+
+        returns: simple namespace container that allows you to access the most common variable types (strings) using dot notation
+        """
+        simple_namespace = SimpleNamespace(**VARIABLE_TYPES_DICT)
+
+        return simple_namespace
 
     def get_variable_count(self):
         """

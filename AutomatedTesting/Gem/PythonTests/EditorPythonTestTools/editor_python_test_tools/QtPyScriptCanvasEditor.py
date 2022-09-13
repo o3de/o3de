@@ -45,3 +45,4 @@ class QtPyScriptCanvasEditor:
         undo_redo_action = self.sc_editor.findChild(QtWidgets.QAction, "action_Redo")
         undo_redo_action.trigger()
 
+

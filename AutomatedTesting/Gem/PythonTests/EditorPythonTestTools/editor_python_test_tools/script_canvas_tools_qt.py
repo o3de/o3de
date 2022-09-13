@@ -13,13 +13,12 @@ import pyside_utils
 import editor_python_test_tools.hydra_editor_utils as hydra
 from editor_python_test_tools.editor_entity_utils import EditorEntity
 import editor_python_test_tools.QtPyWidgetContainer as qtContainer
-from types import SimpleNamespace
 import azlmbr.editor as editor
 import azlmbr.math as math
 import azlmbr.bus as bus
 import azlmbr.legacy.general as general
 import azlmbr.scriptcanvas as scriptcanvas
-from consts.general import (SAVE_STRING, NAME_STRING,  WAIT_TIME_3,VARIABLE_TYPES_DICT, WAIT_FRAMES, ENTITY_STATES)
+from consts.general import (SAVE_STRING, NAME_STRING,  WAIT_TIME_3, WAIT_FRAMES, ENTITY_STATES)
 from consts.scripting import (SCRIPT_CANVAS_UI, ASSET_EDITOR_UI, NODE_PALETTE_UI, NODE_PALETTE_QT, TREE_VIEW_QT,
                               SEARCH_FRAME_QT, SEARCH_FILTER_QT,  NODE_INSPECTOR_TITLE_KEY, SCRIPT_EVENT_UI,
                               PARAMETERS_QT, NODE_INSPECTOR_QT, NODE_INSPECTOR_UI, SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
@@ -71,18 +70,6 @@ def initialize_qt_script_canvas_objects():
     EDITOR_QT_CONTAINER.initialize_SC_objects()
     EDITOR_QT_CONTAINER.initialize_variable_manager()
     return EDITOR_QT_CONTAINER
-
-
-def get_variable_types():
-    """
-    function for getting easy to use container of variable types off the constants file
-
-    returns: simple namespace container that allows you to access variable types (strings) using dot notation
-    """
-    simple_namespace = SimpleNamespace(**VARIABLE_TYPES_DICT)
-
-    return simple_namespace
-
 
 def initialize_asset_editor_object(self):
     """
@@ -175,26 +162,6 @@ def open_asset_editor():
     return result
 
 
-def script_canvas_undo_action():
-    """
-    function for performing an undo action in the script canvas editor
-
-    returns None
-    """
-
-    wrapper_sc_editor = EDITOR_QT_CONTAINER.get_SC_editor_wrapper()
-    wrapper_sc_editor.trigger_undo_action()
-
-
-def script_canvas_redo_action():
-    """
-    function for performing a redo action in the script canvas editor
-
-    returns None
-    """
-    wrapper_sc_editor = EDITOR_QT_CONTAINER.get_SC_editor_wrapper()
-    wrapper_sc_editor.trigger_redo_action()
-
 def canvas_node_palette_search(self, node_name, number_of_retries):
     """
     function for searching the script canvas node palette for user defined nodes. function takes a number of retries as
@@ -268,19 +235,6 @@ def get_node_inspector_node_titles(self, sc_graph_node_inspector, sc_graph):
     return titles
 
 
-def get_main_sc_window_qt_object():
-    """
-    function for getting the sc main window qt object.
-
-    params: none
-
-    returns: a qt widget main window object
-    """
-    editor_window = pyside_utils.get_editor_main_window()
-    sc_editor = editor_window.findChild(QtWidgets.QDockWidget, SCRIPT_CANVAS_UI)
-    return sc_editor.findChild(QtWidgets.QMainWindow)
-
-
 def create_new_sc_graph():
     """
     function for opening a new script canvas graph file. uses the sc editor window to trigger a new file action
@@ -295,18 +249,6 @@ def create_new_sc_graph():
         sc_editor_main_window, {"objectName": "action_New_Script", "type": QtWidgets.QAction}
     )
     create_new_graph_action.trigger()
-
-
-def create_new_SC_variable(new_variable_type):
-    """
-    function for creating a new SC variable through variable manager qt object
-
-    param variable_type: The variable data type to create as a string. i.e "Boolean"
-    returns: none
-    """
-
-    variable_manager = EDITOR_QT_CONTAINER.get_variable_manager()
-    variable_manager.create_new_variable(new_variable_type)
 
 
 def verify_SC_variable_count(expected):
@@ -426,30 +368,6 @@ def get_script_event_parameter_type_combobox(self):
 
     return type_combo_boxes
 
-
-def located_expected_tracer_lines(self, section_tracer, lines):
-    """
-    function for parsing game mode's console output for expected test lines. requires section_tracer. duplicates lines 
-    and error lines are not handled by this function
-    
-    param self: The script calling this function
-    param section_tracer: python editor tracer object
-    param lines: list of expected lines
-    
-    
-    returns true if all the expected lines were detected in the parsed output
-    """
-    found_lines = [printInfo.message.strip() for printInfo in section_tracer.prints]
-
-    expected_lines = len(lines)
-    matching_lines = 0
-
-    for line in lines:
-        for found_line in found_lines:
-            if line == found_line:
-                matching_lines += 1
-
-    return matching_lines >= expected_lines
 
 def create_entity_with_sc_component_asset(entity_name, source_file, position = math.Vector3(512.0, 512.0, 32.0)):
     """

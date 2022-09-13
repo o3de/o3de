@@ -61,7 +61,6 @@ def EditMenu_Default_UndoRedo():
     from consts.general import (WAIT_TIME_3)
 
     general.idle_enable(True)
-    variable_types = SC_tools_qt.get_variable_types()
 
     # 1) Open Script Canvas window
     SC_tools_qt.open_script_canvas()
@@ -70,19 +69,22 @@ def EditMenu_Default_UndoRedo():
     SC_tools_qt.create_new_sc_graph()
 
     # 3) Create and verify the new variable exists in variable manager
-    SC_tools_qt.create_new_SC_variable(variable_types.Boolean)
+    qtpy_variable_manager = SC_tools_qt.EDITOR_QT_CONTAINER.get_variable_manager()
+    variable_types = qtpy_variable_manager.get_basic_variable_types()
+    qtpy_variable_manager.create_new_variable(variable_types.Boolean)
     row_count = SC_tools_qt.verify_SC_variable_count(VARIABLE_COUNT_BEFORE)
     Report.result(Tests.variable_created, helper.wait_for_condition(
         lambda: row_count, WAIT_TIME_3))
 
     # 4) Trigger Undo action and verify if variable is removed in Variable Manager
-    SC_tools_qt.script_canvas_undo_action()
+    sc_editor_wrapper = SC_tools_qt.EDITOR_QT_CONTAINER.get_SC_editor_wrapper()
+    sc_editor_wrapper.trigger_undo_action()
     row_count = SC_tools_qt.verify_SC_variable_count(VARIABLE_COUNT_AFTER)
     Report.result(Tests.undo_worked, helper.wait_for_condition(
         lambda: row_count, WAIT_TIME_3))
 
     # 5) Trigger Redo action and verify if variable is re-added in Variable Manager
-    SC_tools_qt.script_canvas_redo_action()
+    sc_editor_wrapper.trigger_redo_action()
     row_count = SC_tools_qt.verify_SC_variable_count(VARIABLE_COUNT_BEFORE)
     Report.result(Tests.redo_worked, helper.wait_for_condition(
         lambda: row_count, WAIT_TIME_3))
