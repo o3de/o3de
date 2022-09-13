@@ -19,14 +19,12 @@ import azlmbr.math as math
 import azlmbr.bus as bus
 import azlmbr.legacy.general as general
 import azlmbr.scriptcanvas as scriptcanvas
-from scripting_utils.scripting_constants import (SCRIPT_CANVAS_UI, ASSET_EDITOR_UI, NODE_PALETTE_UI, NODE_PALETTE_QT,
-                                                 TREE_VIEW_QT, SEARCH_FRAME_QT, SEARCH_FILTER_QT, SAVE_STRING, NAME_STRING,
-                                                 SAVE_ASSET_AS, WAIT_TIME_3, NODE_INSPECTOR_TITLE_KEY, WAIT_FRAMES,
-                                                 VARIABLE_MANAGER_QT, NODE_INSPECTOR_QT, NODE_INSPECTOR_UI, SCRIPT_EVENT_UI,
-                                                 VARIABLE_PALETTE_QT, ADD_BUTTON_QT, VARIABLE_TYPES, EVENTS_QT, DEFAULT_SCRIPT_EVENT,
-                                                 SCRIPT_EVENT_FILE_PATH, PARAMETERS_QT, VARIABLE_MANAGER_QT, NODE_INSPECTOR_QT,
-                                                 NODE_INSPECTOR_UI, VARIABLE_PALETTE_QT, ADD_BUTTON_QT, VARIABLE_TYPES_DICT,
-                                                 SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, ENTITY_STATES, GRAPH_VARIABLES_QT)
+from consts.scripting_constants import (SCRIPT_CANVAS_UI, ASSET_EDITOR_UI, NODE_PALETTE_UI, NODE_PALETTE_QT,
+                                        TREE_VIEW_QT, SEARCH_FRAME_QT, SEARCH_FILTER_QT, SAVE_STRING, NAME_STRING,
+                                        SAVE_ASSET_AS, WAIT_TIME_3, NODE_INSPECTOR_TITLE_KEY, WAIT_FRAMES,
+                                        SCRIPT_EVENT_UI, EVENTS_QT, DEFAULT_SCRIPT_EVENT, PARAMETERS_QT,
+                                        NODE_INSPECTOR_QT, NODE_INSPECTOR_UI, VARIABLE_TYPES_DICT,
+                                        SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, ENTITY_STATES)
 
 """
 Editor Qt Object container for easy access
@@ -294,8 +292,9 @@ def create_new_sc_graph():
 
     returns: none
     """
+    sc_editor_main_window = EDITOR_QT_CONTAINER.get_SC_editor_wrapper().get_sc_main_pane()
     create_new_graph_action = pyside_utils.find_child_by_pattern(
-        EDITOR_QT_CONTAINER.sc_editor_main_window, {"objectName": "action_New_Script", "type": QtWidgets.QAction}
+        sc_editor_main_window, {"objectName": "action_New_Script", "type": QtWidgets.QAction}
     )
     create_new_graph_action.trigger()
 
@@ -309,7 +308,7 @@ def create_new_SC_variable(new_variable_type):
     """
 
     variable_manager = EDITOR_QT_CONTAINER.get_variable_manager()
-    variable_manager.make_new_variable(new_variable_type)
+    variable_manager.create_new_variable(new_variable_type)
 
 
 def verify_SC_variable_count(expected):

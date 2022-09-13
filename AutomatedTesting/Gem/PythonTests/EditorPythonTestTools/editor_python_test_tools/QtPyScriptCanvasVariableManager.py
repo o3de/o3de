@@ -9,8 +9,8 @@ Object to house all the Qt Objects used when testing and manipulating the O3DE U
 from editor_python_test_tools.utils import TestHelper as helper
 from PySide2 import QtWidgets, QtCore
 import pyside_utils
-from scripting_utils.scripting_constants import (VARIABLE_MANAGER_QT, VARIABLE_TYPES, VARIABLE_PALETTE_QT,
-                                                 ADD_BUTTON_QT, WAIT_TIME_3, GRAPH_VARIABLES_QT)
+from consts.scripting_constants import (VARIABLE_MANAGER_QT, VARIABLE_TYPES, VARIABLE_PALETTE_QT, ADD_BUTTON_QT,
+                                        WAIT_TIME_3, GRAPH_VARIABLES_QT)
 from editor_python_test_tools.utils import Report
 
 
@@ -22,18 +22,18 @@ class QtPyScriptCanvasVariableManager:
     def __init__(self, sc_editor):
         self.variable_manager = sc_editor.findChild(QtWidgets.QDockWidget, VARIABLE_MANAGER_QT)
 
-    def make_new_variable(self, new_variable_type):
+    def create_new_variable(self, new_variable_type):
+        """
+        function for adding a new variable to the variable manager's list
 
+        param new_variable_type: the type of variable you want to create provided as a string. Is case-sensitive!
+
+        returns: None
+        """
         if type(new_variable_type) is not str:
             Report.critical_result(["Invalid variable type provided", ""], False)
 
-        valid_type = False
-        for this_type in VARIABLE_TYPES:
-            if new_variable_type == this_type:
-                valid_type = True
-
-        if not valid_type:
-            Report.critical_result(["Invalid variable type provided", ""], False)
+        self.validate_new_variable(new_variable_type)
 
         add_new_variable_button = self.variable_manager.findChild(QtWidgets.QPushButton, ADD_BUTTON_QT)
         add_new_variable_button.click()  # Click on Create Variable button
@@ -45,8 +45,24 @@ class QtPyScriptCanvasVariableManager:
         # Click on it to create variable
         pyside_utils.item_view_index_mouse_click(table_view, model_index)
 
-    def get_variable_count(self):
+    def validate_new_variable(self, new_variable_type):
+        """
+        function for checking the provided variable type for validity
+        """
+        valid_type = False
+        for this_type in VARIABLE_TYPES:
+            if new_variable_type == this_type:
+                valid_type = True
 
+        if not valid_type:
+            Report.critical_result(["Invalid variable type provided", ""], False)
+
+    def get_variable_count(self):
+        """
+        function for retrieving the number of variables in the variable manager's list
+
+        returns: the number of variables as an integer
+        """
         graph_variables = self.variable_manager.findChild(QtWidgets.QTableView, GRAPH_VARIABLES_QT)
         row_count = graph_variables.model().rowCount(QtCore.QModelIndex())
         return row_count

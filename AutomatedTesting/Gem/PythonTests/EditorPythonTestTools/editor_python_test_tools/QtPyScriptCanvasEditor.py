@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 Object to house all the Qt Objects used when testing and manipulating the O3DE UI
 """
 from PySide2 import QtWidgets
-from scripting_utils.scripting_constants import (SCRIPT_CANVAS_UI)
+from consts.scripting_constants import (SCRIPT_CANVAS_UI)
 
 
 class QtPyScriptCanvasEditor:
@@ -24,13 +24,24 @@ class QtPyScriptCanvasEditor:
         self.sc_editor_main_window = self.sc_editor.findChild(QtWidgets.QMainWindow)
 
     def get_sc_main_pane(self):
+        """
+        function for retrieving the sc_editor's main pane QtPy object
+        """
         return self.sc_editor_main_window
 
     def trigger_undo_action(self):
+        """
+        function for commanding the sc editor to perform an undo action
+
+        returns None
+        """
         undo_redo_action = self.sc_editor.findChild(QtWidgets.QAction, "action_Undo")
         undo_redo_action.trigger()
 
     def trigger_redo_action(self):
+        """
+        function for commanding the sc editor ot perform a redo action
+        """
         undo_redo_action = self.sc_editor.findChild(QtWidgets.QAction, "action_Redo")
         undo_redo_action.trigger()
 

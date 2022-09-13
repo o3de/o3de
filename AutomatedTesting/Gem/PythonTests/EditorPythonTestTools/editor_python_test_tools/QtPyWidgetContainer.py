@@ -20,23 +20,33 @@ class QtPyWidgetContainer:
     def __init__(self):
         self.editor_main_window = pyside_utils.get_editor_main_window()
         self.wrapper_sc_editor = None
-        self.sc_editor_main_window = None
         self.variable_manager = None
 
     def initialize_SC_objects(self):
+        """
+        Function for instantiating the two core script canvas QtPy objects used in SC testing.
+        sc_editor is the editor itself, which the other objects are anchored or embedded in
+        sc_editor_main_window is the main pane that houses the graph UI and basic controls
 
+        returns None
+        """
         self.wrapper_sc_editor = wrapper_sc_editor.QtPyScriptCanvasEditor(self.editor_main_window)
-        self.sc_editor_main_window = self.wrapper_sc_editor.get_sc_main_pane()
 
     def initialize_variable_manager(self):
-
+        """
+        function for instantiating the variable manager tool's QtPy object.
+        """
         self.variable_manager = wapper_variable_manager.QtPyScriptCanvasVariableManager(self.wrapper_sc_editor.sc_editor)
 
     def get_SC_editor_wrapper(self):
-
+        """
+        function for retrieving the sc editor's QtPy object
+        """
         return self.wrapper_sc_editor
 
     def get_variable_manager(self):
-
+        """
+        function for retrieving the variable manager's QtPy object
+        """
         return self.variable_manager
 
