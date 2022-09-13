@@ -10,10 +10,5 @@
     ],
     "PYTHON_DIR": "python",
     "EXTERNAL_REPOS": [
-        {
-            "REPOSITORY_NAME": "Planet_Storm",
-            "DEVELOPMENT_BRANCH": "main",
-            "URL": "https://github.com/o3de/Planet_Storm.git"
-        }
     ]
 }
