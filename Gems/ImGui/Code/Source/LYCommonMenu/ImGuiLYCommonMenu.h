@@ -63,7 +63,6 @@ namespace ImGui
         //! Mark the dropdown for being hidden - this is used to prevent broadcasting that the dropdowns have been hidden
         //! in the case that the ImGui dropdown context has switched options.
         bool m_markedForHiding = false;
-        bool m_showImGuiDemo = false;
     };
 }
 
