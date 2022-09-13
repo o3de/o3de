@@ -47,3 +47,11 @@ ly_set(LY_PYTHON_CMD ${CMAKE_CURRENT_SOURCE_DIR}/python/python.sh)
 # Note: Only ("xcb" or "wayland" should be considered)
 set(PAL_TRAIT_LINUX_WINDOW_MANAGER "xcb" CACHE STRING "Sets the Window Manager type to use when configuring Linux")  
 set_property(CACHE PAL_TRAIT_LINUX_WINDOW_MANAGER PROPERTY STRINGS xcb wayland)
+
+# Use system default OpenSSL library instead of maintaining an O3DE version for Linux
+include(${CMAKE_CURRENT_LIST_DIR}/OpenSSL_linux.cmake)
+
+if ("${OPENSSL_VERSION}" STREQUAL "")
+    message(FATAL_ERROR "OpenSSL not detected. The OpenSSL dev package is required for O3DE")
+endif()
+

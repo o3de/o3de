@@ -45,7 +45,7 @@ namespace SceneUnitTest
         DeactivateFunction m_deactivateFunction = nullptr;
     };
 
-    static const AZ::TypeId TestComponentTypeId = "{DC096267-4815-47D1-BA23-A1CDF0D72D9D}";
+    static constexpr AZ::TypeId TestComponentTypeId{ "{DC096267-4815-47D1-BA23-A1CDF0D72D9D}" };
     class TestComponent : public AZ::Component
     {
     public:

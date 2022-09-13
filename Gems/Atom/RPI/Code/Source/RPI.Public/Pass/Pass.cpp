@@ -110,7 +110,7 @@ namespace AZ
         void Pass::LogError(AZStd::string&& message)
         {
 #if AZ_RPI_ENABLE_PASS_DEBUGGING
-            AZ::Debug::Trace::Break();
+            AZ::Debug::Trace::Instance().Break();
 #endif
 
             if (PassValidation::IsEnabled())

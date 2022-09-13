@@ -56,6 +56,7 @@ namespace AzToolsFramework
             bool IsOwnedByProceduralPrefabInstance(AZ::EntityId entityId) const override;
             bool IsInstanceContainerEntity(AZ::EntityId entityId) const override;
             bool IsLevelInstanceContainerEntity(AZ::EntityId entityId) const override;
+            bool EntitiesBelongToSameInstance(const EntityIdList& entityIds) const;
             AZ::EntityId GetInstanceContainerEntityId(AZ::EntityId entityId) const override;
             AZ::EntityId GetLevelInstanceContainerEntityId() const override;
             AZ::IO::Path GetOwningInstancePrefabPath(AZ::EntityId entityId) const override;
@@ -81,8 +82,12 @@ namespace AzToolsFramework
             //! It will identify and exclude the container entity of the root prefab instance, and all read-only entities.
             EntityIdList SanitizeEntityIdList(const EntityIdList& entityIds) const;
 
+            //! Copies the entity DOM from owning template into the given map if the map sees
+            //! the entity id for the first time.
+            void CaptureInitialEntityDomFromOwningTemplate(AZStd::unordered_map<AZ::EntityId, PrefabDom>& entityIdDomMap,
+                const AZ::EntityId entityId, const PrefabDom& owningTemplateDom) const;
+
             InstanceOptionalReference GetOwnerInstanceByEntityId(AZ::EntityId entityId) const;
-            bool EntitiesBelongToSameInstance(const EntityIdList& entityIds) const;
             void AddNewEntityToSortOrder(Instance& owningInstance, PrefabDom& domToAddEntityUnder,
                 const EntityAlias& parentEntityAlias, const EntityAlias& entityToAddAlias);
 

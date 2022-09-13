@@ -361,7 +361,7 @@ namespace AzToolsFramework
 
         if (pAssetType)
         {
-            (*pAssetType) = nullptr;
+            (*pAssetType) = {};
         }
 
         if (!pData)
@@ -1352,7 +1352,7 @@ namespace AzToolsFramework
         m_thumbnailCallback = editNotifyCallback;
     }
 
-    const AZ::Uuid& AssetPropertyHandlerDefault::GetHandledType() const
+    AZ::TypeId AssetPropertyHandlerDefault::GetHandledType() const
     {
         return AZ::GetAssetClassId();
     }

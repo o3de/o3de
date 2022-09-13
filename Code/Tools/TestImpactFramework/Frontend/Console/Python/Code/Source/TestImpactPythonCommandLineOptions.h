@@ -16,7 +16,6 @@ namespace TestImpact
     class PythonCommandLineOptions
         : public CommandLineOptions
     {
-    public:
         using CommandLineOptions::CommandLineOptions;
     };
 } // namespace TestImpact

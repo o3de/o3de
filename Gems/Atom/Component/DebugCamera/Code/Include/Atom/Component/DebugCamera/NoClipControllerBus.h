@@ -56,6 +56,13 @@ namespace AZ
             virtual void SetPitch(float pitch) = 0;
             virtual void SetFov(float fov) = 0;
 
+            virtual void SetCameraStateForward(float value) = 0;
+            virtual void SetCameraStateBack(float value) = 0;
+            virtual void SetCameraStateLeft(float value) = 0;
+            virtual void SetCameraStateRight(float value) = 0;
+            virtual void SetCameraStateUp(float value) = 0;
+            virtual void SetCameraStateDown(float value) = 0;
+
             virtual float GetMouseSensitivityX() = 0;
             virtual float GetMouseSensitivityY() = 0;
             virtual float GetMoveSpeed() = 0;

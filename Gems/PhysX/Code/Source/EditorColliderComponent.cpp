@@ -168,25 +168,25 @@ namespace PhysX
             // Deprecate old separate components
             serializeContext->ClassDeprecate(
                 "EditorCapsuleColliderComponent",
-                "{0BD5AF3A-35C0-4386-9930-54A2A3E97432}",
+                AZ::Uuid("{0BD5AF3A-35C0-4386-9930-54A2A3E97432}"),
                 &ClassConverters::DeprecateEditorCapsuleColliderComponent)
                 ;
 
             serializeContext->ClassDeprecate(
                 "EditorBoxColliderComponent",
-                "{FAECF2BE-625B-469D-BBFF-E345BBB12D66}",
+                AZ::Uuid("{FAECF2BE-625B-469D-BBFF-E345BBB12D66}"),
                 &ClassConverters::DeprecateEditorBoxColliderComponent)
                 ;
 
             serializeContext->ClassDeprecate(
                 "EditorSphereColliderComponent",
-                "{D11C1624-4AE9-4B66-A6F6-40EDB9CDCE99}",
+                AZ::Uuid("{D11C1624-4AE9-4B66-A6F6-40EDB9CDCE99}"),
                 &ClassConverters::DeprecateEditorSphereColliderComponent)
                 ;
 
             serializeContext->ClassDeprecate(
                 "EditorMeshColliderComponent",
-                "{214185DA-ABD9-4410-9819-7C177801CF7A}",
+                AZ::Uuid("{214185DA-ABD9-4410-9819-7C177801CF7A}"),
                 &ClassConverters::DeprecateEditorMeshColliderComponent)
                 ;
 

@@ -45,10 +45,10 @@ namespace UnitTest
             Entity* systemEntity = m_app.Create(appDesc);
 
             systemEntity->CreateComponent<MemoryComponent>();
-            systemEntity->CreateComponent("{CAE3A025-FAC9-4537-B39E-0A800A2326DF}"); // JobManager component
+            systemEntity->CreateComponent(AZ::TypeId{ "{CAE3A025-FAC9-4537-B39E-0A800A2326DF}" }); // JobManager component
             systemEntity->CreateComponent<StreamerComponent>();
             systemEntity->CreateComponent<AssetManagerComponent>();
-            systemEntity->CreateComponent("{A316662A-6C3E-43E6-BC61-4B375D0D83B4}"); // Usersettings component
+            systemEntity->CreateComponent(AZ::TypeId{ "{A316662A-6C3E-43E6-BC61-4B375D0D83B4}" }); // Usersettings component
             systemEntity->CreateComponent<ScriptSystemComponent>();
 
             systemEntity->Init();

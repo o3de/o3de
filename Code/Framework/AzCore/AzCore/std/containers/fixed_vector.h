@@ -11,7 +11,8 @@
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/containers/containers_concepts.h>
 #include <AzCore/std/createdestroy.h>
-#include <AzCore/std/ranges/ranges.h>
+#include <AzCore/std/ranges/common_view.h>
+#include <AzCore/std/ranges/as_rvalue_view.h>
 #include <AzCore/std/typetraits/typetraits.h>
 
 namespace AZStd::Internal
@@ -633,11 +634,13 @@ namespace AZStd
         {
             if constexpr (is_lvalue_reference_v<R>)
             {
-                assign(ranges::begin(rg), ranges::end(rg));
+                auto rangeView = AZStd::forward<R>(rg) | views::common;
+                assign(ranges::begin(rangeView), ranges::end(rangeView));
             }
             else
             {
-                assign(make_move_iterator(ranges::begin(rg)), make_move_iterator(ranges::end(rg)));
+                auto rangeView = AZStd::forward<R>(rg) | views::as_rvalue | views::common;
+                assign(ranges::begin(rangeView), ranges::end(rangeView));
             }
         }
 
@@ -748,12 +751,14 @@ namespace AZStd
             AZSTD_CONTAINER_ASSERT(insertPos >= cbegin() && insertPos <= cend(), "insert position must be in range of container");
             if constexpr (is_lvalue_reference_v<R>)
             {
-                return insert_iter(insertPos, ranges::begin(rg), ranges::end(rg),
+                auto rangeView = AZStd::forward<R>(rg) | views::common;
+                return insert_iter(insertPos, ranges::begin(rangeView), ranges::end(rangeView),
                     typename iterator_traits<ranges::iterator_t<R>>::iterator_category());
             }
             else
             {
-                return insert_iter(insertPos, make_move_iterator(ranges::begin(rg)), make_move_iterator(ranges::end(rg)),
+                auto rangeView = AZStd::forward<R>(rg) | views::as_rvalue | views::common;
+                return insert_iter(insertPos, ranges::begin(rangeView), ranges::end(rangeView),
                     typename iterator_traits<ranges::iterator_t<R>>::iterator_category());
             }
         };
