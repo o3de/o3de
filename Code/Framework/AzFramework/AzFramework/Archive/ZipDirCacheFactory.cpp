@@ -60,7 +60,7 @@ namespace AZ::IO::ZipDir
     {
         m_szFilename = szFileName;
 
-        CachePtr pCache{ new Cache{ &AZ::AllocatorInstance<AZ::OSAllocator>::Get()} };
+        CachePtr pCache{ aznew Cache{} };
         // opens the given zip file and connects to it. Creates a new file if no such file exists
         // if successful, returns true.
         if (!(m_nFlags & FLAGS_DONT_MEMORIZE_ZIP_PATH))

@@ -80,12 +80,6 @@ namespace AtomToolsFramework
         //! Select the target path where a document will be saved.
         virtual AZStd::string GetSaveDocumentParams(const AZStd::string& initialPath) const;
 
-        //! Requests source and target paths for creating a new document based on another
-        virtual bool GetCreateDocumentParams(AZStd::string& openPath, AZStd::string& savePath) const;
-
-        //! Prompts the user for a selection of documents to open
-        virtual AZStd::vector<AZStd::string> GetOpenDocumentParams() const;
-
         // AtomToolsMainWindowRequestBus::Handler overrides...
         void CreateMenus(QMenuBar* menuBar) override;
         void UpdateMenus(QMenuBar* menuBar) override;
@@ -93,6 +87,10 @@ namespace AtomToolsFramework
         AZStd::vector<AZStd::shared_ptr<DynamicPropertyGroup>> GetSettingsDialogGroups() const override;
 
     protected:
+        // Create menus and actions to open and create files for all registered document types 
+        void BuildCreateMenu(QAction* insertPostion);
+        void BuildOpenMenu(QAction* insertPostion);
+
         void AddDocumentTabBar();
         void UpdateRecentFileMenu();
 
@@ -118,8 +116,6 @@ namespace AtomToolsFramework
 
         QMenu* m_menuOpenRecent = {};
 
-        QAction* m_actionNew = {};
-        QAction* m_actionOpen = {};
         QAction* m_actionClose = {};
         QAction* m_actionCloseAll = {};
         QAction* m_actionCloseOthers = {};

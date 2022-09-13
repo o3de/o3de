@@ -248,22 +248,30 @@ namespace AzToolsFramework::ComponentModeFramework
             componentData = componentDataIt;
         }
 
-        bool inComponentMode;
-        AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::BroadcastResult(
-            inComponentMode, &ComponentModeSystemRequests::InComponentMode);
-
-        // if already in component mode, end current mode and switch active button to the selected component
-        if (inComponentMode)
+        // the transform button does not have an associated component mode,
+        // if the user clicks the transform button they must already be in component mode
+        // so when they click it, leave component mode
+        if (buttonId == m_transformButtonId)
         {
             AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
                 &ComponentModeSystemRequests::EndComponentMode);
 
+            return;
+        }
+
+        bool inComponentMode = false;
+        AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::BroadcastResult(
+            inComponentMode, &ComponentModeSystemRequests::InComponentMode);
+
+        if (inComponentMode)
+        {
+            AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
+                &ComponentModeSystemRequests::ChangeComponentMode, componentData->m_component->GetUnderlyingComponentType());
+
             ViewportUi::ViewportUiRequestBus::Event(
                 ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton, m_switcherId, buttonId);
         }
-
-        // if the newly active button is not the transform button (no component mode associated), emter component mode
-        if (buttonId != m_transformButtonId)
+        else
         {
             AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
                 &ComponentModeSystemRequests::AddSelectedComponentModesOfType, componentData->m_component->GetUnderlyingComponentType());
