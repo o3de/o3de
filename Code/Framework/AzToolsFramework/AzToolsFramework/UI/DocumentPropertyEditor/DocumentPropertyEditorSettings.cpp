@@ -8,6 +8,8 @@
 
 #include "DocumentPropertyEditor.h"
 
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+
 namespace AzToolsFramework
 {
     DocumentPropertyEditorSettings::DocumentPropertyEditorSettings(
@@ -38,7 +40,7 @@ namespace AzToolsFramework
         dumperSettings.m_prettifyOutput = true;
         dumperSettings.m_includeFilter = [pathFilter = m_settingsRegistryBasePath](AZStd::string_view path)
         {
-            return pathFilter.starts_with(path.substr(0, pathFilter.size()));
+            return AZ::SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual(pathFilter, path);
         };
         dumperSettings.m_jsonPointerPrefix = m_settingsRegistryBasePath;
 
