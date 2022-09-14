@@ -1028,7 +1028,7 @@ namespace AzToolsFramework
         }
     }
 
-    bool DocumentPropertyEditor::GetSavedExpanderStateForRow(const AZ::Dom::Path& rowPath)
+    bool DocumentPropertyEditor::GetSavedExpanderStateForRow(const AZ::Dom::Path& rowPath) const
     {
         if (m_dpeSettings)
         {
@@ -1163,7 +1163,7 @@ namespace AzToolsFramework
         return pathToRoot;
     }
 
-    bool DocumentPropertyEditor::IsRecursiveExpansionOngoing()
+    bool DocumentPropertyEditor::IsRecursiveExpansionOngoing() const
     {
         return m_isRecursiveExpansionOngoing;
     }

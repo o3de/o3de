@@ -158,14 +158,14 @@ namespace AzToolsFramework
         void AddAfterWidget(QWidget* precursor, QWidget* widgetToAdd);
 
         void SetSavedExpanderStateForRow(const AZ::Dom::Path& rowPath, bool isExpanded);
-        bool GetSavedExpanderStateForRow(const AZ::Dom::Path& rowPath);
+        bool GetSavedExpanderStateForRow(const AZ::Dom::Path& rowPath) const;
         bool HasSavedExpanderStateForRow(const AZ::Dom::Path& rowPath) const;
         void RemoveExpanderStateForRow(const AZ::Dom::Path& rowPath);
         void ExpandAll();
         void CollapseAll();
 
         // IPropertyEditor overrides
-        void SetSavedStateKey(AZ::u32 key, AZStd::string propertyEditorName = "") override;
+        void SetSavedStateKey(AZ::u32 key, AZStd::string propertyEditorName = {}) override;
 
         AZ::Dom::Value GetDomValueForRow(DPERowWidget* row) const;
 
@@ -180,7 +180,7 @@ namespace AzToolsFramework
 
         AZStd::vector<size_t> GetPathToRoot(DPERowWidget* row) const;
 
-        bool IsRecursiveExpansionOngoing();
+        bool IsRecursiveExpansionOngoing() const;
         void SetRecursiveExpansionOngoing(bool isExpanding);
 
     public slots:

@@ -31,7 +31,7 @@ namespace AzToolsFramework
         AZ::Outcome<void, AZStd::string> SaveSettingsToFile(
             AZ::IO::PathView relativeFilepath,
             AZ::SettingsRegistryMergeUtils::DumperSettings dumperSettings,
-            const AZStd::string& anchorKey = AZStd::string{},
+            const AZStd::string& anchorKey = {},
             AZ::SettingsRegistryInterface* registry = nullptr) const;
 
         //! Loads settings from the provided '.setreg' file and merges settings into the SettingsRegistry
@@ -39,7 +39,7 @@ namespace AzToolsFramework
         //! The path passed to this function is expected to be relative to the project root.
         AZ::Outcome<void, AZStd::string> LoadSettingsFromFile(
             AZ::IO::PathView relativeFilepath,
-            AZStd::string_view anchorKey = AZStd::string{},
+            AZStd::string_view anchorKey = {},
             AZ::SettingsRegistryInterface* registry = nullptr,
             AZ::SettingsRegistryInterface::Format format = AZ::SettingsRegistryInterface::Format::JsonMergePatch) const;
 
