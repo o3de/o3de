@@ -195,12 +195,10 @@ namespace Multiplayer
         {
             m_handleLocalServerRpcMessageEventHandle.Connect(m_sendServertoAuthorityRpcEvent);
         }
-        if (NetworkRoleHasController(m_netEntityRole))
-        {
-            DetermineInputOrdering();
-        }
         if (HasController())
         {
+            DetermineInputOrdering();
+
             // Listen for the entity to completely activate so that we can notify that all controllers have been activated
             GetEntity()->AddStateEventHandler(m_handleEntityStateEvent);
         }
@@ -216,7 +214,7 @@ namespace Multiplayer
                 GetEntity() ? GetEntity()->GetName().c_str() : "null");
         }
         m_handleLocalServerRpcMessageEventHandle.Disconnect();
-        if (NetworkRoleHasController(m_netEntityRole))
+        if (HasController())
         {
             GetNetworkEntityManager()->NotifyControllersDeactivated(m_netEntityHandle, EntityIsMigrating::False);
         }
@@ -435,7 +433,7 @@ namespace Multiplayer
     {
         m_isProcessingInput = true;
         // Only autonomous and authority runs this logic
-        AZ_Assert((NetworkRoleHasController(m_netEntityRole)), "Incorrect network role for input processing");
+        AZ_Assert((HasController()), "Incorrect network role for input processing");
         for (MultiplayerComponent* multiplayerComponent : m_multiplayerInputComponentVector)
         {
             multiplayerComponent->GetController()->ProcessInputFromScript(networkInput, deltaTime);
@@ -784,7 +782,7 @@ namespace Multiplayer
     void NetBindComponent::HandleMarkedDirty()
     {
         m_dirtiedEvent.Signal();
-        if (NetworkRoleHasController(GetNetEntityRole()))
+        if (HasController())
         {
             m_localNotificationRecord.Append(m_currentRecord);
             if (!m_handleNotifyChanges.IsConnected())
@@ -804,7 +802,7 @@ namespace Multiplayer
 
     void NetBindComponent::DetermineInputOrdering()
     {
-        AZ_Assert(NetworkRoleHasController(m_netEntityRole), "Incorrect network role for input processing");
+        AZ_Assert(HasController(), "Incorrect network role for input processing");
 
         m_multiplayerInputComponentVector.clear();
         // walk the components in the activation order so that our default ordering for input matches our dependency sort

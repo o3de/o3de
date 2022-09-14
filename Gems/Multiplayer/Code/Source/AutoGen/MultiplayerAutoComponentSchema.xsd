@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           attributeFormDefault="unqualified"
+           elementFormDefault="qualified"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    
+<xs:element name="Component">
+    <xs:complexType>
+        <xs:sequence>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                
+                <!-- Component Relation -->
+                <xs:element name="ComponentRelation" minOccurs="0" maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:attribute name="Constraint" use="required">
+                            <xs:simpleType>
+                                <xs:restriction base="xs:string">
+                                    <xs:enumeration value="Incompatible" />
+                                    <xs:enumeration value="Required" />
+                                    <xs:enumeration value="Weak" />
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:attribute>
+                        <xs:attribute name="HasController" type="xs:boolean" use="required"/>
+                        <xs:attribute name="Name" type="xs:string" use="required"/>
+                        <xs:attribute name="Namespace" type="xs:string" use="required"/>
+                        <xs:attribute name="Include" type="xs:string" use="required"/>
+                    </xs:complexType>
+                </xs:element>
+
+                <!-- Include Files -->
+                <xs:element name="Include" minOccurs="0"  maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:attribute name="File" type="xs:string" use="required"/>
+                    </xs:complexType>
+                </xs:element>
+
+                <!-- Archetypes -->
+                <xs:element name="ArchetypeProperty" minOccurs="0"  maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:attribute name="Type" type="xs:string" use="required"/>
+                        <xs:attribute name="Name" type="xs:string" use="required"/>
+                        <xs:attribute name="Init" type="xs:string" use="required"/>
+                        <xs:attribute name="Container" use="required">
+                            <xs:simpleType>
+                                <xs:restriction base="xs:string">
+                                    <xs:enumeration value="Object" />
+                                    <xs:enumeration value="Array" />
+                                    <xs:enumeration value="Vector" />
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:attribute>
+                        <xs:attribute name="Count" type="xs:string" use="optional" default="1"/> <!-- Using xs:string not xs:integer because the count may refer to a variable in code -->
+                        <xs:attribute name="ExposeToEditor" type="xs:boolean" use="required"/>
+                        <xs:attribute name="Description" type="xs:string" use="required"/>
+                    </xs:complexType>
+                </xs:element>
+
+                <!-- Network Input -->
+                <xs:element name="NetworkInput" minOccurs="0" maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:attribute name="Type" type="xs:string" use="required"/>
+                        <xs:attribute name="Name" type="xs:string" use="required"/>
+                        <xs:attribute name="Init" type="xs:string" use="required"/>
+                    </xs:complexType>
+                </xs:element>
+
+                <!-- Network Property -->
+                <xs:element name="NetworkProperty" minOccurs="0" maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:attribute name="Type" type="xs:string" use="required"/>
+                        <xs:attribute name="Name" type="xs:string" use="required"/>
+                        <xs:attribute name="Init" type="xs:string" use="required"/>
+                        <!-- Valid Network Property ReplacateFrom->ReplicateTo Combinations: -->
+                        <!--     1. Authority to Server -->
+                        <!--     2. Authority to Autonomous -->
+                        <!--     3. Authority to Client -->
+                        <!--     4. Autonomous to Authority -->
+                        <xs:attribute name="ReplicateFrom" use="required">
+                            <xs:simpleType>
+                                <xs:restriction base="xs:string">
+                                    <xs:enumeration value="Authority" />
+                                    <xs:enumeration value="Autonomous" />
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:attribute>
+                        <xs:attribute name="ReplicateTo" use="required">
+                            <xs:simpleType>
+                                <xs:restriction base="xs:string">
+                                    <xs:enumeration value="Authority" />
+                                    <xs:enumeration value="Autonomous" />
+                                    <xs:enumeration value="Client" />
+                                    <xs:enumeration value="Server" />
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:attribute>
+                        <xs:attribute name="Container" use="required">
+                            <xs:simpleType>
+                                <xs:restriction base="xs:string">
+                                    <xs:enumeration value="Object" />
+                                    <xs:enumeration value="Array" />
+                                    <xs:enumeration value="Vector" />
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:attribute>
+                        <xs:attribute name="Count" type="xs:string" use="optional" default="1"/> <!-- Using xs:string not xs:integer because the count may refer to a variable in code -->
+                        <xs:attribute name="IsPublic" type="xs:boolean" use="required"/>
+                        <xs:attribute name="IsRewindable" type="xs:boolean" use="required"/>
+                        <xs:attribute name="IsPredictable" type="xs:boolean" use="required"/>
+                        <xs:attribute name="ExposeToEditor" type="xs:boolean" use="required"/>
+                        <xs:attribute name="ExposeToScript" type="xs:boolean" use="optional" default="false"/>
+                        <xs:attribute name="GenerateEventBindings" type="xs:boolean" use="required"/>
+                        <xs:attribute name="Description" type="xs:string" use="required"/>
+                    </xs:complexType>
+                </xs:element>
+
+                <!-- RPC -->
+                <xs:element name="RemoteProcedure" minOccurs="0" maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="Param" minOccurs="0" maxOccurs="unbounded">
+                                <xs:complexType>
+                                    <xs:attribute name="Type" type="xs:string" use="required"/>
+                                    <xs:attribute name="Name" type="xs:string" use="required"/>    
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+
+                        <xs:attribute name="Name" type="xs:string" use="required"/>
+
+                        <!-- Valid RPC InvokeFrom->HandleOn Combinations: -->
+                        <!--     1. Authority to Autonomous -->
+                        <!--     2. Authority to Client -->
+                        <!--     3. Server to Authority -->
+                        <!--     4. Autonomous to Authority -->
+                        <xs:attribute name="InvokeFrom" use="required">
+                            <xs:simpleType>
+                                <xs:restriction base="xs:string">
+                                    <xs:enumeration value="Authority" />
+                                    <xs:enumeration value="Autonomous" />
+                                    <xs:enumeration value="Server" />
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:attribute>
+                        <xs:attribute name="HandleOn" use="required">
+                            <xs:simpleType>
+                                <xs:restriction base="xs:string">
+                                    <xs:enumeration value="Authority" />
+                                    <xs:enumeration value="Autonomous" />
+                                    <xs:enumeration value="Client" />
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:attribute>
+                        <xs:attribute name="IsPublic" type="xs:boolean" use="required"/>
+                        <xs:attribute name="IsReliable" type="xs:boolean" use="required"/>
+                        <xs:attribute name="GenerateEventBindings" type="xs:boolean" use="required"/>
+                        <xs:attribute name="Description" type="xs:string" use="required"/>
+                    </xs:complexType>
+                </xs:element>
+            </xs:choice>
+            
+        </xs:sequence>
+
+        <!-- Multiplayer Component Attributes -->
+        <xs:attribute name="Name" type="xs:string" use="required"/>
+        <xs:attribute name="Namespace" type="xs:string" use="required"/>
+        <xs:attribute name="OverrideComponent" type="xs:boolean" use="required"/>
+        <xs:attribute name="OverrideController" type="xs:boolean" use="required"/>
+        <xs:attribute name="OverrideInclude" type="xs:string" use="required"/>
+    </xs:complexType>
+</xs:element>
+
+</xs:schema>
