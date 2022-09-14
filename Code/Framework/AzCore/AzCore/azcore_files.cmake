@@ -183,6 +183,8 @@ set(FILES
     IO/IStreamerTypes.cpp
     IO/GenericStreams.cpp
     IO/GenericStreams.h
+    IO/OpenMode.h
+    IO/OpenMode.cpp
     IO/Path/Path.cpp
     IO/Path/Path.h
     IO/Path/Path.inl
