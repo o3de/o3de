@@ -1008,7 +1008,7 @@ namespace AzToolsFramework
                 {
                     auto rootValue = m_adapter->GetContents();
                     auto numErased = AZStd::erase_if(storedStates,
-                        [&rootValue](AZStd::pair<AZStd::string, bool> statePair)
+                        [&rootValue](const AZStd::pair<AZStd::string, bool>& statePair)
                         {
                             return !rootValue.FindChild(AZ::Dom::Path(statePair.first)) ? true : false;
                         });
