@@ -49,12 +49,12 @@ namespace AZ::DocumentPropertyEditor
         };
 
         // pure virtual methods for new RowFilterAdapters
-        virtual MatchInfoNode* NewMatchInfoNode(MatchInfoNode* parentRow) = 0;
-        virtual void CacheDomInfoForNode(const Dom::Value& domValue, MatchInfoNode* matchNode) = 0;
-        virtual bool MatchesFilter(MatchInfoNode* matchNode) = 0;
+        virtual MatchInfoNode* NewMatchInfoNode(MatchInfoNode* parentRow) const = 0;
+        virtual void CacheDomInfoForNode(const Dom::Value& domValue, MatchInfoNode* matchNode) const = 0;
+        virtual bool MatchesFilter(MatchInfoNode* matchNode) const = 0;
 
         static bool IsRow(const Dom::Value& domValue);
-        bool IsRow(const Dom::Path& sourcePath);
+        bool IsRow(const Dom::Path& sourcePath) const;
 
         void SetFilterActive(bool activateFilter);
         void InvalidateFilter();
@@ -83,7 +83,7 @@ namespace AZ::DocumentPropertyEditor
         void UpdateMatchState(MatchInfoNode* rowState);
 
         //! returns the first path in the ancestry of sourcePath that is of type Row, including self
-        Dom::Path GetRowPath(const Dom::Path& sourcePath);
+        Dom::Path GetRowPath(const Dom::Path& sourcePath) const;
 
         //! indicates whether all children of a direct match are considered matching as well
         bool m_includeAllMatchDescendents = true;
@@ -112,9 +112,9 @@ namespace AZ::DocumentPropertyEditor
 
     protected:
         // pure virtual overrides
-        virtual MatchInfoNode* NewMatchInfoNode(MatchInfoNode* parentRow) override;
-        virtual void CacheDomInfoForNode(const Dom::Value& domValue, MatchInfoNode* matchNode) override;
-        virtual bool MatchesFilter(MatchInfoNode* matchNode) override;
+        virtual MatchInfoNode* NewMatchInfoNode(MatchInfoNode* parentRow) const  override;
+        virtual void CacheDomInfoForNode(const Dom::Value& domValue, MatchInfoNode* matchNode) const override;
+        virtual bool MatchesFilter(MatchInfoNode* matchNode) const override;
 
         bool m_includeDescriptions = true;
         QString m_filterString;

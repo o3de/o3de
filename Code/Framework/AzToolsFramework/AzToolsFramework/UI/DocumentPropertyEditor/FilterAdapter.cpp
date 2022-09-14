@@ -48,7 +48,7 @@ namespace AZ::DocumentPropertyEditor
 
     }
 
-    bool RowFilterAdapter::IsRow(const Dom::Path& sourcePath)
+    bool RowFilterAdapter::IsRow(const Dom::Path& sourcePath) const
     {
         auto sourceRoot = m_sourceAdapter->GetContents();
         auto sourceNode = sourceRoot[sourcePath];
@@ -380,7 +380,7 @@ namespace AZ::DocumentPropertyEditor
         }
     }
 
-    Dom::Path RowFilterAdapter::GetRowPath(const Dom::Path& sourcePath)
+    Dom::Path RowFilterAdapter::GetRowPath(const Dom::Path& sourcePath) const
     {
         Dom::Path rowPath;
         auto currDomValue = m_sourceAdapter->GetContents();
@@ -410,12 +410,12 @@ namespace AZ::DocumentPropertyEditor
         }
     }
 
-    RowFilterAdapter::MatchInfoNode* ValueStringFilter::NewMatchInfoNode(MatchInfoNode* parentRow)
+    RowFilterAdapter::MatchInfoNode* ValueStringFilter::NewMatchInfoNode(MatchInfoNode* parentRow) const
     {
         return new StringMatchNode(parentRow);
     }
 
-    void ValueStringFilter::CacheDomInfoForNode(const Dom::Value& domValue, MatchInfoNode* matchNode)
+    void ValueStringFilter::CacheDomInfoForNode(const Dom::Value& domValue, MatchInfoNode* matchNode) const
     {
         auto actualNode = static_cast<StringMatchNode*>(matchNode);
         const bool nodeIsRow = IsRow(domValue);
@@ -453,7 +453,7 @@ namespace AZ::DocumentPropertyEditor
         }
     }
 
-    bool ValueStringFilter::MatchesFilter(MatchInfoNode* matchNode)
+    bool ValueStringFilter::MatchesFilter(MatchInfoNode* matchNode) const
     {
         auto actualNode = static_cast<StringMatchNode*>(matchNode);
         return (m_filterString.isEmpty() || actualNode->m_matchableDomTerms.contains(m_filterString, Qt::CaseInsensitive));
