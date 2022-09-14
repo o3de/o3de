@@ -273,18 +273,19 @@ namespace AtomToolsFramework
 
     AZStd::string GetWatchFolder(const AZStd::string& sourcePath)
     {
-        bool sourcePathFound = false;
-        AZ::Data::AssetInfo sourcePathInfo;
-        AZStd::string sourcePathWatchFolder;
+        bool relativePathFound = false;
+        AZStd::string relativePath;
+        AZStd::string relativePathFolder;
 
+        // GenerateRelativeSourcePath is necessary when saving new files because it allows us to get the info for files that may not exist yet. 
         AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-            sourcePathFound,
-            &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath,
-            sourcePath.c_str(),
-            sourcePathInfo,
-            sourcePathWatchFolder);
+            relativePathFound,
+            &AzToolsFramework::AssetSystem::AssetSystemRequest::GenerateRelativeSourcePath,
+            sourcePath,
+            relativePath,
+            relativePathFolder);
 
-        return sourcePathWatchFolder;
+        return relativePathFolder;
     }
 
     AZStd::string GetPathToExteralReference(const AZStd::string& exportPath, const AZStd::string& referencePath)
