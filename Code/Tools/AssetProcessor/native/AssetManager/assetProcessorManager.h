@@ -405,6 +405,9 @@ namespace AssetProcessor
         //!  Adds the source to the database and returns the corresponding sourceDatabase Entry
         void AddSourceToDatabase(AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceDatabaseEntry, const ScanFolderInfo* scanFolder, QString relativeSourceFilePath);
 
+        // ! Get the engine, project and active gem root directories which could potentially be separate repositories.
+        AZStd::vector<AZStd::string> GetPotentialRepositoryRoots();
+
     protected:
         // given a set of file info that definitely exist, warm the file cache up so
         // that we only query them once.

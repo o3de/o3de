@@ -641,7 +641,8 @@ namespace AssetProcessor
 
         QString absolutePathToFile = jobEntry.GetAbsoluteSourcePath();
 
-        // Write the LFS pointer file related messages to the job log and display it in the job event details UI.
+        // Set the thread local job ID so that JobLogTraceListener can capture the error and write it to the corresponding job log.
+        // The error message will be available in the Event Log Details table when users click on the failed job in the Asset Proessor GUI.
         AssetProcessor::SetThreadLocalJobId(jobEntry.m_jobRunKey);
         AssetUtilities::JobLogTraceListener jobLogTraceListener(jobEntry);
 
@@ -817,27 +818,32 @@ namespace AssetProcessor
     {
         if (!m_lfsPointerFileValidator)
         {
-            AZStd::vector<AZStd::string> scanDirectories;
-            if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
-            {
-                scanDirectories.emplace_back(AZ::Utils::GetEnginePath(settingsRegistry).c_str());
-                scanDirectories.emplace_back(AZ::Utils::GetProjectPath(settingsRegistry).c_str());
-
-                auto RetrieveActiveGemRootDirectories = [&scanDirectories](AZStd::string_view, AZStd::string_view gemPath)
-                {
-                    scanDirectories.emplace_back(gemPath.data());
-                };
-                AZ::SettingsRegistryMergeUtils::VisitActiveGems(*settingsRegistry, RetrieveActiveGemRootDirectories);
-            }
-            else
-            {
-                AZ_Error(AssetProcessor::ConsoleChannel, false, "Failed to retrieve the registered setting registry.");
-            }
-
-            m_lfsPointerFileValidator = AZStd::make_unique<LfsPointerFileValidator>(scanDirectories);
+            m_lfsPointerFileValidator = AZStd::make_unique<LfsPointerFileValidator>(GetPotentialRepositoryRoots());
         }
 
         return m_lfsPointerFileValidator->IsLfsPointerFile(filePath);
+    }
+
+    AZStd::vector<AZStd::string> AssetProcessorManager::GetPotentialRepositoryRoots()
+    {
+        AZStd::vector<AZStd::string> scanDirectories;
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            scanDirectories.emplace_back(AZ::Utils::GetEnginePath(settingsRegistry).c_str());
+            scanDirectories.emplace_back(AZ::Utils::GetProjectPath(settingsRegistry).c_str());
+
+            auto RetrieveActiveGemRootDirectories = [&scanDirectories](AZStd::string_view, AZStd::string_view gemPath)
+            {
+                scanDirectories.emplace_back(gemPath.data());
+            };
+            AZ::SettingsRegistryMergeUtils::VisitActiveGems(*settingsRegistry, RetrieveActiveGemRootDirectories);
+        }
+        else
+        {
+            AZ_Error(AssetProcessor::ConsoleChannel, false, "Failed to retrieve the registered setting registry.");
+        }
+
+        return AZStd::move(scanDirectories);
     }
 
     AssetProcessorManager::ConflictResult AssetProcessorManager::CheckIntermediateProductConflict(
