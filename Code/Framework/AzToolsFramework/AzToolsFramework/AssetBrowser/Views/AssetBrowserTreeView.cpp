@@ -33,7 +33,6 @@
 
 AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // conversion from 'int' to 'float', possible loss of data, needs to have dll-interface to be used by clients of class
                                                                     // 'QFlags<QPainter::RenderHint>::Int': forcing value to bool 'true' or 'false' (performance warning)
-#include <AzToolsFramework/AssetBrowser/Views/ui_AssetBrowserTreeViewDialog.h>
 #include <QMenu>
 #include <QFile>
 #include <QHeaderView>
