@@ -71,28 +71,3 @@ DEFAULT_SCRIPT_EVENT = "EventName"
 DEFAULT_METHOD_NAME = "MethodName"
 
 PARAMETER_NAME = "ParameterName"
-
-#We are deprecating VARIABLE_TYPES in favor of the dictionary since we can access the dictionary nicely with dot notation instead of indices
-VARIABLE_TYPES = ["Boolean", "Color", "EntityId", "Number", "String", "Transform", "Vector2", "Vector3", "Vector4"]
-
-EVENTS_QT = "Events"
-EVENT_NAME_QT = "EventName"
-
-ENTITY_STATES = {
-        "active": 0,
-        "inactive": 1,
-        "editor": 2,
-    }
-
-"""
-General constants
-"""
-BASE_LEVEL_NAME = "Base"
-SAVE_STRING = "Save"
-NAME_STRING = "Name"
-WAIT_FRAMES = 200
-WAIT_TIME_3 = 3
-WAIT_TIME_5 = 5
-
-VARIABLE_TYPES_DICT = {"Boolean": "Boolean", "Color": "Color", "EntityId": "EntityId", "Number": "Number", "String": "String",
-                  "Transform": "Transform", "Vector2": "Vector2", "Vector3": "Vector3", "Vector4": "Vector4"}

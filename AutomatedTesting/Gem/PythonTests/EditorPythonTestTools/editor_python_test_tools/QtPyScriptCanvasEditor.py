@@ -23,7 +23,7 @@ class QtPyScriptCanvasEditor:
         self.sc_editor = editor_main_window.findChild(QtWidgets.QDockWidget, SCRIPT_CANVAS_UI)
         self.sc_editor_main_window = self.sc_editor.findChild(QtWidgets.QMainWindow)
 
-    def get_sc_main_pane(self):
+    def get_main_pane(self):
         """
         function for retrieving the sc_editor's main pane QtPy object
         """

@@ -20,10 +20,20 @@ WAIT_TIME_5 = 5
 EVENTS_QT = "Events"
 EVENT_NAME_QT = "EventName"
 
-VARIABLE_TYPES_DICT = {"Boolean": "Boolean", "Color": "Color", "EntityId": "EntityId", "Number": "Number", "String": "String",
-                  "Transform": "Transform", "Vector2": "Vector2", "Vector3": "Vector3", "Vector4": "Vector4"}
+VARIABLE_TYPES_DICT = {
+    "Boolean": "Boolean",
+    "Color": "Color",
+    "EntityId": "EntityId",
+    "Number": "Number",
+    "String": "String",
+    "Transform": "Transform",
+    "Vector2": "Vector2",
+    "Vector3": "Vector3",
+    "Vector4": "Vector4"
+}
+
 ENTITY_STATES = {
-        "active": 0,
-        "inactive": 1,
-        "editor": 2,
-    }
+    "active": 0,
+    "inactive": 1,
+    "editor": 2,
+}

@@ -244,25 +244,11 @@ def create_new_sc_graph():
 
     returns: none
     """
-    sc_editor_main_window = EDITOR_QT_CONTAINER.get_SC_editor_wrapper().get_sc_main_pane()
+    sc_editor_main_window = EDITOR_QT_CONTAINER.get_script_canvas_editor().get_main_pane()
     create_new_graph_action = pyside_utils.find_child_by_pattern(
         sc_editor_main_window, {"objectName": "action_New_Script", "type": QtWidgets.QAction}
     )
     create_new_graph_action.trigger()
-
-
-def verify_SC_variable_count(expected):
-    """
-    function to check if the current number of variables in variable manager matches the user provided input
-
-    param expected: the expected number of variables in the variable manager
-
-    returns true if the actual number of variables in the variable manager matches the expected number
-    """
-    variable_manager = EDITOR_QT_CONTAINER.get_variable_manager()
-    row_count = variable_manager.get_variable_count()
-
-    return expected == row_count
 
 
 def get_sc_editor_node_inspector(sc_editor):

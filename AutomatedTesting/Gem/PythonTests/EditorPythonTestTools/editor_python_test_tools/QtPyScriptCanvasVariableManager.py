@@ -10,8 +10,7 @@ from editor_python_test_tools.utils import TestHelper as helper
 from PySide2 import QtWidgets, QtCore
 import pyside_utils
 from types import SimpleNamespace
-from consts.scripting import (VARIABLE_MANAGER_QT, VARIABLE_TYPES, VARIABLE_PALETTE_QT, ADD_BUTTON_QT, WAIT_TIME_3,
-                              GRAPH_VARIABLES_QT)
+from consts.scripting import (VARIABLE_MANAGER_QT, VARIABLE_PALETTE_QT, ADD_BUTTON_QT, GRAPH_VARIABLES_QT)
 from consts.general import (WAIT_TIME_3, VARIABLE_TYPES_DICT)
 from editor_python_test_tools.utils import Report
 
@@ -55,8 +54,8 @@ class QtPyScriptCanvasVariableManager:
             Report.critical_result(["Invalid variable type provided", ""], False)
 
         valid_type = False
-        for this_type in VARIABLE_TYPES:
-            if new_variable_type == this_type:
+        for this_type in VARIABLE_TYPES_DICT:
+            if new_variable_type == VARIABLE_TYPES_DICT[this_type]:
                 valid_type = True
 
         if not valid_type:
@@ -68,9 +67,8 @@ class QtPyScriptCanvasVariableManager:
 
         returns: simple namespace container that allows you to access the most common variable types (strings) using dot notation
         """
-        simple_namespace = SimpleNamespace(**VARIABLE_TYPES_DICT)
 
-        return simple_namespace
+        return SimpleNamespace(**VARIABLE_TYPES_DICT)
 
     def get_variable_count(self):
         """
@@ -81,6 +79,18 @@ class QtPyScriptCanvasVariableManager:
         graph_variables = self.variable_manager.findChild(QtWidgets.QTableView, GRAPH_VARIABLES_QT)
         row_count = graph_variables.model().rowCount(QtCore.QModelIndex())
         return row_count
+
+    def sc_variable_count_matches_expected(self, expected):
+        """
+        function to check if the current number of variables in variable manager matches the user provided input
+
+        param expected: the expected number of variables in the variable manager
+
+        returns true if the actual number of variables in the variable manager matches the expected number
+        """
+        row_count = self.get_variable_count()
+
+        return expected == row_count
 
 
 

@@ -5,6 +5,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
 Holds constants used across both hydra and non-hydra scripts.
+We are deprecating VARIABLE_TYPES in favor of the dictionary since we can access the dictionary nicely with dot notation instead of indices
 """
 import os
 import azlmbr.paths as paths
@@ -72,7 +73,7 @@ NAME_STRING = "Name"
 WAIT_FRAMES = 200
 WAIT_TIME_3 = 3
 WAIT_TIME_5 = 5
-#We are deprecating VARIABLE_TYPES in favor of the dictionary since we can access the dictionary nicely with dot notation instead of indices
+
 VARIABLE_TYPES = ["Boolean", "Color", "EntityId", "Number", "String", "Transform", "Vector2", "Vector3", "Vector4"]
 
 VARIABLE_TYPES_DICT = {

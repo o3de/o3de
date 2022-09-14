@@ -57,40 +57,40 @@ def EditMenu_Default_UndoRedo():
     from editor_python_test_tools.utils import TestHelper as helper
     from editor_python_test_tools.utils import Report
     import azlmbr.legacy.general as general
-    import editor_python_test_tools.script_canvas_tools_qt as SC_tools_qt
+    import editor_python_test_tools.script_canvas_tools_qt as sc_tools_qt
     from consts.general import (WAIT_TIME_3)
 
     general.idle_enable(True)
 
     # 1) Open Script Canvas window
-    SC_tools_qt.open_script_canvas()
+    sc_tools_qt.open_script_canvas()
 
     # 2) Create Graph
-    SC_tools_qt.create_new_sc_graph()
+    sc_tools_qt.create_new_sc_graph()
 
     # 3) Create and verify the new variable exists in variable manager
-    qtpy_variable_manager = SC_tools_qt.EDITOR_QT_CONTAINER.get_variable_manager()
+    qtpy_variable_manager = sc_tools_qt.EDITOR_QT_CONTAINER.get_variable_manager()
     variable_types = qtpy_variable_manager.get_basic_variable_types()
     qtpy_variable_manager.create_new_variable(variable_types.Boolean)
-    row_count = SC_tools_qt.verify_SC_variable_count(VARIABLE_COUNT_BEFORE)
+    row_count = qtpy_variable_manager.sc_variable_count_matches_expected(VARIABLE_COUNT_BEFORE)
     Report.result(Tests.variable_created, helper.wait_for_condition(
         lambda: row_count, WAIT_TIME_3))
 
     # 4) Trigger Undo action and verify if variable is removed in Variable Manager
-    sc_editor_wrapper = SC_tools_qt.EDITOR_QT_CONTAINER.get_SC_editor_wrapper()
+    sc_editor_wrapper = sc_tools_qt.EDITOR_QT_CONTAINER.get_script_canvas_editor()
     sc_editor_wrapper.trigger_undo_action()
-    row_count = SC_tools_qt.verify_SC_variable_count(VARIABLE_COUNT_AFTER)
+    row_count = qtpy_variable_manager.sc_variable_count_matches_expected(VARIABLE_COUNT_AFTER)
     Report.result(Tests.undo_worked, helper.wait_for_condition(
         lambda: row_count, WAIT_TIME_3))
 
     # 5) Trigger Redo action and verify if variable is re-added in Variable Manager
     sc_editor_wrapper.trigger_redo_action()
-    row_count = SC_tools_qt.verify_SC_variable_count(VARIABLE_COUNT_BEFORE)
+    row_count = qtpy_variable_manager.sc_variable_count_matches_expected(VARIABLE_COUNT_BEFORE)
     Report.result(Tests.redo_worked, helper.wait_for_condition(
         lambda: row_count, WAIT_TIME_3))
 
     # 6) Close SC window
-    SC_tools_qt.close_script_canvas()
+    sc_tools_qt.close_script_canvas()
 
 
 if __name__ == "__main__":
