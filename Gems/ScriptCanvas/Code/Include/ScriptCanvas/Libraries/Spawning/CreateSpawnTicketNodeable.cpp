@@ -22,10 +22,18 @@ namespace ScriptCanvas::Nodeables::Spawning
         return *this;
     }
 
-    AzFramework::EntitySpawnTicket CreateSpawnTicketNodeable::CreateTicket(const AzFramework::Scripts::SpawnableScriptAssetRef& prefab)
+    void CreateSpawnTicketNodeable::CreateTicket(const AzFramework::Scripts::SpawnableScriptAssetRef& prefab)
     {
         using namespace AzFramework;
-        
-        return m_spawnableScriptMediator.CreateSpawnTicket(prefab);
+
+        auto ticket = m_spawnableScriptMediator.CreateSpawnTicket(prefab);
+        if (ticket.IsSuccess())
+        {
+            CallSuccess(ticket.GetValue());
+        }
+        else
+        {
+            CallFailed();
+        }
     }
 }

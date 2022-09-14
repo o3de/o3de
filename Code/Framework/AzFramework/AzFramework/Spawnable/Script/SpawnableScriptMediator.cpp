@@ -64,9 +64,14 @@ namespace AzFramework::Scripts
         AZ::TickBus::Handler::BusDisconnect();
     }
 
-    EntitySpawnTicket SpawnableScriptMediator::CreateSpawnTicket(const SpawnableScriptAssetRef& spawnableAsset)
+    AZ::Outcome<EntitySpawnTicket> SpawnableScriptMediator::CreateSpawnTicket(const SpawnableScriptAssetRef& spawnableAsset)
     {
-        return EntitySpawnTicket(spawnableAsset.GetAsset());
+        if (spawnableAsset.GetAsset())
+        {
+            AZ::Outcome<EntitySpawnTicket> result(EntitySpawnTicket(spawnableAsset.GetAsset()));
+            return result;
+        }
+        return AZ::Failure();
     }
 
     bool SpawnableScriptMediator::Spawn(EntitySpawnTicket spawnTicket)

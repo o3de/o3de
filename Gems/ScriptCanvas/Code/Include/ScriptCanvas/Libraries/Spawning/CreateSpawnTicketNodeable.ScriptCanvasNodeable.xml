@@ -8,9 +8,12 @@
         Namespace="ScriptCanvas"
         Description="Creates a spawn ticket using provided prefab">
 
-        <Input Name="Create Ticket" OutputName="Ticket Created">
+		<Input  Name="Create Ticket" OutputName="Ticket Created">
             <Parameter Name="Prefab" Type="const AzFramework::Scripts::SpawnableScriptAssetRef&amp;" Description="Prefab source asset to spawn"/>
-            <Return Name="SpawnTicket" Type="AzFramework::EntitySpawnTicket" Shared="true"/>
+			<Branch Name="Success">
+				<Return Name="Entity Spawn Ticket" Type="AzFramework::EntitySpawnTicket"/>
+			</Branch>
+			<Branch Name="Failed"/>
         </Input>
     </Class>
 </ScriptCanvas>
