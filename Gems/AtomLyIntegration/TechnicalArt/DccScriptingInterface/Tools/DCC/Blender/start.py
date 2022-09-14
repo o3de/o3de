@@ -58,7 +58,8 @@ from DccScriptingInterface import add_site_dir
 add_site_dir(PATH_O3DE_TECHART_GEMS)
 
 # get the global dccsi state
-from DccScriptingInterface.globals import *
+from DccScriptingInterface.globals import DCCSI_GDEBUG
+from DccScriptingInterface.globals import DCCSI_DEV_MODE
 
 from azpy.constants import FRMT_LOG_LONG
 _logging.basicConfig(level=_logging.DEBUG,
@@ -66,12 +67,22 @@ _logging.basicConfig(level=_logging.DEBUG,
                     datefmt='%m-%d %H:%M')
 
 _LOGGER = _logging.getLogger(_MODULENAME)
+
+# auto-attach ide debugging at the earliest possible point in module
+if DCCSI_DEV_MODE:
+    import DccScriptingInterface.azpy.test.entry_test
+    DccScriptingInterface.azpy.test.entry_test.connect_wing()
+
 _LOGGER.debug(f'Initializing: {_MODULENAME}')
 _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH.as_posix()}')
 
-# retreive the blender_config class object and it's settings
-from DccScriptingInterface.Tools.DCC.Blender.config import blender_config
-blender_config.settings.setenv() # ensure env is set
+# this should execute the core config.py first and grab settings
+from dynaconf import settings
+
+# may re-enable later
+# # retreive the blender_config class object and it's settings
+# from DccScriptingInterface.Tools.DCC.Blender.config import blender_config
+# blender_config.settings.setenv() # ensure env is set
 
 from DccScriptingInterface.azpy.config_utils import check_is_ascii
 
@@ -115,12 +126,30 @@ if DCCSI_GDEBUG:
 # from cmd, enable addons, load file, start script
 #    ./blender -b --addons animation_nodes,meshlint [file] --python [myscript.py]
 
-_BLENDER_EXE = Path(blender_config.settings.PATH_DCCSI_BLENDER_EXE)
+from DccScriptingInterface.Tools.DCC.Blender import PATH_DCCSI_TOOLS_DCC_BLENDER
+
+from DccScriptingInterface.Tools.DCC.Blender import SLUG_DCCSI_BLENDER_VERSION
+from DccScriptingInterface.Tools.DCC.Blender import SLUG_BLENDER_EXE
+from DccScriptingInterface.Tools.DCC.Blender import PATH_DCCSI_BLENDER_LOCATION
+from DccScriptingInterface.Tools.DCC.Blender import PATH_DCCSI_BLENDER_EXE
+
+_BLENDER_EXE = Path(PATH_DCCSI_BLENDER_EXE).resolve(strict=True)
+#_BLENDER_EXE = Path(blender_config.settings.PATH_DCCSI_BLENDER_EXE)
 
 # this ensures we are in blenders location
 #os.chdir(_BLENDER_EXE.parent)
+from DccScriptingInterface.Tools.DCC.Blender import ENVAR_PATH_DCCSI_TOOLS_DCC_BLENDER_SCRIPTS
+from DccScriptingInterface.Tools.DCC.Blender import PATH_DCCSI_TOOLS_DCC_BLENDER_SCRIPTS
+_BLENDER_SCRIPTS = Path(PATH_DCCSI_TOOLS_DCC_BLENDER_SCRIPTS).resolve(strict=True)
+from DccScriptingInterface import add_site_dir
+add_site_dir(_BLENDER_SCRIPTS)
+os.environ[ENVAR_PATH_DCCSI_TOOLS_DCC_BLENDER_SCRIPTS] = _BLENDER_SCRIPTS.as_posix()
 
-_DEFAULT_BOOTSTRAP = Path(blender_config.settings.PATH_DCCSI_BLENDER_BOOTSTRAP)
+from DccScriptingInterface.Tools.DCC.Blender import SLUG_DCCSI_BLENDER_BOOTSTRAP
+from DccScriptingInterface.Tools.DCC.Blender import PATH_DCCSI_BLENDER_BOOTSTRAP
+
+_DEFAULT_BOOTSTRAP = Path(PATH_DCCSI_BLENDER_BOOTSTRAP).resolve(strict=True)
+#_DEFAULT_BOOTSTRAP = Path(blender_config.settings.PATH_DCCSI_BLENDER_BOOTSTRAP)
 
 # default launch command
 _LAUNCH_COMMAND = [f'{str(_BLENDER_EXE)}',
@@ -189,11 +218,11 @@ if __name__ == '__main__':
     _LOGGER = _logging.getLogger(_MODULENAME)
 
     # log global state to cli
-    _LOGGER.debug(STR_CROSSBAR)
+    _LOGGER.info(STR_CROSSBAR)
     _LOGGER.debug(f'_MODULENAME: {_MODULENAME}')
-    _LOGGER.debug(f'{ENVAR_DCCSI_GDEBUG}: {blender_config.settings.DCCSI_GDEBUG}')
-    _LOGGER.debug(f'{ENVAR_DCCSI_DEV_MODE}: {blender_config.settings.DCCSI_DEV_MODE}')
-    _LOGGER.debug(f'{ENVAR_DCCSI_LOGLEVEL}: {blender_config.settings.DCCSI_LOGLEVEL}')
+    _LOGGER.debug(f'{ENVAR_DCCSI_GDEBUG}: {DCCSI_GDEBUG}')
+    _LOGGER.debug(f'{ENVAR_DCCSI_DEV_MODE}: {DCCSI_DEV_MODE}')
+    _LOGGER.debug(f'{ENVAR_DCCSI_LOGLEVEL}: {DCCSI_LOGLEVEL}')
 
     # commandline interface
     import argparse
@@ -214,14 +243,6 @@ if __name__ == '__main__':
                         help='Exits python. Do not exit if you want to be in interactive interpreter after config')
 
     args = parser.parse_args()
-
-    # easy overrides
-    if args.global_debug:
-        # you can modify/oerrive any setting simply by re-adding it with new values
-        blender_config.add_setting(ENVAR_DCCSI_GDEBUG, True)
-
-    # fetch modified settings and set the env
-    settings = blender_config.get_settings(set_env=True)
 
     try:
         process = popen(command = _LAUNCH_COMMAND,

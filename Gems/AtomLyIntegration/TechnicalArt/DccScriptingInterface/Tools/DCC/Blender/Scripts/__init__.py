@@ -14,3 +14,5 @@
 
 Open 3D Engine Blender Scripts location
 """
+
+__all___['bootstrap']

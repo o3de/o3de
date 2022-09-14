@@ -90,26 +90,31 @@ _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH}')
 
 
 # -------------------------------------------------------------------------
-def pathify(path_list):
+def pathify_list(path_list):
     """Make list path objects"""
+
+    new_path_list = list()
+
     for i, p in enumerate(path_list):
         p = Path(p)
         path_list[i] = p.resolve()
+        if p not in new_path_list:
+            new_path_list.append(p)
 
-    return path_list
+    return new_path_list
 
 def add_site_dir(site_dir):
     """Add a site package and moves to front of sys.path"""
 
     site_dir = Path(site_dir).resolve()
 
-    _prev_sys_paths = pathify(list(sys.path)) # copy
+    _prev_sys_paths = pathify_list(list(sys.path)) # copy
 
     # if passing a Path object cast to string value
     site.addsitedir(str(site_dir))
 
     # new entries have precedence, front of sys.path
-    for p in pathify(list(sys.path)):
+    for p in pathify_list(list(sys.path)):
         if p not in _prev_sys_paths:
             sys.path.remove(str(p))
             sys.path.insert(0, str(p))
@@ -718,7 +723,15 @@ if DCCSI_TEST_PYSIDE:
 
 
 # -------------------------------------------------------------------------
-from dynaconf import LazySettings
+# This will fail importing the DccScriptingInterface in DCC tools
+# that do not have python pkgs dependancies installed (requirements.txt)
+# the user can do this with foundation.py
+try:
+    from dynaconf import LazySettings
+except ImportError as e:
+    _LOGGER.error(f'Could not import dynaconf')
+    _LOGGER.info(f'Follow these steps then re-start DCC app: < to do >')
+    _LOGGER.error(f'{e} , traceback =', exc_info=True)
 
 # settings = LazySettings(
 #     # Loaded first
@@ -734,11 +747,12 @@ LOCAL_SETTINGS_FILE_SLUG = 'settings.local.json'
 
 PATH_DCCSIG_SETTINGS = PATH_DCCSIG.joinpath(SETTINGS_FILE_SLUG).resolve()
 PATH_DCCSIG_LOCAL_SETTINGS = PATH_DCCSIG.joinpath(LOCAL_SETTINGS_FILE_SLUG).resolve()
-settings = LazySettings(
-    SETTINGS_FILE_FOR_DYNACONF=PATH_DCCSIG_SETTINGS.as_posix(),
-    INCLUDES_FOR_DYNACONF=[PATH_DCCSIG_LOCAL_SETTINGS.as_posix()]
-)
-settings.setenv()
+
+# settings = LazySettings(
+#     SETTINGS_FILE_FOR_DYNACONF=PATH_DCCSIG_SETTINGS.as_posix(),
+#     INCLUDES_FOR_DYNACONF=[PATH_DCCSIG_LOCAL_SETTINGS.as_posix()]
+# )
+# settings.setenv()
 # -------------------------------------------------------------------------
 
 _MODULE_END = timeit.default_timer() - __MODULE_START

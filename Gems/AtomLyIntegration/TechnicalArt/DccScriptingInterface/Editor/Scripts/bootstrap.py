@@ -77,6 +77,9 @@ from DccScriptingInterface.globals import *
 # temproary force enable these during development
 #DCCSI_GDEBUG = True
 DCCSI_DEV_MODE = True
+
+# enable this if you are having difficulty with debugging
+# the subprocess booting start.py (note: will block editor)
 DCCSI_LOCAL_DEBUG = False # <-- for code branch in this module only
 
 # auto-attach ide debugging at the earliest possible point in module
@@ -85,6 +88,7 @@ if DCCSI_DEV_MODE: # from DccScriptingInterface.globals
     attach_debugger()
 #
 import DccScriptingInterface.config as dccsi_core_config
+
 # note: if you used win_launch_wingide.bat, settings will be over populated
 # because of the .bat file env chain that includes active apps
 
@@ -232,7 +236,7 @@ def start_service(py_file: Path = None,
     :param : The UI text str for the submenu
     :return: returns the created submenu
     """
-    _LOGGER.debug(f'Starting: {py_file}')
+    _LOGGER.debug(f'Starting Service: {py_file.parent.name}')
 
     cmd = [str(_settings_core.DCCSI_PY_BASE), str(py_file)]
 
@@ -267,9 +271,9 @@ def start_service(py_file: Path = None,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
         out, err = p.communicate()
-        _LOGGER.debug('out', out)
-        _LOGGER.error('err', err)
-        _LOGGER.debug('returncode', p.returncode)
+        _LOGGER.debug(f'out: {str(out)}')
+        _LOGGER.error(f'err: {str(err)}')
+        _LOGGER.debug(f'returncode: {str(p.returncode)}')
         _LOGGER.debug('EXIT')
 
     else:

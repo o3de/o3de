@@ -173,27 +173,6 @@ PATH_WING_APPDATA = Path(PATH_WING_APPDATA).resolve()
 wing_config.add_setting(ENVAR_WING_APPDATA,
                         PATH_WING_APPDATA.as_posix())
 
-# initialize configs for DCC tools we want to develop with
-# so we get access to their python interpreter, etc.
-# it is suggested the in the future, there be a project setreg for wing
-# whose settings describe which DCC tools to activate on start
-
-# Bolt On blender config
-from DccScriptingInterface.Tools.DCC.Blender.config import blender_config
-
-# prefix for defining IDE interpreters 'DCCSI_PY_'
-wing_config.add_setting('DCCSI_PY_BLENDER',
-                        blender_config.settings.DCCSI_BLENDER_PY_EXE,
-                        set_envar=True)
-
-# Bolt On maya config
-# not implemented yet
-
-# Bolt On other DCC tools
-# also not yet implemented
-# -------------------------------------------------------------------------
-
-
 # -------------------------------------------------------------------------
 _MODULE_END = timeit.default_timer() - _MODULE_START
 _LOGGER.debug(f'{_MODULENAME} took: {_MODULE_END} sec')
@@ -208,6 +187,26 @@ if __name__ == '__main__':
 
     # this should hit this modules location and load wing settings
     settings = wing_config.get_settings(set_env=True)
+
+    # initialize configs for DCC tools we want to develop with
+    # so we get access to their python interpreter, etc.
+    # it is suggested the in the future, there be a project setreg for wing
+    # whose settings describe which DCC tools to activate on start
+
+    # # Bolt On blender config
+    # from DccScriptingInterface.Tools.DCC.Blender.config import blender_config
+    #
+    # # prefix for defining IDE interpreters 'DCCSI_PY_'
+    # wing_config.add_setting('DCCSI_PY_BLENDER',
+    #                         blender_config.settings.DCCSI_BLENDER_PY_EXE,
+    #                         set_envar=True)
+
+    # Bolt On maya config
+    # not implemented yet
+
+    # Bolt On other DCC tools
+    # also not yet implemented
+    # -------------------------------------------------------------------------
 
     try:
         settings.DCCSI_CONFIG_IDE_WING

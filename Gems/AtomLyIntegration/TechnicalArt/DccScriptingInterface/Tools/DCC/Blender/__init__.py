@@ -29,10 +29,11 @@ import logging as _logging
 from DccScriptingInterface.Tools.DCC import _PACKAGENAME
 _PACKAGENAME = f'{_PACKAGENAME}.Blender'
 
-__all__ = ['bootstrap',
-           'config',
+__all__ = ['config',
            'constants',
-           'start']
+           'start',
+           'scripts',
+           'discovery']
 
 _LOGGER = _logging.getLogger(_PACKAGENAME)
 _LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
@@ -74,17 +75,41 @@ PATH_DCCSI_TOOLS_DCC_BLENDER = _MODULE_PATH.parent
 PATH_DCCSI_TOOLS_DCC = PATH_DCCSI_TOOLS_DCC_BLENDER.parent
 PATH_DCCSI_TOOLS = PATH_DCCSI_TOOLS_DCC.parent
 
-from dynaconf import LazySettings
+# from dynaconf import LazySettings
 
 PATH_DCCSI_TOOLS_DCC_BLENDER_SETTINGS = PATH_DCCSI_TOOLS_DCC_BLENDER.joinpath(SETTINGS_FILE_SLUG).resolve()
 PATH_DCCSI_TOOLS_DCC_BLENDER_LOCAL_SETTINGS = PATH_DCCSI_TOOLS_DCC_BLENDER.joinpath(LOCAL_SETTINGS_FILE_SLUG).resolve()
 
-settings = LazySettings(
-    SETTINGS_FILE_FOR_DYNACONF=PATH_DCCSI_TOOLS_DCC_BLENDER_SETTINGS.as_posix(),
-    INCLUDES_FOR_DYNACONF=[PATH_DCCSI_TOOLS_DCC_BLENDER_LOCAL_SETTINGS.as_posix()]
-)
+# put these here so we don't have to init config to get them
+# default version
+ENVAR_DCCSI_BLENDER_VERSION = "DCCSI_BLENDER_VERSION"
+SLUG_DCCSI_BLENDER_VERSION = "3.1"
 
-settings.setenv()
+ENVAR_DCCSI_BLENDER_LOCATION = "PATH_DCCSI_BLENDER_LOCATION"
+PATH_DCCSI_BLENDER_ROOT = f'C:\\Program Files\\Blender Foundation\\Blender'
+PATH_DCCSI_BLENDER_LOCATION = f'{PATH_DCCSI_BLENDER_ROOT} {SLUG_DCCSI_BLENDER_VERSION}'
+
+ENVAR_PATH_DCCSI_TOOLS_DCC_BLENDER_SCRIPTS = "PATH_DCCSI_BLENDER_SCRIPTS"
+PATH_DCCSI_TOOLS_DCC_BLENDER_SCRIPTS = f'{PATH_DCCSI_TOOLS_DCC_BLENDER}\\scripts'
+
+# I think this one will launch with a console
+SLUG_BLENDER_EXE = "blender.exe"
+ENVAR_PATH_DCCSI_BLENDER_EXE = "PATH_DCCSI_BLENDER_EXE"
+PATH_DCCSI_BLENDER_EXE = f"{PATH_DCCSI_BLENDER_LOCATION}\\{SLUG_BLENDER_EXE}"
+
+# our dccsi default start up script for blender aka bootstrap
+SLUG_DCCSI_BLENDER_BOOTSTRAP = "bootstrap.py"
+ENVAR_PATH_DCCSI_BLENDER_BOOTSTRAP = "PATH_DCCSI_BLENDER_BOOTSTRAP"
+PATH_DCCSI_BLENDER_BOOTSTRAP = f'{PATH_DCCSI_TOOLS_DCC_BLENDER_SCRIPTS}\\{SLUG_DCCSI_BLENDER_BOOTSTRAP}'
+
+
+# settings = LazySettings(
+#     SETTINGS_FILE_FOR_DYNACONF=PATH_DCCSI_TOOLS_DCC_BLENDER_SETTINGS.as_posix(),
+#     INCLUDES_FOR_DYNACONF=[PATH_DCCSI_TOOLS_DCC_BLENDER_LOCAL_SETTINGS.as_posix()]
+# )
+#
+# # need to create a json validator for settings.local.json
+# settings.setenv()
 # -------------------------------------------------------------------------
 
 

@@ -125,6 +125,11 @@ blender_config.add_setting(ENVAR_PATH_DCCSI_TOOLS_DCC_BLENDER_SCRIPTS,
                            set_sys_path=True,
                            set_pythonpath=True)
 
+from Tools.DCC.Blender.constants import ENVAR_DCCSI_BLENDER_VERSION
+from Tools.DCC.Blender.constants import SLUG_DCCSI_BLENDER_VERSION
+blender_config.add_setting(ENVAR_DCCSI_BLENDER_VERSION,
+                           SLUG_DCCSI_BLENDER_VERSION)
+
 from Tools.DCC.Blender.constants import ENVAR_DCCSI_BLENDER_LOCATION
 from Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_LOCATION
 PATH_DCCSI_BLENDER_LOCATION = Path(PATH_DCCSI_BLENDER_LOCATION).resolve()
@@ -167,10 +172,10 @@ from Tools.DCC.Blender.constants import ENVAR_URL_DCCSI_BLENDER_WIKI
 from Tools.DCC.Blender.constants import URL_DCCSI_BLENDER_WIKI
 blender_config.add_setting(ENVAR_URL_DCCSI_BLENDER_WIKI,
                            str(URL_DCCSI_BLENDER_WIKI))
-# -------------------------------------------------------------------------
+# --- END -----------------------------------------------------------------
 
+settings = blender_config.get_config_settings()
 
-# -------------------------------------------------------------------------
 _MODULE_END = timeit.default_timer() - _MODULE_START
 _LOGGER.debug(f'{_MODULENAME} took: {_MODULE_END} sec')
 # -------------------------------------------------------------------------
@@ -183,7 +188,7 @@ if __name__ == '__main__':
     """Run this file as a standalone cli script for testing/debugging"""
 
     # this should hit this modules location and load wing settings
-    settings = blender_config.get_settings(set_env=True)
+    settings = blender_config.get_config_settings()
 
     try:
         settings.CONFIG_DCC_BLENDER
