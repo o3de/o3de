@@ -160,8 +160,58 @@ namespace PhysX
     }
 
     void EditorPrismaticJointComponent::DisplayEntityViewport(
-        [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo,
-        [[maybe_unused]] AzFramework::DebugDisplayRequests& debugDisplay)
+        const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
+        EditorJointComponent::DisplayEntityViewport(viewportInfo, debugDisplay);
+
+        if (!m_config.ShowSetupDisplay() &&
+            !m_config.m_inComponentMode)
+        {
+            return;
+        }
+
+        const float size = 1.0f;
+        const float alpha = 0.6f;
+        const AZ::Color colorDefault = AZ::Color(1.0f, 1.0f, 1.0f, alpha);
+        const AZ::Color colorLimitLower = AZ::Color(1.0f, 0.0f, 0.0f, alpha);
+        const AZ::Color colorLimitUpper = AZ::Color(0.0f, 1.0f, 0.0f, alpha);
+
+        AZ::u32 stateBefore = debugDisplay.GetState();
+        debugDisplay.CullOff();
+        debugDisplay.SetAlpha(alpha);
+
+        const AZ::EntityId& entityId = GetEntityId();
+
+        AZ::Transform worldTransform = PhysX::Utils::GetEntityWorldTransformWithoutScale(entityId);
+
+        AZ::Transform localTransform;
+        EditorJointRequestBus::EventResult(localTransform,
+            AZ::EntityComponentIdPair(entityId, GetId()),
+            &EditorJointRequests::GetTransformValue,
+            PhysX::JointsComponentModeCommon::ParamaterNames::Transform);
+
+        debugDisplay.PushMatrix(worldTransform);
+        debugDisplay.PushMatrix(localTransform);
+
+        debugDisplay.SetColor(colorDefault);
+        debugDisplay.DrawLine(AZ::Vector3::CreateAxisX(m_linearLimit.m_limitLower), AZ::Vector3::CreateAxisX(m_linearLimit.m_limitUpper));
+
+        debugDisplay.SetColor(colorLimitLower);
+        debugDisplay.DrawQuad(
+            AZ::Vector3(m_linearLimit.m_limitLower, -size, -size),
+            AZ::Vector3(m_linearLimit.m_limitLower, -size, size),
+            AZ::Vector3(m_linearLimit.m_limitLower, size, size),
+            AZ::Vector3(m_linearLimit.m_limitLower, size, -size));
+
+        debugDisplay.SetColor(colorLimitUpper);
+        debugDisplay.DrawQuad(
+            AZ::Vector3(m_linearLimit.m_limitUpper, -size, -size),
+            AZ::Vector3(m_linearLimit.m_limitUpper, -size, size),
+            AZ::Vector3(m_linearLimit.m_limitUpper, size, size),
+            AZ::Vector3(m_linearLimit.m_limitUpper, size, -size));
+
+        debugDisplay.PopMatrix(); // pop local transform
+        debugDisplay.PopMatrix(); // pop world transform
+        debugDisplay.SetState(stateBefore);
     }
 }
