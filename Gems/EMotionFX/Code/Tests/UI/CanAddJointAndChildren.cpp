@@ -59,7 +59,7 @@ namespace EMotionFX
         QTreeView* treeView = skeletonOutliner->GetDockWidget()->findChild<QTreeView*>("EMFX.SkeletonOutlinerPlugin.SkeletonOutlinerTreeView");
         const QAbstractItemModel* model = treeView->model();
 
-        const QModelIndex rootJointIndex = model->index(0, 0);
+        const QModelIndex rootJointIndex = model->index(0, 0, model->index(0, 0));
         ASSERT_TRUE(rootJointIndex.isValid()) << "Unable to find a model index for the root joint of the actor";
 
         treeView->selectionModel()->select(rootJointIndex, QItemSelectionModel::Select | QItemSelectionModel::Rows);

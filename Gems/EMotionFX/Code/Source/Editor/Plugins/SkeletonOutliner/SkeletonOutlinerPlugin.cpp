@@ -267,6 +267,11 @@ namespace EMotionFX
             return;
         }
 
+        if (selectedRowIndices.size() == 1 && SkeletonModel::IndexIsRootNode(selectedRowIndices[0]))
+        {
+            return;
+        }
+
         QMenu* contextMenu = new QMenu(m_mainWidget);
         contextMenu->setObjectName("EMFX.SkeletonOutlinerPlugin.ContextMenu");
 

@@ -188,7 +188,7 @@ namespace ShaderManagementConsole
                     results.push_back({ combined.m_sourceGuid, combined.m_subID });
                     return false;
                 },
-                nullptr);
+                {});
         }
 
         return results;

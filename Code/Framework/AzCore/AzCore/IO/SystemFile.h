@@ -53,6 +53,8 @@ namespace AZ
             using FileHandleType = AZ::IO::Internal::FileHandleType;
 
             SystemFile();
+            //! Constructor which invokes Open() using the file name and mode
+            SystemFile(const char* fileName, int mode, int platformFlags = 0);
             ~SystemFile();
 
             SystemFile(SystemFile&&);

@@ -237,6 +237,31 @@ namespace UnitTest
         EXPECT_FALSE(AZStd::ranges::equal(testVector, unequalVector));
     }
 
+    TEST_F(RangesAlgorithmTestFixture, RangesLexicographicalCompare_IsAbleToCompareTwoRanges_ReturnsSmallerRange)
+    {
+        AZStd::vector testVector{ 5, 1, 22, 47, -8, -5, 1000, 687, 22, -8, -8, 1000, 45 };
+        AZStd::vector longerVector{ 5, 1, 22, 47, -8, -5, 1000, 687, 22, -8, -8, 1000, 45, 929 };
+        AZStd::vector shorterVector{ 5, 1, 22, 47, -8, -5, 1000, 687, 22, -8, -8, 1000 };
+        AZStd::vector unequalVector{ 5, 1, 22, 47, -8, -5, 1000, 14, 22, -8, -8, 1000, 25 };
+
+        const AZStd::vector<int> emptyVector;
+        EXPECT_FALSE(AZStd::ranges::lexicographical_compare(emptyVector, emptyVector));
+        EXPECT_TRUE(AZStd::ranges::lexicographical_compare(emptyVector, testVector));
+        EXPECT_FALSE(AZStd::ranges::lexicographical_compare(testVector, emptyVector));
+
+        // testVector is a proper prefix of longerVector
+        EXPECT_TRUE(AZStd::ranges::lexicographical_compare(testVector, longerVector));
+        EXPECT_FALSE(AZStd::ranges::lexicographical_compare(longerVector, testVector));
+
+        // shorterVector is a proper prefix of shorterVector
+        EXPECT_FALSE(AZStd::ranges::lexicographical_compare(testVector, shorterVector));
+        EXPECT_TRUE(AZStd::ranges::lexicographical_compare(shorterVector, testVector));
+
+        // testVector and unequalVector are the same size, but have different element values
+        EXPECT_FALSE(AZStd::ranges::lexicographical_compare(testVector, unequalVector));
+        EXPECT_TRUE(AZStd::ranges::lexicographical_compare(unequalVector, testVector));
+    }
+
     TEST_F(RangesAlgorithmTestFixture, RangesMismatch_Returns_IteratorsToMismatchElements)
     {
         AZStd::vector testVector{ 1, 2, 3, 4, 5 ,6 };
@@ -441,6 +466,50 @@ namespace UnitTest
         EXPECT_THAT(testString, ::testing::ElementsAre('\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0'));
     }
 
+    TEST_F(RangesAlgorithmTestFixture, RangesTransform_UnaryConvertsInPlace_Succeeds)
+    {
+        const char* expectedString = "ifmmp";
+        AZStd::string testString = "hello";
+        constexpr auto incrementChar = [](char elem) { return static_cast<char>(elem + 1); };
+        auto unaryResult = AZStd::ranges::transform(testString, testString.begin(), incrementChar);
+        EXPECT_EQ(testString.end(), unaryResult.in);
+        EXPECT_EQ(testString.end(), unaryResult.out);
+        EXPECT_EQ(expectedString, testString);
+    }
+
+    TEST_F(RangesAlgorithmTestFixture, RangesTransform_UnaryModifiesOtherRange_Succeeds)
+    {
+        AZStd::string testString = "hello";
+        AZStd::vector<int> ordinals;
+        auto unaryResult = AZStd::ranges::transform(testString, AZStd::back_inserter(ordinals), AZStd::identity{});
+        EXPECT_EQ(testString.end(), unaryResult.in);
+
+        EXPECT_THAT(ordinals, ::testing::ElementsAre('h', 'e', 'l', 'l', 'o'));
+    }
+
+     TEST_F(RangesAlgorithmTestFixture, RangesTransform_BinaryCombinesTwoRanges_Succeeds)
+    {
+        AZStd::array testArray1{1, 4, 9, 16};
+        AZStd::array testArray2{2, 4, 6, 8};
+        AZStd::vector<int> ordinals;
+        constexpr auto AddNumbers = [](int left, int right) { return left + right; };
+        auto binaryResult = AZStd::ranges::transform(testArray1, testArray2, AZStd::back_inserter(ordinals), AddNumbers);
+        EXPECT_EQ(testArray1.end(), binaryResult.in1);
+        EXPECT_EQ(testArray2.end(), binaryResult.in2);
+
+        EXPECT_THAT(ordinals, ::testing::ElementsAre(3, 8, 15, 24));
+    }
+
+    TEST_F(RangesAlgorithmTestFixture, RangesTransform_ModifiesOtherRange_Succeeds)
+    {
+        AZStd::string testString = "hello";
+        AZStd::vector<int> ordinals;
+        auto unaryResult = AZStd::ranges::transform(testString, AZStd::back_inserter(ordinals), AZStd::identity{});
+        EXPECT_EQ(testString.end(), unaryResult.in);
+
+        EXPECT_THAT(ordinals, ::testing::ElementsAre('h', 'e', 'l', 'l', 'o'));
+    }
+
     TEST_F(RangesAlgorithmTestFixture, RangesContains_LocatesElementInContainer_Succeeds)
     {
         AZStd::vector testVector{ 5, 1, 22, 47, -8, -5, 1000, 687, 22, -8, 1000, 45 };
@@ -499,5 +568,24 @@ namespace UnitTest
 
         EXPECT_TRUE(AZStd::ranges::ends_with(testVector, shorterVector));
         EXPECT_FALSE(AZStd::ranges::ends_with(shorterVector, testVector));
+    }
+
+    TEST_F(RangesAlgorithmTestFixture, RangesIota_IncrementsSequence_UntilOfRange)
+    {
+        constexpr int vectorSize = 10;
+        AZStd::vector<int> testVector(vectorSize);
+        constexpr int startValue = -4;
+        auto result = AZStd::ranges::iota(testVector, startValue);
+
+        EXPECT_EQ(startValue + vectorSize, result.value);
+        EXPECT_EQ(testVector.end(), result.out);
+
+        AZStd::vector<int> expectedVector;
+        expectedVector.reserve(vectorSize);
+        for (int i = 0; i < vectorSize; ++i)
+        {
+            expectedVector.push_back(startValue + i);
+        }
+        EXPECT_THAT(testVector, ::testing::ContainerEq(expectedVector));
     }
 }

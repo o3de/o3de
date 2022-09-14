@@ -101,8 +101,8 @@ namespace AssetProcessor
 
             //Calculating fingerprints for the file for pc and android platforms
             AZ::Uuid sourceId = AZ::Uuid("{2206A6E0-FDBC-45DE-B6FE-C2FC63020BD5}");
-            JobEntry jobEntryPC(scanFolderPath, relPath, relPath, 0, { "pc", {"desktop", "renderer"} }, "", 0, 1, sourceId);
-            JobEntry jobEntryANDROID(scanFolderPath, relPath, relPath, 0, { "android", {"mobile", "renderer"} }, "", 0, 2, sourceId);
+            JobEntry jobEntryPC(scanFolderPath, relPath, relPath, {}, { "pc", {"desktop", "renderer"} }, "", 0, 1, sourceId);
+            JobEntry jobEntryANDROID(scanFolderPath, relPath, relPath, {}, { "android", {"mobile", "renderer"} }, "", 0, 2, sourceId);
 
             JobDetails jobDetailsPC;
             jobDetailsPC.m_extraInformationForFingerprinting = extraInfoForPC.toUtf8().constData();
