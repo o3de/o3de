@@ -34,6 +34,11 @@ namespace AWSCore
         //! @return The path of AWS resource mapping config file
         virtual AZStd::string GetResourceMappingConfigFilePath() const = 0;
 
+        //! IsAllowedAWSMetadataQueries
+        //! Whether calls to AWS environmental endpoints, such as the Amazon EC2 instance metadata service (IMDS), are permitted
+        //! @return The AllowAWSMetadataQueries setting value
+        virtual bool IsAllowedAWSMetadataQueries() const = 0;
+
         //! ReloadConfiguration
         //! Reload AWSCore configuration without restarting application
         virtual void ReloadConfiguration() = 0;

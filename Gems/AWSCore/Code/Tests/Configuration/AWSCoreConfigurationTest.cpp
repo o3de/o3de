@@ -20,7 +20,8 @@ R"({
     {
         "AWSCore": {
             "ProfileName": "testprofile",
-            "ResourceMappingConfigFileName": "test_aws_resource_mappings.json"
+            "ResourceMappingConfigFileName": "test_aws_resource_mappings.json",
+            "AllowAWSMetadataQueries": true,
         }
     }
 })";
@@ -118,16 +119,20 @@ TEST_F(AWSCoreConfigurationTest, ReloadConfiguration_LoadValidSettingsRegistryAf
 
     auto actualConfigFilePath = m_awsCoreConfiguration->GetResourceMappingConfigFilePath();
     auto actualProfileName = m_awsCoreConfiguration->GetProfileName();
+    auto actualAllowAWSMetadataQueries = m_awsCoreConfiguration->IsAllowedAWSMetadataQueries();
     EXPECT_TRUE(actualConfigFilePath.empty());
     EXPECT_TRUE(actualProfileName == AWSCoreConfiguration::AWSCoreDefaultProfileName);
+    EXPECT_FALSE(actualAllowAWSMetadataQueries);
 
     CreateFile(m_setRegFilePath.Native(), TEST_VALID_RESOURCE_MAPPING_SETREG);
     m_awsCoreConfiguration->ReloadConfiguration();
 
     actualConfigFilePath = m_awsCoreConfiguration->GetResourceMappingConfigFilePath();
     actualProfileName = m_awsCoreConfiguration->GetProfileName();
+    actualAllowAWSMetadataQueries = m_awsCoreConfiguration->IsAllowedAWSMetadataQueries();
     EXPECT_FALSE(actualConfigFilePath.empty());
     EXPECT_TRUE(actualProfileName != AWSCoreConfiguration::AWSCoreDefaultProfileName);
+    EXPECT_TRUE(actualAllowAWSMetadataQueries);
 }
 
 TEST_F(AWSCoreConfigurationTest, ReloadConfiguration_LoadInvalidSettingsRegistryAfterValidOne_ReturnEmptyConfigFilePath)
@@ -137,14 +142,18 @@ TEST_F(AWSCoreConfigurationTest, ReloadConfiguration_LoadInvalidSettingsRegistry
 
     auto actualConfigFilePath = m_awsCoreConfiguration->GetResourceMappingConfigFilePath();
     auto actualProfileName = m_awsCoreConfiguration->GetProfileName();
+    auto actualAllowAWSMetadataQueries = m_awsCoreConfiguration->IsAllowedAWSMetadataQueries();
     EXPECT_FALSE(actualConfigFilePath.empty());
     EXPECT_TRUE(actualProfileName != AWSCoreConfiguration::AWSCoreDefaultProfileName);
+    EXPECT_TRUE(actualAllowAWSMetadataQueries);
 
     CreateFile(m_setRegFilePath.Native(), TEST_INVALID_RESOURCE_MAPPING_SETREG);
     m_awsCoreConfiguration->ReloadConfiguration();
 
     actualConfigFilePath = m_awsCoreConfiguration->GetResourceMappingConfigFilePath();
     actualProfileName = m_awsCoreConfiguration->GetProfileName();
+    actualAllowAWSMetadataQueries = m_awsCoreConfiguration->IsAllowedAWSMetadataQueries();
     EXPECT_TRUE(actualConfigFilePath.empty());
     EXPECT_TRUE(actualProfileName == AWSCoreConfiguration::AWSCoreDefaultProfileName);
+    EXPECT_FALSE(actualAllowAWSMetadataQueries);
 }

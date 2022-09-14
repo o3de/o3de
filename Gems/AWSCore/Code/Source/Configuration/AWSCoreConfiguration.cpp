@@ -20,6 +20,7 @@ namespace AWSCore
         : m_sourceProjectFolder("")
         , m_profileName(AWSCoreDefaultProfileName)
         , m_resourceMappingConfigFileName("")
+        , m_allowAWSMetadataQueries(false)
     {
     }
 
@@ -54,6 +55,11 @@ namespace AWSCore
             m_sourceProjectFolder.c_str(), AWSCoreResourceMappingConfigFolderName, m_resourceMappingConfigFileName.c_str());
         AzFramework::StringFunc::Path::Normalize(configFilePath);
         return configFilePath;
+    }
+
+    bool AWSCoreConfiguration::IsAllowedAWSMetadataQueries() const
+    {
+        return m_allowAWSMetadataQueries;
     }
 
     void AWSCoreConfiguration::InitConfig()
@@ -100,6 +106,14 @@ namespace AWSCore
             AZ_Warning(AWSCoreConfigurationName, false, ProfileNameNotFoundErrorMessage);
             m_profileName = AWSCoreDefaultProfileName;
         }
+
+        auto allowAWSMetadataPath = AZStd::string::format("%s%s",
+            AZ::SettingsRegistryMergeUtils::OrganizationRootKey, AWSCoreAllowAWSMetadataQueriesKey);
+        if (!settingsRegistry->Get(m_allowAWSMetadataQueries, allowAWSMetadataPath))
+        {
+            AZ_Warning(AWSCoreConfigurationName, false, AllowAWSMetadataQueriesNotFoundMessage);
+            m_allowAWSMetadataQueries = false;
+        }
     }
 
     void AWSCoreConfiguration::ResetSettingsRegistryData()
@@ -120,6 +134,11 @@ namespace AWSCore
             AZ::SettingsRegistryMergeUtils::OrganizationRootKey, AWSCoreResourceMappingConfigFileNameKey);
         settingsRegistry->Remove(resourceMappingConfigFileNamePath);
         m_resourceMappingConfigFileName.clear();
+
+        auto allowAWSMetadataPath =
+            AZStd::string::format("%s%s", AZ::SettingsRegistryMergeUtils::OrganizationRootKey, AWSCoreAllowAWSMetadataQueriesKey);
+        settingsRegistry->Remove(allowAWSMetadataPath);
+        m_allowAWSMetadataQueries = false;
 
         // Reload the AWSCore setting registry file from disk.
         if (m_sourceProjectFolder.empty())
