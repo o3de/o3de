@@ -18,6 +18,7 @@
 
 #include <AzToolsFramework/AzToolsFrameworkModule.h>
 #include <AzToolsFramework/ActionManager/ActionManagerSystemComponent.h>
+#include <AzToolsFramework/Manipulators/PaintBrushManipulator.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/Commands/EntityStateCommand.h>
@@ -377,12 +378,6 @@ namespace AzToolsFramework
         EditorAssetMimeDataContainer::Reflect(context);
         ComponentAssetMimeDataContainer::Reflect(context);
 
-        AssetBrowser::AssetBrowserEntry::Reflect(context);
-        AssetBrowser::RootAssetBrowserEntry::Reflect(context);
-        AssetBrowser::FolderAssetBrowserEntry::Reflect(context);
-        AssetBrowser::SourceAssetBrowserEntry::Reflect(context);
-        AssetBrowser::ProductAssetBrowserEntry::Reflect(context);
-
         AssetEditor::AssetEditorWindowSettings::Reflect(context);
         AssetEditor::AssetEditorWidgetUserSettings::Reflect(context);
 
@@ -392,6 +387,7 @@ namespace AzToolsFramework
         Prefab::PrefabIntegrationManager::Reflect(context);
 
         ComponentModeFramework::ComponentModeDelegate::Reflect(context);
+        PaintBrushConfig::Reflect(context);
 
         ViewportInteraction::ViewportInteractionReflect(context);
         ViewportEditorModeNotifications::Reflect(context);

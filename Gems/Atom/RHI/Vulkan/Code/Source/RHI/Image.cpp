@@ -8,7 +8,7 @@
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/parallel/lock.h>
 #include <AzCore/std/sort.h>
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Image.h>
 #include <RHI/ImagePool.h>
 #include <RHI/SwapChain.h>

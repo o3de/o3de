@@ -69,24 +69,36 @@ namespace TestImpact
         {
             "target",
             "name",
+            "type",
             "output_name",
             "path",
             "sources",
             "static",
             "input",
-            "output"
+            "output",
+            "dependencies",
+            "build",
+            "runtime",
+            "production",
+            "test"
         };
 
         enum
         {
             TargetKey,
             NameKey,
+            TargetTypeKey,
             OutputNameKey,
             PathKey,
             SourcesKey,
             StaticKey,
             InputKey,
-            OutputKey
+            OutputKey,
+            DependenciesKey,
+            BuildDependenciesKey,
+            RuntimeDependenciesKey,
+            ProductionTargetTypeKey,
+            TestTargetTypeKey
         };
 
         AZ_TestImpact_Eval(!autogenMatcher.empty(), ArtifactException, "Autogen matcher cannot be empty");
@@ -102,11 +114,41 @@ namespace TestImpact
         const auto& target = buildTarget[Keys[TargetKey]];
         descriptor.m_name = target[Keys[NameKey]].GetString();
         descriptor.m_outputName = target[Keys[OutputNameKey]].GetString();
-        descriptor.m_path = target["path"].GetString();
+        descriptor.m_path = target[Keys[PathKey]].GetString();
+
+        if (const auto& targetType = target[Keys[TargetTypeKey]];
+            targetType == Keys[ProductionTargetTypeKey])
+        {
+            descriptor.m_type = TargetType::ProductionTarget;
+        }
+        else if (targetType == Keys[TestTargetTypeKey])
+        {
+            descriptor.m_type = TargetType::TestTarget;
+        }
+        else
+        {
+            throw(ArtifactException(AZStd::string::format("Unexpected target type '%s'", targetType.GetString())));
+        }
 
         AZ_TestImpact_Eval(!descriptor.m_name.empty(), ArtifactException, "Target name cannot be empty");
         AZ_TestImpact_Eval(!descriptor.m_outputName.empty(), ArtifactException, "Target output name cannot be empty");
         AZ_TestImpact_Eval(!descriptor.m_path.empty(), ArtifactException, "Target path cannot be empty");
+
+        const auto extractDependencies = [](const auto& dependenciesArray)
+        {
+            DependencyList dependencies;
+            dependencies.reserve(dependenciesArray.Size());
+
+            for (const auto& dependency : dependenciesArray)
+            {
+                dependencies.push_back(dependency.GetString());
+            }
+
+            return dependencies;
+        };
+
+        descriptor.m_dependencies.m_build = extractDependencies(target[Keys[DependenciesKey]][Keys[BuildDependenciesKey]].GetArray());
+        descriptor.m_dependencies.m_runtime = extractDependencies(target[Keys[DependenciesKey]][Keys[RuntimeDependenciesKey]].GetArray());
 
         const auto& sources = buildTarget[Keys[SourcesKey]];
         const auto& staticSources = sources[Keys[StaticKey]].GetArray();

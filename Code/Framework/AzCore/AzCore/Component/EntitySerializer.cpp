@@ -85,7 +85,7 @@ namespace AZ
             for (auto& [componentKey, component] : componentMap)
             {
                 // if the component didn't serialize (i.e. is null) or the underlying type is genericComponentWrapperTypeId, the
-                // template is null and the component should not be addded
+                // template is null and the component should not be added
                 if (component && (component->GetUnderlyingComponentType() != genericComponentWrapperTypeId))
                 {
                     entityInstance->m_components.emplace_back(component);
@@ -101,7 +101,7 @@ namespace AZ
 
         return context.Report(
             result,
-            result.GetProcessing() != JSR::Processing::Halted ? "Succesfully loaded entity information."
+            result.GetProcessing() != JSR::Processing::Halted ? "Successfully loaded entity information."
                                                               : "Failed to load entity information.");
     }
 
@@ -207,4 +207,4 @@ namespace AZ
             }
         }
     }
-}
+} // namespace AZ

@@ -54,7 +54,7 @@ namespace AZ
                     editContext->Class<EditorDiffuseProbeGridComponent>(
                         "Diffuse Probe Grid", "The DiffuseProbeGrid component generates a grid of diffuse light probes for global illumination")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                            ->Attribute(AZ::Edit::Attributes::Category, "Atom")
+                            ->Attribute(AZ::Edit::Attributes::Category, "Graphics/Lighting")
                             ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg")
                             ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.svg")
                             ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))

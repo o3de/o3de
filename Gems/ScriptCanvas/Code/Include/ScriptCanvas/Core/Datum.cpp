@@ -17,8 +17,9 @@
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Math/Transform.h>
 
-#include <ScriptCanvas/Data/DataRegistry.h>
 #include <ScriptCanvas/Core/GraphScopedTypes.h>
+#include <ScriptCanvas/Data/DataRegistry.h>
+#include <ScriptCanvas/Execution/ExecutionStateDeclarations.h>
 
 #include "DatumBus.h"
 
@@ -2074,7 +2075,7 @@ namespace ScriptCanvas
             {
                 m_class = classIter->second;
             }
-            else
+            else if (m_type.GetAZType() != AZ::Uuid::CreateString(k_ExecutionStateAzTypeIdString))
             {
                 AZ_Error("ScriptCanvas", false, AZStd::string::format("Datum type (%s) de-serialized, but no such class found in the behavior context", m_type.GetAZType().ToString<AZStd::string>().c_str()).c_str());
             }
@@ -2108,6 +2109,8 @@ namespace ScriptCanvas
             {
                 editContext->Class<Datum>("Datum", "Datum")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "Datum")
+                    ->Attribute(AZ::Edit::Attributes::ChildNameLabelOverride, &Datum::GetLabel)
+                    ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &Datum::GetLabel)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &Datum::GetVisibility)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &Datum::m_storage, "Datum", "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &Datum::GetDatumVisibility)
@@ -2176,14 +2179,7 @@ namespace ScriptCanvas
 
     AZ::Crc32 Datum::GetDatumVisibility() const
     {
-        if (IS_A<Data::QuaternionType>())
-        {
-            return AZ::Edit::PropertyVisibility::Hide;
-        }
-        else
-        {
-            return AZ::Edit::PropertyVisibility::ShowChildrenOnly;
-        }
+        return AZ::Edit::PropertyVisibility::ShowChildrenOnly;
     }
 
     void Datum::SetNotificationsTarget(AZ::EntityId notificationId)

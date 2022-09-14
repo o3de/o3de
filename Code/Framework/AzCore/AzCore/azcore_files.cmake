@@ -183,6 +183,8 @@ set(FILES
     IO/IStreamerTypes.cpp
     IO/GenericStreams.cpp
     IO/GenericStreams.h
+    IO/OpenMode.h
+    IO/OpenMode.cpp
     IO/Path/Path.cpp
     IO/Path/Path.h
     IO/Path/Path.inl
@@ -359,6 +361,7 @@ set(FILES
     Math/TransformSerializer.h
     Math/Uuid.cpp
     Math/Uuid.h
+    Math/Uuid.inl
     Math/UuidSerializer.h
     Math/UuidSerializer.cpp
     Math/Vector2.cpp
@@ -585,6 +588,8 @@ set(FILES
     Settings/SettingsRegistryImpl.h
     Settings/SettingsRegistryMergeUtils.cpp
     Settings/SettingsRegistryMergeUtils.h
+    Settings/SettingsRegistryOriginTracker.cpp
+    Settings/SettingsRegistryOriginTracker.h
     Settings/SettingsRegistryScriptUtils.cpp
     Settings/SettingsRegistryScriptUtils.h
     Settings/SettingsRegistryVisitorUtils.cpp

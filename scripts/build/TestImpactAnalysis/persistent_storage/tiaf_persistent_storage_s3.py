@@ -6,10 +6,13 @@
 #
 #
 
+import os
+import shutil
+import tempfile
 import boto3
 import botocore.exceptions
 import zlib
-import logging
+import pathlib
 from io import BytesIO
 from persistent_storage import PersistentStorage
 from tiaf_logger import get_logger
@@ -24,7 +27,7 @@ class PersistentStorageS3(PersistentStorage):
     META_KEY = "meta"
     BUILD_CONFIG_KEY = "build_config"
 
-    def __init__(self, config: dict, suite: str, commit: str, s3_bucket: str, root_dir: str, branch: str):
+    def __init__(self, config: dict, suite: str, commit: str, s3_bucket: str, root_dir: str, branch: str, active_workspace: str, unpacked_coverage_data_file_path: str, previous_test_run_data_file_path: str, temp_workspace: str):
         """
         Initializes the persistent storage with the specified s3 bucket.
 
@@ -36,7 +39,7 @@ class PersistentStorageS3(PersistentStorage):
         @branch branch:   The branch to retrieve the historic data for.
         """
 
-        super().__init__(config, suite, commit)
+        super().__init__(config, suite, commit, active_workspace, unpacked_coverage_data_file_path, previous_test_run_data_file_path, temp_workspace)
 
         self.s3_bucket = s3_bucket
         self.root_dir = root_dir
@@ -115,10 +118,50 @@ class PersistentStorageS3(PersistentStorage):
         @param s3_object:  The s3 object to download, decompress and decode
         """
         logger.info(f"Attempting to decode historic data object...")
-        response = s3_object.get()
-        file_stream = response['Body']
+        file_stream = s3_object['Body']
         decoded_data = zlib.decompress(file_stream.read()).decode('UTF-8')
         logger.info(f"Decoding complete.")
 
         # Decompress and unpack the zipped historic data JSON
         return decoded_data
+
+    def _store_runtime_artifacts(self, runtime_artifact_dir: str):
+        """
+        Store the runtime artifacts in the designated persistent storage location.
+
+        @param runtime_artifact_dir: The directory containing the runtime artifacts to store.
+        """
+        source_directory = pathlib.Path(runtime_artifact_dir)
+        self._zip_and_upload_directory(source_directory, self.RUNTIME_ARTIFACT_DIRECTORY)
+
+    def _store_coverage_artifacts(self, runtime_coverage_dir: str):
+        """
+        Store the coverage artifacts in the designated persistent storage location.
+
+        @param runtime_coverage_dir: The directory containing the runtime coverage artifacts to store.
+        """
+        source_directory = pathlib.Path(runtime_coverage_dir)
+        self._zip_and_upload_directory(source_directory, self.RUNTIME_COVERAGE_DIRECTORY)
+
+    def _zip_and_upload_directory(self, source_directory: pathlib.Path, object_name: str):
+        """
+        Zip the directory indicated in source_directory and store it in the s3_bucket as a folder in the historic_data_dir.
+        
+        @param source_directory: Path to the directory to zip.
+        @param target_directory: Name for the uploaded object.
+        """
+        artifact_key = f"{self._historic_data_dir}/{object_name}.zip"
+        compressed_file_path = pathlib.Path(self._temp_workspace).joinpath("compressed_artifacts.zip")
+        try:
+            compressed_directory = shutil.make_archive(compressed_file_path.with_suffix(""), 'zip', source_directory)
+            self._s3.upload_file(compressed_directory, Bucket=self.s3_bucket, Key=artifact_key,ExtraArgs={
+                                'ACL': 'bucket-owner-full-control'})
+        except botocore.exceptions.BotoCoreError as e:
+            logger.error(f"There was a problem with the s3 bucket: {e}")
+        except botocore.exceptions.ClientError as e:
+            logger.error(f"There was a problem with the s3 client: {e}")
+        except OSError as e:
+            logger.warn(e)
+        finally:
+            if compressed_file_path.is_file():
+                os.unlink(compressed_file_path)

@@ -12,7 +12,6 @@
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/Matrix4x4.h>
-#include <AzCore/Math/VectorConversions.h>
 #include <AzCore/std/algorithm.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Viewport/CameraState.h>
@@ -23,9 +22,12 @@
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/Commands/EntityManipulatorCommand.h>
 #include <AzToolsFramework/Commands/SelectionCommand.h>
+#include <AzToolsFramework/ComponentMode/ComponentModeSwitcher.h>
+#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Entity/EditorEntityTransformBus.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
+#include <AzToolsFramework/Manipulators/AngularManipulatorCircleViewFeedback.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/Manipulators/ManipulatorSnapping.h>
 #include <AzToolsFramework/Manipulators/RotationManipulators.h>
@@ -41,8 +43,6 @@
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/ViewportSelection/EditorVisibleEntityDataCache.h>
-#include <AzToolsFramework/ComponentMode/ComponentModeSwitcher.h>
-#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <Entity/EditorEntityContextBus.h>
 #include <Entity/EditorEntityHelpers.h>
 #include <QApplication>
@@ -51,6 +51,7 @@
 static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o3de.context.editor.mainwindow";
 static constexpr AZStd::string_view EditMenuIdentifier = "o3de.menu.editor.edit";
 static constexpr AZStd::string_view EditModifyModesMenuIdentifier = "o3de.menu.editor.edit.modify.modes";
+static constexpr AZStd::string_view TransformModeChangedUpdaterIdentifier = "o3de.updater.onTransformModeChanged";
 
 namespace AzToolsFramework
 {
@@ -155,9 +156,9 @@ namespace AzToolsFramework
     static const char* const DuplicateUndoRedoDesc = DuplicateTitle;
     static const char* const DeleteUndoRedoDesc = DeleteTitle;
 
-    static const char* const TransformModeClusterTranslateTooltip = "Switch to translate mode";
-    static const char* const TransformModeClusterRotateTooltip = "Switch to rotate mode";
-    static const char* const TransformModeClusterScaleTooltip = "Switch to scale mode";
+    static const char* const TransformModeClusterTranslateTooltip = "Switch to translate mode (1)";
+    static const char* const TransformModeClusterRotateTooltip = "Switch to rotate mode (2)";
+    static const char* const TransformModeClusterScaleTooltip = "Switch to scale mode (3)";
     static const char* const SpaceClusterWorldTooltip = "Toggle world space lock";
     static const char* const SpaceClusterParentTooltip = "Toggle parent space lock";
     static const char* const SpaceClusterLocalTooltip = "Toggle local space lock";
@@ -474,6 +475,12 @@ namespace AzToolsFramework
     {
         ViewportUi::ViewportUiRequestBus::Event(
             ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterVisible, clusterId, visible);
+    }
+
+    static void SetViewportUiSwitcherVisible(const ViewportUi::SwitcherId switcherId, const bool visible)
+    {
+        ViewportUi::ViewportUiRequestBus::Event(
+            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherVisible, switcherId, visible);
     }
 
     static void SetViewportUiClusterActiveButton(const ViewportUi::ClusterId clusterId, const ViewportUi::ButtonId buttonId)
@@ -997,15 +1004,6 @@ namespace AzToolsFramework
         ToolsApplicationNotificationBus::Broadcast(&ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay, Refresh_Values);
     }
 
-    // leaves focus mode by focusing on the parent of the current prefab in the entity outliner
-    static void LeaveFocusMode()
-    {
-        if (auto prefabFocusPublicInterface = AZ::Interface<Prefab::PrefabFocusPublicInterface>::Get())
-        {
-            prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab(GetEntityContextId());
-        }
-    }
-
     static AZ::Vector3 EtcsPickEntity(const AZ::EntityId entityId, const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {
         float distance;
@@ -1027,6 +1025,7 @@ namespace AzToolsFramework
 
         m_editorHelpers = AZStd::make_unique<EditorHelpers>(entityDataCache);
 
+        ActionManagerRegistrationNotificationBus::Handler::BusConnect();
         EditorEventsBus::Handler::BusConnect();
         EditorTransformComponentSelectionRequestBus::Handler::BusConnect(entityContextId);
         ToolsApplicationNotificationBus::Handler::BusConnect();
@@ -1073,7 +1072,8 @@ namespace AzToolsFramework
                     timeNow,
                     &AzToolsFramework::ViewportInteraction::EditorViewportInputTimeNowRequestBus::Events::EditorViewportInputTimeNow);
                 return timeNow;
-            });
+            }
+        );
     }
 
     EditorTransformComponentSelection::~EditorTransformComponentSelection()
@@ -1104,6 +1104,7 @@ namespace AzToolsFramework
         ToolsApplicationNotificationBus::Handler::BusDisconnect();
         EditorTransformComponentSelectionRequestBus::Handler::BusDisconnect();
         EditorEventsBus::Handler::BusDisconnect();
+        ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
     }
 
     void EditorTransformComponentSelection::SetupBoxSelect()
@@ -1442,7 +1443,8 @@ namespace AzToolsFramework
         AZStd::shared_ptr<SharedRotationState> sharedRotationState = AZStd::make_shared<SharedRotationState>();
 
         rotationManipulators->InstallLeftMouseDownCallback(
-            [this, sharedRotationState]([[maybe_unused]] const AngularManipulator::Action& action) mutable
+            [this, sharedRotationState](
+                [[maybe_unused]] const AngularManipulator::Action& action) mutable
             {
                 sharedRotationState->m_savedOrientation = AZ::Quaternion::CreateIdentity();
                 sharedRotationState->m_referenceFrameAtMouseDown = m_referenceFrame;
@@ -1459,8 +1461,7 @@ namespace AzToolsFramework
             });
 
         rotationManipulators->InstallMouseMoveCallback(
-            [this, prevModifiers = ViewportInteraction::KeyboardModifiers(),
-             sharedRotationState](const AngularManipulator::Action& action) mutable
+            [this, prevModifiers = ViewportInteraction::KeyboardModifiers(), sharedRotationState](const AngularManipulator::Action& action) mutable
             {
                 const ReferenceFrame referenceFrame = m_spaceCluster.m_spaceLock.value_or(ReferenceFrameFromModifiers(action.m_modifiers));
                 const Influence influence = InfluenceFromModifiers(action.m_modifiers);
@@ -2514,14 +2515,22 @@ namespace AzToolsFramework
         EditorMenuRequestBus::Broadcast(&EditorMenuRequests::RestoreEditMenuToDefault);
     }
 
-    void EditorTransformComponentSelection::NotifyMainWindowInitialized([[maybe_unused]] QMainWindow* mainWindow)
+    void EditorTransformComponentSelection::OnActionUpdaterRegistrationHook()
     {
         if (!IsNewActionManagerEnabled())
         {
             return;
         }
 
-        m_menuManagerInterface->AddSeparatorToMenu(EditMenuIdentifier, 300);
+        m_actionManagerInterface->RegisterActionUpdater(TransformModeChangedUpdaterIdentifier);
+    }
+
+    void EditorTransformComponentSelection::OnActionRegistrationHook()
+    {
+        if (!IsNewActionManagerEnabled())
+        {
+            return;
+        }
 
         // Duplicate
         {
@@ -2549,8 +2558,6 @@ namespace AzToolsFramework
                     // selection update handled in AfterEntitySelectionChanged
                 }
             );
-
-            m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.duplicate", 400);
         }
 
         // Delete
@@ -2579,11 +2586,8 @@ namespace AzToolsFramework
                     m_pivotOverrideFrame.Reset();
                 }
             );
-
-            m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.delete", 500);
         }
 
-        m_menuManagerInterface->AddSeparatorToMenu(EditMenuIdentifier, 600);
 
         // Select All
         {
@@ -2633,8 +2637,6 @@ namespace AzToolsFramework
                     RegenerateManipulators();
                 }
             );
-
-            m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.selectAll", 700);
         }
 
         // Invert Selection
@@ -2692,12 +2694,8 @@ namespace AzToolsFramework
                     RegenerateManipulators();
                 }
             );
-
-            m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.invertSelection", 800);
         }
-
-        m_menuManagerInterface->AddSeparatorToMenu(EditMenuIdentifier, 900);
-
+        
         // Toggle Pivot Location
         {
             AzToolsFramework::ActionProperties actionProperties;
@@ -2714,8 +2712,6 @@ namespace AzToolsFramework
                     ToggleCenterPivotSelection();
                 }
             );
-
-            m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.togglePivot", 1000);
         }
 
         // Reset Entity Transform
@@ -2745,8 +2741,6 @@ namespace AzToolsFramework
                     }
                 }
             );
-
-            m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.resetEntityTransform", 1100);
         }
 
         // Reset Manipulator
@@ -2765,8 +2759,6 @@ namespace AzToolsFramework
                     DelegateClearManipulatorOverride();
                 }
             );
-
-            m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.resetManipulator", 1200);
         }
 
         const auto showHide = [this](const bool show)
@@ -2825,8 +2817,6 @@ namespace AzToolsFramework
                     showHide(false);
                 }
             );
-
-            m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.hideSelection", 1300);
         }
 
         // Show All
@@ -2855,8 +2845,6 @@ namespace AzToolsFramework
                     );
                 }
             );
-
-            m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.showAll", 1400);
         }
 
         const auto lockUnlock = [this](const bool lock)
@@ -2897,8 +2885,6 @@ namespace AzToolsFramework
                     lockUnlock(true);
                 }
             );
-
-            m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.lockSelection", 1500);
         }
 
         // Unlock Selection
@@ -2945,14 +2931,11 @@ namespace AzToolsFramework
                     );
                 }
             );
-
-            auto outcome = m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.unlockAllEntities", 1600);
         }
-
-        m_menuManagerInterface->AddSeparatorToMenu(EditMenuIdentifier, 1700);
 
         // Transform Mode - Move
         {
+            AZStd::string actionIdentifier = "o3de.action.edit.transform.move";
             AzToolsFramework::ActionProperties actionProperties;
             actionProperties.m_name = "Move";
             actionProperties.m_description = "Select and move selected object(s)";
@@ -2961,25 +2944,25 @@ namespace AzToolsFramework
 
             m_actionManagerInterface->RegisterCheckableAction(
                 EditorMainWindowActionContextIdentifier,
-                "o3de.action.edit.transform.move",
+                actionIdentifier,
                 actionProperties,
-                [&]()
+                [this]()
                 {
                     SetTransformMode(Mode::Translation);
                 },
-                [&]() -> bool
+                [this]() -> bool
                 {
                     return GetTransformMode() == Mode::Translation;
                 }
             );
 
-            // TODO - Update when the transform mode changes.
-
-            m_menuManagerInterface->AddActionToMenu(EditModifyModesMenuIdentifier, "o3de.action.edit.transform.move", 100);
+            // Update when the transform mode changes.
+            m_actionManagerInterface->AddActionToUpdater(TransformModeChangedUpdaterIdentifier, actionIdentifier);
         }
 
         // Transform Mode - Rotate
         {
+            AZStd::string actionIdentifier = "o3de.action.edit.transform.rotate";
             AzToolsFramework::ActionProperties actionProperties;
             actionProperties.m_name = "Rotate";
             actionProperties.m_description = "Select and rotate selected object(s)";
@@ -2988,49 +2971,73 @@ namespace AzToolsFramework
 
             m_actionManagerInterface->RegisterCheckableAction(
                 EditorMainWindowActionContextIdentifier,
-                "o3de.action.edit.transform.rotate",
+                actionIdentifier,
                 actionProperties,
-                [&]()
+                [this]()
                 {
                     SetTransformMode(Mode::Rotation);
                 },
-                [&]() -> bool
+                [this]() -> bool
                 {
                     return GetTransformMode() == Mode::Rotation;
                 }
             );
 
-            // TODO - Update when the transform mode changes.
-
-            m_menuManagerInterface->AddActionToMenu(EditModifyModesMenuIdentifier, "o3de.action.edit.transform.rotate", 200);
+            // Update when the transform mode changes.
+            m_actionManagerInterface->AddActionToUpdater(TransformModeChangedUpdaterIdentifier, actionIdentifier);
         }
 
         // Transform Mode - Scale
         {
+            AZStd::string actionIdentifier = "o3de.action.edit.transform.scale";
             AzToolsFramework::ActionProperties actionProperties;
             actionProperties.m_name = "Scale";
-            actionProperties.m_description = "Select and rotate selected object(s)";
+            actionProperties.m_description = "Select and scale selected object(s)";
             actionProperties.m_category = "Edit";
             actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Scale.svg";
 
             m_actionManagerInterface->RegisterCheckableAction(
                 EditorMainWindowActionContextIdentifier,
-                "o3de.action.edit.transform.scale",
+                actionIdentifier,
                 actionProperties,
-                [&]()
+                [this]()
                 {
-                    SetTransformMode(Mode::Rotation);
+                    SetTransformMode(Mode::Scale);
                 },
-                [&]() -> bool
+                [this]() -> bool
                 {
-                    return GetTransformMode() == Mode::Rotation;
+                    return GetTransformMode() == Mode::Scale;
                 }
             );
 
-            // TODO - Update when the transform mode changes.
-
-            m_menuManagerInterface->AddActionToMenu(EditModifyModesMenuIdentifier, "o3de.action.edit.transform.scale", 300);
+            // Update when the transform mode changes.
+            m_actionManagerInterface->AddActionToUpdater(TransformModeChangedUpdaterIdentifier, actionIdentifier);
         }
+    }
+
+    void EditorTransformComponentSelection::OnMenuBindingHook()
+    {
+        // Edit Menu
+        m_menuManagerInterface->AddSeparatorToMenu(EditMenuIdentifier, 300);
+        m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.duplicate", 400);
+        m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.delete", 500);
+        m_menuManagerInterface->AddSeparatorToMenu(EditMenuIdentifier, 600);
+        m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.selectAll", 700);
+        m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.invertSelection", 800);
+        m_menuManagerInterface->AddSeparatorToMenu(EditMenuIdentifier, 900);
+        m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.togglePivot", 1000);
+        m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.resetEntityTransform", 1100);
+        m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.resetManipulator", 1200);
+        m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.hideSelection", 1300);
+        m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.showAll", 1400);
+        m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.lockSelection", 1500);
+        m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.unlockAllEntities", 1600);
+        m_menuManagerInterface->AddSeparatorToMenu(EditMenuIdentifier, 1700);
+
+        // Transform Modes
+        m_menuManagerInterface->AddActionToMenu(EditModifyModesMenuIdentifier, "o3de.action.edit.transform.move", 100);
+        m_menuManagerInterface->AddActionToMenu(EditModifyModesMenuIdentifier, "o3de.action.edit.transform.rotate", 200);
+        m_menuManagerInterface->AddActionToMenu(EditModifyModesMenuIdentifier, "o3de.action.edit.transform.scale", 300);
     }
 
     void EditorTransformComponentSelection::UnregisterActions()
@@ -3290,7 +3297,8 @@ namespace AzToolsFramework
         }
     }
 
-    void EditorTransformComponentSelection::OverrideComponentModeSwitcher(AZStd::shared_ptr<ComponentModeFramework::ComponentModeSwitcher> componentModeSwitcher)
+    void EditorTransformComponentSelection::OverrideComponentModeSwitcher(
+        AZStd::shared_ptr<ComponentModeFramework::ComponentModeSwitcher> componentModeSwitcher)
     {
         m_componentModeSwitcher = componentModeSwitcher;
     }
@@ -3338,7 +3346,13 @@ namespace AzToolsFramework
 
         m_mode = mode;
 
-        // set the corresponding Viewport UI button to active
+        // Update Transform Mode Actions.
+        if (m_actionManagerInterface)
+        {
+            m_actionManagerInterface->TriggerActionUpdater(TransformModeChangedUpdaterIdentifier);
+        }
+
+        // Set the corresponding Viewport UI button to active.
         switch (mode)
         {
         case Mode::Translation:
@@ -4118,6 +4132,8 @@ namespace AzToolsFramework
             // if we have an active manipulator, ensure we refresh the view while drawing
             // in case it needs to be recalculated based on the current view position
             m_entityIdManipulators.m_manipulators->RefreshView(cameraState.m_position);
+            // do any additional drawing for this aggregate manipulator/view pairing
+            m_entityIdManipulators.m_manipulators->DisplayFeedback(debugDisplay, cameraState);
 
             if (m_entityIdManipulators.m_manipulators->PerformingAction())
             {
@@ -4342,12 +4358,6 @@ namespace AzToolsFramework
             }
             break;
         case ViewportEditorMode::Focus:
-            {
-                ViewportUi::ViewportUiRequestBus::Event(
-                    ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateViewportBorder, "Focus Mode",
-                    LeaveFocusMode);
-            }
-            break;
         case ViewportEditorMode::Default:
         case ViewportEditorMode::Pick:
             // noop
@@ -4356,7 +4366,7 @@ namespace AzToolsFramework
     }
 
     void EditorTransformComponentSelection::OnEditorModeDeactivated(
-        const ViewportEditorModesInterface& editorModeState, const ViewportEditorMode mode)
+        [[maybe_unused]] const ViewportEditorModesInterface& editorModeState, const ViewportEditorMode mode)
     {
         switch (mode)
         {
@@ -4367,24 +4377,9 @@ namespace AzToolsFramework
                 ToolsApplicationNotificationBus::Handler::BusConnect();
                 EditorEntityVisibilityNotificationBus::Router::BusRouterConnect();
                 EditorEntityLockComponentNotificationBus::Router::BusRouterConnect();
-
-                // note: when leaving component mode, we check if we're still in focus mode (i.e. component mode was
-                // started from within focus mode), if we are, ensure we create/update the viewport border (as leaving
-                // component mode will attempt to remove it)
-                if (editorModeState.IsModeActive(ViewportEditorMode::Focus))
-                {
-                    ViewportUi::ViewportUiRequestBus::Event(
-                        ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateViewportBorder, "Focus Mode",
-                        LeaveFocusMode);
-                }
             }
             break;
         case ViewportEditorMode::Focus:
-            {
-                ViewportUi::ViewportUiRequestBus::Event(
-                    ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RemoveViewportBorder);
-            }
-            break;
         case ViewportEditorMode::Default:
         case ViewportEditorMode::Pick:
             // noop
@@ -4449,11 +4444,21 @@ namespace AzToolsFramework
     void EditorTransformComponentSelection::OnStartPlayInEditor()
     {
         SetAllViewportUiVisible(false);
+        // this is called seperately because the above method disables the switcher in component mode
+        if (m_componentModeSwitcher != nullptr)
+        {
+            SetViewportUiSwitcherVisible(m_componentModeSwitcher->GetSwitcherId(), false);
+        }
     }
 
     void EditorTransformComponentSelection::OnStopPlayInEditor()
     {
         SetAllViewportUiVisible(true);
+
+        if (m_componentModeSwitcher != nullptr)
+        {
+            SetViewportUiSwitcherVisible(m_componentModeSwitcher->GetSwitcherId(), true);
+        }
     }
 
     void EditorTransformComponentSelection::OnGridSnappingChanged([[maybe_unused]] const bool enabled)

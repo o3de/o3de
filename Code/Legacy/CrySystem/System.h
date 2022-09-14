@@ -99,8 +99,7 @@ struct SSystemCVars
     float sys_update_profile_time;
     int sys_MaxFPS;
     float sys_maxTimeStepForMovieSystem;
-    int sys_report_files_not_found_in_paks = 0;
-
+    
     int sys_asserts;
     int sys_error_debugbreak;
 
@@ -260,7 +259,7 @@ private:
     bool InitConsole();
     bool InitFileSystem();
     bool InitFileSystem_LoadEngineFolders(const SSystemInitParams& initParams);
-    bool InitAudioSystem(const SSystemInitParams& initParams);
+    bool InitAudioSystem();
 
     //@}
 
@@ -268,7 +267,6 @@ private:
     // Helper functions.
     //////////////////////////////////////////////////////////////////////////
     void CreateSystemVars();
-    void CreateAudioVars();
 
     void QueryVersionInfo();
     void LogVersion();
@@ -367,8 +365,6 @@ private: // ------------------------------------------------------
 #define AZ_RESTRICTED_SECTION SYSTEM_H_SECTION_4
 #include AZ_RESTRICTED_FILE(System_h)
 #endif
-
-    ICVar* m_sys_audio_disable;
 
     ICVar* m_gpu_particle_physics;
 

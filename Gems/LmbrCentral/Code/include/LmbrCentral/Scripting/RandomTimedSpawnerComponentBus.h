@@ -17,8 +17,8 @@ namespace AZ
 
 namespace LmbrCentral
 {
-    static const AZ::Uuid EditorRandomTimedSpawnerComponentTypeId = "{6D3E32F0-1971-416B-86DE-4B5EB6E2139E}";
-    static const AZ::Uuid RandomTimedSpawnerComponentTypeId = "{8EE9EC2C-1CC9-4F88-968F-CFD20C380694}";
+    inline constexpr AZ::TypeId EditorRandomTimedSpawnerComponentTypeId{ "{6D3E32F0-1971-416B-86DE-4B5EB6E2139E}" };
+    inline constexpr AZ::TypeId RandomTimedSpawnerComponentTypeId{ "{8EE9EC2C-1CC9-4F88-968F-CFD20C380694}" };
 
     // Request bus for the RandomTimedSpawnerComponent
     class RandomTimedSpawnerComponentRequests

@@ -28,7 +28,10 @@
 #include <EMotionFX/Source/AnimGraphObjectFactory.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 
+#include <GraphCanvas/Widgets/NodePalette/NodePaletteTreeView.h>
+
 #include <QApplication>
+#include <QModelIndex>
 #include <QWidget>
 
 namespace EMotionFX
@@ -102,13 +105,19 @@ namespace EMotionFX
         const AZStd::vector<EMotionFX::AnimGraphNode*>& selectedAnimGraphNodes = GetActiveNodeGraph()->GetSelectedAnimGraphNodes();
         m_blendGraphWidget->OnContextMenuEvent(m_blendGraphWidget, QPoint(0, 0), QPoint(0, 0), m_animGraphPlugin, selectedAnimGraphNodes, true, false, m_animGraphPlugin->GetActionFilter());
 
-        // Fire the Add Node action.
-        QAction* addNodeAction = GetNamedAction(m_blendGraphWidget, nodeTypeName);
-        if (!addNodeAction)
+        // Instantiate the node from the tree in context menu
+        auto* tree = UIFixture::GetFirstChildOfType<GraphCanvas::NodePaletteTreeView>(m_blendGraphWidget);
+        if (!tree)
         {
             return nullptr;
         }
-        addNodeAction->trigger();
+        const QModelIndex idx = UIFixture::GetIndexFromName(tree, nodeTypeName);
+        if (!idx.isValid())
+        {
+            return nullptr;
+        }
+        // Selection should spawn the node
+        tree->setCurrentIndex(idx);
 
         const EMotionFX::AnimGraphNode* currentNode = GetActiveNodeGraph()->GetModelIndex().data(EMStudio::AnimGraphModel::ROLE_NODE_POINTER).value<EMotionFX::AnimGraphNode*>();
 

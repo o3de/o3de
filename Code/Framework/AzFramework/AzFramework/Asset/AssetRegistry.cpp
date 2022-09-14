@@ -14,42 +14,31 @@
 
 namespace AssetRegistryInternal
 {
-    // to prevent people from shooting themselves in the foot here we are going to normalize the path.
+    // normalize the path.
     // since sha1 is sensitive to both slash direction and case!
     // note that this is not generating asset IDs, its merely creating UUIDs that map from
     // asset path -> asset Id, so that storing asset path as strings is not necessary.
-    AZ::Uuid CreateUUIDForName(const char* name)
+    AZ::Uuid CreateUUIDForName(AZStd::string_view name)
     {
-        if (!name)
+        if (name.empty())
         {
-            return AZ::Uuid::CreateNull();
+            return {};
         }
-
-        // avoid allocating memory.  Note that the input paths are expected to be relative paths
-        // from the root and thus should be much shorter than AZ_MAX_PATH_LEN
-        char tempBuffer[AZ_MAX_PATH_LEN] = { 0 };
-        tempBuffer[AZ_ARRAY_SIZE(tempBuffer) - 1] = 0;
         
-        // here we try to pass over the memory only once.
-        for (AZStd::size_t pos = 0; pos < AZ_ARRAY_SIZE(tempBuffer) - 1; ++pos)
+        // pass over the memory only once
+        auto TransformPath = [](const char elem) -> char
         {
-            char currentValue = name[pos];
-            if (!currentValue)
+            if (elem == AZ::IO::WindowsPathSeparator)
             {
-                tempBuffer[pos] = 0;
-                break;
-            }
-            else if (currentValue == '\\')
-            {
-                tempBuffer[pos] = '/';
+                return AZ::IO::PosixPathSeparator;
             }
             else
             {
-                tempBuffer[pos] = (char)tolower(currentValue);
+                return AZStd::tolower(elem);
             }
-        }
+        };
 
-        return AZ::Uuid::CreateName(tempBuffer);
+        return AZ::Uuid::CreateData(name | AZStd::views::transform(TransformPath));
     }
 }
 
@@ -136,7 +125,7 @@ namespace AzFramework
         auto existingAsset = m_assetIdToInfo.find(id);
         if (existingAsset != m_assetIdToInfo.end())
         {
-            m_assetPathToId.erase(CreateUUIDForName(existingAsset->second.m_relativePath.c_str()));
+            m_assetPathToId.erase(CreateUUIDForName(existingAsset->second.m_relativePath));
         }
         
         m_assetIdToInfo.erase(id);

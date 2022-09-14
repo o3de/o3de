@@ -20,6 +20,11 @@ namespace TestImpact
         return m_descriptor.m_name;
     }
 
+    TargetType Target::GetType() const
+    {
+        return m_descriptor.m_type;
+    }
+
     const RepoPath& Target::GetPath() const
     {
         return m_descriptor.m_path;
@@ -33,5 +38,10 @@ namespace TestImpact
     const AZStd::string& Target::GetOutputName() const
     {
         return m_descriptor.m_outputName;
+    }
+
+    const TargetDependencies& Target::GetDependencies() const
+    {
+        return m_descriptor.m_dependencies;
     }
 } // namespace TestImpact

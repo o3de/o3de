@@ -19,6 +19,7 @@
 #include <QSet>
 
 #include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/Settings/SettingsRegistryVisitorUtils.h>
 #include <AzCore/std/string/string.h>
 #include <native/utilities/assetUtils.h>
 #include <native/AssetManager/assetScanFolderInfo.h>
@@ -40,22 +41,6 @@ namespace AssetProcessor
     class ScanFolderInfo;
     extern const char AssetConfigPlatformDir[];
     extern const char AssetProcessorPlatformConfigFileName[];
-
-    struct AssetImporterPathsVisitor
-        : AZ::SettingsRegistryInterface::Visitor
-    {
-        AssetImporterPathsVisitor(AZ::SettingsRegistryInterface* settingsRegistry, AZStd::vector<AZStd::string>& supportedExtension)
-            : m_settingsRegistry(settingsRegistry)
-            , m_supportedFileExtensions(supportedExtension)
-        {
-        }
-
-        using AZ::SettingsRegistryInterface::Visitor::Visit;
-        void Visit(AZStd::string_view path, AZStd::string_view, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override;
-
-        AZ::SettingsRegistryInterface* m_settingsRegistry;
-        AZStd::vector<AZStd::string> m_supportedFileExtensions;
-    };
 
     //! Information for a given recognizer, on a specific platform
     //! essentially a plain data holder, but with helper funcs
@@ -137,97 +122,6 @@ namespace AssetProcessor
         virtual const RecognizerContainer& GetAssetCacheRecognizerContainer() const = 0;
         virtual const ExcludeRecognizerContainer& GetExcludeAssetRecognizerContainer() const = 0;
         virtual bool AddAssetCacheRecognizerContainer(const RecognizerContainer& recognizerContainer) = 0;
-    };
-
-    //! Visitor for reading the "/Amazon/AssetProcessor/Settings/ScanFolder *" entries from the Settings Registry
-    //! Expects the key to path to the visitor to be "/Amazon/AssetProcessor/Settings"
-    struct ScanFolderVisitor
-        : AZ::SettingsRegistryInterface::Visitor
-    {
-        AZ::SettingsRegistryInterface::VisitResponse Traverse(AZStd::string_view jsonPath, AZStd::string_view valueName,
-            AZ::SettingsRegistryInterface::VisitAction action, AZ::SettingsRegistryInterface::Type) override;
-
-        using AZ::SettingsRegistryInterface::Visitor::Visit;
-        void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZ::s64 value) override;
-        void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override;
-
-        struct ScanFolderInfo
-        {
-            AZStd::string m_scanFolderIdentifier;
-            AZStd::string m_scanFolderDisplayName;
-            AZ::IO::Path m_watchPath{ AZ::IO::PosixPathSeparator };
-            AZStd::vector<AZStd::string> m_includeIdentifiers;
-            AZStd::vector<AZStd::string> m_excludeIdentifiers;
-            int m_scanOrder{};
-            bool m_isRecursive{};
-        };
-        AZStd::vector<ScanFolderInfo> m_scanFolderInfos;
-    private:
-        AZStd::stack<AZStd::string> m_scanFolderStack;
-    };
-
-    struct ExcludeVisitor
-        : AZ::SettingsRegistryInterface::Visitor
-    {
-        AZ::SettingsRegistryInterface::VisitResponse Traverse(AZStd::string_view jsonPath, AZStd::string_view valueName,
-            AZ::SettingsRegistryInterface::VisitAction action, AZ::SettingsRegistryInterface::Type) override;
-
-        using AZ::SettingsRegistryInterface::Visitor::Visit;
-        void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override;
-
-        AZStd::vector<ExcludeAssetRecognizer> m_excludeAssetRecognizers;
-    private:
-        AZStd::stack<AZStd::string> m_excludeNameStack;
-    };
-
-    struct SimpleJobVisitor
-        : AZ::SettingsRegistryInterface::Visitor
-    {
-        SimpleJobVisitor(const AZ::SettingsRegistryInterface& settingsRegistry, const AZStd::vector<AssetBuilderSDK::PlatformInfo>& enabledPlatforms)
-            : m_registry(settingsRegistry)
-            , m_enabledPlatforms(enabledPlatforms)
-        {
-        }
-        AZ::SettingsRegistryInterface::VisitResponse Traverse(AZStd::string_view jsonPath, AZStd::string_view valueName,
-            AZ::SettingsRegistryInterface::VisitAction action, AZ::SettingsRegistryInterface::Type) override;
-
-        using AZ::SettingsRegistryInterface::Visitor::Visit;
-        void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, bool value) override;
-        void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZ::s64 value) override;
-        void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override;
-
-        struct SimpleJobAssetRecognizer
-        {
-            AssetRecognizer m_recognizer;
-            AZStd::string m_defaultParams;
-            bool m_ignore{};
-        };
-        AZStd::vector<SimpleJobAssetRecognizer> m_assetRecognizers;
-    private:
-        void ApplyParamsOverrides(AZStd::string_view path);
-
-        AZStd::stack<AZStd::string> m_simpleJobNameStack;
-        const AZ::SettingsRegistryInterface& m_registry;
-        const AZStd::vector<AssetBuilderSDK::PlatformInfo>& m_enabledPlatforms;
-    };
-
-    //! This vistor reads in the Asset Cache Server configuration elements from the settings registry
-    struct ACSVisitor
-        : AZ::SettingsRegistryInterface::Visitor
-    {
-        AZ::SettingsRegistryInterface::VisitResponse Traverse(AZStd::string_view jsonPath, AZStd::string_view valueName,
-            AZ::SettingsRegistryInterface::VisitAction action, AZ::SettingsRegistryInterface::Type) override;
-
-        using AZ::SettingsRegistryInterface::Visitor::Visit;
-        void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, bool value) override;
-        void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZ::s64 value) override;
-        void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override;
-
-        AZStd::vector<AssetRecognizer> m_assetRecognizers;
-    private:
-        AssetRecognizer* CurrentAssetRecognizer();
-
-        AZStd::stack<AZStd::string> m_nameStack;
     };
 
     /** Reads the platform ini configuration file to determine

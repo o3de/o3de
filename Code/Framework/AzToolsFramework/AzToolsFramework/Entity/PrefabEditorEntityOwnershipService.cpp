@@ -310,6 +310,13 @@ namespace AzToolsFramework
             sourcePath.Set(levelDefaultDom, relativePath.c_str());
 
             templateId = m_prefabSystemComponent->AddTemplate(relativePath, AZStd::move(levelDefaultDom));
+
+            // Initialize the container entity if it is in constructed state. This will make the entity queryable before the first
+            // time it gets deserialized.
+            if (m_rootInstance->m_containerEntity && m_rootInstance->m_containerEntity->GetState() == AZ::Entity::State::Constructed)
+            {
+                m_rootInstance->m_containerEntity->Init();
+            }
         }
         else
         {

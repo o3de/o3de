@@ -94,7 +94,7 @@ namespace AZ
                     return result;
                 }
 
-                AZStd::string CreateUniqueName(const AZStd::string& baseName, const AZStd::string& subName, 
+                AZStd::string CreateUniqueName(const AZStd::string& baseName, const AZStd::string& subName,
                     const Containers::SceneManifest& manifest, const Uuid& type)
                 {
                     return CreateUniqueName(AZStd::string::format("%s_%s", baseName.c_str(), subName.c_str()), manifest, type);
@@ -102,10 +102,7 @@ namespace AZ
 
                 Uuid CreateStableUuid(const Containers::Scene& scene, const Uuid& typeId)
                 {
-                    char guid[sizeof(Uuid) * 2];
-                    memcpy(guid, scene.GetSourceGuid().data, sizeof(Uuid));
-                    memcpy(guid + sizeof(Uuid), typeId.data, sizeof(Uuid));
-                    return Uuid::CreateData(guid, sizeof(Uuid) * 2);
+                    return scene.GetSourceGuid() + typeId;
                 }
 
                 Uuid CreateStableUuid(const Containers::Scene& scene, const Uuid& typeId, const AZStd::string& subId)
@@ -115,7 +112,7 @@ namespace AZ
                     guid += typeId.ToString<AZStd::string>();
                     guid += subId;
 
-                    return Uuid::CreateData(guid.data(), guid.size() * sizeof(guid[0]));
+                    return Uuid::CreateData(guid);
                 }
 
                 Uuid CreateStableUuid(const Containers::Scene& scene, const Uuid& typeId, const char* subId)
@@ -125,7 +122,7 @@ namespace AZ
                     guid += typeId.ToString<AZStd::string>();
                     guid += subId;
 
-                    return Uuid::CreateData(guid.data(), guid.size() * sizeof(guid[0]));
+                    return Uuid::CreateData(guid);
                 }
             } // namespace Utilities
         } // namespace DataTypes

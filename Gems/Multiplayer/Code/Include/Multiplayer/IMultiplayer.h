@@ -61,13 +61,14 @@ namespace Multiplayer
 
     using ClientMigrationStartEvent = AZ::Event<ClientInputId>;
     using ClientMigrationEndEvent = AZ::Event<>;
-    using EndpointDisonnectedEvent = AZ::Event<MultiplayerAgentType>;
+    using EndpointDisconnectedEvent = AZ::Event<MultiplayerAgentType>;
     using NotifyClientMigrationEvent = AZ::Event<AzNetworking::ConnectionId, const HostId&, uint64_t, ClientInputId, NetEntityId>;
     using NotifyEntityMigrationEvent = AZ::Event<const ConstNetworkEntityHandle&, const HostId&>;
     using ConnectionAcquiredEvent = AZ::Event<MultiplayerAgentDatum>;
     using ServerAcceptanceReceivedEvent = AZ::Event<>;
     using SessionInitEvent = AZ::Event<AzNetworking::INetworkInterface*>;
     using SessionShutdownEvent = AZ::Event<AzNetworking::INetworkInterface*>;
+    using LevelLoadBlockedEvent = AZ::Event<>;
 
     //! @class IMultiplayer
     //! @brief IMultiplayer provides insight into the Multiplayer session and its Agents
@@ -124,9 +125,9 @@ namespace Multiplayer
         //! @param handler The ClientMigrationEndEvent Handler to add
         virtual void AddClientMigrationEndEventHandler(ClientMigrationEndEvent::Handler& handler) = 0;
 
-        //! Adds a EndpointDisonnectedEvent Handler which is invoked on the client when a disconnection occurs.
-        //! @param handler The EndpointDisonnectedEvent Handler to add
-        virtual void AddEndpointDisonnectedHandler(EndpointDisonnectedEvent::Handler& handler) = 0;
+        //! Adds a EndpointDisconnectedEvent Handler which is invoked on the client when a disconnection occurs.
+        //! @param handler The EndpointDisconnectedEvent Handler to add
+        virtual void AddEndpointDisconnectedHandler(EndpointDisconnectedEvent::Handler& handler) = 0;
 
         //! Adds a NotifyClientMigrationEvent Handler which is invoked when a client migrates from one host to another.
         //! @param handler The NotifyClientMigrationEvent Handler to add
@@ -151,6 +152,10 @@ namespace Multiplayer
         //! Adds a SessionShutdownEvent Handler which is invoked when the current network session ends.
         //! @param handler The SessionShutdownEvent handler to add
         virtual void AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler) = 0;
+
+        //! Adds a LevelLoadBlockedEvent Handler which is invoked whenever the multiplayer system blocks a level load.
+        //! @param handler The LevelLoadBlockedEvent handler to add
+        virtual void AddLevelLoadBlockedHandler(LevelLoadBlockedEvent::Handler& handler) = 0;
 
         //! Signals a NotifyClientMigrationEvent with the provided parameters.
         //! @param connectionId       the connection id of the client that is migrating

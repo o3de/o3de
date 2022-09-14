@@ -392,7 +392,7 @@ void CSystem::ShutDown()
 
     // Audio System Shutdown!
     // Shut down audio as late as possible but before the streaming system and console get released!
-    Audio::Gem::AudioSystemGemRequestBus::Broadcast(&Audio::Gem::AudioSystemGemRequestBus::Events::Release);
+    Audio::Gem::SystemRequestBus::Broadcast(&Audio::Gem::SystemRequestBus::Events::Release);
 
     // Shut down console as late as possible and after audio!
     SAFE_RELEASE(m_env.pConsole);
@@ -943,7 +943,7 @@ void CSystem::WarningV(EValidatorModule module, EValidatorSeverity severity, int
 
     if (bDbgBreak && g_cvars.sys_error_debugbreak)
     {
-        AZ::Debug::Trace::Break();
+        AZ::Debug::Trace::Instance().Break();
     }
 }
 

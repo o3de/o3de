@@ -19,7 +19,7 @@
 
 namespace AzToolsFramework::ViewportUi::Internal
 {
-    const static int HighlightBorderSize = 5;
+    const static int HighlightBorderSize = ViewportUiLeftRightBottomBorderSize;
     const static char* const HighlightBorderColor = "#4A90E2";
     const static int HighlightBorderBackButtonIconSize = 20;
     const static char* const HighlightBorderBackButtonIconFile = "X_axis.svg";
@@ -66,10 +66,12 @@ namespace AzToolsFramework::ViewportUi::Internal
         , m_viewportBorderText(&m_uiOverlay)
         , m_viewportBorderBackButton(&m_uiOverlay)
     {
+        AzFramework::ViewportImGuiNotificationBus::Handler::BusConnect();
     }
 
     ViewportUiDisplay::~ViewportUiDisplay()
     {
+        AzFramework::ViewportImGuiNotificationBus::Handler::BusDisconnect();
         UnparentWidgets(m_viewportUiElements);
     }
 
@@ -142,17 +144,17 @@ namespace AzToolsFramework::ViewportUi::Internal
 
     void ViewportUiDisplay::AddSwitcherButton(const ViewportUiElementId switcherId, Button* button)
     {
-        if (auto viewportUiSwitcher = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(switcherId).get()))
+        if (auto switcher = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(switcherId).get()))
         {
-            viewportUiSwitcher->AddButton(button);
+            switcher->AddButton(button);
         }
     }
 
     void ViewportUiDisplay::RemoveSwitcherButton(ViewportUiElementId switcherId, ButtonId buttonId)
     {
-        if (auto cluster = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(switcherId).get()))
+        if (auto switcher = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(switcherId).get()))
         {
-            cluster->RemoveButton(buttonId);
+            switcher->RemoveButton(buttonId);
         }
     }
 
@@ -303,6 +305,18 @@ namespace AzToolsFramework::ViewportUi::Internal
         return false;
     }
 
+    QMargins ViewportUiDisplay::ViewportElementMargins() const
+    {
+        if (m_imGuiActive)
+        {
+            return GetViewportBorderVisible() ? ViewportUiOverlayImGuiBorderMargin : ViewportUiOverlayImGuiMargin;
+        }
+        else
+        {
+            return GetViewportBorderVisible() ? ViewportUiOverlayBorderMargin : ViewportUiOverlayDefaultMargin;
+        }
+    }
+
     void ViewportUiDisplay::CreateViewportBorder(
         const AZStd::string& borderTitle, AZStd::optional<ViewportUiBackButtonCallback> backButtonCallback)
     {
@@ -310,27 +324,50 @@ namespace AzToolsFramework::ViewportUi::Internal
                                       .arg(
                                           QString::number(HighlightBorderSize), HighlightBorderColor,
                                           QString::number(ViewportUiTopBorderSize), HighlightBorderColor));
-        m_uiOverlayLayout.setContentsMargins(
-            HighlightBorderSize + ViewportUiOverlayMargin, ViewportUiTopBorderSize + ViewportUiOverlayMargin,
-            HighlightBorderSize + ViewportUiOverlayMargin, HighlightBorderSize + ViewportUiOverlayMargin);
+
+        m_viewportBorderText.setAlignment(Qt::AlignCenter);
+
         m_viewportBorderText.show();
-        m_viewportBorderText.setText(borderTitle.c_str());
-        UpdateUiOverlayGeometry();
+        m_uiOverlayLayout.setContentsMargins(ViewportElementMargins());
+        ChangeViewportBorderText(borderTitle.c_str());
 
         // only display the back button if a callback was provided
         m_viewportBorderBackButtonCallback = backButtonCallback;
         m_viewportBorderBackButton.setVisible(m_viewportBorderBackButtonCallback.has_value());
     }
 
+    void ViewportUiDisplay::ChangeViewportBorderText(const char* borderTitle)
+    {
+        // when the text changes if the width is different it will flicker as it changes,
+        // this sets the width to the entire overlay to avoid that
+        m_viewportBorderText.setFixedWidth(m_uiOverlay.width());
+        m_viewportBorderText.setText(borderTitle);
+    }
+
+    void ViewportUiDisplay::OnImGuiActivated()
+    {
+        m_imGuiActive = true;
+        m_uiOverlayLayout.setContentsMargins(ViewportElementMargins());
+    };
+
+    void ViewportUiDisplay::OnImGuiDeactivated()
+    {
+        m_imGuiActive = false;
+        m_uiOverlayLayout.setContentsMargins(ViewportElementMargins());
+    };
+
     void ViewportUiDisplay::RemoveViewportBorder()
     {
         m_viewportBorderText.hide();
         m_uiOverlay.setStyleSheet("border: none;");
-        m_uiOverlayLayout.setContentsMargins(
-            ViewportUiOverlayMargin, ViewportUiOverlayMargin + ViewportUiOverlayTopMarginPadding, ViewportUiOverlayMargin,
-            ViewportUiOverlayMargin);
+        m_uiOverlayLayout.setContentsMargins(ViewportElementMargins());
         m_viewportBorderBackButtonCallback.reset();
         m_viewportBorderBackButton.hide();
+    }
+
+    bool ViewportUiDisplay::GetViewportBorderVisible() const
+    {
+        return m_viewportBorderText.isVisible();
     }
 
     void ViewportUiDisplay::PositionViewportUiElementFromWorldSpace(ViewportUiElementId elementId, const AZ::Vector3& pos)
@@ -450,6 +487,14 @@ namespace AzToolsFramework::ViewportUi::Internal
             region -= QRect(
                 QPoint(m_uiOverlay.rect().left() + HighlightBorderSize, m_uiOverlay.rect().top() + ViewportUiTopBorderSize),
                 QPoint(m_uiOverlay.rect().right() - HighlightBorderSize, m_uiOverlay.rect().bottom() - HighlightBorderSize));
+
+            // if the user changes the size of their window, release the width of the border so the
+            // overlay can resize
+            if (m_viewportBorderText.width() != m_renderOverlay->width())
+            {
+                m_viewportBorderText.setMinimumWidth(0);
+                m_viewportBorderText.setMaximumWidth(m_renderOverlay->width());
+            }
         }
 
         // add all children widget regions

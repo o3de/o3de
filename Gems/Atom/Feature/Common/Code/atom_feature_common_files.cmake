@@ -40,6 +40,7 @@ set(FILES
     Include/Atom/Feature/SphericalHarmonics/SphericalHarmonicsUtility.inl
     Include/Atom/Feature/TransformService/TransformServiceFeatureProcessor.h
     Include/Atom/Feature/Utils/FrameCaptureBus.h
+    Include/Atom/Feature/Utils/FrameCaptureTestBus.h
     Include/Atom/Feature/Utils/GpuBufferHandler.h
     Include/Atom/Feature/Utils/IndexedDataVector.h
     Include/Atom/Feature/Utils/IndexedDataVector.inl
@@ -307,6 +308,12 @@ set(FILES
     Source/SkyBox/SkyBoxFeatureProcessor.h
     Source/SkyBox/SkyBoxFogSettings.h
     Source/SkyBox/SkyBoxFogSettings.cpp
+    Source/SkyAtmosphere/SkyAtmosphereFeatureProcessor.cpp
+    Source/SkyAtmosphere/SkyAtmosphereFeatureProcessor.h
+    Source/SkyAtmosphere/SkyAtmosphereParentPass.cpp
+    Source/SkyAtmosphere/SkyAtmosphereParentPass.h
+    Source/SkyAtmosphere/SkyAtmospherePass.cpp
+    Source/SkyAtmosphere/SkyAtmospherePass.h
     Source/TransformService/TransformServiceFeatureProcessor.cpp
     Source/Utils/GpuBufferHandler.cpp
 )

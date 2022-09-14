@@ -142,11 +142,23 @@ namespace TestImpact
             return AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(timePoint.time_since_epoch()).count();
         }
 
+        AZStd::string GetNameSpaceOrTargetName(const Client::TestRunBase& testRun)
+        {
+            if (const auto testNamespace = testRun.GetTestNamespace(); !testNamespace.empty())
+            {
+                return testNamespace + "_" + testRun.GetTargetName();
+            }
+            else
+            {
+                return testRun.GetTargetName();
+            }
+        }
+
         void SerializeTestRunMembers(const Client::TestRunBase& testRun, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer)
         {
             // Name
             writer.Key(SequenceReportFields::Keys[SequenceReportFields::Name]);
-            writer.String(testRun.GetTargetName().c_str());
+            writer.String(GetNameSpaceOrTargetName(testRun).c_str());
 
             // Command string
             writer.Key(SequenceReportFields::Keys[SequenceReportFields::CommandArgs]);
@@ -626,6 +638,7 @@ namespace TestImpact
     Client::TestRunBase DeserializeTestRunBase(const rapidjson::Value& serialTestRun)
     {
         return Client::TestRunBase(
+            "",
             serialTestRun[SequenceReportFields::Keys[SequenceReportFields::Name]].GetString(),
             serialTestRun[SequenceReportFields::Keys[SequenceReportFields::CommandArgs]].GetString(),
             TimePointFromMsInt64(serialTestRun[SequenceReportFields::Keys[SequenceReportFields::StartTime]].GetInt64()),
@@ -752,7 +765,10 @@ namespace TestImpact
         }
         else
         {
-            static_assert(false, "Template paramater must be a valid policy state type");
+            // static assert needs to be depend on template parameters to defer evaluation until the function is instantiate
+            // with the type that isn't a valid policy state type, otherwise the compiler is free to evaluate the static assert
+            // without an instantiation of the template
+            static_assert(!AZStd::same_as<PolicyStateType, PolicyStateType>, "Template parameter must be a valid policy state type");
         }
     }
 
@@ -775,7 +791,7 @@ namespace TestImpact
             serialSequenceReportBase[SequenceReportFields::Keys[SequenceReportFields::MaxConcurrency]].GetUint64(),
             testTargetTimeout ? AZStd::optional<AZStd::chrono::milliseconds>{ testTargetTimeout } : AZStd::nullopt,
             globalTimeout ? AZStd::optional<AZStd::chrono::milliseconds>{ globalTimeout } : AZStd::nullopt,
-            DeserializePolicyStateType<SequenceReportBaseType::PolicyState>(serialSequenceReportBase),
+            DeserializePolicyStateType<typename SequenceReportBaseType::PolicyState>(serialSequenceReportBase),
             SuiteTypeFromString(serialSequenceReportBase[SequenceReportFields::Keys[SequenceReportFields::Suite]].GetString()),
             DeserializeTestSelection(serialSequenceReportBase[SequenceReportFields::Keys[SequenceReportFields::SelectedTestRuns]]),
             DeserializeTestRunReport(serialSequenceReportBase[SequenceReportFields::Keys[SequenceReportFields::SelectedTestRunReport]]));

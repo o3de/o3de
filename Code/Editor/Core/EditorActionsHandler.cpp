@@ -31,6 +31,8 @@
 #include <LmbrCentral/Audio/AudioSystemComponentBus.h>
 #include <MainWindow.h>
 #include <QtViewPaneManager.h>
+#include <ToolBox.h>
+#include <ToolsConfigPage.h>
 
 #include <QDesktopServices>
 #include <QLabel>
@@ -66,6 +68,7 @@ static constexpr AZStd::string_view GameMenuIdentifier = "o3de.menu.editor.game"
 static constexpr AZStd::string_view PlayGameMenuIdentifier = "o3de.menu.editor.game.play";
 static constexpr AZStd::string_view GameAudioMenuIdentifier = "o3de.menu.editor.game.audio";
 static constexpr AZStd::string_view GameDebuggingMenuIdentifier = "o3de.menu.editor.game.debugging";
+static constexpr AZStd::string_view ToolBoxMacrosMenuIdentifier = "o3de.menu.editor.toolbox.macros";
 static constexpr AZStd::string_view ToolsMenuIdentifier = "o3de.menu.editor.tools";
 static constexpr AZStd::string_view ViewMenuIdentifier = "o3de.menu.editor.view";
 static constexpr AZStd::string_view LayoutsMenuIdentifier = "o3de.menu.editor.view.layouts";
@@ -127,37 +130,11 @@ void EditorActionsHandler::Initialize(MainWindow* mainWindow)
     m_toolBarManagerInterface = AZ::Interface<AzToolsFramework::ToolBarManagerInterface>::Get();
     AZ_Assert(m_toolBarManagerInterface, "EditorActionsHandler - could not get ToolBarManagerInterface on EditorActionsHandler construction.");
 
-    InitializeActionContext();
-    InitializeActionUpdaters();
-    InitializeActions();
-    InitializeWidgetActions();
-    InitializeMenus();
-    InitializeToolBars();
-
     // Retrieve the bookmark count from the loader.
     m_defaultBookmarkCount = AzToolsFramework::LocalViewBookmarkLoader::DefaultViewBookmarkCount;
 
-    // Ensure the layouts menu is refreshed when the layouts list changes.
-    QObject::connect(
-        m_mainWindow->m_viewPaneManager, &QtViewPaneManager::savedLayoutsChanged, m_mainWindow,
-        [&]()
-        {
-            RefreshLayoutActions();
-        }
-    );
-
-    RefreshLayoutActions();
-
-    // Ensure the tools menu and toolbar are refreshed when the viewpanes change.
-    QObject::connect(
-        m_qtViewPaneManager, &QtViewPaneManager::registeredPanesChanged, m_mainWindow,
-        [&]()
-        {
-            RefreshToolActions();
-        }
-    );
-
     const int DefaultViewportId = 0;
+    AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
     AzToolsFramework::EditorEventsBus::Handler::BusConnect();
     AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
     AzToolsFramework::ToolsApplicationNotificationBus::Handler::BusConnect();
@@ -173,10 +150,11 @@ EditorActionsHandler::~EditorActionsHandler()
         AzToolsFramework::ToolsApplicationNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEventsBus::Handler::BusDisconnect();
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
     }
 }
 
-void EditorActionsHandler::InitializeActionContext()
+void EditorActionsHandler::OnActionContextRegistrationHook()
 {
     AzToolsFramework::ActionContextProperties contextProperties;
     contextProperties.m_name = "O3DE Editor";
@@ -184,7 +162,7 @@ void EditorActionsHandler::InitializeActionContext()
     m_actionManagerInterface->RegisterActionContext("", EditorMainWindowActionContextIdentifier, contextProperties, m_mainWindow);
 }
 
-void EditorActionsHandler::InitializeActionUpdaters()
+void EditorActionsHandler::OnActionUpdaterRegistrationHook()
 {
     m_actionManagerInterface->RegisterActionUpdater(AngleSnappingStateChangedUpdaterIdentifier);
     m_actionManagerInterface->RegisterActionUpdater(DrawHelpersStateChangedUpdaterIdentifier);
@@ -205,7 +183,7 @@ void EditorActionsHandler::InitializeActionUpdaters()
     }
 }
 
-void EditorActionsHandler::InitializeActions()
+void EditorActionsHandler::OnActionRegistrationHook()
 {
     // --- File Actions
 
@@ -826,6 +804,48 @@ void EditorActionsHandler::InitializeActions()
         );
     }
 
+    // Error Report
+    {
+        AZStd::string actionIdentifier = "o3de.action.game.debugging.errorDialog";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Error Report";
+        actionProperties.m_description = "Open the Error Report dialog.";
+        actionProperties.m_category = "Debugging";
+
+        m_actionManagerInterface->RegisterAction(
+            EditorMainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            [qtViewPaneManager = m_qtViewPaneManager]()
+            {
+                qtViewPaneManager->OpenPane(LyViewPane::ErrorReport);
+            }
+        );
+    }
+
+    // Configure Toolbox Macros
+    {
+        AZStd::string actionIdentifier = "o3de.action.game.debugging.toolboxMacros";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Configure Toolbox Macros...";
+        actionProperties.m_description = "Open the Toolbox Macros dialog.";
+        actionProperties.m_category = "Debugging";
+
+        m_actionManagerInterface->RegisterAction(
+            EditorMainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            [&]()
+            {
+                ToolsConfigDialog dlg;
+                if (dlg.exec() == QDialog::Accepted)
+                {
+                    RefreshToolboxMacroActions();
+                }
+            }
+        );
+    }
+
     // --- View Actions
 
     // Component Entity Layout
@@ -1158,10 +1178,9 @@ void EditorActionsHandler::InitializeActions()
             }
         );
     }
-
 }
 
-void EditorActionsHandler::InitializeWidgetActions()
+void EditorActionsHandler::OnWidgetActionRegistrationHook()
 {
     // Help - Search Documentation Widget
     {
@@ -1212,11 +1231,14 @@ void EditorActionsHandler::InitializeWidgetActions()
     }
 }
 
-void EditorActionsHandler::InitializeMenus()
+void EditorActionsHandler::OnMenuBarRegistrationHook()
 {
     // Register MenuBar
     m_menuManagerInterface->RegisterMenuBar(EditorMainWindowMenuBarIdentifier);
+}
 
+void EditorActionsHandler::OnMenuRegistrationHook()
+{
     // Initialize Menus
     {
         AzToolsFramework::MenuProperties menuProperties;
@@ -1272,19 +1294,24 @@ void EditorActionsHandler::InitializeMenus()
     }
         {
             AzToolsFramework::MenuProperties menuProperties;
-                menuProperties.m_name = "Play Game";
-                m_menuManagerInterface->RegisterMenu(PlayGameMenuIdentifier, menuProperties);
+            menuProperties.m_name = "Play Game";
+            m_menuManagerInterface->RegisterMenu(PlayGameMenuIdentifier, menuProperties);
         }
         {
             AzToolsFramework::MenuProperties menuProperties;
-                menuProperties.m_name = "Audio";
-                m_menuManagerInterface->RegisterMenu(GameAudioMenuIdentifier, menuProperties);
+            menuProperties.m_name = "Audio";
+            m_menuManagerInterface->RegisterMenu(GameAudioMenuIdentifier, menuProperties);
         }
         {
             AzToolsFramework::MenuProperties menuProperties;
-                menuProperties.m_name = "Debugging";
-                m_menuManagerInterface->RegisterMenu(GameDebuggingMenuIdentifier, menuProperties);
+            menuProperties.m_name = "Debugging";
+            m_menuManagerInterface->RegisterMenu(GameDebuggingMenuIdentifier, menuProperties);
         }
+            {
+                AzToolsFramework::MenuProperties menuProperties;
+                menuProperties.m_name = "ToolBox Macros";
+                m_menuManagerInterface->RegisterMenu(ToolBoxMacrosMenuIdentifier, menuProperties);
+            }
     {
         AzToolsFramework::MenuProperties menuProperties;
         menuProperties.m_name = "&Tools";
@@ -1330,7 +1357,10 @@ void EditorActionsHandler::InitializeMenus()
             menuProperties.m_name = "GameDev Resources";
             m_menuManagerInterface->RegisterMenu(HelpGameDevResourcesMenuIdentifier, menuProperties);
         }
+}
 
+void EditorActionsHandler::OnMenuBindingHook()
+{
     // Add Menus to MenuBar
     // We space the sortkeys by 100 to allow external systems to add menus in-between.
     m_menuManagerInterface->AddMenuToMenuBar(EditorMainWindowMenuBarIdentifier, FileMenuIdentifier, 100);
@@ -1419,12 +1449,19 @@ void EditorActionsHandler::InitializeMenus()
         m_menuManagerInterface->AddSeparatorToMenu(GameMenuIdentifier, 1000);
         m_menuManagerInterface->AddSubMenuToMenu(GameMenuIdentifier, GameDebuggingMenuIdentifier, 1100);
         {
+            m_menuManagerInterface->AddActionToMenu(GameDebuggingMenuIdentifier, "o3de.action.game.debugging.errorDialog", 100);
+            m_menuManagerInterface->AddSeparatorToMenu(GameDebuggingMenuIdentifier, 200);
+            m_menuManagerInterface->AddSubMenuToMenu(GameDebuggingMenuIdentifier, ToolBoxMacrosMenuIdentifier, 300);
+            {
+                // Some of the contents of the ToolBox Mactos menu are initialized in RefreshToolboxMacrosActions.
+
+                m_menuManagerInterface->AddSeparatorToMenu(ToolBoxMacrosMenuIdentifier, 200);
+                m_menuManagerInterface->AddActionToMenu(ToolBoxMacrosMenuIdentifier, "o3de.action.game.debugging.toolboxMacros", 300);
+            }
         }
     }
 
     // View
-
-
     {
         m_menuManagerInterface->AddSubMenuToMenu(ViewMenuIdentifier, LayoutsMenuIdentifier, 100);
         {
@@ -1484,9 +1521,16 @@ void EditorActionsHandler::InitializeMenus()
         m_menuManagerInterface->AddActionToMenu(HelpMenuIdentifier, "o3de.action.help.abouto3de", 600);
         m_menuManagerInterface->AddActionToMenu(HelpMenuIdentifier, "o3de.action.help.welcome", 700);
     }
+
+    // Add helper actions to the Viewport top toolbar helpers button.
+    // This is temporary until that toolbar is completely refactored.
+    {
+        m_menuManagerInterface->AddActionToMenu("o3de.menu.viewport.helpers", "o3de.action.view.toggleHelpers", 100);
+        m_menuManagerInterface->AddActionToMenu("o3de.menu.viewport.helpers", "o3de.action.view.toggleIcons", 200);
+    }
 }
 
-void EditorActionsHandler::InitializeToolBars()
+void EditorActionsHandler::OnToolBarRegistrationHook()
 {
     // Initialize ToolBars
     {
@@ -1504,7 +1548,10 @@ void EditorActionsHandler::InitializeToolBars()
     // Set the toolbars
     m_mainWindow->addToolBar(Qt::ToolBarArea::TopToolBarArea, m_toolBarManagerInterface->GetToolBar(ToolsToolBarIdentifier));
     m_mainWindow->addToolBar(Qt::ToolBarArea::TopToolBarArea, m_toolBarManagerInterface->GetToolBar(PlayControlsToolBarIdentifier));
-    
+}
+
+void EditorActionsHandler::OnToolBarBindingHook()
+{
     // Add actions to each toolbar
 
     // Play Controls
@@ -1516,6 +1563,34 @@ void EditorActionsHandler::InitializeToolBars()
         m_toolBarManagerInterface->AddSeparatorToToolBar(PlayControlsToolBarIdentifier, 500);
         m_toolBarManagerInterface->AddActionToToolBar(PlayControlsToolBarIdentifier, "o3de.action.game.simulate", 600);
     }
+}
+
+void EditorActionsHandler::OnPostActionManagerRegistrationHook()
+{
+    // Ensure the layouts menu is refreshed when the layouts list changes.
+    QObject::connect(
+        m_mainWindow->m_viewPaneManager, &QtViewPaneManager::savedLayoutsChanged, m_mainWindow,
+        [&]()
+        {
+            RefreshLayoutActions();
+        }
+    );
+
+    RefreshLayoutActions();
+
+    // Ensure the tools menu and toolbar are refreshed when the viewpanes change.
+    QObject::connect(
+        m_qtViewPaneManager, &QtViewPaneManager::registeredPanesChanged, m_mainWindow,
+        [&]()
+        {
+            RefreshToolActions();
+        }
+    );
+    
+    RefreshToolActions();
+
+    // Initialize the Toolbox Macro actions
+    RefreshToolboxMacroActions();
 }
 
 QWidget* EditorActionsHandler::CreateExpander()
@@ -1798,6 +1873,52 @@ void EditorActionsHandler::RefreshLayoutActions()
 
         m_layoutMenuIdentifiers.push_back(layoutMenuIdentifier);
         m_menuManagerInterface->AddSubMenuToMenu(LayoutsMenuIdentifier, layoutMenuIdentifier, sortKey);
+    }
+}
+
+void EditorActionsHandler::RefreshToolboxMacroActions()
+{
+    // If the toolbox macros are being displayed in the menu already, remove them.
+    m_menuManagerInterface->RemoveActionsFromMenu(ToolBoxMacrosMenuIdentifier, m_toolboxMacroActionIdentifiers);
+    m_toolboxMacroActionIdentifiers.clear();
+
+    // Place all actions in the same sort index in the menu .
+    // This will display them in order of addition (alphabetical).
+    const int sortKey = 0;
+
+    auto tools = GetIEditor()->GetToolBoxManager();
+    const int macroCount = tools->GetMacroCount(true);
+
+    for (int macroIndex = 0; macroIndex < macroCount; ++macroIndex)
+    {
+        auto macro = tools->GetMacro(macroIndex, true);
+        const int toolbarId = macro->GetToolbarId();
+        if (toolbarId == -1 || toolbarId == ID_TOOLS_TOOL1)
+        {
+            AZStd::string toolboxMacroActionIdentifier = AZStd::string::format("o3de.action.toolboxMacro[%s]", macro->GetTitle().toStdString().c_str());
+
+            // Create the action if it does not already exist.
+            if (!m_actionManagerInterface->IsActionRegistered(toolboxMacroActionIdentifier))
+            {
+                AzToolsFramework::ActionProperties actionProperties;
+                actionProperties.m_name = macro->GetTitle().toStdString().c_str();
+                actionProperties.m_category = "Toolbox Macro";
+                actionProperties.m_iconPath = macro->GetIconPath().toStdString().c_str();
+
+                m_actionManagerInterface->RegisterAction(
+                    EditorMainWindowActionContextIdentifier,
+                    toolboxMacroActionIdentifier,
+                    actionProperties,
+                    [macro]
+                    {
+                        macro->Execute();
+                    }
+                );
+            }
+
+            m_menuManagerInterface->AddActionToMenu(ToolBoxMacrosMenuIdentifier, toolboxMacroActionIdentifier, sortKey);
+            m_toolboxMacroActionIdentifiers.push_back(AZStd::move(toolboxMacroActionIdentifier));
+        }
     }
 }
 

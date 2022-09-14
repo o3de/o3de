@@ -435,7 +435,7 @@ namespace UnitTest
         bool timedOut = false;
         while (!assetStatus1.m_ready || !assetStatus2.m_ready || !assetStatus3.m_ready)
         {
-            AssetBus::ExecuteQueuedEvents();
+            AssetManager::Instance().DispatchEvents();
             if (AZStd::chrono::system_clock::now() > maxTimeout)
             {
                 timedOut = true;
@@ -462,6 +462,9 @@ namespace UnitTest
         EXPECT_EQ(assetStatus4.m_reloaded, 0);
         EXPECT_EQ(assetStatus5.m_reloaded, 0);
         EXPECT_EQ(assetStatus6.m_reloaded, 0);
+
+        // Since Asset Container cleanup is queued on the ebus, dispatch events one last time to be sure the containers are released
+        AssetManager::Instance().DispatchEvents();
 
         EXPECT_EQ(m_testAssetManager->GetAssetContainers().size(), 0);
 
@@ -503,6 +506,9 @@ namespace UnitTest
         EXPECT_EQ(assetStatus5.m_reloaded, 0);
         EXPECT_EQ(assetStatus6.m_reloaded, 0);
 
+        // Since Asset Container cleanup is queued on the ebus, dispatch events one last time to be sure the containers are released
+        AssetManager::Instance().DispatchEvents();
+
         EXPECT_EQ(m_testAssetManager->GetAssetContainers().size(), 0);
 
         OnAssetReadyListener delayLoadAssetStatus(DelayLoadAssetId, azrtti_typeid<AssetWithAssetReference>());
@@ -527,6 +533,10 @@ namespace UnitTest
         ASSERT_FALSE(timedOut);
 
         EXPECT_EQ(delayLoadAssetStatus.m_ready, 1);
+
+        // Since Asset Container cleanup is queued on the ebus, dispatch events one last time to be sure the containers are released
+        AssetManager::Instance().DispatchEvents();
+
         EXPECT_EQ(m_testAssetManager->GetAssetContainers().size(), 0);
 
         // This should go through to loading
@@ -677,8 +687,8 @@ namespace UnitTest
         // Dispatched event leads to another blocking load of asset B
 
         // Setup
-        constexpr char AssetNoRefA[] = "{EC5E3E4F-518C-4B03-A8BF-C9966CF763EB}";
-        constexpr char AssetNoRefB[] = "{C07E55B5-E60C-4575-AE07-32DD3DC68B1A}";
+        constexpr auto AssetNoRefA = AZ::Uuid("{EC5E3E4F-518C-4B03-A8BF-C9966CF763EB}");
+        constexpr auto AssetNoRefB = AZ::Uuid("{C07E55B5-E60C-4575-AE07-32DD3DC68B1A}");
 
         {
             m_assetHandlerAndCatalog->AddAsset<AssetWithSerializedData>(AssetNoRefA, "a.txt");
@@ -895,7 +905,7 @@ namespace UnitTest
         auto maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
         while (!assetStatus1.m_ready || !assetStatus2.m_ready || !assetStatus3.m_ready)
         {
-            AssetBus::ExecuteQueuedEvents();
+            AssetManager::Instance().DispatchEvents();
             if (AZStd::chrono::system_clock::now() > maxTimeout)
             {
                 AZ_Assert(false, "Timeout reached.");
@@ -1994,21 +2004,21 @@ namespace UnitTest
         : public DisklessAssetManagerBase
     {
     public:
-        static inline const AZ::Uuid MyAsset1Id{ "{5B29FE2B-6B41-48C9-826A-C723951B0560}" };
-        static inline const AZ::Uuid MyAsset2Id{ "{BD354AE5-B5D5-402A-A12E-BE3C96F6522B}" };
-        static inline const AZ::Uuid MyAsset3Id{ "{622C3FC9-5AE2-4E52-AFA2-5F7095ADAB53}" };
-        static inline const AZ::Uuid MyAsset4Id{ "{EE99215B-7AB4-4757-B8AF-F78BD4903AC4}" };
-        static inline const AZ::Uuid MyAsset5Id{ "{D9CDAB04-D206-431E-BDC0-1DD615D56197}" };
-        static inline const AZ::Uuid MyAsset6Id{ "{B2F139C3-5032-4B52-ADCA-D52A8F88E043}" };
+        static inline constexpr AZ::Uuid MyAsset1Id{ "{5B29FE2B-6B41-48C9-826A-C723951B0560}" };
+        static inline constexpr AZ::Uuid MyAsset2Id{ "{BD354AE5-B5D5-402A-A12E-BE3C96F6522B}" };
+        static inline constexpr AZ::Uuid MyAsset3Id{ "{622C3FC9-5AE2-4E52-AFA2-5F7095ADAB53}" };
+        static inline constexpr AZ::Uuid MyAsset4Id{ "{EE99215B-7AB4-4757-B8AF-F78BD4903AC4}" };
+        static inline constexpr AZ::Uuid MyAsset5Id{ "{D9CDAB04-D206-431E-BDC0-1DD615D56197}" };
+        static inline constexpr AZ::Uuid MyAsset6Id{ "{B2F139C3-5032-4B52-ADCA-D52A8F88E043}" };
 
 
         // Initialize the Job Manager with 2 threads for the Asset Manager to use.
         size_t GetNumJobManagerThreads() const override { return 2; }
 
-        static constexpr inline char MyAssetAId[] = "{C5B08D5D-8589-4706-A53F-96248CFDCE73}";
-        static constexpr inline char MyAssetBId[] = "{E1DECFB8-6FAC-4FE4-BD54-3A4A4E6616A5}";
-        static constexpr inline char MyAssetCId[] = "{F7091500-A220-4407-BEF4-B658D8D24289}";
-        static constexpr inline char MyAssetDId[] = "{1BB6CA5B-CE56-497B-B721-9460365E1125}";
+        static constexpr inline AZ::Uuid MyAssetAId{ "{C5B08D5D-8589-4706-A53F-96248CFDCE73}" };
+        static constexpr inline AZ::Uuid MyAssetBId{ "{E1DECFB8-6FAC-4FE4-BD54-3A4A4E6616A5}" };
+        static constexpr inline AZ::Uuid MyAssetCId{ "{F7091500-A220-4407-BEF4-B658D8D24289}" };
+        static constexpr inline AZ::Uuid MyAssetDId{ "{1BB6CA5B-CE56-497B-B721-9460365E1125}" };
 
         void SetupAssets(DataDrivenHandlerAndCatalog* catalog)
         {
@@ -3173,7 +3183,7 @@ namespace UnitTest
         bool timedOut = false;
         while (!(assetStatus1.m_ready && assetStatus2.m_ready))
         {
-            AssetBus::ExecuteQueuedEvents();
+            AssetManager::Instance().DispatchEvents();
             if (AZStd::chrono::system_clock::now() > maxTimeout)
             {
                 timedOut = true;
@@ -3185,7 +3195,7 @@ namespace UnitTest
         EXPECT_TRUE(nestedDependentAsset.IsReady());
     }
 
-    TEST_F(AssetManagerClearAssetReferenceTests, ReloadTest)
+    TEST_F(AssetManagerClearAssetReferenceTests, ReloadTest_SUITE_sandbox)
     {
         // Regression test - there was a bug where rapid reloads could get stuck due to the owning container being invalidated
         // Note that for this bug to occur, the loaded asset needs to have dependencies
@@ -3238,36 +3248,52 @@ namespace UnitTest
 
         SignalType reloadSignal = AZStd::make_unique<AZStd::binary_semaphore>();
 
-        // 1) Load the asset
-        ReloadHandler reloadHandler(
-            reloadSignal,
-            AssetManager::Instance().GetAsset<AssetWithAssetReference>(RootWithSynchronizerAssetId, AssetLoadBehavior::Default));
+        {
+            // Intentional scope to allow asset references to be released before shutdown
 
-        m_loadDataSynchronizer.m_readyToLoad = true;
-        m_loadDataSynchronizer.m_condition.notify_all();
+            // 1) Load the asset
+            ReloadHandler reloadHandler(
+                reloadSignal,
+                AssetManager::Instance().GetAsset<AssetWithAssetReference>(RootWithSynchronizerAssetId, AssetLoadBehavior::Default));
 
-        reloadHandler.m_asset.BlockUntilLoadComplete();
+            m_loadDataSynchronizer.m_readyToLoad = true;
+            m_loadDataSynchronizer.m_condition.notify_all();
 
-        ASSERT_TRUE(reloadHandler.m_asset.IsReady());
+            ColoredPrintf(COLOR_DEFAULT, "Waiting for initial asset load to complete\n");
 
-        // 2) Start a reload which will complete
-        AssetManager::Instance().ReloadAsset(RootWithSynchronizerAssetId, AssetLoadBehavior::Default);
+            reloadHandler.m_asset.BlockUntilLoadComplete();
 
-        reloadSignal->acquire(); // Wait until reload is done
+            ASSERT_TRUE(reloadHandler.m_asset.IsReady());
 
-        // 3) Start another reload
-        m_loadDataSynchronizer.m_readyToLoad = false; // Prevent the reload from progressing too far
-        AssetManager::Instance().ReloadAsset(RootWithSynchronizerAssetId, AssetLoadBehavior::Default); // Start another reload
+            ColoredPrintf(COLOR_DEFAULT, "Starting reload of asset\n");
 
-        // 4) Reassign the asset, which should cause the old asset to be unloaded
-        reloadHandler.m_asset = reloadHandler.m_reloadedAsset;
+            // 2) Start a reload which will complete
+            AssetManager::Instance().ReloadAsset(RootWithSynchronizerAssetId, AssetLoadBehavior::Default);
 
-        // Resume loading
-        m_loadDataSynchronizer.m_readyToLoad = true;
-        m_loadDataSynchronizer.m_condition.notify_all();
+            ColoredPrintf(COLOR_DEFAULT, "Waiting for reload to complete\n");
 
-        // 5) If the bug is still active, this will fail because the asset can never finish loading
-        EXPECT_TRUE(reloadSignal->try_acquire_for(AZStd::chrono::seconds(5)));
+            reloadSignal->acquire(); // Wait until reload is done
+
+            ColoredPrintf(COLOR_DEFAULT, "Starting another reload of asset\n");
+
+            // 3) Start another reload
+            m_loadDataSynchronizer.m_readyToLoad = false; // Prevent the reload from progressing too far
+            AssetManager::Instance().ReloadAsset(RootWithSynchronizerAssetId, AssetLoadBehavior::Default); // Start another reload
+
+            // 4) Reassign the asset, which should cause the old asset to be unloaded
+            reloadHandler.m_asset = reloadHandler.m_reloadedAsset;
+
+            // Resume loading
+            m_loadDataSynchronizer.m_readyToLoad = true;
+            m_loadDataSynchronizer.m_condition.notify_all();
+
+            ColoredPrintf(COLOR_DEFAULT, "Waiting for 2nd reload to complete\n");
+
+            // 5) If the bug is still active, this will fail because the asset can never finish loading
+            EXPECT_TRUE(reloadSignal->try_acquire_for(AZStd::chrono::seconds(5)));
+
+            ColoredPrintf(COLOR_DEFAULT, "Test conditions complete, beginning shutdown\n");
+        }
 
         // Shut down the event thread
         running = false;
@@ -3276,9 +3302,12 @@ namespace UnitTest
         {
             eventThread.join();
         }
+
+        // Make sure any pending events are flushed out (to clear any remaining references)
+        AssetManager::Instance().DispatchEvents();
     }
 
-    TEST_F(AssetManagerClearAssetReferenceTests, ReleaseOldReferenceWhileLoadingNewReference_DoesNotDeleteContainer)
+    TEST_F(AssetManagerClearAssetReferenceTests, ReleaseOldReferenceWhileLoadingNewReference_DoesNotDeleteContainer_SUITE_sandbox)
     {
         // Regression test very similar to the above test but this time it occurs when releasing an old asset reference while *loading* (not reloading) the same asset
         // Order of events to reproduce:
@@ -3339,36 +3368,52 @@ namespace UnitTest
         SignalType loadSignal = AZStd::make_unique<AZStd::binary_semaphore>();
         SignalType unloadSignal = AZStd::make_unique<AZStd::binary_semaphore>();
 
-        // 1) Load the asset
-        AssetEventHandler assetEventHandler(
-            loadSignal, unloadSignal,
-            AssetManager::Instance().GetAsset<AssetWithAssetReference>(RootWithSynchronizerAssetId, AssetLoadBehavior::Default));
+        {
+            // Intentional scope to allow asset references to be released before shutdown
 
-        m_loadDataSynchronizer.m_readyToLoad = true;
-        m_loadDataSynchronizer.m_condition.notify_all();
+            // 1) Load the asset
+            AssetEventHandler assetEventHandler(
+                loadSignal, unloadSignal,
+                AssetManager::Instance().GetAsset<AssetWithAssetReference>(RootWithSynchronizerAssetId, AssetLoadBehavior::Default));
 
-        loadSignal->acquire();
+            m_loadDataSynchronizer.m_readyToLoad = true;
+            m_loadDataSynchronizer.m_condition.notify_all();
 
-        ASSERT_TRUE(assetEventHandler.m_asset.IsReady());
+            ColoredPrintf(COLOR_DEFAULT, "Waiting for initial asset load to complete\n");
 
-        // 2) Start a reload which will complete
-        AssetManager::Instance().ReloadAsset(RootWithSynchronizerAssetId, AssetLoadBehavior::Default);
+            loadSignal->acquire();
 
-        unloadSignal->acquire(); // Wait until unload is done
+            ASSERT_TRUE(assetEventHandler.m_asset.IsReady());
 
-        // 3) Start another load
-        m_loadDataSynchronizer.m_readyToLoad = false; // Prevent the load from progressing too far
-        auto loadingAsset = AssetManager::Instance().GetAsset<AssetWithAssetReference>(RootWithSynchronizerAssetId, AssetLoadBehavior::Default);
+            ColoredPrintf(COLOR_DEFAULT, "Starting reload of asset\n");
 
-        // 4) Unload the old asset reference
-        assetEventHandler.m_asset = {};
+            // 2) Start a reload which will complete
+            AssetManager::Instance().ReloadAsset(RootWithSynchronizerAssetId, AssetLoadBehavior::Default);
 
-        // Resume loading
-        m_loadDataSynchronizer.m_readyToLoad = true;
-        m_loadDataSynchronizer.m_condition.notify_all();
+            ColoredPrintf(COLOR_DEFAULT, "Waiting for reload of asset to complete\n");
 
-        // 5) If the bug is still active, this will fail because the asset can never finish loading
-        EXPECT_TRUE(loadSignal->try_acquire_for(AZStd::chrono::seconds(5)));
+            unloadSignal->acquire(); // Wait until unload is done
+
+            ColoredPrintf(COLOR_DEFAULT, "Starting another load of asset\n");
+
+            // 3) Start another load
+            m_loadDataSynchronizer.m_readyToLoad = false; // Prevent the load from progressing too far
+            auto loadingAsset = AssetManager::Instance().GetAsset<AssetWithAssetReference>(RootWithSynchronizerAssetId, AssetLoadBehavior::Default);
+
+            // 4) Unload the old asset reference
+            assetEventHandler.m_asset = {};
+
+            // Resume loading
+            m_loadDataSynchronizer.m_readyToLoad = true;
+            m_loadDataSynchronizer.m_condition.notify_all();
+
+            ColoredPrintf(COLOR_DEFAULT, "Waiting for 2nd reload to complete\n");
+
+            // 5) If the bug is still active, this will fail because the asset can never finish loading
+            EXPECT_TRUE(loadSignal->try_acquire_for(AZStd::chrono::seconds(5)));
+
+            ColoredPrintf(COLOR_DEFAULT, "Test conditions complete, beginning shutdown\n");
+        }
 
         // Shut down the event thread
         running = false;
@@ -3377,6 +3422,9 @@ namespace UnitTest
         {
             eventThread.join();
         }
+
+        // Make sure any pending events are flushed out (to clear any remaining references)
+        AssetManager::Instance().DispatchEvents();
     }
 
     struct IContainerEvents
@@ -3408,7 +3456,7 @@ namespace UnitTest
         }
     };
 
-    // Test class to listen to interface event and signal a semaphor when one occurs
+    // Test class to listen to interface event and signal a semaphore when one occurs
     class ContainerListener : public AZ::Interface<IContainerEvents>::Registrar
     {
     public:
@@ -3454,7 +3502,7 @@ namespace UnitTest
         SignallingAssetManager* m_assetManager{};
     };
 
-    TEST_F(AssetManagerEbusSafety, OnAssetReady_GetAsset_DoesNotDeadlock)
+    TEST_F(AssetManagerEbusSafety, OnAssetReady_GetAsset_DoesNotDeadlock_SUITE_sandbox)
     {
         // Regression test
         // Steps to repro:
@@ -3533,9 +3581,12 @@ namespace UnitTest
             threadBFinishedSignal.release();
         });
 
-        AssetBusHandler assetBusHandler(onAssetReadySignal, clearToStartLoadingSignal, AssetManager::Instance().GetAsset<AssetWithSerializedData>(AssetA, Default));
+        {
+            // Intentional scope to allow asset references to be released before shutdown
+            AssetBusHandler assetBusHandler(onAssetReadySignal, clearToStartLoadingSignal, AssetManager::Instance().GetAsset<AssetWithSerializedData>(AssetA, Default));
 
-        ASSERT_TRUE(threadBFinishedSignal.try_acquire_for(AZStd::chrono::seconds(5)));
+            ASSERT_TRUE(threadBFinishedSignal.try_acquire_for(AZStd::chrono::seconds(5)));
+        }
 
         running = false;
 
@@ -3548,6 +3599,9 @@ namespace UnitTest
         {
             threadB.join();
         }
+
+        // Make sure any pending events are flushed out (to clear any remaining references)
+        AssetManager::Instance().DispatchEvents();
     }
 
     using AssetManagerErrorTests = AssetManagerTests;

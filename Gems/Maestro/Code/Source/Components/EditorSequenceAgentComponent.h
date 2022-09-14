@@ -67,7 +67,7 @@ namespace Maestro
         }
        
         // Override from SequenceAgent
-        const AZ::Uuid& GetComponentTypeUuid(const AZ::Component& component) const override;
+        AZ::TypeId GetComponentTypeUuid(const AZ::Component& component) const override;
 
         // Get all of the components available on the current entity.
         void GetEntityComponents(AZ::Entity::ComponentArrayType& entityComponents) const override;
