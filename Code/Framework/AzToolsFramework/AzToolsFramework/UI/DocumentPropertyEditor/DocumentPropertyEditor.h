@@ -116,6 +116,9 @@ namespace AzToolsFramework
     protected:
         DocumentPropertyEditor* GetDPE() const;
         void AddDomChildWidget(size_t domIndex, QWidget* childWidget);
+        void AddColumnWidget(QWidget* columnWidget, size_t domIndex, const AZ::Dom::Value& domValue);
+
+        QWidget* CreateWidgetForHandler(PropertyEditorToolsSystemInterface::PropertyHandlerId handlerId, const AZ::Dom::Value& domValue);
 
         DPERowWidget* m_parentRow = nullptr;
         int m_depth = 0; //!< number of levels deep in the tree. Used for indentation
@@ -125,7 +128,12 @@ namespace AzToolsFramework
         AZStd::deque<QWidget*> m_domOrderedChildren;
 
         // a map from the propertyHandler widgets to the propertyHandlers that created them
-        AZStd::unordered_map<QWidget*, AZStd::unique_ptr<PropertyHandlerWidgetInterface>> m_widgetToPropertyHandler;
+        struct HandlerInfo
+        {
+            PropertyEditorToolsSystemInterface::PropertyHandlerId handlerId = nullptr;
+            AZStd::unique_ptr<PropertyHandlerWidgetInterface> hanlderInterface;
+        };
+        AZStd::unordered_map<QWidget*, HandlerInfo> m_widgetToPropertyHandlerInfo;
     };
 
     class DocumentPropertyEditor
@@ -184,6 +192,7 @@ namespace AzToolsFramework
         void HandleReset();
         void HandleDomChange(const AZ::Dom::Patch& patch);
         void HandleDomMessage(const AZ::DocumentPropertyEditor::AdapterMessage& message, AZ::Dom::Value& value);
+
         void CleanupReleasedHandlers();
 
         AZ::DocumentPropertyEditor::DocumentAdapterPtr m_adapter;
