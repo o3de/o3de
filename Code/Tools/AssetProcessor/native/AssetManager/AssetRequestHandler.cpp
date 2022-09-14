@@ -72,7 +72,7 @@ namespace
 {
     using namespace AzToolsFramework::AssetSystem;
     using namespace AzFramework::AssetSystem;
-#pragma optimize("", off)
+
     AssetChangeReportResponse HandleAssetChangeReportRequest(MessageData < AssetChangeReportRequest> messageData)
     {
         AZStd::vector<AZStd::string> lines;
@@ -82,13 +82,13 @@ namespace
         {
             switch (messageData.m_message->m_type)
             {
-                case AssetChangeReportRequest::ChangeType::Move:
+                case AssetChangeReportRequest::ChangeType::CheckMove:
                 {
-                    auto result = relocationInterface->Move(messageData.m_message->m_fromPath, messageData.m_message->m_toPath);
+                    auto resultCheck = relocationInterface->Move(messageData.m_message->m_fromPath, messageData.m_message->m_toPath);
 
-                    if (result.IsSuccess())
+                    if (resultCheck.IsSuccess())
                     {
-                        AssetProcessor::RelocationSuccess success = result.TakeValue();
+                        AssetProcessor::RelocationSuccess success = resultCheck.TakeValue();
 
                         // The report can be too long for the AZ_Printf buffer, so split it into individual lines
                         AZStd::string report =
@@ -102,11 +102,31 @@ namespace
                     }
                 }
                 break;
-            }
+                case AssetChangeReportRequest::ChangeType::Move:
+                    {
+                        auto resultMove = relocationInterface->Move(messageData.m_message->m_fromPath, messageData.m_message->m_toPath, false, true, true, true);
+
+                        if (resultMove.IsSuccess())
+                        {
+                            AssetProcessor::RelocationSuccess success = resultMove.TakeValue();
+
+                            // The report can be too long for the AZ_Printf buffer, so split it into individual lines
+                            AZStd::string report =
+                                relocationInterface->BuildChangeReport(success.m_relocationContainer, success.m_updateTasks);
+                            AzFramework::StringFunc::Tokenize(report.c_str(), lines, "\n");
+
+                            for (const AZStd::string& line : lines)
+                            {
+                                AZ_Printf(AssetProcessor::ConsoleChannel, (line + "\n").c_str());
+                            }
+                        }
+                    }
+                    break;
+                }
         }
         return AssetChangeReportResponse(lines);
     }
-#pragma optimize("", on)
+
     GetFullSourcePathFromRelativeProductPathResponse HandleGetFullSourcePathFromRelativeProductPathRequest(MessageData<GetFullSourcePathFromRelativeProductPathRequest> messageData)
     {
         bool fullPathFound = false;

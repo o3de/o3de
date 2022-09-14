@@ -11,7 +11,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetPicker/ui_AssetPickerDialog.h>
 #include <QDialog>
 #include <QHBoxLayout>
-#pragma optimize("", off)
+
 namespace AzToolsFramework
 {
     namespace AssetBrowser

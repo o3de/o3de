@@ -579,7 +579,7 @@ namespace AzToolsFramework
                 QFile::copy(oldPath.c_str(), newPath.c_str());
             }
         }
-#pragma optimize("", off)
+
         void AssetBrowserTreeView::MoveEntries()
         {
             using namespace AzFramework::AssetSystem;
@@ -617,43 +617,65 @@ namespace AzToolsFramework
                         Path toPath(folderPath);
                         toPath /= filename;
                         AssetChangeReportRequest request(
-                            AZ::OSString(fromPath.c_str()), AZ::OSString(toPath.c_str()), AssetChangeReportRequest::ChangeType::Move);
+                            AZ::OSString(fromPath.c_str()), AZ::OSString(toPath.c_str()), AssetChangeReportRequest::ChangeType::CheckMove);
                         AssetChangeReportResponse response;
 
-                        if (!SendRequest(request, response))
+                        if (SendRequest(request, response))
                         {
-                            AZ_Assert(false, "AssetChangeReportRequest failed ");
-                        }
-                        AZStd::string message;
-                        for (int i = 0; i < response.m_lines.size(); ++i)
-                        {
-                            AZ_TracePrintf("JJS", "%s\n", response.m_lines[i].c_str());
-                            message += response.m_lines[i];
-                        }
-
-                        if (message.size())
-                        {
-                            QMessageBox msgBox(this);
-                            msgBox.setWindowTitle("Pre-Move Report");
-                            msgBox.setIcon(QMessageBox::Warning);
-                            msgBox.setText("The asset you are moving may be referenced in other assets.");
-                            msgBox.setInformativeText("More information can be found by pressing \"Show Details...\".");
-                            QAbstractButton* moveButton = (QAbstractButton*)msgBox.addButton("Move", QMessageBox::YesRole);
-                            msgBox.setStandardButtons(QMessageBox::Cancel);
-                            msgBox.setDefaultButton(QMessageBox::Yes);
-                            msgBox.setDetailedText(message.c_str());
-                            msgBox.exec();
-
-                            if (msgBox.clickedButton() == moveButton)
+                            AZStd::string message;
+                            for (int i = 0; i < response.m_lines.size(); ++i)
                             {
-                                //                            useReferencedEntities = true;
+                                message += response.m_lines[i] + "\n";
+                            }
+
+                            if (message.size())
+                            {
+                                QMessageBox msgBox(this);
+                                msgBox.setWindowTitle("Pre-Move Report");
+                                msgBox.setIcon(QMessageBox::Warning);
+                                msgBox.setText("The asset you are moving may be referenced in other assets.");
+                                msgBox.setInformativeText("More information can be found by pressing \"Show Details...\".");
+                                QAbstractButton* moveButton = (QAbstractButton*)msgBox.addButton("Move", QMessageBox::YesRole);
+                                msgBox.setStandardButtons(QMessageBox::Cancel);
+                                msgBox.setDefaultButton(QMessageBox::Yes);
+                                msgBox.setDetailedText(message.c_str());
+                                msgBox.exec();
+
+                                if (msgBox.clickedButton() == moveButton)
+                                {
+                                    AssetChangeReportRequest request2(
+                                        AZ::OSString(fromPath.c_str()),
+                                        AZ::OSString(toPath.c_str()),
+                                        AssetChangeReportRequest::ChangeType::Move);
+                                    AssetChangeReportResponse response2;
+                                    if (SendRequest(request2, response2))
+                                    {
+                                        AZStd::string message2;
+                                        for (int i = 0; i < response2.m_lines.size(); ++i)
+                                        {
+                                            message2 += response2.m_lines[i] + "\n";
+                                        }
+
+                                        if (message2.size())
+                                        {
+                                            QMessageBox msgBox2(this);
+                                            msgBox2.setWindowTitle("Move Report");
+                                            msgBox2.setIcon(QMessageBox::Warning);
+                                            msgBox2.setText("The asset has been moved.");
+                                            msgBox2.setInformativeText("More information can be found by pressing \"Show Details...\".");
+                                            msgBox2.setStandardButtons(QMessageBox::Ok);
+                                            msgBox2.setDefaultButton(QMessageBox::Ok);
+                                            msgBox2.setDetailedText(message2.c_str());
+                                            msgBox2.exec();
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
         }
-#pragma optimize("", on)
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 
