@@ -1895,9 +1895,9 @@ namespace AzToolsFramework
         {
             if (cursorEntityIdQuery.HasContainerAncestorEntityId())
             {
-                if (auto prefabFocusInterface = AZ::Interface<Prefab::PrefabFocusInterface>::Get())
+                if (auto prefabFocusPublicInterface = AZ::Interface<Prefab::PrefabFocusPublicInterface>::Get())
                 {
-                    prefabFocusInterface->FocusOnPrefabInstanceOwningEntityId(cursorEntityIdQuery.ContainerAncestorEntityId());
+                    prefabFocusPublicInterface->FocusOnOwningPrefab(cursorEntityIdQuery.ContainerAncestorEntityId());
                     return false;
                 }
             }
