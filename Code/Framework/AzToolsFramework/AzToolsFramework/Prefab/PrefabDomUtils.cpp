@@ -177,7 +177,7 @@ namespace AzToolsFramework
                     {
                         // Add metadata to track components that are deprecated
                         auto deprecationTracker = AZ::DeprecatedComponentMetadata{};
-                        deprecationTracker.SetShouldTrackDeprecatedCallback(shouldTrackDeprecated);
+                        deprecationTracker.SetEnableDeprecationTrackingCallback(shouldTrackDeprecated);
                         settings.m_metadata.Add(deprecationTracker);
                     }
 

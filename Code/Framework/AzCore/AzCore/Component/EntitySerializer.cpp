@@ -210,14 +210,14 @@ namespace AZ
         }
     }
 
-    void DeprecatedComponentMetadata::SetShouldTrackDeprecatedCallback(ShouldTrackDeprecatedCallback callback)
+    void DeprecatedComponentMetadata::SetEnableDeprecationTrackingCallback(EnableDeprecationTrackingCallback callback)
     {
-        m_shouldTrackDeprecatedCallback = callback;
+        m_enableDeprecationTrackingCallback = callback;
     }
 
     void DeprecatedComponentMetadata::AddComponent(const TypeId& componentType)
     {
-        if (!m_shouldTrackDeprecatedCallback || m_shouldTrackDeprecatedCallback())
+        if (!m_enableDeprecationTrackingCallback || m_enableDeprecationTrackingCallback())
         {
             m_componentTypes.insert(componentType);
         }
