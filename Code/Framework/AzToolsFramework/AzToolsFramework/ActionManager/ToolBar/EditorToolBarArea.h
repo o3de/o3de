@@ -31,9 +31,10 @@ namespace AzToolsFramework
         AZ_CLASS_ALLOCATOR(EditorToolBarArea, AZ::SystemAllocator, 0);
         AZ_RTTI(EditorToolBarArea, "{7B55B739-B4E0-41C0-9E71-B526BD62C3FB}");
 
+        EditorToolBarArea();
         EditorToolBarArea(QMainWindow* mainWindow, Qt::ToolBarArea toolBarArea);
 
-        static void Initialize(QWidget* defaultParentWidget);
+        static void Initialize();
         static void Reflect(AZ::ReflectContext* context);
 
         void AddToolBar(int sortKey, AZStd::string toolBarIdentifier);
@@ -53,8 +54,7 @@ namespace AzToolsFramework
 
         AZStd::map<int, AZStd::vector<AZStd::string>> m_toolBars;
         AZStd::unordered_map<AZStd::string, int> m_toolBarToSortKeyMap;
-        
-        inline static QWidget* m_defaultParentWidget = nullptr;
+        AZStd::vector<QToolBar*> m_toolBarsCache;
 
         inline static ToolBarManagerInterface* m_toolBarManagerInterface = nullptr;
         inline static ToolBarManagerInternalInterface* m_toolBarManagerInternalInterface = nullptr;

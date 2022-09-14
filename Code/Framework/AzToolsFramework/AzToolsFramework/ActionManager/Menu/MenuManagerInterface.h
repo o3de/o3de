@@ -11,6 +11,8 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
+class QMainWindow;
+
 namespace AzToolsFramework
 {
     using MenuManagerOperationResult = AZ::Outcome<void, AZStd::string>;
@@ -43,8 +45,9 @@ namespace AzToolsFramework
 
         //! Register a new Menu Bar to the Menu Manager.
         //! @param menuBarIdentifier The identifier for the menu bar that is being registered.
+        //! @param mainWindow Pointer to the QMainWindow to associate the menu bar with.
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
-        virtual MenuManagerOperationResult RegisterMenuBar(const AZStd::string& menuBarIdentifier) = 0;
+        virtual MenuManagerOperationResult RegisterMenuBar(const AZStd::string& menuBarIdentifier, QMainWindow* mainWindow) = 0;
 
         //! Returns whether a menu with the identifier queried is registered to the Menu Manager.
         //! @param menuIdentifier The identifier for the menu to query.

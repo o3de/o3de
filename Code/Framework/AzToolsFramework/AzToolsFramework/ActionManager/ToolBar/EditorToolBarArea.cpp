@@ -10,10 +10,16 @@
 #include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInterface.h>
 #include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInternalInterface.h>
 
+#include <AzQtComponents/Components/StyleManager.h>
+
 #include <QMainWindow>
 
 namespace AzToolsFramework
 {
+    EditorToolBarArea::EditorToolBarArea()
+    {
+    }
+
     EditorToolBarArea::EditorToolBarArea(QMainWindow* mainWindow, Qt::ToolBarArea toolBarArea)
         : m_mainWindow(mainWindow)
         , m_toolBarArea(toolBarArea)
@@ -44,24 +50,33 @@ namespace AzToolsFramework
 
     void EditorToolBarArea::RefreshToolBarArea()
     {
-        m_menuBar->clear();
-
-        for (const auto& vectorIterator : m_menus)
+        if (!m_mainWindow)
         {
-            for (const auto& menuIdentifier : vectorIterator.second)
+            return;
+        }
+
+        for (QToolBar* toolBar : m_toolBarsCache)
+        {
+            m_mainWindow->removeToolBar(toolBar);
+        }
+        m_toolBarsCache.clear();
+
+        for (const auto& vectorIterator : m_toolBars)
+        {
+            for (const auto& toolBarIdentifier : vectorIterator.second)
             {
-                if (QMenu* menu = m_menuManagerInternalInterface->GetMenu(menuIdentifier))
+                if (QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar(toolBarIdentifier))
                 {
-                    m_menuBar->addMenu(menu);
+                    m_mainWindow->addToolBar(m_toolBarArea, toolBar);
+                    AzQtComponents::StyleManager::repolishStyleSheet(toolBar);
+                    m_toolBarsCache.push_back(toolBar);
                 }
             }
         }
     }
 
-    void EditorToolBarArea::Initialize(QWidget* defaultParentWidget)
+    void EditorToolBarArea::Initialize()
     {
-        m_defaultParentWidget = defaultParentWidget;
-
         m_toolBarManagerInterface = AZ::Interface<ToolBarManagerInterface>::Get();
         AZ_Assert(m_toolBarManagerInterface, "EditorMenuBar - Could not retrieve instance of ToolBarManagerInterface");
 

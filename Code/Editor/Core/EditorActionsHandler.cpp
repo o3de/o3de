@@ -79,6 +79,8 @@ static constexpr AZStd::string_view HelpMenuIdentifier = "o3de.menu.editor.help"
 static constexpr AZStd::string_view HelpDocumentationMenuIdentifier = "o3de.menu.editor.help.documentation";
 static constexpr AZStd::string_view HelpGameDevResourcesMenuIdentifier = "o3de.menu.editor.help.gamedevresources";
 
+static constexpr AZStd::string_view EditorMainWindowTopToolBarAreaIdentifier = "o3de.toolbararea.editor.mainwindow.top";
+
 static constexpr AZStd::string_view ToolsToolBarIdentifier = "o3de.toolbar.editor.tools";
 static constexpr AZStd::string_view PlayControlsToolBarIdentifier = "o3de.toolbar.editor.playcontrols";
 
@@ -1234,7 +1236,7 @@ void EditorActionsHandler::OnWidgetActionRegistrationHook()
 void EditorActionsHandler::OnMenuBarRegistrationHook()
 {
     // Register MenuBar
-    m_menuManagerInterface->RegisterMenuBar(EditorMainWindowMenuBarIdentifier);
+    m_menuManagerInterface->RegisterMenuBar(EditorMainWindowMenuBarIdentifier, m_mainWindow);
 }
 
 void EditorActionsHandler::OnMenuRegistrationHook()
@@ -1369,9 +1371,6 @@ void EditorActionsHandler::OnMenuBindingHook()
     m_menuManagerInterface->AddMenuToMenuBar(EditorMainWindowMenuBarIdentifier, ToolsMenuIdentifier, 400);
     m_menuManagerInterface->AddMenuToMenuBar(EditorMainWindowMenuBarIdentifier, ViewMenuIdentifier, 500);
     m_menuManagerInterface->AddMenuToMenuBar(EditorMainWindowMenuBarIdentifier, HelpMenuIdentifier, 600);
-
-    // Set the menu bar for this window
-    m_mainWindow->setMenuBar(m_menuManagerInternalInterface->GetMenuBar(EditorMainWindowMenuBarIdentifier));
 
     // Add actions to each menu
 
@@ -1530,6 +1529,11 @@ void EditorActionsHandler::OnMenuBindingHook()
     }
 }
 
+void EditorActionsHandler::OnToolBarAreaRegistrationHook()
+{
+    m_toolBarManagerInterface->RegisterToolBarArea(EditorMainWindowTopToolBarAreaIdentifier, m_mainWindow, Qt::ToolBarArea::TopToolBarArea);
+}
+
 void EditorActionsHandler::OnToolBarRegistrationHook()
 {
     // Initialize ToolBars
@@ -1544,14 +1548,15 @@ void EditorActionsHandler::OnToolBarRegistrationHook()
         toolBarProperties.m_name = "Play Controls";
         m_toolBarManagerInterface->RegisterToolBar(PlayControlsToolBarIdentifier, toolBarProperties);
     }
-
-    // Set the toolbars
-    m_mainWindow->addToolBar(Qt::ToolBarArea::TopToolBarArea, m_toolBarManagerInterface->GetToolBar(ToolsToolBarIdentifier));
-    m_mainWindow->addToolBar(Qt::ToolBarArea::TopToolBarArea, m_toolBarManagerInterface->GetToolBar(PlayControlsToolBarIdentifier));
 }
 
 void EditorActionsHandler::OnToolBarBindingHook()
 {
+    // Add ToolBars to ToolBar Areas
+    // We space the sortkeys by 100 to allow external systems to add toolbars in-between.
+    m_toolBarManagerInterface->AddToolBarToToolBarArea(EditorMainWindowTopToolBarAreaIdentifier, ToolsToolBarIdentifier, 100);
+    m_toolBarManagerInterface->AddToolBarToToolBarArea(EditorMainWindowTopToolBarAreaIdentifier, PlayControlsToolBarIdentifier, 200);
+
     // Add actions to each toolbar
 
     // Play Controls
