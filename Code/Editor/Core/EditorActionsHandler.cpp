@@ -1531,7 +1531,8 @@ void EditorActionsHandler::OnMenuBindingHook()
 
 void EditorActionsHandler::OnToolBarAreaRegistrationHook()
 {
-    m_toolBarManagerInterface->RegisterToolBarArea(EditorMainWindowTopToolBarAreaIdentifier, m_mainWindow, Qt::ToolBarArea::TopToolBarArea);
+    m_toolBarManagerInterface->RegisterToolBarArea(
+        EditorMainWindowTopToolBarAreaIdentifier, m_mainWindow, Qt::ToolBarArea::TopToolBarArea);
 }
 
 void EditorActionsHandler::OnToolBarRegistrationHook()

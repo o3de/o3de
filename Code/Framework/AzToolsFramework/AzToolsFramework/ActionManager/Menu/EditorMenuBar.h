@@ -29,8 +29,8 @@ namespace AzToolsFramework
         AZ_CLASS_ALLOCATOR(EditorMenuBar, AZ::SystemAllocator, 0);
         AZ_RTTI(EditorMenuBar, "{6242037D-9BC5-41A1-91BE-441B33875DC6}");
 
-        EditorMenuBar();
-        EditorMenuBar(QMainWindow* mainWindow);
+        EditorMenuBar() = default;
+        explicit EditorMenuBar(QMainWindow* mainWindow);
 
         static void Initialize();
         static void Reflect(AZ::ReflectContext* context);

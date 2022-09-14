@@ -16,10 +16,6 @@
 
 namespace AzToolsFramework
 {
-    EditorToolBarArea::EditorToolBarArea()
-    {
-    }
-
     EditorToolBarArea::EditorToolBarArea(QMainWindow* mainWindow, Qt::ToolBarArea toolBarArea)
         : m_mainWindow(mainWindow)
         , m_toolBarArea(toolBarArea)

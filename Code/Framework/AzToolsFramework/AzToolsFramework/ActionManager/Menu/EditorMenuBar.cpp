@@ -15,10 +15,6 @@
 
 namespace AzToolsFramework
 {
-    EditorMenuBar::EditorMenuBar()
-    {
-    }
-
     EditorMenuBar::EditorMenuBar(QMainWindow* mainWindow)
         : m_mainWindow(mainWindow)
     {

@@ -31,7 +31,7 @@ namespace AzToolsFramework
         AZ_CLASS_ALLOCATOR(EditorToolBarArea, AZ::SystemAllocator, 0);
         AZ_RTTI(EditorToolBarArea, "{7B55B739-B4E0-41C0-9E71-B526BD62C3FB}");
 
-        EditorToolBarArea();
+        EditorToolBarArea() = default;
         EditorToolBarArea(QMainWindow* mainWindow, Qt::ToolBarArea toolBarArea);
 
         static void Initialize();
@@ -39,13 +39,13 @@ namespace AzToolsFramework
 
         void AddToolBar(int sortKey, AZStd::string toolBarIdentifier);
         
-        // Returns whether the toolbar queried is contained in this toolbar area.
+        //! Returns whether the toolbar queried is contained in this toolbar area.
         bool ContainsToolBar(const AZStd::string& toolBarIdentifier) const;
 
-        // Returns the sort key for the queried toolbar, or AZStd::nullopt if it's not found.
+        //! Returns the sort key for the queried toolbar, or AZStd::nullopt if it's not found.
         AZStd::optional<int> GetToolBarSortKey(const AZStd::string& toolBarIdentifier) const;
         
-        // Clears the toolbar area and creates a new one from the EditorToolBarArea information.
+        //! Clears the toolbar area and creates a new one from the EditorToolBarArea information.
         void RefreshToolBarArea();
 
     private:
