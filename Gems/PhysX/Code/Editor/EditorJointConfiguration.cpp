@@ -187,13 +187,29 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorJointLimitPairConfig::IsLimited)
                     ->Attribute(AZ::Edit::Attributes::Max, s_linearLimitMax)
                     ->Attribute(AZ::Edit::Attributes::Min, s_linearLimitMin)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorJointLimitLinearPairConfig::OnLimitLowerChanged)
                     ->DataElement(
                         0, &PhysX::EditorJointLimitLinearPairConfig::m_limitUpper, "Upper linear limit", "Upper limit of linear motion.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorJointLimitPairConfig::IsLimited)
                     ->Attribute(AZ::Edit::Attributes::Max, s_linearLimitMax)
-                    ->Attribute(AZ::Edit::Attributes::Min, s_linearLimitMin);
+                    ->Attribute(AZ::Edit::Attributes::Min, s_linearLimitMin)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorJointLimitLinearPairConfig::OnLimitUpperChanged);
             }
         }
+    }
+
+    AZ::Crc32 EditorJointLimitLinearPairConfig::OnLimitLowerChanged()
+    {
+        // force lower limit to be <= upper limit
+        m_limitLower = AZ::GetMin(m_limitLower, m_limitUpper);
+        return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
+    }
+
+    AZ::Crc32 EditorJointLimitLinearPairConfig::OnLimitUpperChanged()
+    {
+        // force upper limit to be >= lower limit
+        m_limitUpper = AZ::GetMax(m_limitLower, m_limitUpper);
+        return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
     }
 
     bool EditorJointLimitLinearPairConfig::IsLimited() const
@@ -212,8 +228,6 @@ namespace PhysX
             m_standardLimitConfig.m_stiffness,
             m_standardLimitConfig.m_tolerance);
     }
-
-
 
     void EditorJointLimitConeConfig::Reflect(AZ::ReflectContext* context)
     {

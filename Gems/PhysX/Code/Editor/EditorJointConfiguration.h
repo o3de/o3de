@@ -88,6 +88,9 @@ namespace PhysX
         EditorJointLimitConfig m_standardLimitConfig;
         float m_limitLower = -1.0f;
         float m_limitUpper = 1.0f;
+    private:
+        AZ::Crc32 OnLimitLowerChanged();
+        AZ::Crc32 OnLimitUpperChanged();
     };
 
     /// Cone (swing) limits for joints.
