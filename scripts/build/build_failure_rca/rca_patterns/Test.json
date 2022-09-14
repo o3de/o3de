@@ -10,10 +10,9 @@
           "The following tests FAILED:.*Errors while running CTest"
         ],
         "log_testcases": [
-          "The following tests FAILED:"
+          "The following tests FAILED:\\n[2022-09-08T02:30:37.437Z] 33 - pytest_sanity_main_no_gpu.main::TEST_RUN (Failed)\\n[2022-09-08T02:30:37.437Z] Errors while running CTest"
         ],
         "owners": []
       }
     ]
   }
-  

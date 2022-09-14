@@ -201,7 +201,6 @@ public:
 
     UiAnimParamData()
         : m_componentId(AZ::InvalidComponentId)
-        , m_typeId(0)
         , m_offset(0)
     {}
 
