@@ -64,7 +64,6 @@ def on_update_manifest(args):
     result = update_manifest(scene)
     global mySceneJobHandler
     mySceneJobHandler.disconnect()
-    mySceneJobHandler = None
     return result
 
 def main():

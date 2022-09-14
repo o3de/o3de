@@ -208,7 +208,6 @@ def on_update_manifest(args):
 
     global sceneJobHandler
     sceneJobHandler.disconnect()
-    sceneJobHandler = None
 
 # try to create SceneAPI handler for processing
 try:

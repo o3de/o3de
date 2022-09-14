@@ -111,14 +111,13 @@ def on_update_manifest(args):
         log_exception_traceback()
 
     global sceneJobHandler
-    sceneJobHandler = None
+    sceneJobHandler.disconnect()
 
 # try to create SceneAPI handler for processing
 try:
     import azlmbr.scene as sceneApi
-    if (sceneJobHandler == None):
-        sceneJobHandler = sceneApi.ScriptBuildingNotificationBusHandler()
-        sceneJobHandler.connect()
-        sceneJobHandler.add_callback('OnUpdateManifest', on_update_manifest)
+    sceneJobHandler = sceneApi.ScriptBuildingNotificationBusHandler()
+    sceneJobHandler.connect()
+    sceneJobHandler.add_callback('OnUpdateManifest', on_update_manifest)
 except:
     sceneJobHandler = None

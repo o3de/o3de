@@ -152,8 +152,9 @@ namespace AzToolsFramework::ViewportUi
     {
         if (auto clusterIt = m_clusterButtonGroups.find(clusterId); clusterIt != m_clusterButtonGroups.end())
         {
+            auto elementId = clusterIt->second->GetViewportUiElementId();
             m_clusterButtonGroups.erase(clusterIt);
-            m_viewportUi->RemoveViewportUiElement(clusterIt->second->GetViewportUiElementId());
+            m_viewportUi->RemoveViewportUiElement(elementId);
         }
     }
 
@@ -161,8 +162,9 @@ namespace AzToolsFramework::ViewportUi
     {
         if (auto switcherIt = m_switcherButtonGroups.find(switcherId); switcherIt != m_switcherButtonGroups.end())
         {
+            auto elementId = switcherIt->second->GetViewportUiElementId();
             m_switcherButtonGroups.erase(switcherIt);
-            m_viewportUi->RemoveViewportUiElement(switcherIt->second->GetViewportUiElementId());
+            m_viewportUi->RemoveViewportUiElement(elementId);
         }
     }
 
@@ -246,8 +248,9 @@ namespace AzToolsFramework::ViewportUi
     {
         if (auto textFieldIt = m_textFields.find(textFieldId); textFieldIt != m_textFields.end())
         {
+            auto viewportId = textFieldIt->second->m_viewportId;
             m_textFields.erase(textFieldIt);
-            m_viewportUi->RemoveViewportUiElement(textFieldIt->second->m_viewportId);
+            m_viewportUi->RemoveViewportUiElement(viewportId);
         }
     }
 

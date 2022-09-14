@@ -11,7 +11,6 @@ sceneJobHandler = None
 def clear_sceneJobHandler():
     global sceneJobHandler
     sceneJobHandler.disconnect()
-    sceneJobHandler = None
 
 def on_prepare_for_export(args): 
     print (f'on_prepare_for_export')
@@ -68,11 +67,10 @@ def on_update_manifest(args):
 try:
     import azlmbr.scene as sceneApi
     
-    if sceneJobHandler is None:
-        sceneJobHandler = sceneApi.ScriptBuildingNotificationBusHandler()
-        sceneJobHandler.connect()
-        sceneJobHandler.add_callback('OnUpdateManifest', on_update_manifest)
-        sceneJobHandler.add_callback('OnPrepareForExport', on_prepare_for_export)
+    sceneJobHandler = sceneApi.ScriptBuildingNotificationBusHandler()
+    sceneJobHandler.connect()
+    sceneJobHandler.add_callback('OnUpdateManifest', on_update_manifest)
+    sceneJobHandler.add_callback('OnPrepareForExport', on_prepare_for_export)
 
 except:
     sceneJobHandler = None

@@ -44,14 +44,13 @@ def on_update_manifest(args):
     result = update_manifest(scene)
     global mySceneJobHandler
     mySceneJobHandler.disconnect()
-    mySceneJobHandler = None
     return result
 
 def main():
     global mySceneJobHandler
     mySceneJobHandler = sceneApi.ScriptBuildingNotificationBusHandler()
-    mySceneJobHandler.connect()
     mySceneJobHandler.add_callback('OnUpdateManifest', on_update_manifest)
+    mySceneJobHandler.connect()
 
 if __name__ == "__main__":
     main()

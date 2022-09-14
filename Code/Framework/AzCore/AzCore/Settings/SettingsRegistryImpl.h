@@ -159,5 +159,11 @@ namespace AZ
         //! Stack tracking the files currently being merged
         //! This is protected by m_settingsMutex
         AZStd::stack<AZ::IO::FixedMaxPath> m_mergeFilePathStack;
+
+        // if this is nonzero, we are in a visit operation.  It can be used to detect illegal modifications
+        // of the tree during visit.
+        mutable int m_visitDepth = 0; // mutable due to it being a debugging value used in const.
+
+        void CheckVisitMutate() const;
     };
 } // namespace AZ
