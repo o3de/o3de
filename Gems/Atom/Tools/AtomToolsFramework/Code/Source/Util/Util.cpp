@@ -457,8 +457,8 @@ namespace AtomToolsFramework
             }
         }
 
-        // Sorting the container and removing duplicate paths. This isn't entirely necessary but the function previously returned a sorted
-        // set so preserving behavior.
+        // Sorting the container and removing duplicate paths to ensure uniqueness in case of nested or overlapping scan folders.
+        // This was previously done automatically with a set but using a vector for compatibility with behavior context and Python. 
         AZStd::sort(results.begin(), results.end());
         results.erase(AZStd::unique(results.begin(), results.end()), results.end());
 
