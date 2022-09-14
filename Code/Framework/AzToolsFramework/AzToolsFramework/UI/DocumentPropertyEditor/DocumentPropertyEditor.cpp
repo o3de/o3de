@@ -711,12 +711,12 @@ namespace AzToolsFramework
                 }
                 else
                 {
-                    QLabel* changedLabel = qobject_cast<QLabel*>(childWidget);
+                    auto changedLabel = qobject_cast<AzQtComponents::ElidingLabel*>(childWidget);
                     AZ_Assert(changedLabel, "not a label, unknown widget discovered!");
                     if (changedLabel)
                     {
                         auto labelString = AZ::Dpe::Nodes::Label::Value.ExtractFromDomNode(valueAtSubPath).value_or("");
-                        changedLabel->setText(QString::fromUtf8(labelString.data(), aznumeric_cast<int>(labelString.size())));
+                        changedLabel->SetText(QString::fromUtf8(labelString.data(), aznumeric_cast<int>(labelString.size())));
                     }
                 }
             }
@@ -1101,6 +1101,8 @@ namespace AzToolsFramework
     {
         // clear any pre-existing DPERowWidgets
         Clear();
+
+        // invisible root node has a "depth" of -1; its children are all at indent 0
         m_rootNode = new DPERowWidget(-1, nullptr);
         m_rootNode->setParent(this);
         m_rootNode->hide();
