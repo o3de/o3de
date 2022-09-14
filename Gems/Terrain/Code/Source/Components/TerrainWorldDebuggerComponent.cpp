@@ -267,8 +267,11 @@ namespace Terrain
         AZ::Color outlineColor(1.0f, 0.0f, 0.0f, 1.0f);
         AZ::Aabb aabb = GetWorldBounds();
 
-        debugDisplay.SetColor(outlineColor);
-        debugDisplay.DrawWireBox(aabb.GetMin(), aabb.GetMax());
+        if (aabb.IsValid())
+        {
+            debugDisplay.SetColor(outlineColor);
+            debugDisplay.DrawWireBox(aabb.GetMin(), aabb.GetMax());
+        }
     }
 
     void TerrainWorldDebuggerComponent::DrawQueries(
