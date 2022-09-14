@@ -29,12 +29,22 @@ namespace UnitTest
         AzFramework::Camera m_targetCamera;
         AZStd::shared_ptr<AzFramework::CameraSystem> m_cameraSystem;
 
-        bool HandleEventAndUpdate(const AzFramework::InputState& state)
+        void Update()
         {
             constexpr float deltaTime = 0.01666f; // 60fps
-            const bool consumed = m_cameraSystem->HandleEvents(state);
             m_targetCamera = m_cameraSystem->StepCamera(m_targetCamera, deltaTime);
             m_camera = m_targetCamera; // no smoothing
+        }
+
+        bool HandleEvent(const AzFramework::InputState& state)
+        {
+            return m_cameraSystem->HandleEvents(state);
+        }
+
+        bool HandleEventAndUpdate(const AzFramework::InputState& state)
+        {
+            const bool consumed = HandleEvent(state);
+            Update();
             return consumed;
         }
 
@@ -585,5 +595,26 @@ namespace UnitTest
             m_cameraSystem->m_cameras.RemoveCameras(AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>{ firstPersonPanCamera });
 
         EXPECT_THAT(removed, ::testing::IsFalse());
+    }
+
+    // note: this test is attempting to mimic the behavior that happens when a user presses 'ctrl-tab' to change focus from the editor
+    // which can cause the event/update order to become irregular - this test verifies the orbit behavior does not change the position
+    // of the camera if updates are dropped (due to the editor losing focus)
+    TEST_F(CameraInputFixture, OrbitRotateCameraInputDoesNotResetPositionWithInconsitentEventAndUpdate)
+    {
+        const AzFramework::ModifierKeyStates orbitModifierKeystate = OrbitModifierKeyStates(m_orbitChannelId);
+
+        const auto cameraStartingPosition = AZ::Vector3::CreateAxisY(-20.0f);
+        m_targetCamera.m_pivot = cameraStartingPosition;
+        m_pivot = AZ::Vector3::CreateAxisY(-10.0f);
+
+        HandleEvent(AzFramework::InputState{ AzFramework::DiscreteInputEvent{ m_orbitChannelId, AzFramework::InputChannel::State::Began },
+                                             orbitModifierKeystate });
+        Update();
+        HandleEvent(AzFramework::InputState{ AzFramework::CursorEvent{ AzFramework::ScreenPoint{ 100, 100 } }, AzFramework::ModifierKeyStates{} });
+        HandleEvent(AzFramework::InputState{ AzFramework::CursorEvent{ AzFramework::ScreenPoint{ 100, 100 } }, orbitModifierKeystate });
+        Update();
+
+        EXPECT_THAT(m_camera.Translation(), IsCloseTolerance(cameraStartingPosition, 0.01f));
     }
 } // namespace UnitTest
