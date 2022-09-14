@@ -35,12 +35,14 @@ SceneSettingsCardHeader::SceneSettingsCardHeader(QWidget* parent /* = nullptr */
     m_busySpinner->setBaseSize(20, 20);
     m_backgroundLayout->insertWidget(1, m_busySpinner);
     m_busySpinner->setStyleSheet("background-color: rgba(0,0,0,0)");
+    m_busySpinner->setToolTip(tr("There is an active processing event for this file. The window will update when the event completes."));
 
     m_closeButton = new QPushButton(this);
     m_closeButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     m_closeButton->setMinimumSize(24, 24);
     m_closeButton->setMaximumSize(24, 24);
     m_closeButton->setBaseSize(24, 24);
+    m_closeButton->setToolTip(tr("Removes this from the window. If you wish to see log details for this file again later, you can check the Asset Processor."));
 
     QIcon closeButtonIcon;
     closeButtonIcon.addPixmap(QPixmap(":/SceneUI/Common/CloseIcon.svg"));
@@ -280,19 +282,30 @@ void SceneSettingsCard::SetState(State newState)
     switch (newState)
     {
     case State::Loading:
-        setTitle(tr("Loading scene settings"));
-        m_settingsHeader->SetCanClose(false);
+        {
+            QString tooltip(tr("The scene settings for this file are being loaded. The window will update when the event completes."));
+            setTitle(tr("Loading scene settings"), tooltip);
+            m_settingsHeader->m_busySpinner->setToolTip(tooltip);
+            m_settingsHeader->SetCanClose(false);
+        }
         break;
     case State::Processing:
-        setTitle(tr("Saving scene settings, and reprocessing scene file"));
-        m_settingsHeader->SetCanClose(false);
+        {
+            QString tooltip(tr("The scene file is being processed. The window will update when the event completes."));
+            setTitle(tr("Saving scene settings, and reprocessing scene file"), tooltip);
+            m_settingsHeader->m_busySpinner->setToolTip(tooltip);
+            m_settingsHeader->SetCanClose(false);
+        }
         break;
     case State::Done:
         {
+            QString tooltip(tr("No errors or warnings were encountered %1 the scene file.%2"));
             QString errorsAndWarningsString;
             if (m_warningCount > 0 || m_errorCount > 0)
             {
                 errorsAndWarningsString = tr(" with %1 warning(s), %2 error(s)").arg(m_warningCount).arg(m_errorCount);
+                tooltip = tr("Warnings and/or errors were encountered %1 the scene file. You can view the details by expanding this card "
+                             "and reading the log message.%2");
             }
 
             QString previousStateString;
@@ -300,12 +313,15 @@ void SceneSettingsCard::SetState(State newState)
             {
             case State::Loading:
                 previousStateString = tr("Loading ");
+                // The second arg is empty because there isn't an easy way to find the loading log messages later.
+                tooltip = tooltip.arg(tr("loading")).arg("");
                 break;
             case State::Processing:
                 previousStateString = tr("Processing ");
+                tooltip = tooltip.arg(tr("processing")).arg(tr(" If you dismiss this card, you can view the processing logs again in the Asset Processor."));
                 break;
                 }
-            setTitle(tr("%1%2 completed at %3%4").arg(previousStateString).arg(m_fileTracked).arg(GetTimeNowAsString()).arg(errorsAndWarningsString));
+            setTitle(tr("%1%2 completed at %3%4").arg(previousStateString).arg(m_fileTracked).arg(GetTimeNowAsString()).arg(errorsAndWarningsString), tooltip);
             m_settingsHeader->SetCanClose(true);
 
             switch (m_completionState)

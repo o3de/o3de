@@ -149,6 +149,11 @@ namespace AzQtComponents
     {
         m_header->setTitle(title);
     }
+    
+    void Card::setTitle(const QString& title, const QString& tooltip)
+    {
+        m_header->setTitle(title, tooltip);
+    }
 
     QString Card::title() const
     {

@@ -71,6 +71,9 @@ namespace AzQtComponents
         //! Sets the Card's Title.
         //! Equivalent to calling setTitle on the CardHeader.
         void setTitle(const QString& title);
+        //! Sets the Card's title, and the tooltip for that title.
+        //! Equivalent to calling setTitle on the CardHeader.
+        void setTitle(const QString& title, const QString& tooltip);
         //! Returns the Card's Title.
         QString title() const;
 

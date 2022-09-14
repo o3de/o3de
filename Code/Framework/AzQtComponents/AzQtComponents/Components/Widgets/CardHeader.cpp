@@ -143,6 +143,13 @@ namespace AzQtComponents
         m_titleLabel->setVisible(!title.isEmpty());
     }
 
+    void CardHeader::setTitle(const QString& title, const QString& tooltip)
+    {
+        setTitle(title);
+        m_titleLabel->setToolTip(tooltip);
+        this->setToolTip(tooltip);
+    }
+
     void CardHeader::setFilter(const QString& filter)
     {
         m_titleLabel->setFilter(filter);
