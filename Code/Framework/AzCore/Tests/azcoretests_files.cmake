@@ -68,7 +68,8 @@ set(FILES
     StatisticalProfilerTests.cpp
     StreamerTests.cpp
     StringFunc.cpp
-    SystemFile.cpp
+    SystemFileTest.cpp
+    SystemFileStreamTest.cpp
     TaskTests.cpp
     TickBusTest.cpp
     UUIDTests.cpp
