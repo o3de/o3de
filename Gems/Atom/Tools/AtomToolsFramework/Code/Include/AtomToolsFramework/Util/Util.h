@@ -111,9 +111,7 @@ namespace AtomToolsFramework
     //! Generate a file path that is relative to either the source asset root or the export path
     //! @param exportPath absolute path of the file being saved
     //! @param referencePath absolute path of a file that will be treated as an external reference
-    //! @param relativeToExportPath specifies if the path is relative to the source asset root or the export path
-    AZStd::string GetPathToExteralReference(
-        const AZStd::string& exportPath, const AZStd::string& referencePath, const bool relativeToExportPath = false);
+    AZStd::string GetPathToExteralReference(const AZStd::string& exportPath, const AZStd::string& referencePath);
 
     //! Traverse up the instance data hierarchy to find a node containing the corresponding type
     template<typename T>
