@@ -651,7 +651,7 @@ namespace AssetProcessor
             AZ_Error(AssetProcessor::ConsoleChannel, false,
                 "%s is a git large file storage (LFS) file. "
                 "This is a placeholder file used by the git source control system to manage content. "
-                "This issue most happens if you've downloaded all of O3DE as a zip file. "
+                "This issue usually happens if you've downloaded all of O3DE as a zip file. "
                 "Please sync all of the files from the LFS endpoint following https://www.o3de.org/docs/welcome-guide/setup/setup-from-github/#fork-and-clone.",
                 jobEntry.GetAbsoluteSourcePath().toUtf8().constData());
         }
