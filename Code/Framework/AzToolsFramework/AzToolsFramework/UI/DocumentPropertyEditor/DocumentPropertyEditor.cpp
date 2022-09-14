@@ -802,10 +802,9 @@ namespace AzToolsFramework
         auto pathToRoot = GetDPE()->GetPathToRoot(this);
         AZ::Dom::Path rowPath = AZ::Dom::Path();
 
-        auto reverseIndexIter = pathToRoot.rbegin();
-        for (reverseIndexIter; reverseIndexIter != pathToRoot.rend(); ++reverseIndexIter)
+        for (auto reversePathEntry : pathToRoot | AZStd::views::reverse)
         {
-            rowPath.Push(*reverseIndexIter);
+            rowPath.Push(reversePathEntry);
         }
 
         return rowPath;
@@ -1007,22 +1006,13 @@ namespace AzToolsFramework
             m_dpeSettings->SetCleanExpanderStateCallback(
                 [this](DocumentPropertyEditorSettings::ExpanderStateMap& storedStates)
                 {
-                    bool wereChangesMade = false;
                     auto rootValue = m_adapter->GetContents();
-                    auto iter = storedStates.begin();
-                    while (iter != storedStates.end())
-                    {
-                        if (auto value = rootValue.FindChild(AZ::Dom::Path(iter->first)); !value)
+                    auto numErased = AZStd::erase_if(storedStates,
+                        [&rootValue](AZStd::pair<AZStd::string, bool> statePair)
                         {
-                            iter = storedStates.erase(iter);
-                            wereChangesMade = true;
-                        }
-                        else
-                        {
-                            ++iter;
-                        }
-                    }
-                    return wereChangesMade;
+                            return !rootValue.FindChild(AZ::Dom::Path(statePair.first)) ? true : false;
+                        });
+                    return numErased > 0;
                 });
 
             // We need to rebuild the view using the stored expander states

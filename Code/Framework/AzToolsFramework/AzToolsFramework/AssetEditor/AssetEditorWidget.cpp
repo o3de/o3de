@@ -341,8 +341,7 @@ namespace AzToolsFramework
             serializeContext->CloneObjectInplace((*m_inMemoryAsset.GetData()), asset.GetData());
 
             // Make sure the saved state key is reset since this could be a file opened with the same property editor isntance
-            m_savedStateKey = AZ::Crc32();
-            m_savedStateKey.Add(&asset.GetId(), sizeof(AZ::Data::AssetId));
+            m_savedStateKey = AZ::Crc32(&asset.GetId(), sizeof(AZ::Data::AssetId));
 
             UpdatePropertyEditor(m_inMemoryAsset);
 
@@ -957,8 +956,7 @@ namespace AzToolsFramework
             m_currentAsset = "New Asset";
 
             // Make sure the saved state key is reset since this could be a file opened with the same property editor isntance
-            m_savedStateKey = AZ::Crc32();
-            m_savedStateKey.Add(&newAssetId, sizeof(AZ::Data::AssetId));
+            m_savedStateKey = AZ::Crc32(&newAssetId, sizeof(AZ::Data::AssetId));
 
             UpdatePropertyEditor(m_inMemoryAsset);
 

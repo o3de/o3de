@@ -15,12 +15,11 @@ namespace AzToolsFramework
         const AZStd::string& propertyEditorName)
     {
         m_settingsRegistryBasePath = AZStd::string::format("%s/%s", RootSettingsRegistryPath, propertyEditorName.c_str());
-        m_settingsRegistryDocumentKey = settingsRegistryKey;
-        m_fullSettingsRegistryPath = AZStd::string::format("%s/%s",
-            m_settingsRegistryBasePath.c_str(), m_settingsRegistryDocumentKey.c_str());
+        m_fullSettingsRegistryPath = AZStd::string::format("%s/%s", m_settingsRegistryBasePath.c_str(), settingsRegistryKey.c_str());
 
-        m_fullSettingsFilepath = AZStd::string::format("%s/%s_settings.%s",
-            RootSettingsFilepath, propertyEditorName.c_str(), SettingsRegistrar::SettingsRegistryFileExt);
+        m_settingsFilepath.Append(RootSettingsFilepath)
+            .Append(AZStd::string::format("%s_settings", propertyEditorName.c_str()))
+            .ReplaceExtension(SettingsRegistrar::SettingsRegistryFileExt);
 
         m_wereSettingsLoaded = LoadExpanderStates();
     }
@@ -43,7 +42,7 @@ namespace AzToolsFramework
         };
         dumperSettings.m_jsonPointerPrefix = m_settingsRegistryBasePath;
 
-        auto outcome = m_settingsRegistrar.SaveSettingsToFile(m_fullSettingsFilepath, dumperSettings, m_settingsRegistryBasePath);
+        auto outcome = m_settingsRegistrar.SaveSettingsToFile(m_settingsFilepath, dumperSettings, m_settingsRegistryBasePath);
         if (!outcome.IsSuccess())
         {
             AZ_Warning("DocumentPropertyEditorSettings", false, outcome.GetError().c_str());
@@ -52,7 +51,7 @@ namespace AzToolsFramework
 
     bool DocumentPropertyEditorSettings::LoadExpanderStates()
     {
-        auto loadOutcome = m_settingsRegistrar.LoadSettingsFromFile(m_fullSettingsFilepath);
+        auto loadOutcome = m_settingsRegistrar.LoadSettingsFromFile(m_settingsFilepath);
         if (loadOutcome.IsSuccess())
         {
             auto getOutcome = m_settingsRegistrar.GetObjectSettings(this, m_fullSettingsRegistryPath);
@@ -97,7 +96,7 @@ namespace AzToolsFramework
 
     bool DocumentPropertyEditorSettings::GetExpanderStateForRow(const AZ::Dom::Path& rowPath)
     {
-        AZStd::string_view strPath = rowPath.ToString();
+        AZStd::string strPath = rowPath.ToString();
         if (m_expandedElementStates.contains(strPath))
         {
             return m_expandedElementStates[strPath];
@@ -112,11 +111,7 @@ namespace AzToolsFramework
 
     void DocumentPropertyEditorSettings::RemoveExpanderStateForRow(const AZ::Dom::Path& rowPath)
     {
-        const AZStd::string& strPath = rowPath.ToString();
-        if (m_expandedElementStates.contains(strPath))
-        {
-            m_expandedElementStates.erase(strPath);
-        }
+        m_expandedElementStates.erase(rowPath.ToString());
     }
 
     void DocumentPropertyEditorSettings::SetCleanExpanderStateCallback(CleanExpanderStateCallback function)

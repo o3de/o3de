@@ -48,10 +48,10 @@ namespace AzToolsFramework
         void SetCleanExpanderStateCallback(CleanExpanderStateCallback function);
 
         //! Root filepath for DocumentPropertyEditor settings files
-        static constexpr char RootSettingsFilepath[] = "user/Registry/DocumentPropertyEditor";
+        static constexpr const char* RootSettingsFilepath = "user/Registry/DocumentPropertyEditor";
 
         //! Root SettingsRegistry path where DPE settings are stored
-        static constexpr char RootSettingsRegistryPath[] = "/O3DE/DocumentPropertyEditor";
+        static constexpr const char* RootSettingsRegistryPath = "/O3DE/DocumentPropertyEditor";
 
         //! Serialized map of expanded element states
         ExpanderStateMap m_expandedElementStates;
@@ -69,9 +69,9 @@ namespace AzToolsFramework
 
         SettingsRegistrar m_settingsRegistrar;
 
-        AZStd::string m_fullSettingsFilepath;
+        AZ::IO::Path m_settingsFilepath;
+
         AZStd::string m_fullSettingsRegistryPath;
         AZStd::string m_settingsRegistryBasePath;
-        AZStd::string m_settingsRegistryDocumentKey;
     };
 } // namespace AzToolsFramework

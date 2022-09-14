@@ -9,27 +9,27 @@
 #include "SettingsRegistrar.h"
 
 #include <AzCore/IO/ByteContainerStream.h>
-#include <AzCore/IO/FileIO.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 
 namespace AzToolsFramework
 {
     AZ::Outcome<void, AZStd::string> SettingsRegistrar::SaveSettingsToFile(
-        const AZStd::string& relativeFilepath,
+        AZ::IO::PathView relativeFilepath,
         AZ::SettingsRegistryMergeUtils::DumperSettings dumperSettings,
-        const AZStd::string& rootSearchKey) const
+        const AZStd::string& anchorKey,
+        AZ::SettingsRegistryInterface* registry) const
     {
-        AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
+        registry = !registry ? AZ::SettingsRegistry::Get() : registry;
         if (!registry)
         {
             return AZ::Failure(AZStd::string::format("Failed to access global settings registry"));
         }
 
         constexpr const char* setregFileExt = ".setreg";
-        if (AZ::IO::Path(relativeFilepath).Extension() != setregFileExt)
+        if (relativeFilepath.Extension() != setregFileExt)
         {
             return AZ::Failure(AZStd::string::format(
-                "Failed to save settings to file '%s': file must be of type '.setreg'", relativeFilepath.c_str()));
+                "Failed to save settings to file '%s': file must be of type '.setreg'", relativeFilepath.FixedMaxPathString().c_str()));
         }
 
         AZ::IO::FixedMaxPath fullSettingsPath = AZ::Utils::GetProjectPath();
@@ -38,7 +38,7 @@ namespace AzToolsFramework
 
         AZStd::string stringBuffer;
         AZ::IO::ByteContainerStream stringStream(&stringBuffer);
-        if (!AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(*registry, rootSearchKey, stringStream, dumperSettings))
+        if (!AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(*registry, anchorKey, stringStream, dumperSettings))
         {
             return AZ::Failure(AZStd::string::format(
                 "Failed to save settings to file '%s': failed to retrieve settings from registry", posixSettingsPath));
@@ -60,11 +60,12 @@ namespace AzToolsFramework
     }
 
     AZ::Outcome<void, AZStd::string> SettingsRegistrar::LoadSettingsFromFile(
-        AZStd::string_view relativeFilepath,
+        AZ::IO::PathView relativeFilepath,
         AZStd::string_view anchorKey,
+        AZ::SettingsRegistryInterface* registry,
         AZ::SettingsRegistryInterface::Format format) const
     {
-        AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
+        registry = !registry ? AZ::SettingsRegistry::Get() : registry;
         if (!registry)
         {
             return AZ::Failure(AZStd::string::format("Failed to access global settings registry"));
@@ -72,26 +73,25 @@ namespace AzToolsFramework
 
         AZ::IO::FixedMaxPath fullSettingsPath = AZ::Utils::GetProjectPath();
         fullSettingsPath /= relativeFilepath;
-        const char* posixSettingsPath = fullSettingsPath.AsPosix().c_str();
 
-        if (!AZ::IO::FileIOBase::GetInstance()->Exists(fullSettingsPath.c_str()))
+        if (!AZ::IO::SystemFile::Exists(fullSettingsPath.c_str()))
         {
-            return AZ::Failure(AZStd::string::format("Settings file does not exist: '%s'", posixSettingsPath)); 
+            return AZ::Failure(AZStd::string::format("Settings file does not exist: '%s'", fullSettingsPath.c_str()));
         }
 
-        if (registry->MergeSettingsFile(posixSettingsPath, format, anchorKey))
+        if (registry->MergeSettingsFile(fullSettingsPath.Native(), format, anchorKey))
         {
             return AZ::Success();
         }
         else
         {
-            return AZ::Failure(AZStd::string::format("Failed to merge settings file '%s': check log for errors", posixSettingsPath));
+            return AZ::Failure(AZStd::string::format("Failed to merge settings file '%s': check log for errors", fullSettingsPath.c_str()));
         }
     }
 
-    bool SettingsRegistrar::RemoveSettingFromRegistry(AZStd::string_view registryPath) const
+    bool SettingsRegistrar::RemoveSettingFromRegistry(AZStd::string_view registryPath, AZ::SettingsRegistryInterface* registry) const
     {
-        AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
+        registry = !registry ? AZ::SettingsRegistry::Get() : registry;
         if (!registry)
         {
             return false;
