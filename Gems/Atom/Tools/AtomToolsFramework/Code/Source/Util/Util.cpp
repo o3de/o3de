@@ -18,6 +18,8 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzCore/std/algorithm.h>
+#include <AzCore/std/sort.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/FileFunc/FileFunc.h>
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
@@ -434,9 +436,9 @@ namespace AtomToolsFramework
         return paths;
     }
 
-    AZStd::set<AZStd::string> GetPathsInSourceFoldersMatchingWildcard(const AZStd::string& wildcard)
+    AZStd::vector<AZStd::string> GetPathsInSourceFoldersMatchingWildcard(const AZStd::string& wildcard)
     {
-        AZStd::set<AZStd::string> results;
+        AZStd::vector<AZStd::string> results;
         AZStd::vector<AZStd::string> scanFolders;
         AzToolsFramework::AssetSystemRequestBus::Broadcast(
             &AzToolsFramework::AssetSystem::AssetSystemRequest::GetAssetSafeFolders, scanFolders);
@@ -449,11 +451,17 @@ namespace AtomToolsFramework
                 {
                     if (ValidateDocumentPath(path))
                     {
-                        results.insert(path);
+                        results.push_back(path);
                     }
                 }
             }
         }
+
+        // Sorting the container and removing duplicate paths to ensure uniqueness in case of nested or overlapping scan folders.
+        // This was previously done automatically with a set but using a vector for compatibility with behavior context and Python. 
+        AZStd::sort(results.begin(), results.end());
+        results.erase(AZStd::unique(results.begin(), results.end()), results.end());
+
         return results;
     }
 
@@ -515,5 +523,35 @@ namespace AtomToolsFramework
                 });
             }
         });
+    }
+
+    void ReflectUtilFunctions(AZ::ReflectContext* context)
+    {
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            // This will put these methods into the 'azlmbr.atomtools.util' module
+            auto addUtilFunc = [](AZ::BehaviorContext::GlobalMethodBuilder methodBuilder)
+            {
+                methodBuilder->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                    ->Attribute(AZ::Script::Attributes::Category, "Editor")
+                    ->Attribute(AZ::Script::Attributes::Module, "atomtools.util");
+            };
+
+            addUtilFunc(behaviorContext->Method("GetSymbolNameFromText", GetSymbolNameFromText, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetDisplayNameFromText", GetDisplayNameFromText, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetDisplayNameFromPath", GetDisplayNameFromPath, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetSaveFilePath", GetSaveFilePath, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetUniqueFilePath", GetUniqueFilePath, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetUniqueDefaultSaveFilePath", GetUniqueDefaultSaveFilePath, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetUniqueDuplicateFilePath", GetUniqueDuplicateFilePath, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("ValidateDocumentPath", ValidateDocumentPath, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("IsDocumentPathInSupportedFolder", IsDocumentPathInSupportedFolder, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("IsDocumentPathEditable", IsDocumentPathEditable, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("IsDocumentPathPreviewable", IsDocumentPathPreviewable, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetPathToExteralReference", GetPathToExteralReference, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetPathWithoutAlias", GetPathWithoutAlias, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetPathWithAlias", GetPathWithAlias, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetPathsInSourceFoldersMatchingWildcard", GetPathsInSourceFoldersMatchingWildcard, nullptr, ""));
+        }
     }
 } // namespace AtomToolsFramework

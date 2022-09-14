@@ -196,11 +196,15 @@ namespace AtomToolsFramework
     AZStd::set<AZStd::string> GetPathsFromMimeData(const QMimeData* mimeData);
 
     //! Collect a set of file paths from all project safe folders matching a wild card
-    AZStd::set<AZStd::string> GetPathsInSourceFoldersMatchingWildcard(const AZStd::string& wildcard);
+    AZStd::vector<AZStd::string> GetPathsInSourceFoldersMatchingWildcard(const AZStd::string& wildcard);
 
-    // Add menu actions for scripts specified in the settings registry
-    // @param menu The menu where the actions will be inserted
-    // @param registryKey The path to the registry setting where script categories are registered
-    // @param arguments The list of arguments passed into the script when executed
+    //! Add menu actions for scripts specified in the settings registry
+    //! @param menu The menu where the actions will be inserted
+    //! @param registryKey The path to the registry setting where script categories are registered
+    //! @param arguments The list of arguments passed into the script when executed
     void AddRegisteredScriptToMenu(QMenu* menu, const AZStd::string& registryKey, const AZStd::vector<AZStd::string>& arguments);
+
+    //! Reflect utility functions to behavior context
+    void ReflectUtilFunctions(AZ::ReflectContext* context);
+
 } // namespace AtomToolsFramework
