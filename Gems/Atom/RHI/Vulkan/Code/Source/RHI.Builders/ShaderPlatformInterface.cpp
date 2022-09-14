@@ -26,8 +26,10 @@ namespace AZ
     {
         [[maybe_unused]] static const char* VulkanShaderPlatformName = "VulkanShaderPlatform";
         static const char* WindowsPlatformShaderHeader = "Builders/ShaderHeaders/Platform/Windows/Vulkan/PlatformHeader.hlsli";
+        static const char* LinuxPlatformShaderHeader = "Builders/ShaderHeaders/Platform/Linux/Vulkan/PlatformHeader.hlsli";
         static const char* AndroidPlatformShaderHeader = "Builders/ShaderHeaders/Platform/Android/Vulkan/PlatformHeader.hlsli";
         static const char* WindowsAzslShaderHeader = "Builders/ShaderHeaders/Platform/Windows/Vulkan/AzslcHeader.azsli";
+        static const char* LinuxAzslShaderHeader = "Builders/ShaderHeaders/Platform/Linux/Vulkan/AzslcHeader.azsli";
         static const char* AndroidAzslShaderHeader = "Builders/ShaderHeaders/Platform/Android/Vulkan/AzslcHeader.azsli";
     
         RHI::APIType ShaderPlatformInterface::GetAPIType() const
@@ -102,9 +104,13 @@ namespace AZ
             {
                 return AndroidAzslShaderHeader;
             }
-            else
+            else if (platform.HasTag("dx12"))
             {
                 return WindowsAzslShaderHeader;
+            }
+            else
+            {
+                return LinuxAzslShaderHeader;
             }
         }
 
@@ -241,9 +247,13 @@ namespace AZ
             {
                 prependFile = AndroidPlatformShaderHeader;
             }
-            else
+            else if (platform.HasTag("dx12"))
             {
                 prependFile = WindowsPlatformShaderHeader;
+            }
+            else
+            {
+                prependFile = LinuxPlatformShaderHeader;
             }
 
             RHI::PrependArguments args;

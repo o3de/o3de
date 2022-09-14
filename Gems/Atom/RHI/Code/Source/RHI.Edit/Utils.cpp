@@ -156,6 +156,11 @@ namespace AZ
                 AZ_Error(ShaderPlatformInterfaceName, false, "%s", prependFileLoadResult.GetError().c_str());
                 return arguments.m_sourceFile;
             }
+            else if (strcmp(prependFileLoadResult.GetValue().end(), "\n") != 0)
+            {
+                // Add new line to prepend file if not present
+                prependFileLoadResult.GetValue().append("\n");
+            }
 
             auto sourceFileAbsolutePath = AsAbsolute(arguments.m_sourceFile);
             if (!sourceFileAbsolutePath)
