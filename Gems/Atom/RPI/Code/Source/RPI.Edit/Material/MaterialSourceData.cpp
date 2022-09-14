@@ -339,7 +339,7 @@ namespace AZ
                 }
 
                 // Record the material source data and its absolute path so that asset references can be resolved relative to it
-                parentSourceDataStack.emplace_back(parentSourceAbsPath, AZStd::move(parentSourceData));
+                parentSourceDataStack.emplace_back(parentSourceAbsPath, parentSourceData);
 
                 // Get the location of the next parent material and push the source data onto the stack 
                 parentSourceRelPath = parentSourceData.m_parentMaterial;
