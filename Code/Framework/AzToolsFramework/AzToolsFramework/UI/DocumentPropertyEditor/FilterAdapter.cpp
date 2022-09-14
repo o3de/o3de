@@ -421,7 +421,8 @@ namespace AZ::DocumentPropertyEditor
         const bool nodeIsRow = IsRow(domValue);
         AZ_Assert(nodeIsRow, "Only row nodes should be cached by a RowFilterAdapter");
         if (nodeIsRow)
-        {            
+        {
+            actualNode->m_matchableDomTerms.clear();
             for (auto childIter = domValue.ArrayBegin(), endIter = domValue.ArrayEnd(); childIter != endIter; ++childIter)
             {
                 auto& currChild = *childIter;

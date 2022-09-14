@@ -406,7 +406,7 @@ namespace AzToolsFramework
         m_domOrderedChildren.clear();
     }
 
-    void DPERowWidget::AddChildFromDomValue(const AZ::Dom::Value& childValue, int domIndex)
+    void DPERowWidget::AddChildFromDomValue(const AZ::Dom::Value& childValue, size_t domIndex)
     {
         // create a child widget from the given DOM value and add it to the correct layout
         auto childType = childValue.GetNodeName();
@@ -422,7 +422,7 @@ namespace AzToolsFramework
                 DPERowWidget* priorWidgetInLayout = nullptr;
 
                 // search for an existing row sibling with a lower dom index
-                for (int priorWidgetIndex = domIndex - 1; priorWidgetInLayout == nullptr && priorWidgetIndex >= 0; --priorWidgetIndex)
+                for (int priorWidgetIndex = static_cast<int>(domIndex) - 1; priorWidgetInLayout == nullptr && priorWidgetIndex >= 0; --priorWidgetIndex)
                 {
                     priorWidgetInLayout = qobject_cast<DPERowWidget*>(m_domOrderedChildren[priorWidgetIndex]);
                 }
@@ -502,7 +502,7 @@ namespace AzToolsFramework
 
                 // search for an existing column sibling with a lower dom index
                 int priorColumnIndex = -1;
-                for (int searchIndex = domIndex - 1; (priorColumnIndex == -1 && searchIndex >= 0); --searchIndex)
+                for (int searchIndex = static_cast<int>(domIndex) - 1; (priorColumnIndex == -1 && searchIndex >= 0); --searchIndex)
                 {
                     priorColumnIndex = m_columnLayout->indexOf(m_domOrderedChildren[searchIndex]);
                 }
@@ -587,7 +587,7 @@ namespace AzToolsFramework
         for (size_t arrayIndex = 0, numIndices = domArray.ArraySize(); arrayIndex < numIndices; ++arrayIndex)
         {
             auto& childValue = domArray[arrayIndex];
-            AddChildFromDomValue(childValue, aznumeric_cast<int>(arrayIndex));
+            AddChildFromDomValue(childValue, arrayIndex);
         }
     }
 
@@ -612,7 +612,7 @@ namespace AzToolsFramework
             if (pathEntry.IsIndex())
             {
                 // remove and replace operations must match an existing index. Add operations can be one past the current end.
-                childIndex = aznumeric_cast<int>(pathEntry.GetIndex());
+                childIndex = pathEntry.GetIndex();
                 const bool indexValid =
                     (domOperation.GetType() == AZ::Dom::PatchOperation::Type::Add ? childIndex <= childCount : childIndex < childCount);
                 AZ_Assert(indexValid, "patch index is beyond the array bounds!");
@@ -660,7 +660,7 @@ namespace AzToolsFramework
             if (domOperation.GetType() == AZ::Dom::PatchOperation::Type::Replace ||
                 domOperation.GetType() == AZ::Dom::PatchOperation::Type::Add)
             {
-                AddChildFromDomValue(domOperation.GetValue(), aznumeric_cast<int>(childIndex));
+                AddChildFromDomValue(domOperation.GetValue(), childIndex);
             }
         }
         else // not the direct owner of the entry to patch
@@ -736,9 +736,9 @@ namespace AzToolsFramework
         return theDPE;
     }
 
-    void DPERowWidget::AddDomChildWidget(int domIndex, QWidget* childWidget)
+    void DPERowWidget::AddDomChildWidget(size_t domIndex, QWidget* childWidget)
     {
-        if (domIndex >= 0 && m_domOrderedChildren.size() > domIndex)
+        if (m_domOrderedChildren.size() > domIndex)
         {
             delete m_domOrderedChildren[domIndex];
             m_domOrderedChildren[domIndex] = childWidget;
@@ -894,21 +894,26 @@ namespace AzToolsFramework
 
     void DocumentPropertyEditor::Clear()
     {
-        for (auto row : m_domOrderedRows)
-        {
-            delete row;
-        }
-
-        m_domOrderedRows.clear();
+        delete m_rootNode;
         m_expanderPaths.clear();
     }
 
     void DocumentPropertyEditor::AddAfterWidget(QWidget* precursor, QWidget* widgetToAdd)
     {
-        int foundIndex = m_layout->indexOf(precursor);
-        if (foundIndex >= 0)
+        if (precursor == m_rootNode)
         {
-            m_layout->insertWidget(foundIndex + 1, widgetToAdd);
+            m_layout->insertWidget(0, widgetToAdd);
+        }
+        else
+        {
+            int foundIndex = m_layout->indexOf(precursor);
+            const bool validInsert = (foundIndex >= 0);
+            AZ_Assert(validInsert, "AddAfterWidget: no existing widget found!");
+
+            if (validInsert)
+            {
+                m_layout->insertWidget(foundIndex + 1, widgetToAdd);
+            }
         }
     }
 
@@ -1009,16 +1014,20 @@ namespace AzToolsFramework
 
     void DocumentPropertyEditor::ExpandAll()
     {
-        for (auto row : m_domOrderedRows)
+        for (auto child : m_rootNode->m_domOrderedChildren)
         {
+            // all direct children of the root are rows
+            auto row = static_cast<DPERowWidget*>(child);
             row->SetExpanded(true, true);
         }
     }
 
     void DocumentPropertyEditor::CollapseAll()
     {
-        for (auto row : m_domOrderedRows)
+        for (auto child : m_rootNode->m_domOrderedChildren)
         {
+            // all direct children of the root are rows
+            auto row = static_cast<DPERowWidget*>(child);
             row->SetExpanded(false, true);
         }
     }
@@ -1064,30 +1073,6 @@ namespace AzToolsFramework
         return m_layout;
     }
 
-    void DocumentPropertyEditor::AddRowFromValue(const AZ::Dom::Value& domValue, size_t rowIndex)
-    {
-        const bool indexInRange = (rowIndex <= m_domOrderedRows.size());
-        AZ_Assert(indexInRange, "rowIndex cannot be more than one past the existing end!")
-
-        if (indexInRange)
-        {
-            auto newRow = new DPERowWidget(0, nullptr);
-
-            if (rowIndex == 0)
-            {
-                m_domOrderedRows.push_front(newRow);
-                m_layout->insertWidget(0, newRow);
-            }
-            else
-            {
-                auto priorRowPosition = m_domOrderedRows.begin() + (rowIndex - 1);
-                AddAfterWidget((*priorRowPosition)->GetLastDescendantInLayout(), newRow);
-                m_domOrderedRows.insert(priorRowPosition + 1, newRow);
-            }
-            newRow->SetValueFromDom(domValue);
-        }
-    }
-
     AZStd::vector<size_t> DocumentPropertyEditor::GetPathToRoot(DPERowWidget* row) const
     {
         AZStd::vector<size_t> pathToRoot;
@@ -1109,10 +1094,6 @@ namespace AzToolsFramework
             thisRow = parentRow;
             parentRow = parentRow->m_parentRow;
         }
-
-        // we've reached the top of the DPERowWidget chain, now we need to get that first row's index from the m_domOrderedRows
-        pushPathPiece(m_domOrderedRows, thisRow);
-
         return pathToRoot;
     }
 
@@ -1120,6 +1101,9 @@ namespace AzToolsFramework
     {
         // clear any pre-existing DPERowWidgets
         Clear();
+        m_rootNode = new DPERowWidget(-1, nullptr);
+        m_rootNode->setParent(this);
+        m_rootNode->hide();
 
         auto topContents = m_adapter->GetContents();
 
@@ -1132,7 +1116,7 @@ namespace AzToolsFramework
 
             if (isRow)
             {
-                AddRowFromValue(rowValue, arrayIndex);
+                m_rootNode->AddChildFromDomValue(topContents[arrayIndex], arrayIndex);
             }
         }
         m_layout->addStretch();
@@ -1141,70 +1125,7 @@ namespace AzToolsFramework
     {
         for (auto operationIterator = patch.begin(), endIterator = patch.end(); operationIterator != endIterator; ++operationIterator)
         {
-            const auto& patchPath = operationIterator->GetDestinationPath();
-            if (patchPath.Size() == 0)
-            {
-                // an empty path indicates a change to the top-level of the DOM, which is the adapter.
-                // Currently, this is meaningless to the DPE so just return.
-                return;
-            }
-            auto firstAddressEntry = patchPath[0];
-
-            const auto numRows = m_domOrderedRows.size();
-            size_t rowIndex = numRows - 1;
-
-            const bool isValidIndex = firstAddressEntry.IsIndex() || firstAddressEntry.IsEndOfArray();
-            AZ_Assert(isValidIndex, "the direct children of the adapter must be referenced by index");
-            if (!isValidIndex)
-            {
-                return;
-            }
-            if (firstAddressEntry.IsIndex())
-            {
-                // remove and replace operations must match an existing index. Add operations can be one past the current end.
-                rowIndex = firstAddressEntry.GetIndex();
-                const bool inBounds =
-                    (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Add ? rowIndex <= numRows : rowIndex < numRows);
-                AZ_Assert(inBounds, "patch index is beyond the array bounds!");
-                if (!inBounds)
-                {
-                    return;
-                }
-            }
-            else if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Add)
-            {
-                rowIndex = numRows;
-            }
-            // otherwise keep the initialized value of (numRows - 1), because this must be IsEndOfArray and a replace or remove
-
-            // if there is only one level in the path, this operation is for the top layout
-            if (patchPath.Size() == 1)
-            {
-                if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Add)
-                {
-                    AddRowFromValue(operationIterator->GetValue(), rowIndex);
-                }
-                else
-                {
-                    auto& rowWidget = m_domOrderedRows[rowIndex];
-                    if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Replace)
-                    {
-                        rowWidget->SetValueFromDom(operationIterator->GetValue());
-                    }
-                    else if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Remove)
-                    {
-                        delete rowWidget;
-                        m_domOrderedRows.erase(m_domOrderedRows.begin() + rowIndex);
-                    }
-                }
-            }
-            else
-            {
-                // delegate the action to the rowWidget, which will, in turn, delegate to the next row in the path, if available
-                auto rowWidget = m_domOrderedRows[rowIndex];
-                constexpr size_t pathDepth = 1; // top level has been handled, start the next operation at path depth 1
-                rowWidget->HandleOperationAtPath(*operationIterator, pathDepth);
-            }
+            m_rootNode->HandleOperationAtPath(*operationIterator, 0);
         }
     }
 

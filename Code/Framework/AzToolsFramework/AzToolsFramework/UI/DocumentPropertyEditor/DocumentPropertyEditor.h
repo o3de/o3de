@@ -96,7 +96,7 @@ namespace AzToolsFramework
         ~DPERowWidget();
 
         void Clear(); //!< destroy all layout contents and clear DOM children
-        void AddChildFromDomValue(const AZ::Dom::Value& childValue, int domIndex);
+        void AddChildFromDomValue(const AZ::Dom::Value& childValue, size_t domIndex);
 
         //! clears and repopulates all children from a given DOM array
         void SetValueFromDom(const AZ::Dom::Value& domArray);
@@ -115,7 +115,7 @@ namespace AzToolsFramework
 
     protected:
         DocumentPropertyEditor* GetDPE() const;
-        void AddDomChildWidget(int domIndex, QWidget* childWidget);
+        void AddDomChildWidget(size_t domIndex, QWidget* childWidget);
 
         DPERowWidget* m_parentRow = nullptr;
         int m_depth = 0; //!< number of levels deep in the tree. Used for indentation
@@ -179,7 +179,6 @@ namespace AzToolsFramework
 
     protected:
         QVBoxLayout* GetVerticalLayout();
-        void AddRowFromValue(const AZ::Dom::Value& domValue, size_t rowIndex);
         AZStd::vector<size_t> GetPathToRoot(DPERowWidget* row) const;
 
         void HandleReset();
@@ -198,7 +197,7 @@ namespace AzToolsFramework
 
         QTimer* m_handlerCleanupTimer;
         AZStd::vector<AZStd::unique_ptr<PropertyHandlerWidgetInterface>> m_unusedHandlers;
-        AZStd::deque<DPERowWidget*> m_domOrderedRows;
+        DPERowWidget* m_rootNode = nullptr;
 
         //! tree nodes to keep track of expander state explicitly changed by the user
         struct ExpanderPathNode
