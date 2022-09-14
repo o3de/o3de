@@ -186,7 +186,7 @@ namespace AZ
                     {
                         if (top->m_estimatedCompletion < now)
                         {
-                            auto estimationDelta = Statistic::TimeValue(now - top->m_estimatedCompletion);
+                            auto estimationDelta = AZStd::chrono::duration_cast<Statistic::TimeValue>(now - top->m_estimatedCompletion);
                             m_predictionAccuracyStat.PushEntry(estimationDelta);
                             Statistic::PlotImmediate(ContextName, PredictionAccuracyName, aznumeric_cast<double>(estimationDelta.count()));
 
@@ -196,7 +196,7 @@ namespace AZ
                         }
                         else
                         {
-                            auto estimationDelta = Statistic::TimeValue(top->m_estimatedCompletion - now);
+                            auto estimationDelta = AZStd::chrono::duration_cast<Statistic::TimeValue>(top->m_estimatedCompletion - now);
                             m_predictionAccuracyStat.PushEntry(estimationDelta);
                             Statistic::PlotImmediate(ContextName, PredictionAccuracyName, aznumeric_cast<double>(estimationDelta.count()));
 

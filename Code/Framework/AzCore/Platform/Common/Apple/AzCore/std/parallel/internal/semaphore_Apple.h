@@ -11,7 +11,7 @@
 #include <AzCore/std/algorithm.h>
 #include <mach/kern_return.h>
 #include <unistd.h>
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 
 /**
  * This file is to be included from the semaphore.h only. It should NOT be included by the user.
@@ -38,7 +38,7 @@ namespace AZStd
         int initSemCount = static_cast<int>(AZStd::min(initialCount, static_cast<unsigned int>(semaphore::MAXIMUM_COUNT)));
         int result = semaphore_create(mach_task_self(), &m_semaphore, SYNC_POLICY_FIFO, initSemCount);
         AZ_Assert(result == 0, "semaphore_create error %s\n", strerror(errno));
-        
+
         int maxSemCount = static_cast<int>(AZStd::min(maximumCount, static_cast<unsigned int>(semaphore::MAXIMUM_COUNT)));
         result = semaphore_create(mach_task_self(), &m_maxCountSemaphore, SYNC_POLICY_FIFO, maxSemCount);
         AZ_Assert(result == 0, "semaphore_create error for max count semaphore %s\n", strerror(errno));
@@ -70,7 +70,7 @@ namespace AZStd
         mach_timespec_t mts;
         // note that in the mach kernel (Mac), semaphore_timedwait is used instead of the posix
         // sem_timedwait.  The major difference is that semaphore_timedwait expects a delta time
-        // wheras sem_timedwait expects an absolute time. 
+        // wheras sem_timedwait expects an absolute time.
         mts.tv_sec = static_cast<unsigned int>(chrono::duration_cast<chrono::seconds>(rel_time).count());
         chrono::duration<Rep, Period> remainder = rel_time - chrono::seconds(mts.tv_sec);
         mts.tv_nsec = static_cast<clock_res_t>(chrono::duration_cast<chrono::nanoseconds>(remainder).count());

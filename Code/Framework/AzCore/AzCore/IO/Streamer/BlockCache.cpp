@@ -688,7 +688,7 @@ namespace AZ::IO
     void BlockCache::TouchBlock(u32 index)
     {
         AZ_Assert(index < m_numBlocks, "Index for touch a cache entry in the BlockCache is out of bounds.");
-        m_blockLastTouched[index] = AZStd::chrono::high_resolution_clock::now();
+        m_blockLastTouched[index] = AZStd::chrono::system_clock::now();
     }
 
     u32 BlockCache::RecycleOldestBlock(const RequestPath& filePath, u64 offset)
