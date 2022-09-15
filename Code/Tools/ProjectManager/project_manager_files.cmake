@@ -98,6 +98,8 @@ set(FILES
     Source/DownloadRemoteTemplateDialog.cpp
     Source/TextOverflowWidget.h
     Source/TextOverflowWidget.cpp
+    Source/CreateAGemScreen.h
+    Source/CreateAGemScreen.cpp
     Source/GemCatalog/GemCatalogHeaderWidget.h
     Source/GemCatalog/GemCatalogHeaderWidget.cpp
     Source/GemCatalog/GemCatalogScreen.h

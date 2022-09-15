@@ -59,6 +59,7 @@ namespace PhysX::JointsComponentModeCommon
         static const AZStd::string_view Transform;
         static const AZStd::string_view ComponentMode;
         static const AZStd::string_view LeadEntity;
+        static const AZStd::string_view LinearLimits;
     };
 
     //! A pairing of Sub component Names, and Id.

@@ -32,7 +32,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString AreaBlenderNode::TITLE = QObject::tr("Vegetation Layer Blender");
+    const char* AreaBlenderNode::TITLE = "Vegetation Layer Blender";
 
     AreaBlenderNode::AreaBlenderNode(GraphModel::GraphPtr graph)
         : BaseAreaNode(graph)

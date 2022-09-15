@@ -331,7 +331,7 @@ namespace LandscapeCanvasEditor
     }
 
 #define REGISTER_NODE_PALETTE_ITEM(category, TYPE, editorId) \
-    category->CreateChildNode<GraphModelIntegration::StandardNodePaletteItem<TYPE>>(TYPE::TITLE.toUtf8().constData(), editorId);
+    category->CreateChildNode<GraphModelIntegration::StandardNodePaletteItem<TYPE>>(TYPE::TITLE, editorId);
 
     GraphCanvas::GraphCanvasTreeItem* LandscapeCanvasConfig::CreateNodePaletteRoot()
     {
@@ -423,7 +423,7 @@ namespace LandscapeCanvasEditor
     LandscapeCanvas::LandscapeCanvasNodeFactoryRequestBus::BroadcastResult(componentTypeId, &LandscapeCanvas::LandscapeCanvasNodeFactoryRequests::GetComponentTypeId, azrtti_typeid<TYPE>()); \
     if (!AzToolsFramework::EntityHasComponentOfType(entityId, componentTypeId)) \
     { \
-        category->CreateChildNode<GraphModelIntegration::StandardNodePaletteItem<TYPE>>(TYPE::TITLE.toUtf8().constData(), editorId); \
+        category->CreateChildNode<GraphModelIntegration::StandardNodePaletteItem<TYPE>>(TYPE::TITLE, editorId); \
     } \
 } \
 
