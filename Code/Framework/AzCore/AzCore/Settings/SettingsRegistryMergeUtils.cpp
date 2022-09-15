@@ -809,10 +809,8 @@ namespace AZ::SettingsRegistryMergeUtils
 
         VisitAllManifestGems(registry, CollectManifestGems);
 
-        for (const auto& element : collectedGems)
+        for (const auto& [gemName, gemRootPath] : collectedGems)
         {
-            const AZStd::string& gemName = element.first;
-            const AZ::IO::FixedMaxPath& gemRootPath = element.second;
             using FixedValueString = SettingsRegistryInterface::FixedValueString;
             const auto manifestGemJsonPath = FixedValueString::format("%s/%.*s/Path", ManifestGemsRootKey, AZ_STRING_ARG(gemName));
             registry.Set(manifestGemJsonPath, gemRootPath.LexicallyNormal().Native());

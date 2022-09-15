@@ -10,6 +10,9 @@ sceneJobHandler = None
 
 def clear_sceneJobHandler():
     global sceneJobHandler
+    # do not delete or set sceneJobHandler to None, just disconnect from it.
+    # this call is occuring while the scene Job Handler itself is in the callstack, so deleting it here
+    # would cause a crash.
     sceneJobHandler.disconnect()
 
 def on_prepare_for_export(args): 
