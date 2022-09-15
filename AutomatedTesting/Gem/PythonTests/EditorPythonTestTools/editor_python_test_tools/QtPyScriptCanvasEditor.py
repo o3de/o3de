@@ -3,8 +3,6 @@ Copyright (c) Contributors to the Open 3D Engine Project.
 For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
-
-Object to house all the Qt Objects used when testing and manipulating the O3DE UI
 """
 from PySide2 import QtWidgets
 from consts.scripting import (SCRIPT_CANVAS_UI)

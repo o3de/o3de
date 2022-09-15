@@ -4,16 +4,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
-"""
-from PySide2 import QtWidgets
-import PySide2.QtCore as QtCore
-from editor_python_test_tools.utils import TestHelper as helper
-from editor_python_test_tools.utils import Report
-import azlmbr.legacy.general as general
-import pyside_utils
-import scripting_utils.scripting_tools as scripting_tools
-from scripting_utils.scripting_constants import (WAIT_TIME_3, SCRIPT_CANVAS_UI, VARIABLE_TYPES, GRAPH_VARIABLES_QT)
-"""
+
 # fmt: off
 class Tests():
     variable_created = ("New variable created", "New variable not created")
