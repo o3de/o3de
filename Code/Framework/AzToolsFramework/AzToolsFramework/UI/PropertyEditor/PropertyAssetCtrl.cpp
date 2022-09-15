@@ -792,8 +792,6 @@ namespace AzToolsFramework
 
     void PropertyAssetCtrl::PopupAssetPicker()
     {
-        AZ_Assert(!GetSelectableAssetTypes().empty(), "No asset type was assigned.");
-
         // Request the AssetBrowser Dialog and set a type filter
         AssetSelectionModel selection = GetAssetSelectionModel();
         selection.SetSelectedAssetId(m_selectedAssetID);
@@ -994,11 +992,6 @@ namespace AzToolsFramework
         UpdateThumbnail();
 
         UpdateEditButton();
-
-        if (m_currentAssetType == AZ::Data::s_invalidAssetType)
-        {
-            return;
-        }
 
         const AZStd::string& folderPath = GetFolderSelection();
         if (!folderPath.empty())
