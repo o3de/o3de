@@ -240,8 +240,8 @@ namespace PhysX
         {
             serializeContext->Class<PrismaticJointConfiguration, AzPhysics::JointConfiguration>()
                 ->Version(1)
-                ->Field("Generic Properties", &HingeJointConfiguration::m_genericProperties)
-                ->Field("Limit Properties", &HingeJointConfiguration::m_limitProperties)
+                ->Field("Generic Properties", &PrismaticJointConfiguration::m_genericProperties)
+                ->Field("Limit Properties", &PrismaticJointConfiguration::m_limitProperties)
                 ;
         }
     }

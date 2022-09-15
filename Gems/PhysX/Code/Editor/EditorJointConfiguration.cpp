@@ -184,13 +184,13 @@ namespace PhysX
                         "Common limit parameters to all joint types.")
                     ->DataElement(
                         0, &PhysX::EditorJointLimitLinearPairConfig::m_limitLower, "Lower linear limit", "Lower limit of linear motion.")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorJointLimitPairConfig::IsLimited)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorJointLimitLinearPairConfig::IsLimited)
                     ->Attribute(AZ::Edit::Attributes::Max, LinearLimitMax)
                     ->Attribute(AZ::Edit::Attributes::Min, LinearLimitMin)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorJointLimitLinearPairConfig::OnLimitLowerChanged)
                     ->DataElement(
                         0, &PhysX::EditorJointLimitLinearPairConfig::m_limitUpper, "Upper linear limit", "Upper limit of linear motion.")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorJointLimitPairConfig::IsLimited)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorJointLimitLinearPairConfig::IsLimited)
                     ->Attribute(AZ::Edit::Attributes::Max, LinearLimitMax)
                     ->Attribute(AZ::Edit::Attributes::Min, LinearLimitMin)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorJointLimitLinearPairConfig::OnLimitUpperChanged);
