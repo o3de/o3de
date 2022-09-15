@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/Feature/Utils/FrameCaptureBus.h>
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/Pass/AttachmentReadback.h>
 #include <AtomToolsFramework/PreviewRenderer/PreviewContent.h>
