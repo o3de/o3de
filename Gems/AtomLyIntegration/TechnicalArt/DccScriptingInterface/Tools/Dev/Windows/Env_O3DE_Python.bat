@@ -45,7 +45,7 @@ echo     DCCSI_PY_VERSION_MINOR = %DCCSI_PY_VERSION_MINOR%
 IF "%DCCSI_PY_VERSION_RELEASE%"=="" (set DCCSI_PY_VERSION_RELEASE=5)
 echo     DCCSI_PY_VERSION_RELEASE = %DCCSI_PY_VERSION_RELEASE%
 
-:: shared location for 64bit python 3.7 DEV location
+:: shared location for 64bit python 3.10 DEV location
 :: this defines a DCCsi sandbox for lib site-packages by version
 :: <O3DE>\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\3rdParty\Python\Lib
 set "PATH_DCCSI_PYTHON=%PATH_DCCSIG%\3rdParty\Python"

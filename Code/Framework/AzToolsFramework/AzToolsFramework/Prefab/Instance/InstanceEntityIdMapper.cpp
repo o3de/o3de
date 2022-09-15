@@ -151,6 +151,11 @@ namespace AzToolsFramework
             m_loadingInstance = &loadingInstance;
         }
 
+        const Instance* InstanceEntityIdMapper::GetLoadingInstance() const
+        {
+            return m_loadingInstance;
+        }
+
         EntityAlias InstanceEntityIdMapper::ResolveReferenceId(const AZ::EntityId& entityId)
         {
             AliasPath relativeEntityAliasPath;

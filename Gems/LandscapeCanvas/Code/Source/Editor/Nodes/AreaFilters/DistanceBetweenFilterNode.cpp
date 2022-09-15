@@ -29,7 +29,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString DistanceBetweenFilterNode::TITLE = QObject::tr("Distance Between Filter");
+    const char* DistanceBetweenFilterNode::TITLE = "Distance Between Filter";
 
     DistanceBetweenFilterNode::DistanceBetweenFilterNode(GraphModel::GraphPtr graph)
         : BaseAreaFilterNode(graph)
