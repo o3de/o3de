@@ -166,12 +166,35 @@ TEST_F(AWSDefaultCredentialHandlerTest,
 
 TEST_F(
     AWSDefaultCredentialHandlerTest,
+    GetCredentialsProvider_AllowAWSMetadataQueries_InstanceMetadataNonTrueValue_GetExpectedCredentialProvider)
+{
+    // save current value so we can restore it after the test
+    const auto currentEc2MetadataDisabledValue = Aws::Environment::GetEnv(AWS_EC2_METADATA_DISABLED);
+    // set it
+    const auto nonTrueValue = "thisValueIsNotTheWordTrue";
+    AZ::Utils::SetEnv(AWS_EC2_METADATA_DISABLED, nonTrueValue, 1);
+
+    Aws::Auth::AWSCredentials emptyCredential;
+    Aws::Auth::AWSCredentials nonEmptyCredential(AWS_ACCESS_KEY, AWS_SECRET_KEY);
+    EXPECT_CALL(*m_environmentCredentialsProviderMock, GetAWSCredentials()).Times(1).WillOnce(::testing::Return(emptyCredential));
+    EXPECT_CALL(*m_profileCredentialsProviderMock, GetAWSCredentials()).Times(1).WillOnce(::testing::Return(emptyCredential));
+    EXPECT_CALL(*m_instanceProfileCredentialsProviderMock, GetAWSCredentials()).Times(1).WillOnce(::testing::Return(nonEmptyCredential));
+    m_allowAWSMetadataQueries = true;
+    auto credentialProvider = m_credentialHandler->GetCredentialsProvider();
+    EXPECT_TRUE(credentialProvider == m_instanceProfileCredentialsProviderMock);
+    // restore previous value
+    AZ::Utils::SetEnv(AWS_EC2_METADATA_DISABLED, currentEc2MetadataDisabledValue.c_str(), 1);
+}
+
+TEST_F(
+    AWSDefaultCredentialHandlerTest,
     GetCredentialsProvider_AllowAWSMetadataQueries_InstanceMetadataDisabled_GetDifferentCredentialProvider)
 {
     // save current value so we can restore it after the test
     const auto currentEc2MetadataDisabledValue = Aws::Environment::GetEnv(AWS_EC2_METADATA_DISABLED);
-    // set it 
-    AZ::Utils::SetEnv(AWS_EC2_METADATA_DISABLED, "truE", 1);
+    // set it
+    const auto caseInsensitiveTrue = "TruE";
+    AZ::Utils::SetEnv(AWS_EC2_METADATA_DISABLED, caseInsensitiveTrue, 1);
 
     Aws::Auth::AWSCredentials emptyCredential;
     EXPECT_CALL(*m_environmentCredentialsProviderMock, GetAWSCredentials()).Times(1).WillOnce(::testing::Return(emptyCredential));
