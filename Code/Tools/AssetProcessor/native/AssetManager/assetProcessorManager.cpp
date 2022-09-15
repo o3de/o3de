@@ -3717,7 +3717,7 @@ namespace AssetProcessor
         {
             // this scope exists only to narrow the range of m_sourceUUIDToSourceNameMapMutex
             AZStd::lock_guard<AZStd::mutex> lock(m_sourceUUIDToSourceInfoMapMutex);
-            m_sourceUUIDToSourceInfoMap.insert(AZStd::make_pair(sourceUUID, newSourceInfo));
+            m_sourceUUIDToSourceInfoMap[sourceUUID] = newSourceInfo; // Don't use insert, there may be an outdated entry from a previously overriden file
         }
 
         // insert the new entry into the analysis tracker:
