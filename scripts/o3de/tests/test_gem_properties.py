@@ -17,9 +17,9 @@ from o3de import gem_properties
 TEST_GEM_JSON_PAYLOAD = '''
 {
     "gem_name": "TestGem",
-    "version": "0.0.0.0",
+    "version": "0.0.0",
     "compatible_engines" : [
-        "o3de-sdk==2205.1"
+        "o3de-sdk==1.2.3"
     ],
     "display_name": "TestGem",
     "license": "Apache-2.0 or MIT",
@@ -58,28 +58,28 @@ class TestEditGemProperties:
         pytest.param(pathlib.PurePath('D:/TestProject'),
                      None, 'TestGem2', 'New Gem Name', 'O3DE', 'Code', 'Gem that exercises Default Gem Template',
                      'new_preview.png', 'Do this extra thing', 'https://o3de.org/docs/user-guide/gems/',
-                     'Apache 2.0', 'https://www.apache.org/licenses/LICENSE-2.0', '1.2.3.4', 
-                     ['o3de>=1.0',"o3de-sdk~=1.0"], None, None, ['o3de-sdk==2205.1','o3de>=1.0',"o3de-sdk~=1.0"],
+                     'Apache 2.0', 'https://www.apache.org/licenses/LICENSE-2.0', '1.2.3', 
+                     ['o3de>=1.0',"o3de-sdk~=1.0"], None, None, ['o3de-sdk==1.2.3','o3de>=1.0',"o3de-sdk~=1.0"],
                      ['Physics', 'Rendering', 'Scripting'], None, None, ['TestGem', 'Physics', 'Rendering', 'Scripting'],
                      0),
         pytest.param(None,
                      'TestGem2', None, 'New Gem Name', 'O3DE', 'Asset', 'Gem that exercises Default Gem Template',
                      'new_preview.png', 'Do this extra thing', 'https://o3de.org/docs/user-guide/gems/', 
-                     'Apache 2.0', 'https://www.apache.org/licenses/LICENSE-2.0', '2205.01.02.0', 
-                     None, ['o3de>=1.0'], None, ['o3de-sdk==2205.1',"o3de-sdk~=1.0"],
+                     'Apache 2.0', 'https://www.apache.org/licenses/LICENSE-2.0', '1.2.3', 
+                     None, ['o3de>=1.0'], None, ['o3de-sdk==1.2.3',"o3de-sdk~=1.0"],
                      None, ['Physics'], None, ['TestGem', 'Rendering', 'Scripting'], 
                      0),
         pytest.param(None,
                      'TestGem2', None, 'New Gem Name', 'O3DE', 'Tool', 'Gem that exercises Default Gem Template',
                      'new_preview.png', 'Do this extra thing', 'https://o3de.org/docs/user-guide/gems/',
-                     'Apache 2.0', 'https://www.apache.org/licenses/LICENSE-2.0', '2205.01.02.0', 
-                     None, None, ['o3de>=1.2.3.4'], ['o3de>=1.2.3.4'],
+                     'Apache 2.0', 'https://www.apache.org/licenses/LICENSE-2.0', '1.2.3', 
+                     None, None, ['o3de>=1.2.3'], ['o3de>=1.2.3'],
                      None, None, ['Animation', 'TestGem'], ['Animation', 'TestGem'], 
                      0),
         pytest.param(None,
                      'TestGem2', None, 'New Gem Name', 'O3DE', 'Tool', 'Gem that exercises Default Gem Template',
                      'new_preview.png', 'Do this extra thing', 'https://o3de.org/docs/user-guide/gems/',
-                     'Apache 2.0', 'https://www.apache.org/licenses/LICENSE-2.0', '2205.01.02.0', 
+                     'Apache 2.0', 'https://www.apache.org/licenses/LICENSE-2.0', '1.2.3', 
                      None, None, ['INVALID'], [], # invalid version specifier
                      None, None, ['Animation', 'TestGem'], ['Animation', 'TestGem'], 
                      1)

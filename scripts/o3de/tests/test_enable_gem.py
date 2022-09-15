@@ -19,7 +19,7 @@ TEST_ENGINE_JSON_PAYLOAD = '''
     "engine_name": "o3de",
     "restricted_name": "o3de",
     "FileVersion": 1,
-    "O3DEVersion": "0.0.0.0",
+    "O3DEVersion": "0.0.0",
     "O3DECopyrightYear": 2021,
     "O3DEBuildNumber": 0,
     "external_subdirectories": [
@@ -190,32 +190,32 @@ class TestEnableGemCommand:
                     '', [], {}, False, False, [], 'o3de-test', '', 0),
         # passes when a compatible engine version is provided
         pytest.param(pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), False, False,
-                    '1.2.3.4', [], {}, False, False, ['o3de-test>=1.0.0.0'], 'o3de-test', '1.0.0.0', 0),
+                    '1.2.3', [], {}, False, False, ['o3de-test>=1.0.0'], 'o3de-test', '1.0.0', 0),
         # fails when no compatible engine version is found
         pytest.param(pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), True, False,
-                    '1.2.3.4', [], {}, False, False, ['o3de-test<1.0.0.0'], 'o3de-test', '1.0.0.0', 1),
+                    '1.2.3', [], {}, False, False, ['o3de-test<1.0.0'], 'o3de-test', '1.0.0', 1),
         # passes when forced even if no compatible engine version is found
         pytest.param(pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), True, False,
-                    '1.2.3.4', [], {}, False, True, ['o3de-test<1.0.0.0'], 'o3de-test', '1.0.0.0', 0),
+                    '1.2.3', [], {}, False, True, ['o3de-test<1.0.0'], 'o3de-test', '1.0.0', 0),
         # fails when no compatible engine is found
         pytest.param(pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), True, False,
-                    '1.2.3.4', [], {}, False, False, ['o3de-test<1.0.0.0'], 'other-engine', '0.0.0.0', 1),
+                    '1.2.3', [], {}, False, False, ['o3de-test<1.0.0'], 'other-engine', '0.0.0', 1),
         # passes when dependent gems and engines are found
         pytest.param(pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), True, False,
-                    '1.2.3.4', ['testgem1==1.2.3.4','testgem2>1.0.0.0'], { 'testgem1':'1.2.3.4', 'testgem2':'2.0.0.0'}, 
-                    False, False, ['o3de-test<=1.0.0.0'], 'o3de-test', '1.0.0.0', 0),
+                    '1.2.3', ['testgem1==1.2.3','testgem2>1.0.0'], { 'testgem1':'1.2.3', 'testgem2':'2.0.0'}, 
+                    False, False, ['o3de-test<=1.0.0'], 'o3de-test', '1.0.0', 0),
         # fails when dependent gem is not found
         pytest.param(pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), True, False,
-                    '1.2.3.4', ['testgem1==1.2.3.4','testgem2>1.0.0.0'], { 'testgem1':'1.2.3.4'}, 
-                    False, False, ['o3de-test<=1.0.0.0'], 'o3de-test', '0.0.0.0', 1),
+                    '1.2.3', ['testgem1==1.2.3','testgem2>1.0.0'], { 'testgem1':'1.2.3'}, 
+                    False, False, ['o3de-test<=1.0.0'], 'o3de-test', '0.0.0', 1),
         # fails when dependent gem with wrong version found
         pytest.param(pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), True, False,
-                    '1.2.3.4', ['testgem1==1.2.3.4','testgem2>1.0.0.0'], { 'testgem1':'1.0.0.0', 'testgem2':'1.0.0.0'}, 
-                    False, False, ['o3de-test~=1.0.0.0'], 'o3de-test', '1.0.0.0', 1),
+                    '1.2.3', ['testgem1==1.2.3','testgem2>1.0.0'], { 'testgem1':'1.0.0', 'testgem2':'1.0.0'}, 
+                    False, False, ['o3de-test~=1.0.0'], 'o3de-test', '1.0.0', 1),
         # does not modify project when check only 
         pytest.param(pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), False, False,
-                    '1.2.3.4', ['testgem1==1.2.3.4','testgem2>1.0.0.0'], { 'testgem1':'1.2.3.4', 'testgem2':'2.0.0.0'}, 
-                    True, False, ['o3de-test<=1.0.0.0'], 'o3de-test', '1.0.0.0', 0),
+                    '1.2.3', ['testgem1==1.2.3','testgem2>1.0.0'], { 'testgem1':'1.2.3', 'testgem2':'2.0.0'}, 
+                    True, False, ['o3de-test<=1.0.0'], 'o3de-test', '1.0.0', 0),
         ]
     )
     def test_enable_gem_checks_version_compatibility(self, gem_path, project_path, gem_registered_with_project, 

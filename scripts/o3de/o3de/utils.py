@@ -371,8 +371,8 @@ def get_object_name_and_version_specifier(input:str) -> (str, str) or None:
     """
     Get the object name and version specifier from a string in the form <name><version specifier(s)>
     Valid input examples:
-        o3de>=1.0.0.0
-        o3de-sdk==2205.01,~=2201.10
+        o3de>=1.2.3
+        o3de-sdk==1.2.3,~=2.3.4
     :param input the string in the form <name><version specifier(s)>
 
     return an engine name and a version specifier or raises an exception if input is invalid
@@ -383,10 +383,10 @@ def get_object_name_and_version_specifier(input:str) -> (str, str) or None:
     match = regex.search(input)
 
     if not match:
-        raise Exception(f"Invalid name and/or version specifier {input}, expected <name><version specifiers> e.g. o3de==1.0.0.0")
+        raise Exception(f"Invalid name and/or version specifier {input}, expected <name><version specifiers> e.g. o3de==1.2.3")
 
     if not match.group("object_name"):
-        raise Exception(f"Invalid or missing name {input}, expected <name><version specifiers> e.g. o3de==1.0.0.0")
+        raise Exception(f"Invalid or missing name {input}, expected <name><version specifiers> e.g. o3de==1.2.3")
 
     # SpecifierSet will raise an exception if invalid
     if not SpecifierSet(match.group("version_specifier")):

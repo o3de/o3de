@@ -32,18 +32,18 @@ def has_compatible_version(name_and_version_specifier_list:list, object_name:str
 
 def get_object_name_and_version_specifier(input:str):
     # accepts input in the form <name><version specifier(s)>, for example:
-    # o3de>=1.0.0.0
-    # o3de-sdk==2205.01,~=2201.10
+    # o3de>=1.0.0
+    # o3de-sdk==1.2.3,~=2.3.4
 
     regex_str = r"(?P<object_name>(.*?))(?P<version_specifier>((~=|==|!=|<=|>=|<|>|===)(\s*\S+)+))"
     regex = re.compile(r"^\s*" + regex_str + r"\s*$", re.VERBOSE | re.IGNORECASE)
     match = regex.search(input)
 
     if not match:
-        raise Exception(f"Invalid name and/or version specifier {input}, expected <name><version specifiers> e.g. o3de==1.0.0.0")
+        raise Exception(f"Invalid name and/or version specifier {input}, expected <name><version specifiers> e.g. o3de==1.2.3")
 
     if not match.group("object_name"):
-        raise Exception(f"Invalid or missing name {input}, expected <name><version specifiers> e.g. o3de==1.0.0.0")
+        raise Exception(f"Invalid or missing name {input}, expected <name><version specifiers> e.g. o3de==1.2.3")
 
     # SpecifierSet with raise an exception if invalid
     if not SpecifierSet(match.group("version_specifier")):

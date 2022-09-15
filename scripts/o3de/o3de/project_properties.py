@@ -78,15 +78,15 @@ def edit_project_props(proj_path: pathlib.Path = None,
                                                         delete_gem_names, replace_gem_names)
 
     if new_compatible_engines and not utils.validate_version_specifier_list(new_compatible_engines):
-        logger.error(f'Compatible versions must be in the format <engine name><version specifiers>. e.g. o3de==1.0.0.0 \n {new_compatible_engines}')
+        logger.error(f'Compatible versions must be in the format <engine name><version specifiers>. e.g. o3de==1.2.3 \n {new_compatible_engines}')
         return 1
 
     if delete_compatible_engines and not utils.validate_version_specifier_list(delete_compatible_engines):
-        logger.error(f'Compatible versions must be in the format <engine name><version specifiers>. e.g. o3de==1.0.0.0 \n {delete_compatible_engines}')
+        logger.error(f'Compatible versions must be in the format <engine name><version specifiers>. e.g. o3de==1.2.3 \n {delete_compatible_engines}')
         return 1
 
     if replace_compatible_engines and not utils.validate_version_specifier_list(replace_compatible_engines):
-        logger.error(f'Compatible versions must be in the format <engine name><version specifiers>. e.g. o3de==1.0.0.0 \n {replace_compatible_engines}')
+        logger.error(f'Compatible versions must be in the format <engine name><version specifiers>. e.g. o3de==1.2.3 \n {replace_compatible_engines}')
         return 1
 
     if new_compatible_engines or delete_compatible_engines or replace_compatible_engines:
@@ -157,9 +157,9 @@ def add_parser_args(parser):
                        help='Replace entirety of gem_names field with space delimited list of values')
     group = parser.add_mutually_exclusive_group(required=False)
     group.add_argument('-aev', '--add-compatible-engines', type=str, nargs='*', required=False,
-                       help='Add engine version(s) this project is compatible with. Space delimited list (ex. o3de>=1.0.0.0 o3de-sdk~=2.3).')
+                       help='Add engine version(s) this project is compatible with. Space delimited list (ex. o3de>=1.2.3 o3de-sdk~=2.3).')
     group.add_argument('-dev', '--remove-compatible-engines', type=str, nargs='*', required=False,
-                       help='Removes engine version(s) from the compatible_engines property. Space delimited list (ex. o3de>=1.0.0.0 o3de-sdk~=2.3).')
+                       help='Removes engine version(s) from the compatible_engines property. Space delimited list (ex. o3de>=1.2.3 o3de-sdk~=2.3).')
     group.add_argument('-rev', '--replace-compatible-engines', type=str, nargs='*', required=False,
                        help='Replace entirety of compatible_engines field with space delimited list of values.')
     parser.set_defaults(func=_edit_project_props)

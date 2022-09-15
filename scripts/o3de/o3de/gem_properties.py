@@ -85,15 +85,15 @@ def edit_gem_props(gem_path: pathlib.Path = None,
                                                         remove_tags, replace_tags)
 
     if new_compatible_engines and not utils.validate_version_specifier_list(new_compatible_engines):
-        logger.error(f'Compatible versions must be in the format <engine name><version specifiers>. e.g. o3de==1.0.0.0 \n {new_compatible_engines}')
+        logger.error(f'Compatible versions must be in the format <engine name><version specifiers>. e.g. o3de==1.2.3 \n {new_compatible_engines}')
         return 1
 
     if remove_compatible_engines and not utils.validate_version_specifier_list(remove_compatible_engines):
-        logger.error(f'Compatible versions must be in the format <engine name><version specifiers>. e.g. o3de==1.0.0.0 \n {remove_compatible_engines}')
+        logger.error(f'Compatible versions must be in the format <engine name><version specifiers>. e.g. o3de==1.2.3 \n {remove_compatible_engines}')
         return 1
 
     if replace_compatible_engines and not utils.validate_version_specifier_list(replace_compatible_engines):
-        logger.error(f'Compatible versions must be in the format <engine name><version specifiers>. e.g. o3de==1.0.0.0 \n {replace_compatible_engines}')
+        logger.error(f'Compatible versions must be in the format <engine name><version specifiers>. e.g. o3de==1.2.3 \n {replace_compatible_engines}')
         return 1
 
     if new_compatible_engines or remove_compatible_engines or replace_compatible_engines:
