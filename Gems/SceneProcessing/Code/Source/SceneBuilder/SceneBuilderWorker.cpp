@@ -43,6 +43,22 @@
 
 namespace SceneBuilder
 {
+    struct DebugScope final
+    {
+        DebugScope(bool isDebug)
+            : m_inDebug(isDebug)
+        {
+            AZ::SettingsRegistry::Get()->Set(AZ::SceneAPI::Utilities::Key_AssetProcessorInDebug, m_inDebug);
+        }
+
+        ~DebugScope()
+        {
+            AZ::SettingsRegistry::Get()->Set(AZ::SceneAPI::Utilities::Key_AssetProcessorInDebug, false);
+        }
+
+        bool m_inDebug;
+    };
+
     void SceneBuilderWorker::ShutDown()
     {
         m_isShuttingDown = true;
@@ -232,10 +248,13 @@ namespace SceneBuilder
         // Load Scene graph and manifest from the provided path and then initialize them.
         if (m_isShuttingDown)
         {
-            AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "Loading scene was cancelled.\n");
+            AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "Loading scene was canceled.\n");
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Cancelled;
             return;
         }
+
+        auto debugFlagItr = request.m_jobDescription.m_jobParameters.find(AZ_CRC_CE("DebugFlag"));
+        DebugScope theDebugScope(debugFlagItr != request.m_jobDescription.m_jobParameters.end() && debugFlagItr->second == "true");
 
         AZStd::shared_ptr<Scene> scene;
         if (!LoadScene(scene, request, response))
@@ -246,7 +265,7 @@ namespace SceneBuilder
         // Run scene generation step to allow for runtime generation of SceneGraph objects
         if (m_isShuttingDown)
         {
-            AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "Generation of dynamic scene objects was cancelled.\n");
+            AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "Generation of dynamic scene objects was canceled.\n");
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Cancelled;
             return;
         }
@@ -258,7 +277,7 @@ namespace SceneBuilder
         // Process the scene.
         if (m_isShuttingDown)
         {
-            AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "Processing scene was cancelled.\n");
+            AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "Processing scene was canceled.\n");
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Cancelled;
             return;
         }

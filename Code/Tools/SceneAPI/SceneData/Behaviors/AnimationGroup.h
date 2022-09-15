@@ -39,7 +39,10 @@ namespace AZ
                 // AssetImportRequest
                 Events::ProcessingResult UpdateManifest(Containers::Scene& scene, ManifestAction action,
                     RequestingApplication requester) override;
-                
+                void GetPolicyName(AZStd::string& result) const override
+                {
+                    result = "AnimationGroup";
+                }
             private:
                 Events::ProcessingResult BuildDefault(Containers::Scene& scene) const;
                 Events::ProcessingResult UpdateAnimationGroups(Containers::Scene& scene) const;

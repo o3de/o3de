@@ -17,6 +17,11 @@
 #include <SceneAPI/SceneCore/Events/AssetImportRequest.h>
 #include <SceneAPI/SceneCore/Events/SceneSerializationBus.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzToolsFramework/Debug/TraceContext.h>
+#include <AzCore/JSON/writer.h>
+#include <AzCore/IO/TextStreamWriters.h>
 
 namespace AZ
 {
@@ -24,6 +29,91 @@ namespace AZ
     {
         namespace Events
         {
+            struct UpdateManifestScope final
+                : public AssetImportRequestReporter
+            {
+                AZ_RTTI(UpdateManifestScope, "{C9DD605E-2A9D-4C0D-A22E-A71B44528420}", AssetImportRequestReporter);
+
+                UpdateManifestScope(AZStd::shared_ptr<Containers::Scene> scene)
+                    : m_scene(scene)
+                {
+                    m_registered = false;
+                    AZ::SettingsRegistry::Get()->Get(m_registered, AZ::SceneAPI::Utilities::Key_AssetProcessorInDebug);
+                    if (m_registered)
+                    {
+                        AZ::Interface<AssetImportRequestReporter>::Register(this);
+                    }
+                }
+
+                ~UpdateManifestScope()
+                {
+                    if (m_registered)
+                    {
+                        AZ::Interface<AssetImportRequestReporter>::Unregister(this);
+                        m_registered = false;
+                    }
+                    m_previous = {};
+                    m_previousSet = false;
+                }
+
+                void ReportStart([[maybe_unused]] const AssetImportRequest* instance) override
+                {
+                    ++m_reportNumber;
+
+                    if (!m_previousSet)
+                    {
+                        auto saveToJsonOutcome = m_scene->GetManifest().SaveToJsonDocument();
+                        if (!saveToJsonOutcome.IsSuccess())
+                        {
+                            AZ_Error(AZ::SceneAPI::Utilities::ErrorWindow, false,
+                                "UpdateManifest(%d) error: %.*s",
+                                AZ_STRING_ARG(saveToJsonOutcome.GetError()));
+                            return;
+                        }
+                        m_previous.CopyFrom(saveToJsonOutcome.GetValue(), m_previous.GetAllocator(), true);
+                        m_previousSet = true;
+                    }
+                }
+
+                void ReportFinish([[maybe_unused]] const AssetImportRequest* instance) override
+                {
+                    auto saveToJsonOutcome = m_scene->GetManifest().SaveToJsonDocument();
+                    if (!saveToJsonOutcome.IsSuccess())
+                    {
+                        AZ_Error(AZ::SceneAPI::Utilities::ErrorWindow, false,
+                            "UpdateManifest(%d) error: %.*s",
+                            AZ_STRING_ARG(saveToJsonOutcome.GetError()));
+                        return;
+                    }
+
+                    AZStd::string result;
+                    instance->GetPolicyName(result);
+
+                    if (m_previous == saveToJsonOutcome.GetValue())
+                    {
+                        AZ_TraceContext("UpdateManifest", "No Changes");
+                        AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "UpdateManifest(%d): %.*s \n", m_reportNumber, AZ_STRING_ARG(result));
+                        return;
+                    }
+                    m_previous = {};
+                    m_previousSet = false;
+
+                    rapidjson::StringBuffer buffer;
+                    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+                    if (saveToJsonOutcome.GetValue().Accept(writer))
+                    {
+                        AZ_TraceContext("Update Manifest", buffer.GetString());
+                        AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "UpdateManifest(%d): %.*s \n", m_reportNumber, AZ_STRING_ARG(result));
+                    }
+                }
+
+                AZStd::shared_ptr<Containers::Scene> m_scene;
+                AZ::s32 m_reportNumber = 0;
+                bool m_registered = false;
+                rapidjson::Document m_previous;
+                bool m_previousSet = false;
+            };
+
             // an internal scope object that is active during a scene import
             struct ImportScope final
                 : public AZ::SceneAPI::Events::AssetPostImportRequestBus::Handler
@@ -96,6 +186,11 @@ namespace AZ
 
             void AssetImportRequest::GetGeneratedManifestExtension(AZStd::string& /*result*/)
             {
+            }
+
+            void AssetImportRequest::GetPolicyName(AZStd::string& result) const
+            {
+                result = "AssetImportRequest Base";
             }
 
             void AssetImportRequest::GetSupportedFileExtensions(AZStd::unordered_set<AZStd::string>& /*extensions*/)
@@ -188,6 +283,7 @@ namespace AZ
                     scene->GetManifest().Clear();
                     action = ManifestAction::ConstructDefault;
                 }
+                UpdateManifestScope updateManifestScope(scene);
                 ProcessingResultCombiner manifestUpdate;
                 AssetImportRequestBus::BroadcastResult(manifestUpdate, &AssetImportRequestBus::Events::UpdateManifest, *scene, action, requester);
                 if (manifestUpdate.GetResult() == ProcessingResult::Failure)
