@@ -13,10 +13,6 @@ namespace AZ
     {        
         class FileIOStream;
 
-        enum class OpenMode : AZ::u32;
-
-        int TranslateOpenModeToSystemFileMode(const char* path, OpenMode mode);
-
         /**
         * ReOpen a stream until it opens - this can help avoid transient problems where the OS has a brief
         * lock on a file stream.

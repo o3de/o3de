@@ -110,6 +110,12 @@ namespace
                                                  const AZ::Vector3& rayEnd,
                                                  AzFramework::RenderGeometry::RayResult& result)
     {
+        if (!terrainWorldBounds.IsValid())
+        {
+            // There is no terrain to intersect.
+            return;
+        }
+
         // Find the nearest intersection (if any) between the ray and terrain world bounds.
         // Note that the ray might (and often will) start inside the terrain world bounds.
         AZ::Vector3 clippedRayStart = rayStart;

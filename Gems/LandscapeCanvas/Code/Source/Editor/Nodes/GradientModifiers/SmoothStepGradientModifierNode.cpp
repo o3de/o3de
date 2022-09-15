@@ -28,7 +28,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString SmoothStepGradientModifierNode::TITLE = QObject::tr("Smooth-Step");
+    const char* SmoothStepGradientModifierNode::TITLE = "Smooth-Step";
 
     SmoothStepGradientModifierNode::SmoothStepGradientModifierNode(GraphModel::GraphPtr graph)
         : BaseGradientModifierNode(graph)

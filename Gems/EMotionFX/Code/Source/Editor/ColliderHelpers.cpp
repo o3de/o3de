@@ -60,6 +60,11 @@ namespace EMotionFX
         AZStd::string contents;
         for (const QModelIndex& selectedIndex : modelIndices)
         {
+            if (SkeletonModel::IndexIsRootNode(selectedIndex))
+            {
+                continue;
+            }
+
             const Actor* actor = selectedIndex.data(SkeletonModel::ROLE_ACTOR_POINTER).value<Actor*>();
             const Node* joint = selectedIndex.data(SkeletonModel::ROLE_POINTER).value<Node*>();
 
@@ -92,6 +97,11 @@ namespace EMotionFX
 
         for (const QModelIndex& selectedIndex : modelIndices)
         {
+            if (SkeletonModel::IndexIsRootNode(selectedIndex))
+            {
+                continue;
+            }
+
             const Actor* actor = selectedIndex.data(SkeletonModel::ROLE_ACTOR_POINTER).value<Actor*>();
             const Node* joint = selectedIndex.data(SkeletonModel::ROLE_POINTER).value<Node*>();
 
@@ -119,6 +129,11 @@ namespace EMotionFX
 
         for (const QModelIndex& selectedIndex : modelIndices)
         {
+            if (SkeletonModel::IndexIsRootNode(selectedIndex))
+            {
+                continue;
+            }
+
             const Actor* actor = selectedIndex.data(SkeletonModel::ROLE_ACTOR_POINTER).value<Actor*>();
             const Node* joint = selectedIndex.data(SkeletonModel::ROLE_POINTER).value<Node*>();
 
@@ -158,6 +173,11 @@ namespace EMotionFX
 
         for (const QModelIndex& selectedIndex : modelIndices)
         {
+            if (SkeletonModel::IndexIsRootNode(selectedIndex))
+            {
+                continue;
+            }
+
             const Actor* actor = selectedIndex.data(SkeletonModel::ROLE_ACTOR_POINTER).value<Actor*>();
             const Node* joint = selectedIndex.data(SkeletonModel::ROLE_POINTER).value<Node*>();
 

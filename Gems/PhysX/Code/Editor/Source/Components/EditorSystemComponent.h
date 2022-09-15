@@ -62,7 +62,7 @@ namespace PhysX
         void OnStopPlayInEditor() override;
 
         // AztoolsFramework::EditorContextMenuBus overrides...
-        void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags) override;
+        void PopulateEditorGlobalContextMenu(QMenu* menu, const AZStd::optional<AzFramework::ScreenPoint>& point, int flags) override;
 
         // AztoolsFramework::EditorEvents overrides...
         void NotifyRegisterViews() override;

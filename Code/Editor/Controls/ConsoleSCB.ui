@@ -39,7 +39,7 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="ConsoleTextEdit" name="textEdit">
+    <widget class="AzToolsFramework::ConsoleTextEdit" name="textEdit">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
        <horstretch>0</horstretch>
@@ -221,10 +221,10 @@
    <header>Controls/ConsoleSCB.h</header>
   </customwidget>
   <customwidget>
-   <class>ConsoleTextEdit</class>
-   <extends>QPlainTextEdit</extends>
-   <header>Controls/ConsoleSCB.h</header>
-  </customwidget>
+    <class>AzToolsFramework::ConsoleTextEdit</class>
+    <extends>QPlainTextEdit</extends>
+    <header>AzToolsFramework/UI/UICore/ConsoleTextEdit.hxx</header>
+   </customwidget>
  </customwidgets>
  <tabstops>
   <tabstop>lineEdit</tabstop>
