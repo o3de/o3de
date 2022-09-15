@@ -390,7 +390,6 @@ namespace AzFramework
             behaviorContext->Class<EntitySpawnTicket>("EntitySpawnTicket")
                 ->Constructor()
                 ->Constructor<AZ::Data::Asset<Spawnable>>()
-                ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Category, "Prefab/Spawning")
                 ->Attribute(AZ::Script::Attributes::Module, "prefabs")

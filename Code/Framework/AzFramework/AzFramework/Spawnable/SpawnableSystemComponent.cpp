@@ -175,7 +175,6 @@ namespace AzFramework
 
         RootSpawnableNotificationBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
-        SpawnableNotificationBus::Handler::BusConnect();
 
         m_registryChangeHandler = settingsRegistry->RegisterNotifier([this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
             {
@@ -194,7 +193,6 @@ namespace AzFramework
 
         AZ::TickBus::Handler::BusDisconnect();
         RootSpawnableNotificationBus::Handler::BusDisconnect();
-        SpawnableNotificationBus::Handler::BusDisconnect();
 
         // Unregister Lifecycle event handler
         m_criticalAssetsHandler = {};

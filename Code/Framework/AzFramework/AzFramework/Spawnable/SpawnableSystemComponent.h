@@ -17,7 +17,6 @@
 #include <AzFramework/Spawnable/SpawnableAssetHandler.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesContainer.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesManager.h>
-#include <AzFramework/Spawnable/SpawnableBus.h>
 
 namespace AzFramework
 {

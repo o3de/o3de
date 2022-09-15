@@ -315,7 +315,6 @@ set(FILES
     Render/Intersector.cpp
     Render/Intersector.h
     Render/IntersectorInterface.h
-    Spawnable/SpawnableBus.h
     Spawnable/RootSpawnableInterface.h
     Spawnable/Script/SpawnableScriptAssetRef.cpp
     Spawnable/Script/SpawnableScriptAssetRef.h

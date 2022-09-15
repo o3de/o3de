@@ -8,7 +8,7 @@
 
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesContainer.h>
-#include <AzFramework/Spawnable/SpawnableBus.h>
+
 namespace AzFramework
 {
     SpawnableEntitiesContainer::SpawnableEntitiesContainer(AZ::Data::Asset<Spawnable> spawnable)
