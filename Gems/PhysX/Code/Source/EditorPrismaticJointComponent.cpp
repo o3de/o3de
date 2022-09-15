@@ -214,4 +214,4 @@ namespace PhysX
         debugDisplay.PopMatrix(); // pop world transform
         debugDisplay.SetState(stateBefore);
     }
-}
+} // namespace PhysX

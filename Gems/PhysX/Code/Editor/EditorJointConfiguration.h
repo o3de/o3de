@@ -75,15 +75,15 @@ namespace PhysX
     class EditorJointLimitLinearPairConfig : public EditorJointLimitBase
     {
     public:
-        static const float s_linearLimitMin;
-        static const float s_linearLimitMax;
+        AZ_CLASS_ALLOCATOR(EditorJointLimitLinearPairConfig, AZ::SystemAllocator, 0);
+        AZ_TYPE_INFO(EditorJointLimitLinearPairConfig, "{20A3AE4C-1B92-4541-ACA7-5FA2BFDDEDC0}");
+        static void Reflect(AZ::ReflectContext* context);
 
         bool IsLimited() const;
         JointLimitProperties ToGameTimeConfig() const;
 
-        AZ_CLASS_ALLOCATOR(EditorJointLimitLinearPairConfig, AZ::SystemAllocator, 0);
-        AZ_TYPE_INFO(EditorJointLimitLinearPairConfig, "{20A3AE4C-1B92-4541-ACA7-5FA2BFDDEDC0}");
-        static void Reflect(AZ::ReflectContext* context);
+        static const float LinearLimitMin;
+        static const float LinearLimitMax;
 
         EditorJointLimitConfig m_standardLimitConfig;
         float m_limitLower = -1.0f;

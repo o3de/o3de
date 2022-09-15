@@ -32,8 +32,8 @@ namespace PhysX
     const float EditorJointLimitConeConfig::s_angleMax = 180.0f;
     const float EditorJointLimitConeConfig::s_angleMin = 0.1f;
 
-    const float EditorJointLimitLinearPairConfig::s_linearLimitMax = 1000.0f;
-    const float EditorJointLimitLinearPairConfig::s_linearLimitMin = -1000.0f;
+    const float EditorJointLimitLinearPairConfig::LinearLimitMax = 1000.0f;
+    const float EditorJointLimitLinearPairConfig::LinearLimitMin = -1000.0f;
 
     const float EditorJointConfig::s_breakageMax = 10000000.0f;
     const float EditorJointConfig::s_breakageMin = 0.01f;
@@ -185,14 +185,14 @@ namespace PhysX
                     ->DataElement(
                         0, &PhysX::EditorJointLimitLinearPairConfig::m_limitLower, "Lower linear limit", "Lower limit of linear motion.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorJointLimitPairConfig::IsLimited)
-                    ->Attribute(AZ::Edit::Attributes::Max, s_linearLimitMax)
-                    ->Attribute(AZ::Edit::Attributes::Min, s_linearLimitMin)
+                    ->Attribute(AZ::Edit::Attributes::Max, LinearLimitMax)
+                    ->Attribute(AZ::Edit::Attributes::Min, LinearLimitMin)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorJointLimitLinearPairConfig::OnLimitLowerChanged)
                     ->DataElement(
                         0, &PhysX::EditorJointLimitLinearPairConfig::m_limitUpper, "Upper linear limit", "Upper limit of linear motion.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorJointLimitPairConfig::IsLimited)
-                    ->Attribute(AZ::Edit::Attributes::Max, s_linearLimitMax)
-                    ->Attribute(AZ::Edit::Attributes::Min, s_linearLimitMin)
+                    ->Attribute(AZ::Edit::Attributes::Max, LinearLimitMax)
+                    ->Attribute(AZ::Edit::Attributes::Min, LinearLimitMin)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorJointLimitLinearPairConfig::OnLimitUpperChanged);
             }
         }

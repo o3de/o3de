@@ -12,6 +12,9 @@
 
 namespace PhysX
 {
+    //! Provides runtime support for prismatic joints.
+    //! Prismatic joints allow no rotation, but allow sliding along a direction aligned with the x-axis of both bodies'
+    //! joint frames.
     class PrismaticJointComponent
         : public JointComponent
     {

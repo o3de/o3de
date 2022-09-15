@@ -17,6 +17,9 @@
 
 namespace PhysX
 {
+    //! Provides functionality for modifying and visualizing prismatic joints in the editor.
+    //! Prismatic joints allow no rotation, but allow sliding along a direction aligned with the x-axis of both bodies'
+    //! joint frames.
     class EditorPrismaticJointComponent
         : public EditorJointComponent
     {
@@ -28,15 +31,15 @@ namespace PhysX
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
-        // AZ::Component
+        // AZ::Component overrides ...
         void Activate() override;
         void Deactivate() override;
 
-        // EditorComponentBase
+        // EditorComponentBase overrides ...
         void BuildGameEntity(AZ::Entity* gameEntity) override;
 
     private:
-        // PhysX::EditorJointRequests
+        // PhysX::EditorJointRequestBus overrides ...
         float GetLinearValue(const AZStd::string& parameterName) override;
         LinearLimitsFloatPair GetLinearValuePair(const AZStd::string& parameterName) override;
         AZStd::vector<JointsComponentModeCommon::SubModeParamaterState> GetSubComponentModesState() override;
@@ -44,7 +47,7 @@ namespace PhysX
         void SetLinearValue(const AZStd::string& parameterName, float value) override;
         void SetLinearValuePair(const AZStd::string& parameterName, const LinearLimitsFloatPair& valuePair) override;
 
-        // AzFramework::EntityDebugDisplayEventBus
+        // AzFramework::EntityDebugDisplayEventBus overrides ...
         void DisplayEntityViewport(
             const AzFramework::ViewportInfo& viewportInfo,
             AzFramework::DebugDisplayRequests& debugDisplay) override;
