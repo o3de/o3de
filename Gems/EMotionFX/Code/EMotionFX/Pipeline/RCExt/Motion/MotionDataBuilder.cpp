@@ -417,7 +417,7 @@ namespace EMotionFX
 
             if (coordinateSystemRule)
             {
-                float scaleFactor = coordinateSystemRule->GetScale();
+                const float scaleFactor = coordinateSystemRule->GetScale();
                 if (!AZ::IsClose(scaleFactor, 1.0f, FLT_EPSILON)) // If the scale factor is 1, no need to call Scale
                 {
                     motionData->Scale(scaleFactor);
