@@ -51,15 +51,6 @@ TEST_F(ApplicationTest, MakePathRelative_AbsPath_Valid)
     EXPECT_EQ(inputPath, "TestA.txt");
 }
 
-TEST_F(ApplicationTest, MakePathAssetRootRelative_AbsPath_RootLowerCase_Valid)
-{
-    AZ::IO::Path inputPath = m_tempDirectory.GetDirectoryAsPath();
-    AZStd::to_lower(inputPath.Native());
-    inputPath /= "TestA.txt";
-    m_application->MakePathAssetRootRelative(inputPath.Native());
-    EXPECT_EQ(inputPath, "testa.txt");
-}
-
 TEST_F(ApplicationTest, MakePathRelative_AbsPath_RootLowerCase_Valid)
 {
     AZ::IO::Path root = m_tempDirectory.GetDirectory();
