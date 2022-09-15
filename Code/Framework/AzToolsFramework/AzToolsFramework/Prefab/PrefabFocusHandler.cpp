@@ -147,8 +147,10 @@ namespace AzToolsFramework::Prefab
             focusedInstance.has_value() && focusedInstance->get().GetParentInstance() != AZStd::nullopt)
         {
             EntityIdList selectedEntities;
+
+            // Retrieve all nested entities in this instance, excluding the container.
             AZ::EntityId containerEntityId = focusedInstance->get().GetContainerEntityId();
-            focusedInstance->get().GetNestedEntityIds(
+            focusedInstance->get().GetEntityIds(
                 [&selectedEntities, containerEntityId](AZ::EntityId entityId)
                 {
                     if (entityId != containerEntityId)
@@ -158,6 +160,17 @@ namespace AzToolsFramework::Prefab
                     return true;
                 }
             );
+
+            // Retrieve container entities for all nested prefab instances in this instance.
+            focusedInstance->get().GetNestedInstances(
+                [&selectedEntities](AZStd::unique_ptr<Instance>& instance)
+                {
+                    selectedEntities.push_back(instance->GetContainerEntityId());
+                    return true;
+                }
+            );
+
+            // Create undo node to select entities.
             auto selectionUndo = aznew SelectionCommand(selectedEntities, "Select Entities of Focused Prefab");
             selectionUndo->SetParent(undoBatch.GetUndoBatch());
             ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequestBus::Events::SetSelectedEntities, selectedEntities);
