@@ -140,7 +140,7 @@ def register_all_o3de_objects_of_type_in_folder(o3de_object_path: pathlib.Path,
                                                 stop_iteration_callable: callable,
                                                 **register_kwargs) -> int:
     if not o3de_object_path:
-        logger.error(f'Engines path cannot be empty.')
+        logger.error(f'{o3de_object_type} path cannot be empty.')
         return 1
 
     o3de_object_path = pathlib.Path(o3de_object_path).resolve()

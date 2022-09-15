@@ -9,12 +9,10 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <AzCore/DOM/Backends/JSON/JsonBackend.h>
-#include <AzCore/Interface/Interface.h>
-#include <AzCore/Memory/SystemAllocator.h>
 #include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/IPropertyEditor.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyHandlerWidget.h>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditorSettings.h>
 
 #include <QHBoxLayout>
 #include <QScrollArea>
@@ -115,6 +113,8 @@ namespace AzToolsFramework
         void SetExpanded(bool expanded, bool recurseToChildRows = false);
         bool IsExpanded() const;
 
+        const AZ::Dom::Path GetPath() const;
+
     protected slots:
         void onExpanderChanged(int expanderState);
 
@@ -122,9 +122,15 @@ namespace AzToolsFramework
         DocumentPropertyEditor* GetDPE() const;
         void AddDomChildWidget(int domIndex, QWidget* childWidget);
 
+        AZ::Dom::Path BuildDomPath();
+        void SaveExpanderStatesForChildRows(bool isExpanded);
+
         DPERowWidget* m_parentRow = nullptr;
         int m_depth = 0; //!< number of levels deep in the tree. Used for indentation
         DPELayout* m_columnLayout = nullptr;
+
+        // This widget's indexed path from the root
+        AZ::Dom::Path m_domPath;
 
         //! widget children in DOM specified order; mix of row and column widgets
         AZStd::deque<QWidget*> m_domOrderedChildren;
@@ -151,20 +157,15 @@ namespace AzToolsFramework
         }
         void AddAfterWidget(QWidget* precursor, QWidget* widgetToAdd);
 
-        enum class ExpanderState : uint8_t
-        {
-            NotSet,
-            Collapsed,
-            Expanded
-        };
-
-        void SetSavedExpanderStateForRow(DPERowWidget* row, ExpanderState expanderState);
-        ExpanderState GetSavedExpanderStateForRow(DPERowWidget* row) const;
-        void RemoveExpanderStateForRow(DPERowWidget* row);
+        void SetSavedExpanderStateForRow(const AZ::Dom::Path& rowPath, bool isExpanded);
+        bool GetSavedExpanderStateForRow(const AZ::Dom::Path& rowPath) const;
+        bool HasSavedExpanderStateForRow(const AZ::Dom::Path& rowPath) const;
+        void RemoveExpanderStateForRow(const AZ::Dom::Path& rowPath);
         void ExpandAll();
         void CollapseAll();
 
-        // IPropertyEditor overrides to be added ...
+        // IPropertyEditor overrides
+        void SetSavedStateKey(AZ::u32 key, AZStd::string propertyEditorName = {}) override;
 
         AZ::Dom::Value GetDomValueForRow(DPERowWidget* row) const;
 
@@ -177,6 +178,11 @@ namespace AzToolsFramework
 
         static bool ShouldReplaceRPE();
 
+        AZStd::vector<size_t> GetPathToRoot(DPERowWidget* row) const;
+
+        bool IsRecursiveExpansionOngoing() const;
+        void SetRecursiveExpansionOngoing(bool isExpanding);
+
     public slots:
         //! set the DOM adapter for this DPE to inspect
         void SetAdapter(AZ::DocumentPropertyEditor::DocumentAdapterPtr theAdapter);
@@ -185,7 +191,6 @@ namespace AzToolsFramework
     protected:
         QVBoxLayout* GetVerticalLayout();
         void AddRowFromValue(const AZ::Dom::Value& domValue, int rowIndex);
-        AZStd::vector<size_t> GetPathToRoot(DPERowWidget* row) const;
 
         void HandleReset();
         void HandleDomChange(const AZ::Dom::Patch& patch);
@@ -199,20 +204,13 @@ namespace AzToolsFramework
 
         QVBoxLayout* m_layout = nullptr;
 
+        AZStd::unique_ptr<DocumentPropertyEditorSettings> m_dpeSettings;
+        bool m_isRecursiveExpansionOngoing = false;
+
         bool m_spawnDebugView = false;
 
         QTimer* m_handlerCleanupTimer;
         AZStd::vector<AZStd::unique_ptr<PropertyHandlerWidgetInterface>> m_unusedHandlers;
         AZStd::deque<DPERowWidget*> m_domOrderedRows;
-
-        //! tree nodes to keep track of expander state explicitly changed by the user
-        struct ExpanderPathNode
-        {
-            ExpanderState expanderState = ExpanderState::NotSet;
-            AZStd::unordered_map<size_t, ExpanderPathNode> nextNode;
-        };
-
-        //! hierarchical dom index to expander state tree
-        AZStd::unordered_map<size_t, ExpanderPathNode> m_expanderPaths;
     };
 } // namespace AzToolsFramework

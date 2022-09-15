@@ -270,7 +270,7 @@ namespace AZ
             AzFramework::StringFunc::Path::GetFolderPath(resolvedOutputFilePath, lutGenerationCacheFolder);
             AZ::IO::SystemFile::CreateDir(lutGenerationCacheFolder.c_str());
 
-            uint32_t frameCaptureId = AZ::Render::InvalidFrameCaptureId;
+            AZ::Render::FrameCaptureId frameCaptureId = AZ::Render::InvalidFrameCaptureId;
             AZ::Render::FrameCaptureRequestBus::BroadcastResult(
                 frameCaptureId,
                 &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachment,

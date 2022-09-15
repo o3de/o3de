@@ -33,6 +33,7 @@ namespace AzToolsFramework
         ActionManagerNotificationBus::Handler::BusConnect();
 
         EditorToolBar::Initialize(defaultParentWidget);
+        EditorToolBarArea::Initialize();
     }
 
     ToolBarManager::~ToolBarManager()
@@ -61,6 +62,25 @@ namespace AzToolsFramework
             {
                 toolBarIdentifier,
                 EditorToolBar(properties.m_name)
+            }
+        );
+
+        return AZ::Success();
+    }
+
+    ToolBarManagerOperationResult ToolBarManager::RegisterToolBarArea(
+        const AZStd::string& toolBarAreaIdentifier, QMainWindow* mainWindow, Qt::ToolBarArea toolBarArea)
+    {
+        if (m_toolBarAreas.contains(toolBarAreaIdentifier))
+        {
+            return AZ::Failure(
+                AZStd::string::format("ToolBar Manager - Could not register toolbar area \"%.s\" twice.", toolBarAreaIdentifier.c_str()));
+        }
+
+        m_toolBarAreas.insert(
+            {
+                toolBarAreaIdentifier,
+                EditorToolBarArea(mainWindow, toolBarArea)
             }
         );
 
@@ -291,6 +311,39 @@ namespace AzToolsFramework
         return AZ::Success();
     }
 
+    ToolBarManagerOperationResult ToolBarManager::AddToolBarToToolBarArea(
+        const AZStd::string& toolBarAreaIdentifier, const AZStd::string& toolBarIdentifier, int sortIndex)
+    {
+        auto toolBarAreaIterator = m_toolBarAreas.find(toolBarAreaIdentifier);
+        if (toolBarAreaIterator == m_toolBarAreas.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "ToolBar Manager - Could not add toolbar \"%s\" to toolbar area \"%s\" - toolbar area has not been registered.",
+                toolBarIdentifier.c_str(),
+                toolBarAreaIdentifier.c_str()));
+        }
+
+        if (!m_toolBars.contains(toolBarIdentifier))
+        {
+            return AZ::Failure(AZStd::string::format(
+                "ToolBar Manager - Could not add toolbar \"%s\" to toolbar area \"%s\" - toolbar has not been registered.",
+                toolBarIdentifier.c_str(),
+                toolBarAreaIdentifier.c_str()));
+        }
+
+        if (toolBarAreaIterator->second.ContainsToolBar(toolBarIdentifier))
+        {
+            return AZ::Failure(AZStd::string::format(
+                "ToolBar Manager - Could not add toolbar \"%s\" to toolbar area \"%s\" - toolbar area already contains this toolbar.",
+                toolBarIdentifier.c_str(),
+                toolBarAreaIdentifier.c_str()));
+        }
+
+        toolBarAreaIterator->second.AddToolBar(sortIndex, toolBarIdentifier);
+        m_toolBarAreasToRefresh.insert(toolBarAreaIdentifier);
+        return AZ::Success();
+    }
+
     QToolBar* ToolBarManager::GetToolBar(const AZStd::string& toolBarIdentifier)
     {
         auto toolBarIterator = m_toolBars.find(toolBarIdentifier);
@@ -388,6 +441,20 @@ namespace AzToolsFramework
         m_toolBarsToRefresh.clear();
     }
 
+    void ToolBarManager::RefreshToolBarAreas()
+    {
+        for (const AZStd::string& toolBarAreaIdentifier : m_toolBarAreasToRefresh)
+        {
+            auto toolBarAreaIterator = m_toolBarAreas.find(toolBarAreaIdentifier);
+            if (toolBarAreaIterator != m_toolBarAreas.end())
+            {
+                toolBarAreaIterator->second.RefreshToolBarArea();
+            }
+        }
+
+        m_toolBarAreasToRefresh.clear();
+    }
+
     ToolBarManagerStringResult ToolBarManager::SerializeToolBar(const AZStd::string& toolBarIdentifier)
     {
         if (!m_toolBars.contains(toolBarIdentifier))
@@ -420,6 +487,7 @@ namespace AzToolsFramework
     void ToolBarManager::OnSystemTick()
     {
         RefreshToolBars();
+        RefreshToolBarAreas();
     }
 
     void ToolBarManager::OnActionStateChanged(AZStd::string actionIdentifier)

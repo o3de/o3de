@@ -46,7 +46,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString TerrainLayerSpawnerNode::TITLE = QObject::tr("Terrain Layer Spawner");
+    const char* TerrainLayerSpawnerNode::TITLE = "Terrain Layer Spawner";
 
     TerrainLayerSpawnerNode::TerrainLayerSpawnerNode(GraphModel::GraphPtr graph)
         : BaseNode(graph)
@@ -57,12 +57,12 @@ namespace LandscapeCanvas
 
     const char* TerrainLayerSpawnerNode::GetTitle() const
     {
-        return TITLE.toUtf8().constData();
+        return TITLE;
     }
 
     const char* TerrainLayerSpawnerNode::GetSubTitle() const
     {
-        return LandscapeCanvas::TERRAIN_TITLE.toUtf8().constData();
+        return LandscapeCanvas::TERRAIN_TITLE;
     }
 
     GraphModel::NodeType TerrainLayerSpawnerNode::GetNodeType() const
