@@ -21,8 +21,7 @@ namespace PhysX
 {
     void PrismaticJointComponent::Reflect(AZ::ReflectContext* context)
     {
-        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
-        if (serializeContext)
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<PrismaticJointComponent, JointComponent>()
                 ->Version(2)

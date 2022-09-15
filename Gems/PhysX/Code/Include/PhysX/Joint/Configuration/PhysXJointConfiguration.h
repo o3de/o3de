@@ -113,6 +113,9 @@ namespace PhysX
         JointLimitProperties m_limitProperties;
     };
 
+    //! Configuration for a prismatic joint.
+    //! Prismatic joints allow no rotation, but allow sliding along a direction aligned with the x-axis of both bodies'
+    //! joint frames.
     struct PrismaticJointConfiguration : public AzPhysics::JointConfiguration
     {
         AZ_CLASS_ALLOCATOR(PrismaticJointConfiguration, AZ::SystemAllocator, 0);
