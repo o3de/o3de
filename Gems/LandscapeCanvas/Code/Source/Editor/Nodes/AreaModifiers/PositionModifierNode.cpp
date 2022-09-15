@@ -32,7 +32,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString PositionModifierNode::TITLE = QObject::tr("Position Modifier");
+    const char* PositionModifierNode::TITLE = "Position Modifier";
 
     PositionModifierNode::PositionModifierNode(GraphModel::GraphPtr graph)
         : BaseAreaModifierNode(graph)

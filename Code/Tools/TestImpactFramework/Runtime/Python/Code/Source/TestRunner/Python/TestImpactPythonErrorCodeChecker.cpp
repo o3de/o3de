@@ -6,29 +6,10 @@
  *
  */
 
-#include <TestEngine/Python/TestImpactPythonErrorCodeChecker.h>
+#include <TestRunner/Python/TestImpactPythonErrorCodeChecker.h>
 
 namespace TestImpact
 {
-    // Known error codes for Python and PyTest library
-    namespace ErrorCodes
-    {
-        namespace Python
-        {
-            static constexpr ReturnCode ScriptException = 1;
-            static constexpr ReturnCode InvalidArgs = 2;
-        } // namespace Python
-
-        namespace PyTest
-        {
-            static constexpr ReturnCode TestFailures = 1;
-            static constexpr ReturnCode UserInterrupt = 2;
-            static constexpr ReturnCode InternalError = 3;
-            static constexpr ReturnCode InvalidArgs = 4;
-            static constexpr ReturnCode NoTests = 5;
-        } // namespace PyTest
-    } // namespace ErrorCodes
-
     AZStd::optional<Client::TestRunResult> CheckPythonErrorCode(ReturnCode returnCode)
     {
         switch (returnCode)

@@ -9,6 +9,7 @@
 
 #include <AzQtComponents/Components/Widgets/ElidingLabel.h>
 #include <QCheckBox>
+#include <QDialog>
 #include <QLineEdit>
 #include <QTimer>
 #include <QVBoxLayout>
@@ -18,9 +19,10 @@
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorSystem.h>
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
-#include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
 #include <AzToolsFramework/UI/DPEDebugViewer/DPEDebugModel.h>
 #include <AzToolsFramework/UI/DPEDebugViewer/DPEDebugWindow.h>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/KeyQueryDPE.h>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
 
 AZ_CVAR(
     bool,
@@ -32,7 +34,6 @@ AZ_CVAR(
 
 namespace AzToolsFramework
 {
-
     DPELayout::DPELayout(int depth, QWidget* parentWidget)
         : QHBoxLayout(parentWidget)
         , m_depth(depth)
@@ -122,7 +123,6 @@ namespace AzToolsFramework
             return m_cachedMinLayoutSize;
         }
 
-
         int cumulativeWidth = 0;
         int minimumHeight = 0;
 
@@ -199,7 +199,9 @@ namespace AzToolsFramework
                     int numItems = m_sharePriorColumn[sharedVectorIndex].second;
                     int sharedWidgetIndex = 0;
                     // values used to remember the alignment of each widget
-                    bool startSpacer = false, endSpacer = false, stretchWidget = false;
+                    bool startSpacer = false, endSpacer = false;
+                    // number of widgets that should be set to their minimum size
+                    int minWidthCount = 0;
 
                     // Iterate over each item in the current shared column, adding them to a single layout
                     while (sharedWidgetIndex < numItems)
@@ -227,26 +229,33 @@ namespace AzToolsFramework
                         }
                         sharedColumnLayout->addItem(itemAt(layoutIndex + sharedWidgetIndex));
 
-                        // If a widget should be expanded, stretch it
-                        if (itemAt(layoutIndex + sharedWidgetIndex)->minimumSize().width() > 18)
+                        // If a widget should only take up its minimum width, do not stretch it
+                        if (m_minimumWidthWidgets.contains(currentWidget))
+                        {
+                            minWidthCount++;
+                        }
+                        else
                         {
                             sharedColumnLayout->setStretch(sharedColumnLayout->count() - 1, 1);
-                            stretchWidget = true;
                         }
                         sharedWidgetIndex++;
                     }
-                    // If all widgets in a column should be right aligned or center aligned
-                    if (startSpacer && !stretchWidget)
+
+                    // if all widgets in this shared column take up only their minimum width, set the appropriate alignment with spacers
+                    if (minWidthCount == numItems)
                     {
-                        QSpacerItem* spacer = new QSpacerItem(perItemWidth, 1, QSizePolicy::Expanding, QSizePolicy::Fixed);
-                        sharedColumnLayout->insertSpacerItem(0, spacer);
+                        if (startSpacer)
+                        {
+                            QSpacerItem* spacer = new QSpacerItem(perItemWidth, 1, QSizePolicy::Expanding, QSizePolicy::Fixed);
+                            sharedColumnLayout->insertSpacerItem(0, spacer);
+                        }
+                        if (endSpacer)
+                        {
+                            QSpacerItem* spacer = new QSpacerItem(perItemWidth, 1, QSizePolicy::Expanding, QSizePolicy::Fixed);
+                            sharedColumnLayout->addSpacerItem(spacer);
+                        }
                     }
-                    // If all widgets in a column should be left aligned or center aligned
-                    if (endSpacer && !stretchWidget)
-                    {
-                        QSpacerItem* spacer = new QSpacerItem(perItemWidth, 1, QSizePolicy::Expanding, QSizePolicy::Fixed);
-                        sharedColumnLayout->addSpacerItem(spacer);
-                    }
+
                     // Special case if this is the first column in a row
                     if (layoutIndex == 0)
                     {
@@ -358,6 +367,11 @@ namespace AzToolsFramework
         m_widgetAlignment[alignedWidget] = widgetAlignment;
     }
 
+    void DPELayout::AddMinimumWidthWidget(QWidget* widget)
+    {
+        m_minimumWidthWidgets.insert(widget);
+    }
+
     DPERowWidget::DPERowWidget(int depth, DPERowWidget* parentRow)
         : QWidget(nullptr) // parent will be set when the row is added to its layout
         , m_parentRow(parentRow)
@@ -381,7 +395,8 @@ namespace AzToolsFramework
             DocumentPropertyEditor* dpe = GetDPE();
             // propertyHandlers own their widgets, so don't destroy them here. Set them free!
             for (auto propertyWidgetIter = m_widgetToPropertyHandler.begin(), endIter = m_widgetToPropertyHandler.end();
-                 propertyWidgetIter != endIter; ++propertyWidgetIter)
+                 propertyWidgetIter != endIter;
+                 ++propertyWidgetIter)
             {
                 QWidget* propertyWidget = propertyWidgetIter->first;
                 auto toRemove = AZStd::remove(m_domOrderedChildren.begin(), m_domOrderedChildren.end(), propertyWidget);
@@ -526,7 +541,7 @@ namespace AzToolsFramework
                     m_columnLayout->WidgetAlignment(addedWidget, widgetAlignment);
                 }
 
-                //! If the sharePrior attribute is present, add the previous widget to the column layout.
+                //! If the SharePrior attribute is present, add the previous widget to the column layout.
                 //! Set the SharePrior boolean so we know to create a new shared column layout, or add to an existing one
                 auto sharePrior = AZ::Dpe::Nodes::PropertyEditor::SharePriorColumn.ExtractFromDomNode(childValue);
                 if (sharePrior.has_value() && sharePrior.value())
@@ -537,6 +552,13 @@ namespace AzToolsFramework
                 else
                 {
                     m_columnLayout->SetSharePrior(false);
+                }
+
+                // If the UseMinimumWidth attribute is present, add the widget to set of widgets using their minimum width
+                auto minimumWidth = AZ::Dpe::Nodes::PropertyEditor::UseMinimumWidth.ExtractFromDomNode(childValue);
+                if (minimumWidth.has_value() && minimumWidth.value())
+                {
+                    m_columnLayout->AddMinimumWidthWidget(addedWidget);
                 }
 
                 m_columnLayout->insertWidget(priorColumnIndex + 1, addedWidget);
@@ -870,6 +892,13 @@ namespace AzToolsFramework
             });
         m_adapter->ConnectChangedHandler(m_changedHandler);
 
+        m_domMessageHandler = AZ::DocumentPropertyEditor::DocumentAdapter::MessageEvent::Handler(
+            [this](const AZ::DocumentPropertyEditor::AdapterMessage& message, AZ::Dom::Value& value)
+            {
+                this->HandleDomMessage(message, value);
+            });
+        m_adapter->ConnectMessageHandler(m_domMessageHandler);
+
         // populate the view from the full adapter contents, just like a reset
         HandleReset();
     }
@@ -1126,23 +1155,29 @@ namespace AzToolsFramework
             const auto& patchPath = operationIterator->GetDestinationPath();
             if (patchPath.Size() == 0)
             {
-                // If we're operating on the entire tree, go ahead and just reset
-                HandleReset();
+                // an empty path indicates a change to the top-level of the DOM, which is the adapter.
+                // Currently, this is meaningless to the DPE so just return.
                 return;
             }
             auto firstAddressEntry = patchPath[0];
 
-            AZ_Assert(
-                firstAddressEntry.IsIndex() || firstAddressEntry.IsEndOfArray(),
-                "first entry in a DPE patch must be the index of the first row");
+            const bool isIndex = (firstAddressEntry.IsIndex() || firstAddressEntry.IsEndOfArray());
+            AZ_Assert(isIndex, "first entry in a DPE patch must be the index of the first row");
             auto rowIndex = (firstAddressEntry.IsIndex() ? firstAddressEntry.GetIndex() : m_domOrderedRows.size());
-            AZ_Assert(
-                rowIndex < m_domOrderedRows.size() ||
-                    (rowIndex <= m_domOrderedRows.size() && operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Add),
-                "received a patch for a row that doesn't exist");
 
-            // if the patch points at our root, this operation is for the top level layout
-            if (patchPath.IsEmpty())
+            const bool indexInRange =
+                (rowIndex < m_domOrderedRows.size() ||
+                 (rowIndex <= m_domOrderedRows.size() && operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Add));
+            AZ_Assert(indexInRange, "received a patch for a row that doesn't exist");
+
+            if (!(isIndex && indexInRange))
+            {
+                // invalid input, bail
+                return;
+            }
+
+            // if there is only one level in the path, this operation is for the top layout
+            if (patchPath.Size() == 1)
             {
                 if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Add)
                 {
@@ -1170,6 +1205,28 @@ namespace AzToolsFramework
                 rowWidget->HandleOperationAtPath(*operationIterator, pathDepth);
             }
         }
+    }
+
+    void DocumentPropertyEditor::HandleDomMessage(
+        const AZ::DocumentPropertyEditor::AdapterMessage& message, [[maybe_unused]] AZ::Dom::Value& value)
+    {
+        // message match for QueryKey
+        auto showKeyQueryDialog = [&](AZ::DocumentPropertyEditor::DocumentAdapterPtr* adapter, AZ::Dom::Path containerPath)
+        {
+            KeyQueryDPE keyQueryUi(adapter);
+            if (keyQueryUi.exec() == QDialog::Accepted)
+            {
+                AZ::DocumentPropertyEditor::Nodes::Adapter::AddContainerKey.InvokeOnDomNode(
+                    m_adapter->GetContents(), adapter, containerPath);
+            }
+            else
+            {
+                AZ::DocumentPropertyEditor::Nodes::Adapter::RejectContainerKey.InvokeOnDomNode(
+                    m_adapter->GetContents(), adapter, containerPath);
+            }
+        };
+
+        message.Match(AZ::DocumentPropertyEditor::Nodes::Adapter::QueryKey, showKeyQueryDialog);
     }
 
     void DocumentPropertyEditor::CleanupReleasedHandlers()

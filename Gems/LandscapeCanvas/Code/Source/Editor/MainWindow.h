@@ -223,7 +223,10 @@ namespace LandscapeCanvasEditor
 
         AZ::EntityId GetRootEntityIdForGraphId(const GraphCanvas::GraphId& graphId);
 
-        AZ::ComponentId AddComponentTypeIdToEntity(const AZ::EntityId& entityId, AZ::TypeId componentToAddTypeId);
+        AZ::ComponentId AddComponentTypeIdToEntity(
+            const AZ::EntityId& entityId,
+            AZ::TypeId componentToAddTypeId,
+            const AZ::ComponentDescriptor::DependencyArrayType& optionalServices = {});
         void AddComponentForNode(GraphModel::NodePtr node, const AZ::EntityId& entityId);
         void HandleNodeCreated(GraphModel::NodePtr node);
         void HandleNodeAdded(GraphModel::NodePtr node);
@@ -235,7 +238,7 @@ namespace LandscapeCanvasEditor
             Invalid = -1,
             Shapes = 0,
             Gradients,
-            VegetationAreas,
+            WrapperNodes,
             Count
         };
 

@@ -270,7 +270,6 @@ namespace AZ::SerializeContextTools
     bool Dumper::DumpTypes(Application& application)
     {
         // outputStream defaults to writing to stdout
-        AZ::IO::SystemFile systemFile;
         AZStd::variant<FunctorStream, AZ::IO::SystemFileStream> outputStream(AZStd::in_place_type<FunctorStream>,
             GetWriteBypassStdoutCapturerFunctor(application));
 
@@ -290,8 +289,9 @@ namespace AZ::SerializeContextTools
             }
 
             constexpr AZ::IO::OpenMode openMode = AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath;
-            auto& fileStream = outputStream.emplace<AZ::IO::SystemFileStream>(&systemFile, true);
-            if (!fileStream.Open(outputPath.c_str(), openMode))
+
+            if (auto& fileStream = outputStream.emplace<AZ::IO::SystemFileStream>(outputPath.c_str(), openMode);
+                !fileStream.IsOpen())
             {
                 AZ_Printf(
                     "dumptypes",
@@ -440,7 +440,6 @@ namespace AZ::SerializeContextTools
     bool Dumper::CreateType(Application& application)
     {
         // outputStream defaults to writing to stdout
-        AZ::IO::SystemFile systemFile;
         AZStd::variant<FunctorStream, AZ::IO::SystemFileStream> outputStream(AZStd::in_place_type<FunctorStream>,
             GetWriteBypassStdoutCapturerFunctor(application));
 
@@ -460,8 +459,9 @@ namespace AZ::SerializeContextTools
             }
 
             constexpr AZ::IO::OpenMode openMode = AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath;
-            auto& fileStream = outputStream.emplace<AZ::IO::SystemFileStream>(&systemFile, true);
-            if (!fileStream.Open(outputPath.c_str(), openMode))
+
+            if (auto& fileStream = outputStream.emplace<AZ::IO::SystemFileStream>(outputPath.c_str(), openMode);
+                !fileStream.IsOpen())
             {
                 AZ_Printf(
                     "createtype",

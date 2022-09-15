@@ -57,16 +57,12 @@ class MaterialEditorSingleTest(SingleTest):
     @staticmethod
     def setup(instance: MaterialEditorTestSuite.MultiTestCollector,
               request: _pytest.fixtures.FixtureRequest,
-              workspace: AbstractWorkspaceManager,
-              material_editor_test_results: MultiTestSuite.TestData,
-              launcher_platform: str) -> None:
+              workspace: AbstractWorkspaceManager) -> None:
         """
         User-overrideable setup function, which will run before the test.
         :param instance: Parent MaterialEditorTestSuite.MultiTestCollector instance executing the test
         :param request: PyTest request object
         :param workspace: LyTestTools workspace manager
-        :param material_editor_test_results: Currently recorded MaterialEditor test results
-        :param launcher_platform: user-parameterized string for LyTestTools
         """
         pass
 
@@ -74,8 +70,7 @@ class MaterialEditorSingleTest(SingleTest):
     def wrap_run(instance: MaterialEditorTestSuite.MultiTestCollector,
                  request: _pytest.fixtures.FixtureRequest,
                  workspace: AbstractWorkspaceManager,
-                 material_editor_test_results: MultiTestSuite.TestData,
-                 launcher_platform: str) -> None:
+                 material_editor_test_results: MultiTestSuite.TestData) -> None:
         """
         User-overrideable wrapper function, which will run both before and after test.
         Any code before the 'yield' statement will run before the test. With code after yield run after the test.
@@ -84,7 +79,6 @@ class MaterialEditorSingleTest(SingleTest):
         :param request: PyTest request object
         :param workspace: LyTestTools workspace manager
         :param material_editor_test_results: Currently recorded MaterialEditor test results
-        :param launcher_platform: user-parameterized string for LyTestTools
         """
         yield
 
@@ -92,15 +86,13 @@ class MaterialEditorSingleTest(SingleTest):
     def teardown(instance: MaterialEditorTestSuite.MultiTestCollector,
                  request: _pytest.fixtures.FixtureRequest,
                  workspace: AbstractWorkspaceManager,
-                 material_editor_test_results: MultiTestSuite.TestData,
-                 launcher_platform: str) -> None:
+                 material_editor_test_results: MultiTestSuite.TestData) -> None:
         """
         User-overrideable teardown function, which will run after the test
         :param instance: Parent MaterialEditorTestSuite.MultiTestCollector instance executing the test
         :param request: PyTest request object
         :param workspace: LyTestTools workspace manager
         :param material_editor_test_results: Currently recorded MaterialEditor test results
-        :param launcher_platform: user-parameterized string for LyTestTools
         """
         pass
 

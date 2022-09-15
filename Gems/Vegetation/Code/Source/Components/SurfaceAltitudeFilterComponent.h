@@ -37,7 +37,7 @@ namespace Vegetation
         bool IsShapeValid() const;
     };
 
-    static const AZ::Uuid SurfaceAltitudeFilterComponentTypeId = "{A32681E7-61BE-40CA-93D8-A1CD6E76B2EB}";
+    inline constexpr AZ::TypeId SurfaceAltitudeFilterComponentTypeId{ "{A32681E7-61BE-40CA-93D8-A1CD6E76B2EB}" };
 
     /**
     * Component implementing VegetationFilterRequestBus that accepts/rejects based on altitude

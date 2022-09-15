@@ -44,7 +44,7 @@ namespace Blast
         };
 
         // AZ::BehaviorEBusHandler
-        void Disconnect() override;
+        void Disconnect(AZ::BehaviorArgument* id = nullptr) override;
         bool Connect(AZ::BehaviorArgument* id = nullptr) override;
         bool IsConnected() override;
         bool IsConnectedId(AZ::BehaviorArgument* id) override;

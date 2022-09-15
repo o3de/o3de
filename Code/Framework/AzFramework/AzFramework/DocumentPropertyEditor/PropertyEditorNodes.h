@@ -42,6 +42,10 @@ namespace AZ::DocumentPropertyEditor::Nodes
     struct Adapter : NodeWithVisiblityControl
     {
         static constexpr AZStd::string_view Name = "Adapter";
+        static constexpr auto QueryKey = CallbackAttributeDefinition<void(DocumentAdapterPtr*, AZ::Dom::Path)>("QueryKey");
+        static constexpr auto AddContainerKey = CallbackAttributeDefinition<void(DocumentAdapterPtr*, AZ::Dom::Path)>("AddContainerKey");
+        static constexpr auto RejectContainerKey = CallbackAttributeDefinition<void(DocumentAdapterPtr*, AZ::Dom::Path)>("RejectContainerKey");
+
         static bool CanAddToParentNode(const Dom::Value& parentNode);
         static bool CanBeParentToValue(const Dom::Value& value);
     };
@@ -105,6 +109,11 @@ namespace AZ::DocumentPropertyEditor::Nodes
         //! to the previous column in the layout, creating a SharedColumn that can hold many PropertyEditors.
         //! Useful for things like the "add container entry" button.
         static constexpr auto SharePriorColumn = AttributeDefinition<bool>("SharePriorColumn");
+
+        //! DEPENDENT attribute - must be used inside a SharedColumn.
+        //! If set to true, specifies that this PropertyEditor should only take up as much space as its minimum width.
+        //! Useful for placing things like "add container entry" and "remove all elements" next to each other
+        static constexpr auto UseMinimumWidth = AttributeDefinition<bool>("SharePriorColumn");
 
         //! Specifies the alignment options for a PropertyEditor that has the Alignment attribute.
         enum class Align : AZ::u8

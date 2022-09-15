@@ -6,27 +6,10 @@
  *
  */
 
-#include <TestEngine/Native/TestImpactNativeErrorCodeChecker.h>
+#include <TestRunner/Native/TestImpactNativeErrorCodeChecker.h>
 
 namespace TestImpact
 {
-    // Known error codes for test runner and test library
-    namespace ErrorCodes
-    {
-        namespace GTest
-        {
-            static constexpr ReturnCode Unsuccessful = 1;
-        } // namespace GTest
-
-        namespace AZTestRunner
-        {
-            static constexpr ReturnCode InvalidArgs = 101;
-            static constexpr ReturnCode FailedToFindTargetBinary = 102;
-            static constexpr ReturnCode SymbolNotFound = 103;
-            static constexpr ReturnCode ModuleSkipped = 104;
-        } // namespace AZTestRunner
-    } // namespace ErrorCodes
-
     AZStd::optional<Client::TestRunResult> CheckNativeTestRunnerErrorCode(ReturnCode returnCode)
     {
         switch (returnCode)
