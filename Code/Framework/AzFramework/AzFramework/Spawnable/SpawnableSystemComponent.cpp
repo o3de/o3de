@@ -149,16 +149,6 @@ namespace AzFramework
         AZ_TracePrintf("Spawnables", "Generation %i of the root spawnable has been released.\n", generation);
     }
 
-    void SpawnableSystemComponent::ClearEntityTickets()
-    {
-        m_spawnedEntityTickets.clear();
-    }
-
-    void SpawnableSystemComponent::OnSpawnEntityTicketCreated(EntitySpawnTicket spawnTicket)
-    {
-        m_spawnedEntityTickets.insert(spawnTicket);
-    }
-
     void SpawnableSystemComponent::Activate()
     {
         // Register with AssetDatabase

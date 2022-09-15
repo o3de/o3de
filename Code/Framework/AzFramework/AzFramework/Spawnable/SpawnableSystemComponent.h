@@ -103,10 +103,6 @@ namespace AzFramework
         AZ::Data::AssetId m_rootSpawnableId;
         AZ::SettingsRegistryInterface::NotifyEventHandler m_criticalAssetsHandler;
 
-        // Cache of EntitySpawnTickets created from script, they are tracked to avoid
-        // refcounting issues at runtime
-        AZStd::unordered_set<EntitySpawnTicket> m_spawnedEntityTickets;
-
     };
 } // namespace AzFramework
 

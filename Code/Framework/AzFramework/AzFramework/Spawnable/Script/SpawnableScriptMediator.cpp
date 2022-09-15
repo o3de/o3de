@@ -69,7 +69,7 @@ namespace AzFramework::Scripts
     EntitySpawnTicket SpawnableScriptMediator::CreateSpawnTicket(const SpawnableScriptAssetRef& spawnableAsset)
     {
         EntitySpawnTicket ticket = EntitySpawnTicket(spawnableAsset.GetAsset());
-        SpawnableNotificationBus::Broadcast(&SpawnableNotifications::OnSpawnEntityTicketCreated, ticket);
+        m_activeSpawnTickets.insert(ticket);
         return ticket;
     }
 
@@ -165,6 +165,8 @@ namespace AzFramework::Scripts
             return false;
         }
 
+        m_activeSpawnTickets.erase(spawnTicket);
+
         AZStd::weak_ptr<CallbackSentinel> weakPtr = m_sentinel;
         auto despawnCompleteCB = [this, weakPtr, spawnTicket]
             ([[maybe_unused]] EntitySpawnTicket::Id ticketId)
@@ -189,8 +191,7 @@ namespace AzFramework::Scripts
 
     void SpawnableScriptMediator::Clear()
     {
-        SpawnableNotificationBus::Broadcast(&SpawnableNotifications::ClearEntityTickets);
-
+        m_activeSpawnTickets.clear();
         m_resultCommands.clear();
         AZ::TickBus::Handler::BusDisconnect();
     }

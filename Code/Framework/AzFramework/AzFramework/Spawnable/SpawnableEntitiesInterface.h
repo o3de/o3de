@@ -458,7 +458,6 @@ namespace AzFramework
     using SpawnableEntitiesInterface = AZ::Interface<SpawnableEntitiesDefinition>;
 } // namespace AzFramework
 
-
 namespace AZStd
 {
     template<>
@@ -475,4 +474,3 @@ namespace AZStd
         }
     };
 }
-

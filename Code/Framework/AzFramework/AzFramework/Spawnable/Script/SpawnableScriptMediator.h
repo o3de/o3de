@@ -79,5 +79,7 @@ namespace AzFramework::Scripts
         AZStd::recursive_mutex m_mutex;
         // used to track when SpawnableScriptMediator is destroyed to avoid executing logic in callbacks
         AZStd::shared_ptr<CallbackSentinel> m_sentinel;
+
+        AZStd::unordered_set<EntitySpawnTicket> m_activeSpawnTickets;
     };
 } // namespace AzFramework
