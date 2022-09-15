@@ -73,20 +73,19 @@ namespace AWSCore
             AWSCoreInternalRequestBus::BroadcastResult(allowAWSMetadata, &AWSCoreInternalRequests::IsAllowedAWSMetadataQueries);
             if (allowAWSMetadata)
             {
-
-                if (!m_instanceProfileCredentailsProvider)
-                {
-                    SetInstanceProfileCredentialProvider(
-                        Aws::MakeShared<Aws::Auth::InstanceProfileCredentialsProvider>(AWSDEFAULTCREDENTIALHANDLER_ALLOC_TAG));
-                }
-
                 const auto ec2MetadataDisabled = Aws::Environment::GetEnv(AWS_EC2_METADATA_DISABLED);
                 if (Aws::Utils::StringUtils::ToLower(ec2MetadataDisabled.c_str()) != "true")
                 {
-                    auto credentials = m_instanceProfileCredentailsProvider->GetAWSCredentials();
+                    if (!m_instanceProfileCredentialsProvider)
+                    {
+                        SetInstanceProfileCredentialProvider(
+                            Aws::MakeShared<Aws::Auth::InstanceProfileCredentialsProvider>(AWSDEFAULTCREDENTIALHANDLER_ALLOC_TAG));
+                    }
+
+                    auto credentials = m_instanceProfileCredentialsProvider->GetAWSCredentials();
                     if (!credentials.IsEmpty())
                     {
-                        return m_instanceProfileCredentailsProvider;
+                        return m_instanceProfileCredentialsProvider;
                     }
                 }
             }
@@ -141,7 +140,7 @@ namespace AWSCore
     void AWSDefaultCredentialHandler::SetInstanceProfileCredentialProvider(
         std::shared_ptr<Aws::Auth::InstanceProfileCredentialsProvider> credentialsProvider)
     {
-        m_instanceProfileCredentailsProvider = credentialsProvider;
+        m_instanceProfileCredentialsProvider = credentialsProvider;
     }
 
     void AWSDefaultCredentialHandler::ResetCredentialsProviders()
@@ -150,9 +149,9 @@ namespace AWSCore
         AZStd::lock_guard<AZStd::mutex> credentialsLock{m_credentialMutex};
         m_environmentCredentialsProvider.reset();
         m_profileCredentialsProvider.reset();
-        if (m_instanceProfileCredentailsProvider)
+        if (m_instanceProfileCredentialsProvider)
         {
-            m_instanceProfileCredentailsProvider.reset();
+            m_instanceProfileCredentialsProvider.reset();
         }
     }
 } // namespace AWSCore

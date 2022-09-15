@@ -50,6 +50,6 @@ namespace AWSCore
         std::shared_ptr<Aws::Auth::EnvironmentAWSCredentialsProvider> m_environmentCredentialsProvider;
         AZStd::string m_profileName;
         std::shared_ptr<Aws::Auth::ProfileConfigFileAWSCredentialsProvider> m_profileCredentialsProvider;
-        std::shared_ptr<Aws::Auth::InstanceProfileCredentialsProvider> m_instanceProfileCredentailsProvider;
+        std::shared_ptr<Aws::Auth::InstanceProfileCredentialsProvider> m_instanceProfileCredentialsProvider;
     };
 } // namespace AWSCore
