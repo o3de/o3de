@@ -863,6 +863,12 @@ namespace PhysX
                 azdynamic_cast<const HingeJointConfiguration*>(jointConfig),
                 m_sceneHandle, parentBody, childBody, newJointCrc);
         }
+        else if (azrtti_istypeof<PhysX::PrismaticJointConfiguration*>(jointConfig))
+        {
+            newJoint = Internal::CreateJoint<PhysXPrismaticJoint, PrismaticJointConfiguration>(
+                azdynamic_cast<const PrismaticJointConfiguration*>(jointConfig),
+                m_sceneHandle, parentBody, childBody, newJointCrc);
+        }
         else
         {
             AZ_Warning("PhysXScene", false, "Unknown JointConfiguration.");

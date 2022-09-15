@@ -21,6 +21,7 @@
 #include <AzToolsFramework/ActionManager/Menu/MenuManager.h>
 #include <AzToolsFramework/ActionManager/ToolBar/ToolBarManager.h>
 
+#include <QMainWindow>
 #include <QWidget>
 
 namespace UnitTest
@@ -40,6 +41,7 @@ namespace UnitTest
         AzToolsFramework::ToolBarManagerInterface* m_toolBarManagerInterface = nullptr;
         AzToolsFramework::ToolBarManagerInternalInterface* m_toolBarManagerInternalInterface = nullptr;
 
+        QMainWindow* m_mainWindow = nullptr;
         QWidget* m_widget = nullptr;
         QWidget* m_defaultParentWidget = nullptr;
 

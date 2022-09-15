@@ -28,7 +28,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString DiskShapeNode::TITLE = QObject::tr("Disk Shape");
+    const char* DiskShapeNode::TITLE = "Disk Shape";
 
     DiskShapeNode::DiskShapeNode(GraphModel::GraphPtr graph)
         : BaseShapeNode(graph)

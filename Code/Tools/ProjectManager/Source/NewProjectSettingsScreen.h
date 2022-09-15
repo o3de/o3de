@@ -45,7 +45,7 @@ namespace O3DE::ProjectManager
         void OnTemplateSelectionChanged(int oldIndex, int newIndex);
 
     public slots:
-        void StartTemplateDownload(const QString& templateName);
+        void StartTemplateDownload(const QString& templateName, const QString& destinationPath);
         void HandleDownloadResult(const QString& projectName, bool succeeded);
         void HandleDownloadProgress(const QString& projectName, DownloadController::DownloadObjectType objectType, int bytesDownloaded, int totalBytes);
 

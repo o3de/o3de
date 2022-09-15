@@ -214,6 +214,12 @@ namespace EditorPythonBindings
         return m_toolBarManagerInterface->RegisterToolBar(toolBarIdentifier, properties);
     }
 
+    AzToolsFramework::ToolBarManagerOperationResult PythonActionManagerHandler::RegisterToolBarArea(
+        const AZStd::string& toolBarAreaIdentifier, QMainWindow* mainWindow, Qt::ToolBarArea toolBarArea)
+    {
+        return m_toolBarManagerInterface->RegisterToolBarArea(toolBarAreaIdentifier, mainWindow, toolBarArea);
+    }
+
     AzToolsFramework::ToolBarManagerOperationResult PythonActionManagerHandler::AddActionToToolBar(
         const AZStd::string& toolBarIdentifier, const AZStd::string& actionIdentifier, int sortIndex)
     {
@@ -257,6 +263,12 @@ namespace EditorPythonBindings
         const AZStd::string& toolBarIdentifier, const AZStd::string& widgetActionIdentifier, int sortIndex)
     {
         return m_toolBarManagerInterface->AddWidgetToToolBar(toolBarIdentifier, widgetActionIdentifier, sortIndex);
+    }
+
+    AzToolsFramework::ToolBarManagerOperationResult PythonActionManagerHandler::AddToolBarToToolBarArea(
+        const AZStd::string& toolBarAreaIdentifier, const AZStd::string& toolBarIdentifier, int sortIndex)
+    {
+        return m_toolBarManagerInterface->AddToolBarToToolBarArea(toolBarAreaIdentifier, toolBarIdentifier, sortIndex);
     }
 
     QToolBar* PythonActionManagerHandler::GetToolBar(const AZStd::string& toolBarIdentifier)
