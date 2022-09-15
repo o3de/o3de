@@ -346,7 +346,7 @@ namespace PhysX::Benchmarks
     BENCHMARK_DEFINE_F(PhysXJointBenchmarkFixture, BM_Joints_Snake)(benchmark::State& state)
     {
         const int numSegments = aznumeric_cast<int>(state.range(0));
-        const int bodyType = static_cast<int>(state.range(1));
+        const int bodyType = aznumeric_cast<int>(state.range(1));
 
         //create the collider shape config to use on the whole snake
         auto snakePartShapeConfiguration = AZStd::make_shared<Physics::SphereShapeConfiguration>(JointConstants::CreateJointDefaults::ColliderRadius);
@@ -426,7 +426,7 @@ namespace PhysX::Benchmarks
         }
 
         AZStd::visit(
-            [](auto&& rigidBodies)
+            [](auto& rigidBodies)
             {
                 rigidBodies.clear();
             },

@@ -53,7 +53,7 @@ namespace PhysX::Benchmarks
 
         //! Helper function to create the required number of rigid bodies and spawn them in the provided world.
         //! @param numRigidBodies The number of bodies to spawn.
-        //! @param world World where the rigid bodies will be spawned into.
+        //! @param sceneHandle The handle of a scene where the rigid bodies will be spawned into.
         //! @param enableCCD Flag to enable|disable Continuous Collision Detection (CCD).
         //! @param benchmarkObjectType Type specifying whether rigid bodies should be entities with components or API objects.
         //! @param genColliderFuncPtr [optional] Function pointer to allow caller to pick the collider object Default is a box sized at 1m.

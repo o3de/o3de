@@ -16,11 +16,11 @@
 
 namespace PhysX::Benchmarks
 {
-    static constexpr float DefaultTimeStep = 0.0166667f; // 0.0166667f (60fps)
+    inline constexpr float DefaultTimeStep = 0.0166667f; // 0.0166667f (60fps)
 
     //! Rigid body benchmark types: create entities with rigid body component or rigid bodies with no entities
-    static constexpr int RigidBodyApiObject = 0;
-    static constexpr int RigidBodyEntity = 1;
+    inline constexpr int RigidBodyApiObject = 0;
+    inline constexpr int RigidBodyEntity = 1;
 
     //! The Benchmark environment is used for one time setup and tear down of shared resources
     class PhysXBenchmarkEnvironment

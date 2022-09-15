@@ -204,8 +204,8 @@ namespace PhysX::Benchmarks
     BENCHMARK_DEFINE_F(PhysXRigidbodyBenchmarkFixture, BM_RigidBody_AtRest)(benchmark::State& state)
     {
         //get the request number of rigid bodies and prepare to spawn them
-        const int numRigidBodies = static_cast<int>(state.range(0));
-        const int bodyType = static_cast<int>(state.range(1));
+        const int numRigidBodies = aznumeric_cast<int>(state.range(0));
+        const int bodyType = aznumeric_cast<int>(state.range(1));
 
         //common settings for each rigid body
         const float boxSizeWithSpacing = RigidBodyConstants::RigidBodys::BoxSize + 2.0f;
@@ -266,7 +266,7 @@ namespace PhysX::Benchmarks
         }
 
         AZStd::visit(
-            [](auto&& rigidBodies)
+            [](auto& rigidBodies)
             {
                 rigidBodies.clear();
             },
@@ -296,8 +296,8 @@ namespace PhysX::Benchmarks
             washingMachineCentre, RigidBodyConstants::WashingMachine::BladeRPM);
 
         //get the request number of rigid bodies and prepare to spawn them
-        const int numRigidBodies = static_cast<int>(state.range(0));
-        const int bodyType = static_cast<int>(state.range(1));
+        const int numRigidBodies = aznumeric_cast<int>(state.range(0));
+        const int bodyType = aznumeric_cast<int>(state.range(1));
 
         //add the rigid bodies
         //function to generate the rigid bodies position / orientation / mass
@@ -355,7 +355,7 @@ namespace PhysX::Benchmarks
         }
 
         AZStd::visit(
-            [](auto&& rigidBodies)
+            [](auto& rigidBodies)
             {
                 rigidBodies.clear();
             },
@@ -457,8 +457,8 @@ namespace PhysX::Benchmarks
             washingMachineCentre, RigidBodyConstants::WashingMachine::BladeRPM);
 
         //get the request number of rigid bodies and prepare to spawn them
-        const int numRigidBodies = static_cast<int>(state.range(0));
-        const int bodyType = static_cast<int>(state.range(2));
+        const int numRigidBodies = aznumeric_cast<int>(state.range(0));
+        const int bodyType = aznumeric_cast<int>(state.range(2));
 
         //add the rigid bodies
         //function to generate the rigid bodies position / orientation / mass
@@ -494,11 +494,11 @@ namespace PhysX::Benchmarks
         //create the collision handlers
         AZStd::vector<Utils::SimulatedBodyCollisionHandler> collisionHandlers;
         int numberCollisionHandlers = 0;
-        if (static_cast<int>(state.range(1)) == RigidBodyConstants::BenchmarkSettings::AllCollisionHanders)
+        if (aznumeric_cast<int>(state.range(1)) == RigidBodyConstants::BenchmarkSettings::AllCollisionHanders)
         {
             numberCollisionHandlers = numRigidBodies;
         }
-        else if (static_cast<int>(state.range(1)) == RigidBodyConstants::BenchmarkSettings::HalfCollisionHandlers)
+        else if (aznumeric_cast<int>(state.range(1)) == RigidBodyConstants::BenchmarkSettings::HalfCollisionHandlers)
         {
             numberCollisionHandlers = numRigidBodies / 2;
         }
@@ -551,7 +551,7 @@ namespace PhysX::Benchmarks
         }
 
         AZStd::visit(
-            [](auto&& rigidBodies)
+            [](auto& rigidBodies)
             {
                 rigidBodies.clear();
             },

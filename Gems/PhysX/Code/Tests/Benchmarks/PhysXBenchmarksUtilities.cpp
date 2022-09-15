@@ -126,22 +126,14 @@ namespace PhysX::Benchmarks
 
             if (auto handlesList = AZStd::get_if<AzPhysics::SimulatedBodyHandleList>(&benchmarkRigidBodies))
             {
-                rigidBodies.reserve(handlesList->size());
+                rigidBodies = AZStd::vector<AzPhysics::RigidBody*>(AZStd::from_range, *handlesList | AZStd::views::transform([&scene](const AzPhysics::SimulatedBodyHandle& handle) {
+                    return azrtti_cast<AzPhysics::RigidBody*>(scene->GetSimulatedBodyFromHandle(handle)); }));
 
-                for (const AzPhysics::SimulatedBodyHandle& handle : *handlesList)
-                {
-                    rigidBodies.push_back(azdynamic_cast<AzPhysics::RigidBody*>(scene->GetSimulatedBodyFromHandle(handle)));
-                }
             }
             else if (auto entityList = AZStd::get_if<PhysX::EntityList>(&benchmarkRigidBodies))
             {
-                rigidBodies.reserve(entityList->size());
-
-                for (const EntityPtr& entity : *entityList)
-                {
-                    auto* rigidBodyComponent = entity->FindComponent<RigidBodyComponent>();
-                    rigidBodies.push_back(rigidBodyComponent->GetRigidBody());
-                }
+                rigidBodies = AZStd::vector<AzPhysics::RigidBody*>(AZStd::from_range, *entityList | AZStd::views::transform([](const EntityPtr& entity) {
+                    return entity->FindComponent<RigidBodyComponent>()->GetRigidBody(); }));
             }
 
             return rigidBodies;
