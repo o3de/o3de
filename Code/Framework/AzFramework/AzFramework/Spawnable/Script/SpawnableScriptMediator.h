@@ -13,6 +13,8 @@
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 #include <AzFramework/Spawnable/Script/SpawnableScriptAssetRef.h>
 
+#include <AzCore/std/containers/unordered_set.h>
+
 namespace AzFramework::Scripts
 {
     //! A helper class for direct calls to SpawnableEntitiesInterface that is
@@ -79,5 +81,7 @@ namespace AzFramework::Scripts
         AZStd::recursive_mutex m_mutex;
         // used to track when SpawnableScriptMediator is destroyed to avoid executing logic in callbacks
         AZStd::shared_ptr<CallbackSentinel> m_sentinel;
+
+        AZStd::unordered_set<EntitySpawnTicket> m_activeSpawnTickets;
     };
 } // namespace AzFramework

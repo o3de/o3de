@@ -457,3 +457,20 @@ namespace AzFramework
 
     using SpawnableEntitiesInterface = AZ::Interface<SpawnableEntitiesDefinition>;
 } // namespace AzFramework
+
+namespace AZStd
+{
+    template<>
+    struct hash<AzFramework::EntitySpawnTicket>
+    {
+        using argument_type = AzFramework::EntitySpawnTicket;
+        using result_type = size_t;
+
+        result_type operator() (const argument_type& ticket) const
+        {
+            size_t h = 0;
+            hash_combine(h, ticket.GetId());
+            return h;
+        }
+    };
+}
