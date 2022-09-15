@@ -586,7 +586,7 @@ namespace AzToolsFramework
             foldersFilter->SetEntryType(AssetBrowserEntry::AssetEntryType::Folder);
 
             auto selection = AzToolsFramework::AssetBrowser::AssetSelectionModel::EverythingSelection();
-            selection.SetTitle("Pick folder to move to");
+            selection.SetTitle("folder to move to");
             selection.SetMultiselect(false);
             selection.SetDisplayFilter(FilterConstType(foldersFilter));
             AssetBrowserTreeViewDialog dialog(selection, this);
@@ -630,7 +630,7 @@ namespace AzToolsFramework
                             if (message.size())
                             {
                                 QMessageBox msgBox(this);
-                                msgBox.setWindowTitle("Pre-Move Report");
+                                msgBox.setWindowTitle("Before Move Asset Information");
                                 msgBox.setIcon(QMessageBox::Warning);
                                 msgBox.setText("The asset you are moving may be referenced in other assets.");
                                 msgBox.setInformativeText("More information can be found by pressing \"Show Details...\".");
@@ -638,6 +638,9 @@ namespace AzToolsFramework
                                 msgBox.setStandardButtons(QMessageBox::Cancel);
                                 msgBox.setDefaultButton(QMessageBox::Yes);
                                 msgBox.setDetailedText(message.c_str());
+                                QSpacerItem* horizontalSpacer = new QSpacerItem(600, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+                                QGridLayout* layout = (QGridLayout*)msgBox.layout();
+                                layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());
                                 msgBox.exec();
 
                                 if (msgBox.clickedButton() == moveButton)
@@ -658,13 +661,17 @@ namespace AzToolsFramework
                                         if (message2.size())
                                         {
                                             QMessageBox msgBox2(this);
-                                            msgBox2.setWindowTitle("Move Report");
+                                            msgBox2.setWindowTitle("After Move Asset Information");
                                             msgBox2.setIcon(QMessageBox::Warning);
                                             msgBox2.setText("The asset has been moved.");
                                             msgBox2.setInformativeText("More information can be found by pressing \"Show Details...\".");
                                             msgBox2.setStandardButtons(QMessageBox::Ok);
                                             msgBox2.setDefaultButton(QMessageBox::Ok);
                                             msgBox2.setDetailedText(message2.c_str());
+                                            QSpacerItem* horizontalSpacer2 =
+                                                new QSpacerItem(600, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+                                            QGridLayout* layout2 = (QGridLayout*)msgBox2.layout();
+                                            layout2->addItem(horizontalSpacer2, layout2->rowCount(), 0, 1, layout2->columnCount());
                                             msgBox2.exec();
                                         }
                                     }

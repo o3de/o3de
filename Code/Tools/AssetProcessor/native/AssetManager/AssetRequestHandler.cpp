@@ -100,29 +100,30 @@ namespace
                             AZ_Printf(AssetProcessor::ConsoleChannel, (line + "\n").c_str());
                         }
                     }
+                    break;
                 }
-                break;
                 case AssetChangeReportRequest::ChangeType::Move:
+                {
+                    auto resultMove = relocationInterface->Move(
+                        messageData.m_message->m_fromPath, messageData.m_message->m_toPath, false, true, true, true);
+
+                    if (resultMove.IsSuccess())
                     {
-                        auto resultMove = relocationInterface->Move(messageData.m_message->m_fromPath, messageData.m_message->m_toPath, false, true, true, true);
+                        AssetProcessor::RelocationSuccess success = resultMove.TakeValue();
 
-                        if (resultMove.IsSuccess())
+                        // The report can be too long for the AZ_Printf buffer, so split it into individual lines
+                        AZStd::string report =
+                            relocationInterface->BuildChangeReport(success.m_relocationContainer, success.m_updateTasks);
+                        AzFramework::StringFunc::Tokenize(report.c_str(), lines, "\n");
+
+                        for (const AZStd::string& line : lines)
                         {
-                            AssetProcessor::RelocationSuccess success = resultMove.TakeValue();
-
-                            // The report can be too long for the AZ_Printf buffer, so split it into individual lines
-                            AZStd::string report =
-                                relocationInterface->BuildChangeReport(success.m_relocationContainer, success.m_updateTasks);
-                            AzFramework::StringFunc::Tokenize(report.c_str(), lines, "\n");
-
-                            for (const AZStd::string& line : lines)
-                            {
-                                AZ_Printf(AssetProcessor::ConsoleChannel, (line + "\n").c_str());
-                            }
+                            AZ_Printf(AssetProcessor::ConsoleChannel, (line + "\n").c_str());
                         }
                     }
                     break;
                 }
+            }
         }
         return AssetChangeReportResponse(lines);
     }

@@ -1269,6 +1269,7 @@ namespace AzFramework
                 Move
             };
 
+            // The default constructor is only required for the SerializeContext.
             AssetChangeReportRequest() = default;
             AssetChangeReportRequest(const AZ::OSString& fromPath, const AZ::OSString& toPath, ChangeType changeType = ChangeType::Move);
             unsigned int GetMessageType() const override;
@@ -1286,6 +1287,7 @@ namespace AzFramework
             AZ_RTTI(AssetChangeReportResponse, "{C18891A7-794D-4270-93AE-7D0C2ECABB5C}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
 
+            // The default constructor is only required for the SerializeContext.
             AssetChangeReportResponse() = default;
             AssetChangeReportResponse(AZStd::vector<AZStd::string> lines);
             unsigned int GetMessageType() const override;
