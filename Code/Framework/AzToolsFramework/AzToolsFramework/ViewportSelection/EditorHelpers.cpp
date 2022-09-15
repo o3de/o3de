@@ -290,7 +290,7 @@ namespace AzToolsFramework
             for (size_t entityCacheIndex = 0; entityCacheIndex < m_entityDataCache->VisibleEntityDataCount(); ++entityCacheIndex)
             {
                 if (const AZ::EntityId entityId = m_entityDataCache->GetVisibleEntityId(entityCacheIndex);
-                    m_entityDataCache->IsVisibleEntityVisible(entityCacheIndex))
+                    m_entityDataCache->IsVisibleEntityVisible(entityCacheIndex) && m_entityDataCache->IsVisibleEntitySelected(entityCacheIndex))
                 {
                     // notify components to display
                     DisplayComponents(entityId, viewportInfo, debugDisplay);

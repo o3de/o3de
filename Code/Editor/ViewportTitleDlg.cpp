@@ -254,6 +254,16 @@ void CViewportTitleDlg::SetupHelpersButton()
                 m_ui->m_helpers->setChecked(AzToolsFramework::HelpersVisible() || AzToolsFramework::IconsVisible());
             });
 
+        auto onlySelectedAction = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::Icons);
+        connect(
+            onlySelectedAction,
+            &QAction::triggered,
+            this,
+            [this]
+            {
+                m_ui->m_helpers->setChecked(AzToolsFramework::HelpersVisible() || AzToolsFramework::IconsVisible());
+            });
+
         m_helpersAction = new QAction(tr("Helpers"), m_helpersMenu);
         m_helpersAction->setCheckable(true);
         connect(
@@ -272,6 +282,18 @@ void CViewportTitleDlg::SetupHelpersButton()
                 iconAction->trigger();
             });
 
+        m_onlySelectedAction = new QAction(tr("Only show for selected Entities"), m_helpersMenu);
+        m_onlySelectedAction->setCheckable(true);
+        connect(
+            onlySelectedAction,
+            &QAction::triggered,
+            this,
+            [onlySelectedAction]
+            {
+                onlySelectedAction->trigger();
+            });
+
+        m_helpersMenu->addAction(m_onlySelectedAction);
         m_helpersMenu->addAction(m_helpersAction);
         m_helpersMenu->addAction(m_iconsAction);
 
@@ -281,6 +303,7 @@ void CViewportTitleDlg::SetupHelpersButton()
             {
                 m_helpersAction->setChecked(AzToolsFramework::HelpersVisible());
                 m_iconsAction->setChecked(AzToolsFramework::IconsVisible());
+                m_onlySelectedAction->setChecked(AzToolsFramework::OnlyShowHelpersForSelectedEntities());
             });
 
         m_ui->m_helpers->setCheckable(true);

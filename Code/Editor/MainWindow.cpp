@@ -1059,6 +1059,24 @@ void MainWindow::InitActions()
                     &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnIconsVisibilityChanged,
                     AzToolsFramework::IconsVisible());
             });
+    am->AddAction(AzToolsFramework::Helpers, tr("Only Show Helpers for selected Entities"))
+        .SetToolTip(tr("Show/Hide Icons (Ctrl+Space)"))
+        .SetCheckable(true)
+        .RegisterUpdateCallback(
+            [](QAction* action)
+            {
+                Q_ASSERT(action->isCheckable());
+                action->setChecked(AzToolsFramework::HelpersVisible());
+            })
+        .Connect(
+            &QAction::triggered,
+            []()
+            {
+                AzToolsFramework::SetIconsVisible(!AzToolsFramework::IconsVisible());
+                AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
+                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnIconsVisibilityChanged,
+                    AzToolsFramework::IconsVisible());
+            });
 
     // Audio actions
     am->AddAction(ID_SOUND_STOPALLSOUNDS, tr("Stop All Sounds"))

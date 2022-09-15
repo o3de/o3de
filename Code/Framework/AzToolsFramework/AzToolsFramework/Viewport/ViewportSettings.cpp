@@ -24,6 +24,7 @@ namespace AzToolsFramework
     constexpr AZStd::string_view ManipulatorViewBaseScaleSetting = "/Amazon/Preferences/Editor/Manipulator/ViewBaseScale";
     constexpr AZStd::string_view IconsVisibleSetting = "/Amazon/Preferences/Editor/IconsVisible";
     constexpr AZStd::string_view HelpersVisibleSetting = "/Amazon/Preferences/Editor/HelpersVisible";
+    constexpr AZStd::string_view SelectedEntitiesHelpersSetting = "/Amazon/Preferences/Editor/OnlyShowHelpersForSelectedEntities";
     constexpr AZStd::string_view ComponentSwitcherEnabledSetting = "/Amazon/Preferences/Editor/ComponentSwitcherEnabled";
 
     bool FlipManipulatorAxesTowardsView()
@@ -138,12 +139,23 @@ namespace AzToolsFramework
 
     bool HelpersVisible()
     {
+
         return GetRegistry(HelpersVisibleSetting, true);
     }
 
     void SetHelpersVisible(const bool visible)
     {
         SetRegistry(HelpersVisibleSetting, visible);
+    }
+
+    bool OnlyShowHelpersForSelectedEntities()
+    {
+        return GetRegistry(SelectedEntitiesHelpersSetting, false);
+    }
+
+    void SetOnlyShowHelpersForSelectedEntities(const bool visible)
+    {
+        SetRegistry(SelectedEntitiesHelpersSetting, visible);
     }
 
     bool ComponentSwitcherEnabled()
