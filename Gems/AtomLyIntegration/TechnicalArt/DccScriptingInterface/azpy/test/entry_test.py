@@ -24,7 +24,8 @@ from pathlib import Path
 _BOOT_CHECK = False  # set true to test breakpoint in this module directly
 
 # global scope
-_MODULENAME = 'azpy.test.entry_test'
+from DccScriptingInterface import _PACKAGENAME
+_MODULENAME = f'{_PACKAGENAME}.entry_test'
 _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 
@@ -35,8 +36,17 @@ _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH.as_posix()}')
 # this accesses common global state, e.g. DCCSI_GDEBUG (is True or False)
 from DccScriptingInterface.globals import *
 
-from DccScriptingInterface.Tools.IDE.Wing.config import wing_config
-settings = wing_config.get_settings()
+# this module needs to be lightweight and avoid cyclical imports
+# so refactoring this out, a more fully featured dev module with
+# support for multiple IDEs can come later
+# from DccScriptingInterface.Tools.IDE.Wing.config import wing_config
+# settings = wing_config.get_settings()
+
+from DccScriptingInterface import PATH_WINGHOME
+WINGHOME = Path(PATH_WINGHOME).resolve()
+
+from DccScriptingInterface import PATH_WING_APPDATA
+WING_APPDATA = Path(PATH_WINGHOME).resolve()
 # -------------------------------------------------------------------------
 
 
@@ -72,8 +82,8 @@ def connect_wing():
     _LOGGER.info('entry_test.connect_wing()')
 
     try:
-        Path(settings.WINGHOME).exists()
-        _LOGGER.info(f'~   WINGHOME: {settings.WINGHOME}')
+        Path(PATH_WINGHOME).exists()
+        _LOGGER.info(f'~   WINGHOME: {PATH_WINGHOME}')
     except Exception as e:
         _LOGGER.error(e)
         _LOGGER.error(f'WINGHOME does not exist')
@@ -84,18 +94,18 @@ def connect_wing():
         return None
 
     try:
-        _wing_appdata = Path(settings.WING_APPDATA)
+        _wing_appdata = Path(WING_APPDATA)
         _wing_appdata.exists()
-        _LOGGER.info(f'~   WING_APPDATA: {settings.WING_APPDATA}')
+        _LOGGER.info(f'~   WING_APPDATA: {WING_APPDATA}')
         wDBstub = Path(_wing_appdata, 'wingdbstub.py').resolve(strict=True)
         _LOGGER.info(f'~   Wing debugger: {wDBstub}')
     except Exception as e:
         _LOGGER.error(e)
         _LOGGER.warning(f'{WING_APPDATA}\wingdbstub.py does not exist')
         _LOGGER.warning(f'This is required to attach wing as debugger')
-        _LOGGER.warning(f'Copy the file: {settings.WINGHOME}\\wingdbstub.py')
-        _LOGGER.warning(f'To the dir: {settings.WING_APPDATA}\\wingdbstub.py')
-        _LOGGER.warning(f'Then open the file: {settings.WING_APPDATA}\\wingdbstub.py')
+        _LOGGER.warning(f'Copy the file: {PATH_WINGHOME}\\wingdbstub.py')
+        _LOGGER.warning(f'To the dir: {WING_APPDATA}\\wingdbstub.py')
+        _LOGGER.warning(f'Then open the file: {WING_APPDATA}\\wingdbstub.py')
         _LOGGER.warning(f"Modify line 96 to 'kEmbedded = 1'")
         return None
 

@@ -88,12 +88,15 @@ from DccScriptingInterface import SLUG_BOOTSTRAP_FILENAME
 
 from DccScriptingInterface import ENVAR_QT_PLUGIN_PATH
 
-# resolves the windows program install directory
-ENVAR_PROGRAMFILES_X86 = 'PROGRAMFILES(X86)'
-PATH_PROGRAMFILES_X86 = os.environ[ENVAR_PROGRAMFILES_X86]
-# resolves the windows program install directory
-ENVAR_PROGRAMFILES_X64 = 'PROGRAMFILES'
-PATH_PROGRAMFILES_X64 = os.environ[ENVAR_PROGRAMFILES_X64]
+from DccScriptingInterface import ENVAR_PROGRAMFILES_X86
+from DccScriptingInterface import PATH_PROGRAMFILES_X86
+from DccScriptingInterface import ENVAR_PROGRAMFILES_X64
+from DccScriptingInterface import PATH_PROGRAMFILES_X64
+
+from DccScriptingInterface import SLUG_DCCSI_WING_TYPE
+from DccScriptingInterface import SLUG_DCCSI_WING_VERSION_MAJOR
+from DccScriptingInterface import PATH_WINGHOME
+from DccScriptingInterface import PATH_WING_APPDATA
 
 # path string constructor
 PATH_USER_O3DE = f'{USER_HOME}\\{TAG_USER_O3DE}'

@@ -87,13 +87,13 @@ _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH}')
 from DccScriptingInterface.constants import *
 from DccScriptingInterface.globals import *
 
+import DccScriptingInterface.azpy.test.entry_test
 import DccScriptingInterface.azpy.config_utils
-from DccScriptingInterface.azpy.config_utils import attach_debugger
 
 if DCCSI_DEV_MODE:
     # if dev mode, this will attempt to auto-attach the debugger
     # at the earliest possible point in this module
-    attach_debugger(debugger_type=DCCSI_GDEBUGGER)
+    DccScriptingInterface.azpy.test.entry_test.connect_wing()
 
 # we should be able to import dccsi pkg dependencies now
 try:
@@ -930,7 +930,8 @@ if __name__ == '__main__':
 
     if arg_bool(args.developer_mode, desc="args.developer_mode"):
         DCCSI_DEV_MODE = True
-        DccScriptingInterface.azpy.config_utils.attach_debugger()  # attempts to start debugger
+        # attempts to start debugger
+        DccScriptingInterface.azpy.test.entry_test.connect_wing()
 
     if args.set_debugger:
         _LOGGER.info('Setting and switching debugger type not implemented (default=WING)')

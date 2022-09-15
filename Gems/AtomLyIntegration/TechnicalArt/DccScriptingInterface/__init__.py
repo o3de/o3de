@@ -73,7 +73,7 @@ _LOGGER.debug(f'Initializing: {_PACKAGENAME}')
 __all__ = ['globals', # global state module
            'config', # dccsi core config.py
            'constants', # global dccsi constants
-           'foundation', # set up dependancy pkgs for DCC tools
+           'foundation', # set up dependency pkgs for DCC tools
            'return_sys_version', # util
            'azpy', # shared pure python api
            'Editor', # O3DE editor scripts
@@ -168,7 +168,7 @@ STR_DCCSI_PYTHON_LIB = (f'{PATH_DCCSIG.as_posix()}' +
 # build path
 PATH_DCCSI_PYTHON_LIB = Path(STR_DCCSI_PYTHON_LIB)
 
-# allow location to be set/overriden from env
+# allow location to be set/overridden from env
 PATH_DCCSI_PYTHON_LIB = Path(os.getenv(ENVAR_PATH_DCCSI_PYTHON_LIB,
                                        str(PATH_DCCSI_PYTHON_LIB)))
 
@@ -180,8 +180,8 @@ try:
 except NotADirectoryError as e:
     _LOGGER.warning(f'{ENVAR_PATH_DCCSI_PYTHON_LIB} does not exist:' +
                     f'{PATH_DCCSI_PYTHON_LIB.as_Posix()}')
-    _LOGGER.warning(f'Pkg dependancies may not be available for import')
-    _LOGGER.warning(f'Try using foundation.py to install pkg dependancies for the target python runtime')
+    _LOGGER.warning(f'Pkg dependencies may not be available for import')
+    _LOGGER.warning(f'Try using foundation.py to install pkg dependencies for the target python runtime')
     PATH_DCCSI_PYTHON_LIB = None
     _LOGGER.error(f'{e} , traceback =', exc_info=True)
     PATH_DCCSIG = None
@@ -222,6 +222,34 @@ O3DE_BOOTSTRAP_PATH = Path(USER_HOME,
                       TAG_USER_O3DE,
                       'Registry',
                       SLUG_BOOTSTRAP_FILENAME)
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+# top level constants, need for basic wing debugging
+# str slug for the default wing type
+# in the future, add support for wing personal and maybe wing 101 versions
+SLUG_DCCSI_WING_TYPE = 'Wing Pro'
+
+# the default supported version of wing pro is 8
+SLUG_DCCSI_WING_VERSION_MAJOR = int(8)
+
+# resolves the windows program install directory
+ENVAR_PROGRAMFILES_X86 = 'PROGRAMFILES(X86)'
+PATH_PROGRAMFILES_X86 = os.environ[ENVAR_PROGRAMFILES_X86]
+# resolves the windows program install directory
+ENVAR_PROGRAMFILES_X64 = 'PROGRAMFILES'
+PATH_PROGRAMFILES_X64 = os.environ[ENVAR_PROGRAMFILES_X64]
+
+# path string constructor, dccsi default WINGHOME location
+PATH_WINGHOME = (f'{PATH_PROGRAMFILES_X86}' +
+                f'\\{SLUG_DCCSI_WING_TYPE} {SLUG_DCCSI_WING_VERSION_MAJOR}')
+
+# path string constructor, userhome where wingstubdb.py can live
+PATH_WING_APPDATA = (f'{USER_HOME}' +
+                     f'\\AppData' +
+                     f'\\Roaming' +
+                     f'\\{SLUG_DCCSI_WING_TYPE} {str(SLUG_DCCSI_WING_VERSION_MAJOR)}')
 # -------------------------------------------------------------------------
 
 
@@ -541,7 +569,7 @@ _LOGGER.debug(f'---- Finding {ENVAR_PATH_O3DE_BIN}')
 if not PATH_O3DE_BIN:
 
     # executable, such as Editor.exe or MaterialEditor.exe
-    O3DE_EDITOR = Path(sys.executable) # executible path
+    O3DE_EDITOR = Path(sys.executable) # executable path
 
     if O3DE_EDITOR.stem.lower() in {"editor",
                                     "materialeditor",
@@ -580,7 +608,7 @@ if not PATH_O3DE_BIN:
 # if we know the project, check the project.json
 # the project.json can define which registered engine to use
 # such as 'o3de' versus 'o3de-sdk', providing multi-engine support
-# check the .o3de\o3de_manifest.json and retreive engine path?
+# check the .o3de\o3de_manifest.json and retrieve engine path?
 
 # the next way, for now the best way, is to just explicitly set it somewhere
 # fallback 2, check if a dev set it in env and allow override
@@ -625,7 +653,7 @@ except Exception as e:
 
 
 # -------------------------------------------------------------------------
-# QtForPython (PySide2) is a DCCsi Gem dependancy
+# QtForPython (PySide2) is a DCCsi Gem dependency
 # Can't be initialized in the dev env, because Wing 9 is a Qt5 app
 # and this causes interference, so replicate here
 
@@ -673,6 +701,7 @@ if DCCSI_TEST_PYSIDE:
 
     if not QT_PLUGIN_PATH:
         # fallback, not future proof without editing file
+        # path to PySide could change! (this is a prototype)
         # modify to be a grep?
         # path constructor
         QT_PLUGIN_PATH = Path(PATH_O3DE_3RDPARTY,
@@ -724,7 +753,7 @@ if DCCSI_TEST_PYSIDE:
 
 # -------------------------------------------------------------------------
 # This will fail importing the DccScriptingInterface in DCC tools
-# that do not have python pkgs dependancies installed (requirements.txt)
+# that do not have python pkgs dependencies installed (requirements.txt)
 # the user can do this with foundation.py
 try:
     from dynaconf import LazySettings
