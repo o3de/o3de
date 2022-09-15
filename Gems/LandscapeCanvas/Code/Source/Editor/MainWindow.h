@@ -275,6 +275,7 @@ namespace LandscapeCanvasEditor
 
         using DeletedNodePositionsMap = AZStd::unordered_map<AZ::EntityComponentIdPair, AZ::Vector2>;
         AZStd::unordered_map<GraphCanvas::GraphId, DeletedNodePositionsMap> m_deletedNodePositions;
+        GraphModel::NodePtrList m_deletedWrappedNodes;
         AzToolsFramework::EntityIdList m_queuedEntityDeletes;
 
         AzToolsFramework::EntityIdList m_ignoreEntityComponentPropertyChanges;

@@ -840,6 +840,8 @@ namespace GraphModelIntegration
         const GraphModel::NodePtr node = m_elementMap.Find<GraphModel::Node>(nodeUiId);
         if (node)
         {
+            GraphControllerNotificationBus::Event(m_graphCanvasSceneId, &GraphControllerNotifications::PreOnGraphModelNodeRemoved, node);
+
             GraphCanvas::ScopedGraphUndoBatch undoBatch(m_graphCanvasSceneId);
 
             // Remove any thumbnail reference for this node when it is removed from the graph
@@ -857,15 +859,6 @@ namespace GraphModelIntegration
             m_elementMap.Remove(node);
 
             GraphControllerNotificationBus::Event(m_graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelNodeRemoved, node);
-        }
-    }
-
-    void GraphController::PreOnNodeRemoved(const AZ::EntityId& nodeUiId)
-    {
-        const GraphModel::NodePtr node = m_elementMap.Find<GraphModel::Node>(nodeUiId);
-        if (node)
-        {
-            GraphControllerNotificationBus::Event(m_graphCanvasSceneId, &GraphControllerNotifications::PreOnGraphModelNodeRemoved, node);
         }
     }
 
