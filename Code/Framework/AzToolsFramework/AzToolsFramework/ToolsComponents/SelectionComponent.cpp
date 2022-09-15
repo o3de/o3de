@@ -11,14 +11,14 @@
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
+#include <AzCore/Component/EntitySerializer.h>
 
 namespace AzToolsFramework
 {
     namespace Components
     {
-        static constexpr const char* const SelectionComponentRemovalNotice =
-            "[INFORMATION] The editor SelectionComponent is being removed from .prefab data. Please edit and save the level to persist "
-            "the change.";
+        static constexpr const char* const SelectionComponentLoadMessage =
+            "The editor SelectionComponent is being skipped and will be removed from the .prefab file the next time it is saved.";
 
         class SelectionComponentSerializer : public AZ::BaseJsonSerializer
         {
@@ -44,8 +44,16 @@ namespace AzToolsFramework
             [[maybe_unused]] const rapidjson::Value& inputValue,
             AZ::JsonDeserializerContext& context)
         {
+            // Mark this component as deprecated to inform the user that it was skipped
+            AZ::DeprecatedComponentMetadata* deprecatedComponents = context.GetMetadata().Find<AZ::DeprecatedComponentMetadata>();
+            if (deprecatedComponents)
+            {
+                deprecatedComponents->AddComponent(outputValueTypeId);
+            }
+
+            // Report to the deserializer that this component should no longer be part of the data
             namespace JSR = AZ::JsonSerializationResult;
-            return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Unavailable, SelectionComponentRemovalNotice);
+            return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Unavailable, SelectionComponentLoadMessage);
         }
 
         void SelectionComponent::Reflect(AZ::ReflectContext* context)
@@ -53,7 +61,7 @@ namespace AzToolsFramework
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<SelectionComponent, EditorComponentBase>()->Version(2);
-                serializeContext->ClassDeprecate("SelectionComponent", "{73B724FC-43D1-4C75-ACF5-79AA8A3BF89D}");
+                serializeContext->ClassDeprecate("SelectionComponent", AZ::Uuid("{73B724FC-43D1-4C75-ACF5-79AA8A3BF89D}"));
             }
 
             if (AZ::JsonRegistrationContext* jsonRegistration = azrtti_cast<AZ::JsonRegistrationContext*>(context))

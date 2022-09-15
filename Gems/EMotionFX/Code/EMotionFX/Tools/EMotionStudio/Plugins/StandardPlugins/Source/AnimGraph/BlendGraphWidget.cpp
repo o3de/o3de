@@ -183,7 +183,7 @@ namespace EMStudio
                         if (targetModelIndex.isValid())
                         {
                             EMotionFX::AnimGraphNode* currentNode = targetModelIndex.data(AnimGraphModel::ROLE_NODE_POINTER).value<EMotionFX::AnimGraphNode*>();
-                            CommandSystem::CreateAnimGraphNode(&commandGroup, currentNode->GetAnimGraph(), "BlendTreeMotionNode", "Motion", currentNode, offset.x(), offset.y(), serializedMotionNode.GetValue());
+                            CommandSystem::CreateAnimGraphNode(&commandGroup, currentNode->GetAnimGraph(), AZ::Uuid::CreateName("BlendTreeMotionNode"), "Motion", currentNode, offset.x(), offset.y(), serializedMotionNode.GetValue());
 
                             // setup the offset for the next motion
                             offset.setY(offset.y() + 60);

@@ -175,6 +175,7 @@ namespace ScriptCanvasPhysicsTests
         MOCK_METHOD2(SetLocalPose, void(const AZ::Vector3& offset, const AZ::Quaternion& rotation));
         MOCK_CONST_METHOD0(GetLocalPose, AZStd::pair<AZ::Vector3, AZ::Quaternion>());
         MOCK_METHOD0(GetNativePointer, void*());
+        MOCK_CONST_METHOD0(GetNativePointer, const void*());
         MOCK_CONST_METHOD0(GetTag, AZ::Crc32());
         MOCK_METHOD1(AttachedToActor, void(void* actor));
         MOCK_METHOD0(DetachedFromActor, void());

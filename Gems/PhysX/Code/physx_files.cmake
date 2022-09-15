@@ -59,6 +59,8 @@ set(FILES
     Source/HingeJointComponent.h
     Source/JointComponent.cpp
     Source/JointComponent.h
+    Source/PrismaticJointComponent.cpp
+    Source/PrismaticJointComponent.h
     Source/Pipeline/MeshAssetHandler.cpp
     Source/Pipeline/MeshAssetHandler.h
     Source/Pipeline/HeightFieldAssetHandler.cpp

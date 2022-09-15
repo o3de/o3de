@@ -34,4 +34,4 @@ IMAGE_EXT = ('', '.jpg', '.png', '.JPG', '.PNG')
 USER_HOME = Path.home()
 DEFAULT_SDK_MANIFEST_PATH = Path.home().joinpath(f'{TAG_O3DE}','o3de_manifest.json')
 WIKI_URL = 'https://github.com/o3de/o3de/blob/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/Tools/DCC/Blender/AddOns/SceneExporter/README.md'
-PLUGIN_VERSION = '1.4'
+PLUGIN_VERSION = '1.5'

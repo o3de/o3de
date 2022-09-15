@@ -19,7 +19,7 @@ namespace AZ
     {
         namespace DeferredFog
         {
-            static constexpr const char* const DeferredFogComponentTypeId = "{9492DC07-B3F7-4DF2-88FA-E4EEF1DD98E3}";
+            inline constexpr AZ::TypeId DeferredFogComponentTypeId{ "{9492DC07-B3F7-4DF2-88FA-E4EEF1DD98E3}" };
         }
 
         class DeferredFogComponent final

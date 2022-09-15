@@ -121,8 +121,7 @@ namespace GradientSignal
                     // Either show the "Create" options or the "use image" options based on how this is set.
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorImageGradientComponent::m_creationSelectionChoice,
                         "Source Type", "Select whether to create a new image or use an existing image.")
-                        ->EnumAttribute(ImageCreationOrSelection::UseExistingImage, "Use Existing Image")
-                        ->EnumAttribute(ImageCreationOrSelection::CreateNewImage, "Create New Image")
+                        ->Attribute(AZ::Edit::Attributes::EnumValues, &EditorImageGradientComponent::SupportedImageOptions)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &EditorImageGradientComponent::InComponentMode)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorImageGradientComponent::RefreshCreationSelectionChoice)
 
@@ -433,7 +432,7 @@ namespace GradientSignal
         return (m_creationSelectionChoice == ImageCreationOrSelection::CreateNewImage);
     }
 
-    AZ::Crc32 EditorImageGradientComponent::GetPaintModeVisibility() const
+    bool EditorImageGradientComponent::IsPaintFeatureEnabled() const
     {
         // temporary setting to disable this feature unless the registry key is set.
         if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get())
@@ -441,10 +440,19 @@ namespace GradientSignal
             constexpr AZStd::string_view ImageGradientPaintFeature = "/O3DE/Preferences/ImageGradient/PaintFeature";
             bool hasPaintFeature = false;
             settingsRegistry->Get(hasPaintFeature, ImageGradientPaintFeature);
-            if (!hasPaintFeature)
-            {
-                return AZ::Edit::PropertyVisibility::Hide;
-            }
+
+            return hasPaintFeature;
+        }
+
+        return false;
+    }
+
+    AZ::Crc32 EditorImageGradientComponent::GetPaintModeVisibility() const
+    {
+        // temporary setting to disable this feature unless the registry key is set.
+        if (!IsPaintFeatureEnabled())
+        {
+            return AZ::Edit::PropertyVisibility::Hide;
         }
 
         // Only show the image painting button while we're using an image, not while we're creating one.
@@ -584,6 +592,24 @@ namespace GradientSignal
         }
 
         return true;
+    }
+
+    AZStd::vector<AZ::Edit::EnumConstant<EditorImageGradientComponent::ImageCreationOrSelection>> EditorImageGradientComponent::
+        SupportedImageOptions() const
+    {
+        AZStd::vector<AZ::Edit::EnumConstant<EditorImageGradientComponent::ImageCreationOrSelection>> options;
+
+        options.push_back(
+            AZ::Edit::EnumConstant<ImageCreationOrSelection>(ImageCreationOrSelection::UseExistingImage, "Use Existing Image"));
+
+        // Temporarily don't show the Create New Image option if the Paint Feature isn't enabled
+        if (IsPaintFeatureEnabled())
+        {
+            options.push_back(
+                AZ::Edit::EnumConstant<ImageCreationOrSelection>(ImageCreationOrSelection::CreateNewImage, "Create New Image"));
+        }
+
+        return options;
     }
 
     void EditorImageGradientComponent::StartImageModification()

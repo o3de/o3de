@@ -1025,7 +1025,7 @@ namespace ScriptCanvas
         bool IsParserGeneratedId(const ScriptCanvas::VariableId& id)
         {
             using namespace ParsingUtilitiesCpp;
-            return reinterpret_cast<const AZ::u64*>(id.m_id.data)[k_maskIndex] == k_parserGeneratedMask;
+            return reinterpret_cast<const AZ::u64*>(AZStd::ranges::data(id.m_id))[k_maskIndex] == k_parserGeneratedMask;
         }
 
         bool IsPropertyExtractionSlot(const ExecutionTreeConstPtr& execution, const Slot* outputSlot)
@@ -1214,8 +1214,9 @@ namespace ScriptCanvas
             using namespace ParsingUtilitiesCpp;
 
             AZ::Uuid parserGenerated;
-            reinterpret_cast<AZ::u64*>(parserGenerated.data)[k_maskIndex] = k_parserGeneratedMask;
-            reinterpret_cast<AZ::u64*>(parserGenerated.data)[k_countIndex] = count;
+            auto parserGeneratedData = reinterpret_cast<AZ::u64*>(AZStd::ranges::data(parserGenerated));
+            parserGeneratedData[k_maskIndex] = k_parserGeneratedMask;
+            parserGeneratedData[k_countIndex] = count;
             return ScriptCanvas::VariableId(parserGenerated);
         }
 
@@ -1248,7 +1249,7 @@ namespace ScriptCanvas
             {
                 return VariableConstructionRequirement::Static;
             }
-            
+
             return VariableConstructionRequirement::None;
         }
 

@@ -10,6 +10,7 @@
 
 #include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
+#include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
 
 namespace AZ::Render
@@ -34,6 +35,7 @@ namespace AZ::Render
         : EditorStateBase(EditorState::FocusMode, "FocusMode", CreateFocusedEntityChildPasses())
     {
         AzToolsFramework::ViewportEditorModeNotificationsBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
+        SetEnabled(AzToolsFramework::PrefabEditModeEffectEnabled());
     }
 
     FocusedEntityState::~FocusedEntityState()
@@ -49,8 +51,11 @@ namespace AZ::Render
     }
     void FocusedEntityState::OnEditorModeDeactivated(
         [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode)
-    {   
-        m_inFocusMode = !(mode == AzToolsFramework::ViewportEditorMode::Focus);
+    {
+        if (m_inFocusMode)
+        {
+            m_inFocusMode = mode != AzToolsFramework::ViewportEditorMode::Focus;
+        }
     }
 
     bool FocusedEntityState::IsEnabled() const
