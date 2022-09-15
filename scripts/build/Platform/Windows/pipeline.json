@@ -84,7 +84,7 @@
                 "parameter_type": "string",
                 "default_value": "",
                 "use_last_run_value": true,
-                "description": "The O3DE version in the installer filename"
+                "description": "The O3DE version in the installer filename and engine version"
             },
             {
                 "parameter_name": "O3DE_BUILD_VERSION",
