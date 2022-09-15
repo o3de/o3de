@@ -452,6 +452,9 @@ namespace AzToolsFramework
 
                 CreateLink(instanceToCreate->get(), instanceToParentUnder->get().GetTemplateId(), undoBatch.GetUndoBatch(), AZStd::move(patch));
 
+                m_prefabUndoCache.UpdateCache(containerEntityId);
+                m_prefabUndoCache.UpdateCache(parent);
+
                 AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
                     &AzToolsFramework::ToolsApplicationRequestBus::Events::ClearDirtyEntities);
             }
@@ -1054,13 +1057,6 @@ namespace AzToolsFramework
             }
 
             return AZ::Success(m_prefabSystemComponentInterface->IsTemplateDirty(templateId));
-        }
-
-        PrefabOperationResult PrefabPublicHandler::DeleteEntitiesInInstance(const EntityIdList& entityIds)
-        {
-            AZ_Warning(
-                "Prefab", false, "This function is marked for deprecation. Please use DeleteEntitiesAndAllDescendantsInInstance instead.");
-            return DeleteFromInstance(entityIds);
         }
 
         PrefabOperationResult PrefabPublicHandler::DeleteEntitiesAndAllDescendantsInInstance(const EntityIdList& entityIds)
