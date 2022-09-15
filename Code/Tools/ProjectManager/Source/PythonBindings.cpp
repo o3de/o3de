@@ -1561,7 +1561,7 @@ namespace O3DE::ProjectManager
     }
 
     IPythonBindings::DetailedOutcome  PythonBindings::DownloadGem(
-        const QString& gemName, std::function<void(int, int)> gemProgressCallback, bool force)
+        const QString& gemName, const QString& path, std::function<void(int, int)> gemProgressCallback, bool force)
     {
         // This process is currently limited to download a single object at a time.
         bool downloadSucceeded = false;
@@ -1572,7 +1572,7 @@ namespace O3DE::ProjectManager
             {
                 auto downloadResult = m_download.attr("download_gem")(
                     QString_To_Py_String(gemName), // gem name
-                    pybind11::none(), // destination path
+                    path.isEmpty() ? pybind11::none() : QString_To_Py_Path(path), // destination path
                     false, // skip auto register
                     force, // force overwrite
                     pybind11::cpp_function(
@@ -1601,7 +1601,7 @@ namespace O3DE::ProjectManager
     }
 
     IPythonBindings::DetailedOutcome PythonBindings::DownloadProject(
-        const QString& projectName, std::function<void(int, int)> projectProgressCallback, bool force)
+        const QString& projectName, const QString& path, std::function<void(int, int)> projectProgressCallback, bool force)
     {
         // This process is currently limited to download a single object at a time.
         bool downloadSucceeded = false;
@@ -1612,7 +1612,7 @@ namespace O3DE::ProjectManager
             {
                 auto downloadResult = m_download.attr("download_project")(
                     QString_To_Py_String(projectName), // gem name
-                    pybind11::none(), // destination path
+                    path.isEmpty() ? pybind11::none() : QString_To_Py_Path(path), // destination path
                     false, // skip auto register
                     force, // force overwrite
                     pybind11::cpp_function(
@@ -1640,7 +1640,7 @@ namespace O3DE::ProjectManager
     }
 
     IPythonBindings::DetailedOutcome PythonBindings::DownloadTemplate(
-        const QString& templateName, std::function<void(int, int)> templateProgressCallback, bool force)
+        const QString& templateName, const QString& path, std::function<void(int, int)> templateProgressCallback, bool force)
     {
         // This process is currently limited to download a single object at a time.
         bool downloadSucceeded = false;
@@ -1651,7 +1651,7 @@ namespace O3DE::ProjectManager
             {
                 auto downloadResult = m_download.attr("download_template")(
                     QString_To_Py_String(templateName), // gem name
-                    pybind11::none(), // destination path
+                    path.isEmpty() ? pybind11::none() : QString_To_Py_Path(path), // destination path
                     false, // skip auto register
                     force, // force overwrite
                     pybind11::cpp_function(

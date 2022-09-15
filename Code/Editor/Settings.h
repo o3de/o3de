@@ -267,6 +267,7 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     SettingOutcome SetValue(const AZStd::string_view path, const AZStd::any& value) override;
     AzToolsFramework::ConsoleColorTheme GetConsoleColorTheme() const override;
     AZ::u64 GetMaxNumberOfItemsShownInSearchView() const override;
+    void SaveSettingsRegistryFile() override;
 
     void ConvertPath(const AZStd::string_view sourcePath, AZStd::string& category, AZStd::string& attribute);
 
@@ -277,8 +278,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     // because its state is updateable through the main status bar
     void SaveEnableSourceControlFlag(bool triggerUpdate = false);
     void LoadEnableSourceControlFlag();
-
-    void SaveSettingsRegistryFile();
 
     void PostInitApply();
 
