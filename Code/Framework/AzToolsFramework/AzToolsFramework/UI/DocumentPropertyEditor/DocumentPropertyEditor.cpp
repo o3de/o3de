@@ -686,7 +686,7 @@ namespace AzToolsFramework
                     if (changedLabel)
                     {
                         auto labelString = AZ::Dpe::Nodes::Label::Value.ExtractFromDomNode(valueAtSubPath).value_or("");
-                        changedLabel->SetText(QString::fromUtf8(labelString.data(), aznumeric_cast<int>(labelString.size())));
+                        changedLabel->setText(QString::fromUtf8(labelString.data(), aznumeric_cast<int>(labelString.size())));
                     }
                 }
             }
@@ -757,8 +757,8 @@ namespace AzToolsFramework
 
         //! If the sharePrior attribute is present, add the previous widget to the column layout.
         //! Set the SharePrior boolean so we know to create a new shared column layout, or add to an existing one
-        auto sharePrior = AZ::Dpe::Nodes::PropertyEditor::SharePriorColumn.ExtractFromDomNode(domValue);
-        if (sharePrior.has_value() && sharePrior.value())
+        auto sharePrior = AZ::Dpe::Nodes::PropertyEditor::SharePriorColumn.ExtractFromDomNode(domValue).value_or(false);
+        if (sharePrior)
         {
             m_columnLayout->SharePriorColumn(m_columnLayout->itemAt(priorColumnIndex)->widget());
             m_columnLayout->SetSharePrior(true);

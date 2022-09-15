@@ -50,7 +50,7 @@ namespace AZ::DocumentPropertyEditor
 
     bool RowFilterAdapter::IsRow(const Dom::Path& sourcePath) const
     {
-        auto sourceRoot = m_sourceAdapter->GetContents();
+        const auto& sourceRoot = m_sourceAdapter->GetContents();
         auto sourceNode = sourceRoot[sourcePath];
         return IsRow(sourceNode);
     }
@@ -143,7 +143,7 @@ namespace AZ::DocumentPropertyEditor
     {
         delete m_root;
         m_root = NewMatchInfoNode(nullptr);
-        auto sourceContents = m_sourceAdapter->GetContents();
+        const auto& sourceContents = m_sourceAdapter->GetContents();
 
         // we can assume all direct children of an adapter must be rows; populate each of them
         for (size_t topIndex = 0; topIndex < sourceContents.ArraySize(); ++topIndex)
@@ -155,7 +155,7 @@ namespace AZ::DocumentPropertyEditor
 
     void RowFilterAdapter::HandleDomChange(const Dom::Patch& patch)
     {
-        auto sourceContents = m_sourceAdapter->GetContents();
+        const auto& sourceContents = m_sourceAdapter->GetContents();
         for (auto operationIterator = patch.begin(), endIterator = patch.end(); operationIterator != endIterator; ++operationIterator)
         {
             const auto& patchPath = operationIterator->GetDestinationPath();
@@ -192,7 +192,9 @@ namespace AZ::DocumentPropertyEditor
                     {
                         // this value wasn't a row before, so its parent needs to recache its info
                         auto parentNode = GetMatchNodeAtPath(patchPath)->m_parentNode;
-                        CacheDomInfoForNode(sourceContents[patchPath].ArrayPopBack(), parentNode);
+                        auto parentPath = patchPath;
+                        parentPath.Pop();
+                        CacheDomInfoForNode(sourceContents[parentPath], parentNode);
                         UpdateMatchState(parentNode);
                     }
                 }
@@ -329,7 +331,7 @@ namespace AZ::DocumentPropertyEditor
             auto addedChild = parentMatchState->m_childMatchState[newRowIndex];
 
             // recursively add descendents and cache their match status
-            auto sourceContents = m_sourceAdapter->GetContents();
+            const auto& sourceContents = m_sourceAdapter->GetContents();
             recursivelyRegenerateMatches(addedChild, sourceContents[sourcePath]);
         }
     }
@@ -383,11 +385,12 @@ namespace AZ::DocumentPropertyEditor
     Dom::Path RowFilterAdapter::GetRowPath(const Dom::Path& sourcePath) const
     {
         Dom::Path rowPath;
-        auto currDomValue = m_sourceAdapter->GetContents();
+        const auto& contents = m_sourceAdapter->GetContents();
+        const auto* currDomValue = &contents;
         for (const auto& pathEntry : sourcePath)
         {
-            currDomValue = currDomValue[pathEntry];
-            if (IsRow(currDomValue))
+            currDomValue = &(*currDomValue)[pathEntry];
+            if (IsRow(*currDomValue))
             {
                 rowPath.Push(pathEntry);
             }
@@ -404,7 +407,7 @@ namespace AZ::DocumentPropertyEditor
     {
         if (m_filterString != filterString)
         {
-            m_filterString = std::move(filterString);
+            m_filterString = AZStd::move(filterString);
             InvalidateFilter();
             SetFilterActive(!m_filterString.isEmpty());
         }
