@@ -13,8 +13,9 @@
 #include <AzCore/std/containers/fixed_vector.h>
 #include <AzCore/std/containers/list.h>
 #include <AzCore/std/containers/fixed_list.h>
-
 #include <AzCore/std/hash.h>
+#include <AzCore/std/ranges/common_view.h>
+#include <AzCore/std/ranges/as_rvalue_view.h>
 #include <AzCore/std/tuple.h>
 #include <AzCore/std/utils.h>
 #include <AzCore/std/functional_basic.h>
@@ -24,6 +25,9 @@
 
 namespace AZStd
 {
+    template<class Traits>
+    class hash_table;
+
     namespace Internal
     {
         /**
@@ -285,7 +289,7 @@ namespace AZStd
         template<class Traits>
         class hash_table_storage<Traits, false>
         {
-            typedef hash_table_storage<Traits, false> this_type;
+            typedef hash_table_storage this_type;
 
         public:
             typedef typename Traits::allocator_type                                     allocator_type;
@@ -617,11 +621,13 @@ namespace AZStd
         {
             if constexpr (is_lvalue_reference_v<R>)
             {
-                insert(ranges::begin(rg), ranges::end(rg));
+                auto rangeView = AZStd::forward<R>(rg) | views::common;
+                insert(ranges::begin(rangeView), ranges::end(rangeView));
             }
             else
             {
-                insert(make_move_iterator(ranges::begin(rg)), make_move_iterator(ranges::end(rg)));
+                auto rangeView = AZStd::forward<R>(rg) | views::as_rvalue | views::common;
+                insert(ranges::begin(rangeView), ranges::end(rangeView));
             }
         }
 
@@ -720,7 +726,7 @@ namespace AZStd
                 {
                     first = erase(first);
                 }
-                return AZStd::Internal::ConstIteratorCast<iterator>(first);
+                return first.base();
             }
         }
 

@@ -285,9 +285,10 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             )
 
             # Add RecastNavigation.Editor.Tests to googletest
-            ly_add_googletest(
-                NAME Gem::RecastNavigation.Editor.Tests
-            )
+            # Commented out as currently there are no RecastNavigation Editor tests
+            # ly_add_googletest(
+                # NAME Gem::RecastNavigation.Editor.Tests
+            # )
         endif()
     endif()
 endif()

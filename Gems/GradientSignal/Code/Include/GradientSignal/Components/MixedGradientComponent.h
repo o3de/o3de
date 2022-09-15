@@ -67,7 +67,7 @@ namespace GradientSignal
         void OnLayerAdded();
     };
 
-    static const AZ::Uuid MixedGradientComponentTypeId = "{BB461301-D8FD-431C-9E4A-BEC6A878297C}";
+    inline constexpr AZ::TypeId MixedGradientComponentTypeId{ "{BB461301-D8FD-431C-9E4A-BEC6A878297C}" };
 
     /**
     * performs operations to combine multiple gradients

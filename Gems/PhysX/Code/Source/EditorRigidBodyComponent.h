@@ -52,6 +52,7 @@ namespace PhysX
 
         EditorRigidBodyComponent();
         explicit EditorRigidBodyComponent(const EditorRigidBodyConfiguration& configuration);
+        EditorRigidBodyComponent(const EditorRigidBodyConfiguration& configuration, const RigidBodyConfiguration& physxSpecificConfiguration);
         ~EditorRigidBodyComponent() = default;
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)

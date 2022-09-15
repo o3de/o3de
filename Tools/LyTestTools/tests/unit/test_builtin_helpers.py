@@ -16,6 +16,7 @@ import ly_test_tools._internal.managers.workspace
 import ly_test_tools._internal.managers.platforms.mac
 import ly_test_tools._internal.managers.platforms.windows
 
+from ly_test_tools._internal.exceptions import LyTestToolsFrameworkException
 from ly_test_tools import MAC, WINDOWS
 
 pytestmark = pytest.mark.SUITE_smoke
@@ -107,7 +108,7 @@ class TestBuiltinHelpers(object):
     @mock.patch('os.path.abspath', mock.MagicMock(return_value='mock_base_dir'))
     @mock.patch('os.path.exists', mock.MagicMock(return_value=False))
     def test_FindEngineRoot_NoRootFile_RaisesOSError(self):
-        with pytest.raises(OSError):
+        with pytest.raises(LyTestToolsFrameworkException):
             ly_test_tools._internal.managers.abstract_resource_locator._find_engine_root(
                 initial_path='mock_dev_dir')
 

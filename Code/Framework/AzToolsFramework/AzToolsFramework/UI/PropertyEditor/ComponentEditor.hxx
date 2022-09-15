@@ -45,6 +45,7 @@ namespace AzToolsFramework
     class IPropertyEditorNotify;
     class ReflectedPropertyEditor;
     class DocumentPropertyEditor;
+    class IPropertyEditor;
     enum PropertyModificationRefreshLevel : int;
 
     /**
@@ -88,7 +89,7 @@ namespace AzToolsFramework
         bool HasComponentWithId(AZ::ComponentId componentId);
 
         ComponentEditorHeader* GetHeader() const;
-        ReflectedPropertyEditor* GetPropertyEditor();
+        IPropertyEditor* GetPropertyEditor();
         AZStd::vector<AZ::Component*>& GetComponents();
         const AZStd::vector<AZ::Component*>& GetComponents() const;
 

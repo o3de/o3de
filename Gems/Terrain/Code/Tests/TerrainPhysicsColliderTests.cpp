@@ -98,7 +98,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, ActivateEntityActivateSuccess)
     AddTerrainPhysicsColliderToEntity(Terrain::TerrainPhysicsColliderConfig());
     ActivateEntity(m_entity.get());
     EXPECT_EQ(m_entity->GetState(), AZ::Entity::State::Active);
-     
+
 }
 
 TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderTransformChangedNotifiesHeightfieldBus)
@@ -354,8 +354,8 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderReturnsMateria
     // Create two SurfaceTag/Material mappings and add them to the collider.
     Terrain::TerrainPhysicsColliderConfig config;
 
-    const AZ::Data::Asset<Physics::MaterialAsset> mat1(AZ::Data::AssetId(AZ::Uuid::CreateRandom()), nullptr);
-    const AZ::Data::Asset<Physics::MaterialAsset> mat2(AZ::Data::AssetId(AZ::Uuid::CreateRandom()), nullptr);
+    const AZ::Data::Asset<Physics::MaterialAsset> mat1(AZ::Data::AssetId(AZ::Uuid::CreateRandom()), {});
+    const AZ::Data::Asset<Physics::MaterialAsset> mat2(AZ::Data::AssetId(AZ::Uuid::CreateRandom()), {});
 
     const SurfaceData::SurfaceTag tag1 = SurfaceData::SurfaceTag("tag1");
     const SurfaceData::SurfaceTag tag2 = SurfaceData::SurfaceTag("tag2");
@@ -409,8 +409,8 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderGetHeightsAndM
     // Create two SurfaceTag/Material mappings and add them to the collider.
     Terrain::TerrainPhysicsColliderConfig config;
 
-    const AZ::Data::Asset<Physics::MaterialAsset> mat1(AZ::Data::AssetId(AZ::Uuid::CreateRandom()), nullptr);
-    const AZ::Data::Asset<Physics::MaterialAsset> mat2(AZ::Data::AssetId(AZ::Uuid::CreateRandom()), nullptr);
+    const AZ::Data::Asset<Physics::MaterialAsset> mat1(AZ::Data::AssetId(AZ::Uuid::CreateRandom()), {});
+    const AZ::Data::Asset<Physics::MaterialAsset> mat2(AZ::Data::AssetId(AZ::Uuid::CreateRandom()), {});
 
     const SurfaceData::SurfaceTag tag1 = SurfaceData::SurfaceTag("tag1");
     const SurfaceData::SurfaceTag tag2 = SurfaceData::SurfaceTag("tag2");
@@ -509,8 +509,8 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderDefaultMateria
     // Create two SurfaceTag/Material mappings and add them to the collider.
     Terrain::TerrainPhysicsColliderConfig config;
 
-    const AZ::Data::Asset<Physics::MaterialAsset> defaultSurfaceMaterial(AZ::Data::AssetId(AZ::Uuid::CreateRandom()), nullptr);
-    const AZ::Data::Asset<Physics::MaterialAsset> mat1(AZ::Data::AssetId(AZ::Uuid::CreateRandom()), nullptr);
+    const AZ::Data::Asset<Physics::MaterialAsset> defaultSurfaceMaterial(AZ::Data::AssetId(AZ::Uuid::CreateRandom()), {});
+    const AZ::Data::Asset<Physics::MaterialAsset> mat1(AZ::Data::AssetId(AZ::Uuid::CreateRandom()), {});
 
     const SurfaceData::SurfaceTag tag1 = SurfaceData::SurfaceTag("tag1");
     const SurfaceData::SurfaceTag tag2 = SurfaceData::SurfaceTag("tag2");
@@ -584,7 +584,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderDefaultMateria
         EXPECT_EQ(materialList[1], mat1);
     }
 
-    // Validate material indices 
+    // Validate material indices
     {
         AZStd::vector<Physics::HeightMaterialPoint> heightsAndMaterials;
         Physics::HeightfieldProviderRequestsBus::EventResult(
@@ -615,8 +615,8 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderDefaultMateria
 TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderDefaultMaterialAssignedWhenNoMappingsExist)
 {
     // Create only the default material with no mapping for the tags. It's expected the default material will be assigned to both tags.
-    Terrain::TerrainPhysicsColliderConfig config;    
-    const AZ::Data::Asset<Physics::MaterialAsset> defaultSurfaceMaterial(AZ::Data::AssetId(AZ::Uuid::CreateRandom()), nullptr);
+    Terrain::TerrainPhysicsColliderConfig config;
+    const AZ::Data::Asset<Physics::MaterialAsset> defaultSurfaceMaterial(AZ::Data::AssetId(AZ::Uuid::CreateRandom()), {});
     config.m_defaultMaterialAsset = defaultSurfaceMaterial;
     AddTerrainPhysicsColliderToEntity(config);
 
@@ -681,7 +681,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderDefaultMateria
         EXPECT_EQ(materialList[0], defaultSurfaceMaterial);
     }
 
-    // Validate material indices 
+    // Validate material indices
     {
         AZStd::vector<Physics::HeightMaterialPoint> heightsAndMaterials;
         Physics::HeightfieldProviderRequestsBus::EventResult(

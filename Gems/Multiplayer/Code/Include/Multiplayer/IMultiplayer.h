@@ -68,6 +68,7 @@ namespace Multiplayer
     using ServerAcceptanceReceivedEvent = AZ::Event<>;
     using SessionInitEvent = AZ::Event<AzNetworking::INetworkInterface*>;
     using SessionShutdownEvent = AZ::Event<AzNetworking::INetworkInterface*>;
+    using LevelLoadBlockedEvent = AZ::Event<>;
 
     //! @class IMultiplayer
     //! @brief IMultiplayer provides insight into the Multiplayer session and its Agents
@@ -151,6 +152,10 @@ namespace Multiplayer
         //! Adds a SessionShutdownEvent Handler which is invoked when the current network session ends.
         //! @param handler The SessionShutdownEvent handler to add
         virtual void AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler) = 0;
+
+        //! Adds a LevelLoadBlockedEvent Handler which is invoked whenever the multiplayer system blocks a level load.
+        //! @param handler The LevelLoadBlockedEvent handler to add
+        virtual void AddLevelLoadBlockedHandler(LevelLoadBlockedEvent::Handler& handler) = 0;
 
         //! Signals a NotifyClientMigrationEvent with the provided parameters.
         //! @param connectionId       the connection id of the client that is migrating

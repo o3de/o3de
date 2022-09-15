@@ -37,7 +37,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString PhysXHeightfieldColliderNode::TITLE = QObject::tr("PhysX Heightfield Collider");
+    const char* PhysXHeightfieldColliderNode::TITLE = "PhysX Heightfield Collider";
 
     PhysXHeightfieldColliderNode::PhysXHeightfieldColliderNode(GraphModel::GraphPtr graph)
         : BaseNode(graph)
@@ -53,6 +53,6 @@ namespace LandscapeCanvas
 
     const char* PhysXHeightfieldColliderNode::GetTitle() const
     {
-        return TITLE.toUtf8().constData();
+        return TITLE;
     }
 } // namespace LandscapeCanvas

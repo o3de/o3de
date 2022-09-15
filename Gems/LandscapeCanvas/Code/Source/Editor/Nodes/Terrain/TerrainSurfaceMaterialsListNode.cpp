@@ -37,7 +37,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString TerrainSurfaceMaterialsListNode::TITLE = QObject::tr("Terrain Surface Materials List");
+    const char* TerrainSurfaceMaterialsListNode::TITLE = "Terrain Surface Materials List";
 
     TerrainSurfaceMaterialsListNode::TerrainSurfaceMaterialsListNode(GraphModel::GraphPtr graph)
         : BaseNode(graph)
@@ -53,7 +53,7 @@ namespace LandscapeCanvas
 
     const char* TerrainSurfaceMaterialsListNode::GetTitle() const
     {
-        return TITLE.toUtf8().constData();
+        return TITLE;
     }
 
     void TerrainSurfaceMaterialsListNode::RegisterSlots()

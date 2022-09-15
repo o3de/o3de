@@ -126,7 +126,7 @@ namespace StartingPointInput
                 serializeContext->Class<StartingPointInputSystemComponent, AZ::Component>()
                     ->Version(1)
                     ;
-                serializeContext->ClassDeprecate("Input", "{546C9EBC-90EF-4F03-891A-0736BE2A487E}", &ConvertToInputEventMap);
+                serializeContext->ClassDeprecate("Input", AZ::Uuid("{546C9EBC-90EF-4F03-891A-0736BE2A487E}"), &ConvertToInputEventMap);
 
                 serializeContext->Class<InputEventNotificationId>()
                     ->Version(1)

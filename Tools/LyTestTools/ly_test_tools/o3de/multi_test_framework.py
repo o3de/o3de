@@ -39,6 +39,7 @@ from _pytest.skipping import pytest_runtest_setup as skip_pytest_runtest_setup
 
 import ly_test_tools.o3de.editor_test_utils as editor_utils
 from ly_test_tools._internal.managers.workspace import AbstractWorkspaceManager
+from ly_test_tools._internal.exceptions import EditorToolsFrameworkException, TestResultException
 from ly_test_tools.launchers import launcher_helper
 from ly_test_tools.launchers.exceptions import WaitTimeoutError
 from ly_test_tools.launchers.platforms.linux.launcher import LinuxEditor, LinuxMaterialEditor
@@ -119,11 +120,6 @@ class BatchedTest(SharedTest):
     """Test that will be run as serially batched with other tests in a single instance."""
     is_batchable = True
     is_parallelizable = False
-
-
-class TestResultException(Exception):
-    """Indicates that an unknown result was found during the tests"""
-    pass
 
 
 class Result(object):
@@ -425,8 +421,8 @@ class MultiTestSuite(object):
                             # Setup step for wrap_run
                             wrap = inner_test_spec.wrap_run(
                                 self, request, workspace, collected_test_data)
-                            assert isinstance(wrap, types.GeneratorType), (
-                                "wrap_run must return a generator, did you forget 'yield'?")
+                            if not isinstance(wrap, types.GeneratorType):
+                                raise EditorToolsFrameworkException("wrap_run must return a generator, did you forget 'yield'?")
                             next(wrap, None)
                             # Setup step
                             inner_test_spec.setup(
@@ -922,7 +918,9 @@ class MultiTestSuite(object):
             return
 
         parallel_executables = self._get_number_parallel_executables(request)
-        assert parallel_executables > 0, "Must have at least one executable"
+        if not parallel_executables > 0:
+            logger.warning("Expected 1 or more parallel_executables, found 0. Setting to 1.")
+            parallel_executables = 1
 
         # If there are more tests than max parallel executables, we will split them into multiple consecutive runs.
         num_iterations = int(math.ceil(len(test_spec_list) / parallel_executables))
@@ -936,7 +934,9 @@ class MultiTestSuite(object):
                     def run(request, workspace, extra_cmdline_args):
                         results = self._exec_single_test(
                             request, workspace, current_executable, index + 1, self._log_name, test_spec, extra_cmdline_args)
-                        assert results is not None
+                        if results is None:
+                            raise EditorToolsFrameworkException(f"Results were None. Current log name is "
+                                                                f"{self._log_name} and test is {str(test_spec)}")
                         results_per_thread[index] = results
                     return run
 
@@ -1004,7 +1004,10 @@ class MultiTestSuite(object):
             return
 
         total_threads = self._get_number_parallel_executables(request)
-        assert total_threads > 0, "Must have at least one executable"
+        if not total_threads > 0:
+            logger.warning("Expected 1 or more total_threads, found 0. Setting to 1.")
+            total_threads = 1
+
         threads = []
         tests_per_executable = int(math.ceil(len(test_spec_list) / total_threads))
         results_per_thread = [None] * total_threads
@@ -1018,7 +1021,10 @@ class MultiTestSuite(object):
                         results = self._exec_multitest(
                             request, workspace, current_executable, index + 1, self._log_name,
                             test_spec_list_for_executable, extra_cmdline_args)
-                        assert results is not None
+                        if results is None:
+                            raise EditorToolsFrameworkException(f"Results were None. Current log name is "
+                                                                f"{self._log_name} and tests are "
+                                                                f"{str(test_spec_list_for_executable)}")
                     else:
                         results = {}
                     results_per_thread[index] = results
@@ -1172,8 +1178,9 @@ class MultiTestSuite(object):
                 # This function should always populate the result list.
                 # If it didn't then it will have "Unknown" as the type of result.
                 results = self._get_results_using_output(test_spec_list, output, executable_log_content)
-                assert len(results) == len(test_spec_list), (
-                    "bug in get_results_using_output(), the number of results don't match the tests ran")
+                if not len(results) == len(test_spec_list):
+                    raise EditorToolsFrameworkException("bug in get_results_using_output(), the number of results "
+                                                        "don't match the tests ran")
 
                 # If the executable crashed, find out in which test it happened and update the results.
                 has_crashed = return_code != self._test_fail_retcode
@@ -1220,8 +1227,9 @@ class MultiTestSuite(object):
 
             # The executable timed out when running the tests, get the data from the output to find out which ones ran
             results = self._get_results_using_output(test_spec_list, output, executable_log_content)
-            assert len(results) == len(test_spec_list), (
-                "bug in _get_results_using_output(), the number of results don't match the tests ran")
+            if not len(results) == len(test_spec_list):
+                raise EditorToolsFrameworkException("bug in _get_results_using_output(), the number of results "
+                                                    "don't match the tests ran")
 
             # Similar logic here as crashes, the first test that has no result is the one that timed out
             timed_out_result = None

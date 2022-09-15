@@ -31,7 +31,7 @@ namespace LmbrCentral
         AZ::EntityId m_shapeEntityId;
     };
 
-    static const AZ::Uuid ReferenceShapeComponentTypeId = "{EB9C6DC1-900F-4CE8-AA00-81361127063A}";
+    inline constexpr AZ::TypeId ReferenceShapeComponentTypeId{ "{EB9C6DC1-900F-4CE8-AA00-81361127063A}" };
 
     /**
     * allows reference and reuse of shape entities

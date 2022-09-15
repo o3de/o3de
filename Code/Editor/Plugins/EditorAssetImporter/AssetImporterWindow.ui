@@ -75,6 +75,27 @@
               <property name="bottomMargin">
                 <number>0</number>
               </property>
+              <item>
+                <widget class="QSplitter" name="m_mainAreaSplitter">
+                  <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                  </property>
+                  <widget class="QWidget" name="m_notificationAreaLayoutWidget">
+                    <layout class="QVBoxLayout" name="m_notificationAreaLayout">
+                      <item>
+                          <widget class="QWidget" name="m_cardAreaLayoutWidget">
+                            <layout class="QVBoxLayout" name="m_cardAreaLayout">
+                            </layout>
+                          </widget>
+                      </item>
+                    </layout>
+                  </widget>
+                  <widget class="QWidget" name="m_settingsAreaLayoutWidget">
+                    <layout class="QVBoxLayout" name="m_settingsAreaLayout">
+                    </layout>
+                  </widget>
+                </widget>
+              </item>
             </layout>
           </widget>
         </item>
