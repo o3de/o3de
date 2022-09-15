@@ -352,6 +352,7 @@ namespace Blast
         MOCK_METHOD1(SetRestOffset, void(float));
         MOCK_METHOD1(SetContactOffset, void(float));
         MOCK_METHOD0(GetNativePointer, void*());
+        MOCK_CONST_METHOD0(GetNativePointer, const void*());
         MOCK_CONST_METHOD0(GetTag, AZ::Crc32());
         MOCK_METHOD1(AttachedToActor, void(void*));
         MOCK_METHOD0(DetachedFromActor, void());

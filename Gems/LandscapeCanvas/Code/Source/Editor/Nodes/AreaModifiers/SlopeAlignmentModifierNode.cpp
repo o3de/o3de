@@ -32,7 +32,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString SlopeAlignmentModifierNode::TITLE = QObject::tr("Slope Alignment Modifier");
+    const char* SlopeAlignmentModifierNode::TITLE = "Slope Alignment Modifier";
 
     SlopeAlignmentModifierNode::SlopeAlignmentModifierNode(GraphModel::GraphPtr graph)
         : BaseAreaModifierNode(graph)
