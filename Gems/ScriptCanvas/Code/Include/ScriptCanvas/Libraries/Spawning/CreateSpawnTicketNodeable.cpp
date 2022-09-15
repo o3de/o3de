@@ -8,6 +8,7 @@
 
 #include <AzFramework/Spawnable/Script/SpawnableScriptMediator.h>
 #include <ScriptCanvas/Libraries/Spawning/CreateSpawnTicketNodeable.h>
+#include <AzCore/Console/ILogger.h>
 
 namespace ScriptCanvas::Nodeables::Spawning
 {
@@ -33,6 +34,7 @@ namespace ScriptCanvas::Nodeables::Spawning
         }
         else
         {
+            AZLOG_ERROR("Unable to Create Spawn Ticket - A valid prefab was not provided");
             CallFailed();
         }
     }
