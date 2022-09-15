@@ -82,18 +82,31 @@ namespace AWSNativeSDKInit
         Platform::CustomizeSDKOptions(m_awsSDKOptions);
         Aws::InitAPI(m_awsSDKOptions);
 
-        // Default to preventing calls to the Amazon EC2 instance metadata service (IMDS), unless environment var has been configured.
-        // AWS C++ SDK may reach out to EC2 IMDS for region, config or credentials, but unless code is running on EC2 compute
-        // such calls will fail and waste network resources.
-        // Note: AWS C++ SDK explicitly only checks if lower case version of AWS_EC2_METADATA_DISABLED == "true", otherwise it will enable the
-        // EC2 metadata service calls.
-        const auto ec2MetadataDisabled = Aws::Environment::GetEnv(AWS_EC2_METADATA_DISABLED);
-        if (ec2MetadataDisabled.empty())
+#endif // #if defined(PLATFORM_SUPPORTS_AWS_NATIVE_SDK)
+    }
+
+    bool InitializationManager::PreventAwsEC2MetadataCalls(bool force = false)
+    {
+        bool prevented = false;
+#if defined(PLATFORM_SUPPORTS_AWS_NATIVE_SDK)
+
+        // Helper function to prevent calls to the Amazon EC2 instance metadata service (IMDS), unless environment var has been
+        // configured. AWS C++ SDK may reach out to EC2 IMDS for region, config or credentials, but unless code is running on EC2
+        // compute such calls will fail and waste network resources. Note: AWS C++ SDK explicitly only checks if lower case version of
+        // AWS_EC2_METADATA_DISABLED == "true", otherwise it will enable the EC2 metadata service calls.
+        const auto ec2MetadataEnvVar = Aws::Environment::GetEnv(AWS_EC2_METADATA_DISABLED);
+        if (ec2MetadataEnvVar.empty() || force)
         {
+            prevented = true;
             AZ::Utils::SetEnv(AWS_EC2_METADATA_DISABLED, "true", true);
+        }
+        else if (Aws::Utils::StringUtils::ToLower(ec2MetadataEnvVar.c_str()) == "true")
+        {
+            prevented = true;
         }
 
 #endif // #if defined(PLATFORM_SUPPORTS_AWS_NATIVE_SDK)
+        return prevented;
     }
 
     void InitializationManager::ShutdownAwsApiInternal()

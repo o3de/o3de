@@ -48,6 +48,14 @@ namespace AWSNativeSDKInit
         //! Remove reference, if final reference then shut down SDK.
         static void Shutdown();
 
+        //! Call this after InitAwsApi to prevent any reachout to the Amazon EC2 instance metadata service (IMDS).
+        //! Unless you are running on EC2 compute this is recommended, otherwise AWS C++ SDK may try to call IMDS for region, config
+        //! or credential information, which will fail on non EC2 compute and waste resources. 
+        //! Note: This is a helper function for managing the environment variable, AWS_EC2_METADATA_DISABLED, but impacts just the current application's environment.
+        //! @param force If true, always set AWS_EC2_METADATA_DISABLED to true, otherwise only set if environment variable is not set.
+        //! @returns True if env var was set or currently prevents calls, False otherwise 
+        static bool PreventAwsEC2MetadataCalls(bool force);
+
     private:    
         void InitializeAwsApiInternal();
         void ShutdownAwsApiInternal();
