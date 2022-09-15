@@ -78,16 +78,6 @@ namespace AzFramework
         void OnRootSpawnableReady(AZ::Data::Asset<Spawnable> rootSpawnable, uint32_t generation) override;
         void OnRootSpawnableReleased(uint32_t generation) override;
 
-        //
-        // SpawnableNotifications
-        //
-
-        //! Sent any time a SpawnEntityTicket is created through script
-        void OnSpawnEntityTicketCreated(EntitySpawnTicket spawnTicket) override;
-
-        //! Sent when the ScriptMediator system shuts down
-        void ClearEntityTickets() override;
-
     protected:
         void Activate() override;
         void Deactivate() override;
@@ -101,7 +91,6 @@ namespace AzFramework
 
         AZ::Data::AssetId m_rootSpawnableId;
         AZ::SettingsRegistryInterface::NotifyEventHandler m_criticalAssetsHandler;
-
     };
 } // namespace AzFramework
 

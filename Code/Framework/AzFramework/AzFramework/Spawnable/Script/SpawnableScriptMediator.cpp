@@ -12,8 +12,6 @@
 #include <AzFramework/Spawnable/Script/SpawnableScriptMediator.h>
 #include <AzFramework/Spawnable/Script/SpawnableScriptNotificationsHandler.h>
 
-#include <AzFramework/Spawnable/SpawnableBus.h>
-
 namespace AzFramework::Scripts
 {
     void SpawnableScriptMediator::Reflect(AZ::ReflectContext* context)
