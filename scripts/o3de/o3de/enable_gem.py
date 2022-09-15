@@ -110,12 +110,12 @@ def enable_gem_in_project(gem_name: str = None,
     else:
         if not check_gem_compatibility(gem_json_data, project_path, buildable_gems):
             if check:
-                logger.info(f'{gem_json_data["gem_name"]} is not known to be compatibile with this project and requires the --force parameter to enable.')
+                logger.info(f'{gem_json_data["gem_name"]} is not known to be compatible with this project and requires the --force parameter to enable.')
             else:
-                logger.error(f'{gem_json_data["gem_name"]} is not known to be compatibile with this project and requires the --force parameter to enable.')
+                logger.error(f'{gem_json_data["gem_name"]} is not known to be compatible with this project and requires the --force parameter to enable.')
             return 1
         elif check:
-            logger.info(f'{gem_json_data["gem_name"]} is compatibile with this project and engine.')
+            logger.info(f'{gem_json_data["gem_name"]} is compatible with this project and engine.')
             return 0
 
     ret_val = 0
@@ -171,14 +171,14 @@ def check_gem_compatibility(gem_json_data: dict, project_path:pathlib.Path, gem_
 
         for gem_dependency in gem_dependencies:
             gem_dependency_name, version_specifier = version.get_object_name_and_version_specifier(gem_dependency)
-            # check if the gem is already enabled in the project 
+            # check if the gem dependency is not enabled in the project 
             if not gem_dependency_name in project_gem_versions:
-                logger.error(f'{gem_json_data["gem_name"]} requires {gem_dependency}. Use the --force to override.')
+                logger.error(f'{gem_json_data["gem_name"]} requires {gem_dependency} but it is not enabled in the project. Use the --force to override.')
                 return False
             # check if the gem version is compatible
             gem_dependency_version = project_gem_versions[gem_dependency_name]
             if gem_dependency_version and not version.has_compatible_version([gem_dependency], gem_dependency_name, gem_dependency_version):
-                logger.error(f'{gem_json_data["gem_name"]} requires {gem_dependency}. Use the --force to override.')
+                logger.error(f'{gem_json_data["gem_name"]} requires {gem_dependency} but the available version {gem_dependency_version} is not listed as compatible. Use the --force to override.')
                 return False
 
     return True
