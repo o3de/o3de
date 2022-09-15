@@ -341,10 +341,10 @@ namespace O3DE::ProjectManager
         return projectTemplateDetails;
     }
 
-    void NewProjectSettingsScreen::StartTemplateDownload(const QString& templateName)
+    void NewProjectSettingsScreen::StartTemplateDownload(const QString& templateName, const QString& destinationPath)
     {
         AZ_Assert(m_downloadController, "DownloadController must exist.");
-        m_downloadController->AddObjectDownload(templateName, DownloadController::DownloadObjectType::Template);
+        m_downloadController->AddObjectDownload(templateName, destinationPath, DownloadController::DownloadObjectType::Template);
         auto foundButton = AZStd::ranges::find_if(
             m_templateButtons,
             [&templateName](const QAbstractButton* value)
@@ -370,7 +370,7 @@ namespace O3DE::ProjectManager
                     DownloadRemoteTemplateDialog* downloadRemoteTemplateDialog = new DownloadRemoteTemplateDialog(templateInfo, this);
                     if (downloadRemoteTemplateDialog->exec() == QDialog::DialogCode::Accepted)
                     {
-                        StartTemplateDownload(templateInfo.m_name);
+                        StartTemplateDownload(templateInfo.m_name, downloadRemoteTemplateDialog->GetInstallPath());
                     }
                 });
     }

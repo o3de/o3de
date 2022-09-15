@@ -23,7 +23,7 @@
 
 namespace LandscapeCanvas
 {
-    const QString BaseShapeNode::SHAPE_CATEGORY_TITLE = QObject::tr("Shape");
+    const char* BaseShapeNode::SHAPE_CATEGORY_TITLE = "Shape";
     const QString BaseShapeNode::BOUNDS_SLOT_LABEL = QObject::tr("Bounds");
     const QString BaseShapeNode::BOUNDS_OUTPUT_SLOT_DESCRIPTION = QObject::tr("Bounds output slot");
     const char* BaseShapeNode::BOUNDS_SLOT_ID = "Bounds";
