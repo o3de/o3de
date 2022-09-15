@@ -112,6 +112,7 @@ namespace AZ
             }
 
             m_probeRayRotation = AZ::Quaternion::CreateIdentity();
+            m_frameUpdateIndex = (m_frameUpdateIndex + 1) % m_frameUpdateCount;
         }
 
         bool DiffuseProbeGrid::ValidateProbeSpacing(const AZ::Vector3& newSpacing)
@@ -150,7 +151,7 @@ namespace AZ
             m_updateRenderObjectSrg = true;
         }
 
-        void DiffuseProbeGrid::SetNumRaysPerProbe(const DiffuseProbeGridNumRaysPerProbe& numRaysPerProbe)
+        void DiffuseProbeGrid::SetNumRaysPerProbe(DiffuseProbeGridNumRaysPerProbe numRaysPerProbe)
         {
             m_numRaysPerProbe = numRaysPerProbe;
             m_updateTextures = true;
@@ -599,6 +600,15 @@ namespace AZ
 
             constantIndex = srgLayout->FindShaderInputConstantIndex(Name("m_useDiffuseIbl"));
             m_rayTraceSrg->SetConstant(constantIndex, m_useDiffuseIbl);
+
+            constantIndex = srgLayout->FindShaderInputConstantIndex(Name("m_frameUpdateCount"));
+            m_rayTraceSrg->SetConstant(constantIndex, m_frameUpdateCount);
+
+            constantIndex = srgLayout->FindShaderInputConstantIndex(Name("m_frameUpdateIndex"));
+            m_rayTraceSrg->SetConstant(constantIndex, m_frameUpdateIndex);
+
+            constantIndex = srgLayout->FindShaderInputConstantIndex(Name("m_transparencyMode"));
+            m_rayTraceSrg->SetConstant(constantIndex, aznumeric_cast<uint32_t>(m_transparencyMode));
         }
 
         void DiffuseProbeGrid::UpdateBlendIrradianceSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& layout)
@@ -610,6 +620,7 @@ namespace AZ
             }
 
             const RHI::ShaderResourceGroupLayout* srgLayout = m_blendIrradianceSrg->GetLayout();
+            RHI::ShaderInputConstantIndex constantIndex;
             RHI::ShaderInputImageIndex imageIndex;
             RHI::ShaderInputBufferIndex bufferIndex;
 
@@ -624,6 +635,12 @@ namespace AZ
 
             imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeData"));
             m_blendIrradianceSrg->SetImageView(imageIndex, m_probeDataImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
+
+            constantIndex = srgLayout->FindShaderInputConstantIndex(Name("m_frameUpdateCount"));
+            m_blendIrradianceSrg->SetConstant(constantIndex, m_frameUpdateCount);
+
+            constantIndex = srgLayout->FindShaderInputConstantIndex(Name("m_frameUpdateIndex"));
+            m_blendIrradianceSrg->SetConstant(constantIndex, m_frameUpdateIndex);
         }
 
         void DiffuseProbeGrid::UpdateBlendDistanceSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& layout)
@@ -635,6 +652,7 @@ namespace AZ
             }
 
             const RHI::ShaderResourceGroupLayout* srgLayout = m_blendDistanceSrg->GetLayout();
+            RHI::ShaderInputConstantIndex constantIndex;
             RHI::ShaderInputImageIndex imageIndex;
             RHI::ShaderInputBufferIndex bufferIndex;
 
@@ -649,6 +667,12 @@ namespace AZ
 
             imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeData"));
             m_blendDistanceSrg->SetImageView(imageIndex, m_probeDataImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
+
+            constantIndex = srgLayout->FindShaderInputConstantIndex(Name("m_frameUpdateCount"));
+            m_blendDistanceSrg->SetConstant(constantIndex, m_frameUpdateCount);
+
+            constantIndex = srgLayout->FindShaderInputConstantIndex(Name("m_frameUpdateIndex"));
+            m_blendDistanceSrg->SetConstant(constantIndex, m_frameUpdateIndex);
         }
 
         void DiffuseProbeGrid::UpdateBorderUpdateSrgs(
@@ -741,6 +765,7 @@ namespace AZ
             }
 
             const RHI::ShaderResourceGroupLayout* srgLayout = m_relocationSrg->GetLayout();
+            RHI::ShaderInputConstantIndex constantIndex;
             RHI::ShaderInputImageIndex imageIndex;
             RHI::ShaderInputBufferIndex bufferIndex;
 
@@ -752,6 +777,12 @@ namespace AZ
 
             imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeData"));
             m_relocationSrg->SetImageView(imageIndex, m_probeDataImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
+
+            constantIndex = srgLayout->FindShaderInputConstantIndex(Name("m_frameUpdateCount"));
+            m_relocationSrg->SetConstant(constantIndex, m_frameUpdateCount);
+
+            constantIndex = srgLayout->FindShaderInputConstantIndex(Name("m_frameUpdateIndex"));
+            m_relocationSrg->SetConstant(constantIndex, m_frameUpdateIndex);
         }
 
         void DiffuseProbeGrid::UpdateClassificationSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& layout)
@@ -763,6 +794,7 @@ namespace AZ
             }
 
             const RHI::ShaderResourceGroupLayout* srgLayout = m_classificationSrg->GetLayout();
+            RHI::ShaderInputConstantIndex constantIndex;
             RHI::ShaderInputImageIndex imageIndex;
             RHI::ShaderInputBufferIndex bufferIndex;
 
@@ -774,6 +806,12 @@ namespace AZ
 
             imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeData"));
             m_classificationSrg->SetImageView(imageIndex, m_probeDataImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
+
+            constantIndex = srgLayout->FindShaderInputConstantIndex(Name("m_frameUpdateCount"));
+            m_classificationSrg->SetConstant(constantIndex, m_frameUpdateCount);
+
+            constantIndex = srgLayout->FindShaderInputConstantIndex(Name("m_frameUpdateIndex"));
+            m_classificationSrg->SetConstant(constantIndex, m_frameUpdateIndex);
         }
 
         void DiffuseProbeGrid::UpdateRenderObjectSrg()
