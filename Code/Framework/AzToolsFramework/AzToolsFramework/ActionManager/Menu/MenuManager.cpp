@@ -31,7 +31,7 @@ namespace AzToolsFramework
         ActionManagerNotificationBus::Handler::BusConnect();
 
         EditorMenu::Initialize(defaultParentWidget);
-        EditorMenuBar::Initialize(defaultParentWidget);
+        EditorMenuBar::Initialize();
     }
 
     MenuManager::~MenuManager()
@@ -67,7 +67,7 @@ namespace AzToolsFramework
         return AZ::Success();
     }
 
-    MenuManagerOperationResult MenuManager::RegisterMenuBar(const AZStd::string& menuBarIdentifier)
+    MenuManagerOperationResult MenuManager::RegisterMenuBar(const AZStd::string& menuBarIdentifier, QMainWindow* mainWindow)
     {
         if (m_menuBars.contains(menuBarIdentifier))
         {
@@ -78,7 +78,7 @@ namespace AzToolsFramework
         m_menuBars.insert(
             {
                 menuBarIdentifier,
-                EditorMenuBar()
+                EditorMenuBar(mainWindow)
             }
         );
 
@@ -463,17 +463,6 @@ namespace AzToolsFramework
         }
 
         return menuIterator->second.GetMenu();
-    }
-
-    QMenuBar* MenuManager::GetMenuBar(const AZStd::string& menuBarIdentifier)
-    {
-        auto menuBarIterator = m_menuBars.find(menuBarIdentifier);
-        if (menuBarIterator == m_menuBars.end())
-        {
-            return nullptr;
-        }
-
-        return menuBarIterator->second.GetMenuBar();
     }
     
     MenuManagerIntegerResult MenuManager::GetSortKeyOfActionInMenu(const AZStd::string& menuIdentifier, const AZStd::string& actionIdentifier) const

@@ -107,7 +107,14 @@ namespace AZ
 
             for (uint16_t i = 0; i < AZ::RPI::XRMaxNumViews; i++)
             {
-                m_stereoscopicViewQuats.insert(m_stereoscopicViewQuats.begin() + i, AZ::Quaternion::CreateIdentity());
+                if (i < m_stereoscopicViewQuats.size())
+                {
+                    m_stereoscopicViewQuats[i] = AZ::Quaternion::CreateIdentity();
+                }
+                else
+                {
+                    m_stereoscopicViewQuats.insert(m_stereoscopicViewQuats.begin() + i, AZ::Quaternion::CreateIdentity());
+                }
             }
 
             m_auxGeomFeatureProcessor = RPI::Scene::GetFeatureProcessorForEntity<RPI::AuxGeomFeatureProcessorInterface>(GetEntityId());
@@ -146,6 +153,8 @@ namespace AZ
                 cameraView = nullptr;
             } 
             m_auxGeomFeatureProcessor = nullptr;
+            m_stereoscopicViewQuats.clear();
+            m_cameraViews.clear();
         }
 
         RPI::ViewPtr CameraComponent::GetView() const

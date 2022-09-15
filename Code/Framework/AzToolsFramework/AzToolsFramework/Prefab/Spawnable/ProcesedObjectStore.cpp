@@ -43,7 +43,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         return m_asset != nullptr;
     }
 
-    const AZ::Data::AssetType& ProcessedObjectStore::GetAssetType() const
+    AZ::Data::AssetType ProcessedObjectStore::GetAssetType() const
     {
         AZ_Assert(m_asset, "Called GetAssetType on ProcessedObjectStore when there was no valid asset.");
         return m_asset->GetType();

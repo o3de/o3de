@@ -183,6 +183,8 @@ set(FILES
     IO/IStreamerTypes.cpp
     IO/GenericStreams.cpp
     IO/GenericStreams.h
+    IO/OpenMode.h
+    IO/OpenMode.cpp
     IO/Path/Path.cpp
     IO/Path/Path.h
     IO/Path/Path.inl
@@ -359,6 +361,7 @@ set(FILES
     Math/TransformSerializer.h
     Math/Uuid.cpp
     Math/Uuid.h
+    Math/Uuid.inl
     Math/UuidSerializer.h
     Math/UuidSerializer.cpp
     Math/Vector2.cpp

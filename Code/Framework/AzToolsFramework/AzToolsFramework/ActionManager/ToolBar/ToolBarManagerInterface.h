@@ -11,7 +11,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
-class QToolBar;
+#include <QToolBar>
 
 namespace AzToolsFramework
 {
@@ -42,6 +42,14 @@ namespace AzToolsFramework
         //! @param properties The properties object for the newly registered ToolBar.
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
         virtual ToolBarManagerOperationResult RegisterToolBar(const AZStd::string& toolBarIdentifier, const ToolBarProperties& properties) = 0;
+
+        //! Register a new ToolBar Area to the ToolBar Manager.
+        //! @param toolBarAreaIdentifier The identifier for the toolbar area that is being registered.
+        //! @param mainWindow Pointer to the QMainWindow to associate the toolbar area with.
+        //! @param toolBarArea Enum of which part of the QMainWindow the toolbar area will cover.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual ToolBarManagerOperationResult RegisterToolBarArea(
+            const AZStd::string& toolBarAreaIdentifier, QMainWindow* mainWindow, Qt::ToolBarArea toolBarArea) = 0;
 
         //! Add an Action to a ToolBar.
         //! @param toolBarIdentifier The identifier for the ToolBar the action is being added to.
@@ -95,6 +103,14 @@ namespace AzToolsFramework
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
         virtual ToolBarManagerOperationResult AddWidgetToToolBar(
             const AZStd::string& toolBarIdentifier, const AZStd::string& widgetActionIdentifier, int sortIndex) = 0;
+
+        //! Add a ToolBar to a ToolBar Area.
+        //! @param toolBarAreaIdentifier The identifier for the toolbar area the toolbar is being added to.
+        //! @param toolBarIdentifier The identifier for the toolbar to add to the toolbar area.
+        //! @param sortIndex An integer defining the position the toolbar should appear in the toolbar area.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual ToolBarManagerOperationResult AddToolBarToToolBarArea(
+            const AZStd::string& toolBarAreaIdentifier, const AZStd::string& toolBarIdentifier, int sortIndex) = 0;
 
         //! Retrieve a QToolBar from its identifier.
         //! @param toolBarIdentifier The identifier for the ToolBar to retrieve.

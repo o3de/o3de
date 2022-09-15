@@ -632,7 +632,7 @@
 
   <!-- Implementation without custom types added to the code or plug-ins, displays the UUID as 4 32 bit variables -->
   <Type Name="AZ::Uuid">
-    <DisplayString>{((((int)data[3] &amp; 0xFF)) + (((int)data[2] &amp; 0xFF) &lt;&lt; 8) + (((int)data[1] &amp; 0xFF) &lt;&lt; 16) + (((int)data[0] &amp; 0xFF) &lt;&lt; 24)),X} - {((((int)data[7] &amp; 0xFF)) + (((int)data[6] &amp; 0xFF) &lt;&lt; 8) + (((int)data[5] &amp; 0xFF) &lt;&lt; 16) + (((int)data[4] &amp; 0xFF) &lt;&lt; 24)),X} - {((((int)data[11] &amp; 0xFF)) + (((int)data[10] &amp; 0xFF) &lt;&lt; 8) + (((int)data[9] &amp; 0xFF) &lt;&lt; 16) + (((int)data[8] &amp; 0xFF) &lt;&lt; 24)),X} - {((((int)data[15] &amp; 0xFF)) + (((int)data[14] &amp; 0xFF) &lt;&lt; 8) + (((int)data[13] &amp; 0xFF) &lt;&lt; 16) + (((int)data[12] &amp; 0xFF) &lt;&lt; 24)),X}</DisplayString>
+    <DisplayString>{((((int)m_data[3] &amp; 0xFF)) + (((int)m_data[2] &amp; 0xFF) &lt;&lt; 8) + (((int)m_data[1] &amp; 0xFF) &lt;&lt; 16) + (((int)m_data[0] &amp; 0xFF) &lt;&lt; 24)),X} - {((((int)m_data[7] &amp; 0xFF)) + (((int)m_data[6] &amp; 0xFF) &lt;&lt; 8) + (((int)m_data[5] &amp; 0xFF) &lt;&lt; 16) + (((int)m_data[4] &amp; 0xFF) &lt;&lt; 24)),X} - {((((int)m_data[11] &amp; 0xFF)) + (((int)m_data[10] &amp; 0xFF) &lt;&lt; 8) + (((int)m_data[9] &amp; 0xFF) &lt;&lt; 16) + (((int)m_data[8] &amp; 0xFF) &lt;&lt; 24)),X} - {((((int)m_data[15] &amp; 0xFF)) + (((int)m_data[14] &amp; 0xFF) &lt;&lt; 8) + (((int)m_data[13] &amp; 0xFF) &lt;&lt; 16) + (((int)m_data[12] &amp; 0xFF) &lt;&lt; 24)),X}</DisplayString>
   </Type>
 
   <Type Name="AZ::EntityId">

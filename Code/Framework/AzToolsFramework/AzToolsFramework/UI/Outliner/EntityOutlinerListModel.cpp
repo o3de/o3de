@@ -1165,9 +1165,8 @@ namespace AzToolsFramework
 
             for (auto entityId : m_entityChangeQueue)
             {
-                if (entityId.IsValid())
+                if (const QModelIndex beginIndex = GetIndexFromEntity(entityId, ColumnName); beginIndex.isValid())
                 {
-                    const QModelIndex beginIndex = GetIndexFromEntity(entityId, ColumnName);
                     const QModelIndex endIndex = createIndex(beginIndex.row(), VisibleColumnCount - 1, beginIndex.internalId());
                     emit dataChanged(beginIndex, endIndex);
                 }

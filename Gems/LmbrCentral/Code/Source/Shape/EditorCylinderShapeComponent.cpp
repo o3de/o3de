@@ -22,7 +22,7 @@ namespace LmbrCentral
             // Deprecate: EditorCylinderColliderComponent -> EditorCylinderShapeComponent
             serializeContext->ClassDeprecate(
                 "EditorCylinderColliderComponent",
-                "{1C10CEE7-0A5C-4D4A-BBD9-5C3B6C6FE844}",
+                AZ::Uuid("{1C10CEE7-0A5C-4D4A-BBD9-5C3B6C6FE844}"),
                 &ClassConverters::DeprecateEditorCylinderColliderComponent)
                 ;
 
