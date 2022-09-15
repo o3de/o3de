@@ -222,10 +222,10 @@ def test_register():
     default_third_party_folder = parameters[12]
     assert default_third_party_folder.name == 'default_third_party_folder'
     assert default_third_party_folder.annotation == pathlib.Path
-    remove = parameters[15]
+    remove = parameters[16]
     assert remove.name == 'remove'
     assert remove.annotation == bool
-    force = parameters[16]
+    force = parameters[17]
     assert force.name == 'force'
     assert force.annotation == bool
 
