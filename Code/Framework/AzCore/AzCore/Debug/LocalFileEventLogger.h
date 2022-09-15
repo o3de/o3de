@@ -9,7 +9,7 @@
 #pragma once
 
 #include <limits>
-#include <AzCore/Debug/IEventLogger.h>
+#include <AzCore/Metrics/IEventLogger.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
@@ -26,7 +26,7 @@ namespace AZ::Debug
     public:
         bool ReadLog(const char* filePath);
 
-        EventNameHash GetEventName() const;
+        Metrics::EventNameHash GetEventName() const;
         uint16_t GetEventSize() const;
         uint16_t GetEventFlags() const;
         uint64_t GetThreadId() const;
@@ -45,15 +45,15 @@ namespace AZ::Debug
         void UpdateThreadId();
 
         AZStd::vector<uint8_t> m_buffer;
-        IEventLogger::LogHeader m_logHeader;
+        Metrics::IEventLogger::LogHeader m_logHeader;
 
         uint64_t m_currentThreadId{ 0 };
-        IEventLogger::EventHeader* m_current{ nullptr };
+        Metrics::IEventLogger::EventHeader* m_current{ nullptr };
     };
 
 
     class LocalFileEventLogger
-        : public Interface<IEventLogger>::Registrar
+        : public Interface<Metrics::IEventLogger>::Registrar
     {
     public:
         inline static constexpr size_t MaxThreadCount = 512;
@@ -66,10 +66,10 @@ namespace AZ::Debug
 
         void Flush() override;
 
-        void* RecordEventBegin(EventNameHash id, uint16_t size, uint16_t flags = 0) override;
+        void* RecordEventBegin(Metrics::EventNameHash id, uint16_t size, uint16_t flags = 0) override;
         void RecordEventEnd() override;
 
-        void RecordStringEvent(EventNameHash id, AZStd::string_view text, uint16_t flags = 0) override;
+        void RecordStringEvent(Metrics::EventNameHash id, AZStd::string_view text, uint16_t flags = 0) override;
 
     protected:
         struct ThreadData
