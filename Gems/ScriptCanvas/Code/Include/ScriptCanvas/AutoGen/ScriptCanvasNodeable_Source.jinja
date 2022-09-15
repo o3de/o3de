@@ -280,7 +280,7 @@ void Nodes::{{ nodeableNodeName }}::Reflect(AZ::ReflectContext* context)
                 {{preEdit}}->Attribute(AZ::Edit::Attributes::Category, "{{ attribute_Category }}"){{postEdit}}
 {% endif %}
 {% if attribute_HideProperty is defined %}
-                {{preEdit}}->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::HideChildren){{postEdit}}
+                {{preEdit}}->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide){{postEdit}}
 {% else %}
                 {{preEdit}}->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly){{postEdit}}
 {% endif %}
