@@ -11,9 +11,27 @@ from PySide2 import QtWidgets, QtCore
 import pyside_utils
 from types import SimpleNamespace
 from consts.scripting import (VARIABLE_MANAGER_QT, VARIABLE_PALETTE_QT, ADD_BUTTON_QT, GRAPH_VARIABLES_QT)
-from consts.general import (WAIT_TIME_3, VARIABLE_TYPES_DICT)
+from consts.general import (WAIT_TIME_3)
 from editor_python_test_tools.utils import Report
 
+class Tests():
+    variable_created = ("New variable created", "New variable not created")
+
+"""
+Basic variable types.
+These are str-str kv pairings so they can be used with SimpleNamespace class easily or as an iterable type.  
+"""
+VARIABLE_TYPES_DICT = {
+    "Boolean": "Boolean",
+    "Color": "Color",
+    "EntityId": "EntityId",
+    "Number": "Number",
+    "String": "String",
+    "Transform": "Transform",
+    "Vector2": "Vector2",
+    "Vector3": "Vector3",
+    "Vector4": "Vector4"
+}
 
 class QtPyScriptCanvasVariableManager:
     """
@@ -86,11 +104,13 @@ class QtPyScriptCanvasVariableManager:
 
         param expected: the expected number of variables in the variable manager
 
-        returns true if the actual number of variables in the variable manager matches the expected number
+        returns None
         """
         row_count = self.get_variable_count()
+        expected == row_count
 
-        return expected == row_count
+        Report.result(Tests.variable_created, helper.wait_for_condition(
+            lambda: expected, WAIT_TIME_3))
 
 
 

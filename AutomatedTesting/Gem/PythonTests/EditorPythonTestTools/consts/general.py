@@ -4,7 +4,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
-Holds general constants used across both hydra and non-hydra scripts.
+Holds constants forlabels, frequently used
 """
 
 
@@ -19,18 +19,6 @@ WAIT_TIME_3 = 3
 WAIT_TIME_5 = 5
 EVENTS_QT = "Events"
 EVENT_NAME_QT = "EventName"
-
-VARIABLE_TYPES_DICT = {
-    "Boolean": "Boolean",
-    "Color": "Color",
-    "EntityId": "EntityId",
-    "Number": "Number",
-    "String": "String",
-    "Transform": "Transform",
-    "Vector2": "Vector2",
-    "Vector3": "Vector3",
-    "Vector4": "Vector4"
-}
 
 ENTITY_STATES = {
     "active": 0,

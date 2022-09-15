@@ -5,13 +5,6 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-# fmt: off
-class Tests():
-    variable_created = ("New variable created", "New variable not created")
-    undo_worked      = ("Undo action working",  "Undo action did not work")
-    redo_worked      = ("Redo action working",  "Redo action did not work")
-# fmt: on
-
 VARIABLE_COUNT_BEFORE = 1
 VARIABLE_COUNT_AFTER = 0
 
@@ -43,13 +36,9 @@ def EditMenu_Default_UndoRedo():
     :return: None
     """
 
-
     # Preconditions
-    from editor_python_test_tools.utils import TestHelper as helper
-    from editor_python_test_tools.utils import Report
     import azlmbr.legacy.general as general
     import editor_python_test_tools.script_canvas_tools_qt as sc_tools_qt
-    from consts.general import (WAIT_TIME_3)
 
     general.idle_enable(True)
 
@@ -63,22 +52,16 @@ def EditMenu_Default_UndoRedo():
     qtpy_variable_manager = sc_tools_qt.EDITOR_QT_CONTAINER.get_variable_manager()
     variable_types = qtpy_variable_manager.get_basic_variable_types()
     qtpy_variable_manager.create_new_variable(variable_types.Boolean)
-    row_count = qtpy_variable_manager.sc_variable_count_matches_expected(VARIABLE_COUNT_BEFORE)
-    Report.result(Tests.variable_created, helper.wait_for_condition(
-        lambda: row_count, WAIT_TIME_3))
+    qtpy_variable_manager.sc_variable_count_matches_expected(VARIABLE_COUNT_BEFORE)
 
     # 4) Trigger Undo action and verify if variable is removed in Variable Manager
-    sc_editor_wrapper = sc_tools_qt.EDITOR_QT_CONTAINER.get_script_canvas_editor()
-    sc_editor_wrapper.trigger_undo_action()
-    row_count = qtpy_variable_manager.sc_variable_count_matches_expected(VARIABLE_COUNT_AFTER)
-    Report.result(Tests.undo_worked, helper.wait_for_condition(
-        lambda: row_count, WAIT_TIME_3))
+    sc_editor = sc_tools_qt.EDITOR_QT_CONTAINER.get_script_canvas_editor()
+    sc_editor.trigger_undo_action()
+    qtpy_variable_manager.sc_variable_count_matches_expected(VARIABLE_COUNT_AFTER)
 
     # 5) Trigger Redo action and verify if variable is re-added in Variable Manager
-    sc_editor_wrapper.trigger_redo_action()
-    row_count = qtpy_variable_manager.sc_variable_count_matches_expected(VARIABLE_COUNT_BEFORE)
-    Report.result(Tests.redo_worked, helper.wait_for_condition(
-        lambda: row_count, WAIT_TIME_3))
+    sc_editor.trigger_redo_action()
+    qtpy_variable_manager.sc_variable_count_matches_expected(VARIABLE_COUNT_BEFORE)
 
     # 6) Close SC window
     sc_tools_qt.close_script_canvas()
