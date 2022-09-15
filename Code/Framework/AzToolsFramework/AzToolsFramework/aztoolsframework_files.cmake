@@ -375,10 +375,14 @@ set(FILES
     UI/DocumentPropertyEditor/PropertyHandlerWidget.h
     UI/DocumentPropertyEditor/DocumentPropertyEditor.cpp
     UI/DocumentPropertyEditor/DocumentPropertyEditor.h
+    UI/DocumentPropertyEditor/DocumentPropertyEditorSettings.cpp
+    UI/DocumentPropertyEditor/DocumentPropertyEditorSettings.h
     UI/DocumentPropertyEditor/IPropertyEditor.h
     UI/DocumentPropertyEditor/KeyQueryDPE.cpp
     UI/DocumentPropertyEditor/KeyQueryDPE.h
     UI/DocumentPropertyEditor/KeyQueryDPE.ui
+    UI/DocumentPropertyEditor/SettingsRegistrar.cpp
+    UI/DocumentPropertyEditor/SettingsRegistrar.h
     UI/DPEDebugViewer/DPEDebugModel.cpp
     UI/DPEDebugViewer/DPEDebugModel.h
     UI/DPEDebugViewer/DPEDebugTextView.cpp
