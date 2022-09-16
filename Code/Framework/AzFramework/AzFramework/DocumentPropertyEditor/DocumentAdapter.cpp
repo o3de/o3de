@@ -125,7 +125,7 @@ namespace AZ::DocumentPropertyEditor
         m_changedEvent.Signal(patch);
     }
 
-    Dom::Value DocumentAdapter::SendMessage(const AdapterMessage& message)
+    Dom::Value DocumentAdapter::SendAdapterMessage(const AdapterMessage& message)
     {
         // First, fire HandleMessage to allow descendants to handle the message.
         Dom::Value result = HandleMessage(message);
@@ -147,7 +147,7 @@ namespace AZ::DocumentPropertyEditor
         message.m_messageName = m_messageName;
         message.m_messageOrigin = m_messageOrigin;
         message.m_messageParameters = parameters;
-        return m_adapter->SendMessage(message);
+        return m_adapter->SendAdapterMessage(message);
     }
 
     Dom::Value BoundAdapterMessage::MarshalToDom() const

@@ -26,6 +26,7 @@ namespace UnitTest
         MOCK_CONST_METHOD0(GetLocalPose, AZStd::pair<AZ::Vector3, AZ::Quaternion> ());
         MOCK_CONST_METHOD0(GetMaterial, AZStd::shared_ptr<Physics::Material> ());
         MOCK_METHOD0(GetNativePointer, void* ());
+        MOCK_CONST_METHOD0(GetNativePointer, const void*());
         MOCK_CONST_METHOD0(GetRestOffset, float ());
         MOCK_CONST_METHOD0(GetTag, AZ::Crc32 ());
         MOCK_METHOD2(RayCast, AzPhysics::SceneQueryHit (const AzPhysics::RayCastRequest&, const AZ::Transform&));

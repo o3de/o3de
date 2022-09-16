@@ -655,6 +655,8 @@ namespace PhysX
                 return CreatePxCookedMeshConfiguration(points, scale);
             }
             break;
+            case Physics::ShapeType::CookedMesh:
+                return static_cast<const Physics::CookedMeshShapeConfiguration&>(primitiveShapeConfig);
             default:
                 AZ_Error("PhysX Utils", false, "CreateConvexFromPrimitive was called with a non-primitive shape configuration.");
                 return {};
@@ -1795,6 +1797,7 @@ namespace PhysX
             FixedJointConfiguration::Reflect(context);
             BallJointConfiguration::Reflect(context);
             HingeJointConfiguration::Reflect(context);
+            PrismaticJointConfiguration::Reflect(context);
 
             MaterialConfiguration::Reflect(context);
         }

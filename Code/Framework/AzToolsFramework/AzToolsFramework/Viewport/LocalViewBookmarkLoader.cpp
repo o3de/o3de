@@ -216,15 +216,12 @@ namespace AzToolsFramework
                              AZStd::function<bool(AZ::IO::GenericStream&, AZStd::string_view)> writeFn)
         {
             constexpr auto configurationMode =
-                AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY;
+                AZ::IO::OpenMode::ModeCreatePath | AZ::IO::OpenMode::ModeWrite;
 
             // resolve path to user project folder
             const auto localBookmarkFilePath = LocalBookmarkFilePath(localBookmarksFileName);
 
-            AZ::IO::SystemFile outputFile;
-            outputFile.Open(localBookmarkFilePath.c_str(), configurationMode);
-
-            AZ::IO::SystemFileStream systemFileStream(&outputFile, false);
+            AZ::IO::SystemFileStream systemFileStream(localBookmarkFilePath.c_str(), configurationMode);
             const bool saved = writeFn(systemFileStream, stringBuffer);
 
             AZ_Warning(

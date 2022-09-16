@@ -43,6 +43,8 @@ set(FILES
     native/tests/assetmanager/AssetManagerTestingBase.h
     native/tests/assetmanager/IntermediateAssetTests.cpp
     native/tests/assetmanager/IntermediateAssetTests.h
+    native/tests/assetmanager/Validators/LfsPointerFileValidatorTests.cpp
+    native/tests/assetmanager/Validators/LfsPointerFileValidatorTests.h
     native/tests/utilities/assetUtilsTest.cpp
     native/tests/platformconfiguration/platformconfigurationtests.cpp
     native/tests/platformconfiguration/platformconfigurationtests.h
