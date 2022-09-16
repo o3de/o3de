@@ -16,8 +16,6 @@
 
 namespace AzToolsFramework
 {
-    class ViewportEditorModesInterface;
-
     struct ViewPaneOptions
     {
         AZ_TYPE_INFO(ViewPaneOptions, "{E9FB803A-2A47-4BCF-8A50-AB4C9D73AED2}");
