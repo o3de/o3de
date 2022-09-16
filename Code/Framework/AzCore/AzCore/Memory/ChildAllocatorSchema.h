@@ -7,6 +7,9 @@
  */
 #pragma once
 
+#include <AzCore/Memory/IAllocator.h>
+#include <AzCore/Memory/AllocatorInstance.h>
+
 namespace AZ
 {
     // Schema which acts as a pass through to another allocator. This allows for allocators

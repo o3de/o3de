@@ -23,6 +23,7 @@
 #include <AzCore/IO/SystemFile.h>
 
 #include <AzCore/Memory/AllocationRecords.h>
+#include <AzCore/Memory/IAllocator.h>
 #include <AzCore/UnitTest/TestTypes.h>
 
 #include <AzCore/std/parallel/containers/concurrent_unordered_set.h>
@@ -65,6 +66,8 @@ TEST(ComponentApplication, Test)
     systemEntity->Init();
     systemEntity->Activate();
     app.Destroy();
+
+    AZ::AllocatorManager::Instance().GarbageCollect();
     //////////////////////////////////////////////////////////////////////////
 }
 

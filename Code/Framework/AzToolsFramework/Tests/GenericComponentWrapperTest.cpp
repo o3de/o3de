@@ -9,6 +9,7 @@
 #include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
@@ -51,7 +52,7 @@ R"DELIMITER(<ObjectStream version="1">
 </ObjectStream>)DELIMITER";
 
 class WrappedEditorComponentTest
-    : public ::testing::Test
+    : public UnitTest::AllocatorsTestFixture
 {
 protected:
     void SetUp() override
@@ -178,7 +179,7 @@ public:
 };
 
 class FindWrappedComponentsTest
-    : public ::testing::Test
+    : public UnitTest::AllocatorsTestFixture
 {
 public:
     void SetUp() override

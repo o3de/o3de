@@ -32,7 +32,6 @@ namespace AZ
         ~PoolSchema();
 
         bool Create();
-        void Destroy() override;
 
         pointer allocate(size_type byteSize, size_type alignment) override;
         void deallocate(pointer ptr, size_type byteSize, size_type alignment) override;
@@ -70,7 +69,6 @@ namespace AZ
         ~ThreadPoolSchema();
 
         bool Create();
-        void Destroy() override;
 
         pointer allocate(size_type byteSize, size_type alignment) override;
         void deallocate(pointer ptr, size_type byteSize, size_type alignment) override;
@@ -147,6 +145,17 @@ namespace AZ
 
             AZ_RTTI((PoolAllocatorHelper, "{813b4b74-7381-4c62-b475-3f66efbcb615}", Schema), Base)
 
+            PoolAllocatorHelper()
+            {
+                this->Create();
+                this->PostCreate();
+            }
+
+            ~PoolAllocatorHelper() override
+            {
+                this->PreDestroy();
+            }
+
             bool Create()
             {
                 AZ_Assert(this->IsReady() == false, "Allocator was already created!");
@@ -165,12 +174,6 @@ namespace AZ
                 return isReady;
             }
 
-            void Destroy() override
-            {
-                static_cast<Schema*>(this->m_schema)->Destroy();
-                Base::Destroy();
-            }
-                        
             AllocatorDebugConfig GetDebugConfig() override
             {
                 return AllocatorDebugConfig()

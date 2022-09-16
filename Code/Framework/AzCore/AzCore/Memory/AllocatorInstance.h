@@ -9,105 +9,61 @@
 #pragma once
 
 #include <AzCore/Module/Environment.h>
-#include <AzCore/Memory/IAllocator.h>
+#include <AzCore/RTTI/TypeInfo.h>
+
+namespace AZ { class IAllocator; }
 
 namespace AZ::AllocatorStorage
 {
-    /**
-    * A base class for all storage policies. This exists to provide access to private IAllocator methods via template friends.
-    */
-    template<class Allocator>
-    class StoragePolicyBase
-    {
-    protected:
-        static void Create(Allocator& allocator, bool lazilyCreated)
-        {
-            allocator.Create();
-            allocator.PostCreate();
-            allocator.SetLazilyCreated(lazilyCreated);
-        }
-
-        static void SetLazilyCreated(Allocator& allocator, bool lazilyCreated)
-        {
-            allocator.SetLazilyCreated(lazilyCreated);
-        }
-
-        static void Destroy(IAllocator& allocator)
-        {
-            allocator.PreDestroy();
-            allocator.Destroy();
-        }
-    };
-
     /**
     * EnvironmentStoragePolicy stores the allocator singleton in the shared Environment.
     * This is the default, preferred method of storing allocators.
     */
     template<class Allocator>
-    class EnvironmentStoragePolicy : public StoragePolicyBase<Allocator>
+    class EnvironmentStoragePolicy
     {
+        class AllocatorEnvironmentVariable
+        {
+        public:
+            AllocatorEnvironmentVariable()
+                : m_allocator(Environment::FindVariable<Allocator>(AzTypeInfo<Allocator>::Name()))
+            {
+                if (!m_allocator)
+                {
+                    m_allocator = Environment::CreateVariable<Allocator>(AzTypeInfo<Allocator>::Name());
+                }
+            }
+
+            Allocator& operator*() const
+            {
+                return *m_allocator;
+            }
+
+        private:
+            EnvironmentVariable<Allocator> m_allocator;
+        };
+
     public:
         static IAllocator& GetAllocator()
         {
-            if (!s_allocator)
-            {
-                // Assert here before attempting to resolve. Otherwise a module-local
-                // environment will be created which will result in a much more difficult to
-                // locate problem
-                s_allocator = Environment::FindVariable<Allocator>(AzTypeInfo<Allocator>::Name());
-                AZ_Assert(s_allocator, "Allocator '%s' NOT ready for use! Call Create first!", AzTypeInfo<Allocator>::Name());
-            }
+            static AllocatorEnvironmentVariable s_allocator;
             return *s_allocator;
         }
 
         static void Create()
         {
-            if (!s_allocator)
-            {
-                s_allocator = Environment::CreateVariable<Allocator>(AzTypeInfo<Allocator>::Name());
-                if (s_allocator->IsReady()) // already created in a different module
-                {
-                    return;
-                }
-            }
-            else
-            {
-                AZ_Assert(s_allocator->IsReady(), "Allocator '%s' already created!", AzTypeInfo<Allocator>::Name());
-            }
-
-            StoragePolicyBase<Allocator>::Create(*s_allocator, false);
+            GetAllocator();
         }
 
         static void Destroy()
         {
-            if (s_allocator)
-            {
-                if (s_allocator.IsOwner())
-                {
-                    StoragePolicyBase<Allocator>::Destroy(*s_allocator);
-                }
-                s_allocator = nullptr;
-            }
-            else
-            {
-                AZ_Assert(false, "Allocator '%s' NOT ready for use! Call Create first!", AzTypeInfo<Allocator>::Name());
-            }
         }
 
         AZ_FORCE_INLINE static bool IsReady()
         {
-            if (!s_allocator)
-            {
-                s_allocator = Environment::FindVariable<Allocator>(AzTypeInfo<Allocator>::Name());
-            }
-            return s_allocator && s_allocator->IsReady();
+            return true;
         }
-
-        static EnvironmentVariable<Allocator> s_allocator;
     };
-
-    template<class Allocator>
-    EnvironmentVariable<Allocator> EnvironmentStoragePolicy<Allocator>::s_allocator;
 } // namespace AZ::AllocatorStorage
 
 namespace AZ::Internal

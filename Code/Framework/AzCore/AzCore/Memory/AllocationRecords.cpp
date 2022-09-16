@@ -46,23 +46,6 @@ namespace AZ::Debug
     }
 
     //=========================================================================
-    // ~AllocationRecords
-    // [9/16/2009]
-    //=========================================================================
-    AllocationRecords::~AllocationRecords()
-    {
-        if (!AllocatorManager::Instance().m_isAllocatorLeaking)
-        {
-            // dump all allocation (we should not have any at this point).
-            bool includeNameAndFilename = (m_saveNames || m_mode == RECORD_FULL);
-            EnumerateAllocations(PrintAllocationsCB(true, includeNameAndFilename));
-            AZ_Error(
-                "Memory", m_records.empty(), "We still have %d allocations on record! They must be freed prior to destroy!",
-                m_records.size());
-        }
-    }
-
-    //=========================================================================
     // lock
     // [9/16/2009]
     //=========================================================================

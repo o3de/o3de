@@ -2548,9 +2548,10 @@ namespace AZ
         template <typename T>
         AZ::GenericClassInfo* FindGenericClassInfo() const;
         AZ::GenericClassInfo* FindGenericClassInfo(const AZ::TypeId& genericTypeId) const;
-    private:
+
         void Cleanup();
 
+    private:
         AZ::OSAllocator m_moduleOSAllocator;
 
         GenericInfoModuleMap m_moduleLocalGenericClassInfos;
@@ -2572,8 +2573,7 @@ namespace AZ
         }
 
         void* rawMemory = m_moduleOSAllocator.Allocate(sizeof(GenericClassInfoType), alignof(GenericClassInfoType));
-        new (rawMemory) GenericClassInfoType();
-        auto genericClassInfo = static_cast<GenericClassInfoType*>(rawMemory);
+        auto genericClassInfo = new (rawMemory) GenericClassInfoType();
         if (genericClassInfo)
         {
             AddGenericClassInfo(genericClassInfo);

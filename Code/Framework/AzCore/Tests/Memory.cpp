@@ -44,6 +44,7 @@ namespace UnitTest
         }
         void TearDown() override
         {
+            AZ::AllocatorManager::Instance().GarbageCollect();
             AZ::AllocatorManager::Instance().ExitProfilingMode();
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_NO_RECORDS);
         }
@@ -2060,9 +2061,6 @@ namespace UnitTest
                     // pool allocations
                     MAX_SIZE = 256;
                     //allocdeallocThread(hpha,threadPool,true,true,true);
-
-                    pool.Destroy();
-                    threadPool.Destroy();
                 }
             }
 
@@ -2093,8 +2091,6 @@ namespace UnitTest
                           // pool allocations
                           MAX_SIZE = 256;
                           allocdeallocThread(hpha,threadPool,true,true,true);
-                          pool.Destroy();
-                          threadPool.Destroy();
                       }
             #endif
         }

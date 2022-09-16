@@ -20,36 +20,37 @@
 namespace AZ
 {
 
-static EnvironmentVariable<AllocatorManager> s_allocManager = nullptr;
-static AllocatorManager* s_allocManagerDebug = nullptr;  // For easier viewing in crash dumps
+static EnvironmentVariable<AllocatorManager>& GetAllocatorManagerEnvVar()
+{
+    static EnvironmentVariable<AllocatorManager> s_allocManager;
+    return s_allocManager;
+}
+
+static AllocatorManager* s_allocManagerDebug;  // For easier viewing in crash dumps
 
 //////////////////////////////////////////////////////////////////////////
 bool AllocatorManager::IsReady()
 {
-    return s_allocManager.IsConstructed();
+    return GetAllocatorManagerEnvVar().IsConstructed();
 }
 //////////////////////////////////////////////////////////////////////////
 void AllocatorManager::Destroy()
 {
-    if (s_allocManager)
-    {
-        s_allocManager->InternalDestroy();
-        s_allocManager.Reset();
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
 // The only allocator manager instance.
 AllocatorManager& AllocatorManager::Instance()
 {
-    if (!s_allocManager)
+    auto& allocatorManager = GetAllocatorManagerEnvVar();
+    if (!allocatorManager)
     {
-        s_allocManager = Environment::CreateVariable<AllocatorManager>(AZ_CRC_CE("AZ::AllocatorManager::s_allocManager"));
+        allocatorManager = Environment::CreateVariable<AllocatorManager>(AZ_CRC_CE("AZ::AllocatorManager::s_allocManager"));
 
-        s_allocManagerDebug = &(*s_allocManager);
+        s_allocManagerDebug = &(*allocatorManager);
     }
 
-    return *s_allocManager;
+    return *allocatorManager;
 }
 //////////////////////////////////////////////////////////////////////////
 
@@ -89,8 +90,6 @@ AllocatorManager::RegisterAllocator(class IAllocator* alloc)
         AZ_Assert(m_allocators[i] != alloc, "Allocator %s (%s) registered twice!", alloc->GetName());
     }
 
-    alloc->SetProfilingActive(m_profilingRefcount.load() > 0);
-
     m_allocators[m_numAllocators++] = alloc;
 }
 
@@ -105,7 +104,6 @@ AllocatorManager::InternalDestroy()
     {
         IAllocator* allocator = m_allocators[m_numAllocators - 1];
         (void)allocator;
-        AZ_Assert(allocator->IsLazilyCreated(), "Manually created allocator '%s (%s)' must be manually destroyed before shutdown", allocator->GetName());
         m_allocators[--m_numAllocators] = nullptr;
         // Do not actually destroy the lazy allocator as it may have work to do during non-deterministic shutdown
     }
@@ -172,7 +170,12 @@ AllocatorManager::GarbageCollect()
 {
     AZStd::lock_guard<AZStd::mutex> lock(m_allocatorListMutex);
 
-    for (int i = 0; i < m_numAllocators; ++i)
+    // Allocators can use other allocators. When this happens, the dependent
+    // allocators are registered first. By running garbage collect on the
+    // allocators in reverse order, the ones with no dependencies are garbage
+    // collected first, which frees up more allocations for the dependent
+    // allocators to release.
+    for (int i = m_numAllocators - 1; i >= 0; --i)
     {
         m_allocators[i]->GarbageCollect();
     }
@@ -226,33 +229,11 @@ AllocatorManager::SetTrackingMode(Debug::AllocationRecords::Mode mode)
 void
 AllocatorManager::EnterProfilingMode()
 {
-    if (!m_profilingRefcount++)
-    {
-        // We were at 0, so enable profiling
-        AZStd::lock_guard<AZStd::mutex> lock(m_allocatorListMutex);
-
-        for (int i = 0; i < m_numAllocators; ++i)
-        {
-            m_allocators[i]->SetProfilingActive(true);
-        }
-    }
 }
 
 void
 AllocatorManager::ExitProfilingMode()
 {
-    if (!--m_profilingRefcount)
-    {
-        // We've gone down to 0, so disable profiling
-        AZStd::lock_guard<AZStd::mutex> lock(m_allocatorListMutex);
-
-        for (int i = 0; i < m_numAllocators; ++i)
-        {
-            m_allocators[i]->SetProfilingActive(false);
-        }
-    }
-
-    AZ_Assert(m_profilingRefcount.load() >= 0, "ExitProfilingMode called without matching EnterProfilingMode");
 }
 
 void

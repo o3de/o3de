@@ -9,6 +9,7 @@
 
 #include <AzCore/base.h>
 #include <AzCore/std/algorithm.h>
+#include <AzCore/std/allocator_stateless.h>
 
 #include <AzCore/std/function/function_fwd.h> // for callbacks
 
@@ -40,7 +41,7 @@ namespace AZ
         };
 
         // We use OSAllocator which uses system calls to allocate memory, they are not recorded or tracked!
-        using AllocationRecordsType = AZStd::unordered_map<void*, AllocationInfo, AZStd::hash<void*>, AZStd::equal_to<void*>, OSStdAllocator>;
+        using AllocationRecordsType = AZStd::unordered_map<void*, AllocationInfo, AZStd::hash<void*>, AZStd::equal_to<void*>, AZStd::stateless_allocator>;
 
         /**
          * Records enumeration callback
@@ -92,8 +93,6 @@ namespace AZ
         class AllocationRecords
         {
          public:
-            AZ_CLASS_ALLOCATOR(AllocationRecords, OSAllocator, 0);
-
             enum Mode : int
             {
                 RECORD_NO_RECORDS,              ///< Never record any information.
@@ -109,7 +108,6 @@ namespace AZ
              */
 
             AllocationRecords(unsigned char stackRecordLevels, bool isMemoryGuard, bool isMarkUnallocatedMemory, const char* allocatorName);
-            ~AllocationRecords();
 
             unsigned int  MemoryGuardSize() const               { return m_memoryGuardSize; }
 

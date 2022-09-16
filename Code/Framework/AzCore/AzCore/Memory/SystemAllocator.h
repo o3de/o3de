@@ -28,7 +28,7 @@ namespace AZ
     public:
         AZ_RTTI(SystemAllocator, "{607C9CDF-B81F-4C5F-B493-2AD9C49023B7}", AllocatorBase)
 
-        SystemAllocator() = default;
+        SystemAllocator();
         ~SystemAllocator() override;
 
         bool Create();
@@ -56,7 +56,6 @@ namespace AZ
         SystemAllocator(const SystemAllocator&);
         SystemAllocator& operator=(const SystemAllocator&);
 
-        bool                        m_ownsOSAllocator = false;
         IAllocator* m_subAllocator;
     };
 }

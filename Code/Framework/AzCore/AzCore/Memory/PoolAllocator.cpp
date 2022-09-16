@@ -10,12 +10,15 @@
 #include <AzCore/Memory/AllocatorDebug.h>
 #include <AzCore/Memory/PoolAllocator.h>
 
+#include <AzCore/std/allocator_stateless.h>
+#include <AzCore/std/containers/span.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/intrusive_slist.h>
 #include <AzCore/std/containers/intrusive_list.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/lock.h>
 #include <AzCore/std/parallel/thread.h>
+#include <AzCore/std/typetraits/alignment_of.h>
 
 #include <AzCore/Memory/AllocationRecords.h>
 #include <AzCore/Math/MathUtils.h>
@@ -49,8 +52,7 @@ namespace AZ
         void* Allocate(size_t byteSize, size_t alignment);
         void DeAllocate(void* ptr);
         size_t get_allocated_size(void* ptr) const;
-        // if isForceFreeAllPages is true we will free all pages even if they have allocations in them.
-        void GarbageCollect(bool isForceFreeAllPages = false);
+        void GarbageCollect();
 
         Allocator* m_allocator;
         size_t m_pageSize;
@@ -68,8 +70,6 @@ namespace AZ
     class PoolSchemaImpl
     {
     public:
-        AZ_CLASS_ALLOCATOR(PoolSchemaImpl, SystemAllocator, 0)
-
         PoolSchemaImpl();
         ~PoolSchemaImpl();
 
@@ -151,6 +151,25 @@ namespace AZ
             return page;
         }
 
+        inline Bucket* AllocateBuckets(size_t numBuckets)
+        {
+            Bucket* buckets = reinterpret_cast<Bucket*>(m_pageAllocator->allocate(sizeof(Bucket) * numBuckets, alignof(Bucket)));
+            for (size_t i = 0; i < numBuckets; ++i)
+            {
+                new (buckets + i) Bucket();
+            }
+            return buckets;
+        }
+
+        inline void DeAllocateBuckets(Bucket* buckets, size_t numBuckets)
+        {
+            for (size_t i = 0; i < numBuckets; ++i)
+            {
+                buckets[i].~Bucket();
+            }
+            m_pageAllocator->deallocate(buckets, sizeof(Bucket) * numBuckets);
+        }
+
         using AllocatorType = PoolAllocation<PoolSchemaImpl>;
         IAllocator*                   m_pageAllocator;
         AllocatorType m_allocator;
@@ -164,8 +183,6 @@ namespace AZ
     class ThreadPoolSchemaImpl
     {
     public:
-        AZ_CLASS_ALLOCATOR(ThreadPoolSchemaImpl, SystemAllocator, 0)
-
         /**
          * Specialized \ref PoolAllocator::Page page for lock free allocator.
          */
@@ -258,6 +275,25 @@ namespace AZ
             return page;
         }
 
+        inline Bucket* AllocateBuckets(size_t numBuckets)
+        {
+            Bucket* buckets = reinterpret_cast<Bucket*>(m_pageAllocator->allocate(sizeof(Bucket) * numBuckets, alignof(Bucket)));
+            for (size_t i = 0; i < numBuckets; ++i)
+            {
+                new (buckets + i) Bucket();
+            }
+            return buckets;
+        }
+
+        inline void DeAllocateBuckets(Bucket* buckets, size_t numBuckets)
+        {
+            for (size_t i = 0; i < numBuckets; ++i)
+            {
+                buckets[i].~Bucket();
+            }
+            m_pageAllocator->deallocate(buckets, sizeof(Bucket) * numBuckets);
+        }
+
         // NOTE we allow only one instance of a allocator, you need to subclass it for different versions.
         // so for now it's safe to use static. We use TLS on a static because on some platforms set thread key is available
         // only for pthread lib and we don't use it. I can't find other way to it, otherwise please switch this to
@@ -268,7 +304,7 @@ namespace AZ
         // Fox X64 we push/pop pages using the m_mutex to sync. Pages are
         using FreePagesType = Bucket::PageListType;
         FreePagesType m_freePages;
-        AZStd::vector<ThreadPoolData*> m_threads; ///< Array with all separate thread data. Used to traverse end free elements.
+        AZStd::vector<ThreadPoolData*, AZStd::stateless_allocator> m_threads; ///< Array with all separate thread data. Used to traverse end free elements.
 
         IAllocator*           m_pageAllocator;
         size_t m_pageSize;
@@ -280,8 +316,6 @@ namespace AZ
 
     struct ThreadPoolData
     {
-        AZ_CLASS_ALLOCATOR(ThreadPoolData, SystemAllocator, 0)
-
         ThreadPoolData(ThreadPoolSchemaImpl* alloc, size_t pageSize, size_t minAllocationSize, size_t maxAllocationSize);
         ~ThreadPoolData();
 
@@ -339,12 +373,7 @@ namespace AZ
             m_minAllocationSize);
         m_numBuckets = m_maxAllocationSize / m_minAllocationSize;
         AZ_Assert(m_numBuckets <= 0xffff, "You can't have more than 65535 number of buckets! We need to increase the index size!");
-        m_buckets = reinterpret_cast<BucketType*>(
-            alloc->m_pageAllocator->allocate(sizeof(BucketType) * m_numBuckets, alignof(BucketType)));
-        for (size_t i = 0; i < m_numBuckets; ++i)
-        {
-            new (m_buckets + i) BucketType();
-        }
+        m_buckets = m_allocator->AllocateBuckets(m_numBuckets);
     }
 
     //=========================================================================
@@ -354,13 +383,17 @@ namespace AZ
     template<class Allocator>
     PoolAllocation<Allocator>::~PoolAllocation()
     {
-        GarbageCollect(true);
-
-        for (size_t i = 0; i < m_numBuckets; ++i)
+#if defined(AZ_ENABLE_TRACING)
+        // Check all pages in buckets are empty
+        if (m_buckets)
         {
-            m_buckets[i].~BucketType();
+            for (const auto& bucket : AZStd::span(m_buckets, m_buckets + m_numBuckets))
+            {
+                AZ_Assert(bucket.m_pages.empty(), "Found page for bucket %p", &bucket);
+            }
         }
-        m_allocator->m_pageAllocator->deallocate(m_buckets, sizeof(BucketType) * m_numBuckets);
+#endif
+        GarbageCollect();
     }
 
     //=========================================================================
@@ -381,6 +414,11 @@ namespace AZ
         {
             AZ_Assert(false, "Allocation size (%d) is too big (max: %d) for pools!", byteSize, m_maxAllocationSize);
             return nullptr;
+        }
+
+        if (!m_buckets)
+        {
+            m_buckets = m_allocator->AllocateBuckets(m_numBuckets);
         }
 
         u32 bucketIndex = static_cast<u32>((byteSize >> m_minAllocationShift) - 1);
@@ -514,23 +552,33 @@ namespace AZ
     // [3/1/2012]
     //=========================================================================
     template<class Allocator>
-    AZ_INLINE void PoolAllocation<Allocator>::GarbageCollect(bool isForceFreeAllPages)
+    AZ_INLINE void PoolAllocation<Allocator>::GarbageCollect()
     {
-        // Free empty pages in the buckets (or better be empty)
-        for (unsigned int i = 0; i < (unsigned int)m_numBuckets; ++i)
+        if (m_buckets)
         {
-            // (pageSize - info struct at the end) / (element size)
-            size_t maxElementsPerBucket = (m_pageSize - sizeof(PageType)) / ((i + 1) << m_minAllocationShift);
-
-            typename BucketType::PageListType& pages = m_buckets[i].m_pages;
-            while (!pages.empty())
+            // Free empty pages in the buckets
+            for (auto& bucket : AZStd::span(m_buckets, m_buckets + m_numBuckets))
             {
-                PageType& page = pages.front();
-                pages.pop_front();
-                if (page.m_freeList.size() == maxElementsPerBucket || isForceFreeAllPages)
+                auto& pages = bucket.m_pages;
+                pages.remove_if([this](PageType& page)
                 {
-                    m_allocator->FreePage(&page);
-                }
+                    if (page.m_freeList.size() == page.m_maxNumElements)
+                    {
+                        m_allocator->FreePage(&page);
+                        return true;
+                    };
+                    return false;
+                });
+            }
+
+            const bool allBucketsEmpty = AZStd::all_of(m_buckets, m_buckets + m_numBuckets, [](const BucketType& bucket)
+            {
+                return bucket.m_pages.empty();
+            });
+            if (allBucketsEmpty)
+            {
+                m_allocator->DeAllocateBuckets(m_buckets, m_numBuckets);
+                m_buckets = nullptr;
             }
         }
     }
@@ -556,8 +604,9 @@ namespace AZ
     //=========================================================================
     PoolSchema::~PoolSchema()
     {
-        AZ_Assert(m_impl == nullptr, "You did not destroy the pool schema!");
-        delete m_impl;
+        m_impl->~PoolSchemaImpl();
+        AZStd::stateless_allocator().deallocate(m_impl, sizeof(PoolSchemaImpl));
+        m_impl = nullptr;
     }
 
     //=========================================================================
@@ -569,19 +618,11 @@ namespace AZ
         AZ_Assert(m_impl == nullptr, "PoolSchema already created!");
         if (m_impl == nullptr)
         {
-            m_impl = aznew PoolSchemaImpl();
+            m_impl =
+                reinterpret_cast<PoolSchemaImpl*>(AZStd::stateless_allocator().allocate(sizeof(PoolSchemaImpl), alignof(PoolSchemaImpl)));
+            new (m_impl) PoolSchemaImpl();
         }
         return (m_impl != nullptr);
-    }
-
-    //=========================================================================
-    // ~Destroy
-    // [9/15/2009]
-    //=========================================================================
-    void PoolSchema::Destroy()
-    {
-        delete m_impl;
-        m_impl = nullptr;
     }
 
     //=========================================================================
@@ -637,14 +678,8 @@ namespace AZ
     {
         // External requests for garbage collection may come from any thread, and the
         // garbage collection operation isn't threadsafe, which can lead to crashes.
-        //
-        // Due to the low memory consumption of this allocator in practice on Dragonfly
-        // (~3kb) it makes sense to not bother with garbage collection and leave it to
-        // occur exclusively in the destruction of the allocator.
-        //
-        // TODO: A better solution needs to be found for integrating back into mainline
-        // Open 3D Engine.
-        // m_impl->GarbageCollect();
+
+        m_impl->GarbageCollect();
     }
 
     //=========================================================================
@@ -679,9 +714,6 @@ namespace AZ
     //=========================================================================
     PoolSchemaImpl::~PoolSchemaImpl()
     {
-        // Force free all pages
-        m_allocator.GarbageCollect(true);
-
         // Free all unused memory
         GarbageCollect();
     }
@@ -750,17 +782,13 @@ namespace AZ
     //=========================================================================
     void PoolSchemaImpl::GarbageCollect()
     {
-        // if( m_ownerThread == AZStd::this_thread::get_id() )
+        while (!m_freePages.empty())
         {
-            m_allocator.GarbageCollect();
-
-            while (!m_freePages.empty())
-            {
-                Page* page = &m_freePages.front();
-                m_freePages.pop_front();
-                FreePage(page);
-            }
+            Page* page = &m_freePages.front();
+            m_freePages.pop_front();
+            FreePage(page);
         }
+        m_allocator.GarbageCollect();
     }
 
     //=========================================================================
@@ -804,8 +832,9 @@ namespace AZ
     //=========================================================================
     ThreadPoolSchema::~ThreadPoolSchema()
     {
-        AZ_Assert(m_impl == nullptr, "You did not destroy the thread pool schema!");
-        delete m_impl;
+        m_impl->~ThreadPoolSchemaImpl();
+        AZStd::stateless_allocator().deallocate(m_impl, sizeof(ThreadPoolSchemaImpl));
+        m_impl = nullptr;
     }
 
     //=========================================================================
@@ -817,20 +846,15 @@ namespace AZ
         AZ_Assert(m_impl == nullptr, "PoolSchema already created!");
         if (m_impl == nullptr)
         {
-            m_impl = aznew ThreadPoolSchemaImpl(m_threadPoolGetter, m_threadPoolSetter);
+            // We use the AZStd::stateless_allocator for the allocation of this object to prevent it from showing up as a leak
+            // in other allocators.
+            m_impl = reinterpret_cast<ThreadPoolSchemaImpl*>(
+                AZStd::stateless_allocator().allocate(sizeof(ThreadPoolSchemaImpl), AZStd::alignment_of<ThreadPoolSchemaImpl>::value));
+            new (m_impl) ThreadPoolSchemaImpl(m_threadPoolGetter, m_threadPoolSetter);
         }
         return (m_impl != nullptr);
     }
 
-    //=========================================================================
-    // Destroy
-    // [9/15/2009]
-    //=========================================================================
-    void ThreadPoolSchema::Destroy()
-    {
-        delete m_impl;
-        m_impl = nullptr;
-    }
     //=========================================================================
     // Allocate
     // [9/15/2009]
@@ -929,29 +953,30 @@ namespace AZ
     //=========================================================================
     ThreadPoolSchemaImpl::~ThreadPoolSchemaImpl()
     {
+        GarbageCollect();
+
         // clean up all the thread data.
         // IMPORTANT: We assume/rely that all threads (except the calling one) are or will
         // destroyed before you create another instance of the pool allocation.
         // This should generally be ok since the all allocators are singletons.
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
+        if (!m_threads.empty())
         {
-            AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
-            if (!m_threads.empty())
+            for (ThreadPoolData*& threadData : m_threads)
             {
-                for (size_t i = 0; i < m_threads.size(); ++i)
+                if (threadData)
                 {
-                    if (m_threads[i])
-                    {
-                        // Force free all pages
-                        delete m_threads[i];
-                    }
+                    // Force free all pages
+                    threadData->~ThreadPoolData();
+                    AZStd::stateless_allocator().deallocate(
+                        threadData, sizeof(ThreadPoolData), AZStd::alignment_of<ThreadPoolData>::value);
+                    threadData = nullptr;
                 }
-
-                /// reset the variable for the owner thread.
-                m_threadPoolSetter(nullptr);
             }
-        }
 
-        GarbageCollect();
+            /// reset the variable for the owner thread.
+            m_threadPoolSetter(nullptr);
+        }
     }
 
     //=========================================================================
@@ -965,7 +990,8 @@ namespace AZ
 
         if (threadData == nullptr)
         {
-            threadData = aznew ThreadPoolData(this, m_pageSize, m_minAllocationSize, m_maxAllocationSize);
+            void* threadPoolData = AZStd::stateless_allocator().allocate(sizeof(ThreadPoolData), AZStd::alignment_of<ThreadPoolData>::value);
+            threadData = new (threadPoolData) ThreadPoolData(this, m_pageSize, m_minAllocationSize, m_maxAllocationSize);
             m_threadPoolSetter(threadData);
             {
                 AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
@@ -1085,6 +1111,17 @@ namespace AZ
     void ThreadPoolSchemaImpl::GarbageCollect()
     {
         AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
+        for (ThreadPoolData* threadData : m_threads)
+        {
+            if (threadData)
+            {
+                for (auto fakeLFNode = threadData->m_freedElements.pop(); fakeLFNode; fakeLFNode = threadData->m_freedElements.pop())
+                {
+                    threadData->m_allocator.DeAllocate(fakeLFNode);
+                }
+                threadData->m_allocator.GarbageCollect();
+            }
+        }
         while (!m_freePages.empty())
         {
             Page* page = &m_freePages.front();
@@ -1127,8 +1164,7 @@ namespace AZ
     ThreadPoolData::~ThreadPoolData()
     {
         // deallocate elements if they were freed from other threads
-        ThreadPoolSchemaImpl::Page::FakeNodeLF* fakeLFNode;
-        while ((fakeLFNode = m_freedElements.pop()) != nullptr)
+        for (ThreadPoolSchemaImpl::Page::FakeNodeLF* fakeLFNode = m_freedElements.pop(); fakeLFNode; fakeLFNode = m_freedElements.pop())
         {
             m_allocator.DeAllocate(fakeLFNode);
         }

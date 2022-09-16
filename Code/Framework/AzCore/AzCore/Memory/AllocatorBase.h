@@ -36,8 +36,6 @@ namespace AZ
         bool IsReady() const final;
         void PostCreate() override;
         void PreDestroy() final;
-        void SetLazilyCreated(bool lazy) final;
-        bool IsLazilyCreated() const final;
         void SetProfilingActive(bool active) final;
         bool IsProfilingActive() const final;
         //---------------------------------------------------------------------
@@ -94,7 +92,6 @@ namespace AZ
     private:
         Debug::AllocationRecords* m_records = nullptr;  // Cached pointer to allocation records
         size_t m_memoryGuardSize = 0;
-        bool m_isLazilyCreated = false;
         bool m_isProfilingActive = false;
         bool m_isReady = false;
         bool m_registrationEnabled = true;

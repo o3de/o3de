@@ -25,20 +25,27 @@ namespace AZ
 {
     //////////////////////////////////////////////////////////////////////////
     // Globals - we use global storage for the first memory schema, since we can't use dynamic memory!
-    static bool g_isSystemSchemaUsed = false;
     static AZStd::aligned_storage<sizeof(HphaSchema), AZStd::alignment_of<HphaSchema>::value>::type g_systemSchema;
 
     //////////////////////////////////////////////////////////////////////////
+
+    SystemAllocator::SystemAllocator()
+    {
+        AllocatorInstance<OSAllocator>::Get();
+#if defined(AZ_ENABLE_TRACING)
+        SetProfilingActive(true);
+#endif
+        Create();
+        PostCreate();
+    }
 
     //=========================================================================
     // ~SystemAllocator
     //=========================================================================
     SystemAllocator::~SystemAllocator()
     {
-        if (IsReady())
-        {
-            Destroy();
-        }
+        PreDestroy();
+        Destroy();
     }
 
     //=========================================================================
@@ -53,33 +60,8 @@ namespace AZ
             return false;
         }
 
-        if (!AllocatorInstance<OSAllocator>::IsReady())
-        {
-            m_ownsOSAllocator = true;
-            AllocatorInstance<OSAllocator>::Create();
-        }
-        bool isReady = false;
-        // Fix SystemAllocator from growing in small chunks
-        if (&AllocatorInstance<SystemAllocator>::Get() == this) // if we are the system allocator
-        {
-            AZ_Assert(!g_isSystemSchemaUsed, "AZ::SystemAllocator MUST be created first! It's the source of all allocations!");
-
-            m_subAllocator = new (&g_systemSchema) HphaSchema();
-            g_isSystemSchemaUsed = true;
-            isReady = true;
-        }
-        else
-        {
-            // this class should be inheriting from SystemAllocator
-            AZ_Assert(
-                AllocatorInstance<SystemAllocator>::IsReady(),
-                "System allocator must be created before any other allocator! They allocate from it.");
-
-            m_subAllocator = azcreate(HphaSchema, (), SystemAllocator);
-            isReady = m_subAllocator != nullptr;
-        }
-
-        return isReady;
+        m_subAllocator = new (&g_systemSchema) HphaSchema();
+        return true;
     }
 
     //=========================================================================
@@ -88,27 +70,7 @@ namespace AZ
     //=========================================================================
     void SystemAllocator::Destroy()
     {
-        if (g_isSystemSchemaUsed)
-        {
-            int dummy;
-            (void)dummy;
-        }
-
-        if ((void*)m_subAllocator == (void*)&g_systemSchema)
-        {
-            static_cast<HphaSchema*>(m_subAllocator)->~HphaSchema();
-            g_isSystemSchemaUsed = false;
-        }
-        else
-        {
-            azdestroy(m_subAllocator);
-        }
-
-        if (m_ownsOSAllocator)
-        {
-            AllocatorInstance<OSAllocator>::Destroy();
-            m_ownsOSAllocator = false;
-        }
+        static_cast<HphaSchema*>(m_subAllocator)->~HphaSchema();
     }
 
     AllocatorDebugConfig SystemAllocator::GetDebugConfig()

@@ -7,6 +7,7 @@
  */
 #include <AzCore/Script/ScriptContext.h>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/Memory/AllocatorWrappers.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/RTTI/BehaviorContextUtilities.h>
 #include <AzCore/Script/ScriptContextDebug.h>
@@ -16,7 +17,6 @@
 #include <AzCore/Script/lua/lua.h>
 #include <AzCore/IO/GenericStreams.h>
 #include <AzCore/RTTI/AttributeReader.h>
-#include <AzCore/RTTI/BehaviorContext.h>
 
 #include <AzCore/Script/ScriptPropertyTable.h>
 #include <AzCore/StringFunc/StringFunc.h>
@@ -398,13 +398,7 @@ namespace AZ
         };
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
-        class LuaSystemAllocator final
-            : public AZ::SystemAllocator
-        {
-        public:
-            AZ_CLASS_ALLOCATOR(LuaSystemAllocator, AZ::SystemAllocator, 0);
-            AZ_RTTI(LuaSystemAllocator, "{7BEFB496-76EC-43DB-AB82-5ABA524FEF7F}", AZ::SystemAllocator);
-        };
+        AZ_ALLOCATOR_DEFAULT_GLOBAL_WRAPPER(LuaSystemAllocator, AZ::SystemAllocator, "{7BEFB496-76EC-43DB-AB82-5ABA524FEF7F}")
 
         //=========================================================================
         // azlua_setglobal - raw setglobal function (no metamethods called)
@@ -4340,8 +4334,7 @@ LUA_API const Node* lua_getDummyNode()
                 {
                     if (!allocator)
                     {
-                        m_luaAllocator.Create();
-                        allocator = m_luaAllocator.Get();
+                        allocator = &m_luaAllocator;
                     }
                     m_lua = lua_newstate(&LuaMemoryHook, allocator);
                     AZ_Assert(m_lua, "Failed to create new LUA state!");
@@ -5842,7 +5835,7 @@ LUA_API const Node* lua_getDummyNode()
             AZStd::vector< ScriptTypeFactory >  m_scriptPropertyFactories;
             AZStd::vector< ScriptTypeFactory >  m_scriptPropertyArrayFactories;
             ScriptTypeFactory                   m_scriptPropertyTableFactory;
-            AllocatorWrapper<Internal::LuaSystemAllocator> m_luaAllocator;
+            Internal::LuaSystemAllocator m_luaAllocator;
             AZStd::thread::id m_ownerThreadId; // Check if Lua methods (including EBus handlers) are called from background threads.
         };
 

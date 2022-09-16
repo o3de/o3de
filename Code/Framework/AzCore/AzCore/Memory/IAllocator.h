@@ -28,12 +28,6 @@ namespace AZ
         class AllocationRecords;
     }
 
-    namespace AllocatorStorage
-    {
-        template<class Allocator>
-        class StoragePolicyBase;
-    }
-
     template<class Allocator>
     class AllocatorWrapper;
 
@@ -212,15 +206,7 @@ namespace AZ
         /// Returns true if this allocator is ready to use.
         virtual bool IsReady() const { return true; }
 
-        /// Returns true if the allocator was lazily created. Exposed primarily for testing systems that need to verify the state of allocators.
-        virtual bool IsLazilyCreated() const { return false; }
-
     private:
-        /// Determines whether the allocator was lazily created, possibly at static initialization.
-        /// This is primarily meant to support older allocation systems, such as those used by CryEngine.
-        /// Newer systems should create and destroy their allocators deliberately at program start-up and shut-down.
-        virtual void SetLazilyCreated([[maybe_unused]] bool lazy) {}
-
         /// Sets whether profiling calls should be made.
         /// This is primarily a performance compromise, as the profiling calls go out on an EBus that may not exist if not activated, and will
         /// result in an expensive hash lookup if that is the case.
@@ -239,9 +225,6 @@ namespace AZ
         virtual void Destroy() {}
 
     protected:
-        template<class Allocator>
-        friend class AllocatorStorage::StoragePolicyBase;
-
         friend class AllocatorManager;
 
         template<class Allocator>

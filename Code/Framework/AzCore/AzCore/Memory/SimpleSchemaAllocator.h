@@ -30,7 +30,12 @@ namespace AZ
         using size_type = typename Schema::size_type;
         using difference_type = typename Schema::difference_type;
 
-        SimpleSchemaAllocator() = default;
+        SimpleSchemaAllocator()
+        {
+            SetProfilingActive(ProfileAllocations);
+            Create();
+        }
+
         ~SimpleSchemaAllocator() override
         {
             if (m_schema)
@@ -44,15 +49,6 @@ namespace AZ
         {
             m_schema = new (&m_schemaStorage) Schema();
             return m_schema != nullptr;
-        }
-
-        //---------------------------------------------------------------------
-        // IAllocator
-        //---------------------------------------------------------------------
-        void Destroy() override
-        {
-            reinterpret_cast<Schema*>(&m_schemaStorage)->~Schema();
-            m_schema = nullptr;
         }
 
         AllocatorDebugConfig GetDebugConfig() override
@@ -96,7 +92,7 @@ namespace AZ
             m_schema->deallocate(ptr, byteSize, alignment);
         }
 
-        pointer reallocate(pointer ptr, size_type newSize, size_type newAlignment) override
+        pointer reallocate(pointer ptr, size_type newSize, size_type newAlignment = 1) override
         {
             if (ProfileAllocations)
             {
@@ -128,7 +124,7 @@ namespace AZ
             return newPtr;
         }
                 
-        size_type get_allocated_size(pointer ptr, align_type alignment) const override
+        size_type get_allocated_size(pointer ptr, align_type alignment = 1) const override
         {
             return MemorySizeAdjustedDown(m_schema->get_allocated_size(ptr, alignment));
         }
@@ -144,7 +140,7 @@ namespace AZ
         }
 
     protected:
-        IAllocator* m_schema;
+        IAllocator* m_schema{};
     private:
         typename AZStd::aligned_storage<sizeof(Schema), AZStd::alignment_of<Schema>::value>::type m_schemaStorage;
     };

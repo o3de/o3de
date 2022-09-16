@@ -25,7 +25,7 @@ namespace UnitTest
      * Test fixture that starts up an AzFramework::Application.
      */
     class FrameworkApplicationFixture
-        : public ::testing::Test
+        : public UnitTest::AllocatorsTestFixture
     {
     protected:
 

@@ -10,6 +10,20 @@
 
 namespace AZ
 {
+    OSAllocator::OSAllocator()
+    {
+        Create();
+        PostCreate();
+#if defined(AZ_ENABLE_TRACING)
+        SetProfilingActive(true);
+#endif
+    }
+    OSAllocator::~OSAllocator()
+    {
+        PreDestroy();
+        Destroy();
+    }
+
     //=========================================================================
     // Create
     // [9/2/2009]
@@ -34,7 +48,11 @@ namespace AZ
     //=========================================================================
     AllocatorDebugConfig OSAllocator::GetDebugConfig()
     {
-        return AllocatorDebugConfig().ExcludeFromDebugging();
+        return AllocatorDebugConfig()
+            .StackRecordLevels(20)
+            .UsesMemoryGuards()
+            .MarksUnallocatedMemory()
+            .ExcludeFromDebugging(false);
     }
 
     //=========================================================================
@@ -52,7 +70,15 @@ namespace AZ
             OnOutOfMemory(byteSize, alignment);
         }
 
-        m_numAllocatedBytes += byteSize;
+#if defined(AZ_ENABLE_TRACING)
+        // We assume 1 alignment because alignment is sometimes not passed in deallocate. This does mean that we are under-reporting
+        // for cases where alignment != 1 and the OS could not find a block specifically for that alignment (the OS will give use a
+        // block that is byteSize+(alignment-1) and place the ptr in the first address that satisfies the alignment).
+        const size_type allocatedSize = get_allocated_size(address, 1);
+        m_numAllocatedBytes += allocatedSize;
+        AZ_PROFILE_MEMORY_ALLOC_EX(MemoryReserved, fileName, lineNum, address, byteSize, name);
+        AZ_MEMORY_PROFILE(ProfileAllocation(address, byteSize, alignment, 1));
+#endif
 
         return address;
     }
@@ -61,25 +87,43 @@ namespace AZ
     // DeAllocate
     // [9/2/2009]
     //=========================================================================
-    void OSAllocator::deallocate(pointer ptr, size_type byteSize, [[maybe_unused]] size_type alignment)
+    void OSAllocator::deallocate(pointer ptr, [[maybe_unused]] size_type byteSize, [[maybe_unused]] size_type alignment)
     {
+#if defined(AZ_ENABLE_TRACING)
+        if (ptr)
+        {
+            const size_type allocatedSize = get_allocated_size(ptr, 1);
+            m_numAllocatedBytes -= allocatedSize;
+            AZ_PROFILE_MEMORY_FREE(MemoryReserved, ptr);
+            AZ_MEMORY_PROFILE(ProfileDeallocation(ptr, byteSize, alignment, nullptr));
+        }
+#endif
         AZ_OS_FREE(ptr);
 
-        m_numAllocatedBytes -= byteSize;
     }
 
     OSAllocator::pointer OSAllocator::reallocate(pointer ptr, size_type newSize, align_type alignment)
     {
+#if defined(AZ_ENABLE_TRACING)
         if (ptr)
         {
-            m_numAllocatedBytes -= get_allocated_size(ptr, alignment);
+            const size_type previouslyAllocatedSize = get_allocated_size(ptr, 1);
+            m_numAllocatedBytes -= previouslyAllocatedSize;
+            AZ_PROFILE_MEMORY_FREE(MemoryReserved, ptr);
+            AZ_MEMORY_PROFILE(ProfileDeallocation(ptr, previouslyAllocatedSize, alignment, nullptr));
         }
+#endif
 
         // Realloc in most platforms doesnt support allocating from a nulltpr
         pointer newPtr = ptr ? AZ_OS_REALLOC(ptr, newSize, static_cast<AZStd::size_t>(alignment))
                              : AZ_OS_MALLOC(newSize, static_cast<AZStd::size_t>(alignment));
 
-        m_numAllocatedBytes += get_allocated_size(newPtr, alignment);
+#if defined(AZ_ENABLE_TRACING)
+        const size_type allocatedSize = get_allocated_size(newPtr, 1);
+        m_numAllocatedBytes += allocatedSize;
+        AZ_PROFILE_MEMORY_ALLOC_EX(MemoryReserved, fileName, lineNum, address, byteSize, name);
+        AZ_MEMORY_PROFILE(ProfileAllocation(ptr, allocatedSize, alignment, 1));
+#endif
 
         return newPtr;
     }

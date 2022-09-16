@@ -17,6 +17,17 @@ public:
     AZ_TYPE_INFO(HphaSchema_TestAllocator, "{ACE2D6E5-4EB8-4DD2-AE95-6BDFD0476801}");
 
     using Base = AZ::SimpleSchemaAllocator<AZ::HphaSchema>;
+
+    HphaSchema_TestAllocator()
+    {
+        Create();
+        PostCreate();
+    }
+
+    ~HphaSchema_TestAllocator() override
+    {
+        PreDestroy();
+    }
 };
 
 static const size_t s_kiloByte = 1024;

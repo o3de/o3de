@@ -140,6 +140,7 @@ namespace AZ
 {
     AllocatorBase::~AllocatorBase()
     {
+        PreDestroy();
         AZ_Assert(
             !m_isReady,
             "Allocator %s is being destructed without first having gone through proper calls to PreDestroy() and Destroy(). Use "
@@ -196,16 +197,6 @@ namespace AZ
         }
 
         m_isReady = false;
-    }
-
-    void AllocatorBase::SetLazilyCreated(bool lazy)
-    {
-        m_isLazilyCreated = lazy;
-    }
-
-    bool AllocatorBase::IsLazilyCreated() const
-    {
-        return m_isLazilyCreated;
     }
 
     void AllocatorBase::SetProfilingActive(bool active)
