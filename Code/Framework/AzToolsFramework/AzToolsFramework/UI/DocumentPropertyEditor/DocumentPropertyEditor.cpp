@@ -548,18 +548,22 @@ namespace AzToolsFramework
         const auto& fullPath = domOperation.GetDestinationPath();
         auto pathEntry = fullPath[pathIndex];
 
-        const bool isValidIndex = pathEntry.IsIndex() || pathEntry.IsEndOfArray();
-        AZ_Assert(isValidIndex, "the direct children of a row must be referenced by index");
-        if (!isValidIndex)
+        const bool entryIsIndex = pathEntry.IsIndex() || pathEntry.IsEndOfArray();
+        const bool entryAtEnd = (pathIndex == fullPath.Size() - 1); // this is the last entry in the path
+
+        if (!entryIsIndex && entryAtEnd)
         {
-            return;
+            // patch isn't addressing a child index like a child row or widget, it's an attribute,
+            // refresh this row from its corresponding DOM node
+            auto subPath = fullPath;
+            subPath.Pop();
+            const auto valueAtSubPath = GetDPE()->GetAdapter()->GetContents()[subPath];
+            SetValueFromDom(valueAtSubPath);
         }
-
-        auto childCount = m_domOrderedChildren.size();
-
-        // if we're on the last entry in the path, this row widget is the direct owner
-        if (pathIndex == fullPath.Size() - 1)
+        else if (entryAtEnd)
         {
+            // if we're on the last entry in the path, this row widget is the direct owner
+            const auto childCount = m_domOrderedChildren.size();
             size_t childIndex = 0;
             if (pathEntry.IsIndex())
             {
@@ -617,6 +621,7 @@ namespace AzToolsFramework
         }
         else // not the direct owner of the entry to patch
         {
+            const auto childCount = m_domOrderedChildren.size();
             // find the next widget in the path and delegate the operation to them
             auto childIndex = (pathEntry.IsIndex() ? pathEntry.GetIndex() : childCount - 1);
             AZ_Assert(childIndex <= childCount, "DPE: Patch failed to apply, invalid child index specified");
