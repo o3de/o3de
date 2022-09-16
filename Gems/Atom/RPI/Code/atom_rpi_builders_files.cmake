@@ -13,6 +13,8 @@ set(FILES
     Source/RPI.Builders/Common/AnyAssetBuilder.h
     Source/RPI.Builders/Material/MaterialBuilder.cpp
     Source/RPI.Builders/Material/MaterialBuilder.h
+    Source/RPI.Builders/Material/MaterialTypePreBuilder.cpp
+    Source/RPI.Builders/Material/MaterialTypePreBuilder.h
     Source/RPI.Builders/Model/MaterialAssetBuilderComponent.cpp
     Source/RPI.Builders/Model/MaterialAssetBuilderComponent.h
     Source/RPI.Builders/Model/ModelAssetBuilderComponent.cpp

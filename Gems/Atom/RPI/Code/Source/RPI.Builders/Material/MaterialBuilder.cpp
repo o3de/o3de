@@ -216,7 +216,7 @@ namespace AZ
             // If the file is a .material, report a dependency on the .materialtype and parent .material file
             {
                 AZStd::string fullSourcePath;
-                AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), fullSourcePath, true);
+                AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.c_str(), request.m_sourceFile.c_str(), fullSourcePath, true);
 
                 auto loadOutcome = JsonSerializationUtils::ReadJsonFile(fullSourcePath, AZ::RPI::JsonUtils::DefaultMaxFileSize);
                 if (!loadOutcome.IsSuccess())
