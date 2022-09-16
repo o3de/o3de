@@ -14,7 +14,6 @@
 
 namespace AZ::Metrics
 {
-
     void EventLoggerFactoryImpl::EventLoggerDeleter::operator()(IEventLogger* ptr) const
     {
         if (m_delete)
@@ -28,9 +27,9 @@ namespace AZ::Metrics
 
     void EventLoggerFactoryImpl::VisitEventLoggers(const VisitEventLoggerInterfaceCallback& callback) const
     {
-        auto VisitInterface = [&callback](const EventLoggerPtr& eventLogger)
+        auto VisitInterface = [&callback](const IdToEventLoggerEntry& eventLoggerEntry)
         {
-            return eventLogger != nullptr ? callback(*eventLogger) : true;
+            return eventLoggerEntry.m_logger != nullptr ? callback(*eventLoggerEntry.m_logger) : true;
         };
 
         AZStd::scoped_lock lock(m_eventLoggerMutex);
@@ -39,20 +38,23 @@ namespace AZ::Metrics
 
     AZ::Outcome<void, AZStd::unique_ptr<IEventLogger>> EventLoggerFactoryImpl::RegisterEventLogger(EventLoggerId eventLoggerId, AZStd::unique_ptr<IEventLogger> eventLogger)
     {
-        // Transfer ownership of the event logger to the EventLoggerPtr
-        // If registration fails, ownership is transferred back to the input param   
+        // Transfer ownership to a temporary EventLoggerPtr which is supplied to the RegisterEventLoggerImpl
+        // If registration fails, the event logger pointer is returned in the failure outcome
         if (auto registerResult = RegisterEventLoggerImpl(eventLoggerId, EventLoggerPtr{ eventLogger.release() });
             !registerResult.IsSuccess())
         {
             return AZ::Failure(AZStd::unique_ptr<IEventLogger>(registerResult.TakeError().release()));
         }
 
+        // registration succeeded, return a void success outcome
         return AZ::Success();
     }
 
     bool EventLoggerFactoryImpl::RegisterEventLogger(EventLoggerId eventLoggerId, IEventLogger& eventLogger)
     {
-        // The EventLoggerDeleter does not delete the reference
+        // Create a temporary EventLoggerPtr with a custom deleter that does NOT delete the eventLogger reference
+        // On success, the the EventLoggerPtr is stored in the event logger array and will not the reference to the input eventLogger
+        // when the eventLogger is unregistered
         return RegisterEventLoggerImpl(eventLoggerId, EventLoggerPtr{ &eventLogger, EventLoggerDeleter{false} }).IsSuccess();
     }
 
@@ -65,28 +67,23 @@ namespace AZ::Metrics
         }
 
         AZStd::scoped_lock lock(m_eventLoggerMutex);
-        auto loggerIdIter = FindEventLoggerIndex(eventLoggerId);
-        if (loggerIdIter != m_eventLoggerIndirectSet.end()
-            && loggerIdIter->m_index < m_eventLoggers.size())
+        auto idLoggerIter = FindEventLoggerImpl(eventLoggerId);
+        if (idLoggerIter != m_eventLoggers.end())
         {
             // The event logger has been found using the event logger id,
             // so second registration cannot be done
             return AZ::Failure(AZStd::move(eventLoggerPtr));
         }
 
-        // Insert new interface since it is not registered
-        m_eventLoggers.emplace_back(AZStd::move(eventLoggerPtr));
-        const size_t emplaceIndex = m_eventLoggers.size() - 1;
-
-        // Use UpperBound to find the insertion slot for the new entry 
-        auto FindIdIndexEntry = [](const EventLoggerIdIndexEntry& lhs, const EventLoggerIdIndexEntry& rhs)
+        // Use UpperBound to find the insertion slot for the new entry
+        auto ProjectionToEventLoggerId = [](const IdToEventLoggerEntry& entry) -> EventLoggerId
         {
-            return lhs.m_id < rhs.m_id;
+            return entry.m_id;
         };
-        EventLoggerIdIndexEntry newEntry{ eventLoggerId, emplaceIndex };
-        m_eventLoggerIndirectSet.insert(AZStd::upper_bound(m_eventLoggerIndirectSet.begin(), m_eventLoggerIndirectSet.end(),
-            newEntry, AZStd::move(FindIdIndexEntry)),
-            AZStd::move(newEntry));
+
+        m_eventLoggers.emplace(AZStd::ranges::upper_bound(m_eventLoggers, eventLoggerId,
+            AZStd::ranges::less{}, ProjectionToEventLoggerId),
+            IdToEventLoggerEntry{ eventLoggerId, AZStd::move(eventLoggerPtr) });
 
         return AZ::Success();
     }
@@ -94,18 +91,11 @@ namespace AZ::Metrics
     bool EventLoggerFactoryImpl::UnregisterEventLogger(EventLoggerId eventLoggerId)
     {
         AZStd::scoped_lock lock(m_eventLoggerMutex);
-        auto loggerIdIter = FindEventLoggerIndex(eventLoggerId);
-        if (loggerIdIter != m_eventLoggerIndirectSet.end())
+        if (auto idLoggerIter = FindEventLoggerImpl(eventLoggerId);
+            idLoggerIter != m_eventLoggers.end())
         {
-            // Check if the logger id index is within the event loggers vector
-            if (loggerIdIter->m_index < m_eventLoggers.size())
-            {
-                // Remove the EventLogger
-                m_eventLoggers.erase(m_eventLoggers.begin() + loggerIdIter->m_index);
-            }
-
-            // Remove the Event LoggerId to event logger vector indirection entry as well
-            m_eventLoggerIndirectSet.erase(loggerIdIter);
+            // Remove the EventLogger
+            m_eventLoggers.erase(idLoggerIter);
             return true;
         }
 
@@ -115,31 +105,31 @@ namespace AZ::Metrics
     IEventLogger* EventLoggerFactoryImpl::FindEventLogger(EventLoggerId eventLoggerId) const
     {
         AZStd::scoped_lock lock(m_eventLoggerMutex);
-        auto loggerIdIter = FindEventLoggerIndex(eventLoggerId);
-        return loggerIdIter != m_eventLoggerIndirectSet.end() && loggerIdIter->m_index < m_eventLoggers.size()
-            ? m_eventLoggers[loggerIdIter->m_index].get() : nullptr;
+        auto idLoggerIter = FindEventLoggerImpl(eventLoggerId);
+        return idLoggerIter != m_eventLoggers.end() ? idLoggerIter->m_logger.get() : nullptr;
     }
 
     bool EventLoggerFactoryImpl::IsRegistered(EventLoggerId eventLoggerId) const
     {
         AZStd::scoped_lock lock(m_eventLoggerMutex);
-        auto loggerIdIter = FindEventLoggerIndex(eventLoggerId);
-        return loggerIdIter != m_eventLoggerIndirectSet.end() && loggerIdIter->m_index < m_eventLoggers.size();
+        auto idLoggerIter = FindEventLoggerImpl(eventLoggerId);
+        return idLoggerIter != m_eventLoggers.end();
     }
 
-    // returns iterator containing index into the m_eventLoggers vector that matches the id
-    // otherwise returns the end iteator
-    auto EventLoggerFactoryImpl::FindEventLoggerIndex(EventLoggerId eventLoggerId) const
-        -> typename EventLoggerIndirectSet::const_iterator
+    // NOTE: The caller should lock the event logger mutex
+    // returns iterator to the event logger matching the logger id
+    // otherwise a sentinel iterator is returned
+    auto EventLoggerFactoryImpl::FindEventLoggerImpl(EventLoggerId eventLoggerId) const
+        -> typename IdToEventLoggerMap::const_iterator
     {
-        auto FindIdIndexEntry = [](const EventLoggerIdIndexEntry& lhs, const EventLoggerIdIndexEntry& rhs)
+        auto ProjectionToEventLoggerId = [](const IdToEventLoggerEntry& entry) -> EventLoggerId
         {
-            return lhs.m_id < rhs.m_id;
+            return entry.m_id;
         };
 
-        auto [firstFoundIter, lastFoundIter] = AZStd::equal_range(m_eventLoggerIndirectSet.begin(), m_eventLoggerIndirectSet.end(),
-            EventLoggerIdIndexEntry{ eventLoggerId }, FindIdIndexEntry);
+        auto [firstFoundIter, lastFoundIter] = AZStd::ranges::equal_range(m_eventLoggers,
+            eventLoggerId, AZStd::ranges::less{}, ProjectionToEventLoggerId);
 
-        return firstFoundIter != lastFoundIter ? firstFoundIter : m_eventLoggerIndirectSet.end();
+        return firstFoundIter != lastFoundIter ? firstFoundIter : m_eventLoggers.end();
     }
 }// namespace AZ::Metrics

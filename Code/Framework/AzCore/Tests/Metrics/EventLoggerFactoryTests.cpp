@@ -68,6 +68,40 @@ namespace UnitTest
         // The second event logger will be unregistered when the EventFactory goes out of scope
     }
 
+    TEST_F(EventLoggerFactoryFixture, Factory_RegisteringAndUnregistering_EventLoggers_DoesNotCauseMemoryCorruption)
+    {
+        // As the Event Factory sorts the Event Loggers in order of there logger id
+        // This test validates that removing event loggers from the front of the array
+        // and accessing them does not cause memory courrption
+
+        // Used to generate EventLoggerIds in the range [0, count)
+        constexpr size_t EventLoggerIdCount = 10;
+
+        // TestEventLogger is not owned by the Event Factory as it is passed by lvalue reference
+        // This is used to register the same event logger with multiple ids
+        TestEventLogger testEventLogger;
+        // Register event loggers in reverse ID order
+        for (uint32_t i = EventLoggerIdCount; i > 0; --i)
+        {
+            // Subtract to avoid indexing out of bounds
+            auto lastIndex = i - 1;
+            EXPECT_TRUE(m_eventLoggerFactory->RegisterEventLogger(AZ::Metrics::EventLoggerId{ lastIndex }, testEventLogger));
+        }
+
+        // Validate event loggers can be accessed by iterating in order
+        for (uint32_t i = 0; i < EventLoggerIdCount; ++i)
+        {
+            EXPECT_NE(nullptr, m_eventLoggerFactory->FindEventLogger(AZ::Metrics::EventLoggerId{ i }));
+        }
+
+        // Unregister event loggers in ascending order
+        for (uint32_t i = 0; i < EventLoggerIdCount; ++i)
+        {
+            EXPECT_TRUE(m_eventLoggerFactory->UnregisterEventLogger(AZ::Metrics::EventLoggerId{ i }));
+        }
+
+    }
+
     TEST_F(EventLoggerFactoryFixture, Factory_NullEventLoggerRegistration_Fails)
     {
         constexpr AZ::Metrics::EventLoggerId loggerId{ 1 };

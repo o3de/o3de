@@ -79,7 +79,7 @@ namespace AZ::Debug
 
     bool EventLogReader::Next()
     {
-        size_t increment = AZ_SIZE_ALIGN_UP(sizeof(Metrics::IEventLogger::EventHeader) + m_current->m_size, AZ::Metrics::EventBoundary);
+        size_t increment = AZ_SIZE_ALIGN_UP(sizeof(Metrics::IEventLogger::EventHeader) + m_current->m_size, Metrics::EventBoundary);
         uint8_t* bufferPosition = reinterpret_cast<uint8_t*>(m_current) + increment;
         if (bufferPosition < m_buffer.end())
         {

@@ -27,42 +27,53 @@ namespace AZ::Metrics
         void VisitEventLoggers(const VisitEventLoggerInterfaceCallback&) const override;
 
         //! Registers an event logger with a standard deleter
-        AZ::Outcome<void, AZStd::unique_ptr<IEventLogger>> RegisterEventLogger(EventLoggerId loggerId, AZStd::unique_ptr<IEventLogger>) override;
+        AZ::Outcome<void, AZStd::unique_ptr<IEventLogger>> RegisterEventLogger(EventLoggerId loggerId,
+            AZStd::unique_ptr<IEventLogger> eventLogger) override;
 
         //! Registers an event logger with a null deleter
-        bool RegisterEventLogger(EventLoggerId loggerId, IEventLogger&) override;
+        bool RegisterEventLogger(EventLoggerId loggerId, IEventLogger& eventLogger) override;
 
         bool UnregisterEventLogger(EventLoggerId loggerId) override;
 
-        IEventLogger* FindEventLogger(EventLoggerId) const override;
+        [[nodiscard]] IEventLogger* FindEventLogger(EventLoggerId loggerId) const override;
 
-        bool IsRegistered(EventLoggerId) const override;
+        [[nodiscard]] bool IsRegistered(EventLoggerId loggerId) const override;
 
     private:
-
         struct EventLoggerDeleter
         {
             void operator()(IEventLogger* ptr) const;
             bool m_delete{ true };
         };
         using EventLoggerPtr = AZStd::unique_ptr<IEventLogger, EventLoggerDeleter>;
-        AZ::Outcome<void, EventLoggerPtr> RegisterEventLoggerImpl(EventLoggerId loggerId, EventLoggerPtr);
 
-        struct EventLoggerIdIndexEntry
+        //! Helper function that is used to register an event logger into the event logger array
+        //! while taking into account whether the event logger should be owned by this factory
+        //! @param loggerId Unique Id of the event logger to register with this factory
+        //! @param eventLogger unique_ptr to event logger to register
+        //! @return outcome which indicates whether the event logger was registered with the event logger array
+        //! On success an empty Success outcome is returned
+        //! On failure, the supplied event logger parameter is returned back to the caller
+        AZ::Outcome<void, EventLoggerPtr> RegisterEventLoggerImpl(EventLoggerId loggerId, EventLoggerPtr eventlogger);
+
+        struct IdToEventLoggerEntry
         {
             EventLoggerId m_id;
-            size_t m_index;
+            EventLoggerPtr m_logger;
         };
 
-        using EventLoggerIndirectSet = AZStd::vector<EventLoggerIdIndexEntry>;
-        typename EventLoggerIndirectSet::const_iterator FindEventLoggerIndex(EventLoggerId) const;
+        using IdToEventLoggerMap = AZStd::vector<IdToEventLoggerEntry>;
 
-        //! Indirect array into the EventLogger Interfaces vector
-        AZStd::vector<EventLoggerIdIndexEntry> m_eventLoggerIndirectSet;
+        //! Searches within the event logger array for the event logger registered with the specified id
+        //! @param loggerId Unique Id of event logger to locate
+        //! @return iterator pointing the event logger registered with the specified EventLoggerId
+        //! NOTE: It is responsibility of the caller to lock the Event Logger Mutex to protect the search
+        typename IdToEventLoggerMap::const_iterator FindEventLoggerImpl(EventLoggerId) const;
 
 
-
-        AZStd::vector<EventLoggerPtr> m_eventLoggers;
+        //! Contains the registered event loggers
+        //! Sorted to provide O(Log N) search
+        IdToEventLoggerMap m_eventLoggers;
 
         //! Protects modifications to the m_eventLoggers range
         //! Doesn't need to be recursive as now inner calls attempts to lock the mutex
