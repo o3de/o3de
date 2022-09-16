@@ -37,14 +37,17 @@ namespace GradientSignal
 
     protected:
         // PaintBrushNotificationBus overrides
-        void OnPaintBegin() override;
-        void OnPaintEnd() override;
-        void OnPaint(const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn) override;
+        void OnPaintBegin(const AZ::EntityComponentIdPair& id) override;
+        void OnPaintEnd(const AZ::EntityComponentIdPair& id) override;
+        void OnPaint(const AZ::EntityComponentIdPair& id, const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn) override;
 
         void BeginUndoBatch();
         void EndUndoBatch();
 
     private:
+        //! The entity/component that owns this paintbrush.
+        AZ::EntityComponentIdPair m_ownerEntityComponentId;
+
         AZStd::shared_ptr<AzToolsFramework::PaintBrushManipulator> m_brushManipulator;
 
         //! The undo information for the in-progress painting brush stroke.

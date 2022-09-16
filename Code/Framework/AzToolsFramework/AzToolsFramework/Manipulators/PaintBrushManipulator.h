@@ -12,8 +12,8 @@
 
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzToolsFramework/Manipulators/PaintBrushRequestBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
+#include <AzToolsFramework/Manipulators/PaintBrushRequestBus.h>
 
 namespace AzToolsFramework
 {
@@ -35,15 +35,21 @@ namespace AzToolsFramework
 
         virtual ~PaintBrushConfig() = default;
 
+        float GetRadius() const { return m_radius; }
+        float GetIntensity() const { return m_intensity; }
+        float GetOpacity() const { return m_opacity; }
+
+        void SetRadius(float radius);
+        void SetIntensity(float intensity);
+        void SetOpacity(float opacity);
+
+    protected:
         //! Paintbrush radius
         float m_radius = 5.0f;
         //! Paintbrush intensity (black to white)
         float m_intensity = 1.0f;
         //! Paintbrush opacity (transparent to opaque)
         float m_opacity = 0.5f;
-
-        //! The entity/component that owns this paintbrush.
-        AZ::EntityComponentIdPair m_ownerEntityComponentId;
 
         AZ::u32 OnIntensityChange();
         AZ::u32 OnOpacityChange();
@@ -70,7 +76,7 @@ namespace AzToolsFramework
     class PaintBrushManipulator
         : public BaseManipulator
         , public ManipulatorSpace
-        , public PaintBrushRequestBus::Handler
+        , protected PaintBrushSettingsNotificationBus::Handler
     {
         //! Private constructor.
         PaintBrushManipulator(
@@ -100,15 +106,9 @@ namespace AzToolsFramework
         // Handle mouse events
         bool HandleMouseInteraction(const ViewportInteraction::MouseInteractionEvent& mouseInteraction);
 
-        // PaintBrushRequestBus overrides for getting/setting the paintbrush settings...
-        float GetRadius() const override;
-        float GetIntensity() const override;
-        float GetOpacity() const override;
-        void SetRadius(float radius) override;
-        void SetIntensity(float intensity) override;
-        void SetOpacity(float opacity) override;
-
     private:
+        void OnRadiusChanged(float radius) override;
+
         void MovePaintBrush(int viewportId, const AzFramework::ScreenPoint& screenCoordinates, bool isFirstPaintedPoint);
 
         AZStd::shared_ptr<ManipulatorViewProjectedCircle> m_manipulatorView;
@@ -124,7 +124,5 @@ namespace AzToolsFramework
 
         //! Current center of the paintbrush in world space.
         AZ::Vector3 m_center;
-
-        PaintBrushConfig m_config;
     };
 } // namespace AzToolsFramework

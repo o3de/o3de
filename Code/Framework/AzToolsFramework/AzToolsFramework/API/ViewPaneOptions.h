@@ -16,6 +16,8 @@
 
 namespace AzToolsFramework
 {
+    class ViewportEditorModesInterface;
+
     struct ViewPaneOptions
     {
         AZ_TYPE_INFO(ViewPaneOptions, "{E9FB803A-2A47-4BCF-8A50-AB4C9D73AED2}");
@@ -41,6 +43,9 @@ namespace AzToolsFramework
 
         bool showOnToolsToolbar = false;                                ///< set to true if the view pane should create a button on the tools toolbar to open/close the pane
         AZStd::string toolbarIcon;                                      ///< path to the icon to use for the toolbar button - only used if showOnToolsToolbar is set to true
+
+        bool isDisabledInComponentMode = true;                          ///< set to false if the view pane should remain enabled during component mode
+        bool isDisabledInImGuiMode = true;                              ///< set to false if the view pane should remain enabled during imgui mode
     };
 
 } // namespace AzToolsFramework

@@ -13,6 +13,7 @@
 #include <AzToolsFramework/Manipulators/PaintBrushRequestBus.h>
 #include <AzToolsFramework/Manipulators/ManipulatorSnapping.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
+#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsWindow.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
@@ -32,34 +33,53 @@ namespace AzToolsFramework
             {
                 editContext->Class<PaintBrushConfig>("Paint Brush", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &PaintBrushConfig::m_radius, "Radius", "Radius of the paint brush.")
-                    ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
-                    ->Attribute(AZ::Edit::Attributes::SoftMin, 1.0f)
-                    ->Attribute(AZ::Edit::Attributes::Max, 1024.0f)
-                    ->Attribute(AZ::Edit::Attributes::SoftMax, 100.0f)
-                    ->Attribute(AZ::Edit::Attributes::Step, 0.25f)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushConfig::OnRadiusChange)
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMin, 1.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 1024.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, 100.0f)
+                        ->Attribute(AZ::Edit::Attributes::Step, 0.25f)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushConfig::OnRadiusChange)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Slider, &PaintBrushConfig::m_intensity, "Intensity", "Intensity of the paint brush.")
-                    ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                    ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-                    ->Attribute(AZ::Edit::Attributes::Step, 0.025f)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushConfig::OnIntensityChange)
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
+                        ->Attribute(AZ::Edit::Attributes::Step, 0.025f)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushConfig::OnIntensityChange)
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &PaintBrushConfig::m_opacity, "Opacity", "Opacity of the paint brush.")
-                    ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                    ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-                    ->Attribute(AZ::Edit::Attributes::Step, 0.025f)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushConfig::OnOpacityChange);
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
+                        ->Attribute(AZ::Edit::Attributes::Step, 0.025f)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushConfig::OnOpacityChange);
             }
         }
+    }
+
+    void PaintBrushConfig::SetRadius(float radius)
+    {
+        m_radius = radius;
+        OnRadiusChange();
+    }
+
+    void PaintBrushConfig::SetIntensity(float intensity)
+    {
+        m_intensity = intensity;
+        OnIntensityChange();
+    }
+
+    void PaintBrushConfig::SetOpacity(float opacity)
+    {
+        m_opacity = opacity;
+        OnOpacityChange();
     }
 
     AZ::u32 PaintBrushConfig::OnIntensityChange()
     {
         // Notify listeners that the configuration changed. This is used to synchronize the internal manipulator configuration
         // with the visible editable one stored on the Editor component.
-        PaintBrushNotificationBus::Event(m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnIntensityChanged, m_intensity);
+        PaintBrushSettingsNotificationBus::Broadcast(&PaintBrushSettingsNotificationBus::Events::OnIntensityChanged, m_intensity);
         return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
     }
 
@@ -67,7 +87,7 @@ namespace AzToolsFramework
     {
         // Notify listeners that the configuration changed. This is used to synchronize the internal manipulator configuration
         // with the visible editable one stored on the Editor component.
-        PaintBrushNotificationBus::Event(m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnOpacityChanged, m_opacity);
+        PaintBrushSettingsNotificationBus::Broadcast(&PaintBrushSettingsNotificationBus::Events::OnOpacityChanged, m_opacity);
         return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
     }
 
@@ -75,7 +95,7 @@ namespace AzToolsFramework
     {
         // Notify listeners that the configuration changed. This is used to synchronize the internal manipulator configuration
         // with the visible editable one stored on the Editor component.
-        PaintBrushNotificationBus::Event(m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnRadiusChanged, m_radius);
+        PaintBrushSettingsNotificationBus::Broadcast(&PaintBrushSettingsNotificationBus::Events::OnRadiusChanged, m_radius);
         return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
     }
 
@@ -89,30 +109,31 @@ namespace AzToolsFramework
         const AZ::Transform& worldFromLocal, const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
         m_ownerEntityComponentId = entityComponentIdPair;
-        m_config.m_ownerEntityComponentId = entityComponentIdPair;
-        PaintBrushRequestBus::Handler::BusConnect(entityComponentIdPair);
 
         SetSpace(worldFromLocal);
+
+        float radius = 0.0f;
+        PaintBrushSettingsRequestBus::BroadcastResult(radius, &PaintBrushSettingsRequestBus::Events::GetRadius);
 
         // The PaintBrush manipulator uses a circle projected into world space to represent the brush.
         const AZ::Color manipulatorColor = AZ::Colors::Red;
         const float manipulatorWidth = 0.05f;
         SetView(
-            AzToolsFramework::CreateManipulatorViewProjectedCircle(*this, manipulatorColor, m_config.m_radius, manipulatorWidth));
+            AzToolsFramework::CreateManipulatorViewProjectedCircle(*this, manipulatorColor, radius, manipulatorWidth));
 
-        // Notify listeners that the configuration changed. This is used to synchronize the internal manipulator configuration
-        // with the visible editable one stored on the Editor component.
-        PaintBrushNotificationBus::Event(
-            m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnIntensityChanged, m_config.m_intensity);
-        PaintBrushNotificationBus::Event(
-            m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnOpacityChanged, m_config.m_opacity);
-        PaintBrushNotificationBus::Event(
-            m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnRadiusChanged, m_config.m_radius);
+        // Make sure the Paint Brush Settings window is open
+        AzToolsFramework::OpenViewPane(PaintBrush::s_paintBrushSettingsName);
+
+        PaintBrushSettingsNotificationBus::Handler::BusConnect();
+
+        // Notify listeners that we've entered the paint mode.
+        PaintBrushNotificationBus::Broadcast(&PaintBrushNotificationBus::Events::OnPaintModeBegin, m_ownerEntityComponentId);
     }
 
     PaintBrushManipulator::~PaintBrushManipulator()
     {
-        PaintBrushRequestBus::Handler::BusDisconnect();
+        PaintBrushNotificationBus::Broadcast(&PaintBrushNotificationBus::Events::OnPaintModeEnd, m_ownerEntityComponentId);
+        PaintBrushSettingsNotificationBus::Handler::BusDisconnect();
     }
 
     void PaintBrushManipulator::Draw(
@@ -130,39 +151,9 @@ namespace AzToolsFramework
         m_manipulatorView = AZStd::move(view);
     }
 
-    float PaintBrushManipulator::GetRadius() const
-    {
-        return m_config.m_radius;
-    }
-
-    float PaintBrushManipulator::GetIntensity() const
-    {
-        return m_config.m_intensity;
-    }
-
-    float PaintBrushManipulator::GetOpacity() const
-    {
-        return m_config.m_opacity;
-    }
-
-    void PaintBrushManipulator::SetRadius(float radius)
+    void PaintBrushManipulator::OnRadiusChanged(float radius)
     {
         m_manipulatorView->SetRadius(radius);
-
-        m_config.m_radius = radius;
-        m_config.OnRadiusChange();
-    }
-
-    void PaintBrushManipulator::SetIntensity(float intensity)
-    {
-        m_config.m_intensity = intensity;
-        m_config.OnIntensityChange();
-    }
-
-    void PaintBrushManipulator::SetOpacity(float opacity)
-    {
-        m_config.m_opacity = opacity;
-        m_config.OnOpacityChange();
     }
 
     bool PaintBrushManipulator::HandleMouseInteraction(const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction)
@@ -182,7 +173,7 @@ namespace AzToolsFramework
             if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left())
             {
                 m_isPainting = true;
-                PaintBrushNotificationBus::Event(m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnPaintBegin);
+                PaintBrushNotificationBus::Broadcast(&PaintBrushNotificationBus::Events::OnPaintBegin, m_ownerEntityComponentId);
 
                 const bool isFirstPaintedPoint = true;
                 MovePaintBrush(
@@ -196,7 +187,7 @@ namespace AzToolsFramework
             if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left())
             {
                 m_isPainting = false;
-                PaintBrushNotificationBus::Event(m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnPaintEnd);
+                PaintBrushNotificationBus::Broadcast(&PaintBrushNotificationBus::Events::OnPaintEnd, m_ownerEntityComponentId);
 
                 return true;
             }
@@ -220,7 +211,7 @@ namespace AzToolsFramework
         m_center = worldSurfacePosition.value();
         AZ::Transform space = AZ::Transform::CreateTranslation(m_center);
         SetSpace(space);
-        PaintBrushNotificationBus::Event(m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnWorldSpaceChanged, space);
+        PaintBrushNotificationBus::Broadcast(&PaintBrushNotificationBus::Events::OnWorldSpaceChanged, m_ownerEntityComponentId, space);
 
         // If we're currently painting, send off a paint notification.
         if (m_isPainting)
@@ -232,16 +223,22 @@ namespace AzToolsFramework
                 m_previousCenter = m_center;
             }
 
+            float radius = 0.0f;
+            float intensity = 0.0f;
+            float opacity = 0.0f;
+
+            PaintBrushSettingsRequestBus::BroadcastResult(radius, &PaintBrushSettingsRequestBus::Events::GetRadius);
+            PaintBrushSettingsRequestBus::BroadcastResult(intensity, &PaintBrushSettingsRequestBus::Events::GetIntensity);
+            PaintBrushSettingsRequestBus::BroadcastResult(opacity, &PaintBrushSettingsRequestBus::Events::GetOpacity);
+
             // Create an AABB that contains both endpoints. By definition, it will contain all of the brush stroke
             // points that fall in-between as well.
-            AZ::Aabb strokeRegion = AZ::Aabb::CreateCenterRadius(m_center, m_config.m_radius);
-            strokeRegion.AddAabb(AZ::Aabb::CreateCenterRadius(m_previousCenter, m_config.m_radius));
+            AZ::Aabb strokeRegion = AZ::Aabb::CreateCenterRadius(m_center, radius);
+            strokeRegion.AddAabb(AZ::Aabb::CreateCenterRadius(m_previousCenter, radius));
 
-            const float manipulatorRadiusSq = m_config.m_radius * m_config.m_radius;
+            const float manipulatorRadiusSq = radius * radius;
             const AZ::Vector2 previousCenter2D(m_previousCenter);
             const AZ::Vector2 center2D(m_center);
-            const float intensity = m_config.m_intensity;
-            const float opacity = m_config.m_opacity;
 
             // Callback function that we pass into OnPaint so that paint handling code can request specific paint values
             // for the world positions it cares about.
@@ -274,8 +271,8 @@ namespace AzToolsFramework
                 }
             });
 
-            PaintBrushNotificationBus::Event(
-                m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnPaint, strokeRegion, valueLookupFn);
+            PaintBrushNotificationBus::Broadcast(
+                &PaintBrushNotificationBus::Events::OnPaint, m_ownerEntityComponentId, strokeRegion, valueLookupFn);
 
             m_previousCenter = m_center;
         }

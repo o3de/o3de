@@ -146,11 +146,12 @@ namespace GradientSignal
     EditorImageGradientComponentMode::EditorImageGradientComponentMode(
         const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType)
         : EditorBaseComponentMode(entityComponentIdPair, componentType)
+        , m_ownerEntityComponentId(entityComponentIdPair)
     {
         EditorImageGradientRequestBus::Event(GetEntityId(), &EditorImageGradientRequests::StartImageModification);
         ImageGradientModificationBus::Event(GetEntityId(), &ImageGradientModifications::StartImageModification);
 
-        AzToolsFramework::PaintBrushNotificationBus::Handler::BusConnect(entityComponentIdPair);
+        AzToolsFramework::PaintBrushNotificationBus::Handler::BusConnect();
 
         AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(worldFromLocal, GetEntityId(), &AZ::TransformInterface::GetWorldTM);
@@ -244,18 +245,37 @@ namespace GradientSignal
         }
     }
 
-    void EditorImageGradientComponentMode::OnPaintBegin()
+    void EditorImageGradientComponentMode::OnPaintBegin(const AZ::EntityComponentIdPair& id)
     {
+        // Make sure the notification is for this component mode.
+        if (m_ownerEntityComponentId != id)
+        {
+            return;
+        }
+
         BeginUndoBatch();
     }
 
-    void EditorImageGradientComponentMode::OnPaintEnd()
+    void EditorImageGradientComponentMode::OnPaintEnd(const AZ::EntityComponentIdPair& id)
     {
+        // Make sure the notification is for this component mode.
+        if (m_ownerEntityComponentId != id)
+        {
+            return;
+        }
+
         EndUndoBatch();
     }
 
-    void EditorImageGradientComponentMode::OnPaint(const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn)
+    void EditorImageGradientComponentMode::OnPaint(
+        const AZ::EntityComponentIdPair& id, const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn)
     {
+        // Make sure the notification is for this component mode.
+        if (m_ownerEntityComponentId != id)
+        {
+            return;
+        }
+
         // The OnPaint notification means that we should paint new values into our image gradient.
         // To do this, we need to calculate the set of world space positions that map to individual pixels in the image,
         // then ask the paint brush for each position what value we should set that pixel to. Finally, we use those modified
@@ -346,32 +366,32 @@ namespace GradientSignal
 
     void EditorImageGradientComponentMode::AdjustRadius(float radiusDelta)
     {
-        float radius = m_brushManipulator->GetRadius();
+        float radius = 0.0f;
+        AzToolsFramework::PaintBrushSettingsRequestBus::BroadcastResult(
+            radius, &AzToolsFramework::PaintBrushSettingsRequestBus::Events::GetRadius);
         radius = AZStd::clamp(radius + radiusDelta, 0.01f, 1024.0f);
-        m_brushManipulator->SetRadius(radius);
-
-        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
+        AzToolsFramework::PaintBrushSettingsRequestBus::Broadcast(
+            &AzToolsFramework::PaintBrushSettingsRequestBus::Events::SetRadius, radius);
     }
 
     void EditorImageGradientComponentMode::AdjustIntensity(float intensityDelta)
     {
-        float intensity = m_brushManipulator->GetIntensity();
+        float intensity = 0.0f;
+        AzToolsFramework::PaintBrushSettingsRequestBus::BroadcastResult(
+            intensity, &AzToolsFramework::PaintBrushSettingsRequestBus::Events::GetIntensity);
         intensity = AZStd::clamp(intensity + intensityDelta, 0.0f, 1.0f);
-        m_brushManipulator->SetIntensity(intensity);
-
-        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
+        AzToolsFramework::PaintBrushSettingsRequestBus::Broadcast(
+            &AzToolsFramework::PaintBrushSettingsRequestBus::Events::SetIntensity, intensity);
     }
 
     void EditorImageGradientComponentMode::AdjustOpacity(float opacityDelta)
     {
-        float opacity = m_brushManipulator->GetOpacity();
+        float opacity = 0.0f;
+        AzToolsFramework::PaintBrushSettingsRequestBus::BroadcastResult(
+            opacity, &AzToolsFramework::PaintBrushSettingsRequestBus::Events::GetOpacity);
         opacity = AZStd::clamp(opacity + opacityDelta, 0.0f, 1.0f);
-        m_brushManipulator->SetOpacity(opacity);
-
-        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
+        AzToolsFramework::PaintBrushSettingsRequestBus::Broadcast(
+            &AzToolsFramework::PaintBrushSettingsRequestBus::Events::SetOpacity, opacity);
     }
 
 } // namespace GradientSignal
