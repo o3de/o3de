@@ -126,6 +126,11 @@ namespace UnitTest
         }
 
         AZ::Data::Asset<AZ::Data::AssetData> m_asset;
+
+        bool ForceReloadWhenDependencyReloaded() const override
+        {
+            return true;
+        }
     };
 
     // AssetWithQueueAndPreLoadReferences:  asset with two asset references, one set as PreLoad, and one set as QueueLoad

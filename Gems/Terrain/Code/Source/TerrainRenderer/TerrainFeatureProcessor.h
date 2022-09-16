@@ -75,7 +75,6 @@ namespace Terrain
 
         // AZ::Data::AssetBus overrides...
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
-        void OnAssetDependencyReloaded(AZ::Data::Asset<AZ::Data::AssetData> assetId) override;
 
         // AzFramework::Terrain::TerrainDataNotificationBus overrides...
         void OnTerrainDataDestroyBegin() override;

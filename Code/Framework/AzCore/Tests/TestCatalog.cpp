@@ -331,6 +331,27 @@ namespace UnitTest
         return AZ::Failure<AZStd::string>("Unknown asset");
     }
 
+    AZ::Outcome<AZStd::unordered_set<AssetId>, AZStd::string> DataDrivenHandlerAndCatalog::GetDirectReverseProductDependencies(
+        const AssetId& assetId)
+    {
+        AZStd::unordered_set<AZ::Data::AssetId> output;
+
+        auto itr = m_reverseDependencies.find(assetId);
+
+        if (itr != m_reverseDependencies.end())
+        {
+            for (const auto& dependency : itr->second)
+            {
+                if (!output.contains(dependency))
+                {
+                    output.insert(dependency);
+                }
+            }
+        }
+
+        return AZ::Success(output);
+    }
+
     AZ::Outcome<AZStd::unordered_set<AssetId>, AZStd::string> DataDrivenHandlerAndCatalog::GetAllReverseProductDependencies(const AssetId& assetId)
     {
         AZStd::vector<AZ::Data::AssetId> queue;

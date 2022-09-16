@@ -110,6 +110,7 @@ namespace UnitTest
         Outcome<AZStd::vector<ProductDependency>, AZStd::string> GetAllProductDependencies(const AssetId& assetId) override;
         Outcome<AZStd::vector<ProductDependency>, AZStd::string> GetLoadBehaviorProductDependencies(const AssetId& assetId,
             AZStd::unordered_set<AssetId>& noloadSet, PreloadAssetListType& preloadList) override;
+        AZ::Outcome<AZStd::unordered_set<AssetId>, AZStd::string> GetDirectReverseProductDependencies(const AssetId&) override;
         AZ::Outcome<AZStd::unordered_set<AssetId>, AZStd::string> GetAllReverseProductDependencies(const AssetId&) override;
 
         AssetInfo GetAssetInfoById(const AssetId& assetId) override;

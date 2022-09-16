@@ -192,6 +192,14 @@ namespace AZ
             /// \return AZ::Success containing a list of dependencies
             virtual AZ::Outcome<AZStd::vector<ProductDependency>, AZStd::string> GetAllProductDependencies(const AssetId& /*id*/) { return AZ::Failure<AZStd::string>("Not implemented"); }
 
+            /// Retrieves a list of all products that depend on the given (product) asset (direct only).
+            /// \param id - the id of the asset to look up the dependencies for
+            /// \return AZ::Success containing a list of direct dependencies (products that depend on the given product)
+            virtual AZ::Outcome<AZStd::unordered_set<AssetId>, AZStd::string> GetDirectReverseProductDependencies(const AssetId& /*id*/)
+            {
+                return AZ::Failure<AZStd::string>("Not implemented");
+            }
+
             /// Retrieves a list of all products that depend on the given (product) asset (recursively).
             /// \param id - the id of the asset to look up the dependencies for
             /// \return AZ::Success containing a list of reverse dependencies (products that depend on the given product)

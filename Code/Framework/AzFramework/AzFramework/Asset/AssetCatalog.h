@@ -80,6 +80,7 @@ namespace AzFramework
         AZStd::vector<AZStd::string> GetRegisteredAssetPaths() override;
         AZ::Outcome<AZStd::vector<AZ::Data::ProductDependency>, AZStd::string> GetDirectProductDependencies(const AZ::Data::AssetId& asset) override;
         AZ::Outcome<AZStd::vector<AZ::Data::ProductDependency>, AZStd::string> GetAllProductDependencies(const AZ::Data::AssetId& asset) override;
+        AZ::Outcome<AZStd::unordered_set<AZ::Data::AssetId>, AZStd::string> GetDirectReverseProductDependencies(const AZ::Data::AssetId& asset) override;
         AZ::Outcome<AZStd::unordered_set<AZ::Data::AssetId>, AZStd::string> GetAllReverseProductDependencies(const AZ::Data::AssetId& asset) override;
         AZ::Outcome<AZStd::vector<AZ::Data::ProductDependency>, AZStd::string> GetAllProductDependenciesFilter(const AZ::Data::AssetId& id, const AZStd::unordered_set<AZ::Data::AssetId>& exclusionList, const AZStd::vector<AZStd::string>& wildcardPatternExclusionList) override;
         AZ::Outcome<AZStd::vector<AZ::Data::ProductDependency>, AZStd::string> GetLoadBehaviorProductDependencies(const AZ::Data::AssetId& id, AZStd::unordered_set<AZ::Data::AssetId>& noloadSet,

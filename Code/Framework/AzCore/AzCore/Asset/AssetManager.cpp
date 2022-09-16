@@ -1494,6 +1494,8 @@ namespace AZ::Data
             // Current AssetData has requested not to be auto reloaded
             if (preventAutoReload)
             {
+                ASSET_DEBUG_OUTPUT(AZStd::string::format(
+                    "Asset type is set to prevent auto-reload, stopping - " AZ_STRING_FORMAT, AZ_STRING_ARG(assetId.ToFixedString())));
                 return;
             }
 
@@ -1689,25 +1691,51 @@ namespace AZ::Data
             AssetLoadBus::Event(asset.GetId(), &AssetLoadBus::Events::OnAssetReloaded, asset); // Broadcast to any containers first
             AssetBus::Event(assetId, &AssetBus::Events::OnAssetReloaded, asset);
 
-            AZ::Outcome<AZStd::unordered_set<AssetId>, AZStd::string> result = AZ::Failure(AZStd::string("No handler"));
-            AssetCatalogRequestBus::BroadcastResult(result, &AssetCatalogRequestBus::Events::GetAllReverseProductDependencies, asset.GetId());
-
-            if (result)
-            {
-                for (const auto& dependency : result.GetValue())
-                {
-                    AssetBus::Event(dependency, &AssetBus::Events::OnAssetDependencyReloaded, asset);
-                }
-            }
-            else
-            {
-                AZ_Error("AssetManager", false, result.GetError().c_str());
-            }
-
             // Release the lock before we call reload
             if (requeue)
             {
                 ReloadAsset(assetId, asset.GetAutoLoadBehavior());
+            }
+            else
+            {
+                AZ::Outcome<AZStd::unordered_set<AssetId>, AZStd::string> result = AZ::Failure(AZStd::string("No handler"));
+                AssetCatalogRequestBus::BroadcastResult(
+                    result, &AssetCatalogRequestBus::Events::GetDirectReverseProductDependencies, asset.GetId());
+
+                if (result)
+                {
+                    for (const auto& dependencyId : result.GetValue())
+                    {
+                        auto dependencyAsset = FindAsset(dependencyId, AssetLoadBehavior::Default);
+
+                        if (dependencyAsset)
+                        {
+                            if (dependencyAsset->ForceReloadWhenDependencyReloaded())
+                            {
+                                ReloadAsset(dependencyId, AssetLoadBehavior::Default, /*isAutoReload*/ true);
+                                AZ_Printf("AssetManager", "Force reload for %s\n", dependencyAsset.ToString<AZStd::string>().c_str());
+                            }
+                            else
+                            {
+                                AZ_Printf(
+                                    "AssetManager", "Skipping force reload for %s\n", dependencyAsset.ToString<AZStd::string>().c_str());
+                            }
+                        }
+                        else
+                        {
+                            AZ_Warning(
+                                "AssetManager",
+                                false,
+                                "Did not find dependency %s for %s",
+                                dependencyId.ToFixedString().c_str(),
+                                assetId.ToFixedString().c_str());
+                        }
+                    }
+                }
+                else
+                {
+                    AZ_Error("AssetManager", false, result.GetError().c_str());
+                }
             }
         }
         else

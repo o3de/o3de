@@ -253,11 +253,6 @@ namespace AZ
             }
         }
 
-        void Material::OnAssetDependencyReloaded([[maybe_unused]] Data::Asset<Data::AssetData> asset)
-        {
-            OnAssetReloaded(m_materialAsset);
-        }
-
         ///////////////////////////////////////////////////////////////////
         // ShaderReloadNotificationBus overrides...
         void Material::OnShaderReinitialized([[maybe_unused]] const Shader& shader)

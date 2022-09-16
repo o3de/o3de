@@ -91,18 +91,12 @@ namespace UnitTest
             m_latest = asset;
         }
 
-        void OnAssetDependencyReloaded([[maybe_unused]] Asset<AssetData> asset) override
-        {
-            m_dependencyReloaded++;
-        }
-
         AssetId     m_assetId;
         AssetType   m_assetType;
         AZStd::atomic_int m_ready{};
         AZStd::atomic_int m_error{};
         AZStd::atomic_int m_reloaded{};
         AZStd::atomic_int m_dataLoaded{};
-        AZStd::atomic_int m_dependencyReloaded{};
         Asset<AssetData> m_latest;
         OnAssetReadyCheck m_readyCheck;
     };
@@ -236,7 +230,7 @@ namespace UnitTest
 
     TEST_F(AssetReloading, AssetReloadTest)
     {
-        // Test OnAssetDependencyReloaded notification is sent all the way to the parent asset up a deep chain of dependencies
+        // Test that updating an asset causes a reload all the way up a deep chain of dependencies
         const auto timeoutSeconds = AZStd::chrono::seconds(200);
 
         OnAssetReadyListener assetStatus1(MyAsset1Id, azrtti_typeid<AssetWithAssetReference>());
@@ -250,7 +244,7 @@ namespace UnitTest
         auto streamer = AZ::Interface<AZ::IO::IStreamer>::Get();
         streamer->SuspendProcessing();
 
-        // Load all three root assets, each of which cascades another asset load as PreLoad.
+        // Load the root asset, which cascades all the other assets to load as PreLoad.
         Asset<AssetWithAssetReference> asset1 =
             m_testAssetManager->GetAsset(MyAsset1Id, azrtti_typeid<AssetWithAssetReference>(), AZ::Data::AssetLoadBehavior::Default);
 
@@ -289,11 +283,8 @@ namespace UnitTest
         EXPECT_EQ(assetStatus1.m_ready, 1);
         EXPECT_EQ(assetStatus2.m_ready, 1);
         EXPECT_EQ(assetStatus3.m_ready, 1);
-        // MyAsset4 and 5 were loaded as a blocking dependency while a job was waiting to load them
-        // we want to verify they did not go through a second load
         EXPECT_EQ(assetStatus4.m_ready, 1);
         EXPECT_EQ(assetStatus5.m_ready, 1);
-        // MyAsset6 was loaded by MyAsset3.  Make sure it's ready too.
         EXPECT_EQ(assetStatus6.m_ready, 1);
 
         EXPECT_EQ(assetStatus1.m_reloaded, 0);
@@ -323,7 +314,7 @@ namespace UnitTest
         EXPECT_FALSE(timedOut);
 
         EXPECT_EQ(assetStatus6.m_reloaded, 1);
-        EXPECT_EQ(assetStatus1.m_dependencyReloaded, 1);
+        EXPECT_GE(assetStatus1.m_reloaded, 1);
     }
 
     /**
@@ -3190,7 +3181,7 @@ namespace UnitTest
 
         void CreateAsset(AZ::Uuid assetId, const char* filename, LoadAssetDataSynchronizer* synchronizer = nullptr)
         {
-            m_assetHandlerAndCatalog->AddAsset<AssetWithSerializedData>(assetId, filename, 0, false, false, synchronizer);
+            AssetDefinition::Create<AssetWithSerializedData>(assetId, filename, 0, false, false, synchronizer).Store(*m_assetHandlerAndCatalog);
 
             AssetWithSerializedData asset;
 
@@ -3200,7 +3191,9 @@ namespace UnitTest
         template<typename T>
         void CreateAssetRef(AZ::Uuid assetId, const char* filename, AZ::Uuid referencedAssetId, LoadAssetDataSynchronizer* synchronizer = nullptr)
         {
-            m_assetHandlerAndCatalog->AddAsset<AssetWithAssetReference>(assetId, filename, 0, false, false, synchronizer)->AddPreload(referencedAssetId);
+            AssetDefinition::Create<AssetWithAssetReference>(assetId, filename, 0, false, false, synchronizer)
+                .AddPreload(referencedAssetId)
+                .Store(*m_assetHandlerAndCatalog);
 
             AssetWithAssetReference asset;
             asset.m_asset = AssetManager::Instance().FindOrCreateAsset(referencedAssetId, azrtti_typeid<T>(), PreLoad);

@@ -185,6 +185,9 @@ namespace AZ
              */
             virtual bool HandleAutoReload() { return true; }
 
+            //! Asset Handlers can indicate if their asset types should be reloaded when a direct child dependency is reloaded
+            virtual bool ForceReloadWhenDependencyReloaded() const { return false; }
+
             enum class AssetDataFlags : AZ::u32
             {
                 Requeue = 0
@@ -602,9 +605,6 @@ namespace AZ
 
             /// Called when an asset has been reloaded (usually in tool mode and loose more). It should not be called in final build.
             virtual void OnAssetReloaded(Asset<AssetData> asset) { (void)asset; }
-
-            /// Called when a dependency has been reloaded.  The assetId is the id of the dependency that was reloaded.
-            virtual void OnAssetDependencyReloaded([[maybe_unused]] Asset<AssetData> asset){}
 
             /// Called when an asset failed to reload.
             virtual void OnAssetReloadError(Asset<AssetData> asset) { (void)asset; }

@@ -324,6 +324,27 @@ namespace AzFramework
         return GetAllProductDependenciesFilter(id, {}, {});
     }
 
+    AZ::Outcome<AZStd::unordered_set<AZ::Data::AssetId>, AZStd::string> AssetCatalog::GetDirectReverseProductDependencies(
+        const AZ::Data::AssetId& id)
+    {
+        AZStd::unordered_set<AZ::Data::AssetId> output;
+
+        auto itr = m_registry->m_reverseAssetDependencies.find(id);
+
+        if (itr != m_registry->m_reverseAssetDependencies.end())
+        {
+            for (const auto& dependency : itr->second)
+            {
+                if (!output.contains(dependency))
+                {
+                    output.insert(dependency);
+                }
+            }
+        }
+
+        return AZ::Success(output);
+    }
+
     AZ::Outcome<AZStd::unordered_set<AZ::Data::AssetId>, AZStd::string> AssetCatalog::GetAllReverseProductDependencies(const AZ::Data::AssetId& id)
     {
         AZStd::vector<AZ::Data::AssetId> queue;
@@ -884,7 +905,7 @@ namespace AzFramework
             if (!isNewAsset)
             {
                 // the following deliveries must happen on the main thread of the application:
-                AZ::SystemTickBus::QueueFunction([assetId]() 
+                AZ::SystemTickBus::QueueFunction([assetId]()
                 {
                     AzFramework::AssetCatalogEventBus::Broadcast(&AzFramework::AssetCatalogEventBus::Events::OnCatalogAssetChanged, assetId);
                 });
