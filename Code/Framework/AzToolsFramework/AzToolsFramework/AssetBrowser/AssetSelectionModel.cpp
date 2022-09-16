@@ -155,9 +155,10 @@ namespace AzToolsFramework
                 return m_title;
             }
 
-            if (GetDisplayFilter())
+            auto displayFilter = GetDisplayFilter();
+            if (displayFilter && !displayFilter->GetName().isEmpty())
             {
-                return GetDisplayFilter()->GetName();
+                return displayFilter->GetName();
             }
 
             return "Asset";
