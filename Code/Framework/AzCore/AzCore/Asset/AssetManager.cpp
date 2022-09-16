@@ -1713,22 +1713,19 @@ namespace AZ::Data
                             if (dependencyAsset->ForceReloadWhenDependencyReloaded())
                             {
                                 ReloadAsset(dependencyId, AssetLoadBehavior::Default, /*isAutoReload*/ true);
-                                AZ_Printf("AssetManager", "Force reload for %s\n", dependencyAsset.ToString<AZStd::string>().c_str());
+                                ASSET_DEBUG_OUTPUT(AZStd::string::format("Force reload for %s", dependencyAsset.ToString<AZStd::string>().c_str()));
                             }
                             else
                             {
-                                AZ_Printf(
-                                    "AssetManager", "Skipping force reload for %s\n", dependencyAsset.ToString<AZStd::string>().c_str());
+                                ASSET_DEBUG_OUTPUT(AZStd::string::format("Skipping force reload for %s", dependencyAsset.ToString<AZStd::string>().c_str()));
                             }
                         }
                         else
                         {
-                            AZ_Warning(
-                                "AssetManager",
-                                false,
+                            ASSET_DEBUG_OUTPUT(AZStd::string::format(
                                 "Did not find dependency %s for %s",
                                 dependencyId.ToFixedString().c_str(),
-                                assetId.ToFixedString().c_str());
+                                assetId.ToFixedString().c_str()));
                         }
                     }
                 }
