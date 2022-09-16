@@ -153,7 +153,7 @@ namespace AZ::DocumentPropertyEditor
         // we can assume all direct children of an adapter must be rows; populate each of them
         for (size_t topIndex = 0; topIndex < sourceContents.ArraySize(); ++topIndex)
         {
-            PopulateNodesAtPath(Dom::Path({Dom::PathEntry(topIndex)}));
+            PopulateNodesAtPath(Dom::Path({Dom::PathEntry(topIndex)}), false);
         }
         NotifyResetDocument();
     }
@@ -192,7 +192,7 @@ namespace AZ::DocumentPropertyEditor
                 if (patchPath == rowPath)
                 {
                     // replacement value is a row, populate it
-                    PopulateNodesAtPath(patchPath);
+                    PopulateNodesAtPath(patchPath, true);
                     if (!existingMatchInfo)
                     {
                         // this value wasn't a row before, so its parent needs to recache its info
@@ -227,12 +227,10 @@ namespace AZ::DocumentPropertyEditor
             }
             else if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Add)
             {
-                // <apm> test this! Does an add imply shifting all subsequent nodes back by 1, or are we given those messages?
-                // i.e., should we insert a blank m_childMatchState entry before we populate here?
                 if (rowPath == patchPath)
                 {
                     // given path is a new row, populate our tree with match information for this node and any row descendents
-                    PopulateNodesAtPath(rowPath);
+                    PopulateNodesAtPath(rowPath, false);
                 }
                 else
                 {
@@ -282,7 +280,7 @@ namespace AZ::DocumentPropertyEditor
         return currMatchState;
     }
 
-    void RowFilterAdapter::PopulateNodesAtPath(const Dom::Path& sourcePath)
+    void RowFilterAdapter::PopulateNodesAtPath(const Dom::Path& sourcePath, bool replaceExisting)
     {
         Dom::Path startingPath = GetRowPath(sourcePath);
 
@@ -293,7 +291,7 @@ namespace AZ::DocumentPropertyEditor
         }
         else
         {
-            // addition is a new node, populate its children (if any), dump its node info to the match string
+            // path is a node, populate its children (if any), dump its node info to the match string
             AZStd::function<void(MatchInfoNode*, const Dom::Value&)> recursivelyRegenerateMatches =
             [&](MatchInfoNode* matchState, const Dom::Value& value)
             {
@@ -321,16 +319,28 @@ namespace AZ::DocumentPropertyEditor
             startingPath.Pop();
             auto parentMatchState = GetMatchNodeAtPath(startingPath);
             
-            if (parentMatchState->m_childMatchState.size() > newRowIndex)
+            if (replaceExisting)
             {
                 // destroy existing entry, if present
-                delete parentMatchState->m_childMatchState[newRowIndex];
+                const bool hasEntryToReplace = (parentMatchState->m_childMatchState.size() > newRowIndex);
+                AZ_Assert(hasEntryToReplace, "PopulateNodesAtPath was called with replaceExisting, but no existing entry exists!");
+                if (hasEntryToReplace)
+                {
+                    delete parentMatchState->m_childMatchState[newRowIndex];
+                    parentMatchState->m_childMatchState[newRowIndex] = NewMatchInfoNode(parentMatchState);
+                }
+                else
+                {
+                    // this shouldn't happen!
+                    return;
+                }
             }
             else
             {
-                // no existing child entry, resize to fit, and pre-populate new entries with a nullptr
-                parentMatchState->m_childMatchState.resize(newRowIndex + 1, nullptr);
-                parentMatchState->m_childMatchState[newRowIndex] = NewMatchInfoNode(parentMatchState);
+                // inserting or appending child entry, add it to the correct position
+                parentMatchState->m_childMatchState.insert(
+                    parentMatchState->m_childMatchState.begin() + newRowIndex,
+                    NewMatchInfoNode(parentMatchState));
             }
             auto addedChild = parentMatchState->m_childMatchState[newRowIndex];
 
