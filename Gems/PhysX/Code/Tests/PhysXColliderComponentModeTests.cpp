@@ -24,7 +24,7 @@
 namespace UnitTest
 {
     class PhysXColliderComponentModeTest
-        : public testing::Test
+        : public ToolsApplicationFixture<false>
     {
     protected:
         using EntityPtr = AZ::Entity*;
@@ -53,30 +53,14 @@ namespace UnitTest
         // Needed to support ViewportUi request calls.
         ViewportManagerWrapper m_viewportManagerWrapper;
 
-        virtual AZStd::shared_ptr<AzFramework::DebugDisplayRequests> CreateDebugDisplayRequests()
-        {
-            return AZStd::make_shared<NullDebugDisplayRequests>();
-        }
-        virtual void SetUpEditorFixtureImpl()
+        void SetUpEditorFixtureImpl() override
         {
             m_viewportManagerWrapper.Create();
-            m_editorActions.Connect();
         }
-        virtual void TearDownEditorFixtureImpl()
+        void TearDownEditorFixtureImpl() override
         {
-            m_editorActions.Disconnect();
             m_viewportManagerWrapper.Destroy();
         }
-        void SetUp() override
-        {
-            SetUpEditorFixtureImpl();
-        }
-        void TearDown() override
-        {
-            TearDownEditorFixtureImpl();
-        }
-
-        TestEditorActions m_editorActions;
     };
 
     TEST_F(PhysXColliderComponentModeTest, MouseWheelUpShouldSetNextMode)
@@ -456,7 +440,7 @@ namespace UnitTest
         EXPECT_NEAR(assetScale.GetZ(), 1.0f, tolerance);
     }
 
-    class PhysXEditorColliderComponentFixture : public UnitTest::ToolsApplicationFixture
+    class PhysXEditorColliderComponentFixture : public UnitTest::ToolsApplicationFixture<false>
     {
     public:
         void SetUpEditorFixtureImpl() override;

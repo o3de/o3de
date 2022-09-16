@@ -111,7 +111,7 @@ namespace UnitTest
     }
 
     class EntityPropertyEditorRequestTest
-        : public ToolsApplicationFixture
+        : public ToolsApplicationFixture<>
     {
         void SetUpEditorFixtureImpl() override
         {
@@ -206,7 +206,7 @@ namespace UnitTest
     }
 
     class LevelEntityPropertyEditorRequestTest
-        : public ToolsApplicationFixture
+        : public ToolsApplicationFixture<>
         , public AzToolsFramework::EditorRequestBus::Handler
     {
         void SetUpEditorFixtureImpl() override

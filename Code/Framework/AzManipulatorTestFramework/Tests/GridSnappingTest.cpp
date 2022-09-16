@@ -22,7 +22,7 @@
 
 namespace UnitTest
 {
-    class GridSnappingFixture : public ToolsApplicationFixture
+    class GridSnappingFixture : public ToolsApplicationFixture<>
     {
     public:
         GridSnappingFixture()
