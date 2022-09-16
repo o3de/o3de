@@ -63,7 +63,7 @@ namespace AZ
                 Mesh() = default;
                 ~Mesh() = default;
 
-                //! Describes a single stream buffer/channel in a single mesh. 
+                //! Describes a single stream buffer/channel in a single mesh.
                 //! For example position, normal, or UV.
                 //! ModelLodAsset always uses a separate stream buffer for each stream channel (no interleaving) so
                 //! this struct is used to describe both the stream buffer and the stream channel.
@@ -130,13 +130,13 @@ namespace AZ
                 // References material slot in the ModelAsset that owns this mesh; see ModelAsset::FindMaterialSlot().
                 ModelMaterialSlot::StableId m_materialSlotId = ModelMaterialSlot::InvalidStableId;
 
-                // Both the buffer in m_indexBufferAssetView and the buffers in m_streamBufferInfo 
-                // may point to either unique buffers for the mesh or to consolidated 
+                // Both the buffer in m_indexBufferAssetView and the buffers in m_streamBufferInfo
+                // may point to either unique buffers for the mesh or to consolidated
                 // buffers owned by the lod.
 
                 BufferAssetView m_indexBufferAssetView;
 
-                // These stream buffers are not ordered. If a specific ordering is required it's 
+                // These stream buffers are not ordered. If a specific ordering is required it's
                 // expected that the user calls GetStreamBufferInfo with the required semantics
                 // and pieces the layout together themselves.
                 AZStd::fixed_vector<StreamBufferInfo, RHI::Limits::Pipeline::StreamCountMax> m_streamBufferInfo;
@@ -153,14 +153,19 @@ namespace AZ
             // AssetData overrides...
             bool HandleAutoReload() override
             {
-                return false;
+                return true;
             }
-            
+
+            bool ForceReloadWhenDependencyReloaded() const override
+            {
+                return true;
+            }
+
             AZStd::vector<Mesh> m_meshes;
             AZ::Aabb m_aabb = AZ::Aabb::CreateNull();
-            
-            // These buffers owned by the lod are the consolidated super buffers. 
-            // Meshes may either have views into these buffers or they may own 
+
+            // These buffers owned by the lod are the consolidated super buffers.
+            // Meshes may either have views into these buffers or they may own
             // their own buffers.
 
             Data::Asset<BufferAsset> m_indexBuffer;

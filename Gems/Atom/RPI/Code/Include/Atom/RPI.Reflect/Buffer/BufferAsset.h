@@ -56,14 +56,19 @@ namespace AZ
             const Data::Asset<ResourcePoolAsset>& GetPoolAsset() const;
 
             CommonBufferPoolType GetCommonPoolType() const;
-            
+
             const AZStd::string& GetName() const;
 
         private:
             // AssetData overrides...
             bool HandleAutoReload() override
             {
-                return false;
+                return true;
+            }
+
+            bool ForceReloadWhenDependencyReloaded() const override
+            {
+                return true;
             }
 
             // Called by asset creators to assign the asset to a ready state.

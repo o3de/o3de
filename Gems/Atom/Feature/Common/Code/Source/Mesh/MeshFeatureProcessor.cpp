@@ -557,12 +557,10 @@ namespace AZ
             }
 
             Data::AssetBus::Handler::BusConnect(modelAsset.GetId());
-            AzFramework::AssetCatalogEventBus::Handler::BusConnect();
         }
 
         ModelDataInstance::MeshLoader::~MeshLoader()
         {
-            AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
             Data::AssetBus::Handler::BusDisconnect();
         }
 
@@ -633,36 +631,6 @@ namespace AZ
 
             AzFramework::AssetSystemRequestBus::Broadcast(
                 &AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetByUuid, m_modelAsset.GetId().m_guid);
-        }
-
-        void ModelDataInstance::MeshLoader::OnCatalogAssetChanged(const AZ::Data::AssetId& assetId)
-        {
-            if (assetId == m_modelAsset.GetId())
-            {
-                Data::Asset<RPI::ModelAsset> modelAssetReference = m_modelAsset;
-
-                // If the asset was modified, reload it
-                AZ::SystemTickBus::QueueFunction(
-                    [=]() mutable
-                    {
-                        ModelReloaderSystemInterface::Get()->ReloadModel(modelAssetReference, m_modelReloadedEventHandler);
-                    });
-            }
-        }
-
-        void ModelDataInstance::MeshLoader::OnCatalogAssetAdded(const AZ::Data::AssetId& assetId)
-        {
-            if (assetId == m_modelAsset.GetId())
-            {
-                Data::Asset<RPI::ModelAsset> modelAssetReference = m_modelAsset;
-
-                // If the asset didn't exist in the catalog when it first attempted to load, we need to try loading it again
-                AZ::SystemTickBus::QueueFunction(
-                    [=]() mutable
-                    {
-                        ModelReloaderSystemInterface::Get()->ReloadModel(modelAssetReference, m_modelReloadedEventHandler);
-                    });
-            }
         }
 
         // ModelDataInstance...
@@ -736,7 +704,7 @@ namespace AZ
 
                 if (!material)
                 {
-                    AZ_Warning("MeshFeatureProcessor", false, "No material provided for mesh. Skipping.");
+                    AZ_Warning("MeshFeatureProcessor", false, "No material provided for mesh %s. Skipping.", m_model->GetModelAsset().ToString<AZStd::string>().c_str());
                     continue;
                 }
 

@@ -59,6 +59,12 @@ namespace AZ
             static constexpr uint16_t InvalidJointIndex = 0xffff;
             uint16_t GetJointIndexByName(const AZStd::string& jointName) const;
 
+        protected:
+            bool ForceReloadWhenDependencyReloaded() const override
+            {
+                return true;
+            }
+
         private:
             AZStd::unordered_map<AZStd::string, uint16_t> m_jointNameToIndexMap;
         };

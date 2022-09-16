@@ -57,10 +57,6 @@ namespace AZ
                 void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
                 void OnAssetError(Data::Asset<Data::AssetData> asset) override;
 
-                // AssetCatalogEventBus::Handler overrides...
-                void OnCatalogAssetChanged(const AZ::Data::AssetId& assetId) override;
-                void OnCatalogAssetAdded(const AZ::Data::AssetId& assetId) override;
-
                 void OnModelReloaded(Data::Asset<Data::AssetData> asset);
                 ModelReloadedEvent::Handler m_modelReloadedEventHandler { [&](Data::Asset<RPI::ModelAsset> modelAsset)
                                                                   {
@@ -88,7 +84,7 @@ namespace AZ
             void UpdateObjectSrg();
             bool MaterialRequiresForwardPassIblSpecular(Data::Instance<RPI::Material> material) const;
             void SetVisible(bool isVisible);
-            
+
             RPI::MeshDrawPacketLods m_drawPacketListsByLod;
 
             RPI::Cullable m_cullable;
@@ -100,7 +96,7 @@ namespace AZ
             //! A reference to the original model asset in case it got cloned before creating the model instance.
             Data::Asset<RPI::ModelAsset> m_originalModelAsset;
 
-            //! List of object SRGs used by meshes in this model 
+            //! List of object SRGs used by meshes in this model
             AZStd::vector<Data::Instance<RPI::ShaderResourceGroup>> m_objectSrgList;
             AZStd::unique_ptr<MeshLoader> m_meshLoader;
             RPI::Scene* m_scene = nullptr;
@@ -200,7 +196,7 @@ namespace AZ
             // RPI::SceneNotificationBus::Handler overrides...
             void OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline) override;
             void OnRenderPipelineRemoved(RPI::RenderPipeline* pipeline) override;
-                        
+
             AZStd::concurrency_checker m_meshDataChecker;
             StableDynamicArray<ModelDataInstance> m_modelData;
             TransformServiceFeatureProcessor* m_transformService;

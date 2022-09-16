@@ -57,6 +57,8 @@ namespace EMotionFX
             void InitRenderActor();
 
         private:
+            bool ForceReloadWhenDependencyReloaded() const override;
+
             AZStd::shared_ptr<Actor> m_emfxActor;
             AZStd::unique_ptr<RenderActor> m_renderActor;
         };

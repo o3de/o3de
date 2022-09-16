@@ -47,6 +47,11 @@ namespace EMotionFX
             m_renderActor.reset(renderBackend->CreateActor(this));
         }
 
+        bool ActorAsset::ForceReloadWhenDependencyReloaded() const
+        {
+            return true;
+        }
+
         bool ActorAssetHandler::OnInitAsset(const AZ::Data::Asset<AZ::Data::AssetData>& asset)
         {
             ActorAsset* assetData = asset.GetAs<ActorAsset>();
