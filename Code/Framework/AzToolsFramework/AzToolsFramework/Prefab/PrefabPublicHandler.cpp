@@ -360,7 +360,7 @@ namespace AzToolsFramework
         }
 
         InstantiatePrefabResult PrefabPublicHandler::InstantiatePrefab(
-            AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position)
+            AZStd::string_view filePath, AZ::EntityId parentId, const AZ::Vector3& position)
         {
             auto prefabEditorEntityOwnershipInterface = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
             if (!prefabEditorEntityOwnershipInterface)
@@ -376,17 +376,17 @@ namespace AzToolsFramework
 
             InstanceOptionalReference instanceToParentUnder;
 
-            // Get parent entity and owning instance
-            if (parent.IsValid())
+            // Get parent entity's owning instance
+            if (parentId.IsValid())
             {
-                instanceToParentUnder = m_instanceEntityMapperInterface->FindOwningInstance(parent);
+                instanceToParentUnder = m_instanceEntityMapperInterface->FindOwningInstance(parentId);
             }
 
             if (!instanceToParentUnder.has_value())
             {
                 AzFramework::EntityContextId editorEntityContextId = AzToolsFramework::GetEntityContextId();
                 instanceToParentUnder = m_prefabFocusInterface->GetFocusedPrefabInstance(editorEntityContextId);
-                parent = instanceToParentUnder->get().GetContainerEntityId();
+                parentId = instanceToParentUnder->get().GetContainerEntityId();
             }
 
             //Detect whether this instantiation would produce a cyclical dependency
@@ -436,8 +436,19 @@ namespace AzToolsFramework
                 Prefab::PrefabDom containerEntityDomBefore;
                 m_instanceToTemplateInterface->GenerateDomForEntity(containerEntityDomBefore, *containerEntity);
 
+                // Capture parent entity DOM before adding the nested prefab instance
+                AZ::Entity* parentEntity = GetEntityById(parentId);
+
+                if (!parentEntity)
+                {
+                    return AZ::Failure<AZStd::string>("Parent entity cannot be found while instantiating a prefab.");
+                }
+
+                PrefabDom parentEntityDomBeforeAdding;
+                m_instanceToTemplateInterface->GenerateDomForEntity(parentEntityDomBeforeAdding, *parentEntity);
+
                 // Set container entity's parent
-                AZ::TransformBus::Event(containerEntityId, &AZ::TransformBus::Events::SetParent, parent);
+                AZ::TransformBus::Event(containerEntityId, &AZ::TransformBus::Events::SetParent, parentId);
 
                 // Set the position of the container entity
                 AZ::TransformBus::Event(containerEntityId, &AZ::TransformBus::Events::SetWorldTranslation, position);
@@ -452,8 +463,13 @@ namespace AzToolsFramework
 
                 CreateLink(instanceToCreate->get(), instanceToParentUnder->get().GetTemplateId(), undoBatch.GetUndoBatch(), AZStd::move(patch));
 
+                // Update parent entity DOM
+                PrefabDom parentEntityDomAfterAdding;
+                m_instanceToTemplateInterface->GenerateDomForEntity(parentEntityDomAfterAdding, *parentEntity);
+                PrefabUndoHelpers::UpdateEntity(parentEntityDomBeforeAdding, parentEntityDomAfterAdding, parentId, undoBatch.GetUndoBatch());
+
                 m_prefabUndoCache.UpdateCache(containerEntityId);
-                m_prefabUndoCache.UpdateCache(parent);
+                m_prefabUndoCache.UpdateCache(parentId);
 
                 AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
                     &AzToolsFramework::ToolsApplicationRequestBus::Events::ClearDirtyEntities);

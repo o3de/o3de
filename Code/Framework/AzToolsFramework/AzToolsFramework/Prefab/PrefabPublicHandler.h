@@ -47,7 +47,7 @@ namespace AzToolsFramework
             CreatePrefabResult CreatePrefabInMemory(
                 const EntityIdList& entityIds, AZ::IO::PathView filePath) override;
             InstantiatePrefabResult InstantiatePrefab(
-                AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position) override;
+                AZStd::string_view filePath, AZ::EntityId parentId, const AZ::Vector3& position) override;
             PrefabOperationResult SavePrefab(AZ::IO::Path filePath) override;
             PrefabEntityResult CreateEntity(AZ::EntityId parentId, const AZ::Vector3& position) override;
             
