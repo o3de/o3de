@@ -597,7 +597,6 @@ namespace AzToolsFramework
             if (!folderPaths.empty())
             {
                 AZStd::string folderPath = folderPaths[0];
-                AZ_TracePrintf("JJS", "FolderPath = %s\n", folderPath.c_str());
                 bool connectedToAssetProcessor = false;
                 AzFramework::AssetSystemRequestBus::BroadcastResult(
                     connectedToAssetProcessor, &AzFramework::AssetSystemRequestBus::Events::AssetProcessorIsReady);
@@ -609,7 +608,6 @@ namespace AzToolsFramework
                     for (auto entry : entries)
                     {
                         using namespace AZ::IO;
-                        AZStd::string originalFname;
                         AssetBrowserEntry* item = entry;
                         Path fromPath = item->GetFullPath();
                         PathView filename = fromPath.Filename();
@@ -645,34 +643,34 @@ namespace AzToolsFramework
 
                                 if (msgBox.clickedButton() == moveButton)
                                 {
-                                    AssetChangeReportRequest request2(
+                                    AssetChangeReportRequest moveRequest(
                                         AZ::OSString(fromPath.c_str()),
                                         AZ::OSString(toPath.c_str()),
                                         AssetChangeReportRequest::ChangeType::Move);
-                                    AssetChangeReportResponse response2;
-                                    if (SendRequest(request2, response2))
+                                    AssetChangeReportResponse moveResponse;
+                                    if (SendRequest(moveRequest, moveResponse))
                                     {
                                         AZStd::string message2;
-                                        for (int i = 0; i < response2.m_lines.size(); ++i)
+                                        for (int i = 0; i < moveResponse.m_lines.size(); ++i)
                                         {
-                                            message2 += response2.m_lines[i] + "\n";
+                                            message2 += moveResponse.m_lines[i] + "\n";
                                         }
 
                                         if (message2.size())
                                         {
-                                            QMessageBox msgBox2(this);
-                                            msgBox2.setWindowTitle("After Move Asset Information");
-                                            msgBox2.setIcon(QMessageBox::Warning);
-                                            msgBox2.setText("The asset has been moved.");
-                                            msgBox2.setInformativeText("More information can be found by pressing \"Show Details...\".");
-                                            msgBox2.setStandardButtons(QMessageBox::Ok);
-                                            msgBox2.setDefaultButton(QMessageBox::Ok);
-                                            msgBox2.setDetailedText(message2.c_str());
+                                            QMessageBox moveMsgBox(this);
+                                            moveMsgBox.setWindowTitle("After Move Asset Information");
+                                            moveMsgBox.setIcon(QMessageBox::Warning);
+                                            moveMsgBox.setText("The asset has been moved.");
+                                            moveMsgBox.setInformativeText("More information can be found by pressing \"Show Details...\".");
+                                            moveMsgBox.setStandardButtons(QMessageBox::Ok);
+                                            moveMsgBox.setDefaultButton(QMessageBox::Ok);
+                                            moveMsgBox.setDetailedText(message2.c_str());
                                             QSpacerItem* horizontalSpacer2 =
                                                 new QSpacerItem(600, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
-                                            QGridLayout* layout2 = (QGridLayout*)msgBox2.layout();
-                                            layout2->addItem(horizontalSpacer2, layout2->rowCount(), 0, 1, layout2->columnCount());
-                                            msgBox2.exec();
+                                            QGridLayout* moveLayout = (QGridLayout*)moveMsgBox.layout();
+                                            moveLayout->addItem(horizontalSpacer2, moveLayout->rowCount(), 0, 1, moveLayout->columnCount());
+                                            moveMsgBox.exec();
                                         }
                                     }
                                 }
