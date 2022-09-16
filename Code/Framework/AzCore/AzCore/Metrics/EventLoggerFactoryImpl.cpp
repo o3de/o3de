@@ -14,6 +14,10 @@
 
 namespace AZ::Metrics
 {
+    EventLoggerFactoryImpl::EventLoggerDeleter::EventLoggerDeleter() = default;
+    EventLoggerFactoryImpl::EventLoggerDeleter::EventLoggerDeleter(bool shouldDelete)
+        : m_delete(shouldDelete)
+    {}
     void EventLoggerFactoryImpl::EventLoggerDeleter::operator()(IEventLogger* ptr) const
     {
         if (m_delete)

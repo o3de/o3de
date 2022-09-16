@@ -39,12 +39,15 @@ namespace AZ::Metrics
 
         [[nodiscard]] bool IsRegistered(EventLoggerId loggerId) const override;
 
-    private:
         struct EventLoggerDeleter
         {
+            EventLoggerDeleter();
+            EventLoggerDeleter(bool shouldDelete);
             void operator()(IEventLogger* ptr) const;
             bool m_delete{ true };
         };
+
+    private:
         using EventLoggerPtr = AZStd::unique_ptr<IEventLogger, EventLoggerDeleter>;
 
         //! Helper function that is used to register an event logger into the event logger array
@@ -54,7 +57,7 @@ namespace AZ::Metrics
         //! @return outcome which indicates whether the event logger was registered with the event logger array
         //! On success an empty Success outcome is returned
         //! On failure, the supplied event logger parameter is returned back to the caller
-        AZ::Outcome<void, EventLoggerPtr> RegisterEventLoggerImpl(EventLoggerId loggerId, EventLoggerPtr eventlogger);
+        [[nodiscard]] AZ::Outcome<void, EventLoggerPtr> RegisterEventLoggerImpl(EventLoggerId loggerId, EventLoggerPtr eventlogger);
 
         struct IdToEventLoggerEntry
         {
