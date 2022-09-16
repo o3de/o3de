@@ -26,7 +26,6 @@ namespace AzFramework
         , public AZ::SystemTickBus::Handler
         , public RootSpawnableInterface::Registrar
         , public RootSpawnableNotificationBus::Handler
-        , protected SpawnableNotificationBus::Handler
     {
     public:
         AZ_COMPONENT(SpawnableSystemComponent, "{12D0DA52-BB86-4AC3-8862-9493E0D0E207}");
