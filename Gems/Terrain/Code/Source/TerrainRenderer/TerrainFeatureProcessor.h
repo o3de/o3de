@@ -35,7 +35,7 @@ namespace Terrain
 {
     class TerrainFeatureProcessor final
         : public AZ::RPI::FeatureProcessor
-        , public AZ::Data::AssetBus::Handler
+        , private AZ::RPI::MaterialReloadNotificationBus::Handler
         , private AzFramework::Terrain::TerrainDataNotificationBus::Handler
     {
     public:
@@ -64,7 +64,7 @@ namespace Terrain
 
         static constexpr auto InvalidImageIndex = AZ::Render::BindlessImageArrayHandler::InvalidImageIndex;
         using MaterialInstance = AZ::Data::Instance<AZ::RPI::Material>;
-
+        
         struct WorldShaderData
         {
             float m_zMin;
@@ -73,8 +73,8 @@ namespace Terrain
             float m_padding;
         };
 
-        // AZ::Data::AssetBus overrides...
-        void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+        // AZ::RPI::MaterialReloadNotificationBus::Handler overrides...
+        void OnMaterialReinitialized(const MaterialInstance& material) override;
 
         // AzFramework::Terrain::TerrainDataNotificationBus overrides...
         void OnTerrainDataDestroyBegin() override;
@@ -83,7 +83,7 @@ namespace Terrain
         // AZ::RPI::SceneNotificationBus overrides...
         void OnRenderPipelineAdded(AZ::RPI::RenderPipelinePtr pipeline) override;
         void OnRenderPipelinePassesChanged(AZ::RPI::RenderPipeline* renderPipeline) override;
-
+        
         // AZ::RPI::FeatureProcessor overrides...
         void ApplyRenderPipelineChange(AZ::RPI::RenderPipeline* renderPipeline) override;
 
@@ -111,7 +111,7 @@ namespace Terrain
 
         AzFramework::Terrain::FloatRange m_zBounds;
         AZ::Aabb m_dirtyRegion{ AZ::Aabb::CreateNull() };
-
+        
         bool m_terrainBoundsNeedUpdate{ false };
 
         AZStd::vector<AZ::RPI::RenderPass*> m_passes;

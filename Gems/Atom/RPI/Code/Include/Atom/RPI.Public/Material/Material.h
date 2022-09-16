@@ -38,20 +38,21 @@ namespace AZ
         class MaterialPropertiesLayout;
 
         //! Provides runtime material functionality based on a MaterialAsset. The material operates on a
-        //! set of properties, which are configured primarily at build-time through the MaterialAsset.
+        //! set of properties, which are configured primarily at build-time through the MaterialAsset. 
         //! These properties are used to configure shader system inputs at runtime.
-        //!
+        //! 
         //! Material property values can be accessed at runtime, using the SetPropertyValue() and GetPropertyValue().
         //! After applying all property changes, Compile() must be called to apply those changes to the shader system.
-        //!
+        //! 
         //! If RPI validation is enabled, the class will perform additional error checking. If a setter method fails
-        //! an error is emitted and the call returns false without performing the requested operation. Likewise, if
-        //! a getter method fails, an error is emitted and an empty value is returned. If validation is disabled, the
+        //! an error is emitted and the call returns false without performing the requested operation. Likewise, if 
+        //! a getter method fails, an error is emitted and an empty value is returned. If validation is disabled, the 
         //! operation is always performed.
         class Material
             : public Data::InstanceData
             , public Data::AssetBus::Handler
             , public ShaderReloadNotificationBus::MultiHandler
+            , public MaterialReloadNotificationBus::Handler
         {
             friend class MaterialSystem;
         public:
@@ -89,7 +90,7 @@ namespace AZ
 
             const MaterialPropertyValue& GetPropertyValue(MaterialPropertyIndex index) const;
             const AZStd::vector<MaterialPropertyValue>& GetPropertyValues() const;
-
+            
             //! Gets flags indicating which properties have been modified.
             const MaterialPropertyFlags& GetPropertyDirtyFlags() const;
 
@@ -100,7 +101,7 @@ namespace AZ
             //! Does nothing if NeedsCompile() is false or CanCompile() is false.
             //! @return whether compilation occurred
             bool Compile();
-
+            
             //! Returns an ID that can be used to track whether the material has changed since the last time client code read it.
             //! This gets incremented every time a change is made, like by calling SetPropertyValue().
             ChangeId GetCurrentChangeId() const;
@@ -145,6 +146,10 @@ namespace AZ
             ///////////////////////////////////////////////////////////////////
             // AssetBus overrides...
             void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
+
+            ///////////////////////////////////////////////////////////////////
+            // MaterialReloadNotificationBus overrides...
+            void OnMaterialAssetReinitialized(const Data::Asset<MaterialAsset>& materialAsset) override;
 
             ///////////////////////////////////////////////////////////////////
             // ShaderReloadNotificationBus overrides...
@@ -193,7 +198,7 @@ namespace AZ
             ShaderCollection m_shaderCollection;
 
             //! Tracks each change made to material properties.
-            //! Initialized to DEFAULT_CHANGE_ID+1 to ensure that GetCurrentChangeId() will not return DEFAULT_CHANGE_ID (a value that client
+            //! Initialized to DEFAULT_CHANGE_ID+1 to ensure that GetCurrentChangeId() will not return DEFAULT_CHANGE_ID (a value that client 
             //! code can use to initialize a ChangeId that is immediately dirty).
             ChangeId m_currentChangeId = DEFAULT_CHANGE_ID + 1;
 
@@ -201,7 +206,7 @@ namespace AZ
             ChangeId m_compiledChangeId = DEFAULT_CHANGE_ID;
 
             bool m_isInitializing = false;
-
+                
             MaterialPropertyPsoHandling m_psoHandling = MaterialPropertyPsoHandling::Warning;
         };
 
