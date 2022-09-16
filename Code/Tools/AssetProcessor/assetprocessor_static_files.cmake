@@ -25,6 +25,8 @@ set(FILES
     native/AssetManager/assetScannerWorker.h
     native/AssetManager/FileStateCache.cpp
     native/AssetManager/FileStateCache.h
+    native/AssetManager/Validators/LfsPointerFileValidator.cpp
+    native/AssetManager/Validators/LfsPointerFileValidator.h
     native/AssetManager/PathDependencyManager.cpp
     native/AssetManager/PathDependencyManager.h
     native/AssetManager/SourceFileRelocator.cpp

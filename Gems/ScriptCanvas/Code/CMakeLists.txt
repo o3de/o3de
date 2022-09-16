@@ -98,6 +98,8 @@ ly_add_target(
             AZ::AzFramework
             Gem::ScriptCanvasDebugger
     AUTOGEN_RULES
+        *.ScriptCanvasData.xml,ScriptCanvasDataRegistry_Header.jinja,AutoGenDataRegistry.generated.h
+        *.ScriptCanvasData.xml,ScriptCanvasDataRegistry_Source.jinja,AutoGenDataRegistry.generated.cpp
         *.ScriptCanvasFunction.xml,ScriptCanvasFunctionRegistry_Header.jinja,AutoGenFunctionRegistry.generated.h
         *.ScriptCanvasFunction.xml,ScriptCanvasFunctionRegistry_Source.jinja,AutoGenFunctionRegistry.generated.cpp
         *.ScriptCanvasGrammar.xml,ScriptCanvasGrammar_Header.jinja,$path/$fileprefix.generated.h

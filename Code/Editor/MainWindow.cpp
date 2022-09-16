@@ -1968,6 +1968,7 @@ void MainWindow::ConnectivityStateChanged(const AzToolsFramework::SourceControlS
 
     gSettings.enableSourceControl = connected;
     gSettings.SaveEnableSourceControlFlag(false);
+    gSettings.SaveSettingsRegistryFile();
 }
 
 void MainWindow::OnGotoSelected()
