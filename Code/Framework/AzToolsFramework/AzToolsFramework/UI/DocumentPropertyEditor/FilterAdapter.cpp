@@ -253,8 +253,7 @@ namespace AZ::DocumentPropertyEditor
     void RowFilterAdapter::HandleDomMessage(const AZ::DocumentPropertyEditor::AdapterMessage& message,[[maybe_unused]] Dom::Value& value)
     {
         // forward all messages unaltered
-        #undef SendMessage // for now, work around windows #defines. We should probably just rename our SendMessage
-        DocumentAdapter::SendMessage(message);
+        DocumentAdapter::SendAdapterMessage(message);
     }
 
     RowFilterAdapter::MatchInfoNode* RowFilterAdapter::GetMatchNodeAtPath(const Dom::Path& sourcePath)
