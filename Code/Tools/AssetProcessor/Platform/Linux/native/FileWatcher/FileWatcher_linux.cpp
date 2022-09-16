@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/string/fixed_string.h>
 #include <native/FileWatcher/FileWatcher.h>
 #include <native/FileWatcher/FileWatcher_platform.h>
@@ -58,9 +59,9 @@ void FileWatcher::PlatformImplementation::Finalize()
 
 bool FileWatcher::PlatformImplementation::TryToWatch(const QString &pathStr, int* errnoPtr)
 {
-    const char* path = pathStr.toUtf8().constData();
+    AZ::IO::FixedMaxPathString path(pathStr.toUtf8().constData());
     int watchHandle = inotify_add_watch(
-        m_inotifyHandle, path, IN_CREATE | IN_CLOSE_WRITE | IN_DELETE | IN_DELETE_SELF | IN_MODIFY | IN_MOVE);
+        m_inotifyHandle, path.c_str(), IN_CREATE | IN_CLOSE_WRITE | IN_DELETE | IN_DELETE_SELF | IN_MODIFY | IN_MOVE);
     const auto err = errno; // Only contains relevant information if we actually failed
 
     if (watchHandle < 0)
@@ -70,7 +71,7 @@ bool FileWatcher::PlatformImplementation::TryToWatch(const QString &pathStr, int
         AZ_Warning(
             "FileWatcher", false,
             "inotify_add_watch failed for path %s with error %d: %s%s",
-            path, err, strerror_r(err, errorString.data(), errorString.capacity()), extraStr);
+            path.c_str(), err, strerror_r(err, errorString.data(), errorString.capacity()), extraStr);
         if (errnoPtr)
         {
             *errnoPtr = err;
