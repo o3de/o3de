@@ -787,7 +787,7 @@ namespace AzToolsFramework
         }
 
         QMessageBox::warning(GetActiveWindow(), tr("Unable to Edit Asset"),
-            QObject::QObject::tr("No callback is provided and no associated editor could be found."), QMessageBox::Ok, QMessageBox::Ok);
+            QObject::tr("No callback is provided and no associated editor could be found."), QMessageBox::Ok, QMessageBox::Ok);
     }
 
     void PropertyAssetCtrl::PopupAssetPicker()
