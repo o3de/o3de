@@ -93,7 +93,7 @@ namespace PhysX
             // The reason this is in a free function is because JointsComponentMode
             // privately inherits from ToolsApplicationNotificationBus. Trying to invoke
             // the bus inside the class scope causes the compiler to complain it's not accessible
-            // to due private inheritance.
+            // due to private inheritance.
             // Using the global namespace operator :: should have fixed that, except there
             // is a bug in the Microsoft compiler meaning it doesn't work. So this is a work around.
             AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(

@@ -161,6 +161,7 @@ namespace PhysX
         // The follower body has to be a RigidBody, otherwise it won't be moving anywhere
         if (!info.m_followerBody || info.m_followerBody->GetNativeType() != NativeTypeIdentifiers::RigidBody)
         {
+            info.m_followerBody = nullptr;
             const AZStd::string entityWithoutBodyWarningMsg("Rigid body not found in follower entity associated with joint. Please add a rigid body component to the entity.");
             WarnInvalidJointSetup(m_configuration.m_followerEntity, entityWithoutBodyWarningMsg);
             return;
@@ -183,6 +184,14 @@ namespace PhysX
             info.m_leadLocal = jointTransform; // lead is null, attaching follower to global position of joint.
         }
         info.m_followerLocal = m_configuration.m_localTransformFromFollower;// joint position & orientation in follower actor's frame.
+    }
+
+    void JointComponent::PrintJointSetupMessage(AZ::EntityId entityId, const AZStd::string& message)
+    {
+        const AZStd::vector<AZ::EntityId> entityIds = { entityId };
+        const char* category = "PhysX Joint";
+
+        PhysX::Utils::PrintEntityNames(entityIds, category, message.c_str());
     }
 
     void JointComponent::WarnInvalidJointSetup(AZ::EntityId entityId, const AZStd::string& message)
