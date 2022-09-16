@@ -19,6 +19,7 @@ namespace AZ::DocumentPropertyEditor
     {
     public:
         RowFilterAdapter();
+        ~RowFilterAdapter();
 
         void SetSourceAdapter(DocumentAdapterPtr sourceAdapter);
 

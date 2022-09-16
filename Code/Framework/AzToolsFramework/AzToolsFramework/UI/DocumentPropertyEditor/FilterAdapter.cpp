@@ -14,6 +14,11 @@ namespace AZ::DocumentPropertyEditor
     {
     }
 
+    RowFilterAdapter::~RowFilterAdapter()
+    {
+        delete m_root;
+    }
+
     void RowFilterAdapter::SetSourceAdapter(DocumentAdapterPtr sourceAdapter)
     {
         m_sourceAdapter = sourceAdapter;

@@ -1051,7 +1051,7 @@ namespace AzToolsFramework
             m_dpeSettings->SetCleanExpanderStateCallback(
                 [this](DocumentPropertyEditorSettings::ExpanderStateMap& storedStates)
                 {
-                    auto rootValue = m_adapter->GetContents();
+                    const auto& rootValue = m_adapter->GetContents();
                     auto numErased = AZStd::erase_if(storedStates,
                         [&rootValue](const AZStd::pair<AZStd::string, bool>& statePair)
                         {
