@@ -58,23 +58,32 @@ namespace UnitTest
 
             auto localFileIO = AZ::IO::FileIOBase::GetInstance();
             EXPECT_NE(nullptr, localFileIO);
+
             char rootPath[AZ_MAX_PATH_LEN];
             AZ::Utils::GetExecutableDirectory(rootPath, AZ_MAX_PATH_LEN);
             localFileIO->SetAlias("@exefolder@", rootPath);
 
             m_testMaterialSrgLayout = CreateCommonTestMaterialSrgLayout();
+            EXPECT_NE(nullptr, m_testMaterialSrgLayout);
+
             m_testShaderAsset = CreateTestShaderAsset(Uuid::CreateRandom(), m_testMaterialSrgLayout);
-            m_assetSystemStub.RegisterSourceInfo("@exefolder@/Temp/test.shader", m_testShaderAsset.GetId());
+            EXPECT_TRUE(m_testShaderAsset.GetId().IsValid());
+            EXPECT_TRUE(m_testShaderAsset.IsReady());
+
+            m_assetSystemStub.RegisterSourceInfo(DeAliasPath("@exefolder@/Temp/test.shader"), m_testShaderAsset.GetId());
 
             m_testMaterialTypeAsset = CreateTestMaterialTypeAsset(Uuid::CreateRandom());
+            EXPECT_TRUE(m_testMaterialTypeAsset.GetId().IsValid());
+            EXPECT_TRUE(m_testMaterialTypeAsset.IsReady());
 
             // Since this test doesn't actually instantiate a Material, it won't need to instantiate this ImageAsset, so all we
             // need is an asset reference with a valid ID.
             m_testImageAsset = Data::Asset<ImageAsset>{ Data::AssetId{Uuid::CreateRandom(), StreamingImageAsset::GetImageAssetSubId()}, azrtti_typeid<StreamingImageAsset>() };
+            EXPECT_TRUE(m_testImageAsset.GetId().IsValid());
 
             // Register the test assets with the AssetSystemStub so CreateMaterialAsset() can use AssetUtils.
-            m_assetSystemStub.RegisterSourceInfo("@exefolder@/Temp/test.materialtype", m_testMaterialTypeAsset.GetId());
-            m_assetSystemStub.RegisterSourceInfo("@exefolder@/Temp/test.streamingimage", m_testImageAsset.GetId());
+            m_assetSystemStub.RegisterSourceInfo(DeAliasPath("@exefolder@/Temp/test.materialtype"), m_testMaterialTypeAsset.GetId());
+            m_assetSystemStub.RegisterSourceInfo(DeAliasPath("@exefolder@/Temp/test.streamingimage"), m_testImageAsset.GetId());
         }
 
         void TearDown() override
@@ -85,6 +94,13 @@ namespace UnitTest
             m_testImageAsset.Reset();
 
             RPITestFixture::TearDown();
+        }
+
+        AZStd::string DeAliasPath(const AZStd::string& sourcePath) const
+        {
+            AZ::IO::FixedMaxPath sourcePathNoAlias;
+            AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(sourcePathNoAlias, AZ::IO::PathView{ sourcePath });
+            return sourcePathNoAlias.LexicallyNormal().String();
         }
 
         AZStd::string GetTestMaterialTypeJson()
@@ -1360,7 +1376,7 @@ namespace UnitTest
         expecteMaterial.SetPropertyValue(Name{"general.MyFloat4"}, Vector4{0.1f,0.2f,0.3f,0.4f});
         expecteMaterial.SetPropertyValue(Name{"general.MyColor"}, Color{0.1f,0.2f,0.3f,0.5f});
         expecteMaterial.SetPropertyValue(Name{"general.MyImage1"}, AZStd::string{});
-        expecteMaterial.SetPropertyValue(Name{"general.MyImage2"}, AZStd::string{"@exefolder@/Temp/test.streamingimage"});
+        expecteMaterial.SetPropertyValue(Name{"general.MyImage2"}, DeAliasPath("@exefolder@/Temp/test.streamingimage"));
         expecteMaterial.SetPropertyValue(Name{"general.MyEnum"}, AZStd::string{"Enum1"});
 
         CheckEqual(expecteMaterial, material);

@@ -171,7 +171,7 @@ namespace UnitTest
 
         if (!info.m_streamName.empty())
         {
-            AZStd::string fullName = GetTestFolderPath() + info.m_streamName;
+            AZ::IO::Path fullName = GetTestFolderPath() / info.m_streamName;
             IO::FileIOBase* io = IO::FileIOBase::GetInstance();
             io->Size(fullName.c_str(), info.m_dataLen);
         }
@@ -195,7 +195,7 @@ namespace UnitTest
         {
             IO::FileIOBase* io = AZ::IO::FileIOBase::GetInstance();
 
-            AZStd::string fullName = GetTestFolderPath() + info.m_streamName;
+            AZ::IO::Path fullName = GetTestFolderPath() / info.m_streamName;
 
             io->Size(fullName.c_str(), info.m_dataLen);
         }

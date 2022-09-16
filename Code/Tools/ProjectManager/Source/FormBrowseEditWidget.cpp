@@ -14,19 +14,36 @@
 
 namespace O3DE::ProjectManager
 {
-    FormBrowseEditWidget::FormBrowseEditWidget(const QString& labelText, const QString& valueText, QWidget* parent)
-        : FormLineEditWidget(labelText, valueText, parent)
+    FormBrowseEditWidget::FormBrowseEditWidget(
+        const QString& labelText,
+        const QString& valueText,
+        const QString& placeholderText,
+        const QString& errorText,
+        QWidget* parent)
+        : FormLineEditWidget(labelText, valueText, placeholderText, errorText, parent)
     {
         setObjectName("formBrowseEditWidget");
 
         QPushButton* browseButton = new QPushButton(this);
-        connect( browseButton, &QPushButton::pressed, [this]{ emit OnBrowse(); });
-        connect( this, &FormBrowseEditWidget::OnBrowse, this, &FormBrowseEditWidget::HandleBrowseButton);
+        connect(
+            browseButton,
+            &QPushButton::pressed,
+            [this]
+            {
+                emit OnBrowse();
+            });
+        connect(this, &FormBrowseEditWidget::OnBrowse, this, &FormBrowseEditWidget::HandleBrowseButton);
         m_frameLayout->addWidget(browseButton); 
     }
 
+    FormBrowseEditWidget::FormBrowseEditWidget(const QString& labelText, const QString& valueText, QWidget* parent)
+        : FormBrowseEditWidget(labelText, valueText, "", "", parent)
+    {
+        
+    }
+
     FormBrowseEditWidget::FormBrowseEditWidget(const QString& labelText, QWidget* parent)
-        : FormBrowseEditWidget(labelText, "", parent)
+        : FormBrowseEditWidget(labelText, "", "", "", parent)
     {
     }
 

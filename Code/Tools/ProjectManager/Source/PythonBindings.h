@@ -74,11 +74,11 @@ namespace O3DE::ProjectManager
         AZ::Outcome<QVector<GemInfo>, AZStd::string> GetGemInfosForRepo(const QString& repoUri) override;
         AZ::Outcome<QVector<GemInfo>, AZStd::string> GetGemInfosForAllRepos() override;
         DetailedOutcome DownloadGem(
-            const QString& gemName, std::function<void(int, int)> gemProgressCallback, bool force = false) override;
+            const QString& gemName, const QString& path, std::function<void(int, int)> gemProgressCallback, bool force = false) override;
         DetailedOutcome DownloadProject(
-            const QString& projectName, std::function<void(int, int)> projectProgressCallback, bool force = false) override;
+            const QString& projectName, const QString& path, std::function<void(int, int)> projectProgressCallback, bool force = false) override;
         DetailedOutcome DownloadTemplate(
-            const QString& templateName, std::function<void(int, int)> templateProgressCallback, bool force = false) override;
+            const QString& templateName, const QString& path, std::function<void(int, int)> templateProgressCallback, bool force = false) override;
         void CancelDownload() override;
         bool IsGemUpdateAvaliable(const QString& gemName, const QString& lastUpdated) override;
 
