@@ -7,6 +7,7 @@
  */
 
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
+#include <AzToolsFramework/Viewport/ViewportSettings.h>
 
 #include <QObject>
 #include <QWidget>
@@ -62,6 +63,7 @@ namespace UnitTest
         const MouseMoveParams mouseMoveParams = GetParam();
         m_rootWidget->move(mouseMoveParams.m_widgetPosition);
         m_rootWidget->setFixedSize(mouseMoveParams.m_widgetSize);
+        AzToolsFramework::SetComponentSwitcherEnabled(false);
 
         // when
         MouseMove(m_rootWidget.get(), mouseMoveParams.m_localCursorPosition, mouseMoveParams.m_cursorDelta);
@@ -76,6 +78,8 @@ namespace UnitTest
         EXPECT_THAT(mouseLocalPosition.y(), Eq(expectedPosition.y()));
         EXPECT_THAT(mouseLocalPositionFromGlobal.x(), Eq(expectedPosition.x()));
         EXPECT_THAT(mouseLocalPositionFromGlobal.y(), Eq(expectedPosition.y()));
+
+        AzToolsFramework::SetComponentSwitcherEnabled(true);
     }
 
     INSTANTIATE_TEST_CASE_P(
@@ -85,4 +89,5 @@ namespace UnitTest
             MouseMoveParams{ QSize(100, 100), QPoint(0, 0), QPoint(0, 0), QPoint(10, 10) },
             MouseMoveParams{ QSize(100, 100), QPoint(100, 100), QPoint(0, 0), QPoint(10, 10) },
             MouseMoveParams{ QSize(100, 100), QPoint(20, 20), QPoint(50, 50), QPoint(20, 20) }));
+
 } // namespace UnitTest
