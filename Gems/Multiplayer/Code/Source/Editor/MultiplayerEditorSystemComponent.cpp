@@ -13,6 +13,7 @@
 
 #include <MultiplayerSystemComponent.h>
 #include <PythonEditorEventsBus.h>
+#include <Editor/MultiplayerEditorAutomation.h>
 #include <Editor/MultiplayerEditorSystemComponent.h>
 
 #include <AzCore/Console/IConsole.h>
@@ -93,6 +94,8 @@ namespace Multiplayer
     
     void MultiplayerEditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
+        Automation::MultiplayerEditorAutomationHandler::Reflect(context);
+
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<MultiplayerEditorSystemComponent, AZ::Component>()
@@ -251,7 +254,8 @@ namespace Multiplayer
 
         AZ_Error(
             "MultiplayerEditor", false,
-            "The ServerLauncher binary is missing! (%s), (%s) and (%s) were tried. Please build server launcher or specify using editorsv_process.",
+            "The ServerLauncher binary is missing! Attempted to find ServerLauncher in the editorsv_process path:\"%s\", relative to "
+            "editor:\"%s\" and relative to the current project:\"%s\". Please build ServerLauncher or specify its location using editorsv_process.",
             serverPathFromCvar.c_str(),
             serverPathFromEditorLocation.c_str(),
             serverPathFromProjectBin.c_str());

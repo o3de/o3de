@@ -22,7 +22,7 @@ import azlmbr.bus
 #
 # Python Asset Builder
 #
-busId = azlmbr.math.Uuid_CreateString('{D4FA20E3-8EF4-44A3-A045-AAE6C1CCAAAB}', 0)
+busId = azlmbr.math.Uuid_CreateString('{D4FA20E3-8EF4-44A3-A045-AAE6C1CCAAAB}')
 jobKeyName = 'Blast Chunk Assets'
 
 def log_exception_traceback():
@@ -105,7 +105,7 @@ def generate_assetinfo_product(request):
     jsonFile.close()
 
     # return a job product for the generated assetinfo file
-    sceneManifestType = azlmbr.math.Uuid_CreateString('{9274AD17-3212-4651-9F3B-7DCCB080E467}', 0)
+    sceneManifestType = azlmbr.math.Uuid_CreateString('{9274AD17-3212-4651-9F3B-7DCCB080E467}')
     subId = 1
     product = azlmbr.asset.builder.JobProduct(outputFilename, sceneManifestType, subId)
     product.dependenciesHandled = True

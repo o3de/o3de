@@ -32,7 +32,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString ScaleModifierNode::TITLE = QObject::tr("Scale Modifier");
+    const char* ScaleModifierNode::TITLE = "Scale Modifier";
 
     ScaleModifierNode::ScaleModifierNode(GraphModel::GraphPtr graph)
         : BaseAreaModifierNode(graph)

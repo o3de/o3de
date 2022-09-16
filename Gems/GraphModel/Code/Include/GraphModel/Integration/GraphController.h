@@ -62,6 +62,7 @@ namespace GraphModelIntegration
         void WrapNode(GraphModel::NodePtr wrapperNode, GraphModel::NodePtr node) override;
         void WrapNodeOrdered(GraphModel::NodePtr wrapperNode, GraphModel::NodePtr node, AZ::u32 layoutOrder) override;
         void UnwrapNode(GraphModel::NodePtr wrapperNode, GraphModel::NodePtr node) override;
+        bool IsNodeWrapped(GraphModel::NodePtr node) const override;
         void SetWrapperNodeActionString(GraphModel::NodePtr node, const char* actionString) override;
 
         GraphModel::ConnectionPtr AddConnection(GraphModel::SlotPtr sourceSlot, GraphModel::SlotPtr targetSlot) override;
@@ -135,7 +136,6 @@ namespace GraphModelIntegration
         // GraphCanvas::SceneNotificationBus, connections
         void OnNodeAdded(const AZ::EntityId& nodeUiId, bool isPaste) override;
         void OnNodeRemoved(const AZ::EntityId& nodeUiId) override;
-        void PreOnNodeRemoved(const AZ::EntityId& nodeUiId) override;
         void OnConnectionRemoved(const AZ::EntityId& connectionUiId) override;
         void OnEntitiesSerialized(GraphCanvas::GraphSerialization& serializationTarget) override;
         void OnEntitiesDeserialized(const GraphCanvas::GraphSerialization& serializationSource) override;

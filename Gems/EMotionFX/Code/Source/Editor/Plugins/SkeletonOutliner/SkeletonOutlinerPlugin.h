@@ -58,11 +58,14 @@ namespace EMotionFX
         void OnSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
         void OnTextFilterChanged(const QString& text);
         void OnTypeFilterChanged(const AzQtComponents::SearchTypeFilterList& activeTypeFilters);
+        void OnEntered(const QModelIndex& index);
         void Reinit();
 
         void OnContextMenu(const QPoint& position);
 
     private:
+        bool eventFilter(QObject* object, QEvent* event) override;
+
         QWidget*                                m_mainWidget;
         QLabel*                                 m_noSelectionLabel;
 

@@ -23,6 +23,7 @@ int main(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
+    const AZ::Debug::Trace tracer;
     // Ensure the process is a foreground application. Must be done before creating the application.
     ProcessSerialNumber processSerialNumber = { 0, kCurrentProcess };
     TransformProcessType(&processSerialNumber, kProcessTransformToForegroundApplication);

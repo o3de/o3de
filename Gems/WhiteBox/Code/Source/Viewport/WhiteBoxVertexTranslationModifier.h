@@ -77,7 +77,7 @@ namespace WhiteBox
             m_translationManipulator; //!< Manipulator for performing vertex translation.
         AZStd::shared_ptr<AzToolsFramework::ManipulatorViewSphere>
             m_vertexView; //!< Manipulator view used to represent a mesh vertex for selection.
-        AZ::Color m_color = cl_whiteBoxVertexHoveredColor; //!< The current color of the vertex.
+        AZ::Color m_color = ed_whiteBoxVertexHover; //!< The current color of the vertex.
         AZ::Vector3
             m_localPositionAtMouseDown; //!< The position of the modifier in local space at the time of mouse down.
         int m_actionIndex = InvalidAxisIndex; //!< Which action (axis) are we moving along for the given vertex.

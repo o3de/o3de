@@ -14,6 +14,7 @@
 #include <AzCore/std/containers/array.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzToolsFramework/Manipulators/AngularManipulator.h>
+#include <AzToolsFramework/Manipulators/PaintBrushManipulator.h>
 #include <AzToolsFramework/Manipulators/LineSegmentSelectionManipulator.h>
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
@@ -636,6 +637,41 @@ namespace AzToolsFramework
         RefreshBoundInternal(managerId, manipulatorId, sphereBound);
     }
 
+    void ManipulatorViewProjectedCircle::Draw(
+        const ManipulatorManagerId managerId,
+        [[maybe_unused]] const ManipulatorManagerState& managerState,
+        const ManipulatorId manipulatorId,
+        const ManipulatorState& manipulatorState,
+        AzFramework::DebugDisplayRequests& debugDisplay,
+        [[maybe_unused]] const AzFramework::CameraState& cameraState,
+        [[maybe_unused]] const ViewportInteraction::MouseInteraction& mouseInteraction)
+    {
+        const Picking::BoundShapeTorus torusBound =
+            CalculateTorusBound(manipulatorState.m_localPosition, manipulatorState.m_worldFromLocal, m_axis, m_radius, m_width);
+
+        // transform circle based on delta between default z up axis and other axes
+        const AZ::Transform worldFromLocalWithOrientation =
+            AZ::Transform::CreateTranslation(manipulatorState.m_worldFromLocal.GetTranslation()) *
+            AZ::Transform::CreateFromQuaternion((QuaternionFromTransformNoScaling(manipulatorState.m_worldFromLocal) *
+                                                 AZ::Quaternion::CreateShortestArc(AZ::Vector3::CreateAxisZ(), m_axis))
+                                                    .GetNormalized());
+
+        debugDisplay.CullOn();
+        debugDisplay.PushMatrix(worldFromLocalWithOrientation);
+        debugDisplay.SetColor(ViewColor(manipulatorState.m_mouseOver, m_color, m_mouseOverColor).GetAsVector4());
+        debugDisplay.DrawCircle(manipulatorState.m_localPosition, torusBound.m_majorRadius);
+
+        debugDisplay.PopMatrix();
+        debugDisplay.CullOff();
+
+        RefreshBoundInternal(managerId, manipulatorId, torusBound);
+    }
+
+    void ManipulatorViewProjectedCircle::SetRadius(float radius)
+    {
+        m_radius = radius;
+    }
+
     void ManipulatorViewCircle::Draw(
         const ManipulatorManagerId managerId,
         [[maybe_unused]] const ManipulatorManagerState& managerState,
@@ -677,7 +713,7 @@ namespace AzToolsFramework
 
         debugDisplay.CullOn();
         debugDisplay.PushMatrix(worldFromLocalWithOrientation);
-        debugDisplay.SetColor(ViewColor(manipulatorState.m_mouseOver, m_color, m_mouseOverColor).GetAsVector4());
+        debugDisplay.SetColor(ViewColor(manipulatorState.m_mouseOver, m_color, m_mouseOverColor));
         m_drawCircleFunc(
             debugDisplay, manipulatorState.m_localPosition, torusBound.m_majorRadius,
             worldFromLocalWithOrientation.GetInverse().TransformPoint(cameraState.m_position));
@@ -833,6 +869,17 @@ namespace AzToolsFramework
         return viewSphere;
     }
 
+    AZStd::unique_ptr<ManipulatorViewProjectedCircle> CreateManipulatorViewProjectedCircle(
+        [[maybe_unused]] const PaintBrushManipulator& brushManipulator, const AZ::Color& color, const float radius, const float width)
+    {
+        AZStd::unique_ptr<ManipulatorViewProjectedCircle> viewCircle = AZStd::make_unique<ManipulatorViewProjectedCircle>();
+        viewCircle->m_axis = AZ::Vector3::CreateAxisZ();
+        viewCircle->m_color = color;
+        viewCircle->m_radius = radius;
+        viewCircle->m_width = width;
+        return viewCircle;
+    }
+
     AZStd::unique_ptr<ManipulatorViewCircle> CreateManipulatorViewCircle(
         const AngularManipulator& angularManipulator,
         const AZ::Color& color,
@@ -862,9 +909,7 @@ namespace AzToolsFramework
     AZ::Vector3 CalculateViewDirection(const Manipulators& manipulators, const AZ::Vector3& worldViewPosition)
     {
         const AZ::Transform worldFromLocalWithTransform = manipulators.GetSpace() * manipulators.GetLocalTransform();
-
-        AZ::Vector3 lookDirection = (worldFromLocalWithTransform.GetTranslation() - worldViewPosition).GetNormalized();
-
+        const AZ::Vector3 lookDirection = (worldFromLocalWithTransform.GetTranslation() - worldViewPosition).GetNormalized();
         return TransformDirectionNoScaling(worldFromLocalWithTransform.GetInverse(), lookDirection);
     }
 } // namespace AzToolsFramework

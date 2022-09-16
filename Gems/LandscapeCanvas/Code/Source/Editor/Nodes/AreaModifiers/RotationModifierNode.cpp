@@ -32,7 +32,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString RotationModifierNode::TITLE = QObject::tr("Rotation Modifier");
+    const char* RotationModifierNode::TITLE = "Rotation Modifier";
 
     RotationModifierNode::RotationModifierNode(GraphModel::GraphPtr graph)
         : BaseAreaModifierNode(graph)

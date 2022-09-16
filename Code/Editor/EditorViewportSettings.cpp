@@ -8,6 +8,7 @@
 
 #include <EditorViewportSettings.h>
 
+#include <AzCore/Math/MathUtils.h>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
@@ -23,7 +24,6 @@ namespace SandboxEditor
     constexpr AZStd::string_view AngleSizeSetting = "/Amazon/Preferences/Editor/AngleSize";
     constexpr AZStd::string_view ShowGridSetting = "/Amazon/Preferences/Editor/ShowGrid";
     constexpr AZStd::string_view StickySelectSetting = "/Amazon/Preferences/Editor/StickySelect";
-    constexpr AZStd::string_view ManipulatorMouseWrapSetting = "/Amazon/Preferences/Editor/Manipulator/ManipulatorMouseWrapSetting";
     constexpr AZStd::string_view ManipulatorLineBoundWidthSetting = "/Amazon/Preferences/Editor/Manipulator/LineBoundWidth";
     constexpr AZStd::string_view ManipulatorCircleBoundWidthSetting = "/Amazon/Preferences/Editor/Manipulator/CircleBoundWidth";
     constexpr AZStd::string_view CameraTranslateSpeedSetting = "/Amazon/Preferences/Editor/Camera/TranslateSpeed";
@@ -62,6 +62,7 @@ namespace SandboxEditor
     constexpr AZStd::string_view CameraDefaultStartingYaw = "/Amazon/Preferences/Editor/Camera/DefaultStartingYaw";
     constexpr AZStd::string_view CameraNearPlaneDistanceSetting = "/Amazon/Preferences/Editor/Camera/NearPlaneDistance";
     constexpr AZStd::string_view CameraFarPlaneDistanceSetting = "/Amazon/Preferences/Editor/Camera/FarPlaneDistance";
+    constexpr AZStd::string_view CameraFovSetting = "/Amazon/Preferences/Editor/Camera/FovDegrees";
 
     struct EditorViewportSettingsCallbacksImpl : public EditorViewportSettingsCallbacks
     {
@@ -72,9 +73,9 @@ namespace SandboxEditor
                 using AZ::SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual;
 
                 m_angleSnappingNotifyEventHandler = registry->RegisterNotifier(
-                    [this](const AZStd::string_view path, [[maybe_unused]] const AZ::SettingsRegistryInterface::Type type)
+                    [this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
                     {
-                        if (IsPathAncestorDescendantOrEqual(AngleSnappingSetting, path))
+                        if (IsPathAncestorDescendantOrEqual(AngleSnappingSetting, notifyEventArgs.m_jsonKeyPath))
                         {
                             m_angleSnappingChanged.Signal(AngleSnappingEnabled());
                         }
@@ -82,9 +83,9 @@ namespace SandboxEditor
                 );
 
                 m_gridSnappingNotifyEventHandler = registry->RegisterNotifier(
-                    [this](const AZStd::string_view path, [[maybe_unused]] const AZ::SettingsRegistryInterface::Type type)
+                    [this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
                     {
-                        if (IsPathAncestorDescendantOrEqual(GridSnappingSetting, path))
+                        if (IsPathAncestorDescendantOrEqual(GridSnappingSetting, notifyEventArgs.m_jsonKeyPath))
                         {
                             m_gridSnappingChanged.Signal(GridSnappingEnabled());
                         }
@@ -92,9 +93,9 @@ namespace SandboxEditor
                 );
 
                 m_farPlaneDistanceNotifyEventHandler = registry->RegisterNotifier(
-                    [this](const AZStd::string_view path, [[maybe_unused]] const AZ::SettingsRegistryInterface::Type type)
+                    [this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
                     {
-                        if (IsPathAncestorDescendantOrEqual(CameraFarPlaneDistanceSetting, path))
+                        if (IsPathAncestorDescendantOrEqual(CameraFarPlaneDistanceSetting, notifyEventArgs.m_jsonKeyPath))
                         {
                             m_farPlaneChanged.Signal(CameraDefaultFarPlaneDistance());
                         }
@@ -102,14 +103,23 @@ namespace SandboxEditor
                 );
 
                 m_nearPlaneDistanceNotifyEventHandler = registry->RegisterNotifier(
-                    [this](const AZStd::string_view path, [[maybe_unused]] const AZ::SettingsRegistryInterface::Type type)
+                    [this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
                     {
-                        if (IsPathAncestorDescendantOrEqual(CameraNearPlaneDistanceSetting, path))
+                        if (IsPathAncestorDescendantOrEqual(CameraNearPlaneDistanceSetting, notifyEventArgs.m_jsonKeyPath))
                         {
                             m_nearPlaneChanged.Signal(CameraDefaultNearPlaneDistance());
                         }
                     }
                 );
+
+                m_perspectiveNotifyEventHandler = registry->RegisterNotifier(
+                    [this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
+                    {
+                        if (IsPathAncestorDescendantOrEqual(CameraFovSetting, notifyEventArgs.m_jsonKeyPath))
+                        {
+                            m_perspectiveChanged.Signal(CameraDefaultFovRadians());
+                        }
+                    });
             }
         }
 
@@ -133,14 +143,21 @@ namespace SandboxEditor
             handler.Connect(m_nearPlaneChanged);
         }
 
+        void SetPerspectiveChangedEvent(PerspectiveChangedEvent::Handler& handler) override
+        {
+            handler.Connect(m_perspectiveChanged);
+        }
+
         AngleSnappingChangedEvent m_angleSnappingChanged;
         GridSnappingChangedEvent m_gridSnappingChanged;
+        PerspectiveChangedEvent m_perspectiveChanged;
         NearFarPlaneChangedEvent m_farPlaneChanged;
         NearFarPlaneChangedEvent m_nearPlaneChanged;
         AZ::SettingsRegistryInterface::NotifyEventHandler m_angleSnappingNotifyEventHandler;
         AZ::SettingsRegistryInterface::NotifyEventHandler m_farPlaneDistanceNotifyEventHandler;
         AZ::SettingsRegistryInterface::NotifyEventHandler m_gridSnappingNotifyEventHandler;
         AZ::SettingsRegistryInterface::NotifyEventHandler m_nearPlaneDistanceNotifyEventHandler;
+        AZ::SettingsRegistryInterface::NotifyEventHandler m_perspectiveNotifyEventHandler;
     };
 
     AZStd::unique_ptr<EditorViewportSettingsCallbacks> CreateEditorViewportSettingsCallbacks()
@@ -244,16 +261,6 @@ namespace SandboxEditor
     void SetStickySelectEnabled(const bool enabled)
     {
         AzToolsFramework::SetRegistry(StickySelectSetting, enabled);
-    }
-
-    bool ManipulatorMouseWrap()
-    {
-        return AzToolsFramework::GetRegistry(ManipulatorMouseWrapSetting, false);
-    }
-
-    void SetManipulatorMouseWrap(bool enabled)
-    {
-        AzToolsFramework::SetRegistry(ManipulatorMouseWrapSetting, enabled);
     }
 
     float ManipulatorLineBoundWidth()
@@ -599,4 +606,25 @@ namespace SandboxEditor
     {
         AzToolsFramework::SetRegistry(CameraFarPlaneDistanceSetting, aznumeric_cast<double>(distance));
     }
+
+    float CameraDefaultFovRadians()
+    {
+        return AZ::DegToRad(CameraDefaultFovDegrees());
+    }
+
+    void SetCameraDefaultFovRadians(float fovRadians)
+    {       
+        SetCameraDefaultFovDegrees(AZ::RadToDeg(fovRadians));
+    }
+
+    float CameraDefaultFovDegrees()
+    {
+        return aznumeric_caster(AzToolsFramework::GetRegistry(CameraFovSetting, aznumeric_cast<double>(60.0)));
+    }
+
+    void SetCameraDefaultFovDegrees(float fovDegrees)
+    {
+        AzToolsFramework::SetRegistry(CameraFovSetting, aznumeric_cast<double>(fovDegrees));
+    }
+
 } // namespace SandboxEditor

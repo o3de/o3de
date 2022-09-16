@@ -216,10 +216,10 @@ namespace AZ
                     xrDescriptor.m_dimensions.m_imageCount = AZ::RHI::Limits::Device::FrameCountMax;
                     xrDescriptor.m_isXrSwapChain = true;
                     xrDescriptor.m_xrSwapChainIndex = i;
-                    xrDescriptor.m_dimensions.m_imageFormat = GetSwapChainFormat(device);
+                    xrDescriptor.m_dimensions.m_imageFormat = xrSystem->GetSwapChainFormat(i);
 
-                    attachmentName = AZStd::string::format("XRSwapChain_View_%i", i);
-                    xrDescriptor.m_attachmentId = RHI::AttachmentId{ attachmentName.c_str() };
+                    const AZStd::string xrAttachmentName = AZStd::string::format("XRSwapChain_View_%i", i);
+                    xrDescriptor.m_attachmentId = RHI::AttachmentId{ xrAttachmentName.c_str() };
                     xrSwapChain->Init(device, xrDescriptor);
                     xrDescriptor = xrSwapChain->GetDescriptor(); // Get descriptor from swapchain because it can set different values during initialization
 

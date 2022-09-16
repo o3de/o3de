@@ -18,21 +18,27 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzCore/std/algorithm.h>
+#include <AzCore/std/sort.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/FileFunc/FileFunc.h>
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
+#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 #include <AzToolsFramework/ToolsComponents/EditorAssetMimeDataContainer.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QApplication>
+#include <QMenu>
 #include <QMessageBox>
 #include <QMimeData>
 #include <QProcess>
+#include <QTimer>
 AZ_POP_DISABLE_WARNING
 
 namespace AtomToolsFramework
@@ -75,17 +81,33 @@ namespace AtomToolsFramework
         return mainWindow;
     }
 
-    AZStd::string GetDisplayNameFromPath(const AZStd::string& path)
+    AZStd::string GetSymbolNameFromText(const AZStd::string& text)
     {
-        QFileInfo fileInfo(path.c_str());
-        QString fileName = fileInfo.baseName();
-        fileName.replace(QRegExp("[^a-zA-Z\\d]"), " ");
-        QStringList fileNameParts = fileName.split(' ', Qt::SkipEmptyParts);
-        for (QString& part : fileNameParts)
+        QString symbolName(text.c_str());
+        symbolName.replace(QRegExp("[^a-zA-Z\\d]"), " ");
+        symbolName.replace(QRegExp("([a-z\\d])([A-Z])"), "\\1 \\2");
+        symbolName.replace(QRegExp("\\A(\\d)"), "_\\1");
+        symbolName.replace(QRegExp("\\s+"), "_");
+        return symbolName.toLower().toUtf8().constData();
+    }
+
+    AZStd::string GetDisplayNameFromText(const AZStd::string& text)
+    {
+        QString displayName(text.c_str());
+        displayName.replace(QRegExp("[^a-zA-Z\\d]"), " ");
+        displayName.replace(QRegExp("([a-z\\d])([A-Z])"), "\\1 \\2");
+        QStringList displayNameParts = displayName.split(QRegExp("\\s"), Qt::SkipEmptyParts);
+        for (QString& part : displayNameParts)
         {
             part.replace(0, 1, part[0].toUpper());
         }
-        return fileNameParts.join(" ").toUtf8().constData();
+        return displayNameParts.join(" ").toUtf8().constData();
+    }
+
+    AZStd::string GetDisplayNameFromPath(const AZStd::string& path)
+    {
+        QFileInfo fileInfo(path.c_str());
+        return GetDisplayNameFromText(fileInfo.baseName().toUtf8().constData());
     }
 
     AZStd::string GetSaveFilePath(const AZStd::string& initialPath, const AZStd::string& title)
@@ -251,40 +273,53 @@ namespace AtomToolsFramework
         return QProcess::startDetached(launchPath.c_str(), arguments, engineRoot.c_str());
     }
 
-    AZStd::string GetPathToExteralReference(
-        const AZStd::string& exportPath, const AZStd::string& referencePath, const bool relativeToExportPath)
+    AZStd::string GetWatchFolder(const AZStd::string& sourcePath)
     {
+        bool relativePathFound = false;
+        AZStd::string relativePath;
+        AZStd::string relativePathFolder;
+
+        // GenerateRelativeSourcePath is necessary when saving new files because it allows us to get the info for files that may not exist yet. 
+        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+            relativePathFound,
+            &AzToolsFramework::AssetSystem::AssetSystemRequest::GenerateRelativeSourcePath,
+            sourcePath,
+            relativePath,
+            relativePathFolder);
+
+        return relativePathFolder;
+    }
+
+    AZStd::string GetPathToExteralReference(const AZStd::string& exportPath, const AZStd::string& referencePath)
+    {
+        // An empty reference path signifies that there is no external reference and we can return immediately.
         if (referencePath.empty())
         {
             return {};
         }
 
-        const AZStd::string exportPathWithoutAlias = GetPathWithoutAlias(exportPath);
-        const AZStd::string referencePathWithoutAlias = GetPathWithoutAlias(referencePath);
+        // Path aliases should be supported wherever possible to allow referencing files between different gems and projects. De-alias the
+        // paths to compare them and attempt to generate a relative path.
+        AZ::IO::FixedMaxPath exportPathWithoutAlias;
+        AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(exportPathWithoutAlias, AZ::IO::PathView{ exportPath });
+        const AZ::IO::PathView exportFolder = exportPathWithoutAlias.ParentPath();
 
-        if (!relativeToExportPath)
+        AZ::IO::FixedMaxPath referencePathWithoutAlias;
+        AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(referencePathWithoutAlias, AZ::IO::PathView{ referencePath });
+
+        // If both paths are contained underneath the same watch folder hierarchy then attempt to construct a relative path between them.
+        if (GetWatchFolder(exportPath) == GetWatchFolder(referencePath))
         {
-            AZStd::string relativePath;
-            AZStd::string watchFolder;
-            AZ::Data::AssetInfo assetInfo;
-            bool relativePathFound = false;
-            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-                relativePathFound,
-                &AzToolsFramework::AssetSystemRequestBus::Events::GenerateRelativeSourcePath,
-                referencePathWithoutAlias.c_str(),
-                relativePath,
-                watchFolder);
-
-            if (relativePathFound)
+            const auto relativePath = referencePathWithoutAlias.LexicallyRelative(exportFolder);
+            if (!relativePath.empty())
             {
-                return relativePath;
+                return relativePath.StringAsPosix();
             }
         }
 
-        AZ::IO::BasicPath<AZStd::string> exportFolder(exportPathWithoutAlias);
-        exportFolder.RemoveFilename();
-
-        return AZ::IO::PathView(referencePathWithoutAlias).LexicallyRelative(exportFolder).StringAsPosix();
+        // If a relative path could not be constructed from the export path to the reference path then return the aliased path for the
+        // reference.
+        return GetPathWithAlias(referencePath);
     }
 
     bool SaveSettingsToFile(const AZ::IO::FixedMaxPath& savePath, const AZStd::vector<AZStd::string>& filters)
@@ -337,14 +372,16 @@ namespace AtomToolsFramework
 
     AZStd::string GetPathWithoutAlias(const AZStd::string& path)
     {
-        auto convertedPath = AZ::IO::FileIOBase::GetInstance()->ResolvePath(AZ::IO::PathView{ path });
-        return convertedPath ? convertedPath->StringAsPosix() : path;
+        AZ::IO::FixedMaxPath pathWithoutAlias;
+        AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(pathWithoutAlias, AZ::IO::PathView{ path });
+        return pathWithoutAlias.StringAsPosix();
     }
 
     AZStd::string GetPathWithAlias(const AZStd::string& path)
     {
-        auto convertedPath = AZ::IO::FileIOBase::GetInstance()->ConvertToAlias(AZ::IO::PathView{ path });
-        return convertedPath ? convertedPath->StringAsPosix() : path;
+        AZ::IO::FixedMaxPath pathWithAlias;
+        AZ::IO::FileIOBase::GetInstance()->ConvertToAlias(pathWithAlias, AZ::IO::PathView{ path });
+        return pathWithAlias.StringAsPosix();
     }
 
     AZStd::set<AZStd::string> GetPathsFromMimeData(const QMimeData* mimeData)
@@ -371,18 +408,15 @@ namespace AtomToolsFramework
             }
         }
 
-        if (mimeData->hasFormat(AzToolsFramework::AssetBrowser::AssetBrowserEntry::GetMimeType()))
+        AZStd::vector<const AzToolsFramework::AssetBrowser::AssetBrowserEntry*> entries;
+        if (AzToolsFramework::AssetBrowser::Utils::FromMimeData(mimeData, entries))
         {
-            AZStd::vector<AzToolsFramework::AssetBrowser::AssetBrowserEntry*> entries;
-            if (AzToolsFramework::AssetBrowser::AssetBrowserEntry::FromMimeData(mimeData, entries))
+            for (const auto entry : entries)
             {
-                for (const auto entry : entries)
+                AZStd::string path = entry->GetFullPath();
+                if (ValidateDocumentPath(path))
                 {
-                    AZStd::string path = entry->GetFullPath();
-                    if (ValidateDocumentPath(path))
-                    {
-                        paths.insert(path);
-                    }
+                    paths.insert(path);
                 }
             }
         }
@@ -402,9 +436,9 @@ namespace AtomToolsFramework
         return paths;
     }
 
-    AZStd::set<AZStd::string> GetPathsInSourceFoldersMatchingWildcard(const AZStd::string& wildcard)
+    AZStd::vector<AZStd::string> GetPathsInSourceFoldersMatchingWildcard(const AZStd::string& wildcard)
     {
-        AZStd::set<AZStd::string> results;
+        AZStd::vector<AZStd::string> results;
         AZStd::vector<AZStd::string> scanFolders;
         AzToolsFramework::AssetSystemRequestBus::Broadcast(
             &AzToolsFramework::AssetSystem::AssetSystemRequest::GetAssetSafeFolders, scanFolders);
@@ -417,11 +451,107 @@ namespace AtomToolsFramework
                 {
                     if (ValidateDocumentPath(path))
                     {
-                        results.insert(path);
+                        results.push_back(path);
                     }
                 }
             }
         }
+
+        // Sorting the container and removing duplicate paths to ensure uniqueness in case of nested or overlapping scan folders.
+        // This was previously done automatically with a set but using a vector for compatibility with behavior context and Python. 
+        AZStd::sort(results.begin(), results.end());
+        results.erase(AZStd::unique(results.begin(), results.end()), results.end());
+
         return results;
+    }
+
+    void AddRegisteredScriptToMenu(QMenu* menu, const AZStd::string& registryKey, const AZStd::vector<AZStd::string>& arguments)
+    {
+        // Map containing vectors of script file paths organized by category
+        using ScriptsSettingsMap = AZStd::map<AZStd::string, AZStd::vector<AZStd::string>>;
+
+        // Retrieve and iterate over all of the registered script settings to add them to the menu
+        for (const auto& [scriptCategoryName, scriptPathVec] : GetSettingsObject(registryKey, ScriptsSettingsMap()))
+        {
+            // Create a parent category menu group to contain all of the individual script menu actions.
+            QMenu* scriptCategoryMenu = menu;
+            if (!scriptCategoryName.empty())
+            {
+                scriptCategoryMenu = menu->findChild<QMenu*>(scriptCategoryName.c_str());
+                if (!scriptCategoryMenu)
+                {
+                    scriptCategoryMenu = menu->addMenu(scriptCategoryName.c_str());
+                }
+            }
+
+            // Create menu actions for executing the individual scripts.
+            for (AZStd::string scriptPath : scriptPathVec)
+            {
+                // Removing the alias for the path so that we can check for its existence and add it to the menu.
+                scriptPath = GetPathWithoutAlias(scriptPath);
+                if (QFile::exists(scriptPath.c_str()))
+                {
+                    // Use the file name instead of the full path as the display name for the menu action.
+                    AZStd::string filename;
+                    AZ::StringFunc::Path::GetFullFileName(scriptPath.c_str(), filename);
+
+                    scriptCategoryMenu->addAction(filename.c_str(), [scriptPath, arguments]() {
+                        // Delay execution of the script until the next frame.
+                        QTimer::singleShot(0, [scriptPath, arguments]() {
+                            AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(
+                                &AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilenameWithArgs,
+                                scriptPath,
+                                AZStd::vector<AZStd::string_view>(arguments.begin(), arguments.end()));
+                            });
+                    });
+                }
+            }
+        }
+
+        // Create menu action for running arbitrary Python script.
+        menu->addAction(QObject::tr("&Run Python Script..."), [arguments]() {
+            const QString scriptPath = QFileDialog::getOpenFileName(
+                GetToolMainWindow(), QObject::tr("Run Python Script"), QString(AZ::Utils::GetProjectPath().c_str()), QString("*.py"));
+            if (!scriptPath.isEmpty())
+            {
+                // Delay execution of the script until the next frame.
+                QTimer::singleShot(0, [scriptPath, arguments]() {
+                    AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(
+                        &AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilenameWithArgs,
+                        scriptPath.toUtf8().constData(),
+                        AZStd::vector<AZStd::string_view>(arguments.begin(), arguments.end()));
+                });
+            }
+        });
+    }
+
+    void ReflectUtilFunctions(AZ::ReflectContext* context)
+    {
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            // This will put these methods into the 'azlmbr.atomtools.util' module
+            auto addUtilFunc = [](AZ::BehaviorContext::GlobalMethodBuilder methodBuilder)
+            {
+                methodBuilder->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                    ->Attribute(AZ::Script::Attributes::Category, "Editor")
+                    ->Attribute(AZ::Script::Attributes::Module, "atomtools.util");
+            };
+
+            addUtilFunc(behaviorContext->Method("GetSymbolNameFromText", GetSymbolNameFromText, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetDisplayNameFromText", GetDisplayNameFromText, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetDisplayNameFromPath", GetDisplayNameFromPath, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetSaveFilePath", GetSaveFilePath, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetUniqueFilePath", GetUniqueFilePath, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetUniqueDefaultSaveFilePath", GetUniqueDefaultSaveFilePath, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetUniqueDuplicateFilePath", GetUniqueDuplicateFilePath, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("ValidateDocumentPath", ValidateDocumentPath, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("IsDocumentPathInSupportedFolder", IsDocumentPathInSupportedFolder, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("IsDocumentPathEditable", IsDocumentPathEditable, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("IsDocumentPathPreviewable", IsDocumentPathPreviewable, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetPathToExteralReference", GetPathToExteralReference, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetPathWithoutAlias", GetPathWithoutAlias, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetPathWithAlias", GetPathWithAlias, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetPathsInSourceFoldersMatchingWildcard", GetPathsInSourceFoldersMatchingWildcard, nullptr, ""));
+        }
     }
 } // namespace AtomToolsFramework

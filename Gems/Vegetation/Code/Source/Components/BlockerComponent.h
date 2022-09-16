@@ -40,7 +40,7 @@ namespace Vegetation
         bool m_inheritBehavior = true;
     };
 
-    static const AZ::Uuid BlockerComponentTypeId = "{C8A7AAEB-C315-44CE-919D-F304B53ACA4A}";
+    inline constexpr AZ::TypeId BlockerComponentTypeId{ "{C8A7AAEB-C315-44CE-919D-F304B53ACA4A}" };
 
     /**
     * Blocking claim logic for vegetation in an area

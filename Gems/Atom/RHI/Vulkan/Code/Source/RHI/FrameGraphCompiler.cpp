@@ -15,7 +15,7 @@
 #include <Atom/RHI/SwapChainFrameAttachment.h>
 #include <RHI/Buffer.h>
 #include <RHI/BufferView.h>
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/FrameGraphCompiler.h>
 #include <RHI/Image.h>

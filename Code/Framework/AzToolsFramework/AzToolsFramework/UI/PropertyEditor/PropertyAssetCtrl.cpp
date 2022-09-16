@@ -55,6 +55,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/AssetBrowser/Thumbnails/ProductThumbnail.h>
 
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/AssetEditor/AssetEditorBus.h>
 #include <AzToolsFramework/ToolsComponents/ComponentAssetMimeDataContainer.h>
@@ -360,7 +361,7 @@ namespace AzToolsFramework
 
         if (pAssetType)
         {
-            (*pAssetType) = nullptr;
+            (*pAssetType) = {};
         }
 
         if (!pData)
@@ -427,8 +428,8 @@ namespace AzToolsFramework
 
         if (pData->hasFormat(AssetBrowser::AssetBrowserEntry::GetMimeType()))
         {
-            AZStd::vector<AssetBrowser::AssetBrowserEntry*> entries;
-            if (AssetBrowser::AssetBrowserEntry::FromMimeData(pData, entries))
+            AZStd::vector<const AssetBrowser::AssetBrowserEntry*> entries;
+            if (AssetBrowser::Utils::FromMimeData(pData, entries))
             {
                 // Searching all source data entries for a compatible asset
                 for (const auto entry : entries)
@@ -617,6 +618,7 @@ namespace AzToolsFramework
 
     void PropertyAssetCtrl::ClearAssetInternal()
     {
+        ClearErrorButton();
         SetCurrentAssetHint(AZStd::string());
         SetSelectedAssetID(AZ::Data::AssetId());
         // To clear the asset we only need to refresh the values.
@@ -1075,6 +1077,17 @@ namespace AzToolsFramework
                         break;
                     }
                 }
+                else
+                {
+                    // If there aren't any jobs and the asset ID is valid, the asset must have been removed.
+                    if (assetID.IsValid())
+                    {
+                        UpdateErrorButtonWithMessage(AZStd::string::format(
+                            "Asset has been removed.\n\nID: %s\nHint:%s",
+                            assetID.ToString<AZStd::string>().c_str(),
+                            GetCurrentAssetHint().c_str()));
+                    }
+                }
 
                 // This can be turned on with an attribute in EditContext
                 if (m_showProductAssetName)
@@ -1339,7 +1352,7 @@ namespace AzToolsFramework
         m_thumbnailCallback = editNotifyCallback;
     }
 
-    const AZ::Uuid& AssetPropertyHandlerDefault::GetHandledType() const
+    AZ::TypeId AssetPropertyHandlerDefault::GetHandledType() const
     {
         return AZ::GetAssetClassId();
     }

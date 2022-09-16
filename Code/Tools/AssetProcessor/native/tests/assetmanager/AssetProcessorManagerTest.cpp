@@ -54,7 +54,7 @@ bool AssetProcessorManagerTest::BlockUntilIdle(int millisecondsMax)
     QElapsedTimer limit;
     limit.start();
 
-    if(AZ::Debug::Trace::IsDebuggerPresent())
+    if(AZ::Debug::Trace::Instance().IsDebuggerPresent())
     {
         millisecondsMax = std::numeric_limits<int>::max();
     }
@@ -3670,6 +3670,62 @@ TEST_F(AssetProcessorManagerTest, SourceFileProcessFailure_ClearsFingerprint)
 
     ASSERT_TRUE(found);
     ASSERT_EQ(source.m_analysisFingerprint, "");
+}
+
+TEST_F(AssetProcessorManagerTest, SourceFileProcessFailure_ValidLfsPointerFile_ReceiveLFSPointerFileError)
+{
+    // Override the project and engine root directories in the setting registry to create a custom .gitattributes file for testing.
+    auto settingsRegistry = AZ::SettingsRegistry::Get();
+    ASSERT_TRUE(settingsRegistry);
+    AZ::IO::FixedMaxPathString engineRoot, projectRoot;
+    settingsRegistry->Get(engineRoot, AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+    settingsRegistry->Get(projectRoot, AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath);
+    settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder, m_tempDir.path().toUtf8().data());
+    settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath, m_tempDir.path().toUtf8().data());
+
+    QDir tempPath(m_tempDir.path());
+    QString gitAttributesPath = tempPath.absoluteFilePath(".gitattributes");
+    ASSERT_TRUE(UnitTestUtils::CreateDummyFile(gitAttributesPath, QString(
+        "#\n"
+        "# Git LFS(see https ://git-lfs.github.com/)\n"
+        "#\n"
+        "*.txt filter=lfs diff=lfs merge=lfs -text\n")));
+
+    QString sourcePath = tempPath.absoluteFilePath("subfolder1/test.txt");
+    ASSERT_TRUE(UnitTestUtils::CreateDummyFile(sourcePath, QString(
+        "version https://git-lfs.github.com/spec/v1\n"
+        "oid sha256:ee4799379bfcfa99e95afd6494da51fbeda95f21ea71d267ae7102f048edec85\n"
+        "size 63872\n")));
+
+    constexpr int idleWaitTime = 5000;
+    using namespace AzToolsFramework::AssetDatabase;
+
+    QList<AssetProcessor::JobDetails> processResults;
+    auto assetConnection = QObject::connect(m_assetProcessorManager.get(), &AssetProcessorManager::AssetToProcess, [&processResults](JobDetails details)
+        {
+            processResults.push_back(AZStd::move(details));
+        });
+
+    // Add the test file and signal a failed event
+    m_assetProcessorManager.get()->AssessAddedFile(sourcePath);
+    ASSERT_TRUE(BlockUntilIdle(idleWaitTime));
+
+    for(const auto& processResult : processResults)
+    {
+        AssetBuilderSDK::ProcessJobResponse response;
+        response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
+
+        m_assetProcessorManager->AssetFailed(processResult.m_jobEntry);
+    }
+
+    ASSERT_TRUE(BlockUntilIdle(idleWaitTime));
+
+    // An error message should be thrown for the valid LFS pointer file.
+    ASSERT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 1);
+
+    // Revert the project and engine root directories in the setting registry.
+    settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder, engineRoot);
+    settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath, projectRoot);
 }
 
 //////////////////////////////////////////////////////////////////////////

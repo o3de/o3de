@@ -35,7 +35,7 @@ namespace Vegetation
         GradientSignal::GradientSampler m_gradientSampler;
     };
 
-    static const AZ::Uuid SlopeAlignmentModifierComponentTypeId = "{08831F9F-E720-4FBD-9CC5-0EF09212B0A0}";
+    inline constexpr AZ::TypeId SlopeAlignmentModifierComponentTypeId{ "{08831F9F-E720-4FBD-9CC5-0EF09212B0A0}" };
 
     /**
     * Component implementing VegetationModifierRequestBus that alignsto slope
