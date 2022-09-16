@@ -99,7 +99,7 @@ namespace AzToolsFramework
         ~DPERowWidget();
 
         void Clear(); //!< destroy all layout contents and clear DOM children
-        void AddChildFromDomValue(const AZ::Dom::Value& childValue, int domIndex);
+        void AddChildFromDomValue(const AZ::Dom::Value& childValue, size_t domIndex);
 
         //! clears and repopulates all children from a given DOM array
         void SetValueFromDom(const AZ::Dom::Value& domArray);
@@ -120,10 +120,13 @@ namespace AzToolsFramework
 
     protected:
         DocumentPropertyEditor* GetDPE() const;
-        void AddDomChildWidget(int domIndex, QWidget* childWidget);
+        void AddDomChildWidget(size_t domIndex, QWidget* childWidget);
+        void AddColumnWidget(QWidget* columnWidget, size_t domIndex, const AZ::Dom::Value& domValue);
 
         AZ::Dom::Path BuildDomPath();
         void SaveExpanderStatesForChildRows(bool isExpanded);
+
+        QWidget* CreateWidgetForHandler(PropertyEditorToolsSystemInterface::PropertyHandlerId handlerId, const AZ::Dom::Value& domValue);
 
         DPERowWidget* m_parentRow = nullptr;
         int m_depth = 0; //!< number of levels deep in the tree. Used for indentation
@@ -136,7 +139,12 @@ namespace AzToolsFramework
         AZStd::deque<QWidget*> m_domOrderedChildren;
 
         // a map from the propertyHandler widgets to the propertyHandlers that created them
-        AZStd::unordered_map<QWidget*, AZStd::unique_ptr<PropertyHandlerWidgetInterface>> m_widgetToPropertyHandler;
+        struct HandlerInfo
+        {
+            PropertyEditorToolsSystemInterface::PropertyHandlerId handlerId = nullptr;
+            AZStd::unique_ptr<PropertyHandlerWidgetInterface> hanlderInterface;
+        };
+        AZStd::unordered_map<QWidget*, HandlerInfo> m_widgetToPropertyHandlerInfo;
     };
 
     class DocumentPropertyEditor
@@ -179,7 +187,6 @@ namespace AzToolsFramework
         static bool ShouldReplaceRPE();
 
         AZStd::vector<size_t> GetPathToRoot(DPERowWidget* row) const;
-
         bool IsRecursiveExpansionOngoing() const;
         void SetRecursiveExpansionOngoing(bool isExpanding);
 
@@ -190,11 +197,11 @@ namespace AzToolsFramework
 
     protected:
         QVBoxLayout* GetVerticalLayout();
-        void AddRowFromValue(const AZ::Dom::Value& domValue, int rowIndex);
 
         void HandleReset();
         void HandleDomChange(const AZ::Dom::Patch& patch);
         void HandleDomMessage(const AZ::DocumentPropertyEditor::AdapterMessage& message, AZ::Dom::Value& value);
+
         void CleanupReleasedHandlers();
 
         AZ::DocumentPropertyEditor::DocumentAdapterPtr m_adapter;
@@ -211,6 +218,6 @@ namespace AzToolsFramework
 
         QTimer* m_handlerCleanupTimer;
         AZStd::vector<AZStd::unique_ptr<PropertyHandlerWidgetInterface>> m_unusedHandlers;
-        AZStd::deque<DPERowWidget*> m_domOrderedRows;
+        DPERowWidget* m_rootNode = nullptr;
     };
 } // namespace AzToolsFramework
