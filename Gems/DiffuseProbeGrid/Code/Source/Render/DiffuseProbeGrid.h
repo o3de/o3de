@@ -106,6 +106,9 @@ namespace AZ
             bool GetScrolling() const { return m_scrolling; }
             void SetScrolling(bool scrolling);
 
+            bool GetEdgeBlendIbl() const { return m_edgeBlendIbl; }
+            void SetEdgeBlendIbl(bool edgeBlendIbl);
+
             bool GetVisualizationEnabled() const { return m_visualizationEnabled; }
             void SetVisualizationEnabled(bool visualizationEnabled);
 
@@ -253,6 +256,7 @@ namespace AZ
             bool  m_giShadows = true;
             bool  m_useDiffuseIbl = true;
             bool  m_scrolling = false;
+            bool  m_edgeBlendIbl = true;
 
             DiffuseProbeGridNumRaysPerProbe m_numRaysPerProbe = DiffuseProbeGridNumRaysPerProbe::NumRaysPerProbe_288;
 

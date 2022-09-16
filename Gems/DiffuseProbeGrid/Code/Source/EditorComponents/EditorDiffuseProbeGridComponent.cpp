@@ -42,6 +42,7 @@ namespace AZ
                     ->Field("normalBias", &EditorDiffuseProbeGridComponent::m_normalBias)
                     ->Field("numRaysPerProbe", &EditorDiffuseProbeGridComponent::m_numRaysPerProbe)
                     ->Field("scrolling", &EditorDiffuseProbeGridComponent::m_scrolling)
+                    ->Field("edgeBlendIbl", &EditorDiffuseProbeGridComponent::m_edgeBlendIbl)
                     ->Field("editorMode", &EditorDiffuseProbeGridComponent::m_editorMode)
                     ->Field("runtimeMode", &EditorDiffuseProbeGridComponent::m_runtimeMode)
                     ->Field("showVisualization", &EditorDiffuseProbeGridComponent::m_showVisualization)
@@ -104,6 +105,8 @@ namespace AZ
                             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &EditorDiffuseProbeGridComponent::m_scrolling, "Scrolling", "Scrolling causes the grid to move probes on the edges of the volume when it is translated, instead of moving all of the probes.  Use scrolling when the DiffuseProbeGrid is attached to a camera or moving entity.")
                                 ->Attribute(AZ::Edit::Attributes::ChangeValidate, &EditorDiffuseProbeGridComponent::OnScrollingChangeValidate)
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::OnScrollingChanged)
+                            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &EditorDiffuseProbeGridComponent::m_edgeBlendIbl, "Edge Blend IBL", "Blend the edges of the DiffuseProbeGrid with the Diffuse IBL cubemap.")
+                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::OnEdgeBlendIblChanged)
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Visualization")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &EditorDiffuseProbeGridComponent::m_showVisualization, "Show Visualization", "Show the probe grid visualization")
@@ -371,6 +374,12 @@ namespace AZ
         AZ::u32 EditorDiffuseProbeGridComponent::OnScrollingChanged()
         {
             m_controller.SetScrolling(m_scrolling);
+            return AZ::Edit::PropertyRefreshLevels::None;
+        }
+
+        AZ::u32 EditorDiffuseProbeGridComponent::OnEdgeBlendIblChanged()
+        {
+            m_controller.SetEdgeBlendIbl(m_edgeBlendIbl);
             return AZ::Edit::PropertyRefreshLevels::None;
         }
 

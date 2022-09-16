@@ -231,6 +231,18 @@ namespace AZ
             m_gridDataInitialized = false;
         }
 
+        void DiffuseProbeGrid::SetEdgeBlendIbl(bool edgeBlendIbl)
+        {
+            if (m_edgeBlendIbl == edgeBlendIbl)
+            {
+                return;
+            }
+
+            m_edgeBlendIbl = edgeBlendIbl;
+
+            m_updateRenderObjectSrg = true;
+        }
+
         void DiffuseProbeGrid::SetBakedTextures(const DiffuseProbeGridBakedTextures& bakedTextures)
         {
             AZ_Assert(bakedTextures.m_irradianceImage.get(), "Invalid Irradiance image passed to SetBakedTextures");
@@ -813,6 +825,9 @@ namespace AZ
 
             constantIndex = srgLayout->FindShaderInputConstantIndex(Name("m_ambientMultiplier"));
             m_renderObjectSrg->SetConstant(constantIndex, m_ambientMultiplier);
+
+            constantIndex = srgLayout->FindShaderInputConstantIndex(Name("m_edgeBlendIbl"));
+            m_renderObjectSrg->SetConstant(constantIndex, m_edgeBlendIbl);
 
             imageIndex = srgLayout->FindShaderInputImageIndex(Name("m_probeIrradiance"));
             m_renderObjectSrg->SetImageView(imageIndex, GetIrradianceImage()->GetImageView(m_renderData->m_probeIrradianceImageViewDescriptor).get());

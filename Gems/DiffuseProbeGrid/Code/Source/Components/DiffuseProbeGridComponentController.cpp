@@ -34,7 +34,7 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<DiffuseProbeGridComponentConfig>()
-                    ->Version(4) // Added scrolling
+                    ->Version(5) // Added EdgeBlendIbl
                     ->Field("ProbeSpacing", &DiffuseProbeGridComponentConfig::m_probeSpacing)
                     ->Field("Extents", &DiffuseProbeGridComponentConfig::m_extents)
                     ->Field("AmbientMultiplier", &DiffuseProbeGridComponentConfig::m_ambientMultiplier)
@@ -42,6 +42,7 @@ namespace AZ
                     ->Field("NormalBias", &DiffuseProbeGridComponentConfig::m_normalBias)
                     ->Field("NumRaysPerProbe", &DiffuseProbeGridComponentConfig::m_numRaysPerProbe)
                     ->Field("Scrolling", &DiffuseProbeGridComponentConfig::m_scrolling)
+                    ->Field("EdgeBlendIbl", &DiffuseProbeGridComponentConfig::m_edgeBlendIbl)
                     ->Field("EditorMode", &DiffuseProbeGridComponentConfig::m_editorMode)
                     ->Field("RuntimeMode", &DiffuseProbeGridComponentConfig::m_runtimeMode)
                     ->Field("BakedIrradianceTextureRelativePath", &DiffuseProbeGridComponentConfig::m_bakedIrradianceTextureRelativePath)
@@ -145,6 +146,7 @@ namespace AZ
             m_featureProcessor->SetNormalBias(m_handle, m_configuration.m_normalBias);
             m_featureProcessor->SetNumRaysPerProbe(m_handle, m_configuration.m_numRaysPerProbe);
             m_featureProcessor->SetScrolling(m_handle, m_configuration.m_scrolling);
+            m_featureProcessor->SetEdgeBlendIbl(m_handle, m_configuration.m_edgeBlendIbl);
             m_featureProcessor->SetVisualizationEnabled(m_handle, m_configuration.m_visualizationEnabled);
             m_featureProcessor->SetVisualizationShowInactiveProbes(m_handle, m_configuration.m_visualizationShowInactiveProbes);
             m_featureProcessor->SetVisualizationSphereRadius(m_handle, m_configuration.m_visualizationSphereRadius);
@@ -350,6 +352,17 @@ namespace AZ
 
             m_configuration.m_scrolling = scrolling;
             m_featureProcessor->SetScrolling(m_handle, m_configuration.m_scrolling);
+        }
+
+        void DiffuseProbeGridComponentController::SetEdgeBlendIbl(bool edgeBlendIbl)
+        {
+            if (!m_featureProcessor)
+            {
+                return;
+            }
+
+            m_configuration.m_edgeBlendIbl = edgeBlendIbl;
+            m_featureProcessor->SetEdgeBlendIbl(m_handle, m_configuration.m_edgeBlendIbl);
         }
 
         void DiffuseProbeGridComponentController::SetEditorMode(DiffuseProbeGridMode editorMode)

@@ -545,6 +545,12 @@ namespace AZ
             probeGrid->SetScrolling(scrolling);
         }
 
+        void DiffuseProbeGridFeatureProcessor::SetEdgeBlendIbl(const DiffuseProbeGridHandle& probeGrid, bool edgeBlendIbl)
+        {
+            AZ_Assert(probeGrid.get(), "SetEdgeBlendIbl called with an invalid handle");
+            probeGrid->SetEdgeBlendIbl(edgeBlendIbl);
+        }
+
         void DiffuseProbeGridFeatureProcessor::SetBakedTextures(const DiffuseProbeGridHandle& probeGrid, const DiffuseProbeGridBakedTextures& bakedTextures)
         {
             AZ_Assert(probeGrid.get(), "SetBakedTextures called with an invalid handle");
