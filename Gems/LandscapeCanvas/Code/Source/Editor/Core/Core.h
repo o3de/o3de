@@ -40,11 +40,11 @@ namespace LandscapeCanvas
     static constexpr const char* OUTPUT_IMAGE_SLOT_ID = "OutputImage";
 
     // Category title labels
-    static const QString GRADIENT_TITLE = QObject::tr("Gradient");
-    static const QString GRADIENT_GENERATOR_TITLE = QObject::tr("Gradient");
-    static const QString GRADIENT_MODIFIER_TITLE = QObject::tr("Gradient Modifier");
-    static const QString VEGETATION_AREA_TITLE = QObject::tr("Vegetation Area");
-    static const QString TERRAIN_TITLE = QObject::tr("Terrain");
+    static const char* GRADIENT_TITLE = "Gradient";
+    static const char* GRADIENT_GENERATOR_TITLE = "Gradient";
+    static const char* GRADIENT_MODIFIER_TITLE = "Gradient Modifier";
+    static const char* VEGETATION_AREA_TITLE = "Vegetation Area";
+    static const char* TERRAIN_TITLE = "Terrain";
 
     // Connection slot labels
     static const QString PREVIEW_BOUNDS_SLOT_LABEL = QObject::tr("Preview Bounds");

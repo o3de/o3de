@@ -57,7 +57,7 @@ namespace O3DE::ProjectManager
         MOCK_METHOD0(GetAllGemRepoInfos, AZ::Outcome<QVector<GemRepoInfo>, AZStd::string>());
         MOCK_METHOD1(GetGemInfosForRepo, AZ::Outcome<QVector<GemInfo>, AZStd::string>(const QString&));
         MOCK_METHOD0(GetGemInfosForAllRepos, AZ::Outcome<QVector<GemInfo>, AZStd::string>());
-        MOCK_METHOD3(DownloadGem, DetailedOutcome(const QString&, std::function<void(int, int)>, bool));
+        MOCK_METHOD4(DownloadGem, DetailedOutcome(const QString&, const QString&, std::function<void(int, int)>, bool));
         MOCK_METHOD0(CancelDownload, void());
         MOCK_METHOD2(IsGemUpdateAvaliable, bool(const QString&, const QString&));
 

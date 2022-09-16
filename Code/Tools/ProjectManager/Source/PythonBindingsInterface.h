@@ -310,7 +310,7 @@ namespace O3DE::ProjectManager
          * @return an outcome with a pair of string error and detailed messages on failure.
          */
         virtual DetailedOutcome DownloadGem(
-            const QString& gemName, std::function<void(int, int)> gemProgressCallback, bool force = false) = 0;
+            const QString& gemName, const QString& path, std::function<void(int, int)> gemProgressCallback, bool force = false) = 0;
 
         /**
          * Downloads and registers a project.
@@ -320,7 +320,7 @@ namespace O3DE::ProjectManager
          * @return an outcome with a pair of string error and detailed messages on failure.
          */
         virtual DetailedOutcome DownloadProject(
-            const QString& projectName, std::function<void(int, int)> projectProgressCallback, bool force = false) = 0;
+            const QString& projectName, const QString& path, std::function<void(int, int)> projectProgressCallback, bool force = false) = 0;
 
         /**
          * Downloads and registers a template.
@@ -330,7 +330,7 @@ namespace O3DE::ProjectManager
          * @return an outcome with a pair of string error and detailed messages on failure.
          */
         virtual DetailedOutcome DownloadTemplate(
-            const QString& templateName, std::function<void(int, int)> templateProgressCallback, bool force = false) = 0;
+            const QString& templateName, const QString& path, std::function<void(int, int)> templateProgressCallback, bool force = false) = 0;
 
         /**
          * Cancels the current download.
