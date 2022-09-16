@@ -110,6 +110,11 @@ namespace AZ::DocumentPropertyEditor::Nodes
         //! Useful for things like the "add container entry" button.
         static constexpr auto SharePriorColumn = AttributeDefinition<bool>("SharePriorColumn");
 
+        //! DEPENDENT attribute - must be used inside a SharedColumn.
+        //! If set to true, specifies that this PropertyEditor should only take up as much space as its minimum width.
+        //! Useful for placing things like "add container entry" and "remove all elements" next to each other
+        static constexpr auto UseMinimumWidth = AttributeDefinition<bool>("SharePriorColumn");
+
         //! Specifies the alignment options for a PropertyEditor that has the Alignment attribute.
         enum class Align : AZ::u8
         {

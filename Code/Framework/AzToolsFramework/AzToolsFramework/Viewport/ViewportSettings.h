@@ -79,4 +79,7 @@ namespace AzToolsFramework
 
     bool ComponentSwitcherEnabled();
 
+    bool PrefabEditModeEffectEnabled();
+    void SetPrefabEditModeEffectEnabled(bool enabled);
+
 } // namespace AzToolsFramework

@@ -28,7 +28,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString ThresholdGradientModifierNode::TITLE = QObject::tr("Threshold");
+    const char* ThresholdGradientModifierNode::TITLE = "Threshold";
 
     ThresholdGradientModifierNode::ThresholdGradientModifierNode(GraphModel::GraphPtr graph)
         : BaseGradientModifierNode(graph)

@@ -29,7 +29,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString SurfaceMaskGradientNode::TITLE = QObject::tr("Surface Mask");
+    const char* SurfaceMaskGradientNode::TITLE = "Surface Mask";
 
     SurfaceMaskGradientNode::SurfaceMaskGradientNode(GraphModel::GraphPtr graph)
         : BaseGradientNode(graph)

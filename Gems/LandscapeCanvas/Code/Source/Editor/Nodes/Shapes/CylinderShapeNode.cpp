@@ -28,7 +28,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString CylinderShapeNode::TITLE = QObject::tr("Cylinder Shape");
+    const char* CylinderShapeNode::TITLE = "Cylinder Shape";
 
     CylinderShapeNode::CylinderShapeNode(GraphModel::GraphPtr graph)
         : BaseShapeNode(graph)

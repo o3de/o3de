@@ -37,7 +37,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString TerrainMacroMaterialNode::TITLE = QObject::tr("Terrain Macro Material");
+    const char* TerrainMacroMaterialNode::TITLE = "Terrain Macro Material";
 
     TerrainMacroMaterialNode::TerrainMacroMaterialNode(GraphModel::GraphPtr graph)
         : BaseNode(graph)
@@ -53,7 +53,7 @@ namespace LandscapeCanvas
 
     const char* TerrainMacroMaterialNode::GetTitle() const
     {
-        return TITLE.toUtf8().constData();
+        return TITLE;
     }
 
     void TerrainMacroMaterialNode::RegisterSlots()

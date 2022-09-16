@@ -183,7 +183,7 @@ namespace AtomToolsFramework
         m_currentCaptureRequest.m_content->Update();
     }
 
-    uint32_t PreviewRenderer::StartCapture()
+    AZ::Render::FrameCaptureId PreviewRenderer::StartCapture()
     {
         auto captureCompleteCallback = m_currentCaptureRequest.m_captureCompleteCallback;
         auto captureFailedCallback = m_currentCaptureRequest.m_captureFailedCallback;
@@ -216,7 +216,7 @@ namespace AtomToolsFramework
 
         m_renderPipeline->AddToRenderTickOnce();
 
-        uint32_t frameCaptureId = AZ::Render::InvalidFrameCaptureId;
+        AZ::Render::FrameCaptureId frameCaptureId = AZ::Render::InvalidFrameCaptureId;
         AZ::Render::FrameCaptureRequestBus::BroadcastResult(
             frameCaptureId, &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachmentWithCallback, m_passHierarchy,
             AZStd::string("Output"), captureCallback, AZ::RPI::PassAttachmentReadbackOption::Output);

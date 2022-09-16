@@ -28,7 +28,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString MeshBlockerAreaNode::TITLE = QObject::tr("Vegetation Layer Blocker (Mesh)");
+    const char* MeshBlockerAreaNode::TITLE = "Vegetation Layer Blocker (Mesh)";
 
     MeshBlockerAreaNode::MeshBlockerAreaNode(GraphModel::GraphPtr graph)
         : BaseAreaNode(graph)
