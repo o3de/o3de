@@ -169,6 +169,11 @@ def PhysX_ColliderFamily_Component_CRUD():
         # print(has_component)
 
         test_entity = EditorEntity.create_editor_entity("Test")
+        test_component = test_entity.add_component("PhysX Hinge Joint")
+
+        print(test_component.get_property_type_visibility())
+
+        test_entity = EditorEntity.create_editor_entity("Test")
         test_component = add_validated_component(test_entity, "PhysX Shape Collider", ["Test Componenet Added", "Test Component Failed."])
 
         print(test_component.get_property_type_visibility())
