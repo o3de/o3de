@@ -122,7 +122,7 @@ namespace AZ
             }
             else
             {
-                pool = ImageSystemInterface::Get()->GetStreamingPool();
+                pool = ImageSystemInterface::Get()->GetSystemStreamingPool();
             }
 
             if (!pool)
@@ -156,7 +156,7 @@ namespace AZ
 
             if (resultCode == RHI::ResultCode::Success)
             {
-                m_imageView = m_image->GetImageView(imageAsset.GetImageViewDescriptor());                
+                m_imageView = m_image->GetImageView(imageAsset.GetImageViewDescriptor());
                 if(!m_imageView.get())
                 {
                    AZ_Error("Image", false, "Failed to initialize RHI image view. This is not a recoverable error and is likely a bug.");
@@ -191,6 +191,12 @@ namespace AZ
 
                 // Set rhi image name
                 m_image->SetName(Name(m_imageAsset.GetHint()));
+
+                // queue expand mipmaps if it's not managed by the streaming controller
+                if (!m_streamingController)
+                {
+                    QueueExpandToMipChainLevel(0);
+                }
                         
 #ifdef AZ_RPI_STREAMING_IMAGE_DEBUG_LOG
                 AZ_TracePrintf("StreamingImage", "Init image [%s]\n", m_image->GetName().data());
@@ -244,7 +250,11 @@ namespace AZ
         {
             if (m_streamingController)
             {
-                m_streamingController->OnSetTargetMip(this, targetMipLevel);
+                // find the mipchain which contains the target mip 
+                size_t mipChainIndex = m_imageAsset->GetMipChainIndex(targetMipLevel);
+                // adjust target mip level to the highest detailed mip of the mipchain
+                size_t clampedMipLevel = m_imageAsset->GetMipLevel(mipChainIndex);
+                m_streamingController->OnSetTargetMip(this, aznumeric_cast<uint16_t>(clampedMipLevel));
             }
         }
         
@@ -256,6 +266,27 @@ namespace AZ
         Color StreamingImage::GetAverageColor() const
         {
             return m_imageAsset->GetAverageColor();
+        }
+
+        StreamingImage::Priority StreamingImage::GetStreamingPriority() const
+        {
+            return m_streamingPriority;
+        }
+
+        void StreamingImage::SetStreamingPriority(Priority priority)
+        {
+            m_streamingPriority = priority;
+        }
+
+        bool StreamingImage::IsTrimmable()
+        {
+            // the streaming image is trimmable when it has more mipchains other than the tail mipchain (the last mipchain)
+            return IsStreamable() && m_state.m_streamingTarget < m_mipChains.size()-1;
+        }
+                
+        RHI::ResultCode StreamingImage::TrimOneMipChain()
+        {
+            return TrimToMipChainLevel(m_state.m_streamingTarget + 1);
         }
 
         RHI::ResultCode StreamingImage::TrimToMipChainLevel(size_t mipChainIndex)
@@ -290,7 +321,6 @@ namespace AZ
 
         void StreamingImage::QueueExpandToMipChainLevel(size_t mipChainIndex)
         {
-            AZ_Assert(IsStreamable(), "Only streamable StreamingImage's mip chain can be expanded");
             AZ_Assert(mipChainIndex < m_mipChains.size(), "Exceeded number of mip chains.");
 
             // Expand operation - queue streaming of mip chains up to target mip chain index. 
@@ -298,15 +328,20 @@ namespace AZ
             {
                 // Start on the next-detailed chain from the streaming target.
                 const size_t mipChainBegin = m_state.m_streamingTarget - 1;
-                const size_t mipChainEnd = mipChainIndex - 1;
+
+                // The streaming target need to set before fetching mip chain asset since it's possible the
+                // asset is ready when fetching which may trigger expanding directly
+                m_state.m_streamingTarget = static_cast<uint16_t>(mipChainIndex);
 
                 // Iterate through to the end chain and queue loading operations on the mip assets.
-                for (size_t i = mipChainBegin; i != mipChainEnd; --i)
+                for (size_t i = mipChainBegin; ; --i)
                 {
                     FetchMipChainAsset(i);
+                    if (i == mipChainIndex)
+                    {
+                        break;
+                    }
                 }
-
-                m_state.m_streamingTarget = static_cast<uint16_t>(mipChainIndex);
             }
         }
         
@@ -405,12 +440,13 @@ namespace AZ
                 Data::Asset<ImageMipChainAsset>& mipChainAsset = m_mipChains[mipChainIndex];
                 AZ_Assert(mipChainAsset.Get() == nullptr, "Asset marked as inactive, but has a valid reference.");
 
-                // Connect to the AssetBus so we are ready to receive OnAssetReady(), which will call OnMipChainAssetReady().
-                // If the asset happens to already be loaded, OnAssetReady() will be called immediately.
-                Data::AssetBus::MultiHandler::BusConnect(mipChainAsset.GetId());
-
                 // And we request that the asset be loaded in case it isn't already.
                 mipChainAsset.QueueLoad();
+
+                // Connect to the AssetBus so we are ready to receive OnAssetReady(), which will call OnMipChainAssetReady().
+                // If the asset happens to already be loaded, OnAssetReady() will be called immediately.
+                // Note: call BusConnect after QueueLoad() so that OnAssetReady won't be called during QueueLoad() which the asset data in mipChainAsset wasn't ready
+                Data::AssetBus::MultiHandler::BusConnect(mipChainAsset.GetId());
 
 #ifdef AZ_RPI_STREAMING_IMAGE_DEBUG_LOG
                 AZ_TracePrintf("StreamingImage", "Fetch mip chain asset [%s]\n", mipChainAsset.GetHint().c_str());
@@ -442,6 +478,10 @@ namespace AZ
             if (m_streamingController)
             {
                 m_streamingController->OnMipChainAssetReady(this);
+            }
+            else
+            {
+                ExpandMipChain();
             }
         }
                 
@@ -500,7 +540,7 @@ namespace AZ
                 StreamingImageAsset* imageAsset = azrtti_cast<StreamingImageAsset*>(asset.GetData());
 
                 // Release the loaded mipchain assets from both current asset and new asset since they are coming from old asset
-                // This is due to we have to use PreLoad dependecy load behavior for streaming image asset
+                // This is due to we have to use PreLoad dependency load behavior for streaming image asset
                 // before we can switch load behavior at runtime.
                 // [GFX TODO] [ATOM-14467] Remove unnecessary code in StreamingImage::OnAssetReloaded when runtime switching dependency load behavior is supported
                 m_imageAsset->ReleaseMipChainAssets();
@@ -523,11 +563,24 @@ namespace AZ
         {
             return m_pool;
         }
-        
+
         bool StreamingImage::IsStreamable() const
         {
-            return (RHI::CheckBitsAny(m_imageAsset->GetFlags(), StreamingImageFlags::NotStreamable) == false);
+            return (RHI::CheckBitsAny(m_imageAsset->GetFlags(), StreamingImageFlags::NotStreamable) == false) && m_image->IsStreamable();
         }
 
+        bool StreamingImage::IsExpanding() const
+        {
+            return m_state.m_residencyTarget > m_state.m_streamingTarget;
+        }
+
+        bool StreamingImage::IsStreamed() const
+        {
+            if (m_streamingController)
+            {
+                return m_streamingController->GetImageTargetMip(this) >= m_image->GetResidentMipLevel();
+            }
+            return m_image->GetResidentMipLevel() == 0;
+        }
     }
 }

@@ -94,6 +94,7 @@ namespace UnitTest
 
         private:
             void GetSubresourceLayoutsInternal(const AZ::RHI::ImageSubresourceRange&, AZ::RHI::ImageSubresourceLayoutPlaced*, size_t*) const override {}
+            bool IsStreamableInternal() const override {return true;};
         };
 
         class BufferView

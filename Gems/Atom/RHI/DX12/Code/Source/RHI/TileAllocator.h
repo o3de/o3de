@@ -57,6 +57,10 @@ namespace AZ
             //! Allocate tiles. it may returen tiles from different heaps.
             AZStd::vector<HeapTiles> Allocate(uint32_t tileCount);
 
+            //! Returns page memory allocation (in bytes) needed for required tile count.
+            //! It returns 0 if there are enough tiles avaliable within current allocated pages.
+            size_t EvaluateMemoryAllocation(uint32_t tileCount);
+
             //! DeAllocate multiple group of tiles 
             void DeAllocate(const AZStd::vector<HeapTiles>& tiles);
 

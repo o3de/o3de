@@ -38,7 +38,6 @@ set(FILES
     Include/Atom/RPI.Reflect/Asset/BuiltInAssetHandler.h
     Include/Atom/RPI.Reflect/Image/AttachmentImageAsset.h
     Include/Atom/RPI.Reflect/Image/AttachmentImageAssetCreator.h
-    Include/Atom/RPI.Reflect/Image/DefaultStreamingImageControllerAsset.h
     Include/Atom/RPI.Reflect/Image/Image.h
     Include/Atom/RPI.Reflect/Image/ImageAsset.h
     Include/Atom/RPI.Reflect/Image/ImageMipChainAsset.h
@@ -121,7 +120,6 @@ set(FILES
     Source/RPI.Reflect/ResourcePoolAssetCreator.cpp
     Source/RPI.Reflect/Image/AttachmentImageAsset.cpp
     Source/RPI.Reflect/Image/AttachmentImageAssetCreator.cpp
-    Source/RPI.Reflect/Image/DefaultStreamingImageControllerAsset.cpp
     Source/RPI.Reflect/Image/Image.cpp
     Source/RPI.Reflect/Image/ImageAsset.cpp
     Source/RPI.Reflect/Image/ImageMipChainAsset.cpp

@@ -98,7 +98,7 @@ namespace AZ
             // Array of mip slice pointers; initialized after serialization. Used for constructing the RHI update request.
             MipSliceList m_mipSlices;
 
-            // The list of subresource datas, fixed up from serialization.
+            // The list of subresource data, fixed up from serialization.
             AZStd::vector<RHI::StreamingImageSubresourceData> m_subImageDatas;
 
             // [Serialized] Topology of sub-images in the mip group.

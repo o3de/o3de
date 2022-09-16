@@ -86,6 +86,9 @@ namespace AZ
             //! Get the hash associated with the passed view descriptorimage
             const HashValue64 GetHash() const;
 
+            //! Returns whether the image has sub-resources which can be evicted from or streamed in the device memory
+            bool IsStreamable() const;
+
         protected:
             Image() = default;
 
@@ -101,6 +104,9 @@ namespace AZ
                 const ImageSubresourceRange& subresourceRange,
                 ImageSubresourceLayoutPlaced* subresourceLayouts,
                 size_t* totalSizeInBytes) const = 0;
+
+            //! Returns whether the image has sub-resources which can be evicted from or streamed in the device memory
+            virtual bool IsStreamableInternal() const { return false;};
             ///////////////////////////////////////////////////////////////////
 
             /// The RHI descriptor for this image.

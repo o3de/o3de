@@ -15,13 +15,11 @@
 #include <Atom/RPI.Reflect/Image/StreamingImageAssetCreator.h>
 #include <Atom/RPI.Reflect/Image/StreamingImagePoolAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImagePoolAssetCreator.h>
-#include <Atom/RPI.Reflect/Image/DefaultStreamingImageControllerAsset.h>
 #include <Atom/RPI.Reflect/Asset/BuiltInAssetHandler.h>
 
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Public/Image/StreamingImagePool.h>
-#include <Atom/RPI.Public/Image/DefaultStreamingImageController.h>
 #include <Atom/RPI.Public/RPIUtils.h>
 
 #include <AtomCore/Instance/InstanceDatabase.h>
@@ -122,46 +120,16 @@ namespace UnitTest
         AZ_RTTI(TestStreamingImageContext, "{E2FC3EB5-4F66-41D0-9ABE-6EDD2622DD88}", AZ::RPI::StreamingImageContext);
     };
 
-    class TestStreamingImageController final
-        : public AZ::RPI::StreamingImageController
-    {
-    public:
-        AZ_CLASS_ALLOCATOR(TestStreamingImageController, AZ::SystemAllocator, 0);
-        AZ_RTTI(TestStreamingImageController, "{69D1A49C-B07E-4987-86D4-79C1F4E239B8}", AZ::RPI::StreamingImageController);
-
-        TestStreamingImageController() = default;
-
-    private:
-        AZ::RPI::StreamingImageContextPtr CreateContextInternal() override
-        {
-            return aznew TestStreamingImageContext();
-        }
-
-        void UpdateInternal(size_t timestamp, const StreamingImageContextList&) override
-        {
-            EXPECT_EQ(timestamp, m_expectedTimestamp);
-            m_expectedTimestamp++;
-        }
-
-        size_t m_expectedTimestamp = 0;
-    };
-
     class StreamingImageTests
         : public RPITestFixture
     {
-    private:
-        AZ::Data::Asset<AZ::RPI::DefaultStreamingImageControllerAsset> m_testControllerAsset;
-
     protected:
-        AZ::RPI::BuiltInAssetHandler* m_testControllerAssetHandler;
-        AZ::Data::AssetId m_testControllerAssetId;
 
         AZ::Data::AssetHandler* m_imageHandler = nullptr;
         AZ::Data::AssetHandler* m_mipChainHandler = nullptr;
         AZ::Data::Instance<AZ::RPI::StreamingImagePool> m_defaultPool = nullptr;
 
         StreamingImageTests()
-            : m_testControllerAssetId(AZ::RPI::DefaultStreamingImageControllerAsset::BuiltInAssetId)
         {}
 
         void SetUp() override
@@ -300,11 +268,6 @@ namespace UnitTest
                 EXPECT_NE(desc, nullptr);
                 EXPECT_EQ(desc->m_magic, UnitTest::TestStreamingImagePoolDescriptor::Magic);
             }
-
-            {
-                Data::Asset<RPI::StreamingImageControllerAsset> asset = poolAsset->GetControllerAsset();
-                EXPECT_TRUE(azrtti_typeid<RPI::DefaultStreamingImageControllerAsset>() == asset.GetType());
-            }
         }
 
         void ValidateImageResidency(AZ::RPI::StreamingImage* imageInstance, AZ::RPI::StreamingImageAsset* imageAsset)
@@ -419,12 +382,6 @@ namespace UnitTest
             assetCreator.Begin(Data::AssetId(Uuid::CreateRandom()));
 
             assetCreator.SetPoolDescriptor(AZStd::make_unique<TestStreamingImagePoolDescriptor>(budgetInBytes));
-
-            assetCreator.SetControllerAsset(
-                Data::AssetManager::Instance().GetAsset<RPI::DefaultStreamingImageControllerAsset>(
-                    m_testControllerAssetId,
-                    Data::AssetLoadBehavior::PreLoad)
-            );
 
             Data::Asset<RPI::StreamingImagePoolAsset> poolAsset;
             EXPECT_TRUE(assetCreator.End(poolAsset));

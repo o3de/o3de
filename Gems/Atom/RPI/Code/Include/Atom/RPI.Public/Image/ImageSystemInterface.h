@@ -56,12 +56,11 @@ namespace AZ
             //! Returns a system image generated at runtime.
             virtual const Data::Instance<Image>& GetSystemImage(SystemImage systemImage) const = 0;
 
-            //! Returns the system streaming image pool. Use this if you do not need a custom pool for your allocation.
-            //! This pool's budget is usually small and it's preferred to use it only for streaming images which data were
-            //! generated during runtime instead of from streaming image assets.
+            //! Returns the system streaming image pool. 
             virtual const Data::Instance<StreamingImagePool>& GetSystemStreamingPool() const = 0;
 
-            //! Returns streaming image pool which is dedicated for streaming images created from streaming image assets.
+            //! O3DE_DEPRECATION_NOTICE(GHI-12058)
+            //! @deprecated use GetSystemStreamingPool()
             virtual const Data::Instance<StreamingImagePool>& GetStreamingPool() const = 0;
 
             //! Returns the system attachment image pool. Use this if you do not need a custom pool for your allocation.

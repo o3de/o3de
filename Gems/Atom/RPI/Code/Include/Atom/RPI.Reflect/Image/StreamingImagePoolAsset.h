@@ -56,9 +56,6 @@ namespace AZ
             //! type. This is determined by the asset builder.
             const RHI::StreamingImagePoolDescriptor& GetPoolDescriptor() const;
 
-            //! Returns the controller asset that performs streaming priority management.
-            const Data::Asset<StreamingImageControllerAsset>& GetControllerAsset() const;
-
             //! Returns the name of the pool.
             AZStd::string_view GetPoolName() const;
 
@@ -69,9 +66,6 @@ namespace AZ
 
             // [Serialized] The platform-specific descriptor used to initialize the RHI pool.
             AZStd::unique_ptr<RHI::StreamingImagePoolDescriptor> m_poolDescriptor;
-
-            // [Serialized] The streaming controller used to budget the pool.
-            Data::Asset<StreamingImageControllerAsset> m_controllerAsset{ Data::AssetLoadBehavior::PreLoad };
 
             // [Serialized] A display name for this pool. 
             AZStd::string m_poolName;

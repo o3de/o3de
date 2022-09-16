@@ -16,6 +16,8 @@
 
 #include <AtomCore/Instance/InstanceData.h>
 
+#include <AzCore/std/containers/set.h>
+
 namespace AZ
 {
     namespace RHI
@@ -51,6 +53,30 @@ namespace AZ
 
             const RHI::StreamingImagePool* GetRHIPool() const;
 
+            //! Get the number of streaming images in this pool
+            uint32_t GetImageCount() const;
+
+            //! Get the number of streamable images in this pool
+            uint32_t GetStreamableImageCount() const;
+
+            //! Set the streaming pool's heap memory budget on device
+            //! Return true if the pool was set to new memory budget successfully
+            bool SetMemoryBudget(size_t newBudgetInBytes);
+
+            //! Returns the streaming pool's heap memory budget on device
+            size_t GetMemoryBudget() const;
+
+            //! Return whether the available memory is low
+            bool IsMemoryLow() const;
+                        
+            //! Set mipmap bias to streaming images's streaming target
+            //! For example, if the streaming image's streaming target is 0, and mipmap bias is 1, then the actual streaming target is 0+1
+            //! The mipBias can be a negative value.
+            //! The streaming target will be clamped to [0, imageLowestMip]
+            void SetMipBias(int16_t mipBias);
+                        
+            int16_t GetMipBias() const;
+
         private:
             StreamingImagePool() = default;
 
@@ -71,7 +97,10 @@ namespace AZ
             RHI::Ptr<RHI::StreamingImagePool> m_pool;
 
             // The controller used to manage streaming events on the pool.
-            Data::Instance<StreamingImageController> m_controller;
+            AZStd::unique_ptr<StreamingImageController> m_controller;
+
+            // The streamable image count
+            AZStd::atomic_uint m_streamableImageCount = 0;
         };
     }
 }
