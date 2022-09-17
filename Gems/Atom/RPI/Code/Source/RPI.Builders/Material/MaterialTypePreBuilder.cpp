@@ -7,31 +7,12 @@
  */
 
 #include "MaterialTypePreBuilder.h"
-//#include <Atom/RPI.Edit/Material/MaterialSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialUtils.h>
-//#include <Atom/RPI.Edit/Common/AssetUtils.h>
-//#include <Atom/RPI.Edit/Common/JsonReportingHelper.h>
 #include <Atom/RPI.Edit/Common/JsonUtils.h>
-//#include <AzCore/Serialization/Json/JsonUtils.h>
-//
-//#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
-//#include <Atom/RPI.Reflect/Material/MaterialAssetCreator.h>
-//#include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
-//
-//#include <AzFramework/IO/LocalFileIO.h>
-//#include <AzFramework/StringFunc/StringFunc.h>
-//#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-//#include <AzToolsFramework/Debug/TraceContext.h>
-//
-//#include <AssetBuilderSDK/AssetBuilderSDK.h>
-//#include <AssetBuilderSDK/SerializationDependencies.h>
-//
-//#include <AzCore/IO/IOUtils.h>
+#include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <AzCore/Utils/Utils.h>
-//#include <AzCore/IO/Path/Path.h>
-//#include <AzCore/Serialization/Json/JsonSerialization.h>
-//#include <AzCore/Settings/SettingsRegistry.h>
+
 
 namespace AZ
 {
@@ -48,7 +29,7 @@ namespace AZ
         {
             AssetBuilderSDK::AssetBuilderDesc builderDescriptor;
             builderDescriptor.m_name = JobKey;
-            builderDescriptor.m_version = 3; // First version
+            builderDescriptor.m_version = 6; // Initial checkin
             builderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.materialtypeex", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             builderDescriptor.m_busId = azrtti_typeid<MaterialTypePreBuilder>();
             builderDescriptor.m_createJobFunction = AZStd::bind(&MaterialTypePreBuilder::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
@@ -57,11 +38,35 @@ namespace AZ
             BusConnect(builderDescriptor.m_busId);
 
             AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBus::Handler::RegisterBuilderInformation, builderDescriptor);
+
+            LoadMaterialPipelines();
         }
 
         MaterialTypePreBuilder::~MaterialTypePreBuilder()
         {
             BusDisconnect();
+        }
+
+        void MaterialTypePreBuilder::LoadMaterialPipelines()
+        {
+            if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+            {
+                AZStd::vector<AZStd::string> materialPipelineFiles;
+                settingsRegistry->GetObject(materialPipelineFiles, "/O3DE/Atom/RPI/MaterialPipelineFiles");
+
+                for (const AZStd::string& file : materialPipelineFiles)
+                {
+                    auto loadResult = MaterialUtils::LoadMaterialPipelineSourceData(file.c_str());
+                    if (loadResult.IsSuccess())
+                    {
+                        m_materialPipelines.emplace(file, loadResult.TakeValue());
+                    }
+                    else
+                    {
+                        AZ_Error(MaterialTypePreBuilderName, false, "Failed to load '%s'.", file.c_str());
+                    }
+                }
+            }
         }
 
         void MaterialTypePreBuilder::CreateJobs(const AssetBuilderSDK::CreateJobsRequest& /*request*/, AssetBuilderSDK::CreateJobsResponse& response) const
@@ -76,6 +81,27 @@ namespace AZ
             outputJobDescriptor.m_jobKey = JobKey;
             outputJobDescriptor.SetPlatformIdentifier(AssetBuilderSDK::CommonPlatformName);
             response.m_createJobOutputs.push_back(outputJobDescriptor);
+
+            for (const auto& [materialPipelineFilePath, materialPipeline] : m_materialPipelines)
+            {
+                // This comes from a central registry setting, so it must be a full path already.
+                response.m_sourceFileDependencyList.push_back({});
+                response.m_sourceFileDependencyList.back().m_sourceFileDependencyPath = materialPipelineFilePath;
+
+                for (const MaterialPipelineSourceData::ShaderTemplate& shaderTemplate : materialPipeline.m_shaderTemplates)
+                {
+                    AZStd::vector<AZStd::string> possibleDependencies = RPI::AssetUtils::GetPossibleDepenencyPaths(materialPipelineFilePath, shaderTemplate.m_shader);
+                    for (const AZStd::string& path : possibleDependencies)
+                    {
+                        response.m_sourceFileDependencyList.push_back({});
+                        response.m_sourceFileDependencyList.back().m_sourceFileDependencyPath = path;
+                    }
+
+                    // We don't need to add m_azsli as a dependency because that will be #included into the final azsl file, so the shader asset builder
+                    // will account for that dependency.
+                }
+            }
+
             response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
         }
 
@@ -95,101 +121,114 @@ namespace AZ
                 return;
             }
 
-            AZ::IO::Path inputMaterialTypePath = request.m_fullPath;
-
-            auto loadResult = MaterialUtils::LoadMaterialTypeSourceData(inputMaterialTypePath.c_str());
-
-            if (!loadResult.IsSuccess())
-            {
-                AZ_Error(MaterialTypePreBuilderName, false, "Failed to load material type file.");
-                return;
-            }
-
-            // Generate the required shaders
-
-            auto azslFile = AZ::Utils::ReadFile<AZStd::string>("@gemroot:Atom@/TestData/TestData/Materials/Types/MinimalPBR_ForwardPass.azsl");
-
-            auto shaderFile = AZ::Utils::ReadFile<AZStd::string>("@gemroot:Atom@/TestData/TestData/Materials/Types/MinimalPBR_ForwardPass.shader");
-
-            if (!shaderFile.IsSuccess() || !azslFile.IsSuccess())
-            {
-                AZ_Error(MaterialTypePreBuilderName, false, "Failed to load shader files.");
-                return;
-            }
+            AZStd::string materialTypeName;
+            AZ::StringFunc::Path::GetFileName(request.m_sourceFile.c_str(), materialTypeName);
 
             AZ::u32 nextProductSubID = 0;
 
-            // Intermediate azsl file
-
-            AZ::IO::Path outputAzslFilePath = request.m_tempDirPath;
-            outputAzslFilePath /= inputMaterialTypePath.Filename();
-            outputAzslFilePath.ReplaceExtension("azsl");
-
-            if (AZ::Utils::WriteFile(azslFile.GetValue(), outputAzslFilePath.c_str()).IsSuccess())
+            // Generate the required shaders
+            for (const auto& [materialPipelineFilePath, materialPipeline] : m_materialPipelines)
             {
-                AssetBuilderSDK::JobProduct product;
-                product.m_outputFlags = AssetBuilderSDK::ProductOutputFlags::IntermediateAsset;
-                product.m_dependenciesHandled = true;
-                product.m_productFileName = outputAzslFilePath.String();
-                product.m_productSubID = nextProductSubID++;
-                response.m_outputProducts.push_back(AZStd::move(product));
-            }
-            else
-            {
-                AZ_Error(MaterialTypePreBuilderName, false, "Failed to write intermediate azsl file.");
-                return;
-            }
+                AZStd::string materialPipelineName;
+                AZ::StringFunc::Path::GetFileName(materialPipelineFilePath.c_str(), materialPipelineName);
 
-            // Intermediate shader file
+                // TODO: Need to update MaterialTypeAsset to support multiple pipelines, for now we have to generate separate ones.
+                auto materialTypeLoadResult = MaterialUtils::LoadMaterialTypeSourceData(request.m_fullPath);
+                if (!materialTypeLoadResult.IsSuccess())
+                {
+                    AZ_Error(MaterialTypePreBuilderName, false, "Failed to load material type file.");
+                    return;
+                }
+                MaterialTypeSourceData materialType = materialTypeLoadResult.TakeValue();
+                materialType.m_shaderCollection.clear();
 
-            AzFramework::StringFunc::Replace(shaderFile.GetValue(), "./MinimalPBR_ForwardPass.azsl", AZ::IO::Path{outputAzslFilePath.Filename()}.c_str());
+                // TODO: Eventually we'll use a script and inputs from the material type to decide which shader templates need to be used
+                for (const MaterialPipelineSourceData::ShaderTemplate& shaderTemplate : materialPipeline.m_shaderTemplates)
+                {
+                    AZStd::string shaderName;
+                    AZ::StringFunc::Path::GetFileName(shaderTemplate.m_shader.c_str(), shaderName); // This will remove the ".template" extension
+                    AZ::StringFunc::Path::ReplaceExtension(shaderName, "");                         // This will remove the ".shader" extension
 
-            AZ::IO::Path outputShaderFilePath = request.m_tempDirPath;
-            outputShaderFilePath /= inputMaterialTypePath.Filename();
-            outputShaderFilePath.ReplaceExtension("shader");
+                    AZStd::string shaderFilePath = AssetUtils::ResolvePathReference(materialPipelineFilePath, shaderTemplate.m_shader);
+                    auto shaderFile = AZ::Utils::ReadFile<AZStd::string>(shaderFilePath);
+                    if (!shaderFile.IsSuccess())
+                    {
+                        AZ_Error(MaterialTypePreBuilderName, false, "Failed to load shader file '%s'.", shaderFilePath.c_str());
+                        return;
+                    }
 
-            if (AZ::Utils::WriteFile(shaderFile.GetValue(), outputShaderFilePath.c_str()).IsSuccess())
-            {
-                AssetBuilderSDK::JobProduct product;
-                product.m_outputFlags = AssetBuilderSDK::ProductOutputFlags::IntermediateAsset;
-                product.m_productFileName = outputShaderFilePath.String();
-                product.m_productSubID = nextProductSubID++;
-                response.m_outputProducts.push_back(AZStd::move(product));
-            }
-            else
-            {
-                AZ_Error(MaterialTypePreBuilderName, false, "Failed to write intermediate shader file.");
-                return;
-            }
+                    // Intermediate azsl file
 
-            // Intermediate material type
+                    // TODO: Stitch together with shader code from the material type file.
+                    const AZStd::string generatedAzsl = AZStd::string::format(
+                        "// This code was generated by %s. Do not modify.\n"
+                        "#include <%s>\n",
+                        MaterialTypePreBuilderName,
+                        shaderTemplate.m_azsli.c_str());
 
-            MaterialTypeSourceData materialType = loadResult.TakeValue();
+                    AZ::IO::Path outputAzslFilePath = request.m_tempDirPath;
+                    outputAzslFilePath /= AZStd::string::format("%s_%s_%s.azsl", materialTypeName.c_str(), materialPipelineName.c_str(), shaderName.c_str());
 
-            materialType.m_shaderCollection.clear();
+                    if (AZ::Utils::WriteFile(generatedAzsl, outputAzslFilePath.c_str()).IsSuccess())
+                    {
+                        AssetBuilderSDK::JobProduct product;
+                        product.m_outputFlags = AssetBuilderSDK::ProductOutputFlags::IntermediateAsset;
+                        product.m_dependenciesHandled = true;
+                        product.m_productFileName = outputAzslFilePath.String();
+                        product.m_productSubID = nextProductSubID++;
+                        response.m_outputProducts.push_back(AZStd::move(product));
+                    }
+                    else
+                    {
+                        AZ_Error(MaterialTypePreBuilderName, false, "Failed to write intermediate azsl file.");
+                        return;
+                    }
 
-            materialType.m_shaderCollection.push_back({});
-            materialType.m_shaderCollection.back().m_shaderFilePath = AZ::IO::Path{outputShaderFilePath.Filename()}.c_str();
+                    // Intermediate shader file
 
-            materialType.m_shaderCollection.push_back({});
-            materialType.m_shaderCollection.back().m_shaderFilePath = "Shaders/Depth/DepthPass.shader";
+                    AZStd::string azslFileReference = AZ::IO::Path{outputAzslFilePath.Filename()}.c_str();
+                    AZStd::to_lower(azslFileReference.begin(), azslFileReference.end());
+                    AzFramework::StringFunc::Replace(shaderFile.GetValue(), "INSERT_AZSL_HERE", azslFileReference.c_str());
 
-            AZ::IO::Path outputMaterialTypeFilePath = request.m_tempDirPath;
-            outputMaterialTypeFilePath /= inputMaterialTypePath.Filename();
-            outputMaterialTypeFilePath.ReplaceExtension("materialtype");
+                    AZ::IO::Path outputShaderFilePath = request.m_tempDirPath;
+                    outputShaderFilePath /= AZStd::string::format("%s_%s_%s.shader", materialTypeName.c_str(), materialPipelineName.c_str(), shaderName.c_str());
 
-            if (JsonUtils::SaveObjectToFile(outputMaterialTypeFilePath.String(), materialType))
-            {
-                AssetBuilderSDK::JobProduct product;
-                product.m_outputFlags = AssetBuilderSDK::ProductOutputFlags::IntermediateAsset;
-                product.m_productFileName = outputMaterialTypeFilePath.String();
-                product.m_productSubID = nextProductSubID++;
-                response.m_outputProducts.push_back(AZStd::move(product));
-            }
-            else
-            {
-                AZ_Error(MaterialTypePreBuilderName, false, "Failed to write intermediate material type file.");
-                return;
+                    if (AZ::Utils::WriteFile(shaderFile.GetValue(), outputShaderFilePath.c_str()).IsSuccess())
+                    {
+                        AssetBuilderSDK::JobProduct product;
+                        product.m_outputFlags = AssetBuilderSDK::ProductOutputFlags::IntermediateAsset;
+                        product.m_productFileName = outputShaderFilePath.String();
+                        product.m_productSubID = nextProductSubID++;
+                        response.m_outputProducts.push_back(AZStd::move(product));
+                    }
+                    else
+                    {
+                        AZ_Error(MaterialTypePreBuilderName, false, "Failed to write intermediate shader file.");
+                        return;
+                    }
+
+                    // Add shader to intermediate material type
+
+                    materialType.m_shaderCollection.push_back({});
+                    materialType.m_shaderCollection.back().m_shaderFilePath = AZ::IO::Path{outputShaderFilePath.Filename()}.c_str();
+                }
+
+                AZ::IO::Path outputMaterialTypeFilePath = request.m_tempDirPath;
+                outputMaterialTypeFilePath /= AZStd::string::format("%s_%s.materialtype", materialTypeName.c_str(), materialPipelineName.c_str());
+
+                if (JsonUtils::SaveObjectToFile(outputMaterialTypeFilePath.String(), materialType))
+                {
+                    AssetBuilderSDK::JobProduct product;
+                    product.m_outputFlags = AssetBuilderSDK::ProductOutputFlags::IntermediateAsset;
+                    product.m_productFileName = outputMaterialTypeFilePath.String();
+                    product.m_productSubID = nextProductSubID++;
+                    response.m_outputProducts.push_back(AZStd::move(product));
+                }
+                else
+                {
+                    AZ_Error(MaterialTypePreBuilderName, false, "Failed to write intermediate material type file.");
+                    return;
+                }
             }
 
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;

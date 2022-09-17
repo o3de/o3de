@@ -10,6 +10,7 @@
 
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <AzCore/JSON/document.h>
+#include <Atom/RPI.Edit/Material/MaterialPipelineSourceData.h>
 
 namespace AZ
 {
@@ -39,6 +40,10 @@ namespace AZ
         private:
 
             bool m_isShuttingDown = false;
+
+            void LoadMaterialPipelines();
+
+            AZStd::map<AZStd::string /*path*/, MaterialPipelineSourceData> m_materialPipelines;
         };
 
     } // namespace RPI

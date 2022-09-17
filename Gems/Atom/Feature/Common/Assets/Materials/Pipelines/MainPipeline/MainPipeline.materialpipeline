@@ -1,0 +1,16 @@
+{
+    "shaderTemplates": [
+        {
+            "shader": "./ForwardPass.shader.template",
+            "azsli": "Atom/Feature/Common/Assets/Materials/Pipelines/MainPipeline/ForwardPass.azsli"
+        },
+        {
+            "shader": "./DepthPass.shader.template",
+            "azsli": "Atom/Feature/Common/Assets/Materials/Pipelines/MainPipeline/DepthPass.azsli"
+        },
+        {
+            "shader": "./ShadowmapPass.shader.template",
+            "azsli": "Atom/Feature/Common/Assets/Materials/Pipelines/MainPipeline/ShadowmapPass.azsli"
+        }
+    ]
+}
