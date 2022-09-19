@@ -33,7 +33,7 @@ class QtPyO3DEEditor:
         """
         Function for instantiating the core script canvas QtPy object and its associated other script canvas tools.
 
-        returns None
+        returns reference to the QtPy script canvas editor object
         """
         general.open_pane(SCRIPT_CANVAS_UI)
         result = TestHelper.wait_for_condition(lambda: general.is_pane_visible(SCRIPT_CANVAS_UI), WAIT_TIME_3)
@@ -41,6 +41,8 @@ class QtPyO3DEEditor:
         self.sc_editor = QtPyScriptCanvasEditor.QtPyScriptCanvasEditor(self.editor_main_window)
 
         Report.result(Tests.script_canvas_editor_opened, result is True)
+
+        return self.sc_editor
 
     def close_script_canvas(self):
         """

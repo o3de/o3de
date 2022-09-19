@@ -4,8 +4,8 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
-Holds script canvas related constants used across both hydra and non-hydra scripts.
-We are deprecating VARIABLE_TYPES in favor of the dictionary since we can access the dictionary nicely with dot notation instead of indices
+We are deprecating this file and moving the constants to area specific files. See the EditorPythonTestTools > consts
+folder for more info
 """
 import os
 import azlmbr.paths as paths

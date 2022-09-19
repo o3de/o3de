@@ -44,25 +44,24 @@ def EditMenu_Default_UndoRedo():
 
     # 1) Open Script Canvas window
     qtpy_o3de_editor = sc_tools_qt.qtpy_o3de_editor
-    qtpy_o3de_editor.open_script_canvas()
+    sc_editor = qtpy_o3de_editor.open_script_canvas()
 
     # 2) Create Graph
-    sc_editor = qtpy_o3de_editor.sc_editor
     sc_editor.create_new_script_canvas_graph()
 
     # 3) Create and verify the new variable exists in variable manager
-    qtpy_variable_manager = sc_editor.variable_manager
-    variable_types = qtpy_variable_manager.get_basic_variable_types()
-    qtpy_variable_manager.create_new_variable(variable_types.Boolean)
-    qtpy_variable_manager.sc_variable_count_matches_expected(VARIABLE_COUNT_BEFORE)
+    variable_manager = sc_editor.variable_manager
+    boolean_variable_type = variable_manager.variable_types.Boolean
+    variable_manager.create_new_variable(boolean_variable_type)
+    variable_manager.sc_variable_count_matches_expected(VARIABLE_COUNT_BEFORE)
 
     # 4) Trigger Undo action and verify if variable is removed in Variable Manager
     sc_editor.trigger_undo_action()
-    qtpy_variable_manager.sc_variable_count_matches_expected(VARIABLE_COUNT_AFTER)
+    variable_manager.sc_variable_count_matches_expected(VARIABLE_COUNT_AFTER)
 
     # 5) Trigger Redo action and verify if variable is re-added in Variable Manager
     sc_editor.trigger_redo_action()
-    qtpy_variable_manager.sc_variable_count_matches_expected(VARIABLE_COUNT_BEFORE)
+    variable_manager.sc_variable_count_matches_expected(VARIABLE_COUNT_BEFORE)
 
     # 6) Close SC window
     qtpy_o3de_editor.close_script_canvas()

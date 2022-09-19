@@ -3,6 +3,8 @@ Copyright (c) Contributors to the Open 3D Engine Project.
 For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
+
+This file is being deprecated. relevant functions should be added to EditorPythonTestTools>script_canvas_tools_qt
 """
 
 from editor_python_test_tools.utils import TestHelper as helper

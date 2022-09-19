@@ -58,16 +58,3 @@ File Paths
 """
 SCRIPT_EVENT_FILE_PATH = os.path.join(paths.projectroot, "ScriptCanvas", "test_file.scriptevent")
 SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH = "Configuration|Source"
-
-
-"""
-DEPRECATED CONSTANTS SECTION. delete these once associated references have been updated to appropriate files
-"""
-"""
-Constants for Asset Editor
-"""
-SAVE_ASSET_AS = "SaveAssetAs"
-DEFAULT_SCRIPT_EVENT = "EventName"
-DEFAULT_METHOD_NAME = "MethodName"
-
-PARAMETER_NAME = "ParameterName"
