@@ -563,7 +563,7 @@ namespace AssetProcessor
           * if a source file is missing from disk, it will not be included in the result set, since this returns
           * full absolute paths.
           */
-        void QueryAbsolutePathDependenciesRecursive(QString inputDatabasePath, SourceFilesForFingerprintingContainer& finalDependencyList, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency dependencyType, bool reverseQuery);
+        void QueryAbsolutePathDependenciesRecursive(AZ::Uuid sourceUuid, SourceFilesForFingerprintingContainer& finalDependencyList, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency dependencyType);
 
         // we can't write a job to the database as not needing analysis the next time around,
         // until all jobs related to it are finished.  This is becuase the jobs themselves are not written to the database
