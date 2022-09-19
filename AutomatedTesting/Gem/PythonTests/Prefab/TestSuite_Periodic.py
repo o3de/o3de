@@ -24,9 +24,9 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
     class test_AddEntity_UnderAnotherEntity(EditorSharedTest):
        from .tests.add_entity import AddEntity_UnderAnotherEntity as test_module
 
-    class test_AddEntity_UnderPrefab(EditorSharedTest):
-        from .tests.add_entity import AddEntity_UnderPrefab as test_module
+    class test_AddEntity_UnderContainerEntityOfPrefab(EditorSharedTest):
+        from .tests.add_entity import AddEntity_UnderContainerEntityOfPrefab as test_module
 
-    class test_AddEntity_UnderChildEntityOfAnotherPrefab(EditorSharedTest):
-        from .tests.add_entity import AddEntity_UnderChildEntityOfAnotherPrefab as test_module
+    class test_AddEntity_UnderChildEntityOfPrefab(EditorSharedTest):
+        from .tests.add_entity import AddEntity_UnderChildEntityOfPrefab as test_module
 
