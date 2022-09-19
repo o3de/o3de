@@ -14,6 +14,8 @@
 #include <AssetBuilderSDK/AssetBuilderBusses.h>
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+
 #include <AzFramework/FileFunc/FileFunc.h>
 
 #include <AzToolsFramework/Debug/TraceContext.h>
@@ -24,6 +26,7 @@
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
 
 #include <native/AssetManager/PathDependencyManager.h>
+#include <native/AssetManager/Validators/LfsPointerFileValidator.h>
 #include <native/utilities/BuilderConfigurationBus.h>
 #include <native/utilities/StatsCapture.h>
 
@@ -636,6 +639,25 @@ namespace AssetProcessor
             return;
         }
 
+        QString absolutePathToFile = jobEntry.GetAbsoluteSourcePath();
+
+        // Set the thread local job ID so that JobLogTraceListener can capture the error and write it to the corresponding job log.
+        // The error message will be available in the Event Log Details table when users click on the failed job in the Asset Proessor GUI.
+        AssetProcessor::SetThreadLocalJobId(jobEntry.m_jobRunKey);
+        AssetUtilities::JobLogTraceListener jobLogTraceListener(jobEntry);
+
+        if (IsLfsPointerFile(absolutePathToFile.toUtf8().constData()))
+        {
+            AZ_Error(AssetProcessor::ConsoleChannel, false,
+                "%s is a git large file storage (LFS) file. "
+                "This is a placeholder file used by the git source control system to manage content. "
+                "This issue usually happens if you've downloaded all of O3DE as a zip file. "
+                "Please sync all of the files from the LFS endpoint following https://www.o3de.org/docs/welcome-guide/setup/setup-from-github/#fork-and-clone.",
+                jobEntry.GetAbsoluteSourcePath().toUtf8().constData());
+        }
+
+        AssetProcessor::SetThreadLocalJobId(0);
+
         // wipe the times so that it will try again next time.
         // note:  Leave the prior successful products where they are, though.
 
@@ -645,7 +667,6 @@ namespace AssetProcessor
         //create/update the source record for this job
         AzToolsFramework::AssetDatabase::SourceDatabaseEntry source;
         AzToolsFramework::AssetDatabase::SourceDatabaseEntryContainer sources;
-        QString absolutePathToFile = jobEntry.GetAbsoluteSourcePath();
         if (m_stateData->GetSourcesBySourceName(jobEntry.m_databaseSourceName, sources))
         {
             AZ_Assert(sources.size() == 1, "Should have only found one source!!!");
@@ -791,6 +812,38 @@ namespace AssetProcessor
         // If we rely on the file watcher only, it might fire before the AssetMessage signal has been responded to and the
         // Asset Catalog may not realize that things are dirty by that point.
         QueueIdleCheck();
+    }
+
+    bool AssetProcessorManager::IsLfsPointerFile(const AZStd::string& filePath)
+    {
+        if (!m_lfsPointerFileValidator)
+        {
+            m_lfsPointerFileValidator = AZStd::make_unique<LfsPointerFileValidator>(GetPotentialRepositoryRoots());
+        }
+
+        return m_lfsPointerFileValidator->IsLfsPointerFile(filePath);
+    }
+
+    AZStd::vector<AZStd::string> AssetProcessorManager::GetPotentialRepositoryRoots()
+    {
+        AZStd::vector<AZStd::string> scanDirectories;
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            scanDirectories.emplace_back(AZ::Utils::GetEnginePath(settingsRegistry).c_str());
+            scanDirectories.emplace_back(AZ::Utils::GetProjectPath(settingsRegistry).c_str());
+
+            auto RetrieveActiveGemRootDirectories = [&scanDirectories](AZStd::string_view, AZStd::string_view gemPath)
+            {
+                scanDirectories.emplace_back(gemPath.data());
+            };
+            AZ::SettingsRegistryMergeUtils::VisitActiveGems(*settingsRegistry, RetrieveActiveGemRootDirectories);
+        }
+        else
+        {
+            AZ_Error(AssetProcessor::ConsoleChannel, false, "Failed to retrieve the registered setting registry.");
+        }
+
+        return AZStd::move(scanDirectories);
     }
 
     AssetProcessorManager::ConflictResult AssetProcessorManager::CheckIntermediateProductConflict(
