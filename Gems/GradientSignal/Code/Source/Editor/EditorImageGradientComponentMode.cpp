@@ -13,6 +13,7 @@
 #include <AzToolsFramework/Manipulators/PaintBrushNotificationBus.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
+#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsWindow.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
 #include <Editor/EditorImageGradientComponentMode.h>
@@ -146,10 +147,14 @@ namespace GradientSignal
         Refresh();
 
         m_brushManipulator->Register(AzToolsFramework::g_mainManipulatorManagerId);
+
+        CreateSubModeSelectionCluster();
     }
 
     EditorImageGradientComponentMode::~EditorImageGradientComponentMode()
     {
+        RemoveSubModeSelectionCluster();
+
         AzToolsFramework::PaintBrushNotificationBus::Handler::BusDisconnect();
         m_brushManipulator->Unregister();
 
@@ -326,5 +331,64 @@ namespace GradientSignal
         LmbrCentral::DependencyNotificationBus::Event(
             GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionRegionChanged, expandedDirtyArea);
     }
+
+
+    void EditorImageGradientComponentMode::RemoveSubModeSelectionCluster()
+    {
+        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+            AzToolsFramework::ViewportUi::DefaultViewportId,
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RemoveCluster,
+            m_paintBrushControlClusterId);
+    }
+
+    void EditorImageGradientComponentMode::CreateSubModeSelectionCluster()
+    {
+        auto RegisterClusterButton = [](AzToolsFramework::ViewportUi::ClusterId clusterId,
+                                        const char* iconName,
+                                        const char* tooltip) -> AzToolsFramework::ViewportUi::ButtonId
+        {
+            AzToolsFramework::ViewportUi::ButtonId buttonId;
+            AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
+                buttonId,
+                AzToolsFramework::ViewportUi::DefaultViewportId,
+                &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateClusterButton,
+                clusterId,
+                AZStd::string::format(":/stylesheet/img/UI20/toolbar/%s.svg", iconName));
+
+            AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+                AzToolsFramework::ViewportUi::DefaultViewportId,
+                &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip,
+                clusterId,
+                buttonId,
+                tooltip);
+
+            return buttonId;
+        };
+
+        // create the cluster for changing transform mode
+        AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
+            m_paintBrushControlClusterId,
+            AzToolsFramework::ViewportUi::DefaultViewportId,
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateCluster,
+            AzToolsFramework::ViewportUi::Alignment::TopLeft);
+
+        // create and register the buttons
+        m_paintBrushSettingsButtonId = RegisterClusterButton(m_paintBrushControlClusterId, "Align_to_Object", "Show Paint Brush Settings");
+
+        m_buttonSelectionHandler = AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler(
+            [this](AzToolsFramework::ViewportUi::ButtonId buttonId)
+            {
+                if (buttonId == m_paintBrushSettingsButtonId)
+                {
+                    AzToolsFramework::OpenViewPane(PaintBrush::s_paintBrushSettingsName);
+                }
+            });
+        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+            AzToolsFramework::ViewportUi::DefaultViewportId,
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler,
+            m_paintBrushControlClusterId,
+            m_buttonSelectionHandler);
+    }
+
 
 } // namespace GradientSignal

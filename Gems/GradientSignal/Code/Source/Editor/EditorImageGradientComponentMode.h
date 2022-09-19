@@ -12,6 +12,7 @@
 #include <AzToolsFramework/Manipulators/PaintBrushManipulator.h>
 #include <AzToolsFramework/Manipulators/PaintBrushNotificationBus.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
+#include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
 
 namespace GradientSignal
 {
@@ -40,6 +41,9 @@ namespace GradientSignal
         void BeginUndoBatch();
         void EndUndoBatch();
 
+        void CreateSubModeSelectionCluster();
+        void RemoveSubModeSelectionCluster();
+
     private:
         //! The entity/component that owns this paintbrush.
         AZ::EntityComponentIdPair m_ownerEntityComponentId;
@@ -49,5 +53,10 @@ namespace GradientSignal
         //! The undo information for the in-progress painting brush stroke.
         AzToolsFramework::UndoSystem::URSequencePoint* m_undoBatch = nullptr;
         PaintBrushUndoBuffer* m_paintBrushUndoBuffer = nullptr;
+
+        AzToolsFramework::ViewportUi::ClusterId m_paintBrushControlClusterId;
+        AzToolsFramework::ViewportUi::ButtonId m_paintBrushSettingsButtonId;
+
+        AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler m_buttonSelectionHandler;
     };
 } // namespace GradientSignal
