@@ -83,7 +83,7 @@ namespace ShaderManagementConsole
 
     size_t ShaderManagementConsoleDocument::GetShaderOptionDescriptorCount() const
     {
-        if (IsOpen())
+        if (m_shaderAsset.IsReady())
         {
             const auto& layout = m_shaderAsset->GetShaderOptionGroupLayout();
             const auto& shaderOptionDescriptors = layout->GetShaderOptions();
@@ -94,7 +94,7 @@ namespace ShaderManagementConsole
 
     const AZ::RPI::ShaderOptionDescriptor& ShaderManagementConsoleDocument::GetShaderOptionDescriptor(size_t index) const
     {
-        if (IsOpen())
+        if (m_shaderAsset.IsReady())
         {
             const auto& layout = m_shaderAsset->GetShaderOptionGroupLayout();
             const auto& shaderOptionDescriptors = layout->GetShaderOptions();
@@ -109,9 +109,6 @@ namespace ShaderManagementConsole
         documentType.m_documentTypeName = "Shader Variant List";
         documentType.m_documentFactoryCallback = [](const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo) {
             return aznew ShaderManagementConsoleDocument(toolId, documentTypeInfo); };
-        documentType.m_supportedExtensionsToCreate.push_back({ "Shader", AZ::RPI::ShaderSourceData::Extension });
-        documentType.m_supportedExtensionsToCreate.push_back({ "Shader Variant List", AZ::RPI::ShaderVariantListSourceData::Extension });
-        documentType.m_supportedExtensionsToOpen.push_back({ "Shader", AZ::RPI::ShaderSourceData::Extension });
         documentType.m_supportedExtensionsToOpen.push_back({ "Shader Variant List", AZ::RPI::ShaderVariantListSourceData::Extension });
         documentType.m_supportedExtensionsToSave.push_back({ "Shader Variant List", AZ::RPI::ShaderVariantListSourceData::Extension });
         documentType.m_supportedAssetTypesToCreate.insert(azrtti_typeid<AZ::RPI::ShaderAsset>());
@@ -120,13 +117,7 @@ namespace ShaderManagementConsole
 
     AtomToolsFramework::DocumentObjectInfoVector ShaderManagementConsoleDocument::GetObjectInfo() const
     {
-        if (!IsOpen())
-        {
-            AZ_Error("ShaderManagementConsoleDocument", false, "Document is not open.");
-            return {};
-        }
-
-        AtomToolsFramework::DocumentObjectInfoVector objects;
+        AtomToolsFramework::DocumentObjectInfoVector objects = AtomToolsDocument::GetObjectInfo();
 
         AtomToolsFramework::DocumentObjectInfo objectInfo;
         objectInfo.m_visible = true;
@@ -197,11 +188,6 @@ namespace ShaderManagementConsole
         }
 
         return SaveSourceData();
-    }
-
-    bool ShaderManagementConsoleDocument::IsOpen() const
-    {
-        return AtomToolsDocument::IsOpen() && m_shaderAsset.IsReady();
     }
 
     bool ShaderManagementConsoleDocument::IsModified() const
@@ -370,7 +356,7 @@ namespace ShaderManagementConsole
         SetShaderVariantListSourceData(shaderVariantListSourceData);
         m_modified = {};
 
-        return IsOpen() ? OpenSucceeded() : OpenFailed();
+        return OpenSucceeded();
     }
 
     AZStd::vector<AZ::Data::AssetId> ShaderManagementConsoleDocument::FindMaterialAssetsUsingShader(const AZStd::string& shaderFilePath)

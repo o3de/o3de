@@ -477,6 +477,12 @@ namespace AzToolsFramework
             ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterVisible, clusterId, visible);
     }
 
+    static void SetViewportUiSwitcherVisible(const ViewportUi::SwitcherId switcherId, const bool visible)
+    {
+        ViewportUi::ViewportUiRequestBus::Event(
+            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherVisible, switcherId, visible);
+    }
+
     static void SetViewportUiClusterActiveButton(const ViewportUi::ClusterId clusterId, const ViewportUi::ButtonId buttonId)
     {
         ViewportUi::ViewportUiRequestBus::Event(
@@ -3872,7 +3878,7 @@ namespace AzToolsFramework
     }
 
     void EditorTransformComponentSelection::PopulateEditorGlobalContextMenu(
-        QMenu* menu, [[maybe_unused]] const AZ::Vector2& point, [[maybe_unused]] int flags)
+        QMenu* menu, [[maybe_unused]] const AZStd::optional<AzFramework::ScreenPoint>& point, [[maybe_unused]] int flags)
     {
         // Don't show the Toggle Pivot option if any read-only entities are in the current selection
         // We need to request the selected entities instead of just using the m_selectedEntities variable
@@ -4448,11 +4454,21 @@ namespace AzToolsFramework
     void EditorTransformComponentSelection::OnStartPlayInEditor()
     {
         SetAllViewportUiVisible(false);
+        // this is called seperately because the above method disables the switcher in component mode
+        if (m_componentModeSwitcher != nullptr)
+        {
+            SetViewportUiSwitcherVisible(m_componentModeSwitcher->GetSwitcherId(), false);
+        }
     }
 
     void EditorTransformComponentSelection::OnStopPlayInEditor()
     {
         SetAllViewportUiVisible(true);
+
+        if (m_componentModeSwitcher != nullptr)
+        {
+            SetViewportUiSwitcherVisible(m_componentModeSwitcher->GetSwitcherId(), true);
+        }
     }
 
     void EditorTransformComponentSelection::OnGridSnappingChanged([[maybe_unused]] const bool enabled)

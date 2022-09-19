@@ -19,6 +19,7 @@
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
 #include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
 #include <AtomToolsFramework/Util/Util.h>
+#include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -79,12 +80,6 @@ namespace MaterialEditor
 
     void MaterialDocument::SetPropertyValue(const AZStd::string& propertyId, const AZStd::any& value)
     {
-        if (!IsOpen())
-        {
-            AZ_Error("MaterialDocument", false, "Document is not open.");
-            return;
-        }
-
         const AZ::Name propertyName(propertyId);
 
         AtomToolsFramework::DynamicProperty* foundProperty = {};
@@ -95,20 +90,23 @@ namespace MaterialEditor
                 {
                     foundProperty = &property;
 
-                    // This first converts to an acceptable runtime type in case the value came from script
-                    const AZ::RPI::MaterialPropertyValue propertyValue = AtomToolsFramework::ConvertToRuntimeType(value);
-
-                    property.SetValue(AtomToolsFramework::ConvertToEditableType(propertyValue));
-
-                    const auto propertyIndex = m_materialInstance->FindPropertyIndex(propertyName);
-                    if (!propertyIndex.IsNull())
+                    if (m_materialInstance)
                     {
-                        if (m_materialInstance->SetPropertyValue(propertyIndex, propertyValue))
-                        {
-                            AZ::RPI::MaterialPropertyFlags dirtyFlags = m_materialInstance->GetPropertyDirtyFlags();
+                        // This first converts to an acceptable runtime type in case the value came from script
+                        const AZ::RPI::MaterialPropertyValue propertyValue = AtomToolsFramework::ConvertToRuntimeType(value);
 
-                            Recompile();
-                            RunEditorMaterialFunctors(dirtyFlags);
+                        property.SetValue(AtomToolsFramework::ConvertToEditableType(propertyValue));
+
+                        const auto propertyIndex = m_materialInstance->FindPropertyIndex(propertyName);
+                        if (!propertyIndex.IsNull())
+                        {
+                            if (m_materialInstance->SetPropertyValue(propertyIndex, propertyValue))
+                            {
+                                AZ::RPI::MaterialPropertyFlags dirtyFlags = m_materialInstance->GetPropertyDirtyFlags();
+
+                                Recompile();
+                                RunEditorMaterialFunctors(dirtyFlags);
+                            }
                         }
                     }
 
@@ -132,12 +130,6 @@ namespace MaterialEditor
 
     const AZStd::any& MaterialDocument::GetPropertyValue(const AZStd::string& propertyId) const
     {
-        if (!IsOpen())
-        {
-            AZ_Error("MaterialDocument", false, "Document is not open.");
-            return m_invalidValue;
-        }
-
         auto property = FindProperty(AZ::Name(propertyId));
         if (!property)
         {
@@ -168,19 +160,12 @@ namespace MaterialEditor
 
     AtomToolsFramework::DocumentObjectInfoVector MaterialDocument::GetObjectInfo() const
     {
-        if (!IsOpen())
-        {
-            AZ_Error("MaterialDocument", false, "Document is not open.");
-            return {};
-        }
+        AtomToolsFramework::DocumentObjectInfoVector objects = AtomToolsDocument::GetObjectInfo();
+        objects.reserve(objects.size() + m_groups.size());
 
-        AtomToolsFramework::DocumentObjectInfoVector objects;
-        objects.reserve(m_groups.size());
-
-        AtomToolsFramework::DocumentObjectInfo objectInfo;
         for (const auto& group : m_groups)
         {
-            objects.push_back(GetObjectInfoFromDynamicPropertyGroup(group.get()));
+            objects.push_back(AZStd::move(GetObjectInfoFromDynamicPropertyGroup(group.get())));
         }
 
         return objects;
@@ -197,7 +182,11 @@ namespace MaterialEditor
 
         // populate sourceData with modified or overridden properties and save object
         AZ::RPI::MaterialSourceData sourceData;
-        sourceData.m_materialTypeVersion = m_materialAsset->GetMaterialTypeAsset()->GetVersion();
+        if (m_materialAsset.IsReady() &&
+            m_materialAsset->GetMaterialTypeAsset().IsReady())
+        {
+            sourceData.m_materialTypeVersion = m_materialAsset->GetMaterialTypeAsset()->GetVersion();
+        }
         sourceData.m_materialType = AtomToolsFramework::GetPathToExteralReference(m_absolutePath, m_materialSourceData.m_materialType);
         sourceData.m_parentMaterial = AtomToolsFramework::GetPathToExteralReference(m_absolutePath, m_materialSourceData.m_parentMaterial);
         auto propertyFilter = [](const AtomToolsFramework::DynamicProperty& property) {
@@ -233,7 +222,11 @@ namespace MaterialEditor
 
         // populate sourceData with modified or overridden properties and save object
         AZ::RPI::MaterialSourceData sourceData;
-        sourceData.m_materialTypeVersion = m_materialAsset->GetMaterialTypeAsset()->GetVersion();
+        if (m_materialAsset.IsReady() &&
+            m_materialAsset->GetMaterialTypeAsset().IsReady())
+        {
+            sourceData.m_materialTypeVersion = m_materialAsset->GetMaterialTypeAsset()->GetVersion();
+        }
         sourceData.m_materialType = AtomToolsFramework::GetPathToExteralReference(m_savePathNormalized, m_materialSourceData.m_materialType);
         sourceData.m_parentMaterial = AtomToolsFramework::GetPathToExteralReference(m_savePathNormalized, m_materialSourceData.m_parentMaterial);
         auto propertyFilter = [](const AtomToolsFramework::DynamicProperty& property) {
@@ -265,7 +258,11 @@ namespace MaterialEditor
 
         // populate sourceData with modified or overridden properties and save object
         AZ::RPI::MaterialSourceData sourceData;
-        sourceData.m_materialTypeVersion = m_materialAsset->GetMaterialTypeAsset()->GetVersion();
+        if (m_materialAsset.IsReady() &&
+            m_materialAsset->GetMaterialTypeAsset().IsReady())
+        {
+            sourceData.m_materialTypeVersion = m_materialAsset->GetMaterialTypeAsset()->GetVersion();
+        }
         sourceData.m_materialType = AtomToolsFramework::GetPathToExteralReference(m_savePathNormalized, m_materialSourceData.m_materialType);
 
         // Only assign a parent path if the source was a .material
@@ -290,11 +287,6 @@ namespace MaterialEditor
         }
 
         return SaveSucceeded();
-    }
-
-    bool MaterialDocument::IsOpen() const
-    {
-        return AtomToolsDocument::IsOpen() && m_materialAsset.IsReady() && m_materialInstance;
     }
 
     bool MaterialDocument::IsModified() const
@@ -361,7 +353,7 @@ namespace MaterialEditor
     {
         if (m_compilePending)
         {
-            if (m_materialInstance->Compile())
+            if (m_materialInstance && m_materialInstance->Compile())
             {
                 m_compilePending = false;
                 AZ::SystemTickBus::Handler::BusDisconnect();
@@ -533,39 +525,46 @@ namespace MaterialEditor
         m_groups.back()->m_displayName = "Overview";
         m_groups.back()->m_description = m_materialSourceData.m_description;
 
-        AtomToolsFramework::DynamicPropertyConfig propertyConfig;
-        propertyConfig.m_dataType = AtomToolsFramework::DynamicPropertyType::Asset;
-        propertyConfig.m_id = "overview.materialType";
-        propertyConfig.m_name = "materialType";
-        propertyConfig.m_displayName = "Material Type";
-        propertyConfig.m_groupName = "overview";
-        propertyConfig.m_groupDisplayName = "Overview";
-        propertyConfig.m_description = "The material type defines the layout, properties, default values, shader connections, and other "
-                                       "data needed to create and edit a derived material.";
-        propertyConfig.m_defaultValue = AZStd::any(materialTypeAsset);
-        propertyConfig.m_originalValue = propertyConfig.m_defaultValue;
-        propertyConfig.m_parentValue = propertyConfig.m_defaultValue;
-        propertyConfig.m_readOnly = true;
-        propertyConfig.m_showThumbnail = true;
+        auto createHeadingProperty =
+            [](const AZStd::string& group, const AZStd::string& name, const AZStd::string& description, const AZStd::any& value)
+        {
+            AtomToolsFramework::DynamicPropertyConfig propertyConfig;
+            propertyConfig.m_name = name;
+            propertyConfig.m_displayName = AtomToolsFramework::GetDisplayNameFromText(propertyConfig.m_name);
+            propertyConfig.m_groupName = group;
+            propertyConfig.m_groupDisplayName = AtomToolsFramework::GetDisplayNameFromText(propertyConfig.m_groupName);
+            propertyConfig.m_id = propertyConfig.m_groupName + "." + name;
+            propertyConfig.m_description = description;
+            propertyConfig.m_parentValue = propertyConfig.m_originalValue = propertyConfig.m_defaultValue = value;
+            propertyConfig.m_readOnly = true;
+            propertyConfig.m_showThumbnail = true;
+            return propertyConfig;
+        };
 
-        m_groups.back()->m_properties.push_back(AtomToolsFramework::DynamicProperty(propertyConfig));
+        m_groups.back()->m_properties.emplace_back(createHeadingProperty(
+            "overview",
+            "materialType",
+            "The material type defines the layout, properties, default values, shader connections, and other data needed to create and "
+            "edit a derived material.",
+            AZStd::any(materialTypeAsset)));
 
-        propertyConfig = {};
-        propertyConfig.m_dataType = AtomToolsFramework::DynamicPropertyType::Asset;
-        propertyConfig.m_id = "overview.parentMaterial";
-        propertyConfig.m_name = "parentMaterial";
-        propertyConfig.m_displayName = "Parent Material";
-        propertyConfig.m_groupName = "overview";
-        propertyConfig.m_groupDisplayName = "Overview";
-        propertyConfig.m_description =
-            "The parent material provides an initial configuration whose properties are inherited and overriden by a derived material.";
-        propertyConfig.m_defaultValue = AZStd::any(parentMaterialAsset);
-        propertyConfig.m_originalValue = propertyConfig.m_defaultValue;
-        propertyConfig.m_parentValue = propertyConfig.m_defaultValue;
-        propertyConfig.m_readOnly = true;
-        propertyConfig.m_showThumbnail = true;
+        m_groups.back()->m_properties.emplace_back(createHeadingProperty(
+            "overview",
+            "materialTypeDescription",
+            "Description of the material type used to create the selected material.",
+            AZStd::any(m_materialSourceData.m_description)));
 
-        m_groups.back()->m_properties.push_back(AtomToolsFramework::DynamicProperty(propertyConfig));
+        m_groups.back()->m_properties.emplace_back(createHeadingProperty(
+            "overview",
+            "parentMaterial",
+            "The parent material provides an initial configuration whose properties are inherited and overriden by a derived material.",
+            AZStd::any(parentMaterialAsset)));
+
+        m_groups.back()->m_properties.emplace_back(createHeadingProperty(
+            "overview",
+            "materialDescription",
+            "Description of the selected material.",
+            AZStd::any(m_materialSourceData.m_description)));
 
         // Inserting a hard coded property group to display UV channels specified in the material type.
         m_groups.emplace_back(aznew AtomToolsFramework::DynamicPropertyGroup);
@@ -578,21 +577,7 @@ namespace MaterialEditor
         {
             const AZStd::string shaderInput = uvNamePair.m_shaderInput.ToString();
             const AZStd::string uvName = uvNamePair.m_uvName.GetStringView();
-
-            propertyConfig = {};
-            propertyConfig.m_dataType = AtomToolsFramework::DynamicPropertyType::String;
-            propertyConfig.m_id = AZ::RPI::MaterialPropertyId(UvGroupName, shaderInput);
-            propertyConfig.m_name = shaderInput;
-            propertyConfig.m_displayName = shaderInput;
-            propertyConfig.m_groupName = UvGroupName;
-            propertyConfig.m_groupDisplayName = "UV Sets";
-            propertyConfig.m_description = shaderInput;
-            propertyConfig.m_defaultValue = uvName;
-            propertyConfig.m_originalValue = uvName;
-            propertyConfig.m_parentValue = uvName;
-            propertyConfig.m_readOnly = true;
-
-            m_groups.back()->m_properties.push_back(AtomToolsFramework::DynamicProperty(propertyConfig));
+            m_groups.back()->m_properties.emplace_back(createHeadingProperty(UvGroupName, shaderInput, shaderInput, AZStd::any(uvName)));
         }
 
         // Populate the property map from a combination of source data and assets
@@ -890,6 +875,11 @@ namespace MaterialEditor
 
     void MaterialDocument::RunEditorMaterialFunctors(AZ::RPI::MaterialPropertyFlags dirtyFlags)
     {
+        if (!m_materialInstance)
+        {
+            return;
+        }
+
         AZStd::unordered_map<AZ::Name, AZ::RPI::MaterialPropertyDynamicMetadata> propertyDynamicMetadata;
         AZStd::unordered_map<AZ::Name, AZ::RPI::MaterialPropertyGroupDynamicMetadata> propertyGroupDynamicMetadata;
 

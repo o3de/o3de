@@ -10,12 +10,18 @@ This file contains utility functions for using GitHub
 """
 
 import json
+import logging
 import pathlib
 import urllib.parse
 import urllib.request
 import subprocess
 
 from o3de import gitproviderinterface
+
+LOG_FORMAT = '[%(levelname)s] %(name)s: %(message)s'
+
+logger = logging.getLogger('o3de.github_utils')
+logging.basicConfig(format=LOG_FORMAT)
 
 class GitHubProvider(gitproviderinterface.GitProviderInterface):
     def get_specific_file_uri(parsed_uri):

@@ -41,6 +41,12 @@ namespace O3DE::ProjectManager
             ValidationSuccess
         };
 
+        FormLineEditWidget(
+            const QString& labelText,
+            const QString& valueText,
+            const QString& placeholderText,
+            const QString& errorText,
+            QWidget* parent = nullptr);
         explicit FormLineEditWidget(const QString& labelText, const QString& valueText = "", QWidget* parent = nullptr);
         ~FormLineEditWidget() = default;
 
