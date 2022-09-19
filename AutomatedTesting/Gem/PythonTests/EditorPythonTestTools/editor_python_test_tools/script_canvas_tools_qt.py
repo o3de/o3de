@@ -65,11 +65,6 @@ def save_script_event_file(self, file_path):
     label = self.asset_editor.findChild(QtWidgets.QLabel, "textEdit")
     return helper.wait_for_condition(lambda: "*" not in label.text(), WAIT_TIME_3)
 
-def initialize_qt_script_canvas_objects():
-
-    EDITOR_QT_CONTAINER.initialize_SC_objects()
-    EDITOR_QT_CONTAINER.initialize_variable_manager()
-    return EDITOR_QT_CONTAINER
 
 def initialize_asset_editor_object(self):
     """
@@ -127,29 +122,6 @@ def open_node_palette(self):
         action = pyside_utils.find_child_by_pattern(self.sc_editor, {"text": NODE_PALETTE_UI, "type": QtWidgets.QAction})
         action.trigger()
 
-
-def open_script_canvas():
-    """
-    function for opening the script canvas UI
-
-    returns true / false result of helper function's attempt
-    """
-    general.open_pane(SCRIPT_CANVAS_UI)
-    result = helper.wait_for_condition(lambda: general.is_pane_visible(SCRIPT_CANVAS_UI), WAIT_TIME_3)
-
-    initialize_qt_script_canvas_objects()
-
-    return result
-
-def close_script_canvas():
-    """
-    function for closing the script canvas UI
-
-    returns true / false result of helper function's attempt
-    """
-    general.close_pane(SCRIPT_CANVAS_UI)
-    result = helper.wait_for_condition(lambda: general.is_pane_visible(SCRIPT_CANVAS_UI) is False, WAIT_TIME_3)
-    return result
 
 def open_asset_editor():
     """
@@ -233,22 +205,6 @@ def get_node_inspector_node_titles(self, sc_graph_node_inspector, sc_graph):
         if background_title.text() != "":
             titles.append(background_title.text())
     return titles
-
-
-def create_new_sc_graph():
-    """
-    function for opening a new script canvas graph file. uses the sc editor window to trigger a new file action
-
-    param self: the script calling this function
-    param sc_editor_main_window: the qt object for the main sc_editor window
-
-    returns: none
-    """
-    sc_editor_main_window = EDITOR_QT_CONTAINER.get_script_canvas_editor().get_main_pane()
-    create_new_graph_action = pyside_utils.find_child_by_pattern(
-        sc_editor_main_window, {"objectName": "action_New_Script", "type": QtWidgets.QAction}
-    )
-    create_new_graph_action.trigger()
 
 
 def get_sc_editor_node_inspector(sc_editor):

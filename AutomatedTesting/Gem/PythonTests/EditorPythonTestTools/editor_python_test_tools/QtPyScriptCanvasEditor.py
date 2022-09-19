@@ -5,6 +5,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 from PySide2 import QtWidgets
+import pyside_utils
 from consts.scripting import (SCRIPT_CANVAS_UI)
 
 
@@ -18,14 +19,9 @@ class QtPyScriptCanvasEditor:
     """
 
     def __init__(self, editor_main_window):
-        self.sc_editor = editor_main_window.findChild(QtWidgets.QDockWidget, SCRIPT_CANVAS_UI)
-        self.sc_editor_main_window = self.sc_editor.findChild(QtWidgets.QMainWindow)
 
-    def get_main_pane(self):
-        """
-        function for retrieving the sc_editor's main pane QtPy object
-        """
-        return self.sc_editor_main_window
+        self.sc_editor = editor_main_window.findChild(QtWidgets.QDockWidget, SCRIPT_CANVAS_UI)
+        self.sc_editor_main_pane = self.sc_editor.findChild(QtWidgets.QMainWindow)
 
     def trigger_undo_action(self):
         """
@@ -43,4 +39,9 @@ class QtPyScriptCanvasEditor:
         undo_redo_action = self.sc_editor.findChild(QtWidgets.QAction, "action_Redo")
         undo_redo_action.trigger()
 
+    def create_new_script_canvas_graph(self):
 
+        create_new_graph_action = pyside_utils.find_child_by_pattern(
+            self.sc_editor_main_pane, {"objectName": "action_New_Script", "type": QtWidgets.QAction}
+        )
+        create_new_graph_action.trigger()

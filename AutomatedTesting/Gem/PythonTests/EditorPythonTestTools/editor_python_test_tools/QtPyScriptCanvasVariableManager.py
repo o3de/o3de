@@ -15,7 +15,7 @@ from consts.general import (WAIT_TIME_3)
 from editor_python_test_tools.utils import Report
 
 class Tests():
-    variable_created = ("New variable created", "New variable not created")
+    variable_count_expected = ("Variable count matches expected", "Variable count does not match expected")
 
 """
 Basic variable types.
@@ -107,10 +107,9 @@ class QtPyScriptCanvasVariableManager:
         returns None
         """
         row_count = self.get_variable_count()
-        expected == row_count
+        result = expected == row_count
 
-        Report.result(Tests.variable_created, helper.wait_for_condition(
-            lambda: expected, WAIT_TIME_3))
+        Report.result(Tests.variable_count_expected, helper.wait_for_condition(lambda: result is True, WAIT_TIME_3))
 
 
 
