@@ -18,7 +18,7 @@ import azlmbr.math as math
 import azlmbr.bus as bus
 import azlmbr.legacy.general as general
 import azlmbr.scriptcanvas as scriptcanvas
-from consts.general import (SAVE_STRING, NAME_STRING,  WAIT_TIME_3, WAIT_FRAMES_200, ENTITY_STATES)
+from consts.general import (SAVE_STRING, NAME_STRING, WAIT_TIME_3, WAIT_FRAMES_200, ENTITY_STATES)
 from consts.scripting import (ASSET_EDITOR_UI, NODE_PALETTE_UI, NODE_PALETTE_QT, TREE_VIEW_QT, SEARCH_FRAME_QT,
                               SEARCH_FILTER_QT,  NODE_INSPECTOR_TITLE_KEY, SCRIPT_EVENT_UI, PARAMETERS_QT,
                               NODE_INSPECTOR_QT, NODE_INSPECTOR_UI, SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)

@@ -4,6 +4,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
+Object to house all the Qt Objects used when testing and manipulating the O3DE UI
 """
 import pyside_utils
 import azlmbr.legacy.general as general
@@ -30,10 +31,7 @@ class QtPyO3DEEditor:
 
     def open_script_canvas(self):
         """
-        Function for instantiating the two core script canvas QtPy objects and other script canvas tools such as
-        variable manager.
-
-        param qtpy_widget_container: the widget container holding references to other qtpy objects
+        Function for instantiating the core script canvas QtPy object and its associated other script canvas tools.
 
         returns None
         """
@@ -45,6 +43,9 @@ class QtPyO3DEEditor:
         Report.result(Tests.script_canvas_editor_opened, result is True)
 
     def close_script_canvas(self):
+        """
+        this function will close the script canvas UI. It will not clear the reference to the sc_editor
+        """
 
         general.close_pane(SCRIPT_CANVAS_UI)
         result = TestHelper.wait_for_condition(lambda: general.is_pane_visible(SCRIPT_CANVAS_UI) is False, WAIT_TIME_3)

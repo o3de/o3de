@@ -4,7 +4,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
-Object to house all the Qt Objects used when testing and manipulating the O3DE UI
+Object to house all the Qt Objects and behavior used in testing the script canvas variable manager
 """
 from editor_python_test_tools.utils import TestHelper as helper
 from PySide2 import QtWidgets, QtCore
@@ -41,6 +41,21 @@ class QtPyScriptCanvasVariableManager:
     def __init__(self, sc_editor):
         self.variable_manager = sc_editor.sc_editor.findChild(QtWidgets.QDockWidget, VARIABLE_MANAGER_QT)
 
+    def __validate_new_variable(self, new_variable_type):
+        """
+        function for checking the provided variable type for validity
+        """
+        if type(new_variable_type) is not str:
+            Report.critical_result(["Invalid variable type provided", ""], False)
+
+        valid_type = False
+        for this_type in VARIABLE_TYPES_DICT:
+            if new_variable_type == VARIABLE_TYPES_DICT[this_type]:
+                valid_type = True
+
+        if not valid_type:
+            Report.critical_result(["Invalid variable type provided", ""], False)
+
     def create_new_variable(self, new_variable_type):
         """
         function for adding a new variable to the variable manager's list
@@ -59,29 +74,14 @@ class QtPyScriptCanvasVariableManager:
 
         # Select variable type
         table_view = self.variable_manager.findChild(QtWidgets.QTableView, VARIABLE_PALETTE_QT)
-        model_index = pyside_utils.find_child_by_pattern(table_view, new_variable_type)
+        variable_entry = pyside_utils.find_child_by_pattern(table_view, new_variable_type)
 
         # Click on it to create variable
-        pyside_utils.item_view_index_mouse_click(table_view, model_index)
-
-    def __validate_new_variable(self, new_variable_type):
-        """
-        function for checking the provided variable type for validity
-        """
-        if type(new_variable_type) is not str:
-            Report.critical_result(["Invalid variable type provided", ""], False)
-
-        valid_type = False
-        for this_type in VARIABLE_TYPES_DICT:
-            if new_variable_type == VARIABLE_TYPES_DICT[this_type]:
-                valid_type = True
-
-        if not valid_type:
-            Report.critical_result(["Invalid variable type provided", ""], False)
+        pyside_utils.item_view_index_mouse_click(table_view, variable_entry)
 
     def get_basic_variable_types(self):
         """
-        function for getting easy to use container of variable types off the general constants file
+        function for getting easy to use container of variable types out of the dictionary
 
         returns: simple namespace container that allows you to access the most common variable types (strings) using dot notation
         """
