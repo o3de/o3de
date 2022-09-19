@@ -149,37 +149,52 @@ def PhysX_ColliderFamily_Component_CRUD():
         sphere_shape_component = add_validated_component(physx_shape_collider_sphere_entity, SPHERE_SHAPE_COMPONENT, Tests.add_sphere_shape_component)
 
         # 6) PhysX Collider PhysicsAsset Mesh Support
-        #proptree = physx_collider_physicsasset_component.get_property_tree(True)
-        #proptree_count = proptree.get_container_count()
-        #proptree_list = physx_collider_physicsasset_component.get_property_type_visibility()
+        # --Crash--
+        # proptree = physx_collider_physicsasset_component.get_property_tree(True)
+        # proptree_count = proptree.get_container_count()
+        # proptree_list = physx_collider_physicsasset_component.get_property_type_visibility()
 
+        # --Crash--
         # test_entity = EditorEntity.create_editor_entity("Test")
         # test_component = test_entity.add_component("PhysX Collider")
         # has_component = test_entity.has_component("PhysX Collider")
-        #
         # print(test_component.get_property_type_visibility())
 
+        # --Crash--
+        # test_entity = EditorEntity.create_editor_entity("Test")
+        # test_component = test_entity.add_component("PhysX Hinge Joint")
+        # print(test_component.get_property_type_visibility())
+
+        # --Crash--
+        # test_entity = EditorEntity.create_editor_entity("Test")
+        # test_component = add_validated_component(test_entity, "PhysX Shape Collider", ["Test Componenet Added", "Test Component Failed."])
+        # print(test_component.get_property_type_visibility())
+        # output = ["", "Proptree: " + str(test_component.get_property_type_visibility())]
+
+        # --Works--
         # test_entity = EditorEntity.create_editor_entity("Test")
         # test_component = test_entity.add_component("PhysX Collider")
         # has_component = test_entity.has_component("PhysX Collider")
-        #
         # test_tree = test_component.get_property_tree()
-        #
+        # output = ["", "Proptree: " + str(test_tree.build_paths_list())]
+        # print(test_tree.build_paths_list())
+
+        # --Works--
+        # position = math.Vector3(0.0, 0.0, 0.0)
+        # test_entity = hydra.Entity("test")
+        # test_entity.create_entity(position, ["PhysX Collider"])
+        # component = test_entity.components[0]
+        # print(hydra.get_property_tree(component))
+
+        # --Works--
+        # test_entity = EditorEntity.create_editor_entity("Test")
+        # test_component = test_entity.add_component("PhysX Collider")
+        # has_component = test_entity.has_component("PhysX Collider")
+        # test_tree = test_component.get_property_tree()
         # print(test_tree.build_paths_list())
         # print(has_component)
 
-        test_entity = EditorEntity.create_editor_entity("Test")
-        test_component = test_entity.add_component("PhysX Hinge Joint")
-
-        print(test_component.get_property_type_visibility())
-
-        test_entity = EditorEntity.create_editor_entity("Test")
-        test_component = add_validated_component(test_entity, "PhysX Shape Collider", ["Test Componenet Added", "Test Component Failed."])
-
-        print(test_component.get_property_type_visibility())
-        output = ["", "Proptree: " + str(test_component.get_property_type_visibility())]
-
-        Report.critical_result(output, False)
+        #Report.critical_result(output, False)
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
