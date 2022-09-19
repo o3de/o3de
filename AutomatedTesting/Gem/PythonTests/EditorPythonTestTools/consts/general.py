@@ -14,7 +14,7 @@ General constants
 BASE_LEVEL_NAME = "Base"
 SAVE_STRING = "Save"
 NAME_STRING = "Name"
-WAIT_FRAMES = 200
+WAIT_FRAMES_200 = 200
 WAIT_TIME_3 = 3
 WAIT_TIME_5 = 5
 EVENTS_QT = "Events"

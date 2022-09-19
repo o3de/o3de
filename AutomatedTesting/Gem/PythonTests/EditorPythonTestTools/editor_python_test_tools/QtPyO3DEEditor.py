@@ -8,7 +8,6 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import pyside_utils
 import azlmbr.legacy.general as general
 import editor_python_test_tools.QtPyScriptCanvasEditor as QtPyScriptCanvasEditor
-import editor_python_test_tools.QtPyScriptCanvasVariableManager as QtPyScriptCanvasVariableManager
 from editor_python_test_tools.utils import TestHelper
 from editor_python_test_tools.utils import Report
 from consts.scripting import (SCRIPT_CANVAS_UI)
@@ -27,8 +26,9 @@ class QtPyO3DEEditor:
 
     def __init__(self):
         self.editor_main_window = pyside_utils.get_editor_main_window()
+        self.sc_editor = None
 
-    def open_script_canvas(self, qtpy_widget_container):
+    def open_script_canvas(self):
         """
         Function for instantiating the two core script canvas QtPy objects and other script canvas tools such as
         variable manager.
@@ -40,9 +40,7 @@ class QtPyO3DEEditor:
         general.open_pane(SCRIPT_CANVAS_UI)
         result = TestHelper.wait_for_condition(lambda: general.is_pane_visible(SCRIPT_CANVAS_UI), WAIT_TIME_3)
 
-        qtpy_widget_container.sc_editor = QtPyScriptCanvasEditor.QtPyScriptCanvasEditor(self.editor_main_window)
-        qtpy_widget_container.variable_manager = QtPyScriptCanvasVariableManager.QtPyScriptCanvasVariableManager(
-            qtpy_widget_container.sc_editor.sc_editor)
+        self.sc_editor = QtPyScriptCanvasEditor.QtPyScriptCanvasEditor(self.editor_main_window)
 
         Report.result(Tests.script_canvas_editor_opened, result is True)
 

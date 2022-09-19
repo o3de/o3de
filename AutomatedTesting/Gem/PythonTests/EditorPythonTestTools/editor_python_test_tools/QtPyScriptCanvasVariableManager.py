@@ -39,7 +39,7 @@ class QtPyScriptCanvasVariableManager:
     """
 
     def __init__(self, sc_editor):
-        self.variable_manager = sc_editor.findChild(QtWidgets.QDockWidget, VARIABLE_MANAGER_QT)
+        self.variable_manager = sc_editor.sc_editor.findChild(QtWidgets.QDockWidget, VARIABLE_MANAGER_QT)
 
     def create_new_variable(self, new_variable_type):
         """

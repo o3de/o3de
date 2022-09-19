@@ -12,21 +12,21 @@ from editor_python_test_tools.utils import Report
 import pyside_utils
 import editor_python_test_tools.hydra_editor_utils as hydra
 from editor_python_test_tools.editor_entity_utils import EditorEntity
-import editor_python_test_tools.QtPyWidgetContainer as qtContainer
+import editor_python_test_tools.QtPyO3DEEditor as QtPyO3DEEditor
 import azlmbr.editor as editor
 import azlmbr.math as math
 import azlmbr.bus as bus
 import azlmbr.legacy.general as general
 import azlmbr.scriptcanvas as scriptcanvas
-from consts.general import (SAVE_STRING, NAME_STRING,  WAIT_TIME_3, WAIT_FRAMES, ENTITY_STATES)
-from consts.scripting import (SCRIPT_CANVAS_UI, ASSET_EDITOR_UI, NODE_PALETTE_UI, NODE_PALETTE_QT, TREE_VIEW_QT,
-                              SEARCH_FRAME_QT, SEARCH_FILTER_QT,  NODE_INSPECTOR_TITLE_KEY, SCRIPT_EVENT_UI,
-                              PARAMETERS_QT, NODE_INSPECTOR_QT, NODE_INSPECTOR_UI, SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
+from consts.general import (SAVE_STRING, NAME_STRING,  WAIT_TIME_3, WAIT_FRAMES_200, ENTITY_STATES)
+from consts.scripting import (ASSET_EDITOR_UI, NODE_PALETTE_UI, NODE_PALETTE_QT, TREE_VIEW_QT, SEARCH_FRAME_QT,
+                              SEARCH_FILTER_QT,  NODE_INSPECTOR_TITLE_KEY, SCRIPT_EVENT_UI, PARAMETERS_QT,
+                              NODE_INSPECTOR_QT, NODE_INSPECTOR_UI, SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
 from consts.asset_editor import (EVENTS_QT, DEFAULT_SCRIPT_EVENT, SAVE_ASSET_AS)
 """
 Editor Qt Object container for easy access
 """
-EDITOR_QT_CONTAINER = qtContainer.QtPyWidgetContainer()
+qtpy_o3de_editor = QtPyO3DEEditor.QtPyO3DEEditor()
 
 class Tests():
     new_event_created = ("New Script Event created", "Failed to create a new event")
@@ -197,7 +197,7 @@ def get_node_inspector_node_titles(self, sc_graph_node_inspector, sc_graph):
     """
     node_inspector_scroll_area = sc_graph_node_inspector.findChild(QtWidgets.QScrollArea, "")
     # perform ctrl+a keystroke to highlight all nodes on the graph
-    QtTest.QTest.keyClick(sc_graph, "a", Qt.ControlModifier, WAIT_FRAMES)
+    QtTest.QTest.keyClick(sc_graph, "a", Qt.ControlModifier, WAIT_FRAMES_200)
     node_inspector_backgrounds = node_inspector_scroll_area.findChildren(QtWidgets.QFrame, "Background")
     titles = []
     for background in node_inspector_backgrounds:

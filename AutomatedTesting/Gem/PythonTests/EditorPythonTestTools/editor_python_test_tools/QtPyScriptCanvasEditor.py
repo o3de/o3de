@@ -6,12 +6,14 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 from PySide2 import QtWidgets
 import pyside_utils
+import editor_python_test_tools.QtPyScriptCanvasVariableManager as QtPyScriptCanvasVariableManager
 from consts.scripting import (SCRIPT_CANVAS_UI)
 
 
 class QtPyScriptCanvasEditor:
     """
-    QtPy class for handling the behavior of the Script Canvas editor.
+    QtPy class for handling the behavior of the Script Canvas editor. Contains references to other qtpy objects
+    reliant on the script canvas editor
 
     Note: This class contains a reference to the SC editor's main window AND the SC editor itself. This was done because
     the other QtPy elements such as the SC variable manager can be toggled on and off by the user but the main pane
@@ -22,6 +24,7 @@ class QtPyScriptCanvasEditor:
 
         self.sc_editor = editor_main_window.findChild(QtWidgets.QDockWidget, SCRIPT_CANVAS_UI)
         self.sc_editor_main_pane = self.sc_editor.findChild(QtWidgets.QMainWindow)
+        self.variable_manager = QtPyScriptCanvasVariableManager.QtPyScriptCanvasVariableManager(self)
 
     def trigger_undo_action(self):
         """

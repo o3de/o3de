@@ -43,20 +43,20 @@ def EditMenu_Default_UndoRedo():
     general.idle_enable(True)
 
     # 1) Open Script Canvas window
-    qtpy_container = sc_tools_qt.EDITOR_QT_CONTAINER
-    qtpy_container.editor_main_window.open_script_canvas(qtpy_container)
+    qtpy_o3de_editor = sc_tools_qt.qtpy_o3de_editor
+    qtpy_o3de_editor.open_script_canvas()
 
     # 2) Create Graph
-    qtpy_container.sc_editor.create_new_script_canvas_graph()
+    sc_editor = qtpy_o3de_editor.sc_editor
+    sc_editor.create_new_script_canvas_graph()
 
     # 3) Create and verify the new variable exists in variable manager
-    qtpy_variable_manager = qtpy_container.variable_manager
+    qtpy_variable_manager = sc_editor.variable_manager
     variable_types = qtpy_variable_manager.get_basic_variable_types()
     qtpy_variable_manager.create_new_variable(variable_types.Boolean)
     qtpy_variable_manager.sc_variable_count_matches_expected(VARIABLE_COUNT_BEFORE)
 
     # 4) Trigger Undo action and verify if variable is removed in Variable Manager
-    sc_editor = qtpy_container.sc_editor
     sc_editor.trigger_undo_action()
     qtpy_variable_manager.sc_variable_count_matches_expected(VARIABLE_COUNT_AFTER)
 
@@ -65,7 +65,7 @@ def EditMenu_Default_UndoRedo():
     qtpy_variable_manager.sc_variable_count_matches_expected(VARIABLE_COUNT_BEFORE)
 
     # 6) Close SC window
-    qtpy_container.editor_main_window.close_script_canvas()
+    qtpy_o3de_editor.close_script_canvas()
 
 
 if __name__ == "__main__":
