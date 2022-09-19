@@ -85,6 +85,9 @@ set(FILES
     Prefab/Benchmark/Spawnable/SpawnableBenchmarkFixture.cpp
     Prefab/Benchmark/Spawnable/SpawnAllEntitiesBenchmarks.cpp
     Prefab/Instance/InstanceDeserializationTests.cpp
+    Prefab/Link/PrefabLinkDomTestFixture.cpp
+    Prefab/Link/PrefabLinkDomTestFixture.h
+    Prefab/Link/PrefabLinkDomTests.cpp
     Prefab/PrefabFocus/PrefabFocusTests.cpp
     Prefab/MockPrefabFileIOActionValidator.cpp
     Prefab/MockPrefabFileIOActionValidator.h

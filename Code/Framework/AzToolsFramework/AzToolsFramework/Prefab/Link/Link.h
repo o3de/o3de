@@ -59,7 +59,7 @@ namespace AzToolsFramework
 
                 bool operator<(const PrefabOverrideMetadata& other) const
                 {
-                    return (this->m_patchIndex < other.m_patchIndex);
+                    return (m_patchIndex < other.m_patchIndex);
                 }
 
                 PrefabDom m_patch;

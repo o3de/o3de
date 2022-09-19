@@ -265,9 +265,13 @@ namespace AzToolsFramework
 
         void Link::GetLinkPatches(PrefabDom& patchesDom, PrefabDom::AllocatorType& allocator) const
         {
+            auto cmp = [](const PrefabOverrideMetadata* a, const PrefabOverrideMetadata* b)
+            {
+                return (a->m_patchIndex < b->m_patchIndex);
+            };
             // Use a set to sort the patches based on their patch indices. This will make sure that entities are
             // retrieved from the tree in the same order as they are inserted in.
-            AZStd::set<const PrefabOverrideMetadata*> patchesSet;
+            AZStd::set<const PrefabOverrideMetadata*, decltype(cmp)> patchesSet(cmp);
 
             auto visitorFn = [&patchesSet](const AZ::Dom::Path&, const PrefabOverrideMetadata& overrideMetadata)
             {
