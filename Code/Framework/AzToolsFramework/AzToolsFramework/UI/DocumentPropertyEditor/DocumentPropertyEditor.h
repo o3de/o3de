@@ -89,9 +89,12 @@ namespace AzToolsFramework
         mutable QSize m_cachedMinLayoutSize;
     };
 
-    class DPERowWidget : public QWidget
+    class DPERowWidget : public QFrame
     {
         Q_OBJECT
+        Q_PROPERTY(bool hasChildRows READ HasChildRows);
+        Q_PROPERTY(int getLevel READ GetLevel);
+
         friend class DocumentPropertyEditor;
 
     public:
@@ -114,6 +117,9 @@ namespace AzToolsFramework
         bool IsExpanded() const;
 
         const AZ::Dom::Path GetPath() const;
+
+        bool HasChildRows() const;
+        int GetLevel() const;
 
     protected slots:
         void onExpanderChanged(int expanderState);
