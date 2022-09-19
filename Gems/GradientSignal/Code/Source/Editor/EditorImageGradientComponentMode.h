@@ -31,10 +31,6 @@ namespace GradientSignal
         bool HandleMouseInteraction(const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction) override;
         AZStd::string GetComponentModeName() const override;
 
-        void AdjustRadius(float radiusDelta);
-        void AdjustIntensity(float intensityDelta);
-        void AdjustOpacity(float opacityDelta);
-
     protected:
         // PaintBrushNotificationBus overrides
         void OnPaintBegin(const AZ::EntityComponentIdPair& id) override;

@@ -10,15 +10,31 @@
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzToolsFramework/Manipulators/PaintBrushManipulator.h>
 #include <AzToolsFramework/Manipulators/PaintBrushNotificationBus.h>
-#include <AzToolsFramework/Manipulators/PaintBrushRequestBus.h>
 #include <AzToolsFramework/Manipulators/ManipulatorSnapping.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
+#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsNotificationBus.h>
+#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsRequestBus.h>
 #include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsWindow.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
 namespace AzToolsFramework
 {
+    namespace
+    {
+        // Increase / decrease paintbrush radius amount in meters.
+        static constexpr float PaintbrushRadiusAdjustAmount = 0.25f;
+
+        static constexpr AZ::Crc32 PaintbrushIncreaseRadius = AZ_CRC_CE("org.o3de.action.paintbrush.increase_radius");
+        static constexpr AZ::Crc32 PaintbrushDecreaseRadius = AZ_CRC_CE("org.o3de.action.paintbrush.decrease_radius");
+
+        static constexpr const char* PaintbrushIncreaseRadiusTitle = "Increase Radius";
+        static constexpr const char* PaintbrushDecreaseRadiusTitle = "Decrease Radius";
+
+        static constexpr const char* PaintbrushIncreaseRadiusDesc = "Increases radius of paintbrush";
+        static constexpr const char* PaintbrushDecreaseRadiusDesc = "Decreases radius of paintbrush";
+    } // namespace
+
     AZStd::shared_ptr<PaintBrushManipulator> PaintBrushManipulator::MakeShared(
         const AZ::Transform& worldFromLocal, const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
@@ -203,6 +219,59 @@ namespace AzToolsFramework
 
             m_previousCenter = m_center;
         }
+    }
+
+    AZStd::vector<AzToolsFramework::ActionOverride> PaintBrushManipulator::PopulateActionsImpl()
+    {
+        // Paint brush manipulators should be able to easily adjust the radius of the brush with the [ and ] keys
+        return {
+            AzToolsFramework::ActionOverride()
+                .SetUri(PaintbrushIncreaseRadius)
+                .SetKeySequence(QKeySequence{ Qt::Key_BracketRight })
+                .SetTitle(PaintbrushIncreaseRadiusTitle)
+                .SetTip(PaintbrushIncreaseRadiusDesc)
+                .SetEntityComponentIdPair(m_ownerEntityComponentId)
+                .SetCallback(
+                    [this]()
+                    {
+                        AdjustRadius(PaintbrushRadiusAdjustAmount);
+                    }),
+            AzToolsFramework::ActionOverride()
+                .SetUri(PaintbrushDecreaseRadius)
+                .SetKeySequence(QKeySequence{ Qt::Key_BracketLeft })
+                .SetTitle(PaintbrushDecreaseRadiusTitle)
+                .SetTip(PaintbrushDecreaseRadiusDesc)
+                .SetEntityComponentIdPair(m_ownerEntityComponentId)
+                .SetCallback(
+                    [this]()
+                    {
+                        AdjustRadius(-PaintbrushRadiusAdjustAmount);
+                    }),
+        };
+    }
+
+    void PaintBrushManipulator::AdjustRadius(float radiusDelta)
+    {
+        float radius = 0.0f;
+        PaintBrushSettingsRequestBus::BroadcastResult(radius, &PaintBrushSettingsRequestBus::Events::GetRadius);
+        radius = AZStd::clamp(radius + radiusDelta, 0.01f, 1024.0f);
+        PaintBrushSettingsRequestBus::Broadcast(&PaintBrushSettingsRequestBus::Events::SetRadius, radius);
+    }
+
+    void PaintBrushManipulator::AdjustIntensity(float intensityDelta)
+    {
+        float intensity = 0.0f;
+        PaintBrushSettingsRequestBus::BroadcastResult(intensity, &PaintBrushSettingsRequestBus::Events::GetIntensity);
+        intensity = AZStd::clamp(intensity + intensityDelta, 0.0f, 1.0f);
+        PaintBrushSettingsRequestBus::Broadcast(&PaintBrushSettingsRequestBus::Events::SetIntensity, intensity);
+    }
+
+    void PaintBrushManipulator::AdjustOpacity(float opacityDelta)
+    {
+        float opacity = 0.0f;
+        PaintBrushSettingsRequestBus::BroadcastResult(opacity, &PaintBrushSettingsRequestBus::Events::GetOpacity);
+        opacity = AZStd::clamp(opacity + opacityDelta, 0.0f, 1.0f);
+        PaintBrushSettingsRequestBus::Broadcast(&PaintBrushSettingsRequestBus::Events::SetOpacity, opacity);
     }
 
 } // namespace AzToolsFramework

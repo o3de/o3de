@@ -11,7 +11,6 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Manipulators/PaintBrushManipulator.h>
 #include <AzToolsFramework/Manipulators/PaintBrushNotificationBus.h>
-#include <AzToolsFramework/Manipulators/PaintBrushRequestBus.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
@@ -27,19 +26,6 @@
 
 namespace GradientSignal
 {
-    // Increase / decrease paintbrush radius amount in meters.
-    static constexpr float RadiusAdjustAmount = 0.25f;
-
-    static constexpr AZ::Crc32 PaintbrushIncreaseRadius = AZ_CRC_CE("org.o3de.action.paintbrush.increase_radius");
-    static constexpr AZ::Crc32 PaintbrushDecreaseRadius = AZ_CRC_CE("org.o3de.action.paintbrush.decrease_radius");
-
-    const constexpr char* PaintbrushIncreaseRadiusTitle = "Increase Radius";
-    const constexpr char* PaintbrushDecreaseRadiusTitle = "Decrease Radius";
-
-    const constexpr char* PaintbrushIncreaseRadiusDesc = "Increases radius of paintbrush";
-    const constexpr char* PaintbrushDecreaseRadiusDesc = "Decreases radius of paintbrush";
-
-
     //! Class that tracks data for undoing/redoing a paint stroke.
     //! This is currently a naive implementation that just tracks a list of every point that's been modified during the paint stroke.
     //! Duplicate positions will get recorded multiple times.
@@ -182,30 +168,7 @@ namespace GradientSignal
 
     AZStd::vector<AzToolsFramework::ActionOverride> EditorImageGradientComponentMode::PopulateActionsImpl()
     {
-        return {
-            AzToolsFramework::ActionOverride()
-                .SetUri(PaintbrushIncreaseRadius)
-                .SetKeySequence(QKeySequence{ Qt::Key_BracketRight })
-                .SetTitle(PaintbrushIncreaseRadiusTitle)
-                .SetTip(PaintbrushIncreaseRadiusDesc)
-                .SetEntityComponentIdPair(GetEntityComponentIdPair())
-                .SetCallback(
-                    [this]()
-                    {
-                        AdjustRadius(RadiusAdjustAmount);
-                    }),
-            AzToolsFramework::ActionOverride()
-                .SetUri(PaintbrushDecreaseRadius)
-                .SetKeySequence(QKeySequence{ Qt::Key_BracketLeft })
-                .SetTitle(PaintbrushDecreaseRadiusTitle)
-                .SetTip(PaintbrushDecreaseRadiusDesc)
-                .SetEntityComponentIdPair(GetEntityComponentIdPair())
-                .SetCallback(
-                    [this]()
-                    {
-                        AdjustRadius(-RadiusAdjustAmount);
-                    }),
-        };
+        return m_brushManipulator->PopulateActionsImpl();
     }
 
     AZStd::string EditorImageGradientComponentMode::GetComponentModeName() const
@@ -362,36 +325,6 @@ namespace GradientSignal
         expandedDirtyArea.Expand(AZ::Vector3(xMetersPerPixel, yMetersPerPixel, 0.0f));
         LmbrCentral::DependencyNotificationBus::Event(
             GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionRegionChanged, expandedDirtyArea);
-    }
-
-    void EditorImageGradientComponentMode::AdjustRadius(float radiusDelta)
-    {
-        float radius = 0.0f;
-        AzToolsFramework::PaintBrushSettingsRequestBus::BroadcastResult(
-            radius, &AzToolsFramework::PaintBrushSettingsRequestBus::Events::GetRadius);
-        radius = AZStd::clamp(radius + radiusDelta, 0.01f, 1024.0f);
-        AzToolsFramework::PaintBrushSettingsRequestBus::Broadcast(
-            &AzToolsFramework::PaintBrushSettingsRequestBus::Events::SetRadius, radius);
-    }
-
-    void EditorImageGradientComponentMode::AdjustIntensity(float intensityDelta)
-    {
-        float intensity = 0.0f;
-        AzToolsFramework::PaintBrushSettingsRequestBus::BroadcastResult(
-            intensity, &AzToolsFramework::PaintBrushSettingsRequestBus::Events::GetIntensity);
-        intensity = AZStd::clamp(intensity + intensityDelta, 0.0f, 1.0f);
-        AzToolsFramework::PaintBrushSettingsRequestBus::Broadcast(
-            &AzToolsFramework::PaintBrushSettingsRequestBus::Events::SetIntensity, intensity);
-    }
-
-    void EditorImageGradientComponentMode::AdjustOpacity(float opacityDelta)
-    {
-        float opacity = 0.0f;
-        AzToolsFramework::PaintBrushSettingsRequestBus::BroadcastResult(
-            opacity, &AzToolsFramework::PaintBrushSettingsRequestBus::Events::GetOpacity);
-        opacity = AZStd::clamp(opacity + opacityDelta, 0.0f, 1.0f);
-        AzToolsFramework::PaintBrushSettingsRequestBus::Broadcast(
-            &AzToolsFramework::PaintBrushSettingsRequestBus::Events::SetOpacity, opacity);
     }
 
 } // namespace GradientSignal

@@ -12,8 +12,9 @@
 
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzToolsFramework/Viewport/ActionBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
-#include <AzToolsFramework/Manipulators/PaintBrushRequestBus.h>
+#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsNotificationBus.h>
 
 namespace AzToolsFramework
 {
@@ -66,8 +67,15 @@ namespace AzToolsFramework
 
         void SetView(AZStd::shared_ptr<ManipulatorViewProjectedCircle> view);
 
-        // Handle mouse events
+        //! Handle mouse events
         bool HandleMouseInteraction(const ViewportInteraction::MouseInteractionEvent& mouseInteraction);
+
+        //! Returns the actions that we want any Component Mode using the Paint Brush Manipulator to support.
+        AZStd::vector<AzToolsFramework::ActionOverride> PopulateActionsImpl();
+ 
+        void AdjustRadius(float radiusDelta);
+        void AdjustIntensity(float intensityDelta);
+        void AdjustOpacity(float opacityDelta);
 
     private:
         void OnRadiusChanged(float radius) override;

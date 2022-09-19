@@ -235,7 +235,6 @@ set(FILES
     Manipulators/PaintBrushManipulator.cpp
     Manipulators/PaintBrushManipulator.h
     Manipulators/PaintBrushNotificationBus.h
-    Manipulators/PaintBrushRequestBus.h
     Manipulators/PlanarManipulator.cpp
     Manipulators/PlanarManipulator.h
     Manipulators/RotationManipulators.cpp
@@ -253,6 +252,10 @@ set(FILES
     Manipulators/TranslationManipulators.cpp
     Manipulators/TranslationManipulators.h
     Maths/TransformUtils.h
+    PaintBrushSettings/PaintBrushSettingsNotificationBus.h
+    PaintBrushSettings/PaintBrushSettingsRequestBus.h
+    PaintBrushSettings/PaintBrushSettingsSystemComponent.cpp
+    PaintBrushSettings/PaintBrushSettingsSystemComponent.h
     PaintBrushSettings/PaintBrushSettingsWindow.cpp
     PaintBrushSettings/PaintBrushSettingsWindow.h
     PaintBrushSettings/PaintBrushSettingsWindow_Internals.h

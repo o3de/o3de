@@ -10,12 +10,11 @@
 
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/EBus/EBus.h>
-#include <AzCore/std/containers/span.h>
-
-#include <AzToolsFramework/Viewport/ViewportTypes.h>
 
 namespace AzToolsFramework
 {
+    class PaintBrushSettings;
+
     //! PaintBrushSettingsRequestBus is used to get/set the global paintbrush settings
     class PaintBrushSettingsRequests : public AZ::EBusTraits
     {
@@ -23,6 +22,12 @@ namespace AzToolsFramework
         // EBusTraits
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
         using MutexType = AZStd::recursive_mutex;
+
+        //! GetSettings returns all of the current paintbrush settings.
+        //! This shouldn't normally be used, but it's necessary for exposing the global paintbrush settings
+        //! outwards to the Property Editor window.
+        //! @return The paintbrush settings
+        virtual PaintBrushSettings* GetSettings() = 0;
 
         //! GetRadius returns the current paintbrush radius.
         //! @return The radius of the paintbrush
@@ -52,34 +57,5 @@ namespace AzToolsFramework
     };
 
     using PaintBrushSettingsRequestBus = AZ::EBus<PaintBrushSettingsRequests>;
-
-    //! PaintBrushSettingsNotificationBus is used to send out notifications whenever the global paintbrush settings have changed.
-    class PaintBrushSettingsNotifications : public AZ::EBusTraits
-    {
-    public:
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
-        // This uses a Broadcast where each message has an EntityComponentIdPair instead of having the EBus use that as an ID
-        // because the PaintBrushSettings window will want to listen to all notifications, regardless of which entity they came from.
-
-        //! OnIntensityChanged notifies listeners that the paintbrush intensity setting has changed.
-        //! @param intensity The new intensity setting for the paintbrush (0=black, 1=white).
-        virtual void OnIntensityChanged([[maybe_unused]] float intensity)
-        {
-        }
-
-        //! OnOpacityChanged notifies listeners that the paintbrush opacity setting has changed.
-        //! @param opacity The new opacity setting for the paintbrush (0=transparent, 1=opaque).
-        virtual void OnOpacityChanged([[maybe_unused]] float opacity)
-        {
-        }
-
-        //! OnRadiusChanged notifies listeners that the paintbrush radius setting has changed.
-        //! @param radius The new radius setting for the paintbrush, in meters.
-        virtual void OnRadiusChanged([[maybe_unused]] float radius)
-        {
-        }
-    };
-
-    using PaintBrushSettingsNotificationBus = AZ::EBus<PaintBrushSettingsNotifications>;
 
 } // namespace AzToolsFramework
