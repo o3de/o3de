@@ -373,6 +373,7 @@ set(FILES
     Include/ScriptCanvas/Serialization/RuntimeVariableSerializer.h
     Include/ScriptCanvas/Data/BehaviorContextObject.h
     Include/ScriptCanvas/Data/BehaviorContextObjectPtr.h
+    Include/ScriptCanvas/Data/Constants.h
     Include/ScriptCanvas/Data/Data.h
     Include/ScriptCanvas/Data/DataRegistry.h
     Include/ScriptCanvas/Data/DataTrait.h
