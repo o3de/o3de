@@ -373,6 +373,10 @@ namespace AzFramework
             serializeContext
                 ->Class<EntitySpawnTicket>();
 
+            serializeContext->RegisterGenericType<AZStd::vector<EntitySpawnTicket>>();
+            serializeContext->RegisterGenericType<AZStd::unordered_map<AZStd::string, EntitySpawnTicket>>();
+            serializeContext->RegisterGenericType<AZStd::unordered_map<double, EntitySpawnTicket>>(); // required to support Map<Number, EntitySpawnTicket> in Script Canvas
+
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<EntitySpawnTicket>(

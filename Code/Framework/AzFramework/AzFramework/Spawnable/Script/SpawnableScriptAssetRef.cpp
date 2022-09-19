@@ -26,6 +26,10 @@ namespace AzFramework::Scripts
                 ->Field("asset", &SpawnableScriptAssetRef::m_asset)
             ;
 
+            serializeContext->RegisterGenericType<AZStd::vector<SpawnableScriptAssetRef>>();
+            serializeContext->RegisterGenericType<AZStd::unordered_map<AZStd::string, SpawnableScriptAssetRef>>();
+            serializeContext->RegisterGenericType<AZStd::unordered_map<double, SpawnableScriptAssetRef>>(); // required to support Map<Number, SpawnableScriptAssetRef> in Script Canvas
+
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext
