@@ -25,6 +25,86 @@ namespace PaintBrush
 
     namespace Internal
     {
+        void PaintBrushConfig::Reflect(AZ::ReflectContext* context)
+        {
+            if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+            {
+                serializeContext->Class<PaintBrushConfig>()
+                    ->Version(1)
+                    ->Field("Radius", &PaintBrushConfig::m_radius)
+                    ->Field("Intensity", &PaintBrushConfig::m_intensity)
+                    ->Field("Opacity", &PaintBrushConfig::m_opacity);
+
+                if (auto editContext = serializeContext->GetEditContext())
+                {
+                    editContext->Class<PaintBrushConfig>("Paint Brush", "")
+                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &PaintBrushConfig::m_radius, "Radius", "Radius of the paint brush.")
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMin, 1.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 1024.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, 100.0f)
+                        ->Attribute(AZ::Edit::Attributes::Step, 0.25f)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushConfig::OnRadiusChange)
+                        ->DataElement(
+                            AZ::Edit::UIHandlers::Slider, &PaintBrushConfig::m_intensity, "Intensity", "Intensity of the paint brush.")
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
+                        ->Attribute(AZ::Edit::Attributes::Step, 0.025f)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushConfig::OnIntensityChange)
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &PaintBrushConfig::m_opacity, "Opacity", "Opacity of the paint brush.")
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
+                        ->Attribute(AZ::Edit::Attributes::Step, 0.025f)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushConfig::OnOpacityChange);
+                }
+            }
+        }
+
+        void PaintBrushConfig::SetRadius(float radius)
+        {
+            m_radius = radius;
+            OnRadiusChange();
+        }
+
+        void PaintBrushConfig::SetIntensity(float intensity)
+        {
+            m_intensity = intensity;
+            OnIntensityChange();
+        }
+
+        void PaintBrushConfig::SetOpacity(float opacity)
+        {
+            m_opacity = opacity;
+            OnOpacityChange();
+        }
+
+        AZ::u32 PaintBrushConfig::OnIntensityChange()
+        {
+            // Notify listeners that the configuration changed. This is used to synchronize the paint brush settings with the manipulator.
+            AzToolsFramework::PaintBrushSettingsNotificationBus::Broadcast(
+                &AzToolsFramework::PaintBrushSettingsNotificationBus::Events::OnIntensityChanged, m_intensity);
+            return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
+        }
+
+        AZ::u32 PaintBrushConfig::OnOpacityChange()
+        {
+            // Notify listeners that the configuration changed. This is used to synchronize the paint brush settings with the manipulator.
+            AzToolsFramework::PaintBrushSettingsNotificationBus::Broadcast(
+                &AzToolsFramework::PaintBrushSettingsNotificationBus::Events::OnOpacityChanged, m_opacity);
+            return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
+        }
+
+        AZ::u32 PaintBrushConfig::OnRadiusChange()
+        {
+            // Notify listeners that the configuration changed. This is used to synchronize the paint brush settings with the manipulator.
+            AzToolsFramework::PaintBrushSettingsNotificationBus::Broadcast(
+                &AzToolsFramework::PaintBrushSettingsNotificationBus::Events::OnRadiusChanged, m_radius);
+            return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
+        }
+
         PaintBrushSettingsWindow::PaintBrushSettingsWindow(QWidget* parent)
         {
             setObjectName("PaintBrushSettings");

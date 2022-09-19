@@ -19,43 +19,6 @@ namespace AzToolsFramework
 {
     class ManipulatorViewProjectedCircle;
 
-    //! PaintBrushConfig exposes the paint brush configuration properties so that we can edit them via the component editor.
-    //! Currently, for this to work, we end up needing two copies of the configuration. One needs to be on the Editor component
-    //! that's supporting the painting, and one is internal to the PaintBrushManipulator. The two are manually kept in sync
-    //! through PaintBrush Request/Notification EBus calls.
-    //!
-    //! If we ever add support for modifying these via in-viewport UX, we could then make these settings internal to the
-    //! manipulator and simplify the logic.
-    class PaintBrushConfig
-    {
-    public:
-        AZ_CLASS_ALLOCATOR(PaintBrushConfig, AZ::SystemAllocator, 0);
-        AZ_RTTI(PaintBrushConfig, "{CE5EFFE2-14E5-4A9F-9B0F-695F66744A50}");
-        static void Reflect(AZ::ReflectContext* context);
-
-        virtual ~PaintBrushConfig() = default;
-
-        float GetRadius() const { return m_radius; }
-        float GetIntensity() const { return m_intensity; }
-        float GetOpacity() const { return m_opacity; }
-
-        void SetRadius(float radius);
-        void SetIntensity(float intensity);
-        void SetOpacity(float opacity);
-
-    protected:
-        //! Paintbrush radius
-        float m_radius = 5.0f;
-        //! Paintbrush intensity (black to white)
-        float m_intensity = 1.0f;
-        //! Paintbrush opacity (transparent to opaque)
-        float m_opacity = 0.5f;
-
-        AZ::u32 OnIntensityChange();
-        AZ::u32 OnOpacityChange();
-        AZ::u32 OnRadiusChange();
-    };
-
     //! PaintBrushManipulator contains the core logic for painting functionality.
     //! It handles the paintbrush settings, the logic for converting mouse events into paintbrush actions,
     //! the rendering of the paintbrush into the viewport,  and the specific value calculations for what

@@ -18,7 +18,7 @@
 
 #include <AzToolsFramework/AzToolsFrameworkModule.h>
 #include <AzToolsFramework/ActionManager/ActionManagerSystemComponent.h>
-#include <AzToolsFramework/Manipulators/PaintBrushManipulator.h>
+#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsWindow_Internals.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/Commands/EntityStateCommand.h>
@@ -387,7 +387,7 @@ namespace AzToolsFramework
         Prefab::PrefabIntegrationManager::Reflect(context);
 
         ComponentModeFramework::ComponentModeDelegate::Reflect(context);
-        PaintBrushConfig::Reflect(context);
+        PaintBrush::Internal::PaintBrushConfig::Reflect(context);
 
         ViewportInteraction::ViewportInteractionReflect(context);
         ViewportEditorModeNotifications::Reflect(context);
