@@ -15,11 +15,14 @@ import site
 from pathlib import Path
 import logging as _logging
 
-_PACKAGENAME = 'azpy.shared.ui'
+from DccScriptingInterface.azpy.shared import _PACKAGENAME
+_PACKAGENAME = f'{_PACKAGENAME}.ui'
 _LOGGER = _logging.getLogger(_PACKAGENAME)
 _LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
 
 __all__ = ['utils', 'samples']
+
+from DccScriptingInterface.globals import *
 
 DCCSI_TEST_PYSIDE = False
 
@@ -27,9 +30,8 @@ DCCSI_TEST_PYSIDE = False
 from DccScriptingInterface import PATH_O3DE_TECHART_GEMS
 from DccScriptingInterface import PATH_DCCSIG
 
-import DccScriptingInterface.config as dccsi_core_config
-
 if DCCSI_TEST_PYSIDE:
+    import DccScriptingInterface.config as dccsi_core_config
     settings_core = dccsi_core_config.get_config_settings(enable_o3de_python=False,
                                                            enable_o3de_pyside2=True,
                                                            set_env=True)
@@ -60,15 +62,12 @@ if DCCSI_TEST_PYSIDE:
     if PYSIDE2_TOOLS:
         __all__.append('puic_utils')
 
-# # -------------------------------------------------------------------------
-# might re-enable this later, or may deprecate these checks in a future PR
-# if _DCCSI_DEV_MODE:
-#     # If in dev mode this will test imports of __all__
-#     from azpy import test_imports
-#     _LOGGER.debug('Testing Imports from {0}'.format(_PACKAGENAME))
-#     test_imports(__all__,
-#                  _pkg=_PACKAGENAME,
-#                  _logger=_LOGGER)
-# # -------------------------------------------------------------------------
 
-del _LOGGER
+# -------------------------------------------------------------------------
+if DCCSI_DEV_MODE:
+    # If in dev mode this will test imports of __all__
+    from DccScriptingInterface.azpy.shared.utils.init import test_imports
+    _LOGGER.debug('Testing Imports from {0}'.format(_PACKAGENAME))
+    test_imports(__all__,
+                 _pkg=_PACKAGENAME,
+                 _logger=_LOGGER)

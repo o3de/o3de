@@ -44,7 +44,11 @@ __all__ = ['constants',
            'shared',
            'test']
 
+from DccScriptingInterface import PATH_DCCSIG
+
 from DccScriptingInterface.globals import *
+
+PATH_DCCSI_AZPY = Path(_MODULE_PATH.parent)
 
 # debug breadcrumbs to check this module and used paths
 _LOGGER.debug(f'This MODULE_PATH: {_MODULE_PATH}')

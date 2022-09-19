@@ -94,12 +94,17 @@ from azpy.constants import PATH_DCCSI_LOG_PATH
 from azpy.constants import ENVAR_DCCSI_PY_VERSION_MAJOR
 from azpy.constants import ENVAR_DCCSI_PY_VERSION_MINOR
 from azpy.constants import ENVAR_PATH_DCCSI_PYTHON_LIB
-from azpy.constants import STR_PATH_DCCSI_PYTHON_LIB
-from azpy.constants import PATH_DCCSI_PYTHON_LIB
+
+from DccScriptingInterface import ENVAR_PATH_DCCSI_PYTHON_LIB
+from DccScriptingInterface import STR_DCCSI_PYTHON_LIB
+from DccScriptingInterface import PATH_DCCSI_PYTHON_LIB
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
+OBJ_DCCSI_MAINMENU = 'O3deDCCsiMainMenu'
+TAG_DCCSI_MAINMENU = 'O3DE(DCCsi)'
+
 # dcc: Maya ENVAR constants
 ENVAR_DCCSI_PY_VERSION_MAJOR=str("DCCSI_PY_VERSION_MAJOR")
 ENVAR_DCCSI_PY_VERSION_MINOR=str("DCCSI_PY_VERSION_MINOR")
@@ -150,11 +155,6 @@ ENVAR_MAYA_OGS_DEVICE_OVERRIDE=str("MAYA_OGS_DEVICE_OVERRIDE")
 DCCSI_PY_VERSION_MAJOR   = 3
 DCCSI_PY_VERSION_MINOR   = 7
 DCCSI_PY_VERSION_RELEASE = 7
-
-# override with maya defaults
-PATH_DCCSI_PYTHON_LIB = STR_PATH_DCCSI_PYTHON_LIB.format(_PATH_DCCSIG,
-                                                         DCCSI_PY_VERSION_MAJOR,
-                                                         DCCSI_PY_VERSION_MINOR)
 
 # not actually a maya envar, to do: could rename DCCSI_MAYA_VERSION
 MAYA_VERSION=2022
@@ -293,12 +293,6 @@ if __name__ == '__main__':
     search_path = ['.']  # set to None to see all modules importable from sys.path
     all_modules = [x[1] for x in pkgutil.iter_modules(path=search_path)]
     _LOGGER.info('All Available Modules in working dir: {0}'.format(all_modules))
-
-    # override based on current executable
-    PATH_DCCSI_PYTHON_LIB = STR_PATH_DCCSI_PYTHON_LIB.format(_PATH_DCCSIG,
-                                                             sys.version_info.major,
-                                                             sys.version_info.minor)
-    PATH_DCCSI_PYTHON_LIB = Path(PATH_DCCSI_PYTHON_LIB).as_posix()
 
     #  test anything procedurally generated
     _LOGGER.info('Testing procedural env paths ...')

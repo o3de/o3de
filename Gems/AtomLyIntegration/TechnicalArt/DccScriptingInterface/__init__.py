@@ -213,8 +213,9 @@ if str(_user_home_parts[1].lower()) == 'documents':
     USER_HOME = _user_home_parts[0]
     _LOGGER.debug(f'user home CORRECTED: {USER_HOME}')
 
-O3DE_MANIFEST_PATH = USER_HOME.joinpath(f'{TAG_USER_O3DE}',
-                                        SLUG_MANIFEST_FILENAME)
+O3DE_MANIFEST_PATH = Path(USER_HOME,
+                          TAG_USER_O3DE,
+                          SLUG_MANIFEST_FILENAME).resolve()
 
 # {user_home}\.o3de\registry\bootstrap.setreg
 SLUG_BOOTSTRAP_FILENAME = 'bootstrap.setreg'
