@@ -44,7 +44,7 @@ def EditMenu_Default_UndoRedo():
 
     # 1) Open Script Canvas window
     qtpy_container = sc_tools_qt.EDITOR_QT_CONTAINER
-    qtpy_container.open_script_canvas()
+    qtpy_container.editor_main_window.open_script_canvas(qtpy_container)
 
     # 2) Create Graph
     qtpy_container.sc_editor.create_new_script_canvas_graph()
@@ -65,7 +65,7 @@ def EditMenu_Default_UndoRedo():
     qtpy_variable_manager.sc_variable_count_matches_expected(VARIABLE_COUNT_BEFORE)
 
     # 6) Close SC window
-    qtpy_container.close_script_canvas()
+    qtpy_container.editor_main_window.close_script_canvas()
 
 
 if __name__ == "__main__":

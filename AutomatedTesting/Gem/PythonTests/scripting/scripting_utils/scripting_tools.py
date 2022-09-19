@@ -71,7 +71,7 @@ def initialize_editor_object(self):
 
 def initialize_sc_editor_objects(self):
     self.sc_editor = self.editor_main_window.findChild(QtWidgets.QDockWidget, SCRIPT_CANVAS_UI)
-    self.sc_editor_main_window = self.sc_editor.findChild(QtWidgets.QMainWindow)
+    self.sc_editor_main_pane = self.sc_editor.findChild(QtWidgets.QMainWindow)
 
 
 def initialize_variable_manager_object(self):

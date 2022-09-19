@@ -13,9 +13,9 @@ class QtPyScriptCanvasEditor:
     """
     QtPy class for handling the behavior of the Script Canvas editor.
 
-    Note: This class contains a reference to the SC editor's main window AND the SC editor itself. This was done because the other
-    QtPy elements such as the SC variable manager can be toggled on and off by the user but the main pane cannot. If a need
-    to separate the two objects is discovered the main pane object will be put into its own QtPy class
+    Note: This class contains a reference to the SC editor's main window AND the SC editor itself. This was done because
+    the other QtPy elements such as the SC variable manager can be toggled on and off by the user but the main pane
+    cannot. If a need to separate the two objects is discovered the main pane object will be put into its own QtPy class
     """
 
     def __init__(self, editor_main_window):
