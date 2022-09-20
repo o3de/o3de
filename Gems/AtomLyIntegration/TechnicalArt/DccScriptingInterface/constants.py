@@ -115,6 +115,9 @@ PATH_DCCSI_LOG_PATH = (f'{PATH_USER_O3DE}\\Cache\\log' +
 ENVAR_PATH_DCCSI_TOOLS = 'PATH_DCCSI_TOOLS'
 
 # envar to get/set the < dccsi>/tools/IDE folder
+ENVAR_PATH_DCCSI_TOOLS_DCC = 'PATH_DCCSI_TOOLS_DCC'
+
+# envar to get/set the < dccsi>/tools/IDE folder
 ENVAR_PATH_DCCSI_TOOLS_IDE = 'PATH_DCCSI_TOOLS_IDE'
 
 # envar to get/set the < dccsi>/tools/IDE/Wing folder

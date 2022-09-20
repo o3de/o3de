@@ -43,6 +43,8 @@ _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH}')
 # -------------------------------------------------------------------------
 # set up access to this IDE folder as a pkg
 # last two package paths, follow the turtles all the way down
+from DccScriptingInterface import add_site_dir
+
 from DccScriptingInterface.Tools import PATH_DCCSIG
 from DccScriptingInterface.Tools import PATH_DCCSI_TOOLS
 from DccScriptingInterface.globals import *
@@ -53,7 +55,7 @@ from DccScriptingInterface.constants import ENVAR_PATH_DCCSI_TOOLS_IDE
 PATH_DCCSI_TOOLS_IDE = Path(_MODULE_PATH.parent)
 PATH_DCCSI_TOOLS_IDE = Path(os.getenv(ENVAR_PATH_DCCSI_TOOLS_IDE,
                                        PATH_DCCSI_TOOLS_IDE.as_posix()))
-site.addsitedir(PATH_DCCSI_TOOLS_IDE.as_posix())
+add_site_dir(PATH_DCCSI_TOOLS_IDE.as_posix())
 _LOGGER.debug(f'{ENVAR_PATH_DCCSI_TOOLS_IDE}: {PATH_DCCSI_TOOLS_IDE}')
 _LOGGER.debug(STR_CROSSBAR)
 # -------------------------------------------------------------------------

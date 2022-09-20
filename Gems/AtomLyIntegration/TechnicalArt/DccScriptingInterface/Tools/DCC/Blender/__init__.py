@@ -51,7 +51,7 @@ from DccScriptingInterface import add_site_dir
 from DccScriptingInterface import SETTINGS_FILE_SLUG
 from DccScriptingInterface import LOCAL_SETTINGS_FILE_SLUG
 
-from DccScriptingInterface.Tools.DCC import PATH_DCCSI_TOOLS
+from DccScriptingInterface.Tools import PATH_DCCSI_TOOLS
 from DccScriptingInterface.Tools.DCC import PATH_DCCSI_TOOLS_DCC
 
 from DccScriptingInterface.globals import *
