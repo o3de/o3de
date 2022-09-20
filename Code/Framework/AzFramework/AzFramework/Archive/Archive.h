@@ -171,8 +171,6 @@ namespace AZ::IO
         //! Free pool
         void PoolFree(void* p) override;
 
-        AZStd::intrusive_ptr<AZ::IO::MemoryBlock> PoolAllocMemoryBlock(size_t nSize, const char* sUsage, size_t nAlign) override;
-
         // interface IArchive ---------------------------------------------------------------------------
 
         void RegisterFileAccessSink(IArchiveFileAccessSink* pSink) override;

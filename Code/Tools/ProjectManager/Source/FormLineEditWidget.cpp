@@ -19,8 +19,14 @@
 
 namespace O3DE::ProjectManager
 {
-    FormLineEditWidget::FormLineEditWidget(const QString& labelText, const QString& valueText, QWidget* parent)
+    FormLineEditWidget::FormLineEditWidget(
+        const QString& labelText,
+        const QString& valueText,
+        const QString& placeholderText,
+        const QString& errorText,
+        QWidget* parent)
         : QWidget(parent)
+        
     {
         setObjectName("formLineEditWidget");
 
@@ -42,6 +48,7 @@ namespace O3DE::ProjectManager
                 m_lineEdit->setFlavor(AzQtComponents::StyledLineEdit::Question);
                 AzQtComponents::LineEdit::setErrorIconEnabled(m_lineEdit, false);
                 m_lineEdit->setText(valueText);
+                m_lineEdit->setPlaceholderText(placeholderText);
 
                 connect(m_lineEdit, &AzQtComponents::StyledLineEdit::flavorChanged, this, &FormLineEditWidget::flavorChanged);
                 connect(m_lineEdit, &AzQtComponents::StyledLineEdit::onFocus, this, &FormLineEditWidget::onFocus);
@@ -62,11 +69,17 @@ namespace O3DE::ProjectManager
 
             m_errorLabel = new QLabel(this);
             m_errorLabel->setObjectName("formErrorLabel");
+            m_errorLabel->setText(errorText);
             m_errorLabel->setVisible(false);
             mainLayout->addWidget(m_errorLabel);
         }
 
         setLayout(mainLayout);
+    }
+
+    FormLineEditWidget::FormLineEditWidget(const QString& labelText, const QString& valueText, QWidget* parent)
+        : FormLineEditWidget(labelText, valueText, "", "", parent)
+    {
     }
 
     void FormLineEditWidget::setErrorLabelText(const QString& labelText)
