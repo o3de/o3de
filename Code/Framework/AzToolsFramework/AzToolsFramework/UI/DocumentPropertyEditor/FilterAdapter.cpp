@@ -270,11 +270,11 @@ namespace AZ::DocumentPropertyEditor
 
         for (const auto& pathEntry : sourcePath)
         {
-            if (!pathEntry.IsIndex() || !currMatchState)
+            if (!(pathEntry.IsIndex() || pathEntry.IsEndOfArray()) || !currMatchState)
             {
                 return nullptr;
             }
-            const auto index = pathEntry.GetIndex();
+            const auto index = (pathEntry.IsEndOfArray() ? currMatchState->m_childMatchState.size() - 1 : pathEntry.GetIndex());
             if (index >= currMatchState->m_childMatchState.size())
             {
                 return nullptr;

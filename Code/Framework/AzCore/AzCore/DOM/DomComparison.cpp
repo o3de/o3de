@@ -115,10 +115,10 @@ namespace AZ::Dom
 
             if (beforeSize > afterSize)
             {
-                subPath.Push(PathEntry(PathEntry::EndOfArrayIndex));
                 for (size_t i = beforeSize; i > afterSize; --i)
                 {
-                    AddPatch(PatchOperation::RemoveOperation(subPath), PatchOperation::AddOperation(subPath, before[i - 1]));
+                    auto removePath = subPath / (i - 1);
+                    AddPatch(PatchOperation::RemoveOperation(removePath), PatchOperation::AddOperation(removePath, before[i - 1]));
                 }
             }
         };
