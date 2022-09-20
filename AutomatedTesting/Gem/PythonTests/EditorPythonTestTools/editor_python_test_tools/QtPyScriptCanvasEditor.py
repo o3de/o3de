@@ -47,7 +47,7 @@ class QtPyScriptCanvasEditor():
 
     def create_new_script_canvas_graph(self):
         """
-        function for opening a new untitled script canvas graph for edit
+        function for opening a new untitled script canvas graph file for edit
         """
         create_new_graph_action = pyside_utils.find_child_by_pattern(
             self.sc_editor_main_pane, {"objectName": "action_New_Script", "type": QtWidgets.QAction}

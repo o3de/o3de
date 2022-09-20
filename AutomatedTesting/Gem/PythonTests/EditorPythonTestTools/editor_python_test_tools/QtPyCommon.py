@@ -17,10 +17,11 @@ class QtPyCommon:
     def __init__(self):
         self.var = None
 
-    def click_menu_option(self, window, option_text):
+    def click_menu_bar_option(self, window, option_text):
         """
-        function for clicking an option from a Qt menu object. This function bypasses menu groups or categories. for example,
-        if you want to click the Open option from the "File" category provide "Open" as your menu text instead of "File" then "Open".
+        function for clicking an toolbar menu option from a Qt menu object. This function bypasses menu categories.
+        for example, if you want to click the Open option from the "File" toolbar menu provide "Open" as your menu text
+        instead of "File" then "Open".
 
         param window: the qt window object where the menu option is located
         param option_text: the label string used in the menu option that you want to click
