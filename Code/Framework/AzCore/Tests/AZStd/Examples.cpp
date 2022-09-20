@@ -277,14 +277,11 @@ namespace UnitTest
                 // I will use static_buffer_allocator for this sample.
                 typedef static_buffer_allocator<16*1024, 1> static_buffer_16KB;
 
-                static_buffer_16KB otherAllocator("Other allocator");
+                static_buffer_16KB otherAllocator;
 
                 // change allocator name
                 // All of this depends if your allocator assignment is slow/expensive. Otherwise this is valid code
-                vector<int, static_buffer_16KB> int_vec1(100, 10, static_buffer_16KB("New Allocator Name"));
-
-                // If assignment is slow, we can do this. This works on the instance of the allocator.
-                int_vec1.get_allocator().set_name("New Name");
+                vector<int, static_buffer_16KB> int_vec1(100, 10, static_buffer_16KB());
 
                 // Changing the allocator, will force the vector to re-allocate itself, if it has any elements.
                 int_vec1.set_allocator(otherAllocator);

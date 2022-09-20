@@ -33,35 +33,23 @@ namespace AZStd
         using size_type = AZStd::size_t;
         using difference_type = AZStd::ptrdiff_t;
 
-        AZ_FORCE_INLINE static_buffer_allocator(const char* name = "AZStd::static_buffer_allocator")
-            : m_name(name)
-            , m_lastAllocation(nullptr)
+        AZ_FORCE_INLINE static_buffer_allocator()
+            : m_lastAllocation(nullptr)
         {
             m_freeData = reinterpret_cast<char*>(&m_data);
         }
 
         // When we copy the allocator we don't copy the allocated memory since it's the user responsibility.
-        AZ_FORCE_INLINE static_buffer_allocator(const this_type& rhs)
-            : m_name(rhs.m_name)
-            , m_freeData(reinterpret_cast<char*>(&m_data))
+        AZ_FORCE_INLINE static_buffer_allocator(const this_type&)
+            : m_freeData(reinterpret_cast<char*>(&m_data))
             , m_lastAllocation(nullptr)
         {}
         
-        AZ_FORCE_INLINE static_buffer_allocator(const this_type& rhs, const char* name)
-            : m_name(name)
+        AZ_FORCE_INLINE this_type& operator=(const this_type&)
         {
-            (void)rhs;
-            m_freeData = reinterpret_cast<char*>(&m_data);
-        }
-
-        AZ_FORCE_INLINE this_type& operator=(const this_type& rhs)
-        {
-            m_name = rhs.m_name;
             return *this;
         }
         
-        AZ_FORCE_INLINE const char* get_name() const            { return m_name; }
-        AZ_FORCE_INLINE void        set_name(const char* name)  { m_name = name; }
         constexpr size_type         max_size() const { return Size; }
         AZ_FORCE_INLINE size_type   get_allocated_size() const { return m_freeData - reinterpret_cast<const char*>(&m_data); }
                 
@@ -116,7 +104,6 @@ namespace AZStd
         }
 
     private:
-        const char*    m_name;
         typename aligned_storage<Size, Alignment>::type  m_data;
         char*           m_freeData;
         void*           m_lastAllocation;
@@ -168,8 +155,7 @@ namespace AZStd
         using size_type = AZStd::size_t;
         using difference_type = AZStd::ptrdiff_t;
 
-        AZ_FORCE_INLINE static_pool_allocator(const char* name = "AZStd::static_pool_allocator")
-            : m_name(name)
+        AZ_FORCE_INLINE static_pool_allocator()
         {
             reset();
         }
@@ -180,14 +166,10 @@ namespace AZStd
         }
 
         // When we copy the allocator we don't copy the allocated memory since it's the user responsibility.
-        AZ_FORCE_INLINE static_pool_allocator(const this_type& rhs)
-            : m_name(rhs.m_name)    {  reset(); }
-        AZ_FORCE_INLINE static_pool_allocator(const this_type& rhs, const char* name)
-            : m_name(name) { (void)rhs; reset(); }
-        AZ_FORCE_INLINE this_type& operator=(const this_type& rhs)      { m_name = rhs.m_name; return *this; }
+        AZ_FORCE_INLINE static_pool_allocator(const this_type&)
+            { reset(); }
+        AZ_FORCE_INLINE this_type& operator=(const this_type&)      { return *this; }
 
-        AZ_FORCE_INLINE const char*  get_name() const           { return m_name; }
-        AZ_FORCE_INLINE void         set_name(const char* name) { m_name = name; }
         constexpr size_type          max_size() const           { return NumNodes * sizeof(Node); }
         AZ_FORCE_INLINE size_type   get_allocated_size() const  { return m_numOfAllocatedNodes * sizeof(Node); }
 
@@ -266,7 +248,6 @@ namespace AZStd
 
     private:
         typename aligned_storage<sizeof(Node) * NumNodes, AZStd::alignment_of<Node>::value>::type m_data;
-        const char*    m_name;
         index_type      m_firstFreeNode;
         size_type       m_numOfAllocatedNodes;
     };

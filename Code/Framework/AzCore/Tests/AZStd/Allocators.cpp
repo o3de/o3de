@@ -143,12 +143,7 @@ namespace UnitTest
         const int bufferSize = 500;
         typedef static_buffer_allocator<bufferSize, 4> buffer_alloc_type;
 
-        const char name[] = "My test allocator";
-        buffer_alloc_type myalloc(name);
-        AZ_TEST_ASSERT(strcmp(myalloc.get_name(), name) == 0);
-        const char newName[] = "My new test allocator";
-        myalloc.set_name(newName);
-        AZ_TEST_ASSERT(strcmp(myalloc.get_name(), newName) == 0);
+        buffer_alloc_type myalloc;
 
         EXPECT_EQ(bufferSize, myalloc.max_size());
         AZ_TEST_ASSERT(myalloc.get_allocated_size() == 0);
@@ -187,13 +182,8 @@ namespace UnitTest
     TEST(Allocator, StaticPool)
     {
         const int numNodes = 100;
-        const char name[] = "My test allocator";
-        const char newName[] = "My new test allocator";
         typedef static_pool_allocator<int, numNodes> int_node_pool_type;
-        int_node_pool_type myalloc(name);
-        AZ_TEST_ASSERT(strcmp(myalloc.get_name(), name) == 0);
-        myalloc.set_name(newName);
-        AZ_TEST_ASSERT(strcmp(myalloc.get_name(), newName) == 0);
+        int_node_pool_type myalloc;
 
         EXPECT_EQ(numNodes * sizeof(int), myalloc.max_size());
         AZ_TEST_ASSERT(myalloc.get_allocated_size() == 0);
@@ -246,7 +236,7 @@ namespace UnitTest
     {
         const int bufferSize = 500;
         typedef static_buffer_allocator<bufferSize, 4> buffer_alloc_type;
-        buffer_alloc_type shared_allocator("Shared allocator");
+        buffer_alloc_type shared_allocator;
 
         typedef allocator_ref<buffer_alloc_type> ref_allocator_type;
 
@@ -306,9 +296,7 @@ namespace UnitTest
     {
         size_t bufferSize = 500;
 
-        const char name[] = "My test allocator";
-        stack_allocator myalloc(alloca(bufferSize), bufferSize, name);
-        AZ_TEST_ASSERT(strcmp(myalloc.get_name(), name) == 0);
+        stack_allocator myalloc(alloca(bufferSize), bufferSize);
         const char newName[] = "My new test allocator";
         myalloc.set_name(newName);
         AZ_TEST_ASSERT(strcmp(myalloc.get_name(), newName) == 0);
