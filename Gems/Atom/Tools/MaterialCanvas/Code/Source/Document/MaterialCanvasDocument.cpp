@@ -17,27 +17,25 @@
 #include <AtomToolsFramework/DynamicNode/DynamicNodeUtil.h>
 #include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
 #include <AtomToolsFramework/Util/Util.h>
-#include <AzCore/RTTI/BehaviorContext.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
-#include <Document/MaterialCanvasDocument.h>
-#include <Document/MaterialCanvasDocumentNotificationBus.h>
-#include <GraphCanvas/Components/SceneBus.h>
-#include <GraphCanvas/GraphCanvasBus.h>
-#include <GraphModel/Model/Connection.h>
-
 #include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/RTTI/RTTI.h>
+#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/ObjectStream.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/sort.h>
+#include <Document/MaterialCanvasDocument.h>
+#include <Document/MaterialCanvasDocumentNotificationBus.h>
+#include <GraphCanvas/Components/SceneBus.h>
+#include <GraphCanvas/GraphCanvasBus.h>
+#include <GraphModel/Model/Connection.h>
 
 namespace MaterialCanvas
 {
@@ -71,16 +69,22 @@ namespace MaterialCanvas
         : AtomToolsFramework::AtomToolsDocument(toolId, documentTypeInfo)
         , m_graphContext(graphContext)
     {
+        AZ_Assert(m_graphContext, "Graph context must be valid in order to create a graph document.");
+
         // Creating the scene entity and graph for this document. This may end up moving to the view if we can have the document only store
         // minimal material graph specific data that can be transformed into a graph canvas graph in the view and back. That abstraction
         // would help maintain a separation between the serialized data and the UI for rendering and interacting with the graph. This would
         // also help establish a mediator pattern for other node based tools that want to visualize their data or documents as a graph. My
         // understanding is that graph model will help with this.
         m_graph = AZStd::make_shared<GraphModel::Graph>(m_graphContext);
+        AZ_Assert(m_graph, "Failed to create graph object.");
 
         GraphModelIntegration::GraphManagerRequestBus::BroadcastResult(
             m_sceneEntity, &GraphModelIntegration::GraphManagerRequests::CreateScene, m_graph, m_toolId);
+        AZ_Assert(m_sceneEntity, "Failed to create graph scene entity.");
+
         m_graphId = m_sceneEntity->GetId();
+        AZ_Assert(m_graphId.IsValid(), "Graph scene entity ID is not valid.");
 
         RecordGraphState();
 
@@ -112,7 +116,7 @@ namespace MaterialCanvas
 
     AtomToolsFramework::DocumentTypeInfo MaterialCanvasDocument::BuildDocumentTypeInfo()
     {
-        // Setting up placeholder document type info and extensions. This is not representative of final data.
+        // Setting up placeholder document type info and extensions.
         AtomToolsFramework::DocumentTypeInfo documentType;
         documentType.m_documentTypeName = "Material Canvas";
         documentType.m_documentFactoryCallback = [](const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo) {
@@ -152,14 +156,8 @@ namespace MaterialCanvas
 
     AtomToolsFramework::DocumentObjectInfoVector MaterialCanvasDocument::GetObjectInfo() const
     {
-        if (!IsOpen())
-        {
-            AZ_Error("MaterialCanvasDocument", false, "Document is not open.");
-            return {};
-        }
-
-        AtomToolsFramework::DocumentObjectInfoVector objects;
-        objects.reserve(m_groups.size());
+        AtomToolsFramework::DocumentObjectInfoVector objects = AtomToolsDocument::GetObjectInfo();
+        objects.reserve(objects.size() + m_groups.size());
 
         for (const auto& group : m_groups)
         {
@@ -177,7 +175,7 @@ namespace MaterialCanvas
                     // There are currently no indicators for material canvas nodes.
                     return nullptr;
                 };
-                objects.push_back(objectInfo);
+                objects.push_back(AZStd::move(objectInfo));
             }
         }
 
@@ -221,7 +219,8 @@ namespace MaterialCanvas
             return false;
         }
 
-        if (!AZ::JsonSerializationUtils::SaveObjectToFile(m_graph.get(), m_savePathNormalized))
+        AZ_Error("MaterialCanvasDocument", m_graph, "Attempting to save invalid graph object.");
+        if (!m_graph || !AZ::JsonSerializationUtils::SaveObjectToFile(m_graph.get(), m_savePathNormalized))
         {
             return SaveFailed();
         }
@@ -241,7 +240,8 @@ namespace MaterialCanvas
             return false;
         }
 
-        if (!AZ::JsonSerializationUtils::SaveObjectToFile(m_graph.get(), m_savePathNormalized))
+        AZ_Error("MaterialCanvasDocument", m_graph, "Attempting to save invalid graph object.");
+        if (!m_graph || !AZ::JsonSerializationUtils::SaveObjectToFile(m_graph.get(), m_savePathNormalized))
         {
             return SaveFailed();
         }
@@ -261,7 +261,8 @@ namespace MaterialCanvas
             return false;
         }
 
-        if (!AZ::JsonSerializationUtils::SaveObjectToFile(m_graph.get(), m_savePathNormalized))
+        AZ_Error("MaterialCanvasDocument", m_graph, "Attempting to save invalid graph object. ");
+        if (!m_graph || !AZ::JsonSerializationUtils::SaveObjectToFile(m_graph.get(), m_savePathNormalized))
         {
             return SaveFailed();
         }
@@ -270,11 +271,6 @@ namespace MaterialCanvas
         m_absolutePath = m_savePathNormalized;
         QueueCompileGraph();
         return SaveSucceeded();
-    }
-
-    bool MaterialCanvasDocument::IsOpen() const
-    {
-        return AtomToolsDocument::IsOpen() && m_graph && m_graphId.IsValid();
     }
 
     bool MaterialCanvasDocument::IsModified() const
@@ -328,16 +324,6 @@ namespace MaterialCanvas
         m_modified = false;
 
         AtomToolsFramework::AtomToolsDocument::Clear();
-    }
-
-    bool MaterialCanvasDocument::ReopenRecordState()
-    {
-        return AtomToolsDocument::ReopenRecordState();
-    }
-
-    bool MaterialCanvasDocument::ReopenRestoreState()
-    {
-        return AtomToolsDocument::ReopenRestoreState();
     }
 
     void MaterialCanvasDocument::OnGraphModelRequestUndoPoint()
@@ -413,14 +399,18 @@ namespace MaterialCanvas
     {
         DestroyGraph();
 
-        m_graph = graph;
-        m_graph->PostLoadSetup(m_graphContext);
-        BuildEditablePropertyGroups();
-        RecordGraphState();
+        if (graph)
+        {
+            m_graph = graph;
+            m_graph->PostLoadSetup(m_graphContext);
 
-        // The graph controller will create all of the scene items on construction.
-        GraphModelIntegration::GraphManagerRequestBus::Broadcast(
-            &GraphModelIntegration::GraphManagerRequests::CreateGraphController, m_graphId, m_graph);
+            BuildEditablePropertyGroups();
+            RecordGraphState();
+
+            // The graph controller will create all of the scene items on construction.
+            GraphModelIntegration::GraphManagerRequestBus::Broadcast(
+                &GraphModelIntegration::GraphManagerRequests::CreateGraphController, m_graphId, m_graph);
+        }
     }
 
     void MaterialCanvasDocument::DestroyGraph()
@@ -658,6 +648,8 @@ namespace MaterialCanvas
     AZStd::vector<GraphModel::ConstNodePtr> MaterialCanvasDocument::GetInstructionNodesInExecutionOrder(
         GraphModel::ConstNodePtr outputNode, const AZStd::vector<AZStd::string>& inputSlotNames) const
     {
+        AZ_Assert(m_graph, "Attempting to generate data from invalid graph object.");
+
         AZStd::vector<GraphModel::ConstNodePtr> sortedNodes;
         sortedNodes.reserve(m_graph->GetNodes().size());
 
@@ -682,12 +674,20 @@ namespace MaterialCanvas
     }
 
     AZStd::vector<AZStd::string> MaterialCanvasDocument::GetInstructionsFromConnectedNodes(
-        GraphModel::ConstNodePtr outputNode, const AZStd::vector<AZStd::string>& inputSlotNames) const
+        GraphModel::ConstNodePtr outputNode,
+        const AZStd::vector<AZStd::string>& inputSlotNames,
+        AZStd::vector<GraphModel::ConstNodePtr>& instructionNodes) const
     {
         AZStd::vector<AZStd::string> instructions;
 
         for (const auto& inputNode : GetInstructionNodesInExecutionOrder(outputNode, inputSlotNames))
         {
+            // Build a list of all nodes that will contribute instructions for the output node
+            if (AZStd::find(instructionNodes.begin(), instructionNodes.end(), inputNode) == instructionNodes.end())
+            {
+                instructionNodes.push_back(inputNode);
+            }
+
             auto dynamicNode = azrtti_cast<const AtomToolsFramework::DynamicNode*>(inputNode.get());
             if (dynamicNode)
             {
@@ -772,14 +772,15 @@ namespace MaterialCanvas
         return materialInputsForSlot;
     }
 
-    AZStd::vector<AZStd::string> MaterialCanvasDocument::GetMaterialInputsFromNodes() const
+    AZStd::vector<AZStd::string> MaterialCanvasDocument::GetMaterialInputsFromNodes(
+        const AZStd::vector<GraphModel::ConstNodePtr>& instructionNodes) const
     {
+        AZ_Assert(m_graph, "Attempting to generate data from invalid graph object.");
+
         AZStd::vector<AZStd::string> materialInputs;
 
-        for (const auto& inputNodePair : m_graph->GetNodes())
+        for (const auto& inputNode : instructionNodes)
         {
-            const auto& inputNode = inputNodePair.second;
-
             auto dynamicNode = azrtti_cast<const AtomToolsFramework::DynamicNode*>(inputNode.get());
             if (dynamicNode)
             {
@@ -869,8 +870,14 @@ namespace MaterialCanvas
     }
 
     bool MaterialCanvasDocument::BuildMaterialTypeFromTemplate(
-        GraphModel::ConstNodePtr templateNode, const AZStd::string& templateInputPath, const AZStd::string& templateOutputPath) const
+        GraphModel::ConstNodePtr templateNode,
+        const AZStd::vector<GraphModel::ConstNodePtr>& instructionNodes,
+        const AZStd::string& templateInputPath,
+        const AZStd::string& templateOutputPath) const
     {
+        AZ_Assert(m_graph, "Attempting to generate data from invalid graph object.");
+        AZ_Assert(templateNode, "Attempting to generate data from invalid template node.");
+
         // Load the material type template file, which is the same format as MaterialTypeSourceData with a different extension
         auto materialTypeOutcome = AZ::RPI::MaterialUtils::LoadMaterialTypeSourceData(templateInputPath);
         if (!materialTypeOutcome.IsSuccess())
@@ -890,10 +897,9 @@ namespace MaterialCanvas
         }
 
         // Search the graph for nodes defining material input properties that should be added to the material type and material SRG
-        for (const auto& inputNodePair : m_graph->GetNodes())
+        for (const auto& inputNode : instructionNodes)
         {
             // Each node contains property and input slots corresponding to MaterialTypeSourceData::PropertyDefinition members
-            const auto& inputNode = inputNodePair.second;
             const auto materialInputNameSlot = inputNode->GetSlot("inName");
             const auto materialInputGroupSlot = inputNode->GetSlot("inGroup");
             const auto materialInputDescriptionSlot = inputNode->GetSlot("inDescription");
@@ -971,7 +977,7 @@ namespace MaterialCanvas
         m_compileGraphQueued = false;
         m_generatedFiles.clear();
 
-        if (!IsOpen())
+        if (!m_graph)
         {
             return false;
         }
@@ -1023,26 +1029,21 @@ namespace MaterialCanvas
                     });
             }
 
+            AZStd::vector<GraphModel::ConstNodePtr> instructionNodesForAllBlocks;
+
             // Attempt to resolve every template file, replacing tokens, injecting lines, updating settings, and outputting the final result
             for (const auto& templatePath : templatePaths)
             {
-                AZ_TracePrintf("MaterialCanvasDocument", "templatePath: %s\n", templatePath.c_str());
-
                 // Remove any aliases to resolve the absolute path to the template file
                 const AZStd::string templateInputPath = AtomToolsFramework::GetPathWithoutAlias(templatePath);
                 const AZStd::string templateOutputPath = GetOutputPathFromTemplatePath(templateInputPath);
 
                 if (AZ::StringFunc::EndsWith(templateOutputPath, ".materialtype"))
                 {
-                    if (!BuildMaterialTypeFromTemplate(currentNode, templateInputPath, templateOutputPath))
-                    {
-                        m_generatedFiles.clear();
-                        return false;
-                    }
-                    m_generatedFiles.push_back(templateOutputPath);
                     continue;
                 }
 
+                AZ_TracePrintf("MaterialCanvasDocument", "templatePath: %s\n", templatePath.c_str());
 
                 // Attempt to load the template file to do symbol substitution and inject any code or data
                 if (auto result = AZ::Utils::ReadFile(templateInputPath))
@@ -1054,6 +1055,22 @@ namespace MaterialCanvas
 
                     // Substitute all references to the placeholder graph name with one generated from the document name
                     ReplaceStringsInContainer("MaterialGraphName", GetGraphName(), templateLines);
+
+                    // Inject shader code instructions stitched together by traversing the graph from each of the input slots on the current
+                    // node. The O3DE_GENERATED_INSTRUCTIONS_BEGIN marker will be followed by a list of input slot names corresponding to
+                    // required variables in the shader. Instructions will only be generated for the current node and nodes connected to the
+                    // specified inputs. This will allow multiple O3DE_GENERATED_INSTRUCTIONS blocks with different inputs to be specified
+                    // in multiple locations across multiple files from a single graph.
+                    ReplaceLinesInTemplateBlock(
+                        "O3DE_GENERATED_INSTRUCTIONS_BEGIN",
+                        "O3DE_GENERATED_INSTRUCTIONS_END",
+                        [&]([[maybe_unused]] const AZStd::string& blockHeader)
+                        {
+                            AZStd::vector<AZStd::string> inputSlotNames;
+                            AZ::StringFunc::Tokenize(blockHeader, inputSlotNames, ";:, \t\r\n\\/", false, false);
+                            return GetInstructionsFromConnectedNodes(currentNode, inputSlotNames, instructionNodesForAllBlocks);
+                        },
+                        templateLines);
 
                     // Inject include files found while traversing the graph into any include file blocks in the template.
                     ReplaceLinesInTemplateBlock(
@@ -1091,34 +1108,41 @@ namespace MaterialCanvas
                         "O3DE_GENERATED_MATERIAL_SRG_END",
                         [&]([[maybe_unused]] const AZStd::string& blockHeader)
                         {
-                            return GetMaterialInputsFromNodes();
-                        },
-                        templateLines);
-
-                    // Inject shader code instructions stitched together by traversing the graph from each of the input slots on the current
-                    // node. The O3DE_GENERATED_INSTRUCTIONS_BEGIN marker will be followed by a list of input slot names corresponding to
-                    // required variables in the shader. Instructions will only be generated for the current node and nodes connected to the
-                    // specified inputs. This will allow multiple O3DE_GENERATED_INSTRUCTIONS blocks with different inputs to be specified in
-                    // multiple locations across multiple files from a single graph.
-                    ReplaceLinesInTemplateBlock(
-                        "O3DE_GENERATED_INSTRUCTIONS_BEGIN",
-                        "O3DE_GENERATED_INSTRUCTIONS_END",
-                        [&]([[maybe_unused]] const AZStd::string& blockHeader)
-                        {
-                            AZStd::vector<AZStd::string> inputSlotNames;
-                            AZ::StringFunc::Tokenize(blockHeader, inputSlotNames, ";:, \t\n\r\\/", false, false);
-                            return GetInstructionsFromConnectedNodes(currentNode, inputSlotNames);
+                            return GetMaterialInputsFromNodes(instructionNodesForAllBlocks);
                         },
                         templateLines);
 
                     // Recombine all of the lines to rebuild the file text.
                     AZStd::string templateOutputText;
                     AZ::StringFunc::Join(templateOutputText, templateLines, '\n');
+                    templateOutputText += '\n';
 
                     // Save the file generated from the template to the same folder as the graph.
                     AZ::Utils::WriteFile(templateOutputText, templateOutputPath);
                     m_generatedFiles.push_back(templateOutputPath);
                 }
+            }
+
+            // Attempt to resolve every template file, replacing tokens, injecting lines, updating settings, and outputting the final result
+            for (const auto& templatePath : templatePaths)
+            {
+                // Remove any aliases to resolve the absolute path to the template file
+                const AZStd::string templateInputPath = AtomToolsFramework::GetPathWithoutAlias(templatePath);
+                const AZStd::string templateOutputPath = GetOutputPathFromTemplatePath(templateInputPath);
+
+                if (!AZ::StringFunc::EndsWith(templateOutputPath, ".materialtype"))
+                {
+                    continue;
+                }
+
+                AZ_TracePrintf("MaterialCanvasDocument", "templatePath: %s\n", templatePath.c_str());
+
+                if (!BuildMaterialTypeFromTemplate(currentNode, instructionNodesForAllBlocks, templateInputPath, templateOutputPath))
+                {
+                    m_generatedFiles.clear();
+                    return false;
+                }
+                m_generatedFiles.push_back(templateOutputPath);
             }
         }
 
@@ -1129,7 +1153,7 @@ namespace MaterialCanvas
 
     void MaterialCanvasDocument::QueueCompileGraph() const
     {
-        if (IsOpen() && !m_compileGraphQueued)
+        if (m_graph && !m_compileGraphQueued)
         {
             m_compileGraphQueued = true;
             AZ::SystemTickBus::QueueFunction([id = m_id](){

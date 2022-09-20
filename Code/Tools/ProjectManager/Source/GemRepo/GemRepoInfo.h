@@ -31,7 +31,7 @@ namespace O3DE::ProjectManager
 
         QString m_path = "";
         QString m_name = "Unknown Repo Name";
-        QString m_creator = "Unknown Creator";
+        QString m_origin = "Unknown Creator";
         bool m_isEnabled = false; //! Is the repo currently enabled for this engine?
         QString m_summary = "No summary provided.";
         QString m_additionalInfo = "";

@@ -35,10 +35,10 @@ namespace AZStd
         {
             timespec ts = CurrentTime();
 
-            chrono::seconds timeInSeconds = rel_time;
+            auto timeInSeconds = chrono::duration_cast<chrono::seconds>(rel_time);
             ts.tv_sec += timeInSeconds.count();
-            ts.tv_nsec += chrono::nanoseconds(rel_time - timeInSeconds).count();
-            
+            ts.tv_nsec += chrono::duration_cast<chrono::nanoseconds>(rel_time - timeInSeconds).count();
+
             // note that ts.tv_nsec could have overflowed 'one second' worth of nanoseconds but since CurrentTime()
             // will always return under 1,000,000,000 nanoseconds and so will the subtraction above here, the
             // largest the two could be is 1,999,999,999 nanoseconds when summed together, so we do not have to do
@@ -48,7 +48,7 @@ namespace AZStd
                 ts.tv_nsec -= 1000000000;
                 ts.tv_sec += 1;
             }
-            
+
             return ts;
         }
     }

@@ -85,17 +85,23 @@ def TerrainExtenderNodes_ComponentEntitySync():
     handler.add_callback('OnEditorEntityCreated', onEntityCreated)
 
     # Extender mapping with the key being the node name and the value is the
-    # expected Component that should be added to the layer Entity for that wrapped node
+    # expected Component(s) that should be added to the layer Entity for that wrapped node
+    # The heightfield colliders are a special case where they add each-other to make
+    # the workflow easier since they depend on each-other
     extenders = {
-        'TerrainSurfaceGradientListNode': 'Terrain Surface Gradient List',
-        'TerrainHeightGradientListNode': 'Terrain Height Gradient List',
+        'TerrainMacroMaterialNode': ['Terrain Macro Material'],
+        'PhysXHeightfieldColliderNode': ['PhysX Heightfield Collider', 'Terrain Physics Heightfield Collider'],
+        'TerrainPhysicsHeightfieldColliderNode': ['Terrain Physics Heightfield Collider', 'PhysX Heightfield Collider'],
+        'TerrainSurfaceGradientListNode': ['Terrain Surface Gradient List'],
+        'TerrainHeightGradientListNode': ['Terrain Height Gradient List'],
+        'TerrainSurfaceMaterialsListNode': ['Terrain Surface Materials List'],
     }
 
     # Retrieve a mapping of the TypeIds for all the components
     # we will be checking for
     componentNames = []
     for name in extenders:
-        componentNames.append(extenders[name])
+        componentNames += extenders[name]
     componentTypeIds = hydra.get_component_type_id_map(componentNames)
 
     areas = [
@@ -107,14 +113,14 @@ def TerrainExtenderNodes_ComponentEntitySync():
     newGraph = graph.GraphManagerRequestBus(bus.Broadcast, 'GetGraph', newGraphId)
     x = 10.0
     y = 10.0
+    nodePosition = math.Vector2(x, y)
     for areaName in areas:
-        nodePosition = math.Vector2(x, y)
-        areaNode = landscapecanvas.LandscapeCanvasNodeFactoryRequestBus(bus.Broadcast, 'CreateNodeForTypeName',
-                                                                        newGraph, areaName)
-        graph.GraphControllerRequestBus(bus.Event, 'AddNode', newGraphId, areaNode, nodePosition)
-
         success = True
         for extenderName in extenders:
+            areaNode = landscapecanvas.LandscapeCanvasNodeFactoryRequestBus(bus.Broadcast, 'CreateNodeForTypeName',
+                                                                        newGraph, areaName)
+            graph.GraphControllerRequestBus(bus.Event, 'AddNode', newGraphId, areaNode, nodePosition)
+
             # Add the wrapped node for the extender
             extenderNode = landscapecanvas.LandscapeCanvasNodeFactoryRequestBus(bus.Broadcast,
                                                                                 'CreateNodeForTypeName', newGraph,
@@ -122,24 +128,30 @@ def TerrainExtenderNodes_ComponentEntitySync():
             graph.GraphControllerRequestBus(bus.Event, 'AddNode', newGraphId, extenderNode, nodePosition)
             graph.GraphControllerRequestBus(bus.Event, 'WrapNode', newGraphId, areaNode, extenderNode)
 
-            # Check that the appropriate Component was added when the extender node was added
-            extenderComponent = extenders[extenderName]
-            componentTypeId = componentTypeIds[extenderComponent]
-            success = success and editor.EditorComponentAPIBus(bus.Broadcast, 'HasComponentOfType', newEntityId,
-                                                               componentTypeId)
-            Report.info(f"Component: {extenderComponent}")
+            # Check that the appropriate Component(s) were added when the extender node was added
+            extenderComponents = extenders[extenderName]
+            for extenderComponent in extenderComponents:
+                componentTypeId = componentTypeIds[extenderComponent]
+                success = success and editor.EditorComponentAPIBus(bus.Broadcast, 'HasComponentOfType', newEntityId,
+                                                                   componentTypeId)
+            Report.info(f"Component(s): {extenderComponents}")
             Report.result(Tests.component_added, success)
             if not success:
                 break
 
             # Check that the appropriate Component was removed when the extender node was removed
+            # Only need to check that the first component was removed, because the special case
+            # that adds multiple components will leave the additional
+            componentTypeId = componentTypeIds[extenderComponents[0]]
             graph.GraphControllerRequestBus(bus.Event, 'RemoveNode', newGraphId, extenderNode)
             success = success and not editor.EditorComponentAPIBus(bus.Broadcast, 'HasComponentOfType', newEntityId,
                                                                    componentTypeId)
-            Report.info(f"Component: {extenderComponent}")
+            Report.info(f"Component(s): {extenderComponents}")
             Report.result(Tests.component_removed, success)
             if not success:
                 break
+
+            graph.GraphControllerRequestBus(bus.Event, 'RemoveNode', newGraphId, areaNode)
 
         if success:
             Report.info(f"{areaName} successfully added and removed all wrapped nodes")

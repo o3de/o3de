@@ -72,7 +72,7 @@ namespace AZ::Debug
 
         // AZ::BehaviorEBusHandler overrides...
         int GetFunctionIndex(const char* functionName) const override;
-        void Disconnect() override;
+        void Disconnect(AZ::BehaviorArgument* id = nullptr) override;
         bool Connect(AZ::BehaviorArgument* id = nullptr) override;
         bool IsConnected() override;
         bool IsConnectedId(AZ::BehaviorArgument* id) override;
@@ -131,9 +131,9 @@ namespace AZ::Debug
         return -1;
     }
 
-    void TraceMessageBusHandler::Disconnect()
+    void TraceMessageBusHandler::Disconnect(AZ::BehaviorArgument* id)
     {
-        AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
+        AZ::Internal::EBusConnector<AZ::Debug::TraceMessageBus::Handler>::Disconnect(this, id);
         AZ::TickBus::Handler::BusDisconnect();
     }
 

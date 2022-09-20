@@ -68,14 +68,14 @@ set(FILES
     StatisticalProfilerTests.cpp
     StreamerTests.cpp
     StringFunc.cpp
-    SystemFile.cpp
+    SystemFileTest.cpp
+    SystemFileStreamTest.cpp
     TaskTests.cpp
     TickBusTest.cpp
     UUIDTests.cpp
     XML.cpp
     Debug/LocalFileEventLoggerTests.cpp
     Debug/Trace.cpp
-    Debug/UnhandledExceptions.cpp
     Name/NameJsonSerializerTests.cpp
     Name/NameBenchmarks.cpp
     Name/NameTests.cpp

@@ -94,12 +94,12 @@ namespace Multiplayer
         //! @{
         void OnStartPlayInEditorBegin() override;
         void OnStartPlayInEditor() override;
-        //! @
+        //! @}
 
         //! AzToolsFramework::Prefab::PrefabToInMemorySpawnableNotificationBus::Handler overrides
         //! @{
         void OnPreparingInMemorySpawnableFromPrefab(const AzFramework::Spawnable& spawnable, const AZStd::string& assetHint) override;
-        //! @
+        //! @}
         
         //! EditorEvents::Handler overrides
         //! @{

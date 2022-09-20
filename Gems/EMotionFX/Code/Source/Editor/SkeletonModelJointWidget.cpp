@@ -96,7 +96,8 @@ namespace EMotionFX
 
         if (GetActor())
         {
-            if (!selectedModelIndices.isEmpty())
+            bool onlyRootSelected = selectedModelIndices.size() == 1 && SkeletonModel::IndicesContainRootNode(selectedModelIndices);
+            if (!selectedModelIndices.isEmpty() && !onlyRootSelected)
             {
                 if (selectedModelIndices.size() == 1)
                 {

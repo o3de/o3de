@@ -13,7 +13,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/chrono/chrono.h>
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/std/containers/unordered_map.h>
@@ -40,7 +40,7 @@ namespace AssetProcessor
             AZStd::optional<AZStd::sys_time_t> EndCaptureStat(AZStd::string_view statName, bool persistToDb);
             void Dump();
         private:
-            using timepoint = AZStd::chrono::high_resolution_clock::time_point;
+            using timepoint = AZStd::chrono::system_clock::time_point;
             using duration = AZStd::chrono::milliseconds;
             struct StatsEntry
             {
@@ -176,7 +176,7 @@ namespace AssetProcessor
                 // prevent double 'Begins'
                 return;
             }
-            existingStat.m_operationStartTime = AZStd::chrono::high_resolution_clock::now();
+            existingStat.m_operationStartTime = AZStd::chrono::system_clock::now();
         }
 
         AZStd::optional<AZStd::sys_time_t> StatsCaptureImpl::EndCaptureStat(AZStd::string_view statName, bool persistToDb)
@@ -185,7 +185,7 @@ namespace AssetProcessor
             AZStd::optional<AZStd::sys_time_t> operationDurationInMillisecond;
             if (existingStat.m_operationStartTime != timepoint())
             {
-                duration operationDuration = AZStd::chrono::high_resolution_clock::now() - existingStat.m_operationStartTime;
+                duration operationDuration = AZStd::chrono::duration_cast<duration>(AZStd::chrono::system_clock::now() - existingStat.m_operationStartTime);
                 operationDurationInMillisecond = operationDuration.count();
                 existingStat.m_cumulativeTime = existingStat.m_cumulativeTime + operationDuration;
                 existingStat.m_operationCount = existingStat.m_operationCount + 1;
@@ -205,7 +205,7 @@ namespace AssetProcessor
 
         void StatsCaptureImpl::Dump()
         {
-            timepoint startTimeStamp = AZStd::chrono::high_resolution_clock::now();
+            timepoint startTimeStamp = AZStd::chrono::system_clock::now();
 
             auto settingsRegistry = AZ::SettingsRegistry::Get();
 
@@ -362,7 +362,7 @@ namespace AssetProcessor
                 PrintStatsArray(allProcessJobsByJobKey, maxCumulativeStats, "cumulative time spent in ProcessJob by JobKey");
                 PrintStatsArray(allProcessJobsByPlatform, maxCumulativeStats, "cumulative time spent in ProcessJob by Platform");
             }
-            duration costToGenerateStats =  AZStd::chrono::high_resolution_clock::now() - startTimeStamp;
+            duration costToGenerateStats = AZStd::chrono::duration_cast<duration>(AZStd::chrono::system_clock::now() - startTimeStamp);
             PrintStat("ComputeStatsTime", costToGenerateStats, 1);
         }
 

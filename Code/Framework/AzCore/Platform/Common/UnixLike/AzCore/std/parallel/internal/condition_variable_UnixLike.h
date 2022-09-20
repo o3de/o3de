@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 
 /**
  * This file is to be included from the mutex.h only. It should NOT be included by the user.
@@ -197,7 +197,7 @@ namespace AZStd
 
         pthread_mutex_unlock(&m_mutex);
         lock.lock();
-        
+
         return ret == ETIMEDOUT ? cv_status::timeout : cv_status::no_timeout;
     }
 

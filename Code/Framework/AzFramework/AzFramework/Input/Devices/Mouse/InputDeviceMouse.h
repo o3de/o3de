@@ -13,7 +13,7 @@
 #include <AzFramework/Input/Channels/InputChannelDeltaWithSharedPosition2D.h>
 #include <AzFramework/Input/Channels/InputChannelDigitalWithSharedPosition2D.h>
 
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework

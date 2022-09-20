@@ -2215,7 +2215,7 @@ namespace ScriptCanvas
 
         void AbstractCodeModel::MarkParseStop()
         {
-            m_parseDuration = AZStd::chrono::microseconds(AZStd::chrono::system_clock::now() - m_parseStartTime).count();
+            m_parseDuration = AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(AZStd::chrono::system_clock::now() - m_parseStartTime).count();
         }
 
         AZStd::vector<ExecutionTreePtr> AbstractCodeModel::ModAllExecutionRoots()
