@@ -13,6 +13,7 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Aabb.h>
+#include <AzCore/Math/Hemisphere.h>
 #include <AzCore/Math/Sphere.h>
 #include <AzCore/Math/Frustum.h>
 #include <AzCore/Name/Name.h>
@@ -87,6 +88,12 @@ namespace AzFramework
         //! @param callback the callback to invoke when a node is visible
         //! @return the intersection result of the sphere against the visibility system
         virtual void Enumerate(const AZ::Sphere& sphere, const EnumerateCallback& callback) const = 0;
+
+        //! Intersects a hemisphere against the visibility system.
+        //! @param hemisphere the hemisphere to test against
+        //! @param callback the callback to invoke when a node is visible
+        //! @return the intersection result of the sphere against the visibility system
+        virtual void Enumerate(const AZ::Hemisphere& hemisphere, const EnumerateCallback& callback) const = 0;
 
         //! Intersects a frustum against the visibility system.
         //! @param frustum the frustum to test against

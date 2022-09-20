@@ -78,7 +78,7 @@ namespace AZ
         {
             uint16_t id = m_lightData.GetFreeSlotIndex();
 
-            if (id == IndexedDataVector<PointLightData>::NoFreeSlot)
+            if (id == MultiIndexedDataVector<PointLightData>::NoFreeSlot)
             {
                 return LightHandle::Null;
             }

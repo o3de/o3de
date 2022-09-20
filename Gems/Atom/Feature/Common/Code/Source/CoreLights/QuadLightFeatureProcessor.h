@@ -8,9 +8,10 @@
 
 #pragma once
 
+#include <AzCore/Math/Hemisphere.h>
 #include <Atom/Feature/CoreLights/QuadLightFeatureProcessorInterface.h>
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
-#include <Atom/Feature/Utils/IndexedDataVector.h>
+#include <Atom/Feature/Utils/MultiIndexedDataVector.h>
 
 namespace AZ
 {
@@ -57,10 +58,14 @@ namespace AZ
         private:
             QuadLightFeatureProcessor(const QuadLightFeatureProcessor&) = delete;
 
+            void UpdateBounds(LightHandle handle);
+
             static constexpr const char* FeatureProcessorName = "QuadLightFeatureProcessor";
 
-            IndexedDataVector<QuadLightData> m_quadLightData;
+            MultiIndexedDataVector<QuadLightData, Hemisphere> m_lightData;
             GpuBufferHandler m_lightBufferHandler;
+            RHI::Handle<uint32_t> m_lightLtcMeshFlag;
+            RHI::Handle<uint32_t> m_lightApproxMeshFlag;
             bool m_deviceBufferNeedsUpdate = false;
         };
     } // namespace Render

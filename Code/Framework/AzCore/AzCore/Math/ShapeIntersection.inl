@@ -125,6 +125,44 @@ namespace AZ
             return Overlaps(capsule, sphere);
         }
 
+        AZ_MATH_INLINE bool Overlaps(const Hemisphere& hemisphere, const Sphere& sphere)
+        {
+            float sphereDistanceToPlane = hemisphere.GetDirection().Dot(sphere.GetCenter() - hemisphere.GetCenter());
+
+            if (sphereDistanceToPlane >= 0)
+            {
+                // Sphere is in front of hemisphere, so treat the hemisphere as a sphere
+                return Overlaps(Sphere(hemisphere.GetCenter(), hemisphere.GetRadius()), sphere);
+            }
+            else if (sphereDistanceToPlane >= -sphere.GetRadius())
+            {
+                // Sphere is behind hemisphere, project the sphere onto the plane, then check radius of circle.
+                Vector3 projectedSphereCenter = sphere.GetCenter() + hemisphere.GetDirection() * sphereDistanceToPlane;
+                float circleRadius = AZStd::sqrt(sphere.GetRadius() * sphere.GetRadius() - sphereDistanceToPlane * sphereDistanceToPlane);
+                const float radiusSum = hemisphere.GetRadius() + circleRadius;
+                return hemisphere.GetCenter().GetDistanceSq(projectedSphereCenter) <= (radiusSum * radiusSum);
+            }
+            return false; // too far behind hemisphere to intersect
+        }
+
+        AZ_MATH_INLINE bool Overlaps(const Hemisphere& hemisphere, const Aabb& aabb)
+        {
+            float distSq = aabb.GetDistanceSq(hemisphere.GetCenter());
+            float radiusSq = hemisphere.GetRadius() * hemisphere.GetRadius();
+            if (distSq > radiusSq)
+            {
+                return false;
+            }
+
+            Vector3 nearestPointToPlane = aabb.GetSupport(-hemisphere.GetDirection());
+            bool abovePlane = hemisphere.GetDirection().Dot(hemisphere.GetCenter() - nearestPointToPlane) > 0.0f;
+            if (!abovePlane)
+            {
+                return false;
+            }
+
+            return distSq <= radiusSq && abovePlane;  // This has false positives but is reasonably tight.
+        }
 
         AZ_MATH_INLINE bool Overlaps(const Frustum& frustum, const Sphere& sphere)
         {
