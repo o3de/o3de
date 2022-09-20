@@ -121,15 +121,15 @@ namespace AZ::DocumentPropertyEditor
                         {
                             if (currMatch->m_matchesSelf)
                             {
-                                // node matches directly. All descendents automatically match if m_includeAllMatchDescendents is set
-                                if (!m_includeAllMatchDescendents)
+                                // node matches directly. All descendants automatically match if m_includeAllMatchDescendants is set
+                                if (!m_includeAllMatchDescendants)
                                 {
                                     cullUnmatchedChildRows(*valueIter, *matchIter);
                                 }
                             }
-                            else if (!currMatch->m_matchingDescendents.empty())
+                            else if (!currMatch->m_matchingDescendants.empty())
                             {
-                                // all nodes with matching descendents must be included so that there is a path to the matching node
+                                // all nodes with matching descendants must be included so that there is a path to the matching node
                                 cullUnmatchedChildRows(*valueIter, *matchIter);
                             }
                             else
@@ -180,7 +180,7 @@ namespace AZ::DocumentPropertyEditor
                     auto& parentContainer = matchingRow->m_parentNode->m_childMatchState;
                     parentContainer.erase(parentContainer.begin() + (patchPath.end() - 1)->GetIndex());
 
-                    // update former parent's match state, as its m_matchingDescendents may have changed
+                    // update former parent's match state, as its m_matchingDescendants may have changed
                     UpdateMatchState(matchingRow->m_parentNode);
                 }
                 else
@@ -200,7 +200,7 @@ namespace AZ::DocumentPropertyEditor
                     PopulateNodesAtPath(patchPath, true);
                     if (!existingMatchInfo)
                     {
-                        // this value wasn't a row before, so its parent needs to recache its info
+                        // this value wasn't a row before, so its parent needs to re-cache its info
                         auto parentNode = GetMatchNodeAtPath(patchPath)->m_parentNode;
                         auto parentPath = patchPath;
                         parentPath.Pop();
@@ -217,7 +217,7 @@ namespace AZ::DocumentPropertyEditor
                         auto& parentContainer = existingMatchInfo->m_parentNode->m_childMatchState;
                         parentContainer.erase(parentContainer.begin() + (patchPath.end() - 1)->GetIndex());
 
-                        // update former parent's match state, as its m_matchingDescendents may have changed
+                        // update former parent's match state, as its m_matchingDescendants may have changed
                         UpdateMatchState(existingMatchInfo->m_parentNode);
                     }
                     else
@@ -234,7 +234,7 @@ namespace AZ::DocumentPropertyEditor
             {
                 if (rowPath == patchPath)
                 {
-                    // given path is a new row, populate our tree with match information for this node and any row descendents
+                    // given path is a new row, populate our tree with match information for this node and any row descendants
                     PopulateNodesAtPath(rowPath, false);
                 }
                 else
@@ -349,7 +349,7 @@ namespace AZ::DocumentPropertyEditor
             }
             auto addedChild = parentMatchState->m_childMatchState[newRowIndex];
 
-            // recursively add descendents and cache their match status
+            // recursively add descendants and cache their match status
             const auto& sourceContents = m_sourceAdapter->GetContents();
             recursivelyRegenerateMatches(addedChild, sourceContents[sourcePath]);
         }
@@ -359,13 +359,13 @@ namespace AZ::DocumentPropertyEditor
     {
         auto includeInFilter = [](MatchInfoNode* node) -> bool
         {
-            return (node->m_matchesSelf || !node->m_matchingDescendents.empty());
+            return (node->m_matchesSelf || !node->m_matchingDescendants.empty());
         };
         bool usedToMatch = includeInFilter(rowState);
 
         rowState->m_matchesSelf = MatchesFilter(rowState); //update own match state
 
-        auto& matchingChildren = rowState->m_matchingDescendents;
+        auto& matchingChildren = rowState->m_matchingDescendants;
         for (auto childIter = matchingChildren.begin(); childIter != matchingChildren.end(); /* omitted */)
         {
             // it's a child's job to update its parents, but a parent still has to check if any
@@ -382,7 +382,7 @@ namespace AZ::DocumentPropertyEditor
 
         }
 
-        // update each ancestor until updating their m_matchingDescendents doesn't change their inclusion state
+        // update each ancestor until updating their m_matchingDescendants doesn't change their inclusion state
         MatchInfoNode* currState = rowState;
         bool nowMatches = includeInFilter(currState);
         while (currState->m_parentNode && nowMatches != usedToMatch)
@@ -390,11 +390,11 @@ namespace AZ::DocumentPropertyEditor
             usedToMatch = includeInFilter(currState->m_parentNode);
             if (nowMatches)
             {
-                currState->m_parentNode->m_matchingDescendents.insert(currState);
+                currState->m_parentNode->m_matchingDescendants.insert(currState);
             }
             else
             {
-                currState->m_parentNode->m_matchingDescendents.erase(currState);
+                currState->m_parentNode->m_matchingDescendants.erase(currState);
             }
             nowMatches = includeInFilter(currState->m_parentNode);
             currState = currState->m_parentNode;

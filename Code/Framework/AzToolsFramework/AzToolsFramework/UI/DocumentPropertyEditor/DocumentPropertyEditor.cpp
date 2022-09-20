@@ -621,7 +621,7 @@ namespace AzToolsFramework
             const auto childCount = m_domOrderedChildren.size();
             // find the next widget in the path and delegate the operation to them
             auto childIndex = (pathEntry.IsIndex() ? pathEntry.GetIndex() : childCount - 1);
-            AZ_Assert(childIndex <= childCount, "DPE: Patch failed to apply, invalid child index specified");
+            AZ_Assert(childIndex < childCount, "DPE: Patch failed to apply, invalid child index specified");
             if (childIndex >= childCount)
             {
                 return;
