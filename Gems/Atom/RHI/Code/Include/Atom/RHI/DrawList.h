@@ -33,6 +33,7 @@ namespace AZ
          * See also DrawListTagRegistry.
          */
         using DrawListTag = Handle<uint8_t>;
+        // TODO: DrawFilterMask = uint32_t has a comment "AZStd::bitset's implementation is too expensive", perhaps we should use uint32_t here too.
         using DrawListMask = AZStd::bitset<RHI::Limits::Pipeline::DrawListTagCountMax>;
 
         using DrawList = AZStd::vector<RHI::DrawItemProperties>;

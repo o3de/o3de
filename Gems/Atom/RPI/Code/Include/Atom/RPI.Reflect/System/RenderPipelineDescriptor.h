@@ -24,7 +24,8 @@ namespace AZ
             AZ_TYPE_INFO(RenderPipelineDescriptor, "{B1A5CF41-AC8D-440E-A1E9-3544D7F3445B}");
             static void Reflect(AZ::ReflectContext* context);
 
-            //! The root pass template name 
+            //! The root pass template name.
+            //! This will be used in the render pipeline's DrawFilterMask for draw item filtering.
             AZStd::string m_rootPassTemplate;
 
             //! The name string of the pipeline view tag we want to use as default view tag.

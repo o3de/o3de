@@ -181,6 +181,13 @@ namespace AZ
                 //! Unique tag to identify the shader
                 AZ::Name m_shaderTag;
 
+                // TODO: We might need to rename this depending on how we end up doing the filtering. Right now it's actually
+                // based on the pass tree template name, not the render pipeline name. And even that might change, we might
+                // have some dedicated material pipeline filter tag. 
+                
+                //! If set, the shader will only be used in a render pipeline with this name
+                AZ::Name m_renderPipelineName;
+
                 //! This list provides a way for users to set shader option values in a 'hard-coded' way rather than connecting them to material properties.
                 //! These are optional and the list will usually be empty; most options will either get set from a material property connection,
                 //! or will use the default value from the shader. 

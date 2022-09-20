@@ -240,6 +240,9 @@ namespace AZ
                 for (uint32_t index = context.GetSubmitRange().m_startIndex; index < context.GetSubmitRange().m_endIndex; ++index)
                 {
                     const RHI::DrawItemProperties& drawItemProperties = m_drawListView[index];
+
+                    // TODO: Maybe we can optimize this by pass a draw filter mask to DynamicDrawInterface::GetDrawListsForPass
+                    // in RasterPass::UpdateDrawList()
                     if (drawItemProperties.m_drawFilterMask & m_pipeline->GetDrawFilterMask())
                     {
                         commandList->Submit(*drawItemProperties.m_item, index);

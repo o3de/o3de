@@ -178,6 +178,11 @@ namespace AZ
             //! Try apply render pipeline changes from each feature processors if the pipeline allows modification and wasn't modified.
             void TryApplyRenderPipelineChanges(RenderPipeline* pipeline);
 
+            RHI::Ptr<RHI::DrawFilterTagRegistry> GetDrawFilterTagRegistry() const
+            {
+                return m_drawFilterTagRegistry;
+            }
+
         protected:
             // SceneFinder overrides...
             void OnSceneNotifictaionHandlerConnected(SceneNotification* handler);

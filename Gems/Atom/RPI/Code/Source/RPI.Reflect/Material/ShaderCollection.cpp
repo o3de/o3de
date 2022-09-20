@@ -83,6 +83,7 @@ namespace AZ
                     ->Field("Enabled", &ShaderCollection::Item::m_enabled)
                     ->Field("OwnedShaderOptionIndices", &ShaderCollection::Item::m_ownedShaderOptionIndices)
                     ->Field("ShaderTag", &ShaderCollection::Item::m_shaderTag)
+                    ->Field("RenderPipelineName", &ShaderCollection::Item::m_renderPipelineName)
                     ;
             }
 
@@ -155,21 +156,23 @@ namespace AZ
             return (m_shaderTagIndexMap.Find(shaderTag).IsValid());
         }
 
-        ShaderCollection::Item::Item(const Data::Asset<ShaderAsset>& shaderAsset, const AZ::Name& shaderTag, ShaderVariantId variantId)
+        ShaderCollection::Item::Item(const Data::Asset<ShaderAsset>& shaderAsset, const AZ::Name& shaderTag, ShaderVariantId variantId, const AZ::Name& renderPipelineName)
             : m_renderStatesOverlay(RHI::GetInvalidRenderStates())
             , m_shaderAsset(shaderAsset)
             , m_shaderVariantId(variantId)
             , m_shaderTag(shaderTag)
             , m_shaderOptionGroup(shaderAsset->GetShaderOptionGroupLayout(), variantId)
+            , m_renderPipelineName(renderPipelineName)
         {
         }
 
-        ShaderCollection::Item::Item(Data::Asset<ShaderAsset>&& shaderAsset, const AZ::Name& shaderTag, ShaderVariantId variantId)
+        ShaderCollection::Item::Item(Data::Asset<ShaderAsset>&& shaderAsset, const AZ::Name& shaderTag, ShaderVariantId variantId, const AZ::Name& renderPipelineName)
             : m_renderStatesOverlay(RHI::GetInvalidRenderStates())
             , m_shaderAsset(AZStd::move(shaderAsset))
             , m_shaderVariantId(variantId)
             , m_shaderTag(shaderTag)
             , m_shaderOptionGroup(shaderAsset->GetShaderOptionGroupLayout(), variantId)
+            , m_renderPipelineName(renderPipelineName)
         {
         }
 
@@ -255,6 +258,11 @@ namespace AZ
         const AZ::Name& ShaderCollection::Item::GetShaderTag() const
         {
             return m_shaderTag;
+        }
+
+        const AZ::Name& ShaderCollection::Item::GetRenderPipelineName() const
+        {
+            return m_renderPipelineName;
         }
 
         const Data::AssetId& ShaderCollection::Item::GetShaderAssetId() const

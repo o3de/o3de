@@ -80,6 +80,7 @@ namespace AZ
                     ->Version(2)
                     ->Field("file", &ShaderVariantReferenceData::m_shaderFilePath)
                     ->Field("tag", &ShaderVariantReferenceData::m_shaderTag)
+                    ->Field("pipeline", &ShaderVariantReferenceData::m_renderPipelineName)
                     ->Field("options", &ShaderVariantReferenceData::m_shaderOptionValues)
                     ;
 
@@ -847,7 +848,8 @@ namespace AZ
 
                     materialTypeAssetCreator.AddShader(
                         shaderAsset, options.GetShaderVariantId(),
-                        shaderRef.m_shaderTag.IsEmpty() ? AZ::Name(Uuid::CreateRandom().ToFixedString()) : shaderRef.m_shaderTag);
+                        shaderRef.m_shaderTag.IsEmpty() ? AZ::Name(Uuid::CreateRandom().ToFixedString()) : shaderRef.m_shaderTag,
+                        shaderRef.m_renderPipelineName);
 
                     // Gather UV names
                     const ShaderInputContract& shaderInputContract = shaderAsset->GetInputContract();

@@ -57,6 +57,8 @@ namespace AZ
 
         RenderPipelinePtr RenderPipeline::CreateRenderPipelineFromAsset(Data::Asset<AnyAsset> pipelineAsset)
         {
+            // TOOD: It looks like this function isn't used anywhere, we should just remove it.
+
             const RenderPipelineDescriptor* renderPipelineDescriptor = GetDataFromAnyAsset<RenderPipelineDescriptor>(pipelineAsset);
             if (renderPipelineDescriptor == nullptr)
             {
@@ -107,6 +109,7 @@ namespace AZ
             pipeline->m_descriptor = desc;
             pipeline->m_mainViewTag = Name(desc.m_mainViewTagName);
             pipeline->m_nameId = desc.m_name.data();
+            pipeline->m_passTreeTemplateName = desc.m_rootPassTemplate;
             pipeline->m_activeRenderSettings = desc.m_renderSettings;
             pipeline->m_passTree.m_rootPass->SetRenderPipeline(pipeline);
             pipeline->m_passTree.m_rootPass->m_flags.m_isPipelineRoot = true;
@@ -357,7 +360,8 @@ namespace AZ
             m_scene = nullptr;
             PassSystemInterface::Get()->RemoveRenderPipeline(this);
 
-            m_drawFilterTag.Reset();
+            m_drawFilterTagForPassTreeTemplate.Reset();
+            m_drawFilterTagForPipelineInstanceName.Reset();
             m_drawFilterMask = 0;
         }
 
@@ -628,27 +632,33 @@ namespace AZ
             return m_renderMode != RenderMode::NoRender;
         }
 
-        RHI::DrawFilterTag RenderPipeline::GetDrawFilterTag() const
-        {
-            return m_drawFilterTag;
-        }
-
         RHI::DrawFilterMask RenderPipeline::GetDrawFilterMask() const
         {
             return m_drawFilterMask;
         }
 
-        void RenderPipeline::SetDrawFilterTag(RHI::DrawFilterTag tag)
+        void RenderPipeline::SetDrawFilterTags(RHI::DrawFilterTagRegistry* tagRegistry)
         {
-            m_drawFilterTag = tag;
-            if (m_drawFilterTag.IsValid())
+            m_drawFilterTagForPassTreeTemplate = tagRegistry->AcquireTag(m_passTreeTemplateName);
+            m_drawFilterTagForPipelineInstanceName = tagRegistry->AcquireTag(m_nameId);
+
+            m_drawFilterMask = 0;
+
+            if (m_drawFilterTagForPassTreeTemplate.IsValid())
             {
-                m_drawFilterMask = 1 << tag.GetIndex();
+                m_drawFilterMask |= 1 << m_drawFilterTagForPassTreeTemplate.GetIndex();
             }
-            else
+
+            if (m_drawFilterTagForPipelineInstanceName.IsValid())
             {
-                m_drawFilterMask = 0;
+                m_drawFilterMask |= 1 << m_drawFilterTagForPipelineInstanceName.GetIndex();
             }
+        }
+
+        void RenderPipeline::ReleaseDrawFilterTags(RHI::DrawFilterTagRegistry* tagRegistry)
+        {
+            tagRegistry->ReleaseTag(m_drawFilterTagForPassTreeTemplate);
+            tagRegistry->ReleaseTag(m_drawFilterTagForPipelineInstanceName);
         }
 
         const RenderPipelineDescriptor& RenderPipeline::GetDescriptor() const

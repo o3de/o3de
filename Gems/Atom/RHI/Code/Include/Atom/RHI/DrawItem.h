@@ -112,6 +112,14 @@ namespace AZ
             };
         };
 
+        using DrawItemSortKey = AZ::s64;
+
+        // A filter associate to a DrawItem which can be used to filter the DrawItem when submitting to command list
+        using DrawFilterTag = Handle<uint8_t, DefaultNamespaceType>;
+        using DrawFilterMask = uint32_t; // AZStd::bitset's impelmentation is too expensive.
+        constexpr uint32_t DrawFilterMaskDefaultValue = uint32_t(-1);  // Default all bit to 1.
+        static_assert(sizeof(DrawFilterMask) * 8 >= Limits::Pipeline::DrawFilterTagCountMax, "DrawFilterMask doesn't have enough bits for maximum tag count");
+
         struct DrawItem
         {
             DrawItem() = default;
@@ -149,15 +157,13 @@ namespace AZ
             /// List of viewports to be applied to this draw item only. Viewports will be restore to the previous state
             /// after the DrawItem has been processed.
             const Viewport* m_viewports = nullptr;
+
+            // TODO: I'm not sure whether the draw filter mask should exist as a member of DrawItem or as a separate
+            // list like m_drawItemSortKeys and m_drawListTags.
+            // 
+            // The draw filter applies to each draw item
+            DrawFilterMask m_drawFilterMask = DrawFilterMaskDefaultValue;
         };
-
-        using DrawItemSortKey = AZ::s64;
-
-        // A filter associate to a DrawItem which can be used to filter the DrawItem when submitting to command list
-        using DrawFilterTag = Handle<uint8_t, DefaultNamespaceType>;
-        using DrawFilterMask = uint32_t; // AZStd::bitset's impelmentation is too expensive.
-        constexpr uint32_t DrawFilterMaskDefaultValue = uint32_t(-1);  // Default all bit to 1.
-        static_assert(sizeof(DrawFilterMask) * 8 >= Limits::Pipeline::DrawFilterTagCountMax, "DrawFilterMask doesn't have enough bits for maximum tag count");
 
         struct DrawItemProperties
         {

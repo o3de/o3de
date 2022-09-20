@@ -352,7 +352,7 @@ namespace AZ
                 return;
             }
 
-            pipeline->SetDrawFilterTag(m_drawFilterTagRegistry->AcquireTag(pipelineId));
+            pipeline->SetDrawFilterTags(m_drawFilterTagRegistry.get());
 
             m_pipelines.push_back(pipeline);
 
@@ -389,7 +389,7 @@ namespace AZ
                         m_defaultPipeline = nullptr;
                     }
 
-                    m_drawFilterTagRegistry->ReleaseTag(pipelineToRemove->GetDrawFilterTag());
+                    pipelineToRemove->ReleaseDrawFilterTags(m_drawFilterTagRegistry.get());
 
                     pipelineToRemove->OnRemovedFromScene(this);
                     m_pipelines.erase(it);

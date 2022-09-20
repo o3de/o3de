@@ -51,8 +51,8 @@ namespace AZ
                 //! @param shaderAsset The ShaderAsset represented by this item.
                 //! @param shaderTag Unique tag to identify this item.
                 //! @param variantId The the initial state of shader option values for use with this shader item.
-                Item(const Data::Asset<ShaderAsset>& shaderAsset, const AZ::Name& shaderTag, ShaderVariantId variantId = ShaderVariantId{});
-                Item(Data::Asset<ShaderAsset>&& shaderAsset, const AZ::Name& shaderTag, ShaderVariantId variantId = ShaderVariantId{});
+                Item(const Data::Asset<ShaderAsset>& shaderAsset, const AZ::Name& shaderTag, ShaderVariantId variantId = ShaderVariantId{}, const AZ::Name& renderPipelineName = {});
+                Item(Data::Asset<ShaderAsset>&& shaderAsset, const AZ::Name& shaderTag, ShaderVariantId variantId = ShaderVariantId{}, const AZ::Name& renderPipelineName = {});
 
                 const Data::Asset<ShaderAsset>& GetShaderAsset() const;
 
@@ -91,6 +91,8 @@ namespace AZ
                 //! Returns the shader tag used to identify this item
                 const AZ::Name& GetShaderTag() const;
 
+                const AZ::Name& GetRenderPipelineName() const;
+
             private:
                 Data::Asset<ShaderAsset> m_shaderAsset;
                 ShaderVariantId m_shaderVariantId;       //!< Temporarily holds the ShaderVariantId, used for serialization. This will be copied to/from m_shaderOptionGroup.
@@ -101,6 +103,7 @@ namespace AZ
                 AZStd::unordered_set<ShaderOptionIndex> m_ownedShaderOptionIndices; //!< Set of shader options in this shader that are owned by the material.
                 bool m_enabled = true;                   //!< Disabled items will not be included in the final draw packet that gets sent to the renderer.
                 AZ::Name m_shaderTag;                    //!< Unique tag that identifies this item
+                AZ::Name m_renderPipelineName;           //!< If set, the shader will only be used in this render pipeline.
             };
 
             using iterator = AZStd::vector<Item>::iterator;

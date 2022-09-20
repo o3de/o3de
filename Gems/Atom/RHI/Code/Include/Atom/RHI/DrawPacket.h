@@ -55,9 +55,6 @@ namespace AZ
             //! Returns the draw list tag associated with the provided index.
             DrawListTag GetDrawListTag(size_t index) const;
 
-            //! Returns the draw filter mask which applied to all the draw items.
-            DrawFilterMask GetDrawFilterMask() const;
-
             //! Overloaded operator delete for freeing a draw packet.
             void operator delete(void* p, size_t size);
 
@@ -70,9 +67,6 @@ namespace AZ
 
             // The bit-mask of all active filter tags.
             DrawListMask m_drawListMask = 0;
-
-            // The draw filter applies to each draw item
-            DrawFilterMask m_drawFilterMask = DrawFilterMaskDefaultValue;
 
             // The index buffer view used when the draw call is indexed.
             IndexBufferView m_indexBufferView;

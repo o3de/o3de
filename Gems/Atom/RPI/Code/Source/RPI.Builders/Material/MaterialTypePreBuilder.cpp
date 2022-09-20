@@ -29,7 +29,9 @@ namespace AZ
         {
             AssetBuilderSDK::AssetBuilderDesc builderDescriptor;
             builderDescriptor.m_name = JobKey;
-            builderDescriptor.m_version = 6; // Initial checkin
+            builderDescriptor.m_version = 7; // Initial checkin
+            // TODO: We won't actually use a different "ex" extension, this is just temporary. We will use the same ".materialtype" extension and just evaluate the content
+            // to determine whether this is a stage1 or stage2 material type source file.
             builderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.materialtypeex", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             builderDescriptor.m_busId = azrtti_typeid<MaterialTypePreBuilder>();
             builderDescriptor.m_createJobFunction = AZStd::bind(&MaterialTypePreBuilder::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
@@ -126,21 +128,21 @@ namespace AZ
 
             AZ::u32 nextProductSubID = 0;
 
+            auto materialTypeLoadResult = MaterialUtils::LoadMaterialTypeSourceData(request.m_fullPath);
+            if (!materialTypeLoadResult.IsSuccess())
+            {
+                AZ_Error(MaterialTypePreBuilderName, false, "Failed to load material type file.");
+                return;
+            }
+            MaterialTypeSourceData materialType = materialTypeLoadResult.TakeValue();
+            materialType.m_shaderCollection.clear();
+
             // Generate the required shaders
             for (const auto& [materialPipelineFilePath, materialPipeline] : m_materialPipelines)
             {
                 AZStd::string materialPipelineName;
                 AZ::StringFunc::Path::GetFileName(materialPipelineFilePath.c_str(), materialPipelineName);
 
-                // TODO: Need to update MaterialTypeAsset to support multiple pipelines, for now we have to generate separate ones.
-                auto materialTypeLoadResult = MaterialUtils::LoadMaterialTypeSourceData(request.m_fullPath);
-                if (!materialTypeLoadResult.IsSuccess())
-                {
-                    AZ_Error(MaterialTypePreBuilderName, false, "Failed to load material type file.");
-                    return;
-                }
-                MaterialTypeSourceData materialType = materialTypeLoadResult.TakeValue();
-                materialType.m_shaderCollection.clear();
 
                 // TODO: Eventually we'll use a script and inputs from the material type to decide which shader templates need to be used
                 for (const MaterialPipelineSourceData::ShaderTemplate& shaderTemplate : materialPipeline.m_shaderTemplates)
@@ -211,24 +213,29 @@ namespace AZ
 
                     materialType.m_shaderCollection.push_back({});
                     materialType.m_shaderCollection.back().m_shaderFilePath = AZ::IO::Path{outputShaderFilePath.Filename()}.c_str();
-                }
 
-                AZ::IO::Path outputMaterialTypeFilePath = request.m_tempDirPath;
-                outputMaterialTypeFilePath /= AZStd::string::format("%s_%s.materialtype", materialTypeName.c_str(), materialPipelineName.c_str());
+                    // TODO: We should probably make the material pipeline file have a field to indicate the name of the corresponding
+                    // pass tree template instead of assuming the filenames match.
+                    // pass tree template instead of assuming the filenames match.
+                    materialType.m_shaderCollection.back().m_renderPipelineName = materialPipelineName;
+                }
+            }
 
-                if (JsonUtils::SaveObjectToFile(outputMaterialTypeFilePath.String(), materialType))
-                {
-                    AssetBuilderSDK::JobProduct product;
-                    product.m_outputFlags = AssetBuilderSDK::ProductOutputFlags::IntermediateAsset;
-                    product.m_productFileName = outputMaterialTypeFilePath.String();
-                    product.m_productSubID = nextProductSubID++;
-                    response.m_outputProducts.push_back(AZStd::move(product));
-                }
-                else
-                {
-                    AZ_Error(MaterialTypePreBuilderName, false, "Failed to write intermediate material type file.");
-                    return;
-                }
+            AZ::IO::Path outputMaterialTypeFilePath = request.m_tempDirPath;
+            outputMaterialTypeFilePath /= AZStd::string::format("%s.materialtype", materialTypeName.c_str());
+
+            if (JsonUtils::SaveObjectToFile(outputMaterialTypeFilePath.String(), materialType))
+            {
+                AssetBuilderSDK::JobProduct product;
+                product.m_outputFlags = AssetBuilderSDK::ProductOutputFlags::IntermediateAsset;
+                product.m_productFileName = outputMaterialTypeFilePath.String();
+                product.m_productSubID = nextProductSubID++;
+                response.m_outputProducts.push_back(AZStd::move(product));
+            }
+            else
+            {
+                AZ_Error(MaterialTypePreBuilderName, false, "Failed to write intermediate material type file.");
+                return;
             }
 
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;

@@ -302,6 +302,17 @@ namespace AZ
                     drawRequest.m_uniqueShaderResourceGroup = drawSrg->GetRHIShaderResourceGroup();
                     m_perDrawSrgs.push_back(drawSrg);
                 }
+
+                Name renderPipelineName = shaderItem.GetRenderPipelineName();
+                if (!renderPipelineName.IsEmpty())
+                {
+                    // TODO: We might want to move this into a utility function in teh Scene class or something like that,
+                    // so there is one source of truth for how a shader's pipeline filter settings get put into a DrawFilterMask.
+                    RHI::DrawFilterTag pipelineTag = parentScene.GetDrawFilterTagRegistry()->AcquireTag(renderPipelineName);
+                    AZ_Assert(pipelineTag.IsValid(), "Could not acquire draw filter tag for render pipeline.");
+                    drawRequest.m_drawFilterMask = 1 << pipelineTag.GetIndex();
+                }
+
                 drawPacketBuilder.AddDrawItem(drawRequest);
                 
                 ShaderData shaderData;
