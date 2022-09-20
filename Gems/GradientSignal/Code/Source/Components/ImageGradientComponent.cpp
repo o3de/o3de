@@ -817,7 +817,7 @@ namespace GradientSignal
         GetValuesInternal(m_currentSamplingType, positions, outValues);
     }
 
-    void ImageGradientComponent::GetValuesByPosition(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
+    void ImageGradientComponent::GetPixelValuesByPosition(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
     {
         GetValuesInternal(SamplingType::Point, positions, outValues);
     }
@@ -1044,12 +1044,12 @@ namespace GradientSignal
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
-    void ImageGradientComponent::SetValueByPosition(const AZ::Vector3& position, float value)
+    void ImageGradientComponent::SetPixelValueByPosition(const AZ::Vector3& position, float value)
     {
-        SetValuesByPosition(AZStd::span<const AZ::Vector3>(&position, 1), AZStd::span<float>(&value, 1));
+        SetPixelValuesByPosition(AZStd::span<const AZ::Vector3>(&position, 1), AZStd::span<float>(&value, 1));
     }
 
-    void ImageGradientComponent::SetValuesByPosition(AZStd::span<const AZ::Vector3> positions, AZStd::span<const float> values)
+    void ImageGradientComponent::SetPixelValuesByPosition(AZStd::span<const AZ::Vector3> positions, AZStd::span<const float> values)
     {
         AZStd::unique_lock lock(m_queryMutex);
 
@@ -1141,7 +1141,7 @@ namespace GradientSignal
 
     }
 
-    void ImageGradientComponent::GetValuesByPixelIndex(AZStd::span<const PixelIndex> positions, AZStd::span<float> outValues) const
+    void ImageGradientComponent::GetPixelValuesByPixelIndex(AZStd::span<const PixelIndex> positions, AZStd::span<float> outValues) const
     {
         AZStd::shared_lock lock(m_queryMutex);
 
@@ -1163,12 +1163,12 @@ namespace GradientSignal
         }
     }
 
-    void ImageGradientComponent::SetValueByPixelIndex(const PixelIndex& position, float value)
+    void ImageGradientComponent::SetPixelValueByPixelIndex(const PixelIndex& position, float value)
     {
-        SetValuesByPixelIndex(AZStd::span<const PixelIndex>(&position, 1), AZStd::span<float>(&value, 1));
+        SetPixelValuesByPixelIndex(AZStd::span<const PixelIndex>(&position, 1), AZStd::span<float>(&value, 1));
     }
 
-    void ImageGradientComponent::SetValuesByPixelIndex(AZStd::span<const PixelIndex> positions, AZStd::span<const float> values)
+    void ImageGradientComponent::SetPixelValuesByPixelIndex(AZStd::span<const PixelIndex> positions, AZStd::span<const float> values)
     {
         AZStd::unique_lock lock(m_queryMutex);
 

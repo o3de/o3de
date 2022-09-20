@@ -34,42 +34,42 @@ namespace GradientSignal
 
         //! Given a list of world positions, return a list of pixel indices into the image.
         //! @param positions The list of world positions to query
-        //! @param outIndicies [out] The list of output PixelIndex values giving the (x,y) pixel coordinates for each world position.
+        //! @param outIndices [out] The list of output PixelIndex values giving the (x,y) pixel coordinates for each world position.
         virtual void GetPixelIndicesForPositions(AZStd::span<const AZ::Vector3> positions, AZStd::span<PixelIndex> outIndices) const = 0;
 
-        //! Get the image gradient values at a list of positions.
+        //! Get the image pixel values at a list of positions.
         //! Unlike GetValues on the GradientRequestBus, this will always use point sampling regardless of
-        //! the Image Gradient sampler type because the values are expected to be used for image modifications.
+        //! the Image Gradient sampler type because the specific pixel values are being requested.
         //! @param positions The list of world positions to query
         //! @param outValues [out] The list of output values. This list is expected to be the same size as the positions list.
-        virtual void GetValuesByPosition(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const = 0;
+        virtual void GetPixelValuesByPosition(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const = 0;
 
-        //! Get the image gradient values at a list of pixel indices.
+        //! Get the image pixel values at a list of pixel indices.
         //! Unlike GetValues on the GradientRequestBus, this will always use point sampling regardless of
-        //! the Image Gradient sampler type because the values are expected to be used for image modifications.
+        //! the Image Gradient sampler type because the specific pixel values are being requested.
         //! @param positions The list of pixel indices to query
         //! @param outValues [out] The list of output values. This list is expected to be the same size as the positions list.
-        virtual void GetValuesByPixelIndex(AZStd::span<const PixelIndex> indices, AZStd::span<float> outValues) const = 0;
+        virtual void GetPixelValuesByPixelIndex(AZStd::span<const PixelIndex> indices, AZStd::span<float> outValues) const = 0;
 
         //! Set the value at the given world position.
         //! @param position The world position to set the value at.
         //! @param value The value to set it to.
-        virtual void SetValueByPosition(const AZ::Vector3& position, float value) = 0;
+        virtual void SetPixelValueByPosition(const AZ::Vector3& position, float value) = 0;
 
         //! Set the value at the given pixel index.
         //! @param index The pixel index to set the value at.
         //! @param value The value to set it to.
-        virtual void SetValueByPixelIndex(const PixelIndex& index, float value) = 0;
+        virtual void SetPixelValueByPixelIndex(const PixelIndex& index, float value) = 0;
 
         //! Given a list of world positions, set the pixels at those positions to the given values.
         //! @param positions The list of world positions to set the values for.
         //! @param values The list of values to set. This list is expected to be the same size as the positions list.
-        virtual void SetValuesByPosition(AZStd::span<const AZ::Vector3> positions, AZStd::span<const float> values) = 0;
+        virtual void SetPixelValuesByPosition(AZStd::span<const AZ::Vector3> positions, AZStd::span<const float> values) = 0;
 
         //! Given a list of pixel indices, set those pixels to the given values.
         //! @param indicdes The list of pixel indices to set the values for.
         //! @param values The list of values to set. This list is expected to be the same size as the positions list.
-        virtual void SetValuesByPixelIndex(AZStd::span<const PixelIndex> indices, AZStd::span<const float> values) = 0;
+        virtual void SetPixelValuesByPixelIndex(AZStd::span<const PixelIndex> indices, AZStd::span<const float> values) = 0;
     };
 
     using ImageGradientModificationBus = AZ::EBus<ImageGradientModifications>;

@@ -284,7 +284,7 @@ namespace GradientSignal
         // Get the previous gradient image values
         AZStd::vector<float> oldValues(points.size());
         ImageGradientModificationBus::Event(
-            GetEntityId(), &ImageGradientModificationBus::Events::GetValuesByPixelIndex, pixelIndices, oldValues);
+            GetEntityId(), &ImageGradientModificationBus::Events::GetPixelValuesByPixelIndex, pixelIndices, oldValues);
 
         AZ_Assert(m_paintBrushUndoBuffer != nullptr, "Undo batch is expected to exist while painting");
         m_paintBrushUndoBuffer->ReserveBuffer(points.size());
@@ -300,7 +300,7 @@ namespace GradientSignal
                 m_paintBrushUndoBuffer->AddPoint(points[index], pixelIndices[index], oldValues[index], newValue);
 
                 ImageGradientModificationBus::Event(
-                    GetEntityId(), &ImageGradientModificationBus::Events::SetValueByPixelIndex, pixelIndices[index], newValue);
+                    GetEntityId(), &ImageGradientModificationBus::Events::SetPixelValueByPixelIndex, pixelIndices[index], newValue);
             }
         }
 
