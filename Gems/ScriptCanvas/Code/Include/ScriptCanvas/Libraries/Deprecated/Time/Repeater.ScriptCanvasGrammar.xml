@@ -12,7 +12,6 @@
            Category="Utilities"
            Version="3"
            VersionConverter="ScriptCanvas::VersionConverters::RepeaterVersionConverter"
-           GeneratePropertyFriend="True"
            Description="Repeats the output signal the given number of times using the specified delay to space the signals out">
         <In Name="In" Description="Input signal"/>
         <Property Name="Repetitions"

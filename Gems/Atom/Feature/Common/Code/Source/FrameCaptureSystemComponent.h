@@ -41,12 +41,12 @@ namespace AZ
 
             // FrameCaptureRequestBus overrides ...
             bool CanCapture() const override;
-            uint32_t CaptureScreenshot(const AZStd::string& filePath) override;
-            uint32_t CaptureScreenshotForWindow(const AZStd::string& filePath, AzFramework::NativeWindowHandle windowHandle) override;
-            uint32_t CaptureScreenshotWithPreview(const AZStd::string& outputFilePath) override;
-            uint32_t CapturePassAttachment(const AZStd::vector<AZStd::string>& passHierarchy, const AZStd::string& slotName, const AZStd::string& outputFilePath,
+            FrameCaptureId CaptureScreenshot(const AZStd::string& filePath) override;
+            FrameCaptureId CaptureScreenshotForWindow(const AZStd::string& filePath, AzFramework::NativeWindowHandle windowHandle) override;
+            FrameCaptureId CaptureScreenshotWithPreview(const AZStd::string& outputFilePath) override;
+            FrameCaptureId CapturePassAttachment(const AZStd::vector<AZStd::string>& passHierarchy, const AZStd::string& slotName, const AZStd::string& outputFilePath,
                 RPI::PassAttachmentReadbackOption option) override;
-            uint32_t CapturePassAttachmentWithCallback(const AZStd::vector<AZStd::string>& passHierarchy, const AZStd::string& slotName
+            FrameCaptureId CapturePassAttachmentWithCallback(const AZStd::vector<AZStd::string>& passHierarchy, const AZStd::string& slotName
                 , RPI::AttachmentReadback::CallbackFunction callback, RPI::PassAttachmentReadbackOption option) override;
 
             // FrameCaptureTestRequestBus overrides ...

@@ -235,6 +235,7 @@ namespace AzToolsFramework
 
         void AssetEditorWidget::SaveAll()
         {
+
             for (int tabIndex = 0; tabIndex < m_tabs->count(); tabIndex++)
             {
                 AssetEditorTab* tab = qobject_cast<AssetEditorTab*>(m_tabs->widget(tabIndex));

@@ -168,6 +168,7 @@ namespace AzToolsFramework
             AZStd::unique_ptr<Ui::AssetEditorStatusBar> m_statusBar;
 
             AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeEvent::Handler m_propertyChangeHandler;
+            AZ::Crc32 m_savedStateKey;
 
             void PopulateGenericAssetTypes();
         };

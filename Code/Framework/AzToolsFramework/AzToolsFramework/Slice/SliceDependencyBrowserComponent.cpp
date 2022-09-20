@@ -208,9 +208,22 @@ namespace AzToolsFramework
     bool SliceDependencyBrowserComponent::GetSliceDependenciesByRelativeAssetPath(const AZStd::string& relativePath, AZStd::vector<AZStd::string>& dependencies) const
     {
         bool found = false;
+
+        AZ::Uuid sourceUuid;
+        m_databaseConnection->QuerySourceBySourceName(relativePath.c_str(), [&sourceUuid](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
+        {
+            sourceUuid = entry.m_sourceGuid;
+            return false;
+        });
+
+        if (sourceUuid.IsNull())
+        {
+            return false;
+        }
+
         bool succeeded = m_databaseConnection->QueryDependsOnSourceBySourceDependency(
-            relativePath.c_str(),"%.slice", 
-            AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceOrJob, 
+            sourceUuid, "%.slice",
+            AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceOrJob,
             [&](AssetDatabase::SourceFileDependencyEntry& entry)
         {
             found = true;
@@ -224,12 +237,25 @@ namespace AzToolsFramework
     {
         bool found = false;
         bool succeeded = m_databaseConnection->QuerySourceDependencyByDependsOnSource(
-            relativePath.c_str(), "%.slice",
+            relativePath.c_str(),
             AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceOrJob,
             [&](AssetDatabase::SourceFileDependencyEntry& entry)
         {
+            AzToolsFramework::AssetDatabase::SourceDatabaseEntry sourceEntry;
+            m_databaseConnection->QuerySourceBySourceGuid(entry.m_sourceGuid, [&sourceEntry](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
+            {
+                sourceEntry = entry;
+                return false;
+            });
+
+            if(!sourceEntry.m_sourceName.ends_with(".slice"))
+            {
+                // Filter out non-slice files
+                return true;
+            }
+
             found = true;
-            dependents.push_back(AZStd::move(entry.m_source));
+            dependents.push_back(AZStd::move(sourceEntry.m_sourceName));
             return true;
         });
         return found && succeeded;

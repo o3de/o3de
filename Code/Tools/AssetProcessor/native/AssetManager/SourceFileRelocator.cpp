@@ -453,7 +453,6 @@ Please note that only those seed files will get updated that are active for your
         for (auto& relocationInfo : relocationContainer)
         {
             m_stateData->QuerySourceDependencyByDependsOnSource(relocationInfo.m_sourceEntry.m_sourceName.c_str(),
-                nullptr,
                 AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_Any, [&relocationInfo](AzToolsFramework::AssetDatabase::SourceFileDependencyEntry& dependencyEntry)
                 {
                     relocationInfo.m_sourceDependencyEntries.push_back(dependencyEntry);
@@ -748,9 +747,18 @@ Please note that only those seed files will get updated that are active for your
 
                 for (const auto& sourceDependency : relocationInfo.m_sourceDependencyEntries)
                 {
-                    report = AZStd::string::format("%s\t\tPATH: %s, TYPE: %d, %s\n", report.c_str(), sourceDependency.m_source.c_str(), sourceDependency.m_typeOfDependency, sourceDependency.m_fromAssetId ? "AssetId-based" : "Path-based");
+                    AzToolsFramework::AssetDatabase::SourceDatabaseEntry sourceEntry;
+                    m_stateData->QuerySourceBySourceGuid(
+                        sourceDependency.m_sourceGuid,
+                        [&sourceEntry](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
+                        {
+                            sourceEntry = entry;
+                            return false;
+                        });
+
+                    report = AZStd::string::format("%s\t\tUUID: %s, TYPE: %d, %s\n", report.c_str(), sourceEntry.m_sourceName.c_str(), sourceDependency.m_typeOfDependency, sourceDependency.m_fromAssetId ? "AssetId-based" : "Path-based");
                     AZStd::string fileExtension;
-                    AZ::StringFunc::Path::GetExtension(sourceDependency.m_source.c_str(), fileExtension, false);
+                    AZ::StringFunc::Path::GetExtension(sourceEntry.m_sourceName.c_str(), fileExtension, false);
 
                     auto found = m_additionalHelpTextMap.find(fileExtension);
                     if (found != m_additionalHelpTextMap.end())
@@ -1345,7 +1353,16 @@ Please note that only those seed files will get updated that are active for your
 
             for (const auto& sourceDependency : relocationInfo.m_sourceDependencyEntries)
             {
-                AZStd::string fullPath = m_platformConfig->FindFirstMatchingFile(sourceDependency.m_source.c_str()).toUtf8().constData();
+                AzToolsFramework::AssetDatabase::SourceDatabaseEntry sourceEntry;
+                m_stateData->QuerySourceBySourceGuid(
+                    sourceDependency.m_sourceGuid,
+                    [&sourceEntry](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
+                    {
+                        sourceEntry = entry;
+                        return false;
+                    });
+
+                AZStd::string fullPath = m_platformConfig->FindFirstMatchingFile(sourceEntry.m_sourceName.c_str()).toUtf8().constData();
 
                 fullPath = pathFixupFunc(fullPath.c_str());
 

@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Memory/Memory.h>
+#include <AzCore/Component/Entity.h>
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
 
 namespace AZ
@@ -29,5 +30,26 @@ namespace AZ
     private:
         void ConvertComponentVectorToMap(const AZ::Entity::ComponentArrayType& components,
             AZStd::unordered_map<AZStd::string, AZ::Component*>& componentMapOut);
+    };
+
+    //! Helper class to track components that have been skipped during loading.
+    //! When this class is added to the metadata of a Json deserializer setting,
+    //! custom component serializers can add themselves to the list so users
+    //! can be informed of component deprecation upon load completion
+    class DeprecatedComponentMetadata
+    {
+    public:
+        AZ_TYPE_INFO(DeprecatedComponentMetadata, "{3D5F5EAE-BDA9-43AA-958E-E87158BAFB9F}");
+        using EnableDeprecationTrackingCallback = AZStd::function<bool()>;
+
+        ~DeprecatedComponentMetadata() = default;
+
+        void SetEnableDeprecationTrackingCallback(EnableDeprecationTrackingCallback callback);
+        void AddComponent(const TypeId& componentType);
+        AZStd::vector<AZStd::string> GetComponentNames() const;
+
+    private:
+        AZStd::unordered_set<AZ::TypeId> m_componentTypes;
+        EnableDeprecationTrackingCallback m_enableDeprecationTrackingCallback;
     };
 }

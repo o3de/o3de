@@ -344,6 +344,7 @@
     <file>img/UI20/toolbar/Align_to_Object.svg</file>
     <file>img/UI20/toolbar/Angle.svg</file>
     <file>img/UI20/toolbar/Audio.svg</file>
+    <file>img/UI20/toolbar/AutoFit.svg</file>
     <file>img/UI20/toolbar/Database_view.svg</file>
     <file>img/UI20/toolbar/Debugging.svg</file>
     <file>img/UI20/toolbar/Deploy.svg</file>
@@ -391,9 +392,11 @@
     <file>img/UI20/toolbar/Y_axis.svg</file>
     <file>img/UI20/toolbar/Z_axis.svg</file>
     <file>img/UI20/toolbar/XY2_copy.svg</file>
+    <file>img/UI20/toolbar/joints/ChildFrame.svg</file>
     <file>img/UI20/toolbar/joints/Damping.svg</file>
     <file>img/UI20/toolbar/joints/MaxForce.svg</file>
     <file>img/UI20/toolbar/joints/MaxTorque.svg</file>
+    <file>img/UI20/toolbar/joints/ParentFrame.svg</file>
     <file>img/UI20/toolbar/joints/SnapPosition.svg</file>
     <file>img/UI20/toolbar/joints/SnapRotation.svg</file>
     <file>img/UI20/toolbar/joints/Stiffness.svg</file>
