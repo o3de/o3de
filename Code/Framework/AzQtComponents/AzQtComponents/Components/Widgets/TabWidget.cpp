@@ -44,6 +44,7 @@ namespace AzQtComponents
     static int g_closeButtonMinTabWidth = -1;
     static int g_toolTipTabWidthThreshold = -1;
     static int g_overflowSpacing = -1;
+    static int g_secondaryOverflowSpacing = -1;
     static QString g_secondaryStyleClass = QStringLiteral("Secondary");
     static QString g_borderedStyleClass = QStringLiteral("Bordered");
     static QString g_emptyStyleClass = QStringLiteral("Empty");
@@ -105,12 +106,14 @@ namespace AzQtComponents
         ConfigHelpers::read<int>(settings, QStringLiteral("ToolTipTabWidthThreshold"), config.toolTipTabWidthThreshold);
         ConfigHelpers::read<bool>(settings, QStringLiteral("ShowOverflowMenu"), config.showOverflowMenu);
         ConfigHelpers::read<int>(settings, QStringLiteral("OverflowSpacing"), config.overflowSpacing);
+        ConfigHelpers::read<int>(settings, QStringLiteral("SecondaryOverflowSpacing"), config.secondaryOverflowSpacing);
 
         g_closeButtonPadding = config.closeButtonRightPadding;
         g_closeButtonWidth = config.closeButtonSize;
         g_closeButtonMinTabWidth = config.closeButtonMinTabWidth;
         g_toolTipTabWidthThreshold = config.toolTipTabWidthThreshold;
         g_overflowSpacing = config.overflowSpacing;
+        g_secondaryOverflowSpacing = config.secondaryOverflowSpacing;
 
         return config;
     }
@@ -128,7 +131,8 @@ namespace AzQtComponents
             32,         // CloseButtonMinTabWidth
             96,         // ToolTipTabWidthThreshold
             true,       // ShowOverflowMenu
-            24          // OverflowSpacing
+            24,         // OverflowSpacing
+            0           // SecondaryOverflowSpacing
         };
     }
 
@@ -226,7 +230,13 @@ namespace AzQtComponents
 
         if (m_shouldShowOverflowMenu && m_spaceOverflowButton && visible)
         {
-            m_actionToolBarContainer->overflowSpacer()->changeSize(g_overflowSpacing, 0, QSizePolicy::Fixed, QSizePolicy::Fixed);
+            int spacing = g_overflowSpacing;
+            if (Style::hasClass(this, g_secondaryStyleClass))
+            {
+                spacing = g_secondaryOverflowSpacing;
+            }
+
+            m_actionToolBarContainer->overflowSpacer()->changeSize(spacing, 0, QSizePolicy::Fixed, QSizePolicy::Fixed);
         }
         else
         {
@@ -828,7 +838,7 @@ namespace AzQtComponents
             return size;
         }
 
-        int availableWidth = tabWidget->width() - tabWidget->count();
+        int availableWidth = tabWidget->width();
         if (tabWidget->isActionToolBarVisible())
         {
             auto toolBarContainer = qobject_cast<QWidget*>(tabWidget->actionToolBar()->parent());
@@ -843,15 +853,12 @@ namespace AzQtComponents
         availableWidth -= toolButtonWidth;
 
         ToolButton* overflowButton = tabWidget->getOverflowButton();
-        int overflowButtonWidth = overflowButton->isVisible() ? overflowButton->width() : 0;
+        int overflowButtonWidth = overflowButton->isVisible() ? tabBar->height() : 0;
 
         int minButtonWidth = size.width() + config.textRightPadding;
-        if (!tabBar->tabsClosable())
-        {
-            minButtonWidth -= config.closeButtonSize + 1;
-        }
 
-        bool overflowing = minButtonWidth * tabBar->count() > availableWidth;
+        // Never show the overflow menu if there's one or zero tabs.
+        bool overflowing = tabBar->count() > 1 ? minButtonWidth * tabBar->count() > availableWidth : false;
 
         if (overflowing)
         {
@@ -869,11 +876,6 @@ namespace AzQtComponents
             else
             {
                 size.setWidth(minButtonWidth);
-            }
-
-            if (!tabBar->tabsClosable())
-            {
-                size -= QSize(config.closeButtonSize + 1, 0);
             }
         }
         else

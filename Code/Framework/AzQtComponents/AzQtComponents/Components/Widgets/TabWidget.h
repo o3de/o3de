@@ -56,6 +56,7 @@ namespace AzQtComponents
             int toolTipTabWidthThreshold;   //!< Width threshold below which a tooltip is displayed, in pixels.
             bool showOverflowMenu;          //!< Whether an overflow dropdown menu listing the tabs should be displayed on resize.
             int overflowSpacing;            //!< Spacing between the overflow button and the other buttons when the tabs are shrunk, in pixels.
+            int secondaryOverflowSpacing;   //!< Spacing when using secondary style.
         };
 
         //! Applies the "Secondary" style class to a TabWidget.
