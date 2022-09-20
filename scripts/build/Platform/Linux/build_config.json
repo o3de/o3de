@@ -21,7 +21,7 @@
   "profile_ubuntu22_nounity_pipe": {
     "TAGS": [
       "periodic-incremental-daily",
-      "periodic-clean-weekly-internal",
+      "periodic-clean-weekly-internal"
     ],
     "PIPELINE_ENV":{
       "NODE_LABEL":"linux-ubuntu-22"
