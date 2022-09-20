@@ -6,6 +6,10 @@
 # 
 # 
 
+if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
+    return()
+endif()
+
 # Currently we are in the Code folder: ${CMAKE_CURRENT_LIST_DIR}
 # Get the platform specific folder ${pal_dir} for the current folder: ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME}
 # Note: o3de_pal_dir will take care of the details for us, as this may be a restricted platform
