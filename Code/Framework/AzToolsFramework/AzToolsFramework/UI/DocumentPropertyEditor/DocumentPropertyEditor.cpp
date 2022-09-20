@@ -628,19 +628,6 @@ namespace AzToolsFramework
             }
 
             QWidget* childWidget = m_domOrderedChildren[childIndex];
-
-            if (!childWidget)
-            {
-                // if there's a null entry in the current place for m_domOrderedChildren,
-                // that's ok if this entry isn't expanded to that depth and need not follow the change any further
-                // if we are expanded, then this patch references an unsupported handler, which might a problem
-                if (IsExpanded())
-                {
-                    AZ_Warning("Document Property Editor", false, "got patch for unimplemented PropertyHandler");
-                }
-                return;
-            }
-
             DPERowWidget* widgetAsDpeRow = qobject_cast<DPERowWidget*>(childWidget);
             if (widgetAsDpeRow)
             {
@@ -656,6 +643,36 @@ namespace AzToolsFramework
                     subPath.Pop();
                 }
                 const auto valueAtSubPath = GetDPE()->GetAdapter()->GetContents()[subPath];
+
+                if (!childWidget)
+                {
+                    // if there's a null entry in the current place for m_domOrderedChildren,
+                    // that's ok if this entry isn't expanded to that depth and need not follow the change any further
+                    // if we are expanded, then this patch references an unsupported handler, which might a problem
+                    if (IsExpanded())
+                    {
+                        // widget doesn't exist, but maybe we can make one now with the known contents
+                        auto handlerId =
+                            AZ::Interface<PropertyEditorToolsSystemInterface>::Get()->GetPropertyHandlerForNode(valueAtSubPath);
+
+                        if (handlerId)
+                        {
+                            // have a proper handlerID now, see if we can make a widget from this value now
+                            auto replacementWidget = CreateWidgetForHandler(handlerId, valueAtSubPath);
+                            if (replacementWidget)
+                            {
+                                AddColumnWidget(replacementWidget, childIndex, valueAtSubPath);
+                                AddDomChildWidget(childIndex, replacementWidget);
+                            }
+                        }
+                        else
+                        {
+                            AZ_Warning("Document Property Editor", false, "got patch for unimplemented PropertyHandler");
+                        }
+                    }
+                    // new handler was created with the current value from the DOM, or not. Either way, we're done
+                    return;
+                }
 
                 // check if it's a PropertyHandler; if it is, just set it from the DOM directly
                 auto foundEntry = m_widgetToPropertyHandlerInfo.find(childWidget);
