@@ -104,7 +104,45 @@ namespace O3DE::ProjectManager
                     else if (button && button->property(k_addRemoteTemplateProperty).isValid())
                     {
                         AddRemoteTemplateDialog* addRemoteTemplateDialog = new AddRemoteTemplateDialog(this);
-                        addRemoteTemplateDialog->exec();
+                        if (addRemoteTemplateDialog->exec() == QDialog::DialogCode::Accepted)
+                        {
+                            auto remoteTemplatesResult =
+                                PythonBindingsInterface::Get()->GetProjectTemplatesForRepo(addRemoteTemplateDialog->GetRepoPath());
+                            if (remoteTemplatesResult.IsSuccess() && !remoteTemplatesResult.GetValue().isEmpty())
+                            {
+                                // remove remote template button from layout so we can insert the new templates before it
+                                m_templateFlowLayout->removeWidget(m_remoteTemplateButton);
+
+                                int currentTemplateIndex = m_templates.size();
+                                const QVector<ProjectTemplateInfo>& remoteTemplates = remoteTemplatesResult.GetValue();
+                                for (const ProjectTemplateInfo& remoteTemplate : remoteTemplates)
+                                {
+                                    m_templates.push_back(remoteTemplate);
+
+                                    // create template button
+                                    QString projectPreviewPath = QDir(remoteTemplate.m_path).filePath(ProjectPreviewImagePath);
+                                    QFileInfo doesPreviewExist(projectPreviewPath);
+                                    if (!doesPreviewExist.exists() || !doesPreviewExist.isFile())
+                                    {
+                                        projectPreviewPath = ":/DefaultTemplate.png";
+                                    }
+                                    TemplateButton* templateButton =
+                                        new TemplateButton(projectPreviewPath, remoteTemplate.m_displayName, this);
+                                    templateButton->SetIsRemote(remoteTemplate.m_isRemote);
+                                    templateButton->setCheckable(true);
+                                    templateButton->setProperty(k_templateIndexProperty, currentTemplateIndex);
+                                    templateButton->setProperty(k_templateNameProperty, remoteTemplate.m_name);
+
+                                    m_projectTemplateButtonGroup->addButton(templateButton);
+                                    m_templateFlowLayout->addWidget(templateButton);
+                                    m_templateButtons.append(templateButton);
+                                    ++currentTemplateIndex;
+                                }
+
+                                // add remote template button back to layout
+                                m_templateFlowLayout->addWidget(m_remoteTemplateButton);
+                            }
+                        }
                     }
                 });
 
@@ -259,10 +297,10 @@ namespace O3DE::ProjectManager
             }
 
             // Insert the add a remote template button
-            TemplateButton* remoteTemplateButton = new TemplateButton(":/DefaultTemplate.png", tr("Add remote Template"), this);
-            remoteTemplateButton->setProperty(k_addRemoteTemplateProperty, true);
-            m_projectTemplateButtonGroup->addButton(remoteTemplateButton);
-            m_templateFlowLayout->addWidget(remoteTemplateButton);
+            m_remoteTemplateButton = new TemplateButton(":/DefaultTemplate.png", tr("Add remote Template"), this);
+            m_remoteTemplateButton->setProperty(k_addRemoteTemplateProperty, true);
+            m_projectTemplateButtonGroup->addButton(m_remoteTemplateButton);
+            m_templateFlowLayout->addWidget(m_remoteTemplateButton);
 
             // Select the first project template (default selection).
             SelectProjectTemplate(0, /*blockSignals=*/true);
@@ -397,6 +435,17 @@ namespace O3DE::ProjectManager
             m_projectTemplateButtonGroup->blockSignals(false);
         }
     }
+
+    AZ::Outcome<void, QString> NewProjectSettingsScreen::Validate()
+    {
+        if (m_selectedTemplateIndex != -1 && m_templates[m_selectedTemplateIndex].m_isRemote)
+        {
+            return AZ::Failure<QString>(tr("You can not create a project with a template that has not been downloaded."));
+        }
+
+        return ProjectSettingsScreen::Validate();
+    }
+
     void NewProjectSettingsScreen::OnProjectNameUpdated()
     {
         if (ValidateProjectName() && !m_userChangedProjectPath)

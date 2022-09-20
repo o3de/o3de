@@ -249,6 +249,12 @@ namespace O3DE::ProjectManager
         virtual AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplates() = 0;
 
         /**
+         * Gathers all project templates for the given repo.
+         * @return An outcome with a list of all ProjectTemplateInfos from the given repo on success
+         */
+        virtual AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplatesForRepo(const QString& repoUri) = 0;
+
+        /**
          * Gathers all project templates for all templates registered from repos.
          * @return An outcome with a list of all ProjectTemplateInfos on success
          */

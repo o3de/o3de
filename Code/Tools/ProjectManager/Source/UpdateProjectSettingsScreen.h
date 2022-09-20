@@ -29,7 +29,7 @@ namespace O3DE::ProjectManager
         ProjectInfo GetProjectInfo() override;
         void SetProjectInfo(const ProjectInfo& projectInfo);
 
-        bool Validate() override;
+        AZ::Outcome<void, QString> Validate() override;
 
         void ResetProjectPreviewPath();
 
