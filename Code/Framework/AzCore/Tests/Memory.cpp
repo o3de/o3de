@@ -24,7 +24,7 @@
 #include <AzCore/std/containers/intrusive_slist.h>
 #include <AzCore/std/containers/intrusive_list.h>
 
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 
 #include <AzCore/std/functional.h>
 
