@@ -63,7 +63,8 @@ namespace UnitTest
         const MouseMoveParams mouseMoveParams = GetParam();
         m_rootWidget->move(mouseMoveParams.m_widgetPosition);
         m_rootWidget->setFixedSize(mouseMoveParams.m_widgetSize);
-        AzToolsFramework::SetComponentSwitcherEnabled(false);
+        AzToolsFramework::SetComponentSwitcherEnabled(true);
+        printf("switcher is : %i", AzToolsFramework::ComponentSwitcherEnabled());
 
         // when
         MouseMove(m_rootWidget.get(), mouseMoveParams.m_localCursorPosition, mouseMoveParams.m_cursorDelta);
@@ -78,8 +79,6 @@ namespace UnitTest
         EXPECT_THAT(mouseLocalPosition.y(), Eq(expectedPosition.y()));
         EXPECT_THAT(mouseLocalPositionFromGlobal.x(), Eq(expectedPosition.x()));
         EXPECT_THAT(mouseLocalPositionFromGlobal.y(), Eq(expectedPosition.y()));
-
-        AzToolsFramework::SetComponentSwitcherEnabled(true);
     }
 
     INSTANTIATE_TEST_CASE_P(
