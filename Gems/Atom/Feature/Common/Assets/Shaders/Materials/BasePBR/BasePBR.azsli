@@ -50,5 +50,5 @@ COMMON_OPTIONS_NORMAL()
 #include "BasePBR_Surface.azsli"
 
 #include "BasePBR_LightingData.azsli"
-#include "BasePBR_LightingModel.azsli"
+#include "BasePBR_LightingBrdf.azsli"
 #include "BasePBR_Lighting.azsli"

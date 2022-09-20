@@ -90,7 +90,6 @@ void LightingData_BasePBR::CalculateMultiscatterCompensation(float3 specularF0, 
 void LightingData_BasePBR::FinalizeLighting(Surface surface)
 {
     specularLighting *= specularOcclusion;
-    specularLighting += emissiveLighting;
 
     if(!IsSpecularLightingEnabled())
     {

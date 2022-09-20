@@ -56,5 +56,5 @@ COMMON_OPTIONS_SPECULAR_F0()
 #include "Eye_Surface.azsli"
 
 #include "../BasePBR/BasePBR_LightingData.azsli"
-#include "../Skin/Skin_LightingModel.azsli"
+#include "../Skin/Skin_LightingBrdf.azsli"
 #include "../BasePBR/BasePBR_Lighting.azsli"

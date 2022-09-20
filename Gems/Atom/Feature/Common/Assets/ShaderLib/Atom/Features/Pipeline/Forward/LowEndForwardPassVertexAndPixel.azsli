@@ -9,7 +9,7 @@
 #pragma once
 
 
-#include <Atom/Features/Pipeline/Forward/LowEndForwardPassOutput.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli>
 
 // --- Vertex Shader ---
 
@@ -36,8 +36,13 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 
     ForwardPassOutput OUT;
 
-    OUT.m_color.rgb = lightingData.diffuseLighting.rgb + lightingData.specularLighting.rgb;
+    OUT.m_color.rgb = lightingData.diffuseLighting.rgb + lightingData.specularLighting.rgb + lightingData.emissiveLighting.rgb;
     OUT.m_color.a = 1.0;
+
+#if OUTPUT_DEPTH
+    // Can be modified in Parallax calculations in EvaluatePixelGeometry
+    OUT.m_depth = IN.position.z;
+#endif
 
     return OUT;
 }

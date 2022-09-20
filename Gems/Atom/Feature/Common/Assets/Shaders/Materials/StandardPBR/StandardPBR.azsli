@@ -57,5 +57,5 @@ COMMON_OPTIONS_EMISSIVE()
 #include "StandardPBR_Surface.azsli"
 
 #include "../BasePBR/BasePBR_LightingData.azsli"
-#include "StandardPBR_LightingModel.azsli"
+#include "StandardPBR_LightingBrdf.azsli"
 #include "StandardPBR_Lighting.azsli"

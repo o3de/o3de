@@ -71,7 +71,7 @@ Surface EvaluateSurface_EnhancedPBR(
 
     if(o_parallax_highlightClipping && isDisplacementClipped)
     {
-        ApplyParallaxClippingHighlight(surface.albedo);
+        ApplyParallaxClippingHighlight(baseColor);
     }
 
     // ------- Alpha & Clip -------

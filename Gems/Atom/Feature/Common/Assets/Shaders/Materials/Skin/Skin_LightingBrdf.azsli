@@ -15,7 +15,7 @@
 #define GetDiffuseLighting(surface, lightingData, lightIntensity, dirToLight)       GetDiffuseLighting_Skin(surface, lightingData, lightIntensity, dirToLight)
 #endif
 
-#include "../BasePBR/BasePBR_LightingModel.azsli"
+#include "../BasePBR/BasePBR_LightingBrdf.azsli"
 
 // Then define the Diffuse and Specular lighting functions
 float3 GetDiffuseLighting_Skin(Surface surface, LightingData lightingData, float3 lightIntensity, float3 dirToLight)

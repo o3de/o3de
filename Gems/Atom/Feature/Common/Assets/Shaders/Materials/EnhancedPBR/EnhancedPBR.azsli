@@ -64,5 +64,5 @@ COMMON_OPTIONS_DETAIL_MAPS()
 #include "EnhancedPBR_Surface.azsli"
 
 #include "../BasePBR/BasePBR_LightingData.azsli"
-#include "EnhancedPBR_LightingModel.azsli"
+#include "EnhancedPBR_LightingBrdf.azsli"
 #include "../StandardPBR/StandardPBR_Lighting.azsli"

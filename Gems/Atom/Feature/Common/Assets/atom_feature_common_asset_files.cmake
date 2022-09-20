@@ -19,6 +19,7 @@ set(FILES
     Materials/Types/EnhancedPBR_Anisotropy.lua
     Materials/Types/EnhancedPBR_SubsurfaceState.lua
     Materials/Types/Eye.materialtype
+    Materials/Types/Eye.shader
     Materials/Types/Skin.materialtype
     Materials/Types/Skin_SpecularF0.lua
     Materials/Types/Skin_WrinkleMaps.lua
@@ -105,6 +106,8 @@ set(FILES
     Passes/LookModificationTransform.pass
     Passes/LowEndForward.pass
     Passes/LowEndPipeline.pass
+    Passes/LowEndPipelineXRLeft.pass
+    Passes/LowEndPipelineXRRight.pass
     Passes/LuminanceHeatmap.pass
     Passes/LuminanceHistogramGenerator.pass
     Passes/LutGeneration.pass
@@ -146,13 +149,13 @@ set(FILES
     Passes/ReflectionScreenSpaceTrace.pass
     Passes/ShadowParent.pass
     Passes/Skinning.pass
-    Passes/SkyAtmosphereParent.pass
     Passes/SkyAtmosphere.pass
-    Passes/SkyTransmittanceLUT.pass
-    Passes/SkyViewLUT.pass
-    Passes/SkyRayMarching.pass
+    Passes/SkyAtmosphereParent.pass
     Passes/SkyBox.pass
     Passes/SkyBox_TwoOutputs.pass
+    Passes/SkyRayMarching.pass
+    Passes/SkyTransmittanceLUT.pass
+    Passes/SkyViewLUT.pass
     Passes/SlowClear.pass
     Passes/SMAA1xApplyLinearHDRColor.pass
     Passes/SMAA1xApplyPerceptualColor.pass
@@ -238,7 +241,6 @@ set(FILES
     ShaderLib/Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli
     ShaderLib/Atom/Features/Pipeline/Forward/ForwardPassVertexAndPixel.azsli
     ShaderLib/Atom/Features/Pipeline/Forward/ForwardSubsurfacePassOutput.azsli
-    ShaderLib/Atom/Features/Pipeline/Forward/LowEndForwardPassOutput.azsli
     ShaderLib/Atom/Features/Pipeline/Forward/LowEndForwardPassVertexAndPixel.azsli
     ShaderLib/Atom/Features/PostProcessing/Aces.azsli
     ShaderLib/Atom/Features/PostProcessing/AcesColorSpaceConversion.azsli
@@ -319,8 +321,8 @@ set(FILES
     Shaders/Materials/BasePBR/BasePBR_ForwardPass.azsl
     Shaders/Materials/BasePBR/BasePBR_ForwardPass.shader
     Shaders/Materials/BasePBR/BasePBR_Lighting.azsli
+    Shaders/Materials/BasePBR/BasePBR_LightingBrdf.azsli
     Shaders/Materials/BasePBR/BasePBR_LightingData.azsli
-    Shaders/Materials/BasePBR/BasePBR_LightingModel.azsli
     Shaders/Materials/BasePBR/BasePBR_LowEndForward.azsl
     Shaders/Materials/BasePBR/BasePBR_LowEndForward.shader
     Shaders/Materials/BasePBR/BasePBR_MaterialSrg.azsli
@@ -336,8 +338,7 @@ set(FILES
     Shaders/Materials/EnhancedPBR/EnhancedPBR_ForwardPass.azsl
     Shaders/Materials/EnhancedPBR/EnhancedPBR_ForwardPass.shader
     Shaders/Materials/EnhancedPBR/EnhancedPBR_ForwardPass_EDS.shader
-    Shaders/Materials/EnhancedPBR/EnhancedPBR_Lighting.azsli
-    Shaders/Materials/EnhancedPBR/EnhancedPBR_LightingModel.azsli
+    Shaders/Materials/EnhancedPBR/EnhancedPBR_LightingBrdf.azsli
     Shaders/Materials/EnhancedPBR/EnhancedPBR_MaterialSrg.azsli
     Shaders/Materials/EnhancedPBR/EnhancedPBR_PixelGeometry.azsli
     Shaders/Materials/EnhancedPBR/EnhancedPBR_PixelGeometryData.azsli
@@ -350,15 +351,12 @@ set(FILES
     Shaders/Materials/Eye/Eye.azsli
     Shaders/Materials/Eye/Eye_ForwardPass.azsl
     Shaders/Materials/Eye/Eye_ForwardPass.shader
-    Shaders/Materials/Eye/Eye_LightingModel.azsli
     Shaders/Materials/Eye/Eye_MaterialSrg.azsli
     Shaders/Materials/Eye/Eye_PixelGeometry.azsli
     Shaders/Materials/Eye/Eye_PixelGeometryData.azsli
     Shaders/Materials/Eye/Eye_Surface.azsli
-    Shaders/Materials/Eye/Eye_SurfaceData.azsli
     Shaders/Materials/Eye/Eye_Vertex.azsli
     Shaders/Materials/Eye/Eye_VertexData.azsli
-    Shaders/Materials/MaterialFunctions/EnhancedParallaxDepth.azsli
     Shaders/Materials/MaterialFunctions/EvaluateTangentFrame.azsli
     Shaders/Materials/MaterialFunctions/MultilayerParallaxDepth.azsli
     Shaders/Materials/MaterialFunctions/ParallaxDepth.azsli
@@ -390,7 +388,7 @@ set(FILES
     Shaders/Materials/Skin/Skin.azsli
     Shaders/Materials/Skin/Skin_ForwardPass.azsl
     Shaders/Materials/Skin/Skin_ForwardPass.shader
-    Shaders/Materials/Skin/Skin_LightingModel.azsli
+    Shaders/Materials/Skin/Skin_LightingBrdf.azsli
     Shaders/Materials/Skin/Skin_MaterialSrg.azsli
     Shaders/Materials/Skin/Skin_PixelGeometry.azsli
     Shaders/Materials/Skin/Skin_PixelGeometryData.azsli
@@ -405,14 +403,13 @@ set(FILES
     Shaders/Materials/StandardPBR/StandardPBR_ForwardPass.shader
     Shaders/Materials/StandardPBR/StandardPBR_ForwardPass_EDS.shader
     Shaders/Materials/StandardPBR/StandardPBR_Lighting.azsli
-    Shaders/Materials/StandardPBR/StandardPBR_LightingModel.azsli
+    Shaders/Materials/StandardPBR/StandardPBR_LightingBrdf.azsli
     Shaders/Materials/StandardPBR/StandardPBR_LowEndForward.azsl
     Shaders/Materials/StandardPBR/StandardPBR_LowEndForward.shader
     Shaders/Materials/StandardPBR/StandardPBR_LowEndForward_EDS.shader
     Shaders/Materials/StandardPBR/StandardPBR_MaterialSrg.azsli
     Shaders/Materials/StandardPBR/StandardPBR_PixelGeometry.azsli
     Shaders/Materials/StandardPBR/StandardPBR_PixelGeometryData.azsli
-    Shaders/Materials/StandardPBR/StandardPBR_Shadowmap_WithPS.azsl
     Shaders/Materials/StandardPBR/StandardPBR_Shadowmap_WithPS.shader
     Shaders/Materials/StandardPBR/StandardPBR_Surface.azsli
     Shaders/Materials/StandardPBR/StandardPBR_SurfaceData.azsli
@@ -574,15 +571,15 @@ set(FILES
     Shaders/SkinnedMesh/LinearSkinningCS.azsl
     Shaders/SkinnedMesh/LinearSkinningCS.shader
     Shaders/SkinnedMesh/LinearSkinningPassSRG.azsli
-    Shaders/SkyBox/SkyBox.azsl
-    Shaders/SkyBox/SkyBox.shader
-    Shaders/SkyBox/SkyBox_TwoOutputs.azsl
-    Shaders/SkyBox/SkyBox_TwoOutputs.shader
     Shaders/SkyAtmosphere/SkyAtmosphereCommon.azsli
+    Shaders/SkyAtmosphere/SkyRayMarching.azsl
+    Shaders/SkyAtmosphere/SkyRayMarching.shader
     Shaders/SkyAtmosphere/SkyTransmittanceLUT.azsl
     Shaders/SkyAtmosphere/SkyTransmittanceLUT.shader
     Shaders/SkyAtmosphere/SkyViewLUT.azsl
     Shaders/SkyAtmosphere/SkyViewLUT.shader
-    Shaders/SkyAtmosphere/SkyRayMarching.azsl
-    Shaders/SkyAtmosphere/SkyRayMarching.shader
+    Shaders/SkyBox/SkyBox.azsl
+    Shaders/SkyBox/SkyBox.shader
+    Shaders/SkyBox/SkyBox_TwoOutputs.azsl
+    Shaders/SkyBox/SkyBox_TwoOutputs.shader
 ) 

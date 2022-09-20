@@ -55,5 +55,5 @@ COMMON_OPTIONS_DETAIL_MAPS()
 #include "Skin_Surface.azsli"
 
 #include "../BasePBR/BasePBR_LightingData.azsli"
-#include "Skin_LightingModel.azsli"
+#include "Skin_LightingBrdf.azsli"
 #include "../BasePBR/BasePBR_Lighting.azsli"
