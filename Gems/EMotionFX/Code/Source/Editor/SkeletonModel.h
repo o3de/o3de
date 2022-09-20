@@ -56,7 +56,8 @@ namespace EMotionFX
             ROLE_HITDETECTION,
             ROLE_CLOTH,
             ROLE_SIMULATED_JOINT,
-            ROLE_SIMULATED_OBJECT_COLLIDER
+            ROLE_SIMULATED_OBJECT_COLLIDER,
+            ROLE_IS_CHARACTER_ROOT_NODE,
         };
 
         SkeletonModel();
@@ -99,6 +100,9 @@ namespace EMotionFX
         static const char* s_simulatedJointIconPath;
         static const char* s_simulatedColliderIconPath;
 
+        static bool IndexIsRootNode(const QModelIndex& idx);
+        static bool IndicesContainRootNode(const QModelIndexList& indices);
+
     private:
         struct NodeInfo
         {
@@ -112,6 +116,8 @@ namespace EMotionFX
         void SetActorInstance(ActorInstance* actorInstance);
         void UpdateNodeInfos(Actor* actor);
         void Reset();
+        NodeInfo& GetNodeInfo(const Node* node);
+        const NodeInfo& GetNodeInfo(const Node* node) const;
 
         static int s_columnCount;
 
@@ -120,6 +126,7 @@ namespace EMotionFX
         Actor* m_actor;
         ActorInstance* m_actorInstance;
         QItemSelectionModel m_selectionModel;
+        Node* m_characterRootNode;
 
         QIcon m_jointIcon;
         QIcon m_clothColliderIcon;

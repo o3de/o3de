@@ -257,7 +257,7 @@ namespace LmbrCentral
         {
             // Allow loading of Material and Texture Assets which explicitly specialized AzTypeInfo instead of using
             // the AZ_RTTI Uuid from SimpleAssetReference<T>
-            serializeContext->ClassDeprecate("SimpleAssetReference_MaterialAsset", "{B7B8ECC7-FF89-4A76-A50E-4C6CA2B6E6B4}",
+            serializeContext->ClassDeprecate("SimpleAssetReference_MaterialAsset", AZ::Uuid("{B7B8ECC7-FF89-4A76-A50E-4C6CA2B6E6B4}"),
                 [](AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& rootElement)
                 {
                     AZStd::vector<AZ::SerializeContext::DataElementNode> childNodeElements;
@@ -273,7 +273,7 @@ namespace LmbrCentral
                     }
                     return true;
                 });
-            serializeContext->ClassDeprecate("SimpleAssetReference_TextureAsset", "{68E92460-5C0C-4031-9620-6F1A08763243}",
+            serializeContext->ClassDeprecate("SimpleAssetReference_TextureAsset", AZ::Uuid("{68E92460-5C0C-4031-9620-6F1A08763243}"),
                 [](AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& rootElement)
                 {
                     AZStd::vector<AZ::SerializeContext::DataElementNode> childNodeElements;

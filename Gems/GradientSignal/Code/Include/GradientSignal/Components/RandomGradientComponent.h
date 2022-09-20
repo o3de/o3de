@@ -32,7 +32,7 @@ namespace GradientSignal
         AZ::u32 m_randomSeed = 13;
     };
 
-    static const AZ::Uuid RandomGradientComponentTypeId = "{8B7E5121-41B0-4EF9-96A9-04953EC69754}";
+    inline constexpr AZ::TypeId RandomGradientComponentTypeId{ "{8B7E5121-41B0-4EF9-96A9-04953EC69754}" };
 
     class RandomGradientComponent
         : public AZ::Component

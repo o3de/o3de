@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Math/MathUtils.h>
 #include <AzCore/Time/TimeSystem.h>
 #include <AzCore/UnitTest/TestTypes.h>
 

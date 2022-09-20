@@ -42,7 +42,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString GradientMixerNode::TITLE = QObject::tr("Gradient Mixer");
+    const char* GradientMixerNode::TITLE = "Gradient Mixer";
 
     GradientMixerNode::GradientMixerNode(GraphModel::GraphPtr graph)
         : BaseNode(graph)
@@ -53,12 +53,12 @@ namespace LandscapeCanvas
 
     const char* GradientMixerNode::GetTitle() const
     {
-        return TITLE.toUtf8().constData();
+        return TITLE;
     }
 
     const char* GradientMixerNode::GetSubTitle() const
     {
-        return GRADIENT_MODIFIER_TITLE.toUtf8().constData();
+        return GRADIENT_MODIFIER_TITLE;
     }
 
     const BaseNode::BaseNodeType GradientMixerNode::GetBaseNodeType() const

@@ -28,7 +28,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString AxisAlignedBoxShapeNode::TITLE = QObject::tr("Axis Aligned Box Shape");
+    const char* AxisAlignedBoxShapeNode::TITLE = "Axis Aligned Box Shape";
 
     AxisAlignedBoxShapeNode::AxisAlignedBoxShapeNode(GraphModel::GraphPtr graph)
         : BaseShapeNode(graph)

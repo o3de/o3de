@@ -62,9 +62,6 @@ namespace AzToolsFramework
             AZ::IO::Path GetOwningInstancePrefabPath(AZ::EntityId entityId) const override;
             PrefabRequestResult HasUnsavedChanges(AZ::IO::Path prefabFilePath) const override;
 
-            //! [DEPRECATION]--This function is marked for deprecation. Please use DeleteEntitiesAndAllDescendantsInInstance instead.
-            PrefabOperationResult DeleteEntitiesInInstance(const EntityIdList& entityIds) override;
-
             PrefabOperationResult DeleteEntitiesAndAllDescendantsInInstance(const EntityIdList& entityIds) override;
             DuplicatePrefabResult DuplicateEntitiesInInstance(const EntityIdList& entityIds) override;
 
@@ -81,6 +78,11 @@ namespace AzToolsFramework
             //! Sanitizes an EntityIdList to remove entities that should not be affected by prefab operations.
             //! It will identify and exclude the container entity of the root prefab instance, and all read-only entities.
             EntityIdList SanitizeEntityIdList(const EntityIdList& entityIds) const;
+
+            //! Copies the entity DOM from owning template into the given map if the map sees
+            //! the entity id for the first time.
+            void CaptureInitialEntityDomFromOwningTemplate(AZStd::unordered_map<AZ::EntityId, PrefabDom>& entityIdDomMap,
+                const AZ::EntityId entityId, const PrefabDom& owningTemplateDom) const;
 
             InstanceOptionalReference GetOwnerInstanceByEntityId(AZ::EntityId entityId) const;
             void AddNewEntityToSortOrder(Instance& owningInstance, PrefabDom& domToAddEntityUnder,

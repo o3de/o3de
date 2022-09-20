@@ -53,7 +53,7 @@ namespace Vegetation
         void AddTag(AZStd::string tag);
     };
 
-    static const AZ::Uuid PositionModifierComponentTypeId = "{A5E84838-57D7-4F40-B011-73D9FD9AE33D}";
+    inline constexpr AZ::TypeId PositionModifierComponentTypeId{ "{A5E84838-57D7-4F40-B011-73D9FD9AE33D}" };
 
     /**
     * Component implementing VegetationModifierRequestBus that offsets position
