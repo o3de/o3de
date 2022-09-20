@@ -58,9 +58,9 @@ namespace AzQtComponents
 
         //! Sets the Card Header title. Passing an empty string will hide the Card Header.
         void setTitle(const QString& title);
-        
-        //! Sets the Card Header title and tooltip. Passing an empty string for the title will hide the Card Header.
-        void setTitle(const QString& title, const QString& tooltip);
+
+        //! Sets the tool tip for the card header and card header title.
+        void setTitleToolTip(const QString& toolTip);
 
         //! Returns the current title.
         QString title() const;

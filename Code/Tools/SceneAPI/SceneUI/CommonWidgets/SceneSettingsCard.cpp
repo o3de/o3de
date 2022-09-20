@@ -283,28 +283,30 @@ void SceneSettingsCard::SetState(State newState)
     {
     case State::Loading:
         {
-            QString tooltip(tr("The scene settings for this file are being loaded. The window will update when the event completes."));
-            setTitle(tr("Loading scene settings"), tooltip);
-            m_settingsHeader->m_busySpinner->setToolTip(tooltip);
+            QString toolTip(tr("The scene settings for this file are being loaded. The window will update when the event completes."));
+            setTitle(tr("Loading scene settings"));
+            setTitleToolTip(toolTip);
+            m_settingsHeader->m_busySpinner->setToolTip(toolTip);
             m_settingsHeader->SetCanClose(false);
         }
         break;
     case State::Processing:
         {
-            QString tooltip(tr("The scene file is being processed. The window will update when the event completes."));
-            setTitle(tr("Saving scene settings, and reprocessing scene file"), tooltip);
-            m_settingsHeader->m_busySpinner->setToolTip(tooltip);
+            QString toolTip(tr("The scene file is being processed. The window will update when the event completes."));
+            setTitle(tr("Saving scene settings, and reprocessing scene file"));
+            setTitleToolTip(toolTip);
+            m_settingsHeader->m_busySpinner->setToolTip(toolTip);
             m_settingsHeader->SetCanClose(false);
         }
         break;
     case State::Done:
         {
-            QString tooltip(tr("No errors or warnings were encountered %1 the scene file.%2"));
+            QString toolTip(tr("No errors or warnings were encountered %1 the scene file.%2"));
             QString errorsAndWarningsString;
             if (m_warningCount > 0 || m_errorCount > 0)
             {
                 errorsAndWarningsString = tr(" with %1 warning(s), %2 error(s)").arg(m_warningCount).arg(m_errorCount);
-                tooltip = tr("Warnings and/or errors were encountered %1 the scene file. You can view the details by expanding this card "
+                toolTip = tr("Warnings and/or errors were encountered %1 the scene file. You can view the details by expanding this card "
                              "and reading the log message.%2");
             }
 
@@ -314,14 +316,15 @@ void SceneSettingsCard::SetState(State newState)
             case State::Loading:
                 previousStateString = tr("Loading ");
                 // The second arg is empty because there isn't an easy way to find the loading log messages later.
-                tooltip = tooltip.arg(tr("loading")).arg("");
+                toolTip = toolTip.arg(tr("loading")).arg("");
                 break;
             case State::Processing:
                 previousStateString = tr("Processing ");
-                tooltip = tooltip.arg(tr("processing")).arg(tr(" If you dismiss this card, you can view the processing logs again in the Asset Processor."));
+                toolTip = toolTip.arg(tr("processing")).arg(tr(" If you dismiss this card, you can view the processing logs again in the Asset Processor."));
                 break;
                 }
-            setTitle(tr("%1%2 completed at %3%4").arg(previousStateString).arg(m_fileTracked).arg(GetTimeNowAsString()).arg(errorsAndWarningsString), tooltip);
+            setTitle(tr("%1%2 completed at %3%4").arg(previousStateString).arg(m_fileTracked).arg(GetTimeNowAsString()).arg(errorsAndWarningsString));
+            setTitleToolTip(toolTip);
             m_settingsHeader->SetCanClose(true);
 
             switch (m_completionState)
