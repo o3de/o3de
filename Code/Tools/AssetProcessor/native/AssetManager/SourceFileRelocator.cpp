@@ -715,9 +715,23 @@ Please note that only those seed files will get updated that are active for your
 
                 for (const auto& sourceDependency : relocationInfo.m_sourceDependencyEntries)
                 {
-                    report = AZStd::string::format("%s\nPATH: %s, TYPE: %d, %s\n", report.c_str(), sourceDependency.m_source.c_str(), sourceDependency.m_typeOfDependency, sourceDependency.m_fromAssetId ? "AssetId-based" : "Path-based");
+                    AzToolsFramework::AssetDatabase::SourceDatabaseEntry sourceEntry;
+                    m_stateData->QuerySourceBySourceGuid(
+                        sourceDependency.m_sourceGuid,
+                        [&sourceEntry](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
+                        {
+                            sourceEntry = entry;
+                            return false;
+                        });
+
+                    report = AZStd::string::format(
+                        "%s\nPATH: %s, TYPE: %d, %s\n",
+                        report.c_str(),
+                        sourceEntry.m_sourceName.c_str(),
+                        sourceDependency.m_typeOfDependency,
+                        sourceDependency.m_fromAssetId ? "AssetId-based" : "Path-based");
                     AZStd::string fileExtension;
-                    AZ::StringFunc::Path::GetExtension(sourceDependency.m_source.c_str(), fileExtension, false);
+                    AZ::StringFunc::Path::GetExtension(sourceEntry.m_sourceName.c_str(), fileExtension, false);
 
                     auto found = m_additionalHelpTextMap.find(fileExtension);
                     if (found != m_additionalHelpTextMap.end())
@@ -766,8 +780,7 @@ Please note that only those seed files will get updated that are active for your
         return report;
     }
 
-        AZStd::string SourceFileRelocator::BuildReport(
-        const SourceFileRelocationContainer& relocationEntries, const FileUpdateTasks& updateTasks, bool isMove, bool updateReference) const
+    AZStd::string SourceFileRelocator::BuildReport(const SourceFileRelocationContainer& relocationEntries, const FileUpdateTasks& updateTasks, bool isMove, bool updateReference) const
     {
         AZStd::string report;
 
@@ -806,21 +819,22 @@ Please note that only those seed files will get updated that are active for your
 
             if (!relocationInfo.m_sourceDependencyEntries.empty())
             {
-                AZStd::string reportString = AZStd::string::format(
-                    "\t%s:\n",
-                    updateReference ? " The following files have a source / job dependency on this file, we will attempt to fix the "
-                                      "references but they may still break"
-                                    : "The following files have a source / job dependency on this file and will break");
+                AZStd::string reportString = AZStd::string::format("\t%s:\n", updateReference ? " The following files have a source / job dependency on this file, we will attempt to fix the references but they may still break"
+                    : "The following files have a source / job dependency on this file and will break");
                 report.append(reportString);
 
                 for (const auto& sourceDependency : relocationInfo.m_sourceDependencyEntries)
                 {
-                    report = AZStd::string::format(
-                        "%s\t\tPATH: %s, TYPE: %d, %s\n",
-                        report.c_str(),
-                        sourceDependency.m_source.c_str(),
-                        sourceDependency.m_typeOfDependency,
-                        sourceDependency.m_fromAssetId ? "AssetId-based" : "Path-based");
+                    AzToolsFramework::AssetDatabase::SourceDatabaseEntry sourceEntry;
+                    m_stateData->QuerySourceBySourceGuid(
+                        sourceDependency.m_sourceGuid,
+                        [&sourceEntry](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
+                        {
+                            sourceEntry = entry;
+                            return false;
+                        });
+
+                    report = AZStd::string::format("%s\t\tUUID: %s, TYPE: %d, %s\n", report.c_str(), sourceEntry.m_sourceName.c_str(), sourceDependency.m_typeOfDependency, sourceDependency.m_fromAssetId ? "AssetId-based" : "Path-based");
                     AZStd::string fileExtension;
                     AZ::StringFunc::Path::GetExtension(sourceEntry.m_sourceName.c_str(), fileExtension, false);
 
@@ -834,12 +848,8 @@ Please note that only those seed files will get updated that are active for your
 
             if (!relocationInfo.m_productDependencyEntries.empty())
             {
-                AZStd::string reportString = AZStd::string::format(
-                    "\t%s:\n",
-                    updateReference ? " The following files have a product dependency on one or more of the products generated by this "
-                                      "file, we will attempt to fix the references but they may still break"
-                                    : "The following files have a product dependency on one or more of the products generated by this file "
-                                      "and will break");
+                AZStd::string reportString = AZStd::string::format("\t%s:\n", updateReference ? " The following files have a product dependency on one or more of the products generated by this file, we will attempt to fix the references but they may still break"
+                    : "The following files have a product dependency on one or more of the products generated by this file and will break");
                 report.append(reportString);
 
                 for (const auto& productDependency : relocationInfo.m_productDependencyEntries)
@@ -848,42 +858,25 @@ Please note that only those seed files will get updated that are active for your
                     AzToolsFramework::AssetDatabase::ProductDatabaseEntry productEntry;
                     AzToolsFramework::AssetDatabase::ProductDatabaseEntry thisFilesProductEntry;
 
-                    m_stateData->QuerySourceByProductID(
-                        productDependency.m_productPK,
-                        [&sourceEntry](const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
+                    m_stateData->QuerySourceByProductID(productDependency.m_productPK, [&sourceEntry](const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
                         {
                             sourceEntry = entry;
                             return false;
                         });
 
-                    m_stateData->QueryProductByProductID(
-                        productDependency.m_productPK,
-                        [&productEntry](const AzToolsFramework::AssetDatabase::ProductDatabaseEntry& entry)
+                    m_stateData->QueryProductByProductID(productDependency.m_productPK, [&productEntry](const AzToolsFramework::AssetDatabase::ProductDatabaseEntry& entry)
                         {
                             productEntry = entry;
                             return false;
                         });
 
-                    m_stateData->QueryCombinedBySourceGuidProductSubId(
-                        productDependency.m_dependencySourceGuid,
-                        productDependency.m_dependencySubID,
-                        [&thisFilesProductEntry](const AzToolsFramework::AssetDatabase::CombinedDatabaseEntry& entry)
+                    m_stateData->QueryCombinedBySourceGuidProductSubId(productDependency.m_dependencySourceGuid, productDependency.m_dependencySubID, [&thisFilesProductEntry](const AzToolsFramework::AssetDatabase::CombinedDatabaseEntry& entry)
                         {
                             thisFilesProductEntry = static_cast<AzToolsFramework::AssetDatabase::ProductDatabaseEntry>(entry);
                             return false;
-                        },
-                        AZ::Uuid::CreateNull(),
-                        nullptr,
-                        productDependency.m_platform.c_str());
+                        }, AZ::Uuid::CreateNull(), nullptr, productDependency.m_platform.c_str());
 
-                    report = AZStd::string::format(
-                        "%s\t\tPATH: %s, DEPENDS ON PRODUCT: %s, ASSETID: %s, TYPE: %d, %s\n",
-                        report.c_str(),
-                        productEntry.m_productName.c_str(),
-                        thisFilesProductEntry.m_productName.c_str(),
-                        AZ::Data::AssetId(sourceEntry.m_sourceGuid, productEntry.m_subID).ToString<AZStd::string>().c_str(),
-                        productDependency.m_dependencyType,
-                        productDependency.m_fromAssetId ? "AssetId-based" : "Path-based");
+                    report = AZStd::string::format("%s\t\tPATH: %s, DEPENDS ON PRODUCT: %s, ASSETID: %s, TYPE: %d, %s\n", report.c_str(), productEntry.m_productName.c_str(), thisFilesProductEntry.m_productName.c_str(), AZ::Data::AssetId(sourceEntry.m_sourceGuid, productEntry.m_subID).ToString<AZStd::string>().c_str(), productDependency.m_dependencyType, productDependency.m_fromAssetId ? "AssetId-based" : "Path-based");
                 }
             }
         }
