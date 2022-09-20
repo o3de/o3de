@@ -23,7 +23,7 @@ namespace UnitTest
         {
             AllocatorsTestFixture::SetUp();
 
-            m_rootWidget = AZStd::make_unique<QWidget>();
+            m_rootWidget = new QWidget();
             m_rootWidget->setFixedSize(0, 0);
             m_rootWidget->setMouseTracking(true);
             m_rootWidget->move(0, 0); // explicitly set the widget to be in the upper left corner
@@ -35,13 +35,13 @@ namespace UnitTest
         void TearDown() override
         {
             m_rootWidget->removeEventFilter(m_mouseMoveDetector.get());
-            m_rootWidget.reset();
+            delete m_rootWidget;
             m_mouseMoveDetector.reset();
 
             AllocatorsTestFixture::TearDown();
         }
 
-        AZStd::unique_ptr<QWidget> m_rootWidget;
+        QWidget* m_rootWidget = nullptr;
         AZStd::unique_ptr<MouseMoveDetector> m_mouseMoveDetector;
     };
 
@@ -75,7 +75,7 @@ namespace UnitTest
         }
 
         // when
-        MouseMove(m_rootWidget.get(), mouseMoveParams.m_localCursorPosition, mouseMoveParams.m_cursorDelta);
+        MouseMove(m_rootWidget, mouseMoveParams.m_localCursorPosition, mouseMoveParams.m_cursorDelta);
 
         // then
         const QPoint mouseLocalPosition = m_mouseMoveDetector->m_mouseLocalPosition;
