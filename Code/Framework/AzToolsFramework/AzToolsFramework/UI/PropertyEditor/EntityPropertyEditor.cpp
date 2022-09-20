@@ -4560,6 +4560,12 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::dragEnterEvent(QDragEnterEvent* event)
     {
+        if (m_selectionContainsReadOnlyEntity)
+        {
+            event->ignore();
+            return;
+        }
+
         if (UpdateDrag(event->pos(), event->mouseButtons(), event->mimeData()))
         {
             event->accept();
@@ -4572,6 +4578,12 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::dragMoveEvent(QDragMoveEvent* event)
     {
+        if (m_selectionContainsReadOnlyEntity)
+        {
+            event->ignore();
+            return;
+        }
+
         if (UpdateDrag(event->pos(), event->mouseButtons(), event->mimeData()))
         {
             event->accept();
@@ -4814,6 +4826,11 @@ namespace AzToolsFramework
         if (m_isAlreadyQueuedRefresh)
         {
             return false; // can't drop while tree is rebuilding itself!
+        }
+
+        if (m_selectionContainsReadOnlyEntity)
+        {
+            return false;
         }
 
         const QRect globalRect(globalPos, globalPos);
