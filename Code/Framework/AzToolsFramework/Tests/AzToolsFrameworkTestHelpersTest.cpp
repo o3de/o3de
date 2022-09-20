@@ -99,7 +99,7 @@ namespace UnitTest
         All,
         MouseMoveAzToolsFrameworkTestHelperFixture,
         testing::Values(
-            MouseMoveParams{ QSize(100, 100), QPoint(0, 0), QPoint(0, 0), QPoint(10, 10) },
+            MouseMoveParams{ QSize(100, 100), QPoint(0, 0), QPoint(0, 0), QPoint(30, 30) },
             MouseMoveParams{ QSize(100, 100), QPoint(100, 100), QPoint(0, 0), QPoint(10, 10) },
             MouseMoveParams{ QSize(100, 100), QPoint(20, 20), QPoint(50, 50), QPoint(20, 20) }));
 
