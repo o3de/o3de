@@ -3608,7 +3608,11 @@ namespace AssetProcessor
             AssetBuilderSDK::SourceFileDependency& sourceFileDependency = jobDependencyInternal->m_jobDependency.m_sourceFile;
             if (sourceFileDependency.m_sourceFileDependencyUUID.IsNull() && sourceFileDependency.m_sourceFileDependencyPath.empty())
             {
-                AZ_Warning(AssetProcessor::DebugChannel, false, "Unable to resolve job dependency for job %s - %s\n", job.ToString().c_str(), sourceFileDependency.ToString().c_str());
+                AZ_Warning(
+                    AssetProcessor::DebugChannel,
+                    false,
+                    "Invalid job dependency for job %s - dependency is empty",
+                    job.ToString().c_str());
                 job.m_jobDependencyList.erase(jobDependencyInternal);
                 continue;
             }
@@ -3617,9 +3621,14 @@ namespace AssetProcessor
             QStringList resolvedList;
             if (!ResolveSourceFileDependencyPath(sourceFileDependency, databaseSourceName, resolvedList))
             {
-                AZ_Warning(AssetProcessor::DebugChannel, false, "Unable to resolve job dependency for job (%s, %s, %s)\n",
-                    job.m_jobEntry.m_databaseSourceName.toUtf8().data(), job.m_jobEntry.m_jobKey.toUtf8().data(),
-                    job.m_jobEntry.m_platformInfo.m_identifier.c_str(), sourceFileDependency.m_sourceFileDependencyUUID.ToString<AZStd::string>().c_str());
+                AZ_Warning(
+                    AssetProcessor::DebugChannel,
+                    false,
+                    "Unable to resolve job dependency for job %s on %s",
+                    "With this unresolved job dependency, this file may not reprocess in situations where you would expect, "
+                    "because of this gap in the job dependency graph. This could be caused by a disabled builder, or missing source asset.",
+                    job.ToString().c_str(),
+                    sourceFileDependency.ToString().c_str());
                 job.m_jobDependencyList.erase(jobDependencyInternal);
                 continue;
             }
@@ -3636,11 +3645,11 @@ namespace AssetProcessor
                     AZ_Warning(
                         AssetProcessor::DebugChannel,
                         false,
-                        "Unable to resolve job dependency for job (%s, %s, %s)\n",
-                        job.m_jobEntry.m_databaseSourceName.toUtf8().data(),
-                        job.m_jobEntry.m_jobKey.toUtf8().data(),
-                        job.m_jobEntry.m_platformInfo.m_identifier.c_str(),
-                        sourceFileDependency.m_sourceFileDependencyUUID.ToString<AZStd::string>().c_str());
+                        "Unable to resolve job dependency for job %s on %s\n"
+                        "With this unresolved job dependency, this file may not reprocess in situations where you would expect, "
+                        "because of this gap in the job dependency graph. This could be caused by a disabled builder, or missing source asset.",
+                        job.ToString().c_str(),
+                        sourceFileDependency.ToString().c_str());
                     job.m_jobDependencyList.erase(jobDependencyInternal);
                     continue;
                 }
