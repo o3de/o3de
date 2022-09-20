@@ -95,20 +95,20 @@ namespace AWSCore
         {
             ShowConsentDialog();
         }
-        
+
         if (ShouldGenerateMetric())
         {
             // Gather metadata and assemble metric
             AttributionMetric metric;
-            UpdateMetric(metric);            
-            
+            UpdateMetric(metric);
+
             // Post metric
             SubmitMetric(metric);
         }
     }
 
     bool AWSAttributionManager::ShouldGenerateMetric() const
-    {   
+    {
         bool awsAttributionEnabled = false;
         if (!m_settingsRegistry->Get(awsAttributionEnabled, AWSAttributionEnabledKey))
         {
@@ -120,7 +120,7 @@ namespace AWSCore
         {
             return false;
         }
-        
+
         // If delayInSeconds is not found, set default to a day
         AZ::u64 delayInSeconds = 0;
         if (!m_settingsRegistry->Get(delayInSeconds, AWSAttributionDelaySecondsKey))
@@ -237,13 +237,13 @@ namespace AWSCore
             },
             true);
         job->Start();
-        
+
     }
 
     void AWSAttributionManager::UpdateLastSend()
-    {  
+    {
         if (!m_settingsRegistry->Set(AWSAttributionLastTimeStampKey,
-            AZStd::chrono::duration_cast<AZStd::chrono::seconds>(AZStd::chrono::system_clock::now().time_since_epoch()).count()))
+            static_cast<AZ::s64>(AZStd::chrono::duration_cast<AZStd::chrono::seconds>(AZStd::chrono::system_clock::now().time_since_epoch()).count())))
         {
             AZ_Warning("AWSAttributionManager", true, "Failed to set AWSAttributionLastTimeStamp");
             return;
@@ -264,7 +264,7 @@ namespace AWSCore
             config->endpointOverride = AWSAttributionChinaEndpoint;
         }
         else
-        {   
+        {
             config->region = Aws::Region::US_EAST_1;
             config->endpointOverride = AWSAttributionEndpoint;
         }

@@ -16,7 +16,7 @@
 #include <AzCore/IO/Streamer/StreamStackEntry.h>
 #include <AzCore/std/containers/deque.h>
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/Statistics/RunningStatistic.h>

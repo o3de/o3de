@@ -69,7 +69,7 @@ protected:
         for (connectionState = connectionObject.GetConnectionState(); connectionState != desired;
             connectionState = connectionObject.GetConnectionState())
         {
-            auto seconds_passed = AZStd::chrono::seconds(AZStd::chrono::system_clock::now() - started).count();
+            auto seconds_passed = AZStd::chrono::duration_cast<AZStd::chrono::seconds>(AZStd::chrono::system_clock::now() - started).count();
             if (seconds_passed > secondsMaxConnectionAttempt)
             {
                 break;
@@ -86,11 +86,11 @@ protected:
         // matches in the loop condition it could later not match in the return statement
         // as the state is being updated on another thread
         AzFramework::SocketConnection::EConnectionState connectionState;
-        auto started  = AZStd::chrono::system_clock::now();
+        auto started = AZStd::chrono::system_clock::now();
         for (connectionState = connectionObject.GetConnectionState(); connectionState == notDesired;
             connectionState = connectionObject.GetConnectionState())
         {
-            auto seconds_passed = AZStd::chrono::seconds(AZStd::chrono::system_clock::now() - started).count();
+            auto seconds_passed = AZStd::chrono::duration_cast<AZStd::chrono::seconds>(AZStd::chrono::system_clock::now() - started).count();
             if (seconds_passed > secondsMaxConnectionAttempt)
             {
                 break;
