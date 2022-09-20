@@ -91,7 +91,7 @@ namespace AzFramework
 
     uint32_t SpawnableAssetHandler::BuildSubId(AZStd::string_view id)
     {
-        AZ::Uuid subIdHash = AZ::Uuid::CreateData(id.data(), id.size());
+        AZ::Uuid subIdHash = AZ::Uuid::CreateData(id);
         return azlossy_caster(subIdHash.GetHash());
     }
 } // namespace AzFramework

@@ -18,7 +18,7 @@ namespace LmbrCentral
     /**
     * Type ID for the EditorPolygonPrismShapeComponent
     */
-    static const AZ::Uuid EditorPolygonPrismShapeComponentTypeId = "{5368F204-FE6D-45C0-9A4F-0F933D90A785}";
+    inline constexpr AZ::TypeId EditorPolygonPrismShapeComponentTypeId{ "{5368F204-FE6D-45C0-9A4F-0F933D90A785}" };
 
     /// Services provided by the Polygon Prism Shape Component.
     class PolygonPrismShapeComponentRequests

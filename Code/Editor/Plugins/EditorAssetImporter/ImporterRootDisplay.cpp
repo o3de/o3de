@@ -17,8 +17,10 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzQtComponents/Components/Widgets/Text.h>
 
+#include <QDesktopServices>
 #include <QDir>
 #include <QFileInfo>
+#include <QUrl>
 
 ImporterRootDisplay::ImporterRootDisplay(AZ::SerializeContext* serializeContext, QWidget* parent)
     : QWidget(parent)
@@ -37,15 +39,13 @@ ImporterRootDisplay::ImporterRootDisplay(AZ::SerializeContext* serializeContext,
 
     ui->headerFrame->setVisible(false);
 
+    ui->HeaderPythonBuilderLayoutWidget->setVisible(false);
+
     ui->m_fullPathText->SetElideMode(Qt::TextElideMode::ElideMiddle);
 
-    AzQtComponents::Text::addTitleStyle(ui->m_filePathText);
-    AzQtComponents::Text::addTitleStyle(ui->m_fullPathText);
-    
-    AzQtComponents::Text::addSubtitleStyle(ui->locationLabel);
-    AzQtComponents::Text::addSubtitleStyle(ui->nameLabel);
-
     connect(ui->m_updateButton, &QPushButton::clicked, this, &ImporterRootDisplay::UpdateClicked);
+
+    ui->m_showInExplorer->setEnabled(false);
 
     BusConnect();
 }
@@ -64,8 +64,27 @@ AZ::SceneAPI::UI::ManifestWidget* ImporterRootDisplay::GetManifestWidget()
 void ImporterRootDisplay::SetSceneHeaderText(const QString& headerText)
 {
     QFileInfo fileInfo(headerText);
-    ui->m_filePathText->setText(fileInfo.fileName());
-    ui->m_fullPathText->setText(QString("%1%2").arg(QDir::toNativeSeparators(fileInfo.path())).arg(QDir::separator()));
+    ui->m_filePathText->setText(tr("<b>%1</b>").arg(fileInfo.fileName()));
+    QString fullPath = tr("<b>%1%2</b>").arg(QDir::toNativeSeparators(fileInfo.path())).arg(QDir::separator());
+    ui->m_fullPathText->setText(fullPath);
+    
+    ui->m_showInExplorer->setEnabled(true);
+    ui->m_showInExplorer->disconnect();
+    connect(ui->m_showInExplorer, &QPushButton::clicked, this, [fullPath]()
+    {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fullPath));
+    });
+}
+
+void ImporterRootDisplay::SetPythonBuilderText(QString pythonBuilderText)
+{
+    ui->m_pythonBuilderScript->setText(pythonBuilderText);
+    ui->HeaderPythonBuilderLayoutWidget->setVisible(!pythonBuilderText.isEmpty());
+}
+
+QString ImporterRootDisplay::GetHeaderFileName() const
+{
+    return ui->m_filePathText->text();
 }
 
 void ImporterRootDisplay::SetSceneDisplay(const QString& headerText, const AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene>& scene)
@@ -95,6 +114,10 @@ void ImporterRootDisplay::HandleSceneWasReset(const AZStd::shared_ptr<AZ::SceneA
     BusDisconnect();
     m_manifestWidget->BuildFromScene(scene);
     BusConnect();
+
+    // Resetting the scene doesn't immediately save the changes, so mark this as having unsaved changes.
+    m_hasUnsavedChanges = true;
+    ui->m_updateButton->setEnabled(true);
 }
 
 void ImporterRootDisplay::HandleSaveWasSuccessful()

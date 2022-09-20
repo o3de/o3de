@@ -49,6 +49,8 @@ namespace EMStudio
         GetCommandManager()->RemoveCommandCallback(m_removeActorCallback, false);
         delete m_importActorCallback;
         delete m_removeActorCallback;
+
+        m_picking.reset();
     }
 
     const char* AtomRenderPlugin::GetName() const
@@ -115,6 +117,8 @@ namespace EMStudio
 
         m_manipulatorManager = AZStd::make_shared<AzToolsFramework::ManipulatorManager>(g_animManipulatorManagerId);
         SetupManipulators();
+
+        m_picking = AZStd::make_unique<EMotionFX::Picking>();
 
         SetupMetrics();
 
@@ -353,33 +357,51 @@ namespace EMStudio
     bool AtomRenderPlugin::HandleMouseInteraction(
         const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteractionEvent)
     {
-        if (!m_manipulatorManager)
+        bool eventHandled = false;
+        if (m_manipulatorManager)
         {
-            return false;
-        }
-
-        using AzToolsFramework::ViewportInteraction::MouseEvent;
-        const auto& mouseInteraction = mouseInteractionEvent.m_mouseInteraction;
-
-        switch (mouseInteractionEvent.m_mouseEvent)
-        {
-        case MouseEvent::Down:
-            return m_manipulatorManager->ConsumeViewportMousePress(mouseInteraction);
-        case MouseEvent::DoubleClick:
-            return false;
-        case MouseEvent::Move:
+            auto eventHandledByManipulators = [&mouseInteractionEvent, this]()
             {
-                const AzToolsFramework::ManipulatorManager::ConsumeMouseMoveResult mouseMoveResult =
-                    m_manipulatorManager->ConsumeViewportMouseMove(mouseInteraction);
-                return mouseMoveResult == AzToolsFramework::ManipulatorManager::ConsumeMouseMoveResult::Interacting;
-            }
-        case MouseEvent::Up:
-            return m_manipulatorManager->ConsumeViewportMouseRelease(mouseInteraction);
-        case MouseEvent::Wheel:
-            return m_manipulatorManager->ConsumeViewportMouseWheel(mouseInteraction);
-        default:
-            return false;
+                using AzToolsFramework::ViewportInteraction::MouseEvent;
+                const auto& mouseInteraction = mouseInteractionEvent.m_mouseInteraction;
+
+                switch (mouseInteractionEvent.m_mouseEvent)
+                {
+                case MouseEvent::Down:
+                    return m_manipulatorManager->ConsumeViewportMousePress(mouseInteraction);
+                case MouseEvent::DoubleClick:
+                    return false;
+                case MouseEvent::Move:
+                {
+                    const AzToolsFramework::ManipulatorManager::ConsumeMouseMoveResult mouseMoveResult =
+                        m_manipulatorManager->ConsumeViewportMouseMove(mouseInteraction);
+                    return mouseMoveResult == AzToolsFramework::ManipulatorManager::ConsumeMouseMoveResult::Interacting;
+                }
+                case MouseEvent::Up:
+                    return m_manipulatorManager->ConsumeViewportMouseRelease(mouseInteraction);
+                case MouseEvent::Wheel:
+                    return m_manipulatorManager->ConsumeViewportMouseWheel(mouseInteraction);
+                default:
+                    return false;
+                }
+            };
+            eventHandled = eventHandledByManipulators();
         }
+
+        if (!eventHandled)
+        {
+            if (m_picking)
+            {
+                eventHandled = m_picking->HandleMouseInteraction(mouseInteractionEvent);
+            }
+        }
+
+        return eventHandled;
+    }
+
+    void AtomRenderPlugin::UpdatePickingRenderFlags(EMotionFX::ActorRenderFlags renderFlags)
+    {
+        m_picking->SetRenderFlags(renderFlags);
     }
 
     // Command callbacks

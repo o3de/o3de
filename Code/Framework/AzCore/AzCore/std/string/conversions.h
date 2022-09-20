@@ -12,17 +12,14 @@
 
 #include <ctype.h>
 #include <wctype.h>
+#include <locale>
 
 //////////////////////////////////////////////////////////////////////////
 // utf8 cpp lib
 #include <AzCore/std/string/utf8/unchecked.h>
 //////////////////////////////////////////////////////////////////////////
 
-# define AZSTD_USE_OLD_RW_STL
 
-#if !defined(AZSTD_USE_OLD_RW_STL)
-#   include <locale>
-#endif
 
 namespace AZStd
 {
@@ -458,26 +455,6 @@ namespace AZStd
         }
     }
 
-    // Convert a range of chars to lower case
-#if defined(AZSTD_USE_OLD_RW_STL)
-    template<class Iterator>
-    void to_lower(Iterator first, Iterator last)
-    {
-        for (; first != last; ++first)
-        {
-            *first = static_cast<typename AZStd::iterator_traits<Iterator>::value_type>(tolower(*first));
-        }
-    }
-
-    // Convert a range of chars to upper case
-    template<class Iterator>
-    void to_upper(Iterator first, Iterator last)
-    {
-        for (; first != last; ++first)
-        {
-            *first = static_cast<typename AZStd::iterator_traits<Iterator>::value_type>(toupper(*first));
-        }
-    }
 
     AZ_FORCE_INLINE size_t str_transform(char* destination, const char* source, size_t count)
     {
@@ -489,37 +466,49 @@ namespace AZStd
         return wcsxfrm(destination, source, count);
     }
 
-    // C standard requires that is_alpha and all the other below functions should be passed a positive integer
-    // (it will error if a negative value is passed in such as -128), which is what happens if you pass a char
-    // from the extended character set, without first converting it to an unsigned char, because it will
-    // automatically convert it to an int (-128) instead of to its ascii value (127), which is what these functions expect.
-    AZ_FORCE_INLINE bool is_alnum(char ch)          { return isalnum((unsigned char)ch) != 0; }
-    AZ_FORCE_INLINE bool is_alpha(char ch)          { return isalpha((unsigned char)ch) != 0; }
-    AZ_FORCE_INLINE bool is_cntrl(char ch)          { return iscntrl((unsigned char)ch) != 0; }
-    AZ_FORCE_INLINE bool is_digit(char ch)          { return isdigit((unsigned char)ch) != 0; }
-    AZ_FORCE_INLINE bool is_graph(char ch)          { return isgraph((unsigned char)ch) != 0; }
-    AZ_FORCE_INLINE bool is_lower(char ch)          { return islower((unsigned char)ch) != 0; }
-    AZ_FORCE_INLINE bool is_print(char ch)          { return isprint((unsigned char)ch) != 0; }
-    AZ_FORCE_INLINE bool is_punct(char ch)          { return ispunct((unsigned char)ch) != 0; }
-    AZ_FORCE_INLINE bool is_space(char ch)          { return isspace((unsigned char)ch) != 0; }
-    AZ_FORCE_INLINE bool is_upper(char ch)          { return isupper((unsigned char)ch) != 0; }
-    AZ_FORCE_INLINE bool is_xdigit(char ch)         { return isxdigit((unsigned char)ch) != 0; }
+    // Use the C++ standard character classification functions and avoid the issue with negative integer values
+    template<class CharT> bool isalnum(CharT ch, const std::locale& loc = {})  { return std::isalnum(ch, loc); }
+    template<class CharT> bool isalpha(CharT ch, const std::locale& loc = {})  { return std::isalpha(ch, loc); }
+    template<class CharT> bool isblank(CharT ch, const std::locale& loc = {})  { return std::isalnum(ch, loc); }
+    template<class CharT> bool iscntrl(CharT ch, const std::locale& loc = {})  { return std::iscntrl(ch, loc); }
+    template<class CharT> bool isdigit(CharT ch, const std::locale& loc = {})  { return std::isdigit(ch, loc); }
+    template<class CharT> bool isgraph(CharT ch, const std::locale& loc = {})  { return std::isgraph(ch, loc); }
+    template<class CharT> bool islower(CharT ch, const std::locale& loc = {})  { return std::islower(ch, loc); }
+    template<class CharT> bool isprint(CharT ch, const std::locale& loc = {})  { return std::isprint(ch, loc); }
+    template<class CharT> bool ispunct(CharT ch, const std::locale& loc = {})  { return std::ispunct(ch, loc); }
+    template<class CharT> bool isspace(CharT ch, const std::locale& loc = {})  { return std::isspace(ch, loc); }
+    template<class CharT> bool isupper(CharT ch, const std::locale& loc = {})  { return std::isupper(ch, loc); }
+    template<class CharT> bool isxdigit(CharT ch, const std::locale& loc = {}) { return std::isxdigit(ch, loc); }
 
-    AZ_FORCE_INLINE bool is_alnum(wchar_t ch)       { return iswalnum(ch) != 0; }
-    AZ_FORCE_INLINE bool is_alpha(wchar_t ch)       { return iswalpha(ch) != 0; }
-    AZ_FORCE_INLINE bool is_cntrl(wchar_t ch)       { return iswcntrl(ch) != 0; }
-    AZ_FORCE_INLINE bool is_digit(wchar_t ch)       { return iswdigit(ch) != 0; }
-    AZ_FORCE_INLINE bool is_graph(wchar_t ch)       { return iswgraph(ch) != 0; }
-    AZ_FORCE_INLINE bool is_lower(wchar_t ch)       { return iswlower(ch) != 0; }
-    AZ_FORCE_INLINE bool is_print(wchar_t ch)       { return iswprint(ch) != 0; }
-    AZ_FORCE_INLINE bool is_punct(wchar_t ch)       { return iswpunct(ch) != 0; }
-    AZ_FORCE_INLINE bool is_space(wchar_t ch)       { return iswspace(ch) != 0; }
-    AZ_FORCE_INLINE bool is_upper(wchar_t ch)       { return iswupper(ch) != 0; }
-    AZ_FORCE_INLINE bool is_xdigit(wchar_t ch)      { return iswxdigit(ch) != 0; }
+    template<class CharT> bool is_alnum(CharT ch, const std::locale& loc = {})  { return std::isalnum(ch, loc); }
+    template<class CharT> bool is_alpha(CharT ch, const std::locale& loc = {})  { return std::isalpha(ch, loc); }
+    template<class CharT> bool is_blank(CharT ch, const std::locale& loc = {})  { return std::isalnum(ch, loc); }
+    template<class CharT> bool is_cntrl(CharT ch, const std::locale& loc = {})  { return std::iscntrl(ch, loc); }
+    template<class CharT> bool is_digit(CharT ch, const std::locale& loc = {})  { return std::isdigit(ch, loc); }
+    template<class CharT> bool is_graph(CharT ch, const std::locale& loc = {})  { return std::isgraph(ch, loc); }
+    template<class CharT> bool is_lower(CharT ch, const std::locale& loc = {})  { return std::islower(ch, loc); }
+    template<class CharT> bool is_print(CharT ch, const std::locale& loc = {})  { return std::isprint(ch, loc); }
+    template<class CharT> bool is_punct(CharT ch, const std::locale& loc = {})  { return std::ispunct(ch, loc); }
+    template<class CharT> bool is_space(CharT ch, const std::locale& loc = {})  { return std::isspace(ch, loc); }
+    template<class CharT> bool is_upper(CharT ch, const std::locale& loc = {})  { return std::isupper(ch, loc); }
+    template<class CharT> bool is_xdigit(CharT ch, const std::locale& loc = {}) { return std::isxdigit(ch, loc); }
+    // Wrap the std::locale tolower and toupper functions with a default std::locale argument
+    template<class charT>
+    charT tolower(charT ch, const std::locale& loc = {})
+    {
+        return std::tolower(ch , loc);
+    }
 
-#else // default standard implementation
+    template<class charT>
+    charT toupper(charT ch, const std::locale& loc = {})
+    {
+        return std::toupper(ch , loc);
+    }
+
+
+    // Convert a range of chars to lower case
     template<class Iterator>
-    void to_lower(Iterator first, Iterator last, const std::locale& loc = std::locale())
+    void to_lower(Iterator first, Iterator last, const std::locale& loc = {})
     {
         for (; first != last; ++first)
         {
@@ -527,15 +516,29 @@ namespace AZStd
         }
     }
 
+    template<class Range>
+    auto to_lower(Range&& r, const std::locale& loc = {})
+        -> enable_if_t<ranges::range<Range>
+            && indirectly_copyable<ranges::iterator_t<Range>, ranges::iterator_t<Range>>>
+    {
+        to_lower(ranges::begin(r), ranges::end(r), loc);
+    }
+
     // Convert a range of chars to upper case
     template<class Iterator>
-    void to_upper(Iterator first, Iterator last, const std::locale& loc = std::locale())
+    void to_upper(Iterator first, Iterator last, const std::locale& loc = {})
     {
         for (; first != last; ++first)
         {
             *first = std::toupper(*first, loc);
         }
     }
-#endif
-    // Add case insensitive compares
+
+    template<class Range>
+    auto to_upper(Range&& r, const std::locale& loc = {})
+        -> enable_if_t<ranges::range<Range>
+            && indirectly_copyable<ranges::iterator_t<Range>, ranges::iterator_t<Range>>>
+    {
+        to_upper(ranges::begin(r), ranges::end(r), loc);
+    }
 }

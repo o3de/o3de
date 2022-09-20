@@ -109,6 +109,9 @@ namespace GraphModelIntegration
         //! This results in a no-op if node isn't actually wrapped on the wrapperNode
         virtual void UnwrapNode(GraphModel::NodePtr wrapperNode, GraphModel::NodePtr node) = 0;
 
+        //! Return if the specified node is a wrapped node
+        virtual bool IsNodeWrapped(GraphModel::NodePtr node) const = 0;
+
         //! Set the action string for the specified node (used by wrapper nodes for
         //! setting the action widget label)
         virtual void SetWrapperNodeActionString(GraphModel::NodePtr node, const char* actionString) = 0;

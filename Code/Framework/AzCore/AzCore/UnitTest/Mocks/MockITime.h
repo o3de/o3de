@@ -38,6 +38,8 @@ namespace AZ
         MOCK_CONST_METHOD0(GetSimulationTickDeltaTimeUs, TimeUs());
         MOCK_CONST_METHOD0(GetRealTickDeltaTimeUs, TimeUs());
         MOCK_CONST_METHOD0(GetLastSimulationTickTime, TimeUs());
+        MOCK_METHOD1(SetElapsedTimeMsDebug, void(TimeMs));
+        MOCK_METHOD1(SetElapsedTimeUsDebug, void(TimeUs));
         MOCK_METHOD1(SetSimulationTickDeltaOverride, void(TimeMs));
         MOCK_CONST_METHOD0(GetSimulationTickDeltaOverride, TimeMs());
         MOCK_METHOD1(SetSimulationTickScale, void(float));
@@ -86,6 +88,14 @@ namespace AZ
         virtual AZ::TimeUs GetLastSimulationTickTime() const override
         {
             return AZ::Time::ZeroTimeUs;
+        }
+
+        virtual void SetElapsedTimeMsDebug([[maybe_unused]] TimeMs timeMs) override
+        {
+        }
+
+        virtual void SetElapsedTimeUsDebug([[maybe_unused]] TimeUs timeUs) override
+        {
         }
 
         virtual void SetSimulationTickDeltaOverride([[maybe_unused]]TimeMs timeMs) override

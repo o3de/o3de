@@ -29,11 +29,6 @@ namespace ScriptCanvas
             return TransformType::CreateFromQuaternion(rotation);
         }
 
-        TransformType FromRotationAndTranslation(QuaternionType rotation, Vector3Type translation)
-        {
-            return TransformType::CreateFromQuaternionAndTranslation(rotation, translation);
-        }
-
         TransformType FromScale(NumberType scale)
         {
             return TransformType::CreateUniformScale(static_cast<float>(scale));
@@ -42,6 +37,16 @@ namespace ScriptCanvas
         TransformType FromTranslation(Vector3Type translation)
         {
             return TransformType::CreateTranslation(translation);
+        }
+
+        TransformType FromRotationAndTranslation(QuaternionType rotation, Vector3Type translation)
+        {
+            return TransformType::CreateFromQuaternionAndTranslation(rotation, translation);
+        }
+
+        TransformType FromRotationScaleAndTranslation(QuaternionType rotation, NumberType scale, Vector3Type translation)
+        {
+            return TransformType(translation, rotation, aznumeric_cast<float>(scale));
         }
 
         Vector3Type GetRight(const TransformType& source, NumberType scale)

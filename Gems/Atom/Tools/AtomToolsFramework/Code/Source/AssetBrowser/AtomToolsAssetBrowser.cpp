@@ -40,7 +40,7 @@ namespace AtomToolsFramework
         m_ui->m_searchWidget->Setup(true, true);
         m_ui->m_searchWidget->setMinimumSize(QSize(150, 0));
 
-        m_ui->m_viewOptionButton->setIcon(QIcon(":/Icons/view.svg"));
+        m_ui->m_viewOptionButton->setIcon(QIcon(":/Icons/menu.svg"));
         m_ui->m_splitter->setSizes(QList<int>() << 400 << 200);
         m_ui->m_splitter->setStretchFactor(0, 1);
 

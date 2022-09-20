@@ -22,7 +22,7 @@ namespace Physics
 
     MaterialId MaterialId::CreateData(const void* data, size_t dataSize)
     {
-        return MaterialId(AZ::Uuid::CreateData(data, dataSize));
+        return MaterialId(AZ::Uuid::CreateData(reinterpret_cast<const AZStd::byte*>(data), dataSize));
     }
 
     MaterialId MaterialId::CreateRandom()
