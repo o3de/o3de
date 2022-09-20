@@ -39,6 +39,9 @@ easyprocess==0.2.8 \
     --hash=sha256:da7f67a006e2eb63d86a8f3f4baa9d6752dab9676009a67193a4e433f2f41c2a \
     --hash=sha256:e8258e8fafddc97a9780bafa83a0b7a7223e3679478ebc7a64cb320d434354e5 \
     # via pyscreenshot
+exceptiongroup==1.0.0rc8 \
+    --hash=sha256:ab0a968e1ef769e55d9a596f4a89f7be9ffedbc9fdefdb77cc68cf5c33ce1035 \
+    # via hypothesis
 gitdb2==2.0.6 \
     --hash=sha256:1b6df1433567a51a4a9c1a5a0de977aa351a405cc56d7d35f3388bad1f630350 \
     --hash=sha256:96bbb507d765a7f51eb802554a9cfe194a174582f772e0d89f4e87288c288b7b \
@@ -46,6 +49,9 @@ gitdb2==2.0.6 \
 gitpython==2.1.15 \
     --hash=sha256:23b4de99c5fc1564701301cead04e16aa3e47019034668327206d1b52e1e54f7 \
     --hash=sha256:838c38d882a97b2fd146dbd4eb9baaf857cb65ebaa64e4c06fca48aaa491e1c6 \
+    # via -r requirements.in
+hypothesis==6.54.6 \
+    --hash=sha256:e44833325f9a55f795596ceefd7ede7d626cfe45836025d2647cccaff7070e10 \
     # via -r requirements.in
 idna==2.9 \
     --hash=sha256:7588d1c14ae4c77d74036e8c22ff447b26d0fde8f007354fd48a7814db15b7cb \
@@ -320,6 +326,9 @@ smmap==3.0.5 \
     --hash=sha256:7bfcf367828031dc893530a29cb35eb8c8f2d7c8f2d0989354d75d24c8573714 \
     --hash=sha256:84c2751ef3072d4f6b2785ec7ee40244c6f45eb934d9e543e2c51f1bd3d54c50 \
     # via smmap2
+sortedcontainers==2.4.0 \
+    --hash=sha256:a163dcaede0f1c021485e957a39245190e74249897e2ae4b2aa38595db237ee0 \
+    # via hypothesis
 urllib3==1.26.8 \
     --hash=sha256:000ca7f471a233c2251c6c7023ee85305721bfdf18621ebff4fd17a8653427ed \
     --hash=sha256:0e7c33d9a63e7ddfcb86780aac87befc2fbddf46c58dbb487e0855f7ceec283c \
