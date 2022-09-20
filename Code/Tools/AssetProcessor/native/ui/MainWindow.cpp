@@ -467,7 +467,7 @@ void MainWindow::Activate()
         ui->ProductAssetsTreeView,
         m_productModel,
         m_productAssetTreeFilterModel,
-        ui->assetsTabWidget);    
+        ui->assetsTabWidget);
     ui->productAssetDetailsPanel->RegisterAssociatedWidgets(
         ui->SourceAssetsTreeView,
         m_sourceModel,
@@ -1970,7 +1970,7 @@ void MainWindow::ShowJobViewContextMenu(const QPoint& pos)
     {
         ui->dialogStack->setCurrentIndex(static_cast<int>(DialogStackIndex::Assets));
         ui->buttonList->setCurrentIndex(static_cast<int>(DialogStackIndex::Assets));
-        ui->sourceAssetDetailsPanel->GoToSource(item->m_elementId.GetInputAssetName().toUtf8().constData());
+        ui->sourceAssetDetailsPanel->GoToSource(AZStd::string(item->m_elementId.GetInputAssetName().toUtf8().constData()));
     });
 
     if (item->m_jobState != AzToolsFramework::AssetSystem::JobStatus::Completed)
@@ -2003,7 +2003,7 @@ void MainWindow::ShowJobViewContextMenu(const QPoint& pos)
             }
         };
         connect(productAssetMenu.m_listWidget, &QListWidget::itemClicked, this, productMenuItemClicked);
-        
+
         auto intermediateMenuItemClicked = [this, &menu](QListWidgetItem* item)
         {
             if (item)
@@ -2016,7 +2016,7 @@ void MainWindow::ShowJobViewContextMenu(const QPoint& pos)
             }
         };
         connect(intermediateAssetMenu.m_listWidget, &QListWidget::itemClicked, this, intermediateMenuItemClicked);
-        
+
         int intermediateCount = 0;
         int productCount = 0;
         m_sharedDbConnection->QueryJobByJobRunKey(
@@ -2056,7 +2056,7 @@ void MainWindow::ShowJobViewContextMenu(const QPoint& pos)
         {
             ResizeAssetRightClickMenuList(productAssetMenu.m_listWidget, productCount);
         }
-        
+
         if (intermediateCount == 0)
         {
             CreateDisabledAssetRightClickMenu(&menu, intermediateAssetMenu.m_assetMenu, intermediateMenuTitle, tr("This job created no intermediate product assets."));
@@ -2184,7 +2184,7 @@ void MainWindow::ShowIntermediateAssetContextMenu(const QPoint& pos)
         });
     });
     sourceAssetAction->setToolTip(tr("Show the source asset for this intermediate asset."));
-    
+
     BuildSourceAssetTreeContextMenu(menu, *cachedAsset);
 
     menu.exec(ui->SourceAssetsTreeView->viewport()->mapToGlobal(pos));
@@ -2220,7 +2220,7 @@ void MainWindow::BuildSourceAssetTreeContextMenu(QMenu& menu, const AssetProcess
 
 
     QString jobMenuText(tr("View job..."));
-    
+
     AssetRightClickMenuResult productAssetMenu(SetupProductAssetRightClickMenu(&menu));
     AssetRightClickMenuResult intermediateAssetMenu(SetupIntermediateAssetRightClickMenu(&menu));
 
@@ -2248,7 +2248,7 @@ void MainWindow::BuildSourceAssetTreeContextMenu(QMenu& menu, const AssetProcess
         }
     };
     connect(intermediateAssetMenu.m_listWidget, &QListWidget::itemClicked, this, intermediateMenuItemClicked);
-    
+
     int intermediateCount = 0;
     int productCount = 0;
     AZStd::string sourceName(sourceItemData->m_assetDbName);
