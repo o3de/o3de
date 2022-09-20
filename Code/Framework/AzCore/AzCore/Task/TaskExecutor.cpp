@@ -25,6 +25,16 @@ namespace AZ
 {
     namespace Internal
     {
+        static constexpr uint32_t NumTrackedRecentDeallocations = 32u;
+        struct DeallocationData
+        {
+            const char* m_parentLabel = nullptr;
+            CompiledTaskGraph* m_ctg = nullptr;
+        };
+        static DeallocationData s_recentDeallocations[NumTrackedRecentDeallocations]; // deallocation breadcrumbs to help look for a double delete
+        static uint32_t s_nextDeallocationSlot = 0;
+        static AZStd::mutex s_deallocationMutex;
+
         CompiledTaskGraph::CompiledTaskGraph(
             AZStd::vector<Task>&& tasks,
             AZStd::unordered_map<uint32_t, AZStd::vector<uint32_t>>& links,
@@ -55,6 +65,19 @@ namespace AZ
             }
 
             // TODO: Check for dependency cycles
+        }
+
+        CompiledTaskGraph::~CompiledTaskGraph()
+        {
+            // record deallocation breadcrumbs
+            AZStd::scoped_lock<AZStd::mutex> lock(s_deallocationMutex);
+
+            uint32_t deallocationSlot = s_nextDeallocationSlot;
+            s_nextDeallocationSlot = (s_nextDeallocationSlot + 1) % NumTrackedRecentDeallocations;
+            DeallocationData& slot = s_recentDeallocations[deallocationSlot];
+            slot.m_parentLabel = m_parentLabel;
+            slot.m_ctg = this;
+            m_parentLabel = "Deleted CompiledTaskGraph";
         }
 
         uint32_t CompiledTaskGraph::Release()

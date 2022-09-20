@@ -35,6 +35,8 @@ namespace AZ
                 TaskGraph* parent,
                 const char* parentLabel);
 
+            ~CompiledTaskGraph();
+
             AZStd::vector<Task>& Tasks() noexcept
             {
                 return m_tasks;
