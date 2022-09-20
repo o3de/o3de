@@ -8,7 +8,6 @@ Object to house all the Qt Objects and behavior used in testing the script canva
 """
 from editor_python_test_tools.utils import TestHelper as helper
 from PySide2 import QtWidgets, QtCore
-import editor_python_test_tools.QtPyCommon as QtPyCommon
 import pyside_utils
 from types import SimpleNamespace
 from consts.scripting import (VARIABLE_MANAGER_QT, VARIABLE_PALETTE_QT, ADD_BUTTON_QT, GRAPH_VARIABLES_QT)
@@ -37,7 +36,7 @@ VARIABLE_TYPES_DICT = {
 }
 
 
-class QtPyScriptCanvasVariableManager(QtPyCommon.QtPyCommon):
+class QtPyScriptCanvasVariableManager():
     """
     QtPy class for handling the behavior of the script canvas variable manager
     """

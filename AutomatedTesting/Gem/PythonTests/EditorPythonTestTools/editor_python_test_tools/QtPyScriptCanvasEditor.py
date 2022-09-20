@@ -13,7 +13,7 @@ import editor_python_test_tools.QtPyScriptCanvasVariableManager as QtPyScriptCan
 from consts.scripting import (SCRIPT_CANVAS_UI)
 
 
-class QtPyScriptCanvasEditor(QtPyCommon.QtPyCommon):
+class QtPyScriptCanvasEditor():
     """
     QtPy class for handling the behavior of the Script Canvas editor. Contains references to other qtpy objects
     reliant on the script canvas editor
