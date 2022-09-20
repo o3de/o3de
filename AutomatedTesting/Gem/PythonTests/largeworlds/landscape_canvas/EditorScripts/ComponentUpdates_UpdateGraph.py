@@ -98,7 +98,6 @@ def ComponentUpdates_UpdateGraph():
 
     import editor_python_test_tools.hydra_editor_utils as hydra
     from editor_python_test_tools.editor_entity_utils import EditorEntity
-    from editor_python_test_tools.wait_utils import PrefabWaiter
     from editor_python_test_tools.utils import Report
 
     # Open a simple level and instantiate BushFlowerBlender.prefab
