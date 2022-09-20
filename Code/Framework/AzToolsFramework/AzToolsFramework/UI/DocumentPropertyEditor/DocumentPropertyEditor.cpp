@@ -485,10 +485,7 @@ namespace AzToolsFramework
                 return;
             }
 
-            if (addedWidget)
-            {
-                AddColumnWidget(addedWidget, domIndex, childValue);
-            }
+            AddColumnWidget(addedWidget, domIndex, childValue);
             AddDomChildWidget(domIndex, addedWidget);
         }
     }
@@ -625,7 +622,7 @@ namespace AzToolsFramework
             // find the next widget in the path and delegate the operation to them
             auto childIndex = (pathEntry.IsIndex() ? pathEntry.GetIndex() : childCount - 1);
             AZ_Assert(childIndex <= childCount, "DPE: Patch failed to apply, invalid child index specified");
-            if (childIndex > childCount)
+            if (childIndex >= childCount)
             {
                 return;
             }
@@ -731,6 +728,10 @@ namespace AzToolsFramework
 
     void DPERowWidget::AddColumnWidget(QWidget* columnWidget, size_t domIndex, const AZ::Dom::Value& domValue)
     {
+        if (!columnWidget)
+        {
+            return;
+        }
         columnWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
         // search for an existing column sibling with a lower dom index

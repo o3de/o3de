@@ -94,6 +94,11 @@ namespace AZ::DocumentPropertyEditor
 
     Dom::Value RowFilterAdapter::GenerateContents()
     {
+        if (!m_sourceAdapter)
+        {
+            return Dom::Value();
+        }
+
         auto filteredContents = m_sourceAdapter->GetContents();
         if (m_filterActive)
         {
@@ -155,7 +160,7 @@ namespace AZ::DocumentPropertyEditor
         {
             PopulateNodesAtPath(Dom::Path({Dom::PathEntry(topIndex)}), false);
         }
-        NotifyResetDocument();
+        NotifyResetDocument(DocumentResetType::HardReset);
     }
 
     void RowFilterAdapter::HandleDomChange(const Dom::Patch& patch)
