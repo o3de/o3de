@@ -28,21 +28,21 @@ namespace UnitTest
             m_rootWidget->setMouseTracking(true);
             m_rootWidget->move(0, 0); // explicitly set the widget to be in the upper left corner
 
-            m_mouseMoveDetector = AZStd::make_unique<MouseMoveDetector>();
-            m_rootWidget->installEventFilter(m_mouseMoveDetector.get());
+            m_mouseMoveDetector = new MouseMoveDetector();
+            m_rootWidget->installEventFilter(m_mouseMoveDetector);
         }
 
         void TearDown() override
         {
-            m_rootWidget->removeEventFilter(m_mouseMoveDetector.get());
+            m_rootWidget->removeEventFilter(m_mouseMoveDetector);
             delete m_rootWidget;
-            m_mouseMoveDetector.reset();
+            delete m_mouseMoveDetector;
 
             AllocatorsTestFixture::TearDown();
         }
 
         QWidget* m_rootWidget = nullptr;
-        AZStd::unique_ptr<MouseMoveDetector> m_mouseMoveDetector;
+        MouseMoveDetector* m_mouseMoveDetector = nullptr;
     };
 
     struct MouseMoveParams
