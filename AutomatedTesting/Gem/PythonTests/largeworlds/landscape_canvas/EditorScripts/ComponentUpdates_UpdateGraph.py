@@ -111,11 +111,11 @@ def ComponentUpdates_UpdateGraph():
     Report.critical_result(Tests.prefab_instantiated, prefab_result.IsSuccess())
 
     # Find root entity in the loaded level
-    prefab_root_entity = EditorEntity.find_editor_entity("LandscapeCanvas")
+    prefab_root_entity = EditorEntity.find_editor_entity("LandscapeCanvas", must_be_unique=True)
     Report.critical_result(Tests.lc_entity_found, prefab_root_entity.id.IsValid())
 
     # Find the BushSpawner entity
-    bush_spawner_entity = EditorEntity.find_editor_entity("BushSpawner")
+    bush_spawner_entity = EditorEntity.find_editor_entity("BushSpawner", must_be_unique=True)
     Report.critical_result(Tests.spawner_entity_found, bush_spawner_entity.id.IsValid())
 
     # Verify the BushSpawner entity has a Distribution Filter
