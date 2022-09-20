@@ -22,8 +22,8 @@ namespace AzToolsFramework
     {
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
-        // This uses a Broadcast where each message has an EntityComponentIdPair instead of having the EBus use that as an ID
-        // because the PaintBrushSettings window will want to listen to all notifications, regardless of which entity they came from.
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        using BusIdType = AZ::EntityComponentIdPair;
 
         //! ValueLookupFn returns the set of current painted values at the requested positions.
         //! This should get called in response to receiving a PaintBrushNotificationBus::OnPaint(dirtyRegion, valueLookupFn) event
@@ -41,34 +41,28 @@ namespace AzToolsFramework
         //! OnWorldSpaceChanged notifies listeners that the paintbrush transform has changed,
         //! typically due to the brush moving around in world space.
         //! This will get called in each frame that the brush transform changes.
-        //! @param id The entity/component ID of the owning component that's currently painting.
         //! @param brushTransform The new transform for the brush position/rotation/scale.
-        virtual void OnWorldSpaceChanged(
-            [[maybe_unused]] const AZ::EntityComponentIdPair& id, [[maybe_unused]] const AZ::Transform& brushTransform)
+        virtual void OnWorldSpaceChanged([[maybe_unused]] const AZ::Transform& brushTransform)
         {
         }
 
         //! OnPaintModeBegin notifies listeners that the paint mode has been entered.
-        //! @param id The entity/component ID of the component that owns the paintbrush.
-        virtual void OnPaintModeBegin([[maybe_unused]] const AZ::EntityComponentIdPair& id)
+        virtual void OnPaintModeBegin()
         {
         }
 
         //! OnPaintModeEnd notifies listeners that the paint mode is exiting.
-        //! @param id The entity/component ID of the component that owns the paintbrush
-        virtual void OnPaintModeEnd([[maybe_unused]] const AZ::EntityComponentIdPair& id)
+        virtual void OnPaintModeEnd()
         {
         }
 
         //! OnPaintBegin notifies listeners that painting has begun.
-        //! @param id The entity/component ID of the owning component that's currently painting.
-        virtual void OnPaintBegin([[maybe_unused]] const AZ::EntityComponentIdPair& id)
+        virtual void OnPaintBegin()
         {
         }
 
         //! OnPaintBegin notifies listeners that painting has ended.
-        //! @param id The entity/component ID of the owning component that's currently painting.
-        virtual void OnPaintEnd([[maybe_unused]] const AZ::EntityComponentIdPair& id)
+        virtual void OnPaintEnd()
         {
         }
 
@@ -79,13 +73,9 @@ namespace AzToolsFramework
         //! 1. The paintbrush sends the OnPaint message with the AABB of the region that has changed and a paintbrush value callback.
         //! 2. The listener calls the paintbrush value callback for each position in the region that it cares about.
         //! 3. The paintbrush responds with the specific painted values for each of those positions based on the brush shape and settings.
-        //! @param id The entity/component ID of the owning component that's currently painting.
         //! @param dirtyArea The AABB of the area that has been painted in.
         //! @param valueLookupFn The paintbrush value callback to use to get the intensities / opacities / valid flags for specific positions.
-        virtual void OnPaint(
-            [[maybe_unused]] const AZ::EntityComponentIdPair& id,
-            [[maybe_unused]] const AZ::Aabb& dirtyArea,
-            [[maybe_unused]] ValueLookupFn& valueLookupFn)
+        virtual void OnPaint([[maybe_unused]] const AZ::Aabb& dirtyArea, [[maybe_unused]] ValueLookupFn& valueLookupFn)
         {
         }
     };

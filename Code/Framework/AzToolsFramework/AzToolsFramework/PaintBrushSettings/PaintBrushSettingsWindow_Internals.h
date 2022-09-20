@@ -12,7 +12,6 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzToolsFramework/Manipulators/PaintBrushManipulator.h>
-#include <AzToolsFramework/Manipulators/PaintBrushNotificationBus.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
 
 namespace AZ
@@ -29,10 +28,14 @@ namespace PaintBrush
 {
     namespace Internal
     {
+        //! PaintBrushSettingsWindow is a simple view pane that lets us view and edit the global paint brush settings.
+        //! This pane is only visible while in a painting component mode.
+        //! Unlike other component modes, this is built as a separate pane because the controls might get fairly complex over time
+        //! and will likely get used frequently while painting, so the user should have the ability to move and dock these settings
+        //! to wherever is best for their paint session.
         class PaintBrushSettingsWindow
             : public QListView
             , private AzToolsFramework::IPropertyEditorNotify
-            , private AzToolsFramework::PaintBrushNotificationBus::Handler
         {
         public:
             PaintBrushSettingsWindow(QWidget* parent = nullptr);
@@ -62,10 +65,6 @@ namespace PaintBrush
             void SealUndoStack() override
             {
             }
-
-            // PaintBrushNotificationBus overrides...
-            void OnPaintModeBegin([[maybe_unused]] const AZ::EntityComponentIdPair& id) override;
-            void OnPaintModeEnd([[maybe_unused]] const AZ::EntityComponentIdPair& id) override;
 
         private:
             // RPE Support

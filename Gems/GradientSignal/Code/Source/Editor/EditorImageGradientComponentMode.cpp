@@ -138,7 +138,7 @@ namespace GradientSignal
         EditorImageGradientRequestBus::Event(GetEntityId(), &EditorImageGradientRequests::StartImageModification);
         ImageGradientModificationBus::Event(GetEntityId(), &ImageGradientModifications::StartImageModification);
 
-        AzToolsFramework::PaintBrushNotificationBus::Handler::BusConnect();
+        AzToolsFramework::PaintBrushNotificationBus::Handler::BusConnect(entityComponentIdPair);
 
         AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(worldFromLocal, GetEntityId(), &AZ::TransformInterface::GetWorldTM);
@@ -213,37 +213,18 @@ namespace GradientSignal
         }
     }
 
-    void EditorImageGradientComponentMode::OnPaintBegin(const AZ::EntityComponentIdPair& id)
+    void EditorImageGradientComponentMode::OnPaintBegin()
     {
-        // Make sure the notification is for this component mode.
-        if (m_ownerEntityComponentId != id)
-        {
-            return;
-        }
-
         BeginUndoBatch();
     }
 
-    void EditorImageGradientComponentMode::OnPaintEnd(const AZ::EntityComponentIdPair& id)
+    void EditorImageGradientComponentMode::OnPaintEnd()
     {
-        // Make sure the notification is for this component mode.
-        if (m_ownerEntityComponentId != id)
-        {
-            return;
-        }
-
         EndUndoBatch();
     }
 
-    void EditorImageGradientComponentMode::OnPaint(
-        const AZ::EntityComponentIdPair& id, const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn)
+    void EditorImageGradientComponentMode::OnPaint(const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn)
     {
-        // Make sure the notification is for this component mode.
-        if (m_ownerEntityComponentId != id)
-        {
-            return;
-        }
-
         // The OnPaint notification means that we should paint new values into our image gradient.
         // To do this, we need to calculate the set of world space positions that map to individual pixels in the image,
         // then ask the paint brush for each position what value we should set that pixel to. Finally, we use those modified
@@ -332,15 +313,6 @@ namespace GradientSignal
             GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionRegionChanged, expandedDirtyArea);
     }
 
-
-    void EditorImageGradientComponentMode::RemoveSubModeSelectionCluster()
-    {
-        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-            AzToolsFramework::ViewportUi::DefaultViewportId,
-            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RemoveCluster,
-            m_paintBrushControlClusterId);
-    }
-
     void EditorImageGradientComponentMode::CreateSubModeSelectionCluster()
     {
         auto RegisterClusterButton = [](AzToolsFramework::ViewportUi::ClusterId clusterId,
@@ -365,14 +337,16 @@ namespace GradientSignal
             return buttonId;
         };
 
-        // create the cluster for changing transform mode
+        // create the cluster for showing the Paint Brush Settings window
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
             m_paintBrushControlClusterId,
             AzToolsFramework::ViewportUi::DefaultViewportId,
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateCluster,
             AzToolsFramework::ViewportUi::Alignment::TopLeft);
 
-        // create and register the buttons
+        // create and register the "Show Paint Brush Settings" button.
+        // This button is needed because the window is only shown while in component mode, and the window can be closed by the user,
+        // so we need to provide an alternate way for the user to re-open the window. 
         m_paintBrushSettingsButtonId = RegisterClusterButton(m_paintBrushControlClusterId, "Paint", "Show Paint Brush Settings");
 
         m_buttonSelectionHandler = AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler(
@@ -390,5 +364,12 @@ namespace GradientSignal
             m_buttonSelectionHandler);
     }
 
+    void EditorImageGradientComponentMode::RemoveSubModeSelectionCluster()
+    {
+        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+            AzToolsFramework::ViewportUi::DefaultViewportId,
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RemoveCluster,
+            m_paintBrushControlClusterId);
+    }
 
 } // namespace GradientSignal

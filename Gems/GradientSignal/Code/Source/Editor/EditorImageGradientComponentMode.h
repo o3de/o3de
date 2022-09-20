@@ -34,9 +34,9 @@ namespace GradientSignal
 
     protected:
         // PaintBrushNotificationBus overrides
-        void OnPaintBegin(const AZ::EntityComponentIdPair& id) override;
-        void OnPaintEnd(const AZ::EntityComponentIdPair& id) override;
-        void OnPaint(const AZ::EntityComponentIdPair& id, const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn) override;
+        void OnPaintBegin() override;
+        void OnPaintEnd() override;
+        void OnPaint(const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn) override;
 
         void BeginUndoBatch();
         void EndUndoBatch();

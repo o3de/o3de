@@ -51,7 +51,7 @@ namespace AzToolsFramework
         // Make sure the Paint Brush Settings window is open
         AzToolsFramework::OpenViewPane(PaintBrush::s_paintBrushSettingsName);
 
-        // Get the radius from the Paint Brush Settings window.
+        // Get the radius from the global Paint Brush Settings.
         float radius = 0.0f;
         PaintBrushSettingsRequestBus::BroadcastResult(radius, &PaintBrushSettingsRequestBus::Events::GetRadius);
 
@@ -65,13 +65,13 @@ namespace AzToolsFramework
         PaintBrushSettingsNotificationBus::Handler::BusConnect();
 
         // Notify listeners that we've entered the paint mode.
-        PaintBrushNotificationBus::Broadcast(&PaintBrushNotificationBus::Events::OnPaintModeBegin, m_ownerEntityComponentId);
+        PaintBrushNotificationBus::Event(m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnPaintModeBegin);
     }
 
     PaintBrushManipulator::~PaintBrushManipulator()
     {
         // Notify listeners that we've exited the paint mode.
-        PaintBrushNotificationBus::Broadcast(&PaintBrushNotificationBus::Events::OnPaintModeEnd, m_ownerEntityComponentId);
+        PaintBrushNotificationBus::Event(m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnPaintModeEnd);
 
         // Stop listening for any changes to the Paint Brush Settings
         PaintBrushSettingsNotificationBus::Handler::BusDisconnect();
@@ -117,7 +117,7 @@ namespace AzToolsFramework
             if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left())
             {
                 m_isPainting = true;
-                PaintBrushNotificationBus::Broadcast(&PaintBrushNotificationBus::Events::OnPaintBegin, m_ownerEntityComponentId);
+                PaintBrushNotificationBus::Event(m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnPaintBegin);
 
                 const bool isFirstPaintedPoint = true;
                 MovePaintBrush(
@@ -131,7 +131,7 @@ namespace AzToolsFramework
             if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left())
             {
                 m_isPainting = false;
-                PaintBrushNotificationBus::Broadcast(&PaintBrushNotificationBus::Events::OnPaintEnd, m_ownerEntityComponentId);
+                PaintBrushNotificationBus::Event(m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnPaintEnd);
 
                 return true;
             }
@@ -155,7 +155,7 @@ namespace AzToolsFramework
         m_center = worldSurfacePosition.value();
         AZ::Transform space = AZ::Transform::CreateTranslation(m_center);
         SetSpace(space);
-        PaintBrushNotificationBus::Broadcast(&PaintBrushNotificationBus::Events::OnWorldSpaceChanged, m_ownerEntityComponentId, space);
+        PaintBrushNotificationBus::Event(m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnWorldSpaceChanged, space);
 
         // If we're currently painting, send off a paint notification.
         if (m_isPainting)
@@ -217,8 +217,8 @@ namespace AzToolsFramework
                 }
             });
 
-            PaintBrushNotificationBus::Broadcast(
-                &PaintBrushNotificationBus::Events::OnPaint, m_ownerEntityComponentId, strokeRegion, valueLookupFn);
+            PaintBrushNotificationBus::Event(
+                m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnPaint, strokeRegion, valueLookupFn);
 
             m_previousCenter = m_center;
         }

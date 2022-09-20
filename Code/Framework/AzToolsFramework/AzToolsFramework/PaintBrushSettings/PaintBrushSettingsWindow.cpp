@@ -50,7 +50,7 @@ namespace PaintBrush
             m_propertyEditor->AddInstance(settings, azrtti_typeid(*settings), nullptr);
 
             m_propertyEditor->InvalidateAll();
-            m_propertyEditor->setEnabled(false);
+            m_propertyEditor->setEnabled(true);
 
             m_propertyEditor->setObjectName("PaintBrushSettingsPropertyEditor");
             m_propertyEditor->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -58,23 +58,10 @@ namespace PaintBrush
             m_propertyEditor->show();
 
             setLayout(mainLayout);
-
-            AzToolsFramework::PaintBrushNotificationBus::Handler::BusConnect();
         }
 
         PaintBrushSettingsWindow::~PaintBrushSettingsWindow()
         {
-            AzToolsFramework::PaintBrushNotificationBus::Handler::BusDisconnect();
-        }
-
-        void PaintBrushSettingsWindow::OnPaintModeBegin([[maybe_unused]] const AZ::EntityComponentIdPair& id)
-        {
-            m_propertyEditor->setEnabled(true);
-        }
-
-        void PaintBrushSettingsWindow::OnPaintModeEnd([[maybe_unused]] const AZ::EntityComponentIdPair& id)
-        {
-            m_propertyEditor->setEnabled(false);
         }
 
         // simple factory method
@@ -89,7 +76,8 @@ namespace PaintBrush
         AzToolsFramework::ViewPaneOptions viewOptions;
         // Don't list this pane in the Tools menu, it will only be visible and accessible while in painting mode.
         viewOptions.showInMenu = false;
-        // Don't enable/disable based on entering component mode. We'll enable more specifically ourselves based on when painting begins.
+        // Don't enable/disable based on entering component mode. We want the controls to be enabled and usable while in painting mode
+        // and this is only visible while in a painting component mode, so we don't ever need to disable the controls.
         viewOptions.isDisabledInComponentMode = false;
         // Default size of the window
         viewOptions.paneRect = QRect(50, 50, 350, 105);
