@@ -65,8 +65,8 @@ void ImporterRootDisplay::SetSceneHeaderText(const QString& headerText)
 {
     QFileInfo fileInfo(headerText);
     ui->m_filePathText->setText(tr("<b>%1</b>").arg(fileInfo.fileName()));
-    QString fullPath = tr("<b>%1%2</b>").arg(QDir::toNativeSeparators(fileInfo.path())).arg(QDir::separator());
-    ui->m_fullPathText->setText(fullPath);
+    QString fullPath = tr("%1%2").arg(QDir::toNativeSeparators(fileInfo.path())).arg(QDir::separator());
+    ui->m_fullPathText->setText(tr("<b>%1</b>").arg(fullPath));
     
     ui->m_showInExplorer->setEnabled(true);
     ui->m_showInExplorer->disconnect();
