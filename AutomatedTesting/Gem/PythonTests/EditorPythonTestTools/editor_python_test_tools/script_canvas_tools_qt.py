@@ -40,39 +40,6 @@ class Tests():
     parameter_removed = ("Successfully removed parameter", "Failed to remove parameter")
 
 
-def click_menu_option(self, window, option_text):
-    """
-    move this to the base class when we reach that test script
-
-    function for clicking an option from a Qt menu object. This function bypasses menu groups or categories. for example,
-    if you want to click the Open option from the "File" category provide "Open" as your menu text instead of "File" then "Open".
-
-    param window: the qt window object where the menu option is located
-    param option_text: the label string used in the menu option that you want to click
-
-    returns none
-    """
-    action = pyside_utils.find_child_by_pattern(window, {"text": option_text, "type": QtWidgets.QAction})
-    action.trigger()
-
-def expand_qt_container_rows(self, object_name):
-    """
-    move this the base class when we reach that test script
-
-    function used for expanding qt container rows with expandable children. May need to refactor this to replace
-    self.findChildren with container.findChildren
-
-    param object_name: qt object name as a string
-
-    returns: none
-    """
-    children = self.findChildren(QtWidgets.QFrame, object_name)
-    for child in children:
-        check_box = child.findChild(QtWidgets.QCheckBox)
-        if check_box and not check_box.isChecked():
-            QtTest.QTest.mouseClick(check_box, QtCore.Qt.LeftButton, QtCore.Qt.NoModifier)
-
-
 def save_script_event_file(self, file_path):
     """
     function for saving a script event file with a user defined file path. Requires asset editor qt object to be initialized

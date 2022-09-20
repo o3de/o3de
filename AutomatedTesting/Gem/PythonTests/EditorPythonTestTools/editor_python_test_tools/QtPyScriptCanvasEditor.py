@@ -24,7 +24,6 @@ class QtPyScriptCanvasEditor(QtPyCommon.QtPyCommon):
     """
 
     def __init__(self, editor_main_window):
-        super().__init__()
 
         self.sc_editor = editor_main_window.findChild(QtWidgets.QDockWidget, SCRIPT_CANVAS_UI)
         self.sc_editor_main_pane = self.sc_editor.findChild(QtWidgets.QMainWindow)
