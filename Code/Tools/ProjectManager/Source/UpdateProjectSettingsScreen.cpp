@@ -176,9 +176,14 @@ namespace O3DE::ProjectManager
         }
     }
 
-    bool UpdateProjectSettingsScreen::Validate()
+    AZ::Outcome<void, QString> UpdateProjectSettingsScreen::Validate()
     {
-        return ProjectSettingsScreen::Validate() && ValidateProjectPreview() && ValidateProjectId();
+        if (!(ValidateProjectPreview() && ValidateProjectId()))
+        {
+            return AZ::Failure<QString>("");
+        }
+
+        return ProjectSettingsScreen::Validate();
     }
 
     void UpdateProjectSettingsScreen::ResetProjectPreviewPath()

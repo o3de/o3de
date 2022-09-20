@@ -10,6 +10,8 @@
 #if !defined(Q_MOC_RUN)
 #include <ProjectInfo.h>
 #include <ScreenWidget.h>
+
+#include <AzCore/Outcome/Outcome.h>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QHBoxLayout)
@@ -30,7 +32,7 @@ namespace O3DE::ProjectManager
 
         virtual ProjectInfo GetProjectInfo();
 
-        virtual bool Validate();
+        virtual AZ::Outcome<void, QString> Validate();
 
     protected slots:
         virtual void OnProjectNameUpdated();

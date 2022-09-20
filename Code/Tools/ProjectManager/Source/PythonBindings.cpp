@@ -1305,6 +1305,40 @@ namespace O3DE::ProjectManager
         }
     }
 
+    AZ::Outcome<QVector<ProjectTemplateInfo>> PythonBindings::GetProjectTemplatesForRepo(const QString& repoUri)
+    {
+        QVector<ProjectTemplateInfo> templates;
+
+        bool result = ExecuteWithLock(
+            [&]
+            {
+                using namespace pybind11::literals;
+
+                auto templatePaths = m_repo.attr("get_template_json_paths_from_cached_repo")(
+                    "repo_uri"_a = QString_To_Py_String(repoUri)
+                    );
+
+                if (pybind11::isinstance<pybind11::set>(templatePaths))
+                {
+                    for (auto path : templatePaths)
+                    {
+                        ProjectTemplateInfo remoteTemplate = ProjectTemplateInfoFromPath(path);
+                        remoteTemplate.m_isRemote = true;
+                        templates.push_back(remoteTemplate);
+                    }
+                }
+            });
+
+        if (!result)
+        {
+            return AZ::Failure();
+        }
+        else
+        {
+            return AZ::Success(AZStd::move(templates));
+        }
+    }
+
     AZ::Outcome<QVector<ProjectTemplateInfo>> PythonBindings::GetProjectTemplatesForAllRepos()
     {
         QVector<ProjectTemplateInfo> templates;
@@ -1444,7 +1478,6 @@ namespace O3DE::ProjectManager
             try
             {
                 // required
-                gemRepoInfo.m_repoUri = Py_To_String(data["repo_uri"]);
                 gemRepoInfo.m_name = Py_To_String(data["repo_name"]);
                 gemRepoInfo.m_origin = Py_To_String(data["origin"]);
 

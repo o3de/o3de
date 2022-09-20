@@ -145,8 +145,13 @@ namespace O3DE::ProjectManager
         ValidateProjectName() && ValidateProjectPath();
     }
 
-    bool ProjectSettingsScreen::Validate()
+    AZ::Outcome<void, QString> ProjectSettingsScreen::Validate()
     {
-        return ValidateProjectName() && ValidateProjectPath();
+        if (ValidateProjectName() && ValidateProjectPath())
+        {
+            return AZ::Success();
+        }
+
+        return AZ::Failure<QString>("");
     }
 } // namespace O3DE::ProjectManager
