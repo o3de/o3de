@@ -30,6 +30,7 @@ namespace AzPhysics
 namespace PhysX
 {
     using EntityPtr = AZStd::shared_ptr<AZ::Entity>;
+    using EntityList = AZStd::vector<EntityPtr>;
     using PointList = AZStd::vector<AZ::Vector3>;
     using VertexIndexData = AZStd::pair<PointList, AZStd::vector<AZ::u32>>;
 

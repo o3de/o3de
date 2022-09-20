@@ -368,6 +368,8 @@ set(FILES
     UI/Docking/DockWidgetUtils.h
     UI/DocumentPropertyEditor/ContainerActionButtonHandler.cpp
     UI/DocumentPropertyEditor/ContainerActionButtonHandler.h
+    UI/DocumentPropertyEditor/FilterAdapter.cpp
+    UI/DocumentPropertyEditor/FilterAdapter.h
     UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h
     UI/DocumentPropertyEditor/PropertyEditorToolsSystem.cpp
     UI/DocumentPropertyEditor/PropertyEditorToolsSystem.h
