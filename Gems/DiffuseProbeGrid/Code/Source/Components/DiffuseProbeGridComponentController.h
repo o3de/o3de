@@ -38,6 +38,8 @@ namespace AZ
             DiffuseProbeGridNumRaysPerProbe m_numRaysPerProbe = DefaultDiffuseProbeGridNumRaysPerProbe;
             bool m_scrolling = false;
             bool m_edgeBlendIbl = true;
+            uint32_t m_frameUpdateCount = 1;
+            DiffuseProbeGridTransparencyMode m_transparencyMode = DiffuseProbeGridTransparencyMode::Full;
 
             DiffuseProbeGridMode m_editorMode = DiffuseProbeGridMode::RealTime;
             DiffuseProbeGridMode m_runtimeMode = DiffuseProbeGridMode::RealTime;
@@ -108,6 +110,8 @@ namespace AZ
             void SetNumRaysPerProbe(const DiffuseProbeGridNumRaysPerProbe& numRaysPerProbe);
             void SetScrolling(bool scrolling);
             void SetEdgeBlendIbl(bool edgeBlendIbl);
+            void SetFrameUpdateCount(uint32_t frameUpdateCount);
+            void SetTransparencyMode(DiffuseProbeGridTransparencyMode transparencyMode);
             void SetEditorMode(DiffuseProbeGridMode editorMode);
             void SetRuntimeMode(DiffuseProbeGridMode runtimeMode);
             void SetVisualizationEnabled(bool visualizationEnabled);

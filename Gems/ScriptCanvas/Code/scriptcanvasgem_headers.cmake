@@ -342,9 +342,9 @@ set(FILES
     Include/ScriptCanvas/Libraries/Time/RepeaterNodeable.ScriptCanvasNodeable.xml
     Include/ScriptCanvas/Libraries/Time/TimerNodeable.h
     Include/ScriptCanvas/Libraries/Time/TimerNodeable.ScriptCanvasNodeable.xml
-    Include/ScriptCanvas/Libraries/Spawning/SpawningLibrary.h
     Include/ScriptCanvas/Libraries/Spawning/CreateSpawnTicketNodeable.h
     Include/ScriptCanvas/Libraries/Spawning/CreateSpawnTicketNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Spawning/SpawningData.ScriptCanvasData.xml
     Include/ScriptCanvas/Libraries/Spawning/SpawnNodeable.h
     Include/ScriptCanvas/Libraries/Spawning/SpawnNodeable.ScriptCanvasNodeable.xml
     Include/ScriptCanvas/Libraries/Spawning/DespawnNodeable.h

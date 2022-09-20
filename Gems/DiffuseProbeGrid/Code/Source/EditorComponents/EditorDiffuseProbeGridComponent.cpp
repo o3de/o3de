@@ -33,7 +33,7 @@ namespace AZ
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<EditorDiffuseProbeGridComponent, BaseClass>()
-                    ->Version(1, ConvertToEditorRenderComponentAdapter<1>)
+                    ->Version(2, ConvertToEditorRenderComponentAdapter<1>)
                     ->Field("probeSpacingX", &EditorDiffuseProbeGridComponent::m_probeSpacingX)
                     ->Field("probeSpacingY", &EditorDiffuseProbeGridComponent::m_probeSpacingY)
                     ->Field("probeSpacingZ", &EditorDiffuseProbeGridComponent::m_probeSpacingZ)
@@ -43,6 +43,8 @@ namespace AZ
                     ->Field("numRaysPerProbe", &EditorDiffuseProbeGridComponent::m_numRaysPerProbe)
                     ->Field("scrolling", &EditorDiffuseProbeGridComponent::m_scrolling)
                     ->Field("edgeBlendIbl", &EditorDiffuseProbeGridComponent::m_edgeBlendIbl)
+                    ->Field("frameUpdateCount", &EditorDiffuseProbeGridComponent::m_frameUpdateCount)
+                    ->Field("transparencyMode", &EditorDiffuseProbeGridComponent::m_transparencyMode)
                     ->Field("editorMode", &EditorDiffuseProbeGridComponent::m_editorMode)
                     ->Field("runtimeMode", &EditorDiffuseProbeGridComponent::m_runtimeMode)
                     ->Field("showVisualization", &EditorDiffuseProbeGridComponent::m_showVisualization)
@@ -107,6 +109,17 @@ namespace AZ
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::OnScrollingChanged)
                             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &EditorDiffuseProbeGridComponent::m_edgeBlendIbl, "Edge Blend IBL", "Blend the edges of the DiffuseProbeGrid with the Diffuse IBL cubemap.")
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::OnEdgeBlendIblChanged)
+                            ->DataElement(AZ::Edit::UIHandlers::SpinBox, &EditorDiffuseProbeGridComponent::m_frameUpdateCount, "Number of Update Frames", "The number of frames to update the complete DiffuseProbeGrid, by updating a subset of the probes each frame.  This will improve the performance of the Real-Time DiffuseProbeGrid update.")
+                                ->Attribute(Edit::Attributes::Min, 1)
+                                ->Attribute(Edit::Attributes::Max, 10)
+                                ->Attribute(AZ::Edit::Attributes::SoftMin, 1)
+                                ->Attribute(AZ::Edit::Attributes::SoftMax, 10)
+                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::OnFrameUpdateCountChanged)
+                            ->DataElement(Edit::UIHandlers::ComboBox, &EditorDiffuseProbeGridComponent::m_transparencyMode, "Transparency Mode", "Controls how the DiffuseProbeGrid handles transparent geometry in the Real-Time update, and is a performance/quality tradeoff.  'Full' processes all transparencies found along the probe rays.  'Closest Only' processes only the closest transparency to the probe.  'None' disables transparency handling and treats all geometry as Opaque.")
+                                ->EnumAttribute(DiffuseProbeGridTransparencyMode::Full, "Full")
+                                ->EnumAttribute(DiffuseProbeGridTransparencyMode::ClosestOnly, "Closest Only")
+                                ->EnumAttribute(DiffuseProbeGridTransparencyMode::None, "None")
+                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::OnTransparencyModeChanged)
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Visualization")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &EditorDiffuseProbeGridComponent::m_showVisualization, "Show Visualization", "Show the probe grid visualization")
@@ -380,6 +393,18 @@ namespace AZ
         AZ::u32 EditorDiffuseProbeGridComponent::OnEdgeBlendIblChanged()
         {
             m_controller.SetEdgeBlendIbl(m_edgeBlendIbl);
+            return AZ::Edit::PropertyRefreshLevels::None;
+        }
+
+        AZ::u32 EditorDiffuseProbeGridComponent::OnFrameUpdateCountChanged()
+        {
+            m_controller.SetFrameUpdateCount(m_frameUpdateCount);
+            return AZ::Edit::PropertyRefreshLevels::None;
+        }
+
+        AZ::u32 EditorDiffuseProbeGridComponent::OnTransparencyModeChanged()
+        {
+            m_controller.SetTransparencyMode(m_transparencyMode);
             return AZ::Edit::PropertyRefreshLevels::None;
         }
 
