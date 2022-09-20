@@ -20,6 +20,7 @@ namespace UnitTest
     {
         AllocatorsTestFixture::SetUp();
 
+        m_mainWindow = new QMainWindow();
         m_defaultParentWidget = new QWidget();
         m_widget = new QWidget(m_defaultParentWidget);
 

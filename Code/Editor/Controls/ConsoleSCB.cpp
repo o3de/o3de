@@ -338,7 +338,7 @@ CConsoleSCB::CConsoleSCB(QWidget* parent)
 
     connect(ui->button, &QPushButton::clicked, this, &CConsoleSCB::showVariableEditor);
     connect(ui->findButton, &QPushButton::clicked, this, &CConsoleSCB::toggleConsoleSearch);
-    connect(ui->textEdit, &ConsoleTextEdit::searchBarRequested, this, [this]
+    connect(ui->textEdit, &AzToolsFramework::ConsoleTextEdit::searchBarRequested, this, [this]
     {
         this->ui->findBar->setVisible(true);
         this->ui->lineEditFind->setFocus();
@@ -389,6 +389,10 @@ void CConsoleSCB::RegisterViewClass()
     opts.showInMenu = true;
     opts.builtInActionId = ID_VIEW_CONSOLEWINDOW;
     opts.shortcut = QKeySequence(Qt::Key_QuoteLeft);
+    // Override the default behavior for component mode enter/exit and imgui enter/exit
+    // so that we don't disable and enable the Console window.
+    opts.isDisabledInComponentMode = false;
+    opts.isDisabledInImGuiMode = false;
 
     AzToolsFramework::RegisterViewPane<CConsoleSCB>(LyViewPane::Console, LyViewPane::CategoryTools, opts);
 }
@@ -418,12 +422,10 @@ void CConsoleSCB::RefreshStyle()
         m_colorTable[6] = QColor(0xff, 0xaa, 0x22);     // Warning (Yellow)
     }
 
-    const bool uiAndDark = !GetIEditor()->IsInConsolewMode() && CConsoleSCB::GetCreatedInstance() && m_backgroundTheme == AzToolsFramework::ConsoleColorTheme::Dark;
-
     QColor bgColor;
     if (!GetIEditor()->IsInConsolewMode() && CConsoleSCB::GetCreatedInstance() && m_backgroundTheme == AzToolsFramework::ConsoleColorTheme::Dark)
     {
-        bgColor = Qt::black;
+        bgColor = QColor(0x22, 0x22, 0x22);
         AzQtComponents::ScrollBar::applyLightStyle(ui->textEdit);
     }
     else
@@ -436,8 +438,7 @@ void CConsoleSCB::RefreshStyle()
     m_colorTable[0] = textColor;
     m_colorTable[1] = textColor;
 
-    ui->textEdit->setBackgroundVisible(!uiAndDark);
-    ui->textEdit->setStyleSheet(uiAndDark ? QString() : QString("QPlainTextEdit{ background: %1 }").arg(bgColor.name(QColor::HexRgb)));
+    ui->textEdit->setStyleSheet(QString("background: %1").arg(bgColor.name(QColor::HexRgb)));
 
     // Clear out the console text when we change our background color since
     // some of the previous text colors may not be appropriate for the
@@ -657,96 +658,6 @@ static void OnConsoleVariableUpdated(IVariable* pVar)
     }
 }
 
-ConsoleTextEdit::ConsoleTextEdit(QWidget* parent)
-    : QPlainTextEdit(parent)
-    , m_contextMenu(new QMenu(this))
-{
-    setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(this, &QPlainTextEdit::customContextMenuRequested, this, &ConsoleTextEdit::showContextMenu);
-
-    // Make sure to add the actions to this widget, so that the ShortCutDispatcher picks them up properly
-
-    QAction* copyAction = m_contextMenu->addAction(tr("&Copy"));
-    copyAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    copyAction->setShortcut(QKeySequence::Copy);
-    copyAction->setEnabled(false);
-    connect(copyAction, &QAction::triggered, this, &QPlainTextEdit::copy);
-    addAction(copyAction);
-
-    QAction* selectAllAction = m_contextMenu->addAction(tr("Select &All"));
-    selectAllAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    selectAllAction->setShortcut(QKeySequence::SelectAll);
-    selectAllAction->setEnabled(false);
-    connect(selectAllAction, &QAction::triggered, this, &QPlainTextEdit::selectAll);
-    addAction(selectAllAction);
-
-    m_contextMenu->addSeparator();
-
-    QAction* deleteAction = m_contextMenu->addAction(tr("Delete"));
-    deleteAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    deleteAction->setShortcut(QKeySequence::Delete);
-    deleteAction->setEnabled(false);
-    connect(deleteAction, &QAction::triggered, this, [=]() { textCursor().removeSelectedText(); } );
-    addAction(deleteAction);
-
-    QAction* clearAction = m_contextMenu->addAction(tr("Clear"));
-    clearAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    clearAction->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_C);
-    clearAction->setEnabled(false);
-    connect(clearAction, &QAction::triggered, this, &QPlainTextEdit::clear);
-    addAction(clearAction);
-
-    QAction* findAction = m_contextMenu->addAction(tr("Find"));
-    findAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    findAction->setShortcut(QKeySequence::Find);
-    findAction->setEnabled(true);
-    connect(findAction, &QAction::triggered, this, &ConsoleTextEdit::searchBarRequested);
-    addAction(findAction);
-
-    connect(this, &QPlainTextEdit::copyAvailable, copyAction, &QAction::setEnabled);
-    connect(this, &QPlainTextEdit::copyAvailable, deleteAction, &QAction::setEnabled);
-    connect(this, &QPlainTextEdit::textChanged, selectAllAction, [=]
-        {
-            if (document() && !document()->isEmpty())
-            {
-                clearAction->setEnabled(true);
-                selectAllAction->setEnabled(true);
-            }
-            else
-            {
-                clearAction->setEnabled(false);
-                selectAllAction->setEnabled(false);
-            }
-        });
-}
-
-bool ConsoleTextEdit::event(QEvent* theEvent)
-{
-    if (theEvent->type() == QEvent::ShortcutOverride)
-    {
-        // ignore several possible key combinations to prevent them bubbling up to the main editor
-        QKeyEvent* shortcutEvent = static_cast<QKeyEvent*>(theEvent);
-
-        QKeySequence::StandardKey ignoredKeys[] = { QKeySequence::Backspace };
-
-        for (auto& currKey : ignoredKeys)
-        {
-            if (shortcutEvent->matches(currKey))
-            {
-                // these shortcuts are ignored. Accept them and do nothing.
-                theEvent->accept();
-                return true;
-            }
-        }
-    }
-
-    return QPlainTextEdit::event(theEvent);
-}
-
-void ConsoleTextEdit::showContextMenu(const QPoint &pt)
-{
-    m_contextMenu->exec(mapToGlobal(pt));
-}
 
 ConsoleVariableItemDelegate::ConsoleVariableItemDelegate(QObject* parent)
     : QStyledItemDelegate(parent)

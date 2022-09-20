@@ -28,6 +28,8 @@ set(FILES
     Source/EditorFixedJointComponent.h
     Source/EditorHingeJointComponent.cpp
     Source/EditorHingeJointComponent.h
+    Source/EditorPrismaticJointComponent.cpp
+    Source/EditorPrismaticJointComponent.h
     Source/EditorHeightfieldColliderComponent.cpp
     Source/EditorHeightfieldColliderComponent.h
     Source/EditorJointComponent.cpp
