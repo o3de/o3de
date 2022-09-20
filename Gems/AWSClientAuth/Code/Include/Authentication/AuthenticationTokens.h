@@ -9,7 +9,7 @@
 
 #include <AzCore/Preprocessor/Enum.h>
 #include <AzCore/std/string/string.h>
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 

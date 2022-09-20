@@ -9,7 +9,7 @@
 #pragma once
 
 #include <AzCore/Outcome/Outcome.h>
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <ScriptCanvas/Core/Core.h>
 #include <ScriptCanvas/Core/Datum.h>

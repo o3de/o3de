@@ -216,7 +216,7 @@ namespace AZ::IO
                 auto timeInProcessing = now - m_processingJobs[i].m_jobStartTime;
                 auto timeLeft = decompressionDuration > timeInProcessing ? decompressionDuration - timeInProcessing : AZStd::chrono::microseconds(0);
                 // Get the shortest time as this indicates the next decompression to become available.
-                cumulativeDelay = AZStd::min(timeLeft, cumulativeDelay);
+                cumulativeDelay = AZStd::min(AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(timeLeft), cumulativeDelay);
                 m_processingJobs[i].m_waitRequest->SetEstimatedCompletion(now + timeLeft);
             }
         }
@@ -637,7 +637,7 @@ namespace AZ::IO
 
                 DecompressionInformation& info = m_processingJobs[jobSlot];
                 info.m_waitRequest = waitRequest;
-                info.m_queueStartTime = AZStd::chrono::high_resolution_clock::now();
+                info.m_queueStartTime = AZStd::chrono::system_clock::now();
                 info.m_jobStartTime = info.m_queueStartTime; // Set these to the same in case the scheduler requests an update before the job has started.
                 info.m_compressedData = m_readBuffers[readSlot]; // Transfer ownership of the pointer.
                 m_readBuffers[readSlot] = nullptr;
@@ -693,7 +693,7 @@ namespace AZ::IO
         DecompressionInformation& jobInfo = m_processingJobs[jobSlot];
         AZ_Assert(jobInfo.m_waitRequest == waitRequest, "Job slot didn't contain the expected wait request.");
 
-        auto endTime = AZStd::chrono::high_resolution_clock::now();
+        auto endTime = AZStd::chrono::system_clock::now();
 
         FileRequest* compressedRequest = jobInfo.m_waitRequest->GetParent();
         AZ_Assert(compressedRequest, "A wait request attached to FullFileDecompressor was completed but didn't have a parent compressed request.");
@@ -723,7 +723,7 @@ namespace AZ::IO
 
     void FullFileDecompressor::FullDecompression(StreamerContext* context, DecompressionInformation& info)
     {
-        info.m_jobStartTime = AZStd::chrono::high_resolution_clock::now();
+        info.m_jobStartTime = AZStd::chrono::system_clock::now();
 
         FileRequest* compressedRequest = info.m_waitRequest->GetParent();
         AZ_Assert(compressedRequest, "A wait request attached to FullFileDecompressor was completed but didn't have a parent compressed request.");
@@ -748,7 +748,7 @@ namespace AZ::IO
 
     void FullFileDecompressor::PartialDecompression(StreamerContext* context, DecompressionInformation& info)
     {
-        info.m_jobStartTime = AZStd::chrono::high_resolution_clock::now();
+        info.m_jobStartTime = AZStd::chrono::system_clock::now();
 
         FileRequest* compressedRequest = info.m_waitRequest->GetParent();
         AZ_Assert(compressedRequest, "A wait request attached to FullFileDecompressor was completed but didn't have a parent compressed request.");
