@@ -15,7 +15,7 @@ import os
 import pathlib
 import sys
 
-from o3de import cmake, manifest, project_properties, utils, version
+from o3de import cmake, compatibility, manifest, project_properties, utils
 
 logger = logging.getLogger('o3de.enable_gem')
 logging.basicConfig(format=utils.LOG_FORMAT)
@@ -114,7 +114,7 @@ def enable_gem_in_project(gem_name: str = None,
         # opening many gem.json files to get version information
         if gem_dependencies:
             # gem compatibility
-            incompatible_gem_version_specifiers = version.get_incompatible_gem_version_specifiers(
+            incompatible_gem_version_specifiers = compatibility.get_incompatible_gem_version_specifiers(
                 project_path, gem_dependencies, buildable_gems)
             if incompatible_gem_version_specifiers:
                 if check:
@@ -127,7 +127,7 @@ def enable_gem_in_project(gem_name: str = None,
                     f'{incompatible_gem_version_specifiers}')
 
         # engine compatibility
-        engine_is_compatible = version.project_engine_is_compatible(project_path, 
+        engine_is_compatible = compatibility.project_engine_is_compatible(project_path, 
             gem_json_data.get('compatible_engines',''), gem_json_data.get('engine_api_dependencies',''))
         if not engine_is_compatible:
             if check:

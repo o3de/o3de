@@ -12,22 +12,18 @@ from packaging.version import Version, InvalidVersion
 from packaging.specifiers import SpecifierSet
 import re
 import pathlib
-from o3de import manifest, utils
-from enum import IntFlag
-
-# compatibility ranges from NotCompatible to the most compatible option EngineAPIVersions
-class Compatiblity(IntFlag):
-    NONE    = 0
-    NAME    = 1 >> 0
-    VERSION = 1 >> 1
-    API     = 1 >> 2
-    ALL = NAME | VERSION | API
-
-    def __bool__(self) -> bool:
-        return self.value != Compatiblity.NONE
-
+from o3de import manifest
 
 def engine_is_compatible(engine_name:str, engine_version:str, compatible_engines:list, engine_api_version_specifiers:list) -> bool:
+    """
+    Returns True if the engine is compatible with the provided compatible_engines and engine_api_versions information.
+    If a compatible_engine entry only has an engine name, it is assumed compatible with every engine version with that name.
+    If an engine_api_version entry only has an api name, it is assumed compatible with every engine api version with that name.
+    :param engine_name: the engine name
+    :param engine_version: the engine version
+    :param compatible_engines: a list of engine names and (optional)version specifiers
+    :param engine_api_versions: a list of engine api names and (optional)version specifiers
+    """
     # early out if there are no restrictions
     if not compatible_engines and not engine_api_version_specifiers:
         return True
@@ -65,6 +61,15 @@ def engine_is_compatible(engine_name:str, engine_version:str, compatible_engines
     return False
 
 def project_engine_is_compatible(project_path:pathlib.Path, compatible_engines:list, engine_api_versions:list) -> bool:
+    """
+    Returns True if the engine used by the provided project is compatible with the
+    provided compatible_engines and engine_api_versions information.
+    If a compatible_engine entry only has an engine name, it is assumed compatible with every engine version with that name.
+    If an engine_api_version entry only has an api name, it is assumed compatible with every engine api version with that name.
+    :param project_path: the path to the project
+    :param compatible_engines: a list of engine names and (optional)version specifiers
+    :param engine_api_versions: a list of engine api names and (optional)version specifiers
+    """
     project_json_data = manifest.get_project_json_data(project_path=project_path)
     if not project_json_data:
         return False
@@ -74,6 +79,13 @@ def project_engine_is_compatible(project_path:pathlib.Path, compatible_engines:l
     return engine_is_compatible(engine_name, engine_version, compatible_engines, engine_api_versions)
 
 def get_incompatible_gem_version_specifiers(project_path:pathlib.Path, gem_version_specifier_list:list, gem_paths:list) -> bool:
+    """
+    Returns a list of gem version specifiers that are not compatible with the gem's provided
+    If a gem_version_specifier_list entry only has a gem name, it is assumed compatible with every gem version with that name.
+    :param project_path: the path to the project
+    :param gem_version_specifier_list: a list of gem names and (optional)version specifiers
+    :param gem_paths: a list of gem paths
+    """
     if not gem_version_specifier_list:
         return []
 
@@ -106,6 +118,11 @@ def get_incompatible_gem_version_specifiers(project_path:pathlib.Path, gem_versi
     return incompatible_gem_version_specifiers
 
 def has_compatible_name(name_and_version_specifier_list:list, object_name:str) -> bool:
+    """
+    Returns True if the object_name matches an entry in the name_and_version_specifier_list
+    :param name_and_version_specifier_list: a list of names and (optional)version specifiers
+    :param object_name: the object name
+    """
     for name_and_version_specifier in name_and_version_specifier_list:
         # only accept a name without a version specifier
         if object_name == name_and_version_specifier:
@@ -114,6 +131,13 @@ def has_compatible_name(name_and_version_specifier_list:list, object_name:str) -
     return False 
 
 def has_compatible_version(name_and_version_specifier_list:list, object_name:str, object_version:str) -> bool:
+    """
+    returns True if the object_name matches an entry in the name_and_version_specifier_list that has no version,
+    or if the object_name matches and the object_version is compatible with the version specifier.
+    :param name_and_version_specifier_list: a list of names and (optional)version specifiers
+    :param object_name: the object name
+    :param object_version: the object version
+    """
     try:
         version = Version(object_version)
     except InvalidVersion as e:
@@ -135,16 +159,23 @@ def has_compatible_version(name_and_version_specifier_list:list, object_name:str
     return False 
 
 def get_object_name_and_optional_version_specifier(input:str):
+    """
+    Returns an object name and optional version specifier 
+    :param input: The input string
+    """
     try:
         return get_object_name_and_version_specifier(input)
     except Exception as e:
         return input, None
 
 def get_object_name_and_version_specifier(input:str):
-    # accepts input in the form <name><version specifier(s)>, for example:
-    # o3de>=1.0.0
-    # o3de-sdk==1.2.3,~=2.3.4
-
+    """
+    Returns an object name and version specifier.
+    accepts input in the form <name><version specifier(s)>, for example:
+     o3de>=1.0.0
+     o3de-sdk==1.2.3,~=2.3.4
+    :param input: The input string
+    """
     regex_str = r"(?P<object_name>(.*?))(?P<version_specifier>((~=|==|!=|<=|>=|<|>|===)(\s*\S+)+))"
     regex = re.compile(r"^\s*" + regex_str + r"\s*$", re.VERBOSE | re.IGNORECASE)
     match = regex.search(input)
