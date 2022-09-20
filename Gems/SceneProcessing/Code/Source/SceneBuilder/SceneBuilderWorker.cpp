@@ -43,17 +43,18 @@
 
 namespace SceneBuilder
 {
-    struct DebugScope final
+    struct DebugOutputScope final
     {
-        DebugScope(bool isDebug)
+        DebugOutputScope() = delete;
+        DebugOutputScope(bool isDebug)
             : m_inDebug(isDebug)
         {
-            AZ::SettingsRegistry::Get()->Set(AZ::SceneAPI::Utilities::Key_AssetProcessorInDebug, m_inDebug);
+            AZ::SettingsRegistry::Get()->Set(AZ::SceneAPI::Utilities::Key_AssetProcessorInDebugOutput, m_inDebug);
         }
 
-        ~DebugScope()
+        ~DebugOutputScope()
         {
-            AZ::SettingsRegistry::Get()->Set(AZ::SceneAPI::Utilities::Key_AssetProcessorInDebug, false);
+            AZ::SettingsRegistry::Get()->Set(AZ::SceneAPI::Utilities::Key_AssetProcessorInDebugOutput, false);
         }
 
         bool m_inDebug;
@@ -254,7 +255,7 @@ namespace SceneBuilder
         }
 
         auto debugFlagItr = request.m_jobDescription.m_jobParameters.find(AZ_CRC_CE("DebugFlag"));
-        DebugScope theDebugScope(debugFlagItr != request.m_jobDescription.m_jobParameters.end() && debugFlagItr->second == "true");
+        DebugOutputScope theDebugOutputScope(debugFlagItr != request.m_jobDescription.m_jobParameters.end() && debugFlagItr->second == "true");
 
         AZStd::shared_ptr<Scene> scene;
         if (!LoadScene(scene, request, response))
