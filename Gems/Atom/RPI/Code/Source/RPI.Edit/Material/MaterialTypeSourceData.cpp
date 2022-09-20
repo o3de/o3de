@@ -863,7 +863,7 @@ namespace AZ
                 }
                 else
                 {
-                    materialTypeAssetCreator.ReportError("Shader '%s' not found", shaderFile.data());
+                    materialTypeAssetCreator.ReportError("Shader asset not found for source file '%s'. See above for details.", shaderFile.data());
                     return Failure();
                 }
             }
