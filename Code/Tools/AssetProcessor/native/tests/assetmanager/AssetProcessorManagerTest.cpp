@@ -2884,12 +2884,7 @@ void SourceFileDependenciesTest::SetupData(
 
     if (primeMap)
     {
-        // note that we have to "prime" the map with the UUIDs to the source info for this to work:
         m_assetProcessorManager->m_sourceUUIDToSourceInfoMap[job.m_sourceFileInfo.m_uuid] = { m_watchFolderPath, job.m_sourceFileInfo.m_databasePath, job.m_sourceFileInfo.m_databasePath };
-        //m_assetProcessorManager->m_sourceUUIDToSourceInfoMap[m_uuidOfA] = { m_watchFolderPath, "a.txt", "a.txt" };
-        //m_assetProcessorManager->m_sourceUUIDToSourceInfoMap[m_uuidOfB] = { m_watchFolderPath, "b.txt", "b.txt" };
-        //m_assetProcessorManager->m_sourceUUIDToSourceInfoMap[m_uuidOfC] = { m_watchFolderPath, "c.txt", "c.txt" };
-        //m_assetProcessorManager->m_sourceUUIDToSourceInfoMap[m_uuidOfD] = { m_watchFolderPath, "d.txt", "d.txt" };
     }
 
     for (const auto& sourceFileDependency : sourceFileDependencies)
