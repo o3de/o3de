@@ -511,6 +511,7 @@ namespace O3DE::ProjectManager
     {
         m_projectImageLabel->GetCloudIcon()->setVisible(true);
         m_projectImageLabel->GetWarningSpacer()->changeSize(0, 0, QSizePolicy::Expanding, QSizePolicy::Fixed);
+        m_projectMenuButton->setVisible(false);
 
         SetLaunchingEnabled(false);
     }
@@ -519,6 +520,7 @@ namespace O3DE::ProjectManager
     {
         m_projectImageLabel->GetCloudIcon()->setVisible(true);
         m_projectImageLabel->GetWarningSpacer()->changeSize(0, 0, QSizePolicy::Expanding, QSizePolicy::Fixed);
+        m_projectMenuButton->setVisible(false);
 
         m_projectImageLabel->GetDownloadMessageLabel()->setVisible(true);
         m_projectImageLabel->GetProgressPercentage()->setVisible(true);

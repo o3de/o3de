@@ -28,7 +28,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString SphereShapeNode::TITLE = QObject::tr("Sphere Shape");
+    const char* SphereShapeNode::TITLE = "Sphere Shape";
 
     SphereShapeNode::SphereShapeNode(GraphModel::GraphPtr graph)
         : BaseShapeNode(graph)

@@ -450,6 +450,8 @@ namespace AzToolsFramework
                 ->Event("RegisterCustomViewPane", &EditorRequests::RegisterCustomViewPane)
                 ->Event("UnregisterViewPane", &EditorRequests::UnregisterViewPane)
                 ->Event("GetComponentTypeEditorIcon", &EditorRequests::GetComponentTypeEditorIcon)
+                ->Event("IsLevelDocumentOpen", &EditorRequests::IsLevelDocumentOpen)
+                ->Event("GetLevelName", &EditorRequests::GetLevelName)
                 ;
 
             behaviorContext->EBus<EditorEventsBus>("EditorEventBus")

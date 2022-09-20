@@ -7,7 +7,6 @@
            Uuid="{61E2CDC6-5CFA-47A2-8936-6A4332511E28}"
            Base="ScriptCanvas::Node"
            Category="Logic/Deprecated"
-           GeneratePropertyFriend="True"
            Deprecated="True"
            Description="An execution flow gate that activates each input flow in sequential order">
         <In Name="In0" Description="Input 0"/>

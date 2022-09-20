@@ -119,4 +119,20 @@ namespace PhysX
 
         AZ::Crc32 GetNativeType() const override;
     };
+
+    class PhysXPrismaticJoint : public PhysXJoint
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(PhysXPrismaticJoint, AZ::SystemAllocator, 0);
+        AZ_RTTI(PhysXPrismaticJoint, "{CEE6A6DF-FDE1-4E30-9EE2-631C7561C1C7}", PhysX::PhysXJoint);
+
+        PhysXPrismaticJoint(const PrismaticJointConfiguration& configuration,
+            AzPhysics::SceneHandle sceneHandle,
+            AzPhysics::SimulatedBodyHandle parentBodyHandle,
+            AzPhysics::SimulatedBodyHandle childBodyHandle);
+
+        virtual ~PhysXPrismaticJoint() = default;
+
+        AZ::Crc32 GetNativeType() const override;
+    };
 } // namespace PhysX
