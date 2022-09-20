@@ -147,7 +147,7 @@ namespace AzQtComponents
     {
         setTitle(title);
         m_titleLabel->setToolTip(tooltip);
-        this->setToolTip(tooltip);
+        setToolTip(tooltip);
     }
 
     void CardHeader::setFilter(const QString& filter)
