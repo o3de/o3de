@@ -5,17 +5,19 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "PaintBrushSettingsWindow.h"
-#include "PaintBrushSettingsWindow_Internals.h"
-#include <AzToolsFramework/API/ViewPaneOptions.h>
 #include <QLabel>
 #include <QListView>
 #include <QScopedValueRollback>
 #include <QVBoxLayout>
 
 #include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
-#include <UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
 
+#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsRequestBus.h>
+#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsWindow.h>
+#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsWindow_Internals.h>
+#include <AzToolsFramework/API/ViewPaneOptions.h>
+
+#include <UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
 #include <UI/PropertyEditor/PropertyRowWidget.hxx>
 #include <UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 
@@ -85,13 +87,12 @@ namespace PaintBrush
     void RegisterPaintBrushSettingsWindow()
     {
         AzToolsFramework::ViewPaneOptions viewOptions;
-        viewOptions.showInMenu = true;
-        viewOptions.preferedDockingArea = Qt::DockWidgetArea::RightDockWidgetArea;
-        // Keep the window active but hidden when it's closed. This is needed so that it still provides the paint brush settings
-        // even when they aren't visible.
-        viewOptions.isDeletable = false;
+        // Don't list this pane in the Tools menu, it will only be visible and accessible while in painting mode.
+        viewOptions.showInMenu = false;
         // Don't enable/disable based on entering component mode. We'll enable more specifically ourselves based on when painting begins.
         viewOptions.isDisabledInComponentMode = false;
+        // Default size of the window
+        viewOptions.paneRect = QRect(50, 50, 350, 105);
 
         AzToolsFramework::EditorRequestBus::Broadcast(
             &AzToolsFramework::EditorRequestBus::Events::RegisterViewPane,

@@ -373,7 +373,7 @@ namespace GradientSignal
             AzToolsFramework::ViewportUi::Alignment::TopLeft);
 
         // create and register the buttons
-        m_paintBrushSettingsButtonId = RegisterClusterButton(m_paintBrushControlClusterId, "Align_to_Object", "Show Paint Brush Settings");
+        m_paintBrushSettingsButtonId = RegisterClusterButton(m_paintBrushControlClusterId, "Paint", "Show Paint Brush Settings");
 
         m_buttonSelectionHandler = AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler(
             [this](AzToolsFramework::ViewportUi::ButtonId buttonId)

@@ -75,6 +75,9 @@ namespace AzToolsFramework
 
         // Stop listening for any changes to the Paint Brush Settings
         PaintBrushSettingsNotificationBus::Handler::BusDisconnect();
+
+        // Make sure the Paint Brush Settings window is closed
+        AzToolsFramework::CloseViewPane(PaintBrush::s_paintBrushSettingsName);
     }
 
     void PaintBrushManipulator::Draw(
