@@ -51,17 +51,16 @@ def EditMenu_Default_UndoRedo():
 
     # 3) Create and verify the new variable exists in variable manager
     variable_manager = sc_editor.variable_manager
-    boolean_variable_type = variable_manager.variable_types.Boolean
-    variable_manager.create_new_variable(boolean_variable_type)
-    variable_manager.sc_variable_count_matches_expected(VARIABLE_COUNT_BEFORE)
+    variable_manager.create_new_variable(variable_manager.variable_types.Boolean)
+    variable_manager.validate_variable_count(VARIABLE_COUNT_BEFORE)
 
     # 4) Trigger Undo action and verify if variable is removed in Variable Manager
     sc_editor.trigger_undo_action()
-    variable_manager.sc_variable_count_matches_expected(VARIABLE_COUNT_AFTER)
+    variable_manager.validate_variable_count(VARIABLE_COUNT_AFTER)
 
     # 5) Trigger Redo action and verify if variable is re-added in Variable Manager
     sc_editor.trigger_redo_action()
-    variable_manager.sc_variable_count_matches_expected(VARIABLE_COUNT_BEFORE)
+    variable_manager.validate_variable_count(VARIABLE_COUNT_BEFORE)
 
     # 6) Close SC window
     qtpy_o3de_editor.close_script_canvas()

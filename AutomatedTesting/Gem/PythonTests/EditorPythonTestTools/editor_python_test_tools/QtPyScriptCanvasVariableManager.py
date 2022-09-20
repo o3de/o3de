@@ -8,14 +8,17 @@ Object to house all the Qt Objects and behavior used in testing the script canva
 """
 from editor_python_test_tools.utils import TestHelper as helper
 from PySide2 import QtWidgets, QtCore
+import editor_python_test_tools.QtPyCommon as QtPyCommon
 import pyside_utils
 from types import SimpleNamespace
 from consts.scripting import (VARIABLE_MANAGER_QT, VARIABLE_PALETTE_QT, ADD_BUTTON_QT, GRAPH_VARIABLES_QT)
 from consts.general import (WAIT_TIME_3)
 from editor_python_test_tools.utils import Report
 
+
 class Tests():
     variable_count_expected = ("Variable count matches expected", "Variable count does not match expected")
+
 
 """
 Basic variable types.
@@ -33,12 +36,14 @@ VARIABLE_TYPES_DICT = {
     "Vector4": "Vector4"
 }
 
-class QtPyScriptCanvasVariableManager:
+
+class QtPyScriptCanvasVariableManager(QtPyCommon.QtPyCommon):
     """
     QtPy class for handling the behavior of the script canvas variable manager
     """
 
     def __init__(self, sc_editor):
+        super().__init__()
         self.variable_manager = sc_editor.sc_editor.findChild(QtWidgets.QDockWidget, VARIABLE_MANAGER_QT)
         self.variable_types = self.get_basic_variable_types()
 
@@ -98,9 +103,10 @@ class QtPyScriptCanvasVariableManager:
         """
         graph_variables = self.variable_manager.findChild(QtWidgets.QTableView, GRAPH_VARIABLES_QT)
         row_count = graph_variables.model().rowCount(QtCore.QModelIndex())
+
         return row_count
 
-    def sc_variable_count_matches_expected(self, expected):
+    def validate_variable_count(self, expected):
         """
         function to check if the current number of variables in variable manager matches the user provided input
 
@@ -112,7 +118,3 @@ class QtPyScriptCanvasVariableManager:
         result = expected == row_count
 
         Report.result(Tests.variable_count_expected, helper.wait_for_condition(lambda: result is True, WAIT_TIME_3))
-
-
-
-

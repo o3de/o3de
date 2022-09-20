@@ -177,6 +177,7 @@ class TestHelper:
                     matching_lines += 1
 
         return matching_lines >= expected_lines
+
     @staticmethod
     def multiplayer_enter_game_mode(msgtuple_success_fail: Tuple[str, str]) -> None:
         """

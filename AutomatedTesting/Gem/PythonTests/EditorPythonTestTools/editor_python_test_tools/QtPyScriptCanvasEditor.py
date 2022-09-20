@@ -7,12 +7,13 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 Object to house all the Qt Objects used when testing and manipulating the Script Canvas editor and its tools
 """
 from PySide2 import QtWidgets
+import editor_python_test_tools.QtPyCommon as QtPyCommon
 import pyside_utils
 import editor_python_test_tools.QtPyScriptCanvasVariableManager as QtPyScriptCanvasVariableManager
 from consts.scripting import (SCRIPT_CANVAS_UI)
 
 
-class QtPyScriptCanvasEditor:
+class QtPyScriptCanvasEditor(QtPyCommon.QtPyCommon):
     """
     QtPy class for handling the behavior of the Script Canvas editor. Contains references to other qtpy objects
     reliant on the script canvas editor
@@ -23,6 +24,7 @@ class QtPyScriptCanvasEditor:
     """
 
     def __init__(self, editor_main_window):
+        super().__init__()
 
         self.sc_editor = editor_main_window.findChild(QtWidgets.QDockWidget, SCRIPT_CANVAS_UI)
         self.sc_editor_main_pane = self.sc_editor.findChild(QtWidgets.QMainWindow)

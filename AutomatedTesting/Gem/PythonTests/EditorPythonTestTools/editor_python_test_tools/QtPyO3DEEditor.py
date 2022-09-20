@@ -7,6 +7,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 Object to house all the Qt Objects used when testing and manipulating the O3DE UI
 """
 import pyside_utils
+import editor_python_test_tools.QtPyCommon as QtPyCommon
 import azlmbr.legacy.general as general
 import editor_python_test_tools.QtPyScriptCanvasEditor as QtPyScriptCanvasEditor
 from editor_python_test_tools.utils import TestHelper
@@ -19,13 +20,14 @@ class Tests():
     script_canvas_editor_closed = ("Script Canvas Editor closed successfully", "Failed to close Script Canvas Editor")
 
 
-class QtPyO3DEEditor:
+class QtPyO3DEEditor(QtPyCommon.QtPyCommon):
     """
     Container class for QtPy objects used in testing/manipulating the UI
 
     """
 
     def __init__(self):
+        super().__init__()
         self.editor_main_window = pyside_utils.get_editor_main_window()
         self.sc_editor = None
 

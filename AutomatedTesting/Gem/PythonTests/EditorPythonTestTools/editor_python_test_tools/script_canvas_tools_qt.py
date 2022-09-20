@@ -3,6 +3,11 @@ Copyright (c) Contributors to the Open 3D Engine Project.
 For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
+
+Tools library for script canvas related helper functions.
+
+Note: scripting_utils>scripting_tools is being deprecated and relevant functions should be moved here then deleted
+from that file.
 """
 
 from editor_python_test_tools.utils import TestHelper as helper
@@ -34,8 +39,11 @@ class Tests():
     parameter_created = ("Successfully added parameter", "Failed to add parameter")
     parameter_removed = ("Successfully removed parameter", "Failed to remove parameter")
 
-def click_menu_option(window, option_text):
+
+def click_menu_option(self, window, option_text):
     """
+    move this to the base class when we reach that test script
+
     function for clicking an option from a Qt menu object. This function bypasses menu groups or categories. for example,
     if you want to click the Open option from the "File" category provide "Open" as your menu text instead of "File" then "Open".
 
@@ -46,6 +54,24 @@ def click_menu_option(window, option_text):
     """
     action = pyside_utils.find_child_by_pattern(window, {"text": option_text, "type": QtWidgets.QAction})
     action.trigger()
+
+def expand_qt_container_rows(self, object_name):
+    """
+    move this the base class when we reach that test script
+
+    function used for expanding qt container rows with expandable children. May need to refactor this to replace
+    self.findChildren with container.findChildren
+
+    param object_name: qt object name as a string
+
+    returns: none
+    """
+    children = self.findChildren(QtWidgets.QFrame, object_name)
+    for child in children:
+        check_box = child.findChild(QtWidgets.QCheckBox)
+        if check_box and not check_box.isChecked():
+            QtTest.QTest.mouseClick(check_box, QtCore.Qt.LeftButton, QtCore.Qt.NoModifier)
+
 
 def save_script_event_file(self, file_path):
     """
@@ -68,6 +94,9 @@ def save_script_event_file(self, file_path):
 
 def initialize_asset_editor_object(self):
     """
+    Move to asset editor class once implemented
+    Put this function's behavior onto the QtPy O3DEEditor and QtPy Asset Editor class when we get to the asset editor tests.
+
     function for initializing qt objects needed for testing around asset editor
 
     param self: the script object calling this function.
@@ -82,6 +111,7 @@ def initialize_asset_editor_object(self):
 
 def initialize_node_palette_object(self):
     """
+    move to node palette class once implemented
     function for initializing qt objects needed for testing around the script canvas editor
 
     param self: the script object calling this function
@@ -94,24 +124,9 @@ def initialize_node_palette_object(self):
     self.node_tree_search_box = self.node_tree_search_frame.findChild(QtWidgets.QLineEdit, SEARCH_FILTER_QT)
 
 
-def expand_qt_container_rows(self, object_name):
-    """
-    function used for expanding qt container rows with expandable children
-
-    param self: The script object calling this function
-    param object_name: qt object name as a string
-
-    returns: none
-    """
-    children = self.asset_editor_row_container.findChildren(QtWidgets.QFrame, object_name)
-    for child in children:
-        check_box = child.findChild(QtWidgets.QCheckBox)
-        if check_box and not check_box.isChecked():
-            QtTest.QTest.mouseClick(check_box, QtCore.Qt.LeftButton, QtCore.Qt.NoModifier)
-
-
 def open_node_palette(self):
     """
+    move to node palette class once implemented
     function for checking if node palette is on and if not turn it on
 
     param self: the script calling this function
@@ -125,6 +140,7 @@ def open_node_palette(self):
 
 def open_asset_editor():
     """
+    add this to the asset editor class once implemented
     function for opening the asset editor UI
 
     returns true/false result of helper function's attempt
@@ -136,6 +152,7 @@ def open_asset_editor():
 
 def canvas_node_palette_search(self, node_name, number_of_retries):
     """
+    add this to the node palette class once implemented
     function for searching the script canvas node palette for user defined nodes. function takes a number of retries as
     an argument in case editor/script canvas lags during test.
 
@@ -159,6 +176,7 @@ def canvas_node_palette_search(self, node_name, number_of_retries):
 
 def get_node_palette_node_tree_qt_object (self):
     """
+    add this to the node palette class once implemented
     function for retrieving the tree view qt object for the node palette
 
     params self: the script calling this function
@@ -172,6 +190,7 @@ def get_node_palette_node_tree_qt_object (self):
 
 def get_node_palette_category_qt_object(self, category_name):
     """
+    add this to the node palette class once implemented
     function for retrieving the qt object for a node palette category
 
     param self: the script calling this function
@@ -185,6 +204,7 @@ def get_node_palette_category_qt_object(self, category_name):
 
 def get_node_inspector_node_titles(self, sc_graph_node_inspector, sc_graph):
     """
+    add this to the node palette class once implemented
     function for retrieving the node inspector's node titles from all nodes in a script canvas graph. function takes
     a script canvas graph and node inspector qt widget.
 
@@ -209,6 +229,7 @@ def get_node_inspector_node_titles(self, sc_graph_node_inspector, sc_graph):
 
 def get_sc_editor_node_inspector(sc_editor):
     """
+    add this to the node inspector class once implemented
     function for toggling the node inspector if it's not already turned on and returning the qt widget object
 
     param sc_editor: the script canvas editor qt object
@@ -226,6 +247,7 @@ def get_sc_editor_node_inspector(sc_editor):
 
 def create_script_event(self):
     """
+    add this to the asset editor class once implemented
     Function for creating a script event from the editor's asset editor.
 
     param self: the script calling this function
@@ -248,6 +270,9 @@ def create_script_event(self):
     Report.result(Tests.child_event_created, result)
 
 def create_script_event_parameter(self):
+    """
+    add this to the asset editor class once implemented
+    """
     add_param = self.asset_editor_row_container.findChild(QtWidgets.QFrame, "Parameters").findChild(QtWidgets.QToolButton, "")
     add_param.click()
     result = helper.wait_for_condition(
@@ -256,6 +281,10 @@ def create_script_event_parameter(self):
     Report.result(Tests.parameter_created, result)
 
 def remove_script_event_parameter(self):
+
+    """
+    add this to the asset editor class once implemented
+    """
     remove_param = self.asset_editor_row_container.findChild(QtWidgets.QFrame, "[0]").findChild(QtWidgets.QToolButton, "")
     remove_param.click()
     result = helper.wait_for_condition(
@@ -265,6 +294,7 @@ def remove_script_event_parameter(self):
 
 def add_empty_parameter_to_script_event(self, number_of_parameters):
     """
+    add this to the asset editor class once implemented
     Function for adding a new blank parameter to a script event
 
     param self: the script calling this function
@@ -282,6 +312,7 @@ def add_empty_parameter_to_script_event(self, number_of_parameters):
 
 def get_script_event_parameter_name_text(self):
     """
+    add this to the asset editor class once implemented
     function for retrieving the name field of script event parameters
 
     param self: the script calling this function
@@ -297,6 +328,7 @@ def get_script_event_parameter_name_text(self):
 
 def get_script_event_parameter_type_combobox(self):
     """
+    add this to the asset editor class once implemented
     function for retrieving the type field of script event parameters
 
     param self: the script calling this function
@@ -313,6 +345,7 @@ def get_script_event_parameter_type_combobox(self):
 
 def create_entity_with_sc_component_asset(entity_name, source_file, position = math.Vector3(512.0, 512.0, 32.0)):
     """
+    Break this down into create entity function and stamp component function on the Editor class
     function for creating a new entity in the scene w/ a script canvas component. Function also adds as
     script canvas file to the script canvas component's source file property.
 
@@ -334,6 +367,7 @@ def create_entity_with_sc_component_asset(entity_name, source_file, position = m
 
 def create_entity_with_multiple_sc_component_asset(entity_name, source_files, position = math.Vector3(512.0, 512.0, 32.0)):
     """
+    Break this down into create entity function and stamp component function on the Editor class
     function for creating a new entity with multiple script canvas components and adding a source file to each.
 
     param entity_name: the name you want to assign the entity
@@ -400,6 +434,8 @@ def change_entity_sc_variable_entity(entity_name, target_entity_name, component_
 
 def change_entity_start_status(entity_name, start_status):
     """
+    Move this to the editor class when we reach that test script
+
     function for finding an entity by name and changing its start status
 
     param entity_name: the string name of the entity you want to modify
@@ -413,6 +449,8 @@ def change_entity_start_status(entity_name, start_status):
 
 def validate_entity_start_state_by_name(entity_name, expected_state):
     """
+    Move this to the editor class when we reach that test script
+
     function for finding and validating the start state of an entity by name. If the actual state does not match
     the expected state the function will attempt to set the state for you.
 
@@ -436,6 +474,8 @@ def validate_entity_start_state_by_name(entity_name, expected_state):
 
 def validate_entity_exists_by_name(entity_name, test_results):
     """
+    Move this to the editor class when we reach that test script
+
     function for validating if an entity was properly created
 
     param entity_name: string name of the entity to validate
