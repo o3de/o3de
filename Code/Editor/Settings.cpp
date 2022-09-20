@@ -7,6 +7,9 @@
  */
 
 
+#pragma optimize("", off)
+#pragma inline_depth(0)
+
 #include "EditorDefs.h"
 
 #include "Settings.h"
@@ -1095,3 +1098,5 @@ AZ::u64 SEditorSettings::GetMaxNumberOfItemsShownInSearchView() const
 {
     return SandboxEditor::MaxItemsShownInAssetBrowserSearch();
 }
+#pragma optimize("", on)
+#pragma inline_depth()
