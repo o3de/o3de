@@ -539,7 +539,7 @@ namespace ScriptCanvas
             DebugSymbolMapReverse m_debugMapReverse;
 
             AZStd::sys_time_t m_parseDuration;
-            AZStd::chrono::system_clock::time_point m_parseStartTime;
+            AZStd::chrono::steady_clock::time_point m_parseStartTime;
             EBusHandlingByNode m_ebusHandlingByNode;
             EventHandlingByNode m_eventHandlingByNode;
             ImplicitVariablesByNode m_implicitVariablesByNode;

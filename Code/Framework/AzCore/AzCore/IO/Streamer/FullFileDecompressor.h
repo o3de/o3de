@@ -65,7 +65,7 @@ namespace AZ::IO
         bool ExecuteRequests() override;
 
         void UpdateStatus(Status& status) const override;
-        void UpdateCompletionEstimates(AZStd::chrono::system_clock::time_point now, AZStd::vector<FileRequest*>& internalPending,
+        void UpdateCompletionEstimates(AZStd::chrono::steady_clock::time_point now, AZStd::vector<FileRequest*>& internalPending,
             StreamerContext::PreparedQueue::iterator pendingBegin, StreamerContext::PreparedQueue::iterator pendingEnd) override;
 
         void CollectStatistics(AZStd::vector<Statistic>& statistics) const override;
@@ -84,8 +84,8 @@ namespace AZ::IO
         {
             bool IsProcessing() const;
 
-            AZStd::chrono::system_clock::time_point m_queueStartTime;
-            AZStd::chrono::system_clock::time_point m_jobStartTime;
+            AZStd::chrono::steady_clock::time_point m_queueStartTime;
+            AZStd::chrono::steady_clock::time_point m_jobStartTime;
             Buffer m_compressedData{ nullptr };
             FileRequest* m_waitRequest{ nullptr };
             u32 m_alignmentOffset{ 0 };
