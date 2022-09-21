@@ -56,7 +56,7 @@ namespace GradientSignal
             for (int32_t index = aznumeric_cast<int32_t>(m_pixelIndices.size()) - 1; index >= 0; index--)
             {
                 ImageGradientModificationBus::Event(
-                    m_entityId, &ImageGradientModificationBus::Events::SetValueByPixelIndex, m_pixelIndices[index], m_oldValues[index]);
+                    m_entityId, &ImageGradientModificationBus::Events::SetPixelValueByPixelIndex, m_pixelIndices[index], m_oldValues[index]);
             }
 
             // Notify anything listening to the image gradient that the modified region has changed.
@@ -75,7 +75,7 @@ namespace GradientSignal
 
             // Replay all the changes in forward order.
             ImageGradientModificationBus::Event(
-                m_entityId, &ImageGradientModificationBus::Events::SetValuesByPixelIndex, m_pixelIndices, m_newValues);
+                m_entityId, &ImageGradientModificationBus::Events::SetPixelValuesByPixelIndex, m_pixelIndices, m_newValues);
 
             // Notify anything listening to the image gradient that the modified region has changed.
             // We expand the region by one pixel in each direction to account for any data affected by bilinear filtering as well.
