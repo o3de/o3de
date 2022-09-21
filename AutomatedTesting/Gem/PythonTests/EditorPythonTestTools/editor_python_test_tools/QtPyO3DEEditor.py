@@ -47,7 +47,7 @@ class QtPyO3DEEditor(QtPyCommon):
 
     def close_script_canvas(self) -> None:
         """
-        this function will close the script canvas UI. It will not clear the reference to the sc_editor
+        This function will close the script canvas UI. It will not clear the reference to the sc_editor
 
         returns: None
         """
