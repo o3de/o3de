@@ -1,9 +1,8 @@
 {
-    "materialType": "Materials/Types/StandardMultilayerPBR.materialtype",
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardMultilayerPBR.materialtype",
     "materialTypeVersion": 3,
-    "parentMaterial": "TestData/Materials/StandardMultilayerPbrTestCases/002_ParallaxPdo.material",
+    "parentMaterial": "002_ParallaxPdo.material",
     "propertyValues": {
-        "blend.blendSource": "BlendMaskVertexColors",
-        "parallax.quality": "Medium"
+        "blend.blendSource": "BlendMaskVertexColors"
     }
 }

@@ -254,20 +254,15 @@ def get_template_json_paths_from_all_cached_repos() -> set:
     return template_set
 
 def refresh_repo(repo_uri: str,
-                 cache_folder: str = None,
                  repo_set: set = None) -> int:
-    if not cache_folder:
-        cache_folder = manifest.get_o3de_cache_folder()
     if not repo_set:
         repo_set = set()
 
     repo_uri = f'{repo_uri}/repo.json'
-    cache_file, parsed_uri = get_cache_file_uri(repo_uri)
-
-    download_file_result = utils.download_file(parsed_uri, cache_file, True)
-    if download_file_result != 0:
+    cache_file = download_repo_manifest(repo_uri)
+    if not cache_file:
         logger.error(f'Repo json {repo_uri} could not download.')
-        return download_file_result
+        return 1
 
     if not validation.valid_o3de_repo_json(cache_file):
         logger.error(f'Repo json {repo_uri} is not valid.')
@@ -278,7 +273,6 @@ def refresh_repo(repo_uri: str,
 
 def refresh_repos() -> int:
     json_data = manifest.load_o3de_manifest()
-    cache_folder = manifest.get_o3de_cache_folder()
     result = 0
 
     # set will stop circular references
@@ -288,7 +282,7 @@ def refresh_repos() -> int:
         if repo_uri not in repo_set:
             repo_set.add(repo_uri)
 
-            last_failure = refresh_repo(repo_uri, cache_folder, repo_set)
+            last_failure = refresh_repo(repo_uri, repo_set)
             if last_failure:
                 result = last_failure
 
