@@ -154,7 +154,8 @@
              bool m_waitingToSave = false;
 
              AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeEvent::Handler m_propertyChangeHandler;
- 
+             AZ::Crc32 m_savedStateKey;
+
              void CreateAssetImpl(AZ::Data::AssetType assetType, const QString& assetName);
              bool SaveImpl(const AZ::Data::Asset<AZ::Data::AssetData>& asset, const QString& saveAsPath);
              void UpdatePropertyEditor(AZ::Data::Asset<AZ::Data::AssetData>& asset);
