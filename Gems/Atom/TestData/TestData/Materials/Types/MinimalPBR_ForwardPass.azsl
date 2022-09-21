@@ -8,8 +8,8 @@
 
 #include <viewsrg.srgi>
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
-#include <Atom/Features/PBR/ForwardPassSrg.azsli>
-#include <Atom/Features/PBR/ForwardPassOutput.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli>
 #include <Atom/Features/PBR/AlphaUtils.azsli>
 #include <Atom/Features/SrgSemantics.azsli>
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
