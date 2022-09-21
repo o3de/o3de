@@ -715,7 +715,6 @@ namespace GradientSignal
         m_configuration.m_imageAsset.Release(); 
         AZ::RPI::StreamingImageAsset* imageAsset = azrtti_cast<AZ::RPI::StreamingImageAsset*>(asset.GetData());
         imageAsset->ReloadMipChainAssets();
-        OnAssetReady(asset);
     }
 
     void ImageGradientComponent::OnGradientTransformChanged(const GradientTransform& newTransform)
