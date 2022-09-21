@@ -9,7 +9,7 @@
 #define AZCORE_TIMEPOINT_H_
 
 #include <AzCore/PlatformDef.h>
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
@@ -52,7 +52,7 @@ namespace AZ
 
     inline AZStd::string ScriptTimePoint::ToString() const
     {
-        return AZStd::string::format("Time %llu", m_timePoint.time_since_epoch().count());
+        return AZStd::string::format("Time %lld", static_cast<long long>(m_timePoint.time_since_epoch().count()));
     }
 
     inline const AZStd::chrono::system_clock::time_point& ScriptTimePoint::Get() const

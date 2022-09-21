@@ -104,7 +104,7 @@ namespace ScriptCanvas
 
         void GraphToX::MarkTranslationStop()
         {
-            m_translationDuration = AZStd::chrono::microseconds(AZStd::chrono::system_clock::now() - m_translationStartTime).count();
+            m_translationDuration = AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(AZStd::chrono::system_clock::now() - m_translationStartTime).count();
         }
 
         AZStd::vector<ValidationConstPtr>&& GraphToX::MoveErrors()

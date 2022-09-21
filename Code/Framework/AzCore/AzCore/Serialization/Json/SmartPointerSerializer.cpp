@@ -100,8 +100,11 @@ namespace AZ
         };
         container->EnumElements(outputValue, elementCallback);
 
-        return context.Report(result, result.GetProcessing() != JSR::Processing::Halted ?
-            "Successfully read data into smart pointer." : "Failed to read data for smart pointer.");
+        AZStd::string_view message =
+            result.GetProcessing() == JSR::Processing::Completed ? "Successfully read data into smart pointer." :
+            result.GetProcessing() != JSR::Processing::Halted ? "Partially read data into smart pointer." :
+            "Failed to read data for smart pointer.";
+        return context.Report(result, message);
     }
 
     JsonSerializationResult::Result JsonSmartPointerSerializer::Store(rapidjson::Value& outputValue, const void* inputValue,

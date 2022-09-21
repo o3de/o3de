@@ -8,7 +8,7 @@
 
 
 #include <AzCore/Component/TickBus.h>
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 
 #include <AzToolsFramework/UI/UICore/ProgressShield.hxx>
 

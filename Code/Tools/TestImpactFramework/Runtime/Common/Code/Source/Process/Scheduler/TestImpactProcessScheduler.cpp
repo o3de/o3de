@@ -106,7 +106,7 @@ namespace TestImpact
             // Check to see whether or not the scheduling has exceeded its specified runtime
             if (m_scheduleTimeout.has_value())
             {
-                const auto shedulerRunTime = AZStd::chrono::milliseconds(AZStd::chrono::high_resolution_clock::now() - m_startTime);
+                const auto shedulerRunTime = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::high_resolution_clock::now() - m_startTime);
 
                 if (shedulerRunTime > m_scheduleTimeout)
                 {
@@ -167,7 +167,7 @@ namespace TestImpact
                     {
                         // Process is still in-flight
                         const auto exitTime = AZStd::chrono::high_resolution_clock::now();
-                        const auto runTime = AZStd::chrono::milliseconds(exitTime - processInFlight.m_startTime.value());
+                        const auto runTime = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(exitTime - processInFlight.m_startTime.value());
 
                         // Check to see whether or not the processes has exceeded its specified flight time
                         if (m_processTimeout.has_value() && runTime > m_processTimeout)

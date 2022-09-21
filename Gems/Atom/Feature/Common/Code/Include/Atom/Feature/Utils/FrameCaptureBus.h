@@ -12,6 +12,7 @@
 #include <AzFramework/Windowing/WindowBus.h>
 
 #include <Atom/RPI.Public/Pass/AttachmentReadback.h>
+#include <Atom/Utils/ImageComparison.h>
 
 namespace AZ
 {
@@ -78,7 +79,6 @@ namespace AZ
             //! @return value is the frame capture Id, on failure it will return InvalidFrameCaptureId
             virtual FrameCaptureId CapturePassAttachmentWithCallback(const AZStd::vector<AZStd::string>& passHierarchy, const AZStd::string& slotName
                 , RPI::AttachmentReadback::CallbackFunction callback, RPI::PassAttachmentReadbackOption option) = 0;
-
         };
         using FrameCaptureRequestBus = EBus<FrameCaptureRequests>;
 

@@ -1200,7 +1200,7 @@ namespace AzToolsFramework
         m_impl->m_queuedTabOrderRefresh = false;
     }
 
-    void ReflectedPropertyEditor::SetSavedStateKey(AZ::u32 key)
+    void ReflectedPropertyEditor::SetSavedStateKey(AZ::u32 key, [[maybe_unused]] AZStd::string propertyEditorName)
     {
         if (m_impl->m_savedStateKey != key)
         {

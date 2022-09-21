@@ -13,7 +13,7 @@
 #include <AzCore/IO/Streamer/FileRange.h>
 #include <AzCore/IO/Streamer/Statistics.h>
 #include <AzCore/IO/Streamer/StreamerContext.h>
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/containers/deque.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>

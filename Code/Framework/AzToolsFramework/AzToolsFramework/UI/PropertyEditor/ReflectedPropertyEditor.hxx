@@ -79,7 +79,8 @@ namespace AzToolsFramework
 
         void SetFilterString(AZStd::string str) override;
         AZStd::string GetFilterString();
-        void SetSavedStateKey(AZ::u32 key) override; // a settings key which is used to store and load the set of things that are expanded or not and other settings
+        // a settings key which is used to store and load the set of things that are expanded or not and other settings
+        void SetSavedStateKey([[maybe_unused]] AZ::u32 key, [[maybe_unused]] AZStd::string propertyEditorName = "") override;
 
         void QueueInvalidation(PropertyModificationRefreshLevel level) override;
         //will force any queued invalidations to happen immediately

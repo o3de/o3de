@@ -28,6 +28,7 @@ namespace AzToolsFramework
         class Instance;
         class InstanceEntityMapperInterface;
         class InstanceToTemplateInterface;
+        class InstanceDomGeneratorInterface;
         class PrefabLoaderInterface;
         class PrefabSystemComponentInterface;
 
@@ -61,9 +62,6 @@ namespace AzToolsFramework
             AZ::EntityId GetLevelInstanceContainerEntityId() const override;
             AZ::IO::Path GetOwningInstancePrefabPath(AZ::EntityId entityId) const override;
             PrefabRequestResult HasUnsavedChanges(AZ::IO::Path prefabFilePath) const override;
-
-            //! [DEPRECATION]--This function is marked for deprecation. Please use DeleteEntitiesAndAllDescendantsInInstance instead.
-            PrefabOperationResult DeleteEntitiesInInstance(const EntityIdList& entityIds) override;
 
             PrefabOperationResult DeleteEntitiesAndAllDescendantsInInstance(const EntityIdList& entityIds) override;
             DuplicatePrefabResult DuplicateEntitiesInInstance(const EntityIdList& entityIds) override;
@@ -199,6 +197,7 @@ namespace AzToolsFramework
 
             InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
             InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
+            InstanceDomGeneratorInterface* m_instanceDomGeneratorInterface = nullptr;
             PrefabFocusInterface* m_prefabFocusInterface = nullptr;
             PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
             PrefabLoaderInterface* m_prefabLoaderInterface = nullptr;

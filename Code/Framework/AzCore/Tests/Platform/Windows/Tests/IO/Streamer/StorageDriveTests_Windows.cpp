@@ -1236,7 +1236,7 @@ namespace Benchmark
                 AZStd::atomic<system_clock::time_point> end;
                 auto callback = [&end, &waitForReads]([[maybe_unused]] FileRequestHandle request)
                 {
-                    benchmark::DoNotOptimize(end = high_resolution_clock::now());
+                    benchmark::DoNotOptimize(end = system_clock::now());
                     waitForReads.release();
                 };
 
@@ -1244,7 +1244,7 @@ namespace Benchmark
                 m_streamer->SetRequestCompleteCallback(request, callback);
 
                 system_clock::time_point start;
-                benchmark::DoNotOptimize(start = high_resolution_clock::now());
+                benchmark::DoNotOptimize(start = system_clock::now());
                 m_streamer->QueueRequest(request);
 
                 waitForReads.try_acquire_for(AZStd::chrono::seconds(5));

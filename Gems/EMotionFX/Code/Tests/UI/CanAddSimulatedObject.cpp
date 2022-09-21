@@ -176,7 +176,7 @@ namespace EMotionFX
         QTreeView* treeView = skeletonOutliner->GetDockWidget()->findChild<QTreeView*>("EMFX.SkeletonOutlinerPlugin.SkeletonOutlinerTreeView");
         const QAbstractItemModel* model = treeView->model();
 
-        const QModelIndex rootJointIndex = model->index(0, 0);
+        const QModelIndex rootJointIndex = model->index(0, 0, model->index(0, 0));
         ASSERT_TRUE(rootJointIndex.isValid()) << "Unable to find a model index for the root joint of the actor";
 
         treeView->selectionModel()->select(rootJointIndex, QItemSelectionModel::Select | QItemSelectionModel::Rows);
@@ -233,7 +233,7 @@ namespace EMotionFX
         const QAbstractItemModel* model = treeView->model();
 
         // Find the 3rd joint in the TreeView and select it
-        const QModelIndex jointIndex = model->index(0, 3);
+        const QModelIndex jointIndex = model->index(0, 3, model->index(0, 0));
         ASSERT_TRUE(jointIndex.isValid()) << "Unable to find a model index for the root joint of the actor";
 
         treeView->selectionModel()->select(jointIndex, QItemSelectionModel::Select | QItemSelectionModel::Rows);
@@ -289,7 +289,7 @@ namespace EMotionFX
         const QAbstractItemModel* model = treeView->model();
 
         // Find the 3rd joint in the TreeView and select it
-        const QModelIndex jointIndex = model->index(0, 3);
+        const QModelIndex jointIndex = model->index(0, 3, model->index(0, 0));
         ASSERT_TRUE(jointIndex.isValid()) << "Unable to find a model index for the root joint of the actor";
 
         treeView->selectionModel()->select(jointIndex, QItemSelectionModel::Select | QItemSelectionModel::Rows);
@@ -382,7 +382,7 @@ namespace EMotionFX
         const QAbstractItemModel* model = treeView->model();
 
         QModelIndexList indexList;
-        RecursiveGetAllChildren(treeView, model->index(0, 0), indexList);
+        RecursiveGetAllChildren(treeView, model->index(0, 0, model->index(0, 0)), indexList);
 
         SelectIndexes(indexList, treeView, 3, 3);
 
@@ -437,7 +437,7 @@ namespace EMotionFX
         const QAbstractItemModel* model = treeView->model();
 
         QModelIndexList indexList;
-        RecursiveGetAllChildren(treeView, model->index(0, 0), indexList);
+        RecursiveGetAllChildren(treeView, model->index(0, 0, model->index(0, 0)), indexList);
 
         SelectIndexes(indexList, treeView, 3, 5);
 
@@ -485,7 +485,7 @@ namespace EMotionFX
 
         m_indexList.clear();
 
-        m_skeletonTreeView->RecursiveGetAllChildren(m_skeletonTreeView->model()->index(0, 0), m_indexList);
+        m_skeletonTreeView->RecursiveGetAllChildren(m_skeletonModel->index(0, 0, m_skeletonModel->index(0, 0)), m_indexList);
 
         // Add colliders to two joints.
         AddCapsuleColliderToJointIndex(3);
@@ -496,7 +496,7 @@ namespace EMotionFX
 
         m_indexList.clear();
 
-        m_skeletonTreeView->RecursiveGetAllChildren(m_skeletonTreeView->model()->index(0, 0), m_indexList);
+        m_skeletonTreeView->RecursiveGetAllChildren(m_skeletonModel->index(0, 0, m_skeletonModel->index(0, 0)), m_indexList);
 
         // Reselect joint 3 and pop up the context menu for it.
         m_skeletonTreeView->selectionModel()->clearSelection();
