@@ -280,7 +280,7 @@ namespace O3DE::ProjectManager
         }
         else
         {
-            QString& errorMessage = settingsValidation.GetError();
+            const QString& errorMessage = settingsValidation.GetError();
             if (errorMessage.isEmpty())
             {
                 QMessageBox::warning(

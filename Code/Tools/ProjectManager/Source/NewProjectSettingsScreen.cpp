@@ -41,7 +41,6 @@
 namespace O3DE::ProjectManager
 {
     constexpr const char* k_templateIndexProperty = "TemplateIndex";
-    constexpr const char* k_addRemoteTemplateProperty = "AddRemoteTemplate";
     constexpr const char* k_templateNameProperty = "TemplateName";
 
     NewProjectSettingsScreen::NewProjectSettingsScreen(DownloadController* downloadController, QWidget* parent)
@@ -101,7 +100,7 @@ namespace O3DE::ProjectManager
                             emit OnTemplateSelectionChanged(/*oldIndex=*/oldIndex, /*newIndex=*/m_selectedTemplateIndex);
                         }
                     }
-                    else if (button && button->property(k_addRemoteTemplateProperty).isValid())
+                    else if (button == m_remoteTemplateButton)
                     {
                         AddRemoteTemplateDialog* addRemoteTemplateDialog = new AddRemoteTemplateDialog(this);
                         if (addRemoteTemplateDialog->exec() == QDialog::DialogCode::Accepted)
@@ -298,7 +297,6 @@ namespace O3DE::ProjectManager
 
             // Insert the add a remote template button
             m_remoteTemplateButton = new TemplateButton(":/DefaultTemplate.png", tr("Add remote Template"), this);
-            m_remoteTemplateButton->setProperty(k_addRemoteTemplateProperty, true);
             m_projectTemplateButtonGroup->addButton(m_remoteTemplateButton);
             m_templateFlowLayout->addWidget(m_remoteTemplateButton);
 
@@ -436,7 +434,7 @@ namespace O3DE::ProjectManager
         }
     }
 
-    AZ::Outcome<void, QString> NewProjectSettingsScreen::Validate()
+    AZ::Outcome<void, QString> NewProjectSettingsScreen::Validate() const
     {
         if (m_selectedTemplateIndex != -1 && m_templates[m_selectedTemplateIndex].m_isRemote)
         {

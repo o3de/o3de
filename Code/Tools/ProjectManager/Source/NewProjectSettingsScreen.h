@@ -41,7 +41,7 @@ namespace O3DE::ProjectManager
 
         void SelectProjectTemplate(int index, bool blockSignals = false);
 
-        AZ::Outcome<void, QString> Validate() override;
+        AZ::Outcome<void, QString> Validate() const override;
 
     signals:
         void OnTemplateSelectionChanged(int oldIndex, int newIndex);

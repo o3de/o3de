@@ -665,7 +665,7 @@ namespace O3DE::ProjectManager
         return AZ::Success(AZStd::move(gems));
     }
 
-    AZ::Outcome<QVector<AZStd::string>, AZStd::string> PythonBindings::GetEnabledGemNames(const QString& projectPath)
+    AZ::Outcome<QVector<AZStd::string>, AZStd::string> PythonBindings::GetEnabledGemNames(const QString& projectPath) const
     {
         // Retrieve the path to the cmake file that lists the enabled gems.
         pybind11::str enabledGemsFilename;
@@ -1191,7 +1191,7 @@ namespace O3DE::ProjectManager
         return AZ::Success();
     }
 
-    ProjectTemplateInfo PythonBindings::ProjectTemplateInfoFromPath(pybind11::handle path)
+    ProjectTemplateInfo PythonBindings::ProjectTemplateInfoFromPath(pybind11::handle path) const
     {
         ProjectTemplateInfo templateInfo(TemplateInfoFromPath(path));
         if (templateInfo.IsValid())
@@ -1215,7 +1215,7 @@ namespace O3DE::ProjectManager
         return templateInfo;
     }
 
-    TemplateInfo PythonBindings::TemplateInfoFromPath(pybind11::handle path)
+    TemplateInfo PythonBindings::TemplateInfoFromPath(pybind11::handle path) const
     {
         TemplateInfo templateInfo;
         templateInfo.m_path = Py_To_String(path);
@@ -1305,7 +1305,7 @@ namespace O3DE::ProjectManager
         }
     }
 
-    AZ::Outcome<QVector<ProjectTemplateInfo>> PythonBindings::GetProjectTemplatesForRepo(const QString& repoUri)
+    AZ::Outcome<QVector<ProjectTemplateInfo>> PythonBindings::GetProjectTemplatesForRepo(const QString& repoUri) const
     {
         QVector<ProjectTemplateInfo> templates;
 
@@ -1339,7 +1339,7 @@ namespace O3DE::ProjectManager
         }
     }
 
-    AZ::Outcome<QVector<ProjectTemplateInfo>> PythonBindings::GetProjectTemplatesForAllRepos()
+    AZ::Outcome<QVector<ProjectTemplateInfo>> PythonBindings::GetProjectTemplatesForAllRepos() const
     {
         QVector<ProjectTemplateInfo> templates;
 

@@ -141,7 +141,7 @@ namespace O3DE::ProjectManager
          * @param[in] projectPath Absolute file path to the project.
          * @return A list of gem names of all the enabled gems for a given project or a error message on failure.
          */
-        virtual AZ::Outcome<QVector<AZStd::string>, AZStd::string> GetEnabledGemNames(const QString& projectPath) = 0;
+        virtual AZ::Outcome<QVector<AZStd::string>, AZStd::string> GetEnabledGemNames(const QString& projectPath) const = 0;
 
         /**
          * Registers the gem to the specified project, or to the o3de_manifest.json if no project path is given
@@ -252,13 +252,13 @@ namespace O3DE::ProjectManager
          * Gathers all project templates for the given repo.
          * @return An outcome with a list of all ProjectTemplateInfos from the given repo on success
          */
-        virtual AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplatesForRepo(const QString& repoUri) = 0;
+        virtual AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplatesForRepo(const QString& repoUri) const = 0;
 
         /**
          * Gathers all project templates for all templates registered from repos.
          * @return An outcome with a list of all ProjectTemplateInfos on success
          */
-        virtual AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplatesForAllRepos() = 0;
+        virtual AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplatesForAllRepos() const = 0;
 
         // Gem Repos
 

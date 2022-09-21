@@ -32,15 +32,15 @@ namespace O3DE::ProjectManager
 
         virtual ProjectInfo GetProjectInfo();
 
-        virtual AZ::Outcome<void, QString> Validate();
+        virtual AZ::Outcome<void, QString> Validate() const;
 
     protected slots:
         virtual void OnProjectNameUpdated();
         virtual void OnProjectPathUpdated();
 
     protected:
-        bool ValidateProjectName();
-        virtual bool ValidateProjectPath();
+        bool ValidateProjectName() const;
+        virtual bool ValidateProjectPath() const;
 
         QString GetDefaultProjectPath();
 
