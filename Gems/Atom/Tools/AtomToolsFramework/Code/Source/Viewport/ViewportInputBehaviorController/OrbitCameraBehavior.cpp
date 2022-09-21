@@ -34,7 +34,7 @@ namespace AtomToolsFramework
         rotation =
             AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisZ(), -x) * AZ::Quaternion::CreateFromAxisAngle(right, -y) * rotation;
         rotation.Normalize();
-        AZ::Vector3 position = rotation.TransformVector(AZ::Vector3(0, -m_distanceToObject, 0)) + m_objectPosition;
+        AZ::Vector3 position = rotation.TransformVector(AZ::Vector3(0.0f, -m_objectDistance, 0.0f)) + m_objectPosition;
         transform = AZ::Transform::CreateFromQuaternionAndTranslation(rotation, position);
         AZ::TransformBus::Event(m_cameraEntityId, &AZ::TransformBus::Events::SetWorldTM, transform);
     }
