@@ -64,8 +64,6 @@ struct VSOutput
     float2 m_uv[UvSetCount] : UV1;
 };
 
-#include <Atom/Features/Vertex/VertexHelper.azsli>
-
 VSOutput BasePbr_ForwardPassVS(VSInput IN)
 {
     VSOutput OUT;
@@ -79,7 +77,11 @@ VSOutput BasePbr_ForwardPassVS(VSInput IN)
     // No parallax in BaseBPR, so do shadow coordinate calculations in vertex shader
     bool skipShadowCoords = false;
 
-    VertexHelper(IN, OUT, worldPosition, skipShadowCoords);
+    OUT.m_worldPosition = worldPosition;
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(OUT.m_worldPosition, 1.0));
+    OUT.m_normal = IN.m_normal;
+    OUT.m_tangent = IN.m_tangent;
+    OUT.m_bitangent = IN.m_bitangent;
 
     return OUT;
 }
@@ -89,11 +91,17 @@ VSOutput BasePbr_ForwardPassVS(VSInput IN)
 
 PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace)
 {
-    const float3 vertexNormal = normalize(IN.m_normal);
+    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
+    float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
+
+    float3 normal, tangent, bitangent;
+    ConstructTBN(IN.m_normal, IN.m_tangent, IN.m_bitangent, objectToWorld, objectToWorldIT, normal, tangent, bitangent);
+
+    const float3 vertexNormal = normal;
 
     // ------- Tangents & Bitangets -------
-    float3 tangents[UvSetCount] = { IN.m_tangent.xyz, IN.m_tangent.xyz };
-    float3 bitangents[UvSetCount] = { IN.m_bitangent.xyz, IN.m_bitangent.xyz };
+    float3 tangents[UvSetCount] = { tangent, tangent };
+    float3 bitangents[UvSetCount] = { bitangent, bitangent };
 
     if (o_normal_useTexture)
     {

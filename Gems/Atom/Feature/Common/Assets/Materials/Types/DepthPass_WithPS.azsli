@@ -66,10 +66,11 @@ VSDepthOutput MainVS(VSInput IN)
     if(ShouldHandleParallaxInDepthShaders())
     {
         OUT.m_worldPosition = worldPosition.xyz;
-
-        float3x3 objectToWorldIT = GetNormalToWorld();
-        ConstructTBN(IN.m_normal, IN.m_tangent, IN.m_bitangent, objectToWorld, objectToWorldIT, OUT.m_normal, OUT.m_tangent, OUT.m_bitangent);
     }
+
+    OUT.m_normal = IN.m_normal;
+    OUT.m_tangent = IN.m_tangent.xyz;
+    OUT.m_bitangent = IN.m_bitangent;
 
 #if MULTILAYER
     if(o_blendMask_isBound)
@@ -92,7 +93,18 @@ struct PSDepthOutput
 
 PSDepthOutput MainPS(VSDepthOutput IN, bool isFrontFace : SV_IsFrontFace)
 {
-    const float3 vertexNormal = normalize(IN.m_normal);
+    float3 normal = IN.m_normal;
+    float3 tangent = IN.m_tangent;
+    float3 bitangent = IN.m_bitangent;
+    if(ShouldHandleParallaxInDepthShaders())
+    {
+        float4x4 objectToWorld = GetObjectToWorld();
+        float3x3 objectToWorldIT = GetNormalToWorld();
+
+        ConstructTBN(IN.m_normal, IN.m_tangent, IN.m_bitangent, objectToWorld, objectToWorldIT, normal, tangent, bitangent);
+    }
+    
+    const float3 vertexNormal = normal;
 
     PSDepthOutput OUT;
 
@@ -100,8 +112,8 @@ PSDepthOutput MainPS(VSDepthOutput IN, bool isFrontFace : SV_IsFrontFace)
 
     if(ShouldHandleParallaxInDepthShaders())
     {
-        float3 tangents[UvSetCount] = { IN.m_tangent, IN.m_tangent };
-        float3 bitangents[UvSetCount] = { IN.m_bitangent, IN.m_bitangent };
+        float3 tangents[UvSetCount] = { tangent, tangent };
+        float3 bitangents[UvSetCount] = { bitangent, bitangent };
 
         for (int i = 0; i != UvSetCount; ++i)
         {
@@ -111,8 +123,8 @@ PSDepthOutput MainPS(VSDepthOutput IN, bool isFrontFace : SV_IsFrontFace)
                 isFrontFace,
                 IN.m_uv[i],
                 i,
-                IN.m_tangent,
-                IN.m_bitangent,
+                tangent,
+                bitangent,
                 tangents[i],
                 bitangents[i]);
         }

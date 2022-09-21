@@ -27,11 +27,14 @@ float3 WorldSpaceToTangent(float3 vectorWS, float3 normalWS, float3 tangentWS, f
 }
 
 //! Utility function for vertex shaders to transform vertex tangent, bitangent, and normal vectors into world space.
-void ConstructTBN(float3 vertexNormal, float4 vertexTangent, float3 vertexBitangent, float4x4 localToWorld, float3x3 localToWorldInverseTranspose, out float3 normalWS, out float3 tangentWS, out float3 bitangentWS)
+void ConstructTBN(float3 vertexNormal, float3 vertexTangent, float3 vertexBitangent, float4x4 localToWorld, float3x3 localToWorldInverseTranspose, out float3 normalWS, out float3 tangentWS, out float3 bitangentWS)
 {
+    vertexNormal = normalize(vertexNormal);
+    vertexTangent = normalize(vertexTangent);
+    vertexBitangent = normalize(vertexBitangent);
     normalWS = normalize(mul(localToWorldInverseTranspose, vertexNormal));
-    tangentWS = normalize(mul(localToWorld, float4(vertexTangent.xyz, 0)).xyz);
-    bitangentWS = normalize(mul(localToWorld, float4(vertexBitangent, 0)).xyz);
+    tangentWS = normalize(mul(localToWorld, float4(vertexTangent, 0.0)).xyz);
+    bitangentWS = normalize(mul(localToWorld, float4(vertexBitangent, 0.0)).xyz);
 }
 
 // ---------- Normal Calculation ----------

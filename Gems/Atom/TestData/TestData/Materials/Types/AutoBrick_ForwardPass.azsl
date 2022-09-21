@@ -7,6 +7,7 @@
  */
 
 #include <viewsrg.srgi>
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include "AutoBrick_Common.azsli"
 #include <Atom/Features/PBR/AlphaUtils.azsli>
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
@@ -36,8 +37,6 @@ struct VSOutput
     float2 m_uv : UV1;
 };
 
-#include <Atom/Features/Vertex/VertexHelper.azsli>
-
 VSOutput AutoBrick_ForwardPassVS(VSInput IN)
 {
     VSOutput OUT;
@@ -45,8 +44,11 @@ VSOutput AutoBrick_ForwardPassVS(VSInput IN)
     float3 worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_position, 1.0)).xyz;
  
     OUT.m_uv = IN.m_uv;
-
-    VertexHelper(IN, OUT, worldPosition);
+    OUT.m_worldPosition = worldPosition;
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(OUT.m_worldPosition, 1.0));
+    OUT.m_normal = IN.m_normal;
+    OUT.m_tangent = IN.m_tangent.xyz;
+    OUT.m_bitangent = IN.m_bitangent;
 
     return OUT;
 }
@@ -126,6 +128,12 @@ DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
 
 ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
 {
+    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
+    float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
+
+    float3 normal, tangent, bitangent;
+    ConstructTBN(IN.m_normal, IN.m_tangent, IN.m_bitangent, objectToWorld, objectToWorldIT, normal, tangent, bitangent);
+
     float3x3 identityUvMatrix = 
         { 1,0,0,
           0,1,0,
@@ -137,9 +145,9 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
                                                       depthOffset,
                                                       IN.m_uv,
                                                       ViewSrg::m_worldPosition.xyz - IN.m_worldPosition, 
-                                                      IN.m_tangent,
-                                                      IN.m_bitangent,
-                                                      IN.m_normal,
+                                                      tangent,
+                                                      bitangent,
+                                                      normal,
                                                       identityUvMatrix);
     
     IN.m_uv += tangentOffset.m_offsetTS.xy;
@@ -160,7 +168,7 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
     float surfaceDepth;
     float3 surfaceNormal;
     GetSurfaceShape(IN.m_uv, surfaceDepth, surfaceNormal);
-    const float3 normal = TangentSpaceToWorld(surfaceNormal, normalize(IN.m_normal), normalize(IN.m_tangent), normalize(IN.m_bitangent));
+    const float3 surfaceNormalWorld = TangentSpaceToWorld(surfaceNormal, normal, tangent, bitangent);
     
     // ------- Surface -------
 
@@ -168,7 +176,7 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
     
     // Position, Normal, Roughness
     surface.position = IN.m_worldPosition.xyz;
-    surface.normal = normalize(normal);
+    surface.normal = normalize(surfaceNormalWorld);
     surface.vertexNormal = surfaceNormal;
     surface.roughnessLinear = 1.0f;
     surface.CalculateRoughnessA();

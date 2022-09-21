@@ -69,7 +69,7 @@ VSOutput EnhancedPbr_ForwardPassVS(VSInput IN)
     bool skipShadowCoords = ShouldHandleParallax() && o_parallax_enablePixelDepthOffset;
 
     float3x3 objectToWorldIT = GetNormalToWorld();
-    ConstructTBN(IN.m_normal, IN.m_tangent, IN.m_bitangent, objectToWorld, objectToWorldIT, OUT.m_normal, OUT.m_tangent, OUT.m_bitangent);
+    ConstructTBN(IN.m_normal, IN.m_tangent.xyz, IN.m_bitangent, objectToWorld, objectToWorldIT, OUT.m_normal, OUT.m_tangent, OUT.m_bitangent);
 
     return OUT;
 }

@@ -7,6 +7,7 @@
  */
 
 #include <viewsrg.srgi>
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #include <Atom/Features/PBR/ForwardPassSrg.azsli>
 #include <Atom/Features/PBR/ForwardPassOutput.azsli>
@@ -40,29 +41,37 @@ struct VSOutput
     float3 m_worldPosition : UV0;
 };
 
-#include <Atom/Features/Vertex/VertexHelper.azsli>
-
 VSOutput MinimalPBR_MainPassVS(VSInput IN)
 {
     VSOutput OUT;
  
     float3 worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_position, 1.0)).xyz;
  
-    VertexHelper(IN, OUT, worldPosition);
+    OUT.m_worldPosition = worldPosition;
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(OUT.m_worldPosition, 1.0));
+    OUT.m_normal = IN.m_normal;
+    OUT.m_tangent = IN.m_tangent.xyz;
+    OUT.m_bitangent = IN.m_bitangent;
 
     return OUT;
 }
 
 ForwardPassOutput MinimalPBR_MainPassPS(VSOutput IN)
 {
+    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
+    float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
+
+    float3 normal, tangent, bitangent;
+    ConstructTBN(IN.m_normal, IN.m_tangent, IN.m_bitangent, objectToWorld, objectToWorldIT, normal, tangent, bitangent);
+
     // ------- Surface -------
 
     Surface surface;
     
     // Position, Normal, Roughness
     surface.position = IN.m_worldPosition.xyz;
-    surface.normal = normalize(IN.m_normal);
-    surface.vertexNormal = normalize(IN.m_normal);
+    surface.normal = normal;
+    surface.vertexNormal = normal;
     surface.roughnessLinear = MinimalPBRSrg::m_roughness;
     surface.CalculateRoughnessA();
 

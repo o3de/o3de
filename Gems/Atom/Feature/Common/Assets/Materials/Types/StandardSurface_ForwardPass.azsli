@@ -51,8 +51,6 @@ struct VSOutput
     float2 m_uv[UvSetCount] : UV1;
 };
 
-#include <Atom/Features/Vertex/VertexHelper.azsli>
-
 VSOutput StandardPbr_ForwardPassVS(VSInput IN)
 {
     VSOutput OUT;
@@ -68,9 +66,9 @@ VSOutput StandardPbr_ForwardPassVS(VSInput IN)
     // Shadow coords will be calculated in the pixel shader in this case
     bool skipShadowCoords = ShouldHandleParallax() && o_parallax_enablePixelDepthOffset;
 
-    float3x3 objectToWorldIT = GetNormalToWorld();
-    ConstructTBN(IN.m_normal, IN.m_tangent, IN.m_bitangent, objectToWorld, objectToWorldIT, OUT.m_normal, OUT.m_tangent, OUT.m_bitangent);
-
+    OUT.m_normal = IN.m_normal;
+    OUT.m_tangent = IN.m_tangent.xyz;
+    OUT.m_bitangent = IN.m_bitangent;
 
     return OUT;
 }
@@ -80,11 +78,17 @@ VSOutput StandardPbr_ForwardPassVS(VSInput IN)
 
 PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float depthNDC)
 {
-    const float3 vertexNormal = normalize(IN.m_normal);
+    float4x4 objectToWorld = GetObjectToWorld();
+    float3x3 objectToWorldIT = GetNormalToWorld();
+
+    float3 normal, tangent, bitangent;
+    ConstructTBN(IN.m_normal, IN.m_tangent, IN.m_bitangent, objectToWorld, objectToWorldIT, normal, tangent, bitangent);
+
+    const float3 vertexNormal = normal;
 
     // ------- Tangents & Bitangents -------
-    float3 tangents[UvSetCount] = { IN.m_tangent, IN.m_tangent };
-    float3 bitangents[UvSetCount] = { IN.m_bitangent, IN.m_bitangent };
+    float3 tangents[UvSetCount] = { tangent, tangent };
+    float3 bitangents[UvSetCount] = { bitangent, bitangent };
 
     if (ShouldHandleParallax() || o_normal_useTexture || (o_clearCoat_enabled && o_clearCoat_normal_useTexture))
     {
@@ -96,8 +100,8 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
                 isFrontFace,
                 IN.m_uv[i],
                 i,
-                IN.m_tangent,
-                IN.m_bitangent,
+                tangent,
+                bitangent,
                 tangents[i],
                 bitangents[i]);
         }
