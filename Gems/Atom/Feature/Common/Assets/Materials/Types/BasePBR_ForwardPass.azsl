@@ -56,8 +56,7 @@ struct VSOutput
     // "centroid" is needed for SV_Depth to compile
     precise linear centroid float4 m_position : SV_Position;
     float3 m_normal: NORMAL;
-    float3 m_tangent : TANGENT; 
-    float3 m_bitangent : BITANGENT; 
+    float4 m_tangent : TANGENT;
     float3 m_worldPosition : UV0;
 
     // Extended fields (only referenced in this azsl file)...
@@ -81,7 +80,6 @@ VSOutput BasePbr_ForwardPassVS(VSInput IN)
     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(OUT.m_worldPosition, 1.0));
     OUT.m_normal = IN.m_normal;
     OUT.m_tangent = IN.m_tangent;
-    OUT.m_bitangent = IN.m_bitangent;
 
     return OUT;
 }
@@ -94,18 +92,16 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace)
     float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
     float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
 
-    float3 normal, tangent, bitangent;
-    ConstructTBN(IN.m_normal, IN.m_tangent, IN.m_bitangent, objectToWorld, objectToWorldIT, normal, tangent, bitangent);
-
-    const float3 vertexNormal = normal;
+    float3 vertexNormal, vertexTangent, vertexBitangent;
+    ConstructTBN(IN.m_normal, IN.m_tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
 
     // ------- Tangents & Bitangets -------
-    float3 tangents[UvSetCount] = { tangent, tangent };
-    float3 bitangents[UvSetCount] = { bitangent, bitangent };
+    float3 tangents[UvSetCount] = { vertexTangent, vertexTangent };
+    float3 bitangents[UvSetCount] = { vertexBitangent, vertexBitangent };
 
     if (o_normal_useTexture)
     {
-        PrepareGeneratedTangent(IN.m_normal, IN.m_worldPosition, isFrontFace, IN.m_uv, UvSetCount, tangents, bitangents);
+        PrepareGeneratedTangent(vertexNormal, IN.m_worldPosition, isFrontFace, IN.m_uv, UvSetCount, tangents, bitangents);
     }
     
     Surface surface;
@@ -116,7 +112,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace)
     float2 normalUv = IN.m_uv[MaterialSrg::m_normalMapUvIndex];
     float3x3 uvMatrix = MaterialSrg::m_normalMapUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3(); // By design, only UV0 is allowed to apply transforms.
     surface.vertexNormal = vertexNormal;
-    surface.normal = GetNormalInputWS(MaterialSrg::m_normalMap, MaterialSrg::m_sampler, normalUv, MaterialSrg::m_flipNormalX, MaterialSrg::m_flipNormalY, isFrontFace, IN.m_normal,
+    surface.normal = GetNormalInputWS(MaterialSrg::m_normalMap, MaterialSrg::m_sampler, normalUv, MaterialSrg::m_flipNormalX, MaterialSrg::m_flipNormalY, isFrontFace, vertexNormal,
                                        tangents[MaterialSrg::m_normalMapUvIndex], bitangents[MaterialSrg::m_normalMapUvIndex], uvMatrix, o_normal_useTexture, MaterialSrg::m_normalFactor);
 
     // ------- Base Color -------

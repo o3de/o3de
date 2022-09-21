@@ -42,8 +42,7 @@ struct VSOutput
     // "centroid" is needed for SV_Depth to compile
     precise linear centroid float4 m_position : SV_Position;
     float3 m_normal: NORMAL;
-    float4 m_tangent : TANGENT; 
-    float3 m_bitangent : BITANGENT; 
+    float4 m_tangent : TANGENT;
     float3 m_worldPosition : UV0;
 
     // Extended fields (only referenced in this azsl file)...
@@ -62,7 +61,6 @@ VSOutput MainVS(VSInput IN)
 
     OUT.m_normal = IN.m_normal;
     OUT.m_tangent = IN.m_tangent;
-    OUT.m_bitangent = IN.m_bitangent;
 
     return OUT;
 }
@@ -105,24 +103,24 @@ PixelOutput MainPS(VSOutput IN)
     float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
     float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
 
-    float3 normal, tangent, bitangent;
-    ConstructTBN(IN.m_normal, IN.m_tangent.xyz, IN.m_bitangent, objectToWorld, objectToWorldIT, normal, tangent, bitangent);
+    float3 vertexNormal, vertexTangent, vertexBitangent;
+    ConstructTBN(IN.m_normal, IN.m_tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
 
     PixelOutput OUT;
     
-    float3 tangents[UvSetCount] = { tangent, tangent };
-    float3 bitangents[UvSetCount] = { bitangent, bitangent };
+    float3 tangents[UvSetCount] = { vertexTangent, vertexTangent };
+    float3 bitangents[UvSetCount] = { vertexBitangent, vertexBitangent };
     
     if(o_bitangentOptions == BitangentOptions::ReconstructBitangent && MaterialSrg::m_uvIndex == 0)
     {
-        bitangents[MaterialSrg::m_uvIndex] = cross(IN.m_normal, IN.m_tangent.xyz) * sign(IN.m_tangent.w);
+        bitangents[MaterialSrg::m_uvIndex] = cross(vertexNormal, vertexTangent) * sign(IN.m_tangent.w);
     }
     else if((o_debugVertexStream == DebugVertexStream::Tangents && o_tangentOptions == TangentOptions::UseSurfaceGradient)
     || (o_debugVertexStream == DebugVertexStream::Bitangents && o_bitangentOptions == BitangentOptions::UseSurfaceGradient)
     || MaterialSrg::m_uvIndex > 0)
     {
         const bool isBackface = false;
-        SurfaceGradientNormalMapping_Init(IN.m_normal, IN.m_worldPosition, isBackface);
+        SurfaceGradientNormalMapping_Init(vertexNormal, IN.m_worldPosition, isBackface);
         SurfaceGradientNormalMapping_GenerateTB(IN.m_uv[MaterialSrg::m_uvIndex], tangents[MaterialSrg::m_uvIndex], bitangents[MaterialSrg::m_uvIndex]);
     }
 
@@ -131,7 +129,7 @@ PixelOutput MainPS(VSOutput IN)
     switch(o_debugVertexStream)
         {
         case DebugVertexStream::Normals:
-            outColor = OffsetColor(IN.m_normal);
+            outColor = OffsetColor(vertexNormal);
             break;
         case DebugVertexStream::Tangents:
             outColor = OffsetColor(tangents[MaterialSrg::m_uvIndex]);

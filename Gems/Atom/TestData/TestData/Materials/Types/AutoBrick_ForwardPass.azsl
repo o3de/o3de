@@ -22,8 +22,8 @@ struct VSInput
 {
     float3 m_position : POSITION;
     float3 m_normal : NORMAL;
-    float4 m_tangent : TANGENT; 
-    float3 m_bitangent : BITANGENT; 
+    float4 m_tangent : TANGENT;
+    float3 m_bitangent : BITANGENT;
     float2 m_uv : UV0;
 };
 
@@ -31,8 +31,7 @@ struct VSOutput
 {
     precise linear centroid float4 m_position : SV_Position;
     float3 m_normal: NORMAL;
-    float3 m_tangent : TANGENT; 
-    float3 m_bitangent : BITANGENT; 
+    float4 m_tangent : TANGENT;
     float3 m_worldPosition : UV0;
     float2 m_uv : UV1;
 };
@@ -47,8 +46,7 @@ VSOutput AutoBrick_ForwardPassVS(VSInput IN)
     OUT.m_worldPosition = worldPosition;
     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(OUT.m_worldPosition, 1.0));
     OUT.m_normal = IN.m_normal;
-    OUT.m_tangent = IN.m_tangent.xyz;
-    OUT.m_bitangent = IN.m_bitangent;
+    OUT.m_tangent = IN.m_tangent;
 
     return OUT;
 }
@@ -131,8 +129,8 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
     float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
     float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
 
-    float3 normal, tangent, bitangent;
-    ConstructTBN(IN.m_normal, IN.m_tangent, IN.m_bitangent, objectToWorld, objectToWorldIT, normal, tangent, bitangent);
+    float3 vertexNormal, vertexTangent, vertexBitangent;
+    ConstructTBN(IN.m_normal, IN.m_tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
 
     float3x3 identityUvMatrix = 
         { 1,0,0,
@@ -145,9 +143,9 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
                                                       depthOffset,
                                                       IN.m_uv,
                                                       ViewSrg::m_worldPosition.xyz - IN.m_worldPosition, 
-                                                      tangent,
-                                                      bitangent,
-                                                      normal,
+                                                      vertexTangent,
+                                                      vertexBitangent,
+                                                      vertexNormal,
                                                       identityUvMatrix);
     
     IN.m_uv += tangentOffset.m_offsetTS.xy;
@@ -168,7 +166,7 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
     float surfaceDepth;
     float3 surfaceNormal;
     GetSurfaceShape(IN.m_uv, surfaceDepth, surfaceNormal);
-    const float3 surfaceNormalWorld = TangentSpaceToWorld(surfaceNormal, normal, tangent, bitangent);
+    const float3 surfaceNormalWorld = TangentSpaceToWorld(surfaceNormal, vertexNormal, vertexTangent, vertexBitangent);
     
     // ------- Surface -------
 
@@ -235,5 +233,4 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
 
     return OUT;
 }
- 
 

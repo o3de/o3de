@@ -28,8 +28,8 @@ struct VSInput
     // Base fields (required by the template azsli file)...
     float3 m_position : POSITION;
     float3 m_normal : NORMAL;
-    float4 m_tangent : TANGENT; 
-    float3 m_bitangent : BITANGENT; 
+    float4 m_tangent : TANGENT;
+    float3 m_bitangent : BITANGENT;
  
     // Extended fields (only referenced in this azsl file)...
     float2 m_uv0 : UV0;
@@ -41,8 +41,7 @@ struct VSOutput
     // Base fields (required by the template azsli file)...
     precise linear centroid float4 m_position : SV_Position;
     float3 m_normal: NORMAL;
-    float3 m_tangent : TANGENT; 
-    float3 m_bitangent : BITANGENT; 
+    float4 m_tangent : TANGENT;
     float3 m_worldPosition : UV0;
 
     // Extended fields (only referenced in this azsl file)...
@@ -68,8 +67,8 @@ VSOutput EnhancedPbr_ForwardPassVS(VSInput IN)
     // Shadow coords will be calculated in the pixel shader in this case
     bool skipShadowCoords = ShouldHandleParallax() && o_parallax_enablePixelDepthOffset;
 
-    float3x3 objectToWorldIT = GetNormalToWorld();
-    ConstructTBN(IN.m_normal, IN.m_tangent.xyz, IN.m_bitangent, objectToWorld, objectToWorldIT, OUT.m_normal, OUT.m_tangent, OUT.m_bitangent);
+    OUT.m_normal = IN.m_normal;
+    OUT.m_tangent = IN.m_tangent;
 
     return OUT;
 }
@@ -79,11 +78,15 @@ VSOutput EnhancedPbr_ForwardPassVS(VSInput IN)
 
 PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float depth)
 {
-    const float3 vertexNormal = normalize(IN.m_normal);
+    float4x4 objectToWorld = GetObjectToWorld();
+    float3x3 objectToWorldIT = GetNormalToWorld();
+
+    float3 vertexNormal, vertexTangent, vertexBitangent;
+    ConstructTBN(IN.m_normal, IN.m_tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
 
     // ------- Tangents & Bitangets -------
-    float3 tangents[UvSetCount] = { IN.m_tangent.xyz, IN.m_tangent.xyz };
-    float3 bitangents[UvSetCount] = { IN.m_bitangent.xyz, IN.m_bitangent.xyz };
+    float3 tangents[UvSetCount] = { vertexTangent, vertexTangent };
+    float3 bitangents[UvSetCount] = { vertexBitangent, vertexBitangent };
     
     if (ShouldHandleParallax() || o_normal_useTexture || (o_clearCoat_enabled && o_clearCoat_normal_useTexture) || o_detail_normal_useTexture)
     {
