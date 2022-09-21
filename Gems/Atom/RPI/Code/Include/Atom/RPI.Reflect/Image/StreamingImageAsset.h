@@ -68,6 +68,9 @@ namespace AZ
             //! Release referenced ImageMipChainAssets
             void ReleaseMipChainAssets();
 
+            //! Load referenced ImageMipChainAssets
+            void ReloadMipChainAssets();
+
             //! Get the last mip chain asset data which contains lowest level of mips.
             const ImageMipChainAsset& GetTailMipChain() const;
 

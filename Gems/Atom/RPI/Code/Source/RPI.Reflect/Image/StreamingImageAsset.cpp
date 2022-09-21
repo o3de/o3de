@@ -55,6 +55,27 @@ namespace AZ
             }
         }
 
+        void StreamingImageAsset::ReloadMipChainAssets()
+        {
+            // Release loaded mipChain asset
+            uint32_t mipChainIndex = 0;
+            for (mipChainIndex = 0; mipChainIndex < m_mipChains.size() - 1; mipChainIndex++)
+            {
+                if (m_mipChains[mipChainIndex].m_asset.Get())
+                {
+                    m_mipChains[mipChainIndex].m_asset.Reload();
+                }
+                else
+                {
+                    m_mipChains[mipChainIndex].m_asset.QueueLoad();
+                }
+            }
+            for (mipChainIndex = 0; mipChainIndex < m_mipChains.size() - 1; mipChainIndex++)
+            {
+                m_mipChains[mipChainIndex].m_asset.BlockUntilLoadComplete();
+            }
+        }
+
         const ImageMipChainAsset& StreamingImageAsset::GetTailMipChain() const
         {
             return m_tailMipChain;

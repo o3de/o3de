@@ -75,7 +75,7 @@ namespace AZ
 
                 if (assetId.IsValid())
                 {
-                    imageAsset.QueueLoad();
+                    imageAsset.QueueLoad(AZ::Data::AssetLoadParameters(nullptr, AZ::Data::AssetDependencyLoadRules::LoadAll));
                     // [GFX TODO][ATOM-14271] - DecalTextureArrayFeatureProcessor should use async loading
                     imageAsset.BlockUntilLoadComplete();
                 }

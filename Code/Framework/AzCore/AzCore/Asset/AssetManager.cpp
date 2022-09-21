@@ -28,6 +28,8 @@
 #include <utility>
 #include <AzCore/Serialization/ObjectStream.h>
 
+#pragma optimize("", off)
+
 // Set this to 1 to enable debug logging for asset loads/unloads
 #define ENABLE_ASSET_DEBUGGING 0
 #if ENABLE_ASSET_DEBUGGING == 1
@@ -2365,3 +2367,5 @@ size_t AZStd::hash<AZ::Data::AssetContainerKey>::operator()(const AZ::Data::Asse
     hash_combine(h, obj.m_loadParameters.m_dependencyRules);
     return h;
 }
+
+#pragma optimize("", on)

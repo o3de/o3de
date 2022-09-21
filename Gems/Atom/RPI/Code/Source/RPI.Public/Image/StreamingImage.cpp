@@ -498,14 +498,6 @@ namespace AZ
             if (asset.GetId() == GetAssetId())
             {
                 StreamingImageAsset* imageAsset = azrtti_cast<StreamingImageAsset*>(asset.GetData());
-
-                // Release the loaded mipchain assets from both current asset and new asset since they are coming from old asset
-                // This is due to we have to use PreLoad dependecy load behavior for streaming image asset
-                // before we can switch load behavior at runtime.
-                // [GFX TODO] [ATOM-14467] Remove unnecessary code in StreamingImage::OnAssetReloaded when runtime switching dependency load behavior is supported
-                m_imageAsset->ReleaseMipChainAssets();
-                imageAsset->ReleaseMipChainAssets();
-
                 // Re-initialize the image.
                 Shutdown();
                 [[maybe_unused]] RHI::ResultCode resultCode = Init(*imageAsset);

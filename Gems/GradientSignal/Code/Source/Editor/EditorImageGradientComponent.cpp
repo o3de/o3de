@@ -724,7 +724,7 @@ namespace GradientSignal
         auto createdAsset = AZ::Data::AssetManager::Instance().FindOrCreateAsset(
             AZ::Data::AssetId(sourceInfo.m_assetId.m_guid, AZ::RPI::StreamingImageAsset::GetImageAssetSubId()),
             azrtti_typeid<AZ::RPI::StreamingImageAsset>(),
-            AZ::Data::AssetLoadBehavior::QueueLoad);
+            AZ::Data::AssetLoadBehavior::PreLoad);
 
         // Set the asset hint to the source path so that we can display something reasonably correct in the component while waiting
         // for the product asset to get created.
