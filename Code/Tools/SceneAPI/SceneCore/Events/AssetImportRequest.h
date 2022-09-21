@@ -15,6 +15,7 @@
 #include <AzCore/std/containers/unordered_set.h>
 #include <SceneAPI/SceneCore/SceneCoreConfiguration.h>
 #include <SceneAPI/SceneCore/Events/ProcessingResult.h>
+#include <AzCore/Interface/Interface.h>
 
 namespace AZ
 {
@@ -39,7 +40,7 @@ namespace AZ
 
             struct AssetImportRequestReporter
             {
-                AZ_RTTI(ITestEventProcessingReporter, "{3BCEDF5C-9FE6-4A16-A521-D2362E51522F}");
+                AZ_RTTI(AssetImportRequestReporter, "{3BCEDF5C-9FE6-4A16-A521-D2362E51522F}");
 
                 virtual void ReportStart(const AssetImportRequest* instance) = 0;
                 virtual void ReportFinish(const AssetImportRequest* instance) = 0;
