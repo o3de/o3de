@@ -18,13 +18,13 @@ import os
 from pathlib import Path
 from box import Box
 import logging as _logging
-import azpy.config_utils
-from azpy.o3de.utils import o3de_utilities as o3de_helpers
-from azpy.constants import FRMT_LOG_LONG
-from SDK.Python import general_utilities as helpers
+import DccScriptingInterface.azpy.config_utils
+from DccScriptingInterface.azpy.o3de.utils import o3de_utilities as o3de_helpers
+from DccScriptingInterface.azpy.constants import FRMT_LOG_LONG
+from DccScriptingInterface.azpy import general_utils as helpers
 
 
-_config = azpy.config_utils.get_dccsi_config()
+_config = DccScriptingInterface.azpy.config_utils.get_dccsi_config()
 settings = _config.get_config_settings()
 
 for handler in _logging.root.handlers[:]:

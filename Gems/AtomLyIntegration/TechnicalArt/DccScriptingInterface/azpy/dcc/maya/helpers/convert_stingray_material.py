@@ -22,14 +22,14 @@
 # @section Maya Materials Notes
 # - Comments are Doxygen compatible
 
-from azpy.dcc.maya.helpers import maya_materials_conversion
-from SDK.Python import general_utilities as helpers
+from DccScriptingInterface.azpy.dcc.maya.helpers import maya_materials_conversion
+from DccScriptingInterface.azpy import general_utils as helpers
 import logging as _logging
 import maya.cmds as mc
 from pathlib import Path
 
 
-_LOGGER = _logging.getLogger('azpy.dcc.maya.helpers.convert_stingray_material')
+_LOGGER = _logging.getLogger('DCCsi.azpy.dcc.maya.helpers.convert_stingray_material')
 
 
 stingray_file_connections = [

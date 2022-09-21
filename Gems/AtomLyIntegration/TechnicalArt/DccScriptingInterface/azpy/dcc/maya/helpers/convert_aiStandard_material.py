@@ -22,14 +22,14 @@
 # @section Maya Materials Notes
 # - Comments are Doxygen compatible
 
-from azpy.dcc.maya.helpers import maya_materials_conversion
-from SDK.Python import general_utilities as helpers
+from DccScriptingInterface.azpy.dcc.maya.helpers import maya_materials_conversion
+from DccScriptingInterface.azpy import general_utils as helpers
 from pathlib import Path
 import logging as _logging
 import maya.cmds as mc
 
 
-_LOGGER = _logging.getLogger('azpy.dcc.maya.helpers.convert_aiStandard_material')
+_LOGGER = _logging.getLogger('DCCsi.azpy.dcc.maya.helpers.convert_aiStandard_material')
 
 
 def get_material_info(target_material: str):

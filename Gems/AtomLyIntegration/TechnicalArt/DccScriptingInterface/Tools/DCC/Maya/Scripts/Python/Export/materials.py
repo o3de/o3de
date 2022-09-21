@@ -1,22 +1,43 @@
-import maya.cmds as mc
-from PySide2 import QtWidgets, QtCore, QtGui
-from azpy.o3de.renderer.materials import material_utilities
-from azpy.dcc.maya.helpers import maya_materials_conversion as material_utils
-from SDK.Python import general_utilities
-from maya import OpenMayaUI as omui
-from shiboken2 import wrapInstance
+
+#
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
+# -------------------------------------------------------------------------
+"""! @brief: todo: module docstring"""
+
+# standard imports
 from pathlib import Path
 import logging as _logging
 import os
 
+# o3de, dccsi imports
+from DccScriptingInterface.azpy.o3de.renderer.materials import material_utilities
+from DccScriptingInterface.azpy.dcc.maya.helpers import maya_materials_conversion as material_utils
+from DccScriptingInterface.azpy import general_utils
+
+# maya imports
+import maya.cmds as mc
+from maya import OpenMayaUI as omui
+from shiboken2 import wrapInstance
+from PySide2 import QtWidgets, QtCore, QtGui
+
+#  global scope
+from DccScriptingInterface.Tools.DCC.Maya.Scripts.Python.export import _PACKAGENAME
+_MODULENAME = f'{_PACKAGENAME}.materials'
+_LOGGER = _logging.getLogger(_MODULENAME)
+_LOGGER.info(f'Initializing: {_MODULENAME}')
+
+from DccScriptingInterface.globals import *
 
 mayaMainWindowPtr = omui.MQtUtil.mainWindow()
 mayaMainWindow = wrapInstance(int(mayaMainWindowPtr), QtWidgets.QWidget)
+# -------------------------------------------------------------------------
 
 
-_LOGGER = _logging.getLogger('SDK.maya.scripts.Python.maya_menu.items')
-
-
+# ---- First Class --------------------------------------------------------
 class MaterialsHelper(QtWidgets.QWidget):
     def __init__(self, operation, parent=None):
         super().__init__(parent)
@@ -369,17 +390,24 @@ class MaterialsHelper(QtWidgets.QWidget):
                 if os.path.splitext(file)[-1] in file_types:
                     file_list.append(root / file)
         return file_list
+# -------------------------------------------------------------------------
 
 
+# -------------------------------------------------------------------------
 def delete_instances():
+    """to do: docstring"""
+    from DccScriptingInterface.Tools.DCC.Maya.Scripts.Python.export import _PACKAGENAME
+
     for obj in mayaMainWindow.children():
-        if str(type(obj)) == "<class 'SDK.Maya.Scripts.Python.maya_menu_items.materials_helper.MaterialsHelper'>":
+        if str(type(obj)) == f"<class '{_PACKAGENAME}.MaterialsHelper'>":
             if obj.__class__.__name__ == "MaterialsHelper":
                 obj.setParent(None)
                 obj.deleteLater()
 
 
 def show_ui(operation):
+    """to do: docstring"""
     delete_instances()
     ui = MaterialsHelper(operation, mayaMainWindow)
     ui.show()
+# -------------------------------------------------------------------------

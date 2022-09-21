@@ -1,34 +1,36 @@
-# -*- coding: utf-8 -*-
-# !/usr/bin/python
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
+#
+# -------------------------------------------------------------------------
+"""! @brief To Do: module docstring here..."""
 
-"""! @brief Description here..."""
-
-from azpy.o3de.utils import o3de_utilities as o3de_helpers
-from azpy.o3de.renderer.materials import o3de_material_generator as exporter
-from azpy.constants import FRMT_LOG_LONG
-from SDK.Python import general_utilities as helpers
-import azpy.config_utils
-from PySide2 import QtWidgets
-from pathlib import Path
-import importlib
-from box import Box
+# standard imports
 import logging as _logging
 import click
 import json
 import os
+from pathlib import Path
+import importlib
+
+# dccsi 3rdparty
+from box import Box
+
+# dccsi imports
+from DccScriptingInterface.azpy.o3de.utils import o3de_utilities as o3de_helpers
+from DccScriptingInterface.azpy.o3de.renderer.materials import o3de_material_generator as exporter
+from DccScriptingInterface.azpy.constants import FRMT_LOG_LONG
+from DccScriptingInterface.azpy import general_utils as helpers
+import DccScriptingInterface.azpy.config_utils
+
+# maya and pyside imports, etc.
+from PySide2 import QtWidgets
 
 
-_LOGGER = _logging.getLogger('azpy.o3de.renderer.materials.material_utilities')
+_LOGGER = _logging.getLogger('DCCsi.azpy.o3de.renderer.materials.material_utilities')
 
 
 def run_cli():

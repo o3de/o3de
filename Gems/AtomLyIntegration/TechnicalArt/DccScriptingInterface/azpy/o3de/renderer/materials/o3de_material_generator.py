@@ -12,8 +12,8 @@
 #
 
 """! @brief Description here..."""
-from azpy.o3de.renderer.materials import material_utilities
-from SDK.Python import general_utilities as helpers
+from DccScriptingInterface.azpy.o3de.renderer.materials import material_utilities
+from DccScriptingInterface.azpy import general_utils as helpers
 import logging as _logging
 from pathlib import Path
 from box import Box

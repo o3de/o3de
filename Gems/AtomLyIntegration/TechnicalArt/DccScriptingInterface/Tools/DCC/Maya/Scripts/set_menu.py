@@ -55,15 +55,16 @@ def export_scene_materials(args):
     # for function to fire
 
     _LOGGER.info('Exporting Scene Materials')
+
     from importlib import reload
-    from azpy.dcc.maya.helpers import maya_materials_conversion
-    from azpy.o3de.renderer.materials import material_utilities
-    from azpy.o3de.renderer.materials import o3de_material_generator
-    from azpy.dcc.maya.helpers import convert_aiStandardSurface_material
-    from azpy.dcc.maya.helpers import convert_aiStandard_material
-    from azpy.dcc.maya.helpers import convert_stingray_material
-    from SDK.Python import general_utilities
-    from SDK.Maya.Scripts.Python.maya_menu_items import materials_helper
+    from DccScriptingInterface.azpy.dcc.maya.helpers import maya_materials_conversion
+    from DccScriptingInterface.azpy.o3de.renderer.materials import material_utilities
+    from DccScriptingInterface.azpy.o3de.renderer.materials import o3de_material_generator
+    from DccScriptingInterface.azpy.dcc.maya.helpers import convert_aiStandardSurface_material
+    from DccScriptingInterface.azpy.dcc.maya.helpers import convert_aiStandard_material
+    from DccScriptingInterface.azpy.dcc.maya.helpers import convert_stingray_material
+    from DccScriptingInterface.azpy import general_utils
+    from DccScriptingInterface.Tools.DCC.Maya.Scripts.Python.export import materials
 
     reload(maya_materials_conversion)
     reload(material_utilities)
@@ -71,9 +72,9 @@ def export_scene_materials(args):
     reload(convert_aiStandardSurface_material)
     reload(convert_aiStandard_material)
     reload(convert_stingray_material)
-    reload(general_utilities)
-    reload(materials_helper)
-    materials_helper.MaterialsHelper('convert')
+    reload(general_utils)
+    reload(materials)
+    materials.MaterialsHelper('convert')
 # -------------------------------------------------------------------------
 
 

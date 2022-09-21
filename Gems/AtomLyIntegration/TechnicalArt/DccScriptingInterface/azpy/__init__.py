@@ -32,17 +32,22 @@ _LOGGER = _logging.getLogger(_PACKAGENAME)
 _LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
 _MODULE_PATH = Path(__file__) # thos module should not be used as an entry
 
-__all__ = ['constants',
-           'config_utils',
-           'env_bool',
-           'return_stub',
-           'logger',
-           'core',
+__all__ = ['core',
            'dcc',
            'dev',
            'o3de',
            'shared',
-           'test']
+           'test',
+           'config_class',
+           'config_utils',
+           'constants',
+           'env_bool',
+           'general_utils',
+           'return_stub',
+           'logger']
+
+# future deprection of these modules
+# env_base and synthetic_env were precursors to using dynaconf
 
 from DccScriptingInterface import PATH_DCCSIG
 

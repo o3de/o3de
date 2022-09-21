@@ -9,12 +9,8 @@
 # standard imports
 import logging as _logging
 
-from DccScriptingInterface.Tools.DCC.Maya import _PACKAGENAME
-_PACKAGENAME = f'{_PACKAGENAME}.Scripts'
+from DccScriptingInterface.Tools.DCC.Maya.Scripts.Python import _PACKAGENAME
+_PACKAGENAME = f'{_PACKAGENAME}.export'
 _LOGGER = _logging.getLogger(_PACKAGENAME)
 
-__all__ = ['set_callbacks',
-           'set_defaults',
-           'set_menu',
-           'set_shelf',
-           'userSetup']
+__all__ = ['materials']
