@@ -15,7 +15,7 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/containers/deque.h>
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 
 namespace AZ::IO::Requests
 {

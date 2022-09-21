@@ -10,7 +10,7 @@
 #include <AzCore/std/parallel/config.h>
 #include <AzCore/std/allocator.h>
 #include <AzCore/std/typetraits/alignment_of.h>
-#include <AzCore/std/chrono/types.h>
+#include <AzCore/std/chrono/chrono.h>
 
 #define AFFINITY_MASK_ALL          AZ_TRAIT_THREAD_AFFINITY_MASK_ALLTHREADS
 #define AFFINITY_MASK_MAINTHREAD   AZ_TRAIT_THREAD_AFFINITY_MASK_MAINTHREAD
@@ -55,7 +55,7 @@ namespace AZStd
 
         //! Thread stack size. Default is -1, which means we will use the default stack size for each platform.
         int             m_stackSize{ -1 };
-        
+
         //! Windows: One of the following values:
         //!     THREAD_PRIORITY_IDLE
         //!     THREAD_PRIORITY_LOWEST
@@ -139,7 +139,7 @@ namespace AZStd
 
         // Extensions
         //thread(AZStd::delegate<void ()> d,const thread_desc* desc = 0);
-        
+
     private:
         thread(const thread&) = delete;
         thread& operator=(const thread&) = delete;
@@ -252,7 +252,7 @@ namespace AZStd
             }
         }
     }
-    
+
     template <>
     struct hash<thread_id>
     {

@@ -14,7 +14,7 @@
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Base.h>
 #include <AtomCore/std/containers/vector_set.h>
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 
 
 namespace AZ
