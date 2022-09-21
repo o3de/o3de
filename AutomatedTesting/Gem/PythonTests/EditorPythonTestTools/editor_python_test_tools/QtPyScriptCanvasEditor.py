@@ -23,7 +23,6 @@ class QtPyScriptCanvasEditor():
     """
 
     def __init__(self, editor_main_window: QtWidgets.QMainWindow):
-
         self.sc_editor = editor_main_window.findChild(QtWidgets.QDockWidget, SCRIPT_CANVAS_UI)
         self.sc_editor_main_pane = self.sc_editor.findChild(QtWidgets.QMainWindow)
         self.variable_manager = QtPyScriptCanvasVariableManager.QtPyScriptCanvasVariableManager(self)
@@ -54,7 +53,7 @@ class QtPyScriptCanvasEditor():
 
     def create_new_script_canvas_graph(self) -> None:
         """
-        function for opening a new untitled script canvas graph file for edit
+        Function for opening a new untitled script canvas graph file for edit
 
         returns: None
         """

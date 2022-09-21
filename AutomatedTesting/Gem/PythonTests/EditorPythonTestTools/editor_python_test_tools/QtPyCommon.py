@@ -36,7 +36,7 @@ class QtPyCommon:
 
     def expand_qt_container_rows(self, object_name: str) -> None:
         """
-        function used for expanding qt container rows with expandable children. May need to refactor this to replace
+        Function used for expanding qt container rows with expandable children. May need to refactor this to replace
         self.findChildren with container.findChildren
 
         param object_name: qt object name as a string

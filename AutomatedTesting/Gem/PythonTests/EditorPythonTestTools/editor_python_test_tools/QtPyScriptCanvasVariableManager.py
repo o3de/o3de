@@ -57,7 +57,7 @@ class QtPyScriptCanvasVariableManager():
 
     def create_new_variable(self, new_variable_type: str) -> None:
         """
-        function for adding a new variable to the variable manager's list
+        Function for adding a new variable to the variable manager's list
 
         param new_variable_type: the type of variable you want to create provided as a string. Is case-sensitive!
 

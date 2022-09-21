@@ -42,7 +42,7 @@ class Tests():
 
 def save_script_event_file(self, file_path):
     """
-    function for saving a script event file with a user defined file path. Requires asset editor qt object to be initialized
+    Function for saving a script event file with a user defined file path. Requires asset editor qt object to be initialized
     and any required fields in the asset editor to be filled in before asset can be saved.
 
     param self: the script object calling this function

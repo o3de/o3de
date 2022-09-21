@@ -19,6 +19,7 @@ class Tests():
     script_canvas_editor_closed = ("Script Canvas Editor closed successfully", "Failed to close Script Canvas Editor")
 
 
+
 class QtPyO3DEEditor(QtPyCommon):
     """
     Container class for QtPy objects used in testing/manipulating the UI
