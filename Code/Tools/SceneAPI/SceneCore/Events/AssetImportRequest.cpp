@@ -63,13 +63,14 @@ namespace AZ
                 {
                     ++m_reportNumber;
 
-                    if (!m_previousSet)
+                    if (!m_previousSet && m_scene->GetManifest().GetEntryCount() > 0)
                     {
                         auto saveToJsonOutcome = m_scene->GetManifest().SaveToJsonDocument();
                         if (!saveToJsonOutcome.IsSuccess())
                         {
                             AZ_Error(AZ::SceneAPI::Utilities::ErrorWindow, false,
                                 "UpdateManifest(%d) error: %.*s",
+                                m_reportNumber,
                                 AZ_STRING_ARG(saveToJsonOutcome.GetError()));
                             return;
                         }
@@ -80,22 +81,29 @@ namespace AZ
 
                 void ReportFinish([[maybe_unused]] const AssetImportRequest* instance) override
                 {
+                    AZStd::string policy;
+                    instance->GetPolicyName(policy);
+                    AZ_TraceContext("PolicyName", policy.c_str());
+
+                    if (!m_previousSet && m_scene->GetManifest().GetEntryCount() > 0)
+                    {
+                        return;
+                    }
+
                     auto saveToJsonOutcome = m_scene->GetManifest().SaveToJsonDocument();
                     if (!saveToJsonOutcome.IsSuccess())
                     {
                         AZ_Error(AZ::SceneAPI::Utilities::ErrorWindow, false,
                             "UpdateManifest(%d) error: %.*s",
+                            m_reportNumber,
                             AZ_STRING_ARG(saveToJsonOutcome.GetError()));
                         return;
                     }
 
-                    AZStd::string result;
-                    instance->GetPolicyName(result);
-
                     if (m_previous == saveToJsonOutcome.GetValue())
                     {
                         AZ_TraceContext("UpdateManifest", "No Changes");
-                        AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "UpdateManifest(%d): %.*s \n", m_reportNumber, AZ_STRING_ARG(result));
+                        AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "UpdateManifest(%d): No Changes \n", m_reportNumber);
                         return;
                     }
                     m_previous = {};
@@ -106,7 +114,7 @@ namespace AZ
                     if (saveToJsonOutcome.GetValue().Accept(writer))
                     {
                         AZ_TraceContext("Update Manifest", buffer.GetString());
-                        AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "UpdateManifest(%d): %.*s \n", m_reportNumber, AZ_STRING_ARG(result));
+                        AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "UpdateManifest(%d): Updated \n", m_reportNumber);
                     }
                 }
 
