@@ -15,9 +15,10 @@ BASE_LEVEL_NAME = "Base"
 SAVE_STRING = "Save"
 NAME_STRING = "Name"
 WAIT_FRAMES_200 = 200
-WAIT_TIME_3 = 3
-WAIT_TIME_5 = 5
+WAIT_TIME_SEC_3 = 3
+WAIT_TIME_SEC_5 = 5
 
+# "editor" is the editor only state
 ENTITY_STATES = {
     "active": 0,
     "inactive": 1,

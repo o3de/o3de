@@ -7,7 +7,6 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 Object to house all the Qt Objects used when testing and manipulating the Script Canvas editor and its tools
 """
 from PySide2 import QtWidgets
-import editor_python_test_tools.QtPyCommon as QtPyCommon
 import pyside_utils
 import editor_python_test_tools.QtPyScriptCanvasVariableManager as QtPyScriptCanvasVariableManager
 from consts.scripting import (SCRIPT_CANVAS_UI)
@@ -23,33 +22,46 @@ class QtPyScriptCanvasEditor():
     cannot. If a need to separate the two objects is discovered the main pane object will be put into its own QtPy class
     """
 
-    def __init__(self, editor_main_window):
+    def __init__(self, editor_main_window: QtWidgets.QMainWindow):
 
         self.sc_editor = editor_main_window.findChild(QtWidgets.QDockWidget, SCRIPT_CANVAS_UI)
         self.sc_editor_main_pane = self.sc_editor.findChild(QtWidgets.QMainWindow)
         self.variable_manager = QtPyScriptCanvasVariableManager.QtPyScriptCanvasVariableManager(self)
 
-    def trigger_undo_action(self):
+    def trigger_undo_action(self) -> None:
         """
         function for commanding the sc editor to perform an undo action
 
         returns None
         """
         undo_redo_action = self.sc_editor.findChild(QtWidgets.QAction, "action_Undo")
+
+        assert undo_redo_action is not None, "Unable to create undo action."
+
         undo_redo_action.trigger()
 
-    def trigger_redo_action(self):
+    def trigger_redo_action(self) -> None:
         """
         function for commanding the sc editor ot perform a redo action
+
+        returns: None
         """
         undo_redo_action = self.sc_editor.findChild(QtWidgets.QAction, "action_Redo")
+
+        assert undo_redo_action is not None, "Unable to create redo action."
+
         undo_redo_action.trigger()
 
-    def create_new_script_canvas_graph(self):
+    def create_new_script_canvas_graph(self) -> None:
         """
         function for opening a new untitled script canvas graph file for edit
+
+        returns: None
         """
         create_new_graph_action = pyside_utils.find_child_by_pattern(
             self.sc_editor_main_pane, {"objectName": "action_New_Script", "type": QtWidgets.QAction}
         )
+
+        assert create_new_graph_action is not None, "Unable to create new script canvas graph action."
+
         create_new_graph_action.trigger()

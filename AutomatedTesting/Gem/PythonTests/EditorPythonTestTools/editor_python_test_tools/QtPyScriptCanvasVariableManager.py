@@ -11,8 +11,7 @@ from PySide2 import QtWidgets, QtCore
 import pyside_utils
 from types import SimpleNamespace
 from consts.scripting import (VARIABLE_MANAGER_QT, VARIABLE_PALETTE_QT, ADD_BUTTON_QT, GRAPH_VARIABLES_QT)
-from consts.general import (WAIT_TIME_3)
-from editor_python_test_tools.utils import Report
+from consts.general import (WAIT_TIME_SEC_3)
 
 
 class Tests():
@@ -46,23 +45,17 @@ class QtPyScriptCanvasVariableManager():
         self.variable_manager = sc_editor.sc_editor.findChild(QtWidgets.QDockWidget, VARIABLE_MANAGER_QT)
         self.variable_types = self.get_basic_variable_types()
 
-
-    def __validate_new_variable(self, new_variable_type):
+    def __validate_new_variable(self, new_variable_type: str) -> None:
         """
         function for checking the provided variable type for validity
+
+        returns: None
         """
-        if type(new_variable_type) is not str:
-            Report.critical_result(["Invalid variable type provided", ""], False)
+        assert type(new_variable_type) is str, "Wrong parameter type provided. new_variable_type was not str"
+        assert VARIABLE_TYPES_DICT.__contains__(new_variable_type), \
+            "Wrong type provided. new_variable_type is not a valid type"
 
-        valid_type = False
-        for this_type in VARIABLE_TYPES_DICT:
-            if new_variable_type == VARIABLE_TYPES_DICT[this_type]:
-                valid_type = True
-
-        if not valid_type:
-            Report.critical_result(["Invalid variable type provided", ""], False)
-
-    def create_new_variable(self, new_variable_type):
+    def create_new_variable(self, new_variable_type: str) -> None:
         """
         function for adding a new variable to the variable manager's list
 
@@ -76,7 +69,8 @@ class QtPyScriptCanvasVariableManager():
         add_new_variable_button.click()  # Click on Create Variable button
 
         helper.wait_for_condition((
-            lambda: self.variable_manager.findChild(QtWidgets.QTableView, VARIABLE_PALETTE_QT) is not None), WAIT_TIME_3)
+            lambda: self.variable_manager.findChild(QtWidgets.QTableView, VARIABLE_PALETTE_QT) is not None),
+            WAIT_TIME_SEC_3)
 
         # Select variable type
         table_view = self.variable_manager.findChild(QtWidgets.QTableView, VARIABLE_PALETTE_QT)
@@ -105,7 +99,7 @@ class QtPyScriptCanvasVariableManager():
 
         return row_count
 
-    def validate_variable_count(self, expected):
+    def validate_variable_count(self, expected) -> None:
         """
         function to check if the current number of variables in variable manager matches the user provided input
 
@@ -114,6 +108,6 @@ class QtPyScriptCanvasVariableManager():
         returns None
         """
         row_count = self.get_variable_count()
-        result = expected == row_count
+        result = helper.wait_for_condition(lambda: expected == row_count, WAIT_TIME_SEC_3)
 
-        Report.result(Tests.variable_count_expected, helper.wait_for_condition(lambda: result is True, WAIT_TIME_3))
+        assert result, "Variable count did not match expected value."

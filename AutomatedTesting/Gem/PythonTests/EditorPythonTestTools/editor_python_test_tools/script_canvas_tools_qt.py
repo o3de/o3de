@@ -23,7 +23,7 @@ import azlmbr.math as math
 import azlmbr.bus as bus
 import azlmbr.legacy.general as general
 import azlmbr.scriptcanvas as scriptcanvas
-from consts.general import (SAVE_STRING, NAME_STRING, WAIT_TIME_3, WAIT_FRAMES_200, ENTITY_STATES)
+from consts.general import (SAVE_STRING, NAME_STRING, WAIT_TIME_SEC_3, WAIT_FRAMES_200, ENTITY_STATES)
 from consts.scripting import (ASSET_EDITOR_UI, NODE_PALETTE_UI, NODE_PALETTE_QT, TREE_VIEW_QT, SEARCH_FRAME_QT,
                               SEARCH_FILTER_QT,  NODE_INSPECTOR_TITLE_KEY, SCRIPT_EVENT_UI, PARAMETERS_QT,
                               NODE_INSPECTOR_QT, NODE_INSPECTOR_UI, SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
@@ -56,7 +56,7 @@ def save_script_event_file(self, file_path):
     # wait till file is saved, to validate that check the text of QLabel at the bottom of the AssetEditor,
     # if there are no unsaved changes we will not have any * in the text
     label = self.asset_editor.findChild(QtWidgets.QLabel, "textEdit")
-    return helper.wait_for_condition(lambda: "*" not in label.text(), WAIT_TIME_3)
+    return helper.wait_for_condition(lambda: "*" not in label.text(), WAIT_TIME_SEC_3)
 
 
 def initialize_asset_editor_object(self):
@@ -113,7 +113,7 @@ def open_asset_editor():
     returns true/false result of helper function's attempt
     """
     general.open_pane(ASSET_EDITOR_UI)
-    result = helper.wait_for_condition(lambda: general.is_pane_visible(ASSET_EDITOR_UI), WAIT_TIME_3)
+    result = helper.wait_for_condition(lambda: general.is_pane_visible(ASSET_EDITOR_UI), WAIT_TIME_SEC_3)
     return result
 
 
@@ -130,13 +130,13 @@ def canvas_node_palette_search(self, node_name, number_of_retries):
     returns: boolean value of the search attempt
     """
     self.node_tree_search_box.setText(node_name)
-    helper.wait_for_condition(lambda: self.node_tree_search_box.text() == node_name, WAIT_TIME_3)
+    helper.wait_for_condition(lambda: self.node_tree_search_box.text() == node_name, WAIT_TIME_SEC_3)
     # Try clicking ENTER in search box multiple times
     found_node = False
     for _ in range(number_of_retries):
         QtTest.QTest.keyClick(self.node_tree_search_box, QtCore.Qt.Key_Enter, QtCore.Qt.NoModifier)
         found_node = helper.wait_for_condition(
-            lambda: pyside_utils.find_child_by_pattern(self.node_tree_view, {"text": node_name}) is not None, WAIT_TIME_3)
+            lambda: pyside_utils.find_child_by_pattern(self.node_tree_view, {"text": node_name}) is not None, WAIT_TIME_SEC_3)
         if found_node is True:
             break
     return found_node
@@ -224,7 +224,7 @@ def create_script_event(self):
     action = pyside_utils.find_child_by_pattern(self.asset_editor_menu_bar, {"type": QtWidgets.QAction, "text": SCRIPT_EVENT_UI})
     action.trigger()
     result = helper.wait_for_condition(
-        lambda: self.asset_editor_row_container.findChild(QtWidgets.QFrame, EVENTS_QT) is not None, WAIT_TIME_3
+        lambda: self.asset_editor_row_container.findChild(QtWidgets.QFrame, EVENTS_QT) is not None, WAIT_TIME_SEC_3
     )
     Report.result(Tests.new_event_created, result)
 
@@ -232,7 +232,7 @@ def create_script_event(self):
     add_event = self.asset_editor_row_container.findChild(QtWidgets.QFrame, EVENTS_QT).findChild(QtWidgets.QToolButton, "")
     add_event.click()
     result = helper.wait_for_condition(
-        lambda: self.asset_editor_widget.findChild(QtWidgets.QFrame, DEFAULT_SCRIPT_EVENT) is not None, WAIT_TIME_3
+        lambda: self.asset_editor_widget.findChild(QtWidgets.QFrame, DEFAULT_SCRIPT_EVENT) is not None, WAIT_TIME_SEC_3
     )
     Report.result(Tests.child_event_created, result)
 
@@ -243,7 +243,7 @@ def create_script_event_parameter(self):
     add_param = self.asset_editor_row_container.findChild(QtWidgets.QFrame, "Parameters").findChild(QtWidgets.QToolButton, "")
     add_param.click()
     result = helper.wait_for_condition(
-        lambda: self.asset_editor_widget.findChild(QtWidgets.QFrame, "[0]") is not None, WAIT_TIME_3
+        lambda: self.asset_editor_widget.findChild(QtWidgets.QFrame, "[0]") is not None, WAIT_TIME_SEC_3
     )
     Report.result(Tests.parameter_created, result)
 
@@ -255,7 +255,7 @@ def remove_script_event_parameter(self):
     remove_param = self.asset_editor_row_container.findChild(QtWidgets.QFrame, "[0]").findChild(QtWidgets.QToolButton, "")
     remove_param.click()
     result = helper.wait_for_condition(
-        lambda: self.asset_editor_widget.findChild(QtWidgets.QFrame, "[0]") is None, WAIT_TIME_3
+        lambda: self.asset_editor_widget.findChild(QtWidgets.QFrame, "[0]") is None, WAIT_TIME_SEC_3
     )
     Report.result(Tests.parameter_removed, result)
 
@@ -270,7 +270,7 @@ def add_empty_parameter_to_script_event(self, number_of_parameters):
     returns none
     """
     helper.wait_for_condition(
-        lambda: self.asset_editor_row_container.findChild(QtWidgets.QFrame, PARAMETERS_QT) is not None, WAIT_TIME_3)
+        lambda: self.asset_editor_row_container.findChild(QtWidgets.QFrame, PARAMETERS_QT) is not None, WAIT_TIME_SEC_3)
     parameters = self.asset_editor_row_container.findChild(QtWidgets.QFrame, PARAMETERS_QT)
     add_parameter = parameters.findChild(QtWidgets.QToolButton, "")
 
@@ -376,7 +376,7 @@ def change_entity_sc_asset(entity, source_file, component_index = 0):
     script_canvas_component = entity.components[component_index]
     hydra.set_component_property_value(script_canvas_component, SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, source_handle)
     script_file = hydra.get_component_property_value(script_canvas_component, SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
-    result = helper.wait_for_condition(lambda: script_file is not None, WAIT_TIME_3)
+    result = helper.wait_for_condition(lambda: script_file is not None, WAIT_TIME_SEC_3)
 
     return result
 
