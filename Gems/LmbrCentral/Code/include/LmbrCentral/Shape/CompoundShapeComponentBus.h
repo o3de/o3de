@@ -17,7 +17,7 @@ namespace LmbrCentral
     /**
     * Type ID for the EditorCompoundShapeComponent
     */
-    static const AZ::Uuid EditorCompoundShapeComponentTypeId = "{837AA0DF-9C14-4311-8410-E7983E1F4B8D}";
+    inline constexpr AZ::TypeId EditorCompoundShapeComponentTypeId{ "{837AA0DF-9C14-4311-8410-E7983E1F4B8D}" };
 
     /// Configuration data for CompoundShapeConfiguration
     class CompoundShapeConfiguration

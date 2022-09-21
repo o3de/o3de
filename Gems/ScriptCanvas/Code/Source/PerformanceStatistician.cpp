@@ -207,7 +207,7 @@ namespace ScriptCanvas
 
         void PerformanceStatistician::UpdateAccumulatedTime()
         {
-            m_accumulatedStats.duration = AZStd::chrono::microseconds(AZStd::chrono::system_clock::now() - m_accumulatedStartTime).count();
+            m_accumulatedStats.duration = AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(AZStd::chrono::system_clock::now() - m_accumulatedStartTime).count();
         }
 
         void PerformanceStatistician::UpdateStatisticsFromTracker()

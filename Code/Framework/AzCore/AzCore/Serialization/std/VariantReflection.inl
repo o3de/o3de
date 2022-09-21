@@ -446,7 +446,7 @@ namespace AZ
                 return sizeof...(Types);
             }
 
-            const Uuid& GetTemplatedTypeId(size_t element) override
+            AZ::TypeId GetTemplatedTypeId(size_t element) override
             {
                 if (GenericClassInfo* valueGenericClassInfo = m_variantContainer.m_alternativeClassElements[element].m_genericClassInfo)
                 {
@@ -455,12 +455,12 @@ namespace AZ
                 return m_variantContainer.m_alternativeClassElements[element].m_typeId;
             }
 
-            const Uuid& GetSpecializedTypeId() const override
+            AZ::TypeId GetSpecializedTypeId() const override
             {
                 return azrtti_typeid<VariantType>();
             }
 
-            const Uuid& GetGenericTypeId() const override
+            AZ::TypeId GetGenericTypeId() const override
             {
                 return TYPEINFO_Uuid();
             }
@@ -519,7 +519,7 @@ namespace AZ
             return GetCurrentSerializeContextModule().CreateGenericClassInfo<VariantType>();
         }
 
-        static const Uuid& GetClassTypeId()
+        static AZ::TypeId GetClassTypeId()
         {
             return GetGenericInfo()->GetClassData()->m_typeId;
         }

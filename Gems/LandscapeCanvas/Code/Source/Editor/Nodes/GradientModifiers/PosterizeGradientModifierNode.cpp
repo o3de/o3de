@@ -28,7 +28,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString PosterizeGradientModifierNode::TITLE = QObject::tr("Posterize");
+    const char* PosterizeGradientModifierNode::TITLE = "Posterize";
 
     PosterizeGradientModifierNode::PosterizeGradientModifierNode(GraphModel::GraphPtr graph)
         : BaseGradientModifierNode(graph)

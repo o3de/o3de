@@ -55,7 +55,7 @@ namespace TextureAtlasNamespace
     {
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->ClassDeprecate("SimpleAssetReference_TextureAtlasAsset", "{6F612FE6-A054-4E49-830C-0288F3C79A52}",
+            serialize->ClassDeprecate("SimpleAssetReference_TextureAtlasAsset", AZ::Uuid("{6F612FE6-A054-4E49-830C-0288F3C79A52}"),
                 [](AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& rootElement)
             {
                 AZStd::vector<AZ::SerializeContext::DataElementNode> childNodeElements;

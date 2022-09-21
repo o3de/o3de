@@ -25,6 +25,7 @@
 #include <AzCore/Serialization/ObjectStream.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Math/Random.h>
+#include <AzCore/std/time.h>
 
 #include <thread>
 #include <stdlib.h>

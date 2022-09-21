@@ -54,7 +54,7 @@ namespace AzToolsFramework
             // EditorContextMenuBus overrides ...
             int GetMenuPosition() const override;
             AZStd::string GetMenuIdentifier() const override;
-            void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags) override;
+            void PopulateEditorGlobalContextMenu(QMenu* menu, const AZStd::optional<AzFramework::ScreenPoint>& point, int flags) override;
 
             // EditorEventsBus overrides ...
             void OnEscape() override;

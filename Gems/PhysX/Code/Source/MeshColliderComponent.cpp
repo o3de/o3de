@@ -19,7 +19,7 @@ namespace PhysX
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->ClassDeprecate("MeshColliderComponent", "{87A02711-8D7F-4966-87E1-77001EB6B29E}");
+            serializeContext->ClassDeprecate("MeshColliderComponent", AZ::Uuid("{87A02711-8D7F-4966-87E1-77001EB6B29E}"));
             serializeContext->Class<MeshColliderComponent, BaseColliderComponent>()
                 ->Version(1)
             ;

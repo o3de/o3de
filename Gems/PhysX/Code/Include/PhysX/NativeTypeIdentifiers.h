@@ -26,5 +26,6 @@ namespace PhysX
         static const AZ::Crc32 FixedJoint = AZ_CRC_CE("PhysXFixedJoint");
         static const AZ::Crc32 HingeJoint = AZ_CRC_CE("PhysXHingeJoint");
         static const AZ::Crc32 BallJoint = AZ_CRC_CE("PhysXBallJoint");
+        static const AZ::Crc32 PrismaticJoint = AZ_CRC_CE("PhysXPrismaticJoint");
     } // namespace NativeTypeIdentifiers
 } // namespace PhysX

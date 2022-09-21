@@ -203,7 +203,7 @@ namespace AssetProcessorMessagesTests
         void RunNetworkRequest(AZStd::function<void()> func) const
         {
             AZStd::atomic_bool finished = false;
-            auto start = AZStd::chrono::monotonic_clock::now();
+            auto start = AZStd::chrono::steady_clock::now();
 
             auto thread = AZStd::thread({/*m_name =*/ "MessageTests"}, [&finished, &func]()
                 {
@@ -213,7 +213,7 @@ namespace AssetProcessorMessagesTests
             );
 
             constexpr int MaxWaitTime = 5;
-            while (!finished && AZStd::chrono::monotonic_clock::now() - start < AZStd::chrono::seconds(MaxWaitTime))
+            while (!finished && AZStd::chrono::steady_clock::now() - start < AZStd::chrono::seconds(MaxWaitTime))
             {
                 QCoreApplication::processEvents();
             }
@@ -310,9 +310,9 @@ namespace AssetProcessorMessagesTests
                         // before we check if it was received
                         // We'll wait a maximum of 5 seconds, checking periodically if the message was received, to avoid failing due to slow running test servers
                         constexpr int MaxWaitTimeSeconds = 5;
-                        auto start = AZStd::chrono::monotonic_clock::now();
+                        auto start = AZStd::chrono::steady_clock::now();
 
-                        while (!m_assetRequestHandler->m_invoked && AZStd::chrono::monotonic_clock::now() - start < AZStd::chrono::seconds(MaxWaitTimeSeconds))
+                        while (!m_assetRequestHandler->m_invoked && AZStd::chrono::steady_clock::now() - start < AZStd::chrono::seconds(MaxWaitTimeSeconds))
                         {
                             AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(10));
                         }

@@ -45,8 +45,12 @@ class DirectionalLightShadow
 
 bool DirectionalLightShadow::UseFullscreenShadows()
 {
+#ifdef FORCE_OPAQUE
+    return true;
+#else
     bool useFullscreenShadows = o_opacity_mode == OpacityMode::Opaque || o_opacity_mode == OpacityMode::Cutout;
     return useFullscreenShadows;
+#endif
 }
 
 DirectionalShadowCalculator DirectionalLightShadow::MakeShadowCalculator(uint lightIndex, float3 worldPos, float3 normalVector, float4 screenUv)

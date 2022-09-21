@@ -32,7 +32,6 @@
 #include <SceneAPIExt/Behaviors/LodRuleBehavior.h>
 #include <SceneAPIExt/Rules/ActorPhysicsSetupRule.h>
 #include <SceneAPIExt/Rules/SimulatedObjectSetupRule.h>
-#include <SceneAPIExt/Rules/ActorScaleRule.h>
 #include <SceneAPIExt/Rules/MetaDataRule.h>
 #include <SceneAPIExt/Rules/MorphTargetRule.h>
 #include <SceneAPIExt/Rules/LodRule.h>
@@ -51,7 +50,6 @@ namespace EMotionFX
                 Group::ActorGroup::Reflect(context);
                 Rule::ActorPhysicsSetupRule::Reflect(context);
                 Rule::SimulatedObjectSetupRule::Reflect(context);
-                Rule::ActorScaleRule::Reflect(context);
                 Rule::MetaDataRule::Reflect(context);
                 Rule::MorphTargetRule::Reflect(context);
                 Rule::LodRule::Reflect(context);
@@ -106,10 +104,6 @@ namespace EMotionFX
                         {
                             AZ_WarningOnce("EMotionFX", false, "Empty rule found in the ruleContainer, ignoring it. Check the .assetinfo file for invalid data.");
                         }
-                    }
-                    if (existingRules.find(Rule::ActorScaleRule::TYPEINFO_Uuid()) == existingRules.end())
-                    {
-                        modifiers.push_back(Rule::ActorScaleRule::TYPEINFO_Uuid());
                     }
                     if (existingRules.find(azrtti_typeid<AZ::SceneAPI::SceneData::CoordinateSystemRule>()) == existingRules.end())
                     {

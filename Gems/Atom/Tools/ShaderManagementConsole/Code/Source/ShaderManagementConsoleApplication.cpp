@@ -141,13 +141,21 @@ namespace ShaderManagementConsole
         AZStd::list<AZStd::string> materialTypeSources;
 
         assetDatabaseConnection.QuerySourceDependencyByDependsOnSource(
-            shaderFilePath.c_str(), nullptr, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_Any,
+            shaderFilePath.c_str(), AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_Any,
             [&](AzToolsFramework::AssetDatabase::SourceFileDependencyEntry& sourceFileDependencyEntry)
             {
-                if (AzFramework::StringFunc::Path::IsExtension(
-                        sourceFileDependencyEntry.m_source.c_str(), AZ::RPI::MaterialTypeSourceData::Extension))
+                AZStd::string relativeSourcePath;
+                assetDatabaseConnection.QuerySourceBySourceGuid(
+                    sourceFileDependencyEntry.m_sourceGuid,
+                    [&relativeSourcePath](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
+                    {
+                        relativeSourcePath = entry.m_sourceName;
+                        return false;
+                    });
+
+                if (AzFramework::StringFunc::Path::IsExtension(relativeSourcePath.c_str(), AZ::RPI::MaterialTypeSourceData::Extension))
                 {
-                    materialTypeSources.push_back(sourceFileDependencyEntry.m_source);
+                    materialTypeSources.push_back(relativeSourcePath);
                 }
                 return true;
             });
@@ -188,7 +196,7 @@ namespace ShaderManagementConsole
                     results.push_back({ combined.m_sourceGuid, combined.m_subID });
                     return false;
                 },
-                nullptr);
+                {});
         }
 
         return results;

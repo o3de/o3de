@@ -10,19 +10,21 @@
 #include <AzCore/Name/Name.h>
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 #include <AzCore/std/parallel/shared_mutex.h>
+#include <Atom/RHI.Reflect/Base.h>
+#include <Atom/RHI.Reflect/Handle.h>
 
 namespace AZ
 {
     namespace RHI
     {
-        //! 
+        //!
         //! Allocates and registers tags by name, allowing the user to acquire and find tags from names.
         //! The class is designed to map user-friendly tag names defined through content or higher level code to
         //! low-level tags, which are simple handles.
-        //! 
+        //!
         //! Some notes about usage and design:
         //!   - TagType need to be a Handle<Integer> type.
-        //!   - Tags are reference counted, which means multiple calls to 'Acquire' with the same name will increment 
+        //!   - Tags are reference counted, which means multiple calls to 'Acquire' with the same name will increment
         //!     the internal reference count on the tag. This allows shared ownership between systems, if necessary.
         //!   - FindTag is provided to search for a tag reference without taking ownership.
         //!   - Names are case sensitive.

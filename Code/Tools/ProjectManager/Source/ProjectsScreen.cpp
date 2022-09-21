@@ -147,7 +147,7 @@ namespace O3DE::ProjectManager
                 QMenu* newProjectMenu = new QMenu(this);
                 m_createNewProjectAction = newProjectMenu->addAction("Create New Project");
                 m_addExistingProjectAction = newProjectMenu->addAction("Open Existing Project");
-                m_addRemoteProjectAction = newProjectMenu->addAction("Add Remote Project");
+                m_addRemoteProjectAction = newProjectMenu->addAction("Add a Remote Project");
 
                 connect(m_createNewProjectAction, &QAction::triggered, this, &ProjectsScreen::HandleNewProjectButton);
                 connect(m_addExistingProjectAction, &QAction::triggered, this, &ProjectsScreen::HandleAddProjectButton);
@@ -212,31 +212,35 @@ namespace O3DE::ProjectManager
 
         // Get all projects and sort so that building and queued projects appear first
         // followed by the remaining projects in alphabetical order
+        QVector<ProjectInfo> projects;
         auto projectsResult = PythonBindingsInterface::Get()->GetProjects();
         if (projectsResult.IsSuccess() && !projectsResult.GetValue().isEmpty())
         {
-            QVector<ProjectInfo> projects = projectsResult.GetValue();
+            projects.append(projectsResult.GetValue());
+        }
 
-            // additional
-            auto remoteProjectsResult = PythonBindingsInterface::Get()->GetProjectsForAllRepos();
-            if (remoteProjectsResult.IsSuccess() && !remoteProjectsResult.GetValue().isEmpty())
+        // Also add remote projects that we do not have a local copy of
+        auto remoteProjectsResult = PythonBindingsInterface::Get()->GetProjectsForAllRepos();
+        if (remoteProjectsResult.IsSuccess() && !remoteProjectsResult.GetValue().isEmpty())
+        {
+            const QVector<ProjectInfo>& remoteProjects = remoteProjectsResult.GetValue();
+            for (const ProjectInfo& remoteProject : remoteProjects)
             {
-                const QVector<ProjectInfo>& remoteProjects = remoteProjectsResult.GetValue();
-                for (const ProjectInfo& remoteProject : remoteProjects)
-                {
-                    auto foundProject = AZStd::ranges::find_if(projects,
-                        [&remoteProject](const ProjectInfo& value)
-                        {
-                            return remoteProject.m_id == value.m_id;
-                        });
-                    if (foundProject == projects.end())
+                auto foundProject = AZStd::ranges::find_if(
+                    projects,
+                    [&remoteProject](const ProjectInfo& value)
                     {
-                        projects.append(remoteProject);
-                    }
+                        return remoteProject.m_id == value.m_id;
+                    });
+                if (foundProject == projects.end())
+                {
+                    projects.append(remoteProject);
                 }
-                
             }
+        }
 
+        if (!projects.isEmpty())
+        {
             // If a project path is in this set then the button for it will be kept
             AZStd::unordered_set<AZ::IO::Path> keepProject;
             for (const ProjectInfo& project : projects)
@@ -344,7 +348,7 @@ namespace O3DE::ProjectManager
                             tr("Download Project"),
                             [this, currentButton, project]
                             {
-                                m_downloadController->AddObjectDownload(project.m_projectName, DownloadController::DownloadObjectType::Project);
+                                m_downloadController->AddObjectDownload(project.m_projectName, "", DownloadController::DownloadObjectType::Project);
                                 currentButton->SetState(ProjectButtonState::Downloading);
                             });
                     }
@@ -670,9 +674,9 @@ namespace O3DE::ProjectManager
         ResetProjectsContent();
     }
 
-    void ProjectsScreen::StartProjectDownload(const QString& projectName)
+    void ProjectsScreen::StartProjectDownload(const QString& projectName, const QString& destinationPath, bool queueBuild)
     {
-        m_downloadController->AddObjectDownload(projectName, DownloadController::DownloadObjectType::Project);
+        m_downloadController->AddObjectDownload(projectName, destinationPath, DownloadController::DownloadObjectType::Project);
 
         auto foundButton = AZStd::ranges::find_if(m_projectButtons,
             [&projectName](const AZStd::unordered_map<AZ::IO::Path, ProjectButton*>::value_type& value)
@@ -682,13 +686,54 @@ namespace O3DE::ProjectManager
 
         if (foundButton != m_projectButtons.end())
         {
-            (*foundButton).second->SetState(ProjectButtonState::Downloading);
+            (*foundButton).second->SetState(queueBuild ? ProjectButtonState::DownloadingBuildQueued : ProjectButtonState::Downloading);
         }
     }
 
-    void ProjectsScreen::HandleDownloadResult(const QString& /*projectName*/, bool /*succeeded*/)
+    void ProjectsScreen::HandleDownloadResult(const QString& projectName, bool succeeded)
     {
-        ResetProjectsContent();
+        auto foundButton = AZStd::ranges::find_if(
+            m_projectButtons,
+            [&projectName](const AZStd::unordered_map<AZ::IO::Path, ProjectButton*>::value_type& value)
+            {
+                return (value.second->GetProjectInfo().m_projectName == projectName);
+            });
+
+        if (foundButton != m_projectButtons.end())
+        {
+            if (succeeded)
+            {
+                // Find the project info since it should now be local
+                auto projectsResult = PythonBindingsInterface::Get()->GetProjects();
+                if (projectsResult.IsSuccess() && !projectsResult.GetValue().isEmpty())
+                {
+                    for (const ProjectInfo& projectInfo : projectsResult.GetValue())
+                    {
+                        if (projectInfo.m_projectName == projectName)
+                        {
+                            (*foundButton).second->SetProject(projectInfo);
+
+                            if ((*foundButton).second->GetState() == ProjectButtonState::DownloadingBuildQueued)
+                            {
+                                QueueBuildProject(projectInfo);
+                            }
+                            else
+                            {
+                                (*foundButton).second->SetState(ProjectButtonState::NeedsToBuild);
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                (*foundButton).second->SetState(ProjectButtonState::NotDownloaded);
+            }
+        }
+        else
+        {
+            ResetProjectsContent();
+        }
     }
 
     void ProjectsScreen::HandleDownloadProgress(const QString& projectName, DownloadController::DownloadObjectType objectType, int bytesDownloaded, int totalBytes)
@@ -729,7 +774,11 @@ namespace O3DE::ProjectManager
     bool ProjectsScreen::ShouldDisplayFirstTimeContent()
     {
         auto projectsResult = PythonBindingsInterface::Get()->GetProjects();
-        if (!projectsResult.IsSuccess() || projectsResult.GetValue().isEmpty())
+        auto remoteProjectsResult = PythonBindingsInterface::Get()->GetProjectsForAllRepos();
+
+        // If we do not have any local or remote projects to show, then show the first time content
+        if ((!projectsResult.IsSuccess() || projectsResult.GetValue().isEmpty()) &&
+            (!remoteProjectsResult.IsSuccess() || remoteProjectsResult.GetValue().isEmpty()))
         {
             return true;
         }

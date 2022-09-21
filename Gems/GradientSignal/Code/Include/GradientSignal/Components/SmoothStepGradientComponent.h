@@ -39,7 +39,7 @@ namespace GradientSignal
         static bool UpdateVersion(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement);
     };
 
-    static const AZ::Uuid SmoothStepGradientComponentTypeId = "{404BD2B5-6229-4C60-998E-77F394FF27A8}";
+    inline constexpr AZ::TypeId SmoothStepGradientComponentTypeId{ "{404BD2B5-6229-4C60-998E-77F394FF27A8}" };
 
     /**
     * Component implementing GradientRequestBus based on smooth step

@@ -163,7 +163,7 @@ namespace AzToolsFramework
         virtual void ReadValuesIntoGUI_Internal(QWidget* widget, InstanceDataNode* t) = 0;
         // we define this automatically for you, you don't have to override it.
         virtual bool HandlesType(const AZ::Uuid& id) const = 0;
-        virtual const AZ::Uuid& GetHandledType() const = 0;
+        virtual AZ::TypeId GetHandledType() const = 0;
         virtual QWidget* GetFirstInTabOrder_Internal(QWidget* widget) = 0;
         virtual QWidget* GetLastInTabOrder_Internal(QWidget* widget) = 0;
         virtual void UpdateWidgetInternalTabbing_Internal(QWidget* widget) = 0;
@@ -479,7 +479,7 @@ namespace AzToolsFramework
             return GetHandledType() == id;
         }
 
-        virtual const AZ::Uuid& GetHandledType() const override
+        virtual AZ::TypeId GetHandledType() const override
         {
             return AZ::SerializeTypeInfo<PropertyType>::GetUuid();
         }

@@ -4441,7 +4441,7 @@ namespace ScriptCanvasEditor
         auto timeNow = AZStd::chrono::system_clock::now();
         AZStd::erase_if(m_saves, [&timeNow](const auto& item)
         {
-            AZStd::sys_time_t delta = AZStd::chrono::seconds(timeNow - item.second).count();
+            AZStd::sys_time_t delta = AZStd::chrono::duration_cast<AZStd::chrono::seconds>(timeNow - item.second).count();
             return delta > 2.0f;
         });
     }
