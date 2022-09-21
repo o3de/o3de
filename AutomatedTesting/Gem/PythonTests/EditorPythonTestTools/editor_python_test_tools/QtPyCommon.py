@@ -44,6 +44,9 @@ class QtPyCommon:
         returns: None
         """
         children = self.findChildren(QtWidgets.QFrame, object_name)
+
+        assert children is not None, "Unable to find QtContainer children."
+
         for child in children:
             check_box = child.findChild(QtWidgets.QCheckBox)
             if check_box and not check_box.isChecked():

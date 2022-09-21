@@ -8,8 +8,8 @@ Object to house all the Qt Objects used when testing and manipulating the O3DE U
 """
 import pyside_utils
 from editor_python_test_tools.QtPyCommon import QtPyCommon
+from editor_python_test_tools.QtPyScriptCanvasEditor import QtPyScriptCanvasEditor
 import azlmbr.legacy.general as general
-import editor_python_test_tools.QtPyScriptCanvasEditor as QtPyScriptCanvasEditor
 from editor_python_test_tools.utils import TestHelper
 from consts.scripting import (SCRIPT_CANVAS_UI)
 from consts.general import (WAIT_TIME_SEC_3)
@@ -42,7 +42,7 @@ class QtPyO3DEEditor(QtPyCommon):
 
         assert result, "Failed to open Script Canvas Editor"
 
-        self.sc_editor = QtPyScriptCanvasEditor.QtPyScriptCanvasEditor(self.editor_main_window)
+        self.sc_editor = QtPyScriptCanvasEditor(self.editor_main_window)
 
         return self.sc_editor
 
