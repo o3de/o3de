@@ -230,11 +230,10 @@ namespace AZ::DocumentPropertyEditor
 
             if (hashValue)
             {
-                AZStd::any myAny(&instance);
-                
+                AZStd::any anyVal(&instance);
                 m_builder.Attribute(
                     Nodes::PropertyEditor::ValueHashed,
-                    AZ::Uuid::CreateData(reinterpret_cast<AZStd::byte*>(AZStd::any_cast<void>(&myAny)), myAny.get_type_info().m_valueSize));
+                    AZ::Uuid::CreateData(reinterpret_cast<AZStd::byte*>(AZStd::any_cast<void>(&anyVal)), anyVal.get_type_info().m_valueSize));
             }
             m_builder.EndPropertyEditor();
 
@@ -594,11 +593,6 @@ namespace AZ::DocumentPropertyEditor
     void ReflectionAdapter::NotifyPropertyChanged(const PropertyChangeInfo& changeInfo)
     {
         m_propertyChangeEvent.Signal(changeInfo);
-    }
-
-    void ReflectionAdapter::RefreshValues()
-    {
-        NotifyResetDocument();
     }
 
     Dom::Value ReflectionAdapter::GenerateContents()
