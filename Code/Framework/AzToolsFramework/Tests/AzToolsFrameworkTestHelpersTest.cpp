@@ -59,6 +59,7 @@ namespace UnitTest
     TEST_P(MouseMoveAzToolsFrameworkTestHelperFixture, MouseMoveCorrectlyTransformsCursorPositionInGlobalAndLocalSpace)
     {
         // given
+        printf("reached #0");
         const MouseMoveParams mouseMoveParams = GetParam();
         printf("reached #1");
         m_rootWidget->move(mouseMoveParams.m_widgetPosition);
@@ -83,15 +84,16 @@ namespace UnitTest
         EXPECT_THAT(mouseLocalPosition.y(), Eq(expectedPosition.y()));
         EXPECT_THAT(mouseLocalPositionFromGlobal.x(), Eq(expectedPosition.x()));
         EXPECT_THAT(mouseLocalPositionFromGlobal.y(), Eq(expectedPosition.y()));
-        printf("reached #1");
+        printf("reached #8");
     }
 
     INSTANTIATE_TEST_CASE_P(
         All,
         MouseMoveAzToolsFrameworkTestHelperFixture,
         testing::Values(
+            MouseMoveParams{ QSize(100, 100), QPoint(20, 20), QPoint(50, 50), QPoint(20, 20) },
             MouseMoveParams{ QSize(100, 100), QPoint(0, 0), QPoint(0, 0), QPoint(10, 10) },
-            MouseMoveParams{ QSize(100, 100), QPoint(100, 100), QPoint(0, 0), QPoint(10, 10) },
-            MouseMoveParams{ QSize(100, 100), QPoint(20, 20), QPoint(50, 50), QPoint(20, 20) }));
+            MouseMoveParams{ QSize(100, 100), QPoint(100, 100), QPoint(0, 0), QPoint(10, 10) }
+            ));
 
 } // namespace UnitTest
