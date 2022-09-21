@@ -10,11 +10,16 @@
 #include <Multiplayer/IMultiplayerTools.h>
 #include <Multiplayer/INetworkSpawnableLibrary.h>
 #include <Multiplayer/MultiplayerConstants.h>
+#include <Multiplayer/Components/NetBindComponent.h>
+#include <Multiplayer/Components/NetworkTransformComponent.h>
 
 #include <MultiplayerSystemComponent.h>
 #include <PythonEditorEventsBus.h>
 #include <Editor/MultiplayerEditorAutomation.h>
 #include <Editor/MultiplayerEditorSystemComponent.h>
+#include <Editor/EditorViewportSettings.h>
+#include <Editor/Viewport.h>
+#include <Editor/ViewManager.h>
 
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Interface/Interface.h>
@@ -22,10 +27,19 @@
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzNetworking/Framework/INetworking.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
+#include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
+#include <AzToolsFramework/API/EntityCompositionRequestBus.h>
+#include <AzToolsFramework/ViewportSelection/EditorHelpers.h>
+#include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+
+#include <QMenu>
+#include <QAction>
+
 namespace Multiplayer
 {
     using namespace AzNetworking;
@@ -142,10 +156,12 @@ namespace Multiplayer
         MultiplayerEditorServerRequestBus::Handler::BusConnect();
         AZ::Interface<IMultiplayer>::Get()->AddServerAcceptanceReceivedHandler(m_serverAcceptanceReceivedHandler);
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
+        AzToolsFramework::EditorContextMenuBus::Handler::BusConnect();
     }
 
     void MultiplayerEditorSystemComponent::Deactivate()
     {
+        AzToolsFramework::EditorContextMenuBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
         MultiplayerEditorServerRequestBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
@@ -523,5 +539,77 @@ namespace Multiplayer
         constexpr double retrySeconds = 1.0;
         constexpr bool autoRequeue = true;
         m_connectionEvent.Enqueue(AZ::SecondsToTimeMs(retrySeconds), autoRequeue);
+    }
+
+    void MultiplayerEditorSystemComponent::PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, [[ maybe_unused ]] int flags)
+    {
+        menu->setToolTipsVisible(true);
+
+        m_contextMenuViewPoint = point;
+
+        QAction* action = nullptr;
+
+        action = menu->addAction(QObject::tr("Create multiplayer entity"));
+        action->setShortcut(QKeySequence(Qt::CTRL + Qt::ALT + Qt::Key_M));
+        QObject::connect(
+            action, &QAction::triggered, action,
+            [this]
+        {
+            ContextMenu_NewMultiplayerEntity();
+        });
+    }
+
+    int MultiplayerEditorSystemComponent::GetMenuPosition() const
+    {
+        return aznumeric_cast<int>(AzToolsFramework::EditorContextMenuOrdering::TOP);
+    }
+
+    void MultiplayerEditorSystemComponent::ContextMenu_NewMultiplayerEntity()
+    {
+        AzToolsFramework::EntityIdList selected;
+        EBUS_EVENT_RESULT(selected,
+            AzToolsFramework::ToolsApplicationRequests::Bus,
+            GetSelectedEntities);
+
+        // Merge in highlighted entities..
+        // This stuff should probably be exposed from the SandboxIntegration class
+        {
+            AzToolsFramework::EntityIdList highlightedEntities;
+            EBUS_EVENT_RESULT(highlightedEntities,
+                AzToolsFramework::ToolsApplicationRequests::Bus,
+                GetHighlightedEntities);
+
+            for (AZ::EntityId highlightedId : highlightedEntities)
+            {
+                if (selected.end() == AZStd::find(selected.begin(), selected.end(), highlightedId))
+                {
+                    selected.push_back(highlightedId);
+                }
+            }
+        }
+
+        AZ::EntityId parentEntityId = AZ::EntityId();
+        AZ::Vector3 worldPosition = AZ::Vector3::CreateZero();
+        if (selected.size() == 1)
+        {
+            parentEntityId = selected.front();
+        }
+
+        if (CViewport* view = m_editor->GetViewManager()->GetGameViewport())
+        {
+            worldPosition = AzToolsFramework::FindClosestPickIntersection(
+                view->GetViewportId(), AzFramework::ScreenPointFromVector2(m_contextMenuViewPoint), AzToolsFramework::EditorPickRayLength,
+                AzToolsFramework::GetDefaultEntityPlacementDistance());
+        }
+
+        auto prefabIntegrationInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabIntegrationInterface>::Get();
+        AZ::EntityId newEntityId = prefabIntegrationInterface->CreateNewEntityAtPosition(worldPosition, parentEntityId);
+
+        AzToolsFramework::EntityCompositionRequestBus::Broadcast
+        (
+            &AzToolsFramework::EntityCompositionRequests::AddComponentsToEntities,
+            AzToolsFramework::EntityIdList{ newEntityId },
+            AZ::ComponentTypeList{ azrtti_typeid<NetBindComponent>(), azrtti_typeid<NetworkTransformComponent>() }
+        );
     }
 } // namespace Multiplayer

@@ -21,6 +21,7 @@
 #include <AzFramework/Process/ProcessCommunicatorTracePrinter.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabToInMemorySpawnableNotificationBus.h>
+#include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 
 namespace AzNetworking
 {
@@ -35,13 +36,12 @@ namespace Multiplayer
     public:
         AZ_COMPONENT(PythonEditorFuncs, "{22AEEA59-94E6-4033-B67D-7C8FBB84DF0D}")
 
-        SANDBOX_API static void Reflect(AZ::ReflectContext* context);
+        static void Reflect(AZ::ReflectContext* context);
 
         // AZ::Component ...
         void Activate() override {}
         void Deactivate() override {}
     };
-
 
     //! Multiplayer system component wraps the bridging logic between the game and transport layer.
     class MultiplayerEditorSystemComponent final
@@ -53,6 +53,7 @@ namespace Multiplayer
         , private AZ::TickBus::Handler
         , private AzToolsFramework::Prefab::PrefabToInMemorySpawnableNotificationBus::Handler
         , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
+        , private AzToolsFramework::EditorContextMenuBus::Handler
     {
     public:
         AZ_COMPONENT(MultiplayerEditorSystemComponent, "{9F335CC0-5574-4AD3-A2D8-2FAEF356946C}");
@@ -96,11 +97,17 @@ namespace Multiplayer
         void OnStartPlayInEditor() override;
         //! @}
 
+        //! AzToolsFramework::EditorContextMenu::Bus::Handler overrides
+        //! @{
+        void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags) override;
+        int GetMenuPosition() const override;
+        //! @}
+
         //! AzToolsFramework::Prefab::PrefabToInMemorySpawnableNotificationBus::Handler overrides
         //! @{
         void OnPreparingInMemorySpawnableFromPrefab(const AzFramework::Spawnable& spawnable, const AZStd::string& assetHint) override;
         //! @}
-        
+
         //! EditorEvents::Handler overrides
         //! @{
         void OnEditorNotifyEvent(EEditorNotifyEvent event) override;
@@ -115,6 +122,9 @@ namespace Multiplayer
         //! @{
         void OnTick(float, AZ::ScriptTimePoint) override;
         //! @}
+
+        //! Context menu handler
+        void ContextMenu_NewMultiplayerEntity();
 
         IEditor* m_editor = nullptr;
         AZStd::unique_ptr<AzFramework::ProcessWatcher> m_serverProcessWatcher = nullptr;
@@ -133,5 +143,7 @@ namespace Multiplayer
         };
         
         AZStd::vector<PreAliasedSpawnableData> m_preAliasedSpawnablesForServer;
+
+        AZ::Vector2 m_contextMenuViewPoint = AZ::Vector2::CreateZero();
     };
 }
