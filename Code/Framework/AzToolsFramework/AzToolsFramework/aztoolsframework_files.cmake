@@ -252,6 +252,8 @@ set(FILES
     Manipulators/TranslationManipulators.cpp
     Manipulators/TranslationManipulators.h
     Maths/TransformUtils.h
+    PaintBrushSettings/PaintBrushSettings.cpp
+    PaintBrushSettings/PaintBrushSettings.h
     PaintBrushSettings/PaintBrushSettingsNotificationBus.h
     PaintBrushSettings/PaintBrushSettingsRequestBus.h
     PaintBrushSettings/PaintBrushSettingsSystemComponent.cpp

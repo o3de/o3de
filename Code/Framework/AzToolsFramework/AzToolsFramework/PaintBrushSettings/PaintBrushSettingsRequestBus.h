@@ -10,11 +10,10 @@
 
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/EBus/EBus.h>
+#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettings.h>
 
 namespace AzToolsFramework
 {
-    class PaintBrushSettings;
-
     //! PaintBrushSettingsRequestBus is used to get/set the global paintbrush settings
     class PaintBrushSettingsRequests : public AZ::EBusTraits
     {
