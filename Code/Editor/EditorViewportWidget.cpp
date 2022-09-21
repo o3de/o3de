@@ -2599,7 +2599,7 @@ void EditorViewportWidget::StartFullscreenPreview()
     m_inFullscreenPreview = true;
 
     // Pick the screen on which the main window lies to use as the screen for the full screen preview
-    const QScreen* screen = MainWindow::instance()->screen();
+    QScreen* screen = MainWindow::instance()->screen();
     const QRect screenGeometry = screen->geometry();
 
     // Unparent this and show it, which turns it into a free floating window
@@ -2608,8 +2608,8 @@ void EditorViewportWidget::StartFullscreenPreview()
     setWindowFlag(Qt::FramelessWindowHint, true);
     setWindowFlag(Qt::MSWindowsFixedSizeDialogHint, true);
     setFixedSize(screenGeometry.size());
-    move(QPoint(screenGeometry.x(), screenGeometry.y()));
-    showMaximized();
+    windowHandle()->setScreen(screen);
+    showFullScreen();
 
     // This must be done after unparenting this widget above
     MainWindow::instance()->hide();
