@@ -23,6 +23,30 @@ namespace AZ
 
     namespace Internal
     {
+        class CompiledTaskGraph;
+
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // DEBUG code
+        // Implement basic CompiledTaskGraph deletion breadcrumbs to help debug
+        // https://github.com/o3de/o3de/issues/12015
+        class CompiledTaskGraphDeallocationTracker final
+        {
+        public:
+            void WriteDeallocationData(const CompiledTaskGraph* ctg);
+
+        private:
+            static constexpr uint32_t NumTrackedRecentDeallocations = 32u;
+            struct DeallocationData
+            {
+                const char* m_parentLabel = nullptr;
+                const CompiledTaskGraph* m_ctg = nullptr;
+            };
+            DeallocationData m_recentDeallocations[NumTrackedRecentDeallocations]; // deallocation breadcrumbs to help look for a double delete
+            uint32_t m_nextDeallocationSlot = 0;
+            AZStd::mutex m_deallocationMutex;
+        };
+        ////////////////////////////////////////////////////////////////////////////////////////////////
+
         class CompiledTaskGraph final
         {
         public:
@@ -44,7 +68,10 @@ namespace AZ
 
             // Indicate that a constituent task has finished and decrement a counter to determine if the
             // graph should be freed (returns the value after atomic decrement)
-            uint32_t Release();
+            uint32_t Release(CompiledTaskGraphDeallocationTracker& deallocationTracker);
+
+            // Debug access
+            const char* GetParentLabel() const { return m_parentLabel; }
 
         private:
             friend class ::AZ::TaskGraph;
@@ -82,6 +109,8 @@ namespace AZ
 
         void Submit(Internal::Task& task);
 
+        Internal::CompiledTaskGraphDeallocationTracker& GetDeallocationTracker() {return m_deallocationTracker;}
+
     private:
         friend class Internal::TaskWorker;
         friend class TaskGraphEvent;
@@ -94,5 +123,12 @@ namespace AZ
         uint32_t m_threadCount = 0;
         AZStd::atomic<uint32_t> m_lastSubmission;
         AZStd::atomic<uint64_t> m_graphsRemaining;
+
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // DEBUG code
+        // Implement basic CompiledTaskGraph deletion breadcrumbs to help debug
+        // https://github.com/o3de/o3de/issues/12015
+        Internal::CompiledTaskGraphDeallocationTracker m_deallocationTracker;
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////
     };
 } // namespace AZ

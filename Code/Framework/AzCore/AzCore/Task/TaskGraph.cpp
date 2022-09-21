@@ -81,9 +81,11 @@ namespace AZ
     {
         if (m_retained && m_compiledTaskGraph)
         {
+            Internal::CompiledTaskGraphDeallocationTracker& deallocationTracker = TaskExecutor::Instance().GetDeallocationTracker();
             // This job graph has already finished and we are potentially responsible for its destruction
-            if (m_compiledTaskGraph->Release() == 0)
+            if (m_compiledTaskGraph->Release(deallocationTracker) == 0)
             {
+                deallocationTracker.WriteDeallocationData(m_compiledTaskGraph);
                 azdestroy(m_compiledTaskGraph);
             }
         }

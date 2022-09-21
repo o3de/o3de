@@ -25,15 +25,21 @@ namespace AZ
 {
     namespace Internal
     {
-        static constexpr uint32_t NumTrackedRecentDeallocations = 32u;
-        struct DeallocationData
+        const char* const DeletedCompiledTaskGraphLabel = "Deleted CompiledTaskGraph";
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // DEBUG code
+        // Implement basic CompiledTaskGraph deletion breadcrumbs to help debug
+        // https://github.com/o3de/o3de/issues/12015
+        void CompiledTaskGraphDeallocationTracker::WriteDeallocationData(const CompiledTaskGraph* ctg)
         {
-            const char* m_parentLabel = nullptr;
-            CompiledTaskGraph* m_ctg = nullptr;
-        };
-        static DeallocationData s_recentDeallocations[NumTrackedRecentDeallocations]; // deallocation breadcrumbs to help look for a double delete
-        static uint32_t s_nextDeallocationSlot = 0;
-        static AZStd::mutex s_deallocationMutex;
+            // record deallocation breadcrumbs
+            AZStd::scoped_lock<AZStd::mutex> lock(m_deallocationMutex);
+
+            DeallocationData& slot = m_recentDeallocations[m_nextDeallocationSlot++ % NumTrackedRecentDeallocations];
+            slot.m_parentLabel = ctg->GetParentLabel();
+            slot.m_ctg = ctg;
+        }
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         CompiledTaskGraph::CompiledTaskGraph(
             AZStd::vector<Task>&& tasks,
@@ -69,19 +75,14 @@ namespace AZ
 
         CompiledTaskGraph::~CompiledTaskGraph()
         {
-            // record deallocation breadcrumbs
-            AZStd::scoped_lock<AZStd::mutex> lock(s_deallocationMutex);
-
-            uint32_t deallocationSlot = s_nextDeallocationSlot;
-            s_nextDeallocationSlot = (s_nextDeallocationSlot + 1) % NumTrackedRecentDeallocations;
-            DeallocationData& slot = s_recentDeallocations[deallocationSlot];
-            slot.m_parentLabel = m_parentLabel;
-            slot.m_ctg = this;
-            m_parentLabel = "Deleted CompiledTaskGraph";
+            AZ_Assert(m_parentLabel != DeletedCompiledTaskGraphLabel, "Called destructor on an already deleted CompiledTaskGraph");
+            // stamp a known bad value so we can tell if we're looking at a deleted CompiledTaskGraph
+            m_parentLabel = DeletedCompiledTaskGraphLabel;
         }
 
-        uint32_t CompiledTaskGraph::Release()
+        uint32_t CompiledTaskGraph::Release(CompiledTaskGraphDeallocationTracker& deallocationTracker)
         {
+            AZ_Assert(m_parentLabel != DeletedCompiledTaskGraphLabel, "Calling Release on an already deleted CompiledTaskGraph");
             uint32_t remaining = --m_remaining;
 
             if (m_parent)
@@ -98,6 +99,8 @@ namespace AZ
                 {
                     m_waitEvent->Signal();
                 }
+
+                deallocationTracker.WriteDeallocationData(this);
 
                 azdestroy(this);
                 return remaining;
@@ -296,7 +299,7 @@ namespace AZ
                         }
 
                         bool isRetained = task->m_graph->m_parent != nullptr;
-                        if (task->m_graph->Release() == (isRetained ? 1u : 0u))
+                        if (task->m_graph->Release(m_executor->GetDeallocationTracker()) == (isRetained ? 1u : 0u))
                         {
                             m_executor->ReleaseGraph();
                         }
