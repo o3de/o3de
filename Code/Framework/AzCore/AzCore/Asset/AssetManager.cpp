@@ -899,7 +899,7 @@ namespace AZ::Data
             priority = loadParams.m_priority.value();
         }
 
-        return make_pair(deadline, priority);
+        return { deadline, priority };
     }
 
     //=========================================================================
@@ -1974,7 +1974,7 @@ namespace AZ::Data
 
     }
 
-    void AssetManager::RescheduleStreamerRequest(AssetId assetId, AZStd::chrono::milliseconds newDeadline, AZ::IO::IStreamerTypes::Priority newPriority)
+    void AssetManager::RescheduleStreamerRequest(AssetId assetId, AZ::IO::IStreamerTypes::Deadline newDeadline, AZ::IO::IStreamerTypes::Priority newPriority)
     {
         AZStd::scoped_lock lock(m_activeJobOrRequestMutex);
 

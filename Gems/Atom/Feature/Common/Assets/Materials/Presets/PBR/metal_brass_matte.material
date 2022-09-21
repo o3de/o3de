@@ -1,27 +1,17 @@
 {
-    "description": "",
-    "materialType": "Materials\\Types\\StandardPBR.materialtype",
-    "parentMaterial": "",
+    "materialType": "../../Types/StandardPBR.materialtype",
     "materialTypeVersion": 5,
-    "properties": {
-        "baseColor": {
-            "color": [
-                0.6745098233222961,
-                0.48627451062202456,
-                0.19607843458652497,
-                1.0
-            ],
-            "factor": 0.5
-        },
-        "metallic": {
-            "factor": 1.0
-        },
-        "roughness": {
-            "factor": 0.33000001311302187
-        },
-        "specularF0": {
-            "enableMultiScatterCompensation": true,
-            "factor": 0.8799999952316284
-        }
+    "propertyValues": {
+        "baseColor.color": [
+            0.6745098233222961,
+            0.48627451062202454,
+            0.19607843458652496,
+            1.0
+        ],
+        "baseColor.factor": 0.5,
+        "metallic.factor": 1.0,
+        "roughness.factor": 0.33000001311302185,
+        "specularF0.enableMultiScatterCompensation": true,
+        "specularF0.factor": 0.8799999952316284
     }
 }

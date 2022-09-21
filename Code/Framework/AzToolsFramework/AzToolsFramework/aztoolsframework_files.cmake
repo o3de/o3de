@@ -235,7 +235,6 @@ set(FILES
     Manipulators/PaintBrushManipulator.cpp
     Manipulators/PaintBrushManipulator.h
     Manipulators/PaintBrushNotificationBus.h
-    Manipulators/PaintBrushRequestBus.h
     Manipulators/PlanarManipulator.cpp
     Manipulators/PlanarManipulator.h
     Manipulators/RotationManipulators.cpp
@@ -253,6 +252,15 @@ set(FILES
     Manipulators/TranslationManipulators.cpp
     Manipulators/TranslationManipulators.h
     Maths/TransformUtils.h
+    PaintBrushSettings/PaintBrushSettings.cpp
+    PaintBrushSettings/PaintBrushSettings.h
+    PaintBrushSettings/PaintBrushSettingsNotificationBus.h
+    PaintBrushSettings/PaintBrushSettingsRequestBus.h
+    PaintBrushSettings/PaintBrushSettingsSystemComponent.cpp
+    PaintBrushSettings/PaintBrushSettingsSystemComponent.h
+    PaintBrushSettings/PaintBrushSettingsWindow.cpp
+    PaintBrushSettings/PaintBrushSettingsWindow.h
+    PaintBrushSettings/PaintBrushSettingsWindow_Internals.h
     Picking/BoundInterface.h
     Picking/ContextBoundAPI.h
     Picking/Manipulators/ManipulatorBoundManager.cpp
@@ -368,6 +376,8 @@ set(FILES
     UI/Docking/DockWidgetUtils.h
     UI/DocumentPropertyEditor/ContainerActionButtonHandler.cpp
     UI/DocumentPropertyEditor/ContainerActionButtonHandler.h
+    UI/DocumentPropertyEditor/FilterAdapter.cpp
+    UI/DocumentPropertyEditor/FilterAdapter.h
     UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h
     UI/DocumentPropertyEditor/PropertyEditorToolsSystem.cpp
     UI/DocumentPropertyEditor/PropertyEditorToolsSystem.h
@@ -375,10 +385,14 @@ set(FILES
     UI/DocumentPropertyEditor/PropertyHandlerWidget.h
     UI/DocumentPropertyEditor/DocumentPropertyEditor.cpp
     UI/DocumentPropertyEditor/DocumentPropertyEditor.h
+    UI/DocumentPropertyEditor/DocumentPropertyEditorSettings.cpp
+    UI/DocumentPropertyEditor/DocumentPropertyEditorSettings.h
     UI/DocumentPropertyEditor/IPropertyEditor.h
     UI/DocumentPropertyEditor/KeyQueryDPE.cpp
     UI/DocumentPropertyEditor/KeyQueryDPE.h
     UI/DocumentPropertyEditor/KeyQueryDPE.ui
+    UI/DocumentPropertyEditor/SettingsRegistrar.cpp
+    UI/DocumentPropertyEditor/SettingsRegistrar.h
     UI/DPEDebugViewer/DPEDebugModel.cpp
     UI/DPEDebugViewer/DPEDebugModel.h
     UI/DPEDebugViewer/DPEDebugTextView.cpp
@@ -651,6 +665,8 @@ set(FILES
     AssetBrowser/EBusFindAssetTypeByName.h
     AssetBrowser/Views/AssetBrowserTreeView.cpp
     AssetBrowser/Views/AssetBrowserTreeView.h
+    AssetBrowser/Views/AssetBrowserTreeViewDialog.cpp
+    AssetBrowser/Views/AssetBrowserTreeViewDialog.h
     AssetBrowser/Views/AssetBrowserTableView.cpp
     AssetBrowser/Views/AssetBrowserTableView.h
     AssetBrowser/Views/EntryDelegate.cpp

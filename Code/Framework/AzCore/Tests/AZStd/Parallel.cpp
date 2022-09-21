@@ -1149,7 +1149,7 @@ namespace UnitTest
             startTime = AZStd::chrono::system_clock::now();
             auto waitUntilTime = startTime + waitDuration;
             status = cv.wait_until(lock, waitUntilTime);
-            timeSpent = AZStd::chrono::system_clock::now() - startTime;
+            timeSpent = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::system_clock::now() - startTime);
         };
         
         // we aren't going to signal it, and ensure the timeout was reached.
@@ -1176,7 +1176,7 @@ namespace UnitTest
             auto waitUntilTime = AZStd::chrono::system_clock::now();
             startTime = waitUntilTime;
             status = cv.wait_until(lock, waitUntilTime);
-            timeSpent = AZStd::chrono::system_clock::now() - startTime;
+            timeSpent = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::system_clock::now() - startTime);
         };
         
         AZStd::thread waitThread1(wait);
@@ -1202,13 +1202,13 @@ namespace UnitTest
             auto waitUntilTime = AZStd::chrono::system_clock::now();
             startTime = waitUntilTime;
             status = cv.wait_until(lock, waitUntilTime, pred);
-            timeSpent = AZStd::chrono::system_clock::now() - startTime;
+            timeSpent = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::system_clock::now() - startTime);
         };
-        
-        
+
+
         AZStd::thread waitThread1(wait);
         waitThread1.join();
-        
+
         // we should have timed out immediately:
         EXPECT_LT(timeSpent, AZStd::chrono::milliseconds(MARGIN_OF_ERROR_MS));
         EXPECT_FALSE(status); // if the time has passed, the status should be false.
@@ -1220,7 +1220,7 @@ namespace UnitTest
         AZStd::condition_variable cv;
         AZStd::mutex cv_mutex;
         AZStd::atomic_bool retVal = { true };
-        
+
         auto pred = []() { return false; }; // should cause it to wait the entire duration
 
         AZStd::chrono::system_clock::time_point startTime;
@@ -1231,14 +1231,14 @@ namespace UnitTest
             AZStd::unique_lock<AZStd::mutex> lock(cv_mutex);
             auto waitDuration = AZStd::chrono::milliseconds(WAIT_TIME_MS);
             startTime = AZStd::chrono::system_clock::now();
-            auto waitUntilTime =  startTime + waitDuration;
+            auto waitUntilTime = startTime + waitDuration;
             retVal = cv.wait_until(lock, waitUntilTime, pred);
-            timeSpent = AZStd::chrono::system_clock::now() - startTime;
+            timeSpent = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::system_clock::now() - startTime);
         };
-        
+
         // we aren't going to signal it, and ensure the timeout was reached.
         AZStd::thread waitThread1(wait);
-        
+
         waitThread1.join();
 
         // the duration given is a minimum time, for wait_until, so we should have timed out above
@@ -1251,26 +1251,26 @@ namespace UnitTest
     {
         AZStd::condition_variable cv;
         AZStd::mutex cv_mutex;
-        AZStd::atomic_bool retVal = {true};
+        AZStd::atomic_bool retVal = { true };
         AZStd::chrono::system_clock::time_point startTime;
         AZStd::chrono::milliseconds timeSpent;
 
         auto pred = []() { return true; }; // should cause it to immediately return
-        
+
         auto wait = [&]()
         {
             AZStd::unique_lock<AZStd::mutex> lock(cv_mutex);
             auto waitDuration = AZStd::chrono::milliseconds(WAIT_TIME_MS);
             startTime = AZStd::chrono::system_clock::now();
             auto waitUntilTime = startTime + waitDuration;
-            
+
             retVal = cv.wait_until(lock, waitUntilTime, pred);
-            timeSpent = AZStd::chrono::system_clock::now() - startTime;
+            timeSpent = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::system_clock::now() - startTime);
         };
-        
+
         AZStd::thread waitThread1(wait);
         waitThread1.join();
-        
+
         // we should NOT have reached the minimum time or in fact waited at all:
         EXPECT_LE(timeSpent, AZStd::chrono::milliseconds(MARGIN_OF_ERROR_MS));
         EXPECT_TRUE(retVal); // we didn't wake up but still returned true.
@@ -1293,7 +1293,7 @@ namespace UnitTest
             auto waitDuration = AZStd::chrono::milliseconds(WAIT_TIME_MS);
             startTime = AZStd::chrono::system_clock::now();
             status = cv.wait_for(lock, waitDuration);
-            timeSpent = AZStd::chrono::system_clock::now() - startTime;
+            timeSpent = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::system_clock::now() - startTime);
         };
         
         // we aren't going to signal it, and ensure the timeout was reached.
@@ -1323,7 +1323,7 @@ namespace UnitTest
             startTime = AZStd::chrono::system_clock::now();
             auto waitDuration = AZStd::chrono::milliseconds(WAIT_TIME_MS);
             status = cv.wait_for(lock, waitDuration, pred);
-            timeSpent = AZStd::chrono::system_clock::now() - startTime;
+            timeSpent = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::system_clock::now() - startTime);
         };
         
         // we aren't going to signal it, and ensure the timeout was reached.
@@ -1358,7 +1358,7 @@ namespace UnitTest
             auto waitUntilTime = startTime + waitDuration;
             // we expect the other thread to wake us up before the timeout expires so the following should return true
             EXPECT_TRUE(cv.wait_until(lock, waitUntilTime, [&]{ return i == 1; }));
-            timeSpent = AZStd::chrono::system_clock::now() - startTime;
+            timeSpent = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::system_clock::now() - startTime);
             EXPECT_EQ(1, i);
             done = true;
         };

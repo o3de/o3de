@@ -1,6 +1,6 @@
 {
-    "materialType": "Materials/Types/StandardPBR.materialtype",
-    "materialTypeVersion": 3,
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 5,
     "propertyValues": {
         "baseColor.color": [
             0.800000011920929,
@@ -8,25 +8,25 @@
             0.800000011920929,
             1.0
         ],
-        "baseColor.textureMap": "Textures/bricks_1k_basecolor.png",
+        "baseColor.textureMap": "../Textures/bricks_1k_basecolor.png",
         "clearCoat.factor": 0.5,
-        "clearCoat.normalMap": "Textures/bricks_1k_normal.jpg",
+        "clearCoat.normalMap": "../Textures/bricks_1k_normal.jpg",
         "clearCoat.roughness": 0.5,
         "general.applySpecularAA": true,
-        "irradiance.color": [
+        "irradiance.manualColor": [
             1.0,
             0.9703211784362793,
             0.9703211784362793,
             1.0
         ],
-        "metallic.textureMap": "Textures/bricks_1k_metallic.png",
-        "normal.textureMap": "Textures/bricks_1k_normal.jpg",
-        "occlusion.diffuseTextureMap": "Textures/bricks_1k_ao.png",
+        "metallic.textureMap": "../Textures/bricks_1k_metallic.png",
+        "normal.textureMap": "../Textures/bricks_1k_normal.jpg",
+        "occlusion.diffuseTextureMap": "../Textures/bricks_1k_ao.png",
         "opacity.factor": 1.0,
         "parallax.algorithm": "ContactRefinement",
         "parallax.factor": 0.03500000014901161,
         "parallax.quality": "Medium",
         "parallax.useTexture": false,
-        "roughness.textureMap": "Textures/bricks_1k_roughness.png"
+        "roughness.textureMap": "../Textures/bricks_1k_roughness.png"
     }
 }

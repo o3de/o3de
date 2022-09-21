@@ -16,7 +16,7 @@
 #include <AzCore/std/any.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/containers/variant.h>
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/parallel/atomic.h>
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>

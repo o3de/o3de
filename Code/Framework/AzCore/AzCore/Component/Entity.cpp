@@ -29,6 +29,7 @@
 #include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/string/conversions.h>
+#include <AzCore/std/time.h>
 #include <AzCore/Platform.h>
 
 #include <AzCore/Debug/Profiler.h>

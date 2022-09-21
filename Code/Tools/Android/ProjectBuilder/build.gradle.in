@@ -66,6 +66,14 @@ ${OVERRIDE_JAVA_SOURCESET}
 
 }
 
+// Inject the zip64 option into package task to allow 4GiB apks
+tasks.withType(Zip) {
+    if (name == "packageDebug" || name == "packageProfile" || name == "packageRelease") {
+        zip64 = true
+    }
+}
+
+
 ${PROJECT_DEPENDENCIES}
 
 afterEvaluate {
