@@ -60,22 +60,30 @@ namespace UnitTest
     {
         // given
         const MouseMoveParams mouseMoveParams = GetParam();
+        printf("reached #1");
         m_rootWidget->move(mouseMoveParams.m_widgetPosition);
+        printf("reached #2");
         m_rootWidget->setFixedSize(mouseMoveParams.m_widgetSize);
+        printf("reached #3");
 
         // when
         MouseMove(m_rootWidget, mouseMoveParams.m_localCursorPosition, mouseMoveParams.m_cursorDelta);
+        printf("reached #4");
 
         // then
         const QPoint mouseLocalPosition = m_mouseMoveDetector->m_mouseLocalPosition;
+        printf("reached #5");
         const QPoint mouseLocalPositionFromGlobal = m_rootWidget->mapFromGlobal(m_mouseMoveDetector->m_mouseGlobalPosition);
+        printf("reached #6");
         const QPoint expectedPosition = mouseMoveParams.m_localCursorPosition + mouseMoveParams.m_cursorDelta;
+        printf("reached #7");
 
         using ::testing::Eq;
         EXPECT_THAT(mouseLocalPosition.x(), Eq(expectedPosition.x()));
         EXPECT_THAT(mouseLocalPosition.y(), Eq(expectedPosition.y()));
         EXPECT_THAT(mouseLocalPositionFromGlobal.x(), Eq(expectedPosition.x()));
         EXPECT_THAT(mouseLocalPositionFromGlobal.y(), Eq(expectedPosition.y()));
+        printf("reached #1");
     }
 
     INSTANTIATE_TEST_CASE_P(
