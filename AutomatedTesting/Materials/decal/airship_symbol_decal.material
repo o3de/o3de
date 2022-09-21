@@ -1,15 +1,15 @@
 {
-    "materialType": "Materials/Types/StandardPBR.materialtype",
-    "materialTypeVersion": 4,
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 5,
     "propertyValues": {
-        "baseColor.textureMap": "Materials/decal/airship_symbol_decal.tif",
+        "baseColor.textureMap": "airship_symbol_decal.tif",
         "general.doubleSided": true,
         "metallic.useTexture": false,
         "normal.useTexture": false,
         "opacity.alphaSource": "Split",
         "opacity.factor": 0.6899999976158142,
         "opacity.mode": "Cutout",
-        "opacity.textureMap": "Materials/decal/airship_symbol_decal.tif",
+        "opacity.textureMap": "airship_symbol_decal.tif",
         "roughness.useTexture": false,
         "specularF0.useTexture": false,
         "uv.center": [
