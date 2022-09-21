@@ -111,7 +111,7 @@
     },
     "shaders": [
         {
-            "file": "./Eye.shader",
+            "file": "Shaders/Materials/Eye/Eye_ForwardPass.shader",
             "tag": "ForwardPass_EDS"
         },
         {

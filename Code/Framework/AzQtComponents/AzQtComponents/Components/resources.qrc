@@ -321,6 +321,7 @@
     <file>img/logging/copy.svg</file>
     <file>img/logging/reset.svg</file>
     <file>img/logging/add-filter.svg</file>
+    <file>img/logging/failure.svg</file>
     <file>img/logging/warning-yellow.svg</file>
     <file>img/branch_open.png</file>
     <file>img/branch_closed.png</file>
