@@ -63,7 +63,7 @@ namespace O3DE::ProjectManager
         void QueueBuildProject(const ProjectInfo& projectInfo);
         void UnqueueBuildProject(const ProjectInfo& projectInfo);
 
-        void StartProjectDownload(const QString& projectName);
+        void StartProjectDownload(const QString& projectName, const QString& destinationPath, bool queueBuild);
         void HandleDownloadProgress(const QString& projectName, DownloadController::DownloadObjectType objectType, int bytesDownloaded, int totalBytes);
         void HandleDownloadResult(const QString& projectName, bool succeeded);
 

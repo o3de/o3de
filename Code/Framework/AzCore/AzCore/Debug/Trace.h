@@ -46,57 +46,44 @@ namespace AZ
             None
         };
 
-        class ITrace
+        class O3DEKERNEL_API ITrace
         {
         public:
-            O3DEKERNEL_API ITrace()
-            {
-                s_tracer = this;
-            }
-            O3DEKERNEL_API virtual ~ITrace()
-            {
-                s_tracer = nullptr;
-            }
+            ITrace();
+            virtual ~ITrace();
             ITrace(const ITrace&) = delete;
-            O3DEKERNEL_API ITrace(ITrace&&) = default;
+            ITrace(ITrace&&) = default;
             ITrace& operator=(const ITrace&) = delete;
-            O3DEKERNEL_API ITrace& operator=(ITrace&&) = default;
+            ITrace& operator=(ITrace&&) = default;
 
-            O3DEKERNEL_API static ITrace& Instance()
-            {
-                if (!s_tracer)
-                {
-                    static ITrace defaultTracer;
-                }
-                return *s_tracer;
-            }
+            static ITrace& Instance();
 
-            O3DEKERNEL_API virtual void Init() {}
-            O3DEKERNEL_API virtual void Destroy() {}
-            O3DEKERNEL_API virtual bool IsDebuggerPresent() { return false; }
-            O3DEKERNEL_API virtual void Break() {}
-            O3DEKERNEL_API virtual void Crash() {}
+            virtual void Init() {}
+            virtual void Destroy() {}
+            virtual bool IsDebuggerPresent() { return false; }
+            virtual void Break() {}
+            virtual void Crash() {}
 
             /// Indicates if trace logging functions are enabled based on compile mode and cvar logging level
-            O3DEKERNEL_API bool IsTraceLoggingEnabledForLevel(LogLevel level)
+            bool IsTraceLoggingEnabledForLevel(LogLevel level)
             {
                 return m_logLevel >= level;
             }
-            O3DEKERNEL_API void SetLogLevel(LogLevel newLevel)
+            void SetLogLevel(LogLevel newLevel)
             {
                 m_logLevel = newLevel;
             }
 
-            O3DEKERNEL_API bool GetAlwaysPrintCallstack() const
+            bool GetAlwaysPrintCallstack() const
             {
                 return m_printCallstack;
             }
-            O3DEKERNEL_API void SetAlwaysPrintCallstack(bool enable)
+            void SetAlwaysPrintCallstack(bool enable)
             {
                 m_printCallstack = enable;
             }
 
-            O3DEKERNEL_API virtual void Assert(const char* fileName, int line, const char* funcName, const char* format, ...)
+            virtual void Assert(const char* fileName, int line, const char* funcName, const char* format, ...)
             {
                 char message[s_maxMessageLength];
                 va_list mark;
@@ -105,7 +92,7 @@ namespace AZ
                 va_end(mark);
                 fprintf(stderr, "Assert: %s:%d (%s): %s\n", fileName, line, funcName, message);
             }
-            O3DEKERNEL_API virtual void Error(const char* fileName, int line, const char* funcName, const char* window, const char* format, ...)
+            virtual void Error(const char* fileName, int line, const char* funcName, const char* window, const char* format, ...)
             {
                 char message[s_maxMessageLength];
                 va_list mark;
@@ -114,7 +101,7 @@ namespace AZ
                 va_end(mark);
                 fprintf(stderr, "Error: %s:%d (%s): %s: %s\n", fileName, line, funcName, window, message);
             }
-            O3DEKERNEL_API virtual void Warning(const char* fileName, int line, const char* funcName, const char* window, const char* format, ...)
+            virtual void Warning(const char* fileName, int line, const char* funcName, const char* window, const char* format, ...)
             {
                 char message[s_maxMessageLength];
                 va_list mark;
@@ -123,7 +110,7 @@ namespace AZ
                 va_end(mark);
                 fprintf(stderr, "Warning: %s:%d (%s): %s: %s\n", fileName, line, funcName, window, message);
             }
-            O3DEKERNEL_API virtual void Printf(const char* window, const char* format, ...)
+            virtual void Printf(const char* window, const char* format, ...)
             {
                 char message[s_maxMessageLength];
                 va_list mark;
@@ -132,19 +119,19 @@ namespace AZ
                 va_end(mark);
                 fprintf(stdout, "%s: %s\n", window, message);
             }
-            O3DEKERNEL_API virtual void Output(const char* window, const char* message)
+            virtual void Output(const char* window, const char* message)
             {
                 fprintf(stdout, "%s: %s\n", window, message);
             }
-            O3DEKERNEL_API virtual void RawOutput(const char* window, const char* message)
+            virtual void RawOutput(const char* window, const char* message)
             {
                 fprintf(stdout, "%s: %s\n", window, message);
             }
-            O3DEKERNEL_API virtual void PrintCallstack(const char* /*window*/, unsigned int /*suppressCount*/ = 0, void* /*nativeContext*/ = nullptr) {}
+            virtual void PrintCallstack(const char* /*window*/, unsigned int /*suppressCount*/ = 0, void* /*nativeContext*/ = nullptr) {}
 
         private:
             inline static constexpr size_t s_maxMessageLength = 4096;
-            O3DEKERNEL_API inline static ITrace* s_tracer{};
+            inline static ITrace* s_tracer{};
 
             LogLevel m_logLevel = LogLevel::Info;
             bool m_printCallstack = false;

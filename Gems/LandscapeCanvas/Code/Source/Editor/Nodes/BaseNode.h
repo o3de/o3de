@@ -8,12 +8,11 @@
 
 #pragma once
 
-// AZ
+#include <AzCore/Component/Component.h>
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 
-// Graph Model
 #include <GraphModel/Model/Node.h>
 
 namespace AZ
@@ -47,6 +46,7 @@ namespace LandscapeCanvas
             GradientModifier,
             TerrainArea,
             TerrainExtender,
+            TerrainSurfaceExtender,
             VegetationAreaModifier,
             VegetationAreaFilter,
             VegetationAreaSelector
@@ -64,6 +64,8 @@ namespace LandscapeCanvas
 
         const AZ::ComponentId& GetComponentId() const { return m_componentId; }
         void SetComponentId(const AZ::ComponentId& componentId);
+
+        virtual AZ::ComponentDescriptor::DependencyArrayType GetOptionalRequiredServices() const;
 
         /// Retrieve a pointer to the Component on the respective Entity that
         /// this Node represents

@@ -107,6 +107,10 @@ namespace AZ::Dom
         Path& operator/=(const Path&);
 
         bool operator==(const Path&) const;
+        bool operator!=(const Path& rhs) const
+        {
+            return !operator==(rhs);
+        }
 
         const ContainerType& GetEntries() const;
         void Push(PathEntry entry);

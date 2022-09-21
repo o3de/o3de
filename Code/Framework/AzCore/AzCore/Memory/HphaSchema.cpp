@@ -54,79 +54,6 @@ namespace AZ
 // Enabled mutex per bucket
 #define USE_MUTEX_PER_BUCKET
 
-    namespace HphaInternal
-    {
-        //! Rounds up a value to next power of 2.
-        //! For example to round 8388609((2^23) + 1) up to 16777216(2^24) the following occurs
-        //! Subtract one from the value in case it is already
-        //! equal to a power of 2
-        //! 8388609 - 1 = 8388608
-        //! Propagate the highest one bit in the value to all the lower bits
-        //! 8388608 = 0b100'0000'0000'0000'0000'0000 in binary
-        //!
-        //!  0b100'0000'0000'0000'0000'0000
-        //! |0b010'0000'0000'0000'0000'0000 (>> 1)
-        //! -------------------------------
-        //!  0b110'0000'0000'0000'0000'0000 (Now there are 2 consecutive 1-bits)
-        //! |0b001'1000'0000'0000'0000'0000 (>> 2)
-        //! -------------------------------
-        //!  0b111'1000'0000'0000'0000'0000 (Now there are 4 consecutive 1-bits)
-        //! |0b000'0111'1000'0000'0000'0000 (>> 4)
-        //! -------------------------------
-        //!  0b111'1111'1000'0000'0000'0000 (Now there are 8 consecutive 1-bits)
-        //! |0b000'0000'0111'1111'1000'0000 (>> 8)
-        //! -------------------------------
-        //!  0b111'1111'1111'1111'1000'0000 (Now there are 16 consecutive 1-bits)
-        //! |0b000'0000'0000'0000'0111'1111 (>> 16)
-        //! -------------------------------
-        //!  0b111'1111'1111'1111'1111'1111 (Now there are 23 consecutive 1-bits)
-        //! |0b000'0000'0000'0000'0000'0000 (>> 32)
-        //! -------------------------------
-        //!  0b111'1111'1111'1111'1111'1111
-        //! Finally since all the one bits are set in the value, adding one pushes it
-        //! to next power of 2
-        //! 0b1000'0000'0000'0000'0000'0000 = 16777216
-        static constexpr size_t AlignUpToPowerOfTwo(size_t value)
-        {
-            // If the value is <=2 it is already aligned
-            if (value <= 2)
-            {
-                return value;
-            }
-
-            // Subtract one to make any values already
-            // aligned to a power of 2 less than that power of 2
-            // so that algorithm doesn't push those values upwards
-            --value;
-            value |= value >> 0b1;
-            value |= value >> 0b10;
-            value |= value >> 0b100;
-            value |= value >> 0b1000;
-            value |= value >> 0b1'0000;
-            value |= value >> 0b10'0000;
-            ++value;
-            return value;
-        }
-
-        static_assert(AlignUpToPowerOfTwo(0) == 0);
-        static_assert(AlignUpToPowerOfTwo(1) == 1);
-        static_assert(AlignUpToPowerOfTwo(2) == 2);
-        static_assert(AlignUpToPowerOfTwo(3) == 4);
-        static_assert(AlignUpToPowerOfTwo(4) == 4);
-        static_assert(AlignUpToPowerOfTwo(5) == 8);
-        static_assert(AlignUpToPowerOfTwo(8) == 8);
-        static_assert(AlignUpToPowerOfTwo(10) == 16);
-        static_assert(AlignUpToPowerOfTwo(16) == 16);
-        static_assert(AlignUpToPowerOfTwo(24) == 32);
-        static_assert(AlignUpToPowerOfTwo(32) == 32);
-        static_assert(AlignUpToPowerOfTwo(45) == 64);
-        static_assert(AlignUpToPowerOfTwo(64) == 64);
-        static_assert(AlignUpToPowerOfTwo(112) == 128);
-        static_assert(AlignUpToPowerOfTwo(128) == 128);
-        static_assert(AlignUpToPowerOfTwo(136) == 256);
-        static_assert(AlignUpToPowerOfTwo(256) == 256);
-    }
-
     //////////////////////////////////////////////////////////////////////////
 
     template<bool DebugAllocatorEnable>
@@ -281,9 +208,9 @@ namespace AZ
         using page_list = AZStd::intrusive_list<page, AZStd::list_base_hook<page>>;
 
 #if defined(MULTITHREADED) && defined(USE_MUTEX_PER_BUCKET)
-        static constexpr size_t BucketAlignment = HphaInternal::AlignUpToPowerOfTwo(sizeof(page_list) + sizeof(AZStd::mutex) + sizeof(size_t));
+        static constexpr size_t BucketAlignment = AlignUpToPowerOfTwo(sizeof(page_list) + sizeof(AZStd::mutex) + sizeof(size_t));
 #else
-        static constexpr size_t BucketAlignment = HphaInternal::AlignUpToPowerOfTwo(sizeof(page_list) + sizeof(size_t));
+        static constexpr size_t BucketAlignment = AlignUpToPowerOfTwo(sizeof(page_list) + sizeof(size_t));
 #endif
         AZ_PUSH_DISABLE_WARNING_MSVC(4324)
         class alignas(BucketAlignment) bucket
@@ -1215,7 +1142,7 @@ namespace AZ
     auto HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::bucket_grow(size_t elemSize, size_t marker) -> page*
     {
         // make sure mUseCount won't overflow
-        HPPA_ASSERT((m_poolPageSize - sizeof(page)) / elemSize <= USHRT_MAX);
+        HPPA_ASSERT((m_poolPageSize - sizeof(page)) / elemSize <= AZStd::numeric_limits<unsigned short>::max());
         if (void* mem = bucket_system_alloc())
         {
             return new (mem) page((unsigned short)elemSize, m_poolPageSize, marker);

@@ -16,7 +16,6 @@ namespace AZ
         return planeId;
     }
 
-
     AZ_MATH_INLINE Frustum::Frustum()
     {
 #ifdef AZ_DEBUG_BUILD
@@ -27,12 +26,10 @@ namespace AZ
 #endif
     }
 
-
     AZ_MATH_INLINE Plane Frustum::GetPlane(PlaneId planeId) const
     {
         return Plane(m_planes[planeId]);
     }
-
 
     AZ_MATH_INLINE void Frustum::SetPlane(PlaneId planeId, const Plane& plane)
     {
@@ -44,7 +41,6 @@ namespace AZ
         const Vec4::FloatType length = Vec4::Sqrt(lengthSquared);
         m_planes[planeId] = Vec4::Div(plane.GetSimdValue(), length);
     }
-
 
     AZ_MATH_INLINE IntersectResult Frustum::IntersectSphere(const Vector3& center, float radius) const
     {
@@ -65,18 +61,15 @@ namespace AZ
         return intersect ? IntersectResult::Overlaps : IntersectResult::Interior;
     }
 
-
     AZ_MATH_INLINE IntersectResult Frustum::IntersectSphere(const Sphere& sphere) const
     {
         return IntersectSphere(sphere.GetCenter(), sphere.GetRadius());
     }
 
-
     AZ_MATH_INLINE IntersectResult Frustum::IntersectAabb(const Vector3& minimum, const Vector3& maximum) const
     {
         return IntersectAabb(Aabb::CreateFromMinMax(minimum, maximum));
     }
-
 
     AZ_MATH_INLINE IntersectResult Frustum::IntersectAabb(const Aabb& aabb) const
     {
@@ -109,7 +102,6 @@ namespace AZ
         return (numInterior < PlaneId::MAX) ? IntersectResult::Overlaps : IntersectResult::Interior;
     }
 
-
     AZ_MATH_INLINE bool Frustum::IsClose(const Frustum& rhs, float tolerance) const
     {
         return Vector4(m_planes[PlaneId::Near  ]).IsClose(Vector4(rhs.m_planes[PlaneId::Near  ]), tolerance)
@@ -119,4 +111,5 @@ namespace AZ
             && Vector4(m_planes[PlaneId::Top   ]).IsClose(Vector4(rhs.m_planes[PlaneId::Top   ]), tolerance)
             && Vector4(m_planes[PlaneId::Bottom]).IsClose(Vector4(rhs.m_planes[PlaneId::Bottom]), tolerance);
     }
+
 } // namespace AZ

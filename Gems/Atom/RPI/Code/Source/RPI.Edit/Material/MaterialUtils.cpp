@@ -56,7 +56,7 @@ namespace AZ
                     }
 
                     Outcome<Data::AssetId> imageAssetId = AssetUtils::MakeAssetId(materialSourceFilePath, imageFilePath, subId, AssetUtils::TraceLevel::None);
-                    
+
                     if (!imageAssetId.IsSuccess())
                     {
                         // When the AssetId cannot be found, we don't want to outright fail, because the runtime has mechanisms for displaying fallback textures which gives the
@@ -64,11 +64,11 @@ namespace AZ
                         // no value was present and result in using no texture, and this would amount to a silent failure.
                         // So we use a randomly generated (well except for the "BADA55E7" bit ;) UUID which the runtime and tools will interpret as a missing asset and represent
                         // it as such.
-                        static const Uuid InvalidAssetPlaceholderId = "{BADA55E7-1A1D-4940-B655-9D08679BD62F}";
+                        static constexpr Uuid InvalidAssetPlaceholderId{ "{BADA55E7-1A1D-4940-B655-9D08679BD62F}" };
                         imageAsset = Data::Asset<ImageAsset>{InvalidAssetPlaceholderId, azrtti_typeid<StreamingImageAsset>(), imageFilePath};
                         return GetImageAssetResult::Missing;
                     }
-                    
+
                     imageAsset = Data::Asset<ImageAsset>{imageAssetId.GetValue(), typeId, imageFilePath};
                     imageAsset.SetAutoLoadBehavior(Data::AssetLoadBehavior::PreLoad);
                     return GetImageAssetResult::Found;
@@ -86,7 +86,7 @@ namespace AZ
                 outResolvedValue = enumValue;
                 return true;
             }
-            
+
             AZ::Outcome<MaterialTypeSourceData> LoadMaterialTypeSourceData(const AZStd::string& filePath, rapidjson::Document* document, ImportedJsonFiles* importedFiles)
             {
                 rapidjson::Document localDocument;
@@ -103,7 +103,7 @@ namespace AZ
                     localDocument = loadOutcome.TakeValue();
                     document = &localDocument;
                 }
-                
+
                 AZ::BaseJsonImporter jsonImporter;
                 AZ::JsonImportSettings importSettings;
                 importSettings.m_importer = &jsonImporter;
@@ -140,7 +140,7 @@ namespace AZ
                     return AZ::Success(AZStd::move(materialType));
                 }
             }
-            
+
             AZ::Outcome<MaterialSourceData> LoadMaterialSourceData(const AZStd::string& filePath, const rapidjson::Value* document, bool warningsAsErrors)
             {
                 AZ::Outcome<rapidjson::Document, AZStd::string> loadOutcome;
@@ -203,7 +203,7 @@ namespace AZ
                     }
                 }
             }
-            
+
             bool BuildersShouldFinalizeMaterialAssets()
             {
                 // Disable this registry setting to improve iteration times when making changes to widely used shaders and material types,

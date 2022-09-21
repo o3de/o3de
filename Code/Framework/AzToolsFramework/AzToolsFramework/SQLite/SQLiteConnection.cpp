@@ -443,13 +443,13 @@ namespace AzToolsFramework
             const void* blobAddr = GetColumnBlob(statement, col);
             int blobBytes = GetColumnBlobBytes(statement, col);
             AZ::Uuid newUuid;
-            AZ_Error("SQLiteConnection", blobAddr && (blobBytes == sizeof(newUuid.data)), "GetColumnUuid: Database column %i does not contain a UUID - could be a sign of a corrupt database.", col);
-            if ((!blobAddr) || (blobBytes != sizeof(newUuid.data)))
+            AZ_Error("SQLiteConnection", blobAddr && (blobBytes == AZStd::ranges::size(newUuid)), "GetColumnUuid: Database column %i does not contain a UUID - could be a sign of a corrupt database.", col);
+            if ((!blobAddr) || (blobBytes != AZStd::ranges::size(newUuid)))
             {
                 return AZ::Uuid::CreateNull();
             }
 
-            memcpy(newUuid.data, blobAddr, blobBytes);
+            memcpy(AZStd::ranges::data(newUuid), blobAddr, blobBytes);
             return newUuid;
         }
 
@@ -639,7 +639,7 @@ namespace AzToolsFramework
             {
                 return false;
             }
-            int res = sqlite3_bind_blob(m_statement, idx, data.data, sizeof(data.data), nullptr);
+            int res = sqlite3_bind_blob(m_statement, idx, AZStd::ranges::data(data), static_cast<int>(AZStd::ranges::size(data)), nullptr);
             AZ_Assert(res == SQLITE_OK, "Statement::BindValueUuid: failed to bind!");
             return (res == SQLITE_OK);
         }

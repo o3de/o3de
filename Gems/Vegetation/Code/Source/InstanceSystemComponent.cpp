@@ -8,7 +8,7 @@
 #include <VegetationProfiler.h>
 #include "InstanceSystemComponent.h"
 
-#include <AzCore/Debug/Profiler.h> 
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -186,7 +186,7 @@ namespace Vegetation
                 if (*existingDescriptorPtr == descriptor)
                 {
                     DescriptorDetails& details = descPair.second;
-                    details.m_refCount++;  
+                    details.m_refCount++;
                     return existingDescriptorPtr;
                 }
 
@@ -571,7 +571,7 @@ namespace Vegetation
             }
 
             currentTime = AZStd::chrono::system_clock::now();
-            if (AZStd::chrono::microseconds(currentTime - initialTime).count() > m_configuration.m_maxInstanceProcessTimeMicroseconds)
+            if (AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(currentTime - initialTime).count() > m_configuration.m_maxInstanceProcessTimeMicroseconds)
             {
                 break;
             }

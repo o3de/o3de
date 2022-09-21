@@ -83,25 +83,22 @@ namespace AtomToolsFramework
     void AtomToolsAssetBrowserInteractions::AddContextMenuActionsForSourceEntries(
         [[maybe_unused]] QWidget* caller, QMenu* menu, const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry)
     {
-        menu->addAction("Duplicate...", [entry]()
+        menu->addAction("Duplicate", [entry]()
             {
-                const auto& duplicateFilePath = GetUniqueDuplicateFilePath(entry->GetFullPath());
-                if (!duplicateFilePath.empty())
+                const auto& duplicateFilePath = GetUniqueFilePath(entry->GetFullPath());
+                if (QFile::copy(entry->GetFullPath().c_str(), duplicateFilePath.c_str()))
                 {
-                    if (QFile::copy(entry->GetFullPath().c_str(), duplicateFilePath.c_str()))
-                    {
-                        QFile::setPermissions(duplicateFilePath.c_str(), QFile::ReadOther | QFile::WriteOther);
+                    QFile::setPermissions(duplicateFilePath.c_str(), QFile::ReadOther | QFile::WriteOther);
 
-                        // Auto add file to source control
-                        AzToolsFramework::SourceControlCommandBus::Broadcast(&AzToolsFramework::SourceControlCommandBus::Events::RequestEdit,
-                            duplicateFilePath.c_str(), true, [](bool, const AzToolsFramework::SourceControlFileInfo&) {});
-                    }
+                    // Auto add file to source control
+                    AzToolsFramework::SourceControlCommandBus::Broadcast(&AzToolsFramework::SourceControlCommandBus::Events::RequestEdit,
+                        duplicateFilePath.c_str(), true, [](bool, const AzToolsFramework::SourceControlFileInfo&) {});
                 }
             });
 
         QMenu* scriptsMenu = menu->addMenu(QObject::tr("Python Scripts"));
-        AZStd::vector<AZStd::string_view> pythonArgs{ entry->GetFullPath() };
-        AddRegisteredScriptToMenu(scriptsMenu, "/O3DE/AtomToolsFramework/AssetBrowser/ContextMenuScripts", pythonArgs);
+        const AZStd::vector<AZStd::string> arguments{ entry->GetFullPath() };
+        AddRegisteredScriptToMenu(scriptsMenu, "/O3DE/AtomToolsFramework/AssetBrowser/ContextMenuScripts", arguments);
     }
 
     void AtomToolsAssetBrowserInteractions::AddContextMenuActionsForFolderEntries(

@@ -7,14 +7,16 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 # -------------------------------------------------------------------------
-"""@module docstring
-This module is part of the O3DE DccScriptingInterface Gem
+"""! This module is part of the O3DE DccScriptingInterface Gem
 This module is a set of utils related to config.py, it hase several methods
 that can fullfil discovery of paths for use in standing up a synthetic env.
 This is particularly useful when the config is used outside of O3DE,
-in an external standalone tool with PySide2(Qt).  Foe example, these paths
+in an external standalone tool with PySide2(Qt). For example, these paths
 are discoverable so that we can synthetically derive code access to various
 aspects of O3DE outside of the executables.
+
+:notice: In a future PR this module needs to be refactored
+- if can be written entirely for py3, using Pathlib, etc.
 
 return_stub_dir()          :discover path by walking from module to file stub
 get_stub_check_path()      :discover by walking from known path to file stub
@@ -52,11 +54,13 @@ import importlib.util
 
 # --------------------------------------------------------------------------
 # Global Scope
-_MODULENAME = 'azpy.config_utils'
+from DccScriptingInterface.azpy import _PACKAGENAME
+_MODULENAME = f'{_PACKAGENAME}.config_utils'
 _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug('Initializing: {}.'.format({_MODULENAME}))
 
-__all__ = ['attach_debugger',
+__all__ = ['check_is_ascii',
+           'attach_debugger',
            'get_os',
            'return_stub_dir',
            'get_stub_check_path',
@@ -85,6 +89,10 @@ _DCCSI_GDEBUG = False
 _DCCSI_DEV_MODE = False
 _DCCSI_LOGLEVEL = _logging.INFO
 _DCCSI_GDEBUGGER = 'WING'
+
+# Notice: The above ^ in a future refactor should probably attempt to use the following
+# # this accesses common global state, e.g. DCCSI_GDEBUG (is True or False)
+# from DccScriptingInterface.globals import *
 
 FRMT_LOG_LONG = "[%(name)s][%(levelname)s] >> %(message)s (%(asctime)s; %(filename)s:%(lineno)d)"
 
@@ -120,6 +128,8 @@ site.addsitedir(_PATH_DCCSIG.as_posix())  # must be done for azpy
 
 
 # -------------------------------------------------------------------------
+# notice: this can be removed in a future refactor, this was some early
+# test inspection when the framework was being stood up.
 # just a quick check to ensure what paths have code access
 if _DCCSI_GDEBUG:
     known_paths = list()
@@ -130,6 +140,7 @@ if _DCCSI_GDEBUG:
 
 
 # -------------------------------------------------------------------------
+# notice: this block can be removed in a future refactor
 # this import can fail in Maya 2020 (and earlier) stuck on py2.7
 # wrapped in a try, to trap and providing messaging to help user correct
 # to do: deprecate this code block when Maya boostrapping is refactored
@@ -148,51 +159,51 @@ except Exception as e:
 
 
 # -------------------------------------------------------------------------
+def check_is_ascii(value):
+    """checks that passed value is ascii str"""
+    try:
+        value.encode('ascii')
+        return True
+    except (AttributeError, UnicodeEncodeError):
+        return False
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
 # to do: move to a azpy.dev module with plugins for multiple IDEs
 def attach_debugger(debugger_type=_DCCSI_GDEBUGGER):
-    """!
-    This will attempt to attach the WING debugger
+    """! This method will attempt to attach the WING debugger
+
+    :param debugger_type: set the debugger ide type (currently only WING)
+
     To Do: other IDEs for debugging not yet implemented.
-    This should be replaced with a plugin based dev package."""
+
+    This method should be replaced with a plugin based dev package.
+    """
+
+    # notice: This is a temporary method, in a future refactor this
+    # would be replaced with a azpy.dev.debugger module
+    # using a pluggy pattern, to support plugins for multiple ides
 
     # we only support wing right now
-    # your WING_VERSION_PATH as of version 7.x defaults to either Wing Personal 7.x or Wing Pro 7.x
-    # your WING_IDE_DIR is your installation path, which defaults to: C:\Program Files (x86)\WING_VERSION_PATH
-    # your APP_DATA_PATH defaults to C:\Users\[Your User Name]\AppData\Roaming\WING_VERSION_PATH (without the .x minor version)
+    # the default version is Wing Pro 8 (others not tested)
 
-    # after installing wing, opy the WING_IDE_DIR\wingdbstub.py file to APP_DATA_PATH
 
-    # Open the APP_DATA_PATH \wingdbstub.py file and modify line 96 to
+    # WINGHOME defaults to Wing Pro 8.x (other versions not tested)
+    # Assumes the default install path: "C:\Program Files (x86)\Wing Pro WING_VERSION_MAJOR"
+    # WING_APPDATA defaults to:
+    # "C:\Users\[Your User Name]\AppData\Roaming\Wing Pro WING_VERSION_MAJOR"
+
+    # after installing wing, copy the WINGHOME\wingdbstub.py file to WING_APPDATA
+
+    # Open the WING_APPDATA\wingdbstub.py file and modify line 96 to
     #kEmbedded = 1
 
     # or alternatively you can manually edit the copy in the ide install location.
-    # such as: "WINGHOME": "C:\Program Files (x86)\Wing Pro 7.2"
+    # such as: "WINGHOME": "C:\Program Files (x86)\Wing Pro 8\wingdbstub.py"
 
-    from azpy.constants import PATH_USER_HOME
-    from azpy.constants import TAG_WING_PRO
-    from azpy.constants import TAG_DEFAULT_WING_MAJOR_VER
-    # this will need to be improved, a azpy.dev module should be written
-    # this should have an IDE plugin pattern, attach_debugger() would be moved there
-    # and the IDE type, version and related data would be data driven (config.py, settings.local.json)
-    wingstub_appdata = Path(PATH_USER_HOME,
-                            'AppData',
-                            'Roaming',
-                            f'{TAG_WING_PRO} {str(TAG_DEFAULT_WING_MAJOR_VER)}').resolve()
-
-    # we can set this here in anticipation of importing from this location,
-    # however currently entry_test is setup to use WINGHOME
-    # there is suggested improvement here to move all of this to a azpy.dev module
-    # and make it much more user friendly, configurable and data-driven
-    sys.path.append(wingstub_appdata.as_posix())
-
-    _DCCSI_GDEBUG = True
-    os.environ["DCCSI_GDEBUG"] = str(_DCCSI_GDEBUG)  # cast bools
-
-    _DCCSI_DEV_MODE = True
-    os.environ["DCCSI_DEV_MODE"] = str(_DCCSI_DEV_MODE)
-
-    from azpy.test.entry_test import connect_wing
     if debugger_type == 'WING':
+        from azpy.test.entry_test import connect_wing
         _debugger = connect_wing()
     else:
         _LOGGER.warning(f'Debugger type: {debugger_type}, is Not Implemented!')
@@ -310,6 +321,8 @@ def get_o3de_engine_root(check_stub=STUB_O3DE_DEV):
     '''Discovers the engine root
     Input:  a file name stub, default engine.json
     Output: engine root path (if found)
+
+    Notice: This method will be deprecated
     '''
     # get the O3DE engine root folder
     # if we are running within O3DE we can ensure which engine is running

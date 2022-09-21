@@ -89,13 +89,13 @@ namespace AZ
         AZ::TypeId FeatureProcessorFactory::GetFeatureProcessorTypeId(FeatureProcessorId featureProcessorId)
         {
             auto foundIt = GetEntry(featureProcessorId);
-            return foundIt == AZStd::end(m_registry) ? nullptr : foundIt->m_typeId;
+            return foundIt == AZStd::end(m_registry) ? AZ::TypeId{} : foundIt->m_typeId;
         }
 
         AZ::TypeId FeatureProcessorFactory::GetFeatureProcessorInterfaceTypeId(FeatureProcessorId featureProcessorId)
         {
             auto foundIt = GetEntry(featureProcessorId);
-            return foundIt == AZStd::end(m_registry) ? nullptr : foundIt->m_interfaceTypeId;
+            return foundIt == AZStd::end(m_registry) ? AZ::TypeId{} : foundIt->m_interfaceTypeId;
         }
 
         FeatureProcessorFactory::FeatureProcessorRegistry::const_iterator FeatureProcessorFactory::GetEntry(FeatureProcessorId featureProcessorId)

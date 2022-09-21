@@ -126,7 +126,7 @@ void DebugComponent::Deactivate()
     DebugRequestBus::Handler::BusDisconnect();
     DebugNotificationBus::Handler::BusDisconnect();
 
-    // These 2 calls presume that this debug component is the only one active 
+    // These 2 calls presume that this debug component is the only one active
     // and that if another was to be activated it would not overlap the lifetime of this one
     DebugNotificationBus::AllowFunctionQueuing(false);
     DebugNotificationBus::ClearQueuedEvents();
@@ -155,7 +155,7 @@ bool DebugComponent::WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const
 void DebugComponent::DisplayEntityViewport(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
 {
     // time to collect the report?
-    if (AZStd::chrono::microseconds(AZStd::chrono::system_clock::now() - m_lastCollectionTime).count() > m_configuration.m_collectionFrequencyUs)
+    if (AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(AZStd::chrono::system_clock::now() - m_lastCollectionTime).count() > m_configuration.m_collectionFrequencyUs)
     {
         PrepareNextReport();
         m_lastCollectionTime = AZStd::chrono::system_clock::now();
@@ -585,7 +585,7 @@ namespace DebugUtility
         // fetch timings
         for (const auto& datum : data)
         {
-            auto timeSpan = AZStd::chrono::microseconds(datum.m_end - datum.m_start).count();
+            auto timeSpan = AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(datum.m_end - datum.m_start).count();
 
             auto itEntry = map.find(datum.m_id);
             if (itEntry != map.end())
@@ -626,7 +626,7 @@ namespace DebugUtility
         if (iterator != filterReasonCount.end())
         {
             return iterator->second;
-        } 
+        }
         return 0u;
     }
 
@@ -851,8 +851,8 @@ void DebugComponent::PrepareNextReport()
     DebugUtility::FetchTimingData<decltype(m_sectorData), decltype(sectorTimingMap), SectorTracker, SectorTiming, SectorId>(m_sectorData, sectorTimingMap, [sectorSizeInMeters, sectorHalfSizeInMeters](const SectorId& sectorId)
     {
         SectorTiming timing = {};
-        const AZ::Vector3 pos(  (sectorSizeInMeters * sectorId.first) + sectorHalfSizeInMeters, 
-                                (sectorSizeInMeters * sectorId.second) + sectorHalfSizeInMeters, 
+        const AZ::Vector3 pos(  (sectorSizeInMeters * sectorId.first) + sectorHalfSizeInMeters,
+                                (sectorSizeInMeters * sectorId.second) + sectorHalfSizeInMeters,
                                 0.0f);
 
         SurfaceData::SurfacePointList points;
@@ -871,18 +871,18 @@ void DebugComponent::PrepareNextReport()
             if (iterator != sectorTiming.m_perAreaData.end())
             {
                 AreaSectorTiming& areaSectorTiming = iterator->second;
-                areaSectorTiming.m_totalTime += AZStd::chrono::microseconds(sectorAreaData.m_end - sectorAreaData.m_start).count();
+                areaSectorTiming.m_totalTime += AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(sectorAreaData.m_end - sectorAreaData.m_start).count();
                 areaSectorTiming.m_numInstances += static_cast<AZ::u32>(sectorAreaData.m_numInstancesCreated);
                 for( const auto& reasonValue : sectorAreaData.m_numInstancesRejectedByFilters )
                 {
                     DebugComponentUtilities::IncrementFilterReason(areaSectorTiming.m_numInstancesRejectedByFilters, reasonValue.first, reasonValue.second);
                 }
                 areaSectorTiming.m_filteredByMasks &= sectorAreaData.m_filteredByMasks;
-            } 
+            }
             else
             {
                 AreaSectorTiming newAreaSectorTiming;
-                newAreaSectorTiming.m_totalTime = AZStd::chrono::microseconds(sectorAreaData.m_end - sectorAreaData.m_start).count();
+                newAreaSectorTiming.m_totalTime = AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(sectorAreaData.m_end - sectorAreaData.m_start).count();
                 newAreaSectorTiming.m_numInstances = static_cast<AZ::u32>(sectorAreaData.m_numInstancesCreated);
                 newAreaSectorTiming.m_numInstancesRejectedByFilters = sectorAreaData.m_numInstancesRejectedByFilters;
                 newAreaSectorTiming.m_filteredByMasks = sectorAreaData.m_filteredByMasks;
@@ -908,7 +908,7 @@ void DebugComponent::PrepareNextReport()
         {
             AreaSectorTiming& areaSectorTiming = iterator->second;
 
-            areaSectorTiming.m_totalTime += AZStd::chrono::microseconds(areaTracker.m_end - areaTracker.m_start).count();
+            areaSectorTiming.m_totalTime += AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(areaTracker.m_end - areaTracker.m_start).count();
             areaSectorTiming.m_numInstances += static_cast<AZ::u32>(areaTracker.m_numInstancesCreated);
             for (const auto& filterReasonEntry : areaTracker.m_numInstancesRejectedByFilters)
             {
@@ -920,7 +920,7 @@ void DebugComponent::PrepareNextReport()
         else
         {
             AreaSectorTiming newAreaSectorTiming;
-            newAreaSectorTiming.m_totalTime = AZStd::chrono::microseconds(areaTracker.m_end - areaTracker.m_start).count();
+            newAreaSectorTiming.m_totalTime = AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(areaTracker.m_end - areaTracker.m_start).count();
             newAreaSectorTiming.m_numInstances = static_cast<AZ::u32>(areaTracker.m_numInstancesCreated);
             newAreaSectorTiming.m_numInstancesRejectedByFilters = areaTracker.m_numInstancesRejectedByFilters;
             newAreaSectorTiming.m_filteredByMasks = areaTracker.m_filteredByMasks;
@@ -1055,7 +1055,7 @@ void DebugComponent::DumpPerformanceReport(const PerformanceReport& report, Filt
         return;
     }
 
-    AZStd::function<bool(const DebugConfig& configuration, const BaseTiming& timing)> fnFilterRule; 
+    AZStd::function<bool(const DebugConfig& configuration, const BaseTiming& timing)> fnFilterRule;
     if (filter == DebugRequests::FilterTypeLevel::Danger)
     {
         fnFilterRule = [](const DebugConfig& configuration, const BaseTiming& timing) -> bool
