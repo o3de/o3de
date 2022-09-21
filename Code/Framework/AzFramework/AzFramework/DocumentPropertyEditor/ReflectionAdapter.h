@@ -60,6 +60,7 @@ namespace AZ::DocumentPropertyEditor
         //! property editor instances has altered its value.
         void NotifyPropertyChanged(const PropertyChangeInfo& changeInfo);
 
+        void RefreshValues();
         void* GetInstance() { return m_instance; }
         const void* GetInstance() const { return m_instance; }
         AZ::TypeId GetTypeId() const { return m_typeId; }

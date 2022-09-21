@@ -5717,7 +5717,7 @@ namespace AzToolsFramework
         {
             if (componentEditor->isVisible() && componentEditor->HasComponentWithId(componentId))
             {
-                componentEditor->QueuePropertyEditorInvalidation(AzToolsFramework::PropertyModificationRefreshLevel::Refresh_Values);
+                componentEditor->PropertyChanged(AzToolsFramework::PropertyModificationRefreshLevel::Refresh_Values);
                 break;
             }
         }
