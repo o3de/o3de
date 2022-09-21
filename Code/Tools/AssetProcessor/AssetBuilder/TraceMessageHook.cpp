@@ -15,8 +15,6 @@
 
 namespace AssetBuilder
 {
-    constexpr int MaxMessageLength = 4096;
-
     TraceMessageHook::TraceMessageHook()
         : m_stacks(nullptr)
         , m_inDebugMode(false)
