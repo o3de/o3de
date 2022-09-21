@@ -350,7 +350,7 @@ namespace UnitTest
         while (!conditionPredicate())
         {
             AZStd::chrono::time_point currentTime = AZStd::chrono::system_clock::now();
-            if (AZStd::chrono::seconds elapsedTime{ currentTime - dispatchEventTimeStart };
+            if (auto elapsedTime{ currentTime - dispatchEventTimeStart };
                 elapsedTime >= dispatchEventNextLogTime)
             {
                 const testing::TestInfo* test_info = ::testing::UnitTest::GetInstance()->current_test_info();
@@ -358,7 +358,7 @@ namespace UnitTest
                     " in test %s.%s", elapsedTime.count(), test_info->test_case_name(), test_info->name());
                 // Update the next log time to be the next multiple of DefaultTimeout Seconds
                 // after current elapsed time
-                dispatchEventNextLogTime = elapsedTime + logIntervalSeconds - ((elapsedTime + logIntervalSeconds) % logIntervalSeconds);
+                dispatchEventNextLogTime = AZStd::chrono::duration_cast<AZStd::chrono::seconds>(elapsedTime + logIntervalSeconds - ((elapsedTime + logIntervalSeconds) % logIntervalSeconds));
                 if (elapsedTime >= maxTimeoutSeconds)
                 {
                     return false;

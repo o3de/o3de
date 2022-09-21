@@ -9,7 +9,7 @@
 #pragma once
 
 #include <AzCore/Outcome/Outcome.h>
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <ScriptCanvas/Debugger/ValidationEvents/ValidationEvent.h>
 
 #include "Configuration.h"

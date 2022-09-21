@@ -69,6 +69,7 @@ namespace AZ
             AZ::u32 OnNumRaysPerProbeChanged();
             AZ::Outcome<void, AZStd::string> OnScrollingChangeValidate(void* newValue, const AZ::Uuid& valueType);
             AZ::u32 OnScrollingChanged();
+            AZ::u32 OnEdgeBlendIblChanged();
             AZ::u32 OnFrameUpdateCountChanged();
             AZ::u32 OnTransparencyModeChanged();
             AZ::u32 OnEditorModeChanged();
@@ -91,6 +92,7 @@ namespace AZ
             float m_normalBias = DefaultDiffuseProbeGridNormalBias;
             DiffuseProbeGridNumRaysPerProbe m_numRaysPerProbe = DefaultDiffuseProbeGridNumRaysPerProbe;
             bool m_scrolling = false;
+            bool m_edgeBlendIbl = true;
             uint32_t m_frameUpdateCount = 1;
             DiffuseProbeGridTransparencyMode m_transparencyMode = DiffuseProbeGridTransparencyMode::Full;
             DiffuseProbeGridMode m_editorMode = DiffuseProbeGridMode::RealTime;
