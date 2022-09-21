@@ -586,7 +586,7 @@ namespace AzToolsFramework
             foldersFilter->SetEntryType(AssetBrowserEntry::AssetEntryType::Folder);
 
             auto selection = AzToolsFramework::AssetBrowser::AssetSelectionModel::EverythingSelection();
-            selection.SetTitle("folder to move to");
+            selection.SetTitle(tr("folder to move to"));
             selection.SetMultiselect(false);
             selection.SetDisplayFilter(FilterConstType(foldersFilter));
             AssetBrowserTreeViewDialog dialog(selection, this);
@@ -608,8 +608,7 @@ namespace AzToolsFramework
                     for (auto entry : entries)
                     {
                         using namespace AZ::IO;
-                        AssetBrowserEntry* item = entry;
-                        Path fromPath = item->GetFullPath();
+                        Path fromPath = entry->GetFullPath();
                         PathView filename = fromPath.Filename();
                         Path toPath(folderPath);
                         toPath /= filename;
@@ -632,16 +631,16 @@ namespace AzToolsFramework
                                 msgBox.setIcon(QMessageBox::Warning);
                                 msgBox.setText("The asset you are moving may be referenced in other assets.");
                                 msgBox.setInformativeText("More information can be found by pressing \"Show Details...\".");
-                                QAbstractButton* moveButton = (QAbstractButton*)msgBox.addButton("Move", QMessageBox::YesRole);
+                                auto* moveButton = msgBox.addButton("Move", QMessageBox::YesRole);
                                 msgBox.setStandardButtons(QMessageBox::Cancel);
                                 msgBox.setDefaultButton(QMessageBox::Yes);
                                 msgBox.setDetailedText(message.c_str());
                                 QSpacerItem* horizontalSpacer = new QSpacerItem(600, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
-                                QGridLayout* layout = (QGridLayout*)msgBox.layout();
+                                auto* layout = qobject_cast<QGridLayout*>(msgBox.layout());
                                 layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());
                                 msgBox.exec();
 
-                                if (msgBox.clickedButton() == moveButton)
+                                if (msgBox.clickedButton() == reinterpret_cast<QAbstractButton *>(moveButton))
                                 {
                                     AssetChangeReportRequest moveRequest(
                                         AZ::OSString(fromPath.c_str()),
