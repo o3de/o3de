@@ -15,7 +15,7 @@
 #define EvaluateVertexGeometry(IN)      EvaluateVertexGeometry_EnhancedPBR(IN)
 #endif
 
-#include "../BasePBR/BasePBR_Vertex.azsli"
+#include "../BasePBR/BasePBR_VertexEval.azsli"
 #include "../MaterialFunctions/StandardTransformDetailUvs.azsli"
 
 VsOutput EvaluateVertexGeometry_EnhancedPBR(

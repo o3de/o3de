@@ -15,7 +15,7 @@
 #define EvaluatePixelGeometry(IN, isFrontFace)      EvaluatePixelGeometry_EnhancedPBR(IN, isFrontFace)
 #endif
 
-#include "../StandardPBR/StandardPBR_PixelGeometry.azsli"
+#include "../StandardPBR/StandardPBR_PixelGeometryEval.azsli"
 
 #include <Atom/Features/Debug.azsli>
 

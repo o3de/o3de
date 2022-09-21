@@ -47,15 +47,15 @@ COMMON_OPTIONS_EMISSIVE()
 
 // Use same vertex logic as BasePBR
 #include "../BasePBR/BasePBR_VertexData.azsli"
-#include "../BasePBR/BasePBR_Vertex.azsli"
+#include "../BasePBR/BasePBR_VertexEval.azsli"
 
 // Use same pixel geometry logic at BasePBR
 #include "StandardPBR_PixelGeometryData.azsli"
-#include "StandardPBR_PixelGeometry.azsli"
+#include "StandardPBR_PixelGeometryEval.azsli"
 
 #include "StandardPBR_SurfaceData.azsli"
-#include "StandardPBR_Surface.azsli"
+#include "StandardPBR_SurfaceEval.azsli"
 
 #include "../BasePBR/BasePBR_LightingData.azsli"
 #include "StandardPBR_LightingBrdf.azsli"
-#include "StandardPBR_Lighting.azsli"
+#include "StandardPBR_LightingEval.azsli"

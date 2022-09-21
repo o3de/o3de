@@ -12,41 +12,47 @@
 // used in your shader. Simply #define EvaluatePixelGeometry to your custom definition before including this file
 //
 #ifndef EvaluatePixelGeometry
-#define EvaluatePixelGeometry(IN, isFrontFace)      EvaluatePixelGeometry_Skin(IN, isFrontFace)
+#define EvaluatePixelGeometry(IN, isFrontFace)      EvaluatePixelGeometry_StandardPBR(IN, isFrontFace)
 #endif
 
-#include "../BasePBR/BasePBR_PixelGeometry.azsli"
+#include "../BasePBR/BasePBR_PixelGeometryEval.azsli"
+#include "../MaterialFunctions/ParallaxDepth.azsli"
 
-PixelGeometryData EvaluatePixelGeometry_Skin(
+#include <Atom/Features/Debug.azsli>
+
+PixelGeometryData EvaluatePixelGeometry_StandardPBR(
+    inout float4 positionSV,
     float3 positionWS,
     float3 normal,
     float3 tangent,
     float3 bitangent,
     float2 uvs[UvSetCount],
-    float2 detailUv,
-    float4 wrinkleBlendFactors,
     bool isFrontFace)
 {
-    // Base PBR Geo Data
-    bool evaluateTangentFrame = o_normal_useTexture || o_detail_normal_useTexture;
+    bool evaluateTangentFrame = ShouldHandleParallax() || o_normal_useTexture || (o_clearCoat_enabled && o_clearCoat_normal_useTexture);
     PixelGeometryData geoData = EvaluatePixelGeometry_BasePBR(positionWS, normal, tangent, bitangent, uvs, isFrontFace, evaluateTangentFrame);
 
-    // Skin specifics
-    geoData.detailUv = detailUv;
-    geoData.wrinkleBlendFactors = wrinkleBlendFactors;
+    // ------- Parallax -------
+
+    geoData.isDisplacementClipped = false;
+
+    if(ShouldHandleParallax())
+    {
+        SetPixelDepth(geoData.positionWS, geoData.vertexNormal, geoData.tangents, geoData.bitangents,
+                      geoData.uvs, isFrontFace, positionSV.z, positionSV.w, geoData.isDisplacementClipped);
+    }
 
     return geoData;
 }
 
-PixelGeometryData EvaluatePixelGeometry_Skin(VsOutput IN, bool isFrontFace)
+PixelGeometryData EvaluatePixelGeometry_StandardPBR(inout VsOutput IN, bool isFrontFace)
 {
-    return EvaluatePixelGeometry_Skin(
+    return EvaluatePixelGeometry_StandardPBR(
+        IN.position,
         IN.worldPosition,
         IN.normal,
         IN.tangent,
         IN.bitangent,
         IN.uvs,
-        IN.detailUv,
-        IN.wrinkleBlendFactors,
         isFrontFace);
 }

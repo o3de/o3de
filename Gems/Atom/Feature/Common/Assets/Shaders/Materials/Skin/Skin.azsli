@@ -46,14 +46,14 @@ COMMON_OPTIONS_DETAIL_MAPS()
 // ------- Shader Stitching -------
 
 #include "Skin_VertexData.azsli"
-#include "Skin_Vertex.azsli"
+#include "Skin_VertexEval.azsli"
 
 #include "Skin_PixelGeometryData.azsli"
-#include "Skin_PixelGeometry.azsli"
+#include "Skin_PixelGeometryEval.azsli"
 
 #include "Skin_SurfaceData.azsli"
-#include "Skin_Surface.azsli"
+#include "Skin_SurfaceEval.azsli"
 
 #include "../BasePBR/BasePBR_LightingData.azsli"
 #include "Skin_LightingBrdf.azsli"
-#include "../BasePBR/BasePBR_Lighting.azsli"
+#include "../BasePBR/BasePBR_LightingEval.azsli"

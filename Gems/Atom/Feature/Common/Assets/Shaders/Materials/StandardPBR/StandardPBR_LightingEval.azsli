@@ -15,7 +15,7 @@
 #define EvaluateLighting(surface, screenPosition)       EvaluateLighting_StandardPBR(surface, screenPosition)
 #endif
 
-#include "../BasePBR/BasePBR_Lighting.azsli"
+#include "../BasePBR/BasePBR_LightingEval.azsli"
 
 void InitializeLightingData_StandardPBR(Surface surface, float4 screenPosition, inout LightingData lightingData)
 {

@@ -55,14 +55,14 @@ COMMON_OPTIONS_DETAIL_MAPS()
 // ------- Shader Stitching -------
 
 #include "EnhancedPBR_VertexData.azsli"
-#include "EnhancedPBR_Vertex.azsli"
+#include "EnhancedPBR_VertexEval.azsli"
 
 #include "EnhancedPBR_PixelGeometryData.azsli"
-#include "EnhancedPBR_PixelGeometry.azsli"
+#include "EnhancedPBR_PixelGeometryEval.azsli"
 
 #include "EnhancedPBR_SurfaceData.azsli"
-#include "EnhancedPBR_Surface.azsli"
+#include "EnhancedPBR_SurfaceEval.azsli"
 
 #include "../BasePBR/BasePBR_LightingData.azsli"
 #include "EnhancedPBR_LightingBrdf.azsli"
-#include "../StandardPBR/StandardPBR_Lighting.azsli"
+#include "../StandardPBR/StandardPBR_LightingEval.azsli"

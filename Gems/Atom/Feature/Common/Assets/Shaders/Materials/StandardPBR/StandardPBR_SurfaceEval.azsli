@@ -15,7 +15,7 @@
 #define EvaluateSurface(geoData)        EvaluateSurface_StandardPBR(geoData)
 #endif
 
-#include "../BasePBR/BasePBR_Surface.azsli"
+#include "../BasePBR/BasePBR_SurfaceEval.azsli"
 #include "../MaterialFunctions/StandardGetAlphaAndClip.azsli"
 
 Surface EvaluateSurface_StandardPBR(

@@ -41,14 +41,14 @@ COMMON_OPTIONS_NORMAL()
 // ------- Shader Stitching -------
 
 #include "BasePBR_VertexData.azsli"
-#include "BasePBR_Vertex.azsli"
+#include "BasePBR_VertexEval.azsli"
 
 #include "BasePBR_PixelGeometryData.azsli"
-#include "BasePBR_PixelGeometry.azsli"
+#include "BasePBR_PixelGeometryEval.azsli"
 
 #include "BasePBR_SurfaceData.azsli"
-#include "BasePBR_Surface.azsli"
+#include "BasePBR_SurfaceEval.azsli"
 
 #include "BasePBR_LightingData.azsli"
 #include "BasePBR_LightingBrdf.azsli"
-#include "BasePBR_Lighting.azsli"
+#include "BasePBR_LightingEval.azsli"
