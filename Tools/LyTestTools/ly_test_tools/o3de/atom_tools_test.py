@@ -4,25 +4,25 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
-Test-writing utilities that simplify creating O3DE MaterialEditor tests in Python.
+Test-writing utilities that simplify creating O3DE executable tests in Python.
 
-Test writers should subclass a test suite from MaterialEditorSuite to hold the specification of python test scripts
-for the MaterialEditor to load and run.
-Tests can be parallelized (run in multiple MaterialEditor instances at once) and/or
-batched (multiple tests run in the same MaterialEditor instance), with collated results and crash detection.
-Tests retain the ability to be run as a single test in a single MaterialEditor instance as well.
+Test writers should subclass a test suite from AtomToolsTestSuite to hold the specification of python test scripts
+for the executable to load and run.
+Tests can be parallelized (run in multiple executable instances at once) and/or
+batched (multiple tests run in the same executable instance), with collated results and crash detection.
+Tests retain the ability to be run as a single test in a single executable instance as well.
 
 Usage example:
-   class MyTestSuite(MaterialEditorSuite):
+   class MyTestSuite(AtomToolsTestSuite):
 
-       class MyFirstTest(MaterialEditorSingleTest):
-           from . import script_to_be_run_by_material_editor as test_module
+       class MyFirstTest(AtomToolsSingleTest):
+           from . import script_to_be_run_by_executable as test_module
 
-       class MyTestInParallel_1(MaterialEditorBatchedTest):
-           from . import another_script_to_be_run_by_material_editor as test_module
+       class MyTestInParallel_1(AtomToolsBatchedTest):
+           from . import another_script_to_be_run_by_executable as test_module
 
-       class MyTestInParallel_2(MaterialEditorParallelTest):
-           from . import yet_another_script_to_be_run_by_material_editor as test_module
+       class MyTestInParallel_2(AtomToolsParallelTest):
+           from . import yet_another_script_to_be_run_by_executable as test_module
 """
 
 from __future__ import annotations
@@ -41,79 +41,79 @@ from ly_test_tools.o3de.multi_test_framework import MultiTestSuite, SharedTest, 
 logger = logging.getLogger(__name__)
 
 
-class MaterialEditorSingleTest(SingleTest):
+class AtomToolsSingleTest(SingleTest):
     """
-    Test that will run alone in one MaterialEditor with no parallel MaterialEditors,
+    Test that will run alone in one executable with no parallel executables,
     limiting environmental side-effects at the expense of redundant isolated work
     """
 
     def __init__(self):
-        super(MaterialEditorSingleTest, self).__init__()
-        # Extra cmdline arguments to supply to the MaterialEditor for the test
+        super(AtomToolsSingleTest, self).__init__()
+        # Extra cmdline arguments to supply to the executable for the test
         self.extra_cmdline_args = []
         # Whether to use null renderer, this will override use_null_renderer for the Suite if not None
         self.use_null_renderer = None
 
     @staticmethod
-    def setup(instance: MaterialEditorTestSuite.MultiTestCollector,
+    def setup(instance: AtomToolsTestSuite.MultiTestCollector,
               request: _pytest.fixtures.FixtureRequest,
               workspace: AbstractWorkspaceManager) -> None:
         """
         User-overrideable setup function, which will run before the test.
-        :param instance: Parent MaterialEditorTestSuite.MultiTestCollector instance executing the test
+        :param instance: Parent AtomToolsTestSuite.MultiTestCollector instance executing the test
         :param request: PyTest request object
         :param workspace: LyTestTools workspace manager
         """
         pass
 
     @staticmethod
-    def wrap_run(instance: MaterialEditorTestSuite.MultiTestCollector,
+    def wrap_run(instance: AtomToolsTestSuite.MultiTestCollector,
                  request: _pytest.fixtures.FixtureRequest,
                  workspace: AbstractWorkspaceManager,
-                 material_editor_test_results: MultiTestSuite.TestData) -> None:
+                 test_results: MultiTestSuite.TestData) -> None:
         """
         User-overrideable wrapper function, which will run both before and after test.
         Any code before the 'yield' statement will run before the test. With code after yield run after the test.
         Setup will run before wrap_run starts. Teardown will run after it completes.
-        :param instance: Parent MaterialEditorTestSuite.MultiTestCollector instance executing the test
+        :param instance: Parent AtomToolsTestSuite.MultiTestCollector instance executing the test
         :param request: PyTest request object
         :param workspace: LyTestTools workspace manager
-        :param material_editor_test_results: Currently recorded MaterialEditor test results
+        :param test_results: Currently recorded executable test results
         """
         yield
 
     @staticmethod
-    def teardown(instance: MaterialEditorTestSuite.MultiTestCollector,
+    def teardown(instance: AtomToolsTestSuite.MultiTestCollector,
                  request: _pytest.fixtures.FixtureRequest,
                  workspace: AbstractWorkspaceManager,
-                 material_editor_test_results: MultiTestSuite.TestData) -> None:
+                 test_results: MultiTestSuite.TestData) -> None:
         """
         User-overrideable teardown function, which will run after the test
-        :param instance: Parent MaterialEditorTestSuite.MultiTestCollector instance executing the test
+        :param instance: Parent AtomToolsTestSuite.MultiTestCollector instance executing the test
         :param request: PyTest request object
         :param workspace: LyTestTools workspace manager
-        :param material_editor_test_results: Currently recorded MaterialEditor test results
+        :param test_results: Currently recorded executable test results
         """
         pass
 
 
-class MaterialEditorSharedTest(SharedTest):
+class AtomToolsSharedTest(SharedTest):
     """
-    Test that will run in parallel with tests in different MaterialEditor instances, as well as serially batching
-    with other tests in each MaterialEditor instance. Minimizes total test run duration.
+    Test that will run in parallel with tests in different executable instances, as well as serially batching
+    with other tests in each executable instance. Minimizes total test run duration.
 
     Does not support per test setup/teardown to avoid creating race conditions
     """
-    # Specifies if the test can be batched in the same MaterialEditor
+    # Specifies if the test can be batched in the same executable
     is_batchable = True
-    # Specifies if the test can be run in multiple MaterialEditors in parallel
+    # Specifies if the test can be run in multiple executables in parallel
     is_parallelizable = True
 
 
-class MaterialEditorParallelTest(MaterialEditorSharedTest):
+class AtomToolsParallelTest(AtomToolsSharedTest):
     """
-    Test that will run in parallel with tests in different MaterialEditor instances,
-    though not serially batched with other tests in each MaterialEditor instance.
+    Test that will run in parallel with tests in different executable instances,
+    though not serially batched with other tests in each executable instance.
     Reduces total test run duration, while limiting side-effects between tests.
 
     Does not support per test setup/teardown to avoid creating race conditions
@@ -122,11 +122,11 @@ class MaterialEditorParallelTest(MaterialEditorSharedTest):
     is_parallelizable = True
 
 
-class MaterialEditorBatchedTest(MaterialEditorSharedTest):
+class AtomToolsBatchedTest(AtomToolsSharedTest):
     """
-    Test that will run serially batched with the tests in the same MaterialEditor instance,
-    though not executed in parallel with other MaterialEditor instances.
-    Reduces overhead from starting the MaterialEditor, while limiting side-effects between MaterialEditors.
+    Test that will run serially batched with the tests in the same executable instance,
+    though not executed in parallel with other executable instances.
+    Reduces overhead from starting the executable, while limiting side-effects between executables.
 
     Does not support per test setup/teardown to avoid creating race conditions
     """
@@ -134,33 +134,33 @@ class MaterialEditorBatchedTest(MaterialEditorSharedTest):
     is_parallelizable = False
 
 
-class MaterialEditorTestSuite(MultiTestSuite):
+class AtomToolsTestSuite(MultiTestSuite):
     """
-    This class defines the values needed in order to execute a batched, parallel, or single MaterialEditor test.
+    This class defines the values needed in order to execute a batched, parallel, or single executable test.
     Any new test cases written that inherit from this class can override these values for their newly created class.
     """
-    # Extra cmdline arguments to supply for every MaterialEditor for this test suite.
+    # Extra cmdline arguments to supply for every executable for this test suite.
     global_extra_cmdline_args = ["-BatchMode", "-autotest_mode"]
     # Tests usually run with no renderer, however some tests require a renderer and will disable this.
     use_null_renderer = True
-    # Maximum time in seconds for a single MaterialEditor to stay open across the set of shared tests.
+    # Name of the executable's log file.
+    log_name = "material_editor_test.log"  # We default to MaterialEditor for this suite.
+    # Executable function to call when launching the executable.
+    executable_function = launcher_helper.create_material_editor  # We default to MaterialEditor for this suite.
+    # Maximum time in seconds for a single executable to stay open across the set of shared tests.
     timeout_shared_test = 300
     # Maximum time (seconds) for waiting for a crash file to finish being dumped to disk.
     _timeout_crash_log = 20
     # Return code for test failure.
     _test_fail_retcode = 0xF
     # Test class to use for single test collection.
-    _single_test_class = MaterialEditorSingleTest
+    _single_test_class = AtomToolsSingleTest
     # Test class to use for shared test collection.
-    _shared_test_class = MaterialEditorSharedTest
-    # Name of the executable's log file.
-    _log_name = "material_editor_test.log"
-    # Executable function to call when launching MaterialEditor.
-    _executable_function = launcher_helper.create_material_editor
+    _shared_test_class = AtomToolsSharedTest
 
     @pytest.mark.parametrize("crash_log_watchdog", [("raise_on_crash", False)])
     def pytest_multitest_makeitem(
-            collector: _pytest.python.Module, name: str, obj: object) -> MaterialEditorTestSuite.MultiTestCollector:
+            collector: _pytest.python.Module, name: str, obj: object) -> AtomToolsTestSuite.MultiTestCollector:
         """
         Enables ly_test_tools._internal.pytest_plugin.multi_testing.pytest_pycollect_makeitem to collect the tests
         defined by this suite.
@@ -169,6 +169,6 @@ class MaterialEditorTestSuite(MultiTestSuite):
         :param collector: Module that serves as the pytest test class collector
         :param name: Name of the parent test class
         :param obj: Module of the test to be run
-        :return: MaterialEditorTestSuite.MultiTestCollector
+        :return: AtomToolsTestSuite.MultiTestCollector
         """
-        return MaterialEditorTestSuite.MultiTestCollector.from_parent(parent=collector, name=name)
+        return AtomToolsTestSuite.MultiTestCollector.from_parent(parent=collector, name=name)

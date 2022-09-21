@@ -87,10 +87,10 @@ def retrieve_log_path(run_id: int, workspace: ly_test_tools._internal.managers.w
     return os.path.join(workspace.paths.project(), "user", f"log_test_{run_id}")
 
 
-def retrieve_non_editor_log_path(
+def atom_tools_log_path(
         run_id: int, workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager) -> str:
     """
-    return the log path for non-editor test runs
+    return the log path for Atom tools test runs
     :param run_id: executable id that will be used for differentiating paths
     :param workspace: Workspace fixture
     :return: str: The full path to the given executable log
@@ -187,7 +187,7 @@ def retrieve_non_editor_log_content(run_id: int,
     :param timeout: Maximum time to wait for the log file to appear
     :return str: The contents of the log
     """
-    material_editor_log = os.path.join(retrieve_non_editor_log_path(run_id, workspace), log_name)
+    material_editor_log = os.path.join(atom_tools_log_path(run_id, workspace), log_name)
     try:
         waiter.wait_for(lambda: os.path.exists(material_editor_log), timeout=timeout)
     except AssertionError:

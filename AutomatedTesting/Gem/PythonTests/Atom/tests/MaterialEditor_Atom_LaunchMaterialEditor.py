@@ -28,16 +28,16 @@ def MaterialEditor_Launched_SuccessfullyLaunched():
     :return: None
     """
 
-    import Atom.atom_utils.material_editor_utils as material_editor
+    import Atom.atom_utils.atom_tools_utils as atom_tools_utils
 
     from editor_python_test_tools.utils import Report, Tracer, TestHelper
 
     with Tracer() as error_tracer:
         # 1. Verify Material Inspector pane visibility to confirm the MaterialEditor launched.
-        material_editor.set_pane_visibility("Inspector", True)
+        atom_tools_utils.set_pane_visibility("Inspector", True)
         Report.result(
             Tests.material_editor_launched,
-            material_editor.is_pane_visible("Inspector") is True)
+            atom_tools_utils.is_pane_visible("Inspector") is True)
 
         # 2. Look for errors and asserts.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)

@@ -328,6 +328,10 @@ class MultiTestSuite(object):
     use_null_renderer = True
     # Maximum time in seconds for a single executable to stay open across the set of shared tests
     timeout_shared_test = 300
+    # Name of the executable's log file.
+    log_name = ""
+    # Executable function to call when launching executable.
+    executable_function = launcher_helper.create_game_launcher
     # Maximum time (seconds) for waiting for a crash file to finish being dumped to disk
     _timeout_crash_log = 20
     # Return code for test failure
@@ -336,10 +340,6 @@ class MultiTestSuite(object):
     _single_test_class = SingleTest
     # Test class to use for shared test collection
     _shared_test_class = SharedTest
-    # Name of the executable's log file.
-    _log_name = ""
-    # Executable function to call when launching executable.
-    _executable_function = launcher_helper.create_game_launcher
 
     class TestData:
         __test__ = False  # Avoid pytest collection & warnings since "test" is in the class name.
@@ -705,7 +705,7 @@ class MultiTestSuite(object):
         :return: None
         """
         # Set the self.executable program for Launcher ad re-bind our param workspace to it.
-        self.executable = self._executable_function(workspace)
+        self.executable = self.executable_function(workspace)
         self.executable.workspace = workspace
 
         # Setup AP, kill processes, and configure the executable.
@@ -718,13 +718,13 @@ class MultiTestSuite(object):
         if hasattr(test_spec, "extra_cmdline_args"):
             extra_cmdline_args = test_spec.extra_cmdline_args
         result = self._exec_single_test(
-            request, workspace, self.executable, 1, self._log_name, test_spec, extra_cmdline_args)
+            request, workspace, self.executable, 1, self.log_name, test_spec, extra_cmdline_args)
         if result is None:
-            logger.error(f"Unexpectedly found no test run in the {self._log_name} during {test_spec}")
+            logger.error(f"Unexpectedly found no test run in the {self.log_name} during {test_spec}")
             result = {"Unknown":
                       Result.Unknown(
                           test_spec=test_spec,
-                          extra_info=f"Unexpectedly found no test run information on stdout in the {self._log_name}")}
+                          extra_info=f"Unexpectedly found no test run information on stdout in the {self.log_name}")}
         collected_test_data.results.update(result)
         test_name, test_result = next(iter(result.items()))
         self._report_result(test_name, test_result)
@@ -788,7 +788,7 @@ class MultiTestSuite(object):
                        "-logfile", f"@log@/{log_name}",
                        "-project-log-path", log_path_function(run_id, workspace)] + test_cmdline_args
         elif type(executable) in [WinMaterialEditor, LinuxMaterialEditor, WinMaterialCanvas, LinuxMaterialCanvas]:
-            log_path_function = editor_utils.retrieve_non_editor_log_path
+            log_path_function = editor_utils.atom_tools_log_path
             log_content_function = editor_utils.retrieve_non_editor_log_content
             cmdline = ["-runpythontest", test_filename,
                        "-logfile", os.path.join(log_path_function(run_id, workspace), log_name)] + test_cmdline_args
@@ -856,7 +856,7 @@ class MultiTestSuite(object):
         :return: None
         """
         # Set the self.executable program for Launcher ad re-bind our param workspace to it.
-        self.executable = self._executable_function(workspace)
+        self.executable = self.executable_function(workspace)
         self.executable.workspace = workspace
 
         # Setup AP, kill processes, and configure the executable.
@@ -871,7 +871,7 @@ class MultiTestSuite(object):
             return
 
         results = self._exec_multitest(
-            request, workspace, self.executable, 1, self._log_name, test_spec_list, extra_cmdline_args)
+            request, workspace, self.executable, 1, self.log_name, test_spec_list, extra_cmdline_args)
         collected_test_data.results.update(results)
         # If at least one test did not pass, save assets with errors and warnings
         for result in results:
@@ -903,7 +903,7 @@ class MultiTestSuite(object):
         :return: None
         """
         # Set the self.executable program for Launcher ad re-bind our param workspace to it.
-        self.executable = self._executable_function(workspace)
+        self.executable = self.executable_function(workspace)
         self.executable.workspace = workspace
 
         # Setup AP, kill processes, and configure the executable.
@@ -933,10 +933,10 @@ class MultiTestSuite(object):
                 def make_parallel_test_func(test_spec, index, current_executable):
                     def run(request, workspace, extra_cmdline_args):
                         results = self._exec_single_test(
-                            request, workspace, current_executable, index + 1, self._log_name, test_spec, extra_cmdline_args)
+                            request, workspace, current_executable, index + 1, self.log_name, test_spec, extra_cmdline_args)
                         if results is None:
                             raise EditorToolsFrameworkException(f"Results were None. Current log name is "
-                                                                f"{self._log_name} and test is {str(test_spec)}")
+                                                                f"{self.log_name} and test is {str(test_spec)}")
                         results_per_thread[index] = results
                     return run
 
@@ -989,7 +989,7 @@ class MultiTestSuite(object):
         :return: None
         """
         # Set the self.executable program for Launcher ad re-bind our param workspace to it.
-        self.executable = self._executable_function(workspace)
+        self.executable = self.executable_function(workspace)
         self.executable.workspace = workspace
 
         # Setup AP, kill processes, and configure the executable.
@@ -1019,11 +1019,11 @@ class MultiTestSuite(object):
                     results = None
                     if len(test_spec_list_for_executable) > 0:
                         results = self._exec_multitest(
-                            request, workspace, current_executable, index + 1, self._log_name,
+                            request, workspace, current_executable, index + 1, self.log_name,
                             test_spec_list_for_executable, extra_cmdline_args)
                         if results is None:
                             raise EditorToolsFrameworkException(f"Results were None. Current log name is "
-                                                                f"{self._log_name} and tests are "
+                                                                f"{self.log_name} and tests are "
                                                                 f"{str(test_spec_list_for_executable)}")
                     else:
                         results = {}
@@ -1140,7 +1140,7 @@ class MultiTestSuite(object):
                        "-project-log-path", log_path_function(run_id, workspace)] + test_cmdline_args
         # MaterialEditor
         elif type(executable) in [WinMaterialEditor, LinuxMaterialEditor, WinMaterialCanvas, LinuxMaterialCanvas]:
-            log_path_function = editor_utils.retrieve_non_editor_log_path
+            log_path_function = editor_utils.atom_tools_log_path
             log_content_function = editor_utils.retrieve_non_editor_log_content
             test_filenames_str = ";".join(
                 editor_utils.get_testcase_module_filepath(test_spec.test_module) for test_spec in test_spec_list)
