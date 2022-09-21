@@ -14,7 +14,7 @@
 
 namespace AzToolsFramework
 {
-    //! PaintBrushSettingsRequestBus is used to get/set the global paintbrush settings
+    //! This is used to get/set the global paintbrush settings.
     class PaintBrushSettingsRequests : public AZ::EBusTraits
     {
     public:
@@ -22,32 +22,32 @@ namespace AzToolsFramework
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
         using MutexType = AZStd::recursive_mutex;
 
-        //! GetSettings returns all of the current paintbrush settings.
+        //! Returns all of the current paintbrush settings.
         //! This shouldn't normally be used, but it's necessary for exposing the global paintbrush settings
         //! outwards to the Property Editor window.
         //! @return The paintbrush settings
         virtual PaintBrushSettings* GetSettings() = 0;
 
-        //! GetRadius returns the current paintbrush radius.
+        //! Returns the current paintbrush radius.
         //! @return The radius of the paintbrush
         virtual float GetRadius() const = 0;
 
-        //! GetIntensity returns the current paintbrush intensity (0=black, 1=white).
+        //! Returns the current paintbrush intensity (0=black, 1=white).
         //! @return The intensity of the paintbrush
         virtual float GetIntensity() const = 0;
 
-        //! GetOpacity returns the current paintbrush opacity (0=transparent, 1=opaque).
+        //! Returns the current paintbrush opacity (0=transparent, 1=opaque).
         virtual float GetOpacity() const = 0;
 
-        //! SetRadius sets the paintbrush radius.
+        //! Sets the paintbrush radius.
         //! @param radius The new radius, in meters.
         virtual void SetRadius(float radius) = 0;
 
-        //! SetIntensity sets the paintbrush intensity.
+        //! Sets the paintbrush intensity.
         //! @param intensity The new intensity, in 0-1 range (0=black, 1=white).
         virtual void SetIntensity(float intensity) = 0;
 
-        //! SetOpacity sets the paintbrush opacity.
+        //! Sets the paintbrush opacity.
         //! @param opacity The new opacity, in 0-1 range (0=transparent, 1=opaque).
         virtual void SetOpacity(float opacity) = 0;
 

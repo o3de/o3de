@@ -20,10 +20,11 @@ namespace AzToolsFramework
     {
     public:
         AZ_CLASS_ALLOCATOR(PaintBrushSettings, AZ::SystemAllocator, 0);
-        AZ_RTTI(PaintBrushSettings, "{CE5EFFE2-14E5-4A9F-9B0F-695F66744A50}");
+        AZ_TYPE_INFO(PaintBrushSettings, "{CE5EFFE2-14E5-4A9F-9B0F-695F66744A50}");
         static void Reflect(AZ::ReflectContext* context);
 
-        virtual ~PaintBrushSettings() = default;
+        PaintBrushSettings() = default;
+        ~PaintBrushSettings() = default;
 
         float GetRadius() const
         {

@@ -33,7 +33,7 @@ namespace PaintBrush
             setParent(parent);
 
             QVBoxLayout* mainLayout = new QVBoxLayout();
-            mainLayout->setContentsMargins(0, 0, 0, 0);
+            mainLayout->setContentsMargins(0, 10, 0, 10);
             mainLayout->setSpacing(0);
 
             AZ::ComponentApplicationBus::BroadcastResult(m_serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
@@ -58,10 +58,28 @@ namespace PaintBrush
             m_propertyEditor->show();
 
             setLayout(mainLayout);
+
+            AzToolsFramework::PaintBrushSettingsNotificationBus::Handler::BusConnect();
         }
 
         PaintBrushSettingsWindow::~PaintBrushSettingsWindow()
         {
+            AzToolsFramework::PaintBrushSettingsNotificationBus::Handler::BusDisconnect();
+        }
+
+        void PaintBrushSettingsWindow::OnIntensityChanged([[maybe_unused]] float intensity)
+        {
+            m_propertyEditor->InvalidateValues();
+        }
+
+        void PaintBrushSettingsWindow::OnOpacityChanged([[maybe_unused]] float opacity)
+        {
+            m_propertyEditor->InvalidateValues();
+        }
+
+        void PaintBrushSettingsWindow::OnRadiusChanged([[maybe_unused]] float radius)
+        {
+            m_propertyEditor->InvalidateValues();
         }
 
         // simple factory method
@@ -80,7 +98,7 @@ namespace PaintBrush
         // and this is only visible while in a painting component mode, so we don't ever need to disable the controls.
         viewOptions.isDisabledInComponentMode = false;
         // Default size of the window
-        viewOptions.paneRect = QRect(50, 50, 350, 105);
+        viewOptions.paneRect = QRect(50, 50, 350, 120);
 
         AzToolsFramework::EditorRequestBus::Broadcast(
             &AzToolsFramework::EditorRequestBus::Events::RegisterViewPane,

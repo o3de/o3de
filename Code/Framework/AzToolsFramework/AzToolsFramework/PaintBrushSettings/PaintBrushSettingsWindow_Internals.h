@@ -12,6 +12,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzToolsFramework/Manipulators/PaintBrushManipulator.h>
+#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsNotificationBus.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
 
 namespace AZ
@@ -36,6 +37,7 @@ namespace PaintBrush
         class PaintBrushSettingsWindow
             : public QListView
             , private AzToolsFramework::IPropertyEditorNotify
+            , private AzToolsFramework::PaintBrushSettingsNotificationBus::Handler
         {
         public:
             PaintBrushSettingsWindow(QWidget* parent = nullptr);
@@ -67,6 +69,11 @@ namespace PaintBrush
             }
 
         private:
+            void OnIntensityChanged(float intensity) override;
+            void OnOpacityChanged(float opacity) override;
+            void OnRadiusChanged(float radius) override;
+
+
             // RPE Support
             AzToolsFramework::ReflectedPropertyEditor* m_propertyEditor = nullptr;
             AZ::SerializeContext* m_serializeContext = nullptr;

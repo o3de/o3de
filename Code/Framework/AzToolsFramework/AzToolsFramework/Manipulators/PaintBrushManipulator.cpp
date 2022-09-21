@@ -20,11 +20,16 @@
 
 namespace AzToolsFramework
 {
+    AZ_CVAR(
+        float,
+        ed_paintBrushRadiusAdjustAmount,
+        0.25f,
+        nullptr,
+        AZ::ConsoleFunctorFlags::Null,
+        "The amount to increase / decrease the paintbrush radius in meters.");
+
     namespace
     {
-        // Increase / decrease paintbrush radius amount in meters.
-        static constexpr float PaintbrushRadiusAdjustAmount = 0.25f;
-
         static constexpr AZ::Crc32 PaintbrushIncreaseRadius = AZ_CRC_CE("org.o3de.action.paintbrush.increase_radius");
         static constexpr AZ::Crc32 PaintbrushDecreaseRadius = AZ_CRC_CE("org.o3de.action.paintbrush.decrease_radius");
 
@@ -237,7 +242,7 @@ namespace AzToolsFramework
                 .SetCallback(
                     [this]()
                     {
-                        AdjustRadius(PaintbrushRadiusAdjustAmount);
+                        AdjustRadius(ed_paintBrushRadiusAdjustAmount);
                     }),
             AzToolsFramework::ActionOverride()
                 .SetUri(PaintbrushDecreaseRadius)
@@ -248,7 +253,7 @@ namespace AzToolsFramework
                 .SetCallback(
                     [this]()
                     {
-                        AdjustRadius(-PaintbrushRadiusAdjustAmount);
+                        AdjustRadius(-ed_paintBrushRadiusAdjustAmount);
                     }),
         };
     }

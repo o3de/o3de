@@ -25,7 +25,7 @@ namespace AzToolsFramework
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         using BusIdType = AZ::EntityComponentIdPair;
 
-        //! ValueLookupFn returns the set of current painted values at the requested positions.
+        //! Returns the set of current painted values at the requested positions.
         //! This should get called in response to receiving a PaintBrushNotificationBus::OnPaint(dirtyRegion, valueLookupFn) event
         //! to get the specific painted values at every position the listener cares about within the dirtyRegion.
         //! @points The input world space positions to query.
@@ -38,7 +38,7 @@ namespace AzToolsFramework
             AZStd::span<float> opacities,
             AZStd::span<bool> validFlags)>;
 
-        //! OnWorldSpaceChanged notifies listeners that the paintbrush transform has changed,
+        //! Notifies listeners that the paintbrush transform has changed,
         //! typically due to the brush moving around in world space.
         //! This will get called in each frame that the brush transform changes.
         //! @param brushTransform The new transform for the brush position/rotation/scale.
@@ -46,27 +46,27 @@ namespace AzToolsFramework
         {
         }
 
-        //! OnPaintModeBegin notifies listeners that the paint mode has been entered.
+        //! Notifies listeners that the paint mode has been entered.
         virtual void OnPaintModeBegin()
         {
         }
 
-        //! OnPaintModeEnd notifies listeners that the paint mode is exiting.
+        //! Notifies listeners that the paint mode is exiting.
         virtual void OnPaintModeEnd()
         {
         }
 
-        //! OnPaintBegin notifies listeners that painting has begun.
+        //! Notifies listeners that painting has begun.
         virtual void OnPaintBegin()
         {
         }
 
-        //! OnPaintBegin notifies listeners that painting has ended.
+        //! Notifies listeners that painting has ended.
         virtual void OnPaintEnd()
         {
         }
 
-        //! OnPaint notifies listeners that the paintbrush has painted in a region.
+        //! Notifies listeners that the paintbrush has painted in a region.
         //! This will get called in each frame that the paintbrush continues to paint and the brush has moved.
         //! Since the paintbrush doesn't know how it's being used, and the system using a paintbrush doesn't know the specifics of the
         //! paintbrush shape and pattern, this works through a back-and-forth handshake.

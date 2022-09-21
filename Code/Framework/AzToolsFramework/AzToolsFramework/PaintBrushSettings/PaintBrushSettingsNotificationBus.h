@@ -19,19 +19,19 @@ namespace AzToolsFramework
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
 
-        //! OnIntensityChanged notifies listeners that the paintbrush intensity setting has changed.
+        //! Notifies listeners that the paintbrush intensity setting has changed.
         //! @param intensity The new intensity setting for the paintbrush (0=black, 1=white).
         virtual void OnIntensityChanged([[maybe_unused]] float intensity)
         {
         }
 
-        //! OnOpacityChanged notifies listeners that the paintbrush opacity setting has changed.
+        //! Notifies listeners that the paintbrush opacity setting has changed.
         //! @param opacity The new opacity setting for the paintbrush (0=transparent, 1=opaque).
         virtual void OnOpacityChanged([[maybe_unused]] float opacity)
         {
         }
 
-        //! OnRadiusChanged notifies listeners that the paintbrush radius setting has changed.
+        //! Notifies listeners that the paintbrush radius setting has changed.
         //! @param radius The new radius setting for the paintbrush, in meters.
         virtual void OnRadiusChanged([[maybe_unused]] float radius)
         {

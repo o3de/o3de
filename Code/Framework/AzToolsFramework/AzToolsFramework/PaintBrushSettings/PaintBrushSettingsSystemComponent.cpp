@@ -70,6 +70,4 @@ namespace AzToolsFramework
     {
         m_settings.SetOpacity(opacity);
     }
-
-
 } // namespace AzToolsFramework
