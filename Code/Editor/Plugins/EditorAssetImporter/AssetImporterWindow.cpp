@@ -702,7 +702,7 @@ void AssetImporterWindow::FileChanged(QString path)
         promptMessage += tr("\n\nThis scene file is still cached and will not reload correctly. The Editor should be shut down and re-launched to properly load the modified external data.");
     }
 
-    const int result = QMessageBox::question(
+    QMessageBox::question(
         this,
         tr("External Change"),
         promptMessage.arg(path),
