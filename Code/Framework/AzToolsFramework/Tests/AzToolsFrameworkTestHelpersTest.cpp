@@ -7,9 +7,6 @@
  */
 
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
-#include <AzToolsFramework/Viewport/ViewportSettings.h>
-
-#include <Editor/EditorSettingsAPIBus.h>
 
 #include <QObject>
 #include <QWidget>
@@ -66,14 +63,6 @@ namespace UnitTest
         m_rootWidget->move(mouseMoveParams.m_widgetPosition);
         m_rootWidget->setFixedSize(mouseMoveParams.m_widgetSize);
 
-        auto switcherEnabled = false;
-        if (AzToolsFramework::ComponentSwitcherEnabled())
-        {
-            AzToolsFramework::SetComponentSwitcherEnabled(false);
-            AzToolsFramework::EditorSettingsAPIBus::Broadcast(&AzToolsFramework::EditorSettingsAPIBus::Events::SaveSettingsRegistryFile);
-            switcherEnabled = true;
-        }
-
         // when
         MouseMove(m_rootWidget, mouseMoveParams.m_localCursorPosition, mouseMoveParams.m_cursorDelta);
 
@@ -87,19 +76,13 @@ namespace UnitTest
         EXPECT_THAT(mouseLocalPosition.y(), Eq(expectedPosition.y()));
         EXPECT_THAT(mouseLocalPositionFromGlobal.x(), Eq(expectedPosition.x()));
         EXPECT_THAT(mouseLocalPositionFromGlobal.y(), Eq(expectedPosition.y()));
-
-        if (switcherEnabled)
-        {
-            AzToolsFramework::SetComponentSwitcherEnabled(true);
-            AzToolsFramework::EditorSettingsAPIBus::Broadcast(&AzToolsFramework::EditorSettingsAPIBus::Events::SaveSettingsRegistryFile);
-        }
     }
 
     INSTANTIATE_TEST_CASE_P(
         All,
         MouseMoveAzToolsFrameworkTestHelperFixture,
         testing::Values(
-            MouseMoveParams{ QSize(100, 100), QPoint(30, 30), QPoint(0, 0), QPoint(30, 30) },
+            MouseMoveParams{ QSize(100, 100), QPoint(0, 0), QPoint(0, 0), QPoint(10, 10) },
             MouseMoveParams{ QSize(100, 100), QPoint(100, 100), QPoint(0, 0), QPoint(10, 10) },
             MouseMoveParams{ QSize(100, 100), QPoint(20, 20), QPoint(50, 50), QPoint(20, 20) }));
 
