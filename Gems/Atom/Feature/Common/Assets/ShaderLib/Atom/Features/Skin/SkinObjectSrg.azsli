@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <scenesrg.srgi>
+#include <Atom/Features/SrgSemantics.azsli>
 
 ShaderResourceGroup ObjectSrg : SRG_PerObject
 {
