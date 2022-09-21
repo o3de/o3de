@@ -226,7 +226,7 @@ ly_set(LY_PACKAGE_VALIDATE_PACKAGE ${temp_LY_PACKAGE_VALIDATE_PACKAGE})
 
 if (NOT CMAKE_SCRIPT_MODE_FILE)
     # if we're in script mode, we dont want to actually try to find package or anything else
-
+    set (Python_ROOT_DIR ${LY_ROOT_FOLDER}/python/runtime/${LY_PYTHON_PACKAGE_NAME}/python)
     find_package(Python ${LY_PYTHON_VERSION} REQUIRED)
 
     # note - if you want to use a normal python via FindPython instead of the LY package above,
