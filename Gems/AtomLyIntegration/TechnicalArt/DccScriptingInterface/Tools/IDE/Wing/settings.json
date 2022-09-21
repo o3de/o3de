@@ -2,10 +2,10 @@
 	"LOAD_DOTENV": true,
 	"COMPANY": "Amazon",
 	"DCCSI_CONFIG_IDE_WING": true,
-	"DCCSI_GDEBUG": "False",
-	"DCCSI_DEV_MODE": "False",
+	"DCCSI_GDEBUG": "True",
+	"DCCSI_DEV_MODE": "True",
 	"DCCSI_GDEBUGGER": "WING",
-	"DCCSI_LOGLEVEL": 20,
+	"DCCSI_LOGLEVEL": 10,
 	"DEFAULT_SETTINGS_PATHS": [
 		"settings.py",
 		"settings.json",

@@ -405,7 +405,7 @@ namespace UnitTest
                 const AZStd::chrono::system_clock::time_point assetLoadFinishTime = AZStd::chrono::system_clock::now();
 
                 AZ_Printf("StressTest", "All Assets Loaded: %u assets, took %.2f ms\n", assetsLoaded,
-                    float(AZStd::chrono::microseconds(assetLoadFinishTime - startTime).count()) * 0.001f);
+                    float(AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(assetLoadFinishTime - startTime).count()) * 0.001f);
 
                 return true;
             }
@@ -465,7 +465,7 @@ namespace UnitTest
                     rootSlice->GetEntities(entities);
 
                     AZ_Printf("StressTest", "All Assets Instantiated: %u slices, %u entities, took %.2f ms\n", slices, entities.size(),
-                        float(AZStd::chrono::microseconds(instantiateFinishTime - startTime).count()) * 0.001f);
+                        float(AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(instantiateFinishTime - startTime).count()) * 0.001f);
 
                     return true;
                 }
