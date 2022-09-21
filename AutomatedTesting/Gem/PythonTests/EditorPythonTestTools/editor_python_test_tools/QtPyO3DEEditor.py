@@ -39,9 +39,9 @@ class QtPyO3DEEditor(QtPyCommon):
         general.open_pane(SCRIPT_CANVAS_UI)
         result = TestHelper.wait_for_condition(lambda: general.is_pane_visible(SCRIPT_CANVAS_UI), WAIT_TIME_SEC_3)
 
-        self.sc_editor = QtPyScriptCanvasEditor.QtPyScriptCanvasEditor(self.editor_main_window)
-
         assert result, "Failed to open Script Canvas Editor"
+
+        self.sc_editor = QtPyScriptCanvasEditor.QtPyScriptCanvasEditor(self.editor_main_window)
 
         return self.sc_editor
 
