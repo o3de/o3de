@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 @pytest.mark.parametrize("launcher_platform", ['windows_material_canvas'])
 class TestMaterialCanvas(AtomToolsTestSuite):
 
-    log_name = "material_editor_test.log"
+    log_name = "material_canvas_test.log"
     executable_function = launcher_helper.create_material_canvas
 
     class MaterialCanvas_Atom_LaunchMaterialCanvas_1(AtomToolsBatchedTest):
