@@ -49,12 +49,18 @@ namespace SceneBuilder
         DebugOutputScope(bool isDebug)
             : m_inDebug(isDebug)
         {
-            AZ::SettingsRegistry::Get()->Set(AZ::SceneAPI::Utilities::Key_AssetProcessorInDebugOutput, m_inDebug);
+            if (AZ::SettingsRegistry::Get())
+            {
+                AZ::SettingsRegistry::Get()->Set(AZ::SceneAPI::Utilities::Key_AssetProcessorInDebugOutput, m_inDebug);
+            }
         }
 
         ~DebugOutputScope()
         {
-            AZ::SettingsRegistry::Get()->Set(AZ::SceneAPI::Utilities::Key_AssetProcessorInDebugOutput, false);
+            if (AZ::SettingsRegistry::Get())
+            {
+                AZ::SettingsRegistry::Get()->Set(AZ::SceneAPI::Utilities::Key_AssetProcessorInDebugOutput, false);
+            }
         }
 
         bool m_inDebug;

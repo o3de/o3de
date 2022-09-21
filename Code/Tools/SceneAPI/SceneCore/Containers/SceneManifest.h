@@ -99,7 +99,6 @@ namespace AZ
                 static bool VersionConverter(SerializeContext& context, SerializeContext::DataElementNode& node);
 
                 //! Save manifest to string buffer.
-                //! @param absoluteFilePath the absolute path of the file you want to save to.
                 //! @param context If no serialize context was specified, it will get the context from the application component bus.
                 //! @param registrationContext If no Json registration context was specified, it will get the context from the application component bus.
                 //! @result True in case saving went all fine, false if an error occurred.

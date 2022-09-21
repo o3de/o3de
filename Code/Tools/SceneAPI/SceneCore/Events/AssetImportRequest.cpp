@@ -38,7 +38,10 @@ namespace AZ
                     : m_scene(scene)
                 {
                     m_registered = false;
-                    AZ::SettingsRegistry::Get()->Get(m_registered, AZ::SceneAPI::Utilities::Key_AssetProcessorInDebugOutput);
+                    if (AZ::SettingsRegistry::Get())
+                    {
+                        AZ::SettingsRegistry::Get()->Get(m_registered, AZ::SceneAPI::Utilities::Key_AssetProcessorInDebugOutput);
+                    }
                     if (m_registered)
                     {
                         AZ::Interface<AssetImportRequestReporter>::Register(this);
