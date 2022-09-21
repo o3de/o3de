@@ -43,6 +43,7 @@ class CXTPDockingPaneLayout; // Needed for settings.h
 #include <SceneAPI/SceneCore/Containers/Utilities/Filters.h>
 #include <SceneAPI/SceneCore/DataTypes/Rules/IScriptProcessorRule.h>
 #include <SceneAPI/SceneCore/Events/AssetImportRequest.h>
+#include <SceneAPI/SceneCore/Events/SceneSerializationBus.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <SceneAPI/SceneData/Rules/ScriptProcessorRule.h>
 #include <SceneAPI/SceneUI/Handlers/ProcessingHandlers/AsyncOperationProcessingHandler.h>
@@ -673,14 +674,15 @@ void AssetImporterWindow::FileChanged(QString path)
         return;
     }
 
-    QString promptMessage(tr("The file %1 has been changed outside of the scene settings tool. This tool will be reloaded."));
-
-    // There currently isn't a way to cache unsaved changes, and attempt to re-apply them after reloading.
-    if (m_rootDisplay->HasUnsavedChanges())
+    QString promptMessage([this]()
     {
-        promptMessage = tr("The file %1 has been changed outside of the scene settings tool. This tool will be reloaded and any unsaved changes will be lost. \n\n"
-                           "To prevent this from occuring in the future, do not modify the scene file or scene manifest outside of this tool while this tool has unsaved work.");
-    }
+        if(m_rootDisplay->HasUnsavedChanges()) 
+        {
+            return tr("The file %1 has been changed outside of the scene settings tool. This tool will be reloaded and any unsaved changes will be lost. \n\n"
+                        "To prevent this from occuring in the future, do not modify the scene file or scene manifest outside of this tool while this tool has unsaved work.");
+        }
+        return  tr("The file %1 has been changed outside of the scene settings tool. This tool will be reloaded.");
+    }());
 
     // The scene system holds weak pointers to any previously loaded scenes,
     // and will return a previously cached scene on a requested load.

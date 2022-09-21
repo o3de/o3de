@@ -111,19 +111,14 @@ namespace AZ
         // There's a small window where all shared pointers might be released after cleaning the map
         // and before checking the list here, so this won't be 100% accurate, but it will still catch
         // cases where the scene is in use somewhere.
-        auto sceneIt = m_scenes.find(cleanPath.Native());
-        if (sceneIt != m_scenes.end())
-        {
-            return true;
-        }
-        return false;
+        return m_scenes.find(cleanPath.Native()) != m_scenes.end();
 
     }
 
     AZ::IO::Path SceneSerializationHandler::BuildCleanPathFromFilePath(const AZStd::string& filePath) const
     {
         AZ::IO::Path enginePath;
-        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        if (auto* settingsRegistry = AZ::SettingsRegistry::Get())
         {
             settingsRegistry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
         }
