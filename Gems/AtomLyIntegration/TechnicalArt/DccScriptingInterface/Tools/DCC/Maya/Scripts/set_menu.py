@@ -53,6 +53,35 @@ def menu_cmd_test():
     return
 # -------------------------------------------------------------------------
 
+
+# -------------------------------------------------------------------------
+def export_scene_materials(args):
+    # It is unclear why a False argument is being passed when called from the menu item below, but needed to add args
+    # for function to fire
+
+    _LOGGER.info('Exporting Scene Materials')
+    from importlib import reload
+    from azpy.dcc.maya.helpers import maya_materials_conversion
+    from azpy.o3de.renderer.materials import material_utilities
+    from azpy.o3de.renderer.materials import o3de_material_generator
+    from azpy.dcc.maya.helpers import convert_aiStandardSurface_material
+    from azpy.dcc.maya.helpers import convert_aiStandard_material
+    from azpy.dcc.maya.helpers import convert_stingray_material
+    from SDK.Python import general_utilities
+    from SDK.Maya.Scripts.Python.maya_menu_items import materials_helper
+
+    reload(maya_materials_conversion)
+    reload(material_utilities)
+    reload(o3de_material_generator)
+    reload(convert_aiStandardSurface_material)
+    reload(convert_aiStandard_material)
+    reload(convert_stingray_material)
+    reload(general_utilities)
+    reload(materials_helper)
+    materials_helper.MaterialsHelper('convert')
+# -------------------------------------------------------------------------
+
+
 # -------------------------------------------------------------------------
 def set_main_menu(obj_name=OBJ_DCCSI_MAINMENU, label=TAG_DCCSI_MAINMENU):
     _main_window = pm.language.melGlobals['gMainWindow']
@@ -70,14 +99,16 @@ def set_main_menu(obj_name=OBJ_DCCSI_MAINMENU, label=TAG_DCCSI_MAINMENU):
                                  parent=_main_window,
                                  tearOff=True)
 
-    # make a dummpy sub-menu
-    pm.menuItem(label='Menu Item Stub',
+    # Conversion Section (sub-menu)
+    _LOGGER.info('A')
+    pm.menuItem(label='Conversion Utilities',
                 subMenu=True,
                 parent=_custom_tools_menu,
                 tearOff=True)
-    
-    # make a dummy menu item to test
-    pm.menuItem(label='Test', command=pm.Callback(menu_cmd_test))
+
+    # Conversion Section Menu Items
+    pm.menuItem(label='Export Scene Materials', command=export_scene_materials)
+
     return _custom_tools_menu
 
 # ==========================================================================
