@@ -190,7 +190,7 @@ namespace AZ::Dom
         //! \return an outcome with either the patched element or an error string
         AZ::Outcome<Value, AZStd::string> Apply(Value rootElement, StrategyFunctor strategy = PatchApplicationStrategy::HaltOnFailure) const;
         //! Applies this patch to the given DOM element in place, changing it to the new value.
-        //! //! \param rootElement The DOM element to patch.
+        //! \param rootElement The DOM element to patch.
         //! \param strategy A callback to be run after every patch application, see PatchApplicationState.
         //! \return an outcome with either the patched element or an error string
         PatchOutcome ApplyInPlace(Value& rootElement, StrategyFunctor strategy = PatchApplicationStrategy::HaltOnFailure) const;
@@ -206,7 +206,7 @@ namespace AZ::Dom
         //! Applies this patch to the given DOM element in place, changing it to the new value.
         //! After applying the patch, any "EndOfArray" patch entries are denormalized into their resolved paths.
         //! This operation mutates the underyling patch operations; make a copy if you wish to keep the original patch.
-        //! //! \param rootElement The DOM element to patch.
+        //! \param rootElement The DOM element to patch.
         //! \param strategy A callback to be run after every patch application, see PatchApplicationState.
         //! \return an outcome with either the patched element or an error string
         PatchOutcome ApplyInPlaceAndDenormalize(Value& rootElement, StrategyFunctor strategy = PatchApplicationStrategy::HaltOnFailure);

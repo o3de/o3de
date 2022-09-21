@@ -101,7 +101,7 @@ namespace AZ::Dom
             {
                 if (i >= beforeSize)
                 {
-                    // Per JSON patch RFFC 6902:
+                    // Per JSON patch RFC 6902:
                     // The specified index MUST NOT be greater than the
                     // number of elements in the array.
                     // So for schema-compliant JSON patches, we need to use EndOfArrayIndex.
