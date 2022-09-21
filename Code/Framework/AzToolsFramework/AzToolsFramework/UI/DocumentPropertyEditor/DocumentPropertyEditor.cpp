@@ -374,7 +374,7 @@ namespace AzToolsFramework
     }
 
     DPERowWidget::DPERowWidget(int depth, DPERowWidget* parentRow)
-        : QWidget(nullptr) // parent will be set when the row is added to its layout
+        : QFrame(nullptr) // parent will be set when the row is added to its layout
         , m_parentRow(parentRow)
         , m_depth(depth)
         , m_columnLayout(new DPELayout(depth, this))
@@ -958,6 +958,16 @@ namespace AzToolsFramework
     const AZ::Dom::Path DPERowWidget::GetPath() const
     {
         return m_domPath;
+    }
+
+    bool DPERowWidget::HasChildRows() const
+    {
+        return !m_domOrderedChildren.empty();
+    }
+
+    int DPERowWidget::GetLevel() const
+    {
+        return m_depth;
     }
 
     DocumentPropertyEditor::DocumentPropertyEditor(QWidget* parentWidget)

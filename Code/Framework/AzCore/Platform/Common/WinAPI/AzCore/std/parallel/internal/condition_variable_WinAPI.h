@@ -82,7 +82,7 @@ namespace AZStd
     template <class Rep, class Period>
     AZ_FORCE_INLINE cv_status condition_variable::wait_for(unique_lock<mutex>& lock, const chrono::duration<Rep, Period>& rel_time)
     {
-        chrono::milliseconds toWait = rel_time;
+        auto toWait = AZStd::chrono::duration_cast<chrono::milliseconds>(rel_time);
         // We need to make sure we use CriticalSection based mutex.
         // https://docs.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-sleepconditionvariablecs
         // indicates that this returns nonzero on success, zero on failure

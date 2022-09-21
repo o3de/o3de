@@ -291,7 +291,7 @@ namespace AzFramework
         if (cacheIndex != s_fileNotFound)
         {
             file = m_fileHandles[cacheIndex];
-            m_fileLastUsed[cacheIndex] = AZStd::chrono::high_resolution_clock::now();
+            m_fileLastUsed[cacheIndex] = AZStd::chrono::system_clock::now();
         }
 
         // If the file is not open, eject the oldest entry from the cache and open the file for reading.
@@ -316,7 +316,7 @@ namespace AzFramework
                 return;
             }
 
-            m_fileLastUsed[cacheIndex] = AZStd::chrono::high_resolution_clock::now();
+            m_fileLastUsed[cacheIndex] = AZStd::chrono::system_clock::now();
             if (m_fileHandles[cacheIndex] != InvalidHandle)
             {
                 m_fileIO.Close(m_fileHandles[cacheIndex]);

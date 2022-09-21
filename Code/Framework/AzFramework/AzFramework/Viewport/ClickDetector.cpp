@@ -9,7 +9,7 @@
 #include <AzFramework/Viewport/ClickDetector.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
 
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 
 namespace AzFramework
 {

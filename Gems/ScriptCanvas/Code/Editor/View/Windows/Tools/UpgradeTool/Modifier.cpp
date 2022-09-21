@@ -92,7 +92,7 @@ namespace ScriptCanvasEditor
         AZStd::sys_time_t Modifier::CalculateRemainingWaitTime(const AZStd::unordered_set<size_t>& dependencies) const
         {
             auto maxSeconds = AZStd::chrono::seconds(dependencies.size() * m_config.perDependencyWaitSecondsMax);
-            auto waitedSeconds = AZStd::chrono::seconds(AZStd::chrono::system_clock::now() - m_waitTimeStamp);
+            auto waitedSeconds = AZStd::chrono::duration_cast<AZStd::chrono::seconds>(AZStd::chrono::system_clock::now() - m_waitTimeStamp);
             return (maxSeconds - waitedSeconds).count();
         }
 
@@ -512,7 +512,7 @@ namespace ScriptCanvasEditor
             {
                 ReportModificationError("Dependency update time has taken too long, aborting modification.");
             }
-            else if (AZStd::chrono::seconds(AZStd::chrono::system_clock::now() - m_waitLogTimeStamp).count() > LogPeriodSeconds)
+            else if (AZStd::chrono::duration_cast<AZStd::chrono::seconds>(AZStd::chrono::system_clock::now() - m_waitLogTimeStamp).count() > LogPeriodSeconds)
             {
                 m_waitLogTimeStamp = AZStd::chrono::system_clock::now();
 
