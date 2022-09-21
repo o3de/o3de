@@ -152,11 +152,6 @@ namespace AzToolsFramework
         return GetRegistry(ComponentSwitcherEnabledSetting, true);
     }
 
-    void SetComponentSwitcherEnabled(const bool enabled)
-    {
-        SetRegistry(ComponentSwitcherEnabledSetting, enabled);
-    }
-
     bool PrefabEditModeEffectEnabled()
     {
         return GetRegistry(PrefabEditModeEffectEnabledSetting, false);
