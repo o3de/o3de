@@ -19,7 +19,7 @@
 #include <Atom/Features/PBR/Lights/Ibl.azsli>
 #include <Atom/Features/PBR/Decals.azsli>
 
-void InitializeLightingData_BasePBR(Surface surface, float4 screenPosition, inout LightingData lightingData)
+void InitializeLightingData_BasePBR(inout Surface surface, float4 screenPosition, inout LightingData lightingData)
 {
     // Light iterator
     lightingData.tileIterator.Init(screenPosition, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
@@ -33,7 +33,7 @@ void InitializeLightingData_BasePBR(Surface surface, float4 screenPosition, inou
     lightingData.CalculateMultiscatterCompensation(surface.specularF0, o_specularF0_enableMultiScatterCompensation);
 }
 
-void CalculateLighting_BasePBR(Surface surface, float4 screenPosition, inout LightingData lightingData)
+void CalculateLighting_BasePBR(inout Surface surface, float4 screenPosition, inout LightingData lightingData)
 {
     // Apply Decals
     ApplyDecals(lightingData.tileIterator, surface);
@@ -48,7 +48,7 @@ void CalculateLighting_BasePBR(Surface surface, float4 screenPosition, inout Lig
     lightingData.FinalizeLighting(surface);
 }
 
-LightingData EvaluateLighting_BasePBR(Surface surface, float4 screenPosition)
+LightingData EvaluateLighting_BasePBR(inout Surface surface, float4 screenPosition)
 {
     LightingData lightingData;
     InitializeLightingData_BasePBR(surface, screenPosition, lightingData);

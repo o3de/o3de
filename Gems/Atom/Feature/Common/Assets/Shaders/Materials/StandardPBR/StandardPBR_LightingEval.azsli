@@ -17,7 +17,7 @@
 
 #include "../BasePBR/BasePBR_LightingEval.azsli"
 
-void InitializeLightingData_StandardPBR(Surface surface, float4 screenPosition, inout LightingData lightingData)
+void InitializeLightingData_StandardPBR(inout Surface surface, float4 screenPosition, inout LightingData lightingData)
 {
     // --- Base PBR ---
     InitializeLightingData_BasePBR(surface, screenPosition, lightingData);
@@ -35,7 +35,7 @@ void InitializeLightingData_StandardPBR(Surface surface, float4 screenPosition, 
     }
 }
 
-void HandleOpacity(Surface surface, inout LightingData lightingData)
+void HandleOpacity(inout Surface surface, inout LightingData lightingData)
 {
     if (o_opacity_mode == OpacityMode::Blended || o_opacity_mode == OpacityMode::TintedTransparent)
     {
@@ -88,7 +88,7 @@ void HandleOpacity(Surface surface, inout LightingData lightingData)
     }
 }
 
-LightingData EvaluateLighting_StandardPBR(Surface surface, float4 screenPosition)
+LightingData EvaluateLighting_StandardPBR(inout Surface surface, float4 screenPosition)
 {
     LightingData lightingData;
     InitializeLightingData_StandardPBR(surface, screenPosition, lightingData);
