@@ -26,7 +26,7 @@
 
 namespace AzToolsFramework
 {
-    static const QPoint EditIconOffset = { -18, 4 };
+    static const QPoint EditIconOffset = { -18, 3 };
 
     AzFramework::EntityContextId PrefabUiHandler::s_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
 
