@@ -56,6 +56,18 @@ namespace AtomToolsFramework
     //! @returns the display name generated from the file path
     AZStd::string GetDisplayNameFromPath(const AZStd::string& path);
 
+    //! Prompts the user to select one more strings from a dialogue with a list widget.
+    //! @param selectedStrings Input for the currently selected set of strings. Output for the newly selected strings.
+    //! @param availableStrings List of strings that will populate the dialogue with available choices.
+    //! @param title Text that will be displayed at the top of the dialogue.
+    //! @param multiSelect Flag that determines whether the user will be able to select one or multiple strings.
+    //! @returns True if the user accepted the selected strings. Otherwise false.
+    bool GetStringListFromDialog(
+        AZStd::vector<AZStd::string>& selectedStrings,
+        const AZStd::vector<AZStd::string>& availableStrings,
+        const AZStd::string& title = "Select Values",
+        const bool multiSelect = false);
+
     //! Opens a dialog to prompt the user to select a save file path
     //! @param initialPath File path initially selected in the dialog
     //! @param title Description of the filetype being opened that's displayed at the top of the dialog
