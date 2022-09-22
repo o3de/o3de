@@ -58,7 +58,7 @@ namespace AZStd
     template <class Clock, class Duration>
     AZ_FORCE_INLINE cv_status condition_variable::wait_until(unique_lock<mutex>& lock, const chrono::time_point<Clock, Duration>& abs_time)
     {
-        chrono::system_clock::time_point now = chrono::system_clock::now();
+        auto now = chrono::steady_clock::now();
         if (now < abs_time)
         {
             return wait_for(lock, abs_time - now);
@@ -99,7 +99,7 @@ namespace AZStd
             {
                 return cv_status::timeout;
             }
-        } 
+        }
         return cv_status::no_timeout;
     }
     template <class Rep, class Period, class Predicate>
@@ -174,7 +174,7 @@ namespace AZStd
     template <class Lock, class Clock, class Duration>
     AZ_FORCE_INLINE cv_status condition_variable_any::wait_until(Lock& lock, const chrono::time_point<Clock, Duration>& abs_time)
     {
-        auto now = chrono::system_clock::now();
+        auto now = chrono::steady_clock::now();
         if (now < abs_time)
         {
             return wait_for(lock, abs_time - now);

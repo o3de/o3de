@@ -92,7 +92,7 @@ namespace AZStd
     template <class Clock, class Duration>
     AZ_FORCE_INLINE bool semaphore::try_acquire_until(const chrono::time_point<Clock, Duration>& abs_time)
     {
-        auto nowTime = chrono::system_clock::now();
+        auto nowTime = chrono::steady_clock::now();
         if (nowTime >= abs_time)
         {
             return false; // we have already timed out.

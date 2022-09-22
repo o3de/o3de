@@ -158,6 +158,9 @@ namespace AZ::Dom
         //! "path/to/foo/0"
         void FromString(AZStd::string_view pathString);
 
+        //! Returns true if this path contains any "EndOfArray" entries that require a target DOM to look up.
+        bool ContainsNormalizedEntries() const;
+
     private:
         ContainerType m_entries;
     };

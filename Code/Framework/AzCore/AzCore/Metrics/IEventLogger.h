@@ -15,7 +15,7 @@
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/Casting/numeric_cast.h>
 
-namespace AZ::Debug
+namespace AZ::Metrics
 {
     //! Simple hash structure based on DJB2a to generate event IDs at compile time
     class EventNameHash

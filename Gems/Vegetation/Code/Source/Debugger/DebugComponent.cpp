@@ -155,10 +155,10 @@ bool DebugComponent::WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const
 void DebugComponent::DisplayEntityViewport(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
 {
     // time to collect the report?
-    if (AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(AZStd::chrono::system_clock::now() - m_lastCollectionTime).count() > m_configuration.m_collectionFrequencyUs)
+    if (AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(AZStd::chrono::steady_clock::now() - m_lastCollectionTime).count() > m_configuration.m_collectionFrequencyUs)
     {
         PrepareNextReport();
-        m_lastCollectionTime = AZStd::chrono::system_clock::now();
+        m_lastCollectionTime = AZStd::chrono::steady_clock::now();
 
         if(m_configuration.m_showVisualization)
         {
@@ -936,7 +936,7 @@ void DebugComponent::PrepareNextReport()
     AZStd::lock_guard<decltype(m_reportMutex)> lock(m_reportMutex);
     m_thePerformanceReport.m_count++;
     m_thePerformanceReport.m_activeInstanceCount = instanceCount;
-    m_thePerformanceReport.m_lastUpdateTime = AZStd::chrono::system_clock::now();
+    m_thePerformanceReport.m_lastUpdateTime = AZStd::chrono::steady_clock::now();
     DebugUtility::MergeResults(sectorTimingMap, m_thePerformanceReport.m_sectorTimingData, m_thePerformanceReport.m_lastUpdateTime, [](const SectorTiming& newTiming, SectorTiming& timing)
     {
         for (const auto& newData : newTiming.m_perAreaData)
@@ -1044,7 +1044,7 @@ void DebugComponent::DumpPerformanceReport(const PerformanceReport& report, Filt
     AZStd::string logFolder = AZStd::string::format("@log@/vegetation");
     AZ::IO::LocalFileIO::GetInstance()->CreatePath(logFolder.c_str());
 
-    AZ::u64 timeSinceEpoch = AZStd::chrono::system_clock::now().time_since_epoch().count();
+    AZ::u64 timeSinceEpoch = AZStd::chrono::steady_clock::now().time_since_epoch().count();
     AZStd::string logFile = AZStd::string::format("%s/%s_%s_%s_%llu.csv", logFolder.c_str(), "vegperf", GetSortTypeString(sort), GetFilterTypeLevelString(filter), timeSinceEpoch);
 
     AZ::IO::HandleType logHandle;
