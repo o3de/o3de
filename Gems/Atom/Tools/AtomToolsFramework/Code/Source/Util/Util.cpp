@@ -110,7 +110,7 @@ namespace AtomToolsFramework
         return GetDisplayNameFromText(fileInfo.baseName().toUtf8().constData());
     }
 
-    AZStd::string GetSaveFilePath(const AZStd::string& initialPath, const AZStd::string& title)
+    AZStd::string GetSaveFilePathFromDialog(const AZStd::string& initialPath, const AZStd::string& title)
     {
         const QFileInfo initialFileInfo(initialPath.c_str());
         const QString initialExt(initialFileInfo.completeSuffix());
@@ -139,11 +139,11 @@ namespace AtomToolsFramework
             .absoluteFilePath().toUtf8().constData();
     }
 
-    AZStd::vector<AZStd::string> GetOpenFilePaths(const QRegExp& filter, const AZStd::string& title)
+    AZStd::vector<AZStd::string> GetOpenFilePathsFromDialog(const QRegExp& filter, const AZStd::string& title, const bool multiSelect)
     {
         auto selection = AzToolsFramework::AssetBrowser::AssetSelectionModel::SourceAssetTypeSelection(filter);
         selection.SetTitle(title.c_str());
-        selection.SetMultiselect(true);
+        selection.SetMultiselect(multiSelect);
 
         AzToolsFramework::AssetBrowser::AssetBrowserComponentRequestBus::Broadcast(
             &AzToolsFramework::AssetBrowser::AssetBrowserComponentRequests::PickAssets, selection, GetToolMainWindow());
@@ -170,14 +170,9 @@ namespace AtomToolsFramework
         return fileInfo.absoluteFilePath().toUtf8().constData();
     }
 
-    AZStd::string GetUniqueDefaultSaveFilePath(const AZStd::string& extension)
+    AZStd::string GetUniqueUntitledFilePath(const AZStd::string& extension)
     {
         return GetUniqueFilePath(AZStd::string::format("%s/Assets/untitled.%s", AZ::Utils::GetProjectPath().c_str(), extension.c_str()));
-    }
-
-    AZStd::string GetUniqueDuplicateFilePath(const AZStd::string& initialPath)
-    {
-        return GetSaveFilePath(GetUniqueFilePath(initialPath), "Duplicate File");
     }
 
     bool ValidateDocumentPath(AZStd::string& path)
@@ -540,10 +535,9 @@ namespace AtomToolsFramework
             addUtilFunc(behaviorContext->Method("GetSymbolNameFromText", GetSymbolNameFromText, nullptr, ""));
             addUtilFunc(behaviorContext->Method("GetDisplayNameFromText", GetDisplayNameFromText, nullptr, ""));
             addUtilFunc(behaviorContext->Method("GetDisplayNameFromPath", GetDisplayNameFromPath, nullptr, ""));
-            addUtilFunc(behaviorContext->Method("GetSaveFilePath", GetSaveFilePath, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetSaveFilePathFromDialog", GetSaveFilePathFromDialog, nullptr, ""));
             addUtilFunc(behaviorContext->Method("GetUniqueFilePath", GetUniqueFilePath, nullptr, ""));
-            addUtilFunc(behaviorContext->Method("GetUniqueDefaultSaveFilePath", GetUniqueDefaultSaveFilePath, nullptr, ""));
-            addUtilFunc(behaviorContext->Method("GetUniqueDuplicateFilePath", GetUniqueDuplicateFilePath, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetUniqueUntitledFilePath", GetUniqueUntitledFilePath, nullptr, ""));
             addUtilFunc(behaviorContext->Method("ValidateDocumentPath", ValidateDocumentPath, nullptr, ""));
             addUtilFunc(behaviorContext->Method("IsDocumentPathInSupportedFolder", IsDocumentPathInSupportedFolder, nullptr, ""));
             addUtilFunc(behaviorContext->Method("IsDocumentPathEditable", IsDocumentPathEditable, nullptr, ""));

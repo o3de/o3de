@@ -60,13 +60,15 @@ namespace AtomToolsFramework
     //! @param initialPath File path initially selected in the dialog
     //! @param title Description of the filetype being opened that's displayed at the top of the dialog
     //! @returns Absolute path of the selected file, or an empty string if nothing was selected
-    AZStd::string GetSaveFilePath(const AZStd::string& initialPath, const AZStd::string& title = "Document");
+    AZStd::string GetSaveFilePathFromDialog(const AZStd::string& initialPath, const AZStd::string& title = "Document");
 
     //! Opens a dialog to prompt the user to select one or more files to open 
     //! @param filter A regular expression filter to determine which files are selectable and displayed in the dialog 
     //! @param title Description of the filetype being opened that's displayed at the top of the dialog
+    //! @param multiSelect If true, the file picker will allow selecting multiple files
     //! @returns Container of selected files matching the filter 
-    AZStd::vector<AZStd::string> GetOpenFilePaths(const QRegExp& filter, const AZStd::string& title = "Document");
+    AZStd::vector<AZStd::string> GetOpenFilePathsFromDialog(
+        const QRegExp& filter, const AZStd::string& title = "Document", const bool multiSelect = true);
 
     //! Converts an input file path to a unique file path by appending a unique number
     //! @param initialPath The starting path that will be compared to other existing files and modified until it is unique
@@ -76,12 +78,7 @@ namespace AtomToolsFramework
     //! Generates a unique, untitled file path in the project asset folder
     //! @param Extension Extension of the file path to be generated
     //! @returns Absolute file path with a unique filename
-    AZStd::string GetUniqueDefaultSaveFilePath(const AZStd::string& extension);
-
-    //! Opens a dialog to prompt the user to select a file path where the initial file will be duplicated 
-    //! @param initialPath File path to be duplicated, will be used to generate a unique filename for the new file 
-    //! @returns Absolute path of the selected file, or an empty string if nothing was selected
-    AZStd::string GetUniqueDuplicateFilePath(const AZStd::string& initialPath);
+    AZStd::string GetUniqueUntitledFilePath(const AZStd::string& extension);
 
     //! Verifies that an input file path is not empty, is not relative, can be normalized, and is a valid source file path accessible by the project
     //! @param path File path to be validated and normalized
