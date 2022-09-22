@@ -703,7 +703,7 @@ namespace AZ
 
             bool MaterialPropertyInspector::SaveMaterial(const AZStd::string& path) const
             {
-                const auto& saveFilePath = AtomToolsFramework::GetSaveFilePath(path);
+                const auto& saveFilePath = AtomToolsFramework::GetSaveFilePathFromDialog(path);
                 if (saveFilePath.empty())
                 {
                     return false;

@@ -99,8 +99,8 @@ namespace AtomToolsFramework
 
     void EntityPreviewViewportSettingsInspector::CreateModelPreset()
     {
-        const AZStd::string defaultPath = GetUniqueDefaultSaveFilePath(AZ::Render::ModelPreset::Extension);
-        const AZStd::string savePath = GetSaveFilePath(defaultPath);
+        const AZStd::string defaultPath = GetUniqueUntitledFilePath(AZ::Render::ModelPreset::Extension);
+        const AZStd::string savePath = GetSaveFilePathFromDialog(defaultPath);
         if (!savePath.empty())
         {
             EntityPreviewViewportSettingsRequestBus::Event(
@@ -155,10 +155,10 @@ namespace AtomToolsFramework
 
         if (defaultPath.empty())
         {
-            defaultPath = GetUniqueDefaultSaveFilePath(AZ::Render::ModelPreset::Extension);
+            defaultPath = GetUniqueUntitledFilePath(AZ::Render::ModelPreset::Extension);
         }
 
-        const AZStd::string savePath = GetSaveFilePath(defaultPath);
+        const AZStd::string savePath = GetSaveFilePathFromDialog(defaultPath);
         if (!savePath.empty())
         {
             EntityPreviewViewportSettingsRequestBus::Event(m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::SetModelPreset, m_modelPreset);
@@ -200,8 +200,8 @@ namespace AtomToolsFramework
 
     void EntityPreviewViewportSettingsInspector::CreateLightingPreset()
     {
-        const AZStd::string defaultPath = GetUniqueDefaultSaveFilePath(AZ::Render::LightingPreset::Extension);
-        const AZStd::string savePath = GetSaveFilePath(defaultPath);
+        const AZStd::string defaultPath = GetUniqueUntitledFilePath(AZ::Render::LightingPreset::Extension);
+        const AZStd::string savePath = GetSaveFilePathFromDialog(defaultPath);
         if (!savePath.empty())
         {
             EntityPreviewViewportSettingsRequestBus::Event(
@@ -256,10 +256,10 @@ namespace AtomToolsFramework
 
         if (defaultPath.empty())
         {
-            defaultPath = GetUniqueDefaultSaveFilePath(AZ::Render::LightingPreset::Extension);
+            defaultPath = GetUniqueUntitledFilePath(AZ::Render::LightingPreset::Extension);
         }
 
-        const AZStd::string savePath = GetSaveFilePath(defaultPath);
+        const AZStd::string savePath = GetSaveFilePathFromDialog(defaultPath);
         if (!savePath.empty())
         {
             EntityPreviewViewportSettingsRequestBus::Event(m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::SetLightingPreset, m_lightingPreset);

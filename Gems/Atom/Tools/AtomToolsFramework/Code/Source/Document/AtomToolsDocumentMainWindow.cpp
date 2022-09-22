@@ -115,7 +115,6 @@ namespace AtomToolsFramework
                 {
                     SetStatusError(tr("Document save failed: %1").arg(documentPath));
                 }
-                return;
             }
         }, QKeySequence::Save);
 
@@ -358,7 +357,7 @@ namespace AtomToolsFramework
                 const QString title = tr("%1 Document").arg(documentType.m_documentTypeName.c_str());
                 CreateActionAtPosition(parentMenu, insertPostion, name, [expression, title, toolId = m_toolId]() {
                     // Open all files selected in the get open file path dialog
-                    for (const auto& path : GetOpenFilePaths(QRegExp(expression, Qt::CaseInsensitive), title.toUtf8().constData()))
+                    for (const auto& path : GetOpenFilePathsFromDialog(QRegExp(expression, Qt::CaseInsensitive), title.toUtf8().constData()))
                     {
                         AtomToolsDocumentSystemRequestBus::Event(
                             toolId, &AtomToolsDocumentSystemRequestBus::Events::OpenDocument, path);
@@ -588,7 +587,20 @@ namespace AtomToolsFramework
 
     AZStd::string AtomToolsDocumentMainWindow::GetSaveDocumentParams(const AZStd::string& initialPath) const
     {
-        return GetSaveFilePath(initialPath);
+        if (initialPath.empty())
+        {
+            // If the initial path is empty attempt to determine one using the document type info supported save extensions. This should be
+            // extended so that the save dialog lists out all of the available save extensions for documents that support more than one.
+            DocumentTypeInfo documentTypeInfo;
+            AtomToolsDocumentRequestBus::EventResult(
+                documentTypeInfo, GetCurrentDocumentId(), &AtomToolsDocumentRequestBus::Events::GetDocumentTypeInfo);
+            if (!documentTypeInfo.m_supportedExtensionsToSave.empty())
+            {
+                return GetSaveFilePathFromDialog(GetUniqueUntitledFilePath(documentTypeInfo.m_supportedExtensionsToSave.front().second));
+            }
+        }
+
+        return GetSaveFilePathFromDialog(GetUniqueFilePath(initialPath));
     }
 
     void AtomToolsDocumentMainWindow::OnDocumentOpened(const AZ::Uuid& documentId)
