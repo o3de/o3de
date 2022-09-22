@@ -1417,7 +1417,7 @@ namespace AZ::Data
     //=========================================================================
     // ReloadAsset
     //=========================================================================
-    void AssetManager::ReloadAsset(const AssetId& assetId, AssetLoadBehavior assetReferenceLoadBehavior, bool isAutoReload)
+    Asset<AssetData> AssetManager::ReloadAsset(const AssetId& assetId, AssetLoadBehavior assetReferenceLoadBehavior, bool isAutoReload)
     {
         ASSET_DEBUG_OUTPUT(AZStd::string::format("Reload asset - " AZ_STRING_FORMAT, AZ_STRING_ARG(assetId.ToFixedString())));
 
@@ -1433,7 +1433,7 @@ namespace AZ::Data
                 // Only existing assets can be reloaded.
                 ASSET_DEBUG_OUTPUT(AZStd::string::format("Asset does not exist or is already loading - reload abort - " AZ_STRING_FORMAT,
                     AZ_STRING_ARG(assetId.ToFixedString())));
-                return;
+                return newAsset;
             }
 
             auto reloadIter = m_reloads.find(assetId);
@@ -1446,7 +1446,7 @@ namespace AZ::Data
                 if (curStatus == AssetData::AssetStatus::Queued)
                 {
                     ASSET_DEBUG_OUTPUT(AZStd::string::format("Already reloading - queued - " AZ_STRING_FORMAT, AZ_STRING_ARG(assetId.ToFixedString())));
-                    return;
+                    return reloadIter->second;
                 }
                 else if (curStatus == AssetData::AssetStatus::Loading || curStatus == AssetData::AssetStatus::StreamReady || curStatus == AssetData::AssetStatus::LoadedPreReady)
                 {
@@ -1455,7 +1455,7 @@ namespace AZ::Data
                         AZ_STRING_ARG(assetId.ToFixedString())));
                     // Don't flood the tick bus - this value will be checked when the asset load completes
                     reloadIter->second->SetRequeue(true);
-                    return;
+                    return reloadIter->second;
                 }
 
                 ASSET_DEBUG_OUTPUT(AZStd::string::format(
@@ -1484,7 +1484,7 @@ namespace AZ::Data
                 // Reloading an "instance asset" is basically a no-op.
                 // We'll simply notify users to reload the asset.
                 AssetBus::QueueFunction(&AssetManager::NotifyAssetReloaded, this, currentAsset);
-                return;
+                return currentAsset;
             }
             else
             {
@@ -1494,7 +1494,7 @@ namespace AZ::Data
             // Current AssetData has requested not to be auto reloaded
             if (preventAutoReload)
             {
-                return;
+                return currentAsset;
             }
 
             // Resolve the asset handler and allocate new data for the reload.
@@ -1574,6 +1574,8 @@ namespace AZ::Data
                 m_ownedAssetContainerLookup.insert({ assetId, container.get() });
             }
         }
+
+        return newAsset;
     }
 
     //=========================================================================

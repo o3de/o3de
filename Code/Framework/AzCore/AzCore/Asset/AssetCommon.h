@@ -515,7 +515,7 @@ namespace AZ
                 const AZ::Data::AssetLoadParameters& assetLoadFilterCB = AssetLoadParameters{});
             AssetData::AssetStatus BlockUntilLoadComplete(const Asset<AssetData>& asset);
             void UpdateAssetInfo(AssetId& id, AZStd::string& assetHint);
-            bool ReloadAsset(AssetData* assetData, AssetLoadBehavior assetReferenceLoadBehavior);
+            Asset<AssetData> ReloadAsset(AssetData* assetData, AssetLoadBehavior assetReferenceLoadBehavior);
             bool SaveAsset(AssetData* assetData, AssetLoadBehavior assetReferenceLoadBehavior);
             Asset<AssetData> GetAssetData(const AssetId& id, AssetLoadBehavior assetReferenceLoadBehavior);
             AssetId ResolveAssetId(const AssetId& id);
@@ -1203,7 +1203,14 @@ namespace AZ
         {
             if (m_assetData && m_assetData->GetId().IsValid())
             {
-                return AssetInternal::ReloadAsset(m_assetData, m_loadBehavior);
+                auto asset = AssetInternal::ReloadAsset(m_assetData, m_loadBehavior);
+
+                // Only assign on success so we don't lose the assetId/assetType if the above failed
+                if (asset)
+                {
+                    *this = asset;
+                    return true;
+                }
             }
 
             return false;

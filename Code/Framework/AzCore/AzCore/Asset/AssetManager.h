@@ -266,7 +266,7 @@ namespace AZ
             /**
              * Requests a reload of a given asset from storage.
              */
-            void ReloadAsset(const AssetId& assetId, AssetLoadBehavior assetReferenceLoadBehavior, bool isAutoReload = false);
+            Asset<AssetData> ReloadAsset(const AssetId& assetId, AssetLoadBehavior assetReferenceLoadBehavior, bool isAutoReload = false);
 
             /**
              * Reloads an asset from provided in-memory data.
