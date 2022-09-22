@@ -231,12 +231,12 @@ namespace AZ::Debug
     Trace::WaitForDebugger([[maybe_unused]] float timeoutSeconds/*=-1.f*/)
     {
 #if defined(AZ_ENABLE_DEBUG_TOOLS)
-        using AZStd::chrono::system_clock;
+        using AZStd::chrono::steady_clock;
         using AZStd::chrono::time_point;
         using AZStd::chrono::milliseconds;
 
         milliseconds timeoutMs = milliseconds(aznumeric_cast<long long>(timeoutSeconds * 1000));
-        system_clock clock;
+        steady_clock clock;
         time_point start = clock.now();
         auto hasTimedOut = [&clock, start, timeoutMs]()
         {

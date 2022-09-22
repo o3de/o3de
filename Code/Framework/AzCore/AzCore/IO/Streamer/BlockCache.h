@@ -73,7 +73,7 @@ namespace AZ::IO
         bool ExecuteRequests() override;
 
         void UpdateStatus(Status& status) const override;
-        void UpdateCompletionEstimates(AZStd::chrono::system_clock::time_point now, AZStd::vector<FileRequest*>& internalPending,
+        void UpdateCompletionEstimates(AZStd::chrono::steady_clock::time_point now, AZStd::vector<FileRequest*>& internalPending,
             StreamerContext::PreparedQueue::iterator pendingBegin, StreamerContext::PreparedQueue::iterator pendingEnd) override;
         void AddDelayedRequests(AZStd::vector<FileRequest*>& internalPending);
         void UpdatePendingRequestEstimations();
@@ -114,7 +114,7 @@ namespace AZ::IO
             void Prefix(const Section& section);
         };
 
-        using TimePoint = AZStd::chrono::system_clock::time_point;
+        using TimePoint = AZStd::chrono::steady_clock::time_point;
 
         void ReadFile(FileRequest* request, Requests::ReadData& data);
         void ContinueReadFile(FileRequest* request, u64 fileLength);

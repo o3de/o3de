@@ -501,7 +501,7 @@ namespace AssetProcessor
             // we need the relative path too:
             CheckDeletedSourceFile(
                 iter.key(), iter.value().m_sourceRelativeToWatchFolder, iter.value().m_sourceDatabaseName,
-                AZStd::chrono::system_clock::now());
+                AZStd::chrono::steady_clock::now());
         }
 
         // we want to remove any left over scan folders from the database only after
@@ -1880,7 +1880,7 @@ namespace AssetProcessor
                     CheckDeletedSourceFile(
                         productPath.GetIntermediatePath().c_str(), productPath.GetRelativePath().c_str(),
                         productPath.GetRelativePath().c_str(),
-                        AZStd::chrono::system_clock::now());
+                        AZStd::chrono::steady_clock::now());
                 }
 
                 m_checkFoldersToRemove.insert(productPath.GetCachePath().c_str());
@@ -1892,7 +1892,7 @@ namespace AssetProcessor
     }
 
     void AssetProcessorManager::CheckDeletedSourceFile(QString normalizedPath, QString relativePath, QString databaseSourceFile,
-        AZStd::chrono::system_clock::time_point initialProcessTime)
+        AZStd::chrono::steady_clock::time_point initialProcessTime)
     {
         // getting here means an input asset has been deleted
         // and no overrides exist for it.
@@ -1903,9 +1903,9 @@ namespace AssetProcessor
         // To avoid retrying forever, we keep track of the time of the first deletion failure and only retry
         // if less than this amount of time has passed.
         constexpr int MaxRetryPeriodMS = 500;
-        AZStd::chrono::duration<double, AZStd::milli> duration = AZStd::chrono::system_clock::now() - initialProcessTime;
+        AZStd::chrono::duration<double, AZStd::milli> duration = AZStd::chrono::steady_clock::now() - initialProcessTime;
 
-        if (initialProcessTime > AZStd::chrono::system_clock::time_point{}
+        if (initialProcessTime > AZStd::chrono::steady_clock::time_point{}
             && duration >= AZStd::chrono::milliseconds(MaxRetryPeriodMS))
         {
             AZ_Warning(AssetProcessor::ConsoleChannel, false, "Failed to delete product(s) from source file `%s` after retrying for %fms.  Giving up.",
@@ -1965,8 +1965,8 @@ namespace AssetProcessor
                                 deleteFailure = true;
                                 CheckSource(FileEntry(
                                     normalizedPath, true, false,
-                                    initialProcessTime > AZStd::chrono::system_clock::time_point{} ? initialProcessTime
-                                                                                                   : AZStd::chrono::system_clock::now()));
+                                    initialProcessTime > AZStd::chrono::steady_clock::time_point{} ? initialProcessTime
+                                                                                                   : AZStd::chrono::steady_clock::now()));
                                 AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Delete failed on %s. Will retry!\n", normalizedPath.toUtf8().constData());
                                 continue;
                             }

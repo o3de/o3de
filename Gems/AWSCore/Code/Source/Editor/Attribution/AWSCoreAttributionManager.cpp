@@ -125,7 +125,7 @@ namespace AWSCore
         AZ::u64 delayInSeconds = 0;
         if (!m_settingsRegistry->Get(delayInSeconds, AWSAttributionDelaySecondsKey))
         {
-            delayInSeconds = 86400 * AWSAttributionDefaultDelayInDays;
+            delayInSeconds = static_cast<AZ::u64>(AZStd::chrono::duration_cast<AZStd::chrono::seconds>(AZStd::chrono::days(AWSAttributionDefaultDelayInDays)).count());
             m_settingsRegistry->Set(AWSAttributionDelaySecondsKey, delayInSeconds);
         }
 
