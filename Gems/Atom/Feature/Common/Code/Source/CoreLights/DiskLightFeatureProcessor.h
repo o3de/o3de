@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Math/Frustum.h>
+#include <AzCore/Math/Hemisphere.h>
 #include <Atom/Feature/CoreLights/DiskLightFeatureProcessorInterface.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
@@ -78,7 +79,7 @@ namespace AZ
             static void UpdateBulbPositionOffset(DiskLightData& light);
 
             void ValidateAndSetConeAngles(LightHandle handle, float innerRadians, float outerRadians);
-            void UpdateFrustum(LightHandle handle);
+            void UpdateBounds(LightHandle handle);
             void UpdateShadow(LightHandle handle);
 
             // Convenience function for forwarding requests to the ProjectedShadowFeatureProcessor
@@ -87,7 +88,7 @@ namespace AZ
 
             ProjectedShadowFeatureProcessor* m_shadowFeatureProcessor = nullptr;
 
-            MultiIndexedDataVector<DiskLightData, AZ::Frustum> m_lightData;
+            MultiIndexedDataVector<DiskLightData, AZ::Frustum, AZ::Hemisphere> m_lightData;
             GpuBufferHandler m_lightBufferHandler;
             RHI::Handle<uint32_t> m_lightMeshFlag;
             RHI::Handle<uint32_t> m_shadowMeshFlag;

@@ -59,6 +59,7 @@ namespace AZ
         bool Contains(const Sphere& sphere,  const Aabb& aabb);
         bool Contains(const Sphere& sphere,  const Vector3& point);
         bool Contains(const Sphere& sphere1, const Sphere& sphere2);
+        bool Contains(const Hemisphere& sphere1, const Aabb& aabb);
         bool Contains(const Frustum& frustum,  const Aabb& aabb);
         bool Contains(const Frustum& frustum,  const Sphere& sphere);
         bool Contains(const Frustum& frustum,  const Vector3& point);

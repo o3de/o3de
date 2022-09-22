@@ -45,21 +45,21 @@ namespace AZ
         void DiskLightFeatureProcessor::Activate()
         {
             GpuBufferHandler::Descriptor desc;
-            desc.m_bufferName = "DiskLightBuffer";
-            desc.m_bufferSrgName = "m_diskLights";
-            desc.m_elementCountSrgName = "m_diskLightCount";
-            desc.m_elementSize = sizeof(DiskLightData);
-            desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
+desc.m_bufferName = "DiskLightBuffer";
+desc.m_bufferSrgName = "m_diskLights";
+desc.m_elementCountSrgName = "m_diskLightCount";
+desc.m_elementSize = sizeof(DiskLightData);
+desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
 
-            m_lightBufferHandler = GpuBufferHandler(desc);
-            m_shadowFeatureProcessor = GetParentScene()->GetFeatureProcessor<ProjectedShadowFeatureProcessor>();
+m_lightBufferHandler = GpuBufferHandler(desc);
+m_shadowFeatureProcessor = GetParentScene()->GetFeatureProcessor<ProjectedShadowFeatureProcessor>();
 
-            MeshFeatureProcessor* meshFeatureProcessor = GetParentScene()->GetFeatureProcessor<MeshFeatureProcessor>();
-            if (meshFeatureProcessor)
-            {
-                m_lightMeshFlag = meshFeatureProcessor->GetFlagRegistry()->AcquireTag(AZ::Name("DisktLight"));
-                m_shadowMeshFlag = meshFeatureProcessor->GetFlagRegistry()->AcquireTag(AZ::Name("DiskLightShadow"));
-            }
+MeshFeatureProcessor* meshFeatureProcessor = GetParentScene()->GetFeatureProcessor<MeshFeatureProcessor>();
+if (meshFeatureProcessor)
+{
+    m_lightMeshFlag = meshFeatureProcessor->GetFlagRegistry()->AcquireTag(AZ::Name("DisktLight"));
+    m_shadowMeshFlag = meshFeatureProcessor->GetFlagRegistry()->AcquireTag(AZ::Name("DiskLightShadow"));
+}
         }
 
         void DiskLightFeatureProcessor::Deactivate()
@@ -77,7 +77,7 @@ namespace AZ
                 return LightHandle::Null;
             }
             else
-           {
+            {
                 m_deviceBufferNeedsUpdate = true;
                 return LightHandle(id);
             }
@@ -139,23 +139,52 @@ namespace AZ
                 m_deviceBufferNeedsUpdate = false;
             }
 
-            auto hasShadow = [&](const AZ::Frustum& frustum) -> bool
+            // Helper lambdas
+            auto indexHasShadow = [&](LightHandle::IndexType index) -> bool
             {
-                LightHandle::IndexType index = m_lightData.GetIndexForData<1>(&frustum);
                 ShadowId shadowId = ShadowId(m_lightData.GetData<0>(index).m_shadowIndex);
                 return shadowId.IsValid();
             };
-            auto noShadow = [&](const AZ::Frustum& frustum) -> bool
+            auto indexHemisphereBestFit = [&](LightHandle::IndexType index) -> bool
             {
-                return !hasShadow(frustum);
+                DiskLightData& lightData = m_lightData.GetData<0>(index);
+                bool usesConeAngle = (lightData.m_flags & DiskLightData::Flags::UseConeAngle) > 0;
+
+                // Hemisphere is best fit if the cone angle isn't used, or it's very wide (greater than 60 degrees).
+                // For wide angles, a frustum will contain a large area beyond the radius of the light
+                return !usesConeAngle || lightData.m_cosOuterConeAngle < 0.5f;
+            };
+
+            // Filter lambdas
+            auto shadowFrustum = [&](const AZ::Frustum& frustum) -> bool
+            {
+                LightHandle::IndexType index = m_lightData.GetIndexForData<1>(&frustum);
+                return indexHasShadow(index) && !indexHemisphereBestFit(index);
+            };
+            auto shadowHemisphere = [&](const AZ::Hemisphere& hemisphere) -> bool
+            {
+                LightHandle::IndexType index = m_lightData.GetIndexForData<2>(&hemisphere);
+                return indexHasShadow(index) && indexHemisphereBestFit(index);
+            };
+            auto noShadowFrustum = [&](const AZ::Frustum& frustum) -> bool
+            {
+                LightHandle::IndexType index = m_lightData.GetIndexForData<1>(&frustum);
+                return !indexHasShadow(index) && !indexHemisphereBestFit(index);
+            };
+            auto noShadowHemisphere = [&](const AZ::Hemisphere& hemisphere) -> bool
+            {
+                LightHandle::IndexType index = m_lightData.GetIndexForData<2>(&hemisphere);
+                return !indexHasShadow(index) && indexHemisphereBestFit(index);
             };
 
             // Mark meshes that have point lights without shadow using only the light flag.
-            LightCommon::MarkMeshesWithLightType(GetParentScene(), AZStd::span(m_lightData.GetDataVector<1>()), m_lightMeshFlag.GetIndex(), noShadow);
+            LightCommon::MarkMeshesWithLightType(GetParentScene(), AZStd::span(m_lightData.GetDataVector<1>()), m_lightMeshFlag.GetIndex(), noShadowFrustum);
+            LightCommon::MarkMeshesWithLightType(GetParentScene(), AZStd::span(m_lightData.GetDataVector<2>()), m_lightMeshFlag.GetIndex(), noShadowHemisphere);
 
             // Mark meshes that have point lights with shadow using a combination of light and shadow flags.
             uint32_t lightAndShadow = m_lightMeshFlag.GetIndex() | m_shadowMeshFlag.GetIndex();
-            LightCommon::MarkMeshesWithLightType(GetParentScene(), AZStd::span(m_lightData.GetDataVector<1>()), lightAndShadow, hasShadow);
+            LightCommon::MarkMeshesWithLightType(GetParentScene(), AZStd::span(m_lightData.GetDataVector<1>()), lightAndShadow, shadowFrustum);
+            LightCommon::MarkMeshesWithLightType(GetParentScene(), AZStd::span(m_lightData.GetDataVector<2>()), lightAndShadow, shadowHemisphere);
         }
 
         void DiskLightFeatureProcessor::Render(const DiskLightFeatureProcessor::RenderPacket& packet)
@@ -189,7 +218,7 @@ namespace AZ
             AZStd::array<float, 3>& position = m_lightData.GetData<0>(handle.GetIndex()).m_position;
             lightPosition.StoreToFloat3(position.data());
 
-            UpdateFrustum(handle);
+            UpdateBounds(handle);
             UpdateShadow(handle);
 
             m_deviceBufferNeedsUpdate = true;
@@ -202,7 +231,7 @@ namespace AZ
             AZStd::array<float, 3>& direction = m_lightData.GetData<0>(handle.GetIndex()).m_direction;
             lightDirection.StoreToFloat3(direction.data());
 
-            UpdateFrustum(handle);
+            UpdateBounds(handle);
             UpdateShadow(handle);
 
             m_deviceBufferNeedsUpdate = true;
@@ -216,7 +245,7 @@ namespace AZ
             DiskLightData& light = m_lightData.GetData<0>(handle.GetIndex());
             light.m_invAttenuationRadiusSquared = 1.0f / (attenuationRadius * attenuationRadius);
 
-            UpdateFrustum(handle);
+            UpdateBounds(handle);
 
             // Update the shadow near far planes if necessary
             ShadowId shadowId = ShadowId(light.m_shadowIndex);
@@ -238,7 +267,7 @@ namespace AZ
             light.m_diskRadius = radius;
 
             UpdateBulbPositionOffset(light);
-            UpdateFrustum(handle);
+            UpdateBounds(handle);
             UpdateShadow(handle);
 
             m_deviceBufferNeedsUpdate = true;
@@ -448,7 +477,7 @@ namespace AZ
             light.m_bulbPositionOffset = light.m_diskRadius * cosConeRadians / sqrt(1.0f - cosConeRadians * cosConeRadians);
         }
 
-        void DiskLightFeatureProcessor::UpdateFrustum(LightHandle handle)
+        void DiskLightFeatureProcessor::UpdateBounds(LightHandle handle)
         {
             DiskLightData data = m_lightData.GetData<0>(handle.GetIndex());
 

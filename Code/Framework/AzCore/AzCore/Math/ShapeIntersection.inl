@@ -29,7 +29,6 @@ namespace AZ
             return false;
         }
 
-
         AZ_MATH_INLINE IntersectResult Classify(const Plane& plane, const Sphere& sphere)
         {
             float distance = plane.GetPointDist(sphere.GetCenter());
@@ -47,7 +46,6 @@ namespace AZ
                 return IntersectResult::Overlaps;
             }
         }
-
 
         AZ_MATH_INLINE IntersectResult Classify(const Plane& plane, const Obb& obb)
         {
@@ -72,18 +70,15 @@ namespace AZ
             }
         }
 
-
         AZ_MATH_INLINE IntersectResult Classify(const Frustum& frustum, const Sphere& sphere)
         {
             return frustum.IntersectSphere(sphere);
         }
 
-
         AZ_MATH_INLINE bool Overlaps(const Aabb& aabb1, const Aabb& aabb2)
         {
             return aabb1.Overlaps(aabb2);
         }
-
 
         AZ_MATH_INLINE bool Overlaps(const Sphere& sphere, const Aabb& aabb)
         {
@@ -92,12 +87,10 @@ namespace AZ
             return distSq <= radiusSq;
         }
 
-
         AZ_MATH_INLINE bool Overlaps(const Sphere& sphere, const Frustum& frustum)
         {
             return Overlaps(frustum, sphere);
         }
-
 
         AZ_MATH_INLINE bool Overlaps(const Sphere& sphere, const Plane& plane)
         {
@@ -105,20 +98,17 @@ namespace AZ
             return dist * dist <= sphere.GetRadius() * sphere.GetRadius();
         }
 
-
         AZ_MATH_INLINE bool Overlaps(const Sphere& sphere1, const Sphere& sphere2)
         {
             const float radiusSum = sphere1.GetRadius() + sphere2.GetRadius();
             return sphere1.GetCenter().GetDistanceSq(sphere2.GetCenter()) <= (radiusSum * radiusSum);
         }
 
-
         AZ_MATH_INLINE bool Overlaps(const Sphere& sphere, const Obb& obb)
         {
             const float radius = sphere.GetRadius();
             return obb.GetDistanceSq(sphere.GetCenter()) < radius * radius;
         }
-
 
         AZ_MATH_INLINE bool Overlaps(const Sphere& sphere, const Capsule& capsule)
         {
@@ -176,7 +166,6 @@ namespace AZ
             return true;
         }
 
-
         AZ_MATH_INLINE bool Overlaps(const Frustum& frustum, const Aabb& aabb)
         {
             //For an AABB, extents.Dot(planeAbs) computes the projection interval radius of the AABB onto the plane normal.
@@ -200,7 +189,6 @@ namespace AZ
             return true;
         }
 
-
         AZ_MATH_INLINE bool Overlaps(const Frustum& frustum, const Obb& obb)
         {
             for (Frustum::PlaneId planeId = Frustum::PlaneId::Near; planeId < Frustum::PlaneId::MAX; ++planeId)
@@ -213,7 +201,6 @@ namespace AZ
 
             return true;
         }
-
 
         AZ_MATH_INLINE bool Overlaps(const Capsule& capsule1, const Capsule& capsule2)
         {
@@ -228,7 +215,6 @@ namespace AZ
             return closestPointSegment1.GetDistanceSq(closestPointSegment2) <= radiusSum * radiusSum;
         }
 
-
         AZ_MATH_INLINE bool Overlaps(const Capsule& capsule, const Sphere& sphere)
         {
             float proportion;
@@ -238,12 +224,10 @@ namespace AZ
             return closestPointOnCapsuleAxis.GetDistanceSq(sphere.GetCenter()) <= radiusSum * radiusSum;
         }
 
-
         AZ_MATH_INLINE bool Contains(const Aabb& aabb1, const Aabb& aabb2)
         {
             return aabb1.Contains(aabb2);
         }
-
 
         AZ_MATH_INLINE bool Contains(const Aabb& aabb, const Sphere& sphere)
         {
@@ -251,15 +235,11 @@ namespace AZ
             return Contains(aabb, AZ::Aabb::CreateCenterRadius(sphere.GetCenter(), sphere.GetRadius()));
         }
 
-
         AZ_MATH_INLINE bool Contains(const Sphere& sphere, const Aabb& aabb)
         {
-            const float maxDistSq = sphere.GetCenter().GetDistanceSq(aabb.GetMax());
-            const float minDistSq = sphere.GetCenter().GetDistanceSq(aabb.GetMin());
             const float radiusSq = sphere.GetRadius() * sphere.GetRadius();
-            return maxDistSq <= radiusSq && minDistSq <= radiusSq;
+            return aabb.GetMaxDistanceSq(sphere.GetCenter()) <= radiusSq;
         }
-
 
         AZ_MATH_INLINE bool Contains(const Sphere& sphere, const Vector3& point)
         {
@@ -268,13 +248,29 @@ namespace AZ
             return distSq <= radiusSq;
         }
 
-
         AZ_MATH_INLINE bool Contains(const Sphere& sphere1, const Sphere& sphere2)
         {
             const float radiusDiff = sphere1.GetRadius() - sphere2.GetRadius();
             return sphere1.GetCenter().GetDistanceSq(sphere2.GetCenter()) <= (radiusDiff * radiusDiff);
         }
 
+        AZ_MATH_INLINE bool Contains(const Hemisphere& hemisphere, const Aabb& aabb)
+        {
+            float radiusSq = hemisphere.GetRadius() * hemisphere.GetRadius();
+            if (aabb.GetMaxDistanceSq(hemisphere.GetCenter()) > radiusSq)
+            {
+                return false; // too far away
+            }
+
+            Vector3 nearestPointToPlane = aabb.GetSupport(-hemisphere.GetDirection());
+            bool abovePlane = hemisphere.GetDirection().Dot(hemisphere.GetCenter() - nearestPointToPlane) > 0.0f;
+            if (!abovePlane)
+            {
+                return false; // behind hemisphere plane
+            }
+
+            return true;
+        }
 
         AZ_MATH_INLINE bool Contains(const Frustum& frustum, const Aabb& aabb)
         {
@@ -295,7 +291,6 @@ namespace AZ
             return true;
         }
 
-
         AZ_MATH_INLINE bool Contains(const Frustum& frustum, const Sphere& sphere)
         {
             for (Frustum::PlaneId planeId = Frustum::PlaneId::Near; planeId < Frustum::PlaneId::MAX; ++planeId)
@@ -307,7 +302,6 @@ namespace AZ
             }
             return true;
         }
-
 
         AZ_MATH_INLINE bool Contains(const Frustum& frustum, const Vector3& point)
         {
