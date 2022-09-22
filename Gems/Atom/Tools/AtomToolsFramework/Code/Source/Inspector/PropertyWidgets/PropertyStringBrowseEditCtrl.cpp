@@ -194,6 +194,7 @@ namespace AtomToolsFramework
         : PropertyStringBrowseEditCtrl(parent)
     {
         m_browseEdit->setLineEditReadOnly(true);
+        m_browseEdit->setAttachedButtonIcon(QIcon(":/stylesheet/img/UI20/browse-edit.svg"));
         SetEditButtonVisible(true);
         SetEditButtonEnabled(true);
     }
@@ -292,10 +293,11 @@ namespace AtomToolsFramework
         return false;
     }
 
-   PropertyMultiLineStringCtrl::PropertyMultiLineStringCtrl(QWidget* parent)
+    PropertyMultiLineStringCtrl::PropertyMultiLineStringCtrl(QWidget* parent)
         : PropertyStringBrowseEditCtrl(parent)
     {
         m_browseEdit->setLineEditReadOnly(false);
+        m_browseEdit->setAttachedButtonIcon(QIcon(":/stylesheet/img/UI20/open-in-internal-app.svg"));
         SetEditButtonVisible(true);
         SetEditButtonEnabled(true);
     }
@@ -371,6 +373,7 @@ namespace AtomToolsFramework
         : PropertyStringBrowseEditCtrl(parent)
     {
         m_browseEdit->setLineEditReadOnly(true);
+        m_browseEdit->setAttachedButtonIcon(QIcon(":/stylesheet/img/UI20/open-in-internal-app.svg"));
         SetEditButtonVisible(true);
         SetEditButtonEnabled(true);
     }

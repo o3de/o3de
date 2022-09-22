@@ -23,7 +23,7 @@ namespace AzQtComponents
 namespace AtomToolsFramework
 {
     // Custom property widget for editing strings using a browse edit control. This allows the strings to be cleared using the browse
-    // controls clear button. It also allows for custom dialogues and editors to be opened using the browse edit button.
+    // controls clear button. It also allows for custom dialogs and editors to be opened using the browse edit button.
     class PropertyStringBrowseEditCtrl : public QWidget
     {
         Q_OBJECT
