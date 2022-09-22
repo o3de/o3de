@@ -40,6 +40,10 @@ namespace AZ
         using ViewPtr = AZStd::shared_ptr<View>;
         using ConstViewPtr = AZStd::shared_ptr<const View>;
 
+        class ViewGroup;
+        using ViewGroupPtr = AZStd::shared_ptr<ViewGroup>;
+        using ConstViewGroupPtr = AZStd::shared_ptr<const ViewGroup>;
+
         class QueryPool;
         using QueryPoolPtr = AZStd::unique_ptr<QueryPool>;
 

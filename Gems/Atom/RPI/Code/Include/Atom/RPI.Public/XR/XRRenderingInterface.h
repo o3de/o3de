@@ -98,7 +98,7 @@ namespace AZ::RPI
         virtual float GetControllerScale(const AZ::u32 handIndex) const = 0;
 
         //! Creates an off-center projection matrix suitable for VR. Angles are in radians and distance is in meters.
-        virtual AZ::Matrix4x4 CreateProjectionOffset(
+        virtual AZ::Matrix4x4 CreateStereoscopicProjection(
             float angleLeft, float angleRight, float angleBottom, float angleTop, float nearDist, float farDist, bool reverseDepth) = 0;
 
         //! Returns the XR specific RHI rendering interface.

@@ -18,6 +18,7 @@
 #include <Atom/RPI.Public/ViewProviderBus.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/View.h>
+#include <Atom/RPI.Public/ViewGroup.h>
 #include <Atom/RPI.Public/WindowContext.h>
 #include <Atom/RPI.Public/WindowContextBus.h>
 #include <Atom/RPI.Public/XR/XRRenderingInterface.h>
@@ -68,7 +69,7 @@ namespace AZ
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
-            CameraComponent() = default;
+            CameraComponent();
             virtual ~CameraComponent() override = default;
 
             // AZ::Component overrides...
@@ -119,9 +120,9 @@ namespace AZ
             void UpdateAspectRatio();
             void UpdateViewToClipMatrix();
 
-            // A vector to hold all the camera views. Stereoscopic and non-stereoscopic.
+            // ViewGroup to help manage stereoscopic and non-stereoscopic views.
             // This will allow us to render to PC window as well as a XR device at the same time 
-            AZStd::vector<RPI::ViewPtr> m_cameraViews;
+            AZ::RPI::ViewGroupPtr m_cameraView;
 
             // Stereoscopic view related data
             RPI::XRRenderingInterface* m_xrSystem = nullptr;

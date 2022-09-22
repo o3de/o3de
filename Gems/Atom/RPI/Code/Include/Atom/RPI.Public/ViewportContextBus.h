@@ -16,6 +16,7 @@
 #include <AzFramework/Viewport/ViewportId.h>
 #include <AzFramework/Windowing/NativeWindow.h>
 #include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/ViewGroup.h>
 
 namespace AZ
 {
@@ -77,15 +78,24 @@ namespace AZ
             //! Enumerates all registered ViewportContexts, calling visitorFunction once for each registered viewport.
             virtual void EnumerateViewportContexts(AZStd::function<void(ViewportContextPtr)> visitorFunction) = 0;
 
-            //! Pushes a view  to the stack for a given context name.
+            //! Creates a ViewGroup out of the view and pushes it to the stack for a given context name.
             //! The View must be declared a camera by having the View::UsageFlags::UsageCamera usage flag set.
-            //! This View will be registered as the context's pipeline's default view until the top of the camera stack changes.
+            //! This View group will be registered as the context's pipeline's default view group until the top of the camera stack changes.
             virtual void PushView(const Name& contextName, ViewPtr view) = 0;
-            //! Pops a camera off of the stack for a given context name. Returns true if the camera was successfully removed
-            //! or false if the camera wasn't removed, either because it wasn't found or its removal was not allowed.
-            //! @note The default camera for a given viewport may not be removed from the view stack.
-            //! You must push an additional camera to override the default view instead.
+
+            //! Pushes a view group to the stack for a given context name. A view group manages all stereoscopic and non-stereoscopic views.
+            //! The Views within a View Group must be declared a camera by having the View::UsageFlags::UsageCamera usage flag set.
+            //! This View Group will be registered as the context's pipeline's default view group until the top of the camera stack changes.
+            virtual void PushView(const Name& contextName, ViewGroupPtr viewGroup) = 0;
+
+            //! Pops a ViewGroup that contains the passed in view or views within the passed in view group off of the stack for a given context name.
+            //! Returns true if the camera was successfully removed or false if the view wasn't removed,
+            //! either because it wasn't found within any existing view groups or its removal was not allowed.
+            //! @note The default camera's view group for a given viewport may not be removed from the view stack.
+            //! You must push an additional camera view groups to override the default view group instead.
             virtual bool PopView(const Name& contextName, ViewPtr view) = 0;
+            virtual bool PopView(const Name& contextName, ViewGroupPtr viewGroup) = 0;
+
             //! Gets the view currently registered to a given context, assuming the context exists.
             //! This will be null if there is no registered ViewportContext and no views have been pushed for this context name.
             virtual ViewPtr GetCurrentView(const Name& contextName) const = 0;

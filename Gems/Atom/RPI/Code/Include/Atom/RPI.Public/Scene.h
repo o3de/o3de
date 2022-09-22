@@ -21,6 +21,7 @@
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/SceneBus.h>
+#include <Atom/RPI.Public/ViewProviderBus.h>
 
 #include <AtomCore/Instance/Instance.h>
 
@@ -163,7 +164,7 @@ namespace AZ
                 return m_cullingScene;
             }
 
-            RenderPipelinePtr FindRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle);
+            RenderPipelinePtr FindRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle, ViewType viewType = ViewType::Default);
 
             using PrepareSceneSrgEvent = AZ::Event<RPI::ShaderResourceGroup*>;
             //! Connect a handler to listen to the event that the Scene is ready to update and compile its scene srg

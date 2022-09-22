@@ -230,7 +230,7 @@ namespace AZ
                 // zNear -> n, zFar -> f
                 // A = 2n/(f-n), B = 2fn / (f - n)
                 // the formula of A and B should be the same as projection matrix's definition
-                // currently defined in CreateProjectionOffset in XRUtils.cpp
+                // currently defined in CreateStereoscopicProjection in XRUtils.cpp
                 double A = m_viewToClipMatrix.GetElement(2, 2);
                 double B = m_viewToClipMatrix.GetElement(2, 3);
 
