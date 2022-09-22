@@ -5168,7 +5168,6 @@ namespace AssetProcessor
             explicit PathOrUuid(AZStd::string path)
                 : m_path(AZStd::move(path))
             {
-
             }
 
             bool IsUuid() const
@@ -5210,7 +5209,7 @@ namespace AssetProcessor
         struct Hasher
         {
             size_t operator()(const PathOrUuid& obj) const
-                {
+            {
                 size_t seed = 0;
 
                 if (obj.IsUuid())
