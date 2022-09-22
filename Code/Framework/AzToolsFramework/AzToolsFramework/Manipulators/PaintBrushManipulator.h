@@ -12,43 +12,13 @@
 
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzToolsFramework/Manipulators/PaintBrushRequestBus.h>
+#include <AzToolsFramework/Viewport/ActionBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
+#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsNotificationBus.h>
 
 namespace AzToolsFramework
 {
     class ManipulatorViewProjectedCircle;
-
-    //! PaintBrushConfig exposes the paint brush configuration properties so that we can edit them via the component editor.
-    //! Currently, for this to work, we end up needing two copies of the configuration. One needs to be on the Editor component
-    //! that's supporting the painting, and one is internal to the PaintBrushManipulator. The two are manually kept in sync
-    //! through PaintBrush Request/Notification EBus calls.
-    //!
-    //! If we ever add support for modifying these via in-viewport UX, we could then make these settings internal to the
-    //! manipulator and simplify the logic.
-    class PaintBrushConfig
-    {
-    public:
-        AZ_CLASS_ALLOCATOR(PaintBrushConfig, AZ::SystemAllocator, 0);
-        AZ_RTTI(PaintBrushConfig, "{CE5EFFE2-14E5-4A9F-9B0F-695F66744A50}");
-        static void Reflect(AZ::ReflectContext* context);
-
-        virtual ~PaintBrushConfig() = default;
-
-        //! Paintbrush radius
-        float m_radius = 5.0f;
-        //! Paintbrush intensity (black to white)
-        float m_intensity = 1.0f;
-        //! Paintbrush opacity (transparent to opaque)
-        float m_opacity = 0.5f;
-
-        //! The entity/component that owns this paintbrush.
-        AZ::EntityComponentIdPair m_ownerEntityComponentId;
-
-        AZ::u32 OnIntensityChange();
-        AZ::u32 OnOpacityChange();
-        AZ::u32 OnRadiusChange();
-    };
 
     //! PaintBrushManipulator contains the core logic for painting functionality.
     //! It handles the paintbrush settings, the logic for converting mouse events into paintbrush actions,
@@ -70,7 +40,7 @@ namespace AzToolsFramework
     class PaintBrushManipulator
         : public BaseManipulator
         , public ManipulatorSpace
-        , public PaintBrushRequestBus::Handler
+        , protected PaintBrushSettingsNotificationBus::Handler
     {
         //! Private constructor.
         PaintBrushManipulator(
@@ -97,18 +67,19 @@ namespace AzToolsFramework
 
         void SetView(AZStd::shared_ptr<ManipulatorViewProjectedCircle> view);
 
-        // Handle mouse events
+        //! Handle mouse events
         bool HandleMouseInteraction(const ViewportInteraction::MouseInteractionEvent& mouseInteraction);
 
-        // PaintBrushRequestBus overrides for getting/setting the paintbrush settings...
-        float GetRadius() const override;
-        float GetIntensity() const override;
-        float GetOpacity() const override;
-        void SetRadius(float radius) override;
-        void SetIntensity(float intensity) override;
-        void SetOpacity(float opacity) override;
+        //! Returns the actions that we want any Component Mode using the Paint Brush Manipulator to support.
+        AZStd::vector<AzToolsFramework::ActionOverride> PopulateActionsImpl();
+ 
+        void AdjustRadius(float radiusDelta);
+        void AdjustIntensity(float intensityDelta);
+        void AdjustOpacity(float opacityDelta);
 
     private:
+        void OnRadiusChanged(float radius) override;
+
         void MovePaintBrush(int viewportId, const AzFramework::ScreenPoint& screenCoordinates, bool isFirstPaintedPoint);
 
         AZStd::shared_ptr<ManipulatorViewProjectedCircle> m_manipulatorView;
@@ -124,7 +95,5 @@ namespace AzToolsFramework
 
         //! Current center of the paintbrush in world space.
         AZ::Vector3 m_center;
-
-        PaintBrushConfig m_config;
     };
 } // namespace AzToolsFramework
