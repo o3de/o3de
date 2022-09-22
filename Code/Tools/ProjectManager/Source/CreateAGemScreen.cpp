@@ -400,7 +400,16 @@ namespace O3DE::ProjectManager
                 auto result = PythonBindingsInterface::Get()->CreateGem(templateLocation, m_createGemInfo);
                 if (result.IsSuccess())
                 {
-                    emit CreateButtonPressed(result.GetValue<GemInfo>());
+                    //make sure the gem is registered, otherwise our changes will not persist
+                    auto registerResult = PythonBindingsInterface::Get()->RegisterGem(m_createGemInfo.m_path);
+                    if(!registerResult)
+                    {
+                        QMessageBox::critical(this, tr("Failed to register gem after creation"), registerResult.GetError().c_str());
+                    }
+                    else
+                    {
+                        emit CreateButtonPressed(result.GetValue<GemInfo>());
+                    }
                 }
                 else
                 {
