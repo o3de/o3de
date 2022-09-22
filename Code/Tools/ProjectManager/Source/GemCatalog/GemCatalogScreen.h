@@ -12,7 +12,7 @@
 #include <ScreenWidget.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzToolsFramework/UI/Notifications/ToastNotificationsView.h>
-#include "GemInfo.h"
+#include <GemCatalog/GemInfo.h>
 #include <QSet>
 #include <QString>
 #endif
