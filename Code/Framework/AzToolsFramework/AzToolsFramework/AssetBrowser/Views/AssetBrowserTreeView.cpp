@@ -541,7 +541,7 @@ namespace AzToolsFramework
         void AssetBrowserTreeView::RenameEntry()
         {
             auto entries = GetSelectedAssets(false); // you cannot rename product files.
-            // you may not rename products.
+
             if (entries.size() != 1)
             {
                 return;
@@ -556,7 +556,6 @@ namespace AzToolsFramework
                 using namespace AZ::IO;
                 AssetBrowserEntry* item = entries[0];
                 Path fromPath = item->GetFullPath();
-                PathView filename = fromPath.Filename();
                 Path toPath(fromPath);
                 AssetChangeReportRequest request(
                     AZ::OSString(fromPath.c_str()), AZ::OSString(toPath.c_str()), AssetChangeReportRequest::ChangeType::CheckMove);
