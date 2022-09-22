@@ -19,6 +19,7 @@
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzFramework/Process/ProcessCommunicatorTracePrinter.h>
+#include <AzFramework/Viewport/ScreenGeometry.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabToInMemorySpawnableNotificationBus.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
@@ -99,7 +100,7 @@ namespace Multiplayer
 
         //! AzToolsFramework::EditorContextMenu::Bus::Handler overrides
         //! @{
-        void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags) override;
+        void PopulateEditorGlobalContextMenu(QMenu* menu, const AZStd::optional<AzFramework::ScreenPoint>& point, int flags) override;
         int GetMenuPosition() const override;
         //! @}
 
@@ -124,7 +125,7 @@ namespace Multiplayer
         //! @}
 
         //! Context menu handler
-        void ContextMenu_NewMultiplayerEntity();
+        void ContextMenu_NewMultiplayerEntity(AZ::EntityId parentEntityId, const AZ::Vector3& worldPosition);
 
         IEditor* m_editor = nullptr;
         AZStd::unique_ptr<AzFramework::ProcessWatcher> m_serverProcessWatcher = nullptr;
@@ -143,7 +144,5 @@ namespace Multiplayer
         };
         
         AZStd::vector<PreAliasedSpawnableData> m_preAliasedSpawnablesForServer;
-
-        AZ::Vector2 m_contextMenuViewPoint = AZ::Vector2::CreateZero();
     };
 }

@@ -29,6 +29,7 @@
 #include <AzNetworking/Framework/INetworking.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
+#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorHelpers.h>
@@ -542,44 +543,16 @@ namespace Multiplayer
         m_connectionEvent.Enqueue(AZ::SecondsToTimeMs(retrySeconds), autoRequeue);
     }
 
-    void MultiplayerEditorSystemComponent::PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, [[ maybe_unused ]] int flags)
-    {
-        menu->setToolTipsVisible(true);
-
-        m_contextMenuViewPoint = point;
-
-        QAction* action = nullptr;
-
-        action = menu->addAction(QObject::tr("Create multiplayer entity"));
-        action->setShortcut(QKeySequence(Qt::CTRL + Qt::ALT + Qt::Key_M));
-        QObject::connect(
-            action, &QAction::triggered, action,
-            [this]
-        {
-            ContextMenu_NewMultiplayerEntity();
-        });
-    }
-
-    int MultiplayerEditorSystemComponent::GetMenuPosition() const
-    {
-        return aznumeric_cast<int>(AzToolsFramework::EditorContextMenuOrdering::TOP);
-    }
-
-    void MultiplayerEditorSystemComponent::ContextMenu_NewMultiplayerEntity()
+    void MultiplayerEditorSystemComponent::PopulateEditorGlobalContextMenu(QMenu* menu, const AZStd::optional<AzFramework::ScreenPoint>& point, [[ maybe_unused ]] int flags)
     {
         AzToolsFramework::EntityIdList selected;
-        EBUS_EVENT_RESULT(selected,
-            AzToolsFramework::ToolsApplicationRequests::Bus,
-            GetSelectedEntities);
+        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(selected, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
 
         // Merge in highlighted entities..
         // This stuff should probably be exposed from the SandboxIntegration class
         {
             AzToolsFramework::EntityIdList highlightedEntities;
-            EBUS_EVENT_RESULT(highlightedEntities,
-                AzToolsFramework::ToolsApplicationRequests::Bus,
-                GetHighlightedEntities);
-
+            AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(highlightedEntities, &AzToolsFramework::ToolsApplicationRequests::GetHighlightedEntities);
             for (AZ::EntityId highlightedId : highlightedEntities)
             {
                 if (selected.end() == AZStd::find(selected.begin(), selected.end(), highlightedId))
@@ -596,13 +569,37 @@ namespace Multiplayer
             parentEntityId = selected.front();
         }
 
-        if (CViewport* view = m_editor->GetViewManager()->GetGameViewport())
+        auto readOnlyEntityPublicInterface = AZ::Interface<AzToolsFramework::ReadOnlyEntityPublicInterface>::Get();
+        if (readOnlyEntityPublicInterface && !readOnlyEntityPublicInterface->IsReadOnly(parentEntityId))
         {
-            worldPosition = AzToolsFramework::FindClosestPickIntersection(
-                view->GetViewportId(), AzFramework::ScreenPointFromVector2(m_contextMenuViewPoint), AzToolsFramework::EditorPickRayLength,
-                AzToolsFramework::GetDefaultEntityPlacementDistance());
-        }
+            menu->setToolTipsVisible(true);
 
+            if (CViewport* view = GetIEditor()->GetViewManager()->GetGameViewport();
+                view && point.has_value())
+            {
+                worldPosition = AzToolsFramework::FindClosestPickIntersection(
+                    view->GetViewportId(), point.value(), AzToolsFramework::EditorPickRayLength,
+                    AzToolsFramework::GetDefaultEntityPlacementDistance());
+            }
+
+            QAction* action = nullptr;
+
+            action = menu->addAction(QObject::tr("Create multiplayer entity"));
+            action->setShortcut(QKeySequence(Qt::CTRL + Qt::ALT + Qt::Key_M));
+            QObject::connect(action, &QAction::triggered, action, [this, parentEntityId, worldPosition]
+            {
+                ContextMenu_NewMultiplayerEntity(parentEntityId, worldPosition);
+            });
+        }
+    }
+
+    int MultiplayerEditorSystemComponent::GetMenuPosition() const
+    {
+        return aznumeric_cast<int>(AzToolsFramework::EditorContextMenuOrdering::TOP);
+    }
+
+    void MultiplayerEditorSystemComponent::ContextMenu_NewMultiplayerEntity(AZ::EntityId parentEntityId, const AZ::Vector3& worldPosition)
+    {
         auto prefabIntegrationInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabIntegrationInterface>::Get();
         AZ::EntityId newEntityId = prefabIntegrationInterface->CreateNewEntityAtPosition(worldPosition, parentEntityId);
 
