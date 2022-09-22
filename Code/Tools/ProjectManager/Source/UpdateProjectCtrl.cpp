@@ -189,7 +189,9 @@ namespace O3DE::ProjectManager
         QString notification = tr("Successfully created gem: ") + gemInfo.m_displayName;
         m_projectGemCatalogScreen->ShowStandardToastNotification(notification);
 
-        HandleBackButton();
+        //because we access the gem creation workflow from the catalog screen, we will forcibly return there
+        m_stack->setCurrentIndex(ScreenOrder::Gems);
+        Update();
     }
 
     void UpdateProjectCtrl::HandleNextButton()
