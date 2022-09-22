@@ -438,7 +438,7 @@ namespace O3DE::ProjectManager
     {
         if (m_selectedTemplateIndex != -1 && m_templates[m_selectedTemplateIndex].m_isRemote)
         {
-            return AZ::Failure<QString>(tr("You can not create a project with a template that has not been downloaded."));
+            return AZ::Failure<QString>(tr("You cannot create a new project with a template that has not been downloaded. Please download it before proceeding."));
         }
 
         return ProjectSettingsScreen::Validate();
