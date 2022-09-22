@@ -144,7 +144,7 @@ namespace AzToolsFramework::Prefab
         // Set the selection to the entities owned by the newly focused prefab instance.
         // Only do it if the focused prefab is not the root.
         if (auto focusedInstance = GetInstanceReference(m_rootAliasFocusPath);
-            focusedInstance.has_value() && focusedInstance->get().GetParentInstance() != AZStd::nullopt)
+            focusedInstance.has_value() && focusedInstance->get().HasParentInstance())
         {
             EntityIdList selectedEntities;
 
@@ -165,7 +165,10 @@ namespace AzToolsFramework::Prefab
             focusedInstance->get().GetNestedInstances(
                 [&selectedEntities](AZStd::unique_ptr<Instance>& instance)
                 {
-                    selectedEntities.push_back(instance->GetContainerEntityId());
+                    if (instance)
+                    {
+                        selectedEntities.push_back(instance->GetContainerEntityId());
+                    }
                     return true;
                 }
             );
