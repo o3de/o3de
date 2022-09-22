@@ -57,7 +57,7 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_BadPlatform)
     UnitTestPlatformConfiguration config;
     m_errorAbsorber->Clear();
     ASSERT_FALSE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), projectPath.c_str(), false, false));
-    ASSERT_GT(m_errorAbsorber->m_numErrorsAbsorbed, 0);
+    m_errorAbsorber->ExpectErrorsGT(0);
 }
 
 
@@ -73,7 +73,7 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_NoPlatform)
     UnitTestPlatformConfiguration config;
     m_errorAbsorber->Clear();
     ASSERT_FALSE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), projectPath.c_str(), false, false));
-    ASSERT_GT(m_errorAbsorber->m_numErrorsAbsorbed, 0);
+    m_errorAbsorber->ExpectErrorsGT(0);
 }
 
 TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_NoScanFolders)
@@ -88,7 +88,7 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_NoScanFolders)
     UnitTestPlatformConfiguration config;
     m_errorAbsorber->Clear();
     ASSERT_FALSE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), projectPath.c_str(), false, false));
-    ASSERT_GT(m_errorAbsorber->m_numErrorsAbsorbed, 0);
+    m_errorAbsorber->ExpectErrorsGT(0);
 }
 
 TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_BrokenRecognizers)
@@ -103,7 +103,7 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_BrokenRecognizers)
     UnitTestPlatformConfiguration config;
     m_errorAbsorber->Clear();
     ASSERT_FALSE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), projectPath.c_str(), false, false));
-    ASSERT_GT(m_errorAbsorber->m_numErrorsAbsorbed, 0);
+    m_errorAbsorber->ExpectErrorsGT(0);
 }
 
 TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_Regular_Platforms)
@@ -118,7 +118,7 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_Regular_Platforms)
     UnitTestPlatformConfiguration config;
     m_errorAbsorber->Clear();
     ASSERT_TRUE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), projectPath.c_str(), false, false));
-    ASSERT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 0);
+    m_errorAbsorber->ExpectErrors(0);
 
     // verify the data.
     ASSERT_NE(config.GetPlatformByIdentifier(AzToolsFramework::AssetSystem::GetHostAssetPlatform()), nullptr);
@@ -333,7 +333,7 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_RegularScanfolder)
     m_errorAbsorber->Clear();
     AssetUtilities::ComputeProjectName(EmptyDummyProjectName, true);
     ASSERT_TRUE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), projectPath.c_str(), false, false));
-    ASSERT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 0);
+    m_errorAbsorber->ExpectErrors(0);
 
     ASSERT_EQ(config.GetScanFolderCount(), 4); // the two, and then the one that has the same data as prior but different identifier, plus hardcoded intermediates scanfolder
     QString scanName = AssetUtilities::ComputeProjectPath(true) + " Scan Folder";
@@ -370,7 +370,7 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_RegularScanfolderP
     UnitTestPlatformConfiguration config;
     m_errorAbsorber->Clear();
     ASSERT_TRUE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), projectPath.c_str(), false, false));
-    ASSERT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 0);
+    m_errorAbsorber->ExpectErrors(0);
 
     ASSERT_EQ(config.GetScanFolderCount(), 6); // +1 for hardcoded intermediates scanfolder
     // Scanfolder 0 is the intermediate assets folder, so start at 1
@@ -420,7 +420,7 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_RegularExcludes)
     config.AddScanFolder(ScanFolderInfo("blahblah", "Blah ScanFolder", "sf2", true, true), true);
     m_errorAbsorber->Clear();
     ASSERT_TRUE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), projectPath.c_str(), false, false));
-    ASSERT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 0);
+    m_errorAbsorber->ExpectErrors(0);
 
     ASSERT_TRUE(config.IsFileExcluded("blahblah/$tmp_01.test"));
     ASSERT_FALSE(config.IsFileExcluded("blahblah/tmp_01.test"));
@@ -501,7 +501,7 @@ TEST_F(PlatformConfigurationUnitTests, ReadCheckServer_FromConfig_Valid)
     UnitTestPlatformConfiguration config;
     m_errorAbsorber->Clear();
     ASSERT_TRUE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), projectPath.c_str(), false, false));
-    ASSERT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 0);
+    m_errorAbsorber->ExpectErrors(0);
 
     const AssetProcessor::RecognizerContainer& recogs = config.GetAssetRecognizerContainer();
 
@@ -551,7 +551,7 @@ TEST_F(PlatformConfigurationUnitTests, Test_MetaFileTypes_AssetImporterExtension
     UnitTestPlatformConfiguration config;
     m_errorAbsorber->Clear();
     ASSERT_FALSE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), projectPath.c_str(), false, false));
-    ASSERT_GT(m_errorAbsorber->m_numErrorsAbsorbed, 0);
+    m_errorAbsorber->ExpectErrorsGT(0);
     ASSERT_TRUE(config.MetaDataFileTypesCount() == 2);
 
     QStringList entriesToTest{ "aaa", "bbb" };

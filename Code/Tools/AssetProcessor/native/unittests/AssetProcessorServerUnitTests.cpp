@@ -220,14 +220,14 @@ namespace UnitTest
         // Testing the case when negotiation succeeds
         RunAssetProcessorConnectionStressTest(false);
 
-        EXPECT_EQ(assertAbsorber.m_numErrorsAbsorbed, 0);
-        EXPECT_EQ(assertAbsorber.m_numAssertsAbsorbed, 0);
+        assertAbsorber.ExpectErrors(0);
+        assertAbsorber.ExpectAsserts(0);
 
         // Testing the case when negotiation fails
         RunAssetProcessorConnectionStressTest(true);
 
-        EXPECT_EQ(assertAbsorber.m_numErrorsAbsorbed, 0);
-        EXPECT_EQ(assertAbsorber.m_numAssertsAbsorbed, 0);
+        assertAbsorber.ExpectErrors(0);
+        assertAbsorber.ExpectAsserts(0);
     }
 
     void AssetProcessorServerUnitTest::ConnectionErrorForNonProxyMode(unsigned int connId, QString error)

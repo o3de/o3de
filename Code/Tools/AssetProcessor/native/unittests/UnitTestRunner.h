@@ -87,9 +87,8 @@ namespace UnitTestUtils
     class AssertAbsorber : public AZ::Debug::TraceMessageBus::Handler
     {
     public:
-        AssertAbsorber(bool debugMessages = false) : m_debugMessages{debugMessages}
+        AssertAbsorber()
         {
-            m_debugMessages = debugMessages;
             // only absorb asserts when this object is on scope in the thread that this object is on scope in.
             BusConnect();
         }
@@ -99,7 +98,7 @@ namespace UnitTestUtils
             if (numAbsorbed != expectedAbsorbed)
             {
                 BusDisconnect();
-                AZ_Printf("AssertAbsorber", "Incorrect number of %s absobed:\n\n", errorType);
+                AZ_Printf("AssertAbsorber", "Incorrect number of %s absorbed:\n\n", errorType);
                 for (auto& thisMessage : messageList)
                 {
                     AZ_Printf("Absorbed", thisMessage.c_str());
@@ -107,6 +106,21 @@ namespace UnitTestUtils
                 BusConnect();
             }
             ASSERT_EQ(numAbsorbed, expectedAbsorbed);
+        }
+
+        void ExpectGT(int numAbsorbed, int expectedThreshold, const char* errorType, const AZStd::vector<AZStd::string>& messageList)
+        {
+            if (numAbsorbed <= expectedThreshold)
+            {
+                BusDisconnect();
+                AZ_Printf("AssertAbsorber", "Incorrect number of %s absorbed:\n\n", errorType);
+                for (auto& thisMessage : messageList)
+                {
+                    AZ_Printf("Absorbed", thisMessage.c_str());
+                }
+                BusConnect();
+            }
+            EXPECT_GT(numAbsorbed, expectedThreshold);
         }
 
         void AssertCheck(const int& numAbsorbed, int expectedAbsorbed, const char* errorType, const AZStd::vector<AZStd::string>& messageList)
@@ -139,6 +153,16 @@ namespace UnitTestUtils
             ExpectCheck(m_numAssertsAbsorbed, expectValue, "asserts", m_assertMessages);
         }
 
+        void ExpectWarningsGT(int expectedThreshold)
+        {
+            ExpectGT(m_numWarningsAbsorbed, expectedThreshold, "warnings", m_warningMessages);
+        }
+
+        void ExpectErrorsGT(int expectedThreshold)
+        {
+            ExpectGT(m_numErrorsAbsorbed, expectedThreshold, "errors", m_errorMessages);
+        }
+
         void AssertWarnings(int expectValue)
         {
             AssertCheck(m_numWarningsAbsorbed, expectValue, "warnings", m_warningMessages);
@@ -157,10 +181,7 @@ namespace UnitTestUtils
         bool OnPreWarning([[maybe_unused]] const char* window, [[maybe_unused]] const char* fileName, [[maybe_unused]] int line, [[maybe_unused]] const char* func, [[maybe_unused]] const char* message) override
         {
             ++m_numWarningsAbsorbed;
-            if (m_debugMessages)
-            {
-                m_warningMessages.push_back(AZStd::string::format("%s\n    File: %s  Line: %d  Func: %s\n", message, fileName, line, func));
-            }
+            m_warningMessages.push_back(AZStd::string::format("%s\n    File: %s  Line: %d  Func: %s\n", message, fileName, line, func));
             return true;
         }
 
@@ -170,20 +191,14 @@ namespace UnitTestUtils
             UnitTest::ColoredPrintf(UnitTest::COLOR_YELLOW, "Absorbed Assert: %s\n", message);
 
             ++m_numAssertsAbsorbed;
-            if (m_debugMessages)
-            {
-                m_assertMessages.push_back(AZStd::string::format("%s\n    File: %s  Line: %d  Func: %s\n", message, fileName, line, func));
-            }
+            m_assertMessages.push_back(AZStd::string::format("%s\n    File: %s  Line: %d  Func: %s\n", message, fileName, line, func));
             return true; // I handled this, do not forward it
         }
 
         bool OnPreError([[maybe_unused]] const char* window, [[maybe_unused]] const char* fileName, [[maybe_unused]] int line, [[maybe_unused]] const char* func, [[maybe_unused]] const char* message) override
         {
             ++m_numErrorsAbsorbed;
-            if (m_debugMessages)
-            {
-                m_errorMessages.push_back(AZStd::string::format("%s\n    File: %s  Line: %d  Func: %s\n", message, fileName, line, func));
-            }
+            m_errorMessages.push_back(AZStd::string::format("%s\n    File: %s  Line: %d  Func: %s\n", message, fileName, line, func));
             return true; // I handled this, do not forward it
         }
 
@@ -229,14 +244,15 @@ namespace UnitTestUtils
             m_errorMessages.clear();
             m_assertMessages.clear();
         }
-        AZStd::vector<AZStd::string> m_assertMessages;
-        AZStd::vector<AZStd::string> m_warningMessages;
-        AZStd::vector<AZStd::string> m_errorMessages;
-        int m_numMessagesAbsorbed = 0;
-        int m_numWarningsAbsorbed = 0;
-        int m_numAssertsAbsorbed = 0;
-        int m_numErrorsAbsorbed = 0;
-        bool m_debugMessages{ false };
+
+        private:
+            AZStd::vector<AZStd::string> m_assertMessages;
+            AZStd::vector<AZStd::string> m_warningMessages;
+            AZStd::vector<AZStd::string> m_errorMessages;
+            int m_numMessagesAbsorbed = 0;
+            int m_numWarningsAbsorbed = 0;
+            int m_numAssertsAbsorbed = 0;
+            int m_numErrorsAbsorbed = 0;
     };
 
     //! Automatically restore current directory when this leaves scope:

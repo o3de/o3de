@@ -42,9 +42,9 @@ TEST_F(AssetProcessorTest, StatsCaptureTest_DoubleInitializeIsAnAssert)
     
     AssetProcessor::StatsCapture::Initialize();
     AssetProcessor::StatsCapture::Initialize();
-    
-    EXPECT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 0);
-    EXPECT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 1); // not allowed to assert on this
+
+    m_errorAbsorber->ExpectErrors(0);
+    m_errorAbsorber->ExpectAsserts(1); // not allowed to assert on this
 
     AssetProcessor::StatsCapture::BeginCaptureStat("Test");
     AssetProcessor::StatsCapture::Shutdown();

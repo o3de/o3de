@@ -258,9 +258,9 @@ TEST_F(AssetProcessorManagerTest, UnitTestForGettingJobInfoBySourceUUIDSuccess)
     EXPECT_STRCASEEQ(relFileName.toUtf8().data(), response.m_jobList[0].m_sourceFile.c_str());
     EXPECT_STRCASEEQ(tempPath.filePath("subfolder1").toUtf8().data(), response.m_jobList[0].m_watchFolder.c_str());
 
-    ASSERT_EQ(m_errorAbsorber->m_numWarningsAbsorbed, 0);
-    ASSERT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 0);
-    ASSERT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 0);
+    m_errorAbsorber->ExpectWarnings(0);
+    m_errorAbsorber->ExpectErrors(0);
+    m_errorAbsorber->ExpectAsserts(0);
 }
 
 TEST_F(AssetProcessorManagerTest, WarningsAndErrorsReported_SuccessfullySavedToDatabase)
@@ -312,9 +312,9 @@ TEST_F(AssetProcessorManagerTest, WarningsAndErrorsReported_SuccessfullySavedToD
     ASSERT_EQ(response.m_jobList[0].m_warningCount, 11);
     ASSERT_EQ(response.m_jobList[0].m_errorCount, 22);
 
-    ASSERT_EQ(m_errorAbsorber->m_numWarningsAbsorbed, 0);
-    ASSERT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 0);
-    ASSERT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 0);
+    m_errorAbsorber->ExpectWarnings(0);
+    m_errorAbsorber->ExpectErrors(0);
+    m_errorAbsorber->ExpectAsserts(0);
 }
 
 
@@ -1259,8 +1259,8 @@ void PathDependencyTest::SetUp()
 
 void PathDependencyTest::TearDown()
 {
-    ASSERT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 0);
-    ASSERT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 0);
+    m_errorAbsorber->ExpectAsserts(0);
+    m_errorAbsorber->ExpectErrors(0);
 
     AssetProcessorManagerTest::TearDown();
 }
@@ -1577,7 +1577,7 @@ TEST_F(PathDependencyTest, AssetProcessed_Impl_SelfReferrentialProductDependency
     ASSERT_TRUE(dependencyContainer.empty());
 
     // We are testing 2 different dependencies, so we should get 2 warnings
-    ASSERT_EQ(m_errorAbsorber->m_numWarningsAbsorbed, 2);
+    m_errorAbsorber->ExpectWarnings(2);
     m_errorAbsorber->Clear();
 }
 
@@ -1895,7 +1895,7 @@ TEST_F(PathDependencyTest, WildcardDependencies_ExcludePathsExisting_ResolveCorr
     );
 
     // Test asset PrimaryFile1 has 4 conflict dependencies
-    ASSERT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 4);
+    m_errorAbsorber->ExpectErrors(4);
     m_errorAbsorber->Clear();
 }
 
@@ -2043,7 +2043,7 @@ TEST_F(PathDependencyTest, WildcardDependencies_ExcludedPathDeferred_ResolveCorr
     // Test asset PrimaryFile1 has 4 conflict dependencies
     // After test assets dep2 and dep3 are processed,
     // another 2 errors will be raised because of the confliction
-    ASSERT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 6);
+    m_errorAbsorber->ExpectErrors(6);
     m_errorAbsorber->Clear();
 }
 

@@ -197,9 +197,9 @@ namespace AssetProcessor
         {
             // if you EXPECT warnings/asserts/errors you need to check in your test, and you need to also
             // reset it before returning from your test.
-            EXPECT_EQ(m_data->m_absorber.m_numAssertsAbsorbed, 0);
-            EXPECT_EQ(m_data->m_absorber.m_numErrorsAbsorbed, 0);
-            EXPECT_EQ(m_data->m_absorber.m_numWarningsAbsorbed, 0);
+            m_data->m_absorber.ExpectAsserts(0);
+            m_data->m_absorber.ExpectErrors(0);
+            m_data->m_absorber.ExpectWarnings(0);
             AssetUtilities::ResetAssetRoot();
 
             azdestroy(m_data);
@@ -418,9 +418,9 @@ namespace AssetProcessor
         // empty requests should generate an assert since it is a programming error to call this API with bad data.
         // however, the app should not crash even if the assert is absorbed.
         GetRelativeProductPathFromFullSourceOrProductPathRequest request(fileToCheck.toUtf8().constData());
-        ASSERT_EQ(m_data->m_absorber.m_numAssertsAbsorbed, 1);
+        m_data->m_absorber.ExpectAsserts(1);
         GetFullSourcePathFromRelativeProductPathRequest sourceRequest(fileToCheck.toUtf8().constData());
-        ASSERT_EQ(m_data->m_absorber.m_numAssertsAbsorbed, 2);
+        m_data->m_absorber.ExpectAsserts(2);
         // reset the absorber before we leave this assert-test, so that it doesn't cause failure of the test itself
         m_data->m_absorber.Clear();
 

@@ -228,8 +228,8 @@ TEST_F(AssetUtilitiesTest, GenerateFingerprint_Empty_Asserts)
 {
     AssetProcessor::JobDetails jobDetail;
     AssetUtilities::GenerateFingerprint(jobDetail);
-    
-    EXPECT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 1);
+
+    m_errorAbsorber->ExpectAsserts(1);
     m_errorAbsorber->Clear();
 }
 

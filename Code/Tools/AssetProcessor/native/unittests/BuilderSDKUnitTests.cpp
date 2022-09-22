@@ -212,7 +212,7 @@ namespace UnitTest
             EXPECT_TRUE(UnitTestUtils::CreateDummyFile(dummyFileName, "<ObjectStream><Class type=\"\"/></ObjectStream>"));
             EXPECT_EQ(
                 AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName(dummyFileName.toUtf8().data()), AZ::Uuid::CreateNull());
-            EXPECT_GT(absorber.m_numWarningsAbsorbed, 0);
+            absorber.ExpectWarningsGT(0);
         }
 
         {
@@ -221,7 +221,7 @@ namespace UnitTest
             EXPECT_TRUE(UnitTestUtils::CreateDummyFile(dummyFileName, "<ObjectStream><Class type=\"123 NOT A GUID\"/></ObjectStream>"));
             EXPECT_EQ(
                 AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName(dummyFileName.toUtf8().data()), AZ::Uuid::CreateNull());
-            EXPECT_GT(absorber.m_numWarningsAbsorbed, 0);
+            absorber.ExpectWarningsGT(0);
         }
 
         // objectstream with an actual 'guid' inside the class (bad guid)

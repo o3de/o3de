@@ -88,9 +88,9 @@ namespace UnitTests
         BuilderParams builderParams;
         ProcessJobResponse response;
         EXPECT_TRUE(RCJob::CopyCompiledAssets(builderParams, response));
-        EXPECT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 0);
-        EXPECT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 0);
-        EXPECT_EQ(m_errorAbsorber->m_numWarningsAbsorbed, 0);
+        m_errorAbsorber->ExpectAsserts(0);
+        m_errorAbsorber->ExpectErrors(0);
+        m_errorAbsorber->ExpectWarnings(0);
     }
 
     TEST_F(RCJobTest, CopyCompiledAssets_InvalidOutputPath_FailsAndAsserts)
@@ -104,7 +104,7 @@ namespace UnitTests
         builderParams.m_processJobRequest.m_tempDirPath = m_data->m_absolutePathToTempInputFolder.c_str(); // input working scratch space folder
 
         EXPECT_FALSE(RCJob::CopyCompiledAssets(builderParams, response));
-        EXPECT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 1);
+        m_errorAbsorber->ExpectAsserts(1);
     }
 
     TEST_F(RCJobTest, CopyCompiledAssets_InvalidInputPath_FailsAndAsserts)
@@ -120,7 +120,7 @@ namespace UnitTests
         builderParams.m_intermediateOutputDir = AssetUtilities::GetIntermediateAssetsFolder(m_data->m_absolutePathToTempOutputFolder.c_str());
 
         EXPECT_FALSE(RCJob::CopyCompiledAssets(builderParams, response));
-        EXPECT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 1);
+        m_errorAbsorber->ExpectAsserts(1);
     }
 
     TEST_F(RCJobTest, CopyCompiledAssets_TooLongPath_FailsButDoesNotAssert)
@@ -139,8 +139,8 @@ namespace UnitTests
         response.m_outputProducts.push_back({ reallyLongFileName.c_str() });
 
         EXPECT_FALSE(RCJob::CopyCompiledAssets(builderParams, response));
-        EXPECT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 0);
-        EXPECT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 1);
+        m_errorAbsorber->ExpectAsserts(0);
+        m_errorAbsorber->ExpectErrors(1);
     }
 
     TEST_F(RCJobTest, CopyCompiledAssets_OutOfDiskSpace_FailsButDoesNotAssert)
@@ -165,8 +165,8 @@ namespace UnitTests
             .WillRepeatedly(Return(false));
 
         EXPECT_FALSE(RCJob::CopyCompiledAssets(builderParams, response));
-        EXPECT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 0);
-        EXPECT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 1);
+        m_errorAbsorber->ExpectAsserts(0);
+        m_errorAbsorber->ExpectErrors(1);
 
         // no notifies should be hit since the operation should not have been attempted at all (disk space should be checked up front)
         ASSERT_EQ(m_data->m_notifyTracker.m_capturedStartPaths.size(), 0);
@@ -198,8 +198,8 @@ namespace UnitTests
         // note well that we create the first file but we don't acutally create the second one, so it is missing.
 
         EXPECT_FALSE(RCJob::CopyCompiledAssets(builderParams, response));
-        EXPECT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 0);
-        EXPECT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 1);
+        m_errorAbsorber->ExpectAsserts(0);
+        m_errorAbsorber->ExpectErrors(1);
 
         // no notifies should be hit since the operation should not have been attempted at all.
         ASSERT_EQ(m_data->m_notifyTracker.m_capturedStartPaths.size(), 0);
@@ -230,8 +230,8 @@ namespace UnitTests
 
         // this should copy that file into the target path.
         EXPECT_TRUE(RCJob::CopyCompiledAssets(builderParams, response));
-        EXPECT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 0);
-        EXPECT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 0);
+        m_errorAbsorber->ExpectAsserts(0);
+        m_errorAbsorber->ExpectErrors(0);
         ASSERT_EQ(m_data->m_notifyTracker.m_capturedStartPaths.size(), 1);
         ASSERT_EQ(m_data->m_notifyTracker.m_capturedStopPaths.size(), 1);
 
@@ -258,8 +258,8 @@ namespace UnitTests
         UnitTestUtils::CreateDummyFile(QDir(m_data->m_absolutePathToTempInputFolder.c_str()).absoluteFilePath("FiLe1.TxT"), "output of file 1");
 
         EXPECT_TRUE(RCJob::CopyCompiledAssets(builderParams, response));
-        EXPECT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 0);
-        EXPECT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 0);
+        m_errorAbsorber->ExpectAsserts(0);
+        m_errorAbsorber->ExpectErrors(0);
         ASSERT_EQ(m_data->m_notifyTracker.m_capturedStartPaths.size(), 1);
         ASSERT_EQ(m_data->m_notifyTracker.m_capturedStopPaths.size(), 1);
 

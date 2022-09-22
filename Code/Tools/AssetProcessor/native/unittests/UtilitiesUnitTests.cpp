@@ -145,10 +145,10 @@ void UtilitiesUnitTests::StartTest()
     {
         UnitTestUtils::AssertAbsorber absorb;
         UNIT_TEST_EXPECT_FALSE(CopyFileWithTimeout(fileName, outputFileName, 1));
-        UNIT_TEST_EXPECT_TRUE(absorb.m_numWarningsAbsorbed == 2); // 2 for each fail
+        absorb.ExpectWarnings(2);
         //Trying to move when the output file is open for reading
         UNIT_TEST_EXPECT_FALSE(MoveFileWithTimeout(fileName, outputFileName, 1));
-        UNIT_TEST_EXPECT_TRUE(absorb.m_numWarningsAbsorbed == 4);
+        absorb.ExpectWarnings(4);
     }
 #endif // AZ_PLATFORM_WINDOWS ONLY
 
@@ -189,7 +189,7 @@ void UtilitiesUnitTests::StartTest()
 #if defined(AZ_PLATFORM_WINDOWS)
         // only windows has an issue with moving files out that are in use.
         // other platforms do so without issue.
-        UNIT_TEST_EXPECT_TRUE(absorb.m_numWarningsAbsorbed > 0);
+        absorb.ExpectWarningsGT(0);
 #endif // windows platform.
     }
 

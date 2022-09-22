@@ -311,7 +311,7 @@ void AssetProcessingStateDataUnitTest::DataTest(AssetProcessor::AssetDatabaseCon
     {
         UnitTestUtils::AssertAbsorber absorb;
         UNIT_TEST_EXPECT_FALSE(stateData->SetSource(source));
-        UNIT_TEST_EXPECT_TRUE(absorb.m_numWarningsAbsorbed > 0);
+        absorb.ExpectWarningsGT(0);
     }
 
     //setting a valid scan folder pk should allow it to be added
@@ -662,7 +662,7 @@ void AssetProcessingStateDataUnitTest::DataTest(AssetProcessor::AssetDatabaseCon
         UnitTestUtils::AssertAbsorber absorber;
         job = JobDatabaseEntry(234234, "jobkey", validFingerprint1, "pc", validBuilderGuid1, statusQueued, 1);
         UNIT_TEST_EXPECT_FALSE(stateData->SetJob(job));
-        UNIT_TEST_EXPECT_TRUE(absorber.m_numWarningsAbsorbed > 0);
+        absorber.ExpectWarningsGT(0);
     }
 
     //trying to add a job with a valid source pk but an invalid job id  should fail:
@@ -670,7 +670,7 @@ void AssetProcessingStateDataUnitTest::DataTest(AssetProcessor::AssetDatabaseCon
         UnitTestUtils::AssertAbsorber absorb;
         job = JobDatabaseEntry(source.m_sourceID, "jobkey", validFingerprint1, "pc", validBuilderGuid1, statusQueued, 0);
         UNIT_TEST_EXPECT_FALSE(stateData->SetJob(job));
-        UNIT_TEST_EXPECT_TRUE(absorb.m_numErrorsAbsorbed > 0);
+        absorb.ExpectErrorsGT(0);
     }
 
     //setting a valid scan folder pk should allow it to be added AND should tell you what the job ID will be.
@@ -868,7 +868,7 @@ void AssetProcessingStateDataUnitTest::DataTest(AssetProcessor::AssetDatabaseCon
     {
         UnitTestUtils::AssertAbsorber absorb;
         UNIT_TEST_EXPECT_FALSE(stateData->CreateOrUpdateLegacySubID(legacyEntry));
-        UNIT_TEST_EXPECT_TRUE(absorb.m_numWarningsAbsorbed > 0);
+        absorb.ExpectWarningsGT(0);
     }
 
     // test invalid insert for non-existant legacy product FK constraint
@@ -876,7 +876,7 @@ void AssetProcessingStateDataUnitTest::DataTest(AssetProcessor::AssetDatabaseCon
     {
         UnitTestUtils::AssertAbsorber absorb;
         UNIT_TEST_EXPECT_FALSE(stateData->CreateOrUpdateLegacySubID(legacyEntry));
-        UNIT_TEST_EXPECT_TRUE(absorb.m_numWarningsAbsorbed > 0);
+        absorb.ExpectWarningsGT(0);
     }
 
     // test valid insert of another for same product
@@ -1090,7 +1090,7 @@ void AssetProcessingStateDataUnitTest::DataTest(AssetProcessor::AssetDatabaseCon
     {
         UnitTestUtils::AssertAbsorber absorber;
         UNIT_TEST_EXPECT_FALSE(stateData->SetProductDependency(productDependency));
-        UNIT_TEST_EXPECT_TRUE(absorber.m_numWarningsAbsorbed > 0);
+        absorber.ExpectWarningsGT(0);
     }
 
     //setting a valid product pk should allow it to be added

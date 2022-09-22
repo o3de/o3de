@@ -240,6 +240,6 @@ TEST_F(RCcontrollerTest_Simple, DISABLED_SameJobIsCompletedMultipleTimes_Complet
         m_rcController->OnAddedToCatalog(entry);
     }
 
-    ASSERT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 4); // Expected that there are 4 errors related to the files not existing on disk.  Error message: GenerateFingerprint was called but no input files were requested for fingerprinting.
-    ASSERT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 0);
+    m_errorAbsorber->ExpectAsserts(4); // Expected that there are 4 errors related to the files not existing on disk.  Error message: GenerateFingerprint was called but no input files were requested for fingerprinting.
+    m_errorAbsorber->ExpectErrors(0);
 }
