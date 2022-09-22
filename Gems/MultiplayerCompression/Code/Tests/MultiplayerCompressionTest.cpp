@@ -12,7 +12,7 @@
 #include <LZ4Compressor.h>
 
 #include <AzCore/Compression/Compression.h>
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <AzNetworking/DataStructures/ByteBuffer.h>
 #include <AzNetworking/Serialization/NetworkInputSerializer.h>
 #include <AzTest/AzTest.h>

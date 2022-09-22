@@ -231,6 +231,8 @@ namespace AzFramework
 
             FileTreeRequest::Reflect(context);
 
+            AssetChangeReportRequest::Reflect(context);
+
             // Responses
             GetUnresolvedDependencyCountsResponse::Reflect(context);
             GetRelativeProductPathFromFullSourceOrProductPathResponse::Reflect(context);
@@ -258,6 +260,8 @@ namespace AzFramework
             FindFilesResponse::Reflect(context);
 
             FileTreeResponse::Reflect(context);
+
+            AssetChangeReportResponse::Reflect(context);
 
             SaveAssetCatalogRequest::Reflect(context);
             SaveAssetCatalogResponse::Reflect(context);

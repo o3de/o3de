@@ -7,7 +7,7 @@
  */
 
 #include "AssetScannerUnitTests.h"
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <AzTest/Utils.h>
 #include <native/AssetManager/assetScanner.h>
 #include <native/utilities/PlatformConfiguration.h>

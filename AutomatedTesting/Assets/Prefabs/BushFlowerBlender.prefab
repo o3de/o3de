@@ -31,10 +31,6 @@
                 "Id": 16356049875968660722,
                 "Parent Entity": ""
             },
-            "Component_[16391695178646515457]": {
-                "$type": "SelectionComponent",
-                "Id": 16391695178646515457
-            },
             "Component_[16407238476365087382]": {
                 "$type": "EditorVisibilityComponent",
                 "Id": 16407238476365087382
@@ -192,10 +188,6 @@
                         "Entity_[263590326957726]"
                     ]
                 },
-                "Component_[5689270312836823309]": {
-                    "$type": "SelectionComponent",
-                    "Id": 5689270312836823309
-                },
                 "Component_[7105803915999711758]": {
                     "$type": "EditorPendingCompositionComponent",
                     "Id": 7105803915999711758
@@ -206,9 +198,7 @@
                     "Configuration": {
                         "Descriptors": [
                             {
-                                "SpawnerType": "{74BEEDB5-81CF-409F-B375-0D93D81EF2E3}",
                                 "InstanceSpawner": {
-                                    "$type": "PrefabInstanceSpawner",
                                     "SpawnableAsset": {
                                         "assetId": {
                                             "guid": "{EE51E73C-D753-54AC-A1C0-4F29844FB6C3}",
@@ -230,7 +220,9 @@
                 "Component_[13412023990029767074]": {
                     "$type": "EditorRandomGradientComponent",
                     "Id": 13412023990029767074,
-                    "PreviewEntity": "Entity_[263577442055838]"
+                    "Previewer": {
+                        "BoundsEntity": ""
+                    }
                 },
                 "Component_[14048059127502350032]": {
                     "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
@@ -256,10 +248,6 @@
                         "ShapeEntityId": "Entity_[263607506826910]"
                     }
                 },
-                "Component_[2794166072748175035]": {
-                    "$type": "SelectionComponent",
-                    "Id": 2794166072748175035
-                },
                 "Component_[4784966656524567789]": {
                     "$type": "EditorVisibilityComponent",
                     "Id": 4784966656524567789
@@ -277,6 +265,11 @@
                             50.0,
                             50.0,
                             1.0
+                        ],
+                        "Translate": [
+                            0.0,
+                            10.100000381469727,
+                            4.010446548461914
                         ]
                     }
                 },
@@ -419,9 +412,7 @@
                     "Configuration": {
                         "Descriptors": [
                             {
-                                "SpawnerType": "{74BEEDB5-81CF-409F-B375-0D93D81EF2E3}",
                                 "InstanceSpawner": {
-                                    "$type": "PrefabInstanceSpawner",
                                     "SpawnableAsset": {
                                         "assetId": {
                                             "guid": "{80C0CF4E-9A5E-544B-B89E-BC980175A259}",
@@ -432,9 +423,7 @@
                                 }
                             },
                             {
-                                "SpawnerType": "{74BEEDB5-81CF-409F-B375-0D93D81EF2E3}",
                                 "InstanceSpawner": {
-                                    "$type": "PrefabInstanceSpawner",
                                     "SpawnableAsset": {
                                         "assetId": {
                                             "guid": "{20DD1202-A434-5482-9FB9-AED4C78F6CBF}",
@@ -457,10 +446,6 @@
                     "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
                     "Id": 1915862229814997128,
                     "Parent Entity": "Entity_[263607506826910]"
-                },
-                "Component_[2123416208548010747]": {
-                    "$type": "SelectionComponent",
-                    "Id": 2123416208548010747
                 },
                 "Component_[4172073657954183661]": {
                     "$type": "EditorVisibilityComponent",
@@ -536,10 +521,6 @@
                     "$type": "EditorPendingCompositionComponent",
                     "Id": 16206759293595766479
                 },
-                "Component_[17566144032052847628]": {
-                    "$type": "SelectionComponent",
-                    "Id": 17566144032052847628
-                },
                 "Component_[17784057508127919200]": {
                     "$type": "EditorLockComponent",
                     "Id": 17784057508127919200
@@ -572,7 +553,9 @@
                             "GradientId": "Entity_[263594621925022]"
                         }
                     },
-                    "PreviewEntity": "Entity_[263586031990430]"
+                    "Previewer": {
+                        "BoundsEntity": ""
+                    }
                 }
             }
         },
@@ -580,10 +563,6 @@
             "Id": "Entity_[263590326957726]",
             "Name": "RandomNoise",
             "Components": {
-                "Component_[10420548607186596407]": {
-                    "$type": "SelectionComponent",
-                    "Id": 10420548607186596407
-                },
                 "Component_[11351507264577024072]": {
                     "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
                     "Id": 11351507264577024072,
@@ -647,6 +626,11 @@
                             50.0,
                             50.0,
                             1.0
+                        ],
+                        "Translate": [
+                            0.0,
+                            10.100000381469727,
+                            4.010446548461914
                         ]
                     }
                 },
@@ -660,7 +644,9 @@
                 "Component_[8967153379180885152]": {
                     "$type": "EditorRandomGradientComponent",
                     "Id": 8967153379180885152,
-                    "PreviewEntity": "Entity_[263590326957726]"
+                    "Previewer": {
+                        "BoundsEntity": ""
+                    }
                 }
             }
         },
@@ -675,7 +661,9 @@
                         "randomSeed": 33,
                         "frequency": 0.25
                     },
-                    "PreviewEntity": "Entity_[263594621925022]"
+                    "Previewer": {
+                        "BoundsEntity": ""
+                    }
                 },
                 "Component_[16035848776632936419]": {
                     "$type": "EditorPendingCompositionComponent",
@@ -695,10 +683,6 @@
                 "Component_[17679463569742913027]": {
                     "$type": "EditorOnlyEntityComponent",
                     "Id": 17679463569742913027
-                },
-                "Component_[18285870860955961523]": {
-                    "$type": "SelectionComponent",
-                    "Id": 18285870860955961523
                 },
                 "Component_[2330427084045350198]": {
                     "$type": "EditorDisabledCompositionComponent",
@@ -750,6 +734,11 @@
                             50.0,
                             50.0,
                             1.0
+                        ],
+                        "Translate": [
+                            0.0,
+                            10.100000381469727,
+                            4.010446548461914
                         ]
                     }
                 },
@@ -2062,10 +2051,6 @@
                     "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
                     "Id": 5796173638130327223,
                     "Parent Entity": "ContainerEntity"
-                },
-                "Component_[8278362871021770878]": {
-                    "$type": "SelectionComponent",
-                    "Id": 8278362871021770878
                 }
             }
         },
@@ -2084,7 +2069,9 @@
                         "randomSeed": 33,
                         "frequency": 0.25
                     },
-                    "PreviewEntity": "Entity_[263603211859614]"
+                    "Previewer": {
+                        "BoundsEntity": ""
+                    }
                 },
                 "Component_[11506183926478566822]": {
                     "$type": "EditorEntitySortComponent",
@@ -2128,6 +2115,11 @@
                             50.0,
                             50.0,
                             1.0
+                        ],
+                        "Translate": [
+                            0.0,
+                            10.100000381469727,
+                            4.010446548461914
                         ]
                     }
                 },
@@ -2145,10 +2137,6 @@
                     "Configuration": {
                         "ShapeEntityId": "Entity_[263607506826910]"
                     }
-                },
-                "Component_[6233982345083723563]": {
-                    "$type": "SelectionComponent",
-                    "Id": 6233982345083723563
                 },
                 "Component_[6484803030406851652]": {
                     "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
@@ -2213,10 +2201,6 @@
                 "Component_[8772711204845372843]": {
                     "$type": "EditorLockComponent",
                     "Id": 8772711204845372843
-                },
-                "Component_[8959345022109725835]": {
-                    "$type": "SelectionComponent",
-                    "Id": 8959345022109725835
                 },
                 "Component_[9094488642973843583]": {
                     "$type": "EditorDisabledCompositionComponent",

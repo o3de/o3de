@@ -14,7 +14,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Statistics/RunningStatistic.h>
 #include <AzCore/std/limits.h>
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/deque.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>

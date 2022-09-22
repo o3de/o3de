@@ -33,7 +33,6 @@
 #include <AzToolsFramework/Debug/TraceContext.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
-#include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
 
@@ -45,7 +44,9 @@
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/sort.h>
+#include <AzCore/std/time.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
+#include <AzCore/StringFunc/StringFunc.h>
 
 #include "ShaderAssetBuilder.h"
 #include "ShaderBuilderUtility.h"
@@ -120,7 +121,7 @@ namespace AZ
 
             for (AZStd::string scanFolder : scanFolders)
             {
-                AzFramework::StringFunc::Path::Normalize(scanFolder);
+                AZ::StringFunc::Path::Normalize(scanFolder);
                 if (!AZ::StringFunc::StartsWith(sourceFileFullPath, scanFolder))
                 {
                     continue;
@@ -166,7 +167,7 @@ namespace AZ
             AZ_TracePrintf(ShaderVariantAssetBuilderName, "For shader [%s], Scan folder full path [%s], relative file path [%s]", shaderFileFullPath.c_str(), scanFolderFullPath.c_str(), shaderProductFileRelativePath.c_str());
 
             AZStd::string shaderVariantListFileRelativePath = shaderProductFileRelativePath;
-            AzFramework::StringFunc::Path::ReplaceExtension(shaderVariantListFileRelativePath, RPI::ShaderVariantListSourceData::Extension);
+            AZ::StringFunc::Path::ReplaceExtension(shaderVariantListFileRelativePath, RPI::ShaderVariantListSourceData::Extension);
 
             AZ::IO::FixedMaxPath gameProjectPath = AZ::Utils::GetProjectPath();
 
@@ -282,7 +283,7 @@ namespace AZ
         void ShaderVariantAssetBuilder::CreateJobs(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response) const
         {
             AZStd::string variantListFullPath;
-            AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), variantListFullPath, true);
+            AZ::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), variantListFullPath, true);
 
             AZ_TracePrintf(ShaderVariantAssetBuilderName, "CreateJobs for Shader Variant List \"%s\"\n", variantListFullPath.data());
 
@@ -631,7 +632,7 @@ namespace AZ
         void ShaderVariantAssetBuilder::ProcessShaderVariantTreeJob(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const
         {
             AZStd::string variantListFullPath;
-            AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), variantListFullPath, true);
+            AZ::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), variantListFullPath, true);
 
             RPI::ShaderVariantListSourceData shaderVariantListDescriptor;
             if (!RPI::JsonUtils::LoadObjectFromFile(variantListFullPath, shaderVariantListDescriptor, AZStd::numeric_limits<size_t>::max()))
@@ -645,7 +646,7 @@ namespace AZ
 
             //For debugging purposes will create a dummy azshadervarianttree file.
             AZStd::string shaderName;
-            AzFramework::StringFunc::Path::GetFileName(shaderSourceFileFullPath.c_str(), shaderName);
+            AZ::StringFunc::Path::GetFileName(shaderSourceFileFullPath.c_str(), shaderName);
 
             // No error checking because the same calls were already executed during CreateJobs()
             auto descriptorParseOutcome = ShaderBuilderUtility::LoadShaderDataJson(shaderSourceFileFullPath);
@@ -708,7 +709,7 @@ namespace AZ
 
             AZStd::string filename = AZStd::string::format("%s.%s", shaderName.c_str(), RPI::ShaderVariantTreeAsset::Extension);
             AZStd::string assetPath;
-            AzFramework::StringFunc::Path::ConstructFull(request.m_tempDirPath.c_str(), filename.c_str(), assetPath, true);
+            AZ::StringFunc::Path::ConstructFull(request.m_tempDirPath.c_str(), filename.c_str(), assetPath, true);
             if (!AZ::Utils::SaveObjectToFile(assetPath, AZ::DataStream::ST_BINARY, shaderVariantTreeAsset.Get()))
             {
                 AZ_Error(ShaderVariantAssetBuilderName, false, "Failed to save Shader Variant Tree Asset to \"%s\"", assetPath.c_str());
@@ -733,14 +734,14 @@ namespace AZ
             AssetBuilderSDK::JobCancelListener jobCancelListener(request.m_jobId);
 
             AZStd::string fullPath;
-            AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), fullPath, true);
+            AZ::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), fullPath, true);
 
             const auto& jobParameters = request.m_jobDescription.m_jobParameters;
             const AZStd::string& shaderSourceFileFullPath = jobParameters.at(ShaderSourceFilePathJobParam);
             auto descriptorParseOutcome = ShaderBuilderUtility::LoadShaderDataJson(shaderSourceFileFullPath);
             RPI::ShaderSourceData shaderSourceData = descriptorParseOutcome.TakeValue();
             AZStd::string shaderFileName;
-            AzFramework::StringFunc::Path::GetFileName(shaderSourceFileFullPath.c_str(), shaderFileName);
+            AZ::StringFunc::Path::GetFileName(shaderSourceFileFullPath.c_str(), shaderFileName);
 
             const AZStd::string& variantJsonString = jobParameters.at(ShaderVariantJobVariantParam);
             RPI::ShaderVariantListSourceData::VariantInfo variantInfo;
@@ -978,7 +979,7 @@ namespace AZ
                 shaderVariantAsset->GetStableId().GetIndex(), RPI::ShaderVariantAsset::Extension);
 
             AZStd::string assetPath;
-            AzFramework::StringFunc::Path::ConstructFull(tempDirPath.c_str(), filename.c_str(), assetPath, true);
+            AZ::StringFunc::Path::ConstructFull(tempDirPath.c_str(), filename.c_str(), assetPath, true);
 
             if (!AZ::Utils::SaveObjectToFile(assetPath, AZ::DataStream::ST_BINARY, shaderVariantAsset.Get()))
             {
@@ -1070,7 +1071,7 @@ namespace AZ
                 AZStd::string shaderAssetName = AZStd::string::format(
                     "%s_%s_%u.hlsl", creationContext.m_shaderStemNamePrefix.c_str(),
                     creationContext.m_shaderPlatformInterface.GetAPIName().GetCStr(), shaderVariantInfo.m_stableId);
-                AzFramework::StringFunc::Path::Join(
+                AZ::StringFunc::Path::Join(
                     creationContext.m_tempDirPath.c_str(), shaderAssetName.c_str(), variantShaderSourcePath, true, true);
 
                 auto outcome = Utils::WriteFile(variantShaderSourceString, variantShaderSourcePath);

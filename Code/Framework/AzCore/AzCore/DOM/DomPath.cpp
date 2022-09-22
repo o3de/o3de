@@ -438,6 +438,18 @@ namespace AZ::Dom
         FormatString(output.data() + startIndex, stringLength + 1);
     }
 
+    bool Path::ContainsNormalizedEntries() const
+    {
+        for (const PathEntry& entry : m_entries)
+        {
+            if (entry.IsEndOfArray())
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     void Path::FromString(AZStd::string_view pathString)
     {
         m_entries.clear();

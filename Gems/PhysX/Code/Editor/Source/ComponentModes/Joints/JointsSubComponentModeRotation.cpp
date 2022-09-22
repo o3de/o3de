@@ -21,7 +21,6 @@
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
 #include <Editor/Source/ComponentModes/Joints/JointsComponentModeCommon.h>
-#include <PhysX/EditorColliderComponentRequestBus.h>
 #include <PhysX/EditorJointBus.h>
 #include <Source/Utils.h>
 

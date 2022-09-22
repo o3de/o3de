@@ -1,10 +1,10 @@
 {
-    "materialType": "Materials\\Types\\StandardPBR.materialtype",
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
     "materialTypeVersion": 5,
     "propertyValues": {
-        "baseColor.textureMap": "TestData/Textures/Foliage_Leaves_0_BaseColor.dds",
+        "baseColor.textureMap": "../../Textures/Foliage_Leaves_0_BaseColor.dds",
         "general.doubleSided": true,
         "opacity.mode": "Cutout",
-        "opacity.textureMap": "TestData/Textures/checker8x8_512.png"
+        "opacity.textureMap": "../../Textures/checker8x8_512.png"
     }
 }

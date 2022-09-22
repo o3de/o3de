@@ -9,8 +9,7 @@
 #define AZSTD_BINARY_SEMAPHORE_H
 
 #include <AzCore/base.h>
-#include <AzCore/std/chrono/types.h>
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <AzCore/Casting/numeric_cast.h>
 
 #if AZ_TRAIT_OS_USE_WINDOWS_SET_EVENT
@@ -62,10 +61,10 @@ namespace AZStd
         template <class Rep, class Period>
         bool try_acquire_for(const chrono::duration<Rep, Period>& rel_time)
         {
-            chrono::milliseconds timeToTry = rel_time;
+            auto timeToTry = chrono::duration_cast<chrono::milliseconds>(rel_time);
             return (WaitForSingleObject(m_event, aznumeric_cast<DWORD>(timeToTry.count())) == AZ_WAIT_OBJECT_0);
         }
-        
+
         template <class Clock, class Duration>
         bool try_acquire_until(const chrono::time_point<Clock, Duration>& abs_time)
         {
@@ -120,7 +119,7 @@ namespace AZStd
                 // whereas condition_var's wait_for is the maximum time to wait, and may return early.
                 // Thus, we call wait_until, instead of wait_for, here.
                 m_condVar.wait_until(ulock, absTime);
-                
+
                 if (!m_isReady)
                 {
                     return false;
@@ -129,7 +128,7 @@ namespace AZStd
             m_isReady = false;
             return true;
         }
-        
+
         template <class Clock, class Duration>
         bool try_acquire_until(const chrono::time_point<Clock, Duration>& abs_time)
         {
@@ -137,7 +136,7 @@ namespace AZStd
             if (!m_isReady)
             {
                 m_condVar.wait_until(ulock, abs_time, [&](){ return m_isReady; });
-                
+
                 if (!m_isReady)
                 {
                     return false;
@@ -182,7 +181,7 @@ namespace AZStd
         {
             return m_semaphore.try_acquire_for(rel_time);
         }
-        
+
         template <class Clock, class Duration>
         bool try_acquire_until(const chrono::time_point<Clock, Duration>& abs_time)
         {

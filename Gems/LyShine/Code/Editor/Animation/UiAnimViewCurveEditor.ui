@@ -10,6 +10,12 @@
     <height>285</height>
    </rect>
   </property>
+  <property name="minimumSize">
+   <size>
+    <width>50</width>
+    <height>0</height>
+   </size>
+  </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="1" column="0">
     <widget class="CUiAnimViewSplineCtrl" name="m_wndSpline" native="true"/>

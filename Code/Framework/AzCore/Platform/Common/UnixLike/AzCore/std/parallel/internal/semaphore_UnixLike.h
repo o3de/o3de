@@ -8,7 +8,7 @@
 #pragma once
 
 #include "time_UnixLike.h"
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 
 /**
 * This file is to be included from the semaphore.h only. It should NOT be included by the user.
@@ -57,9 +57,9 @@ namespace AZStd
 
         result = sem_wait(&m_semaphore);
         (void)result;
-        // note that we could return 0, or we could return EINTR, and its okay to be 'interrupted' 
+        // note that we could return 0, or we could return EINTR, and its okay to be 'interrupted'
         // by a system call.  Therefore, the only real error we care about is EINVAL.
-        AZ_Assert(result != EINVAL && result != EINTR, "sem_wait error %s\n", strerror(errno)); 
+        AZ_Assert(result != EINVAL && result != EINTR, "sem_wait error %s\n", strerror(errno));
     }
 
     template <class Rep, class Period>
