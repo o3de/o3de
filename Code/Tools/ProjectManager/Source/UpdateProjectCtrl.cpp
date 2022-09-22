@@ -185,7 +185,9 @@ namespace O3DE::ProjectManager
         //make sure the project gem catalog model is updated
         m_projectGemCatalogScreen->AddToGemModel(gemInfo);
 
-        //TODO: also create Toast Notification for project gem catalog
+        //create Toast Notification for project gem catalog
+        QString notification = tr("Successfully created gem: ") + gemInfo.m_displayName;
+        m_projectGemCatalogScreen->ShowStandardToastNotification(notification);
 
         HandleBackButton();
     }

@@ -45,7 +45,9 @@ namespace O3DE::ProjectManager
         void NotifyCurrentScreen() override;
 
         void AddToGemModel(GemInfo gemInfo);
-        
+
+        void ShowStandardToastNotification(QString notification);
+
         GemModel* GetGemModel() const { return m_gemModel; }
         DownloadController* GetDownloadController() const { return m_downloadController; }
 
