@@ -590,86 +590,92 @@ namespace AzToolsFramework
             selection.SetMultiselect(false);
             selection.SetDisplayFilter(FilterConstType(foldersFilter));
             AssetBrowserTreeViewDialog dialog(selection, this);
-            dialog.exec();
 
-            const AZStd::vector<AZStd::string> folderPaths = selection.GetSelectedFilePaths();
-
-            if (!folderPaths.empty())
+            if (dialog.exec() == QDialog::Accepted)
             {
-                AZStd::string folderPath = folderPaths[0];
-                bool connectedToAssetProcessor = false;
-                AzFramework::AssetSystemRequestBus::BroadcastResult(
-                    connectedToAssetProcessor, &AzFramework::AssetSystemRequestBus::Events::AssetProcessorIsReady);
+                const AZStd::vector<AZStd::string> folderPaths = selection.GetSelectedFilePaths();
 
-                if (connectedToAssetProcessor)
+                if (!folderPaths.empty())
                 {
-                    auto entries = GetSelectedAssets();
+                    AZStd::string folderPath = folderPaths[0];
+                    bool connectedToAssetProcessor = false;
+                    AzFramework::AssetSystemRequestBus::BroadcastResult(
+                        connectedToAssetProcessor, &AzFramework::AssetSystemRequestBus::Events::AssetProcessorIsReady);
 
-                    for (auto entry : entries)
+                    if (connectedToAssetProcessor)
                     {
-                        using namespace AZ::IO;
-                        Path fromPath = entry->GetFullPath();
-                        PathView filename = fromPath.Filename();
-                        Path toPath(folderPath);
-                        toPath /= filename;
-                        AssetChangeReportRequest request(
-                            AZ::OSString(fromPath.c_str()), AZ::OSString(toPath.c_str()), AssetChangeReportRequest::ChangeType::CheckMove);
-                        AssetChangeReportResponse response;
+                        auto entries = GetSelectedAssets();
 
-                        if (SendRequest(request, response))
+                        for (auto entry : entries)
                         {
-                            AZStd::string message;
-                            for (int i = 0; i < response.m_lines.size(); ++i)
-                            {
-                                message += response.m_lines[i] + "\n";
-                            }
+                            using namespace AZ::IO;
+                            Path fromPath = entry->GetFullPath();
+                            PathView filename = fromPath.Filename();
+                            Path toPath(folderPath);
+                            toPath /= filename;
+                            AssetChangeReportRequest request(
+                                AZ::OSString(fromPath.c_str()),
+                                AZ::OSString(toPath.c_str()),
+                                AssetChangeReportRequest::ChangeType::CheckMove);
+                            AssetChangeReportResponse response;
 
-                            if (message.size())
+                            if (SendRequest(request, response))
                             {
-                                QMessageBox msgBox(this);
-                                msgBox.setWindowTitle("Before Move Asset Information");
-                                msgBox.setIcon(QMessageBox::Warning);
-                                msgBox.setText("The asset you are moving may be referenced in other assets.");
-                                msgBox.setInformativeText("More information can be found by pressing \"Show Details...\".");
-                                auto* moveButton = msgBox.addButton("Move", QMessageBox::YesRole);
-                                msgBox.setStandardButtons(QMessageBox::Cancel);
-                                msgBox.setDefaultButton(QMessageBox::Yes);
-                                msgBox.setDetailedText(message.c_str());
-                                QSpacerItem* horizontalSpacer = new QSpacerItem(600, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
-                                auto* layout = qobject_cast<QGridLayout*>(msgBox.layout());
-                                layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());
-                                msgBox.exec();
-
-                                if (msgBox.clickedButton() == reinterpret_cast<QAbstractButton *>(moveButton))
+                                AZStd::string message;
+                                for (int i = 0; i < response.m_lines.size(); ++i)
                                 {
-                                    AssetChangeReportRequest moveRequest(
-                                        AZ::OSString(fromPath.c_str()),
-                                        AZ::OSString(toPath.c_str()),
-                                        AssetChangeReportRequest::ChangeType::Move);
-                                    AssetChangeReportResponse moveResponse;
-                                    if (SendRequest(moveRequest, moveResponse))
-                                    {
-                                        AZStd::string message2;
-                                        for (int i = 0; i < moveResponse.m_lines.size(); ++i)
-                                        {
-                                            message2 += moveResponse.m_lines[i] + "\n";
-                                        }
+                                    message += response.m_lines[i] + "\n";
+                                }
 
-                                        if (message2.size())
+                                if (message.size())
+                                {
+                                    QMessageBox msgBox(this);
+                                    msgBox.setWindowTitle("Before Move Asset Information");
+                                    msgBox.setIcon(QMessageBox::Warning);
+                                    msgBox.setText("The asset you are moving may be referenced in other assets.");
+                                    msgBox.setInformativeText("More information can be found by pressing \"Show Details...\".");
+                                    auto* moveButton = msgBox.addButton("Move", QMessageBox::YesRole);
+                                    msgBox.setStandardButtons(QMessageBox::Cancel);
+                                    msgBox.setDefaultButton(QMessageBox::Yes);
+                                    msgBox.setDetailedText(message.c_str());
+                                    QSpacerItem* horizontalSpacer = new QSpacerItem(600, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+                                    auto* layout = qobject_cast<QGridLayout*>(msgBox.layout());
+                                    layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());
+                                    msgBox.exec();
+
+                                    if (msgBox.clickedButton() == reinterpret_cast<QAbstractButton*>(moveButton))
+                                    {
+                                        AssetChangeReportRequest moveRequest(
+                                            AZ::OSString(fromPath.c_str()),
+                                            AZ::OSString(toPath.c_str()),
+                                            AssetChangeReportRequest::ChangeType::Move);
+                                        AssetChangeReportResponse moveResponse;
+                                        if (SendRequest(moveRequest, moveResponse))
                                         {
-                                            QMessageBox moveMsgBox(this);
-                                            moveMsgBox.setWindowTitle("After Move Asset Information");
-                                            moveMsgBox.setIcon(QMessageBox::Warning);
-                                            moveMsgBox.setText("The asset has been moved.");
-                                            moveMsgBox.setInformativeText("More information can be found by pressing \"Show Details...\".");
-                                            moveMsgBox.setStandardButtons(QMessageBox::Ok);
-                                            moveMsgBox.setDefaultButton(QMessageBox::Ok);
-                                            moveMsgBox.setDetailedText(message2.c_str());
-                                            QSpacerItem* horizontalSpacer2 =
-                                                new QSpacerItem(600, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
-                                            QGridLayout* moveLayout = (QGridLayout*)moveMsgBox.layout();
-                                            moveLayout->addItem(horizontalSpacer2, moveLayout->rowCount(), 0, 1, moveLayout->columnCount());
-                                            moveMsgBox.exec();
+                                            AZStd::string message2;
+                                            for (int i = 0; i < moveResponse.m_lines.size(); ++i)
+                                            {
+                                                message2 += moveResponse.m_lines[i] + "\n";
+                                            }
+
+                                            if (message2.size())
+                                            {
+                                                QMessageBox moveMsgBox(this);
+                                                moveMsgBox.setWindowTitle("After Move Asset Information");
+                                                moveMsgBox.setIcon(QMessageBox::Warning);
+                                                moveMsgBox.setText("The asset has been moved.");
+                                                moveMsgBox.setInformativeText(
+                                                    "More information can be found by pressing \"Show Details...\".");
+                                                moveMsgBox.setStandardButtons(QMessageBox::Ok);
+                                                moveMsgBox.setDefaultButton(QMessageBox::Ok);
+                                                moveMsgBox.setDetailedText(message2.c_str());
+                                                QSpacerItem* horizontalSpacer2 =
+                                                    new QSpacerItem(600, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+                                                QGridLayout* moveLayout = (QGridLayout*)moveMsgBox.layout();
+                                                moveLayout->addItem(
+                                                    horizontalSpacer2, moveLayout->rowCount(), 0, 1, moveLayout->columnCount());
+                                                moveMsgBox.exec();
+                                            }
                                         }
                                     }
                                 }
