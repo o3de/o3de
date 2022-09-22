@@ -127,10 +127,14 @@ namespace AtomToolsFramework
 
         // Fill the list widget with all of the available strings for the user to select.
         QListWidget listWidget(&dialog);
+        listWidget.setSelectionMode(multiSelect ? QAbstractItemView::ExtendedSelection : QAbstractItemView::SingleSelection);
+
         for (const auto& availableString : availableStrings)
         {
             listWidget.addItem(availableString.c_str());
         }
+
+        listWidget.sortItems();
 
         // The selected strings vector already has items then attempt to select those in the list.
         for (const auto& selection : selectedStrings)
@@ -141,8 +145,6 @@ namespace AtomToolsFramework
             }
         }
 
-        listWidget.setSelectionMode(multiSelect ? QAbstractItemView::ExtendedSelection : QAbstractItemView::SingleSelection);
-        listWidget.sortItems();
 
         // Create the button box that will provide default dialog buttons to allow the user to accept or reject their selections.
         QDialogButtonBox buttonBox(&dialog);
