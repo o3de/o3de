@@ -1,9 +1,20 @@
+# coding:utf-8
+#!/usr/bin/python
+#
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
+#
+# -------------------------------------------------------------------------
+# standard imports
 from pathlib import Path
 import logging as _logging
 import bpy
-from azpy.dcc.blender.helpers import convert_bsdf_material as bsdf
+from DccScriptingInterface.azpy.dcc.blender.helpers import convert_bsdf_material as bsdf
 
-_LOGGER = _logging.getLogger('azpy.dcc.blender.helpers.blender_materials')
+_LOGGER = _logging.getLogger('Dccsi.azpy.dcc.blender.helpers.blender_materials')
 
 
 supported_material_types = [
