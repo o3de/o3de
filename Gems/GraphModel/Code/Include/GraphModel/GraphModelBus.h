@@ -126,6 +126,13 @@ namespace GraphModelIntegration
             GraphModel::NodePtr targetNode,
             GraphModel::SlotId targetSlotId) = 0;
 
+        //! Check if there is a connection between the specified source and target specified slots
+        virtual bool AreSlotsConnected(
+            GraphModel::NodePtr sourceNode,
+            GraphModel::SlotId sourceSlotId,
+            GraphModel::NodePtr targetNode,
+            GraphModel::SlotId targetSlotId) const = 0;
+
         //! Remove the specified connection
         virtual bool RemoveConnection(GraphModel::ConnectionPtr connection) = 0;
 
