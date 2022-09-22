@@ -4,7 +4,10 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
-This file is being deprecated. relevant functions should be added to EditorPythonTestTools>script_canvas_tools_qt
+Tools library for script canvas related helper functions.
+
+Note: scripting_utils>scripting_tools is being deprecated and relevant functions should be moved here then deleted
+from that file.
 """
 
 from editor_python_test_tools.utils import TestHelper as helper
@@ -14,20 +17,21 @@ from editor_python_test_tools.utils import Report
 import pyside_utils
 import editor_python_test_tools.hydra_editor_utils as hydra
 from editor_python_test_tools.editor_entity_utils import EditorEntity
+import editor_python_test_tools.QtPyO3DEEditor as QtPyO3DEEditor
 import azlmbr.editor as editor
 import azlmbr.math as math
 import azlmbr.bus as bus
 import azlmbr.legacy.general as general
 import azlmbr.scriptcanvas as scriptcanvas
-from scripting_utils.scripting_constants import (SCRIPT_CANVAS_UI, ASSET_EDITOR_UI, NODE_PALETTE_UI, NODE_PALETTE_QT,
-                                                 TREE_VIEW_QT, SEARCH_FRAME_QT, SEARCH_FILTER_QT, SAVE_STRING, NAME_STRING,
-                                                 SAVE_ASSET_AS, WAIT_TIME_3, NODE_INSPECTOR_TITLE_KEY, WAIT_FRAMES,
-                                                 VARIABLE_MANAGER_QT, NODE_INSPECTOR_QT, NODE_INSPECTOR_UI, SCRIPT_EVENT_UI,
-                                                 VARIABLE_PALETTE_QT, ADD_BUTTON_QT, VARIABLE_TYPES, EVENTS_QT, DEFAULT_SCRIPT_EVENT,
-                                                 SCRIPT_EVENT_FILE_PATH, PARAMETERS_QT, VARIABLE_MANAGER_QT, NODE_INSPECTOR_QT,
-                                                 NODE_INSPECTOR_UI, VARIABLE_PALETTE_QT, ADD_BUTTON_QT, VARIABLE_TYPES,
-                                                 SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, ENTITY_STATES)
-
+from consts.general import (SAVE_STRING, NAME_STRING, WAIT_TIME_SEC_3, WAIT_FRAMES_200, ENTITY_STATES)
+from consts.scripting import (ASSET_EDITOR_UI, NODE_PALETTE_UI, NODE_PALETTE_QT, TREE_VIEW_QT, SEARCH_FRAME_QT,
+                              SEARCH_FILTER_QT,  NODE_INSPECTOR_TITLE_KEY, SCRIPT_EVENT_UI, PARAMETERS_QT,
+                              NODE_INSPECTOR_QT, NODE_INSPECTOR_UI, SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
+from consts.asset_editor import (EVENTS_QT, DEFAULT_SCRIPT_EVENT, SAVE_ASSET_AS)
+"""
+Editor Qt Object container for easy access
+"""
+qtpy_o3de_editor = QtPyO3DEEditor.QtPyO3DEEditor()
 
 class Tests():
     new_event_created = ("New Script Event created", "Failed to create a new event")
@@ -35,22 +39,10 @@ class Tests():
     parameter_created = ("Successfully added parameter", "Failed to add parameter")
     parameter_removed = ("Successfully removed parameter", "Failed to remove parameter")
 
-def click_menu_option(window, option_text):
-    """
-    function for clicking an option from a Qt menu object. This function bypasses menu groups or categories. for example,
-    if you want to click the Open option from the "File" category provide "Open" as your menu text instead of "File" then "Open".
-
-    param window: the qt window object where the menu option is located
-    param option_text: the label string used in the menu option that you want to click
-
-    returns none
-    """
-    action = pyside_utils.find_child_by_pattern(window, {"text": option_text, "type": QtWidgets.QAction})
-    action.trigger()
 
 def save_script_event_file(self, file_path):
     """
-    function for saving a script event file with a user defined file path. Requires asset editor qt object to be initialized
+    Function for saving a script event file with a user defined file path. Requires asset editor qt object to be initialized
     and any required fields in the asset editor to be filled in before asset can be saved.
 
     param self: the script object calling this function
@@ -64,26 +56,14 @@ def save_script_event_file(self, file_path):
     # wait till file is saved, to validate that check the text of QLabel at the bottom of the AssetEditor,
     # if there are no unsaved changes we will not have any * in the text
     label = self.asset_editor.findChild(QtWidgets.QLabel, "textEdit")
-    return helper.wait_for_condition(lambda: "*" not in label.text(), WAIT_TIME_3)
-
-
-def initialize_editor_object(self):
-    self.editor_main_window = pyside_utils.get_editor_main_window()
-
-
-def initialize_sc_editor_objects(self):
-    self.sc_editor = self.editor_main_window.findChild(QtWidgets.QDockWidget, SCRIPT_CANVAS_UI)
-    self.sc_editor_main_window = self.sc_editor.findChild(QtWidgets.QMainWindow)
-
-
-def initialize_variable_manager_object(self):
-    self.variable_manager = self.sc_editor.findChild(QtWidgets.QDockWidget, VARIABLE_MANAGER_QT)
-    if not self.variable_manager.isVisible():
-        self.click_menu_option(self.sc_editor, VARIABLE_MANAGER_QT)
+    return helper.wait_for_condition(lambda: "*" not in label.text(), WAIT_TIME_SEC_3)
 
 
 def initialize_asset_editor_object(self):
     """
+    Move to asset editor class once implemented
+    Put this function's behavior onto the QtPy O3DEEditor and QtPy Asset Editor class when we get to the asset editor tests.
+
     function for initializing qt objects needed for testing around asset editor
 
     param self: the script object calling this function.
@@ -98,6 +78,7 @@ def initialize_asset_editor_object(self):
 
 def initialize_node_palette_object(self):
     """
+    move to node palette class once implemented
     function for initializing qt objects needed for testing around the script canvas editor
 
     param self: the script object calling this function
@@ -110,24 +91,9 @@ def initialize_node_palette_object(self):
     self.node_tree_search_box = self.node_tree_search_frame.findChild(QtWidgets.QLineEdit, SEARCH_FILTER_QT)
 
 
-def expand_qt_container_rows(self, object_name):
-    """
-    function used for expanding qt container rows with expandable children
-
-    param self: The script object calling this function
-    param object_name: qt object name as a string
-
-    returns: none
-    """
-    children = self.asset_editor_row_container.findChildren(QtWidgets.QFrame, object_name)
-    for child in children:
-        check_box = child.findChild(QtWidgets.QCheckBox)
-        if check_box and not check_box.isChecked():
-            QtTest.QTest.mouseClick(check_box, QtCore.Qt.LeftButton, QtCore.Qt.NoModifier)
-
-
 def open_node_palette(self):
     """
+    move to node palette class once implemented
     function for checking if node palette is on and if not turn it on
 
     param self: the script calling this function
@@ -139,28 +105,21 @@ def open_node_palette(self):
         action.trigger()
 
 
-def open_script_canvas():
-    """
-    function for opening the script canvas UI
-
-    returns true / false result of helper function's attempt
-    """
-    general.open_pane(SCRIPT_CANVAS_UI)
-    result = helper.wait_for_condition(lambda: general.is_pane_visible(SCRIPT_CANVAS_UI), WAIT_TIME_3)
-    return result
-
 def open_asset_editor():
     """
+    add this to the asset editor class once implemented
     function for opening the asset editor UI
 
     returns true/false result of helper function's attempt
     """
     general.open_pane(ASSET_EDITOR_UI)
-    result = helper.wait_for_condition(lambda: general.is_pane_visible(ASSET_EDITOR_UI), WAIT_TIME_3)
+    result = helper.wait_for_condition(lambda: general.is_pane_visible(ASSET_EDITOR_UI), WAIT_TIME_SEC_3)
     return result
+
 
 def canvas_node_palette_search(self, node_name, number_of_retries):
     """
+    add this to the node palette class once implemented
     function for searching the script canvas node palette for user defined nodes. function takes a number of retries as
     an argument in case editor/script canvas lags during test.
 
@@ -171,19 +130,20 @@ def canvas_node_palette_search(self, node_name, number_of_retries):
     returns: boolean value of the search attempt
     """
     self.node_tree_search_box.setText(node_name)
-    helper.wait_for_condition(lambda: self.node_tree_search_box.text() == node_name, WAIT_TIME_3)
+    helper.wait_for_condition(lambda: self.node_tree_search_box.text() == node_name, WAIT_TIME_SEC_3)
     # Try clicking ENTER in search box multiple times
     found_node = False
     for _ in range(number_of_retries):
         QtTest.QTest.keyClick(self.node_tree_search_box, QtCore.Qt.Key_Enter, QtCore.Qt.NoModifier)
         found_node = helper.wait_for_condition(
-            lambda: pyside_utils.find_child_by_pattern(self.node_tree_view, {"text": node_name}) is not None, WAIT_TIME_3)
+            lambda: pyside_utils.find_child_by_pattern(self.node_tree_view, {"text": node_name}) is not None, WAIT_TIME_SEC_3)
         if found_node is True:
             break
     return found_node
 
 def get_node_palette_node_tree_qt_object (self):
     """
+    add this to the node palette class once implemented
     function for retrieving the tree view qt object for the node palette
 
     params self: the script calling this function
@@ -197,6 +157,7 @@ def get_node_palette_node_tree_qt_object (self):
 
 def get_node_palette_category_qt_object(self, category_name):
     """
+    add this to the node palette class once implemented
     function for retrieving the qt object for a node palette category
 
     param self: the script calling this function
@@ -210,6 +171,7 @@ def get_node_palette_category_qt_object(self, category_name):
 
 def get_node_inspector_node_titles(self, sc_graph_node_inspector, sc_graph):
     """
+    add this to the node palette class once implemented
     function for retrieving the node inspector's node titles from all nodes in a script canvas graph. function takes
     a script canvas graph and node inspector qt widget.
 
@@ -222,77 +184,19 @@ def get_node_inspector_node_titles(self, sc_graph_node_inspector, sc_graph):
     """
     node_inspector_scroll_area = sc_graph_node_inspector.findChild(QtWidgets.QScrollArea, "")
     # perform ctrl+a keystroke to highlight all nodes on the graph
-    QtTest.QTest.keyClick(sc_graph, "a", Qt.ControlModifier, WAIT_FRAMES)
+    QtTest.QTest.keyClick(sc_graph, "a", Qt.ControlModifier, WAIT_FRAMES_200)
     node_inspector_backgrounds = node_inspector_scroll_area.findChildren(QtWidgets.QFrame, "Background")
     titles = []
     for background in node_inspector_backgrounds:
         background_title = background.findChild(QtWidgets.QLabel, NODE_INSPECTOR_TITLE_KEY)
-        if background_title.text() is not "":
+        if background_title.text() != "":
             titles.append(background_title.text())
     return titles
 
 
-def get_main_sc_window_qt_object():
-    """
-    function for getting the sc main window qt object.
-
-    params: none
-
-    returns: a qt widget main window object
-    """
-    editor_window = pyside_utils.get_editor_main_window()
-    sc_editor = editor_window.findChild(QtWidgets.QDockWidget, SCRIPT_CANVAS_UI)
-    return sc_editor.findChild(QtWidgets.QMainWindow)
-
-
-def create_new_sc_graph(sc_editor_main_window):
-    """
-    function for opening a new script canvas graph file. uses the sc editor window to trigger a new file action
-
-    param self: the script calling this function
-    param sc_editor_main_window: the qt object for the main sc_editor window
-
-    returns: none
-    """
-    create_new_graph_action = pyside_utils.find_child_by_pattern(
-        sc_editor_main_window, {"objectName": "action_New_Script", "type": QtWidgets.QAction}
-    )
-    create_new_graph_action.trigger()
-
-
-def create_new_variable(self, new_variable_type):
-    """
-    function for creating a new SC variable through variable manager
-
-    param self: the script objecting calling this function
-    param variable_type: The variable data type to create as a string. i.e "Boolean"
-    returns: none
-    """
-
-    if type(new_variable_type) is not str:
-        Report.critical_result(["Invalid variable type provided", ""], False)
-
-    valid_type = False
-    for this_type in VARIABLE_TYPES:
-        if new_variable_type == this_type:
-            valid_type = True
-
-    if not valid_type:
-        Report.critical_result(["Invalid variable type provided", ""], False)
-
-    add_new_variable_button = self.variable_manager.findChild(QtWidgets.QPushButton, ADD_BUTTON_QT)
-    add_new_variable_button.click()  # Click on Create Variable button
-    helper.wait_for_condition((
-        lambda: self.variable_manager.findChild(QtWidgets.QTableView, VARIABLE_PALETTE_QT) is not None), WAIT_TIME_3)
-    # Select variable type
-    table_view = self.variable_manager.findChild(QtWidgets.QTableView, VARIABLE_PALETTE_QT)
-    model_index = pyside_utils.find_child_by_pattern(table_view, new_variable_type)
-    # Click on it to create variable
-    pyside_utils.item_view_index_mouse_click(table_view, model_index)
-
-
 def get_sc_editor_node_inspector(sc_editor):
     """
+    add this to the node inspector class once implemented
     function for toggling the node inspector if it's not already turned on and returning the qt widget object
 
     param sc_editor: the script canvas editor qt object
@@ -310,6 +214,7 @@ def get_sc_editor_node_inspector(sc_editor):
 
 def create_script_event(self):
     """
+    add this to the asset editor class once implemented
     Function for creating a script event from the editor's asset editor.
 
     param self: the script calling this function
@@ -319,7 +224,7 @@ def create_script_event(self):
     action = pyside_utils.find_child_by_pattern(self.asset_editor_menu_bar, {"type": QtWidgets.QAction, "text": SCRIPT_EVENT_UI})
     action.trigger()
     result = helper.wait_for_condition(
-        lambda: self.asset_editor_row_container.findChild(QtWidgets.QFrame, EVENTS_QT) is not None, WAIT_TIME_3
+        lambda: self.asset_editor_row_container.findChild(QtWidgets.QFrame, EVENTS_QT) is not None, WAIT_TIME_SEC_3
     )
     Report.result(Tests.new_event_created, result)
 
@@ -327,28 +232,36 @@ def create_script_event(self):
     add_event = self.asset_editor_row_container.findChild(QtWidgets.QFrame, EVENTS_QT).findChild(QtWidgets.QToolButton, "")
     add_event.click()
     result = helper.wait_for_condition(
-        lambda: self.asset_editor_widget.findChild(QtWidgets.QFrame, DEFAULT_SCRIPT_EVENT) is not None, WAIT_TIME_3
+        lambda: self.asset_editor_widget.findChild(QtWidgets.QFrame, DEFAULT_SCRIPT_EVENT) is not None, WAIT_TIME_SEC_3
     )
     Report.result(Tests.child_event_created, result)
 
 def create_script_event_parameter(self):
+    """
+    add this to the asset editor class once implemented
+    """
     add_param = self.asset_editor_row_container.findChild(QtWidgets.QFrame, "Parameters").findChild(QtWidgets.QToolButton, "")
     add_param.click()
     result = helper.wait_for_condition(
-        lambda: self.asset_editor_widget.findChild(QtWidgets.QFrame, "[0]") is not None, WAIT_TIME_3
+        lambda: self.asset_editor_widget.findChild(QtWidgets.QFrame, "[0]") is not None, WAIT_TIME_SEC_3
     )
     Report.result(Tests.parameter_created, result)
 
 def remove_script_event_parameter(self):
+
+    """
+    add this to the asset editor class once implemented
+    """
     remove_param = self.asset_editor_row_container.findChild(QtWidgets.QFrame, "[0]").findChild(QtWidgets.QToolButton, "")
     remove_param.click()
     result = helper.wait_for_condition(
-        lambda: self.asset_editor_widget.findChild(QtWidgets.QFrame, "[0]") is None, WAIT_TIME_3
+        lambda: self.asset_editor_widget.findChild(QtWidgets.QFrame, "[0]") is None, WAIT_TIME_SEC_3
     )
     Report.result(Tests.parameter_removed, result)
 
 def add_empty_parameter_to_script_event(self, number_of_parameters):
     """
+    add this to the asset editor class once implemented
     Function for adding a new blank parameter to a script event
 
     param self: the script calling this function
@@ -357,7 +270,7 @@ def add_empty_parameter_to_script_event(self, number_of_parameters):
     returns none
     """
     helper.wait_for_condition(
-        lambda: self.asset_editor_row_container.findChild(QtWidgets.QFrame, PARAMETERS_QT) is not None, WAIT_TIME_3)
+        lambda: self.asset_editor_row_container.findChild(QtWidgets.QFrame, PARAMETERS_QT) is not None, WAIT_TIME_SEC_3)
     parameters = self.asset_editor_row_container.findChild(QtWidgets.QFrame, PARAMETERS_QT)
     add_parameter = parameters.findChild(QtWidgets.QToolButton, "")
 
@@ -366,6 +279,7 @@ def add_empty_parameter_to_script_event(self, number_of_parameters):
 
 def get_script_event_parameter_name_text(self):
     """
+    add this to the asset editor class once implemented
     function for retrieving the name field of script event parameters
 
     param self: the script calling this function
@@ -381,6 +295,7 @@ def get_script_event_parameter_name_text(self):
 
 def get_script_event_parameter_type_combobox(self):
     """
+    add this to the asset editor class once implemented
     function for retrieving the type field of script event parameters
 
     param self: the script calling this function
@@ -395,32 +310,9 @@ def get_script_event_parameter_type_combobox(self):
     return type_combo_boxes
 
 
-def located_expected_tracer_lines(self, section_tracer, lines):
-    """
-    function for parsing game mode's console output for expected test lines. requires section_tracer. duplicates lines 
-    and error lines are not handled by this function
-    
-    param self: The script calling this function
-    param section_tracer: python editor tracer object
-    param lines: list of expected lines
-    
-    
-    returns true if all the expected lines were detected in the parsed output
-    """
-    found_lines = [printInfo.message.strip() for printInfo in section_tracer.prints]
-
-    expected_lines = len(lines)
-    matching_lines = 0
-
-    for line in lines:
-        for found_line in found_lines:
-            if line == found_line:
-                matching_lines += 1
-
-    return matching_lines >= expected_lines
-
 def create_entity_with_sc_component_asset(entity_name, source_file, position = math.Vector3(512.0, 512.0, 32.0)):
     """
+    Break this down into create entity function and stamp component function on the Editor class
     function for creating a new entity in the scene w/ a script canvas component. Function also adds as
     script canvas file to the script canvas component's source file property.
 
@@ -442,6 +334,7 @@ def create_entity_with_sc_component_asset(entity_name, source_file, position = m
 
 def create_entity_with_multiple_sc_component_asset(entity_name, source_files, position = math.Vector3(512.0, 512.0, 32.0)):
     """
+    Break this down into create entity function and stamp component function on the Editor class
     function for creating a new entity with multiple script canvas components and adding a source file to each.
 
     param entity_name: the name you want to assign the entity
@@ -483,7 +376,7 @@ def change_entity_sc_asset(entity, source_file, component_index = 0):
     script_canvas_component = entity.components[component_index]
     hydra.set_component_property_value(script_canvas_component, SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, source_handle)
     script_file = hydra.get_component_property_value(script_canvas_component, SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
-    result = helper.wait_for_condition(lambda: script_file is not None, WAIT_TIME_3)
+    result = helper.wait_for_condition(lambda: script_file is not None, WAIT_TIME_SEC_3)
 
     return result
 
@@ -508,6 +401,8 @@ def change_entity_sc_variable_entity(entity_name, target_entity_name, component_
 
 def change_entity_start_status(entity_name, start_status):
     """
+    Move this to the editor class when we reach that test script
+
     function for finding an entity by name and changing its start status
 
     param entity_name: the string name of the entity you want to modify
@@ -521,6 +416,8 @@ def change_entity_start_status(entity_name, start_status):
 
 def validate_entity_start_state_by_name(entity_name, expected_state):
     """
+    Move this to the editor class when we reach that test script
+
     function for finding and validating the start state of an entity by name. If the actual state does not match
     the expected state the function will attempt to set the state for you.
 
@@ -544,6 +441,8 @@ def validate_entity_start_state_by_name(entity_name, expected_state):
 
 def validate_entity_exists_by_name(entity_name, test_results):
     """
+    Move this to the editor class when we reach that test script
+
     function for validating if an entity was properly created
 
     param entity_name: string name of the entity to validate
