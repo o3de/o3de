@@ -6,6 +6,26 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 def EditEntity_UnderNestedInstance():
+    """
+    Test description:
+    - Creates a "NestedPrefabs_Prefab_3" prefab containing one entity called "Test_Entity".
+    - Creates a "NestedPrefabs_Prefab_2" prefab containing "NestedPrefabs_Prefab_3" instance.
+    - Creates a "NestedPrefabs_Prefab_1" prefab containing "NestedPrefabs_Prefab_2" instance.
+    - Instantiates the "NestedPrefabs_Prefab_1" prefab twice under the level prefab.
+    - Edits the "Test_Entity" of the first "NestedPrefabs_Prefab_3" instance.
+    - Checks that after propagation, the "Test_Entity" of the first "NestedPrefabs_Prefab_3" instance contains the correct edits.
+    - Checks that after propagation, the "Test_Entity" of the second "NestedPrefabs_Prefab_3" instance does not contain any edits.
+
+    - Level (Focused prefab)
+    -- NestedPrefabs_Prefab_1 (first instance)
+    --- NestedPrefabs_Prefab_2
+    ---- NestedPrefabs_Prefab_3
+    ----- Test_Entity <-- edit this entity's transform
+    -- NestedPrefabs_Prefab_1 (second instance)
+    --- NestedPrefabs_Prefab_2
+    ---- NestedPrefabs_Prefab_3
+    ----- Test_Entity
+    """
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity, EditorComponent
     from editor_python_test_tools.prefab_utils import Prefab
@@ -22,7 +42,7 @@ def EditEntity_UnderNestedInstance():
 
     NESTED_PREFABS_FILE_NAME_PREFIX = Path(__file__).stem + '_' + 'nested_prefabs_'
     NESTED_PREFABS_NAME_PREFIX = 'NestedPrefabs_Prefab_'
-    NESTED_PREFABS_TEST_ENTITY_NAME = 'TestEntity'
+    NESTED_PREFABS_TEST_ENTITY_NAME = 'Test_Entity'
     CREATION_POSITION = azlmbr.math.Vector3(0.0, 0.0, 0.0)
     UPDATED_POSITION = azlmbr.math.Vector3(10.0, 0.0, 0.0)
     NUM_NESTED_PREFABS_LEVELS = 3

@@ -6,6 +6,20 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 def EditEntity_UnderImmediateInstance():
+    """
+    Test description:
+    - Creates a "Car" prefab containing one entity called "Car_Entity".
+    - Instantiates the "Car" prefab twice under the level prefab.
+    - Edits the "Car_Entity" of the second "Car" instance.
+    - Checks that after propagation, the "Car_Entity" of the second "Car" instance contains the correct edits.
+    - Checks that after propagation, the "Car_Entity" of the first "Car" instance does not contain any edits.
+
+    - Level (Focused prefab)
+    -- Car (first instance)
+    --- Car_Entity
+    -- Car (second instance)
+    --- Car_Entity <-- edit this entity's transform
+    """
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity, EditorComponent
     from editor_python_test_tools.prefab_utils import Prefab
