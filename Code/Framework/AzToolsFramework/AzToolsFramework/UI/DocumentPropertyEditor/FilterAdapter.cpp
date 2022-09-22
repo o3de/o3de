@@ -188,8 +188,9 @@ namespace AZ::DocumentPropertyEditor
                     // removed node wasn't a row, so we need to re-cache the owning row's cached info
                     auto parentPath = patchPath;
                     parentPath.Pop();
-                    CacheDomInfoForNode(sourceContents[parentPath], GetMatchNodeAtPath(parentPath));
-                    UpdateMatchState(matchingRow);
+                    auto parentRow = GetMatchNodeAtPath(parentPath);
+                    CacheDomInfoForNode(sourceContents[parentPath], parentRow);
+                    UpdateMatchState(parentRow);
                 }
             }
             else if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Replace)
@@ -275,11 +276,11 @@ namespace AZ::DocumentPropertyEditor
 
         for (const auto& pathEntry : sourcePath)
         {
-            if (!(pathEntry.IsIndex() || pathEntry.IsEndOfArray()) || !currMatchState)
+            if (!pathEntry.IsIndex() || !currMatchState)
             {
                 return nullptr;
             }
-            const auto index = (pathEntry.IsEndOfArray() ? currMatchState->m_childMatchState.size() - 1 : pathEntry.GetIndex());
+            const auto index = pathEntry.GetIndex();
             if (index >= currMatchState->m_childMatchState.size())
             {
                 return nullptr;
@@ -334,7 +335,7 @@ namespace AZ::DocumentPropertyEditor
             if (replaceExisting)
             {
                 // destroy existing entry, if present
-                AZ_Assert(!lastPathEntry.IsEndOfArray() && lastPathEntry.IsIndex(), "if we're replacing, the last entry in the the path must by a valid index");
+                AZ_Assert(lastPathEntry.IsIndex(), "if we're replacing, the last entry in the the path must by a valid index");
                 auto newRowIndex = lastPathEntry.GetIndex();
                 const bool hasEntryToReplace = (parentMatchState->m_childMatchState.size() > newRowIndex);
                 AZ_Assert(hasEntryToReplace, "PopulateNodesAtPath was called with replaceExisting, but no existing entry exists!");
@@ -352,8 +353,7 @@ namespace AZ::DocumentPropertyEditor
             }
             else
             {
-                /// a path entry of IsEndOfArray means append to the end
-                auto newRowIndex = (lastPathEntry.IsEndOfArray() ? parentMatchState->m_childMatchState.size() : lastPathEntry.GetIndex());
+                auto newRowIndex = lastPathEntry.GetIndex();
 
                 // inserting or appending child entry, add it to the correct position
                 addedChild = NewMatchInfoNode(parentMatchState);
@@ -421,14 +421,7 @@ namespace AZ::DocumentPropertyEditor
         const auto* currDomValue = &contents;
         for (const auto& pathEntry : sourcePath)
         {
-            if (pathEntry.IsEndOfArray())
-            {
-                currDomValue = &(*currDomValue)[currDomValue->ArraySize() - 1];
-            }
-            else
-            {
-                currDomValue = &(*currDomValue)[pathEntry];
-            }
+            currDomValue = &(*currDomValue)[pathEntry];
             if (IsRow(*currDomValue))
             {
                 rowPath.Push(pathEntry);

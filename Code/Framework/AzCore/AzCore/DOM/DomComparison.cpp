@@ -139,7 +139,7 @@ namespace AZ::Dom
             {
                 for (size_t i = beforeSize; i > afterSize; --i)
                 {
-                    subPath.Push(PathEntry(i));
+                    subPath.Push(PathEntry(i - 1));
                     AddPatch(PatchOperation::RemoveOperation(subPath), PatchOperation::AddOperation(subPath, before[i - 1]));
                     subPath.Pop();
                 }

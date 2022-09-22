@@ -10,8 +10,7 @@
 
 #include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
 #include <QString>
-#include <AzCore/std/containers/vector.h>
-#include <AzCore/std/containers/set.h>
+#include <AzCore/std/containers/unordered_set.h>
 
 namespace AZ::DocumentPropertyEditor
 {

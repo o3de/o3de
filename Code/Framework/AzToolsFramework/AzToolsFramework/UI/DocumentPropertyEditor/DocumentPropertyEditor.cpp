@@ -402,9 +402,9 @@ namespace AzToolsFramework
                 QWidget* propertyWidget = propertyWidgetIter->first;
                 auto toRemove = AZStd::remove(m_domOrderedChildren.begin(), m_domOrderedChildren.end(), propertyWidget);
                 m_domOrderedChildren.erase(toRemove, m_domOrderedChildren.end());
+                propertyWidget->hide();
                 m_columnLayout->removeWidget(propertyWidget);
-
-                propertyWidgetIter->first->setParent(nullptr);
+                propertyWidget->setParent(nullptr);
                 dpe->ReleaseHandler(AZStd::move(propertyWidgetIter->second.hanlderInterface));
             }
             m_widgetToPropertyHandlerInfo.clear();
@@ -545,7 +545,7 @@ namespace AzToolsFramework
         const auto& fullPath = domOperation.GetDestinationPath();
         auto pathEntry = fullPath[pathIndex];
 
-        const bool entryIsIndex = pathEntry.IsIndex() || pathEntry.IsEndOfArray();
+        const bool entryIsIndex = pathEntry.IsIndex();
         const bool entryAtEnd = (pathIndex == fullPath.Size() - 1); // this is the last entry in the path
 
         if (!entryIsIndex && entryAtEnd)
@@ -574,14 +574,6 @@ namespace AzToolsFramework
                     return;
                 }
             }
-            else if (domOperation.GetType() == AZ::Dom::PatchOperation::Type::Add)
-            {
-                childIndex = childCount;
-            }
-            else // must be IsEndOfArray and a replace or remove, use the last existing index
-            {
-                childIndex = childCount - 1;
-            }
 
             // if this is a remove or replace, remove the existing entry first,
             // then, if this is a replace or add, add the new entry
@@ -589,14 +581,25 @@ namespace AzToolsFramework
                 domOperation.GetType() == AZ::Dom::PatchOperation::Type::Replace)
             {
                 const auto childIterator = m_domOrderedChildren.begin() + childIndex;
-                DPERowWidget* rowToRemove = qobject_cast<DPERowWidget*>(*childIterator);
+                auto childWidget = *childIterator;
+                DPERowWidget* rowToRemove = qobject_cast<DPERowWidget*>(childWidget);
                 if (rowToRemove)
                 {
                     // we're removing a row, remove any associated saved expander state
                     GetDPE()->RemoveExpanderStateForRow(rowToRemove->GetPath());
                 }
-
-                delete (*childIterator); // deleting the widget also automatically removes it from the layout
+                if (auto foundEntry = m_widgetToPropertyHandlerInfo.find(childWidget); foundEntry != m_widgetToPropertyHandlerInfo.end())
+                {
+                    GetDPE()->ReleaseHandler(AZStd::move(foundEntry->second.hanlderInterface));
+                    m_widgetToPropertyHandlerInfo.erase(foundEntry);
+                    childWidget->hide();
+                    m_columnLayout->removeWidget(childWidget);
+                    childWidget->setParent(nullptr);
+                }
+                else
+                {
+                    delete childWidget;
+                }
                 m_domOrderedChildren.erase(childIterator);
 
                 // check if the last row widget child was removed, and hide the expander if necessary
@@ -662,7 +665,7 @@ namespace AzToolsFramework
                             if (replacementWidget)
                             {
                                 AddColumnWidget(replacementWidget, childIndex, valueAtSubPath);
-                                AddDomChildWidget(childIndex, replacementWidget);
+                                m_domOrderedChildren[childIndex] = replacementWidget;
                             }
                         }
                         else
@@ -686,11 +689,13 @@ namespace AzToolsFramework
                         // CreateWidgetForHandler will add a new entry to m_widgetToPropertyHandlerInfo, kill the old entry
                         GetDPE()->ReleaseHandler(AZStd::move(foundEntry->second.hanlderInterface));
                         m_widgetToPropertyHandlerInfo.erase(foundEntry);
+                        childWidget->hide();
+                        m_columnLayout->removeWidget(childWidget);
 
                         // Replace the existing handler widget with one appropriate for the new type
                         auto replacementWidget = CreateWidgetForHandler(handlerId, valueAtSubPath);
                         AddColumnWidget(replacementWidget, childIndex, valueAtSubPath);
-                        AddDomChildWidget(childIndex, replacementWidget);
+                        m_domOrderedChildren[childIndex] = replacementWidget;
                     }
                     else
                     {
@@ -727,20 +732,9 @@ namespace AzToolsFramework
 
     void DPERowWidget::AddDomChildWidget(size_t domIndex, QWidget* childWidget)
     {
-        if (m_domOrderedChildren.size() > domIndex)
-        {
-            delete m_domOrderedChildren[domIndex];
-            m_domOrderedChildren[domIndex] = childWidget;
-        }
-        else if (m_domOrderedChildren.size() == domIndex)
-        {
-            m_domOrderedChildren.push_back(childWidget);
-        }
-        else
-        {
-            AZ_Assert(0, "error: trying to add an out of bounds index");
-            return;
-        }
+        const bool validIndex = (domIndex <= m_domOrderedChildren.size());
+        AZ_Assert(validIndex, "trying to add an out-of-bounds child!");
+        m_domOrderedChildren.insert(m_domOrderedChildren.begin() + domIndex, childWidget);
     }
 
     void DPERowWidget::AddColumnWidget(QWidget* columnWidget, size_t domIndex, const AZ::Dom::Value& domValue)
@@ -963,6 +957,7 @@ namespace AzToolsFramework
             {
                 if (m_domOrderedChildren[valueIndex] == nullptr)
                 {
+                    m_domOrderedChildren.erase(m_domOrderedChildren.begin() + valueIndex);
                     AddChildFromDomValue(myValue[valueIndex], valueIndex);
                 }
             }
