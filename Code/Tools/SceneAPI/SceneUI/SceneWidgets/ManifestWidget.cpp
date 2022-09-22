@@ -38,6 +38,13 @@ namespace AZ
             {
             }
 
+            void ManifestWidget::ResetScene()
+            {
+                ui->m_tabs->clear();
+                m_pages.clear();
+                m_scene.reset();
+            }
+
             void ManifestWidget::BuildFromScene(const AZStd::shared_ptr<Containers::Scene>& scene)
             {
                 AZ_PROFILE_FUNCTION(Editor);
