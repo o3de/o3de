@@ -55,14 +55,12 @@ Module Documentation:
 #--------------------------------------------------------------------------
 # -- Standard Python modules
 import os
+import logging as _logging
 
 # -- External Python modules
 
 # -- Lumberyard Extension Modules
-import azpy
-from azpy.env_bool import env_bool
-from azpy.constants import ENVAR_DCCSI_GDEBUG
-from azpy.constants import ENVAR_DCCSI_DEV_MODE
+from DccScriptingInterface.globals import *
 
 # -- Maya Modules
 import maya.api.OpenMaya as openmaya
@@ -70,17 +68,12 @@ import maya.api.OpenMaya as openmaya
 
 
 #--------------------------------------------------------------------------
-# -- Misc Global Space Definitions
-_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
-_DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
-
-_PACKAGENAME = __name__
-if _PACKAGENAME is '__main__':
-    _PACKAGENAME = 'azpy.dcc.maya.callbacks.event_callback_handler'
-
-_LOGGER = azpy.initialize_logger(_PACKAGENAME, default_log_level=int(20))
-_LOGGER.debug('Invoking:: {0}.'.format({_PACKAGENAME}))
-# --------------------------------------------------------------------------
+# global scope
+from DccScriptingInterface.azpy.dcc.maya.callbacks import _PACKAGENAME
+_MODULENAME = f'{_PACKAGENAME}.event_callback_handler'
+_LOGGER = _logging.getLogger(_MODULENAME)
+_LOGGER.debug('Invoking:: {0}.'.format({_MODULENAME}))
+# -------------------------------------------------------------------------
 
 
 # =========================================================================
@@ -103,7 +96,7 @@ class EventCallbackHandler(object):
     # --constructor-
     def __init__(self, callback_event, this_function, install=True):
         """
-        initializes a callback_event object        
+        initializes a callback_event object
         """
         # callback_event id storage
         self._callback_id = None
@@ -125,13 +118,13 @@ class EventCallbackHandler(object):
 
     @property
     def callback_event(self):
-        return self._callback_event    
+        return self._callback_event
 
     @property
     def this_function(self):
         return self._this_function
 
-    # --method------------------------------------------------------------- 
+    # --method-------------------------------------------------------------
     def install(self):
         """
         installs this callback_event for event, which makes it active
@@ -163,7 +156,7 @@ class EventCallbackHandler(object):
 
         return self._callback_id
 
-    # --method------------------------------------------------------------- 
+    # --method-------------------------------------------------------------
     def uninstall(self):
         """
         uninstalls this callback_event for the event, deactivates
@@ -189,9 +182,9 @@ class EventCallbackHandler(object):
             _LOGGER.warning("EventCallback::{0}:{1}, not currently installed"
                             "".format(self._callback_event,
                                       self._function.__name__))
-            return False   
+            return False
 
-    # --method------------------------------------------------------------- 
+    # --method-------------------------------------------------------------
     def __del__(self):
         """
         if object is deleted, the callback_event is uninstalled

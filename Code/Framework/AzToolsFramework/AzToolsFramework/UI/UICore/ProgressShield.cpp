@@ -54,7 +54,7 @@ namespace AzToolsFramework
 
     void ProgressShield::LegacyShowAndWait(QWidget* parent, QString label, AZStd::function<bool(int& current, int& max)> completeCallback, int delayMS)
     {
-        using AzSysClock = AZStd::chrono::system_clock;
+        using AzSysClock = AZStd::chrono::steady_clock;
         using AzMillisec = AZStd::chrono::milliseconds;
         bool showShield = false;
 

@@ -1,7 +1,7 @@
 {
-    "materialType": "Materials/Types/StandardMultilayerPBR.materialtype",
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardMultilayerPBR.materialtype",
     "materialTypeVersion": 3,
-    "parentMaterial": "TestData/Materials/StandardMultilayerPbrTestCases/005_UseDisplacement.material",
+    "parentMaterial": "005_UseDisplacement.material",
     "propertyValues": {
         "blend.enableLayer2": false
     }

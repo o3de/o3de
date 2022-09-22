@@ -145,11 +145,11 @@ namespace PhysX::Benchmarks
         {
             request.m_direction = m_boxes[next].GetNormalized();
 
-            auto start = AZStd::chrono::system_clock::now();
+            auto start = AZStd::chrono::steady_clock::now();
 
             AzPhysics::SceneQueryHits result = sceneInterface->QueryScene(m_testSceneHandle, &request);
 
-            auto timeElasped = AZStd::chrono::duration_cast<AZStd::chrono::nanoseconds>(AZStd::chrono::system_clock::now() - start);
+            auto timeElasped = AZStd::chrono::duration_cast<AZStd::chrono::nanoseconds>(AZStd::chrono::steady_clock::now() - start);
             executionTimes.emplace_back(timeElasped.count());
 
             benchmark::DoNotOptimize(result);
@@ -179,11 +179,11 @@ namespace PhysX::Benchmarks
         {
             request.m_direction = m_boxes[next].GetNormalized();
 
-            auto start = AZStd::chrono::system_clock::now(); 
+            auto start = AZStd::chrono::steady_clock::now(); 
 
             AzPhysics::SceneQueryHits result = sceneInterface->QueryScene(m_testSceneHandle, &request);
 
-            auto timeElasped = AZStd::chrono::duration_cast<AZStd::chrono::nanoseconds>(AZStd::chrono::system_clock::now() - start);
+            auto timeElasped = AZStd::chrono::duration_cast<AZStd::chrono::nanoseconds>(AZStd::chrono::steady_clock::now() - start);
             executionTimes.emplace_back(timeElasped.count());
 
             benchmark::DoNotOptimize(result);
@@ -210,11 +210,11 @@ namespace PhysX::Benchmarks
         {
             request.m_pose = AZ::Transform::CreateTranslation(m_boxes[next]);
 
-            auto start = AZStd::chrono::system_clock::now();
+            auto start = AZStd::chrono::steady_clock::now();
 
             AzPhysics::SceneQueryHits result = sceneInterface->QueryScene(m_testSceneHandle, &request);
 
-            auto timeElasped = AZStd::chrono::duration_cast<AZStd::chrono::nanoseconds>(AZStd::chrono::system_clock::now() - start);
+            auto timeElasped = AZStd::chrono::duration_cast<AZStd::chrono::nanoseconds>(AZStd::chrono::steady_clock::now() - start);
             executionTimes.emplace_back(timeElasped.count());
 
             benchmark::DoNotOptimize(result);

@@ -29,7 +29,7 @@ namespace ScriptCanvas
 
             // secondary stats are inferred from the primary stats
             double scriptCostPercent = 0.0;
-            
+
             void CalculateSecondary();
         };
 
@@ -75,7 +75,7 @@ namespace ScriptCanvas
             TrackingState m_trackingState = TrackingState::None;
             AZ::s32 m_accumulatedTickCountRemaining = 0;
             AZStd::unordered_map<AZ::Data::AssetId, AZStd::string> m_executedScripts;
-            AZStd::chrono::system_clock::time_point m_accumulatedStartTime;
+            AZStd::chrono::steady_clock::time_point m_accumulatedStartTime;
             PerformanceStatistics m_accumulatedStats;
 
             void ClearTrackingState();
