@@ -32,6 +32,11 @@ _LOGGER.info(f'Initializing: {_MODULENAME}')
 
 from DccScriptingInterface.globals import *
 
+# early attach WingIDE debugger (can refactor to include other IDEs later)
+if DCCSI_DEV_MODE:
+    import DccScriptingInterface.azpy.test.entry_test
+    DccScriptingInterface.azpy.test.entry_test.connect_wing()
+
 mayaMainWindowPtr = omui.MQtUtil.mainWindow()
 mayaMainWindow = wrapInstance(int(mayaMainWindowPtr), QtWidgets.QWidget)
 # -------------------------------------------------------------------------
