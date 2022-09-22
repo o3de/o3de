@@ -10,6 +10,7 @@
 #if !defined(Q_MOC_RUN)
 #include <ProjectInfo.h>
 #include <ScreenWidget.h>
+#include <GemCatalog/GemInfo.h>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QStackedWidget)
@@ -43,6 +44,7 @@ namespace O3DE::ProjectManager
         void HandleBackButton();
         void HandleNextButton();
         void HandleGemsButton();
+        void HandleCreateGemButtonPressed(GemInfo gemInfo);
         void OnChangeScreenRequest(ProjectManagerScreen screen);
         void UpdateCurrentProject(const QString& projectPath);
 

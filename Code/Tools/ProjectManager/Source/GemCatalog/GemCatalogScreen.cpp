@@ -228,12 +228,17 @@ namespace O3DE::ProjectManager
                 AZ::Outcome<GemInfo, void> gemInfoResult = PythonBindingsInterface::Get()->GetGemInfo(directory);
                 if (gemInfoResult)
                 {
-                    m_gemModel->AddGem(gemInfoResult.GetValue<GemInfo>());
-                    m_gemModel->UpdateGemDependencies();
-                    m_proxyModel->sort(/*column=*/0);
+                    AddToGemModel(gemInfoResult.GetValue<GemInfo>());
                 }
             }
         }
+    }
+
+    void GemCatalogScreen::AddToGemModel(GemInfo gemInfo)
+    {
+        m_gemModel->AddGem(gemInfo);
+        m_gemModel->UpdateGemDependencies();
+        m_proxyModel->sort(/*column=*/0);
     }
 
     void GemCatalogScreen::Refresh()
@@ -360,6 +365,7 @@ namespace O3DE::ProjectManager
             m_notificationsView->ShowToastNotification(toastConfiguration);
         }
     }
+    
 
     void GemCatalogScreen::OnDependencyGemStatusChanged(const QString& gemName)
     {
