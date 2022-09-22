@@ -7,6 +7,8 @@
  */
 
 #include <AzCore/Script/ScriptTimePoint.h>
+#include <AzFramework/Asset/AssetSystemBus.h>
+#include <AzFramework/Network/AssetProcessorConnection.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
@@ -20,6 +22,8 @@
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
 
 #include <QFileInfo>
+#include <QtWidgets/QMessageBox>
+#include <QHBoxLayout>
 #include <QMimeData>
 #include <QTimer>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 'QRegularExpression::d': class 'QExplicitlySharedDataPointer<QRegularExpressionPrivate>' needs to have dll-interface to be used by clients of class 'QRegularExpression'
@@ -226,26 +230,38 @@ namespace AzToolsFramework
             Path newPath = oldPath;
             newPath.ReplaceFilename(newFile);
             newPath.ReplaceExtension(extension);
-            using SCCommandBus = AzToolsFramework::SourceControlCommandBus;
-            SCCommandBus::Broadcast(
-                &SCCommandBus::Events::RequestRename, oldPath.c_str(), newPath.c_str(),
-                [&, index, item, newPath](bool success, [[maybe_unused]] const AzToolsFramework::SourceControlFileInfo& info)
-                {
-                    if (success)
-                    {
-                        emit dataChanged(index.parent(), index);
 
-                        if (m_assetEntriesToCreatorBusIds.contains(item))
-                        {
-                            AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotificationBus::Event(
-                                m_assetEntriesToCreatorBusIds[item],
-                                &AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::HandleInitialFilenameChange,
-                                newPath.c_str());
-                        }
+            {
+                using namespace AzFramework::AssetSystem;
+                AssetChangeReportRequest moveRequest(
+                    AZ::OSString(oldPath.c_str()), AZ::OSString(newPath.c_str()), AssetChangeReportRequest::ChangeType::Move);
+                AssetChangeReportResponse moveResponse;
+                if (SendRequest(moveRequest, moveResponse))
+                {
+                    AZStd::string message;
+                    for (int i = 0; i < moveResponse.m_lines.size(); ++i)
+                    {
+                        message += moveResponse.m_lines[i] + "\n";
                     }
 
-                    m_assetEntriesToCreatorBusIds.erase(item);
-                });
+                    if (message.size())
+                    {
+                        QMessageBox msgBox(nullptr);
+                        msgBox.setWindowTitle("After Rename Asset Information");
+                        msgBox.setIcon(QMessageBox::Warning);
+                        msgBox.setText("The asset has been moved.");
+                        msgBox.setInformativeText("More information can be found by pressing \"Show Details...\".");
+                        msgBox.setStandardButtons(QMessageBox::Ok);
+                        msgBox.setDefaultButton(QMessageBox::Ok);
+                        msgBox.setDetailedText(message.c_str());
+                        QSpacerItem* horizontalSpacer2 = new QSpacerItem(600, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+                        QGridLayout* moveLayout = (QGridLayout*)msgBox.layout();
+                        moveLayout->addItem(horizontalSpacer2, moveLayout->rowCount(), 0, 1, moveLayout->columnCount());
+                        msgBox.exec();
+                        emit dataChanged(index.parent(), index);
+                    }
+                }
+            }
             return false;
         }
 

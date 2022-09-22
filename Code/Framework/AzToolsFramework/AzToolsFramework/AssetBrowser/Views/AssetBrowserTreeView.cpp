@@ -542,11 +542,63 @@ namespace AzToolsFramework
         {
             auto entries = GetSelectedAssets(false); // you cannot rename product files.
             // you may not rename products.
-            if (entries.size() == 1)
+            if (entries.size() != 1)
             {
-                edit(currentIndex());
+                return;
+            }
+            using namespace AzFramework::AssetSystem;
+            bool connectedToAssetProcessor = false;
+            AzFramework::AssetSystemRequestBus::BroadcastResult(
+                connectedToAssetProcessor, &AzFramework::AssetSystemRequestBus::Events::AssetProcessorIsReady);
+
+            if (connectedToAssetProcessor)
+            {
+                using namespace AZ::IO;
+                AssetBrowserEntry* item = entries[0];
+                Path fromPath = item->GetFullPath();
+                PathView filename = fromPath.Filename();
+                Path toPath(fromPath);
+                AssetChangeReportRequest request(
+                    AZ::OSString(fromPath.c_str()), AZ::OSString(toPath.c_str()), AssetChangeReportRequest::ChangeType::CheckMove);
+                AssetChangeReportResponse response;
+
+                if (SendRequest(request, response))
+                {
+                    AZStd::string message;
+                    for (int i = 0; i < response.m_lines.size(); ++i)
+                    {
+                        message += response.m_lines[i] + "\n";
+                    }
+
+                    if (message.size())
+                    {
+                        QMessageBox msgBox(this);
+                        msgBox.setWindowTitle("Before Rename Asset Information");
+                        msgBox.setIcon(QMessageBox::Warning);
+                        msgBox.setText("The asset you are renaming may be referenced in other assets.");
+                        msgBox.setInformativeText("More information can be found by pressing \"Show Details...\".");
+                        auto* renameButton = msgBox.addButton("Rename", QMessageBox::YesRole);
+                        msgBox.setStandardButtons(QMessageBox::Cancel);
+                        msgBox.setDefaultButton(QMessageBox::Yes);
+                        msgBox.setDetailedText(message.c_str());
+                        QSpacerItem* horizontalSpacer = new QSpacerItem(600, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+                        QGridLayout* layout = (QGridLayout*)msgBox.layout();
+                        layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());
+                        msgBox.exec();
+
+                        if (msgBox.clickedButton() == reinterpret_cast<QAbstractButton*>(renameButton))
+                        {
+                            edit(currentIndex());
+                        }
+                    }
+                    else
+                    {
+                        edit(currentIndex());
+                    }
+                }
             }
         }
+
         void AssetBrowserTreeView::DuplicateEntries()
         {
             auto entries = GetSelectedAssets(false); // you may not duplicate product files.
