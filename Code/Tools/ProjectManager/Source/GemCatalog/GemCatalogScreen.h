@@ -44,9 +44,9 @@ namespace O3DE::ProjectManager
         bool IsTab() override;
         void NotifyCurrentScreen() override;
 
-        void AddToGemModel(GemInfo gemInfo);
+        void AddToGemModel(const GemInfo& gemInfo);
 
-        void ShowStandardToastNotification(QString notification);
+        void ShowStandardToastNotification(const QString& notification);
 
         GemModel* GetGemModel() const { return m_gemModel; }
         DownloadController* GetDownloadController() const { return m_downloadController; }

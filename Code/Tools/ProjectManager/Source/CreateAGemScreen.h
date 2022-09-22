@@ -35,7 +35,7 @@ namespace O3DE::ProjectManager
         ~CreateGem() = default;
 
     signals:
-        void CreateButtonPressed(GemInfo gemInfo);
+        void CreateButtonPressed(const GemInfo& gemInfo);
 
     private slots:
         void HandleBackButton();

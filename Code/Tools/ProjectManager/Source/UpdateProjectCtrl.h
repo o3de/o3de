@@ -44,7 +44,7 @@ namespace O3DE::ProjectManager
         void HandleBackButton();
         void HandleNextButton();
         void HandleGemsButton();
-        void HandleCreateGemButtonPressed(GemInfo gemInfo);
+        void HandleCreateGemButtonPressed(const GemInfo& gemInfo);
         void OnChangeScreenRequest(ProjectManagerScreen screen);
         void UpdateCurrentProject(const QString& projectPath);
 

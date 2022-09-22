@@ -234,7 +234,7 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void GemCatalogScreen::AddToGemModel(GemInfo gemInfo)
+    void GemCatalogScreen::AddToGemModel(const GemInfo& gemInfo)
     {
         m_gemModel->AddGem(gemInfo);
         m_gemModel->UpdateGemDependencies();
@@ -362,7 +362,7 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void GemCatalogScreen::ShowStandardToastNotification(QString notification)
+    void GemCatalogScreen::ShowStandardToastNotification(const QString& notification)
     {
         AzQtComponents::ToastConfiguration toastConfiguration(AzQtComponents::ToastType::Custom, notification, "");
         toastConfiguration.m_customIconImage = ":/gem.svg";

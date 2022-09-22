@@ -174,7 +174,7 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void UpdateProjectCtrl::HandleCreateGemButtonPressed(GemInfo gemInfo)
+    void UpdateProjectCtrl::HandleCreateGemButtonPressed(const GemInfo& gemInfo)
     {
         /*
             Note: by the time this function is called, the signal CreateButtonPressed was already emitted.
