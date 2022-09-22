@@ -52,7 +52,7 @@ class QtPyScriptCanvasVariableManager():
         returns: None
         """
         assert type(new_variable_type) is str, "Wrong parameter type provided. new_variable_type was not str"
-        assert VARIABLE_TYPES_DICT.__contains__(new_variable_type), \
+        assert new_variable_type in VARIABLE_TYPES_DICT, \
             "Wrong type provided. new_variable_type is not a valid type"
 
     def create_new_variable(self, new_variable_type: str) -> None:
