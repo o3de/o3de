@@ -192,15 +192,15 @@ namespace AssetProcessor
                     }
                     if (processDuration.hour() > 0)
                     {
-                        return processDuration.toString("zzz' ms, 'ss' sec, 'mm' min, 'hh' hr'");
+                        return processDuration.toString("hh' hr, 'mm' min, 'ss' sec, 'zzz' ms");
                     }
                     if (processDuration.minute() > 0)
                     {
-                        return processDuration.toString("zzz' ms, 'ss' sec, 'mm' min'");
+                        return processDuration.toString("mm' min, 'ss' sec, 'zzz' ms");
                     }
                     if (processDuration.second() > 0)
                     {
-                        return processDuration.toString("zzz' ms, 'ss' sec'");
+                        return processDuration.toString("ss' sec, 'zzz' ms");
                     }
                     return processDuration.toString("zzz' ms'");
                 }
@@ -382,9 +382,9 @@ namespace AssetProcessor
                         "this warning, report an issue on GitHub with O3DE version number.",
                         entry.m_statName.c_str(),
                         numTokensExpected,
-                        tokens.size()); 
+                        tokens.size());
                 }
-                
+
                 return true;
             };
             assetDatabaseConnection.QueryStatLikeStatName("ProcessJob,%", statsFunction);
@@ -537,7 +537,7 @@ namespace AssetProcessor
             }
         }
 
-        // now that we've collected all the elements to remove, we can remove them.  
+        // now that we've collected all the elements to remove, we can remove them.
         // Doing it this way avoids problems with mutating these cache structures while iterating them.
         for (const AssetProcessor::QueueElementID& removal : elementsToRemove)
         {
@@ -561,8 +561,8 @@ namespace AssetProcessor
             m_cachedJobs.erase(m_cachedJobs.begin() + jobIndex);
             delete jobInfo;
             m_cachedJobsLookup.erase(iter);
-            // Since we are storing the jobIndex for each job for faster lookup therefore 
-            // we need to update the jobIndex for jobs that were after the removed job. 
+            // Since we are storing the jobIndex for each job for faster lookup therefore
+            // we need to update the jobIndex for jobs that were after the removed job.
             for (int idx = jobIndex; idx < m_cachedJobs.size(); idx++)
             {
                 jobInfo = m_cachedJobs[idx];
@@ -577,4 +577,3 @@ namespace AssetProcessor
         }
     }
 } //namespace AssetProcessor
-
