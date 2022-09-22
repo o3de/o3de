@@ -34,11 +34,15 @@
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QApplication>
+#include <QDialog>
+#include <QDialogButtonBox>
+#include <QListWidget>
 #include <QMenu>
 #include <QMessageBox>
 #include <QMimeData>
 #include <QProcess>
 #include <QTimer>
+#include <QVBoxLayout>
 AZ_POP_DISABLE_WARNING
 
 namespace AtomToolsFramework
@@ -108,6 +112,59 @@ namespace AtomToolsFramework
     {
         QFileInfo fileInfo(path.c_str());
         return GetDisplayNameFromText(fileInfo.baseName().toUtf8().constData());
+    }
+
+    bool GetStringListFromDialog(
+        AZStd::vector<AZStd::string>& selectedStrings,
+        const AZStd::vector<AZStd::string>& availableStrings,
+        const AZStd::string& title,
+        const bool multiSelect)
+    {
+        // Create a dialog that will display a list of string options and prompt the user for input.
+        QDialog dialog(GetToolMainWindow());
+        dialog.setWindowTitle(title.c_str());
+        dialog.setLayout(new QVBoxLayout());
+
+        // Fill the list widget with all of the available strings for the user to select.
+        QListWidget listWidget(&dialog);
+        for (const auto& availableString : availableStrings)
+        {
+            listWidget.addItem(availableString.c_str());
+        }
+
+        // The selected strings vector already has items then attempt to select those in the list.
+        for (const auto& selection : selectedStrings)
+        {
+            for (auto item : listWidget.findItems(selection.c_str(), Qt::MatchExactly))
+            {
+                item->setSelected(true);
+            }
+        }
+
+        listWidget.setSelectionMode(multiSelect ? QAbstractItemView::ExtendedSelection : QAbstractItemView::SingleSelection);
+        listWidget.sortItems();
+
+        // Create the button box that will provide default dialog buttons to allow the user to accept or reject their selections.
+        QDialogButtonBox buttonBox(&dialog);
+        buttonBox.setStandardButtons(QDialogButtonBox::Cancel | QDialogButtonBox::Ok);
+        QObject::connect(&buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+        QObject::connect(&buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
+        // Add the list widget and button box to the layout so they appear and the dialog.
+        dialog.layout()->addWidget(&listWidget);
+        dialog.layout()->addWidget(&buttonBox);
+
+        // If the user accepts their selections then the selected strings director will be cleared and refilled with them.
+        if (dialog.exec() == QDialog::Accepted)
+        {
+            selectedStrings.clear();
+            for (auto item : listWidget.selectedItems())
+            {
+                selectedStrings.push_back(item->text().toUtf8().constData());
+            }
+            return true;
+        }
+        return false;
     }
 
     AZStd::string GetSaveFilePathFromDialog(const AZStd::string& initialPath, const AZStd::string& title)
@@ -535,6 +592,7 @@ namespace AtomToolsFramework
             addUtilFunc(behaviorContext->Method("GetSymbolNameFromText", GetSymbolNameFromText, nullptr, ""));
             addUtilFunc(behaviorContext->Method("GetDisplayNameFromText", GetDisplayNameFromText, nullptr, ""));
             addUtilFunc(behaviorContext->Method("GetDisplayNameFromPath", GetDisplayNameFromPath, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetStringListFromDialog", GetStringListFromDialog, nullptr, ""));
             addUtilFunc(behaviorContext->Method("GetSaveFilePathFromDialog", GetSaveFilePathFromDialog, nullptr, ""));
             addUtilFunc(behaviorContext->Method("GetUniqueFilePath", GetUniqueFilePath, nullptr, ""));
             addUtilFunc(behaviorContext->Method("GetUniqueUntitledFilePath", GetUniqueUntitledFilePath, nullptr, ""));
