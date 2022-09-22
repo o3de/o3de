@@ -20,26 +20,26 @@ namespace UnitTest
         {
             AllocatorsTestFixture::SetUp();
 
-            m_rootWidget = new QWidget();
+            m_rootWidget = AZStd::make_unique<QWidget>();
             m_rootWidget->setFixedSize(0, 0);
             m_rootWidget->setMouseTracking(true);
             m_rootWidget->move(0, 0); // explicitly set the widget to be in the upper left corner
 
-            m_mouseMoveDetector = new MouseMoveDetector();
-            m_rootWidget->installEventFilter(m_mouseMoveDetector);
+            m_mouseMoveDetector = AZStd::make_unique<MouseMoveDetector>();
+            m_rootWidget->installEventFilter(m_mouseMoveDetector.get());
         }
 
         void TearDown() override
         {
-            m_rootWidget->removeEventFilter(m_mouseMoveDetector);
-            delete m_rootWidget;
-            delete m_mouseMoveDetector;
+            m_rootWidget->removeEventFilter(m_mouseMoveDetector.get());
+            m_rootWidget.reset();
+            m_mouseMoveDetector.reset();
 
             AllocatorsTestFixture::TearDown();
         }
 
-        QWidget* m_rootWidget = nullptr;
-        MouseMoveDetector* m_mouseMoveDetector = nullptr;
+        AZStd::unique_ptr<QWidget> m_rootWidget;
+        AZStd::unique_ptr<MouseMoveDetector> m_mouseMoveDetector;
     };
 
     struct MouseMoveParams
@@ -59,41 +59,30 @@ namespace UnitTest
     TEST_P(MouseMoveAzToolsFrameworkTestHelperFixture, MouseMoveCorrectlyTransformsCursorPositionInGlobalAndLocalSpace)
     {
         // given
-        printf("reached #0");
         const MouseMoveParams mouseMoveParams = GetParam();
-        printf("reached #1");
         m_rootWidget->move(mouseMoveParams.m_widgetPosition);
-        printf("reached #2");
         m_rootWidget->setFixedSize(mouseMoveParams.m_widgetSize);
-        printf("reached #3");
 
         // when
-        MouseMove(m_rootWidget, mouseMoveParams.m_localCursorPosition, mouseMoveParams.m_cursorDelta);
-        printf("reached #4");
+        MouseMove(m_rootWidget.get(), mouseMoveParams.m_localCursorPosition, mouseMoveParams.m_cursorDelta);
 
         // then
         const QPoint mouseLocalPosition = m_mouseMoveDetector->m_mouseLocalPosition;
-        printf("reached #5");
         const QPoint mouseLocalPositionFromGlobal = m_rootWidget->mapFromGlobal(m_mouseMoveDetector->m_mouseGlobalPosition);
-        printf("reached #6");
         const QPoint expectedPosition = mouseMoveParams.m_localCursorPosition + mouseMoveParams.m_cursorDelta;
-        printf("reached #7");
 
         using ::testing::Eq;
         EXPECT_THAT(mouseLocalPosition.x(), Eq(expectedPosition.x()));
         EXPECT_THAT(mouseLocalPosition.y(), Eq(expectedPosition.y()));
         EXPECT_THAT(mouseLocalPositionFromGlobal.x(), Eq(expectedPosition.x()));
         EXPECT_THAT(mouseLocalPositionFromGlobal.y(), Eq(expectedPosition.y()));
-        printf("reached #8");
     }
 
     INSTANTIATE_TEST_CASE_P(
         All,
         MouseMoveAzToolsFrameworkTestHelperFixture,
         testing::Values(
-            MouseMoveParams{ QSize(100, 100), QPoint(20, 20), QPoint(50, 50), QPoint(20, 20) },
             MouseMoveParams{ QSize(100, 100), QPoint(0, 0), QPoint(0, 0), QPoint(10, 10) },
-            MouseMoveParams{ QSize(100, 100), QPoint(100, 100), QPoint(0, 0), QPoint(10, 10) }
-            ));
-
+            MouseMoveParams{ QSize(100, 100), QPoint(100, 100), QPoint(0, 0), QPoint(10, 10) },
+            MouseMoveParams{ QSize(100, 100), QPoint(20, 20), QPoint(50, 50), QPoint(20, 20) }));
 } // namespace UnitTest
