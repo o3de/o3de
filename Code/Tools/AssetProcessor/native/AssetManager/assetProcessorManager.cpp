@@ -5165,7 +5165,8 @@ namespace AssetProcessor
             {
             }
 
-            explicit PathOrUuid(AZStd::string path) : m_path(AZStd::move(path))
+            explicit PathOrUuid(AZStd::string path)
+                : m_path(AZStd::move(path))
             {
 
             }
