@@ -96,6 +96,8 @@ namespace AZ::DocumentPropertyEditor
             // Prefer more expensive patch generation that produces fewer replace patches, we want as minimal a GUI
             // update as possible, as that's the really expensive side of this
             patchGenerationParams.m_replaceThreshold = Dom::DeltaPatchGenerationParameters::NoReplace;
+            // Generate denormalized paths instead of EndOfArray entries (this is required by ChangedEvent)
+            patchGenerationParams.m_generateDenormalizedPaths = true;
             Dom::PatchUndoRedoInfo patches = Dom::GenerateHierarchicalDeltaPatch(m_cachedContents, newContents, patchGenerationParams);
             m_cachedContents = newContents;
             m_changedEvent.Signal(patches.m_forwardPatches);
@@ -104,9 +106,25 @@ namespace AZ::DocumentPropertyEditor
 
     void DocumentAdapter::NotifyContentsChanged(const AZ::Dom::Patch& patch)
     {
+        const Dom::Patch* appliedPatch = &patch;
+        // This is used as a scratch buffer if we need to denormalize the path before we emit it.
+        // This lets the DPE and proxy adapters listen for patches that have valid indices instead of EndOfArray entries.
+        Dom::Patch tempDenormalizedPatch;
+
         if (!m_cachedContents.IsNull())
         {
-            Dom::PatchOutcome outcome = patch.ApplyInPlace(m_cachedContents);
+            Dom::PatchOutcome outcome;
+            if (!patch.ContainsNormalizedEntries())
+            {
+                outcome = patch.ApplyInPlace(m_cachedContents);
+            }
+            else
+            {
+                tempDenormalizedPatch = patch;
+                outcome = tempDenormalizedPatch.ApplyInPlaceAndDenormalize(m_cachedContents);
+                appliedPatch = &tempDenormalizedPatch;
+            }
+
             if (!outcome.IsSuccess())
             {
                 AZ_Warning("DPE", false, "DocumentAdapter::NotifyContentsChanged: Failed to apply DOM patches: %s", outcome.GetError().c_str());
@@ -122,7 +140,7 @@ namespace AZ::DocumentPropertyEditor
                 AZ_Warning("DPE", valuesMatch, "DocumentAdapter::NotifyContentsChanged: DOM patches applied, but the new model contents don't match the result of GenerateContents");
             }
         }
-        m_changedEvent.Signal(patch);
+        m_changedEvent.Signal(*appliedPatch);
     }
 
     Dom::Value DocumentAdapter::SendAdapterMessage(const AdapterMessage& message)

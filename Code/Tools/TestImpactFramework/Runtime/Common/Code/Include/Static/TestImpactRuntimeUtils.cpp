@@ -17,30 +17,30 @@
 namespace TestImpact
 {
     Timer::Timer()
-        : m_startTime(AZStd::chrono::high_resolution_clock::now())
+        : m_startTime(AZStd::chrono::steady_clock::now())
     {
     }
 
-    AZStd::chrono::high_resolution_clock::time_point Timer::GetStartTimePoint() const
+    AZStd::chrono::steady_clock::time_point Timer::GetStartTimePoint() const
     {
         return m_startTime;
     }
 
-    AZStd::chrono::high_resolution_clock::time_point Timer::GetStartTimePointRelative(const Timer& start) const
+    AZStd::chrono::steady_clock::time_point Timer::GetStartTimePointRelative(const Timer& start) const
     {
-        return AZStd::chrono::high_resolution_clock::time_point() +
+        return AZStd::chrono::steady_clock::time_point() +
             AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(m_startTime - start.GetStartTimePoint());
     }
 
     AZStd::chrono::milliseconds Timer::GetElapsedMs() const
     {
-        const auto endTime = AZStd::chrono::high_resolution_clock::now();
+        const auto endTime = AZStd::chrono::steady_clock::now();
         return AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(endTime - m_startTime);
     }
 
-    AZStd::chrono::high_resolution_clock::time_point Timer::GetElapsedTimepoint() const
+    AZStd::chrono::steady_clock::time_point Timer::GetElapsedTimepoint() const
     {
-        const auto endTime = AZStd::chrono::high_resolution_clock::now();
+        const auto endTime = AZStd::chrono::steady_clock::now();
         return m_startTime + AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(endTime - m_startTime);
     }
 
@@ -60,5 +60,5 @@ namespace TestImpact
         }
 
         return descriptors;
-    }    
+    }
 } // namespace TestImpact

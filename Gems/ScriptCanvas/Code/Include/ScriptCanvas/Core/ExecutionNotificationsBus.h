@@ -15,6 +15,7 @@
 #include "Core/NamedId.h"
 
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/std/time.h>
 #include <ScriptCanvas/Execution/ExecutionStateDeclarations.h>
 
 #define SC_EXECUTION_TRACE_THREAD_BEGUN(arg) ;
@@ -41,7 +42,7 @@ namespace ScriptCanvas
         AZ_RTTI(GraphInfo, "{8D40A70D-3846-46B4-B0BF-22B5D0F55ADC}");
 
         ExecutionStateWeakConstPtr m_executionState;
-        
+
         GraphInfo() = default;
         virtual ~GraphInfo() = default;
 
@@ -110,7 +111,7 @@ namespace AZStd
 namespace ScriptCanvas
 {
     using Timestamp = AZ::u64;
-    
+
     struct BreakTag
     {
         AZ_TYPE_INFO_LEGACY(BreakTag, "{B1B0976D-E300-470B-B01C-8EED7571414A}", );
@@ -196,7 +197,7 @@ namespace ScriptCanvas
         AZ_TYPE_INFO(VariableChangeTag, "{2936D848-1EA1-4B07-A462-F52F8A0ED395}");
         static const char* ToString() { return "VariableChange"; }
     };
-        
+
     class LoggableEventVisitor;
 
     struct LoggableEvent
@@ -204,9 +205,9 @@ namespace ScriptCanvas
     public:
         AZ_CLASS_ALLOCATOR(LoggableEvent, AZ::SystemAllocator, 0);
         AZ_RTTI(LoggableEvent, "{0ACA3F48-170F-4859-9ED7-9C60523758A7}");
-        
+
         virtual ~LoggableEvent() = default;
-                
+
         virtual LoggableEvent* Duplicate() const = 0;
         virtual Timestamp GetTimestamp() const = 0;
         virtual void SetTimestamp(Timestamp) = 0;
@@ -215,7 +216,7 @@ namespace ScriptCanvas
     };
 
     template<typename t_Tag, typename t_Parent>
-    struct TaggedParent 
+    struct TaggedParent
         : public t_Parent
         , public LoggableEvent
     {
@@ -233,23 +234,23 @@ namespace ScriptCanvas
                     ;
             }
         }
-        
+
         Timestamp m_timestamp = 0;
-                
+
         TaggedParent()
             : m_timestamp(AZStd::GetTimeUTCMilliSecond())
         {}
-                
+
         TaggedParent(const t_Parent& parent)
             : t_Parent(parent)
             , m_timestamp(AZStd::GetTimeUTCMilliSecond())
         {}
-                        
+
         LoggableEvent* Duplicate() const override
         {
             return aznew ThisType(*this);
         }
-    
+
         Timestamp GetTimestamp() const override
         {
             return m_timestamp;
@@ -264,7 +265,7 @@ namespace ScriptCanvas
         {
             return AZStd::string::format("%s:%s", t_Tag::ToString(), t_Parent::ToString().data());
         }
-       
+
         void Visit(LoggableEventVisitor& visitor) override;
     };
 
@@ -292,12 +293,12 @@ namespace ScriptCanvas
 
     using ActiveEntityStatusMap = AZStd::unordered_map< AZ::EntityId, ActiveEntityStatus >;
     using ActiveEntitiesAndGraphs = AZStd::pair<ActiveEntityStatusMap, ActiveGraphStatusMap>;
-        
-    struct DatumValue 
+
+    struct DatumValue
     {
         AZ_CLASS_ALLOCATOR(DatumValue, AZ::SystemAllocator, 0);
         AZ_RTTI(DatumValue, "{5B4C8EA8-747E-4557-A10A-0EA0ADB387CA}");
-        
+
         static DatumValue Create(const Datum& value);
 
         static DatumValue Create(const GraphVariable& value);
@@ -305,7 +306,7 @@ namespace ScriptCanvas
         // if valid, the datum will contain a string result of BCO->ToString()
         AZ::TypeId m_behaviorContextObjectType;
         Datum m_datum;
-        
+
         DatumValue() = default;
         virtual ~DatumValue() = default;
 
@@ -322,11 +323,11 @@ namespace ScriptCanvas
         {}
 
         AZStd::string ToString() const;
-    };     
-    
+    };
+
     using SlotDataMap = AZStd::unordered_map<NamedSlotId, DatumValue>;
     using VariableValues = AZStd::unordered_map<VariableId, AZStd::pair<AZStd::string, DatumValue>>;
-        
+
     struct ActivationInfo
         : public GraphInfo
     {
@@ -334,7 +335,7 @@ namespace ScriptCanvas
         AZ_RTTI(ActivationInfo, "{9EBCB557-80D1-43CA-840E-BB8945BF13F4}", GraphInfo);
 
         bool m_entityIsObserved = false;
-        
+
         VariableValues m_variableValues;
 
         ActivationInfo() = default;
@@ -350,16 +351,16 @@ namespace ScriptCanvas
         AZStd::string ToString() const;
     };
 
-    struct Signal 
+    struct Signal
         : public GraphInfo
     {
         AZ_CLASS_ALLOCATOR(Signal, AZ::SystemAllocator, 0);
         AZ_RTTI(Signal, "{F65B92D1-10D8-4065-90FA-8FD46A9B122A}", GraphInfo);
-    
+
         NodeTypeIdentifier m_nodeType;
         NamedEndpoint m_endpoint;
         SlotDataMap m_data;
-        
+
         Signal() = default;
 
         Signal(const Signal& signal) = default;
@@ -373,7 +374,7 @@ namespace ScriptCanvas
             , m_nodeType(nodeType)
             , m_endpoint(endpoint)
         {}
-        
+
         Signal(const GraphInfo& graphInfo, const NodeTypeIdentifier& nodeType, const NamedEndpoint& endpoint, const SlotDataMap& data)
             : GraphInfo(graphInfo)
             , m_nodeType(nodeType)
@@ -382,7 +383,7 @@ namespace ScriptCanvas
         {}
 
         virtual ~Signal() = default;
-        
+
         bool operator==(const Signal& other) const;
 
         AZStd::string ToString() const;
@@ -395,11 +396,11 @@ namespace ScriptCanvas
         , public LoggableEvent
     {
         using ThisType = TaggedDataValue<t_Tag>;
-        
+
         AZ_CLASS_ALLOCATOR(TaggedDataValue<t_Tag>, AZ::SystemAllocator, 0);
         AZ_RTTI((TaggedDataValue, "{893B73BA-E1CC-4D91-92D1-C1CF46817A57}", t_Tag), DatumValue, GraphInfo, LoggableEvent);
         using DatumValue::DatumValue;
-        
+
         static void Reflect(AZ::ReflectContext* context)
         {
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -434,7 +435,7 @@ namespace ScriptCanvas
         {
             return aznew TaggedDataValue<t_Tag>(*this);
         }
-        
+
         Timestamp GetTimestamp() const override
         {
             return m_timestamp;
@@ -454,7 +455,7 @@ namespace ScriptCanvas
     };
 
     using Breakpoint = TaggedParent<BreakpointTag, Signal>;
-    
+
     struct ExecutionThreadBeginning
         : public GraphInfo
         , public LoggableEvent
@@ -475,7 +476,7 @@ namespace ScriptCanvas
         {}
 
         virtual ~ExecutionThreadBeginning() = default;
-        
+
         LoggableEvent* Duplicate() const override;
 
         Timestamp GetTimestamp() const override;
@@ -486,7 +487,7 @@ namespace ScriptCanvas
 
         void Visit(LoggableEventVisitor& visitor) override;
     };
-    
+
     using ExecutionThreadEnd = TaggedParent<ExecutionThreadEndTag, GraphInfo>;
     using GraphActivation = TaggedParent<GraphActivationTag, ActivationInfo>;
     using GraphDeactivation = TaggedParent<GraphDeactivationTag, ActivationInfo>;
@@ -554,10 +555,10 @@ namespace ScriptCanvas
 
         AnnotationLevel m_annotationLevel;
         AZStd::string   m_annotation;
-        
+
         AZ::NamedEntityId m_assetNodeId;
     };
-            
+
     class ExecutionNotifications
         : public AZ::EBusTraits
     {
@@ -573,8 +574,8 @@ namespace ScriptCanvas
         virtual void NodeStateUpdated(const NodeStateChange&) = 0;
         virtual void VariableChanged(const VariableChange&) = 0;
     };
-    using ExecutionNotificationsBus = AZ::EBus<ExecutionNotifications>;   
-        
+    using ExecutionNotificationsBus = AZ::EBus<ExecutionNotifications>;
+
     class LoggableEventVisitor
     {
     public:

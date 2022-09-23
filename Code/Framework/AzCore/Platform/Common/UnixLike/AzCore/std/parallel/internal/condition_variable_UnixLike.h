@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 
 /**
  * This file is to be included from the mutex.h only. It should NOT be included by the user.
@@ -57,7 +57,7 @@ namespace AZStd
     template <class Clock, class Duration>
     AZ_FORCE_INLINE cv_status condition_variable::wait_until(unique_lock<mutex>& lock, const chrono::time_point<Clock, Duration>& abs_time)
     {
-        const auto now = chrono::system_clock::now();
+        const auto now = chrono::steady_clock::now();
         if (now < abs_time)
         {
             return wait_for(lock, abs_time - now);
@@ -97,7 +97,7 @@ namespace AZStd
     template <class Rep, class Period, class Predicate>
     AZ_FORCE_INLINE bool condition_variable::wait_for(unique_lock<mutex>& lock, const chrono::duration<Rep, Period>& rel_time, Predicate pred)
     {
-        return wait_until(lock, chrono::system_clock::now() + rel_time, move(pred));
+        return wait_until(lock, chrono::steady_clock::now() + rel_time, move(pred));
     }
     condition_variable::native_handle_type
     inline condition_variable::native_handle()
@@ -160,7 +160,7 @@ namespace AZStd
     template <class Lock, class Clock, class Duration>
     AZ_FORCE_INLINE cv_status condition_variable_any::wait_until(Lock& lock, const chrono::time_point<Clock, Duration>& abs_time)
     {
-        const auto now = chrono::system_clock::now();
+        const auto now = chrono::steady_clock::now();
         if (now < abs_time)
         {
             // note that wait_for will either time out, in which case we should return time out, or it will return
@@ -197,14 +197,14 @@ namespace AZStd
 
         pthread_mutex_unlock(&m_mutex);
         lock.lock();
-        
+
         return ret == ETIMEDOUT ? cv_status::timeout : cv_status::no_timeout;
     }
 
     template <class Lock, class Rep, class Period, class Predicate>
     AZ_FORCE_INLINE bool condition_variable_any::wait_for(Lock& lock, const chrono::duration<Rep, Period>& rel_time, Predicate pred)
     {
-        return wait_until(lock, chrono::system_clock::now() + rel_time, move(pred));
+        return wait_until(lock, chrono::steady_clock::now() + rel_time, move(pred));
     }
     condition_variable_any::native_handle_type
     inline condition_variable_any::native_handle()

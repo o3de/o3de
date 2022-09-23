@@ -57,9 +57,9 @@ namespace ScriptCanvas
 {%         if Data.attrib['Namespace'] is defined and Data.attrib['Namespace'] %}
 {%             set namespaceName = Data.attrib['Namespace'] + '::' %}
 {%         endif %}
-            serializeContext->RegisterGenericType<AZStd::vector<{{namespaceName}}{{dataName}}>>();
-            serializeContext->RegisterGenericType<AZStd::unordered_map<AZStd::string, {{namespaceName}}{{dataName}}>>();
-            serializeContext->RegisterGenericType<AZStd::unordered_map<double, {{namespaceName}}{{dataName}}>>();
+            //serializeContext->RegisterGenericType<AZStd::vector<{{namespaceName}}{{dataName}}>>();
+            //serializeContext->RegisterGenericType<AZStd::unordered_map<AZStd::string, {{namespaceName}}{{dataName}}>>();
+            //serializeContext->RegisterGenericType<AZStd::unordered_map<double, {{namespaceName}}{{dataName}}>>();
 
 {%     endfor %}
 {% endfor %}

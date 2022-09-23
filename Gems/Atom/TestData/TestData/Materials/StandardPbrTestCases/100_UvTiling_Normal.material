@@ -1,8 +1,8 @@
 {
-    "materialType": "Materials\\Types\\StandardPBR.materialtype",
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
     "materialTypeVersion": 5,
-    "parentMaterial": "TestData\\Materials\\StandardPbrTestCases\\UvTilingBase.material",
+    "parentMaterial": "UvTilingBase.material",
     "propertyValues": {
-        "normal.textureMap": "TestData/Objects/cube/cube_diff.tif"
+        "normal.textureMap": "../../Objects/cube/cube_diff.tif"
     }
 }

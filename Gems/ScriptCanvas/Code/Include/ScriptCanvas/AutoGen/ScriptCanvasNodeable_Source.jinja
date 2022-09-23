@@ -37,9 +37,9 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 {%- set attribute_PreferredClassName = macros.CleanName(Class.attrib['PreferredClassName']) %}
 {%- set attribute_Description = Class.attrib['Description']  %}
 {%- set attribute_Category = Class.attrib['Category']  %}
+{%- set attribute_HideProperty = Class.attrib['HideProperty']%}
 {%- set attribute_Uuid = Class.attrib['Uuid']  %}
 {%- set attribute_Icon = Class.attrib['Icon']  %}
-{%- set attribute_GeneratePropertyFriend = Class.attrib['GeneratePropertyFriend']  %}
 {%- set attribute_Version = Class.attrib['Version'] %}
 {%- set attribute_VersionConverter = Class.attrib['VersionConverter'] %}
 {%- set attribute_EventHandler = Class.attrib['EventHandler'] %}
@@ -182,13 +182,13 @@ void {{attribute_QualifiedName}}::Reflect(AZ::ReflectContext* context)
                        {{preEdit}}->ClassElement(AZ::Edit::ClassElements::EditorData, ""){{postEdit}}
                        {{preEdit}}->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly){{postEdit}}
 {% if attribute_Category is defined %}
-                        {{preEdit}}->Attribute(AZ::Edit::Attributes::Category, "{{ attribute_Category }}"){{postEdit}}
+                       {{preEdit}}->Attribute(AZ::Edit::Attributes::Category, "{{ attribute_Category }}"){{postEdit}}
 {%- endif %}
 {% if attribute_Icon is defined %}
-                        {{preEdit}}->Attribute(AZ::Edit::Attributes::Icon, "{{ attribute_Icon }}"){{postEdit}}
+                       {{preEdit}}->Attribute(AZ::Edit::Attributes::Icon, "{{ attribute_Icon }}"){{postEdit}}
 {%- endif %}
 {% if attribute_Deprecated is defined %}
-                        {{preEdit}}->Attribute(AZ::Edit::Attributes::Deprecated, "{{ attribute_Deprecated }}"){{postEdit}}
+                       {{preEdit}}->Attribute(AZ::Edit::Attributes::Deprecated, "{{ attribute_Deprecated }}"){{postEdit}}
 {%- endif %}
 {% set uihandler = 'AZ::Edit::UIHandlers::Default' %}
 {% for item in Class.iter('Property') %}
@@ -200,10 +200,10 @@ void {{attribute_QualifiedName}}::Reflect(AZ::ReflectContext* context)
     {% set description = item.attrib['Description'] %}
 {% endif %}
 
-                        // {{ item.attrib['Name'] }}
-                        {{preEdit}}->DataElement({{ uihandler }}, &{{ attribute_Name }}::{{ item.attrib['Name'] }}, "{{ item.attrib['Name'] }}", "{{ description }}"){{postEdit}}
+                       // {{ item.attrib['Name'] }}
+                       {{preEdit}}->DataElement({{ uihandler }}, &{{ attribute_Name }}::{{ item.attrib['Name'] }}, "{{ item.attrib['Name'] }}", "{{ description }}"){{postEdit}}
 {%          for EditAttribute in item.iter('EditAttribute') %}
-                        {{preEdit}}->Attribute({{ EditAttribute.attrib['Key'] }}, {{ EditAttribute.attrib['Value'] }}){{postEdit}}
+                       {{preEdit}}->Attribute({{ EditAttribute.attrib['Key'] }}, {{ EditAttribute.attrib['Value'] }}){{postEdit}}
 {%          endfor %}
 {% endfor %}
                             ;
@@ -278,7 +278,11 @@ void Nodes::{{ nodeableNodeName }}::Reflect(AZ::ReflectContext* context)
 {% if attribute_Category is defined %}
                 {{preEdit}}->Attribute(AZ::Edit::Attributes::Category, "{{ attribute_Category }}"){{postEdit}}
 {% endif %}
+{% if attribute_HideProperty is defined %}
+                {{preEdit}}->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide){{postEdit}}
+{% else %}
                 {{preEdit}}->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly){{postEdit}}
+{% endif %}
                 {{preEdit}}->Attribute(AZ::Edit::Attributes::AutoExpand, true){{postEdit}}
                 ;
 {% if ExtendReflectionEdit is defined %}

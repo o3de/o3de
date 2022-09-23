@@ -1,5 +1,5 @@
 @echo off
-REM 
+REM
 REM Copyright (c) Contributors to the Open 3D Engine Project.
 REM For complete copyright and license terms please see the LICENSE at the root of this distribution.
 REM
@@ -23,6 +23,9 @@ cd %~dp0
 PUSHD %~dp0
 
 ::SETLOCAL ENABLEDELAYEDEXPANSION
+
+:: if the user has set up a custom env call it
+IF EXIST "%~dp0Env_Dev.bat" CALL %~dp0Env_Dev.bat
 
 echo.
 echo _____________________________________________________________________
@@ -76,7 +79,7 @@ echo     O3DE_PROJECT = %O3DE_PROJECT%
 :: set up the default project path (dccsi)
 :: if not set we also use the DCCsi path as stand-in
 CD /D ..\..\..\
-:: To Do: remove one of these 
+:: To Do: remove one of these
 IF "%PATH_O3DE_PROJECT%"=="" (set "PATH_O3DE_PROJECT=%CD%")
 echo     PATH_O3DE_PROJECT = %PATH_O3DE_PROJECT%
 
@@ -92,6 +95,11 @@ IF "%O3DE_DEV%"=="" (set "O3DE_DEV=%CD%")
 echo     O3DE_DEV = %O3DE_DEV%
 :: Restore original directory
 popd
+
+:: We need to know where the engine 3rdParty folder is to add access for PySide2, etc
+:: Adding 3rdParty location, default is something like c:\users\< user>\.o3de\3rdparty
+IF "%PATH_O3DE_3RDPARTY%"=="" (set "PATH_O3DE_3RDPARTY=%userprofile%\.o3de\3rdparty")
+echo     PATH_O3DE_3RDPARTY = %PATH_O3DE_3RDPARTY%
 
 :: O3DE Technical Art Gems Location
 set "PATH_O3DE_TECHART_GEMS=%O3DE_DEV%\Gems\AtomLyIntegration\TechnicalArt"
@@ -117,14 +125,12 @@ echo     PATH_DCCSI_TOOLS_DCC = %PATH_DCCSI_TOOLS_DCC%
 set "DCCSI_LOG_PATH=%PATH_O3DE_PROJECT%\.temp\logs"
 echo     DCCSI_LOG_PATH = %DCCSI_LOG_PATH%
 
-:: O3DE build path
-IF "%O3DE_BUILD_FOLDER%"=="" (set O3DE_BUILD_FOLDER=build)
+IF "%O3DE_BUILD_FOLDER%"=="" (set "O3DE_BUILD_FOLDER=bin\Windows\profile\Default")
 echo     O3DE_BUILD_FOLDER = %O3DE_BUILD_FOLDER%
 
-IF "%PATH_O3DE_BUILD%"=="" (set "PATH_O3DE_BUILD=%O3DE_DEV%\%O3DE_BUILD_FOLDER%")
-echo     PATH_O3DE_BUILD = %PATH_O3DE_BUILD%
-
-IF "%PATH_O3DE_BIN%"=="" (set "PATH_O3DE_BIN=%PATH_O3DE_BUILD%\bin\profile")
+:: for reference the nightly engine sdk bin path looks like:
+:: C:\O3DE\0.0.0.0\bin\Windows\profile\Default
+IF "%PATH_O3DE_BIN%"=="" (set "PATH_O3DE_BIN=%O3DE_DEV%\%O3DE_BUILD_FOLDER%")
 echo     PATH_O3DE_BIN = %PATH_O3DE_BIN%
 
 ::ENDLOCAL

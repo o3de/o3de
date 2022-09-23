@@ -1,10 +1,10 @@
 {
-    "materialType": "Materials/Types/StandardPBR.materialtype",
-    "materialTypeVersion": 4,
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 5,
     "propertyValues": {
         "baseColor.textureMap": "../Textures/vase_1k_basecolor.png",
         "general.applySpecularAA": true,
-        "irradiance.color": [
+        "irradiance.manualColor": [
             1.0,
             0.8713664412498474,
             0.6021667718887329,
