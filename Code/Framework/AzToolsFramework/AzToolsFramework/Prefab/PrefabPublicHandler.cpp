@@ -140,7 +140,8 @@ namespace AzToolsFramework
                 AZ::Quaternion containerEntityRotation(AZ::Quaternion::CreateZero());
                 GenerateContainerEntityTransform(topLevelEntities, containerEntityTranslation, containerEntityRotation);
 
-                // set parents of top level entities to null.
+                // Set the parent of top level entities to null, so the parent entity's child entity order array does not include the entities.
+                // This is needed before doing serialization on the parent entity to avoid referring to the detached entities.
                 for (AZ::Entity* topLevelEntity : topLevelEntities)
                 {
                     AZ::TransformBus::Event(topLevelEntity->GetId(), &AZ::TransformBus::Events::SetParent, AZ::EntityId());
