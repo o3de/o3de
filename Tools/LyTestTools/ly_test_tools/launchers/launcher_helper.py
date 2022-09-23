@@ -97,8 +97,9 @@ def create_material_editor(workspace, launcher_platform=ly_test_tools.HOST_OS_MA
     return launcher_class(workspace, args)
 
 
-def create_material_canvas(workspace, launcher_platform=ly_test_tools.HOST_OS_MATERIAL_CANVAS, args=None):
-    # type: (workspace_manager.AbstractWorkspaceManager, str, list[str]) -> base_launcher.Launcher
+def create_material_canvas(workspace: workspace_manager.AbstractWorkspaceManager,
+                           launcher_platform: str = ly_test_tools.HOST_OS_MATERIAL_CANVAS,
+                           args: list[str] = None):
     """
     Create a MaterialCanvas compatible with the specified workspace.
     MaterialCanvas is only officially supported on the Windows Platform.

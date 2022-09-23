@@ -4,7 +4,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
-Test-writing utilities that simplify creating O3DE executable tests in Python.
+Test-writing utilities that simplify creating O3DE Atom tools executable tests in Python.
 
 Test writers should subclass a test suite from AtomToolsTestSuite to hold the specification of python test scripts
 for the executable to load and run.
@@ -43,13 +43,13 @@ logger = logging.getLogger(__name__)
 
 class AtomToolsSingleTest(SingleTest):
     """
-    Test that will run alone in one executable with no parallel executables,
+    Test that will run alone in one Atom tools executable with no parallel Atom tools executables,
     limiting environmental side-effects at the expense of redundant isolated work
     """
 
     def __init__(self):
         super(AtomToolsSingleTest, self).__init__()
-        # Extra cmdline arguments to supply to the executable for the test
+        # Extra cmdline arguments to supply to the Atom tools executable for the test
         self.extra_cmdline_args = []
         # Whether to use null renderer, this will override use_null_renderer for the Suite if not None
         self.use_null_renderer = None
@@ -78,7 +78,7 @@ class AtomToolsSingleTest(SingleTest):
         :param instance: Parent AtomToolsTestSuite.MultiTestCollector instance executing the test
         :param request: PyTest request object
         :param workspace: LyTestTools workspace manager
-        :param test_results: Currently recorded executable test results
+        :param test_results: Currently recorded Atom tools executable test results
         """
         yield
 
@@ -92,28 +92,28 @@ class AtomToolsSingleTest(SingleTest):
         :param instance: Parent AtomToolsTestSuite.MultiTestCollector instance executing the test
         :param request: PyTest request object
         :param workspace: LyTestTools workspace manager
-        :param test_results: Currently recorded executable test results
+        :param test_results: Currently recorded Atom tools executable test results
         """
         pass
 
 
 class AtomToolsSharedTest(SharedTest):
     """
-    Test that will run in parallel with tests in different executable instances, as well as serially batching
-    with other tests in each executable instance. Minimizes total test run duration.
+    Test that will run in parallel with tests in different Atom tools executable instances, as well as serially batching
+    with other tests in each Atom tools executable instance. Minimizes total test run duration.
 
     Does not support per test setup/teardown to avoid creating race conditions
     """
-    # Specifies if the test can be batched in the same executable
+    # Specifies if the test can be batched in the same Atom tools executable
     is_batchable = True
-    # Specifies if the test can be run in multiple executables in parallel
+    # Specifies if the test can be run in multiple Atom tools executables in parallel
     is_parallelizable = True
 
 
 class AtomToolsParallelTest(AtomToolsSharedTest):
     """
-    Test that will run in parallel with tests in different executable instances,
-    though not serially batched with other tests in each executable instance.
+    Test that will run in parallel with tests in different Atom tools executable instances,
+    though not serially batched with other tests in each Atom tools executable instance.
     Reduces total test run duration, while limiting side-effects between tests.
 
     Does not support per test setup/teardown to avoid creating race conditions
@@ -124,9 +124,9 @@ class AtomToolsParallelTest(AtomToolsSharedTest):
 
 class AtomToolsBatchedTest(AtomToolsSharedTest):
     """
-    Test that will run serially batched with the tests in the same executable instance,
-    though not executed in parallel with other executable instances.
-    Reduces overhead from starting the executable, while limiting side-effects between executables.
+    Test that will run serially batched with the tests in the same Atom tools executable instance,
+    though not executed in parallel with other Atom tools executable instances.
+    Reduces overhead from starting the Atom tools executable, while limiting side-effects between executables.
 
     Does not support per test setup/teardown to avoid creating race conditions
     """
@@ -136,18 +136,18 @@ class AtomToolsBatchedTest(AtomToolsSharedTest):
 
 class AtomToolsTestSuite(MultiTestSuite):
     """
-    This class defines the values needed in order to execute a batched, parallel, or single executable test.
+    This class defines the values needed in order to execute a batched, parallel, or single Atom tools executable test.
     Any new test cases written that inherit from this class can override these values for their newly created class.
     """
-    # Extra cmdline arguments to supply for every executable for this test suite.
+    # Extra cmdline arguments to supply for every Atom tools executable for this test suite.
     global_extra_cmdline_args = ["-BatchMode", "-autotest_mode"]
     # Tests usually run with no renderer, however some tests require a renderer and will disable this.
     use_null_renderer = True
-    # Name of the executable's log file.
+    # Name of the Atom tools executable's log file.
     log_name = "material_editor_test.log"  # We default to MaterialEditor for this suite.
-    # Executable function to call when launching the executable.
+    # Atom tools executable function to call when launching the executable.
     executable_function = launcher_helper.create_material_editor  # We default to MaterialEditor for this suite.
-    # Maximum time in seconds for a single executable to stay open across the set of shared tests.
+    # Maximum time in seconds for a single Atom tools executable to stay open across the set of shared tests.
     timeout_shared_test = 300
     # Maximum time (seconds) for waiting for a crash file to finish being dumped to disk.
     _timeout_crash_log = 20

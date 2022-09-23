@@ -69,7 +69,7 @@ def run():
     """
 
     # 1) Test Case: Opening an Existing Asset
-    document_id = atom_tools_utils.open_material(MATERIAL_TYPE_PATH)
+    document_id = atom_tools_utils.open_document(MATERIAL_TYPE_PATH)
     print(f"Material opened: {atom_tools_utils.is_document_open(document_id)}")
 
     # Verify if the test material exists initially
@@ -83,7 +83,7 @@ def run():
     time.sleep(2.0)
 
     # Verify if the newly created document is open
-    new_document_id = atom_tools_utils.open_material(target_path)
+    new_document_id = atom_tools_utils.open_document(target_path)
     atom_tools_utils.wait_for_condition(lambda: atom_tools_utils.is_document_open(new_document_id))
     print(f"New Material opened: {atom_tools_utils.is_document_open(new_document_id)}")
 
@@ -92,7 +92,7 @@ def run():
 
     # Open materials initially
     document1_id, document2_id, document3_id = (
-        atom_tools_utils.open_material(os.path.join(TEST_DATA_PATH, material))
+        atom_tools_utils.open_document(os.path.join(TEST_DATA_PATH, material))
         for material in [TEST_MATERIAL_1, TEST_MATERIAL_2, TEST_MATERIAL_3])
 
     # 4) Test Case: Closing All Materials
@@ -100,14 +100,14 @@ def run():
 
     # 5) Test Case: Closing all but Selected Material
     document1_id, document2_id, document3_id = (
-        atom_tools_utils.open_material(os.path.join(TEST_DATA_PATH, material))
+        atom_tools_utils.open_document(os.path.join(TEST_DATA_PATH, material))
         for material in [TEST_MATERIAL_1, TEST_MATERIAL_2, TEST_MATERIAL_3]
     )
     result = atom_tools_utils.close_all_except_selected(document1_id)
     print(f"Close All Except Selected worked as expected: {result and atom_tools_utils.is_document_open(document1_id)}")
 
     # 6) Test Case: Saving Material
-    document_id = atom_tools_utils.open_material(os.path.join(TEST_DATA_PATH, TEST_MATERIAL_1))
+    document_id = atom_tools_utils.open_document(os.path.join(TEST_DATA_PATH, TEST_MATERIAL_1))
     property_name = "baseColor.color"
     initial_color = material_editor_utils.get_property(document_id, property_name)
     # Assign new color to the material file and save the actual material
@@ -140,9 +140,9 @@ def run():
 
     # Close/Reopen documents
     atom_tools_utils.close_all_documents()
-    document_id = atom_tools_utils.open_material(os.path.join(TEST_DATA_PATH, TEST_MATERIAL_1))
-    document1_id = atom_tools_utils.open_material(target_path_1)
-    document2_id = atom_tools_utils.open_material(target_path_2)
+    document_id = atom_tools_utils.open_document(os.path.join(TEST_DATA_PATH, TEST_MATERIAL_1))
+    document1_id = atom_tools_utils.open_document(target_path_1)
+    document2_id = atom_tools_utils.open_document(target_path_2)
 
     # Verify if the changes are saved in the actual document
     actual_color = material_editor_utils.get_property(document_id, property_name)
@@ -165,29 +165,29 @@ def run():
 
     # 9) Test Case: Saving all Open Materials
     # Open first material and make change to the values
-    document1_id = atom_tools_utils.open_material(os.path.join(TEST_DATA_PATH, TEST_MATERIAL_1))
+    document1_id = atom_tools_utils.open_document(os.path.join(TEST_DATA_PATH, TEST_MATERIAL_1))
     property1_name = "metallic.factor"
     initial_metallic_factor = material_editor_utils.get_property(document1_id, property1_name)
     expected_metallic_factor = 0.444
     material_editor_utils.set_property(document1_id, property1_name, expected_metallic_factor)
 
     # Open second material and make change to the values
-    document2_id = atom_tools_utils.open_material(os.path.join(TEST_DATA_PATH, TEST_MATERIAL_2))
+    document2_id = atom_tools_utils.open_document(os.path.join(TEST_DATA_PATH, TEST_MATERIAL_2))
     property2_name = "baseColor.color"
     initial_color = material_editor_utils.get_property(document2_id, property2_name)
     expected_color = math.Color(0.4156, 0.0196, 0.6862, 1.0)
     material_editor_utils.set_property(document2_id, property2_name, expected_color)
 
     # Save all and close all documents
-    atom_tools_utils.save_all()
+    atom_tools_utils.save_all_documents()
     atom_tools_utils.close_all_documents()
 
     # Reopen materials and verify values
-    document1_id = atom_tools_utils.open_material(os.path.join(TEST_DATA_PATH, TEST_MATERIAL_1))
+    document1_id = atom_tools_utils.open_document(os.path.join(TEST_DATA_PATH, TEST_MATERIAL_1))
     result = atom_tools_utils.is_close(
         material_editor_utils.get_property(document1_id, property1_name), expected_metallic_factor, 0.00001
     )
-    document2_id = atom_tools_utils.open_material(os.path.join(TEST_DATA_PATH, TEST_MATERIAL_2))
+    document2_id = atom_tools_utils.open_document(os.path.join(TEST_DATA_PATH, TEST_MATERIAL_2))
     result = result and atom_tools_utils.compare_colors(
         expected_color, material_editor_utils.get_property(document2_id, property2_name))
     print(f"Save All worked as expected: {result}")
@@ -195,7 +195,7 @@ def run():
     # Revert the changes made
     material_editor_utils.set_property(document1_id, property1_name, initial_metallic_factor)
     material_editor_utils.set_property(document2_id, property2_name, initial_color)
-    atom_tools_utils.save_all()
+    atom_tools_utils.save_all_documents()
     atom_tools_utils.close_all_documents()
 
     # Confirm documents closed

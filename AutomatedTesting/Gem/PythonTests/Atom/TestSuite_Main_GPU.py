@@ -45,8 +45,7 @@ class TestAutomation(EditorTestSuite):
         return test_screenshots, golden_images
 
     @pytest.mark.test_case_id("C34525095")
-    @pytest.mark.skip(
-        reason="Remnant of AtomTest tests which are deprecated and currently failing, but keeping for reference.")
+    @pytest.mark.skip(reason="These are old GPU tests that are going to be changed in a future update.")
     class AtomGPU_LightComponent_AreaLightScreenshotsMatchGoldenImages_DX12(EditorSingleTest):
         from Atom.tests import hydra_AtomGPU_AreaLightScreenshotTest as test_module
 
@@ -74,8 +73,7 @@ class TestAutomation(EditorTestSuite):
                                                       similarity_threshold=0.96) is True
 
     @pytest.mark.test_case_id("C34525095")
-    @pytest.mark.skip(
-        reason="Remnant of AtomTest tests which are deprecated and currently failing, but keeping for reference.")
+    @pytest.mark.skip(reason="These are old GPU tests that are going to be changed in a future update.")
     class AtomGPU_LightComponent_AreaLightScreenshotsMatchGoldenImages_Vulkan(EditorSingleTest):
         from Atom.tests import hydra_AtomGPU_AreaLightScreenshotTest as test_module
 
@@ -103,8 +101,7 @@ class TestAutomation(EditorTestSuite):
                                                       similarity_threshold=0.96) is True
 
     @pytest.mark.test_case_id("C34525110")
-    @pytest.mark.skip(
-        reason="Remnant of AtomTest tests which are deprecated and currently failing, but keeping for reference.")
+    @pytest.mark.skip(reason="These are old GPU tests that are going to be changed in a future update.")
     class AtomGPU_LightComponent_SpotLightScreenshotsMatchGoldenImages_DX12(EditorSingleTest):
         from Atom.tests import hydra_AtomGPU_SpotLightScreenshotTest as test_module
 
@@ -133,8 +130,7 @@ class TestAutomation(EditorTestSuite):
                                                       similarity_threshold=0.96) is True
 
     @pytest.mark.test_case_id("C34525110")
-    @pytest.mark.skip(
-        reason="Remnant of AtomTest tests which are deprecated and currently failing, but keeping for reference.")
+    @pytest.mark.skip(reason="These are old GPU tests that are going to be changed in a future update.")
     class AtomGPU_LightComponent_SpotLightScreenshotsMatchGoldenImages_Vulkan(EditorSingleTest):
         from Atom.tests import hydra_AtomGPU_SpotLightScreenshotTest as test_module
 

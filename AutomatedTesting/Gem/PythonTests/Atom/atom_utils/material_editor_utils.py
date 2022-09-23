@@ -9,7 +9,7 @@ import azlmbr.bus as bus
 import azlmbr.materialeditor as materialeditor
 
 
-def get_property(document_id: azlmbr.math.Uuid, property_name: str) -> azlmbr.math.Uuid:
+def get_property(document_id: azlmbr.math.Uuid, property_name: str) -> any:
     """
     Gets a property value for a given document_id and property name.
     :param document_id: The UUID of a given document file.
@@ -19,7 +19,8 @@ def get_property(document_id: azlmbr.math.Uuid, property_name: str) -> azlmbr.ma
     return materialeditor.MaterialDocumentRequestBus(bus.Event, "GetPropertyValue", document_id, property_name)
 
 
-def set_property(document_id: azlmbr.math.Uuid, property_name: str, value: math.Uuid or int or float or math.Color) -> None:
+def set_property(
+        document_id: azlmbr.math.Uuid, property_name: str, value: math.Uuid or int or float or math.Color) -> None:
     """
     Sets a property value for a given document_id, property_name, and value.
     :param document_id: The UUID of a given document file.
