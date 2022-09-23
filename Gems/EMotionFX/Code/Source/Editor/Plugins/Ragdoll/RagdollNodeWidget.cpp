@@ -126,7 +126,9 @@ namespace EMotionFX
     void RagdollNodeWidget::InternalReinit()
     {
         const QModelIndexList& selectedModelIndices = GetSelectedModelIndices();
-        if (selectedModelIndices.size() == 1)
+        Node* selectedNode = GetNode();
+
+        if (selectedModelIndices.size() == 1 && !SkeletonModel::IndexIsRootNode(selectedModelIndices[0]))
         {
             m_ragdollNodeEditor->ClearInstances(false);
 
@@ -168,7 +170,6 @@ namespace EMotionFX
                 {
                     PhysicsSetupManipulatorData physicsSetupManipulatorData;
                     ActorInstance* actorInstance = GetActorInstance();
-                    Node* selectedNode = GetNode();
                     if (GetActor() && actorInstance && selectedNode)
                     {
                         const Transform& nodeWorldTransform =

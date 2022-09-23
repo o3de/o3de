@@ -27,7 +27,7 @@ namespace LmbrCentral
             // Deprecate: EditorBoxColliderComponent -> EditorBoxShapeComponent
             serializeContext->ClassDeprecate(
                 "EditorBoxColliderComponent",
-                "{E1707478-4F5F-4C28-A31A-EF42B7BD2A68}",
+                AZ::Uuid("{E1707478-4F5F-4C28-A31A-EF42B7BD2A68}"),
                 &ClassConverters::DeprecateEditorBoxColliderComponent)
                 ;
 

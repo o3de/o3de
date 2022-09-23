@@ -13,6 +13,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/IPropertyEditor.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyHandlerWidget.h>
 
 #include <QHBoxLayout>
@@ -46,6 +47,7 @@ namespace AzToolsFramework
         bool ShouldSharePrior();
         int SharedWidgetCount();
         void WidgetAlignment(QWidget* alignedWidget, Qt::Alignment widgetAlignment);
+        void AddMinimumWidthWidget(QWidget* widget);
 
 
         // QLayout overrides
@@ -76,8 +78,12 @@ namespace AzToolsFramework
         AZStd::vector<AZStd::pair<QWidget*, int>> m_sharePriorColumn;
 
         //! Map containing all widgets that have special alignment.
-        //! Each widget will be aligned according to its value, where 0 = LEFT align, 1 = CENTER align, and 2 = RIGHT align.
+        //! Each widget will be aligned according to its Qt::Alignment value.
         AZStd::unordered_map<QWidget*, Qt::Alignment> m_widgetAlignment;
+
+        //! Vector containing all widgets that have the UseMinimumWidth attribute.
+        //! Dependent attribute that forces widgets to use their minimum width within a shared column.
+        AZStd::unordered_set<QWidget*> m_minimumWidthWidgets;
 
     private:
         // These cached sizes must be mutable since they are set inside of an overidden const function
@@ -127,7 +133,9 @@ namespace AzToolsFramework
         AZStd::unordered_map<QWidget*, AZStd::unique_ptr<PropertyHandlerWidgetInterface>> m_widgetToPropertyHandler;
     };
 
-    class DocumentPropertyEditor : public QScrollArea
+    class DocumentPropertyEditor
+        : public QScrollArea
+        , public IPropertyEditor
     {
         Q_OBJECT
 
@@ -155,6 +163,8 @@ namespace AzToolsFramework
         void RemoveExpanderStateForRow(DPERowWidget* row);
         void ExpandAll();
         void CollapseAll();
+
+        // IPropertyEditor overrides to be added ...
 
         AZ::Dom::Value GetDomValueForRow(DPERowWidget* row) const;
 

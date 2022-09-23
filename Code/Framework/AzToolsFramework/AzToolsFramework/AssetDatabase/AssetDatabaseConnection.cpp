@@ -2110,7 +2110,7 @@ namespace AzToolsFramework
                     source = AZStd::move(combined);
                     handler(source);
                     return false;//one
-                }, nullptr,
+                }, {},
                 nullptr);
         }
 
@@ -2123,7 +2123,7 @@ namespace AzToolsFramework
                     source = AZStd::move(combined);
                     handler(source);
                     return false;//one
-                }, nullptr);
+                }, {});
         }
 
         bool AssetDatabaseConnection::QuerySourceBySourceGuid(AZ::Uuid sourceGuid, sourceHandler handler)

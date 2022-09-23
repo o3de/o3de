@@ -89,7 +89,7 @@ namespace AZ
             {
                 if (AzFramework::StringFunc::Equal(extensionString.c_str(), potentialExtension.c_str()))
                 {
-                    return AzToolsFramework::AssetBrowser::SourceFileDetails("Icons/AssetBrowser/FBX_16.png");
+                    return AzToolsFramework::AssetBrowser::SourceFileDetails("Icons/AssetBrowser/FBX_16.svg");
                 }
             }
         }

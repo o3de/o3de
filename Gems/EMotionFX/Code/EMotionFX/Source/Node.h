@@ -450,5 +450,7 @@ namespace EMotionFX
          * @param numNodes The integer containing the current node count. This counter will be increased during recursion.
          */
         void RecursiveCountChildNodes(size_t& numNodes);
+
+        friend class SkeletonModel;
     };
 } // namespace EMotionFX

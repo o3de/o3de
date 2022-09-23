@@ -73,7 +73,7 @@ namespace PhysX
             TestUtils::ResetPhysXSystem();
         }
 
-        // DefaultWorldBus        
+        // DefaultWorldBus
         AzPhysics::SceneHandle GetDefaultSceneHandle() const override
         {
             return m_testSceneHandle;
@@ -160,7 +160,7 @@ namespace PhysX
 
         if (forceType == SplineFollowForce)
         {
-            forceRegionEntity->CreateComponent("{F0905297-1E24-4044-BFDA-BDE3583F1E57}");//SplineComponent
+            forceRegionEntity->CreateComponent(AZ::TypeId("{F0905297-1E24-4044-BFDA-BDE3583F1E57}"));//SplineComponent
         }
 
         forceRegionEntity->Init();
@@ -303,14 +303,14 @@ namespace PhysX
         AZ::Vector3 entityVelocity = TestForceVolume<BoxColliderComponent>(GetTestSceneHandle(), PointForce);
         EXPECT_TRUE(entityVelocity.GetX() > 0.0f);
         EXPECT_NEAR(entityVelocity.GetY(), 0.0f, AZ::Constants::FloatEpsilon);
-        EXPECT_TRUE(entityVelocity.GetZ() > 0.0f); 
+        EXPECT_TRUE(entityVelocity.GetZ() > 0.0f);
     }
 
     TEST_F(PhysXForceRegionTest, ForceRegion_SplineFollowForce_EntityVelocitySpecificValue)
     {
         AZ::Vector3 entityVelocity = TestForceVolume<BoxColliderComponent>(GetTestSceneHandle(), SplineFollowForce);
         // Follow spline direction towards positive X and Y.
-        EXPECT_TRUE(entityVelocity.GetX() > 0.0f); 
+        EXPECT_TRUE(entityVelocity.GetX() > 0.0f);
         EXPECT_TRUE(entityVelocity.GetY() > 0.0f);
     }
 
@@ -320,7 +320,7 @@ namespace PhysX
         EXPECT_TRUE(entityVelocity.GetZ() > -12.65f); // Falling velocity should be slower than free fall velocity, which is -12.65.
         EXPECT_NEAR(entityVelocity.GetX(), 0.0f, AZ::Constants::FloatEpsilon); // Dragging should not change original direction.
         EXPECT_NEAR(entityVelocity.GetY(), 0.0f, AZ::Constants::FloatEpsilon); // Dragging should not change original direction.
-    } 
+    }
 
     TEST_F(PhysXForceRegionTest, ForceRegion_LinearDampingForce_EntityVelocitySpecificValue)
     {
