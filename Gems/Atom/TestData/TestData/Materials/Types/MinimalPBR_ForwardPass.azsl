@@ -29,7 +29,6 @@ struct VSInput
     float3 m_position : POSITION;
     float3 m_normal : NORMAL;
     float4 m_tangent : TANGENT;
-    float3 m_bitangent : BITANGENT;
 };
 
 struct VSOutput

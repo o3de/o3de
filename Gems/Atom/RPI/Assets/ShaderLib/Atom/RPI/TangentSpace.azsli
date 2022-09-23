@@ -27,16 +27,16 @@ float3 WorldSpaceToTangent(float3 vectorWS, float3 normalWS, float3 tangentWS, f
 }
 
 //! Utility function for *pixel* shaders to transform vertex tangent, bitangent, and normal vectors into world space.
-void ConstructTBN(float3 vertexNormal, float3 vertexTangent, float4x4 localToWorld, float3x3 localToWorldInverseTranspose, out float3 normalWS, out float3 tangentWS, out float3 bitangentWS)
+void ConstructTBN(float3 vertexNormal, float4 vertexTangent, float4x4 localToWorld, float3x3 localToWorldInverseTranspose, out float3 normalWS, out float3 tangentWS, out float3 bitangentWS)
 {
     // No guarantee that normal and tangent will preserve unit length after interpolation in pixel shaders.
     // Instead of doing normalization in each shader, do it here.
-    vertexNormal = normalize(vertexNormal);
-    vertexTangent = normalize(vertexTangent);
-    float3 vertexBitangent = cross(vertexTangent, vertexNormal);
-    normalWS = normalize(mul(localToWorldInverseTranspose, vertexNormal));
-    tangentWS = normalize(mul(localToWorld, float4(vertexTangent, 0.0)).xyz);
-    bitangentWS = normalize(mul(localToWorld, float4(vertexBitangent, 0.0)).xyz);
+    float3 unitNormal = normalize(vertexNormal);
+    float3 unitTangent = normalize(vertexTangent.xyz);
+    float3 unitBitangent = cross(unitNormal, unitTangent) * sign(vertexTangent.w);
+    normalWS = normalize(mul(localToWorldInverseTranspose, unitNormal));
+    tangentWS = normalize(mul(localToWorld, float4(unitTangent, 0.0)).xyz);
+    bitangentWS = normalize(mul(localToWorld, float4(unitBitangent, 0.0)).xyz);
 }
 
 // ---------- Normal Calculation ----------

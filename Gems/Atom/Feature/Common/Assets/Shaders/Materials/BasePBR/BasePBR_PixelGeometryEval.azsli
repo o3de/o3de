@@ -70,7 +70,7 @@ PixelGeometryData EvaluatePixelGeometry_BasePBR(VsOutput IN, bool isFrontFace)
     float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
 
     float3 vertexNormal, vertexTangent, vertexBitangent;
-    ConstructTBN(IN.m_normal, IN.m_tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
+    ConstructTBN(IN.normal, IN.tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
 
     return EvaluatePixelGeometry_BasePBR(
         IN.worldPosition,

@@ -21,7 +21,6 @@ VsOutput EvaluateVertexGeometry_BasePBR(
     float3 position,
     float3 normal,
     float4 tangent,
-    float3 bitangent,
     float2 uv0,
     float2 uv1)
 {
@@ -48,7 +47,6 @@ VsOutput EvaluateVertexGeometry_BasePBR(VsInput IN)
         IN.position,
         IN.normal,
         IN.tangent,
-        IN.bitangent,
         IN.uv0,
         IN.uv1);
 }

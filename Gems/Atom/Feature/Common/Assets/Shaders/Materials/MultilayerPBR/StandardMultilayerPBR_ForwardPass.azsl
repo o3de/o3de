@@ -63,7 +63,6 @@ struct VSInput
     float3 m_position : POSITION;
     float3 m_normal : NORMAL;
     float4 m_tangent : TANGENT;
-    float3 m_bitangent : BITANGENT;
  
     // Extended fields (only referenced in this azsl file)...
     float2 m_uv0 : UV0;
@@ -75,7 +74,6 @@ struct VSInput
     // [GFX TODO][ATOM-14475]: Come up with a more elegant way to associate the isBound flag with the input stream.
     float4 m_optional_blendMask : COLOR0;
 };
-
 
 struct VSOutput
 {

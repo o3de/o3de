@@ -31,8 +31,7 @@ struct VSInput
 {
     float3 m_position : POSITION;
     float3 m_normal : NORMAL;
-    float4 m_tangent : TANGENT; 
-    float3 m_bitangent : BITANGENT;
+    float4 m_tangent : TANGENT;
     float2 m_uv0 : UV0;
     float2 m_uv1 : UV1;
 
