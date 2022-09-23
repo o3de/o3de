@@ -1,7 +1,7 @@
 {
-    "materialType": "Materials\\Types\\StandardPBR.materialtype",
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
     "materialTypeVersion": 5,
-    "parentMaterial": "TestData\\Materials\\StandardPbrTestCases\\UvTilingBase.material",
+    "parentMaterial": "UvTilingBase.material",
     "propertyValues": {
         "baseColor.color": [
             0.11546501517295837,
@@ -11,6 +11,6 @@
         ],
         "roughness.factor": 0.0,
         "specularF0.factor": 1.0,
-        "specularF0.textureMap": "TestData/Objects/cube/cube_diff.tif"
+        "specularF0.textureMap": "../../Objects/cube/cube_diff.tif"
     }
 }

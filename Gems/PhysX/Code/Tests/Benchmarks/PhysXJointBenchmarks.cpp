@@ -249,11 +249,11 @@ namespace PhysX::Benchmarks
         {
             for (AZ::u32 i = 0; i < JointConstants::GameFramesToSimulate; i++)
             {
-                auto start = AZStd::chrono::system_clock::now();
+                auto start = AZStd::chrono::steady_clock::now();
                 StepScene1Tick(DefaultTimeStep);
 
                 //time each physics tick and store it to analyze
-                auto tickElapsedMilliseconds = Types::double_milliseconds(AZStd::chrono::system_clock::now() - start);
+                auto tickElapsedMilliseconds = Types::double_milliseconds(AZStd::chrono::steady_clock::now() - start);
                 tickTimes.emplace_back(tickElapsedMilliseconds.count());
             }
         }
@@ -320,11 +320,11 @@ namespace PhysX::Benchmarks
                     }
                 }
 
-                auto start = AZStd::chrono::system_clock::now();
+                auto start = AZStd::chrono::steady_clock::now();
                 StepScene1Tick(DefaultTimeStep);
 
                 //time each physics tick and store it to analyze
-                auto tickElapsedMilliseconds = Types::double_milliseconds(AZStd::chrono::system_clock::now() - start);
+                auto tickElapsedMilliseconds = Types::double_milliseconds(AZStd::chrono::steady_clock::now() - start);
                 tickTimes.emplace_back(tickElapsedMilliseconds.count());
             }
         }
@@ -405,11 +405,11 @@ namespace PhysX::Benchmarks
         {
             for (AZ::u32 i = 0; i < JointConstants::GameFramesToSimulate; i++)
             {
-                auto start = AZStd::chrono::system_clock::now();
+                auto start = AZStd::chrono::steady_clock::now();
                 StepScene1Tick(DefaultTimeStep);
 
                 //time each physics tick and store it to analyze
-                auto tickElapsedMilliseconds = Types::double_milliseconds(AZStd::chrono::system_clock::now() - start);
+                auto tickElapsedMilliseconds = Types::double_milliseconds(AZStd::chrono::steady_clock::now() - start);
                 tickTimes.emplace_back(tickElapsedMilliseconds.count());
             }
         }

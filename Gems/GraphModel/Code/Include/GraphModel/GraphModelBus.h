@@ -126,6 +126,13 @@ namespace GraphModelIntegration
             GraphModel::NodePtr targetNode,
             GraphModel::SlotId targetSlotId) = 0;
 
+        //! Check if there is a connection between the specified source and target specified slots
+        virtual bool AreSlotsConnected(
+            GraphModel::NodePtr sourceNode,
+            GraphModel::SlotId sourceSlotId,
+            GraphModel::NodePtr targetNode,
+            GraphModel::SlotId targetSlotId) const = 0;
+
         //! Remove the specified connection
         virtual bool RemoveConnection(GraphModel::ConnectionPtr connection) = 0;
 
@@ -213,6 +220,9 @@ namespace GraphModelIntegration
 
         //! A connection has been removed from the scene.
         virtual void OnGraphModelConnectionRemoved(GraphModel::ConnectionPtr /*connection*/){};
+
+        //! The specified node is about to be wrapped (embedded) onto the wrapperNode
+        virtual void PreOnGraphModelNodeWrapped([[maybe_unused]] GraphModel::NodePtr wrapperNode, [[maybe_unused]] GraphModel::NodePtr node) {};
 
         //! The specified node has been wrapped (embedded) onto the wrapperNode
         virtual void OnGraphModelNodeWrapped(GraphModel::NodePtr /*wrapperNode*/, GraphModel::NodePtr /*node*/){};
