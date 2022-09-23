@@ -270,7 +270,7 @@ namespace EMotionFX
             AnimGraphNode* paramSrcNode = paramConnection->GetSourceNode();
             if (paramSrcNode)
             {
-                paramSrcNode->PerformTopDownUpdate(animGraphInstance, timePassedInSeconds);
+                TopDownUpdateIncomingNode(animGraphInstance, paramSrcNode, timePassedInSeconds);
             }
         }
     }
@@ -347,7 +347,7 @@ namespace EMotionFX
         EMotionFX::BlendTreeConnection* paramConnection = GetInputPort(INPUTPORT_VALUE).m_connection;
         if (paramConnection)
         {
-            paramConnection->GetSourceNode()->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+            PostUpdateIncomingNode(animGraphInstance, paramConnection->GetSourceNode(), timePassedInSeconds);
         }
 
         if (uniqueData->m_motionInfos.empty())

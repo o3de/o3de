@@ -274,7 +274,7 @@ namespace EMotionFX
             HierarchicalSyncInputNode(animGraphInstance, finalNode, uniqueData);
 
             // pass the global weight along to the child nodes
-            finalNode->PerformTopDownUpdate(animGraphInstance, timePassedInSeconds);
+            TopDownUpdateIncomingNode(animGraphInstance, finalNode, timePassedInSeconds);
         }
     }
 

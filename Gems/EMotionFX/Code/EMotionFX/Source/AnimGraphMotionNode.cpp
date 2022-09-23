@@ -124,7 +124,7 @@ namespace EMotionFX
         EMotionFX::BlendTreeConnection* playSpeedConnection = GetInputPort(INPUTPORT_PLAYSPEED).m_connection;
         if (playSpeedConnection && m_disabled == false)
         {
-            playSpeedConnection->GetSourceNode()->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+            PostUpdateIncomingNode(animGraphInstance, playSpeedConnection->GetSourceNode(), timePassedInSeconds);
         }
 
         // clear the event buffer
@@ -202,7 +202,7 @@ namespace EMotionFX
         // top down update all incoming connections
         for (BlendTreeConnection* connection : m_connections)
         {
-            connection->GetSourceNode()->PerformTopDownUpdate(animGraphInstance, timePassedInSeconds);
+            TopDownUpdateIncomingNode(animGraphInstance, connection->GetSourceNode(), timePassedInSeconds);
         }
     }
 
