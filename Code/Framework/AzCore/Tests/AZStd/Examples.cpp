@@ -320,7 +320,7 @@ namespace UnitTest
                 typedef static_pool_allocator< list<int>::node_type, 1000 > int_list_pool_allocator_type;
                 typedef allocator_ref<int_list_pool_allocator_type> int_pool_alloc_ref_type;
                 int_list_pool_allocator_type myPool;
-                int_pool_alloc_ref_type myPoolRef(myPool, "My list<int>::note_type allocator!");
+                int_pool_alloc_ref_type myPoolRef(myPool);
 
                 // Now we want to share that pool in multiple containers.
                 list<int, int_pool_alloc_ref_type>  int_list(myPoolRef);

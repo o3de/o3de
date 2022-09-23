@@ -37,7 +37,6 @@ namespace Multiplayer
     public:
         void SetUp() override
         {
-            SetupAllocator();
             AZ::NameDictionary::Create();
 
             m_ComponentApplicationRequests = AZStd::make_unique<BenchmarkComponentApplicationRequests>();
@@ -108,8 +107,6 @@ namespace Multiplayer
             m_netBindDescriptor.reset();
             m_serializeContext.reset();
             m_behaviorContext.reset();
-
-            TeardownAllocator();
         }
 
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;

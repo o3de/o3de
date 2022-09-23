@@ -240,20 +240,8 @@ namespace UnitTest
 
         typedef allocator_ref<buffer_alloc_type> ref_allocator_type;
 
-        const char name1[] = "Ref allocator1";
-        ref_allocator_type ref_allocator1(shared_allocator, name1);
-        const char name2[] = "Ref allocator2";
-        ref_allocator_type ref_allocator2(shared_allocator, name2);
-
-        AZ_TEST_ASSERT(strcmp(ref_allocator1.get_name(), name1) == 0);
-        AZ_TEST_ASSERT(strcmp(ref_allocator2.get_name(), name2) == 0);
-
-        const char newName1[] = "Ref new allocator1";
-        ref_allocator1.set_name(newName1);
-        AZ_TEST_ASSERT(strcmp(ref_allocator1.get_name(), newName1) == 0);
-        const char newName2[] = "Ref new allocator2";
-        ref_allocator2.set_name(newName2);
-        AZ_TEST_ASSERT(strcmp(ref_allocator2.get_name(), newName2) == 0);
+        ref_allocator_type ref_allocator1(shared_allocator);
+        ref_allocator_type ref_allocator2(shared_allocator);
 
         AZ_TEST_ASSERT(ref_allocator2.get_allocator() == ref_allocator1.get_allocator());
 

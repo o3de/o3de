@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_ALLOCATOR_STATIC_H
-#define AZSTD_ALLOCATOR_STATIC_H
+
+#pragma once
 
 #include <AzCore/std/base.h>
 #include <AzCore/std/typetraits/integral_constant.h>
@@ -53,9 +53,8 @@ namespace AZStd
         constexpr size_type         max_size() const { return Size; }
         AZ_FORCE_INLINE size_type   get_allocated_size() const { return m_freeData - reinterpret_cast<const char*>(&m_data); }
                 
-        pointer allocate(size_type byteSize, size_type alignment, int flags = 0)
+        pointer allocate(size_type byteSize, size_type alignment, [[maybe_unused]] int flags = 0)
         {
-            (void)flags;
             AZ_Assert(alignment > 0 && (alignment & (alignment - 1)) == 0, "AZStd::static_buffer_allocator::allocate - alignment must be > 0 and power of 2");
             char* address = AZ::PointerAlignUp(m_freeData, alignment);
             m_freeData = address + byteSize;
@@ -64,17 +63,13 @@ namespace AZStd
                 AZ_Assert(false, "AZStd::static_buffer_allocator - run out of memory!");
                 return nullptr;
             }
-            else
-            {
-                m_lastAllocation = address;
-                return address;
-            }
+
+            m_lastAllocation = address;
+            return address;
         }
 
-        AZ_FORCE_INLINE void  deallocate(pointer ptr, size_type byteSize = 0, size_type alignment = 0)
+        AZ_FORCE_INLINE void  deallocate(pointer ptr, [[maybe_unused]] size_type byteSize = 0, [[maybe_unused]] size_type alignment = 0)
         {
-            (void)byteSize;
-            (void)alignment;
             // we can free only the last allocation
             if (ptr == m_lastAllocation)
             {
@@ -112,21 +107,13 @@ namespace AZStd
     template<AZStd::size_t Size, AZStd::size_t Alignment>
     AZ_FORCE_INLINE bool operator==(const static_buffer_allocator<Size, Alignment>& a, const static_buffer_allocator<Size, Alignment>& b)
     {
-        if (&a == &b)
-        {
-            return true;
-        }
-        return false;
+        return &a == &b;
     }
 
     template<AZStd::size_t Size, AZStd::size_t Alignment>
     AZ_FORCE_INLINE bool operator!=(const static_buffer_allocator<Size, Alignment>& a, const static_buffer_allocator<Size, Alignment>& b)
     {
-        if (&a != &b)
-        {
-            return true;
-        }
-        return false;
+        return &a != &b;
     }
 
     /**
@@ -264,6 +251,3 @@ namespace AZStd
         return &a != &b;
     }
 }
-
-#endif // AZSTD_ALLOCATOR_STATIC_H
-#pragma once
