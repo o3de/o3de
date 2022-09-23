@@ -68,19 +68,44 @@ namespace AtomToolsFramework
         const AZStd::string& title = "Select Values",
         const bool multiSelect = false);
 
+    //! Build a file dialog filter string by combining all of the entries in the supported extensions table. .
+    //! @param supportedExtensions Table of descriptions and extensions use to configure file filters.
+    //! @returns The generated string that can be fed directly into a file dialog filter.
+    AZStd::string GetFileFilterFromSupportedExtensions(const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& supportedExtensions);
+
+    //! Returns the first non empty string found in a container of supported extensions.
+    //! @param supportedExtensions Table of descriptions and extensions use to configure file filters.
+    //! @returns The first non empty extension founded in container
+    AZStd::string GetFirstValidSupportedExtension(const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& supportedExtensions);
+
+    //! Returns the first extension matching a path.
+    //! @param supportedExtensions Table of descriptions and extensions use to configure file filters.
+    //! @param path Path or file name that will be compared against supported extensions.
+    //! @returns The first occurrence of an extension matching the path.
+    AZStd::string GetFirstMatchingSupportedExtension(
+        const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& supportedExtensions, const AZStd::string& path);
+
     //! Opens a dialog to prompt the user to select a save file path
     //! @param initialPath File path initially selected in the dialog
+    //! @param supportedExtensions Table of descriptions and extensions use to configure file filters.
     //! @param title Description of the filetype being opened that's displayed at the top of the dialog
     //! @returns Absolute path of the selected file, or an empty string if nothing was selected
-    AZStd::string GetSaveFilePathFromDialog(const AZStd::string& initialPath, const AZStd::string& title = "Document");
+    AZStd::string GetSaveFilePathFromDialog(
+        const AZStd::string& initialPath,
+        const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& supportedExtensions,
+        const AZStd::string& title);
 
     //! Opens a dialog to prompt the user to select one or more files to open 
-    //! @param filter A regular expression filter to determine which files are selectable and displayed in the dialog 
+    //! @param selectedFilePaths A list of file paths that will be selected in the dialog
+    //! @param supportedExtensions Table of descriptions and extensions use to configure file filters.
     //! @param title Description of the filetype being opened that's displayed at the top of the dialog
     //! @param multiSelect If true, the file picker will allow selecting multiple files
     //! @returns Container of selected files matching the filter 
     AZStd::vector<AZStd::string> GetOpenFilePathsFromDialog(
-        const QRegExp& filter, const AZStd::string& title = "Document", const bool multiSelect = true);
+        const AZStd::vector<AZStd::string>& selectedFilePaths,
+        const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& supportedExtensions,
+        const AZStd::string& title,
+        const bool multiSelect);
 
     //! Converts an input file path to a unique file path by appending a unique number
     //! @param initialPath The starting path that will be compared to other existing files and modified until it is unique

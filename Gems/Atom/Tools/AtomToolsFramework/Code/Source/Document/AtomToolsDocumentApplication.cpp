@@ -74,8 +74,8 @@ namespace AtomToolsFramework
                             : QObject::tr("Create %1...").arg(documentType.m_documentTypeName.c_str());
 
                         menu->addAction(createActionName, [entries, documentType, this]() {
-                            const auto& defaultPath = GetUniqueUntitledFilePath(documentType.GetDefaultExtensionToSave().c_str());
-                            const auto& savePath = GetSaveFilePathFromDialog(defaultPath);
+                            const auto& savePath = GetSaveFilePathFromDialog(
+                                {}, documentType.m_supportedExtensionsToSave, documentType.m_documentTypeName);
                             if (!savePath.empty())
                             {
                                 AtomToolsDocumentSystemRequestBus::Event(
