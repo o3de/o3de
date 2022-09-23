@@ -40,6 +40,7 @@ ly_add_target(
     COMPILE_DEFINITIONS
         PUBLIC
             EMFX_DEVELOPMENT_BUILD
+            EMFX_ANIMGRAPH_PROFILER_ENABLED
 )
 
 ly_add_target(
