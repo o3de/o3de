@@ -40,9 +40,9 @@ namespace AZ
     class ModuleManager;
     class TimeSystem;
 }
-namespace AZ::Debug
+namespace AZ::Metrics
 {
-    class LocalFileEventLogger;
+    class IEventLoggerFactory;
 }
 
 namespace AZ
@@ -403,18 +403,6 @@ namespace AZ
 
         AZStd::unique_ptr<AZ::Entity>               m_systemEntity; ///< Track the system entity to ensure we free it on shutdown.
 
-        // Created early to allow events to be logged before anything else. These will be kept in memory until
-        // a file is associated with the logger. The internal buffer is limited to 64kb and once full unexpected
-        // behavior may happen. The LocalFileEventLogger will register itself automatically with AZ::Interface<IEventLogger>.
-
-        struct EventLoggerDeleter
-        {
-            EventLoggerDeleter() noexcept;
-            EventLoggerDeleter(bool skipDelete) noexcept;
-            void operator()(AZ::Debug::LocalFileEventLogger* ptr);
-            bool m_skipDelete{};
-        };
-        using EventLoggerPtr = AZStd::unique_ptr<AZ::Debug::LocalFileEventLogger, EventLoggerDeleter>;
-        EventLoggerPtr m_eventLogger;
+        AZStd::unique_ptr<AZ::Metrics::IEventLoggerFactory> m_eventLoggerFactory;
     };
 }

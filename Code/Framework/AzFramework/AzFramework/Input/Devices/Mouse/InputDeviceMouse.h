@@ -304,7 +304,7 @@ namespace AzFramework
             AZStd::sys_time_t            m_rawMovementSampleRate;      //!< Raw movement sample rate
             RawButtonEventQueueByIdMap   m_rawButtonEventQueuesById;   //!< Raw button events by id
             RawMovementEventQueueByIdMap m_rawMovementEventQueuesById; //!< Raw movement events by id
-            AZStd::chrono::system_clock::time_point m_timeOfLastRawMovementSample; //!< Time of the last raw movement sample
+            AZStd::chrono::steady_clock::time_point m_timeOfLastRawMovementSample; //!< Time of the last raw movement sample
         };
 
         ////////////////////////////////////////////////////////////////////////////////////////////

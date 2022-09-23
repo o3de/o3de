@@ -54,6 +54,6 @@ namespace AWSClientAuth
         AZStd::string m_refreshToken;
         AZStd::string m_openIdToken;
         ProviderNameEnum m_providerName;
-        AZStd::chrono::system_clock::time_point m_tokensExpireTimeStamp;
+        AZStd::chrono::steady_clock::time_point m_tokensExpireTimeStamp;
     };
 } // namespace AWSClientAuth
