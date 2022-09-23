@@ -35,8 +35,8 @@ VsOutput EvaluateVertexGeometry_Eye(
     output.uvs[0] = uv0;
     output.uvs[1] = uv1;
 
-    float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
-    ConstructTBN(normal, tangent, bitangent, objectToWorld, objectToWorldIT, output.normal, output.tangent, output.bitangent);
+    output.normal = normal;
+    output.tangent = tangent;
 
     output.localPosition = position.xyz;
 
