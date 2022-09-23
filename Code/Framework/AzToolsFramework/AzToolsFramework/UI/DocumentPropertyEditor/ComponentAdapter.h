@@ -30,7 +30,7 @@ namespace AZ::DocumentPropertyEditor
 
         void OnEntityComponentPropertyChanged(AZ::ComponentId componentId) override;
 
-        void InvalidatePropertyDisplay(AzToolsFramework::PropertyModificationRefreshLevel /*level*/) override;
+        void InvalidatePropertyDisplay(AzToolsFramework::PropertyModificationRefreshLevel level) override;
 
         //! Sets the component, connects the appropriate Bus Handlers and sets the reflect data for this instance
         void SetComponent(AZ::Component* componentInstance);
@@ -40,7 +40,8 @@ namespace AZ::DocumentPropertyEditor
 
     protected:
         AZ::Component* m_componentInstance = nullptr;
-        int m_refreshQueue = 0;
+        enum AzToolsFramework::PropertyModificationRefreshLevel m_queuedRefreshLevel =
+            AzToolsFramework::PropertyModificationRefreshLevel::Refresh_None;
     };
 
 } // namespace AZ::DocumentPropertyEditor

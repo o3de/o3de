@@ -20,13 +20,18 @@ namespace AZ::DocumentPropertyEditor
         SetComponent(componentInstace);
     }
 
-    ComponentAdapter::~ComponentAdapter() = default;
+    ComponentAdapter::~ComponentAdapter()
+    {
+        AzToolsFramework::ToolsApplicationEvents::Bus::Handler::BusDisconnect();
+        AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler::BusDisconnect(m_componentInstance->GetEntityId());
+        delete m_componentInstance;
+    }
 
     void ComponentAdapter::OnEntityComponentPropertyChanged(AZ::ComponentId componentId)
     {
         if (m_componentInstance->GetId() == componentId)
         {
-            m_refreshQueue++;
+            m_queuedRefreshLevel = AzToolsFramework::PropertyModificationRefreshLevel::Refresh_Values;
             QTimer::singleShot(
                 0,
                 [this]()
@@ -36,15 +41,18 @@ namespace AZ::DocumentPropertyEditor
         }
     }
 
-    void ComponentAdapter::InvalidatePropertyDisplay([[maybe_unused]] AzToolsFramework::PropertyModificationRefreshLevel level)
+    void ComponentAdapter::InvalidatePropertyDisplay(AzToolsFramework::PropertyModificationRefreshLevel level)
     {
-        m_refreshQueue++;
-        QTimer::singleShot(
-            0,
-            [this]()
-            {
-                DoRefresh();
-            });
+        if (level > m_queuedRefreshLevel)
+        {
+            m_queuedRefreshLevel = level;
+            QTimer::singleShot(
+                0,
+                [this]()
+                {
+                    DoRefresh();
+                });
+        }
     }
 
     void ComponentAdapter::SetComponent(AZ::Component* componentInstance)
@@ -58,11 +66,11 @@ namespace AZ::DocumentPropertyEditor
 
     void ComponentAdapter::DoRefresh()
     {
-        if (m_refreshQueue == 0)
+        if (m_queuedRefreshLevel == AzToolsFramework::PropertyModificationRefreshLevel::Refresh_None)
         {
             return;
         }
-        m_refreshQueue = 0;
+        m_queuedRefreshLevel = AzToolsFramework::PropertyModificationRefreshLevel::Refresh_None;
         NotifyResetDocument();
     }
 
