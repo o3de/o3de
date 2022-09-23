@@ -10,8 +10,7 @@
 
 #include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
 #include <QString>
-#include <AzCore/std/containers/vector.h>
-#include <AzCore/std/containers/set.h>
+#include <AzCore/std/containers/unordered_set.h>
 
 namespace AZ::DocumentPropertyEditor
 {
@@ -36,7 +35,7 @@ namespace AZ::DocumentPropertyEditor
             }
 
             bool m_matchesSelf = false;
-            AZStd::set<MatchInfoNode*> m_matchingDescendents;
+            AZStd::unordered_set<MatchInfoNode*> m_matchingDescendants;
             MatchInfoNode* m_parentNode = nullptr;
 
             //! Deque where only row node children are populate, other children are null entries
@@ -74,12 +73,12 @@ namespace AZ::DocumentPropertyEditor
 
         MatchInfoNode* GetMatchNodeAtPath(const Dom::Path& sourcePath);
 
-        /*! populates the MatchInfoNode nodes for the given path and any descendent row children created.
-         *  All new nodes have their m_matchesSelf, m_matchingDescendents, and  m_matchableDomTerms set */
+        /*! populates the MatchInfoNode nodes for the given path and any descendant row children created.
+         *  All new nodes have their m_matchesSelf, m_matchingDescendants, and  m_matchableDomTerms set */
         void PopulateNodesAtPath(const Dom::Path& sourcePath, bool replaceExisting);
 
-        /*! updates the match states (m_matchesSelf, m_matchingDescendents) for the given row node,
-            and updates the m_matchingDescendents state for all its ancestors
+        /*! updates the match states (m_matchesSelf, m_matchingDescendants) for the given row node,
+            and updates the m_matchingDescendants state for all its ancestors
             \param rowState the row to operate on */
         void UpdateMatchState(MatchInfoNode* rowState);
 
@@ -87,7 +86,7 @@ namespace AZ::DocumentPropertyEditor
         Dom::Path GetRowPath(const Dom::Path& sourcePath) const;
 
         //! indicates whether all children of a direct match are considered matching as well
-        bool m_includeAllMatchDescendents = true;
+        bool m_includeAllMatchDescendants = true;
         bool m_filterActive = false;
 
         MatchInfoNode* m_root = nullptr;
