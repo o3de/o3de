@@ -59,7 +59,7 @@ namespace AZ
                 releaseQueueDescriptor.m_collectLatency = m_descriptor.m_frameCountMax;
                 m_releaseQueue.Init(releaseQueueDescriptor);
             }
-             
+
             {
                 CommandListAllocator::Descriptor commandListAllocatorDescriptor;
                 commandListAllocatorDescriptor.m_frameCountMax = m_descriptor.m_frameCountMax;
@@ -78,19 +78,19 @@ namespace AZ
             allocatorDescriptor.m_getHeapMemoryUsageFunction = [this]() { return &m_argumentBufferConstantsAllocatorMemoryUsage; };
             allocatorDescriptor.m_recycleOnCollect = true;
             m_argumentBufferConstantsAllocator.Init(allocatorDescriptor);
-             
+
             allocatorDescriptor.m_getHeapMemoryUsageFunction = [this]() { return &m_argumentBufferAllocatorMemoryUsage; };
             allocatorDescriptor.m_pageSizeInBytes = DefaultArgumentBufferPageSize;
             m_argumentBufferAllocator.Init(allocatorDescriptor);
 
             m_nullDescriptorManager.Init(*this);
-            
+
             m_samplerCache = [[NSCache alloc]init];
             [m_samplerCache setName:@"SamplerCache"];
 
             return RHI::ResultCode::Success;
         }
-    
+
         void Device::PreShutdown()
         {
             //CommandLists hold on to a ptr to the device.
@@ -108,11 +108,11 @@ namespace AZ
             m_argumentBufferAllocator.Shutdown();
             m_releaseQueue.Shutdown();
             m_pipelineLayoutCache.Shutdown();
-            
+
             [m_samplerCache removeAllObjects];
             [m_samplerCache release];
             m_samplerCache = nil;
-            
+
             for (AZ::u32 i = 0; i < CommandEncoderTypeCount; ++i)
             {
                 m_commandListPools[i].Shutdown();
@@ -135,13 +135,13 @@ namespace AZ
             m_releaseQueue.Collect();
             FlushAutoreleasePool();
         }
-    
+
         void Device::WaitForIdleInternal()
         {
             m_commandQueueContext.WaitForIdle();
             m_releaseQueue.Collect(true);
         }
-        
+
         void Device::FlushAutoreleasePool()
         {
             if (m_autoreleasePool)
@@ -150,7 +150,7 @@ namespace AZ
                 m_autoreleasePool = nullptr;
             }
         }
-        
+
         void Device::TryCreateAutoreleasePool()
         {
             if (!m_autoreleasePool)
@@ -162,16 +162,16 @@ namespace AZ
         void Device::QueueDeferredRelease(RHI::Ptr<RHI::Object> object)
         {
         }
-    
+
         MemoryView Device::CreateInternalImageCommitted(MTLTextureDescriptor* mtlTextureDesc)
         {
             id<MTLTexture> mtlTexture = [m_metalDevice newTextureWithDescriptor : mtlTextureDesc];
             AZ_Assert(mtlTexture, "Failed to create texture");
-            
+
             RHI::Ptr<MetalResource> resc = MetalResource::Create(MetalResourceDescriptor{mtlTexture, ResourceType::MtlTextureType});
             return MemoryView(resc, 0, mtlTexture.allocatedSize, 0);
         }
-    
+
         // [GFX TODO][ATOM-3888] - This method should go away when the streaming textures also start using private memory.
         MemoryView Device::CreateImageCommitted(const RHI::ImageDescriptor& imageDescriptor, MTLStorageMode overrideStorageMode)
         {
@@ -179,7 +179,7 @@ namespace AZ
             mtlTextureDesc.storageMode = overrideStorageMode;
             return CreateInternalImageCommitted(mtlTextureDesc);
         }
-    
+
         MemoryView Device::CreateImageCommitted(const RHI::ImageDescriptor& imageDescriptor)
         {
             MTLTextureDescriptor* mtlTextureDesc = ConvertImageDescriptor(imageDescriptor);
@@ -196,7 +196,7 @@ namespace AZ
             mtlTextureDesc.textureType = overrideTextureType;
             return CreateImagePlaced(imageDescriptor, mtlHeap, heapByteOffset, textureSizeAndAlign);
         }
-    
+
         MemoryView Device::CreateImagePlaced(const RHI::ImageDescriptor& imageDescriptor,
                                              id<MTLHeap> mtlHeap,
                                              size_t heapByteOffset,
@@ -208,12 +208,12 @@ namespace AZ
             id<MTLTexture> mtlTexture = [mtlHeap newTextureWithDescriptor:mtlTextureDesc
                                                                    offset:heapByteOffset];
             AZ_Assert(mtlTexture, "Failed to create texture");
-            
+
             RHI::Ptr<MetalResource> resc = MetalResource::Create(MetalResourceDescriptor{mtlTexture, ResourceType::MtlTextureType});
             AZ_Assert(textureSizeAndAlign.size == mtlTexture.allocatedSize, "Predicted size %tu does not match the actual size %tu", textureSizeAndAlign.size, mtlTexture.allocatedSize);
             return MemoryView(resc, heapByteOffset, mtlTexture.allocatedSize, textureSizeAndAlign.align);
         }
-    
+
         MemoryView Device::CreateBufferPlaced(const RHI::BufferDescriptor& bufferDescriptor,
                                               id<MTLHeap> mtlHeap,
                                               size_t heapByteOffset,
@@ -221,17 +221,17 @@ namespace AZ
         {
             ResourceDescriptor resourceDesc = ConvertBufferDescriptor(bufferDescriptor);
             MTLResourceOptions resOptions = CovertToResourceOptions(mtlHeap.storageMode, resourceDesc.m_mtlCPUCacheMode, mtlHeap.hazardTrackingMode);
-            
+
             id<MTLBuffer> mtlBuffer = [mtlHeap newBufferWithLength:bufferDescriptor.m_byteCount
                                                              options:resOptions
                                                               offset:heapByteOffset];
             AZ_Assert(mtlBuffer, "Failed to create buffer");
-           
+
             RHI::Ptr<MetalResource> resc = MetalResource::Create(MetalResourceDescriptor{mtlBuffer, ResourceType::MtlBufferType});
             AZ_Assert(bufferSizeAndAlign.size == mtlBuffer.allocatedSize, "Predicted size does not match the actual size");
             return MemoryView(resc, heapByteOffset, mtlBuffer.allocatedSize, bufferSizeAndAlign.align);
         }
-      
+
         MemoryView Device::CreateBufferCommitted(const RHI::BufferDescriptor& bufferDescriptor, RHI::HeapMemoryLevel heapMemoryLevel)
         {
             id<MTLBuffer> mtlBuffer = nullptr;
@@ -239,15 +239,15 @@ namespace AZ
             MTLResourceOptions resOptions = CovertToResourceOptions(resourceDesc.m_mtlStorageMode, resourceDesc.m_mtlCPUCacheMode, resourceDesc.m_mtlHazardTrackingMode);
             mtlBuffer = [m_metalDevice newBufferWithLength:resourceDesc.m_width options:resOptions];
             AZ_Assert(mtlBuffer, "Failed to create the buffer");
-            
+
             RHI::Ptr<MetalResource> resc = MetalResource::Create(MetalResourceDescriptor{mtlBuffer, ResourceType::MtlBufferType});
             return MemoryView(resc, 0, mtlBuffer.length, 0);
         }
-                
+
         void Device::CompileMemoryStatisticsInternal(RHI::MemoryStatisticsBuilder& builder)
         {
         }
-        
+
         void Device::UpdateCpuTimingStatisticsInternal() const
         {
             m_commandQueueContext.UpdateCpuTimingStatistics();
@@ -260,7 +260,7 @@ namespace AZ
                 RHI::Format format = static_cast<RHI::Format>(i);
                 RHI::FormatCapabilities& flags = formatsCapabilities[i];
                 flags = RHI::FormatCapabilities::None;
-                
+
                 //Buffer specific capabilities
                 //https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf doesnt have specific information about
                 //buffer capabilities, hence enabling it for all formats.
@@ -268,41 +268,41 @@ namespace AZ
                 flags |= RHI::FormatCapabilities::TypedLoadBuffer;
                 flags |= RHI::FormatCapabilities::TypedStoreBuffer;
                 flags |= RHI::FormatCapabilities::AtomicBuffer;
-                
+
                 if (format == RHI::Format::R32_UINT || format == RHI::Format::R16_UINT)
                 {
                     flags |= RHI::FormatCapabilities::IndexBuffer;
                 }
-                
+
                 //Texture specific capabilities
                 if(IsDepthStencilSupported(m_metalDevice, format))
                 {
                     flags |= RHI::FormatCapabilities::DepthStencil;
                 }
-                   
+
                 if (IsColorRenderTargetSupported(m_metalDevice, format))
                 {
                     flags |= RHI::FormatCapabilities::RenderTarget;
                 }
-                
+
                 if (IsBlendingSupported(m_metalDevice, format))
                 {
                     flags |= RHI::FormatCapabilities::Blend;
                 }
-                
+
                 //All graphics and compute functions can read or sample from any texture, regardless of its pixel format.
                 //For filtering support use IsFilteringSupported
                 flags |= RHI::FormatCapabilities::Sample;
             }
         }
-        
+
         AZStd::chrono::microseconds Device::GpuTimestampToMicroseconds(uint64_t gpuTimestamp, RHI::HardwareQueueClass queueClass) const
         {
             //gpuTimestamp in nanoseconds.
             auto timeInNano = AZStd::chrono::nanoseconds(gpuTimestamp);
-            return AZStd::chrono::microseconds(timeInNano);
+            return AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(timeInNano);
         }
-    
+
         RHI::ResourceMemoryRequirements Device::GetResourceMemoryRequirements(const RHI::ImageDescriptor& descriptor)
         {
             MTLTextureDescriptor* mtlTextureDesc = ConvertImageDescriptor(descriptor);
@@ -311,7 +311,7 @@ namespace AZ
             RHI::ResourceMemoryRequirements memoryRequirements;
             memoryRequirements.m_alignmentInBytes = textureSizeAndAlign.align;
             memoryRequirements.m_sizeInBytes = textureSizeAndAlign.size;
-            
+
             return memoryRequirements;
         }
 
@@ -335,7 +335,7 @@ namespace AZ
 
         void Device::InitFeatures()
         {
-            
+
             m_features.m_tessellationShader = false;
             m_features.m_geometryShader = false;
             m_features.m_computeShader = true;
@@ -343,10 +343,10 @@ namespace AZ
             m_features.m_dualSourceBlending = true;
             m_features.m_customResolvePositions = m_metalDevice.programmableSamplePositionsSupported;
             m_features.m_indirectDrawSupport = false;
-            
+
             //Metal drivers save and load serialized PipelineLibrary internally
-            m_features.m_isPsoCacheFileOperationsNeeded = false; 
-            
+            m_features.m_isPsoCacheFileOperationsNeeded = false;
+
             RHI::QueryTypeFlags counterSamplingFlags = RHI::QueryTypeFlags::None;
 
             bool supportsInterDrawTimestamps = true;
@@ -360,7 +360,7 @@ namespace AZ
             {
                 supportsInterDrawTimestamps = ![m_metalDevice.name containsString:@"Apple"]; // Apple GPU's don't support inter draw timestamps at the M1/A14 generation
             }
-            
+
             if (supportsInterDrawTimestamps)
             {
                 counterSamplingFlags |= (RHI::QueryTypeFlags::Timestamp | RHI::QueryTypeFlags::PipelineStatistics);
@@ -369,9 +369,9 @@ namespace AZ
 
             m_features.m_queryTypesMask[static_cast<uint32_t>(RHI::HardwareQueueClass::Graphics)] = RHI::QueryTypeFlags::Occlusion | counterSamplingFlags;
             //Compute queue can do gfx work
-            m_features.m_queryTypesMask[static_cast<uint32_t>(RHI::HardwareQueueClass::Compute)] = RHI::QueryTypeFlags::Occlusion | counterSamplingFlags;            
+            m_features.m_queryTypesMask[static_cast<uint32_t>(RHI::HardwareQueueClass::Compute)] = RHI::QueryTypeFlags::Occlusion | counterSamplingFlags;
             m_features.m_occlusionQueryPrecise = true;
-            
+
             //Values taken from https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf
             m_limits.m_maxImageDimension1D = 8192;
             m_limits.m_maxImageDimension2D = 8192;
@@ -379,7 +379,7 @@ namespace AZ
             m_limits.m_maxImageDimensionCube = 8192;
             m_limits.m_maxImageArraySize = 2048;
             m_limits.m_minConstantBufferViewOffset = Alignment::Constant;
-            
+
             AZ_Assert(m_metalDevice.argumentBuffersSupport, "Atom needs Argument buffer support to run");
         }
 
@@ -387,22 +387,22 @@ namespace AZ
         {
             return m_commandListAllocator.Allocate(hardwareQueueClass);
         }
-        
+
         RHI::ConstPtr<PipelineLayout> Device::AcquirePipelineLayout(const RHI::PipelineLayoutDescriptor& descriptor)
         {
             return m_pipelineLayoutCache.Allocate(descriptor);
         }
-        
+
         void Device::QueueForRelease(const MemoryView& memoryView)
         {
             m_releaseQueue.QueueForCollect(memoryView.GetMemory());
         }
-        
+
         void Device::QueueForRelease(Memory* memory)
         {
             m_releaseQueue.QueueForCollect(memory, 1);
         }
-    
+
         RHI::Ptr<Buffer> Device::AcquireStagingBuffer(AZStd::size_t byteCount, RHI::BufferBindFlags bufferBindFlags)
         {
             if (!m_stagingBufferPool)
@@ -419,7 +419,7 @@ namespace AZ
                     AZ_Assert(false, "Staging buffer pool was not created.");
                 }
             }
-            
+
             RHI::Ptr<Buffer> stagingBuffer = Buffer::Create();
             RHI::BufferDescriptor bufferDesc(bufferBindFlags, byteCount);
             RHI::BufferInitRequest initRequest(*stagingBuffer, bufferDesc);
@@ -432,12 +432,12 @@ namespace AZ
 
             return stagingBuffer;
         }
-    
+
         NullDescriptorManager& Device::GetNullDescriptorManager()
         {
             return m_nullDescriptorManager;
         }
-        
+
         AZStd::vector<RHI::Format> Device::GetValidSwapChainImageFormats(const RHI::WindowHandle& windowHandle) const
         {
             return AZStd::vector<RHI::Format>{RHI::Format::B8G8R8A8_UNORM};
