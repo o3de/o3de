@@ -739,7 +739,10 @@ namespace AzToolsFramework
     {
         const bool validIndex = (domIndex <= m_domOrderedChildren.size());
         AZ_Assert(validIndex, "trying to add an out-of-bounds child!");
-        m_domOrderedChildren.insert(m_domOrderedChildren.begin() + domIndex, childWidget);
+        if (validIndex)
+        {
+            m_domOrderedChildren.insert(m_domOrderedChildren.begin() + domIndex, childWidget);
+        }
     }
 
     void DPERowWidget::AddColumnWidget(QWidget* columnWidget, size_t domIndex, const AZ::Dom::Value& domValue)
