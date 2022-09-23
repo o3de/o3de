@@ -63,6 +63,7 @@ namespace AZ
             void Begin(CommandList& commandList) const;
             void End(CommandList& commandList) const;
 
+            //! Adds a barrier for a scope attachment resource to be emitted at a later time.
             template<class T>
             void QueueAttachmentBarrier(
                 const RHI::ScopeAttachment& attachment,
@@ -74,6 +75,7 @@ namespace AZ
                 QueueBarrierInternal(&attachment, slot, src, dst, barrier);
             }
 
+            //! Adds a barrier over a resource that is not a scope attachment that will be emitted at a later time.
             template<class T>
             void QueueBarrier(
                 BarrierSlot slot,
@@ -168,7 +170,7 @@ namespace AZ
             void OnFrameCompileEnd(RHI::FrameGraph& frameGraph) override;
             //////////////////////////////////////////////////////////////////////////
 
-            // Returns if a barrier can be converted to an implicit subpass barrier.
+            // Returns true if a barrier can be converted to an implicit subpass barrier.
             bool CanOptimizeBarrier(const Barrier& barrier, BarrierSlot slot) const;
 
             template<class T>
