@@ -276,7 +276,7 @@ namespace AzToolsFramework
         painter->setRenderHint(QPainter::Antialiasing, true);
         painter->setPen(borderLinePen);
 
-        if (IsLastVisibleChild(index, descendantIndex))
+        if (IsLastVisibleChild(index, descendantIndex, outlinerTreeView))
         {
             // This is the last visible entity in the prefab, so close the container
 
@@ -401,9 +401,9 @@ namespace AzToolsFramework
         painter->restore();
     }
 
-    bool PrefabUiHandler::IsLastVisibleChild(const QModelIndex& parent, const QModelIndex& child)
+    bool PrefabUiHandler::IsLastVisibleChild(const QModelIndex& parent, const QModelIndex& child, const QTreeView* outlinerTreeView)
     {
-        QModelIndex lastVisibleItemIndex = GetLastVisibleChild(parent);
+        QModelIndex lastVisibleItemIndex = GetLastVisibleChild(parent, outlinerTreeView);
         QModelIndex index = child;
 
         // GetLastVisibleChild returns an index set to the ColumnName column
@@ -415,7 +415,7 @@ namespace AzToolsFramework
         return index == lastVisibleItemIndex;
     }
 
-    QModelIndex PrefabUiHandler::GetLastVisibleChild(const QModelIndex& parent)
+    QModelIndex PrefabUiHandler::GetLastVisibleChild(const QModelIndex& parent, const QTreeView* outlinerTreeView)
     {
         auto model = parent.model();
         QModelIndex index = parent;
@@ -426,12 +426,14 @@ namespace AzToolsFramework
             index = index.siblingAtColumn(EntityOutlinerListModel::ColumnName);
         }
 
-        return Internal_GetLastVisibleChild(model, index);
+        return Internal_GetLastVisibleChild(model, index, outlinerTreeView);
     }
 
-    QModelIndex PrefabUiHandler::Internal_GetLastVisibleChild(const QAbstractItemModel* model, const QModelIndex& index)
+    QModelIndex PrefabUiHandler::Internal_GetLastVisibleChild(
+        const QAbstractItemModel* model, const QModelIndex& index, const QTreeView* outlinerTreeView)
     {
-        if (!model->hasChildren(index) || !index.data(EntityOutlinerListModel::ExpandedRole).value<bool>())
+
+        if (!model->hasChildren(index) || !outlinerTreeView->isExpanded(index))
         {
             return index;
         }
@@ -439,7 +441,7 @@ namespace AzToolsFramework
         int childCount = index.data(EntityOutlinerListModel::ChildCountRole).value<int>();
         QModelIndex lastChild = model->index(childCount - 1, EntityOutlinerListModel::ColumnName, index);
 
-        return Internal_GetLastVisibleChild(model, lastChild);
+        return Internal_GetLastVisibleChild(model, lastChild, outlinerTreeView);
     }
 
     bool PrefabUiHandler::OnOutlinerItemClick(const QPoint& position, const QStyleOptionViewItem& option, const QModelIndex& index) const

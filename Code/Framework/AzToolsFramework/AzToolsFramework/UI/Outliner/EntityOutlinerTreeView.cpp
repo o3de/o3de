@@ -77,6 +77,7 @@ namespace AzToolsFramework
                 if (modelRow.isValid())
                 {
                     CheckExpandedState(modelRow);
+                    RecursiveCheckExpandedStates(modelRow);
                 }
             }
         }

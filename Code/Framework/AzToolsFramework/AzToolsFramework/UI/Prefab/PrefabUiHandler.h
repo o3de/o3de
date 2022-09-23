@@ -57,9 +57,10 @@ namespace AzToolsFramework
         Prefab::PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
         Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;
 
-        static bool IsLastVisibleChild(const QModelIndex& parent, const QModelIndex& child);
-        static QModelIndex GetLastVisibleChild(const QModelIndex& parent);
-        static QModelIndex Internal_GetLastVisibleChild(const QAbstractItemModel* model, const QModelIndex& index);
+        static bool IsLastVisibleChild(const QModelIndex& parent, const QModelIndex& child, const QTreeView* outlinerTreeView);
+        static QModelIndex GetLastVisibleChild(const QModelIndex& parent, const QTreeView* outlinerTreeView);
+        static QModelIndex Internal_GetLastVisibleChild(
+            const QAbstractItemModel* model, const QModelIndex& index, const QTreeView* outlinerTreeView);
 
         void PaintDescendantBorder(
             QPainter* painter,
