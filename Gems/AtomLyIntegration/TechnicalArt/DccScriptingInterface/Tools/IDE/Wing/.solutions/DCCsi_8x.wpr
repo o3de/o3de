@@ -214,7 +214,7 @@ proj.launch-config = {loc('../../../../../../../../../sample-code-gems/py_gems/P
                       loc('../../../DCC/Blender/start.py'): ('project',
         ('',
          'launch-H3gT8EPtxXR6YyOq')),
-                      loc('../../../DCC/Maya/Scripts/Python/export/materials.py'): ('project',
+                      loc('../../../DCC/Maya/Scripts/Python/Export/materials.py'): ('project',
         ('',
          'launch-H3gT8EPtxXR6YyOq')),
                       loc('../../../DCC/Maya/Scripts/userSetup.py'): ('project',
