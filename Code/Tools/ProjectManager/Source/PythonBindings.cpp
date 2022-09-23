@@ -827,7 +827,7 @@ namespace O3DE::ProjectManager
         }
     }
 
-    AZ::Outcome<GemInfo> PythonBindings::CreateGem(const QString& templatePath, const GemInfo& gemInfo, bool registerGem)
+    AZ::Outcome<GemInfo> PythonBindings::CreateGem(const QString& templatePath, const GemInfo& gemInfo, bool registerGem/*=true*/)
     {
         using namespace pybind11::literals;
 
@@ -852,7 +852,7 @@ namespace O3DE::ProjectManager
                     "icon_path"_a = QString_To_Py_Path(gemInfo.m_iconPath),
                     "documentation_url"_a = QString_To_Py_String(gemInfo.m_documentationLink),
                     "repo_uri"_a = QString_To_Py_String(gemInfo.m_repoUri),
-                    "no_register"_a = registerGem)
+                    "no_register"_a = !registerGem)
                     ;
                 if (createGemResult.cast<int>() == 0)
                 {
