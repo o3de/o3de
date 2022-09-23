@@ -9,8 +9,11 @@
 #include <Atom/Utils/ImGuiFeatureConfig.h>
 
 #include <AzCore/std/containers/array.h>
-#include <imgui/imgui.h>
 #include <AzCore/Console/Console.h>
+#include <imgui/imgui.h>
+#include <Atom/RPI.Public/Pass/Pass.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/RPISystemInterface.h>
 
 AZ_CVAR_EXTERNED(float, r_renderScale);
 AZ_CVAR_EXTERNED(float, r_renderScaleMin);
@@ -32,10 +35,37 @@ namespace AZ::Render
                                                                  Fsr2Preset{ "Medium (2x upscale)", 2.f },
                                                                  Fsr2Preset{ "Low (3x upscale)", 3.f } };
 
-    void ImGuiFeatureConfig::Draw(bool& draw)
+    void ImGuiFeatureConfig::Draw(bool& draw, AZ::RPI::Pass* rootPass)
     {
         if (ImGui::Begin("Feature Config", &draw, 0))
         {
+            // MSAA configuration
+            if (rootPass)
+            {
+                ImGui::Text("MSAA State");
+                RPI::RPISystemInterface* rpiSystem = RPI::RPISystemInterface::Get();
+                const RHI::MultisampleState& currentMSAA = rpiSystem->GetApplicationMultisampleState();
+
+                const AZStd::array<RHI::MultisampleState, 4> msaaPresets = { RHI::MultisampleState{ 1, 0 },
+                                                                             RHI::MultisampleState{ 2, 0 },
+                                                                             RHI::MultisampleState{ 4, 0 },
+                                                                             RHI::MultisampleState{ 8, 0 } };
+
+                const AZStd::array<char const*, 4> labels = { "1x", "2x", "4x", "8x" };
+
+                for (size_t i = 0; i != msaaPresets.size(); ++i)
+                {
+                    if (ImGui::RadioButton(labels[i], currentMSAA.m_samples == msaaPresets[i].m_samples))
+                    {
+                        rpiSystem->SetApplicationMultisampleState(msaaPresets[i]);
+                    }
+                    ImGui::SameLine();
+                }
+                ImGui::NewLine();
+
+                ImGui::Separator();
+            }
+
             float renderScale = r_renderScale;
             float renderScaleMin = r_renderScaleMin;
             float renderScaleMax = r_renderScaleMax;

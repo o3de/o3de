@@ -38,6 +38,8 @@
 #include <RHI/Sampler.h>
 #include <RHI/SemaphoreAllocator.h>
 
+#include <ffx_fsr2.h>
+
 namespace AZ
 {
     namespace Vulkan
@@ -141,6 +143,14 @@ namespace AZ
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements(const RHI::ImageDescriptor& descriptor) override;
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements(const RHI::BufferDescriptor& descriptor) override;
             void ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction) override;
+            bool HasFsr2Support() const override { return true; }
+            RHI::ResultCode CreateFsr2Context(FfxFsr2Context& outContext, const FfxFsr2ContextDescription& desc) override;
+            RHI::ResultCode PopulateFsr2Resource(
+                FfxFsr2Context& context,
+                FfxResource& outResource,
+                const RHI::ImageView& imageVew,
+                const wchar_t* name,
+                bool unorderedAccess) override;
             //////////////////////////////////////////////////////////////////////////
 
             void InitFeaturesAndLimits(const PhysicalDevice& physicalDevice);
@@ -156,6 +166,7 @@ namespace AZ
             //! Flags will be corrected if required features or extensions are not enabled.
             VkBufferUsageFlags GetBufferUsageFlagBitsUnderRestrictions(RHI::BufferBindFlags bindFlags) const;
 
+            VkPhysicalDevice m_nativePhysicalDevice = VK_NULL_HANDLE;
             VkDevice m_nativeDevice = VK_NULL_HANDLE;
             VkPhysicalDeviceFeatures m_enabledDeviceFeatures{};
             VkPipelineStageFlags m_supportedPipelineStageFlagsMask = std::numeric_limits<VkPipelineStageFlags>::max();
@@ -192,6 +203,9 @@ namespace AZ
 
             RHI::Ptr<NullDescriptorManager> m_nullDescriptorManager;
             bool m_isXrNativeDevice = false;
+
+            AZStd::unique_ptr<char[]> m_fsr2Scratch;
+            FfxFsr2Interface m_fsr2Interface;
         };
 
         template<typename ObjectType, typename ...Args>

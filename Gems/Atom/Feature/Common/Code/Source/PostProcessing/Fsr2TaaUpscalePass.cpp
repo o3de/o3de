@@ -35,8 +35,67 @@ AZ_CVAR(
     AZ::ConsoleFunctorFlags::DontReplicate,
     "If FSR2 sharpening is enabled, modulates the strenght of the sharpening.");
 
+#pragma optimize("", off)
 namespace AZ::Render
 {
+    // NOTE: FSR2 appears to have issues currently dealing with multiple active live contexts.
+    // If we tie the FSR2 context lifetime to the pass itself, we may end up with multiple live
+    // contexts during pass/pipeline creation for a brief time. As such, we maintain a single
+    // static ref-counted instance of the context here.
+    struct Fsr2Context
+    {
+        RHI::ResultCode Create(const FfxFsr2ContextDescription& desc, RHI::Device& device)
+        {
+            if (m_refCount > 0 && memcmp(&desc, &m_desc, sizeof(desc)) == 0)
+            {
+                // The active context was created in a previous frame with a matching description
+                return RHI::ResultCode::Success;
+            }
+
+            if (m_active)
+            {
+                // There's already an active context created with a different description than
+                // what's requested. Destroy the active context first.
+                ffxFsr2ContextDestroy(&m_context);
+                m_active = false;
+            }
+
+            RHI::ResultCode result = device.CreateFsr2Context(m_context, desc);
+            if (result == RHI::ResultCode::Success)
+            {
+                memcpy(&m_desc, &desc, sizeof(desc));
+                m_active = true;
+            }
+            return result;
+        }
+
+        void Retain()
+        {
+            ++m_refCount;
+        }
+
+        void Release()
+        {
+            if (--m_refCount == 0 && m_active)
+            {
+                ffxFsr2ContextDestroy(&m_context);
+                m_active = false;
+            }
+        }
+
+        ~Fsr2Context()
+        {
+            AZ_Assert(m_refCount == 0, "Static FSR2 context has active references at program exit");
+        }
+
+        int m_refCount = 0;
+        bool m_active = false;
+        FfxFsr2ContextDescription m_desc{};
+        FfxFsr2Context m_context{};
+    };
+
+    Fsr2Context s_fsr2Context;
+
     void Fsr2TaaUpscalePassData::Reflect(ReflectContext* context)
     {
         if (auto* sc = azrtti_cast<SerializeContext*>(context))
@@ -64,14 +123,13 @@ namespace AZ::Render
         {
             SetEnabled(false);
         }
+
+        s_fsr2Context.Retain();
     }
 
     Fsr2TaaUpscalePass::~Fsr2TaaUpscalePass()
     {
-        if (IsFsr2ContextValid())
-        {
-            ffxFsr2ContextDestroy(&m_fsr2Context);
-        }
+        s_fsr2Context.Release();
     }
 
     void Fsr2TaaUpscalePass::MaybeCreateFsr2Context()
@@ -112,28 +170,14 @@ namespace AZ::Render
         fsr2Desc.maxRenderSize.width = aznumeric_cast<uint32_t>(invRenderScaleMin * fsr2Desc.displaySize.width);
         fsr2Desc.maxRenderSize.height = aznumeric_cast<uint32_t>(invRenderScaleMin * fsr2Desc.displaySize.height);
 
-        // Check if the flags or render/display dimensions since the last time the context was created (or
-        // if the context was created at all) and create the FSR2 context if needed.
-        if (memcmp(&fsr2Desc, &m_fsr2ContextDesc, sizeof(FfxFsr2ContextDescription)) != 0)
+        RHI::ResultCode result = s_fsr2Context.Create(fsr2Desc, *RHI::RHISystemInterface::Get()->GetDevice());
+        if (result != RHI::ResultCode::Success)
         {
-            if (IsFsr2ContextValid())
-            {
-                ffxFsr2ContextDestroy(&m_fsr2Context);
-            }
-
-            m_lastFrameTimeMS = RHI::RHISystemInterface::Get()->GetCpuFrameTime();
-
-            AZ_Printf("Fsr2TaaUpscalePass", "Creating FSR2 context");
-            m_fsr2ContextDesc = fsr2Desc;
-            RHI::ResultCode result = RHI::RHISystemInterface::Get()->GetDevice()->CreateFsr2Context(m_fsr2Context, fsr2Desc);
-            if (result != RHI::ResultCode::Success)
-            {
-                // A 0 display size on the FSR2 context is a sentinel for failed context creation
-                m_fsr2ContextDesc.displaySize.width = 0;
-
-                AZ_Error("Fsr2TaaUpscalePass", false, "Failed to create FSR2 context");
-            }
+            AZ_Error("Fsr2TaaUpscalePass", false, "Failed to create FSR2 context");
+            return;
         }
+
+        m_lastFrameTimeMS = RHI::RHISystemInterface::Get()->GetCpuFrameTime();
     }
 
     void Fsr2TaaUpscalePass::ResetInternal()
@@ -143,6 +187,11 @@ namespace AZ::Render
 
     void Fsr2TaaUpscalePass::BuildInternal()
     {
+        if (!IsEnabled())
+        {
+            return;
+        }
+
         m_inputColor = FindAttachmentBinding(Name{ "InputColor" });
         AZ_Error("Fsr2TaaUpscalePass", m_inputColor, "Fsr2TaaUpscalePass missing InputColor attachment.");
 
@@ -198,7 +247,8 @@ namespace AZ::Render
         // Determine the jitter offset based on current render scale. The sequence length grows as a function
         // of the upscale amount. The FSR2 provided jitter sequence is a Halton sequence (outputs are in
         // unit pixel space).
-        int jitterPhaseCount = ffxFsr2GetJitterPhaseCount(m_fsr2DispatchDesc.renderSize.width, m_fsr2ContextDesc.displaySize.width);
+        int jitterPhaseCount =
+            ffxFsr2GetJitterPhaseCount(m_fsr2DispatchDesc.renderSize.width, s_fsr2Context.m_desc.displaySize.width);
         ffxFsr2GetJitterOffset(&m_fsr2DispatchDesc.jitterOffset.x, &m_fsr2DispatchDesc.jitterOffset.y, ++m_frameCount, jitterPhaseCount);
 
         // Transfer from [-0.5, 0.5] to [-1/w, 1/w] in x and [-1/h, 1/h] in y
@@ -207,7 +257,6 @@ namespace AZ::Render
 
         RPI::ViewPtr view = GetRenderPipeline()->GetDefaultView();
         view->SetClipSpaceOffset(-clipSpaceJitter.GetX(), -clipSpaceJitter.GetY());
-        // FSR2 expects negative velocities in the motion vector buffer (current - previous clip position)
         view->SetMotionVectorScale(-1.f, -1.f);
 
         Vector2 nearFar = view->GetClipNearFar();
@@ -283,18 +332,18 @@ namespace AZ::Render
 
         RHI::Device* device = RHI::RHISystemInterface::Get()->GetDevice();
 
-        const RHI::Image* inputColor = context.GetImage(m_inputColor->GetAttachment()->GetAttachmentId());
-        device->PopulateFsr2Resource(m_fsr2Context, m_fsr2DispatchDesc.color, *inputColor, L"FSR2 Input Color", false);
+        const RHI::ImageView* inputColor = context.GetImageView(m_inputColor->GetAttachment()->GetAttachmentId());
+        device->PopulateFsr2Resource(s_fsr2Context.m_context, m_fsr2DispatchDesc.color, *inputColor, L"FSR2 Input Color", false);
 
-        const RHI::Image* inputDepth = context.GetImage(m_inputDepth->GetAttachment()->GetAttachmentId());
-        device->PopulateFsr2Resource(m_fsr2Context, m_fsr2DispatchDesc.depth, *inputDepth, L"FSR2 Input Depth", false);
+        const RHI::ImageView* inputDepth = context.GetImageView(m_inputDepth->GetAttachment()->GetAttachmentId());
+        device->PopulateFsr2Resource(s_fsr2Context.m_context, m_fsr2DispatchDesc.depth, *inputDepth, L"FSR2 Input Depth", false);
 
-        const RHI::Image* inputMotionVectors = context.GetImage(m_inputMotionVectors->GetAttachment()->GetAttachmentId());
+        const RHI::ImageView* inputMotionVectors = context.GetImageView(m_inputMotionVectors->GetAttachment()->GetAttachmentId());
         device->PopulateFsr2Resource(
-            m_fsr2Context, m_fsr2DispatchDesc.motionVectors, *inputMotionVectors, L"FSR2 Input Motion Vectors", false);
+            s_fsr2Context.m_context, m_fsr2DispatchDesc.motionVectors, *inputMotionVectors, L"FSR2 Input Motion Vectors", false);
 
-        const RHI::Image* outputColor = context.GetImage(m_outputColor->GetAttachment()->GetAttachmentId());
-        device->PopulateFsr2Resource(m_fsr2Context, m_fsr2DispatchDesc.output, *outputColor, L"FSR2 Output Color", true);
+        const RHI::ImageView* outputColor = context.GetImageView(m_outputColor->GetAttachment()->GetAttachmentId());
+        device->PopulateFsr2Resource(s_fsr2Context.m_context, m_fsr2DispatchDesc.output, *outputColor, L"FSR2 Output Color", true);
     }
 
     void Fsr2TaaUpscalePass::BuildCommandList(const RHI::FrameGraphExecuteContext& context)
@@ -308,16 +357,12 @@ namespace AZ::Render
             m_timestampQuery->BeginQuery(context);
         }
 
-        context.GetCommandList()->Submit(m_fsr2Context, m_fsr2DispatchDesc);
+        context.GetCommandList()->Submit(s_fsr2Context.m_context, m_fsr2DispatchDesc);
 
         if (m_timestampQuery && context.GetCommandListIndex() == context.GetCommandListCount() - 1)
         {
             m_timestampQuery->EndQuery(context);
         }
     }
-
-    bool Fsr2TaaUpscalePass::IsFsr2ContextValid() const
-    {
-        return m_fsr2ContextDesc.displaySize.width != 0;
-    }
 } // namespace AZ::Render
+#pragma optimize("", on)

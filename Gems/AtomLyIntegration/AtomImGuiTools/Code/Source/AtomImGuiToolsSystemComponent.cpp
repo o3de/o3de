@@ -79,17 +79,19 @@ namespace AtomImGuiTools
 #if defined(IMGUI_ENABLED)
     void AtomImGuiToolsSystemComponent::OnImGuiUpdate()
     {
+        AZ::RPI::ParentPass* rootPass = AZ::RPI::PassSystemInterface::Get()->GetRootPass().get();
+
         if (m_showFeatureConfig)
         {
-            m_imguiFeatureConfig.Draw(m_showFeatureConfig);
+            m_imguiFeatureConfig.Draw(m_showFeatureConfig, rootPass);
         }
         if (m_showPassTree)
         {
-            m_imguiPassTree.Draw(m_showPassTree, AZ::RPI::PassSystemInterface::Get()->GetRootPass().get());
+            m_imguiPassTree.Draw(m_showPassTree, rootPass);
         }
         if (m_showGpuProfiler)
         {
-            m_imguiGpuProfiler.Draw(m_showGpuProfiler, AZ::RPI::PassSystemInterface::Get()->GetRootPass().get());
+            m_imguiGpuProfiler.Draw(m_showGpuProfiler, rootPass);
         }
         if (m_showTransientAttachmentProfiler)
         {

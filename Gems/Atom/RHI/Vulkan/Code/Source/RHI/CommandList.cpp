@@ -418,10 +418,10 @@ namespace AZ
             }            
         }
 
-        void CommandList::Submit([[maybe_unused]] FfxFsr2Context& context, [[maybe_unused]] FfxFsr2DispatchDescription& fsr2DispatchItem)
+        void CommandList::Submit(FfxFsr2Context& context, FfxFsr2DispatchDescription& fsr2DispatchItem)
         {
-            // Provide a VK backend for FSR2
-            AZ_Assert(false, "Not implemented");
+            fsr2DispatchItem.commandList = m_nativeCommandBuffer;
+            ffxFsr2ContextDispatch(&context, &fsr2DispatchItem);
         }
 
         void CommandList::Submit([[maybe_unused]] const RHI::DispatchRaysItem& dispatchRaysItem, uint32_t submitIndex)

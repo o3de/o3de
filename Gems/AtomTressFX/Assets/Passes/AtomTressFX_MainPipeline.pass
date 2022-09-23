@@ -527,13 +527,6 @@
                                 "Pass": "DebugOverlayPass",
                                 "Attachment": "InputOutput"
                             }
-                        },
-                        {
-                            "LocalSlot": "DepthInputOutput",
-                            "AttachmentRef": {
-                                "Pass": "HairParentPass",
-                                "Attachment": "Depth"
-                            }
                         }
                     ]
                 },

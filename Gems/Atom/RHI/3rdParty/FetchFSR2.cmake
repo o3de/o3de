@@ -23,8 +23,7 @@ if(NOT TARGET ffx_fsr2_api_x64)
     set(FSR2_API_LIBS "ffx_fsr2_api_x64")
     # The ATOMFSR2_VK and ATOMFSR2_DX12 PAL traits determine if we should compile the VK and DX12 FSR2 backends
 
-    # TODO: FIX FSR2 VK
-    if(OFF)
+    if(PAL_TRAIT_ATOMFSR2_VK)
         set(FFX_FSR2_API_VK ON CACHE BOOL "")
         list(APPEND FSR2_API_LIBS "ffx_fsr2_api_vk_x64")
     else()
@@ -52,7 +51,7 @@ if(NOT TARGET ffx_fsr2_api_x64)
     FetchContent_Declare(
         FSR2
         GIT_REPOSITORY https://github.com/jeremyong-az/FidelityFX-FSR2.git
-        GIT_TAG d5e2d05
+        GIT_TAG 281ff42
         GIT_SUBMODULES
         GIT_SUBMODULES_RECURSE OFF
         GIT_SHALLOW ON
@@ -69,7 +68,7 @@ if(NOT TARGET ffx_fsr2_api_x64)
     if(FFX_FSR2_API_VK)
         set(RHI_CODE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../../RHI/Vulkan/Code")
         o3de_pal_dir(vk_pal_dir ${RHI_CODE_PATH}/Include/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
-        target_compile_definitions(ffx_fsr2_api_vk_x64 PUBLIC O3DE_FSR2_VK=1)
+        target_compile_definitions(ffx_fsr2_api_vk_x64 PUBLIC O3DE_FSR2_VK=1 PRIVATE _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
         target_include_directories(
             ffx_fsr2_api_vk_x64
             PUBLIC
@@ -78,13 +77,13 @@ if(NOT TARGET ffx_fsr2_api_x64)
             ${RHI_CODE_PATH}/Include/Atom/RHI.Loader/Glad
             ${vk_pal_dir}
         )
-        target_link_libraries(ffx_fsr2_api_vk_x64 PUBLIC 3rdParty::glad_vulkan)
+        target_link_libraries(ffx_fsr2_api_vk_x64 PUBLIC AZ::AzCore 3rdParty::glad_vulkan)
         add_library(3rdParty::ffx_fsr2_api_vk_x64 ALIAS ffx_fsr2_api_vk_x64)
     else()
         target_compile_definitions(ffx_fsr2_api_x64 PUBLIC O3DE_FSR2_VK=0)
     endif()
     if(FFX_FSR2_API_DX12)
-        target_compile_definitions(ffx_fsr2_api_dx12_x64 PUBLIC O3DE_FSR2_DX12=1)
+        target_compile_definitions(ffx_fsr2_api_dx12_x64 PUBLIC O3DE_FSR2_DX12=1 PRIVATE _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
         add_library(3rdParty::ffx_fsr2_api_dx12_x64 ALIAS ffx_fsr2_api_dx12_x64)
     else()
         target_compile_definitions(ffx_fsr2_api_x64 PUBLIC O3DE_FSR2_DX12=0)

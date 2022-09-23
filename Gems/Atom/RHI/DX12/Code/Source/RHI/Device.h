@@ -173,7 +173,7 @@ namespace AZ
             RHI::ResultCode PopulateFsr2Resource(
                 FfxFsr2Context& context,
                 FfxResource& outResource,
-                const RHI::Image& image,
+                const RHI::ImageView& imageView,
                 const wchar_t* name,
                 bool unorderedAccess) override;
             //////////////////////////////////////////////////////////////////////////

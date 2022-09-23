@@ -8,6 +8,11 @@
 
 #pragma once
 
+namespace AZ::RPI
+{
+    class Pass;
+}
+
 namespace AZ::Render
 {
     //! The ImGuiFeatureConfig menu provides a convenient developer-facing frontend for
@@ -16,6 +21,6 @@ namespace AZ::Render
     {
     public:
         //! Draws the ImGuiFeatureConfig window
-        void Draw(bool& draw);
+        void Draw(bool& draw, AZ::RPI::Pass* rootPass);
     };
 } // namespace AZ::Render

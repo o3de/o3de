@@ -59,8 +59,6 @@ namespace AZ::Render
         void CompileResources(const RHI::FrameGraphCompileContext& context) override;
         void BuildCommandList(const RHI::FrameGraphExecuteContext& context) override;
 
-        bool IsFsr2ContextValid() const;
-
         // Pass attachments
         RPI::PassAttachmentBinding* m_inputColor = nullptr;
         RPI::PassAttachmentBinding* m_inputDepth = nullptr;
@@ -72,8 +70,6 @@ namespace AZ::Render
         RPI::TimestampResult m_timestampResult;
 
         // State needed to submit an FSR2 dispatch
-        FfxFsr2ContextDescription m_fsr2ContextDesc{};
-        FfxFsr2Context m_fsr2Context{};
         FfxFsr2DispatchDescription m_fsr2DispatchDesc{};
         uint32_t m_frameCount = 0u;
         double m_lastFrameTimeMS = 0.0;

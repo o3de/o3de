@@ -12,6 +12,7 @@
 #include <RHI/Conversions.h>
 #include <RHI/DescriptorContext.h>
 #include <RHI/Fence.h>
+#include <RHI/ImageView.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
 #include <Atom/RHI.Reflect/DX12/PlatformLimitsDescriptor.h>
 #include <AzCore/std/parallel/lock.h>
@@ -697,9 +698,9 @@ namespace AZ
         }
 
         RHI::ResultCode Device::PopulateFsr2Resource(
-            FfxFsr2Context& context, FfxResource& outResource, const RHI::Image& image, const wchar_t* name, bool unorderedAccess)
+            FfxFsr2Context& context, FfxResource& outResource, const RHI::ImageView& imageView, const wchar_t* name, bool unorderedAccess)
         {
-            const DX12::Image& dx12Image = reinterpret_cast<const DX12::Image&>(image);
+            const DX12::Image& dx12Image = reinterpret_cast<const DX12::Image&>(imageView.GetImage());
             outResource = ffxGetResourceDX12(
                 &context,
                 dx12Image.GetMemoryView().GetMemory(),

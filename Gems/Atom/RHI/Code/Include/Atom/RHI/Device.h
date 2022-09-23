@@ -32,7 +32,7 @@ namespace AZ
 {
     namespace RHI
     {
-        class Image;
+        class ImageView;
 
         //! The Device is a context for managing GPU state and memory on a physical device. The user creates
         //! a device instance from a PhysicalDevice. Each device has its own capabilities and limits, and can
@@ -163,11 +163,11 @@ namespace AZ
                 return RHI::ResultCode::Unimplemented;
             }
 
-            //! Convert an RHI::Image to a resource type FSR2 expects
+            //! Convert an RHI::ImageView to a resource type FSR2 expects
             virtual RHI::ResultCode PopulateFsr2Resource(
                 [[maybe_unused]] FfxFsr2Context& context,
                 [[maybe_unused]] FfxResource& outResource,
-                [[maybe_unused]] const Image& image,
+                [[maybe_unused]] const ImageView& imageView,
                 [[maybe_unused]] const wchar_t* name,
                 [[maybe_unused]] bool unorderedAccess)
             {

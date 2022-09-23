@@ -8,8 +8,8 @@
             "PassClass": "RasterPass",
             "Slots": [
                 {
-                    "Name": "DepthInputOutput",
-                    "SlotType": "InputOutput",
+                    "Name": "DepthStencil",
+                    "SlotType": "Output",
                     "ScopeAttachmentUsage": "DepthStencil",
                     "LoadStoreAction": {
                         "ClearValue": {
@@ -22,6 +22,30 @@
                     "Name": "InputOutput",
                     "SlotType": "InputOutput",
                     "ScopeAttachmentUsage": "RenderTarget"
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "DepthStencil",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "InputOutput"
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "D32_FLOAT_S8X24_UINT",
+                        "SharedQueueMask": "Graphics"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "DepthStencil",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "DepthStencil"
+                    }
                 }
             ]
         }

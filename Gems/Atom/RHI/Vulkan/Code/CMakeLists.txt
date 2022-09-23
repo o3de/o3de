@@ -78,8 +78,6 @@ endif()
 
 include(../../3rdParty/FetchFSR2.cmake)
 
-# TODO: FSR2
-
 ly_add_target(
     NAME Atom_RHI_Vulkan.Reflect STATIC
     NAMESPACE Gem
@@ -118,6 +116,8 @@ ly_add_target(
             ${pal_include_dir}
     BUILD_DEPENDENCIES
         PUBLIC
+            3rdParty::ffx_fsr2_api_x64
+            3rdParty::ffx_fsr2_api_vk_x64
             AZ::AzCore
             AZ::AzFramework
             Gem::Atom_RHI.Reflect

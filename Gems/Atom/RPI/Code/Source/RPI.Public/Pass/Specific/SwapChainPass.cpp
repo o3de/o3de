@@ -19,7 +19,7 @@
 AZ_CVAR(
     float,
     r_renderScale,
-    2.f,
+    1.f,
     nullptr,
     AZ::ConsoleFunctorFlags::DontReplicate,
     "When set to a number greater than 1.0 (the minimum allowed), renders the scene at a reduced resolution, "

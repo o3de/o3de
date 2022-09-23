@@ -318,7 +318,7 @@ namespace AZ
 
         const Vector2 View::GetClipNearFar() const
         {
-            return Vector2{ m_nearZ_farZ_farZTimesNearZ_farZMinusNearZ.GetX(), m_nearZ_farZ_farZTimesNearZ_farZMinusNearZ.GetY() };
+            return Vector2{ m_linearizeDepthConstants.GetX(), m_linearizeDepthConstants.GetY() };
         }
 
         bool View::HasDrawListTag(RHI::DrawListTag drawListTag)

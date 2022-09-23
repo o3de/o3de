@@ -29,6 +29,36 @@
 #include <RHI/SwapChain.h>
 #include <RHI/WSISurface.h>
 #include <Vulkan_Traits_Platform.h>
+#include <vk/ffx_fsr2_vk.h>
+
+static const char* FfxErrorString(FfxErrorCode error)
+{
+#define FFX_ERROR_CASE(error)                                                                                                              \
+    case error:                                                                                                                            \
+        return #error
+
+    switch (error)
+    {
+        FFX_ERROR_CASE(FFX_OK);
+        FFX_ERROR_CASE(FFX_ERROR_INVALID_POINTER);
+        FFX_ERROR_CASE(FFX_ERROR_INVALID_ALIGNMENT);
+        FFX_ERROR_CASE(FFX_ERROR_INVALID_SIZE);
+        FFX_ERROR_CASE(FFX_EOF);
+        FFX_ERROR_CASE(FFX_ERROR_INVALID_PATH);
+        FFX_ERROR_CASE(FFX_ERROR_EOF);
+        FFX_ERROR_CASE(FFX_ERROR_MALFORMED_DATA);
+        FFX_ERROR_CASE(FFX_ERROR_OUT_OF_MEMORY);
+        FFX_ERROR_CASE(FFX_ERROR_INCOMPLETE_INTERFACE);
+        FFX_ERROR_CASE(FFX_ERROR_INVALID_ENUM);
+        FFX_ERROR_CASE(FFX_ERROR_INVALID_ARGUMENT);
+        FFX_ERROR_CASE(FFX_ERROR_OUT_OF_RANGE);
+        FFX_ERROR_CASE(FFX_ERROR_NULL_DEVICE);
+        FFX_ERROR_CASE(FFX_ERROR_BACKEND_API_ERROR);
+        FFX_ERROR_CASE(FFX_ERROR_INSUFFICIENT_MEMORY);
+    default:
+        return "Unknown FidelityFX error!";
+    }
+}
 
 namespace AZ
 {
@@ -68,6 +98,7 @@ namespace AZ
         RHI::ResultCode Device::InitInternal(RHI::PhysicalDevice& physicalDeviceBase)
         {
             auto& physicalDevice = static_cast<Vulkan::PhysicalDevice&>(physicalDeviceBase);
+            m_nativePhysicalDevice = physicalDevice.GetNativePhysicalDevice();
             RawStringList requiredLayers = GetRequiredLayers();
             RawStringList requiredExtensions = GetRequiredExtensions();
 
@@ -782,6 +813,68 @@ namespace AZ
         void Device::ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction)
         {
             m_releaseQueue.Notify(notifyFunction);
+        }
+
+        RHI::ResultCode Device::CreateFsr2Context(FfxFsr2Context& outContext, const FfxFsr2ContextDescription& desc)
+        {
+            if (!m_fsr2Scratch)
+            {
+                size_t scratchSize = ffxFsr2GetScratchMemorySizeVK(m_nativePhysicalDevice, GetContext().EnumerateDeviceExtensionProperties);
+                m_fsr2Scratch = AZStd::make_unique<char[]>(scratchSize);
+                FfxErrorCode error = ffxFsr2GetInterfaceVK(
+                    &m_fsr2Interface,
+                    m_fsr2Scratch.get(),
+                    scratchSize,
+                    m_nativePhysicalDevice,
+                    GetContext().GetDeviceProcAddr,
+                    GetContext().EnumerateDeviceExtensionProperties,
+                    GetContext().GetPhysicalDeviceMemoryProperties,
+                    GetContext().GetPhysicalDeviceProperties,
+                    GetContext().GetPhysicalDeviceProperties2,
+                    GetContext().GetPhysicalDeviceFeatures2);
+
+                if (error != FFX_OK)
+                {
+                    AZ_Error("Vulkan::Device", false, "Failed to initialize FSR2 VK RHI interface table (%s)", FfxErrorString(error));
+                    return RHI::ResultCode::Fail;
+                }
+            }
+
+            FfxFsr2ContextDescription clonedDesc = desc;
+            clonedDesc.callbacks = m_fsr2Interface;
+            clonedDesc.device = m_nativeDevice;
+
+            FfxErrorCode error = ffxFsr2ContextCreate(&outContext, &clonedDesc);
+            if (error != FFX_OK)
+            {
+                AZ_Error("Vulkan::Device", false, "Failed to create FSR2 Vulkan RHI context (%s)", FfxErrorString(error));
+                return RHI::ResultCode::Fail;
+            }
+
+            return RHI::ResultCode::Success;
+        }
+
+        RHI::ResultCode Device::PopulateFsr2Resource(
+                FfxFsr2Context& context,
+                FfxResource& outResource,
+                const RHI::ImageView& imageView,
+                const wchar_t* name,
+                bool unorderedAccess)
+        {
+            const Vulkan::ImageView& vulkanImageView = reinterpret_cast<const Vulkan::ImageView&>(imageView);
+            const Vulkan::Image& vulkanImage = reinterpret_cast<const Vulkan::Image&>(imageView.GetImage());
+            const auto& descriptor = vulkanImage.GetDescriptor();
+            outResource = ffxGetTextureResourceVK(
+                &context,
+                vulkanImage.GetNativeImage(),
+                vulkanImageView.GetNativeImageView(),
+                descriptor.m_size.m_width,
+                descriptor.m_size.m_height,
+                ConvertFormat(descriptor.m_format),
+                name,
+                unorderedAccess ? FFX_RESOURCE_STATE_UNORDERED_ACCESS : FFX_RESOURCE_STATE_COMPUTE_READ);
+
+            return RHI::ResultCode::Success;
         }
 
         void Device::InitFeaturesAndLimits(const PhysicalDevice& physicalDevice)
