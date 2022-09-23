@@ -48,6 +48,7 @@ set(FILES
     GenericStreamMock.h
     GenericStreamTests.cpp
     Memory.cpp
+    Metrics/EventLoggerFactoryTests.cpp
     Module.cpp
     ModuleTestBus.h
     OrderedEventBenchmarks.cpp
@@ -68,14 +69,14 @@ set(FILES
     StatisticalProfilerTests.cpp
     StreamerTests.cpp
     StringFunc.cpp
-    SystemFile.cpp
+    SystemFileTest.cpp
+    SystemFileStreamTest.cpp
     TaskTests.cpp
     TickBusTest.cpp
     UUIDTests.cpp
     XML.cpp
     Debug/LocalFileEventLoggerTests.cpp
     Debug/Trace.cpp
-    Debug/UnhandledExceptions.cpp
     Name/NameJsonSerializerTests.cpp
     Name/NameBenchmarks.cpp
     Name/NameTests.cpp
@@ -85,6 +86,7 @@ set(FILES
     Settings/SettingsRegistryTests.cpp
     Settings/SettingsRegistryConsoleUtilsTests.cpp
     Settings/SettingsRegistryMergeUtilsTests.cpp
+    Settings/SettingsRegistryOriginTrackerTests.cpp
     Settings/SettingsRegistryScriptUtilsTests.cpp
     Settings/SettingsRegistryVisitorUtilsTests.cpp
     Streamer/BlockCacheTests.cpp
@@ -98,6 +100,7 @@ set(FILES
     Streamer/StreamStackEntryMock.h
     Streamer/StreamStackEntryTests.cpp
     Serialization/Json/ArraySerializerTests.cpp
+    Serialization/Json/AnySerializerTests.cpp
     Serialization/Json/BaseJsonSerializerFixture.h
     Serialization/Json/BaseJsonSerializerTests.cpp
     Serialization/Json/BasicContainerSerializerTests.cpp
@@ -222,6 +225,7 @@ set(FILES
     AZStd/Parallel.cpp
     AZStd/RangesAlgorithmTests.cpp
     AZStd/RangesTests.cpp
+    AZStd/RangesUtilityTests.cpp
     AZStd/RangesViewTests.cpp
     AZStd/ScopedLockTests.cpp
     AZStd/SetsIntrusive.cpp

@@ -1,11 +1,10 @@
----
-Copyright (c) Contributors to the Open 3D Engine Project.For complete copyright and license terms please see the LICENSE at the root of this distribution.
-
-SPDX-License-Identifier: Apache-2.0 OR MIT
-
----
-
 # DccScriptingInterface ( aka DCCsi )
+
+###### Status: Prototype
+
+###### Version: 0.0.1
+
+###### Support: Wing Pro 8+, currently Windows only
 
 The *DccScriptingInterface* is a Gem for O3DE to extend and interface with dcc tools in the python ecosystem. Each dcc tool may have it's own specific version of python, most are some version of py3+. O3DE provides an install of py3+ and manages package dependencies with requirements.txt files and the cmake build system.
 
@@ -115,7 +114,7 @@ Note: most DCC tools come with their own managed Python, and many are Qt based a
 
 - config.py will always procedurally stand up core access to O3DE
   
-  - within the module this is the method `config.pyinit_o3de_core()`
+  - within the module this is the method `config.init_o3de_core()`
 
 - config.py can optionally bootstrap access to O3DE python
   
@@ -187,3 +186,11 @@ config.py comes with the ability to export the settings and write them to the se
 Additional, the settings can be written to and stored in any user specified location, by using the following cli flag:
 
 - dccsi > `python config.py --export-settings="C:\temp\dccs.settings.json"`
+
+```
+Copyright (c) Contributors to the Open 3D Engine Project.  For complete
+copyright and license terms please see the LICENSE at the root of this
+distribution.
+
+SPDX-License-Identifier: Apache-2.0 OR MIT
+```

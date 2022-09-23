@@ -39,7 +39,7 @@ namespace Vegetation
         void AddDescriptorEntityId(AZ::EntityId entityId);
     };
 
-    static const AZ::Uuid DescriptorListCombinerComponentTypeId = "{1A1267EA-8A29-42AE-A385-BB0E60899EEF}";
+    inline constexpr AZ::TypeId DescriptorListCombinerComponentTypeId{ "{1A1267EA-8A29-42AE-A385-BB0E60899EEF}" };
 
     /**
     * Retrieve a list of descriptors from multiple providers

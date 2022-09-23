@@ -87,7 +87,7 @@ namespace AZ
                  * Save manifest to file. Overwrites the file in case it already exists and creates a new file if not.
                  * @param absoluteFilePath the absolute path of the file you want to save to.
                  * @param context If no serialize context was specified, it will get the serialize context from the application component bus.
-                 * @result True in case saving went all fine, false if an error occured.
+                 * @result True in case saving went all fine, false if an error occurred.
                  */
                 bool SaveToFile(const AZStd::string& absoluteFilePath, SerializeContext* context = nullptr);
 
@@ -98,7 +98,10 @@ namespace AZ
                 static void Reflect(ReflectContext* context);
                 static bool VersionConverter(SerializeContext& context, SerializeContext::DataElementNode& node);
 
-            protected:
+                //! Save manifest to string buffer.
+                //! @param context If no serialize context was specified, it will get the context from the application component bus.
+                //! @param registrationContext If no Json registration context was specified, it will get the context from the application component bus.
+                //! @result True in case saving went all fine, false if an error occurred.
                 AZ::Outcome<rapidjson::Document, AZStd::string> SaveToJsonDocument(SerializeContext* context = nullptr, JsonRegistrationContext* registrationContext = nullptr);
 
             private:

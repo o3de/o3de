@@ -118,6 +118,7 @@ namespace GraphModel
 
         NodeId GetId() const;
 
+        bool HasConnections() const;
         bool HasInputConnections() const;
         bool HasOutputConnections() const;
         bool HasInputConnectionFromNode(ConstNodePtr node) const;

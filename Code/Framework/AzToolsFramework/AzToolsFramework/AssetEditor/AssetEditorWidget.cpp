@@ -212,6 +212,12 @@ namespace AzToolsFramework
                 m_adapter = AZStd::make_shared<AZ::DocumentPropertyEditor::ReflectionAdapter>();
                 m_dpe = new DocumentPropertyEditor(this);
                 propertyEditor = m_dpe;
+                m_propertyChangeHandler = AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeEvent::Handler(
+                    [this](const AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeInfo& changeInfo)
+                    {
+                        this->OnDocumentPropertyChanged(changeInfo);
+                    });
+                m_adapter->ConnectPropertyChangeHandler(m_propertyChangeHandler);
             }
 
             propertyEditor->setObjectName("AssetEditorWidgetPropertyEditor");
@@ -334,6 +340,9 @@ namespace AzToolsFramework
             auto serializeContext = AZ::EntityUtils::GetApplicationSerializeContext();
             serializeContext->CloneObjectInplace((*m_inMemoryAsset.GetData()), asset.GetData());
 
+            // Make sure the saved state key is reset since this could be a file opened with the same property editor isntance
+            m_savedStateKey = AZ::Crc32(&asset.GetId(), sizeof(AZ::Data::AssetId));
+
             UpdatePropertyEditor(m_inMemoryAsset);
 
             SetupHeader();
@@ -358,19 +367,18 @@ namespace AzToolsFramework
 
         void AssetEditorWidget::UpdatePropertyEditor(AZ::Data::Asset<AZ::Data::AssetData>& asset)
         {
-            AZ::Crc32 saveStateKey;
-            saveStateKey.Add(&asset.GetId(), sizeof(AZ::Data::AssetId));
-
             if (m_useDPE)
             {
                 m_adapter->SetValue(asset.Get(), asset.GetType());
                 m_dpe->SetAdapter(m_adapter);
                 m_dpe->setEnabled(true);
+
+                m_dpe->SetSavedStateKey(m_savedStateKey, "AssetEditor");
             }
             else
             {
                 m_propertyEditor->ClearInstances();
-                m_propertyEditor->SetSavedStateKey(saveStateKey);
+                m_propertyEditor->SetSavedStateKey(m_savedStateKey);
                 m_propertyEditor->AddInstance(asset.Get(), asset.GetType(), nullptr);
 
                 m_propertyEditor->InvalidateAll();
@@ -947,6 +955,9 @@ namespace AzToolsFramework
             }
             m_currentAsset = "New Asset";
 
+            // Make sure the saved state key is reset since this could be a file opened with the same property editor isntance
+            m_savedStateKey = AZ::Crc32(&newAssetId, sizeof(AZ::Data::AssetId));
+
             UpdatePropertyEditor(m_inMemoryAsset);
 
             ExpandAll();
@@ -957,6 +968,14 @@ namespace AzToolsFramework
         void AssetEditorWidget::AfterPropertyModified(InstanceDataNode* /*node*/)
         {
             DirtyAsset();
+        }
+
+        void AssetEditorWidget::OnDocumentPropertyChanged(const AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeInfo& changeInfo)
+        {
+            if (changeInfo.changeType == AZ::DocumentPropertyEditor::Nodes::ValueChangeType::FinishedEdit)
+            {
+                DirtyAsset();
+            }
         }
 
         void AssetEditorWidget::RequestPropertyContextMenu(InstanceDataNode* node, const QPoint& point)

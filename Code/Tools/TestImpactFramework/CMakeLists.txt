@@ -10,7 +10,7 @@ o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} ${O
 
 include(${pal_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
-if(PAL_TRAIT_TEST_IMPACT_FRAMEWORK_SUPPORTED)
+if(PAL_TRAIT_TEST_IMPACT_FRAMEWORK_SUPPORTED AND LY_TEST_IMPACT_ACTIVE)
     add_subdirectory(Runtime)
     add_subdirectory(Frontend)
     ly_add_pytest(
@@ -19,7 +19,6 @@ if(PAL_TRAIT_TEST_IMPACT_FRAMEWORK_SUPPORTED)
         TEST_SERIAL
         COMPONENT 
             TestImpactFramework
-        
     )
     
     ly_add_pytest(

@@ -40,7 +40,19 @@ namespace AtomToolsFramework
         m_ui->m_searchWidget->Setup(true, true);
         m_ui->m_searchWidget->setMinimumSize(QSize(150, 0));
 
-        m_ui->m_viewOptionButton->setIcon(QIcon(":/Icons/view.svg"));
+        // Create pop-up menu to toggle the visibility of the asset browser preview window
+        QMenu* viewOptionsMenu= new QMenu(this);
+        QMenu::connect(viewOptionsMenu, &QMenu::aboutToShow, [this, viewOptionsMenu]() {
+            viewOptionsMenu->clear();
+            QAction* action = viewOptionsMenu->addAction(tr("Show Asset Preview"), this, &AtomToolsAssetBrowser::TogglePreview);
+            action->setCheckable(true);
+            action->setChecked(m_ui->m_previewerFrame->isVisible());
+        });
+
+        m_ui->m_viewOptionButton->setMenu(viewOptionsMenu);
+        m_ui->m_viewOptionButton->setIcon(QIcon(":/Icons/menu.svg"));
+        m_ui->m_viewOptionButton->setPopupMode(QToolButton::InstantPopup);
+
         m_ui->m_splitter->setSizes(QList<int>() << 400 << 200);
         m_ui->m_splitter->setStretchFactor(0, 1);
 
@@ -64,7 +76,6 @@ namespace AtomToolsFramework
         connect(m_filterModel, &AssetBrowserFilterModel::filterChanged, this, &AtomToolsAssetBrowser::UpdateFilter);
         connect(m_ui->m_assetBrowserTreeViewWidget, &AssetBrowserTreeView::activated, this, &AtomToolsAssetBrowser::OpenSelectedEntries);
         connect(m_ui->m_assetBrowserTreeViewWidget, &AssetBrowserTreeView::selectionChangedSignal, this, &AtomToolsAssetBrowser::UpdatePreview);
-        connect(m_ui->m_viewOptionButton, &QPushButton::clicked, this, &AtomToolsAssetBrowser::OpenOptionsMenu);
         connect(m_ui->m_searchWidget->GetFilter().data(), &AssetBrowserEntryFilter::updatedSignal, m_filterModel, &AssetBrowserFilterModel::filterUpdatedSlot);
     }
 
@@ -128,15 +139,6 @@ namespace AtomToolsFramework
                 m_openHandler(entry->GetFullPath().c_str());
             }
         }
-    }
-
-    void AtomToolsAssetBrowser::OpenOptionsMenu()
-    {
-        QMenu menu;
-        QAction* action = menu.addAction(tr("Show Asset Preview"), this, &AtomToolsAssetBrowser::TogglePreview);
-        action->setCheckable(true);
-        action->setChecked(m_ui->m_previewerFrame->isVisible());
-        menu.exec(QCursor::pos());
     }
 
     AzToolsFramework::AssetBrowser::FilterConstType AtomToolsAssetBrowser::CreateFilter() const

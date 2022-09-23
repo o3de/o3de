@@ -46,7 +46,7 @@ namespace TestImpact
             //! @param unexecutedTestRuns The set of test runs that were queued up for execution but did not get the opportunity to execute.
             TestRunReport(
                 TestSequenceResult result,
-                AZStd::chrono::high_resolution_clock::time_point startTime,
+                AZStd::chrono::steady_clock::time_point startTime,
                 AZStd::chrono::milliseconds duration,
                 AZStd::vector<PassingTestRun>&& passingTestRuns,
                 AZStd::vector<FailingTestRun>&& failingTestRuns,
@@ -58,10 +58,10 @@ namespace TestImpact
             TestSequenceResult GetResult() const;
 
             //! Returns the time this sequence of test runs started relative to T0.
-            AZStd::chrono::high_resolution_clock::time_point GetStartTime() const;
+            AZStd::chrono::steady_clock::time_point GetStartTime() const;
 
             //! Returns the time this sequence of test runs ended relative to T0.
-            AZStd::chrono::high_resolution_clock::time_point GetEndTime() const;
+            AZStd::chrono::steady_clock::time_point GetEndTime() const;
 
             //! Returns the duration this sequence of test runs took to complete.
             AZStd::chrono::milliseconds GetDuration() const;
@@ -109,7 +109,7 @@ namespace TestImpact
             const AZStd::vector<UnexecutedTestRun>& GetUnexecutedTestRuns() const;
         private:
             TestSequenceResult m_result = TestSequenceResult::Success;
-            AZStd::chrono::high_resolution_clock::time_point m_startTime;
+            AZStd::chrono::steady_clock::time_point m_startTime;
             AZStd::chrono::milliseconds m_duration = AZStd::chrono::milliseconds{ 0 };
             AZStd::vector<PassingTestRun> m_passingTestRuns;
             AZStd::vector<FailingTestRun> m_failingTestRuns;
@@ -230,13 +230,13 @@ namespace TestImpact
             }
 
             //! Returns the start time of the sequence.
-            AZStd::chrono::high_resolution_clock::time_point GetStartTime() const
+            AZStd::chrono::steady_clock::time_point GetStartTime() const
             {
                 return m_selectedTestRunReport.GetStartTime();
             }
 
             //! Returns the end time of the sequence.
-            AZStd::chrono::high_resolution_clock::time_point GetEndTime() const
+            AZStd::chrono::steady_clock::time_point GetEndTime() const
             {
                 return GetStartTime() + GetDuration();
             }
@@ -391,57 +391,58 @@ namespace TestImpact
             // SequenceReport overrides ...
             AZStd::chrono::milliseconds GetDuration() const override
             {
-                return GetDuration() + m_draftedTestRunReport.GetDuration();
+                return SequenceReportBase<Type, PolicyStateType>::GetDuration() + m_draftedTestRunReport.GetDuration();
             }
 
             TestSequenceResult GetResult() const override
             {
-                return CalculateMultiTestSequenceResult({ GetResult(), m_draftedTestRunReport.GetResult() });
+                return CalculateMultiTestSequenceResult(
+                    { SequenceReportBase<Type, PolicyStateType>::GetResult(), m_draftedTestRunReport.GetResult() });
             }
 
             size_t GetTotalNumTestRuns() const override
             {
-                return GetTotalNumTestRuns() + m_draftedTestRunReport.GetTotalNumTestRuns();
+                return SequenceReportBase<Type, PolicyStateType>::GetTotalNumTestRuns() + m_draftedTestRunReport.GetTotalNumTestRuns();
             }
 
             size_t GetTotalNumPassingTests() const override
             {
-                return GetTotalNumPassingTests() + m_draftedTestRunReport.GetTotalNumPassingTests();
+                return SequenceReportBase<Type, PolicyStateType>::GetTotalNumPassingTests() + m_draftedTestRunReport.GetTotalNumPassingTests();
             }
 
             size_t GetTotalNumFailingTests() const override
             {
-                return GetTotalNumFailingTests() + m_draftedTestRunReport.GetTotalNumFailingTests();
+                return SequenceReportBase<Type, PolicyStateType>::GetTotalNumFailingTests() + m_draftedTestRunReport.GetTotalNumFailingTests();
             }
 
             size_t GetTotalNumDisabledTests() const override
             {
-                return GetTotalNumDisabledTests() + m_draftedTestRunReport.GetTotalNumDisabledTests();
+                return SequenceReportBase<Type, PolicyStateType>::GetTotalNumDisabledTests() + m_draftedTestRunReport.GetTotalNumDisabledTests();
             }
 
             size_t GetTotalNumPassingTestRuns() const override
             {
-                return GetTotalNumPassingTestRuns() + m_draftedTestRunReport.GetNumPassingTestRuns();
+                return SequenceReportBase<Type, PolicyStateType>::GetTotalNumPassingTestRuns() + m_draftedTestRunReport.GetNumPassingTestRuns();
             }
 
             size_t GetTotalNumFailingTestRuns() const override
             {
-                return GetTotalNumFailingTestRuns() + m_draftedTestRunReport.GetNumFailingTestRuns();
+                return SequenceReportBase<Type, PolicyStateType>::GetTotalNumFailingTestRuns() + m_draftedTestRunReport.GetNumFailingTestRuns();
             }
 
             size_t GetTotalNumExecutionFailureTestRuns() const override
             {
-                return GetTotalNumExecutionFailureTestRuns() + m_draftedTestRunReport.GetNumExecutionFailureTestRuns();
+                return SequenceReportBase<Type, PolicyStateType>::GetTotalNumExecutionFailureTestRuns() + m_draftedTestRunReport.GetNumExecutionFailureTestRuns();
             }
 
             size_t GetTotalNumTimedOutTestRuns() const override
             {
-                return GetTotalNumTimedOutTestRuns() + m_draftedTestRunReport.GetNumTimedOutTestRuns();
+                return SequenceReportBase<Type, PolicyStateType>::GetTotalNumTimedOutTestRuns() + m_draftedTestRunReport.GetNumTimedOutTestRuns();
             }
 
             size_t GetTotalNumUnexecutedTestRuns() const override
             {
-                return GetTotalNumUnexecutedTestRuns() + m_draftedTestRunReport.GetNumUnexecutedTestRuns();
+                return SequenceReportBase<Type, PolicyStateType>::GetTotalNumUnexecutedTestRuns() + m_draftedTestRunReport.GetNumUnexecutedTestRuns();
             }
         private:
             AZStd::vector<AZStd::string> m_draftedTestRuns;

@@ -8,7 +8,6 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Limits.h>
-#include <Atom/RHI/SubmitItem.h>
 #include <AzCore/std/containers/array.h>
 #include <Atom/RHI/RayTracingAccelerationStructure.h>
 
@@ -24,7 +23,6 @@ namespace AZ
 
         //! Encapsulates all the necessary information for doing a ray tracing dispatch call.
         struct DispatchRaysItem
-            : public SubmitItem
         {
             DispatchRaysItem() = default;
 

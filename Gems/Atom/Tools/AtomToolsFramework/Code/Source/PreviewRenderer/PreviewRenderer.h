@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/Feature/Utils/FrameCaptureBus.h>
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/Pass/AttachmentReadback.h>
 #include <Atom/RPI.Public/SceneBus.h>
@@ -49,7 +50,7 @@ namespace AtomToolsFramework
 
         void PoseContent();
 
-        uint32_t StartCapture();
+        AZ::Render::FrameCaptureId StartCapture();
         void EndCapture();
 
     private:

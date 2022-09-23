@@ -14,6 +14,7 @@
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryCache.h>
+#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
@@ -268,17 +269,23 @@ namespace AzToolsFramework
         {
             QMimeData* mimeData = new QMimeData;
 
+            AZStd::vector<const AssetBrowserEntry*> collected;
+            collected.reserve(indexes.size());
+
             for (const auto& index : indexes)
             {
                 if (index.isValid())
                 {
-                    AssetBrowserEntry* item = static_cast<AssetBrowserEntry*>(index.internalPointer());
+                    const AssetBrowserEntry* item = static_cast<const AssetBrowserEntry*>(index.internalPointer());
                     if (item)
                     {
-                        item->AddToMimeData(mimeData);
+                        collected.push_back(item);
                     }
                 }
             }
+
+            Utils::ToMimeData(mimeData, collected);
+
             return mimeData;
         }
 

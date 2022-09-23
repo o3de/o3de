@@ -10,12 +10,13 @@
 
 #include <benchmark/benchmark.h>
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/std/chrono/types.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/numeric.h>
 
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
+#include <Tests/PhysXTestCommon.h>
 
 namespace AzPhysics
 {
@@ -47,24 +48,32 @@ namespace PhysX::Benchmarks
         //! Function pointer to allow setting an Entity Id on the rigid bodies created with Utils::CreateRigidBodies. int param is the id of the rigid body being created (values 0-N, where N=number requested to be created)
         using GenerateEntityIdFuncPtr = AZStd::function<AZ::EntityId(int)>;
 
+        //! Type for returned objects when constructing rigid bodies. Depends on the desired type.
+        using BenchmarkRigidBodies = AZStd::variant<AzPhysics::SimulatedBodyHandleList, PhysX::EntityList>;
+
         //! Helper function to create the required number of rigid bodies and spawn them in the provided world.
         //! @param numRigidBodies The number of bodies to spawn.
-        //! @param world World where the rigid bodies will be spawned into.
+        //! @param sceneHandle The handle of a scene where the rigid bodies will be spawned into.
         //! @param enableCCD Flag to enable|disable Continuous Collision Detection (CCD).
+        //! @param benchmarkObjectType Type specifying whether rigid bodies should be entities with components or API objects.
         //! @param genColliderFuncPtr [optional] Function pointer to allow caller to pick the collider object Default is a box sized at 1m.
         //! @param genSpawnPosFuncPtr [optional] Function pointer to allow caller to pick the spawn position.
         //! @param genSpawnOriFuncPtr [optional] Function pointer to allow caller to pick the spawn orientation.
         //! @param genMassFuncPtr [optional] Function pointer to allow caller to pick the mass of the object.
         //! @param genEntityIdFuncPtr [optional] Function pointer to allow caller to define the entity id of the object.
-        AzPhysics::SimulatedBodyHandleList CreateRigidBodies(int numRigidBodies,
-            AzPhysics::Scene* scene, bool enableCCD,
+        BenchmarkRigidBodies CreateRigidBodies(
+            int numRigidBodies,
+            AzPhysics::SceneHandle sceneHandle,
+            bool enableCCD,
+            int benchmarkObjectType,
             GenerateColliderFuncPtr* genColliderFuncPtr = nullptr, GenerateSpawnPositionFuncPtr* genSpawnPosFuncPtr = nullptr,
             GenerateSpawnOrientationFuncPtr* genSpawnOriFuncPtr = nullptr, GenerateMassFuncPtr* genMassFuncPtr = nullptr,
             GenerateEntityIdFuncPtr* genEntityIdFuncPtr = nullptr
         );
 
         //! Helper that takes a list of SimulatedBodyHandles to Rigid Bodies and return RigidBody pointers
-        AZStd::vector<AzPhysics::RigidBody*> GetRigidBodiesFromHandles(AzPhysics::Scene* scene, const AzPhysics::SimulatedBodyHandleList& handlesList);
+        AZStd::vector<AzPhysics::RigidBody*> GetRigidBodiesFromHandles(
+            AzPhysics::Scene* scene, const Utils::BenchmarkRigidBodies& handlesList);
 
         //! Object that when given a World will listen to the Pre / Post physics updates.
         //! Will time the duration between Pre and Post events in milliseconds. Used for running Benchmarks
@@ -87,8 +96,8 @@ namespace PhysX::Benchmarks
             void PostTick();
             //! list of each sub tick execution time in milliseconds
             Types::TimeList m_subTickTimes;
-            AZStd::chrono::system_clock::time_point m_tickStart;
-            
+            AZStd::chrono::steady_clock::time_point m_tickStart;
+
             AzPhysics::SceneEvents::OnSceneSimulationStartHandler m_sceneStartSimHandler;
             AzPhysics::SceneEvents::OnSceneSimulationFinishHandler m_sceneFinishSimHandler;
         };

@@ -32,7 +32,7 @@ namespace GraphCanvas
 
         AZ_CLASS_ALLOCATOR(NodePaletteAutoCompleteModel, AZ::SystemAllocator, 0);
 
-        NodePaletteAutoCompleteModel();
+        NodePaletteAutoCompleteModel(QObject* parent = nullptr);
         ~NodePaletteAutoCompleteModel() = default;
 
         QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;

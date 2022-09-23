@@ -2622,11 +2622,11 @@
     },
     "shaders": [ 
         {
-            "file": "./StandardMultilayerPBR_ForwardPass.shader",
+            "file": "Shaders/Materials/MultilayerPBR/StandardMultilayerPBR_ForwardPass.shader",
             "tag": "ForwardPass"
         },
         {
-            "file": "./StandardMultilayerPBR_ForwardPass_EDS.shader",
+            "file": "Shaders/Materials/MultilayerPBR/StandardMultilayerPBR_ForwardPass_EDS.shader",
             "tag": "ForwardPass_EDS"
         },
         {
@@ -2634,7 +2634,7 @@
             "tag": "Shadowmap"
         },
         {
-            "file": "./StandardMultilayerPBR_Shadowmap_WithPS.shader",
+            "file": "Shaders/Materials/MultilayerPBR/StandardMultilayerPBR_Shadowmap_WithPS.shader",
             "tag": "Shadowmap_WithPS"
         },
         {
@@ -2642,7 +2642,7 @@
             "tag": "DepthPass"
         },
         {
-            "file": "./StandardMultilayerPBR_DepthPass_WithPS.shader",
+            "file": "Shaders/Materials/MultilayerPBR/StandardMultilayerPBR_DepthPass_WithPS.shader",
             "tag": "DepthPass_WithPS"
         },
         {

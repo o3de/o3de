@@ -9,11 +9,14 @@
 set(FILES
     PrefabBuilderComponent.h
     PrefabBuilderComponent.cpp
+    PrefabGroup/DefaultProceduralPrefab.h
+    PrefabGroup/DefaultProceduralPrefab.cpp
     PrefabGroup/IPrefabGroup.h
     PrefabGroup/PrefabGroup.cpp
     PrefabGroup/PrefabGroup.h
     PrefabGroup/PrefabGroupBehavior.cpp
     PrefabGroup/PrefabGroupBehavior.h
+    PrefabGroup/PrefabGroupBus.h
     PrefabGroup/ProceduralAssetHandler.cpp
     PrefabGroup/ProceduralAssetHandler.h
 )

@@ -8,6 +8,7 @@
 
 #include <ProjectGemCatalogScreen.h>
 #include <GemRepo/GemRepoScreen.h>
+#include <CreateAGemScreen.h>
 #include <ProjectManagerDefs.h>
 #include <PythonBindingsInterface.h>
 #include <ScreenHeaderWidget.h>
@@ -28,7 +29,7 @@
 
 namespace O3DE::ProjectManager
 {
-    UpdateProjectCtrl::UpdateProjectCtrl(QWidget* parent)
+    UpdateProjectCtrl::UpdateProjectCtrl(DownloadController* downloadController, QWidget* parent)
         : ScreenWidget(parent)
     {
         QVBoxLayout* vLayout = new QVBoxLayout();
@@ -41,11 +42,13 @@ namespace O3DE::ProjectManager
         vLayout->addWidget(m_header);
 
         m_updateSettingsScreen = new UpdateProjectSettingsScreen();
-        m_projectGemCatalogScreen = new ProjectGemCatalogScreen();
+        m_projectGemCatalogScreen = new ProjectGemCatalogScreen(downloadController);
         m_gemRepoScreen = new GemRepoScreen(this);
+        m_createGem = new CreateGem();
 
         connect(m_projectGemCatalogScreen, &ScreenWidget::ChangeScreenRequest, this, &UpdateProjectCtrl::OnChangeScreenRequest);
         connect(m_gemRepoScreen, &GemRepoScreen::OnRefresh, m_projectGemCatalogScreen, &ProjectGemCatalogScreen::Refresh);
+        connect(m_createGem, &CreateGem::CreateButtonPressed, this, &UpdateProjectCtrl::HandleBackButton);
 
         m_stack = new QStackedWidget(this);
         m_stack->setObjectName("body");
@@ -73,6 +76,7 @@ namespace O3DE::ProjectManager
         m_stack->addWidget(topBarFrameWidget);
         m_stack->addWidget(m_projectGemCatalogScreen);
         m_stack->addWidget(m_gemRepoScreen);
+        m_stack->addWidget(m_createGem);
 
         QDialogButtonBox* backNextButtons = new QDialogButtonBox();
         backNextButtons->setObjectName("footer");
@@ -131,6 +135,11 @@ namespace O3DE::ProjectManager
         else if (screen == ProjectManagerScreen::UpdateProjectSettings)
         {
             m_stack->setCurrentWidget(m_updateSettingsScreen);
+            Update();
+        }
+        else if (screen == ProjectManagerScreen::CreateGem)
+        {
+            m_stack->setCurrentWidget(m_createGem);
             Update();
         }
         else
@@ -223,7 +232,7 @@ namespace O3DE::ProjectManager
         if (m_stack->currentIndex() == ScreenOrder::GemRepos)
         {
             m_header->setTitle(QString(tr("Edit Project Settings: \"%1\"")).arg(m_projectInfo.GetProjectDisplayName()));
-            m_header->setSubTitle(QString(tr("Gem Repositories")));
+            m_header->setSubTitle(QString(tr("Remote Sources")));
             m_nextButton->setVisible(false);
         }
         else if (m_stack->currentIndex() == ScreenOrder::Gems)

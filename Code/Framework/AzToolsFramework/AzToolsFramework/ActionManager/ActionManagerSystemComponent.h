@@ -13,14 +13,17 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
 #include <AzToolsFramework/ActionManager/Action/ActionManager.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManager.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManager.h>
 #include <AzToolsFramework/ActionManager/ToolBar/ToolBarManager.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
 namespace AzToolsFramework
 {
     //! System Component to handle the Action Manager system and subsystems.
     class ActionManagerSystemComponent final
         : public AZ::Component
+        , public AzToolsFramework::EditorEventsBus::Handler
     {
     public:
         AZ_COMPONENT(ActionManagerSystemComponent, "{47925132-7373-42EE-9131-F405EE4B0F1A}");
@@ -33,6 +36,9 @@ namespace AzToolsFramework
         void Activate() override;
         void Deactivate() override;
 
+        // EditorEvents overrides ...
+        void NotifyEditorInitialized() override;
+
         static void Reflect(AZ::ReflectContext* context);
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
@@ -40,6 +46,7 @@ namespace AzToolsFramework
 
     private:
         AZStd::unique_ptr<ActionManager> m_actionManager = nullptr;
+        AZStd::unique_ptr<HotKeyManager> m_hotKeyManager = nullptr;
         AZStd::unique_ptr<MenuManager> m_menuManager = nullptr;
         AZStd::unique_ptr<ToolBarManager> m_toolBarManager = nullptr;
 

@@ -103,6 +103,9 @@ namespace AzToolsFramework
 
             void OnNewAsset();
 
+            // For subscribing to document property editor adapter property specific changes
+            void OnDocumentPropertyChanged(const AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeInfo& changeInfo);
+
         Q_SIGNALS:
             void OnAssetSavedSignal();
             void OnAssetSaveFailedSignal(const AZStd::string& error);
@@ -174,6 +177,9 @@ namespace AzToolsFramework
 
             AZStd::intrusive_ptr<AssetEditorWidgetUserSettings> m_userSettings;
             AZStd::unique_ptr< Ui::AssetEditorStatusBar > m_statusBar;
+
+            AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeEvent::Handler m_propertyChangeHandler;
+            AZ::Crc32 m_savedStateKey;
 
             void PopulateGenericAssetTypes();
             void CreateAssetImpl(AZ::Data::AssetType assetType);

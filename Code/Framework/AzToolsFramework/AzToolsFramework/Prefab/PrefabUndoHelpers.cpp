@@ -50,6 +50,41 @@ namespace AzToolsFramework
                 linkRemoveUndo->SetParent(undoBatch);
                 linkRemoveUndo->Redo();
             }
+
+            void AddEntity(
+                const PrefabDomValue& newEntityDom,
+                AZ::EntityId entityId,
+                TemplateId templateId,
+                UndoSystem::URSequencePoint* undoBatch)
+            {
+                PrefabUndoAddEntity* addEntityUndoState = aznew PrefabUndoAddEntity("Undo Adding Entity");
+                addEntityUndoState->SetParent(undoBatch);
+                addEntityUndoState->Capture(newEntityDom, entityId, templateId);
+                addEntityUndoState->Redo();
+            }
+
+            void RemoveEntities(
+                const AZStd::vector<AZStd::pair<const PrefabDomValue*, AZStd::string>>& entityDomAndPathList,
+                TemplateId templateId,
+                UndoSystem::URSequencePoint* undoBatch)
+            {
+                PrefabUndoRemoveEntities* removeEntitiesUndoState = aznew PrefabUndoRemoveEntities("Undo Removing Entities");
+                removeEntitiesUndoState->SetParent(undoBatch);
+                removeEntitiesUndoState->Capture(entityDomAndPathList, templateId);
+                removeEntitiesUndoState->Redo();
+            }
+
+            void UpdateEntity(
+                const PrefabDomValue& entityDomBeforeUpdatingEntity,
+                const PrefabDomValue& entityDomAfterUpdatingEntity,
+                AZ::EntityId entityId,
+                UndoSystem::URSequencePoint* undoBatch)
+            {
+                PrefabUndoEntityUpdate* state = aznew PrefabUndoEntityUpdate("Undo Updating Entity");
+                state->SetParent(undoBatch);
+                state->Capture(entityDomBeforeUpdatingEntity, entityDomAfterUpdatingEntity, entityId);
+                state->Redo();
+            }
         }
     } // namespace Prefab
 } // namespace AzToolsFramework

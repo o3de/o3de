@@ -99,7 +99,6 @@ set(FILES
     Debug/BudgetTracker.cpp
     Debug/LocalFileEventLogger.h
     Debug/LocalFileEventLogger.cpp
-    Debug/IEventLogger.h
     Debug/MemoryProfiler.h
     Debug/Profiler.cpp
     Debug/Profiler.inl
@@ -183,6 +182,8 @@ set(FILES
     IO/IStreamerTypes.cpp
     IO/GenericStreams.cpp
     IO/GenericStreams.h
+    IO/OpenMode.h
+    IO/OpenMode.cpp
     IO/Path/Path.cpp
     IO/Path/Path.h
     IO/Path/Path.inl
@@ -359,6 +360,7 @@ set(FILES
     Math/TransformSerializer.h
     Math/Uuid.cpp
     Math/Uuid.h
+    Math/Uuid.inl
     Math/UuidSerializer.h
     Math/UuidSerializer.cpp
     Math/Vector2.cpp
@@ -416,6 +418,10 @@ set(FILES
     Memory/SimpleSchemaAllocator.h
     Memory/SystemAllocator.cpp
     Memory/SystemAllocator.h
+    Metrics/EventLoggerFactoryImpl.h
+    Metrics/EventLoggerFactoryImpl.cpp
+    Metrics/IEventLogger.h
+    Metrics/IEventLoggerFactory.h
     Module/DynamicModuleHandle.cpp
     Module/DynamicModuleHandle.h
     Module/Module.cpp
@@ -516,6 +522,8 @@ set(FILES
     Serialization/DataPatchBus.h
     Serialization/DataPatchUpgradeManager.h
     Serialization/DataPatchUpgradeManager.cpp
+    Serialization/Json/AnySerializer.h
+    Serialization/Json/AnySerializer.cpp
     Serialization/Json/ArraySerializer.h
     Serialization/Json/ArraySerializer.cpp
     Serialization/Json/BaseJsonSerializer.h
@@ -583,6 +591,8 @@ set(FILES
     Settings/SettingsRegistryImpl.h
     Settings/SettingsRegistryMergeUtils.cpp
     Settings/SettingsRegistryMergeUtils.h
+    Settings/SettingsRegistryOriginTracker.cpp
+    Settings/SettingsRegistryOriginTracker.h
     Settings/SettingsRegistryScriptUtils.cpp
     Settings/SettingsRegistryScriptUtils.h
     Settings/SettingsRegistryVisitorUtils.cpp

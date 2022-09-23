@@ -154,8 +154,19 @@ namespace AtomToolsFramework
             m_currentCaptureRequest = m_captureRequestQueue.front();
             m_captureRequestQueue.pop();
 
-            m_state.reset();
-            m_state.reset(new PreviewRendererLoadState(this));
+            bool canCapture = false;
+            AZ::Render::FrameCaptureRequestBus::BroadcastResult(canCapture, &AZ::Render::FrameCaptureRequestBus::Events::CanCapture);
+
+            // if we're not on a device that can capture, immediately trigger the "failed" state.
+            if (!canCapture)
+            {
+                CancelCaptureRequest();
+            }
+            else
+            {
+                m_state.reset();
+                m_state.reset(new PreviewRendererLoadState(this));
+            }
         }
     }
 
@@ -207,7 +218,7 @@ namespace AtomToolsFramework
         m_currentCaptureRequest.m_content->Update();
     }
 
-    uint32_t PreviewRenderer::StartCapture()
+    AZ::Render::FrameCaptureId PreviewRenderer::StartCapture()
     {
         auto captureCompleteCallback = m_currentCaptureRequest.m_captureCompleteCallback;
         auto captureFailedCallback = m_currentCaptureRequest.m_captureFailedCallback;
@@ -240,7 +251,7 @@ namespace AtomToolsFramework
 
         m_renderPipeline->AddToRenderTickOnce();
 
-        uint32_t frameCaptureId = AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId;
+        AZ::Render::FrameCaptureId frameCaptureId = AZ::Render::InvalidFrameCaptureId;
         AZ::Render::FrameCaptureRequestBus::BroadcastResult(
             frameCaptureId, &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachmentWithCallback, m_passHierarchy,
             AZStd::string("Output"), captureCallback, AZ::RPI::PassAttachmentReadbackOption::Output);

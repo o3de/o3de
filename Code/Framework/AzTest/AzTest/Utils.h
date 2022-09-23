@@ -8,6 +8,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzTest/Printers.h>
@@ -69,7 +70,7 @@ namespace AZ
         //! @gemroot<gem-name> to <gem-path>
         void AddActiveGem(AZStd::string_view, AZ::SettingsRegistryInterface& registry, AZ::IO::FileIOBase* fileIo = nullptr);
 
-        //! Provides a scoped object that will create a temporary operating-system specific folder on creation, and delete it and 
+        //! Provides a scoped object that will create a temporary operating-system specific folder on creation, and delete it and
         //! its contents on destruction. This class is only available on host platforms (Windows, Mac, and Linux)
         class ScopedAutoTempDirectory
         {
@@ -78,7 +79,9 @@ namespace AZ
             ~ScopedAutoTempDirectory();
 
             const char* GetDirectory() const;
-            AZStd::string Resolve(const char* path) const;
+            AZ::IO::Path GetDirectoryAsPath() const;
+            AZ::IO::FixedMaxPath GetDirectoryAsFixedMaxPath() const;
+            AZ::IO::Path Resolve(const char* path) const;
         private:
             char m_tempDirectory[AZ::IO::MaxPathLength] = { '\0' };
         };

@@ -18,8 +18,6 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/UnitTest/TestTypes.h>
 
-#include <AZTestShared/Utils/Utils.h>
-
 namespace SettingsRegistryTests
 {
     class TestClass
@@ -113,25 +111,14 @@ namespace SettingsRegistryTests
             m_registry->SetContext(m_registrationContext.get());
 
             AZ::JsonSystemComponent::Reflect(m_registrationContext.get());
-
-            AZStd::string rootFolder = UnitTest::GetTestFolderPath();
-
-            m_testFolder = AZStd::make_unique<AZStd::string>(AZStd::string::format("%sSettingsRegistryTest_", rootFolder.c_str()));
-            m_testFolder->append(AZ::Uuid::CreateRandom().ToString<AZStd::string>(false, false));
         }
 
         void TearDown() override
         {
-            if (m_hasTestFiles)
-            {
-                DeleteFolderRecursive(*m_testFolder);
-            }
-
             m_registrationContext->EnableRemoveReflection();
             AZ::JsonSystemComponent::Reflect(m_registrationContext.get());
             m_registrationContext->DisableRemoveReflection();
 
-            m_testFolder.reset();
             m_registry.reset();
             m_registrationContext.reset();
             m_serializeContext.reset();
@@ -139,12 +126,11 @@ namespace SettingsRegistryTests
             TeardownAllocator();
         }
 
-        AZStd::string CreateTestFile(AZStd::string_view name, AZStd::string_view content)
+        AZ::IO::FixedMaxPath CreateTestFile(AZStd::string_view name, AZStd::string_view content)
         {
             using namespace AZ::IO;
 
-            AZStd::string path = AZStd::string::format("%s/%s/%.*s", m_testFolder->c_str(),
-                AZ::SettingsRegistryInterface::RegistryFolder, static_cast<int>(name.length()), name.data());
+            auto path = m_tempDirectory.GetDirectoryAsFixedMaxPath() / AZ::SettingsRegistryInterface::RegistryFolder / name;
 
             SystemFile file;
             if (!file.Open(path.c_str(), SystemFile::OpenMode::SF_OPEN_CREATE | SystemFile::SF_OPEN_CREATE_PATH | SystemFile::SF_OPEN_WRITE_ONLY))
@@ -158,24 +144,23 @@ namespace SettingsRegistryTests
                 AZ_Assert(false, "Unable to write content to test file: %s", path.c_str());
             }
 
-            m_hasTestFiles = true;
             return path;
         }
 
         void Visit(const AZStd::vector<RegistryEntry>& expected, AZStd::string_view path = "")
         {
             size_t counter = 0;
-            auto callback = [&expected, &counter](AZStd::string_view path, AZStd::string_view valueName,
-                AZ::SettingsRegistryInterface::VisitAction action, AZ::SettingsRegistryInterface::Type type)
+            auto callback = [&expected, &counter](const AZ::SettingsRegistryInterface::VisitArgs& visitArgs,
+                AZ::SettingsRegistryInterface::VisitAction action)
             {
                 EXPECT_LT(counter, expected.size());
                 if (counter < expected.size())
                 {
                     const RegistryEntry& entry = expected[counter];
-                    EXPECT_STREQ(entry.m_path.data(), path.data());
-                    EXPECT_STREQ(entry.m_valueName.data(), valueName.data());
+                    EXPECT_STREQ(entry.m_path.data(), visitArgs.m_jsonKeyPath.data());
+                    EXPECT_STREQ(entry.m_valueName.data(), visitArgs.m_fieldName.data());
                     EXPECT_EQ(entry.m_action, action);
-                    EXPECT_EQ(entry.m_type, type);
+                    EXPECT_EQ(entry.m_type, visitArgs.m_type);
                     counter++;
                     return entry.m_response;
                 }
@@ -211,8 +196,7 @@ namespace SettingsRegistryTests
         AZStd::unique_ptr<AZ::SettingsRegistryImpl> m_registry;
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
         AZStd::unique_ptr<AZ::JsonRegistrationContext> m_registrationContext;
-        AZStd::unique_ptr<AZStd::string> m_testFolder;
-        bool m_hasTestFiles{ false };
+        AZ::Test::ScopedAutoTempDirectory m_tempDirectory;
     };
 
     template<typename> struct SettingsType {};
@@ -344,15 +328,15 @@ namespace SettingsRegistryTests
     TYPED_TEST(TypedSettingsRegistryTest, Set_NotifiersCalled_ReturnsFalse)
     {
         size_t counter = 0;
-        auto callback0 = [&counter](AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
+        auto callback0 = [&counter](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
-            EXPECT_STREQ("/Object/Value", path.data());
+            EXPECT_EQ("/Object/Value", notifyEventArgs.m_jsonKeyPath);
             counter++;
         };
-        auto callback1 = [&counter](AZStd::string_view, AZ::SettingsRegistryInterface::Type callbackType)
+        auto callback1 = [&counter](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
             AZ::SettingsRegistryInterface::Type type = SettingsType<TypeParam>::s_type;
-            EXPECT_EQ(callbackType, type);
+            EXPECT_EQ(notifyEventArgs.m_type, type);
             counter++;
         };
         auto testNotifier1 = this->m_registry->RegisterNotifier(callback0);
@@ -368,16 +352,16 @@ namespace SettingsRegistryTests
     TYPED_TEST(TypedSettingsRegistryTest, Set_ConnectedNotifierCalledAndDisconnectedNotifierNotCalled_Success)
     {
         size_t counter1{};
-        auto callback0 = [&counter1](AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
+        auto callback0 = [&counter1](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
-            EXPECT_STREQ("/Object/Value", path.data());
+            EXPECT_EQ("/Object/Value", notifyEventArgs.m_jsonKeyPath);
             counter1++;
         };
 
         size_t counter2{};
-        auto callback1 = [&counter2](AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
+        auto callback1 = [&counter2](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
-            EXPECT_STREQ("/Object/Value", path.data());
+            EXPECT_EQ("/Object/Value", notifyEventArgs.m_jsonKeyPath);
             counter2++;
         };;
 
@@ -426,10 +410,10 @@ namespace SettingsRegistryTests
             using AZ::SettingsRegistryInterface::Visitor::Visit;
 
             using ValueType [[maybe_unused]] = typename SettingsType<TypeParam>::ValueType;
-            void Visit([[maybe_unused]] AZStd::string_view path, [[maybe_unused]] AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type type, ValueType value) override
+            void Visit(const AZ::SettingsRegistryInterface::VisitArgs& visitArgs, ValueType value) override
             {
                 AZ::SettingsRegistryInterface::Type expectedType = SettingsType<TypeParam>::s_type;
-                EXPECT_EQ(expectedType, type);
+                EXPECT_EQ(expectedType, visitArgs.m_type);
                 SettingsType<TypeParam>::ExpectEq(SettingsType<TypeParam>::GetStoredValue(), value);
                 m_counter++;
             }
@@ -457,10 +441,10 @@ namespace SettingsRegistryTests
             using AZ::SettingsRegistryInterface::Visitor::Visit;
 
             using ValueType [[maybe_unused]] = typename SettingsType<TypeParam>::ValueType;
-            void Visit([[maybe_unused]] AZStd::string_view path, [[maybe_unused]] AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type type, ValueType value) override
+            void Visit(const AZ::SettingsRegistryInterface::VisitArgs& visitArgs, ValueType value) override
             {
                 AZ::SettingsRegistryInterface::Type expectedType = SettingsType<TypeParam>::s_type;
-                EXPECT_EQ(expectedType, type);
+                EXPECT_EQ(expectedType, visitArgs.m_type);
                 SettingsType<TypeParam>::ExpectEq(SettingsType<TypeParam>::GetStoredValue(), value);
                 m_counter++;
             }
@@ -487,9 +471,9 @@ namespace SettingsRegistryTests
         struct : public AZ::SettingsRegistryInterface::Visitor
         {
             using AZ::SettingsRegistryInterface::Visitor::Visit;
-            void Visit([[maybe_unused]] AZStd::string_view path, [[maybe_unused]] AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type type, AZ::s64 value) override
+            void Visit(const AZ::SettingsRegistryInterface::VisitArgs& visitArgs, AZ::s64 value) override
             {
-                EXPECT_EQ(AZ::SettingsRegistryInterface::Type::Integer, type);
+                EXPECT_EQ(AZ::SettingsRegistryInterface::Type::Integer, visitArgs.m_type);
                 AZ::u64 testValue = reinterpret_cast<AZ::u64&>(value);
                 EXPECT_EQ(expectedValue, testValue);
                 
@@ -516,17 +500,17 @@ namespace SettingsRegistryTests
 
         struct : public AZ::SettingsRegistryInterface::Visitor
         {
-            AZ::SettingsRegistryInterface::VisitResponse Traverse(AZStd::string_view path, AZStd::string_view valueName,
-                AZ::SettingsRegistryInterface::VisitAction, AZ::SettingsRegistryInterface::Type) override
+            AZ::SettingsRegistryInterface::VisitResponse Traverse(const AZ::SettingsRegistryInterface::VisitArgs& visitArgs,
+                AZ::SettingsRegistryInterface::VisitAction) override
             {
-                EXPECT_TRUE(path.ends_with(valueName));
+                EXPECT_TRUE(visitArgs.m_jsonKeyPath.ends_with(visitArgs.m_fieldName));
                 return AZ::SettingsRegistryInterface::VisitResponse::Continue;
             }
 
             using AZ::SettingsRegistryInterface::Visitor::Visit;
-            void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type , AZStd::string_view)override
+            void Visit(const AZ::SettingsRegistryInterface::VisitArgs& visitArgs, AZStd::string_view)override
             {
-                EXPECT_TRUE(path.ends_with(valueName));
+                EXPECT_TRUE(visitArgs.m_jsonKeyPath.ends_with(visitArgs.m_fieldName));
             }
         } visitor;
 
@@ -602,14 +586,14 @@ namespace SettingsRegistryTests
     TEST_F(SettingsRegistryTest, SetObject_NotifiersCalled_ReturnsFalse)
     {
         size_t counter = 0;
-        auto callback0 = [&counter](AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
+        auto callback0 = [&counter](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
-            EXPECT_STREQ("/Object/Value", path.data());
+            EXPECT_EQ("/Object/Value", notifyEventArgs.m_jsonKeyPath);
             counter++;
         };
-        auto callback1 = [&counter](AZStd::string_view, AZ::SettingsRegistryInterface::Type callbackType)
+        auto callback1 = [&counter](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
-            EXPECT_EQ(callbackType, AZ::SettingsRegistryInterface::Type::Object);
+            EXPECT_EQ(notifyEventArgs.m_type, AZ::SettingsRegistryInterface::Type::Object);
             counter++;
         };
         auto testNotifier1 = m_registry->RegisterNotifier(callback0);
@@ -1032,8 +1016,8 @@ namespace SettingsRegistryTests
 
     TEST_F(SettingsRegistryTest, VisitWithCallback_InvalidPath_ReturnsFalse)
     {
-        auto callback = [](AZStd::string_view, AZStd::string_view,
-            AZ::SettingsRegistryInterface::VisitAction, AZ::SettingsRegistryInterface::Type)
+        auto callback = [](const AZ::SettingsRegistryInterface::VisitArgs&,
+            AZ::SettingsRegistryInterface::VisitAction)
         {
             return AZ::SettingsRegistryInterface::VisitResponse::Continue;
         };
@@ -1043,8 +1027,8 @@ namespace SettingsRegistryTests
 
     TEST_F(SettingsRegistryTest, VisitWithCallback_UnknownPath_ReturnsFalse)
     {
-        auto callback = [](AZStd::string_view, AZStd::string_view,
-            AZ::SettingsRegistryInterface::VisitAction, AZ::SettingsRegistryInterface::Type)
+        auto callback = [](const AZ::SettingsRegistryInterface::VisitArgs&,
+            AZ::SettingsRegistryInterface::VisitAction)
         {
             return AZ::SettingsRegistryInterface::VisitResponse::Continue;
         };
@@ -1054,8 +1038,8 @@ namespace SettingsRegistryTests
 
     TEST_F(SettingsRegistryTest, VisitWithCallback_WithEmptyStringViewPath_DoesNotCrash)
     {
-        auto callback = [](AZStd::string_view, AZStd::string_view,
-            AZ::SettingsRegistryInterface::VisitAction, AZ::SettingsRegistryInterface::Type)
+        auto callback = [](const AZ::SettingsRegistryInterface::VisitArgs&,
+            AZ::SettingsRegistryInterface::VisitAction)
         {
             return AZ::SettingsRegistryInterface::VisitResponse::Continue;
         };
@@ -1316,10 +1300,10 @@ namespace SettingsRegistryTests
     {
         AZStd::string_view anchorKey = "/Anchor/Root";
         bool callbackInvoked{};
-        auto callback = [anchorKey, &callbackInvoked](AZStd::string_view path, AZ::SettingsRegistryInterface::Type type)
+        auto callback = [anchorKey, &callbackInvoked](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
-            EXPECT_EQ(anchorKey, path);
-            EXPECT_EQ(AZ::SettingsRegistryInterface::Type::Array, type);
+            EXPECT_EQ(anchorKey, notifyEventArgs.m_jsonKeyPath);
+            EXPECT_EQ(AZ::SettingsRegistryInterface::Type::Array, notifyEventArgs.m_type);
             callbackInvoked = true;
         };
         auto testNotifier1 = m_registry->RegisterNotifier(callback);
@@ -1334,18 +1318,18 @@ namespace SettingsRegistryTests
 
     TEST_F(SettingsRegistryTest, MergeSettingsFile_MergeTestFile_PatchAppliedAndReported)
     {
-        AZStd::string path = CreateTestFile("test.setreg", R"({ "Test": 1 })");
+        auto path = CreateTestFile("test.setreg", R"({ "Test": 1 })");
 
-        auto callback = [this](AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
+        auto callback = [this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
-            EXPECT_TRUE(path.empty());
+            EXPECT_TRUE(notifyEventArgs.m_jsonKeyPath.empty());
             AZ::s64 value = -1;
             bool result = m_registry->Get(value, "/Test");
             EXPECT_TRUE(result);
             EXPECT_EQ(1, value);
         };
         auto testNotifier1 = m_registry->RegisterNotifier(callback);
-        bool result = m_registry->MergeSettingsFile(path, AZ::SettingsRegistryInterface::Format::JsonMergePatch, {}, nullptr);
+        bool result = m_registry->MergeSettingsFile(path.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, {}, nullptr);
         ASSERT_TRUE(result);
 
         AZStd::string history;
@@ -1356,18 +1340,18 @@ namespace SettingsRegistryTests
 
     TEST_F(SettingsRegistryTest, MergeSettingsFile_MergeTestFileWithRootKey_PatchAppliedAndReported)
     {
-        AZStd::string path = CreateTestFile("test.setreg", R"({ "Test": 1 })");
+        auto path = CreateTestFile("test.setreg", R"({ "Test": 1 })");
 
-        auto callback = [this](AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
+        auto callback = [this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
-            EXPECT_EQ("/Path", path);
+            EXPECT_EQ("/Path", notifyEventArgs.m_jsonKeyPath);
             AZ::s64 value = -1;
             bool result = m_registry->Get(value, "/Path/Test");
             EXPECT_TRUE(result);
             EXPECT_EQ(1, value);
         };
         auto testNotifier1 = m_registry->RegisterNotifier(callback);
-        bool result = m_registry->MergeSettingsFile(path, AZ::SettingsRegistryInterface::Format::JsonMergePatch, "/Path", nullptr);
+        bool result = m_registry->MergeSettingsFile(path.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "/Path", nullptr);
         ASSERT_TRUE(result);
 
         AZStd::string history;
@@ -1378,12 +1362,12 @@ namespace SettingsRegistryTests
 
     TEST_F(SettingsRegistryTest, MergeSettingsFile_MergeTestFileWithBuffer_PatchAppliedAndReported)
     {
-        AZStd::string path = CreateTestFile("test.setreg", R"({ "Test": 1 })");
+        auto path = CreateTestFile("test.setreg", R"({ "Test": 1 })");
 
         AZStd::vector<char> buffer;
         buffer.push_back(32);
         buffer.push_back(64);
-        bool result = m_registry->MergeSettingsFile(path, AZ::SettingsRegistryInterface::Format::JsonMergePatch, {}, &buffer);
+        bool result = m_registry->MergeSettingsFile(path.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, {}, &buffer);
         EXPECT_TRUE(result);
         EXPECT_TRUE(buffer.empty());
     }
@@ -1398,11 +1382,11 @@ namespace SettingsRegistryTests
 
     TEST_F(SettingsRegistryTest, MergeSettingsFile_PathAsSubString_ReturnsTrue)
     {
-        AZStd::string path = AZStd::string::format("%s/%s/test.setreg1234",
-            m_testFolder->c_str(), AZ::SettingsRegistryInterface::RegistryFolder);
+        auto path = m_tempDirectory.GetDirectoryAsFixedMaxPath()
+            / AZ::SettingsRegistryInterface::RegistryFolder / "test.setreg1234";
         CreateTestFile("test.setreg", R"({ "Test": 1 })");
 
-        AZStd::string_view subPath(path.c_str(), path.length() - 4);
+        AZStd::string_view subPath(path.c_str(), path.Native().size() - 4);
         bool result = m_registry->MergeSettingsFile(subPath, AZ::SettingsRegistryInterface::Format::JsonMergePatch, {}, nullptr);
         EXPECT_TRUE(result);
     }
@@ -1436,10 +1420,10 @@ namespace SettingsRegistryTests
 
     TEST_F(SettingsRegistryTest, MergeSettingsFile_InvalidRootKey_ReturnsFalse)
     {
-        AZStd::string path = CreateTestFile("test.setreg", R"({ "Test": 1 })");
+        auto path = CreateTestFile("test.setreg", R"({ "Test": 1 })");
 
         AZ_TEST_START_TRACE_SUPPRESSION;
-        bool result = m_registry->MergeSettingsFile(path, AZ::SettingsRegistryInterface::Format::JsonMergePatch, "$", nullptr);
+        bool result = m_registry->MergeSettingsFile(path.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "$", nullptr);
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         EXPECT_FALSE(result);
 
@@ -1450,10 +1434,10 @@ namespace SettingsRegistryTests
 
     TEST_F(SettingsRegistryTest, MergeSettingsFile_ParseError_ReturnsFalse)
     {
-        AZStd::string path = CreateTestFile("test.setreg", "{ Test: 1 }");
+        auto path = CreateTestFile("test.setreg", "{ Test: 1 }");
 
         AZ_TEST_START_TRACE_SUPPRESSION;
-        bool result = m_registry->MergeSettingsFile(path, AZ::SettingsRegistryInterface::Format::JsonMergePatch, {}, nullptr);
+        bool result = m_registry->MergeSettingsFile(path.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, {}, nullptr);
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         EXPECT_FALSE(result);
 
@@ -1464,10 +1448,10 @@ namespace SettingsRegistryTests
 
     TEST_F(SettingsRegistryTest, MergeSettingsFile_NonObjectRoot_EmptyRootKey_JsonMergePatch_ReturnsFalse)
     {
-        AZStd::string path = CreateTestFile("test.setreg", R"("BooleanValue": false)");
+        auto path = CreateTestFile("test.setreg", R"("BooleanValue": false)");
 
         AZ_TEST_START_TRACE_SUPPRESSION;
-        bool result = m_registry->MergeSettingsFile(path, AZ::SettingsRegistryInterface::Format::JsonMergePatch, {});
+        bool result = m_registry->MergeSettingsFile(path.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, {});
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         EXPECT_FALSE(result);
 
@@ -1480,10 +1464,10 @@ namespace SettingsRegistryTests
     {
         // Because the root key isn't empty the setting registry will not be be completely overridden and therefore
         // it is safe to merge the .setreg file with a boolean element at the root
-        AZStd::string path = CreateTestFile("test.setreg", R"("BooleanValue": false)");
+        auto path = CreateTestFile("test.setreg", R"("BooleanValue": false)");
 
         AZ_TEST_START_TRACE_SUPPRESSION;
-        EXPECT_FALSE(m_registry->MergeSettingsFile(path, AZ::SettingsRegistryInterface::Format::JsonMergePatch, "/Test"));
+        EXPECT_FALSE(m_registry->MergeSettingsFile(path.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "/Test"));
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         // There should be an error message about attempting to serialize a root json value that is not a Json Object
         // to the settings registry
@@ -1497,14 +1481,14 @@ namespace SettingsRegistryTests
     {
         // In this scenario the object root is empty. The Merge should complete successfully
         // but leave the settings registry unchanged.
-        AZStd::string path = CreateTestFile("test.setreg", R"({})");
+        auto path = CreateTestFile("test.setreg", R"({})");
 
         // Initialize the Settings Registry with an Object at /TestObject/IntValue
         m_registry->MergeSettings(R"({ "TestObject": { "IntValue": 7 } })", AZ::SettingsRegistryInterface::Format::JsonMergePatch);
 
         // Merging a file with a empty JSON Object should be effectively a no-op.
         // There are some changes in the settings registry to record the merge history for introspection purposes.
-        bool result = m_registry->MergeSettingsFile(path, AZ::SettingsRegistryInterface::Format::JsonMergePatch, {});
+        bool result = m_registry->MergeSettingsFile(path.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, {});
         EXPECT_TRUE(result);
 
         AZStd::string history;
@@ -1529,7 +1513,7 @@ namespace SettingsRegistryTests
         CreateTestFile("Memory.test.setreg",            R"({ "Memory": 2, "MemoryTest": true })");
 
         size_t counter = 0;
-        auto callback = [this, &counter](AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
+        auto callback = [this, &counter](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
             const char* fileIds[] =
             {
@@ -1539,14 +1523,12 @@ namespace SettingsRegistryTests
                 "/MemoryEditorTest"
             };
 
-            MergeNotify(path, counter, AZ_ARRAY_SIZE(fileIds), "/Memory", fileIds);
+            MergeNotify(notifyEventArgs.m_jsonKeyPath, counter, AZ_ARRAY_SIZE(fileIds), "/Memory", fileIds);
             counter++;
         };
         auto testNotifier1 = m_registry->RegisterNotifier(callback);
 
-        m_testFolder->push_back(AZ_CORRECT_DATABASE_SEPARATOR);
-        *m_testFolder += AZ::SettingsRegistryInterface::RegistryFolder;
-        bool result = m_registry->MergeSettingsFolder(*m_testFolder, { "editor", "test" }, {});
+        bool result = m_registry->MergeSettingsFolder((m_tempDirectory.GetDirectoryAsFixedMaxPath() / AZ::SettingsRegistryInterface::RegistryFolder).Native(), {"editor", "test"}, {});
         EXPECT_TRUE(result);
         EXPECT_EQ(4, counter);
 
@@ -1569,7 +1551,7 @@ namespace SettingsRegistryTests
         CreateTestFile("Platform/Special/Memory.editor.setreg",   R"({ "Memory": 3, "MemoryEditorSpecial": true })");
 
         size_t counter = 0;
-        auto callback = [this, &counter](AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
+        auto callback = [this, &counter](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
             const char* fileIds[] =
             {
@@ -1581,14 +1563,12 @@ namespace SettingsRegistryTests
                 "/MemoryEditorTest"
             };
 
-            MergeNotify(path, counter, AZ_ARRAY_SIZE(fileIds), "/Memory", fileIds);
+            MergeNotify(notifyEventArgs.m_jsonKeyPath, counter, AZ_ARRAY_SIZE(fileIds), "/Memory", fileIds);
             counter++;
         };
         auto testNotifier1 = m_registry->RegisterNotifier(callback);
 
-        m_testFolder->push_back(AZ_CORRECT_DATABASE_SEPARATOR);
-        *m_testFolder += AZ::SettingsRegistryInterface::RegistryFolder;
-        bool result = m_registry->MergeSettingsFolder(*m_testFolder, { "editor", "test" }, "Special");
+        bool result = m_registry->MergeSettingsFolder((m_tempDirectory.GetDirectoryAsFixedMaxPath() / AZ::SettingsRegistryInterface::RegistryFolder).Native(), { "editor", "test" }, "Special");
         EXPECT_TRUE(result);
         EXPECT_EQ(6, counter);
 
@@ -1610,7 +1590,7 @@ namespace SettingsRegistryTests
         CreateTestFile("c.test.setreg",           R"({ "Id": 3, "cTest": true })");
 
         size_t counter = 0;
-        auto callback = [this, &counter](AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
+        auto callback = [this, &counter](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
             const char* fileIds[] =
             {
@@ -1620,14 +1600,12 @@ namespace SettingsRegistryTests
                 "/cTest"
             };
 
-            MergeNotify(path, counter, AZ_ARRAY_SIZE(fileIds), "/Id", fileIds);
+            MergeNotify(notifyEventArgs.m_jsonKeyPath, counter, AZ_ARRAY_SIZE(fileIds), "/Id", fileIds);
             counter++;
         };
         auto testNotifier1 = m_registry->RegisterNotifier(callback);
         
-        m_testFolder->push_back(AZ_CORRECT_DATABASE_SEPARATOR);
-        *m_testFolder += AZ::SettingsRegistryInterface::RegistryFolder;
-        bool result = m_registry->MergeSettingsFolder(*m_testFolder, { "editor", "test" }, {});
+        bool result = m_registry->MergeSettingsFolder((m_tempDirectory.GetDirectoryAsFixedMaxPath() / AZ::SettingsRegistryInterface::RegistryFolder).Native(), { "editor", "test" }, {});
         EXPECT_TRUE(result);
         EXPECT_EQ(4, counter);
 
@@ -1651,7 +1629,7 @@ namespace SettingsRegistryTests
             ])");
 
         size_t counter = 0;
-        auto callback = [this, &counter](AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
+        auto callback = [this, &counter](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
             const char* fileIds[] =
             {
@@ -1661,14 +1639,12 @@ namespace SettingsRegistryTests
                 "/MemoryEditorTest"
             };
 
-            MergeNotify(path, counter, AZ_ARRAY_SIZE(fileIds), "/Memory", fileIds);
+            MergeNotify(notifyEventArgs.m_jsonKeyPath, counter, AZ_ARRAY_SIZE(fileIds), "/Memory", fileIds);
             counter++;
         };
         auto testNotifier1 = m_registry->RegisterNotifier(callback);
 
-        m_testFolder->push_back(AZ_CORRECT_DATABASE_SEPARATOR);
-        *m_testFolder += AZ::SettingsRegistryInterface::RegistryFolder;
-        bool result = m_registry->MergeSettingsFolder(*m_testFolder, { "editor", "test" }, {});
+        bool result = m_registry->MergeSettingsFolder((m_tempDirectory.GetDirectoryAsFixedMaxPath() / AZ::SettingsRegistryInterface::RegistryFolder).Native(), { "editor", "test" }, {});
         EXPECT_TRUE(result);
         EXPECT_EQ(4, counter);
 
@@ -1687,21 +1663,19 @@ namespace SettingsRegistryTests
         CreateTestFile("Platform/Special/Memory.wrong", R"({ "Memory": 2, "SpecialWrong": true })");
 
         size_t counter = 0;
-        auto callback = [this, &counter](AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
+        auto callback = [this, &counter](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
             const char* fileIds[] =
             {
                 "/MemoryRoot"
             };
 
-            MergeNotify(path, counter, AZ_ARRAY_SIZE(fileIds), "/Memory", fileIds);
+            MergeNotify(notifyEventArgs.m_jsonKeyPath, counter, AZ_ARRAY_SIZE(fileIds), "/Memory", fileIds);
             counter++;
         };
         auto testNotifier1 = m_registry->RegisterNotifier(callback);
 
-        m_testFolder->push_back(AZ_CORRECT_DATABASE_SEPARATOR);
-        *m_testFolder += AZ::SettingsRegistryInterface::RegistryFolder;
-        bool result = m_registry->MergeSettingsFolder(*m_testFolder, { "editor", "test" }, "Special");
+        bool result = m_registry->MergeSettingsFolder((m_tempDirectory.GetDirectoryAsFixedMaxPath() / AZ::SettingsRegistryInterface::RegistryFolder).Native(), { "editor", "test" }, "Special");
         EXPECT_TRUE(result);
         EXPECT_EQ(1, counter);
 
@@ -1718,7 +1692,7 @@ namespace SettingsRegistryTests
         CreateTestFile("Memory.test.setreg", R"({ "Memory": 2, "MemoryTest": true })");
 
         size_t counter = 0;
-        auto callback = [this, &counter](AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
+        auto callback = [this, &counter](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
             const char* fileIds[] =
             {
@@ -1728,16 +1702,14 @@ namespace SettingsRegistryTests
                 "/MemoryEditorTest"
             };
 
-            MergeNotify(path, counter, AZ_ARRAY_SIZE(fileIds), "/Memory", fileIds);
+            MergeNotify(notifyEventArgs.m_jsonKeyPath, counter, AZ_ARRAY_SIZE(fileIds), "/Memory", fileIds);
             counter++;
         };
         auto testNotifier1 = m_registry->RegisterNotifier(callback);
 
         AZStd::vector<char> buffer;
 
-        m_testFolder->push_back(AZ_CORRECT_DATABASE_SEPARATOR);
-        *m_testFolder += AZ::SettingsRegistryInterface::RegistryFolder;
-        bool result = m_registry->MergeSettingsFolder(*m_testFolder, { "editor", "test" }, {}, "", &buffer);
+        bool result = m_registry->MergeSettingsFolder((m_tempDirectory.GetDirectoryAsFixedMaxPath() / AZ::SettingsRegistryInterface::RegistryFolder).Native(), { "editor", "test" }, {}, "", &buffer);
         EXPECT_TRUE(result);
         EXPECT_EQ(4, counter);
 
@@ -1751,7 +1723,7 @@ namespace SettingsRegistryTests
 
     TEST_F(SettingsRegistryTest, MergeSettingsFolder_EmptyFolder_ReportsSuccessButNothingAdded)
     {
-        bool result = m_registry->MergeSettingsFolder(*m_testFolder, { "editor", "test" }, {});
+        bool result = m_registry->MergeSettingsFolder(m_tempDirectory.GetDirectoryAsFixedMaxPath().Native(), { "editor", "test" }, {});
         EXPECT_TRUE(result);
 
         EXPECT_EQ(AZ::SettingsRegistryInterface::Type::Object, m_registry->GetType(AZ_SETTINGS_REGISTRY_HISTORY_KEY "/0")); // Folder and specialization settings.
@@ -1778,9 +1750,7 @@ namespace SettingsRegistryTests
         CreateTestFile("Memory.editor.test.setreg", "{}");
 
         AZ_TEST_START_TRACE_SUPPRESSION;
-        m_testFolder->push_back(AZ_CORRECT_DATABASE_SEPARATOR);
-        *m_testFolder += AZ::SettingsRegistryInterface::RegistryFolder;
-        bool result = m_registry->MergeSettingsFolder(*m_testFolder, { "editor", "test" }, {});
+        bool result = m_registry->MergeSettingsFolder((m_tempDirectory.GetDirectoryAsFixedMaxPath() / AZ::SettingsRegistryInterface::RegistryFolder).Native(), { "editor", "test" }, {});
         EXPECT_GT(::UnitTest::TestRunner::Instance().StopAssertTests(), 0);
         EXPECT_FALSE(result);
 

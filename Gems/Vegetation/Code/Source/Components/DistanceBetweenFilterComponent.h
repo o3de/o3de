@@ -37,7 +37,7 @@ namespace Vegetation
         bool IsRadiusReadOnly() const;
     };
 
-    static const AZ::Uuid DistanceBetweenFilterComponentTypeId = "{B1F3B6E1-A3C4-44EE-B70B-D69013073E82}";
+    inline constexpr AZ::TypeId DistanceBetweenFilterComponentTypeId{ "{B1F3B6E1-A3C4-44EE-B70B-D69013073E82}" };
 
     /**
     * Component implementing VegetationFilterRequestBus that accepts/rejects based on distance between instances

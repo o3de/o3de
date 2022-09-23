@@ -32,10 +32,13 @@ namespace TestImpact
             TestFailurePolicyKey,
             IntegrityFailurePolicyKey,
             TargetOutputCaptureKey,
+            TestTargetTimeoutKey,
             GlobalTimeoutKey,
             SuiteFilterKey,
             DraftFailingTestsKey,
             ExcludedTestsKey,
+            SafeModeKey,
+            TestRunnerPolicy,
             // Values
             None,
             Seed,
@@ -50,7 +53,7 @@ namespace TestImpact
             StdOut,
             File,
             Discard,
-            Keep
+            Keep,
         };
 
         constexpr const char* OptionKeys[] = {
@@ -67,10 +70,13 @@ namespace TestImpact
             "fpolicy",
             "ipolicy",
             "targetout",
+            "ttimeout",
             "gtimeout",
             "suite",
             "draftfailingtests",
             "excluded",
+            "safemode",
+            "testrunner",
             // Values
             "none",
             "seed",
@@ -85,7 +91,7 @@ namespace TestImpact
             "stdout",
             "file",
             "discard",
-            "keep"
+            "keep",
         };
 
         RepoPath ParseConfigurationFile(const AZ::CommandLine& cmd)
@@ -183,6 +189,13 @@ namespace TestImpact
             return ParseAbortContinueOption(OptionKeys[IntegrityFailurePolicyKey], states, cmd).value_or(Policy::IntegrityFailure::Abort);
         }
 
+        Policy::TestRunner ParseTestRunnerPolicy(const AZ::CommandLine& cmd)
+        {
+            const BinaryStateValue<Policy::TestRunner> states = { Policy::TestRunner::UseLiveTestRunner, Policy::TestRunner::UseNullTestRunner };
+
+            return ParseLiveNullOption(OptionKeys[TestRunnerPolicy], states, cmd).value_or(Policy::TestRunner::UseLiveTestRunner);
+        }
+
         Policy::TargetOutputCapture ParseTargetOutputCapture(const AZ::CommandLine& cmd)
         {
             if (const auto numSwitchValues = cmd.GetNumSwitchValues(OptionKeys[TargetOutputCaptureKey]);
@@ -230,6 +243,11 @@ namespace TestImpact
             return Policy::TargetOutputCapture::None;
         }
 
+        AZStd::optional<AZStd::chrono::milliseconds> ParseTestTargetTimeout(const AZ::CommandLine& cmd)
+        {
+            return ParseSecondsOption(OptionKeys[TestTargetTimeoutKey], cmd);
+        }
+
         AZStd::optional<AZStd::chrono::milliseconds> ParseGlobalTimeout(const AZ::CommandLine& cmd)
         {
             return ParseSecondsOption(OptionKeys[GlobalTimeoutKey], cmd);
@@ -264,7 +282,13 @@ namespace TestImpact
 
             return {};
         }
-    }
+
+        bool ParseSafeMode(const AZ::CommandLine& cmd)
+        {
+            const BinaryStateValue<bool> states = { false, true };
+            return ParseOnOffOption(OptionKeys[SafeModeKey], states, cmd).value_or(false);
+        }
+    } // namespace
 
     CommandLineOptions::CommandLineOptions(int argc, char** argv)
     {
@@ -287,6 +311,14 @@ namespace TestImpact
         m_draftFailingTests = ParseDraftFailingTests(cmd);
         m_suiteFilter = ParseSuiteFilter(cmd);
         m_excludedTests = ParseExcludedTestsFile(cmd);
+        m_safeMode = ParseSafeMode(cmd);
+        m_testTargetTimeout = ParseTestTargetTimeout(cmd);
+        m_testRunnerPolicy = ParseTestRunnerPolicy(cmd);
+    }
+
+    bool CommandLineOptions::HasSafeMode() const
+    {
+        return m_safeMode;
     }
 
     bool CommandLineOptions::HasDataFilePath() const
@@ -374,6 +406,16 @@ namespace TestImpact
         return m_targetOutputCapture;
     }
 
+    Policy::TestRunner CommandLineOptions::GetTestRunnerPolicy() const
+    {
+        return m_testRunnerPolicy;
+    }
+
+    const AZStd::optional<AZStd::chrono::milliseconds>& CommandLineOptions::GetTestTargetTimeout() const
+    {
+        return m_testTargetTimeout;
+    }
+
     const AZStd::optional<AZStd::chrono::milliseconds>& CommandLineOptions::GetGlobalTimeout() const
     {
         return m_globalTimeout;
@@ -411,6 +453,10 @@ namespace TestImpact
             "                                                                analysis on.\n"
             "    -report=<filename>                                          Path to where the sequence report file will be written (if this option \n"
             "                                                                is not specified, no report will be written).\n"
+            "    -ttimeout=<seconds>                                         Timeout value to terminate individual test targets should it be \n"
+            "                                                                tests is run without instrumentation after the set of selected \n"
+            "                                                                instrumented tests is run (this has the effect of ensuring all \n"
+            "                                                                tests are run regardless).\n"
             "    -gtimeout=<seconds>                                         Global timeout value to terminate the entire test sequence should it \n"
             "                                                                be exceeded.\n"
             "    -sequence=<none, seed, regular, tia, tianowrite, tiaorseed> The type of test sequence to perform, where 'none' runs no tests and\n"
@@ -463,6 +509,9 @@ namespace TestImpact
             "                                                                prioritize test targets according to the locality of their covering \n"
             "                                                                production targets in the dependency graph(if no dependency graph data \n"
             "                                                                available, no prioritization will occur).\n"
+            "    -safemode=<on,off>                                          Flag to specify a safe mode sequence where the set of unselected \n"
+            "    -testrunner=<live,null>                                     Whether to use the null test runner (on) or run the tests (off). \n"
+            "                                                                If not set, defaults to running the tests.                          \n"
             "    -suite=<main, periodic, sandbox, awsi>                      The test suite to select from for this test sequence.";
 
         return help;

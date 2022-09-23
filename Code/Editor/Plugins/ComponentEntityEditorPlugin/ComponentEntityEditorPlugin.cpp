@@ -120,6 +120,11 @@ ComponentEntityEditorPlugin::ComponentEntityEditorPlugin([[maybe_unused]] IEdito
     ViewPaneOptions inspectorOptions;
     inspectorOptions.canHaveMultipleInstances = true;
     inspectorOptions.preferedDockingArea = Qt::RightDockWidgetArea;
+    // Override the default behavior for component mode enter/exit and imgui enter/exit
+    // so that we don't automatically disable and enable the entire Entity Inspector. This will be handled separately per-component.
+    inspectorOptions.isDisabledInComponentMode = false;
+    inspectorOptions.isDisabledInImGuiMode = false;
+
     RegisterViewPane<QComponentEntityEditorInspectorWindow>(
         LyViewPane::EntityInspector,
         LyViewPane::CategoryTools,
@@ -130,6 +135,11 @@ ComponentEntityEditorPlugin::ComponentEntityEditorPlugin([[maybe_unused]] IEdito
     pinnedInspectorOptions.preferedDockingArea = Qt::NoDockWidgetArea;
     pinnedInspectorOptions.paneRect = QRect(50, 50, 400, 700);
     pinnedInspectorOptions.showInMenu = false;
+    // Override the default behavior for component mode enter/exit and imgui enter/exit
+    // so that we don't automatically disable and enable the entire Pinned Entity Inspector. This will be handled separately per-component.
+    pinnedInspectorOptions.isDisabledInComponentMode = false;
+    pinnedInspectorOptions.isDisabledInImGuiMode = false;
+
     RegisterViewPane<QComponentEntityEditorInspectorWindow>(
         LyViewPane::EntityInspectorPinned,
         LyViewPane::CategoryTools,
@@ -145,6 +155,10 @@ ComponentEntityEditorPlugin::ComponentEntityEditorPlugin([[maybe_unused]] IEdito
         ViewPaneOptions outlinerOptions;
         outlinerOptions.canHaveMultipleInstances = true;
         outlinerOptions.preferedDockingArea = Qt::LeftDockWidgetArea;
+        // Override the default behavior for component mode enter/exit and imgui enter/exit
+        // so that we don't automatically disable and enable the Entity Outliner. This will be handled separately.
+        outlinerOptions.isDisabledInComponentMode = false;
+        outlinerOptions.isDisabledInImGuiMode = false;
 
         RegisterViewPane<QEntityOutlinerWindow>(
             LyViewPane::EntityOutliner,
@@ -164,6 +178,10 @@ ComponentEntityEditorPlugin::ComponentEntityEditorPlugin([[maybe_unused]] IEdito
         ViewPaneOptions outlinerOptions;
         outlinerOptions.canHaveMultipleInstances = true;
         outlinerOptions.preferedDockingArea = Qt::LeftDockWidgetArea;
+        // Override the default behavior for component mode enter/exit and imgui enter/exit
+        // so that we don't automatically disable and enable the Entity Outliner. This will be handled separately.
+        outlinerOptions.isDisabledInComponentMode = false;
+        outlinerOptions.isDisabledInImGuiMode = false;
 
         // this pane was originally introduced with this name, so layout settings are all saved with that name, despite the preview label being removed.
         outlinerOptions.saveKeyName = "Entity Outliner (PREVIEW)";

@@ -337,16 +337,16 @@ namespace AZ::IO
     {
         SAutoCollectFileAccessTime(Archive* pArchive)
             : m_pArchive{ pArchive }
-            , m_startTime{ AZStd::chrono::system_clock::now() }
+            , m_startTime{ AZStd::chrono::steady_clock::now() }
         {
         }
         ~SAutoCollectFileAccessTime()
         {
-            m_pArchive->m_fFileAccessTime += aznumeric_cast<float>(AZStd::chrono::duration_cast<AZStd::chrono::seconds>(AZStd::chrono::system_clock::now() - m_startTime).count());
+            m_pArchive->m_fFileAccessTime += aznumeric_cast<float>(AZStd::chrono::duration_cast<AZStd::chrono::seconds>(AZStd::chrono::steady_clock::now() - m_startTime).count());
         }
     private:
         Archive* m_pArchive;
-        AZStd::chrono::system_clock::time_point m_startTime;
+        AZStd::chrono::steady_clock::time_point m_startTime;
     };
 
     /////////////////////////////////////////////////////
@@ -370,7 +370,7 @@ namespace AZ::IO
             // this system is initialized before the settings registry has loaded the event list.
             AZ::ComponentApplicationLifecycle::RegisterHandler(
                 *settingsRegistry, m_componentApplicationLifecycleHandler,
-                [this](AZStd::string_view /*path*/, AZ::SettingsRegistryInterface::Type /*type*/)
+                [this](const AZ::SettingsRegistryInterface::NotifyEventArgs&)
                 {
                     OnSystemEntityActivated();
                 },
@@ -412,7 +412,7 @@ namespace AZ::IO
     {
         // Print call stack for each find.
         AZ_TracePrintf("Archive", "LogFileAccessCallStack() - name=%.*s; nameFull=%.*s; mode=%s\n", AZ_STRING_ARG(name), AZ_STRING_ARG(nameFull), mode);
-        AZ::Debug::Trace::PrintCallstack("Archive", 32);
+        AZ::Debug::Trace::Instance().PrintCallstack("Archive", 32);
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -1945,12 +1945,12 @@ namespace AZ::IO
 
     void* Archive::PoolMalloc(size_t size)
     {
-        return AZ::AllocatorInstance<AZ::OSAllocator>::Get().Allocate(size, 1, 0, "Archive::Malloc");
+        return azmalloc(size);
     }
 
     void Archive::PoolFree(void* p)
     {
-        return AZ::AllocatorInstance<AZ::OSAllocator>::Get().DeAllocate(p);
+        azfree(p);
     }
 
     // gets the current archive priority
@@ -1966,33 +1966,6 @@ namespace AZ::IO
     }
 
     //////////////////////////////////////////////////////////////////////////
-
-
-    AZStd::intrusive_ptr<AZ::IO::MemoryBlock> Archive::PoolAllocMemoryBlock(size_t size, const char* usage, size_t alignment)
-    {
-        if (!AZ::AllocatorInstance<AZ::OSAllocator>::IsReady())
-        {
-            AZ_Error("Archive", false, "OSAllocator is not ready. It cannot be used to allocate a MemoryBlock");
-            return {};
-        }
-        AZ::IAllocator* allocator = &AZ::AllocatorInstance<AZ::OSAllocator>::Get();
-        AZStd::intrusive_ptr<AZ::IO::MemoryBlock> memoryBlock{ new (allocator->Allocate(sizeof(AZ::IO::MemoryBlock), alignof(AZ::IO::MemoryBlock))) AZ::IO::MemoryBlock{AZ::IO::MemoryBlockDeleter{ &AZ::AllocatorInstance<AZ::OSAllocator>::Get() }} };
-        auto CreateFunc = [](size_t byteSize, size_t byteAlignment, const char* name)
-        {
-            return reinterpret_cast<uint8_t*>(AZ::AllocatorInstance<AZ::OSAllocator>::Get().Allocate(byteSize, byteAlignment, 0, name));
-        };
-        auto DeleterFunc = [](uint8_t* ptrArray)
-        {
-            if (ptrArray)
-            {
-                AZ::AllocatorInstance<AZ::OSAllocator>::Get().DeAllocate(ptrArray);
-            }
-        };
-        memoryBlock->m_address = AZ::IO::MemoryBlock::AddressPtr{ CreateFunc(size, alignment, usage), AZ::IO::MemoryBlock::AddressDeleter{DeleterFunc} };
-        memoryBlock->m_size = size;
-
-        return memoryBlock;
-    }
 
     void Archive::FindCompressionInfo(bool& found, AZ::IO::CompressionInfo& info, const AZ::IO::PathView filePath)
     {

@@ -45,7 +45,6 @@ struct ConsoleLine
 };
 typedef std::deque<ConsoleLine> Lines;
 
-
 class ConsoleLineEdit
     : public QLineEdit
 {
@@ -68,23 +67,6 @@ private:
     QStringList m_history;
     unsigned int m_historyIndex;
     bool m_bReusedHistory;
-};
-
-class ConsoleTextEdit
-    : public QPlainTextEdit
-{
-    Q_OBJECT
-public:
-    explicit ConsoleTextEdit(QWidget* parent = nullptr);
-    virtual bool event(QEvent* theEvent) override;
-
-signals:
-    void searchBarRequested();
-
-private:
-    void showContextMenu(const QPoint& pt);
-
-    QScopedPointer<QMenu> m_contextMenu;
 };
 
 class ConsoleVariableItemDelegate

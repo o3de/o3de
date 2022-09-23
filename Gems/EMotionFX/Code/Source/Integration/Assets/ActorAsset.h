@@ -78,6 +78,7 @@ namespace EMotionFX
             AZ::Uuid GetComponentTypeId() const override;
             const char* GetAssetTypeDisplayName() const override;
             const char* GetBrowserIcon() const override;
+            int GetAssetTypeDragAndDropCreationPriority() const override;
         };
     } // namespace Integration
 

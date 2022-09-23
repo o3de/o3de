@@ -135,6 +135,9 @@ namespace AzToolsFramework
     void EditorDefaultSelection::EndComponentMode()
     {
         TransitionFromComponentMode();
+        // remove the component mode viewport border
+        ViewportUi::ViewportUiRequestBus::Event(
+            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RemoveViewportBorder);
     }
 
     void EditorDefaultSelection::Refresh(const AZ::EntityComponentIdPair& entityComponentIdPair)
@@ -149,6 +152,20 @@ namespace AzToolsFramework
 
     void EditorDefaultSelection::AddSelectedComponentModesOfType(const AZ::Uuid& componentType)
     {
+        ComponentModeFramework::ComponentModeDelegateRequestBus::EnumerateHandlers(
+            [componentType](ComponentModeFramework::ComponentModeDelegateRequestBus::InterfaceType* componentModeMouseRequests)
+            {
+                componentModeMouseRequests->AddComponentModeOfType(componentType);
+                return true;
+            });
+
+        TransitionToComponentMode();
+    }
+
+    void EditorDefaultSelection::ChangeComponentMode(const AZ::Uuid& componentType)
+    {
+        TransitionFromComponentMode();
+
         ComponentModeFramework::ComponentModeDelegateRequestBus::EnumerateHandlers(
             [componentType](ComponentModeFramework::ComponentModeDelegateRequestBus::InterfaceType* componentModeMouseRequests)
             {

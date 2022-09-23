@@ -56,7 +56,34 @@ namespace AzToolsFramework
             void Redo(InstanceOptionalConstReference instance);
         };
 
-        //! handles entity updates, such as when the values on an entity change
+        //! Undo class for handling addition of an entity to a prefab template.
+        class PrefabUndoAddEntity
+            : public PrefabUndoBase
+        {
+        public:
+            explicit PrefabUndoAddEntity(const AZStd::string& undoOperationName);
+
+            void Capture(const PrefabDomValue& entityDom, AZ::EntityId entityId, TemplateId templateId);
+
+            void Undo() override;
+            void Redo() override;
+        };
+
+        //! Undo class for handling deletion of entities to a prefab template.
+        class PrefabUndoRemoveEntities
+            : public PrefabUndoBase
+        {
+        public:
+            explicit PrefabUndoRemoveEntities(const AZStd::string& undoOperationName);
+
+            void Capture(const AZStd::vector<AZStd::pair<const PrefabDomValue*, AZStd::string>>& entityDomAndPathList,
+                TemplateId templateId);
+
+            void Undo() override;
+            void Redo() override;
+        };
+
+        //! Undo class for handling update of an entity to a prefab template.
         class PrefabUndoEntityUpdate
             : public PrefabUndoBase
         {
@@ -66,9 +93,7 @@ namespace AzToolsFramework
 
             explicit PrefabUndoEntityUpdate(const AZStd::string& undoOperationName);
 
-            void Capture(
-                PrefabDom& initialState,
-                PrefabDom& endState, const AZ::EntityId& entity);
+            void Capture(const PrefabDomValue& initialState, const PrefabDomValue& endState, AZ::EntityId entity);
 
             void Undo() override;
             void Redo() override;

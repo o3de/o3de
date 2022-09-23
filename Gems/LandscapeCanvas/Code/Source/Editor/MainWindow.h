@@ -194,7 +194,7 @@ namespace LandscapeCanvasEditor
         ////////////////////////////////////////////////////////////////////////
 
         //! PrefabFocusNotificationBus overrides
-        void OnPrefabFocusChanged() override;
+        void OnPrefabFocusChanged(AZ::EntityId previousContainerEntityId, AZ::EntityId newContainerEntityId) override;
 
         //! PrefabPublicNotificationBus overrides
         void OnPrefabInstancePropagationBegin() override;
@@ -217,12 +217,16 @@ namespace LandscapeCanvasEditor
 
         QString GetPropertyPathForSlot(GraphModel::SlotPtr slot, GraphModel::DataType::Enum dataType, int elementIndex = 0);
         void UpdateConnectionData(GraphModel::ConnectionPtr connection, bool added);
+        void HandleSetImageAssetPath(const AZ::EntityId& sourceEntityId, const AZ::EntityId& targetEntityId);
 
         AZ::u32 GetWrappedNodeLayoutOrder(GraphModel::NodePtr node);
 
         AZ::EntityId GetRootEntityIdForGraphId(const GraphCanvas::GraphId& graphId);
 
-        AZ::ComponentId AddComponentTypeIdToEntity(const AZ::EntityId& entityId, AZ::TypeId componentToAddTypeId);
+        AZ::ComponentId AddComponentTypeIdToEntity(
+            const AZ::EntityId& entityId,
+            AZ::TypeId componentToAddTypeId,
+            const AZ::ComponentDescriptor::DependencyArrayType& optionalServices = {});
         void AddComponentForNode(GraphModel::NodePtr node, const AZ::EntityId& entityId);
         void HandleNodeCreated(GraphModel::NodePtr node);
         void HandleNodeAdded(GraphModel::NodePtr node);
@@ -234,7 +238,7 @@ namespace LandscapeCanvasEditor
             Invalid = -1,
             Shapes = 0,
             Gradients,
-            VegetationAreas,
+            WrapperNodes,
             Count
         };
 
@@ -251,6 +255,7 @@ namespace LandscapeCanvasEditor
         GraphModel::NodePtrList RefreshEntityComponentNodes(const AZ::EntityId& targetEntityId, GraphCanvas::GraphId graphId);
         void PlaceNewNode(GraphCanvas::GraphId graphId, LandscapeCanvas::BaseNode::BaseNodePtr node);
         int GetInboundDataSlotIndex(GraphModel::NodePtr node, GraphModel::DataTypePtr dataType, GraphModel::SlotPtr targetSlot);
+        void HandleImageAssetSlot(GraphModel::NodePtr targetNode, const EntityIdNodeMap& gradientNodeMap, ConnectionsList& connections);
 
         //! Determines whether or not we should allow the user to interact with the graph
         //! This should be disabled when there is no level currently loaded
@@ -273,11 +278,10 @@ namespace LandscapeCanvasEditor
 
         using DeletedNodePositionsMap = AZStd::unordered_map<AZ::EntityComponentIdPair, AZ::Vector2>;
         AZStd::unordered_map<GraphCanvas::GraphId, DeletedNodePositionsMap> m_deletedNodePositions;
+        GraphModel::NodePtrList m_deletedWrappedNodes;
         AzToolsFramework::EntityIdList m_queuedEntityDeletes;
 
         AzToolsFramework::EntityIdList m_ignoreEntityComponentPropertyChanges;
-
-        AZStd::unordered_map<AZ::Uuid, AZ::u32> m_wrappedNodeLayoutOrderMap;
 
         /// Keep track of the dock widget for the graph that represents the Vegetation Entity
         AZStd::unordered_map<AZ::EntityId, GraphCanvas::DockWidgetId> m_dockWidgetsByEntity;

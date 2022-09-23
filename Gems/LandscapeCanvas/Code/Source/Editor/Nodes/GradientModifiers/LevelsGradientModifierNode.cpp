@@ -28,7 +28,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString LevelsGradientModifierNode::TITLE = QObject::tr("Levels");
+    const char* LevelsGradientModifierNode::TITLE = "Levels";
 
     LevelsGradientModifierNode::LevelsGradientModifierNode(GraphModel::GraphPtr graph)
         : BaseGradientModifierNode(graph)

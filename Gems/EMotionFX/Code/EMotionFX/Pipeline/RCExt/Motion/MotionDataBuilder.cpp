@@ -16,7 +16,6 @@
 #include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
 
 #include <SceneAPIExt/Groups/IMotionGroup.h>
-#include <SceneAPIExt/Rules/IMotionScaleRule.h>
 #include <SceneAPIExt/Rules/MotionRangeRule.h>
 #include <SceneAPIExt/Rules/MotionAdditiveRule.h>
 #include <SceneAPIExt/Rules/MotionSamplingRule.h>
@@ -413,13 +412,12 @@ namespace EMotionFX
             if (rootMotionExtractionRule && sampleJointDataIndex != InvalidJointDataIndex && rootJointDataIndex != InvalidJointDataIndex)
             {
                 const auto& data = rootMotionExtractionRule->GetData();
-                motionData->ExtractMotion(sampleJointDataIndex, rootJointDataIndex, data.m_transitionZeroXAxis, data.m_transitionZeroYAxis, data.m_extractRotation);
+                motionData->ExtractRootMotion(sampleJointDataIndex, rootJointDataIndex, data);
             }
 
-            AZStd::shared_ptr<Rule::IMotionScaleRule> scaleRule = motionGroup.GetRuleContainerConst().FindFirstByType<Rule::IMotionScaleRule>();
-            if (scaleRule)
+            if (coordinateSystemRule)
             {
-                float scaleFactor = scaleRule->GetScaleFactor();
+                const float scaleFactor = coordinateSystemRule->GetScale();
                 if (!AZ::IsClose(scaleFactor, 1.0f, FLT_EPSILON)) // If the scale factor is 1, no need to call Scale
                 {
                     motionData->Scale(scaleFactor);

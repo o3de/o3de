@@ -130,6 +130,7 @@ void RCcontrollerUnitTests::PrepareRCController()
 
 void RCcontrollerUnitTests::RunRCControllerTests()
 {
+    static constexpr int MaxProcessingWaitTimeMs = 60 * 1000; // Wait up to 1 minute.  Give a generous amount of time to allow for slow CPUs
     int jobsInQueueCount = 0;
     QString platformInQueueCount;
     bool gotJobsInQueueCall = false;
@@ -543,7 +544,10 @@ void RCcontrollerUnitTests::RunRCControllerTests()
     // on windows, opening a file for reading locks it
     // but on other platforms, this is not the case.
     // we only expect work to begin when we can gain an exclusive lock on this file.
-    UNIT_TEST_EXPECT_FALSE(UnitTestUtils::BlockUntil(beginWork, 500));
+
+    // Use a short wait time here because the test will have to wait this entire time to detect the failure
+    static constexpr int WaitTimeMs = 500;
+    UNIT_TEST_EXPECT_FALSE(UnitTestUtils::BlockUntil(beginWork, WaitTimeMs));
 
     // Once we release the file, it should process normally
     lockFileTest.close();
@@ -552,7 +556,7 @@ void RCcontrollerUnitTests::RunRCControllerTests()
 #endif
 
     //Once we release the lock we should see jobStarted and jobFinished
-    UNIT_TEST_EXPECT_TRUE(UnitTestUtils::BlockUntil(jobFinished, 500));
+    UNIT_TEST_EXPECT_TRUE(UnitTestUtils::BlockUntil(jobFinished, MaxProcessingWaitTimeMs));
     UNIT_TEST_EXPECT_TRUE(beginWork);
     UNIT_TEST_EXPECT_TRUE(rcJob.m_DoWorkCalled);
 
@@ -690,7 +694,7 @@ void RCcontrollerUnitTests::RunRCControllerTests()
     m_rcController.SetDispatchPaused(false);
 
     m_rcController.DispatchJobs();
-    UNIT_TEST_EXPECT_TRUE(UnitTestUtils::BlockUntil(allJobsCompleted, 500));
+    UNIT_TEST_EXPECT_TRUE(UnitTestUtils::BlockUntil(allJobsCompleted, MaxProcessingWaitTimeMs));
     UNIT_TEST_EXPECT_TRUE(jobFinishedB);
 
     // Now test the use case where we have a cyclic dependency,
@@ -745,7 +749,7 @@ void RCcontrollerUnitTests::RunRCControllerTests()
 
     m_rcController.SetDispatchPaused(false);
     m_rcController.DispatchJobs();
-    UNIT_TEST_EXPECT_TRUE(UnitTestUtils::BlockUntil(allJobsCompleted, 500));
+    UNIT_TEST_EXPECT_TRUE(UnitTestUtils::BlockUntil(allJobsCompleted, MaxProcessingWaitTimeMs));
 
     // Test case when source file is deleted before it started processing
     {

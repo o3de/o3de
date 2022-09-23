@@ -64,4 +64,6 @@ set(ENABLED_GEMS
     Stars
     RecastNavigation
     ScriptAutomation
+    DiffuseProbeGrid
+    PythonCoverage
 )

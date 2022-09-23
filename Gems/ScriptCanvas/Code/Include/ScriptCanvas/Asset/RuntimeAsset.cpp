@@ -111,6 +111,24 @@ namespace ScriptCanvas
         return !m_cloneSources.empty();
     }
 
+    RuntimeAssetDescription::RuntimeAssetDescription()
+        : AssetDescription(
+            azrtti_typeid<RuntimeAsset>(),
+            "Script Canvas Runtime",
+            "Script Canvas Runtime Graph",
+            "@projectroot@/scriptcanvas",
+            ".scriptcanvas_compiled",
+            "Script Canvas Runtime",
+            "Untitled-%i",
+            "Script Canvas Files (*.scriptcanvas_compiled)",
+            "Script Canvas Runtime",
+            "Script Canvas Runtime",
+            "Icons/ScriptCanvas/Viewport/ScriptCanvas.png",
+            AZ::Color(1.0f, 0.0f, 0.0f, 1.0f),
+            false
+        )
+    {}
+
     IsPreloadedResult IsPreloaded(const RuntimeDataOverrides& overrides)
     {
         if (!overrides.m_runtimeAsset.Get())
@@ -241,6 +259,24 @@ namespace ScriptCanvas
     ////////////////////////
     // SubgraphInterfaceData
     ////////////////////////
+
+    SubgraphInterfaceAssetDescription::SubgraphInterfaceAssetDescription()
+        : AssetDescription(
+            azrtti_typeid<SubgraphInterfaceAsset>(),
+            "Script Canvas Function Interface",
+            "Script Canvas Function Interface",
+            "@projectroot@/scriptcanvas",
+            ".scriptcanvas_fn_compiled",
+            "Script Canvas Function Interface",
+            "Untitled-Function-%i",
+            "Script Canvas Compiled Function Interfaces (*.scriptcanvas_fn_compiled)",
+            "Script Canvas Function Interface",
+            "Script Canvas Function Interface",
+            "Icons/ScriptCanvas/Viewport/ScriptCanvas_Function.png",
+            AZ::Color(1.0f, 0.0f, 0.0f, 1.0f),
+            false
+        )
+    {}
 
     void SubgraphInterfaceData::Reflect(AZ::ReflectContext* reflectContext)
     {

@@ -1,6 +1,6 @@
 ----
 
-Copyright (c) Contributors to the Open 3D Engine Project.For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.  For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
@@ -11,6 +11,8 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 This document contains instructions and other information related to using Adobe Substance Designer with Open 3D Engine (O3DE).  O3DE has a Gem called the DccScriptingInterface (DCCsi) that helps user manage the usage of many popular Digital Content Creation tools (DCC) such as Substance.  These are primarily workflow integrations with the intent to provide an improved ease-of-use experience when these tools are used to author source content for O3DE.  The DCCsi helps with aspects such as, configuration and settings, launching tools and bootstrapping them with O3DE extensions (generally python scripts using the DCC tools APIs to automate tasks)
 
 ## Status:  Prototype
+
+### Version: 0.0.1
 
 This iteration is developer focused, such as a Technical Artist.
 
@@ -32,7 +34,7 @@ It does not have end-user artist functionality or creature comforts yet.
 
 ### Getting Started
 
-#### Confguration
+#### Configuration
 
 1. Make sure that Adobe Substance3D (aka Substance Designer) is installed. As noted above, currently we have only tested the latest version installed via Creative Cloud Desktop and only in the default install location.
 
@@ -80,7 +82,7 @@ Many DCC applications such as Substance Designer also come with a managed python
 
 - O3DE doesn't use a user or system installed python interpreter, nor do most DCC apps we are aware of.
 
-- The DCC apps python version may be different then O3DE e.g. python 3.7.12 vs 3.9.9.
+- The DCC apps python version may be different then O3DE e.g. python 3.10.5 vs 3.9.9.
 
 - O3DE and most DCC apps we are aware of don't make use of virtual environments, which is a common way to manage package dependencies for different versions of python.
 

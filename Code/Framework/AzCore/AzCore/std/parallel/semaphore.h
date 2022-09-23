@@ -8,7 +8,7 @@
 #pragma once
 
 #include <AzCore/std/parallel/config.h>
-#include <AzCore/std/chrono/types.h>
+#include <AzCore/std/chrono/chrono.h>
 
 namespace AZStd
 {

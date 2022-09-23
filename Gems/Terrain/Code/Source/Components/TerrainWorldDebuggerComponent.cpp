@@ -267,8 +267,11 @@ namespace Terrain
         AZ::Color outlineColor(1.0f, 0.0f, 0.0f, 1.0f);
         AZ::Aabb aabb = GetWorldBounds();
 
-        debugDisplay.SetColor(outlineColor);
-        debugDisplay.DrawWireBox(aabb.GetMin(), aabb.GetMax());
+        if (aabb.IsValid())
+        {
+            debugDisplay.SetColor(outlineColor);
+            debugDisplay.DrawWireBox(aabb.GetMin(), aabb.GetMax());
+        }
     }
 
     void TerrainWorldDebuggerComponent::DrawQueries(
@@ -301,10 +304,8 @@ namespace Terrain
                 AZ::RPI::ViewportContextPtr viewportContext = viewportContextRequests->GetViewportContextById(viewportInfo.m_viewportId);
                 const AZ::Transform cameraTransform = viewportContext->GetCameraTransform();
 
-                // Get our camera's center point, but then extend the center point out further along the camera's "forward"
-                // direction by half the total distance to try and get as much of our total query area as possible visible
-                // in front of the camera so that we don't waste any of our query points.
-                centerPos = cameraTransform.GetTranslation() + (viewportContext->GetCameraTransform().GetBasisY() * halfDistance);
+                // Get our camera's center point
+                centerPos = cameraTransform.GetTranslation();
             }
         }
 
