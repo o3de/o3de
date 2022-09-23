@@ -495,13 +495,13 @@ namespace AzToolsFramework
         Clear();
 
         m_domPath = BuildDomPath();
+        SetAttributesFromDom(domArray);
 
         // determine whether this node should be expanded
-        auto forceExpandAttribute = AZ::Dpe::Nodes::Row::ForceAutoExpand.ExtractFromDomNode(domArray);
-        if (forceExpandAttribute.has_value())
+        if (m_forceAutoExpand.has_value())
         {
             // forced attribute always wins, set the expansion state
-            SetExpanded(forceExpandAttribute.value());
+            SetExpanded(m_forceAutoExpand.value());
         }
         else
         {
@@ -519,10 +519,9 @@ namespace AzToolsFramework
             else
             {
                 // no prior expansion state set, use the AutoExpand attribute, if it's set
-                auto autoExpandAttribute = AZ::Dpe::Nodes::Row::AutoExpand.ExtractFromDomNode(domArray);
-                if (autoExpandAttribute.has_value())
+                if (m_expandByDefault.has_value())
                 {
-                    SetExpanded(autoExpandAttribute.value());
+                    SetExpanded(m_expandByDefault.value());
                 }
                 else
                 {
@@ -540,6 +539,12 @@ namespace AzToolsFramework
         }
     }
 
+    void DPERowWidget::SetAttributesFromDom(const AZ::Dom::Value& domArray)
+    {
+        m_forceAutoExpand = AZ::Dpe::Nodes::Row::ForceAutoExpand.ExtractFromDomNode(domArray);
+        m_expandByDefault = AZ::Dpe::Nodes::Row::AutoExpand.ExtractFromDomNode(domArray);
+    }
+
     void DPERowWidget::HandleOperationAtPath(const AZ::Dom::PatchOperation& domOperation, size_t pathIndex)
     {
         const auto& fullPath = domOperation.GetDestinationPath();
@@ -555,7 +560,7 @@ namespace AzToolsFramework
             auto subPath = fullPath;
             subPath.Pop();
             const auto valueAtSubPath = GetDPE()->GetAdapter()->GetContents()[subPath];
-            SetValueFromDom(valueAtSubPath);
+            SetAttributesFromDom(valueAtSubPath);
         }
         else if (entryAtEnd)
         {

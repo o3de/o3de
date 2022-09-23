@@ -14,9 +14,8 @@ namespace AzToolsFramework
     FilteredDPE::FilteredDPE(QWidget* parentWidget)
         : QWidget(parentWidget)
         , m_filterAdapter(AZStd::make_shared<AZ::DocumentPropertyEditor::ValueStringFilter>())
-        , m_ui(new Ui::FilteredDPE)
+        , m_ui(new Ui::FilteredDPE())
     {
-        
         m_ui->setupUi(this);
         setAttribute(Qt::WA_DeleteOnClose);
         
