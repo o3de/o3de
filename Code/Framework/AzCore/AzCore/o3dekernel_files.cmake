@@ -9,6 +9,7 @@
 set(FILES
     Module/Environment.cpp
     Module/Environment.h
+    Debug/ITrace.cpp
 )
 
 if(NOT LY_MONOLITHIC_GAME)

@@ -115,7 +115,6 @@ namespace StartingPointInput
 
         static void Reflect(AZ::ReflectContext* context)
         {
-            REFLECT_SCRIPTCANVAS_AUTOGEN(StartingPointInputStatic, context);
             InputEventBindingsAsset::Reflect(context);
             InputEventBindings::Reflect(context);
             InputEventGroup::Reflect(context);
@@ -127,7 +126,7 @@ namespace StartingPointInput
                 serializeContext->Class<StartingPointInputSystemComponent, AZ::Component>()
                     ->Version(1)
                     ;
-                serializeContext->ClassDeprecate("Input", "{546C9EBC-90EF-4F03-891A-0736BE2A487E}", &ConvertToInputEventMap);
+                serializeContext->ClassDeprecate("Input", AZ::Uuid("{546C9EBC-90EF-4F03-891A-0736BE2A487E}"), &ConvertToInputEventMap);
 
                 serializeContext->Class<InputEventNotificationId>()
                     ->Version(1)
@@ -175,7 +174,6 @@ namespace StartingPointInput
 
         void Init() override
         {
-            INIT_SCRIPTCANVAS_AUTOGEN(StartingPointInputStatic);
         }
 
         void Activate() override
@@ -210,9 +208,6 @@ namespace StartingPointInput
                 InputConfigurationComponent::CreateDescriptor(),
                 StartingPointInputSystemComponent::CreateDescriptor(),
             });
-
-            AZStd::vector<AZ::ComponentDescriptor*> autogenDescriptors(GET_SCRIPTCANVAS_AUTOGEN_COMPONENT_DESCRIPTORS(StartingPointInputStatic));
-            m_descriptors.insert(m_descriptors.end(), autogenDescriptors.begin(), autogenDescriptors.end());
         }
 
         AZ::ComponentTypeList GetRequiredSystemComponents() const override

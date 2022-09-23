@@ -1,4 +1,18 @@
 {
+    "target": {
+        "name": "${target_name}",
+        "type": "${target_type}",
+        "output_name": "${target_output_name}",
+        "path": "${target_path}",
+        "dependencies": {
+            "build": [
+                ${build_dependencies}
+            ],
+            "runtime": [
+                ${runtime_dependencies}
+            ]
+        }
+    },
     "sources": {
         "input": [
 ${autogen_input_files}
@@ -9,10 +23,5 @@ ${autogen_output_files}
         "static": [
 ${static_sources}
         ]
-    },
-    "target": {
-        "name": "${target_name}",
-        "output_name": "${target_output_name}",
-        "path": "${target_path}"
     }
 }

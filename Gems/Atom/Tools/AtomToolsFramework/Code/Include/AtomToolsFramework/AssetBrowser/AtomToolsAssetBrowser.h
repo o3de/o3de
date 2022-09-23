@@ -37,7 +37,7 @@ namespace AtomToolsFramework
     //! Extends the standard asset browser with custom filters and multiselect behavior
     class AtomToolsAssetBrowser
         : public QWidget
-        , protected AZ::TickBus::Handler
+        , protected AZ::SystemTickBus::Handler
     {
         Q_OBJECT
     public:
@@ -49,7 +49,6 @@ namespace AtomToolsFramework
 
         void SelectEntries(const AZStd::string& absolutePath);
         void OpenSelectedEntries();
-        void OpenOptionsMenu();
 
     protected:
         AzToolsFramework::AssetBrowser::FilterConstType CreateFilter() const;
@@ -57,8 +56,8 @@ namespace AtomToolsFramework
         void UpdatePreview();
         void TogglePreview();
 
-        // AZ::TickBus::Handler
-        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+        // AZ::SystemTickBus::Handler
+        void OnSystemTick() override;
 
         QScopedPointer<Ui::AtomToolsAssetBrowser> m_ui;
         AzToolsFramework::AssetBrowser::AssetBrowserFilterModel* m_filterModel = nullptr;

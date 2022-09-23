@@ -42,7 +42,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString AssetWeightSelectorNode::TITLE = QObject::tr("Vegetation Asset Weight Selector");
+    const char* AssetWeightSelectorNode::TITLE = "Vegetation Asset Weight Selector";
 
     AssetWeightSelectorNode::AssetWeightSelectorNode(GraphModel::GraphPtr graph)
         : BaseNode(graph)
@@ -56,16 +56,9 @@ namespace LandscapeCanvas
         return BaseNode::VegetationAreaSelector;
     }
 
-    const bool AssetWeightSelectorNode::ShouldShowEntityName() const
-    {
-        // Don't show the entity name for Area Selectors since they will
-        // be wrapped on a Vegetation Area it would be redundant
-        return false;
-    }
-
     const char* AssetWeightSelectorNode::GetTitle() const
     {
-        return TITLE.toUtf8().constData();
+        return TITLE;
     }
 
     void AssetWeightSelectorNode::RegisterSlots()

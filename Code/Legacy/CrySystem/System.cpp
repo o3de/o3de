@@ -26,7 +26,6 @@
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Debug/Trace.h>
-#include <AzCore/Debug/IEventLogger.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/Time/ITime.h>
@@ -392,7 +391,7 @@ void CSystem::ShutDown()
 
     // Audio System Shutdown!
     // Shut down audio as late as possible but before the streaming system and console get released!
-    Audio::Gem::AudioSystemGemRequestBus::Broadcast(&Audio::Gem::AudioSystemGemRequestBus::Events::Release);
+    Audio::Gem::SystemRequestBus::Broadcast(&Audio::Gem::SystemRequestBus::Events::Release);
 
     // Shut down console as late as possible and after audio!
     SAFE_RELEASE(m_env.pConsole);
@@ -429,12 +428,6 @@ void CSystem::Quit()
     }
 
     gEnv->pLog->Flush();
-
-    // Latest possible place to flush any pending messages to disk before the forceful termination.
-    if (auto logger = AZ::Interface<AZ::Debug::IEventLogger>::Get(); logger)
-    {
-        logger->Flush();
-    }
 
 #ifdef WIN32
     //Post a WM_QUIT message to the Win32 api which causes the message loop to END
@@ -943,7 +936,7 @@ void CSystem::WarningV(EValidatorModule module, EValidatorSeverity severity, int
 
     if (bDbgBreak && g_cvars.sys_error_debugbreak)
     {
-        AZ::Debug::Trace::Break();
+        AZ::Debug::Trace::Instance().Break();
     }
 }
 

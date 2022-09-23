@@ -20,7 +20,8 @@ namespace AssetProcessor
         : QAbstractItemModel(parent)
         , m_pendingIcon(QStringLiteral(":/stylesheet/img/logging/pending.svg"))
         , m_errorIcon(QStringLiteral(":/stylesheet/img/logging/error.svg"))
-        , m_warningIcon(QStringLiteral(":/stylesheet/img/logging/warning-yellow.svg"))
+        , m_failureIcon(QStringLiteral(":/stylesheet/img/logging/failure.svg"))
+        , m_warningIcon(QStringLiteral(":/stylesheet/img/logging/warning.svg"))
         , m_okIcon(QStringLiteral(":/stylesheet/img/logging/valid.svg"))
         , m_processingIcon(QStringLiteral(":/stylesheet/img/logging/processing.svg"))
     {
@@ -134,14 +135,18 @@ namespace AssetProcessor
                     return m_pendingIcon;
                 case JobStatus::Failed_InvalidSourceNameExceedsMaxLimit:  // fall through intentional
                 case JobStatus::Failed:
-                    return m_errorIcon;
+                    return m_failureIcon;
                 case JobStatus::Completed:
                 {
                     CachedJobInfo* jobInfo = getItem(index.row());
 
-                    if(jobInfo->m_warningCount > 0 || jobInfo->m_errorCount > 0)
+                    if(jobInfo->m_errorCount > 0)
                     {
-                        // Warning icon is used for both warnings and errors.
+                        return m_errorIcon;
+                    }
+
+                    if(jobInfo->m_warningCount > 0)
+                    {
                         return m_warningIcon;
                     }
 
@@ -360,7 +365,7 @@ namespace AssetProcessor
             AZStd::unordered_map<QueueElementID, AZ::s64> historicalStats;
             auto statsFunction = [&historicalStats](AzToolsFramework::AssetDatabase::StatDatabaseEntry entry)
             {
-                static constexpr int numTokensExpected = 4;
+                static constexpr int numTokensExpected = 5;
                 AZStd::vector<AZStd::string> tokens;
                 AZ::StringFunc::Tokenize(entry.m_statName, tokens, ',');
 
@@ -511,7 +516,7 @@ namespace AssetProcessor
         }
     }
 
-    void JobsModel::OnJobProcessDurationChanged(JobEntry jobEntry, QTime duration)
+    void JobsModel::OnJobProcessDurationChanged(JobEntry jobEntry, int durationMs)
     {
         QueueElementID elementId(jobEntry.m_databaseSourceName, jobEntry.m_platformInfo.m_identifier.c_str(), jobEntry.m_jobKey);
 
@@ -519,7 +524,7 @@ namespace AssetProcessor
         {
             unsigned int jobIndex = iter.value();
             CachedJobInfo* jobInfo = m_cachedJobs[jobIndex];
-            jobInfo->m_processDuration = duration;
+            jobInfo->m_processDuration = QTime::fromMSecsSinceStartOfDay(durationMs);
             Q_EMIT dataChanged(
                 index(jobIndex, ColumnProcessDuration, QModelIndex()), index(jobIndex, ColumnProcessDuration, QModelIndex()));
         }

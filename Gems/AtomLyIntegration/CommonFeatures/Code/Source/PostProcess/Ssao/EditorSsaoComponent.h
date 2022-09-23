@@ -18,7 +18,7 @@ namespace AZ
     {
         namespace Ssao
         {
-            static constexpr const char* const EditorSsaoComponentTypeId = "{5A807489-4FB2-4421-A4D2-9D9E523ABF83}";
+            inline constexpr AZ::TypeId EditorSsaoComponentTypeId{ "{5A807489-4FB2-4421-A4D2-9D9E523ABF83}" };
         }
 
         class EditorSsaoComponent final

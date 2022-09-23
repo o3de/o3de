@@ -114,7 +114,7 @@ namespace UnitTest
 
         ::testing::NiceMock<StreamerMock> m_mockStreamer;
 
-        AZStd::chrono::milliseconds m_deadline;
+        AZ::IO::IStreamerTypes::Deadline m_deadline;
         AZ::IO::IStreamerTypes::Priority m_priority;
         IO::StreamerContext m_context;
         AZ::IO::IStreamer::OnCompleteCallback m_callback;

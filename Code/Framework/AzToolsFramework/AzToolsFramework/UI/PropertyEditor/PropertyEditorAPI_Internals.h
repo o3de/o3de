@@ -85,7 +85,7 @@ namespace AzToolsFramework
         using BusIdType = QWidget*;
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
-        virtual void OnValueChanged(AZ::DocumentPropertyEditor::Nodes::PropertyEditor::ValueChangeType changeType) = 0;
+        virtual void OnValueChanged(AZ::DocumentPropertyEditor::Nodes::ValueChangeType changeType) = 0;
         virtual void OnRequestPropertyNotify() = 0;
     };
 
@@ -163,7 +163,7 @@ namespace AzToolsFramework
         virtual void ReadValuesIntoGUI_Internal(QWidget* widget, InstanceDataNode* t) = 0;
         // we define this automatically for you, you don't have to override it.
         virtual bool HandlesType(const AZ::Uuid& id) const = 0;
-        virtual const AZ::Uuid& GetHandledType() const = 0;
+        virtual AZ::TypeId GetHandledType() const = 0;
         virtual QWidget* GetFirstInTabOrder_Internal(QWidget* widget) = 0;
         virtual QWidget* GetLastInTabOrder_Internal(QWidget* widget) = 0;
         virtual void UpdateWidgetInternalTabbing_Internal(QWidget* widget) = 0;
@@ -255,8 +255,9 @@ namespace AzToolsFramework
             {
                 m_proxyValue = AZ::Dom::Utils::ValueToType<WrappedType>(value.value()).value_or(m_proxyValue);
             }
-            m_rpeHandler.ReadValuesIntoGUI_Internal(GetWidget(), &m_proxyNode);
+
             m_rpeHandler.ConsumeAttributes_Internal(GetWidget(), &m_proxyNode);
+            m_rpeHandler.ReadValuesIntoGUI_Internal(GetWidget(), &m_proxyNode);
 
             m_domNode = node;
         }
@@ -301,7 +302,7 @@ namespace AzToolsFramework
             return propertyEditorSystem->LookupNameFromId(rpeHandler.GetHandlerName()).GetStringView();
         }
 
-        void OnValueChanged(AZ::DocumentPropertyEditor::Nodes::PropertyEditor::ValueChangeType changeType) override
+        void OnValueChanged(AZ::DocumentPropertyEditor::Nodes::ValueChangeType changeType) override
         {
             using AZ::DocumentPropertyEditor::Nodes::PropertyEditor;
 
@@ -478,7 +479,7 @@ namespace AzToolsFramework
             return GetHandledType() == id;
         }
 
-        virtual const AZ::Uuid& GetHandledType() const override
+        virtual AZ::TypeId GetHandledType() const override
         {
             return AZ::SerializeTypeInfo<PropertyType>::GetUuid();
         }

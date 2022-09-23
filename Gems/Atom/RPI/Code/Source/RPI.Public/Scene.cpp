@@ -44,9 +44,6 @@ namespace AZ
             {
                 auto shaderAsset = RPISystemInterface::Get()->GetCommonShaderAssetForSrgs();
                 scene->m_srg = ShaderResourceGroup::Create(shaderAsset, sceneSrgLayout->GetName());
-                
-                // Set value for constants defined in SceneTimeSrg.azsli
-                scene->m_timeInputIndex = scene->m_srg->FindShaderInputConstantIndex(Name{ "m_time" });
             }
 
             scene->m_name = sceneDescriptor.m_nameId;
@@ -279,22 +276,49 @@ namespace AZ
             }
             m_featureProcessors.clear();
         }
-        
+
+        void Scene::VisitFeatureProcessor(FeatureProcessorVisitCallback callback) const
+        {
+            auto VisitInterface = [&callback](const FeatureProcessorPtr& featureProcessor)
+            {
+                return featureProcessor != nullptr ? callback(*featureProcessor) : true;
+            };
+
+            AZStd::ranges::all_of(m_featureProcessors, VisitInterface);
+        }
+
         FeatureProcessor* Scene::GetFeatureProcessor(const FeatureProcessorId& featureProcessorId) const
         {
-            AZ::TypeId featureProcessorTypeId = FeatureProcessorFactory::Get()->GetFeatureProcessorTypeId(featureProcessorId);
-
-            return GetFeatureProcessor(featureProcessorTypeId);
+            FeatureProcessor* foundFp = nullptr;
+            VisitFeatureProcessor(
+                [featureProcessorId, &foundFp](FeatureProcessor& fp)
+                {
+                    if (FeatureProcessorId(fp.RTTI_GetTypeName()) == featureProcessorId)
+                    {
+                        foundFp = &fp;
+                        return false;
+                    }
+                    return true;
+                }
+            );
+            return foundFp;
         }
         
         FeatureProcessor* Scene::GetFeatureProcessor(const TypeId& featureProcessorTypeId) const
         {
-            auto foundFP = AZStd::find_if(
-                AZStd::begin(m_featureProcessors),
-                AZStd::end(m_featureProcessors),
-                [featureProcessorTypeId](const FeatureProcessorPtr& fp) { return fp->RTTI_IsTypeOf(featureProcessorTypeId); });
-
-            return foundFP == AZStd::end(m_featureProcessors) ? nullptr : (*foundFP).get();
+            FeatureProcessor* foundFp = nullptr;
+            VisitFeatureProcessor(
+                [featureProcessorTypeId, &foundFp](FeatureProcessor& fp)
+                {
+                    if (fp.RTTI_IsTypeOf(featureProcessorTypeId))
+                    {
+                        foundFp = &fp;
+                        return false;
+                    }
+                    return true;
+                }
+            );
+            return foundFp;
         }
 
         void Scene::TryApplyRenderPipelineChanges(RenderPipeline* pipeline)
@@ -448,6 +472,7 @@ namespace AZ
         {
             AZ_PROFILE_SCOPE(RPI, "Scene: Simulate");
 
+            m_prevSimulationTime = m_simulationTime;
             m_simulationTime = simulationTime;
 
             // If previous simulation job wasn't done, wait for it to finish.
@@ -514,10 +539,8 @@ namespace AZ
         {
             if (m_srg)
             {
-                if (m_timeInputIndex.IsValid())
-                {
-                    m_srg->SetConstant(m_timeInputIndex, m_simulationTime);
-                }
+                m_srg->SetConstant(m_timeInputIndex, m_simulationTime);
+                m_srg->SetConstant(m_prevTimeInputIndex, m_prevSimulationTime);
 
                 // signal any handlers to update values for their partial scene srg
                 m_prepareSrgEvent.Signal(m_srg.get());

@@ -19,6 +19,7 @@
 
 #include <QModelIndex>
 #include <QPointer>
+#include <QDialog>
 #endif
 
 class QTimer;
@@ -38,6 +39,7 @@ namespace AzToolsFramework
             , public AssetBrowserComponentNotificationBus::Handler
         {
             Q_OBJECT
+
         public:
             explicit AssetBrowserTreeView(QWidget* parent = nullptr);
             ~AssetBrowserTreeView() override;
@@ -49,18 +51,23 @@ namespace AzToolsFramework
 
             //! Set unique asset browser name, used to persist tree expansion states
             void SetName(const QString& name);
+            QString& GetName(){ return m_name; }
 
             // O3DE_DEPRECATED
             void LoadState(const QString& name);
             void SaveState() const;
 
-            AZStd::vector<AssetBrowserEntry*> GetSelectedAssets() const;
+            //! Gets the selected entries.  if includeProducts is false, it will only
+            //! count sources and folders - many common operations such as deleting, renaming, etc,
+            //! can only work on sources and folders.
+            AZStd::vector<AssetBrowserEntry*> GetSelectedAssets(bool includeProducts = true) const;
 
             void SelectFolder(AZStd::string_view folderPath);
 
             void DeleteEntries();
             void RenameEntry();
             void DuplicateEntries();
+            void MoveEntries();
 
             //////////////////////////////////////////////////////////////////////////
             // AssetBrowserViewRequestBus
@@ -90,12 +97,15 @@ namespace AzToolsFramework
             void ClearStringFilter();
             void ClearTypeFilter();
 
-        protected Q_SLOTS:
-            void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected) override;
-            void rowsAboutToBeRemoved(const QModelIndex& parent, int start, int end) override;
+        public Q_SLOTS:
+            void OpenItemForEditing(const QModelIndex& index);
 
         protected:
             QModelIndexList selectedIndexes() const override;
+
+        protected Q_SLOTS:
+            void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected) override;
+            void rowsAboutToBeRemoved(const QModelIndex& parent, int start, int end) override;
 
         private:
             QPointer<AssetBrowserModel> m_assetBrowserModel;

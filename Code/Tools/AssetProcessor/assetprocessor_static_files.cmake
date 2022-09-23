@@ -25,6 +25,8 @@ set(FILES
     native/AssetManager/assetScannerWorker.h
     native/AssetManager/FileStateCache.cpp
     native/AssetManager/FileStateCache.h
+    native/AssetManager/Validators/LfsPointerFileValidator.cpp
+    native/AssetManager/Validators/LfsPointerFileValidator.h
     native/AssetManager/PathDependencyManager.cpp
     native/AssetManager/PathDependencyManager.h
     native/AssetManager/SourceFileRelocator.cpp
@@ -81,6 +83,10 @@ set(FILES
     native/utilities/BuilderConfigurationBus.h
     native/utilities/BuilderConfigurationManager.cpp
     native/utilities/BuilderConfigurationManager.h
+    native/utilities/Builder.cpp
+    native/utilities/Builder.h
+    native/utilities/BuilderList.cpp
+    native/utilities/BuilderList.h
     native/utilities/BuilderManager.cpp
     native/utilities/BuilderManager.h
     native/utilities/BuilderManager.inl

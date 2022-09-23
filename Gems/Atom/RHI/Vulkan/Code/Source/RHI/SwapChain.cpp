@@ -16,7 +16,7 @@
 #include <Atom/RHI.Reflect/Vulkan/XRVkDescriptors.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/Image.h>
 #include <RHI/ImagePool.h>
@@ -233,7 +233,8 @@ namespace AZ
                     // we need to add an ownership transfer to the presentation queue.
                     auto commandList = device.AcquireCommandList(vulkanQueue->GetId().m_familyIndex);
                     commandList->BeginCommandBuffer();
-                    vkCmdPipelineBarrier(commandList->GetNativeCommandBuffer(),
+                    device.GetContext().CmdPipelineBarrier(
+                        commandList->GetNativeCommandBuffer(),
                         m_swapChainBarrier.m_srcPipelineStages,
                         m_swapChainBarrier.m_dstPipelineStages,
                         VK_DEPENDENCY_BY_REGION_BIT,
@@ -273,7 +274,7 @@ namespace AZ
                 info.pImageIndices = &imageIndex;
                 info.pResults = nullptr;
 
-                const VkResult result = vkQueuePresentKHR(vulkanQueue->GetNativeQueue(), &info);
+                const VkResult result = device.GetContext().QueuePresentKHR(vulkanQueue->GetNativeQueue(), &info);
 
                 // Vulkan's definition of the two types of errors.
                 // VK_ERROR_OUT_OF_DATE_KHR: "A surface has changed in such a way that it is no longer compatible with the swapchain,
@@ -353,10 +354,12 @@ namespace AZ
             auto& device = static_cast<Device&>(GetDevice());
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(device.GetPhysicalDevice());
             uint32_t surfaceFormatCount = 0;
-            AssertSuccess(vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice.GetNativePhysicalDevice(), m_surface->GetNativeSurface(), &surfaceFormatCount, nullptr));
+            AssertSuccess(device.GetContext().GetPhysicalDeviceSurfaceFormatsKHR(
+                physicalDevice.GetNativePhysicalDevice(), m_surface->GetNativeSurface(), &surfaceFormatCount, nullptr));
             AZ_Assert(surfaceFormatCount > 0, "Surface support no format.");
             AZStd::vector<VkSurfaceFormatKHR> surfaceFormats(surfaceFormatCount);
-            AssertSuccess(vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice.GetNativePhysicalDevice(), m_surface->GetNativeSurface(), &surfaceFormatCount, surfaceFormats.data()));
+            AssertSuccess(device.GetContext().GetPhysicalDeviceSurfaceFormatsKHR(
+                physicalDevice.GetNativePhysicalDevice(), m_surface->GetNativeSurface(), &surfaceFormatCount, surfaceFormats.data()));
 
             const VkFormat format = ConvertFormat(rhiFormat);
             for (uint32_t index = 0; index < surfaceFormatCount; ++index)
@@ -385,12 +388,14 @@ namespace AZ
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(device.GetPhysicalDevice());
 
             uint32_t modeCount = 0;
-            AssertSuccess(vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice.GetNativePhysicalDevice(), m_surface->GetNativeSurface(), &modeCount, nullptr));
+            AssertSuccess(device.GetContext().GetPhysicalDeviceSurfacePresentModesKHR(
+                physicalDevice.GetNativePhysicalDevice(), m_surface->GetNativeSurface(), &modeCount, nullptr));
             // At least VK_PRESENT_MODE_FIFO_KHR have to be supported.
             // https://www.khronos.org/registry/vulkan/specs/1.1-extensions/man/html/VkPresentModeKHR.html
             AZ_Assert(modeCount > 0, "no available present mode.");
             AZStd::vector<VkPresentModeKHR> supportedModes(modeCount);
-            AssertSuccess(vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice.GetNativePhysicalDevice(), m_surface->GetNativeSurface(), &modeCount, supportedModes.data()));
+            AssertSuccess(device.GetContext().GetPhysicalDeviceSurfacePresentModesKHR(
+                physicalDevice.GetNativePhysicalDevice(), m_surface->GetNativeSurface(), &modeCount, supportedModes.data()));
 
             VkPresentModeKHR preferredModes[] = {VK_PRESENT_MODE_IMMEDIATE_KHR, VK_PRESENT_MODE_MAILBOX_KHR};
             for (VkPresentModeKHR preferredMode : preferredModes)
@@ -414,7 +419,7 @@ namespace AZ
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(device.GetPhysicalDevice());
 
             VkSurfaceCapabilitiesKHR surfaceCapabilities;
-            VkResult vkResult = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
+            VkResult vkResult = device.GetContext().GetPhysicalDeviceSurfaceCapabilitiesKHR(
                 physicalDevice.GetNativePhysicalDevice(), m_surface->GetNativeSurface(), &surfaceCapabilities);
             AssertSuccess(vkResult);
 
@@ -495,7 +500,8 @@ namespace AZ
             createInfo.clipped = VK_FALSE;
             createInfo.oldSwapchain = m_oldNativeSwapChain;
 
-            const VkResult result = vkCreateSwapchainKHR(device.GetNativeDevice(), &createInfo, nullptr, &m_nativeSwapChain);
+            const VkResult result =
+                device.GetContext().CreateSwapchainKHR(device.GetNativeDevice(), &createInfo, nullptr, &m_nativeSwapChain);
             AssertSuccess(result);
 
             return ConvertResult(result);
@@ -506,7 +512,8 @@ namespace AZ
             auto& device = static_cast<Device&>(GetDevice());
             auto& semaphoreAllocator = device.GetSemaphoreAllocator();
             Semaphore* imageAvailableSemaphore = semaphoreAllocator.Allocate();
-            VkResult vkResult = vkAcquireNextImageKHR(device.GetNativeDevice(),
+            VkResult vkResult = device.GetContext().AcquireNextImageKHR(
+                device.GetNativeDevice(),
                 m_nativeSwapChain,
                 UINT64_MAX,
                 imageAvailableSemaphore->GetNativeSemaphore(),
@@ -541,12 +548,12 @@ namespace AZ
             auto& device = static_cast<Device&>(GetDevice());
             auto presentCommand = [this, &device]([[maybe_unused]] void* queue)
             {
-                vkDeviceWaitIdle(device.GetNativeDevice());
+                device.GetContext().DeviceWaitIdle(device.GetNativeDevice());
                 if (m_nativeSwapChain != VK_NULL_HANDLE)
                 {
                     //Add the swapchain on the release queue to be released later as we still need it in order to transition to the new swapchain
-                    device.QueueForRelease(
-                        new ReleaseContainer<VkSwapchainKHR>(device.GetNativeDevice(), m_nativeSwapChain, vkDestroySwapchainKHR));
+                    device.QueueForRelease(new ReleaseContainer<VkSwapchainKHR>(
+                        device.GetNativeDevice(), m_nativeSwapChain, device.GetContext().DestroySwapchainKHR));
                     m_oldNativeSwapChain = m_nativeSwapChain;
                     m_nativeSwapChain = VK_NULL_HANDLE;
                 }
@@ -561,10 +568,10 @@ namespace AZ
             auto& device = static_cast<Device&>(GetDevice());
             auto presentCommand = [this, &device]([[maybe_unused]] void* queue)
             {
-                vkDeviceWaitIdle(device.GetNativeDevice());
+                device.GetContext().DeviceWaitIdle(device.GetNativeDevice());
                 if (m_nativeSwapChain != VK_NULL_HANDLE)
                 {
-                    vkDestroySwapchainKHR(device.GetNativeDevice(), m_nativeSwapChain, nullptr);
+                    device.GetContext().DestroySwapchainKHR(device.GetNativeDevice(), m_nativeSwapChain, nullptr);
                     m_nativeSwapChain = VK_NULL_HANDLE;
                 }
             };
@@ -615,7 +622,8 @@ namespace AZ
             }
 
             m_dimensions.m_imageCount = 0;
-            VkResult vkResult = vkGetSwapchainImagesKHR(device.GetNativeDevice(), m_nativeSwapChain, &m_dimensions.m_imageCount, nullptr);
+            VkResult vkResult =
+                device.GetContext().GetSwapchainImagesKHR(device.GetNativeDevice(), m_nativeSwapChain, &m_dimensions.m_imageCount, nullptr);
             AssertSuccess(vkResult);
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(vkResult));
 
@@ -623,7 +631,7 @@ namespace AZ
 
             // Retrieve the native images of the swapchain so they are
             // available when we init the images in InitImageInternal
-            vkResult = vkGetSwapchainImagesKHR(
+            vkResult = device.GetContext().GetSwapchainImagesKHR(
                 device.GetNativeDevice(), m_nativeSwapChain, &m_dimensions.m_imageCount, m_swapchainNativeImages.data());
             AssertSuccess(vkResult);
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(vkResult));

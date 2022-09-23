@@ -33,7 +33,7 @@ namespace O3DE::ProjectManager
         {
             // do not add gems with duplicate names
             // this can happen by mistake or when a gem repo has a gem with the same name as a local gem
-            AZ_TracePrintf("GemModel", "Ignoring duplicate gem: %s", gemInfo.m_name.toUtf8().constData());
+            AZ_TracePrintf("GemModel", "Ignoring duplicate gem: %s\n", gemInfo.m_name.toUtf8().constData());
             return QModelIndex();
         }
 
@@ -43,7 +43,7 @@ namespace O3DE::ProjectManager
 
         item->setData(gemInfo.m_name, RoleName);
         item->setData(gemInfo.m_displayName, RoleDisplayName);
-        item->setData(gemInfo.m_creator, RoleCreator);
+        item->setData(gemInfo.m_origin, RoleCreator);
         item->setData(gemInfo.m_gemOrigin, RoleGemOrigin);
         item->setData(aznumeric_cast<int>(gemInfo.m_platforms), RolePlatforms);
         item->setData(aznumeric_cast<int>(gemInfo.m_types), RoleTypes);

@@ -25,6 +25,7 @@
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityIdMapper.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceToTemplateInterface.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceDomGeneratorInterface.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicHandler.h>
@@ -42,23 +43,28 @@ namespace AzToolsFramework
     {
         void PrefabPublicHandler::RegisterPrefabPublicHandlerInterface()
         {
+            m_prefabFocusHandler.RegisterPrefabFocusInterface();
+
             m_instanceEntityMapperInterface = AZ::Interface<InstanceEntityMapperInterface>::Get();
-            AZ_Assert(m_instanceEntityMapperInterface, "PrefabPublicHandler - Could not retrieve instance of InstanceEntityMapperInterface");
+            AZ_Assert(m_instanceEntityMapperInterface, "PrefabPublicHandler - Could not get InstanceEntityMapperInterface.");
 
             m_instanceToTemplateInterface = AZ::Interface<InstanceToTemplateInterface>::Get();
-            AZ_Assert(m_instanceToTemplateInterface, "PrefabPublicHandler - Could not retrieve instance of InstanceToTemplateInterface");
+            AZ_Assert(m_instanceToTemplateInterface, "PrefabPublicHandler - Could not get InstanceToTemplateInterface.");
 
-            m_prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
-            AZ_Assert(m_prefabFocusInterface, "Could not get PrefabFocusInterface on PrefabPublicHandler construction.");
-
-            m_prefabFocusPublicInterface = AZ::Interface<PrefabFocusPublicInterface>::Get();
-            AZ_Assert(m_prefabFocusPublicInterface, "Could not get PrefabFocusPublicInterface on PrefabPublicHandler construction.");
+            m_instanceDomGeneratorInterface = AZ::Interface<InstanceDomGeneratorInterface>::Get();
+            AZ_Assert(m_instanceDomGeneratorInterface, "PrefabPublicHandler - Could not get InstanceDomGeneratorInterface.");
 
             m_prefabLoaderInterface = AZ::Interface<PrefabLoaderInterface>::Get();
-            AZ_Assert(m_prefabLoaderInterface, "Could not get PrefabLoaderInterface on PrefabPublicHandler construction.");
+            AZ_Assert(m_prefabLoaderInterface, "PrefabPublicHandler - Could not get PrefabLoaderInterface.");
+
+            m_prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
+            AZ_Assert(m_prefabFocusInterface, "PrefabPublicHandler - Could not get PrefabFocusInterface.");
+
+            m_prefabFocusPublicInterface = AZ::Interface<PrefabFocusPublicInterface>::Get();
+            AZ_Assert(m_prefabFocusPublicInterface, "PrefabPublicHandler - Could not get PrefabFocusPublicInterface.");
 
             m_prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
-            AZ_Assert(m_prefabSystemComponentInterface, "Could not get PrefabSystemComponentInterface on PrefabPublicHandler construction.");
+            AZ_Assert(m_prefabSystemComponentInterface, "PrefabPublicHandler - Could not get PrefabSystemComponentInterface.");
 
             m_prefabUndoCache.Initialize();
 
@@ -70,6 +76,16 @@ namespace AzToolsFramework
             AZ::Interface<PrefabPublicInterface>::Unregister(this);
 
             m_prefabUndoCache.Destroy();
+
+            m_prefabSystemComponentInterface = nullptr;
+            m_prefabFocusPublicInterface = nullptr;
+            m_prefabFocusInterface = nullptr;
+            m_prefabLoaderInterface = nullptr;
+            m_instanceDomGeneratorInterface = nullptr;
+            m_instanceToTemplateInterface = nullptr;
+            m_instanceEntityMapperInterface = nullptr;
+
+            m_prefabFocusHandler.UnregisterPrefabFocusInterface();
         }
 
         CreatePrefabResult PrefabPublicHandler::CreatePrefabInMemory(const EntityIdList& entityIds, AZ::IO::PathView filePath)
@@ -343,13 +359,13 @@ namespace AzToolsFramework
             m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(patch, containerEntityId);
 
             // Update the cache - this prevents these changes from being stored in the regular undo/redo nodes
-            m_prefabUndoCache.Store(containerEntityId, AZStd::move(containerEntityDomAfter), parentEntityId);
+            m_prefabUndoCache.Store(containerEntityId, parentEntityId);
 
             return AZStd::move(patch);
         }
 
         InstantiatePrefabResult PrefabPublicHandler::InstantiatePrefab(
-            AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position)
+            AZStd::string_view filePath, AZ::EntityId parentId, const AZ::Vector3& position)
         {
             auto prefabEditorEntityOwnershipInterface = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
             if (!prefabEditorEntityOwnershipInterface)
@@ -365,17 +381,17 @@ namespace AzToolsFramework
 
             InstanceOptionalReference instanceToParentUnder;
 
-            // Get parent entity and owning instance
-            if (parent.IsValid())
+            // Get parent entity's owning instance
+            if (parentId.IsValid())
             {
-                instanceToParentUnder = m_instanceEntityMapperInterface->FindOwningInstance(parent);
+                instanceToParentUnder = m_instanceEntityMapperInterface->FindOwningInstance(parentId);
             }
 
             if (!instanceToParentUnder.has_value())
             {
                 AzFramework::EntityContextId editorEntityContextId = AzToolsFramework::GetEntityContextId();
                 instanceToParentUnder = m_prefabFocusInterface->GetFocusedPrefabInstance(editorEntityContextId);
-                parent = instanceToParentUnder->get().GetContainerEntityId();
+                parentId = instanceToParentUnder->get().GetContainerEntityId();
             }
 
             //Detect whether this instantiation would produce a cyclical dependency
@@ -425,8 +441,19 @@ namespace AzToolsFramework
                 Prefab::PrefabDom containerEntityDomBefore;
                 m_instanceToTemplateInterface->GenerateDomForEntity(containerEntityDomBefore, *containerEntity);
 
+                // Capture parent entity DOM before adding the nested prefab instance
+                AZ::Entity* parentEntity = GetEntityById(parentId);
+
+                if (!parentEntity)
+                {
+                    return AZ::Failure<AZStd::string>("Parent entity cannot be found while instantiating a prefab.");
+                }
+
+                PrefabDom parentEntityDomBeforeAdding;
+                m_instanceToTemplateInterface->GenerateDomForEntity(parentEntityDomBeforeAdding, *parentEntity);
+
                 // Set container entity's parent
-                AZ::TransformBus::Event(containerEntityId, &AZ::TransformBus::Events::SetParent, parent);
+                AZ::TransformBus::Event(containerEntityId, &AZ::TransformBus::Events::SetParent, parentId);
 
                 // Set the position of the container entity
                 AZ::TransformBus::Event(containerEntityId, &AZ::TransformBus::Events::SetWorldTranslation, position);
@@ -440,6 +467,14 @@ namespace AzToolsFramework
                 m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(patch, containerEntityId);
 
                 CreateLink(instanceToCreate->get(), instanceToParentUnder->get().GetTemplateId(), undoBatch.GetUndoBatch(), AZStd::move(patch));
+
+                // Update parent entity DOM
+                PrefabDom parentEntityDomAfterAdding;
+                m_instanceToTemplateInterface->GenerateDomForEntity(parentEntityDomAfterAdding, *parentEntity);
+                PrefabUndoHelpers::UpdateEntity(parentEntityDomBeforeAdding, parentEntityDomAfterAdding, parentId, undoBatch.GetUndoBatch());
+
+                m_prefabUndoCache.UpdateCache(containerEntityId);
+                m_prefabUndoCache.UpdateCache(parentId);
 
                 AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
                     &AzToolsFramework::ToolsApplicationRequestBus::Events::ClearDirtyEntities);
@@ -618,42 +653,6 @@ namespace AzToolsFramework
             
             Instance& entityOwningInstance = owningInstanceOfParentEntity->get();
 
-            // Get the template for our owning instance from the root prefab DOM and use that to generate our patch
-            AZStd::vector<InstanceOptionalConstReference> pathOfInstances;
-
-            InstanceOptionalReference rootInstance = owningInstanceOfParentEntity;
-            while (rootInstance->get().GetParentInstance() != AZStd::nullopt)
-            {
-                pathOfInstances.emplace_back(rootInstance);
-                rootInstance = rootInstance->get().GetParentInstance();
-            }
-
-            AZStd::string aliasPathResult = "";
-            for (auto instanceIter = pathOfInstances.rbegin(); instanceIter != pathOfInstances.rend(); ++instanceIter)
-            {
-                aliasPathResult.append("/Instances/");
-                aliasPathResult.append((*instanceIter)->get().GetInstanceAlias());
-            }
-
-            PrefabDomPath rootPrefabDomPath(aliasPathResult.c_str());
-
-            PrefabDom& rootPrefabTemplateDom = m_prefabSystemComponentInterface->FindTemplateDom(rootInstance->get().GetTemplateId());
-
-            auto instanceDomFromRootValue = rootPrefabDomPath.Get(rootPrefabTemplateDom);
-            if (!instanceDomFromRootValue)
-            {
-                return AZ::Failure<AZStd::string>("Could not load Instance DOM from the top level ancestor's DOM.");
-            }
-
-            PrefabDomValueReference instanceDomFromRoot = *instanceDomFromRootValue;
-            if (!instanceDomFromRoot.has_value())
-            {
-                return AZ::Failure<AZStd::string>("Could not load Instance DOM from the top level ancestor's DOM.");
-            }
-
-            PrefabDom instanceDomBeforeUpdate;
-            instanceDomBeforeUpdate.CopyFrom(instanceDomFromRoot.value().get(), instanceDomBeforeUpdate.GetAllocator());
-
             ScopedUndoBatch undoBatch("Add Entity");
 
             entityOwningInstance.AddEntity(*entity, entityAlias);
@@ -679,7 +678,33 @@ namespace AzToolsFramework
             {
                 AZ::TransformBus::Event(entityId, &AZ::TransformInterface::SetWorldTM, transform);
             }
+
+            m_prefabUndoCache.UpdateCache(entityId);
+            m_prefabUndoCache.UpdateCache(parentId);
+
+            // Get the alias of the parent entity in the owning template's DOM.
+            AZStd::string parentEntityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(parentId);
+            PrefabDomPath entityPathInOwningTemplate(parentEntityAliasPath.c_str());
             
+            PrefabDom& owningTemplateDom =
+                m_prefabSystemComponentInterface->FindTemplateDom(owningInstanceOfParentEntity->get().GetTemplateId());
+            const PrefabDomValue* parentEntityDomInOwningTemplate = entityPathInOwningTemplate.Get(owningTemplateDom);
+            if (!parentEntityDomInOwningTemplate)
+            {
+                return AZ::Failure<AZStd::string>("Could not load entity DOM from the owning template's DOM.");
+            }
+
+            const PrefabDomValue& parentEntityDomBeforeAddingEntity = *parentEntityDomInOwningTemplate;
+
+            PrefabDom parentEntityDomAfterAddingEntity;
+            AZ::Entity* parentEntity = GetEntityById(parentId);
+
+            if (!parentEntity)
+            {
+                return AZ::Failure<AZStd::string>("Parent entity cannot be found while adding an entity.");
+            }
+
+            m_instanceToTemplateInterface->GenerateDomForEntity(parentEntityDomAfterAddingEntity, *parentEntity);
 
             // Select the new entity (and deselect others).
             AzToolsFramework::EntityIdList selection = {entityId};
@@ -689,9 +714,16 @@ namespace AzToolsFramework
 
             ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, selection);
 
-            PrefabUndoHelpers::UpdatePrefabInstance(
-                entityOwningInstance, "Undo adding entity", instanceDomBeforeUpdate, undoBatch.GetUndoBatch());
+            PrefabDom newEntityDom;
+            m_instanceToTemplateInterface->GenerateDomForEntity(newEntityDom, *entity);
 
+            PrefabUndoHelpers::AddEntity(newEntityDom, entityId, entityOwningInstance.GetTemplateId(), undoBatch.GetUndoBatch());
+
+            // Create undo node to account for changes to parent entity due to adding a new entity under it. Currently only the
+            // EditorEntitySortComponent get modified on the parent but more things can change in the future too.
+            PrefabUndoHelpers::UpdateEntity(parentEntityDomBeforeAddingEntity, parentEntityDomAfterAddingEntity, parentId,
+                undoBatch.GetUndoBatch());
+                
             AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
                 &AzToolsFramework::ToolsApplicationRequestBus::Events::ClearDirtyEntities);
 
@@ -716,13 +748,13 @@ namespace AzToolsFramework
             }
 
             PrefabDom beforeState;
+            m_instanceDomGeneratorInterface->GenerateEntityDom(beforeState, *entity);
             AZ::EntityId beforeParentId;
-            m_prefabUndoCache.Retrieve(entityId, beforeState, beforeParentId);
+            m_prefabUndoCache.Retrieve(entityId, beforeParentId);
 
             PrefabDom afterState;
             AZ::EntityId afterParentId;
             AZ::TransformBus::EventResult(afterParentId, entityId, &AZ::TransformBus::Events::GetParentId);
-
             m_instanceToTemplateInterface->GenerateDomForEntity(afterState, *entity);
 
             PrefabDom patch;
@@ -731,8 +763,12 @@ namespace AzToolsFramework
 
             if (patch.IsArray() && !patch.Empty() && beforeState.IsObject())
             {
-                bool isInstanceContainerEntity = IsInstanceContainerEntity(entityId) && !IsLevelInstanceContainerEntity(entityId);
                 bool isNewParentOwnedByDifferentInstance = false;
+
+                // Reparenting of entities happens before they are associated with their owning instances. So the owning instance
+                // of the entity can be stale. Therefore, check whether the parent entity is in the focus tree instead.
+                bool isInFocusTree = m_prefabFocusPublicInterface->IsOwningPrefabInFocusHierarchy(afterParentId);
+                bool isOwnedByFocusedPrefabInstance = m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId);
 
                 if (beforeParentId != afterParentId)
                 {
@@ -748,7 +784,7 @@ namespace AzToolsFramework
                         // Detect loops. Assert if an instance has been reparented in such a way to generate circular dependencies.
                         AZStd::vector<Instance*> instancesInvolved;
 
-                        if (isInstanceContainerEntity)
+                        if (isInFocusTree && !isOwnedByFocusedPrefabInstance)
                         {
                             instancesInvolved.push_back(&owningInstance->get());
                         }
@@ -787,7 +823,7 @@ namespace AzToolsFramework
                     }
                 }
 
-                if (isInstanceContainerEntity)
+                if (isInFocusTree && !isOwnedByFocusedPrefabInstance)
                 {
                     if (isNewParentOwnedByDifferentInstance)
                     {
@@ -808,8 +844,11 @@ namespace AzToolsFramework
                     }
                     else
                     {
-                        Internal_HandleContainerOverride(
-                            parentUndoBatch, entityId, patch, owningInstance->get().GetLinkId());
+                        PrefabDom newPatch;
+                        m_instanceToTemplateInterface->GeneratePatch(newPatch, beforeState, afterState);
+                        LinkId linkId = m_prefabFocusInterface->AppendPathFromFocusedInstanceToPatchPaths(newPatch, entityId);
+
+                        Internal_HandleContainerOverride(parentUndoBatch, entityId, newPatch, linkId);
                     }
                 }
                 else
@@ -843,10 +882,8 @@ namespace AzToolsFramework
             PrefabDom& afterState)
         {
             // Update the state of the entity
-            PrefabUndoEntityUpdate* state = aznew PrefabUndoEntityUpdate(AZStd::to_string(static_cast<AZ::u64>(entityId)));
-            state->SetParent(undoBatch);
-            state->Capture(beforeState, afterState, entityId);
-            state->Redo();
+            PrefabUndoHelpers::UpdateEntity(beforeState, afterState,
+                entityId, undoBatch);
         }
 
         void PrefabPublicHandler::Internal_HandleInstanceChange(
@@ -1043,13 +1080,6 @@ namespace AzToolsFramework
             return AZ::Success(m_prefabSystemComponentInterface->IsTemplateDirty(templateId));
         }
 
-        PrefabOperationResult PrefabPublicHandler::DeleteEntitiesInInstance(const EntityIdList& entityIds)
-        {
-            AZ_Warning(
-                "Prefab", false, "This function is marked for deprecation. Please use DeleteEntitiesAndAllDescendantsInInstance instead.");
-            return DeleteFromInstance(entityIds);
-        }
-
         PrefabOperationResult PrefabPublicHandler::DeleteEntitiesAndAllDescendantsInInstance(const EntityIdList& entityIds)
         {
             return DeleteFromInstance(entityIds);
@@ -1244,42 +1274,18 @@ namespace AzToolsFramework
 
             AZ_PROFILE_SCOPE(AzToolsFramework, "Internal::DeleteEntities:UndoCaptureAndPurgeEntities");
 
-            Prefab::PrefabDom instanceDomBefore;
-
-            AZStd::vector<AZ::Entity*> entities;
-            AZStd::vector<Instance*> instances;
+            AZStd::vector<AZ::Entity*> entityList;
+            AZStd::vector<Instance*> instanceList;
 
             PrefabOperationResult retrieveEntitiesAndInstancesOutcome =
-                RetrieveAndSortPrefabEntitiesAndInstances(inputEntityList, commonOwningInstance->get(), entities, instances);
+                RetrieveAndSortPrefabEntitiesAndInstances(inputEntityList, commonOwningInstance->get(), entityList, instanceList);
 
             if (!retrieveEntitiesAndInstancesOutcome.IsSuccess())
             {
                 return AZStd::move(retrieveEntitiesAndInstancesOutcome);
             }
 
-            for (auto& nestedInstance : instances)
-            {
-                AZStd::unique_ptr<Instance> outInstance =
-                    commonOwningInstance->get().DetachNestedInstance(nestedInstance->GetInstanceAlias());
-                RemoveLink(outInstance, commonOwningInstance->get().GetTemplateId(), undoBatch.GetUndoBatch());
-                outInstance.reset();
-            }
-
-            m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomBefore, commonOwningInstance->get());
-
-            for (AZ::Entity* entity : entities)
-            {
-                commonOwningInstance->get().DetachEntity(entity->GetId()).release();
-                AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationRequests::DeleteEntity, entity->GetId());
-            }
-
-            Prefab::PrefabDom instanceDomAfter;
-            m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomAfter, commonOwningInstance->get());
-
-            // In order to undo DeleteSelected, we have to create a selection command which selects the current selection
-            // and then add the deletion as children.
-            // Commands always execute themselves first and then their children (when going forwards)
-            // and do the opposite when going backwards.
+            // Gets selected entities.
             EntityIdList selectedEntities;
             ToolsApplicationRequestBus::BroadcastResult(selectedEntities, &ToolsApplicationRequests::GetSelectedEntities);
             SelectionCommand* selCommand = aznew SelectionCommand(selectedEntities, "Delete Entities");
@@ -1294,10 +1300,82 @@ namespace AzToolsFramework
             SelectionCommand* deselectAllCommand = aznew SelectionCommand(deselection, "Deselect Entities");
             deselectAllCommand->SetParent(undoBatch.GetUndoBatch());
 
-            PrefabUndoInstance* command = aznew PrefabUndoInstance("Instance deletion");
-            command->Capture(instanceDomBefore, instanceDomAfter, commonOwningInstance->get().GetTemplateId());
-            command->SetParent(undoBatch.GetUndoBatch());
-            command->Redo();
+            const TemplateId commonOwningTemplateId = commonOwningInstance->get().GetTemplateId();
+            PrefabDom& commonOwningTemplateDom = m_prefabSystemComponentInterface->FindTemplateDom(commonOwningTemplateId);
+
+            // Removing instances and entities...
+
+            // Map for capturing the initial DOM state before parent entities get updated.
+            AZStd::unordered_map<AZ::EntityId, PrefabDom> parentEntityDomBeforeRemovalMap;
+
+            // Step 1 - Removes instances.
+            for (const Instance* nestedInstance : instanceList)
+            {
+                // Gets the container entity id for the instance.
+                const AZ::EntityId nestedContainerEntityId = nestedInstance->GetContainerEntityId();
+
+                // Captures the parent DOM if it is first seen in map.
+                AZ::EntityId parentEntityId;
+                AZ::TransformBus::EventResult(parentEntityId, nestedContainerEntityId, &AZ::TransformBus::Events::GetParentId);
+                CaptureInitialEntityDomFromOwningTemplate(parentEntityDomBeforeRemovalMap, parentEntityId, commonOwningTemplateDom);
+
+                // Detaches the instance, removes the link and instance DOM in template.
+                AZStd::unique_ptr<Instance> outInstance =
+                    commonOwningInstance->get().DetachNestedInstance(nestedInstance->GetInstanceAlias());
+                RemoveLink(outInstance, commonOwningTemplateId, undoBatch.GetUndoBatch());
+                outInstance.reset();
+            }
+
+            // Step 2 - Removes entities.
+            AZStd::vector<AZStd::pair<const PrefabDomValue*, AZStd::string>> removedEntityDomAndPathList;
+            AZStd::unordered_set<AZ::EntityId> entitiesThatGotRemoved;
+
+            for (const AZ::Entity* entity : entityList)
+            {
+                const AZ::EntityId entityId = entity->GetId();
+                const AZStd::string entityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(entityId); // retrieve before detaching
+
+                // Captures the parent DOM if it is first seen in map.
+                AZ::EntityId parentEntityId;
+                AZ::TransformBus::EventResult(parentEntityId, entityId, &AZ::TransformBus::Events::GetParentId);
+                CaptureInitialEntityDomFromOwningTemplate(parentEntityDomBeforeRemovalMap, parentEntityId, commonOwningTemplateDom);
+
+                // Detaches the entity.
+                commonOwningInstance->get().DetachEntity(entityId).release();
+                AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationRequests::DeleteEntity, entityId);
+
+                // Captures the entity DOM from the owning template DOM for undo purpose and puts the entity DOM into a list
+                // for batch processing.
+                PrefabDomPath entityDomInOwningTemplatePath(entityAliasPath.c_str());
+                const PrefabDomValue* removedEntityDomPtr = entityDomInOwningTemplatePath.Get(commonOwningTemplateDom);
+                removedEntityDomAndPathList.emplace_back(removedEntityDomPtr, AZStd::move(entityAliasPath));
+
+                entitiesThatGotRemoved.insert(entityId);
+            }
+
+            PrefabUndoHelpers::RemoveEntities(removedEntityDomAndPathList, commonOwningTemplateId, undoBatch.GetUndoBatch());
+
+            // Step 3 - Updates parent entity DOMs with new children information.
+            for (const auto& [parentEntityId, parentEntityDomBefore] : parentEntityDomBeforeRemovalMap)
+            {
+                // Skips if the parent entity was already deleted.
+                if (entitiesThatGotRemoved.find(parentEntityId) != entitiesThatGotRemoved.end())
+                {
+                    continue;
+                }
+
+                const AZ::Entity* parentEntity = GetEntityById(parentEntityId);
+                if (parentEntity)
+                {
+                    PrefabDom parentEntityDomAfter;
+                    m_instanceToTemplateInterface->GenerateDomForEntity(parentEntityDomAfter, *parentEntity);
+
+                    PrefabUndoHelpers::UpdateEntity(parentEntityDomBefore, parentEntityDomAfter,
+                        parentEntityId, undoBatch.GetUndoBatch());
+
+                    m_prefabUndoCache.UpdateCache(parentEntityId);
+                }
+            }
 
             AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
                 &AzToolsFramework::ToolsApplicationRequestBus::Events::ClearDirtyEntities);
@@ -1669,6 +1747,26 @@ namespace AzToolsFramework
             }
             
             return outEntityIds;
+        }
+
+        void PrefabPublicHandler::CaptureInitialEntityDomFromOwningTemplate(
+            AZStd::unordered_map<AZ::EntityId, PrefabDom>& entityIdDomMap,
+            const AZ::EntityId entityId,
+            const PrefabDom& owningTemplateDom) const
+        {
+            if (entityId.IsValid() && entityIdDomMap.find(entityId) == entityIdDomMap.end())
+            {
+                const AZStd::string& entityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(entityId);
+                PrefabDomPath entityAliasDomPath(entityAliasPath.c_str());
+                const PrefabDomValue* entityDomPtr = entityAliasDomPath.Get(owningTemplateDom);
+                if (entityDomPtr)
+                {
+                    // Deep copy is needed to cache the current DOM state.
+                    PrefabDom initialEntityDom;
+                    initialEntityDom.CopyFrom(*entityDomPtr, initialEntityDom.GetAllocator());
+                    entityIdDomMap[entityId] = AZStd::move(initialEntityDom);
+                }
+            }
         }
 
         bool PrefabPublicHandler::EntitiesBelongToSameInstance(const EntityIdList& entityIds) const

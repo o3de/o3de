@@ -86,7 +86,7 @@ namespace AudioEngineWwiseGem
 
     void AudioEngineWwiseGemSystemComponent::Activate()
     {
-        Audio::Gem::AudioEngineGemRequestBus::Handler::BusConnect();
+        Audio::Gem::EngineRequestBus::Handler::BusConnect();
 
     #if defined(AUDIO_ENGINE_WWISE_EDITOR)
         AudioControlsEditor::EditorImplPluginEventBus::Handler::BusConnect();
@@ -95,7 +95,7 @@ namespace AudioEngineWwiseGem
 
     void AudioEngineWwiseGemSystemComponent::Deactivate()
     {
-        Audio::Gem::AudioEngineGemRequestBus::Handler::BusDisconnect();
+        Audio::Gem::EngineRequestBus::Handler::BusDisconnect();
 
     #if defined(AUDIO_ENGINE_WWISE_EDITOR)
         AudioControlsEditor::EditorImplPluginEventBus::Handler::BusDisconnect();
@@ -145,7 +145,7 @@ namespace AudioEngineWwiseGem
         m_engineWwise = AZStd::make_unique<Audio::CAudioSystemImpl_wwise>(assetPlatform.c_str());
         if (m_engineWwise)
         {
-            AZLOG_INFO("AudioEngineWwise created!");
+            AZLOG_INFO("%s", "AudioEngineWwise created!");
 
             Audio::SystemRequest::Initialize initRequest;
             AZ::Interface<Audio::IAudioSystem>::Get()->PushRequestBlocking(AZStd::move(initRequest));
@@ -154,7 +154,7 @@ namespace AudioEngineWwiseGem
         }
         else
         {
-            AZLOG_ERROR("Could not create AudioEngineWwise!");
+            AZLOG_ERROR("%s", "Could not create AudioEngineWwise!");
         }
 
         return success;

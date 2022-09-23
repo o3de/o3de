@@ -44,7 +44,7 @@ namespace AZ
             {
                 serializeContext
                     ->Class<MeshFeatureProcessor, FeatureProcessor>()
-                    ->Version(0);
+                    ->Version(1);
             }
         }
 
@@ -242,7 +242,7 @@ namespace AZ
             return {};
         }
         
-        const MeshDrawPacketLods& MeshFeatureProcessor::GetDrawPackets(const MeshHandle& meshHandle) const
+        const RPI::MeshDrawPacketLods& MeshFeatureProcessor::GetDrawPackets(const MeshHandle& meshHandle) const
         {
             return meshHandle.IsValid() ? meshHandle->m_drawPacketListsByLod : m_emptyDrawPacketLods;
         }
@@ -464,6 +464,15 @@ namespace AZ
                 AZ_Assert(false, "Invalid mesh handle");
                 return false;
             }
+        }
+
+        bool MeshFeatureProcessor::GetVisible(const MeshHandle& meshHandle) const
+        {
+            if (meshHandle.IsValid())
+            {
+                return meshHandle->m_visible;
+            }
+            return false;
         }
 
         void MeshFeatureProcessor::SetVisible(const MeshHandle& meshHandle, bool visible)
@@ -688,7 +697,7 @@ namespace AZ
                 objectIdIndex.AssertValid();
             }
 
-            if (m_descriptor.m_isRayTracingEnabled)
+            if (m_visible && m_descriptor.m_isRayTracingEnabled)
             {
                 SetRayTracingData();
             }
@@ -705,7 +714,7 @@ namespace AZ
             RPI::ModelLod& modelLod = *m_model->GetLods()[modelLodIndex];
             const size_t meshCount = modelLod.GetMeshes().size();
             
-            MeshDrawPacketList& drawPacketListOut = m_drawPacketListsByLod[modelLodIndex];
+            RPI::MeshDrawPacketList& drawPacketListOut = m_drawPacketListsByLod[modelLodIndex];
             drawPacketListOut.clear();
             drawPacketListOut.reserve(meshCount);
 
@@ -1180,6 +1189,25 @@ namespace AZ
             {
                 subMesh.m_irradianceColor *= material->GetPropertyValue<float>(propertyIndex);
             }
+
+            // set the raytracing transparency from the material opacity factor
+            float opacity = 1.0f;
+            propertyIndex = material->FindPropertyIndex(AZ::Name("opacity.mode"));
+            if (propertyIndex.IsValid())
+            {
+                // only query the opacity factor if it's a non-Opaque mode
+                uint32_t mode = material->GetPropertyValue<uint32_t>(propertyIndex);
+                if (mode > 0)
+                {
+                    propertyIndex = material->FindPropertyIndex(AZ::Name("opacity.factor"));
+                    if (propertyIndex.IsValid())
+                    {
+                        opacity = material->GetPropertyValue<float>(propertyIndex);
+                    }
+                }
+            }
+
+            subMesh.m_irradianceColor.SetA(opacity);
         }
 
         void ModelDataInstance::RemoveRayTracingData()
@@ -1324,6 +1352,8 @@ namespace AZ
 
             localAabb.GetTransformedAabb(localToWorld).GetAsSphere(center, radius);
 
+            m_cullable.m_lodData.m_lodSelectionRadius = 0.5f*localAabb.GetExtents().GetMaxElement();
+
             m_cullable.m_cullData.m_boundingSphere = Sphere(center, radius);
             m_cullable.m_cullData.m_boundingObb = localAabb.GetTransformedObb(localToWorld);
             m_cullable.m_cullData.m_visibilityEntry.m_boundingVolume = localAabb.GetTransformedAabb(localToWorld);
@@ -1384,7 +1414,7 @@ namespace AZ
                         // take the last handle from the list, which will be the smallest (most influential) probe
                         ReflectionProbeHandle handle = reflectionProbeHandles.back();
 
-                        objectSrg->SetConstant(modelToWorldConstantIndex, reflectionProbeFeatureProcessor->GetTransform(handle));
+                        objectSrg->SetConstant(modelToWorldConstantIndex, Matrix3x4::CreateFromTransform(reflectionProbeFeatureProcessor->GetTransform(handle)));
                         objectSrg->SetConstant(modelToWorldInverseConstantIndex, Matrix3x4::CreateFromTransform(reflectionProbeFeatureProcessor->GetTransform(handle)).GetInverseFull());
                         objectSrg->SetConstant(outerObbHalfLengthsConstantIndex, reflectionProbeFeatureProcessor->GetOuterObbWs(handle).GetHalfLengths());
                         objectSrg->SetConstant(innerObbHalfLengthsConstantIndex, reflectionProbeFeatureProcessor->GetInnerObbWs(handle).GetHalfLengths());

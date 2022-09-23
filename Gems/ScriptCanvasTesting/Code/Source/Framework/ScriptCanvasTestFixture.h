@@ -38,6 +38,9 @@
 #define SC_EXPECT_DOUBLE_EQ(candidate, reference) EXPECT_NEAR(candidate, reference, 0.001)
 #define SC_EXPECT_FLOAT_EQ(candidate, reference) EXPECT_NEAR(candidate, reference, 0.001f)
 
+REGISTER_SCRIPTCANVAS_AUTOGEN_FUNCTION(ScriptCanvasTestingEditorStatic);
+REGISTER_SCRIPTCANVAS_AUTOGEN_NODEABLE(ScriptCanvasTestingEditorStatic);
+
 namespace ScriptCanvasTests
 {
 
@@ -116,14 +119,13 @@ namespace ScriptCanvasTests
             TestNodeableObject::Reflect(m_behaviorContext);
             ScriptUnitTestEventHandler::Reflect(m_serializeContext);
             ScriptUnitTestEventHandler::Reflect(m_behaviorContext);
-
-            REGISTER_SCRIPTCANVAS_AUTOGEN_FUNCTION(ScriptCanvasTestingEditorStatic);
-            REGISTER_SCRIPTCANVAS_AUTOGEN_NODEABLE(ScriptCanvasTestingEditorStatic);
-            REFLECT_SCRIPTCANVAS_AUTOGEN(ScriptCanvasTestingEditorStatic, m_behaviorContext);
         }
 
         static void TearDownTestCase()
         {
+            ScriptCanvas::AutoGenRegistryManager::GetInstance()->UnregisterRegistry("ScriptCanvasTestingEditorStaticFunctionRegistry");
+            ScriptCanvas::AutoGenRegistryManager::GetInstance()->UnregisterRegistry("ScriptCanvasTestingEditorStaticNodeableRegistry");
+
             // don't hang on to dangling assets
             AZ::Data::AssetManager::Instance().DispatchEvents();
 
@@ -159,11 +161,6 @@ namespace ScriptCanvasTests
 
             RegisterComponentDescriptor<TestNodes::TestResult>();
             RegisterComponentDescriptor<TestNodes::ConfigurableUnitTestNode>();
-            auto autogenDescriptors = GET_SCRIPTCANVAS_AUTOGEN_COMPONENT_DESCRIPTORS(ScriptCanvasTestingEditorStatic);
-            for (auto descriptor : autogenDescriptors)
-            {
-                GetApplication()->RegisterComponentDescriptor(descriptor);
-            }
 
             m_numericVectorType = ScriptCanvas::Data::Type::BehaviorContextObject(azrtti_typeid<AZStd::vector<ScriptCanvas::Data::NumberType>>());
             m_stringToNumberMapType = ScriptCanvas::Data::Type::BehaviorContextObject(azrtti_typeid<AZStd::unordered_map<ScriptCanvas::Data::StringType, ScriptCanvas::Data::NumberType>>());
@@ -183,7 +180,7 @@ namespace ScriptCanvasTests
                 GetApplication()->UnregisterComponentDescriptor(componentDescriptor);
             }
 
-            m_descriptors.clear();            
+            m_descriptors.clear();
         }
 
         ScriptCanvas::Graph* CreateGraph()
@@ -199,7 +196,7 @@ namespace ScriptCanvasTests
 
         TestNodes::ConfigurableUnitTestNode* CreateConfigurableNode(AZStd::string entityName = "ConfigurableNodeEntity")
         {
-            AZ::Entity* configurableNodeEntity = new AZ::Entity(entityName.c_str());         
+            AZ::Entity* configurableNodeEntity = new AZ::Entity(entityName.c_str());
             auto configurableNode = configurableNodeEntity->CreateComponent<TestNodes::ConfigurableUnitTestNode>();
 
             if (m_graph == nullptr)

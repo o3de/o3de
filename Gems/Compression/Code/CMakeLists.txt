@@ -171,9 +171,10 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         )
 
         # Add Compression.Tests to googletest
-        ly_add_googletest(
-            NAME Gem::Compression.Tests
-        )
+        # Commented out as currently there are no Compression tests
+        #ly_add_googletest(
+            #NAME Gem::Compression.Tests
+        #)
     endif()
 
     # If we are a host platform we want to add tools test like editor tests here
@@ -198,9 +199,10 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             )
 
             # Add Compression.Editor.Tests to googletest
-            ly_add_googletest(
-                NAME Gem::Compression.Editor.Tests
-            )
+            # Commented out as currently there are no Compression Editor tests
+            # ly_add_googletest(
+                # NAME Gem::Compression.Editor.Tests
+            # )
         endif()
     endif()
 endif()

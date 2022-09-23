@@ -1,10 +1,10 @@
 {
-    "materialType": "Materials/Types/StandardPBR.materialtype",
-    "materialTypeVersion": 4,
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 5,
     "propertyValues": {
         "baseColor.textureMap": "../Textures/arch_1k_basecolor.png",
         "general.applySpecularAA": true,
-        "irradiance.color": [
+        "irradiance.manualColor": [
             0.2663614749908447,
             0.2383916974067688,
             0.18117037415504456,

@@ -542,7 +542,7 @@ namespace PhysX
 
         {
             AZ_PROFILE_SCOPE(Physics, "OnSceneSimulationStartEvent::Signaled");
-            m_sceneSimuationStartEvent.Signal(m_sceneHandle, deltatime);
+            m_sceneSimulationStartEvent.Signal(m_sceneHandle, deltatime);
         }
 
         m_currentDeltaTime = deltatime;
@@ -607,7 +607,7 @@ namespace PhysX
 
         {
             AZ_PROFILE_SCOPE(Physics, "OnSceneSimulationFinishedEvent::Signaled");
-            m_sceneSimuationFinishEvent.Signal(m_sceneHandle, m_currentDeltaTime);
+            m_sceneSimulationFinishEvent.Signal(m_sceneHandle, m_currentDeltaTime);
         }
 
         UpdateAzProfilerDataPoints();
@@ -861,6 +861,12 @@ namespace PhysX
         {
             newJoint = Internal::CreateJoint<PhysXHingeJoint, HingeJointConfiguration>(
                 azdynamic_cast<const HingeJointConfiguration*>(jointConfig),
+                m_sceneHandle, parentBody, childBody, newJointCrc);
+        }
+        else if (azrtti_istypeof<PhysX::PrismaticJointConfiguration*>(jointConfig))
+        {
+            newJoint = Internal::CreateJoint<PhysXPrismaticJoint, PrismaticJointConfiguration>(
+                azdynamic_cast<const PrismaticJointConfiguration*>(jointConfig),
                 m_sceneHandle, parentBody, childBody, newJointCrc);
         }
         else

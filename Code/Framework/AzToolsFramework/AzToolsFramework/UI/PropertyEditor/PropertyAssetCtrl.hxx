@@ -270,6 +270,9 @@ namespace AzToolsFramework
         void UpdateEditButton();
     };
 
+    // Shared function that processes all attributes for any handler using PropertyAssetCtrl
+    void ConsumeAttributeForPropertyAssetCtrl(PropertyAssetCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName);
+
     class AssetPropertyHandlerDefault
         : QObject
         , public PropertyHandler<AZ::Data::Asset<AZ::Data::AssetData>, PropertyAssetCtrl>
@@ -280,15 +283,14 @@ namespace AzToolsFramework
     public:
         AZ_CLASS_ALLOCATOR(AssetPropertyHandlerDefault, AZ::SystemAllocator, 0);
 
-        virtual const AZ::Uuid& GetHandledType() const override;
-        virtual AZ::u32 GetHandlerName(void) const override { return AZ_CRC("Asset", 0x02af5a5c); }
+        virtual AZ::TypeId GetHandledType() const override;
+        virtual AZ::u32 GetHandlerName(void) const override { return AZ_CRC_CE("Asset"); }
         virtual bool IsDefaultHandler() const override { return true; }
         virtual QWidget* GetFirstInTabOrder(PropertyAssetCtrl* widget) override { return widget->GetFirstInTabOrder(); }
         virtual QWidget* GetLastInTabOrder(PropertyAssetCtrl* widget) override { return widget->GetLastInTabOrder(); }
         virtual void UpdateWidgetInternalTabbing(PropertyAssetCtrl* widget) override { widget->UpdateTabOrder(); }
 
         virtual QWidget* CreateGUI(QWidget* pParent) override;
-        static void ConsumeAttributeInternal(PropertyAssetCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName);
         void ConsumeAttribute(PropertyAssetCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override;
         static void WriteGUIValuesIntoPropertyInternal(size_t index, PropertyAssetCtrl* GUI, property_t& instance, InstanceDataNode* node);
         virtual void WriteGUIValuesIntoProperty(size_t index, PropertyAssetCtrl* GUI, property_t& instance, InstanceDataNode* node) override;
@@ -305,6 +307,27 @@ namespace AzToolsFramework
         }
     };
 
+    class AssetIdPropertyHandlerDefault
+        : QObject
+        , public PropertyHandler<AZ::Data::AssetId, PropertyAssetCtrl>
+    {
+        Q_OBJECT
+
+    public:
+        AZ_CLASS_ALLOCATOR(AssetIdPropertyHandlerDefault, AZ::SystemAllocator, 0);
+
+        virtual AZ::u32 GetHandlerName(void) const override { return AZ_CRC_CE("AssetId"); }
+        virtual bool IsDefaultHandler() const override { return true; }
+        virtual QWidget* GetFirstInTabOrder(PropertyAssetCtrl* widget) override { return widget->GetFirstInTabOrder(); }
+        virtual QWidget* GetLastInTabOrder(PropertyAssetCtrl* widget) override { return widget->GetLastInTabOrder(); }
+        virtual void UpdateWidgetInternalTabbing(PropertyAssetCtrl* widget) override { widget->UpdateTabOrder(); }
+
+        virtual QWidget* CreateGUI(QWidget* pParent) override;
+        virtual void ConsumeAttribute(PropertyAssetCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override;
+        virtual void WriteGUIValuesIntoProperty(size_t index, PropertyAssetCtrl* GUI, property_t& instance, InstanceDataNode* node) override;
+        virtual bool ReadValuesIntoGUI(size_t index, PropertyAssetCtrl* GUI, const property_t& instance, InstanceDataNode* node)  override;
+    };
+
     class SimpleAssetPropertyHandlerDefault
         : QObject
         , public PropertyHandler<AzFramework::SimpleAssetReferenceBase, PropertyAssetCtrl>
@@ -315,7 +338,7 @@ namespace AzToolsFramework
     public:
         AZ_CLASS_ALLOCATOR(SimpleAssetPropertyHandlerDefault, AZ::SystemAllocator, 0);
 
-        virtual AZ::u32 GetHandlerName(void) const override { return AZ_CRC("SimpleAssetRef", 0x49f51d54); }
+        virtual AZ::u32 GetHandlerName(void) const override { return AZ_CRC_CE("SimpleAssetRef"); }
         virtual bool IsDefaultHandler() const override { return true; }
         virtual QWidget* GetFirstInTabOrder(PropertyAssetCtrl* widget) override { return widget->GetFirstInTabOrder(); }
         virtual QWidget* GetLastInTabOrder(PropertyAssetCtrl* widget) override { return widget->GetLastInTabOrder(); }

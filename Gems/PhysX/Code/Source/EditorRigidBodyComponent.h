@@ -8,19 +8,18 @@
 
 #pragma once
 
-#include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
-
+#include <AzCore/Component/NonUniformScaleBus.h>
+#include <AzCore/Component/TransformBus.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
-#include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
-#include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
-
-#include <AzCore/Component/TransformBus.h>
-#include <AzCore/Component/NonUniformScaleBus.h>
+#include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
+#include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
+#include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <PhysX/ColliderComponentBus.h>
 #include <PhysX/Debug/PhysXDebugConfiguration.h>
 #include <PhysX/Debug/PhysXDebugInterface.h>
+#include <Source/RigidBody.h>
 
 namespace PhysX
 {
@@ -53,6 +52,7 @@ namespace PhysX
 
         EditorRigidBodyComponent();
         explicit EditorRigidBodyComponent(const EditorRigidBodyConfiguration& configuration);
+        EditorRigidBodyComponent(const EditorRigidBodyConfiguration& configuration, const RigidBodyConfiguration& physxSpecificConfiguration);
         ~EditorRigidBodyComponent() = default;
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -123,7 +123,9 @@ namespace PhysX
 
         Debug::DebugDisplayDataChangedEvent::Handler m_debugDisplayDataChangeHandler;
 
-        EditorRigidBodyConfiguration m_config;
+        EditorRigidBodyConfiguration m_config; //!< Generic properties from AzPhysics.
+        RigidBodyConfiguration
+            m_physxSpecificConfig; //!< Properties specific to PhysX which might not have exact equivalents in other physics engines.
         AzPhysics::SimulatedBodyHandle m_editorRigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
         AzPhysics::SceneHandle m_editorSceneHandle = AzPhysics::InvalidSceneHandle;
 

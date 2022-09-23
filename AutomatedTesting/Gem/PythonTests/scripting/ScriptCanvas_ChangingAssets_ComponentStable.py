@@ -5,18 +5,34 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
+import os
+from editor_python_test_tools.utils import TestHelper as helper
+import azlmbr.editor as editor
+import azlmbr.bus as bus
+from editor_python_test_tools.utils import Report, Tracer
+import editor_python_test_tools.hydra_editor_utils as hydra
+import scripting_utils.scripting_tools as scripting_tools
+import azlmbr.legacy.general as general
+import azlmbr.paths as paths
+import pyside_utils
+from scripting_utils.scripting_constants import (BASE_LEVEL_NAME, WAIT_TIME_3)
+
+TEST_ENTITY_NAME = "test_entity"
+ASSET_1 = os.path.join(paths.projectroot, "scriptcanvas", "ScriptCanvas_TwoComponents0.scriptcanvas")
+ASSET_2 = os.path.join(paths.projectroot, "scriptcanvas", "ScriptCanvas_TwoComponents1.scriptcanvas")
+EXPECTED_LINES = ["Greetings from the first script", "Greetings from the second script"]
 
 # fmt: off
-class Tests():
-    level_created     = ("New level created",              "New level not created")
+class Tests:
     entity_created    = ("Test Entity created",            "Test Entity not created")
     game_mode_entered = ("Game Mode successfully entered", "Game mode failed to enter")
     game_mode_exited  = ("Game Mode successfully exited",  "Game mode failed to exited")
+    script_file_update = ("Script Canvas File Updated", "Script Canvas File Not Updated")
     found_lines       = ("Expected log lines were found",  "Expected log lines were not found")
 # fmt: on
 
 
-def ScriptCanvas_ChangingAssets_ComponentStable():
+class ScriptCanvas_ChangingAssets_ComponentStable:
     """
     Summary:
      Changing the assigned Script Canvas Asset on an entity properly updates level functionality
@@ -39,67 +55,43 @@ def ScriptCanvas_ChangingAssets_ComponentStable():
 
     :return: None
     """
+    def __init__(self):
+        editor_window = None
 
-    import os
+    @pyside_utils.wrap_async
+    async def run_test(self):
 
-    from utils import TestHelper as helper
-    from utils import Tracer
-    import hydra_editor_utils as hydra
-    import azlmbr.legacy.general as general
-    import azlmbr.math as math
-    import azlmbr.asset as asset
-    import azlmbr.bus as bus
+        # Preconditions
+        general.idle_enable(True)
 
-    LEVEL_NAME = "tmp_level"
-    ASSET_1 = os.path.join("scriptcanvas", "ScriptCanvas_TwoComponents0.scriptcanvas")
-    ASSET_2 = os.path.join("scriptcanvas", "ScriptCanvas_TwoComponents1.scriptcanvas")
-    EXP_LINE_1 = "Greetings from the first script"
-    EXP_LINE_2 = "Greetings from the second script"
-    WAIT_TIME = 3.0  # SECONDS
+        # 1) Create temp level
+        hydra.open_base_level()
+        helper.wait_for_condition(lambda: general.get_current_level_name() == BASE_LEVEL_NAME, WAIT_TIME_3)
+        general.close_pane("Error Report")
 
-    def get_asset(asset_path):
-        return asset.AssetCatalogRequestBus(bus.Broadcast, "GetAssetIdByPath", asset_path, math.Uuid(), False)
+        # 2) Create new entity
+        entity = scripting_tools.create_entity_with_sc_component_asset(TEST_ENTITY_NAME, ASSET_1)
+        result = helper.wait_for_condition(lambda: entity is not None, WAIT_TIME_3)
+        Report.result(Tests.entity_created, result)
 
-    def find_expected_line(expected_line):
-        found_lines = [printInfo.message.strip() for printInfo in section_tracer.prints]
-        return expected_line in found_lines
+        with Tracer() as section_tracer:
 
-    def set_asset_evaluate(test_entity, ASSET_PATH, EXP_LINE):
-        # Set Script Canvas entity
-        test_entity.get_set_test(0, "Script Canvas Asset|Script Canvas Asset", get_asset(ASSET_PATH))
+            # 3) Enter and Exit Game Mode
+            helper.enter_game_mode(Tests.game_mode_entered)
+            helper.exit_game_mode(Tests.game_mode_exited)
 
-        # Enter/exit game mode
-        helper.enter_game_mode(Tests.game_mode_entered)
-        helper.wait_for_condition(lambda: find_expected_line(EXP_LINE), WAIT_TIME)
-        Report.result(Tests.found_lines, find_expected_line(EXP_LINE))
-        helper.exit_game_mode(Tests.game_mode_exited)
+            # 4) Update Script Canvas file on entity's SC component
+            result = scripting_tools.change_entity_sc_asset(entity, ASSET_2)
+            Report.result(Tests.script_file_update, result)
 
-    # 1) Create temp level
-    general.idle_enable(True)
-    result = general.create_level_no_prompt(LEVEL_NAME, 128, 1, 512, True)
-    Report.critical_result(Tests.level_created, result == 0)
-    helper.wait_for_condition(lambda: general.get_current_level_name() == LEVEL_NAME, WAIT_TIME)
-    general.close_pane("Error Report")
+            # 5) Enter and Exit Game Mode
+            helper.enter_game_mode(Tests.game_mode_entered)
+            helper.exit_game_mode(Tests.game_mode_exited)
 
-    # 2) Create new entity
-    position = math.Vector3(512.0, 512.0, 32.0)
-    test_entity = hydra.Entity("test_entity")
-    test_entity.create_entity(position, ["Script Canvas"])
+            # 6 Verify script canvas graph output
+            result = scripting_tools.located_expected_tracer_lines(self, section_tracer, EXPECTED_LINES)
+            Report.result(Tests.found_lines, result)
 
-    # 3) Start Tracer
-    with Tracer() as section_tracer:
+test = ScriptCanvas_ChangingAssets_ComponentStable()
+test.run_test()
 
-        # 4) Set first script and evaluate
-        set_asset_evaluate(test_entity, ASSET_1, EXP_LINE_1)
-
-        # 5) Set second script and evaluate
-        set_asset_evaluate(test_entity, ASSET_2, EXP_LINE_2)
-
-
-if __name__ == "__main__":
-    import ImportPathHelper as imports
-
-    imports.init()
-    from utils import Report
-
-    Report.start_test(ScriptCanvas_ChangingAssets_ComponentStable)

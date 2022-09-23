@@ -12,6 +12,7 @@
 #include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
+#include <AzFramework/IO/LocalFileIO.h>
 #include <QCoreApplication>
 #include <native/tests/assetmanager/AssetManagerTestingBase.h>
 #include <native/utilities/AssetUtilEBusHelper.h>

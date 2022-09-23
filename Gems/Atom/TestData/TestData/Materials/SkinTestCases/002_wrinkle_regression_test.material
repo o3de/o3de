@@ -1,6 +1,6 @@
 {
-    "materialType": "Materials/Types/Skin.materialtype",
-    "materialTypeVersion": 3,
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/Skin.materialtype",
+    "materialTypeVersion": 4,
     "propertyValues": {
         "baseColor.color": [
             0.2847791314125061,
@@ -8,24 +8,24 @@
             0.9392080307006836,
             1.0
         ],
-        "baseColor.textureMap": "TestData/Textures/TextureHaven/4k_castle_brick_02_red/4k_castle_brick_02_red_bc.png",
+        "baseColor.textureMap": "../../Textures/TextureHaven/4k_castle_brick_02_red/4k_castle_brick_02_red_bc.png",
         "detailLayerGroup.baseColorDetailBlend": 0.4300000071525574,
-        "detailLayerGroup.baseColorDetailMap": "TestData/Textures/cc0/Concrete019_1K_Color.jpg",
+        "detailLayerGroup.baseColorDetailMap": "../../Textures/cc0/Concrete019_1K_Color.jpg",
+        "detailLayerGroup.detailUV.scale": 5.0,
         "detailLayerGroup.enableBaseColor": true,
         "detailLayerGroup.enableDetailLayer": true,
         "detailLayerGroup.enableNormals": true,
         "detailLayerGroup.normalDetailFlipY": true,
-        "detailLayerGroup.normalDetailMap": "TestData/Textures/cc0/Concrete019_1K_Normal.jpg",
+        "detailLayerGroup.normalDetailMap": "../../Textures/cc0/Concrete019_1K_Normal.jpg",
         "detailLayerGroup.normalDetailStrength": 1.5,
         "detailLayerGroup.textureMapUv": "Tiled",
-        "detailUV.scale": 5.0,
         "normal.flipY": true,
-        "normal.textureMap": "Objects/Hermanubis/Hermanubis_Normal.png",
+        "normal.textureMap": "@gemroot:CommonFeaturesAtom@/Assets/Objects/Hermanubis/Hermanubis_Normal.png",
         "subsurfaceScattering.enableSubsurfaceScattering": true,
-        "subsurfaceScattering.influenceMap": "TestData/Textures/checker8x8_gray_512.png",
+        "subsurfaceScattering.influenceMap": "../../Textures/checker8x8_gray_512.png",
         "subsurfaceScattering.scatterDistance": 15.0,
         "subsurfaceScattering.subsurfaceScatterFactor": 0.4300000071525574,
-        "subsurfaceScattering.thicknessMap": "Objects/Hermanubis/Hermanubis_thickness.tif",
+        "subsurfaceScattering.thicknessMap": "@gemroot:CommonFeaturesAtom@/Assets/Objects/Hermanubis/Hermanubis_thickness.tif",
         "subsurfaceScattering.transmissionAttenuation": 15.0,
         "subsurfaceScattering.transmissionDistortion": 0.3499999940395355,
         "subsurfaceScattering.transmissionMode": "ThickObject",
@@ -37,13 +37,13 @@
             0.16388189792633057,
             1.0
         ],
-        "wrinkleLayers.baseColorMap1": "TestData/Textures/cc0/Lava004_1K_Color.jpg",
-        "wrinkleLayers.baseColorMap3": "TestData/Textures/checker8x8_gray_512.png",
+        "wrinkleLayers.baseColorMap1": "../../Textures/cc0/Lava004_1K_Color.jpg",
+        "wrinkleLayers.baseColorMap3": "../../Textures/checker8x8_gray_512.png",
         "wrinkleLayers.count": 3,
         "wrinkleLayers.enable": true,
         "wrinkleLayers.enableBaseColor": true,
         "wrinkleLayers.enableNormal": true,
-        "wrinkleLayers.normalMap1": "TestData/Textures/cc0/Lava004_1K_Normal.jpg",
-        "wrinkleLayers.normalMap2": "TestData/Textures/TextureHaven/4k_castle_brick_02_red/4k_castle_brick_02_red_normal.png"
+        "wrinkleLayers.normalMap1": "../../Textures/cc0/Lava004_1K_Normal.jpg",
+        "wrinkleLayers.normalMap2": "../../Textures/TextureHaven/4k_castle_brick_02_red/4k_castle_brick_02_red_normal.png"
     }
 }

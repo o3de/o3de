@@ -109,6 +109,13 @@ namespace AZ
                     return false;
                 }
 
+                // Utils::ReadFile fails if the file doesn't exist.
+                // Check if it exists first, it's not an error if there is no scene manifest.
+                if (!AZ::IO::SystemFile::Exists(absoluteFilePath.c_str()))
+                {
+                    return false;
+                }
+
                 auto readFileOutcome = Utils::ReadFile(absoluteFilePath, MaxSceneManifestFileSizeInBytes);
                 if (!readFileOutcome.IsSuccess())
                 {

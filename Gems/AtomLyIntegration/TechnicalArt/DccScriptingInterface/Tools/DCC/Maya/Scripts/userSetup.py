@@ -43,7 +43,8 @@ import logging as _logging
 
 # -------------------------------------------------------------------------
 # global scope
-_MODULENAME = 'Tools.DCC.Maya.scripts.userSetup'
+from DccScriptingInterface.Tools.DCC.Maya import _PACKAGENAME
+_MODULENAME = f'{_PACKAGENAME}.scripts.userSetup'
 
 __all__ = ['config',
            'constants',
@@ -52,6 +53,7 @@ __all__ = ['config',
            'scripts']
 
 _LOGGER = _logging.getLogger(_MODULENAME)
+_LOGGER.debug('Invoking:: {0}.'.format({_MODULENAME}))
 # -------------------------------------------------------------------------
 
 
@@ -61,66 +63,60 @@ _LOGGER = _logging.getLogger(_MODULENAME)
 _MODULE_PATH = Path(os.path.abspath(inspect.getfile(inspect.currentframe())))
 _LOGGER.debug('_MODULE_PATH: {}'.format(_MODULE_PATH))
 
-_DCCSI_TOOLS_MAYA_SCRIPTS_PATH = Path(_MODULE_PATH.parent.as_posix())
-_LOGGER.debug('_DCCSI_TOOLS_MAYA_SCRIPTS_PATH: {}'.format(_DCCSI_TOOLS_MAYA_SCRIPTS_PATH))
+from DccScriptingInterface import PATH_DCCSIG
+from DccScriptingInterface import add_site_dir
 
-_PATH_DCCSI_TOOLS_MAYA = Path(_DCCSI_TOOLS_MAYA_SCRIPTS_PATH.parent)
-_PATH_DCCSI_TOOLS_MAYA = Path(os.getenv('PATH_DCCSI_TOOLS_MAYA', _PATH_DCCSI_TOOLS_MAYA.as_posix()))
-site.addsitedir(_PATH_DCCSI_TOOLS_MAYA.as_posix())
+DCCSI_TOOLS_MAYA_SCRIPTS_PATH = Path(_MODULE_PATH.parent.as_posix())
+_LOGGER.debug('_DCCSI_TOOLS_MAYA_SCRIPTS_PATH: {}'.format(DCCSI_TOOLS_MAYA_SCRIPTS_PATH))
+add_site_dir(DCCSI_TOOLS_MAYA_SCRIPTS_PATH)
 
-_PATH_DCCSI_TOOLS_DCC = Path(_PATH_DCCSI_TOOLS_MAYA.parent)
-_PATH_DCCSI_TOOLS_DCC = Path(os.getenv('PATH_DCCSI_TOOLS_DCC', _PATH_DCCSI_TOOLS_DCC.as_posix()))
-site.addsitedir(_PATH_DCCSI_TOOLS_DCC.as_posix())
+PATH_DCCSI_TOOLS_MAYA = Path(DCCSI_TOOLS_MAYA_SCRIPTS_PATH.parent)
+PATH_DCCSI_TOOLS_MAYA = Path(os.getenv('PATH_DCCSI_TOOLS_MAYA', PATH_DCCSI_TOOLS_MAYA.as_posix()))
+add_site_dir(PATH_DCCSI_TOOLS_MAYA.as_posix())
 
-_PATH_DCCSI_TOOLS = Path(_PATH_DCCSI_TOOLS_DCC.parent)
-_PATH_DCCSI_TOOLS = Path(os.getenv('PATH_DCCSI_TOOLS', _PATH_DCCSI_TOOLS.as_posix()))
+PATH_DCCSI_TOOLS_DCC = Path(PATH_DCCSI_TOOLS_MAYA.parent)
+PATH_DCCSI_TOOLS_DCC = Path(os.getenv('PATH_DCCSI_TOOLS_DCC', PATH_DCCSI_TOOLS_DCC.as_posix()))
 
-_PATH_DCCSIG = Path(_PATH_DCCSI_TOOLS.parent)
-_PATH_DCCSIG = Path(os.getenv('PATH_DCCSIG', _PATH_DCCSIG.as_posix()))
-site.addsitedir(_PATH_DCCSIG.as_posix())
+PATH_DCCSI_TOOLS = Path(PATH_DCCSI_TOOLS_DCC.parent)
+PATH_DCCSI_TOOLS = Path(os.getenv('PATH_DCCSI_TOOLS', PATH_DCCSI_TOOLS.as_posix()))
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
 # now we have access to the DCCsi code and azpy
-from azpy.env_bool import env_bool
-from azpy.constants import *
+from DccScriptingInterface.azpy.env_bool import env_bool
+from DccScriptingInterface.azpy.constants import *
 #from azpy.constants import ENVAR_DCCSI_GDEBUG
 #from azpy.constants import ENVAR_DCCSI_DEV_MODE
 #from azpy.constants import ENVAR_DCCSI_LOGLEVEL
 #from azpy.constants import ENVAR_DCCSI_GDEBUGGER
 #from azpy.constants import FRMT_LOG_LONG
 
-#  global space
-_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
-_DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
-_DCCSI_GDEBUGGER = env_bool(ENVAR_DCCSI_GDEBUGGER, 'WING')
+from DccScriptingInterface.globals import *
 
-# default loglevel to info unless set
-_DCCSI_LOGLEVEL = int(env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO))
-if _DCCSI_GDEBUG:
+if DCCSI_GDEBUG:
     # override loglevel if runnign debug
-    _DCCSI_LOGLEVEL = _logging.DEBUG
-    _logging.basicConfig(level=_DCCSI_LOGLEVEL,
+    DCCSI_LOGLEVEL = _logging.DEBUG
+    _logging.basicConfig(level=DCCSI_LOGLEVEL,
                         format=FRMT_LOG_LONG,
                         datefmt='%m-%d %H:%M')
     _LOGGER = _logging.getLogger(_MODULENAME)
-    
+
 # early attach WingIDE debugger (can refactor to include other IDEs later)
-if _DCCSI_DEV_MODE:
-    from azpy.test.entry_test import connect_wing
-    foo = connect_wing()
+if DCCSI_DEV_MODE:
+    import DccScriptingInterface.azpy.test.entry_test
+    DccScriptingInterface.azpy.test.entry_test.connect_wing()
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
 # message collection
-_LOGGER.debug(f'Initializing: {_MODULENAME}')
+_LOGGER.info(f'Initializing: {_MODULENAME}')
 _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH}')
-_LOGGER.debug(f'PATH_DCCSIG: {_PATH_DCCSIG}')
-_LOGGER.debug(f'PATH_DCCSI_TOOLS: {_PATH_DCCSI_TOOLS}')
-_LOGGER.debug(f'PATH_DCCSI_TOOLS_DCC: {_PATH_DCCSI_TOOLS_DCC}')
-_LOGGER.debug(f'PATH_DCCSI_TOOLS_MAYA: {_PATH_DCCSI_TOOLS_MAYA}')
+_LOGGER.debug(f'PATH_DCCSIG: {PATH_DCCSIG}')
+_LOGGER.debug(f'PATH_DCCSI_TOOLS: {PATH_DCCSI_TOOLS}')
+_LOGGER.debug(f'PATH_DCCSI_TOOLS_DCC: {PATH_DCCSI_TOOLS_DCC}')
+_LOGGER.debug(f'PATH_DCCSI_TOOLS_MAYA: {PATH_DCCSI_TOOLS_MAYA}')
 
 # flag to turn off setting up callbacks, until they are fully implemented
 # To Do: consider making it a settings option to define and enable/disable
@@ -229,7 +225,7 @@ try:
     _PATH_O3DE_PROJECT = _BASE_ENVVAR_DICT[ENVAR_PATH_O3DE_PROJECT]
 except Exception as e:
     _LOGGER.critical(_STR_ERROR_ENVAR.format(_BASE_ENVVAR_DICT[ENVAR_PATH_O3DE_PROJECT]))
-    
+
 _O3DE_DEV = _BASE_ENVVAR_DICT[ENVAR_O3DE_DEV]
 _O3DE_PATH_DCCSIG = _BASE_ENVVAR_DICT[ENVAR_PATH_DCCSIG]
 _O3DE_DCCSI_LOG_PATH = _BASE_ENVVAR_DICT[ENVAR_DCCSI_LOG_PATH]
@@ -254,20 +250,18 @@ _fix_paths = None
 # -------------------------------------------------------------------------
 # add appropriate common tools paths to the maya environment variables
 def startup():
-    """Early starup execution before mayautils.executeDeferred(). 
+    """Early starup execution before mayautils.executeDeferred().
     Some things like UI and plugins should be defered to avoid failure"""
     _LOGGER.info('{}.startup() fired'.format(_MODULENAME))
 
-    # get known paths
-    _KNOWN_PATHS = site._init_pathinfo()
+    from DccScriptingInterface import PATH_DCCSIG
+    from DccScriptingInterface.Tools import PATH_DCCSI_TOOLS
 
-    if os.path.isdir(_PATH_DCCSI_TOOLS.as_posix()):
-        site.addsitedir(_PATH_DCCSI_TOOLS.as_posix(), _KNOWN_PATHS)
-        try:
-            import azpy.test
-            _LOGGER.info('SUCCESS, import azpy.test')
-        except Exception as e:
-            _LOGGER.warning('startup(), could not import azpy.test')
+    try:
+        import DccScriptingInterface.azpy.test
+        _LOGGER.info('SUCCESS, import DccScriptingInterface.azpy.test')
+    except Exception as e:
+        _LOGGER.warning('startup(), could not import DccScriptingInterface.azpy.test')
 
     _LOGGER.info('startup(), COMPLETE')
     return 0
@@ -278,8 +272,9 @@ def startup():
 # verify Shared\Python exists and add it as a site dir. Begin imports and config.
 def post_startup():
     """Allows for a defered execution startup sequence (post UI boot)"""
-    
-    # note: at this point, in Maya 2022, the logging will show in script editor
+
+    # NOTE: at this point, in Maya 2022+, the logging will show in script editor
+    # not in the boot console window
     # to do: investigate if we want to figure out how to stream into output console also
     _LOGGER.info('{}.post_startup() fired'.format(_MODULENAME))
 
@@ -287,16 +282,15 @@ def post_startup():
     try:
         maya.cmds.loadPlugin("dx11Shader")
     except Exception as e:
-        _LOGGER.error(e)  # not a hard failure
+        _LOGGER.exception(f'{e} , traceback =', exc_info=True)
 
     # Lumberyard DCCsi environment ready or error out.
     try:
-        import azpy.dcc.maya
-        from azpy.dcc.maya import _PACKAGENAME
+        import DccScriptingInterface.azpy.dcc.maya
+        from DccScriptingInterface.azpy.dcc.maya import _PACKAGENAME
         _LOGGER.info('Python module imported: {}'.format(_PACKAGENAME))
     except Exception as e:
-        _LOGGER.error(e)
-        _LOGGER.error(traceback.print_exc())
+        _LOGGER.exception(f'{e} , traceback =', exc_info=True)
         return 1
 
     # DEPRECATE: don't nee to .init() anymore, auto-init (experimental)
@@ -314,13 +308,19 @@ def post_startup():
     # Defered startup after the Ui is running.
     _G_CALLBACKS = Box(box_dots=True)  # this just ensures a global scope container
     if _G_LOAD_CALLBACKS:
-        from set_callbacks import _G_CALLBACKS
-        # ^ need to hold on to this as the install repopulate set
+        try:
+            import DccScriptingInterface.Tools.DCC.Maya.Scripts
+            import DccScriptingInterface.Tools.DCC.Maya.Scripts.set_callbacks
+            from DccScriptingInterface.Tools.DCC.Maya.Scripts.set_callbacks import _G_CALLBACKS
+            # ^ need to hold on to this as the install repopulate set
+        except ImportError as e:
+            _LOGGER.exception(f'{e} , traceback =', exc_info=True)
+            raise e
 
     # this ensures the fixPaths callback is loaded
     # even when the other global callbacks are disabled
-    from set_callbacks import install_fix_paths
-    install_fix_paths()    
+    #from set_callbacks import install_fix_paths
+    DccScriptingInterface.Tools.DCC.Maya.Scripts.set_callbacks.install_fix_paths()
 
     # set the project workspace
     _project_workspace = os.path.join(_PATH_O3DE_PROJECT, TAG_MAYA_WORKSPACE)
@@ -331,13 +331,13 @@ def post_startup():
             _LOGGER.info('Loaded workspace file: {0}'.format(_project_workspace))
             maya.cmds.workspace(_PATH_O3DE_PROJECT, update=True)
         except Exception as e:
-            _LOGGER.error(e)
+            _LOGGER.exception(f'{e} , traceback =', exc_info=True)
     else:
         _LOGGER.warning('Workspace file not found: {1}'.format(_PATH_O3DE_PROJECT))
 
     # Set up Lumberyard, maya default setting
-    from set_defaults import set_defaults
-    set_defaults()
+    import DccScriptingInterface.Tools.DCC.Maya.Scripts.set_defaults
+    DccScriptingInterface.Tools.DCC.Maya.Scripts.set_defaults.set_defaults()
 
     # Setup UI tools
     if not maya.cmds.about(batch=True):
@@ -346,12 +346,13 @@ def post_startup():
         try:
             mel.eval(str(r'source "{}"'.format(TAG_O3DE_DCC_MAYA_MEL)))
         except Exception as e:
-            _LOGGER.error(e)
+            _LOGGER.exception(f'{e} , traceback =', exc_info=True)
+            pass
 
     # manage custom menu in a sub-module
-    from set_menu import set_main_menu
-    set_main_menu()
-    
+    import DccScriptingInterface.Tools.DCC.Maya.Scripts.set_menu
+    DccScriptingInterface.Tools.DCC.Maya.Scripts.set_menu.set_main_menu()
+
     # To Do: manage custom shelf in a sub-module
 
     _LOGGER.info('post_startup(), COMPLETE')
@@ -368,7 +369,13 @@ if __name__ == '__main__':
 
         # This allows defered action post boot (atfer UI is active)
         from maya.utils import executeDeferred
+
+        _LOGGER.info('attempting to run, post_startup()')
+
         post = executeDeferred(post_startup)
 
+        _LOGGER.info('executing userSetup COMPLETE')
+
     except Exception as e:
-        traceback.print_exc()
+        _LOGGER.exception(f'{e} , traceback =', exc_info=True)
+        raise e

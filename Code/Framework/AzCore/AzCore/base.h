@@ -13,6 +13,8 @@
 
 #include <AzCore/AzCore_Traits_Platform.h>
 
+#include <cstdio>
+
 /// Return an array size for static arrays.
 namespace AZ::Internal
 {
@@ -196,6 +198,76 @@ namespace AZ
 
     template<typename T>
     inline T* PointerAlignDown(T* p, size_t a) { return reinterpret_cast<T*>((reinterpret_cast<size_t>(p)) & ~(a-1));   }
+
+    //! Rounds up a value to next power of 2.
+    //! For example to round 8388609((2^23) + 1) up to 16777216(2^24) the following occurs
+    //! Subtract one from the value in case it is already
+    //! equal to a power of 2
+    //! 8388609 - 1 = 8388608
+    //! Propagate the highest one bit in the value to all the lower bits
+    //! 8388608 = 0b100'0000'0000'0000'0000'0000 in binary
+    //!
+    //!  0b100'0000'0000'0000'0000'0000
+    //! |0b010'0000'0000'0000'0000'0000 (>> 1)
+    //! -------------------------------
+    //!  0b110'0000'0000'0000'0000'0000 (Now there are 2 consecutive 1-bits)
+    //! |0b001'1000'0000'0000'0000'0000 (>> 2)
+    //! -------------------------------
+    //!  0b111'1000'0000'0000'0000'0000 (Now there are 4 consecutive 1-bits)
+    //! |0b000'0111'1000'0000'0000'0000 (>> 4)
+    //! -------------------------------
+    //!  0b111'1111'1000'0000'0000'0000 (Now there are 8 consecutive 1-bits)
+    //! |0b000'0000'0111'1111'1000'0000 (>> 8)
+    //! -------------------------------
+    //!  0b111'1111'1111'1111'1000'0000 (Now there are 16 consecutive 1-bits)
+    //! |0b000'0000'0000'0000'0111'1111 (>> 16)
+    //! -------------------------------
+    //!  0b111'1111'1111'1111'1111'1111 (Now there are 23 consecutive 1-bits)
+    //! |0b000'0000'0000'0000'0000'0000 (>> 32)
+    //! -------------------------------
+    //!  0b111'1111'1111'1111'1111'1111
+    //! Finally since all the one bits are set in the value, adding one pushes it
+    //! to next power of 2
+    //! 0b1000'0000'0000'0000'0000'0000 = 16777216
+    inline constexpr size_t AlignUpToPowerOfTwo(size_t value)
+    {
+        // If the value is <=2 it is already aligned
+        if (value <= 2)
+        {
+            return value;
+        }
+
+        // Subtract one to make any values already
+        // aligned to a power of 2 less than that power of 2
+        // so that algorithm doesn't push those values upwards
+        --value;
+        value |= value >> 0b1;
+        value |= value >> 0b10;
+        value |= value >> 0b100;
+        value |= value >> 0b1000;
+        value |= value >> 0b1'0000;
+        value |= value >> 0b10'0000;
+        ++value;
+        return value;
+    }
+
+    static_assert(AlignUpToPowerOfTwo(0) == 0);
+    static_assert(AlignUpToPowerOfTwo(1) == 1);
+    static_assert(AlignUpToPowerOfTwo(2) == 2);
+    static_assert(AlignUpToPowerOfTwo(3) == 4);
+    static_assert(AlignUpToPowerOfTwo(4) == 4);
+    static_assert(AlignUpToPowerOfTwo(5) == 8);
+    static_assert(AlignUpToPowerOfTwo(8) == 8);
+    static_assert(AlignUpToPowerOfTwo(10) == 16);
+    static_assert(AlignUpToPowerOfTwo(16) == 16);
+    static_assert(AlignUpToPowerOfTwo(24) == 32);
+    static_assert(AlignUpToPowerOfTwo(32) == 32);
+    static_assert(AlignUpToPowerOfTwo(45) == 64);
+    static_assert(AlignUpToPowerOfTwo(64) == 64);
+    static_assert(AlignUpToPowerOfTwo(112) == 128);
+    static_assert(AlignUpToPowerOfTwo(128) == 128);
+    static_assert(AlignUpToPowerOfTwo(136) == 256);
+    static_assert(AlignUpToPowerOfTwo(256) == 256);
 
     /**
     * Does an safe alias cast using a union. This will allow you to properly cast types that when

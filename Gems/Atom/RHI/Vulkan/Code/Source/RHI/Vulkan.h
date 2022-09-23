@@ -57,10 +57,10 @@ namespace AZ
             AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::Vulkan::Debug::DebugMessageTypeFlag);
 
             /// Initializes the debug callback system.
-            void InitDebugMessages(VkInstance instance, DebugMessageTypeFlag messageTypeMask);
+            void InitDebugMessages(const GladVulkanContext& context, VkInstance instance, DebugMessageTypeFlag messageTypeMask);
 
             /// Shuts down the debug callback system.
-            void ShutdownDebugMessages(VkInstance instance);
+            void ShutdownDebugMessages(const GladVulkanContext& context, VkInstance instance);
 
             RawStringList GetValidationLayers();
 
@@ -68,16 +68,17 @@ namespace AZ
             void SetNameToObject(uint64_t objectHandle, const char* name, VkObjectType objectType, const Device& device);
 
             /// Begins a command buffer debug label
-            void BeginCmdDebugLabel(VkCommandBuffer commandBuffer, const char* label, const AZ::Color color);
+            void BeginCmdDebugLabel(
+                const GladVulkanContext& context, VkCommandBuffer commandBuffer, const char* label, const AZ::Color color);
 
             /// Ends an open command buffer debug label.
-            void EndCmdDebugLabel(VkCommandBuffer commandBuffer);
+            void EndCmdDebugLabel(const GladVulkanContext& context, VkCommandBuffer commandBuffer);
 
             /// Begins a queue debug label.
-            void BeginQueueDebugLabel(VkQueue queue, const char* label, const AZ::Color color);
+            void BeginQueueDebugLabel(const GladVulkanContext& context, VkQueue queue, const char* label, const AZ::Color color);
 
             /// Ends an open queue debug label.
-            void EndQueueDebugLabel(VkQueue queue);
+            void EndQueueDebugLabel(const GladVulkanContext& context, VkQueue queue);
         }
 
         const char* GetResultString(const VkResult result);

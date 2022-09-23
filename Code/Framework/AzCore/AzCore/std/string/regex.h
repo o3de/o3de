@@ -15,9 +15,9 @@
 #include <AzCore/std/utils.h>
 #include <AzCore/std/exceptions.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/limits.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
-#include <limits>
 
 // used for std::pointer_traits \note do an AZStd version
 #include <memory>
@@ -1911,6 +1911,11 @@ namespace AZStd
             m_rootNode = rootNode;
         }
     };
+
+    // AZStd::basic_regex deduction guides
+    template <class ForwardIt>
+    basic_regex(ForwardIt, ForwardIt, AZStd::regex_constants::syntax_option_type = AZStd::regex_constants::ECMAScript)
+        -> basic_regex<typename iterator_traits<ForwardIt>::value_type>;
 
     // exchange contents of left with right
     template<class Element, class RegExTraits>
@@ -4040,7 +4045,7 @@ namespace AZStd
     template<class ForwardIterator, class Element, class RegExTraits>
     inline bool Parser<ForwardIterator, Element, RegExTraits>::DecimalDigits()
     {   // check for decimal value
-        return (DoDigits(10, INT_MAX) != INT_MAX);
+        return (DoDigits(10, AZStd::numeric_limits<int>::max()) != AZStd::numeric_limits<int>::max());
     }
 
     template<class ForwardIterator, class Element, class RegExTraits>

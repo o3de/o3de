@@ -11,15 +11,20 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Containers/SceneManifest.h>
+#include <SceneAPI/SceneCore/DataTypes/Groups/ISceneNodeGroup.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <SceneAPI/SceneCore/Events/ManifestMetaInfoBus.h>
 #include <SceneAPI/SceneUI/RowWidgets/HeaderWidget.h>
 #include <SceneAPI/SceneUI/RowWidgets/ManifestVectorWidget.h>
 #include <SceneAPI/SceneUI/SceneWidgets/ManifestWidget.h>
+
+
+#include <QFile>
 
 static void InitSceneUIHeaderWidgetResources()
 {
@@ -46,6 +51,8 @@ namespace AZ
                 ui->setupUi(this);
 
                 ui->m_icon->hide();
+                ui->m_headerLine->hide();
+                ui->m_headerLineSpacer->hide();
                 
                 ui->m_deleteButton->setIcon(QIcon(":/PropertyEditor/Resources/cross-small.png"));
                 connect(ui->m_deleteButton, &QToolButton::clicked, this, &HeaderWidget::DeleteObject);
@@ -67,7 +74,7 @@ namespace AZ
                 ui->m_nameLabel->setText(GetSerializedName(target));
                 
                 UpdateDeletable();
-                SetIcon(target);
+                UpdateUIForManifestObject(target);
             }
 
             const DataTypes::IManifestObject* HeaderWidget::GetManifestObject() const
@@ -175,22 +182,96 @@ namespace AZ
                 return "<type not registered>";
             }
 
-            void HeaderWidget::SetIcon(const DataTypes::IManifestObject* target)
+            void HeaderWidget::UpdateUIForManifestObject(const DataTypes::IManifestObject* target)
             {
                 if (!target)
                 {
                     return;
                 }
 
+                const AZ::Edit::ElementData* editorElementData = nullptr;
+                const DataTypes::IGroup* sceneNodeGroup = nullptr;
+
+                // Retrieve information from the edit context to figure out if this HeaderWidget
+                // show have a visual divider, and potentially the icon.
+                if (target->RTTI_IsTypeOf(DataTypes::IGroup::TYPEINFO_Uuid()))
+                {
+                    sceneNodeGroup = azrtti_cast<const DataTypes::IGroup*>(&target);
+                    
+                    AZ::SerializeContext* serializeContext = nullptr;
+                    AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+                    AZ_Assert(serializeContext, "No serialize context");
+
+                    auto classData = serializeContext->FindClassData(target->RTTI_GetType());
+                    if (classData && classData->m_editData)
+                    {
+                        editorElementData = classData->m_editData->FindElementData(AZ::Edit::ClassElements::EditorData);
+
+
+                        if (auto categoryAttribute = editorElementData->FindAttribute(AZ::Edit::Attributes::CategoryStyle))
+                        {
+                            if (auto categoryAttributeData = azdynamic_cast<const AZ::Edit::AttributeData<const char*>*>(categoryAttribute))
+                            {
+                                AZStd::string categoryAttributeValue = categoryAttributeData->Get(&sceneNodeGroup);
+                                if (categoryAttributeValue.compare("display divider") == 0)
+                                {
+                                    ui->m_headerLine->show();
+                                    ui->m_headerLineSpacer->show();
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // First, see if there's an icon registered on the ManifestMetaInfoBus.
                 AZStd::string iconPath;
                 EBUS_EVENT(Events::ManifestMetaInfoBus, GetIconPath, iconPath, *target);
+
+                // If there isn't, then attempt to retrieve it from the edit context.
+                if (iconPath.empty() && editorElementData)
+                {
+                    // Search the edit context for an icon.
+                    // It will have been reflected like:
+                    //  ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/MeshCollider.svg")
+                    if (auto iconAttribute = editorElementData->FindAttribute(AZ::Edit::Attributes::Icon))
+                    {
+                        if (auto iconAttributeData = azdynamic_cast<const AZ::Edit::AttributeData<const char*>*>(iconAttribute))
+                        {
+                            AZStd::string iconAttributeValue = iconAttributeData->Get(&sceneNodeGroup);
+                            if (!iconAttributeValue.empty())
+                            {
+                                iconPath = AZStd::move(iconAttributeValue);
+                                        
+                                // The path is probably going to be relative to a scan directory,
+                                // especially if this node was defined in a Gem.
+                                // If a first check doesn't find the file, then see if the path can
+                                // be resolved via the asset system, and pull an absolute path from there.
+                                if (!QFile::exists(QString(iconPath.c_str())))
+                                {
+                                    AZStd::string iconFullPath;
+                                    bool pathFound = false;
+                                    using AssetSysReqBus = AzToolsFramework::AssetSystemRequestBus;
+                                    AssetSysReqBus::BroadcastResult(
+                                        pathFound, &AssetSysReqBus::Events::GetFullSourcePathFromRelativeProductPath,
+                                        iconPath, iconFullPath);
+                                    if (pathFound)
+                                    {
+                                        iconPath = AZStd::move(iconFullPath);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
                 if (iconPath.empty())
                 {
                     ui->m_icon->hide();
                 }
                 else
                 {
-                    ui->m_icon->setPixmap(QPixmap(iconPath.c_str()));
+                    ui->m_icon->setPixmap(QIcon(iconPath.c_str()).pixmap(QSize(ui->m_icon->size())));
+                    
                     ui->m_icon->show();
                 }
             }

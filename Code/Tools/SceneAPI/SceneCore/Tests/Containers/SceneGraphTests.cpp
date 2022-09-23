@@ -14,7 +14,6 @@
 #include <SceneAPI/SceneCore/DataTypes/IGraphObject.h>
 #include <SceneAPI/SceneCore/Mocks/DataTypes/MockIGraphObject.h>
 
-
 namespace AZ
 {
     namespace SceneAPI

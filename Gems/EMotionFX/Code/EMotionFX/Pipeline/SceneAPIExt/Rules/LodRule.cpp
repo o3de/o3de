@@ -10,9 +10,9 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <SceneAPI/SceneCore/DataTypes/GraphData/IBoneData.h>
 #include <SceneAPIExt/Rules/LodRule.h>
 #include <SceneAPIExt/Data/LodNodeSelectionList.h>
-
 
 namespace EMotionFX
 {
@@ -104,7 +104,8 @@ namespace EMotionFX
                             AZ::Edit::UIHandlers::Default, &LodRule::m_nodeSelectionLists, "Skeleton",
                             "Select the joints to assign to each level of detail.")
                         ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "Additional LOD")
-                        ->ElementAttribute(AZ::Edit::UIHandlers::Handler, AZ_CRC("LODTreeSelection", 0x25c27718));
+                            ->ElementAttribute(AZ::Edit::UIHandlers::Handler, AZ_CRC("LODTreeSelection", 0x25c27718))
+                            ->ElementAttribute(AZ_CRC("FilterType", 0x2661cf01), azrtti_typeid<SceneDataTypes::IBoneData>());
                 }
             }
         }

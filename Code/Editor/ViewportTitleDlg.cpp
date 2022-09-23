@@ -39,11 +39,15 @@
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/std/algorithm.h>
 #include <AzFramework/API/ApplicationAPI.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInternalInterface.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
+#include <Editor/EditorSettingsAPIBus.h>
+#include <EditorModeFeedback/EditorStateRequestsBus.h>
 
 #include <LmbrCentral/Audio/AudioSystemComponentBus.h>
 
@@ -103,6 +107,7 @@ CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
     LoadCustomPresets("AspectRatioPresets", "AspectRatioPreset", m_customAspectRatioPresets);
     LoadCustomPresets("ResPresets", "ResPreset", m_customResPresets);
 
+    SetupPrefabEditModeMenu();
     SetupCameraDropdownMenu();
     SetupResolutionDropdownMenu();
     SetupViewportInformationMenu();
@@ -110,6 +115,23 @@ CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
     if (!AzToolsFramework::IsNewActionManagerEnabled())
     {
         SetupHelpersButton();
+    }
+    else
+    {
+        // Temporary Helpers menu setup until this toolbar is refactored.
+        auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
+        auto menuManagerInternalInterface = AZ::Interface<AzToolsFramework::MenuManagerInternalInterface>::Get();
+        if (menuManagerInterface && menuManagerInternalInterface)
+        {
+            const AZStd::string helpersMenuIdentifier = "o3de.menu.viewport.helpers";
+            AzToolsFramework::MenuProperties menuProperties;
+            menuProperties.m_name = "Helpers State";
+            menuManagerInterface->RegisterMenu(helpersMenuIdentifier, menuProperties);
+
+            QMenu* helpersMenu = menuManagerInternalInterface->GetMenu(helpersMenuIdentifier);
+            m_ui->m_helpers->setMenu(helpersMenu);
+            m_ui->m_helpers->setPopupMode(QToolButton::InstantPopup);
+        }
     }
 
     SetupOverflowMenu();
@@ -194,6 +216,15 @@ void CViewportTitleDlg::SetupResolutionDropdownMenu()
     resolutionMenu->addMenu(GetResolutionMenu());
     m_ui->m_resolutionMenu->setMenu(resolutionMenu);
     m_ui->m_resolutionMenu->setPopupMode(QToolButton::InstantPopup);
+}
+
+void CViewportTitleDlg::SetupPrefabEditModeMenu()
+{
+    m_prefabEditMode = AzToolsFramework::PrefabEditModeEffectEnabled() ? PrefabEditModeUXSetting::Monochromatic : PrefabEditModeUXSetting::Normal;
+    m_ui->m_prefabEditModeMenu->setMenu(GetPrefabEditModeMenu());
+    m_ui->m_prefabEditModeMenu->setAutoRaise(true);
+    m_ui->m_prefabEditModeMenu->setPopupMode(QToolButton::InstantPopup);
+    UpdatePrefabEditMode();
 }
 
 void CViewportTitleDlg::SetupViewportInformationMenu()
@@ -428,6 +459,18 @@ void CViewportTitleDlg::OnMaximize()
     }
 }
 
+void CViewportTitleDlg::SetNormalPrefabEditMode()
+{
+    m_prefabEditMode = PrefabEditModeUXSetting::Normal;
+    UpdatePrefabEditMode();
+}
+
+void CViewportTitleDlg::SetMonochromaticPrefabEditMode()
+{
+    m_prefabEditMode = PrefabEditModeUXSetting::Monochromatic;
+    UpdatePrefabEditMode();
+}
+
 void CViewportTitleDlg::SetNoViewportInfo()
 {
     AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Broadcast(
@@ -453,6 +496,42 @@ void CViewportTitleDlg::SetCompactViewportInfo()
 }
 
 //////////////////////////////////////////////////////////////////////////
+void CViewportTitleDlg::UpdatePrefabEditMode()
+{
+    if (m_prefabEditModeMenu == nullptr)
+    {
+        // Nothing to update, just return;
+        return;
+    }
+
+    m_normalPrefabEditModeAction->setChecked(false);
+    m_monochromaticPrefabEditModeAction->setChecked(false);
+
+    switch (m_prefabEditMode)
+    {
+    case PrefabEditModeUXSetting::Normal:
+        {
+            m_normalPrefabEditModeAction->setChecked(true);
+            AZ::Render::EditorStateRequestsBus::Event(
+                AZ::Render::EditorState::FocusMode, &AZ::Render::EditorStateRequestsBus::Events::SetEnabled, false);
+            AzToolsFramework::SetPrefabEditModeEffectEnabled(false);
+            AzToolsFramework::EditorSettingsAPIBus::Broadcast(&AzToolsFramework::EditorSettingsAPIBus::Events::SaveSettingsRegistryFile);
+            break;
+        }
+    case PrefabEditModeUXSetting::Monochromatic:
+        {
+            m_monochromaticPrefabEditModeAction->setChecked(true);
+            AZ::Render::EditorStateRequestsBus::Event(
+                AZ::Render::EditorState::FocusMode, &AZ::Render::EditorStateRequestsBus::Events::SetEnabled, true);
+            AzToolsFramework::SetPrefabEditModeEffectEnabled(true);
+            AzToolsFramework::EditorSettingsAPIBus::Broadcast(&AzToolsFramework::EditorSettingsAPIBus::Events::SaveSettingsRegistryFile);
+            break;
+        }
+    default:
+        AZ_Error("PrefabEditMode", false, AZStd::string::format("Unexpected edit mode: %zu", static_cast<size_t>(m_prefabEditMode)).c_str());
+    }
+}
+
 void CViewportTitleDlg::UpdateDisplayInfo()
 {
     if (m_viewportInformationMenu == nullptr)
@@ -547,7 +626,7 @@ void CViewportTitleDlg::AddFOVMenus(QMenu* menu, std::function<void(float)> call
                 break;
             }
 
-            float fov = gSettings.viewports.fDefaultFov;
+            float fov = SandboxEditor::CameraDefaultFovRadians();
             bool ok;
             float f = customPreset.toFloat(&ok);
             if (ok)
@@ -701,6 +780,32 @@ QMenu* const CViewportTitleDlg::GetAspectMenu()
 {
     CreateAspectMenu();
     return m_aspectMenu;
+}
+
+QMenu* const CViewportTitleDlg::GetPrefabEditModeMenu()
+{
+    CreatePrefabEditModeMenu();
+    return m_prefabEditModeMenu;
+}
+
+void CViewportTitleDlg::CreatePrefabEditModeMenu()
+{
+    if (m_prefabEditModeMenu == nullptr)
+    {
+        m_prefabEditModeMenu = new QMenu("Edit Mode");
+
+        m_normalPrefabEditModeAction = new QAction(tr("Normal"), m_prefabEditModeMenu);
+        m_normalPrefabEditModeAction->setCheckable(true);
+        connect(m_normalPrefabEditModeAction, &QAction::triggered, this, &CViewportTitleDlg::SetNormalPrefabEditMode);
+        m_prefabEditModeMenu->addAction(m_normalPrefabEditModeAction);
+
+        m_monochromaticPrefabEditModeAction = new QAction(tr("Monochromatic"), m_prefabEditModeMenu);
+        m_monochromaticPrefabEditModeAction->setCheckable(true);
+        connect(m_monochromaticPrefabEditModeAction, &QAction::triggered, this, &CViewportTitleDlg::SetMonochromaticPrefabEditMode);
+        m_prefabEditModeMenu->addAction(m_monochromaticPrefabEditModeAction);
+
+        UpdatePrefabEditMode();
+    }
 }
 
 QMenu* const CViewportTitleDlg::GetViewportInformationMenu()
@@ -1050,13 +1155,13 @@ void CViewportTitleDlg::OnGridSnappingToggled(const int state)
 {
     m_gridSizeActionWidget->setEnabled(state == Qt::Checked);
     m_enableGridVisualizationCheckBox->setEnabled(state == Qt::Checked);
-    MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapToGrid)->trigger();
+    SandboxEditor::SetGridSnapping(!SandboxEditor::GridSnappingEnabled());
 }
 
 void CViewportTitleDlg::OnAngleSnappingToggled(const int state)
 {
     m_angleSizeActionWidget->setEnabled(state == Qt::Checked);
-    MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapAngle)->trigger();
+    SandboxEditor::SetAngleSnapping(!SandboxEditor::AngleSnappingEnabled());
 }
 
 void CViewportTitleDlg::OnGridSpinBoxChanged(const double value)
@@ -1071,14 +1176,14 @@ void CViewportTitleDlg::OnAngleSpinBoxChanged(const double value)
 
 void CViewportTitleDlg::UpdateOverFlowMenuState()
 {
-    const bool gridSnappingActive = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapToGrid)->isChecked();
+    const bool gridSnappingActive = SandboxEditor::GridSnappingEnabled();
     {
         QSignalBlocker signalBlocker(m_enableGridSnappingCheckBox);
         m_enableGridSnappingCheckBox->setChecked(gridSnappingActive);
     }
     m_gridSizeActionWidget->setEnabled(gridSnappingActive);
 
-    const bool angleSnappingActive = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapAngle)->isChecked();
+    const bool angleSnappingActive = SandboxEditor::AngleSnappingEnabled();
     {
         QSignalBlocker signalBlocker(m_enableAngleSnappingCheckBox);
         m_enableAngleSnappingCheckBox->setChecked(angleSnappingActive);

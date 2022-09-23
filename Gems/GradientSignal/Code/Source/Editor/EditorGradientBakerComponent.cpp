@@ -6,17 +6,13 @@
  *
  */
 
-#include "EditorGradientBakerComponent.h"
-
 #include <AzCore/IO/SystemFile.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyFilePathCtrl.h>
 #include <GradientSignal/Ebuses/GradientPreviewRequestBus.h>
 #include <GradientSignal/Ebuses/ImageGradientRequestBus.h>
-
-AZ_PUSH_DISABLE_WARNING(4777, "-Wunknown-warning-option")
-#include <OpenImageIO/imageio.h>
-AZ_POP_DISABLE_WARNING
+#include <GradientSignal/Editor/EditorGradientBakerComponent.h>
+#include <Editor/EditorGradientImageCreatorUtils.h>
 
 namespace GradientSignal
 {
@@ -58,40 +54,10 @@ namespace GradientSignal
             channels = 4;
         }
 
-        int bytesPerPixel = 0;
-        OIIO::TypeDesc pixelFormat = OIIO::TypeDesc::UINT8;
-        switch (m_configuration.m_outputFormat)
-        {
-        case OutputFormat::R8:
-            bytesPerPixel = 1;
-            pixelFormat = OIIO::TypeDesc::UINT8;
-            break;
-        case OutputFormat::R16:
-            bytesPerPixel = 2;
-            pixelFormat = OIIO::TypeDesc::UINT16;
-            break;
-        case OutputFormat::R32:
-            bytesPerPixel = 4;
-            pixelFormat = OIIO::TypeDesc::FLOAT;
-            break;
-        default:
-            AZ_Assert(false, "Unsupported output image format (%d)", m_configuration.m_outputFormat);
-            return;
-        }
-        const size_t imageSize = imageResolutionX * imageResolutionY * channels * bytesPerPixel;
+        int bytesPerChannel = ImageCreatorUtils::GetBytesPerChannel(m_configuration.m_outputFormat);
+
+        const size_t imageSize = imageResolutionX * imageResolutionY * channels * bytesPerChannel;
         AZStd::vector<AZ::u8> pixels(imageSize, 0);
-
-        AZ::IO::Path absolutePath = m_outputImageAbsolutePath.LexicallyNormal();
-        std::unique_ptr<OIIO::ImageOutput> outputImage = OIIO::ImageOutput::create(absolutePath.c_str());
-        if (!outputImage)
-        {
-            AZ_Error("GradientBaker", false, "Failed to write out gradient baked image to path: %s",
-                absolutePath.c_str());
-            return;
-        }
-
-        OIIO::ImageSpec spec(imageResolutionX, imageResolutionY, channels, pixelFormat);
-        outputImage->open(absolutePath.c_str(), spec);
 
         const AZ::Vector3 inputBoundsCenter = m_inputBounds.GetCenter();
         const AZ::Vector3 inputBoundsExtentsOld = m_inputBounds.GetExtents();
@@ -215,14 +181,16 @@ namespace GradientSignal
         // Don't try to write out the image if the job was canceled
         if (!m_shouldCancel)
         {
-            bool result = outputImage->write_image(pixelFormat, pixels.data());
+            constexpr bool showProgressDialog = false;
+            bool result = ImageCreatorUtils::WriteImage(
+                m_outputImageAbsolutePath.c_str(),
+                imageResolutionX, imageResolutionY, channels, m_configuration.m_outputFormat, pixels,
+                showProgressDialog);
             if (!result)
             {
-                AZ_Error("GradientBaker", result, "Failed to write out gradient baked image to path: %s",
-                    absolutePath.c_str());
+                AZ_Error(
+                    "GradientBaker", result, "Failed to write out gradient baked image to path: %s", m_outputImageAbsolutePath.c_str());
             }
-
-            outputImage->close();
         }
 
         // Safely notify that the job has finished
@@ -243,12 +211,24 @@ namespace GradientSignal
         m_shouldCancel = true;
 
         // Then we synchronously block until the job has completed
+        Wait();
+    }
+
+    void BakeImageJob::Wait()
+    {
+        // Jobs don't inherently have a way to block on cancellation / completion, so we need to implement it
+        // ourselves.
+
+        // If we've already started the job, block on a condition variable that gets notified at
+        // the end of the Process() function.
         AZStd::unique_lock<decltype(m_bakeImageMutex)> lock(m_bakeImageMutex);
         if (!m_isFinished)
         {
             m_finishedNotify.wait(lock, [this] { return m_isFinished == true; });
         }
 
+        // Regardless of whether or not we were running, we need to reset the internal Job class status
+        // and clear our cancel flag.
         Reset(true);
         m_shouldCancel = false;
     }
@@ -256,28 +236,6 @@ namespace GradientSignal
     bool BakeImageJob::IsFinished() const
     {
         return m_isFinished.load();
-    }
-
-    AZStd::string GetSupportedImagesFilter()
-    {
-        // Build filter for supported streaming image formats that will be used on the
-        // native file dialog when creating/picking an output file for the baked image.
-        // ImageProcessingAtom::s_SupportedImageExtensions actually has more formats
-        // that will produce streaming image assets, but not all of them support
-        // all of the bit depths we care about (8/16/32), so we've reduced the list
-        // to the image formats that do.
-        return "Images (*.png *.tif *.tiff *.tga *.exr)";
-    }
-
-    AZStd::vector<AZ::Edit::EnumConstant<OutputFormat>> SupportedOutputFormatOptions()
-    {
-        AZStd::vector<AZ::Edit::EnumConstant<OutputFormat>> options;
-
-        options.push_back(AZ::Edit::EnumConstant<OutputFormat>(OutputFormat::R8, "R8 (8-bit)"));
-        options.push_back(AZ::Edit::EnumConstant<OutputFormat>(OutputFormat::R16, "R16 (16-bit)"));
-        options.push_back(AZ::Edit::EnumConstant<OutputFormat>(OutputFormat::R32, "R32 (32-bit)"));
-
-        return options;
     }
 
     void GradientBakerConfig::Reflect(AZ::ReflectContext* context)
@@ -315,11 +273,11 @@ namespace GradientSignal
                     ->DataElement(
                         AZ::Edit::UIHandlers::ComboBox, &GradientBakerConfig::m_outputFormat, "Output Format",
                         "Output format of the baked image.")
-                    ->Attribute(AZ::Edit::Attributes::EnumValues, &SupportedOutputFormatOptions)
+                    ->Attribute(AZ::Edit::Attributes::EnumValues, &ImageCreatorUtils::SupportedOutputFormatOptions)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &GradientBakerConfig::m_outputImagePath, "Output Path",
                         "Output path to bake the image to.")
-                    ->Attribute(AZ::Edit::Attributes::SourceAssetFilterPattern, GetSupportedImagesFilter())
+                    ->Attribute(AZ::Edit::Attributes::SourceAssetFilterPattern, ImageCreatorUtils::GetSupportedImagesFilter())
                     ->Attribute(AZ::Edit::Attributes::DefaultAsset, "baked_output_gsi")
                     ;
             }
@@ -333,7 +291,8 @@ namespace GradientSignal
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EditorGradientBakerComponent, EditorComponentBase>()
-                ->Version(0)
+                ->Version(1)
+                ->Field("Previewer", &EditorGradientBakerComponent::m_previewer)
                 ->Field("Configuration", &EditorGradientBakerComponent::m_configuration)
                 ;
 
@@ -350,12 +309,7 @@ namespace GradientSignal
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Preview")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
-                    ->UIElement(AZ_CRC_CE("GradientPreviewer"), "Previewer")
-                    ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
-                    ->Attribute(AZ_CRC_CE("GradientEntity"), &EditorGradientBakerComponent::GetGradientEntityId)
-                    ->EndGroup()
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorGradientBakerComponent::m_previewer, "Previewer", "")
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorGradientBakerComponent::m_configuration, "Configuration", "")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorGradientBakerComponent::OnConfigurationChanged)
@@ -369,15 +323,49 @@ namespace GradientSignal
                     ;
             }
         }
+
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->EBus<GradientImageCreatorRequestBus>("GradientImageCreatorRequestBus")
+                ->Attribute(AZ::Script::Attributes::Category, "Gradient")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Module, "gradient")
+                ->Event("GetOutputResolution", &GradientImageCreatorRequests::GetOutputResolution)
+                ->Event("SetOutputResolution", &GradientImageCreatorRequests::SetOutputResolution)
+                ->VirtualProperty("OutputResolution", "GetOutputResolution", "SetOutputResolution")
+                ->Event("GetOutputFormat", &GradientImageCreatorRequests::GetOutputFormat)
+                ->Event("SetOutputFormat", &GradientImageCreatorRequests::SetOutputFormat)
+                ->VirtualProperty("OutputFormat", "GetOutputFormat", "SetOutputFormat")
+                ->Event("GetOutputImagePath", &GradientImageCreatorRequests::GetOutputImagePath)
+                ->Event("SetOutputImagePath", &GradientImageCreatorRequests::SetOutputImagePath)
+                ->VirtualProperty("OutputImagePath", "GetOutputImagePath", "SetOutputImagePath");
+
+
+            behaviorContext->Class<EditorGradientBakerComponent>()
+                ->RequestBus("GradientImageCreatorRequestBus")
+                ->RequestBus("GradientBakerRequestBus")
+                ;
+
+            behaviorContext->EBus<GradientBakerRequestBus>("GradientBakerRequestBus")
+                ->Attribute(AZ::Script::Attributes::Category, "Gradient")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Module, "gradient")
+                ->Event("BakeImage", &GradientBakerRequests::BakeImage)
+                ->Event("GetInputBounds", &GradientBakerRequests::GetInputBounds)
+                ->Event("SetInputBounds", &GradientBakerRequests::SetInputBounds)
+                ->VirtualProperty("InputBounds", "GetInputBounds", "SetInputBounds");
+        }
     }
 
     void EditorGradientBakerComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
+        services.push_back(AZ_CRC_CE("GradientImageCreatorService"));
         services.push_back(AZ_CRC_CE("GradientBakerService"));
     }
 
     void EditorGradientBakerComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
+        services.push_back(AZ_CRC_CE("GradientImageCreatorService"));
         services.push_back(AZ_CRC_CE("GradientBakerService"));
     }
 
@@ -385,12 +373,7 @@ namespace GradientSignal
     {
         AzToolsFramework::Components::EditorComponentBase::Activate();
 
-        m_gradientEntityId = GetEntityId();
-
-        SectorDataNotificationBus::Handler::BusConnect();
         LmbrCentral::DependencyNotificationBus::Handler::BusConnect(GetEntityId());
-        AzToolsFramework::EntitySelectionEvents::Bus::Handler::BusConnect(GetEntityId());
-        GradientPreviewContextRequestBus::Handler::BusConnect(GetEntityId());
 
         m_configuration.m_gradientSampler.m_ownerEntityId = GetEntityId();
 
@@ -403,7 +386,12 @@ namespace GradientSignal
         // Setup the dependency monitor and listen for gradient requests
         SetupDependencyMonitor();
 
-        UpdatePreviewSettings();
+        GradientBakerRequestBus::Handler::BusConnect(GetEntityId());
+        GradientImageCreatorRequestBus::Handler::BusConnect(GetEntityId());
+
+        m_previewer.SetPreviewSettingsVisible(false);
+        m_previewer.SetPreviewEntity(m_configuration.m_inputBounds);
+        m_previewer.Activate(GetEntityId());
 
         // If we have a valid output image path set and the other criteria for baking
         // are met but the image doesn't exist, then bake it when we activate our component.
@@ -424,10 +412,12 @@ namespace GradientSignal
         // Disconnect from GradientRequestBus first to ensure no queries are in process when deactivating.
         GradientRequestBus::Handler::BusDisconnect();
 
+        GradientImageCreatorRequestBus::Handler::BusDisconnect();
+        GradientBakerRequestBus::Handler::BusDisconnect();
+
         m_dependencyMonitor.Reset();
 
-        // If the preview shouldn't be active, use an invalid entityId
-        m_gradientEntityId = AZ::EntityId();
+        m_previewer.Deactivate();
 
         // If we had a bake job running, delete it before deactivating
         // This delete will cancel the job and block waiting for it to complete
@@ -438,44 +428,18 @@ namespace GradientSignal
             m_bakeImageJob = nullptr;
         }
 
-        AzToolsFramework::EntitySelectionEvents::Bus::Handler::BusDisconnect();
-        GradientPreviewContextRequestBus::Handler::BusDisconnect();
         LmbrCentral::DependencyNotificationBus::Handler::BusDisconnect();
-        SectorDataNotificationBus::Handler::BusDisconnect();
 
         AzToolsFramework::Components::EditorComponentBase::Deactivate();
     }
 
     void EditorGradientBakerComponent::OnCompositionChanged()
     {
+        m_previewer.SetPreviewEntity(m_configuration.m_inputBounds);
+        m_previewer.RefreshPreview();
+
         AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(
             &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
-    }
-
-    void EditorGradientBakerComponent::UpdatePreviewSettings() const
-    {
-        // Trigger an update just for our specific preview (this means there was a preview-specific change, not an actual configuration
-        // change)
-        GradientSignal::GradientPreviewRequestBus::Event(m_gradientEntityId, &GradientSignal::GradientPreviewRequestBus::Events::Refresh);
-    }
-
-    AzToolsFramework::EntityIdList EditorGradientBakerComponent::CancelPreviewRendering() const
-    {
-        AzToolsFramework::EntityIdList entityIds;
-        AZ::EBusAggregateResults<AZ::EntityId> canceledPreviews;
-        GradientSignal::GradientPreviewRequestBus::BroadcastResult(
-            canceledPreviews, &GradientSignal::GradientPreviewRequestBus::Events::CancelRefresh);
-
-        // Gather up the EntityIds for any previews that were in progress when we canceled them
-        for (auto entityId : canceledPreviews.values)
-        {
-            if (entityId.IsValid())
-            {
-                entityIds.push_back(entityId);
-            }
-        }
-
-        return entityIds;
     }
 
     void EditorGradientBakerComponent::SetupDependencyMonitor()
@@ -515,7 +479,7 @@ namespace GradientSignal
             AZ::IO::SystemFile::Delete(fullPathIO.c_str());
         }
 
-        m_bakeImageJob = aznew BakeImageJob(m_configuration, fullPathIO, GetPreviewBounds(), m_configuration.m_inputBounds);
+        m_bakeImageJob = aznew BakeImageJob(m_configuration, fullPathIO, m_previewer.GetPreviewBounds(), m_configuration.m_inputBounds);
         m_bakeImageJob->Start();
 
         // Force a refresh now so the bake button gets disabled
@@ -527,26 +491,6 @@ namespace GradientSignal
     {
         return m_configuration.m_outputImagePath.empty() || !m_configuration.m_gradientSampler.m_gradientId.IsValid() ||
             !m_configuration.m_inputBounds.IsValid() || m_bakeImageJob;
-    }
-
-    AZ::EntityId EditorGradientBakerComponent::GetPreviewEntity() const
-    {
-        // Our preview entity will always be ourself since we want to preview
-        // exactly what's going to be in the baked image.
-        return GetEntityId();
-    }
-
-    AZ::Aabb EditorGradientBakerComponent::GetPreviewBounds() const
-    {
-        AZ::Aabb bounds = AZ::Aabb::CreateNull();
-
-        if (m_configuration.m_inputBounds.IsValid())
-        {
-            LmbrCentral::ShapeComponentRequestsBus::EventResult(
-                bounds, m_configuration.m_inputBounds, &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
-        }
-
-        return bounds;
     }
 
     void EditorGradientBakerComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
@@ -565,12 +509,8 @@ namespace GradientSignal
             {
                 AzToolsFramework::ScopedUndoBatch undo("Update Image Gradient Asset");
 
-                QString outputImagePath = QString::fromUtf8(
-                    m_configuration.m_outputImagePath.c_str(), static_cast<int>(m_configuration.m_outputImagePath.Native().size()));
-                outputImagePath += ".streamingimage";
-
                 GradientSignal::ImageGradientRequestBus::Event(
-                    GetEntityId(), &GradientSignal::ImageGradientRequests::SetImageAssetPath, outputImagePath.toUtf8().constData());
+                    GetEntityId(), &GradientSignal::ImageGradientRequests::SetImageAssetSourcePath, m_configuration.m_outputImagePath.c_str());
 
                 undo.MarkEntityDirty(GetEntityId());
             }
@@ -588,11 +528,6 @@ namespace GradientSignal
         }
     }
 
-    AZ::EntityId EditorGradientBakerComponent::GetGradientEntityId() const
-    {
-        return m_gradientEntityId;
-    }
-
     float EditorGradientBakerComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
         return m_configuration.m_gradientSampler.GetValue(sampleParams);
@@ -608,37 +543,67 @@ namespace GradientSignal
         return m_configuration.m_gradientSampler.IsEntityInHierarchy(entityId);
     }
 
-    void EditorGradientBakerComponent::OnSectorDataConfigurationUpdated() const
+    AZ::EntityId EditorGradientBakerComponent::GetInputBounds() const
     {
+        return m_configuration.m_inputBounds;
+    }
+
+    void EditorGradientBakerComponent::SetInputBounds(const AZ::EntityId& inputBounds)
+    {
+        m_configuration.m_inputBounds = inputBounds;
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
-    void EditorGradientBakerComponent::OnSelected()
+    AZ::Vector2 EditorGradientBakerComponent::GetOutputResolution() const
     {
-        UpdatePreviewSettings();
+        return m_configuration.m_outputResolution;
     }
 
-    void EditorGradientBakerComponent::OnDeselected()
+    void EditorGradientBakerComponent::SetOutputResolution(const AZ::Vector2& resolution)
     {
-        UpdatePreviewSettings();
+        m_configuration.m_outputResolution = resolution;
+
+        LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
+    }
+
+    OutputFormat EditorGradientBakerComponent::GetOutputFormat() const
+    {
+        return m_configuration.m_outputFormat;
+    }
+
+    void EditorGradientBakerComponent::SetOutputFormat(OutputFormat outputFormat)
+    {
+        m_configuration.m_outputFormat = outputFormat;
+
+        LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
+    }
+
+    AZ::IO::Path EditorGradientBakerComponent::GetOutputImagePath() const
+    {
+        return m_configuration.m_outputImagePath;
+    }
+
+    void EditorGradientBakerComponent::SetOutputImagePath(const AZ::IO::Path& outputImagePath)
+    {
+        m_configuration.m_outputImagePath = outputImagePath;
+
+        LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
     void EditorGradientBakerComponent::OnConfigurationChanged()
     {
         // Cancel any pending preview refreshes before locking, to help ensure the preview itself isn't holding the lock
-        auto entityIds = CancelPreviewRendering();
+        auto entityIds = m_previewer.CancelPreviewRendering();
 
         // Re-setup the dependency monitor when the configuration changes because the gradient sampler
         // could've changed
         SetupDependencyMonitor();
 
         // Refresh any of the previews that we canceled that were still in progress so they can be completed
-        for (auto entityId : entityIds)
-        {
-            GradientSignal::GradientPreviewRequestBus::Event(entityId, &GradientSignal::GradientPreviewRequestBus::Events::Refresh);
-        }
+        m_previewer.RefreshPreviews(entityIds);
 
-        // This OnCompositionChanged notification will refresh our own preview so we don't need to call UpdatePreviewSettings explicitly
+        // This OnCompositionChanged notification will refresh our own preview so we don't need to call RefreshPreview explicitly
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 } // namespace GradientSignal

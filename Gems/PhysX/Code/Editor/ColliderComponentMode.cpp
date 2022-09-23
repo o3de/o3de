@@ -128,6 +128,9 @@ namespace PhysX
         case Physics::ShapeType::Capsule:
             m_subModes[SubMode::Dimensions] = AZStd::make_unique<ColliderCapsuleMode>();
             break;
+        case Physics::ShapeType::CookedMesh:
+            m_subModes[SubMode::Dimensions] = AZStd::make_unique<NullColliderComponentMode>();
+            break;
         case Physics::ShapeType::PhysicsAsset:
             m_subModes[SubMode::Dimensions] = AZStd::make_unique<ColliderAssetScaleMode>();
             break;

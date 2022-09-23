@@ -85,6 +85,7 @@ set(FILES
     Include/ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedSingleton.cpp
     Include/ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedUtility.cpp
     Include/ScriptCanvas/Grammar/AbstractCodeModel.cpp
+    Include/ScriptCanvas/Grammar/ASTModifications.cpp
     Include/ScriptCanvas/Grammar/DebugMap.cpp
     Include/ScriptCanvas/Grammar/ExecutionTraversalListeners.cpp
     Include/ScriptCanvas/Grammar/ParsingMetaData.cpp
@@ -185,7 +186,6 @@ set(FILES
     Include/ScriptCanvas/Libraries/Time/HeartBeatNodeable.cpp
     Include/ScriptCanvas/Libraries/Time/RepeaterNodeable.cpp
     Include/ScriptCanvas/Libraries/Time/TimerNodeable.cpp
-    Include/ScriptCanvas/Libraries/Spawning/SpawningLibrary.cpp
     Include/ScriptCanvas/Libraries/Spawning/CreateSpawnTicketNodeable.cpp
     Include/ScriptCanvas/Libraries/Spawning/SpawnNodeable.cpp
     Include/ScriptCanvas/Libraries/Spawning/DespawnNodeable.cpp

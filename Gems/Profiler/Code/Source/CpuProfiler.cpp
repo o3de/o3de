@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Statistics/StatisticalProfilerProxy.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzCore/std/time.h>
 
 namespace Profiler
 {

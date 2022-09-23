@@ -11,7 +11,6 @@
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/IntersectSegment.h>
 #include <AzCore/Math/Transform.h>
-#include <AzCore/Math/VectorConversions.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
@@ -86,8 +85,8 @@ namespace LmbrCentral
         for (size_t i = 0; i < vertexCount; ++i)
         {
             // local vertex positions
-            const AZ::Vector3 currentPoint = nonUniformScale * AZ::Vector2ToVector3(vertices[i]);
-            const AZ::Vector3 nextPoint = nonUniformScale * AZ::Vector2ToVector3(vertices[(i + 1) % vertexCount]);
+            const AZ::Vector3 currentPoint = nonUniformScale * AZ::Vector3(vertices[i]);
+            const AZ::Vector3 nextPoint = nonUniformScale * AZ::Vector3(vertices[(i + 1) % vertexCount]);
             const AZ::Vector3 p1 = currentPoint + bottomVector;
             const AZ::Vector3 p2 = nextPoint + bottomVector;
             const AZ::Vector3 p3 = currentPoint + topVector;
@@ -125,22 +124,22 @@ namespace LmbrCentral
         for (size_t i = 0; i < verticalLineCount; ++i)
         {
             // vertical line
-            lines[lineVertIndex++] = nonUniformScale * AZ::Vector2ToVector3(vertices[i]);
-            lines[lineVertIndex++] = nonUniformScale * AZ::Vector2ToVector3(vertices[i], height);
+            lines[lineVertIndex++] = nonUniformScale * AZ::Vector3(vertices[i]);
+            lines[lineVertIndex++] = nonUniformScale * AZ::Vector3(vertices[i], height);
         }
 
         for (size_t i = 0; i < horizontalLineCount; ++i)
         {
             // bottom line
-            lines[lineVertIndex++] = nonUniformScale * AZ::Vector2ToVector3(vertices[i]);
-            lines[lineVertIndex++] = nonUniformScale * AZ::Vector2ToVector3(vertices[(i + 1) % vertexCount]);
+            lines[lineVertIndex++] = nonUniformScale * AZ::Vector3(vertices[i]);
+            lines[lineVertIndex++] = nonUniformScale * AZ::Vector3(vertices[(i + 1) % vertexCount]);
         }
 
         for (size_t i = 0; i < horizontalLineCount; ++i)
         {
             // top line
-            lines[lineVertIndex++] = nonUniformScale * AZ::Vector2ToVector3(vertices[i], height);
-            lines[lineVertIndex++] = nonUniformScale * AZ::Vector2ToVector3(vertices[(i + 1) % vertexCount], height);
+            lines[lineVertIndex++] = nonUniformScale * AZ::Vector3(vertices[i], height);
+            lines[lineVertIndex++] = nonUniformScale * AZ::Vector3(vertices[(i + 1) % vertexCount], height);
         }
     }
 
@@ -369,7 +368,8 @@ namespace LmbrCentral
     AZ::Aabb PolygonPrismShape::GetEncompassingAabb()
     {
         PolygonPrismSharedLockGuard lock(m_mutex, m_uniqueLockThreadId);
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, *m_polygonPrism, m_mutex, m_currentNonUniformScale);
+        m_intersectionDataCache.UpdateIntersectionParams(
+            m_currentTransform, *m_polygonPrism, lock.GetMutexForIntersectionDataCache(), m_currentNonUniformScale);
 
         return m_intersectionDataCache.m_aabb;
     }
@@ -387,7 +387,8 @@ namespace LmbrCentral
     bool PolygonPrismShape::IsPointInside(const AZ::Vector3& point)
     {
         PolygonPrismSharedLockGuard lock(m_mutex, m_uniqueLockThreadId);
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, *m_polygonPrism, m_mutex, m_currentNonUniformScale);
+        m_intersectionDataCache.UpdateIntersectionParams(
+            m_currentTransform, *m_polygonPrism, lock.GetMutexForIntersectionDataCache(), m_currentNonUniformScale);
 
         // initial early aabb rejection test
         // note: will implicitly do height test too
@@ -402,7 +403,8 @@ namespace LmbrCentral
     float PolygonPrismShape::DistanceSquaredFromPoint(const AZ::Vector3& point)
     {
         PolygonPrismSharedLockGuard lock(m_mutex, m_uniqueLockThreadId);
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, *m_polygonPrism, m_mutex, m_currentNonUniformScale);
+        m_intersectionDataCache.UpdateIntersectionParams(
+            m_currentTransform, *m_polygonPrism, lock.GetMutexForIntersectionDataCache(), m_currentNonUniformScale);
 
         return PolygonPrismUtil::DistanceSquaredFromPoint(*m_polygonPrism, point, m_currentTransform);
     }
@@ -410,7 +412,8 @@ namespace LmbrCentral
     bool PolygonPrismShape::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance)
     {
         PolygonPrismSharedLockGuard lock(m_mutex, m_uniqueLockThreadId);
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, *m_polygonPrism, m_mutex, m_currentNonUniformScale);
+        m_intersectionDataCache.UpdateIntersectionParams(
+            m_currentTransform, *m_polygonPrism, lock.GetMutexForIntersectionDataCache(), m_currentNonUniformScale);
 
         return PolygonPrismUtil::IntersectRay(m_intersectionDataCache.m_triangles, m_currentTransform, src, dir, distance);
     }
@@ -514,8 +517,8 @@ namespace LmbrCentral
             // (odd number of intersections - inside, even number of intersections - outside)
             for (size_t i = 0; i < vertexCount; ++i)
             {
-                const AZ::Vector3 segmentStart = AZ::Vector2ToVector3(vertices[i]);
-                const AZ::Vector3 segmentEnd = AZ::Vector2ToVector3(vertices[(i + 1) % vertexCount]);
+                const AZ::Vector3 segmentStart = AZ::Vector3(vertices[i]);
+                const AZ::Vector3 segmentEnd = AZ::Vector3(vertices[(i + 1) % vertexCount]);
 
                 AZ::Vector3 closestPosRay, closestPosSegment;
                 float rayProportion, segmentProportion;
@@ -599,8 +602,8 @@ namespace LmbrCentral
             float minDistanceSq = std::numeric_limits<float>::max();
             for (size_t i = 0; i < vertexCount; ++i)
             {
-                const AZ::Vector3 segmentStart = combinedScale * AZ::Vector2ToVector3(vertices[i]);
-                const AZ::Vector3 segmentEnd = combinedScale * AZ::Vector2ToVector3(vertices[(i + 1) % vertexCount]);
+                const AZ::Vector3 segmentStart = combinedScale * AZ::Vector3(vertices[i]);
+                const AZ::Vector3 segmentEnd = combinedScale * AZ::Vector3(vertices[(i + 1) % vertexCount]);
 
                 AZ::Vector3 position;
                 float proportion;

@@ -92,13 +92,14 @@ namespace AssetProcessor
 
 public Q_SLOTS:
         void OnJobStatusChanged(JobEntry entry, AzToolsFramework::AssetSystem::JobStatus status);
-        void OnJobProcessDurationChanged(JobEntry jobEntry, QTime duration);
+        void OnJobProcessDurationChanged(JobEntry jobEntry, int durationMs);
         void OnJobRemoved(AzToolsFramework::AssetSystem::JobInfo jobInfo);
         void OnSourceRemoved(QString sourceDatabasePath);
 
     protected:
         QIcon m_pendingIcon;
         QIcon m_errorIcon;
+        QIcon m_failureIcon;
         QIcon m_warningIcon;
         QIcon m_okIcon;
         QIcon m_processingIcon;

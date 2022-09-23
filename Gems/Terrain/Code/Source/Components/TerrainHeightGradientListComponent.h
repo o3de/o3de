@@ -45,7 +45,7 @@ namespace Terrain
         AZStd::vector<AZ::EntityId> m_gradientEntities;
     };
 
-    static const AZ::Uuid TerrainHeightGradientListComponentTypeId = "{1BB3BA6C-6D4A-4636-B542-F23ECBA8F2AB}";
+    inline constexpr AZ::TypeId TerrainHeightGradientListComponentTypeId{ "{1BB3BA6C-6D4A-4636-B542-F23ECBA8F2AB}" };
 
     class TerrainHeightGradientListComponent
         : public AZ::Component
@@ -90,8 +90,7 @@ namespace Terrain
     private:
         TerrainHeightGradientListConfig m_configuration;
 
-        float m_cachedMinWorldHeight{ 0.0f };
-        float m_cachedMaxWorldHeight{ 0.0f };
+        AzFramework::Terrain::FloatRange m_cachedHeightBounds{ 0.0f, 0.0f };
         AZ::Aabb m_cachedShapeBounds;
 
         LmbrCentral::DependencyMonitor m_dependencyMonitor;

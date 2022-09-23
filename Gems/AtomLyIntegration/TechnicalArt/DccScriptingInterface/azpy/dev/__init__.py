@@ -7,7 +7,19 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
-# -- This line is 75 characters -------------------------------------------
+# -------------------------------------------------------------------------
+# standard imports
+import logging as _logging
 
 # define api package for each IDE supported
+
+# global scope
+from DccScriptingInterface.azpy import _PACKAGENAME
+_PACKAGENAME = f'{_PACKAGENAME}.dev'
+_LOGGER = _logging.getLogger(_PACKAGENAME)
+_LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
+
+from DccScriptingInterface.globals import *
+
 __all__ = ['ide', 'utils']
+# -------------------------------------------------------------------------

@@ -71,6 +71,14 @@ namespace ScriptCanvas
             void PostParseExecutionTreeBody(AbstractCodeModel& model, ExecutionTreePtr execution) override;
         };
 
+        class UserFunctionNodeCallMetaData
+        {
+        public:
+            AZ_TYPE_INFO(UserFunctionNodeCallMetaData, "{893A827F-9340-4FE1-9829-69E2602F37A1}");
+            AZ_CLASS_ALLOCATOR(UserFunctionNodeCallMetaData, AZ::SystemAllocator, 0);
+
+            bool m_isLocal = false;
+        };
     } 
 
 } 

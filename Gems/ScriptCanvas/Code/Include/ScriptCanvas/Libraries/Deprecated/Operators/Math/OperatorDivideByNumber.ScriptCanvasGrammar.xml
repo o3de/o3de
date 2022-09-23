@@ -12,7 +12,6 @@
            DrecationUUID="{C1E3C9D0-42E3-4D00-AE73-2A881E7E76A8}"
            ReplacementMethodName="Divide by Number (/)"
            VersionConverter="OperatorDivideByNumberVersionConverter"
-           GeneratePropertyFriend="True"
            Description="Divides certain types by a given number">
         <In Name="In" Description=""/>
         <Out Name="Out" Description=""/>

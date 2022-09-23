@@ -8,6 +8,7 @@
 
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
+#include <AzQtComponents/Components/Widgets/Internal/RectangleWidget.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleHelpers.h>
 
@@ -23,6 +24,8 @@
 
 namespace AzQtComponents
 {
+    static QString g_containerCardHeaderClass = QStringLiteral("ContainerCardHeader");
+
     namespace HeaderBarConstants
     {
         // names for widgets so they can be found in stylesheet
@@ -34,9 +37,15 @@ namespace AzQtComponents
         static const char* kContextMenuId = "ContextMenu";
         static const char* kContextMenuPlusIconId = "ContextMenuPlusIcon";
         static const char* khelpButtonId = "Help";
+        static const char* kUnderlineRectId = "UnderlineRectangle";
 
         static const char* kCardHeaderIconClassName = "CardHeaderIcon";
         static const char* kCardHeaderMenuClassName = "CardHeaderMenu";
+    } // namespace HeaderBarConstants
+
+    void CardHeader::applyContainerStyle(CardHeader* header)
+    {
+        Style::addClass(header, g_containerCardHeaderClass);
     }
 
     int CardHeader::s_iconSize = CardHeader::defaultIconSize();
@@ -112,6 +121,12 @@ namespace AzQtComponents
         m_mainLayout->setContentsMargins(0, 0, 0, 0);
         m_mainLayout->addWidget(m_backgroundFrame);
 
+        m_underlineWidget = new Internal::RectangleWidget(this);
+        m_underlineWidget->setObjectName(HeaderBarConstants::kUnderlineRectId);
+        m_underlineWidget->setFixedHeight(2);
+        setUnderlineColor(QColor());
+        m_mainLayout->addWidget(m_underlineWidget);
+
         StyleHelpers::repolishWhenPropertyChanges(this, &CardHeader::warningChanged);
         StyleHelpers::repolishWhenPropertyChanges(this, &CardHeader::readOnlyChanged);
         StyleHelpers::repolishWhenPropertyChanges(this, &CardHeader::contentModifiedChanged);
@@ -140,7 +155,7 @@ namespace AzQtComponents
         m_titleLabel->update();
     }
 
-    void CardHeader::setTitleProperty(const char *name, const QVariant &value)
+    void CardHeader::setTitleProperty(const char* name, const QVariant& value)
     {
         m_titleLabel->setProperty(name, value);
     }
@@ -179,7 +194,7 @@ namespace AzQtComponents
             m_warningLabel->setPixmap(m_warningIcon.pixmap(s_iconSize, s_iconSize));
         }
     }
-    
+
     void CardHeader::mockDisabledState(bool disabled)
     {
         m_iconLabel->setDisabled(disabled);
@@ -273,7 +288,7 @@ namespace AzQtComponents
 
     void CardHeader::mouseDoubleClickEvent(QMouseEvent* event)
     {
-        //allow double click to expand/contract
+        // allow double click to expand/contract
         if (event->button() == Qt::LeftButton && isExpandable())
         {
             bool expand = !isExpanded();
@@ -354,6 +369,14 @@ namespace AzQtComponents
             break;
         }
         Style::addClass(m_contextMenuButton, HeaderBarConstants::kCardHeaderMenuClassName);
+    }
+
+    void CardHeader::setUnderlineColor(const QColor& color)
+    {
+        m_underlineWidget->setColor(color);
+
+        const bool underlineVisible = color.isValid() && color.alpha() != 0;
+        m_underlineWidget->setVisible(underlineVisible);
     }
 
 } // namespace AzQtComponents

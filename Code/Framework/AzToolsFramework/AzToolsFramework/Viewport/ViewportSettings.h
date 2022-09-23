@@ -76,4 +76,10 @@ namespace AzToolsFramework
 
     bool HelpersVisible();
     void SetHelpersVisible(bool visible);
+
+    bool ComponentSwitcherEnabled();
+
+    bool PrefabEditModeEffectEnabled();
+    void SetPrefabEditModeEffectEnabled(bool enabled);
+
 } // namespace AzToolsFramework

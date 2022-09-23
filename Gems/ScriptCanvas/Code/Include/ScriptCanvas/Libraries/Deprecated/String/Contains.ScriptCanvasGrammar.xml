@@ -14,7 +14,6 @@
            ReplacementMethodName="Contains String"
            
            Version="0"
-           GeneratePropertyFriend="True"
            Description="Checks if a string contains an instance of a specified string, if true, it returns the index to the first instance matched.">
         <In Name="In" Description="Input signal"/>
         <Property Name="Source"

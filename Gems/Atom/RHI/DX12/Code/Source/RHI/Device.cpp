@@ -151,6 +151,10 @@ namespace AZ
             m_features.m_indirectDrawCountBufferSupported = true;
             m_features.m_indirectDispatchCountBufferSupported = true;
             m_features.m_indirectDrawStartInstanceLocationSupported = true;
+                        
+            D3D12_FEATURE_DATA_D3D12_OPTIONS options;
+            GetDevice()->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, &options, sizeof(options));
+            m_features.m_tiledResource = options.TiledResourcesTier >= D3D12_TILED_RESOURCES_TIER_1;
 
 #ifdef AZ_DX12_DXR_SUPPORT
             D3D12_FEATURE_DATA_D3D12_OPTIONS5 options5;
@@ -207,7 +211,7 @@ namespace AZ
         AZStd::chrono::microseconds Device::GpuTimestampToMicroseconds(uint64_t gpuTimestamp, RHI::HardwareQueueClass queueClass) const
         {
             auto durationInSeconds = AZStd::chrono::duration<double>(double(gpuTimestamp) / m_commandQueueContext.GetCommandQueue(queueClass).GetGpuTimestampFrequency());
-            return AZStd::chrono::microseconds(durationInSeconds);
+            return AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(durationInSeconds);
         }
 
         void Device::FillFormatsCapabilitiesInternal(FormatCapabilitiesList& formatsCapabilities)
