@@ -185,10 +185,12 @@ namespace EMStudio
                 }
 
                 // skip non-processed nodes and nodes that have no output pose
+#if !defined(EMFX_ANIMGRAPH_PROFILER_ENABLED)
                 if (!emfxNode->GetHasOutputPose() || !graphNode->GetIsProcessed() || graphNode->GetIsHighlighted())
                 {
                     continue;
                 }
+#endif
 
                 // get the unique data
                 EMotionFX::AnimGraphNodeData* uniqueData = emfxNode->FindOrCreateUniqueNodeData(animGraphInstance);
@@ -213,6 +215,12 @@ namespace EMStudio
                 {
                     requiredHeight += heightSpacing;
                 }
+#if defined(EMFX_ANIMGRAPH_PROFILER_ENABLED)
+                if (plugin->GetIsDisplayFlagEnabled(AnimGraphPlugin::DISPLAYFLAG_PROFILING_UPDATE | AnimGraphPlugin::DISPLAYFLAG_PROFILING_TOPDOWN | AnimGraphPlugin::DISPLAYFLAG_PROFILING_POSTUPDATE | AnimGraphPlugin::DISPLAYFLAG_PROFILING_OUTPUT))
+                {
+                    requiredHeight += heightSpacing;
+                }
+#endif
                 const QRect& nodeRect = graphNode->GetFinalRect();
                 const QRect textRect(nodeRect.center().x() - rectWidth / 2, nodeRect.center().y() - requiredHeight / 2, rectWidth, requiredHeight);
                 const uint32 alpha = (graphNode->GetIsHighlighted()) ? 225 : 175;
@@ -260,6 +268,23 @@ namespace EMStudio
                     painter.drawText(textPosition, m_qtTempString);
                     textPosition.setY(textPosition.y() + heightSpacing);
                 }
+
+#if defined(EMFX_ANIMGRAPH_PROFILER_ENABLED)
+                if (plugin->GetIsDisplayFlagEnabled(AnimGraphPlugin::DISPLAYFLAG_PROFILING_UPDATE | AnimGraphPlugin::DISPLAYFLAG_PROFILING_TOPDOWN | AnimGraphPlugin::DISPLAYFLAG_PROFILING_POSTUPDATE | AnimGraphPlugin::DISPLAYFLAG_PROFILING_OUTPUT))
+                {
+                    AZ::u8 profileFlags = 0;
+                    profileFlags |= plugin->GetIsDisplayFlagEnabled(AnimGraphPlugin::DISPLAYFLAG_PROFILING_UPDATE) ? static_cast<AZ::u8>(EMotionFX::AnimGraphNode::ProfileMode::Update) : 0;
+                    profileFlags |= plugin->GetIsDisplayFlagEnabled(AnimGraphPlugin::DISPLAYFLAG_PROFILING_TOPDOWN) ? static_cast<AZ::u8>(EMotionFX::AnimGraphNode::ProfileMode::TopDown) : 0;
+                    profileFlags |= plugin->GetIsDisplayFlagEnabled(AnimGraphPlugin::DISPLAYFLAG_PROFILING_POSTUPDATE) ? static_cast<AZ::u8>(EMotionFX::AnimGraphNode::ProfileMode::PostUpdate) : 0;
+                    profileFlags |= plugin->GetIsDisplayFlagEnabled(AnimGraphPlugin::DISPLAYFLAG_PROFILING_OUTPUT) ? static_cast<AZ::u8>(EMotionFX::AnimGraphNode::ProfileMode::Output) : 0;
+                    emfxNode->SetProfileMode(profileFlags);
+                    m_qtTempString = AZStd::fixed_string<32>::format("Update = %d (%d) us", emfxNode->GetUpdateTime(animGraphInstance).count(), emfxNode->GetTotalUpdateTime(animGraphInstance).count()).c_str();
+                    painter.drawText(textPosition, m_qtTempString);
+                    textPosition.setY(textPosition.y() + heightSpacing);
+
+                    emfxNode->ClearProfileTimers(animGraphInstance);
+                }
+#endif
             }
         }
 
