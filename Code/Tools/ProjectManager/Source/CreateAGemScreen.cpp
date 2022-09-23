@@ -10,11 +10,13 @@
 #include <CreateAGemScreen.h>
 #include <ProjectUtils.h>
 #include <PythonBindingsInterface.h>
+#include <ScreenHeaderWidget.h>
 
 #include <QApplication>
 #include <QButtonGroup>
 #include <QComboBox>
 #include <QDialogButtonBox>
+#include <QDir>
 #include <QLabel>
 #include <QMessageBox>
 #include <QPushButton>
@@ -91,6 +93,18 @@ namespace O3DE::ProjectManager
         QVBoxLayout* vLayout = new QVBoxLayout(this);
         vLayout->setSpacing(0);
         vLayout->setContentsMargins(0, 0, 0, 0);
+
+        ScreenHeader* m_header = new ScreenHeader(this);
+        m_header->setSubTitle(tr("Create a new gem"));
+        connect(
+            m_header->backButton(),
+            &QPushButton::clicked,
+            this,
+            [&]()
+            {
+                emit GoToPreviousScreenRequest();
+            });
+        vLayout->addWidget(m_header);
 
         m_tabWidget = new TabWidget(this);
         m_tabWidget->setContentsMargins(0, 0, 0, 0);
@@ -231,9 +245,10 @@ namespace O3DE::ProjectManager
         gemDetailsLayout->addWidget(m_licenseURL);
 
         m_userDefinedGemTags = new FormLineEditWidget(tr("User-defined Gem Tags (Comma separated list)"), "");
+        m_userDefinedGemTags->lineEdit()->setValidator(new QRegularExpressionValidator(QRegularExpression("(,|\\w)+"), this));
         gemDetailsLayout->addWidget(m_userDefinedGemTags);
 
-        m_gemLocation = new FormFolderBrowseEditWidget(tr("Gem Location"), "", tr("The path that the gem will be created at."), "");
+        m_gemLocation = new FormFolderBrowseEditWidget(tr("Gem Location"), "", tr("The path that the gem will be created at."), tr("The chosen directory must be empty."));
         gemDetailsLayout->addWidget(m_gemLocation);
         
         m_gemIconPath = new FormLineEditWidget(tr("Gem Icon Path"), "default.png", tr("Select Gem icon path"), "");
@@ -311,6 +326,20 @@ namespace O3DE::ProjectManager
         return gemSystemNameIsValid;
     }
 
+    bool CreateGem::ValidateGemPath()
+    {
+        if (m_gemLocation->lineEdit()->text().isEmpty())
+        {
+            return false;
+        }
+
+        QDir chosenGemLocation = QDir(m_gemLocation->lineEdit()->text());
+
+        bool locationValid = !chosenGemLocation.exists() || chosenGemLocation.isEmpty();
+        m_gemLocation->setErrorLabelVisible(!locationValid);
+        return locationValid;
+    }
+
     bool CreateGem::ValidateFormNotEmpty(FormLineEditWidget* form)
     {
         bool formIsValid = !form->lineEdit()->text().isEmpty();
@@ -362,7 +391,8 @@ namespace O3DE::ProjectManager
             bool gemNameValid = ValidateGemName();
             bool gemDisplayNameValid = ValidateGemDisplayName();
             bool licenseValid = ValidateFormNotEmpty(m_license);
-            if (gemNameValid && gemDisplayNameValid && licenseValid)
+            bool gemPathValid = ValidateGemPath();
+            if (gemNameValid && gemDisplayNameValid && licenseValid && gemPathValid)
             {
                 m_createGemInfo.m_displayName = m_gemDisplayName->lineEdit()->text();
                 m_createGemInfo.m_name = m_gemName->lineEdit()->text();
@@ -400,7 +430,8 @@ namespace O3DE::ProjectManager
                 auto result = PythonBindingsInterface::Get()->CreateGem(templateLocation, m_createGemInfo);
                 if (result.IsSuccess())
                 {
-                    emit CreateButtonPressed(result.GetValue<GemInfo>());
+                    emit GemCreated(result.GetValue<GemInfo>());
+                    emit GoToPreviousScreenRequest();
                 }
                 else
                 {
