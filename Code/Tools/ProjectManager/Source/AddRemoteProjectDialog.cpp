@@ -49,7 +49,7 @@ namespace O3DE::ProjectManager
         m_repoPath = new FormLineEditWidget(tr("Remote URL"), "", this);
         m_repoPath->setMinimumSize(QSize(600, 0));
         m_repoPath->setErrorLabelText(tr("Not a valid remote source."));
-        m_repoPath->lineEdit()->setPlaceholderText("http://github.com/o3de/example.git");
+        m_repoPath->lineEdit()->setPlaceholderText("https://github.com/o3de/example.git");
         vLayout->addWidget(m_repoPath);
 
         vLayout->addSpacing(10);

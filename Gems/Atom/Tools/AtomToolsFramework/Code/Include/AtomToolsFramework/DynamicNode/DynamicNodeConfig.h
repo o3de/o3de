@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AtomToolsFramework/DynamicNode/DynamicNodeSlotConfig.h>
+#include <AzCore/Serialization/EditContext.h>
 
 namespace AtomToolsFramework
 {
@@ -56,5 +57,8 @@ namespace AtomToolsFramework
         AZStd::vector<DynamicNodeSlotConfig> m_inputSlots;
         //! Output slots is a container of DynamicNodeSlotConfig for all outputs from a node 
         AZStd::vector<DynamicNodeSlotConfig> m_outputSlots;
+
+    private:
+        static const AZ::Edit::ElementData* GetDynamicEditData(const void* handlerPtr, const void* elementPtr, const AZ::Uuid& elementType);
     };
 } // namespace AtomToolsFramework

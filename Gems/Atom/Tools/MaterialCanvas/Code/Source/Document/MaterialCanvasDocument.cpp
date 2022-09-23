@@ -53,9 +53,10 @@ namespace MaterialCanvas
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Category, "Editor")
                 ->Attribute(AZ::Script::Attributes::Module, "materialcanvas")
+                ->Event("GetGraph", &MaterialCanvasDocumentRequests::GetGraph)
                 ->Event("GetGraphId", &MaterialCanvasDocumentRequests::GetGraphId)
-                ->Event("GetGeneratedFilePaths", &MaterialCanvasDocumentRequests::GetGeneratedFilePaths)
                 ->Event("GetGraphName", &MaterialCanvasDocumentRequests::GetGraphName)
+                ->Event("GetGeneratedFilePaths", &MaterialCanvasDocumentRequests::GetGeneratedFilePaths)
                 ->Event("CompileGraph", &MaterialCanvasDocumentRequests::CompileGraph)
                 ->Event("QueueCompileGraph", &MaterialCanvasDocumentRequests::QueueCompileGraph)
                 ->Event("IsCompileGraphQueued", &MaterialCanvasDocumentRequests::IsCompileGraphQueued);
@@ -305,9 +306,23 @@ namespace MaterialCanvas
         return true;
     }
 
+    GraphModel::GraphPtr MaterialCanvasDocument::GetGraph() const
+    {
+        return m_graph;
+    }
+
     GraphCanvas::GraphId MaterialCanvasDocument::GetGraphId() const
     {
         return m_graphId;
+    }
+
+    AZStd::string MaterialCanvasDocument::GetGraphName() const
+    {
+        // Sanitize the document name to remove any illegal characters that could not be used as symbols in generated code
+        AZStd::string documentName;
+        AZ::StringFunc::Path::GetFullFileName(m_absolutePath.c_str(), documentName);
+        AZ::StringFunc::Replace(documentName, ".materialcanvas.azasset", "");
+        return AtomToolsFramework::GetSymbolNameFromText(documentName);
     }
 
     const AZStd::vector<AZStd::string>& MaterialCanvasDocument::GetGeneratedFilePaths() const
@@ -507,15 +522,6 @@ namespace MaterialCanvas
                 m_groups.emplace_back(group);
             }
         }
-    }
-
-    AZStd::string MaterialCanvasDocument::GetGraphName() const
-    {
-        // Sanitize the document name to remove any illegal characters that could not be used as symbols in generated code
-        AZStd::string documentName;
-        AZ::StringFunc::Path::GetFullFileName(m_absolutePath.c_str(), documentName);
-        AZ::StringFunc::Replace(documentName, ".materialcanvas.azasset", "");
-        return AtomToolsFramework::GetSymbolNameFromText(documentName);
     }
 
     AZStd::string MaterialCanvasDocument::GetOutputPathFromTemplatePath(const AZStd::string& templateInputPath) const

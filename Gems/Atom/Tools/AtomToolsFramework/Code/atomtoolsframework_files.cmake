@@ -111,6 +111,8 @@ set(FILES
     Source/Inspector/InspectorWidget.cpp
     Source/Inspector/InspectorWidget.qrc
     Source/Inspector/InspectorWidget.ui
+    Source/Inspector/PropertyWidgets/PropertyStringBrowseEditCtrl.cpp
+    Source/Inspector/PropertyWidgets/PropertyStringBrowseEditCtrl.h
 
     Include/AtomToolsFramework/PerformanceMonitor/PerformanceMetrics.h
     Include/AtomToolsFramework/PerformanceMonitor/PerformanceMonitorRequestBus.h
