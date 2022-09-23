@@ -110,12 +110,14 @@ namespace MaterialCanvas
 
         editData = {};
         editData.m_elementId = AZ_CRC_CE("FilePathString");
+        AtomToolsFramework::AddEditDataAttribute(editData, AZ_CRC_CE("Title"), AZStd::string("Template File"));
         AtomToolsFramework::AddEditDataAttribute(editData, AZ_CRC_CE("Extensions"),
             AZStd::vector<AZStd::string>{ "azsl.template", "azsli.template", "material.template", "materialtype.template", "shader.template" });
         m_dynamicNodeManager->RegisterEditDataForSetting("templatePaths", editData);
 
         editData = {};
         editData.m_elementId = AZ_CRC_CE("FilePathString");
+        AtomToolsFramework::AddEditDataAttribute(editData, AZ_CRC_CE("Title"), AZStd::string("Include File"));
         AtomToolsFramework::AddEditDataAttribute(editData, AZ_CRC_CE("Extensions"), AZStd::vector<AZStd::string>{ "azsli" });
         m_dynamicNodeManager->RegisterEditDataForSetting("includePaths", editData);
 

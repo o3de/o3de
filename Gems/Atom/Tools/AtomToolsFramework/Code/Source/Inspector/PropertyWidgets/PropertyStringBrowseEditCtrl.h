@@ -93,7 +93,7 @@ namespace AtomToolsFramework
 
     private:
         AZStd::string m_title = "File";
-        AZStd::vector<AZStd::string> m_extensions;
+        AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>> m_extensions;
     };
 
     // Property handler for PropertyFilePathStringCtrl

@@ -13,10 +13,12 @@
 #include <Inspector/PropertyWidgets/PropertyStringBrowseEditCtrl.h>
 
 AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option")
+#include <QDialog>
+#include <QDialogButtonBox>
 #include <QHBoxLayout>
 #include <QInputDialog>
-#include <QLineEdit>
 #include <QPushButton>
+#include <QTextEdit>
 #include <QToolButton>
 #include <QVBoxLayout>
 AZ_POP_DISABLE_WARNING
@@ -205,7 +207,7 @@ namespace AtomToolsFramework
 
         if (attrib == AZ_CRC_CE("Title"))
         {
-            if (AZStd::string value; attrValue->Read<AZStd::string>(value))
+            if (AZStd::string value; attrValue->Read<decltype(value)>(value))
             {
                 m_title = value;
             }
@@ -214,13 +216,30 @@ namespace AtomToolsFramework
 
         if (attrib == AZ_CRC_CE("Extensions") || attrib == AZ_CRC_CE("Extension"))
         {
-            if (AZStd::string value; attrValue->Read<AZStd::string>(value))
+            if (AZStd::string value; attrValue->Read<decltype(value)>(value))
             {
-                AZ::StringFunc::Tokenize(value, m_extensions, ";:, \t\r\n\\/|");
+                AZStd::vector<AZStd::string> extensions;
+                AZ::StringFunc::Tokenize(value, extensions, ";:, \t\r\n\\/|");
+
+                m_extensions.clear();
+                for (const auto& extension : extensions)
+                {
+                    m_extensions.emplace_back(AZStd::string{}, extension);
+                }
                 return;
             }
 
-            if (AZStd::vector<AZStd::string> value; attrValue->Read<AZStd::vector<AZStd::string>>(value))
+            if (AZStd::vector<AZStd::string> value; attrValue->Read<decltype(value)>(value))
+            {
+                m_extensions.clear();
+                for (const auto& extension : value)
+                {
+                    m_extensions.emplace_back(AZStd::string{}, extension);
+                }
+                return;
+            }
+
+            if (AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>> value; attrValue->Read<decltype(value)>(value))
             {
                 m_extensions = value;
                 return;
@@ -231,15 +250,7 @@ namespace AtomToolsFramework
 
     void PropertyFilePathStringCtrl::Edit()
     {
-        QStringList extensionList;
-        for (const auto& extension : m_extensions)
-        {
-            extensionList.append(extension.c_str());
-        }
-
-        const QString expression = QString("[\\w\\-.]+\\.(%1)").arg(extensionList.join("|"));
-        const auto& paths = GetOpenFilePathsFromDialog(QRegExp(expression, Qt::CaseInsensitive), m_title, false);
-        if (!paths.empty())
+        if (const auto& paths = GetOpenFilePathsFromDialog({ GetValue() }, m_extensions, m_title, false); !paths.empty())
         {
             SetValue(GetPathWithAlias(paths.front()));
         }
@@ -309,15 +320,37 @@ namespace AtomToolsFramework
 
     void PropertyMultiLineStringCtrl::Edit()
     {
-        QInputDialog dialog(GetToolMainWindow());
-        dialog.setOptions(QInputDialog::UsePlainTextEditForTextInput);
+        QDialog dialog(GetToolMainWindow());
         dialog.setWindowTitle(tr("Edit String Value"));
-        dialog.setLabelText(tr("Edit String Value"));
-        dialog.setTextValue(GetValue().c_str());
+        dialog.setLayout(new QVBoxLayout());
 
-        if (dialog.exec())
+        QTextEdit textEdit(&dialog);
+        textEdit.setAcceptRichText(false);
+        textEdit.setReadOnly(false);
+        textEdit.setTabChangesFocus(false);
+        textEdit.setTabStopDistance(4.0f);
+        textEdit.setUndoRedoEnabled(true);
+        textEdit.setLineWrapMode(QTextEdit::LineWrapMode::NoWrap);
+        textEdit.setWordWrapMode(QTextOption::WrapMode::NoWrap);
+        textEdit.setPlainText(GetValue().c_str());
+
+        QDialogButtonBox buttonBox(&dialog);
+        buttonBox.setStandardButtons(QDialogButtonBox::Cancel | QDialogButtonBox::Ok);
+        QObject::connect(&buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+        QObject::connect(&buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
+        dialog.layout()->addWidget(&textEdit);
+        dialog.layout()->addWidget(&buttonBox);
+
+        // Temporarily forcing a fixed size before showing it to compensate for window management centering and resizing the dialog.
+        dialog.setFixedSize(800, 400);
+        dialog.show();
+        dialog.setMinimumSize(0, 0);
+        dialog.setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+
+        if (dialog.exec() == QDialog::Accepted)
         {
-            SetValue(dialog.textValue().toUtf8().constData());
+            SetValue(textEdit.toPlainText().toUtf8().constData());
         }
     }
 

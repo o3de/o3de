@@ -339,28 +339,18 @@ namespace AtomToolsFramework
         bool isFirstDocumentTypeAdded = true;
         for (const auto& documentType : documentTypes)
         {
-            // Build a list of all extensions supported by this document type so they can be combined into a file dialog filter
-            QStringList extensionList;
-            for (const auto& extensionInfo : documentType.m_supportedExtensionsToOpen)
+            if (!documentType.m_supportedExtensionsToOpen.empty())
             {
-                extensionList.append(extensionInfo.second.c_str());
-            }
-
-            if (!extensionList.empty())
-            {
-                // Generate a regular expression that combines all of the supported extensions to use as a filter for the asset picker
-                const QString expression = QString("[\\w\\-.]+\\.(%1)").arg(extensionList.join("|"));
-
                 // Create a menu action for each document type instead of one action for all document types to reduce the number of
-                // extensions displayed in the get open file path dialog
+                // extensions displayed in the dialog
                 const QString name = tr("Open %1 Document...").arg(documentType.m_documentTypeName.c_str());
-                const QString title = tr("%1 Document").arg(documentType.m_documentTypeName.c_str());
-                CreateActionAtPosition(parentMenu, insertPostion, name, [expression, title, toolId = m_toolId]() {
-                    // Open all files selected in the get open file path dialog
-                    for (const auto& path : GetOpenFilePathsFromDialog(QRegExp(expression, Qt::CaseInsensitive), title.toUtf8().constData()))
+                CreateActionAtPosition(parentMenu, insertPostion, name, [documentType, toolId = m_toolId]() {
+                    // Open all files selected in the dialog
+                    const auto& paths =
+                        GetOpenFilePathsFromDialog({}, documentType.m_supportedExtensionsToOpen, documentType.m_documentTypeName, true);
+                    for (const auto& path : paths)
                     {
-                        AtomToolsDocumentSystemRequestBus::Event(
-                            toolId, &AtomToolsDocumentSystemRequestBus::Events::OpenDocument, path);
+                        AtomToolsDocumentSystemRequestBus::Event(toolId, &AtomToolsDocumentSystemRequestBus::Events::OpenDocument, path);
                     }
                 }, isFirstDocumentTypeAdded ? QKeySequence::Open : QKeySequence());
                 isFirstDocumentTypeAdded = false;
@@ -587,20 +577,10 @@ namespace AtomToolsFramework
 
     AZStd::string AtomToolsDocumentMainWindow::GetSaveDocumentParams(const AZStd::string& initialPath) const
     {
-        if (initialPath.empty())
-        {
-            // If the initial path is empty attempt to determine one using the document type info supported save extensions. This should be
-            // extended so that the save dialog lists out all of the available save extensions for documents that support more than one.
-            DocumentTypeInfo documentTypeInfo;
-            AtomToolsDocumentRequestBus::EventResult(
-                documentTypeInfo, GetCurrentDocumentId(), &AtomToolsDocumentRequestBus::Events::GetDocumentTypeInfo);
-            if (!documentTypeInfo.m_supportedExtensionsToSave.empty())
-            {
-                return GetSaveFilePathFromDialog(GetUniqueUntitledFilePath(documentTypeInfo.m_supportedExtensionsToSave.front().second));
-            }
-        }
-
-        return GetSaveFilePathFromDialog(GetUniqueFilePath(initialPath));
+        DocumentTypeInfo documentType;
+        AtomToolsDocumentRequestBus::EventResult(
+            documentType, GetCurrentDocumentId(), &AtomToolsDocumentRequestBus::Events::GetDocumentTypeInfo);
+        return GetSaveFilePathFromDialog(initialPath, documentType.m_supportedExtensionsToSave, documentType.m_documentTypeName);
     }
 
     void AtomToolsDocumentMainWindow::OnDocumentOpened(const AZ::Uuid& documentId)
