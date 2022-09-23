@@ -103,6 +103,7 @@ namespace LandscapeCanvas
             || baseNodeType == LandscapeCanvas::BaseNode::VegetationAreaFilter
             || baseNodeType == LandscapeCanvas::BaseNode::VegetationAreaSelector
             || baseNodeType == LandscapeCanvas::BaseNode::TerrainExtender
+            || baseNodeType == LandscapeCanvas::BaseNode::TerrainSurfaceExtender
             ;
     }
 } // namespace LandscapeCanvas
