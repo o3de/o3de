@@ -18,6 +18,20 @@
       "test_profile_nounity"
     ]
   },
+  "profile_ubuntu22_nounity_pipe": {
+    "TAGS": [
+      "periodic-incremental-daily",
+      "periodic-clean-weekly-internal"
+    ],
+    "PIPELINE_ENV":{
+      "NODE_LABEL":"linux-ubuntu-22"
+    },
+    "steps": [
+      "profile_nounity",
+      "asset_profile_nounity",
+      "test_profile_nounity"
+    ]
+  },
   "metrics": {
     "TAGS": [
       "weekly"
