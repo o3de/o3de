@@ -8,23 +8,22 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 def EditEntity_UnderNestedInstance():
     """
     Test description:
-    - Creates a "NestedPrefabs_Prefab_3" prefab containing one entity called "Test_Entity".
-    - Creates a "NestedPrefabs_Prefab_2" prefab containing "NestedPrefabs_Prefab_3" instance.
-    - Creates a "NestedPrefabs_Prefab_1" prefab containing "NestedPrefabs_Prefab_2" instance.
-    - Instantiates the "NestedPrefabs_Prefab_1" prefab twice under the level prefab.
-    - Edits the "Test_Entity" of the first "NestedPrefabs_Prefab_3" instance.
-    - Checks that after propagation, the "Test_Entity" of the first "NestedPrefabs_Prefab_3" instance contains the correct edits.
-    - Checks that after propagation, the "Test_Entity" of the second "NestedPrefabs_Prefab_3" instance does not contain any edits.
+    - Creates two motorcycle prefab instances where each motorcycle has two wheel instances.
+    - Puts focus on the first motorcycle instance and changes the position of one of the wheels.
+    - Validates that after propagation, only one wheel of the focused motorcycle is changed.
+    - Validates that after propagation, the wheel positions of the second motorcycle match those of the first.
 
-    - Level (Focused prefab)
-    -- NestedPrefabs_Prefab_1 (first instance)
-    --- NestedPrefabs_Prefab_2
-    ---- NestedPrefabs_Prefab_3
-    ----- Test_Entity <-- edit this entity's transform
-    -- NestedPrefabs_Prefab_1 (second instance)
-    --- NestedPrefabs_Prefab_2
-    ---- NestedPrefabs_Prefab_3
-    ----- Test_Entity
+    - Level
+    -- Motorcycle (first instance) <-- focus
+    --- Wheel (nested instance)
+    ---- Wheel_Entity <-- change this entity's name to "Front_Wheel" and edit its position
+    --- Wheel (nested instance)
+    ---- Wheel_Entity <-- change this entity's name to "Back_Wheel"
+    -- Motorcycle (second instance)
+    --- Wheel (nested instance)
+    ---- Wheel_Entity
+    --- Wheel (nested instance)
+    ---- Wheel_Entity
     """
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity, EditorComponent
@@ -40,30 +39,38 @@ def EditEntity_UnderNestedInstance():
 
     prefab_test_utils.open_base_tests_level()
 
-    NESTED_PREFABS_FILE_NAME_PREFIX = Path(__file__).stem + '_' + 'nested_prefabs_'
-    NESTED_PREFABS_NAME_PREFIX = 'NestedPrefabs_Prefab_'
-    NESTED_PREFABS_TEST_ENTITY_NAME = 'Test_Entity'
+    WHEEL_PREFAB_FILE_NAME = Path(__file__).stem + 'wheel_prefab'
+    MOTORCYCLE_PREFAB_FILE_NAME = Path(__file__).stem + 'motorcycle_prefab'
     CREATION_POSITION = azlmbr.math.Vector3(0.0, 0.0, 0.0)
     UPDATED_POSITION = azlmbr.math.Vector3(10.0, 0.0, 0.0)
-    NUM_NESTED_PREFABS_LEVELS = 3
 
-    # Create nested prefabs at the root level. Also creates first instance
-    entity = EditorEntity.create_editor_entity_at(CREATION_POSITION, name=NESTED_PREFABS_TEST_ENTITY_NAME)
-    assert entity.id.IsValid(), "Couldn't create TestEntity"
-    nested_prefabs, nested_prefab_instances = prefab_test_utils.create_linear_nested_prefabs(
-        [entity], NESTED_PREFABS_FILE_NAME_PREFIX, NESTED_PREFABS_NAME_PREFIX, NUM_NESTED_PREFABS_LEVELS)
-    prefab_test_utils.validate_linear_nested_prefab_instances_hierarchy(nested_prefab_instances)
+    # Create a wheel prefab from a wheel entity. Also creates first wheel instance
+    wheel_entity = EditorEntity.create_editor_entity_at(CREATION_POSITION, "Wheel_Entity")
+    wheel_prefab, wheel_instance_1 = Prefab.create_prefab([wheel_entity], WHEEL_PREFAB_FILE_NAME)
 
-    # Create a second instance
-    nested_prefab_root = nested_prefabs[0]
-    nested_prefab_instance_root_2 = nested_prefab_root.instantiate()
-    assert nested_prefab_instance_root_2.is_valid(), "Failed to instantiate prefab"
+    # Create a second wheel instance
+    wheel_instance_2 = wheel_prefab.instantiate()
 
-    # Edit transform of the entity owned by the deepest nested instance of the first instance
-    deepest_nested_prefab_instance_1 = nested_prefab_instances[NUM_NESTED_PREFABS_LEVELS-1]
-    entity_of_deepest_nested_instance_1 = deepest_nested_prefab_instance_1.get_direct_child_entities()[0]
+    # Create a motorcycle prefab with two wheel instances. Also creates first motorcycle instance
+    motorcycle_prefab, motorcycle_instance_1 = Prefab.create_prefab([wheel_instance_1.container_entity, wheel_instance_2.container_entity], MOTORCYCLE_PREFAB_FILE_NAME)
+
+    # Create a second motorcycle instance
+    motorcycle_instance_2 = motorcycle_prefab.instantiate()
+
+    # Set focused prefab to first motorcycle instance
+    motorcycle_instance_1.container_entity.focus_on_owning_prefab()
+
+    # Change the names of the focused motorcycle's wheel entities
+    wheel_instance_1_1 = motorcycle_instance_1.get_direct_child_entities()[0]
+    front_wheel_entity = wheel_instance_1_1.get_children()[0]
+    front_wheel_entity.set_name("Front_Wheel")
+    wheel_instance_1_2 = motorcycle_instance_1.get_direct_child_entities()[1]
+    back_wheel_entity = wheel_instance_1_2.get_children()[0]
+    back_wheel_entity.set_name("Back_Wheel")
+
+    # Change the position of the focused motorcycle's front wheel entity
     get_transform_component_outcome = editor.EditorComponentAPIBus(
-        bus.Broadcast, "GetComponentOfType", entity_of_deepest_nested_instance_1.id, globals.property.EditorTransformComponentTypeId
+        bus.Broadcast, "GetComponentOfType", front_wheel_entity.id, globals.property.EditorTransformComponentTypeId
     )
     entity_transform_component = EditorComponent(globals.property.EditorTransformComponentTypeId)
     entity_transform_component.id = get_transform_component_outcome.GetValue()
@@ -71,31 +78,40 @@ def EditEntity_UnderNestedInstance():
 
     PrefabWaiter.wait_for_propagation()
 
-    # Find the entity owned by the deepest nested instance of the second instance
-    children = nested_prefab_instance_root_2.get_direct_child_entities()
-    while children:
-        entity_of_deepest_nested_instance_2 = children[0]
-        children = entity_of_deepest_nested_instance_2.get_children()
-
-    # Validate that only the first prefab instance has changed
-    entity_of_deepest_nested_instance_1.validate_world_translate_position(UPDATED_POSITION)
-    entity_of_deepest_nested_instance_2.validate_world_translate_position(CREATION_POSITION)
+    # Validate that the front wheels of both motorcycle instances have
+    # the updated position, and that the back wheels remain unchanged
+    front_wheels = EditorEntity.find_editor_entities(["Front_Wheel"])
+    assert len(front_wheels) == 2, 'Expected to find a total of two front wheels.'
+    for front_wheel in front_wheels:
+        front_wheel.validate_world_translate_position(UPDATED_POSITION)
+    back_wheels = EditorEntity.find_editor_entities(["Back_Wheel"])
+    assert len(back_wheels) == 2, 'Expected to find a total of two back wheels.'
+    for back_wheel in back_wheels:
+        back_wheel.validate_world_translate_position(CREATION_POSITION)
 
     # Undo the override
     general.undo()
     PrefabWaiter.wait_for_propagation()
 
     # Validate the undo
-    entity_of_deepest_nested_instance_1.validate_world_translate_position(CREATION_POSITION)
-    entity_of_deepest_nested_instance_2.validate_world_translate_position(CREATION_POSITION)
+    front_wheels = EditorEntity.find_editor_entities(["Front_Wheel"])
+    for front_wheel in front_wheels:
+        front_wheel.validate_world_translate_position(CREATION_POSITION)
+    back_wheels = EditorEntity.find_editor_entities(["Back_Wheel"])
+    for back_wheel in back_wheels:
+        back_wheel.validate_world_translate_position(CREATION_POSITION)
 
     # Redo the override
     general.redo()
     PrefabWaiter.wait_for_propagation()
 
     # Validate the redo
-    entity_of_deepest_nested_instance_1.validate_world_translate_position(UPDATED_POSITION)
-    entity_of_deepest_nested_instance_2.validate_world_translate_position(CREATION_POSITION)
+    front_wheels = EditorEntity.find_editor_entities(["Front_Wheel"])
+    for front_wheel in front_wheels:
+        front_wheel.validate_world_translate_position(UPDATED_POSITION)
+    back_wheels = EditorEntity.find_editor_entities(["Back_Wheel"])
+    for back_wheel in back_wheels:
+        back_wheel.validate_world_translate_position(CREATION_POSITION)
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
