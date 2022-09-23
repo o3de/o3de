@@ -221,6 +221,9 @@ namespace GraphModelIntegration
         //! A connection has been removed from the scene.
         virtual void OnGraphModelConnectionRemoved(GraphModel::ConnectionPtr /*connection*/){};
 
+        //! The specified node is about to be wrapped (embedded) onto the wrapperNode
+        virtual void PreOnGraphModelNodeWrapped([[maybe_unused]] GraphModel::NodePtr wrapperNode, [[maybe_unused]] GraphModel::NodePtr node) {};
+
         //! The specified node has been wrapped (embedded) onto the wrapperNode
         virtual void OnGraphModelNodeWrapped(GraphModel::NodePtr /*wrapperNode*/, GraphModel::NodePtr /*node*/){};
 

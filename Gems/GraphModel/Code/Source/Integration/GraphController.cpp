@@ -551,6 +551,9 @@ namespace GraphModelIntegration
             return;
         }
 
+        GraphControllerNotificationBus::Event(
+            m_graphCanvasSceneId, &GraphControllerNotifications::PreOnGraphModelNodeWrapped, wrapperNode, node);
+
         AZ::EntityId nodeUiId = m_elementMap.Find(node);
         if (!nodeUiId.IsValid())
         {
