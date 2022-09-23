@@ -120,6 +120,23 @@ namespace AtomToolsFramework
         return rootItem;
     }
 
+    void DynamicNodeManager::RegisterEditDataForSetting(const AZStd::string& settingName, const AZ::Edit::ElementData& editData)
+    {
+        m_editDataForSettingName[settingName] = editData;
+    }
+
+    const AZ::Edit::ElementData* DynamicNodeManager::GetEditDataForSetting(const AZStd::string& settingName) const
+    {
+        for (const auto& editDataPair : m_editDataForSettingName)
+        {
+            if (AZ::StringFunc::Equal(editDataPair.first, settingName))
+            {
+                return &editDataPair.second;
+            }
+        }
+        return nullptr;
+    }
+
     bool DynamicNodeManager::ValidateSlotConfig(
         [[maybe_unused]] const AZ::Uuid& configId, const DynamicNodeSlotConfig& slotConfig) const
     {
