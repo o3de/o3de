@@ -41,53 +41,9 @@ namespace AZ
             }
         }
 
-        StreamingImageAsset::~StreamingImageAsset()
-        {
-            // Release loaded mipChain asset
-            if (m_mipChains.size() > 0)
-            {
-                for (uint32_t mipChainIndex = 0; mipChainIndex < m_mipChains.size() - 1; mipChainIndex++)
-                {
-                    if (m_mipChains[mipChainIndex].m_asset)
-                    {
-                        Data::AssetBus::MultiHandler::BusDisconnect(m_mipChains[mipChainIndex].m_asset.GetId());
-                    }
-                }
-            }
-        }
-
         const Data::Asset<ImageMipChainAsset>& StreamingImageAsset::GetMipChainAsset(size_t mipChainIndex) const
         {
             return m_mipChains[mipChainIndex].m_asset;
-        }
-
-        void StreamingImageAsset::ReleaseMipChainAssets()
-        {
-            // Release loaded mipChain asset
-            for (uint32_t mipChainIndex = 0; mipChainIndex < m_mipChains.size() - 1; mipChainIndex++)
-            {
-                m_mipChains[mipChainIndex].m_asset.Release();
-                Data::AssetBus::MultiHandler::BusDisconnect(m_mipChains[mipChainIndex].m_asset.GetId());
-            }
-        }
-
-        void StreamingImageAsset::ReloadMipChainAssets()
-        {
-            // Release loaded mipChain asset
-            uint32_t mipChainIndex = 0;
-            for (mipChainIndex = 0; mipChainIndex < m_mipChains.size() - 1; mipChainIndex++)
-            {
-                if (m_mipChains[mipChainIndex].m_asset.Get())
-                {
-                    m_mipChains[mipChainIndex].m_asset.Reload();
-                }
-                else
-                {
-                    m_mipChains[mipChainIndex].m_asset.QueueLoad();
-                }
-                Data::AssetBus::MultiHandler::BusConnect(m_mipChains[mipChainIndex].m_asset.GetId());
-            }
-            m_pendingMipChainAssets = m_mipChains.size() - 1;
         }
 
         const ImageMipChainAsset& StreamingImageAsset::GetTailMipChain() const
@@ -172,30 +128,6 @@ namespace AZ
             return imageDescriptor;
         }
 
-        void StreamingImageAsset::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
-        {
-            for (size_t mipChainIndex = 0; mipChainIndex < m_mipChains.size() - 1; mipChainIndex++)
-            {
-                if (m_mipChains[mipChainIndex].m_asset.GetId() == asset.GetId())
-                {
-                    m_mipChains[mipChainIndex].m_asset = asset;
-                    m_pendingMipChainAssets --;
-                    
-                    Data::AssetBus::MultiHandler::BusDisconnect(m_mipChains[mipChainIndex].m_asset.GetId());
-                    if (m_pendingMipChainAssets == 0)
-                    {
-                        Data::AssetBus::Event(GetId(), &Data::AssetBus::Events::OnAssetReady, Data::Asset<StreamingImageAsset>(this, Data::AssetLoadBehavior::Default));
-                    }
-                    break;
-                }
-           }
-        }
-
-        bool StreamingImageAsset::HasPendingMipChainAssets() const
-        {
-            return m_pendingMipChainAssets > 0;
-        }
-
         AZStd::span<const uint8_t> StreamingImageAsset::GetSubImageData(uint32_t mip, uint32_t slice)
         {
             const ImageMipChainAsset* mipChainAsset = GetImageMipChainAsset(mip);
@@ -235,6 +167,19 @@ namespace AZ
             }
 
             return mipChainAsset;
+        }
+
+        bool StreamingImageAsset::HasFullMipChainAssets() const
+        {
+            for (const auto& mipChain : m_mipChains)
+            {
+                if (mipChain.m_asset.GetId().IsValid() && !mipChain.m_asset.GetData())
+                {
+                    // if the asset id is valid but the asset doesn't contain asset data, return false
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }

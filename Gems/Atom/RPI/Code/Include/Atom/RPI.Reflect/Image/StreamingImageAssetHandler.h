@@ -15,6 +15,38 @@ namespace AZ
 {
     namespace RPI
     {
+        class StreamingImageAssetReloader
+            : public Data::AssetBus::MultiHandler
+        {        
+        public:            
+            using CompleteCallback = AZStd::function<void(StreamingImageAssetReloader*)>;
+
+            StreamingImageAssetReloader(Data::AssetId asset, CompleteCallback callback);
+            virtual ~StreamingImageAssetReloader();
+
+            Data::AssetId GetRemovalAssetId() const;
+        
+        protected:
+            //////////////////////////////////////////////////////////////////////////
+            // Asset Bus
+            void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
+            void OnAssetReloadError(Data::Asset<Data::AssetData> asset) override;
+            //////////////////////////////////////////////////////////////////////////
+
+            void HandleMipChainAssetReload(Data::Asset<Data::AssetData> asset);
+
+        private:
+            Data::AssetId m_imageAssetId;
+            Data::Asset<StreamingImageAsset> m_imageAsset;
+
+            AZStd::set<Data::AssetId> m_pendingMipChainAssets;
+            
+            AZStd::vector<Data::Asset<ImageMipChainAsset>> m_reloadedMipChainAssets;
+
+            bool m_complete = false;
+            CompleteCallback m_completeCallback;
+        };
+
         //! The StreamingImageAsset's handler with customized loading steps in LoadAssetData override.
         class StreamingImageAssetHandler final
             : public AssetHandler<StreamingImageAsset>

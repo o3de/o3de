@@ -46,11 +46,11 @@ namespace AZ
         //! See RPI::StreamingImage for runtime features based on this asset.
         class StreamingImageAsset final
             : public ImageAsset
-            , public Data::AssetBus::MultiHandler
         {
             friend class StreamingImageAssetCreator;
             friend class StreamingImageAssetTester;
             friend class StreamingImageAssetHandler;
+            friend class StreamingImageAssetReloader;
 
         public:
             static const char* DisplayName;
@@ -62,17 +62,9 @@ namespace AZ
             static void Reflect(ReflectContext* context);
 
             StreamingImageAsset() = default;
-            virtual ~StreamingImageAsset();
 
             //! Returns an immutable reference to the mip chain associated by index into the array of mip chains.
             const Data::Asset<ImageMipChainAsset>& GetMipChainAsset(size_t mipChainIndex) const; 
-
-            //! Release referenced ImageMipChainAssets
-            void ReleaseMipChainAssets();
-
-            //! Load referenced ImageMipChainAssets
-            void ReloadMipChainAssets();
-            bool HasPendingMipChainAssets() const;
 
             //! Get the last mip chain asset data which contains lowest level of mips.
             const ImageMipChainAsset& GetTailMipChain() const;
@@ -110,12 +102,14 @@ namespace AZ
             //! Returns the image descriptor for the specified mip level.
             RHI::ImageDescriptor GetImageDescriptorForMipLevel(AZ::u32 mipLevel) const;
 
+            //! Whether the image has all referenced ImageMipChainAssets loaded
+            bool HasFullMipChainAssets() const;
+
         protected:
-            
-            //////////////////////////////////////////////////////////////////////////
-            // Asset Bus
-            void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
-            //////////////////////////////////////////////////////////////////////////
+
+            // AssetData overrides...
+            // Disable auto reload and use StreamingImageAsestReloader instead
+            bool HandleAutoReload() override { return false; }
 
         private:
             struct MipChain
@@ -156,8 +150,6 @@ namespace AZ
             //! mip chain index, not the level. And will fail for any level
             //! that resides in the tail mip chain.
             const ImageMipChainAsset* GetImageMipChainAsset(AZ::u32 mipLevel) const;
-
-            size_t m_pendingMipChainAssets = 0;
         };
     }
 }

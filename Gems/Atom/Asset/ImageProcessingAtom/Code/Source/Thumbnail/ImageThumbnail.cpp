@@ -89,9 +89,15 @@ namespace ImageProcessingAtom
         {
             if (m_state == State::Ready && m_assetIds.find(assetId) != m_assetIds.end())
             {
-                m_state = State::Unloaded;
-                Load();
+                AZ::Data::AssetBus::MultiHandler::BusConnect(assetId);
             }
+        }
+
+        void ImageThumbnail::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
+        {
+            AZ::Data::AssetBus::MultiHandler::BusDisconnect(asset.GetId());
+            m_state = State::Unloaded;
+            Load();
         }
 
         //////////////////////////////////////////////////////////////////////////

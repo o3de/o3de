@@ -707,14 +707,12 @@ namespace GradientSignal
 
     void ImageGradientComponent::OnAssetMoved(AZ::Data::Asset<AZ::Data::AssetData> asset, [[maybe_unused]] void* oldDataPointer)
     {
-        OnAssetReady(asset);
+        //OnAssetReady(asset);
     }
 
     void ImageGradientComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        m_configuration.m_imageAsset.Release(); 
-        AZ::RPI::StreamingImageAsset* imageAsset = azrtti_cast<AZ::RPI::StreamingImageAsset*>(asset.GetData());
-        imageAsset->ReloadMipChainAssets();
+        OnAssetReady(asset);
     }
 
     void ImageGradientComponent::OnGradientTransformChanged(const GradientTransform& newTransform)

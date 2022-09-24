@@ -27,7 +27,8 @@ namespace ImageProcessingAtom
         class ImageThumbnail
             : public AzToolsFramework::Thumbnailer::Thumbnail
             , public AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Handler
-            , public AzFramework::AssetCatalogEventBus::Handler
+            , public AzFramework::AssetCatalogEventBus::Handler            
+            , public AZ::Data::AssetBus::MultiHandler
         {
             Q_OBJECT
         public:
@@ -40,6 +41,10 @@ namespace ImageProcessingAtom
 
         protected:
             void LoadThread() override;
+            
+            //////////////////////////////////////////////////////////////////////////
+            // Asset Bus
+            void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
 
         private:
             // AzFramework::AssetCatalogEventBus::Handler interface overrides...

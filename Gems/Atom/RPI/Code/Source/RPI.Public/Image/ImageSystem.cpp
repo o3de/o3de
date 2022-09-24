@@ -142,6 +142,8 @@ namespace AZ
             CreateDefaultResources(desc);
 
             Interface<ImageSystemInterface>::Register(this);
+            
+            AzFramework::AssetCatalogEventBus::Handler::BusConnect();
 
             m_initialized = true;
         }
@@ -152,6 +154,9 @@ namespace AZ
             {
                 return;
             }
+            
+            AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
+
             Interface<ImageSystemInterface>::Unregister(this);
 
             m_defaultStreamingImageControllerAsset.Release();
@@ -179,6 +184,13 @@ namespace AZ
             {
                 imagePool->Update();
             }
+
+            for (StreamingImageAssetReloader* reloader : m_pendingRemoveReloaders)
+            {
+                m_workingStreamingImageAssetReloader.erase(reloader->GetRemovalAssetId());
+                delete reloader;
+            }
+            m_pendingRemoveReloaders.clear();
         }
 
         const Data::Instance<StreamingImagePool>& ImageSystem::GetSystemStreamingPool() const
@@ -360,6 +372,35 @@ namespace AZ
                         sizeof(uint32_t));
                 }
             }
+        }
+
+        
+        void ImageSystem::OnCatalogAssetChanged(const AZ::Data::AssetId& assetId)
+        {
+            // check if the asset is a StreamingImage Asset
+            AZ::Data::AssetInfo assetInfo;
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, assetId);
+            if (assetInfo.m_assetType ==  StreamingImageAsset::RTTI_Type())
+            {
+                ReloadStreamingImageAsset(assetInfo.m_assetId);
+            }
+        }
+
+        void ImageSystem::ReloadStreamingImageAsset(const AZ::Data::AssetId& assetId)
+        {
+            if (m_workingStreamingImageAssetReloader.find(assetId) != m_workingStreamingImageAssetReloader.end())
+            {
+                return;
+            }
+            m_workingStreamingImageAssetReloader[assetId] = new StreamingImageAssetReloader(assetId, [this](StreamingImageAssetReloader* reloader)
+                {
+                    RemoveReloader(reloader);
+                });
+        }
+        
+        void ImageSystem::RemoveReloader(StreamingImageAssetReloader* reloader)
+        {
+            m_pendingRemoveReloaders.push_back(reloader);
         }
     } // namespace RPI
 }// namespace AZ

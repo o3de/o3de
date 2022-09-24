@@ -37,8 +37,11 @@ namespace AZ
 
     namespace RPI
     {
+        class StreamingImageAssetReloader;
+
         class ImageSystem final
             : public ImageSystemInterface
+             , private AzFramework::AssetCatalogEventBus::Handler
         {
         public:
             static void Reflect(AZ::ReflectContext* context);
@@ -66,6 +69,12 @@ namespace AZ
         private:
             void CreateDefaultResources(const ImageSystemDescriptor& desc);
 
+            // Asset catalog EBus
+            void OnCatalogAssetChanged(const AZ::Data::AssetId& assetId) override;
+
+            void ReloadStreamingImageAsset(const AZ::Data::AssetId& assetId);
+            void RemoveReloader(StreamingImageAssetReloader* reloader);
+
             // The set of active (externally created) streaming image pools tracked by the system.
             AZStd::mutex m_activeStreamingPoolMutex;
             AZStd::vector<StreamingImagePool*> m_activeStreamingPools;
@@ -85,6 +94,9 @@ namespace AZ
             // a collections of regirested attachment images
             // Note: use AttachmentImage* instead of Data::Instance<AttachmentImage> so it can be released properly
             AZStd::unordered_map<RHI::AttachmentId, AttachmentImage*> m_registeredAttachmentImages;
+
+            AZStd::unordered_map<Data::AssetId, StreamingImageAssetReloader*> m_workingStreamingImageAssetReloader;
+            AZStd::list<StreamingImageAssetReloader*> m_pendingRemoveReloaders;
         };
     }
 }

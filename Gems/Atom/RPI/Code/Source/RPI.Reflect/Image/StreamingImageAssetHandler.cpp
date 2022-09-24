@@ -15,6 +15,98 @@ namespace AZ
 {
     namespace RPI
     {
+        StreamingImageAssetReloader::StreamingImageAssetReloader(Data::AssetId assetId, CompleteCallback callback)
+        {
+            m_imageAssetId = assetId;
+            m_completeCallback = callback;
+
+            // Get current image asset
+            m_imageAsset = AZ::Data::AssetManager::Instance().GetAsset<StreamingImageAsset>(assetId, AZ::Data::AssetLoadBehavior::Default);
+
+            // trigger reload for all its mip chains
+            if (m_imageAsset->GetMipChainCount() > 0)
+            {
+                for (uint32_t mipChainIndex = 0; mipChainIndex < m_imageAsset->GetMipChainCount() - 1; mipChainIndex++)
+                {
+                    auto& mipChainAsset = m_imageAsset->m_mipChains[mipChainIndex].m_asset;
+                    if (mipChainAsset.Get())
+                    {
+                        if (mipChainAsset.Reload())
+                        {
+                            m_pendingMipChainAssets.insert(mipChainAsset.GetId());
+                            Data::AssetBus::MultiHandler::BusConnect(mipChainAsset.GetId());
+                        }
+                    }
+                }
+            }
+            
+            if (m_pendingMipChainAssets.size() > 0)
+            {
+                m_imageAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
+            }
+            else
+            {
+                m_imageAsset.Reload();
+                Data::AssetBus::MultiHandler::BusConnect(m_imageAsset.GetId());
+            }
+        }
+        
+        StreamingImageAssetReloader::~StreamingImageAssetReloader()
+        {
+            if (!m_complete)
+            {
+                Data::AssetBus::MultiHandler::BusDisconnect(m_imageAssetId);
+                for (uint32_t mipChainIndex = 0; mipChainIndex < m_imageAsset->GetMipChainCount() - 1; mipChainIndex++)
+                {
+                    auto& mipChainAsset = m_imageAsset->m_mipChains[mipChainIndex].m_asset;
+                    Data::AssetBus::MultiHandler::BusDisconnect(mipChainAsset.GetId());
+                }
+            }
+        }
+
+        Data::AssetId StreamingImageAssetReloader::GetRemovalAssetId() const
+        {
+            return m_imageAssetId;
+        }
+
+        void StreamingImageAssetReloader::HandleMipChainAssetReload(Data::Asset<Data::AssetData> asset)
+        {
+            if (m_pendingMipChainAssets.size() > 0)
+            {
+                auto itr = m_pendingMipChainAssets.find(asset.GetId());
+                if (itr != m_pendingMipChainAssets.end())
+                {
+                    m_reloadedMipChainAssets.push_back(asset);
+                    m_pendingMipChainAssets.erase(itr);
+                    Data::AssetBus::MultiHandler::BusDisconnect(asset.GetId());
+                    if (m_pendingMipChainAssets.size() == 0)
+                    {
+                        m_imageAsset.Reload();
+                        Data::AssetBus::MultiHandler::BusConnect(m_imageAsset.GetId());
+                    }
+                }
+            }
+        }
+
+        void StreamingImageAssetReloader::OnAssetReloadError(Data::Asset<Data::AssetData> asset)
+        {
+            // it's possible a mipchain asset was removed and the reload failed
+            HandleMipChainAssetReload(asset);
+        }
+        
+        void StreamingImageAssetReloader::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
+        {
+            HandleMipChainAssetReload(asset);
+
+            if (m_imageAssetId == asset.GetId())
+            {
+                m_imageAsset = asset;
+                Data::AssetBus::MultiHandler::BusDisconnect(asset.GetId());
+                m_complete = true;
+                m_completeCallback(this);
+            }
+        }
+
         Data::AssetHandler::LoadResult StreamingImageAssetHandler::LoadAssetData(
             const Data::Asset<Data::AssetData>& asset,
             AZStd::shared_ptr<Data::AssetDataStream> stream,
@@ -36,8 +128,32 @@ namespace AZ
                 if (loadResult == Data::AssetHandler::LoadResult::LoadComplete)
                 {
                     // ImageMipChainAsset has some internal variables need to initialized after it was loaded.
-                    StreamingImageAsset* assetData2 = asset.GetAs<StreamingImageAsset>();
-                    assetData2->m_tailMipChain.Init();
+                    assetData->m_tailMipChain.Init();
+
+                    // Find assets for all the mipchains
+                    // This is to resolve reloading StreamingImageAsset won't load the asset reference even the StreamingImageAsset was loaded with LoadAll option
+                    // If the asset was loaded. Check if it has full mipchain loaded.
+                    auto& assetManager = AZ::Data::AssetManager::Instance();
+                    Data::Asset<StreamingImageAsset> foundImageAsset = assetManager.FindAsset(asset.GetId(), AZ::Data::AssetLoadBehavior::PreLoad);
+                    if (foundImageAsset && foundImageAsset->HasFullMipChainAssets())
+                    {
+                        for (auto& mipChainAsset : assetData->m_mipChains)
+                        {
+                            if (mipChainAsset.m_asset.GetId().IsValid() && !mipChainAsset.m_asset.Get())
+                            {
+                                if (auto foundAsset = assetManager.FindAsset(mipChainAsset.m_asset.GetId(), AZ::Data::AssetLoadBehavior::PreLoad))
+                                {
+                                    mipChainAsset.m_asset = foundAsset;
+                                }
+                                else
+                                {
+                                    // This may happen if the image's resolution increased which generate new mipchain assets 
+                                    mipChainAsset.m_asset.QueueLoad();
+                                    mipChainAsset.m_asset.BlockUntilLoadComplete();
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
