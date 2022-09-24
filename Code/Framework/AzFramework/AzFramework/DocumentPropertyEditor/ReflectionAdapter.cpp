@@ -445,7 +445,7 @@ namespace AZ::DocumentPropertyEditor
 
                 AZ::Dom::Value instancePointerValue = AZ::Dom::Utils::MarshalTypedPointerToValue(access.Get(), access.GetType());
                 bool hashValue = false;
-                const AZ::Name PointerTypeFieldName = AZ::Name::FromStringLiteral("pointerType", AZ::Interface<AZ::NameDictionary>::Get());
+                const AZ::Name PointerTypeFieldName = AZ::Dom::Utils::PointerTypeFieldName;
                 if (instancePointerValue.IsOpaqueValue() || instancePointerValue.FindMember(PointerTypeFieldName))
                 {
                     hashValue = true;

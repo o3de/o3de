@@ -15,7 +15,7 @@
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzQtComponents/Components/Widgets/Card.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
-#include <AzToolsFramework/UI/DocumentPropertyEditor/ComponentAdapter.h>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/DPEComponentAdapter.h>
 
 #include <QFrame>
 #include <QIcon>

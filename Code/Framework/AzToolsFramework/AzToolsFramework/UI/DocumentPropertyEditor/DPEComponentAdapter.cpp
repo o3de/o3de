@@ -6,14 +6,12 @@
  *
  */
 
-#include <AzToolsFramework/UI/DocumentPropertyEditor/ComponentAdapter.h>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/DPEComponentAdapter.h>
 #include <QtCore/QTimer>
 
 namespace AZ::DocumentPropertyEditor
 {
-    ComponentAdapter::ComponentAdapter()
-    {
-    }
+    ComponentAdapter::ComponentAdapter() = default;
 
     ComponentAdapter::ComponentAdapter(AZ::Component* componentInstace)
     {
