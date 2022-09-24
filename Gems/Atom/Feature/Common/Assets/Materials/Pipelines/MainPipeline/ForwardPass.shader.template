@@ -28,11 +28,11 @@
       "EntryPoints":
       [
         {
-          "name": "MinimalPBR_MainPassVS",
+          "name": "ForwardPassVS",
           "type": "Vertex"
         },
         {
-          "name": "MinimalPBR_MainPassPS",
+          "name": "ForwardPassPS",
           "type": "Fragment"
         }
       ]

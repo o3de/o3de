@@ -20,12 +20,20 @@ struct VertexOutput
     float4 m_position : SV_Position;
 };
 
+void MaterialFunction_AdjustLocalPosition(inout float3 localPosition);
+void MaterialFunction_AdjustWorldPosition(inout float3 worldPosition);
+
 VertexOutput MainVS(VertexInput input)
 {
     const float4x4 worldMatrix = ObjectSrg::GetWorldMatrix();
     VertexOutput output;
     
-    const float3 worldPosition = mul(worldMatrix, float4(input.m_position, 1.0)).xyz;
+    MaterialFunction_AdjustLocalPosition(input.m_position);
+
+    float3 worldPosition = mul(worldMatrix, float4(input.m_position, 1.0)).xyz;
+    
+    MaterialFunction_AdjustWorldPosition(worldPosition);
+
     output.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(worldPosition, 1.0));
 
     return output;

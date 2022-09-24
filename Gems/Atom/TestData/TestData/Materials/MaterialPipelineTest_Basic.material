@@ -1,5 +1,5 @@
 {
-    "materialType": "@projectroot@/Cache/Intermediate Assets/testdata/materials/types/testabstraction.materialtype",
+    "materialType": "@projectroot@/Cache/Intermediate Assets/testdata/materials/types/materialpipelinetest_basic.materialtype",
     "materialTypeVersion": 3,
     "propertyValues": {
         "settings.color": [

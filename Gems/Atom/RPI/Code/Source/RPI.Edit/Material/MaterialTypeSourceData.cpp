@@ -113,6 +113,7 @@ namespace AZ
                     ->Field("version", &MaterialTypeSourceData::m_version)
                     ->Field("versionUpdates", &MaterialTypeSourceData::m_versionUpdates)
                     ->Field("propertyLayout", &MaterialTypeSourceData::m_propertyLayout)
+                    ->Field("materialShaderCode", &MaterialTypeSourceData::m_materialShaderCode)
                     ->Field("shaders", &MaterialTypeSourceData::m_shaderCollection)
                     ->Field("functors", &MaterialTypeSourceData::m_materialFunctorSourceData)
                     ->Field("uvNameMap", &MaterialTypeSourceData::m_uvNameMap)

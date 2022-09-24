@@ -23,13 +23,6 @@
 #include <Atom/Features/PBR/Lighting/StandardLighting.azsli>
 #include <Atom/Features/PBR/Decals.azsli>
 
-ShaderResourceGroup MinimalPBRSrg : SRG_PerMaterial
-{
-    float3 m_baseColor;
-    float m_metallic;
-    float m_roughness;
-}
-
 struct VSInput
 {
     float3 m_position : POSITION;
@@ -49,38 +42,47 @@ struct VSOutput
 
 #include <Atom/Features/Vertex/VertexHelper.azsli>
 
-VSOutput MinimalPBR_MainPassVS(VSInput IN)
+void MaterialFunction_AdjustLocalPosition(inout float3 localPosition);
+void MaterialFunction_AdjustWorldPosition(inout float3 worldPosition);
+void MaterialFunction_AdjustSurface(inout Surface outSurface);
+
+VSOutput ForwardPassVS(VSInput IN)
 {
     VSOutput OUT;
  
+    MaterialFunction_AdjustLocalPosition(IN.m_position);
+
     float3 worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_position, 1.0)).xyz;
  
+    MaterialFunction_AdjustWorldPosition(worldPosition);
+
     VertexHelper(IN, OUT, worldPosition);
 
     return OUT;
 }
 
-ForwardPassOutput MinimalPBR_MainPassPS(VSOutput IN)
+#define MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE 1
+
+ForwardPassOutput ForwardPassPS(VSOutput IN)
 {
     // ------- Surface -------
-
-    Surface surface;
     
-    // Position, Normal, Roughness
+    Surface surface;
     surface.position = IN.m_worldPosition.xyz;
-    surface.normal = normalize(IN.m_normal);
     surface.vertexNormal = normalize(IN.m_normal);
-    surface.roughnessLinear = MinimalPBRSrg::m_roughness;
-    surface.CalculateRoughnessA();
 
-    // Albedo, SpecularF0
-    float3 baseColor = MinimalPBRSrg::m_baseColor;
-    float metallic = MinimalPBRSrg::m_metallic;
+    // These are the values we expect MaterialFunction_EvaluateSurface to potentially replace.
+    surface.normal = surface.vertexNormal;
+    surface.roughnessLinear = 0.0;
+    float3 baseColor = float3(0.5, 0.5, 0.5);
+    float metallic = 0.0;
     float specularF0Factor = 0.5f;
     surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
-
-    // Clear Coat
     surface.clearCoat.InitializeToZero();
+
+    MaterialFunction_AdjustSurface(surface);
+    
+    surface.CalculateRoughnessA();
 
     // ------- LightingData -------
 

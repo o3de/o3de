@@ -45,17 +45,7 @@
             }
         ]
     },
-    "shaders": [
-        {
-            "file": "./MinimalPBR_ForwardPass.shader"
-        },
-        {
-            "file": "Shaders/Shadow/Shadowmap.shader"
-        },
-        {
-            "file": "Shaders/Depth/DepthPass.shader"
-        }
-    ],
+    "materialShaderCode": "Atom/TestData/TestData/Materials/Types/MaterialPipelineTest_Basic.azsli",
     "functors": [
     ]
 }

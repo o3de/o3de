@@ -234,6 +234,10 @@ namespace AZ
             
             VersionUpdates m_versionUpdates;
 
+            // This path must be reachable as a #include statement in other azsl files.
+            // TODO: See if there's a way we can make this path be relative to the .materialtype file instead.
+            AZStd::string m_materialShaderCode;
+
             //! A list of shader variants that are always used at runtime; they cannot be turned off
             AZStd::vector<ShaderVariantReferenceData> m_shaderCollection;
 
