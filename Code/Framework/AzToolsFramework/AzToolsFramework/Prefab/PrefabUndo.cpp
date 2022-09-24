@@ -195,13 +195,25 @@ namespace AzToolsFramework
 
                 if (cachedDom.has_value())
                 {
+                    // OLD CODE
+
                     // Create a copy of the DOM of the end state so that it shares the lifecycle of the cached DOM.
-                    PrefabDom endStateCopy;
-                    endStateCopy.CopyFrom(endState, cachedDom->get().GetAllocator());
-                    Prefab::PrefabDomPath entityPathInDom(entityAliasPath.c_str());
+                    //PrefabDom endStateCopy;
+                    //endStateCopy.CopyFrom(endState, cachedDom->get().GetAllocator());
+                    //Prefab::PrefabDomPath entityPathInDom(entityAliasPath.c_str());
 
                     // Update the cached instance DOM corresponding to the entity so that the same modified entity isn't reloaded again.
-                    entityPathInDom.Set(cachedDom->get(), AZStd::move(endStateCopy));
+                    //entityPathInDom.Set(cachedDom->get(), AZStd::move(endStateCopy));
+
+                    // NEW CODE
+                    PrefabDom& cachedInstanceDom = cachedDom->get();
+                    PrefabDomPath entityPathInDom(entityAliasPath.c_str());
+                    entityPathInDom.Set(cachedInstanceDom, PrefabDomValue(endState, cachedInstanceDom.GetAllocator()).Move()); // make a copy
+
+                    // Move() just casts it to GenerticValue& type so it can invoke the move version of Set() instead of
+                    //   invoking the copy version of Set().
+
+                    // IMPROVEMENT: Very trivial. Avoided creating an extra allocator for endStateCopy.
                 }
             }
         }

@@ -86,18 +86,23 @@ namespace AzToolsFramework
             // Copies the instance DOM, that is stored in the focused or root template DOM, into the output instance DOM.
             AZStd::string relativePathFromTop = PrefabInstanceUtils::GetRelativePathFromClimbedInstances(climbUpResult.m_climbedInstances);
             PrefabDomPath relativeDomPath(relativePathFromTop.c_str());
-            PrefabDom focusedOrRootTemplateDom;
-            focusedOrRootTemplateDom.CopyFrom(m_prefabSystemComponentInterface->FindTemplateDom(focusedOrRootInstance->GetTemplateId()),
-                instanceDom.GetAllocator());
-            const PrefabDomValue* instanceDomFromTemplate = relativeDomPath.Get(focusedOrRootTemplateDom);
-            if (!instanceDomFromTemplate)
-            {
-                AZ_Assert(false, "Prefab - InstanceDomGenerator::GenerateInstanceDom - "
-                    "Could not get the instance DOM stored in the focused or root template DOM.");
-                return false;
-            }
 
-            instanceDom.CopyFrom(*instanceDomFromTemplate, instanceDom.GetAllocator());
+            // IMPROVEMENT: Copy the nested instance DOM instead of the whole template DOM.
+            {
+                // only valid in this scope.
+                const PrefabDom& focusedOrRootTemplateDom = m_prefabSystemComponentInterface->FindTemplateDom(
+                    focusedOrRootInstance->GetTemplateId());
+                const PrefabDomValue* instanceDomFromTemplate = relativeDomPath.Get(focusedOrRootTemplateDom);
+                if (!instanceDomFromTemplate)
+                {
+                    AZ_Assert(false, "Prefab - InstanceDomGenerator::GenerateInstanceDom - "
+                        "Could not get the instance DOM stored in the focused or root template DOM.");
+                    return false;
+                }
+
+                // Directly copy into the output DOM.
+                instanceDom.CopyFrom(*instanceDomFromTemplate, instanceDom.GetAllocator());
+            }
 
             // Additional processing on focused instance DOM...
 
@@ -114,21 +119,25 @@ namespace AzToolsFramework
             {
                 PrefabDom focusedTemplateDom;
                 focusedTemplateDom.CopyFrom(m_prefabSystemComponentInterface->FindTemplateDom(focusedInstance->get().GetTemplateId()),
-                    instanceDom.GetAllocator());
+                    focusedTemplateDom.GetAllocator());
 
                 UpdateContainerEntityInDomFromRoot(focusedTemplateDom, focusedInstance->get());
 
-                // Forces a hard copy using the instanceDom's allocator.
-                PrefabDom focusedTemplateDomCopy;
-                focusedTemplateDomCopy.CopyFrom(focusedTemplateDom, instanceDom.GetAllocator());
+                // REMOVED: Forces a hard copy using the instanceDom's allocator.
+                // PrefabDom focusedTemplateDomCopy;
+                // focusedTemplateDomCopy.CopyFrom(focusedTemplateDom, instanceDom.GetAllocator());
 
                 // Stores the focused DOM into the instance DOM.
                 AZStd::string relativePathToFocus = PrefabInstanceUtils::GetRelativePathBetweenInstances(instance, focusedInstance->get());
                 PrefabDomPath relativeDomPathToFocus(relativePathToFocus.c_str());
-                relativeDomPathToFocus.Set(instanceDom, focusedTemplateDomCopy, instanceDom.GetAllocator());
+                relativeDomPathToFocus.Set(instanceDom, PrefabDomValue(focusedTemplateDom, instanceDom.GetAllocator()).Move()); // make a copy
+
+                // IMPROVEMENT: NO, because we don't reduce # of copying.
             }
             // Skips additional processing if the focused instance is a proper ancestor of the given instance, or
             // the focused instance has no hierarchy relation with the given instance.
+
+            // See [Other flow] in GenerateEntityDom
 
             return true;
         }
@@ -178,26 +187,42 @@ namespace AzToolsFramework
             PrefabDomPath relativeDomPathFromTopToEntity(relativePathFromTop.c_str());
 
             // Retrieves the entity DOM from the template of the focused or root instance.
-            PrefabDom focusedOrRootTemplateDom;
-            focusedOrRootTemplateDom.CopyFrom(m_prefabSystemComponentInterface->FindTemplateDom(focusedOrRootInstance->GetTemplateId()),
-                entityDom.GetAllocator());
+            // NOTE 1: Can be improved by only copying the entity Dom. But we need an overloaded UpdateContainerEntityInDomFromRoot
+            //   for entity DOM and template info as input.
+            // NOTE 2: PrefabDom focusedOrRootTemplateDomCopy(&entityDom.GetAllocator()) does not seem to be a good idea. From rapidjson code,
+            //   when it goes out of scope, it destroys the allocator.
+            // NOTE 3: Eventually, the whole template DOM copy can be avoided if we later cache container entity DOM in focus handler
+            //   as suggested by Ram earlier in PR.
+            PrefabDom focusedOrRootTemplateDomCopy;
+            focusedOrRootTemplateDomCopy.CopyFrom(
+                m_prefabSystemComponentInterface->FindTemplateDom(focusedOrRootInstance->GetTemplateId()),
+                focusedOrRootTemplateDomCopy.GetAllocator());
 
             // If it is the focused container entity, then replace the entity DOM's transform data (from template)
             // with the one seen from root.
             if (entityId == focusedInstance->get().GetContainerEntityId())
             {
-                UpdateContainerEntityInDomFromRoot(focusedOrRootTemplateDom, focusedInstance->get());
+                UpdateContainerEntityInDomFromRoot(focusedOrRootTemplateDomCopy, focusedInstance->get());
             }
 
-            const PrefabDomValue* entityDomFromTemplate = relativeDomPathFromTopToEntity.Get(focusedOrRootTemplateDom);
-            if (!entityDomFromTemplate)
+            PrefabDomValue* entityDomFromTemplateCopy = relativeDomPathFromTopToEntity.Get(focusedOrRootTemplateDomCopy);
+            if (!entityDomFromTemplateCopy)
             {
                 AZ_Warning("Prefab", false, "InstanceDomGenerator::GenerateEntityDom - "
                     "The entity DOM cannot be found in the template DOM. Returns false.");
                 return false;
             }
 
-            entityDom.CopyFrom(*entityDomFromTemplate, entityDom.GetAllocator());
+            entityDom.CopyFrom(*entityDomFromTemplateCopy, entityDom.GetAllocator());
+
+            // [Other flow]
+            //   1. Defines PrefabDom outputEntityDom
+            //   2. Uses outputEntityDom.GetAllocator() throughout this function
+            //   3. Calls entityDom.Swap(outputEntityDom) at last OR entityDom = AZStd::move(outputEntityDom);
+            // Why good? All memory is allocated by one allocator.
+            // Why bad?  If we do something on entityDom before calling this function, the changes will be lost.
+            // Ref: https://github.com/Tencent/rapidjson/issues/285
+
             return true;
         }
 
@@ -221,14 +246,24 @@ namespace AzToolsFramework
             PrefabDomPath domPathToContainerEntity(pathToContainerEntity.c_str());
 
             // Retrieves the container entity DOM of the root template DOM.
-            const PrefabDom& rootTemplateDom = m_prefabSystemComponentInterface->FindTemplateDom((*rootInstancePtr).GetTemplateId());
-            PrefabDom containerEntityDom;
-            containerEntityDom.CopyFrom(*domPathToContainerEntity.Get(rootTemplateDom), instanceDom.GetAllocator());
+            {
+                // only valid in this scope
+                const PrefabDom& rootTemplateDom = m_prefabSystemComponentInterface->FindTemplateDom((*rootInstancePtr).GetTemplateId());
+                const PrefabDomValue* containerEntityDom = domPathToContainerEntity.Get(rootTemplateDom);
 
-            // Sets the container entity DOM in the given instance DOM.
-            const AZStd::string containerEntityName = AZStd::string::format("/%s", PrefabDomUtils::ContainerEntityName);
-            PrefabDomPath containerEntityPath(containerEntityName.c_str());
-            containerEntityPath.Set(instanceDom, containerEntityDom, instanceDom.GetAllocator());
+                if (containerEntityDom)
+                {
+                    // IMPROVEMENT: AVOIDED A COPY
+
+                    // Sets the container entity DOM in the given instance DOM.
+                    const AZStd::string containerEntityName = AZStd::string::format("/%s", PrefabDomUtils::ContainerEntityName);
+                    PrefabDomPath containerEntityPath(containerEntityName.c_str());
+
+                    // Makes a copy using the output allocator
+                    containerEntityPath.Set(instanceDom,
+                        PrefabDomValue(*containerEntityDom, instanceDom.GetAllocator()).Move());
+                }
+            }
         }
     } // namespace Prefab
 } // namespace AzToolsFramework
