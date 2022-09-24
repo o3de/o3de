@@ -136,7 +136,7 @@ namespace AtomToolsFramework
     void PropertyStringBrowseEditCtrl::OnTextEditingFinished()
     {
         // This check is compensating for what might be a bug in the browser widget. If the line edit widget is read only and double clicked
-        // then the browse edit widget will send the signal that the edit button has been pressed. It’s likely treating the entire read only
+        // then the browse edit widget will send the signal that the edit button has been pressed. It's likely treating the entire read only
         // widget as a button for convenience, UX, feedback. However, double clicking the read only line edit widget is also sending a
         // conflicting signal that editing is finished, even though it never began. So, double clicking the widget to open the dialog
         // triggers an erroneous value change and causes the property editor to refresh just before editing begins, placing it in a bad
