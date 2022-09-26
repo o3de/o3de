@@ -26,8 +26,7 @@ namespace AtomToolsFramework
         }
     }
 
-    CreateDynamicNodeMimeEvent::CreateDynamicNodeMimeEvent(
-        const AZ::Crc32& toolId, const AZ::Uuid& configId)
+    CreateDynamicNodeMimeEvent::CreateDynamicNodeMimeEvent(const AZ::Crc32& toolId, const AZ::Uuid& configId)
         : m_toolId(toolId)
         , m_configId(configId)
     {
@@ -39,10 +38,10 @@ namespace AtomToolsFramework
         GraphModel::GraphPtr graph;
         GraphModelIntegration::GraphManagerRequestBus::BroadcastResult(
             graph, &GraphModelIntegration::GraphManagerRequests::GetGraph, graphCanvasSceneId);
+
         if (graph)
         {
-            AZStd::shared_ptr<GraphModel::Node> node = AZStd::make_shared<DynamicNode>(graph, m_toolId, m_configId);
-            if (node)
+            if (auto node = AZStd::make_shared<DynamicNode>(graph, m_toolId, m_configId))
             {
                 GraphModelIntegration::GraphControllerRequestBus::Event(
                     graphCanvasSceneId, &GraphModelIntegration::GraphControllerRequests::AddNode, node, dropPosition);
@@ -53,8 +52,7 @@ namespace AtomToolsFramework
         return false;
     }
 
-    DynamicNodePaletteItem::DynamicNodePaletteItem(
-        const AZ::Crc32& toolId, const DynamicNodeConfig& config)
+    DynamicNodePaletteItem::DynamicNodePaletteItem(const AZ::Crc32& toolId, const DynamicNodeConfig& config)
         : DraggableNodePaletteTreeItem(config.m_title.c_str(), toolId)
         , m_toolId(toolId)
         , m_configId(config.m_id)
