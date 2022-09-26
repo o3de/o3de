@@ -19,6 +19,7 @@
 
 #include <QModelIndex>
 #include <QPointer>
+#include <QDialog>
 #endif
 
 class QTimer;
@@ -66,6 +67,7 @@ namespace AzToolsFramework
             void DeleteEntries();
             void RenameEntry();
             void DuplicateEntries();
+            void MoveEntries();
 
             //////////////////////////////////////////////////////////////////////////
             // AssetBrowserViewRequestBus

@@ -90,7 +90,7 @@ namespace UnitTest
     
     struct ReadRequest
     {
-        AZStd::chrono::milliseconds m_deadline{};
+        AZ::IO::IStreamerTypes::Deadline m_deadline{};
         AZ::IO::IStreamerTypes::Priority m_priority{};
         IO::IStreamerTypes::RequestMemoryAllocatorResult m_data{ nullptr, 0, IO::IStreamerTypes::MemoryType::ReadWrite };
         AZ::IO::IStreamer::OnCompleteCallback m_callback;

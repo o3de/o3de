@@ -119,10 +119,9 @@ namespace AzToolsFramework
                 buffer += "HideChildren";
             }
 
-            AZ::Attribute* attribute = nodePtr->FindAttribute(AZ::Edit::Attributes::ReadOnly);
-            if (attribute)
+            if (AZ::Attribute* attribute = nodePtr->FindAttribute(AZ::Edit::Attributes::ReadOnly))
             {
-                PropertyAttributeReader reader(nullptr, attribute);
+                PropertyAttributeReader reader(static_cast<AZ::Component*>(nodePtr->FirstInstance()), attribute);
                 bool readOnlyValue = false;
                 reader.Read<bool>(readOnlyValue);
                 if (readOnlyValue)

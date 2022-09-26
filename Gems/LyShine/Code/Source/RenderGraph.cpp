@@ -16,6 +16,7 @@
 
 #ifndef _RELEASE
 #include <AzCore/Asset/AssetManagerBus.h>
+#include <AzCore/std/time.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #endif
 
@@ -619,7 +620,7 @@ namespace LyShine
         m_isDirty = true;
         m_renderToRenderTargetCount = 0;
 
-#ifndef _RELEASE  
+#ifndef _RELEASE
         m_wasBuiltThisFrame = true;
         m_timeGraphLastBuiltMs = AZStd::GetTimeUTCMilliSecond();
 #endif
@@ -1092,7 +1093,7 @@ namespace LyShine
                 GetDebugInfoRenderNodeList(childNodeList, info, uniqueTextures);
             }
         }
-    
+
         // walk the graph recursively to add up all of the data
         GetDebugInfoRenderNodeList(m_renderNodes, info, uniqueTextures);
 
@@ -1149,7 +1150,7 @@ namespace LyShine
                 }
 
                 const PrimitiveListRenderNode* primListRenderNode = static_cast<const PrimitiveListRenderNode*>(renderNode);
-                
+
                 LyShine::UiPrimitiveList& primitives = primListRenderNode->GetPrimitives();
                 info.m_numPrimitives += static_cast<int>(primitives.size());
                 {
@@ -1209,7 +1210,7 @@ namespace LyShine
 
                 AZ::Color clearColor = renderTargetRenderNode->GetClearColor();
                 AZStd::string logLine = AZStd::string::format("RenderTarget %s (ClearColor=(%f,%f,%f), ClearAlpha=%f, Viewport=(%f,%f,%f,%f)) :\r\n",
-                    renderTargetName, 
+                    renderTargetName,
                     static_cast<float>(clearColor.GetR()), static_cast<float>(clearColor.GetG()), static_cast<float>(clearColor.GetB()), static_cast<float>(clearColor.GetA()),
                     renderTargetRenderNode->GetViewportX(),
                     renderTargetRenderNode->GetViewportY(),
@@ -1257,7 +1258,7 @@ namespace LyShine
                 AZStd::string newIndent = indent + "    ";
 
                 logLine = AZStd::string::format("%sMask (MaskEnabled=%d, UseAlphaTest=%d, DrawBehind=%d, DrawInFront=%d) :\r\n",
-                    indent.c_str(), 
+                    indent.c_str(),
                     static_cast<int>(maskRenderNode->GetIsMaskingEnabled()),
                     static_cast<int>(maskRenderNode->GetUseAlphaTest()),
                     static_cast<int>(maskRenderNode->GetDrawBehind()),
@@ -1277,7 +1278,7 @@ namespace LyShine
             else if (renderNode->GetType() == RenderNodeType::PrimitiveList)
             {
                 const PrimitiveListRenderNode* primListRenderNode = static_cast<const PrimitiveListRenderNode*>(renderNode);
-                
+
                 bool nodeExistsBecauseOfExceedingMaxTextures = false;
                 if (prevPrimListNode)
                 {

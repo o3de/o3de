@@ -1,35 +1,22 @@
 {
-    "description": "",
-    "parentMaterial": "Materials/Presets/PBR/metal_brass.material",
-    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
     "materialTypeVersion": 5,
-    "properties": {
-        "baseColor": {
-            "factor": 1.0,
-            "textureBlendMode": "Lerp",
-            "textureMap": "Hermanubis_bronze_BaseColor.png",
-            "textureMapUv": "Unwrapped"
-        },
-        "general": {
-            "applySpecularAA": true
-        },
-        "metallic": {
-            "textureMap": "Hermanubis_bronze_Metallic.png",
-            "textureMapUv": "Unwrapped"
-        },
-        "normal": {
-            "flipY": true,
-            "textureMap": "Hermanubis_Normal.png",
-            "textureMapUv": "Unwrapped"
-        },
-        "occlusion": {
-            "diffuseTextureMap": "Hermanubis_ao.tif",
-            "diffuseTextureMapUv": "Unwrapped"
-        },
-        "roughness": {
-            "textureMap": "Hermanubis_bronze_Roughness.png",
-            "textureMapUv": "Unwrapped",
-            "upperBound": 0.6767677068710327
-        }
+    "parentMaterial": "@gemroot:Atom_Feature_Common@/Assets/Materials/Presets/PBR/metal_brass.material",
+    "propertyValues": {
+        "baseColor.factor": 1.0,
+        "baseColor.textureBlendMode": "Lerp",
+        "baseColor.textureMap": "Hermanubis_bronze_BaseColor.png",
+        "baseColor.textureMapUv": "Unwrapped",
+        "general.applySpecularAA": true,
+        "metallic.textureMap": "Hermanubis_bronze_Metallic.png",
+        "metallic.textureMapUv": "Unwrapped",
+        "normal.flipY": true,
+        "normal.textureMap": "Hermanubis_Normal.png",
+        "normal.textureMapUv": "Unwrapped",
+        "occlusion.diffuseTextureMap": "Hermanubis_ao.tif",
+        "occlusion.diffuseTextureMapUv": "Unwrapped",
+        "roughness.textureMap": "Hermanubis_bronze_Roughness.png",
+        "roughness.textureMapUv": "Unwrapped",
+        "roughness.upperBound": 0.6767677068710327
     }
 }
