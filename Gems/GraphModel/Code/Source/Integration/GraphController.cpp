@@ -382,7 +382,7 @@ namespace GraphModelIntegration
         GraphCanvas::NodeTitleRequestBus::Event(nodeUiId, &GraphCanvas::NodeTitleRequests::SetSubTitle, node->GetSubTitle());
 
         // Set the palette override for this node if one has been specified
-        AZStd::string paletteOverride = Helpers::GetTitlePaletteOverride(azrtti_typeid(node.get()));
+        AZStd::string paletteOverride = Helpers::GetTitlePaletteOverride(node.get(), azrtti_typeid(node.get()));
         if (!paletteOverride.empty())
         {
             GraphCanvas::NodeTitleRequestBus::Event(nodeUiId, &GraphCanvas::NodeTitleRequests::SetPaletteOverride, paletteOverride);

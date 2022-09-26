@@ -57,6 +57,8 @@ namespace AtomToolsFramework
         , m_toolId(toolId)
         , m_configId(config.m_id)
     {
+        // Copy the node title style from the configuration
+        SetTitlePalette(!config.m_titlePaletteName.empty() ? config.m_titlePaletteName : "DefaultNodeTitlePalette");
     }
 
     GraphCanvas::GraphCanvasMimeEvent* DynamicNodePaletteItem::CreateMimeEvent() const
