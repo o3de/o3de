@@ -72,6 +72,11 @@ namespace GraphCanvas
         {
             return this;
         }
+
+        virtual void PrepareGeometryChange() 
+        {
+            GraphicsClass::prepareGeometryChange();
+        }
         
         virtual void OnGraphicsEffectCancelled()
         {            
