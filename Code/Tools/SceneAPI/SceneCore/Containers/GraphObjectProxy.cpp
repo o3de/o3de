@@ -188,6 +188,7 @@ namespace AZ
                         ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                         ->Attribute(AZ::Script::Attributes::Module, "scene.graph")
                         ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
+                        ->Constructor<>()
                         ->Method("CastWithTypeName", &GraphObjectProxy::CastWithTypeName)
                         ->Method("Invoke", &GraphObjectProxy::Invoke)
                         ->Method("Fetch", &GraphObjectProxy::Fetch)
