@@ -92,6 +92,13 @@ namespace AZ
         {
             // it's possible a mipchain asset was removed and the reload failed
             HandleMipChainAssetReload(asset);
+
+            if (m_imageAssetId == asset.GetId())
+            {
+                Data::AssetBus::MultiHandler::BusDisconnect(asset.GetId());
+                m_complete = true;
+                m_completeCallback(this);
+            }
         }
         
         void StreamingImageAssetReloader::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
