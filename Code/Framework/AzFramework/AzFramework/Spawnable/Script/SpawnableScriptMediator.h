@@ -80,6 +80,9 @@ namespace AzFramework::Scripts
         // used to track when SpawnableScriptMediator is destroyed to avoid executing logic in callbacks
         AZStd::shared_ptr<CallbackSentinel> m_sentinel;
 
+        // Maintain a cache of tickets to at least keep 1 reference in the mediator, some script systems
+        // may do garbage collection which could lead to unintended despawn due to reference 
+        // counts reaching 0
         AZStd::unordered_set<EntitySpawnTicket> m_cachedSpawnTickets;
     };
 } // namespace AzFramework
