@@ -22,7 +22,8 @@ import sys
 import subprocess
 import pathlib
 
-from distutils.version import LooseVersion
+from packaging.version import Version
+
 
 # Resolve the common python module
 ROOT_DEV_PATH = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..'))
@@ -839,7 +840,7 @@ class AndroidProjectGenerator(object):
                 '"-GNinja"',
                 f'"-S{template_engine_root}"',
                 f'"-DCMAKE_BUILD_TYPE={native_config_lower}"',
-                f'"-DCMAKE_TOOLCHAIN_FILE={template_engine_root}/cmake/Platform/Android/Toolchain_Android.cmake"',
+                f'"-DCMAKE_TOOLCHAIN_FILE={template_engine_root}/cmake/Platform/Android/Toolchain_android.cmake"',
                 f'"-DLY_3RDPARTY_PATH={template_third_party_path}"',
                 f'"-DLY_UNITY_BUILD={template_unity_build}"']
 
@@ -1552,16 +1553,16 @@ class AndroidGradlePluginInfo(object):
                                       f"Only the following version(s) are supported: {','.join(ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP.keys())}")
 
         details = ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP[android_gradle_plugin_version]
-        self.default_sdk_build_tools_version = LooseVersion(details.get('sdk_build'))
+        self.default_sdk_build_tools_version = Version(details.get('sdk_build'))
 
-        self.default_ndk_version = LooseVersion(details.get('default_ndk'))
+        self.default_ndk_version = Version(details.get('default_ndk'))
 
-        self.min_gradle_version = LooseVersion(details.get('min_gradle_version'))
+        self.min_gradle_version = Version(details.get('min_gradle_version'))
 
-        self.min_cmake_version = LooseVersion(details.get('min_cmake_version'))
+        self.min_cmake_version = Version(details.get('min_cmake_version'))
 
         max_cmake_version_number = details.get('max_cmake_version')
-        self.max_cmake_version = None if max_cmake_version_number is None else LooseVersion(max_cmake_version_number)
+        self.max_cmake_version = None if max_cmake_version_number is None else Version(max_cmake_version_number)
 
 
 class AndroidSDKResolver(object):
@@ -1569,27 +1570,27 @@ class AndroidSDKResolver(object):
     Class that manages the Android SDK tool to validate, install packages (e.g. built tools, sdk platforms, ndk, etc)
     """
 
-    class InstalledPackage(object):
+    class BasePackage(object):
+        def __init__(self, components):
+            self.path = components[0]
+            self.version = Version(components[1].strip().replace(' ', '.'))  # Fix for versions that have spaces between the version number and potential non-numeric versioning (PEP-0440)
+            self.description = components[2]
+
+    class InstalledPackage(BasePackage):
         def __init__(self, installed_package_components):
+            super().__init__(installed_package_components)
             assert len(installed_package_components) == 4, '4 sections expected for installed package components (path, version, description, location)'
-            self.path = installed_package_components[0]
-            self.version = LooseVersion(installed_package_components[1])
-            self.description = installed_package_components[2]
             self.location = installed_package_components[3]
 
-    class AvailablePackage(object):
+    class AvailablePackage(BasePackage):
         def __init__(self, available_package_components):
+            super().__init__(available_package_components)
             assert len(available_package_components) == 3, '3 sections expected for installed package components (path, version, description)'
-            self.path = available_package_components[0]
-            self.version = LooseVersion(available_package_components[1])
-            self.description = available_package_components[2]
 
-    class AvailableUpdate(object):
+    class AvailableUpdate(BasePackage):
         def __init__(self, available_update_components):
+            super().__init__(available_update_components)
             assert len(available_update_components) == 3, '3 sections expected for installed package components (path, version, available)'
-            self.path = available_update_components[0]
-            self.version = LooseVersion(available_update_components[1])
-            self.available = available_update_components[2]
 
     def __init__(self, android_sdk_path, command_line_tools_version):
 

@@ -39,6 +39,8 @@ namespace AzToolsFramework
             void SetStoringInstance(const Instance& storingInstance);
             void SetLoadingInstance(Instance& loadingInstance);
 
+            const Instance* GetLoadingInstance() const;
+
             static AZ::EntityId GenerateEntityIdForAliasPath(const AliasPathView& aliasPath, uint64_t seedKey = SeedKey);
 
         private:

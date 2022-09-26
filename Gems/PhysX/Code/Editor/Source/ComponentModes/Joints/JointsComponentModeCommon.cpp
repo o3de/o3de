@@ -23,5 +23,7 @@ namespace PhysX::JointsComponentModeCommon
     const AZStd::string_view ParamaterNames::Transform = "Transform";
     const AZStd::string_view ParamaterNames::ComponentMode = "Component Mode";
     const AZStd::string_view ParamaterNames::LeadEntity = "Lead Entity";
-
+    const AZStd::string_view ParamaterNames::LinearLimits = "Linear Limits";
+    const AZStd::string_view ParamaterNames::EnableLimits = "Enable Limits";
+    const AZStd::string_view ParamaterNames::EnableSoftLimits = "Enable SoftLimits";
 } // namespace PhysX::JointsComponentModeCommon

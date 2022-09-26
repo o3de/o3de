@@ -2001,6 +2001,193 @@ namespace AZStd::ranges
         constexpr Internal::ends_with_fn ends_with{};
     }
 
+    //! Constrained binary search algorithms
+    // ranges::lower_bound
+    namespace Internal
+    {
+        struct lower_bound_fn
+        {
+            template<class I, class S, class T, class Proj = identity, class Comp = ranges::less,
+                class = enable_if_t<conjunction_v<
+                bool_constant<forward_iterator<I>>,
+                bool_constant<sentinel_for<S, I>>,
+                bool_constant<indirect_strict_weak_order<Comp, const T*, projected<I, Proj>>>
+                >>>
+            constexpr I operator()(I first, S last, const T& value, Comp comp = {}, Proj proj = {}) const
+            {
+                I iter = first;
+                for (auto rangeCount = AZStd::ranges::distance(first, last); rangeCount > 0; iter = first)
+                {
+                    // Perform a binary search by cutting the count in half and searching one half
+                    // of a sorted parition
+                    auto partitionSize = rangeCount / 2;
+                    ranges::advance(iter, partitionSize, last);
+                    if (AZStd::invoke(comp, AZStd::invoke(proj, *iter), value))
+                    {
+                        // The element is less than the value, therefore check the right
+                        // for an element that is not less than the value
+                        first = ranges::next(iter);
+                        // +1 is needed to point to the element after the
+                        // the check element;
+                        rangeCount = rangeCount - (partitionSize + 1);
+                    }
+                    else
+                    {
+                        // The element is not less than the value, therefore check the left
+                        // for a better lower_bound candidate(a smaller element that is still not less than value)
+                        // i.e if value = 5 and the range is [1, 6, 10, 15, 20].
+                        // Then the first candidate of 10 is not less than 5, but 6 is still the best candidate
+                        rangeCount = partitionSize;
+                    }
+                }
+
+                return first;
+            }
+
+            template<class T, class R, class Proj = identity, class Comp = ranges::less,
+                class = enable_if_t<conjunction_v<
+                bool_constant<forward_range<R>>,
+                bool_constant<indirect_strict_weak_order<Comp, const T*, projected<iterator_t<R>, Proj>>>
+                >>>
+            constexpr borrowed_iterator_t<R> operator()(R&& r, const T& value, Comp comp = {}, Proj proj = {}) const
+            {
+                return operator()(ranges::begin(r), ranges::end(r), value,
+                    AZStd::move(comp), AZStd::move(proj));
+            }
+        };
+    }
+    inline namespace customization_point_object
+    {
+        constexpr Internal::lower_bound_fn lower_bound{};
+    }
+
+    // ranges::upper_bound
+    namespace Internal
+    {
+        struct upper_bound_fn
+        {
+            template<class I, class S, class T, class Proj = identity, class Comp = ranges::less,
+                class = enable_if_t<conjunction_v<
+                bool_constant<forward_iterator<I>>,
+                bool_constant<sentinel_for<S, I>>,
+                bool_constant<indirect_strict_weak_order<Comp, const T*, projected<I, Proj>>>
+                >>>
+            constexpr I operator()(I first, S last, const T& value, Comp comp = {}, Proj proj = {}) const
+            {
+                I iter = first;
+                for (auto rangeCount = AZStd::ranges::distance(first, last); rangeCount > 0; iter = first)
+                {
+                    // Perform a binary search by cutting the count in half and searching one half
+                    // of a sorted parition
+                    auto partitionSize = rangeCount / 2;
+                    ranges::advance(iter, partitionSize, last);
+                    if (!AZStd::invoke(comp, value, AZStd::invoke(proj, *iter)))
+                    {
+                        // The element is not greater than the value, therefore check the right
+                        // for an element that is greater than the value
+                        first = ranges::next(iter);
+                        // +1 is needed to point to the element after the
+                        // the check element;
+                        rangeCount = rangeCount - (partitionSize + 1);
+                    }
+                    else
+                    {
+                        // The element is not greater than the value, therefore check the left
+                        // for a better upper_bound candidate(a smaller element that is still greater)
+                        // i.e if value = 5 and the range is [1, 6, 10, 15, 20].
+                        // Then the first candidate of 10 is greater than 5, but 6 is still the best candidate
+                        rangeCount = partitionSize;
+                    }
+                }
+
+                return first;
+            }
+
+            template<class T, class R, class Proj = identity, class Comp = ranges::less,
+                class = enable_if_t<conjunction_v<
+                bool_constant<forward_range<R>>,
+                bool_constant<indirect_strict_weak_order<Comp, const T*, projected<iterator_t<R>, Proj>>>
+                >>>
+            constexpr borrowed_iterator_t<R> operator()(R&& r, const T& value, Comp comp = {}, Proj proj = {}) const
+            {
+                return operator()(ranges::begin(r), ranges::end(r), value,
+                    AZStd::move(comp), AZStd::move(proj));
+            }
+        };
+    }
+    inline namespace customization_point_object
+    {
+        constexpr Internal::upper_bound_fn upper_bound{};
+    }
+
+    // ranges::equal_range
+    namespace Internal
+    {
+        struct equal_range_fn
+        {
+            template<class I, class S, class T, class Proj = identity, class Comp = ranges::less,
+                class = enable_if_t<conjunction_v<
+                bool_constant<forward_iterator<I>>,
+                bool_constant<sentinel_for<S, I>>,
+                bool_constant<indirect_strict_weak_order<Comp, const T*, projected<I, Proj>>>
+                >>>
+            constexpr subrange<I> operator()(I first, S last, const T& value, Comp comp = {}, Proj proj = {}) const
+            {
+                return { ranges::lower_bound(first, last, value, comp, proj),
+                    ranges::upper_bound(first, last, value, comp, proj) };
+            }
+
+            template<class T, class R, class Proj = identity, class Comp = ranges::less,
+                class = enable_if_t<conjunction_v<
+                bool_constant<forward_range<R>>,
+                bool_constant<indirect_strict_weak_order<Comp, const T*, projected<iterator_t<R>, Proj>>>
+                >>>
+            constexpr borrowed_subrange_t<R> operator()(R&& r, const T& value, Comp comp = {}, Proj proj = {}) const
+            {
+                return operator()(ranges::begin(r), ranges::end(r), value,
+                    AZStd::move(comp), AZStd::move(proj));
+            }
+        };
+    }
+    inline namespace customization_point_object
+    {
+        constexpr Internal::equal_range_fn equal_range{};
+    }
+
+    // ranges::binary_search
+    namespace Internal
+    {
+        struct binary_search_fn
+        {
+            template<class I, class S, class T, class Proj = identity, class Comp = ranges::less,
+                class = enable_if_t<conjunction_v<
+                bool_constant<forward_iterator<I>>,
+                bool_constant<sentinel_for<S, I>>,
+                bool_constant<indirect_strict_weak_order<Comp, const T*, projected<I, Proj>>>
+                >>>
+            constexpr bool operator()(I first, S last, const T& value, Comp comp = {}, Proj proj = {}) const
+            {
+                auto lowerBoundIter = ranges::lower_bound(first, last, value, comp, proj);
+                    return lowerBoundIter != last && !AZStd::invoke(comp, value, AZStd::invoke(proj, *lowerBoundIter));
+            }
+
+            template<class T, class R, class Proj = identity, class Comp = ranges::less,
+                class = enable_if_t<conjunction_v<
+                bool_constant<forward_range<R>>,
+                bool_constant<indirect_strict_weak_order<Comp, const T*, projected<iterator_t<R>, Proj>>>
+                >>>
+            constexpr bool operator()(R&& r, const T& value, Comp comp = {}, Proj proj = {}) const
+            {
+                return operator()(ranges::begin(r), ranges::end(r), value,
+                    AZStd::move(comp), AZStd::move(proj));
+            }
+        };
+    }
+    inline namespace customization_point_object
+    {
+        constexpr Internal::binary_search_fn binary_search{};
+    }
+
     //! Constrained numeric algorithms
     // ranges::iota
 

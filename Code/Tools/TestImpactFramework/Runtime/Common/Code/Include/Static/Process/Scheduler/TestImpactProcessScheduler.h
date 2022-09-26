@@ -60,7 +60,7 @@ namespace TestImpact
         AZStd::function<ProcessCallbackResult(
             ProcessId processId,
             LaunchResult launchResult,
-            AZStd::chrono::high_resolution_clock::time_point createTime)>;
+            AZStd::chrono::steady_clock::time_point createTime)>;
 
     //! Callback for process exit of successfully launched process.
     //! @param processId The id of the process that attempted to launch.
@@ -74,7 +74,7 @@ namespace TestImpact
             ExitCondition exitStatus,
             ReturnCode returnCode,
             StdContent&& std,
-            AZStd::chrono::high_resolution_clock::time_point exitTime)>;
+            AZStd::chrono::steady_clock::time_point exitTime)>;
 
     //! Callback for process standard output/error buffer consumption in real-time.
     //! @note The full standard output/error data is available to all capturing processes at their end of life regardless of this callback.

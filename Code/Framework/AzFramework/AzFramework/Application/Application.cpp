@@ -456,14 +456,14 @@ namespace AzFramework
     ////////////////////////////////////////////////////////////////////////////
     void Application::MakePathAssetRootRelative(AZStd::string& fullPath)
     {
-        // relative file paths wrt AssetRoot are always lowercase
-        AZStd::to_lower(fullPath.begin(), fullPath.end());
         AZStd::string cacheAssetPath;
         if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
         {
             settingsRegistry->Get(cacheAssetPath, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder);
         }
         MakePathRelative(fullPath, cacheAssetPath.c_str());
+        // relative file paths wrt AssetRoot are always lowercase
+        AZStd::to_lower(fullPath);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -471,18 +471,7 @@ namespace AzFramework
     {
         AZ_Assert(rootPath, "Provided root path is null.");
 
-        NormalizePathKeepCase(fullPath);
-        AZStd::string root(rootPath);
-        NormalizePathKeepCase(root);
-        if (!azstrnicmp(fullPath.c_str(), root.c_str(), root.length()))
-        {
-            fullPath = fullPath.substr(root.length());
-        }
-
-        while (!fullPath.empty() && fullPath[0] == AZ_CORRECT_DATABASE_SEPARATOR)
-        {
-            fullPath.erase(fullPath.begin());
-        }
+        fullPath = AZ::IO::PathView(fullPath).LexicallyProximate(AZ::IO::PathView(rootPath)).StringAsPosix();
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -749,7 +738,7 @@ namespace AzFramework
 
     bool Application::IsEditorModeFeedbackEnabled() const
     {
-        bool value = false;
+        bool value = true;
         if (auto* registry = AZ::SettingsRegistry::Get())
         {
             registry->Get(value, ApplicationInternal::s_editorModeFeedbackKey);

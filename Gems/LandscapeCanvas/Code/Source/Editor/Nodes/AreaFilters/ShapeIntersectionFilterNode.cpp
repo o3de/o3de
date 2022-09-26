@@ -32,7 +32,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString ShapeIntersectionFilterNode::TITLE = QObject::tr("Shape Intersection Filter");
+    const char* ShapeIntersectionFilterNode::TITLE = "Shape Intersection Filter";
 
     ShapeIntersectionFilterNode::ShapeIntersectionFilterNode(GraphModel::GraphPtr graph)
         : BaseAreaFilterNode(graph)

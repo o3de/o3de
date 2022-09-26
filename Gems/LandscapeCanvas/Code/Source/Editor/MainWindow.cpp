@@ -127,9 +127,10 @@ namespace LandscapeCanvasEditor
     static constexpr int InvalidSlotIndex = -1;
     static const char* PreviewEntityElementName = "PreviewEntity";
     static const char* GradientIdElementName = "GradientId";
+    static const char* GradientEntityIdElementName = "Gradient Entity";
     static const char* ShapeEntityIdElementName = "ShapeEntityId";
     static const char* InputBoundsEntityIdElementName = "InputBounds";
-    static const char* VegetationAreaEntityIdElementName = "element";
+    static const char* EntityIdListElementName = "element";
 
     static IEditor* GetLegacyEditor()
     {
@@ -331,7 +332,7 @@ namespace LandscapeCanvasEditor
     }
 
 #define REGISTER_NODE_PALETTE_ITEM(category, TYPE, editorId) \
-    category->CreateChildNode<GraphModelIntegration::StandardNodePaletteItem<TYPE>>(TYPE::TITLE.toUtf8().constData(), editorId);
+    category->CreateChildNode<GraphModelIntegration::StandardNodePaletteItem<TYPE>>(TYPE::TITLE, editorId);
 
     GraphCanvas::GraphCanvasTreeItem* LandscapeCanvasConfig::CreateNodePaletteRoot()
     {
@@ -423,7 +424,7 @@ namespace LandscapeCanvasEditor
     LandscapeCanvas::LandscapeCanvasNodeFactoryRequestBus::BroadcastResult(componentTypeId, &LandscapeCanvas::LandscapeCanvasNodeFactoryRequests::GetComponentTypeId, azrtti_typeid<TYPE>()); \
     if (!AzToolsFramework::EntityHasComponentOfType(entityId, componentTypeId)) \
     { \
-        category->CreateChildNode<GraphModelIntegration::StandardNodePaletteItem<TYPE>>(TYPE::TITLE.toUtf8().constData(), editorId); \
+        category->CreateChildNode<GraphModelIntegration::StandardNodePaletteItem<TYPE>>(TYPE::TITLE, editorId); \
     } \
 } \
 
@@ -599,10 +600,19 @@ namespace LandscapeCanvasEditor
             return;
         }
 
-        // If an area filter or modifier is removed, then only delete the underlying component.
+        // Check if the deleted node was a wrapped node
+        bool isNodeWrapped = false;
+        auto it = AZStd::find(m_deletedWrappedNodes.begin(), m_deletedWrappedNodes.end(), node);
+        if (it != m_deletedWrappedNodes.end())
+        {
+            isNodeWrapped = true;
+            m_deletedWrappedNodes.erase(it);
+        }
+
+        // If a wrapped node is removed, then only delete the underlying component.
         // Otherwise, delete the whole underlying Entity when the node is removed.
         auto baseNodePtr = static_cast<LandscapeCanvas::BaseNode*>(node.get());
-        if (baseNodePtr->IsAreaExtender())
+        if (isNodeWrapped)
         {
             AZ::Component* component = baseNodePtr->GetComponent();
             if (component)
@@ -626,6 +636,16 @@ namespace LandscapeCanvasEditor
     void MainWindow::PreOnGraphModelNodeRemoved(GraphModel::NodePtr node)
     {
         GraphCanvas::GraphId graphId = (*GraphModelIntegration::GraphControllerNotificationBus::GetCurrentBusId());
+
+        // We need to track any wrapped nodes before the actually get deleted so we can handle
+        // their deletion properly, because once the OnGraphModelNodeRemoved is called
+        // the wrapped information is lost.
+        bool isNodeWrapped = false;
+        GraphModelIntegration::GraphControllerRequestBus::EventResult(isNodeWrapped, graphId, &GraphModelIntegration::GraphControllerRequests::IsNodeWrapped, node);
+        if (isNodeWrapped)
+        {
+            m_deletedWrappedNodes.push_back(node);
+        }
 
         // Before a node gets removed from the graph, save off its position
         // so that we can restore it to its previous spot if it ends up
@@ -666,13 +686,31 @@ namespace LandscapeCanvasEditor
         UpdateConnectionData(connection, false /* added */);
     }
 
-    void MainWindow::OnGraphModelNodeWrapped(GraphModel::NodePtr wrapperNode, GraphModel::NodePtr node)
+    void MainWindow::PreOnGraphModelNodeWrapped(GraphModel::NodePtr wrapperNode, GraphModel::NodePtr node)
     {
-        // We only need to add components when nodes are created by the user,
-        // not when we are parsing/graphing an existing setup 
         if (m_ignoreGraphUpdates)
         {
             return;
+        }
+
+        // Keep track when wrapped nodes are about to be added so we can prevent the logic that
+        // creates new entities when nodes are added
+        m_addedWrappedNodes.push_back(node);
+    }
+
+    void MainWindow::OnGraphModelNodeWrapped(GraphModel::NodePtr wrapperNode, GraphModel::NodePtr node)
+    {
+        // We only need to add components when nodes are created by the user,
+        // not when we are parsing/graphing an existing setup
+        if (m_ignoreGraphUpdates)
+        {
+            return;
+        }
+
+        auto it = AZStd::find(m_addedWrappedNodes.begin(), m_addedWrappedNodes.end(), node);
+        if (it != m_addedWrappedNodes.end())
+        {
+            m_addedWrappedNodes.erase(it);
         }
 
         // We don't need to create a new component for nodes that already
@@ -1281,6 +1319,7 @@ namespace LandscapeCanvasEditor
         static const char* InputBoundsEntityIdPropertyPath = "Input Bounds";
         static const char* PinToShapeEntityIdPropertyPath = "Pin To Shape Entity Id";
         static const char* VegetationAreasPropertyPath = "Vegetation Areas";
+        static const char* TerrainSurfaceEntityIdPropertyPath = "Gradient Entity";
 
         const GraphModel::SlotName& slotName = slot->GetName();
         QString propertyPath;
@@ -1314,7 +1353,11 @@ namespace LandscapeCanvasEditor
             auto targetBaseNode = static_cast<LandscapeCanvas::BaseNode*>(targetNode.get());
             auto targetBaseNodeType = targetBaseNode->GetBaseNodeType();
 
-            if (targetBaseNodeType != LandscapeCanvas::BaseNode::TerrainExtender)
+            if (targetBaseNodeType == LandscapeCanvas::BaseNode::TerrainSurfaceExtender)
+            {
+                propertyPath = TerrainSurfaceEntityIdPropertyPath;
+            }
+            else if (targetBaseNodeType != LandscapeCanvas::BaseNode::TerrainExtender)
             {
                 propertyPath = GradientEntityIdPropertyPath;
             }
@@ -1327,6 +1370,10 @@ namespace LandscapeCanvasEditor
                 if (targetBaseNodeType == LandscapeCanvas::BaseNode::TerrainExtender)
                 {
                     gradientListName = "Gradient Entities|[%1]";
+                }
+                else if (targetBaseNodeType == LandscapeCanvas::BaseNode::TerrainSurfaceExtender)
+                {
+                    gradientListName = "Gradient to Surface Mappings|[%1]|";
                 }
                 else
                 {
@@ -2960,6 +3007,15 @@ namespace LandscapeCanvasEditor
             return;
         }
 
+        // Ignore for wrapped nodes that were added since we don't want to
+        // create a new Entity for them. Adding their component will be handled
+        // later when the OnGraphModelNodeWrapped event gets called.
+        auto wrappedNodeIt = AZStd::find(m_addedWrappedNodes.begin(), m_addedWrappedNodes.end(), node);
+        if (wrappedNodeIt != m_addedWrappedNodes.end())
+        {
+            return;
+        }
+
         auto* baseNodePtr = static_cast<BaseNode*>(node.get());
         if (!baseNodePtr)
         {
@@ -3237,7 +3293,7 @@ namespace LandscapeCanvasEditor
         AzToolsFramework::EntityIdList vegetationAreaIds;
         m_serializeContext->EnumerateObject(component,
             // beginElemCB
-            [&previewEntityId, &inboundShapeEntityId, &gradientSamplerIds, &vegetationAreaIds](void *instance, [[maybe_unused]] const AZ::SerializeContext::ClassData *classData, const AZ::SerializeContext::ClassElement *classElement) -> bool
+            [&previewEntityId, &inboundShapeEntityId, &gradientSamplerIds, &vegetationAreaIds, baseNodePtr](void *instance, [[maybe_unused]] const AZ::SerializeContext::ClassData *classData, const AZ::SerializeContext::ClassElement *classElement) -> bool
         {
             if (classElement && (classElement->m_typeId == azrtti_typeid<AZ::EntityId>()))
             {
@@ -3246,14 +3302,23 @@ namespace LandscapeCanvasEditor
                     previewEntityId = *reinterpret_cast<AZ::EntityId*>(instance);
                     return false;
                 }
-                else if (strcmp(classElement->m_name, GradientIdElementName) == 0)
+                else if ((strcmp(classElement->m_name, GradientIdElementName) == 0)
+                    || (strcmp(classElement->m_name, GradientEntityIdElementName) == 0))
                 {
                     gradientSamplerIds.push_back(*reinterpret_cast<AZ::EntityId*>(instance));
                     return false;
                 }
-                else if (strcmp(classElement->m_name, VegetationAreaEntityIdElementName) == 0)
+                else if (strcmp(classElement->m_name, EntityIdListElementName) == 0)
                 {
-                    vegetationAreaIds.push_back(*reinterpret_cast<AZ::EntityId*>(instance));
+                    if (baseNodePtr->GetBaseNodeType() == LandscapeCanvas::BaseNode::BaseNodeType::VegetationArea)
+                    {
+                        vegetationAreaIds.push_back(*reinterpret_cast<AZ::EntityId*>(instance));
+                    }
+                    else
+                    {
+                        gradientSamplerIds.push_back(*reinterpret_cast<AZ::EntityId*>(instance));
+                    }
+
                     return false;
                 }
                 else if (strcmp(classElement->m_name, ShapeEntityIdElementName) == 0)

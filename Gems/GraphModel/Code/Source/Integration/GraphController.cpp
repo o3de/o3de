@@ -551,6 +551,9 @@ namespace GraphModelIntegration
             return;
         }
 
+        GraphControllerNotificationBus::Event(
+            m_graphCanvasSceneId, &GraphControllerNotifications::PreOnGraphModelNodeWrapped, wrapperNode, node);
+
         AZ::EntityId nodeUiId = m_elementMap.Find(node);
         if (!nodeUiId.IsValid())
         {
@@ -646,6 +649,32 @@ namespace GraphModelIntegration
         GraphModel::SlotPtr targetSlot = targetNode->GetSlot(targetSlotId);
 
         return AddConnection(sourceSlot, targetSlot);
+    }
+
+    bool GraphController::AreSlotsConnected(
+        GraphModel::NodePtr sourceNode, GraphModel::SlotId sourceSlotId, GraphModel::NodePtr targetNode, GraphModel::SlotId targetSlotId) const
+    {
+        if (!sourceNode || !targetNode)
+        {
+            return false;
+        }
+
+        GraphModel::SlotPtr sourceSlot = sourceNode->GetSlot(sourceSlotId);
+        if (!sourceSlot)
+        {
+            return false;
+        }
+
+        // Check all connections on the source slot to see if they match the target node and slot
+        for (const auto& connection : sourceSlot->GetConnections())
+        {
+            if (connection->GetTargetNode() == targetNode && connection->GetTargetSlot()->GetSlotId() == targetSlotId)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     bool GraphController::RemoveConnection(GraphModel::ConnectionPtr connection)
@@ -845,6 +874,8 @@ namespace GraphModelIntegration
         const GraphModel::NodePtr node = m_elementMap.Find<GraphModel::Node>(nodeUiId);
         if (node)
         {
+            GraphControllerNotificationBus::Event(m_graphCanvasSceneId, &GraphControllerNotifications::PreOnGraphModelNodeRemoved, node);
+
             GraphCanvas::ScopedGraphUndoBatch undoBatch(m_graphCanvasSceneId);
 
             // Remove any thumbnail reference for this node when it is removed from the graph
@@ -862,15 +893,6 @@ namespace GraphModelIntegration
             m_elementMap.Remove(node);
 
             GraphControllerNotificationBus::Event(m_graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelNodeRemoved, node);
-        }
-    }
-
-    void GraphController::PreOnNodeRemoved(const AZ::EntityId& nodeUiId)
-    {
-        const GraphModel::NodePtr node = m_elementMap.Find<GraphModel::Node>(nodeUiId);
-        if (node)
-        {
-            GraphControllerNotificationBus::Event(m_graphCanvasSceneId, &GraphControllerNotifications::PreOnGraphModelNodeRemoved, node);
         }
     }
 

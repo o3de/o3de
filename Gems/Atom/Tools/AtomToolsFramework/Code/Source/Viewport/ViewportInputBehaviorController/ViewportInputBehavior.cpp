@@ -32,9 +32,9 @@ namespace AtomToolsFramework
 
         m_cameraEntityId = m_controller->GetCameraEntityId();
         AZ_Assert(m_cameraEntityId.IsValid(), "Failed to find m_cameraEntityId");
-        m_distanceToObject = m_controller->GetDistanceToObject();
+        m_objectDistance = m_controller->GetObjectDistance();
         m_objectPosition = m_controller->GetObjectPosition();
-        m_radius = m_controller->GetRadius();
+        m_objectRadius = m_controller->GetObjectRadius();
     }
 
     void ViewportInputBehavior::End()
@@ -64,19 +64,19 @@ namespace AtomToolsFramework
 
     void ViewportInputBehavior::TickInternal([[maybe_unused]] float x, [[maybe_unused]] float y, float z)
     {
-        m_distanceToObject = m_distanceToObject - z;
+        m_objectDistance -= z;
 
         bool isCameraCentered = m_controller->IsCameraCentered();
 
         // if camera is looking at the object (locked to the object) we don't want to zoom past the object's center
         if (isCameraCentered)
         {
-            m_distanceToObject = AZ::GetMax(m_distanceToObject, 0.0f);
+            m_objectDistance = AZ::GetMax(m_objectDistance, 0.0f);
         }
 
         AZ::Transform transform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(transform, m_cameraEntityId, &AZ::TransformBus::Events::GetLocalTM);
-        AZ::Vector3 position = m_objectPosition - transform.GetRotation().TransformVector(AZ::Vector3::CreateAxisY(m_distanceToObject));
+        AZ::Vector3 position = m_objectPosition - transform.GetRotation().TransformVector(AZ::Vector3::CreateAxisY(m_objectDistance));
         AZ::TransformBus::Event(m_cameraEntityId, &AZ::TransformBus::Events::SetLocalTranslation, position);
 
         // if camera is not locked to the object, move its focal point so we can free look
@@ -84,7 +84,7 @@ namespace AtomToolsFramework
         {
             m_objectPosition += transform.GetRotation().TransformVector(AZ::Vector3::CreateAxisY(z));
             m_controller->SetObjectPosition(m_objectPosition);
-            m_distanceToObject = m_controller->GetDistanceToObject();
+            m_objectDistance = m_controller->GetObjectDistance();
         }
     }
 
@@ -101,7 +101,7 @@ namespace AtomToolsFramework
     float ViewportInputBehavior::GetSensitivityZ()
     {
         // adjust zooming sensitivity by object size, so that large objects zoom at the same speed as smaller ones
-        return 0.001f * AZ::GetMax(0.5f, m_radius);
+        return 0.001f * AZ::GetMax(0.5f, m_objectRadius);
     }
 
     AZ::Quaternion ViewportInputBehavior::LookRotation(AZ::Vector3 forward)
@@ -119,15 +119,7 @@ namespace AtomToolsFramework
     float ViewportInputBehavior::TakeStep(float& value, float t)
     {
         const float absValue = AZ::GetAbs(value);
-        float step;
-        if (absValue < SnapInterval)
-        {
-            step = value;
-        }
-        else
-        {
-            step = AZ::Lerp(0, value, t);
-        }
+        const float step = absValue < SnapInterval ? value : AZ::Lerp(0, value, t);
         value -= step;
         return step;
     }
