@@ -67,10 +67,10 @@ namespace PhysX
             AZStd::chrono::milliseconds totalTime = AZStd::chrono::milliseconds(0);
             do
             {
-                AZStd::chrono::system_clock::time_point startTime = AZStd::chrono::system_clock::now();
+                AZStd::chrono::steady_clock::time_point startTime = AZStd::chrono::steady_clock::now();
                 PhysX::TestUtils::UpdateScene(scene, AzPhysics::SystemConfiguration::DefaultFixedTimestep, 1);
                 AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(1));
-                totalTime += AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::system_clock::now() - startTime);
+                totalTime += AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - startTime);
             } while (totalTime < updateTimeLimit);
         }
     }

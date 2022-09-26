@@ -76,7 +76,7 @@ namespace AZ::Statistics
                 {
                     return;
                 }
-                m_startTime = AZStd::chrono::system_clock::now();
+                m_startTime = AZStd::chrono::steady_clock::now();
             }
 
             ~TimedScope()
@@ -85,7 +85,7 @@ namespace AZ::Statistics
                 {
                     return;
                 }
-                auto stopTime = AZStd::chrono::system_clock::now();
+                auto stopTime = AZStd::chrono::steady_clock::now();
                 auto duration = stopTime - m_startTime;
                 m_profilerProxy->PushSample(m_profilerId, m_statId, static_cast<double>(duration.count()));
             }
@@ -100,7 +100,7 @@ namespace AZ::Statistics
             static StatisticalProfilerProxy* m_profilerProxy;
             const StatisticalProfilerId m_profilerId;
             const StatIdType& m_statId;
-            AZStd::chrono::system_clock::time_point m_startTime;
+            AZStd::chrono::steady_clock::time_point m_startTime;
         }; // class TimedScope
 
         friend class TimedScope;

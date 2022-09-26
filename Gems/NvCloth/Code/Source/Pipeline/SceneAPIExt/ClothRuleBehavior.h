@@ -61,6 +61,10 @@ namespace NvCloth
                 const AZ::SceneAPI::Containers::Scene& scene,
                 const AZ::SceneAPI::DataTypes::IManifestObject& target) override;
             void InitializeObject(const AZ::SceneAPI::Containers::Scene& scene, AZ::SceneAPI::DataTypes::IManifestObject& target) override;
+            void GetPolicyName(AZStd::string& result) const override
+            {
+                result = "ClothRuleBehavior";
+            }
 
             // AssetImportRequestBus::Handler overrides ....
             AZ::SceneAPI::Events::ProcessingResult UpdateManifest(AZ::SceneAPI::Containers::Scene& scene, ManifestAction action, RequestingApplication requester) override;
