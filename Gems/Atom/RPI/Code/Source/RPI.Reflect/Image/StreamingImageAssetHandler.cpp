@@ -93,6 +93,7 @@ namespace AZ
             // it's possible a mipchain asset was removed and the reload failed
             HandleMipChainAssetReload(asset);
 
+            // Reload finished with error
             if (m_imageAssetId == asset.GetId())
             {
                 Data::AssetBus::MultiHandler::BusDisconnect(asset.GetId());
