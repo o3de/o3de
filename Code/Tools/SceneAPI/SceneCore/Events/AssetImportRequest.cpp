@@ -55,74 +55,70 @@ namespace AZ
                         AZ::Interface<AssetImportRequestReporter>::Unregister(this);
                         m_registered = false;
                     }
-                    m_previous = {};
-                    m_previousSet = false;
+                    m_previousManifest = {};
                 }
 
                 void ReportStart([[maybe_unused]] const AssetImportRequest* instance) override
                 {
                     ++m_reportNumber;
 
-                    if (!m_previousSet && m_scene->GetManifest().GetEntryCount() > 0)
+                    if (m_previousManifest.IsEmpty() && !m_scene->GetManifest().IsEmpty())
                     {
-                        auto saveToJsonOutcome = m_scene->GetManifest().SaveToJsonDocument();
-                        if (!saveToJsonOutcome.IsSuccess())
-                        {
-                            AZ_Error(AZ::SceneAPI::Utilities::ErrorWindow, false,
-                                "UpdateManifest(%d) error: %.*s",
-                                m_reportNumber,
-                                AZ_STRING_ARG(saveToJsonOutcome.GetError()));
-                            return;
-                        }
-                        m_previous.CopyFrom(saveToJsonOutcome.GetValue(), m_previous.GetAllocator(), true);
-                        m_previousSet = true;
+                        m_previousManifest = m_scene->GetManifest();
                     }
                 }
 
-                void ReportFinish([[maybe_unused]] const AssetImportRequest* instance) override
+                void ReportFinish(const AssetImportRequest* instance) override
                 {
                     AZStd::string policy;
                     instance->GetPolicyName(policy);
                     AZ_TraceContext("PolicyName", policy.c_str());
 
-                    if (!m_previousSet && m_scene->GetManifest().GetEntryCount() > 0)
+                    if (ManifestInstancesAreEqual(m_previousManifest, m_scene->GetManifest()))
                     {
-                        return;
-                    }
-
-                    auto saveToJsonOutcome = m_scene->GetManifest().SaveToJsonDocument();
-                    if (!saveToJsonOutcome.IsSuccess())
-                    {
-                        AZ_Error(AZ::SceneAPI::Utilities::ErrorWindow, false,
-                            "UpdateManifest(%d) error: %.*s",
-                            m_reportNumber,
-                            AZ_STRING_ARG(saveToJsonOutcome.GetError()));
-                        return;
-                    }
-
-                    if (m_previous == saveToJsonOutcome.GetValue())
-                    {
-                        AZ_TraceContext("UpdateManifest", "No Changes");
                         AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "UpdateManifest(%d): No Changes \n", m_reportNumber);
-                        return;
                     }
-                    m_previous = {};
-                    m_previousSet = false;
-
-                    rapidjson::StringBuffer buffer;
-                    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-                    if (saveToJsonOutcome.GetValue().Accept(writer))
+                    else
                     {
-                        AZ_TraceContext("Update Manifest", buffer.GetString());
+                        AZ_TraceContext("Old manifest rule count", m_previousManifest.GetEntryCount());
+                        AZ_TraceContext("New manifest rule count", m_scene->GetManifest().GetEntryCount());
                         AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "UpdateManifest(%d): Updated \n", m_reportNumber);
+                        m_previousManifest = m_scene->GetManifest();
                     }
+                }
+
+                bool ManifestInstancesAreEqual(const Containers::SceneManifest& lhs, const Containers::SceneManifest& rhs) const
+                {
+                    if (lhs.IsEmpty() && rhs.IsEmpty())
+                    {
+                        return true;
+                    }
+
+                    if (lhs.GetEntryCount() == rhs.GetEntryCount())
+                    {
+                        auto rhsValueStorage = rhs.GetValueStorage();
+                        for (auto index = 0; index < lhs.GetEntryCount(); ++index)
+                        {
+                            const auto lhsObject = lhs.GetValue(index);
+                            auto found = AZStd::find_if(rhsValueStorage.begin(), rhsValueStorage.end(), [lhsObject](const auto& rhs)
+                            {
+                                return lhsObject.get()->RTTI_Type() == rhs.get()->RTTI_Type();
+                            });
+                            if (found == rhsValueStorage.end())
+                            {
+                                return false;
+                            }
+                        }
+                        return true;
+                    }
+
+                    return false;
                 }
 
                 AZStd::shared_ptr<Containers::Scene> m_scene;
                 AZ::s32 m_reportNumber = 0;
                 bool m_registered = false;
-                rapidjson::Document m_previous;
-                bool m_previousSet = false;
+                Containers::SceneManifest m_previousManifest;
             };
 
             // an internal scope object that is active during a scene import
