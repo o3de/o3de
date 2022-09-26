@@ -325,7 +325,7 @@ namespace ScriptCanvasBuilder
         DataSystemAssetNotificationsBus::Event(sourceId, &DataSystemAssetNotifications::OnAssetNotReady);
         MonitorAsset(sourceId);
 
-        auto handle = SourceHandle::FromRelativePathAndScenFolder(relativePath, scanFolder, sourceId);
+        auto handle = SourceHandle::FromRelativePathAndScanFolder(relativePath, scanFolder, sourceId);
         CompileBuilderDataInternal(handle);
         auto& builderStorage = m_buildResultsByHandle[sourceId];
         DataSystemSourceNotificationsBus::Event
