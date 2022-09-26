@@ -44,6 +44,7 @@ AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // conversio
 #include <QtWidgets/QMessageBox>
 #include <QAbstractButton>
 #include <QHBoxLayout>
+#include <QPushButton>
 
 AZ_POP_DISABLE_WARNING
 
@@ -644,7 +645,7 @@ namespace AzToolsFramework
                                     layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());
                                     msgBox.exec();
 
-                                    if (msgBox.clickedButton() != reinterpret_cast<QAbstractButton*>(moveButton))
+                                    if (msgBox.clickedButton() != static_cast<QAbstractButton*>(moveButton))
                                     {
                                         canMove = false;
                                     }
