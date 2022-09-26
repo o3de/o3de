@@ -47,7 +47,10 @@ namespace AtomToolsFramework
         {
             clearButton->setVisible(true);
             clearButton->setEnabled(true);
-            QObject::connect(clearButton, &QToolButton::clicked, this, [this](){ ClearValue(); OnValueChanged(); });
+            QObject::connect(clearButton, &QToolButton::clicked, this, [this]() {
+                ClearValue();
+                OnValueChanged();
+            });
         }
 
         layout()->setContentsMargins(0, 0, 0, 0);
