@@ -299,7 +299,8 @@ namespace Audio
         auto offset = aznumeric_cast<size_t>(transferInfo.uFilePosition);
         auto readSize = aznumeric_cast<size_t>(transferInfo.uRequestedSize);
         auto bufferSize = aznumeric_cast<size_t>(transferInfo.uBufferSize);
-        AZStd::chrono::microseconds deadline = AZStd::chrono::duration<float, AZStd::milli>(heuristics.fDeadline);
+        auto deadline =
+            AZStd::chrono::duration_cast<AZ::IO::IStreamerTypes::Deadline>(AZStd::chrono::duration<float, AZStd::milli>(heuristics.fDeadline));
 
         auto streamer = AZ::Interface<AZ::IO::IStreamer>::Get();
         AZ::IO::FileRequestPtr request = streamer->Read(*filename, transferInfo.pBuffer, bufferSize, readSize, deadline, priority, offset);
