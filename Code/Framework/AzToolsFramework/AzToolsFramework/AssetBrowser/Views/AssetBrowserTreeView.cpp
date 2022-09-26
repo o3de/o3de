@@ -621,6 +621,7 @@ namespace AzToolsFramework
 
                             if (SendRequest(request, response))
                             {
+                                bool canMove = true;
                                 AZStd::string message;
                                 for (int i = 0; i < response.m_lines.size(); ++i)
                                 {
@@ -643,39 +644,41 @@ namespace AzToolsFramework
                                     layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());
                                     msgBox.exec();
 
-                                    if (msgBox.clickedButton() == reinterpret_cast<QAbstractButton*>(moveButton))
+                                    if (msgBox.clickedButton() != reinterpret_cast<QAbstractButton*>(moveButton))
                                     {
-                                        AssetChangeReportRequest moveRequest(
-                                            AZ::OSString(fromPath.c_str()),
-                                            AZ::OSString(toPath.c_str()),
-                                            AssetChangeReportRequest::ChangeType::Move);
-                                        AssetChangeReportResponse moveResponse;
-                                        if (SendRequest(moveRequest, moveResponse))
+                                        canMove = false;
+                                    }
+                                }
+                                if (canMove)
+                                {
+                                    AssetChangeReportRequest moveRequest(
+                                        AZ::OSString(fromPath.c_str()),
+                                        AZ::OSString(toPath.c_str()),
+                                        AssetChangeReportRequest::ChangeType::Move);
+                                    AssetChangeReportResponse moveResponse;
+                                    if (SendRequest(moveRequest, moveResponse))
+                                    {
+                                        AZStd::string message2;
+                                        for (int i = 0; i < moveResponse.m_lines.size(); ++i)
                                         {
-                                            AZStd::string message2;
-                                            for (int i = 0; i < moveResponse.m_lines.size(); ++i)
-                                            {
-                                                message2 += moveResponse.m_lines[i] + "\n";
-                                            }
+                                            message2 += moveResponse.m_lines[i] + "\n";
+                                        }
 
-                                            if (message2.size())
-                                            {
-                                                QMessageBox moveMsgBox(this);
-                                                moveMsgBox.setWindowTitle("After Move Asset Information");
-                                                moveMsgBox.setIcon(QMessageBox::Warning);
-                                                moveMsgBox.setText("The asset has been moved.");
-                                                moveMsgBox.setInformativeText(
-                                                    "More information can be found by pressing \"Show Details...\".");
-                                                moveMsgBox.setStandardButtons(QMessageBox::Ok);
-                                                moveMsgBox.setDefaultButton(QMessageBox::Ok);
-                                                moveMsgBox.setDetailedText(message2.c_str());
-                                                QSpacerItem* horizontalSpacer2 =
-                                                    new QSpacerItem(600, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
-                                                QGridLayout* moveLayout = (QGridLayout*)moveMsgBox.layout();
-                                                moveLayout->addItem(
-                                                    horizontalSpacer2, moveLayout->rowCount(), 0, 1, moveLayout->columnCount());
-                                                moveMsgBox.exec();
-                                            }
+                                        if (message2.size())
+                                        {
+                                            QMessageBox moveMsgBox(this);
+                                            moveMsgBox.setWindowTitle("After Move Asset Information");
+                                            moveMsgBox.setIcon(QMessageBox::Warning);
+                                            moveMsgBox.setText("The asset has been moved.");
+                                            moveMsgBox.setInformativeText("More information can be found by pressing \"Show Details...\".");
+                                            moveMsgBox.setStandardButtons(QMessageBox::Ok);
+                                            moveMsgBox.setDefaultButton(QMessageBox::Ok);
+                                            moveMsgBox.setDetailedText(message2.c_str());
+                                            QSpacerItem* horizontalSpacer2 =
+                                                new QSpacerItem(600, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+                                            QGridLayout* moveLayout = (QGridLayout*)moveMsgBox.layout();
+                                            moveLayout->addItem(horizontalSpacer2, moveLayout->rowCount(), 0, 1, moveLayout->columnCount());
+                                            moveMsgBox.exec();
                                         }
                                     }
                                 }
