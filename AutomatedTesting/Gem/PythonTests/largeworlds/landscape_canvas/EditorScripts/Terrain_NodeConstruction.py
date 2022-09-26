@@ -77,6 +77,11 @@ def Terrain_NodeConstruction():
     # Open an existing simple level
     hydra.open_base_level()
 
+    # Listen for entity creation notifications
+    handler = editor.EditorEntityContextNotificationBusHandler()
+    handler.connect()
+    handler.add_callback("OnEditorEntityCreated", on_entity_created)
+
     # Open Landscape Canvas tool and verify
     general.open_pane("Landscape Canvas")
     Report.critical_result(Tests.lc_tool_opened, general.is_pane_visible("Landscape Canvas"))
@@ -86,17 +91,12 @@ def Terrain_NodeConstruction():
     Report.critical_result(Tests.new_graph_created, new_graph_id is not None)
 
     # Reposition the automatically created entity to origin
-    root_entity = EditorEntity.find_editor_entity("Entity1")
+    root_entity = EditorEntity(created_entity_id)
     root_entity.set_world_translation(math.Vector3(0.0, 0.0, 0.0))
 
     # Make sure the graph we created is in Landscape Canvas
     graph_registered = graph.AssetEditorRequestBus(bus.Event, "ContainsGraph", editor_id, new_graph_id)
     Report.result(Tests.graph_registered, graph_registered)
-
-    # Listen for entity creation notifications
-    handler = editor.EditorEntityContextNotificationBusHandler()
-    handler.connect()
-    handler.add_callback("OnEditorEntityCreated", on_entity_created)
 
     # Add the required Terrain level components
     terrain_world_component = EditorLevelEntity.add_component("Terrain World")
