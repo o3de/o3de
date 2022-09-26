@@ -102,7 +102,6 @@ namespace GraphCanvas
         Internal::FocusableLineEdit*    m_lineEdit;
         QGraphicsProxyWidget*           m_proxyWidget;
 
-        bool m_valueDirty;
         bool m_isNudging;
     };
 }

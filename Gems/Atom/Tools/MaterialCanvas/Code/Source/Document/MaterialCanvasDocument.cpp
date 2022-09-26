@@ -341,6 +341,17 @@ namespace MaterialCanvas
         AtomToolsFramework::AtomToolsDocument::Clear();
     }
 
+    void MaterialCanvasDocument::OnGraphModelGraphModified([[maybe_unused]] GraphModel::NodePtr node)
+    {
+        m_modified = true;
+        BuildEditablePropertyGroups();
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoInvalidated, m_id);
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
+        QueueCompileGraph();
+    }
+
     void MaterialCanvasDocument::OnGraphModelRequestUndoPoint()
     {
         // Undo and redo is being handled differently for edits received directly from graph model and graph canvas. By the time this is

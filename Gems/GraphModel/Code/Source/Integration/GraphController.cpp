@@ -1187,9 +1187,9 @@ namespace GraphModelIntegration
     template<typename DataInterfaceType, typename CreateDisplayFunctionType>
     GraphCanvas::NodePropertyDisplay* CreatePropertyDisplay(GraphModel::SlotPtr inputSlot, CreateDisplayFunctionType createDisplayFunction)
     {
+        GraphCanvas::NodePropertyDisplay* dataDisplay = nullptr;
         if (inputSlot)
         {
-            GraphCanvas::NodePropertyDisplay* dataDisplay = nullptr;
             GraphCanvas::DataInterface* dataInterface = aznew DataInterfaceType(inputSlot);
             GraphCanvas::GraphCanvasRequestBus::BroadcastResult(
                 dataDisplay, createDisplayFunction, static_cast<DataInterfaceType*>(dataInterface));
@@ -1197,12 +1197,8 @@ namespace GraphModelIntegration
             {
                 delete dataInterface;
             }
-            return dataDisplay;
         }
-        else
-        {
-            return nullptr;
-        }
+        return dataDisplay;
     }
 
     GraphCanvas::NodePropertyDisplay* GraphController::CreatePropertySlotPropertyDisplay(
@@ -1214,8 +1210,13 @@ namespace GraphModelIntegration
         // expects a non-const NodePropertyDisplay*. We need non-const version of m_elementMap in order to create a non-const
         // NodePropertyDisplay
         GraphModel::SlotPtr inputSlot = const_cast<GraphController*>(this)->m_elementMap.Find<GraphModel::Slot>(slotUiId);
-
-        return CreateSlotPropertyDisplay(inputSlot);
+        GraphCanvas::NodePropertyDisplay* display = CreateSlotPropertyDisplay(inputSlot);
+        if (display)
+        {
+            display->SetNodeId(nodeUiId);
+            display->SetSlotId(slotUiId);
+        }
+        return display;
     }
 
     GraphCanvas::NodePropertyDisplay* GraphController::CreateDataSlotPropertyDisplay(
@@ -1237,8 +1238,13 @@ namespace GraphModelIntegration
         // expects a non-const NodePropertyDisplay*. We need non-const version of m_elementMap in order to create a non-const
         // NodePropertyDisplay
         GraphModel::SlotPtr inputSlot = const_cast<GraphController*>(this)->m_elementMap.Find<GraphModel::Slot>(slotUiId);
-
-        return CreateSlotPropertyDisplay(inputSlot);
+        GraphCanvas::NodePropertyDisplay* display = CreateSlotPropertyDisplay(inputSlot);
+        if (display)
+        {
+            display->SetNodeId(nodeUiId);
+            display->SetSlotId(slotUiId);
+        }
+        return display;
     }
 
     GraphCanvas::NodePropertyDisplay* GraphController::CreateSlotPropertyDisplay(GraphModel::SlotPtr inputSlot) const
@@ -1251,46 +1257,45 @@ namespace GraphModelIntegration
         AZ_Assert(
             inputSlot->GetSlotDirection() == GraphModel::SlotDirection::Input, "Property value displays are only meant for input slots");
 
-        GraphCanvas::NodePropertyDisplay* dataDisplay = nullptr;
-        AZ::Uuid dataTypeUuid = inputSlot->GetDataType()->GetTypeUuid();
+        const AZ::Uuid dataTypeUuid = inputSlot->GetDataType()->GetTypeUuid();
 
         if (dataTypeUuid == azrtti_typeid<bool>())
         {
-            dataDisplay =
-                CreatePropertyDisplay<BooleanDataInterface>(inputSlot, &GraphCanvas::GraphCanvasRequests::CreateBooleanNodePropertyDisplay);
+            return CreatePropertyDisplay<BooleanDataInterface>(
+                inputSlot, &GraphCanvas::GraphCanvasRequests::CreateBooleanNodePropertyDisplay);
         }
-        else if (dataTypeUuid == azrtti_typeid<int>())
+        if (dataTypeUuid == azrtti_typeid<int>())
         {
-            dataDisplay =
-                CreatePropertyDisplay<IntegerDataInterface>(inputSlot, &GraphCanvas::GraphCanvasRequests::CreateNumericNodePropertyDisplay);
+            return CreatePropertyDisplay<IntegerDataInterface>(
+                inputSlot, &GraphCanvas::GraphCanvasRequests::CreateNumericNodePropertyDisplay);
         }
-        else if (dataTypeUuid == azrtti_typeid<float>())
+        if (dataTypeUuid == azrtti_typeid<float>())
         {
-            dataDisplay =
-                CreatePropertyDisplay<FloatDataInterface>(inputSlot, &GraphCanvas::GraphCanvasRequests::CreateNumericNodePropertyDisplay);
+            return CreatePropertyDisplay<FloatDataInterface>(
+                inputSlot, &GraphCanvas::GraphCanvasRequests::CreateNumericNodePropertyDisplay);
         }
-        else if (dataTypeUuid == azrtti_typeid<AZ::Vector2>())
+        if (dataTypeUuid == azrtti_typeid<AZ::Vector2>())
         {
-            dataDisplay = CreatePropertyDisplay<VectorDataInterface<AZ::Vector2, 2>>(
+            return CreatePropertyDisplay<VectorDataInterface<AZ::Vector2, 2>>(
                 inputSlot, &GraphCanvas::GraphCanvasRequests::CreateVectorNodePropertyDisplay);
         }
-        else if (dataTypeUuid == azrtti_typeid<AZ::Vector3>())
+        if (dataTypeUuid == azrtti_typeid<AZ::Vector3>())
         {
-            dataDisplay = CreatePropertyDisplay<VectorDataInterface<AZ::Vector3, 3>>(
+            return CreatePropertyDisplay<VectorDataInterface<AZ::Vector3, 3>>(
                 inputSlot, &GraphCanvas::GraphCanvasRequests::CreateVectorNodePropertyDisplay);
         }
-        else if (dataTypeUuid == azrtti_typeid<AZ::Vector4>())
+        if (dataTypeUuid == azrtti_typeid<AZ::Vector4>())
         {
-            dataDisplay = CreatePropertyDisplay<VectorDataInterface<AZ::Vector4, 4>>(
+            return CreatePropertyDisplay<VectorDataInterface<AZ::Vector4, 4>>(
                 inputSlot, &GraphCanvas::GraphCanvasRequests::CreateVectorNodePropertyDisplay);
         }
-        else if (dataTypeUuid == azrtti_typeid<AZStd::string>())
+        if (dataTypeUuid == azrtti_typeid<AZStd::string>())
         {
-            dataDisplay =
-                CreatePropertyDisplay<StringDataInterface>(inputSlot, &GraphCanvas::GraphCanvasRequests::CreateStringNodePropertyDisplay);
+            return CreatePropertyDisplay<StringDataInterface>(
+                inputSlot, &GraphCanvas::GraphCanvasRequests::CreateStringNodePropertyDisplay);
         }
 
-        return dataDisplay;
+        return nullptr;
     }
 
     void GraphController::RequestUndoPoint()

@@ -12,6 +12,7 @@
 #include <GraphCanvas/Components/NodePropertyDisplay/VectorDataInterface.h>
 
 // Graph Model
+#include <GraphModel/GraphModelBus.h>
 #include <GraphModel/Integration/IntegrationBus.h>
 #include <GraphModel/Model/Slot.h>
 
@@ -82,12 +83,13 @@ namespace GraphModelIntegration
                 Type vector = slot->GetValue<Type>();
                 if (value != vector.GetElement(index))
                 {
-                    GraphCanvas::GraphId graphCanvasSceneId;
-                    IntegrationBus::BroadcastResult(graphCanvasSceneId, &IntegrationBusInterface::GetActiveGraphCanvasSceneId);
+                    const GraphCanvas::GraphId graphCanvasSceneId = GetDisplay()->GetSceneId();
                     GraphCanvas::ScopedGraphUndoBatch undoBatch(graphCanvasSceneId);
 
                     vector.SetElement(index, aznumeric_cast<float>(value));
                     slot->SetValue(vector);
+                    GraphControllerNotificationBus::Event(
+                        graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelGraphModified, slot->GetParentNode());
                 }
             }
         }
