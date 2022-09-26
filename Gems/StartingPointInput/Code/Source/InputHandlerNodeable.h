@@ -28,7 +28,6 @@ namespace StartingPointInput
     public:
         InputHandlerNodeable() = default;
         virtual ~InputHandlerNodeable();
-        InputHandlerNodeable(const InputHandlerNodeable&) = default;
         InputHandlerNodeable& operator=(const InputHandlerNodeable&) = default;
 
     protected:
