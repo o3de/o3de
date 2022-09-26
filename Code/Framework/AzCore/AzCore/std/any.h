@@ -84,7 +84,7 @@ namespace AZStd
             // Should the object be stored on the heap? (never true for pointers)
             bool m_useHeap = false;
             // The size of the value stored by this type
-            size_t m_valueSize;
+            size_t m_valueSize = 0;
         };
 
         /// Constructs an empty object.
