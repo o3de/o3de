@@ -72,7 +72,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     bool CAudioTranslationLayer::Initialize()
     {
-        m_lastUpdateTime = AZStd::chrono::system_clock::now();
+        m_lastUpdateTime = AZStd::chrono::steady_clock::now();
         return true;
     }
 
@@ -87,7 +87,7 @@ namespace Audio
     {
         AZ_PROFILE_FUNCTION(Audio);
 
-        auto current = AZStd::chrono::system_clock::now();
+        auto current = AZStd::chrono::steady_clock::now();
         m_elapsedTime = AZStd::chrono::duration_cast<duration_ms>(current - m_lastUpdateTime);
         m_lastUpdateTime = current;
         float elapsedMs = m_elapsedTime.count();

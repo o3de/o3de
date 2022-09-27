@@ -1,19 +1,16 @@
 {
-    "description": "",
-    "parentMaterial": "21_neutral_6-5_0-44D.material",
     "materialType": "../../Types/StandardPBR.materialtype",
     "materialTypeVersion": 5,
-    "properties": {
-        "baseColor": {
-            "color": [
-                1.0,
-                1.0,
-                1.0,
-                1.0
-            ],
-            "textureBlendMode": "Lerp",
-            "textureMap": "21_neutral_6-5_0-44D_sRGB.tif",
-            "useTexture": true
-        }
+    "parentMaterial": "21_neutral_6-5_0-44D.material",
+    "propertyValues": {
+        "baseColor.color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "baseColor.textureBlendMode": "Lerp",
+        "baseColor.textureMap": "21_neutral_6-5_0-44D_sRGB.tif",
+        "baseColor.useTexture": true
     }
 }

@@ -8,10 +8,11 @@
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <Editor/EditorJointConfiguration.h>
 #include <Source/EditorColliderComponent.h>
 #include <Source/EditorRigidBodyComponent.h>
-#include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
+#include <Source/EditorShapeColliderComponent.h>
 
 namespace
 {
@@ -483,13 +484,16 @@ namespace PhysX
             m_leadEntity);
         if (entity)
         {
+            [[maybe_unused]] const bool leadEntityHasRigidActor =
+                (entity->FindComponent<PhysX::EditorRigidBodyComponent>() ||
+                 entity->FindComponent<PhysX::EditorColliderComponent>() ||
+                 entity->FindComponent<PhysX::EditorShapeColliderComponent>());
+
             AZ_Warning("EditorJointComponent",
-                entity->FindComponent<PhysX::EditorRigidBodyComponent>() != nullptr,
-                "Please add a rigid body component to Entity %s. Joints do not work with a lead entity without a rigid body component.",
-                entity->GetName().c_str());
-            AZ_Warning("EditorJointComponent",
-                entity->FindComponent<PhysX::EditorColliderComponent>() != nullptr,
-                "Please add a collider component to Entity %s. Joints do not work with a lead entity without a collider component.",
+                leadEntityHasRigidActor,
+                "Joints require either a dynamic or static rigid body on the lead entity. "
+                "Please add either a rigid body component (to create a dynamic rigid body) "
+                "or a collider component (to create a static rigid body) to entity %s",
                 entity->GetName().c_str());
         }
         else

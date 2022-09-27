@@ -124,17 +124,20 @@ namespace PhysX
             return busIds;
         }
 
+        //! Logs an info message using the names of the entities provided.
+        void PrintEntityNames(const AZStd::vector<AZ::EntityId>& entityIds, const char* category, const char* message);
+
         //! Logs a warning message using the names of the entities provided.
         void WarnEntityNames(const AZStd::vector<AZ::EntityId>& entityIds, const char* category, const char* message);
 
         //! Logs a warning if there is more than one connected bus of the particular type.
         template<typename BusT>
-        void LogWarningIfMultipleComponents(const char* messageCategroy, const char* messageFormat)
+        void LogWarningIfMultipleComponents(const char* messageCategory, const char* messageFormat)
         {
             const auto entityIds = FindConnectedBusIds<BusT>();
             if (entityIds.size() > 1)
             {
-                WarnEntityNames(entityIds, messageCategroy, messageFormat);
+                WarnEntityNames(entityIds, messageCategory, messageFormat);
             }
         }
 

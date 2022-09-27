@@ -501,7 +501,7 @@ namespace AssetProcessor
             // we need the relative path too:
             CheckDeletedSourceFile(
                 iter.key(), iter.value().m_sourceRelativeToWatchFolder, iter.value().m_sourceDatabaseName,
-                AZStd::chrono::system_clock::now());
+                AZStd::chrono::steady_clock::now());
         }
 
         // we want to remove any left over scan folders from the database only after
@@ -1874,7 +1874,7 @@ namespace AssetProcessor
                     CheckDeletedSourceFile(
                         productPath.GetIntermediatePath().c_str(), productPath.GetRelativePath().c_str(),
                         productPath.GetRelativePath().c_str(),
-                        AZStd::chrono::system_clock::now());
+                        AZStd::chrono::steady_clock::now());
                 }
 
                 m_checkFoldersToRemove.insert(productPath.GetCachePath().c_str());
@@ -1886,7 +1886,7 @@ namespace AssetProcessor
     }
 
     void AssetProcessorManager::CheckDeletedSourceFile(QString normalizedPath, QString relativePath, QString databaseSourceFile,
-        AZStd::chrono::system_clock::time_point initialProcessTime)
+        AZStd::chrono::steady_clock::time_point initialProcessTime)
     {
         // getting here means an input asset has been deleted
         // and no overrides exist for it.
@@ -1897,9 +1897,9 @@ namespace AssetProcessor
         // To avoid retrying forever, we keep track of the time of the first deletion failure and only retry
         // if less than this amount of time has passed.
         constexpr int MaxRetryPeriodMS = 500;
-        AZStd::chrono::duration<double, AZStd::milli> duration = AZStd::chrono::system_clock::now() - initialProcessTime;
+        AZStd::chrono::duration<double, AZStd::milli> duration = AZStd::chrono::steady_clock::now() - initialProcessTime;
 
-        if (initialProcessTime > AZStd::chrono::system_clock::time_point{}
+        if (initialProcessTime > AZStd::chrono::steady_clock::time_point{}
             && duration >= AZStd::chrono::milliseconds(MaxRetryPeriodMS))
         {
             AZ_Warning(AssetProcessor::ConsoleChannel, false, "Failed to delete product(s) from source file `%s` after retrying for %fms.  Giving up.",
@@ -1959,8 +1959,8 @@ namespace AssetProcessor
                                 deleteFailure = true;
                                 CheckSource(FileEntry(
                                     normalizedPath, true, false,
-                                    initialProcessTime > AZStd::chrono::system_clock::time_point{} ? initialProcessTime
-                                                                                                   : AZStd::chrono::system_clock::now()));
+                                    initialProcessTime > AZStd::chrono::steady_clock::time_point{} ? initialProcessTime
+                                                                                                   : AZStd::chrono::steady_clock::now()));
                                 AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Delete failed on %s. Will retry!\n", normalizedPath.toUtf8().constData());
                                 continue;
                             }
@@ -5135,11 +5135,12 @@ namespace AssetProcessor
 
             AZ::Uuid searchUuid;
 
-            if(!toSearch.IsUuid())
+            if (!toSearch.IsUuid())
             {
                 // If the dependency is a path, try to get a UUID for it
                 // If the dependency is an asset, this will resolve to a valid UUID
-                // If the dependency is not an asset, this will resolve to an invalid UUID which will simply return no results for our search
+                // If the dependency is not an asset, this will resolve to an invalid UUID which will simply return no results for our
+                // search
                 searchUuid = AssetUtilities::CreateSafeSourceUUIDFromName(toSearch.GetPath().c_str());
             }
             else
@@ -5160,7 +5161,7 @@ namespace AssetProcessor
         {
             QString absolutePath;
 
-            if(dep.IsUuid())
+            if (dep.IsUuid())
             {
                 SourceInfo info;
 
@@ -5184,7 +5185,6 @@ namespace AssetProcessor
             finalDependencyList.insert(AZStd::make_pair(absolutePath.toUtf8().constData(), dep.ToString().c_str()));
         }
     }
-
     bool AssetProcessorManager::AreBuildersUnchanged(AZStd::string_view builderEntries, int& numBuildersEmittingSourceDependencies)
     {
         // each entry here is of the format "builderID~builderFingerprint"

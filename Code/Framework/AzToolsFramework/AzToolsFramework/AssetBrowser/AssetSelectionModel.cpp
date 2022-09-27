@@ -150,7 +150,18 @@ namespace AzToolsFramework
 
         QString AssetSelectionModel::GetTitle() const
         {
-            return m_title.isEmpty() ? GetDisplayFilter()->GetName() : m_title;
+            if (!m_title.isEmpty())
+            {
+                return m_title;
+            }
+
+            auto displayFilter = GetDisplayFilter();
+            if (displayFilter && !displayFilter->GetName().isEmpty())
+            {
+                return displayFilter->GetName();
+            }
+
+            return "Asset";
         }
 
         AssetSelectionModel AssetSelectionModel::AssetTypeSelection(const AZ::Data::AssetType& assetType, bool multiselect)
@@ -167,27 +178,32 @@ namespace AzToolsFramework
 
         AssetSelectionModel AssetSelectionModel::AssetTypesSelection(const AZStd::vector<AZ::Data::AssetType>& assetTypes, bool multiselect) 
         {
+            // If no asset types were specified then allow unfiltered asset selection.
+            if (assetTypes.empty())
+            {
+                return EverythingSelection(multiselect);
+            }
+
             AssetSelectionModel selection;
 
             CompositeFilter* anyAssetTypeFilter = new CompositeFilter(CompositeFilter::LogicOperatorType::OR);
             anyAssetTypeFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
             auto anyAssetTypeFilterPtr = FilterConstType(anyAssetTypeFilter);
 
-            for (const auto& assetType : assetTypes) {
+            for (const auto& assetType : assetTypes)
+            {
                 AssetTypeFilter* assetTypeFilter = new AssetTypeFilter();
                 assetTypeFilter->SetAssetType(assetType);
                 anyAssetTypeFilter->AddFilter(FilterConstType(assetTypeFilter));
             }
-
-            selection.SetDisplayFilter(anyAssetTypeFilterPtr);
 
             CompositeFilter* compFilter = new CompositeFilter(CompositeFilter::LogicOperatorType::AND);
             compFilter->AddFilter(anyAssetTypeFilterPtr);
             compFilter->AddFilter(EntryTypeNoFoldersFilter());
 
             selection.SetSelectionFilter(FilterConstType(compFilter));
+            selection.SetDisplayFilter(anyAssetTypeFilterPtr);
             selection.SetMultiselect(multiselect);
-
             return selection;
         }
 

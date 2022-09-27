@@ -264,7 +264,7 @@ namespace AZ::Render
 
     void AtomViewportDisplayInfoSystemComponent::UpdateFramerate()
     {
-        auto currentTime = AZStd::chrono::system_clock::now();
+        auto currentTime = AZStd::chrono::steady_clock::now();
         while (!m_fpsHistory.empty() && (currentTime - m_fpsHistory.front()) > m_fpsInterval)
         {
             m_fpsHistory.pop_front();
@@ -350,7 +350,7 @@ namespace AZ::Render
 
     void AtomViewportDisplayInfoSystemComponent::DrawFramerate()
     {
-        AZStd::optional<AZStd::chrono::system_clock::time_point> lastTime;
+        AZStd::optional<AZStd::chrono::steady_clock::time_point> lastTime;
         double minFPS = DBL_MAX;
         double maxFPS = 0;
         AZStd::chrono::duration<double> deltaTime;

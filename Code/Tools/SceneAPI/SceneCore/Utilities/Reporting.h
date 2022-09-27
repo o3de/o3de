@@ -22,7 +22,8 @@ namespace AZ
             const char* const SuccessWindow = "Success";
             // Window name used for logging through AZ_TracePrintf.
             const char* const LogWindow = "SceneAPI";
-
+            // A key to indicate if the scene builder is in debug mode
+            inline constexpr const char* Key_AssetProcessorInDebugOutput = "/O3DE/AssetProcessor/InDebug";
         } // Utilities
     } // SceneAPI
 } // AZ

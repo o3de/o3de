@@ -45,7 +45,7 @@ namespace Multiplayer
         size_t m_maxBytes;
         size_t m_aggregateBytes;
 
-        AZStd::chrono::monotonic_clock::time_point m_lastUpdateTime;
+        AZStd::chrono::steady_clock::time_point m_lastUpdateTime;
     };
 
     class MultiplayerDebugComponentReporter final

@@ -230,7 +230,7 @@ namespace ScriptCanvasEditor
 #else ///////////////////////////////////////////////////////////////////////////////////////
 
                         dependencies = LoadInterpretedDepencies(luaAssetResult.m_dependencies.source.userSubgraphs);
-                        
+
                         if (!dependencies.empty())
                         {
                             // #functions2_recursive_unit_tests eventually, this will need to be recursive, or the full asset handling system will need to be integrated into the testing framework
@@ -401,7 +401,7 @@ namespace ScriptCanvasEditor
         AZ::SystemTickBus::Broadcast(&AZ::SystemTickBus::Events::OnSystemTick);
         AZ::SystemTickBus::ExecuteQueuedEvents();
 
-        AZ::TickBus::Broadcast(&AZ::TickEvents::OnTick, duration.m_timeStep, AZ::ScriptTimePoint(AZStd::chrono::system_clock::now()));
+        AZ::TickBus::Broadcast(&AZ::TickEvents::OnTick, duration.m_timeStep, AZ::ScriptTimePoint(AZStd::chrono::steady_clock::now()));
         AZ::TickBus::ExecuteQueuedEvents();
     }
 
