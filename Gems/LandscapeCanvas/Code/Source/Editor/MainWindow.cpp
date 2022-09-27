@@ -686,13 +686,31 @@ namespace LandscapeCanvasEditor
         UpdateConnectionData(connection, false /* added */);
     }
 
-    void MainWindow::OnGraphModelNodeWrapped(GraphModel::NodePtr wrapperNode, GraphModel::NodePtr node)
+    void MainWindow::PreOnGraphModelNodeWrapped(GraphModel::NodePtr wrapperNode, GraphModel::NodePtr node)
     {
-        // We only need to add components when nodes are created by the user,
-        // not when we are parsing/graphing an existing setup 
         if (m_ignoreGraphUpdates)
         {
             return;
+        }
+
+        // Keep track when wrapped nodes are about to be added so we can prevent the logic that
+        // creates new entities when nodes are added
+        m_addedWrappedNodes.push_back(node);
+    }
+
+    void MainWindow::OnGraphModelNodeWrapped(GraphModel::NodePtr wrapperNode, GraphModel::NodePtr node)
+    {
+        // We only need to add components when nodes are created by the user,
+        // not when we are parsing/graphing an existing setup
+        if (m_ignoreGraphUpdates)
+        {
+            return;
+        }
+
+        auto it = AZStd::find(m_addedWrappedNodes.begin(), m_addedWrappedNodes.end(), node);
+        if (it != m_addedWrappedNodes.end())
+        {
+            m_addedWrappedNodes.erase(it);
         }
 
         // We don't need to create a new component for nodes that already
@@ -2985,6 +3003,15 @@ namespace LandscapeCanvasEditor
         using namespace LandscapeCanvas;
 
         if (m_ignoreGraphUpdates)
+        {
+            return;
+        }
+
+        // Ignore for wrapped nodes that were added since we don't want to
+        // create a new Entity for them. Adding their component will be handled
+        // later when the OnGraphModelNodeWrapped event gets called.
+        auto wrappedNodeIt = AZStd::find(m_addedWrappedNodes.begin(), m_addedWrappedNodes.end(), node);
+        if (wrappedNodeIt != m_addedWrappedNodes.end())
         {
             return;
         }

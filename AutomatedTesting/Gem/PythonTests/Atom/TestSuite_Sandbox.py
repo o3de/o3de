@@ -31,9 +31,6 @@ class TestAutomation(EditorTestSuite):
     class AtomLevelLoadTest_Editor_Sandbox(EditorSharedTest):
         from Atom.tests import hydra_Atom_LevelLoadTest_Sandbox as test_module
 
-    class ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges(EditorSharedTest):
-        from Atom.tests import hydra_ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges as test_module
-
 
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("launcher_platform", ['windows_generic'])

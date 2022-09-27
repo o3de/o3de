@@ -44,6 +44,7 @@ AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // conversio
 #include <QtWidgets/QMessageBox>
 #include <QAbstractButton>
 #include <QHBoxLayout>
+#include <QPushButton>
 
 AZ_POP_DISABLE_WARNING
 
@@ -697,6 +698,7 @@ namespace AzToolsFramework
 
                             if (SendRequest(request, response))
                             {
+                                bool canMove = true;
                                 AZStd::string message;
                                 for (int i = 0; i < response.m_lines.size(); ++i)
                                 {
@@ -704,6 +706,27 @@ namespace AzToolsFramework
                                 }
 
                                 if (message.size())
+                                {
+                                    QMessageBox msgBox(this);
+                                    msgBox.setWindowTitle("Before Move Asset Information");
+                                    msgBox.setIcon(QMessageBox::Warning);
+                                    msgBox.setText("The asset you are moving may be referenced in other assets.");
+                                    msgBox.setInformativeText("More information can be found by pressing \"Show Details...\".");
+                                    auto* moveButton = msgBox.addButton("Move", QMessageBox::YesRole);
+                                    msgBox.setStandardButtons(QMessageBox::Cancel);
+                                    msgBox.setDefaultButton(QMessageBox::Yes);
+                                    msgBox.setDetailedText(message.c_str());
+                                    QSpacerItem* horizontalSpacer = new QSpacerItem(600, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+                                    auto* layout = qobject_cast<QGridLayout*>(msgBox.layout());
+                                    layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());
+                                    msgBox.exec();
+
+                                    if (msgBox.clickedButton() != static_cast<QAbstractButton*>(moveButton))
+                                    {
+                                        canMove = false;
+                                    }
+                                }
+                                if (canMove)
                                 {
                                     QMessageBox msgBox(this);
                                     msgBox.setWindowTitle("Before Move Asset Information");
