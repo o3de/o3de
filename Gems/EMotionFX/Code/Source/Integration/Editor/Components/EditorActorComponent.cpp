@@ -575,9 +575,7 @@ namespace EMotionFX
                 return;
             }
 
-            auto&& dependencies = result.GetValue();
-
-            for (auto&& dependency : dependencies)
+            for (const auto& dependency : result.GetValue())
             {
                 auto dependencyAsset =
                     AZ::Data::AssetManager::Instance().FindAsset(dependency.m_assetId, AZ::Data::AssetLoadBehavior::Default);
