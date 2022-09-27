@@ -36,8 +36,8 @@ namespace AtomToolsFramework
         m_browseEdit->setClearButtonEnabled(true);
         m_browseEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
         m_browseEdit->setAttachedButtonIcon(QIcon(":/stylesheet/img/UI20/browse-edit.svg"));
-        QObject::connect(m_browseEdit, &AzQtComponents::BrowseEdit::attachedButtonTriggered, this, &PropertyStringBrowseEditCtrl::Edit);
-        QObject::connect(m_browseEdit, &AzQtComponents::BrowseEdit::editingFinished, this, &PropertyStringBrowseEditCtrl::ValueChanged);
+        QObject::connect(m_browseEdit, &AzQtComponents::BrowseEdit::attachedButtonTriggered, this, &PropertyStringBrowseEditCtrl::EditValue);
+        QObject::connect(m_browseEdit, &AzQtComponents::BrowseEdit::editingFinished, this, &PropertyStringBrowseEditCtrl::OnTextEditingFinished);
 
         SetEditButtonVisible(false);
         SetEditButtonEnabled(false);
@@ -47,7 +47,10 @@ namespace AtomToolsFramework
         {
             clearButton->setVisible(true);
             clearButton->setEnabled(true);
-            QObject::connect(clearButton, &QToolButton::clicked, this, &PropertyStringBrowseEditCtrl::Clear);
+            QObject::connect(clearButton, &QToolButton::clicked, this, [this]() {
+                ClearValue();
+                OnValueChanged();
+            });
         }
 
         layout()->setContentsMargins(0, 0, 0, 0);
@@ -105,27 +108,46 @@ namespace AtomToolsFramework
         }
     }
 
-    void PropertyStringBrowseEditCtrl::Edit()
+    void PropertyStringBrowseEditCtrl::EditValue()
     {
-        Q_EMIT ValueChanged();
     }
 
-    void PropertyStringBrowseEditCtrl::Clear()
+    void PropertyStringBrowseEditCtrl::ClearValue()
     {
         m_browseEdit->setText("");
         m_browseEdit->lineEdit()->clearFocus();
-        Q_EMIT ValueChanged();
     }
 
     void PropertyStringBrowseEditCtrl::SetValue(const AZStd::string& value)
     {
         m_browseEdit->setText(value.c_str());
-        Q_EMIT ValueChanged();
     }
 
     AZStd::string PropertyStringBrowseEditCtrl::GetValue() const
     {
         return m_browseEdit->text().toUtf8().constData();
+    }
+
+    void PropertyStringBrowseEditCtrl::OnValueChanged()
+    {
+        AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+            &AzToolsFramework::PropertyEditorGUIMessages::RequestWrite, this);
+        AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+            &AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, this);
+    }
+
+    void PropertyStringBrowseEditCtrl::OnTextEditingFinished()
+    {
+        // This check is compensating for what might be a bug in the browser widget. If the line edit widget is read only and double clicked
+        // then the browse edit widget will send the signal that the edit button has been pressed. It's likely treating the entire read only
+        // widget as a button for convenience, UX, feedback. However, double clicking the read only line edit widget is also sending a
+        // conflicting signal that editing is finished, even though it never began. So, double clicking the widget to open the dialog
+        // triggers an erroneous value change and causes the property editor to refresh just before editing begins, placing it in a bad
+        // state.
+        if (m_browseEdit->isVisible() && m_browseEdit->isEnabled() && !m_browseEdit->isLineEditReadOnly())
+        {
+            OnValueChanged();
+        }
     }
 
     void PropertyStringBrowseEditCtrl::SetEditButtonEnabled(bool value)
@@ -146,21 +168,7 @@ namespace AtomToolsFramework
 
     QWidget* PropertyStringBrowseEditHandler::CreateGUI(QWidget* parent)
     {
-        PropertyStringBrowseEditCtrl* newCtrl = aznew PropertyStringBrowseEditCtrl(parent);
-
-        QObject::connect(
-            newCtrl,
-            &PropertyStringBrowseEditCtrl::ValueChanged,
-            this,
-            [newCtrl]()
-            {
-                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
-                    &AzToolsFramework::PropertyEditorGUIMessages::RequestWrite, newCtrl);
-                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
-                    &AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, newCtrl);
-            });
-
-        return newCtrl;
+        return aznew PropertyStringBrowseEditCtrl(parent);
     }
 
     void PropertyStringBrowseEditHandler::ConsumeAttribute(
@@ -248,31 +256,18 @@ namespace AtomToolsFramework
         }
     }
 
-    void PropertyFilePathStringCtrl::Edit()
+    void PropertyFilePathStringCtrl::EditValue()
     {
         if (const auto& paths = GetOpenFilePathsFromDialog({ GetValue() }, m_extensions, m_title, false); !paths.empty())
         {
             SetValue(GetPathWithAlias(paths.front()));
+            OnValueChanged();
         }
     }
 
     QWidget* PropertyFilePathStringHandler::CreateGUI(QWidget* parent)
     {
-        PropertyFilePathStringCtrl* newCtrl = aznew PropertyFilePathStringCtrl(parent);
-
-        QObject::connect(
-            newCtrl,
-            &PropertyFilePathStringCtrl::ValueChanged,
-            this,
-            [newCtrl]()
-            {
-                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
-                    &AzToolsFramework::PropertyEditorGUIMessages::RequestWrite, newCtrl);
-                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
-                    &AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, newCtrl);
-            });
-
-        return newCtrl;
+        return aznew PropertyFilePathStringCtrl(parent);
     }
 
     void PropertyFilePathStringHandler::ConsumeAttribute(
@@ -318,7 +313,7 @@ namespace AtomToolsFramework
         PropertyStringBrowseEditCtrl::ConsumeAttribute(attrib, attrValue);
     }
 
-    void PropertyMultiLineStringCtrl::Edit()
+    void PropertyMultiLineStringCtrl::EditValue()
     {
         QDialog dialog(GetToolMainWindow());
         dialog.setWindowTitle(tr("Edit String Value"));
@@ -351,26 +346,13 @@ namespace AtomToolsFramework
         if (dialog.exec() == QDialog::Accepted)
         {
             SetValue(textEdit.toPlainText().toUtf8().constData());
+            OnValueChanged();
         }
     }
 
     QWidget* PropertyMultiLineStringHandler::CreateGUI(QWidget* parent)
     {
-        PropertyMultiLineStringCtrl* newCtrl = aznew PropertyMultiLineStringCtrl(parent);
-
-        QObject::connect(
-            newCtrl,
-            &PropertyMultiLineStringCtrl::ValueChanged,
-            this,
-            [newCtrl]()
-            {
-                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
-                    &AzToolsFramework::PropertyEditorGUIMessages::RequestWrite, newCtrl);
-                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
-                    &AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, newCtrl);
-            });
-
-        return newCtrl;
+        return aznew PropertyMultiLineStringCtrl(parent);
     }
 
     void PropertyMultiLineStringHandler::ConsumeAttribute(
@@ -431,12 +413,13 @@ namespace AtomToolsFramework
         }
     }
 
-    void PropertyMultiSelectSplitStringCtrl::Edit()
+    void PropertyMultiSelectSplitStringCtrl::EditValue()
     {
         AZStd::vector<AZStd::string> selections = GetValuesVec();
         if (GetStringListFromDialog(selections, GetOptionsVec(), "Select Options", true))
         {
             SetValuesVec(selections);
+            OnValueChanged();
         }
     }
 
@@ -490,21 +473,7 @@ namespace AtomToolsFramework
 
     QWidget* PropertyMultiSelectSplitStringHandler::CreateGUI(QWidget* parent)
     {
-        PropertyMultiSelectSplitStringCtrl* newCtrl = aznew PropertyMultiSelectSplitStringCtrl(parent);
-
-        QObject::connect(
-            newCtrl,
-            &PropertyMultiSelectSplitStringCtrl::ValueChanged,
-            this,
-            [newCtrl]()
-            {
-                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
-                    &AzToolsFramework::PropertyEditorGUIMessages::RequestWrite, newCtrl);
-                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
-                    &AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, newCtrl);
-            });
-
-        return newCtrl;
+        return aznew PropertyMultiSelectSplitStringCtrl(parent);
     }
 
     void PropertyMultiSelectSplitStringHandler::ConsumeAttribute(
@@ -538,21 +507,7 @@ namespace AtomToolsFramework
 
     QWidget* PropertyMultiSelectStringVectorHandler::CreateGUI(QWidget* parent)
     {
-        PropertyMultiSelectSplitStringCtrl* newCtrl = aznew PropertyMultiSelectSplitStringCtrl(parent);
-
-        QObject::connect(
-            newCtrl,
-            &PropertyMultiSelectSplitStringCtrl::ValueChanged,
-            this,
-            [newCtrl]()
-            {
-                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
-                    &AzToolsFramework::PropertyEditorGUIMessages::RequestWrite, newCtrl);
-                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
-                    &AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, newCtrl);
-            });
-
-        return newCtrl;
+        return aznew PropertyMultiSelectSplitStringCtrl(parent);
     }
 
     void PropertyMultiSelectStringVectorHandler::ConsumeAttribute(

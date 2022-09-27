@@ -46,10 +46,30 @@ namespace AtomToolsFramework
                     ->DataElement(AZ_CRC_CE("MultiLineString"), &DynamicNodeConfig::m_subTitle, "Sub Title", "Secondary title that will appear below the main title on the node UI in a graph.")
                     ->DataElement(AZ_CRC_CE("MultiLineString"), &DynamicNodeConfig::m_titlePaletteName, "Title Palette Name", "Name of the node title bar UI palette style sheet entry.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeConfig::m_settings, "Settings", "Table of strings that can be used for any context specific or user defined data for each node.")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
+                        ->Attribute(AZ::Edit::Attributes::ClearNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                        ->Attribute(AZ::Edit::Attributes::AddNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                        ->Attribute(AZ::Edit::Attributes::RemoveNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                        ->ElementAttribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
+                        ->ElementAttribute(AZ::Edit::Attributes::ClearNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                        ->ElementAttribute(AZ::Edit::Attributes::AddNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                        ->ElementAttribute(AZ::Edit::Attributes::RemoveNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeConfig::m_inputSlots, "Input Slots", "Container of dynamic node input slot configurations.")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
+                        ->Attribute(AZ::Edit::Attributes::ClearNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                        ->Attribute(AZ::Edit::Attributes::AddNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                        ->Attribute(AZ::Edit::Attributes::RemoveNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeConfig::m_outputSlots, "Output Slots", "Container of dynamic node output slot configurations.")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
+                        ->Attribute(AZ::Edit::Attributes::ClearNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                        ->Attribute(AZ::Edit::Attributes::AddNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                        ->Attribute(AZ::Edit::Attributes::RemoveNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeConfig::m_propertySlots, "Property Slots", "Container hub dynamic node property slot configurations.")
-                    ;
+                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
+                        ->Attribute(AZ::Edit::Attributes::ClearNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                        ->Attribute(AZ::Edit::Attributes::AddNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                        ->Attribute(AZ::Edit::Attributes::RemoveNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                   ;
             }
         }
 
