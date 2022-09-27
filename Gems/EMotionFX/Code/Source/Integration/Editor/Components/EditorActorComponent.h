@@ -26,7 +26,6 @@
 
 #include <EMotionFX/Source/ActorBus.h>
 #include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
-#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 
 namespace EMotionFX
 {
