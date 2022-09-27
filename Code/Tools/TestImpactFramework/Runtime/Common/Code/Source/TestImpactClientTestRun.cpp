@@ -18,7 +18,7 @@ namespace TestImpact
             const AZStd::string& testNamespace,
             const AZStd::string& name,
             const AZStd::string& commandString,
-            AZStd::chrono::high_resolution_clock::time_point startTime,
+            AZStd::chrono::steady_clock::time_point startTime,
             AZStd::chrono::milliseconds duration,
             TestRunResult result)
             : m_targetName(name)
@@ -40,12 +40,12 @@ namespace TestImpact
             return m_commandString;
         }
 
-        AZStd::chrono::high_resolution_clock::time_point TestRunBase::GetStartTime() const
+        AZStd::chrono::steady_clock::time_point TestRunBase::GetStartTime() const
         {
             return m_startTime;
         }
 
-        AZStd::chrono::high_resolution_clock::time_point TestRunBase::GetEndTime() const
+        AZStd::chrono::steady_clock::time_point TestRunBase::GetEndTime() const
         {
             return m_startTime + m_duration;
         }
@@ -124,7 +124,7 @@ namespace TestImpact
         CompletedTestRun::CompletedTestRun(
             const AZStd::string& name,
             const AZStd::string& commandString,
-            AZStd::chrono::high_resolution_clock::time_point startTime,
+            AZStd::chrono::steady_clock::time_point startTime,
             AZStd::chrono::milliseconds duration,
             TestRunResult result,
             AZStd::vector<Test>&& tests,

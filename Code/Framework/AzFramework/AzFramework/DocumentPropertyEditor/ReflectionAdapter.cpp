@@ -213,7 +213,8 @@ namespace AZ::DocumentPropertyEditor
             void* instance,
             const Reflection::IAttributes& attributes,
             AZStd::function<Dom::Value(const Dom::Value&)> onChanged,
-            bool createRow)
+            bool createRow,
+            bool hashValue)
         {
             if (createRow)
             {
@@ -226,6 +227,14 @@ namespace AZ::DocumentPropertyEditor
             m_onChangedCallbacks.SetValue(m_builder.GetCurrentPath(), AZStd::move(onChanged));
             m_builder.AddMessageHandler(m_adapter, Nodes::PropertyEditor::OnChanged);
             m_builder.AddMessageHandler(m_adapter, Nodes::PropertyEditor::RequestTreeUpdate);
+
+            if (hashValue)
+            {
+                AZStd::any anyVal(&instance);
+                m_builder.Attribute(
+                    Nodes::PropertyEditor::ValueHashed,
+                    AZ::Uuid::CreateData(reinterpret_cast<AZStd::byte*>(AZStd::any_cast<void>(&anyVal)), anyVal.get_type_info().m_valueSize));
+            }
             m_builder.EndPropertyEditor();
 
             CheckContainerElement(instance, attributes);
@@ -253,7 +262,7 @@ namespace AZ::DocumentPropertyEditor
                     }
                     return Dom::Utils::ValueFromType(value);
                 },
-                true);
+                true, false);
         }
 
         void Visit(bool& value, const Reflection::IAttributes& attributes) override
@@ -378,7 +387,7 @@ namespace AZ::DocumentPropertyEditor
                         value = newValue.GetString();
                         return newValue;
                     },
-                    false);
+                    false, false);
                 return;
             }
             else
@@ -435,6 +444,12 @@ namespace AZ::DocumentPropertyEditor
                 }
 
                 AZ::Dom::Value instancePointerValue = AZ::Dom::Utils::MarshalTypedPointerToValue(access.Get(), access.GetType());
+                bool hashValue = false;
+                const AZ::Name PointerTypeFieldName = AZ::Dom::Utils::PointerTypeFieldName;
+                if (instancePointerValue.IsOpaqueValue() || instancePointerValue.FindMember(PointerTypeFieldName))
+                {
+                    hashValue = true;
+                }
                 VisitValue(
                     instancePointerValue,
                     access.Get(),
@@ -468,7 +483,7 @@ namespace AZ::DocumentPropertyEditor
                         // advantages would have to be measured against the size changes in the DOM and the time taken to populate and parse them.
                         return newValue;
                     },
-                    false);
+                    false, hashValue);
             }
         }
 

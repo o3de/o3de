@@ -402,9 +402,9 @@ namespace AzToolsFramework
                 QWidget* propertyWidget = propertyWidgetIter->first;
                 auto toRemove = AZStd::remove(m_domOrderedChildren.begin(), m_domOrderedChildren.end(), propertyWidget);
                 m_domOrderedChildren.erase(toRemove, m_domOrderedChildren.end());
+                propertyWidget->hide();
                 m_columnLayout->removeWidget(propertyWidget);
-
-                propertyWidgetIter->first->setParent(nullptr);
+                propertyWidget->setParent(nullptr);
                 dpe->ReleaseHandler(AZStd::move(propertyWidgetIter->second.hanlderInterface));
             }
             m_widgetToPropertyHandlerInfo.clear();
@@ -485,10 +485,7 @@ namespace AzToolsFramework
                 return;
             }
 
-            if (addedWidget)
-            {
-                AddColumnWidget(addedWidget, domIndex, childValue);
-            }
+            AddColumnWidget(addedWidget, domIndex, childValue);
             AddDomChildWidget(domIndex, addedWidget);
         }
     }
@@ -498,13 +495,13 @@ namespace AzToolsFramework
         Clear();
 
         m_domPath = BuildDomPath();
+        SetAttributesFromDom(domArray);
 
         // determine whether this node should be expanded
-        auto forceExpandAttribute = AZ::Dpe::Nodes::Row::ForceAutoExpand.ExtractFromDomNode(domArray);
-        if (forceExpandAttribute.has_value())
+        if (m_forceAutoExpand.has_value())
         {
             // forced attribute always wins, set the expansion state
-            SetExpanded(forceExpandAttribute.value());
+            SetExpanded(m_forceAutoExpand.value());
         }
         else
         {
@@ -522,10 +519,9 @@ namespace AzToolsFramework
             else
             {
                 // no prior expansion state set, use the AutoExpand attribute, if it's set
-                auto autoExpandAttribute = AZ::Dpe::Nodes::Row::AutoExpand.ExtractFromDomNode(domArray);
-                if (autoExpandAttribute.has_value())
+                if (m_expandByDefault.has_value())
                 {
-                    SetExpanded(autoExpandAttribute.value());
+                    SetExpanded(m_expandByDefault.value());
                 }
                 else
                 {
@@ -543,12 +539,18 @@ namespace AzToolsFramework
         }
     }
 
+    void DPERowWidget::SetAttributesFromDom(const AZ::Dom::Value& domArray)
+    {
+        m_forceAutoExpand = AZ::Dpe::Nodes::Row::ForceAutoExpand.ExtractFromDomNode(domArray);
+        m_expandByDefault = AZ::Dpe::Nodes::Row::AutoExpand.ExtractFromDomNode(domArray);
+    }
+
     void DPERowWidget::HandleOperationAtPath(const AZ::Dom::PatchOperation& domOperation, size_t pathIndex)
     {
         const auto& fullPath = domOperation.GetDestinationPath();
         auto pathEntry = fullPath[pathIndex];
 
-        const bool entryIsIndex = pathEntry.IsIndex() || pathEntry.IsEndOfArray();
+        const bool entryIsIndex = pathEntry.IsIndex();
         const bool entryAtEnd = (pathIndex == fullPath.Size() - 1); // this is the last entry in the path
 
         if (!entryIsIndex && entryAtEnd)
@@ -558,7 +560,7 @@ namespace AzToolsFramework
             auto subPath = fullPath;
             subPath.Pop();
             const auto valueAtSubPath = GetDPE()->GetAdapter()->GetContents()[subPath];
-            SetValueFromDom(valueAtSubPath);
+            SetAttributesFromDom(valueAtSubPath);
         }
         else if (entryAtEnd)
         {
@@ -577,14 +579,6 @@ namespace AzToolsFramework
                     return;
                 }
             }
-            else if (domOperation.GetType() == AZ::Dom::PatchOperation::Type::Add)
-            {
-                childIndex = childCount;
-            }
-            else // must be IsEndOfArray and a replace or remove, use the last existing index
-            {
-                childIndex = childCount - 1;
-            }
 
             // if this is a remove or replace, remove the existing entry first,
             // then, if this is a replace or add, add the new entry
@@ -592,14 +586,25 @@ namespace AzToolsFramework
                 domOperation.GetType() == AZ::Dom::PatchOperation::Type::Replace)
             {
                 const auto childIterator = m_domOrderedChildren.begin() + childIndex;
-                DPERowWidget* rowToRemove = qobject_cast<DPERowWidget*>(*childIterator);
+                auto childWidget = *childIterator;
+                DPERowWidget* rowToRemove = qobject_cast<DPERowWidget*>(childWidget);
                 if (rowToRemove)
                 {
                     // we're removing a row, remove any associated saved expander state
                     GetDPE()->RemoveExpanderStateForRow(rowToRemove->GetPath());
                 }
-
-                delete (*childIterator); // deleting the widget also automatically removes it from the layout
+                if (auto foundEntry = m_widgetToPropertyHandlerInfo.find(childWidget); foundEntry != m_widgetToPropertyHandlerInfo.end())
+                {
+                    GetDPE()->ReleaseHandler(AZStd::move(foundEntry->second.hanlderInterface));
+                    m_widgetToPropertyHandlerInfo.erase(foundEntry);
+                    childWidget->hide();
+                    m_columnLayout->removeWidget(childWidget);
+                    childWidget->setParent(nullptr);
+                }
+                else
+                {
+                    delete childWidget;
+                }
                 m_domOrderedChildren.erase(childIterator);
 
                 // check if the last row widget child was removed, and hide the expander if necessary
@@ -624,26 +629,13 @@ namespace AzToolsFramework
             const auto childCount = m_domOrderedChildren.size();
             // find the next widget in the path and delegate the operation to them
             auto childIndex = (pathEntry.IsIndex() ? pathEntry.GetIndex() : childCount - 1);
-            AZ_Assert(childIndex <= childCount, "DPE: Patch failed to apply, invalid child index specified");
-            if (childIndex > childCount)
+            AZ_Assert(childIndex < childCount, "DPE: Patch failed to apply, invalid child index specified");
+            if (childIndex >= childCount)
             {
                 return;
             }
 
             QWidget* childWidget = m_domOrderedChildren[childIndex];
-
-            if (!childWidget)
-            {
-                // if there's a null entry in the current place for m_domOrderedChildren,
-                // that's ok if this entry isn't expanded to that depth and need not follow the change any further
-                // if we are expanded, then this patch references an unsupported handler, which might a problem
-                if (IsExpanded())
-                {
-                    AZ_Warning("Document Property Editor", false, "got patch for unimplemented PropertyHandler");
-                }
-                return;
-            }
-
             DPERowWidget* widgetAsDpeRow = qobject_cast<DPERowWidget*>(childWidget);
             if (widgetAsDpeRow)
             {
@@ -660,6 +652,36 @@ namespace AzToolsFramework
                 }
                 const auto valueAtSubPath = GetDPE()->GetAdapter()->GetContents()[subPath];
 
+                if (!childWidget)
+                {
+                    // if there's a null entry in the current place for m_domOrderedChildren,
+                    // that's ok if this entry isn't expanded to that depth and need not follow the change any further
+                    // if we are expanded, then this patch references an unsupported handler, which might a problem
+                    if (IsExpanded())
+                    {
+                        // widget doesn't exist, but maybe we can make one now with the known contents
+                        auto handlerId =
+                            AZ::Interface<PropertyEditorToolsSystemInterface>::Get()->GetPropertyHandlerForNode(valueAtSubPath);
+
+                        if (handlerId)
+                        {
+                            // have a proper handlerID now, see if we can make a widget from this value now
+                            auto replacementWidget = CreateWidgetForHandler(handlerId, valueAtSubPath);
+                            if (replacementWidget)
+                            {
+                                AddColumnWidget(replacementWidget, childIndex, valueAtSubPath);
+                                m_domOrderedChildren[childIndex] = replacementWidget;
+                            }
+                        }
+                        else
+                        {
+                            AZ_Warning("Document Property Editor", false, "got patch for unimplemented PropertyHandler");
+                        }
+                    }
+                    // new handler was created with the current value from the DOM, or not. Either way, we're done
+                    return;
+                }
+
                 // check if it's a PropertyHandler; if it is, just set it from the DOM directly
                 auto foundEntry = m_widgetToPropertyHandlerInfo.find(childWidget);
                 if (foundEntry != m_widgetToPropertyHandlerInfo.end())
@@ -672,11 +694,13 @@ namespace AzToolsFramework
                         // CreateWidgetForHandler will add a new entry to m_widgetToPropertyHandlerInfo, kill the old entry
                         GetDPE()->ReleaseHandler(AZStd::move(foundEntry->second.hanlderInterface));
                         m_widgetToPropertyHandlerInfo.erase(foundEntry);
+                        childWidget->hide();
+                        m_columnLayout->removeWidget(childWidget);
 
                         // Replace the existing handler widget with one appropriate for the new type
                         auto replacementWidget = CreateWidgetForHandler(handlerId, valueAtSubPath);
                         AddColumnWidget(replacementWidget, childIndex, valueAtSubPath);
-                        AddDomChildWidget(childIndex, replacementWidget);
+                        m_domOrderedChildren[childIndex] = replacementWidget;
                     }
                     else
                     {
@@ -713,24 +737,20 @@ namespace AzToolsFramework
 
     void DPERowWidget::AddDomChildWidget(size_t domIndex, QWidget* childWidget)
     {
-        if (m_domOrderedChildren.size() > domIndex)
+        const bool validIndex = (domIndex <= m_domOrderedChildren.size());
+        AZ_Assert(validIndex, "trying to add an out-of-bounds child!");
+        if (validIndex)
         {
-            delete m_domOrderedChildren[domIndex];
-            m_domOrderedChildren[domIndex] = childWidget;
-        }
-        else if (m_domOrderedChildren.size() == domIndex)
-        {
-            m_domOrderedChildren.push_back(childWidget);
-        }
-        else
-        {
-            AZ_Assert(0, "error: trying to add an out of bounds index");
-            return;
+            m_domOrderedChildren.insert(m_domOrderedChildren.begin() + domIndex, childWidget);
         }
     }
 
     void DPERowWidget::AddColumnWidget(QWidget* columnWidget, size_t domIndex, const AZ::Dom::Value& domValue)
     {
+        if (!columnWidget)
+        {
+            return;
+        }
         columnWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
         // search for an existing column sibling with a lower dom index
@@ -945,6 +965,7 @@ namespace AzToolsFramework
             {
                 if (m_domOrderedChildren[valueIndex] == nullptr)
                 {
+                    m_domOrderedChildren.erase(m_domOrderedChildren.begin() + valueIndex);
                     AddChildFromDomValue(myValue[valueIndex], valueIndex);
                 }
             }

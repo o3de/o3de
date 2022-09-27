@@ -26,8 +26,7 @@
 
 namespace AzToolsFramework
 {
-    static const QPoint ExpanderOffset = { -18, 3 };
-    static const QPoint EditIconOffset = { -13, 7 };
+    static const QPoint EditIconOffset = { -18, 3 };
 
     AzFramework::EntityContextId PrefabUiHandler::s_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
 
@@ -74,9 +73,10 @@ namespace AzToolsFramework
                 saveFlag = "*";
             }
 
-            infoString = QObject::tr("<table style=\"font-size: 10px;\"><tr><td>%1%2</td><td width=\"%3\"></td></tr></table>")
+            infoString = QObject::tr("<table style=\"font-size: %4px;\"><tr><td>%1%2</td><td width=\"%3\"></td></tr></table>")
                              .arg(path.Filename().Native().data())
                              .arg(saveFlag)
+                             .arg(m_prefabEditIconSize)
                              .arg(m_prefabFileNameFontSize);
         }
 
@@ -344,8 +344,6 @@ namespace AzToolsFramework
     {
         AZ::EntityId entityId = GetEntityIdFromIndex(index);
         QModelIndex firstColumnIndex = index.siblingAtColumn(EntityOutlinerListModel::ColumnName);
-        const int iconSize = 16;
-        const int editIconSize = 10;
         const bool isHovered = (option.state & QStyle::State_MouseOver);
         const bool isSelected = index.data(EntityOutlinerListModel::SelectedRole).template value<bool>();
         const bool isFirstColumn = index.column() == EntityOutlinerListModel::ColumnName;
@@ -379,12 +377,12 @@ namespace AzToolsFramework
 
                     // Paint a rect to cover up the expander.
                     QRect rect = QRect(0, 0, 16, 16);
-                    rect.translate(option.rect.topLeft() + ExpanderOffset);
+                    rect.translate(option.rect.topLeft() + EditIconOffset);
                     painter->fillRect(rect, editIconBackgroundColor);
 
                     // Paint the icon.
                     QIcon closeIcon = QIcon(m_prefabEditCloseIconPath);
-                    painter->drawPixmap(option.rect.topLeft() + ExpanderOffset, closeIcon.pixmap(iconSize));
+                    painter->drawPixmap(option.rect.topLeft() + EditIconOffset, closeIcon.pixmap(m_prefabEditIconSize));
                 }
             }
         }
@@ -394,7 +392,7 @@ namespace AzToolsFramework
             if (isFirstColumn && isHovered && !isContainerOpen)
             {
                 QIcon openIcon = QIcon(m_prefabEditOpenIconPath);
-                painter->drawPixmap(option.rect.topRight() + EditIconOffset, openIcon.pixmap(editIconSize));
+                painter->drawPixmap(option.rect.topRight() + EditIconOffset, openIcon.pixmap(m_prefabEditIconSize));
             }
         }
 
@@ -447,7 +445,7 @@ namespace AzToolsFramework
         AZ::EntityId entityId = GetEntityIdFromIndex(index);
 
         QRect expanderRect = QRect(0, 0, 16, 16);
-        expanderRect.translate(option.rect.topLeft() + ExpanderOffset);
+        expanderRect.translate(option.rect.topLeft() + EditIconOffset);
 
         const QPoint textOffset = QPoint(0, 3);
         QRect filenameRect = QRect(0, 0, 12, 10);

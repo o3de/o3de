@@ -686,13 +686,31 @@ namespace LandscapeCanvasEditor
         UpdateConnectionData(connection, false /* added */);
     }
 
-    void MainWindow::OnGraphModelNodeWrapped(GraphModel::NodePtr wrapperNode, GraphModel::NodePtr node)
+    void MainWindow::PreOnGraphModelNodeWrapped(GraphModel::NodePtr wrapperNode, GraphModel::NodePtr node)
     {
-        // We only need to add components when nodes are created by the user,
-        // not when we are parsing/graphing an existing setup 
         if (m_ignoreGraphUpdates)
         {
             return;
+        }
+
+        // Keep track when wrapped nodes are about to be added so we can prevent the logic that
+        // creates new entities when nodes are added
+        m_addedWrappedNodes.push_back(node);
+    }
+
+    void MainWindow::OnGraphModelNodeWrapped(GraphModel::NodePtr wrapperNode, GraphModel::NodePtr node)
+    {
+        // We only need to add components when nodes are created by the user,
+        // not when we are parsing/graphing an existing setup
+        if (m_ignoreGraphUpdates)
+        {
+            return;
+        }
+
+        auto it = AZStd::find(m_addedWrappedNodes.begin(), m_addedWrappedNodes.end(), node);
+        if (it != m_addedWrappedNodes.end())
+        {
+            m_addedWrappedNodes.erase(it);
         }
 
         // We don't need to create a new component for nodes that already
@@ -1845,6 +1863,12 @@ namespace LandscapeCanvasEditor
     {
         if (m_prefabPropagationInProgress)
         {
+            // If we get the entity deleted event while prefab propagation is in progress,
+            // it means there was some kind of change that caused that entity to be rebuilt
+            // that we can't track by other notification APIs (e.g. entity was added/removed
+            // by undo/redo), so we will queue this entity to be refreshed after the
+            // propagation is complete.
+            m_queuedEntityRefresh.push_back(entityId);
             return;
         }
 
@@ -2068,6 +2092,14 @@ namespace LandscapeCanvasEditor
     GraphCanvas::GraphId MainWindow::FindGraphContainingEntity(const AZ::EntityId& entityId)
     {
         GraphCanvas::GraphId graphId;
+
+        AZ::Entity* entity = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, entityId);
+        if (!entity)
+        {
+            return graphId;
+        }
+
         AZ::EntityId parentEntityId = entityId;
 
         AZ::EntityId levelEntityId;
@@ -2778,6 +2810,15 @@ namespace LandscapeCanvasEditor
         {
             CloseEditor(dockWidgetId);
         }
+
+        // Handle any queued entities that we need to refresh by calling
+        // HandleEditorEntityCreated, which will handle if there is anything
+        // out of sync in the graph based on the corresponding entity.
+        for (const auto& entityId : m_queuedEntityRefresh)
+        {
+            HandleEditorEntityCreated(entityId);
+        }
+        m_queuedEntityRefresh.clear();
     }
 
     void MainWindow::OnCryEditorEndCreate()
@@ -2985,6 +3026,15 @@ namespace LandscapeCanvasEditor
         using namespace LandscapeCanvas;
 
         if (m_ignoreGraphUpdates)
+        {
+            return;
+        }
+
+        // Ignore for wrapped nodes that were added since we don't want to
+        // create a new Entity for them. Adding their component will be handled
+        // later when the OnGraphModelNodeWrapped event gets called.
+        auto wrappedNodeIt = AZStd::find(m_addedWrappedNodes.begin(), m_addedWrappedNodes.end(), node);
+        if (wrappedNodeIt != m_addedWrappedNodes.end())
         {
             return;
         }

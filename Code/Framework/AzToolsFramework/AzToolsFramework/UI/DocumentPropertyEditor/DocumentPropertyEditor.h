@@ -106,6 +106,7 @@ namespace AzToolsFramework
 
         //! clears and repopulates all children from a given DOM array
         void SetValueFromDom(const AZ::Dom::Value& domArray);
+        void SetAttributesFromDom(const AZ::Dom::Value& domArray);
 
         //! handles a patch operation at the given path, or delegates to a child that will
         void HandleOperationAtPath(const AZ::Dom::PatchOperation& domOperation, size_t pathIndex = 0);
@@ -143,6 +144,10 @@ namespace AzToolsFramework
 
         //! widget children in DOM specified order; mix of row and column widgets
         AZStd::deque<QWidget*> m_domOrderedChildren;
+
+        // row attributes extracted from the DOM
+        AZStd::optional<bool> m_forceAutoExpand;
+        AZStd::optional<bool> m_expandByDefault;
 
         // a map from the propertyHandler widgets to the propertyHandlers that created them
         struct HandlerInfo
