@@ -32,7 +32,7 @@ namespace WhiteBox
 
     AtomRenderMesh::~AtomRenderMesh()
     {
-        if (m_meshHandle.IsValid())
+        if (m_meshHandle.IsValid() && m_meshFeatureProcessor)
         {
             m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
             AZ::Render::MeshHandleStateNotificationBus::Event(
