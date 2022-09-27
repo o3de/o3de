@@ -46,6 +46,8 @@ namespace GraphModelIntegration
 
                 slot->SetValue(trimValue);
                 GraphControllerNotificationBus::Event(
+                    graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelSlotModified, slot);
+                GraphControllerNotificationBus::Event(
                     graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelGraphModified, slot->GetParentNode());
             }
         }

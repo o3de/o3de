@@ -84,6 +84,8 @@ namespace GraphModelIntegration
                         vector.SetElement(index, aznumeric_cast<float>(value));
                         slot->SetValue(vector);
                         GraphControllerNotificationBus::Event(
+                            graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelSlotModified, slot);
+                        GraphControllerNotificationBus::Event(
                             graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelGraphModified, slot->GetParentNode());
                     }
                 }

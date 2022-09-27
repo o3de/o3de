@@ -204,9 +204,8 @@ namespace MaterialCanvas
         GraphModel::GraphPtr graph;
         graph.reset(serializeContext->CloneObject(AZStd::any_cast<const GraphModel::Graph>(&loadResult.GetValue())));
 
-        CreateGraph(graph);
         m_modified = false;
-
+        CreateGraph(graph);
         QueueCompileGraph();
         return OpenSucceeded();
     }
@@ -341,12 +340,10 @@ namespace MaterialCanvas
         AtomToolsFramework::AtomToolsDocument::Clear();
     }
 
-    void MaterialCanvasDocument::OnGraphModelGraphModified([[maybe_unused]] GraphModel::NodePtr node)
+    void MaterialCanvasDocument::OnGraphModelSlotModified([[maybe_unused]] GraphModel::SlotPtr slot)
     {
         m_modified = true;
         BuildEditablePropertyGroups();
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
-            m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoInvalidated, m_id);
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
             m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
         QueueCompileGraph();
@@ -370,8 +367,6 @@ namespace MaterialCanvas
             m_modified = true;
             BuildEditablePropertyGroups();
             AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
-                m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoInvalidated, m_id);
-            AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
                 m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
             QueueCompileGraph();
         }
@@ -390,8 +385,6 @@ namespace MaterialCanvas
     void MaterialCanvasDocument::OnSelectionChanged()
     {
         BuildEditablePropertyGroups();
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
-            m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoInvalidated, m_id);
     }
 
     void MaterialCanvasDocument::RecordGraphState()
@@ -411,11 +404,8 @@ namespace MaterialCanvas
         GraphModel::GraphPtr graph = AZStd::make_shared<GraphModel::Graph>(m_graphContext);
         AZ::Utils::LoadObjectFromStreamInPlace(undoGraphStateStream, *graph.get());
 
-        CreateGraph(graph);
-
         m_modified = true;
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
-            m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoInvalidated, m_id);
+        CreateGraph(graph);
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
             m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
         QueueCompileGraph();
@@ -430,12 +420,12 @@ namespace MaterialCanvas
             m_graph = graph;
             m_graph->PostLoadSetup(m_graphContext);
 
-            BuildEditablePropertyGroups();
-            RecordGraphState();
-
             // The graph controller will create all of the scene items on construction.
             GraphModelIntegration::GraphManagerRequestBus::Broadcast(
                 &GraphModelIntegration::GraphManagerRequests::CreateGraphController, m_graphId, m_graph);
+
+            RecordGraphState();
+            BuildEditablePropertyGroups();
         }
     }
 
@@ -533,6 +523,9 @@ namespace MaterialCanvas
                 m_groups.emplace_back(group);
             }
         }
+
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoInvalidated, m_id);
     }
 
     AZStd::string MaterialCanvasDocument::GetOutputPathFromTemplatePath(const AZStd::string& templateInputPath) const

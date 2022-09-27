@@ -69,7 +69,7 @@ namespace MaterialCanvas
         void Clear() override;
 
         // GraphModelIntegration::GraphControllerNotificationBus::Handler overrides...
-        void OnGraphModelGraphModified(GraphModel::NodePtr node) override;
+        void OnGraphModelSlotModified(GraphModel::SlotPtr slot) override;
         void OnGraphModelRequestUndoPoint() override;
         void OnGraphModelTriggerUndo() override;
         void OnGraphModelTriggerRedo() override;

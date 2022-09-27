@@ -832,22 +832,17 @@ namespace GraphModelIntegration
 
     void GraphController::OnNodeAdded(const AZ::EntityId& nodeUiId, bool)
     {
-        const GraphModel::NodePtr node = m_elementMap.Find<GraphModel::Node>(nodeUiId);
-        if (node)
+        if (const GraphModel::NodePtr node = m_elementMap.Find<GraphModel::Node>(nodeUiId))
         {
-            GraphCanvas::ScopedGraphUndoBatch undoBatch(m_graphCanvasSceneId);
             GraphControllerNotificationBus::Event(m_graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelNodeAdded, node);
         }
     }
 
     void GraphController::OnNodeRemoved(const AZ::EntityId& nodeUiId)
     {
-        const GraphModel::NodePtr node = m_elementMap.Find<GraphModel::Node>(nodeUiId);
-        if (node)
+        if (const GraphModel::NodePtr node = m_elementMap.Find<GraphModel::Node>(nodeUiId))
         {
             GraphControllerNotificationBus::Event(m_graphCanvasSceneId, &GraphControllerNotifications::PreOnGraphModelNodeRemoved, node);
-
-            GraphCanvas::ScopedGraphUndoBatch undoBatch(m_graphCanvasSceneId);
 
             // Remove any thumbnail reference for this node when it is removed from the graph
             // The ThumbnailItem will be deleted by the Node layout itself
@@ -869,10 +864,8 @@ namespace GraphModelIntegration
 
     void GraphController::OnConnectionRemoved(const AZ::EntityId& connectionUiId)
     {
-        const GraphModel::ConnectionPtr connection = m_elementMap.Find<GraphModel::Connection>(connectionUiId);
-        if (connection)
+        if (const GraphModel::ConnectionPtr connection = m_elementMap.Find<GraphModel::Connection>(connectionUiId))
         {
-            GraphCanvas::ScopedGraphUndoBatch undoBatch(m_graphCanvasSceneId);
             m_graph->RemoveConnection(connection);
             m_elementMap.Remove(connection);
 
@@ -1360,9 +1353,7 @@ namespace GraphModelIntegration
 
     void GraphController::ResetSlotToDefaultValue(const GraphCanvas::Endpoint& endpoint)
     {
-        auto slot = m_elementMap.Find<GraphModel::Slot>(endpoint.GetSlotId());
-
-        if (slot)
+        if (auto slot = m_elementMap.Find<GraphModel::Slot>(endpoint.GetSlotId()))
         {
             GraphCanvas::ScopedGraphUndoBatch undoBatch(m_graphCanvasSceneId);
             slot->SetValue(slot->GetDefaultValue());
@@ -1406,8 +1397,7 @@ namespace GraphModelIntegration
         GraphCanvas::ScopedGraphUndoBatch undoBatch(m_graphCanvasSceneId);
         GraphCanvas::SlotId graphCanvasSlotId;
 
-        GraphModel::NodePtr node = m_elementMap.Find<GraphModel::Node>(nodeId);
-        if (node)
+        if (GraphModel::NodePtr node = m_elementMap.Find<GraphModel::Node>(nodeId))
         {
             auto it = m_nodeExtenderIds.find(nodeId);
             if (it == m_nodeExtenderIds.end())
@@ -1426,8 +1416,7 @@ namespace GraphModelIntegration
             // Node has overriden the extension handling and rejected the new slot
             const GraphModel::SlotName& slotName = extenderIt->second;
             GraphModel::SlotId newSlotId = ExtendSlot(node, slotName);
-            GraphModel::SlotPtr newSlot = node->GetSlot(newSlotId);
-            if (newSlot)
+            if (GraphModel::SlotPtr newSlot = node->GetSlot(newSlotId))
             {
                 graphCanvasSlotId = m_elementMap.Find(newSlot);
             }

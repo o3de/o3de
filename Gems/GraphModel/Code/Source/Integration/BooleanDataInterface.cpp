@@ -40,6 +40,8 @@ namespace GraphModelIntegration
 
                 slot->SetValue(enabled);
                 GraphControllerNotificationBus::Event(
+                    graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelSlotModified, slot);
+                GraphControllerNotificationBus::Event(
                     graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelGraphModified, slot->GetParentNode());
             }
         }
