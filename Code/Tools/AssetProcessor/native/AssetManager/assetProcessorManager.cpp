@@ -5116,13 +5116,13 @@ namespace AssetProcessor
         using namespace AzToolsFramework::AssetDatabase;
 
         // then we add database dependencies.  We have to query this recursively so that we get dependencies of dependencies:
-        AZStd::unordered_set<AZ::Uuid> results;
-        AZStd::queue<AZ::Uuid> queryQueue;
-        queryQueue.push(sourceUuid);
+        AZStd::unordered_set<PathOrUuid> results;
+        AZStd::queue<PathOrUuid> queryQueue;
+        queryQueue.push(PathOrUuid(sourceUuid));
 
         while (!queryQueue.empty())
         {
-            AZ::Uuid toSearch = queryQueue.front();
+            PathOrUuid toSearch = queryQueue.front();
             queryQueue.pop();
 
             // if we've already queried it, dont do it again (breaks recursion)
@@ -5130,43 +5130,58 @@ namespace AssetProcessor
             {
                 continue;
             }
+
             results.insert(toSearch);
+
+            AZ::Uuid searchUuid;
+
+            if(!toSearch.IsUuid())
+            {
+                // If the dependency is a path, try to get a UUID for it
+                // If the dependency is an asset, this will resolve to a valid UUID
+                // If the dependency is not an asset, this will resolve to an invalid UUID which will simply return no results for our search
+                searchUuid = AssetUtilities::CreateSafeSourceUUIDFromName(toSearch.GetPath().c_str());
+            }
+            else
+            {
+                searchUuid = toSearch.GetUuid();
+            }
 
             auto callbackFunction = [&queryQueue](SourceFileDependencyEntry& entry)
             {
-                PathOrUuid dependsOnSource = entry.m_dependsOnSource;
-                AZ::Uuid uuid;
-
-                if (!dependsOnSource.IsUuid())
-                {
-                    AZStd::string path = dependsOnSource.GetPath();
-
-                    uuid = AssetUtilities::CreateSafeSourceUUIDFromName(path.c_str());
-                }
-                else
-                {
-                    uuid = dependsOnSource.GetUuid();
-                }
-
-                queryQueue.push(uuid);
+                queryQueue.push(entry.m_dependsOnSource);
                 return true;
             };
 
-            m_stateData->QueryDependsOnSourceBySourceDependency(toSearch, dependencyType, callbackFunction);
+            m_stateData->QueryDependsOnSourceBySourceDependency(searchUuid, dependencyType, callbackFunction);
         }
 
-        for (AZ::Uuid dep : results)
+        for (const PathOrUuid& dep : results)
         {
-            SourceInfo info;
+            QString absolutePath;
 
-            if (!SearchSourceInfoBySourceUUID(dep, info))
+            if(dep.IsUuid())
             {
-                continue;
+                SourceInfo info;
+
+                if (!SearchSourceInfoBySourceUUID(dep.GetUuid(), info))
+                {
+                    continue;
+                }
+
+                absolutePath = QDir(info.m_watchFolder).absoluteFilePath(info.m_sourceRelativeToWatchFolder);
+            }
+            else
+            {
+                absolutePath = m_platformConfig->FindFirstMatchingFile(dep.GetPath().c_str());
+
+                if (absolutePath.isEmpty())
+                {
+                    continue;
+                }
             }
 
-            QString absolutePath = QDir(info.m_watchFolder).absoluteFilePath(info.m_sourceRelativeToWatchFolder);
-
-            finalDependencyList.insert(AZStd::make_pair(absolutePath.toUtf8().constData(), dep.ToFixedString().c_str()));
+            finalDependencyList.insert(AZStd::make_pair(absolutePath.toUtf8().constData(), dep.ToString().c_str()));
         }
     }
 
