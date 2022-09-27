@@ -9,6 +9,7 @@
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/std/ranges/ranges_algorithm.h>
+#include <AzCore/std/ranges/ranges_functional.h>
 
 namespace UnitTest
 {
@@ -568,6 +569,165 @@ namespace UnitTest
 
         EXPECT_TRUE(AZStd::ranges::ends_with(testVector, shorterVector));
         EXPECT_FALSE(AZStd::ranges::ends_with(shorterVector, testVector));
+    }
+
+    TEST_F(RangesAlgorithmTestFixture, RangesLowerBound_CanProjectElementFromMoveOnlyContainer)
+    {
+        struct MoveOnly
+        {
+            MoveOnly() = default;
+            MoveOnly(const MoveOnly&) = delete;
+            MoveOnly& operator=(const MoveOnly&) = delete;
+            MoveOnly(MoveOnly&&) = default;
+            MoveOnly& operator=(MoveOnly&&) = default;
+
+            int m_value{};
+        };
+        AZStd::array testArray{ MoveOnly{0}, MoveOnly{1}, MoveOnly{2} , MoveOnly{3} , MoveOnly{5},
+            MoveOnly{6}, MoveOnly{7} };
+
+        int valueToSearch = 3;
+        auto ProjectMoveOnlyToInt = [](const MoveOnly& moveOnly) { return moveOnly.m_value; };
+        auto lowerBoundIter = AZStd::ranges::lower_bound(testArray, valueToSearch, AZStd::ranges::less{}, ProjectMoveOnlyToInt);
+        ASSERT_NE(testArray.end(), lowerBoundIter);
+        EXPECT_EQ(3, lowerBoundIter->m_value);
+
+        valueToSearch = 4;
+        lowerBoundIter = AZStd::ranges::lower_bound(testArray, valueToSearch, AZStd::ranges::less{}, ProjectMoveOnlyToInt);
+        ASSERT_NE(testArray.end(), lowerBoundIter);
+        // lower_bound is 5 since 4 is not in the array
+        EXPECT_EQ(5, lowerBoundIter->m_value);
+
+        valueToSearch = 0;
+        lowerBoundIter = AZStd::ranges::lower_bound(testArray, valueToSearch, AZStd::ranges::less{}, ProjectMoveOnlyToInt);
+        ASSERT_NE(testArray.end(), lowerBoundIter);
+        EXPECT_EQ(0, lowerBoundIter->m_value);
+
+        valueToSearch = 7;
+        lowerBoundIter = AZStd::ranges::lower_bound(testArray, valueToSearch, AZStd::ranges::less{}, ProjectMoveOnlyToInt);
+        ASSERT_NE(testArray.end(), lowerBoundIter);
+        EXPECT_EQ(7, lowerBoundIter->m_value);
+
+        valueToSearch = 8;
+        lowerBoundIter = AZStd::ranges::lower_bound(testArray, valueToSearch, AZStd::ranges::less{}, ProjectMoveOnlyToInt);
+        EXPECT_EQ(testArray.end(), lowerBoundIter);
+    }
+
+    TEST_F(RangesAlgorithmTestFixture, RangesUpperBound_CanProjectElementFromMoveOnlyContainer)
+    {
+        struct MoveOnly
+        {
+            MoveOnly() = default;
+            MoveOnly(const MoveOnly&) = delete;
+            MoveOnly& operator=(const MoveOnly&) = delete;
+            MoveOnly(MoveOnly&&) = default;
+            MoveOnly& operator=(MoveOnly&&) = default;
+
+            int m_value{};
+        };
+        AZStd::array testArray{ MoveOnly{0}, MoveOnly{1}, MoveOnly{2} , MoveOnly{3} , MoveOnly{5},
+            MoveOnly{6}, MoveOnly{7} };
+
+        int valueToSearch = 3;
+        auto ProjectMoveOnlyToInt = [](const MoveOnly& moveOnly) { return moveOnly.m_value; };
+        auto upperBoundIter = AZStd::ranges::upper_bound(testArray, valueToSearch, AZStd::ranges::less{}, ProjectMoveOnlyToInt);
+        ASSERT_NE(testArray.end(), upperBoundIter);
+        // upper_bound is 5 as 4 is not an element in the array
+        EXPECT_EQ(5, upperBoundIter->m_value);
+
+        valueToSearch = 4;
+        upperBoundIter = AZStd::ranges::upper_bound(testArray, valueToSearch, AZStd::ranges::less{}, ProjectMoveOnlyToInt);
+        ASSERT_NE(testArray.end(), upperBoundIter);
+        // upper_bound is still 5
+        EXPECT_EQ(5, upperBoundIter->m_value);
+
+        valueToSearch = 0;
+        upperBoundIter = AZStd::ranges::upper_bound(testArray, valueToSearch, AZStd::ranges::less{}, ProjectMoveOnlyToInt);
+        ASSERT_NE(testArray.end(), upperBoundIter);
+        EXPECT_EQ(1, upperBoundIter->m_value);
+
+        valueToSearch = 7;
+        upperBoundIter = AZStd::ranges::upper_bound(testArray, valueToSearch, AZStd::ranges::less{}, ProjectMoveOnlyToInt);
+        // There is no value above 7 in the array so the upper bound is the end
+        EXPECT_EQ(testArray.end(), upperBoundIter);
+
+        valueToSearch = 8;
+        upperBoundIter = AZStd::ranges::upper_bound(testArray, valueToSearch, AZStd::ranges::less{}, ProjectMoveOnlyToInt);
+        EXPECT_EQ(testArray.end(), upperBoundIter);
+    }
+
+    TEST_F(RangesAlgorithmTestFixture, RangesEqualRange_CanProjectElementFromMoveOnlyContainer)
+    {
+        struct MoveOnly
+        {
+            MoveOnly() = default;
+            MoveOnly(const MoveOnly&) = delete;
+            MoveOnly& operator=(const MoveOnly&) = delete;
+            MoveOnly(MoveOnly&&) = default;
+            MoveOnly& operator=(MoveOnly&&) = default;
+
+            int m_value{};
+        };
+        AZStd::array testArray{ MoveOnly{0}, MoveOnly{1}, MoveOnly{2} , MoveOnly{3} , MoveOnly{5},
+            MoveOnly{6}, MoveOnly{7} };
+
+        int valueToSearch = 3;
+        auto ProjectMoveOnlyToInt = [](const MoveOnly& moveOnly) { return moveOnly.m_value; };
+        auto equalSubrange = AZStd::ranges::equal_range(testArray, valueToSearch, AZStd::ranges::less{}, ProjectMoveOnlyToInt);
+        ASSERT_EQ(1, equalSubrange.size());
+        EXPECT_EQ(3, equalSubrange.front().m_value);
+
+        valueToSearch = 4;
+        equalSubrange = AZStd::ranges::equal_range(testArray, valueToSearch, AZStd::ranges::less{}, ProjectMoveOnlyToInt);
+        // 4 is not an element of the array
+        EXPECT_TRUE(equalSubrange.empty());
+
+        valueToSearch = 0;
+        equalSubrange = AZStd::ranges::equal_range(testArray, valueToSearch, AZStd::ranges::less{}, ProjectMoveOnlyToInt);
+        ASSERT_EQ(1, equalSubrange.size());
+        EXPECT_EQ(0, equalSubrange.front().m_value);
+
+        valueToSearch = 7;
+        equalSubrange = AZStd::ranges::equal_range(testArray, valueToSearch, AZStd::ranges::less{}, ProjectMoveOnlyToInt);
+        ASSERT_EQ(1, equalSubrange.size());
+        EXPECT_EQ(7, equalSubrange.front().m_value);
+
+        valueToSearch = 8;
+        equalSubrange = AZStd::ranges::equal_range(testArray, valueToSearch, AZStd::ranges::less{}, ProjectMoveOnlyToInt);
+        EXPECT_TRUE(equalSubrange.empty());
+    }
+
+    TEST_F(RangesAlgorithmTestFixture, RangesBinarySearch_CanProjectElementFromMoveOnlyContainer)
+    {
+        struct MoveOnly
+        {
+            MoveOnly() = default;
+            MoveOnly(const MoveOnly&) = delete;
+            MoveOnly& operator=(const MoveOnly&) = delete;
+            MoveOnly(MoveOnly&&) = default;
+            MoveOnly& operator=(MoveOnly&&) = default;
+
+            int m_value{};
+        };
+        AZStd::array testArray{ MoveOnly{0}, MoveOnly{1}, MoveOnly{2} , MoveOnly{3} , MoveOnly{5},
+            MoveOnly{6}, MoveOnly{7} };
+
+        int valueToSearch = 3;
+        auto ProjectMoveOnlyToInt = [](const MoveOnly& moveOnly) { return moveOnly.m_value; };
+        EXPECT_TRUE(AZStd::ranges::binary_search(testArray, valueToSearch, AZStd::ranges::less{}, ProjectMoveOnlyToInt));
+
+        valueToSearch = 4;
+        // 4 is not in the container
+        EXPECT_FALSE(AZStd::ranges::binary_search(testArray, valueToSearch, AZStd::ranges::less{}, ProjectMoveOnlyToInt));
+
+        valueToSearch = 0;
+        EXPECT_TRUE(AZStd::ranges::binary_search(testArray, valueToSearch, AZStd::ranges::less{}, ProjectMoveOnlyToInt));
+
+        valueToSearch = 7;
+        EXPECT_TRUE(AZStd::ranges::binary_search(testArray, valueToSearch, AZStd::ranges::less{}, ProjectMoveOnlyToInt));
+
+        valueToSearch = 8;
+        EXPECT_FALSE(AZStd::ranges::binary_search(testArray, valueToSearch, AZStd::ranges::less{}, ProjectMoveOnlyToInt));
     }
 
     TEST_F(RangesAlgorithmTestFixture, RangesIota_IncrementsSequence_UntilOfRange)

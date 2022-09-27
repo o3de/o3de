@@ -190,7 +190,7 @@ namespace Audio
         AZ_Assert(g_audioThreadId == AZStd::this_thread::get_id(), "AudioSystem::InternalUpdate - called from non-Audio thread!");
         AZ_PROFILE_FUNCTION(Audio);
 
-        auto startUpdateTime = AZStd::chrono::system_clock::now();        // stamp the start time
+        auto startUpdateTime = AZStd::chrono::steady_clock::now();        // stamp the start time
 
         // Process a single blocking request, if any, and release the semaphore the main thread is trying to acquire.
         // This ensures that main thread will become unblocked quickly.
@@ -239,7 +239,7 @@ namespace Audio
 
         if (!handleBlockingRequest)
         {
-            auto endUpdateTime = AZStd::chrono::system_clock::now();      // stamp the end time
+            auto endUpdateTime = AZStd::chrono::steady_clock::now();      // stamp the end time
             auto elapsedUpdateTime = AZStd::chrono::duration_cast<duration_ms>(endUpdateTime - startUpdateTime);
             if (elapsedUpdateTime < m_targetUpdatePeriod)
             {

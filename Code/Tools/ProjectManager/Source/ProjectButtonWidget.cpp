@@ -419,7 +419,7 @@ namespace O3DE::ProjectManager
         m_projectNameLabel->refreshStyle(); // important for styles to work correctly
     }
 
-    void ProjectButton::SetState(enum ProjectButtonState state)
+    void ProjectButton::SetState(ProjectButtonState state)
     {
         m_currentState = state;
         ResetButtonWidgets();
@@ -445,6 +445,7 @@ namespace O3DE::ProjectManager
         case ProjectButtonState::NotDownloaded:
             ShowNotDownloadedState();
             break;
+        case ProjectButtonState::DownloadingBuildQueued:
         case ProjectButtonState::Downloading:
             ShowDownloadingState();
             break;
@@ -679,6 +680,7 @@ namespace O3DE::ProjectManager
         if (isBuilding)
         {
             SetLaunchingEnabled(false);
+            m_projectImageLabel->GetActionCancelButton()->show();
         }
 
         buildingAnimation->movie()->setPaused(!isBuilding);

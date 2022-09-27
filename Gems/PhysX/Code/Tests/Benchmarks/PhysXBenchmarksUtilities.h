@@ -10,7 +10,7 @@
 
 #include <benchmark/benchmark.h>
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/std/chrono/types.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/numeric.h>
 
 #include <AzFramework/Physics/ShapeConfiguration.h>
@@ -96,8 +96,8 @@ namespace PhysX::Benchmarks
             void PostTick();
             //! list of each sub tick execution time in milliseconds
             Types::TimeList m_subTickTimes;
-            AZStd::chrono::system_clock::time_point m_tickStart;
-            
+            AZStd::chrono::steady_clock::time_point m_tickStart;
+
             AzPhysics::SceneEvents::OnSceneSimulationStartHandler m_sceneStartSimHandler;
             AzPhysics::SceneEvents::OnSceneSimulationFinishHandler m_sceneFinishSimHandler;
         };

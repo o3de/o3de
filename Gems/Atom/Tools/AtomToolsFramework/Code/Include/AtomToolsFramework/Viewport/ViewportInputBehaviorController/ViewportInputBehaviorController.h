@@ -57,8 +57,9 @@ namespace AtomToolsFramework
         const AZ::EntityId& GetEnvironmentEntityId() const override;
         const AZ::Vector3& GetObjectPosition() const override;
         void SetObjectPosition(const AZ::Vector3& objectPosition) override;
-        float GetDistanceToObject() const override;
-        float GetRadius() const override;
+        float GetObjectRadiusMin() const override;
+        float GetObjectRadius() const override;
+        float GetObjectDistance() const override;
         void Reset() override;
         void SetFieldOfView(float value) override;
         bool IsCameraCentered() const override;

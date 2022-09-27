@@ -231,6 +231,8 @@ namespace AzFramework
 
             FileTreeRequest::Reflect(context);
 
+            AssetChangeReportRequest::Reflect(context);
+
             // Responses
             GetUnresolvedDependencyCountsResponse::Reflect(context);
             GetRelativeProductPathFromFullSourceOrProductPathResponse::Reflect(context);
@@ -258,6 +260,8 @@ namespace AzFramework
             FindFilesResponse::Reflect(context);
 
             FileTreeResponse::Reflect(context);
+
+            AssetChangeReportResponse::Reflect(context);
 
             SaveAssetCatalogRequest::Reflect(context);
             SaveAssetCatalogResponse::Reflect(context);
@@ -535,9 +539,9 @@ namespace AzFramework
                     }
                     else
                     {
-                        AZStd::chrono::time_point startConnectFromLaunchTime = AZStd::chrono::system_clock::now();
+                        auto startConnectFromLaunchTime = AZStd::chrono::steady_clock::now();
                         connectionEstablished = WaitUntilAssetProcessorConnected(connectionSettings.m_launchTimeout);
-                        AZStd::chrono::time_point endConnectFromLaunchTime = AZStd::chrono::system_clock::now();
+                        auto endConnectFromLaunchTime = AZStd::chrono::steady_clock::now();
                         if (!connectionEstablished && NegotiationWithAssetProcessorFailed())
                         {
                             AZ_Error(connectionSettings.m_connectionIdentifier.c_str(), false, "Negotiation with asset processor failed");
@@ -610,8 +614,8 @@ namespace AzFramework
 
         bool AssetSystemComponent::WaitUntilAssetProcessorConnected(AZStd::chrono::duration<float> timeout)
         {
-            AZStd::chrono::system_clock::time_point start = AZStd::chrono::system_clock::now();
-            while (!ConnectedWithAssetProcessor() && AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::system_clock::now() - start) < timeout)
+            AZStd::chrono::steady_clock::time_point start = AZStd::chrono::steady_clock::now();
+            while (!ConnectedWithAssetProcessor() && AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - start) < timeout)
             {
                 if (NegotiationWithAssetProcessorFailed())
                 {
@@ -641,9 +645,9 @@ namespace AzFramework
                 AZ_TracePrintf("AssetSystem", "Ping time to asset processor: %0.2f milliseconds\n", pingTime);
             }
 
-            AZStd::chrono::system_clock::time_point start = AZStd::chrono::system_clock::now();
+            AZStd::chrono::steady_clock::time_point start = AZStd::chrono::steady_clock::now();
             bool isAssetProcessorReady = false;
-            while (!isAssetProcessorReady && (AZStd::chrono::system_clock::now() - start) < timeout)
+            while (!isAssetProcessorReady && (AZStd::chrono::steady_clock::now() - start) < timeout)
             {
                 AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::PumpSystemEventLoopUntilEmpty);
 
@@ -715,8 +719,8 @@ namespace AzFramework
 
         bool AssetSystemComponent::WaitUntilAssetProcessorDisconnected(AZStd::chrono::duration<float> timeout)
         {
-            AZStd::chrono::system_clock::time_point start = AZStd::chrono::system_clock::now();
-            while (!DisconnectedWithAssetProcessor() && AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::system_clock::now() - start) < timeout)
+            AZStd::chrono::steady_clock::time_point start = AZStd::chrono::steady_clock::now();
+            while (!DisconnectedWithAssetProcessor() && AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - start) < timeout)
             {
                 //yield
                 AZStd::this_thread::yield();
@@ -840,12 +844,12 @@ namespace AzFramework
                 return 0.0f;
             }
 
-            AZStd::chrono::system_clock::time_point beforePing = AZStd::chrono::system_clock::now();
+            AZStd::chrono::steady_clock::time_point beforePing = AZStd::chrono::steady_clock::now();
             RequestPing pingeRequest;
             ResponsePing pingRespose;
             if (SendRequest(pingeRequest, pingRespose))
             {
-                AZStd::chrono::duration<float, AZStd::milli> difference = AZStd::chrono::duration_cast<AZStd::chrono::duration<float, AZStd::milli> >(AZStd::chrono::system_clock::now() - beforePing);
+                AZStd::chrono::duration<float, AZStd::milli> difference = AZStd::chrono::duration_cast<AZStd::chrono::duration<float, AZStd::milli> >(AZStd::chrono::steady_clock::now() - beforePing);
                 return difference.count();
             }
 
