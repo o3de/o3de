@@ -63,8 +63,28 @@ namespace AZ
             void Begin(CommandList& commandList) const;
             void End(CommandList& commandList) const;
 
-            void QueueBarrier(BarrierSlot slot, const VkPipelineStageFlags src, const VkPipelineStageFlags dst, const VkImageMemoryBarrier& barrier);
-            void QueueBarrier(BarrierSlot slot, const VkPipelineStageFlags src, const VkPipelineStageFlags dst, const VkBufferMemoryBarrier& barrier);
+            //! Adds a barrier for a scope attachment resource to be emitted at a later time.
+            template<class T>
+            void QueueAttachmentBarrier(
+                const RHI::ScopeAttachment& attachment,
+                BarrierSlot slot,
+                const VkPipelineStageFlags src,
+                const VkPipelineStageFlags dst,
+                const T& barrier)
+            {
+                QueueBarrierInternal(&attachment, slot, src, dst, barrier);
+            }
+
+            //! Adds a barrier over a resource that is not a scope attachment that will be emitted at a later time.
+            template<class T>
+            void QueueBarrier(
+                BarrierSlot slot,
+                const VkPipelineStageFlags src,
+                const VkPipelineStageFlags dst,
+                const T& barrier)
+            {
+                QueueBarrierInternal(nullptr, slot, src, dst, barrier);
+            }
 
             //! Execute the queued barriers into the provided commandlist.
             void EmitScopeBarriers(CommandList& commandList, BarrierSlot slot) const;
@@ -102,9 +122,14 @@ namespace AZ
 
             struct Barrier
             {
+                Barrier(VkMemoryBarrier barrier);
+                Barrier(VkBufferMemoryBarrier barrier);
+                Barrier(VkImageMemoryBarrier barrier);
+
                 VkPipelineStageFlags m_srcStageMask = 0;
                 VkPipelineStageFlags m_dstStageMask = 0;
                 VkDependencyFlags m_dependencyFlags = 0;
+                const RHI::ScopeAttachment* m_attachment = nullptr;
 
                 VkStructureType m_type = static_cast<VkStructureType>(~0);
                 union
@@ -145,14 +170,16 @@ namespace AZ
             void OnFrameCompileEnd(RHI::FrameGraph& frameGraph) override;
             //////////////////////////////////////////////////////////////////////////
 
-            // Returns if a barrier can be converted to an implicit subpass barrier.
+            // Returns true if a barrier can be converted to an implicit subpass barrier.
             bool CanOptimizeBarrier(const Barrier& barrier, BarrierSlot slot) const;
 
-            AZStd::vector<const RHI::ScopeAttachment*> FindScopeAttachments(const Barrier& barrier) const;
-
-            // Adds a barrier. It also handles "duplicated" barriers. A duplicated barrier is one that affects the same resource,
-            // on the same queue but with different stage and pipeline flags.
-            void AddBarrier(BarrierSlot slot, const Barrier& barrier);
+            template<class T>
+            void QueueBarrierInternal(
+                const RHI::ScopeAttachment* attachment,
+                BarrierSlot slot,
+                const VkPipelineStageFlags src,
+                const VkPipelineStageFlags dst,
+                const T& barrier);
 
             // Converts barriers to implicit subpass barriers if possible.
             void OptimizeBarriers();
@@ -176,5 +203,23 @@ namespace AZ
             AZStd::vector<CommandList::ResourceClearRequest> m_imageClearRequests;
             AZStd::vector<CommandList::ResourceClearRequest> m_bufferClearRequests;
         };
-    }
+
+        template<class T>
+        void Scope::QueueBarrierInternal(
+            const RHI::ScopeAttachment* attachment,
+            BarrierSlot slot,
+            const VkPipelineStageFlags src,
+            const VkPipelineStageFlags dst,
+            const T& vkBarrier)
+        {
+            Barrier barrier(vkBarrier);
+            barrier.m_dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+            barrier.m_attachment = attachment;
+            barrier.m_dstStageMask = dst;
+            barrier.m_srcStageMask = src;
+
+            m_unoptimizedBarriers[static_cast<uint32_t>(slot)].push_back(barrier);
+        }
+
+    } // namespace Vulkan
 }
