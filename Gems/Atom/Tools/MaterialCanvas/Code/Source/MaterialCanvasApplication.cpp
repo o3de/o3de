@@ -10,6 +10,8 @@
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <AtomToolsFramework/Document/AtomToolsAnyDocument.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
+#include <AtomToolsFramework/DynamicNode/DynamicNodeUtil.h>
+#include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
@@ -97,6 +99,27 @@ namespace MaterialCanvas
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("string"), AZStd::string{}, "string"),
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("image"), AZ::Data::Asset<AZ::RPI::StreamingImageAsset>{}, "image"),
         });
+
+        // Registering custom property handlers for dynamic node configuration settings. The settings are just a map of string data.
+        // Recognized settings will need special controls for selecting files or editing large blocks of text without taking up much real
+        // estate in the property editor.
+        AZ::Edit::ElementData editData;
+        editData.m_elementId = AZ_CRC_CE("MultiLineString");
+        m_dynamicNodeManager->RegisterEditDataForSetting("instructions", editData);
+        m_dynamicNodeManager->RegisterEditDataForSetting("materialInputs", editData);
+
+        editData = {};
+        editData.m_elementId = AZ_CRC_CE("FilePathString");
+        AtomToolsFramework::AddEditDataAttribute(editData, AZ_CRC_CE("Title"), AZStd::string("Template File"));
+        AtomToolsFramework::AddEditDataAttribute(editData, AZ_CRC_CE("Extensions"),
+            AZStd::vector<AZStd::string>{ "azsl.template", "azsli.template", "material.template", "materialtype.template", "shader.template" });
+        m_dynamicNodeManager->RegisterEditDataForSetting("templatePaths", editData);
+
+        editData = {};
+        editData.m_elementId = AZ_CRC_CE("FilePathString");
+        AtomToolsFramework::AddEditDataAttribute(editData, AZ_CRC_CE("Title"), AZStd::string("Include File"));
+        AtomToolsFramework::AddEditDataAttribute(editData, AZ_CRC_CE("Extensions"), AZStd::vector<AZStd::string>{ "azsli" });
+        m_dynamicNodeManager->RegisterEditDataForSetting("includePaths", editData);
 
         // Search the project and gems for dynamic node configurations and register them with the manager
         m_dynamicNodeManager->LoadConfigFiles("materialcanvasnode");
