@@ -11,6 +11,7 @@
 #include <AzCore/Memory/AllocationRecords.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Component/ComponentApplication.h>
+#include <AzCore/UnitTest/TestTypes.h>
 #include <AzFramework/Application/Application.h>
 #ifdef LMBR_CENTRAL_EDITOR
 #include <AzToolsFramework/Application/ToolsApplication.h>
@@ -26,14 +27,14 @@
  */
 template<class ApplicationT, class ModuleT>
 class ModuleReflectionTest
-    : public ::testing::Test
+    : public UnitTest::AllocatorsTestFixture
 {
 public:
     static ApplicationT* GetApplication() { return s_application.get(); }
 
 protected:
-    static void SetUpTestCase();
-    static void TearDownTestCase();
+    void SetUp() override;
+    void TearDown() override;
 
 private:
     // We need reflection from ApplicationT and nothing more.
@@ -116,7 +117,7 @@ protected:
 #endif
 
 template<class ApplicationT, class ModuleT>
-void ModuleReflectionTest<ApplicationT, ModuleT>::SetUpTestCase()
+void ModuleReflectionTest<ApplicationT, ModuleT>::SetUp()
 {
     AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
 
@@ -141,7 +142,7 @@ void ModuleReflectionTest<ApplicationT, ModuleT>::SetUpTestCase()
 }
 
 template<class ApplicationT, class ModuleT>
-void ModuleReflectionTest<ApplicationT, ModuleT>::TearDownTestCase()
+void ModuleReflectionTest<ApplicationT, ModuleT>::TearDown()
 {
     s_application->GetSerializeContext()->DestroyEditContext();
     s_systemEntity = nullptr;
@@ -160,6 +161,7 @@ AZ::Entity* ModuleReflectionTest<ApplicationT, ModuleT>::s_systemEntity = nullpt
 template<class ApplicationT, class ModuleT, class ObjectT>
 void LoadReflectedObjectTest<ApplicationT, ModuleT, ObjectT>::SetUp()
 {
+    BaseType::SetUp();
     const char* buffer = GetSourceDataBuffer();
     if (buffer)
     {
@@ -175,6 +177,7 @@ template<class ApplicationT, class ModuleT, class ObjectT>
 void LoadReflectedObjectTest<ApplicationT, ModuleT, ObjectT>::TearDown()
 {
     m_object.reset();
+    BaseType::TearDown();
 }
 
 #ifdef LMBR_CENTRAL_EDITOR
