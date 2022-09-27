@@ -1,0 +1,47 @@
+"""
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
+
+SPDX-License-Identifier: Apache-2.0 OR MIT
+
+Object to house all the Qt Objects and behavior used in testing the script canvas node palette
+"""
+from editor_python_test_tools.utils import TestHelper as helper
+from PySide2 import QtWidgets, QtTest, QtCore
+import pyside_utils
+from consts.scripting import (NODE_PALETTE_QT, TREE_VIEW_QT)
+from consts.general import (WAIT_TIME_SEC_3)
+
+class QtPyScriptCanvasNodePalette():
+    """
+       QtPy class for handling the behavior of the script canvas node palette
+        """
+    def __init__(self, sc_editor):
+        self.node_palette = sc_editor.sc_editor.findChild(QtWidgets.QDockWidget, NODE_PALETTE_QT)
+        self.node_palette_tree = self.node_palette.findChild(QtWidgets.QTreeView, TREE_VIEW_QT)
+        self.node_palette_search_frame = self.node_palette.findChild(QtWidgets.QFrame, "searchFrame")
+        self.node_palette_search_box = self.node_palette_search_frame.findChild(QtWidgets.QLineEdit, "searchFilter")
+
+    def search_for_node(self, node_name: str):
+        """
+        Function to mimic searching the node palette. Providing a name filters the node palette and reduces the list of
+        visible nodes to the user. We return an empty search instead of throwing an assert because we allow the user
+        to filter down to nothing
+
+        params node_name: the name of the node you are searching for
+
+        returns: True if the node_name we are searching for exists in the filtered search results
+        """
+        # Set the search field to blank text to refresh the visible node list
+        self.node_palette_search_box.setText("")
+        helper.wait_for_condition(lambda: self.node_palette_search_box.text() == node_name, WAIT_TIME_SEC_3)
+
+        self.node_palette_search_box.setText(node_name)
+        helper.wait_for_condition(lambda: self.node_palette_search_box.text() == node_name, WAIT_TIME_SEC_3)
+
+        node_exists = helper.wait_for_condition(
+            lambda: pyside_utils.find_child_by_pattern(
+                self.node_palette_tree, {"text": f"{node_name}"}) is not None, WAIT_TIME_SEC_3)
+
+        return node_exists
+

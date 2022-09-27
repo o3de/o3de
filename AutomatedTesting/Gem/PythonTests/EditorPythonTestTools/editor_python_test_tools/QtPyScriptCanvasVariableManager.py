@@ -13,11 +13,6 @@ from types import SimpleNamespace
 from consts.scripting import (VARIABLE_MANAGER_QT, VARIABLE_PALETTE_QT, ADD_BUTTON_QT, GRAPH_VARIABLES_QT)
 from consts.general import (WAIT_TIME_SEC_3)
 
-
-class Tests():
-    variable_count_expected = ("Variable count matches expected", "Variable count does not match expected")
-
-
 """
 Basic variable types.
 These are str-str kv pairings so they can be used with SimpleNamespace class easily or as an iterable type.  

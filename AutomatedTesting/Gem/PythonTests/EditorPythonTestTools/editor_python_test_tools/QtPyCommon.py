@@ -15,24 +15,25 @@ class QtPyCommon:
     """
     """
     def __init__(self):
-        self.var = None
+        self.menu_tool_bar = None
 
-    def click_menu_bar_option(self, window: QtWidgets, option_text: str) -> None:
+    def click_menu_bar_option(self, option_text: str) -> None:
         """
         function for clicking a toolbar menu option from a Qt window object. This function bypasses menu categories.
         for example, if you want to click the Open option from the "File" toolbar menu provide "Open" as your menu text
         instead of "File" then "Open".
 
-        param window: the qt window object where the menu option is located
         param option_text: the label string used in the menu option that you want to click
 
         returns None
         """
-        action = pyside_utils.find_child_by_pattern(window, {"text": option_text, "type": QtWidgets.QAction})
+        action = pyside_utils.find_child_by_pattern(self.menu_tool_bar, {"text": option_text, "type": QtWidgets.QAction})
 
         assert action is not None, "Unable to find QtWidgets type or menu option"
 
         action.trigger()
+
+
 
     def expand_qt_container_rows(self, object_name: str) -> None:
         """
