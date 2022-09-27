@@ -281,10 +281,10 @@ namespace GraphCanvas
     void VectorNodePropertyDisplay::SubmitValue()
     {
         AzQtComponents::VectorElement** elements = m_propertyVectorCtrl->getElements();
-        const int elementCount = m_dataInterface->GetElementCount();
+        const int elementCount = m_propertyVectorCtrl->getSize();
         for (int i = 0; i < elementCount; ++i)
         {
-            AzQtComponents::VectorElement* element = elements[i];
+            const AzQtComponents::VectorElement* element = elements[i];
             m_dataInterface->SetValue(i, element->getValue());
         }
         UpdateDisplay();
