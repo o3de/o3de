@@ -899,7 +899,7 @@ namespace AZ::Data
             priority = loadParams.m_priority.value();
         }
 
-        return make_pair(deadline, priority);
+        return { deadline, priority };
     }
 
     //=========================================================================
@@ -1974,7 +1974,7 @@ namespace AZ::Data
 
     }
 
-    void AssetManager::RescheduleStreamerRequest(AssetId assetId, AZStd::chrono::milliseconds newDeadline, AZ::IO::IStreamerTypes::Priority newPriority)
+    void AssetManager::RescheduleStreamerRequest(AssetId assetId, AZ::IO::IStreamerTypes::Deadline newDeadline, AZ::IO::IStreamerTypes::Priority newPriority)
     {
         AZStd::scoped_lock lock(m_activeJobOrRequestMutex);
 
@@ -2222,21 +2222,25 @@ namespace AZ::Data
         AZStd::shared_ptr<AssetDataStream> stream,
         const AssetFilterCB& assetLoadFilterCB)
     {
-        AZ_PROFILE_SCOPE(AzCore, "AssetHandler::LoadAssetData - %s", asset.GetHint().c_str());
-
 #ifdef AZ_ENABLE_TRACING
-        auto start = AZStd::chrono::system_clock::now();
+        auto start = AZStd::chrono::steady_clock::now();
 #endif
 
         LoadResult result = LoadAssetData(asset, stream, assetLoadFilterCB);
 
 #ifdef AZ_ENABLE_TRACING
         auto loadMs = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(
-                      AZStd::chrono::system_clock::now() - start);
-        AZ_Warning("AssetDatabase", (!cl_assetLoadWarningEnable) ||
-                   loadMs <= AZStd::chrono::milliseconds(cl_assetLoadWarningMsThreshold),
-                   "Load time threshold exceeded: LoadAssetData call for %s took %" PRId64 " ms",
-                   asset.GetHint().c_str(), loadMs.count());
+            AZStd::chrono::steady_clock::now() - start);
+        if (loadMs.count() > 0)
+        {
+            const double seconds = loadMs.count() / 1000.0;
+            const double kilobytes = stream->GetLoadedSize() / 1024.0;
+            const double rateKbps = kilobytes / seconds;
+            AZ_Warning("AssetDatabase", (!cl_assetLoadWarningEnable) ||
+                loadMs <= AZStd::chrono::milliseconds(cl_assetLoadWarningMsThreshold),
+                "Load time threshold exceeded: LoadAssetData call for %s took %" PRId64 " ms to load %" PRId64 " bytes (%8.4Lf KB/s)",
+                asset.GetHint().c_str(), loadMs.count(), stream->GetLoadedSize(), rateKbps);
+        }
 #endif
 
         return result;

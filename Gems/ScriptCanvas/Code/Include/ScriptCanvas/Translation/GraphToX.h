@@ -9,7 +9,7 @@
 #pragma once
 
 #include <AzCore/Outcome/Outcome.h>
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <ScriptCanvas/Debugger/ValidationEvents/ValidationEvent.h>
 
 #include "Configuration.h"
@@ -33,14 +33,14 @@ namespace ScriptCanvas
         {
         public:
             bool IsSuccessfull() const;
-            
-        protected:         
+
+        protected:
             const Grammar::AbstractCodeModel& m_model;
             const Configuration m_configuration;
             AZ::s32 m_multiReturnCount = 0;
-                        
+
             GraphToX(const Configuration& configuration, const Grammar::AbstractCodeModel& model);
-                        
+
             void AddError(Grammar::ExecutionTreeConstPtr execution, ValidationConstPtr error);
             AZStd::string AddMultiReturnName();
             AZStd::string GetMultiReturnName() const;
@@ -61,7 +61,7 @@ namespace ScriptCanvas
             void WriteCopyright(Writer& writer);
             void WriteDoNotModify(Writer& writer);
             void WriteLastWritten(Writer& writer);
-        
+
         protected:
             void MarkTranslationStart();
             void MarkTranslationStop();
@@ -69,8 +69,8 @@ namespace ScriptCanvas
         private:
             AZStd::vector<ValidationConstPtr> m_errors;
             AZStd::sys_time_t m_translationDuration;
-            AZStd::chrono::system_clock::time_point m_translationStartTime;
+            AZStd::chrono::steady_clock::time_point m_translationStartTime;
         };
-    } 
+    }
 
-} 
+}

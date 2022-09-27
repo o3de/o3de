@@ -10,6 +10,7 @@
 
 #include <AtomToolsFramework/DynamicNode/DynamicNodeConfig.h>
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/string/string.h>
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/NodePaletteTreeItem.h>
 #include <GraphModel/Model/DataType.h>
@@ -38,20 +39,27 @@ namespace AtomToolsFramework
         virtual void LoadConfigFiles(const AZStd::string& extension) = 0;
 
         //! Register a DynamicNodeConfig with the manager.
-        //! @param configId Path or other unique identifier used to register a DynamicNodeConfig
         //! @param config DynamicNodeConfig to be added.
-        virtual bool RegisterConfig(const AZStd::string& configId, const DynamicNodeConfig& config) = 0;
+        virtual bool RegisterConfig(const DynamicNodeConfig& config) = 0;
 
         //! Get a DynamicNodeConfig with a specified ID.
-        //! @param configId Path or other unique identifier used to register a DynamicNodeConfig
+        //! @param configId Unique identifier used to register a DynamicNodeConfig
         //! @returns DynamicNodeConfig matching the ID or a default.
-        virtual DynamicNodeConfig GetConfig(const AZStd::string& configId) const = 0;
+        virtual DynamicNodeConfig GetConfigById(const AZ::Uuid& configId) const = 0;
 
         //! Remove all registered DynamicNodeConfig.
         virtual void Clear() = 0;
 
         //! Generate the node palette tree from registered DynamicNodeConfig
         virtual GraphCanvas::GraphCanvasTreeItem* CreateNodePaletteTree() const = 0;
+
+        //! Register dynamic edit data for dynamic node settings so that the edit context handler and attribute can be overridden for a
+        //! particular settings group.
+        virtual void RegisterEditDataForSetting(const AZStd::string& settingName, const AZ::Edit::ElementData& editData) = 0;
+
+        //! Get the pointer value of the dynamic edit data registered for a dynamic node configuration setting. Edit data pointer must
+        //! remain valid for as long as configurations can be edited.
+        virtual const AZ::Edit::ElementData* GetEditDataForSetting(const AZStd::string& settingName) const = 0;
     };
 
     using DynamicNodeManagerRequestBus = AZ::EBus<DynamicNodeManagerRequests>;

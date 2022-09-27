@@ -20,7 +20,7 @@ namespace AZ
         : public AZ::SettingsRegistryInterface
     {
     public:
-        MOCK_CONST_METHOD1(GetType, Type(AZStd::string_view));
+        MOCK_CONST_METHOD1(GetType, SettingsType(AZStd::string_view));
         MOCK_CONST_METHOD2(Visit, bool(Visitor&, AZStd::string_view));
         MOCK_CONST_METHOD2(Visit, bool(const VisitorCallback&, AZStd::string_view));
         MOCK_METHOD1(RegisterNotifier, NotifyEventHandler(NotifyCallback));
@@ -55,8 +55,8 @@ namespace AZ
             MergeSettingsFolder,
             bool(AZStd::string_view, const Specializations&, AZStd::string_view, AZStd::string_view, AZStd::vector<char>*));
 
-        MOCK_METHOD1(SetApplyPatchSettings, void(const JsonApplyPatchSettings&));
-        MOCK_METHOD1(GetApplyPatchSettings, void(JsonApplyPatchSettings&));
+        MOCK_METHOD1(SetNotifyForMergeOperations, void(bool));
+        MOCK_CONST_METHOD0(GetNotifyForMergeOperations, bool());
         MOCK_METHOD1(SetUseFileIO, void(bool));
     };
 } // namespace AZ

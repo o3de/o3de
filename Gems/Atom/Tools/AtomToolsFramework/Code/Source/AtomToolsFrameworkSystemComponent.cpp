@@ -19,6 +19,7 @@
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsSystem.h>
 #include <AtomToolsFramework/Inspector/InspectorWidget.h>
 #include <AtomToolsFrameworkSystemComponent.h>
+#include <Inspector/PropertyWidgets/PropertyStringBrowseEditCtrl.h>
 
 namespace AtomToolsFramework
 {
@@ -36,6 +37,7 @@ namespace AtomToolsFramework
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->RegisterGenericType<AZStd::unordered_map<AZStd::string, bool>>();
+            serialize->RegisterGenericType<AZStd::map<AZStd::string, AZStd::vector<AZStd::string>>>();
 
             serialize->Class<AtomToolsFrameworkSystemComponent, AZ::Component>()
                 ->Version(0)
@@ -78,6 +80,7 @@ namespace AtomToolsFramework
 
     void AtomToolsFrameworkSystemComponent::Activate()
     {
+        RegisterStringBrowseEditHandler();
     }
 
     void AtomToolsFrameworkSystemComponent::Deactivate()

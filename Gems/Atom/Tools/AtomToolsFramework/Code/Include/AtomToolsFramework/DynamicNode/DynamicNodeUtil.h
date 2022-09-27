@@ -9,12 +9,18 @@
 #pragma once
 
 #include <AtomToolsFramework/DynamicNode/DynamicNodeConfig.h>
+#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 
 namespace AtomToolsFramework
 {
+    using SlotConfigVisitorFn = AZStd::function<void(const DynamicNodeSlotConfig&)>;
+
+    // Visit the dynamic node and all of its slot configurations calling the visitor function.
+    void VisitDynamicNodeSlotConfigs(const DynamicNodeConfig& nodeConfig, const SlotConfigVisitorFn& visitorFn);
+
     using SettingsVisitorFn = AZStd::function<void(const DynamicNodeSettingsMap&)>;
 
     // Visit the dynamic node and all of its slot configurations calling the visitor function for their settings maps.
@@ -27,4 +33,17 @@ namespace AtomToolsFramework
     // Build an accumulated list of settings found on a node or slot configuration.
     void CollectDynamicNodeSettings(
         const DynamicNodeSettingsMap& settings, const AZStd::string& settingName, AZStd::vector<AZStd::string>& container);
+
+    // Convenience function to get a list of all currently registered slot data type names.
+    AZStd::vector<AZStd::string> GetRegisteredDataTypeNames();
+
+    // Search the settings map and the dynamic node manager for dynamic edit data for the setting mapped to elementPtr
+    const AZ::Edit::ElementData* FindDynamicEditDataForSetting(const DynamicNodeSettingsMap& settings, const void* elementPtr);
+
+    // Add a new attribute to dynamic edit data for dynamic node settings
+    template<typename AttributeValueType>
+    void AddEditDataAttribute(AZ::Edit::ElementData& editData, const AZ::Crc32& crc, const AttributeValueType& attribute)
+    {
+        editData.m_attributes.push_back(AZ::Edit::AttributePair(crc, aznew AZ::AttributeContainerType<AttributeValueType>(attribute)));
+    }
 } // namespace AtomToolsFramework

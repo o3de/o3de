@@ -36,9 +36,10 @@
 
 namespace O3DE::ProjectManager
 {
-    GemCatalogScreen::GemCatalogScreen(bool readOnly, QWidget* parent)
+    GemCatalogScreen::GemCatalogScreen(DownloadController* downloadController, bool readOnly, QWidget* parent)
         : ScreenWidget(parent)
         , m_readOnly(readOnly)
+        , m_downloadController(downloadController)
     {
         // The width of either side panel (filters, inspector) in the catalog
         constexpr int sidePanelWidth = 240;
@@ -58,8 +59,6 @@ namespace O3DE::ProjectManager
         vLayout->setSpacing(0);
         setLayout(vLayout);
 
-        m_downloadController = new DownloadController();
-
         m_headerWidget = new GemCatalogHeaderWidget(m_gemModel, m_proxyModel, m_downloadController);
         vLayout->addWidget(m_headerWidget);
 
@@ -68,6 +67,7 @@ namespace O3DE::ProjectManager
         connect(m_gemModel->GetSelectionModel(), &QItemSelectionModel::selectionChanged, this, [this]{ ShowInspector(); });
         connect(m_headerWidget, &GemCatalogHeaderWidget::RefreshGems, this, &GemCatalogScreen::Refresh);
         connect(m_headerWidget, &GemCatalogHeaderWidget::OpenGemsRepo, this, &GemCatalogScreen::HandleOpenGemRepo);
+        connect(m_headerWidget, &GemCatalogHeaderWidget::CreateGem, this, &GemCatalogScreen::HandleCreateGem);
         connect(m_headerWidget, &GemCatalogHeaderWidget::AddGem, this, &GemCatalogScreen::OnAddGemClicked);
         connect(m_headerWidget, &GemCatalogHeaderWidget::UpdateGemCart, this, &GemCatalogScreen::UpdateAndShowGemCart);
         connect(m_downloadController, &DownloadController::Done, this, &GemCatalogScreen::OnGemDownloadResult);
@@ -228,12 +228,17 @@ namespace O3DE::ProjectManager
                 AZ::Outcome<GemInfo, void> gemInfoResult = PythonBindingsInterface::Get()->GetGemInfo(directory);
                 if (gemInfoResult)
                 {
-                    m_gemModel->AddGem(gemInfoResult.GetValue<GemInfo>());
-                    m_gemModel->UpdateGemDependencies();
-                    m_proxyModel->sort(/*column=*/0);
+                    AddToGemModel(gemInfoResult.GetValue<GemInfo>());
                 }
             }
         }
+    }
+
+    void GemCatalogScreen::AddToGemModel(const GemInfo& gemInfo)
+    {
+        m_gemModel->AddGem(gemInfo);
+        m_gemModel->UpdateGemDependencies();
+        m_proxyModel->sort(/*column=*/0);
     }
 
     void GemCatalogScreen::Refresh()
@@ -338,7 +343,7 @@ namespace O3DE::ProjectManager
                 if (added && (GemModel::GetDownloadStatus(modelIndex) == GemInfo::DownloadStatus::NotDownloaded) ||
                     (GemModel::GetDownloadStatus(modelIndex) == GemInfo::DownloadStatus::DownloadFailed))
                 {
-                    m_downloadController->AddGemDownload(GemModel::GetName(modelIndex));
+                    m_downloadController->AddObjectDownload(GemModel::GetName(modelIndex), "", DownloadController::DownloadObjectType::Gem);
                     GemModel::SetDownloadStatus(*m_gemModel, modelIndex, GemInfo::DownloadStatus::Downloading);
                 }
             }
@@ -353,13 +358,19 @@ namespace O3DE::ProjectManager
             }
             notification += (added ? tr(" activated") : tr(" deactivated"));
 
-            AzQtComponents::ToastConfiguration toastConfiguration(AzQtComponents::ToastType::Custom, notification, "");
-            toastConfiguration.m_customIconImage = ":/gem.svg";
-            toastConfiguration.m_borderRadius = 4;
-            toastConfiguration.m_duration = AZStd::chrono::milliseconds(3000);
-            m_notificationsView->ShowToastNotification(toastConfiguration);
+            ShowStandardToastNotification(notification);
         }
     }
+
+    void GemCatalogScreen::ShowStandardToastNotification(const QString& notification)
+    {
+        AzQtComponents::ToastConfiguration toastConfiguration(AzQtComponents::ToastType::Custom, notification, "");
+        toastConfiguration.m_customIconImage = ":/gem.svg";
+        toastConfiguration.m_borderRadius = 4;
+        toastConfiguration.m_duration = AZStd::chrono::milliseconds(3000);
+        m_notificationsView->ShowToastNotification(toastConfiguration);
+    }
+    
 
     void GemCatalogScreen::OnDependencyGemStatusChanged(const QString& gemName)
     {
@@ -368,7 +379,7 @@ namespace O3DE::ProjectManager
         if (added && (GemModel::GetDownloadStatus(modelIndex) == GemInfo::DownloadStatus::NotDownloaded) ||
             (GemModel::GetDownloadStatus(modelIndex) == GemInfo::DownloadStatus::DownloadFailed))
         {
-            m_downloadController->AddGemDownload(GemModel::GetName(modelIndex));
+            m_downloadController->AddObjectDownload(GemModel::GetName(modelIndex), "" , DownloadController::DownloadObjectType::Gem);
             GemModel::SetDownloadStatus(*m_gemModel, modelIndex, GemInfo::DownloadStatus::Downloading);
         }
     }
@@ -434,7 +445,7 @@ namespace O3DE::ProjectManager
         GemUpdateDialog* confirmUpdateDialog = new GemUpdateDialog(selectedGemName, updateAvaliable, this);
         if (confirmUpdateDialog->exec() == QDialog::Accepted)
         {
-            m_downloadController->AddGemDownload(selectedGemName);
+            m_downloadController->AddObjectDownload(selectedGemName, "" , DownloadController::DownloadObjectType::Gem);
         }
     }
 
@@ -607,6 +618,11 @@ namespace O3DE::ProjectManager
         {
             emit ChangeScreenRequest(ProjectManagerScreen::GemRepos);
         }
+    }
+
+    void GemCatalogScreen::HandleCreateGem()
+    {
+        emit ChangeScreenRequest(ProjectManagerScreen::CreateGem);
     }
 
     void GemCatalogScreen::UpdateAndShowGemCart(QWidget* cartWidget)

@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AtomToolsFramework/DynamicNode/DynamicNodeSlotConfig.h>
+#include <AzCore/Serialization/EditContext.h>
 
 namespace AtomToolsFramework
 {
@@ -40,6 +41,8 @@ namespace AtomToolsFramework
         //! @returns True if the operation succeeded, otherwise false
         bool Load(const AZStd::string& path);
 
+        //! Globally unique identifier for referencing this node config inside of DynamicNodeManager and graphs
+        AZ::Uuid m_id = AZ::Uuid::CreateRandom();
         //! The category will be used by the DynamicNodeManager to sort and group node palette tree items
         AZStd::string m_category;
         //! Title will be displayed at the top of every DynamicNode in the graph view 
@@ -54,5 +57,8 @@ namespace AtomToolsFramework
         AZStd::vector<DynamicNodeSlotConfig> m_inputSlots;
         //! Output slots is a container of DynamicNodeSlotConfig for all outputs from a node 
         AZStd::vector<DynamicNodeSlotConfig> m_outputSlots;
+
+    private:
+        static const AZ::Edit::ElementData* GetDynamicEditData(const void* handlerPtr, const void* elementPtr, const AZ::Uuid& elementType);
     };
 } // namespace AtomToolsFramework

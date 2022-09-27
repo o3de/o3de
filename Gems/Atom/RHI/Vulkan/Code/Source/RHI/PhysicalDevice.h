@@ -10,6 +10,7 @@
 #include <Atom/RHI/PhysicalDevice.h>
 #include <AzCore/std/containers/bitset.h>
 #include <Atom/RHI.Reflect/Format.h>
+#include <RHI/Vulkan.h>
 
 namespace AZ
 {

@@ -1,6 +1,6 @@
 {
-    "materialType": "Materials/Types/StandardPBR.materialtype",
-    "materialTypeVersion": 4,
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 5,
     "propertyValues": {
         "baseColor.color": [
             0.800000011920929,
@@ -12,7 +12,7 @@
         "baseColor.textureMap": "../Textures/vasePlant_1k_basecolor.png",
         "general.applySpecularAA": true,
         "general.doubleSided": true,
-        "irradiance.color": [
+        "irradiance.manualColor": [
             0.09086747467517853,
             0.4111391007900238,
             0.0474097803235054,

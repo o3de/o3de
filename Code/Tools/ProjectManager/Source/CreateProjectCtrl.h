@@ -22,12 +22,13 @@ namespace O3DE::ProjectManager
     QT_FORWARD_DECLARE_CLASS(NewProjectSettingsScreen)
     QT_FORWARD_DECLARE_CLASS(ProjectGemCatalogScreen)
     QT_FORWARD_DECLARE_CLASS(GemRepoScreen)
+    QT_FORWARD_DECLARE_CLASS(DownloadController);
 
     class CreateProjectCtrl
         : public ScreenWidget
     {
     public:
-        explicit CreateProjectCtrl(QWidget* parent = nullptr);
+        explicit CreateProjectCtrl(DownloadController* downloadController, QWidget* parent = nullptr);
         ~CreateProjectCtrl() = default;
         ProjectManagerScreen GetScreenEnum() override;
         void NotifyCurrentScreen() override;

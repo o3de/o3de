@@ -20,7 +20,7 @@ import pathlib
 import platform
 
 from subprocess import CalledProcessError
-from distutils.version import LooseVersion
+from packaging.version import Version
 from cmake.Tools import layout_tool
 
 # Text encoding Constants for reading/writing to files.
@@ -322,9 +322,9 @@ def verify_tool(override_tool_path, tool_name, tool_filename, argument_name, too
         if not version_match:
             raise RuntimeError()
 
-        # Since we are doing a compare, strip out any non-numeric and non . character from the version otherwise we will get a TypeError on the LooseVersion comparison
+        # Since we are doing a compare, strip out any non-numeric and non . character from the version otherwise we will get a TypeError on the Version comparison
         result_version_str = re.sub(r"[^\.0-9]", "", str(version_match.group(1)).strip())
-        result_version = LooseVersion(result_version_str)
+        result_version = Version(result_version_str)
 
         if min_version and result_version < min_version:
             raise LmbrCmdError(f"The {tool_desc} does not meet the minimum version of {tool_name} required ({str(min_version)}).",

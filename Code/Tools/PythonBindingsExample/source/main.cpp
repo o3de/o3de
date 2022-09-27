@@ -23,6 +23,7 @@ namespace PythonBindingsExample
 
 int main(int argc, char* argv[])
 {
+    const AZ::Debug::Trace tracer;
     AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
     int runSuccess = 0;
     {

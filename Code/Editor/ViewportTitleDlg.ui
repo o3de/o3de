@@ -28,7 +28,10 @@
     <height>29</height>
    </size>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0,0,0,0,0,0,0">
+  <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0,0,0,0,0,0,0,0">
+   <property name="spacing">
+    <number>0</number>
+   </property>   
    <property name="leftMargin">
     <number>10</number>
    </property>
@@ -76,12 +79,12 @@
     </spacer>
    </item>
    <item>
-    <widget class="QToolButton" name="m_editModeMenu">
+    <widget class="QToolButton" name="m_prefabEditModeMenu">
      <property name="toolTip">
-      <string>Edit mode</string>
+      <string>Prefab Edit mode</string>
      </property>
      <property name="text">
-      <string>Edit mode</string>
+      <string>Prefab Edit mode</string>
      </property>
     </widget>
    </item>

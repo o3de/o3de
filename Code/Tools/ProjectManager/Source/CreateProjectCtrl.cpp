@@ -28,7 +28,7 @@
 
 namespace O3DE::ProjectManager
 {
-    CreateProjectCtrl::CreateProjectCtrl(QWidget* parent)
+    CreateProjectCtrl::CreateProjectCtrl(DownloadController* downloadController, QWidget* parent)
         : ScreenWidget(parent)
     {
         QVBoxLayout* vLayout = new QVBoxLayout();
@@ -44,10 +44,10 @@ namespace O3DE::ProjectManager
         m_stack->setObjectName("body");
         m_stack->setSizePolicy(QSizePolicy(QSizePolicy::Preferred,QSizePolicy::Expanding));
 
-        m_newProjectSettingsScreen = new NewProjectSettingsScreen(this);
+        m_newProjectSettingsScreen = new NewProjectSettingsScreen(downloadController, this);
         m_stack->addWidget(m_newProjectSettingsScreen);
 
-        m_projectGemCatalogScreen = new ProjectGemCatalogScreen(this);
+        m_projectGemCatalogScreen = new ProjectGemCatalogScreen(downloadController, this);
         m_stack->addWidget(m_projectGemCatalogScreen);
 
         m_gemRepoScreen = new GemRepoScreen(this);
@@ -167,7 +167,7 @@ namespace O3DE::ProjectManager
         }
         else if (m_stack->currentWidget() == m_gemRepoScreen)
         {
-            m_header->setSubTitle(tr("Gem Repositories"));
+            m_header->setSubTitle(tr("Remote Sources"));
             m_secondaryButton->setVisible(true);
             m_secondaryButton->setText(tr("Back"));
             m_primaryButton->setVisible(false);
@@ -233,7 +233,7 @@ namespace O3DE::ProjectManager
     {
         if (m_stack->currentWidget() == m_newProjectSettingsScreen)
         {
-            return m_newProjectSettingsScreen->Validate();
+            return m_newProjectSettingsScreen->Validate().IsSuccess();
         }
 
         return true;
@@ -241,7 +241,8 @@ namespace O3DE::ProjectManager
 
     void CreateProjectCtrl::CreateProject()
     {
-        if (m_newProjectSettingsScreen->Validate())
+        AZ::Outcome<void, QString> settingsValidation = m_newProjectSettingsScreen->Validate();
+        if (settingsValidation.IsSuccess())
         {
             if (!m_projectGemCatalogScreen->GetDownloadController()->IsDownloadQueueEmpty())
             {
@@ -279,8 +280,16 @@ namespace O3DE::ProjectManager
         }
         else
         {
-            QMessageBox::warning(
-                this, tr("Invalid project settings"), tr("Please correct the indicated project settings and try again."));
+            const QString& errorMessage = settingsValidation.GetError();
+            if (errorMessage.isEmpty())
+            {
+                QMessageBox::warning(
+                    this, tr("Invalid project settings"), tr("Please correct the indicated project settings and try again."));
+            }
+            else
+            {
+                QMessageBox::warning(this, tr("Invalid project settings"), errorMessage);
+            }
         }
     }
 

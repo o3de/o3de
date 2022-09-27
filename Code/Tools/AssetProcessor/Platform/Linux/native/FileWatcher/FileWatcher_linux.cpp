@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/string/fixed_string.h>
 #include <native/FileWatcher/FileWatcher.h>
 #include <native/FileWatcher/FileWatcher_platform.h>
@@ -56,6 +57,34 @@ void FileWatcher::PlatformImplementation::Finalize()
     m_inotifyHandle = -1;
 }
 
+bool FileWatcher::PlatformImplementation::TryToWatch(const QString &pathStr, int* errnoPtr)
+{
+    AZ::IO::FixedMaxPathString path(pathStr.toUtf8().constData());
+    int watchHandle = inotify_add_watch(
+        m_inotifyHandle, path.c_str(), IN_CREATE | IN_CLOSE_WRITE | IN_DELETE | IN_DELETE_SELF | IN_MODIFY | IN_MOVE);
+    const auto err = errno; // Only contains relevant information if we actually failed
+
+    if (watchHandle < 0)
+    {
+        [[maybe_unused]] const char* extraStr = (err == ENOSPC ? " (try increasing fs.inotify.max_user_watches with sysctl)" : "");
+        [[maybe_unused]] AZStd::fixed_string<255> errorString;
+        AZ_Warning(
+            "FileWatcher", false,
+            "inotify_add_watch failed for path %s with error %d: %s%s",
+            path.c_str(), err, strerror_r(err, errorString.data(), errorString.capacity()), extraStr);
+        if (errnoPtr)
+        {
+            *errnoPtr = err;
+        }
+        return false;
+    }
+    {
+        QMutexLocker lock{&m_handleToFolderMapLock};
+        m_handleToFolderMap[watchHandle] = pathStr;
+    }
+    return true;
+}
+
 void FileWatcher::PlatformImplementation::AddWatchFolder(QString folder, bool recursive)
 {
     if (m_inotifyHandle < 0)
@@ -66,43 +95,37 @@ void FileWatcher::PlatformImplementation::AddWatchFolder(QString folder, bool re
     // Clean up the path before accepting it as a watch folder
     QString cleanPath = QDir::cleanPath(folder);
 
-    // Add the folder to watch and track it
-    int watchHandle = inotify_add_watch(m_inotifyHandle,
-                                        cleanPath.toUtf8().constData(),
-                                        IN_CREATE | IN_CLOSE_WRITE | IN_DELETE | IN_DELETE_SELF | IN_MODIFY | IN_MOVE);
-
-    if (watchHandle < 0)
+    if (!TryToWatch(cleanPath))
     {
-        [[maybe_unused]] const auto err = errno;
-        [[maybe_unused]] AZStd::fixed_string<255> errorString;
-        AZ_Warning("FileWatcher", false, "inotify_add_watch failed for path %s: %s", cleanPath.toUtf8().constData(), strerror_r(err, errorString.data(), errorString.capacity()));
         return;
-    }
-    {
-        QMutexLocker lock{&m_handleToFolderMapLock};
-        m_handleToFolderMap[watchHandle] = cleanPath;
     }
 
     // Add all the contents (files and directories) to watch and track them
-    QDirIterator dirIter(folder, QDir::NoDotAndDotDot | QDir::Dirs | QDir::Files, (recursive ? QDirIterator::Subdirectories : QDirIterator::NoIteratorFlags) | QDirIterator::FollowSymlinks);
+    QDirIterator dirIter(
+        folder, QDir::NoDotAndDotDot | QDir::Dirs | QDir::Files,
+        (recursive ? QDirIterator::Subdirectories : QDirIterator::NoIteratorFlags) | QDirIterator::FollowSymlinks);
 
     while (dirIter.hasNext())
     {
         QString dirName = dirIter.next();
-
-        watchHandle = inotify_add_watch(m_inotifyHandle,
-                                            dirName.toUtf8().constData(),
-                                            IN_CREATE | IN_CLOSE_WRITE | IN_DELETE | IN_DELETE_SELF | IN_MODIFY | IN_MOVE);
-        if (watchHandle < 0)
+        int theErrno;
+        if (!TryToWatch(dirName, &theErrno))
         {
-            [[maybe_unused]] const auto err = errno;
-            [[maybe_unused]] AZStd::fixed_string<255> errorString;
-            AZ_Warning("FileWatcher", false, "inotify_add_watch failed for path %s: %s", dirName.toUtf8().constData(), strerror_r(err, errorString.data(), errorString.capacity()));
-            return;
+            switch (theErrno)
+            {
+            case EACCES:
+            case EBADF:
+            case ENOENT:
+                // Errors specific to the file: try next one
+                continue;
+            default:
+                // Other errors are usually non-recoverable: bail out to avoid warning spam
+                AZ_Warning(
+                    "FileWatcher", false,
+                    "Giving up on directory %s due to errors", cleanPath.toUtf8().constData());
+                return;
+            }
         }
-
-        QMutexLocker lock{&m_handleToFolderMapLock};
-        m_handleToFolderMap[watchHandle] = dirName;
     }
 }
 

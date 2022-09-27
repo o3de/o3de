@@ -176,9 +176,15 @@ namespace O3DE::ProjectManager
         }
     }
 
-    bool UpdateProjectSettingsScreen::Validate()
+    AZ::Outcome<void, QString> UpdateProjectSettingsScreen::Validate() const
     {
-        return ProjectSettingsScreen::Validate() && ValidateProjectPreview() && ValidateProjectId();
+        if (!(ValidateProjectPreview() && ValidateProjectId()))
+        {
+            // Returning empty string to use the default error message
+            return AZ::Failure<QString>("");
+        }
+
+        return ProjectSettingsScreen::Validate();
     }
 
     void UpdateProjectSettingsScreen::ResetProjectPreviewPath()
@@ -212,7 +218,7 @@ namespace O3DE::ProjectManager
     } 
 
 
-    bool UpdateProjectSettingsScreen::ValidateProjectPath()
+    bool UpdateProjectSettingsScreen::ValidateProjectPath() const
     {
         bool projectPathIsValid = true;
         QDir path(m_projectPath->lineEdit()->text());
@@ -226,7 +232,7 @@ namespace O3DE::ProjectManager
         return projectPathIsValid;
     }
 
-    bool UpdateProjectSettingsScreen::ValidateProjectPreview()
+    bool UpdateProjectSettingsScreen::ValidateProjectPreview() const
     {
         bool projectPreviewIsValid = true;
 
@@ -261,7 +267,7 @@ namespace O3DE::ProjectManager
         return projectPreviewIsValid;
     }
 
-    bool UpdateProjectSettingsScreen::ValidateProjectId()
+    bool UpdateProjectSettingsScreen::ValidateProjectId() const
     {
         bool projectIdIsValid = true;
         if (m_projectId->lineEdit()->text().isEmpty())

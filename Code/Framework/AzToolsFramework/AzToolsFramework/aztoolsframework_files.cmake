@@ -7,6 +7,7 @@
 #
 
 set(FILES
+    ActionManager/ActionManagerRegistrationNotificationBus.h
     ActionManager/ActionManagerSystemComponent.cpp
     ActionManager/ActionManagerSystemComponent.h
     ActionManager/Action/ActionManager.cpp
@@ -33,6 +34,8 @@ set(FILES
     ActionManager/Menu/MenuManagerInternalInterface.h
     ActionManager/ToolBar/EditorToolBar.cpp
     ActionManager/ToolBar/EditorToolBar.h
+    ActionManager/ToolBar/EditorToolBarArea.cpp
+    ActionManager/ToolBar/EditorToolBarArea.h
     ActionManager/ToolBar/ToolBarManager.cpp
     ActionManager/ToolBar/ToolBarManager.h
     ActionManager/ToolBar/ToolBarManagerInterface.h
@@ -229,6 +232,9 @@ set(FILES
     Manipulators/ManipulatorSnapping.h
     Manipulators/ManipulatorSpace.cpp
     Manipulators/ManipulatorSpace.h
+    Manipulators/PaintBrushManipulator.cpp
+    Manipulators/PaintBrushManipulator.h
+    Manipulators/PaintBrushNotificationBus.h
     Manipulators/PlanarManipulator.cpp
     Manipulators/PlanarManipulator.h
     Manipulators/RotationManipulators.cpp
@@ -246,6 +252,15 @@ set(FILES
     Manipulators/TranslationManipulators.cpp
     Manipulators/TranslationManipulators.h
     Maths/TransformUtils.h
+    PaintBrushSettings/PaintBrushSettings.cpp
+    PaintBrushSettings/PaintBrushSettings.h
+    PaintBrushSettings/PaintBrushSettingsNotificationBus.h
+    PaintBrushSettings/PaintBrushSettingsRequestBus.h
+    PaintBrushSettings/PaintBrushSettingsSystemComponent.cpp
+    PaintBrushSettings/PaintBrushSettingsSystemComponent.h
+    PaintBrushSettings/PaintBrushSettingsWindow.cpp
+    PaintBrushSettings/PaintBrushSettingsWindow.h
+    PaintBrushSettings/PaintBrushSettingsWindow_Internals.h
     Picking/BoundInterface.h
     Picking/ContextBoundAPI.h
     Picking/Manipulators/ManipulatorBoundManager.cpp
@@ -340,7 +355,6 @@ set(FILES
     ToolsComponents/GenericComponentWrapper.h
     ToolsComponents/SelectionComponent.cpp
     ToolsComponents/SelectionComponent.h
-    ToolsComponents/SelectionComponentBus.h
     ToolsComponents/TransformComponent.h
     ToolsComponents/TransformComponent.cpp
     ToolsComponents/TransformComponentBus.h
@@ -362,6 +376,13 @@ set(FILES
     UI/Docking/DockWidgetUtils.h
     UI/DocumentPropertyEditor/ContainerActionButtonHandler.cpp
     UI/DocumentPropertyEditor/ContainerActionButtonHandler.h
+    UI/DocumentPropertyEditor/DPEComponentAdapter.h
+    UI/DocumentPropertyEditor/DPEComponentAdapter.cpp
+    UI/DocumentPropertyEditor/FilterAdapter.cpp
+    UI/DocumentPropertyEditor/FilterAdapter.h
+    UI/DocumentPropertyEditor/FilteredDPE.cpp
+    UI/DocumentPropertyEditor/FilteredDPE.h
+    UI/DocumentPropertyEditor/FilteredDPE.ui
     UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h
     UI/DocumentPropertyEditor/PropertyEditorToolsSystem.cpp
     UI/DocumentPropertyEditor/PropertyEditorToolsSystem.h
@@ -369,6 +390,14 @@ set(FILES
     UI/DocumentPropertyEditor/PropertyHandlerWidget.h
     UI/DocumentPropertyEditor/DocumentPropertyEditor.cpp
     UI/DocumentPropertyEditor/DocumentPropertyEditor.h
+    UI/DocumentPropertyEditor/DocumentPropertyEditorSettings.cpp
+    UI/DocumentPropertyEditor/DocumentPropertyEditorSettings.h
+    UI/DocumentPropertyEditor/IPropertyEditor.h
+    UI/DocumentPropertyEditor/KeyQueryDPE.cpp
+    UI/DocumentPropertyEditor/KeyQueryDPE.h
+    UI/DocumentPropertyEditor/KeyQueryDPE.ui
+    UI/DocumentPropertyEditor/SettingsRegistrar.cpp
+    UI/DocumentPropertyEditor/SettingsRegistrar.h
     UI/DPEDebugViewer/DPEDebugModel.cpp
     UI/DPEDebugViewer/DPEDebugModel.h
     UI/DPEDebugViewer/DPEDebugTextView.cpp
@@ -499,6 +528,8 @@ set(FILES
     UI/UICore/AspectRatioAwarePixmapWidget.cpp
     UI/UICore/ClickableLabel.hxx
     UI/UICore/ClickableLabel.cpp
+    UI/UICore/ConsoleTextEdit.hxx
+    UI/UICore/ConsoleTextEdit.cpp
     UI/UICore/IconButton.hxx
     UI/UICore/IconButton.cpp
     UI/UICore/PlainTextEdit.hxx
@@ -622,7 +653,6 @@ set(FILES
     ViewportSelection/ViewportEditorModeTracker.h
     ToolsFileUtils/ToolsFileUtils.h
     AssetBrowser/AssetBrowserBus.h
-    AssetBrowser/AssetBrowserSourceDropBus.h
     AssetBrowser/AssetBrowserComponent.cpp
     AssetBrowser/AssetBrowserComponent.h
     AssetBrowser/AssetBrowserEntry.h
@@ -640,6 +670,8 @@ set(FILES
     AssetBrowser/EBusFindAssetTypeByName.h
     AssetBrowser/Views/AssetBrowserTreeView.cpp
     AssetBrowser/Views/AssetBrowserTreeView.h
+    AssetBrowser/Views/AssetBrowserTreeViewDialog.cpp
+    AssetBrowser/Views/AssetBrowserTreeViewDialog.h
     AssetBrowser/Views/AssetBrowserTableView.cpp
     AssetBrowser/Views/AssetBrowserTableView.h
     AssetBrowser/Views/EntryDelegate.cpp
@@ -652,6 +684,8 @@ set(FILES
     AssetBrowser/Entries/AssetBrowserEntry.inl
     AssetBrowser/Entries/AssetBrowserEntryCache.cpp
     AssetBrowser/Entries/AssetBrowserEntryCache.h
+    AssetBrowser/Entries/AssetBrowserEntryUtils.h
+    AssetBrowser/Entries/AssetBrowserEntryUtils.cpp
     AssetBrowser/Entries/FolderAssetBrowserEntry.cpp
     AssetBrowser/Entries/FolderAssetBrowserEntry.h
     AssetBrowser/Entries/ProductAssetBrowserEntry.cpp
@@ -705,6 +739,8 @@ set(FILES
     Prefab/PrefabDomTypes.h
     Prefab/PrefabDomUtils.h
     Prefab/PrefabDomUtils.cpp
+    Prefab/PrefabEditorPreferences.h
+    Prefab/PrefabEditorPreferences.cpp
     Prefab/PrefabFocusHandler.h
     Prefab/PrefabFocusHandler.cpp
     Prefab/PrefabFocusInterface.h
@@ -814,7 +850,8 @@ set(FILES
     UI/Outliner/EntityOutlinerTreeView.cpp
     UI/Outliner/EntityOutlinerWidget.hxx
     UI/Outliner/EntityOutlinerWidget.cpp
-    UI/Outliner/EntityOutlinerCacheBus.h
+    UI/Outliner/EntityOutlinerCacheBus.h 
+    UI/Outliner/EntityOutlinerDragAndDropContext.h
     UI/Outliner/EntityOutlinerListModel.hxx
     UI/Outliner/EntityOutlinerListModel.cpp
     UI/Outliner/EntityOutlinerSearchWidget.h

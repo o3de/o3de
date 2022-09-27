@@ -12,7 +12,6 @@
            DeprecationUUID="{E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF}"
            ReplacementClassName="String"
            ReplacementMethodName="Starts With"
-           GeneratePropertyFriend="True"
            Description=".">
         <In Name="In" Description="Input signal"/>
         <Out Name="True" Description=""/>
@@ -45,7 +44,6 @@
            ReplacementClassName="String"
            ReplacementMethodName="Ends With"
            Version="0"
-           GeneratePropertyFriend="True"
            Description=".">
         <In Name="In" Description="Input signal"/>
         <Out Name="True" Description=""/>
@@ -78,7 +76,6 @@
            DeprecationUUID="{E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF}"
            ReplacementClassName="String"
            ReplacementMethodName="Split"
-           GeneratePropertyFriend="True"
            Description=".">
         <In Name="In" Description="Input signal"/>
         <Out Name="Out" Description=""/>
@@ -110,7 +107,6 @@
            DeprecationUUID="{E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF}"
            ReplacementClassName="String"
            ReplacementMethodName="Join"
-           GeneratePropertyFriend="True"
            Description=".">
         <In Name="In" Description="Input signal"/>
         <Out Name="Out" Description=""/>

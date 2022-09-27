@@ -264,7 +264,7 @@ namespace AZ::Render
 
     void AtomViewportDisplayInfoSystemComponent::UpdateFramerate()
     {
-        auto currentTime = AZStd::chrono::system_clock::now();
+        auto currentTime = AZStd::chrono::steady_clock::now();
         while (!m_fpsHistory.empty() && (currentTime - m_fpsHistory.front()) > m_fpsInterval)
         {
             m_fpsHistory.pop_front();
@@ -333,18 +333,24 @@ namespace AZ::Render
         Data::Instance<RPI::StreamingImagePool> streamingImagePool = RPI::ImageSystemInterface::Get()->GetStreamingPool();
         const RHI::HeapMemoryUsage& imagePoolMemoryUsage = streamingImagePool->GetRHIPool()->GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
 
-        float imagePoolReservedMB = static_cast<float>(imagePoolMemoryUsage.m_reservedInBytes) / MB;
+        float imagePoolUsedAllocatedMB = static_cast<float>(imagePoolMemoryUsage.m_usedResidentInBytes) / MB;
+        float imagePoolTotalAllocatedMB = static_cast<float>(imagePoolMemoryUsage.m_totalResidentInBytes) / MB;
         float imagePoolBudgetMB = static_cast<float>(imagePoolMemoryUsage.m_budgetInBytes) / MB;
+        AZ::Color fontColor = AZ::Colors::White;
+        if (imagePoolTotalAllocatedMB > 0.99f * imagePoolBudgetMB && imagePoolBudgetMB > 0)
+        {
+            fontColor = AZ::Colors::Red;
+        }
 
         DrawLine(
-            AZStd::string::format("RPI AssetStreamingImagePool: %.2f / %.2f MiB", imagePoolReservedMB, imagePoolBudgetMB),
-            (imagePoolReservedMB > 0.99f * imagePoolBudgetMB) ? AZ::Colors::Red : AZ::Colors::White
+            AZStd::string::format("RPI AssetStreamingImagePool (used/allocated/budget): %.2f / %.2f/%.2f MiB", imagePoolUsedAllocatedMB, imagePoolTotalAllocatedMB, imagePoolBudgetMB),
+            fontColor
         );
     }
 
     void AtomViewportDisplayInfoSystemComponent::DrawFramerate()
     {
-        AZStd::optional<AZStd::chrono::system_clock::time_point> lastTime;
+        AZStd::optional<AZStd::chrono::steady_clock::time_point> lastTime;
         double minFPS = DBL_MAX;
         double maxFPS = 0;
         AZStd::chrono::duration<double> deltaTime;

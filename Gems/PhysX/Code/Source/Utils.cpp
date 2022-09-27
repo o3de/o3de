@@ -655,6 +655,8 @@ namespace PhysX
                 return CreatePxCookedMeshConfiguration(points, scale);
             }
             break;
+            case Physics::ShapeType::CookedMesh:
+                return static_cast<const Physics::CookedMeshShapeConfiguration&>(primitiveShapeConfig);
             default:
                 AZ_Error("PhysX Utils", false, "CreateConvexFromPrimitive was called with a non-primitive shape configuration.");
                 return {};
@@ -896,7 +898,8 @@ namespace PhysX
             return str;
         }
 
-        void WarnEntityNames(const AZStd::vector<AZ::EntityId>& entityIds, [[maybe_unused]] const char* category, const char* message)
+        static AZStd::string FormatEntityNames(
+            const AZStd::vector<AZ::EntityId>& entityIds, const char* message)
         {
             AZStd::string messageOutput = message;
             messageOutput += "\n";
@@ -911,9 +914,21 @@ namespace PhysX
             }
 
             AZStd::string percentageSymbol("%");
-            AZStd::string percentageReplace("%%"); //Replacing % with %% serves to escape the % character when printing out the entity names in printf style.
+            AZStd::string percentageReplace(
+                "%%"); // Replacing % with %% serves to escape the % character when printing out the entity names in printf style.
             messageOutput = ReplaceAll(messageOutput, percentageSymbol, percentageReplace);
+            return messageOutput;
+        }
 
+        void PrintEntityNames(const AZStd::vector<AZ::EntityId>& entityIds, [[maybe_unused]] const char* category, const char* message)
+        {
+            const AZStd::string messageOutput = FormatEntityNames(entityIds, message);
+            AZ_Printf(category, messageOutput.c_str());
+        }
+
+        void WarnEntityNames(const AZStd::vector<AZ::EntityId>& entityIds, [[maybe_unused]] const char* category, const char* message)
+        {
+            const AZStd::string messageOutput = FormatEntityNames(entityIds, message);
             AZ_Warning(category, false, messageOutput.c_str());
         }
 
@@ -1795,6 +1810,7 @@ namespace PhysX
             FixedJointConfiguration::Reflect(context);
             BallJointConfiguration::Reflect(context);
             HingeJointConfiguration::Reflect(context);
+            PrismaticJointConfiguration::Reflect(context);
 
             MaterialConfiguration::Reflect(context);
         }

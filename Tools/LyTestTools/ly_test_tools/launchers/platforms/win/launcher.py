@@ -250,3 +250,20 @@ class WinGenericLauncher(WinLauncher):
         assert self.workspace.project is not None, (
             'Project cannot be NoneType - please specify a project name string.')
         return self.expected_executable_path
+
+
+class WinMaterialEditor(WinLauncher):
+
+    def __init__(self, build, args=None):
+        super(WinMaterialEditor, self).__init__(build, args)
+        self.args.append('--regset="/Amazon/Settings/EnableSourceControl=false"')
+        self.args.append('--regset="/Amazon/AWS/Preferences/AWSAttributionConsentShown=true"')
+        self.args.append('--regset="/Amazon/AWS/Preferences/AWSAttributionEnabled=false"')
+
+    def binary_path(self):
+        """
+        Return full path to the MaterialEditor for this build's configuration and project
+        :return: full path to MaterialEditor
+        """
+        assert self.workspace.project is not None
+        return os.path.join(self.workspace.paths.build_directory(), "MaterialEditor.exe")

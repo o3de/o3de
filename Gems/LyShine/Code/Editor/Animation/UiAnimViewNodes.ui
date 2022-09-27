@@ -75,6 +75,12 @@
      <property name="alignment">
       <set>Qt::AlignCenter</set>
      </property>
+     <property name="minimumSize">
+      <size>
+       <width>50</width>
+       <height>0</height>
+      </size>
+     </property>
     </widget>
    </item>
   </layout>

@@ -172,7 +172,7 @@ namespace AzToolsFramework
         InstanceDataHierarchy::ValueComparisonFunction m_valueComparisonFunction;
         ReflectedPropertyEditor::WidgetList m_widgets;
         ReflectedPropertyEditor::WidgetList m_specialGroupWidgets;
-        InstanceDataNode* groupSourceNode = nullptr;
+        InstanceDataNode* m_groupSourceNode = nullptr;
         RowContainerType m_widgetsInDisplayOrder;
         UserWidgetToDataMap m_userWidgetsToData;
         VisibilityCallback m_visibilityCallback;
@@ -358,7 +358,7 @@ namespace AzToolsFramework
 
     ReflectedPropertyEditor::~ReflectedPropertyEditor()
     {
-        m_releasePrompt = true;
+        Q_EMIT releasePrompt();
 
         m_impl->InternalReflectedPropertyEditorEvents::Bus::Handler::BusDisconnect();
         m_impl->PropertyEditorGUIMessages::Bus::Handler::BusDisconnect();
@@ -485,7 +485,7 @@ namespace AzToolsFramework
 
     void ReflectedPropertyEditor::ClearInstances()
     {
-        m_releasePrompt = true;
+        Q_EMIT releasePrompt();
 
         m_impl->SaveExpansion();
         m_impl->ReturnAllToPool();
@@ -514,21 +514,22 @@ namespace AzToolsFramework
                     widgetEntry = CreateOrPullFromPool();
                     widgetEntry->SetFilterString(m_editor->GetFilterString());
 
-                    // Initialized normally if the group does not have a member variable attached to it,
+                    // Initialized normally if the group does not have a member variable attached to it
+                    // or if the source node for the toggle group is null,
                     // otherwise initialize it as a group that will have a toggle switch.
-                    if (groupElementData->IsClassElement())
+                    if (groupElementData->IsClassElement() || !m_groupSourceNode)
                     {
                         widgetEntry->Initialize(groupName, parent, depth, m_propertyLabelWidth);
                     }
                     else
                     {
-                        widgetEntry->InitializeToggleGroup(groupName, parent, depth, groupSourceNode, m_propertyLabelWidth);
+                        widgetEntry->InitializeToggleGroup(groupName, parent, depth, m_groupSourceNode, m_propertyLabelWidth);
                         QWidget* toggleSwitch = widgetEntry->GetToggle();
                         PropertyHandlerBase* pHandler = widgetEntry->GetHandler();
-                        m_userWidgetsToData[toggleSwitch] = groupSourceNode;
-                        m_specialGroupWidgets[groupSourceNode] = widgetEntry;
-                        pHandler->ConsumeAttributes_Internal(toggleSwitch, groupSourceNode);
-                        pHandler->ReadValuesIntoGUI_Internal(toggleSwitch, groupSourceNode);
+                        m_userWidgetsToData[toggleSwitch] = m_groupSourceNode;
+                        m_specialGroupWidgets[m_groupSourceNode] = widgetEntry;
+                        pHandler->ConsumeAttributes_Internal(toggleSwitch, m_groupSourceNode);
+                        pHandler->ReadValuesIntoGUI_Internal(toggleSwitch, m_groupSourceNode);
                         widgetEntry->OnValuesUpdated();
                         isToggleGroup = true;
                     }
@@ -539,7 +540,7 @@ namespace AzToolsFramework
 
                     for (const AZ::Edit::AttributePair& attribute : groupElementData->m_attributes)
                     {
-                        InstanceDataNode* readerNode = (isToggleGroup) ? groupSourceNode : node;
+                        InstanceDataNode* readerNode = (isToggleGroup) ? m_groupSourceNode : node;
                         PropertyAttributeReader reader(readerNode->GetParent()->FirstInstance(), attribute.second);
                         QString descriptionOut;
                         bool foundDescription = false;
@@ -795,7 +796,7 @@ namespace AzToolsFramework
                 // Save the last InstanceDataNode that is a Group ClassElement so that we can use it as the source node for its widget.
                 if (node->GetElementEditMetadata() && (node->GetElementEditMetadata()->m_elementId == AZ::Edit::ClassElements::Group))
                 {
-                    groupSourceNode = node;
+                    m_groupSourceNode = node;
                 }
             }
         }
@@ -872,7 +873,7 @@ namespace AzToolsFramework
     /// Must call after Add/Remove instance for the change to be applied
     void ReflectedPropertyEditor::InvalidateAll(const char* filter)
     {
-        m_releasePrompt = true;
+        Q_EMIT releasePrompt();
 
         setUpdatesEnabled(false);
         m_impl->m_selectedRow = nullptr;
@@ -1008,7 +1009,7 @@ namespace AzToolsFramework
 
     void ReflectedPropertyEditor::InvalidateAttributesAndValues()
     {
-        m_releasePrompt = true;
+        Q_EMIT releasePrompt();
 
         for (InstanceDataHierarchy& instance : m_impl->m_instances)
         {
@@ -1040,7 +1041,7 @@ namespace AzToolsFramework
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-        m_releasePrompt = true;
+        Q_EMIT releasePrompt();
 
         {
             AZ_PROFILE_SCOPE(AzToolsFramework, "ReflectedPropertyEditor::InvalidateValues:InstancesRefreshDataCompare");
@@ -1200,7 +1201,7 @@ namespace AzToolsFramework
         m_impl->m_queuedTabOrderRefresh = false;
     }
 
-    void ReflectedPropertyEditor::SetSavedStateKey(AZ::u32 key)
+    void ReflectedPropertyEditor::SetSavedStateKey(AZ::u32 key, [[maybe_unused]] AZStd::string propertyEditorName)
     {
         if (m_impl->m_savedStateKey != key)
         {
@@ -2006,6 +2007,9 @@ namespace AzToolsFramework
 
     void ReflectedPropertyEditor::OnPropertyRowRequestContainerAddItem(PropertyRowWidget* widget, InstanceDataNode* pContainerNode)
     {
+        // Release the last prompt if its present
+        Q_EMIT releasePrompt();
+
         // Do expansion before modifying container as container modifications will invalidate and disallow the expansion until a later queued refresh
         OnPropertyRowExpandedOrContracted(widget, pContainerNode, true, true);
 
@@ -2113,6 +2117,11 @@ namespace AzToolsFramework
             int dialogFlag = -1;
             connect(buttonBox, &QDialogButtonBox::accepted, &dialog, [&dialogFlag]() {dialogFlag = 1; });
             connect(buttonBox, &QDialogButtonBox::rejected, &dialog, [&dialogFlag]() {dialogFlag = 0; });
+            connect(this, &ReflectedPropertyEditor::releasePrompt, &dialog, [&dialogFlag, &dialog]() 
+            {
+                dialog.reject();
+                dialogFlag = 0;
+            });
             layout->addWidget(buttonBox);
 
             // Make sure the dialog stays on top ready for dropping onto
@@ -2120,16 +2129,8 @@ namespace AzToolsFramework
             dialog.show();
             dialog.adjustSize();
 
-            m_releasePrompt = false;
-
             while (dialogFlag < 0)
             {
-                if (m_releasePrompt)
-                {
-                    dialogFlag = 0;
-                    dialog.reject();
-                    break;
-                }
 
                 qApp->processEvents();
             }

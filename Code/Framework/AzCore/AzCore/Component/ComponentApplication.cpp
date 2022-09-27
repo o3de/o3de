@@ -17,13 +17,13 @@
 #include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/Component/TickBus.h>
 
-#include <AzCore/Debug/LocalFileEventLogger.h>
 
 #include <AzCore/Memory/AllocationRecords.h>
 
 #include <AzCore/Memory/OverrunDetectionAllocator.h>
 #include <AzCore/Memory/AllocatorManager.h>
 #include <AzCore/Memory/MallocSchema.h>
+#include <AzCore/Metrics/EventLoggerFactoryImpl.h>
 
 #include <AzCore/NativeUI/NativeUIRequests.h>
 
@@ -41,6 +41,7 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Settings/SettingsRegistryScriptUtils.h>
 #include <AzCore/Settings/SettingsRegistryVisitorUtils.h>
+#include <AzCore/Settings/SettingsRegistryOriginTracker.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
 #include <AzCore/Module/Module.h>
@@ -118,18 +119,6 @@ namespace AZ
         return environment ? environment->Get() : nullptr;
     }
 
-    ComponentApplication::EventLoggerDeleter::EventLoggerDeleter() noexcept= default;
-    ComponentApplication::EventLoggerDeleter::EventLoggerDeleter(bool skipDelete) noexcept
-        : m_skipDelete{skipDelete}
-    {}
-    void ComponentApplication::EventLoggerDeleter::operator()(AZ::Debug::LocalFileEventLogger* ptr)
-    {
-        if (!m_skipDelete)
-        {
-            delete ptr;
-        }
-    }
-
     //=========================================================================
     // ComponentApplication::Descriptor
     // [5/30/2012]
@@ -198,14 +187,14 @@ namespace AZ
         {
         }
 
-        void operator()(AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
+        void operator()(const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
             // Update the project settings when the project path is set
             using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
             const auto projectPathKey = FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
 
             AZ::IO::FixedMaxPath newProjectPath;
-            if (SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual(projectPathKey, path)
+            if (SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual(projectPathKey, notifyEventArgs.m_jsonKeyPath)
                 && m_registry.Get(newProjectPath.Native(), projectPathKey) && newProjectPath != m_oldProjectPath)
             {
                 // Update old Project path before attempting to merge in new Settings Registry values in order to prevent recursive calls
@@ -231,14 +220,14 @@ namespace AZ
         {
         }
 
-        void operator()(AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
+        void operator()(const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
             // Update the project specialization when the project name is set
             using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
             const auto projectNameKey = FixedValueString(AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey) + "/project_name";
 
             FixedValueString newProjectName;
-            if (SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual(projectNameKey, path)
+            if (SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual(projectNameKey, notifyEventArgs.m_jsonKeyPath)
                 && m_registry.Get(newProjectName, projectNameKey) && newProjectName != m_oldProjectName)
             {
                 // Add the project_name as a specialization for loading the build system dependency .setreg files
@@ -267,10 +256,10 @@ namespace AZ
         {
         }
 
-        void operator()(AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
+        void operator()(const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
             // Update the ComponentApplication CommandLine instance when the command line settings are merged into the Settings Registry
-            if (path == AZ::SettingsRegistryMergeUtils::CommandLineValueChangedKey)
+            if (notifyEventArgs.m_jsonKeyPath == AZ::SettingsRegistryMergeUtils::CommandLineValueChangedKey)
             {
                 AZ::SettingsRegistryMergeUtils::GetCommandLineFromRegistry(m_registry, m_commandLine);
             }
@@ -401,8 +390,7 @@ namespace AZ
     }
 
     ComponentApplication::ComponentApplication(int argC, char** argV)
-        : m_eventLogger{}
-        , m_timeSystem(AZStd::make_unique<TimeSystem>())
+        : m_timeSystem(AZStd::make_unique<TimeSystem>())
     {
         if (Interface<ComponentApplicationRequests>::Get() == nullptr)
         {
@@ -423,18 +411,6 @@ namespace AZ
             m_argV = &m_commandLineBufferAddress;
         }
 
-        // Create the Event logger if it doesn't exist, otherwise reuse the one registered
-        // with the AZ::Interface
-        if (AZ::Interface<AZ::Debug::IEventLogger>::Get() == nullptr)
-        {
-            m_eventLogger.reset(new AZ::Debug::LocalFileEventLogger);
-        }
-        else
-        {
-            m_eventLogger = EventLoggerPtr(static_cast<AZ::Debug::LocalFileEventLogger*>(AZ::Interface<AZ::Debug::IEventLogger>::Get()),
-                EventLoggerDeleter{ true });
-        }
-
         // we are about to create allocators, so make sure that
         // the descriptor is filled with at least the defaults:
         m_descriptor.m_recordingMode = AllocatorManager::Instance().GetDefaultTrackingMode();
@@ -442,6 +418,13 @@ namespace AZ
         // Initializes the OSAllocator and SystemAllocator as soon as possible
         CreateOSAllocator();
         CreateSystemAllocator();
+
+        // Create the EventLoggerFactory as soon as the Allocators are available
+        m_eventLoggerFactory = AZStd::make_unique<AZ::Metrics::EventLoggerFactoryImpl>();
+        if (AZ::Metrics::EventLoggerFactory::Get() == nullptr)
+        {
+            AZ::Metrics::EventLoggerFactory::Register(m_eventLoggerFactory.get());
+        }
 
         // Now that the Allocators are initialized, the Command Line parameters can be parsed
         m_commandLine.Parse(m_argC, m_argV);
@@ -468,6 +451,14 @@ namespace AZ
         if (SettingsRegistry::Get() == nullptr)
         {
             SettingsRegistry::Register(m_settingsRegistry.get());
+        }
+
+        m_settingsRegistryOriginTracker = AZStd::make_unique<SettingsRegistryOriginTracker>(*m_settingsRegistry);
+
+        // Register the Settings Registry Origin Tracker with the AZ Interface system
+        if (AZ::Interface<AZ::SettingsRegistryOriginTracker>::Get() == nullptr)
+        {
+            AZ::Interface<AZ::SettingsRegistryOriginTracker>::Register(m_settingsRegistryOriginTracker.get());
         }
 
         // Add the Command Line arguments into the SettingsRegistry
@@ -516,6 +507,7 @@ namespace AZ
             AZ::Interface<AZ::IConsole>::Register(m_console.get());
             m_console->LinkDeferredFunctors(AZ::ConsoleFunctorBase::GetDeferredHead());
             m_settingsRegistryConsoleFunctors = AZ::SettingsRegistryConsoleUtils::RegisterAzConsoleCommands(*m_settingsRegistry, *m_console);
+            m_settingsRegistryOriginTrackerConsoleFunctors = AZ::SettingsRegistryConsoleUtils::RegisterAzConsoleCommands(*m_settingsRegistryOriginTracker, *m_console);
             ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "ConsoleAvailable", R"({})");
         }
     }
@@ -552,6 +544,13 @@ namespace AZ
         m_console.reset();
 
         m_moduleManager.reset();
+
+        // Unregister the global settings registry origin tracker if this application owns is
+        if (AZ::Interface<AZ::SettingsRegistryOriginTracker>::Get() == m_settingsRegistryOriginTracker.get())
+        {
+            AZ::Interface<AZ::SettingsRegistryOriginTracker>::Unregister(m_settingsRegistryOriginTracker.get());
+        }
+        m_settingsRegistryOriginTracker.reset();
         // Unregister the global Settings Registry if it is owned by this application instance
         if (AZ::SettingsRegistry::Get() == m_settingsRegistry.get())
         {
@@ -567,6 +566,14 @@ namespace AZ
             AZ::Interface<AZ::NameDictionary>::Unregister(m_nameDictionary.get());
         }
         m_nameDictionary.reset();
+
+        // Unregister the Event Factory with th AZ Interface if it is registered
+        if (AZ::Metrics::EventLoggerFactory::Get() == m_eventLoggerFactory.get())
+        {
+            AZ::Metrics::EventLoggerFactory::Unregister(m_eventLoggerFactory.get());
+        }
+
+        m_eventLoggerFactory.reset();
 
         // Set AZ::CommandLine to an empty object to clear out allocated memory before the allocators
         // are destroyed
@@ -649,17 +656,6 @@ namespace AZ
     //=========================================================================
     void ComponentApplication::CreateCommon()
     {
-        {
-            AZ::IO::FixedMaxPath outputPath;
-            m_settingsRegistry->Get(outputPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_DevWriteStorage);
-            outputPath /= "eventlogger";
-
-            AZ::IO::FixedMaxPathString baseFileName{ "EventLog" }; // default name
-            m_settingsRegistry->Get(baseFileName, AZ::SettingsRegistryMergeUtils::BuildTargetNameKey);
-
-            m_eventLogger->Start(outputPath.Native(), baseFileName);
-        }
-
         Sfmt::Create();
 
         CreateReflectionManager();
@@ -784,8 +780,6 @@ namespace AZ
         // Disconnect from application and tick request buses
         ComponentApplicationBus::Handler::BusDisconnect();
         TickRequestBus::Handler::BusDisconnect();
-
-        m_eventLogger->Stop();
 
         // Clear the descriptor to deallocate all strings (owned by ModuleDescriptor)
         m_descriptor = Descriptor();
@@ -1239,17 +1233,15 @@ namespace AZ
             bool m_autoLoad{ true };
         };
 
-
         using FixedValueString = SettingsRegistryInterface::FixedValueString;
-        using Type = SettingsRegistryInterface::Type;
         AZStd::vector<GemModuleLoadData> modulesLoadData;
         auto GemModuleVisitor = [&settingsRegistry = *m_settingsRegistry, &modulesLoadData]
-        (AZStd::string_view gemRootObjectPath, AZStd::string_view, Type)
+        (const AZ::SettingsRegistryInterface::VisitArgs& activeGemArgs)
         {
-            auto VisitGemObjectFields = [&settingsRegistry, &modulesLoadData](AZStd::string_view jsonPath,
-                AZStd::string_view fieldName, Type)
+            auto VisitGemObjectFields = [&settingsRegistry, &modulesLoadData](
+                const AZ::SettingsRegistryInterface::VisitArgs& gemTargetArgs)
             {
-                AZStd::string_view gemModuleName = fieldName;
+                AZStd::string_view gemModuleName = gemTargetArgs.m_fieldName;
                 auto FindGemModuleLoadEntry = [gemModuleName](const GemModuleLoadData& moduleLoadData)
                 {
                     return gemModuleName == moduleLoadData.m_gemModuleName;
@@ -1263,7 +1255,7 @@ namespace AZ
                 // By default the auto load option is true
                 // So auto load is turned off if option "AutoLoad" key exist and has a value of false
                 auto autoLoadJsonPath = FixedValueString::format("%.*s/AutoLoad",
-                    AZ_STRING_ARG(jsonPath));
+                    AZ_STRING_ARG(gemTargetArgs.m_jsonKeyPath));
                 if (bool autoLoadModule{}; settingsRegistry.Get(autoLoadModule, autoLoadJsonPath) && !autoLoadModule)
                 {
                     moduleLoadData.m_autoLoad = false;
@@ -1271,20 +1263,26 @@ namespace AZ
 
                 // Locate the Module paths within the Gem Target Name object
                 auto AppendDynamicModulePaths = [&settingsRegistry, &moduleLoadData]
-                (AZStd::string_view gemModuleJsonPath, AZStd::string_view, Type)
+                (const AZ::SettingsRegistryInterface::VisitArgs& visitArgs)
                 {
-                    if (AZ::IO::Path modulePath; settingsRegistry.Get(modulePath.Native(), gemModuleJsonPath))
+                    if (AZ::IO::Path modulePath; settingsRegistry.Get(modulePath.Native(), visitArgs.m_jsonKeyPath))
                     {
                         moduleLoadData.m_dynamicLibraryPaths.emplace_back(AZStd::move(modulePath.Native()));
                     }
+
+                    return AZ::SettingsRegistryInterface::VisitResponse::Skip;
                 };
                 auto gemModulesJsonPath = FixedValueString::format("%.*s/Modules",
-                    AZ_STRING_ARG(jsonPath));
+                    AZ_STRING_ARG(gemTargetArgs.m_jsonKeyPath));
                 AZ::SettingsRegistryVisitorUtils::VisitArray(settingsRegistry, AppendDynamicModulePaths, gemModulesJsonPath);
+
+                return AZ::SettingsRegistryInterface::VisitResponse::Skip;
             };
 
             AZ::SettingsRegistryVisitorUtils::VisitField(settingsRegistry, VisitGemObjectFields,
-                FixedValueString::format("%.*s/Targets", AZ_STRING_ARG(gemRootObjectPath)));
+                FixedValueString::format("%.*s/Targets", AZ_STRING_ARG(activeGemArgs.m_jsonKeyPath)));
+
+            return AZ::SettingsRegistryInterface::VisitResponse::Skip;
         };
 
         ModuleDescriptorList gemModules;

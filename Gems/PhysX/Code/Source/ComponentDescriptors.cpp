@@ -25,6 +25,7 @@
 #include <Source/BallJointComponent.h>
 #include <Source/FixedJointComponent.h>
 #include <Source/HingeJointComponent.h>
+#include <Source/PrismaticJointComponent.h>
 
 namespace PhysX
 {
@@ -49,7 +50,8 @@ namespace PhysX
             JointComponent::CreateDescriptor(),
             BallJointComponent::CreateDescriptor(),
             FixedJointComponent::CreateDescriptor(),
-            HingeJointComponent::CreateDescriptor()
+            HingeJointComponent::CreateDescriptor(),
+            PrismaticJointComponent::CreateDescriptor()
         };
 
         return descriptors;

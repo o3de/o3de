@@ -36,7 +36,7 @@ R"DELIMITER(<ObjectStream version="1">
                                 <Class name="AZ::u64" field="Id" value="11874523501682509824" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
                             </Class>
                         </Class>
-                        <Class name="SelectionComponent" field="m_template" type="{73B724FC-43D1-4C75-ACF5-79AA8A3BF89D}">
+                        <Class name="SelectionComponent" field="m_template" type="{A7CBE7BC-9B4A-47DC-962F-1BFAE85DBF3A}">
                             <Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
                                 <Class name="AZ::u64" field="Id" value="0" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
                             </Class>
@@ -127,7 +127,7 @@ TEST_F(WrappedEditorComponentTest, ComponentId_MatchesWrapperId)
     EXPECT_EQ(m_componentFromSlice->GetId(), 11874523501682509824u);
 }
 
-const AZ::Uuid InGameOnlyComponentTypeId = "{1D538623-2052-464F-B0DA-D000E1520333}";
+static constexpr AZ::TypeId InGameOnlyComponentTypeId{ "{1D538623-2052-464F-B0DA-D000E1520333}" };
 class InGameOnlyComponent
     : public AZ::Component
 {
@@ -152,7 +152,7 @@ public:
     }
 };
 
-const AZ::Uuid NoneEditorComponentTypeId = "{AE3454BA-D785-4EE2-A55B-A089F2B2916A}";
+static constexpr AZ::Uuid NoneEditorComponentTypeId{ "{AE3454BA-D785-4EE2-A55B-A089F2B2916A}" };
 class NoneEditorComponent
     : public AZ::Component
 {

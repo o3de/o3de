@@ -8,6 +8,10 @@
 
 #pragma once
 
+#include <AzCore/std/ranges/ranges_algorithm.h>
+#include <AzCore/std/ranges/as_rvalue_view.h>
+#include <AzCore/std/utility/as_const.h>
+
 namespace AZ::Dom
 {
     template<class T>
@@ -23,26 +27,30 @@ namespace AZ::Dom
     template<class Range, class>
     DomPrefixTree<T>::DomPrefixTree(Range&& range)
     {
-        for (auto&& [path, value] : AZStd::forward<Range>(range))
+        if constexpr (AZStd::is_lvalue_reference_v<Range>)
         {
-            SetValue(path, value);
+            auto AddPrefixes = [this](auto&& valuePair)
+            {
+                auto&& [path, value] = valuePair;
+                this->SetValue(path, value);
+            };
+            AZStd::ranges::for_each(range, AZStd::move(AddPrefixes));
+        }
+        else
+        {
+            auto AddPrefixes = [this](auto&& valuePair)
+            {
+                auto&& [path, value] = valuePair;
+                this->SetValue(path, AZStd::move(value));
+            };
+            AZStd::ranges::for_each(range | AZStd::views::as_rvalue, AZStd::move(AddPrefixes));
         }
     }
 
     template<class T>
     auto DomPrefixTree<T>::GetNodeForPath(const Path& path) -> Node*
     {
-        Node* node = &m_rootNode;
-        for (const auto& entry : path)
-        {
-            auto entryIt = node->m_values.find(entry);
-            if (entryIt == node->m_values.end())
-            {
-                return nullptr;
-            }
-            node = &entryIt->second;
-        }
-        return node;
+        return const_cast<Node*>(AZStd::as_const(*this).GetNodeForPath(path));
     }
 
     template<class T>
@@ -190,7 +198,7 @@ namespace AZ::Dom
             path,
             [&visitor](const Path& path, T& value)
             {
-                visitor(path, value);
+                return visitor(path, value);
             },
             flags);
     }

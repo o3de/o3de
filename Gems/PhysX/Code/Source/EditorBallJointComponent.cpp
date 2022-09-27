@@ -55,7 +55,6 @@ namespace PhysX
     void EditorBallJointComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         required.push_back(AZ_CRC_CE("TransformService"));
-        required.push_back(AZ_CRC_CE("PhysicsColliderService"));
         required.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
     }
 

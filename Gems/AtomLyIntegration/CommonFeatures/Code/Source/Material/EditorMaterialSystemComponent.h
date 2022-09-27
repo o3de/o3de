@@ -35,6 +35,7 @@ namespace AZ
             , public AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
             , public AzToolsFramework::EditorMenuNotificationBus::Handler
             , public AzToolsFramework::EditorEvents::Bus::Handler
+            , public AzToolsFramework::ToolsApplicationNotificationBus::Handler
             , public AZ::SystemTickBus::Handler
         {
         public:
@@ -56,6 +57,7 @@ namespace AZ
         private:
             //! EditorMaterialSystemComponentRequestBus::Handler overrides...
             void OpenMaterialEditor(const AZStd::string& sourcePath) override;
+            void OpenMaterialCanvas(const AZStd::string& sourcePath) override;
             void OpenMaterialInspector(
                 const AZ::EntityId& primaryEntityId,
                 const AzToolsFramework::EntityIdSet& entityIdsToEdit,
@@ -87,9 +89,13 @@ namespace AZ
             // AztoolsFramework::EditorEvents::Bus::Handler overrides...
             void NotifyRegisterViews() override;
 
+            // AzToolsFramework::ToolsApplicationNotificationBus::Handler overrides...
+            void AfterEntitySelectionChanged(const AzToolsFramework::EntityIdList& newlySelectedEntities, const AzToolsFramework::EntityIdList&) override;
+
             void PurgePreviews();
 
             QAction* m_openMaterialEditorAction = nullptr;
+            QAction* m_openMaterialCanvasAction = nullptr;
             AZStd::unique_ptr<MaterialBrowserInteractions> m_materialBrowserInteractions;
             AZStd::unordered_set<AZStd::pair<AZ::EntityId, AZ::Render::MaterialAssignmentId>> m_materialPreviewRequests;
             AZStd::unordered_map<AZ::EntityId, AZStd::unordered_map<AZ::Render::MaterialAssignmentId, QPixmap>> m_materialPreviews;

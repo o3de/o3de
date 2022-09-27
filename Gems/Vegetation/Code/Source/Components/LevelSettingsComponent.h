@@ -35,7 +35,7 @@ namespace Vegetation
         InstanceSystemConfig m_instanceSystemConfig;
     };
 
-    static const AZ::Uuid LevelSettingsComponentTypeId = "{FDF8520C-933F-4ED5-9B3A-4ABC9B62496C}";
+    inline constexpr AZ::TypeId LevelSettingsComponentTypeId{ "{FDF8520C-933F-4ED5-9B3A-4ABC9B62496C}" };
 
     /*
     * Sends out updates for the settings for the area and instance managers

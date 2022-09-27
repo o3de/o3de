@@ -404,7 +404,9 @@ private:
     // Handlers for snapping/editor event callbacks
     SandboxEditor::AngleSnappingChangedEvent::Handler m_angleSnappingHandler;
     SandboxEditor::GridSnappingChangedEvent::Handler m_gridSnappingHandler;
-    SandboxEditor::NearFarPlaneChangedEvent::Handler m_nearFarPlaneDistanceHandler;
+    SandboxEditor::NearFarPlaneChangedEvent::Handler m_nearPlaneDistanceHandler;
+    SandboxEditor::NearFarPlaneChangedEvent::Handler m_farPlaneDistanceHandler;
+    SandboxEditor::PerspectiveChangedEvent::Handler m_perspectiveChangeHandler;
     AZStd::unique_ptr<SandboxEditor::EditorViewportSettingsCallbacks> m_editorViewportSettingsCallbacks;
 
     // Used for some legacy logic which lets the widget release a grabbed keyboard at the right times

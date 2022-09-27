@@ -48,9 +48,9 @@ namespace EMStudio
         void OnContextMenuEvent(QMouseEvent* event);
 
         // AnimViewportRequestBus::Handler overrides
-        void UpdateCameraViewMode(RenderOptions::CameraViewMode mode);
-        void UpdateCameraFollowUp(bool follow);
-        void UpdateRenderFlags(EMotionFX::ActorRenderFlags renderFlags);
+        void UpdateCameraViewMode(RenderOptions::CameraViewMode mode) override;
+        void UpdateCameraFollowUp(bool follow) override;
+        void UpdateRenderFlags(EMotionFX::ActorRenderFlags renderFlags) override;
 
         // ViewportPluginRequestBus::Handler overrides
         AZ::s32 GetViewportId() const;

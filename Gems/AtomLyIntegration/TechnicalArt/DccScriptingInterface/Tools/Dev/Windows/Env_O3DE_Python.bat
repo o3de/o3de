@@ -33,23 +33,25 @@ echo.
 :: Python Version
 :: Ideally these are set to match the O3DE python distribution
 :: <O3DE>\python\runtime
+
+:: need a more reliable way to set these, instead of updating them to match every time python runtime updates
 IF "%DCCSI_PY_VERSION_MAJOR%"=="" (set DCCSI_PY_VERSION_MAJOR=3)
 echo     DCCSI_PY_VERSION_MAJOR = %DCCSI_PY_VERSION_MAJOR%
 
 :: PY version Major
-IF "%DCCSI_PY_VERSION_MINOR%"=="" (set DCCSI_PY_VERSION_MINOR=7)
+IF "%DCCSI_PY_VERSION_MINOR%"=="" (set DCCSI_PY_VERSION_MINOR=10)
 echo     DCCSI_PY_VERSION_MINOR = %DCCSI_PY_VERSION_MINOR%
 
-IF "%DCCSI_PY_VERSION_RELEASE%"=="" (set DCCSI_PY_VERSION_RELEASE=10)
+IF "%DCCSI_PY_VERSION_RELEASE%"=="" (set DCCSI_PY_VERSION_RELEASE=5)
 echo     DCCSI_PY_VERSION_RELEASE = %DCCSI_PY_VERSION_RELEASE%
 
-:: shared location for 64bit python 3.7 DEV location
+:: shared location for 64bit python 3.10 DEV location
 :: this defines a DCCsi sandbox for lib site-packages by version
 :: <O3DE>\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\3rdParty\Python\Lib
 set "PATH_DCCSI_PYTHON=%PATH_DCCSIG%\3rdParty\Python"
 echo     PATH_DCCSI_PYTHON = %PATH_DCCSI_PYTHON%
 
-:: add access to a Lib location that matches the py version (example: 3.7.x)
+:: add access to a Lib location that matches the py version (example: 3.10.x)
 :: switch this for other python versions like maya (2.7.x)
 IF "%PATH_DCCSI_PYTHON_LIB%"=="" (set "PATH_DCCSI_PYTHON_LIB=%PATH_DCCSI_PYTHON%\Lib\%DCCSI_PY_VERSION_MAJOR%.x\%DCCSI_PY_VERSION_MAJOR%.%DCCSI_PY_VERSION_MINOR%.x\site-packages")
 echo     PATH_DCCSI_PYTHON_LIB = %PATH_DCCSI_PYTHON_LIB%
@@ -62,8 +64,8 @@ echo     PATH_DCCSI_PYTHON_LIB = %PATH_DCCSI_PYTHON_LIB%
 IF "%PATH_O3DE_PYTHON_INSTALL%"=="" (set "PATH_O3DE_PYTHON_INSTALL=%O3DE_DEV%\python")
 echo     PATH_O3DE_PYTHON_INSTALL = %PATH_O3DE_PYTHON_INSTALL%
 
-:: location for O3DE python 3.7 location 
-:: Note, many DCC tools (like Maya) include thier own python interpretter
+:: location for O3DE python 3.10 location 
+:: Note, many DCC tools (like Maya) include thier own python interpreter
 :: Some DCC apps may not operate correctly if PYTHONHOME is set (this is definitely the case with Maya)
 :: Be aware the python.cmd below does set PYTHONHOME
 IF "%DCCSI_PY_BASE%"=="" (set "DCCSI_PY_BASE=%PATH_O3DE_PYTHON_INSTALL%\python.cmd")
@@ -81,16 +83,10 @@ echo     DCCSI_PY_DEFAULT = %DCCSI_PY_DEFAULT%
 IF "%DCCSI_PY_IDE%"=="" (set "DCCSI_PY_IDE=%O3DE_PYTHONHOME%\python.exe")
 echo     DCCSI_PY_IDE = %DCCSI_PY_IDE%
 
-echo.
-echo ~    Not setting up PATH or PYTHONPATH (each launcher should!)
+:: O3DE installs additional python pkgs from 3rd party and other locations
+:: See: C:\path\to\o3de\python\runtime\python-x.x.x-revX-windows\python\Lib\site-packages\easy-install.pth
 
-:: we should NOT add to the PATH here (this is global)
-::SET PATH=%PATH_O3DE_PYTHON_INSTALL%;%O3DE_PYTHONHOME%;%DCCSI_PY_IDE%;%PATH%
-
-:: we should NOT add to the PYTHONPATH here (this is global)
-:: add all python related paths to PYTHONPATH for package imports
-::set PYTHONPATH=%PATH_DCCSIG%;%PATH_DCCSI_PYTHON_LIB%;%PATH_O3DE_BUILD%;%PYTHONPATH%
-::echo     PYTHONPATH = %PYTHONPATH%
+::ENDLOCAL
 
 :: Set flag so we don't initialize dccsi environment twice
 SET DCCSI_ENV_PY_INIT=1

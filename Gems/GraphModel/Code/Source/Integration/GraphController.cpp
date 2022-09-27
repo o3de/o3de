@@ -303,16 +303,7 @@ namespace GraphModelIntegration
         using namespace GraphModel;
 
         GraphCanvas::SlotConfiguration slotConfig;
-
-        // The user can provide put a reader-friendly name, but if left blank
-        // we just use the true name for display.
-        AZStd::string displayName = slot->GetDisplayName();
-        if (displayName.empty())
-        {
-            displayName = slot->GetName();
-        }
-
-        slotConfig.m_name = displayName;
+        slotConfig.m_name = !slot->GetDisplayName().empty() ? slot->GetDisplayName() : slot->GetName();
         slotConfig.m_tooltip = slot->GetDescription();
         slotConfig.m_connectionType = ToGraphCanvasConnectionType(slot->GetSlotDirection());
         slotConfig.m_slotGroup = ToGraphCanvasSlotGroup(slot->GetSlotType());
@@ -560,6 +551,9 @@ namespace GraphModelIntegration
             return;
         }
 
+        GraphControllerNotificationBus::Event(
+            m_graphCanvasSceneId, &GraphControllerNotifications::PreOnGraphModelNodeWrapped, wrapperNode, node);
+
         AZ::EntityId nodeUiId = m_elementMap.Find(node);
         if (!nodeUiId.IsValid())
         {
@@ -606,6 +600,11 @@ namespace GraphModelIntegration
             m_graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelNodeUnwrapped, wrapperNode, node);
     }
 
+    bool GraphController::IsNodeWrapped(GraphModel::NodePtr node) const
+    {
+        return m_graph->IsNodeWrapped(node);
+    }
+
     void GraphController::WrapNodeUi(GraphModel::NodePtr wrapperNode, GraphModel::NodePtr node, AZ::u32 layoutOrder)
     {
         AZ::EntityId wrapperNodeUiId = m_elementMap.Find(wrapperNode);
@@ -650,6 +649,32 @@ namespace GraphModelIntegration
         GraphModel::SlotPtr targetSlot = targetNode->GetSlot(targetSlotId);
 
         return AddConnection(sourceSlot, targetSlot);
+    }
+
+    bool GraphController::AreSlotsConnected(
+        GraphModel::NodePtr sourceNode, GraphModel::SlotId sourceSlotId, GraphModel::NodePtr targetNode, GraphModel::SlotId targetSlotId) const
+    {
+        if (!sourceNode || !targetNode)
+        {
+            return false;
+        }
+
+        GraphModel::SlotPtr sourceSlot = sourceNode->GetSlot(sourceSlotId);
+        if (!sourceSlot)
+        {
+            return false;
+        }
+
+        // Check all connections on the source slot to see if they match the target node and slot
+        for (const auto& connection : sourceSlot->GetConnections())
+        {
+            if (connection->GetTargetNode() == targetNode && connection->GetTargetSlot()->GetSlotId() == targetSlotId)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     bool GraphController::RemoveConnection(GraphModel::ConnectionPtr connection)
@@ -849,6 +874,8 @@ namespace GraphModelIntegration
         const GraphModel::NodePtr node = m_elementMap.Find<GraphModel::Node>(nodeUiId);
         if (node)
         {
+            GraphControllerNotificationBus::Event(m_graphCanvasSceneId, &GraphControllerNotifications::PreOnGraphModelNodeRemoved, node);
+
             GraphCanvas::ScopedGraphUndoBatch undoBatch(m_graphCanvasSceneId);
 
             // Remove any thumbnail reference for this node when it is removed from the graph
@@ -866,15 +893,6 @@ namespace GraphModelIntegration
             m_elementMap.Remove(node);
 
             GraphControllerNotificationBus::Event(m_graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelNodeRemoved, node);
-        }
-    }
-
-    void GraphController::PreOnNodeRemoved(const AZ::EntityId& nodeUiId)
-    {
-        const GraphModel::NodePtr node = m_elementMap.Find<GraphModel::Node>(nodeUiId);
-        if (node)
-        {
-            GraphControllerNotificationBus::Event(m_graphCanvasSceneId, &GraphControllerNotifications::PreOnGraphModelNodeRemoved, node);
         }
     }
 
@@ -1254,7 +1272,7 @@ namespace GraphModelIntegration
 
     GraphCanvas::NodePropertyDisplay* GraphController::CreateSlotPropertyDisplay(GraphModel::SlotPtr inputSlot) const
     {
-        if (!inputSlot)
+        if (!inputSlot || !inputSlot->SupportsEditingOnNode())
         {
             return nullptr;
         }
@@ -1264,9 +1282,6 @@ namespace GraphModelIntegration
 
         GraphCanvas::NodePropertyDisplay* dataDisplay = nullptr;
         AZ::Uuid dataTypeUuid = inputSlot->GetDataType()->GetTypeUuid();
-
-        // We cannot use SHADER_CANVAS_DATA_MACRO here because there is not code alignment between the type and the GraphCanvasRequest
-        // function.
 
         if (dataTypeUuid == azrtti_typeid<bool>())
         {

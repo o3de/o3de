@@ -327,9 +327,9 @@ namespace ScriptAutomation
                 if (PrepareForScreenCapture(AZ::IO::FixedMaxPath(filePath)))
                 {
                     auto scriptAutomationInterface = ScriptAutomationInterface::Get();
-                    uint32_t frameCaptureId = AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId;
+                    AZ::Render::FrameCaptureId frameCaptureId = AZ::Render::InvalidFrameCaptureId;
                     AZ::Render::FrameCaptureRequestBus::BroadcastResult(frameCaptureId, &AZ::Render::FrameCaptureRequestBus::Events::CaptureScreenshot, filePath);
-                    if (frameCaptureId != AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId)
+                    if (frameCaptureId != AZ::Render::InvalidFrameCaptureId)
                     {
                         scriptAutomationInterface->SetFrameCaptureId(frameCaptureId);
                     }
@@ -352,9 +352,9 @@ namespace ScriptAutomation
                 if (PrepareForScreenCapture(AZ::IO::FixedMaxPath(filePath)))
                 {
                     auto scriptAutomationInterface = ScriptAutomationInterface::Get();
-                    uint32_t frameCaptureId = AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId;
+                    AZ::Render::FrameCaptureId frameCaptureId = AZ::Render::InvalidFrameCaptureId;
                     AZ::Render::FrameCaptureRequestBus::BroadcastResult(frameCaptureId, &AZ::Render::FrameCaptureRequestBus::Events::CaptureScreenshotWithPreview, filePath);
-                    if (frameCaptureId != AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId)
+                    if (frameCaptureId != AZ::Render::InvalidFrameCaptureId)
                     {
                         scriptAutomationInterface->SetFrameCaptureId(frameCaptureId);
                     }
@@ -451,9 +451,9 @@ namespace ScriptAutomation
                 if (PrepareForScreenCapture(AZ::IO::FixedMaxPath(outputFilePath)))
                 {
                     auto scriptAutomationInterface = ScriptAutomationInterface::Get();
-                    uint32_t frameCaptureId = AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId;
+                    AZ::Render::FrameCaptureId frameCaptureId = AZ::Render::InvalidFrameCaptureId;
                     AZ::Render::FrameCaptureRequestBus::BroadcastResult(frameCaptureId, &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachment, passHierarchy, slot, outputFilePath, readbackOption);
-                    if (frameCaptureId != AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId)
+                    if (frameCaptureId != AZ::Render::InvalidFrameCaptureId)
                     {
                         scriptAutomationInterface->SetFrameCaptureId(frameCaptureId);
                     }

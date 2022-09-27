@@ -195,12 +195,10 @@ namespace Multiplayer
         {
             m_handleLocalServerRpcMessageEventHandle.Connect(m_sendServertoAuthorityRpcEvent);
         }
-        if (NetworkRoleHasController(m_netEntityRole))
-        {
-            DetermineInputOrdering();
-        }
         if (HasController())
         {
+            DetermineInputOrdering();
+
             // Listen for the entity to completely activate so that we can notify that all controllers have been activated
             GetEntity()->AddStateEventHandler(m_handleEntityStateEvent);
         }
@@ -216,7 +214,7 @@ namespace Multiplayer
                 GetEntity() ? GetEntity()->GetName().c_str() : "null");
         }
         m_handleLocalServerRpcMessageEventHandle.Disconnect();
-        if (NetworkRoleHasController(m_netEntityRole))
+        if (HasController())
         {
             GetNetworkEntityManager()->NotifyControllersDeactivated(m_netEntityHandle, EntityIsMigrating::False);
         }
@@ -258,6 +256,45 @@ namespace Multiplayer
     EntityMigration NetBindComponent::GetAllowEntityMigration() const
     {
         return m_netEntityMigration;
+    }
+
+    bool NetBindComponent::ValidatePropertyRead(const char* propertyName, NetEntityRole replicateFrom, NetEntityRole replicateTo) const
+    {
+        bool isValid(false);
+        if (replicateFrom == NetEntityRole::Authority)
+        {
+            // Things that replicate to clients are readable by all network entity roles
+            const bool replicatesToClient = (replicateTo == NetEntityRole::Client);
+            // Things that replicate from Authority can be read by all hosts
+            const bool isHost = (IsNetEntityRoleAuthority() || IsNetEntityRoleServer());
+            // Things that replicate to Autonomous can't be read by clients
+            const bool isAutonomous = ((replicateTo == NetEntityRole::Autonomous) && !IsNetEntityRoleClient());
+            isValid = replicatesToClient || isHost || isAutonomous;
+        }
+        else
+        {
+            // Autonomous can only replicate to Authority, and won't replicate to servers, it's meant for client authoritative values like basic client metrics
+            AZ_Assert(replicateTo == NetEntityRole::Authority, "The only valid case where properties replicate from a non-authority is in autonomous to authority");
+            isValid = IsNetEntityRoleAuthority() || IsNetEntityRoleAutonomous();
+        }
+
+        if (!isValid)
+        {
+            AZLOG_INFO("%s is not replicated to role %s, property read will return invalid data.", propertyName, GetEnumString(GetNetEntityRole()));
+        }
+        return isValid;
+    }
+
+    bool NetBindComponent::ValidatePropertyWrite(const char* propertyName, NetEntityRole replicateFrom, [[maybe_unused]] NetEntityRole replicateTo, bool isPredictable) const
+    {
+        bool isValid = (replicateFrom == GetNetEntityRole())
+                    || (isPredictable && IsNetEntityRoleAutonomous());
+
+        if (!isValid)
+        {
+            AZLOG_INFO("%s can't be written by role %s, property set will desync network state.", propertyName, GetEnumString(GetNetEntityRole()));
+        }
+        return isValid;
     }
 
     bool NetBindComponent::HasController() const
@@ -396,7 +433,7 @@ namespace Multiplayer
     {
         m_isProcessingInput = true;
         // Only autonomous and authority runs this logic
-        AZ_Assert((NetworkRoleHasController(m_netEntityRole)), "Incorrect network role for input processing");
+        AZ_Assert((HasController()), "Incorrect network role for input processing");
         for (MultiplayerComponent* multiplayerComponent : m_multiplayerInputComponentVector)
         {
             multiplayerComponent->GetController()->ProcessInputFromScript(networkInput, deltaTime);
@@ -745,7 +782,7 @@ namespace Multiplayer
     void NetBindComponent::HandleMarkedDirty()
     {
         m_dirtiedEvent.Signal();
-        if (NetworkRoleHasController(GetNetEntityRole()))
+        if (HasController())
         {
             m_localNotificationRecord.Append(m_currentRecord);
             if (!m_handleNotifyChanges.IsConnected())
@@ -765,7 +802,7 @@ namespace Multiplayer
 
     void NetBindComponent::DetermineInputOrdering()
     {
-        AZ_Assert(NetworkRoleHasController(m_netEntityRole), "Incorrect network role for input processing");
+        AZ_Assert(HasController(), "Incorrect network role for input processing");
 
         m_multiplayerInputComponentVector.clear();
         // walk the components in the activation order so that our default ordering for input matches our dependency sort

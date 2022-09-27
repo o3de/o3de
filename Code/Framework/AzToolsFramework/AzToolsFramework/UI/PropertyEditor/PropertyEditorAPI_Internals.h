@@ -163,7 +163,7 @@ namespace AzToolsFramework
         virtual void ReadValuesIntoGUI_Internal(QWidget* widget, InstanceDataNode* t) = 0;
         // we define this automatically for you, you don't have to override it.
         virtual bool HandlesType(const AZ::Uuid& id) const = 0;
-        virtual const AZ::Uuid& GetHandledType() const = 0;
+        virtual AZ::TypeId GetHandledType() const = 0;
         virtual QWidget* GetFirstInTabOrder_Internal(QWidget* widget) = 0;
         virtual QWidget* GetLastInTabOrder_Internal(QWidget* widget) = 0;
         virtual void UpdateWidgetInternalTabbing_Internal(QWidget* widget) = 0;
@@ -479,7 +479,7 @@ namespace AzToolsFramework
             return GetHandledType() == id;
         }
 
-        virtual const AZ::Uuid& GetHandledType() const override
+        virtual AZ::TypeId GetHandledType() const override
         {
             return AZ::SerializeTypeInfo<PropertyType>::GetUuid();
         }
@@ -512,7 +512,22 @@ namespace AzToolsFramework
 
             const AZ::Uuid& desiredUUID = GetHandledType();
 
-            PropertyType* actualCast = static_cast<PropertyType*>(serializeContext->DownCast(tempValue, propertyType, desiredUUID));
+            PropertyType* actualCast = [&]() -> PropertyType*
+            {
+                if (serializeContext->CanDowncast(propertyType, desiredUUID))
+                {
+                    return static_cast<PropertyType*>(serializeContext->DownCast(tempValue, propertyType, desiredUUID));
+                }
+                // Cover the case of Asset<T> property handling
+                else if (const auto* genericTypeInfo = serializeContext->FindGenericClassInfo(propertyType);
+                            genericTypeInfo && genericTypeInfo->GetGenericTypeId() == desiredUUID)
+                {
+                    return reinterpret_cast<PropertyType*>(tempValue);
+                }
+
+                return nullptr;
+            }();
+
             AZ_Assert(actualCast, "Could not cast from the existing type ID to the actual typeid required by the editor.");
             WriteGUIValuesIntoProperty(0, wid, *actualCast, nullptr);
         }
