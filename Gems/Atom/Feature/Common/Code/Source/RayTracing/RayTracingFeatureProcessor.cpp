@@ -188,6 +188,8 @@ namespace AZ
             AZ::Matrix3x3 rotationMatrix = Matrix3x3::CreateFromTransform(noScaleTransform);
             rotationMatrix = rotationMatrix.GetInverseFull().GetTranspose();
             Matrix3x4 worldInvTranspose3x4 = Matrix3x4::CreateFromMatrix3x3(rotationMatrix);
+            Matrix3x4 world3x4 = Matrix3x4::CreateFromTransform(mesh.m_transform);
+            world3x4.MultiplyByScale(mesh.m_nonUniformScale);
 
             // store the mesh buffers and material textures in the resource lists
             for (uint32_t subMeshIndex : mesh.m_subMeshIndices)
@@ -198,6 +200,7 @@ namespace AZ
 
                 subMesh.m_irradianceColor.StoreToFloat4(meshInfo.m_irradianceColor.data());
                 worldInvTranspose3x4.StoreToRowMajorFloat12(meshInfo.m_worldInvTranspose.data());
+                world3x4.StoreToRowMajorFloat12(meshInfo.m_world.data());
                 meshInfo.m_bufferFlags = subMesh.m_bufferFlags;
 
                 // add mesh buffers
@@ -359,12 +362,15 @@ namespace AZ
                 AZ::Matrix3x3 rotationMatrix = Matrix3x3::CreateFromTransform(noScaleTransform);
                 rotationMatrix = rotationMatrix.GetInverseFull().GetTranspose();
                 Matrix3x4 worldInvTranspose3x4 = Matrix3x4::CreateFromMatrix3x3(rotationMatrix);
+                Matrix3x4 world3x4 = Matrix3x4::CreateFromTransform(mesh.m_transform);
+                world3x4.MultiplyByScale(mesh.m_nonUniformScale);
 
                 // update all MeshInfos for this Mesh with the new transform
                 for (const auto& subMeshIndex : mesh.m_subMeshIndices)
                 {
                     MeshInfo& meshInfo = m_meshInfos[subMeshIndex];
                     worldInvTranspose3x4.StoreToRowMajorFloat12(meshInfo.m_worldInvTranspose.data());
+                    world3x4.StoreToRowMajorFloat12(meshInfo.m_world.data());
                 }
             }
 

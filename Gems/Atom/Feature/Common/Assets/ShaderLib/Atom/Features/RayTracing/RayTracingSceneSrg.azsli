@@ -159,6 +159,7 @@ ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
 
         float4   m_irradianceColor;
         float3x4 m_worldInvTranspose;
+        float3x4 m_world;
     };
 
     // hit shaders can retrieve the MeshInfo for a mesh hit using: RayTracingSceneSrg::m_meshInfo[InstanceIndex()]    

@@ -272,6 +272,7 @@ namespace AZ
 
                 AZStd::array<float, 4> m_irradianceColor;    // float4
                 AZStd::array<float, 12> m_worldInvTranspose; // float3x4
+                AZStd::array<float, 12> m_world;             // float3x4
             };
 
             // vector of MeshInfo, transferred to the meshInfoGpuBuffer
