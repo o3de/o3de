@@ -16,6 +16,7 @@
 #include <QPushButton>
 #include <QSvgWidget>
 #include <QSvgRenderer>
+#include <QTimer>
 #include <QWidgetAction>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/Debug/TraceContextLogFormatter.h>
@@ -54,7 +55,15 @@ SceneSettingsCardHeader::SceneSettingsCardHeader(QWidget* parent /* = nullptr */
 
 void SceneSettingsCardHeader::triggerCloseButton()
 {
-    parent()->deleteLater();
+    // A singleshot + delete on the parent is used instead of calling deleteLater,
+    // because the deleteLater wasn't functioning in automated tests, but this logic does.
+    QObject* card(parent());
+    QTimer::singleShot(
+        0,
+        [card]()
+        {
+            delete card;
+        });
 }
 
 void SceneSettingsCardHeader::SetCanClose(bool canClose)

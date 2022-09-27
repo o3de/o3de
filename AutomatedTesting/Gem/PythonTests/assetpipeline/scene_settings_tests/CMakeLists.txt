@@ -6,19 +6,18 @@
 #
 #
 
-add_subdirectory(asset_processor_tests)
-add_subdirectory(fbx_tests)
-add_subdirectory(scene_settings_tests)
-
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
-## AP Python Tests ##
     ly_add_pytest(
-        NAME AssetPipelineTests.BankInfoParser
-        PATH ${CMAKE_CURRENT_LIST_DIR}/wwise_bank_dependency_tests/bank_info_parser_tests.py
-        EXCLUDE_TEST_RUN_TARGET_FROM_IDE
+        NAME AutomatedTesting::SceneSettingsTests
         TEST_SUITE periodic
+        TEST_SERIAL
+        PATH ${CMAKE_CURRENT_LIST_DIR}/scene_settings_tests.py
+        PYTEST_MARKS "not REQUIRES_gpu"
         RUNTIME_DEPENDENCIES
-            AZ::AssetProcessorBatch   
+            Legacy::Editor
+            AZ::AssetProcessor
+            AutomatedTesting.Assets
+            Gem::EditorPythonBindings.Editor
+        COMPONENT TestTools
     )
-        
 endif()
