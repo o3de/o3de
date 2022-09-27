@@ -26,6 +26,14 @@ namespace AtomToolsFramework
                 ->Field("toolId", &DynamicNode::m_toolId)
                 ->Field("configId", &DynamicNode::m_configId)
                 ;
+
+
+            if (auto editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<DynamicNode>("DynamicNode", "")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->Attribute(AZ_CRC_CE("TitlePaletteOverride"), &DynamicNode::GetTitlePaletteName);
+            }
         }
     }
 
@@ -56,6 +64,11 @@ namespace AtomToolsFramework
     const DynamicNodeConfig& DynamicNode::GetConfig() const
     {
         return m_config;
+    }
+
+    AZStd::string DynamicNode::GetTitlePaletteName() const
+    {
+        return !m_config.m_titlePaletteName.empty() ? m_config.m_titlePaletteName : "DefaultNodeTitlePalette";
     }
 
     void DynamicNode::RegisterSlots()

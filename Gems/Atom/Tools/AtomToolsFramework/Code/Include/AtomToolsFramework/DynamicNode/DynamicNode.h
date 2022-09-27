@@ -37,6 +37,9 @@ namespace AtomToolsFramework
         // contained in the config.
         const DynamicNodeConfig& GetConfig() const;
 
+        // Get the name of the title palette for node UI
+        AZStd::string GetTitlePaletteName() const;
+
     protected:
         void RegisterSlots() override;
 

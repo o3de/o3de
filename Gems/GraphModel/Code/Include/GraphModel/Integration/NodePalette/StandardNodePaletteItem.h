@@ -40,7 +40,7 @@ namespace GraphModelIntegration
         {
             // Setting the palette override (if specified) is mainly used to set the icon color for this
             // node palette item, but it can also be used to override other styling aspects as well
-            AZStd::string paletteOverride = Helpers::GetTitlePaletteOverride(azrtti_typeid<NodeType>());
+            AZStd::string paletteOverride = Helpers::GetTitlePaletteOverride(nullptr, azrtti_typeid<NodeType>());
             if (!paletteOverride.empty())
             {
                 SetTitlePalette(paletteOverride);
