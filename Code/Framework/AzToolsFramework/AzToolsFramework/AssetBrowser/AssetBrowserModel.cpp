@@ -238,28 +238,27 @@ namespace AzToolsFramework
                 AssetChangeReportResponse moveResponse;
                 if (SendRequest(moveRequest, moveResponse))
                 {
+
                     AZStd::string message;
                     for (int i = 0; i < moveResponse.m_lines.size(); ++i)
                     {
                         message += moveResponse.m_lines[i] + "\n";
                     }
-
+#if 0
                     if (message.size())
                     {
-                        QMessageBox msgBox(nullptr);
-                        msgBox.setWindowTitle("After Rename Asset Information");
-                        msgBox.setIcon(QMessageBox::Warning);
-                        msgBox.setText("The asset has been moved.");
-                        msgBox.setInformativeText("More information can be found by pressing \"Show Details...\".");
-                        msgBox.setStandardButtons(QMessageBox::Ok);
-                        msgBox.setDefaultButton(QMessageBox::Ok);
-                        msgBox.setDetailedText(message.c_str());
-                        QSpacerItem* horizontalSpacer2 = new QSpacerItem(600, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
-                        QGridLayout* moveLayout = (QGridLayout*)msgBox.layout();
-                        moveLayout->addItem(horizontalSpacer2, moveLayout->rowCount(), 0, 1, moveLayout->columnCount());
+                        FixedSizeMessageBox msgBox(
+                            "After Rename Asset Information",
+                            "The asset has been renamed.",
+                            "More information can be found by pressing \"Show Details...\".",
+                            message.c_str(),
+                            QMessageBox::Information,
+                            QMessageBox::Ok,
+                            QMessageBox::Ok);
+                        msgBox.SetSize(600, 0);
                         msgBox.exec();
-                        emit dataChanged(index.parent(), index);
                     }
+#endif
                 }
             }
             return false;

@@ -467,10 +467,10 @@
                         "Configuration": {
                             "ModelAsset": {
                                 "assetId": {
-                                    "guid": "{0C6BBB76-4EC2-583A-B8C6-1A4C4FD1FE9D}",
+                                    "guid": "{7F3C02E5-8B4C-54E9-8771-287B808E9DAE}",
                                     "subId": 283109893
                                 },
-                                "assetHint": "objects/bunny.azmodel"
+                                "assetHint": "objects/bunny1.azmodel"
                             },
                             "LodOverride": 255
                         }
