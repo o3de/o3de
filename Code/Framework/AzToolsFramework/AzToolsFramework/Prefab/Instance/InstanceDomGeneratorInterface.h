@@ -22,16 +22,16 @@ namespace AzToolsFramework
             virtual ~InstanceDomGeneratorInterface() = default;
 
             //! Generates an instance DOM that represents a given instance object.
+            //! Caller should check if the generated DOM is a valid JSON object.
             //! @param[out] instanceDom The output instance DOM that will be modified.
             //! @param instance The given instance object.
-            //! @return bool on whether the operation succeeds.
-            virtual bool GenerateInstanceDom(PrefabDom& instanceDom, const Instance& instance) const = 0;
+            virtual void GenerateInstanceDom(PrefabDom& instanceDom, const Instance& instance) const = 0;
 
             //! Generates an entity DOM that represents a given entity object.
+            //! Caller should check if the generated DOM is a valid JSON object.
             //! @param[out] entityDom The output entity DOM that will be modified.
             //! @param entity The given entity object.
-            //! @return bool on whether the operation succeeds.
-            virtual bool GenerateEntityDom(PrefabDom& entityDom, const AZ::Entity& entity) const = 0;
+            virtual void GenerateEntityDom(PrefabDom& entityDom, const AZ::Entity& entity) const = 0;
         };
     } // namespace Prefab
 } // namespace AzToolsFramework

@@ -737,15 +737,21 @@ namespace AzToolsFramework
             m_prefabUndoCache.Retrieve(entityId, beforeParentId);
 
             PrefabDom afterState;
+            m_instanceToTemplateInterface->GenerateDomForEntity(afterState, *entity);
             AZ::EntityId afterParentId;
             AZ::TransformBus::EventResult(afterParentId, entityId, &AZ::TransformBus::Events::GetParentId);
-            m_instanceToTemplateInterface->GenerateDomForEntity(afterState, *entity);
+
+            // Skip further processing if either state is not a valid JSON object.
+            if (!beforeState.IsObject() || !afterState.IsObject())
+            {
+                return AZ::Success();
+            }
 
             PrefabDom patch;
             m_instanceToTemplateInterface->GeneratePatch(patch, beforeState, afterState);
             m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(patch, entityId);
 
-            if (patch.IsArray() && !patch.Empty() && beforeState.IsObject())
+            if (patch.IsArray() && !patch.Empty())
             {
                 bool isNewParentOwnedByDifferentInstance = false;
 
