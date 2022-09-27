@@ -19,28 +19,6 @@ namespace AZ
     {
         static const char* const None = "None";
 
-        class PythonBehaviorInfo final
-        {
-        public:
-            AZ_RTTI(PythonBehaviorInfo, "{8055BD03-5B3B-490D-AEC5-1B1E2616D529}");
-            AZ_CLASS_ALLOCATOR(PythonBehaviorInfo, AZ::SystemAllocator, 0);
-
-            static void Reflect(AZ::ReflectContext* context);
-
-            PythonBehaviorInfo(const AZ::BehaviorClass* behaviorClass);
-            PythonBehaviorInfo() = delete;
-
-        protected:
-            bool IsMemberLike(const AZ::BehaviorMethod& method, const AZ::TypeId& typeId) const;
-            AZStd::string FetchPythonType(const AZ::BehaviorParameter& param) const;
-            void PrepareMethod(AZStd::string_view methodName, const AZ::BehaviorMethod& behaviorMethod);
-            void PrepareProperty(AZStd::string_view propertyName, const AZ::BehaviorProperty& behaviorProperty);
-
-        private:
-            const AZ::BehaviorClass* m_behaviorClass = nullptr;
-            AZStd::vector<AZStd::string> m_methodList;
-            AZStd::vector<AZStd::string> m_propertyList;
-        };
 
         PythonBehaviorInfo::PythonBehaviorInfo(const AZ::BehaviorClass* behaviorClass)
             : m_behaviorClass(behaviorClass)
@@ -62,7 +40,7 @@ namespace AZ
             if (behaviorContext)
             {
                 behaviorContext->Class<PythonBehaviorInfo>()
-                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                     ->Attribute(AZ::Script::Attributes::Module, "scene.graph")
                     ->Property("className", [](const PythonBehaviorInfo& self)
                         { return self.m_behaviorClass->m_name; }, nullptr)
@@ -195,12 +173,12 @@ namespace AZ
                             {
                                 if (self.m_pythonBehaviorInfo)
                                 {
-                                    return self.m_pythonBehaviorInfo;
+                                    return self.m_pythonBehaviorInfo.get();
                                 }
-                                if (self.m_behaviorClass)
+                                else if (self.m_behaviorClass)
                                 {
-                                    self.m_pythonBehaviorInfo = aznew Python::PythonBehaviorInfo(self.m_behaviorClass);
-                                    return self.m_pythonBehaviorInfo;
+                                    self.m_pythonBehaviorInfo = AZStd::make_shared<Python::PythonBehaviorInfo>(self.m_behaviorClass);
+                                    return self.m_pythonBehaviorInfo.get();
                                 }
                                 return nullptr;
                             })
@@ -222,11 +200,7 @@ namespace AZ
 
             GraphObjectProxy::~GraphObjectProxy()
             {
-                if (m_pythonBehaviorInfo)
-                {
-                    delete m_pythonBehaviorInfo;
-                    m_pythonBehaviorInfo = nullptr;
-                }
+                m_pythonBehaviorInfo.reset();
                 m_graphObject.reset();
                 m_behaviorClass = nullptr;
             }
