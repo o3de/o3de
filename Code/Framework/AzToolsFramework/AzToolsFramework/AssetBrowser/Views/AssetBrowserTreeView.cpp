@@ -699,12 +699,9 @@ namespace AzToolsFramework
                             {
                                 bool canMove = true;
                                 AZStd::string message;
-                                for (int i = 0; i < response.m_lines.size(); ++i)
-                                {
-                                    message += response.m_lines[i] + "\n";
-                                }
+                                AZ::StringFunc::Join(message, response.m_lines.begin(), response.m_lines.end(), "\n");
 
-                                if (message.size())
+                                if (!message.empty())
                                 {
                                     FixedSizeMessageBox msgBox(
                                         "Before Move Asset Information",
@@ -734,12 +731,9 @@ namespace AzToolsFramework
                                     if (SendRequest(moveRequest, moveResponse))
                                     {
                                         AZStd::string moveMessage;
-                                        for (int i = 0; i < moveResponse.m_lines.size(); ++i)
-                                        {
-                                            moveMessage += moveResponse.m_lines[i] + "\n";
-                                        }
+                                        AZ::StringFunc::Join(moveMessage, response.m_lines.begin(), response.m_lines.end(), "\n");
 
-                                        if (moveMessage.size())
+                                        if (!moveMessage.empty())
                                         {
                                             FixedSizeMessageBox moveMsgBox(
                                                 "After Move Asset Information",

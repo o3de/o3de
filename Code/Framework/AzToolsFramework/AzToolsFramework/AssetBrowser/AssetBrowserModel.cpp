@@ -9,6 +9,7 @@
 #include <AzCore/Script/ScriptTimePoint.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/Network/AssetProcessorConnection.h>
+#include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
@@ -238,14 +239,9 @@ namespace AzToolsFramework
                 AssetChangeReportResponse moveResponse;
                 if (SendRequest(moveRequest, moveResponse))
                 {
-
                     AZStd::string message;
-                    for (int i = 0; i < moveResponse.m_lines.size(); ++i)
-                    {
-                        message += moveResponse.m_lines[i] + "\n";
-                    }
-#if 0
-                    if (message.size())
+                    AZ::StringFunc::Join(message, moveResponse.m_lines.begin(), moveResponse.m_lines.end(), "\n");
+                    if (!message.empty())
                     {
                         FixedSizeMessageBox msgBox(
                             "After Rename Asset Information",
@@ -258,7 +254,6 @@ namespace AzToolsFramework
                         msgBox.SetSize(600, 0);
                         msgBox.exec();
                     }
-#endif
                 }
             }
             return false;
