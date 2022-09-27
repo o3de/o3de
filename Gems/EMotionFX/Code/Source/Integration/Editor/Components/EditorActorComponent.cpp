@@ -584,6 +584,12 @@ namespace EMotionFX
 
                 if (dependencyAsset && dependencyAsset.GetType() == azrtti_typeid<AZ::RPI::ModelAsset>())
                 {
+                    m_modelReloadedEventHandler = AZ::Render::ModelReloadedEvent::Handler(
+                        [this](AZ::Data::Asset<AZ::RPI::ModelAsset> modelAsset)
+                        {
+                            m_actorAsset.QueueLoad();
+                        });
+
                     // Now that the ModelAsset has been found, request a reload.
                     // When this finishes, the callback will trigger a QueueLoad on m_actorAsset.
                     AZ::Render::ModelReloaderSystemInterface::Get()->ReloadModel(dependencyAsset, m_modelReloadedEventHandler);

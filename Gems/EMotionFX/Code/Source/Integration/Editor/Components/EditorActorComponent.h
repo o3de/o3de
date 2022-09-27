@@ -188,10 +188,7 @@ namespace EMotionFX
             ActorAsset::ActorInstancePtr        m_actorInstance;            ///< Live actor instance.
             AZStd::unique_ptr<RenderActorInstance> m_renderActorInstance;
 
-            AZ::Render::ModelReloadedEvent::Handler m_modelReloadedEventHandler{ [this](AZ::Data::Asset<AZ::RPI::ModelAsset> modelAsset)
-                                                                                 {
-                                                                                     m_actorAsset.QueueLoad();
-                                                                                 } };
+            AZ::Render::ModelReloadedEvent::Handler m_modelReloadedEventHandler;
 
             bool m_reloading = false;
         };
