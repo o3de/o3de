@@ -328,6 +328,9 @@ namespace O3DE::ProjectManager
 
     bool CreateGem::ValidateGemPath()
     {
+        // This first isEmpty check is to check that the input field is not empty. If it is QDir will use the current
+        // directory as the gem location, so that if that folder is also empty it will pass the chosenGemLocation.isEmpty()
+        // check and place the created gem there, which is likely unintended behavior for a GUI app such as Project Manager.
         if (m_gemLocation->lineEdit()->text().isEmpty())
         {
             return false;
