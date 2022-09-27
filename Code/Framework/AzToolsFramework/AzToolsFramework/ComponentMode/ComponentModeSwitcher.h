@@ -128,7 +128,7 @@ namespace AzToolsFramework
             AZ::Event<ViewportUi::ButtonId>::Handler m_handler; //!< Handler for onclick of switcher buttons, activates component mode.
             ViewportUi::SwitcherId m_switcherId; //!< Id of linked switcher.
             AZ::EntityComponentIdPair m_componentModePair; //!< The component mode pair in onEntityCompositionChanged.
-            AddOrRemoveComponent m_addOrRemove; //!< Setting to either add or remove component.
+            AddOrRemoveComponent m_addOrRemove = AddOrRemoveComponent::Add; //!< Setting to either add or remove component.
             bool m_hiddenByImGui = false; //!< Protects the switcher from being opened by OnImGuiDropDownShown if it has been hidden elsewhere.
         };
 
