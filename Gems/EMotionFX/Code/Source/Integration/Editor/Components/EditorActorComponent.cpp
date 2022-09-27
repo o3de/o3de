@@ -542,7 +542,7 @@ namespace EMotionFX
             CheckActorCreation();
         }
 
-        void EditorActorComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
+        void EditorActorComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData>)
         {
             // Release the asset so everything can get unloaded.
             // The Actor asset holds a reference to a ModelAsset which can only be reloaded with a manual call.
