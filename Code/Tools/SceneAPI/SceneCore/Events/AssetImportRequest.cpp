@@ -80,8 +80,8 @@ namespace AZ
                     }
                     else
                     {
-                        AZ_TraceContext("Old manifest rule count", m_previousManifest.GetEntryCount());
-                        AZ_TraceContext("New manifest rule count", m_scene->GetManifest().GetEntryCount());
+                        AZ_TraceContext("Old manifest rule count", aznumeric_cast<int32_t>(m_previousManifest.GetEntryCount()));
+                        AZ_TraceContext("New manifest rule count", aznumeric_cast<int32_t>(m_scene->GetManifest().GetEntryCount()));
                         AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "UpdateManifest(%d): Updated \n", m_reportNumber);
                         m_previousManifest = m_scene->GetManifest();
                     }
