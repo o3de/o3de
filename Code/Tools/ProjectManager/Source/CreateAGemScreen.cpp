@@ -245,10 +245,10 @@ namespace O3DE::ProjectManager
         gemDetailsLayout->addWidget(m_licenseURL);
 
         m_userDefinedGemTags = new FormLineEditWidget(tr("User-defined Gem Tags (Comma separated list)"), "");
-        m_userDefinedGemTags->lineEdit()->setValidator(new QRegularExpressionValidator(QRegularExpression("(,|\\w)+"), this));
+        m_userDefinedGemTags->lineEdit()->setValidator(new QRegularExpressionValidator(QRegularExpression("(\\w+)(,\\s?\\w*)*"), this));
         gemDetailsLayout->addWidget(m_userDefinedGemTags);
 
-        m_gemLocation = new FormFolderBrowseEditWidget(tr("Gem Location"), "", tr("The path that the gem will be created at."), tr("The chosen directory must be empty."));
+        m_gemLocation = new FormFolderBrowseEditWidget(tr("Gem Location"), "", tr("The path that the gem will be created at."), tr("The chosen directory must either not exist or be empty."));
         gemDetailsLayout->addWidget(m_gemLocation);
         
         m_gemIconPath = new FormLineEditWidget(tr("Gem Icon Path"), "default.png", tr("Select Gem icon path"), "");

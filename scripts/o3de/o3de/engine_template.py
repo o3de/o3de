@@ -2045,9 +2045,7 @@ def create_gem(gem_path: pathlib.Path,
         logger.error(f'Gem path {gem_path} already exists.')
         return 1
     else:
-        # We can also use an pre-existing folder if it is empty
-        folder_is_empty = gem_path.is_dir() and (len(list(gem_path.iterdir())) == 0)
-        os.makedirs(gem_path, exist_ok=(force or folder_is_empty))
+        os.makedirs(gem_path, exist_ok=True)
 
     # Default to the gem path basename component if gem_name has not been supplied
     if not gem_name:

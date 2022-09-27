@@ -74,13 +74,13 @@ namespace O3DE::ProjectManager
         connect(m_headerWidget, &GemCatalogHeaderWidget::UpdateGemCart, this, &GemCatalogScreen::UpdateAndShowGemCart);
         connect(m_downloadController, &DownloadController::Done, this, &GemCatalogScreen::OnGemDownloadResult);
 
-        ScreensCtrl* screensControl = dynamic_cast<ScreensCtrl*>(parent);
+        ScreensCtrl* screensControl = qobject_cast<ScreensCtrl*>(parent);
         if (screensControl)
         {
             ScreenWidget* createGemScreen = screensControl->FindScreen(ProjectManagerScreen::CreateGem);
             if (createGemScreen)
             {
-                connect(reinterpret_cast<CreateGem*>(createGemScreen), &CreateGem::GemCreated, this, &GemCatalogScreen::HandleGemCreated);
+                connect(static_cast<CreateGem*>(createGemScreen), &CreateGem::GemCreated, this, &GemCatalogScreen::HandleGemCreated);
             }
         }
 
@@ -714,7 +714,7 @@ namespace O3DE::ProjectManager
         AddToGemModel(gemInfo);
 
         // create Toast Notification for project gem catalog
-        QString notification = gemInfo.m_displayName + tr(" has been created.");
+        QString notification = tr("%1 has been created.").arg(gemInfo.m_displayName);
         ShowStandardToastNotification(notification);
     }
 
