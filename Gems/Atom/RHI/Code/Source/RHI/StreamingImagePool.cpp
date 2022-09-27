@@ -187,11 +187,7 @@ namespace AZ
                 return false;
             }
 
-            if (SetMemoryBudgetInternal(newBudget) == ResultCode::Success)
-            {
-                return true;
-            }
-            return false;
+            return SetMemoryBudgetInternal(newBudget) == ResultCode::Success;
         }
 
         ResultCode StreamingImagePool::InitInternal(Device&, const StreamingImagePoolDescriptor&)

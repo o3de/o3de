@@ -120,10 +120,10 @@ namespace AZ
 
             const StreamingImagePoolDescriptor& GetDescriptor() const override final;
 
-            //! Set a callback function which is called when the pool is out of memory for new allocations
+            //! Set a callback function that is called when the pool is out of memory for new allocations
             //! User could provide such a callback function which releases some resources from the pool
-            //! If there were some resources were released, the function may turn true. If there was nothing was released,
-            //! the function should return false.
+            //! If some resources are released, the function may return true.
+            //! If nothing is released, the function should return false.
             using LowMemoryCallback = AZStd::function<bool()>;
             void SetLowMemoryCallback(LowMemoryCallback callback);
             

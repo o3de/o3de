@@ -60,7 +60,7 @@ namespace AZ
             void OnSetTargetMip(StreamingImage* image, uint16_t targetMipLevel);
             void OnMipChainAssetReady(StreamingImage* image);
 
-            //! Returns the numbers of images which are expanding their mipmaps
+            //! Returns the number of images which are expanding their mipmaps
             uint32_t GetExpandingImageCount() const;
 
             //! Set mipmap bias to streaming images's streaming target
@@ -84,11 +84,12 @@ namespace AZ
             // Evict one mip chain for the streaming image with lowest priority
             bool EvictOneMipChain();
 
-            // Streaming in on mip chain for the streaming image with highest priority
+            // Stream in one mip chain for the streaming image with highest priority
             bool ExpandOneMipChain();
 
-            // For the streaming images, evict mipmaps which are not needed (mips which have high details than target mip level)
+            // For all the streaming images, evict mipmaps which are not needed (mips which have higher details than target mip level)
             void EvictUnusedMips();
+
             // Evict mipmaps for specific image
             // Return true if any mipmaps were evicted
             bool EvictUnusedMips(StreamingImage* image);
@@ -99,10 +100,7 @@ namespace AZ
             // Get gpu memory usage of the streaming image pool
             size_t GetPoolMemoryUsage();
 
-            // Get the memory free to use
-            size_t GetPoolFreeMemory();
-
-            // Update image's priority and re-insert the image to the streaming image list
+            // Update image's priority
             void UpdateImagePriority(StreamingImage* image);
 
             // Calculate image's streaming priority value
@@ -111,7 +109,7 @@ namespace AZ
             // Return whether an image need to expand its mipmap
             bool NeedExpand(const StreamingImage* image) const;
 
-            // Remove low memory state if the controller entered low memory state
+            // Reset the cached variables related to last memory value when the controller receives low memory notification
             void ResetLowMemoryState();
 
         private:
@@ -162,7 +160,7 @@ namespace AZ
 
             // The images which are expanding will be added to this list and removed from m_streamableImages list.
             // Once their expanding are finished, they would be removed from this list and added back to m_streamableImages list
-            AZStd::set<StreamingImage*> m_expandingImages;
+            AZStd::unordered_set<StreamingImage*> m_expandingImages;
 
             // A monotonically increasing counter used to track image mip requests. Useful for sorting contexts by LRU.
             size_t m_timestamp = 0;
@@ -171,7 +169,7 @@ namespace AZ
             size_t m_lastLowMemory = 0 ;
 
             // a global option to add a bias to all the streaming images' target mip level
-            int16_t m_mipBias = 0;
+            int16_t m_globalMipBias = 0;
         };
     }
 }

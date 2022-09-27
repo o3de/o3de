@@ -83,10 +83,10 @@ namespace AZ
             //! Returns the aspects that are included in the image.
             ImageAspectFlags GetAspectFlags() const;
 
-            //! Get the hash associated with the passed view descriptorimage
+            //! Get the hash associated with the passed image descriptor
             const HashValue64 GetHash() const;
 
-            //! Returns whether the image has sub-resources which can be evicted from or streamed in the device memory
+            //! Returns whether the image has sub-resources which can be evicted from or streamed into the device memory
             bool IsStreamable() const;
 
         protected:
@@ -105,7 +105,7 @@ namespace AZ
                 ImageSubresourceLayoutPlaced* subresourceLayouts,
                 size_t* totalSizeInBytes) const = 0;
 
-            //! Returns whether the image has sub-resources which can be evicted from or streamed in the device memory
+            //! Returns whether the image has sub-resources which can be evicted from or streamed into the device memory
             virtual bool IsStreamableInternal() const { return false;};
             ///////////////////////////////////////////////////////////////////
 

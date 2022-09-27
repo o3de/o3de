@@ -123,11 +123,6 @@ namespace AZ
             //! This is true when any queue expand functions (asset requested) are called until the mipmap expand requested are submitted successfully 
             bool IsExpanding() const;
 
-            //! Returns whether the image is fully streamed.
-            //! For non-streamable image, all its mipmap should be residents.
-            //! For streamable image, its target mip should be resident. (The target mip can be effected by streaming image controller's mip bias)
-            bool IsStreamed() const;
-
         private:
             StreamingImage() = default;
 
@@ -184,7 +179,7 @@ namespace AZ
             };
 
             // Runtime state used to track streaming state. Only valid while initialized.
-            MipChainState m_state;
+            MipChainState m_mipChainState;
 
             // Streaming image holds local Asset<> references to mip chains. This is because we are not
             // allowed to mutate the references held by the streaming image asset (it violates the immutability)
@@ -211,7 +206,7 @@ namespace AZ
             Data::Asset<StreamingImageAsset> m_imageAsset;
 
             // The image's streaming priority
-            Priority m_streamingPriority = 0;
+            Priority m_streamingPriority = 0; // value 0 means lowest priority
         };
     }
 }

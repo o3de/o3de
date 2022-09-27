@@ -58,14 +58,6 @@ namespace AZ
 
             void AddImageTransitionBarrier(Image& image, uint32_t beforeMip, uint32_t afterMip)
             {
-                for (auto& barrier:m_prologueBarriers)
-                {
-                    if (barrier.first == &image)
-                    {
-                        AZ_TracePrintf("debug", "debug");
-                    }
-                }
-
                 // Expand or Trim
                 bool isExpand = beforeMip > afterMip;
 
@@ -220,7 +212,7 @@ namespace AZ
                     // Request to release some memory
                     releaseSuccess = m_memoryReleaseCallback();
 
-                    // break if there is no memory release happened 
+                    // break out of the loop if memory release did not happen
                     if (!releaseSuccess)
                     {
                         break;
@@ -651,16 +643,15 @@ namespace AZ
         {
             RHI::HeapMemoryUsage& heapMemoryUsage = m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
 
-            // Can't set to new budget if the new budget is higher than allocated and there is no memory release handling
-            if (newBudget > heapMemoryUsage.m_totalResidentInBytes && !m_memoryReleaseCallback)
+            // Can't set to new budget if the new budget is smaller than allocated and there is no memory release handling
+            if (newBudget < heapMemoryUsage.m_totalResidentInBytes && !m_memoryReleaseCallback)
             {
-                AZ_Warning("StreamingImagePool", false, "Can't set pool memory budget to %u ", newBudget);
+                AZ_Warning("StreamingImagePool", false, "Can't set pool memory budget to %u because the memory release callback wasn't set", newBudget);
                 return RHI::ResultCode::InvalidArgument;
             }
 
-
             bool releaseSuccess = true;
-            while (newBudget <= heapMemoryUsage.m_totalResidentInBytes && releaseSuccess)
+            while (newBudget < heapMemoryUsage.m_totalResidentInBytes && releaseSuccess)
             {
                 // Request to release some memory
                 releaseSuccess = m_memoryReleaseCallback();

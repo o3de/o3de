@@ -174,14 +174,14 @@ namespace AZ
                 }
 
                 // Initialize the streaming state to have the tail mip active and ready.
-                m_state.m_residencyTarget = mipChainTailIndex;
-                m_state.m_streamingTarget = mipChainTailIndex;
+                m_mipChainState.m_residencyTarget = mipChainTailIndex;
+                m_mipChainState.m_streamingTarget = mipChainTailIndex;
 
                 // Setup masks for tail mip chain
                 const uint16_t mipChainBit = static_cast<uint16_t>(1 << mipChainTailIndex);
-                m_state.m_maskActive |= mipChainBit;
-                m_state.m_maskEvictable &= ~mipChainBit;
-                m_state.m_maskReady |= mipChainBit;
+                m_mipChainState.m_maskActive |= mipChainBit;
+                m_mipChainState.m_maskEvictable &= ~mipChainBit;
+                m_mipChainState.m_maskReady |= mipChainBit;
 
                 // Take references on dependent assets
                 m_imageAsset = { &imageAsset, AZ::Data::AssetLoadBehavior::PreLoad };
@@ -237,7 +237,7 @@ namespace AZ
                 }
 
                 m_mipChains.clear();
-                m_state = {};
+                m_mipChainState = {};
             }
         }
 
@@ -281,19 +281,19 @@ namespace AZ
         bool StreamingImage::IsTrimmable()
         {
             // the streaming image is trimmable when it has more mipchains other than the tail mipchain (the last mipchain)
-            return IsStreamable() && m_state.m_streamingTarget < m_mipChains.size()-1;
+            return IsStreamable() && m_mipChainState.m_streamingTarget < m_mipChains.size()-1;
         }
                 
         RHI::ResultCode StreamingImage::TrimOneMipChain()
         {
-            return TrimToMipChainLevel(m_state.m_streamingTarget + 1);
+            return TrimToMipChainLevel(m_mipChainState.m_streamingTarget + 1);
         }
 
         RHI::ResultCode StreamingImage::TrimToMipChainLevel(size_t mipChainIndex)
         {
             AZ_Assert(mipChainIndex < m_mipChains.size(), "Exceeded number of mip chains.");
 
-            const size_t mipChainBegin = m_state.m_streamingTarget;
+            const size_t mipChainBegin = m_mipChainState.m_streamingTarget;
             const size_t mipChainEnd = mipChainIndex;
 
             RHI::ResultCode resultCode = RHI::ResultCode::Success;
@@ -312,8 +312,8 @@ namespace AZ
                 }
                 
                 // Reset tracked state to match the new target.
-                m_state.m_residencyTarget = static_cast<uint16_t>(mipChainEnd);
-                m_state.m_streamingTarget = static_cast<uint16_t>(mipChainEnd);
+                m_mipChainState.m_residencyTarget = static_cast<uint16_t>(mipChainEnd);
+                m_mipChainState.m_streamingTarget = static_cast<uint16_t>(mipChainEnd);
             }
 
             return resultCode;
@@ -324,23 +324,20 @@ namespace AZ
             AZ_Assert(mipChainIndex < m_mipChains.size(), "Exceeded number of mip chains.");
 
             // Expand operation - queue streaming of mip chains up to target mip chain index. 
-            if (m_state.m_streamingTarget > mipChainIndex)
+            if (m_mipChainState.m_streamingTarget > mipChainIndex)
             {
                 // Start on the next-detailed chain from the streaming target.
-                const size_t mipChainBegin = m_state.m_streamingTarget - 1;
+                const size_t mipChainBegin = m_mipChainState.m_streamingTarget - 1;
 
                 // The streaming target need to set before fetching mip chain asset since it's possible the
                 // asset is ready when fetching which may trigger expanding directly
-                m_state.m_streamingTarget = static_cast<uint16_t>(mipChainIndex);
+                m_mipChainState.m_streamingTarget = static_cast<uint16_t>(mipChainIndex);
 
                 // Iterate through to the end chain and queue loading operations on the mip assets.
-                for (size_t i = mipChainBegin; ; --i)
+                size_t offset = mipChainBegin - mipChainIndex;
+                for (size_t i = 0; i<=offset; i++)
                 {
-                    FetchMipChainAsset(i);
-                    if (i == mipChainIndex)
-                    {
-                        break;
-                    }
+                    FetchMipChainAsset(mipChainBegin - i);
                 }
             }
         }
@@ -348,32 +345,32 @@ namespace AZ
         void StreamingImage::QueueExpandToNextMipChainLevel()
         {
             // Return if already reach the end
-            if (m_state.m_streamingTarget == 0)
+            if (m_mipChainState.m_streamingTarget == 0)
             {
                 return;
             }
 
-            QueueExpandToMipChainLevel(m_state.m_streamingTarget - 1);
+            QueueExpandToMipChainLevel(m_mipChainState.m_streamingTarget - 1);
         }
 
         RHI::ResultCode StreamingImage::ExpandMipChain()
         {
-            AZ_Assert(m_state.m_streamingTarget <= m_state.m_residencyTarget, "The target mip chain cannot be less detailed than the resident mip chain.")
+            AZ_Assert(m_mipChainState.m_streamingTarget <= m_mipChainState.m_residencyTarget, "The target mip chain cannot be less detailed than the resident mip chain.")
 
             RHI::ResultCode resultCode = RHI::ResultCode::Success;
 
-            if (m_state.m_streamingTarget < m_state.m_residencyTarget)
+            if (m_mipChainState.m_streamingTarget < m_mipChainState.m_residencyTarget)
             {
 #ifdef AZ_RPI_STREAMING_IMAGE_DEBUG_LOG
                 AZ_TracePrintf("StreamingImage", "Expand image [%s]\n", GetImage()->GetName().data());
 #endif
 
                 // Start by assuming we can expand residency to the full target range.
-                uint16_t mipChainIndexFound = m_state.m_streamingTarget;
+                uint16_t mipChainIndexFound = m_mipChainState.m_streamingTarget;
 
                 // Walk the mip chains from most to least detailed, and track the latest instance
                 // of an unloaded mip chain. This incrementally shortens the interval.
-                for (uint16_t i = m_state.m_streamingTarget; i < m_state.m_residencyTarget; ++i)
+                for (uint16_t i = m_mipChainState.m_streamingTarget; i < m_mipChainState.m_residencyTarget; ++i)
                 {
                     // Can't expand to this chain, select the next one as the candidate.
                     if (!IsMipChainAssetReady(i))
@@ -384,9 +381,9 @@ namespace AZ
 
                 // If we found a range of loaded mip chains, upload them from the low level mipchain to high level mipchain
                 // which the index should be from higher value to lower value
-                if (mipChainIndexFound != m_state.m_residencyTarget)
+                if (mipChainIndexFound != m_mipChainState.m_residencyTarget)
                 {
-                    for (uint16_t mipChainIndex = m_state.m_residencyTarget-1; 
+                    for (uint16_t mipChainIndex = m_mipChainState.m_residencyTarget-1; 
                         mipChainIndex >= mipChainIndexFound && resultCode == RHI::ResultCode::Success; 
                         mipChainIndex--)
                     {
@@ -396,7 +393,7 @@ namespace AZ
                             break;
                         }
                     }
-                    m_state.m_residencyTarget = mipChainIndexFound;
+                    m_mipChainState.m_residencyTarget = mipChainIndexFound;
                 }
             }
 
@@ -409,14 +406,14 @@ namespace AZ
 
             const uint16_t mipChainBit = static_cast<uint16_t>(1 << mipChainIndex);
 
-            const bool isMipChainActive = RHI::CheckBitsAll(m_state.m_maskActive, mipChainBit);
-            const bool isMipChainEvictable = RHI::CheckBitsAll(m_state.m_maskEvictable, mipChainBit);
+            const bool isMipChainActive = RHI::CheckBitsAll(m_mipChainState.m_maskActive, mipChainBit);
+            const bool isMipChainEvictable = RHI::CheckBitsAll(m_mipChainState.m_maskEvictable, mipChainBit);
 
             if (isMipChainActive && isMipChainEvictable)
             {
                 const uint32_t mipChainMask = ~mipChainBit;
-                m_state.m_maskActive &= mipChainMask;
-                m_state.m_maskReady  &= mipChainMask;
+                m_mipChainState.m_maskActive &= mipChainMask;
+                m_mipChainState.m_maskReady  &= mipChainMask;
 
                 Data::Asset<ImageMipChainAsset>& mipChainAsset = m_mipChains[mipChainIndex];
                 AZ_Assert(mipChainAsset.GetStatus() != Data::AssetData::AssetStatus::NotLoaded, "Asset marked as active, but mipChainAsset in 'NotLoaded' state.");
@@ -431,11 +428,11 @@ namespace AZ
 
             const uint16_t mipChainBit = static_cast<uint16_t>(1 << mipChainIndex);
 
-            const bool isMipChainActive = RHI::CheckBitsAll(m_state.m_maskActive, mipChainBit);
+            const bool isMipChainActive = RHI::CheckBitsAll(m_mipChainState.m_maskActive, mipChainBit);
 
             if (!isMipChainActive)
             {
-                m_state.m_maskActive |= mipChainBit;
+                m_mipChainState.m_maskActive |= mipChainBit;
 
                 Data::Asset<ImageMipChainAsset>& mipChainAsset = m_mipChains[mipChainIndex];
                 AZ_Assert(mipChainAsset.Get() == nullptr, "Asset marked as inactive, but has a valid reference.");
@@ -462,7 +459,7 @@ namespace AZ
         {
             AZ_Assert(mipChainIndex < m_mipChains.size(), "Exceeded total number of mip chains.");
 
-            return RHI::CheckBitsAny(m_state.m_maskReady, static_cast<uint16_t>(1 << mipChainIndex));
+            return RHI::CheckBitsAny(m_mipChainState.m_maskReady, static_cast<uint16_t>(1 << mipChainIndex));
         }
 
         void StreamingImage::OnMipChainAssetReady(size_t mipChainIndex)
@@ -471,9 +468,9 @@ namespace AZ
 
             const uint16_t mipChainBit = static_cast<uint16_t>(1 << mipChainIndex);
 
-            AZ_Assert(RHI::CheckBitsAll(m_state.m_maskActive, mipChainBit), "Mip chain should be marked as active.");
+            AZ_Assert(RHI::CheckBitsAll(m_mipChainState.m_maskActive, mipChainBit), "Mip chain should be marked as active.");
 
-            m_state.m_maskReady |= mipChainBit;
+            m_mipChainState.m_maskReady |= mipChainBit;
 
             if (m_streamingController)
             {
@@ -571,16 +568,7 @@ namespace AZ
 
         bool StreamingImage::IsExpanding() const
         {
-            return m_state.m_residencyTarget > m_state.m_streamingTarget;
-        }
-
-        bool StreamingImage::IsStreamed() const
-        {
-            if (m_streamingController)
-            {
-                return m_streamingController->GetImageTargetMip(this) >= m_image->GetResidentMipLevel();
-            }
-            return m_image->GetResidentMipLevel() == 0;
+            return m_mipChainState.m_residencyTarget > m_mipChainState.m_streamingTarget;
         }
     }
 }

@@ -64,7 +64,7 @@ namespace AZ
         {
             AZ_Assert(image, "Image must not be null.");
 
-            // Remove image from the list first before clear the image streaming context
+            // Remove image from the list first before clearing the image streaming context
             // since the compare function uses the context
             {
                 AZStd::lock_guard<AZStd::mutex> lock(m_imageListAccessMutex);
@@ -191,7 +191,7 @@ namespace AZ
         StreamingImage::Priority StreamingImageController::CalculateImagePriority(StreamingImage* image) const
         {
             StreamingImage::Priority newPriority = 0;
-            newPriority = image->m_imageAsset->GetMipLevel(image->m_state.m_residencyTarget) - image->m_streamingContext->GetTargetMip();
+            newPriority = image->m_imageAsset->GetMipLevel(image->m_mipChainState.m_residencyTarget) - image->m_streamingContext->GetTargetMip();
             return newPriority;
         }
 
@@ -217,10 +217,10 @@ namespace AZ
 
         void StreamingImageController::SetMipBias(int16_t mipBias)
         {
-            int16_t prevMipBias = m_mipBias;
-            m_mipBias = mipBias;
+            int16_t prevMipBias = m_globalMipBias;
+            m_globalMipBias = mipBias;
             // if the mipBias increased (using smaller size of mips), go throw each streaming image and evict unneeded mips
-            if (m_mipBias > prevMipBias)
+            if (m_globalMipBias > prevMipBias)
             {
                 EvictUnusedMips();
             }
@@ -228,7 +228,7 @@ namespace AZ
 
         int16_t StreamingImageController::GetMipBias() const
         {
-            return m_mipBias;
+            return m_globalMipBias;
         }
 
         StreamingImageContextPtr StreamingImageController::CreateContext()
@@ -273,7 +273,7 @@ namespace AZ
         {
             uint16_t targetMip = GetImageTargetMip(image);
             // only need expand if the current expanding target is smaller than final target
-            return image->m_state.m_streamingTarget > image->m_imageAsset->GetMipChainIndex(targetMip);
+            return image->m_mipChainState.m_streamingTarget > image->m_imageAsset->GetMipChainIndex(targetMip);
         }
 
         bool StreamingImageController::ExpandOneMipChain()
@@ -292,7 +292,7 @@ namespace AZ
                 if (image->IsExpanding())
                 {
                     StreamingDebugOutput("StreamingImageController", "Image [%s] is expanding mip level to %d\n",
-                        image->GetRHIImage()->GetName().GetCStr(), image->m_imageAsset->GetMipChainIndex(image->m_state.m_streamingTarget));
+                        image->GetRHIImage()->GetName().GetCStr(), image->m_imageAsset->GetMipChainIndex(image->m_mipChainState.m_streamingTarget));
                     m_streamableImages.erase(image);
                     m_expandingImages.insert(image);
                 }
@@ -303,22 +303,21 @@ namespace AZ
 
         uint16_t StreamingImageController::GetImageTargetMip(const StreamingImage* image) const
         {
-            int16_t targetMip = image->m_streamingContext->GetTargetMip() + m_mipBias;
+            int16_t targetMip = image->m_streamingContext->GetTargetMip() + m_globalMipBias;
             targetMip = AZStd::clamp(targetMip, (int16_t)0,  aznumeric_cast<int16_t>(image->GetRHIImage()->GetDescriptor().m_mipLevels-1));
             return aznumeric_cast<uint16_t>(targetMip);
         }
 
         bool StreamingImageController::IsMemoryLow() const
         {
-            // return true if m_lastLowMemory is not zero
-            return m_lastLowMemory;
+            return m_lastLowMemory != 0;
         }
 
         bool StreamingImageController::EvictUnusedMips(StreamingImage* image)
         {
             uint16_t targetMip = GetImageTargetMip(image);
             size_t targetMipChain = image->m_imageAsset->GetMipChainIndex(targetMip);
-            if (image->m_state.m_streamingTarget < targetMipChain)
+            if (image->m_mipChainState.m_streamingTarget < targetMipChain)
             {
                 RHI::ResultCode success = image->TrimToMipChainLevel(targetMipChain);
             
@@ -379,17 +378,6 @@ namespace AZ
         {
             size_t totalResident = m_pool->GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_totalResidentInBytes.load();
             return totalResident;
-        }
-                
-        size_t StreamingImageController::GetPoolFreeMemory()
-        {
-            const RHI::HeapMemoryUsage& memoryUsage = m_pool->GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
-            if (memoryUsage.m_budgetInBytes == 0)
-            {
-                return 4ul*1024*1024*1024;
-            }
-            size_t freeMemory = memoryUsage.m_budgetInBytes - memoryUsage.m_totalResidentInBytes.load();
-            return freeMemory;
         }
     }
 }
