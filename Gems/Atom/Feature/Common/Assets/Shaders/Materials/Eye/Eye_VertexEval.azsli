@@ -21,7 +21,6 @@ VsOutput EvaluateVertexGeometry_Eye(
     float3 position,
     float3 normal,
     float4 tangent,
-    float3 bitangent,
     float2 uv0,
     float2 uv1)
 {
@@ -35,8 +34,8 @@ VsOutput EvaluateVertexGeometry_Eye(
     output.uvs[0] = uv0;
     output.uvs[1] = uv1;
 
-    float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
-    ConstructTBN(normal, tangent, bitangent, objectToWorld, objectToWorldIT, output.normal, output.tangent, output.bitangent);
+    output.normal = normal;
+    output.tangent = tangent;
 
     output.localPosition = position.xyz;
 
@@ -49,7 +48,6 @@ VsOutput EvaluateVertexGeometry_Eye(VsInput IN)
         IN.position,
         IN.normal,
         IN.tangent,
-        IN.bitangent,
         IN.uv0,
         IN.uv1);
 }
