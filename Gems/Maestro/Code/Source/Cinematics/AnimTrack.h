@@ -481,7 +481,7 @@ inline bool TAnimTrack<KeyType>::SerializeSelection(XmlNodeRef& xmlNode, bool bL
         int numCur = GetNumKeys();
         int num = xmlNode->getChildCount();
 
-        int type;
+        unsigned int type;
         xmlNode->getAttr("TrackType", type);
 
         if (type != GetCurveType())
