@@ -143,7 +143,7 @@ namespace GraphCanvas
             m_spinBox->setProperty("HasNoWindowDecorations", true);
 
             QObject::connect(m_spinBox, &Internal::FocusableDoubleSpinBox::OnFocusIn, [this]() { EditStart(); });
-            QObject::connect(m_spinBox, &Internal::FocusableDoubleSpinBox::OnFocusIn, [this]() { EditFinished(); });
+            QObject::connect(m_spinBox, &Internal::FocusableDoubleSpinBox::OnFocusOut, [this]() { EditFinished(); });
             QObject::connect(m_spinBox, &QDoubleSpinBox::editingFinished, [this]() { SubmitValue(); });
 
             m_spinBox->setMinimum(m_dataInterface->GetMin());
