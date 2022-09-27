@@ -538,6 +538,33 @@ namespace AzToolsFramework
             }
         }
 
+        FixedSizeMessageBox::FixedSizeMessageBox(
+            const QString& title,
+            const QString& text,
+            const QString& informativeText,
+            const QString& detailedText,
+            QMessageBox::Icon icon,
+            QMessageBox::StandardButton standardButton,
+            QMessageBox::StandardButton defaultButton,
+            QWidget* parent)
+            : QMessageBox(parent)
+        {
+            setWindowTitle(title);
+            setText(text);
+            setInformativeText(informativeText);
+            setDetailedText(detailedText);
+            setIcon(icon);
+            setStandardButtons(standardButton);
+            setDefaultButton(defaultButton);
+        }
+
+        void FixedSizeMessageBox::SetSize(int width, int height)
+        {
+            QSpacerItem* horizontalSpacer = new QSpacerItem(width, height, QSizePolicy::Minimum, QSizePolicy::Expanding);
+            QGridLayout* layout = (QGridLayout*)this->layout();
+            layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());
+        }
+
         void AssetBrowserTreeView::RenameEntry()
         {
             auto entries = GetSelectedAssets(false); // you cannot rename product files.
@@ -571,18 +598,16 @@ namespace AzToolsFramework
 
                     if (message.size())
                     {
-                        QMessageBox msgBox(this);
-                        msgBox.setWindowTitle("Before Rename Asset Information");
-                        msgBox.setIcon(QMessageBox::Warning);
-                        msgBox.setText("The asset you are renaming may be referenced in other assets.");
-                        msgBox.setInformativeText("More information can be found by pressing \"Show Details...\".");
+                        FixedSizeMessageBox msgBox(
+                           "Before Rename Asset Information",
+                            "The asset you are renaming may be referenced in other assets.",
+                            "More information can be found by pressing \"Show Details...\".",
+                            message.c_str(),
+                            QMessageBox::Warning,
+                            QMessageBox::Cancel,
+                            QMessageBox::Yes);
                         auto* renameButton = msgBox.addButton("Rename", QMessageBox::YesRole);
-                        msgBox.setStandardButtons(QMessageBox::Cancel);
-                        msgBox.setDefaultButton(QMessageBox::Yes);
-                        msgBox.setDetailedText(message.c_str());
-                        QSpacerItem* horizontalSpacer = new QSpacerItem(600, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
-                        QGridLayout* layout = (QGridLayout*)msgBox.layout();
-                        layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());
+                        msgBox.SetSize(600, 0);
                         msgBox.exec();
 
                         if (msgBox.clickedButton() == reinterpret_cast<QAbstractButton*>(renameButton))
