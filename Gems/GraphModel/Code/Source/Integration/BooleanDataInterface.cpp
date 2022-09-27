@@ -6,6 +6,7 @@
  *
  */
 
+#include <GraphModel/GraphModelBus.h>
 #include <GraphModel/Integration/BooleanDataInterface.h>
 #include <GraphModel/Integration/IntegrationBus.h>
 
@@ -34,11 +35,14 @@ namespace GraphModelIntegration
         {
             if (enabled != slot->GetValue<bool>())
             {
-                GraphCanvas::GraphId graphCanvasSceneId;
-                IntegrationBus::BroadcastResult(graphCanvasSceneId, &IntegrationBusInterface::GetActiveGraphCanvasSceneId);
+                const GraphCanvas::GraphId graphCanvasSceneId = GetDisplay()->GetSceneId();
                 GraphCanvas::ScopedGraphUndoBatch undoBatch(graphCanvasSceneId);
 
                 slot->SetValue(enabled);
+                GraphControllerNotificationBus::Event(
+                    graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelSlotModified, slot);
+                GraphControllerNotificationBus::Event(
+                    graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelGraphModified, slot->GetParentNode());
             }
         }
     }

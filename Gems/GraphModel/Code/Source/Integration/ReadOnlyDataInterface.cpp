@@ -23,9 +23,6 @@ namespace GraphModelIntegration
         {
             return slot->GetValue<AZStd::string>();
         }
-        else
-        {
-            return "";
-        }
+        return "";
     }
 }

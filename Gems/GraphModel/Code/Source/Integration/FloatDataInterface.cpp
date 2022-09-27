@@ -6,6 +6,7 @@
  *
  */
 
+#include <GraphModel/GraphModelBus.h>
 #include <GraphModel/Integration/FloatDataInterface.h>
 #include <GraphModel/Integration/IntegrationBus.h>
 
@@ -33,11 +34,14 @@ namespace GraphModelIntegration
         {
             if (static_cast<float>(value) != slot->GetValue<float>())
             {
-                GraphCanvas::GraphId graphCanvasSceneId;
-                IntegrationBus::BroadcastResult(graphCanvasSceneId, &IntegrationBusInterface::GetActiveGraphCanvasSceneId);
+                const GraphCanvas::GraphId graphCanvasSceneId = GetDisplay()->GetSceneId();
                 GraphCanvas::ScopedGraphUndoBatch undoBatch(graphCanvasSceneId);
 
                 slot->SetValue(static_cast<float>(value));
+                GraphControllerNotificationBus::Event(
+                    graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelSlotModified, slot);
+                GraphControllerNotificationBus::Event(
+                    graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelGraphModified, slot->GetParentNode());
             }
         }
     }

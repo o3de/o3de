@@ -832,22 +832,17 @@ namespace GraphModelIntegration
 
     void GraphController::OnNodeAdded(const AZ::EntityId& nodeUiId, bool)
     {
-        const GraphModel::NodePtr node = m_elementMap.Find<GraphModel::Node>(nodeUiId);
-        if (node)
+        if (const GraphModel::NodePtr node = m_elementMap.Find<GraphModel::Node>(nodeUiId))
         {
-            GraphCanvas::ScopedGraphUndoBatch undoBatch(m_graphCanvasSceneId);
             GraphControllerNotificationBus::Event(m_graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelNodeAdded, node);
         }
     }
 
     void GraphController::OnNodeRemoved(const AZ::EntityId& nodeUiId)
     {
-        const GraphModel::NodePtr node = m_elementMap.Find<GraphModel::Node>(nodeUiId);
-        if (node)
+        if (const GraphModel::NodePtr node = m_elementMap.Find<GraphModel::Node>(nodeUiId))
         {
             GraphControllerNotificationBus::Event(m_graphCanvasSceneId, &GraphControllerNotifications::PreOnGraphModelNodeRemoved, node);
-
-            GraphCanvas::ScopedGraphUndoBatch undoBatch(m_graphCanvasSceneId);
 
             // Remove any thumbnail reference for this node when it is removed from the graph
             // The ThumbnailItem will be deleted by the Node layout itself
@@ -869,10 +864,8 @@ namespace GraphModelIntegration
 
     void GraphController::OnConnectionRemoved(const AZ::EntityId& connectionUiId)
     {
-        const GraphModel::ConnectionPtr connection = m_elementMap.Find<GraphModel::Connection>(connectionUiId);
-        if (connection)
+        if (const GraphModel::ConnectionPtr connection = m_elementMap.Find<GraphModel::Connection>(connectionUiId))
         {
-            GraphCanvas::ScopedGraphUndoBatch undoBatch(m_graphCanvasSceneId);
             m_graph->RemoveConnection(connection);
             m_elementMap.Remove(connection);
 
@@ -1187,9 +1180,9 @@ namespace GraphModelIntegration
     template<typename DataInterfaceType, typename CreateDisplayFunctionType>
     GraphCanvas::NodePropertyDisplay* CreatePropertyDisplay(GraphModel::SlotPtr inputSlot, CreateDisplayFunctionType createDisplayFunction)
     {
+        GraphCanvas::NodePropertyDisplay* dataDisplay = nullptr;
         if (inputSlot)
         {
-            GraphCanvas::NodePropertyDisplay* dataDisplay = nullptr;
             GraphCanvas::DataInterface* dataInterface = aznew DataInterfaceType(inputSlot);
             GraphCanvas::GraphCanvasRequestBus::BroadcastResult(
                 dataDisplay, createDisplayFunction, static_cast<DataInterfaceType*>(dataInterface));
@@ -1197,12 +1190,8 @@ namespace GraphModelIntegration
             {
                 delete dataInterface;
             }
-            return dataDisplay;
         }
-        else
-        {
-            return nullptr;
-        }
+        return dataDisplay;
     }
 
     GraphCanvas::NodePropertyDisplay* GraphController::CreatePropertySlotPropertyDisplay(
@@ -1214,8 +1203,13 @@ namespace GraphModelIntegration
         // expects a non-const NodePropertyDisplay*. We need non-const version of m_elementMap in order to create a non-const
         // NodePropertyDisplay
         GraphModel::SlotPtr inputSlot = const_cast<GraphController*>(this)->m_elementMap.Find<GraphModel::Slot>(slotUiId);
-
-        return CreateSlotPropertyDisplay(inputSlot);
+        GraphCanvas::NodePropertyDisplay* display = CreateSlotPropertyDisplay(inputSlot);
+        if (display)
+        {
+            display->SetNodeId(nodeUiId);
+            display->SetSlotId(slotUiId);
+        }
+        return display;
     }
 
     GraphCanvas::NodePropertyDisplay* GraphController::CreateDataSlotPropertyDisplay(
@@ -1237,8 +1231,13 @@ namespace GraphModelIntegration
         // expects a non-const NodePropertyDisplay*. We need non-const version of m_elementMap in order to create a non-const
         // NodePropertyDisplay
         GraphModel::SlotPtr inputSlot = const_cast<GraphController*>(this)->m_elementMap.Find<GraphModel::Slot>(slotUiId);
-
-        return CreateSlotPropertyDisplay(inputSlot);
+        GraphCanvas::NodePropertyDisplay* display = CreateSlotPropertyDisplay(inputSlot);
+        if (display)
+        {
+            display->SetNodeId(nodeUiId);
+            display->SetSlotId(slotUiId);
+        }
+        return display;
     }
 
     GraphCanvas::NodePropertyDisplay* GraphController::CreateSlotPropertyDisplay(GraphModel::SlotPtr inputSlot) const
@@ -1251,46 +1250,45 @@ namespace GraphModelIntegration
         AZ_Assert(
             inputSlot->GetSlotDirection() == GraphModel::SlotDirection::Input, "Property value displays are only meant for input slots");
 
-        GraphCanvas::NodePropertyDisplay* dataDisplay = nullptr;
-        AZ::Uuid dataTypeUuid = inputSlot->GetDataType()->GetTypeUuid();
+        const AZ::Uuid dataTypeUuid = inputSlot->GetDataType()->GetTypeUuid();
 
         if (dataTypeUuid == azrtti_typeid<bool>())
         {
-            dataDisplay =
-                CreatePropertyDisplay<BooleanDataInterface>(inputSlot, &GraphCanvas::GraphCanvasRequests::CreateBooleanNodePropertyDisplay);
+            return CreatePropertyDisplay<BooleanDataInterface>(
+                inputSlot, &GraphCanvas::GraphCanvasRequests::CreateBooleanNodePropertyDisplay);
         }
-        else if (dataTypeUuid == azrtti_typeid<int>())
+        if (dataTypeUuid == azrtti_typeid<int>())
         {
-            dataDisplay =
-                CreatePropertyDisplay<IntegerDataInterface>(inputSlot, &GraphCanvas::GraphCanvasRequests::CreateNumericNodePropertyDisplay);
+            return CreatePropertyDisplay<IntegerDataInterface>(
+                inputSlot, &GraphCanvas::GraphCanvasRequests::CreateNumericNodePropertyDisplay);
         }
-        else if (dataTypeUuid == azrtti_typeid<float>())
+        if (dataTypeUuid == azrtti_typeid<float>())
         {
-            dataDisplay =
-                CreatePropertyDisplay<FloatDataInterface>(inputSlot, &GraphCanvas::GraphCanvasRequests::CreateNumericNodePropertyDisplay);
+            return CreatePropertyDisplay<FloatDataInterface>(
+                inputSlot, &GraphCanvas::GraphCanvasRequests::CreateNumericNodePropertyDisplay);
         }
-        else if (dataTypeUuid == azrtti_typeid<AZ::Vector2>())
+        if (dataTypeUuid == azrtti_typeid<AZ::Vector2>())
         {
-            dataDisplay = CreatePropertyDisplay<VectorDataInterface<AZ::Vector2, 2>>(
+            return CreatePropertyDisplay<VectorDataInterface<AZ::Vector2, 2>>(
                 inputSlot, &GraphCanvas::GraphCanvasRequests::CreateVectorNodePropertyDisplay);
         }
-        else if (dataTypeUuid == azrtti_typeid<AZ::Vector3>())
+        if (dataTypeUuid == azrtti_typeid<AZ::Vector3>())
         {
-            dataDisplay = CreatePropertyDisplay<VectorDataInterface<AZ::Vector3, 3>>(
+            return CreatePropertyDisplay<VectorDataInterface<AZ::Vector3, 3>>(
                 inputSlot, &GraphCanvas::GraphCanvasRequests::CreateVectorNodePropertyDisplay);
         }
-        else if (dataTypeUuid == azrtti_typeid<AZ::Vector4>())
+        if (dataTypeUuid == azrtti_typeid<AZ::Vector4>())
         {
-            dataDisplay = CreatePropertyDisplay<VectorDataInterface<AZ::Vector4, 4>>(
+            return CreatePropertyDisplay<VectorDataInterface<AZ::Vector4, 4>>(
                 inputSlot, &GraphCanvas::GraphCanvasRequests::CreateVectorNodePropertyDisplay);
         }
-        else if (dataTypeUuid == azrtti_typeid<AZStd::string>())
+        if (dataTypeUuid == azrtti_typeid<AZStd::string>())
         {
-            dataDisplay =
-                CreatePropertyDisplay<StringDataInterface>(inputSlot, &GraphCanvas::GraphCanvasRequests::CreateStringNodePropertyDisplay);
+            return CreatePropertyDisplay<StringDataInterface>(
+                inputSlot, &GraphCanvas::GraphCanvasRequests::CreateStringNodePropertyDisplay);
         }
 
-        return dataDisplay;
+        return nullptr;
     }
 
     void GraphController::RequestUndoPoint()
@@ -1355,9 +1353,7 @@ namespace GraphModelIntegration
 
     void GraphController::ResetSlotToDefaultValue(const GraphCanvas::Endpoint& endpoint)
     {
-        auto slot = m_elementMap.Find<GraphModel::Slot>(endpoint.GetSlotId());
-
-        if (slot)
+        if (auto slot = m_elementMap.Find<GraphModel::Slot>(endpoint.GetSlotId()))
         {
             GraphCanvas::ScopedGraphUndoBatch undoBatch(m_graphCanvasSceneId);
             slot->SetValue(slot->GetDefaultValue());
@@ -1401,8 +1397,7 @@ namespace GraphModelIntegration
         GraphCanvas::ScopedGraphUndoBatch undoBatch(m_graphCanvasSceneId);
         GraphCanvas::SlotId graphCanvasSlotId;
 
-        GraphModel::NodePtr node = m_elementMap.Find<GraphModel::Node>(nodeId);
-        if (node)
+        if (GraphModel::NodePtr node = m_elementMap.Find<GraphModel::Node>(nodeId))
         {
             auto it = m_nodeExtenderIds.find(nodeId);
             if (it == m_nodeExtenderIds.end())
@@ -1421,8 +1416,7 @@ namespace GraphModelIntegration
             // Node has overriden the extension handling and rejected the new slot
             const GraphModel::SlotName& slotName = extenderIt->second;
             GraphModel::SlotId newSlotId = ExtendSlot(node, slotName);
-            GraphModel::SlotPtr newSlot = node->GetSlot(newSlotId);
-            if (newSlot)
+            if (GraphModel::SlotPtr newSlot = node->GetSlot(newSlotId))
             {
                 graphCanvasSlotId = m_elementMap.Find(newSlot);
             }
