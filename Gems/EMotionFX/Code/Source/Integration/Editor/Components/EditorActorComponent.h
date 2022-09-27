@@ -25,6 +25,8 @@
 #include <LmbrCentral/Rendering/MaterialAsset.h>
 
 #include <EMotionFX/Source/ActorBus.h>
+#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
+#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 
 namespace EMotionFX
 {
@@ -80,6 +82,7 @@ namespace EMotionFX
             // AZ::Data::AssetBus overrides ...
             void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
             void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+            void OnAssetUnloaded(AZ::Data::AssetId assetId, AZ::Data::AssetType assetType) override;
 
             // BoundsRequestBus overrides ...
             AZ::Aabb GetWorldBounds() override;
@@ -174,7 +177,7 @@ namespace EMotionFX
             size_t                              m_lodLevel;
             ActorComponent::BoundingBoxConfiguration m_bboxConfig;
             bool                                m_forceUpdateJointsOOV = false;
-            ActorRenderFlags                    m_renderFlags;              ///< Actor render flag               
+            ActorRenderFlags                    m_renderFlags;              ///< Actor render flag
             // \todo attachmentTarget node nr
 
             // Note: LOD work in progress. For now we use one material instead of a list of material, because we don't have the support for LOD with multiple scene files.
@@ -185,6 +188,13 @@ namespace EMotionFX
 
             ActorAsset::ActorInstancePtr        m_actorInstance;            ///< Live actor instance.
             AZStd::unique_ptr<RenderActorInstance> m_renderActorInstance;
+
+            AZ::Render::ModelReloadedEvent::Handler m_modelReloadedEventHandler{ [this](AZ::Data::Asset<AZ::RPI::ModelAsset> modelAsset)
+                                                                                 {
+                                                                                     m_actorAsset.QueueLoad();
+                                                                                 } };
+
+            bool m_reloading = false;
         };
     } // namespace Integration
 } // namespace EMotionFX

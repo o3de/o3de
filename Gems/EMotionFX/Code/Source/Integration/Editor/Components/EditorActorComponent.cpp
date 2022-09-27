@@ -544,8 +544,51 @@ namespace EMotionFX
 
         void EditorActorComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
         {
+            // Release the asset so everything can get unloaded.
+            // The Actor asset holds a reference to a ModelAsset which can only be reloaded with a manual call.
+            // Since the Actor asset passed into this function has already been reloaded with the old ModelAsset,
+            // let it and the current Actor reference unload first.
+            // In the Unloaded event, the model will be requested for reload.
+            // When the model has finished reloading, the Actor will be QueueLoaded and will pick up the newly reloaded ModelAsset.
+            m_reloading = true;
             DestroyActorInstance();
-            OnAssetReady(asset);
+            m_actorAsset.Release();
+        }
+
+        void EditorActorComponent::OnAssetUnloaded(AZ::Data::AssetId assetId, AZ::Data::AssetType)
+        {
+            if(!m_reloading)
+            {
+                return;
+            }
+
+            m_reloading = false;
+
+            // Get the direct dependencies and find the ModelAsset
+            AZ::Outcome<AZStd::vector<AZ::Data::ProductDependency>, AZStd::string> result;
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                result, &AZ::Data::AssetCatalogRequestBus::Events::GetDirectProductDependencies, assetId);
+
+            if (!result.IsSuccess())
+            {
+                AZ_Error("EditorActorComponent", false, "Failed to get dependencies for actor asset %s, reload aborted", assetId.ToFixedString().c_str());
+                return;
+            }
+
+            auto&& dependencies = result.GetValue();
+
+            for (auto&& dependency : dependencies)
+            {
+                auto dependencyAsset =
+                    AZ::Data::AssetManager::Instance().FindAsset(dependency.m_assetId, AZ::Data::AssetLoadBehavior::Default);
+
+                if (dependencyAsset && dependencyAsset.GetType() == azrtti_typeid<AZ::RPI::ModelAsset>())
+                {
+                    // Now that the ModelAsset has been found, request a reload.
+                    // When this finishes, the callback will trigger a QueueLoad on m_actorAsset.
+                    AZ::Render::ModelReloaderSystemInterface::Get()->ReloadModel(dependencyAsset, m_modelReloadedEventHandler);
+                }
+            }
         }
 
         void EditorActorComponent::SetActorAsset(AZ::Data::Asset<ActorAsset> actorAsset)
