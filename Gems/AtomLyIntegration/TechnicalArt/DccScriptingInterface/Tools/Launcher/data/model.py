@@ -110,7 +110,6 @@ class LauncherModel:
             existing_tables = helpers.get_tables(self.db)
             if 'tools' not in existing_tables:
                 self.create_tool_table()
-            _LOGGER.info(f'Adding tool data: {data}')
             helpers.create_table_entry(self.db, 'tools', tuple(constants.TOOLS_HEADERS), tuple(data))
             return True
         return False

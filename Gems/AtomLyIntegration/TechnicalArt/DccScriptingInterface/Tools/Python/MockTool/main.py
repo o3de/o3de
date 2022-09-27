@@ -89,7 +89,7 @@ class MockTool(QtWidgets.QWidget):
 
     def get_env_value(self):
         """! Access variables from the .env file. If this tool is launched by the Launcher tool, Dynaconf will
-         not know to to read and add in .env values, which is provided for below.
+         not know to read and add in .env values, which is provided for below.
          """
 
         # Extract .env values manually if tool run through DCCsi Launcher. Set 'env_file_location'

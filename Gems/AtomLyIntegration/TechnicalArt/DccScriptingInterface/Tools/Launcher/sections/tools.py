@@ -405,14 +405,14 @@ class Tools(QtWidgets.QWidget):
         self.tool_category_layout.addWidget(self.tool_category_label)
         self.tool_category_combobox = QtWidgets.QComboBox()
         self.tool_category_combobox.setFixedHeight(25)
-        self.tool_categories = (
+        self.tool_categories = []
+        self.tool_category_layout.addWidget(self.tool_category_combobox)
+        self.tool_category_combobox.addItems((
             'Utility',
             'Workflow',
             'Conversion',
             'Add New Category'
-        )
-        self.tool_category_layout.addWidget(self.tool_category_combobox)
-        self.tool_category_combobox.addItems(self.tool_categories)
+        ))
         self.distribution_row_controls.addSpacing(40)
 
         # Tool window placement
@@ -538,9 +538,24 @@ class Tools(QtWidgets.QWidget):
         self.left_tool_frame.setStyleSheet(f'background-image: url({tiling_image})')
         self.left_container_layout = QtWidgets.QVBoxLayout(self.left_tool_frame)
         self.tool_layout.addWidget(self.left_tool_frame)
+
         #  Loaded Tool Container ----->>
-        self.tool_container_layout = QtWidgets.QVBoxLayout()
-        self.tool_layout.addLayout(self.tool_container_layout)
+        self.scroll_content_layout = QtWidgets.QVBoxLayout()
+        self.tool_layout.addLayout(self.scroll_content_layout)
+        self.scroll_content_layout.addStretch(0)
+
+        self.tool_container_widget = QtWidgets.QWidget()
+        self.tool_container_layout = QtWidgets.QHBoxLayout()
+
+        self.scroll_area = QtWidgets.QScrollArea(self.tool_container_widget)
+        self.scroll_area.setFrameShape(QFrame.NoFrame)
+        self.scroll_area_contents = QtWidgets.QWidget()
+        self.scroll_area_contents.setLayout(self.tool_container_layout)
+        self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.setWidget(self.scroll_area_contents)
+        self.scroll_content_layout.addWidget(self.scroll_area)
+        # self.scroll_content_layout.addStretch(0)
+
         # Right Margin Spacer ----->>
         self.right_tool_frame = QFrame()
         self.right_tool_frame.setFrameStyle(QFrame.StyledPanel)
@@ -550,7 +565,6 @@ class Tools(QtWidgets.QWidget):
 
     def open_section(self):
         """ Initializes Tools Window """
-        self.tool_categories = []
         if not self.tool_categories:
             for tab_name in self.model.get_tools_categories():
                 self.tool_categories.append(tab_name)
@@ -624,6 +638,9 @@ class Tools(QtWidgets.QWidget):
         else:
             self.throw_validation_message(validation_data)
         return False
+
+    def update_tools_listings(self):
+        _LOGGER.info(f'Update... current tool listings: {self.tools_listings}')
 
     def reset_form(self):
         self.tool_name_field.clear()
@@ -762,7 +779,10 @@ class Tools(QtWidgets.QWidget):
     def add_tool_info_clicked(self):
         _LOGGER.info('Add Tool clicked')
         if self.validate_tool_information():
-            _LOGGER.info('Tool successfully added- set the interface and load tool here')
+            self.update_tools_listings()
+            section_name = self.section_tabs.tabText(self.section_tabs.currentIndex())
+            self.set_tools(section_name)
+            self.stacked_layout.setCurrentIndex(0)
 
     def browse_clicked(self, _id):
         browse_info = [
