@@ -26,7 +26,6 @@
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Debug/Trace.h>
-#include <AzCore/Debug/IEventLogger.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/Time/ITime.h>
@@ -429,12 +428,6 @@ void CSystem::Quit()
     }
 
     gEnv->pLog->Flush();
-
-    // Latest possible place to flush any pending messages to disk before the forceful termination.
-    if (auto logger = AZ::Interface<AZ::Debug::IEventLogger>::Get(); logger)
-    {
-        logger->Flush();
-    }
 
 #ifdef WIN32
     //Post a WM_QUIT message to the Win32 api which causes the message loop to END

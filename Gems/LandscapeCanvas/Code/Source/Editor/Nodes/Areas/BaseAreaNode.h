@@ -32,7 +32,7 @@ namespace LandscapeCanvas
 
         const char* GetSubTitle() const override
         {
-            return LandscapeCanvas::VEGETATION_AREA_TITLE.toUtf8().constData();
+            return LandscapeCanvas::VEGETATION_AREA_TITLE;
         }
 
         GraphModel::NodeType GetNodeType() const override

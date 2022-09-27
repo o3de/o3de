@@ -11,11 +11,11 @@
 #include <AzCore/Math/IntersectSegment.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
 #include <PhysX/Configuration/PhysXConfiguration.h>
 #include <Editor/Source/ComponentModes/Joints/JointsComponentModeCommon.h>
-#include <Source/EditorColliderComponent.h>
 #include <Source/EditorJointComponent.h>
 #include <Source/EditorRigidBodyComponent.h>
 #include <Source/Utils.h>

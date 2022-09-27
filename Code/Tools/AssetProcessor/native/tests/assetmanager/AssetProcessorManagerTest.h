@@ -58,6 +58,7 @@ public:
     friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, QueryAbsolutePathDependenciesRecursive_Reverse_BasicTest);
     friend class GTEST_TEST_CLASS_NAME_(
         AssetProcessorManagerTest, QueryAbsolutePathDependenciesRecursive_MissingFiles_ReturnsNoPathWithPlaceholders);
+    friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, QueryAbsolutePathDependenciesRecursive_DependenciesOnNonAssetsIncluded);
 
     friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, BuilderDirtiness_BeforeComputingDirtiness_AllDirty);
     friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, BuilderDirtiness_EmptyDatabase_AllDirty);
@@ -168,6 +169,9 @@ protected:
     void SetUp() override;
     void TearDown() override;
 
+    virtual void CreateSourceAndFile(const char* tempFolderRelativePath);
+    virtual void PopulateDatabase();
+
     QTemporaryDir m_tempDir;
 
     AZStd::unique_ptr<AssetProcessorManager_Test> m_assetProcessorManager;
@@ -177,6 +181,11 @@ protected:
     QDir m_normalizedCacheRootDir;
     AZStd::atomic_bool m_isIdling;
     QMetaObject::Connection m_idleConnection;
+
+    AZ::Uuid m_aUuid = AssetUtilities::CreateSafeSourceUUIDFromName("a.txt");
+    AZ::Uuid m_bUuid = AssetUtilities::CreateSafeSourceUUIDFromName("b.txt");
+    AZ::Uuid m_cUuid = AssetUtilities::CreateSafeSourceUUIDFromName("c.txt");
+    AZ::Uuid m_dUuid = AssetUtilities::CreateSafeSourceUUIDFromName("d.txt");
 
     struct StaticData
     {
@@ -222,6 +231,8 @@ struct SourceFileDependenciesTest : AssetProcessorManagerTest
         bool primeMap,
         AssetProcessor::AssetProcessorManager::JobToProcessEntry& job);
 
+    void PopulateDatabase() override;
+
     auto GetDependencyList();
 
     AssetBuilderSDK::SourceFileDependency MakeSourceDependency(const char* file, bool wildcard = false);
@@ -239,6 +250,7 @@ struct SourceFileDependenciesTest : AssetProcessorManagerTest
     const AssetProcessor::ScanFolderInfo* m_scanFolder = nullptr;
 
     AZ::Uuid m_dummyBuilderUuid;
+    AZ::Uuid m_sourceFileUuid = AssetUtilities::CreateSafeSourceUUIDFromName("assetProcessorManagerTest.txt");
     AZ::Uuid m_uuidOfA = AssetUtilities::CreateSafeSourceUUIDFromName("a.txt");
     AZ::Uuid m_uuidOfB = AssetUtilities::CreateSafeSourceUUIDFromName("b.txt");
     AZ::Uuid m_uuidOfC = AssetUtilities::CreateSafeSourceUUIDFromName("c.txt");

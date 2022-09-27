@@ -32,7 +32,7 @@ namespace AZ
 
         void PostProcessFeatureProcessor::Activate()
         {
-            m_currentTime = AZStd::chrono::system_clock::now();
+            m_currentTime = AZStd::chrono::steady_clock::now();
         }
 
         void PostProcessFeatureProcessor::Deactivate()
@@ -42,7 +42,7 @@ namespace AZ
 
         void PostProcessFeatureProcessor::UpdateTime()
         {
-            AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
+            AZStd::chrono::steady_clock::time_point now = AZStd::chrono::steady_clock::now();
             AZStd::chrono::duration<float> deltaTime = now - m_currentTime;
             m_currentTime = now;
             m_deltaTime = deltaTime.count();
@@ -74,7 +74,7 @@ namespace AZ
 
             // simulate both the global and each view's post process settings
             // Ideally, every view should be associated to a post process settings. The global
-            // setting is returned when a view does not have a post process setting. 
+            // setting is returned when a view does not have a post process setting.
             // e.g. Editor Camera, AtomSampleViewer Samples that do not set perViewBlendWeights
             m_globalAggregateLevelSettings->Simulate(m_deltaTime);
             for (auto& settingsPair : m_blendedPerViewSettings)
@@ -85,7 +85,7 @@ namespace AZ
 
         void PostProcessFeatureProcessor::SortPostProcessSettings()
         {
-            // Clear settings from previous frame 
+            // Clear settings from previous frame
             m_sortedFrameSettings.clear();
 
             // Sort post process settings by layer value and priority
@@ -215,7 +215,7 @@ namespace AZ
         {
             // check for view aliases first
             auto viewAliasiterator = m_viewAliasMap.find(view.get());
-            
+
             // Use the view alias if it exists
             auto settingsIterator = m_blendedPerViewSettings.find(viewAliasiterator != m_viewAliasMap.end() ? viewAliasiterator->second : view.get());
             // If no settings for the view is found, the global settings is returned.

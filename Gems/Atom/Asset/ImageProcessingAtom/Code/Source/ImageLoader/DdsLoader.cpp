@@ -216,10 +216,7 @@ namespace ImageProcessingAtom
 
         IImageObject* LoadImageFromFile(const AZStd::string& filename)
         {
-            AZ::IO::SystemFile file;
-            file.Open(filename.c_str(), AZ::IO::SystemFile::SF_OPEN_READ_ONLY);
-
-            AZ::IO::SystemFileStream fileLoadStream(&file, true);
+            AZ::IO::SystemFileStream fileLoadStream(filename.c_str(), AZ::IO::OpenMode::ModeRead);
             if (!fileLoadStream.IsOpen())
             {
                 AZ_Warning("Image Processing", false, "%s: failed to open file %s", __FUNCTION__, filename.c_str());

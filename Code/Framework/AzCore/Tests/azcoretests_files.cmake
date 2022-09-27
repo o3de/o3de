@@ -48,6 +48,7 @@ set(FILES
     GenericStreamMock.h
     GenericStreamTests.cpp
     Memory.cpp
+    Metrics/EventLoggerFactoryTests.cpp
     Module.cpp
     ModuleTestBus.h
     OrderedEventBenchmarks.cpp
@@ -68,7 +69,8 @@ set(FILES
     StatisticalProfilerTests.cpp
     StreamerTests.cpp
     StringFunc.cpp
-    SystemFile.cpp
+    SystemFileTest.cpp
+    SystemFileStreamTest.cpp
     TaskTests.cpp
     TickBusTest.cpp
     UUIDTests.cpp

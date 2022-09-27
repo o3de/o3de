@@ -87,6 +87,7 @@ namespace AssetProcessor
     class PlatformConfiguration;
     class ScanFolderInfo;
     class PathDependencyManager;
+    class LfsPointerFileValidator;
 
     //! The Asset Processor Manager is the heart of the pipeline
     //! It is what makes the critical decisions about what should and should not be processed
@@ -120,11 +121,11 @@ namespace AssetProcessor
             QString m_fileName;
             bool m_isDelete = false;
             bool m_isFromScanner = false;
-            AZStd::chrono::system_clock::time_point m_initialProcessTime{};
+            AZStd::chrono::steady_clock::time_point m_initialProcessTime{};
 
             FileEntry() = default;
 
-            FileEntry(const QString& fileName, bool isDelete, bool isFromScanner = false, AZStd::chrono::system_clock::time_point initialProcessTime = {})
+            FileEntry(const QString& fileName, bool isDelete, bool isFromScanner = false, AZStd::chrono::steady_clock::time_point initialProcessTime = {})
                 : m_fileName(fileName)
                 , m_isDelete(isDelete)
                 , m_isFromScanner(isFromScanner)
@@ -331,7 +332,7 @@ namespace AssetProcessor
         void CheckDeletedProductFile(QString normalizedPath);
         void CheckDeletedSourceFile(
             QString normalizedPath, QString relativePath, QString databaseSourceFile,
-            AZStd::chrono::system_clock::time_point initialProcessTime);
+            AZStd::chrono::steady_clock::time_point initialProcessTime);
         void CheckModifiedSourceFile(QString normalizedPath, QString databaseSourceFile, const ScanFolderInfo* scanFolderInfo);
         bool AnalyzeJob(JobDetails& details);
         void CheckDeletedCacheFolder(QString normalizedPath);
@@ -404,6 +405,9 @@ namespace AssetProcessor
         //!  Adds the source to the database and returns the corresponding sourceDatabase Entry
         void AddSourceToDatabase(AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceDatabaseEntry, const ScanFolderInfo* scanFolder, QString relativeSourceFilePath);
 
+        // ! Get the engine, project and active gem root directories which could potentially be separate repositories.
+        AZStd::vector<AZStd::string> GetPotentialRepositoryRoots();
+
     protected:
         // given a set of file info that definitely exist, warm the file cache up so
         // that we only query them once.
@@ -458,6 +462,9 @@ namespace AssetProcessor
         bool CheckForIntermediateAssetLoop(AZStd::string_view currentAsset, AZStd::string_view productAsset);
 
         void UpdateForCacheServer(JobDetails& jobDetails);
+
+        //! Check whether the specified file is an LFS pointer file.
+        bool IsLfsPointerFile(const AZStd::string& filePath);
 
         AssetProcessor::PlatformConfiguration* m_platformConfig = nullptr;
 
@@ -516,6 +523,7 @@ namespace AssetProcessor
 
         AZStd::unique_ptr<PathDependencyManager> m_pathDependencyManager;
         AZStd::unique_ptr<SourceFileRelocator> m_sourceFileRelocator;
+        AZStd::unique_ptr<LfsPointerFileValidator> m_lfsPointerFileValidator;
 
         JobDiagnosticTracker m_jobDiagnosticTracker{};
 
@@ -555,7 +563,7 @@ namespace AssetProcessor
           * if a source file is missing from disk, it will not be included in the result set, since this returns
           * full absolute paths.
           */
-        void QueryAbsolutePathDependenciesRecursive(QString inputDatabasePath, SourceFilesForFingerprintingContainer& finalDependencyList, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency dependencyType, bool reverseQuery);
+        void QueryAbsolutePathDependenciesRecursive(AZ::Uuid sourceUuid, SourceFilesForFingerprintingContainer& finalDependencyList, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency dependencyType);
 
         // we can't write a job to the database as not needing analysis the next time around,
         // until all jobs related to it are finished.  This is becuase the jobs themselves are not written to the database

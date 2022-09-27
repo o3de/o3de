@@ -119,8 +119,8 @@ namespace UnitTests
             ASSERT_TRUE(m_data->m_connection->SetSource(sourceFile9));
             ASSERT_TRUE(m_data->m_connection->SetSource(sourceFile10));
 
-            SourceFileDependencyEntry dependency1{ AZ::Uuid::CreateRandom(), "subfolder1/somefile.tif", "subfolder1/otherfile.tif", SourceFileDependencyEntry::TypeOfDependency::DEP_SourceToSource, false, "" };
-            SourceFileDependencyEntry dependency2{ AZ::Uuid::CreateRandom(), "subfolder1/otherfile.tif", "otherfile.tif", SourceFileDependencyEntry::TypeOfDependency::DEP_JobToJob, false, "" };
+            SourceFileDependencyEntry dependency1{ AZ::Uuid::CreateRandom(), m_data->m_dependency1Uuid, "subfolder1/otherfile.tif", SourceFileDependencyEntry::TypeOfDependency::DEP_SourceToSource, false, "" };
+            SourceFileDependencyEntry dependency2{ AZ::Uuid::CreateRandom(), m_data->m_dependency2Uuid, "otherfile.tif", SourceFileDependencyEntry::TypeOfDependency::DEP_JobToJob, false, "" };
             ASSERT_TRUE(m_data->m_connection->SetSourceFileDependency(dependency1));
             ASSERT_TRUE(m_data->m_connection->SetSourceFileDependency(dependency2));
 
@@ -394,6 +394,9 @@ namespace UnitTests
             AZStd::unique_ptr<SourceFileRelocator> m_reporter;
             AZStd::unique_ptr<MockPerforceComponent> m_perforceComponent;
 
+            AZ::Uuid m_dependency1Uuid{ "{2C083160-DD50-459A-9482-CE663F4B558B}" };
+            AZ::Uuid m_dependency2Uuid{ "{013BF607-A52A-4D1A-B2F4-AA8222C1BD68}" };
+
             AZ::JobManager* m_jobManager = nullptr;
             AZ::JobContext* m_jobContext = nullptr;
         };
@@ -638,14 +641,14 @@ namespace UnitTests
 
         m_data->m_reporter->PopulateDependencies(entryContainer);
 
-        AZStd::vector<AZStd::string> databaseSourceNames;
+        AZStd::vector<AZ::Uuid> databaseSourceNames;
         AZStd::vector<AZ::s64> databaseProductDependencyNames;
 
         for(const auto& relocationInfo : entryContainer)
         {
             for (const auto& dependencyEntry : relocationInfo.m_sourceDependencyEntries)
             {
-                databaseSourceNames.push_back(dependencyEntry.m_source);
+                databaseSourceNames.push_back(dependencyEntry.m_sourceGuid);
             }
         }
 
@@ -657,7 +660,7 @@ namespace UnitTests
             }
         }
 
-        ASSERT_THAT(databaseSourceNames, testing::UnorderedElementsAreArray({ "subfolder1/otherfile.tif" }));
+        ASSERT_THAT(databaseSourceNames, testing::UnorderedElementsAreArray({ m_data->m_dependency2Uuid }));
         ASSERT_THAT(databaseProductDependencyNames, testing::UnorderedElementsAreArray({ 2 }));
     }
 

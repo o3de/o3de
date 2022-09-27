@@ -14,20 +14,36 @@
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
+#include <Benchmarks/PhysXBenchmarksCommon.h>
 
 namespace PhysX::Benchmarks
 {
     namespace Utils
     {
-        AzPhysics::SimulatedBodyHandleList CreateRigidBodies(int numRigidBodies,
-            AzPhysics::Scene* scene, bool enableCCD,
+        BenchmarkRigidBodies CreateRigidBodies(
+            int numRigidBodies,
+            AzPhysics::SceneHandle sceneHandle,
+            bool enableCCD,
+            int benchmarkObjectType,
             GenerateColliderFuncPtr* genColliderFuncPtr /*= nullptr*/, GenerateSpawnPositionFuncPtr* genSpawnPosFuncPtr /*= nullptr*/,
             GenerateSpawnOrientationFuncPtr* genSpawnOriFuncPtr /*= nullptr*/, GenerateMassFuncPtr* genMassFuncPtr /*= nullptr*/,
             GenerateEntityIdFuncPtr* genEntityIdFuncPtr /*= nullptr*/
         )
         {
-            AzPhysics::SimulatedBodyHandleList rigidBodies;
-            rigidBodies.reserve(numRigidBodies);
+            BenchmarkRigidBodies benchmarkRigidBodies;
+
+            if (benchmarkObjectType == PhysX::Benchmarks::RigidBodyApiObject)
+            {
+                AzPhysics::SimulatedBodyHandleList rigidBodies;
+                rigidBodies.reserve(numRigidBodies);
+                benchmarkRigidBodies = AZStd::move(rigidBodies);
+            }
+            else if (benchmarkObjectType == PhysX::Benchmarks::RigidBodyEntity)
+            {
+                PhysX::EntityList rigidBodies;
+                rigidBodies.reserve(numRigidBodies);
+                benchmarkRigidBodies = AZStd::move(rigidBodies);
+            }
 
             AzPhysics::RigidBodyConfiguration rigidBodyConfig;
             rigidBodyConfig.m_ccdEnabled = enableCCD;
@@ -65,21 +81,61 @@ namespace PhysX::Benchmarks
                 }
                 rigidBodyConfig.m_colliderAndShapeData = AzPhysics::ShapeColliderPair(rigidBodyColliderConfig, shapeConfig);
 
-                AzPhysics::SimulatedBodyHandle simBodyHandle = scene->AddSimulatedBody(&rigidBodyConfig);
-                rigidBodies.push_back(simBodyHandle);
+                if (benchmarkObjectType == PhysX::Benchmarks::RigidBodyApiObject)
+                {
+                    AzPhysics::Scene* scene = AZ::Interface<AzPhysics::SystemInterface>::Get()->GetScene(sceneHandle);
+                    AzPhysics::SimulatedBodyHandle simBodyHandle = scene->AddSimulatedBody(&rigidBodyConfig);
+
+                    AZStd::get_if<AzPhysics::SimulatedBodyHandleList>(&benchmarkRigidBodies)->push_back(simBodyHandle);
+                }
+                else if (benchmarkObjectType == PhysX::Benchmarks::RigidBodyEntity)
+                {
+                    EntityPtr entity;
+                    if (rigidBodyConfig.m_entityId.IsValid())
+                    {
+                        entity = AZStd::make_shared<AZ::Entity>(rigidBodyConfig.m_entityId, "TestEntity");
+                    }
+                    else
+                    {
+                        entity = AZStd::make_shared<AZ::Entity>("TestEntity");
+                    }
+
+                    auto* transformComponent = entity->CreateComponent<AzFramework::TransformComponent>();
+                    transformComponent->SetWorldTM(
+                        AZ::Transform::CreateFromQuaternionAndTranslation(rigidBodyConfig.m_orientation, rigidBodyConfig.m_position));
+
+                    auto boxColliderComponent = entity->CreateComponent<PhysX::BoxColliderComponent>();
+                    boxColliderComponent->SetShapeConfigurationList({ AzPhysics::ShapeColliderPair(rigidBodyColliderConfig, shapeConfig) });
+
+                    entity->CreateComponent<PhysX::RigidBodyComponent>(rigidBodyConfig, sceneHandle);
+
+                    entity->Init();
+                    entity->Activate();
+
+                    AZStd::get_if<PhysX::EntityList>(&benchmarkRigidBodies)->push_back(entity);
+                }
             }
 
-            return rigidBodies;
+            return benchmarkRigidBodies;
         }
 
-        AZStd::vector<AzPhysics::RigidBody*> GetRigidBodiesFromHandles(AzPhysics::Scene* scene, const AzPhysics::SimulatedBodyHandleList& handlesList)
+        AZStd::vector<AzPhysics::RigidBody*> GetRigidBodiesFromHandles(
+            AzPhysics::Scene* scene, const Utils::BenchmarkRigidBodies& benchmarkRigidBodies)
         {
             AZStd::vector<AzPhysics::RigidBody*> rigidBodies;
-            rigidBodies.reserve(handlesList.size());
-            for (auto handle : handlesList)
+
+            if (auto handlesList = AZStd::get_if<AzPhysics::SimulatedBodyHandleList>(&benchmarkRigidBodies))
             {
-                rigidBodies.push_back(azdynamic_cast<AzPhysics::RigidBody*>(scene->GetSimulatedBodyFromHandle(handle)));
+                rigidBodies = AZStd::vector<AzPhysics::RigidBody*>(AZStd::from_range, *handlesList | AZStd::views::transform([&scene](const AzPhysics::SimulatedBodyHandle& handle) {
+                    return azrtti_cast<AzPhysics::RigidBody*>(scene->GetSimulatedBodyFromHandle(handle)); }));
+
             }
+            else if (auto entityList = AZStd::get_if<PhysX::EntityList>(&benchmarkRigidBodies))
+            {
+                rigidBodies = AZStd::vector<AzPhysics::RigidBody*>(AZStd::from_range, *entityList | AZStd::views::transform([](const EntityPtr& entity) {
+                    return entity->FindComponent<RigidBodyComponent>()->GetRigidBody(); }));
+            }
+
             return rigidBodies;
         }
 
@@ -115,12 +171,12 @@ namespace PhysX::Benchmarks
 
         void PrePostSimulationEventHandler::PreTick()
         {
-            m_tickStart = AZStd::chrono::system_clock::now();
+            m_tickStart = AZStd::chrono::steady_clock::now();
         }
 
         void PrePostSimulationEventHandler::PostTick()
         {
-            auto tickElapsedMilliseconds = Types::double_milliseconds(AZStd::chrono::system_clock::now() - m_tickStart);
+            auto tickElapsedMilliseconds = Types::double_milliseconds(AZStd::chrono::steady_clock::now() - m_tickStart);
             m_subTickTimes.emplace_back(tickElapsedMilliseconds.count());
         }
 
