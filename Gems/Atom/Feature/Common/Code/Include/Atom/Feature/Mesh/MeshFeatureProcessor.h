@@ -203,6 +203,8 @@ namespace AZ
             void ReportShaderOptionFlags(const AZ::ConsoleCommandContainer& arguments);
 
         private:
+            MeshFeatureProcessor(const MeshFeatureProcessor&) = delete;
+
             void ForceRebuildDrawPackets(const AZ::ConsoleCommandContainer& arguments);
             AZ_CONSOLEFUNC(MeshFeatureProcessor,
                 ForceRebuildDrawPackets,
@@ -210,7 +212,7 @@ namespace AZ
                 "(For Testing) Invalidates all mesh draw packets, causing them to rebuild on the next frame."
             );
 
-            MeshFeatureProcessor(const MeshFeatureProcessor&) = delete;
+            void PrintShaderOptionFlags();
 
             // RPI::SceneNotificationBus::Handler overrides...
             void OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline) override;
@@ -224,6 +226,7 @@ namespace AZ
             RPI::MeshDrawPacketLods m_emptyDrawPacketLods;
             RHI::Ptr<FlagRegistry> m_flagRegistry = nullptr;
             bool m_forceRebuildDrawPackets = false;
+            bool m_reportShaderOptionFlags = false;
         };
     } // namespace Render
 } // namespace AZ

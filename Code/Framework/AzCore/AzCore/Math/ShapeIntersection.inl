@@ -80,6 +80,11 @@ namespace AZ
             return aabb1.Overlaps(aabb2);
         }
 
+        AZ_MATH_INLINE bool Overlaps(const Aabb& aabb, const Sphere& sphere)
+        {
+            return Overlaps(sphere, aabb);
+        }
+
         AZ_MATH_INLINE bool Overlaps(const Sphere& sphere, const Aabb& aabb)
         {
             float distSq = aabb.GetDistanceSq(sphere.GetCenter());
@@ -124,13 +129,13 @@ namespace AZ
                 // Sphere is in front of hemisphere, so treat the hemisphere as a sphere
                 return Overlaps(Sphere(hemisphere.GetCenter(), hemisphere.GetRadius()), sphere);
             }
-            else if (sphereDistanceToPlane >= -sphere.GetRadius())
+            else if (sphereDistanceToPlane > -sphere.GetRadius())
             {
                 // Sphere is behind hemisphere, project the sphere onto the plane, then check radius of circle.
                 Vector3 projectedSphereCenter = sphere.GetCenter() + hemisphere.GetDirection() * sphereDistanceToPlane;
                 float circleRadius = AZStd::sqrt(sphere.GetRadius() * sphere.GetRadius() - sphereDistanceToPlane * sphereDistanceToPlane);
                 const float radiusSum = hemisphere.GetRadius() + circleRadius;
-                return hemisphere.GetCenter().GetDistanceSq(projectedSphereCenter) <= (radiusSum * radiusSum);
+                return hemisphere.GetCenter().GetDistanceSq(projectedSphereCenter) < (radiusSum * radiusSum);
             }
             return false; // too far behind hemisphere to intersect
         }
@@ -144,14 +149,14 @@ namespace AZ
                 return false;
             }
 
-            Vector3 nearestPointToPlane = aabb.GetSupport(-hemisphere.GetDirection());
-            bool abovePlane = hemisphere.GetDirection().Dot(hemisphere.GetCenter() - nearestPointToPlane) > 0.0f;
-            if (!abovePlane)
+            if (aabb.Contains(hemisphere.GetCenter()))
             {
-                return false;
+                return true;
             }
 
-            return distSq <= radiusSq && abovePlane;  // This has false positives but is reasonably tight.
+            Vector3 nearestPointToPlane = aabb.GetSupport(-hemisphere.GetDirection());
+            bool abovePlane = hemisphere.GetDirection().Dot(hemisphere.GetCenter() - nearestPointToPlane) > 0.0f;
+            return !abovePlane; // This has false positives but is reasonably tight.
         }
 
         AZ_MATH_INLINE bool Overlaps(const Frustum& frustum, const Sphere& sphere)
@@ -256,20 +261,14 @@ namespace AZ
 
         AZ_MATH_INLINE bool Contains(const Hemisphere& hemisphere, const Aabb& aabb)
         {
-            float radiusSq = hemisphere.GetRadius() * hemisphere.GetRadius();
-            if (aabb.GetMaxDistanceSq(hemisphere.GetCenter()) > radiusSq)
+            const float radiusSq = hemisphere.GetRadius() * hemisphere.GetRadius();
+            if (aabb.GetMaxDistanceSq(hemisphere.GetCenter()) <= radiusSq)
             {
-                return false; // too far away
+                // points are inside sphere, check to make sure it's on the right side of the hemisphere plane
+                Vector3 nearestPointToPlane = aabb.GetSupport(hemisphere.GetDirection());
+                return hemisphere.GetDirection().Dot(nearestPointToPlane - hemisphere.GetCenter()) >= 0.0f;
             }
-
-            Vector3 nearestPointToPlane = aabb.GetSupport(-hemisphere.GetDirection());
-            bool abovePlane = hemisphere.GetDirection().Dot(hemisphere.GetCenter() - nearestPointToPlane) > 0.0f;
-            if (!abovePlane)
-            {
-                return false; // behind hemisphere plane
-            }
-
-            return true;
+            return false;
         }
 
         AZ_MATH_INLINE bool Contains(const Frustum& frustum, const Aabb& aabb)

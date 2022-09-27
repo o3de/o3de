@@ -30,16 +30,7 @@ void ApplyPoylgonLight(ViewSrg::PolygonLight light, Surface surface, inout Light
 
     if (!doubleSided)
     {
-        // Determine the direction of the polygon light by crossing the first two edges
-        float3 edge1 = ViewSrg::m_polygonLightPoints[startIndex].xyz - ViewSrg::m_polygonLightPoints[startIndex + 1].xyz;
-        float3 edge2 = ViewSrg::m_polygonLightPoints[startIndex + 2].xyz - ViewSrg::m_polygonLightPoints[startIndex + 1].xyz;
-        float3 lightDirection = normalize(cross(edge2, edge1));
-
-        // The sign bit on light.m_rgbIntensityNits.x stores if first two edges are concave or convex. Flip lightDirection based on this bit.
-        lightDirection = asfloat(asuint(lightDirection) ^ asuint(light.m_rgbIntensityNits.x) & 0x80000000); 
-
-        float posToLightDotLightDirection = dot(posToLight, -lightDirection);
-        if (posToLightDotLightDirection <= 0.0)
+        if (dot(posToLight, -light.m_lightDirection) <= 0.0)
         {
             return; // Light isn't facing the surface
         }

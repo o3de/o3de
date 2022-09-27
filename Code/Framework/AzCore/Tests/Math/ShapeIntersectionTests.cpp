@@ -801,4 +801,88 @@ namespace UnitTest
         EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(obb1, obb2));
         EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(obb2, obb1));
     }
+
+    TEST(MATH_ShapeIntersection, HemisphereVsSphere)
+    {
+        const AZ::Sphere unitSphere = AZ::Sphere::CreateUnitSphere();
+        const AZ::Sphere sphere1 = AZ::Sphere(AZ::Vector3(2.0f, 2.0f, 2.0f), 2.0f);
+
+        // hemisphere overlaps unit sphere, doesn't touch other sphere
+        const AZ::Hemisphere hemisphere0(AZ::Vector3(0.0f, 0.0f, 0.0f), 1.0f, AZ::Vector3(0.0f, 0.0f, 1.0f));
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(hemisphere0, unitSphere));
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(hemisphere0, sphere1));
+
+        // hemisphere doesn't overlap unit sphere, but overlaps other sphere
+        const AZ::Hemisphere hemisphere1(AZ::Vector3(1.0f, 1.0f, 1.0f), 1.0f, AZ::Vector3(0.0f, 0.0f, 1.0f));
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(hemisphere1, unitSphere));
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(hemisphere1, sphere1));
+
+        // hemisphere faces away from unit sphere but is still within range
+        const AZ::Hemisphere hemisphere2(AZ::Vector3(0.0f, 0.0f, -0.5f), 2.0f, AZ::Vector3(0.0f, 0.0f, -1.0f));
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(hemisphere2, unitSphere));
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(hemisphere2, sphere1));
+
+        // hemisphere faces away from unit sphere but is out of range.
+        const AZ::Hemisphere hemisphere3(AZ::Vector3(0.0f, 0.0f, -1.0f), 2.0f, AZ::Vector3(0.0f, 0.0f, -1.0f));
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(hemisphere3, unitSphere));
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(hemisphere3, sphere1));
+
+        // hemisphere faces towards unit sphere and is in range
+        const AZ::Hemisphere hemisphere4(AZ::Vector3(0.0f, 0.0f, -1.5f), 1.0f, AZ::Vector3(0.0f, 0.0f, 1.0f));
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(hemisphere4, unitSphere));
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(hemisphere4, sphere1));
+    }
+
+    TEST(MATH_ShapeIntersection, HemisphereVsAabb)
+    {
+        const AZ::Aabb unitAabb = AZ::Aabb::CreateCenterHalfExtents(AZ::Vector3::CreateZero(), AZ::Vector3(1.0f));
+
+        // hemisphere on top of aabb
+        const AZ::Hemisphere hemisphere0(AZ::Vector3(0.0f, 0.0f, 0.0f), 1.0f, AZ::Vector3(0.0f, 0.0f, 1.0f));
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(hemisphere0, unitAabb));
+
+        // hemisphere just above aabb pointing away
+        const AZ::Hemisphere hemisphere1(AZ::Vector3(0.0f, 0.0f, 1.1f), 1.0f, AZ::Vector3(0.0f, 0.0f, 1.0f));
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(hemisphere1, unitAabb));
+
+        // hemisphere just above aabb pointing towards
+        const AZ::Hemisphere hemisphere2(AZ::Vector3(0.0f, 0.0f, 1.1f), 1.0f, AZ::Vector3(0.0f, 0.0f, -1.0f));
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(hemisphere2, unitAabb));
+
+        // hemisphere farther above aabb pointing towards
+        const AZ::Hemisphere hemisphere3(AZ::Vector3(0.0f, 0.0f, 2.1f), 1.0f, AZ::Vector3(0.0f, 0.0f, -1.0f));
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(hemisphere3, unitAabb));
+
+        // hemisphere just above aabb pointing away, but at an angle so the plane of the hemisphere intersects
+        const AZ::Hemisphere hemisphere4(AZ::Vector3(0.0f, 0.0f, 1.1f), 1.0f, AZ::Vector3(0.0f, 1.0f, 1.0f).GetNormalized());
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(hemisphere4, unitAabb));
+
+        // false positive case - hemisphere points away from aabb at an angle where the plane still intersects the aabb, but not near enough
+        // to the hemisphere to actually intersect. This typically happens when the hemisphere is much smaller than the aabb.
+        const AZ::Hemisphere hemisphere5(AZ::Vector3(0.0f, 0.0f, 1.2f), 0.3f, AZ::Vector3(0.0f, 1.0f, 1.0f).GetNormalized());
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(hemisphere5, unitAabb));
+
+    }
+
+    TEST(MATH_ShapeIntersection, HemisphereContainsAabb)
+    {
+        const AZ::Aabb unitAabb = AZ::Aabb::CreateCenterHalfExtents(AZ::Vector3::CreateZero(), AZ::Vector3(1.0f));
+
+        // hemisphere intersecting aabb, but not big enough
+        const AZ::Hemisphere hemisphere0(AZ::Vector3(0.0f, 0.0f, 0.0f), 2.0f, AZ::Vector3(0.0f, 0.0f, 1.0f));
+        EXPECT_FALSE(AZ::ShapeIntersection::Contains(hemisphere0, unitAabb));
+
+        // hemisphere contains aabb
+        const AZ::Hemisphere hemisphere1(AZ::Vector3(0.0f, 0.0f, -1.0f), 3.0f, AZ::Vector3(0.0f, 0.0f, 1.0f));
+        EXPECT_TRUE(AZ::ShapeIntersection::Contains(hemisphere1, unitAabb));
+
+        // aabb contains hemisphere
+        const AZ::Hemisphere hemisphere2(AZ::Vector3(0.0f, 0.0f, 0.0f), 0.5f, AZ::Vector3(0.0f, 0.0f, 1.0f));
+        EXPECT_FALSE(AZ::ShapeIntersection::Contains(hemisphere2, unitAabb));
+
+        // just one point of aabb is outside
+        const AZ::Hemisphere hemisphere3(AZ::Vector3(1.0f, 1.0f, -1.0f), 3.0f, AZ::Vector3(0.0f, 0.0f, 1.0f));
+        EXPECT_FALSE(AZ::ShapeIntersection::Contains(hemisphere3, unitAabb));
+    }
+
 } // namespace UnitTest

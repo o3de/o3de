@@ -591,14 +591,6 @@ namespace AZ
         return Vector3(Simd::Vec3::Div(Simd::Vec4::ToVec3(m_value), divisor));
     }
 
-
-    AZ_MATH_INLINE Vector4& Vector4::operator=(const Vector4& rhs)
-    {
-        m_value = rhs.m_value;
-        return *this;
-    }
-
-
     AZ_MATH_INLINE Vector4 Vector4::operator-() const
     {
         return Vector4(Simd::Vec4::Sub(Simd::Vec4::ZeroFloat(), m_value));

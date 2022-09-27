@@ -37,6 +37,7 @@ namespace AZ
 
         bool operator==(const Sphere& rhs) const;
         bool operator!=(const Sphere& rhs) const;
+        Sphere& operator=(const Sphere& other) = default;
 
     private:
         Vector3 m_center;

@@ -9,6 +9,8 @@
 #pragma once
 
 #include <AzCore/Math/Frustum.h>
+#include <AzCore/Math/Hemisphere.h>
+#include <Atom/Feature/CoreLights/LightCommon.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
 #include <Atom/Feature/CoreLights/SimpleSpotLightFeatureProcessorInterface.h>
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
@@ -72,11 +74,11 @@ namespace AZ
         private:
             SimpleSpotLightFeatureProcessor(const SimpleSpotLightFeatureProcessor&) = delete;
 
-            void UpdateFrustum(LightHandle handle);
+            void UpdateBounds(LightHandle handle);
 
             static constexpr const char* FeatureProcessorName = "SimpleSpotLightFeatureProcessor";
 
-            MultiIndexedDataVector<SimpleSpotLightData, AZ::Frustum> m_lightData;
+            MultiIndexedDataVector<SimpleSpotLightData, LightCommon::LightBounds> m_lightData;
             GpuBufferHandler m_lightBufferHandler;
             RHI::Handle<uint32_t> m_lightMeshFlag;
             bool m_deviceBufferNeedsUpdate = false;

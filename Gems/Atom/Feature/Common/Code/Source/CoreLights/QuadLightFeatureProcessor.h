@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AzCore/Math/Hemisphere.h>
+#include <Atom/Feature/CoreLights/LightCommon.h>
 #include <Atom/Feature/CoreLights/QuadLightFeatureProcessorInterface.h>
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
 #include <Atom/Feature/Utils/MultiIndexedDataVector.h>
@@ -62,7 +62,7 @@ namespace AZ
 
             static constexpr const char* FeatureProcessorName = "QuadLightFeatureProcessor";
 
-            MultiIndexedDataVector<QuadLightData, Hemisphere> m_lightData;
+            MultiIndexedDataVector<QuadLightData, LightCommon::LightBounds> m_lightData;
             GpuBufferHandler m_lightBufferHandler;
             RHI::Handle<uint32_t> m_lightLtcMeshFlag;
             RHI::Handle<uint32_t> m_lightApproxMeshFlag;

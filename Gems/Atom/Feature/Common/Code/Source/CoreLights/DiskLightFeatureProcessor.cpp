@@ -13,7 +13,6 @@
 #include <AzCore/Math/Vector3.h>
 
 #include <Atom/Feature/CoreLights/CoreLightsConstants.h>
-#include <Atom/Feature/CoreLights/LightCommon.h>
 #include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 
 #include <Atom/RHI/Factory.h>
@@ -22,6 +21,9 @@
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
+
+
+#include <AzCore/std/containers/variant.h>
 
 namespace AZ
 {
@@ -45,21 +47,21 @@ namespace AZ
         void DiskLightFeatureProcessor::Activate()
         {
             GpuBufferHandler::Descriptor desc;
-desc.m_bufferName = "DiskLightBuffer";
-desc.m_bufferSrgName = "m_diskLights";
-desc.m_elementCountSrgName = "m_diskLightCount";
-desc.m_elementSize = sizeof(DiskLightData);
-desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
+            desc.m_bufferName = "DiskLightBuffer";
+            desc.m_bufferSrgName = "m_diskLights";
+            desc.m_elementCountSrgName = "m_diskLightCount";
+            desc.m_elementSize = sizeof(DiskLightData);
+            desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
 
-m_lightBufferHandler = GpuBufferHandler(desc);
-m_shadowFeatureProcessor = GetParentScene()->GetFeatureProcessor<ProjectedShadowFeatureProcessor>();
+            m_lightBufferHandler = GpuBufferHandler(desc);
+            m_shadowFeatureProcessor = GetParentScene()->GetFeatureProcessor<ProjectedShadowFeatureProcessor>();
 
-MeshFeatureProcessor* meshFeatureProcessor = GetParentScene()->GetFeatureProcessor<MeshFeatureProcessor>();
-if (meshFeatureProcessor)
-{
-    m_lightMeshFlag = meshFeatureProcessor->GetFlagRegistry()->AcquireTag(AZ::Name("DisktLight"));
-    m_shadowMeshFlag = meshFeatureProcessor->GetFlagRegistry()->AcquireTag(AZ::Name("DiskLightShadow"));
-}
+            MeshFeatureProcessor* meshFeatureProcessor = GetParentScene()->GetFeatureProcessor<MeshFeatureProcessor>();
+            if (meshFeatureProcessor)
+            {
+                m_lightMeshFlag = meshFeatureProcessor->GetFlagRegistry()->AcquireTag(AZ::Name("DiskLight"));
+                m_shadowMeshFlag = meshFeatureProcessor->GetFlagRegistry()->AcquireTag(AZ::Name("DiskLightShadow"));
+            }
         }
 
         void DiskLightFeatureProcessor::Deactivate()
@@ -113,6 +115,8 @@ if (meshFeatureProcessor)
                 light = m_lightData.GetData<0>(sourceLightHandle.GetIndex());
                 m_lightData.GetData<1>(handle.GetIndex()) = m_lightData.GetData<1>(sourceLightHandle.GetIndex());
 
+                static_assert(AZStd::variant_detail::copy_assignable_traits<AZ::Frustum, AZ::Hemisphere, AZ::Sphere, AZ::Aabb> != AZStd::variant_detail::SpecialFunctionTraits::Unavailable);
+
                 ShadowId shadowId = ShadowId(light.m_shadowIndex);
                 if (shadowId.IsValid())
                 {
@@ -145,46 +149,23 @@ if (meshFeatureProcessor)
                 ShadowId shadowId = ShadowId(m_lightData.GetData<0>(index).m_shadowIndex);
                 return shadowId.IsValid();
             };
-            auto indexHemisphereBestFit = [&](LightHandle::IndexType index) -> bool
-            {
-                DiskLightData& lightData = m_lightData.GetData<0>(index);
-                bool usesConeAngle = (lightData.m_flags & DiskLightData::Flags::UseConeAngle) > 0;
-
-                // Hemisphere is best fit if the cone angle isn't used, or it's very wide (greater than 60 degrees).
-                // For wide angles, a frustum will contain a large area beyond the radius of the light
-                return !usesConeAngle || lightData.m_cosOuterConeAngle < 0.5f;
-            };
 
             // Filter lambdas
-            auto shadowFrustum = [&](const AZ::Frustum& frustum) -> bool
+            auto hasShadow = [&](const LightCommon::LightBounds& bounds) -> bool
             {
-                LightHandle::IndexType index = m_lightData.GetIndexForData<1>(&frustum);
-                return indexHasShadow(index) && !indexHemisphereBestFit(index);
+                return indexHasShadow(m_lightData.GetIndexForData<1>(&bounds));
             };
-            auto shadowHemisphere = [&](const AZ::Hemisphere& hemisphere) -> bool
+            auto noShadow = [&](const LightCommon::LightBounds& bounds) -> bool
             {
-                LightHandle::IndexType index = m_lightData.GetIndexForData<2>(&hemisphere);
-                return indexHasShadow(index) && indexHemisphereBestFit(index);
-            };
-            auto noShadowFrustum = [&](const AZ::Frustum& frustum) -> bool
-            {
-                LightHandle::IndexType index = m_lightData.GetIndexForData<1>(&frustum);
-                return !indexHasShadow(index) && !indexHemisphereBestFit(index);
-            };
-            auto noShadowHemisphere = [&](const AZ::Hemisphere& hemisphere) -> bool
-            {
-                LightHandle::IndexType index = m_lightData.GetIndexForData<2>(&hemisphere);
-                return !indexHasShadow(index) && indexHemisphereBestFit(index);
+                return !indexHasShadow(m_lightData.GetIndexForData<1>(&bounds));
             };
 
             // Mark meshes that have point lights without shadow using only the light flag.
-            LightCommon::MarkMeshesWithLightType(GetParentScene(), AZStd::span(m_lightData.GetDataVector<1>()), m_lightMeshFlag.GetIndex(), noShadowFrustum);
-            LightCommon::MarkMeshesWithLightType(GetParentScene(), AZStd::span(m_lightData.GetDataVector<2>()), m_lightMeshFlag.GetIndex(), noShadowHemisphere);
+            LightCommon::MarkMeshesWithLightType(GetParentScene(), AZStd::span(m_lightData.GetDataVector<1>()), m_lightMeshFlag.GetIndex(), noShadow);
 
             // Mark meshes that have point lights with shadow using a combination of light and shadow flags.
             uint32_t lightAndShadow = m_lightMeshFlag.GetIndex() | m_shadowMeshFlag.GetIndex();
-            LightCommon::MarkMeshesWithLightType(GetParentScene(), AZStd::span(m_lightData.GetDataVector<1>()), lightAndShadow, shadowFrustum);
-            LightCommon::MarkMeshesWithLightType(GetParentScene(), AZStd::span(m_lightData.GetDataVector<2>()), lightAndShadow, shadowHemisphere);
+            LightCommon::MarkMeshesWithLightType(GetParentScene(), AZStd::span(m_lightData.GetDataVector<1>()), lightAndShadow, hasShadow);
         }
 
         void DiskLightFeatureProcessor::Render(const DiskLightFeatureProcessor::RenderPacket& packet)
@@ -229,7 +210,7 @@ if (meshFeatureProcessor)
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to DiskLightFeatureProcessor::SetDirection().");
 
             AZStd::array<float, 3>& direction = m_lightData.GetData<0>(handle.GetIndex()).m_direction;
-            lightDirection.StoreToFloat3(direction.data());
+            lightDirection.GetNormalized().StoreToFloat3(direction.data());
 
             UpdateBounds(handle);
             UpdateShadow(handle);
@@ -320,7 +301,7 @@ if (meshFeatureProcessor)
 
             m_lightData.GetData<0>(handle.GetIndex()) = data;
             UpdateShadow(handle);
-            UpdateFrustum(handle);
+            UpdateBounds(handle);
 
             m_deviceBufferNeedsUpdate = true;
         }
@@ -481,19 +462,33 @@ if (meshFeatureProcessor)
         {
             DiskLightData data = m_lightData.GetData<0>(handle.GetIndex());
 
-            ViewFrustumAttributes desc;
-            desc.m_aspectRatio = 1.0f;
-
-            desc.m_nearClip = data.m_bulbPositionOffset;
-            desc.m_farClip = data.m_bulbPositionOffset + LightCommon::GetRadiusFromInvRadiusSquared(data.m_invAttenuationRadiusSquared);
-            desc.m_verticalFovRadians = GetMax(0.001f, acosf(data.m_cosOuterConeAngle) * 2.0f);
-
+            float radius = LightCommon::GetRadiusFromInvRadiusSquared(data.m_invAttenuationRadiusSquared);
             AZ::Vector3 position = AZ::Vector3::CreateFromFloat3(data.m_position.data());
             AZ::Vector3 normal = AZ::Vector3::CreateFromFloat3(data.m_direction.data());
-            desc.m_worldTransform = AZ::Transform::CreateLookAt(position, position + normal);
 
-            AZ::Frustum frustum = AZ::Frustum(desc);
-            m_lightData.GetData<1>(handle.GetIndex()).Set(frustum);
+            // At greater than a 68 degree cone angle, a hemisphere will have a smaller volume than a frustum.
+            constexpr float CosFrustumHemisphereVolumeCrossoverAngle = 0.37f;
+
+            if (data.m_cosOuterConeAngle < CosFrustumHemisphereVolumeCrossoverAngle)
+            {
+                // Wide angle, use a hemisphere for bounds instead of frustum
+                LightCommon::LightBounds& bounds = m_lightData.GetData<1>(handle.GetIndex());
+                bounds.emplace<Hemisphere>(Hemisphere(position, radius, normal));
+            }
+            else
+            {
+                ViewFrustumAttributes desc;
+                desc.m_aspectRatio = 1.0f;
+
+                desc.m_nearClip = data.m_bulbPositionOffset;
+                desc.m_farClip = data.m_bulbPositionOffset + radius;
+                desc.m_verticalFovRadians = GetMax(0.001f, acosf(data.m_cosOuterConeAngle) * 2.0f);
+                desc.m_worldTransform = AZ::Transform::CreateLookAt(position, position + normal);
+
+                AZ::Frustum frustum = AZ::Frustum(desc);
+                m_lightData.GetData<1>(handle.GetIndex()) = AZ::Frustum(desc);
+            }
+
         }
 
     } // namespace Render

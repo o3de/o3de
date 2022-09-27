@@ -12,7 +12,6 @@
 #include <AzCore/Math/Color.h>
 
 #include <Atom/Feature/CoreLights/CoreLightsConstants.h>
-#include <Atom/Feature/CoreLights/LightCommon.h>
 #include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 
 #include <Atom/RHI/Factory.h>
@@ -116,6 +115,7 @@ namespace AZ
                 m_lightBufferHandler.UpdateBuffer(m_lightData.GetDataVector<0>());
                 m_deviceBufferNeedsUpdate = false;
             }
+
             LightCommon::MarkMeshesWithLightType(GetParentScene(), AZStd::span(m_lightData.GetDataVector<1>()), m_lightMeshFlag.GetIndex());
         }
 
@@ -150,7 +150,7 @@ namespace AZ
             AZStd::array<float, 3>& position = m_lightData.GetData<0>(handle.GetIndex()).m_position;
             lightPosition.StoreToFloat3(position.data());
 
-            UpdateFrustum(handle);
+            UpdateBounds(handle);
 
             m_deviceBufferNeedsUpdate = true;
         }
@@ -162,7 +162,7 @@ namespace AZ
             AZStd::array<float, 3>& direction = m_lightData.GetData<0>(handle.GetIndex()).m_direction;
             lightDirection.StoreToFloat3(direction.data());
 
-            UpdateFrustum(handle);
+            UpdateBounds(handle);
 
             m_deviceBufferNeedsUpdate = true;
         }
@@ -173,7 +173,7 @@ namespace AZ
             data.m_cosInnerConeAngle = cosf(innerRadians);
             data.m_cosOuterConeAngle = cosf(outerRadians);
 
-            UpdateFrustum(handle);
+            UpdateBounds(handle);
         }
 
         void SimpleSpotLightFeatureProcessor::SetAttenuationRadius(LightHandle handle, float attenuationRadius)
@@ -186,7 +186,7 @@ namespace AZ
             SimpleSpotLightData& data = m_lightData.GetData<0>(handle.GetIndex());
             data.m_invAttenuationRadiusSquared = invAttenuationRadiusSquared;
 
-            UpdateFrustum(handle);
+            UpdateBounds(handle);
 
             m_deviceBufferNeedsUpdate = true;
         }
@@ -217,28 +217,38 @@ namespace AZ
             return m_lightBufferHandler.GetElementCount();
         }
 
-        void SimpleSpotLightFeatureProcessor::UpdateFrustum(LightHandle handle)
+        void SimpleSpotLightFeatureProcessor::UpdateBounds(LightHandle handle)
         {
             SimpleSpotLightData data = m_lightData.GetData<0>(handle.GetIndex());
 
-            ViewFrustumAttributes desc;
-            desc.m_aspectRatio = 1.0f;
-
             float radius = LightCommon::GetRadiusFromInvRadiusSquared(data.m_invAttenuationRadiusSquared);
-            desc.m_nearClip = radius * 0.1f; // near clip will be moved to the light position later
-            desc.m_farClip = radius;
-            desc.m_verticalFovRadians = GetMax(0.001f, acosf(data.m_cosOuterConeAngle) * 2.0f);
-
             AZ::Vector3 position = AZ::Vector3::CreateFromFloat3(data.m_position.data());
             AZ::Vector3 normal = AZ::Vector3::CreateFromFloat3(data.m_direction.data());
-            desc.m_worldTransform = AZ::Transform::CreateLookAt(position, position + normal);
 
-            AZ::Frustum frustum = AZ::Frustum(desc);
+            // At greater than a 68 degree cone angle, a hemisphere will have a smaller volume than a frustum.
+            constexpr float CosFrustumHemisphereVolumeCrossoverAngle = 0.37f;
 
-            // Move the near plane onto the point of the light (the frustum can't be constructed this way due to divide by zero issues).
-            frustum.SetPlane(AZ::Frustum::Near, AZ::Plane::CreateFromNormalAndPoint(desc.m_worldTransform.GetBasisY(), position));
-            m_lightData.GetData<1>(handle.GetIndex()).Set(frustum);
+            if (data.m_cosOuterConeAngle < CosFrustumHemisphereVolumeCrossoverAngle)
+            {
+                // Wide angle, use a hemisphere for bounds instead of frustum
+                LightCommon::LightBounds& bounds = m_lightData.GetData<1>(handle.GetIndex());
+                bounds.emplace<Hemisphere>(Hemisphere(position, radius, normal));
+            }
+            else
+            {
+                ViewFrustumAttributes desc;
+                desc.m_aspectRatio = 1.0f;
+                desc.m_nearClip = radius * 0.1f; // near clip will be moved to the light position later
+                desc.m_farClip = radius;
+                desc.m_verticalFovRadians = GetMax(0.001f, acosf(data.m_cosOuterConeAngle) * 2.0f);
+                desc.m_worldTransform = AZ::Transform::CreateLookAt(position, position + normal);
+
+                AZ::Frustum frustum = AZ::Frustum(desc);
+
+                // Move the near plane onto the point of the light (the frustum can't be constructed this way due to divide by zero issues).
+                frustum.SetPlane(AZ::Frustum::Near, AZ::Plane::CreateFromNormalAndPoint(desc.m_worldTransform.GetBasisY(), position));
+                m_lightData.GetData<1>(handle.GetIndex()).emplace<Frustum>(frustum);
+            }
         }
-
     } // namespace Render
 } // namespace AZ

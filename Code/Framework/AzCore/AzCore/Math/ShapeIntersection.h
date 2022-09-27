@@ -33,6 +33,7 @@ namespace AZ
         //! Tests to see if Arg1 overlaps Arg2. Symmetric.
         //! @{
         bool Overlaps(const Aabb& aabb1, const Aabb& aabb2);
+        bool Overlaps(const Aabb& aabb, const Sphere& sphere);
         bool Overlaps(const Sphere& sphere, const Aabb& aabb);
         bool Overlaps(const Sphere& sphere, const Frustum& frustum);
         bool Overlaps(const Sphere& sphere, const Plane& plane);

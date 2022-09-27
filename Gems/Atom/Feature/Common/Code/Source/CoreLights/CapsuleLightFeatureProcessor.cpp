@@ -55,7 +55,7 @@ namespace AZ
             MeshFeatureProcessor* meshFeatureProcessor = GetParentScene()->GetFeatureProcessor<MeshFeatureProcessor>();
             if (meshFeatureProcessor)
             {
-                m_lightMeshFlag = meshFeatureProcessor->GetFlagRegistry()->AcquireTag(AZ::Name("SimpleSpotLight"));
+                m_lightMeshFlag = meshFeatureProcessor->GetFlagRegistry()->AcquireTag(AZ::Name("CapsuleLight"));
             }
         }
 

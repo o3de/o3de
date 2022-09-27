@@ -552,14 +552,6 @@ namespace AZ
         return AZStd::min<float>(m_x, AZStd::min<float>(m_y, m_z));
     }
 
-
-    AZ_MATH_INLINE Vector3& Vector3::operator=(const Vector3& rhs)
-    {
-        m_value = rhs.m_value;
-        return *this;
-    }
-
-
     AZ_MATH_INLINE Vector3 Vector3::operator-() const
     {
         return Vector3(Simd::Vec3::Sub(Simd::Vec3::ZeroFloat(), m_value));

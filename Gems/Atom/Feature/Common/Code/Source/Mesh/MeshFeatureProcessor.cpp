@@ -170,6 +170,16 @@ namespace AZ
         void MeshFeatureProcessor::OnEndPrepareRender()
         {
             m_meshDataChecker.soft_unlock();
+
+            if (m_reportShaderOptionFlags)
+            {
+                m_reportShaderOptionFlags = false;
+                PrintShaderOptionFlags();
+            }
+            for (auto& model : m_modelData)
+            {
+                model.m_cullable.m_flags.exchange(0);
+            }
         }
 
         MeshFeatureProcessor::MeshHandle MeshFeatureProcessor::AcquireMesh(
@@ -553,6 +563,11 @@ namespace AZ
         }
 
         void MeshFeatureProcessor::ReportShaderOptionFlags([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
+        {
+            m_reportShaderOptionFlags = true;
+        }
+
+        void MeshFeatureProcessor::PrintShaderOptionFlags()
         {
             AZStd::map<FlagRegistry::TagType, AZ::Name> tags;
             AZStd::string registeredFoundMessage = "Registered flags: ";

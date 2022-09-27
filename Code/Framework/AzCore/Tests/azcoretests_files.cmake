@@ -147,6 +147,7 @@ set(FILES
     Math/CrcTestsCompileTimeLiterals.h
     Math/FrustumTests.cpp
     Math/FrustumPerformanceTests.cpp
+    Math/HemisphereTests.cpp
     Math/IntersectionPerformanceTests.cpp
     Math/IntersectionTestHelpers.cpp
     Math/IntersectionTestHelpers.h

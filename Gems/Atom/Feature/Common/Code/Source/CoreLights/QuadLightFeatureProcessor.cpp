@@ -122,6 +122,20 @@ namespace AZ
                 m_lightBufferHandler.UpdateBuffer(m_lightData.GetDataVector<0>());
                 m_deviceBufferNeedsUpdate = false;
             }
+
+            auto usesLtc = [&](const LightCommon::LightBounds& bounds) -> bool
+            {
+                LightHandle::IndexType index = m_lightData.GetIndexForData<1>(&bounds);
+                return(m_lightData.GetData<0>(index).m_flags & QuadLightFlag::UseFastApproximation) == 0;
+            };
+            auto usesFastApproximation = [&](const LightCommon::LightBounds& bounds) -> bool
+            {
+                LightHandle::IndexType index = m_lightData.GetIndexForData<1>(&bounds);
+                return(m_lightData.GetData<0>(index).m_flags & QuadLightFlag::UseFastApproximation) > 0;
+            };
+
+            LightCommon::MarkMeshesWithLightType(GetParentScene(), AZStd::span(m_lightData.GetDataVector<1>()), m_lightLtcMeshFlag.GetIndex(), usesLtc);
+            LightCommon::MarkMeshesWithLightType(GetParentScene(), AZStd::span(m_lightData.GetDataVector<1>()), m_lightApproxMeshFlag.GetIndex(), usesFastApproximation);
         }
 
         void QuadLightFeatureProcessor::Render(const QuadLightFeatureProcessor::RenderPacket& packet)
@@ -257,8 +271,20 @@ namespace AZ
         void QuadLightFeatureProcessor::UpdateBounds(LightHandle handle)
         {
             QuadLightData data = m_lightData.GetData<0>(handle.GetIndex());
+            LightCommon::LightBounds bounds = m_lightData.GetData<1>(handle.GetIndex());
 
+            AZ::Vector3 position = AZ::Vector3::CreateFromFloat3(data.m_position.data());
+            float radius = LightCommon::GetRadiusFromInvRadiusSquared(data.m_invAttenuationRadiusSquared);
 
+            if ((data.m_flags & QuadLightFlag::EmitBothDirections) > 0)
+            {
+                bounds.emplace<Sphere>(AZ::Sphere(position, radius));
+            }
+            else
+            {
+                AZ::Vector3 normal = AZ::Vector3::CreateFromFloat3(data.m_upDir.data());
+                bounds.emplace<Hemisphere>(AZ::Hemisphere(position, radius, normal));
+            }
         }
 
     } // namespace Render
