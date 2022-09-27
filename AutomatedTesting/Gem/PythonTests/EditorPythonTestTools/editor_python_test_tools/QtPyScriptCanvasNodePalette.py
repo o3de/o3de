@@ -9,7 +9,7 @@ Object to house all the Qt Objects and behavior used in testing the script canva
 from editor_python_test_tools.utils import TestHelper as helper
 from PySide2 import QtWidgets, QtTest, QtCore
 import pyside_utils
-from consts.scripting import (NODE_PALETTE_QT, TREE_VIEW_QT)
+from consts.scripting import (NODE_PALETTE_QT, TREE_VIEW_QT, SEARCH_FRAME_QT, SEARCH_FILTER_QT)
 from consts.general import (WAIT_TIME_SEC_3)
 
 class QtPyScriptCanvasNodePalette():
@@ -19,8 +19,8 @@ class QtPyScriptCanvasNodePalette():
     def __init__(self, sc_editor):
         self.node_palette = sc_editor.sc_editor.findChild(QtWidgets.QDockWidget, NODE_PALETTE_QT)
         self.node_palette_tree = self.node_palette.findChild(QtWidgets.QTreeView, TREE_VIEW_QT)
-        self.node_palette_search_frame = self.node_palette.findChild(QtWidgets.QFrame, "searchFrame")
-        self.node_palette_search_box = self.node_palette_search_frame.findChild(QtWidgets.QLineEdit, "searchFilter")
+        self.node_palette_search_frame = self.node_palette.findChild(QtWidgets.QFrame, SEARCH_FRAME_QT)
+        self.node_palette_search_box = self.node_palette_search_frame.findChild(QtWidgets.QLineEdit, SEARCH_FILTER_QT)
 
     def search_for_node(self, node_name: str):
         """
@@ -30,18 +30,26 @@ class QtPyScriptCanvasNodePalette():
 
         params node_name: the name of the node you are searching for
 
-        returns: True if the node_name we are searching for exists in the filtered search results
+        returns: a list of nodes found using the provided node_name string
         """
-        # Set the search field to blank text to refresh the visible node list
-        self.node_palette_search_box.setText("")
+        self.clear_search_filter()
         helper.wait_for_condition(lambda: self.node_palette_search_box.text() == node_name, WAIT_TIME_SEC_3)
 
         self.node_palette_search_box.setText(node_name)
         helper.wait_for_condition(lambda: self.node_palette_search_box.text() == node_name, WAIT_TIME_SEC_3)
 
-        node_exists = helper.wait_for_condition(
-            lambda: pyside_utils.find_child_by_pattern(
-                self.node_palette_tree, {"text": f"{node_name}"}) is not None, WAIT_TIME_SEC_3)
+        helper.wait_for_condition(lambda: pyside_utils.find_child_by_pattern(
+            self.node_palette_tree, {"text": f"{node_name}"}) is not None, WAIT_TIME_SEC_3)
+        nodes_found = pyside_utils.find_child_by_pattern(self.node_palette_tree, {"text": f"{node_name}"})
 
-        return node_exists
+        return nodes_found
 
+    def clear_search_filter(self) -> None:
+        """
+        Function for setting the node palette search filter to a blank string. This will completely reset the list of
+        visible nodes in the list.
+
+        returns: None
+        """
+
+        self.node_palette_search_box.setText("")

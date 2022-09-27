@@ -132,7 +132,6 @@ class TestScriptCanvasTests(object):
     """
     The following tests use hydra_test_utils.py to launch the editor and validate the results.
     """
-
     def test_ScriptEvents_Default_SendReceiveSuccessfully(self, request, editor, launcher_platform):
 
         expected_lines = [

@@ -67,12 +67,15 @@ class QtPyO3DEEditor(QtPyCommon):
 
         returns a reference to the QtPy asset editor object
         """
+
         general.open_pane(ASSET_EDITOR_UI)
         result = TestHelper.wait_for_condition(lambda: general.is_pane_visible(ASSET_EDITOR_UI), WAIT_TIME_SEC_3)
 
         assert result, "Failed to open Asset Editor"
 
         self.asset_editor = QtPyAssetEditor(self.editor_main_window)
+
+        TestHelper.wait_for_condition(lambda: self.asset_editor is not None, WAIT_TIME_SEC_3)
 
         return self.asset_editor
 

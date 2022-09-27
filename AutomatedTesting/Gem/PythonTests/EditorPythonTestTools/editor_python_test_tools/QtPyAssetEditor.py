@@ -98,6 +98,7 @@ class QtPyAssetEditor(QtPyCommon):
         returns: None
         """
         editor.AssetEditorWidgetRequestsBus(bus.Broadcast, "SaveAssetAs", file_path)
+
         action = pyside_utils.find_child_by_pattern(self.menu_tool_bar,
                                                     {"type": QtWidgets.QAction, "iconText": SAVE_STRING})
         assert action is not None, "Unable to complete save action. Filepath may be invalid."
