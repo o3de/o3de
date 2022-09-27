@@ -1034,7 +1034,7 @@
     },
     "shaders": [
         {
-            "file": "./Skin.shader",
+            "file": "Shaders/Materials/Skin/Skin_ForwardPass.shader",
             "tag": "ForwardPass"
         },
         {

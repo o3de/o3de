@@ -35,19 +35,19 @@ namespace TestImpact
         Timer();
 
         //! Returns the time point that the timer was instantiated.
-        AZStd::chrono::high_resolution_clock::time_point GetStartTimePoint() const;
+        AZStd::chrono::steady_clock::time_point GetStartTimePoint() const;
 
         //! Returns the time point that the timer was instantiated relative to the specified starting time point.
-        AZStd::chrono::high_resolution_clock::time_point GetStartTimePointRelative(const Timer& start) const;
+        AZStd::chrono::steady_clock::time_point GetStartTimePointRelative(const Timer& start) const;
 
         //! Returns the time elapsed (in milliseconds) since the timer was instantiated.
         AZStd::chrono::milliseconds GetElapsedMs() const;
 
         //! Returns the current time point relative to the time point the timer was instantiated.
-        AZStd::chrono::high_resolution_clock::time_point GetElapsedTimepoint() const;
+        AZStd::chrono::steady_clock::time_point GetElapsedTimepoint() const;
 
     private:
-        AZStd::chrono::high_resolution_clock::time_point m_startTime;
+        AZStd::chrono::steady_clock::time_point m_startTime;
     };
 
     //! Attempts to read all of the target descriptor files from the specified configuration directories.
@@ -216,7 +216,7 @@ namespace TestImpact
                     }
                 }
             }
-        }   
+        }
 
         AZStd::vector<SourceCoveringTests> sourceCoveringTests;
         sourceCoveringTests.reserve(coverage.size());
@@ -316,7 +316,7 @@ namespace TestImpact
     template<typename TestJob>
     Client::TestRunReport GenerateTestRunReport(
         TestSequenceResult result,
-        AZStd::chrono::high_resolution_clock::time_point startTime,
+        AZStd::chrono::steady_clock::time_point startTime,
         AZStd::chrono::milliseconds duration,
         const AZStd::vector<TestJob>& testJobs)
     {
@@ -325,12 +325,12 @@ namespace TestImpact
         AZStd::vector<Client::TestRunWithExecutionFailure> executionFailureTests;
         AZStd::vector<Client::TimedOutTestRun> timedOutTests;
         AZStd::vector<Client::UnexecutedTestRun> unexecutedTests;
-        
+
         for (const auto& testJob : testJobs)
         {
             // Test job start time relative to start time
             const auto relativeStartTime =
-                AZStd::chrono::high_resolution_clock::time_point() +
+                AZStd::chrono::steady_clock::time_point() +
                 AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(testJob.GetStartTime() - startTime);
 
             Client::TestRunBase clientTestRun(
@@ -375,7 +375,7 @@ namespace TestImpact
             }
             }
         }
-        
+
         return Client::TestRunReport(
             result,
             startTime,
@@ -437,7 +437,7 @@ namespace TestImpact
     {
         TestSequenceResult m_result = TestSequenceResult::Success;
         AZStd::vector<TestJob> m_jobs;
-        AZStd::chrono::high_resolution_clock::time_point m_relativeStartTime;
+        AZStd::chrono::steady_clock::time_point m_relativeStartTime;
         AZStd::chrono::milliseconds m_duration = AZStd::chrono::milliseconds{ 0 };
     };
 

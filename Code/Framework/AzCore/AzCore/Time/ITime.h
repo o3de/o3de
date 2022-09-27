@@ -216,7 +216,7 @@ namespace AZ
     //! Converts from milliseconds to AZStd::chrono::time_point
     inline auto TimeMsToChrono(TimeMs value)
     {
-        auto epoch = AZStd::chrono::time_point<AZStd::chrono::high_resolution_clock>();
+        AZStd::chrono::steady_clock::time_point epoch;
         auto chronoValue = AZStd::chrono::milliseconds(aznumeric_cast<int64_t>(value));
         return epoch + chronoValue;
     }
@@ -224,7 +224,7 @@ namespace AZ
     //! Converts from microseconds to AZStd::chrono::time_point
     inline auto TimeUsToChrono(TimeUs value)
     {
-        auto epoch = AZStd::chrono::time_point<AZStd::chrono::high_resolution_clock>();
+        AZStd::chrono::steady_clock::time_point epoch;
         auto chronoValue = AZStd::chrono::microseconds(aznumeric_cast<int64_t>(value));
         return epoch + chronoValue;
     }

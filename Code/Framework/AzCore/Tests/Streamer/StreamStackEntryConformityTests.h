@@ -297,7 +297,7 @@ namespace AZ::IO
 
         EXPECT_CALL(*mock, UpdateCompletionEstimates(_, _, _, _)).Times(1);
 
-        auto now = AZStd::chrono::system_clock::now();
+        auto now = AZStd::chrono::steady_clock::now();
         AZStd::vector<FileRequest*> internalRequests;
         StreamerContext::PreparedQueue pendingRequests;
         entry.UpdateCompletionEstimates(now, internalRequests, pendingRequests.begin(), pendingRequests.end());

@@ -863,7 +863,8 @@ namespace AzToolsFramework
             // We check the parent entity separately because it may be a container entity and
             // container entities consider their owning instance to be the parent instance
             auto prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
-            if (prefabPublicInterface && !prefabPublicInterface->EntitiesBelongToSameInstance(selectedEntityIds))
+            AZ_Assert(prefabPublicInterface, "EntityOutlinerListModel requires a PrefabPublicInterface instance on Initialize.");
+            if (!prefabPublicInterface->EntitiesBelongToSameInstance(selectedEntityIds))
             {
                 return false;
             }
@@ -873,7 +874,17 @@ namespace AzToolsFramework
             if (instanceEntityMapperInterface)
             {
                 auto parentInstanceReference = instanceEntityMapperInterface->FindOwningInstance(newParentId);
-                auto selectedInstanceReference = instanceEntityMapperInterface->FindOwningInstance(selectedEntityIds.front());
+
+                AZ::EntityId firstSelectedEntityId = selectedEntityIds.front();
+                auto selectedInstanceReference = instanceEntityMapperInterface->FindOwningInstance(firstSelectedEntityId);
+                // If the selected entity id is a container entity id, then we need get its parent owning instance.
+                // This is because containers, despite representing the nested instance in the parent, are owned by the child.
+                if ((selectedInstanceReference->get().GetContainerEntityId() == firstSelectedEntityId) &&
+                    !prefabPublicInterface->IsLevelInstanceContainerEntity(firstSelectedEntityId))
+                {
+                    selectedInstanceReference = selectedInstanceReference->get().GetParentInstance();
+                }
+
                 if (&(parentInstanceReference->get()) != &(selectedInstanceReference->get()))
                 {
                     return false;

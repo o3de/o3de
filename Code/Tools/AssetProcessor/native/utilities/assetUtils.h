@@ -246,10 +246,6 @@ namespace AssetUtilities
 
     QString GuessProductNameInDatabase(QString path, QString platform, AssetProcessor::AssetDatabaseConnection* databaseConnection);
 
-    //! Given a list of source asset Uuids, it returns a list that contains the same source assets Uuids along with all of their dependencies
-    //! which are discovered recursively. All the returned Uuids are unique, meaning they appear once in the returned list.
-    AZStd::vector<AZ::Uuid> CollectAssetAndDependenciesRecursively(AssetProcessor::AssetDatabaseConnection& databaseConnection, const AZStd::vector<AZ::Uuid>& assetList);
-
     //! A utility function which checks the given path starting at the root and updates the relative path to be the actual case correct path.
     bool UpdateToCorrectCase(const QString& rootPath, QString& relativePathFromRoot);
 
@@ -273,7 +269,7 @@ namespace AssetUtilities
     //! Finds all the sources (up and down) in an intermediate output chain
     AZStd::vector<AZStd::string> GetAllIntermediateSources(
         AZ::IO::PathView relativeSourcePath, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db);
-    
+
     //! Given a source path for an intermediate asset, constructs the product path.
     //! This does not verify either exist, it just manipulates the string.
     AZStd::string GetRelativeProductPathForIntermediateSourcePath(AZStd::string_view relativeSourcePath);

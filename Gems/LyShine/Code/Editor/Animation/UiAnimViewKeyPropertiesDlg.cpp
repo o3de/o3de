@@ -73,6 +73,7 @@ CUiAnimViewKeyPropertiesDlg::CUiAnimViewKeyPropertiesDlg(QWidget* hParentWnd)
     m_wndTrackProps = new CUiAnimViewTrackPropsDlg(this);
     l->addWidget(m_wndTrackProps);
     m_wndProps = new ReflectedPropertyControl(this);
+    m_wndProps->setMinimumSize(50, 0);
     m_wndProps->Setup();
     m_wndProps->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
     l->addWidget(m_wndProps);

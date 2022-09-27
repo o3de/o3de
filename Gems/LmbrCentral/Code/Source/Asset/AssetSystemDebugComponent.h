@@ -53,8 +53,8 @@ namespace LmbrCentral
         {
             AZ::Data::AssetId m_id;
             AZ::Data::AssetData::AssetStatus m_status;
-            AZStd::chrono::system_clock::time_point m_loadStart;
-            AZStd::chrono::system_clock::time_point m_loadFinish;
+            AZStd::chrono::steady_clock::time_point m_loadStart;
+            AZStd::chrono::steady_clock::time_point m_loadFinish;
         };
 
         struct EventSortOldest

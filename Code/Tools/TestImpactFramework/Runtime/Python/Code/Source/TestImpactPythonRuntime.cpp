@@ -31,7 +31,7 @@ namespace TestImpact
         auto testTargetMetaMap = PythonTestTargetMetaMapFactory(masterTestListData, suiteFilter);
         for (auto& [name, meta] : testTargetMetaMap)
         {
-            meta.m_scriptMeta.m_testCommand = AZStd::regex_replace(meta.m_scriptMeta.m_testCommand, AZStd::regex("\\$\\<CONFIG\\>"), buildType); 
+            meta.m_scriptMeta.m_testCommand = AZStd::regex_replace(meta.m_scriptMeta.m_testCommand, AZStd::regex("\\$\\<CONFIG\\>"), buildType);
         }
 
         return testTargetMetaMap;
@@ -225,7 +225,7 @@ namespace TestImpact
             Client::TestRunSelection(),
             Client::TestRunReport(
                 TestSequenceResult::Success,
-                AZStd::chrono::high_resolution_clock::time_point(),
+                AZStd::chrono::steady_clock::time_point(),
                 AZStd::chrono::milliseconds{ 0 },
                 {},
                 {},
@@ -261,11 +261,11 @@ namespace TestImpact
 
         // The test targets that were selected for the change list by the dynamic dependency map and the test targets that were not
         const auto [selectedTestTargets, discardedTestTargets] = SelectCoveringTestTargets(changeList, testPrioritizationPolicy);
-        
+
         // The subset of selected test targets that are not on the configuration's exclude list and those that are
         const auto [includedSelectedTestTargets, excludedSelectedTestTargets] =
             SelectTestTargetsByExcludeList(*m_testTargetExcludeList, selectedTestTargets);
-        
+
         // Functor for running instrumented test targets
         const auto instrumentedTestRun = [this, &testTargetTimeout](
                                              const AZStd::vector<const TestTarget*>& testsTargets,
@@ -282,7 +282,7 @@ namespace TestImpact
                 globalTimeout,
                 AZStd::ref(testRunCompleteHandler));
         };
-        
+
         if (dynamicDependencyMapPolicy == Policy::DynamicDependencyMap::Update)
         {
             AZStd::optional<AZStd::function<void(const AZStd::vector<TestEngineInstrumentedRun<TestTarget, TestCoverage>>& jobs)>>
@@ -297,7 +297,7 @@ namespace TestImpact
                                               m_sparTiaFile)
                                               .value_or(m_hasImpactAnalysisData);
             };
-        
+
             return ImpactAnalysisTestSequenceWrapper(
                 1,
                 GenerateImpactAnalysisSequencePolicyState(testPrioritizationPolicy, dynamicDependencyMapPolicy),
@@ -357,7 +357,7 @@ namespace TestImpact
             {},
             Client::TestRunReport(
                 TestSequenceResult::Success,
-                AZStd::chrono::high_resolution_clock::time_point(),
+                AZStd::chrono::steady_clock::time_point(),
                 AZStd::chrono::milliseconds{ 0 },
                 {},
                 {},
@@ -366,7 +366,7 @@ namespace TestImpact
                 {}),
             Client::TestRunReport(
                 TestSequenceResult::Success,
-                AZStd::chrono::high_resolution_clock::time_point(),
+                AZStd::chrono::steady_clock::time_point(),
                 AZStd::chrono::milliseconds{ 0 },
                 {},
                 {},
@@ -375,7 +375,7 @@ namespace TestImpact
                 {}),
             Client::TestRunReport(
                 TestSequenceResult::Success,
-                AZStd::chrono::high_resolution_clock::time_point(),
+                AZStd::chrono::steady_clock::time_point(),
                 AZStd::chrono::milliseconds{ 0 },
                 {},
                 {},
@@ -394,7 +394,7 @@ namespace TestImpact
         const Timer sequenceTimer;
         AZStd::vector<const TestTarget*> includedTestTargets;
         AZStd::vector<const TestTarget*> excludedTestTargets;
-        
+
         // Separate the test targets into those that are excluded by either the test filter or exclusion list and those that are not
         for (const auto& testTarget : m_dynamicDependencyMap->GetBuildTargetList()->GetTestTargetList().GetTargets())
         {
@@ -407,16 +407,16 @@ namespace TestImpact
                 includedTestTargets.push_back(&testTarget);
             }
         }
-        
+
         // Extract the client facing representation of selected test targets
         Client::TestRunSelection selectedTests(ExtractTestTargetNames(includedTestTargets), ExtractTestTargetNames(excludedTestTargets));
-        
+
         // Inform the client that the sequence is about to start
         if (testSequenceStartCallback.has_value())
         {
             (*testSequenceStartCallback)(m_suiteFilter, selectedTests);
         }
-        
+
         // Run the test targets and collect the test run results
         const Timer testRunTimer;
         const auto [result, testJobs] = m_testEngine->InstrumentedRun(
@@ -429,7 +429,7 @@ namespace TestImpact
             globalTimeout,
             TestRunCompleteCallbackHandler<TestTarget>(includedTestTargets.size(), testCompleteCallback));
         const auto testRunDuration = testRunTimer.GetElapsedMs();
-        
+
         // Generate the sequence report for the client
         const auto sequenceReport = Client::SeedSequenceReport(
             1,
@@ -439,15 +439,15 @@ namespace TestImpact
             m_suiteFilter,
             selectedTests,
             GenerateTestRunReport(result, testRunTimer.GetStartTimePointRelative(sequenceTimer), testRunDuration, testJobs));
-        
+
         // Inform the client that the sequence has ended
         if (testSequenceEndCallback.has_value())
         {
             (*testSequenceEndCallback)(sequenceReport);
         }
-        
+
         ClearDynamicDependencyMapAndRemoveExistingFile();
-        
+
         m_hasImpactAnalysisData = UpdateAndSerializeDynamicDependencyMap(
                                       *m_dynamicDependencyMap.get(),
                                       testJobs,
@@ -456,7 +456,7 @@ namespace TestImpact
                                       m_config.m_commonConfig.m_repo.m_root,
                                       m_sparTiaFile)
                                       .value_or(m_hasImpactAnalysisData);
-        
+
         return sequenceReport;
     }
 
