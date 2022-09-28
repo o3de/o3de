@@ -50,7 +50,7 @@ namespace AtomToolsFramework
     void DynamicNodeManager::LoadConfigFiles(const AZStd::string& extension)
     {
         // Load and register all discovered dynamic node configuration
-        for (AZStd::string configPath : GetPathsInSourceFoldersMatchingWildcard(AZStd::string::format("*.%s", extension.c_str())))
+        for (const auto& configPath : GetPathsInSourceFoldersMatchingWildcard(AZStd::string::format("*.%s", extension.c_str())))
         {
             DynamicNodeConfig config;
             if (config.Load(configPath))
@@ -118,6 +118,23 @@ namespace AtomToolsFramework
 
         GraphModelIntegration::AddCommonNodePaletteUtilities(rootItem, m_toolId);
         return rootItem;
+    }
+
+    void DynamicNodeManager::RegisterEditDataForSetting(const AZStd::string& settingName, const AZ::Edit::ElementData& editData)
+    {
+        m_editDataForSettingName[settingName] = editData;
+    }
+
+    const AZ::Edit::ElementData* DynamicNodeManager::GetEditDataForSetting(const AZStd::string& settingName) const
+    {
+        for (const auto& editDataPair : m_editDataForSettingName)
+        {
+            if (AZ::StringFunc::Equal(editDataPair.first, settingName))
+            {
+                return &editDataPair.second;
+            }
+        }
+        return nullptr;
     }
 
     bool DynamicNodeManager::ValidateSlotConfig(

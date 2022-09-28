@@ -12,7 +12,7 @@
 #include <ScreenWidget.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzToolsFramework/UI/Notifications/ToastNotificationsView.h>
-
+#include <GemCatalog/GemInfo.h>
 #include <QSet>
 #include <QString>
 #endif
@@ -44,6 +44,10 @@ namespace O3DE::ProjectManager
         bool IsTab() override;
         void NotifyCurrentScreen() override;
 
+        void AddToGemModel(const GemInfo& gemInfo);
+
+        void ShowStandardToastNotification(const QString& notification);
+
         GemModel* GetGemModel() const { return m_gemModel; }
         DownloadController* GetDownloadController() const { return m_downloadController; }
 
@@ -68,6 +72,7 @@ namespace O3DE::ProjectManager
 
     private slots:
         void HandleOpenGemRepo();
+        void HandleCreateGem();
         void UpdateAndShowGemCart(QWidget* cartWidget);
         void ShowInspector();
 

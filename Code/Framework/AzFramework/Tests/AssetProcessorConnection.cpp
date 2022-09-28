@@ -32,7 +32,7 @@ const AZ::u32 BAPayloadSize = azlossy_caster(strlen(BAPayload));
 
 // how long before tests fail when expecting a connection.
 // normally, connections to localhost happen immediately (microseconds), so this is just for when things
-// go wrong.  In normal test runs, we'll be yielding and waiting very short 
+// go wrong.  In normal test runs, we'll be yielding and waiting very short
 // amounts of time (milliseconds) instead of the full 15 seconds.
 const int secondsMaxConnectionAttempt = 15;
 
@@ -65,11 +65,11 @@ protected:
         // matches in the loop condition it could later not match in the return statement
         // as the state is being updated on another thread
         AzFramework::SocketConnection::EConnectionState connectionState;
-        auto started = AZStd::chrono::system_clock::now();
+        auto started = AZStd::chrono::steady_clock::now();
         for (connectionState = connectionObject.GetConnectionState(); connectionState != desired;
             connectionState = connectionObject.GetConnectionState())
         {
-            auto seconds_passed = AZStd::chrono::seconds(AZStd::chrono::system_clock::now() - started).count();
+            auto seconds_passed = AZStd::chrono::duration_cast<AZStd::chrono::seconds>(AZStd::chrono::steady_clock::now() - started).count();
             if (seconds_passed > secondsMaxConnectionAttempt)
             {
                 break;
@@ -86,11 +86,11 @@ protected:
         // matches in the loop condition it could later not match in the return statement
         // as the state is being updated on another thread
         AzFramework::SocketConnection::EConnectionState connectionState;
-        auto started  = AZStd::chrono::system_clock::now();
+        auto started = AZStd::chrono::steady_clock::now();
         for (connectionState = connectionObject.GetConnectionState(); connectionState == notDesired;
             connectionState = connectionObject.GetConnectionState())
         {
-            auto seconds_passed = AZStd::chrono::seconds(AZStd::chrono::system_clock::now() - started).count();
+            auto seconds_passed = AZStd::chrono::duration_cast<AZStd::chrono::seconds>(AZStd::chrono::steady_clock::now() - started).count();
             if (seconds_passed > secondsMaxConnectionAttempt)
             {
                 break;
@@ -163,7 +163,7 @@ TEST_F(APConnectionTest, TestAddRemoveCallbacks)
 
     // Wait some time for the connection to negotiate, only after negotiation succeeds is it actually considered connected,,
     EXPECT_TRUE(WaitForConnectionStateToBeEqual(apConnection, SocketConnection::EConnectionState::Connected));
-    
+
     // Check listener for success - by this time the listener should also be considered connected.
     EXPECT_TRUE(WaitForConnectionStateToBeEqual(apListener, SocketConnection::EConnectionState::Connected));
 
@@ -242,7 +242,7 @@ TEST_F(APConnectionTest, TestAddRemoveCallbacks_RemoveDuringCallback_DoesNotCras
     ABMessageCallbackCount = 0;
 
     AZStd::binary_semaphore messageArrivedSemaphore;
-    
+
     // establish connection
     EXPECT_TRUE(apListener.Listen(11112));
     EXPECT_TRUE(apConnection.Connect("127.0.0.1", 11112));
@@ -253,7 +253,7 @@ TEST_F(APConnectionTest, TestAddRemoveCallbacks_RemoveDuringCallback_DoesNotCras
     // Now try adding listeners that remove themselves during callback
     //
     // Connection A is expecting the above type and payload from B, therefore it is B->A, BA
-    
+
     // we set a trap here - after we first get this message, we are removing the handler
     // so that it should not ever fire again, and we assert that its false.
     AZStd::atomic_bool failIfWeGetCalledAgainBA = {false};
@@ -268,7 +268,7 @@ TEST_F(APConnectionTest, TestAddRemoveCallbacks_RemoveDuringCallback_DoesNotCras
         apConnection.RemoveMessageHandler(BAType, SelfRemovingBACallbackHandle);
         failIfWeGetCalledAgainBA = true;
         messageArrivedSemaphore.release();
-        
+
     });
 
     // Connection B is expecting the above type and payload from A, therefore it is A->B, AB
@@ -285,7 +285,7 @@ TEST_F(APConnectionTest, TestAddRemoveCallbacks_RemoveDuringCallback_DoesNotCras
         failIfWeGetCalledAgainAB = true;
         messageArrivedSemaphore.release();
     });
-    
+
     // Send message, should be at 1 each
 
     // Send message from A to B
@@ -305,7 +305,7 @@ TEST_F(APConnectionTest, TestAddRemoveCallbacks_RemoveDuringCallback_DoesNotCras
     // above callback functions will trigger their asserts.
     apConnection.SendMsg(ABType, ABPayload, ABPayloadSize);
     apListener.SendMsg(BAType, BAPayload, BAPayloadSize);
-    
+
     // disconnect fully, which flushes sender queue and reciever queue and will cause any traps to spring!
     EXPECT_TRUE(apConnection.Disconnect(true));
     EXPECT_TRUE(apListener.Disconnect(true));
@@ -333,7 +333,7 @@ TEST_F(APConnectionTest, TestAddRemoveCallbacks_AddDuringCallback_DoesNotCrash)
     ABMessageCallbackCount = 0;
 
     AZStd::binary_semaphore messageArrivedSemaphore;
-    
+
     // establish connection
     EXPECT_TRUE(apListener.Listen(11112));
     EXPECT_TRUE(apConnection.Connect("127.0.0.1", 11112));
@@ -347,11 +347,11 @@ TEST_F(APConnectionTest, TestAddRemoveCallbacks_AddDuringCallback_DoesNotCrash)
     // Connection A is expecting the above type and payload from B, therefore it is B->A, BA
     SocketConnection::TMessageCallbackHandle SecondAddedBACallbackHandle = SocketConnection::s_invalidCallbackHandle;
     SocketConnection::TMessageCallbackHandle AddingBACallbackHandle = SocketConnection::s_invalidCallbackHandle;
-    
+
     // set some traps so that if things call more than once, its a failure:
     AZStd::atomic_bool AddingBACallbackFailIfCalledAgain = {false};
     AZStd::atomic_bool AddingBACallbackFailIfCalledAgain_inner = {false};
-    
+
     AddingBACallbackHandle = apConnection.AddMessageHandler(BAType, [&](AZ::u32 typeId, AZ::u32 /*serial*/, const void* data, AZ::u32 dataLength) -> void
     {
         EXPECT_FALSE(AddingBACallbackFailIfCalledAgain.load());
@@ -434,7 +434,7 @@ TEST_F(APConnectionTest, TestAddRemoveCallbacks_AddDuringCallback_DoesNotCrash)
     // since we flush on disconnect, these traps will activate.
     apConnection.SendMsg(ABType, ABPayload, ABPayloadSize);
     apListener.SendMsg(BAType, BAPayload, BAPayloadSize);
-    
+
     // Disconnect A
     // which flushes and will cause any traps to spring.
     bool disconnectResult = apConnection.Disconnect(true);
@@ -499,7 +499,7 @@ TEST_F(APConnectionTest, TestConnection)
     EXPECT_TRUE(apConnection.GetConnectionState() == SocketConnection::EConnectionState::Disconnected);
     bool connectResult = apConnection.Connect("127.0.0.1", 11120);
     EXPECT_TRUE(connectResult);
-    
+
     // during the connect/disconnect/reconnect loop, the status of the connection rapidly oscillates
     // between "connecting" and "disconnecting" as it tries, fails, and sets up to try again.
     // Since the connection attempt starts as disconnected (checked before the connect), here we will
@@ -625,7 +625,7 @@ TEST_F(APConnectionTest, TestReconnect)
     // note that the listener was the ONLY one we told to disconnect!
     // the other end (the apConnection) is likely to be in a retry state (ie, one of the states that is not connected)
     EXPECT_TRUE(WaitForConnectionStateToNotBeEqual(apConnection, SocketConnection::EConnectionState::Connected));
-    
+
     // disconnect A
     disconnectResult = apConnection.Disconnect(true); // we're not going to wait, so we do a final disconnect here (true)
     EXPECT_TRUE(disconnectResult);

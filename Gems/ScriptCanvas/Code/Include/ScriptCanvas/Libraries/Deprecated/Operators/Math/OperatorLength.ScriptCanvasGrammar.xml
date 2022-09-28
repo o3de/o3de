@@ -12,7 +12,6 @@
            DrecationUUID="{C1E3C9D0-42E3-4D00-AE73-2A881E7E76A8}"
            ReplacementMethodName="Length"
            VersionConverter="OperatorLengthConverter"
-           GeneratePropertyFriend="True"
            Description="Given a vector this returns the magnitude (length) of the vector. For a quaternion, magnitude is the cosine of half the angle of rotation.">
         <In Name="In" Description=""/>
         <Out Name="Out" Description=""/>

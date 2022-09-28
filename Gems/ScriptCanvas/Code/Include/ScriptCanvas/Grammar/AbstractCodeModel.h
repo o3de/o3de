@@ -9,7 +9,7 @@
 #pragma once
 
 #include <AzCore/Outcome/Outcome.h>
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <ScriptCanvas/Core/Core.h>
 #include <ScriptCanvas/Core/Datum.h>
@@ -539,7 +539,7 @@ namespace ScriptCanvas
             DebugSymbolMapReverse m_debugMapReverse;
 
             AZStd::sys_time_t m_parseDuration;
-            AZStd::chrono::system_clock::time_point m_parseStartTime;
+            AZStd::chrono::steady_clock::time_point m_parseStartTime;
             EBusHandlingByNode m_ebusHandlingByNode;
             EventHandlingByNode m_eventHandlingByNode;
             ImplicitVariablesByNode m_implicitVariablesByNode;

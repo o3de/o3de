@@ -15,6 +15,7 @@
 
 namespace ScriptCanvas
 {
+    static constexpr const char ScriptCanvasAutoGenDataRegistrySuffix[] = "DataRegistry";
     static constexpr const char ScriptCanvasAutoGenFunctionRegistrySuffix[] = "FunctionRegistry";
     static constexpr const char ScriptCanvasAutoGenNodeableRegistrySuffix[] = "NodeableRegistry";
     static constexpr const char ScriptCanvasAutoGenGrammarRegistrySuffix[] = "GrammarRegistry";
@@ -59,6 +60,7 @@ namespace ScriptCanvas
     AZStd::vector<AZStd::string> AutoGenRegistryManager::GetRegistryNames(const char* registryName)
     {
         AZStd::vector<AZStd::string> result;
+        result.push_back(AZStd::string::format("%s%s", registryName, ScriptCanvasAutoGenDataRegistrySuffix).c_str());
         result.push_back(AZStd::string::format("%s%s", registryName, ScriptCanvasAutoGenFunctionRegistrySuffix).c_str());
         result.push_back(AZStd::string::format("%s%s", registryName, ScriptCanvasAutoGenNodeableRegistrySuffix).c_str());
         result.push_back(AZStd::string::format("%s%s", registryName, ScriptCanvasAutoGenGrammarRegistrySuffix).c_str());

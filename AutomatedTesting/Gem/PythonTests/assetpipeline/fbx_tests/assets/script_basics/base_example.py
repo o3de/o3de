@@ -10,8 +10,10 @@ sceneJobHandler = None
 
 def clear_sceneJobHandler():
     global sceneJobHandler
+    # do not delete or set sceneJobHandler to None, just disconnect from it.
+    # this call is occuring while the scene Job Handler itself is in the callstack, so deleting it here
+    # would cause a crash.
     sceneJobHandler.disconnect()
-    sceneJobHandler = None
 
 def on_prepare_for_export(args): 
     print (f'on_prepare_for_export')
@@ -68,11 +70,10 @@ def on_update_manifest(args):
 try:
     import azlmbr.scene as sceneApi
     
-    if sceneJobHandler is None:
-        sceneJobHandler = sceneApi.ScriptBuildingNotificationBusHandler()
-        sceneJobHandler.connect()
-        sceneJobHandler.add_callback('OnUpdateManifest', on_update_manifest)
-        sceneJobHandler.add_callback('OnPrepareForExport', on_prepare_for_export)
+    sceneJobHandler = sceneApi.ScriptBuildingNotificationBusHandler()
+    sceneJobHandler.connect()
+    sceneJobHandler.add_callback('OnUpdateManifest', on_update_manifest)
+    sceneJobHandler.add_callback('OnPrepareForExport', on_prepare_for_export)
 
 except:
     sceneJobHandler = None

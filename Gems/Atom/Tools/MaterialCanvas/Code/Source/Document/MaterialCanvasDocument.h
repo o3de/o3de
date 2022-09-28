@@ -56,9 +56,10 @@ namespace MaterialCanvas
         bool EndEdit() override;
 
         // MaterialCanvasDocumentRequestBus::Handler overrides...
+        GraphModel::GraphPtr GetGraph() const override;
         GraphCanvas::GraphId GetGraphId() const override;
-        const AZStd::vector<AZStd::string>& GetGeneratedFilePaths() const override;
         AZStd::string GetGraphName() const override;
+        const AZStd::vector<AZStd::string>& GetGeneratedFilePaths() const override;
         bool CompileGraph() const override;
         void QueueCompileGraph() const override;
         bool IsCompileGraphQueued() const override;
@@ -112,7 +113,9 @@ namespace MaterialCanvas
 
         // Generate AZSL instructions for an output node by evaluating all of the sorted graph nodes for connections to input slots
         AZStd::vector<AZStd::string> GetInstructionsFromConnectedNodes(
-            GraphModel::ConstNodePtr outputNode, const AZStd::vector<AZStd::string>& inputSlotNames) const;
+            GraphModel::ConstNodePtr outputNode,
+            const AZStd::vector<AZStd::string>& inputSlotNames,
+            AZStd::vector<GraphModel::ConstNodePtr>& instructionNodes) const;
 
         // Convert a node name and numeric ID into a prefix for a File name or code symbol name
         AZStd::string GetSymbolNameFromNode(GraphModel::ConstNodePtr inputNode) const;
@@ -125,7 +128,7 @@ namespace MaterialCanvas
             GraphModel::ConstNodePtr node, const AtomToolsFramework::DynamicNodeSlotConfig& slotConfig) const;
 
         // Convert all material input nodes into AZSL lines of variables that can be injected into the material SRG
-        AZStd::vector<AZStd::string> GetMaterialInputsFromNodes() const;
+        AZStd::vector<AZStd::string> GetMaterialInputsFromNodes(const AZStd::vector<GraphModel::ConstNodePtr>& instructionNodes) const;
 
         using LineGenerationFn = AZStd::function<AZStd::vector<AZStd::string>(const AZStd::string&)>;
 
@@ -139,7 +142,10 @@ namespace MaterialCanvas
         // Creates and exports a material type source file by loading an existing template, replacing special tokens, and injecting
         // properties defined in material input nodes
         bool BuildMaterialTypeFromTemplate(
-            GraphModel::ConstNodePtr templateNode, const AZStd::string& templateInputPath, const AZStd::string& templateOutputPath) const;
+            GraphModel::ConstNodePtr templateNode,
+            const AZStd::vector<GraphModel::ConstNodePtr>& instructionNodes,
+            const AZStd::string& templateInputPath,
+            const AZStd::string& templateOutputPath) const;
 
         AZ::Entity* m_sceneEntity = {};
         GraphCanvas::GraphId m_graphId;

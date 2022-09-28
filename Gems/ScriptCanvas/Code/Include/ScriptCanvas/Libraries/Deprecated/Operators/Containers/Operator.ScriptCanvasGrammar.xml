@@ -10,7 +10,6 @@
            Category="Operators"
            Version="2"
            Deprecated="True"
-           GeneratePropertyFriend="True"
            Description="">
         <In Name="In" Description="Input signal"/>
         <Out Name="Out" Description="Output signal"/>

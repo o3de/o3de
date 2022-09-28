@@ -272,7 +272,7 @@ inline bool TAnimSplineTrack<Vec2>::SerializeSelection(XmlNodeRef& xmlNode, bool
         int numCur = GetNumKeys();
         int num = xmlNode->getChildCount();
 
-        int type;
+        unsigned int type;
         xmlNode->getAttr("TrackType", type);
 
         if (type != GetCurveType())
@@ -392,7 +392,7 @@ namespace spline
 //////////////////////////////////////////////////////////////////////////
 // When TAnimSplineTrack<Vec2> is deserialized, a spline instance
 // is first created in the TUiAnimSplineTrack<Vec2> constructor (via AllocSpline()),
-// then the pointer is overwritten when "Spline" field is deserialized. 
+// then the pointer is overwritten when "Spline" field is deserialized.
 // To prevent a memory leak, m_spline is now an intrusive pointer, so that if/when
 // the "Spline" field is deserialized, the old object will be deleted.
 template<>

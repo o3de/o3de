@@ -17,7 +17,7 @@
 #include <AzCore/std/string/string.h>
 
 namespace TestImpact
-{    
+{
     //! Generic job runner that launches a process for each job, records metrics about each job run and hands the payload artifacts
     //! produced by each job to the client before compositing the metrics and payload artifacts for each job into a single interface
     //! to be consumed by the client.
@@ -64,7 +64,7 @@ namespace TestImpact
         //! Constructs the job runner with the specified parameters to constrain job runs.
         //! @param maxConcurrentProcesses he maximum number of concurrent jobs in-flight.
         explicit JobRunner(size_t maxConcurrentProcesses);
-           
+
         //! Executes the specified jobs and returns the products of their labor.
         //! @param jobs The arguments (and other pertinent information) required for each job to be run.
         //! @param stdOutRouting The standard output routing to be specified for all jobs.
@@ -128,7 +128,7 @@ namespace TestImpact
         const ProcessLaunchCallback processLaunchCallback = [&jobCallback, &metas](
             TestImpact::ProcessId pid,
             TestImpact::LaunchResult launchResult,
-            AZStd::chrono::high_resolution_clock::time_point createTime)
+            AZStd::chrono::steady_clock::time_point createTime)
         {
             auto& [meta, jobInfo] = metas.at(pid);
             if (launchResult == LaunchResult::Failure)
@@ -149,7 +149,7 @@ namespace TestImpact
             TestImpact::ExitCondition exitCondition,
             TestImpact::ReturnCode returnCode,
             TestImpact::StdContent&& std,
-            AZStd::chrono::high_resolution_clock::time_point exitTime)
+            AZStd::chrono::steady_clock::time_point exitTime)
         {
             auto& [meta, jobInfo] = metas.at(processId);
             meta.m_returnCode = returnCode;

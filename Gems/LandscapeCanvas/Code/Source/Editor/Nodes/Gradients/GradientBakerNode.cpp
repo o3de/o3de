@@ -29,7 +29,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString GradientBakerNode::TITLE = QObject::tr("Gradient Baker");
+    const char* GradientBakerNode::TITLE = "Gradient Baker";
 
     GradientBakerNode::GradientBakerNode(GraphModel::GraphPtr graph)
         : BaseGradientNode(graph)
@@ -40,12 +40,12 @@ namespace LandscapeCanvas
 
     const char* GradientBakerNode::GetTitle() const
     {
-        return TITLE.toUtf8().constData();
+        return TITLE;
     }
 
     const char* GradientBakerNode::GetSubTitle() const
     {
-        return GRADIENT_GENERATOR_TITLE.toUtf8().constData();
+        return GRADIENT_GENERATOR_TITLE;
     }
 
     const BaseNode::BaseNodeType GradientBakerNode::GetBaseNodeType() const

@@ -1,32 +1,17 @@
 {
-    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
     "materialTypeVersion": 5,
-    "properties": {
-        "baseColor": {
-            "color": [ 0.18, 0.18, 0.18 ],
-            "factor": 1.0,
-            "useTexture": false,
-            "textureMap": ""
-        },
-        "metallic": {
-            "factor": 0.0,
-            "useTexture": false,
-            "textureMap": ""
-        },
-        "roughness": {
-            "factor": 1.0,
-            "useTexture": false,
-            "textureMap": ""
-        },
-        "specularF0": {
-            "factor": 0.5,
-            "useTexture": false,
-            "textureMap": ""
-        },
-        "normal": {
-            "factor": 1.0,
-            "useTexture": false,
-            "textureMap": ""
-        }
+    "propertyValues": {
+        "baseColor.color": [
+            0.18000000715255737,
+            0.18000000715255737,
+            0.18000000715255737,
+            1.0
+        ],
+        "baseColor.useTexture": false,
+        "metallic.useTexture": false,
+        "normal.useTexture": false,
+        "roughness.useTexture": false,
+        "specularF0.useTexture": false
     }
 }

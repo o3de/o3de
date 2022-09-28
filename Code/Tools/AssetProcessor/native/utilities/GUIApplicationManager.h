@@ -114,5 +114,5 @@ private:
     QPointer<MainWindow> m_mainWindow;
     AZStd::unique_ptr<ErrorCollector> m_startupErrorCollector; // Collects errors during start up to display when startup has finished
 
-    AZStd::chrono::system_clock::time_point m_timeWhenLastWarningWasShown;
+    AZStd::chrono::steady_clock::time_point m_timeWhenLastWarningWasShown;
 };

@@ -67,13 +67,12 @@ namespace ScriptCanvasEditor
 
         AZ::Data::AssetType GetAssetType() const override
         {
-            return AZ::AzTypeInfo<AZ::DynamicSliceAsset>::Uuid(); //hardcoded for DynamicSliceAsset until the slot definitions can be queried for this
+            return AZ::Uuid::CreateNull(); //hardcoded until the slot definitions can be queried for this
         }
 
         AZStd::string GetStringFilter() const override
         {
-            return AZ::DynamicSliceAsset::GetFileFilter(); //hardcoded for DynamicSliceAsset until the slot definitions can be queried for this
+            return "*.*"; // hardcoded until the slot definitions can be queried for this
         }
-        ////
     };
 }

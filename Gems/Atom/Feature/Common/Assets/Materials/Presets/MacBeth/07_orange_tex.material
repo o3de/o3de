@@ -1,18 +1,15 @@
 {
-    "description": "",
-    "parentMaterial": "07_orange.material",
     "materialType": "../../Types/StandardPBR.materialtype",
     "materialTypeVersion": 5,
-    "properties": {
-        "baseColor": {
-            "color": [
-                1.0,
-                1.0,
-                1.0,
-                1.0
-            ],
-            "textureBlendMode": "Lerp",
-            "textureMap": "07_orange_sRGB.tif"
-        }
+    "parentMaterial": "07_orange.material",
+    "propertyValues": {
+        "baseColor.color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "baseColor.textureBlendMode": "Lerp",
+        "baseColor.textureMap": "07_orange_sRGB.tif"
     }
 }

@@ -160,7 +160,7 @@ namespace AZ
             AZ_PROFILE_FUNCTION(AzCore);
 
 #if AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
-            auto now = AZStd::chrono::system_clock::now();
+            auto now = AZStd::chrono::steady_clock::now();
 #endif
             bool hasCompletedRequests = false;
             while (true)
@@ -182,11 +182,11 @@ namespace AZ
 #if AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
                     // It's possible for a request to be queued internally and processed between scheduling passes. In those
                     // cases, don't check the request for accurate prediction.
-                    if (top->m_estimatedCompletion > AZStd::chrono::system_clock::time_point())
+                    if (top->m_estimatedCompletion > AZStd::chrono::steady_clock::time_point())
                     {
                         if (top->m_estimatedCompletion < now)
                         {
-                            auto estimationDelta = Statistic::TimeValue(now - top->m_estimatedCompletion);
+                            auto estimationDelta = AZStd::chrono::duration_cast<Statistic::TimeValue>(now - top->m_estimatedCompletion);
                             m_predictionAccuracyStat.PushEntry(estimationDelta);
                             Statistic::PlotImmediate(ContextName, PredictionAccuracyName, aznumeric_cast<double>(estimationDelta.count()));
 
@@ -196,7 +196,7 @@ namespace AZ
                         }
                         else
                         {
-                            auto estimationDelta = Statistic::TimeValue(top->m_estimatedCompletion - now);
+                            auto estimationDelta = AZStd::chrono::duration_cast<Statistic::TimeValue>(top->m_estimatedCompletion - now);
                             m_predictionAccuracyStat.PushEntry(estimationDelta);
                             Statistic::PlotImmediate(ContextName, PredictionAccuracyName, aznumeric_cast<double>(estimationDelta.count()));
 

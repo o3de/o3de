@@ -43,7 +43,7 @@ namespace O3DE::ProjectManager
         void SetDialogReady(bool isReady);
 
     signals:
-        void StartObjectDownload(const QString& objectName);
+        void StartObjectDownload(const QString& objectName, const QString& destinationPath, bool queueBuild);
 
     private slots:
         void ValidateURI();

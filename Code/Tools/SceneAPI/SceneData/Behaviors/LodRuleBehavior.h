@@ -50,6 +50,10 @@ namespace AZ
 
                 SCENE_DATA_API void GetVirtualTypeName(AZStd::string& name, Crc32 type) override;
                 SCENE_DATA_API void GetAllVirtualTypes(AZStd::set<Crc32>& types) override;
+                SCENE_DATA_API void GetPolicyName(AZStd::string& result) const override
+                {
+                    result = "LodRuleBehavior";
+                }
 
             private:
                 size_t SelectLodMeshes(const Containers::Scene& scene, DataTypes::ISceneNodeSelectionList& selection, size_t lodLevel) const;
