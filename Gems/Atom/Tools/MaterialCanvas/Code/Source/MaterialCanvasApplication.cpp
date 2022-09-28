@@ -230,14 +230,18 @@ namespace MaterialCanvas
         // of these settings files requires restarting the application and the asset processor for the changes to be picked up.
         if (auto fileIO = AZ::IO::FileIOBase::GetInstance())
         {
-            const AZ::IO::Path settingsPath(
-                AZStd::string::format("%s/user/Registry/user_minimal_shader_build.setreg", AZ::Utils::GetProjectPath().c_str()));
-            const AZ::IO::Path settingsPathStub(
-                AtomToolsFramework::GetPathWithoutAlias("@gemroot:MaterialCanvas@/Registry/user_minimal_shader_build.setregstub"));
-            const AZ::IO::Path settingsPathDx12(
-                AZStd::string::format("%s/user/Registry/user_minimal_shader_build_dx12.setreg", AZ::Utils::GetProjectPath().c_str()));
-            const AZ::IO::Path settingsPathDx12Stub(
-                AtomToolsFramework::GetPathWithoutAlias("@gemroot:MaterialCanvas@/Registry/user_minimal_shader_build_dx12.setregstub"));
+            const AZ::IO::FixedMaxPath materialCanvasGemPath = AZ::Utils::GetGemPath("MaterialCanvas");
+            const auto settingsPathStub(
+                materialCanvasGemPath / AZ::SettingsRegistryInterface::RegistryFolder / "user_minimal_shader_build.setregstub");
+            const auto settingsPathDx12Stub(
+                materialCanvasGemPath / AZ::SettingsRegistryInterface::RegistryFolder / "user_minimal_shader_build_dx12.setregstub");
+
+            const AZ::IO::FixedMaxPath projectPath = AZ::Utils::GetProjectPath();
+            const auto settingsPath(
+                projectPath / AZ::SettingsRegistryInterface::DevUserRegistryFolder / "user_minimal_shader_build.setreg");
+            const auto settingsPathDx12(
+                projectPath / AZ::SettingsRegistryInterface::DevUserRegistryFolder / "user_minimal_shader_build_dx12.setreg");
+
             const bool enableMinimalShaderBuilds =
                 AtomToolsFramework::GetSettingsValue<bool>("/O3DE/Atom/Tools/MaterialCanvas/EnableMinimalShaderBuilds", false);
 
