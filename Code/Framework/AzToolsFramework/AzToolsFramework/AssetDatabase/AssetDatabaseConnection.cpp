@@ -2875,7 +2875,7 @@ namespace AzToolsFramework
 
             if (result == Statement::SqlError)
             {
-                AZ_Warning(LOG_NAME, false, "Error occurred while stepping %s", callName);
+                AZ_Error(LOG_NAME, false, "Error occurred while stepping %s", callName);
                 return false;
             }
             return validResult;
@@ -2915,7 +2915,7 @@ namespace AzToolsFramework
 
                 if (result == Statement::SqlError)
                 {
-                    AZ_Warning(LOG_NAME, false, "Error occurred while stepping %s", callName);
+                    AZ_Error(LOG_NAME, false, "Error occurred while stepping %s", callName);
                     return false;
                 }
 
@@ -2986,7 +2986,7 @@ namespace AzToolsFramework
 
                 if (result == Statement::SqlError)
                 {
-                    AZ_Warning(LOG_NAME, false, "Error occurred while stepping %s", callName);
+                    AZ_Error(LOG_NAME, false, "Error occurred while stepping %s", callName);
                     return false;
                 }
 
@@ -3031,7 +3031,7 @@ namespace AzToolsFramework
 
                 if (result == Statement::SqlError)
                 {
-                    AZ_Warning(LOG_NAME, false, "Error occurred while stepping %s", callName);
+                    AZ_Error(LOG_NAME, false, "Error occurred while stepping %s", callName);
                     return false;
                 }
 
@@ -3100,7 +3100,7 @@ namespace AzToolsFramework
 
                 if (result == Statement::SqlError)
                 {
-                    AZ_Warning(LOG_NAME, false, "Error occurred while stepping %s", callName);
+                    AZ_Error(LOG_NAME, false, "Error occurred while stepping %s", callName);
                     return false;
                 }
 
@@ -3162,7 +3162,7 @@ namespace AzToolsFramework
 
                 if (result == Statement::SqlError)
                 {
-                    AZ_Warning(LOG_NAME, false, "Error occurred while stepping %s", callName);
+                    AZ_Error(LOG_NAME, false, "Error occurred while stepping %s", callName);
                     return false;
                 }
 
@@ -3206,7 +3206,7 @@ namespace AzToolsFramework
 
                 if (result == Statement::SqlError)
                 {
-                    AZ_Warning(LOG_NAME, false, "Error occurred while stepping %s", callName);
+                    AZ_Error(LOG_NAME, false, "Error occurred while stepping %s", callName);
                     return false;
                 }
 
