@@ -16,10 +16,10 @@ namespace AZ::IO
     /**
      * For use with rapidxml::print.
      */
-    class RapidXMLStreamWriter
+    class RapidXMLStreamWriter final
     {
     public:
-        class PrintIterator
+        class PrintIterator final
         {
         public:
             PrintIterator(RapidXMLStreamWriter* writer)
@@ -50,11 +50,10 @@ namespace AZ::IO
             RapidXMLStreamWriter* m_writer;
         };
 
-        RapidXMLStreamWriter(IO::GenericStream* stream, size_t writeCacheSize = 128 * 1024)
+        RapidXMLStreamWriter(IO::GenericStream* stream, size_t defaultWriteCacheSize = 128 * 1024)
             : m_stream(stream)
-            , m_errorCount(0)
         {
-            m_cache.reserve(writeCacheSize);
+            m_cache.reserve(defaultWriteCacheSize);
         }
 
         ~RapidXMLStreamWriter()
@@ -86,7 +85,7 @@ namespace AZ::IO
 
         IO::GenericStream* m_stream;
         AZStd::vector<AZ::u8> m_cache;
-        int m_errorCount;
+        int m_errorCount{};
     };
 
     //! Implements the rapidjson::Stream concept
@@ -122,13 +121,13 @@ namespace AZ::IO
         char Peek() const
         {
             AZ_Assert(false, "RapidJSONStreamWriter Peek not supported.");
-            return 0;
+            return {};
         }
 
         char Take()
         {
             AZ_Assert(false, "RapidJSONStreamWriter Take not supported.");
-            return 0;
+            return {};
         }
         size_t Tell() const
         {
@@ -138,7 +137,7 @@ namespace AZ::IO
         char* PutBegin()
         {
             AZ_Assert(false, "RapidJSONStreamWriter PutBegin not supported.");
-            return 0;
+            return nullptr;
         }
         size_t PutEnd(char*)
         {
@@ -160,7 +159,7 @@ namespace AZ::IO
             m_cache.reserve(writeCacheSize);
         }
 
-        ~RapidJSONStreamWriter()
+        ~RapidJSONStreamWriter() override
         {
             FlushCache();
         }

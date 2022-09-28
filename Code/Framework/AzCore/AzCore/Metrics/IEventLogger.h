@@ -36,8 +36,9 @@ namespace AZ::Metrics
     //! Represents a single json key, value pair field
     struct EventField;
 
-    //! std::span requires a complete type, so an EventValue pointer and a size member
+    //! AZStd/std::span requires a complete type, so an EventValue pointer and a size member
     //! is stored in the public API exposes a span interface
+    //! https://eel.is/c++draft/containers#span.overview-4
     //! The reason why EventValue can't be complete is because it is a recursive type
     //! that has a reference to an array of child event values
     struct EventArray
@@ -53,7 +54,7 @@ namespace AZ::Metrics
         size_t m_arraySize{};
     };
 
-    //! std::span requires a complete type, so an EventField pointer and a size member
+    //! AZStd/std::span requires a complete type, so an EventField pointer and a size member
     //! is stored in the public API exposes a span interface
     struct EventObject
     {

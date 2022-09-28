@@ -32,6 +32,7 @@ namespace AZ::Metrics
     constexpr AZStd::string_view ObjectStart = "{";
     constexpr AZStd::string_view ObjectEnd = "}";
     constexpr AZStd::string_view Newline = "\n";
+    constexpr AZStd::string_view CommaNewline = ",\n";
 
     constexpr int32_t IndentStep = 2;
     constexpr size_t StackAllocatorSize = 2048;
@@ -41,11 +42,7 @@ namespace AZ::Metrics
 
     static void AppendNewlineWithIndent(JsonTraceEventLogger::JsonEventString& eventString, int32_t indent, bool prependComma)
     {
-        if (prependComma)
-        {
-            eventString += ',';
-        }
-        eventString += Newline;
+        eventString += prependComma ? CommaNewline : Newline;
         eventString.append_range(AZStd::views::repeat(' ', indent));
     }
 

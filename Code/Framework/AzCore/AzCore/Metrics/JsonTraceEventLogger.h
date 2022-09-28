@@ -40,7 +40,6 @@ namespace AZ::Metrics
         explicit JsonTraceEventLogger(AZStd::unique_ptr<AZ::IO::GenericStream> stream);
         JsonTraceEventLogger(AZStd::unique_ptr<AZ::IO::GenericStream> stream, JsonTraceLoggerEventConfig);
 
-        // Json Trace Event Logger is movable, but not copyable
         ~JsonTraceEventLogger();
 
         //! Writes and json data to the stream
@@ -95,7 +94,7 @@ namespace AZ::Metrics
         //! This is used to prepend a leading comma before the event entry in the trace events array
         AZStd::atomic_bool m_prependComma{ false };
 
-        //! Trackes the number of events written so far
+        //! Tracks the number of events written so far
         size_t m_eventCount{};
     };
 } // namespace AZ::Metrics
