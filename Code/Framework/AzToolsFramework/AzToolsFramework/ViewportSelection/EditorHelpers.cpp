@@ -80,6 +80,15 @@ namespace AzToolsFramework
         return iconsVisible;
     }
 
+    //helper function to wrap Ebus call to check if helpers and icons should only be drawn for selected entities
+    static bool OnlyDrawHelpersForSelectedEntities(const AzFramework::ViewportId viewportId)
+    {
+        bool onlyDrawHelpersForSelectedEntities = false;
+        ViewportInteraction::ViewportSettingsRequestBus::EventResult(
+            onlyDrawHelpersForSelectedEntities, viewportId, &ViewportInteraction::ViewportSettingsRequestBus::Events::OnlyShowHelpersForSelectedEntities);
+        return onlyDrawHelpersForSelectedEntities;
+    }
+
     float GetIconScale(const float distance)
     {
         return ed_iconMinScale +
@@ -284,16 +293,25 @@ namespace AzToolsFramework
 
         const bool iconsVisible = IconsVisible(viewportInfo.m_viewportId);
         const bool helpersVisible = HelpersVisible(viewportInfo.m_viewportId);
+        const bool onlyDrawSelectedEntities = OnlyDrawHelpersForSelectedEntities(viewportInfo.m_viewportId);
 
         if (helpersVisible)
         {
             for (size_t entityCacheIndex = 0; entityCacheIndex < m_entityDataCache->VisibleEntityDataCount(); ++entityCacheIndex)
             {
                 if (const AZ::EntityId entityId = m_entityDataCache->GetVisibleEntityId(entityCacheIndex);
-                    m_entityDataCache->IsVisibleEntityVisible(entityCacheIndex) && m_entityDataCache->IsVisibleEntitySelected(entityCacheIndex))
+                    m_entityDataCache->IsVisibleEntityVisible(entityCacheIndex))
                 {
-                    // notify components to display
-                    DisplayComponents(entityId, viewportInfo, debugDisplay);
+                    if (onlyDrawSelectedEntities && m_entityDataCache->IsVisibleEntitySelected(entityCacheIndex))
+                    {
+                        // notify components to display
+                        DisplayComponents(entityId, viewportInfo, debugDisplay);
+                    }
+                    else if (!onlyDrawSelectedEntities)
+                    {
+                        DisplayComponents(entityId, viewportInfo, debugDisplay);
+                    }
+                    
                 }
             }
         }

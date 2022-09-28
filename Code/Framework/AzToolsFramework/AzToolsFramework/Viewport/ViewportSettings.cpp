@@ -140,7 +140,6 @@ namespace AzToolsFramework
 
     bool HelpersVisible()
     {
-
         return GetRegistry(HelpersVisibleSetting, true);
     }
 

@@ -1067,16 +1067,16 @@ void MainWindow::InitActions()
             [](QAction* action)
             {
                 Q_ASSERT(action->isCheckable());
-                action->setChecked(AzToolsFramework::HelpersVisible());
+                action->setChecked(AzToolsFramework::OnlyShowHelpersForSelectedEntities());
             })
         .Connect(
             &QAction::triggered,
             []()
             {
-                AzToolsFramework::SetIconsVisible(!AzToolsFramework::IconsVisible());
+                AzToolsFramework::SetOnlyShowHelpersForSelectedEntities(!AzToolsFramework::OnlyShowHelpersForSelectedEntities());
                 AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
-                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnIconsVisibilityChanged,
-                    AzToolsFramework::IconsVisible());
+                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnOnlyDrawHelpersForSelectedItemsChanged,
+                    AzToolsFramework::OnlyShowHelpersForSelectedEntities());
             });
 
     // Audio actions

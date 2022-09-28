@@ -2555,6 +2555,11 @@ bool EditorViewportSettings::HelpersVisible() const
     return AzToolsFramework::HelpersVisible();
 }
 
+bool EditorViewportSettings::OnlyShowHelpersForSelectedEntities() const
+{
+    return AzToolsFramework::OnlyShowHelpersForSelectedEntities();
+}
+
 AZ_CVAR_EXTERNED(bool, ed_previewGameInFullscreen_once);
 
 bool EditorViewportWidget::ShouldPreviewFullscreen() const
