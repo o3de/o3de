@@ -7,7 +7,6 @@
  */
 
 #pragma once
-
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/EBus/Event.h>
@@ -23,7 +22,6 @@
 #include <AzNetworking/ConnectionLayer/ConnectionEnums.h>
 #include <AzNetworking/DataStructures/ByteBuffer.h>
 #include <Multiplayer/MultiplayerConstants.h>
-
 
 namespace Multiplayer
 {
