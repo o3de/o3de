@@ -17,12 +17,12 @@
 #include <QApplication>
 #include <QDoubleSpinBox>
 #include <QEvent>
+#include <QGuiApplication>
 #include <QLineEdit>
 #include <QMouseEvent>
 #include <QObject>
 #include <QPainter>
 #include <QScreen>
-#include <QGuiApplication>
 #include <QSettings>
 #include <QStyle>
 #include <QStyleOptionSpinBox>
@@ -599,7 +599,7 @@ bool SpinBoxWatcher::handleMouseDragStepping(QAbstractSpinBox* spinBox, QEvent* 
             if (((mouseEvent->button() & Qt::LeftButton) && (m_state == Inactive) && !buttonDownPressed && !buttonUpPressed) ||
                 (mouseEvent->button() & Qt::MiddleButton))
             {
-                m_xPos = mouseEvent->screenPos().x();
+                m_xPos = mouseEvent->x();
                 emitValueChangeBegan(spinBox);
                 m_state = Dragging;
                 m_activeScreen = QGuiApplication::screenAt(mouseEvent->globalPos());
