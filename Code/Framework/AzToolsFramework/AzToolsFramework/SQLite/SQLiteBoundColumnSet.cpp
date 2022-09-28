@@ -8,7 +8,7 @@
 
 #include "SQLiteBoundColumnSet.h"
 #include "AzCore/std/containers/bitset.h"
-#include <AzToolsFramework/SQLite/SQLiteQuery.h>
+#include <AzToolsFramework/AssetDatabase/PathOrUuid.h>
 
 namespace AzToolsFramework
 {
@@ -59,9 +59,9 @@ namespace AzToolsFramework
             }
 
             template<>
-            AzToolsFramework::AssetDatabase::PathOrUuid GetColumnValue(SQLite::Statement* statement, int index)
+            AssetDatabase::PathOrUuid GetColumnValue(SQLite::Statement* statement, int index)
             {
-                return AzToolsFramework::AssetDatabase::PathOrUuid::Create(statement->GetColumnText(index));
+                return AssetDatabase::PathOrUuid::Create(statement->GetColumnText(index));
             }
 
             template<>

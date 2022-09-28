@@ -7,6 +7,8 @@
  */
 
 #include "SQLiteQuery.h"
+
+#include <AssetDatabase/PathOrUuid.h>
 #include <AzToolsFramework/SQLite/SQLiteQueryLogBus.h>
 
 namespace AzToolsFramework
@@ -71,64 +73,6 @@ namespace AzToolsFramework
             }
         } // namespace Internal
     } // namespace SQLite
-
-    namespace AssetDatabase
-    {
-        PathOrUuid::PathOrUuid(AZStd::string path)
-            : m_path(AZStd::move(path))
-        {
-        }
-
-        PathOrUuid::PathOrUuid(const char* path)
-            : m_path(path)
-        {
-        }
-
-        PathOrUuid::PathOrUuid(AZ::Uuid uuid)
-            : m_uuid(AZStd::move(uuid))
-        {
-            // Store the stringified version of the UUID in m_path
-            // We need to do this because when serializing the value to sqlite, the string needs to be stored somewhere for the entire
-            // duration of the query If we were to return a temporary, it would go out of scope before the query is finalized We don't want
-            // to store with brackets or dashes because this allows sqlite compatibility: hex(UUID_BLOB) returns a string of hex without any
-            // dashes or brackets, allowing for queries like select * from sources join sourcedependencies on hex(sourceguid) =
-            // dependsonsource
-            m_path = m_uuid.ToFixedString(false, false);
-        }
-
-        PathOrUuid PathOrUuid::Create(AZStd::string val)
-        {
-            AZ::Uuid uuid = AZ::Uuid::CreateStringPermissive(val.c_str());
-
-            if (uuid.IsNull())
-            {
-                return PathOrUuid(AZStd::move(val));
-            }
-
-            return PathOrUuid(uuid);
-        }
-
-        bool PathOrUuid::IsUuid() const
-        {
-            return !m_uuid.IsNull();
-        }
-
-        const AZ::Uuid& PathOrUuid::GetUuid() const
-        {
-            return m_uuid;
-        }
-
-        const AZStd::string& PathOrUuid::GetPath() const
-        {
-            return m_path;
-        }
-
-        const AZStd::string& PathOrUuid::ToString() const
-        {
-            // This looks wrong but actually we store m_uuid.ToString() in m_path.  See above for reasoning
-            return m_path;
-        }
-    } // namespace AssetDatabase
 } // namespace AZFramework
 
 std::ostream& std::operator<<(ostream& out, const AZ::Uuid& uuid)
@@ -145,3 +89,4 @@ std::ostream& std::operator<<(ostream& out, const AzToolsFramework::AssetDatabas
 {
     return out << pathOrUuid.ToString().c_str();
 }
+

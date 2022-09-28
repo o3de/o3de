@@ -15,10 +15,10 @@
 #include <AzCore/std/containers/bitset.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/SQLite/SQLiteQueryLogBus.h>
+#include <AzToolsFramework/AssetDatabase/PathOrUuid.h>
 
 // At the time of writing, AZStd::function does not support RVALUE-Refs.  We use std::function instead.
 #include <functional>
-#include <SQLite/SQLiteQuery.h>
 
 namespace AzToolsFramework
 {

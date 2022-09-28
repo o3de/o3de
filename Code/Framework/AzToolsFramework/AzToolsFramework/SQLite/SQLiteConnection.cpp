@@ -15,8 +15,7 @@
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/std/functional.h>
 #include <sqlite3.h>
-
-#include "SQLiteQuery.h"
+#include <AzToolsFramework/AssetDatabase/PathOrUuid.h>
 
 namespace AzToolsFramework
 {

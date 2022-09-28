@@ -12,7 +12,7 @@
 
 #include <native/tests/AssetProcessorTest.h>
 #include <native/AssetDatabase/AssetDatabase.h>
-#include <AzToolsFramework/SQLite/SQLiteQuery.cpp>
+#include <AzToolsFramework/AssetDatabase/PathOrUuid.h>
 
 namespace UnitTests
 {

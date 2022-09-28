@@ -35,30 +35,6 @@ namespace std
 
 namespace AzToolsFramework
 {
-    namespace AssetDatabase
-    {
-        class PathOrUuid
-        {
-        public:
-            PathOrUuid() = default;
-            explicit PathOrUuid(AZStd::string path);
-            explicit PathOrUuid(const char* path);
-            explicit PathOrUuid(AZ::Uuid uuid);
-
-            static PathOrUuid Create(AZStd::string val);
-
-            bool IsUuid() const;
-
-            const AZ::Uuid& GetUuid() const;
-            const AZStd::string& GetPath() const;
-            const AZStd::string& ToString() const;
-
-        private:
-            AZ::Uuid m_uuid;
-            AZStd::string m_path;
-        };
-    } // namespace AssetDatabase
-
     namespace SQLite
     {
         //! Represents a binary data blob.  Needed so that Bind can accept a pointer and size as a single type
