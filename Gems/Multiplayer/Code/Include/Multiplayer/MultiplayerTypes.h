@@ -24,9 +24,9 @@
 #include <AzNetworking/Serialization/ISerializer.h>
 #include <AzNetworking/ConnectionLayer/ConnectionEnums.h>
 #include <AzNetworking/DataStructures/ByteBuffer.h>
+#include <Multiplayer/MultiplayerConstants.h>
 
 
-#pragma optimize("", off)
 namespace Multiplayer
 {
     //! The default number of rewindable samples for us to store.
@@ -141,13 +141,10 @@ namespace Multiplayer
         static void Reflect(AZ::ReflectContext* context);
 
         AZ::Data::Asset<AzFramework::Spawnable> m_spawnableAsset;
-        AZ::Data::Asset<Physics::MaterialAsset> m_physicsMaterialAsset;
 
         NetworkSpawnable() = default;
         explicit NetworkSpawnable(const AZ::Data::Asset<AzFramework::Spawnable>& spawnableAsset);
-        //bool Serialize(AzNetworking::ISerializer& serializer);
         AZ::Outcome<void, AZStd::string> ValidatePotentialSpawnableAsset(void* newValue, const AZ::Uuid& valueType) const;
-        AZ::u32 ChangeNotify() const;
     };
 
     struct EntityMigrationMessage
@@ -219,12 +216,6 @@ namespace Multiplayer
         ;
     }
 
-    /*inline bool NetworkSpawnable::Serialize(AzNetworking::ISerializer& serializer)
-    {
-        serializer.Serialize(m_spawnableAsset, "spawnableAsset");
-        return serializer.IsValid();
-    }*/
-
     inline void NetworkSpawnable::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -232,7 +223,6 @@ namespace Multiplayer
             serializeContext->Class<NetworkSpawnable>()
                 ->Version(1)
                 ->Field("Spawnable", &NetworkSpawnable::m_spawnableAsset)
-                ->Field("PhysicsMaterial", &NetworkSpawnable::m_physicsMaterialAsset)
             ;
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
@@ -243,34 +233,30 @@ namespace Multiplayer
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &NetworkSpawnable::m_spawnableAsset, "Network Spawnable Asset", "")
-                        //->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC_CE("NetBindService"))
-                        //->Attribute(AZ::Edit::Attributes::ChangeValidate, &NetworkSpawnable::ValidatePotentialSpawnableAsset)
-                        //->Attribute(AZ::Edit::Attributes::ChangeNotify, &NetworkSpawnable::ChangeNotify)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &NetworkSpawnable::m_physicsMaterialAsset, "Phys Material Asset", "")
-                        //->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC_CE("NetBindService"))
                         ->Attribute(AZ::Edit::Attributes::ChangeValidate, &NetworkSpawnable::ValidatePotentialSpawnableAsset)
-                ;
+                    ;
             }
-
         }
     }
 
-    inline AZ::Outcome<void, AZStd::string> NetworkSpawnable::ValidatePotentialSpawnableAsset([[maybe_unused]]void* newValue, const AZ::Uuid& valueType) const
+    inline AZ::Outcome<void, AZStd::string> NetworkSpawnable::ValidatePotentialSpawnableAsset(void* newValue, const AZ::Uuid& valueType) const
     {
-        if (azrtti_typeid<AzFramework::Spawnable>() != valueType)
+        if (azrtti_typeid<AZ::Data::Asset<AzFramework::Spawnable>>() != valueType)
         {
             AZ_Assert(false, "Unexpected value type");
             return AZ::Failure(AZStd::string("Trying to set an network spawnable to something that isn't a spawnable!"));
         }
 
+        const auto potentialNetworkSpawnable = static_cast<AZ::Data::Asset<AzFramework::Spawnable>*>(newValue);
+        if (!potentialNetworkSpawnable->GetHint().ends_with(NetworkSpawnableFileExtension))
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Asset file (%s) extension doesn't match the network spawnable extension (%s). Please select a network spawnable.",
+                potentialNetworkSpawnable->GetHint().c_str(), NetworkSpawnableFileExtension.data()));
+        }
+
         return AZ::Success();
     }
-
-    inline AZ::u32 NetworkSpawnable::ChangeNotify() const
-    {
-        return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
-    }
-
 
     inline bool EntityMigrationMessage::operator!=(const EntityMigrationMessage& rhs) const
     {
@@ -304,5 +290,3 @@ namespace AZ
     AZ_TYPE_INFO_SPECIALIZE(Multiplayer::ClientInputId, "{35BF3504-CEC9-4406-A275-C633A17FBEFB}");
     AZ_TYPE_INFO_SPECIALIZE(Multiplayer::HostFrameId, "{DF17F6F3-48C6-4B4A-BBD9-37DA03162864}");
 } // namespace AZ
-
-#pragma optimize("", on)
