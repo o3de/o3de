@@ -66,7 +66,7 @@ namespace AZ::Render
         MeshFeatureProcessor* meshFeatureProcessor = GetParentScene()->GetFeatureProcessor<MeshFeatureProcessor>();
         if (meshFeatureProcessor)
         {
-            m_lightMeshFlag = meshFeatureProcessor->GetFlagRegistry()->AcquireTag(AZ::Name("PolygonLight"));
+            m_lightMeshFlag = meshFeatureProcessor->GetFlagRegistry()->AcquireTag(AZ::Name("o_enablePolygonLights"));
         }
     }
 

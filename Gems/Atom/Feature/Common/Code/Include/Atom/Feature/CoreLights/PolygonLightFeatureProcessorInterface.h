@@ -35,6 +35,8 @@ namespace AZ
 
             AZStd::array<float, 3> m_direction = { 0.0f, 0.0f, 0.0f };
 
+            float m_padding = 0.0f;
+
             // Convenience functions for setting start / end index.
 
             uint32_t GetStartIndex()

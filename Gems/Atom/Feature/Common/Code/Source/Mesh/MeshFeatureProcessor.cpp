@@ -165,6 +165,19 @@ namespace AZ
         void MeshFeatureProcessor::OnBeginPrepareRender()
         {
             m_meshDataChecker.soft_lock();
+            /*
+            for (auto& model : m_modelData)
+            {
+                if (model.m_cullable.m_prevFlags != model.m_cullable.m_flags)
+                {
+                    const size_t modelLodCount = model.GetModel()->GetLodCount();
+                    for (size_t modelLodIndex = 0; modelLodIndex < modelLodCount; ++modelLodIndex)
+                    {
+                        model.BuildDrawPacketList(modelLodIndex);
+                    }
+                }
+            }
+            */
         }
 
         void MeshFeatureProcessor::OnEndPrepareRender()
@@ -178,7 +191,7 @@ namespace AZ
             }
             for (auto& model : m_modelData)
             {
-                model.m_cullable.m_flags.exchange(0);
+                model.m_cullable.m_prevFlags = model.m_cullable.m_flags.exchange(0);
             }
         }
 
@@ -857,6 +870,15 @@ namespace AZ
                 {
                     AZ_Warning("MeshDrawPacket", false, "Failed to set o_meshUseForwardPassIBLSpecular on mesh draw packet");
                 }
+
+                MeshFeatureProcessor* meshFeatureProcessor = m_scene->GetFeatureProcessor<MeshFeatureProcessor>();
+                auto flagRegistry = meshFeatureProcessor->GetFlagRegistry();
+                flagRegistry->VisitTags(
+                    [&](AZ::Name shaderOption, Render::MeshFeatureProcessor::FlagRegistry::TagType tag)
+                    {
+                        drawPacket.SetShaderOption(shaderOption, AZ::RPI::ShaderOptionValue((m_cullable.m_flags & tag.GetIndex()) > 0));
+                    }
+                );
 
                 bool materialRequiresForwardPassIblSpecular = MaterialRequiresForwardPassIblSpecular(material);
 

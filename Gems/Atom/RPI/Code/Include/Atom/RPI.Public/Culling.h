@@ -112,6 +112,7 @@ namespace AZ
             LodData m_lodData;
 
             using FlagType = uint32_t;
+            FlagType m_prevFlags = 0;
             AZStd::atomic<FlagType> m_flags = 0;
 
             //! Flag indicating if the object is visible in any view, meaning it passed the culling tests in the previous frame.

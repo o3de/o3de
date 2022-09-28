@@ -90,7 +90,7 @@ void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingD
         // - If transmission mode is thin object -> ignore back lighting
         float transmissionDistance = -1.0f;
 
-        if (o_enableShadows)
+        if (o_enableShadows && o_enableSphereLightShadows)
         {
             const float3 lightDir = normalize(light.m_position - surface.position);
             const uint shadowIndex = ComputeShadowIndex(light, surface);

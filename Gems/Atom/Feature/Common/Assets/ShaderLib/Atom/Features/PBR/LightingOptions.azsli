@@ -31,7 +31,8 @@
 #endif
 
 #ifndef ENABLE_DISK_LIGHTS
-#define ENABLE_DISK_LIGHTS              ENABLE_AREA_LIGHTS
+//#define ENABLE_DISK_LIGHTS              ENABLE_AREA_LIGHTS
+#define ENABLE_DISK_LIGHTS              0
 #endif
 
 #ifndef ENABLE_CAPSULE_LIGHTS
@@ -64,7 +65,17 @@ option bool o_specularF0_enableMultiScatterCompensation = true;
 option bool o_enableShadows = true;
 option bool o_enableDirectionalLights = true;
 option bool o_enablePunctualLights = true;
+
 option bool o_enableAreaLights = true;
+option bool o_enableSphereLights = false;
+option bool o_enableSphereLightShadows = false;
+option bool o_enableDiskLights = false;
+option bool o_enableDiskLightShadows = false;
+option bool o_enableCapsuleLights = false;
+option bool o_enableQuadLightLTC = false;
+option bool o_enableQuadLightApprox = false;
+option bool o_enablePolygonLights = false;
+
 option bool o_enableIBL = true;
 option bool o_enableSubsurfaceScattering = false;
 option bool o_meshUseForwardPassIBLSpecular = false;

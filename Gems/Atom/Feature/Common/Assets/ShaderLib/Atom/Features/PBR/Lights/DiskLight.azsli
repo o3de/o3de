@@ -82,7 +82,7 @@ void ApplyDiskLight(ViewSrg::DiskLight light, Surface surface, inout LightingDat
         // - If transmission mode is thin object -> ignore back lighting
         float transmissionDistance = -1.0f;
 
-        if (o_enableShadows)
+        if (o_enableShadows && o_enableDiskLightShadows)
         {
             litRatio = ProjectedShadow::GetVisibility(
                 light.m_shadowIndex,
