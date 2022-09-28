@@ -276,7 +276,10 @@ namespace ScriptCanvas
 
         void ClientTransceiver::DisconnectFromTarget()
         {
-            RemoteToolsInterface::Get()->SendRemoteToolsMessage(m_currentTarget, Message::DisconnectRequest());
+            if (AzFramework::IRemoteTools* remoteTools = RemoteToolsInterface::Get())
+            {
+                remoteTools->SendRemoteToolsMessage(m_currentTarget, Message::DisconnectRequest());
+            }
         }
 
         void ClientTransceiver::CleanupConnection()
