@@ -20,8 +20,9 @@ from consts.general import (WAIT_TIME_SEC_3, SAVE_STRING)
 
 class QtPyAssetEditor(QtPyCommon):
     """
-    QtPy class for handling the behavior of the Asset Editor
-     """
+    QtPy class for manipulating the Asset editor UI and performing actions such as creating Script Events and
+    saving them to disk.
+    """
 
     def __init__(self, editor_main_window: QtWidgets.QMainWindow):
         super().__init__()
@@ -53,9 +54,9 @@ class QtPyAssetEditor(QtPyCommon):
         self.expand_category_by_name(DEFAULT_SCRIPT_EVENT)
         self.expand_category_by_name("Name")
 
-        self.update_new_method_name(method_name)
+        self.update_new_method_name(DEFAULT_METHOD_NAME, method_name)
 
-    def update_new_method_name(self, method_name: str) -> None:
+    def update_new_method_name(self, old_method_name: str, new_method_name: str) -> None:
         """
         Function for finding a default script event and changing its name
 
@@ -66,10 +67,17 @@ class QtPyAssetEditor(QtPyCommon):
         methods with default names
         """
         children = self.asset_editor_row_container.findChildren(QtWidgets.QFrame, "Name")
+        method_name_field = ""
+        old_method_exists = False
         for child in children:
             line_edit = child.findChild(QtWidgets.QLineEdit)
-            if line_edit and line_edit.text() == DEFAULT_METHOD_NAME:
-                line_edit.setText(f"{method_name}")
+            if line_edit and line_edit.text() == old_method_name:
+                old_method_exists = True
+                line_edit.setText(f"{new_method_name}")
+                method_name_field = line_edit.text()
+
+        assert old_method_exists, f"Failed to find method {old_method_name} in Asset Editor."
+        assert method_name_field == new_method_name, "Failed to set method name in Asset Editor."
 
     def delete_method_from_script_events(self) -> None:
         """
@@ -79,8 +87,12 @@ class QtPyAssetEditor(QtPyCommon):
 
         Note: I want to make this function more useful by allowing the user to delete a specific method by name. I
         tried to do this but couldn't find a way to seek out a specific method then click its associated delete button.
-        The Qobjects don't seemed to be organized in a way for you to easily drill down from one into the next nested
+        The Qobjects don't seem to be organized in a way for you to easily drill down from one into the next nested
         object.
+
+        The name of the delete button is also bugged. It should have something more meaningful than  "".
+        Refer to github issue #12262. If it has been resolved and this comment still exists please update
+        the QToolButton name
         """
 
         methods = self.asset_editor_row_container.findChildren(QtWidgets.QFrame, DEFAULT_SCRIPT_EVENT)
@@ -91,25 +103,36 @@ class QtPyAssetEditor(QtPyCommon):
 
     def save_script_event_file(self, file_path: str) -> None:
         """
-        Function for saving the currently open script event file to disk.
+        Function for saving the currently open script event file to disk then verifying the save action occurred
 
         param file_path: The path on disk to save the file to
 
         returns: None
         """
         editor.AssetEditorWidgetRequestsBus(bus.Broadcast, "SaveAssetAs", file_path)
-
         action = pyside_utils.find_child_by_pattern(self.menu_tool_bar,
                                                     {"type": QtWidgets.QAction, "iconText": SAVE_STRING})
+
         assert action is not None, "Unable to complete save action. Filepath may be invalid."
 
         action.trigger()
-        # wait until the file is saved. validate by checking for an * in the label text and we can see the file on disk
+        self.__verify_save_action(file_path)
+
+    def __verify_save_action(self, file_path: str) -> None:
+        """
+        helper function to make the save_script_event_file function a bit cleaner. Performs verification that
+        the save action occurred by checking the tab's label for the * and checking the location on disk for a file
+
+        param file_path: The location of the created file on disk
+
+        returns: None
+        """
         label = self.asset_editor.findChild(QtWidgets.QLabel, "textEdit")
         saved = helper.wait_for_condition(lambda: "*" not in label.text(), WAIT_TIME_SEC_3)
         exists = helper.wait_for_condition(lambda: os.path.exists(file_path), WAIT_TIME_SEC_3)
 
-        assert saved and exists, "Unable to complete save action. Action may have timed out (3 seconds)"
+        assert saved, "Save file failed. Save action not detected in UI (* in label)."
+        assert exists, "Save file failed. File not located on disk."
 
     def expand_category_by_name(self, category_name: str) -> None:
         """

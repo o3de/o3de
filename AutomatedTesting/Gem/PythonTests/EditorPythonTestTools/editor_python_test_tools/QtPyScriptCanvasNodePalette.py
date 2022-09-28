@@ -14,7 +14,7 @@ from consts.general import (WAIT_TIME_SEC_3)
 
 class QtPyScriptCanvasNodePalette():
     """
-       QtPy class for handling the behavior of the script canvas node palette
+       QtPy class for handling the behavior of the script canvas node palette such as filter/searching for a node type
         """
     def __init__(self, sc_editor):
         self.node_palette = sc_editor.sc_editor.findChild(QtWidgets.QDockWidget, NODE_PALETTE_QT)
@@ -33,16 +33,27 @@ class QtPyScriptCanvasNodePalette():
         returns: a list of nodes found using the provided node_name string
         """
         self.clear_search_filter()
-        helper.wait_for_condition(lambda: self.node_palette_search_box.text() == node_name, WAIT_TIME_SEC_3)
 
         self.node_palette_search_box.setText(node_name)
-        helper.wait_for_condition(lambda: self.node_palette_search_box.text() == node_name, WAIT_TIME_SEC_3)
+        self.__validate_search_field_set(node_name)
 
-        helper.wait_for_condition(lambda: pyside_utils.find_child_by_pattern(
-            self.node_palette_tree, {"text": f"{node_name}"}) is not None, WAIT_TIME_SEC_3)
         nodes_found = pyside_utils.find_child_by_pattern(self.node_palette_tree, {"text": f"{node_name}"})
 
         return nodes_found
+
+    def __validate_search_field_set(self, node_name: str):
+        """
+        helper function for validating that the search field was set properly by search functions
+
+        param node_name: The name of the node we are searching for
+
+        returns: None
+
+        """
+        search_field_set = self.node_palette_search_box.text() == node_name
+        helper.wait_for_condition(lambda: search_field_set, WAIT_TIME_SEC_3)
+
+        assert search_field_set, f"Failed to set the node palette search field to: {node_name}."
 
     def clear_search_filter(self) -> None:
         """
@@ -53,3 +64,5 @@ class QtPyScriptCanvasNodePalette():
         """
 
         self.node_palette_search_box.setText("")
+        self.__validate_search_field_set("")
+

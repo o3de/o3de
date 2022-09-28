@@ -15,7 +15,7 @@ class QtPyCommon:
     """
     """
     def __init__(self):
-        self.menu_tool_bar = None
+        self.menu_bar = None
 
     def click_menu_bar_option(self, option_text: str) -> None:
         """
@@ -27,7 +27,7 @@ class QtPyCommon:
 
         returns None
         """
-        action = pyside_utils.find_child_by_pattern(self.menu_tool_bar, {"text": option_text, "type": QtWidgets.QAction})
+        action = pyside_utils.find_child_by_pattern(self.menu_bar, {"text": option_text, "type": QtWidgets.QAction})
 
         assert action is not None, "Unable to find QtWidgets type or menu option"
 

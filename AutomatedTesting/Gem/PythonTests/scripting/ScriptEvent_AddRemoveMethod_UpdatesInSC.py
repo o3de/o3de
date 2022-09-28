@@ -5,11 +5,8 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 class Tests():
+    node_exists = ("Node found in Node Palette", "Node not found in Node Palette")
     method_removed = ("Method removed from scriptevent file", "Method not removed from scriptevent file")
-
-
-NUM_TEST_METHODS = 2
-
 
 def ScriptEvent_AddRemoveMethod_UpdatesInSC():
     """
@@ -38,16 +35,15 @@ def ScriptEvent_AddRemoveMethod_UpdatesInSC():
     # Preconditions
     import os
     import azlmbr.paths as paths
-    import editor_python_test_tools.script_canvas_tools_qt as sc_tools_qt
     from editor_python_test_tools.utils import Report
     import azlmbr.legacy.general as general
+    from editor_python_test_tools import QtPyO3DEEditor
     from consts.asset_editor import (SCRIPT_EVENT_UI, NODE_TEST_METHOD)
 
     general.idle_enable(True)
 
-    # 1) Initialize Qt Test objects and open Asset Editor
-    qtpy_o3de_editor = sc_tools_qt.qtpy_o3de_editor
-
+    # 1) Get a handle on our O3DE QtPy objects then initialize the Asset Editor object
+    qtpy_o3de_editor = QtPyO3DEEditor.QtPyO3DEEditor()
     # Close and reopen Asset Editor to ensure we don't have any existing assets open
     qtpy_o3de_editor.close_asset_editor()
     qtpy_asset_editor = qtpy_o3de_editor.open_asset_editor()
@@ -64,15 +60,16 @@ def ScriptEvent_AddRemoveMethod_UpdatesInSC():
 
     # 4) Open script canvas editor and search the node palette for our new method
     qtpy_o3de_editor.open_script_canvas()
-    qtpy_o3de_editor.sc_editor.node_palette.search_for_node(f"{NODE_TEST_METHOD}_1")
+    node_exists = qtpy_o3de_editor.sc_editor.node_palette.search_for_node(f"{NODE_TEST_METHOD}_1") is not None
+    Report.critical_result(Tests.node_exists, node_exists)
 
     # 5) Delete one of the methods from script event
     qtpy_asset_editor.delete_method_from_script_events()
     qtpy_asset_editor.save_script_event_file(file_path)
 
     # 6) Search the node palette for the deleted method. Verify it's gone
-    node__does_not_exist = qtpy_o3de_editor.sc_editor.node_palette.search_for_node(f"{NODE_TEST_METHOD}_0") is False
-    Report.critical_result(Tests.method_removed, node__does_not_exist)
+    node_does_not_exist = qtpy_o3de_editor.sc_editor.node_palette.search_for_node(f"{NODE_TEST_METHOD}_0") is None
+    Report.critical_result(Tests.method_removed, node_does_not_exist)
 
     # 7) close script canvas editor and asset editor
     qtpy_o3de_editor.close_script_canvas()
