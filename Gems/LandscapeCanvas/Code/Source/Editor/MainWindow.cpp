@@ -1863,6 +1863,12 @@ namespace LandscapeCanvasEditor
     {
         if (m_prefabPropagationInProgress)
         {
+            // If we get the entity deleted event while prefab propagation is in progress,
+            // it means there was some kind of change that caused that entity to be rebuilt
+            // that we can't track by other notification APIs (e.g. entity was added/removed
+            // by undo/redo), so we will queue this entity to be refreshed after the
+            // propagation is complete.
+            m_queuedEntityRefresh.push_back(entityId);
             return;
         }
 
@@ -2086,6 +2092,14 @@ namespace LandscapeCanvasEditor
     GraphCanvas::GraphId MainWindow::FindGraphContainingEntity(const AZ::EntityId& entityId)
     {
         GraphCanvas::GraphId graphId;
+
+        AZ::Entity* entity = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, entityId);
+        if (!entity)
+        {
+            return graphId;
+        }
+
         AZ::EntityId parentEntityId = entityId;
 
         AZ::EntityId levelEntityId;
@@ -2796,6 +2810,15 @@ namespace LandscapeCanvasEditor
         {
             CloseEditor(dockWidgetId);
         }
+
+        // Handle any queued entities that we need to refresh by calling
+        // HandleEditorEntityCreated, which will handle if there is anything
+        // out of sync in the graph based on the corresponding entity.
+        for (const auto& entityId : m_queuedEntityRefresh)
+        {
+            HandleEditorEntityCreated(entityId);
+        }
+        m_queuedEntityRefresh.clear();
     }
 
     void MainWindow::OnCryEditorEndCreate()

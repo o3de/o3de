@@ -48,7 +48,7 @@ namespace O3DE::ProjectManager
 
         connect(m_projectGemCatalogScreen, &ScreenWidget::ChangeScreenRequest, this, &UpdateProjectCtrl::OnChangeScreenRequest);
         connect(m_gemRepoScreen, &GemRepoScreen::OnRefresh, m_projectGemCatalogScreen, &ProjectGemCatalogScreen::Refresh);
-        connect(m_createGem, &CreateGem::CreateButtonPressed, this, &UpdateProjectCtrl::HandleBackButton);
+        connect(m_createGem, &CreateGem::CreateButtonPressed, this, &UpdateProjectCtrl::HandleCreateGemButtonPressed);
 
         m_stack = new QStackedWidget(this);
         m_stack->setObjectName("body");
@@ -172,6 +172,26 @@ namespace O3DE::ProjectManager
                 emit GoToPreviousScreenRequest();
             }
         }
+    }
+
+    void UpdateProjectCtrl::HandleCreateGemButtonPressed(const GemInfo& gemInfo)
+    {
+        /*
+            Note: by the time this function is called, the signal CreateButtonPressed was already emitted.
+
+            This signal occurs only upon successful completion of creating a gem. As such, the gemInfo data is assumed to be valid.
+        */
+
+        //make sure the project gem catalog model is updated
+        m_projectGemCatalogScreen->AddToGemModel(gemInfo);
+
+        //create Toast Notification for project gem catalog
+        QString notification = gemInfo.m_displayName + tr(" has been created.");
+        m_projectGemCatalogScreen->ShowStandardToastNotification(notification);
+
+        //because we access the gem creation workflow from the catalog screen, we will forcibly return there
+        m_stack->setCurrentIndex(ScreenOrder::Gems);
+        Update();
     }
 
     void UpdateProjectCtrl::HandleNextButton()

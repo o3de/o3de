@@ -165,7 +165,7 @@ void CTrackViewSequenceManager::CreateSequence(QString name, [[maybe_unused]] Se
         // add the SequenceComponent. The SequenceComponent's Init() method will call OnCreateSequenceObject() which will actually create
         // the sequence and connect it
         // #TODO LY-21846: Use "SequenceService" to find component, rather than specific component-type.
-        AzToolsFramework::EntityCompositionRequestBus::Broadcast(&AzToolsFramework::EntityCompositionRequests::AddComponentsToEntities, AzToolsFramework::EntityIdList{ newEntityId }, AZ::ComponentTypeList{ "{C02DC0E2-D0F3-488B-B9EE-98E28077EC56}" });
+        AzToolsFramework::EntityCompositionRequestBus::Broadcast(&AzToolsFramework::EntityCompositionRequests::AddComponentsToEntities, AzToolsFramework::EntityIdList{ newEntityId }, AZ::ComponentTypeList{ AZ::TypeId("{C02DC0E2-D0F3-488B-B9EE-98E28077EC56}") });
 
         // restore the Editor selection
         AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::Bus::Events::SetSelectedEntities, selectedEntities);
