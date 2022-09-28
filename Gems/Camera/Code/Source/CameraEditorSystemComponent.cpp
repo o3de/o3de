@@ -67,7 +67,8 @@ namespace Camera
         AzToolsFramework::EditorContextMenuBus::Handler::BusDisconnect();
     }
 
-    void CameraEditorSystemComponent::PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2&, int flags)
+    void CameraEditorSystemComponent::PopulateEditorGlobalContextMenu(
+        QMenu* menu, [[maybe_unused]] const AZStd::optional<AzFramework::ScreenPoint>& point, int flags)
     {
         if (!(flags & AzToolsFramework::EditorEvents::eECMF_HIDE_ENTITY_CREATION))
         {

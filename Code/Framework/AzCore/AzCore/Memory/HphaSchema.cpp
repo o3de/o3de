@@ -1142,7 +1142,7 @@ namespace AZ
     auto HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::bucket_grow(size_t elemSize, size_t marker) -> page*
     {
         // make sure mUseCount won't overflow
-        HPPA_ASSERT((m_poolPageSize - sizeof(page)) / elemSize <= USHRT_MAX);
+        HPPA_ASSERT((m_poolPageSize - sizeof(page)) / elemSize <= AZStd::numeric_limits<unsigned short>::max());
         if (void* mem = bucket_system_alloc())
         {
             return new (mem) page((unsigned short)elemSize, m_poolPageSize, marker);

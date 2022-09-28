@@ -840,7 +840,7 @@ class AndroidProjectGenerator(object):
                 '"-GNinja"',
                 f'"-S{template_engine_root}"',
                 f'"-DCMAKE_BUILD_TYPE={native_config_lower}"',
-                f'"-DCMAKE_TOOLCHAIN_FILE={template_engine_root}/cmake/Platform/Android/Toolchain_Android.cmake"',
+                f'"-DCMAKE_TOOLCHAIN_FILE={template_engine_root}/cmake/Platform/Android/Toolchain_android.cmake"',
                 f'"-DLY_3RDPARTY_PATH={template_third_party_path}"',
                 f'"-DLY_UNITY_BUILD={template_unity_build}"']
 

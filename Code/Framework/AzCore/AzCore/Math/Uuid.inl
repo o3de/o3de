@@ -71,7 +71,7 @@ namespace AZ
 
         if (uuidString.size() < 32 || uuidString.size() > 38)
         {
-            AZStd::string_view errorString = !uuidString.empty() ? uuidString : AZStd::string_view("null");
+            [[maybe_unused]] AZStd::string_view errorString = !uuidString.empty() ? uuidString : AZStd::string_view("null");
             AZ_Warning("Math", skipWarnings, InvalidFormatFormat, AZ_STRING_ARG(errorString));
             return {};
         }

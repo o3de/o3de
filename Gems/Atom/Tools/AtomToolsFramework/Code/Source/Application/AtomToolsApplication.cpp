@@ -104,10 +104,11 @@ namespace AtomToolsFramework
 
         AzToolsFramework::QTreeViewWithStateSaving::Reflect(context);
         AzToolsFramework::QWidgetSavedState::Reflect(context);
+        ReflectUtilFunctions(context);
 
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            // this will put these methods into the 'azlmbr.AtomTools.general' module
+            // This will put these methods into the 'azlmbr.atomtools.general' module
             auto addGeneral = [](AZ::BehaviorContext::GlobalMethodBuilder methodBuilder)
             {
                 methodBuilder->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)

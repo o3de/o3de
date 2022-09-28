@@ -359,6 +359,7 @@ namespace GraphCanvas
 
             m_menuDisplayDirty = false;
 
+            ViewNotificationBus::Handler::BusDisconnect();
             GeometryNotificationBus::Handler::BusDisconnect(GetNodeId());
         }
     }

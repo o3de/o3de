@@ -7,7 +7,6 @@
  */
 
 #include "KeyQueryDPE.h"
-#include "AzToolsFramework/UI/DocumentPropertyEditor/ui_KeyQueryDPE.h"
 
 namespace AzToolsFramework
 {

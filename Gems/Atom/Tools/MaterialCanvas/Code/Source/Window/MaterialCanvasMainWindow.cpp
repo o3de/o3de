@@ -24,14 +24,14 @@ namespace MaterialCanvas
         m_assetBrowser->SetFilterState("", AZ::RPI::StreamingImageAsset::Group, true);
         m_assetBrowser->SetFilterState("", AZ::RPI::MaterialAsset::Group, true);
 
-        m_toolBar = new AtomToolsFramework::EntityPreviewViewportToolBar(m_toolId, this);
-        addToolBar(m_toolBar);
-
         m_documentInspector = new AtomToolsFramework::AtomToolsDocumentInspector(m_toolId, this);
         m_documentInspector->SetDocumentSettingsPrefix("/O3DE/Atom/MaterialCanvas/DocumentInspector");
         AddDockWidget("Inspector", m_documentInspector, Qt::RightDockWidgetArea);
 
-        // Set up the dockable viewport widget
+        // Set up the toolbar that controls the viewport settings
+        m_toolBar = new AtomToolsFramework::EntityPreviewViewportToolBar(m_toolId, this);
+
+        // Create the dockable viewport widget that will be shared between all material canvas documents
         m_materialViewport = new AtomToolsFramework::EntityPreviewViewportWidget(m_toolId, this);
 
         // Initialize the entity context that will be used to create all of the entities displayed in the viewport
@@ -51,7 +51,16 @@ namespace MaterialCanvas
         // Inject the entity context, scene, content, and controller into the viewport widget
         m_materialViewport->Init(entityContext, viewportScene, viewportContent, viewportController);
 
-        AddDockWidget("Viewport", m_materialViewport, Qt::BottomDockWidgetArea);
+        // Combine the shared toolbar in viewport into stacked widget that will be docked as a single view
+        auto viewPortAndToolbar = new QWidget(this);
+        viewPortAndToolbar->setLayout(new QVBoxLayout(viewPortAndToolbar));
+        viewPortAndToolbar->layout()->setContentsMargins(0, 0, 0, 0);
+        viewPortAndToolbar->layout()->setMargin(0);
+        viewPortAndToolbar->layout()->setSpacing(0);
+        viewPortAndToolbar->layout()->addWidget(m_toolBar);
+        viewPortAndToolbar->layout()->addWidget(m_materialViewport);
+
+        AddDockWidget("Viewport", viewPortAndToolbar, Qt::BottomDockWidgetArea);
 
         m_viewportSettingsInspector = new AtomToolsFramework::EntityPreviewViewportSettingsInspector(m_toolId, this);
         AddDockWidget("Viewport Settings", m_viewportSettingsInspector, Qt::LeftDockWidgetArea);

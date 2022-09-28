@@ -35,6 +35,9 @@ namespace AzToolsFramework
         //! Synchronization signal to register Menus.
         virtual void OnMenuRegistrationHook() {}
 
+        //! Synchronization signal to register ToolBar Areas.
+        virtual void OnToolBarAreaRegistrationHook() {}
+
         //! Synchronization signal to register ToolBars.
         virtual void OnToolBarRegistrationHook() {}
 

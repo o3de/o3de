@@ -53,6 +53,11 @@ namespace AZ::SceneAPI::Behaviors
             RequestingApplication requester) override;
 
         SCENE_DATA_API void GetManifestDependencyPaths(AZStd::vector<AZStd::string>& paths) override;
+
+        SCENE_DATA_API void GetPolicyName(AZStd::string& result) const override
+        {
+            result = "ScriptProcessorRuleBehavior";
+        }
     protected:
         bool LoadPython(const AZ::SceneAPI::Containers::Scene& scene, AZStd::string& scriptPath, Events::ProcessingResult& fallbackResult);
         void UnloadPython();

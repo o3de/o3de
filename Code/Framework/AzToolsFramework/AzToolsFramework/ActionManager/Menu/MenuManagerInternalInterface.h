@@ -32,11 +32,6 @@ namespace AzToolsFramework
         //! @return A raw pointer to the QMenu object.
         virtual QMenu* GetMenu(const AZStd::string& menuIdentifier) = 0;
 
-        //! Retrieve a QMenuBar from its identifier.
-        //! @param menuBarIdentifier The identifier for the menu bar to retrieve.
-        //! @return A raw pointer to the QMenuBar object.
-        virtual QMenuBar* GetMenuBar(const AZStd::string& menuBarIdentifier) = 0;
-
         //! Queues up a menu for a refresh at the end of this tick.
         //! @param menuIdentifier The identifier for the menu to refresh.
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.

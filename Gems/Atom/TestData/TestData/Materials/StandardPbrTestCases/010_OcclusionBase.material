@@ -1,5 +1,5 @@
 {
-    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
     "materialTypeVersion": 5,
     "propertyValues": {
         "baseColor.color": [
@@ -9,7 +9,7 @@
             1.0
         ],
         "clearCoat.enable": true,
-        "normal.textureMap": "TestData/Textures/cc0/Tiles009_1K_Normal.jpg",
+        "normal.textureMap": "../../Textures/cc0/Tiles009_1K_Normal.jpg",
         "roughness.factor": 0.0
     }
 }

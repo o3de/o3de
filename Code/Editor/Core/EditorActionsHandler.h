@@ -53,6 +53,7 @@ private:
     void OnActionUpdaterRegistrationHook() override;
     void OnMenuBarRegistrationHook() override;
     void OnMenuRegistrationHook() override;
+    void OnToolBarAreaRegistrationHook() override;
     void OnToolBarRegistrationHook() override;
     void OnActionRegistrationHook() override;
     void OnWidgetActionRegistrationHook() override;

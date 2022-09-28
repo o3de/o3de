@@ -192,7 +192,9 @@ namespace AzToolsFramework
         // to generate the file name in which we will store the view Bookmarks we use the name of the prefab + the timestamp
         // e.g. LevelName_1639763579377.setreg
         const AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
-        return AZStd::string::format("%s_%llu.setreg", prefabTemplateName.c_str(), now.time_since_epoch().count());
+        AZStd::fixed_string<32> wallClockMicroseconds;
+        AZStd::to_string(wallClockMicroseconds, now.time_since_epoch().count());
+        return AZStd::string::format("%s_%s.setreg", prefabTemplateName.c_str(), wallClockMicroseconds.c_str());
     }
 
     static AZ::SettingsRegistryMergeUtils::DumperSettings CreateDumperSettings(AZStd::string_view bookmarkKey)
@@ -216,15 +218,12 @@ namespace AzToolsFramework
                              AZStd::function<bool(AZ::IO::GenericStream&, AZStd::string_view)> writeFn)
         {
             constexpr auto configurationMode =
-                AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY;
+                AZ::IO::OpenMode::ModeCreatePath | AZ::IO::OpenMode::ModeWrite;
 
             // resolve path to user project folder
             const auto localBookmarkFilePath = LocalBookmarkFilePath(localBookmarksFileName);
 
-            AZ::IO::SystemFile outputFile;
-            outputFile.Open(localBookmarkFilePath.c_str(), configurationMode);
-
-            AZ::IO::SystemFileStream systemFileStream(&outputFile, false);
+            AZ::IO::SystemFileStream systemFileStream(localBookmarkFilePath.c_str(), configurationMode);
             const bool saved = writeFn(systemFileStream, stringBuffer);
 
             AZ_Warning(

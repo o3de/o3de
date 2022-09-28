@@ -54,7 +54,7 @@ namespace AzFramework
         AZ::ObjectStream::FilterDescriptor filter(assetLoadFilterCB);
         if (AZ::Utils::LoadObjectFromStreamInPlace(*stream, *spawnable, nullptr /*SerializeContext*/, filter))
         {
-            SpawnableAssetUtils::ResolveEntityAliases(spawnable, asset.GetHint(), stream->GetStreamingDeadline(), stream->GetStreamingPriority(), assetLoadFilterCB);
+            SpawnableAssetUtils::ResolveEntityAliases(spawnable, asset.GetHint(), AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(stream->GetStreamingDeadline()), stream->GetStreamingPriority(), assetLoadFilterCB);
             return AZ::Data::AssetHandler::LoadResult::LoadComplete;
         }
         else

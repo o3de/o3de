@@ -796,20 +796,25 @@ namespace AZ::SettingsRegistryMergeUtils
 
     void MergeSettingsToRegistry_ManifestGemsPaths(SettingsRegistryInterface& registry)
     {
-        auto MergeGemPathToRegistry = [&registry](AZStd::string_view manifestKey,
-            AZStd::string_view gemName,
-            AZ::IO::PathView gemRootPath)
+        // cache a vector so that we don't mutate the registry while inside visitor iteration.
+        AZStd::vector<AZStd::pair<AZStd::string, AZ::IO::FixedMaxPath>> collectedGems;
+        auto CollectManifestGems =
+            [&collectedGems](AZStd::string_view manifestKey, AZStd::string_view gemName, AZ::IO::PathView gemRootPath)
         {
-            using FixedValueString = SettingsRegistryInterface::FixedValueString;
             if (manifestKey == GemNameKey)
             {
-                const auto manifestGemJsonPath = FixedValueString::format("%s/%.*s/Path",
-                    ManifestGemsRootKey, AZ_STRING_ARG(gemName));
-                registry.Set(manifestGemJsonPath, gemRootPath.LexicallyNormal().Native());
+                collectedGems.push_back(AZStd::make_pair(AZStd::string(gemName), AZ::IO::FixedMaxPath(gemRootPath)));
             }
         };
 
-        VisitAllManifestGems(registry, MergeGemPathToRegistry);
+        VisitAllManifestGems(registry, CollectManifestGems);
+
+        for (const auto& [gemName, gemRootPath] : collectedGems)
+        {
+            using FixedValueString = SettingsRegistryInterface::FixedValueString;
+            const auto manifestGemJsonPath = FixedValueString::format("%s/%.*s/Path", ManifestGemsRootKey, AZ_STRING_ARG(gemName));
+            registry.Set(manifestGemJsonPath, gemRootPath.LexicallyNormal().Native());
+        }
     }
 
     void MergeSettingsToRegistry_AddRuntimeFilePaths(SettingsRegistryInterface& registry)
@@ -994,13 +999,21 @@ namespace AZ::SettingsRegistryMergeUtils
     void MergeSettingsToRegistry_GemRegistries(SettingsRegistryInterface& registry, const AZStd::string_view platform,
         const SettingsRegistryInterface::Specializations& specializations, AZStd::vector<char>* scratchBuffer)
     {
-        auto MergeGemRootRegistryFolder = [&registry, &platform, &specializations, &scratchBuffer]
-        (AZStd::string_view, AZ::IO::FixedMaxPath gemPath)
+        // collect the paths first, then mutate the registry, so that we do not do any registry modifications while visiting it.
+        AZStd::vector<AZ::IO::FixedMaxPath> gemPaths;
+        auto CollectRegistryFolders = [&gemPaths]
+            (AZStd::string_view, AZ::IO::FixedMaxPath gemPath)
         {
-            registry.MergeSettingsFolder((gemPath / SettingsRegistryInterface::RegistryFolder).Native(),
-                specializations, platform, "", scratchBuffer);
+            gemPaths.push_back(gemPath);
         };
-        VisitActiveGems(registry, MergeGemRootRegistryFolder);
+        
+        VisitActiveGems(registry, CollectRegistryFolders);
+
+        for (const auto& gemPath : gemPaths)
+        {
+            registry.MergeSettingsFolder(
+                (gemPath / SettingsRegistryInterface::RegistryFolder).Native(), specializations, platform, "", scratchBuffer);
+        }
     }
 
     void MergeSettingsToRegistry_ProjectRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,

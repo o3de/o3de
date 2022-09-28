@@ -211,7 +211,7 @@ namespace AZ
         AZStd::chrono::microseconds Device::GpuTimestampToMicroseconds(uint64_t gpuTimestamp, RHI::HardwareQueueClass queueClass) const
         {
             auto durationInSeconds = AZStd::chrono::duration<double>(double(gpuTimestamp) / m_commandQueueContext.GetCommandQueue(queueClass).GetGpuTimestampFrequency());
-            return AZStd::chrono::microseconds(durationInSeconds);
+            return AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(durationInSeconds);
         }
 
         void Device::FillFormatsCapabilitiesInternal(FormatCapabilitiesList& formatsCapabilities)

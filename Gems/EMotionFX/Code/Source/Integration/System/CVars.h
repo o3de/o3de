@@ -14,7 +14,7 @@ namespace EMotionFX::Integration
     {
     public:
         static inline int emfx_updateEnabled = 1;
-        static inline int emfx_ragdollManipulatorsEnabled = 0;
+        static inline int emfx_ragdollManipulatorsEnabled = 1;
         static inline int emfx_actorRenderEnabled = 1;
     };
 };

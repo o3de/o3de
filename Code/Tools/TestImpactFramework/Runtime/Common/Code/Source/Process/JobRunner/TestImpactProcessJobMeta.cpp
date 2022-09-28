@@ -32,12 +32,12 @@ namespace TestImpact
         return m_meta.m_returnCode;
     }
 
-    AZStd::chrono::high_resolution_clock::time_point JobMetaWrapper::GetStartTime() const
+    AZStd::chrono::steady_clock::time_point JobMetaWrapper::GetStartTime() const
     {
-        return m_meta.m_startTime.value_or(AZStd::chrono::high_resolution_clock::time_point());
+        return m_meta.m_startTime.value_or(AZStd::chrono::steady_clock::time_point());
     }
 
-    AZStd::chrono::high_resolution_clock::time_point JobMetaWrapper::GetEndTime() const
+    AZStd::chrono::steady_clock::time_point JobMetaWrapper::GetEndTime() const
     {
         if (m_meta.m_startTime.has_value() && m_meta.m_duration.has_value())
         {
@@ -45,7 +45,7 @@ namespace TestImpact
         }
         else
         {
-            return AZStd::chrono::high_resolution_clock::time_point();
+            return AZStd::chrono::steady_clock::time_point();
         }
     }
 

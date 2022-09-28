@@ -1,19 +1,16 @@
 {
-    "description": "",
-    "parentMaterial": "17_magenta.material",
     "materialType": "../../Types/StandardPBR.materialtype",
     "materialTypeVersion": 5,
-    "properties": {
-        "baseColor": {
-            "color": [
-                1.0,
-                1.0,
-                1.0,
-                1.0
-            ],
-            "textureBlendMode": "Lerp",
-            "textureMap": "17_magenta_sRGB.tif",
-            "useTexture": true
-        }
+    "parentMaterial": "17_magenta.material",
+    "propertyValues": {
+        "baseColor.color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "baseColor.textureBlendMode": "Lerp",
+        "baseColor.textureMap": "17_magenta_sRGB.tif",
+        "baseColor.useTexture": true
     }
 }

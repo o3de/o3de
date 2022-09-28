@@ -57,7 +57,7 @@ namespace AzToolsFramework
                 const int contextMenuFlag = 0;
                 AzToolsFramework::EditorContextMenuBus::Broadcast(
                     &AzToolsFramework::EditorContextMenuEvents::PopulateEditorGlobalContextMenu, contextMenu.m_menu.data(),
-                    AzFramework::Vector2FromScreenPoint(mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates),
+                    mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates,
                     contextMenuFlag);
 
                 if (!contextMenu.m_menu->isEmpty())

@@ -391,7 +391,7 @@ namespace AZ
             probeGrid->SetNormalBias(normalBias);
         }
 
-        void DiffuseProbeGridFeatureProcessor::SetNumRaysPerProbe(const DiffuseProbeGridHandle& probeGrid, const DiffuseProbeGridNumRaysPerProbe& numRaysPerProbe)
+        void DiffuseProbeGridFeatureProcessor::SetNumRaysPerProbe(const DiffuseProbeGridHandle& probeGrid, DiffuseProbeGridNumRaysPerProbe numRaysPerProbe)
         {
             AZ_Assert(probeGrid.get(), "SetNumRaysPerProbe called with an invalid handle");
             probeGrid->SetNumRaysPerProbe(numRaysPerProbe);
@@ -543,6 +543,24 @@ namespace AZ
         {
             AZ_Assert(probeGrid.get(), "SetScrolling called with an invalid handle");
             probeGrid->SetScrolling(scrolling);
+        }
+
+        void DiffuseProbeGridFeatureProcessor::SetEdgeBlendIbl(const DiffuseProbeGridHandle& probeGrid, bool edgeBlendIbl)
+        {
+            AZ_Assert(probeGrid.get(), "SetEdgeBlendIbl called with an invalid handle");
+            probeGrid->SetEdgeBlendIbl(edgeBlendIbl);
+        }
+
+        void DiffuseProbeGridFeatureProcessor::SetFrameUpdateCount(const DiffuseProbeGridHandle& probeGrid, uint32_t frameUpdateCount)
+        {
+            AZ_Assert(probeGrid.get(), "SetFrameUpdateCount called with an invalid handle");
+            probeGrid->SetFrameUpdateCount(frameUpdateCount);
+        }
+
+        void DiffuseProbeGridFeatureProcessor::SetTransparencyMode(const DiffuseProbeGridHandle& probeGrid, DiffuseProbeGridTransparencyMode transparencyMode)
+        {
+            AZ_Assert(probeGrid.get(), "SetTransparencyMode called with an invalid handle");
+            probeGrid->SetTransparencyMode(transparencyMode);
         }
 
         void DiffuseProbeGridFeatureProcessor::SetBakedTextures(const DiffuseProbeGridHandle& probeGrid, const DiffuseProbeGridBakedTextures& bakedTextures)

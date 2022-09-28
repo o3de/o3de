@@ -26,6 +26,12 @@ namespace AzToolsFramework
             //! @param instance The given instance object.
             //! @return bool on whether the operation succeeds.
             virtual bool GenerateInstanceDom(PrefabDom& instanceDom, const Instance& instance) const = 0;
+
+            //! Generates an entity DOM that represents a given entity object.
+            //! @param[out] entityDom The output entity DOM that will be modified.
+            //! @param entity The given entity object.
+            //! @return bool on whether the operation succeeds.
+            virtual bool GenerateEntityDom(PrefabDom& entityDom, const AZ::Entity& entity) const = 0;
         };
     } // namespace Prefab
 } // namespace AzToolsFramework

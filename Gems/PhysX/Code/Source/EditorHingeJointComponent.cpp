@@ -55,7 +55,6 @@ namespace PhysX
     void EditorHingeJointComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         required.push_back(AZ_CRC_CE("TransformService"));
-        required.push_back(AZ_CRC_CE("PhysicsColliderService"));
         required.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
     }
 
@@ -173,6 +172,14 @@ namespace PhysX
             AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
                 &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay
                 , AzToolsFramework::Refresh_EntireTree);
+        }
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::EnableLimits)
+        {
+            m_angularLimit.m_standardLimitConfig.m_isLimited = value;
+        }
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::EnableSoftLimits)
+        {
+            m_angularLimit.m_standardLimitConfig.m_isSoftLimit = value;
         }
     }
 

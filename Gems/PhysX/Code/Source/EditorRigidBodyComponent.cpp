@@ -375,6 +375,14 @@ namespace PhysX
         InitPhysicsTickHandler();
     }
 
+    EditorRigidBodyComponent::EditorRigidBodyComponent(
+        const EditorRigidBodyConfiguration& configuration, const RigidBodyConfiguration& physxSpecificConfiguration)
+        : m_config(configuration)
+        , m_physxSpecificConfig(physxSpecificConfiguration)
+    {
+        InitPhysicsTickHandler();
+    }
+
     void EditorRigidBodyComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
         // for now use Invalid scene which will fall back on default scene when entity is activated.

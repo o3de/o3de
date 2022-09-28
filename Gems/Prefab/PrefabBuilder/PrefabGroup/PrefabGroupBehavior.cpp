@@ -91,6 +91,10 @@ namespace AZ::SceneAPI::Behaviors
         // AssetImportRequest
         Events::ProcessingResult UpdateManifest(Containers::Scene& scene, ManifestAction action, RequestingApplication requester) override;
         Events::ProcessingResult PrepareForAssetLoading(Containers::Scene& scene, RequestingApplication requester) override;
+        void GetPolicyName(AZStd::string& result) const override
+        {
+            result = "PrefabGroupBehavior::ExportEventHandler";
+        }
     };
 
     Events::ProcessingResult PrefabGroupBehavior::ExportEventHandler::PrepareForAssetLoading(

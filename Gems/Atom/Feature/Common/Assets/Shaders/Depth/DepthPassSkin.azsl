@@ -6,6 +6,8 @@
  *
  */
 
+#include <scenesrg.srgi>
+#include <viewsrg.srgi>
 #include <Atom/Features/Skin/SkinObjectSrg.azsli>
 #include <DepthPassCommon.azsli>
 

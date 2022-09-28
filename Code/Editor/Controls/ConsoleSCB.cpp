@@ -389,6 +389,10 @@ void CConsoleSCB::RegisterViewClass()
     opts.showInMenu = true;
     opts.builtInActionId = ID_VIEW_CONSOLEWINDOW;
     opts.shortcut = QKeySequence(Qt::Key_QuoteLeft);
+    // Override the default behavior for component mode enter/exit and imgui enter/exit
+    // so that we don't disable and enable the Console window.
+    opts.isDisabledInComponentMode = false;
+    opts.isDisabledInImGuiMode = false;
 
     AzToolsFramework::RegisterViewPane<CConsoleSCB>(LyViewPane::Console, LyViewPane::CategoryTools, opts);
 }

@@ -9,12 +9,13 @@
 
 #include <AzCore/std/string/string.h>
 #include <AzCore/Debug/TraceMessageBus.h>
-#include "AzCore/Slice/SliceAsset.h"
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/Slice/SliceAsset.h>
 
 namespace UnitTest
 {
     //! Returns a test folder path 
-    AZStd::string GetTestFolderPath();
+    AZ::IO::Path GetTestFolderPath();
 
     void MakePathFromTestFolder(char* buffer, int bufferLen, const char* fileName);
 

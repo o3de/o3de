@@ -52,7 +52,7 @@ namespace EMStudio
         bool GetIsFloatable() const override;
         bool GetIsVertical() const override;
         bool Init() override;
-        EMStudioPlugin* Clone() const { return new AtomRenderPlugin(); }
+        EMStudioPlugin* Clone() const { return aznew AtomRenderPlugin(); }
         EMStudioPlugin::EPluginType GetPluginType() const override;
         QWidget* GetInnerWidget();
 

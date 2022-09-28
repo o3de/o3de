@@ -622,7 +622,7 @@ namespace AssetBuilderSDK
 
     bool ProductPathDependency::operator==(const ProductPathDependency& rhs) const
     {
-        return m_dependencyPath == rhs.m_dependencyPath
+        return AZ::IO::PathView(m_dependencyPath) == AZ::IO::PathView(rhs.m_dependencyPath)
             && m_dependencyType == rhs.m_dependencyType;
     }
 

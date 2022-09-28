@@ -29,7 +29,7 @@ namespace O3DE::ProjectManager
         ProjectInfo GetProjectInfo() override;
         void SetProjectInfo(const ProjectInfo& projectInfo);
 
-        bool Validate() override;
+        AZ::Outcome<void, QString> Validate() const override;
 
         void ResetProjectPreviewPath();
 
@@ -40,9 +40,9 @@ namespace O3DE::ProjectManager
         void OnProjectEngineUpdated(int index);
 
     protected:
-        bool ValidateProjectPath() override;
-        virtual bool ValidateProjectPreview();
-        bool ValidateProjectId();
+        bool ValidateProjectPath() const override;
+        virtual bool ValidateProjectPreview() const;
+        bool ValidateProjectId() const;
 
         inline constexpr static int s_collapseButtonSize = 24;
 

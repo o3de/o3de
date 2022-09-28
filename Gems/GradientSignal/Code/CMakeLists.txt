@@ -186,6 +186,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             NAMESPACE Gem
             FILES_CMAKE
                 gradientsignal_editor_tests_files.cmake
+            PLATFORM_INCLUDE_FILES
+                Source/Platform/Common/${PAL_TRAIT_COMPILER_ID}/gradient_signal_editor_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
             INCLUDE_DIRECTORIES
                 PRIVATE
                     .

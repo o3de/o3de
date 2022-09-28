@@ -300,7 +300,7 @@ namespace AZ
         {
             //gpuTimestamp in nanoseconds.
             auto timeInNano = AZStd::chrono::nanoseconds(gpuTimestamp);
-            return AZStd::chrono::microseconds(timeInNano);
+            return AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(timeInNano);
         }
     
         RHI::ResourceMemoryRequirements Device::GetResourceMemoryRequirements(const RHI::ImageDescriptor& descriptor)

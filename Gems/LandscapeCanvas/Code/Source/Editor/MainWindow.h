@@ -112,6 +112,7 @@ namespace LandscapeCanvasEditor
         void PreOnGraphModelNodeRemoved(GraphModel::NodePtr node) override;
         void OnGraphModelConnectionAdded(GraphModel::ConnectionPtr connection) override;
         void OnGraphModelConnectionRemoved(GraphModel::ConnectionPtr connection) override;
+        void PreOnGraphModelNodeWrapped(GraphModel::NodePtr wrapperNode, GraphModel::NodePtr node) override;
         void OnGraphModelNodeWrapped(GraphModel::NodePtr wrapperNode, GraphModel::NodePtr node) override;
         void OnGraphModelGraphModified(GraphModel::NodePtr node) override;
         ////////////////////////////////////////////////////////////////////////
@@ -278,7 +279,10 @@ namespace LandscapeCanvasEditor
 
         using DeletedNodePositionsMap = AZStd::unordered_map<AZ::EntityComponentIdPair, AZ::Vector2>;
         AZStd::unordered_map<GraphCanvas::GraphId, DeletedNodePositionsMap> m_deletedNodePositions;
+        GraphModel::NodePtrList m_addedWrappedNodes;
+        GraphModel::NodePtrList m_deletedWrappedNodes;
         AzToolsFramework::EntityIdList m_queuedEntityDeletes;
+        AzToolsFramework::EntityIdList m_queuedEntityRefresh;
 
         AzToolsFramework::EntityIdList m_ignoreEntityComponentPropertyChanges;
 
