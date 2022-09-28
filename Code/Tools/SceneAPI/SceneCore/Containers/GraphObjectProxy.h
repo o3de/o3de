@@ -61,6 +61,7 @@ namespace AZ
                 static void Reflect(AZ::ReflectContext* context);
 
                 GraphObjectProxy(AZStd::shared_ptr<const DataTypes::IGraphObject> graphObject);
+                GraphObjectProxy() = default;
                 GraphObjectProxy(const GraphObjectProxy&);
                 ~GraphObjectProxy();
 

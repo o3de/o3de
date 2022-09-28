@@ -41,6 +41,7 @@ namespace AZ
             {
                 behaviorContext->Class<PythonBehaviorInfo>()
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                    ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::RuntimeOwn)
                     ->Attribute(AZ::Script::Attributes::Module, "scene.graph")
                     ->Property("className", [](const PythonBehaviorInfo& self)
                         { return self.m_behaviorClass->m_name; }, nullptr)
@@ -164,6 +165,7 @@ namespace AZ
 
                     behaviorContext->Class<GraphObjectProxy>()
                         ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                        ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)
                         ->Attribute(AZ::Script::Attributes::Module, "scene.graph")
                         ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                         ->Method("CastWithTypeName", &GraphObjectProxy::CastWithTypeName)
