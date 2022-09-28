@@ -1368,11 +1368,14 @@ namespace EMotionFX
     // update the static AABB (very heavy as it has to create an actor instance, update mesh deformers, calculate the mesh based bounds etc)
     void Actor::UpdateStaticAabb()
     {
-        ActorInstance* actorInstance = ActorInstance::Create(this, nullptr, m_threadIndex);
-        actorInstance->UpdateMeshDeformers(0.0f);
-        actorInstance->UpdateStaticBasedAabbDimensions();
-        actorInstance->GetStaticBasedAabb(&m_staticAabb);
-        actorInstance->Destroy();
+        if (m_meshAsset && m_meshAsset.IsReady())
+        {
+            SetStaticAabb(m_meshAsset->GetAabb());
+        }
+        else
+        {
+            AZ_Error("Actor", false, "Actor %s is attempting to set the static aabb, but the model asset is not ready yet", m_name.c_str());
+        }
     }
 
 

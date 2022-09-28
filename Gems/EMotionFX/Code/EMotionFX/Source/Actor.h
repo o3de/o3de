@@ -676,7 +676,7 @@ namespace EMotionFX
 
         const AZ::Aabb& GetStaticAabb() const;
         void SetStaticAabb(const AZ::Aabb& aabb);
-        void UpdateStaticAabb();    // VERY heavy operation, you shouldn't call this ever (internally creates an actor instance, updates mesh deformers, calcs a mesh based aabb, destroys the actor instance again)
+        void UpdateStaticAabb();
 
         void SetThreadIndex(uint32 index)                   { m_threadIndex = index; }
         uint32 GetThreadIndex() const                       { return m_threadIndex; }
