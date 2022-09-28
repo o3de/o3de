@@ -251,7 +251,7 @@ namespace Multiplayer
         if (!potentialNetworkSpawnable->GetHint().ends_with(NetworkSpawnableFileExtension))
         {
             return AZ::Failure(AZStd::string::format(
-                "Asset file (%s) extension doesn't match the network spawnable extension (%s). Please select a network spawnable.",
+                "Normal spawnable (%s) was selected! Please select a network spawnable with a %s file extension.",
                 potentialNetworkSpawnable->GetHint().c_str(), NetworkSpawnableFileExtension.data()));
         }
 
