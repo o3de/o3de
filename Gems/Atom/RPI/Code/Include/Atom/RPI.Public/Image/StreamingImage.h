@@ -117,11 +117,16 @@ namespace AZ
             void SetStreamingPriority(Priority priority);
             
             //! Returns whether the image has mipchains which can be evicted from device memory
-            bool IsTrimmable();
+            bool IsTrimmable() const;
 
             //! Returns whether the image is expanding its mipmaps
             //! This is true when any queue expand functions (asset requested) are called until the mipmap expand requested are submitted successfully 
             bool IsExpanding() const;
+
+            //! Returns whether the image is fully streamed to the GPU.
+            //! For non-streamable image, all its mipmap should be resident.
+            //! For streamable image, its target mip should be resident. (The target mip can be affected by streaming image controller's mip bias)
+            bool IsStreamed() const;
 
         private:
             StreamingImage() = default;

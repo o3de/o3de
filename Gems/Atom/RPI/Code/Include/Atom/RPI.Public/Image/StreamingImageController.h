@@ -132,29 +132,11 @@ namespace AZ
 
             // A sorted list of streaming images which mips can be streamed in/out.
             // The images are sorted by their priority key, last access timestamp and their address (so there won't be same key from different images)
-            struct CompareImagePriority
+            struct ImagePriorityComparator
             {
-                bool operator()(const StreamingImage* lhs, const StreamingImage* rhs) const
-                {
-                    auto lhsPriority = lhs->GetStreamingPriority();
-                    auto rhsPriority = rhs->GetStreamingPriority();
-                    auto lhsTimestamp = lhs->m_streamingContext->GetLastAccessTimestamp();
-                    auto rhsTimestamp = rhs->m_streamingContext->GetLastAccessTimestamp();
-                    if (lhsPriority == rhsPriority)
-                    {
-                        if (lhsTimestamp == rhsTimestamp)
-                        {
-                            return lhs > rhs;
-                        }
-                        else
-                        {
-                            return lhsTimestamp > rhsTimestamp;
-                        }
-                    }
-                    return lhsPriority > rhsPriority; 
-                }
+                bool operator()(const StreamingImage* lhs, const StreamingImage* rhs) const;
             };
-            AZStd::set<StreamingImage*, CompareImagePriority> m_streamableImages;
+            AZStd::set<StreamingImage*, ImagePriorityComparator> m_streamableImages;
             // mutex for access the m_streamableImages
             AZStd::mutex m_imageListAccessMutex;
 

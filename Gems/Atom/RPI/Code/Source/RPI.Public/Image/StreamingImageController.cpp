@@ -187,11 +187,37 @@ namespace AZ
             StreamingImage::Priority newPriority = CalculateImagePriority(image);
             image->SetStreamingPriority(newPriority);
         }
-        
+
+        bool StreamingImageController::ImagePriorityComparator::operator()(const StreamingImage* lhs, const StreamingImage* rhs) const
+        {
+            auto lhsPriority = lhs->GetStreamingPriority();
+            auto rhsPriority = rhs->GetStreamingPriority();
+            auto lhsTimestamp = lhs->m_streamingContext->GetLastAccessTimestamp();
+            auto rhsTimestamp = rhs->m_streamingContext->GetLastAccessTimestamp();
+            if (lhsPriority == rhsPriority)
+            {
+                if (lhsTimestamp == rhsTimestamp)
+                {
+                    return lhs > rhs;
+                }
+                else
+                {
+                    return lhsTimestamp > rhsTimestamp;
+                }
+            }
+            return lhsPriority > rhsPriority; 
+        }
+
         StreamingImage::Priority StreamingImageController::CalculateImagePriority(StreamingImage* image) const
         {
-            StreamingImage::Priority newPriority = 0;
-            newPriority = image->m_imageAsset->GetMipLevel(image->m_mipChainState.m_residencyTarget) - image->m_streamingContext->GetTargetMip();
+            StreamingImage::Priority newPriority = 0; // 0 means lowest priority and the image mip would be evicted first
+            size_t residentMip = image->m_imageAsset->GetMipLevel(image->m_mipChainState.m_residencyTarget);
+            size_t targetMip = image->m_streamingContext->GetTargetMip();
+            if (residentMip >= targetMip)
+            {
+                newPriority = residentMip - targetMip;
+            }
+
             return newPriority;
         }
 
@@ -337,7 +363,7 @@ namespace AZ
                 return; 
             }
 
-            AZStd::list<StreamingImage*> evictedImages;
+            AZStd::vector<StreamingImage*> evictedImages;
 
             auto itr = m_streamableImages.begin();
             while (itr != m_streamableImages.end())

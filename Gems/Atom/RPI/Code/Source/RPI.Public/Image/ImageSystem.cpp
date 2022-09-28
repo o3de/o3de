@@ -43,7 +43,7 @@ namespace AZ
             {
                 Data::Instance<RPI::StreamingImagePool> pool = imageSystem->GetSystemStreamingPool();
                 size_t newBudget = value * 1024 * 1024;
-                bool success = pool->SetMemoryBudget(newBudget);
+                [[maybe_unused]] bool success = pool->SetMemoryBudget(newBudget);
                 AZ_Warning("StreamingImagePool", success, "Can't update StreamingImagePool's memory budget to %uM", value);
             }
         }

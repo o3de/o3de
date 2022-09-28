@@ -278,7 +278,7 @@ namespace AZ
             m_streamingPriority = priority;
         }
 
-        bool StreamingImage::IsTrimmable()
+        bool StreamingImage::IsTrimmable() const
         {
             // the streaming image is trimmable when it has more mipchains other than the tail mipchain (the last mipchain)
             return IsStreamable() && m_mipChainState.m_streamingTarget < m_mipChains.size()-1;
@@ -569,6 +569,15 @@ namespace AZ
         bool StreamingImage::IsExpanding() const
         {
             return m_mipChainState.m_residencyTarget > m_mipChainState.m_streamingTarget;
+        }
+
+        bool StreamingImage::IsStreamed() const
+        {
+            if (m_streamingController)
+            {
+                return m_streamingController->GetImageTargetMip(this) >= m_image->GetResidentMipLevel();
+            }
+            return m_image->GetResidentMipLevel() == 0;
         }
     }
 }
