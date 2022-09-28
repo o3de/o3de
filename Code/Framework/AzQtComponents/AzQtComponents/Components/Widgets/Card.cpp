@@ -150,9 +150,9 @@ namespace AzQtComponents
         m_header->setTitle(title);
     }
     
-    void Card::setTitle(const QString& title, const QString& tooltip)
+    void Card::setTitleToolTip(const QString& toolTip)
     {
-        m_header->setTitle(title, tooltip);
+        m_header->setTitleToolTip(toolTip);
     }
 
     QString Card::title() const
