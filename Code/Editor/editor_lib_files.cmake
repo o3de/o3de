@@ -319,6 +319,8 @@ set(FILES
     Controls/ConsoleSCB.h
     Controls/ConsoleSCB.ui
     Controls/ConsoleSCB.qrc
+    Controls/CvarDPE.cpp
+    Controls/CvarDPE.h
     Controls/FolderTreeCtrl.cpp
     Controls/FolderTreeCtrl.h
     Controls/ImageHistogramCtrl.cpp

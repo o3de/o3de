@@ -18,6 +18,8 @@ namespace Ui
 
 namespace AzToolsFramework
 {
+    class DocumentPropertyEditor;
+
     class FilteredDPE
         : public QWidget
     {
@@ -26,6 +28,7 @@ namespace AzToolsFramework
         virtual ~FilteredDPE();
 
         void SetAdapter(AZStd::shared_ptr<AZ::DocumentPropertyEditor::DocumentAdapter> sourceAdapter);
+        DocumentPropertyEditor* GetDPE();
 
     protected:
         AZStd::shared_ptr<AZ::DocumentPropertyEditor::DocumentAdapter> m_sourceAdapter;

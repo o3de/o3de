@@ -136,6 +136,7 @@ private:
     ConsoleVariableModel* m_model;
     ConsoleVariableItemDelegate* m_itemDelegate;
     CVarBlock* m_varBlock;
+    static AZ::ConsoleCommandInvokedEvent::Handler m_commandInvokedHandler;
 };
 
 class CConsoleSCB

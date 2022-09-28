@@ -40,4 +40,9 @@ namespace AzToolsFramework
         m_filterAdapter->SetSourceAdapter(m_sourceAdapter);
     }
 
+    DocumentPropertyEditor* FilteredDPE::GetDPE()
+    {
+        return m_ui->m_dpe;
+    }
+
 } // namespace AzToolsFramework

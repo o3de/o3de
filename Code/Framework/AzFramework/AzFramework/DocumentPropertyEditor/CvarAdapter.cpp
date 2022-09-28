@@ -21,6 +21,15 @@ namespace AZ::DocumentPropertyEditor
         {
         }
 
+        void SetCVarValue(const ConsoleFunctorBase* functor, const AZStd::string& valueString)
+        {
+            auto consoleInterface = AZ::Interface<AZ::IConsole>::Get();
+            AZStd::string consoleCommand(functor->GetName());
+            consoleCommand += " ";
+            consoleCommand += valueString;
+            consoleInterface->PerformCommand(consoleCommand.c_str());
+        }
+
         template<typename T>
         bool TryBuildNumericEditor(AdapterBuilder& builder, ConsoleFunctorBase* functor)
         {
@@ -45,7 +54,7 @@ namespace AZ::DocumentPropertyEditor
                         {
                             buffer = aznumeric_cast<T>(value.GetDouble());
                         }
-                        (*functor)({ ConsoleTypeHelpers::ToString(buffer) });
+                        SetCVarValue(functor, ConsoleTypeHelpers::ToString(buffer).c_str());
                         m_adapter->OnContentsChanged(path, value);
                     });
 
@@ -79,7 +88,7 @@ namespace AZ::DocumentPropertyEditor
                 builder.OnEditorChanged(
                     [this, functor](const Dom::Path& path, const Dom::Value& value, Nodes::ValueChangeType)
                     {
-                        (*functor)({ value.GetString() });
+                        SetCVarValue(functor, value.GetString());
                         m_adapter->OnContentsChanged(path, value);
                     });
                 builder.EndPropertyEditor();
@@ -102,12 +111,14 @@ namespace AZ::DocumentPropertyEditor
                     {
                         VectorType newContainer = Dom::Utils::ValueToType<VectorType>(value).value_or(VectorType());
                         // ConsoleCommandContainer holds string_views, so ensure we allocate our parameters here
-                        AZStd::fixed_vector<CVarFixedString, ElementCount> newValue;
+                        AZStd::fixed_vector<CVarFixedString, ElementCount + 1> newValue;
+                        newValue.push_back(functor->GetName());
                         for (int i = 0; i < ElementCount; ++i)
                         {
                             newValue.push_back(ConsoleTypeHelpers::ToString(newContainer.GetElement(i)));
                         }
-                        (*functor)(ConsoleCommandContainer(AZStd::from_range, newValue));
+                        AZ::Interface<AZ::IConsole>::Get()->PerformCommand(ConsoleCommandContainer(AZStd::from_range, newValue));
+
                         m_adapter->OnContentsChanged(path, value);
                     });
                 builder.EndPropertyEditor();
@@ -126,7 +137,7 @@ namespace AZ::DocumentPropertyEditor
                 builder.OnEditorChanged(
                     [this, functor](const Dom::Path& path, const Dom::Value& value, Nodes::ValueChangeType)
                     {
-                        (*functor)({ ConsoleTypeHelpers::ToString(value.GetBool()) });
+                        SetCVarValue(functor, ConsoleTypeHelpers::ToString(value.GetBool()).c_str());
                         m_adapter->OnContentsChanged(path, value);
                     });
                 builder.EndPropertyEditor();
