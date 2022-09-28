@@ -7,6 +7,7 @@
  */
 
 #pragma once
+
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/EBus/Event.h>
