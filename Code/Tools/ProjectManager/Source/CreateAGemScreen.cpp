@@ -400,7 +400,7 @@ namespace O3DE::ProjectManager
                 auto result = PythonBindingsInterface::Get()->CreateGem(templateLocation, m_createGemInfo);
                 if (result.IsSuccess())
                 {
-                    emit CreateButtonPressed();
+                    emit CreateButtonPressed(result.GetValue<GemInfo>());
                 }
                 else
                 {

@@ -76,11 +76,17 @@ PixelGeometryData EvaluatePixelGeometry_Eye(
 
 PixelGeometryData EvaluatePixelGeometry_Eye(VsOutput IN, bool isFrontFace)
 {
+    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
+    float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
+
+    float3 vertexNormal, vertexTangent, vertexBitangent;
+    ConstructTBN(IN.normal, IN.tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
+
     return EvaluatePixelGeometry_Eye(
         IN.worldPosition,
-        IN.normal,
-        IN.tangent,
-        IN.bitangent,
+        vertexNormal,
+        vertexTangent,
+        vertexBitangent,
         IN.uvs,
         IN.localPosition,
         isFrontFace);
