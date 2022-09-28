@@ -33,7 +33,6 @@
 #   define AZ_ENABLE_SERIALIZER_DEBUG
 #endif
 
-#pragma optimize("",off)
 namespace AZ
 {
     AZ_THREAD_LOCAL void* Internal::AZStdArrayEvents::m_indices = nullptr;
@@ -857,8 +856,7 @@ namespace AZ
         }
 
         // Rtti available, use rtti cast
-        const TypeId toClassTypeId = toClassHelper->GetTypeId();
-        return fromClassHelper->Cast(instance, toClassTypeId);
+        return fromClassHelper->Cast(instance, toClassHelper->GetTypeId());
     }
 
     //=========================================================================
@@ -3284,4 +3282,3 @@ namespace AZ
 
 
 } // namespace AZ
-#pragma optimize("", on)

@@ -30,7 +30,7 @@ class QString;
 class QPoint;
 
 AZ_DECLARE_BUDGET(AzToolsFramework);
-#pragma optimize("",off)
+
 namespace AzToolsFramework
 {
     namespace Components
@@ -556,7 +556,6 @@ namespace AzToolsFramework
 
         PropertyEditorToolsSystemInterface::PropertyHandlerId m_registeredDpeHandlerId = PropertyEditorToolsSystemInterface::InvalidHandlerId;
     };
-} // namespace AzToolsFramework
-#pragma optimize("", on)
+}
 
 #endif

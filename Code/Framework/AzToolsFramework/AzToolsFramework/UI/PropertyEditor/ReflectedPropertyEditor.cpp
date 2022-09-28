@@ -28,7 +28,6 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/UI/PropertyEditor/ComponentEditor.hxx>
 #include <AzCore/std/sort.h>
 
-#pragma optimize("", off)
 namespace AzToolsFramework
 {
     const AZ::SerializeContext::ClassData* CreateContainerElementSelectClassCallback(const AZ::Uuid& classId, const AZ::Uuid& typeId, AZ::SerializeContext* context)
@@ -2524,7 +2523,6 @@ namespace AzToolsFramework
         m_impl->m_leafIndentation = indentation;
     }
 
-} // namespace AzToolsFramework
-#pragma optimize("", on)
+}
 
 #include "UI/PropertyEditor/moc_ReflectedPropertyEditor.cpp"
