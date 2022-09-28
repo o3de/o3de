@@ -110,11 +110,11 @@ namespace AZ
 
             RHI::Device* device = AZ::RHI::RHISystemInterface::Get()->GetDevice();
             AZ_Assert(device != nullptr, "Invalid RHI device");
-            const size_t maxReadWriteBufferSize = static_cast<size_t>(device->GetLimits().m_maxReadWriteBufferSize);
-            AZ_Warning("SkinnedMeshOutputStreamManager", m_sizeInBytes <= maxReadWriteBufferSize,
-                "Amount of memory available for actor skinning data capped from the requested %zu to %zu bytes.",
-                maxReadWriteBufferSize, m_sizeInBytes);
-            m_sizeInBytes = AZStd::min(m_sizeInBytes, maxReadWriteBufferSize);
+            const size_t maxBufferSize = static_cast<size_t>(device->GetLimits().m_maxBufferSize);
+            AZ_Warning("SkinnedMeshOutputStreamManager", m_sizeInBytes <= maxBufferSize,
+                "Amount of memory available for actor skinning data capped from the requested %zu bytes to %zu bytes.",
+                maxBufferSize, m_sizeInBytes);
+            m_sizeInBytes = AZStd::min(m_sizeInBytes, maxBufferSize);
 
             CalculateAlignment();
 

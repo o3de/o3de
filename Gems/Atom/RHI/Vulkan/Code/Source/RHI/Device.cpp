@@ -844,8 +844,8 @@ namespace AZ
             m_limits.m_maxImageArraySize = deviceLimits.maxImageArrayLayers;
             m_limits.m_minConstantBufferViewOffset = static_cast<uint32_t>(deviceLimits.minUniformBufferOffsetAlignment);
             m_limits.m_maxIndirectDrawCount = deviceLimits.maxDrawIndirectCount;
-            m_limits.m_maxReadBufferSize = deviceLimits.maxUniformBufferRange;
-            m_limits.m_maxReadWriteBufferSize = deviceLimits.maxStorageBufferRange;
+            m_limits.m_maxConstantBufferSize = deviceLimits.maxUniformBufferRange;
+            m_limits.m_maxBufferSize = deviceLimits.maxStorageBufferRange;
         }
 
         void Device::BuildDeviceQueueInfo(const PhysicalDevice& physicalDevice)

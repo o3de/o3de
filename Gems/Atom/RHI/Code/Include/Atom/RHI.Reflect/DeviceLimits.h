@@ -40,11 +40,11 @@ namespace AZ
             /// The maximum number of dispatches when doing indirect dispaching.
             uint32_t m_maxIndirectDispatchCount = 1;
 
-            /// The maximum size (in bytes) of a read only buffer.
-            uint32_t m_maxReadBufferSize = 0;
+            /// The maximum size in bytes of a constant buffer (BufferBindFlags::Constant).
+            uint32_t m_maxConstantBufferSize = 0;
 
-            /// The maximum size (in bytes) of a buffer with read/write access.
-            uint32_t m_maxReadWriteBufferSize = 0;
+            /// The maximum size in bytes of a buffer (BufferBindFlags::ShaderRead, BufferBindFlags::ShaderWrite or BufferBindFlags::ShaderReadWrite).
+            uint32_t m_maxBufferSize = 0;
 
             /// Additional limits here.
         };
