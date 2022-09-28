@@ -195,19 +195,8 @@ namespace AssetProcessor
                     {
                         return "";
                     }
-                    if (processDuration.hour() > 0)
-                    {
-                        return processDuration.toString("hh' hr, 'mm' min, 'ss' sec, 'zzz' ms");
-                    }
-                    if (processDuration.minute() > 0)
-                    {
-                        return processDuration.toString("mm' min, 'ss' sec, 'zzz' ms");
-                    }
-                    if (processDuration.second() > 0)
-                    {
-                        return processDuration.toString("ss' sec, 'zzz' ms");
-                    }
-                    return processDuration.toString("zzz' ms'");
+
+                    return processDuration.toString("hh:mm:ss.zzz");
                 }
             default:
                 break;
