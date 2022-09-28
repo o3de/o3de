@@ -425,18 +425,20 @@ namespace AzToolsFramework::ComponentModeFramework
             [this]()
             {
                 auto* toolsApplicationRequests = AzToolsFramework::ToolsApplicationRequestBus::FindFirstHandler();
-                const auto& selectedEntityIds = toolsApplicationRequests->GetSelectedEntities();
-
-                if (selectedEntityIds.size() == 1)
+                if (toolsApplicationRequests != nullptr)
                 {
-                    bool inComponentMode;
-                    AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::BroadcastResult(
-                        inComponentMode, &ComponentModeSystemRequests::InComponentMode);
-
-                    if (!inComponentMode)
+                    const auto& selectedEntityIds = toolsApplicationRequests->GetSelectedEntities();
+                    if (selectedEntityIds.size() == 1)
                     {
-                        ClearSwitcher();
-                        UpdateSwitcherOnEntitySelectionChange(selectedEntityIds, {});
+                        bool inComponentMode;
+                        AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::BroadcastResult(
+                            inComponentMode, &ComponentModeSystemRequests::InComponentMode);
+
+                        if (!inComponentMode)
+                        {
+                            ClearSwitcher();
+                            UpdateSwitcherOnEntitySelectionChange(selectedEntityIds, {});
+                        }
                     }
                 }
             });
