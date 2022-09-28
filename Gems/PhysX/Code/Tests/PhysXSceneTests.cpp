@@ -568,7 +568,8 @@ namespace PhysX
         // create + register the active handler
         bool handlerTriggered = false;
         AzPhysics::SceneEvents::OnSceneActiveSimulatedBodiesEvent::Handler activeActorsHandler(
-            [rigidSphereHandle, &handlerTriggered, this](AzPhysics::SceneHandle sceneHandle, const AzPhysics::SimulatedBodyHandleList& activeBodyList)
+            [rigidSphereHandle, &handlerTriggered, this](AzPhysics::SceneHandle sceneHandle,
+                const AzPhysics::SimulatedBodyHandleList& activeBodyList, float deltaTime)
             {
                 handlerTriggered = true;
                 //the scene handles should match
@@ -577,6 +578,8 @@ namespace PhysX
                 //there should only be 1 entry and it should be the rigidSphereHandler
                 EXPECT_TRUE(activeBodyList.size() == 1);
                 EXPECT_TRUE(activeBodyList[0] == rigidSphereHandle);
+
+                EXPECT_TRUE(AZ::IsClose(deltaTime, AzPhysics::SystemConfiguration::DefaultFixedTimestep));
             });
         sceneInterface->RegisterSceneActiveSimulatedBodiesHandler(m_testSceneHandle, activeActorsHandler);
 

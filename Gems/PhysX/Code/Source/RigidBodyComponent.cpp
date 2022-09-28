@@ -11,6 +11,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
+#include <AzFramework/Physics/Configuration/SceneConfiguration.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Utils.h>
@@ -195,6 +196,7 @@ namespace PhysX
         AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::MultiHandler::BusDisconnect();
         m_sceneFinishSimHandler.Disconnect();
+        m_activeBodySyncTransformHandler.Disconnect();
         AZ::TickBus::Handler::BusDisconnect();
     }
 
@@ -225,6 +227,12 @@ namespace PhysX
             {
                 this->PostPhysicsTick(fixedDeltatime);
             }, aznumeric_cast<int32_t>(AzPhysics::SceneEvents::PhysicsStartFinishSimulationPriority::Physics));
+
+        m_activeBodySyncTransformHandler = AzPhysics::SimulatedBodyEvents::OnSyncTransform::Handler(
+            [this](float fixedDeltatime)
+            {
+                this->PostPhysicsTick(fixedDeltatime);
+            });
     }
 
     void RigidBodyComponent::PostPhysicsTick(float fixedDeltaTime)
@@ -259,10 +267,12 @@ namespace PhysX
         {
             m_interpolator->SetTarget(transform.GetTranslation(), rigidBody->GetOrientation(), fixedDeltaTime);
         }
-        else
+        else if (AZ::TransformInterface* entityTransform = GetEntity()->GetTransform())
         {
-            AZ::TransformBus::Event(GetEntityId(), &AZ::TransformInterface::SetWorldRotationQuaternion, rigidBody->GetOrientation());
-            AZ::TransformBus::Event(GetEntityId(), &AZ::TransformInterface::SetWorldTranslation, rigidBody->GetPosition());
+            AZ::Transform newWorldTransform = entityTransform->GetWorldTM();
+            newWorldTransform.SetRotation(rigidBody->GetOrientation());
+            newWorldTransform.SetTranslation(rigidBody->GetPosition());
+            entityTransform->SetWorldTM(newWorldTransform);
         }
         m_isLastMovementFromKinematicSource = false;
     }
@@ -308,14 +318,26 @@ namespace PhysX
             m_configuration.m_startSimulationEnabled = false; //enable physics will enable this when called.
             m_rigidBodyHandle = sceneInterface->AddSimulatedBody(m_attachedSceneHandle, &m_configuration);
             ApplyPhysxSpecificConfiguration();
+
+            // Listen to the PhysX system for events concerning this entity.
+
+            AzPhysics::Scene* scene = sceneInterface->GetScene(m_attachedSceneHandle);
+            if (scene->GetConfiguration().m_enableActiveActors)
+            {
+                AzPhysics::SimulatedBody* body = sceneInterface->GetSimulatedBodyFromHandle(m_attachedSceneHandle, m_rigidBodyHandle);
+                body->RegisterOnSyncTransformHandler(m_activeBodySyncTransformHandler);
+            }
+            else
+            {
+                sceneInterface->RegisterSceneSimulationFinishHandler(m_attachedSceneHandle, m_sceneFinishSimHandler);
+            }
         }
 
-        // Listen to the PhysX system for events concerning this entity.
-        if (sceneInterface != nullptr)
+        if (m_configuration.m_interpolateMotion)
         {
-            sceneInterface->RegisterSceneSimulationFinishHandler(m_attachedSceneHandle, m_sceneFinishSimHandler);
+            AZ::TickBus::Handler::BusConnect();
         }
-        AZ::TickBus::Handler::BusConnect();
+
         AZ::TransformNotificationBus::MultiHandler::BusConnect(GetEntityId());
         Physics::RigidBodyRequestBus::Handler::BusConnect(GetEntityId());
         AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(GetEntityId());

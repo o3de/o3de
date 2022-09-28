@@ -44,6 +44,10 @@ namespace AzPhysics
         //! see OnTriggerEnter
         using OnTriggerExit = AZ::Event<SimulatedBodyHandle, const TriggerEvent&>;
 
+        using OnSyncTransform = AZ::Event<float>;
+        void RegisterOnSyncTransformHandler(
+            AzPhysics::SceneHandle sceneHandle, AzPhysics::SimulatedBodyHandle bodyHandle, OnSyncTransform::Handler& handler);
+
         //! Helper to register a Collision Event handler.
         //! @param sceneHandle A handle to the scene that owns the simulated body.
         //! @param bodyHandle A handle to the simulated body.

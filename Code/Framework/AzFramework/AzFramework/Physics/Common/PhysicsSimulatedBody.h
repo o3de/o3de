@@ -95,6 +95,10 @@ namespace AzPhysics
         //! Will invoke the OnTriggerEnter or OnTriggerExitevent event.
         //! @param trigger The trigger data to be routed.
         void ProcessTriggerEvent(const TriggerEvent& trigger) const;
+        
+        //! Helper to send SyncTransform event to the relevant handlers.
+        //! @param deltaTime Frame time.
+        void SyncTransform(float deltaTime) const;
 
         //! Helpers to register a handler for Collision events on this Simulated body.
         //! OnCollisionBegin is when two bodies start to collide.
@@ -112,6 +116,9 @@ namespace AzPhysics
         void RegisterOnTriggerEnterHandler(SimulatedBodyEvents::OnTriggerEnter::Handler& handler);
         //! see RegisterOnTriggerEnterHandler
         void RegisterOnTriggerExitHandler(SimulatedBodyEvents::OnTriggerExit::Handler& handler);
+
+        //! Helper to register a handler for a SyncTransform event on this Simulated body.
+        void RegisterOnSyncTransformHandler(SimulatedBodyEvents::OnSyncTransform::Handler& handler);
 
         virtual AZ::Crc32 GetNativeType() const = 0;
         virtual void* GetNativePointer() const = 0;
@@ -137,6 +144,7 @@ namespace AzPhysics
         SimulatedBodyEvents::OnCollisionEnd m_collisionEndEvent;
         SimulatedBodyEvents::OnTriggerEnter m_triggerEnterEvent;
         SimulatedBodyEvents::OnTriggerExit m_triggerExitEvent;
+        SimulatedBodyEvents::OnSyncTransform m_syncTransformEvent;
 
         void* m_customUserData = nullptr;
         uint32_t m_frameId = UndefinedFrameId;
@@ -147,6 +155,7 @@ namespace AzPhysics
         SimulatedBodyEvents::OnCollisionEnd* GetOnCollisionEndEvent();
         SimulatedBodyEvents::OnTriggerEnter* GetOnTriggerEnterEvent();
         SimulatedBodyEvents::OnTriggerExit* GetOnTriggerExitEvent();
+        SimulatedBodyEvents::OnSyncTransform* GetOnSyncTransformEvent();
     };
     //! Alias for a list of non owning weak pointers to SimulatedBody objects.
     using SimulatedBodyList = AZStd::vector<SimulatedBody*>;
@@ -180,5 +189,10 @@ namespace AzPhysics
     inline void SimulatedBody::RegisterOnTriggerExitHandler(SimulatedBodyEvents::OnTriggerExit::Handler& handler)
     {
         handler.Connect(m_triggerExitEvent);
+    }
+
+    inline void SimulatedBody::RegisterOnSyncTransformHandler(SimulatedBodyEvents::OnSyncTransform::Handler& handler)
+    {
+        handler.Connect(m_syncTransformEvent);
     }
 }

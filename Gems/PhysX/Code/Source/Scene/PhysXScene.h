@@ -90,6 +90,8 @@ namespace PhysX
 
         void UpdateAzProfilerDataPoints();
 
+        void SyncActiveBodyTransform(const AzPhysics::SimulatedBodyHandleList& activeBodyHandles);
+
         bool m_isEnabled = true;
         AzPhysics::SceneConfiguration m_config;
         AzPhysics::SceneHandle m_sceneHandle;

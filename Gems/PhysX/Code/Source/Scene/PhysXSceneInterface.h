@@ -28,6 +28,7 @@ namespace PhysX
 
         // AzPhysics::SceneInterface ...
         AzPhysics::SceneHandle GetSceneHandle(const AZStd::string& sceneName) override;
+        AzPhysics::Scene* GetScene(AzPhysics::SceneHandle handle) override;
         void StartSimulation(AzPhysics::SceneHandle sceneHandle, float deltatime) override;
         void FinishSimulation(AzPhysics::SceneHandle sceneHandle) override;
         void SetEnabled(AzPhysics::SceneHandle sceneHandle, bool enable) override;
