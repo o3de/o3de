@@ -6,8 +6,8 @@
  *
  */
 
-
 #if !defined(Q_MOC_RUN)
+#include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/base.h>
 #include <QtWidgets/QWidget>
 #include <Source/LUA/LUAEditorPlainTextEdit.hxx>
