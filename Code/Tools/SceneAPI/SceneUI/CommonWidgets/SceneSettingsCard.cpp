@@ -301,29 +301,27 @@ void SceneSettingsCard::SetState(State newState)
         break;
     case State::Done:
         {
-            QString toolTip(tr("No errors or warnings were encountered %1 the scene file.%2"));
+            QString toolTip(tr("No errors or warnings were encountered with the scene file."));
             QString errorsAndWarningsString;
             if (m_warningCount > 0 || m_errorCount > 0)
             {
                 errorsAndWarningsString = tr(" with %1 warning(s), %2 error(s)").arg(m_warningCount).arg(m_errorCount);
-                toolTip = tr("Warnings and/or errors were encountered %1 the scene file. You can view the details by expanding this card "
-                             "and reading the log message.%2");
+                toolTip = tr("Warnings and/or errors were encountered with the scene file. You can view the details by expanding this card "
+                             "and reading the log message.");
             }
 
             QString previousStateString;
             switch (m_sceneCardState)
             {
             case State::Loading:
-                previousStateString = tr("Loading ");
-                // The second arg is empty because there isn't an easy way to find the loading log messages later.
-                toolTip = toolTip.arg(tr("loading")).arg("");
+                previousStateString = tr("Loading");
                 break;
             case State::Processing:
-                previousStateString = tr("Processing ");
-                toolTip = toolTip.arg(tr("processing")).arg(tr(" If you dismiss this card, you can view the processing logs again in the Asset Processor."));
+                previousStateString = tr("Processing");
+                toolTip = tr("%1 If you dismiss this card, you can view the processing logs again in the Asset Processor.").arg(toolTip);
                 break;
                 }
-            setTitle(tr("%1%2 completed at %3%4").arg(previousStateString).arg(m_fileTracked).arg(GetTimeNowAsString()).arg(errorsAndWarningsString));
+            setTitle(tr("%1 %2 completed at %3%4").arg(previousStateString).arg(m_fileTracked).arg(GetTimeNowAsString()).arg(errorsAndWarningsString));
             setTitleToolTip(toolTip);
             m_settingsHeader->SetCanClose(true);
 
