@@ -56,7 +56,7 @@ class QtPyAssetEditor(QtPyCommon):
 
         self.update_new_method_name(DEFAULT_METHOD_NAME, method_name)
 
-    def update_new_method_name(self, old_method_name: str, new_method_name: str) -> None:
+    def update_new_method_name(self, old_method_name: str, updated_method_name: str) -> None:
         """
         Function for finding a default script event and changing its name
 
@@ -73,11 +73,11 @@ class QtPyAssetEditor(QtPyCommon):
             line_edit = child.findChild(QtWidgets.QLineEdit)
             if line_edit and line_edit.text() == old_method_name:
                 old_method_exists = True
-                line_edit.setText(f"{new_method_name}")
+                line_edit.setText(f"{updated_method_name}")
                 method_name_field = line_edit.text()
 
         assert old_method_exists, f"Failed to find method {old_method_name} in Asset Editor."
-        assert method_name_field == new_method_name, "Failed to set method name in Asset Editor."
+        assert method_name_field == updated_method_name, "Failed to set method name in Asset Editor."
 
     def delete_method_from_script_events(self) -> None:
         """

@@ -37,13 +37,13 @@ def ScriptEvent_AddRemoveMethod_UpdatesInSC():
     import azlmbr.paths as paths
     from editor_python_test_tools.utils import Report
     import azlmbr.legacy.general as general
-    from editor_python_test_tools import QtPyO3DEEditor
+    from editor_python_test_tools.QtPyO3DEEditor import QtPyO3DEEditor
     from consts.asset_editor import (SCRIPT_EVENT_UI, NODE_TEST_METHOD)
 
     general.idle_enable(True)
 
     # 1) Get a handle on our O3DE QtPy objects then initialize the Asset Editor object
-    qtpy_o3de_editor = QtPyO3DEEditor.QtPyO3DEEditor()
+    qtpy_o3de_editor = QtPyO3DEEditor()
     # Close and reopen Asset Editor to ensure we don't have any existing assets open
     qtpy_o3de_editor.close_asset_editor()
     qtpy_asset_editor = qtpy_o3de_editor.open_asset_editor()

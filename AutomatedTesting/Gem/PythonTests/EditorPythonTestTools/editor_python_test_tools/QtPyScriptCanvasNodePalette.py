@@ -9,8 +9,9 @@ Object to house all the Qt Objects and behavior used in testing the script canva
 from editor_python_test_tools.utils import TestHelper as helper
 from PySide2 import QtWidgets, QtTest, QtCore
 import pyside_utils
+import azlmbr.legacy.general as general
 from consts.scripting import (NODE_PALETTE_QT, TREE_VIEW_QT, SEARCH_FRAME_QT, SEARCH_FILTER_QT)
-from consts.general import (WAIT_TIME_SEC_3)
+from consts.general import (WAIT_TIME_SEC_1, WAIT_TIME_SEC_3)
 
 class QtPyScriptCanvasNodePalette():
     """
@@ -33,15 +34,13 @@ class QtPyScriptCanvasNodePalette():
         returns: a list of nodes found using the provided node_name string
         """
         self.clear_search_filter()
-
-        self.node_palette_search_box.setText(node_name)
-        self.__validate_search_field_set(node_name)
+        self.__set_search_filter(node_name)
 
         nodes_found = pyside_utils.find_child_by_pattern(self.node_palette_tree, {"text": f"{node_name}"})
 
         return nodes_found
 
-    def __validate_search_field_set(self, node_name: str):
+    def __set_search_filter(self, node_name: str):
         """
         helper function for validating that the search field was set properly by search functions
 
@@ -50,19 +49,19 @@ class QtPyScriptCanvasNodePalette():
         returns: None
 
         """
+        self.node_palette_search_box.setText(node_name)
         search_field_set = self.node_palette_search_box.text() == node_name
+        # this wait_for_condition call is placeholder while we wait on a better way to tell if the search filtering has ended
+        helper.wait_for_condition(lambda: True is False, WAIT_TIME_SEC_1)
         helper.wait_for_condition(lambda: search_field_set, WAIT_TIME_SEC_3)
 
         assert search_field_set, f"Failed to set the node palette search field to: {node_name}."
 
     def clear_search_filter(self) -> None:
         """
-        Function for setting the node palette search filter to a blank string. This will completely reset the list of
-        visible nodes in the list.
+        Function for setting the node palette search filter to a blank string. This will wait for the node palette to
+        rebuild.
 
         returns: None
         """
-
-        self.node_palette_search_box.setText("")
-        self.__validate_search_field_set("")
-
+        self.__set_search_filter("")
