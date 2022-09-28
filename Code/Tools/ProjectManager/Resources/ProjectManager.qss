@@ -235,6 +235,14 @@ QTabBar::tab:focus {
     margin-left: 50px;
 }
 
+#addRemoteProjectDialog #formErrorLabel {
+    margin-left: 0px;
+}
+
+#addRemoteTemplateDialog #formErrorLabel {
+    margin-left: 0px;
+}
+
 #formTitleLabel {
     font-size:21px;
     color:#ffffff;

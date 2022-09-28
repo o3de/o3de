@@ -21,7 +21,6 @@ VsOutput EvaluateVertexGeometry_BasePBR(
     float3 position,
     float3 normal,
     float4 tangent,
-    float3 bitangent,
     float2 uv0,
     float2 uv1)
 {
@@ -36,8 +35,8 @@ VsOutput EvaluateVertexGeometry_BasePBR(
     output.uvs[0] = mul(MaterialSrg::m_uvMatrix, float3(uv0, 1.0)).xy;
     output.uvs[1] = uv1;
 
-    float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
-    ConstructTBN(normal, tangent, bitangent, objectToWorld, objectToWorldIT, output.normal, output.tangent, output.bitangent);
+    output.normal = normal;
+    output.tangent = tangent;
 
     return output;
 }
@@ -48,7 +47,6 @@ VsOutput EvaluateVertexGeometry_BasePBR(VsInput IN)
         IN.position,
         IN.normal,
         IN.tangent,
-        IN.bitangent,
         IN.uv0,
         IN.uv1);
 }
