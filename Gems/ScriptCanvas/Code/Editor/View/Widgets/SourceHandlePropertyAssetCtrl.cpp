@@ -120,8 +120,8 @@ namespace ScriptCanvasEditor
 
     void SourceHandlePropertyHandler::ConsumeAttribute(SourceHandlePropertyAssetCtrl* GUI, AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue, const char* debugName)
     {
-        // Let the AssetPropertyHandlerDefault handle all of the common attributes
-        AzToolsFramework::AssetPropertyHandlerDefault::ConsumeAttributeInternal(GUI, attrib, attrValue, debugName);
+        // Let ConsumeAttributeForPropertyAssetCtrl handle all of the common attributes
+        AzToolsFramework::ConsumeAttributeForPropertyAssetCtrl(GUI, attrib, attrValue, debugName);
 
         if (attrib == AZ::Edit::Attributes::SourceAssetFilterPattern)
         {

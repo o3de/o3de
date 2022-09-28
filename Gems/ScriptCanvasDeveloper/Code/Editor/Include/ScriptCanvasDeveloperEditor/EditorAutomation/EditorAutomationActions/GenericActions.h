@@ -70,7 +70,7 @@ namespace ScriptCanvas::Developer
 
     private:
 
-        AZStd::chrono::time_point<AZStd::chrono::system_clock> m_startPoint;
+        AZStd::chrono::steady_clock::time_point m_startPoint;
 
         AZStd::chrono::milliseconds m_delay;
     };
@@ -114,5 +114,5 @@ namespace ScriptCanvas::Developer
     private:
 
         AZStd::string m_traceName;
-    };   
+    };
 }

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Icons / Notification / Error - black</title>
+    <g id="Icons-/-Notification-/-Error---black" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Icon-Background" x="0" y="0" width="24" height="24"></rect>
+        <circle id="Oval" fill="#222222" cx="12" cy="12" r="10"></circle>
+        <path d="M12,22 C6.4771525,22 2,17.5228475 2,12 C2,6.4771525 6.4771525,2 12,2 C17.5228475,2 22,6.4771525 22,12 C22,17.5228475 17.5228475,22 12,22 Z M10.7544302,11.9140192 L6.01969457,16.6545313 L7.12818919,17.7643783 L11.8629248,13.0238662 L16.6415483,17.8083198 L17.750043,16.6984728 L12.9714194,11.9140192 L17.7697375,7.10984701 L16.6612429,6 L11.8629248,10.8041722 L7.10849462,6.04394146 L6,7.15378847 L10.7544302,11.9140192 L10.7544302,11.9140192 Z" id="Shape" fill="#E25243"></path>
+    </g>
+</svg>

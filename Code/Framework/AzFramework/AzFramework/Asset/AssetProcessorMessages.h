@@ -1254,6 +1254,46 @@ namespace AzFramework
             FolderList m_folderList;
         };
 
+        class AssetChangeReportRequest
+            : public BaseAssetProcessorMessage
+        {
+        public:
+            AZ_CLASS_ALLOCATOR(AssetChangeReportRequest, AZ::OSAllocator, 0);
+            AZ_RTTI(AssetChangeReportRequest, "{EF108E73-08F7-4CBC-A808-61A2EC544A6E}", BaseAssetProcessorMessage);
+            static void Reflect(AZ::ReflectContext* context);
+            static constexpr unsigned int MessageType = AZ_CRC_CE("AssetSystem::AssetChangeReport");
+
+            enum ChangeType
+            {
+                CheckMove,
+                Move
+            };
+
+            // The default constructor is only required for the SerializeContext.
+            AssetChangeReportRequest() = default;
+            AssetChangeReportRequest(const AZ::OSString& fromPath, const AZ::OSString& toPath, ChangeType changeType = ChangeType::Move);
+            unsigned int GetMessageType() const override;
+
+            AZ::OSString m_fromPath;
+            AZ::OSString m_toPath;
+            ChangeType m_type;
+        };
+
+        class AssetChangeReportResponse
+            : public BaseAssetProcessorMessage
+        {
+        public:
+            AZ_CLASS_ALLOCATOR(AssetChangeReportResponse, AZ::OSAllocator, 0);
+            AZ_RTTI(AssetChangeReportResponse, "{C18891A7-794D-4270-93AE-7D0C2ECABB5C}", BaseAssetProcessorMessage);
+            static void Reflect(AZ::ReflectContext* context);
+
+            // The default constructor is only required for the SerializeContext.
+            AssetChangeReportResponse() = default;
+            AssetChangeReportResponse(AZStd::vector<AZStd::string> lines);
+            unsigned int GetMessageType() const override;
+
+            AZStd::vector<AZStd::string> m_lines;
+        };
 
     } // namespace AssetSystem
 } // namespace AzFramework

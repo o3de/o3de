@@ -337,16 +337,16 @@ namespace AZ::IO
     {
         SAutoCollectFileAccessTime(Archive* pArchive)
             : m_pArchive{ pArchive }
-            , m_startTime{ AZStd::chrono::system_clock::now() }
+            , m_startTime{ AZStd::chrono::steady_clock::now() }
         {
         }
         ~SAutoCollectFileAccessTime()
         {
-            m_pArchive->m_fFileAccessTime += aznumeric_cast<float>(AZStd::chrono::duration_cast<AZStd::chrono::seconds>(AZStd::chrono::system_clock::now() - m_startTime).count());
+            m_pArchive->m_fFileAccessTime += aznumeric_cast<float>(AZStd::chrono::duration_cast<AZStd::chrono::seconds>(AZStd::chrono::steady_clock::now() - m_startTime).count());
         }
     private:
         Archive* m_pArchive;
-        AZStd::chrono::system_clock::time_point m_startTime;
+        AZStd::chrono::steady_clock::time_point m_startTime;
     };
 
     /////////////////////////////////////////////////////

@@ -99,7 +99,6 @@ set(FILES
     Debug/BudgetTracker.cpp
     Debug/LocalFileEventLogger.h
     Debug/LocalFileEventLogger.cpp
-    Debug/IEventLogger.h
     Debug/MemoryProfiler.h
     Debug/Profiler.cpp
     Debug/Profiler.inl
@@ -421,6 +420,10 @@ set(FILES
     Memory/SimpleSchemaAllocator.h
     Memory/SystemAllocator.cpp
     Memory/SystemAllocator.h
+    Metrics/EventLoggerFactoryImpl.h
+    Metrics/EventLoggerFactoryImpl.cpp
+    Metrics/IEventLogger.h
+    Metrics/IEventLoggerFactory.h
     Module/DynamicModuleHandle.cpp
     Module/DynamicModuleHandle.h
     Module/Module.cpp

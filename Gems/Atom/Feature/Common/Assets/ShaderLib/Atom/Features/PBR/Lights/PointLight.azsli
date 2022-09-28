@@ -118,7 +118,9 @@ void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingD
         lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, normalize(posToLight)) * litRatio;
 
         // Transmission contribution
+#if ENABLE_TRANSMISSION
         lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, lightIntensity, normalize(posToLight), transmissionDistance, posToLightDist);
+#endif
 
         // Adjust the light direcion for specular based on bulb size
 
@@ -171,8 +173,11 @@ void ValidatePointLight(ViewSrg::PointLight light, Surface surface, inout Lighti
     float3 intensity = intensityLumens * INV_PI;
 
     lightingData.diffuseLighting += (diffuseAcc / float(sampleCount)) * intensity;
-    lightingData.translucentBackLighting += (translucentAcc / float(sampleCount)) * intensity;
     lightingData.specularLighting += (specularAcc / float(sampleCount)) * intensity;
+
+#if ENABLE_TRANSMISSION
+    lightingData.translucentBackLighting += (translucentAcc / float(sampleCount)) * intensity;
+#endif
 }
 
 void ApplyPointLights(Surface surface, inout LightingData lightingData)

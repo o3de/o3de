@@ -67,6 +67,11 @@ namespace GraphModelIntegration
 
         GraphModel::ConnectionPtr AddConnection(GraphModel::SlotPtr sourceSlot, GraphModel::SlotPtr targetSlot) override;
         GraphModel::ConnectionPtr AddConnectionBySlotId(GraphModel::NodePtr sourceNode, GraphModel::SlotId sourceSlotId, GraphModel::NodePtr targetNode, GraphModel::SlotId targetSlotId) override;
+        bool AreSlotsConnected(
+            GraphModel::NodePtr sourceNode,
+            GraphModel::SlotId sourceSlotId,
+            GraphModel::NodePtr targetNode,
+            GraphModel::SlotId targetSlotId) const override;
         bool RemoveConnection(GraphModel::ConnectionPtr connection) override;
         GraphModel::SlotId ExtendSlot(GraphModel::NodePtr node, GraphModel::SlotName slotName) override;
 
