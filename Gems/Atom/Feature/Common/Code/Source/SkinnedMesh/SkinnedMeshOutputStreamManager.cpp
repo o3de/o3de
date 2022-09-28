@@ -112,8 +112,8 @@ namespace AZ
             AZ_Assert(device != nullptr, "Invalid RHI device");
             const size_t maxBufferSize = static_cast<size_t>(device->GetLimits().m_maxBufferSize);
             AZ_Warning("SkinnedMeshOutputStreamManager", m_sizeInBytes <= maxBufferSize,
-                "Amount of memory available for actor skinning data capped from the requested %zu bytes to %zu bytes.",
-                maxBufferSize, m_sizeInBytes);
+                "Amount of memory available for actor skinning data capped from the requested %zu bytes to %zu bytes due to max buffer size limit.",
+                m_sizeInBytes, maxBufferSize);
             m_sizeInBytes = AZStd::min(m_sizeInBytes, maxBufferSize);
 
             CalculateAlignment();
