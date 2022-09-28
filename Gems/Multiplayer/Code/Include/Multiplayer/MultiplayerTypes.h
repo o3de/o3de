@@ -8,7 +8,6 @@
 
 #pragma once
 
-
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/EBus/Event.h>
@@ -18,7 +17,6 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
-#include <AzFramework/Physics/Material/PhysicsMaterialAsset.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzNetworking/Utilities/IpAddress.h>
 #include <AzNetworking/Serialization/ISerializer.h>
