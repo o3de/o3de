@@ -174,6 +174,8 @@ namespace AZ
             m_limits.m_minConstantBufferViewOffset = D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT;
             m_limits.m_maxIndirectDrawCount = static_cast<uint32_t>(-1);
             m_limits.m_maxIndirectDispatchCount = static_cast<uint32_t>(-1);
+            m_limits.m_maxReadBufferSize = static_cast<uint32_t>(-1);
+            m_limits.m_maxReadWriteBufferSize = static_cast<uint32_t>(-1);
         }
 
         void Device::CompileMemoryStatisticsInternal(RHI::MemoryStatisticsBuilder& builder)
