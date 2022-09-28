@@ -63,8 +63,7 @@ def DetachPrefab_WithNestedEntities():
         root_entity = EditorEntity.find_editor_entity("Entity_0")
         is_prefab = editor.EditorComponentAPIBus(bus.Broadcast, "HasComponentOfType", former_container_entity.id,
                                                  azlmbr.globals.property.EditorPrefabComponentTypeId)
-        assert root_entity.get_parent_id() == former_container_entity.id, \
-            "Redo operation unexpectedly changed entity hierarchy"
+        prefab_test_utils.validate_linear_nested_entities(root_entity, NUM_NESTED_ENTITIES_LEVELS, POSITION)
         assert not is_prefab, "Redo operation failed. Entity is still recognized as a prefab."
 
     run_test()
