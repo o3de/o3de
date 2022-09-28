@@ -530,7 +530,7 @@ namespace UnitTest
             searchRange.begin(), searchRange.end()));
         EXPECT_FALSE(AZStd::ranges::contains_subrange(testVector, AZStd::array{735, 32}));
         constexpr AZStd::array<int, 0> emptyRange{};
-        EXPECT_FALSE(AZStd::ranges::contains_subrange(testVector, emptyRange));
+        EXPECT_TRUE(AZStd::ranges::contains_subrange(testVector, emptyRange));
     }
 
     TEST_F(RangesAlgorithmTestFixture, RangesStartsWith_FindsSubrangeAtStart)
