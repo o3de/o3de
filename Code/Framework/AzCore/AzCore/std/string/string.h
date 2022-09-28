@@ -234,7 +234,7 @@ namespace AZStd
             {
                 return append(*this, ptr - data, count);    // substring
             }
-            AZSTD_CONTAINER_ASSERT(npos - size() > count && size() + count >= size(), "result is too long!");
+            AZSTD_CONTAINER_ASSERT(max_size() - size() >= count, "result is too long!");
             size_type oldSize = size();
             size_type newSize = oldSize + count;
             if (count > 0 && grow(newSize))
@@ -252,7 +252,7 @@ namespace AZStd
         this_type& append(size_type count, Element ch)
         {
             // append count * ch
-            AZSTD_CONTAINER_ASSERT(npos - size() > count, "result is too long");
+            AZSTD_CONTAINER_ASSERT(max_size() - size() >= count, "result is too long");
             size_type num  = size() + count;
             if (count > 0 && grow(num))
             {
