@@ -56,11 +56,15 @@ namespace AZ
         void ExposureControlSettings::UpdateExposureControlRelatedPassParameters()
         {
             // [GFX TODO][ATOM-13128] Adapting to render pipeline other than default.
-            const RPI::View* defaultView = GetParentScene()->GetDefaultRenderPipeline()->GetDefaultView().get();
-            if (defaultView != m_lastDefaultView)
+            RPI::RenderPipelinePtr defaultRP = GetParentScene()->GetDefaultRenderPipeline();
+            if (defaultRP)
             {
-                m_shouldUpdatePassParameters = true;
-                m_lastDefaultView = defaultView;
+                const RPI::View* defaultView = defaultRP->GetDefaultView().get();
+                if (defaultView != m_lastDefaultView)
+                {
+                    m_shouldUpdatePassParameters = true;
+                    m_lastDefaultView = defaultView;
+                }
             }
 
             if (m_shouldUpdatePassParameters)

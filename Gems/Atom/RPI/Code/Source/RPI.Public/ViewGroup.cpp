@@ -22,7 +22,7 @@ namespace AZ::RPI
         m_cameraViews.clear();
     }
 
-    void ViewGroup::Init(Descriptor desc)
+    void ViewGroup::Init(const Descriptor& desc)
     {
         m_desc = desc;
 
@@ -39,7 +39,7 @@ namespace AZ::RPI
         for (int i = 0; i < MaxViewTypes; i++)
         {
             m_cameraViews[i].m_onProjectionMatrixChangedHandler = MatrixChangedEvent::Handler(
-                [=](const AZ::Matrix4x4& matrix)
+                [this,i](const AZ::Matrix4x4& matrix)
                 {
                     if (m_desc.m_projectionEventFunction)
                     {
@@ -52,7 +52,7 @@ namespace AZ::RPI
                 });
 
             m_cameraViews[i].m_onViewMatrixChangedHandler = MatrixChangedEvent::Handler(
-                [=](const AZ::Matrix4x4& matrix)
+                [this,i](const AZ::Matrix4x4& matrix)
                 {
                     if(m_desc.m_viewEventFunction)
                     {
@@ -82,9 +82,9 @@ namespace AZ::RPI
             {
                 uint32_t xrViewIndex =
                     i == 0 ? static_cast<uint32_t>(AZ::RPI::ViewType::XrLeft) : static_cast<uint32_t>(AZ::RPI::ViewType::XrRight);
-                AZ::Name xrViewName = AZ::Name(AZStd::string::format("%s XR %i", name.GetCStr(), i));
                 if (m_cameraViews[xrViewIndex].m_view == nullptr)
                 {
+                    AZ::Name xrViewName = AZ::Name(AZStd::string::format("%s XR %i", name.GetCStr(), i));
                     m_cameraViews[xrViewIndex].m_view =
                         AZ::RPI::View::CreateView(xrViewName, AZ::RPI::View::UsageCamera | AZ::RPI::View::UsageXR);
                 }
@@ -94,7 +94,7 @@ namespace AZ::RPI
 
     void ViewGroup::Activate()
     {
-        for (int i = 0; i < AZ::RPI::MaxViewTypes; i++)
+        for (uint32_t i = 0; i < AZ::RPI::MaxViewTypes; i++)
         {
             if (m_cameraViews[i].m_view)
             {
@@ -246,7 +246,7 @@ namespace AZ::RPI
 
     bool ViewGroup::IsViewGroupViewsSame(const AZ::RPI::ViewGroupPtr viewGroup) const
     {
-        for (AZ::u32 i = 0; i < MaxViewTypes; i++)
+        for (uint32_t i = 0; i < MaxViewTypes; i++)
         {
             if (m_cameraViews[i].m_view != viewGroup->GetView(static_cast<ViewType>(i)))
             {

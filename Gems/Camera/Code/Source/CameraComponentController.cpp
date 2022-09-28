@@ -114,7 +114,7 @@ namespace Camera
         auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
         if (atomViewportRequests)
         {
-            AZ_Assert(m_atomCameraView->GetView(AZ::RPI::ViewType::Default), "Attempted to activate Atom camera before component activation");
+            AZ_Assert(GetView(), "Attempted to activate Atom camera before component activation");
 
             const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
 
@@ -133,7 +133,7 @@ namespace Camera
 
             // Push the Atom camera after we make sure we're up-to-date with our component's transform to ensure the viewport reads the correct state
             UpdateCamera();
-            atomViewportRequests->PushView(contextName, m_atomCameraView);
+            atomViewportRequests->PushView(contextName, m_atomCameraViewGroup);
         }
     }
 
@@ -148,7 +148,7 @@ namespace Camera
         if (atomViewportRequests)
         {
             const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
-            atomViewportRequests->PopView(contextName, m_atomCameraView);
+            atomViewportRequests->PopView(contextName, m_atomCameraViewGroup);
         }
     }
 
@@ -201,15 +201,15 @@ namespace Camera
 
     void CameraComponentController::Init()
     {
-        AZStd::function<void(AZ::RPI::ViewPtr view)> onChange = [=](AZ::RPI::ViewPtr view)
+        AZStd::function<void(AZ::RPI::ViewPtr view)> onChange = [this](AZ::RPI::ViewPtr view)
         {
             if (!m_updatingTransformFromEntity && !m_isLockedFn())
             {
                 AZ::TransformBus::Event(m_entityId, &AZ::TransformInterface::SetWorldTM, view->GetCameraTransform());
             }
         };
-        m_atomCameraView = AZStd::make_shared<AZ::RPI::ViewGroup>();
-        m_atomCameraView->Init(AZ::RPI::ViewGroup::Descriptor{ onChange, nullptr });
+        m_atomCameraViewGroup = AZStd::make_shared<AZ::RPI::ViewGroup>();
+        m_atomCameraViewGroup->Init(AZ::RPI::ViewGroup::Descriptor{ onChange, nullptr });
         
         if (auto rpiSystemInterface = AZ::RPI::RPISystemInterface::Get())
         {
@@ -234,32 +234,32 @@ namespace Camera
 
             // Lazily create our camera as part of Activate
             // This will be persisted as part of our config so that it may be shared between the Editor & Game components
-            if (m_atomCameraView->GetView(AZ::RPI::ViewType::Default) == 0 && editorEntityId.IsValid())
+            if (GetView() == nullptr && editorEntityId.IsValid())
             {
                 AZ::RPI::ViewPtr atomEditorView = nullptr;
                 CameraViewRegistrationRequestsBus::BroadcastResult(atomEditorView, &CameraViewRegistrationRequests::GetViewForEntity, editorEntityId);
-                m_atomCameraView->SetView(atomEditorView, AZ::RPI::ViewType::Default);
+                m_atomCameraViewGroup->SetView(atomEditorView, AZ::RPI::ViewType::Default);
             }
 
             AZStd::string entityName;
             AZ::ComponentApplicationBus::BroadcastResult(entityName, &AZ::ComponentApplicationBus::Events::GetEntityName, m_entityId);
             AZ::Name cameraName = AZ::Name(AZStd::string::format("%s View", entityName.c_str()));
             // If there wasn't already a view registered (or the registration system isn't available), create a View
-            if (m_atomCameraView->GetView(AZ::RPI::ViewType::Default) == nullptr)
+            if (GetView() == nullptr)
             {
-                m_atomCameraView->CreateMainView(cameraName);
+                m_atomCameraViewGroup->CreateMainView(cameraName);
                 if (editorEntityId.IsValid())
                 {
                     CameraViewRegistrationRequestsBus::Broadcast(
                         &CameraViewRegistrationRequests::SetViewForEntity,
                         editorEntityId,
-                        m_atomCameraView->GetView(AZ::RPI::ViewType::Default));
+                        GetView());
                 }
             }
-            m_atomCameraView->CreateStereoscopicViews(cameraName);
+            m_atomCameraViewGroup->CreateStereoscopicViews(cameraName);
 
             AZ::RPI::ViewProviderBus::Handler::BusConnect(m_entityId);
-            m_atomCameraView->Activate();
+            m_atomCameraViewGroup->Activate();
         }
 
         UpdateCamera();
@@ -287,7 +287,7 @@ namespace Camera
         if (atomViewportRequests)
         {
             AZ::RPI::ViewProviderBus::Handler::BusDisconnect(m_entityId);
-            m_atomCameraView->Deactivate();
+            m_atomCameraViewGroup->Deactivate();
         }
        
         DeactivateAtomView();
@@ -307,7 +307,7 @@ namespace Camera
     AZ::RPI::ViewportContextPtr CameraComponentController::GetViewportContext()
     {
         auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
-        if (m_atomCameraView && atomViewportRequests)
+        if (m_atomCameraViewGroup && atomViewportRequests)
         {
             return atomViewportRequests->GetDefaultViewportContext();
         }
@@ -419,7 +419,7 @@ namespace Camera
         }
 
         // Set Atom camera, if it exists
-        if (m_atomCameraView->IsAnyViewEnabled())
+        if (m_atomCameraViewGroup->IsAnyViewEnabled())
         {
             ActivateAtomView();
         }
@@ -483,7 +483,7 @@ namespace Camera
     AzFramework::CameraState CameraComponentController::GetCameraState()
     {
         auto viewportContext = GetViewportContext();
-        if (!m_atomCameraView->IsAnyViewEnabled() || !viewportContext)
+        if (!m_atomCameraViewGroup->IsAnyViewEnabled() || !viewportContext)
         {
             return AzFramework::CameraState();
         }
@@ -492,9 +492,9 @@ namespace Camera
         const auto viewportSize = AzFramework::ScreenSize(windowSize.m_width, windowSize.m_height);
 
         AzFramework::CameraState cameraState =
-            AzFramework::CreateDefaultCamera(m_atomCameraView->GetView(AZ::RPI::ViewType::Default)->GetCameraTransform(), viewportSize);
+            AzFramework::CreateDefaultCamera(GetView()->GetCameraTransform(), viewportSize);
         AzFramework::SetCameraClippingVolumeFromPerspectiveFovMatrixRH(
-            cameraState, m_atomCameraView->GetView(AZ::RPI::ViewType::Default)->GetViewToClipMatrix());
+            cameraState, GetView()->GetViewToClipMatrix());
 
         return cameraState;
     }
@@ -518,7 +518,6 @@ namespace Camera
             viewLocalPoseOrientation.SetX(-frontPoseData.m_orientation.GetX());
             viewLocalPoseOrientation.SetY(frontPoseData.m_orientation.GetZ());
             viewLocalPoseOrientation.SetZ(-frontPoseData.m_orientation.GetY());
-            AZ::Matrix4x4 projection = AZ::Matrix4x4::CreateIdentity();
 
             // Apply the stereoscopic view provided by the device
             AZ::Matrix3x4 worldTransform =
@@ -527,14 +526,14 @@ namespace Camera
             for (AZ::u32 i = 0; i < m_numSterescopicViews; i++)
             {
                 AZ::RPI::ViewType viewType = i == 0 ? AZ::RPI::ViewType::XrLeft : AZ::RPI::ViewType::XrRight;
-                m_atomCameraView->SetCameraTransform(worldTransform, viewType);
+                m_atomCameraViewGroup->SetCameraTransform(worldTransform, viewType);
             }
 
-            m_atomCameraView->SetCameraTransform(worldTransform);
+            m_atomCameraViewGroup->SetCameraTransform(worldTransform);
         }
         else
         {
-            m_atomCameraView->SetCameraTransform(AZ::Matrix3x4::CreateFromTransform(world.GetOrthogonalized()));
+            m_atomCameraViewGroup->SetCameraTransform(AZ::Matrix3x4::CreateFromTransform(world.GetOrthogonalized()));
         }
 
         m_updatingTransformFromEntity = false;
@@ -552,23 +551,23 @@ namespace Camera
 
     void CameraComponentController::OnViewportDefaultViewChanged(AZ::RPI::ViewPtr view)
     {
-        m_isActiveView = m_atomCameraView->GetView(AZ::RPI::ViewType::Default) == view;
+        m_isActiveView = GetView() == view;
     }
 
     AZ::RPI::ViewPtr CameraComponentController::GetView() const
     {
-        return m_atomCameraView->GetView(AZ::RPI::ViewType::Default);
+        return m_atomCameraViewGroup->GetView(AZ::RPI::ViewType::Default);
     }
 
     AZ::RPI::ViewPtr CameraComponentController::GetStereoscopicView(AZ::RPI::ViewType viewType) const
     {
-        return m_atomCameraView->GetView(viewType);
+        return m_atomCameraViewGroup->GetView(viewType);
     }
 
     void CameraComponentController::UpdateCamera()
     {
         // O3de assumes a setup for reversed depth
-        bool reverseDepth = true;
+        const bool reverseDepth = true;
 
         if (auto viewportContext = GetViewportContext())
         {
@@ -602,29 +601,30 @@ namespace Camera
                     reverseDepth);
             }
             m_updatingTransformFromEntity = true;
-            m_atomCameraView->SetViewToClipMatrix(viewToClipMatrix);
+            m_atomCameraViewGroup->SetViewToClipMatrix(viewToClipMatrix);
 
             // Update stereoscopic projection matrix
-            if (m_xrSystem)
+            if (m_xrSystem && m_xrSystem->ShouldRender())
             {
                 AZ::Matrix4x4 projection = AZ::Matrix4x4::CreateIdentity();
                 for (AZ::u32 i = 0; i < m_numSterescopicViews; i++)
                 {
                     AZ::RPI::ViewType viewType = i == 0 ? AZ::RPI::ViewType::XrLeft : AZ::RPI::ViewType::XrRight;
                     AZ::RPI::FovData fovData;
-                    AZ::RPI::PoseData poseData;
-                    [[maybe_unused]] AZ::RHI::ResultCode resultCode = m_xrSystem->GetViewFov(i, fovData);
-                    resultCode = m_xrSystem->GetViewPose(i, poseData);
+                    m_xrSystem->GetViewFov(i, fovData);
 
-                    projection = m_xrSystem->CreateStereoscopicProjection(
-                        fovData.m_angleLeft,
-                        fovData.m_angleRight,
-                        fovData.m_angleDown,
-                        fovData.m_angleUp,
-                        m_config.m_nearClipDistance,
-                        m_config.m_farClipDistance,
-                        reverseDepth);
-                    m_atomCameraView->SetStereoscopicViewToClipMatrix(projection, reverseDepth, viewType);
+                    if ( (fovData.m_angleLeft != 0 || fovData.m_angleRight != 0) && (fovData.m_angleUp != 0 || fovData.m_angleDown != 0))
+                    {
+                        projection = m_xrSystem->CreateStereoscopicProjection(
+                            fovData.m_angleLeft,
+                            fovData.m_angleRight,
+                            fovData.m_angleDown,
+                            fovData.m_angleUp,
+                            m_config.m_nearClipDistance,
+                            m_config.m_farClipDistance,
+                            reverseDepth);
+                        m_atomCameraViewGroup->SetStereoscopicViewToClipMatrix(projection, reverseDepth, viewType);
+                    }
                 }
             } 
             m_updatingTransformFromEntity = false;
@@ -637,7 +637,7 @@ namespace Camera
         {
             if (auto auxGeomFP = scene->GetFeatureProcessor<AZ::RPI::AuxGeomFeatureProcessorInterface>())
             {
-                m_atomAuxGeom = auxGeomFP->GetOrCreateDrawQueueForView(m_atomCameraView->GetView(AZ::RPI::ViewType::Default).get());
+                m_atomAuxGeom = auxGeomFP->GetOrCreateDrawQueueForView(GetView().get());
             }
         }
     }

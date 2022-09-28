@@ -385,16 +385,25 @@ namespace AZ
 
                 Data::Asset<RPI::AnyAsset> pipelineAsset =
                     RPI::AssetUtils::LoadAssetByProductPath<RPI::AnyAsset>(pipelineName.data(), RPI::AssetUtils::TraceLevel::Error);
-                RPI::RenderPipelineDescriptor renderPipelineDescriptor = *RPI::GetDataFromAnyAsset<RPI::RenderPipelineDescriptor>(pipelineAsset);
-                renderPipelineDescriptor.m_name = AZStd::string::format("%s_%i", renderPipelineDescriptor.m_name.c_str(), viewportContext->GetId());
-                outMultisampleState = renderPipelineDescriptor.m_renderSettings.m_multisampleState;
-
-                if (!scene->GetRenderPipeline(AZ::Name(renderPipelineDescriptor.m_name)))
+                if (pipelineAsset)
                 {
-                    RPI::RenderPipelinePtr renderPipeline = RPI::RenderPipeline::CreateRenderPipelineForWindow(
-                        renderPipelineDescriptor, *viewportContext->GetWindowContext().get(), viewType);
-                    pipelineAsset.Release();
-                    scene->AddRenderPipeline(renderPipeline);
+                    RPI::RenderPipelineDescriptor renderPipelineDescriptor =
+                        *RPI::GetDataFromAnyAsset<RPI::RenderPipelineDescriptor>(pipelineAsset);
+                    renderPipelineDescriptor.m_name =
+                        AZStd::string::format("%s_%i", renderPipelineDescriptor.m_name.c_str(), viewportContext->GetId());
+                    outMultisampleState = renderPipelineDescriptor.m_renderSettings.m_multisampleState;
+
+                    if (!scene->GetRenderPipeline(AZ::Name(renderPipelineDescriptor.m_name)))
+                    {
+                        RPI::RenderPipelinePtr renderPipeline = RPI::RenderPipeline::CreateRenderPipelineForWindow(
+                            renderPipelineDescriptor, *viewportContext->GetWindowContext().get(), viewType);
+                        pipelineAsset.Release();
+                        scene->AddRenderPipeline(renderPipeline);
+                    }
+                }
+                else
+                {
+                    AZ_Error("AtomBootstrap", false, "Pipeline file failed to load from path: %s.", pipelineName.data());
                 }
             }
 

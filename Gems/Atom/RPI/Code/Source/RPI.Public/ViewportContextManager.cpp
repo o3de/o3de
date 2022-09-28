@@ -228,6 +228,42 @@ namespace AZ
             return GetViewportContextByName(m_defaultViewportContextName);
         }
 
+        bool ViewportContextManager::EraseView(const Name& contextName, ViewPtr view)
+        {
+            ViewPtrStack& associatedViews = GetOrCreateViewStackForContext(contextName);
+
+            auto FindView = [view](ViewGroupPtr vertexGroup)
+            {
+                return vertexGroup->IsViewInGroup(view);
+            };
+
+            if (auto foundIt = AZStd::find_if(associatedViews.begin(), associatedViews.end(), FindView);
+                foundIt != associatedViews.end())
+            {
+                associatedViews.erase(foundIt);
+                return true;
+            }
+            return false;
+        }
+
+        bool ViewportContextManager::EraseViewGroup(const Name& contextName, ViewGroupPtr viewGroup)
+        {
+            ViewPtrStack& associatedViews = GetOrCreateViewStackForContext(contextName);
+
+            auto FindViewGroup = [viewGroup](ViewGroupPtr vertexGroup)
+            {
+                return vertexGroup->IsViewGroupViewsSame(viewGroup);
+            };
+
+            if (auto foundIt = AZStd::find_if(associatedViews.begin(), associatedViews.end(), FindViewGroup);
+                foundIt != associatedViews.end())
+            {
+                associatedViews.erase(foundIt);
+                return true;
+            }
+            return false;
+        }
+
         void ViewportContextManager::PushView(const Name& context, ViewPtr view)
         {
             {
@@ -235,17 +271,10 @@ namespace AZ
                 AZ_Assert(view, "Attempted to push a null view to context \"%s\"", context.GetCStr());
                 AZ_Assert((view->GetUsageFlags() & View::UsageFlags::UsageCamera) != 0, "Attempted to register a non-camera view to context \"%s\", ensure the view is flagged with UsageCamera", context.GetCStr());
 
+                // Remove from its existing position, if any, before re-adding below
+                EraseView(context, view);
+    
                 ViewPtrStack& associatedViews = GetOrCreateViewStackForContext(context);
-                for (auto it = associatedViews.begin(); it != associatedViews.end(); ++it)
-                {
-                    if ((*it)->IsViewInGroup(view))
-                    {
-					    // Remove from its existing position, if any, before re-adding below
-                        associatedViews.erase(it);
-                        break;
-                    }
-                }
-
                 ViewGroupPtr viewGroup = AZStd::make_shared<ViewGroup>();
                 viewGroup->Init(ViewGroup::Descriptor{ nullptr, nullptr });
                 viewGroup->SetView(view);
@@ -260,17 +289,11 @@ namespace AZ
             {
                 AZStd::lock_guard lock(m_containerMutex);
                 AZ_Assert(viewGroup->GetNumViews() > 0, "Attempted to push a null view to context \"%s\"", contextName.GetCStr());
-               
+
+                // Remove from its existing position, if any, before re-adding below
+                EraseView(contextName, viewGroup->GetView(ViewType::Default));
+
                 ViewPtrStack& associatedViews = GetOrCreateViewStackForContext(contextName);
-                for (auto it = associatedViews.begin(); it != associatedViews.end(); ++it)
-                {
-                    if ((*it)->IsViewInGroup(viewGroup->GetView(ViewType::Default)))
-                    {
-					    // Remove from its existing position, if any, before re-adding below
-                        associatedViews.erase(it);
-                        break;
-                    }
-                }
                 associatedViews.push_back(viewGroup);
             }
             UpdateViewForContext(contextName);
@@ -293,18 +316,9 @@ namespace AZ
                     return false;
                 }
 
-                bool viewFound = false;
-                for (auto it = associatedViews.begin(); it != associatedViews.end(); ++it)
-                {
-                    if ((*it)->IsViewInGroup(view))
-                    {
-                        viewFound = true;
-                        associatedViews.erase(it);
-                        break;
-                    }
-                }
-
-                if (!viewFound)
+                // Remove view group which contains this view
+                bool viewErased = EraseView(context, view);
+                if (!viewErased)
                 {
                     return false;
                 }
@@ -331,18 +345,9 @@ namespace AZ
                     return false;
                 }
 
-                bool viewFound = false;
-                for (auto it = associatedViews.begin(); it != associatedViews.end(); ++it)
-                {
-                    if ((*it)->IsViewGroupViewsSame(viewGroup))
-                    {
-                        viewFound = true;
-                        associatedViews.erase(it);
-                        break;
-                    }
-                }
-
-                if (!viewFound)
+                // Remove view group with same views
+                bool viewGroupErased = EraseViewGroup(context, viewGroup);
+                if (!viewGroupErased)
                 {
                     return false;
                 }
@@ -403,7 +408,7 @@ namespace AZ
                 ViewportContextPtr viewportContext = viewportData.second.context.lock();
                 if (viewportContext && viewportContext->GetName() == context)
                 {                 
-                    for (AZ::u32 i = 0; i < MaxViewTypes; i++)
+                    for (uint32_t i = 0; i < MaxViewTypes; i++)
                     {
                         if (i == DefaultViewType)
                         {

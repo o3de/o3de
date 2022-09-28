@@ -143,7 +143,7 @@ namespace Camera
         AZ::EntityId m_entityId;
 
         // Atom integration
-        AZ::RPI::ViewGroupPtr m_atomCameraView = nullptr;
+        AZ::RPI::ViewGroupPtr m_atomCameraViewGroup = nullptr;
         AZ::RPI::XRRenderingInterface* m_xrSystem = nullptr;
         AZ::u32 m_numSterescopicViews = 0;
 

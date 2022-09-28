@@ -23,7 +23,7 @@ namespace AZ
         class ViewGroup final
         {
         public:
-            AZ_TYPE_INFO(View, "{C1AD45ED-03E2-41E0-9DC7-779B4B1842FF}");
+            AZ_TYPE_INFO(ViewGroup, "{C1AD45ED-03E2-41E0-9DC7-779B4B1842FF}");
             AZ_CLASS_ALLOCATOR(ViewGroup, AZ::SystemAllocator, 0);
 
             struct Descriptor
@@ -54,7 +54,7 @@ namespace AZ
             ~ViewGroup();
 
             //! Initialization which involves caching the descriptor and XR system related properties if applicable.
-            void Init(Descriptor desc);
+            void Init(const Descriptor& desc);
 
             //! Create the main non-stereoscopic view.
             void CreateMainView(AZ::Name name);

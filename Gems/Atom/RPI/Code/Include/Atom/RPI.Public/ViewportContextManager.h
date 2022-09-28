@@ -66,6 +66,8 @@ namespace AZ
 
             ViewPtrStack& GetOrCreateViewStackForContext(const Name& context);
             void UpdateViewForContext(const Name& context);
+            bool EraseView(const Name& context, ViewPtr view);
+            bool EraseViewGroup(const Name& contextName, ViewGroupPtr viewGroup);
 
             AZStd::unordered_map<AzFramework::ViewportId, ViewportContextData> m_viewportContexts;
             AZStd::unordered_map<AZ::Name, ViewPtrStack> m_viewportViews;

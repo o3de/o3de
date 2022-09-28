@@ -59,7 +59,7 @@ namespace AZ
             for (const AZ::EntityId& cameraEntityId : cameraEntityList)
             {
 
-                for (AZ::u32 i = 0; i < AZ::RPI::MaxViewTypes; i++)
+                for (uint32_t i = 0; i < AZ::RPI::MaxViewTypes; i++)
                 {
                     if (i == AZ::RPI::DefaultViewType)
                     {

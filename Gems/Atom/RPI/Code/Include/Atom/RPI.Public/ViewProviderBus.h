@@ -28,8 +28,8 @@ namespace AZ
             Count
         };
 
-        static constexpr size_t DefaultViewType = static_cast<uint32_t>(ViewType::Default);
-        static constexpr size_t MaxViewTypes = static_cast<uint32_t>(ViewType::Count);
+        static constexpr uint32_t DefaultViewType = static_cast<uint32_t>(ViewType::Default);
+        static constexpr uint32_t MaxViewTypes = static_cast<uint32_t>(ViewType::Count);
 
         //! Interface for component which may provide a RPI view. 
         class ViewProvider

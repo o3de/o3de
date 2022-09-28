@@ -140,7 +140,7 @@ namespace AZ
 
             ScenePtr m_rootScene;
             WindowContextSharedPtr m_windowContext;
-            ViewGroupPtr m_viewportContextView;
+            ViewGroupPtr m_viewGroup;
 
             AzFramework::WindowSize m_viewportSize;
             float m_viewportDpiScaleFactor = 1.0f;
