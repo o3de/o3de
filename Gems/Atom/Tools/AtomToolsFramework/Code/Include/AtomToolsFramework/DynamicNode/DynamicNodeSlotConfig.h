@@ -11,6 +11,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/RTTI/ReflectContext.h>
+#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/any.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/vector.h>
@@ -52,5 +53,13 @@ namespace AtomToolsFramework
         DynamicNodeSettingsMap m_settings;
         //! Specifies whether or not UI will be displayed for editing the slot value on the node
         bool m_supportsEditingOnNode = true;
+
+    private:
+        AZ::Crc32 SelectDefaultValue();
+        AZ::Crc32 ClearDefaultValue();
+        AZ::Crc32 ClearDefaultValueIfInvalid();
+        AZStd::vector<AZStd::string> GetSelectedDataTypesVec() const;
+
+        static const AZ::Edit::ElementData* GetDynamicEditData(const void* handlerPtr, const void* elementPtr, const AZ::Uuid& elementType);
     };
 } // namespace AtomToolsFramework

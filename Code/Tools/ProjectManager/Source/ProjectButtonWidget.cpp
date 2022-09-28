@@ -680,6 +680,7 @@ namespace O3DE::ProjectManager
         if (isBuilding)
         {
             SetLaunchingEnabled(false);
+            m_projectImageLabel->GetActionCancelButton()->show();
         }
 
         buildingAnimation->movie()->setPaused(!isBuilding);
