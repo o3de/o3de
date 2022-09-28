@@ -240,14 +240,14 @@ namespace Multiplayer
         if (azrtti_typeid<AZ::Data::Asset<AzFramework::Spawnable>>() != valueType)
         {
             AZ_Assert(false, "Unexpected value type");
-            return AZ::Failure(AZStd::string("Trying to set an network spawnable to something that isn't a spawnable!"));
+            return AZ::Failure(AZStd::string("Trying to set a network spawnable to something that isn't a spawnable!"));
         }
 
         const auto potentialNetworkSpawnable = static_cast<AZ::Data::Asset<AzFramework::Spawnable>*>(newValue);
         if (!potentialNetworkSpawnable->GetHint().ends_with(NetworkSpawnableFileExtension))
         {
             return AZ::Failure(AZStd::string::format(
-                "Normal spawnable (%s) was selected! Please select a network spawnable with a %s file extension.",
+                "Non-network spawnable (%s) was selected! Please select a network spawnable with a %s file extension.",
                 potentialNetworkSpawnable->GetHint().c_str(), NetworkSpawnableFileExtension.data()));
         }
 
