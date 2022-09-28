@@ -153,7 +153,7 @@ namespace MaterialCanvas
             "Material Canvas Settings",
            {
                 AtomToolsFramework::CreatePropertyFromSetting(
-                    "/O3DE/Atom/Tools/MaterialCanvas/EnableMinimalShaderBuilds",
+                    "/O3DE/Atom/MaterialCanvas/EnableMinimalShaderBuilds",
                     "Enable Minimal Shader Builds",
                     "Improve shader and material iteration and preview times by limiting the asset processor and shader compiler to the "
                     "current platform and RHI. Changing this setting requires restarting Material Canvas and the asset processor.",

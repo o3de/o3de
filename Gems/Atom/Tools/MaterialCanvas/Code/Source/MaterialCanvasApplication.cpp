@@ -243,7 +243,7 @@ namespace MaterialCanvas
                 projectPath / AZ::SettingsRegistryInterface::DevUserRegistryFolder / "user_minimal_shader_build_dx12.setreg");
 
             const bool enableMinimalShaderBuilds =
-                AtomToolsFramework::GetSettingsValue<bool>("/O3DE/Atom/Tools/MaterialCanvas/EnableMinimalShaderBuilds", false);
+                AtomToolsFramework::GetSettingsValue<bool>("/O3DE/Atom/MaterialCanvas/EnableMinimalShaderBuilds", false);
 
             if (enableMinimalShaderBuilds)
             {
