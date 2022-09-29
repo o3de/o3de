@@ -9,10 +9,9 @@
 o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
 ly_add_target(
-    NAME Multiplayer.Static STATIC
+    NAME Multiplayer.AutoGen.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
-        multiplayer_files.cmake
         multiplayer_autogen_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
@@ -42,6 +41,26 @@ ly_add_target(
 )
 
 ly_add_target(
+    NAME Multiplayer.Unified.Static STATIC
+    NAMESPACE Gem
+    FILES_CMAKE
+        multiplayer_files.cmake
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            ${pal_source_dir}
+            Source
+            .
+        PUBLIC
+            Include
+    BUILD_DEPENDENCIES
+        PUBLIC
+            Gem::Multiplayer.AutoGen.Static
+        PRIVATE
+            Gem::EMotionFXStaticLib
+            Gem::PhysX.Static
+)
+
+ly_add_target(
     NAME Multiplayer ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
@@ -54,7 +73,7 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::Multiplayer.Static
+            Gem::Multiplayer.Unified.Static
     RUNTIME_DEPENDENCIES
         Gem::CertificateManager
 )
@@ -77,7 +96,7 @@ ly_add_target(
             AZ::AzFramework
             AZ::AzNetworking
             Gem::Atom_Feature_Common.Static
-            Gem::Multiplayer.Static
+            Gem::Multiplayer.Unified.Static
             Gem::ImGui.Static
 )
 
@@ -131,7 +150,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzToolsFramework
                 Gem::Atom_RPI.Public
                 Gem::Atom_RHI.Reflect
-                Gem::Multiplayer.Static
+                Gem::Multiplayer.Unified.Static
                 Gem::Multiplayer.Tools.Static
     )
     
@@ -157,7 +176,7 @@ if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzTest
-                Gem::Multiplayer.Static
+                Gem::Multiplayer.Unified.Static
                 Gem::PhysX.Static
         AUTOGEN_RULES
             *.AutoComponent.xml,AutoComponent_Header.jinja,$path/$fileprefix.AutoComponent.h
@@ -189,7 +208,7 @@ if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     AZ::AzTest
                     AZ::AzTestShared
                     AZ::AzToolsFrameworkTestCommon
-                    Gem::Multiplayer.Static
+                    Gem::Multiplayer.Unified.Static
                     Gem::Multiplayer.Tools.Static
         )
         ly_add_googletest(

@@ -69,20 +69,6 @@ set(FILES
     Include/Multiplayer/Session/SessionRequests.h
     Include/Multiplayer/Session/SessionConfig.h
     Include/Multiplayer/Session/SessionNotifications.h
-    Include/Multiplayer/AutoGen/AutoComponentTypes_Header.jinja
-    Include/Multiplayer/AutoGen/AutoComponentTypes_Source.jinja
-    Include/Multiplayer/AutoGen/AutoComponent_Common.jinja
-    Include/Multiplayer/AutoGen/AutoComponent_Header.jinja
-    Include/Multiplayer/AutoGen/AutoComponent_Source.jinja
-    Source/AutoGen/LocalPredictionPlayerInputComponent.AutoComponent.xml
-    Source/AutoGen/Multiplayer.AutoPackets.xml
-    Source/AutoGen/MultiplayerEditor.AutoPackets.xml
-    Source/AutoGen/NetworkCharacterComponent.AutoComponent.xml
-    Source/AutoGen/NetworkHitVolumesComponent.AutoComponent.xml
-    Source/AutoGen/NetworkRigidBodyComponent.AutoComponent.xml
-    Source/AutoGen/NetworkTransformComponent.AutoComponent.xml
-    Source/AutoGen/NetworkHierarchyChildComponent.AutoComponent.xml
-    Source/AutoGen/NetworkHierarchyRootComponent.AutoComponent.xml
     Source/Components/LocalPredictionPlayerInputComponent.cpp
     Source/Components/MultiplayerComponent.cpp
     Source/Components/MultiplayerComponentRegistry.cpp
