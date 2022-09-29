@@ -246,25 +246,33 @@ void CViewportTitleDlg::SetupHelpersButton()
             helperAction, &QAction::triggered, this,
             [this]
             {
-                m_ui->m_helpers->setChecked(AzToolsFramework::HelpersVisible() || AzToolsFramework::IconsVisible());
+                m_ui->m_helpers->setChecked(
+                    AzToolsFramework::HelpersVisible() || AzToolsFramework::IconsVisible() ||
+                    AzToolsFramework::OnlyShowHelpersForSelectedEntities());
             });
 
         auto iconAction = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::Icons);
         connect(
-            iconAction, &QAction::triggered, this,
+            iconAction,
+            &QAction::triggered,
+            this,
             [this]
             {
-                m_ui->m_helpers->setChecked(AzToolsFramework::HelpersVisible() || AzToolsFramework::IconsVisible());
+                m_ui->m_helpers->setChecked(
+                    AzToolsFramework::HelpersVisible() || AzToolsFramework::IconsVisible() ||
+                    AzToolsFramework::OnlyShowHelpersForSelectedEntities());
             });
 
-        auto onlySelectedAction = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::Icons);
+        auto onlySelectedAction = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::OnlyShowSelectedEntitiesHelpers);
         connect(
             onlySelectedAction,
             &QAction::triggered,
             this,
             [this]
             {
-                m_ui->m_helpers->setChecked(AzToolsFramework::HelpersVisible() || AzToolsFramework::IconsVisible());
+                m_ui->m_helpers->setChecked(
+                    AzToolsFramework::HelpersVisible() || AzToolsFramework::IconsVisible() ||
+                    AzToolsFramework::OnlyShowHelpersForSelectedEntities());
             });
 
         m_helpersAction = new QAction(tr("Helpers"), m_helpersMenu);
@@ -285,10 +293,10 @@ void CViewportTitleDlg::SetupHelpersButton()
                 iconAction->trigger();
             });
 
-        m_onlySelectedAction = new QAction(tr("Only show for selected Entities"), m_helpersMenu);
+        m_onlySelectedAction = new QAction(tr("Only show for selected Entitiies"), m_helpersMenu);
         m_onlySelectedAction->setCheckable(true);
         connect(
-            onlySelectedAction,
+             m_onlySelectedAction,
             &QAction::triggered,
             this,
             [onlySelectedAction]
@@ -296,9 +304,9 @@ void CViewportTitleDlg::SetupHelpersButton()
                 onlySelectedAction->trigger();
             });
 
-        m_helpersMenu->addAction(m_onlySelectedAction);
         m_helpersMenu->addAction(m_helpersAction);
         m_helpersMenu->addAction(m_iconsAction);
+        m_helpersMenu->addAction(m_onlySelectedAction);
 
         connect(
             m_helpersMenu, &QMenu::aboutToShow, this,
@@ -314,7 +322,7 @@ void CViewportTitleDlg::SetupHelpersButton()
         m_ui->m_helpers->setPopupMode(QToolButton::InstantPopup);
     }
 
-    m_ui->m_helpers->setChecked(AzToolsFramework::HelpersVisible() || AzToolsFramework::IconsVisible());
+    m_ui->m_helpers->setChecked(AzToolsFramework::HelpersVisible() || AzToolsFramework::IconsVisible() || AzToolsFramework::OnlyShowHelpersForSelectedEntities());
 }
 
 void CViewportTitleDlg::SetupOverflowMenu()

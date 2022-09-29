@@ -51,6 +51,7 @@ static constexpr AZStd::string_view EntitySelectionChangedUpdaterIdentifier = "o
 static constexpr AZStd::string_view GameModeStateChangedUpdaterIdentifier = "o3de.updater.onGameModeStateChanged";
 static constexpr AZStd::string_view GridSnappingStateChangedUpdaterIdentifier = "o3de.updater.onGridSnappingStateChanged";
 static constexpr AZStd::string_view IconsStateChangedUpdaterIdentifier = "o3de.updater.onViewportIconsStateChanged";
+static constexpr AZStd::string_view OnlyShowHelpersForSelectedEntitiesIdentifier =  "o3de.updater.onShowHelpersForSelectedEntitiesChanged";
 static constexpr AZStd::string_view LevelLoadedUpdaterIdentifier = "o3de.updater.onLevelLoaded";
 static constexpr AZStd::string_view RecentFilesChangedUpdaterIdentifier = "o3de.updater.onRecentFilesChanged";
 static constexpr AZStd::string_view UndoRedoUpdaterIdentifier = "o3de.updater.onUndoRedo";
@@ -168,6 +169,7 @@ void EditorActionsHandler::OnActionUpdaterRegistrationHook()
 {
     m_actionManagerInterface->RegisterActionUpdater(AngleSnappingStateChangedUpdaterIdentifier);
     m_actionManagerInterface->RegisterActionUpdater(DrawHelpersStateChangedUpdaterIdentifier);
+    m_actionManagerInterface->RegisterActionUpdater(OnlyShowHelpersForSelectedEntitiesIdentifier);
     m_actionManagerInterface->RegisterActionUpdater(EntitySelectionChangedUpdaterIdentifier);
     m_actionManagerInterface->RegisterActionUpdater(GameModeStateChangedUpdaterIdentifier);
     m_actionManagerInterface->RegisterActionUpdater(GridSnappingStateChangedUpdaterIdentifier);
@@ -1024,6 +1026,36 @@ void EditorActionsHandler::OnActionRegistrationHook()
         m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Ctrl+Space");
     }
 
+    // Show Icons
+    {
+        const AZStd::string_view& actionIdentifier = "o3de.action.view.toggleSelectedHelpers";
+
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Only Show Helpers for Selected Entities";
+        actionProperties.m_description = "Toggle show helpers for Entities";
+        actionProperties.m_category = "View";
+
+        m_actionManagerInterface->RegisterCheckableAction(
+            EditorMainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            []()
+            {
+                AzToolsFramework::SetOnlyShowHelpersForSelectedEntities(!AzToolsFramework::OnlyShowHelpersForSelectedEntities());
+                AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
+                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnOnlyDrawHelpersForSelectedItemsChanged,
+                    AzToolsFramework::OnlyShowHelpersForSelectedEntities());
+            },
+            []()
+            {
+                return AzToolsFramework::OnlyShowHelpersForSelectedEntities();
+            });
+
+        m_actionManagerInterface->AddActionToUpdater(OnlyShowHelpersForSelectedEntitiesIdentifier, actionIdentifier);
+
+        m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Ctrl+Shift+Space");
+    }
+
     // Refresh Style
     {
         const AZStd::string_view& actionIdentifier = "o3de.action.view.refreshEditorStyle";
@@ -1496,6 +1528,7 @@ void EditorActionsHandler::OnMenuBindingHook()
             m_menuManagerInterface->AddSeparatorToMenu(ViewportMenuIdentifier, 500);
             m_menuManagerInterface->AddActionToMenu(ViewportMenuIdentifier, "o3de.action.view.toggleHelpers", 600);
             m_menuManagerInterface->AddActionToMenu(ViewportMenuIdentifier, "o3de.action.view.toggleIcons", 700);
+            m_menuManagerInterface->AddActionToMenu(ViewportMenuIdentifier, "o3de.action.view.toggleSelectedHelpers", 800);
         }
         m_menuManagerInterface->AddActionToMenu(ViewMenuIdentifier, "o3de.action.view.refreshEditorStyle", 300);
     }
@@ -1526,6 +1559,7 @@ void EditorActionsHandler::OnMenuBindingHook()
     {
         m_menuManagerInterface->AddActionToMenu("o3de.menu.viewport.helpers", "o3de.action.view.toggleHelpers", 100);
         m_menuManagerInterface->AddActionToMenu("o3de.menu.viewport.helpers", "o3de.action.view.toggleIcons", 200);
+        m_menuManagerInterface->AddActionToMenu("o3de.menu.viewport.helpers", "o3de.action.view.toggleSelectedHelpers", 300);
     }
 }
 
@@ -1741,6 +1775,11 @@ void EditorActionsHandler::OnGridSnappingChanged([[maybe_unused]] bool enabled)
 void EditorActionsHandler::OnIconsVisibilityChanged([[maybe_unused]] bool enabled)
 {
     m_actionManagerInterface->TriggerActionUpdater(IconsStateChangedUpdaterIdentifier);
+}
+
+void EditorActionsHandler::OnOnlyDrawHelpersForSelectedItemsChanged([[maybe_unused]] bool enabled)
+{
+    m_actionManagerInterface->TriggerActionUpdater(OnlyShowHelpersForSelectedEntitiesIdentifier);
 }
 
 bool EditorActionsHandler::IsRecentFileActionActive(int index)
