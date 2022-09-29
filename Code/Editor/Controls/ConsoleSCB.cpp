@@ -1085,11 +1085,7 @@ AZ::ConsoleCommandInvokedEvent::Handler ConsoleVariableEditor::m_commandInvokedH
        AZ::ConsoleFunctorFlags,
        AZ::ConsoleInvokedFrom)
     {
-        // stop at the first space, if it exists, or npos if it doesn't
-        const auto spacePosition = command.find_first_of(" ");
-
-        AZStd::string variableName = command.substr(0, spacePosition);
-        if (variableName == AzToolsFramework::DocumentPropertyEditor::GetEnableDPECVarName())
+        if (command == AzToolsFramework::DocumentPropertyEditor::GetEnableDPECVarName())
         {
             // the cvar editor pref changed, unregister the old and register the new
             AzToolsFramework::UnregisterViewPane(LyViewPane::ConsoleVariables);
@@ -1098,7 +1094,7 @@ AZ::ConsoleCommandInvokedEvent::Handler ConsoleVariableEditor::m_commandInvokedH
         else
         {
             // find the cvar that changed and keep the ConsoleVariableEditor informed
-            auto changedCVar = GetIEditor()->GetSystem()->GetIConsole()->GetCVar(variableName.c_str());
+            auto changedCVar = GetIEditor()->GetSystem()->GetIConsole()->GetCVar(AZStd::string(command).c_str());
             if (changedCVar)
             {
                 OnVariableUpdated(changedCVar);
