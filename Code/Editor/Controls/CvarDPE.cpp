@@ -23,7 +23,7 @@ namespace AzToolsFramework
 
     void CvarDPE::RegisterViewClass()
     {
-        AzToolsFramework::ViewPaneOptions opts;
+        ViewPaneOptions opts;
         opts.paneRect = QRect(100, 100, 700, 600);
         opts.isDeletable = false;
         AzToolsFramework::RegisterViewPane<CvarDPE>(LyViewPane::ConsoleVariables, LyViewPane::CategoryOther, opts);

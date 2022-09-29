@@ -195,7 +195,7 @@ namespace AzToolsFramework
         // but can be overridden here
         void SetSpawnDebugView(bool shouldSpawn);
 
-        static AZStd::string GetEnableDPECVarName() { return "ed_enableDPE"; }
+        static constexpr const char* GetEnableDPECVarName() { return "ed_enableDPE"; }
         static bool ShouldReplaceRPE();
 
         AZStd::vector<size_t> GetPathToRoot(DPERowWidget* row) const;
