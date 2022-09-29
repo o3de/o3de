@@ -37,10 +37,10 @@ namespace GraphCanvas
         switch (event->type())
         {
         case QEvent::FocusIn:
-            m_owner->OnFocusIn();
+            m_owner->EditStart();
             break;
         case QEvent::FocusOut:
-            m_owner->OnFocusOut();
+            m_owner->EditFinished();
             break;
         default:
             break;
@@ -272,20 +272,27 @@ namespace GraphCanvas
         }
     }
     
-    void VectorNodePropertyDisplay::OnFocusIn()
+    void VectorNodePropertyDisplay::EditStart()
     {
         NodePropertiesRequestBus::Event(GetNodeId(), &NodePropertiesRequests::LockEditState, this);
         TryAndSelectNode();
     }
     
-    void VectorNodePropertyDisplay::SubmitValue(int elementIndex, double newValue)
+    void VectorNodePropertyDisplay::SubmitValue()
     {
-        m_dataInterface->SetValue(elementIndex, newValue);
+        AzQtComponents::VectorElement** elements = m_propertyVectorCtrl->getElements();
+        const int elementCount = m_propertyVectorCtrl->getSize();
+        for (int i = 0; i < elementCount; ++i)
+        {
+            const AzQtComponents::VectorElement* element = elements[i];
+            m_dataInterface->SetValue(i, element->getValue());
+        }
         UpdateDisplay();
     }
 
-    void VectorNodePropertyDisplay::OnFocusOut()
+    void VectorNodePropertyDisplay::EditFinished()
     {
+        SubmitValue();
         NodePropertiesRequestBus::Event(GetNodeId(), &NodePropertiesRequests::UnlockEditState, this);
     }
 
@@ -299,28 +306,22 @@ namespace GraphCanvas
             m_proxyWidget->setFocusPolicy(Qt::StrongFocus);
             m_proxyWidget->setAcceptDrops(false);
 
-            int elementCount = m_dataInterface->GetElementCount();
+            const int elementCount = m_dataInterface->GetElementCount();
             m_propertyVectorCtrl = new AzQtComponents::VectorInput(nullptr, elementCount);
             m_propertyVectorCtrl->setProperty("HasNoWindowDecorations", true);
 
-            AzQtComponents::VectorElement** elements = m_propertyVectorCtrl->getElements();
-
             for (int i = 0; i < elementCount; ++i)
             {
-                AzQtComponents::VectorElement* element = elements[i];
-
                 m_propertyVectorCtrl->setLabel(i, m_dataInterface->GetLabel(i));
                 m_propertyVectorCtrl->setMinimum(m_dataInterface->GetMinimum(i));
                 m_propertyVectorCtrl->setMaximum(m_dataInterface->GetMaximum(i));
                 m_propertyVectorCtrl->setDecimals(m_dataInterface->GetDecimalPlaces(i));
                 m_propertyVectorCtrl->setDisplayDecimals(m_dataInterface->GetDisplayDecimalPlaces(i));
                 m_propertyVectorCtrl->setSuffix(m_dataInterface->GetSuffix(i));
-
-                element->getSpinBox()->installEventFilter(aznew VectorEventFilter(this));
             }
 
             m_propertyVectorCtrl->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-            QObject::connect(m_propertyVectorCtrl, &AzQtComponents::VectorInput::valueAtIndexChanged, [this](int elementIndex, double newValue) { SubmitValue(elementIndex, newValue); });
+            QObject::connect(m_propertyVectorCtrl, &AzQtComponents::VectorInput::editingFinished, [this]() { SubmitValue(); });
 
             m_proxyWidget->setWidget(m_propertyVectorCtrl);
             UpdateDisplay();
