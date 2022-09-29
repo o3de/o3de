@@ -247,7 +247,7 @@ namespace AtomToolsFramework
 
         // This will only save modified registry settings that match the following filters
         const AZStd::vector<AZStd::string> filters = {
-            "/O3DE/AtomToolsFramework", AZStd::string::format("/O3DE/Atom/%s", m_targetName.c_str()) }; 
+            "/O3DE/AtomToolsFramework", "/O3DE/Atom/Tools", AZStd::string::format("/O3DE/Atom/%s", m_targetName.c_str()) }; 
 
         SaveSettingsToFile(settingsFilePath, filters);
 

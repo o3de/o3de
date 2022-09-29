@@ -40,9 +40,9 @@ namespace AtomToolsFramework
         ~DynamicNodeSlotConfig() = default;
 
         //! Unique name or ID of a slot
-        AZStd::string m_name = "Unnamed";
+        AZStd::string m_name = "untitled";
         //! Name displayed next to a slot in the node UI
-        AZStd::string m_displayName = "Unnamed";
+        AZStd::string m_displayName = "untitled";
         //! Longer description display for tooltips and other UI
         AZStd::string m_description;
         //! The default value associated with a slot
