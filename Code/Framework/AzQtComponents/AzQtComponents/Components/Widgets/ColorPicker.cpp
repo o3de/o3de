@@ -668,16 +668,22 @@ ColorPicker::ColorPicker(ColorPicker::Configuration configuration, const QString
 
     // Alternate color space info
 
-    m_alternateColorSpaceInfoLayout = new QGridLayout();
-    containerLayout->addLayout(m_alternateColorSpaceInfoLayout);
-
-    // These widgets will be updated and added to m_alternateColorSpaceInfoLayout as needed in setAlternateColorspace* functions
-    m_alternateColorSpaceIntLabel = new QLabel("Alternate Int");
-    m_alternateColorSpaceFloatLabel = new QLabel("Alternate Float");
-    m_alternateColorSpaceIntValue = new QLineEdit("Unspecified");
-    m_alternateColorSpaceFloatValue = new QLineEdit("Unspecified");
+    // These widgets will be updated as needed in setAlternateColorspace* functions
+    m_alternateColorSpaceIntLabel = new QLabel(QObject::tr("Alternate Int"), this);
+    m_alternateColorSpaceFloatLabel = new QLabel(QObject::tr("Alternate Float"), this);
+    m_alternateColorSpaceIntValue = new QLineEdit(QObject::tr("Unspecified"), this);
+    m_alternateColorSpaceFloatValue = new QLineEdit(QObject::tr("Unspecified"), this);
     m_alternateColorSpaceIntValue->setDisabled(true);
     m_alternateColorSpaceFloatValue->setDisabled(true);
+
+    m_alternateColorSpaceInfoLayout = new QGridLayout();
+    m_alternateColorSpaceInfoLayout->addWidget(m_alternateColorSpaceIntLabel, 0, 0);
+    m_alternateColorSpaceInfoLayout->addWidget(m_alternateColorSpaceFloatLabel, 1, 0);
+    m_alternateColorSpaceInfoLayout->addWidget(m_alternateColorSpaceIntValue, 0, 1);
+    m_alternateColorSpaceInfoLayout->addWidget(m_alternateColorSpaceFloatValue, 1, 1);
+    containerLayout->addLayout(m_alternateColorSpaceInfoLayout);
+
+    setAlternateColorspaceEnabled(false);
 
     // buttons
 
@@ -728,21 +734,10 @@ void ColorPicker::setComment(QString comment)
 
 void ColorPicker::setAlternateColorspaceEnabled(bool enabled)
 {
-    if (enabled && m_alternateColorSpaceInfoLayout->isEmpty())
-    {
-        m_alternateColorSpaceInfoLayout->addWidget(m_alternateColorSpaceIntLabel, 0, 0);
-        m_alternateColorSpaceInfoLayout->addWidget(m_alternateColorSpaceFloatLabel, 1, 0);
-        m_alternateColorSpaceInfoLayout->addWidget(m_alternateColorSpaceIntValue, 0, 1);
-        m_alternateColorSpaceInfoLayout->addWidget(m_alternateColorSpaceFloatValue, 1, 1);
-    }
-
-    if (!enabled && !m_alternateColorSpaceInfoLayout->isEmpty())
-    {
-        m_alternateColorSpaceInfoLayout->removeWidget(m_alternateColorSpaceIntLabel);
-        m_alternateColorSpaceInfoLayout->removeWidget(m_alternateColorSpaceFloatLabel);
-        m_alternateColorSpaceInfoLayout->removeWidget(m_alternateColorSpaceIntValue);
-        m_alternateColorSpaceInfoLayout->removeWidget(m_alternateColorSpaceFloatValue);
-    }
+    m_alternateColorSpaceIntLabel->setVisible(enabled);
+    m_alternateColorSpaceFloatLabel->setVisible(enabled);
+    m_alternateColorSpaceIntValue->setVisible(enabled);
+    m_alternateColorSpaceFloatValue->setVisible(enabled);
 }
 
 void ColorPicker::setAlternateColorspaceName(const QString& name)
