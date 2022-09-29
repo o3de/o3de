@@ -53,6 +53,7 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option")
 #include <QTimer>
 #include <QCursor>
 #include <QLabel>
+#include <QTextEdit>
 AZ_POP_DISABLE_WARNING
 
 // settings keys
@@ -602,6 +603,13 @@ ColorPicker::ColorPicker(ColorPicker::Configuration configuration, const QString
     // Place the hex edit beneath the color slider tab group
     containerLayout->addWidget(m_hexEdit);
 
+    // Place the RGB float input fields
+
+    m_floatEditSeparator = makePaddedSeparator(this);
+    containerLayout->addWidget(m_floatEditSeparator);
+
+    containerLayout->addLayout(m_rgbLayout);
+
     // quick palette
 
     m_quickPaletteSeparator = makePaddedSeparator(this);
@@ -655,11 +663,21 @@ ColorPicker::ColorPicker(ColorPicker::Configuration configuration, const QString
     // Final color space comment
     m_commentSeparator = makePaddedSeparator(this);
     containerLayout->addWidget(m_commentSeparator);
-    m_commentLabel = new QLabel(QObject::tr("sRGB Float"), this);
+    m_commentLabel = new QLabel(QObject::tr("Color space: sRGB"), this);
     containerLayout->addWidget(m_commentLabel);
 
-    // Place the RGB final input fields below the color space comment
-    containerLayout->addLayout(m_rgbLayout);
+    // Alternate color space info
+
+    m_alternateColorSpaceInfoLayout = new QGridLayout();
+    containerLayout->addLayout(m_alternateColorSpaceInfoLayout);
+
+    // These widgets will be updated and added to m_alternateColorSpaceInfoLayout as needed in setAlternateColorspace* functions
+    m_alternateColorSpaceIntLabel = new QLabel("Alternate Int");
+    m_alternateColorSpaceFloatLabel = new QLabel("Alternate Float");
+    m_alternateColorSpaceIntValue = new QLineEdit("Unspecified");
+    m_alternateColorSpaceFloatValue = new QLineEdit("Unspecified");
+    m_alternateColorSpaceIntValue->setDisabled(true);
+    m_alternateColorSpaceFloatValue->setDisabled(true);
 
     // buttons
 
@@ -708,6 +726,40 @@ void ColorPicker::setComment(QString comment)
     m_commentLabel->setText(comment);
 }
 
+void ColorPicker::setAlternateColorspaceEnabled(bool enabled)
+{
+    if (enabled && m_alternateColorSpaceInfoLayout->isEmpty())
+    {
+        m_alternateColorSpaceInfoLayout->addWidget(m_alternateColorSpaceIntLabel, 0, 0);
+        m_alternateColorSpaceInfoLayout->addWidget(m_alternateColorSpaceFloatLabel, 1, 0);
+        m_alternateColorSpaceInfoLayout->addWidget(m_alternateColorSpaceIntValue, 0, 1);
+        m_alternateColorSpaceInfoLayout->addWidget(m_alternateColorSpaceFloatValue, 1, 1);
+    }
+
+    if (!enabled && !m_alternateColorSpaceInfoLayout->isEmpty())
+    {
+        m_alternateColorSpaceInfoLayout->removeWidget(m_alternateColorSpaceIntLabel);
+        m_alternateColorSpaceInfoLayout->removeWidget(m_alternateColorSpaceFloatLabel);
+        m_alternateColorSpaceInfoLayout->removeWidget(m_alternateColorSpaceIntValue);
+        m_alternateColorSpaceInfoLayout->removeWidget(m_alternateColorSpaceFloatValue);
+    }
+}
+
+void ColorPicker::setAlternateColorspaceName(const QString& name)
+{
+    m_alternateColorSpaceIntLabel->setText(name + " Int");
+    m_alternateColorSpaceFloatLabel->setText(name + " Float");
+}
+
+void ColorPicker::setAlternateColorspaceValue(const AZ::Color& color)
+{
+    QColor qColor = AzQtComponents::toQColor(color);
+
+    bool alphaChannelIncluded = m_configuration == Configuration::RGBA;
+    m_alternateColorSpaceIntValue->setText(AzQtComponents::MakePropertyDisplayStringInts(qColor, alphaChannelIncluded));
+    m_alternateColorSpaceFloatValue->setText(AzQtComponents::MakePropertyDisplayStringFloats(qColor, alphaChannelIncluded));
+}
+
 void ColorPicker::warnColorAdjusted(const QString& message)
 {
     m_warning->setToolTip(message);
@@ -716,6 +768,8 @@ void ColorPicker::warnColorAdjusted(const QString& message)
 
 void ColorPicker::setConfiguration(Configuration configuration)
 {
+    m_configuration = configuration;
+
     switch (configuration)
     {
     case Configuration::RGBA:
