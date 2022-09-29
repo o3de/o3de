@@ -150,6 +150,12 @@ namespace ShaderManagementConsole
             shaderAssetInfo,
             watchFolder);
 
+        if (!foundSourceInfo)
+        {
+            AZ_Error("FindMaterialAssetsUsingShader", false, "Failed to find source file info %s.", shaderFilePath.c_str());
+            return {};
+        }
+
         assetDatabaseConnection.QuerySourceDependencyByDependsOnSource(
             shaderAssetInfo.m_assetId.m_guid, shaderAssetInfo.m_relativePath.c_str(), watchFolder.c_str(), AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_Any,
             [&](AzToolsFramework::AssetDatabase::SourceFileDependencyEntry& sourceFileDependencyEntry)
