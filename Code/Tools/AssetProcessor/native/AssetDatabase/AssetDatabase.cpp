@@ -890,8 +890,8 @@ namespace AssetProcessor
                 // examine their workflows to determine why that individual frequently encounters future Asset Database versions.
                 AZ_TracePrintf(
                     AssetProcessor::ConsoleChannel,
-                    "The Asset Database in the Cache folder (%i) is from a newer version of the Asset Processor than this one (expected: %i).\n"
-                    "The newer Asset Database will be deleted and a new Asset Database will be constructed.\n",
+                    "The Asset Database in the Cache folder is from a newer version of the Asset Processor (%i) than this one (expected: %i).\n"
+                    "The existing Asset Database will be deleted and a new Asset Database will be constructed.\n",
                     foundVersion,
                     CurrentDatabaseVersion()
                     );
