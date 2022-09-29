@@ -175,6 +175,11 @@ namespace AZ::DocumentPropertyEditor
 
         AZStd::shared_ptr<AZ::Attribute> DomValueToLegacyAttribute(const AZ::Dom::Value& value) const override
         {
+            // We aren't currently hitting the right case here, but that's because our AttributeDefinition is of type Dom::Value
+            // The difficulties surrounding solving that problem are commented in PropertyEditorNodes.h
+            // If we must leave the attr definition as Dom::Value, then we need at least one more case here for pulling the
+            // data out of the AZStd::any and stuffing it in an AttributeData
+            // Getting the data out of the AZStd::any requires knowing its type, afaik, which is also a sticking point
             if constexpr (AZStd::is_same_v<AttributeType, AZ::Dom::Value>)
             {
                 return AZ::Reflection::WriteDomValueToGenericAttribute(value);

@@ -129,7 +129,13 @@ namespace AZ::DocumentPropertyEditor::Nodes
 
         static constexpr auto EnumType = TypeIdAttributeDefinition("EnumType");
         static constexpr auto EnumUnderlyingType = TypeIdAttributeDefinition("EnumUnderlyingType");
+        // Should these be Dom::Value? StingList has its explicit type, and these function similar to StringList
+        // Problem with explicit parameterization here is that the desired type, at least in the case of EnumValues, is akin to
+        //          AZStd::vector<AZ:Edit::EnumConstant<OneOfManyEnunTypes>>
+        // I don't know of a way to scry our type here
+        // Could be a void*, but will this always be a ptr? And then we're just kicking the "what type is this?" can down the road
         static constexpr auto EnumValue = AttributeDefinition<Dom::Value>("EnumValue");
+        static constexpr auto EnumValues = AttributeDefinition<Dom::Value>("EnumValues");
         static constexpr auto ChangeNotify = CallbackAttributeDefinition<PropertyRefreshLevel()>("ChangeNotify");
         static constexpr auto RequestTreeUpdate = CallbackAttributeDefinition<void(PropertyRefreshLevel)>("RequestTreeUpdate");
 
