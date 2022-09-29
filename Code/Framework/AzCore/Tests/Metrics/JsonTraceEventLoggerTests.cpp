@@ -340,7 +340,7 @@ namespace Benchmark
         EventObjectStorage eventObject;
 
         // Fill out the child array and child object fields
-        for (const auto& [fieldName, fieldValue] : AZStd::views::zip(objectFieldNames, objectFieldValues))
+        for (auto [fieldName, fieldValue] : AZStd::views::zip(objectFieldNames, objectFieldValues))
         {
             auto AppendArgs = [name = fieldName, &eventArray, &eventObject](auto&& value)
             {

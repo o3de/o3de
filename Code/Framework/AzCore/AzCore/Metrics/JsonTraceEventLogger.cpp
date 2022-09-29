@@ -25,15 +25,13 @@ namespace AZ::Metrics
     constexpr AZStd::string_view PhaseKey = "ph";
     constexpr AZStd::string_view IdKey = "id";
     constexpr AZStd::string_view TimestampKey = "ts";
-    constexpr AZStd::string_view ThreadTimestampKey = "tts";
+    [[maybe_unused]] constexpr AZStd::string_view ThreadTimestampKey = "tts";
     constexpr AZStd::string_view ProcessIdKey = "pid";
     constexpr AZStd::string_view ThreadIdKey = "tid";
 
     // Format strings for the TraceEvent Format
     constexpr AZStd::string_view ArrayStart = "[";
     constexpr AZStd::string_view ArrayEnd = "]";
-    constexpr AZStd::string_view ObjectStart = "{";
-    constexpr AZStd::string_view ObjectEnd = "}";
     constexpr AZStd::string_view Newline = "\n";
     constexpr AZStd::string_view CommaNewline = ",\n";
 
@@ -505,10 +503,9 @@ namespace AZ::Metrics
             AZStd::scoped_lock flushLock(m_flushToStreamMutex);
             // Prepend a comma to the stream if an existing event was written previously
             {
-                constexpr int32_t indent = 2;
                 JsonEventString eventSeparatorString;
                 bool expected{};
-                AppendNewlineWithIndent(eventSeparatorString, indent, !m_prependComma.compare_exchange_strong(expected, true));
+                AppendNewlineWithIndent(eventSeparatorString, IndentStep, !m_prependComma.compare_exchange_strong(expected, true));
                 totalBytesWritten += m_stream->Write(eventSeparatorString.size(), eventSeparatorString.data());
             }
 
