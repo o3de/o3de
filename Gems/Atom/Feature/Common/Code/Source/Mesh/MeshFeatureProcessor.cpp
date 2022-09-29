@@ -165,19 +165,28 @@ namespace AZ
         void MeshFeatureProcessor::OnBeginPrepareRender()
         {
             m_meshDataChecker.soft_lock();
-            /*
+
             for (auto& model : m_modelData)
             {
                 if (model.m_cullable.m_prevFlags != model.m_cullable.m_flags)
                 {
-                    const size_t modelLodCount = model.GetModel()->GetLodCount();
-                    for (size_t modelLodIndex = 0; modelLodIndex < modelLodCount; ++modelLodIndex)
+                    for (RPI::MeshDrawPacketList& drawPacketList : model.m_drawPacketListsByLod)
                     {
-                        model.BuildDrawPacketList(modelLodIndex);
+                        for (RPI::MeshDrawPacket& drawPacket : drawPacketList)
+                        {
+                            m_flagRegistry->VisitTags(
+                                [&](AZ::Name shaderOption, Render::MeshFeatureProcessor::FlagRegistry::TagType tag)
+                                {
+                                    drawPacket.SetShaderOption(shaderOption, AZ::RPI::ShaderOptionValue((model.m_cullable.m_flags & tag.GetIndex()) > 0));
+                                }
+                            );
+                            drawPacket.Update(*GetParentScene(), true);
+                        }
                     }
+                    model.m_cullableNeedsRebuild = true;
+                    model.BuildCullable();
                 }
             }
-            */
         }
 
         void MeshFeatureProcessor::OnEndPrepareRender()
@@ -870,15 +879,6 @@ namespace AZ
                 {
                     AZ_Warning("MeshDrawPacket", false, "Failed to set o_meshUseForwardPassIBLSpecular on mesh draw packet");
                 }
-
-                MeshFeatureProcessor* meshFeatureProcessor = m_scene->GetFeatureProcessor<MeshFeatureProcessor>();
-                auto flagRegistry = meshFeatureProcessor->GetFlagRegistry();
-                flagRegistry->VisitTags(
-                    [&](AZ::Name shaderOption, Render::MeshFeatureProcessor::FlagRegistry::TagType tag)
-                    {
-                        drawPacket.SetShaderOption(shaderOption, AZ::RPI::ShaderOptionValue((m_cullable.m_flags & tag.GetIndex()) > 0));
-                    }
-                );
 
                 bool materialRequiresForwardPassIblSpecular = MaterialRequiresForwardPassIblSpecular(material);
 
