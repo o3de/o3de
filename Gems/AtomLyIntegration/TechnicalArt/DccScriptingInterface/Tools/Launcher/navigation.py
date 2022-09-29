@@ -28,13 +28,14 @@ class Navigation(QtWidgets.QWidget):
         self.logo_container.setAlignment(QtCore.Qt.AlignLeft)
         logo_path = settings.get('PATH_DCCSI_TOOLS') / 'Launcher/images/o3de_banner_logo.png'
         logo_pixmap = QtGui.QPixmap(logo_path.as_posix())
+        logotype_path = settings.get('PATH_DCCSI_TOOLS') / 'Launcher/images/launcher_logotype.png'
+        logotype_path_pixmap = QtGui.QPixmap(logotype_path.as_posix())
         self.o3de_logo = QtWidgets.QLabel()
         self.o3de_logo.setPixmap(logo_pixmap)
         self.logo_container.addWidget(self.o3de_logo)
         self.logo_container.addSpacing(4)
-        self.launcher_title = QtWidgets.QLabel('Launcher')
-        self.title_font = QtGui.QFont("Helvetica", 25, QtGui.QFont.Bold)
-        self.launcher_title.setFont(self.title_font)
+        self.launcher_title = QtWidgets.QLabel()
+        self.launcher_title.setPixmap(logotype_path_pixmap)
         self.logo_container.addWidget(self.launcher_title)
 
         # Top Banner Combobox

@@ -354,15 +354,15 @@ class Setup(QtWidgets.QWidget):
         self.set_logging_profile()
 
         # Gather Dynaconf Information
-        with open(self.settings_file) as f:
-            data = json.load(f)
-            self.environment_list = [key for key in data.keys()]
-            for key in self.environment_list:
-                self.environment_key_structure[key] = {}
-                for env_key, env_value in data[key].items():
-                    self.environment_key_structure[key].update({env_key: env_value})
-
-        self.dccsi_environment_listbox.add_items(self.environment_list)
+        if not self.environment_list:
+            with open(self.settings_file) as f:
+                data = json.load(f)
+                self.environment_list = [key for key in data.keys()]
+                for key in self.environment_list:
+                    self.environment_key_structure[key] = {}
+                    for env_key, env_value in data[key].items():
+                        self.environment_key_structure[key].update({env_key: env_value})
+            self.dccsi_environment_listbox.add_items(self.environment_list)
         self.set_ide()
         self.get_dcc_paths()
         self.get_dynaconf_paths()
@@ -396,6 +396,7 @@ class Setup(QtWidgets.QWidget):
 
     def get_system_paths(self):
         self.system_paths_table.clear()
+        self.system_paths_table.setRowCount(0)
         for key, value in os.environ.items():
             count = self.system_paths_table.rowCount()
             self.system_paths_table.insertRow(count)
@@ -443,7 +444,8 @@ class Setup(QtWidgets.QWidget):
         dcc_environment = {}
         for key, value in settings.items():
             if key in self.environment_key_structure[target].keys():
-                dcc_environment[key] = value
+                _LOGGER.info(f'Key: {key}  Value: {value}')
+                dcc_environment[key] = value  # Here is where I stopped... why envars not being passed?
 
         return dcc_environment
 
@@ -508,6 +510,7 @@ class Setup(QtWidgets.QWidget):
         if Path(application_path).name not in (i.name() for i in psutil.process_iter()):
             _LOGGER.info(f'[{Path(application_path).name}] is not an active process... launching')
             envars = self.get_dcc_environment(environment)
+            _LOGGER.info(f'Envars: {envars}')
             app = QtProcess(application_path, 'dummy.py', **envars)
             app.start_process()
         else:
@@ -538,7 +541,7 @@ class Setup(QtWidgets.QWidget):
         target_environment = item.text()
         self.dccsi_environment_listbox.set_active_highlight(target_environment)
         settings.set('STARTUP_ENVIRONMENT', target_environment)
-        config.initialize_settings(target_environment)
+        config.initialize_settings()
         self.get_dynaconf_paths()
 
     def dynaconf_setting_changed(self, item):

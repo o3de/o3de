@@ -43,6 +43,8 @@ class Tools(QtWidgets.QWidget):
         self.content_layout.setContentsMargins(5, 0, 5, 5)
         self.content_frame = QFrame(self)
         self.content_frame.setGeometry(0, 0, 5000, 5000)
+
+        # Tabs Setup
         self.section_tabs = QtWidgets.QTabBar()
         self.section_tabs.setShape(QtWidgets.QTabBar.RoundedNorth)
         self.section_tabs.currentChanged.connect(self.section_button_clicked)
@@ -541,20 +543,24 @@ class Tools(QtWidgets.QWidget):
 
         #  Loaded Tool Container ----->>
         self.scroll_content_layout = QtWidgets.QVBoxLayout()
+        self.scroll_content_layout.setAlignment(QtCore.Qt.AlignTop)
         self.tool_layout.addLayout(self.scroll_content_layout)
-        self.scroll_content_layout.addStretch(0)
-
         self.tool_container_widget = QtWidgets.QWidget()
         self.tool_container_layout = QtWidgets.QHBoxLayout()
 
         self.scroll_area = QtWidgets.QScrollArea(self.tool_container_widget)
         self.scroll_area.setFrameShape(QFrame.NoFrame)
+        self.scroll_area.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.scroll_area_contents = QtWidgets.QWidget()
         self.scroll_area_contents.setLayout(self.tool_container_layout)
         self.scroll_area.setWidgetResizable(True)
         self.scroll_area.setWidget(self.scroll_area_contents)
         self.scroll_content_layout.addWidget(self.scroll_area)
-        # self.scroll_content_layout.addStretch(0)
+        self.content_size_policy = QtWidgets.QSizePolicy()
+        self.content_size_policy.setHorizontalPolicy(QtWidgets.QSizePolicy.Minimum)
+        self.content_size_policy.setVerticalPolicy(QtWidgets.QSizePolicy.Expanding)
+        self.scroll_area.setSizePolicy(self.content_size_policy)
+        self.scroll_area.setMinimumWidth(500)
 
         # Right Margin Spacer ----->>
         self.right_tool_frame = QFrame()
