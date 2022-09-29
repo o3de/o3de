@@ -68,7 +68,10 @@ namespace UnitTest
 
         void CheckAllocatorsForLeaks()
         {
-            AZ::GetCurrentSerializeContextModule().Cleanup();
+            if (m_cleanUpGenericClassInfo)
+            {
+                AZ::GetCurrentSerializeContextModule().Cleanup();
+            }
             AZ::AllocatorManager::Instance().GarbageCollect();
 
             for (const auto& [allocator, sizeAfterTestRan] : GetAllocatedSizes())
@@ -85,6 +88,14 @@ namespace UnitTest
                 }
             }
         }
+
+        void SetShouldCleanUpGenericClassInfo(bool newState)
+        {
+            m_cleanUpGenericClassInfo = newState;
+        }
+
+    private:
+        bool m_cleanUpGenericClassInfo{true};
     };
 
     /**

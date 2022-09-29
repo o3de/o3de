@@ -16,6 +16,11 @@ namespace UnitTest
     struct MixedAllocatorTestFixture
         : public AllocatorsTestFixture
     {
+    public:
+        MixedAllocatorTestFixture()
+        {
+            SetShouldCleanUpGenericClassInfo(false);
+        }
     };
 
     TEST_F(MixedAllocatorTestFixture, MixedStackHeapAllocator_GetNameSetNameWorks)
