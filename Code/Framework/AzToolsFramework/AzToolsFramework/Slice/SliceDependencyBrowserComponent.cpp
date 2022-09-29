@@ -242,7 +242,7 @@ namespace AzToolsFramework
 
                 if (!dependencyName.ends_with(".slice"))
                 {
-                    // Filter out non-slice files
+                    // Since this tool is only meant to display slices, filter out non-slice dependencies
                     return true;
                 }
 
@@ -270,7 +270,7 @@ namespace AzToolsFramework
 
             if (!sourceEntry.m_sourceName.ends_with(".slice"))
             {
-                // Filter out non-slice files
+                // Since this tool is only meant to display slices, filter out non-slice dependencies
                 return true;
             }
 
