@@ -28,7 +28,7 @@ namespace EMotionFX
         : MeshDeformer(mesh)
     {
         AZ::TaskGraphActiveInterface* taskGraphActiveInterface = AZ::Interface<AZ::TaskGraphActiveInterface>::Get();
-        m_useTaskGraph = taskGraphActiveInterface && taskGraphActiveInterface->IsTaskGraphActive();
+        m_useTaskGraph = false;
     }
 
     DualQuatSkinDeformer::~DualQuatSkinDeformer()
