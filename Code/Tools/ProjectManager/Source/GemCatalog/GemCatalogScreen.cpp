@@ -240,7 +240,10 @@ namespace O3DE::ProjectManager
                 AZ::Outcome<GemInfo, void> gemInfoResult = PythonBindingsInterface::Get()->GetGemInfo(directory);
                 if (gemInfoResult)
                 {
-                    AddToGemModel(gemInfoResult.GetValue<GemInfo>());
+                    // We added this local gem so set it's status to downloaded
+                    GemInfo& addedGemInfo = gemInfoResult.GetValue<GemInfo>();
+                    addedGemInfo.m_downloadStatus = GemInfo::DownloadStatus::Downloaded;
+                    AddToGemModel(addedGemInfo);
                 }
             }
         }
