@@ -132,7 +132,7 @@ namespace EMotionFX
                         ->DataElement(0, &EditorActorComponent::m_renderSkeleton,
                             "Draw skeleton", "Toggles rendering of skeleton.")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnRenderFlagChanged)
-                        ->DataElement(0, &EditorActorComponent::m_renderBounds, "Draw bounds", "Toggles rendering of world space bounding boxes.")
+                        ->DataElement(0, &EditorActorComponent::m_renderBounds, "Draw bounds", "World Space AABBs. Teal: Static. Red: Bone Position. Blue: Mesh Vertices.")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnRenderFlagChanged)
                         ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorActorComponent::m_skinningMethod,
                             "Skinning method", "Choose the skinning method this actor is using")

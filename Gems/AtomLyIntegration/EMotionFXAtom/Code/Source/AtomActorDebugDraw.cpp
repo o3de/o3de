@@ -412,6 +412,7 @@ namespace AZ::Render
         {
             AZ::Aabb aabb;
             instance->CalcNodeBasedAabb(&aabb);
+            EMotionFX::ActorInstance::ExpandBounds(aabb, instance->GetExpandBoundsBy());
             if (aabb.IsValid())
             {
                 auxGeom->DrawAabb(aabb, nodeAabbColor, RPI::AuxGeomDraw::DrawStyle::Line);
@@ -423,6 +424,7 @@ namespace AZ::Render
             AZ::Aabb aabb;
             const size_t lodLevel = instance->GetLODLevel();
             instance->CalcMeshBasedAabb(lodLevel, &aabb);
+            EMotionFX::ActorInstance::ExpandBounds(aabb, instance->GetExpandBoundsBy());
             if (aabb.IsValid())
             {
                 auxGeom->DrawAabb(aabb, meshAabbColor, RPI::AuxGeomDraw::DrawStyle::Line);
@@ -433,6 +435,7 @@ namespace AZ::Render
         {
             AZ::Aabb aabb;
             instance->CalcStaticBasedAabb(&aabb);
+            EMotionFX::ActorInstance::ExpandBounds(aabb, instance->GetExpandBoundsBy());
             if (aabb.IsValid())
             {
                 auxGeom->DrawAabb(aabb, staticAabbColor, RPI::AuxGeomDraw::DrawStyle::Line);
