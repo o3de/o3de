@@ -1060,8 +1060,8 @@ void MainWindow::InitActions()
                     &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnIconsVisibilityChanged,
                     AzToolsFramework::IconsVisible());
             });
-    am->AddAction(AzToolsFramework::OnlyShowHelpersForSelectedEntitiesAction, tr("Only Show For Selected Entities"))
-        .SetToolTip(tr("Show/Hide Only selected (Ctrl+Shift+Space)"))
+    am->AddAction(AzToolsFramework::OnlyShowHelpersForSelectedEntitiesAction, tr("Show Helpers for Selected Entities Only"))
+        .SetToolTip(tr("Show Helpers for Selected/All Entities"))
         .SetCheckable(true)
         .RegisterUpdateCallback(
             [](QAction* action)

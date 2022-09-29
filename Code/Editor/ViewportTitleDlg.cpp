@@ -263,7 +263,7 @@ void CViewportTitleDlg::SetupHelpersButton()
                     AzToolsFramework::OnlyShowHelpersForSelectedEntities());
             });
 
-        auto onlySelectedAction = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::OnlyShowSelectedEntitiesHelpers);
+        auto onlySelectedAction = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::OnlyShowHelpersForSelectedEntitiesAction);
         connect(
             onlySelectedAction,
             &QAction::triggered,
@@ -293,7 +293,7 @@ void CViewportTitleDlg::SetupHelpersButton()
                 iconAction->trigger();
             });
 
-        m_onlySelectedAction = new QAction(tr("Only show for selected Entitiies"), m_helpersMenu);
+        m_onlySelectedAction = new QAction(tr("Helpers for Selected Entities Only"), m_helpersMenu);
         m_onlySelectedAction->setCheckable(true);
         connect(
              m_onlySelectedAction,

@@ -1026,13 +1026,13 @@ void EditorActionsHandler::OnActionRegistrationHook()
         m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Ctrl+Space");
     }
 
-    // Only Show Helpers For Selected Entities
+    // Only Show Helpers for Selected Entities
     {
-        const AZStd::string_view& actionIdentifier = "o3de.action.view.toggleSelectedHelpers";
+        const AZStd::string_view& actionIdentifier = "o3de.action.view.toggleSelectedEntityHelpers";
 
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Only Show Helpers For Selected Entities";
-        actionProperties.m_description = "Toggle To Only Show Helpers For Entities";
+        actionProperties.m_name = "Show Helpers for Selected Entities Only";
+        actionProperties.m_description = "Show Helpers for Selected/All Entities";
         actionProperties.m_category = "View";
 
         m_actionManagerInterface->RegisterCheckableAction(
@@ -1052,8 +1052,6 @@ void EditorActionsHandler::OnActionRegistrationHook()
             });
 
         m_actionManagerInterface->AddActionToUpdater(OnlyShowHelpersForSelectedEntitiesIdentifier, actionIdentifier);
-
-        m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Ctrl+Shift+Space");
     }
 
     // Refresh Style
@@ -1528,7 +1526,7 @@ void EditorActionsHandler::OnMenuBindingHook()
             m_menuManagerInterface->AddSeparatorToMenu(ViewportMenuIdentifier, 500);
             m_menuManagerInterface->AddActionToMenu(ViewportMenuIdentifier, "o3de.action.view.toggleHelpers", 600);
             m_menuManagerInterface->AddActionToMenu(ViewportMenuIdentifier, "o3de.action.view.toggleIcons", 700);
-            m_menuManagerInterface->AddActionToMenu(ViewportMenuIdentifier, "o3de.action.view.toggleSelectedHelpers", 800);
+            m_menuManagerInterface->AddActionToMenu(ViewportMenuIdentifier, "o3de.action.view.toggleSelectedEntityHelpers", 800);
         }
         m_menuManagerInterface->AddActionToMenu(ViewMenuIdentifier, "o3de.action.view.refreshEditorStyle", 300);
     }
@@ -1559,7 +1557,7 @@ void EditorActionsHandler::OnMenuBindingHook()
     {
         m_menuManagerInterface->AddActionToMenu("o3de.menu.viewport.helpers", "o3de.action.view.toggleHelpers", 100);
         m_menuManagerInterface->AddActionToMenu("o3de.menu.viewport.helpers", "o3de.action.view.toggleIcons", 200);
-        m_menuManagerInterface->AddActionToMenu("o3de.menu.viewport.helpers", "o3de.action.view.toggleSelectedHelpers", 300);
+        m_menuManagerInterface->AddActionToMenu("o3de.menu.viewport.helpers", "o3de.action.view.toggleSelectedEntityHelpers", 300);
     }
 }
 
