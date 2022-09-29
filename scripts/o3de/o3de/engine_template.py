@@ -2045,7 +2045,7 @@ def create_gem(gem_path: pathlib.Path,
         logger.error(f'Gem path {gem_path} already exists.')
         return 1
     else:
-        os.makedirs(gem_path, exist_ok=force)
+        os.makedirs(gem_path, exist_ok=True)
 
     # Default to the gem path basename component if gem_name has not been supplied
     if not gem_name:
@@ -2112,7 +2112,8 @@ def create_gem(gem_path: pathlib.Path,
     
     tags = [gem_name]
     if user_tags:
-        new_tags = user_tags.split() if isinstance(user_tags, str) else user_tags
+        # Allow commas or spaces as tag separators
+        new_tags = user_tags.replace(',', ' ').split() if isinstance(user_tags, str) else user_tags
         tags.extend(new_tags)
     tags_quoted = ','.join(f'"{word.strip()}"' for word in set(tags))
     # remove the first and last quote because those already exist in gem.json

@@ -235,6 +235,10 @@ QTabBar::tab:focus {
     margin-left: 50px;
 }
 
+#createAGemBody #formErrorLabel {
+    margin-left: 0px;
+}
+
 #addRemoteProjectDialog #formErrorLabel {
     margin-left: 0px;
 }
