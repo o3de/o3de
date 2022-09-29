@@ -29,6 +29,16 @@
       "test_impact_analysis_profile_python"
     ]
   },
+  "profile_pipe_tiaf": {
+    "TAGS": [
+      "tiaf-testing"
+    ],
+    "steps": [
+      "profile",
+      "asset_profile",
+      "test_impact_analysis_profile_python"
+    ]
+  },
   "scrubbing": {
     "TAGS": [],
     "COMMAND": "python_windows.cmd",
