@@ -246,7 +246,7 @@ namespace AzToolsFramework
             virtual void OnIconsVisibilityChanged([[maybe_unused]] bool enabled)
             {
             }
-            virtual void OnOnlyDrawHelpersForSelectedItemsChanged([[maybe_unused]] bool enabled)
+            virtual void OnOnlyShowHelpersForSelectedEntitiesChanged([[maybe_unused]] bool enabled)
             {
             }
 

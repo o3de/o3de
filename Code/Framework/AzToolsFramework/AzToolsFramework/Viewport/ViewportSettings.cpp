@@ -24,7 +24,7 @@ namespace AzToolsFramework
     constexpr AZStd::string_view ManipulatorViewBaseScaleSetting = "/Amazon/Preferences/Editor/Manipulator/ViewBaseScale";
     constexpr AZStd::string_view IconsVisibleSetting = "/Amazon/Preferences/Editor/IconsVisible";
     constexpr AZStd::string_view HelpersVisibleSetting = "/Amazon/Preferences/Editor/HelpersVisible";
-    constexpr AZStd::string_view SelectedEntitiesHelpersSetting = "/Amazon/Preferences/Editor/OnlyShowHelpersForSelectedEntities";
+    constexpr AZStd::string_view OnlyShowHelpersForSelectedEntitiesSetting = "/Amazon/Preferences/Editor/OnlyShowHelpersForSelectedEntities";
     constexpr AZStd::string_view ComponentSwitcherEnabledSetting = "/Amazon/Preferences/Editor/ComponentSwitcherEnabled";
     constexpr AZStd::string_view PrefabEditModeEffectEnabledSetting = "/Amazon/Preferences/Editor/PrefabEditModeEffectEnabled";
 
@@ -150,12 +150,12 @@ namespace AzToolsFramework
 
     bool OnlyShowHelpersForSelectedEntities()
     {
-        return GetRegistry(SelectedEntitiesHelpersSetting, false);
+        return GetRegistry(OnlyShowHelpersForSelectedEntitiesSetting, false);
     }
 
     void SetOnlyShowHelpersForSelectedEntities(const bool visible)
     {
-        SetRegistry(SelectedEntitiesHelpersSetting, visible);
+        SetRegistry(OnlyShowHelpersForSelectedEntitiesSetting, visible);
     }
 
     bool ComponentSwitcherEnabled()

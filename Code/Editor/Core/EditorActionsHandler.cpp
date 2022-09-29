@@ -1026,13 +1026,13 @@ void EditorActionsHandler::OnActionRegistrationHook()
         m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Ctrl+Space");
     }
 
-    // Show Icons
+    // Only Show Helpers For Selected Entities
     {
         const AZStd::string_view& actionIdentifier = "o3de.action.view.toggleSelectedHelpers";
 
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Only Show Helpers for Selected Entities";
-        actionProperties.m_description = "Toggle show helpers for Entities";
+        actionProperties.m_name = "Only Show Helpers For Selected Entities";
+        actionProperties.m_description = "Toggle To Only Show Helpers For Entities";
         actionProperties.m_category = "View";
 
         m_actionManagerInterface->RegisterCheckableAction(
@@ -1043,7 +1043,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
             {
                 AzToolsFramework::SetOnlyShowHelpersForSelectedEntities(!AzToolsFramework::OnlyShowHelpersForSelectedEntities());
                 AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
-                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnOnlyDrawHelpersForSelectedItemsChanged,
+                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnOnlyShowHelpersForSelectedEntitiesChanged,
                     AzToolsFramework::OnlyShowHelpersForSelectedEntities());
             },
             []()
@@ -1777,7 +1777,7 @@ void EditorActionsHandler::OnIconsVisibilityChanged([[maybe_unused]] bool enable
     m_actionManagerInterface->TriggerActionUpdater(IconsStateChangedUpdaterIdentifier);
 }
 
-void EditorActionsHandler::OnOnlyDrawHelpersForSelectedItemsChanged([[maybe_unused]] bool enabled)
+void EditorActionsHandler::OnOnlyShowHelpersForSelectedEntitiesChanged([[maybe_unused]] bool enabled)
 {
     m_actionManagerInterface->TriggerActionUpdater(OnlyShowHelpersForSelectedEntitiesIdentifier);
 }

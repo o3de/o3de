@@ -1060,7 +1060,7 @@ void MainWindow::InitActions()
                     &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnIconsVisibilityChanged,
                     AzToolsFramework::IconsVisible());
             });
-    am->AddAction(AzToolsFramework::OnlyShowSelectedEntitiesHelpers, tr("Only Show For Selected Entities"))
+    am->AddAction(AzToolsFramework::OnlyShowHelpersForSelectedEntitiesAction, tr("Only Show For Selected Entities"))
         .SetToolTip(tr("Show/Hide Only selected (Ctrl+Shift+Space)"))
         .SetCheckable(true)
         .RegisterUpdateCallback(
@@ -1075,7 +1075,7 @@ void MainWindow::InitActions()
             {
                 AzToolsFramework::SetOnlyShowHelpersForSelectedEntities(!AzToolsFramework::OnlyShowHelpersForSelectedEntities());
                 AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
-                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnOnlyDrawHelpersForSelectedItemsChanged,
+                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnOnlyShowHelpersForSelectedEntitiesChanged,
                     AzToolsFramework::OnlyShowHelpersForSelectedEntities());
             });
 
