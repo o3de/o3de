@@ -104,13 +104,9 @@ namespace AZ
             {
                 return AndroidAzslShaderHeader;
             }
-            else if (platform.HasTag("dx12"))
-            {
-                return WindowsAzslShaderHeader;
-            }
             else
             {
-                return LinuxAzslShaderHeader;
+                return AZ_TRAIT_ATOM_AZSL_SHADER_HEADER;
             }
         }
 
@@ -247,13 +243,9 @@ namespace AZ
             {
                 prependFile = AndroidPlatformShaderHeader;
             }
-            else if (platform.HasTag("dx12"))
-            {
-                prependFile = WindowsPlatformShaderHeader;
-            }
             else
             {
-                prependFile = LinuxPlatformShaderHeader;
+                prependFile = AZ_TRAIT_ATOM_AZSL_PLATFORM_HEADER;
             }
 
             RHI::PrependArguments args;
