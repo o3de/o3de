@@ -7,10 +7,12 @@
  */
 
 #if !defined(Q_MOC_RUN)
+#include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/base.h>
-#include <QtWidgets/QPlainTextEdit>
-#include <QtWidgets/QCompleter>
 #include <AzCore/std/functional.h>
+
+#include <QtWidgets/QCompleter>
+#include <QtWidgets/QPlainTextEdit>
 #endif
 
 #pragma once
