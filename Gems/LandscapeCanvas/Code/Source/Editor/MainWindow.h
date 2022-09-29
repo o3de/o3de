@@ -282,6 +282,7 @@ namespace LandscapeCanvasEditor
         GraphModel::NodePtrList m_addedWrappedNodes;
         GraphModel::NodePtrList m_deletedWrappedNodes;
         AzToolsFramework::EntityIdList m_queuedEntityDeletes;
+        AzToolsFramework::EntityIdList m_queuedEntityRefresh;
 
         AzToolsFramework::EntityIdList m_ignoreEntityComponentPropertyChanges;
 

@@ -65,6 +65,13 @@ class GitHubProvider(gitproviderinterface.GitProviderInterface):
 
 def get_github_provider(parsed_uri) -> GitHubProvider or None:
     if 'github.com' in parsed_uri.netloc:
-        return GitHubProvider
+        components = parsed_uri.path.split('/')
+        components = [ele for ele in components if ele.strip()]
+
+        if len(components) < 2:
+            return None
+
+        if components[1].endswith(".git"):
+            return GitHubProvider
 
     return None
