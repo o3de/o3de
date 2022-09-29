@@ -94,7 +94,7 @@ namespace AZ
                 void CreateWindowContext();
 
                 //! Load a render pipeline from disk and add it to the scene
-                void LoadPipeline(const AZ::RPI::ScenePtr scene, const AZ::RPI::ViewportContextPtr viewportContext, AZStd::string_view xrPipelineName,
+                bool LoadPipeline(const AZ::RPI::ScenePtr scene, const AZ::RPI::ViewportContextPtr viewportContext, AZStd::string_view xrPipelineName,
                                     AZ::RPI::ViewType viewType, RHI::MultisampleState& outMultisampleState);
 
                 AzFramework::Scene::RemovalEvent::Handler m_sceneRemovalHandler;

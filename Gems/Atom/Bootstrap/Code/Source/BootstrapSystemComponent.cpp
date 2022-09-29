@@ -317,6 +317,7 @@ namespace AZ
                 }
 
                 RHI::MultisampleState multisampleState;
+                bool isPipelineAssetLoadSuccessfull = true;
                 // Load XR pipelines if applicable
                 if (xrSystem)
                 {
@@ -325,12 +326,16 @@ namespace AZ
                         AZ::RPI::ViewType viewType = i == 0 ? AZ::RPI::ViewType::XrLeft : AZ::RPI::ViewType::XrRight;
                         AZStd::string pipelineAssetName =
                             i == 0 ? "passes/XRLeftRenderPipeline.azasset" : "passes/XRRightRenderPipeline.azasset";
-                        LoadPipeline(scene, viewportContext, pipelineAssetName, viewType, multisampleState);
+                        isPipelineAssetLoadSuccessfull &= LoadPipeline(scene, viewportContext, pipelineAssetName, viewType, multisampleState);
                     }
                 }
 
                 // Load the main default pipeline
-                LoadPipeline(scene, viewportContext, pipelineName, AZ::RPI::ViewType::Default, multisampleState);
+                isPipelineAssetLoadSuccessfull &= LoadPipeline(scene, viewportContext, pipelineName, AZ::RPI::ViewType::Default, multisampleState);
+                if (!isPipelineAssetLoadSuccessfull)
+                {
+                    return false;
+                }
                 AZ::RPI::RPISystemInterface::Get()->SetApplicationMultisampleState(multisampleState);
 
                 // As part of our initialization we need to create the BRDF texture generation pipeline
@@ -372,7 +377,7 @@ namespace AZ
                 return true;
             }
 
-            void BootstrapSystemComponent::LoadPipeline( AZ::RPI::ScenePtr scene, AZ::RPI::ViewportContextPtr viewportContext,
+            bool BootstrapSystemComponent::LoadPipeline( AZ::RPI::ScenePtr scene, AZ::RPI::ViewportContextPtr viewportContext,
                                                     AZStd::string_view pipelineName, AZ::RPI::ViewType viewType, RHI::MultisampleState& outMultisampleState)
             {
                 AzFramework::AssetSystem::AssetStatus status = AzFramework::AssetSystem::AssetStatus_Unknown;
@@ -400,10 +405,12 @@ namespace AZ
                         pipelineAsset.Release();
                         scene->AddRenderPipeline(renderPipeline);
                     }
+                    return true;
                 }
                 else
                 {
                     AZ_Error("AtomBootstrap", false, "Pipeline file failed to load from path: %s.", pipelineName.data());
+                    return false;
                 }
             }
 

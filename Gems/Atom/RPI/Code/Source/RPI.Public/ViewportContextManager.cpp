@@ -278,6 +278,10 @@ namespace AZ
                 ViewGroupPtr viewGroup = AZStd::make_shared<ViewGroup>();
                 viewGroup->Init(ViewGroup::Descriptor{ nullptr, nullptr });
                 viewGroup->SetView(view);
+
+                //Todo: Remove this when we can disable XR pipeline if the attached main view is null.
+                //Until then we create dummy views for now.
+                viewGroup->CreateStereoscopicViews(context);
                 associatedViews.push_back(viewGroup);
             }
 
@@ -368,6 +372,17 @@ namespace AZ
             return {};
         }
 
+        ViewGroupPtr ViewportContextManager::GetCurrentViewGroup(const Name& contextName)
+        {
+            AZStd::lock_guard lock(m_containerMutex);
+
+            if (auto viewIt = m_viewportViews.find(contextName); viewIt != m_viewportViews.end())
+            {
+                return viewIt->second.back();
+            }
+            return {};
+        }
+
         ViewPtr ViewportContextManager::GetCurrentStereoscopicView(const Name& context, ViewType viewType) const
         {
             AZStd::lock_guard lock(m_containerMutex);
@@ -401,30 +416,19 @@ namespace AZ
 
         void ViewportContextManager::UpdateViewForContext(const Name& context)
         {
-            auto currentView = GetCurrentView(context);
+            auto currentViewGroup = GetCurrentViewGroup(context);
 
             for (const auto& viewportData : m_viewportContexts)
             {
                 ViewportContextPtr viewportContext = viewportData.second.context.lock();
                 if (viewportContext && viewportContext->GetName() == context)
-                {                 
-                    for (uint32_t i = 0; i < MaxViewTypes; i++)
-                    {
-                        if (i == DefaultViewType)
-                        {
-                            viewportContext->SetDefaultView(currentView, DefaultViewType);
-                        }
-                        else
-                        {
-                            auto currentStereoscopicView = GetCurrentStereoscopicView(context, static_cast<ViewType>(i));
-                            viewportContext->SetDefaultView(currentStereoscopicView, i);
-                        }
-                    }
+                {
+                    viewportContext->SetDefaultViewGroup(currentViewGroup);
 
                     ViewportContextIdNotificationBus::Event(
                         viewportContext->GetId(),
                         &ViewportContextIdNotificationBus::Events::OnViewportDefaultViewChanged,
-                        currentView);
+                        currentViewGroup->GetView(ViewType::Default));
                     break;
                 }
             }
@@ -432,7 +436,7 @@ namespace AZ
             ViewportContextNotificationBus::Event(
                 context,
                 &ViewportContextNotificationBus::Events::OnViewportDefaultViewChanged,
-                currentView);
+                currentViewGroup->GetView(ViewType::Default));
         }
     } // namespace RPI
 } // namespace AZ

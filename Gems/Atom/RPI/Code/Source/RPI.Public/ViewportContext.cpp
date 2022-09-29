@@ -248,15 +248,14 @@ namespace AZ
             m_viewGroup->SignalViewMatrixChangedEvent(view->GetWorldToViewMatrix());
         }
 
-        void ViewportContext::SetDefaultView(ViewPtr view, uint32_t viewIndex)
+        void ViewportContext::UpdateContextPipelineView(uint32_t viewIndex)
         {
             ViewType viewType = static_cast<ViewType>(viewIndex);
-            if (view != nullptr && m_viewGroup->GetView(viewType) != view)
+            if (auto view = m_viewGroup->GetView(viewType))
             {
                 m_viewGroup->DisconnectProjectionMatrixHandler(viewType);
                 m_viewGroup->DisconnectViewMatrixHandler(viewType);
 
-                m_viewGroup->SetView(view, viewType);
                 UpdatePipelineView(viewIndex);
 
                 m_viewChangedEvents[viewIndex].Signal(view);
@@ -271,6 +270,10 @@ namespace AZ
         void ViewportContext::SetDefaultViewGroup(ViewGroupPtr viewGroup)
         {
             m_viewGroup = viewGroup;
+            for (uint32_t i = 0; i < MaxViewTypes; i++)
+            {
+                UpdateContextPipelineView(i);
+            }
         }
 
         void ViewportContext::UpdatePipelineView(uint32_t viewIndex)

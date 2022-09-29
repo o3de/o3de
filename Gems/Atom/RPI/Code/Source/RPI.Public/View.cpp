@@ -56,6 +56,11 @@ namespace AZ
             AZ::MakePerspectiveFovMatrixRH(viewToClipMatrix, AZ::Constants::HalfPi, 1, 0.1f, 1000.f, true);
             SetViewToClipMatrix(viewToClipMatrix);
 
+            if ((usage & UsageFlags::UsageXR))
+            {
+                SetViewToClipMatrix(AZ::Matrix4x4::CreateIdentity());
+            }
+
             TryCreateShaderResourceGroup();
 
 #if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED

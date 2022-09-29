@@ -132,7 +132,7 @@ namespace AZ
         private:
 
             // Used by the manager to set the current default camera.
-            void SetDefaultView(ViewPtr view, uint32_t viewIndex);
+            void UpdateContextPipelineView(uint32_t viewIndex);
             void SetDefaultViewGroup(ViewGroupPtr viewGroup);
 
             // Ensures our render pipeline's default camera matches ours.
