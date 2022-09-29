@@ -705,11 +705,6 @@ namespace GradientSignal
         GetSubImageData();
     }
 
-    void ImageGradientComponent::OnAssetMoved(AZ::Data::Asset<AZ::Data::AssetData> asset, [[maybe_unused]] void* oldDataPointer)
-    {
-        //OnAssetReady(asset);
-    }
-
     void ImageGradientComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         OnAssetReady(asset);

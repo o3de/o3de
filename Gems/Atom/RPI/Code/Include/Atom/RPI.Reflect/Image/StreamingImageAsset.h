@@ -50,7 +50,6 @@ namespace AZ
             friend class StreamingImageAssetCreator;
             friend class StreamingImageAssetTester;
             friend class StreamingImageAssetHandler;
-            friend class StreamingImageAssetReloader;
 
         public:
             static const char* DisplayName;
@@ -104,12 +103,6 @@ namespace AZ
 
             //! Whether the image has all referenced ImageMipChainAssets loaded
             bool HasFullMipChainAssets() const;
-
-        protected:
-
-            // AssetData overrides...
-            // Disable auto reload and use StreamingImageAsestReloader instead
-            bool HandleAutoReload() override { return false; }
 
         private:
             struct MipChain

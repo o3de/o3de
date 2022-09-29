@@ -85,7 +85,7 @@ namespace ImageProcessingAtom
             m_renderWait.release();
         }
 
-        void ImageThumbnail::OnCatalogAssetChanged([[maybe_unused]] const AZ::Data::AssetId& assetId)
+        void ImageThumbnail::OnCatalogAssetChanged(const AZ::Data::AssetId& assetId)
         {
             if (m_state == State::Ready && m_assetIds.find(assetId) != m_assetIds.end())
             {
