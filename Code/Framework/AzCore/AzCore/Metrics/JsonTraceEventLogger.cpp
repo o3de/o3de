@@ -17,6 +17,9 @@
 
 namespace AZ::Metrics
 {
+    //! Used to enable TracePrintfs within the Json Event Logger class
+    constexpr bool TraceLogging = false;
+
     constexpr AZStd::string_view NameKey = "name";
     constexpr AZStd::string_view CategoryKey = "cat";
     constexpr AZStd::string_view PhaseKey = "ph";
@@ -37,7 +40,7 @@ namespace AZ::Metrics
     constexpr int32_t IndentStep = 2;
     constexpr size_t StackAllocatorSize = 2048;
 
-    using EventJsonWriter = rapidjson::Writer<AZ::IO::RapidJSONWriteStreamNoCache, rapidjson::UTF8<char>, rapidjson::UTF8<char>,
+    using EventJsonWriter = rapidjson::Writer<AZ::IO::RapidJSONWriteStreamUnbuffered, rapidjson::UTF8<char>, rapidjson::UTF8<char>,
         AZ::Json::RapidjsonStackAllocator<StackAllocatorSize>>;
 
     static void AppendNewlineWithIndent(JsonTraceEventLogger::JsonEventString& eventString, int32_t indent, bool prependComma)
@@ -456,7 +459,7 @@ namespace AZ::Metrics
 
         AZ::Json::RapidjsonStackAllocator<StackAllocatorSize> stackAllocator;
         AZ::IO::ByteContainerStream byteStream(&eventString);
-        AZ::IO::RapidJSONWriteStreamNoCache rapidJsonStream(byteStream);
+        AZ::IO::RapidJSONWriteStreamUnbuffered rapidJsonStream(byteStream);
 
         EventJsonWriter jsonWriter(rapidJsonStream, &stackAllocator);
 
@@ -516,8 +519,11 @@ namespace AZ::Metrics
             totalBytesWritten += eventBytesWritten;
         }
 
-        AZ_TracePrintf("EventLogger", R"("Event Logger with name "%s", wrote event at index %zu with of %zu bytes and name %.*s)",
-            m_name.c_str(), currentEventIndex, totalBytesWritten, AZ_STRING_ARG(eventDesc.GetName()));
+        if constexpr (TraceLogging)
+        {
+            AZ_TracePrintf("EventLogger", R"("Event Logger with name "%s", wrote event at index %zu with of %zu bytes and name %.*s)",
+                m_name.c_str(), currentEventIndex, totalBytesWritten, AZ_STRING_ARG(eventDesc.GetName()));
+        }
 
         return result;
     }

@@ -22,15 +22,12 @@ namespace AZ::IO
         class PrintIterator final
         {
         public:
-            PrintIterator(RapidXMLStreamWriter* writer)
+            explicit PrintIterator(RapidXMLStreamWriter* writer)
                 : m_writer(writer)
             {
             }
 
-            PrintIterator(const PrintIterator& it)
-                : m_writer(it.m_writer)
-            {
-            }
+            PrintIterator(const PrintIterator& it) = default;
 
             PrintIterator& operator=(const PrintIterator& rhs) = default;
 
@@ -71,7 +68,7 @@ namespace AZ::IO
                 IO::SizeType bytes = m_stream->Write(m_cache.size(), m_cache.data());
                 if (bytes != m_cache.size())
                 {
-                    AZ_Error("Serializer", false, "Failed writing %d byte(s) to stream, wrote only %d bytes!", m_cache.size(), bytes);
+                    AZ_Error("Serializer", false, "Failed writing %zu byte(s) to stream, wrote only %llu bytes!", m_cache.size(), bytes);
                     ++m_errorCount;
                 }
                 m_cache.clear();
@@ -89,20 +86,20 @@ namespace AZ::IO
     };
 
     //! Implements the rapidjson::Stream concept
-    class RapidJSONWriteStreamNoCache
+    class RapidJSONWriteStreamUnbuffered
     {
     public:
         using Ch = char;    //!< Character type. Only support char.
 
-        explicit RapidJSONWriteStreamNoCache(AZ::IO::GenericStream& stream)
+        explicit RapidJSONWriteStreamUnbuffered(AZ::IO::GenericStream& stream)
             : m_stream(&stream)
         {
         }
 
-        virtual ~RapidJSONWriteStreamNoCache() = default;
+        virtual ~RapidJSONWriteStreamUnbuffered() = default;
 
-        RapidJSONWriteStreamNoCache(const RapidJSONWriteStreamNoCache&) = delete;
-        RapidJSONWriteStreamNoCache& operator=(const RapidJSONWriteStreamNoCache&) = delete;
+        RapidJSONWriteStreamUnbuffered(const RapidJSONWriteStreamUnbuffered&) = delete;
+        RapidJSONWriteStreamUnbuffered& operator=(const RapidJSONWriteStreamUnbuffered&) = delete;
 
         virtual void Put(char c)
         {
@@ -150,11 +147,11 @@ namespace AZ::IO
 
     //! Adds caching around the RapidJsonStreamWriter
     class RapidJSONStreamWriter
-        : public RapidJSONWriteStreamNoCache
+        : public RapidJSONWriteStreamUnbuffered
     {
     public:
         explicit RapidJSONStreamWriter(AZ::IO::GenericStream* stream, size_t writeCacheSize = 128 * 1024)
-            : RapidJSONWriteStreamNoCache(*stream)
+            : RapidJSONWriteStreamUnbuffered(*stream)
         {
             m_cache.reserve(writeCacheSize);
         }

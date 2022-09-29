@@ -42,7 +42,7 @@ namespace UnitTest
             return !::isspace(element);
         };
 
-        // Need persistant storage in this case to count all occurances of JSON string inside of source string
+        // Need persistent storage in this case to count all occurrences of JSON string inside of source string
         // Remove all whitespace from both strings
         AZStd::string sourceString(AZStd::from_range, sourceView | AZStd::views::filter(TrimWhitespace));
         AZStd::string containsString(AZStd::from_range, containsView | AZStd::views::filter(TrimWhitespace));
@@ -131,7 +131,7 @@ namespace UnitTest
         EventObjectStorage eventObject;
 
         // Fill out the child array and child object fields
-        for (const auto& [fieldName, fieldValue] : AZStd::views::zip(objectFieldNames, objectFieldValues))
+        for (auto [fieldName, fieldValue] : AZStd::views::zip(objectFieldNames, objectFieldValues))
         {
             auto AppendArgs = [name = fieldName, &eventArray, &eventObject](auto&& value)
             {
@@ -450,6 +450,7 @@ namespace Benchmark
             }
         };
 
+        LogAllEvents(0);
         // Flush and closes the event stream
         // This completes the json array
         googleTraceLogger.ResetStream(nullptr);
@@ -464,12 +465,16 @@ namespace Benchmark
         metricsPayload.reserve(eventOutputReserveSize);
         for ([[maybe_unused]] auto _ : state)
         {
-            RecordMetricsToStream(AZStd::make_unique<AZ::IO::ByteContainerStream<AZStd::string>>(&metricsPayload));
+            state.PauseTiming();
+            // Do not time the creation of the stream
+            auto stream = AZStd::make_unique<AZ::IO::ByteContainerStream<AZStd::string>>(&metricsPayload);
+            state.ResumeTiming();
+            RecordMetricsToStream(AZStd::move(stream));
             metricsPayload.clear();
         }
     }
 
-    BENCHMARK_F(JsonTraceEventLoggerBenchmarkFixture, BM_JsonTraceEventLogger_RecordEventsToTemporaryDirFileStream)(benchmark::State& state)
+    BENCHMARK_F(JsonTraceEventLoggerBenchmarkFixture, BM_JsonTraceEventLogger_RecordEventsToTemporaryDirUnbufferedFileStream)(benchmark::State& state)
     {
         // Open the file and truncate the file
         constexpr AZ::IO::OpenMode openMode = AZ::IO::OpenMode::ModeWrite;
@@ -477,7 +482,10 @@ namespace Benchmark
 
         for ([[maybe_unused]] auto _ : state)
         {
-            RecordMetricsToStream(AZStd::make_unique<AZ::IO::SystemFileStream>(metricsFilepath.c_str(), openMode));
+            state.PauseTiming();
+            auto stream = AZStd::make_unique<AZ::IO::SystemFileStream>(metricsFilepath.c_str(), openMode);
+            state.ResumeTiming();
+            RecordMetricsToStream(AZStd::move(stream));
         }
     }
 } // Benchmark
