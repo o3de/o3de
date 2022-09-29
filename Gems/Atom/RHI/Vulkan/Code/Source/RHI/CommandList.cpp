@@ -416,7 +416,13 @@ namespace AZ
                 AZ_Assert(false, "Invalid dispatch type");
                 break;
             }            
-        }       
+        }
+
+        void CommandList::Submit([[maybe_unused]] FfxFsr2Context& context, [[maybe_unused]] FfxFsr2DispatchDescription& fsr2DispatchItem)
+        {
+            // Provide a VK backend for FSR2
+            AZ_Assert(false, "Not implemented");
+        }
 
         void CommandList::Submit([[maybe_unused]] const RHI::DispatchRaysItem& dispatchRaysItem, uint32_t submitIndex)
         {

@@ -83,6 +83,7 @@ namespace AZ
             void Submit(const RHI::DrawItem& itemList, uint32_t submitIndex = 0) override;
             void Submit(const RHI::DispatchItem& dispatchItems, uint32_t submitIndex = 0) override;
             void Submit(const RHI::DispatchRaysItem& dispatchRaysItem, uint32_t submitIndex = 0) override;
+            void Submit(FfxFsr2Context& context, FfxFsr2DispatchDescription& fsr2DispatchItem) override;
             void BeginPredication(const RHI::Buffer& buffer, uint64_t offset, RHI::PredicationOp operation) override;
             void EndPredication() override;
             void BuildBottomLevelAccelerationStructure(const RHI::RayTracingBlas& rayTracingBlas) override;

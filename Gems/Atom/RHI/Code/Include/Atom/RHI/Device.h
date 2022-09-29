@@ -23,10 +23,17 @@
 #include <AzCore/std/containers/fixed_vector.h>
 #include <AzCore/std/containers/unordered_map.h>
 
+// Forward declarations of various objects used within FSR2
+struct FfxFsr2Context;
+struct FfxFsr2ContextDescription;
+struct FfxResource;
+
 namespace AZ
 {
     namespace RHI
     {
+        class Image;
+
         //! The Device is a context for managing GPU state and memory on a physical device. The user creates
         //! a device instance from a PhysicalDevice. Each device has its own capabilities and limits, and can
         //! be configured to buffer a specific number of frames.
@@ -141,6 +148,31 @@ namespace AZ
             {
                 return RHI::ResultCode::Success;
             };
+
+            //! Query for RHI FidelityFX FSR2 support
+            virtual bool HasFsr2Support() const
+            {
+                return false;
+            }
+
+            //! Create an FSR2 context used for temporal anti-aliasing and upscaling (implemented only
+            //! on supported RHI backends)
+            virtual RHI::ResultCode CreateFsr2Context(
+                [[maybe_unused]] FfxFsr2Context& outContext, [[maybe_unused]] const FfxFsr2ContextDescription& desc)
+            {
+                return RHI::ResultCode::Unimplemented;
+            }
+
+            //! Convert an RHI::Image to a resource type FSR2 expects
+            virtual RHI::ResultCode PopulateFsr2Resource(
+                [[maybe_unused]] FfxFsr2Context& context,
+                [[maybe_unused]] FfxResource& outResource,
+                [[maybe_unused]] const Image& image,
+                [[maybe_unused]] const wchar_t* name,
+                [[maybe_unused]] bool unorderedAccess)
+            {
+                return RHI::ResultCode::Unimplemented;
+            }
 
             bool WasDeviceRemoved();
             void SetDeviceRemoved();

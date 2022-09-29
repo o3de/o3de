@@ -94,12 +94,16 @@ namespace AZ
             //! Sets a pixel offset on the view, usually used for jittering the camera for anti-aliasing techniques.
             void SetClipSpaceOffset(float xOffset, float yOffset);
 
+            //! Set scale factors to apply to motion vectors
+            void SetMotionVectorScale(float xScale, float yScale);
+
             const AZ::Matrix4x4& GetWorldToViewMatrix() const;
             //! Use GetViewToWorldMatrix().GetTranslation() to get the camera's position.
             const AZ::Matrix4x4& GetViewToWorldMatrix() const;
             const AZ::Matrix4x4& GetViewToClipMatrix() const;
             const AZ::Matrix4x4& GetWorldToClipMatrix() const;
             const AZ::Matrix4x4& GetClipToWorldMatrix() const;
+            const Vector2 GetClipNearFar() const;
 
             AZ::Matrix3x4 GetWorldToViewMatrixAsMatrix3x4() const;
             AZ::Matrix3x4 GetViewToWorldMatrixAsMatrix3x4() const;
@@ -168,7 +172,7 @@ namespace AZ
             // Pointer to list of passes relevant to the draw lists (passes will be used for sorting the draw lists)
             PassesByDrawList* m_passesByDrawList = nullptr;
 
-            // Indies of constants in default view srg
+            // Indices of constants in default view srg
             RHI::ShaderInputNameIndex m_viewProjectionMatrixConstantIndex = "m_viewProjectionMatrix";
             RHI::ShaderInputNameIndex m_worldPositionConstantIndex = "m_worldPosition";
             RHI::ShaderInputNameIndex m_viewMatrixConstantIndex = "m_viewMatrix";
@@ -179,6 +183,8 @@ namespace AZ
             RHI::ShaderInputNameIndex m_worldToClipPrevMatrixConstantIndex = "m_viewProjectionPrevMatrix";
             RHI::ShaderInputNameIndex m_zConstantsConstantIndex = "m_linearizeDepthConstants";
             RHI::ShaderInputNameIndex m_unprojectionConstantsIndex = "m_unprojectionConstants";
+            RHI::ShaderInputNameIndex m_jitterCompensationIndex = "m_jitterCompensation";
+            RHI::ShaderInputNameIndex m_motionVectorScaleIndex = "m_motionVectorScale";
 
             // The context containing draw lists associated with the view.
             RHI::DrawListContext m_drawListContext;
@@ -207,6 +213,10 @@ namespace AZ
 
             // Clip space offset for camera jitter with taa
             Vector2 m_clipSpaceOffset = Vector2(0.0f, 0.0f);
+            Vector2 m_clipSpaceOffsetPrev = Vector2(0.0f, 0.0f);
+
+            // Scale factor to apply to computed motion vectors
+            Vector2 m_motionVectorScale = Vector2{ 1.f, 1.f };
 
             MatrixChangedEvent m_onWorldToClipMatrixChange;
             MatrixChangedEvent m_onWorldToViewMatrixChange;

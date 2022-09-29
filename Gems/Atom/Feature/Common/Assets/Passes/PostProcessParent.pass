@@ -85,6 +85,34 @@
                     ]
                 },
                 {
+                    "Name": "Fsr2TaaUpscalePass",
+                    "TemplateName": "Fsr2TaaUpscaleTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputColor",
+                            "AttachmentRef": {
+                                "Pass": "SMAA1xApplyLinearHDRColorPass",
+                                "Attachment": "OutputColor"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputDepth",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "Depth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "MotionVectors",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "MotionVectors"
+                            }
+                        }
+                    ]
+                },
+                {
                     "Name": "TaaPass",
                     "TemplateName": "TaaTemplate",
                     "Enabled": false,
@@ -92,7 +120,7 @@
                         {
                             "LocalSlot": "InputColor",
                             "AttachmentRef": {
-                                "Pass": "SMAA1xApplyLinearHDRColorPass",
+                                "Pass": "Fsr2TaaUpscalePass",
                                 "Attachment": "OutputColor"
                             }
                         },

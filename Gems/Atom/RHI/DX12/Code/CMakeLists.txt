@@ -68,6 +68,8 @@ if(NOT PAL_TRAIT_ATOM_RHI_DX12_SUPPORTED)
 
 endif()
 
+include(../../3rdParty/FetchFSR2.cmake)
+
 ly_add_target(
     NAME Atom_RHI_DX12.Reflect STATIC
     NAMESPACE Gem
@@ -102,6 +104,8 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PUBLIC
+            3rdParty::ffx_fsr2_api_x64
+            3rdParty::ffx_fsr2_api_dx12_x64
             AZ::AzCore
             AZ::AzFramework
             Gem::Atom_RHI.Reflect

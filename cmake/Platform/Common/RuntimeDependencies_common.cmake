@@ -203,7 +203,7 @@ function(ly_get_runtime_dependency_command ly_RUNTIME_COMMAND ly_RUNTIME_DEPEND 
     if(TARGET ${ly_TARGET})
 
         get_target_property(target_type ${ly_TARGET} TYPE)
-        if(NOT target_type IN_LIST LY_TARGET_TYPES_WITH_RUNTIME_OUTPUTS)
+        if(NOT target_type IN_LIST LY_TARGET_TYPES_WITH_RUNTIME_OUTPUTS OR target_type STREQUAL "UTILITY")
             return()
         endif()
 

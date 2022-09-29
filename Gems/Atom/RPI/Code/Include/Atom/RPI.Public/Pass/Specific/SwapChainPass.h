@@ -67,11 +67,17 @@ namespace AZ
             // The SwapChain used when rendering this pass
             Ptr<PassAttachment> m_swapChainAttachment;
 
+            // An optional render output attachment used as a size and format source for
+            // render pipelines that support upscaling
+            Ptr<PassAttachment> m_renderOutputAttachment;
+
             RHI::SwapChainDimensions m_swapChainDimensions;
 
             RHI::Scissor m_scissorState;
             RHI::Viewport m_viewportState;
             WindowContext::SwapChainMode m_swapChainMode = WindowContext::SwapChainMode::Default;
+
+            float m_currentRenderScale = 1.f;
         };
 
     }   // namespace RPI

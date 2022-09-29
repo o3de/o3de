@@ -8,6 +8,10 @@
             "PassClass": "ParentPass",
             "Slots": [
                 {
+                    "Name": "RenderOutput",
+                    "SlotType": "InputOutput"
+                },
+                {
                     "Name": "PipelineOutput",
                     "SlotType": "InputOutput"
                 }
@@ -15,6 +19,10 @@
             "PassData": {
                 "$type": "PassData",
                 "PipelineGlobalConnections": [
+                    {
+                        "GlobalName": "RenderOutput",
+                        "Slot": "RenderOutput"
+                    },
                     {
                         "GlobalName": "PipelineOutput",
                         "Slot": "PipelineOutput"
@@ -58,7 +66,7 @@
                             "LocalSlot": "PipelineOutput",
                             "AttachmentRef": {
                                 "Pass": "PipelineGlobal",
-                                "Attachment": "PipelineOutput"
+                                "Attachment": "RenderOutput"
                             }
                         }
                     ]
@@ -85,7 +93,7 @@
                             "LocalSlot": "PipelineOutput",
                             "AttachmentRef": {
                                 "Pass": "PipelineGlobal",
-                                "Attachment": "PipelineOutput"
+                                "Attachment": "RenderOutput"
                             }
                         }
                     ]
@@ -112,7 +120,7 @@
                             "LocalSlot": "PipelineOutput",
                             "AttachmentRef": {
                                 "Pass": "PipelineGlobal",
-                                "Attachment": "PipelineOutput"
+                                "Attachment": "RenderOutput"
                             }
                         }
                     ]
@@ -132,7 +140,7 @@
                             "LocalSlot": "PipelineOutput",
                             "AttachmentRef": {
                                 "Pass": "PipelineGlobal",
-                                "Attachment": "PipelineOutput"
+                                "Attachment": "RenderOutput"
                             }
                         },
                         {
@@ -208,7 +216,7 @@
                             "LocalSlot": "PipelineOutput",
                             "AttachmentRef": {
                                 "Pass": "PipelineGlobal",
-                                "Attachment": "PipelineOutput"
+                                "Attachment": "RenderOutput"
                             }
                         }
                     ]

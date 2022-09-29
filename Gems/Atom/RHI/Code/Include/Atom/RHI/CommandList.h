@@ -16,6 +16,9 @@
 #include <Atom/RHI/RayTracingAccelerationStructure.h>
 #include <Atom/RHI/RayTracingBufferPools.h>
 
+struct FfxFsr2Context;
+struct FfxFsr2DispatchDescription;
+
 namespace AZ
 {
     namespace RHI
@@ -79,6 +82,9 @@ namespace AZ
 
             /// Submits a single dispatch rays item for processing on the command list.
             virtual void Submit(const DispatchRaysItem& dispatchRaysItem, uint32_t submitIndex = 0) = 0;
+
+            /// Submit an FSR2 dispatch (on FSR2-supported RHI backends)
+            virtual void Submit(FfxFsr2Context& context, FfxFsr2DispatchDescription& fsr2DispatchItem) = 0;
 
             /// Starts predication on the command list.
             virtual void BeginPredication(const Buffer& buffer, uint64_t offset, PredicationOp operation) = 0;

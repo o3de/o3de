@@ -76,6 +76,10 @@ if(NOT PAL_TRAIT_ATOM_RHI_VULKAN_SUPPORTED)
 
 endif()
 
+include(../../3rdParty/FetchFSR2.cmake)
+
+# TODO: FSR2
+
 ly_add_target(
     NAME Atom_RHI_Vulkan.Reflect STATIC
     NAMESPACE Gem

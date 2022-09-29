@@ -1,0 +1,73 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "Fsr2TaaUpscaleTemplate",
+            "PassClass": "Fsr2TaaUpscalePass",
+            "Slots": [
+                {
+                    "Name": "InputColor",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "InputDepth",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "MotionVectors",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "OutputColor",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader"
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "OutputColor",
+                    "FormatSource": {
+                        "Pass": "This",
+                        "Attachment": "InputColor"
+                    },
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "Parent" ,
+                            "Attachment": "PipelineOutput"
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "SharedQueueMask": "Graphics",
+                        "BindFlags": [
+                            "Color",
+                            "ShaderReadWrite"
+                        ]
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "OutputColor",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "OutputColor"
+                    }
+                }
+            ],
+            "FallbackConnections": [
+                {
+                    "Input": "InputColor",
+                    "Output": "OutputColor"
+                }
+            ],
+            "PassData": {
+                "$type": "Fsr2TaaUpscalePassData"
+            }
+        }
+    }
+}

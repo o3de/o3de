@@ -301,6 +301,10 @@
                 "Path": "Passes/SMAA1xApplyPerceptualColor.pass"
             },
             {
+                "Name": "Fsr2TaaUpscaleTemplate",
+                "Path": "Passes/Fsr2TaaUpscale.pass"
+            },
+            {
                 "Name": "TaaTemplate",
                 "Path": "Passes/Taa.pass"
             },

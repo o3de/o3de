@@ -6,8 +6,18 @@
 #
 #
 
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 set(common_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/Common)
+
+include(../../../RHI/3rdParty/FetchFSR2.cmake)
+set(FSR2_LIB)
+if(TARGET 3rdParty::ffx_fsr2_api_x64)
+    set(FSR2_LIB 3rdParty::ffx_fsr2_api_x64)
+    message(STATUS "Compiling with Atom FSR2 TAA and upscaling feature ${FSR2_INCLUDE_PATH}")
+else()
+    message(STATUS "Excluding Atom FSR2 TAA and upscaling feature")
+endif()
 
 ly_add_target(
     NAME Atom_Feature_Common.Static STATIC
@@ -23,6 +33,7 @@ ly_add_target(
             .
             Source
             ${pal_source_dir}
+            ${FSR2_INCLUDE_PATH}
         PUBLIC
             Include
             Source
@@ -34,6 +45,7 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
         PUBLIC
+            ${FSR2_LIB}
             Gem::Atom_RPI.Public
             Gem::Atom_Utils.Static
             Gem::Atom_Feature_Common.Public
