@@ -6,8 +6,6 @@
 #
 #
 
-cmake_minimum_required(VERSION 3.20)
-
 # The name of the Python import module we're generating.
 set(BINDINGS_LIBRARY "azqtpyside")
 
@@ -16,6 +14,8 @@ set(wrapped_header ${CMAKE_CURRENT_LIST_DIR}/bindings_azqtcomponents.h)
 
 # Typesystem xml.
 set(typesystem_file ${CMAKE_CURRENT_LIST_DIR}/bindings_azqtcomponents.xml)
+
+include(${CMAKE_CURRENT_LIST_DIR}/wrapped_files.cmake)
 
 # Allow AUTOMOC/AUTOUIC on generated files.
 if(POLICY CMP0071)
@@ -57,31 +57,43 @@ set(PYSIDE2_TYPESYSTEM_PATH "${PYSIDE2_SHARE_PATH}/typesystems")
 set(PYSIDE2_BIN_PATH "${PYSIDE2_PATH}/bin")
 set(PYSIDE2_INCLUDE_DIR ${INCLUDE_DIR}/PySide2)
 set(SHIBOKEN_GENERATOR_EXE_PATH "${PYSIDE2_BIN_PATH}/shiboken2${CMAKE_EXECUTABLE_SUFFIX}") 
-
+message("found shiboken ${SHIBOKEN_GENERATOR_EXE_PATH}")
 if(NOT EXISTS ${SHIBOKEN_GENERATOR_EXE_PATH})
     message(FATAL_ERROR "Shiboken executable not found at path: ${SHIBOKEN_GENERATOR_EXE_PATH}")
 endif()
-  
-set(SHIBOKEN_MODULE_PATH "${PYSIDE2_MODULE_DIR}/pyside2/lib/site-packages/shiboken2")
+ 
+set(SHIBOKEN_MODULE_PATH "")
+set(PYSIDE2_LIB_DIR "")
+if (WIN32)  
+    set(SHIBOKEN_MODULE_PATH "${PYSIDE2_MODULE_DIR}/pyside2/lib/site-packages/shiboken2")
+    set(PYSIDE2_LIB_DIR ${PYSIDE2_PATH}/lib/site-packages/PySide2)
+elseif (UNIX)
+    set(SHIBOKEN_MODULE_PATH "${PYSIDE2_MODULE_DIR}/pyside2/lib")
+    set(PYSIDE2_LIB_DIR ${PYSIDE2_PATH}/pyside2/lib)
+endif()    
 
 set(SHIBOKEN_INCLUDE_DIR "${INCLUDE_DIR}/shiboken2")
-set(SHIBOKEN_SHARED_LIBRARIES "${SHIBOKEN_MODULE_PATH}/shiboken2.abi3.lib")
-set(SHIBOKEN_DLL "${SHIBOKEN_MODULE_PATH}/shiboken2.abi3.dll")
-set(SHIBOKEN_SHARED_LIBRARIES_D "${SHIBOKEN_MODULE_PATH}/shiboken2_d.${LIB_EXTENSION}.lib")
-set(SHIBOKEN_DLL_D "${SHIBOKEN_MODULE_PATH}/shiboken2_d.${LIB_EXTENSION}.dll")
+set(SHIBOKEN_SHARED_LIBRARIES "")
+set(SHIBOKEN_SHARED_LIBRARIES_D "")
+set(PYSIDE2_SHARED_LIBRARIES "")
+set (PYSIDE2_SHARED_LIBRARIES_D "")
 
-set(PYSIDE2_LIB_DIR ${PYSIDE2_PATH}/lib/site-packages/PySide2)
-
-set(PYSIDE2_SHARED_LIBRARIES "${PYSIDE2_LIB_DIR}/pyside2.abi3.lib")
-set(PYSIDE2_SHARED_LIBRARIES_D "${PYSIDE2_LIB_DIR}/pyside2_d.${LIB_EXTENSION}.lib")
-
-set(PYSIDE2_DLL "${PYSIDE2_LIB_DIR}/pyside2.abi3.dll")
-set(PYSIDE2_DLL_D "${PYSIDE2_LIB_DIR}/pyside2_d.${LIB_EXTENSION}.dll")
+if (WIN32)  
+    set(SHIBOKEN_SHARED_LIBRARIES "${SHIBOKEN_MODULE_PATH}/shiboken2.abi3.lib")
+    set(SHIBOKEN_SHARED_LIBRARIES_D "${SHIBOKEN_MODULE_PATH}/shiboken2_d.${LIB_EXTENSION}.lib")
+    set(PYSIDE2_SHARED_LIBRARIES "${PYSIDE2_LIB_DIR}/pyside2.abi3.lib")
+    set(PYSIDE2_SHARED_LIBRARIES_D "${PYSIDE2_LIB_DIR}/pyside2_d.${LIB_EXTENSION}.lib")
+elseif (UNIX)
+    set(SHIBOKEN_SHARED_LIBRARIES "${SHIBOKEN_MODULE_PATH}/libshiboken2.abi3.so")
+    set(SHIBOKEN_SHARED_LIBRARIES_D "${SHIBOKEN_MODULE_PATH}/libshiboken2.abi3.so")
+    set(PYSIDE2_SHARED_LIBRARIES "${PYSIDE2_LIB_DIR}/libpyside2.abi3.so")
+    set(PYSIDE2_SHARED_LIBRARIES_D "${PYSIDE2_LIB_DIR}/libpyside2.abi3.so")
+endif()
   
-set(CMAKE_SKIP_BUILD_RPATH FALSE)
-set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-set(CMAKE_INSTALL_RPATH ${SHIBOKEN_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR})
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+#set(CMAKE_SKIP_BUILD_RPATH FALSE)
+#set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+#set(CMAKE_INSTALL_RPATH ${SHIBOKEN_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR})
+#set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 # Define the shared library for which we will create bindings.
 set_property(TARGET ${AZQTCOMPONENTS_LIBRARY} PROPERTY PREFIX "")
@@ -92,67 +104,43 @@ set(LICENSE_FILE ${CMAKE_CURRENT_LIST_DIR}/license_header.txt)
 # Set up the options to pass to shiboken.
 set(shiboken_options --generator-set=shiboken --enable-parent-ctor-heuristic
     --enable-pyside-extensions --enable-return-value-heuristic --use-isnull-as-nb_nonzero
-    --avoid-protected-hack --language-level=c++17
+    --avoid-protected-hack --language-level=c++17 --debug-level=full
     --license-file=${LICENSE_FILE}
     ${INCLUDES}
     -I${CMAKE_SOURCE_DIR}
     -I${CMAKE_CURRENT_LIST_DIR}/..
-    -I"${LY_ROOT_FOLDER}/code/Framework/AzCore"
-    -I"${LY_ROOT_FOLDER}/code/Framework/AzQtComponents"
+    -I${LY_ROOT_FOLDER}/code/Framework/AzCore
+    -I${LY_ROOT_FOLDER}/code/Framework/AzQtComponents
     -I"${PROJECT_BINARY_DIR}/../AzQtComponents_autogen/include"
-    -I"${LY_ROOT_FOLDER}/code/Framework/AzCore/Platform/${PAL_PLATFORM_NAME}"
+    -I${LY_ROOT_FOLDER}/code/Framework/AzCore/Platform/${PAL_PLATFORM_NAME}
     -I"${PYSIDE2_INCLUDE_DIR}"
     -I"${SHIBOKEN_INCLUDE_DIR}"
     -I"${PYSIDE2_INCLUDE_DIR}/QtWidgets"
     -I"${PYSIDE2_INCLUDE_DIR}/QtCore"
     -I"${PYSIDE2_INCLUDE_DIR}/QtGui"
     -I"${PYSIDE2_TYPESYSTEM_PATH}"   
-    -I"${QT_MODULE_DIR}/include"
-    -I"${QT_MODULE_DIR}/include/QtWidgets"
-    -I"${QT_MODULE_DIR}/include/QtCore"
-    -I"${QT_MODULE_DIR}/include/QtGui"
-    -T"${PYSIDE2_PATH}/typesystems"
-    -T"${PYSIDE2_PATH}"
-    -T"${SHIBOKEN_INCLUDE_DIR}"
-    -T"${PYSIDE2_TYPESYSTEM_PATH}"
-    -T"${PYSIDE2_SHARE_PATH}"
+    -I${QT_MODULE_DIR}/include
+    -I${QT_MODULE_DIR}/include/QtWidgets
+    -I${QT_MODULE_DIR}/include/QtCore
+    -I${QT_MODULE_DIR}/include/QtGui
+    #-T"${PYSIDE2_PATH}/typesystems"
+    #-T"${PYSIDE2_PATH}"
+    #-T"${SHIBOKEN_INCLUDE_DIR}"
+    -T${PYSIDE2_TYPESYSTEM_PATH}
+    -T${PYSIDE2_SHARE_PATH}
     --output-directory=${CMAKE_CURRENT_BINARY_DIR}
 )
 
 set(generated_sources_dependencies ${wrapped_header} ${typesystem_file})
 
-# Dummy library to run the custom shiboken command.
-ly_add_target(
-    NAME ${BINDINGS_LIBRARY}.bindings STATIC
-    NAMESPACE Gem
-    FILES_CMAKE
-        dummy_files.cmake
-    INCLUDE_DIRECTORIES
-        PRIVATE
-            ${CMAKE_CURRENT_LIST_DIR}/..
-            ${PYSIDE2_INCLUDE_DIR}
-    BUILD_DEPENDENCIES
-        PUBLIC
-            AZ::AzQtComponents
-            Gem::EditorPythonBindings.Static
+add_custom_command(
+    OUTPUT ${WRAPPED_FILES}
+    COMMAND ${SHIBOKEN_GENERATOR_EXE_PATH} ${shiboken_options} ${wrapped_header} ${typesystem_file}
+    DEPENDS ${generated_sources_dependencies} 
+    COMMENT "Running generator for ${typesystem_file}."
+    VERBATIM
 )
 
-# Add the custom shiboken command to the dummy library.
-add_custom_command(TARGET ${BINDINGS_LIBRARY}.bindings
-                    POST_BUILD
-                    COMMAND ${SHIBOKEN_GENERATOR_EXE_PATH} ${shiboken_options} ${wrapped_header} ${typesystem_file}
-                    DEPENDS ${generated_sources_dependencies} 
-                        Gem::AzQtComponentsForPython.WrappedFiles
-                    COMMENT "Running generator for ${typesystem_file}.")
-    
-# Create dummy wrapper files so the second project has something to work with while being created.
-include(wrapped_files.cmake)
-foreach(WRAPPER_FILE ${WRAPPED_FILES})
-    if(NOT EXISTS "${WRAPPER_FILE}")
-        file(WRITE ${WRAPPER_FILE} "")
-    endif()
-endforeach()
-    
 # Set up the project for building the code generated by shiboken.
 ly_add_target(
     NAME ${BINDINGS_LIBRARY} GEM_MODULE
@@ -175,8 +163,10 @@ ly_add_target(
             Qt5::Widgets
             Qt5::Gui
             ${AZQTCOMPONENTS_LIBRARY}
-            ${BINDINGS_LIBRARY}.bindings
+            Gem::EditorPythonBindings.Static
 )
+
+set_target_properties(${BINDINGS_LIBRARY} PROPERTIES AUTOGEN_OUTPUT_FILES "${AUTOGEN_OUTPUTS}")
 
 target_link_libraries( ${BINDINGS_LIBRARY} PRIVATE 
     debug ${PYSIDE2_SHARED_LIBRARIES_D}

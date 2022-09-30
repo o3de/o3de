@@ -49,6 +49,7 @@
 #include <AzQtComponents/Components/StyledDialog.h>
 #include <AzQtComponents/Components/StyledDockWidget.h>
 #include <AzQtComponents/Components/StyledLineEdit.h>
+
 #include <AzQtComponents/Components/StyledSpinBox.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/StyleSheetCache.h>
@@ -56,11 +57,16 @@
 #include <AzQtComponents/Components/TagSelector.h>
 #include <AzQtComponents/Components/Titlebar.h>
 #include <AzQtComponents/Components/TitleBarOverdrawHandler.h>
+//ok
+/*
 #include <AzQtComponents/Components/ToastNotification.h>
-#include <AzQtComponents/Components/ToastNotificationConfiguration.h>
 
+#include <AzQtComponents/Components/ToastNotificationConfiguration.h>
+//not ok
+*/
 #include <AzQtComponents/Components/ToolBarArea.h>
 #include <AzQtComponents/Components/ToolButtonComboBox.h>
+
 #include <AzQtComponents/Components/ToolButtonLineEdit.h>
 #include <AzQtComponents/Components/ToolButtonWithWidget.h>
 
@@ -68,59 +74,63 @@
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
 
 
-#include <AzQtComponents/Components/Widgets/AssetFolderListView.h>
+// #include <AzQtComponents/Components/Widgets/AssetFolderListView.h>
 #include <AzQtComponents/Components/Widgets/AssetFolderThumbnailView.h>
 #include <AzQtComponents/Components/Widgets/BreadCrumbs.h>
 #include <AzQtComponents/Components/Widgets/BrowseEdit.h>
+//ok
 #include <AzQtComponents/Components/Widgets/Card.h>
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
 #include <AzQtComponents/Components/Widgets/CardNotification.h>
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
-#include <AzQtComponents/Components/Widgets/ColorLabel.h>
+//#include <AzQtComponents/Components/Widgets/ColorLabel.h>
 //#include <AzQtComponents/Components/Widgets/ColorPicker.h>
+
 #include <AzQtComponents/Components/Widgets/ComboBox.h>
 #include <AzQtComponents/Components/Widgets/DialogButtonBox.h>
 #include <AzQtComponents/Components/Widgets/DragAndDrop.h>
 #include <AzQtComponents/Components/Widgets/ElidingLabel.h>
 #include <AzQtComponents/Components/Widgets/Eyedropper.h>
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
-#include <AzQtComponents/Components/Widgets/GradientSlider.h>
+//#include <AzQtComponents/Components/Widgets/GradientSlider.h>
 #include <AzQtComponents/Components/Widgets/LineEdit.h>
 // #include <AzQtComponents/Components/Widgets/LogicalTabOrderingWidget.h>
 #include <AzQtComponents/Components/Widgets/Menu.h>
 #include <AzQtComponents/Components/Widgets/MessageBox.h>
-#include <AzQtComponents/Components/Widgets/OverlayWidget.h>
+//#include <AzQtComponents/Components/Widgets/OverlayWidget.h>
 
 #include <AzQtComponents/Components/Widgets/ProgressBar.h>
 #include <AzQtComponents/Components/Widgets/PushButton.h>
 #include <AzQtComponents/Components/Widgets/RadioButton.h>
 #include <AzQtComponents/Components/Widgets/ScrollBar.h>
 #include <AzQtComponents/Components/Widgets/SegmentBar.h>
+
 #include <AzQtComponents/Components/Widgets/SegmentControl.h>
 #include <AzQtComponents/Components/Widgets/Slider.h>
 #include <AzQtComponents/Components/Widgets/SliderCombo.h>
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
+
 #include <AzQtComponents/Components/Widgets/StatusBar.h>
-#include <AzQtComponents/Components/Widgets/TableView.h>
+//#include <AzQtComponents/Components/Widgets/TableView.h>
 #include <AzQtComponents/Components/Widgets/TabWidget.h>
 
 #include <AzQtComponents/Components/Widgets/TabWidgetActionToolBar.h>
 #include <AzQtComponents/Components/Widgets/Text.h>
 #include <AzQtComponents/Components/Widgets/ToolBar.h>
 #include <AzQtComponents/Components/Widgets/ToolButton.h>
-#include <AzQtComponents/Components/Widgets/TreeView.h>
+//#include <AzQtComponents/Components/Widgets/TreeView.h>
 #include <AzQtComponents/Components/Widgets/VectorInput.h>
 
-#include <AzQtComponents/Components/Widgets/ColorPicker/ColorComponentSliders.h>
-#include <AzQtComponents/Components/Widgets/ColorPicker/ColorController.h>
+//#include <AzQtComponents/Components/Widgets/ColorPicker/ColorComponentSliders.h>
+//#include <AzQtComponents/Components/Widgets/ColorPicker/ColorController.h>
 //#include <AzQtComponents/Components/Widgets/ColorPicker/ColorGrid.h>
-#include <AzQtComponents/Components/Widgets/ColorPicker/ColorHexEdit.h>
-#include <AzQtComponents/Components/Widgets/ColorPicker/ColorPreview.h>
-#include <AzQtComponents/Components/Widgets/ColorPicker/ColorRGBAEdit.h>
-#include <AzQtComponents/Components/Widgets/ColorPicker/ColorWarning.h>
-#include <AzQtComponents/Components/Widgets/ColorPicker/GammaEdit.h>
+//#include <AzQtComponents/Components/Widgets/ColorPicker/ColorHexEdit.h>
+//#include <AzQtComponents/Components/Widgets/ColorPicker/ColorPreview.h>
+//#include <AzQtComponents/Components/Widgets/ColorPicker/ColorRGBAEdit.h>
+//#include <AzQtComponents/Components/Widgets/ColorPicker/ColorWarning.h>
+//#include <AzQtComponents/Components/Widgets/ColorPicker/GammaEdit.h>
 // #include <AzQtComponents/Components/Widgets/ColorPicker/Palette.h>
 // #include <AzQtComponents/Components/Widgets/ColorPicker/PaletteCard.h>
 // #include <AzQtComponents/Components/Widgets/ColorPicker/PaletteCardCollection.h>
 //#include <AzQtComponents/Components/Widgets/ColorPicker/PaletteView.h>
-#include <AzQtComponents/Components/Widgets/ColorPicker/Swatch.h>
+//#include <AzQtComponents/Components/Widgets/ColorPicker/Swatch.h>
