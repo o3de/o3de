@@ -140,7 +140,7 @@ namespace AtomToolsFramework
             // Moving the attributes outside of the switch statement for specific types because the dynamic property is moving away from
             // using the enum. Even though these attributes only apply to specific property types, they can safely be applied to all
             // property types because each property control will only process attributes they recognize.
-            AddEditDataAttribute(AZ_CRC_CE("ColorEditorConfiguration"), AZ::RPI::ColorUtils::GetRgbEditorConfig());
+            AddEditDataAttribute(AZ_CRC_CE("ColorEditorConfiguration"), AZ::RPI::ColorUtils::GetLinearRgbEditorConfig());
             AddEditDataAttribute(AZ_CRC_CE("Thumbnail"), m_config.m_showThumbnail);
             AddEditDataAttribute(AZ_CRC_CE("SupportedAssetTypes"), m_config.m_supportedAssetTypes);
             AddEditDataAttribute(AZ::Edit::Attributes::ShowProductAssetFileName, false);
