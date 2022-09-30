@@ -44,6 +44,8 @@ namespace LyShine
     {
         if (pipeline == nullptr)
         {
+            // The pipeline being set to null means this pass will soon be destroyed. Disconnect from the bus so if a
+            // new LyShinePass is being created to replace it, it will be able to connect.
             LyShinePassRequestBus::Handler::BusDisconnect();
         }
         ParentPass::SetRenderPipeline(pipeline);
