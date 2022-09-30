@@ -244,7 +244,7 @@ namespace Multiplayer
             return AZ::Failure(AZStd::string("Trying to set a network spawnable to something that isn't a spawnable!"));
         }
 
-        const auto potentialNetworkSpawnable = static_cast<AZ::Data::Asset<AzFramework::Spawnable>*>(newValue);
+        const auto potentialNetworkSpawnable = reinterpret_cast<AZ::Data::Asset<AzFramework::Spawnable>*>(newValue);
         if (!potentialNetworkSpawnable->GetHint().ends_with(NetworkSpawnableFileExtension))
         {
             return AZ::Failure(AZStd::string::format(
