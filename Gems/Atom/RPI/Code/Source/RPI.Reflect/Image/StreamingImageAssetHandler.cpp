@@ -40,7 +40,7 @@ namespace AZ
 
                     // Handle StreamingImageAsset reload (which the asset can be found from asset manager)
                     auto& assetManager = AZ::Data::AssetManager::Instance();
-                    Data::Asset<StreamingImageAsset> foundImageAsset = assetManager.FindAsset(asset.GetId(), AZ::Data::AssetLoadBehavior::PreLoad);
+                    Data::Asset<StreamingImageAsset> foundImageAsset = assetManager.FindAsset(asset.GetId(), AZ::Data::AssetLoadBehavior::Default);
                     // If the asset has full mipchain assets, then we want to reload all of them when reload StreamingImageAsset
                     if (foundImageAsset && foundImageAsset.GetData() != asset.GetData() && foundImageAsset->HasFullMipChainAssets())
                     {
@@ -58,7 +58,7 @@ namespace AZ
                                 {
                                     // if the asset was loaded, trigger reload
                                     foundAsset.Reload();
-                                    mipChainAsset.m_asset = foundAsset; // save the reference so it 
+                                    mipChainAsset.m_asset = foundAsset;
                                 }
                                 else
                                 {

@@ -9,7 +9,6 @@
 #include <AssetBrowser/Thumbnails/ProductThumbnail.h>
 #include <AssetBrowser/Thumbnails/SourceThumbnail.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
-#include <AzCore/Asset/AssetCommon.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <QtConcurrent/QtConcurrent>
 #include <Source/ImageLoader/ImageLoaders.h>
@@ -38,10 +37,7 @@ namespace ImageProcessingAtom
 
                 for (const auto& assetInfo : productAssetInfo)
                 {
-                    if (assetInfo.m_assetType == AZ::RPI::StreamingImageAsset::RTTI_Type())
-                    {
-                        m_assetIds.insert(assetInfo.m_assetId);
-                    }
+                    m_assetIds.insert(assetInfo.m_assetId);
                 }
             }
 
@@ -89,15 +85,9 @@ namespace ImageProcessingAtom
         {
             if (m_state == State::Ready && m_assetIds.find(assetId) != m_assetIds.end())
             {
-                AZ::Data::AssetBus::MultiHandler::BusConnect(assetId);
+                m_state = State::Unloaded;
+                Load();
             }
-        }
-
-        void ImageThumbnail::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
-        {
-            AZ::Data::AssetBus::MultiHandler::BusDisconnect(asset.GetId());
-            m_state = State::Unloaded;
-            Load();
         }
 
         //////////////////////////////////////////////////////////////////////////
