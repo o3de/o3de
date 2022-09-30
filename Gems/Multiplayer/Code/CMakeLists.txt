@@ -195,13 +195,13 @@ ly_add_target(
             AZ::AzFramework
             AZ::AzNetworking
             Gem::Atom_Feature_Common.Static
-            Gem::Multiplayer.Unified.Static
+            Gem::Multiplayer.Client.Static
             Gem::ImGui.Static
 )
 
 # The "Multiplayer" target is used by clients and servers, Debug is used only on clients.
 ly_create_alias(NAME Multiplayer.Clients NAMESPACE Gem TARGETS Gem::Multiplayer.Client Gem::Multiplayer.Debug)
-ly_create_alias(NAME Multiplayer.Servers NAMESPACE Gem TARGETS Gem::Multiplayer.Server Gem::Multiplayer.Debug)
+ly_create_alias(NAME Multiplayer.Servers NAMESPACE Gem TARGETS Gem::Multiplayer.Server)
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
