@@ -22,7 +22,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Script/ScriptContext.h>
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <SurfaceData/Components/SurfaceDataSystemComponent.h>
 #include <SurfaceDataModule.h>
 #include <SurfaceData/SurfaceDataProviderRequestBus.h>

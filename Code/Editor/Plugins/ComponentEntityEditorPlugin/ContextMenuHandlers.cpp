@@ -8,6 +8,7 @@
 
 #include <ContextMenuHandlers.h>
 
+#include <AzFramework/Viewport/ScreenGeometry.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
@@ -30,7 +31,7 @@ int ContextMenuBottomHandler::GetMenuPosition() const
 }
 
 void ContextMenuBottomHandler::PopulateEditorGlobalContextMenu(
-    QMenu* menu, [[maybe_unused]] const AZ::Vector2& point, [[maybe_unused]] int flags)
+    QMenu* menu, [[maybe_unused]] const AZStd::optional<AzFramework::ScreenPoint>& point, [[maybe_unused]] int flags)
 {
     AzToolsFramework::EntityIdList selected;
     AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(

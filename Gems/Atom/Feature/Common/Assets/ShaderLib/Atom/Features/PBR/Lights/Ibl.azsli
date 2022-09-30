@@ -16,6 +16,7 @@
 
 #include <Atom/RPI/Math.azsli>
 #include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
+#include <Atom/Features/PBR/Lights/ReflectionProbeData.azsli>
 #include <Atom/Features/PBR/LightingUtils.azsli>
 
 float3 GetIblDiffuse(
@@ -35,7 +36,9 @@ float3 GetIblSpecular(
     float3 specularF0, 
     float roughnessLinear, 
     float3 dirToCamera, 
-    float2 brdf)
+    float2 brdf,
+    ReflectionProbeData reflectionProbe,
+    TextureCube reflectionProbeCubemap)
 {
     float3 reflectDir = reflect(-dirToCamera, normal);
     reflectDir = MultiplyVectorQuaternion(reflectDir, SceneSrg::m_iblOrientation);    
@@ -45,25 +48,25 @@ float3 GetIblSpecular(
     outSpecular *= (specularF0 * brdf.x + brdf.y);
     
     // reflection probe
-    if (ObjectSrg::m_reflectionProbeData.m_useReflectionProbe)
+    if (reflectionProbe.m_useReflectionProbe)
     {
-        if (ObjectSrg::m_reflectionProbeData.m_useParallaxCorrection)
+        if (reflectionProbe.m_useParallaxCorrection)
         {
             reflectDir = ApplyParallaxCorrectionOBB(
-                ObjectSrg::GetReflectionProbeWorldMatrixInverse(),
-                ObjectSrg::m_reflectionProbeData.m_outerObbHalfLengths,
+                reflectionProbe.GetReflectionProbeWorldMatrixInverse(),
+                reflectionProbe.m_outerObbHalfLengths,
                 position,
                 reflectDir);
         }
     
-        float3 probeSpecular = ObjectSrg::m_reflectionProbeCubeMap.SampleLevel(SceneSrg::m_samplerEnv, GetCubemapCoords(reflectDir), GetRoughnessMip(roughnessLinear)).rgb;
+        float3 probeSpecular = reflectionProbeCubemap.SampleLevel(SceneSrg::m_samplerEnv, GetCubemapCoords(reflectDir), GetRoughnessMip(roughnessLinear)).rgb;
         probeSpecular *= (specularF0 * brdf.x + brdf.y);
     
         // compute blend amount based on world position in the reflection probe volume
         float blendAmount = ComputeLerpBetweenInnerOuterOBBs(
-            (float3x4)ObjectSrg::GetReflectionProbeWorldMatrixInverse(),
-            ObjectSrg::m_reflectionProbeData.m_innerObbHalfLengths,
-            ObjectSrg::m_reflectionProbeData.m_outerObbHalfLengths,
+            (float3x4)reflectionProbe.GetReflectionProbeWorldMatrixInverse(),
+            reflectionProbe.m_innerObbHalfLengths,
+            reflectionProbe.m_outerObbHalfLengths,
             position);
     
         outSpecular = lerp(outSpecular, probeSpecular, blendAmount);
@@ -71,19 +74,9 @@ float3 GetIblSpecular(
     return outSpecular;
 }
 
-void ApplyIBL(Surface surface, inout LightingData lightingData)
+void ApplyIBL(Surface surface, inout LightingData lightingData, bool useDiffuseIbl, bool useSpecularIbl, ReflectionProbeData reflectionProbe, TextureCube reflectionProbeCubemap)
 {
-    bool useIbl = o_enableIBL && IsIndirectLightingEnabled();
-
-#ifdef FORCE_IBL_IN_FORWARD_PASS
-    bool useDiffuseIbl = true;
-    bool useSpecularIbl = true;
-#else
-    bool isTransparent = (o_opacity_mode == OpacityMode::Blended || o_opacity_mode == OpacityMode::TintedTransparent);
-    bool useDiffuseIbl = isTransparent;
-    bool useSpecularIbl = (isTransparent || o_meshUseForwardPassIBLSpecular || o_materialUseForwardPassIBLSpecular);
-    useIbl = useIbl && (useDiffuseIbl || useSpecularIbl);
-#endif
+    bool useIbl = IsIndirectLightingEnabled() && (useDiffuseIbl || useSpecularIbl);
 
     if(useIbl)
     {
@@ -97,7 +90,7 @@ void ApplyIBL(Surface surface, inout LightingData lightingData)
 
         if(useSpecularIbl)
         {
-            float3 iblSpecular = GetIblSpecular(surface.position, surface.normal, surface.specularF0, surface.roughnessLinear, lightingData.dirToCamera, lightingData.brdf);
+            float3 iblSpecular = GetIblSpecular(surface.position, surface.normal, surface.specularF0, surface.roughnessLinear, lightingData.dirToCamera, lightingData.brdf, reflectionProbe, reflectionProbeCubemap);
             iblSpecular *= lightingData.multiScatterCompensation;
 
 #if ENABLE_CLEAR_COAT
@@ -110,7 +103,7 @@ void ApplyIBL(Surface surface, inout LightingData lightingData)
                 // clear coat uses fixed IOR = 1.5 represents polyurethane which is the most common material for gloss clear coat
                 // coat layer assumed to be dielectric thus don't need multiple scattering compensation
                 float3 clearCoatSpecularF0 = float3(0.04f, 0.04f, 0.04f);
-                float3 clearCoatIblSpecular = GetIblSpecular(surface.position, surface.clearCoat.normal, clearCoatSpecularF0, surface.clearCoat.roughness, lightingData.dirToCamera, clearCoatBrdf);
+                float3 clearCoatIblSpecular = GetIblSpecular(surface.position, surface.clearCoat.normal, clearCoatSpecularF0, surface.clearCoat.roughness, lightingData.dirToCamera, clearCoatBrdf, reflectionProbe, reflectionProbeCubemap);
 
                 clearCoatIblSpecular *= surface.clearCoat.factor;
         
@@ -120,7 +113,7 @@ void ApplyIBL(Surface surface, inout LightingData lightingData)
             }
 #endif
 
-            float exposure = ObjectSrg::m_reflectionProbeData.m_useReflectionProbe ? pow(2.0, ObjectSrg::m_reflectionProbeData.m_exposure) : globalIblExposure;
+            float exposure = reflectionProbe.m_useReflectionProbe ? pow(2.0, reflectionProbe.m_exposure) : globalIblExposure;
             lightingData.specularLighting += (iblSpecular * exposure);
         }
     }

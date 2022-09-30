@@ -18,6 +18,25 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
     # Enable only -BatchMode for these tests. Some tests cannot run in -autotest_mode due to UI interactions
     global_extra_cmdline_args = ["-BatchMode"]
 
+    # Add Entity Tests
+
+    class test_AddEntity_UnderAnotherEntity(EditorSharedTest):
+        from .tests.add_entity import AddEntity_UnderAnotherEntity as test_module
+
+    class test_AddEntity_UnderChildEntityOfPrefab(EditorSharedTest):
+        from .tests.add_entity import AddEntity_UnderChildEntityOfPrefab as test_module
+
+    class test_AddEntity_UnderContainerEntityOfPrefab(EditorSharedTest):
+        from .tests.add_entity import AddEntity_UnderContainerEntityOfPrefab as test_module
+
+    class test_AddEntity_UnderLevelPrefab(EditorSharedTest):
+        from .tests.add_entity import AddEntity_UnderLevelPrefab as test_module
+
+    # Create Prefab Tests
+
+    class test_CreatePrefab_ComponentConfigurationRetained(EditorSharedTest):
+        from .tests.create_prefab import CreatePrefab_ComponentConfigurationRetained as test_module
+
     class test_CreatePrefab_UnderAnEntity(EditorSharedTest):
         from .tests.create_prefab import CreatePrefab_UnderAnEntity as test_module
 
@@ -33,29 +52,18 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
     class test_CreatePrefab_WithNestedEntitiesAndNestedPrefabs(EditorSharedTest):
         from .tests.create_prefab import CreatePrefab_WithNestedEntitiesAndNestedPrefabs as test_module
 
+    class test_CreatePrefab_WithSingleEntity(EditorSharedTest):
+        from .tests.create_prefab import CreatePrefab_WithSingleEntity as test_module
+
+    # Delete Entity Tests
+
     class test_DeleteEntity_UnderAnotherPrefab(EditorSharedTest):
         from .tests.delete_entity import DeleteEntity_UnderAnotherPrefab as test_module
 
     class test_DeleteEntity_UnderLevelPrefab(EditorSharedTest):
         from .tests.delete_entity import DeleteEntity_UnderLevelPrefab as test_module
 
-    class test_ReparentPrefab_UnderPrefabAndEntityHierarchies(EditorSharedTest):
-        from .tests.reparent_prefab import ReparentPrefab_UnderPrefabAndEntityHierarchies as test_module
-
-    class test_DetachPrefab_UnderAnotherPrefab(EditorSharedTest):
-        from .tests.detach_prefab import DetachPrefab_UnderAnotherPrefab as test_module
-
-    class test_OpenLevel_ContainingTwoEntities(EditorSharedTest):
-        from .tests.open_level import OpenLevel_ContainingTwoEntities as test_module
-
-    class test_CreatePrefab_WithSingleEntity(EditorSharedTest):
-        from .tests.create_prefab import CreatePrefab_WithSingleEntity as test_module
-
-    class test_InstantiatePrefab_ContainingASingleEntity(EditorSharedTest):
-        from .tests.instantiate_prefab import InstantiatePrefab_ContainingASingleEntity as test_module
-
-    class test_InstantiatePrefab_FromCreatedPrefabWithSingleEntity(EditorSharedTest):
-        from .tests.instantiate_prefab import InstantiatePrefab_FromCreatedPrefabWithSingleEntity as test_module
+    # Delete Prefab Tests
 
     class test_DeletePrefab_ContainingASingleEntity(EditorSharedTest):
         from .tests.delete_prefab import DeletePrefab_ContainingASingleEntity as test_module
@@ -63,11 +71,50 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
     class test_DeletePrefab_ContainingNestedEntitiesAndNestedPrefabs(EditorSharedTest):
         from .tests.delete_prefab import DeletePrefab_ContainingNestedEntitiesAndNestedPrefabs as test_module
 
+    class test_DeletePrefab_DuplicatedPrefabInstance(EditorSharedTest):
+        from .tests.delete_prefab import DeletePrefab_DuplicatedPrefabInstance as test_module
+
+    # Detach Prefab Tests
+
+    class test_DetachPrefab_UnderAnotherPrefab(EditorSharedTest):
+        from .tests.detach_prefab import DetachPrefab_UnderAnotherPrefab as test_module
+
+    class test_DetachPrefab_WithNestedEntities(EditorSharedTest):
+        from .tests.detach_prefab import DetachPrefab_WithNestedEntities as test_module
+
+    class test_DetachPrefab_WithSingleEntity(EditorSharedTest):
+        from .tests.detach_prefab import DetachPrefab_WithSingleEntity as test_module
+
+    # Duplicate Prefab Tests
+
     class test_DuplicatePrefab_ContainingASingleEntity(EditorSharedTest):
         from .tests.duplicate_prefab import DuplicatePrefab_ContainingASingleEntity as test_module
 
     class test_DuplicatePrefab_ContainingNestedEntitiesAndNestedPrefabs(EditorSharedTest):
         from .tests.duplicate_prefab import DuplicatePrefab_ContainingNestedEntitiesAndNestedPrefabs as test_module
+
+    # Instantiate Prefab Tests
+
+    class test_InstantiatePrefab_ContainingASingleEntity(EditorSharedTest):
+        from .tests.instantiate_prefab import InstantiatePrefab_ContainingASingleEntity as test_module
+
+    class test_InstantiatePrefab_FromCreatedPrefabWithSingleEntity(EditorSharedTest):
+        from .tests.instantiate_prefab import InstantiatePrefab_FromCreatedPrefabWithSingleEntity as test_module
+
+    # Open Level Tests
+
+    class test_OpenLevel_ContainingTwoEntities(EditorSharedTest):
+        from .tests.open_level import OpenLevel_ContainingTwoEntities as test_module
+
+    # Overrides Tests
+
+    class test_EditEntity_UnderImmediateInstance(EditorSharedTest):
+        from .tests.overrides import EditEntity_UnderImmediateInstance as test_module
+
+    class test_EditEntity_UnderNestedInstance(EditorSharedTest):
+        from .tests.overrides import EditEntity_UnderNestedInstance as test_module
+        
+    # Prefab Notifications Tests
 
     class test_PrefabNotifications_PropagationNotificationsReceived(EditorSharedTest):
         from .tests.prefab_notifications import PrefabNotifications_PropagationNotificationsReceived as test_module
@@ -75,42 +122,7 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
     class test_PrefabNotifications_RootPrefabLoadedNotificationsReceived(EditorSharedTest):
         from .tests.prefab_notifications import PrefabNotifications_RootPrefabLoadedNotificationsReceived as test_module
 
-    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/9789")
-    class test_SC_Spawnables_SimpleSpawnAndDespawn(EditorSharedTest):
-        from .tests.spawnables import SC_Spawnables_SimpleSpawnAndDespawn as test_module
+    # Reparent Prefab Tests
 
-    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/9789")
-    class test_SC_Spawnables_EntityClearedOnGameModeExit(EditorSharedTest):
-        from .tests.spawnables import SC_Spawnables_EntityClearedOnGameModeExit as test_module
-
-    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/9789")
-    class test_SC_Spawnables_MultipleSpawnsFromSingleTicket(EditorSharedTest):
-        from .tests.spawnables import SC_Spawnables_MultipleSpawnsFromSingleTicket as test_module
-
-    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/9789")
-    class test_SC_Spawnables_NestedSpawn(EditorSharedTest):
-        from .tests.spawnables import SC_Spawnables_NestedSpawn as test_module
-
-    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/9789")
-    class test_SC_Spawnables_DespawnOnEntityDeactivate(EditorSharedTest):
-        from .tests.spawnables import SC_Spawnables_DespawnOnEntityDeactivate as test_module
-
-    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/9789")
-    class test_Lua_Spawnables_SimpleSpawnAndDespawn(EditorSharedTest):
-        from .tests.spawnables import Lua_Spawnables_SimpleSpawnAndDespawn as test_module
-
-    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/9789")
-    class test_Lua_Spawnables_EntityClearedOnGameModeExit(EditorSharedTest):
-        from .tests.spawnables import Lua_Spawnables_EntityClearedOnGameModeExit as test_module
-
-    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/9789")
-    class test_Lua_Spawnables_MultipleSpawnsFromSingleTicket(EditorSharedTest):
-        from .tests.spawnables import Lua_Spawnables_MultipleSpawnsFromSingleTicket as test_module
-
-    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/9789")
-    class test_Lua_Spawnables_NestedSpawn(EditorSharedTest):
-        from .tests.spawnables import Lua_Spawnables_NestedSpawn as test_module
-
-    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/9789")
-    class test_Lua_Spawnables_DespawnOnEntityDeactivate(EditorSharedTest):
-        from .tests.spawnables import Lua_Spawnables_DespawnOnEntityDeactivate as test_module
+    class test_ReparentEntity_UnderEntityHierarchies(EditorSharedTest):
+        from .tests.reparent_prefab import ReparentEntity_UnderEntityHierarchies as test_module

@@ -51,6 +51,11 @@ namespace AzToolsFramework
         m_onMouseMoveCallback = onMouseMoveCallback;
     }
 
+    void MultiLinearManipulator::InstallInvalidateCallback(const InvalidateActionCallback& onInvalidateCallback)
+    {
+        m_onInvalidateCallback = onInvalidateCallback;
+    }
+
     static MultiLinearManipulator::Action BuildMultiLinearManipulatorAction(
         const AZ::Transform& worldFromLocal,
         const AZ::Vector3& nonUniformScale,
@@ -173,6 +178,11 @@ namespace AzToolsFramework
         for (auto& view : m_manipulatorViews)
         {
             view->Invalidate(GetManipulatorManagerId());
+        }
+
+        if (m_onInvalidateCallback)
+        {
+            m_onInvalidateCallback();
         }
     }
 

@@ -46,6 +46,11 @@ namespace AZ
                     Containers::SceneGraph::NodeIndex node) override;
                 void GetAllVirtualTypes(AZStd::set<Crc32>& types) override;
                 void GetVirtualTypeName(AZStd::string& name, Crc32 type) override;
+                void GetPolicyName(AZStd::string& result) const override
+                {
+                    result = "SkinGroup";
+                }
+
 
             private:
                 Events::ProcessingResult BuildDefault(Containers::Scene& scene) const;

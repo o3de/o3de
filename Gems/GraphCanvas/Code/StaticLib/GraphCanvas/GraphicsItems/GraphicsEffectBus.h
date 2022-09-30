@@ -20,6 +20,8 @@ namespace GraphCanvas
         using BusIdType = GraphicsEffectId;
         
         virtual QGraphicsItem* AsQGraphicsItem() = 0;
+
+        virtual void PrepareGeometryChange() = 0;
         
         virtual void OnGraphicsEffectCancelled() = 0;
 

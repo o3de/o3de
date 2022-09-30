@@ -17,6 +17,8 @@ set(FILES
     Source/Target/Native/TestImpactNativeTestTarget.h
     Source/Target/Native/TestImpactNativeTargetListCompiler.cpp
     Source/Target/Native/TestImpactNativeTargetListCompiler.h
+    Source/TestRunner/Native/TestImpactNativeErrorCodeChecker.cpp
+    Source/TestRunner/Native/TestImpactNativeErrorCodeChecker.h
     Source/TestRunner/Native/TestImpactNativeInstrumentedTestRunner.h
     Source/TestRunner/Native/TestImpactNativeRegularTestRunner.h
     Source/TestRunner/Native/TestImpactNativeTestEnumerator.h
@@ -27,8 +29,6 @@ set(FILES
     Source/TestRunner/Native/Job/TestImpactNativeTestRunJobData.h
     Source/TestEngine/Native/TestImpactNativeTestEngine.cpp
     Source/TestEngine/Native/TestImpactNativeTestEngine.h
-    Source/TestEngine/Native/TestImpactNativeErrorCodeChecker.cpp
-    Source/TestEngine/Native/TestImpactNativeErrorCodeChecker.h
     Source/TestEngine/Native/TestImpactNativeTestTargetExtension.h
     Source/TestImpactNativeRuntime.cpp
 )

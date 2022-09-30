@@ -25,10 +25,11 @@ namespace O3DE::ProjectManager
         MOCK_METHOD2(SetEngineInfo, DetailedOutcome(const EngineInfo&, bool force));
 
         // Gem
+        MOCK_METHOD3(CreateGem, AZ::Outcome<GemInfo>(const QString&, const GemInfo&, bool));
         MOCK_METHOD2(GetGemInfo, AZ::Outcome<GemInfo>(const QString&, const QString&));
         MOCK_METHOD0(GetEngineGemInfos, AZ::Outcome<QVector<GemInfo>, AZStd::string>());
         MOCK_METHOD1(GetAllGemInfos, AZ::Outcome<QVector<GemInfo>, AZStd::string>(const QString&));
-        MOCK_METHOD1(GetEnabledGemNames, AZ::Outcome<QVector<AZStd::string>, AZStd::string>(const QString&));
+        MOCK_CONST_METHOD1(GetEnabledGemNames, AZ::Outcome<QVector<AZStd::string>, AZStd::string>(const QString&));
         MOCK_METHOD2(RegisterGem, AZ::Outcome<void, AZStd::string>(const QString&, const QString&));
         MOCK_METHOD2(UnregisterGem, AZ::Outcome<void, AZStd::string>(const QString&, const QString&));
 
@@ -45,7 +46,7 @@ namespace O3DE::ProjectManager
 
         // ProjectTemplate
         MOCK_METHOD0(GetProjectTemplates, AZ::Outcome<QVector<ProjectTemplateInfo>>());
-        MOCK_METHOD0(GetProjectTemplatesForAllRepos, AZ::Outcome<QVector<ProjectTemplateInfo>>());
+        MOCK_CONST_METHOD0(GetProjectTemplatesForAllRepos, AZ::Outcome<QVector<ProjectTemplateInfo>>());
         MOCK_METHOD0(GetGemTemplates, AZ::Outcome<QVector<TemplateInfo>>());
 
         // Gem Repos
@@ -56,7 +57,7 @@ namespace O3DE::ProjectManager
         MOCK_METHOD0(GetAllGemRepoInfos, AZ::Outcome<QVector<GemRepoInfo>, AZStd::string>());
         MOCK_METHOD1(GetGemInfosForRepo, AZ::Outcome<QVector<GemInfo>, AZStd::string>(const QString&));
         MOCK_METHOD0(GetGemInfosForAllRepos, AZ::Outcome<QVector<GemInfo>, AZStd::string>());
-        MOCK_METHOD3(DownloadGem, DetailedOutcome(const QString&, std::function<void(int, int)>, bool));
+        MOCK_METHOD4(DownloadGem, DetailedOutcome(const QString&, const QString&, std::function<void(int, int)>, bool));
         MOCK_METHOD0(CancelDownload, void());
         MOCK_METHOD2(IsGemUpdateAvaliable, bool(const QString&, const QString&));
 

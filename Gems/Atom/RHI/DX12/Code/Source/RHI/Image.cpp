@@ -47,6 +47,7 @@ namespace AZ
             imageStats->m_name = GetName();
             imageStats->m_bindFlags = descriptor.m_bindFlags;
             imageStats->m_sizeInBytes = m_residentSizeInBytes;
+            imageStats->m_minimumSizeInBytes = m_minimumResidentSizeInBytes;
         }
 
         void Image::UpdateResidentTilesSizeInBytes(uint32_t sizePerTile)
@@ -124,6 +125,11 @@ namespace AZ
             {
                 *totalSizeInBytes = byteOffset;
             }
+        }
+
+        bool Image::IsStreamableInternal() const
+        {
+            return IsTiled();
         }
         
         void Image::SetDescriptor(const RHI::ImageDescriptor& descriptor)
@@ -213,7 +219,7 @@ namespace AZ
             m_uploadFenceValue = fenceValue;
         }
 
-        uint64_t Image::GetUploadFenceValue()
+        uint64_t Image::GetUploadFenceValue() const
         {
             return m_uploadFenceValue;
         }
@@ -225,7 +231,11 @@ namespace AZ
         
         void Image::SetStreamedMipLevel(uint32_t streamedMipLevel)
         {
-            m_streamedMipLevel = streamedMipLevel;
+            if (m_streamedMipLevel != streamedMipLevel)
+            {
+                m_streamedMipLevel = streamedMipLevel;
+                InvalidateViews();
+            }
         }
 
         void Image::SetAttachmentState(D3D12_RESOURCE_STATES state, const RHI::ImageSubresourceRange* range /*= nullptr*/)

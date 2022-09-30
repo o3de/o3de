@@ -275,7 +275,8 @@ namespace AzFramework
         {
             auto& cameraInput = m_idleCameraInputs[idleIndex];
             const bool canBegin = cameraInput->Beginning() &&
-                AZStd::all_of(m_activeCameraInputs.cbegin(), m_activeCameraInputs.cend(),
+                AZStd::all_of(m_activeCameraInputs.cbegin(),
+                              m_activeCameraInputs.cend(),
                               [](const auto& input)
                               {
                                   return !input->Exclusive();
@@ -302,7 +303,9 @@ namespace AzFramework
         }
 
         const Camera nextCamera = AZStd::accumulate(
-            AZStd::begin(m_activeCameraInputs), AZStd::end(m_activeCameraInputs), targetCamera,
+            AZStd::begin(m_activeCameraInputs),
+            AZStd::end(m_activeCameraInputs),
+            targetCamera,
             [cursorDelta, scrollDelta, deltaTime](Camera acc, auto& camera)
             {
                 acc = camera->StepCamera(acc, cursorDelta, scrollDelta, deltaTime);
@@ -353,7 +356,8 @@ namespace AzFramework
     bool Cameras::Exclusive() const
     {
         return AZStd::any_of(
-            m_activeCameraInputs.begin(), m_activeCameraInputs.end(),
+            m_activeCameraInputs.begin(),
+            m_activeCameraInputs.end(),
             [](const auto& cameraInput)
             {
                 return cameraInput->Exclusive();
@@ -655,37 +659,24 @@ namespace AzFramework
             End
         };
 
-        Action action = Action::Nothing;
-        if (const auto* input = AZStd::get_if<DiscreteInputEvent>(&state.m_inputEvent))
+        const Action action = [&state, orbitChannelId = m_orbitChannelId]
         {
-            // check for explicit channel event
-            if (input->m_channelId == m_orbitChannelId)
+            // check for valid event
+            if (!AZStd::get_if<CursorEvent>(&state.m_inputEvent) && !AZStd::get_if<DiscreteInputEvent>(&state.m_inputEvent))
             {
-                if (input->m_state == InputChannel::State::Began)
-                {
-                    action = Action::Begin;
-                }
-                else if (input->m_state == InputChannel::State::Ended)
-                {
-                    action = Action::End;
-                }
+                return Action::Nothing;
             }
-        }
 
-        // poll modifiers during a cursor event (cursor movement)
-        if (AZStd::get_if<CursorEvent>(&state.m_inputEvent))
-        {
-            if (state.m_modifiers.IsActive(GetCorrespondingModifierKeyMask(m_orbitChannelId)))
+            // poll modifiers
+            if (state.m_modifiers.IsActive(GetCorrespondingModifierKeyMask(orbitChannelId)))
             {
-                action = Action::Begin;
+                return Action::Begin;
             }
-            else
-            {
-                action = Action::End;
-            }
-        }
 
-        if (action == Action::Begin && !Active())
+            return Action::End;
+        }();
+
+        if (action == Action::Begin && Idle())
         {
             BeginActivation();
         }
@@ -994,7 +985,8 @@ namespace AzFramework
         const auto& inputDeviceId = inputChannel.GetInputDevice().GetInputDeviceId();
 
         const bool wasMouseButton = AZStd::any_of(
-            InputDeviceMouse::Button::All.begin(), InputDeviceMouse::Button::All.end(),
+            InputDeviceMouse::Button::All.begin(),
+            InputDeviceMouse::Button::All.end(),
             [inputChannelId](const auto& button)
             {
                 return button == inputChannelId;

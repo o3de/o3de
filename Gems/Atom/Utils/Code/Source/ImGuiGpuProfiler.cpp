@@ -21,6 +21,7 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/std/sort.h>
+#include <AzCore/std/time.h>
 
 #include <inttypes.h>
 

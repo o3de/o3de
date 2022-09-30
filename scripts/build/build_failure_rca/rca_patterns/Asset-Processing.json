@@ -7,11 +7,11 @@
         "single_line": true,
         "find_all": true,
         "log_patterns": [
-          "^.*AssetProcessor: Failed.*\\.\\.\\.$",
+          "^.*AssetProcessor: Failed.*\\.\\.\\.\\s*$",
           "^.*?AssetProcessor: Createjobs Failed:.*$"
         ],
         "log_testcases": [
-          "AssetProcessor: Failed Shaders/Terrain/TerrainDetailClipmapGenerationPass.shader",
+          "AssetProcessor: Failed Shaders/Terrain/TerrainDetailClipmapGenerationPass.shader...",
           "AssetProcessor: Createjobs Failed: /data/workspace/o3de/Gems/LyShineExamples/Assets/UI/Fonts/LyShineExamples/NotoSerif/NotoSerif-Regular.xml."
         ],
         "owners": []

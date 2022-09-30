@@ -165,8 +165,9 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     AZ::AzToolsFrameworkTestCommon
                     Gem::Blast.Editor.Static
         )
-        ly_add_googletest(
-            NAME Gem::Blast.Editor.Tests
-        )
+        # Commented out as currently there are no Blast Editor tests
+        # ly_add_googletest(
+            # NAME Gem::Blast.Editor.Tests
+        # )
     endif()
 endif()

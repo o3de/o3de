@@ -32,7 +32,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString ShapeAreaFalloffGradientNode::TITLE = QObject::tr("Shape Falloff");
+    const char* ShapeAreaFalloffGradientNode::TITLE = "Shape Falloff";
 
     ShapeAreaFalloffGradientNode::ShapeAreaFalloffGradientNode(GraphModel::GraphPtr graph)
         : BaseGradientNode(graph)

@@ -22,17 +22,24 @@ from base import TestAutomationBase
 TEST_DIRECTORY = os.path.dirname(__file__)
 
 #Bat
+@pytest.mark.REQUIRES_gpu
 @pytest.mark.SUITE_periodic
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestScriptCanvas(EditorTestSuite):
+
     class test_NodePalette_HappyPath_CanSelectNode(EditorBatchedTest):
         import NodePalette_HappyPath_CanSelectNode as test_module
 
+    class test_EditMenu_Default_UndoRedo(EditorBatchedTest):
+        import EditMenu_Default_UndoRedo as test_module
+
+@pytest.mark.REQUIRES_gpu
 @pytest.mark.SUITE_periodic
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomation(TestAutomationBase):
+
 
     def test_Pane_HappyPath_OpenCloseSuccessfully(self, request, workspace, editor, launcher_platform):
         from . import Pane_HappyPath_OpenCloseSuccessfully as test_module
@@ -123,24 +130,34 @@ class TestAutomation(TestAutomationBase):
 @pytest.mark.parametrize("launcher_platform", ["windows_editor"])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestScriptCanvasTests(object):
-    """
-    The following tests use hydra_test_utils.py to launch the editor and validate the results.
-    """
-    def test_EditMenu_Default_UndoRedo(self, request, editor, launcher_platform):
+
+    def test_ScriptEvent_AddRemoveMethod_UpdatesInSC(self, request, workspace, editor, launcher_platform):
+        def teardown():
+            file_system.delete(
+                [os.path.join(workspace.paths.project(), "TestAssets", "test_file.scriptevents")], True, True
+            )
+
+        request.addfinalizer(teardown)
+        file_system.delete(
+            [os.path.join(workspace.paths.project(), "TestAssets", "test_file.scriptevents")], True, True
+        )
         expected_lines = [
-            "New variable created",
-            "Undo action working",
-            "Redo action working",
+            "Node found in Node Palette",
+            "Method removed from scriptevent file",
         ]
         hydra.launch_and_validate_results(
             request,
             TEST_DIRECTORY,
             editor,
-            "EditMenu_Default_UndoRedo.py",
+            "ScriptEvent_AddRemoveMethod_UpdatesInSC.py",
             expected_lines,
             auto_test_mode=False,
             timeout=60,
         )
+
+    """
+    The following tests use hydra_test_utils.py to launch the editor and validate the results.
+    """
 
     def test_ScriptEvents_Default_SendReceiveSuccessfully(self, request, editor, launcher_platform):
 
@@ -197,10 +214,6 @@ class TestScriptCanvasTests(object):
 
     def test_VariableManager_UnpinVariableType_Works(self, request, editor, launcher_platform):
         expected_lines = [
-            "Success: VariableManager is opened successfully",
-            "Success: Variable is pinned",
-            "Success: Variable is unpinned",
-            "Success: Variable is unpinned after reopening create variable menu",
         ]
         hydra.launch_and_validate_results(
             request,
@@ -337,33 +350,6 @@ class TestScriptCanvasTests(object):
             "Pane_PropertiesChanged_RetainsOnRestart.py",
             config.get('expected_lines'),
             cfg_args=[config.get('cfg_args')],
-            auto_test_mode=False,
-            timeout=60,
-        )
-
-    def test_ScriptEvent_AddRemoveMethod_UpdatesInSC(self, request, workspace, editor, launcher_platform):
-        def teardown():
-            file_system.delete(
-                [os.path.join(workspace.paths.project(), "TestAssets", "test_file.scriptevents")], True, True
-            )
-        request.addfinalizer(teardown)
-        file_system.delete(
-            [os.path.join(workspace.paths.project(), "TestAssets", "test_file.scriptevents")], True, True
-        )
-        expected_lines = [
-            "Success: New Script Event created",
-            "Success: Initial Child Event created",
-            "Success: Second Child Event created",
-            "Success: Script event file saved",
-            "Success: Method added to scriptevent file",
-            "Success: Method removed from scriptevent file",
-        ]
-        hydra.launch_and_validate_results(
-            request,
-            TEST_DIRECTORY,
-            editor,
-            "ScriptEvent_AddRemoveMethod_UpdatesInSC.py",
-            expected_lines,
             auto_test_mode=False,
             timeout=60,
         )

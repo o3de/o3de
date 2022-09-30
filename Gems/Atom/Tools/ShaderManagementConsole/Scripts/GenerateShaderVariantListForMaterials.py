@@ -108,7 +108,7 @@ def main():
                 continue
 
             valueName = shaderOptionDescriptor.GetValueName(optionValue)
-            options[optionName.ToString()] = valueName.ToString()
+            options[optionName] = valueName
 
         if len(options) != 0:
             variantInfo.options = options
@@ -129,11 +129,11 @@ def main():
 
     defaultShaderVariantListFilePath = defaultShaderVariantListFilePath.replace("\\", "/")
 
-    # Open default shader variant list document
+    # Create shader variant list document
     documentId = azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(
        azlmbr.bus.Broadcast,
-       'OpenDocument',
-       defaultShaderVariantListFilePath
+       'CreateDocumentFromTypeName',
+       'Shader Variant List'
     )
     # Update shader variant list
     azlmbr.shadermanagementconsole.ShaderManagementConsoleDocumentRequestBus(

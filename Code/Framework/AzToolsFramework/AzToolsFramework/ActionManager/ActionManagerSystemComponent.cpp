@@ -10,6 +10,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 
+#include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
 
 namespace AzToolsFramework
@@ -38,10 +39,18 @@ namespace AzToolsFramework
 
     void ActionManagerSystemComponent::Activate()
     {
+        if (IsNewActionManagerEnabled())
+        {
+            AzToolsFramework::EditorEventsBus::Handler::BusConnect();
+        }
     }
 
     void ActionManagerSystemComponent::Deactivate()
     {
+        if (IsNewActionManagerEnabled())
+        {
+            AzToolsFramework::EditorEventsBus::Handler::BusDisconnect();
+        }
     }
 
     void ActionManagerSystemComponent::Reflect(AZ::ReflectContext* context)
@@ -66,6 +75,36 @@ namespace AzToolsFramework
 
     void ActionManagerSystemComponent::GetIncompatibleServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
+    }
+
+    void ActionManagerSystemComponent::NotifyMainWindowInitialized(QMainWindow* /* mainWindow */)
+    {
+        // Broadcast synchronization hooks.
+        // Order is important since latter elements may have depencencies on earlier ones.
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Broadcast(
+            &AzToolsFramework::ActionManagerRegistrationNotifications::OnActionContextRegistrationHook);
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Broadcast(
+            &AzToolsFramework::ActionManagerRegistrationNotifications::OnActionContextModeRegistrationHook);
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Broadcast(
+            &AzToolsFramework::ActionManagerRegistrationNotifications::OnActionUpdaterRegistrationHook);
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Broadcast(
+            &AzToolsFramework::ActionManagerRegistrationNotifications::OnMenuBarRegistrationHook);
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Broadcast(
+            &AzToolsFramework::ActionManagerRegistrationNotifications::OnMenuRegistrationHook);
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Broadcast(
+            &AzToolsFramework::ActionManagerRegistrationNotifications::OnToolBarAreaRegistrationHook);
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Broadcast(
+            &AzToolsFramework::ActionManagerRegistrationNotifications::OnToolBarRegistrationHook);
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Broadcast(
+            &AzToolsFramework::ActionManagerRegistrationNotifications::OnActionRegistrationHook);
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Broadcast(
+            &AzToolsFramework::ActionManagerRegistrationNotifications::OnWidgetActionRegistrationHook);
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Broadcast(
+            &AzToolsFramework::ActionManagerRegistrationNotifications::OnMenuBindingHook);
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Broadcast(
+            &AzToolsFramework::ActionManagerRegistrationNotifications::OnToolBarBindingHook);
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Broadcast(
+            &AzToolsFramework::ActionManagerRegistrationNotifications::OnPostActionManagerRegistrationHook);
     }
 
 } // namespace AzToolsFramework

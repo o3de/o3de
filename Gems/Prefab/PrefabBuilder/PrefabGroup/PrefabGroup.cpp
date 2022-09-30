@@ -8,6 +8,7 @@
 
 #include <PrefabGroup/PrefabGroup.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/JSON/error/error.h>
 #include <AzCore/JSON/error/en.h>
@@ -81,6 +82,16 @@ namespace AZ::SceneAPI::SceneData
         return {};
     }
 
+    void PrefabGroup::SetCreateProceduralPrefab(bool createProceduralPrefab)
+    {
+        m_createProceduralPrefab = createProceduralPrefab;
+    }
+
+    bool PrefabGroup::GetCreateProceduralPrefab() const
+    {
+        return m_createProceduralPrefab;
+    }
+
     void PrefabGroup::Reflect(ReflectContext* context)
     {
         SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
@@ -89,13 +100,30 @@ namespace AZ::SceneAPI::SceneData
             serializeContext->Class<DataTypes::IPrefabGroup, DataTypes::ISceneNodeGroup>()
                 ->Version(1);
 
+            serializeContext->Class<ProceduralMeshGroupRule, DataTypes::IRule>()
+                ->Version(1);
+
             serializeContext->Class<PrefabGroup, DataTypes::IPrefabGroup>()
-                ->Version(1)
+                ->Version(2) // added createProceduralPrefab
                 ->Field("name", &PrefabGroup::m_name)
                 ->Field("nodeSelectionList", &PrefabGroup::m_nodeSelectionList)
                 ->Field("rules", &PrefabGroup::m_rules)
                 ->Field("id", &PrefabGroup::m_id)
-                ->Field("prefabDomData", &PrefabGroup::m_prefabDomData);
+                ->Field("prefabDomData", &PrefabGroup::m_prefabDomData)
+                ->Field("createProceduralPrefab", &PrefabGroup::m_createProceduralPrefab);
+
+            AZ::EditContext* editContext = serializeContext->GetEditContext();
+            if (editContext)
+            {
+                editContext->Class<PrefabGroup>("Prefab group", "Configure actor data exporting.")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute("AutoExpand", true)
+                        ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
+                    ->DataElement(0,
+                        &PrefabGroup::m_createProceduralPrefab,
+                        "Create default procedural prefab?",
+                        "If this flag is true then the default procedural prefab will be generated.");
+            }
         }
 
         BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context);

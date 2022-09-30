@@ -21,6 +21,7 @@
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/SceneBus.h>
+#include <Atom/RPI.Public/ViewProviderBus.h>
 
 #include <AtomCore/Instance/Instance.h>
 
@@ -33,6 +34,11 @@
 
 #include <AzFramework/Scene/Scene.h>
 #include <AzFramework/Scene/SceneSystemInterface.h>
+
+namespace AzFramework
+{
+    class IVisibilityScene;
+}
 
 namespace AZ
 {
@@ -158,12 +164,11 @@ namespace AZ
 
             bool HasOutputForPipelineState(RHI::DrawListTag drawListTag) const;
 
-            AZ::RPI::CullingScene* GetCullingScene()
-            {
-                return m_cullingScene;
-            }
+            AzFramework::IVisibilityScene* GetVisibilityScene() const { return m_visibilityScene; }
 
-            RenderPipelinePtr FindRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle);
+            AZ::RPI::CullingScene* GetCullingScene() const { return m_cullingScene; }
+
+            RenderPipelinePtr FindRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle, ViewType viewType = ViewType::Default);
 
             using PrepareSceneSrgEvent = AZ::Event<RPI::ShaderResourceGroup*>;
             //! Connect a handler to listen to the event that the Scene is ready to update and compile its scene srg
@@ -245,6 +250,7 @@ namespace AZ
             // CPU simulation job completion for track all feature processors' simulation jobs
             AZ::JobCompletion* m_simulationCompletion = nullptr;
 
+            AzFramework::IVisibilityScene* m_visibilityScene;
             AZ::RPI::CullingScene* m_cullingScene;
 
             // Cached views for current rendering frame. It gets re-built every frame.

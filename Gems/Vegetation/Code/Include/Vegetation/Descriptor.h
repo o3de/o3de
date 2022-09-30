@@ -52,7 +52,7 @@ namespace Vegetation
         Extend, // Combine component level values with descriptor level values
     };
 
-    static const AZ::Uuid VegetationDescriptorTypeId = "{A5A5E7F7-FC36-4BD1-8A93-21362574B9DA}";
+    inline constexpr AZ::TypeId VegetationDescriptorTypeId{ "{A5A5E7F7-FC36-4BD1-8A93-21362574B9DA}" };
 
     /**
     * Details used to create vegetation instances

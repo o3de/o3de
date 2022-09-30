@@ -175,19 +175,19 @@ namespace AZ
                 return 1;
             }
 
-            const Uuid& GetTemplatedTypeId(size_t element) override
+            AZ::TypeId GetTemplatedTypeId(size_t element) override
             {
                 (void)element;
                 return SerializeGenericTypeInfo<const EMotionFX::EventData>::GetClassTypeId();
             }
 
             // AZStdSmartPtrContainer uses the underlying smart_ptr container value_type typedef type id for serialization
-            const Uuid& GetSpecializedTypeId() const override
+            AZ::TypeId GetSpecializedTypeId() const override
             {
                 return azrtti_typeid<ContainerType>();
             }
 
-            const Uuid& GetGenericTypeId() const override
+            AZ::TypeId GetGenericTypeId() const override
             {
                 return TYPEINFO_Uuid();
             }
@@ -224,7 +224,7 @@ namespace AZ
             return GenericClassSharedPtr::Instance();
         }
 
-        static const Uuid& GetClassTypeId()
+        static AZ::TypeId GetClassTypeId()
         {
             return GenericClassSharedPtr::Instance()->m_classData.m_typeId;
         }

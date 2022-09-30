@@ -615,6 +615,7 @@ namespace AZ::Render
 
         const Data::Instance<RPI::Model> model = m_meshFeatureProcessor->GetModel(*m_meshHandle);
         MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnModelReady, GetModelAsset(), model);
+        MeshHandleStateNotificationBus::Event(m_entityId, &MeshHandleStateNotificationBus::Events::OnMeshHandleSet, &(*m_meshHandle));
 
         m_meshFeatureProcessor->SetVisible(*m_meshHandle, IsVisible());
     }
@@ -632,6 +633,7 @@ namespace AZ::Render
         if (m_meshHandle)
         {
             m_meshFeatureProcessor->ReleaseMesh(*m_meshHandle);
+            MeshHandleStateNotificationBus::Event(m_entityId, &MeshHandleStateNotificationBus::Events::OnMeshHandleSet, &(*m_meshHandle));
             m_meshHandle = nullptr;
         }
     }

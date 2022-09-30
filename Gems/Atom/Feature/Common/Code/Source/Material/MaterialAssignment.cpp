@@ -7,6 +7,7 @@
  */
 
 #include <Atom/Feature/Material/MaterialAssignment.h>
+#include <Atom/Feature/Material/MaterialAssignmentBus.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -103,17 +104,29 @@ namespace AZ
                 return;
             }
 
-            if (m_materialAsset.IsReady())
+            if (m_materialAsset.GetId().IsValid() || m_materialAsset.IsReady())
             {
                 m_materialInstance = m_propertyOverrides.empty() ? RPI::Material::FindOrCreate(m_materialAsset) : RPI::Material::Create(m_materialAsset);
                 AZ_Error("MaterialAssignment", m_materialInstance, "Material instance not initialized");
+
+                if (m_materialInstance)
+                {
+                    MaterialAssignmentNotificationBus::Event(
+                        m_materialAsset.GetId(), &MaterialAssignmentNotifications::OnRebuildMaterialInstance);
+                }
                 return;
             }
 
-            if (m_defaultMaterialAsset.IsReady())
+            if (m_defaultMaterialAsset.GetId().IsValid() || m_defaultMaterialAsset.IsReady())
             {
                 m_materialInstance = m_propertyOverrides.empty() ? RPI::Material::FindOrCreate(m_defaultMaterialAsset) : RPI::Material::Create(m_defaultMaterialAsset);
                 AZ_Error("MaterialAssignment", m_materialInstance, "Material instance not initialized");
+
+                if (m_materialInstance)
+                {
+                    MaterialAssignmentNotificationBus::Event(
+                        m_defaultMaterialAsset.GetId(), &MaterialAssignmentNotifications::OnRebuildMaterialInstance);
+                }
                 return;
             }
 
@@ -266,17 +279,17 @@ namespace AZ
             if (modelAsset.IsReady())
             {
                 MaterialAssignmentLodIndex lodIndex = 0;
-                for (const auto& lod : modelAsset->GetLodAssets())
+                for (const Data::Asset<RPI::ModelLodAsset>& lod : modelAsset->GetLodAssets())
                 {
-                    for (const auto& mesh : lod->GetMeshes())
+                    for (const RPI::ModelLodAsset::Mesh& mesh : lod->GetMeshes())
                     {
-                        const auto slotId = mesh.GetMaterialSlotId();
-                        const auto& slot = modelAsset->FindMaterialSlot(slotId);
+                        const RPI::ModelMaterialSlot::StableId slotId = mesh.GetMaterialSlotId();
+                        const RPI::ModelMaterialSlot& slot = modelAsset->FindMaterialSlot(slotId);
 
-                        const auto generalId = MaterialAssignmentId::CreateFromStableIdOnly(slotId);
+                        const MaterialAssignmentId generalId = MaterialAssignmentId::CreateFromStableIdOnly(slotId);
                         labels[generalId] = slot.m_displayName.GetStringView();
 
-                        const auto specificId = MaterialAssignmentId::CreateFromLodAndStableId(lodIndex, slotId);
+                        const MaterialAssignmentId specificId = MaterialAssignmentId::CreateFromLodAndStableId(lodIndex, slotId);
                         labels[specificId] = slot.m_displayName.GetStringView();
                     }
                     ++lodIndex;

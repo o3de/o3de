@@ -49,7 +49,7 @@ namespace Vegetation
         FilterStage m_filterStage = FilterStage::PreProcess;
     };
 
-    static const AZ::Uuid SpawnerComponentTypeId = "{14BD176C-2E44-4BA6-849A-258674179237}";
+    inline constexpr AZ::TypeId SpawnerComponentTypeId{ "{14BD176C-2E44-4BA6-849A-258674179237}" };
 
     /**
     * Default placement logic for vegetation in an area

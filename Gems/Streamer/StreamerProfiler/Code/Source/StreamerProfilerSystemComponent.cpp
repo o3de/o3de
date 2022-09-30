@@ -204,7 +204,7 @@ namespace Streamer
                 streamer.ResumeProcessing();
             }
         }
-        
+
         if (ImGui::BeginTable("Stats", 4, ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable))
         {
             streamer.CollectStatistics(m_stats);
@@ -388,7 +388,7 @@ namespace Streamer
             streamer.SetRequestCompleteCallback(request, AZStd::move(callback));
             streamer.QueueRequest(request);
 
-            m_readingFileLocks = nullptr;      
+            m_readingFileLocks = nullptr;
         }
 
         // Try to get a handle to the fresh stats.
@@ -711,7 +711,7 @@ namespace Streamer
         }
         else
         {
-            text += AZStd::fixed_string<32>::format("%lld nanoseconds", count);
+            text += AZStd::fixed_string<32>::format("%lld nanoseconds", static_cast<long long>(count));
         }
     }
 

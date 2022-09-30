@@ -295,9 +295,9 @@ namespace ScriptCanvas
                     continue;
                 }
 
-                if (slotIter->second == nullptr)
+                if (slotIter->second == slots.end())
                 {
-                    AZ_Error("ScriptCanvas", false, "Null Slot in slotIde map when attempting to version a node");
+                    AZ_Error("ScriptCanvas", false, "Null Slot in slotId map when attempting to version a node");
                     return false;
                 }
 
@@ -321,7 +321,7 @@ namespace ScriptCanvas
                         continue;
                     }
 
-                    if (datumIter->second == nullptr)
+                    if (datumIter->second == varDatums.end())
                     {
                         AZ_Error("ScriptCanvas", false, "Variable datum not found when attempting to version node");
                         return false;
@@ -337,12 +337,6 @@ namespace ScriptCanvas
 
                     for (auto offsetSlotIter = slots.begin(); offsetSlotIter != slotIter->second; ++offsetSlotIter)
                     {
-                        if (offsetSlotIter == nullptr)
-                        {
-                            AZ_Error("ScriptCanvas", false, "Offset slot iter was nullptr when trying to version a node");
-                            return false;
-                        }
-
                         if (offsetSlotIter->IsData() && offsetSlotIter->IsInput())
                         {
                             ++copyIterator;

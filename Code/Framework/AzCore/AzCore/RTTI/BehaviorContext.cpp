@@ -87,7 +87,7 @@ namespace AZ
                     azEventDescValid = false;
                 }
 
-                size_t parameterIndex = 0;
+                [[maybe_unused]] size_t parameterIndex = 0;
                 for (AZStd::string_view parameterName : behaviorAzEventDesc.m_parameterNames)
                 {
                     if (parameterName.empty())
@@ -270,7 +270,7 @@ namespace AZ
     //=========================================================================
     // GetTypeId
     //=========================================================================
-    const AZ::Uuid& BehaviorProperty::GetTypeId() const
+    AZ::TypeId BehaviorProperty::GetTypeId() const
     {
         if (m_getter)
         {
@@ -960,7 +960,7 @@ namespace AZ
             return ((static_cast<AZ::u64>(scopeType) & static_cast<AZ::u64>(scope)) == static_cast<AZ::u64>(scope));
         }
 
-        const AZ::TypeId& GetUnderlyingTypeId(const IRttiHelper& enumRttiHelper)
+        AZ::TypeId GetUnderlyingTypeId(const IRttiHelper& enumRttiHelper)
         {
             const size_t underlyingTypeSize = enumRttiHelper.GetTypeSize();
             const TypeTraits underlyingTypeTraits = enumRttiHelper.GetTypeTraits();

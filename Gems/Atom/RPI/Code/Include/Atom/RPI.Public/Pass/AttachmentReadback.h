@@ -123,7 +123,7 @@ namespace AZ
             AZStd::fixed_vector<bool, RHI::Limits::Device::FrameCountMax> m_isReadbackComplete;
             uint32_t m_readbackBufferCurrentIndex = 0u;
             AZ::Name m_readbackName;
-            uint32_t m_userIdentifier = static_cast<uint32_t>(-1); // needs to match FrameCaptureRequests::S_InvalidFrameCaptureId
+            uint32_t m_userIdentifier = static_cast<uint32_t>(-1); // needs to match AZ::Render::InvalidFrameCaptureId
 
             RHI::AttachmentId m_copyAttachmentId;
 

@@ -41,6 +41,8 @@ namespace MaterialCanvas
         // AzToolsFramework::EditorWindowRequests::Bus::Handler
         QWidget* GetAppMainWindow() override;
 
+        void ApplyShaderBuildSettings();
+
         AZStd::unique_ptr<MaterialCanvasMainWindow> m_window;
         AZStd::unique_ptr<AtomToolsFramework::EntityPreviewViewportSettingsSystem> m_viewportSettingsSystem;
         AZStd::unique_ptr<AtomToolsFramework::DynamicNodeManager> m_dynamicNodeManager;

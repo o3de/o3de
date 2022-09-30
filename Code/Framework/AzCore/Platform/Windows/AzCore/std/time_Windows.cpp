@@ -44,18 +44,4 @@ namespace AZStd
         timeNowSecond = GetTickCount() / 1000;
         return timeNowSecond;
     }
-
-    AZ::u64 GetTimeUTCMilliSecond()
-    {
-        AZ::u64 utc;
-        FILETIME UTCFileTime;
-        GetSystemTimeAsFileTime(&UTCFileTime);
-        // store time in 100 of nanoseconds since January 1, 1601 UTC
-        utc = (AZ::u64)UTCFileTime.dwHighDateTime << 32 | UTCFileTime.dwLowDateTime;
-        // convert to since 1970/01/01 00:00:00 UTC
-        utc -= 116444736000000000;
-        // convert to millisecond
-        utc /= 10000;
-        return utc;
-    }
 }

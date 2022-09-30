@@ -10,19 +10,21 @@
 #include <AzCore/Name/Name.h>
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 #include <AzCore/std/parallel/shared_mutex.h>
+#include <Atom/RHI.Reflect/Base.h>
+#include <Atom/RHI.Reflect/Handle.h>
 
 namespace AZ
 {
     namespace RHI
     {
-        //! 
+        //!
         //! Allocates and registers tags by name, allowing the user to acquire and find tags from names.
         //! The class is designed to map user-friendly tag names defined through content or higher level code to
         //! low-level tags, which are simple handles.
-        //! 
+        //!
         //! Some notes about usage and design:
         //!   - TagType need to be a Handle<Integer> type.
-        //!   - Tags are reference counted, which means multiple calls to 'Acquire' with the same name will increment 
+        //!   - Tags are reference counted, which means multiple calls to 'Acquire' with the same name will increment
         //!     the internal reference count on the tag. This allows shared ownership between systems, if necessary.
         //!   - FindTag is provided to search for a tag reference without taking ownership.
         //!   - Names are case sensitive.
@@ -65,6 +67,9 @@ namespace AZ
             //! Returns the number of allocated tags in the registry.
             size_t GetAllocatedTagCount() const;
 
+            template <class TagVisitor>
+            void VisitTags(TagVisitor visitor);
+
         private:
             TagRegistry() = default;
 
@@ -73,7 +78,6 @@ namespace AZ
                 Name m_name;
                 size_t m_refCount = 0;
             };
-
             mutable AZStd::shared_mutex m_mutex;
             AZStd::array<Entry, MaxTagCount> m_entriesByTag;
             size_t m_allocatedTagCount = 0;
@@ -184,6 +188,22 @@ namespace AZ
         size_t TagRegistry<IndexType, MaxTagCount>::GetAllocatedTagCount() const
         {
             return m_allocatedTagCount;
+        }
+
+        template<typename IndexType, size_t MaxTagCount>
+        template<class TagVisitor>
+        void TagRegistry<IndexType, MaxTagCount>::VisitTags(TagVisitor visitor)
+        {
+            size_t entriesToFind = m_allocatedTagCount;
+            for (uint32_t i = 0; entriesToFind > 0 && i < MaxTagCount; ++i)
+            {
+                const Entry& entry = m_entriesByTag.at(i);
+                if (entry.m_refCount > 0)
+                {
+                    visitor(entry.m_name, TagType(i));
+                    --entriesToFind;
+                }
+            }
         }
     }
 }

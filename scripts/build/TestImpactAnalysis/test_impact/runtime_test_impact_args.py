@@ -34,11 +34,14 @@ class RuntimeArgs(Enum):
                "Integration failure policy is set to: ")
     COMMON_CHANGELIST = ("change_list", "--changelist=", "Change list is set to: ")
     COMMON_REPORT = ("report", "--report=", "Sequencer report file is set to: ")
+    COMMON_TARGET_OUTPUT = ("target_output", "--targetout=",
+                      "Test target output capture is set to: ")
 
     # Native arguments
     NATIVE_SAFEMODE = ("safe_mode", "--safemode=", "Safe mode set to: ")
 
     # Python arguments
+    PYTHON_TEST_RUNNER = ("testrunner_policy", "--testrunner=", "Test runner policy is set to: ")
 
     def __init__(self, driver_argument, runtime_arg, message):
         self.driver_argument = driver_argument

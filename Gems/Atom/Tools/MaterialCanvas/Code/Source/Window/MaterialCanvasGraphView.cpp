@@ -21,33 +21,51 @@ namespace MaterialCanvas
     {
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect(m_toolId);
         OnDocumentOpened(m_documentId);
+        m_openedBefore = false;
     }
 
     MaterialCanvasGraphView::~MaterialCanvasGraphView()
     {
-        OnDocumentOpened(AZ::Uuid::CreateNull());
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusDisconnect();
     }
 
     void MaterialCanvasGraphView::OnDocumentOpened(const AZ::Uuid& documentId)
     {
-        GraphCanvas::GraphId activeGraphId = GraphCanvas::GraphId();
         if (m_documentId == documentId)
         {
+            GraphCanvas::GraphId activeGraphId = GraphCanvas::GraphId();
             MaterialCanvasDocumentRequestBus::EventResult(
                 activeGraphId, m_documentId, &MaterialCanvasDocumentRequestBus::Events::GetGraphId);
+            SetActiveGraphId(activeGraphId, true);
+
+            // Show the entire graph and center the view the first time a graph is opened
+            if (!m_openedBefore && activeGraphId.IsValid())
+            {
+                GraphCanvas::ViewId viewId;
+                GraphCanvas::SceneRequestBus::EventResult(viewId, activeGraphId, &GraphCanvas::SceneRequests::GetViewId);
+                GraphCanvas::ViewRequestBus::Event(viewId, &GraphCanvas::ViewRequests::ShowEntireGraph);
+                m_openedBefore = true;
+            }
+            return;
         }
-        SetActiveGraphId(activeGraphId, m_documentId == documentId);
+
+        SetActiveGraphId(GraphCanvas::GraphId(), false);
     }
 
     void MaterialCanvasGraphView::OnDocumentClosed([[maybe_unused]] const AZ::Uuid& documentId)
     {
-        SetActiveGraphId(GraphCanvas::GraphId(), m_documentId == documentId);
+        if (m_documentId == documentId)
+        {
+            SetActiveGraphId(GraphCanvas::GraphId(), true);
+        }
     }
 
     void MaterialCanvasGraphView::OnDocumentDestroyed([[maybe_unused]] const AZ::Uuid& documentId)
     {
-        SetActiveGraphId(GraphCanvas::GraphId(), m_documentId == documentId);
+        if (m_documentId == documentId)
+        {
+            SetActiveGraphId(GraphCanvas::GraphId(), true);
+        }
     }
 } // namespace MaterialCanvas
 

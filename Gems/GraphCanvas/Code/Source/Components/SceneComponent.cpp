@@ -3995,6 +3995,9 @@ namespace GraphCanvas
         {
             GraphicsEffectRequestBus::Event(effectId, &GraphicsEffectRequests::OnGraphicsEffectCancelled);
             RemoveItemFromScene(graphicsItem);
+            // https://stackoverflow.com/questions/38458830/crash-after-qgraphicssceneremoveitem-with-custom-item-class
+            // Scene Index does not correctly update causing a crash when the index tree is queried. 
+            GraphicsEffectRequestBus::Event(effectId, &GraphicsEffectRequests::PrepareGeometryChange);
             delete graphicsItem;
         }
 

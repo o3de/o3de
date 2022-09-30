@@ -1,0 +1,95 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+// This #define magic lets you use the EvaluatePixelGeometry function in this file without making it the final EvaluatePixelGeometry
+// used in your shader. Simply #define EvaluatePixelGeometry to your custom definition before including this file
+//
+#ifndef EvaluatePixelGeometry
+#define EvaluatePixelGeometry(IN, isFrontFace)      EvaluatePixelGeometry_Eye(IN, isFrontFace)
+#endif
+
+#include "../MaterialFunctions/EvaluateTangentFrame.azsli"
+
+// TODO: The body of this function is copy pasted from BasePBR_PixelGeometryEval.azsli as that file could not be included here
+// since the file references an option o_normal_useTexture, which is not defined for the Eye shader. Need to find an elegant
+// way to handle this.
+PixelGeometryData EvaluatePixelGeometry_Eye(
+    float3 positionWS,
+    float3 normal,
+    float3 tangent,
+    float3 bitangent,
+    float2 uvs[UvSetCount],
+    bool isFrontFace,
+    bool evaluateTangentFrame)
+{
+    PixelGeometryData geoData;
+
+    geoData.positionWS = positionWS;
+    geoData.vertexNormal = normalize(normal);
+
+    geoData.tangents[0] = tangent;
+    geoData.tangents[1] = tangent;
+
+    geoData.bitangents[0] = bitangent;
+    geoData.bitangents[1] = bitangent;
+
+    geoData.uvs = uvs;
+    geoData.isFrontFace = isFrontFace;
+
+    if (evaluateTangentFrame)
+    {
+        for (int i = 0; i != UvSetCount; ++i)
+        {
+            EvaluateTangentFrame(geoData.vertexNormal, positionWS, isFrontFace, uvs[i], i,
+                tangent, bitangent, geoData.tangents[i], geoData.bitangents[i]);
+        }
+    }
+
+    return geoData;
+}
+
+PixelGeometryData EvaluatePixelGeometry_Eye(
+    float3 positionWS,
+    float3 normal,
+    float3 tangent,
+    float3 bitangent,
+    float2 uv[UvSetCount],
+    float3 localPosition,
+    bool isFrontFace)
+{
+    // Base PBR Geo Data
+    bool evaluateTangentFrame = o_iris_o_normal_useTexture || o_sclera_o_normal_useTexture;
+    PixelGeometryData geoData = EvaluatePixelGeometry_Eye(positionWS, normal, tangent, bitangent, uv, isFrontFace, evaluateTangentFrame);
+
+    // Skin specifics
+    geoData.localPosition = localPosition;
+
+    return geoData;
+}
+
+PixelGeometryData EvaluatePixelGeometry_Eye(VsOutput IN, bool isFrontFace)
+{
+    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
+    float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
+
+    float3 vertexNormal, vertexTangent, vertexBitangent;
+    ConstructTBN(IN.normal, IN.tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
+    // Bitangent is temporarily added back to fix the eye material screenshot test.
+    vertexBitangent = normalize(mul(objectToWorld, float4(IN.bitangent, 0.0)).xyz);
+
+    return EvaluatePixelGeometry_Eye(
+        IN.worldPosition,
+        vertexNormal,
+        vertexTangent,
+        vertexBitangent,
+        IN.uvs,
+        IN.localPosition,
+        isFrontFace);
+}

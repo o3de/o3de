@@ -58,7 +58,7 @@ namespace
         AzFramework::NativeWindowHandle windowHandle = nullptr;
         AzFramework::WindowSystemRequestBus::BroadcastResult(windowHandle, &AzFramework::WindowSystemRequestBus::Events::GetDefaultWindowHandle);
         AzFramework::WindowSize newSize = AzFramework::WindowSize(aznumeric_cast<int32_t>(value.GetX()), aznumeric_cast<int32_t>(value.GetY()));
-        AzFramework::WindowRequestBus::Broadcast(&AzFramework::WindowRequestBus::Events::ResizeClientArea, newSize);
+        AzFramework::WindowRequestBus::Broadcast(&AzFramework::WindowRequestBus::Events::ResizeClientArea, newSize, AzFramework::WindowPosOptions());
     }
 
     AZ_CVAR(AZ::Vector2, r_viewportPos, AZ::Vector2::CreateZero(), CVar_OnViewportPosition, AZ::ConsoleFunctorFlags::DontReplicate,
@@ -251,6 +251,8 @@ namespace O3DELauncher
                 }
             };
             AZ::Data::AssetCatalogRequestBus::Broadcast(AZStd::move(LoadCatalog));
+
+            AZ_TracePrintf("Launcher", "CriticalAssetsCompiled\n");
 
             // Broadcast that critical assets are ready
             AZ::ComponentApplicationLifecycle::SignalEvent(*settingsRegistry, "CriticalAssetsCompiled", R"({})");

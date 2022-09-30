@@ -42,7 +42,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString TerrainHeightGradientListNode::TITLE = QObject::tr("Terrain Height Gradient List");
+    const char* TerrainHeightGradientListNode::TITLE = "Terrain Height Gradient List";
 
     TerrainHeightGradientListNode::TerrainHeightGradientListNode(GraphModel::GraphPtr graph)
         : BaseNode(graph)
@@ -58,7 +58,7 @@ namespace LandscapeCanvas
 
     const char* TerrainHeightGradientListNode::GetTitle() const
     {
-        return TITLE.toUtf8().constData();
+        return TITLE;
     }
 
     void TerrainHeightGradientListNode::RegisterSlots()

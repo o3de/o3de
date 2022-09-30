@@ -62,10 +62,14 @@ namespace AzToolsFramework::ViewportUi
         virtual const SwitcherId CreateSwitcher(Alignment align) = 0;
         //! Sets the active button of the cluster. This is the button which will display as highlighted.
         virtual void SetClusterActiveButton(ClusterId clusterId, ButtonId buttonId) = 0;
+        //! Disables the Cluster Button. This button won't be clickable by the user.  
+        virtual void SetClusterDisableButton(ClusterId clusterId, ButtonId buttonId, bool disabled) = 0;
         //! Clears the active button of the cluster if one is active. The button will no longer display as highlighted.
         virtual void ClearClusterActiveButton(ClusterId clusterId) = 0;
         //! Sets the active button of the switcher. This is the button which has a text label.
         virtual void SetSwitcherActiveButton(SwitcherId switcherId, ButtonId buttonId) = 0;
+        //! Disables the Switcher button of the switcher. This button won't be clickable by the user.
+        virtual void SetSwitcherDisableButton(SwitcherId switcherId, ButtonId buttonId, bool disabled) = 0;
         //! Adds a locked overlay to the cluster button's icon.
         virtual void SetClusterButtonLocked(ClusterId clusterId, ButtonId buttonId, bool isLocked) = 0;
         //! Updates/sets the cluster button's tooltip to the passed string.
@@ -89,6 +93,8 @@ namespace AzToolsFramework::ViewportUi
         virtual void RemoveSwitcherButton(SwitcherId switcherId, ButtonId buttonId) = 0;
         //! Sets the visibility of the cluster.
         virtual void SetClusterVisible(ClusterId clusterId, bool visible) = 0;
+        //! Sets the visibility of the switcher.
+        virtual void SetSwitcherVisible(SwitcherId switcherId, bool visible) = 0;
         //! Sets the visibility of multiple clusters.
         virtual void SetClusterGroupVisible(const AZStd::vector<ClusterId>& clusterGroup, bool visible) = 0;
         //! Creates and registers a text field with the Viewport UI system.

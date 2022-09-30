@@ -8,9 +8,18 @@
 
 #pragma once
 
-#include <Atom/Features/PBR/Surfaces/BasePbrSurfaceData.azsli>
+#ifndef ENABLE_CLEAR_COAT
+#define ENABLE_CLEAR_COAT               1
+#endif
+
+#include <Atom/Features/PBR/MaterialUtils.azsli>
+#include <Atom/Features/PBR/SpecularAA.azsli>
 #include <Atom/Features/PBR/Surfaces/ClearCoatSurfaceData.azsli>
 #include <Atom/Features/PBR/Surfaces/TransmissionSurfaceData.azsli>
+
+#if ENABLE_CLEAR_COAT
+#include <Atom/Features/PBR/Surfaces/ClearCoatSurfaceData.azsli>
+#endif
 
 // This data varies across different surfaces, but is uniform within a surface
 class SurfaceSettings

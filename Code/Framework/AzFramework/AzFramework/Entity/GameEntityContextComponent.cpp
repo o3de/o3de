@@ -211,11 +211,11 @@ namespace AzFramework
         EntityContext::OnContextEntitiesAdded(entities);
 
     #if (AZ_TRAIT_PUMP_SYSTEM_EVENTS_WHILE_LOADING)
-        auto timeOfLastEventPump = AZStd::chrono::high_resolution_clock::now();
+        auto timeOfLastEventPump = AZStd::chrono::steady_clock::now();
         auto PumpSystemEventsIfNeeded = [&timeOfLastEventPump]()
         {
             static const AZStd::chrono::milliseconds maxMillisecondsBetweenSystemEventPumps(AZ_TRAIT_PUMP_SYSTEM_EVENTS_WHILE_LOADING_INTERVAL_MS);
-            const auto now = AZStd::chrono::high_resolution_clock::now();
+            const auto now = AZStd::chrono::steady_clock::now();
             if (now - timeOfLastEventPump > maxMillisecondsBetweenSystemEventPumps)
             {
                 timeOfLastEventPump = now;
@@ -311,7 +311,7 @@ namespace AzFramework
                                     spawnableEntitiesInterface->DespawnEntity(currentEntity->GetId(), entitySpawnTicket);
                                 }
                             });
-                        return;
+                        continue;
                     }
                 }
 

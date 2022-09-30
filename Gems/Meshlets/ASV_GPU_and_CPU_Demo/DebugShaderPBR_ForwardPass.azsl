@@ -14,6 +14,7 @@
 #include <Atom/Features/SrgSemantics.azsli>
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
 #include <Atom/Features/PBR/Lighting/StandardLighting.azsli>
+#include <Atom/Features/PBR/Lights/IblForward.azsli>
 #include <Atom/Features/PBR/Decals.azsli>
 
 ShaderResourceGroup DebugShaderPBRSrg : SRG_PerMaterial

@@ -23,6 +23,7 @@ namespace AzToolsFramework
 {
     class ContainerEntityInterface;
     class FocusModeInterface;
+    class ReadOnlyEntityPublicInterface;
     class ReadOnlyEntityQueryInterface;
 }
 
@@ -55,6 +56,7 @@ namespace AzToolsFramework::Prefab
         PrefabFocusOperationResult FocusOnPrefabInstanceOwningEntityId(AZ::EntityId entityId) override;
         TemplateId GetFocusedPrefabTemplateId(AzFramework::EntityContextId entityContextId) const override;
         InstanceOptionalReference GetFocusedPrefabInstance(AzFramework::EntityContextId entityContextId) const override;
+        bool IsFocusedPrefabInstanceReadOnly(AzFramework::EntityContextId entityContextId) const override;
         LinkId AppendPathFromFocusedInstanceToPatchPaths(PrefabDom& providedPatch, AZ::EntityId entityId) const override;
 
         // PrefabFocusPublicInterface and PrefabFocusPublicRequestBus overrides ...
@@ -80,6 +82,8 @@ namespace AzToolsFramework::Prefab
         void OnPrefabTemplateDirtyFlagUpdated(TemplateId templateId, bool status) override;
         
     private:
+        InstanceClimbUpResult ClimbUpToFocusedOrRootInstanceFromEntity(AZ::EntityId entityId) const;
+
         PrefabFocusOperationResult FocusOnPrefabInstance(InstanceOptionalReference focusedInstance);
         void RefreshInstanceFocusPath();
 
@@ -105,6 +109,7 @@ namespace AzToolsFramework::Prefab
 
         ContainerEntityInterface* m_containerEntityInterface = nullptr;
         FocusModeInterface* m_focusModeInterface = nullptr;
+        ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
         ReadOnlyEntityQueryInterface* m_readOnlyEntityQueryInterface = nullptr;
     };
 

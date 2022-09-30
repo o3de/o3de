@@ -6,95 +6,97 @@
  *
  */
 
-#include <CoreLights/QuadLightDelegate.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <AtomLyIntegration/CommonFeatures/CoreLights/AreaLightComponentConfig.h>
+#include <CoreLights/QuadLightDelegate.h>
 
-namespace AZ
+namespace AZ::Render
 {
-    namespace Render
+    QuadLightDelegate::QuadLightDelegate(LmbrCentral::QuadShapeComponentRequests* shapeBus, EntityId entityId, bool isVisible)
+        : LightDelegateBase<QuadLightFeatureProcessorInterface>(entityId, isVisible)
+        , m_shapeBus(shapeBus)
     {
-        QuadLightDelegate::QuadLightDelegate(LmbrCentral::QuadShapeComponentRequests* shapeBus, EntityId entityId, bool isVisible)
-            : LightDelegateBase<QuadLightFeatureProcessorInterface>(entityId, isVisible)
-            , m_shapeBus(shapeBus)
+        InitBase(entityId);
+    }
+
+    void QuadLightDelegate::SetLightEmitsBothDirections(bool lightEmitsBothDirections)
+    {
+        if (GetLightHandle().IsValid())
         {
-            InitBase(entityId);
+            GetFeatureProcessor()->SetLightEmitsBothDirections(GetLightHandle(), lightEmitsBothDirections);
         }
+    }
 
-        void QuadLightDelegate::SetLightEmitsBothDirections(bool lightEmitsBothDirections)
+    void QuadLightDelegate::SetUseFastApproximation(bool useFastApproximation)
+    {
+        if (GetLightHandle().IsValid())
         {
-            if (GetLightHandle().IsValid())
-            {
-                GetFeatureProcessor()->SetLightEmitsBothDirections(GetLightHandle(), lightEmitsBothDirections);
-            }
+            GetFeatureProcessor()->SetUseFastApproximation(GetLightHandle(), useFastApproximation);
         }
+    }
 
-        void QuadLightDelegate::SetUseFastApproximation(bool useFastApproximation)
+    float QuadLightDelegate::CalculateAttenuationRadius(float lightThreshold) const
+    {
+        // Calculate the radius at which the irradiance will be equal to cutoffIntensity.
+        const float intensity = GetPhotometricValue().GetCombinedIntensity(PhotometricUnit::Lumen);
+        return Sqrt(intensity / lightThreshold);
+    }
+
+    void QuadLightDelegate::HandleShapeChanged()
+    {
+        if (GetLightHandle().IsValid())
         {
-            if (GetLightHandle().IsValid())
-            {
-                GetFeatureProcessor()->SetUseFastApproximation(GetLightHandle(), useFastApproximation);
-            }
+            GetFeatureProcessor()->SetPosition(GetLightHandle(), GetTransform().GetTranslation());
+            GetFeatureProcessor()->SetOrientation(GetLightHandle(), m_shapeBus->GetQuadOrientation());
+            GetFeatureProcessor()->SetQuadDimensions(GetLightHandle(), GetWidth(), GetHeight());
         }
+    }
 
-        float QuadLightDelegate::CalculateAttenuationRadius(float lightThreshold) const
+    float QuadLightDelegate::GetSurfaceArea() const
+    {
+        return GetWidth() * GetHeight();
+    }
+
+    void QuadLightDelegate::DrawDebugDisplay(
+        const Transform& transform, const Color& color, AzFramework::DebugDisplayRequests& debugDisplay, bool isSelected) const
+    {
+        if (isSelected)
         {
-            // Calculate the radius at which the irradiance will be equal to cutoffIntensity.
-            float intensity = GetPhotometricValue().GetCombinedIntensity(PhotometricUnit::Lumen);
-            return sqrt(intensity / lightThreshold);
-        }
+            debugDisplay.SetColor(color);
 
-        void QuadLightDelegate::HandleShapeChanged()
+            // Draw a quad for the attenuation radius
+            debugDisplay.DrawWireSphere(transform.GetTranslation(), GetConfig()->m_attenuationRadius);
+        }
+    }
+
+    float QuadLightDelegate::GetWidth() const
+    {
+        return m_shapeBus->GetQuadWidth() * GetTransform().GetUniformScale();
+    }
+
+    float QuadLightDelegate::GetHeight() const
+    {
+        return m_shapeBus->GetQuadHeight() * GetTransform().GetUniformScale();
+    }
+
+    void QuadLightDelegate::SetAffectsGI(bool affectsGI)
+    {
+        if (GetLightHandle().IsValid())
         {
-            if (GetLightHandle().IsValid())
-            {
-                GetFeatureProcessor()->SetPosition(GetLightHandle(), GetTransform().GetTranslation());
-                GetFeatureProcessor()->SetOrientation(GetLightHandle(), m_shapeBus->GetQuadOrientation());
-                GetFeatureProcessor()->SetQuadDimensions(GetLightHandle(), GetWidth(), GetHeight());
-            }
+            GetFeatureProcessor()->SetAffectsGI(GetLightHandle(), affectsGI);
         }
+    }
 
-        float QuadLightDelegate::GetSurfaceArea() const
+    void QuadLightDelegate::SetAffectsGIFactor(float affectsGIFactor)
+    {
+        if (GetLightHandle().IsValid())
         {
-            return GetWidth() * GetHeight();
+            GetFeatureProcessor()->SetAffectsGIFactor(GetLightHandle(), affectsGIFactor);
         }
+    }
 
-        void QuadLightDelegate::DrawDebugDisplay(const Transform& transform, const Color& color, AzFramework::DebugDisplayRequests& debugDisplay, bool isSelected) const
-        {
-            if (isSelected)
-            {
-                debugDisplay.SetColor(color);
-
-                // Draw a quad for the attenuation radius
-                debugDisplay.DrawWireSphere(transform.GetTranslation(), GetConfig()->m_attenuationRadius);
-            }
-        }
-
-        float QuadLightDelegate::GetWidth() const
-        {
-            return m_shapeBus->GetQuadWidth() * GetTransform().GetUniformScale();
-        }
-
-        float QuadLightDelegate::GetHeight() const
-        {
-            return m_shapeBus->GetQuadHeight() * GetTransform().GetUniformScale();
-        }
-
-        void QuadLightDelegate::SetAffectsGI(bool affectsGI)
-        {
-            if (GetLightHandle().IsValid())
-            {
-                GetFeatureProcessor()->SetAffectsGI(GetLightHandle(), affectsGI);
-            }
-        }
-
-        void QuadLightDelegate::SetAffectsGIFactor(float affectsGIFactor)
-        {
-            if (GetLightHandle().IsValid())
-            {
-                GetFeatureProcessor()->SetAffectsGIFactor(GetLightHandle(), affectsGIFactor);
-            }
-        }
-
-    } // namespace Render
-} // namespace AZ
+    Aabb QuadLightDelegate::GetLocalVisualizationBounds() const
+    {
+        return Aabb::CreateCenterRadius(Vector3::CreateZero(), GetConfig()->m_attenuationRadius);
+    }
+} // namespace AZ::Render

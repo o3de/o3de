@@ -47,10 +47,9 @@ namespace TrackView
         AZ::RPI::ViewPtr m_targetView; //!< The view that this render pipeline will mimic.
         AZStd::vector<AZStd::string> m_passHierarchy; //!< Pass hierarchy (includes pipelineName and CopyToSwapChain).
         CaptureFinishedCallback m_captureFinishedCallback; //!< Stored callback called from OnCaptureFinished.
-        uint32_t m_frameCaptureId = AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId;
 
         // FrameCaptureNotificationBus overrides ...
-        void OnCaptureFinished(uint32_t frameCaptureId, AZ::Render::FrameCaptureResult result, const AZStd::string& info) override;
+        void OnFrameCaptureFinished(AZ::Render::FrameCaptureResult result, const AZStd::string& info) override;
     };
 
     inline AZ::EntityId ActiveCameraEntityId()

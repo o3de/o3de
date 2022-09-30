@@ -135,6 +135,7 @@ namespace AZ::DocumentPropertyEditor
                 impl->m_adapter->NotifyResetDocument();
             }
         };
+
         // Lookup table of containers and their elements for handling container operations
         AZ::Dom::DomPrefixTree<BoundContainer> m_containers;
 
@@ -213,7 +214,8 @@ namespace AZ::DocumentPropertyEditor
             void* instance,
             const Reflection::IAttributes& attributes,
             AZStd::function<Dom::Value(const Dom::Value&)> onChanged,
-            bool createRow)
+            bool createRow,
+            bool hashValue)
         {
             if (createRow)
             {
@@ -226,6 +228,14 @@ namespace AZ::DocumentPropertyEditor
             m_onChangedCallbacks.SetValue(m_builder.GetCurrentPath(), AZStd::move(onChanged));
             m_builder.AddMessageHandler(m_adapter, Nodes::PropertyEditor::OnChanged);
             m_builder.AddMessageHandler(m_adapter, Nodes::PropertyEditor::RequestTreeUpdate);
+
+            if (hashValue)
+            {
+                AZStd::any anyVal(&instance);
+                m_builder.Attribute(
+                    Nodes::PropertyEditor::ValueHashed,
+                    AZ::Uuid::CreateData(reinterpret_cast<AZStd::byte*>(AZStd::any_cast<void>(&anyVal)), anyVal.get_type_info().m_valueSize));
+            }
             m_builder.EndPropertyEditor();
 
             CheckContainerElement(instance, attributes);
@@ -239,6 +249,13 @@ namespace AZ::DocumentPropertyEditor
         template<class T>
         void VisitPrimitive(T& value, const Reflection::IAttributes& attributes)
         {
+            auto visibilityAttribute = attributes.Find(Nodes::PropertyEditor::Visibility.GetName());
+            Nodes::PropertyVisibility visibility =
+                Nodes::PropertyEditor::Visibility.DomToValue(visibilityAttribute).value_or(Nodes::PropertyVisibility::Show);
+            if (visibility == Nodes::PropertyVisibility::Hide || visibility == Nodes::PropertyVisibility::ShowChildrenOnly)
+            {
+                return;
+            }
             VisitValue(
                 Dom::Utils::ValueFromType(value),
                 &value,
@@ -253,7 +270,7 @@ namespace AZ::DocumentPropertyEditor
                     }
                     return Dom::Utils::ValueFromType(value);
                 },
-                true);
+                true, false);
         }
 
         void Visit(bool& value, const Reflection::IAttributes& attributes) override
@@ -335,7 +352,15 @@ namespace AZ::DocumentPropertyEditor
                 {
                     m_builder.BeginPropertyEditor<Nodes::ContainerActionButton>();
                     m_builder.Attribute(Nodes::PropertyEditor::SharePriorColumn, true);
+                    m_builder.Attribute(Nodes::PropertyEditor::UseMinimumWidth, true);
+                    m_builder.Attribute(Nodes::PropertyEditor::Alignment, Nodes::PropertyEditor::Align::AlignRight);
                     m_builder.Attribute(Nodes::ContainerActionButton::Action, Nodes::ContainerAction::RemoveElement);
+                    auto ancestorDisabledValue = attributes.Find(Nodes::NodeWithVisiblityControl::AncestorDisabled.GetName());
+                    bool isAncestorDisabledValue = ancestorDisabledValue.IsBool() && ancestorDisabledValue.GetBool();
+                    if (isAncestorDisabledValue)
+                    {
+                        m_builder.Attribute(Nodes::PropertyEditor::AncestorDisabled, true);
+                    }
                     m_builder.AddMessageHandler(m_adapter, Nodes::ContainerActionButton::OnActivate.GetName());
                     m_builder.EndPropertyEditor();
                 }
@@ -376,7 +401,7 @@ namespace AZ::DocumentPropertyEditor
                         value = newValue.GetString();
                         return newValue;
                     },
-                    false);
+                    false, false);
                 return;
             }
             else
@@ -412,15 +437,28 @@ namespace AZ::DocumentPropertyEditor
 
                     if (!container->IsFixedSize())
                     {
+                        auto disabledValue = attributes.Find(Nodes::NodeWithVisiblityControl::Disabled.GetName());
+                        bool isDisabled = disabledValue.IsBool() && disabledValue.GetBool();
+
                         m_builder.BeginPropertyEditor<Nodes::ContainerActionButton>();
                         m_builder.Attribute(Nodes::ContainerActionButton::Action, Nodes::ContainerAction::AddElement);
+                        m_builder.Attribute(Nodes::PropertyEditor::UseMinimumWidth, true);
+                        if (isDisabled)
+                        {
+                            m_builder.Attribute(Nodes::PropertyEditor::Disabled, true);
+                        }
                         m_builder.AddMessageHandler(m_adapter, Nodes::ContainerActionButton::OnActivate.GetName());
                         m_builder.EndPropertyEditor();
 
                         m_builder.BeginPropertyEditor<Nodes::ContainerActionButton>();
                         m_builder.Attribute(Nodes::PropertyEditor::SharePriorColumn, true);
+                        m_builder.Attribute(Nodes::PropertyEditor::UseMinimumWidth, true);
                         m_builder.Attribute(Nodes::PropertyEditor::Alignment, Nodes::PropertyEditor::Align::AlignRight);
                         m_builder.Attribute(Nodes::ContainerActionButton::Action, Nodes::ContainerAction::Clear);
+                        if (isDisabled)
+                        {
+                            m_builder.Attribute(Nodes::PropertyEditor::Disabled, true);
+                        }
                         m_builder.AddMessageHandler(m_adapter, Nodes::ContainerActionButton::OnActivate.GetName());
                         m_builder.EndPropertyEditor();
                     }
@@ -431,15 +469,46 @@ namespace AZ::DocumentPropertyEditor
                 }
 
                 AZ::Dom::Value instancePointerValue = AZ::Dom::Utils::MarshalTypedPointerToValue(access.Get(), access.GetType());
+                bool hashValue = false;
+                const AZ::Name PointerTypeFieldName = AZ::Dom::Utils::PointerTypeFieldName;
+                if (instancePointerValue.IsOpaqueValue() || instancePointerValue.FindMember(PointerTypeFieldName))
+                {
+                    hashValue = true;
+                }
                 VisitValue(
                     instancePointerValue,
                     access.Get(),
                     attributes,
-                    [](const Dom::Value& newValue)
+                    // this needs to write the value back into the reflected object via Json serialization
+                    [valuePointer = access.Get(), valueType = access.GetType(), this](const Dom::Value& newValue)
                     {
+                        // marshal this new value into a pointer for use by the Json serializer
+                        auto marshalledPointer = AZ::Dom::Utils::TryMarshalValueToPointer(newValue, valueType);
+
+                        rapidjson::Document buffer;
+                        JsonSerializerSettings serializeSettings;
+                        JsonDeserializerSettings deserializeSettings;
+                        serializeSettings.m_serializeContext = m_serializeContext;
+                        deserializeSettings.m_serializeContext = m_serializeContext;
+
+                        // serialize the new value to Json, using the original valuePointer as a reference object to generate a minimal diff
+                        JsonSerialization::Store(buffer, buffer.GetAllocator(), marshalledPointer, valuePointer, valueType, serializeSettings);
+
+                        // now deserialize that value into the original location
+                        JsonSerialization::Load(valuePointer, valueType, buffer, deserializeSettings);
+
+                        // NB: the returned value for serialized pointer values is instancePointerValue, but since this is passed by pointer,
+                        // it will not actually detect a changed dom value. Since we are already writing directly to the DOM before this step,
+                        // it won't affect the calling DPE, however, other DPEs pointed at the same adapter would be unaware of the change,
+                        // and wouldn't update their UI.
+                        // In future, to properly support multiple DPEs on one adapter, we will need to solve this. One way would be to store
+                        // the json serialized value (which is mostly human-readable text) as an attribute, so any change to the Json would
+                        // trigger an update. This would have the advantage of allowing opaque and pointer types to be searchable by the
+                        // string-based Filter adapter. Without this, things like Vector3 will not have searchable values by text. These
+                        // advantages would have to be measured against the size changes in the DOM and the time taken to populate and parse them.
                         return newValue;
                     },
-                    false);
+                    false, hashValue);
             }
         }
 
@@ -557,6 +626,7 @@ namespace AZ::DocumentPropertyEditor
         m_impl->m_builder.AddMessageHandler(this, Nodes::Adapter::QueryKey);
         m_impl->m_builder.AddMessageHandler(this, Nodes::Adapter::AddContainerKey);
         m_impl->m_builder.AddMessageHandler(this, Nodes::Adapter::RejectContainerKey);
+        m_impl->m_builder.AddMessageHandler(this, Nodes::Adapter::SetNodeDisabled);
         m_impl->m_onChangedCallbacks.Clear();
         m_impl->m_containers.Clear();
         if (m_instance != nullptr)
@@ -577,6 +647,147 @@ namespace AZ::DocumentPropertyEditor
                 Dom::Value newValue = (*changeHandler)(valueFromEditor);
                 NotifyContentsChanged({ Dom::PatchOperation::ReplaceOperation(message.m_messageOrigin / "Value", newValue) });
                 NotifyPropertyChanged({ message.m_messageOrigin, newValue, changeType });
+            }
+        };
+
+        auto handleSetNodeDisabled = [&](bool shouldDisable, Dom::Path targetNodePath)
+        {
+            Dom::Value targetNode = GetContents()[targetNodePath];
+
+            if (!targetNode.IsNode() || targetNode.IsNull())
+            {
+                AZ_Warning("ReflectionAdapter",
+                    false,
+                    "Failed to update disabled state for Value at path `%s`; this is not a valid node",
+                    targetNodePath.ToString().c_str());
+                return;
+            }
+
+            const Name& disabledAttributeName = Nodes::NodeWithVisiblityControl::Disabled.GetName();
+            const Name& ancestorDisabledAttrName = Nodes::NodeWithVisiblityControl::AncestorDisabled.GetName();
+
+            Dom::Patch patch;
+            AZStd::stack<AZStd::pair<Dom::Path, const Dom::Value*>> unvisitedDescendants;
+
+            const auto queueDescendantsForSearch = [&unvisitedDescendants](const Dom::Value& parentNode, const Dom::Path& parentPath)
+            {
+                int index = 0;
+                for (auto child = parentNode.ArrayBegin(); child != parentNode.ArrayEnd(); ++child)
+                {
+                    if (child->IsNode())
+                    {
+                        unvisitedDescendants.push({ parentPath / index, child });
+                    }
+                    ++index;
+                }
+            };
+
+            const auto propagateAttributeChangeToRow = [&](
+                const Dom::Value& parentNode,
+                const Dom::Path& parentPath,
+                AZStd::function<void(const Dom::Value&, const Dom::Path&)> procedure)
+            {
+                int index = 0;
+                for (auto child = parentNode.ArrayBegin(); child != parentNode.ArrayEnd(); ++child)
+                {
+                    if (child->IsNode())
+                    {
+                        auto childPath = parentPath / index;
+                        if (child->GetNodeName() != GetNodeName<Nodes::Row>())
+                        {
+                            procedure(*child, childPath);
+                        }
+                        queueDescendantsForSearch(*child, childPath);
+                    }
+                    ++index;
+                }
+            };
+
+            // This lambda applies the attribute change to any descendants in unvisitedChildren until its done
+            const auto propagateAttributeChangeToDescendants = [&](AZStd::function<void(const Dom::Value&, Dom::Path&)> procedure)
+            {
+                while (!unvisitedDescendants.empty())
+                {
+                    Dom::Path nodePath = unvisitedDescendants.top().first;
+                    auto node = unvisitedDescendants.top().second;
+                    unvisitedDescendants.pop();
+
+                    if (node->GetNodeName() != GetNodeName<Nodes::Row>())
+                    {
+                        procedure(*node, nodePath);
+                    }
+
+                    // We can stop traversing this path if the node has a truthy disabled attribute since its descendants
+                    // should retain their inherited disabled state
+                    if (auto iter = node->FindMember(disabledAttributeName); iter == node->MemberEnd() || !iter->second.GetBool())
+                    {
+                        queueDescendantsForSearch(*node, nodePath);
+                    }
+                }
+            };
+
+            if (shouldDisable)
+            {
+                if (targetNode.GetNodeName() == GetNodeName<Nodes::Row>())
+                {
+                    propagateAttributeChangeToRow(targetNode,
+                        targetNodePath,
+                        [&patch, &disabledAttributeName](const Dom::Value& node, const Dom::Path& nodePath)
+                        {
+                            if (auto iter = node.FindMember(disabledAttributeName); iter == node.MemberEnd() || !iter->second.GetBool())
+                            {
+                                patch.PushBack({ Dom::PatchOperation::AddOperation(nodePath / disabledAttributeName, Dom::Value(true)) });
+                            }
+                        });
+                }
+                else
+                {
+                    patch.PushBack({ Dom::PatchOperation::AddOperation(targetNodePath / disabledAttributeName, Dom::Value(true)) });
+                    queueDescendantsForSearch(targetNode, targetNodePath);
+                }
+
+                propagateAttributeChangeToDescendants(
+                    [&patch, &ancestorDisabledAttrName](const Dom::Value& node, const Dom::Path& nodePath)
+                    {
+                        if (auto iter = node.FindMember(ancestorDisabledAttrName); iter == node.MemberEnd() || !iter->second.GetBool())
+                        {
+                            patch.PushBack({ Dom::PatchOperation::AddOperation(nodePath / ancestorDisabledAttrName, Dom::Value(true)) });
+                        }
+                    });
+            }
+            else
+            {
+                if (targetNode.GetNodeName() == GetNodeName<Nodes::Row>())
+                {
+                    propagateAttributeChangeToRow(targetNode,
+                        targetNodePath,
+                        [&patch, &disabledAttributeName](const Dom::Value& node, const Dom::Path& nodePath)
+                        {
+                            if (auto iter = node.FindMember(disabledAttributeName); iter != node.MemberEnd() && iter->second.GetBool())
+                            {
+                                patch.PushBack({ Dom::PatchOperation::RemoveOperation(nodePath / disabledAttributeName) });
+                            }
+                        });
+                }
+                else
+                {
+                    patch.PushBack({ Dom::PatchOperation::RemoveOperation(targetNodePath / disabledAttributeName) });
+                    queueDescendantsForSearch(targetNode, targetNodePath);
+                }
+
+                propagateAttributeChangeToDescendants(
+                    [&patch, &ancestorDisabledAttrName](const Dom::Value& node, const Dom::Path& nodePath)
+                    {
+                        if (auto iter = node.FindMember(ancestorDisabledAttrName); iter != node.MemberEnd() && iter->second.GetBool())
+                        {
+                            patch.PushBack({ Dom::PatchOperation::RemoveOperation(nodePath / ancestorDisabledAttrName) });
+                        }
+                    });
+            }
+
+            if (patch.Size() > 0)
+            {
+                NotifyContentsChanged(patch);
             }
         };
 
@@ -642,7 +853,9 @@ namespace AZ::DocumentPropertyEditor
             Nodes::PropertyEditor::OnChanged, handlePropertyEditorChanged,
             Nodes::ContainerActionButton::OnActivate, handleContainerOperation,
             Nodes::PropertyEditor::RequestTreeUpdate, handleTreeUpdate,
+            Nodes::Adapter::SetNodeDisabled, handleSetNodeDisabled,
             Nodes::Adapter::AddContainerKey, addKeyToContainer,
-            Nodes::Adapter::RejectContainerKey, rejectKeyToContainer);
+            Nodes::Adapter::RejectContainerKey, rejectKeyToContainer
+            );
     }
 } // namespace AZ::DocumentPropertyEditor

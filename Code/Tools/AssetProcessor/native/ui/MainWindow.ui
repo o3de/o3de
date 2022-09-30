@@ -344,7 +344,7 @@
          <property name="childrenCollapsible">
           <bool>false</bool>
          </property>
-         <widget class="QWidget" name="assetStatusContainer">
+         <widget class="QWidget" name="assetStatusContainer" native="true">
           <layout class="QVBoxLayout" name="verticalLayout_4">
            <property name="spacing">
             <number>0</number>
@@ -461,7 +461,7 @@
            </item>
           </layout>
          </widget>
-         <widget class="QFrame" name="jobContextContainer">
+         <widget class="QWidget" name="jobContextContainer" native="true">
           <layout class="QVBoxLayout" name="jobContextLayout">
            <property name="spacing">
             <number>0</number>
@@ -479,82 +479,32 @@
             <number>0</number>
            </property>
            <item>
-            <widget class="QFrame" name="jobContextLogBar">
-             <layout class="QHBoxLayout" name="horizontalLayout">
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
-               <number>0</number>
-              </property>
-              <item>
-               <widget class="QLabel" name="jobContextLogLabel">
-                <property name="text">
-                 <string>Event Log Line Details</string>
-                </property>
-               </widget>
-              </item>
-              <item alignment="Qt::AlignRight|Qt::AlignBottom">
-               <widget class="QCheckBox" name="jobContextLogDetails">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="text">
-                 <string>Context Details</string>
-                </property>
-                <property name="class" stdset="0">
-                 <string>ToggleSwitch</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
+            <widget class="QLabel" name="jobContextLogLabel">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Event Log Line Details</string>
+             </property>
             </widget>
            </item>
            <item>
-            <widget class="QStackedWidget" name="jobContextLogStackedWidget">
+            <widget class="AzQtComponents::TableView" name="jobContextLogTableView">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
-             <property name="currentIndex">
-              <number>1</number>
+             <property name="contextMenuPolicy">
+              <enum>Qt::CustomContextMenu</enum>
              </property>
-             <widget class="AzQtComponents::TableView" name="jobContextLogTableView">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="contextMenuPolicy">
-               <enum>Qt::CustomContextMenu</enum>
-              </property>
-             </widget>
-             <widget class="QLabel" name="jobContextLogPlaceholderLabel">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string>No event context log details can be shown for unselected rows</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-              </property>
-             </widget>
+             <attribute name="headerVisible">
+              <bool>false</bool>
+             </attribute>
             </widget>
            </item>
           </layout>
@@ -613,27 +563,27 @@
                </item>
               </layout>
              </widget>
-              <widget class="QWidget" name="IntermediateAssetsTab">
-                <attribute name="title">
-                  <string>Intermediate Assets</string>
-                </attribute>
-                <layout class="QVBoxLayout" name="IntermediateAssetsVerticalLayout" stretch="0">
-                  <item>
-                    <widget class="QTreeView" name="IntermediateAssetsTreeView">
-                      <property name="editTriggers">
-                        <set>QAbstractItemView::NoEditTriggers</set>
-                      </property>
-                      <property name="sortingEnabled">
-                        <bool>true</bool>
-                      </property>
-                      <attribute name="headerDefaultSectionSize">
-                        <number>300</number>
-                      </attribute>
-                    </widget>
-                  </item>
-                </layout>
-              </widget>
-              <widget class="QWidget" name="ProductAssetsTab">
+             <widget class="QWidget" name="IntermediateAssetsTab">
+              <attribute name="title">
+               <string>Intermediate Assets</string>
+              </attribute>
+              <layout class="QVBoxLayout" name="IntermediateAssetsVerticalLayout" stretch="0">
+               <item>
+                <widget class="QTreeView" name="IntermediateAssetsTreeView">
+                 <property name="editTriggers">
+                  <set>QAbstractItemView::NoEditTriggers</set>
+                 </property>
+                 <property name="sortingEnabled">
+                  <bool>true</bool>
+                 </property>
+                 <attribute name="headerDefaultSectionSize">
+                  <number>300</number>
+                 </attribute>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+             <widget class="QWidget" name="ProductAssetsTab">
               <attribute name="title">
                <string>Product Assets</string>
               </attribute>
@@ -659,13 +609,13 @@
            <item>
             <widget class="AssetProcessor::SourceAssetDetailsPanel" name="sourceAssetDetailsPanel"/>
            </item>
-            <item>
-              <widget class="AssetProcessor::SourceAssetDetailsPanel" name="intermediateAssetDetailsPanel">
-                <property name="visible">
-                  <bool>false</bool>
-                </property>
-              </widget>
-            </item>
+           <item>
+            <widget class="AssetProcessor::SourceAssetDetailsPanel" name="intermediateAssetDetailsPanel">
+             <property name="visible">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
            <item>
             <widget class="AssetProcessor::ProductAssetDetailsPanel" name="productAssetDetailsPanel">
              <property name="visible">
@@ -1807,7 +1757,11 @@
               </widget>
              </item>
              <item row="5" column="0" colspan="4">
-              <widget class="QLineEdit" name="serverAddressLineEdit"/>
+              <widget class="QLineEdit" name="serverAddressLineEdit">
+               <property name="toolTip">
+                <string>Set the remote folder location for the shared cache</string>
+               </property>
+              </widget>
              </item>
              <item row="9" column="4">
               <widget class="QPushButton" name="sharedCacheDiscardButton">
@@ -2015,6 +1969,45 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>supportButton</tabstop>
+  <tabstop>sharedCacheSupport</tabstop>
+  <tabstop>serverCacheModeOptions</tabstop>
+  <tabstop>serverAddressLineEdit</tabstop>
+  <tabstop>serverAddressToolButton</tabstop>
+  <tabstop>sharedCacheAddPattern</tabstop>
+  <tabstop>sharedCacheTable</tabstop>
+  <tabstop>sharedCacheSubmitButton</tabstop>
+  <tabstop>sharedCacheDiscardButton</tabstop>
+  <tabstop>editConnectionButton</tabstop>
+  <tabstop>addConnectionButton</tabstop>
+  <tabstop>removeConnectionButton</tabstop>
+  <tabstop>connectionTreeView</tabstop>
+  <tabstop>allowedListEnableCheckBox</tabstop>
+  <tabstop>allowedListAddHostNameLineEdit</tabstop>
+  <tabstop>allowedListAddHostNameToolButton</tabstop>
+  <tabstop>allowedListAddIPLineEdit</tabstop>
+  <tabstop>allowedListAddIPToolButton</tabstop>
+  <tabstop>allowListAllowedListConnectionsListView</tabstop>
+  <tabstop>allowedListToAllowedListToolButton</tabstop>
+  <tabstop>allowedListToRejectedListToolButton</tabstop>
+  <tabstop>allowedListRejectedConnectionsListView</tabstop>
+  <tabstop>builderList</tabstop>
+  <tabstop>builderInfoTabWidget</tabstop>
+  <tabstop>builderInfoPatternsTableView</tabstop>
+  <tabstop>builderInfoMetricsTreeView</tabstop>
+  <tabstop>modtimeSkippingCheckBox</tabstop>
+  <tabstop>debugOutputCheckBox</tabstop>
+  <tabstop>fullScanButton</tabstop>
+  <tabstop>missingDependencyScanResults</tabstop>
+  <tabstop>assetsTabWidget</tabstop>
+  <tabstop>logButton</tabstop>
+  <tabstop>ProductAssetsTreeView</tabstop>
+  <tabstop>IntermediateAssetsTreeView</tabstop>
+  <tabstop>jobContextLogTableView</tabstop>
+  <tabstop>SourceAssetsTreeView</tabstop>
+  <tabstop>jobTreeView</tabstop>
+ </tabstops>
  <resources>
   <include location="style/AssetProcessor.qrc"/>
  </resources>

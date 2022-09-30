@@ -80,6 +80,7 @@ struct EditorViewportSettings : public AzToolsFramework::ViewportInteraction::Vi
     AZ::Vector2 DefaultEditorCameraOrientation() const override;
     bool IconsVisible() const override;
     bool HelpersVisible() const override;
+    bool OnlyShowHelpersForSelectedEntities() const override;
 };
 
 //! EditorViewportWidget window
@@ -252,16 +253,6 @@ private:
     void RenderSnapMarker();
     void RenderAll();
 
-    // Update the safe frame, safe action, safe title, and borders rectangles based on
-    // viewport size and target aspect ratio.
-    void UpdateSafeFrame();
-
-    // Draw safe frame, safe action, safe title rectangles and borders.
-    void RenderSafeFrame();
-
-    // Draw one of the safe frame rectangles with the desired color.
-    void RenderSafeFrame(const QRect& frame, float r, float g, float b, float a);
-
     // Draw a selected region if it has been selected
     void RenderSelectedRegion();
 
@@ -386,10 +377,8 @@ private:
     // Reentrancy guard for on paint events
     bool m_isOnPaint = false;
 
-    // Shapes of various safe frame helpers which can be displayed in the editor
-    QRect m_safeFrame;
-    QRect m_safeAction;
-    QRect m_safeTitle;
+    // Guard against calling UpdateVisibility multiple times a frame
+    bool m_hasUpdatedVisibility = false;
 
     // Aspect ratios available in the title bar
     CPredefinedAspectRatios m_predefinedAspectRatios;
@@ -406,6 +395,7 @@ private:
     SandboxEditor::GridSnappingChangedEvent::Handler m_gridSnappingHandler;
     SandboxEditor::NearFarPlaneChangedEvent::Handler m_nearPlaneDistanceHandler;
     SandboxEditor::NearFarPlaneChangedEvent::Handler m_farPlaneDistanceHandler;
+    SandboxEditor::PerspectiveChangedEvent::Handler m_perspectiveChangeHandler;
     AZStd::unique_ptr<SandboxEditor::EditorViewportSettingsCallbacks> m_editorViewportSettingsCallbacks;
 
     // Used for some legacy logic which lets the widget release a grabbed keyboard at the right times
@@ -429,8 +419,9 @@ private:
     // Type to return current state of editor viewport settings
     EditorViewportSettings m_editorViewportSettings;
 
-    // The default view created for the viewport context, which is used as the "Editor Camera"
-    AZ::RPI::ViewPtr m_defaultView;
+    // The default view group created for the viewport context, which is used as the "Editor Camera".
+    // The group contains stereoscopic and non-stereoscopic views.
+    AZ::RPI::ViewGroupPtr m_defaultViewGroup;
 
     // The name to set on the viewport context when this viewport widget is set as the active one
     AZ::Name m_defaultViewportContextName;

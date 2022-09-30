@@ -20,7 +20,6 @@
 #include <GradientSignal/Ebuses/ImageGradientRequestBus.h>
 #include <GradientSignal/Ebuses/ImageGradientModificationBus.h>
 #include <GradientSignal/Util.h>
-#include <LmbrCentral/Dependency/DependencyMonitor.h>
 
 namespace GradientSignal
 {
@@ -62,7 +61,8 @@ namespace GradientSignal
     enum class SamplingType : AZ::u8
     {
         Point,                  //! Point sampling just queries the X,Y point as specified (Default)
-        Bilinear                //! Apply a bilinear filter to the image data
+        Bilinear,               //! Apply a bilinear filter to the image data
+        Bicubic,                //! Apply a bicubic filter to the image data
     };
 
     class ImageGradientConfig
@@ -107,7 +107,7 @@ namespace GradientSignal
         AZStd::string m_imageAssetPropertyLabel = "Image Asset";
     };
 
-    static const AZ::Uuid ImageGradientComponentTypeId = "{4741F079-157F-457E-93E0-D6BA4EAF76FE}";
+    inline constexpr AZ::TypeId ImageGradientComponentTypeId{ "{4741F079-157F-457E-93E0-D6BA4EAF76FE}" };
 
     /**
     * calculates a gradient value based on image data
@@ -145,7 +145,6 @@ namespace GradientSignal
 
         // AZ::Data::AssetBus overrides...
         void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
-        void OnAssetMoved(AZ::Data::Asset<AZ::Data::AssetData> asset, void* oldDataPointer) override;
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
 
         // ImageGradientRequestBus overrides...
@@ -160,8 +159,14 @@ namespace GradientSignal
         // ImageGradientModificationBus overrides...
         void StartImageModification() override;
         void EndImageModification() override;
-        void SetValue(const AZ::Vector3& position, float value) override;
-        void SetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<const float> values) override;
+        void GetPixelValuesByPosition(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const override;
+        void SetPixelValueByPosition(const AZ::Vector3& position, float value) override;
+        void SetPixelValuesByPosition(AZStd::span<const AZ::Vector3> positions, AZStd::span<const float> values) override;
+
+        void GetPixelIndicesForPositions(AZStd::span<const AZ::Vector3> positions, AZStd::span<PixelIndex> outIndices) const override;
+        void GetPixelValuesByPixelIndex(AZStd::span<const PixelIndex> positions, AZStd::span<float> outValues) const override;
+        void SetPixelValueByPixelIndex(const PixelIndex& position, float value) override;
+        void SetPixelValuesByPixelIndex(AZStd::span<const PixelIndex> positions, AZStd::span<const float> values) override;
 
         AZStd::vector<float>* GetImageModificationBuffer();
 
@@ -172,22 +177,23 @@ namespace GradientSignal
         // GradientTransformNotificationBus overrides...
         void OnGradientTransformChanged(const GradientTransform& newTransform) override;
 
-        void SetupDependencies();
-
         void CreateImageModificationBuffer();
         void ClearImageModificationBuffer();
         bool ModificationBufferIsActive() const;
         void UpdateCachedImageBufferData(const AZ::RHI::ImageDescriptor& imageDescriptor, AZStd::span<const uint8_t> imageData);
 
         void GetSubImageData();
-        float GetValueFromImageData(const AZ::Vector3& uvw, float defaultValue) const;
+        void GetValuesInternal(SamplingType samplingType, AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const;
+        float GetValueFromImageData(SamplingType samplingType, const AZ::Vector3& uvw, float defaultValue) const;
         float GetPixelValue(AZ::u32 x, AZ::u32 y) const;
         float GetTerrariumPixelValue(AZ::u32 x, AZ::u32 y) const;
         void SetupMultiplierAndOffset(float min, float max);
         void SetupDefaultMultiplierAndOffset();
         void SetupAutoScaleMultiplierAndOffset();
         void SetupManualScaleMultiplierAndOffset();
-        float GetValueForSamplingType(AZ::u32 x0, AZ::u32 y0, float pixelX, float pixelY) const;
+        void Get4x4Neighborhood(uint32_t x, uint32_t y, AZStd::array<AZStd::array<float, 4>, 4>& values) const;
+        float GetClampedValue(int32_t x, int32_t y) const;
+        float GetValueForSamplingType(SamplingType samplingType, AZ::u32 x0, AZ::u32 y0, float pixelX, float pixelY) const;
 
         float GetTilingX() const override;
         void SetTilingX(float tilingX) override;
@@ -197,7 +203,6 @@ namespace GradientSignal
 
     private:
         ImageGradientConfig m_configuration;
-        LmbrCentral::DependencyMonitor m_dependencyMonitor;
         mutable AZStd::shared_mutex m_queryMutex;
         GradientTransform m_gradientTransform;
         ChannelToUse m_currentChannel = ChannelToUse::Red;
@@ -205,6 +210,8 @@ namespace GradientSignal
         float m_multiplier = 1.0f;
         float m_offset = 0.0f;
         AZ::u32 m_currentMipIndex = 0;
+        int32_t m_maxX = 0;
+        int32_t m_maxY = 0;
         SamplingType m_currentSamplingType = SamplingType::Point;
 
         //! Cached information for our loaded image data.

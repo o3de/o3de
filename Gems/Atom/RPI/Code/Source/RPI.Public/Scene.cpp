@@ -25,6 +25,7 @@
 #include <AzCore/Task/TaskGraph.h>
 
 #include <AzFramework/Entity/EntityContext.h>
+#include <AzFramework/Visibility/IVisibilitySystem.h>
 
 
 namespace AZ
@@ -34,6 +35,11 @@ namespace AZ
         ScenePtr Scene::CreateScene(const SceneDescriptor& sceneDescriptor)
         {
             Scene* scene = aznew Scene();
+            scene->m_name = sceneDescriptor.m_nameId;
+
+            AZ::Name visSceneName(AZStd::string::format("RenderCullScene[%s]", scene->m_name.GetCStr()));
+            scene->m_visibilityScene = AZ::Interface<AzFramework::IVisibilitySystem>::Get()->CreateVisibilityScene(visSceneName);
+
             for (const auto& fpId : sceneDescriptor.m_featureProcessorNames)
             {
                 scene->EnableFeatureProcessor(FeatureProcessorId{ fpId });
@@ -45,8 +51,6 @@ namespace AZ
                 auto shaderAsset = RPISystemInterface::Get()->GetCommonShaderAssetForSrgs();
                 scene->m_srg = ShaderResourceGroup::Create(shaderAsset, sceneSrgLayout->GetName());
             }
-
-            scene->m_name = sceneDescriptor.m_nameId;
 
             return ScenePtr(scene);
         }
@@ -129,6 +133,7 @@ namespace AZ
 
             Deactivate();
 
+            AZ::Interface<AzFramework::IVisibilitySystem>::Get()->DestroyVisibilityScene(m_visibilityScene);
             delete m_cullingScene;
         }
 
@@ -323,7 +328,7 @@ namespace AZ
 
         void Scene::TryApplyRenderPipelineChanges(RenderPipeline* pipeline)
         {
-            // return directly if the pipeline doesn't allow modification or it was already modifed by scene
+            // return directly if the pipeline doesn't allow modification or it was already modified by scene
             if (!pipeline->m_descriptor.m_allowModification || pipeline->m_wasModifiedByScene)
             {
                 return;
@@ -332,6 +337,7 @@ namespace AZ
             pipeline->m_wasModifiedByScene = true;
             for (auto& fp : m_featureProcessors)
             {
+                fp->AddRenderPasses(pipeline);
                 fp->ApplyRenderPipelineChange(pipeline);
             }
             pipeline->ProcessQueuedPassChanges();
@@ -363,6 +369,7 @@ namespace AZ
             }
 
             pipeline->OnAddedToScene(this);
+            pipeline->ProcessQueuedPassChanges();
 
             TryApplyRenderPipelineChanges(pipeline.get());
 
@@ -373,6 +380,7 @@ namespace AZ
             RebuildPipelineStatesLookup();
 
             SceneNotificationBus::Event(m_id, &SceneNotification::OnRenderPipelineAdded, pipeline);
+            SceneNotificationBus::Event(m_id, &SceneNotification::OnRenderPipelineChanged, pipeline.get(), SceneNotification::RenderPipelineChangeType::Added);
         }
         
         void Scene::RemoveRenderPipeline(const RenderPipelineId& pipelineId)
@@ -395,6 +403,11 @@ namespace AZ
                     m_pipelines.erase(it);
                     
                     SceneNotificationBus::Event(m_id, &SceneNotification::OnRenderPipelineRemoved, pipelineToRemove.get());
+                    SceneNotificationBus::Event(
+                        m_id,
+                        &SceneNotification::OnRenderPipelineChanged,
+                        pipelineToRemove.get(),
+                        SceneNotification::RenderPipelineChangeType::Removed);
 
                     // If the default pipeline was removed, set to the first one in the list
                     if (m_defaultPipeline == nullptr && m_pipelines.size() > 0)
@@ -582,7 +595,7 @@ namespace AZ
                     processCullablesTG.AddTask(processCullablesDescriptor, [this, &viewPtr, &processCullablesTGEvent]()
                         {
                             AZ::TaskGraph subTaskGraph{ "ProcessCullables Subgraph" };
-                            m_cullingScene->ProcessCullablesTG(*this, *viewPtr, subTaskGraph);
+                            m_cullingScene->ProcessCullablesTG(*this, *viewPtr, subTaskGraph, processCullablesTGEvent);
                             if (!subTaskGraph.IsEmpty())
                             {
                                 subTaskGraph.Detach();
@@ -595,7 +608,7 @@ namespace AZ
             {
                 for (ViewPtr& viewPtr : m_renderPacket.m_views)
                 {
-                    m_cullingScene->ProcessCullablesTG(*this, *viewPtr, processCullablesTG);
+                    m_cullingScene->ProcessCullablesTG(*this, *viewPtr, processCullablesTG, processCullablesTGEvent);
                 }
             }
             bool processCullablesHasWork = !processCullablesTG.IsEmpty();
@@ -702,7 +715,10 @@ namespace AZ
                 WaitAndCleanCompletionJob(m_simulationCompletion);
             }
 
-            SceneNotificationBus::Event(GetId(), &SceneNotification::OnBeginPrepareRender);
+            {
+                AZ_PROFILE_SCOPE(RPI, "Scene: OnBeginPrepareRender");
+                SceneNotificationBus::Event(GetId(), &SceneNotification::OnBeginPrepareRender);
+            }
 
             // Get active pipelines which need to be rendered and notify them frame started
             AZStd::vector<RenderPipelinePtr> activePipelines;
@@ -904,6 +920,7 @@ namespace AZ
             for (auto renderPipeline : m_pipelines)
             {
                 handler->OnRenderPipelineAdded(renderPipeline);
+                handler->OnRenderPipelineChanged(renderPipeline.get(), SceneNotification::RenderPipelineChangeType::Added);
                 const RenderPipeline::PipelineViewMap& viewsInfo = renderPipeline->GetPipelineViews();
                 for (RenderPipeline::PipelineViewMap::const_iterator itr = viewsInfo.begin(); itr != viewsInfo.end(); itr++)
                 {
@@ -1052,11 +1069,11 @@ namespace AZ
             m_pipelineStatesLookupNeedsRebuild = false;
         }
 
-        RenderPipelinePtr Scene::FindRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle)
+        RenderPipelinePtr Scene::FindRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle, ViewType viewType)
         {
             for (auto renderPipeline : m_pipelines)
             {
-                if (renderPipeline->GetWindowHandle() == windowHandle)
+                if (renderPipeline->GetWindowHandle() == windowHandle && renderPipeline->GetViewType() == viewType)
                 {
                     return renderPipeline;
                 }

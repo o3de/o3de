@@ -212,7 +212,7 @@ namespace AZ
 
         void PassSystem::FrameUpdate(RHI::FrameGraphBuilder& frameGraphBuilder)
         {
-            AZ_PROFILE_SCOPE(RPI, "PassSystem: FrameUpdate");
+            AZ_PROFILE_FUNCTION(RPI);
 
             ResetFrameStatistics();
             ProcessQueuedChanges();
@@ -229,7 +229,7 @@ namespace AZ
 
         void PassSystem::FrameEnd()
         {
-            AZ_PROFILE_SCOPE(RHI, "PassSystem: FrameEnd");
+            AZ_PROFILE_FUNCTION(RPI);
 
             m_state = PassSystemState::FrameEnd;
 

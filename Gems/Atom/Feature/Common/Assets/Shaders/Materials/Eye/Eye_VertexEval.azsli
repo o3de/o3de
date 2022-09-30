@@ -1,0 +1,57 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+// This #define magic allows you to use the EvaluateVertexGeometry function in this file without making it the final
+// EvaluateVertexGeometry used in your shader. Simply #define EvaluateVertexGeometry before including this file
+//
+#ifndef EvaluateVertexGeometry
+#define EvaluateVertexGeometry(IN)      EvaluateVertexGeometry_Eye(IN)
+#endif
+
+#include <Atom/RPI/TangentSpace.azsli>
+
+VsOutput EvaluateVertexGeometry_Eye(
+    float3 position,
+    float3 normal,
+    float4 tangent,
+    float3 bitangent,
+    float2 uv0,
+    float2 uv1)
+{
+    VsOutput output;
+
+    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
+    float4 worldPosition = mul(objectToWorld, float4(position, 1.0));
+    output.worldPosition = worldPosition.xyz;
+    output.position = mul(ViewSrg::m_viewProjectionMatrix, worldPosition);
+
+    output.uvs[0] = uv0;
+    output.uvs[1] = uv1;
+
+    output.normal = normal;
+    output.tangent = tangent;
+    // Bitangent is temporarily added back to fix the eye material screenshot test.
+    output.bitangent = bitangent;
+
+    output.localPosition = position.xyz;
+
+    return output;
+}
+
+VsOutput EvaluateVertexGeometry_Eye(VsInput IN)
+{
+    return EvaluateVertexGeometry_Eye(
+        IN.position,
+        IN.normal,
+        IN.tangent,
+        IN.bitangent,
+        IN.uv0,
+        IN.uv1);
+}

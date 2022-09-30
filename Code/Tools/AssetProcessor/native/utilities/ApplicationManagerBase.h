@@ -119,6 +119,20 @@ public:
 
     bool IsAssetProcessorManagerIdle() const override;
     bool CheckFullIdle();
+
+    // Used to track AP command line checks, so the help can be easily printed.
+    struct APCommandLineSwitch
+    {
+        APCommandLineSwitch(AZStd::vector<APCommandLineSwitch>& commandLineInfo, const char* switchTitle, const char* helpText)
+            : m_switch(switchTitle)
+            , m_helpText(helpText)
+        {
+            commandLineInfo.push_back(*this);
+        }
+        const char* m_switch;
+        const char* m_helpText;
+    };
+
 Q_SIGNALS:
     void CheckAssetProcessorManagerIdleState();
     void ConnectionStatusMsg(QString message);
@@ -130,7 +144,7 @@ public Q_SLOTS:
     void OnAssetProcessorManagerIdleState(bool isIdle);
 
 protected:
-    virtual void InitAssetProcessorManager();//Deletion of assetProcessor Manager will be handled by the ThreadController
+    virtual void InitAssetProcessorManager(AZStd::vector<APCommandLineSwitch>& commandLineInfo);//Deletion of assetProcessor Manager will be handled by the ThreadController
     virtual void InitAssetCatalog();//Deletion of AssetCatalog will be handled when the ThreadController is deleted by the base ApplicationManager
     virtual void InitRCController();
     virtual void DestroyRCController();
@@ -148,13 +162,13 @@ protected:
     virtual void InitConnectionManager();
     void DestroyConnectionManager();
     void InitAssetRequestHandler(AssetProcessor::AssetRequestHandler* assetRequestHandler);
-    void InitFileStateCache();
+    virtual void InitFileStateCache();
     void CreateQtApplication() override;
 
     bool InitializeInternalBuilders();
     void InitBuilderManager();
     void ShutdownBuilderManager();
-    bool InitAssetDatabase();
+    bool InitAssetDatabase(bool ignoreFutureAssetDBVersionError);
     void ShutDownAssetDatabase();
     void InitAssetServerHandler();
     void DestroyAssetServerHandler();
@@ -163,6 +177,8 @@ protected:
     virtual void InitSourceControl() = 0;
     void InitInputThread();
     void InputThread();
+
+    void HandleCommandLineHelp(AZStd::vector<APCommandLineSwitch>& commandLineInfo);
 
     // Give an opportunity to derived classes to make connections before the application server starts listening
     virtual void MakeActivationConnections() {}
@@ -192,6 +208,7 @@ protected:
     int m_processedAssetCount = 0;
     int m_warningCount = 0;
     int m_errorCount = 0;
+    int m_remainingAssetsToFinalize = 0;
     AZStd::set<AZStd::string> m_failedAssets;
     bool m_AssetProcessorManagerIdleState = false;
     bool m_sourceControlReady = false;

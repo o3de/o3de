@@ -61,15 +61,27 @@ namespace AZ
             };
             RPI::ShaderSystemInterface::Get()->Connect(m_handleGlobalShaderOptionUpdate);
             EnableSceneNotification();
+
+            // Must read cvar from AZ::Console due to static variable in multiple libraries, see ghi-5537
+            bool enablePerMeshShaderOptionFlagsCvar = false;
+            if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+            {
+                console->GetCvarValue("r_enablePerMeshShaderOptionFlags", enablePerMeshShaderOptionFlagsCvar);
+
+                // push the cvars value so anything in this dll can access it directly.
+                console->PerformCommand(AZStd::string::format("r_enablePerMeshShaderOptionFlags %s", enablePerMeshShaderOptionFlagsCvar ? "true" : "false").c_str());
+            }
         }
 
         void MeshFeatureProcessor::Deactivate()
         {
+            m_flagRegistry.reset();
+
             m_handleGlobalShaderOptionUpdate.Disconnect();
 
             DisableSceneNotification();
             AZ_Warning("MeshFeatureProcessor", m_modelData.size() == 0,
-                "Deactivaing the MeshFeatureProcessor, but there are still outstanding mesh handles.\n"
+                "Deactivating the MeshFeatureProcessor, but there are still outstanding mesh handles.\n"
             );
             m_transformService = nullptr;
             m_forceRebuildDrawPackets = false;
@@ -163,11 +175,76 @@ namespace AZ
         void MeshFeatureProcessor::OnBeginPrepareRender()
         {
             m_meshDataChecker.soft_lock();
+
+            if (!r_enablePerMeshShaderOptionFlags && m_enablePerMeshShaderOptionFlags)
+            {
+                // Per mesh shader option flags was on, but now turned off, so reset all the shader options.
+                for (auto& model : m_modelData)
+                {
+                    for (RPI::MeshDrawPacketList& drawPacketList : model.m_drawPacketListsByLod)
+                    {
+                        for (RPI::MeshDrawPacket& drawPacket : drawPacketList)
+                        {
+                            m_flagRegistry->VisitTags(
+                                [&](AZ::Name shaderOption, [[maybe_unused]] FlagRegistry::TagType tag)
+                                {
+                                    drawPacket.UnsetShaderOption(shaderOption);
+                                }
+                            );
+                            drawPacket.Update(*GetParentScene(), true);
+                        }
+                    }
+                    model.m_cullable.m_flags = 0;
+                    model.m_cullable.m_prevFlags = 0;
+                    model.m_cullableNeedsRebuild = true;
+                    model.BuildCullable();
+                }
+            }
+
+            m_enablePerMeshShaderOptionFlags = r_enablePerMeshShaderOptionFlags;
+
+            if (m_enablePerMeshShaderOptionFlags)
+            {
+                for (auto& model : m_modelData)
+                {
+                    if (model.m_cullable.m_prevFlags != model.m_cullable.m_flags)
+                    {
+                        // Per mesh shader option flags have changed, so rebuild the draw packet with the new shader options.
+                        for (RPI::MeshDrawPacketList& drawPacketList : model.m_drawPacketListsByLod)
+                        {
+                            for (RPI::MeshDrawPacket& drawPacket : drawPacketList)
+                            {
+                                m_flagRegistry->VisitTags(
+                                    [&](AZ::Name shaderOption, FlagRegistry::TagType tag)
+                                    {
+                                        bool shaderOptionValue = (model.m_cullable.m_flags & tag.GetIndex()) > 0;
+                                        drawPacket.SetShaderOption(shaderOption, AZ::RPI::ShaderOptionValue(shaderOptionValue));
+                                    }
+                                );
+                                drawPacket.Update(*GetParentScene(), true);
+                            }
+                        }
+                        model.m_cullableNeedsRebuild = true;
+                        model.BuildCullable();
+                    }
+                }
+            }
+
         }
 
         void MeshFeatureProcessor::OnEndPrepareRender()
         {
             m_meshDataChecker.soft_unlock();
+
+            if (m_reportShaderOptionFlags)
+            {
+                m_reportShaderOptionFlags = false;
+                PrintShaderOptionFlags();
+            }
+            for (auto& model : m_modelData)
+            {
+                model.m_cullable.m_prevFlags = model.m_cullable.m_flags.exchange(0);
+            }
         }
 
         MeshFeatureProcessor::MeshHandle MeshFeatureProcessor::AcquireMesh(
@@ -242,7 +319,7 @@ namespace AZ
             return {};
         }
         
-        const MeshDrawPacketLods& MeshFeatureProcessor::GetDrawPackets(const MeshHandle& meshHandle) const
+        const RPI::MeshDrawPacketLods& MeshFeatureProcessor::GetDrawPackets(const MeshHandle& meshHandle) const
         {
             return meshHandle.IsValid() ? meshHandle->m_drawPacketListsByLod : m_emptyDrawPacketLods;
         }
@@ -513,17 +590,23 @@ namespace AZ
             }
         }
 
+
+        RHI::Ptr<MeshFeatureProcessor::FlagRegistry> MeshFeatureProcessor::GetFlagRegistry()
+        {
+            if (m_flagRegistry == nullptr)
+            {
+                m_flagRegistry = FlagRegistry::Create();
+            }
+            return m_flagRegistry;
+        };
+
         void MeshFeatureProcessor::ForceRebuildDrawPackets([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
         {
             m_forceRebuildDrawPackets = true;
         }
 
-        void MeshFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
-        {
-            m_forceRebuildDrawPackets = true;;
-        }
-
-        void MeshFeatureProcessor::OnRenderPipelineRemoved([[maybe_unused]] RPI::RenderPipeline* pipeline)
+        void MeshFeatureProcessor::OnRenderPipelineChanged([[maybe_unused]] RPI::RenderPipeline* pipeline,
+            [[maybe_unused]] RPI::SceneNotification::RenderPipelineChangeType changeType)
         {
             m_forceRebuildDrawPackets = true;
         }
@@ -540,7 +623,67 @@ namespace AZ
             }
         }
 
+        void MeshFeatureProcessor::ReportShaderOptionFlags([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
+        {
+            m_reportShaderOptionFlags = true;
+        }
+
+        void MeshFeatureProcessor::PrintShaderOptionFlags()
+        {
+            AZStd::map<FlagRegistry::TagType, AZ::Name> tags;
+            AZStd::string registeredFoundMessage = "Registered flags: ";
+
+            auto gatherTags = [&](const Name& name, FlagRegistry::TagType tag)
+            {
+                tags[tag] = name;
+                registeredFoundMessage.append(name.GetCStr() + AZStd::string(", "));
+            };
+
+            m_flagRegistry->VisitTags(gatherTags);
+
+            registeredFoundMessage.erase(registeredFoundMessage.end() - 2);
+
+            AZ_Printf("MeshFeatureProcessor", registeredFoundMessage.c_str());
+
+            AZStd::map<uint32_t, uint32_t> flagStats;
+
+            for (auto& model : m_modelData)
+            {
+                ++flagStats[model.m_cullable.m_flags.load()];
+            }
+
+            for (auto [flag, references] : flagStats)
+            {
+                AZStd::string flagList;
+
+                if (flag == 0)
+                {
+                    flagList = "(None)";
+                }
+                else
+                {
+                    for (auto [tag, name] : tags)
+                    {
+                        if ((tag.GetIndex() & flag) > 0)
+                        {
+                            flagList.append(name.GetCStr());
+                            flagList.append(", ");
+                        }
+                    }
+                    flagList.erase(flagList.end() - 2);
+                }
+
+                AZ_Printf("MeshFeatureProcessor", "Found %u references to [%s]", references, flagList.c_str());
+            }
+        }
+
+        MeshFeatureProcessorInterface::ModelChangedEvent& ModelDataInstance::MeshLoader::GetModelChangedEvent()
+        {
+            return m_modelChangedEvent;
+        }
+
         // ModelDataInstance::MeshLoader...
+
         ModelDataInstance::MeshLoader::MeshLoader(const Data::Asset<RPI::ModelAsset>& modelAsset, ModelDataInstance* parent)
             : m_modelAsset(modelAsset)
             , m_parent(parent)
@@ -566,10 +709,7 @@ namespace AZ
             Data::AssetBus::Handler::BusDisconnect();
         }
 
-        MeshFeatureProcessorInterface::ModelChangedEvent& ModelDataInstance::MeshLoader::GetModelChangedEvent()
-        {
-            return m_modelChangedEvent;
-        }
+        // ModelDataInstance...
 
         //! AssetBus::Handler overrides...
         void ModelDataInstance::MeshLoader::OnAssetReady(Data::Asset<Data::AssetData> asset)
@@ -665,11 +805,18 @@ namespace AZ
             }
         }
 
-        // ModelDataInstance...
-
         void ModelDataInstance::DeInit()
         {
             m_scene->GetCullingScene()->UnregisterCullable(m_cullable);
+
+            for (const auto& materialAssignment : m_materialAssignments)
+            {
+                const AZ::Data::Instance<RPI::Material>& materialInstance = materialAssignment.second.m_materialInstance;
+                if (materialInstance.get())
+                {
+                    MaterialAssignmentNotificationBus::MultiHandler::BusDisconnect(materialInstance->GetAssetId());
+                }
+            }
 
             RemoveRayTracingData();
 
@@ -697,7 +844,16 @@ namespace AZ
                 objectIdIndex.AssertValid();
             }
 
-            if (m_descriptor.m_isRayTracingEnabled)
+            for (const auto& materialAssignment : m_materialAssignments)
+            {
+                const AZ::Data::Instance<RPI::Material>& materialInstance = materialAssignment.second.m_materialInstance;
+                if (materialInstance.get())
+                {
+                    MaterialAssignmentNotificationBus::MultiHandler::BusConnect(materialInstance->GetAssetId());
+                }
+            }
+
+            if (m_visible && m_descriptor.m_isRayTracingEnabled)
             {
                 SetRayTracingData();
             }
@@ -714,7 +870,7 @@ namespace AZ
             RPI::ModelLod& modelLod = *m_model->GetLods()[modelLodIndex];
             const size_t meshCount = modelLod.GetMeshes().size();
             
-            MeshDrawPacketList& drawPacketListOut = m_drawPacketListsByLod[modelLodIndex];
+            RPI::MeshDrawPacketList& drawPacketListOut = m_drawPacketListsByLod[modelLodIndex];
             drawPacketListOut.clear();
             drawPacketListOut.reserve(meshCount);
 
@@ -799,6 +955,8 @@ namespace AZ
 
         void ModelDataInstance::SetRayTracingData()
         {
+            RemoveRayTracingData();
+
             if (!m_model)
             {
                 return;
@@ -1001,6 +1159,26 @@ namespace AZ
                         subMesh.m_roughnessFactor = material->GetPropertyValue<float>(propertyIndex);
                     }
 
+                    // emissive color
+                    propertyIndex = material->FindPropertyIndex(AZ::Name("emissive.enable"));
+                    if (propertyIndex.IsValid())
+                    {
+                        if (material->GetPropertyValue<bool>(propertyIndex))
+                        {
+                            propertyIndex = material->FindPropertyIndex(AZ::Name("emissive.color"));
+                            if (propertyIndex.IsValid())
+                            {
+                                subMesh.m_emissiveColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
+                            }
+
+                            propertyIndex = material->FindPropertyIndex(AZ::Name("emissive.intensity"));
+                            if (propertyIndex.IsValid())
+                            {
+                                subMesh.m_emissiveColor *= material->GetPropertyValue<float>(propertyIndex);
+                            }
+                        }
+                    }
+
                     // textures
                     Data::Instance<RPI::Image> baseColorImage; // can be used for irradiance color below
                     propertyIndex = material->FindPropertyIndex(AZ::Name("baseColor.textureMap"));
@@ -1048,6 +1226,17 @@ namespace AZ
                         }
                     }
 
+                    propertyIndex = material->FindPropertyIndex(AZ::Name("emissive.textureMap"));
+                    if (propertyIndex.IsValid())
+                    {
+                        Data::Instance<RPI::Image> image = material->GetPropertyValue<Data::Instance<RPI::Image>>(propertyIndex);
+                        if (image.get())
+                        {
+                            subMesh.m_textureFlags |= RayTracingSubMeshTextureFlags::Emissive;
+                            subMesh.m_emissiveImageView = image->GetImageView();
+                        }
+                    }
+
                     // irradiance color
                     SetIrradianceData(subMesh, material, baseColorImage);
                 }
@@ -1067,17 +1256,14 @@ namespace AZ
             const Data::Instance<RPI::Material> material,
             const Data::Instance<RPI::Image> baseColorImage)
         {
-            RPI::MaterialPropertyIndex propertyIndex;
-
-            AZ::Name irradianceColorSource;
-            propertyIndex = material->FindPropertyIndex(AZ::Name("irradiance.irradianceColorSource"));
-            if (propertyIndex.IsValid())
+            RPI::MaterialPropertyIndex propertyIndex = material->FindPropertyIndex(AZ::Name("irradiance.irradianceColorSource"));
+            if (!propertyIndex.IsValid())
             {
-                uint32_t enumVal = material->GetPropertyValue<uint32_t>(propertyIndex);
-                irradianceColorSource = material->GetMaterialPropertiesLayout()
-                                                ->GetPropertyDescriptor(propertyIndex)
-                                                ->GetEnumName(enumVal);
+                return;
             }
+
+            uint32_t enumVal = material->GetPropertyValue<uint32_t>(propertyIndex);
+            AZ::Name irradianceColorSource = material->GetMaterialPropertiesLayout()->GetPropertyDescriptor(propertyIndex)->GetEnumName(enumVal);
 
             if (irradianceColorSource.IsEmpty() || irradianceColorSource == AZ::Name("Manual"))
             {
@@ -1189,6 +1375,25 @@ namespace AZ
             {
                 subMesh.m_irradianceColor *= material->GetPropertyValue<float>(propertyIndex);
             }
+
+            // set the raytracing transparency from the material opacity factor
+            float opacity = 1.0f;
+            propertyIndex = material->FindPropertyIndex(AZ::Name("opacity.mode"));
+            if (propertyIndex.IsValid())
+            {
+                // only query the opacity factor if it's a non-Opaque mode
+                uint32_t mode = material->GetPropertyValue<uint32_t>(propertyIndex);
+                if (mode > 0)
+                {
+                    propertyIndex = material->FindPropertyIndex(AZ::Name("opacity.factor"));
+                    if (propertyIndex.IsValid())
+                    {
+                        opacity = material->GetPropertyValue<float>(propertyIndex);
+                    }
+                }
+            }
+
+            subMesh.m_irradianceColor.SetA(opacity);
         }
 
         void ModelDataInstance::RemoveRayTracingData()
@@ -1307,8 +1512,6 @@ namespace AZ
             {
                 cullData.m_hideFlags |= RPI::View::UsageReflectiveCubeMap;
             }
-
-            cullData.m_scene = m_scene;     //[GFX_TODO][ATOM-13796] once the IVisibilitySystem supports multiple octree scenes, remove this
 
 #ifdef AZ_CULL_DEBUG_ENABLED
             m_cullable.SetDebugName(AZ::Name(AZStd::string::format("%s - objectId: %u", m_model->GetModelAsset()->GetName().GetCStr(), m_objectId.GetIndex())));
@@ -1448,6 +1651,14 @@ namespace AZ
         {
             m_visible = isVisible;
             m_cullable.m_isHidden = !isVisible;
+        }
+
+        void ModelDataInstance::OnRebuildMaterialInstance()
+        {
+            if (m_visible && m_descriptor.m_isRayTracingEnabled)
+            {
+                SetRayTracingData();
+            }
         }
     } // namespace Render
 } // namespace AZ

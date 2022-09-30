@@ -1349,7 +1349,7 @@ namespace UnitTest
                     print ('MathStaticMembers')
                 # testing the Uuid math type member like functions
                 uuidString = '{E866B520-D667-48A2-82F6-6AEBE1EC9C58}'
-                uuid = azlmbr.math.Uuid_CreateString(uuidString, 0)
+                uuid = azlmbr.math.Uuid_CreateString(uuidString)
                 if( uuid.ToString() == uuidString):
                     print ('MathStaticMembers')
             )");

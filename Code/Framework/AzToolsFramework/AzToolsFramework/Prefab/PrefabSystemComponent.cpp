@@ -24,6 +24,8 @@
 #include <AzToolsFramework/Prefab/Spawnable/PrefabConversionPipeline.h>
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationHandler.h>
 
+AZ_DEFINE_BUDGET(PrefabSystem);
+
 namespace AzToolsFramework
 {
     namespace Prefab
@@ -582,12 +584,8 @@ namespace AzToolsFramework
                         linkId, templateId, templateToDelete.GetFilePath().c_str());
                 }
 
-                result = m_templateToLinkIdsMap.erase(templateToLinkIterator) != nullptr;
-                AZ_Assert(result,
-                    "Prefab - PrefabSystemComponent::RemoveTemplate - "
-                    "Failed to remove Template with Id '%llu' on file path '%s' "
-                    "from TemplateToLinkIdsMap.",
-                    templateId, templateToDelete.GetFilePath().c_str());
+                // erase with a valid iterator always succeeds
+                m_templateToLinkIdsMap.erase(templateToLinkIterator);
             }
 
             //Remove this Template from the rest of the maps.
@@ -789,14 +787,16 @@ namespace AzToolsFramework
             newLink.SetTargetTemplateId(linkTargetId);
             newLink.SetSourceTemplateId(linkSourceId);
             newLink.SetInstanceName(instanceAlias.c_str());
-            newLink.GetLinkDom().SetObject();
-            newLink.GetLinkDom().AddMember(
+            PrefabDom newLinkDom;
+            newLinkDom.SetObject();
+            newLinkDom.AddMember(
                 rapidjson::StringRef(PrefabDomUtils::SourceName), rapidjson::StringRef(sourceTemplate.GetFilePath().c_str()),
-                newLink.GetLinkDom().GetAllocator());
+                newLinkDom.GetAllocator());
+            newLink.SetLinkDom(newLinkDom);
 
             if (linkPatches && linkPatches->get().IsArray() && !(linkPatches->get().Empty()))
             {
-                m_instanceToTemplatePropagator.AddPatchesToLink(linkPatches.value(), newLink);
+                newLink.AddPatchesToLink(linkPatches.value());
             }
 
             //update the target template dom to have the proper values for the source template dom

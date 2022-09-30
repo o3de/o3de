@@ -69,14 +69,14 @@ namespace AZStd
     //! to the pointee type
     namespace Internal
     {
-        template <class T, class = void, class = void>
+        template <class T, class = void>
         constexpr bool pointer_traits_has_to_address_v = false;
 
         // pointer_traits isn't SFINAE friendly https://cplusplus.github.io/LWG/lwg-active.html#3545
         // working around that by checking if type T has an element_type alias
         template <class T>
-        constexpr bool pointer_traits_has_to_address_v<T, enable_if_t<has_element_type_v<T>>,
-            void_t<decltype(pointer_traits<T>::to_address(declval<const T&>()))>> = true;
+        constexpr bool pointer_traits_has_to_address_v<T, enable_if_t<has_element_type_v<T>>>
+            = !is_void_v<decltype(pointer_traits<T>::to_address(declval<const T&>()))>;
 
         // fancy pointer helper
         template <class T, class = void>
@@ -84,7 +84,7 @@ namespace AZStd
 
         template <class T>
         inline constexpr bool to_address_fancy_pointer_v<T, enable_if_t<
-            sfinae_trigger_v<decltype(declval<const T&>().operator->())>>> = true;
+            !is_void_v<decltype(declval<const T&>().operator->())>>> = true;
 
         template <class T>
         inline constexpr bool to_address_fancy_pointer_v<T, enable_if_t<
@@ -132,6 +132,9 @@ namespace AZStd
 
 namespace AZStd::Internal
 {
+    template<class T, class U>
+    /*concept*/ constexpr bool different_from = !same_as<remove_cvref_t<T>, remove_cvref_t<U>>;
+
     template <class It, class = void>
     constexpr bool is_class_or_enum = false;
     template <class It>
@@ -241,8 +244,7 @@ namespace AZStd
     /*concept*/ constexpr bool partially_ordered_with = Internal::partially_ordered_with_impl<T, U>;
 
     template<class T>
-    /*concept*/ constexpr bool totally_ordered = conjunction_v<bool_constant<equality_comparable<T>>,
-        bool_constant<partially_ordered_with<T, T>>>;
+    /*concept*/ constexpr bool totally_ordered = equality_comparable<T> && partially_ordered_with<T, T>;
 }
 
 namespace AZStd::Internal
@@ -251,13 +253,13 @@ namespace AZStd::Internal
     template<class, class U, class = void>
     constexpr bool totally_ordered_with_impl = false;
     template<class T, class U>
-    constexpr bool totally_ordered_with_impl<T, U, enable_if_t<conjunction_v<
-        bool_constant<totally_ordered<T>>,
-        bool_constant<totally_ordered<U>>,
-        bool_constant<equality_comparable_with<T, U>>,
-        bool_constant<totally_ordered<common_reference_t<const remove_reference_t<T>&, const remove_reference_t<U>&>>>,
-        bool_constant<partially_ordered_with<T, U>>
-        >>> = true;
+    constexpr bool totally_ordered_with_impl<T, U, enable_if_t<
+        totally_ordered<T> &&
+        totally_ordered<U> &&
+        equality_comparable_with<T, U> &&
+        totally_ordered<common_reference_t<const remove_reference_t<T>&, const remove_reference_t<U>&>> &&
+        partially_ordered_with<T, U>
+        >> = true;
 }
 
 namespace AZStd
@@ -381,9 +383,6 @@ namespace AZStd
 {
     template<class S, class I>
     /*concept*/ constexpr bool sized_sentinel_for = Internal::sized_sentinel_for_impl<S, I>;
-
-    template<class I>
-    struct iterator_traits;
 }
 
 namespace AZStd::Internal
