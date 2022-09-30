@@ -12,7 +12,6 @@
 
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IMeshData.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IMeshVertexColorData.h>
-#include <SceneAPI/SceneData/Groups/MeshGroup.h>
 
 #include <Pipeline/SceneAPIExt/ClothRule.h>
 
