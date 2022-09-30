@@ -187,14 +187,14 @@ def retrieve_non_editor_log_content(run_id: int,
     :param timeout: Maximum time to wait for the log file to appear
     :return str: The contents of the log
     """
-    material_editor_log = os.path.join(atom_tools_log_path(run_id, workspace), log_name)
+    atom_tools_log = os.path.join(atom_tools_log_path(run_id, workspace), log_name)
     try:
-        waiter.wait_for(lambda: os.path.exists(material_editor_log), timeout=timeout)
+        waiter.wait_for(lambda: os.path.exists(atom_tools_log), timeout=timeout)
     except AssertionError:
         pass  # Even if the path didn't exist, we are interested on the exact reason why it couldn't be read
 
     try:
-        with open(material_editor_log) as opened_log:
+        with open(atom_tools_log) as opened_log:
             editor_info = ""
             for line in opened_log:
                 editor_info += f"[{log_name}]  {line}"

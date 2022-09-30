@@ -11,7 +11,7 @@ import pytest
 
 import ly_test_tools.environment.file_system as file_system
 
-from ly_test_tools.atom_tools_test import AtomToolsTestSuite, AtomToolsSingleTest
+from ly_test_tools.o3de.atom_tools_test import AtomToolsTestSuite, AtomToolsSingleTest
 from ly_test_tools.o3de.editor_test import EditorSingleTest, EditorTestSuite, EditorBatchedTest
 
 from Atom.atom_utils.atom_component_helper import compare_screenshot_to_golden_image, golden_images_directory
@@ -163,11 +163,14 @@ class TestAutomation(EditorTestSuite):
 
 
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
-@pytest.mark.parametrize("launcher_platform", ['windows_material_editor'])
+@pytest.mark.parametrize("launcher_platform", ['windows_atom_tools'])
 class TestMaterialEditor(AtomToolsTestSuite):
+
     # Remove -BatchMode from global_extra_cmdline_args since we need rendering for these tests.
     global_extra_cmdline_args = []
     use_null_renderer = False
+    log_name = "material_editor_test.log"
+    atom_tools_executable_name = "MaterialEditor"
 
     class MaterialEditor_Atom_LaunchMaterialEditorDX12(AtomToolsSingleTest):
         extra_cmdline_args = ["-rhi=dx12"]
@@ -178,3 +181,25 @@ class TestMaterialEditor(AtomToolsTestSuite):
         extra_cmdline_args = ["-rhi=Vulkan"]
 
         from Atom.tests import MaterialEditor_Atom_LaunchMaterialEditor as test_module
+
+
+@pytest.mark.skip(reason="GHI #12152 - Non-zero exit code on test success.")
+@pytest.mark.parametrize("project", ["AutomatedTesting"])
+@pytest.mark.parametrize("launcher_platform", ['windows_atom_tools'])
+class TestMaterialCanvas(AtomToolsTestSuite):
+
+    # Remove -BatchMode from global_extra_cmdline_args since we need rendering for these tests.
+    global_extra_cmdline_args = []
+    use_null_renderer = False
+    log_name = "material_canvas_test.log"
+    atom_tools_executable_name = "MaterialCanvas"
+
+    class MaterialCanvas_Atom_LaunchMaterialCanvasDX12(AtomToolsSingleTest):
+        extra_cmdline_args = ["-rhi=dx12"]
+
+        from Atom.tests import MaterialCanvas_Atom_LaunchMaterialCanvas as test_module
+
+    class MaterialCanvas_Atom_LaunchMaterialCanvasVulkan(AtomToolsSingleTest):
+        extra_cmdline_args = ["-rhi=Vulkan"]
+
+        from Atom.tests import MaterialCanvas_Atom_LaunchMaterialCanvas as test_module

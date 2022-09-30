@@ -35,7 +35,6 @@ import _pytest.python
 import _pytest.outcomes
 
 from ly_test_tools._internal.managers.workspace import AbstractWorkspaceManager
-from ly_test_tools.launchers import launcher_helper
 from ly_test_tools.o3de.multi_test_framework import MultiTestSuite, SharedTest, SingleTest
 
 logger = logging.getLogger(__name__)
@@ -144,9 +143,9 @@ class AtomToolsTestSuite(MultiTestSuite):
     # Tests usually run with no renderer, however some tests require a renderer and will disable this.
     use_null_renderer = True
     # Name of the Atom tools executable's log file.
-    log_name = "material_editor_test.log"  # We default to MaterialEditor for this suite.
-    # Atom tools executable function to call when launching the executable.
-    executable_function = launcher_helper.create_material_editor  # We default to MaterialEditor for this suite.
+    log_name = ""
+    # Atom Tools executable name to open with the Atom Tools launchers.
+    executable_name = ""
     # Maximum time in seconds for a single Atom tools executable to stay open across the set of shared tests.
     timeout_shared_test = 300
     # Maximum time (seconds) for waiting for a crash file to finish being dumped to disk.

@@ -42,8 +42,8 @@ from ly_test_tools._internal.managers.workspace import AbstractWorkspaceManager
 from ly_test_tools._internal.exceptions import EditorToolsFrameworkException, TestResultException
 from ly_test_tools.launchers import launcher_helper
 from ly_test_tools.launchers.exceptions import WaitTimeoutError
-from ly_test_tools.launchers.platforms.linux.launcher import LinuxEditor, LinuxMaterialEditor, LinuxMaterialCanvas
-from ly_test_tools.launchers.platforms.win.launcher import WinEditor, WinMaterialEditor, WinMaterialCanvas
+from ly_test_tools.launchers.platforms.linux.launcher import LinuxEditor, LinuxAtomToolsLauncher
+from ly_test_tools.launchers.platforms.win.launcher import WinEditor, WinAtomToolsLauncher
 
 logger = logging.getLogger(__name__)
 
@@ -201,7 +201,7 @@ class Result(object):
                 "------------\n"
                 f"{self.get_output_str()}\n"
                 "----------------------------------------------------\n"
-                f"| Executable (i.e. Editor or MaterialEditor) log  |\n"
+                f"| Application log  |\n"
                 "----------------------------------------------------\n"
                 f"{self.get_log_output_str()}\n"
             )
@@ -242,7 +242,7 @@ class Result(object):
                 "------------\n"
                 f"{self.get_output_str()}\n"
                 "----------------------------------------------------\n"
-                f"| Executable (i.e. Editor or MaterialEditor) log  |\n"
+                f"| Application log  |\n"
                 "----------------------------------------------------\n"
                 f"{self.get_log_output_str()}\n"
             )
@@ -276,7 +276,7 @@ class Result(object):
                 "------------\n"
                 f"{self.get_output_str()}\n"
                 "----------------------------------------------------\n"
-                f"| Executable (i.e. Editor or MaterialEditor) log  |\n"
+                f"| Application log  |\n"
                 "----------------------------------------------------\n"
                 f"{self.get_log_output_str()}\n"
             )
@@ -309,7 +309,7 @@ class Result(object):
                 "------------\n"
                 f"{self.get_output_str()}\n"
                 "----------------------------------------------------\n"
-                f"| Executable (i.e. Editor or MaterialEditor) log  |\n"
+                f"| Application log  |\n"
                 "----------------------------------------------------\n"
                 f"{self.get_log_output_str()}\n"
             )
@@ -330,8 +330,8 @@ class MultiTestSuite(object):
     timeout_shared_test = 300
     # Name of the executable's log file.
     log_name = ""
-    # Executable function to call when launching executable.
-    executable_function = launcher_helper.create_game_launcher
+    # Executable name to look for if the test is an Atom Tools test, leave blank if not an Atom Tools test.
+    atom_tools_executable_name = ""
     # Maximum time (seconds) for waiting for a crash file to finish being dumped to disk
     _timeout_crash_log = 20
     # Return code for test failure
@@ -704,8 +704,11 @@ class MultiTestSuite(object):
         :param test_spec: The test class that should be a subclass of SingleTest
         :return: None
         """
-        # Set the self.executable program for Launcher ad re-bind our param workspace to it.
-        self.executable = self.executable_function(workspace)
+        # Set the self.executable program for Launcher and re-bind our param workspace to it.
+        if self.atom_tools_executable_name:  # Atom Tools test.
+            self.executable = launcher_helper.create_atom_tools_launcher(workspace, self.atom_tools_executable_name)
+        else:  # Editor test.
+            self.executable = launcher_helper.create_editor(workspace)
         self.executable.workspace = workspace
 
         # Setup AP, kill processes, and configure the executable.
@@ -787,7 +790,7 @@ class MultiTestSuite(object):
                        f"-pythontestcase={test_case_name}",
                        "-logfile", f"@log@/{log_name}",
                        "-project-log-path", log_path_function(run_id, workspace)] + test_cmdline_args
-        elif type(executable) in [WinMaterialEditor, LinuxMaterialEditor, WinMaterialCanvas, LinuxMaterialCanvas]:
+        elif type(executable) in [LinuxAtomToolsLauncher, WinAtomToolsLauncher]:
             log_path_function = editor_utils.atom_tools_log_path
             log_content_function = editor_utils.retrieve_non_editor_log_content
             cmdline = ["-runpythontest", test_filename,
@@ -855,8 +858,11 @@ class MultiTestSuite(object):
         :param extra_cmdline_args: Any extra command line args in a list
         :return: None
         """
-        # Set the self.executable program for Launcher ad re-bind our param workspace to it.
-        self.executable = self.executable_function(workspace)
+        # Set the self.executable program for Launcher and re-bind our param workspace to it.
+        if self.atom_tools_executable_name:  # Atom Tools test.
+            self.executable = launcher_helper.create_atom_tools_launcher(workspace, self.atom_tools_executable_name)
+        else:  # Editor test.
+            self.executable = launcher_helper.create_editor(workspace)
         self.executable.workspace = workspace
 
         # Setup AP, kill processes, and configure the executable.
@@ -902,8 +908,11 @@ class MultiTestSuite(object):
         :param extra_cmdline_args: Any extra command line args in a list
         :return: None
         """
-        # Set the self.executable program for Launcher ad re-bind our param workspace to it.
-        self.executable = self.executable_function(workspace)
+        # Set the self.executable program for Launcher and re-bind our param workspace to it.
+        if self.atom_tools_executable_name:  # Atom Tools test.
+            self.executable = launcher_helper.create_atom_tools_launcher(workspace, self.atom_tools_executable_name)
+        else:  # Editor test.
+            self.executable = launcher_helper.create_editor(workspace)
         self.executable.workspace = workspace
 
         # Setup AP, kill processes, and configure the executable.
@@ -988,8 +997,11 @@ class MultiTestSuite(object):
         :extra_cmdline_args: Any extra command line args in a list
         :return: None
         """
-        # Set the self.executable program for Launcher ad re-bind our param workspace to it.
-        self.executable = self.executable_function(workspace)
+        # Set the self.executable program for Launcher and re-bind our param workspace to it.
+        if self.atom_tools_executable_name:  # Atom Tools test.
+            self.executable = launcher_helper.create_atom_tools_launcher(workspace, self.atom_tools_executable_name)
+        else:  # Editor test.
+            self.executable = launcher_helper.create_editor(workspace)
         self.executable.workspace = workspace
 
         # Setup AP, kill processes, and configure the executable.
@@ -1138,8 +1150,8 @@ class MultiTestSuite(object):
                        "-pythontestcase", temp_batched_case_file.name,
                        "-logfile", f"@log@/{log_name}",
                        "-project-log-path", log_path_function(run_id, workspace)] + test_cmdline_args
-        # MaterialEditor
-        elif type(executable) in [WinMaterialEditor, LinuxMaterialEditor, WinMaterialCanvas, LinuxMaterialCanvas]:
+        # Atom Tools application
+        elif type(executable) in [LinuxAtomToolsLauncher, WinAtomToolsLauncher]:
             log_path_function = editor_utils.atom_tools_log_path
             log_content_function = editor_utils.retrieve_non_editor_log_content
             test_filenames_str = ";".join(
@@ -1163,7 +1175,7 @@ class MultiTestSuite(object):
                 if type(executable) in [WinEditor, LinuxEditor]:
                     destination_path = workspace.artifact_manager.save_artifact(path_to_artifact, full_log_name)
                     editor_utils.split_batched_editor_log_file(workspace, path_to_artifact, destination_path)
-                elif type(executable) in [WinMaterialEditor, LinuxMaterialEditor, WinMaterialCanvas, LinuxMaterialCanvas]:
+                elif type(executable) in [LinuxAtomToolsLauncher, WinAtomToolsLauncher]:
                     workspace.artifact_manager.save_artifact(path_to_artifact, full_log_name)
 
             except FileNotFoundError:

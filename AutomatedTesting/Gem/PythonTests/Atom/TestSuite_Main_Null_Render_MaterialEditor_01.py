@@ -13,8 +13,11 @@ logger = logging.getLogger(__name__)
 
 
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
-@pytest.mark.parametrize("launcher_platform", ['windows_material_editor'])
+@pytest.mark.parametrize("launcher_platform", ['windows_atom_tools'])
 class TestMaterialEditor(AtomToolsTestSuite):
+
+    log_name = "material_editor_test.log"
+    atom_tools_executable_name = "MaterialEditor"
 
     class MaterialEditor_Atom_LaunchMaterialEditor_1(AtomToolsBatchedTest):
 
