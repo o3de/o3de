@@ -1,0 +1,30 @@
+{
+    "Amazon": {
+        "AssetProcessor": {
+            "Settings": {
+                "Platform pc": {
+                    "tags": "tools,renderer,vulkan"
+                },
+                "Platform linux": {
+                    "tags": "tools,renderer,vulkan"
+                },
+                "Platform android": {
+                    "tags": "android,mobile,renderer,vulkan"
+                },
+                "Platform ios": {
+                    "tags": "mobile,renderer,metal"
+                },
+                "Platform mac": {
+                    "tags": "tools,renderer,metal"
+                }
+            }
+        }
+    },
+    "O3DE": {
+        "Atom": {
+            "Shaders": {
+                "BuildVariants": false
+            }
+        }
+    }
+}
