@@ -34,13 +34,14 @@ namespace O3DE::ProjectManager
         struct DownloadableObject
         {
             QString m_objectName;
+            QString m_destinationPath;
             DownloadObjectType m_objectType;
         };
 
         explicit DownloadController(QWidget* parent = nullptr);
         ~DownloadController();
 
-        void AddObjectDownload(const QString& objectName, DownloadObjectType objectType);
+        void AddObjectDownload(const QString& objectName, const QString& destinationPath, DownloadObjectType objectType);
         void CancelObjectDownload(const QString& objectName, DownloadObjectType objectType);
 
         bool IsDownloadQueueEmpty()
@@ -70,7 +71,7 @@ namespace O3DE::ProjectManager
         void HandleResults(const QString& result, const QString& detailedError);
 
     signals:
-        void StartObjectDownload(const QString& objectName, DownloadObjectType objectType, bool downloadNow);
+        void StartObjectDownload(const QString& objectName, const QString& destinationPath, DownloadObjectType objectType, bool downloadNow);
         void Done(const QString& objectName, bool success = true);
         void ObjectDownloadAdded(const QString& objectName, DownloadObjectType objectType);
         void ObjectDownloadRemoved(const QString& objectName, DownloadObjectType objectType);

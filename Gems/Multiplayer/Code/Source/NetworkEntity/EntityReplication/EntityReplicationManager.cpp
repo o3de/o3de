@@ -553,7 +553,7 @@ namespace Multiplayer
         {
             if (entityReplicator->IsMarkedForRemoval())
             {
-                AZ_Warning("NET_RepDeletes", false, "Entity replicator for id %llu is already marked for deletion on remote host %s", static_cast<AZ::u64>(updateMessage.GetEntityId()), GetRemoteHostId().GetString().c_str());
+                AZLOG_WARN("Entity replicator for id %llu is already marked for deletion on remote host %s", static_cast<AZ::u64>(updateMessage.GetEntityId()), GetRemoteHostId().GetString().c_str());
                 return true;
             }
             else if (entityReplicator->OwnsReplicatorLifetime())
@@ -570,7 +570,7 @@ namespace Multiplayer
         }
         else
         {
-            AZ_Warning("NET_RepDeletes", false, "Replicator for id %llu is null on remote host %s. It may have already been deleted.", static_cast<AZ::u64>(updateMessage.GetEntityId()), GetRemoteHostId().GetString().c_str());
+            AZLOG_WARN("Replicator for id %llu is null on remote host %s. It may have already been deleted.", static_cast<AZ::u64>(updateMessage.GetEntityId()), GetRemoteHostId().GetString().c_str());
             return true;
         }
 

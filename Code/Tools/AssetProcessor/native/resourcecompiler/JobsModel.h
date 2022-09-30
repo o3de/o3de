@@ -99,6 +99,7 @@ public Q_SLOTS:
     protected:
         QIcon m_pendingIcon;
         QIcon m_errorIcon;
+        QIcon m_failureIcon;
         QIcon m_warningIcon;
         QIcon m_okIcon;
         QIcon m_processingIcon;

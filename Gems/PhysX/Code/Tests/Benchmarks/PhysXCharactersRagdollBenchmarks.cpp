@@ -214,11 +214,11 @@ namespace PhysX::Benchmarks
         {
             for (AZ::u32 i = 0; i < RagdollConstants::GameFramesToSimulate; i++)
             {
-                auto start = AZStd::chrono::system_clock::now();
+                auto start = AZStd::chrono::steady_clock::now();
                 StepScene1Tick(DefaultTimeStep);
 
                 //time each physics tick and store it to analyze
-                auto tickElapsedMilliseconds = PhysX::Benchmarks::Types::double_milliseconds(AZStd::chrono::system_clock::now() - start);
+                auto tickElapsedMilliseconds = PhysX::Benchmarks::Types::double_milliseconds(AZStd::chrono::steady_clock::now() - start);
                 tickTimes.emplace_back(tickElapsedMilliseconds.count());
             }
         }
@@ -280,11 +280,11 @@ namespace PhysX::Benchmarks
         {
             for (AZ::u32 i = 0; i < RagdollConstants::GameFramesToSimulate; i++)
             {
-                auto start = AZStd::chrono::system_clock::now();
+                auto start = AZStd::chrono::steady_clock::now();
                 StepScene1Tick(DefaultTimeStep);
 
                 //time each physics tick and store it to analyze
-                auto tickElapsedMilliseconds = PhysX::Benchmarks::Types::double_milliseconds(AZStd::chrono::system_clock::now() - start);
+                auto tickElapsedMilliseconds = PhysX::Benchmarks::Types::double_milliseconds(AZStd::chrono::steady_clock::now() - start);
                 tickTimes.emplace_back(tickElapsedMilliseconds.count());
             }
         }

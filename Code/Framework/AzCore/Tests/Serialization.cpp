@@ -4525,11 +4525,11 @@ namespace UnitTest
             toSerialize.m_data = false;
 
             // Test save once, read once.
-            AZStd::string filePath = GetTestFolderPath() + "FileUtilsTest";
-            bool success = AZ::Utils::SaveObjectToFile(filePath, streamType, &toSerialize);
+            AZ::IO::Path filePath = GetTestFolderPath() / "FileUtilsTest";
+            bool success = AZ::Utils::SaveObjectToFile(filePath.Native(), streamType, &toSerialize);
             EXPECT_TRUE(success);
 
-            BaseRtti* deserialized = AZ::Utils::LoadObjectFromFile<BaseRtti>(filePath);
+            BaseRtti* deserialized = AZ::Utils::LoadObjectFromFile<BaseRtti>(filePath.Native());
             EXPECT_TRUE(deserialized);
             EXPECT_EQ( toSerialize.m_data, deserialized->m_data );
             delete deserialized;
@@ -4537,12 +4537,12 @@ namespace UnitTest
 
             // Test save twice, read once.
             // This is valid with files because saving a file again will overwrite it. Note that streams function differently.
-            success = AZ::Utils::SaveObjectToFile(filePath, streamType, &toSerialize);
+            success = AZ::Utils::SaveObjectToFile(filePath.Native(), streamType, &toSerialize);
             EXPECT_TRUE(success);
-            success = AZ::Utils::SaveObjectToFile(filePath, streamType, &toSerialize);
+            success = AZ::Utils::SaveObjectToFile(filePath.Native(), streamType, &toSerialize);
             EXPECT_TRUE(success);
 
-            deserialized = AZ::Utils::LoadObjectFromFile<BaseRtti>(filePath);
+            deserialized = AZ::Utils::LoadObjectFromFile<BaseRtti>(filePath.Native());
             EXPECT_TRUE(deserialized);
             EXPECT_EQ( toSerialize.m_data, deserialized->m_data );
             delete deserialized;
@@ -4550,8 +4550,8 @@ namespace UnitTest
 
             // Test reading from an invalid file. The system should return 'nullptr' when given a bad file path.
             AZ::IO::SystemFile::Delete(filePath.c_str());
-            deserialized = AZ::Utils::LoadObjectFromFile<BaseRtti>(filePath);
-            EXPECT_EQ( nullptr, deserialized );
+            deserialized = AZ::Utils::LoadObjectFromFile<BaseRtti>(filePath.Native());
+            EXPECT_EQ(nullptr, deserialized);
         }
 
         TestFileIOBase m_fileIO;

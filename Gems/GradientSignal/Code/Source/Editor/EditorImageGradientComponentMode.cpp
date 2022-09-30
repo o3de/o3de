@@ -8,11 +8,12 @@
 
 #include <AzCore/Component/TransformBus.h>
 
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Manipulators/PaintBrushManipulator.h>
 #include <AzToolsFramework/Manipulators/PaintBrushNotificationBus.h>
-#include <AzToolsFramework/Manipulators/PaintBrushRequestBus.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
+#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsWindow.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
 #include <Editor/EditorImageGradientComponentMode.h>
@@ -26,22 +27,113 @@
 
 namespace GradientSignal
 {
-    // Increase / decrease paintbrush radius amount in meters.
-    static constexpr float RadiusAdjustAmount = 0.25f;
+    //! Class that tracks data for undoing/redoing a paint stroke.
+    //! This is currently a naive implementation that just tracks a list of every point that's been modified during the paint stroke.
+    //! Duplicate positions will get recorded multiple times.
+    class PaintBrushUndoBuffer : public AzToolsFramework::UndoSystem::URSequencePoint
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(PaintBrushUndoBuffer, AZ::SystemAllocator, 0);
+        AZ_RTTI(PaintBrushUndoBuffer, "{E37936AC-22E1-403A-A36B-55390832EDE4}");
 
-    static constexpr AZ::Crc32 PaintbrushIncreaseRadius = AZ_CRC_CE("org.o3de.action.paintbrush.increase_radius");
-    static constexpr AZ::Crc32 PaintbrushDecreaseRadius = AZ_CRC_CE("org.o3de.action.paintbrush.decrease_radius");
+        PaintBrushUndoBuffer(AZ::EntityId imageEntityId)
+            : AzToolsFramework::UndoSystem::URSequencePoint("PaintStroke")
+            , m_entityId(imageEntityId)
+        {
+        }
 
-    const constexpr char* PaintbrushIncreaseRadiusTitle = "Increase Radius";
-    const constexpr char* PaintbrushDecreaseRadiusTitle = "Decrease Radius";
+        virtual ~PaintBrushUndoBuffer() = default;
 
-    const constexpr char* PaintbrushIncreaseRadiusDesc = "Increases radius of paintbrush";
-    const constexpr char* PaintbrushDecreaseRadiusDesc = "Decreases radius of paintbrush";
+        void Undo() override
+        {
+            if (m_pixelIndices.empty())
+            {
+                return;
+            }
 
+            // Run through our buffer in backwards order to make sure that positions that appear more than once in our list
+            // end with the correct final value.
+            for (int32_t index = aznumeric_cast<int32_t>(m_pixelIndices.size()) - 1; index >= 0; index--)
+            {
+                ImageGradientModificationBus::Event(
+                    m_entityId, &ImageGradientModificationBus::Events::SetPixelValueByPixelIndex, m_pixelIndices[index], m_oldValues[index]);
+            }
+
+            // Notify anything listening to the image gradient that the modified region has changed.
+            // We expand the region by one pixel in each direction to account for any data affected by bilinear filtering as well.
+            AZ::Aabb expandedDirtyArea = m_dirtyArea.GetExpanded(AZ::Vector3(m_xMetersPerPixel, m_yMetersPerPixel, 0.0f));
+            LmbrCentral::DependencyNotificationBus::Event(
+                m_entityId, &LmbrCentral::DependencyNotificationBus::Events::OnCompositionRegionChanged, expandedDirtyArea);
+        }
+
+        void Redo() override
+        {
+            if (m_pixelIndices.empty())
+            {
+                return;
+            }
+
+            // Replay all the changes in forward order.
+            ImageGradientModificationBus::Event(
+                m_entityId, &ImageGradientModificationBus::Events::SetPixelValuesByPixelIndex, m_pixelIndices, m_newValues);
+
+            // Notify anything listening to the image gradient that the modified region has changed.
+            // We expand the region by one pixel in each direction to account for any data affected by bilinear filtering as well.
+            AZ::Aabb expandedDirtyArea = m_dirtyArea.GetExpanded(AZ::Vector3(m_xMetersPerPixel, m_yMetersPerPixel, 0.0f));
+            LmbrCentral::DependencyNotificationBus::Event(
+                m_entityId, &LmbrCentral::DependencyNotificationBus::Events::OnCompositionRegionChanged, expandedDirtyArea);
+        }
+
+        bool Changed() const override
+        {
+            return !m_pixelIndices.empty();
+        }
+
+        //! Grow our buffers based on the maximum number of points that we're expecting to add in this paint stroke.
+        void ReserveBuffer(size_t numPointsToAdd)
+        {
+            m_pixelIndices.reserve(m_pixelIndices.size() + numPointsToAdd);
+            m_oldValues.reserve(m_oldValues.size() + numPointsToAdd);
+            m_newValues.reserve(m_newValues.size() + numPointsToAdd);
+        }
+
+        //! Add a point change to our undo buffer.
+        void AddPoint(const AZ::Vector3& position, const PixelIndex& pixelIndex, float oldValue, float newValue)
+        {
+            m_pixelIndices.emplace_back(pixelIndex);
+            m_oldValues.emplace_back(oldValue);
+            m_newValues.emplace_back(newValue);
+            m_dirtyArea.AddPoint(position);
+        }
+
+        //! Set the fractional number of meters per pixel in the image.
+        //! With bilinear filtering, world distances up to one pixel away in each direction from what we've changed
+        //! can potentially be affected by our painted pixels, so we use this to expand our dirty area on change notifications.
+        void SetMetersPerPixel(float xAmount, float yAmount)
+        {
+            m_xMetersPerPixel = xAmount;
+            m_yMetersPerPixel = yAmount;
+        }
+
+    private:
+        //! The entity containing the modified image gradient.
+        AZ::EntityId m_entityId;
+
+        //! The undo/redo data for the paint strokes.
+        AZStd::vector<PixelIndex> m_pixelIndices;
+        AZStd::vector<float> m_oldValues;
+        AZStd::vector<float> m_newValues;
+
+        //! Data for tracking the dirty area covered by these changes so that we can broadcast out the change region on undos/redos
+        AZ::Aabb m_dirtyArea;
+        float m_xMetersPerPixel = 0.0f;
+        float m_yMetersPerPixel = 0.0f;
+    };
 
     EditorImageGradientComponentMode::EditorImageGradientComponentMode(
         const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType)
         : EditorBaseComponentMode(entityComponentIdPair, componentType)
+        , m_ownerEntityComponentId(entityComponentIdPair)
     {
         EditorImageGradientRequestBus::Event(GetEntityId(), &EditorImageGradientRequests::StartImageModification);
         ImageGradientModificationBus::Event(GetEntityId(), &ImageGradientModifications::StartImageModification);
@@ -55,14 +147,25 @@ namespace GradientSignal
         Refresh();
 
         m_brushManipulator->Register(AzToolsFramework::g_mainManipulatorManagerId);
+
+        CreateSubModeSelectionCluster();
     }
 
     EditorImageGradientComponentMode::~EditorImageGradientComponentMode()
     {
+        RemoveSubModeSelectionCluster();
+
         AzToolsFramework::PaintBrushNotificationBus::Handler::BusDisconnect();
         m_brushManipulator->Unregister();
 
-        EditorImageGradientRequestBus::Event(GetEntityId(), &EditorImageGradientRequests::SaveImage);
+        EndUndoBatch();
+
+        // It's possible that we're leaving component mode as the result of an "undo" action.
+        // If that's the case, don't prompt the user to save the changes.
+        if (!AzToolsFramework::UndoRedoOperationInProgress())
+        {
+            EditorImageGradientRequestBus::Event(GetEntityId(), &EditorImageGradientRequests::SaveImage);
+        }
 
         ImageGradientModificationBus::Event(GetEntityId(), &ImageGradientModifications::EndImageModification);
         EditorImageGradientRequestBus::Event(GetEntityId(), &EditorImageGradientRequests::EndImageModification);
@@ -70,30 +173,7 @@ namespace GradientSignal
 
     AZStd::vector<AzToolsFramework::ActionOverride> EditorImageGradientComponentMode::PopulateActionsImpl()
     {
-        return {
-            AzToolsFramework::ActionOverride()
-                .SetUri(PaintbrushIncreaseRadius)
-                .SetKeySequence(QKeySequence{ Qt::Key_BracketRight })
-                .SetTitle(PaintbrushIncreaseRadiusTitle)
-                .SetTip(PaintbrushIncreaseRadiusDesc)
-                .SetEntityComponentIdPair(GetEntityComponentIdPair())
-                .SetCallback(
-                    [this]()
-                    {
-                        AdjustRadius(RadiusAdjustAmount);
-                    }),
-            AzToolsFramework::ActionOverride()
-                .SetUri(PaintbrushDecreaseRadius)
-                .SetKeySequence(QKeySequence{ Qt::Key_BracketLeft })
-                .SetTitle(PaintbrushDecreaseRadiusTitle)
-                .SetTip(PaintbrushDecreaseRadiusDesc)
-                .SetEntityComponentIdPair(GetEntityComponentIdPair())
-                .SetCallback(
-                    [this]()
-                    {
-                        AdjustRadius(-RadiusAdjustAmount);
-                    }),
-        };
+        return m_brushManipulator->PopulateActionsImpl();
     }
 
     AZStd::string EditorImageGradientComponentMode::GetComponentModeName() const
@@ -111,6 +191,38 @@ namespace GradientSignal
     {
     }
 
+    void EditorImageGradientComponentMode::BeginUndoBatch()
+    {
+        AZ_Assert(m_undoBatch == nullptr, "Starting an undo batch while one is already active!");
+
+        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+            m_undoBatch, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::BeginUndoBatch, "PaintStroke");
+
+        m_paintBrushUndoBuffer = aznew PaintBrushUndoBuffer(GetEntityId());
+        m_paintBrushUndoBuffer->SetParent(m_undoBatch);
+    }
+
+    void EditorImageGradientComponentMode::EndUndoBatch()
+    {
+        if (m_undoBatch != nullptr)
+        {
+            AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
+                &AzToolsFramework::ToolsApplicationRequests::Bus::Events::EndUndoBatch);
+            m_undoBatch = nullptr;
+            m_paintBrushUndoBuffer = nullptr;
+        }
+    }
+
+    void EditorImageGradientComponentMode::OnPaintBegin()
+    {
+        BeginUndoBatch();
+    }
+
+    void EditorImageGradientComponentMode::OnPaintEnd()
+    {
+        EndUndoBatch();
+    }
+
     void EditorImageGradientComponentMode::OnPaint(const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn)
     {
         // The OnPaint notification means that we should paint new values into our image gradient.
@@ -126,17 +238,17 @@ namespace GradientSignal
             return;
         }
 
-        const float xStep = 1.0f / imagePixelsPerMeter.GetX();
-        const float yStep = 1.0f / imagePixelsPerMeter.GetY();
+        const float xMetersPerPixel = 1.0f / imagePixelsPerMeter.GetX();
+        const float yMetersPerPixel = 1.0f / imagePixelsPerMeter.GetY();
 
         const AZ::Vector3 minDistances = dirtyArea.GetMin();
         const AZ::Vector3 maxDistances = dirtyArea.GetMax();
 
         // Calculate the minimum set of world space points that map to those pixels.
         AZStd::vector<AZ::Vector3> points;
-        for (float y = minDistances.GetY(); y <= maxDistances.GetY(); y += yStep)
+        for (float y = minDistances.GetY(); y <= maxDistances.GetY(); y += yMetersPerPixel)
         {
-            for (float x = minDistances.GetX(); x <= maxDistances.GetX(); x += xStep)
+            for (float x = minDistances.GetX(); x <= maxDistances.GetX(); x += xMetersPerPixel)
             {
                 points.emplace_back(x, y, minDistances.GetZ());
             }
@@ -149,54 +261,115 @@ namespace GradientSignal
 
         valueLookupFn(points, intensities, opacities, validFlags);
 
+        // Remove all of the positions that weren't affected by the paintbrush.
+        AZStd::erase_if(points, [&points, &validFlags](const AZ::Vector3& value)
+            {
+                return !validFlags[(&value) - (points.begin())];
+            });
+        AZStd::erase_if(intensities, [&intensities, &validFlags](const float& value)
+            {
+                return !validFlags[(&value) - (intensities.begin())];
+            });
+        AZStd::erase_if(opacities, [&opacities, &validFlags](const float& value)
+            {
+                return !validFlags[(&value) - (opacities.begin())];
+            });
+
+        AZStd::erase(validFlags, false);
+
+        AZStd::vector<PixelIndex> pixelIndices(points.size());
+        ImageGradientModificationBus::Event(
+            GetEntityId(), &ImageGradientModificationBus::Events::GetPixelIndicesForPositions, points, pixelIndices);
+
         // Get the previous gradient image values
         AZStd::vector<float> oldValues(points.size());
-        GradientRequestBus::Event(GetEntityId(), &GradientRequestBus::Events::GetValues, points, oldValues);
+        ImageGradientModificationBus::Event(
+            GetEntityId(), &ImageGradientModificationBus::Events::GetPixelValuesByPixelIndex, pixelIndices, oldValues);
+
+        AZ_Assert(m_paintBrushUndoBuffer != nullptr, "Undo batch is expected to exist while painting");
+        m_paintBrushUndoBuffer->ReserveBuffer(points.size());
+        m_paintBrushUndoBuffer->SetMetersPerPixel(xMetersPerPixel, yMetersPerPixel);
 
         // For each value, blend it with the painted value and set the gradient image to the new value.
         for (size_t index = 0; index < points.size(); index++)
         {
-            if (validFlags[index])
+            float newValue = AZStd::lerp(oldValues[index], intensities[index], opacities[index]);
+
+            if (newValue != oldValues[index])
             {
-                float newValue = AZStd::lerp(oldValues[index], intensities[index], opacities[index]);
+                m_paintBrushUndoBuffer->AddPoint(points[index], pixelIndices[index], oldValues[index], newValue);
+
                 ImageGradientModificationBus::Event(
-                    GetEntityId(), &ImageGradientModificationBus::Events::SetValue, points[index], newValue);
+                    GetEntityId(), &ImageGradientModificationBus::Events::SetPixelValueByPixelIndex, pixelIndices[index], newValue);
             }
         }
 
         // Notify anything listening to the image gradient that the modified region has changed.
+        // Because Image Gradients support bilinear filtering, we need to expand our dirty area by an extra pixel in each direction
+        // so that the effects of the painted values on adjacent pixels are taken into account when refreshing.
+        AZ::Aabb expandedDirtyArea(dirtyArea);
+        expandedDirtyArea.Expand(AZ::Vector3(xMetersPerPixel, yMetersPerPixel, 0.0f));
         LmbrCentral::DependencyNotificationBus::Event(
-            GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionRegionChanged, dirtyArea);
+            GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionRegionChanged, expandedDirtyArea);
     }
 
-    void EditorImageGradientComponentMode::AdjustRadius(float radiusDelta)
+    void EditorImageGradientComponentMode::CreateSubModeSelectionCluster()
     {
-        float radius = m_brushManipulator->GetRadius();
-        radius = AZStd::clamp(radius + radiusDelta, 0.01f, 1024.0f);
-        m_brushManipulator->SetRadius(radius);
+        auto RegisterClusterButton = [](AzToolsFramework::ViewportUi::ClusterId clusterId,
+                                        const char* iconName,
+                                        const char* tooltip) -> AzToolsFramework::ViewportUi::ButtonId
+        {
+            AzToolsFramework::ViewportUi::ButtonId buttonId;
+            AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
+                buttonId,
+                AzToolsFramework::ViewportUi::DefaultViewportId,
+                &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateClusterButton,
+                clusterId,
+                AZStd::string::format(":/stylesheet/img/UI20/toolbar/%s.svg", iconName));
 
-        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
+            AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+                AzToolsFramework::ViewportUi::DefaultViewportId,
+                &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip,
+                clusterId,
+                buttonId,
+                tooltip);
+
+            return buttonId;
+        };
+
+        // create the cluster for showing the Paint Brush Settings window
+        AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
+            m_paintBrushControlClusterId,
+            AzToolsFramework::ViewportUi::DefaultViewportId,
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateCluster,
+            AzToolsFramework::ViewportUi::Alignment::TopLeft);
+
+        // create and register the "Show Paint Brush Settings" button.
+        // This button is needed because the window is only shown while in component mode, and the window can be closed by the user,
+        // so we need to provide an alternate way for the user to re-open the window. 
+        m_paintBrushSettingsButtonId = RegisterClusterButton(m_paintBrushControlClusterId, "Paint", "Show Paint Brush Settings");
+
+        m_buttonSelectionHandler = AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler(
+            [this](AzToolsFramework::ViewportUi::ButtonId buttonId)
+            {
+                if (buttonId == m_paintBrushSettingsButtonId)
+                {
+                    AzToolsFramework::OpenViewPane(PaintBrush::s_paintBrushSettingsName);
+                }
+            });
+        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+            AzToolsFramework::ViewportUi::DefaultViewportId,
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler,
+            m_paintBrushControlClusterId,
+            m_buttonSelectionHandler);
     }
 
-    void EditorImageGradientComponentMode::AdjustIntensity(float intensityDelta)
+    void EditorImageGradientComponentMode::RemoveSubModeSelectionCluster()
     {
-        float intensity = m_brushManipulator->GetIntensity();
-        intensity = AZStd::clamp(intensity + intensityDelta, 0.0f, 1.0f);
-        m_brushManipulator->SetIntensity(intensity);
-
-        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
-    }
-
-    void EditorImageGradientComponentMode::AdjustOpacity(float opacityDelta)
-    {
-        float opacity = m_brushManipulator->GetOpacity();
-        opacity = AZStd::clamp(opacity + opacityDelta, 0.0f, 1.0f);
-        m_brushManipulator->SetOpacity(opacity);
-
-        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
+        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+            AzToolsFramework::ViewportUi::DefaultViewportId,
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RemoveCluster,
+            m_paintBrushControlClusterId);
     }
 
 } // namespace GradientSignal

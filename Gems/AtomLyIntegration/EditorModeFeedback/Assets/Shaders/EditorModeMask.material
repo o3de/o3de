@@ -1,6 +1,4 @@
 {
-    "description": "",
-    "parentMaterial": "",
-    "materialType": "Shaders/EditorModeMask.materialtype",
+    "materialType": "EditorModeMask.materialtype",
     "materialTypeVersion": 1
 }

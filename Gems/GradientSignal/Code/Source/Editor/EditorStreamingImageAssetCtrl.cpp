@@ -138,8 +138,8 @@ namespace GradientSignal
 
     void StreamingImagePropertyHandler::ConsumeAttribute(StreamingImagePropertyAssetCtrl* GUI, AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue, const char* debugName)
     {
-        // Let the AssetPropertyHandlerDefault handle all of the attributes
-        AzToolsFramework::AssetPropertyHandlerDefault::ConsumeAttributeInternal(GUI, attrib, attrValue, debugName);
+        // Let ConsumeAttributeForPropertyAssetCtrl handle all of the attributes
+        AzToolsFramework::ConsumeAttributeForPropertyAssetCtrl(GUI, attrib, attrValue, debugName);
     }
 
     void StreamingImagePropertyHandler::WriteGUIValuesIntoProperty(size_t index, StreamingImagePropertyAssetCtrl* GUI, property_t& instance, AzToolsFramework::InstanceDataNode* node)

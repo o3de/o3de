@@ -151,15 +151,15 @@ namespace EMotionFX
                     AzToolsFramework::ViewportUi::Alignment::TopLeft);
 
                 m_buttonData[static_cast<size_t>(SubMode::JointLimitParentRotation)] =
-                    RegisterClusterButton(viewportId, m_jointLimitClusterId, "Rotate", JointLimitParentRotationTooltip);
+                    RegisterClusterButton(viewportId, m_jointLimitClusterId, "joints/ParentFrame", JointLimitParentRotationTooltip);
                 m_buttonData[static_cast<size_t>(SubMode::JointLimitChildRotation)] =
-                    RegisterClusterButton(viewportId, m_jointLimitClusterId, "Rotate", JointLimitChildRotationTooltip);
+                    RegisterClusterButton(viewportId, m_jointLimitClusterId, "joints/ChildFrame", JointLimitChildRotationTooltip);
                 m_buttonData[static_cast<size_t>(SubMode::JointSwingLimits)] =
                     RegisterClusterButton(viewportId, m_jointLimitClusterId, "joints/SwingLimits", JointLimitSwingTooltip);
                 m_buttonData[static_cast<size_t>(SubMode::JointTwistLimits)] =
                     RegisterClusterButton(viewportId, m_jointLimitClusterId, "joints/TwistLimits", JointLimitTwistTooltip);
                 m_buttonData[static_cast<size_t>(SubMode::JointLimitOptimization)] =
-                    RegisterClusterButton(viewportId, m_jointLimitClusterId, "Question", JointLimitAutofitTooltip);
+                    RegisterClusterButton(viewportId, m_jointLimitClusterId, "AutoFit", JointLimitAutofitTooltip);
 
                 const auto onJointLimitButtonClicked = [this](AzToolsFramework::ViewportUi::ButtonId buttonId)
                 {

@@ -43,6 +43,7 @@ set(FILES
     limits.h
     numeric.h
     math.h
+    metaprogramming/ratio.h
     optional.h
     ranges/as_const_view.h
     ranges/as_rvalue_view.h
@@ -74,7 +75,6 @@ set(FILES
     ranges/transform_view.h
     ranges/zip_view.h
     ranges/zip_view.inl
-    ratio.h
     reference_wrapper.h
     sort.h
     time.h
@@ -83,8 +83,7 @@ set(FILES
     bind/bind.h
     bind/mem_fn.h
     chrono/chrono.h
-    chrono/clocks.h
-    chrono/types.h
+    chrono/time.cpp
     containers/array.h
     containers/bitset.h
     containers/compressed_pair.h

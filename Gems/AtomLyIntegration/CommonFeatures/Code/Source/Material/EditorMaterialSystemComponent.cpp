@@ -300,16 +300,23 @@ namespace AZ
             [[maybe_unused]] const AZ::Render::MaterialAssignmentId& materialAssignmentId,
             [[maybe_unused]] const QPixmap& pixmap)
         {
-            PurgePreviews();
+            // Since the "preview rendered" event is not called on the main thread, queue
+            // the handling code to be executed on the main thread. This prevents any non
+            // thread-safe code, such as Qt updates, from running on alternate threads
+            AZ::SystemTickBus::QueueFunction(
+                [=]()
+                {
+                    PurgePreviews();
 
-            // Caching preview so the image will not have to be regenerated every time it's requested
-            m_materialPreviews[entityId][materialAssignmentId] = pixmap;
+                    // Caching preview so the image will not have to be regenerated every time it's requested
+                    m_materialPreviews[entityId][materialAssignmentId] = pixmap;
 
-            AZ::Render::EditorMaterialSystemComponentNotificationBus::Broadcast(
-                &AZ::Render::EditorMaterialSystemComponentNotificationBus::Events::OnRenderMaterialPreviewReady,
-                entityId,
-                materialAssignmentId,
-                pixmap);
+                    AZ::Render::EditorMaterialSystemComponentNotificationBus::Broadcast(
+                        &AZ::Render::EditorMaterialSystemComponentNotificationBus::Events::OnRenderMaterialPreviewReady,
+                        entityId,
+                        materialAssignmentId,
+                        pixmap);
+                });
         }
 
         void EditorMaterialSystemComponent::OnMaterialSlotLayoutChanged()

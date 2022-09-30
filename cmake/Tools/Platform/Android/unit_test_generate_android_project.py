@@ -46,7 +46,7 @@ def test_verify_gradle(tmpdir, from_override, version_str, expected_result):
 
     def _mock_check_output(args, shell):
         assert args
-        assert shell is True
+        assert shell == (platform.system() == 'Windows')
         if from_override:
             assert args[0] == os.path.normpath(f'{override_gradle_install_path}/bin/{gradle_script}')
         assert args[1] == '-v'
@@ -97,7 +97,7 @@ def test_verify_cmake(tmpdir, from_override, version_str, expected_result):
 
     def _mock_check_output(args, shell, stderr):
         assert args
-        assert shell is True
+        assert shell == (platform.system() == 'Windows')
         if from_override:
             assert args[0] == os.path.normpath(f'{override_cmake_install_path}/bin/{cmake_exe}')
         assert args[1] == '--version'
@@ -143,7 +143,7 @@ def test_verify_ninja(tmpdir, from_override, version_str, expected_result):
 
     def _mock_check_output(args, shell, stderr):
         assert args
-        assert shell is True
+        assert shell == (platform.system() == 'Windows')
         if from_override:
             assert args[0] == os.path.normpath(f'{override_cmake_install_path}/{ninja_exe}')
         assert args[1] == '--version'

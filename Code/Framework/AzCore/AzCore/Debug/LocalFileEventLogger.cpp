@@ -44,7 +44,7 @@ namespace AZ::Debug
             if (readSize == size)
             {
                 memcpy(&m_logHeader, buffer, sizeof(m_logHeader));
-                m_current = reinterpret_cast<IEventLogger::EventHeader*>(buffer + sizeof(m_logHeader));
+                m_current = reinterpret_cast<Metrics::IEventLogger::EventHeader*>(buffer + sizeof(m_logHeader));
                 UpdateThreadId();
                 return true;
             }
@@ -52,7 +52,7 @@ namespace AZ::Debug
         return false;
     }
 
-    EventNameHash EventLogReader::GetEventName() const
+    Metrics::EventNameHash EventLogReader::GetEventName() const
     {
         return m_current->m_eventId;
     }
@@ -79,11 +79,11 @@ namespace AZ::Debug
 
     bool EventLogReader::Next()
     {
-        size_t increment = AZ_SIZE_ALIGN_UP(sizeof(IEventLogger::EventHeader) + m_current->m_size, EventBoundary);
+        size_t increment = AZ_SIZE_ALIGN_UP(sizeof(Metrics::IEventLogger::EventHeader) + m_current->m_size, Metrics::EventBoundary);
         uint8_t* bufferPosition = reinterpret_cast<uint8_t*>(m_current) + increment;
         if (bufferPosition < m_buffer.end())
         {
-            m_current = reinterpret_cast<IEventLogger::EventHeader*>(bufferPosition);
+            m_current = reinterpret_cast<Metrics::IEventLogger::EventHeader*>(bufferPosition);
             UpdateThreadId();
             return true;
         }
@@ -92,9 +92,9 @@ namespace AZ::Debug
 
     void EventLogReader::UpdateThreadId()
     {
-        if (GetEventName() == PrologEventHash)
+        if (GetEventName() == Metrics::PrologEventHash)
         {
-            auto prolog = reinterpret_cast<IEventLogger::Prolog*>(m_current);
+            auto prolog = reinterpret_cast<Metrics::IEventLogger::Prolog*>(m_current);
             m_currentThreadId = prolog->m_threadId;
         }
     }
@@ -236,7 +236,7 @@ namespace AZ::Debug
         delete replacementData;
     }
 
-    void* LocalFileEventLogger::RecordEventBegin(EventNameHash id, uint16_t size, uint16_t flags)
+    void* LocalFileEventLogger::RecordEventBegin(Metrics::EventNameHash id, uint16_t size, uint16_t flags)
     {
         ThreadStorage& threadStorage = GetThreadStorage();
         ThreadData* threadData = threadStorage.m_data;
@@ -246,7 +246,7 @@ namespace AZ::Debug
         {
         }
 
-        uint32_t writeSize = AZ_SIZE_ALIGN_UP(sizeof(EventHeader) + size, EventBoundary);
+        uint32_t writeSize = AZ_SIZE_ALIGN_UP(sizeof(EventHeader) + size, Metrics::EventBoundary);
         if (threadData->m_usedBytes + writeSize >= ThreadData::BufferSize)
         {
             AZStd::scoped_lock lock(m_fileWriteGuard);
@@ -278,7 +278,7 @@ namespace AZ::Debug
         threadStorage.m_pendingData = nullptr;
     }
 
-    void LocalFileEventLogger::RecordStringEvent(EventNameHash id, AZStd::string_view text, uint16_t flags)
+    void LocalFileEventLogger::RecordStringEvent(Metrics::EventNameHash id, AZStd::string_view text, uint16_t flags)
     {
         constexpr size_t maxSize = AZStd::numeric_limits<decltype(EventHeader::m_size)>::max();
         const size_t stringLen = text.length();
@@ -299,7 +299,7 @@ namespace AZ::Debug
         // ensure the front loaded prolog is accurate, ThreadData objects
         // are recycled during flush
         Prolog* prologHeader = reinterpret_cast<Prolog*>(threadData.m_buffer);
-        prologHeader->m_eventId = PrologEventHash;
+        prologHeader->m_eventId = Metrics::PrologEventHash;
         prologHeader->m_size = sizeof(prologHeader->m_threadId);
         prologHeader->m_flags = 0; // unused in the prolog
         prologHeader->m_threadId = threadData.m_threadId;

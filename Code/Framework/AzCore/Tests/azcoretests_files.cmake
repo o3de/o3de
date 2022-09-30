@@ -48,6 +48,7 @@ set(FILES
     GenericStreamMock.h
     GenericStreamTests.cpp
     Memory.cpp
+    Metrics/EventLoggerFactoryTests.cpp
     Module.cpp
     ModuleTestBus.h
     OrderedEventBenchmarks.cpp

@@ -632,6 +632,7 @@ namespace AZ::Render
         if (m_meshHandle)
         {
             m_meshFeatureProcessor->ReleaseMesh(*m_meshHandle);
+            MeshHandleStateNotificationBus::Event(m_entityId, &MeshHandleStateNotificationBus::Events::OnMeshHandleSet, &(*m_meshHandle));
             m_meshHandle = nullptr;
         }
     }

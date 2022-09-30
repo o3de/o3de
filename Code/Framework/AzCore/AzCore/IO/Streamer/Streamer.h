@@ -161,7 +161,7 @@ namespace AZ::IO
         IStreamerTypes::RequestStatus GetRequestStatus(FileRequestHandle request) const override;
 
         //! Returns the time that the provided request will complete.
-        AZStd::chrono::system_clock::time_point GetEstimatedRequestCompletionTime(FileRequestHandle request) const override;
+        AZStd::chrono::steady_clock::time_point GetEstimatedRequestCompletionTime(FileRequestHandle request) const override;
 
         //! Gets the result for operations that read data.
         bool GetReadRequestResult(FileRequestHandle request, void*& buffer, u64& numBytesRead,

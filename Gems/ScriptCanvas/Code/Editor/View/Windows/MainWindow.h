@@ -203,7 +203,7 @@ namespace ScriptCanvasEditor
     class VariableDockWidget;
     class UnitTestDockWidget;
     class BatchOperatorTool;
-    class ScriptCanvasBatchConverter;    
+    class ScriptCanvasBatchConverter;
     class LoggingWindow;
     class GraphValidationDockWidget;
     class MainWindowStatusWidget;
@@ -326,14 +326,14 @@ namespace ScriptCanvasEditor
         bool OnFileSave();
         bool OnFileSaveAs();
         bool OnFileSaveCaller(){return OnFileSave();};
-        bool OnFileSaveAsCaller(){return OnFileSaveAs();};        
+        bool OnFileSaveAsCaller(){return OnFileSaveAs();};
         enum class Save
         {
             InPlace,
             As
         };
         bool SaveAssetImpl(const SourceHandle& assetId, Save save);
-        void OnFileOpen();        
+        void OnFileOpen();
 
         // Edit menu
         void SetupEditMenu();
@@ -379,7 +379,7 @@ namespace ScriptCanvasEditor
         void OnViewCommandLine();
         void OnViewLog();
         void OnBookmarks();
-        void OnVariableManager();        
+        void OnVariableManager();
         void OnViewMiniMap();
         void OnViewLogWindow();
         void OnViewGraphValidation();
@@ -404,7 +404,7 @@ namespace ScriptCanvasEditor
         void OnNodeAdded(const AZ::EntityId& nodeId, bool isPaste) override;
         void OnSelectionChanged() override;
         /////////////////////////////////////////////////////////////////////////////////////////////
-        
+
         void OnVariableSelectionChanged(const AZStd::vector<AZ::EntityId>& variablePropertyIds);
         void QueuePropertyGridUpdate();
         void DequeuePropertyGridUpdate();
@@ -441,7 +441,7 @@ namespace ScriptCanvasEditor
         ////
 
         AZ::Outcome<int, AZStd::string> CreateScriptCanvasAsset(AZStd::string_view assetPath, int tabIndex = -1);
-        
+
         void RemoveScriptCanvasAsset(const SourceHandle& assetId);
         void OnChangeActiveGraphTab(SourceHandle) override;
 
@@ -491,7 +491,7 @@ namespace ScriptCanvasEditor
         float GetMaxZoom() const override;
 
         float GetEdgePanningPercentage() const override;
-        float GetEdgePanningScrollSpeed() const override;        
+        float GetEdgePanningScrollSpeed() const override;
 
         GraphCanvas::EditorConstructPresets* GetConstructPresets() const override;
         const GraphCanvas::ConstructTypePresetBucket* GetConstructTypePresetBucket(GraphCanvas::ConstructType constructType) const override;
@@ -510,7 +510,7 @@ namespace ScriptCanvasEditor
         void SignalAutomationBegin() override;
         void SignalAutomationEnd() override;
 
-        void ForceCloseActiveAsset() override;        
+        void ForceCloseActiveAsset() override;
         ////
 
         // AssetEditorAutomationRequestBus
@@ -524,15 +524,15 @@ namespace ScriptCanvasEditor
 
         AZ::EntityId FindEditorNodeIdByAssetNodeId(const SourceHandle& assetId, AZ::EntityId assetNodeId) const override;
         AZ::EntityId FindAssetNodeIdByEditorNodeId(const SourceHandle& assetId, AZ::EntityId editorNodeId) const override;
-        
+
     private:
         void SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;
         void SourceFileRemoved(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;
-        
+
         void DeleteNodes(const AZ::EntityId& sceneId, const AZStd::vector<AZ::EntityId>& nodes) override;
         void DeleteConnections(const AZ::EntityId& sceneId, const AZStd::vector<AZ::EntityId>& connections) override;
         void DisconnectEndpoints(const AZ::EntityId& sceneId, const AZStd::vector<GraphCanvas::Endpoint>& endpoints) override;
-        /////////////////////////////////////////////////////////////////////////////////////////////        
+        /////////////////////////////////////////////////////////////////////////////////////////////
 
         GraphCanvas::Endpoint HandleProposedConnection(const GraphCanvas::GraphId& graphId, const GraphCanvas::ConnectionId& connectionId, const GraphCanvas::Endpoint& endpoint, const GraphCanvas::NodeId& proposedNode, const QPoint& screenPoint);
 
@@ -554,7 +554,7 @@ namespace ScriptCanvasEditor
         // QMainWindow
         void closeEvent(QCloseEvent *event) override;
         UnsavedChangesOptions ShowSaveDialog(const QString& filename);
-        
+
         bool ActivateAndSaveAsset(const SourceHandle& unsavedAssetId);
 
         void SaveAs(AZStd::string_view path, SourceHandle assetId);
@@ -707,7 +707,7 @@ namespace ScriptCanvasEditor
         QVBoxLayout* m_layout;
 
         SourceHandle m_activeGraph;
-        
+
         bool                  m_loadingNewlySavedFile;
         AZStd::string         m_newlySavedFile;
 
@@ -739,7 +739,7 @@ namespace ScriptCanvasEditor
 
         QByteArray m_defaultLayout;
         QTranslator m_translator;
-        
+
         AZStd::vector<AZ::EntityId> m_selectedVariableIds;
 
         AZ::u32                                   m_systemTickActions;
@@ -769,7 +769,7 @@ namespace ScriptCanvasEditor
         void ClearStaleSaves();
         bool IsRecentSave(const SourceHandle& handle) const;
         void MarkRecentSave(const SourceHandle& handle);
-        AZStd::recursive_mutex m_mutex; 
-        AZStd::unordered_map <AZStd::string, AZStd::chrono::system_clock::time_point> m_saves;
+        AZStd::recursive_mutex m_mutex;
+        AZStd::unordered_map <AZStd::string, AZStd::chrono::steady_clock::time_point> m_saves;
     };
 }

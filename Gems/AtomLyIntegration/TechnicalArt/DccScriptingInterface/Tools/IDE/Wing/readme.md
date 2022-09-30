@@ -116,7 +116,7 @@ In the root of the DCCsi, one of the files will start O3DE python, you can start
 
 The actual interpreter that runs is somewhere like
 
-    `o3de\python\runtime\python-3.7.12-rev2-windows\python\python.exe`
+    `o3de\python\runtime\python-3.10.5-rev1-windows\python\python.exe`
 
 The folder for Wing developers is here:
 
