@@ -80,13 +80,13 @@ namespace AzToolsFramework
         return iconsVisible;
     }
 
-    //helper function to wrap Ebus call to check if helpers and icons should only be drawn for selected entities
+    // helper function to wrap Ebus call to check if helpers should only be drawn for selected entities
     static bool OnlyDrawHelpersForSelectedEntities(const AzFramework::ViewportId viewportId)
     {
-        bool onlyDrawHelpersForSelectedEntities = false;
+        bool onlyShowHelpersForSelectedEntities = false;
         ViewportInteraction::ViewportSettingsRequestBus::EventResult(
-            onlyDrawHelpersForSelectedEntities, viewportId, &ViewportInteraction::ViewportSettingsRequestBus::Events::OnlyShowHelpersForSelectedEntities);
-        return onlyDrawHelpersForSelectedEntities;
+            onlyShowHelpersForSelectedEntities, viewportId, &ViewportInteraction::ViewportSettingsRequestBus::Events::OnlyShowHelpersForSelectedEntities);
+        return onlyShowHelpersForSelectedEntities;
     }
 
     float GetIconScale(const float distance)
@@ -311,7 +311,6 @@ namespace AzToolsFramework
                     {
                         DisplayComponents(entityId, viewportInfo, debugDisplay);
                     }
-                    
                 }
             }
         }

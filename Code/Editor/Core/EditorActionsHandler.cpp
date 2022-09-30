@@ -51,7 +51,7 @@ static constexpr AZStd::string_view EntitySelectionChangedUpdaterIdentifier = "o
 static constexpr AZStd::string_view GameModeStateChangedUpdaterIdentifier = "o3de.updater.onGameModeStateChanged";
 static constexpr AZStd::string_view GridSnappingStateChangedUpdaterIdentifier = "o3de.updater.onGridSnappingStateChanged";
 static constexpr AZStd::string_view IconsStateChangedUpdaterIdentifier = "o3de.updater.onViewportIconsStateChanged";
-static constexpr AZStd::string_view OnlyShowHelpersForSelectedEntitiesIdentifier =  "o3de.updater.onShowHelpersForSelectedEntitiesChanged";
+static constexpr AZStd::string_view OnlyShowHelpersForSelectedEntitiesIdentifier =  "o3de.updater.onOnlyShowHelpersForSelectedEntitiesChanged";
 static constexpr AZStd::string_view LevelLoadedUpdaterIdentifier = "o3de.updater.onLevelLoaded";
 static constexpr AZStd::string_view RecentFilesChangedUpdaterIdentifier = "o3de.updater.onRecentFilesChanged";
 static constexpr AZStd::string_view UndoRedoUpdaterIdentifier = "o3de.updater.onUndoRedo";
@@ -200,7 +200,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
 
         m_actionManagerInterface->RegisterAction(
             EditorMainWindowActionContextIdentifier, "o3de.action.file.new", actionProperties,
-            [cryEdit = m_cryEditApp]()
+            [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnCreateLevel();
             }
@@ -218,7 +218,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
 
         m_actionManagerInterface->RegisterAction(
             EditorMainWindowActionContextIdentifier, "o3de.action.file.open", actionProperties,
-            [cryEdit = m_cryEditApp]()
+            [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnOpenLevel();
             }
@@ -251,7 +251,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
                 EditorMainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
-                [cryEdit = m_cryEditApp, index]()
+                [cryEdit = m_cryEditApp, index]
                 {
                     RecentFileList* recentFiles = cryEdit->GetRecentFileList();
                     const int recentFilesSize = recentFiles->GetSize();
@@ -286,7 +286,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
             EditorMainWindowActionContextIdentifier,
             "o3de.action.file.recent.clearAll",
             actionProperties,
-            [&]()
+            [&]
             {
                 RecentFileList* mruList = CCryEditApp::instance()->GetRecentFileList();
 
@@ -315,7 +315,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
 
         m_actionManagerInterface->RegisterAction(
             EditorMainWindowActionContextIdentifier, "o3de.action.file.save", actionProperties,
-            [cryEdit = m_cryEditApp]()
+            [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnFileSave();
             }
@@ -337,7 +337,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
 
         m_actionManagerInterface->RegisterAction(
             EditorMainWindowActionContextIdentifier, "o3de.action.file.saveAs", actionProperties,
-            []()
+            []
             {
                 CCryEditDoc* pDoc = GetIEditor()->GetDocument();
                 pDoc->OnFileSaveAs();
@@ -358,7 +358,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
 
         m_actionManagerInterface->RegisterAction(
             EditorMainWindowActionContextIdentifier, "o3de.action.file.saveLevelStatistics", actionProperties,
-            [cryEdit = m_cryEditApp]()
+            [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnToolsLogMemoryUsage();
             }
@@ -383,7 +383,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
 
         m_actionManagerInterface->RegisterAction(
             EditorMainWindowActionContextIdentifier, "o3de.action.project.editSettings", actionProperties,
-            [cryEdit = m_cryEditApp]()
+            [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnOpenProjectManagerSettings();
             }
@@ -399,7 +399,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
 
         m_actionManagerInterface->RegisterAction(
             EditorMainWindowActionContextIdentifier, "o3de.action.platform.editSettings", actionProperties,
-            [qtViewPaneManager = m_qtViewPaneManager]()
+            [qtViewPaneManager = m_qtViewPaneManager]
             {
                 qtViewPaneManager->OpenPane(LyViewPane::ProjectSettingsTool);
             }
@@ -417,7 +417,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
             EditorMainWindowActionContextIdentifier,
             "o3de.action.project.new",
             actionProperties,
-            [cryEdit = m_cryEditApp]()
+            [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnOpenProjectManagerNew();
             }
@@ -435,7 +435,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
             EditorMainWindowActionContextIdentifier,
             "o3de.action.project.open",
             actionProperties,
-            [cryEdit = m_cryEditApp]()
+            [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnOpenProjectManager();
             }
@@ -452,7 +452,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
             EditorMainWindowActionContextIdentifier,
             "o3de.action.file.showLog",
             actionProperties,
-            [cryEdit = m_cryEditApp]()
+            [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnFileEditLogFile();
             }
@@ -470,7 +470,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
             EditorMainWindowActionContextIdentifier,
             "o3de.action.editor.exit",
             actionProperties,
-            [=]()
+            [=]
             {
                 m_mainWindow->window()->close();
             }
@@ -491,7 +491,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
             EditorMainWindowActionContextIdentifier,
             "o3de.action.edit.undo",
             actionProperties,
-            [cryEdit = m_cryEditApp]()
+            [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnUndo();
             }
@@ -523,7 +523,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
             EditorMainWindowActionContextIdentifier,
             "o3de.action.edit.redo",
             actionProperties,
-            [cryEdit = m_cryEditApp]()
+            [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnRedo();
             }
@@ -555,7 +555,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
             EditorMainWindowActionContextIdentifier,
             "o3de.action.edit.snap.toggleAngleSnapping",
             actionProperties,
-            []()
+            []
             {
                 SandboxEditor::SetAngleSnapping(!SandboxEditor::AngleSnappingEnabled());
             },
@@ -581,7 +581,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
             EditorMainWindowActionContextIdentifier,
             "o3de.action.edit.snap.toggleGridSnapping",
             actionProperties,
-            []()
+            []
             {
                 SandboxEditor::SetGridSnapping(!SandboxEditor::GridSnappingEnabled());
             },
@@ -605,7 +605,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
             EditorMainWindowActionContextIdentifier,
             "o3de.action.edit.globalPreferences",
             actionProperties,
-            [cryEdit = m_cryEditApp]()
+            [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnToolsPreferences();
             }
@@ -622,7 +622,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
             EditorMainWindowActionContextIdentifier,
             "o3de.action.edit.editorSettingsManager",
             actionProperties,
-            []()
+            []
             {
                 QtViewPaneManager::instance()->OpenPane(LyViewPane::EditorSettingsManager);
             }
@@ -641,11 +641,11 @@ void EditorActionsHandler::OnActionRegistrationHook()
 
         m_actionManagerInterface->RegisterCheckableAction(
             EditorMainWindowActionContextIdentifier, "o3de.action.game.play", actionProperties,
-            [cryEdit = m_cryEditApp]()
+            [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnViewSwitchToGame();
             },
-            []()
+            []
             {
                 return GetIEditor()->IsInGameMode();
             }
@@ -667,11 +667,11 @@ void EditorActionsHandler::OnActionRegistrationHook()
 
         m_actionManagerInterface->RegisterCheckableAction(
             EditorMainWindowActionContextIdentifier, "o3de.action.game.playMaximized", actionProperties,
-            [cryEdit = m_cryEditApp]()
+            [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnViewSwitchToGameFullScreen();
             },
-            []()
+            []
             {
                 return GetIEditor()->IsInGameMode();
             }
@@ -682,7 +682,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         m_actionManagerInterface->AddActionToUpdater(GameModeStateChangedUpdaterIdentifier, "o3de.action.game.playMaximized");
     }
 
-    // Simulate
+    // Simulate]
     {
         AzToolsFramework::ActionProperties actionProperties;
         actionProperties.m_name = "Simulate";
@@ -692,11 +692,11 @@ void EditorActionsHandler::OnActionRegistrationHook()
 
         m_actionManagerInterface->RegisterCheckableAction(
             EditorMainWindowActionContextIdentifier, "o3de.action.game.simulate", actionProperties,
-            [cryEdit = m_cryEditApp]()
+            [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnSwitchPhysics();
             },
-            [cryEdit = m_cryEditApp]()
+            [cryEdit = m_cryEditApp]
             {
                 return !cryEdit->IsExportingLegacyData() && GetIEditor()->GetGameEngine()->GetSimulationMode();
             }
@@ -717,7 +717,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
 
         m_actionManagerInterface->RegisterAction(
             EditorMainWindowActionContextIdentifier, "o3de.action.game.exportSelectedObjects", actionProperties,
-            [cryEdit = m_cryEditApp]()
+            [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnExportSelectedObjects();
             }
@@ -736,7 +736,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
 
         m_actionManagerInterface->RegisterAction(
             EditorMainWindowActionContextIdentifier, "o3de.action.game.exportOcclusionMesh", actionProperties,
-            [cryEdit = m_cryEditApp]()
+            [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnFileExportOcclusionMesh();
             }
@@ -754,11 +754,11 @@ void EditorActionsHandler::OnActionRegistrationHook()
             EditorMainWindowActionContextIdentifier,
             "o3de.action.game.movePlayerAndCameraSeparately",
             actionProperties,
-            []()
+            []
             {
                 GetIEditor()->GetGameEngine()->SyncPlayerPosition(!GetIEditor()->GetGameEngine()->IsSyncPlayerPosition());
             },
-            []()
+            []
             {
                 return !GetIEditor()->GetGameEngine()->IsSyncPlayerPosition();
             }
@@ -774,7 +774,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
 
         m_actionManagerInterface->RegisterAction(
             EditorMainWindowActionContextIdentifier, "o3de.action.game.audio.stopAllSounds", actionProperties,
-            []()
+            []
             {
                 LmbrCentral::AudioSystemComponentRequestBus::Broadcast(
                     &LmbrCentral::AudioSystemComponentRequestBus::Events::GlobalStopAllSounds);
@@ -791,7 +791,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
 
         m_actionManagerInterface->RegisterAction(
             EditorMainWindowActionContextIdentifier, "o3de.action.game.audio.refresh", actionProperties,
-            []()
+            []
             {
                 AZStd::string levelName;
                 AzToolsFramework::EditorRequestBus::BroadcastResult(levelName, &AzToolsFramework::EditorRequestBus::Events::GetLevelName);
@@ -820,7 +820,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
             EditorMainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
-            [qtViewPaneManager = m_qtViewPaneManager]()
+            [qtViewPaneManager = m_qtViewPaneManager]
             {
                 qtViewPaneManager->OpenPane(LyViewPane::ErrorReport);
             }
@@ -839,7 +839,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
             EditorMainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
-            [&]()
+            [&]
             {
                 ToolsConfigDialog dlg;
                 if (dlg.exec() == QDialog::Accepted)
@@ -864,7 +864,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
             EditorMainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
-            [this]()
+            [this]
             {
                 m_mainWindow->m_viewPaneManager->RestoreDefaultLayout();
             }
@@ -884,7 +884,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
             EditorMainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
-            [this]()
+            [this]
             {
                 m_mainWindow->SaveLayout();
             }
@@ -904,7 +904,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
             EditorMainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
-            [this]()
+            [this]
             {
                 m_mainWindow->m_viewPaneManager->RestoreDefaultLayout(true);
             }
@@ -925,7 +925,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
             EditorMainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
-            [cryEdit = m_cryEditApp]()
+            [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnDisplayGotoPosition();
             }
@@ -949,7 +949,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
             EditorMainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
-            []()
+            []
             {
                 AzToolsFramework::EditorRequestBus::Broadcast(&AzToolsFramework::EditorRequestBus::Events::GoToSelectedEntitiesInViewports);
             }
@@ -977,14 +977,14 @@ void EditorActionsHandler::OnActionRegistrationHook()
             EditorMainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
-            []()
+            []
             {
                 AzToolsFramework::SetHelpersVisible(!AzToolsFramework::HelpersVisible());
                 AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
                     &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnDrawHelpersChanged,
                     AzToolsFramework::HelpersVisible());
             },
-            []()
+            []
             {
                 return AzToolsFramework::HelpersVisible();
             }
@@ -1008,14 +1008,14 @@ void EditorActionsHandler::OnActionRegistrationHook()
             EditorMainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
-            []()
+            []
             {
                 AzToolsFramework::SetIconsVisible(!AzToolsFramework::IconsVisible());
                 AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
                     &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnIconsVisibilityChanged,
                     AzToolsFramework::IconsVisible());
             },
-            []()
+            []
             {
                 return AzToolsFramework::IconsVisible();
             }
@@ -1039,14 +1039,14 @@ void EditorActionsHandler::OnActionRegistrationHook()
             EditorMainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
-            []()
+            []
             {
                 AzToolsFramework::SetOnlyShowHelpersForSelectedEntities(!AzToolsFramework::OnlyShowHelpersForSelectedEntities());
                 AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
                     &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnOnlyShowHelpersForSelectedEntitiesChanged,
                     AzToolsFramework::OnlyShowHelpersForSelectedEntities());
             },
-            []()
+            []
             {
                 return AzToolsFramework::OnlyShowHelpersForSelectedEntities();
             });
@@ -1067,7 +1067,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
             EditorMainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
-            []()
+            []
             {
                 GetIEditor()->Notify(eNotify_OnStyleChanged);
             }
@@ -1084,7 +1084,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
 
         m_actionManagerInterface->RegisterAction(
             EditorMainWindowActionContextIdentifier, "o3de.action.help.tutorials", actionProperties,
-            [cryEdit = m_cryEditApp]()
+            [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnDocumentationTutorials();
             }
@@ -1099,7 +1099,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
 
         m_actionManagerInterface->RegisterAction(
             EditorMainWindowActionContextIdentifier, "o3de.action.help.documentation.o3de", actionProperties,
-            [cryEdit = m_cryEditApp]()
+            [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnDocumentationO3DE();
             }
@@ -1114,7 +1114,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
 
         m_actionManagerInterface->RegisterAction(
             EditorMainWindowActionContextIdentifier, "o3de.action.help.documentation.gamelift", actionProperties,
-            [cryEdit = m_cryEditApp]()
+            [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnDocumentationGamelift();
             }
@@ -1129,7 +1129,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
 
         m_actionManagerInterface->RegisterAction(
             EditorMainWindowActionContextIdentifier, "o3de.action.help.documentation.releasenotes", actionProperties,
-            [cryEdit = m_cryEditApp]()
+            [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnDocumentationReleaseNotes();
             }
@@ -1144,7 +1144,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
 
         m_actionManagerInterface->RegisterAction(
             EditorMainWindowActionContextIdentifier, "o3de.action.help.resources.gamedevblog", actionProperties,
-            [cryEdit = m_cryEditApp]()
+            [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnDocumentationGameDevBlog();
             }
@@ -1159,7 +1159,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
 
         m_actionManagerInterface->RegisterAction(
             EditorMainWindowActionContextIdentifier, "o3de.action.help.resources.forums", actionProperties,
-            [cryEdit = m_cryEditApp]()
+            [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnDocumentationForums();
             }
@@ -1174,7 +1174,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
 
         m_actionManagerInterface->RegisterAction(
             EditorMainWindowActionContextIdentifier, "o3de.action.help.resources.awssupport", actionProperties,
-            [cryEdit = m_cryEditApp]()
+            [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnDocumentationAWSSupport();
             }
@@ -1189,7 +1189,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
 
         m_actionManagerInterface->RegisterAction(
             EditorMainWindowActionContextIdentifier, "o3de.action.help.abouto3de", actionProperties,
-            [cryEdit = m_cryEditApp]()
+            [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnAppAbout();
             }
@@ -1204,7 +1204,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
 
         m_actionManagerInterface->RegisterAction(
             EditorMainWindowActionContextIdentifier, "o3de.action.help.welcome", actionProperties,
-            [cryEdit = m_cryEditApp]()
+            [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnAppShowWelcomeScreen();
             }
@@ -1223,7 +1223,7 @@ void EditorActionsHandler::OnWidgetActionRegistrationHook()
         auto outcome = m_actionManagerInterface->RegisterWidgetAction(
             "o3de.widgetAction.help.searchDocumentation",
             widgetActionProperties,
-            [&]()
+            [&]
             {
                 return CreateDocsSearchWidget();
             }
@@ -1239,7 +1239,7 @@ void EditorActionsHandler::OnWidgetActionRegistrationHook()
         m_actionManagerInterface->RegisterWidgetAction(
             "o3de.widgetAction.expander",
             widgetActionProperties,
-            [&]()
+            [&]
             {
                 return CreateExpander();
             }
@@ -1255,7 +1255,7 @@ void EditorActionsHandler::OnWidgetActionRegistrationHook()
         m_actionManagerInterface->RegisterWidgetAction(
             "o3de.widgetAction.game.playControlsLabel",
             widgetActionProperties,
-            [&]()
+            [&]
             {
                 return CreatePlayControlsLabel();
             }
@@ -1288,7 +1288,7 @@ void EditorActionsHandler::OnMenuRegistrationHook()
                 menu,
                 &QMenu::aboutToShow,
                 m_mainWindow,
-                [&]()
+                [&]
                 {
                     UpdateRecentFileActions();
                 }
@@ -1608,7 +1608,7 @@ void EditorActionsHandler::OnPostActionManagerRegistrationHook()
     // Ensure the layouts menu is refreshed when the layouts list changes.
     QObject::connect(
         m_mainWindow->m_viewPaneManager, &QtViewPaneManager::savedLayoutsChanged, m_mainWindow,
-        [&]()
+        [&]
         {
             RefreshLayoutActions();
         }
@@ -1619,7 +1619,7 @@ void EditorActionsHandler::OnPostActionManagerRegistrationHook()
     // Ensure the tools menu and toolbar are refreshed when the viewpanes change.
     QObject::connect(
         m_qtViewPaneManager, &QtViewPaneManager::registeredPanesChanged, m_mainWindow,
-        [&]()
+        [&]
         {
             RefreshToolActions();
         }
@@ -1657,7 +1657,7 @@ QWidget* EditorActionsHandler::CreateDocsSearchWidget()
     containerWidget->setContentsMargins(2, 0, 2, 0);
     lineEdit->setPlaceholderText(QObject::tr("Search documentation..."));
 
-    auto searchAction = [lineEdit]()
+    auto searchAction = [lineEdit]
     {
         auto text = lineEdit->text();
         if (text.isEmpty())
@@ -1707,7 +1707,7 @@ void EditorActionsHandler::OnStopPlayInEditor()
     QTimer::singleShot(
         0,
         nullptr,
-        [actionManagerInterface = m_actionManagerInterface]()
+        [actionManagerInterface = m_actionManagerInterface]
         {
             actionManagerInterface->TriggerActionUpdater(GameModeStateChangedUpdaterIdentifier);
         }
@@ -1735,7 +1735,7 @@ void EditorActionsHandler::AfterUndoRedo()
     QTimer::singleShot(
         0,
         nullptr,
-        [actionManagerInterface = m_actionManagerInterface]()
+        [actionManagerInterface = m_actionManagerInterface]
         {
             actionManagerInterface->TriggerActionUpdater(UndoRedoUpdaterIdentifier);
         }
@@ -1748,7 +1748,7 @@ void EditorActionsHandler::OnEndUndo([[maybe_unused]] const char* label, [[maybe
     QTimer::singleShot(
         0,
         nullptr,
-        [actionManagerInterface = m_actionManagerInterface]()
+        [actionManagerInterface = m_actionManagerInterface]
         {
             actionManagerInterface->TriggerActionUpdater(UndoRedoUpdaterIdentifier);
         }
@@ -1844,7 +1844,7 @@ void EditorActionsHandler::RefreshLayoutActions()
                     EditorMainWindowActionContextIdentifier,
                     actionIdentifier,
                     actionProperties,
-                    [layout = layoutName, this]()
+                    [layout = layoutName, this]
                     {
                         m_mainWindow->ViewLoadPaneLayout(layout);
                     }
@@ -1864,7 +1864,7 @@ void EditorActionsHandler::RefreshLayoutActions()
                     EditorMainWindowActionContextIdentifier,
                     actionIdentifier,
                     actionProperties,
-                    [layout = layoutName, this]()
+                    [layout = layoutName, this]
                     {
                         m_mainWindow->ViewSavePaneLayout(layout);
                     }
@@ -1884,7 +1884,7 @@ void EditorActionsHandler::RefreshLayoutActions()
                     EditorMainWindowActionContextIdentifier,
                     actionIdentifier,
                     actionProperties,
-                    [layout = layoutName, this]()
+                    [layout = layoutName, this]
                     {
                         m_mainWindow->ViewRenamePaneLayout(layout);
                     }
@@ -1904,7 +1904,7 @@ void EditorActionsHandler::RefreshLayoutActions()
                     EditorMainWindowActionContextIdentifier,
                     actionIdentifier,
                     actionProperties,
-                    [layout = layoutName, this]()
+                    [layout = layoutName, this]
                     {
                         m_mainWindow->ViewDeletePaneLayout(layout);
                     }
@@ -1995,10 +1995,8 @@ void EditorActionsHandler::RefreshToolActions()
         if (!m_actionManagerInterface->IsActionRegistered(toolActionIdentifier))
         {
             AzToolsFramework::ActionProperties actionProperties;
-            actionProperties.m_name =
-                viewpane.m_options.optionalMenuText.length() > 0
-                ? viewpane.m_options.optionalMenuText.toUtf8().data()
-                : viewpane.m_name.toUtf8().data();
+            actionProperties.m_name = viewpane.m_options.optionalMenuText.length() > 0 ? viewpane.m_options.optionalMenuText.toUtf8().data()
+                                                                                       : viewpane.m_name.toUtf8().data();
             actionProperties.m_category = "Tool";
             actionProperties.m_iconPath = viewpane.m_options.toolbarIcon;
 
@@ -2013,8 +2011,7 @@ void EditorActionsHandler::RefreshToolActions()
                 [viewpaneManager = m_qtViewPaneManager, viewpaneName = viewpane.m_name]() -> bool
                 {
                     return viewpaneManager->IsVisible(viewpaneName);
-                }
-            );
+                });
         }
 
         m_toolActionIdentifiers.push_back(toolActionIdentifier);
@@ -2051,7 +2048,7 @@ void EditorActionsHandler::InitializeViewBookmarkActions()
             EditorMainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
-            [index]()
+            [index]
             {
                 AzToolsFramework::ViewBookmarkInterface* viewBookmarkInterface = AZ::Interface<AzToolsFramework::ViewBookmarkInterface>::Get();
                 if (!viewBookmarkInterface)
@@ -2109,7 +2106,7 @@ void EditorActionsHandler::InitializeViewBookmarkActions()
             EditorMainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
-            [index]()
+            [index]
             {
                 if (auto viewBookmark = AzToolsFramework::StoreViewBookmarkFromActiveCameraAtIndex(index); viewBookmark.has_value())
                 {

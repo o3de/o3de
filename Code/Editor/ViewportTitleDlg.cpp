@@ -235,6 +235,11 @@ void CViewportTitleDlg::SetupViewportInformationMenu()
     m_ui->m_debugInformationMenu->setPopupMode(QToolButton::MenuButtonPopup);
 }
 
+static bool ShouldHelpersBeChecked()
+{
+    return AzToolsFramework::HelpersVisible() || AzToolsFramework::IconsVisible() || AzToolsFramework::OnlyShowHelpersForSelectedEntities();
+}
+
 void CViewportTitleDlg::SetupHelpersButton()
 {
     if (m_helpersMenu == nullptr)
@@ -246,9 +251,7 @@ void CViewportTitleDlg::SetupHelpersButton()
             helperAction, &QAction::triggered, this,
             [this]
             {
-                m_ui->m_helpers->setChecked(
-                    AzToolsFramework::HelpersVisible() || AzToolsFramework::IconsVisible() ||
-                    AzToolsFramework::OnlyShowHelpersForSelectedEntities());
+                m_ui->m_helpers->setChecked(ShouldHelpersBeChecked());
             });
 
         auto iconAction = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::Icons);
@@ -258,9 +261,7 @@ void CViewportTitleDlg::SetupHelpersButton()
             this,
             [this]
             {
-                m_ui->m_helpers->setChecked(
-                    AzToolsFramework::HelpersVisible() || AzToolsFramework::IconsVisible() ||
-                    AzToolsFramework::OnlyShowHelpersForSelectedEntities());
+                m_ui->m_helpers->setChecked(ShouldHelpersBeChecked());
             });
 
         auto onlySelectedAction = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::OnlyShowHelpersForSelectedEntitiesAction);
@@ -270,9 +271,7 @@ void CViewportTitleDlg::SetupHelpersButton()
             this,
             [this]
             {
-                m_ui->m_helpers->setChecked(
-                    AzToolsFramework::HelpersVisible() || AzToolsFramework::IconsVisible() ||
-                    AzToolsFramework::OnlyShowHelpersForSelectedEntities());
+                m_ui->m_helpers->setChecked(ShouldHelpersBeChecked());
             });
 
         m_helpersAction = new QAction(tr("Helpers"), m_helpersMenu);
@@ -322,7 +321,7 @@ void CViewportTitleDlg::SetupHelpersButton()
         m_ui->m_helpers->setPopupMode(QToolButton::InstantPopup);
     }
 
-    m_ui->m_helpers->setChecked(AzToolsFramework::HelpersVisible() || AzToolsFramework::IconsVisible() || AzToolsFramework::OnlyShowHelpersForSelectedEntities());
+    m_ui->m_helpers->setChecked(ShouldHelpersBeChecked());
 }
 
 void CViewportTitleDlg::SetupOverflowMenu()
