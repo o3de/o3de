@@ -47,6 +47,8 @@
 #include <SceneAPI/SceneData/Groups/MeshGroup.h>
 #include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
 #include <SceneAPI/SceneData/Rules/LodRule.h>
+#include <SceneAPI/SceneCore/Events/ManifestMetaInfoBus.h>
+#include <SceneAPI/SceneCore/Containers/Utilities/SceneGraphUtilities.h>
 
 namespace AZ::SceneAPI::Behaviors
 {
@@ -59,6 +61,7 @@ namespace AZ::SceneAPI::Behaviors
     struct PrefabGroupBehavior::ExportEventHandler final
         : public AZ::SceneAPI::SceneCore::ExportingComponent
         , public Events::AssetImportRequestBus::Handler
+        , public Events::ManifestMetaInfoBus::Handler
     {
         using PreExportEventContextFunction = AZStd::function<Events::ProcessingResult(Events::PreExportEventContext&)>;
         PreExportEventContextFunction m_preExportEventContextFunction;
@@ -74,11 +77,13 @@ namespace AZ::SceneAPI::Behaviors
             BindToCall(&ExportEventHandler::PrepareForExport);
             AZ::SceneAPI::SceneCore::ExportingComponent::Activate();
             Events::AssetImportRequestBus::Handler::BusConnect();
+            Events::ManifestMetaInfoBus::Handler::BusConnect();
         }
 
         ~ExportEventHandler()
         {
             m_defaultProceduralPrefab.reset();
+            Events::ManifestMetaInfoBus::Handler::BusDisconnect();
             Events::AssetImportRequestBus::Handler::BusDisconnect();
             AZ::SceneAPI::SceneCore::ExportingComponent::Deactivate();
         }
@@ -95,6 +100,9 @@ namespace AZ::SceneAPI::Behaviors
         {
             result = "PrefabGroupBehavior::ExportEventHandler";
         }
+
+        // ManifestMetaInfoBus
+        void GetCategoryAssignments(AZ::SceneAPI::Events::ManifestMetaInfo::CategoryRegistrationList& categories, const Containers::Scene& scene) override;
     };
 
     Events::ProcessingResult PrefabGroupBehavior::ExportEventHandler::PrepareForAssetLoading(
@@ -110,24 +118,16 @@ namespace AZ::SceneAPI::Behaviors
         return Events::ProcessingResult::Success;
     }
 
+    void PrefabGroupBehavior::ExportEventHandler::GetCategoryAssignments(CategoryRegistrationList& categories, const Containers::Scene&)
+    {
+        categories.emplace_back("Procedural Prefab", SceneData::PrefabGroup::TYPEINFO_Uuid());
+    }
+
     Events::ProcessingResult PrefabGroupBehavior::ExportEventHandler::UpdateManifest(
         Containers::Scene& scene,
         ManifestAction action,
-        RequestingApplication requester)
+        [[maybe_unused]] RequestingApplication requester)
     {
-        if (action == Events::AssetImportRequest::Update)
-        {
-            // ignore constructing a default procedural prefab if some tool or script is attempting
-            // to update the scene manifest
-            return Events::ProcessingResult::Ignored;
-        }
-        else if (action == Events::AssetImportRequest::ConstructDefault && requester == RequestingApplication::Editor)
-        {
-            // ignore constructing a default procedural prefab if the Editor's "Edit Settings..." is being used
-            // the user is trying to assign the source scene asset their own mesh groups
-            return Events::ProcessingResult::Ignored;
-        }
-
         // this toggle makes constructing default mesh groups and a prefab optional
         if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry)
         {
@@ -135,6 +135,56 @@ namespace AZ::SceneAPI::Behaviors
             settingsRegistry->Get(createDefaultPrefab, s_PrefabGroupBehaviorCreateDefaultKey);
             if (createDefaultPrefab == false)
             {
+                return Events::ProcessingResult::Ignored;
+            }
+        }
+
+        if (action == Events::AssetImportRequest::Update)
+        {
+            bool createProceduralPrefab = false;
+            for (auto manifestItemIdx = 0; manifestItemIdx < scene.GetManifest().GetEntryCount(); ++manifestItemIdx)
+            {
+                const auto* prefabGroup = azrtti_cast<const SceneData::PrefabGroup*>(scene.GetManifest().GetValue(manifestItemIdx).get());
+                if (prefabGroup && prefabGroup->GetCreateProceduralPrefab())
+                {
+                    // found a Prefab Group that wants to be created but does not have a DOM yet?
+                    if (prefabGroup->GetPrefabDomRef().has_value() == false)
+                    {
+                        // re-create the Prefab Group to get the DOM
+                        scene.GetManifest().RemoveEntry(prefabGroup);
+                        createProceduralPrefab = true;
+                        break;
+                    }
+                }
+            }
+
+            if (createProceduralPrefab)
+            {
+                // clear out the previous created default mesh groups made for this prefab group
+                AZStd::vector<const DataTypes::IMeshGroup*> proceduralMeshGroupList;
+                for (auto manifestItemIdx = 0; manifestItemIdx < scene.GetManifest().GetEntryCount(); ++manifestItemIdx)
+                {
+                    auto* meshGroup = azrtti_cast<DataTypes::IMeshGroup*>(scene.GetManifest().GetValue(manifestItemIdx).get());
+                    if (meshGroup)
+                    {
+                        const auto proceduralMeshGroupRule =
+                            meshGroup->GetRuleContainer().FindFirstByType<SceneData::ProceduralMeshGroupRule>();
+
+                        if (proceduralMeshGroupRule)
+                        {
+                            proceduralMeshGroupList.push_back(meshGroup);
+                        }
+                    }
+                }
+                while (!proceduralMeshGroupList.empty())
+                {
+                    scene.GetManifest().RemoveEntry(proceduralMeshGroupList.back());
+                    proceduralMeshGroupList.pop_back();
+                }
+            }
+            else
+            {
+                // if a valid prefab group has already been created then do not generate another prefab group
                 return Events::ProcessingResult::Ignored;
             }
         }
@@ -220,7 +270,7 @@ namespace AZ::SceneAPI::Behaviors
         auto templateId = prefabLoaderInterface->LoadTemplateFromString(sb.GetString(), templateName.Native().c_str());
         if (templateId == InvalidTemplateId)
         {
-            AZ_Error("prefab", false, "PrefabGroup(%s) Could not write load template", prefabGroup->GetName().c_str());
+            AZ_Error("prefab", false, "PrefabGroup(%s) Could not load template", prefabGroup->GetName().c_str());
             return {};
         }
 
@@ -324,7 +374,7 @@ namespace AZ::SceneAPI::Behaviors
         for (size_t i = 0; i < manifest.GetEntryCount(); ++i)
         {
             const auto* group = azrtti_cast<const SceneData::PrefabGroup*>(manifest.GetValue(i).get());
-            if (group)
+            if (group && group->GetCreateProceduralPrefab())
             {
                 prefabGroupCollection.push_back(group);
             }

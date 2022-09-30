@@ -12,6 +12,7 @@
 #include <AzCore/std/parallel/atomic.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Public/ViewportContext.h>
+#include <Atom/RPI.Public/ViewGroup.h>
 
 namespace AZ
 {
@@ -38,17 +39,21 @@ namespace AZ
 
             AZ::Name GetDefaultViewportContextName() const override;
             void PushView(const Name& contextName, ViewPtr view) override;
+            void PushView(const Name& contextName, ViewGroupPtr viewGroup) override;
+            
             bool PopView(const Name& contextName, ViewPtr view) override;
+            bool PopView(const Name& context, ViewGroupPtr viewGroup) override;
             ViewPtr GetCurrentView(const Name& contextName) const override;
+            ViewPtr GetCurrentStereoscopicView(const Name& context, ViewType viewType) const;
             ViewportContextPtr GetDefaultViewportContext() const override;
             ViewportContextPtr GetViewportContextByScene(const Scene* scene) const override;
-
+            
         private:
             void RegisterViewportContext(const Name& contextName, ViewportContextPtr viewportContext);
             void UnregisterViewportContext(AzFramework::ViewportId id);
             AzFramework::ViewportId GetViewportIdFromName(const Name& contextName) const;
 
-            using ViewPtrStack = AZStd::deque<ViewPtr>;
+            using ViewPtrStack = AZStd::deque<ViewGroupPtr>;
             struct ViewportContextData
             {
                 AZStd::weak_ptr<ViewportContext> context;
@@ -61,6 +66,9 @@ namespace AZ
 
             ViewPtrStack& GetOrCreateViewStackForContext(const Name& context);
             void UpdateViewForContext(const Name& context);
+            bool EraseView(const Name& context, ViewPtr view);
+            bool EraseViewGroup(const Name& contextName, ViewGroupPtr viewGroup);
+            ViewGroupPtr GetCurrentViewGroup(const Name& contextName);
 
             AZStd::unordered_map<AzFramework::ViewportId, ViewportContextData> m_viewportContexts;
             AZStd::unordered_map<AZ::Name, ViewPtrStack> m_viewportViews;

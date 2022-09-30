@@ -17,6 +17,7 @@
 #include <QApplication>
 #include <QDoubleSpinBox>
 #include <QEvent>
+#include <QGuiApplication>
 #include <QLineEdit>
 #include <QMouseEvent>
 #include <QObject>
@@ -74,7 +75,8 @@ private:
         ProcessingArrowButtons
     };
     int m_xPos = 0;
-    QPointer<QAbstractSpinBox> m_spinBoxChanging;
+    QPointer<QAbstractSpinBox> m_spinBoxChanging = nullptr;
+    QPointer<QScreen> m_activeScreen = nullptr;
     State m_state = Inactive;
     QAbstractSpinBox* m_mouseFocusedSpinBox = nullptr;
     QAbstractSpinBox* m_mouseFocusedSpinBoxSingleClicked = nullptr;
@@ -600,6 +602,8 @@ bool SpinBoxWatcher::handleMouseDragStepping(QAbstractSpinBox* spinBox, QEvent* 
                 m_xPos = mouseEvent->x();
                 emitValueChangeBegan(spinBox);
                 m_state = Dragging;
+                m_activeScreen = QGuiApplication::screenAt(mouseEvent->globalPos());
+                spinBox->grabMouse();
                 spinBox->setProperty(g_spinBoxDraggingName, true);
             }
             setInializeSpinboxValue(spinBox);
@@ -647,13 +651,10 @@ bool SpinBoxWatcher::handleMouseDragStepping(QAbstractSpinBox* spinBox, QEvent* 
 
                 spinBox->stepBy(step);
 
-                // Check if we need to move the mouse cursor away from the edge of the screen. A
-                // native window may not exist.
-                if (QWindow* windowHandle = spinBox->window()->windowHandle())
+                if (m_activeScreen)
                 {
-                    QScreen* screen = windowHandle->screen();
                     const QPoint hotspot = spinBox->cursor().hotSpot();
-                    const QRect screenRect = screen->geometry().adjusted(hotspot.x(), hotspot.y(), -hotspot.x(), -hotspot.y());
+                    const QRect screenRect = m_activeScreen->geometry().adjusted(hotspot.x(), hotspot.y(), -hotspot.x(), -hotspot.y());
                     QPoint screenPos = mouseEvent->screenPos().toPoint();
                     const int xPos = screenPos.x();
                     int newXPos = xPos;
@@ -679,7 +680,7 @@ bool SpinBoxWatcher::handleMouseDragStepping(QAbstractSpinBox* spinBox, QEvent* 
 
                         // Move the mouse cursor away from the edge of the screen.
                         screenPos.setX(newXPos);
-                        QCursor::setPos(screen, screenPos);
+                        QCursor::setPos(m_activeScreen, screenPos);
                     }
                 }
             }
@@ -691,6 +692,7 @@ bool SpinBoxWatcher::handleMouseDragStepping(QAbstractSpinBox* spinBox, QEvent* 
         {
             emitValueChangeEnded(spinBox);
             m_state = Inactive;
+            spinBox->releaseMouse();
             spinBox->setProperty(g_spinBoxDraggingName, false);
             spinBox->update();
             resetCursor(spinBox);
