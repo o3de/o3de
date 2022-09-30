@@ -41,7 +41,6 @@ namespace AzPhysics
         bool m_enableCcdResweep = true; //!< Use a more accurate but more expensive continuous collision detection method.
 
         //! Enables reporting of changed Simulated bodies on the OnSceneActiveSimulatedBodiesEvent event.
-        //! @note There may be a performance penalty for enabling the Active Actor Notification.
         bool m_enableActiveActors = true; 
         bool m_enablePcm = true; //!< Enables the persistent contact manifold algorithm to be used as the narrow phase algorithm.
         bool m_kinematicFiltering = true; //!< Enables filtering between kinematic/kinematic  objects.

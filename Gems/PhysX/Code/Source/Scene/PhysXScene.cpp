@@ -1272,12 +1272,11 @@ namespace PhysX
 
     void PhysXScene::SyncActiveBodyTransform(const AzPhysics::SimulatedBodyHandleList& activeBodyHandles)
     {
-        for (const AzPhysics::SimulatedBodyHandle& bodyHandle : activeBodyHandles)
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
-            if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+            for (const AzPhysics::SimulatedBodyHandle& bodyHandle : activeBodyHandles)
             {
-                AzPhysics::SimulatedBody* simBody = sceneInterface->GetSimulatedBodyFromHandle(m_sceneHandle, bodyHandle);
-                if (simBody)
+                if (AzPhysics::SimulatedBody* simBody = sceneInterface->GetSimulatedBodyFromHandle(m_sceneHandle, bodyHandle))
                 {
                     simBody->SyncTransform(m_currentDeltaTime);
                 }

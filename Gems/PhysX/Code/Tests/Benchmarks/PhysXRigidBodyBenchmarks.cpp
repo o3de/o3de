@@ -36,7 +36,7 @@ namespace PhysX::Benchmarks
         //! Decide if CCD should be on/off for the following tests
         static const bool CCDEnabled = true;
 
-        //! Decide if active actors should be on/off for the following tests
+        //! Decide if active actors should be on/off for the following tests.
         static const bool ActiveActorsEnabled = true;
 
         //! Constant seed to use with random number generation
