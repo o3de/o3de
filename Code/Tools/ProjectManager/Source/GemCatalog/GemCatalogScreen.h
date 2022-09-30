@@ -60,6 +60,7 @@ namespace O3DE::ProjectManager
         void Refresh();
         void UpdateGem(const QModelIndex& modelIndex);
         void UninstallGem(const QModelIndex& modelIndex);
+        void HandleGemCreated(const GemInfo& gemInfo);
 
     protected:
         void hideEvent(QHideEvent* event) override;
