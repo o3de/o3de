@@ -162,6 +162,7 @@ namespace Multiplayer
         }
     }
 
+#if AZ_TRAIT_SERVER_ENABLED
     void LocalPredictionPlayerInputComponentController::HandleSendClientInput
     (
         AzNetworking::IConnection* invokingConnection, 
@@ -363,7 +364,9 @@ namespace Multiplayer
             // So this highly constrains anything a malicious client can do
         }
     }
+#endif
 
+#if AZ_TRAIT_CLIENT_ENABLED
     void LocalPredictionPlayerInputComponentController::HandleSendClientInputCorrection
     (
         AzNetworking::IConnection* invokingConnection,
@@ -445,6 +448,7 @@ namespace Multiplayer
             AZLOG(NET_Prediction, "Replayed InputId=%d", aznumeric_cast<int32_t>(input.GetClientInputId()));
         }
     }
+#endif
 
     void LocalPredictionPlayerInputComponentController::ForceEnableAutonomousUpdate()
     {

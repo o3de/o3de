@@ -135,6 +135,7 @@ namespace Multiplayer
         GetParent().m_physicsRigidBodyComponent->SetKinematic(true);
     }
 
+#if AZ_TRAIT_SERVER_ENABLED
     void NetworkRigidBodyComponentController::HandleSendApplyImpulse
     (
         [[maybe_unused]] AzNetworking::IConnection* invokingConnection,
@@ -147,6 +148,7 @@ namespace Multiplayer
             rigidBody->ApplyLinearImpulseAtWorldPoint(impulse, worldPoint);
         }
     }
+#endif
 
     void NetworkRigidBodyComponentController::OnTransformUpdate()
     {

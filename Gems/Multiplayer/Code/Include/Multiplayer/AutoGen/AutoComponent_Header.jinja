@@ -128,7 +128,7 @@ const {{ Property.attrib['Type'] }}& Get{{ PropertyName }}() const;
 //! {{ PropertyName }} Invocation
 //! {{ Property.attrib['Description'] }}
 //! HandleOn {{ HandleOn }}
-void {{ PropertyName }}({{ ', '.join(paramDefines) }});
+void {{ PropertyName }}([[maybe_unused]] {{ ', [[maybe_unused]] '.join(paramDefines) }});
 {% endmacro %}
 {#
 

@@ -456,6 +456,7 @@ case {{ UpperFirst(Component.attrib['Name']) }}Internal::RemoteProcedure::{{ Upp
         if (paramsSerialized && {{ ValidationFunction }})
         {
 {% if HandleOn == 'Authority' %}
+#if AZ_TRAIT_SERVER_ENABLED
             if (m_controller)
             {
                 AZ_Assert(GetNetBindComponent()->GetNetEntityRole() == Multiplayer::NetEntityRole::Authority, "Entity proxy does not have authority");
@@ -471,7 +472,9 @@ case {{ UpperFirst(Component.attrib['Name']) }}Internal::RemoteProcedure::{{ Upp
                 m_netBindComponent->{{ "GetSend" + InvokeFrom + "To" + HandleOn + "RpcEvent" }}().Signal(message);
 {%            endif %}
             }
+#endif
 {% elif HandleOn == 'Autonomous' %}
+#if AZ_TRAIT_CLIENT_ENABLED
             if (m_controller)
             {
                 AZ_Assert(GetNetBindComponent()->GetNetEntityRole() == Multiplayer::NetEntityRole::Autonomous, "Entity proxy does not have autonomy");
@@ -480,11 +483,14 @@ case {{ UpperFirst(Component.attrib['Name']) }}Internal::RemoteProcedure::{{ Upp
                 m_controller->Get{{ UpperFirst(Property.attrib['Name']) }}Event().Signal({{ PrintRpcParameters('', rpcParamList) }});
 {%            endif %}
             }
+#endif
 {% elif HandleOn == 'Client' %}
+#if AZ_TRAIT_CLIENT_ENABLED
             Handle{{ UpperFirst(Property.attrib['Name']) }}(invokingConnection{{ PrintRpcParameters(', ', rpcParamList) }});
 {%        if Property.attrib['GenerateEventBindings']|booleanTrue == true %}
             m_{{ UpperFirst(Property.attrib['Name']) }}Event.Signal({{ PrintRpcParameters('', rpcParamList) }});
 {%        endif %}
+#endif
 {% endif %}
         }
         else if (paramsSerialized)
@@ -1134,7 +1140,7 @@ m_{{ LowerFirst(Property.attrib['Name']) }} = m_{{ LowerFirst(Property.attrib['N
 {% set NetworkInputsExposedToScriptCount = AutoComponentMacros.GetNetworkInputsExposedToScriptCount(Component) | int %}
 {% set NetworkPropertyCount = Component.findall('NetworkProperty') | len %}
 {% set RpcCount = Component.findall('RemoteProcedure') | len %}
-#include "{{ includeFile }}"
+#include <Source/AutoGen/{{ includeFile }}>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -1627,7 +1633,7 @@ namespace {{ Component.attrib['Namespace'] }}
 {% endcall %}
     }
 
-    {{ DefineNetworkPropertyGets(Component, 'Authority', 'Server', false, ComponentBaseName)|indent(4) -}}
+{{ DefineNetworkPropertyGets(Component, 'Authority', 'Server', false, ComponentBaseName)|indent(4) -}}
 {{ DefineNetworkPropertyGets(Component, 'Authority', 'Client', false, ComponentBaseName)|indent(4) -}}
 {{ DefineNetworkPropertyGets(Component, 'Autonomous', 'Authority', false, ComponentBaseName)|indent(4) -}}
 {{ DefineNetworkPropertyGets(Component, 'Authority', 'Server', true, ComponentBaseName)|indent(4) -}}
@@ -1779,9 +1785,9 @@ namespace {{ Component.attrib['Namespace'] }}
     {
         m_netBindComponent = netBindComponent;
         {{ DefineNetworkPropertyEditConstruction(Component, 'Authority', 'Server', ComponentBaseName)|indent(8) -}}
-{{ DefineNetworkPropertyEditConstruction(Component, 'Authority', 'Client', ComponentBaseName)|indent(8) -}}
-{{ DefineNetworkPropertyEditConstruction(Component, 'Authority', 'Autonomous', ComponentBaseName)|indent(8) -}}
-{{ DefineNetworkPropertyEditConstruction(Component, 'Autonomous', 'Authority', ComponentBaseName)|indent(8) }}
+        {{ DefineNetworkPropertyEditConstruction(Component, 'Authority', 'Client', ComponentBaseName)|indent(8) -}}
+        {{ DefineNetworkPropertyEditConstruction(Component, 'Authority', 'Autonomous', ComponentBaseName)|indent(8) -}}
+        {{ DefineNetworkPropertyEditConstruction(Component, 'Autonomous', 'Authority', ComponentBaseName)|indent(8) }}
 
         // Setup the CurrentRecord
         if (m_currentRecord == nullptr)

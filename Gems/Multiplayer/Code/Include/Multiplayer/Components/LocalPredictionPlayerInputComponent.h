@@ -37,6 +37,7 @@ namespace Multiplayer
         void OnActivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating) override;
         void OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating) override;
 
+#if AZ_TRAIT_SERVER_ENABLED
         void HandleSendClientInput
         (
             AzNetworking::IConnection* invokingConnection,
@@ -49,13 +50,16 @@ namespace Multiplayer
             AzNetworking::IConnection* invokingConnection,
             const Multiplayer::NetworkInputMigrationVector& inputArray
         ) override;
+#endif
 
+#if AZ_TRAIT_CLIENT_ENABLED
         void HandleSendClientInputCorrection
         (
             AzNetworking::IConnection* invokingConnection,
             const Multiplayer::ClientInputId& inputId,
             const AzNetworking::PacketEncodingBuffer& correction
         ) override;
+#endif
 
         //! Forcibly enables ProcessInput to execute on the entity.
         //! Note that this function is quite dangerous and should normally never be used

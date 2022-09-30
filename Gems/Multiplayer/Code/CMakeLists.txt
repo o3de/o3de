@@ -34,6 +34,60 @@ ly_add_target(
         *.AutoPackets.xml,AutoPackets_Source.jinja,$path/$fileprefix.AutoPackets.cpp
         *.AutoPackets.xml,AutoPacketDispatcher_Header.jinja,$path/$fileprefix.AutoPacketDispatcher.h
         *.AutoPackets.xml,AutoPacketDispatcher_Inline.jinja,$path/$fileprefix.AutoPacketDispatcher.inl
+)
+
+ly_add_target(
+    NAME Multiplayer.Client.Static STATIC
+    NAMESPACE Gem
+    FILES_CMAKE
+        multiplayer_files.cmake
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            ${pal_source_dir}
+            Source
+            .
+        PUBLIC
+            Include
+    COMPILE_DEFINITIONS
+        PUBLIC
+            AZ_TRAIT_CLIENT_ENABLED=1
+            AZ_TRAIT_SERVER_ENABLED=0
+    BUILD_DEPENDENCIES
+        PUBLIC
+            Gem::Multiplayer.AutoGen.Static
+        PRIVATE
+            Gem::EMotionFXStaticLib
+            Gem::PhysX.Static
+    AUTOGEN_RULES
+        *.AutoComponent.xml,AutoComponent_Header.jinja,$path/$fileprefix.AutoComponent.h
+        *.AutoComponent.xml,AutoComponent_Source.jinja,$path/$fileprefix.AutoComponent.cpp
+        *.AutoComponent.xml,AutoComponentTypes_Header.jinja,$path/AutoComponentTypes.h
+        *.AutoComponent.xml,AutoComponentTypes_Source.jinja,$path/AutoComponentTypes.cpp
+)
+
+ly_add_target(
+    NAME Multiplayer.Server.Static STATIC
+    NAMESPACE Gem
+    FILES_CMAKE
+        multiplayer_files.cmake
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            ${pal_source_dir}
+            Source
+            .
+        PUBLIC
+            Include
+    COMPILE_DEFINITIONS
+        PUBLIC
+            AZ_TRAIT_CLIENT_ENABLED=0
+            AZ_TRAIT_SERVER_ENABLED=1
+    BUILD_DEPENDENCIES
+        PUBLIC
+            Gem::Multiplayer.AutoGen.Static
+        PRIVATE
+            Gem::EMotionFXStaticLib
+            Gem::PhysX.Static
+    AUTOGEN_RULES
         *.AutoComponent.xml,AutoComponent_Header.jinja,$path/$fileprefix.AutoComponent.h
         *.AutoComponent.xml,AutoComponent_Source.jinja,$path/$fileprefix.AutoComponent.cpp
         *.AutoComponent.xml,AutoComponentTypes_Header.jinja,$path/AutoComponentTypes.h
@@ -52,12 +106,21 @@ ly_add_target(
             .
         PUBLIC
             Include
+    COMPILE_DEFINITIONS
+        PUBLIC
+            AZ_TRAIT_CLIENT_ENABLED=1
+            AZ_TRAIT_SERVER_ENABLED=1
     BUILD_DEPENDENCIES
         PUBLIC
             Gem::Multiplayer.AutoGen.Static
         PRIVATE
             Gem::EMotionFXStaticLib
             Gem::PhysX.Static
+    AUTOGEN_RULES
+        *.AutoComponent.xml,AutoComponent_Header.jinja,$path/$fileprefix.AutoComponent.h
+        *.AutoComponent.xml,AutoComponent_Source.jinja,$path/$fileprefix.AutoComponent.cpp
+        *.AutoComponent.xml,AutoComponentTypes_Header.jinja,$path/AutoComponentTypes.h
+        *.AutoComponent.xml,AutoComponentTypes_Source.jinja,$path/AutoComponentTypes.cpp
 )
 
 ly_add_target(
@@ -74,6 +137,42 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::Multiplayer.Unified.Static
+    RUNTIME_DEPENDENCIES
+        Gem::CertificateManager
+)
+
+ly_add_target(
+    NAME Multiplayer.Client ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAMESPACE Gem
+    FILES_CMAKE
+        multiplayer_shared_files.cmake
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            Source
+            .
+        PUBLIC
+            Include
+    BUILD_DEPENDENCIES
+        PRIVATE
+            Gem::Multiplayer.Client.Static
+    RUNTIME_DEPENDENCIES
+        Gem::CertificateManager
+)
+
+ly_add_target(
+    NAME Multiplayer.Server ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAMESPACE Gem
+    FILES_CMAKE
+        multiplayer_shared_files.cmake
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            Source
+            .
+        PUBLIC
+            Include
+    BUILD_DEPENDENCIES
+        PRIVATE
+            Gem::Multiplayer.Server.Static
     RUNTIME_DEPENDENCIES
         Gem::CertificateManager
 )
@@ -100,9 +199,9 @@ ly_add_target(
             Gem::ImGui.Static
 )
 
-# The  "Multiplayer" target is used by clients and servers, Debug is used only on clients.
-ly_create_alias(NAME Multiplayer.Clients NAMESPACE Gem TARGETS Gem::Multiplayer Gem::Multiplayer.Debug)
-ly_create_alias(NAME Multiplayer.Servers NAMESPACE Gem TARGETS Gem::Multiplayer Gem::Multiplayer.Debug)
+# The "Multiplayer" target is used by clients and servers, Debug is used only on clients.
+ly_create_alias(NAME Multiplayer.Clients NAMESPACE Gem TARGETS Gem::Multiplayer.Client Gem::Multiplayer.Debug)
+ly_create_alias(NAME Multiplayer.Servers NAMESPACE Gem TARGETS Gem::Multiplayer.Server Gem::Multiplayer.Debug)
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
