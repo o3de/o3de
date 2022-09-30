@@ -293,7 +293,7 @@ void ApplicationManagerBase::HandleCommandLineHelp(AZStd::vector<ApplicationMana
         // that includes help output, but right now the AssetProcessor just checks strings
         // via HasSwitch. This means this help output has to be updated manually.
         AZ_TracePrintf("AssetProcessor", "Asset Processor Command Line Flags:\n");
-        for (const auto& command : commandLineInfo)
+        for ([[maybe_unused]] const auto& command : commandLineInfo)
         {
             AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", command.m_switch, command.m_helpText);
         }
