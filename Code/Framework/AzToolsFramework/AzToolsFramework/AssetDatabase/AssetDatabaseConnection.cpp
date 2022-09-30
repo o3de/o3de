@@ -1731,7 +1731,7 @@ namespace AzToolsFramework
             return databaseLocation;
         }
 
-        bool AssetDatabaseConnection::OpenDatabase()
+        bool AssetDatabaseConnection::OpenDatabase(bool ignoreFutureAssetDBVersionError)
         {
             AZ_Assert(!m_databaseConnection, "Already open!");
             AZStd::string assetDatabaseLocation = GetAssetDatabaseFilePath();
@@ -1768,7 +1768,7 @@ namespace AzToolsFramework
             m_validatedTables.clear();
             CreateStatements();
 
-            if (!PostOpenDatabase())
+            if (!PostOpenDatabase(ignoreFutureAssetDBVersionError))
             {
                 CloseDatabase();
                 return false;
@@ -1777,8 +1777,9 @@ namespace AzToolsFramework
             return true;
         }
 
-        bool AssetDatabaseConnection::PostOpenDatabase()
+        bool AssetDatabaseConnection::PostOpenDatabase(bool /*ignoreFutureAssetDBVersionError*/)
         {
+            // AssetDatabase.cpp handles the upgrading and version info, so ignoreFutureAssetDBVersionError isn't checked here.
             if (QueryDatabaseVersion() != CurrentDatabaseVersion())
             {
                 AZ_Error(LOG_NAME, false, "Unable to open database - invalid version - database has %i and we want %i\n", QueryDatabaseVersion(), CurrentDatabaseVersion());
