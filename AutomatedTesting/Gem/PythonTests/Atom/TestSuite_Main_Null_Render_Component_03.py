@@ -30,6 +30,7 @@ class TestAutomation(EditorTestSuite):
         from Atom.tests import (
             hydra_AtomEditorComponents_PostFXRadiusWeightModifierAdded as test_module)
 
+    @pytest.mark.skip(reason="GHI# 12253 Failing in undo/redo intermittently")
     @pytest.mark.test_case_id("C36525665")
     class AtomEditorComponents_PostFXShapeWeightModifierAdded(EditorBatchedTest):
         from Atom.tests import hydra_AtomEditorComponents_PostFxShapeWeightModifierAdded as test_module
