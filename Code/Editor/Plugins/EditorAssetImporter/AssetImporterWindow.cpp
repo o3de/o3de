@@ -240,8 +240,6 @@ void AssetImporterWindow::OpenFileInternal(const AZStd::string& filePath)
         [this, filePath]()
         {
             m_assetImporterDocument->LoadScene(filePath);
-            // OpenFileInternal is called when when the file is saved, or modified outside of this tool.
-            m_rootDisplay->UpdateTimeStamp(m_assetImporterDocument->GetScene()->GetManifestFilename().c_str());
 
             QTimer::singleShot(0, [&]() { UpdateSceneDisplay({}); });
         },
@@ -387,6 +385,7 @@ void AssetImporterWindow::SaveClicked()
     m_assetImporterDocument->SaveScene(output,
         [output, this, isSourceControlActive, card](bool wasSuccessful)
         {
+            m_rootDisplay->UpdateTimeStamp(m_assetImporterDocument->GetScene()->GetManifestFilename().c_str());
             if (output->HasAnyWarnings())
             {
                 AZ_TracePrintf(AZ::SceneAPI::Utilities::WarningWindow, "%s", output->BuildWarningMessage().c_str());
@@ -628,6 +627,9 @@ void AssetImporterWindow::UpdateSceneDisplay(const AZStd::shared_ptr<AZ::SceneAP
     }
     
     m_rootDisplay->SetPythonBuilderText(m_scriptProcessorRuleFilename.c_str());
+
+    // UpdateSceneDisplay gets called both when the file is saved from this tool, as well as when it's modified externally.
+    m_rootDisplay->UpdateTimeStamp(m_assetImporterDocument->GetScene()->GetManifestFilename().c_str());
 }
 
 void AssetImporterWindow::HandleAssetLoadingCompleted()

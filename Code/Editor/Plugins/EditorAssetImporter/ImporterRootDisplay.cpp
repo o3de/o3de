@@ -144,7 +144,7 @@ void ImporterRootDisplay::UpdateTimeStamp(const QString& manifestFilePath)
 {
     const QFileInfo info(manifestFilePath);
     const QDateTime lastModifiedTime(info.lastModified());
-    QString lastModifiedDisplay(lastModifiedTime.toString(Qt::ISODate));
+    QString lastModifiedDisplay(lastModifiedTime.toString(Qt::TextDate));
     ui->m_timeStamp->setVisible(true);
     ui->m_timeStampTitle->setVisible(true);
     ui->m_timeStamp->setText(lastModifiedDisplay);
