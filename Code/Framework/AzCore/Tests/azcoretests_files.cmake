@@ -199,6 +199,7 @@ set(FILES
     AZStd/Atomics.cpp
     AZStd/Any.cpp
     AZStd/Bitset.cpp
+    AZStd/Charconv.cpp
     AZStd/ConceptsTests.cpp
     AZStd/CreateDestroy.cpp
     AZStd/ConcurrentAllocators.cpp
