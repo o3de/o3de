@@ -119,7 +119,7 @@ private:
         SceneSettingsCard::State state);
 
 private slots:
-    void UpdateClicked();
+    void SaveClicked();
     
     void OverlayLayerAdded();
     void OverlayLayerRemoved();

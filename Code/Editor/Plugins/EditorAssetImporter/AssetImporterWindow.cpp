@@ -170,7 +170,7 @@ void AssetImporterWindow::Init()
     //  the Import button & the cancel button, which are handled here by the window.
     m_overlay.reset(aznew AZ::SceneAPI::UI::OverlayWidget(this));
     m_rootDisplay.reset(aznew ImporterRootDisplay(m_serializeContext));
-    connect(m_rootDisplay.data(), &ImporterRootDisplay::UpdateClicked, this, &AssetImporterWindow::UpdateClicked);
+    connect(m_rootDisplay.data(), &ImporterRootDisplay::SaveClicked, this, &AssetImporterWindow::SaveClicked);
 
     connect(m_overlay.data(), &AZ::SceneAPI::UI::OverlayWidget::LayerAdded, this, &AssetImporterWindow::OverlayLayerAdded);
     connect(m_overlay.data(), &AZ::SceneAPI::UI::OverlayWidget::LayerRemoved, this, &AssetImporterWindow::OverlayLayerRemoved);
@@ -240,6 +240,8 @@ void AssetImporterWindow::OpenFileInternal(const AZStd::string& filePath)
         [this, filePath]()
         {
             m_assetImporterDocument->LoadScene(filePath);
+            // OpenFileInternal is called when when the file is saved, or modified outside of this tool.
+            m_rootDisplay->UpdateTimeStamp(m_assetImporterDocument->GetScene()->GetManifestFilename().c_str());
 
             QTimer::singleShot(0, [&]() { UpdateSceneDisplay({}); });
         },
@@ -251,6 +253,7 @@ void AssetImporterWindow::OpenFileInternal(const AZStd::string& filePath)
     QFileInfo fileInfo(filePath.c_str());
     SceneSettingsCard* card = CreateSceneSettingsCard(fileInfo.fileName(), SceneSettingsCard::Layout::Loading, SceneSettingsCard::State::Loading);
     card->SetAndStartProcessingHandler(asyncLoadHandler);
+
 }
 
 SceneSettingsCard* AssetImporterWindow::CreateSceneSettingsCard(
@@ -356,7 +359,7 @@ bool AssetImporterWindow::IsAllowedToChangeSourceFile()
     return false;
 }
 
-void AssetImporterWindow::UpdateClicked()
+void AssetImporterWindow::SaveClicked()
 {
     using namespace AZ::SceneAPI::SceneUI;
 

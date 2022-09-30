@@ -71,8 +71,10 @@ public:
 
     QString GetHeaderFileName() const;
 
+    void UpdateTimeStamp(const QString& manifestFilePath);
+
 signals:
-    void UpdateClicked();
+    void SaveClicked();
 
 private:
     // ManifestMetaInfoBus

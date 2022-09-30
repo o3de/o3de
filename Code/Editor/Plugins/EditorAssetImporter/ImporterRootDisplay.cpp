@@ -17,6 +17,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzQtComponents/Components/Widgets/Text.h>
 
+#include <QDateTime>
 #include <QDesktopServices>
 #include <QDir>
 #include <QFileInfo>
@@ -31,9 +32,10 @@ ImporterRootDisplay::ImporterRootDisplay(AZ::SerializeContext* serializeContext,
     ui->setupUi(this);
     ui->m_manifestWidgetAreaLayout->addWidget(m_manifestWidget.data());
 
-    ui->m_updateButton->setEnabled(false);
-    ui->m_updateButton->setProperty("class", "Primary");
-    
+    ui->m_saveButton->setProperty("class", "Primary");
+
+    ui->m_timeStamp->setVisible(false);
+    ui->m_timeStampTitle->setVisible(false);
     ui->locationLabel->setVisible(false);
     ui->nameLabel->setVisible(false);
 
@@ -43,7 +45,7 @@ ImporterRootDisplay::ImporterRootDisplay(AZ::SerializeContext* serializeContext,
 
     ui->m_fullPathText->SetElideMode(Qt::TextElideMode::ElideMiddle);
 
-    connect(ui->m_updateButton, &QPushButton::clicked, this, &ImporterRootDisplay::UpdateClicked);
+    connect(ui->m_saveButton, &QPushButton::clicked, this, &ImporterRootDisplay::SaveClicked);
 
     ui->m_showInExplorer->setEnabled(false);
 
@@ -102,8 +104,6 @@ void ImporterRootDisplay::SetSceneDisplay(const QString& headerText, const AZStd
     ui->headerFrame->setVisible(true);
 
     HandleSceneWasReset(scene);
-
-    ui->m_updateButton->setEnabled(false);
     m_hasUnsavedChanges = false;
 }
 
@@ -117,12 +117,10 @@ void ImporterRootDisplay::HandleSceneWasReset(const AZStd::shared_ptr<AZ::SceneA
 
     // Resetting the scene doesn't immediately save the changes, so mark this as having unsaved changes.
     m_hasUnsavedChanges = true;
-    ui->m_updateButton->setEnabled(true);
 }
 
 void ImporterRootDisplay::HandleSaveWasSuccessful()
 {
-    ui->m_updateButton->setEnabled(false);
     m_hasUnsavedChanges = false;
 }
 
@@ -138,9 +136,18 @@ void ImporterRootDisplay::ObjectUpdated(const AZ::SceneAPI::Containers::Scene& s
         if (&scene == m_manifestWidget->GetScene().get())
         {
             m_hasUnsavedChanges = true;
-            ui->m_updateButton->setEnabled(true);
         }
     }
+}
+
+void ImporterRootDisplay::UpdateTimeStamp(const QString& manifestFilePath)
+{
+    const QFileInfo info(manifestFilePath);
+    const QDateTime lastModifiedTime(info.lastModified());
+    QString lastModifiedDisplay(lastModifiedTime.toString(Qt::ISODate));
+    ui->m_timeStamp->setVisible(true);
+    ui->m_timeStampTitle->setVisible(true);
+    ui->m_timeStamp->setText(lastModifiedDisplay);
 }
 
 #include <moc_ImporterRootDisplay.cpp>
