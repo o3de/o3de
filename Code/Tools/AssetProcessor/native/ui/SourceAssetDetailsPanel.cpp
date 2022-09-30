@@ -147,7 +147,7 @@ namespace AssetProcessor
                             intermediateAssetSourcePath = sourceEntry.m_sourceName;
                             return true;
                         });
-                    
+
                     AZStd::string sourceIntermediateAssetPath = AssetUtilities::StripAssetPlatformNoCopy(productEntry.m_productName);
 
                     // Qt handles cleanup automatically, setting this as the parent means
@@ -202,7 +202,7 @@ namespace AssetProcessor
         m_ui->outgoingSourceDependenciesTable->setRowCount(0);
         int sourceDependencyCount = 0;
         assetDatabaseConnection.QueryDependsOnSourceBySourceDependency(
-            sourceItemData->m_sourceInfo.m_sourceName.c_str(),
+            sourceItemData->m_sourceInfo.m_sourceGuid,
             nullptr,
             AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_Any,
             [&](AzToolsFramework::AssetDatabase::SourceFileDependencyEntry& sourceFileDependencyEntry)
@@ -211,7 +211,7 @@ namespace AssetProcessor
 
                 // Some outgoing source dependencies are wildcard, or unresolved paths.
                 // Only add a button to link to rows that actually exist.
-                
+
                 AzToolsFramework::AssetDatabase::SourceDatabaseEntry dependencyDetails;
                 assetDatabaseConnection.QuerySourceBySourceName(
                     sourceFileDependencyEntry.m_dependsOnSource.c_str(),
@@ -256,11 +256,19 @@ namespace AssetProcessor
         int sourceDependencyCount = 0;
         assetDatabaseConnection.QuerySourceDependencyByDependsOnSource(
             sourceItemData->m_sourceInfo.m_sourceName.c_str(),
-            nullptr,
             AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_Any,
             [&](AzToolsFramework::AssetDatabase::SourceFileDependencyEntry& sourceFileDependencyEntry)
             {
                 m_ui->incomingSourceDependenciesTable->insertRow(sourceDependencyCount);
+
+                AZStd::string sourceName;
+                assetDatabaseConnection.QuerySourceBySourceGuid(
+                    sourceFileDependencyEntry.m_sourceGuid,
+                    [&sourceName](const auto& entry)
+                    {
+                        sourceName = entry.m_sourceName;
+                        return false;
+                    });
 
                 // Qt handles cleanup automatically, setting this as the parent means
                 // when this panel is torn down, these widgets will be destroyed.
@@ -268,13 +276,13 @@ namespace AssetProcessor
                 connect(
                     rowGoToButton->m_ui->goToPushButton,
                     &QPushButton::clicked,
-                    [=]
+                    [this, sourceName]
                     {
-                        GoToSource(sourceFileDependencyEntry.m_source);
+                        GoToSource(sourceName);
                     });
                 m_ui->incomingSourceDependenciesTable->setCellWidget(sourceDependencyCount, 0, rowGoToButton);
 
-                QTableWidgetItem* rowName = new QTableWidgetItem(sourceFileDependencyEntry.m_source.c_str());
+                QTableWidgetItem* rowName = new QTableWidgetItem(QString(sourceName.c_str()));
                 m_ui->incomingSourceDependenciesTable->setItem(sourceDependencyCount, 1, rowName);
 
                 ++sourceDependencyCount;

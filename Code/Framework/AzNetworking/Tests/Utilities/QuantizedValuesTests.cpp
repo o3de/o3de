@@ -9,6 +9,7 @@
 #include <AzNetworking/Utilities/QuantizedValues.h>
 #include <AzNetworking/Serialization/NetworkInputSerializer.h>
 #include <AzNetworking/Serialization/NetworkOutputSerializer.h>
+#include <AzCore/std/limits.h>
 #include <AzCore/UnitTest/TestTypes.h>
 
 namespace UnitTest
@@ -210,8 +211,8 @@ namespace UnitTest
     void TestQuantizedValuesHelper24bitRange()
     {
         // This gives us a hash sensitivity of around 1/128th of a unit, and will detect errors within a range of -16,777,216 to +16,777,216
-        static const int32_t FloatHashMinValue = (INT_MIN >> 7);
-        static const int32_t FloatHashMaxValue = (INT_MAX >> 7);
+        static constexpr int32_t FloatHashMinValue = (AZStd::numeric_limits<int>::min() >> 7);
+        static constexpr int32_t FloatHashMaxValue = (AZStd::numeric_limits<int>::max() >> 7);
 
         AzNetworking::QuantizedValues<NUM_ELEMENTS, NUM_BYTES, FloatHashMinValue, FloatHashMaxValue> testIn, testOut;
 

@@ -228,12 +228,17 @@ namespace O3DE::ProjectManager
                 AZ::Outcome<GemInfo, void> gemInfoResult = PythonBindingsInterface::Get()->GetGemInfo(directory);
                 if (gemInfoResult)
                 {
-                    m_gemModel->AddGem(gemInfoResult.GetValue<GemInfo>());
-                    m_gemModel->UpdateGemDependencies();
-                    m_proxyModel->sort(/*column=*/0);
+                    AddToGemModel(gemInfoResult.GetValue<GemInfo>());
                 }
             }
         }
+    }
+
+    void GemCatalogScreen::AddToGemModel(const GemInfo& gemInfo)
+    {
+        m_gemModel->AddGem(gemInfo);
+        m_gemModel->UpdateGemDependencies();
+        m_proxyModel->sort(/*column=*/0);
     }
 
     void GemCatalogScreen::Refresh()
@@ -353,13 +358,19 @@ namespace O3DE::ProjectManager
             }
             notification += (added ? tr(" activated") : tr(" deactivated"));
 
-            AzQtComponents::ToastConfiguration toastConfiguration(AzQtComponents::ToastType::Custom, notification, "");
-            toastConfiguration.m_customIconImage = ":/gem.svg";
-            toastConfiguration.m_borderRadius = 4;
-            toastConfiguration.m_duration = AZStd::chrono::milliseconds(3000);
-            m_notificationsView->ShowToastNotification(toastConfiguration);
+            ShowStandardToastNotification(notification);
         }
     }
+
+    void GemCatalogScreen::ShowStandardToastNotification(const QString& notification)
+    {
+        AzQtComponents::ToastConfiguration toastConfiguration(AzQtComponents::ToastType::Custom, notification, "");
+        toastConfiguration.m_customIconImage = ":/gem.svg";
+        toastConfiguration.m_borderRadius = 4;
+        toastConfiguration.m_duration = AZStd::chrono::milliseconds(3000);
+        m_notificationsView->ShowToastNotification(toastConfiguration);
+    }
+    
 
     void GemCatalogScreen::OnDependencyGemStatusChanged(const QString& gemName)
     {

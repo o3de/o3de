@@ -388,7 +388,7 @@ namespace AZ
             return !AZ::RHI::IsNullRHI();
         }
 
-        uint32_t FrameCaptureSystemComponent::CaptureScreenshotForWindow(const AZStd::string& filePath, AzFramework::NativeWindowHandle windowHandle)
+        FrameCaptureId FrameCaptureSystemComponent::CaptureScreenshotForWindow(const AZStd::string& filePath, AzFramework::NativeWindowHandle windowHandle)
         {
             if (!CanCapture())
             {
@@ -434,7 +434,7 @@ namespace AZ
             return captureHandle.GetCaptureStateIndex();
         }
 
-        uint32_t FrameCaptureSystemComponent::CaptureScreenshot(const AZStd::string& filePath)
+        FrameCaptureId FrameCaptureSystemComponent::CaptureScreenshot(const AZStd::string& filePath)
         {
             AzFramework::NativeWindowHandle windowHandle = AZ::RPI::ViewportContextRequests::Get()->GetDefaultViewportContext()->GetWindowHandle();
             if (windowHandle)
@@ -445,7 +445,7 @@ namespace AZ
             return InvalidFrameCaptureId;
         }
 
-        uint32_t FrameCaptureSystemComponent::CaptureScreenshotWithPreview(const AZStd::string& outputFilePath)
+        FrameCaptureId FrameCaptureSystemComponent::CaptureScreenshotWithPreview(const AZStd::string& outputFilePath)
         {
             if (!CanCapture())
             {
@@ -573,7 +573,7 @@ namespace AZ
             return CaptureHandle::Null();
         }
 
-        uint32_t FrameCaptureSystemComponent::CapturePassAttachment(
+        FrameCaptureId FrameCaptureSystemComponent::CapturePassAttachment(
             const AZStd::vector<AZStd::string>& passHierarchy,
             const AZStd::string& slot,
             const AZStd::string& outputFilePath,
@@ -594,7 +594,7 @@ namespace AZ
             return InvalidFrameCaptureId;
         }
 
-        uint32_t FrameCaptureSystemComponent::CapturePassAttachmentWithCallback(
+        FrameCaptureId FrameCaptureSystemComponent::CapturePassAttachmentWithCallback(
             const AZStd::vector<AZStd::string>& passHierarchy,
             const AZStd::string& slotName,
             RPI::AttachmentReadback::CallbackFunction callback,

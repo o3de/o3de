@@ -18,7 +18,7 @@ namespace AZ::Debug
         : public UnitTest::AllocatorsFixture
     {
     public:
-        inline static constexpr EventNameHash MessageId = EventNameHash("Message");
+        inline static constexpr Metrics::EventNameHash MessageId = Metrics::EventNameHash("Message");
         inline static constexpr const char* LogFileName = "TestLog.azel";
     };
 
@@ -31,7 +31,7 @@ namespace AZ::Debug
         AZ::Test::ScopedAutoTempDirectory tempDir;
         auto logFilePath = tempDir.Resolve(LogFileName);
 
-        auto logger = Interface<IEventLogger>::Get();
+        auto logger = Interface<Metrics::IEventLogger>::Get();
         ASSERT_NE(logger, nullptr);
 
         realLogger.Start(logFilePath.c_str());
@@ -41,7 +41,7 @@ namespace AZ::Debug
         EventLogReader reader;
         ASSERT_TRUE(reader.ReadLog(logFilePath.c_str()));
 
-        EXPECT_EQ(reader.GetEventName(), PrologEventHash);
+        EXPECT_EQ(reader.GetEventName(), Metrics::PrologEventHash);
 
         ASSERT_TRUE(reader.Next());
         EXPECT_EQ(reader.GetEventName(), MessageId);
@@ -63,7 +63,7 @@ namespace AZ::Debug
         AZ::Test::ScopedAutoTempDirectory tempDir;
         auto logFilePath = tempDir.Resolve(LogFileName);
 
-        auto logger = Interface<IEventLogger>::Get();
+        auto logger = Interface<Metrics::IEventLogger>::Get();
         ASSERT_NE(logger, nullptr);
 
         realLogger.Start(logFilePath.c_str());
@@ -76,7 +76,7 @@ namespace AZ::Debug
         EventLogReader reader;
         ASSERT_TRUE(reader.ReadLog(logFilePath.c_str()));
 
-        EXPECT_EQ(reader.GetEventName(), PrologEventHash);
+        EXPECT_EQ(reader.GetEventName(), Metrics::PrologEventHash);
 
         for (auto message : messages)
         {
@@ -119,7 +119,7 @@ namespace AZ::Debug
                     AZStd::this_thread::yield();
                 }
 
-                auto logger = Interface<IEventLogger>::Get();
+                auto logger = Interface<Metrics::IEventLogger>::Get();
                 ASSERT_NE(logger, nullptr);
 
                 for (auto message : messages)
@@ -143,7 +143,7 @@ namespace AZ::Debug
         uint64_t threadIds[totalThreads]{ 0 };
         for (size_t threadIndex = 0; threadIndex < totalThreads; ++threadIndex)
         {
-            EXPECT_EQ(reader.GetEventName(), PrologEventHash);
+            EXPECT_EQ(reader.GetEventName(), Metrics::PrologEventHash);
             threadIds[threadIndex] = reader.GetThreadId();
 
             for (size_t otherThreadIndex = 0; otherThreadIndex < threadIndex; ++otherThreadIndex)
@@ -164,7 +164,7 @@ namespace AZ::Debug
 
     TEST_F(LocalFileEventLoggerTest, RecordEvent_BufferGetsWrittenWhenFull_WrittenToLog)
     {
-        constexpr EventNameHash largeBlockId = EventNameHash("Large block");
+        constexpr Metrics::EventNameHash largeBlockId = Metrics::EventNameHash("Large block");
         constexpr size_t largeBlockSizeOffset = 14;
         constexpr size_t largeBlockSize = AZStd::numeric_limits<uint16_t>::max() - largeBlockSizeOffset;
         struct LargeBlock
@@ -179,7 +179,7 @@ namespace AZ::Debug
         AZ::Test::ScopedAutoTempDirectory tempDir;
         auto logFilePath = tempDir.Resolve(LogFileName);
 
-        auto logger = Interface<IEventLogger>::Get();
+        auto logger = Interface<Metrics::IEventLogger>::Get();
         ASSERT_NE(logger, nullptr);
 
         realLogger.Start(logFilePath.c_str());
@@ -192,14 +192,14 @@ namespace AZ::Debug
 
         EventLogReader reader;
         ASSERT_TRUE(reader.ReadLog(logFilePath.c_str()));
-        EXPECT_EQ(reader.GetEventName(), PrologEventHash);
+        EXPECT_EQ(reader.GetEventName(), Metrics::PrologEventHash);
 
         ASSERT_TRUE(reader.Next());
         EXPECT_EQ(reader.GetEventName(), largeBlockId);
         EXPECT_EQ(reader.GetEventSize(), largeBlockSize);
 
         ASSERT_TRUE(reader.Next());
-        EXPECT_EQ(reader.GetEventName(), PrologEventHash); // Another prolog as a new cache block started.
+        EXPECT_EQ(reader.GetEventName(), Metrics::PrologEventHash); // Another prolog as a new cache block started.
 
         ASSERT_TRUE(reader.Next());
         EXPECT_EQ(reader.GetEventName(), MessageId);
@@ -241,7 +241,7 @@ namespace AZ::Debug
                     AZStd::this_thread::yield();
                 }
 
-                auto logger = Interface<IEventLogger>::Get();
+                auto logger = Interface<Metrics::IEventLogger>::Get();
                 ASSERT_NE(logger, nullptr);
 
                 for (size_t recordCount = 0; recordCount < recordsPerThreadCount; ++recordCount)

@@ -58,17 +58,31 @@ namespace AZ
             AZStd::unordered_set<AZ::RPI::View*> allSceneViews;
             for (const AZ::EntityId& cameraEntityId : cameraEntityList)
             {
-                // Get the view pointer associated to each camera entity
-                AZ::RPI::ViewPtr view = nullptr;
-                AZ::RPI::ViewProviderBus::EventResult(
-                    view,
-                    cameraEntityId,
-                    &AZ::RPI::ViewProvider::GetView
-                );
 
-                if (view != nullptr)
+                for (uint32_t i = 0; i < AZ::RPI::MaxViewTypes; i++)
                 {
-                    allSceneViews.insert(view.get());
+                    if (i == AZ::RPI::DefaultViewType)
+                    {
+                        // Get the view pointer associated to each camera entity
+                        AZ::RPI::ViewPtr view = nullptr;
+                        AZ::RPI::ViewProviderBus::EventResult(view, cameraEntityId, &AZ::RPI::ViewProvider::GetView);
+
+                        if (view != nullptr)
+                        {
+                            allSceneViews.insert(view.get());
+                        }
+                    }
+                    else
+                    {
+                        AZ::RPI::ViewPtr stereoscopicView = nullptr;
+                        AZ::RPI::ViewProviderBus::EventResult(
+                            stereoscopicView, cameraEntityId, &AZ::RPI::ViewProvider::GetStereoscopicView, static_cast<AZ::RPI::ViewType>(i));
+
+                        if (stereoscopicView != nullptr)
+                        {
+                            allSceneViews.insert(stereoscopicView.get());
+                        }
+                    }
                 }
             }
 
@@ -136,7 +150,7 @@ namespace AZ
 
         void PostFxLayerComponentController::OnEntityTagRemoved(const AZ::EntityId& entityId)
         {
-            m_taggedCameraEntities.erase(entityId);
+            m_taggedCameraEntities.erase(entityId);  
         }
 
         void PostFxLayerComponentController::OnCameraAdded(const AZ::EntityId& cameraId)

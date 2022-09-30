@@ -38,7 +38,9 @@
         <activity
             android:name="${ANDROID_PROJECT_ACTIVITY}"
             android:screenOrientation="${ANDROID_SCREEN_ORIENTATION}"
-            android:configChanges="${ANDROID_CONFIG_CHANGES}" >
+            android:configChanges="${ANDROID_CONFIG_CHANGES}"
+            android:exported="true" > <!-- needed when an intent-filter is used
+            https://developer.android.com/guide/topics/manifest/activity-element#exported  -->
 
             <!-- Multi-window properties, following line can be blank if not specified -->
             ${ANDROID_MULTI_WINDOW_PROPERTIES}

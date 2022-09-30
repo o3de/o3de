@@ -60,14 +60,14 @@ namespace AZ
             m_swapChainsData.clear();
         }
 
-        const RHI::AttachmentId& WindowContext::GetSwapChainAttachmentId(SwapChainMode swapChainMode) const
+        const RHI::AttachmentId& WindowContext::GetSwapChainAttachmentId(ViewType viewType) const
         {   
-            return GetSwapChain(swapChainMode)->GetAttachmentId();
+            return GetSwapChain(viewType)->GetAttachmentId();
         }
 
-        const RHI::Ptr<RHI::SwapChain>& WindowContext::GetSwapChain(SwapChainMode swapChainMode) const
+        const RHI::Ptr<RHI::SwapChain>& WindowContext::GetSwapChain(ViewType viewType) const
         {
-            uint32_t swapChainIndex = static_cast<uint32_t>(swapChainMode);
+            uint32_t swapChainIndex = static_cast<uint32_t>(viewType);
             AZ_Assert(swapChainIndex < GetSwapChainsSize(), "Swapchain with index %i does not exist", swapChainIndex);
             return m_swapChainsData[swapChainIndex].m_swapChain;
         }
@@ -77,23 +77,23 @@ namespace AZ
             return aznumeric_cast<uint32_t>(m_swapChainsData.size());
         }
 
-        const RHI::Viewport& WindowContext::GetViewport(SwapChainMode swapChainMode) const
+        const RHI::Viewport& WindowContext::GetViewport(ViewType viewType) const
         {
-            uint32_t swapChainIndex = static_cast<uint32_t>(swapChainMode);
+            uint32_t swapChainIndex = static_cast<uint32_t>(viewType);
             AZ_Assert(swapChainIndex < GetSwapChainsSize(), "Swapchain does not exist");
             return m_swapChainsData[swapChainIndex].m_viewport;     
         }
 
-        const RHI::Scissor& WindowContext::GetScissor(SwapChainMode swapChainMode) const
+        const RHI::Scissor& WindowContext::GetScissor(ViewType viewType) const
         {
-            uint32_t swapChainIndex = static_cast<uint32_t>(swapChainMode);
+            uint32_t swapChainIndex = static_cast<uint32_t>(viewType);
             AZ_Assert(swapChainIndex < GetSwapChainsSize(), "Swapchain does not exist");
             return m_swapChainsData[swapChainIndex].m_scissor;  
         }
 
         void WindowContext::OnWindowResized(uint32_t width, uint32_t height)
         {
-            RHI::Ptr<RHI::SwapChain> defaultSwapChain = GetSwapChain(SwapChainMode::Default);
+            RHI::Ptr<RHI::SwapChain> defaultSwapChain = GetSwapChain(ViewType::Default);
             const AZ::RHI::SwapChainDimensions& currentDimensions = defaultSwapChain->GetDescriptor().m_dimensions;
             if (width != currentDimensions.m_imageWidth || height != currentDimensions.m_imageHeight)
             {
@@ -123,7 +123,7 @@ namespace AZ
 
         void WindowContext::OnVsyncIntervalChanged(uint32_t interval)
         {
-            RHI::Ptr<RHI::SwapChain> defaultSwapChain = GetSwapChain(SwapChainMode::Default);
+            RHI::Ptr<RHI::SwapChain> defaultSwapChain = GetSwapChain(ViewType::Default);
             if (defaultSwapChain->GetDescriptor().m_verticalSyncInterval != interval)
             {
                 defaultSwapChain->SetVerticalSyncInterval(interval);
@@ -132,19 +132,19 @@ namespace AZ
 
         bool WindowContext::IsExclusiveFullScreenPreferred() const
         {
-            RHI::Ptr<RHI::SwapChain> defaultSwapChain = GetSwapChain(SwapChainMode::Default);
+            RHI::Ptr<RHI::SwapChain> defaultSwapChain = GetSwapChain(ViewType::Default);
             return defaultSwapChain->IsExclusiveFullScreenPreferred();
         }
 
         bool WindowContext::GetExclusiveFullScreenState() const
         {
-            RHI::Ptr<RHI::SwapChain> defaultSwapChain = GetSwapChain(SwapChainMode::Default);
+            RHI::Ptr<RHI::SwapChain> defaultSwapChain = GetSwapChain(ViewType::Default);
             return defaultSwapChain->GetExclusiveFullScreenState();
         }
 
         bool WindowContext::SetExclusiveFullScreenState(bool fullScreenState)
         {
-            RHI::Ptr<RHI::SwapChain> defaultSwapChain = GetSwapChain(SwapChainMode::Default);
+            RHI::Ptr<RHI::SwapChain> defaultSwapChain = GetSwapChain(ViewType::Default);
             return defaultSwapChain->SetExclusiveFullScreenState(fullScreenState);
         }
 
@@ -188,7 +188,7 @@ namespace AZ
             scissor.m_maxX = static_cast<int16_t>(descriptor.m_dimensions.m_imageWidth);
             scissor.m_maxY = static_cast<int16_t>(descriptor.m_dimensions.m_imageHeight);
 
-            uint32_t defaultSwapChainIndex = static_cast<uint32_t>(SwapChainMode::Default);
+            uint32_t defaultSwapChainIndex = static_cast<uint32_t>(DefaultViewType);
             if (defaultSwapChainIndex < m_swapChainsData.size())
             {
                 m_swapChainsData[defaultSwapChainIndex].m_swapChain = swapChain;
@@ -231,8 +231,7 @@ namespace AZ
                     xrScissor.m_maxX = static_cast<int16_t>(xrDescriptor.m_dimensions.m_imageWidth);
                     xrScissor.m_maxY = static_cast<int16_t>(xrDescriptor.m_dimensions.m_imageHeight);
 
-                    uint32_t xrSwapChainIndex =
-                        i == 0 ? static_cast<uint32_t>(SwapChainMode::XrLeft) : static_cast<uint32_t>(SwapChainMode::XrRight);
+                    uint32_t xrSwapChainIndex = i == 0 ? static_cast<uint32_t>(ViewType::XrLeft) : static_cast<uint32_t>(ViewType::XrRight);
                     if (xrSwapChainIndex < m_swapChainsData.size())
                     {
                         m_swapChainsData[xrSwapChainIndex].m_swapChain = xrSwapChain;
@@ -249,13 +248,13 @@ namespace AZ
 
         void WindowContext::DestroyDefaultSwapChain()
         {
-            DestroySwapChain(static_cast<uint32_t>(SwapChainMode::Default));
+            DestroySwapChain(DefaultViewType);
         }
 
         void WindowContext::DestroyXRSwapChains()
         {
-            DestroySwapChain(static_cast<uint32_t>(SwapChainMode::XrLeft));
-            DestroySwapChain(static_cast<uint32_t>(SwapChainMode::XrRight));
+            DestroySwapChain(static_cast<uint32_t>(ViewType::XrLeft));
+            DestroySwapChain(static_cast<uint32_t>(ViewType::XrRight));
         }
 
         void WindowContext::DestroySwapChain(uint32_t swapChainIndex)
@@ -268,8 +267,8 @@ namespace AZ
 
         void WindowContext::FillWindowState(const uint32_t width, const uint32_t height)
         {
-            auto& defaultViewport = m_swapChainsData[static_cast<uint32_t>(SwapChainMode::Default)].m_viewport;
-            auto& defaultScissor = m_swapChainsData[static_cast<uint32_t>(SwapChainMode::Default)].m_scissor;
+            auto& defaultViewport = m_swapChainsData[DefaultViewType].m_viewport;
+            auto& defaultScissor = m_swapChainsData[DefaultViewType].m_scissor;
 
             defaultViewport.m_minX = 0;
             defaultViewport.m_minY = 0;

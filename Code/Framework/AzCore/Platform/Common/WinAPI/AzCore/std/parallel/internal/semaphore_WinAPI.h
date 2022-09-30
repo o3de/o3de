@@ -41,7 +41,7 @@ namespace AZStd
     template <class Rep, class Period>
     AZ_FORCE_INLINE bool semaphore::try_acquire_for(const chrono::duration<Rep, Period>& rel_time)
     {
-        chrono::milliseconds durationMilliseconds = rel_time;
+        chrono::milliseconds durationMilliseconds = AZStd::chrono::duration_cast<chrono::milliseconds>(rel_time);
         DWORD millisWinAPI = static_cast<DWORD>(durationMilliseconds.count());
         DWORD resultCode = WaitForSingleObject(m_semaphore, millisWinAPI);
         return (resultCode == AZ_WAIT_OBJECT_0);
@@ -50,7 +50,7 @@ namespace AZStd
     template <class Clock, class Duration>
     AZ_FORCE_INLINE bool semaphore::try_acquire_until(const chrono::time_point<Clock, Duration>& abs_time)
     {
-        auto timeNow = AZStd::chrono::system_clock::now();
+        auto timeNow = AZStd::chrono::steady_clock::now();
         if (timeNow < abs_time)
         {
             chrono::milliseconds timeToTry = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(abs_time - timeNow);

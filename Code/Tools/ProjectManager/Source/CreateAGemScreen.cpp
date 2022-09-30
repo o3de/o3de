@@ -214,7 +214,7 @@ namespace O3DE::ProjectManager
 
         m_gemDisplayName = new FormLineEditWidget(
             tr("Gem Display name*"), "", tr("The name displayed in the Gem Catalog"), tr("A gem display name is required."));
-        m_gemDisplayName->lineEdit()->setValidator(new QRegularExpressionValidator(QRegularExpression("\\w+"), this));
+        m_gemDisplayName->lineEdit()->setValidator(new QRegularExpressionValidator(QRegularExpression("( |\\w)+"), this));
         gemDetailsLayout->addWidget(m_gemDisplayName);
 
         m_gemSummary = new FormLineEditWidget(tr("Gem Summary"), "", tr("A short description of your Gem"), "");
@@ -400,7 +400,7 @@ namespace O3DE::ProjectManager
                 auto result = PythonBindingsInterface::Get()->CreateGem(templateLocation, m_createGemInfo);
                 if (result.IsSuccess())
                 {
-                    emit CreateButtonPressed();
+                    emit CreateButtonPressed(result.GetValue<GemInfo>());
                 }
                 else
                 {

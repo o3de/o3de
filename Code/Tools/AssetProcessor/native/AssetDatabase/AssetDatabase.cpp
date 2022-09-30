@@ -116,7 +116,7 @@ namespace AssetProcessor
             "CREATE TABLE IF NOT EXISTS SourceDependency("
             "    SourceDependencyID            INTEGER PRIMARY KEY AUTOINCREMENT, "
             "    BuilderGuid                   BLOB NOT NULL, "
-            "    Source                        TEXT NOT NULL collate nocase, "
+            "    SourceGuid                    BLOB NOT NULL, "
             "    DependsOnSource               TEXT NOT NULL collate nocase, "
             "    SubIds                        TEXT NOT NULL collate nocase, "
             "    TypeOfDependency              INTEGER NOT NULL DEFAULT 0,"
@@ -181,7 +181,7 @@ namespace AssetProcessor
             "CREATE INDEX IF NOT EXISTS DependsOnSource_SourceDependency ON SourceDependency (DependsOnSource);";
         static const char* CREATEINDEX_BUILDERGUID_SOURCE_SOURCEDEPENDENCY = "AssetProcesser::CreateIndexBuilderGuid_Source_SourceDependency";
         static const char* CREATEINDEX_BUILDERGUID_SOURCE_SOURCEDEPENDENCY_STATEMENT =
-            "CREATE INDEX IF NOT EXISTS BuilderGuid_Source_SourceDependency ON SourceDependency (BuilderGuid, Source);";
+            "CREATE INDEX IF NOT EXISTS BuilderGuid_Source_SourceDependency ON SourceDependency (BuilderGuid, SourceGuid);";
         static const char* CREATEINDEX_TYPEOFDEPENDENCY_SOURCEDEPENDENCY = "AssetProcessor::CreateIndexTypeOfDependency_SourceDependency";
         static const char* CREATEINDEX_TYPEOFDEPENDENCY_SOURCEDEPENDENCY_STATEMENT =
             "CREATE INDEX IF NOT EXISTS TypeOfDependency_SourceDependency ON SourceDependency (TypeOfDependency);";
@@ -481,11 +481,11 @@ namespace AssetProcessor
 
         static const char* INSERT_SOURCE_DEPENDENCY = "AssetProcessor::InsertSourceDependency";
         static const char* INSERT_SOURCE_DEPENDENCY_STATEMENT =
-            "INSERT INTO SourceDependency (BuilderGuid, Source, DependsOnSource, TypeOfDependency, FromAssetId, SubIds) "
+            "INSERT INTO SourceDependency (BuilderGuid, SourceGuid, DependsOnSource, TypeOfDependency, FromAssetId, SubIds) "
             "VALUES (:builderGuid, :source, :dependsOnSource, :typeofdependency, :fromAssetId, :subIds);";
         static const auto s_InsertSourceDependencyQuery = MakeSqlQuery(INSERT_SOURCE_DEPENDENCY, INSERT_SOURCE_DEPENDENCY_STATEMENT, LOG_NAME,
             SqlParam<AZ::Uuid>(":builderGuid"),
-            SqlParam<const char*>(":source"),
+            SqlParam<AZ::Uuid>(":source"),
             SqlParam<const char*>(":dependsOnSource"),
             SqlParam<AZ::s32>(":typeofdependency"),
             SqlParam<AZ::s32>(":fromAssetId"),
@@ -810,6 +810,9 @@ namespace AssetProcessor
             "ALTER TABLE Products "
             "ADD Flags INTEGER NOT NULL DEFAULT 1;";
 
+        static const char* CREATEINDEX_SOURCEDEPENDENCY_SOURCEGUID = "AssetProcessor::CreateIndexSourceGuidSourceDependency";
+        static const char* CREATEINDEX_SOURCEDEPENDENCY_SOURCEGUID_STATEMENT =
+            "CREATE INDEX IF NOT EXISTS SourceGuid_SourceDependency ON SourceDependency (SourceGuid);";
     }
 
     AssetDatabaseConnection::AssetDatabaseConnection()
@@ -1117,8 +1120,17 @@ namespace AssetProcessor
             if (m_databaseConnection->ExecuteOneOffStatement(CREATE_STATS_TABLE))
             {
                 foundVersion = DatabaseVersion::AddedStatsTable;
-                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Upgraded Asset Database to version %i (AddedStatsTable)\n", foundVersion)
+                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Upgraded Asset Database to version %i (AddedStatsTable)\n", foundVersion);
             }
+        }
+
+        if(foundVersion == DatabaseVersion::AddedStatsTable)
+        {
+            // Version update - change SourceDependency Source to SourceGuid column
+            // Do nothing so the whole database is dropped.
+            // Unfortunately we have to reprocess all assets because of the way the fingerprinting algorithm works,
+            // changing from storing the path to the UUID changes the fingerprint, resulting in all assets reprocessing anyway
+            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Asset database version updated to ChangedSourceDependencySourceColumn, database will be cleared as migration is not possible for this update\n", foundVersion);
         }
 
         if (foundVersion == CurrentDatabaseVersion())
@@ -1407,10 +1419,12 @@ namespace AssetProcessor
         m_createStatements.push_back(CREATEINDEX_SCANFOLDERS_FILES);
 
         m_databaseConnection->AddStatement(CREATEINDEX_SOURCEDEPENDENCY_SOURCE, CREATEINDEX_SOURCEDEPENDENCY_SOURCE_STATEMENT);
-        m_createStatements.push_back(CREATEINDEX_SOURCEDEPENDENCY_SOURCE);
 
         m_databaseConnection->AddStatement(DROPINDEX_BUILDERGUID_SOURCE_SOURCEDEPENDENCY, DROPINDEX_BUILDERGUID_SOURCE_SOURCEDEPENDENCY_STATEMENT);
         m_createStatements.push_back(DROPINDEX_BUILDERGUID_SOURCE_SOURCEDEPENDENCY);
+
+        m_databaseConnection->AddStatement(CREATEINDEX_SOURCEDEPENDENCY_SOURCEGUID, CREATEINDEX_SOURCEDEPENDENCY_SOURCEGUID_STATEMENT);
+        m_createStatements.push_back(CREATEINDEX_SOURCEDEPENDENCY_SOURCEGUID);
 
         m_databaseConnection->AddStatement(DELETE_AUTO_SUCCEED_JOBS, DELETE_AUTO_SUCCEED_JOBS_STATEMENT);
     }
@@ -2593,7 +2607,7 @@ namespace AssetProcessor
     bool AssetDatabaseConnection::SetSourceFileDependency(SourceFileDependencyEntry& entry)
     {
         //first make sure its not already in the database
-        if (!s_InsertSourceDependencyQuery.BindAndStep(*m_databaseConnection, entry.m_builderGuid, entry.m_source.c_str(), entry.m_dependsOnSource.c_str(), entry.m_typeOfDependency, entry.m_fromAssetId, entry.m_subIds.c_str()))
+        if (!s_InsertSourceDependencyQuery.BindAndStep(*m_databaseConnection, entry.m_builderGuid, entry.m_sourceGuid, entry.m_dependsOnSource.c_str(), entry.m_typeOfDependency, entry.m_fromAssetId, entry.m_subIds.c_str()))
         {
             return false;
         }
@@ -2634,10 +2648,10 @@ namespace AssetProcessor
         return s_DeleteSourceDependencySourcedependencyidQuery.BindAndStep(*m_databaseConnection, sourceFileDependencyId);
     }
 
-    bool AssetDatabaseConnection::GetSourceFileDependenciesByBuilderGUIDAndSource(const AZ::Uuid& builderGuid, const char* source, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency typeOfDependency, SourceFileDependencyEntryContainer& container)
+    bool AssetDatabaseConnection::GetSourceFileDependenciesByBuilderGUIDAndSource(const AZ::Uuid& builderGuid, AZ::Uuid sourceGuid, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency typeOfDependency, SourceFileDependencyEntryContainer& container)
     {
         bool found = false;
-        bool succeeded = QueryDependsOnSourceBySourceDependency(source, nullptr, typeOfDependency,
+        bool succeeded = QueryDependsOnSourceBySourceDependency(sourceGuid, nullptr, typeOfDependency,
             [&](SourceFileDependencyEntry& entry)
         {
             if (builderGuid == entry.m_builderGuid)
@@ -2653,7 +2667,7 @@ namespace AssetProcessor
     bool AssetDatabaseConnection::GetSourceFileDependenciesByDependsOnSource(const QString& dependsOnSource, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency typeOfDependency, SourceFileDependencyEntryContainer& container)
     {
         bool found = false;
-        bool succeeded = QuerySourceDependencyByDependsOnSource(dependsOnSource.toUtf8().constData(), nullptr, typeOfDependency,
+        bool succeeded = QuerySourceDependencyByDependsOnSource(dependsOnSource.toUtf8().constData(), typeOfDependency,
             [&](SourceFileDependencyEntry& entry)
         {
             found = true;
@@ -2664,12 +2678,12 @@ namespace AssetProcessor
     }
 
     bool AssetDatabaseConnection::GetDependsOnSourceBySource(
-        const char* source,
+        AZ::Uuid sourceUuid,
         AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency typeOfDependency,
         AzToolsFramework::AssetDatabase::SourceFileDependencyEntryContainer& container)
     {
         bool found = false;
-        bool succeeded = QueryDependsOnSourceBySourceDependency(source, nullptr, typeOfDependency,
+        bool succeeded = QueryDependsOnSourceBySourceDependency(sourceUuid, nullptr, typeOfDependency,
             [&](SourceFileDependencyEntry& entry)
         {
             found = true;

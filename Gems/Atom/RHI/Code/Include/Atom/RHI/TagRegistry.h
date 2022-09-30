@@ -10,6 +10,7 @@
 #include <AzCore/Name/Name.h>
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 #include <AzCore/std/parallel/shared_mutex.h>
+#include <Atom/RHI.Reflect/Base.h>
 #include <Atom/RHI.Reflect/Handle.h>
 
 namespace AZ

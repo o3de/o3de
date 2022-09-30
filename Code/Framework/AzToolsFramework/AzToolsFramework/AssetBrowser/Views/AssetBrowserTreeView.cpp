@@ -13,14 +13,18 @@
 #include <AzCore/StringFunc/StringFunc.h>
 
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <AzFramework/Asset/AssetSystemBus.h>
+#include <AzFramework/Network/AssetProcessorConnection.h>
 
 #include <AzToolsFramework/UI/UICore/QTreeViewStateSaver.hxx>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeViewDialog.h>
 #include <AzToolsFramework/AssetBrowser/Views/EntryDelegate.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryCache.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
+#include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
@@ -39,6 +43,8 @@ AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // conversio
 #include <QTimer>
 #include <QtWidgets/QMessageBox>
 #include <QAbstractButton>
+#include <QHBoxLayout>
+#include <QPushButton>
 
 AZ_POP_DISABLE_WARNING
 
@@ -571,6 +577,116 @@ namespace AzToolsFramework
                 newPath.ReplaceFilename(temp);
                 newPath.ReplaceExtension(extension);
                 QFile::copy(oldPath.c_str(), newPath.c_str());
+            }
+        }
+
+        void AssetBrowserTreeView::MoveEntries()
+        {
+            using namespace AzFramework::AssetSystem;
+            EntryTypeFilter* foldersFilter = new EntryTypeFilter();
+            foldersFilter->SetEntryType(AssetBrowserEntry::AssetEntryType::Folder);
+
+            auto selection = AzToolsFramework::AssetBrowser::AssetSelectionModel::EverythingSelection();
+            selection.SetTitle(tr("folder to move to"));
+            selection.SetMultiselect(false);
+            selection.SetDisplayFilter(FilterConstType(foldersFilter));
+            AssetBrowserTreeViewDialog dialog(selection, this);
+
+            if (dialog.exec() == QDialog::Accepted)
+            {
+                const AZStd::vector<AZStd::string> folderPaths = selection.GetSelectedFilePaths();
+
+                if (!folderPaths.empty())
+                {
+                    AZStd::string folderPath = folderPaths[0];
+                    bool connectedToAssetProcessor = false;
+                    AzFramework::AssetSystemRequestBus::BroadcastResult(
+                        connectedToAssetProcessor, &AzFramework::AssetSystemRequestBus::Events::AssetProcessorIsReady);
+
+                    if (connectedToAssetProcessor)
+                    {
+                        auto entries = GetSelectedAssets();
+
+                        for (auto entry : entries)
+                        {
+                            using namespace AZ::IO;
+                            Path fromPath = entry->GetFullPath();
+                            PathView filename = fromPath.Filename();
+                            Path toPath(folderPath);
+                            toPath /= filename;
+                            AssetChangeReportRequest request(
+                                AZ::OSString(fromPath.c_str()),
+                                AZ::OSString(toPath.c_str()),
+                                AssetChangeReportRequest::ChangeType::CheckMove);
+                            AssetChangeReportResponse response;
+
+                            if (SendRequest(request, response))
+                            {
+                                bool canMove = true;
+                                AZStd::string message;
+                                for (int i = 0; i < response.m_lines.size(); ++i)
+                                {
+                                    message += response.m_lines[i] + "\n";
+                                }
+
+                                if (message.size())
+                                {
+                                    QMessageBox msgBox(this);
+                                    msgBox.setWindowTitle("Before Move Asset Information");
+                                    msgBox.setIcon(QMessageBox::Warning);
+                                    msgBox.setText("The asset you are moving may be referenced in other assets.");
+                                    msgBox.setInformativeText("More information can be found by pressing \"Show Details...\".");
+                                    auto* moveButton = msgBox.addButton("Move", QMessageBox::YesRole);
+                                    msgBox.setStandardButtons(QMessageBox::Cancel);
+                                    msgBox.setDefaultButton(QMessageBox::Yes);
+                                    msgBox.setDetailedText(message.c_str());
+                                    QSpacerItem* horizontalSpacer = new QSpacerItem(600, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+                                    auto* layout = qobject_cast<QGridLayout*>(msgBox.layout());
+                                    layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());
+                                    msgBox.exec();
+
+                                    if (msgBox.clickedButton() != static_cast<QAbstractButton*>(moveButton))
+                                    {
+                                        canMove = false;
+                                    }
+                                }
+                                if (canMove)
+                                {
+                                    AssetChangeReportRequest moveRequest(
+                                        AZ::OSString(fromPath.c_str()),
+                                        AZ::OSString(toPath.c_str()),
+                                        AssetChangeReportRequest::ChangeType::Move);
+                                    AssetChangeReportResponse moveResponse;
+                                    if (SendRequest(moveRequest, moveResponse))
+                                    {
+                                        AZStd::string message2;
+                                        for (int i = 0; i < moveResponse.m_lines.size(); ++i)
+                                        {
+                                            message2 += moveResponse.m_lines[i] + "\n";
+                                        }
+
+                                        if (message2.size())
+                                        {
+                                            QMessageBox moveMsgBox(this);
+                                            moveMsgBox.setWindowTitle("After Move Asset Information");
+                                            moveMsgBox.setIcon(QMessageBox::Warning);
+                                            moveMsgBox.setText("The asset has been moved.");
+                                            moveMsgBox.setInformativeText("More information can be found by pressing \"Show Details...\".");
+                                            moveMsgBox.setStandardButtons(QMessageBox::Ok);
+                                            moveMsgBox.setDefaultButton(QMessageBox::Ok);
+                                            moveMsgBox.setDetailedText(message2.c_str());
+                                            QSpacerItem* horizontalSpacer2 =
+                                                new QSpacerItem(600, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+                                            QGridLayout* moveLayout = (QGridLayout*)moveMsgBox.layout();
+                                            moveLayout->addItem(horizontalSpacer2, moveLayout->rowCount(), 0, 1, moveLayout->columnCount());
+                                            moveMsgBox.exec();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     } // namespace AssetBrowser
