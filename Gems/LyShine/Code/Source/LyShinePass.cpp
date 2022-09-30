@@ -40,6 +40,15 @@ namespace LyShine
         Base::ResetInternal();
     }
 
+    void LyShinePass::SetRenderPipeline(AZ::RPI::RenderPipeline* pipeline)
+    {
+        if (pipeline == nullptr)
+        {
+            LyShinePassRequestBus::Handler::BusDisconnect();
+        }
+        ParentPass::SetRenderPipeline(pipeline);
+    }
+
     void LyShinePass::BuildInternal()
     {
         AZ::RPI::Scene* scene = GetScene();
