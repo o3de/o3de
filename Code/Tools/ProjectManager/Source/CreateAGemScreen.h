@@ -35,7 +35,7 @@ namespace O3DE::ProjectManager
         ~CreateGem() = default;
 
     signals:
-        void CreateButtonPressed(const GemInfo& gemInfo);
+        void GemCreated(const GemInfo& gemInfo);
 
     private slots:
         void HandleBackButton();
@@ -50,6 +50,7 @@ namespace O3DE::ProjectManager
         bool ValidateGemTemplateLocation();
         bool ValidateGemDisplayName();
         bool ValidateGemName();
+        bool ValidateGemPath();
         bool ValidateFormNotEmpty(FormLineEditWidget* form);
         bool ValidateRepositoryURL();
 
