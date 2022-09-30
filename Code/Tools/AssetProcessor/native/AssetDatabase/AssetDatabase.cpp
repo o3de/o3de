@@ -859,7 +859,7 @@ namespace AssetProcessor
     }
 
 
-    bool AssetDatabaseConnection::PostOpenDatabase()
+    bool AssetDatabaseConnection::PostOpenDatabase(bool ignoreFutureAssetDBVersionError)
     {
         DatabaseVersion foundVersion = DatabaseVersion::DatabaseDoesNotExist;
 
@@ -872,10 +872,31 @@ namespace AssetProcessor
         // if its a future version, we don't want to drop tables and blow up, we'd rather just inform the user, and move on:
         if (foundVersion > CurrentDatabaseVersion())
         {
-            AZ_Error(AssetProcessor::ConsoleChannel, false,
-                "The database in the Cache folder appears to be from a NEWER version of Asset Processor than this one.\n"
-                "To prevent loss of data in the cache for the newer version, this Asset Processor will close.\n");
-            return false;
+            if (!ignoreFutureAssetDBVersionError)
+            {
+                AZ_Error(
+                    AssetProcessor::ConsoleChannel,
+                    false,
+                    "The database in the Cache folder appears to be from a NEWER version of Asset Processor than this one.\n"
+                    "To prevent loss of data in the cache for the newer version, this Asset Processor will close.\n");
+                return false;
+            }
+            else
+            {
+                // This will erase the Asset Database. A future version can't be fully resolved,
+                // so if the flag is set to ignore the error, this will erase the Asset Database and create a new one at the current version.
+                // This flag should only be used with automated builds that use the same asset cache across builds of different branches.
+                // This should not be used for individual builds. If an individual finds themselves running into this issue often, the team should
+                // examine their workflows to determine why that individual frequently encounters future Asset Database versions.
+                AZ_TracePrintf(
+                    AssetProcessor::ConsoleChannel,
+                    "The Asset Database in the Cache folder is from a newer version of the Asset Processor (%i) than this one (expected: %i).\n"
+                    "The existing Asset Database will be deleted and a new Asset Database will be constructed.\n",
+                    foundVersion,
+                    CurrentDatabaseVersion()
+                    );
+                dropAllTables = true;
+            }
         }
 
         if (foundVersion == DatabaseVersion::AddedOutputPrefixToScanFolders)
@@ -1182,7 +1203,7 @@ namespace AssetProcessor
         // now that the database matches the schema, update it:
         SetDatabaseVersion(CurrentDatabaseVersion());
 
-        return AzToolsFramework::AssetDatabase::AssetDatabaseConnection::PostOpenDatabase();
+        return AzToolsFramework::AssetDatabase::AssetDatabaseConnection::PostOpenDatabase(ignoreFutureAssetDBVersionError);
     }
 
 
