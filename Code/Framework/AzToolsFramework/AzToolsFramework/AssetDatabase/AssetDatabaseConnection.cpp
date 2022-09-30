@@ -1791,7 +1791,7 @@ namespace AzToolsFramework
             return true;
         }
 
-        bool AssetDatabaseConnection::PostOpenDatabase(bool /*ignoreFutureAssetDBVersionError*/)
+        bool AssetDatabaseConnection::PostOpenDatabase([[maybe_unused]] bool ignoreFutureAssetDBVersionError)
         {
             // AssetDatabase.cpp handles the upgrading and version info, so ignoreFutureAssetDBVersionError isn't checked here.
             if (QueryDatabaseVersion() != CurrentDatabaseVersion())
