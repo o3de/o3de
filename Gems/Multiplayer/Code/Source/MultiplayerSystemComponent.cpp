@@ -85,7 +85,7 @@ namespace Multiplayer
     AZ_CVAR(uint16_t, cl_serverport, DefaultServerPort, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The port of the remote host to connect to for game traffic");
     AZ_CVAR(uint16_t, sv_port, DefaultServerPort, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The port that this multiplayer gem will bind to for game traffic");
     AZ_CVAR(uint16_t, sv_portRange, 999, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The range of ports the host will incrementally attempt to bind to when initializing");
-    AZ_CVAR(AZ::CVarFixedString, sv_map, "nolevel", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The map the server should load");
+    AZ_CVAR(AZ::CVarFixedString, sv_map, "", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The map the server should load");
     AZ_CVAR(ProtocolType, sv_protocol, ProtocolType::Udp, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "This flag controls whether we use TCP or UDP for game networking");
     AZ_CVAR(bool, sv_isDedicated, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether the host command creates an independent or client hosted server");
     AZ_CVAR(bool, sv_isTransient, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether a dedicated server shuts down if all existing connections disconnect.");
@@ -628,6 +628,9 @@ namespace Multiplayer
         {
             AZLOG_WARN("Server does not have a multiplayer level loaded! Make sure the server has a level loaded before accepting clients.");
             m_noServerLevelLoadedEvent.Signal();
+
+            connection->Disconnect(DisconnectReason::ServerNoLevelLoaded, TerminationEndpoint::Local);
+            return true;
         }
 
         if (connection->SendReliablePacket(MultiplayerPackets::Accept(sv_map)))
@@ -655,18 +658,10 @@ namespace Multiplayer
         if (m_temporaryUserIdentifier == 0)
         {
             sv_map = packet.GetMap().c_str();
-            if (packet.GetMap().empty())
-            {
-                AZLOG_WARN("Server did not provide a valid level to load! Make sure the server has a level loaded before connecting.");
-                m_noServerLevelLoadedEvent.Signal();
-            }
-            else
-            {
-                AZ::CVarFixedString loadLevelString = "LoadLevel " + packet.GetMap();
-                m_blockClientLoadLevel = false;
-                AZ::Interface<AZ::IConsole>::Get()->PerformCommand(loadLevelString.c_str());
-                m_blockClientLoadLevel = true;   
-            }
+            AZ::CVarFixedString loadLevelString = "LoadLevel " + packet.GetMap();
+            m_blockClientLoadLevel = false;
+            AZ::Interface<AZ::IConsole>::Get()->PerformCommand(loadLevelString.c_str());
+            m_blockClientLoadLevel = true;
         }
         else
         {
@@ -895,6 +890,12 @@ namespace Multiplayer
         if (m_agentType == MultiplayerAgentType::Client)
         {
             AZ_Assert(connection->GetConnectionRole() == ConnectionRole::Connector, "Client connection role should only ever be Connector");
+
+            if (reason == DisconnectReason::ServerNoLevelLoaded)
+            {
+                AZLOG_WARN("Server did not provide a valid level to load! Make sure the server has a level loaded before connecting.");
+                m_noServerLevelLoadedEvent.Signal();
+            }
         }
         else if (m_agentType == MultiplayerAgentType::DedicatedServer || m_agentType == MultiplayerAgentType::ClientServer)
         {

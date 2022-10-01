@@ -27,8 +27,8 @@ namespace Multiplayer
         static constexpr int MaxMessageLength = 256;
         static constexpr float ScrimAlpha = 0.6f;
 
-        static constexpr AZ::TimeMs CenterViewportDebugToastTimePerWord = AZ::TimeMs{ 240 }; // Average reading speed is 250 words per minute (240 ms)
-        static constexpr AZ::TimeMs CenterViewportDebugToastTimePrefix = AZ::TimeMs{ 1500 }; // Give viewers 1.5 seconds to notice the toast
+        static constexpr AZ::TimeMs CenterViewportDebugToastTimePerWord = AZ::TimeMs{ 300 }; // Consider reading speed to be 200 words per minute (300 ms)
+        static constexpr AZ::TimeMs CenterViewportDebugToastTimePrefix = AZ::TimeMs{ 2000 }; // Give viewers 2.0 seconds to notice the toast
         static constexpr AZ::TimeMs CenterViewportDebugToastTimeFade = AZ::TimeMs{ 1000 }; // Milliseconds toast takes to fade out
 
         // Messaging for client during editor play mode

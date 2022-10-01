@@ -54,6 +54,7 @@ namespace AzNetworking
         , ConnectionRejected
         , ConnectionDeleted
         , ServerNotReady
+        , ServerNoLevelLoaded
         , ServerError
         , ClientMigrated
         , SslFailure
