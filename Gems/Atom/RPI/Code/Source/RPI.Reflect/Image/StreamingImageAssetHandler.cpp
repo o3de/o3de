@@ -71,8 +71,11 @@ namespace AZ
                             }
                         }
 
-                        AZStd::scoped_lock<AZStd::mutex> lock(m_accessPendingAssetsMutex);
-                        m_pendingReloadImageAsset[imageGuid] = AZStd::move(pendingAssetInfo);
+                        if (pendingAssetInfo.m_mipChainAssetSubIds.size() > 0)
+                        {
+                            AZStd::scoped_lock<AZStd::mutex> lock(m_accessPendingAssetsMutex);
+                            m_pendingReloadImageAsset[imageGuid] = AZStd::move(pendingAssetInfo);
+                        }
                     }
                 }
             }
@@ -173,12 +176,9 @@ namespace AZ
 
         void StreamingImageAssetHandler::InitAsset(const Data::Asset<Data::AssetData>& asset, bool loadStageSucceeded, bool isReload)
         {
-            if (loadStageSucceeded && isReload)
-            {
-                // pending asset reload notification until all its mipchains are reloaded/loaded
-                AZ_Assert(m_pendingReloadImageAsset.find(asset.GetId().m_guid) != m_pendingReloadImageAsset.end(), "The asset should be added to pending reload asset list");
-            }
-            else
+            // Broadcast the asset loading events via AssetHandler::InitAsset
+            // If the asset was reloaded successfully and also have pending mipchain assets to load, skip here and delay the broadcast the reloaded event.
+            if (!(loadStageSucceeded && isReload && m_pendingReloadImageAsset.find(asset.GetId().m_guid) != m_pendingReloadImageAsset.end()))
             {
                 AZ_Assert(m_pendingReloadImageAsset.find(asset.GetId().m_guid) == m_pendingReloadImageAsset.end(), "The asset shouldn't be added to pending reload asset list");
                 AssetHandler::InitAsset(asset, loadStageSucceeded, isReload);

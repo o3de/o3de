@@ -504,10 +504,6 @@ namespace AZ
 
                 AZ_Assert(resultCode == RHI::ResultCode::Success, "Failed to re-initialize streaming image");
             }
-            else
-            {
-                AZ_Assert(false, "The mip chain asset auto-reload was disabled. If you are sure you want to reload mip chain manually you can remove this assert");
-            }
 #endif
         }
 
