@@ -62,11 +62,11 @@ namespace DPEDebugView
         AZ_TYPE_INFO(TestContainer, "{86586583-A58F-45FD-BB6E-C3E9C76DDA38}");
         AZ_CLASS_ALLOCATOR(TestContainer, AZ::SystemAllocator, 0);
 
-        enum class EnumType : AZ::u8
+        enum class EnumType : AZ::s16
         {
             Value1 = 1,
             Value2 = 2,
-            ValueZ = 10,
+            ValueZ = -10,
             NotReflected = 0xFF
         };
 

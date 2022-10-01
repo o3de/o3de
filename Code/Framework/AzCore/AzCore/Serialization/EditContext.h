@@ -821,7 +821,7 @@ namespace AZ
 
             EnumConstant() {}
             EnumConstant(EnumType first, AZStd::string_view description)
-                : m_value(aznumeric_cast<AZ::u64>(first))
+                : m_value(static_cast<AZ::u64>(first))
                 , m_description(description)
             {
             }
