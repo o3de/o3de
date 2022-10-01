@@ -70,6 +70,16 @@ namespace DPEDebugView
             NotReflected = 0xFF
         };
 
+        AZStd::vector<AZ::Edit::EnumConstant<EnumType>> GetEnumValues() const
+        {
+            AZStd::vector<AZ::Edit::EnumConstant<EnumType>> values;
+            values.emplace_back(EnumType::Value1, "Value 1");
+            values.emplace_back(EnumType::Value2, "Value 2");
+            values.emplace_back(EnumType::ValueZ, "Value Z");
+            values.emplace_back(EnumType::NotReflected, "Not Reflected (set from EnumValues)");
+            return values;
+        }
+
         int m_simpleInt = 5;
         double m_doubleSlider = 3.25;
         AZStd::vector<AZStd::string> m_vector;
@@ -148,6 +158,7 @@ namespace DPEDebugView
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_entityIdMap, "unordered_map<EntityId, Number>", "")
                         ->ClassElement(AZ::Edit::ClassElements::Group, "")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_enumValue, "enum (no multi-edit)", "")
+                        ->Attribute(AZ::Edit::Attributes::EnumValues, &TestContainer::GetEnumValues)
                         ->Attribute(AZ::Edit::Attributes::AcceptsMultiEdit, false)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_entityId, "entityId", "")
                         ->UIElement(AZ::Edit::UIHandlers::Button, "")

@@ -103,4 +103,40 @@ namespace AZ::DocumentPropertyEditor
 
         return Dom::Value(result.GetStringView(), false);
     }
+
+    static const AZ::Name enumEntryDescription = AZ_NAME_LITERAL("description");
+    static const AZ::Name enumEntryValue = AZ_NAME_LITERAL("value");
+
+    Dom::Value EnumValuesAttributeDefinition::ValueToDom(const EnumValuesContainer& attribute) const
+    {
+        Dom::Value result(Dom::Type::Array);
+        for (const auto& entry : attribute)
+        {
+            Dom::Value entryDom(Dom::Type::Object);
+            entryDom[enumEntryDescription] = Dom::Value(entry.m_description, true);
+            entryDom[enumEntryValue] = Dom::Value(entry.m_value);
+            result.ArrayPushBack(AZStd::move(entryDom));
+        }
+        return result;
+    }
+
+    AZStd::optional<EnumValuesContainer> EnumValuesAttributeDefinition::DomToValue(const Dom::Value& value) const
+    {
+        if (!value.IsArray())
+        {
+            return {};
+        }
+
+        EnumValuesContainer result;
+        for (const Dom::Value& entryDom : value.GetArray())
+        {
+            if (!entryDom.IsObject() || !entryDom.HasMember(enumEntryDescription) || !entryDom.HasMember(enumEntryValue))
+            {
+                continue;
+            }
+            result.emplace_back(entryDom[enumEntryValue].GetUint64(), entryDom[enumEntryDescription].GetString());
+        }
+
+        return result;
+    }
 } // namespace AZ::DocumentPropertyEditor
