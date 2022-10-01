@@ -85,6 +85,7 @@ namespace Multiplayer
     AZ_CVAR(uint16_t, cl_serverport, DefaultServerPort, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The port of the remote host to connect to for game traffic");
     AZ_CVAR(uint16_t, sv_port, DefaultServerPort, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The port that this multiplayer gem will bind to for game traffic");
     AZ_CVAR(uint16_t, sv_portRange, 999, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The range of ports the host will incrementally attempt to bind to when initializing");
+    AZ_CVAR(AZ::CVarFixedString, sv_map, "nolevel", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The map the server should load");
     AZ_CVAR(ProtocolType, sv_protocol, ProtocolType::Udp, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "This flag controls whether we use TCP or UDP for game networking");
     AZ_CVAR(bool, sv_isDedicated, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether the host command creates an independent or client hosted server");
     AZ_CVAR(bool, sv_isTransient, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether a dedicated server shuts down if all existing connections disconnect.");
@@ -228,7 +229,7 @@ namespace Multiplayer
         AzFramework::RootSpawnableNotificationBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
         SessionNotificationBus::Handler::BusConnect();
-        AzFramework::LevelLoadBlockerBus::Handler::BusConnect();
+        AzFramework::LevelSystemLifecycleRequestBus::Handler::BusConnect();
         const AZ::Name interfaceName = AZ::Name(MpNetworkInterfaceName);
         m_networkInterface = AZ::Interface<INetworking>::Get()->CreateNetworkInterface(interfaceName, sv_protocol, TrustZone::ExternalClientToServer, *this);
 
@@ -254,7 +255,7 @@ namespace Multiplayer
         m_consoleCommandHandler.Disconnect();
         const AZ::Name interfaceName = AZ::Name(MpNetworkInterfaceName);
         AZ::Interface<INetworking>::Get()->DestroyNetworkInterface(interfaceName);
-        AzFramework::LevelLoadBlockerBus::Handler::BusDisconnect();
+        AzFramework::LevelSystemLifecycleRequestBus::Handler::BusDisconnect();
         SessionNotificationBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
         AzFramework::RootSpawnableNotificationBus::Handler::BusDisconnect();
@@ -623,15 +624,13 @@ namespace Multiplayer
             }
         }
 
-        AZStd::string currentLevel;
-        AzFramework::LevelSystemLifecycleRequestBus::BroadcastResult(currentLevel, &AzFramework::LevelSystemLifecycleRequests::GetCurrentLevelName);
-        if (currentLevel.empty())
+        if (static_cast<AZ::CVarFixedString>(sv_map).empty())
         {
             AZLOG_WARN("Server does not have a multiplayer level loaded! Make sure the server has a level loaded before accepting clients.");
             m_noServerLevelLoadedEvent.Signal();
         }
 
-        if (connection->SendReliablePacket(MultiplayerPackets::Accept(currentLevel.c_str())))
+        if (connection->SendReliablePacket(MultiplayerPackets::Accept(sv_map)))
         {
             reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->SetDidHandshake(true);
             if (packet.GetTemporaryUserId() == 0)
@@ -655,6 +654,7 @@ namespace Multiplayer
         reinterpret_cast<IConnectionData*>(connection->GetUserData())->SetDidHandshake(true);
         if (m_temporaryUserIdentifier == 0)
         {
+            sv_map = packet.GetMap().c_str();
             if (packet.GetMap().empty())
             {
                 AZLOG_WARN("Server did not provide a valid level to load! Make sure the server has a level loaded before connecting.");

@@ -305,15 +305,11 @@ namespace ImGui
                 auto lvlSystem = (gEnv && gEnv->pSystem) ? gEnv->pSystem->GetILevelSystem() : nullptr;
                 if (lvlSystem && ImGui::BeginMenu("Levels"))
                 {
-                    AZStd::string currentLevelName;
-                    AzFramework::LevelSystemLifecycleRequestBus::BroadcastResult(
-                        currentLevelName, &AzFramework::LevelSystemLifecycleRequests::GetCurrentLevelName);
-
-                    if (!currentLevelName.empty())
+                    if (lvlSystem->IsLevelLoaded())
                     {
                         ImGui::TextColored(ImGui::Colors::s_PlainLabelColor, "Current Level: ");
                         ImGui::SameLine();
-                        ImGui::TextColored(ImGui::Colors::s_NiceLabelColor, "%s", currentLevelName.c_str());
+                        ImGui::TextColored(ImGui::Colors::s_NiceLabelColor, "%s", lvlSystem->GetCurrentLevelName());
                     }
 
                     bool usePrefabSystemForLevels = false;

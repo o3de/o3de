@@ -10,7 +10,6 @@
 #pragma once
 
 #include "ILevelSystem.h"
-#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Archive/IArchive.h>
 #include <CryCommon/TimeValue.h>
 
@@ -74,7 +73,6 @@ private:
 
 class CLevelSystem
     : public ILevelSystem
-    , AzFramework::LevelSystemLifecycleRequestBus::Handler
 {
 public:
     CLevelSystem(ISystem* pSystem, const char* levelsFolder);
@@ -94,15 +92,6 @@ public:
     bool LoadLevel(const char* levelName) override;
     void UnloadLevel() override;
     bool IsLevelLoaded() override { return m_bLevelLoaded; }
-    AZStd::string GetCurrentLevelName() override
-    {
-        if (m_pCurrentLevel && m_pCurrentLevel->GetLevelInfo())
-        {
-            return m_pCurrentLevel->GetLevelInfo()->GetName();
-        }
-        return "";
-    }
-
     const char* GetCurrentLevelName() const override
     {
         if (m_pCurrentLevel && m_pCurrentLevel->GetLevelInfo())

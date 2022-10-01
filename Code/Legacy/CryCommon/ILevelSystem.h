@@ -66,8 +66,6 @@ struct ILevelSystem
     virtual bool LoadLevel(const char* levelName) = 0;
     virtual void UnloadLevel() = 0;
     virtual bool IsLevelLoaded() = 0;
-
-    // Deprecated. Use AzFramework::LevelSystemLifecycleRequests::GetCurrentLevelName instead.
     virtual const char* GetCurrentLevelName() const = 0;
 
     // If the level load failed then we need to have a different shutdown procedure vs when a level is naturally unloaded
