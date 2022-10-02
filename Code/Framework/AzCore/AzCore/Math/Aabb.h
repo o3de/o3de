@@ -32,6 +32,10 @@ namespace AZ
         //! This is an invalid AABB which has no size, but is useful as adding a point to it will make it valid
         static Aabb CreateNull();
 
+        //! Returns an axis aligned bounding box with uninitialized data members.
+        //! Many of the member functions are not safe to call until the data members have been initialized.
+        static Aabb CreateUninitialized();
+
         static Aabb CreateFromPoint(const Vector3& p);
 
         static Aabb CreateFromMinMax(const Vector3& min, const Vector3& max);
@@ -51,7 +55,7 @@ namespace AZ
         //! Creates an AABB which contains the specified OBB.
         static Aabb CreateFromObb(const Obb& obb);
 
-        Aabb() = default;
+        AZ_DEPRECATED(Aabb() = default, "The Aabb Default Constructor has been deprecated. Please use Aabb::CreateUninitialized() instead.");
 
         const Vector3& GetMin() const;
 

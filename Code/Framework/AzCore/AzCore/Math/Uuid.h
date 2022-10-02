@@ -47,7 +47,13 @@ namespace AZ
         static constexpr int ValidUuidStringLength = 32; /// Number of characters (data only, no extra formatting) in a valid UUID string
         static constexpr size_t MaxStringBuffer = 39; /// 32 Uuid + 4 dashes + 2 brackets + 1 terminate
         using FixedString = AZStd::fixed_string<MaxStringBuffer>;
-        constexpr Uuid() = default;
+
+        AZ_DEPRECATED(constexpr Uuid() = default, "The Uuid Default Constructor has been deprecated. Please use Uuid::CreateUnitialized() instead.");
+
+        //! Returns a uuid with uninitialized data members.
+        //! Many of the member functions are not safe to call until the data members have been initialized.
+        inline constexpr Uuid CreateUninitialized();
+
         constexpr explicit Uuid(AZStd::string_view uuidString);
         constexpr Uuid(const char* string, size_t stringLength);
 

@@ -12,6 +12,11 @@
 
 namespace AZ
 {
+    AZ_MATH_INLINE Vector3 Vector3::CreateUninitialized()
+    {
+        return Vector3();
+    }
+
     AZ_MATH_INLINE Vector3::Vector3(float x)
         : m_value(Simd::Vec3::Splat(x))
     {

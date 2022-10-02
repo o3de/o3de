@@ -26,8 +26,12 @@ namespace AZ
         static void Reflect(ReflectContext* context);
 
         //! Default constructor, components are uninitialized.
-        Color() = default;
+        AZ_DEPRECATED(Color() = default, "The Color Default Constructor has been deprecated. Please use Color::CreateUnitialized() instead.");
         Color(const Vector4& v)   { m_color = v; }
+
+        //! Returns a color with uninitialized data members.
+        //! Many of the member functions are not safe to call until the data members have been initialized.
+        static Color CreateUninitialized();
 
         explicit Color(const Vector2& source);
 
