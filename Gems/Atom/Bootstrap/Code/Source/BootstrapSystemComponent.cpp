@@ -332,8 +332,7 @@ namespace AZ
                 }
 
                 // Load the main default pipeline
-                bool applyMSAAState = true;
-                isPipelineAssetLoadSuccessfull &= LoadPipeline(scene, viewportContext, pipelineName, AZ::RPI::ViewType::Default, applyMSAAState);
+                isPipelineAssetLoadSuccessfull &= LoadPipeline(scene, viewportContext, pipelineName, AZ::RPI::ViewType::Default, true);
                 if (!isPipelineAssetLoadSuccessfull)
                 {
                     return false;
