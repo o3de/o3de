@@ -316,7 +316,6 @@ namespace AZ
                     pipelineName = "passes/LowEndRenderPipeline.azasset";
                 }
 
-                RHI::MultisampleState multisampleState;
                 bool isPipelineAssetLoadSuccessfull = true;
                 // Load XR pipelines if applicable
                 if (xrSystem)
