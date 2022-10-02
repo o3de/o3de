@@ -38,11 +38,7 @@ namespace AZ
         static void Reflect(ReflectContext* context);
 
         //! Default construction, no initialization.
-        AZ_DEPRECATED(Plane() = default, "The Plane Default Constructor has been deprecated. Please use Plane::CreateUnitialized() instead.");
-
-        //! Returns a plane with uninitialized data members.
-        //! Many of the member functions are not safe to call until the data members have been initialized.
-        static Plane CreateUninitialized();
+        Plane() = default;
 
         Plane(AZ::Math::default_initialize_t)
             : m_plane(AZ::Math::default_initialize)

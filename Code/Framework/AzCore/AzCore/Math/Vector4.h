@@ -30,20 +30,8 @@ namespace AZ
         static void Reflect(ReflectContext* context);
 
         //! Default constructor, components are uninitialized.
-        //Vector4() = default;
+        Vector4() = default;
         Vector4(const Vector4& v);
-
-        // curly braces {} - zero initializes the Simd member
-        AZ::Vector4()
-            : m_value{}
-        {
-        }
-
-        // No initialization of the Simd member takes place here
-        // It is left in an indeterminate state
-        AZ::Vector4(AZ::Math::default_initialize_t)
-        {
-        }
 
         //! Constructs vector with all components set to the same specified value.
         explicit Vector4(float x);

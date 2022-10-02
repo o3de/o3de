@@ -13,7 +13,6 @@
 
 namespace AZ
 {
-
     AZ_MATH_INLINE Matrix4x4::Matrix4x4(const Matrix4x4& rhs)
     {
 #if AZ_TRAIT_USE_PLATFORM_SIMD_SCALAR

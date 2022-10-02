@@ -10,7 +10,6 @@
 
 namespace AZ
 {
-
     AZ_MATH_INLINE const Vector3& Obb::GetPosition() const
     {
         return m_position;

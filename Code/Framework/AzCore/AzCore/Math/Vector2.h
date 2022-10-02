@@ -28,21 +28,9 @@ namespace AZ
         //! @param context reflection context
         static void Reflect(ReflectContext* context);
 
-        //Vector2() = default;
+        Vector2() = default;
 
         Vector2(const Vector2& v) = default;
-
-        // curly braces {} - zero initializes the Simd member
-        AZ::Vector2()
-            : m_value{}
-        {
-        }
-
-        // No initialization of the Simd member takes place here
-        // It is left in an indeterminate state
-        AZ::Vector2(AZ::Math::default_initialize_t)
-        {
-        }
 
         //! Constructs vector with all components set to the same specified value.
         explicit Vector2(float x);

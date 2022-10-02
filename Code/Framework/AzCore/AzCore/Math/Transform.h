@@ -40,17 +40,6 @@ namespace AZ
         //! Default constructor does not initialize the matrix.
         Transform() = default;
 
-        Transform(AZ::Math::default_initialize_t)
-            : m_rotation(AZ::Math::default_initialize)
-            , m_scale(0)
-            , m_translation(AZ::Math::default_initialize)
-        {
-        }
-
-        //! Returns a transform with uninitialized data members.
-        //! Many of the member functions are not safe to call until the data members have been initialized.
-        static Transform CreateUninitialized();
-
         //! Construct a transform from components.
         Transform(const Vector3& translation, const Quaternion& rotation, float scale);
 

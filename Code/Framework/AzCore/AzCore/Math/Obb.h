@@ -33,11 +33,7 @@ namespace AZ
         //! @param context reflection context
         static void Reflect(ReflectContext* context);
 
-        AZ_DEPRECATED(Obb() = default, "The Obb Default Constructor has been deprecated. Please use Obb::CreateUnitialized() instead.");
-
-        //! Returns an oriented bounding box with uninitialized data members.
-        //! Many of the member functions are not safe to call until the data members have been initialized.
-        static Obb CreateUninitialized();
+        Obb() = default;
 
         Obb(AZ::Math::default_initialize_t)
             : m_position(AZ::Math::default_initialize)

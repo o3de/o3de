@@ -10,7 +10,6 @@
 
 namespace AZ
 {
-
     AZ_MATH_INLINE Plane::Plane(Simd::Vec4::FloatArgType plane)
         : m_plane(plane)
     {

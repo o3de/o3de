@@ -23,19 +23,7 @@ namespace AZ
         static void Reflect(ReflectContext* context);
 
         //! Default constructor, components are uninitialized.
-        //Quaternion() = default;
-
-        // curly braces {} - zero initializes the Simd member
-        AZ::Quaternion()
-            : m_value{}
-        {
-        }
-
-        // No initialization of the Simd member takes place here
-        // It is left in an indeterminate state
-        AZ::Quaternion(AZ::Math::default_initialize_t)
-        {
-        }
+        Quaternion() = default;
 
         //! Copy constructor, clones the provided quaternion.
         Quaternion(const Quaternion& q);
