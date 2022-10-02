@@ -8,6 +8,11 @@
 
 namespace AZ
 {
+    AZ_MATH_INLINE Transform Transform::CreateUninitialized()
+    {
+        return Transform();
+    }
+
     AZ_MATH_INLINE Transform::Transform(const Vector3& translation, const Quaternion& rotation, float scale)
         : m_translation(translation)
         , m_rotation(rotation)
