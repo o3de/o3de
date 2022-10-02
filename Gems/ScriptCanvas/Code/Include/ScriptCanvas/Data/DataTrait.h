@@ -11,8 +11,7 @@
 #include <Data/BehaviorContextObjectPtr.h>
 #include <Data/Data.h>
 
-//#include <AzFramework/Entity/EntityContextBus.h>
-//#include <AzFramework/Slice/SliceInstantiationTicket.h>
+#include <AzFramework/Spawnable/Script/SpawnableScriptAssetRef.h>
 
 namespace ScriptCanvas
 {
@@ -393,21 +392,21 @@ namespace ScriptCanvas
             static bool IsDefault(const Type& value, const Data::Type& = {}) { return value == GetDefault(); }
         };
 
-        /*template<>
-        struct Traits<AzFramework::SliceInstantiationTicket> : public TraitsBase<AzFramework::SliceInstantiationTicket>
+        template<>
+        struct Traits<AzFramework::Scripts::SpawnableScriptAssetRef> : public TraitsBase<AzFramework::Scripts::SpawnableScriptAssetRef>
         {
-            using Type = AzFramework::SliceInstantiationTicket;
+            using Type = AzFramework::Scripts::SpawnableScriptAssetRef;
             static const bool s_isAutoBoxed = true;
             static const bool s_isNative = false;
             static const bool s_isKey = true;
             static const eType s_type = eType::BehaviorContextObject;
 
-            static AZ::Uuid GetAZType(const Data::Type& = {}) { return azrtti_typeid<AzFramework::SliceInstantiationTicket>(); }
-            static Data::Type GetSCType(const AZ::TypeId& = AZ::TypeId::CreateNull()) { return Data::Type::BehaviorContextObject(AzFramework::SliceInstantiationTicket::TYPEINFO_Uuid()); }
-            static AZStd::string GetName(const Data::Type& = {}) { return "SliceInstantiationTicket"; }
-            static Type GetDefault(const Data::Type& = {}) { return AzFramework::SliceInstantiationTicket(); }
+            static AZ::Uuid GetAZType(const Data::Type& = {}) { return azrtti_typeid<AzFramework::Scripts::SpawnableScriptAssetRef>(); }
+            static Data::Type GetSCType(const AZ::TypeId& = AZ::TypeId::CreateNull()) { return Data::Type::BehaviorContextObject(AzFramework::Scripts::SpawnableScriptAssetRef::TYPEINFO_Uuid()); }
+            static AZStd::string GetName(const Data::Type& = {}) { return "SpawnableScriptAssetRef"; }
+            static Type GetDefault(const Data::Type& = {}) { return AzFramework::Scripts::SpawnableScriptAssetRef(); }
             static bool IsDefault(const Type& value, const Data::Type& = {}) { return value == GetDefault(); }
-        };*/
+        };
 
         /**
         * Special Case Traits specialization for the string_view type

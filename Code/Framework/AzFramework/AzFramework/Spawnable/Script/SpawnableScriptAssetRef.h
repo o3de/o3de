@@ -32,6 +32,11 @@ namespace AzFramework::Scripts
         SpawnableScriptAssetRef& operator=(const SpawnableScriptAssetRef& rhs);
         SpawnableScriptAssetRef& operator=(SpawnableScriptAssetRef&& rhs);
 
+        bool operator == (const SpawnableScriptAssetRef& rhs) const
+        {
+            return m_asset == rhs.GetAsset();
+        }
+
         void SetAsset(const AZ::Data::Asset<Spawnable>& asset);
         AZ::Data::Asset<Spawnable> GetAsset() const;
 
@@ -50,5 +55,22 @@ namespace AzFramework::Scripts
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
 
         AZ::Data::Asset<Spawnable> m_asset;
+    };
+}
+
+namespace AZStd
+{
+    template<>
+    struct hash<AzFramework::Scripts::SpawnableScriptAssetRef>
+    {
+        using argument_type = AzFramework::Scripts::SpawnableScriptAssetRef;
+        using result_type = size_t;
+
+        result_type operator() (const argument_type& ticket) const
+        {
+            size_t h = 0;
+            hash_combine(h, ticket.GetAsset().GetId());
+            return h;
+        }
     };
 }
