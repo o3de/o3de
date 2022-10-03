@@ -61,7 +61,7 @@ namespace UnitTest
     };
 
     class UiScrollBarComponentTest
-        : public testing::Test
+        : public UnitTest::AllocatorsTestFixture
     {
     protected:
 

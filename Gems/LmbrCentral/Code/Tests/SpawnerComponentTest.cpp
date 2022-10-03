@@ -106,7 +106,7 @@ class SpawnerApplication
 };
 
 class SpawnerComponentTest
-    : public testing::Test
+    : public UnitTest::AllocatorsTestFixture
 {
 public:
     void SetUp() override

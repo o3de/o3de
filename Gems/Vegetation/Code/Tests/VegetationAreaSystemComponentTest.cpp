@@ -114,7 +114,7 @@ namespace UnitTest
 
     // Test harness for the vegetation system that starts up / shuts down all the vegetation system components.
     class VegetationTestApp
-        : public ::testing::Test
+        : public UnitTest::AllocatorsTestFixture
     {
     public:
         VegetationTestApp()

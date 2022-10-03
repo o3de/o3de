@@ -16,6 +16,7 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/ComponentApplication.h>
+#include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UnitTest/UnitTest.h>
 #include <AzCore/Utils/Utils.h>
 
@@ -32,7 +33,7 @@ namespace UnitTest
     using namespace AssetBuilderSDK;
 
     class CopyDependencyBuilderTest
-        : public ::testing::Test
+        : public UnitTest::AllocatorsTestFixture
         , public UnitTest::TraceBusRedirector
         , private AzToolsFramework::AssetSystemRequestBus::Handler
     {
