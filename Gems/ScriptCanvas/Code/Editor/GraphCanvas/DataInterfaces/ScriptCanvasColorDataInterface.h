@@ -8,9 +8,12 @@
 #pragma once
 
 #include <AzCore/Math/Color.h>
+#include <QObject>
 
 #include <GraphCanvas/Components/NodePropertyDisplay/VectorDataInterface.h>
+#include <AzQtComponents/Utilities/Conversions.h>
 
+#include <AzQtComponents/Components/Widgets/ColorPicker.h>
 #include "ScriptCanvasDataInterface.h"
 
 namespace ScriptCanvasEditor
@@ -31,7 +34,57 @@ namespace ScriptCanvasEditor
         {
             return 4;
         }
-        
+
+        void SetSubmitValueEvent(SubmitValueEvent::Handler& handler) override {
+            handler.Connect(m_submitEvent);
+        }
+
+        void OnPressButton() override
+        {
+            const ScriptCanvas::Datum* object = GetSlotObject();
+            ScriptCanvas::ModifiableDatumView datumView;
+            ModifySlotObject(datumView);
+            if (datumView.IsValid() && object)
+            {
+                const AZ::Color* retVal = object->GetAs<AZ::Color>();
+                if (retVal)
+                {
+                    AzQtComponents::ColorPicker picker(AzQtComponents::ColorPicker::Configuration::RGBA);
+                    picker.setCurrentColor(*retVal);
+                    picker.setWindowTitle(QObject::tr("Select Color"));
+                    picker.setWindowModality(Qt::ApplicationModal);
+                    if (picker.exec() == QDialog::DialogCode::Accepted)
+                    {
+                        datumView.SetAs(picker.currentColor());
+                        m_submitEvent.Signal();
+                    }
+                }
+            }
+        }
+
+        AZStd::optional<QPixmap> GetIcon() const override
+        {
+            const ScriptCanvas::Datum* object = GetSlotObject();
+            if (object)
+            {
+                const AZ::Color* retVal = object->GetAs<AZ::Color>();
+                if (retVal)
+                {
+                    QColor color = AzQtComponents::toQColor(*retVal);
+                    static const int colorIconWidth = 32;
+                    static const int colorIconHeight = 16;
+                    QPixmap pixmap(QSize(colorIconWidth, colorIconHeight));
+                    pixmap.fill(color);
+                    QPainter painter(&pixmap);
+                    painter.setPen(QColor("#333333"));
+                    painter.drawRect(pixmap.rect().adjusted(0, 0, -1, -1));
+                    return { pixmap };
+                }
+            }
+
+            return {};
+        }
+
         double GetValue(int index) const override
         {
             if (index < GetElementCount())
@@ -150,5 +203,7 @@ namespace ScriptCanvasEditor
         {
             return 255.0;
         }
+    private:
+        SubmitValueEvent m_submitEvent;
     };
 }
