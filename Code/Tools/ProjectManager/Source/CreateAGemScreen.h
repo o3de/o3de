@@ -17,12 +17,12 @@
 #include <PythonBindings.h>
 #endif
 
-class QButtonGroup;
-class QDialogButtonBox;
-class QRadioButton;
-class QScrollArea;
-class QVBoxLayout;
-class QStackedWidget;
+QT_FORWARD_DECLARE_CLASS(QButtonGroup)
+QT_FORWARD_DECLARE_CLASS(QDialogButtonBox)
+QT_FORWARD_DECLARE_CLASS(QRadioButton)
+QT_FORWARD_DECLARE_CLASS(QScrollArea)
+QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
+QT_FORWARD_DECLARE_CLASS(QStackedWidget)
 
 namespace O3DE::ProjectManager
 {
@@ -48,8 +48,8 @@ namespace O3DE::ProjectManager
         QScrollArea* CreateGemSetupScrollArea();
         QScrollArea* CreateGemDetailsScrollArea();
         QScrollArea* CreateGemCreatorScrollArea();
-        QFrame* CreateLHSTabs();
-        QFrame* CreateRHSPane();
+        QFrame* CreateTabButtonsFrame();
+        QFrame* CreateTabPaneFrame();
         bool ValidateGemTemplateLocation();
         bool ValidateGemDisplayName();
         bool ValidateGemName();
@@ -93,9 +93,9 @@ namespace O3DE::ProjectManager
 
         GemInfo m_createGemInfo;
 
-        const int gemTemplateSelectionScreen = 0;
-        const int gemDetailsScreen = 1;
-        const int gemCreatorDetailsScreen = 2;
+        static constexpr int GemTemplateSelectionScreen = 0;
+        static constexpr int GemDetailsScreen = 1;
+        static constexpr int GemCreatorDetailsScreen = 2;
     };
 
 

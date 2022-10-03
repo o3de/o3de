@@ -33,11 +33,11 @@ namespace O3DE::ProjectManager
         : ScreenWidget(parent)
     {
 
-        QVBoxLayout* screenLayout = new QVBoxLayout(this);
+        QVBoxLayout* screenLayout = new QVBoxLayout();
         screenLayout->setSpacing(0);
         screenLayout->setContentsMargins(0, 0, 0, 0);
 
-        ScreenHeader* m_header = new ScreenHeader(this);
+        ScreenHeader* m_header = new ScreenHeader();
         m_header->setSubTitle(tr("Create a new gem"));
         connect(
             m_header->backButton(),
@@ -50,23 +50,23 @@ namespace O3DE::ProjectManager
         screenLayout->addWidget(m_header);
 
         
-        QHBoxLayout* hLayout = new QHBoxLayout(this);
+        QHBoxLayout* hLayout = new QHBoxLayout();
         hLayout->setSpacing(0);
         hLayout->setContentsMargins(0, 0, 0, 0);
 
-        QFrame* lhsFrame = CreateLHSTabs();
-        hLayout->addWidget(lhsFrame);
+        QFrame* tabButtonsFrame = CreateTabButtonsFrame();
+        hLayout->addWidget(tabButtonsFrame);
 
-        QFrame* rhsFrame = CreateRHSPane();
-        hLayout->addWidget(rhsFrame);
+        QFrame* tabPaneFrame = CreateTabPaneFrame();
+        hLayout->addWidget(tabPaneFrame);
         
-        QFrame* createGemFrame = new QFrame(this);
+        QFrame* createGemFrame = new QFrame();
         createGemFrame->setLayout(hLayout);
         screenLayout->addWidget(createGemFrame);
         
-        QFrame* footerFrame = new QFrame(this);
+        QFrame* footerFrame = new QFrame();
         footerFrame->setObjectName("createAGemFooter");
-        m_backNextButtons = new QDialogButtonBox(this);
+        m_backNextButtons = new QDialogButtonBox();
         m_backNextButtons->setObjectName("footer");
         QVBoxLayout* footerLayout = new QVBoxLayout();
         footerLayout->setContentsMargins(0, 0, 0, 0);
@@ -85,12 +85,12 @@ namespace O3DE::ProjectManager
         setLayout(screenLayout);
     }
 
-    QFrame* CreateGem::CreateLHSTabs()
+    QFrame* CreateGem::CreateTabButtonsFrame()
     {
-        QFrame* lhsFrame = new QFrame(this);
-        lhsFrame->setObjectName("createAGemLHS");
+        QFrame* tabButtonsFrame = new QFrame();
+        tabButtonsFrame->setObjectName("createAGemLHS");
 
-        QVBoxLayout* vLayout = new QVBoxLayout(this);
+        QVBoxLayout* vLayout = new QVBoxLayout();
         vLayout->setSpacing(0);
         vLayout->setContentsMargins(0, 0, 0, 0);
 
@@ -98,13 +98,8 @@ namespace O3DE::ProjectManager
         m_gemDetailsTab =           new QRadioButton(tr("2.  Gem Details"));
         m_gemCreatorDetailsTab =    new QRadioButton(tr("3.  Creator Details"));
 
-        m_gemTemplateSelectionTab->setObjectName("createAGemLHSTab");
         m_gemTemplateSelectionTab->setChecked(true);
-
-        m_gemDetailsTab->setObjectName("createAGemLHSTab");
         m_gemDetailsTab->setEnabled(false);
-
-        m_gemCreatorDetailsTab->setObjectName("createAGemLHSTab");
         m_gemCreatorDetailsTab->setEnabled(false);
 
         connect(m_gemTemplateSelectionTab,  &QPushButton::clicked, this, &CreateGem::HandleGemTemplateSelectionTab);
@@ -119,52 +114,52 @@ namespace O3DE::ProjectManager
         vLayout->addWidget(m_gemCreatorDetailsTab);
         vLayout->addStretch();
 
-        lhsFrame->setLayout(vLayout);
+        tabButtonsFrame->setLayout(vLayout);
 
-        return lhsFrame;
+        return tabButtonsFrame;
     }
 
     void CreateGem::HandleGemTemplateSelectionTab()
     {
-        m_stackWidget->setCurrentIndex(gemTemplateSelectionScreen);
+        m_stackWidget->setCurrentIndex(GemTemplateSelectionScreen);
         m_nextButton->setText(tr("Next"));
         m_backButton->setVisible(false);
     }
 
     void CreateGem::HandleGemDetailsTab()
     {
-        m_stackWidget->setCurrentIndex(gemDetailsScreen);
+        m_stackWidget->setCurrentIndex(GemDetailsScreen);
         m_nextButton->setText(tr("Next"));
         m_backButton->setVisible(true);
     }
 
     void CreateGem::HandleGemCreatorDetailsTab()
     {
-        m_stackWidget->setCurrentIndex(gemCreatorDetailsScreen);
+        m_stackWidget->setCurrentIndex(GemCreatorDetailsScreen);
         m_nextButton->setText(tr("Create"));
         m_backButton->setVisible(true);
     }
 
-    QFrame* CreateGem::CreateRHSPane()
+    QFrame* CreateGem::CreateTabPaneFrame()
     {
-        QFrame* rhsFrame = new QFrame(this);
+        QFrame* tabPaneFrame = new QFrame();
 
-        QVBoxLayout* vLayout = new QVBoxLayout(this);
+        QVBoxLayout* vLayout = new QVBoxLayout();
         vLayout->setSpacing(0);
         vLayout->setContentsMargins(0, 0, 0, 0);
 
-        m_stackWidget = new QStackedWidget(this);
+        m_stackWidget = new QStackedWidget();
         m_stackWidget->setContentsMargins(0, 0, 0, 0);
         
         m_stackWidget->setObjectName("createAGemRHS");
-        m_stackWidget->addWidget(CreateGemSetupScrollArea());  //tr("1. Gem Setup");
-        m_stackWidget->addWidget(CreateGemDetailsScrollArea());//tr("2. Gem Details");
-        m_stackWidget->addWidget(CreateGemCreatorScrollArea());//tr("3. Creator Details");
+        m_stackWidget->addWidget(CreateGemSetupScrollArea());
+        m_stackWidget->addWidget(CreateGemDetailsScrollArea());
+        m_stackWidget->addWidget(CreateGemCreatorScrollArea());
         vLayout->addWidget(m_stackWidget);
 
-        rhsFrame->setLayout(vLayout);
+        tabPaneFrame->setLayout(vLayout);
 
-        return rhsFrame;
+        return tabPaneFrame;
     }
 
 
@@ -254,48 +249,38 @@ namespace O3DE::ProjectManager
             tr("The unique name for your gem consisting of only alphanumeric characters, '-' and '_'."),
             tr("A gem system name is required."));
         m_gemName->lineEdit()->setValidator(new QRegularExpressionValidator(QRegularExpression("[a-zA-Z]+[a-zA-Z0-9\\-\\_]*"), this));
-        m_gemName->setObjectName("createAGem");
         gemDetailsLayout->addWidget(m_gemName);
 
         m_gemDisplayName = new FormLineEditWidget(
             tr("Gem Display name*"), "", tr("The name displayed in the Gem Catalog"), tr("A gem display name is required."));
         m_gemDisplayName->lineEdit()->setValidator(new QRegularExpressionValidator(QRegularExpression("( |\\w)+"), this));
-        m_gemDisplayName->setObjectName("createAGem");
         gemDetailsLayout->addWidget(m_gemDisplayName);
 
         m_gemSummary = new FormLineEditWidget(tr("Gem Summary"), "", tr("A short description of your Gem"), "");
-        m_gemSummary->setObjectName("createAGem");
         gemDetailsLayout->addWidget(m_gemSummary);
 
         m_requirements = new FormLineEditWidget(tr("Requirements"), "", tr("Notice of any requirements your Gem. i.e. This requires X other gem"), "");
-        m_requirements->setObjectName("createAGem");
         gemDetailsLayout->addWidget(m_requirements);
 
         m_license = new FormLineEditWidget(
             tr("License*"), "", tr("License uses goes here: i.e. Apache-2.0 or MIT"), tr("License details are required."));
-        m_license->setObjectName("createAGem");
         gemDetailsLayout->addWidget(m_license);
 
         m_licenseURL = new FormLineEditWidget(tr("License URL"), "", tr("Link to the license web site i.e. https://opensource.org/licenses/Apache-2.0"), "");
-        m_licenseURL->setObjectName("createAGem");
         gemDetailsLayout->addWidget(m_licenseURL);
 
         m_userDefinedGemTags = new FormLineEditWidget(tr("User-defined Gem Tags (Comma separated list)"), "");
         m_userDefinedGemTags->lineEdit()->setValidator(new QRegularExpressionValidator(QRegularExpression("(\\w+)(,\\s?\\w*)*"), this));
-        m_userDefinedGemTags->setObjectName("createAGem");
         gemDetailsLayout->addWidget(m_userDefinedGemTags);
 
         m_gemLocation = new FormFolderBrowseEditWidget(tr("Gem Location"), "", tr("The path that the gem will be created at."), tr("The chosen directory must either not exist or be empty."));
-        m_gemLocation->setObjectName("createAGem");
         gemDetailsLayout->addWidget(m_gemLocation);
         
         m_gemIconPath = new FormLineEditWidget(tr("Gem Icon Path"), "default.png", tr("Select Gem icon path"), "");
-        m_gemIconPath->setObjectName("createAGem");
         gemDetailsLayout->addWidget(m_gemIconPath);
 
         m_documentationURL = new FormLineEditWidget(
             tr("Documentation URL"), "", tr("Link to any documentation of your Gem i.e. https://o3de.org/docs/user-guide/gems/..."), "");
-        m_documentationURL->setObjectName("createAGem");
         gemDetailsLayout->addWidget(m_documentationURL);
 
         return gemDetailsScrollArea;
@@ -322,15 +307,12 @@ namespace O3DE::ProjectManager
 
         m_origin =
             new FormLineEditWidget(tr("Creator Name*"), "", tr("The name of the gem creator or originator goes here. i.e. O3DE"), tr("You must provide a creator name."));
-        m_origin->setObjectName("createAGem");
         gemCreatorLayout->addWidget(m_origin);
 
         m_originURL = new FormLineEditWidget(tr("Origin URL"), "", tr("The primary website for your Gem. i.e. http://o3de.org"), "");
-        m_originURL->setObjectName("createAGem");
         gemCreatorLayout->addWidget(m_originURL);
 
         m_repositoryURL = new FormLineEditWidget(tr("Repository URL"), "", tr("Optional URL of the repository for this gem."), "");
-        m_repositoryURL->setObjectName("createAGem");
         gemCreatorLayout->addWidget(m_repositoryURL);
 
         return gemCreatorScrollArea;
@@ -408,22 +390,22 @@ namespace O3DE::ProjectManager
 
     void CreateGem::HandleBackButton()
     {
-        if (m_stackWidget->currentIndex() > gemTemplateSelectionScreen)
+        if (m_stackWidget->currentIndex() > 0)
         {
-            m_stackWidget->setCurrentIndex(m_stackWidget->currentIndex() - 1);
+            const int newIndex = m_stackWidget->currentIndex() - 1;
+            m_stackWidget->setCurrentIndex(newIndex);
 
-            int newIndex = m_stackWidget->currentIndex();
-            if (newIndex == gemDetailsScreen)
+            if (newIndex == GemDetailsScreen)
             {
                 m_gemDetailsTab->setChecked(true);
             }
-            else if (newIndex == gemTemplateSelectionScreen)
+            else if (newIndex == GemTemplateSelectionScreen)
             {
                 m_gemTemplateSelectionTab->setChecked(true);
             }
         }
 
-        if (m_stackWidget->currentIndex() == gemTemplateSelectionScreen)
+        if (m_stackWidget->currentIndex() == 0)
         {
             m_backButton->setVisible(false);
         }
@@ -433,14 +415,14 @@ namespace O3DE::ProjectManager
 
     void CreateGem::HandleNextButton()
     {
-        if (m_stackWidget->currentIndex() == gemTemplateSelectionScreen && ValidateGemTemplateLocation())
+        if (m_stackWidget->currentIndex() == GemTemplateSelectionScreen && ValidateGemTemplateLocation())
         {
             m_backButton->setVisible(true);
-            m_stackWidget->setCurrentIndex(gemDetailsScreen);
+            m_stackWidget->setCurrentIndex(GemDetailsScreen);
             m_gemDetailsTab->setEnabled(true);
             m_gemDetailsTab->setChecked(true);
         }
-        else if (m_stackWidget->currentIndex() == gemDetailsScreen)
+        else if (m_stackWidget->currentIndex() == GemDetailsScreen)
         {
             bool gemNameValid = ValidateGemName();
             bool gemDisplayNameValid = ValidateGemDisplayName();
@@ -458,13 +440,13 @@ namespace O3DE::ProjectManager
                 m_createGemInfo.m_path = m_gemLocation->lineEdit()->text();
                 m_createGemInfo.m_features = m_userDefinedGemTags->lineEdit()->text().split(',');
 
-                m_stackWidget->setCurrentIndex(gemCreatorDetailsScreen);
+                m_stackWidget->setCurrentIndex(GemCreatorDetailsScreen);
                 m_nextButton->setText(tr("Create"));
                 m_gemCreatorDetailsTab->setEnabled(true);
                 m_gemCreatorDetailsTab->setChecked(true);
             }
         }
-        else if (m_stackWidget->currentIndex() == gemCreatorDetailsScreen)
+        else if (m_stackWidget->currentIndex() == GemCreatorDetailsScreen)
         {
             bool originIsValid = ValidateFormNotEmpty(m_origin);
             bool repoURLIsValid = ValidateRepositoryURL();

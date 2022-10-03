@@ -35,11 +35,7 @@ QTabBar::tab:text {
     text-align:left;
 }
 
-QRadioButton#createAGemLHSTab::indicator{
-    image: url(:/nothing.png);
-}
-
-QRadioButton#createAGemLHSTab{
+#createAGemLHS QRadioButton{
     font-size: 16px;
     height: 40px;
     min-width: 180px;
@@ -47,22 +43,27 @@ QRadioButton#createAGemLHSTab{
     color: #6b6b6b;
 }
 
-
-QRadioButton#createAGemLHSTab:enabled{
+#createAGemLHS QRadioButton:enabled{
     color: #aaaaaa;
 }
 
-
-QRadioButton#createAGemLHSTab:checked{
+#createAGemLHS QRadioButton:checked{
     background-color: #333333;
     spacing: 30px;
     color: #FFFFFF;
 }
 
+#createAGemLHS QRadioButton::indicator{
+    image: url(:/nothing.png);
+}
 
 QStackedWidget#createAGemRHS{
     background-color: #333333;
     text-align:left;
+}
+
+#createAGemRHS #formFrame{
+    margin-left: 0px;
 }
 
 QTabWidget::pane {
