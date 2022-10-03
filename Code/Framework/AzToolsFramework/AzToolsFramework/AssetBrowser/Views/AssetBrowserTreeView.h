@@ -69,6 +69,7 @@ namespace AzToolsFramework
             void RenameEntry();
             void DuplicateEntries();
             void MoveEntries();
+            void AfterRename(QString newVal);
 
             //////////////////////////////////////////////////////////////////////////
             // AssetBrowserViewRequestBus

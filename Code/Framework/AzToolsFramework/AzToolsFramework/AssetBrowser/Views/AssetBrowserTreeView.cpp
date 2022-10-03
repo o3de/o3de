@@ -38,6 +38,7 @@ AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // conversio
 #include <QHeaderView>
 #include <QMouseEvent>
 #include <QCoreApplication>
+#include <QLineEdit>
 #include <QPen>
 #include <QPainter>
 #include <QPushButton>
@@ -618,6 +619,54 @@ namespace AzToolsFramework
                     else
                     {
                         edit(currentIndex());
+                    }
+                }
+            }
+        }
+
+        void AssetBrowserTreeView::AfterRename(QString newVal)
+        {
+            auto entries = GetSelectedAssets(false); // you cannot rename product files.
+
+            if (entries.size() != 1)
+            {
+                return;
+            }
+            using namespace AZ::IO;
+            AssetBrowserEntry* item = entries[0];
+            Path fromPath = item->GetFullPath();
+            PathView extension = fromPath.Extension();
+            Path toPath(fromPath);
+            toPath.ReplaceFilename(newVal.toStdString().c_str());
+            toPath.ReplaceExtension(extension);
+
+            using namespace AzFramework::AssetSystem;
+            AssetChangeReportRequest moveRequest(
+                AZ::OSString(fromPath.c_str()), AZ::OSString(toPath.c_str()), AssetChangeReportRequest::ChangeType::Move);
+            AssetChangeReportResponse moveResponse;
+            if (SendRequest(moveRequest, moveResponse))
+            {
+                AZStd::string message;
+                AZ::StringFunc::Join(message, moveResponse.m_lines.begin(), moveResponse.m_lines.end(), "\n");
+                if (!message.empty())
+                {
+                   FixedSizeMessageBox msgBox(
+                        "After Rename Asset Information",
+                        "The asset has been renamed.",
+                        "More information can be found by pressing \"Show Details...\".",
+                        message.c_str(),
+                        QMessageBox::Information,
+                        QMessageBox::Ok,
+                        QMessageBox::Ok,
+                        this);
+                    msgBox.SetSize(600, 0);
+                    int dialogFlag = -1;
+                    connect(&msgBox, &FixedSizeMessageBox::accepted, &msgBox, [&dialogFlag]() {dialogFlag = 1; });
+                    connect(&msgBox, &FixedSizeMessageBox::rejected, &msgBox, [&dialogFlag]() {dialogFlag = 0; });
+                    msgBox.show();
+                    while (dialogFlag < 0)
+                    {
+                        qApp->processEvents();
                     }
                 }
             }

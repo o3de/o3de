@@ -214,7 +214,7 @@ namespace AzToolsFramework
 
             return QVariant();
         }
-
+#if 0
         bool AssetBrowserModel::setData(const QModelIndex& index, const QVariant& value, [[maybe_unused]]int role)
         {
             using namespace AZ::IO;
@@ -258,7 +258,7 @@ namespace AzToolsFramework
             }
             return false;
         }
-
+#endif
         Qt::ItemFlags AssetBrowserModel::flags(const QModelIndex& index) const
         {
             Qt::ItemFlags defaultFlags = QAbstractItemModel::flags(index) | Qt::ItemIsEditable;
