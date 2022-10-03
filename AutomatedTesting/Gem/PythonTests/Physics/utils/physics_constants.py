@@ -34,6 +34,7 @@ SPHERE_SHAPE_COMPONENT = "Sphere Shape"
 Component Properties
 """
 PHSX_SHAPE_COLLIDER_SHAPE = 'Shape Configuration|Shape'
+PHYSX_COLLIDER_MESH_PATH = 'Shape Configuration|Asset|PhysX Mesh'
 
 
 

@@ -4,6 +4,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
+import os
 import azlmbr
 
 from editor_python_test_tools.editor_entity_utils import EditorEntity
@@ -25,3 +26,6 @@ def add_validated_component(parent_entity: EditorEntity, component: str, test_me
     Report.critical_result(test_message, helper.wait_for_condition(lambda: parent_entity.has_component(component), WAIT_TIME_1))
 
     return created_component
+
+def set_physx_collider_mesh(parent_entity: EditorEntity, source_file: str):
+    asdf = "asdf"

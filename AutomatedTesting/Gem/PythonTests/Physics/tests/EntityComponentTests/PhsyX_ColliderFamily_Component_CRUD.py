@@ -79,12 +79,14 @@ def PhysX_ColliderFamily_Component_CRUD():
     """
 
     # Helper file Imports
+    import os
 
     import azlmbr.math as math
     import azlmbr.entity as EntityId
     import azlmbr.editor as editor
     import azlmbr.bus as bus
     import azlmbr.physics as physics
+    import azlmbr.scriptcanvas as scriptcanvas
 
     import editor_python_test_tools.hydra_editor_utils as hydra
 
@@ -101,7 +103,7 @@ def PhysX_ColliderFamily_Component_CRUD():
                                                  BOX_SHAPE_COMPONENT, CAPSULE_SHAPE_COMPONENT,
                                                  PHSX_SHAPE_COLLIDER_SHAPE,
                                                  CYLINDER_SHAPE_COMPONENT, POLYGON_PRISM_SHAPE_COMPONENT,
-                                                 QUAD_SHAPE_COMPONENT, SPHERE_SHAPE_COMPONENT)
+                                                 QUAD_SHAPE_COMPONENT, SPHERE_SHAPE_COMPONENT, PHYSX_COLLIDER_MESH_PATH)
 
 
     # 1) Load the level
@@ -139,6 +141,7 @@ def PhysX_ColliderFamily_Component_CRUD():
         physx_collider_box_shape_component.set_component_property_value(PHSX_SHAPE_COLLIDER_SHAPE, physics.ShapeType_Box)
         physx_collider_capsule_shape_component.set_component_property_value(PHSX_SHAPE_COLLIDER_SHAPE, physics.ShapeType_Capsule)
         physx_collider_sphere_shape_component.set_component_property_value(PHSX_SHAPE_COLLIDER_SHAPE, physics.ShapeType_Sphere)
+        physx_collider_physicsasset_component.set_component_property_value(PHYSX_COLLIDER_MESH_PATH, scriptcanvas.SourceHandleFromPath('E:\\gws\\o3de\\Gems\\PrimitiveAssets\\Assets\\Objects\\_Primitives\\_Box_1x1.fbx'))
 
         # 5) Adding Physx Shape Collider Components to corresponding Shape Collider Entities
         box_shape_component = add_validated_component(physx_shape_collider_box_entity, BOX_SHAPE_COMPONENT, Tests.add_box_shape_component)
@@ -149,6 +152,9 @@ def PhysX_ColliderFamily_Component_CRUD():
         sphere_shape_component = add_validated_component(physx_shape_collider_sphere_entity, SPHERE_SHAPE_COMPONENT, Tests.add_sphere_shape_component)
 
         # 6) PhysX Collider PhysicsAsset Mesh Support
+
+        physx_collider_physicsasset_entity = "butts"
+
         # --Crash--
         proptree = physx_collider_physicsasset_component.get_property_tree(True)
         proptree_count = proptree.get_container_count()
