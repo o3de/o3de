@@ -143,9 +143,10 @@ namespace AZ
 
             if (!isLoadSuccess)
             {
-                HandleMipChainAssetBuses(itr->second.m_imageAsset, false);
+                Data::Asset<Data::AssetData> imageAsset = itr->second.m_imageAsset;
+                HandleMipChainAssetBuses(imageAsset, false);
                 m_pendingReloadImageAsset.erase(itr);
-                Data::AssetManagerBus::Broadcast(&Data::AssetManagerBus::Events::OnAssetReloadError, itr->second.m_imageAsset);
+                Data::AssetManagerBus::Broadcast(&Data::AssetManagerBus::Events::OnAssetReloadError, imageAsset);
                 return;
             }
 
@@ -177,9 +178,10 @@ namespace AZ
 
             if (loadedMipChainAssets == itr->second.m_mipChainAssetSubIds.size())
             {
-                HandleMipChainAssetBuses(itr->second.m_imageAsset, false);
+                Data::Asset<Data::AssetData> imageAsset = itr->second.m_imageAsset;
+                HandleMipChainAssetBuses(imageAsset, false);
                 m_pendingReloadImageAsset.erase(itr);
-                Data::AssetManagerBus::Broadcast(&Data::AssetManagerBus::Events::OnAssetReloaded, itr->second.m_imageAsset);
+                Data::AssetManagerBus::Broadcast(&Data::AssetManagerBus::Events::OnAssetReloaded, imageAsset);
             }
         }
 
