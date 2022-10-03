@@ -77,10 +77,7 @@ namespace AzToolsFramework::ComponentModeFramework
         auto handlerFunc = [this](ViewportUi::ButtonId buttonId)
         {
             ViewportUi::ViewportUiRequestBus::Event(
-                ViewportUi::DefaultViewportId,
-                &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton,
-                m_switcherId,
-                buttonId);
+                ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton, m_switcherId, buttonId);
 
             ActivateComponentMode(buttonId);
         };
@@ -419,29 +416,29 @@ namespace AzToolsFramework::ComponentModeFramework
     void ComponentModeSwitcher::AfterUndoRedo()
     {
         // wait one frame for the undo stack to actually be updated
-        QTimer::singleShot(
-            0,
-            nullptr,
-            [this]()
-            {
-                auto* toolsApplicationRequests = AzToolsFramework::ToolsApplicationRequestBus::FindFirstHandler();
-                if (toolsApplicationRequests != nullptr)
-                {
-                    const auto& selectedEntityIds = toolsApplicationRequests->GetSelectedEntities();
-                    if (selectedEntityIds.size() == 1)
-                    {
-                        bool inComponentMode;
-                        AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::BroadcastResult(
-                            inComponentMode, &ComponentModeSystemRequests::InComponentMode);
+        AZ::TickBus::Handler::BusConnect();
+    }
 
-                        if (!inComponentMode)
-                        {
-                            ClearSwitcher();
-                            UpdateSwitcherOnEntitySelectionChange(selectedEntityIds, {});
-                        }
-                    }
+    void ComponentModeSwitcher::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+    {
+        if (auto* toolsApplicationRequests = AzToolsFramework::ToolsApplicationRequestBus::FindFirstHandler())
+        {
+            const auto& selectedEntityIds = toolsApplicationRequests->GetSelectedEntities();
+            if (selectedEntityIds.size() == 1)
+            {
+                bool inComponentMode = false;
+                AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::BroadcastResult(
+                    inComponentMode, &ComponentModeSystemRequests::InComponentMode);
+
+                if (!inComponentMode)
+                {
+                    ClearSwitcher();
+                    UpdateSwitcherOnEntitySelectionChange(selectedEntityIds, {});
                 }
-            });
+            }
+        }
+
+        AZ::TickBus::Handler::BusDisconnect();
     }
 
     void ComponentModeSwitcher::OnImGuiDropDownShown()

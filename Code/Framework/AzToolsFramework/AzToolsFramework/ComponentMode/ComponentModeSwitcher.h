@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Component/TickBus.h>
 #include <AzToolsFramework/API/EntityCompositionNotificationBus.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
@@ -54,6 +55,7 @@ namespace AzToolsFramework
             , private EntityCompositionNotificationBus::Handler
             , private ToolsApplicationNotificationBus::Handler
             , private AzFramework::ViewportImGuiNotificationBus::Handler
+            , private AZ::TickBus::Handler
         {
         public:
             ComponentModeSwitcher();
@@ -120,6 +122,9 @@ namespace AzToolsFramework
             void OnImGuiActivated() override;
             void OnImGuiDeactivated() override;
 
+            // AZ::TickBus overrides ...
+            void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+
             // Member variables
             AZ::Component* m_activeSwitcherComponent = nullptr; //!< The component that is currently in component mode
             AZStd::vector<ComponentData> m_addedComponents; //!< Vector of ComponentData elements.
@@ -129,7 +134,8 @@ namespace AzToolsFramework
             ViewportUi::SwitcherId m_switcherId; //!< Id of linked switcher.
             AZ::EntityComponentIdPair m_componentModePair; //!< The component mode pair in onEntityCompositionChanged.
             AddOrRemoveComponent m_addOrRemove = AddOrRemoveComponent::Add; //!< Setting to either add or remove component.
-            bool m_hiddenByImGui = false; //!< Protects the switcher from being opened by OnImGuiDropDownShown if it has been hidden elsewhere.
+            //! Protects the switcher from being opened by OnImGuiDropDownShown if it has been hidden elsewhere.
+            bool m_hiddenByImGui = false;
         };
 
     } // namespace ComponentModeFramework
