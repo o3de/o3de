@@ -23,7 +23,7 @@ namespace AZ
         //! Feature processor for Editor Mode Feedback visual effect system.
         class EditorModeFeatureProcessor
             : public RPI::FeatureProcessor
-            , public AZ::TickBus::Handler
+            , private AZ::TickBus::Handler
         {
         public:
             AZ_RTTI(AZ::Render::EditorModeFeatureProcessor, "{78D40D57-F564-4ECD-B9F5-D8C9784B15D0}", AZ::RPI::FeatureProcessor);
