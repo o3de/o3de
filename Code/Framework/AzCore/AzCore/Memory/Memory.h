@@ -252,7 +252,7 @@ namespace AZ {
     /* ========== standard operator new/delete ========== */                                                                                                                        \
     AZ_FORCE_INLINE void* operator new(std::size_t size) {                      /* default operator new (called with "new _Class()") */                                             \
         AZ_Assert(size >= sizeof(_Class), "Size mismatch! Did you forget to declare the macro in derived class? Size: %d sizeof(%s): %d", size, #_Class, sizeof(_Class));           \
-        AZ_Warning(0, true/*false*/, "Make sure you use aznew, offers better tracking!" /*Warning temporarily disabled until engine is using AZ allocators.*/);                     \
+        AZ_Warning(0, true/*false*/, "Make sure you use aznew, offers better tracking! (%s)", #_Class /*Warning temporarily disabled until engine is using AZ allocators.*/);       \
         return AZ::AllocatorInstance< _Allocator >::Get().Allocate(size, AZStd::alignment_of< _Class >::value, _Flags,#_Class);                                                     \
     }                                                                                                                                                                               \
     AZ_FORCE_INLINE void  operator delete(void* p, std::size_t size) {    /* default operator delete */                                                                             \
@@ -436,7 +436,7 @@ namespace AZ {
     [[nodiscard]] void* _Class::operator new(std::size_t size)                                                                                                                                                                                      \
     {                                                                                                                                                                                                                                               \
         AZ_Assert(size >= sizeof(_Class), "Size mismatch! Did you forget to declare the macro in derived class? Size: %d sizeof(_Class): %d", size, sizeof(_Class));                                                                                \
-        AZ_Warning(0, false, "Make sure you use aznew, offers better tracking!");                                                                                                                                                                   \
+        AZ_Warning(0, false, "Make sure you use aznew, offers better tracking! (%s)", #_Class);                                                                                                                                                     \
         return AZ::AllocatorInstance< _Allocator >::Get().Allocate(size, AZStd::alignment_of< _Class >::value, _Flags,#_Class);                                                                                                                     \
     }                                                                                                                                                                                                                                               \
     _Template                                                                                                                                                                                                                                       \

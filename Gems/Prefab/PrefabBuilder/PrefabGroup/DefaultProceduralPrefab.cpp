@@ -90,8 +90,10 @@ namespace AZ::SceneAPI
 
         // compute the filenames of the scene file
         AZStd::string relativeSourcePath = scene.GetSourceFilename();
-        // the watch folder and forward slash is used in the asset hint path of the file
         AZStd::string watchFolder = scene.GetWatchFolder() + "/";
+        // the watch folder and forward slash is used in the asset hint path of the file
+        AZ::StringFunc::Replace(relativeSourcePath, "\\", "/");
+        AZ::StringFunc::Replace(watchFolder, "\\", "/");
         AZ::StringFunc::Replace(relativeSourcePath, watchFolder.c_str(), "");
         AZ::StringFunc::Replace(relativeSourcePath, ".", "_");
         AZStd::string filenameOnly{ relativeSourcePath };
@@ -332,6 +334,9 @@ namespace AZ::SceneAPI
             }
         }
         meshGroup->OverrideId(meshSubId);
+
+        // tag this mesh group as a "default mesh group" using this rule
+        meshGroup->GetRuleContainer().AddRule(AZStd::make_shared<AZ::SceneAPI::SceneData::ProceduralMeshGroupRule>());
 
         // this clears out the mesh coordinates each mesh group will be rotated and translated
         // using the attached scene graph node

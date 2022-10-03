@@ -56,9 +56,10 @@ namespace MaterialCanvas
         bool EndEdit() override;
 
         // MaterialCanvasDocumentRequestBus::Handler overrides...
+        GraphModel::GraphPtr GetGraph() const override;
         GraphCanvas::GraphId GetGraphId() const override;
-        const AZStd::vector<AZStd::string>& GetGeneratedFilePaths() const override;
         AZStd::string GetGraphName() const override;
+        const AZStd::vector<AZStd::string>& GetGeneratedFilePaths() const override;
         bool CompileGraph() const override;
         void QueueCompileGraph() const override;
         bool IsCompileGraphQueued() const override;
@@ -68,6 +69,7 @@ namespace MaterialCanvas
         void Clear() override;
 
         // GraphModelIntegration::GraphControllerNotificationBus::Handler overrides...
+        void OnGraphModelSlotModified(GraphModel::SlotPtr slot) override;
         void OnGraphModelRequestUndoPoint() override;
         void OnGraphModelTriggerUndo() override;
         void OnGraphModelTriggerRedo() override;

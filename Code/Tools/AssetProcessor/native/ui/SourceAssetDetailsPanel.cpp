@@ -203,7 +203,6 @@ namespace AssetProcessor
         int sourceDependencyCount = 0;
         assetDatabaseConnection.QueryDependsOnSourceBySourceDependency(
             sourceItemData->m_sourceInfo.m_sourceGuid,
-            nullptr,
             AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_Any,
             [&](AzToolsFramework::AssetDatabase::SourceFileDependencyEntry& sourceFileDependencyEntry)
             {
@@ -213,17 +212,43 @@ namespace AssetProcessor
                 // Only add a button to link to rows that actually exist.
 
                 AzToolsFramework::AssetDatabase::SourceDatabaseEntry dependencyDetails;
-                assetDatabaseConnection.QuerySourceBySourceName(
-                    sourceFileDependencyEntry.m_dependsOnSource.c_str(),
-                    [&](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry)
-                    {
-                        dependencyDetails = sourceEntry;
-                        return false;
-                    });
+                AZStd::string displayString;
 
+                if (sourceFileDependencyEntry.m_dependsOnSource.IsUuid())
+                {
+                    assetDatabaseConnection.QuerySourceBySourceGuid(
+                        sourceFileDependencyEntry.m_dependsOnSource.GetUuid(),
+                        [&](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
+                        {
+                            dependencyDetails = entry;
+                            displayString = dependencyDetails.m_sourceName;
+                            return false;
+                        });
+
+                    if (displayString.empty())
+                    {
+                        displayString = sourceFileDependencyEntry.m_dependsOnSource.GetUuid().ToFixedString();
+                    }
+                }
+                else
+                {
+                    assetDatabaseConnection.QuerySourceBySourceName(
+                        sourceFileDependencyEntry.m_dependsOnSource.GetPath().c_str(),
+                        [&](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry)
+                        {
+                            dependencyDetails = sourceEntry;
+                            displayString = dependencyDetails.m_sourceName;
+                            return false;
+                        });
+
+                    if (displayString.empty())
+                    {
+                        displayString = sourceFileDependencyEntry.m_dependsOnSource.GetPath();
+                    }
+                }
 
                 SourceAssetTreeModel* treeModel = dependencyDetails.m_scanFolderPK == 1 ? m_intermediateTreeModel : m_sourceTreeModel;
-                QModelIndex goToIndex = treeModel->GetIndexForSource(sourceFileDependencyEntry.m_dependsOnSource);
+                QModelIndex goToIndex = treeModel->GetIndexForSource(dependencyDetails.m_sourceName);
                 if (goToIndex.isValid())
                 {
                     // Qt handles cleanup automatically, setting this as the parent means
@@ -234,12 +259,12 @@ namespace AssetProcessor
                         &QPushButton::clicked,
                         [=]
                         {
-                            GoToSource(sourceFileDependencyEntry.m_dependsOnSource);
+                            GoToSource(dependencyDetails.m_sourceName);
                         });
                     m_ui->outgoingSourceDependenciesTable->setCellWidget(sourceDependencyCount, 0, rowGoToButton);
                 }
 
-                QTableWidgetItem* rowName = new QTableWidgetItem(sourceFileDependencyEntry.m_dependsOnSource.c_str());
+                QTableWidgetItem* rowName = new QTableWidgetItem(displayString.c_str());
                 m_ui->outgoingSourceDependenciesTable->setItem(sourceDependencyCount, 1, rowName);
                 ++sourceDependencyCount;
                 return true;
@@ -254,8 +279,13 @@ namespace AssetProcessor
     {
         m_ui->incomingSourceDependenciesTable->setRowCount(0);
         int sourceDependencyCount = 0;
+
+        auto absolutePath = AZ::IO::Path(sourceItemData->m_scanFolderInfo.m_scanFolder) / sourceItemData->m_sourceInfo.m_sourceName;
+
         assetDatabaseConnection.QuerySourceDependencyByDependsOnSource(
+            sourceItemData->m_sourceInfo.m_sourceGuid,
             sourceItemData->m_sourceInfo.m_sourceName.c_str(),
+            absolutePath.FixedMaxPathStringAsPosix().c_str(),
             AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_Any,
             [&](AzToolsFramework::AssetDatabase::SourceFileDependencyEntry& sourceFileDependencyEntry)
             {
