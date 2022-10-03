@@ -134,64 +134,89 @@ namespace AZ
 
         void StreamingImageAssetHandler::HandleMipChainAssetLoad(Data::Asset<Data::AssetData> asset, bool isLoadSuccess)
         {
-            AZStd::scoped_lock<AZStd::mutex> lock(m_accessPendingAssetsMutex);
-            auto itr = m_pendingReloadImageAsset.find(asset.GetId().m_guid);
-            if (itr == m_pendingReloadImageAsset.end())
-            {
-                return;
-            }
+            bool hasError = false;
+            bool reloadEnded = false;
+            Data::Asset<Data::AssetData> imageAsset;
 
-            if (!isLoadSuccess)
             {
-                Data::Asset<Data::AssetData> imageAsset = itr->second.m_imageAsset;
-                HandleMipChainAssetBuses(imageAsset, false);
-                m_pendingReloadImageAsset.erase(itr);
-                Data::AssetManagerBus::Broadcast(&Data::AssetManagerBus::Events::OnAssetReloadError, imageAsset);
-                return;
-            }
-
-            uint32_t loadedMipChainAssets = 0;
-            for (u32& subId : itr->second.m_mipChainAssetSubIds)
-            {
-                if (subId == asset.GetId().m_subId)
+                // Note: lock the mutex at minimum scope and avoid calling broadcast or bus connect/disconnect when mutex is locked.
+                AZStd::scoped_lock<AZStd::mutex> lock(m_accessPendingAssetsMutex);
+                auto itr = m_pendingReloadImageAsset.find(asset.GetId().m_guid);
+                if (itr == m_pendingReloadImageAsset.end())
                 {
-                    StreamingImageAsset* assetData = itr->second.m_imageAsset.GetAs<StreamingImageAsset>();
+                    return;
+                }
 
-                    // Assign the reloaded/loaded asset to StreamingImageAsset
-                    for (auto& mipChainAsset : assetData->m_mipChains)
+                if (!isLoadSuccess)
+                {
+                    reloadEnded = true;
+                    hasError = true;
+                }
+
+                uint32_t loadedMipChainAssets = 0;
+                for (u32& subId : itr->second.m_mipChainAssetSubIds)
+                {
+                    if (subId == asset.GetId().m_subId)
                     {
-                        if (mipChainAsset.m_asset.GetId() == asset.GetId())
-                        {
-                            mipChainAsset.m_asset = asset;
-                            // set the subId to 0 after it's loaded
-                            subId = 0;
-                            break;
-                        }
-                    }
+                        StreamingImageAsset* assetData = itr->second.m_imageAsset.GetAs<StreamingImageAsset>();
 
+                        // Assign the reloaded/loaded asset to StreamingImageAsset
+                        for (auto& mipChainAsset : assetData->m_mipChains)
+                        {
+                            if (mipChainAsset.m_asset.GetId() == asset.GetId())
+                            {
+                                mipChainAsset.m_asset = asset;
+                                // set the subId to 0 after it's loaded
+                                subId = 0;
+                                break;
+                            }
+                        }
+
+                    }
+                    if (subId == 0)
+                    {
+                        loadedMipChainAssets++;
+                    }
                 }
-                if (subId == 0)
+
+                if (loadedMipChainAssets == itr->second.m_mipChainAssetSubIds.size())
                 {
-                    loadedMipChainAssets++;
+                    reloadEnded = true;
+                    hasError = false;
+                }
+
+                if (reloadEnded)
+                {
+                    imageAsset = itr->second.m_imageAsset;
+                    m_pendingReloadImageAsset.erase(itr);
                 }
             }
 
-            if (loadedMipChainAssets == itr->second.m_mipChainAssetSubIds.size())
+            if (reloadEnded)
             {
-                Data::Asset<Data::AssetData> imageAsset = itr->second.m_imageAsset;
                 HandleMipChainAssetBuses(imageAsset, false);
-                m_pendingReloadImageAsset.erase(itr);
-                Data::AssetManagerBus::Broadcast(&Data::AssetManagerBus::Events::OnAssetReloaded, imageAsset);
+                if (hasError)
+                {
+                    Data::AssetManagerBus::Broadcast(&Data::AssetManagerBus::Events::OnAssetReloadError, imageAsset);
+                }
+                else
+                {
+                    Data::AssetManagerBus::Broadcast(&Data::AssetManagerBus::Events::OnAssetReloaded, imageAsset);
+                }
             }
         }
 
         void StreamingImageAssetHandler::InitAsset(const Data::Asset<Data::AssetData>& asset, bool loadStageSucceeded, bool isReload)
         {
+            m_accessPendingAssetsMutex.lock();
+            bool isPendingReload = m_pendingReloadImageAsset.find(asset.GetId().m_guid) != m_pendingReloadImageAsset.end();
+            m_accessPendingAssetsMutex.unlock();
+
             // Broadcast the asset loading events via AssetHandler::InitAsset
             // If the asset was reloaded successfully and also have pending mipchain assets to load, skip here and delay the broadcast the reloaded event.
-            if (!(loadStageSucceeded && isReload && m_pendingReloadImageAsset.find(asset.GetId().m_guid) != m_pendingReloadImageAsset.end()))
+            if (!(loadStageSucceeded && isReload && isPendingReload))
             {
-                AZ_Assert(m_pendingReloadImageAsset.find(asset.GetId().m_guid) == m_pendingReloadImageAsset.end(), "The asset shouldn't be added to pending reload asset list");
+                AZ_Assert(!isPendingReload, "The asset shouldn't be added to pending reload asset list");
                 AssetHandler::InitAsset(asset, loadStageSucceeded, isReload);
             }
         }
