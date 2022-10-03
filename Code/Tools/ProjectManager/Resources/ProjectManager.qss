@@ -35,21 +35,30 @@ QTabBar::tab:text {
     text-align:left;
 }
 
-/*#createGemTab QTabBar::tab {
-    background-color: #444444;
-    font-size:16px;
-    min-height:230px;
-    margin: 0px;
-    text-align:left;
+QRadioButton#createAGemLHSTab::indicator{
+    image: url(:/nothing.png);
 }
 
-QTabWidget#createGemTab::tab-bar {
-    left: 0px;
+QRadioButton#createAGemLHSTab{
+    font-size: 16px;
+    height: 40px;
+    min-width: 180px;
+    spacing: 10px;
+    color: #6b6b6b;
 }
 
-QTabBar#createGemTab::tab:text {
-    text-align:left;
-}*/
+
+QRadioButton#createAGemLHSTab:enabled{
+    color: #aaaaaa;
+}
+
+
+QRadioButton#createAGemLHSTab:checked{
+    background-color: #333333;
+    spacing: 30px;
+    color: #FFFFFF;
+}
+
 
 QStackedWidget#createAGemRHS{
     background-color: #333333;
@@ -152,10 +161,6 @@ QTabBar::tab:focus {
 }
 
 #createAGem #formFrame {
-    margin-left: 0px;
-}
-
-#createAGemFormLineEdit #formFrame {
     margin-left: 0px;
 }
 
@@ -269,7 +274,6 @@ QTabBar::tab:focus {
 
 #rightPaneDetailsHeader {
     font-size:21px;
-    /* qproperty-indent: 0; */
 }
 
 #rightPaneSubheader {

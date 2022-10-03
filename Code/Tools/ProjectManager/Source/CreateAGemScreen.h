@@ -39,13 +39,17 @@ namespace O3DE::ProjectManager
     private slots:
         void HandleBackButton();
         void HandleNextButton();
-        void UpdateNextButtonToCreate();
+        void HandleGemTemplateSelectionTab();
+        void HandleGemDetailsTab();
+        void HandleGemCreatorDetailsTab();
 
     private:
         void LoadButtonsFromGemTemplatePaths(QVBoxLayout* gemSetupLayout);
         QScrollArea* CreateGemSetupScrollArea();
         QScrollArea* CreateGemDetailsScrollArea();
         QScrollArea* CreateGemCreatorScrollArea();
+        QFrame* CreateLHSTabs();
+        QFrame* CreateRHSPane();
         bool ValidateGemTemplateLocation();
         bool ValidateGemDisplayName();
         bool ValidateGemName();
@@ -81,6 +85,11 @@ namespace O3DE::ProjectManager
         QDialogButtonBox* m_backNextButtons = nullptr;
         QPushButton* m_backButton = nullptr;
         QPushButton* m_nextButton = nullptr;
+
+        
+        QRadioButton* m_gemTemplateSelectionTab = nullptr;
+        QRadioButton* m_gemDetailsTab = nullptr;
+        QRadioButton* m_gemCreatorDetailsTab = nullptr;
 
         GemInfo m_createGemInfo;
 
