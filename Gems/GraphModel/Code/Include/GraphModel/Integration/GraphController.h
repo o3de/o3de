@@ -173,7 +173,6 @@ namespace GraphModelIntegration
         AZStd::string GetDataTypeString(const AZ::Uuid& typeId) override;
 
         //! This is where we find all of the graph metadata (like node positions, comments, etc) and store it in the node graph for serialization
-        // CJS TODO: Use this instead of the above undo functions
         void OnSaveDataDirtied(const AZ::EntityId& savedElement) override;
 
         void OnRemoveUnusedNodes() override {}
