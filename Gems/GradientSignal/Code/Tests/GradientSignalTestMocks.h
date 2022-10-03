@@ -17,6 +17,7 @@
 #include <AzCore/std/hash.h>
 #include <AzCore/UnitTest/TestTypes.h>
 
+#include <GradientSignal/Components/PerlinGradientComponent.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Ebuses/GradientPreviewContextRequestBus.h>
 #include <GradientSignal/GradientSampler.h>
@@ -201,4 +202,29 @@ namespace UnitTest
         SurfaceData::SurfaceDataRegistryHandle m_providerHandle = SurfaceData::InvalidSurfaceDataRegistryHandle;
     };
 
+
+    // Mock the GradientSignal::PerlinGradientComponent so that its can inject a fixed permutation table for
+    // the perlin noise algorithm for consistent unit test results across all platforms
+    class MockGradientSignal : public GradientSignal::PerlinGradientComponent
+    {
+    public:
+        MockGradientSignal(const GradientSignal::PerlinGradientConfig& configuration) :
+            GradientSignal::PerlinGradientComponent(configuration)
+        {
+        }
+
+        void Activate() override
+        {
+            GradientSignal::PerlinGradientComponent::Activate();
+
+            m_perlinImprovedNoise.reset(aznew GradientSignal::PerlinImprovedNoise(m_testPermutationTable));
+        }
+
+        void SetPerlinNoisePermutationTableForTest(const AZStd::array<int, 512>& permutationTable)
+        {
+            AZStd::copy(permutationTable.cbegin(), permutationTable.cend(), m_testPermutationTable.begin());
+        }
+
+        AZStd::array<int, 512>  m_testPermutationTable;
+    };
 }

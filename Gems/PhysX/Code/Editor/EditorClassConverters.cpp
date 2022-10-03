@@ -72,7 +72,7 @@ namespace PhysX
             Physics::ColliderConfiguration colliderConfig = FindColliderConfig(classElement);
 
             // convert to the new EditorColliderComponent and fill out the data
-            const bool result = classElement.Convert(context, "{FD429282-A075-4966-857F-D0BBF186CFE6}");
+            const bool result = classElement.Convert(context, AZ::TypeId("{FD429282-A075-4966-857F-D0BBF186CFE6}"));
             if (result)
             {
                 classElement.AddElementWithData<AzPhysics::CollisionGroups::Id>(context, "CollisionGroupId", collisionGroupId);
@@ -261,7 +261,7 @@ namespace PhysX
                 // Moved:
                 //    EditorColliderComponent::MeshAsset                        -> EditorColliderComponent::ShapeConfiguration::PhysicsAsset::Asset
                 //    EditorColliderComponent::ShapeConfiguration::PhysicsAsset -> EditorColliderComponent::ShapeConfiguration::PhysicsAsset::Configuration
-                
+
                 Physics::PhysicsAssetShapeConfiguration physAssetConfig;
                 FindElementAndGetData(*shapeConfigurationElement, AZ_CRC_CE("PhysicsAsset"), physAssetConfig);
                 shapeConfigurationElement->RemoveElementByName(AZ_CRC_CE("PhysicsAsset"));
@@ -276,7 +276,7 @@ namespace PhysX
 
                 shapeConfigurationElement->AddElementWithData(context, "PhysicsAsset", newAssetShapeConfig);
             }
-            
+
             if (dataElement.GetVersion() <= 8)
             {
                 dataElement.RemoveElementByName(AZ_CRC_CE("LinkedRenderMeshAssetId"));
@@ -311,11 +311,11 @@ namespace PhysX
                     currentShapeType == Physics::ShapeType::Native)
                 {
                     shapeTypeElement->SetData<Physics::ShapeType>(context, Physics::ShapeType::PhysicsAsset);
-                 
+
                     // Insert PhysicsAsset configuration instead of NativeShape. Save the mesh scale.
                     Physics::PhysicsAssetShapeConfiguration assetConfiguration;
                     assetConfiguration.m_assetScale = nativeShapeConfiguration.m_nativeShapeScale;
-                    
+
                     classElement.AddElementWithData<Physics::PhysicsAssetShapeConfiguration>(context, "PhysicsAsset", assetConfiguration);
                 }
             }

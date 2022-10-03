@@ -84,7 +84,7 @@ namespace AZ
         }
 
         RenderPipelinePtr RenderPipeline::CreateRenderPipelineForWindow(const RenderPipelineDescriptor& desc, const WindowContext& windowContext,
-                                                                        const WindowContext::SwapChainMode swapchainMode)
+                                                                        const ViewType viewType)
         {
             RenderPipeline* pipeline = aznew RenderPipeline();
             PassSystemInterface* passSystem = PassSystemInterface::Get();
@@ -94,9 +94,9 @@ namespace AZ
             swapChainDescriptor.m_passTemplate = passSystem->GetPassTemplate(templateName);
             AZ_Assert(swapChainDescriptor.m_passTemplate, "Root-PassTemplate %s not found!", templateName.GetCStr());
 
-            pipeline->m_passTree.m_rootPass = aznew SwapChainPass(swapChainDescriptor, &windowContext, swapchainMode);
+            pipeline->m_passTree.m_rootPass = aznew SwapChainPass(swapChainDescriptor, &windowContext, viewType);
             pipeline->m_windowHandle = windowContext.GetWindowHandle();
-
+            pipeline->m_viewType = viewType;
             InitializeRenderPipeline(pipeline, desc);
 
             return RenderPipelinePtr(pipeline);
@@ -259,6 +259,16 @@ namespace AZ
         {
             ViewPtr cameraView;
             ViewProviderBus::EventResult(cameraView, entityId, &ViewProvider::GetView);
+            if (cameraView)
+            {
+                SetDefaultView(cameraView);
+            }
+        }
+
+        void RenderPipeline::SetDefaultStereoscopicViewFromEntity(EntityId entityId, RPI::ViewType viewType)
+        {
+            ViewPtr cameraView;
+            ViewProviderBus::EventResult(cameraView, entityId, &ViewProvider::GetStereoscopicView, viewType);
             if (cameraView)
             {
                 SetDefaultView(cameraView);
@@ -694,6 +704,11 @@ namespace AZ
                 });
 
             return foundPass;
+        }
+
+        ViewType RenderPipeline::GetViewType() const
+        {
+            return m_viewType;
         }
     }
 }

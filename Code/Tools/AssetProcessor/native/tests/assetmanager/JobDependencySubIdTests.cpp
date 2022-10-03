@@ -44,8 +44,8 @@ namespace UnitTests
         ASSERT_TRUE(m_stateData->SetProduct(product2));
 
         SourceFileDependencyEntry dependency1{ AZ::Uuid::CreateRandom(),
-                                               source2.m_sourceName.c_str(),
-                                               source1.m_sourceName.c_str(),
+                                               source2.m_sourceGuid,
+                                               PathOrUuid(source1.m_sourceName),
                                                SourceFileDependencyEntry::DEP_JobToJob,
                                                0,
                                                 useSubId ? AZStd::to_string(product2.m_subID).c_str() : "" };

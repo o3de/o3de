@@ -44,6 +44,11 @@ namespace AZ
                 //! @return The loaded scene or null if the file couldn't be fully resolved or an error 
                 //! occurred during loading.
                 virtual AZStd::shared_ptr<Containers::Scene> LoadScene(const AZStd::string& sceneFilePath, Uuid sceneSourceGuid) = 0;
+
+                //! The scene system caches loaded scenes. This checks if the given scene is valid and in the cache or not.
+                //! @param sceneFilePath The absolute or relative path to the scene file in the source folder.
+                //! @return True if the given scene is actively cached, false if not.
+                virtual bool IsSceneCached(const AZStd::string& /*sceneFilePath*/) { return false; }
             };
 
             using SceneSerializationBus = AZ::EBus<SceneSerialization>;

@@ -64,10 +64,12 @@ public:
 
     void SetSceneDisplay(const QString& headerText, const AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene>& scene);
     void SetSceneHeaderText(const QString& headerText);
+    void SetPythonBuilderText(QString pythonBuilderText);
     void HandleSceneWasReset(const AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene>& scene);
     void HandleSaveWasSuccessful();
     bool HasUnsavedChanges() const;
 
+    QString GetHeaderFileName() const;
 
 signals:
     void UpdateClicked();

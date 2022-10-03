@@ -44,7 +44,7 @@ namespace AzToolsFramework::ViewportUi
         void RemoveSwitcher(SwitcherId switcherId) override;
         void RemoveSwitcherButton(SwitcherId switcherId, ButtonId buttonId) override;
         void SetClusterVisible(ClusterId clusterId, bool visible) override;
-        void SetSwitcherVisible(SwitcherId switcherId, bool visible);
+        void SetSwitcherVisible(SwitcherId switcherId, bool visible) override;
         void SetClusterGroupVisible(const AZStd::vector<ClusterId>& clusterGroup, bool visible) override;
         const TextFieldId CreateTextField(
             const AZStd::string& labelText, const AZStd::string& textFieldDefaultText, TextFieldValidationType validationType) override;

@@ -39,13 +39,9 @@ ImporterRootDisplay::ImporterRootDisplay(AZ::SerializeContext* serializeContext,
 
     ui->headerFrame->setVisible(false);
 
-    ui->m_fullPathText->SetElideMode(Qt::TextElideMode::ElideMiddle);
+    ui->HeaderPythonBuilderLayoutWidget->setVisible(false);
 
-    AzQtComponents::Text::addTitleStyle(ui->m_filePathText);
-    AzQtComponents::Text::addTitleStyle(ui->m_fullPathText);
-    
-    AzQtComponents::Text::addSubtitleStyle(ui->locationLabel);
-    AzQtComponents::Text::addSubtitleStyle(ui->nameLabel);
+    ui->m_fullPathText->SetElideMode(Qt::TextElideMode::ElideMiddle);
 
     connect(ui->m_updateButton, &QPushButton::clicked, this, &ImporterRootDisplay::UpdateClicked);
 
@@ -68,9 +64,9 @@ AZ::SceneAPI::UI::ManifestWidget* ImporterRootDisplay::GetManifestWidget()
 void ImporterRootDisplay::SetSceneHeaderText(const QString& headerText)
 {
     QFileInfo fileInfo(headerText);
-    ui->m_filePathText->setText(fileInfo.fileName());
-    QString fullPath = QString("%1%2").arg(QDir::toNativeSeparators(fileInfo.path())).arg(QDir::separator());
-    ui->m_fullPathText->setText(fullPath);
+    ui->m_filePathText->setText(QString("<b>%1</b>").arg(fileInfo.fileName()));
+    QString fullPath(QString("%1%2").arg(QDir::toNativeSeparators(fileInfo.path())).arg(QDir::separator()));
+    ui->m_fullPathText->setText(QString("<b>%1</b>").arg(fullPath));
     
     ui->m_showInExplorer->setEnabled(true);
     ui->m_showInExplorer->disconnect();
@@ -78,6 +74,17 @@ void ImporterRootDisplay::SetSceneHeaderText(const QString& headerText)
     {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fullPath));
     });
+}
+
+void ImporterRootDisplay::SetPythonBuilderText(QString pythonBuilderText)
+{
+    ui->m_pythonBuilderScript->setText(pythonBuilderText);
+    ui->HeaderPythonBuilderLayoutWidget->setVisible(!pythonBuilderText.isEmpty());
+}
+
+QString ImporterRootDisplay::GetHeaderFileName() const
+{
+    return ui->m_filePathText->text();
 }
 
 void ImporterRootDisplay::SetSceneDisplay(const QString& headerText, const AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene>& scene)
@@ -107,6 +114,10 @@ void ImporterRootDisplay::HandleSceneWasReset(const AZStd::shared_ptr<AZ::SceneA
     BusDisconnect();
     m_manifestWidget->BuildFromScene(scene);
     BusConnect();
+
+    // Resetting the scene doesn't immediately save the changes, so mark this as having unsaved changes.
+    m_hasUnsavedChanges = true;
+    ui->m_updateButton->setEnabled(true);
 }
 
 void ImporterRootDisplay::HandleSaveWasSuccessful()

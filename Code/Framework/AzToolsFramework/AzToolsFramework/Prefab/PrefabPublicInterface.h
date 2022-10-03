@@ -66,12 +66,12 @@ namespace AzToolsFramework
             /**
              * Instantiate a prefab from a prefab file.
              * @param filePath The path to the prefab file to instantiate.
-             * @param parent The entity the prefab should be a child of in the transform hierarchy.
+             * @param parentId The entity id the prefab should be a child of in the transform hierarchy.
              * @param position The position in world space the prefab should be instantiated in.
              * @return An outcome object with an entityId of the new prefab's container entity;
              *  on failure, it comes with an error message detailing the cause of the error.
              */
-            virtual InstantiatePrefabResult InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position) = 0;
+            virtual InstantiatePrefabResult InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parentId, const AZ::Vector3& position) = 0;
 
             /**
              * Saves changes to prefab to disk.
@@ -158,14 +158,6 @@ namespace AzToolsFramework
              */
             virtual PrefabRequestResult HasUnsavedChanges(AZ::IO::Path prefabFilePath) const = 0;
 
-            /**
-             * [DEPRECATION]--This function is marked for deprecation. Please use DeleteEntitiesAndAllDescendantsInInstance instead.
-             * Deletes all entities from the owning instance. Bails if the entities don't all belong to the same instance.
-             * @param entities The entities to delete.
-             * @return An outcome object; on failure, it comes with an error message detailing the cause of the error.
-             */
-            virtual PrefabOperationResult DeleteEntitiesInInstance(const EntityIdList& entityIds) = 0;
-            
             /**
              * Deletes all entities and their descendants from the owning instance. Bails if the entities don't all belong to the same
              * instance.

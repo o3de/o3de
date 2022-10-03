@@ -20,6 +20,7 @@
 #include <AzCore/std/optional.h>
 #include <AzCore/std/string/regex.h>
 #include <AzCore/Platform.h>
+#include <AzCore/std/time.h>
 
 #include <AzFramework/StringFunc/StringFunc.h>
 
@@ -108,7 +109,7 @@ namespace AZ
         AZStd::string PrependFile(PrependArguments& arguments)
         {
             static const char* executableFolder = nullptr;
-            const auto AsAbsolute = [](const AZStd::string& localFile) -> AZStd::optional<AZStd::string> 
+            const auto AsAbsolute = [](const AZStd::string& localFile) -> AZStd::optional<AZStd::string>
             {
                 if (!AzFramework::StringFunc::Path::IsRelative(localFile.c_str()))
                 {
@@ -155,7 +156,7 @@ namespace AZ
                 AZ_Error(ShaderPlatformInterfaceName, false, "%s", prependFileLoadResult.GetError().c_str());
                 return arguments.m_sourceFile;
             }
-            
+
             auto sourceFileAbsolutePath = AsAbsolute(arguments.m_sourceFile);
             if (!sourceFileAbsolutePath)
             {
@@ -281,8 +282,8 @@ namespace AZ
             auto pumpOuputStreams = [&watcherPtr, &errorMessages]()
             {
                 auto communicator = watcherPtr->GetCommunicator();
-                
-                // Instead of collecting all the output in a giant string, it would be better to report 
+
+                // Instead of collecting all the output in a giant string, it would be better to report
                 // the chunks of messages as they arrive, but this should be good enough for now.
                 if (auto byteCount = communicator->PeekError())
                 {
@@ -369,6 +370,11 @@ namespace AZ
 
         bool ReportMessages([[maybe_unused]] AZStd::string_view window, AZStd::string_view errorMessages, bool reportAsErrors)
         {
+            if (errorMessages.empty())
+            {
+                return false;
+            }
+
             if (reportAsErrors)
             {
                 AZ_Error(window.data(), false, "%.*s", aznumeric_cast<int>(errorMessages.size()), errorMessages.data());
@@ -422,7 +428,7 @@ namespace AZ
             {
                 return AZ::Failure(AZStd::string::format("Failed to load file '%s'.", path));
             }
-            
+
             return AZ::Success(AZStd::move(text));
         }
 
@@ -442,7 +448,7 @@ namespace AZ
             {
                 return AZ::Failure(AZStd::string::format("Failed to load file '%s'.", path));
             }
-            
+
             return AZ::Success(AZStd::move(bytes));
         }
 
@@ -467,7 +473,7 @@ namespace AZ
             } while (searchFrom != text.end());
             return count;
         }
-    
+
         AZStd::string BuildFileNameWithExtension(const AZStd::string& shaderSourceFile,
                                                                    const AZStd::string& tempFolder,
                                                                    const char* outputExtension)

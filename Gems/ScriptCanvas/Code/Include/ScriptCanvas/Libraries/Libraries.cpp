@@ -13,7 +13,6 @@
 #include <Libraries/Deprecated/DeprecatedNodeLibrary.h>
 #include <Libraries/Logic/LogicLibrary.h>
 #include <Libraries/Operators/OperatorsLibrary.h>
-#include <Libraries/Spawning/SpawningLibrary.h>
 #include <Libraries/UnitTesting/UnitTestingLibrary.h>
 
 namespace ScriptCanvas
@@ -38,7 +37,6 @@ namespace ScriptCanvas
         DeprecatedNodeLibrary::Reflect(reflectContext);
         LogicLibrary::Reflect(reflectContext);
         OperatorsLibrary::Reflect(reflectContext);
-        SpawningLibrary::Reflect(reflectContext);
 
 #ifndef _RELEASE
         UnitTestingLibrary::Reflect(reflectContext);

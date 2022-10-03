@@ -28,7 +28,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString DitherGradientModifierNode::TITLE = QObject::tr("Dither");
+    const char* DitherGradientModifierNode::TITLE = "Dither";
 
     DitherGradientModifierNode::DitherGradientModifierNode(GraphModel::GraphPtr graph)
         : BaseGradientModifierNode(graph)

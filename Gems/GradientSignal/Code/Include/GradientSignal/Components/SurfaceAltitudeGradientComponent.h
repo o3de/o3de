@@ -49,7 +49,7 @@ namespace GradientSignal
         bool IsShapeValid() const;
     };
 
-    static const AZ::Uuid SurfaceAltitudeGradientComponentTypeId = "{76359FA6-AD40-4DF9-81C6-F63F2632B665}";
+    inline constexpr AZ::TypeId SurfaceAltitudeGradientComponentTypeId{ "{76359FA6-AD40-4DF9-81C6-F63F2632B665}" };
 
     /**
     * Component implementing GradientRequestBus based on altitude

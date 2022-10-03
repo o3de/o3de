@@ -55,7 +55,7 @@ namespace ScriptEvents
         /// AZ::BehaviorEBusHandler
         int GetFunctionIndex(const char* name) const override;
         bool Connect(AZ::BehaviorArgument* address = nullptr) override;
-        void Disconnect() override;
+        void Disconnect(AZ::BehaviorArgument* address = nullptr) override;
 
     private:
         AZ::BehaviorArgument m_address;

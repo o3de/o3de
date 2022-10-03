@@ -20,7 +20,7 @@ namespace AZ
     {
         namespace DepthOfField
         {
-            static constexpr const char* const DepthOfFieldComponentTypeId = "{405F505B-D900-461F-A17D-380C294BEE39}";
+            inline constexpr AZ::TypeId DepthOfFieldComponentTypeId{ "{405F505B-D900-461F-A17D-380C294BEE39}" };
         }
 
         class DepthOfFieldComponent final

@@ -25,7 +25,7 @@ namespace StartingPointMovement
         {
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
-                serializeContext->ClassDeprecate("Event Action Bindings", "{2BB79CFC-7EBC-4EF4-A62E-5D64CB45CDBD}");
+                serializeContext->ClassDeprecate("Event Action Bindings", AZ::Uuid("{2BB79CFC-7EBC-4EF4-A62E-5D64CB45CDBD}"));
 
                 serializeContext->Class<StartingPointMovementDummyComponent, AZ::Component>()
                     ->Version(0)

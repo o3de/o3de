@@ -582,12 +582,8 @@ namespace AzToolsFramework
                         linkId, templateId, templateToDelete.GetFilePath().c_str());
                 }
 
-                result = m_templateToLinkIdsMap.erase(templateToLinkIterator) != nullptr;
-                AZ_Assert(result,
-                    "Prefab - PrefabSystemComponent::RemoveTemplate - "
-                    "Failed to remove Template with Id '%llu' on file path '%s' "
-                    "from TemplateToLinkIdsMap.",
-                    templateId, templateToDelete.GetFilePath().c_str());
+                // erase with a valid iterator always succeeds
+                m_templateToLinkIdsMap.erase(templateToLinkIterator);
             }
 
             //Remove this Template from the rest of the maps.

@@ -132,18 +132,6 @@ namespace AZ
             }
         }
 
-        //////////////////////////////////////////////////////////////////////////
-        AZStd::string UuidToString(const Uuid& id)
-        {
-            char buffer[64];
-            AZStd::string result;
-            if (id.ToString(buffer, AZ_ARRAY_SIZE(buffer)))
-            {
-                result = buffer;
-            }
-            return result;
-        }
-
         /**
          * Script Wrapper for Crc32
          */
@@ -300,7 +288,7 @@ namespace AZ
             Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)->
             Attribute(AZ::Script::Attributes::ConstructorOverride, &Internal::ScriptUuidConstructor)->
             Attribute(AZ::Script::Attributes::GenericConstructorOverride, &Internal::UuidDefaultConstructor)->
-            Method("ToString", &Internal::UuidToString)->
+            Method("ToString", [](const Uuid* self) { return self->ToString<AZStd::string>(); })->
                 Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::ToString)->
             Method("LessThan", &Uuid::operator<)->
                 Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::LessThan)->
@@ -314,10 +302,10 @@ namespace AZ
                 Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)->
             Method("CreateNull", &Uuid::CreateNull)->
                 Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)->
-            Method("CreateString", &Uuid::CreateString)->
+            Method("CreateString", [](AZStd::string_view uuidString) { return Uuid::CreateString(uuidString); })->
                 Attribute(AZ::Script::Attributes::MethodOverride, &Internal::UuidCreateStringGeneric)->
                 Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)->
-            Method("CreateName", &Uuid::CreateName)->
+            Method("CreateName", [](AZStd::string_view nameString) { return Uuid::CreateName(nameString); })->
                 Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)->
             Method("CreateRandom", &Uuid::CreateRandom);
 

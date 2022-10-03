@@ -30,7 +30,7 @@ namespace LandscapeCanvas
         TerrainLayerSpawnerNode() = default;
         explicit TerrainLayerSpawnerNode(GraphModel::GraphPtr graph);
 
-        static const QString TITLE;
+        static const char* TITLE;
         const char* GetTitle() const override;
         const char* GetSubTitle() const override;
         GraphModel::NodeType GetNodeType() const override;

@@ -33,7 +33,7 @@ namespace O3DE::ProjectManager
         item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
 
         item->setData(gemRepoInfo.m_name, RoleName);
-        item->setData(gemRepoInfo.m_creator, RoleCreator);
+        item->setData(gemRepoInfo.m_origin, RoleCreator);
         item->setData(gemRepoInfo.m_summary, RoleSummary);
         item->setData(gemRepoInfo.m_isEnabled, RoleIsEnabled);
         item->setData(gemRepoInfo.m_directoryLink, RoleDirectoryLink);

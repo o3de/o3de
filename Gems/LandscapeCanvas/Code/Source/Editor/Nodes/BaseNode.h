@@ -46,6 +46,7 @@ namespace LandscapeCanvas
             GradientModifier,
             TerrainArea,
             TerrainExtender,
+            TerrainSurfaceExtender,
             VegetationAreaModifier,
             VegetationAreaFilter,
             VegetationAreaSelector

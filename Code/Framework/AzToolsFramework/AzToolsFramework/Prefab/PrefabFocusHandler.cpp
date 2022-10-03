@@ -100,6 +100,13 @@ namespace AzToolsFramework::Prefab
             "Focus Mode Interface could not be found. "
             "Check that it is being correctly initialized.");
 
+        m_readOnlyEntityPublicInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get();
+        AZ_Assert(
+            m_readOnlyEntityPublicInterface,
+            "Prefab - PrefabFocusHandler - "
+            "ReadOnly Entity Public Interface could not be found. "
+            "Check that it is being correctly initialized.");
+
         m_readOnlyEntityQueryInterface = AZ::Interface<ReadOnlyEntityQueryInterface>::Get();
         AZ_Assert(
             m_readOnlyEntityQueryInterface,
@@ -363,6 +370,18 @@ namespace AzToolsFramework::Prefab
         [[maybe_unused]] AzFramework::EntityContextId entityContextId) const
     {
         return GetInstanceReference(m_rootAliasFocusPath);
+    }
+
+    bool PrefabFocusHandler::IsFocusedPrefabInstanceReadOnly([[maybe_unused]] AzFramework::EntityContextId entityContextId) const
+    {
+        InstanceOptionalReference instance = GetInstanceReference(m_rootAliasFocusPath);
+
+        if (instance.has_value())
+        {
+            return m_readOnlyEntityPublicInterface->IsReadOnly(instance->get().GetContainerEntityId());
+        }
+
+        return false;
     }
 
     LinkId PrefabFocusHandler::AppendPathFromFocusedInstanceToPatchPaths(PrefabDom& providedPatch, AZ::EntityId entityId) const

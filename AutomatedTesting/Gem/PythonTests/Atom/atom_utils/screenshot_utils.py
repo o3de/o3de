@@ -55,15 +55,14 @@ class ScreenshotHelper(object):
         """
         Capture a screenshot and block the execution until the screenshot has been written to the disk.
         """
-        self.handler = azlmbr.atom.FrameCaptureNotificationBusHandler()
-        self.handler.connect()
-        self.handler.add_callback('OnCaptureFinished', self.on_screenshot_captured)
-
         self.done = False
         self.capturedScreenshot = False
-        success = azlmbr.atom.FrameCaptureRequestBus(
+        frameCaptureId = azlmbr.atom.FrameCaptureRequestBus(
             azlmbr.bus.Broadcast, "CaptureScreenshot", f"{folder_path}/{filename}")
-        if success:
+        if frameCaptureId != -1:
+            self.handler = azlmbr.atom.FrameCaptureNotificationBusHandler()
+            self.handler.connect(frameCaptureId)
+            self.handler.add_callback('OnFrameCaptureFinished', self.on_screenshot_captured)
             self.wait_until_screenshot()
             general.log("Screenshot taken.")
         else:

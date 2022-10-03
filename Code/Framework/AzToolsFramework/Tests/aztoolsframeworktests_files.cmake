@@ -66,6 +66,8 @@ set(FILES
     ManipulatorViewTests.cpp
     PerforceComponentTests.cpp
     PlatformAddressedAssetCatalogTests.cpp
+    Prefab/Benchmark/Link/SingleInstanceMultiplePatchesBenchmarks.cpp
+    Prefab/Benchmark/Link/SingleInstanceMultiplePatchesBenchmarks.h
     Prefab/Benchmark/PrefabBenchmarkFixture.cpp
     Prefab/Benchmark/PrefabBenchmarkFixture.h
     Prefab/Benchmark/PrefabCreateBenchmarks.cpp

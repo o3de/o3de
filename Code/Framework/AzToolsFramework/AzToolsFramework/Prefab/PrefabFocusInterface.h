@@ -47,6 +47,11 @@ namespace AzToolsFramework::Prefab
         //! @return The focused instance.
         virtual InstanceOptionalReference GetFocusedPrefabInstance(AzFramework::EntityContextId entityContextId) const = 0;
 
+        //! Returns whether the currently focused prefab instance is read-only.
+        //! @param EntityContextId The entity context id.
+        //! @return True if the currently focused prefab instance is read-only, false otherwise.
+        virtual bool IsFocusedPrefabInstanceReadOnly(AzFramework::EntityContextId entityContextId) const = 0;
+
         //! Appends the path from the focused instance to entity id into the provided patch array.
         //! @param providedPatch The provided path array to be appended to.
         //! @return LinkId stored in the instance closest to the focused instance in hierarchy.

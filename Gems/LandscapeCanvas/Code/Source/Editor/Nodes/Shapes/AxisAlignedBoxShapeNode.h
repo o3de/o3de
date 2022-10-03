@@ -24,8 +24,8 @@ namespace LandscapeCanvas
         AxisAlignedBoxShapeNode() = default;
         explicit AxisAlignedBoxShapeNode(GraphModel::GraphPtr graph);
 
-        static const QString TITLE;
-        const char* GetTitle() const override { return TITLE.toUtf8().constData(); }
+        static const char* TITLE;
+        const char* GetTitle() const override { return TITLE; }
 
     };
 }

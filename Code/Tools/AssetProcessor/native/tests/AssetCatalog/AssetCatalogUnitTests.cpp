@@ -1061,7 +1061,7 @@ namespace AssetProcessor
         );
 
         AssetNotificationMessage message("some/path/image.png", AssetNotificationMessage::NotificationType::AssetChanged, AZ::Data::AssetType::CreateRandom(), "pc");
-        message.m_assetId = { "{C1A73521-E770-475F-8D91-30DF88E4D4C9}" };
+        message.m_assetId = AZ::Data::AssetId{ "{C1A73521-E770-475F-8D91-30DF88E4D4C9}" };
 
         for (int i = 0; i < NumUpdateIterations; ++i)
         {

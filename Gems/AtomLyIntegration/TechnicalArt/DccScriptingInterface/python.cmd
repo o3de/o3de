@@ -53,7 +53,21 @@ echo     O3DE_PYTHON = %O3DE_PYTHON%
 IF "%PATH_O3DE_TECHART_GEMS%"=="" (set "PATH_O3DE_TECHART_GEMS=%O3DE_DEV%\Gems\AtomLyIntegration\TechnicalArt")
 echo     PATH_O3DE_TECHART_GEMS = %PATH_O3DE_TECHART_GEMS%
 
-SET PATH=%O3DE_DEV%;%PATH_O3DE_TECHART_GEMS%;%PATH_DCCSIG%;%PATH%
+:: O3DE DccScriptingInterface Gem location
+IF "%PATH_DCCSIG%"=="" (set "DccScriptingInterface")
+echo     PATH_DCCSIG = %PATH_DCCSIG%
+
+set "QT_BIN_DIR=packages\qt-5.15.2-rev7-windows\qt\bin"
+
+IF "%QT_PLUGIN_PATH%"=="" (set "QT_PLUGIN_PATH=%PATH_O3DE_3RDPARTY%\%QT_BIN_DIR%")
+echo     QT_PLUGIN_PATH = %QT_PLUGIN_PATH%
+
+set "QTPY_PKG_DIR=packages\pyside2-5.15.2.1-py3.10-rev3-windows\pyside2\lib\site-packages"
+
+IF "%QTFORPYTHON_PATH%"=="" (set "QTFORPYTHON_PATH=%PATH_O3DE_3RDPARTY%\%QTPY_PKG_DIR%")
+echo     QTFORPYTHON_PATH = %QTFORPYTHON_PATH%
+
+SET PATH=%QT_PLUGIN_PATH%;%O3DE_DEV%;%PATH_O3DE_TECHART_GEMS%;%PATH_DCCSIG%;%PATH%
 SET PYTHONPATH=%PATH_O3DE_TECHART_GEMS%;%PATH_DCCSIG%;%PYTHONPATH%
 
 :: get the o3de python home

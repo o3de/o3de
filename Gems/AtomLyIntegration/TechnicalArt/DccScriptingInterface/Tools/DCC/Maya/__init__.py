@@ -26,110 +26,31 @@ import logging as _logging
 
 # -------------------------------------------------------------------------
 # global scope
-_PACKAGENAME = 'Tools.DCC.Maya'
+from DccScriptingInterface.Tools.DCC import _PACKAGENAME
+_PACKAGENAME = f'{_PACKAGENAME}.Maya'
 
 __all__ = ['config',
            'constants',
            'setup',
-           'start']
+           'start',
+           'Scripts']
 
 _LOGGER = _logging.getLogger(_PACKAGENAME)
-# -------------------------------------------------------------------------
 
 
-# -------------------------------------------------------------------------
-# Maya is frozen
-#_MODULE_PATH = Path(__file__)
-# https://tinyurl.com/y49t3zzn
-# module path when frozen
-_MODULE_PATH = Path(os.path.abspath(inspect.getfile(inspect.currentframe())))
-_LOGGER.debug('_MODULE_PATH: {}'.format(_MODULE_PATH))
-_PATH_DCCSI_TOOLS_MAYA = Path(_MODULE_PATH.parent)
+# set up access to this DCC folder as a pkg
+_MODULE_PATH = Path(__file__)  # To Do: what if frozen?
 
-# we need to set up basic access to the DCCsi
-_PATH_DCCSI_TOOLS_DCC = Path(_PATH_DCCSI_TOOLS_MAYA.parent)
-_PATH_DCCSI_TOOLS_DCC = Path(os.getenv('PATH_DCCSI_TOOLS_DCC', _PATH_DCCSI_TOOLS_DCC.as_posix()))
-site.addsitedir(_PATH_DCCSI_TOOLS_DCC.as_posix())
-
-# we need to set up basic access to the DCCsi
-_PATH_DCCSI_TOOLS = Path(_PATH_DCCSI_TOOLS_DCC.parent)
-_PATH_DCCSI_TOOLS = Path(os.getenv('PATH_DCCSI_TOOLS', _PATH_DCCSI_TOOLS.as_posix()))
-
-# we need to set up basic access to the DCCsi
-_PATH_DCCSIG = Path(_PATH_DCCSI_TOOLS.parent)
-_PATH_DCCSIG = Path(os.getenv('PATH_DCCSIG', _PATH_DCCSIG.as_posix()))
-site.addsitedir(_PATH_DCCSIG.as_posix())
-# -------------------------------------------------------------------------
+from DccScriptingInterface import STR_CROSSBAR
+from DccScriptingInterface import PATH_O3DE_TECHART_GEMS
+from DccScriptingInterface import PATH_DCCSIG
+from DccScriptingInterface.Tools import PATH_DCCSI_TOOLS
+from DccScriptingInterface.globals import *
 
 
-# -------------------------------------------------------------------------
-# now we have access to the DCCsi code and azpy
-import azpy.test.entry_test
-from azpy.env_bool import env_bool
-from azpy.constants import ENVAR_DCCSI_GDEBUG
-from azpy.constants import ENVAR_DCCSI_DEV_MODE
-from azpy.constants import ENVAR_DCCSI_LOGLEVEL
-from azpy.constants import ENVAR_DCCSI_GDEBUGGER
-from azpy.constants import FRMT_LOG_LONG
-
-#  global space
-_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
-_DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
-_DCCSI_GDEBUGGER = env_bool(ENVAR_DCCSI_GDEBUGGER, 'WING')
-
-# default loglevel to info unless set
-_DCCSI_LOGLEVEL = int(env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO))
-if _DCCSI_GDEBUG:
-    # override loglevel if runnign debug
-    _DCCSI_LOGLEVEL = _logging.DEBUG
-    _logging.basicConfig(level=_DCCSI_LOGLEVEL,
-                        format=FRMT_LOG_LONG,
-                        datefmt='%m-%d %H:%M')
-    _LOGGER = _logging.getLogger(_PACKAGENAME)
-
-from azpy.constants import STR_CROSSBAR
-_LOGGER.info(STR_CROSSBAR)
-_LOGGER.info('Initializing: {0}.'.format({_PACKAGENAME}))
-
-if _DCCSI_DEV_MODE:
-    azpy.test.entry_test.connect_wing()
-
-# message collection
-_LOGGER.debug(f'Initializing: {_PACKAGENAME}')
-_LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH}')
-_LOGGER.debug(f'PATH_DCCSI_TOOLS_MAYA: {_PATH_DCCSI_TOOLS_MAYA}')
-_LOGGER.debug(f'PATH_DCCSIG: {_PATH_DCCSIG}')
-_LOGGER.debug(f'PATH_DCCSI_TOOLS_DCC: {_PATH_DCCSI_TOOLS_DCC}')
-_LOGGER.debug(f'PATH_DCCSI_TOOLS: {_PATH_DCCSI_TOOLS}')
-# -------------------------------------------------------------------------
-
-
-# -------------------------------------------------------------------------
-from azpy.env_bool import env_bool
-from azpy.constants import ENVAR_DCCSI_TESTS
-
-#  global space
-_DCCSI_TESTS = env_bool(ENVAR_DCCSI_TESTS, False)
-
-if _DCCSI_TESTS:
+# dev mode will enable nested import tests
+if DCCSI_DEV_MODE:
+    from DccScriptingInterface.azpy.shared.utils.init import test_imports
     # If in dev mode this will test imports of __all__
-    from azpy import test_imports
-    
-    _LOGGER.info(STR_CROSSBAR)
-    
-    _LOGGER.debug('Testing Imports from {0}'.format(_PACKAGENAME))
-    test_imports(__all__,
-                 _pkg=_PACKAGENAME)
-    
-    _LOGGER.info(STR_CROSSBAR)
-# -------------------------------------------------------------------------
-
-
-
-###########################################################################
-# Main Code Block, runs this script as main (testing)
-# -------------------------------------------------------------------------
-if __name__ == '__main__':
-    """Run as main, perform debug and tests"""
-    pass
-    
+    _LOGGER.debug(f'Testing Imports from {_PACKAGENAME}')
+    test_imports(_all=__all__, _pkg=_PACKAGENAME, _logger=_LOGGER)

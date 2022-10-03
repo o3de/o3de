@@ -11,10 +11,10 @@
 namespace AWSClientAuth
 {
     //! Used to share authentication tokens to caller and to AWSCognitoAuthorizationController.
-   
+
     AuthenticationTokens::AuthenticationTokens()
     {
-        m_tokensExpireTimeStamp = AZStd::chrono::system_clock::time_point::min();
+        m_tokensExpireTimeStamp = AZStd::chrono::steady_clock::time_point::min();
         m_providerName = ProviderNameEnum::None;
     }
 
@@ -35,7 +35,7 @@ namespace AWSClientAuth
         , m_openIdToken(openIdToken)
         , m_providerName(providerName)
         , m_tokensExpireTimeSeconds(tokensExpireTimeSeconds)
-        , m_tokensExpireTimeStamp(AZStd::chrono::system_clock::now() + AZStd::chrono::seconds(tokensExpireTimeSeconds))
+        , m_tokensExpireTimeStamp(AZStd::chrono::steady_clock::now() + AZStd::chrono::seconds(tokensExpireTimeSeconds))
     {
     }
 
@@ -43,7 +43,7 @@ namespace AWSClientAuth
     //! @return True if current TS less than expiry TS.
     bool AuthenticationTokens::AreTokensValid() const
     {
-        return AZStd::chrono::system_clock::now() < m_tokensExpireTimeStamp;
+        return AZStd::chrono::steady_clock::now() < m_tokensExpireTimeStamp;
     }
 
     //! @return Open id token from authentication.

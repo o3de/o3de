@@ -32,7 +32,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString AltitudeFilterNode::TITLE = QObject::tr("Altitude Filter");
+    const char* AltitudeFilterNode::TITLE = "Altitude Filter";
 
     AltitudeFilterNode::AltitudeFilterNode(GraphModel::GraphPtr graph)
         : BaseAreaFilterNode(graph)

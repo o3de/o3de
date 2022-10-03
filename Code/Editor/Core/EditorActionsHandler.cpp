@@ -79,6 +79,8 @@ static constexpr AZStd::string_view HelpMenuIdentifier = "o3de.menu.editor.help"
 static constexpr AZStd::string_view HelpDocumentationMenuIdentifier = "o3de.menu.editor.help.documentation";
 static constexpr AZStd::string_view HelpGameDevResourcesMenuIdentifier = "o3de.menu.editor.help.gamedevresources";
 
+static constexpr AZStd::string_view EditorMainWindowTopToolBarAreaIdentifier = "o3de.toolbararea.editor.mainwindow.top";
+
 static constexpr AZStd::string_view ToolsToolBarIdentifier = "o3de.toolbar.editor.tools";
 static constexpr AZStd::string_view PlayControlsToolBarIdentifier = "o3de.toolbar.editor.playcontrols";
 
@@ -130,40 +132,11 @@ void EditorActionsHandler::Initialize(MainWindow* mainWindow)
     m_toolBarManagerInterface = AZ::Interface<AzToolsFramework::ToolBarManagerInterface>::Get();
     AZ_Assert(m_toolBarManagerInterface, "EditorActionsHandler - could not get ToolBarManagerInterface on EditorActionsHandler construction.");
 
-    InitializeActionContext();
-    InitializeActionUpdaters();
-    InitializeActions();
-    InitializeWidgetActions();
-    InitializeMenus();
-    InitializeToolBars();
-
     // Retrieve the bookmark count from the loader.
     m_defaultBookmarkCount = AzToolsFramework::LocalViewBookmarkLoader::DefaultViewBookmarkCount;
 
-    // Ensure the layouts menu is refreshed when the layouts list changes.
-    QObject::connect(
-        m_mainWindow->m_viewPaneManager, &QtViewPaneManager::savedLayoutsChanged, m_mainWindow,
-        [&]()
-        {
-            RefreshLayoutActions();
-        }
-    );
-
-    RefreshLayoutActions();
-
-    // Ensure the tools menu and toolbar are refreshed when the viewpanes change.
-    QObject::connect(
-        m_qtViewPaneManager, &QtViewPaneManager::registeredPanesChanged, m_mainWindow,
-        [&]()
-        {
-            RefreshToolActions();
-        }
-    );
-
-    // Initialize the Toolbox Macro actions
-    RefreshToolboxMacroActions();
-
     const int DefaultViewportId = 0;
+    AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
     AzToolsFramework::EditorEventsBus::Handler::BusConnect();
     AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
     AzToolsFramework::ToolsApplicationNotificationBus::Handler::BusConnect();
@@ -179,10 +152,11 @@ EditorActionsHandler::~EditorActionsHandler()
         AzToolsFramework::ToolsApplicationNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEventsBus::Handler::BusDisconnect();
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
     }
 }
 
-void EditorActionsHandler::InitializeActionContext()
+void EditorActionsHandler::OnActionContextRegistrationHook()
 {
     AzToolsFramework::ActionContextProperties contextProperties;
     contextProperties.m_name = "O3DE Editor";
@@ -190,7 +164,7 @@ void EditorActionsHandler::InitializeActionContext()
     m_actionManagerInterface->RegisterActionContext("", EditorMainWindowActionContextIdentifier, contextProperties, m_mainWindow);
 }
 
-void EditorActionsHandler::InitializeActionUpdaters()
+void EditorActionsHandler::OnActionUpdaterRegistrationHook()
 {
     m_actionManagerInterface->RegisterActionUpdater(AngleSnappingStateChangedUpdaterIdentifier);
     m_actionManagerInterface->RegisterActionUpdater(DrawHelpersStateChangedUpdaterIdentifier);
@@ -211,7 +185,7 @@ void EditorActionsHandler::InitializeActionUpdaters()
     }
 }
 
-void EditorActionsHandler::InitializeActions()
+void EditorActionsHandler::OnActionRegistrationHook()
 {
     // --- File Actions
 
@@ -1206,10 +1180,9 @@ void EditorActionsHandler::InitializeActions()
             }
         );
     }
-
 }
 
-void EditorActionsHandler::InitializeWidgetActions()
+void EditorActionsHandler::OnWidgetActionRegistrationHook()
 {
     // Help - Search Documentation Widget
     {
@@ -1260,11 +1233,14 @@ void EditorActionsHandler::InitializeWidgetActions()
     }
 }
 
-void EditorActionsHandler::InitializeMenus()
+void EditorActionsHandler::OnMenuBarRegistrationHook()
 {
     // Register MenuBar
-    m_menuManagerInterface->RegisterMenuBar(EditorMainWindowMenuBarIdentifier);
+    m_menuManagerInterface->RegisterMenuBar(EditorMainWindowMenuBarIdentifier, m_mainWindow);
+}
 
+void EditorActionsHandler::OnMenuRegistrationHook()
+{
     // Initialize Menus
     {
         AzToolsFramework::MenuProperties menuProperties;
@@ -1383,7 +1359,10 @@ void EditorActionsHandler::InitializeMenus()
             menuProperties.m_name = "GameDev Resources";
             m_menuManagerInterface->RegisterMenu(HelpGameDevResourcesMenuIdentifier, menuProperties);
         }
+}
 
+void EditorActionsHandler::OnMenuBindingHook()
+{
     // Add Menus to MenuBar
     // We space the sortkeys by 100 to allow external systems to add menus in-between.
     m_menuManagerInterface->AddMenuToMenuBar(EditorMainWindowMenuBarIdentifier, FileMenuIdentifier, 100);
@@ -1392,9 +1371,6 @@ void EditorActionsHandler::InitializeMenus()
     m_menuManagerInterface->AddMenuToMenuBar(EditorMainWindowMenuBarIdentifier, ToolsMenuIdentifier, 400);
     m_menuManagerInterface->AddMenuToMenuBar(EditorMainWindowMenuBarIdentifier, ViewMenuIdentifier, 500);
     m_menuManagerInterface->AddMenuToMenuBar(EditorMainWindowMenuBarIdentifier, HelpMenuIdentifier, 600);
-
-    // Set the menu bar for this window
-    m_mainWindow->setMenuBar(m_menuManagerInternalInterface->GetMenuBar(EditorMainWindowMenuBarIdentifier));
 
     // Add actions to each menu
 
@@ -1553,7 +1529,13 @@ void EditorActionsHandler::InitializeMenus()
     }
 }
 
-void EditorActionsHandler::InitializeToolBars()
+void EditorActionsHandler::OnToolBarAreaRegistrationHook()
+{
+    m_toolBarManagerInterface->RegisterToolBarArea(
+        EditorMainWindowTopToolBarAreaIdentifier, m_mainWindow, Qt::ToolBarArea::TopToolBarArea);
+}
+
+void EditorActionsHandler::OnToolBarRegistrationHook()
 {
     // Initialize ToolBars
     {
@@ -1567,11 +1549,15 @@ void EditorActionsHandler::InitializeToolBars()
         toolBarProperties.m_name = "Play Controls";
         m_toolBarManagerInterface->RegisterToolBar(PlayControlsToolBarIdentifier, toolBarProperties);
     }
+}
 
-    // Set the toolbars
-    m_mainWindow->addToolBar(Qt::ToolBarArea::TopToolBarArea, m_toolBarManagerInterface->GetToolBar(ToolsToolBarIdentifier));
-    m_mainWindow->addToolBar(Qt::ToolBarArea::TopToolBarArea, m_toolBarManagerInterface->GetToolBar(PlayControlsToolBarIdentifier));
-    
+void EditorActionsHandler::OnToolBarBindingHook()
+{
+    // Add ToolBars to ToolBar Areas
+    // We space the sortkeys by 100 to allow external systems to add toolbars in-between.
+    m_toolBarManagerInterface->AddToolBarToToolBarArea(EditorMainWindowTopToolBarAreaIdentifier, ToolsToolBarIdentifier, 100);
+    m_toolBarManagerInterface->AddToolBarToToolBarArea(EditorMainWindowTopToolBarAreaIdentifier, PlayControlsToolBarIdentifier, 200);
+
     // Add actions to each toolbar
 
     // Play Controls
@@ -1583,6 +1569,34 @@ void EditorActionsHandler::InitializeToolBars()
         m_toolBarManagerInterface->AddSeparatorToToolBar(PlayControlsToolBarIdentifier, 500);
         m_toolBarManagerInterface->AddActionToToolBar(PlayControlsToolBarIdentifier, "o3de.action.game.simulate", 600);
     }
+}
+
+void EditorActionsHandler::OnPostActionManagerRegistrationHook()
+{
+    // Ensure the layouts menu is refreshed when the layouts list changes.
+    QObject::connect(
+        m_mainWindow->m_viewPaneManager, &QtViewPaneManager::savedLayoutsChanged, m_mainWindow,
+        [&]()
+        {
+            RefreshLayoutActions();
+        }
+    );
+
+    RefreshLayoutActions();
+
+    // Ensure the tools menu and toolbar are refreshed when the viewpanes change.
+    QObject::connect(
+        m_qtViewPaneManager, &QtViewPaneManager::registeredPanesChanged, m_mainWindow,
+        [&]()
+        {
+            RefreshToolActions();
+        }
+    );
+    
+    RefreshToolActions();
+
+    // Initialize the Toolbox Macro actions
+    RefreshToolboxMacroActions();
 }
 
 QWidget* EditorActionsHandler::CreateExpander()

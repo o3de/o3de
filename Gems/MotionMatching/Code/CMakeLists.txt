@@ -140,8 +140,9 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         )
 
         # Add MotionMatching.Editor.Tests to googletest
-        ly_add_googletest(
-            NAME Gem::MotionMatching.Editor.Tests
-        )
+        # Commented out as currently there are no MotionMatching Editor tests
+        # ly_add_googletest(
+            # NAME Gem::MotionMatching.Editor.Tests
+        # )
     endif()
 endif()

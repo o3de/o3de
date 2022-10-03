@@ -269,6 +269,8 @@ namespace AZStd
         constexpr auto resize(size_type newSize) -> void;
         constexpr auto resize(size_type newSize, Element ch) -> void;
         constexpr auto resize_no_construct(size_type newSize) -> void;
+        template<class Operation>
+        constexpr auto resize_and_overwrite(size_type n, Operation op) -> void;
 
         constexpr auto reserve(size_type newCapacity = 0) -> void;
 

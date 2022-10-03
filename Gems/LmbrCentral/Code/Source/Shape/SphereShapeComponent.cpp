@@ -103,7 +103,7 @@ namespace LmbrCentral
             // Deprecate: SphereColliderConfiguration -> SphereShapeConfig
             serializeContext->ClassDeprecate(
                 "SphereColliderConfiguration",
-                "{0319AE62-3355-4C98-873D-3139D0427A53}",
+                AZ::Uuid("{0319AE62-3355-4C98-873D-3139D0427A53}"),
                 &ClassConverters::DeprecateSphereColliderConfiguration)
                 ;
 
@@ -143,7 +143,7 @@ namespace LmbrCentral
             // Deprecate: SphereColliderComponent -> SphereShapeComponent
             serializeContext->ClassDeprecate(
                 "SphereColliderComponent",
-                "{99F33E4A-4EFB-403C-8918-9171D47A03A4}",
+                AZ::Uuid("{99F33E4A-4EFB-403C-8918-9171D47A03A4}"),
                 &ClassConverters::DeprecateSphereColliderComponent)
                 ;
 

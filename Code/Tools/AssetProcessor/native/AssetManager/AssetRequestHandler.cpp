@@ -10,6 +10,7 @@
 
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzToolsFramework/ToolsComponents/ToolsAssetCatalogBus.h>
+#include "native/AssetManager/assetProcessorManager.h"
 #include <QDir>
 #include <QTimer>
 
@@ -71,6 +72,61 @@ namespace
 {
     using namespace AzToolsFramework::AssetSystem;
     using namespace AzFramework::AssetSystem;
+
+    AssetChangeReportResponse HandleAssetChangeReportRequest(MessageData < AssetChangeReportRequest> messageData)
+    {
+        AZStd::vector<AZStd::string> lines;
+
+        auto* relocationInterface = AZ::Interface<AssetProcessor::ISourceFileRelocation>::Get();
+        if (relocationInterface)
+        {
+            switch (messageData.m_message->m_type)
+            {
+                case AssetChangeReportRequest::ChangeType::CheckMove:
+                {
+                    auto resultCheck = relocationInterface->Move(messageData.m_message->m_fromPath, messageData.m_message->m_toPath);
+
+                    if (resultCheck.IsSuccess())
+                    {
+                        AssetProcessor::RelocationSuccess success = resultCheck.TakeValue();
+
+                        // The report can be too long for the AZ_Printf buffer, so split it into individual lines
+                        AZStd::string report =
+                            relocationInterface->BuildChangeReport(success.m_relocationContainer, success.m_updateTasks);
+                        AzFramework::StringFunc::Tokenize(report.c_str(), lines, "\n");
+
+                        for (const AZStd::string& line : lines)
+                        {
+                            AZ_Printf(AssetProcessor::ConsoleChannel, (line + "\n").c_str());
+                        }
+                    }
+                    break;
+                }
+                case AssetChangeReportRequest::ChangeType::Move:
+                {
+                    auto resultMove = relocationInterface->Move(
+                        messageData.m_message->m_fromPath, messageData.m_message->m_toPath, false, true, true, true);
+
+                    if (resultMove.IsSuccess())
+                    {
+                        AssetProcessor::RelocationSuccess success = resultMove.TakeValue();
+
+                        // The report can be too long for the AZ_Printf buffer, so split it into individual lines
+                        AZStd::string report =
+                            relocationInterface->BuildChangeReport(success.m_relocationContainer, success.m_updateTasks);
+                        AzFramework::StringFunc::Tokenize(report.c_str(), lines, "\n");
+
+                        for (const AZStd::string& line : lines)
+                        {
+                            AZ_Printf(AssetProcessor::ConsoleChannel, (line + "\n").c_str());
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        return AssetChangeReportResponse(lines);
+    }
 
     GetFullSourcePathFromRelativeProductPathResponse HandleGetFullSourcePathFromRelativeProductPathRequest(MessageData<GetFullSourcePathFromRelativeProductPathRequest> messageData)
     {
@@ -434,6 +490,8 @@ AssetRequestHandler::AssetRequestHandler()
     m_requestRouter.RegisterMessageHandler(&HandleUnregisterSourceAssetRequest);
     m_requestRouter.RegisterMessageHandler(&HandleAssetInfoRequest);
     m_requestRouter.RegisterMessageHandler(&HandleAssetDependencyInfoRequest);
+    m_requestRouter.RegisterMessageHandler(&HandleAssetChangeReportRequest);
+
     m_requestRouter.RegisterMessageHandler(ToFunction(&AssetRequestHandler::HandleRequestEscalateAsset));
 }
 

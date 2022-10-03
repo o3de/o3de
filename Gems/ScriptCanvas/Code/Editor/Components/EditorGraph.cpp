@@ -488,7 +488,7 @@ namespace ScriptCanvasEditor
         const AZ::SerializeContext::ClassData* classData = serializeContext->FindClassData(config.m_type);
         if (!classData)
         {
-            AZ_Warning("ScriptCanvas", false, "Failed to find replacement class with UUID %s from serialize context.", config.m_type.data);
+            AZ_Warning("ScriptCanvas", false, "Failed to find replacement class with UUID %s from serialize context.", config.m_type.ToFixedString().c_str());
             return nullptr;
         }
 
