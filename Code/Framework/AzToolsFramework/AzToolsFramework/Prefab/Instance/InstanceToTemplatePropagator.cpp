@@ -112,7 +112,7 @@ namespace AzToolsFramework
             return PatchTemplate(providedPatch, templateId);
         }
 
-        AZStd::string InstanceToTemplatePropagator::GenerateEntityAliasPath(AZ::EntityId entityId)
+        AZStd::string InstanceToTemplatePropagator::GenerateEntityAliasPath(AZ::EntityId entityId, AZStd::string prefix)
         {
             InstanceOptionalReference owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
             if (!owningInstance.has_value())
@@ -122,10 +122,9 @@ namespace AzToolsFramework
             }
 
             // create the prefix for the update - choosing between container and regular entities
-            AZStd::string entityAliasPath = "/";
+            AZStd::string entityAliasPath = prefix + "/";
 
             bool isContainerEntity = entityId == owningInstance->get().GetContainerEntityId();
-
             if (isContainerEntity)
             {
                 entityAliasPath += PrefabDomUtils::ContainerEntityName;
@@ -142,15 +141,18 @@ namespace AzToolsFramework
 
         void InstanceToTemplatePropagator::AppendEntityAliasToPatchPaths(PrefabDom& providedPatch, AZ::EntityId entityId, AZStd::string prefix)
         {
+            AppendEntityAliasPathToPatchPaths(providedPatch, prefix + GenerateEntityAliasPath(entityId));
+        }
+
+        void InstanceToTemplatePropagator::AppendEntityAliasPathToPatchPaths(PrefabDom& providedPatch, AZStd::string entityAliasPath)
+        {
             if (!providedPatch.IsArray())
             {
                 AZ_Error("Prefab", false, "Patch is not an array of updates.  Update failed.");
                 return;
             }
 
-            prefix += GenerateEntityAliasPath(entityId);
-
-            if (prefix.empty())
+            if (entityAliasPath.empty())
             {
                 return;
             }
@@ -167,7 +169,7 @@ namespace AzToolsFramework
                     continue;
                 }
 
-                AZStd::string path = prefix + pathIter->value.GetString();
+                AZStd::string path = entityAliasPath + pathIter->value.GetString();
 
                 pathIter->value.SetString(path.c_str(), static_cast<rapidjson::SizeType>(path.length()), providedPatch.GetAllocator());
             }

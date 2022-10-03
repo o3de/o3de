@@ -30,6 +30,11 @@ namespace AzToolsFramework
                         result.m_climbedInstances.emplace_back(instancePtr);
                         instancePtr = &(instancePtr->GetParentInstance()->get());
                     }
+
+                    if (instancePtr == targetInstance)
+                    {
+                        result.m_isTargetInstanceReached = true;
+                    }
                 }
                 else
                 {
@@ -94,6 +99,21 @@ namespace AzToolsFramework
                 }
 
                 return false;
+            }
+
+            AZStd::string CreateEntityAliasPathPrefixFromClimbedInstances(const AZStd::vector<const Instance*>& climbedInstances)
+            {
+                AZStd::string prefix = "";
+
+                // Skip the instance closest to the target instance.
+                auto startInstanceIter = ++climbedInstances.crbegin();
+                for (auto instanceIter = startInstanceIter; instanceIter != climbedInstances.crend(); ++instanceIter)
+                {
+                    prefix.append(PrefabDomUtils::PathStartingWithInstances);
+                    prefix.append((*instanceIter)->GetInstanceAlias());
+                }
+
+                return AZStd::move(prefix);
             }
 
         } // namespace PrefabInstanceUtils

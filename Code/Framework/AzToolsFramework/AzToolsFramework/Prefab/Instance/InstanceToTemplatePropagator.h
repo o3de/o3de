@@ -35,9 +35,10 @@ namespace AzToolsFramework
                 const PrefabDom& modifiedState, LinkId linkId) override;
             bool PatchEntityInTemplate(PrefabDom& providedPatch, AZ::EntityId entityId) override;
 
-            AZStd::string GenerateEntityAliasPath(AZ::EntityId entityId) override;
+            AZStd::string GenerateEntityAliasPath(AZ::EntityId entityId, AZStd::string prefix = "") override;
 
             void AppendEntityAliasToPatchPaths(PrefabDom& providedPatch, AZ::EntityId entityId, AZStd::string prefix = "") override;
+            void AppendEntityAliasPathToPatchPaths(PrefabDom& providedPatch, AZStd::string entityAliasPath) override;
 
             InstanceOptionalReference GetTopMostInstanceInHierarchy(AZ::EntityId entityId) override;
 

@@ -9,12 +9,14 @@
 #pragma once
 
 #include <AzCore/std/limits.h>
+#include <AzCore/std/optional.h>
 
 namespace AzToolsFramework
 {
     namespace Prefab
     {
         using LinkId = AZ::u64;
+        using LinkIdOptional = AZStd::optional<LinkId>;
         using TemplateId = AZ::u64;
 
         inline static constexpr LinkId InvalidLinkId = AZStd::numeric_limits<LinkId>::max();

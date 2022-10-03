@@ -22,6 +22,10 @@ namespace AzToolsFramework
         {
             //! Instance pointer to the destination.
             const Instance* m_reachedInstance = nullptr;
+
+            //! Flag to tell if reached instance is the target instance.
+            bool m_isTargetInstanceReached = false;
+
             //! Instance list that contains instances that are climbed up from bottom to top.
             //! The list does not include the reached instance.
             AZStd::vector<const Instance*> m_climbedInstances;
@@ -52,6 +56,8 @@ namespace AzToolsFramework
             //! @param parentInstance The given parent instance.
             //! @return bool on whether the relation is valid. Returns true if two instances are identical.
             bool IsDescendantInstance(const Instance& childInstance, const Instance& parentInstance);
+
+            AZStd::string CreateEntityAliasPathPrefixFromClimbedInstances(const AZStd::vector<const Instance*>& climbedInstances);
 
         } // namespace PrefabInstanceUtils
     } // namespace Prefab

@@ -27,6 +27,7 @@
 #include <AzToolsFramework/Prefab/Instance/InstanceToTemplateInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceDomGeneratorInterface.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
+#include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
 #include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicHandler.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
@@ -717,12 +718,44 @@ namespace AzToolsFramework
             PrefabDom newEntityDom;
             m_instanceToTemplateInterface->GenerateDomForEntity(newEntityDom, *entity);
 
-            PrefabUndoHelpers::AddEntity(newEntityDom, entityId, entityOwningInstance.GetTemplateId(), undoBatch.GetUndoBatch());
+            if (IsPrefabOverridesUxEnabled() && !m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(parentId))
+            {
+                // Climb up the instance hierarchy from the owning instance until it hits the focused prefab instance.
+                InstanceClimbUpResult climbUpResult = m_prefabFocusHandler.ClimbUpToFocusedOrRootInstanceFromEntity(parentId);
+                if (!climbUpResult.m_isTargetInstanceReached)
+                {
+                    return AZ::Failure(AZStd::string::format(
+                        "Parent entity id (id '%llu') is not owned by a descendant of the focused prefab instance.",
+                        static_cast<AZ::u64>(parentId)));
+                }
 
-            // Create undo node to account for changes to parent entity due to adding a new entity under it. Currently only the
-            // EditorEntitySortComponent get modified on the parent but more things can change in the future too.
-            PrefabUndoHelpers::UpdateEntity(parentEntityDomBeforeAddingEntity, parentEntityDomAfterAddingEntity, parentId,
-                undoBatch.GetUndoBatch());
+                LinkId linkId = climbUpResult.m_climbedInstances.back()->GetLinkId();
+                AZStd::string entityAliasPathPrefix = PrefabInstanceUtils::CreateEntityAliasPathPrefixFromClimbedInstances(climbUpResult.m_climbedInstances);
+                {
+                    PrefabUndoAddEntityOverrides* addEntityOverridesUndoState = aznew PrefabUndoAddEntityOverrides("Undo Adding Entity Overrides");
+                    addEntityOverridesUndoState->SetParent(undoBatch.GetUndoBatch());
+                    AZStd::string relativeNewEntityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(entityId, entityAliasPathPrefix);
+                    addEntityOverridesUndoState->Capture(newEntityDom, AZStd::move(relativeNewEntityAliasPath), linkId);
+                    addEntityOverridesUndoState->Redo();
+                }
+
+                {
+                    PrefabUndoEntityUpdateOverrides* updateEntityOverridesUndoState = aznew PrefabUndoEntityUpdateOverrides("Undo Updating Entity Overrides");
+                    updateEntityOverridesUndoState->SetParent(undoBatch.GetUndoBatch());
+                    AZStd::string relativeParentEntityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(parentId, AZStd::move(entityAliasPathPrefix));
+                    updateEntityOverridesUndoState->Capture(parentEntityDomBeforeAddingEntity, parentEntityDomAfterAddingEntity, parentId, AZStd::move(relativeParentEntityAliasPath), linkId);
+                    updateEntityOverridesUndoState->Redo();
+                }
+            }
+            else
+            {
+                PrefabUndoHelpers::AddEntity(newEntityDom, entityId, entityOwningInstance.GetTemplateId(), undoBatch.GetUndoBatch());
+
+                // Create undo node to account for changes to parent entity due to adding a new entity under it. Currently only the
+                // EditorEntitySortComponent get modified on the parent but more things can change in the future too.
+                PrefabUndoHelpers::UpdateEntity(parentEntityDomBeforeAddingEntity, parentEntityDomAfterAddingEntity, parentId,
+                    undoBatch.GetUndoBatch());
+            }           
                 
             AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
                 &AzToolsFramework::ToolsApplicationRequestBus::Events::ClearDirtyEntities);

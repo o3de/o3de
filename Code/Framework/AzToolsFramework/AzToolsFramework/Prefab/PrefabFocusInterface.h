@@ -14,6 +14,7 @@
 #include <AzFramework/Entity/EntityContext.h>
 
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
+#include <AzToolsFramework/Prefab/PrefabInstanceUtils.h>
 #include <AzToolsFramework/Prefab/Template/Template.h>
 
 namespace AzToolsFramework::Prefab
@@ -56,5 +57,8 @@ namespace AzToolsFramework::Prefab
         //! @param providedPatch The provided path array to be appended to.
         //! @return LinkId stored in the instance closest to the focused instance in hierarchy.
         virtual LinkId AppendPathFromFocusedInstanceToPatchPaths(PrefabDom& providedPatch, AZ::EntityId entityId) const = 0;
+
+        virtual InstanceClimbUpResult ClimbUpToFocusedOrRootInstanceFromEntity(AZ::EntityId ownedEntity) const = 0;
+
     };
 } // namespace AzToolsFramework::Prefab
