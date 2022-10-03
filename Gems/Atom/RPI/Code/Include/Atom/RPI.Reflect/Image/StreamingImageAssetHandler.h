@@ -22,6 +22,8 @@ namespace AZ
         {
             using Base = AssetHandler<StreamingImageAsset>;
         public:
+            virtual ~StreamingImageAssetHandler();
+            
             Data::AssetHandler::LoadResult LoadAssetData(
                 const Data::Asset<Data::AssetData>& asset,
                 AZStd::shared_ptr<Data::AssetDataStream> stream,

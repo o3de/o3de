@@ -15,6 +15,15 @@ namespace AZ
 {
     namespace RPI
     {
+
+        StreamingImageAssetHandler::~StreamingImageAssetHandler()
+        {
+            for (const auto& pendingAsset: m_pendingReloadImageAsset)
+            {
+                HandleMipChainAssetBuses(pendingAsset.second.m_imageAsset, false);
+            }
+        }
+
         Data::AssetHandler::LoadResult StreamingImageAssetHandler::LoadAssetData(
             const Data::Asset<Data::AssetData>& asset,
             AZStd::shared_ptr<Data::AssetDataStream> stream,
@@ -71,7 +80,7 @@ namespace AZ
                             }
                         }
 
-                        if (pendingAssetInfo.m_mipChainAssetSubIds.size() > 0)
+                        if (!pendingAssetInfo.m_mipChainAssetSubIds.empty())
                         {
                             AZStd::scoped_lock<AZStd::mutex> lock(m_accessPendingAssetsMutex);
                             m_pendingReloadImageAsset[imageGuid] = AZStd::move(pendingAssetInfo);
@@ -135,8 +144,8 @@ namespace AZ
             if (!isLoadSuccess)
             {
                 HandleMipChainAssetBuses(itr->second.m_imageAsset, false);
-                Data::AssetManagerBus::Broadcast(&Data::AssetManagerBus::Events::OnAssetReloadError, itr->second.m_imageAsset);
                 m_pendingReloadImageAsset.erase(itr);
+                Data::AssetManagerBus::Broadcast(&Data::AssetManagerBus::Events::OnAssetReloadError, itr->second.m_imageAsset);
                 return;
             }
 
@@ -169,8 +178,8 @@ namespace AZ
             if (loadedMipChainAssets == itr->second.m_mipChainAssetSubIds.size())
             {
                 HandleMipChainAssetBuses(itr->second.m_imageAsset, false);
-                Data::AssetManagerBus::Broadcast(&Data::AssetManagerBus::Events::OnAssetReloaded, itr->second.m_imageAsset);
                 m_pendingReloadImageAsset.erase(itr);
+                Data::AssetManagerBus::Broadcast(&Data::AssetManagerBus::Events::OnAssetReloaded, itr->second.m_imageAsset);
             }
         }
 
