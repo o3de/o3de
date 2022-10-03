@@ -438,13 +438,15 @@ def register_project_path(json_data: dict,
 
         update_project_json = False
         try:
-            update_project_json = project_json_data['engine'] != this_engine_json['engine_name']
+            update_project_json = project_json_data['engine'] != this_engine_json['engine_name'] or \
+                                  project_json_data['engine_version'] != this_engine_json['engine_version']
         except KeyError as e:
             update_project_json = True
 
         if update_project_json:
             project_json_path = project_path / 'project.json'
             project_json_data['engine'] = this_engine_json['engine_name']
+            project_json_data['engine_version'] = this_engine_json.get('engine_version','')
             utils.backup_file(project_json_path)
             if not manifest.save_o3de_manifest(project_json_data, project_json_path):
                 return 1

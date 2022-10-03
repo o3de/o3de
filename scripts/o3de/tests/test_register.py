@@ -112,6 +112,8 @@ class TestRegisterThisEngine:
             result = register._run_register(args)
             assert result == expected_result
 
+#@pytest.mark.usefixtures('init_manifest_data')
+
 
 TEST_GEM_JSON_PAYLOAD = '''
 {
@@ -248,3 +250,117 @@ class TestRegisterGem:
             elif expected_manifest_file == pathlib.PurePath('engine.json'):
                 assert gem_path in map(lambda subdir: TestRegisterGem.engine_path / subdir,
                                        self.engine_data.get('external_subdirectories', []))
+
+@pytest.fixture(scope='class')
+def init_register_project_data(request):
+    request.cls.o3de_manifest_data = json.loads(TEST_O3DE_MANIFEST_JSON_PAYLOAD)
+    request.cls.project_data = json.loads(TEST_PROJECT_JSON_PAYLOAD)
+    request.cls.engine_data = json.loads(TEST_ENGINE_JSON_PAYLOAD)
+
+@pytest.mark.usefixtures('init_register_project_data')
+class TestRegisterProject:
+    engine_path = pathlib.PurePath('o3de')
+    project_path = pathlib.PurePath('TestProject')
+
+    @pytest.mark.parametrize(
+        'engine_name, engine_version, engine_api_versions,'
+        'registered_gem_versions, project_engine_name, project_engine_version, '
+        'project_gems, project_compatible_engines, project_engine_api_dependencies,'
+        'force, expected_result', [
+            # passes when registering without version information
+            pytest.param('o3de', None, None, { 'gem1':'' }, None, None, ['gem1'], None, None, False, 0),
+            pytest.param('o3de', '', None, { 'gem1':'' }, None, None, ['gem1'], None, None, False, 0),
+            # fails when compatible_engines has no match
+            pytest.param('o3de', '2.3.4', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de==1.2.3'], None, False, 1),
+            pytest.param('o3de', '1.2.3', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de1'], None, False, 1),
+            # passes when forced
+            pytest.param('o3de', '1.2.3', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de1'], None, True, 0),
+            # passes when compatible_engines has match
+            pytest.param('o3de', '0.0.0', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de'], None, False, 0),
+            pytest.param('o3de', '1.2.3', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de>=1.2.3','o3de-sdk==2.3.4'], None, False, 0),
+
+        ]
+    )
+    def test_register_project(self, engine_name, engine_version, engine_api_versions,
+                                registered_gem_versions, project_engine_name, project_engine_version, 
+                                project_gems, project_compatible_engines, project_engine_api_dependencies,
+                                force, expected_result):
+        def save_o3de_manifest(manifest_data: dict, manifest_path: pathlib.Path = None) -> bool:
+            if manifest_path == pathlib.Path(TestRegisterProject.project_path).resolve() / 'project.json':
+                self.project_data = manifest_data
+            elif manifest_path == pathlib.Path(TestRegisterProject.engine_path).resolve() / 'engine.json':
+                self.engine_data = manifest_data
+            else:
+                self.o3de_manifest_data = manifest_data
+            return True
+
+        def load_o3de_manifest(manifest_path: pathlib.Path = None) -> dict:
+            if manifest_path == TestRegisterGem.project_path:
+                return self.project_data
+            elif manifest_path == TestRegisterGem.engine_path:
+                return self.engine_data
+            return self.o3de_manifest_data
+
+        def get_gem_json_data(gem_path: pathlib.Path = None):
+            gem_json_data = json.loads(TEST_GEM_JSON_PAYLOAD)
+            return gem_json_data
+
+        def get_engine_json_data(engine_path: pathlib.Path = None):
+            engine_json_data = json.loads(TEST_ENGINE_JSON_PAYLOAD)
+            engine_json_data['engine_name'] = engine_name
+
+            # we want to allow for testing the case where these fields 
+            # are missing or empty
+            if engine_version != None:
+                engine_json_data['engine_version'] = engine_version
+            if engine_api_versions != None:
+                engine_json_data['engine_api_versions'] = engine_api_versions
+
+            return engine_json_data
+
+        def get_project_json_data(project_path: pathlib.Path = None):
+            project_json_data = json.loads(TEST_PROJECT_JSON_PAYLOAD)
+
+            # we want to allow for testing the case where these fields 
+            # are missing or empty
+            if project_engine_name != None:
+                project_json_data['engine'] = project_engine_name
+            if project_engine_version != None:
+                project_json_data['engine_version'] = project_engine_version
+            if project_gems != None:
+                project_json_data['gems'] = project_gems
+            if project_compatible_engines != None:
+                project_json_data['compatible_engines'] = project_compatible_engines
+            if project_engine_api_dependencies != None:
+                project_json_data['engine_api_dependencies'] = project_engine_api_dependencies
+
+            return project_json_data
+
+        def find_ancestor_dir(target_file_name: pathlib.PurePath, start_path: pathlib.Path):
+            try:
+                if target_file_name == pathlib.PurePath('project.json')\
+                        and start_path.relative_to(TestRegisterProject.project_path):
+                    return TestRegisterProject.project_path
+            except ValueError:
+                pass
+            try:
+                if target_file_name == pathlib.PurePath('engine.json')\
+                        and start_path.relative_to(TestRegisterProject.engine_path):
+                    return TestRegisterProject.engine_path
+            except ValueError:
+                pass
+            return None
+
+        #parser = argparse.ArgumentParser()
+        with patch('o3de.manifest.load_o3de_manifest', side_effect=load_o3de_manifest) as _1,\
+            patch('o3de.manifest.save_o3de_manifest', side_effect=save_o3de_manifest) as _2,\
+            patch('o3de.manifest.get_engine_json_data', side_effect=get_engine_json_data) as _3,\
+            patch('o3de.manifest.get_project_json_data', side_effect=get_project_json_data) as _4,\
+            patch('o3de.manifest.get_gem_json_data', side_effect=get_gem_json_data) as _5,\
+            patch('o3de.utils.find_ancestor_dir_containing_file', side_effect=find_ancestor_dir) as _6,\
+            patch('pathlib.Path.is_dir', return_value=True) as _7,\
+            patch('o3de.validation.valid_o3de_project_json', return_value=True) as _8, \
+            patch('o3de.utils.backup_file', return_value=True) as _9:
+
+            result = register.register(project_path=TestRegisterProject.project_path)
+            assert result == expected_result
