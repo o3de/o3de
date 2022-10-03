@@ -6,6 +6,7 @@
  *
  */
 
+#include <Atom/RHI/Factory.h>
 #include <Atom/RPI.Edit/Shader/ShaderSourceData.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <AtomToolsFramework/Document/AtomToolsAnyDocument.h>
@@ -17,6 +18,7 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
 #include <AzCore/RTTI/RTTI.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <Document/MaterialCanvasDocument.h>
 #include <GraphModel/Model/DataType.h>
@@ -198,6 +200,7 @@ namespace MaterialCanvas
 
         m_window.reset(aznew MaterialCanvasMainWindow(m_toolId, graphViewConfig));
         m_window->show();
+        ApplyShaderBuildSettings();
     }
 
     void MaterialCanvasApplication::Destroy()
@@ -206,6 +209,7 @@ namespace MaterialCanvas
         m_viewportSettingsSystem.reset();
         m_graphContext.reset();
         m_dynamicNodeManager.reset();
+        ApplyShaderBuildSettings();
         Base::Destroy();
     }
 
@@ -217,5 +221,50 @@ namespace MaterialCanvas
     QWidget* MaterialCanvasApplication::GetAppMainWindow()
     {
         return m_window.get();
+    }
+
+    void MaterialCanvasApplication::ApplyShaderBuildSettings()
+    {
+        // If minimal shader build settings are enabled, copy a settings registry file stub into the user settings folder. This will
+        // override AP and shader build settings, disabling shaders and shader variant building for inactive platforms and RHI. Copying any
+        // of these settings files requires restarting the application and the asset processor for the changes to be picked up.
+        if (auto fileIO = AZ::IO::FileIOBase::GetInstance())
+        {
+            const AZ::IO::FixedMaxPath materialCanvasGemPath = AZ::Utils::GetGemPath("MaterialCanvas");
+            const auto settingsPathStub(
+                materialCanvasGemPath / AZ::SettingsRegistryInterface::RegistryFolder / "user_minimal_shader_build.setregstub");
+            const auto settingsPathDx12Stub(
+                materialCanvasGemPath / AZ::SettingsRegistryInterface::RegistryFolder / "user_minimal_shader_build_dx12.setregstub");
+
+            const AZ::IO::FixedMaxPath projectPath = AZ::Utils::GetProjectPath();
+            const auto settingsPath(
+                projectPath / AZ::SettingsRegistryInterface::DevUserRegistryFolder / "user_minimal_shader_build.setreg");
+            const auto settingsPathDx12(
+                projectPath / AZ::SettingsRegistryInterface::DevUserRegistryFolder / "user_minimal_shader_build_dx12.setreg");
+
+            const bool enableMinimalShaderBuilds =
+                AtomToolsFramework::GetSettingsValue<bool>("/O3DE/Atom/MaterialCanvas/EnableMinimalShaderBuilds", false);
+
+            if (enableMinimalShaderBuilds)
+            {
+                // Windows is the only platform with multiple, non-null RHI, supporting Vulkan and DX12. If DX12 is the active RHI then it
+                // will require copying its own settings file. Settings files for inactive RHI will be deleted from the user folder. 
+                if (const AZ::Name apiName = AZ::RHI::Factory::Get().GetName(); apiName == AZ::Name("dx12"))
+                {
+                    fileIO->Copy(settingsPathDx12Stub.c_str(), settingsPathDx12.c_str());
+                    fileIO->Remove(settingsPath.c_str());
+                }
+                else
+                {
+                    fileIO->Copy(settingsPathStub.c_str(), settingsPath.c_str());
+                    fileIO->Remove(settingsPathDx12.c_str());
+                }
+            }
+            else
+            {
+                fileIO->Remove(settingsPath.c_str());
+                fileIO->Remove(settingsPathDx12.c_str());
+            }
+        }
     }
 } // namespace MaterialCanvas

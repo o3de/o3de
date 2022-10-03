@@ -1186,7 +1186,7 @@ namespace AzToolsFramework
         bool dpeEnabled = false;
         if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
         {
-            console->GetCvarValue("ed_enableDPE", dpeEnabled);
+            console->GetCvarValue(GetEnableDPECVarName(), dpeEnabled);
         }
         return dpeEnabled;
     }

@@ -49,6 +49,7 @@ set(FILES
     GenericStreamTests.cpp
     Memory.cpp
     Metrics/EventLoggerFactoryTests.cpp
+    Metrics/JsonTraceEventLoggerTests.cpp
     Module.cpp
     ModuleTestBus.h
     OrderedEventBenchmarks.cpp
@@ -75,7 +76,6 @@ set(FILES
     TickBusTest.cpp
     UUIDTests.cpp
     XML.cpp
-    Debug/LocalFileEventLoggerTests.cpp
     Debug/Trace.cpp
     Name/NameJsonSerializerTests.cpp
     Name/NameBenchmarks.cpp

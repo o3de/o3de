@@ -97,8 +97,6 @@ set(FILES
     Debug/Budget.cpp
     Debug/BudgetTracker.h
     Debug/BudgetTracker.cpp
-    Debug/LocalFileEventLogger.h
-    Debug/LocalFileEventLogger.cpp
     Debug/MemoryProfiler.h
     Debug/Profiler.cpp
     Debug/Profiler.inl
@@ -422,7 +420,11 @@ set(FILES
     Memory/SystemAllocator.h
     Metrics/EventLoggerFactoryImpl.h
     Metrics/EventLoggerFactoryImpl.cpp
+    Metrics/JsonTraceEventLogger.h
+    Metrics/JsonTraceEventLogger.cpp
     Metrics/IEventLogger.h
+    Metrics/IEventLogger.cpp
+    Metrics/IEventLogger.inl
     Metrics/IEventLoggerFactory.h
     Module/DynamicModuleHandle.cpp
     Module/DynamicModuleHandle.h
@@ -636,6 +638,7 @@ set(FILES
     JSON/pointer.h
     JSON/prettywriter.h
     JSON/rapidjson.h
+    JSON/RapidjsonAllocatorAdapter.h
     JSON/reader.h
     JSON/schema.h
     JSON/stream.h
