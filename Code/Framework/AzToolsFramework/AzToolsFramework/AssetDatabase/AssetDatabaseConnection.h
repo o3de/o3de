@@ -460,7 +460,7 @@ namespace AzToolsFramework
             virtual ~AssetDatabaseConnection();
 
             //Open / Close the database
-            bool OpenDatabase();
+            bool OpenDatabase(bool ignoreFutureAssetDBVersionError = false);
             void CloseDatabase();
 
             //These only need to be overridden by derived class if write access is needed, such as by the
@@ -469,7 +469,7 @@ namespace AzToolsFramework
             {
                 return true;
             }
-            virtual bool PostOpenDatabase(); // used by Asset Processor to upgrade the database
+            virtual bool PostOpenDatabase(bool ignoreFutureAssetDBVersionError); // used by Asset Processor to upgrade the database
 
             //returns the current version of the code used for reading the database
             //this is how we know we have to upgrade old databases to the new ones
