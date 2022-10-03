@@ -35,7 +35,7 @@ QTabBar::tab:text {
     text-align:left;
 }
 
-#createGemTab QTabBar::tab {
+/*#createGemTab QTabBar::tab {
     background-color: #444444;
     font-size:16px;
     min-height:230px;
@@ -48,6 +48,11 @@ QTabWidget#createGemTab::tab-bar {
 }
 
 QTabBar#createGemTab::tab:text {
+    text-align:left;
+}*/
+
+QStackedWidget#createAGemRHS{
+    background-color: #333333;
     text-align:left;
 }
 
@@ -147,6 +152,10 @@ QTabBar::tab:focus {
 }
 
 #createAGem #formFrame {
+    margin-left: 0px;
+}
+
+#createAGemFormLineEdit #formFrame {
     margin-left: 0px;
 }
 
@@ -258,6 +267,11 @@ QTabBar::tab:focus {
     qproperty-indent: 0;
 }
 
+#rightPaneDetailsHeader {
+    font-size:21px;
+    /* qproperty-indent: 0; */
+}
+
 #rightPaneSubheader {
     font-size:14px;
     qproperty-indent: 0;
@@ -279,6 +293,10 @@ QTabBar::tab:focus {
     padding-bottom: 20px;
     padding-left: 23px;
     font-size: 12;
+}
+
+#createAGemRadioButtonSubFormField #formFrame{
+    margin-left: 23px;
 }
 
 /************** General (Modal windows) **************/

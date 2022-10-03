@@ -22,11 +22,10 @@ class QDialogButtonBox;
 class QRadioButton;
 class QScrollArea;
 class QVBoxLayout;
+class QStackedWidget;
 
 namespace O3DE::ProjectManager
 {
-    class TabWidget;
-
     class CreateGem : public ScreenWidget
     {
         Q_OBJECT
@@ -77,13 +76,17 @@ namespace O3DE::ProjectManager
         FormLineEditWidget* m_originURL = nullptr;
         FormLineEditWidget* m_repositoryURL = nullptr;
 
-        TabWidget* m_tabWidget;
+        QStackedWidget* m_stackWidget = nullptr;
 
         QDialogButtonBox* m_backNextButtons = nullptr;
         QPushButton* m_backButton = nullptr;
         QPushButton* m_nextButton = nullptr;
 
         GemInfo m_createGemInfo;
+
+        const int gemTemplateSelectionScreen = 0;
+        const int gemDetailsScreen = 1;
+        const int gemCreatorDetailsScreen = 2;
     };
 
 
