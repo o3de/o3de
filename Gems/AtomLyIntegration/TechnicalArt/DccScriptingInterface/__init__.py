@@ -25,7 +25,7 @@ DCCSI_INFO = {
         'include': ('win'),   # windows
         'exclude': ('darwin', # mac
                     'linux')  # linux, linux_x64
-    }),
+        }),
     "doc_url": DCCSI_DOCS_URL
 }
 import timeit
@@ -63,8 +63,8 @@ DCCSI_LOGLEVEL = int(os.getenv(ENVAR_DCCSI_LOGLEVEL, _logging.INFO))
 # configure basic logger since this is the top-level module
 # note: not using a common logger to reduce cyclical imports
 _logging.basicConfig(level=DCCSI_LOGLEVEL,
-                    format=FRMT_LOG_LONG,
-                    datefmt='%m-%d %H:%M')
+                     format=FRMT_LOG_LONG,
+                     datefmt='%m-%d %H:%M')
 
 _LOGGER = _logging.getLogger(_PACKAGENAME)
 _LOGGER.debug(STR_CROSSBAR)
@@ -252,7 +252,7 @@ PATH_PROGRAMFILES_X64 = os.environ[ENVAR_PROGRAMFILES_X64]
 
 # path string constructor, dccsi default WINGHOME location
 PATH_WINGHOME = (f'{PATH_PROGRAMFILES_X86}' +
-                f'\\{SLUG_DCCSI_WING_TYPE} {SLUG_DCCSI_WING_VERSION_MAJOR}')
+                 f'\\{SLUG_DCCSI_WING_TYPE} {SLUG_DCCSI_WING_VERSION_MAJOR}')
 
 # path string constructor, userhome where wingstubdb.py can live
 PATH_WING_APPDATA = (f'{USER_HOME}' +
@@ -401,18 +401,18 @@ if not O3DE_DEV:
 
             if len(ENGINES_PATH) < 1:
                 _LOGGER(f'no engines in o3de manifest')
-                
+
             # what if there are multiple "engines_path"s? We don't know which to use
             elif len(ENGINES_PATH) == 1: # there can only be one
                 O3DE_ENGINENAME = list(ENGINES_PATH.items())[0][0]
                 O3DE_DEV = Path(list(ENGINES_PATH.items())[0][1])
-                
+
             else:
                 _LOGGER.warning(f'Manifest defines more then one engine: {O3DE_DEV.as_posix()}')
                 _LOGGER.warning(f'Not sure which to use? We suggest...')
                 _LOGGER.warning(f"Put 'set {ENVAR_O3DE_DEV}=c:\\path\\to\\o3de' in: {PATH_ENV_DEV}")
                 _LOGGER.warning(f"And '{ENVAR_O3DE_DEV}:c:\\path\\to\\o3de' in: {PATH_DCCSI_SETTINGS_LOCAL}")
-    
+
             try:
                 O3DE_DEV.resolve(strict=True) # make sure the found engine exists
                 _LOGGER.debug(f'O3DE Manifest {ENVAR_O3DE_DEV} is: {O3DE_DEV.as_posix()}')
@@ -735,8 +735,8 @@ if DCCSI_TEST_PYSIDE:
         # modify to be a grep?
         # path constructor
         QT_PLUGIN_PATH = Path(PATH_O3DE_3RDPARTY,
-                                'packages',
-                                'pyside2-5.15.2.1-py3.10-rev3-windows',
+                              'packages',
+                              'pyside2-5.15.2.1-py3.10-rev3-windows',
                                 'pyside2',
                                 'lib',
                                 'site-packages')
@@ -789,8 +789,17 @@ try:
     from dynaconf import LazySettings
 except ImportError as e:
     _LOGGER.error(f'Could not import dynaconf')
-    _LOGGER.info(f'Follow these steps then re-start DCC app: < to do >')
-    _LOGGER.error(f'{e} , traceback =', exc_info=True)
+    _LOGGER.info(f'Most likely python package dependencies are not installed for target runtime')
+    _LOGGER.info(f'Py EXE  is:  {sys.executable}')
+    _LOGGER.info(f'The Python version running: {sys.version_info[0]}.{sys.version_info[1]}')
+    _LOGGER.info(f'{ENVAR_PATH_DCCSI_PYTHON_LIB} location is: {PATH_DCCSI_PYTHON_LIB}')
+    _LOGGER.info(f'Follow these steps then re-start the DCC app (or other target):')
+    _LOGGER.info(f'1. open a cmd prompt')
+    _LOGGER.info(f'2. change directory to: {PATH_DCCSIG}')
+    _LOGGER.info(f'3. run this command...')
+    _LOGGER.info(f'4. >python foundation.py -py="{sys.executable}"')
+    _LOGGER.error(f'{e} , traceback =', exc_info = True)
+    pass # be forgiving
 
 # settings = LazySettings(
 #     # Loaded first
