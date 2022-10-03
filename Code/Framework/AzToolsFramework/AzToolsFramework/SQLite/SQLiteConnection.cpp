@@ -15,6 +15,7 @@
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/std/functional.h>
 #include <sqlite3.h>
+#include <AzToolsFramework/AssetDatabase/PathOrUuid.h>
 
 namespace AzToolsFramework
 {
@@ -642,6 +643,17 @@ namespace AzToolsFramework
             int res = sqlite3_bind_blob(m_statement, idx, AZStd::ranges::data(data), static_cast<int>(AZStd::ranges::size(data)), nullptr);
             AZ_Assert(res == SQLITE_OK, "Statement::BindValueUuid: failed to bind!");
             return (res == SQLITE_OK);
+        }
+
+        bool Statement::BindValuePathOrUuid(int col, const AssetDatabase::PathOrUuid& data)
+        {
+            AZ_Assert(m_statement, "Statement::BindValuePathOrUuid: Statement not ready!");
+            if(!m_statement)
+            {
+                return false;
+            }
+
+            return BindValueText(col, data.ToString().c_str());
         }
 
         bool Statement::BindValueDouble(int idx, double data)
