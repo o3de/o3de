@@ -8,15 +8,13 @@
 
 #pragma once
 
-#include <AzCore/Component/TickBus.h>
+#include <AzFramework/Viewport/ViewportBus.h>
 #include <AzToolsFramework/API/EntityCompositionNotificationBus.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/ViewportUi/Button.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
-
-#include <AzFramework/Viewport/ViewportBus.h>
 
 namespace AZ
 {
@@ -55,7 +53,6 @@ namespace AzToolsFramework
             , private EntityCompositionNotificationBus::Handler
             , private ToolsApplicationNotificationBus::Handler
             , private AzFramework::ViewportImGuiNotificationBus::Handler
-            , private AZ::TickBus::Handler
         {
         public:
             ComponentModeSwitcher();
@@ -121,9 +118,6 @@ namespace AzToolsFramework
             void OnImGuiDropDownHidden() override;
             void OnImGuiActivated() override;
             void OnImGuiDeactivated() override;
-
-            // AZ::TickBus overrides ...
-            void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
             // Member variables
             AZ::Component* m_activeSwitcherComponent = nullptr; //!< The component that is currently in component mode

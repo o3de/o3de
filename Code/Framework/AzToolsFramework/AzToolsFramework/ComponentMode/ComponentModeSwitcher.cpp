@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Component/TickBus.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeSwitcher.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
@@ -416,29 +417,26 @@ namespace AzToolsFramework::ComponentModeFramework
     void ComponentModeSwitcher::AfterUndoRedo()
     {
         // wait one frame for the undo stack to actually be updated
-        AZ::TickBus::Handler::BusConnect();
-    }
-
-    void ComponentModeSwitcher::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
-    {
-        if (auto* toolsApplicationRequests = AzToolsFramework::ToolsApplicationRequestBus::FindFirstHandler())
-        {
-            const auto& selectedEntityIds = toolsApplicationRequests->GetSelectedEntities();
-            if (selectedEntityIds.size() == 1)
+        AZ::TickBus::QueueFunction(
+            [this]()
             {
-                bool inComponentMode = false;
-                AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::BroadcastResult(
-                    inComponentMode, &ComponentModeSystemRequests::InComponentMode);
-
-                if (!inComponentMode)
+                if (auto* toolsApplicationRequests = AzToolsFramework::ToolsApplicationRequestBus::FindFirstHandler())
                 {
-                    ClearSwitcher();
-                    UpdateSwitcherOnEntitySelectionChange(selectedEntityIds, {});
-                }
-            }
-        }
+                    const auto& selectedEntityIds = toolsApplicationRequests->GetSelectedEntities();
+                    if (selectedEntityIds.size() == 1)
+                    {
+                        bool inComponentMode = false;
+                        AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::BroadcastResult(
+                            inComponentMode, &ComponentModeSystemRequests::InComponentMode);
 
-        AZ::TickBus::Handler::BusDisconnect();
+                        if (!inComponentMode)
+                        {
+                            ClearSwitcher();
+                            UpdateSwitcherOnEntitySelectionChange(selectedEntityIds, {});
+                        }
+                    }
+                }
+            });
     }
 
     void ComponentModeSwitcher::OnImGuiDropDownShown()
