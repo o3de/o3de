@@ -87,6 +87,7 @@ namespace GraphModel
                 ->Event("WrapNode", &GraphModelIntegration::GraphControllerRequests::WrapNode)
                 ->Event("AddConnection", &GraphModelIntegration::GraphControllerRequests::AddConnection)
                 ->Event("AddConnectionBySlotId", &GraphModelIntegration::GraphControllerRequests::AddConnectionBySlotId)
+                ->Event("AreSlotsConnected", &GraphModelIntegration::GraphControllerRequests::AreSlotsConnected)
                 ->Event("RemoveConnection", &GraphModelIntegration::GraphControllerRequests::RemoveConnection)
                 ->Event("ExtendSlot", &GraphModelIntegration::GraphControllerRequests::ExtendSlot)
                 ;

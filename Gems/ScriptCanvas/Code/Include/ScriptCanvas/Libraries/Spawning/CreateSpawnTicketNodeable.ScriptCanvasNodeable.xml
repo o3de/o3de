@@ -6,7 +6,8 @@
         PreferredClassName="CreateSpawnTicket"
         Category="Prefab/Spawning"
         Namespace="ScriptCanvas"
-        Description="Creates a spawn ticket using provided prefab">
+        Description="Creates a spawn ticket using provided prefab"
+        HideProperty="true">
 
         <Input Name="Create Ticket" OutputName="Ticket Created">
             <Parameter Name="Prefab" Type="const AzFramework::Scripts::SpawnableScriptAssetRef&amp;" Description="Prefab source asset to spawn"/>

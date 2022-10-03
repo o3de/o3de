@@ -22,6 +22,7 @@ namespace PhysX
     struct FixedJointConfiguration;
     struct BallJointConfiguration;
     struct HingeJointConfiguration;
+    struct PrismaticJointConfiguration;
 
     namespace JointConstants
     {
@@ -60,6 +61,11 @@ namespace PhysX
                 AzPhysics::SimulatedBodyHandle childBodyHandle);
 
             PxJointUniquePtr CreatePxHingeJoint(const PhysX::HingeJointConfiguration& configuration,
+                AzPhysics::SceneHandle sceneHandle,
+                AzPhysics::SimulatedBodyHandle parentBodyHandle,
+                AzPhysics::SimulatedBodyHandle childBodyHandle);
+
+            PxJointUniquePtr CreatePxPrismaticJoint(const PhysX::PrismaticJointConfiguration& configuration,
                 AzPhysics::SceneHandle sceneHandle,
                 AzPhysics::SimulatedBodyHandle parentBodyHandle,
                 AzPhysics::SimulatedBodyHandle childBodyHandle);

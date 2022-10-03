@@ -42,7 +42,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString AssetWeightSelectorNode::TITLE = QObject::tr("Vegetation Asset Weight Selector");
+    const char* AssetWeightSelectorNode::TITLE = "Vegetation Asset Weight Selector";
 
     AssetWeightSelectorNode::AssetWeightSelectorNode(GraphModel::GraphPtr graph)
         : BaseNode(graph)
@@ -58,7 +58,7 @@ namespace LandscapeCanvas
 
     const char* AssetWeightSelectorNode::GetTitle() const
     {
-        return TITLE.toUtf8().constData();
+        return TITLE;
     }
 
     void AssetWeightSelectorNode::RegisterSlots()

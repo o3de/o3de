@@ -1061,7 +1061,7 @@ namespace AssetUtilities
         }
 
         AZ::Sha1 sha;
-        sha.ProcessBytes(fingerprintString.data(), fingerprintString.size());
+        sha.ProcessBytes(AZStd::as_bytes(AZStd::span(fingerprintString)));
         AZ::u32 digest[5];
         sha.GetDigest(digest);
 
@@ -1317,47 +1317,6 @@ namespace AssetUtilities
             return {};
         }
         return productName.toLower();
-    }
-
-    static void CollectDependenciesRecursively(AssetProcessor::AssetDatabaseConnection& databaseConnection, const AZ::Uuid& assetId,
-        AZStd::unordered_set<AZ::Uuid>& uuidSet, AZStd::vector<AZ::Uuid>& dependecyList)
-    {
-        if (uuidSet.count(assetId))
-        {
-            return;
-        }
-        dependecyList.push_back(assetId);
-        uuidSet.insert(assetId);
-        AzToolsFramework::AssetDatabase::SourceDatabaseEntry entry;
-        if (!databaseConnection.GetSourceBySourceGuid(assetId, entry))
-        {
-            return;
-        }
-
-        AzToolsFramework::AssetDatabase::SourceFileDependencyEntryContainer container;
-        if (!databaseConnection.GetDependsOnSourceBySource(entry.m_sourceName.c_str(), AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_Any, container))
-        {
-            return;
-        }
-        for (const auto& sourceFileEntry : container)
-        {
-            databaseConnection.QuerySourceBySourceName(sourceFileEntry.m_dependsOnSource.c_str(), [&](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
-                {
-                    CollectDependenciesRecursively(databaseConnection, entry.m_sourceGuid, uuidSet, dependecyList);
-                    return true;
-                });
-        }
-    }
-
-    AZStd::vector<AZ::Uuid> CollectAssetAndDependenciesRecursively(AssetProcessor::AssetDatabaseConnection& databaseConnection, const AZStd::vector<AZ::Uuid>& assetList)
-    {
-        AZStd::unordered_set<AZ::Uuid> uuidSet; // Used to guarantee uniqueness and prevent infinite recursion.
-        AZStd::vector<AZ::Uuid> completeAssetList;
-        for (const AZ::Uuid& assetId : assetList)
-        {
-            CollectDependenciesRecursively(databaseConnection, assetId, uuidSet, completeAssetList);
-        }
-        return completeAssetList;
     }
 
     bool UpdateToCorrectCase(const QString& rootPath, QString& relativePathFromRoot)

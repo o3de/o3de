@@ -355,8 +355,19 @@ namespace AZ::Reflection
                         }
                     }
                 }
-
                 CacheAttributes();
+
+                // Inherit the change notify attribute from our parent
+                const Name changeNotify = Name("ChangeNotify");
+                Dom::Value changeNotifyValue = Find(changeNotify);
+                if (changeNotifyValue.IsNull())
+                {
+                    changeNotifyValue = Find(Name(), changeNotify, parentData);
+                    if (!changeNotifyValue.IsNull())
+                    {
+                        nodeData->m_cachedAttributes.push_back({ Name(), changeNotify, changeNotifyValue });
+                    }
+                }
 
                 const auto& EnumTypeAttribute = DocumentPropertyEditor::Nodes::PropertyEditor::EnumUnderlyingType;
                 Dom::Value enumTypeValue = Find(EnumTypeAttribute.GetName());
@@ -704,6 +715,18 @@ namespace AZ::Reflection
             {
                 const StackEntry& nodeData = m_stack.back();
                 for (auto it = nodeData.m_cachedAttributes.begin(); it != nodeData.m_cachedAttributes.end(); ++it)
+                {
+                    if (it->m_group == group && it->m_name == name)
+                    {
+                        return it->m_value;
+                    }
+                }
+                return Dom::Value();
+            }
+
+            AttributeDataType Find(Name group, Name name, StackEntry& parentData) const
+            {
+                for (auto it = parentData.m_cachedAttributes.begin(); it != parentData.m_cachedAttributes.end(); ++it)
                 {
                     if (it->m_group == group && it->m_name == name)
                     {

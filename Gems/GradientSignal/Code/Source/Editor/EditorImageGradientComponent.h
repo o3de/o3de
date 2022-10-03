@@ -30,7 +30,6 @@ namespace GradientSignal
         , protected LmbrCentral::DependencyNotificationBus::Handler
         , private GradientImageCreatorRequestBus::Handler
         , private EditorImageGradientRequestBus::Handler
-        , private AzToolsFramework::PaintBrushNotificationBus::Handler
     {
     public:
         AZ_EDITOR_COMPONENT(
@@ -101,14 +100,6 @@ namespace GradientSignal
 
         bool InComponentMode() const;
 
-        // PaintBrushNotificationBus overrides...
-        // These are used to keep the paintbrush config in sync with the current manipulator.
-        void OnIntensityChanged(float intensity) override;
-        void OnOpacityChanged(float opacity) override;
-        void OnRadiusChanged(float radius) override;
-
-        AZ::u32 PaintBrushSettingsChanged();
-
         ImageCreationOrSelection m_creationSelectionChoice = ImageCreationOrSelection::UseExistingImage;
 
         // Parameters used for creating new source image assets
@@ -126,7 +117,6 @@ namespace GradientSignal
         //! Delegates the handling of component editing mode to a paint controller.
         using ComponentModeDelegate = AzToolsFramework::ComponentModeFramework::ComponentModeDelegate;
         ComponentModeDelegate m_componentModeDelegate;
-        AzToolsFramework::PaintBrushConfig m_paintBrush;
 
         //! Preview of the gradient image
         GradientPreviewer m_previewer;

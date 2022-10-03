@@ -15,6 +15,7 @@ namespace UnitTests
     struct ModtimeScanningTest : AssetProcessorManagerTest
     {
         void SetUpAssetProcessorManager();
+        void PopulateDatabase() override;
         void SetUp() override;
         void TearDown() override;
 

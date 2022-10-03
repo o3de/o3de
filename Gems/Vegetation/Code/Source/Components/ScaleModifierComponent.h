@@ -36,7 +36,7 @@ namespace Vegetation
         GradientSignal::GradientSampler m_gradientSampler;
     };
 
-    static const AZ::Uuid ScaleModifierComponentTypeId = "{A9F4FE60-E652-415A-A8C4-0003D5750E9E}";
+    inline constexpr AZ::TypeId ScaleModifierComponentTypeId{ "{A9F4FE60-E652-415A-A8C4-0003D5750E9E}" };
 
     /**
     * Component implementing VegetationModifierRequestBus that offsets scale

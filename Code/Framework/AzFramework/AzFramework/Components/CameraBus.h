@@ -260,7 +260,7 @@ namespace Camera
     };
     using CameraNotificationBus = AZ::EBus<CameraNotifications>;
 
-#define CameraComponentTypeId "{E2DC7EB8-02D1-4E6D-BFE4-CE652FCB7C7F}"
-#define EditorCameraComponentTypeId "{CA11DA46-29FF-4083-B5F6-E02C3A8C3A3D}"
+#define CameraComponentTypeId AZ::TypeId("{E2DC7EB8-02D1-4E6D-BFE4-CE652FCB7C7F}")
+#define EditorCameraComponentTypeId AZ::TypeId("{CA11DA46-29FF-4083-B5F6-E02C3A8C3A3D}")
 
 } // namespace Camera

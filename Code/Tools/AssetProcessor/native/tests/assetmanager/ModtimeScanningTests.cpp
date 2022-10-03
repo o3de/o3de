@@ -44,6 +44,10 @@ namespace UnitTests
             });
     }
 
+    void ModtimeScanningTest::PopulateDatabase()
+    {
+    }
+
     void ModtimeScanningTest::SetUp()
     {
         using namespace AssetProcessor;
@@ -476,14 +480,13 @@ namespace UnitTests
     TEST_F(ModtimeScanningTest, ReprocessRequest_SourceWithDependency_BothWillProcess)
     {
         using namespace AzToolsFramework::AssetSystem;
-
-        using SourceFileDependencyEntry = AzToolsFramework::AssetDatabase::SourceFileDependencyEntry;
+        using namespace AzToolsFramework::AssetDatabase;
 
         SourceFileDependencyEntry newEntry1;
         newEntry1.m_sourceDependencyID = AzToolsFramework::AssetDatabase::InvalidEntryId;
         newEntry1.m_builderGuid = AZ::Uuid::CreateRandom();
-        newEntry1.m_source = m_data->m_absolutePath[0].toUtf8().constData();
-        newEntry1.m_dependsOnSource = m_data->m_absolutePath[1].toUtf8().constData();
+        newEntry1.m_sourceGuid = AZ::Uuid{ "{C0BD819A-F84E-4A56-A6A5-917AE3ECDE53}" };
+        newEntry1.m_dependsOnSource = PathOrUuid(m_data->m_absolutePath[1].toUtf8().constData());
         newEntry1.m_typeOfDependency = SourceFileDependencyEntry::DEP_SourceToSource;
 
         m_assetProcessorManager->RequestReprocess(m_data->m_absolutePath[0]);

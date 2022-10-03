@@ -1,10 +1,3 @@
----
-Copyright (c) Contributors to the Open 3D Engine Project.For complete copyright and license terms please see the LICENSE at the root of this distribution.
-
-SPDX-License-Identifier: Apache-2.0 OR MIT
-
----
-
 # DccScriptingInterface ( aka DCCsi )
 
 ###### Status: Prototype
@@ -193,3 +186,11 @@ config.py comes with the ability to export the settings and write them to the se
 Additional, the settings can be written to and stored in any user specified location, by using the following cli flag:
 
 - dccsi > `python config.py --export-settings="C:\temp\dccs.settings.json"`
+
+```
+Copyright (c) Contributors to the Open 3D Engine Project.  For complete
+copyright and license terms please see the LICENSE at the root of this
+distribution.
+
+SPDX-License-Identifier: Apache-2.0 OR MIT
+```

@@ -55,7 +55,7 @@ namespace AzToolsFramework
             using DynamicEditDataProvider = AZStd::function<const AZ::Edit::ElementData*(const void* /*objectPtr*/, const AZ::SerializeContext::ClassData* /*classData*/)>;
             virtual void SetDynamicEditDataProvider([[maybe_unused]] DynamicEditDataProvider provider) {};
 
-            virtual void SetSavedStateKey([[maybe_unused]] AZ::u32 key) {};
+            virtual void SetSavedStateKey([[maybe_unused]] AZ::u32 key, [[maybe_unused]] AZStd::string propertyEditorName = {}) {}
 
             virtual bool HasFilteredOutNodes() const
             {

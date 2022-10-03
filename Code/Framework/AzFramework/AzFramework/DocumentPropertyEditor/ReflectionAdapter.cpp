@@ -213,7 +213,8 @@ namespace AZ::DocumentPropertyEditor
             void* instance,
             const Reflection::IAttributes& attributes,
             AZStd::function<Dom::Value(const Dom::Value&)> onChanged,
-            bool createRow)
+            bool createRow,
+            bool hashValue)
         {
             if (createRow)
             {
@@ -226,6 +227,14 @@ namespace AZ::DocumentPropertyEditor
             m_onChangedCallbacks.SetValue(m_builder.GetCurrentPath(), AZStd::move(onChanged));
             m_builder.AddMessageHandler(m_adapter, Nodes::PropertyEditor::OnChanged);
             m_builder.AddMessageHandler(m_adapter, Nodes::PropertyEditor::RequestTreeUpdate);
+
+            if (hashValue)
+            {
+                AZStd::any anyVal(&instance);
+                m_builder.Attribute(
+                    Nodes::PropertyEditor::ValueHashed,
+                    AZ::Uuid::CreateData(reinterpret_cast<AZStd::byte*>(AZStd::any_cast<void>(&anyVal)), anyVal.get_type_info().m_valueSize));
+            }
             m_builder.EndPropertyEditor();
 
             CheckContainerElement(instance, attributes);
@@ -253,7 +262,7 @@ namespace AZ::DocumentPropertyEditor
                     }
                     return Dom::Utils::ValueFromType(value);
                 },
-                true);
+                true, false);
         }
 
         void Visit(bool& value, const Reflection::IAttributes& attributes) override
@@ -335,6 +344,8 @@ namespace AZ::DocumentPropertyEditor
                 {
                     m_builder.BeginPropertyEditor<Nodes::ContainerActionButton>();
                     m_builder.Attribute(Nodes::PropertyEditor::SharePriorColumn, true);
+                    m_builder.Attribute(Nodes::PropertyEditor::UseMinimumWidth, true);
+                    m_builder.Attribute(Nodes::PropertyEditor::Alignment, Nodes::PropertyEditor::Align::AlignRight);
                     m_builder.Attribute(Nodes::ContainerActionButton::Action, Nodes::ContainerAction::RemoveElement);
                     m_builder.AddMessageHandler(m_adapter, Nodes::ContainerActionButton::OnActivate.GetName());
                     m_builder.EndPropertyEditor();
@@ -376,7 +387,7 @@ namespace AZ::DocumentPropertyEditor
                         value = newValue.GetString();
                         return newValue;
                     },
-                    false);
+                    false, false);
                 return;
             }
             else
@@ -414,11 +425,13 @@ namespace AZ::DocumentPropertyEditor
                     {
                         m_builder.BeginPropertyEditor<Nodes::ContainerActionButton>();
                         m_builder.Attribute(Nodes::ContainerActionButton::Action, Nodes::ContainerAction::AddElement);
+                        m_builder.Attribute(Nodes::PropertyEditor::UseMinimumWidth, true);
                         m_builder.AddMessageHandler(m_adapter, Nodes::ContainerActionButton::OnActivate.GetName());
                         m_builder.EndPropertyEditor();
 
                         m_builder.BeginPropertyEditor<Nodes::ContainerActionButton>();
                         m_builder.Attribute(Nodes::PropertyEditor::SharePriorColumn, true);
+                        m_builder.Attribute(Nodes::PropertyEditor::UseMinimumWidth, true);
                         m_builder.Attribute(Nodes::PropertyEditor::Alignment, Nodes::PropertyEditor::Align::AlignRight);
                         m_builder.Attribute(Nodes::ContainerActionButton::Action, Nodes::ContainerAction::Clear);
                         m_builder.AddMessageHandler(m_adapter, Nodes::ContainerActionButton::OnActivate.GetName());
@@ -431,15 +444,46 @@ namespace AZ::DocumentPropertyEditor
                 }
 
                 AZ::Dom::Value instancePointerValue = AZ::Dom::Utils::MarshalTypedPointerToValue(access.Get(), access.GetType());
+                bool hashValue = false;
+                const AZ::Name PointerTypeFieldName = AZ::Dom::Utils::PointerTypeFieldName;
+                if (instancePointerValue.IsOpaqueValue() || instancePointerValue.FindMember(PointerTypeFieldName))
+                {
+                    hashValue = true;
+                }
                 VisitValue(
                     instancePointerValue,
                     access.Get(),
                     attributes,
-                    [](const Dom::Value& newValue)
+                    // this needs to write the value back into the reflected object via Json serialization
+                    [valuePointer = access.Get(), valueType = access.GetType(), this](const Dom::Value& newValue)
                     {
+                        // marshal this new value into a pointer for use by the Json serializer
+                        auto marshalledPointer = AZ::Dom::Utils::TryMarshalValueToPointer(newValue, valueType);
+
+                        rapidjson::Document buffer;
+                        JsonSerializerSettings serializeSettings;
+                        JsonDeserializerSettings deserializeSettings;
+                        serializeSettings.m_serializeContext = m_serializeContext;
+                        deserializeSettings.m_serializeContext = m_serializeContext;
+
+                        // serialize the new value to Json, using the original valuePointer as a reference object to generate a minimal diff
+                        JsonSerialization::Store(buffer, buffer.GetAllocator(), marshalledPointer, valuePointer, valueType, serializeSettings);
+
+                        // now deserialize that value into the original location
+                        JsonSerialization::Load(valuePointer, valueType, buffer, deserializeSettings);
+
+                        // NB: the returned value for serialized pointer values is instancePointerValue, but since this is passed by pointer,
+                        // it will not actually detect a changed dom value. Since we are already writing directly to the DOM before this step,
+                        // it won't affect the calling DPE, however, other DPEs pointed at the same adapter would be unaware of the change,
+                        // and wouldn't update their UI.
+                        // In future, to properly support multiple DPEs on one adapter, we will need to solve this. One way would be to store
+                        // the json serialized value (which is mostly human-readable text) as an attribute, so any change to the Json would
+                        // trigger an update. This would have the advantage of allowing opaque and pointer types to be searchable by the
+                        // string-based Filter adapter. Without this, things like Vector3 will not have searchable values by text. These
+                        // advantages would have to be measured against the size changes in the DOM and the time taken to populate and parse them.
                         return newValue;
                     },
-                    false);
+                    false, hashValue);
             }
         }
 

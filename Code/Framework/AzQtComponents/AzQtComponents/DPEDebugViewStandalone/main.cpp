@@ -37,6 +37,7 @@
 #include <AzQtComponents/DPEDebugViewStandalone/ExampleAdapter.h>
 #include <AzToolsFramework/UI/DPEDebugViewer/DPEDebugWindow.h>
 
+#include <AzToolsFramework/UI/DocumentPropertyEditor/FilteredDPE.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyHandlerWidget.h>
@@ -237,12 +238,9 @@ int main(int argc, char** argv)
     QPointer<AzToolsFramework::DPEDebugWindow> debugViewer = new AzToolsFramework::DPEDebugWindow(nullptr);
 
     // create a real DPE to track the same adapter selected for the debug tool
-    QPointer<AzToolsFramework::DocumentPropertyEditor> dpeInstance = new AzToolsFramework::DocumentPropertyEditor(nullptr);
-    dpeInstance->setAttribute(Qt::WA_DeleteOnClose);
-    dpeInstance->SetSpawnDebugView(false); // don't allow this DPE to spawn debug views, as we've made our own
+    QPointer<AzToolsFramework::FilteredDPE> filteredDPE = new AzToolsFramework::FilteredDPE(nullptr);
     QObject::connect(
-        debugViewer.data(), &AzToolsFramework::DPEDebugWindow::AdapterChanged, dpeInstance,
-        &AzToolsFramework::DocumentPropertyEditor::SetAdapter);
+        debugViewer.data(), &AzToolsFramework::DPEDebugWindow::AdapterChanged, filteredDPE, &AzToolsFramework::FilteredDPE::SetAdapter);
 
     debugViewer->AddAdapterToList("Reflection Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::ReflectionAdapter>(&testContainer, azrtti_typeid<DPEDebugView::TestContainer>()));
     debugViewer->AddAdapterToList("CVar Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::CvarAdapter>());
@@ -250,7 +248,7 @@ int main(int argc, char** argv)
     debugViewer->AddAdapterToList("Settings Registry Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::SettingsRegistryAdapter>());
 
     debugViewer->show();
-    dpeInstance->show();
+    filteredDPE->show();
 
     return qtApp.exec();
 }

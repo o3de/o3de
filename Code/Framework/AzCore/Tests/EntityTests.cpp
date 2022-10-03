@@ -242,7 +242,7 @@ namespace UnitTest
         // Component overrides
         void Activate() override { }
         void Deactivate() override { }
-        const AZ::TypeId& GetUnderlyingComponentType() const override
+        AZ::TypeId GetUnderlyingComponentType() const override
         {
             if (m_wrappedComponent)
             {

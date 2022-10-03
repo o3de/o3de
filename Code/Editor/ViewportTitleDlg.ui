@@ -79,12 +79,12 @@
     </spacer>
    </item>
    <item>
-    <widget class="QToolButton" name="m_editModeMenu">
+    <widget class="QToolButton" name="m_prefabEditModeMenu">
      <property name="toolTip">
-      <string>Edit mode</string>
+      <string>Prefab Edit mode</string>
      </property>
      <property name="text">
-      <string>Edit mode</string>
+      <string>Prefab Edit mode</string>
      </property>
     </widget>
    </item>

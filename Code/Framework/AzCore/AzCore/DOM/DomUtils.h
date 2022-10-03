@@ -149,7 +149,7 @@ namespace AZ::Dom::Utils
         }
     }
 
-    const AZ::TypeId& GetValueTypeId(const Dom::Value& value);
+    AZ::TypeId GetValueTypeId(const Dom::Value& value);
 
     template<typename T>
     bool CanConvertValueToType(const Dom::Value& value)

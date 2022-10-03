@@ -599,7 +599,10 @@ namespace PhysX
                     activeBodyHandles.emplace_back(actorData->GetBodyHandle());
                 }
             }
-            m_sceneActiveSimulatedBodies.Signal(m_sceneHandle, activeBodyHandles);
+
+            m_sceneActiveSimulatedBodies.Signal(m_sceneHandle, activeBodyHandles, m_currentDeltaTime);
+
+            SyncActiveBodyTransform(activeBodyHandles);
         }
 
         FlushQueuedEvents();
@@ -861,6 +864,12 @@ namespace PhysX
         {
             newJoint = Internal::CreateJoint<PhysXHingeJoint, HingeJointConfiguration>(
                 azdynamic_cast<const HingeJointConfiguration*>(jointConfig),
+                m_sceneHandle, parentBody, childBody, newJointCrc);
+        }
+        else if (azrtti_istypeof<PhysX::PrismaticJointConfiguration*>(jointConfig))
+        {
+            newJoint = Internal::CreateJoint<PhysXPrismaticJoint, PrismaticJointConfiguration>(
+                azdynamic_cast<const PrismaticJointConfiguration*>(jointConfig),
                 m_sceneHandle, parentBody, childBody, newJointCrc);
         }
         else
@@ -1260,4 +1269,19 @@ namespace PhysX
         AZ_PROFILE_DATAPOINT(Physics, stats.nbLostTouches, RootCategory, CollisionsSubCategory, "LostTouches");
         AZ_PROFILE_DATAPOINT(Physics, stats.nbPartitions, RootCategory, CollisionsSubCategory, "Partitions");
     }
+
+    void PhysXScene::SyncActiveBodyTransform(const AzPhysics::SimulatedBodyHandleList& activeBodyHandles)
+    {
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            for (const AzPhysics::SimulatedBodyHandle& bodyHandle : activeBodyHandles)
+            {
+                if (AzPhysics::SimulatedBody* simBody = sceneInterface->GetSimulatedBodyFromHandle(m_sceneHandle, bodyHandle))
+                {
+                    simBody->SyncTransform(m_currentDeltaTime);
+                }
+            }
+        }
+    }
+
 }

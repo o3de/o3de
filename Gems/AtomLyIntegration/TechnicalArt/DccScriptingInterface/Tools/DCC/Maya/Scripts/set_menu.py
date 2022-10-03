@@ -10,21 +10,21 @@
 # -------------------------------------------------------------------------
 """
 Module Documentation:
-    DccScriptingInterface:: SDK//maya//scripts//set_menu.py
+    DccScriptingInterface//Tools//DCC//maya//scripts//set_menu.py
 
 This module creates and manages a DCCsi mainmenu
 """
 # -------------------------------------------------------------------------
 # -- Standard Python modules
-# none
+import logging as _logging
 
 # -- External Python modules
 # none
 
 # -- DCCsi Extension Modules
-import azpy
-from constants import OBJ_DCCSI_MAINMENU
-from constants import TAG_DCCSI_MAINMENU
+import DccScriptingInterface.azpy
+from DccScriptingInterface.Tools.DCC.Maya.constants import OBJ_DCCSI_MAINMENU
+from DccScriptingInterface.Tools.DCC.Maya.constants import TAG_DCCSI_MAINMENU
 
 # -- maya imports
 import pymel.core as pm
@@ -32,18 +32,13 @@ import pymel.core as pm
 
 
 # -------------------------------------------------------------------------
-from azpy.env_bool import env_bool
-from azpy.constants import ENVAR_DCCSI_GDEBUG
-from azpy.constants import ENVAR_DCCSI_DEV_MODE
+#  global scope
+from DccScriptingInterface.Tools.DCC.Maya import _PACKAGENAME
+_MODULENAME = f'{_PACKAGENAME}.set_menu'
+_LOGGER = _logging.getLogger(_MODULENAME)
+_LOGGER.info(f'Initializing: {_MODULENAME}')
 
-#  global space
-_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
-_DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
-
-_MODULENAME = r'DCCsi.SDK.Maya.Scripts.set_menu'
-
-_LOGGER = azpy.initialize_logger(_MODULENAME, default_log_level=int(20))
-_LOGGER.debug('Invoking:: {0}.'.format({_MODULENAME}))
+from DccScriptingInterface.globals import *
 # -------------------------------------------------------------------------
 
 
@@ -56,7 +51,7 @@ def menu_cmd_test():
 # -------------------------------------------------------------------------
 def set_main_menu(obj_name=OBJ_DCCSI_MAINMENU, label=TAG_DCCSI_MAINMENU):
     _main_window = pm.language.melGlobals['gMainWindow']
-    
+
     _menu_obj = obj_name
     _menu_label = label
 
@@ -75,7 +70,7 @@ def set_main_menu(obj_name=OBJ_DCCSI_MAINMENU, label=TAG_DCCSI_MAINMENU):
                 subMenu=True,
                 parent=_custom_tools_menu,
                 tearOff=True)
-    
+
     # make a dummy menu item to test
     pm.menuItem(label='Test', command=pm.Callback(menu_cmd_test))
     return _custom_tools_menu

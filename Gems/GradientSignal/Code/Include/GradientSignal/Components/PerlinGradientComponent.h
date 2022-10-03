@@ -43,7 +43,7 @@ namespace GradientSignal
         float m_frequency = 1.0f;
     };
 
-    static const AZ::Uuid PerlinGradientComponentTypeId = "{A293D617-C0F2-4D96-9DA0-791A5564878C}";
+    inline constexpr AZ::TypeId PerlinGradientComponentTypeId{ "{A293D617-C0F2-4D96-9DA0-791A5564878C}" };
 
     class PerlinGradientComponent
         : public AZ::Component

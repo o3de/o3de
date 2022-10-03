@@ -83,6 +83,8 @@ namespace AZStd
             bool m_isPointer = false;
             // Should the object be stored on the heap? (never true for pointers)
             bool m_useHeap = false;
+            // The size of the value stored by this type
+            size_t m_valueSize = 0;
         };
 
         /// Constructs an empty object.
@@ -374,6 +376,7 @@ namespace AZStd
             ti.m_id = azrtti_typeid<ValueType>();
             ti.m_isPointer = is_pointer<ValueType>::value;
             ti.m_useHeap = AZStd::GetMax(sizeof(ValueType), AZStd::alignment_of<ValueType>::value) > Internal::ANY_SBO_BUF_SIZE;
+            ti.m_valueSize = sizeof(AZStd::decay_t<AZStd::remove_pointer_t<ValueType>>);
             ti.m_handler = type_info::HandleFnT(&action_handler<ValueType>);
             return ti;
         }

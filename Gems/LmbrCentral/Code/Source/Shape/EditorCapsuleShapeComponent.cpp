@@ -23,7 +23,7 @@ namespace LmbrCentral
             // Deprecate: EditorCapsuleColliderComponent -> EditorCapsuleShapeComponent
             serializeContext->ClassDeprecate(
                 "EditorCapsuleColliderComponent",
-                "{63247EE1-B081-40D9-8AE2-98E5C738EBD8}",
+                AZ::Uuid("{63247EE1-B081-40D9-8AE2-98E5C738EBD8}"),
                 &ClassConverters::DeprecateEditorCapsuleColliderComponent)
                 ;
 

@@ -14,6 +14,7 @@
 #include <Atom/RPI.Public/Shader/ShaderReloadDebugTracker.h>
 #include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/std/time.h>
 
 #include <AzCore/Component/TickBus.h>
 

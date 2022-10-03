@@ -284,7 +284,7 @@ namespace EditorInternal
 
     AZStd::chrono::milliseconds EditorToolsApplication::EditorViewportInputTimeNow()
     {
-        const auto now = AZStd::chrono::high_resolution_clock::now();
+        const auto now = AZStd::chrono::steady_clock::now();
         return AZStd::chrono::time_point_cast<AZStd::chrono::milliseconds>(now).time_since_epoch();
     }
 } // namespace EditorInternal

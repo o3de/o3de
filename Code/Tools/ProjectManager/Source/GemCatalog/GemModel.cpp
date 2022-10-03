@@ -43,7 +43,7 @@ namespace O3DE::ProjectManager
 
         item->setData(gemInfo.m_name, RoleName);
         item->setData(gemInfo.m_displayName, RoleDisplayName);
-        item->setData(gemInfo.m_creator, RoleCreator);
+        item->setData(gemInfo.m_origin, RoleCreator);
         item->setData(gemInfo.m_gemOrigin, RoleGemOrigin);
         item->setData(aznumeric_cast<int>(gemInfo.m_platforms), RolePlatforms);
         item->setData(aznumeric_cast<int>(gemInfo.m_types), RoleTypes);

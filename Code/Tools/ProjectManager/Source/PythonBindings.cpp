@@ -665,7 +665,7 @@ namespace O3DE::ProjectManager
         return AZ::Success(AZStd::move(gems));
     }
 
-    AZ::Outcome<QVector<AZStd::string>, AZStd::string> PythonBindings::GetEnabledGemNames(const QString& projectPath)
+    AZ::Outcome<QVector<AZStd::string>, AZStd::string> PythonBindings::GetEnabledGemNames(const QString& projectPath) const
     {
         // Retrieve the path to the cmake file that lists the enabled gems.
         pybind11::str enabledGemsFilename;
@@ -838,7 +838,7 @@ namespace O3DE::ProjectManager
         }
     }
 
-    AZ::Outcome<GemInfo> PythonBindings::CreateGem(const QString& templatePath, const GemInfo& gemInfo, bool registerGem)
+    AZ::Outcome<GemInfo> PythonBindings::CreateGem(const QString& templatePath, const GemInfo& gemInfo, bool registerGem/*=true*/)
     {
         using namespace pybind11::literals;
 
@@ -857,13 +857,13 @@ namespace O3DE::ProjectManager
                     "requirements"_a = QString_To_Py_String(gemInfo.m_requirement),
                     "license"_a = QString_To_Py_String(gemInfo.m_licenseText),
                     "license_url"_a = QString_To_Py_String(gemInfo.m_licenseLink),
-                    "origin"_a = QString_To_Py_String(gemInfo.m_creator),
+                    "origin"_a = QString_To_Py_String(gemInfo.m_origin),
                     "origin_url"_a = QString_To_Py_String(gemInfo.m_originURL),
                     "user_tags"_a = QString_To_Py_String(gemInfo.m_features.join(",")),
                     "icon_path"_a = QString_To_Py_Path(gemInfo.m_iconPath),
                     "documentation_url"_a = QString_To_Py_String(gemInfo.m_documentationLink),
                     "repo_uri"_a = QString_To_Py_String(gemInfo.m_repoUri),
-                    "no_register"_a = registerGem)
+                    "no_register"_a = !registerGem)
                     ;
                 if (createGemResult.cast<int>() == 0)
                 {
@@ -916,7 +916,7 @@ namespace O3DE::ProjectManager
                 gemInfo.m_lastUpdatedDate = Py_To_String_Optional(data, "last_updated", gemInfo.m_lastUpdatedDate);
                 gemInfo.m_binarySizeInKB = Py_To_Int_Optional(data, "binary_size", gemInfo.m_binarySizeInKB);
                 gemInfo.m_requirement = Py_To_String_Optional(data, "requirements", "");
-                gemInfo.m_creator = Py_To_String_Optional(data, "origin", "");
+                gemInfo.m_origin = Py_To_String_Optional(data, "origin", "");
                 gemInfo.m_originURL = Py_To_String_Optional(data, "origin_url", "");
                 gemInfo.m_documentationLink = Py_To_String_Optional(data, "documentation_url", "");
                 gemInfo.m_iconPath = Py_To_String_Optional(data, "icon_path", "preview.png");
@@ -924,7 +924,7 @@ namespace O3DE::ProjectManager
                 gemInfo.m_licenseLink = Py_To_String_Optional(data, "license_url", "");
                 gemInfo.m_repoUri = Py_To_String_Optional(data, "repo_uri", "");
 
-                if (gemInfo.m_creator.contains("Open 3D Engine"))
+                if (gemInfo.m_origin.contains("Open 3D Engine"))
                 {
                     gemInfo.m_gemOrigin = GemInfo::GemOrigin::Open3DEngine;
                 }
@@ -1191,7 +1191,7 @@ namespace O3DE::ProjectManager
         return AZ::Success();
     }
 
-    ProjectTemplateInfo PythonBindings::ProjectTemplateInfoFromPath(pybind11::handle path)
+    ProjectTemplateInfo PythonBindings::ProjectTemplateInfoFromPath(pybind11::handle path) const
     {
         ProjectTemplateInfo templateInfo(TemplateInfoFromPath(path));
         if (templateInfo.IsValid())
@@ -1215,7 +1215,7 @@ namespace O3DE::ProjectManager
         return templateInfo;
     }
 
-    TemplateInfo PythonBindings::TemplateInfoFromPath(pybind11::handle path)
+    TemplateInfo PythonBindings::TemplateInfoFromPath(pybind11::handle path) const
     {
         TemplateInfo templateInfo;
         templateInfo.m_path = Py_To_String(path);
@@ -1305,7 +1305,41 @@ namespace O3DE::ProjectManager
         }
     }
 
-    AZ::Outcome<QVector<ProjectTemplateInfo>> PythonBindings::GetProjectTemplatesForAllRepos()
+    AZ::Outcome<QVector<ProjectTemplateInfo>> PythonBindings::GetProjectTemplatesForRepo(const QString& repoUri) const
+    {
+        QVector<ProjectTemplateInfo> templates;
+
+        bool result = ExecuteWithLock(
+            [&]
+            {
+                using namespace pybind11::literals;
+
+                auto templatePaths = m_repo.attr("get_template_json_paths_from_cached_repo")(
+                    "repo_uri"_a = QString_To_Py_String(repoUri)
+                    );
+
+                if (pybind11::isinstance<pybind11::set>(templatePaths))
+                {
+                    for (auto path : templatePaths)
+                    {
+                        ProjectTemplateInfo remoteTemplate = ProjectTemplateInfoFromPath(path);
+                        remoteTemplate.m_isRemote = true;
+                        templates.push_back(remoteTemplate);
+                    }
+                }
+            });
+
+        if (!result)
+        {
+            return AZ::Failure();
+        }
+        else
+        {
+            return AZ::Success(AZStd::move(templates));
+        }
+    }
+
+    AZ::Outcome<QVector<ProjectTemplateInfo>> PythonBindings::GetProjectTemplatesForAllRepos() const
     {
         QVector<ProjectTemplateInfo> templates;
 
@@ -1444,9 +1478,8 @@ namespace O3DE::ProjectManager
             try
             {
                 // required
-                gemRepoInfo.m_repoUri = Py_To_String(data["repo_uri"]);
                 gemRepoInfo.m_name = Py_To_String(data["repo_name"]);
-                gemRepoInfo.m_creator = Py_To_String(data["origin"]);
+                gemRepoInfo.m_origin = Py_To_String(data["origin"]);
 
                 // optional
                 gemRepoInfo.m_summary = Py_To_String_Optional(data, "summary", "No summary provided.");
@@ -1561,7 +1594,7 @@ namespace O3DE::ProjectManager
     }
 
     IPythonBindings::DetailedOutcome  PythonBindings::DownloadGem(
-        const QString& gemName, std::function<void(int, int)> gemProgressCallback, bool force)
+        const QString& gemName, const QString& path, std::function<void(int, int)> gemProgressCallback, bool force)
     {
         // This process is currently limited to download a single object at a time.
         bool downloadSucceeded = false;
@@ -1572,7 +1605,7 @@ namespace O3DE::ProjectManager
             {
                 auto downloadResult = m_download.attr("download_gem")(
                     QString_To_Py_String(gemName), // gem name
-                    pybind11::none(), // destination path
+                    path.isEmpty() ? pybind11::none() : QString_To_Py_Path(path), // destination path
                     false, // skip auto register
                     force, // force overwrite
                     pybind11::cpp_function(
@@ -1601,7 +1634,7 @@ namespace O3DE::ProjectManager
     }
 
     IPythonBindings::DetailedOutcome PythonBindings::DownloadProject(
-        const QString& projectName, std::function<void(int, int)> projectProgressCallback, bool force)
+        const QString& projectName, const QString& path, std::function<void(int, int)> projectProgressCallback, bool force)
     {
         // This process is currently limited to download a single object at a time.
         bool downloadSucceeded = false;
@@ -1612,7 +1645,7 @@ namespace O3DE::ProjectManager
             {
                 auto downloadResult = m_download.attr("download_project")(
                     QString_To_Py_String(projectName), // gem name
-                    pybind11::none(), // destination path
+                    path.isEmpty() ? pybind11::none() : QString_To_Py_Path(path), // destination path
                     false, // skip auto register
                     force, // force overwrite
                     pybind11::cpp_function(
@@ -1640,7 +1673,7 @@ namespace O3DE::ProjectManager
     }
 
     IPythonBindings::DetailedOutcome PythonBindings::DownloadTemplate(
-        const QString& templateName, std::function<void(int, int)> templateProgressCallback, bool force)
+        const QString& templateName, const QString& path, std::function<void(int, int)> templateProgressCallback, bool force)
     {
         // This process is currently limited to download a single object at a time.
         bool downloadSucceeded = false;
@@ -1651,7 +1684,7 @@ namespace O3DE::ProjectManager
             {
                 auto downloadResult = m_download.attr("download_template")(
                     QString_To_Py_String(templateName), // gem name
-                    pybind11::none(), // destination path
+                    path.isEmpty() ? pybind11::none() : QString_To_Py_Path(path), // destination path
                     false, // skip auto register
                     force, // force overwrite
                     pybind11::cpp_function(
