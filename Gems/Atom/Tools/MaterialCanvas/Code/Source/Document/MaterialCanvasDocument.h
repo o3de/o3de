@@ -108,6 +108,10 @@ namespace MaterialCanvas
             GraphModel::ConstNodePtr inputNode,
             const AZStd::vector<AZStd::string>& inputSlotNames) const;
 
+        // Sort a container of nodes based on connections between nodes so they execute and appear in the inspector in the expected order.
+        template<typename NodeContainer>
+        void SortNodesInExecutionOrder(NodeContainer& nodes) const;
+
         // Get a list of all of the graph nodes sorted in execution order based on input connections.
         AZStd::vector<GraphModel::ConstNodePtr> GetInstructionNodesInExecutionOrder(
             GraphModel::ConstNodePtr outputNode, const AZStd::vector<AZStd::string>& inputSlotNames) const;
