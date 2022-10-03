@@ -52,7 +52,7 @@
 # @section Launcher Notes
 # - Comments are Doxygen compatible
 
-import config
+# import config
 import sys
 import time
 import logging as _logging
@@ -117,7 +117,10 @@ class MayaServer(ServerBase):
 
 def launch():
     _LOGGER.info('MayaServer firing')
-    app = QtWidgets.QApplication(sys.argv)
+    if not QtWidgets.QApplication.instance():
+        app = QtWidgets.QApplication(sys.argv)
+    else:
+        app = QtWidgets.QApplication.instance()
 
     window = QtWidgets.QDialog()
     window.setWindowTitle('Maya Server')

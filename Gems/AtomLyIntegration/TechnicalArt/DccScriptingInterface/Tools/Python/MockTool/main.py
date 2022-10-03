@@ -47,7 +47,6 @@ import config
 import logging
 from pathlib import Path
 from dynaconf import settings
-# from dynaconf import Dynaconf
 from PySide2 import QtWidgets, QtCore, QtGui
 from SDK.Python import general_utilities as utils
 from azpy.shared import qt_process
@@ -186,7 +185,6 @@ class MockTool(QtWidgets.QWidget):
         """! Access variables from the .env file. If this tool is launched by the Launcher tool, Dynaconf will
          not know to read and add in .env values, which is provided for below.
          """
-
         # Extract .env values manually if tool run through DCCsi Launcher. Set 'env_file_location'
         # class attribute path accordingly for your tool's location
         if Path.cwd().parts[-1] == 'DccScriptingInterface':
@@ -212,7 +210,7 @@ class MockTool(QtWidgets.QWidget):
             test_info['exe'] = self.env[self.dcc_info[test_info['app']]['envar'].replace('PY', 'EXE')]
         test_info['script'] = self.dcc_info[test_info['app']]['script']
         extension = self.dcc_info[test_info['app']]['ext']
-        test_info['file'] = (self.resources_directory / f'test.{extension}').as_posix()
+        test_info['file'] = (self.resources_directory / f'test_scene{extension}').as_posix()
         return test_info
 
     def get_environment_values(self, target_environment=None):
@@ -226,14 +224,23 @@ class MockTool(QtWidgets.QWidget):
                 envars[key] = value
         return envars
 
+    def format_qprocess_environment(self, target_environment, script_data=None):
+        data = [script_data] if script_data else []
+        for key, value in target_environment.items():
+            data.append(f'{key}={value}')
+        return data
+
     def sample_button_clicked(self):
         _LOGGER.info('Sample Button Clicked')
 
     def run_connection_clicked(self):
         connection_info = self.get_dcc_test_info()
+        environment = self.get_environment_values(connection_info['app'].lower())
+        env_data = self.format_qprocess_environment(environment, f"SCRIPT={connection_info['script']}")
         _LOGGER.info(f"Test Started::: Connecting to [{connection_info['app']}]: {connection_info['exe']}")
-        app = qt_process.QtProcess(connection_info['exe'], connection_info['script'], connection_info['file'])
-        app.start_process()
+        _LOGGER.info(f'Data check: {env_data}')
+        app = qt_process.QtProcess(connection_info['exe'], connection_info['file'], env_data)
+        app.start_process(socket_connection=True)
 
 
 def get_tool(*args, **kwargs):

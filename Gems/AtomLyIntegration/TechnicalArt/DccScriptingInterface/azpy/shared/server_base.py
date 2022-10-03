@@ -156,7 +156,10 @@ class ServerBase(QtCore.QObject):
 
 if __name__ == '__main__':
     _LOGGER.info('Socket Communication- ServerBase started...')
-    app = QtWidgets.QApplication(sys.argv)
+    if not QtWidgets.QApplication.instance():
+        app = QtWidgets.QApplication(sys.argv)
+    else:
+        app = QtWidgets.QApplication.instance()
 
     window = QtWidgets.QDialog()
     window.setWindowTitle("Server Base")

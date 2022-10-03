@@ -1,15 +1,49 @@
-# import config
-# from dynaconf import settings
-# from pathlib import Path
+import config
+from dynaconf import settings
+from pathlib import Path
 from PySide2 import QtCore
-from PySide2.QtCore import Signal, Slot, QProcess
+from PySide2.QtCore import Signal, Slot, QProcess, QObject, QThreadPool, QRunnable
 from azpy import constants
+import traceback
 import logging
 import json
 
 
 _LOGGER = logging.getLogger('azpy.shared.qt_process')
 _LOGGER.info('Starting QT Process...')
+
+
+class WorkerSignals(QObject):
+    progress = Signal(str, int)
+    data = Signal(tuple)
+    complete = Signal(str)
+    error = Signal(tuple)
+    result = Signal(object)
+
+
+class Worker(QRunnable):
+    def __init__(self, dcc_app, *args, **kwargs):
+        super().__init__()
+
+        self.dcc_app = dcc_app
+        self.stopped = False
+        self.args = args
+        self.kwargs = kwargs
+        self.signals = WorkerSignals()
+
+    @Slot()
+    def run(self):
+        timer = QtCore.QDeadlineTimer.ForeverConstant
+        if self.dcc_app == 'Maya':
+            from azpy.dcc.maya.utils import maya_server
+            from azpy.dcc.maya.utils import maya_client
+            maya_server.launch()
+
+        while not self.stopped and not timer.hasExpired():
+            self.msleep(1000)
+
+    def stop(self):
+        self.stopped = True
 
 
 class QtProcess(QtCore.QObject):
@@ -26,6 +60,7 @@ class QtProcess(QtCore.QObject):
         self.processing_script = self.parse_data('SCRIPT')
         self.input_data = self.parse_data('INPUT_DATA')
         self.output_data = self.parse_data('OUTPUT_DATA')
+        self.threadpool = QThreadPool()
         self.process_output = {}
         self.initialize_qprocess()
 
@@ -76,10 +111,10 @@ class QtProcess(QtCore.QObject):
         return env
 
     def handle_stderr(self):
-        pass
+        # pass
         # Keep this disabled unless you need to register all events while debugging
-        # data = str(self.p.readAllStandardError(), 'utf-8')
-        # _LOGGER.info(f'STD_ERROR_FIRED: {data}')
+        data = str(self.p.readAllStandardError(), 'utf-8')
+        _LOGGER.info(f'STD_ERROR_FIRED: {data}')
 
     def handle_stdout(self):
         """
@@ -88,11 +123,19 @@ class QtProcess(QtCore.QObject):
         :return:
         """
         data = str(self.p.readAllStandardOutput(), 'utf-8')
-        # _LOGGER.info(f'STDOUT::: {data}')
-        if data.startswith('{'):
-            self.process_output = json.loads(data)
-            self.process_info.emit(self.process_output)
-            _LOGGER.info('QProcess Complete.')
+        _LOGGER.info(f'STDOUT [{len(data)}]::: {data}')
+
+        try:
+            if data.startswith('{'):
+                self.process_output = json.loads(data)
+                self.process_info.emit(self.process_output)
+                _LOGGER.info('QProcess Complete.')
+            elif data.index('dcc_connected') != -1:
+                self.start_dcc_server()
+            else:
+                pass
+        except ValueError as e:
+            _LOGGER.info(f'Value error: {e}')
 
     def handle_state(self, state):
         """
@@ -115,19 +158,21 @@ class QtProcess(QtCore.QObject):
         _LOGGER.info('+ QProcess Completed.')
         self.p.closeWriteChannel()
 
-    def start_process(self, detached=True):
-        """
+    def start_process(self, socket_connection=False, detached=True):
+        """!
         This starts the exchange between the standalone QT UI and Maya Standalone to process FBX files.
         The information sent to Maya is the FBX file for processing, as well as the base directory and
         relative destination paths. There is a pipe that can be used to shuttle processed information
         back to the script, but at this stage it is not being used.
-        :param detached: Set detached to False if the operation you are performing needs to be ran, and
+
+        @param socket_connection Set this argument to True if a socket communication server is needed
+        @param detached Set detached argument to False if the operation you are performing needs to be ran, and
         the process subsequently closed.
-        :return:
         """
 
-        info_list = [self.target_files, self.input_data, self.output_data]
-        command = [self.processing_script]
+        info_list = [self.input_data, self.output_data]
+        command = [self.target_files]
+        command.append('socket_connection') if socket_connection else command
         for entry in info_list:
             command.append(str(entry))
         self.p.setArguments(command)
@@ -135,12 +180,20 @@ class QtProcess(QtCore.QObject):
 
         try:
             if detached:
-                self.p.startDetached()
+                self.p.start()
+                self.p.waitForFinished(-1)
             else:
                 self.p.start()
                 self.p.waitForFinished(-1)
         except Exception as e:
             _LOGGER.info(f'+ QProcess failed: {e}')
+
+    def start_dcc_server(self):
+        dcc_app = Path(self.application).stem.capitalize()
+        _LOGGER.info(f'Starting DCC Server [{dcc_app}]...')
+        worker = Worker(dcc_app)
+        self.threadpool.start(worker)
+
 
     @Slot(dict)
     def get_process_output(self):

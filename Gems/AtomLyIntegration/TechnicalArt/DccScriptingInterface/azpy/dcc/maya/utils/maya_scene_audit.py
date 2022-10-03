@@ -1,46 +1,14 @@
 import config
 from dynaconf import settings
 from PySide2 import QtWidgets, QtCore, QtGui
-from PySide2.QtCore import QObject, Signal, Slot, QThreadPool, QRunnable
+from PySide2.QtCore import Signal, Slot
 from azpy.dcc.scene_audit_utility import SceneAuditor
-import traceback
 from pathlib import Path
 import logging
 import sys
 
 
 _LOGGER = logging.getLogger('DCCsi.azpy.dcc.maya.utils.maya_scene_audit')
-
-
-class WorkerSignals(QObject):
-    progress = Signal(str, int)
-    data = Signal(tuple)
-    complete = Signal(str)
-    error = Signal(tuple)
-    result = Signal(object)
-
-
-class Worker(QRunnable):
-    def __init__(self, fn, *args, **kwargs):
-        super().__init__()
-
-        self.fn = fn
-        self.args = args
-        self.kwargs = kwargs
-        self.signals = WorkerSignals()
-
-    @Slot()
-    def run(self):
-        try:
-            result = self.fn(*self.args, **self.kwargs)
-        except Exception:
-            traceback.print_exc()
-            exc_type, value = sys.exc_info()[:2]
-            self.signals.error.emit((exc_type, value, traceback.format_exc()))
-        else:
-            self.signals.result.emit(result)
-        finally:
-            self.signals.complete.emit()
 
 
 class MayaSceneAuditor(SceneAuditor):
@@ -54,7 +22,6 @@ class MayaSceneAuditor(SceneAuditor):
         self.target_application = target_application
         self.target_files = target_files
         self.operation = operation
-        self.threadpool = QThreadPool()
         self.audit_data = {}
         self.animation_data = {}
         self.lighting_data = {}
@@ -100,4 +67,5 @@ class MayaSceneAuditor(SceneAuditor):
 
     def get_animation_information(self, target='all'):
         pass
+
 
