@@ -1,7 +1,10 @@
 {
     "Amazon": {
         "Preferences": {
-            "EnablePrefabSystem": true
+            "EnablePrefabSystem": true,
+            "Editor": {
+                "ComponentSwitcherEnabled": false
+            }
         }
     },
     "O3DE": {
