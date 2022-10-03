@@ -32,6 +32,7 @@ ImporterRootDisplay::ImporterRootDisplay(AZ::SerializeContext* serializeContext,
     ui->setupUi(this);
     ui->m_manifestWidgetAreaLayout->addWidget(m_manifestWidget.data());
 
+    ui->m_saveButton->setVisible(false);
     ui->m_saveButton->setProperty("class", "Primary");
     ui->m_saveButton->setDefault(true);
 
@@ -39,7 +40,6 @@ ImporterRootDisplay::ImporterRootDisplay(AZ::SerializeContext* serializeContext,
     ui->m_timeStampTitle->setVisible(false);
     ui->locationLabel->setVisible(false);
     ui->nameLabel->setVisible(false);
-    ui->m_saveButton->setVisible(false);
 
     ui->headerFrame->setVisible(false);
 
