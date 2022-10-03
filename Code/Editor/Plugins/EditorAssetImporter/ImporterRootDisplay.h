@@ -80,6 +80,8 @@ private:
     // ManifestMetaInfoBus
     void ObjectUpdated(const AZ::SceneAPI::Containers::Scene& scene, const AZ::SceneAPI::DataTypes::IManifestObject* target, void* sender) override;
 
+    void SetUnsavedChanges(bool hasUnsavedChanges);
+
     Ui::ImporterRootDisplay* ui;
     QScopedPointer<AZ::SceneAPI::UI::ManifestWidget> m_manifestWidget;
     bool m_hasUnsavedChanges;

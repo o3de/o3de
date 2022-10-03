@@ -33,11 +33,13 @@ ImporterRootDisplay::ImporterRootDisplay(AZ::SerializeContext* serializeContext,
     ui->m_manifestWidgetAreaLayout->addWidget(m_manifestWidget.data());
 
     ui->m_saveButton->setProperty("class", "Primary");
+    ui->m_saveButton->setDefault(true);
 
     ui->m_timeStamp->setVisible(false);
     ui->m_timeStampTitle->setVisible(false);
     ui->locationLabel->setVisible(false);
     ui->nameLabel->setVisible(false);
+    ui->m_saveButton->setVisible(false);
 
     ui->headerFrame->setVisible(false);
 
@@ -104,7 +106,7 @@ void ImporterRootDisplay::SetSceneDisplay(const QString& headerText, const AZStd
     ui->headerFrame->setVisible(true);
 
     HandleSceneWasReset(scene);
-    m_hasUnsavedChanges = false;
+    SetUnsavedChanges(false);
 }
 
 void ImporterRootDisplay::HandleSceneWasReset(const AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene>& scene)
@@ -116,12 +118,12 @@ void ImporterRootDisplay::HandleSceneWasReset(const AZStd::shared_ptr<AZ::SceneA
     BusConnect();
 
     // Resetting the scene doesn't immediately save the changes, so mark this as having unsaved changes.
-    m_hasUnsavedChanges = true;
+    SetUnsavedChanges(true);
 }
 
 void ImporterRootDisplay::HandleSaveWasSuccessful()
 {
-    m_hasUnsavedChanges = false;
+    SetUnsavedChanges(false);
 }
 
 bool ImporterRootDisplay::HasUnsavedChanges() const
@@ -135,7 +137,7 @@ void ImporterRootDisplay::ObjectUpdated(const AZ::SceneAPI::Containers::Scene& s
     {
         if (&scene == m_manifestWidget->GetScene().get())
         {
-            m_hasUnsavedChanges = true;
+            SetUnsavedChanges(true);
         }
     }
 }
@@ -143,11 +145,34 @@ void ImporterRootDisplay::ObjectUpdated(const AZ::SceneAPI::Containers::Scene& s
 void ImporterRootDisplay::UpdateTimeStamp(const QString& manifestFilePath)
 {
     const QFileInfo info(manifestFilePath);
-    const QDateTime lastModifiedTime(info.lastModified());
-    QString lastModifiedDisplay(lastModifiedTime.toString(Qt::TextDate));
+    if (info.exists())
+    {
+        const QDateTime lastModifiedTime(info.lastModified());
+        QString lastModifiedDisplay(lastModifiedTime.toString(Qt::TextDate));
+        ui->m_timeStampTitle->setVisible(true);
+        ui->m_timeStamp->setText(lastModifiedDisplay);
+    }
+    else
+    {
+        // If the scene manifest doesn't yet exist, then don't show a timestamp.
+        // Don't mark this as dirty, because standard dirty workflows (popup "Would you like to save changes?" on closing, for example)
+        // shouldn't be applied to unsaved, unmodified scene settings.
+        ui->m_timeStampTitle->setVisible(false);
+        ui->m_timeStamp->setText(tr("This file has not yet been saved to disk."));
+    }
+    ui->m_saveButton->setVisible(true);
     ui->m_timeStamp->setVisible(true);
-    ui->m_timeStampTitle->setVisible(true);
-    ui->m_timeStamp->setText(lastModifiedDisplay);
+}
+
+void ImporterRootDisplay::SetUnsavedChanges(bool hasUnsavedChanges)
+{
+    if (hasUnsavedChanges != m_hasUnsavedChanges)
+    {
+        // Include a marker on the save button to help content creators track if there are unsaved changes.
+        QString saveButtonText(tr("Save%1").arg(hasUnsavedChanges ? "*" : ""));
+        ui->m_saveButton->setText(saveButtonText);
+    }
+    m_hasUnsavedChanges = hasUnsavedChanges;
 }
 
 #include <moc_ImporterRootDisplay.cpp>
