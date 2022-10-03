@@ -59,30 +59,33 @@ namespace AZ
 
         uint32_t CompiledTaskGraph::Release()
         {
+            // Release is run from many threads, and another thread can azdestroy(this) as soon as the remaining count is decremented.
+            // READ ALL NECESSARY DATA BEFORE DECREMENTING THE REMAINING COUNT!
+            bool isRetained = m_parent != nullptr;
+            TaskGraph* parent = m_parent;
+            TaskGraphEvent* waitEvent = m_waitEvent;
             uint32_t remaining = --m_remaining;
 
-            if (m_parent)
+            if (isRetained)
             {
                 if (remaining == 1)
                 {
                     // Allow the parent graph to be submitted again
-                    m_parent->m_submitted = false;
+                    parent->m_submitted = false;
+                    if (waitEvent)
+                    {
+                        waitEvent->Signal();
+                    }
                 }
             }
             else if (remaining == 0)
             {
-                if (m_waitEvent)
+                if (waitEvent)
                 {
-                    m_waitEvent->Signal();
+                    waitEvent->Signal();
                 }
 
                 azdestroy(this);
-                return remaining;
-            }
-
-            if (m_waitEvent && remaining == (m_parent ? 1u : 0u))
-            {
-                m_waitEvent->Signal();
             }
 
             return remaining;
