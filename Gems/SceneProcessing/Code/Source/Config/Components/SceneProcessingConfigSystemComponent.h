@@ -69,7 +69,7 @@ namespace AZ
             // AssetImportRequestBus END
 
             // AZ::SceneAPI::Events::ScriptConfigEventBus START
-            const AZStd::vector<AZ::SceneAPI::Events::ScriptConfig>& GetScriptConfigList() const override;
+            void GetScriptConfigList(AZStd::vector<SceneAPI::Events::ScriptConfig>& scriptConfigList) const override;
             // AZ::SceneAPI::Events::ScriptConfigEventBus END
 
             static void Reflect(AZ::ReflectContext* context);

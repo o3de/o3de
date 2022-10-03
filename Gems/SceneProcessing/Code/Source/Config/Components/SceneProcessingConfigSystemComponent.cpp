@@ -61,12 +61,14 @@ namespace AZ
         {
             SceneProcessingConfigRequestBus::Handler::BusConnect();
             AZ::SceneAPI::Events::AssetImportRequestBus::Handler::BusConnect();
+            AZ::SceneAPI::Events::ScriptConfigEventBus::Handler::BusConnect();
             SceneProcessingConfig::GraphTypeSelector::Register();
         }
 
         void SceneProcessingConfigSystemComponent::Deactivate()
         {
             SceneProcessingConfig::GraphTypeSelector::Unregister();
+            AZ::SceneAPI::Events::ScriptConfigEventBus::Handler::BusDisconnect();
             AZ::SceneAPI::Events::AssetImportRequestBus::Handler::BusDisconnect();
             SceneProcessingConfigRequestBus::Handler::BusDisconnect();
         }
@@ -190,9 +192,9 @@ namespace AZ
             registry->Visit(vistor, AssetProcessorDefaultScriptsKey);
         }
 
-        const AZStd::vector<AZ::SceneAPI::Events::ScriptConfig>& SceneProcessingConfigSystemComponent::GetScriptConfigList() const
+        void SceneProcessingConfigSystemComponent::GetScriptConfigList(AZStd::vector<SceneAPI::Events::ScriptConfig>& scriptConfigList) const
         {
-            return m_scriptConfigList;
+            scriptConfigList = m_scriptConfigList;
         }
 
         void SceneProcessingConfigSystemComponent::AreCustomNormalsUsed(bool &value)
@@ -221,7 +223,7 @@ namespace AZ
 
                 if (AZ::EditContext* ec = serialize->GetEditContext())
                 {
-                    ec->Class<SceneProcessingConfigSystemComponent>("Scene Processing Config", "Use this component to fine tune the defaults for processing of scene files like Fbx.")
+                    ec->Class<SceneProcessingConfigSystemComponent>("Scene Processing Config", "Use this component to fine tune the defaults for processing of scene files like FBX.")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::Category, "Assets")
                             ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))

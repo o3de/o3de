@@ -33,7 +33,8 @@ namespace AZ::SceneAPI::Events
 
         virtual ~ScriptConfigEvents() = default;
 
-        virtual const AZStd::vector<ScriptConfig>& GetScriptConfigList() const = 0;
+        //! Copies the script config entries into scriptConfigList.
+        virtual void GetScriptConfigList(AZStd::vector<SceneAPI::Events::ScriptConfig>& scriptConfigList) const = 0;
     };
 
     using ScriptConfigEventBus = AZ::EBus<ScriptConfigEvents>;

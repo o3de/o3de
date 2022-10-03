@@ -72,7 +72,9 @@ TEST_F(SceneProcessingConfigTest, SceneProcessingConfigSystemComponent_EmptySetR
 {
     AZ::SceneProcessingConfig::SceneProcessingConfigSystemComponent sceneProcessingConfigSystemComponent;
     sceneProcessingConfigSystemComponent.Activate();
-    EXPECT_TRUE(sceneProcessingConfigSystemComponent.GetScriptConfigList().empty());
+    AZStd::vector<AZ::SceneAPI::Events::ScriptConfig> scriptConfigList;
+    sceneProcessingConfigSystemComponent.GetScriptConfigList(scriptConfigList);
+    EXPECT_TRUE(scriptConfigList.empty());
     sceneProcessingConfigSystemComponent.Deactivate();
 }
 
@@ -94,9 +96,38 @@ TEST_F(SceneProcessingConfigTest, SceneProcessingConfigSystemComponent_ProperlyS
     }
     )JSON";
     m_settingsRegistry->MergeSettings(settings, AZ::SettingsRegistryInterface::Format::JsonMergePatch);
+    
+    AZ::SceneProcessingConfig::SceneProcessingConfigSystemComponent sceneProcessingConfigSystemComponent;
+    sceneProcessingConfigSystemComponent.Activate();
+    AZStd::vector<AZ::SceneAPI::Events::ScriptConfig> scriptConfigList;
+    sceneProcessingConfigSystemComponent.GetScriptConfigList(scriptConfigList);
+    EXPECT_EQ(scriptConfigList.size(), 2);
+    sceneProcessingConfigSystemComponent.Deactivate();
+}
+
+TEST_F(SceneProcessingConfigTest, SceneProcessingConfigSystemComponent_ScriptConfigEventBus_IsEnabled)
+{
+    const char* settings = R"JSON(
+    {
+        "O3DE": {
+            "AssetProcessor": {
+                "SceneBuilder": {
+                  "defaultScripts": {
+                    "fooPattern": "@projectroot@/test_foo.py"
+                  }
+                }
+            }
+        }
+    }
+    )JSON";
+    m_settingsRegistry->MergeSettings(settings, AZ::SettingsRegistryInterface::Format::JsonMergePatch);
 
     AZ::SceneProcessingConfig::SceneProcessingConfigSystemComponent sceneProcessingConfigSystemComponent;
     sceneProcessingConfigSystemComponent.Activate();
-    EXPECT_EQ(sceneProcessingConfigSystemComponent.GetScriptConfigList().size(), 2);
+    AZStd::vector<AZ::SceneAPI::Events::ScriptConfig> scriptConfigList;
+    AZ::SceneAPI::Events::ScriptConfigEventBus::Broadcast(
+        &AZ::SceneAPI::Events::ScriptConfigEventBus::Events::GetScriptConfigList,
+        scriptConfigList);
+    EXPECT_EQ(scriptConfigList.size(), 1);
     sceneProcessingConfigSystemComponent.Deactivate();
 }
