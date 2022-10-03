@@ -3004,7 +3004,7 @@ namespace AssetProcessor
             {
                 // schedule additional updates
                 m_alreadyScheduledUpdate = true;
-                QTimer::singleShot(1, this, SLOT(ScheduleNextUpdate()));
+                QTimer::singleShot(0, this, SLOT(ScheduleNextUpdate()));
             }
             else if (numWorkRemainingNow == 0)  // if there are only jobs to process later remaining
             {
@@ -3124,7 +3124,7 @@ namespace AssetProcessor
         if (!m_alreadyScheduledUpdate)
         {
             m_alreadyScheduledUpdate = true;
-            QTimer::singleShot(1, this, SLOT(ScheduleNextUpdate()));
+            QTimer::singleShot(0, this, SLOT(ScheduleNextUpdate()));
         }
     }
 
@@ -3476,7 +3476,7 @@ namespace AssetProcessor
         {
             // schedule additional updates
             m_alreadyScheduledUpdate = true;
-            QTimer::singleShot(1, this, SLOT(ScheduleNextUpdate()));
+            QTimer::singleShot(0, this, SLOT(ScheduleNextUpdate()));
         }
     }
 
