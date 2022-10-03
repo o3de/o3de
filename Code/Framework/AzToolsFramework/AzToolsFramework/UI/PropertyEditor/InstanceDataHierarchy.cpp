@@ -907,7 +907,7 @@ namespace AzToolsFramework
                     elementEditData = labelData;
                 }
             }
-            else if (!m_editDataOverrides.empty())
+            else if (!m_editDataOverrides.empty())  
             {
                 const EditDataOverride& editDataOverride = m_editDataOverrides.back();
 
