@@ -160,10 +160,6 @@ namespace UnitTests
 
         m_assetProcessorManager->CheckActiveFiles(expectedFileCount);
 
-        // AssessModifiedFile is going to set up a OneShotTimer with a 1ms delay on it.  We have to wait a short time for that timer to
-        // elapse before we can process that event. If we use the alternative processEvents that loops for X milliseconds we could
-        // accidentally process too many events.
-        AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(10));
         QCoreApplication::processEvents();
 
         m_assetProcessorManager->CheckActiveFiles(0);
