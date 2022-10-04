@@ -486,7 +486,7 @@ namespace AssetProcessor
         static const auto s_InsertSourceDependencyQuery = MakeSqlQuery(INSERT_SOURCE_DEPENDENCY, INSERT_SOURCE_DEPENDENCY_STATEMENT, LOG_NAME,
             SqlParam<AZ::Uuid>(":builderGuid"),
             SqlParam<AZ::Uuid>(":source"),
-            SqlParam<const char*>(":dependsOnSource"),
+            SqlParam<PathOrUuid>(":dependsOnSource"),
             SqlParam<AZ::s32>(":typeofdependency"),
             SqlParam<AZ::s32>(":fromAssetId"),
             SqlParam<const char*>(":subIds"));
@@ -2628,7 +2628,7 @@ namespace AssetProcessor
     bool AssetDatabaseConnection::SetSourceFileDependency(SourceFileDependencyEntry& entry)
     {
         //first make sure its not already in the database
-        if (!s_InsertSourceDependencyQuery.BindAndStep(*m_databaseConnection, entry.m_builderGuid, entry.m_sourceGuid, entry.m_dependsOnSource.c_str(), entry.m_typeOfDependency, entry.m_fromAssetId, entry.m_subIds.c_str()))
+        if (!s_InsertSourceDependencyQuery.BindAndStep(*m_databaseConnection, entry.m_builderGuid, entry.m_sourceGuid, entry.m_dependsOnSource, entry.m_typeOfDependency, entry.m_fromAssetId, entry.m_subIds.c_str()))
         {
             return false;
         }
@@ -2672,7 +2672,7 @@ namespace AssetProcessor
     bool AssetDatabaseConnection::GetSourceFileDependenciesByBuilderGUIDAndSource(const AZ::Uuid& builderGuid, AZ::Uuid sourceGuid, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency typeOfDependency, SourceFileDependencyEntryContainer& container)
     {
         bool found = false;
-        bool succeeded = QueryDependsOnSourceBySourceDependency(sourceGuid, nullptr, typeOfDependency,
+        bool succeeded = QueryDependsOnSourceBySourceDependency(sourceGuid, typeOfDependency,
             [&](SourceFileDependencyEntry& entry)
         {
             if (builderGuid == entry.m_builderGuid)
@@ -2685,10 +2685,10 @@ namespace AssetProcessor
         return found && succeeded;
     }
 
-    bool AssetDatabaseConnection::GetSourceFileDependenciesByDependsOnSource(const QString& dependsOnSource, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency typeOfDependency, SourceFileDependencyEntryContainer& container)
+    bool AssetDatabaseConnection::GetSourceFileDependenciesByDependsOnSource(AZ::Uuid sourceGuid, const char* sourceName, const char* absolutePath, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency typeOfDependency, SourceFileDependencyEntryContainer& container)
     {
         bool found = false;
-        bool succeeded = QuerySourceDependencyByDependsOnSource(dependsOnSource.toUtf8().constData(), typeOfDependency,
+        bool succeeded = QuerySourceDependencyByDependsOnSource(sourceGuid, sourceName, absolutePath,typeOfDependency,
             [&](SourceFileDependencyEntry& entry)
         {
             found = true;
@@ -2704,7 +2704,7 @@ namespace AssetProcessor
         AzToolsFramework::AssetDatabase::SourceFileDependencyEntryContainer& container)
     {
         bool found = false;
-        bool succeeded = QueryDependsOnSourceBySourceDependency(sourceUuid, nullptr, typeOfDependency,
+        bool succeeded = QueryDependsOnSourceBySourceDependency(sourceUuid, typeOfDependency,
             [&](SourceFileDependencyEntry& entry)
         {
             found = true;
