@@ -99,12 +99,12 @@ namespace AzToolsFramework
             //! Populates the patches DOM provided with the patches fetched from 'm_linkPatchesTree'
             //! @param[out] patchesDom The DOM to populate with patches
             //! @param allocator The allocator to use for memory allocations of patches.
-            void GetLinkPatches(PrefabDomValue& patchesDom, PrefabDom::AllocatorType& allocator) const;
+            void GetLinkPatches(PrefabDomValue& patchesDom, PrefabDomAllocator& allocator) const;
 
             //! Populates the link DOM provided with 'Source' and 'Patches' fields. 'Patches' are fetched from 'm_linkPatchesTree'.
             //! @param[out] linkDom The DOM to populate with source and patches information.
             //! @param allocator The allocator to use for memory allocations of patches.
-            void GetLinkDom(PrefabDomValue& linkDom, PrefabDom::AllocatorType& allocator) const;
+            void GetLinkDom(PrefabDomValue& linkDom, PrefabDomAllocator& allocator) const;
 
             PrefabDomPath GetInstancePath() const;
             const AZStd::string& GetInstanceName() const;
@@ -133,12 +133,12 @@ namespace AzToolsFramework
              * @param instanceDomValue The DOM value of the instance within the target template DOM.
              * @param allocator The allocator used while adding the linkId object to the instance DOM.
              */
-            void AddLinkIdToInstanceDom(PrefabDomValue& instanceDomValue, PrefabDom::AllocatorType& allocator);
+            void AddLinkIdToInstanceDom(PrefabDomValue& instanceDomValue, PrefabDomAllocator& allocator);
 
             //! Populates the DOM provided with the patches fetched from 'm_linkPatchesTree'
             //! @param[out] linkDom The DOM to populate with patches
             //! @param allocator The allocator to use for memory allocations of patches.
-            void ConstructLinkDomFromPatches(PrefabDomValue& linkDom, PrefabDom::AllocatorType& allocator) const;
+            void ConstructLinkDomFromPatches(PrefabDomValue& linkDom, PrefabDomAllocator& allocator) const;
 
             //! Clears the existing tree and rebuilds it from the provided patches.
             //! @param patches The patches to build the tree with.

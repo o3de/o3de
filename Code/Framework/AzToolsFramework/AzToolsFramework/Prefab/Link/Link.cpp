@@ -114,7 +114,7 @@ namespace AzToolsFramework
             return m_id;
         }
 
-        void Link::GetLinkDom(PrefabDomValue& linkDom, PrefabDom::AllocatorType& allocator) const
+        void Link::GetLinkDom(PrefabDomValue& linkDom, PrefabDomAllocator& allocator) const
         {
             AZ_PROFILE_FUNCTION(PrefabSystem);
             return ConstructLinkDomFromPatches(linkDom, allocator);
@@ -206,7 +206,7 @@ namespace AzToolsFramework
             AddLinkIdToInstanceDom(instanceDom, targetTemplatePrefabDom.GetAllocator());
         }
 
-        void Link::AddLinkIdToInstanceDom(PrefabDomValue& instanceDom, PrefabDom::AllocatorType& allocator)
+        void Link::AddLinkIdToInstanceDom(PrefabDomValue& instanceDom, PrefabDomAllocator& allocator)
         {
             PrefabDomValueReference linkIdReference = PrefabDomUtils::FindPrefabDomValue(instanceDom, PrefabDomUtils::LinkIdName);
             if (!linkIdReference.has_value())
@@ -220,14 +220,14 @@ namespace AzToolsFramework
             }
         }
 
-        void Link::ConstructLinkDomFromPatches(PrefabDomValue& linkDom, PrefabDom::AllocatorType& allocator) const
+        void Link::ConstructLinkDomFromPatches(PrefabDomValue& linkDom, PrefabDomAllocator& allocator) const
         {
             linkDom.SetObject();
 
             TemplateReference sourceTemplate = m_prefabSystemComponentInterface->FindTemplate(m_sourceTemplateId);
             if (!sourceTemplate.has_value())
             {
-                AZ_Assert(false, "Failed to fetch sourct template from link");
+                AZ_Assert(false, "Failed to fetch source template from link");
                 return;
             }
 
@@ -236,7 +236,7 @@ namespace AzToolsFramework
                 PrefabDomValue(sourceTemplate->get().GetFilePath().c_str(), allocator),
                 allocator);
 
-            PrefabDom patchesArray;
+            PrefabDomValue patchesArray;
 
             GetLinkPatches(patchesArray, allocator);
 
@@ -268,7 +268,7 @@ namespace AzToolsFramework
             }
         }
 
-        void Link::GetLinkPatches(PrefabDomValue& patchesDom, PrefabDom::AllocatorType& allocator) const
+        void Link::GetLinkPatches(PrefabDomValue& patchesDom, PrefabDomAllocator& allocator) const
         {
             auto cmp = [](const PrefabOverrideMetadata* a, const PrefabOverrideMetadata* b)
             {
@@ -290,8 +290,7 @@ namespace AzToolsFramework
 
             for (auto patchesSetIterator = patchesSet.begin(); patchesSetIterator != patchesSet.end(); ++patchesSetIterator)
             {
-                PrefabDomValue patch;
-                patch.CopyFrom((*patchesSetIterator)->m_patch, allocator);
+                PrefabDomValue patch((*patchesSetIterator)->m_patch, allocator);
                 patchesDom.PushBack(patch.Move(), allocator);
             }
         }
