@@ -36,7 +36,7 @@ namespace ScriptCanvasEditor
                     m_keepEditorActive = m_edKeepEditorActive->GetIVal();
                     m_edKeepEditorActive->Set(1);
                 }
-            }            
+            }
         }
 
         EditorKeepAlive::~EditorKeepAlive()
@@ -50,6 +50,11 @@ namespace ScriptCanvasEditor
         Model::Model()
         {
             ModelRequestsBus::Handler::BusConnect();
+        }
+
+        Model::~Model()
+        {
+            ModelRequestsBus::Handler::BusDisconnect();
         }
 
         void Model::CacheSettings()
@@ -130,7 +135,7 @@ namespace ScriptCanvasEditor
 
             m_modResults = {};
             m_log.Activate();
-            m_keepEditorAlive = AZStd::make_unique<EditorKeepAlive>();            
+            m_keepEditorAlive = AZStd::make_unique<EditorKeepAlive>();
         }
 
         void Model::OnModificationComplete()
@@ -172,5 +177,5 @@ namespace ScriptCanvasEditor
         {
             m_settingsCache.reset();
         }
-    }
-}
+    } // namespace VersionExplorer
+} // namespace ScriptCanvasEditor
