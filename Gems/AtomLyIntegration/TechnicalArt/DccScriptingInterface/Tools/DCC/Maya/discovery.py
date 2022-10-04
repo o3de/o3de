@@ -1,5 +1,3 @@
-# coding:utf-8
-#!/usr/bin/python
 #
 # Copyright (c) Contributors to the Open 3D Engine Project.
 # For complete copyright and license terms please see the LICENSE at the root of this distribution.
@@ -8,12 +6,12 @@
 #
 #
 # -------------------------------------------------------------------------
-"""! A module to discover installed versions of Blender for selection
+"""! A module to discover installed versions of Maya for selection
 
-:file: < DCCsi >/Tools/DCC/Blender/discovery.py
+:file: < DCCsi >/Tools/DCC/Maya/discovery.py
 :Status: Prototype, very bare bones
 :Version: 0.0.1
-Future: provide a variety of ways to discover Blender, i.e. use winreg
+Future: provide a variety of ways to discover Maya, i.e. use winreg
 """
 # -------------------------------------------------------------------------
 # standard imports
