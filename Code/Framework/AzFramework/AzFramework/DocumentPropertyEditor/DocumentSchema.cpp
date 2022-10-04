@@ -114,7 +114,7 @@ namespace AZ::DocumentPropertyEditor
         {
             Dom::Value entryDom(Dom::Type::Object);
             entryDom[enumEntryDescription] = Dom::Value(entry.m_description, true);
-            entryDom[enumEntryValue] = Dom::Value(entry.m_value);
+            entryDom[enumEntryValue] = Dom::Value(static_cast<uint64_t>(entry.m_value));
             result.ArrayPushBack(AZStd::move(entryDom));
         }
         return result;
@@ -134,7 +134,7 @@ namespace AZ::DocumentPropertyEditor
             {
                 continue;
             }
-            result.emplace_back(entryDom[enumEntryValue].GetUint64(), entryDom[enumEntryDescription].GetString());
+            result.emplace_back(static_cast<AZ::u64>(entryDom[enumEntryValue].GetUint64()), entryDom[enumEntryDescription].GetString());
         }
 
         return result;
