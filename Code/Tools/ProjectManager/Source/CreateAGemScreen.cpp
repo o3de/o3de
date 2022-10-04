@@ -23,78 +23,21 @@
 #include <QRadioButton>
 #include <QScrollArea>
 #include <QStackedWidget>
-#include <QStyleOptionTab>
-#include <QStylePainter>
-#include <QTabBar>
-#include <QTabWidget>
 #include <QVBoxLayout>
 
 
 namespace O3DE::ProjectManager
 {
-    class TabBar : public QTabBar
-    {
-    public:
-        QSize tabSizeHint(int index) const
-        {
-            QSize s = QTabBar::tabSizeHint(index);
-            s.transpose();
-            return s;
-        }
-
-    protected:
-        void paintEvent(QPaintEvent*)
-        {
-            QStylePainter painter(this);
-            QStyleOptionTab opt;
-
-            QPoint currentTopPosition(115, 175);
-
-            QStringList strs = { "1. Gem Setup", "2. Gem Details", "3. Creator Details" };
-            for (int i = 0; i < count(); i++)
-            {
-                initStyleOption(&opt, i);
-                painter.drawControl(QStyle::CE_TabBarTabShape, opt);
-                painter.save();
-                QSize s = opt.rect.size();
-                s.transpose();
-                s.setWidth(130);
-                QRect r(QPoint(), s);
-                r.moveCenter(opt.rect.center());
-                opt.rect = r;
-                QPoint c = tabRect(i).center();
-                QPoint leftJustify(currentTopPosition);
-                leftJustify.setX(30 + (int)(0.5 * opt.rect.width()));
-                painter.translate(leftJustify);
-                currentTopPosition.setY(currentTopPosition.y() + 55);
-                painter.setFont(QFont("Open Sans", 12));
-                painter.translate(-c);
-                painter.drawItemText(r, Qt::AlignLeft, QApplication::palette(), true, strs.at(i));
-                painter.restore();
-            }
-        }
-    };
-
-    class TabWidget : public QTabWidget
-    {
-    public:
-        TabWidget(QWidget* parent = nullptr)
-            : QTabWidget(parent)
-        {
-            setTabBar(new TabBar());
-            setTabPosition(QTabWidget::West);
-            setTabShape(QTabWidget::TabShape::Rounded);
-        }
-    };
 
     CreateGem::CreateGem(QWidget* parent)
         : ScreenWidget(parent)
     {
-        QVBoxLayout* vLayout = new QVBoxLayout(this);
-        vLayout->setSpacing(0);
-        vLayout->setContentsMargins(0, 0, 0, 0);
 
-        ScreenHeader* m_header = new ScreenHeader(this);
+        QVBoxLayout* screenLayout = new QVBoxLayout();
+        screenLayout->setSpacing(0);
+        screenLayout->setContentsMargins(0, 0, 0, 0);
+
+        ScreenHeader* m_header = new ScreenHeader();
         m_header->setSubTitle(tr("Create a new gem"));
         connect(
             m_header->backButton(),
@@ -104,39 +47,121 @@ namespace O3DE::ProjectManager
             {
                 emit GoToPreviousScreenRequest();
             });
-        vLayout->addWidget(m_header);
+        screenLayout->addWidget(m_header);
 
-        m_tabWidget = new TabWidget(this);
-        m_tabWidget->setContentsMargins(0, 0, 0, 0);
         
-        m_tabWidget->setObjectName("createGemTab");
-        m_tabWidget->addTab(CreateGemSetupScrollArea(), tr("1. Gem Setup"));
-        m_tabWidget->addTab(CreateGemDetailsScrollArea(), tr("2. Gem Details"));
-        m_tabWidget->addTab(CreateGemCreatorScrollArea(), tr("3. Creator Details"));
-        m_tabWidget->tabBar()->setEnabled(false);
-        vLayout->addWidget(m_tabWidget);
+        QHBoxLayout* hLayout = new QHBoxLayout();
+        hLayout->setSpacing(0);
+        hLayout->setContentsMargins(0, 0, 0, 0);
 
-        QFrame* footerFrame = new QFrame(this);
+        QFrame* tabButtonsFrame = CreateTabButtonsFrame();
+        hLayout->addWidget(tabButtonsFrame);
+
+        QFrame* tabPaneFrame = CreateTabPaneFrame();
+        hLayout->addWidget(tabPaneFrame);
+        
+        QFrame* createGemFrame = new QFrame();
+        createGemFrame->setLayout(hLayout);
+        screenLayout->addWidget(createGemFrame);
+        
+        QFrame* footerFrame = new QFrame();
         footerFrame->setObjectName("createAGemFooter");
-        m_backNextButtons = new QDialogButtonBox(this);
+        m_backNextButtons = new QDialogButtonBox();
         m_backNextButtons->setObjectName("footer");
         QVBoxLayout* footerLayout = new QVBoxLayout();
         footerLayout->setContentsMargins(0, 0, 0, 0);
         footerFrame->setLayout(footerLayout);
         footerLayout->addWidget(m_backNextButtons);
-        vLayout->addWidget(footerFrame);
+        screenLayout->addWidget(footerFrame);
 
         m_backButton = m_backNextButtons->addButton(tr("Back"), QDialogButtonBox::RejectRole);
         m_backButton->setProperty("secondary", true);
         m_nextButton = m_backNextButtons->addButton(tr("Next"), QDialogButtonBox::ApplyRole);
 
-        connect(m_tabWidget, &TabWidget::currentChanged, this, &CreateGem::UpdateNextButtonToCreate);
         connect(m_backButton, &QPushButton::clicked, this, &CreateGem::HandleBackButton);
         connect(m_nextButton, &QPushButton::clicked, this, &CreateGem::HandleNextButton);
 
         setObjectName("createAGemBody");
-        setLayout(vLayout);
+        setLayout(screenLayout);
     }
+
+    QFrame* CreateGem::CreateTabButtonsFrame()
+    {
+        QFrame* tabButtonsFrame = new QFrame();
+        tabButtonsFrame->setObjectName("createAGemLHS");
+
+        QVBoxLayout* vLayout = new QVBoxLayout();
+        vLayout->setSpacing(0);
+        vLayout->setContentsMargins(0, 0, 0, 0);
+
+        m_gemTemplateSelectionTab = new QRadioButton(tr("1.  Gem Setup"));
+        m_gemDetailsTab =           new QRadioButton(tr("2.  Gem Details"));
+        m_gemCreatorDetailsTab =    new QRadioButton(tr("3.  Creator Details"));
+
+        m_gemTemplateSelectionTab->setChecked(true);
+        m_gemDetailsTab->setEnabled(false);
+        m_gemCreatorDetailsTab->setEnabled(false);
+
+        connect(m_gemTemplateSelectionTab,  &QPushButton::clicked, this, &CreateGem::HandleGemTemplateSelectionTab);
+        connect(m_gemDetailsTab,            &QPushButton::clicked, this, &CreateGem::HandleGemDetailsTab);
+        connect(m_gemCreatorDetailsTab,     &QPushButton::clicked, this, &CreateGem::HandleGemCreatorDetailsTab);
+
+        vLayout->addSpacing(46);
+        vLayout->addWidget(m_gemTemplateSelectionTab);
+        vLayout->addSpacing(12);
+        vLayout->addWidget(m_gemDetailsTab);
+        vLayout->addSpacing(12);
+        vLayout->addWidget(m_gemCreatorDetailsTab);
+        vLayout->addStretch();
+
+        tabButtonsFrame->setLayout(vLayout);
+
+        return tabButtonsFrame;
+    }
+
+    void CreateGem::HandleGemTemplateSelectionTab()
+    {
+        m_stackWidget->setCurrentIndex(GemTemplateSelectionScreen);
+        m_nextButton->setText(tr("Next"));
+        m_backButton->setVisible(false);
+    }
+
+    void CreateGem::HandleGemDetailsTab()
+    {
+        m_stackWidget->setCurrentIndex(GemDetailsScreen);
+        m_nextButton->setText(tr("Next"));
+        m_backButton->setVisible(true);
+    }
+
+    void CreateGem::HandleGemCreatorDetailsTab()
+    {
+        m_stackWidget->setCurrentIndex(GemCreatorDetailsScreen);
+        m_nextButton->setText(tr("Create"));
+        m_backButton->setVisible(true);
+    }
+
+    QFrame* CreateGem::CreateTabPaneFrame()
+    {
+        QFrame* tabPaneFrame = new QFrame();
+
+        QVBoxLayout* vLayout = new QVBoxLayout();
+        vLayout->setSpacing(0);
+        vLayout->setContentsMargins(0, 0, 0, 0);
+
+        m_stackWidget = new QStackedWidget();
+        m_stackWidget->setContentsMargins(0, 0, 0, 0);
+        
+        m_stackWidget->setObjectName("createAGemRHS");
+        m_stackWidget->addWidget(CreateGemSetupScrollArea());
+        m_stackWidget->addWidget(CreateGemDetailsScrollArea());
+        m_stackWidget->addWidget(CreateGemCreatorScrollArea());
+        vLayout->addWidget(m_stackWidget);
+
+        tabPaneFrame->setLayout(vLayout);
+
+        return tabPaneFrame;
+    }
+
 
     void CreateGem::LoadButtonsFromGemTemplatePaths(QVBoxLayout* gemSetupLayout)
     {
@@ -192,7 +217,7 @@ namespace O3DE::ProjectManager
         m_radioButtonGroup->addButton(m_formFolderRadioButton);
 
         m_gemTemplateLocation = new FormFolderBrowseEditWidget(tr("Gem Template Location*"), "", "", tr("A path must be provided."));
-
+        m_gemTemplateLocation->setObjectName("createAGemRadioButtonSubFormField");
         gemSetupLayout->addWidget(m_formFolderRadioButton);
         gemSetupLayout->addWidget(m_gemTemplateLocation);
 
@@ -215,7 +240,7 @@ namespace O3DE::ProjectManager
         gemDetailsScrollWidget->setLayout(gemDetailsLayout);
 
         QLabel* secondRightPaneHeader = new QLabel(tr("Enter Gem Details"));
-        secondRightPaneHeader->setObjectName("rightPaneHeader");
+        secondRightPaneHeader->setObjectName("rightPaneDetailsHeader");
         gemDetailsLayout->addWidget(secondRightPaneHeader);
 
         m_gemName = new FormLineEditWidget(
@@ -277,7 +302,7 @@ namespace O3DE::ProjectManager
         gemCreatorScrollWidget->setLayout(gemCreatorLayout);
 
         QLabel* thirdRightPaneHeader = new QLabel(tr("Enter your Details"));
-        thirdRightPaneHeader->setObjectName("rightPaneHeader");
+        thirdRightPaneHeader->setObjectName("rightPaneDetailsHeader");
         gemCreatorLayout->addWidget(thirdRightPaneHeader);
 
         m_origin =
@@ -365,12 +390,22 @@ namespace O3DE::ProjectManager
 
     void CreateGem::HandleBackButton()
     {
-        if (m_tabWidget->currentIndex() > 0)
+        if (m_stackWidget->currentIndex() > 0)
         {
-            m_tabWidget->setCurrentIndex(m_tabWidget->currentIndex() - 1);
+            const int newIndex = m_stackWidget->currentIndex() - 1;
+            m_stackWidget->setCurrentIndex(newIndex);
+
+            if (newIndex == GemDetailsScreen)
+            {
+                m_gemDetailsTab->setChecked(true);
+            }
+            else if (newIndex == GemTemplateSelectionScreen)
+            {
+                m_gemTemplateSelectionTab->setChecked(true);
+            }
         }
 
-        if (m_tabWidget->currentIndex() == 0)
+        if (m_stackWidget->currentIndex() == 0)
         {
             m_backButton->setVisible(false);
         }
@@ -380,16 +415,14 @@ namespace O3DE::ProjectManager
 
     void CreateGem::HandleNextButton()
     {
-        const int gemTemplateSelectionScreen = 0;
-        const int gemDetailsScreen = 1;
-        const int gemCreatorDetailsScreen = 2;
-
-        if (m_tabWidget->currentIndex() == gemTemplateSelectionScreen && ValidateGemTemplateLocation())
+        if (m_stackWidget->currentIndex() == GemTemplateSelectionScreen && ValidateGemTemplateLocation())
         {
             m_backButton->setVisible(true);
-            m_tabWidget->setCurrentIndex(gemDetailsScreen);
+            m_stackWidget->setCurrentIndex(GemDetailsScreen);
+            m_gemDetailsTab->setEnabled(true);
+            m_gemDetailsTab->setChecked(true);
         }
-        else if (m_tabWidget->currentIndex() == gemDetailsScreen)
+        else if (m_stackWidget->currentIndex() == GemDetailsScreen)
         {
             bool gemNameValid = ValidateGemName();
             bool gemDisplayNameValid = ValidateGemDisplayName();
@@ -407,11 +440,13 @@ namespace O3DE::ProjectManager
                 m_createGemInfo.m_path = m_gemLocation->lineEdit()->text();
                 m_createGemInfo.m_features = m_userDefinedGemTags->lineEdit()->text().split(',');
 
-                m_tabWidget->setCurrentIndex(gemCreatorDetailsScreen);
+                m_stackWidget->setCurrentIndex(GemCreatorDetailsScreen);
                 m_nextButton->setText(tr("Create"));
+                m_gemCreatorDetailsTab->setEnabled(true);
+                m_gemCreatorDetailsTab->setChecked(true);
             }
         }
-        else if (m_tabWidget->currentIndex() == gemCreatorDetailsScreen)
+        else if (m_stackWidget->currentIndex() == GemCreatorDetailsScreen)
         {
             bool originIsValid = ValidateFormNotEmpty(m_origin);
             bool repoURLIsValid = ValidateRepositoryURL();
@@ -444,18 +479,6 @@ namespace O3DE::ProjectManager
                         tr("The gem failed to be created"));
                 }
             }
-        }
-    }
-
-    void CreateGem::UpdateNextButtonToCreate()
-    {
-        if (m_tabWidget->currentIndex() == 2)
-        {
-            m_nextButton->setText(tr("Create"));
-        }
-        else
-        {
-            m_nextButton->setText(tr("Next"));
         }
     }
 
