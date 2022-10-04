@@ -18,7 +18,7 @@
 #include <Benchmarks/PhysXBenchmarksCommon.h>
 #include <Benchmarks/PhysXBenchmarksUtilities.h>
 
-#include <chrono>
+#include <AzCore/std/chrono/chrono.h>
 
 namespace PhysX::Benchmarks
 {
@@ -45,7 +45,7 @@ namespace PhysX::Benchmarks
     class PhysXSceneQueryBenchmarkFixture
         : public benchmark::Fixture
         , public PhysX::GenericPhysicsFixture
-        
+
     {
         //! Spawns box entities in unique locations in 1/8 of sphere with all non-negative dimensions between radii[2, max radius].
         //! Accepts 2 parameters from \state.
@@ -136,7 +136,7 @@ namespace PhysX::Benchmarks
         AzPhysics::RayCastRequest request;
         request.m_start = AZ::Vector3::CreateZero();
         request.m_distance = 2000.0f;
-        
+
         AZStd::vector<int64_t> executionTimes;
         auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
 
@@ -145,11 +145,11 @@ namespace PhysX::Benchmarks
         {
             request.m_direction = m_boxes[next].GetNormalized();
 
-            auto start = std::chrono::system_clock::now(); //AZStd::chrono::system_clock wont messeare below 1000ns
+            auto start = AZStd::chrono::steady_clock::now();
 
             AzPhysics::SceneQueryHits result = sceneInterface->QueryScene(m_testSceneHandle, &request);
 
-            auto timeElasped = std::chrono::nanoseconds(std::chrono::system_clock::now() - start);
+            auto timeElasped = AZStd::chrono::duration_cast<AZStd::chrono::nanoseconds>(AZStd::chrono::steady_clock::now() - start);
             executionTimes.emplace_back(timeElasped.count());
 
             benchmark::DoNotOptimize(result);
@@ -169,8 +169,8 @@ namespace PhysX::Benchmarks
             AZ::Vector3::CreateOne(),
             2000.0f
         );
-        
-        
+
+
         AZStd::vector<int64_t> executionTimes;
         auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
 
@@ -179,11 +179,11 @@ namespace PhysX::Benchmarks
         {
             request.m_direction = m_boxes[next].GetNormalized();
 
-            auto start = std::chrono::system_clock::now(); //AZStd::chrono::system_clock wont messeare below 1000ns
+            auto start = AZStd::chrono::steady_clock::now(); 
 
             AzPhysics::SceneQueryHits result = sceneInterface->QueryScene(m_testSceneHandle, &request);
 
-            auto timeElasped = std::chrono::nanoseconds(std::chrono::system_clock::now() - start);
+            auto timeElasped = AZStd::chrono::duration_cast<AZStd::chrono::nanoseconds>(AZStd::chrono::steady_clock::now() - start);
             executionTimes.emplace_back(timeElasped.count());
 
             benchmark::DoNotOptimize(result);
@@ -201,7 +201,7 @@ namespace PhysX::Benchmarks
             SceneQueryConstants::SphereShapeRadius,
             AZ::Transform::CreateIdentity()
         );
-        
+
         AZStd::vector<int64_t> executionTimes;
         auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
 
@@ -210,11 +210,11 @@ namespace PhysX::Benchmarks
         {
             request.m_pose = AZ::Transform::CreateTranslation(m_boxes[next]);
 
-            auto start = std::chrono::system_clock::now(); //AZStd::chrono::system_clock wont messeare below 1000ns
+            auto start = AZStd::chrono::steady_clock::now();
 
             AzPhysics::SceneQueryHits result = sceneInterface->QueryScene(m_testSceneHandle, &request);
 
-            auto timeElasped = std::chrono::nanoseconds(std::chrono::system_clock::now() - start);
+            auto timeElasped = AZStd::chrono::duration_cast<AZStd::chrono::nanoseconds>(AZStd::chrono::steady_clock::now() - start);
             executionTimes.emplace_back(timeElasped.count());
 
             benchmark::DoNotOptimize(result);

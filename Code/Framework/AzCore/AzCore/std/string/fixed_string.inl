@@ -266,7 +266,7 @@ namespace AZStd
         {
             count = num;    // trim count to size
         }
-        AZSTD_CONTAINER_ASSERT(Capacity - m_size > count && m_size + count >= m_size,
+        AZSTD_CONTAINER_ASSERT(capacity() - size() >= count,
             "New size of fixed_string would be larger than can be represented in internal size_type with size %d",
             std::numeric_limits<internal_size_type>::digits);
         num = m_size + count;
@@ -287,7 +287,7 @@ namespace AZStd
     {
         // append [ptr, ptr + count)
         pointer data = m_buffer;
-        AZSTD_CONTAINER_ASSERT(Capacity - m_size > count && m_size + count >= m_size,
+        AZSTD_CONTAINER_ASSERT(capacity() - size() >= count,
             "New size of fixed_string would be larger than can be represented in internal size_type with size %d",
             std::numeric_limits<internal_size_type>::digits);
         size_type num = m_size + count;

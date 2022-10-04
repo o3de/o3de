@@ -15,12 +15,13 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #if !defined(Q_MOC_RUN)
-#include <AzCore/PlatformIncl.h>
-#include <QMainWindow>
-#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/Math/Guid.h>
+#include <AzCore/PlatformIncl.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <SceneAPI/SceneUI/CommonWidgets/OverlayWidget.h>
 #include <SceneAPI/SceneUI/CommonWidgets/SceneSettingsCard.h>
+#include <QFileSystemWatcher>
+#include <QMainWindow>
 #endif
 
 
@@ -124,6 +125,8 @@ private slots:
     void OverlayLayerRemoved();
     void UpdateSceneDisplay(const AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene> scene = {}) const;
 
+    void FileChanged(QString path);
+
 private:
     static const AZ::Uuid s_browseTag;
     static const char* s_documentationWebAddress;
@@ -134,11 +137,15 @@ private:
     int m_openSceneSettingsCards = 0;
     int m_sceneSettingsCardOverlay = AZ::SceneAPI::UI::OverlayWidget::s_invalidOverlayIndex;
 
+    // Monitor the scene file, and scene settings file in case they are changed outside the scene settings tool.
+    QFileSystemWatcher m_qtFileWatcher;
+
     AZ::SerializeContext* m_serializeContext;
     AZStd::string m_fullSourcePath;
 
     QScopedPointer<ImporterRootDisplay> m_rootDisplay;
     bool m_isClosed;
+    bool m_isSaving = false;
 
     AZStd::string m_scriptProcessorRuleFilename;
 };

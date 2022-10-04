@@ -121,11 +121,11 @@ namespace AssetProcessor
             QString m_fileName;
             bool m_isDelete = false;
             bool m_isFromScanner = false;
-            AZStd::chrono::system_clock::time_point m_initialProcessTime{};
+            AZStd::chrono::steady_clock::time_point m_initialProcessTime{};
 
             FileEntry() = default;
 
-            FileEntry(const QString& fileName, bool isDelete, bool isFromScanner = false, AZStd::chrono::system_clock::time_point initialProcessTime = {})
+            FileEntry(const QString& fileName, bool isDelete, bool isFromScanner = false, AZStd::chrono::steady_clock::time_point initialProcessTime = {})
                 : m_fileName(fileName)
                 , m_isDelete(isDelete)
                 , m_isFromScanner(isFromScanner)
@@ -332,7 +332,7 @@ namespace AssetProcessor
         void CheckDeletedProductFile(QString normalizedPath);
         void CheckDeletedSourceFile(
             QString normalizedPath, QString relativePath, QString databaseSourceFile,
-            AZStd::chrono::system_clock::time_point initialProcessTime);
+            AZStd::chrono::steady_clock::time_point initialProcessTime);
         void CheckModifiedSourceFile(QString normalizedPath, QString databaseSourceFile, const ScanFolderInfo* scanFolderInfo);
         bool AnalyzeJob(JobDetails& details);
         void CheckDeletedCacheFolder(QString normalizedPath);
@@ -563,7 +563,7 @@ namespace AssetProcessor
           * if a source file is missing from disk, it will not be included in the result set, since this returns
           * full absolute paths.
           */
-        void QueryAbsolutePathDependenciesRecursive(QString inputDatabasePath, SourceFilesForFingerprintingContainer& finalDependencyList, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency dependencyType, bool reverseQuery);
+        void QueryAbsolutePathDependenciesRecursive(AZ::Uuid sourceUuid, SourceFilesForFingerprintingContainer& finalDependencyList, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency dependencyType);
 
         // we can't write a job to the database as not needing analysis the next time around,
         // until all jobs related to it are finished.  This is becuase the jobs themselves are not written to the database

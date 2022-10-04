@@ -966,6 +966,34 @@ namespace AZ
 #endif
     }
 
+    TEST_F(StringFuncPathTest, ReplaceExtension_WithoutDot)
+    {
+        AZStd::string s = "D:\\p4\\some.file";
+        AZ::StringFunc::Path::ReplaceExtension(s, "xml");
+        EXPECT_STREQ("D:\\p4\\some.xml", s.c_str());
+    }
+
+    TEST_F(StringFuncPathTest, ReplaceExtension_WithDot)
+    {
+        AZStd::string s = "D:\\p4\\some.file";
+        AZ::StringFunc::Path::ReplaceExtension(s, ".xml");
+        EXPECT_STREQ("D:\\p4\\some.xml", s.c_str());
+    }
+
+    TEST_F(StringFuncPathTest, ReplaceExtension_Empty)
+    {
+        AZStd::string s = "D:\\p4\\some.file";
+        AZ::StringFunc::Path::ReplaceExtension(s, "");
+        EXPECT_STREQ("D:\\p4\\some", s.c_str());
+    }
+
+    TEST_F(StringFuncPathTest, ReplaceExtension_Null)
+    {
+        AZStd::string s = "D:\\p4\\some.file";
+        AZ::StringFunc::Path::ReplaceExtension(s, nullptr);
+        EXPECT_STREQ("D:\\p4\\some", s.c_str());
+    }
+
     class TestPathStringArgs
     {
     public:
@@ -1000,7 +1028,6 @@ namespace AZ
         EXPECT_TRUE(result);
         EXPECT_STREQ(input.c_str(), expected.c_str());
     }
-
 
 #if AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
 

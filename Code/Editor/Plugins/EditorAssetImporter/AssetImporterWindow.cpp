@@ -43,10 +43,12 @@ class CXTPDockingPaneLayout; // Needed for settings.h
 #include <SceneAPI/SceneCore/Containers/Utilities/Filters.h>
 #include <SceneAPI/SceneCore/DataTypes/Rules/IScriptProcessorRule.h>
 #include <SceneAPI/SceneCore/Events/AssetImportRequest.h>
+#include <SceneAPI/SceneCore/Events/SceneSerializationBus.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <SceneAPI/SceneData/Rules/ScriptProcessorRule.h>
 #include <SceneAPI/SceneUI/Handlers/ProcessingHandlers/AsyncOperationProcessingHandler.h>
 #include <SceneAPI/SceneUI/Handlers/ProcessingHandlers/ExportJobProcessingHandler.h>
+#include <SceneAPI/SceneUI/SceneWidgets/ManifestWidget.h>
 #include <SceneAPI/SceneUI/SceneWidgets/SceneGraphInspectWidget.h>
 
 const char* AssetImporterWindow::s_documentationWebAddress = "https://www.o3de.org/docs/user-guide/assets/scene-settings/";
@@ -222,11 +224,16 @@ void AssetImporterWindow::Init()
             "No importable file types were detected. This likely means an internal error has taken place which has broken the "
             "registration of valid import types (e.g. FBX). This type of issue requires engineering support.");
     }
+    
+    QObject::connect(&m_qtFileWatcher, &QFileSystemWatcher::fileChanged, this, &AssetImporterWindow::FileChanged);
 }
 
 void AssetImporterWindow::OpenFileInternal(const AZStd::string& filePath)
 {
     using namespace AZ::SceneAPI::SceneUI;
+
+    // Clear all previously watched files
+    m_qtFileWatcher.removePaths(m_qtFileWatcher.files());
 
     auto asyncLoadHandler = AZStd::make_shared<AZ::SceneAPI::SceneUI::AsyncOperationProcessingHandler>(
         s_browseTag,
@@ -289,6 +296,8 @@ void AssetImporterWindow::SceneSettingsCardProcessingCompleted()
     {
         return;
     }
+    
+    m_isSaving = false;
     m_overlay->PopLayer(m_sceneSettingsCardOverlay);
     m_sceneSettingsCardOverlay = AZ::SceneAPI::UI::OverlayWidget::s_invalidOverlayIndex;
 }
@@ -316,7 +325,7 @@ bool AssetImporterWindow::IsAllowedToChangeSourceFile()
     {
         return true;
     }
-
+    m_isSaving = true;
     AZStd::shared_ptr<AZ::ActionOutput> output = AZStd::make_shared<AZ::ActionOutput>();
     m_assetImporterDocument->SaveScene(
         output,
@@ -371,6 +380,7 @@ void AssetImporterWindow::UpdateClicked()
     }
 
     AZStd::shared_ptr<AZ::ActionOutput> output = AZStd::make_shared<AZ::ActionOutput>();
+    m_isSaving = true;
     m_assetImporterDocument->SaveScene(output,
         [output, this, isSourceControlActive, card](bool wasSuccessful)
         {
@@ -651,6 +661,54 @@ void AssetImporterWindow::HandleAssetLoadingCompleted()
     //  show the main area where all the actual work takes place
     ui->m_initialBrowseContainer->hide();
     m_rootDisplay->show();
+
+   
+    m_qtFileWatcher.addPath(m_fullSourcePath.c_str());
+    m_qtFileWatcher.addPath(m_assetImporterDocument->GetScene()->GetManifestFilename().c_str());
+}
+
+void AssetImporterWindow::FileChanged(QString path)
+{
+    if (m_isSaving)
+    {
+        return;
+    }
+
+    QString promptMessage([this]()
+    {
+        if(m_rootDisplay->HasUnsavedChanges()) 
+        {
+            return tr("The file %1 has been changed outside of the scene settings tool. This tool will be reloaded and any unsaved changes will be lost. \n\n"
+                        "To prevent this from occuring in the future, do not modify the scene file or scene manifest outside of this tool while this tool has unsaved work.");
+        }
+        return  tr("The file %1 has been changed outside of the scene settings tool. This tool will be reloaded.");
+    }());
+
+    // The scene system holds weak pointers to any previously loaded scenes,
+    // and will return a previously cached scene on a requested load.
+    // In this case, it's known the scene file is different than what's in memory, so make sure to flush
+    // any cached scene info, so it is freshly reloaded from disk.
+    m_assetImporterDocument->ClearScene();
+    m_rootDisplay->GetManifestWidget()->ResetScene();
+
+    // Verify nothing is left holding a shared pointer to the scene.
+    namespace SceneEvents = AZ::SceneAPI::Events;
+    bool foundSharedScene = true; // If the ebus fails, default to true to assume there's something sharing the scene still.
+    SceneEvents::SceneSerializationBus::BroadcastResult(foundSharedScene, &SceneEvents::SceneSerializationBus::Events::IsSceneCached, m_fullSourcePath);
+
+    // The scene is still cached, somewhere. Warn the user.
+    if (foundSharedScene)
+    {
+        promptMessage += tr("\n\nThis scene file is still cached and will not reload correctly. The Editor should be shut down and re-launched to properly load the modified external data.");
+    }
+
+    QMessageBox::question(
+        this,
+        tr("External Change"),
+        promptMessage.arg(path),
+        QMessageBox::Ok);
+
+    OpenFileInternal(m_fullSourcePath);
 }
 
 #include <moc_AssetImporterWindow.cpp>

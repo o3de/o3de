@@ -764,7 +764,7 @@ namespace AZ
         {
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(GetPhysicalDevice());
             auto timeInNano = AZStd::chrono::nanoseconds(static_cast<AZStd::chrono::nanoseconds::rep>(physicalDevice.GetDeviceLimits().timestampPeriod * gpuTimestamp));
-            return AZStd::chrono::microseconds(timeInNano);
+            return AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(timeInNano);
         }
 
         RHI::ResourceMemoryRequirements Device::GetResourceMemoryRequirements(const RHI::ImageDescriptor& descriptor)
@@ -844,6 +844,8 @@ namespace AZ
             m_limits.m_maxImageArraySize = deviceLimits.maxImageArrayLayers;
             m_limits.m_minConstantBufferViewOffset = static_cast<uint32_t>(deviceLimits.minUniformBufferOffsetAlignment);
             m_limits.m_maxIndirectDrawCount = deviceLimits.maxDrawIndirectCount;
+            m_limits.m_maxConstantBufferSize = deviceLimits.maxUniformBufferRange;
+            m_limits.m_maxBufferSize = deviceLimits.maxStorageBufferRange;
         }
 
         void Device::BuildDeviceQueueInfo(const PhysicalDevice& physicalDevice)

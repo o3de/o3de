@@ -18,6 +18,8 @@ namespace AzToolsFramework
     namespace Prefab
     {
         class Instance;
+        class InstanceEntityMapperInterface;
+        class InstanceToTemplateInterface;
         class PrefabSystemComponentInterface;
 
         class InstanceDomGenerator
@@ -41,6 +43,14 @@ namespace AzToolsFramework
             //! @return bool on whether the operation succeeds.
             bool GenerateInstanceDom(PrefabDom& instanceDom, const Instance& instance) const override;
 
+            //! Generates an entity DOM for a given entity object based on the currently focused instance.
+            //! If the owning instance of the given entity is descendant of the focused instance, entity DOM stored in focused
+            //! template DOM is used; otherwise, the entity DOM stored in the root template DOM is used.
+            //! @param[out] entityDom The output entity DOM that will be modified.
+            //! @param entity The given entity object.
+            //! @return bool on whether the operation succeeds.
+            bool GenerateEntityDom(PrefabDom& entityDom, const AZ::Entity& entity) const override;
+
         private:
             //! Given an instance and its DOM, updates the container entity in the DOM with the one seen
             //! from the root template DOM.
@@ -50,6 +60,8 @@ namespace AzToolsFramework
 
             static AzFramework::EntityContextId s_editorEntityContextId;
 
+            InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
+            InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
         };
     } // namespace Prefab

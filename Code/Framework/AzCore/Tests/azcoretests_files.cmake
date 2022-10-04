@@ -48,6 +48,8 @@ set(FILES
     GenericStreamMock.h
     GenericStreamTests.cpp
     Memory.cpp
+    Metrics/EventLoggerFactoryTests.cpp
+    Metrics/JsonTraceEventLoggerTests.cpp
     Module.cpp
     ModuleTestBus.h
     OrderedEventBenchmarks.cpp
@@ -74,7 +76,6 @@ set(FILES
     TickBusTest.cpp
     UUIDTests.cpp
     XML.cpp
-    Debug/LocalFileEventLoggerTests.cpp
     Debug/Trace.cpp
     Name/NameJsonSerializerTests.cpp
     Name/NameBenchmarks.cpp
@@ -198,6 +199,7 @@ set(FILES
     AZStd/Atomics.cpp
     AZStd/Any.cpp
     AZStd/Bitset.cpp
+    AZStd/Charconv.cpp
     AZStd/ConceptsTests.cpp
     AZStd/CreateDestroy.cpp
     AZStd/ConcurrentAllocators.cpp
@@ -222,6 +224,7 @@ set(FILES
     AZStd/Optional.cpp
     AZStd/Pair.cpp
     AZStd/Parallel.cpp
+    AZStd/RangesAlgorithmBenchmarks.cpp
     AZStd/RangesAlgorithmTests.cpp
     AZStd/RangesTests.cpp
     AZStd/RangesUtilityTests.cpp

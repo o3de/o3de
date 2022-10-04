@@ -101,8 +101,30 @@ namespace AZ::Dom
             {
                 if (i >= beforeSize)
                 {
-                    subPath.Push(PathEntry(PathEntry::EndOfArrayIndex));
-                    AddPatch(PatchOperation::AddOperation(subPath, after[i]), PatchOperation::RemoveOperation(subPath));
+                    // Per JSON patch RFC 6902:
+                    // The specified index MUST NOT be greater than the
+                    // number of elements in the array.
+                    // So for schema-compliant JSON patches, we need to use EndOfArrayIndex.
+                    // This is, however, inconvenient when introspecting patches and finding their affected paths,
+                    // so we provide this denormalized path generation path as well in which the out of bounds index
+                    // is used for both add and remove.
+                    // Our Patch apply supports this, so this usage is acceptable for internal use.
+                    if (params.m_generateDenormalizedPaths)
+                    {
+                        subPath.Push(PathEntry(i));
+                    }
+                    else
+                    {
+                        subPath.Push(PathEntry(PathEntry::EndOfArrayIndex));
+                    }
+
+                    auto addOperation = PatchOperation::AddOperation(subPath, after[i]);
+                    if (!params.m_generateDenormalizedPaths)
+                    {
+                        subPath[subPath.size() - 1] = PathEntry(i);
+                    }
+
+                    AddPatch(AZStd::move(addOperation), PatchOperation::RemoveOperation(subPath));
                     subPath.Pop();
                 }
                 else
@@ -115,10 +137,11 @@ namespace AZ::Dom
 
             if (beforeSize > afterSize)
             {
-                subPath.Push(PathEntry(PathEntry::EndOfArrayIndex));
                 for (size_t i = beforeSize; i > afterSize; --i)
                 {
+                    subPath.Push(PathEntry(i - 1));
                     AddPatch(PatchOperation::RemoveOperation(subPath), PatchOperation::AddOperation(subPath, before[i - 1]));
+                    subPath.Pop();
                 }
             }
         };

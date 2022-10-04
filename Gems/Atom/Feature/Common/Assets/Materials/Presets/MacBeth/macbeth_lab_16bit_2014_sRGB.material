@@ -1,11 +1,8 @@
 {
-    "description": "",
-    "parentMaterial": "00_illuminant.material",
     "materialType": "../../Types/StandardPBR.materialtype",
     "materialTypeVersion": 5,
-    "properties": {
-        "baseColor": {
-            "textureMap": "ColorChecker_sRGB_from_Lab_16bit_AfterNov2014.tif"
-        }
+    "parentMaterial": "00_illuminant.material",
+    "propertyValues": {
+        "baseColor.textureMap": "ColorChecker_sRGB_from_Lab_16bit_AfterNov2014.tif"
     }
 }
