@@ -73,6 +73,7 @@ namespace AzToolsFramework
         void Link::SetLinkDom(const PrefabDomValue& linkDom)
         {
             AZ_PROFILE_FUNCTION(PrefabSystem);
+            m_linkPatchesTree.Clear();
             PrefabDomValueConstReference patchesReference = PrefabDomUtils::FindPrefabDomValue(linkDom, PrefabDomUtils::PatchesName);
             if (patchesReference.has_value())
             {

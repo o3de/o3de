@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Debug/Budget.h>
 #include <AzCore/DOM/DomPrefixTree.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
