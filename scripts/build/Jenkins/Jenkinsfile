@@ -688,10 +688,11 @@ def Build(Map pipelineConfig, String platform, String type, String workspace) {
                     }
                 }
             }
+            dir(ENGINE_REPOSITORY_NAME) {
+                //build
+                PlatformSh(command, "Running ${platform} ${type}")
+            }
         }
-
-        //build
-        PlatformSh(command, "Running ${platform} ${type}")
     }
 }
 
