@@ -6,8 +6,6 @@
  *
  */
 
-#pragma once
-
 #include <Prefab/Link/PrefabLinkDomTestFixture.h>
 #include <Prefab/MockPrefabFileIOActionValidator.h>
 #include <Prefab/PrefabTestDomUtils.h>

@@ -21,7 +21,10 @@ namespace UnitTest
         void SetUpEditorFixtureImpl() override;
         void TearDownEditorFixtureImpl() override;
 
+        // Object to store data about template used for tests.
         TemplateData m_templateData;
+
+        // Link used for testing DOM operations.
         AZStd::unique_ptr<Link> m_link;
         
     };

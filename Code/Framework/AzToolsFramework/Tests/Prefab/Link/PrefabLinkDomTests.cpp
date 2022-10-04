@@ -13,6 +13,7 @@ namespace UnitTest
 {
     using PrefabLinkDomTest = PrefabLinkDomTestFixture;
 
+    // Mock patches to use for validating tests.
     static constexpr const AZStd::string_view patchesValue = R"(
             [
                 {
@@ -42,8 +43,9 @@ namespace UnitTest
         PrefabDom patchesCopy;
         patchesCopy.Parse(patchesValue.data());
         newLinkDom.AddMember(rapidjson::StringRef(PrefabDomUtils::PatchesName), AZStd::move(patchesCopy), newLinkDom.GetAllocator());
-
         m_link->SetLinkDom(newLinkDom);
+
+        // Get the link DOM and verify that it matches the DOM used for SetLinkDom().
         PrefabDom fetchedLinkDom;
         m_link->GetLinkDom(fetchedLinkDom, fetchedLinkDom.GetAllocator());
         EXPECT_EQ(AZ::JsonSerialization::Compare(newLinkDom, fetchedLinkDom), AZ::JsonSerializerCompareResult::Equal);
@@ -59,10 +61,10 @@ namespace UnitTest
 
         PrefabDom patchesCopy;
         patchesCopy.Parse(patchesValue.data());
-
         m_link->AddPatchesToLink(patchesCopy);
         newLinkDom.AddMember(rapidjson::StringRef(PrefabDomUtils::PatchesName), AZStd::move(patchesCopy), newLinkDom.GetAllocator());
 
+        // Get the link DOM and verify that it matches the DOM used for AddPatchesToLink().
         PrefabDom fetchedLinkDom;
         m_link->GetLinkDom(fetchedLinkDom, fetchedLinkDom.GetAllocator());
         EXPECT_EQ(AZ::JsonSerialization::Compare(newLinkDom, fetchedLinkDom), AZ::JsonSerializerCompareResult::Equal);

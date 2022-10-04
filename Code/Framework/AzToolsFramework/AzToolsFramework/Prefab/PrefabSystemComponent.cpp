@@ -24,6 +24,8 @@
 #include <AzToolsFramework/Prefab/Spawnable/PrefabConversionPipeline.h>
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationHandler.h>
 
+AZ_DEFINE_BUDGET(PrefabSystem);
+
 namespace AzToolsFramework
 {
     namespace Prefab

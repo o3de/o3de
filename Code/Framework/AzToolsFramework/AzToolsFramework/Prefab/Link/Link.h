@@ -14,6 +14,8 @@
 #include <AzToolsFramework/Prefab/PrefabDomTypes.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 
+AZ_DECLARE_BUDGET(PrefabSystem);
+
 namespace AzToolsFramework
 {
     namespace Prefab
@@ -32,6 +34,7 @@ namespace AzToolsFramework
             AZ_CLASS_ALLOCATOR(Link, AZ::SystemAllocator, 0);
             AZ_RTTI(Link, "{49230756-7BAA-4456-8DFE-0E18CB887DB5}");
 
+            // The structure to store metadata information about individual patches on a link.
             struct PrefabOverrideMetadata
             {
                 PrefabOverrideMetadata(PrefabDom&& patch, AZ::u32 patchIndex) noexcept
@@ -62,7 +65,10 @@ namespace AzToolsFramework
                     return (m_patchIndex < other.m_patchIndex);
                 }
 
+                // An individual patch that can get applied to the target template of the link.
                 PrefabDom m_patch;
+
+                // The patch index to associate with each individual patch. This is needed to maintain the order of patches within a link.
                 AZ::u32 m_patchIndex;
             };
 
@@ -88,8 +94,16 @@ namespace AzToolsFramework
             TemplateId GetTargetTemplateId() const;
 
             LinkId GetId() const;
-            void GetLinkPatches(PrefabDom& patchesDom, PrefabDom::AllocatorType& allocator) const;
-            void GetLinkDom(PrefabDom& linkDom, PrefabDom::AllocatorType& allocator) const;
+
+            //! Populates the patches DOM provided with the patches fetched from 'm_linkPatchesTree'
+            //! @param[out] patchesDom The DOM to populate with patches
+            //! @param allocator The allocator to use for memory allocations of patches.
+            void GetLinkPatches(PrefabDomValue& patchesDom, PrefabDom::AllocatorType& allocator) const;
+
+            //! Populates the link DOM provided with 'Source' and 'Patches' fields. 'Patches' are fetched from 'm_linkPatchesTree'.
+            //! @param[out] linkDom The DOM to populate with source and patches information.
+            //! @param allocator The allocator to use for memory allocations of patches.
+            void GetLinkDom(PrefabDomValue& linkDom, PrefabDom::AllocatorType& allocator) const;
 
             PrefabDomPath GetInstancePath() const;
             const AZStd::string& GetInstanceName() const;
@@ -120,8 +134,17 @@ namespace AzToolsFramework
              */
             void AddLinkIdToInstanceDom(PrefabDomValue& instanceDomValue, PrefabDom::AllocatorType& allocator);
 
-            void ConstructLinkDomFromPatches(PrefabDom& linkDom, PrefabDom::AllocatorType& allocator) const;
+            //! Populates the DOM provided with the patches fetched from 'm_linkPatchesTree'
+            //! @param[out] linkDom The DOM to populate with patches
+            //! @param allocator The allocator to use for memory allocations of patches.
+            void ConstructLinkDomFromPatches(PrefabDomValue& linkDom, PrefabDom::AllocatorType& allocator) const;
 
+            //! Clears the existing tree and rebuilds it from the provided patches.
+            //! @param patches The patches to build the tree with.
+            void RebuildLinkPatchesTree(const PrefabDomValue& patches);
+
+            // The prefix tree to store patches on a link. The tree is built with nodes. A node may or maynot store a patch.
+            // The path from the root to a node represents a path to a DOM value. Eg: 'Instances/Instance1/Entities/Entity1'.
             AZ::Dom::DomPrefixTree<PrefabOverrideMetadata> m_linkPatchesTree;
 
             // Target template id for propagation during updating templates.

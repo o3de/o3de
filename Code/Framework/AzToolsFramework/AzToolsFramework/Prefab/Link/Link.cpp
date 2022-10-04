@@ -6,8 +6,8 @@
  *
  */
 
+#include <AzCore/Debug/Profiler.h>
 #include <AzToolsFramework/Prefab/Link/Link.h>
-
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Template/Template.h>
@@ -72,36 +72,17 @@ namespace AzToolsFramework
 
         void Link::SetLinkDom(const PrefabDomValue& linkDom)
         {
-            m_linkPatchesTree.Clear();
+            AZ_PROFILE_FUNCTION(PrefabSystem);
             PrefabDomValueConstReference patchesReference = PrefabDomUtils::FindPrefabDomValue(linkDom, PrefabDomUtils::PatchesName);
-            if (patchesReference.has_value() && patchesReference->get().IsArray())
+            if (patchesReference.has_value())
             {
-                rapidjson::GenericArray patchesArray = patchesReference->get().GetArray();
-                for (rapidjson::SizeType i = 0; i < patchesArray.Size(); i++)
-                {
-                    PrefabDom patchEntry;
-                    patchEntry.CopyFrom(patchesArray[i], patchEntry.GetAllocator());
-
-                    auto path = patchEntry.FindMember("path");
-                    if (path != patchEntry.MemberEnd())
-                    {
-                        AZ::Dom::Path domPath(path->value.GetString());
-                        PrefabOverrideMetadata overrideMetadata(AZStd::move(patchEntry), i);
-                        m_linkPatchesTree.SetValue(domPath, AZStd::move(overrideMetadata));
-                    }
-                }
+                RebuildLinkPatchesTree(patchesReference->get());
             }
         }
 
         void Link::AddPatchesToLink(const PrefabDom& patches)
         {
-            PrefabDom linkDom;
-            linkDom.SetObject();
-            PrefabDom patchesCopy;
-            patchesCopy.CopyFrom(patches, linkDom.GetAllocator());
-            linkDom.AddMember(rapidjson::StringRef(PrefabDomUtils::PatchesName), AZStd::move(patchesCopy), linkDom.GetAllocator());
-
-            SetLinkDom(linkDom);
+            RebuildLinkPatchesTree(patches);
         }
 
         void Link::SetInstanceName(const char* instanceName)
@@ -132,8 +113,9 @@ namespace AzToolsFramework
             return m_id;
         }
 
-        void Link::GetLinkDom(PrefabDom& linkDom, PrefabDom::AllocatorType& allocator) const
+        void Link::GetLinkDom(PrefabDomValue& linkDom, PrefabDom::AllocatorType& allocator) const
         {
+            AZ_PROFILE_FUNCTION(PrefabSystem);
             return ConstructLinkDomFromPatches(linkDom, allocator);
         }
 
@@ -237,7 +219,7 @@ namespace AzToolsFramework
             }
         }
 
-        void Link::ConstructLinkDomFromPatches(PrefabDom& linkDom, PrefabDom::AllocatorType& allocator) const
+        void Link::ConstructLinkDomFromPatches(PrefabDomValue& linkDom, PrefabDom::AllocatorType& allocator) const
         {
             linkDom.SetObject();
 
@@ -263,12 +245,35 @@ namespace AzToolsFramework
             }
         }
 
-        void Link::GetLinkPatches(PrefabDom& patchesDom, PrefabDom::AllocatorType& allocator) const
+        void Link::RebuildLinkPatchesTree(const PrefabDomValue& patches)
+        {
+            m_linkPatchesTree.Clear();
+            if (patches.IsArray())
+            {
+                rapidjson::GenericArray patchesArray = patches.GetArray();
+                for (rapidjson::SizeType i = 0; i < patchesArray.Size(); i++)
+                {
+                    PrefabDom patchEntry;
+                    patchEntry.CopyFrom(patchesArray[i], patchEntry.GetAllocator());
+
+                    auto path = patchEntry.FindMember("path");
+                    if (path != patchEntry.MemberEnd())
+                    {
+                        AZ::Dom::Path domPath(path->value.GetString());
+                        PrefabOverrideMetadata overrideMetadata(AZStd::move(patchEntry), i);
+                        m_linkPatchesTree.SetValue(domPath, AZStd::move(overrideMetadata));
+                    }
+                }
+            }
+        }
+
+        void Link::GetLinkPatches(PrefabDomValue& patchesDom, PrefabDom::AllocatorType& allocator) const
         {
             auto cmp = [](const PrefabOverrideMetadata* a, const PrefabOverrideMetadata* b)
             {
                 return (a->m_patchIndex < b->m_patchIndex);
             };
+
             // Use a set to sort the patches based on their patch indices. This will make sure that entities are
             // retrieved from the tree in the same order as they are inserted in.
             AZStd::set<const PrefabOverrideMetadata*, decltype(cmp)> patchesSet(cmp);
