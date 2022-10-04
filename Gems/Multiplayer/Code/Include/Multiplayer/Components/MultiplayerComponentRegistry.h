@@ -25,6 +25,7 @@ namespace Multiplayer
         {
             AZ::Name m_gemName;
             AZ::Name m_componentName;
+            AZ::HashValue64 m_versionHash;
             PropertyNameLookupFunction m_componentPropertyNameLookupFunction;
             RpcNameLookupFunction m_componentRpcNameLookupFunction;
             AllocComponentInputFunction m_allocComponentInputFunction;
