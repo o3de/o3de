@@ -26,3 +26,14 @@ class TestMaterialEditor(AtomToolsTestSuite):
     class MaterialEditor_Atom_LaunchMaterialEditor_2(AtomToolsBatchedTest):
 
         from Atom.tests import MaterialEditor_Atom_LaunchMaterialEditor as test_module
+
+    @pytest.mark.xfail
+    class MaterialEditor_Atom_ExpectsTestFailure(AtomToolsBatchedTest):
+
+        from Atom.tests import MaterialEditor_Atom_ExpectsTestFailure as test_module
+
+    class MaterialEditor_Atom_ExpectsTestTimeout(AtomToolsBatchedTest):
+
+        timeout = 10
+
+        from Atom.tests import MaterialEditor_Atom_ExpectsTestTimeout as test_module
