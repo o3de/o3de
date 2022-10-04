@@ -454,167 +454,80 @@ namespace AzToolsFramework
             : PrefabUndoBase(undoOperationName)
         {
             m_prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
-            AZ_Assert(m_instanceToTemplateInterface, "Failed to grab interface");
+            AZ_Assert(m_prefabSystemComponentInterface, "Failed to grab interface");
         }
 
-        void PrefabUndoAddEntityOverrides::Capture(const PrefabDomValue& entityDom, const AZStd::string& entityAliasPath, LinkId linkId)
+        void PrefabUndoAddEntityOverrides::Capture(
+            const PrefabDomValue& parentEntityDomBeforeAddingEntity, const PrefabDomValue& parentEntityDomAfterAddingEntity, const AZStd::string& parentEntityAliasPath,
+            const PrefabDomValue& newEntityDom, const AZStd::string& newEntityAliasPath,
+            PrefabDomReference cachedInstanceDom, TemplateId templateId)
         {
-            m_linkId = linkId;
+            m_templateId = templateId;
 
             // Create redo patch.
             m_redoPatch.SetArray();
-            PrefabDomValue redoPatch(rapidjson::kObjectType);
-            rapidjson::Value path = rapidjson::Value(entityAliasPath.data(), aznumeric_caster(entityAliasPath.length()), m_redoPatch.GetAllocator());
+
+            PrefabDomValue addNewEntityRedoPatch(rapidjson::kObjectType);
+            rapidjson::Value path = rapidjson::Value(newEntityAliasPath.data(), aznumeric_caster(newEntityAliasPath.length()), m_redoPatch.GetAllocator());
             rapidjson::Value patchValue;
-            patchValue.CopyFrom(entityDom, m_redoPatch.GetAllocator(), true);
-            redoPatch.AddMember(rapidjson::StringRef("op"), rapidjson::StringRef("add"), m_redoPatch.GetAllocator())
+            patchValue.CopyFrom(newEntityDom, m_redoPatch.GetAllocator(), true);
+            addNewEntityRedoPatch.AddMember(rapidjson::StringRef("op"), rapidjson::StringRef("add"), m_redoPatch.GetAllocator())
                 .AddMember(rapidjson::StringRef("path"), AZStd::move(path), m_redoPatch.GetAllocator())
                 .AddMember(rapidjson::StringRef("value"), AZStd::move(patchValue), m_redoPatch.GetAllocator());
-            m_redoPatch.PushBack(redoPatch.Move(), m_redoPatch.GetAllocator());
+            m_redoPatch.PushBack(addNewEntityRedoPatch.Move(), m_redoPatch.GetAllocator());
+
+            PrefabDom updateParentEntityRedoPatch(rapidjson::kObjectType);
+            m_instanceToTemplateInterface->GeneratePatch(updateParentEntityRedoPatch, parentEntityDomBeforeAddingEntity, parentEntityDomAfterAddingEntity);
+            m_instanceToTemplateInterface->AppendEntityAliasPathToPatchPaths(updateParentEntityRedoPatch, parentEntityAliasPath);
+            m_redoPatch.PushBack(updateParentEntityRedoPatch.Move(), m_redoPatch.GetAllocator());
 
             // Create undo patch.
             m_undoPatch.SetArray();
-            PrefabDomValue undoPatch(rapidjson::kObjectType);
-            path = rapidjson::Value(entityAliasPath.data(), aznumeric_caster(entityAliasPath.length()), m_undoPatch.GetAllocator());
-            undoPatch.AddMember(rapidjson::StringRef("op"), rapidjson::StringRef("remove"), m_undoPatch.GetAllocator())
+
+            PrefabDomValue addNewEntityUndoPatch(rapidjson::kObjectType);
+            path = rapidjson::Value(newEntityAliasPath.data(), aznumeric_caster(newEntityAliasPath.length()), m_undoPatch.GetAllocator());
+            addNewEntityUndoPatch.AddMember(rapidjson::StringRef("op"), rapidjson::StringRef("remove"), m_undoPatch.GetAllocator())
                 .AddMember(rapidjson::StringRef("path"), AZStd::move(path), m_undoPatch.GetAllocator());
-            m_undoPatch.PushBack(undoPatch.Move(), m_undoPatch.GetAllocator());
+            m_undoPatch.PushBack(addNewEntityUndoPatch.Move(), m_undoPatch.GetAllocator());
+
+            PrefabDom updateParentEntityUndoPatch(rapidjson::kObjectType);
+            m_instanceToTemplateInterface->GeneratePatch(updateParentEntityUndoPatch, parentEntityDomAfterAddingEntity, parentEntityDomBeforeAddingEntity);
+            m_instanceToTemplateInterface->AppendEntityAliasPathToPatchPaths(updateParentEntityUndoPatch, parentEntityAliasPath);
+            m_undoPatch.PushBack(updateParentEntityUndoPatch.Move(), m_undoPatch.GetAllocator());
+
+            // Preemptively updates the cached DOM to prevent reloading instance DOM.
+            if (cachedInstanceDom.has_value())
+            {
+                // Create a copy of the DOM of the end state so that it shares the lifecycle of the cached DOM.
+                if (!parentEntityAliasPath.empty())
+                {
+                    PrefabDom endStateCopy;
+                    endStateCopy.CopyFrom(parentEntityDomAfterAddingEntity, cachedInstanceDom->get().GetAllocator());
+                    Prefab::PrefabDomPath parentEntityPathInDom(parentEntityAliasPath.c_str());
+
+                    // Update the cached instance DOM corresponding to the entity so that the same modified entity isn't reloaded again.
+                    parentEntityPathInDom.Set(cachedInstanceDom->get(), AZStd::move(endStateCopy));
+                }
+
+                if (!newEntityAliasPath.empty())
+                {
+                    PrefabDom endStateCopy;
+                    endStateCopy.CopyFrom(newEntityDom, cachedInstanceDom->get().GetAllocator());
+                    Prefab::PrefabDomPath newEntityPathInDom(newEntityAliasPath.c_str());
+
+                    newEntityPathInDom.Set(cachedInstanceDom->get(), AZStd::move(endStateCopy));
+                }
+            }
         }
 
         void PrefabUndoAddEntityOverrides::Undo()
         {
-            UpdateLink(m_undoPatch);
+            m_instanceToTemplateInterface->PatchTemplate(m_undoPatch, m_templateId);
         }
 
         void PrefabUndoAddEntityOverrides::Redo()
         {
-            UpdateLink(m_redoPatch);
-        }
-
-        bool PrefabUndoAddEntityOverrides::UpdateLink(PrefabDom& patch)
-        {
-            LinkReference link = m_prefabSystemComponentInterface->FindLink(m_linkId);
-            if (link == AZStd::nullopt)
-            {
-                AZ_Error("Prefab", false, "PrefabUndoLinkUpdate: Link not found");
-                return false;
-            }
-            TemplateId targetTemplateId = link->get().GetTargetTemplateId();
-            PrefabDom& targetTemplateDomReference = m_prefabSystemComponentInterface->FindTemplateDom(targetTemplateId);
-
-            //apply patch to template
-            AZ::JsonSerializationResult::ResultCode result =
-                PrefabDomUtils::ApplyPatches(targetTemplateDomReference, targetTemplateDomReference.GetAllocator(), patch);
-
-            //trigger propagation
-            if (result.GetProcessing() != AZ::JsonSerializationResult::Processing::Completed)
-            {
-                AZ_Error("Prefab", false, "Patch was not successfully applied.");
-                return false;
-            }
-            else
-            {
-                AZ_Warning(
-                    "Prefab",
-                    (result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::Skipped) &&
-                    (result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::PartialSkip),
-                    "Some of the patches were not successfully applied.");
-                m_prefabSystemComponentInterface->SetTemplateDirtyFlag(targetTemplateId, true);
-                m_prefabSystemComponentInterface->PropagateTemplateChanges(targetTemplateId);
-                return true;
-            }
-        }
-
-        PrefabUndoEntityUpdateOverrides::PrefabUndoEntityUpdateOverrides(const AZStd::string& undoOperationName)
-            : PrefabUndoBase(undoOperationName)
-        {
-            m_instanceEntityMapperInterface = AZ::Interface<InstanceEntityMapperInterface>::Get();
-            AZ_Assert(m_instanceEntityMapperInterface, "Failed to grab instance entity mapper interface");
-
-            m_prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
-            AZ_Assert(m_instanceToTemplateInterface, "Failed to grab interface");
-        }
-
-        void PrefabUndoEntityUpdateOverrides::Capture(const PrefabDomValue& initialState, const PrefabDomValue& endState,
-            AZ::EntityId entityId, const AZStd::string& entityAliasPath, LinkId linkId)
-        {
-            m_linkId = linkId;
-
-            //generate undo/redo patches
-            m_instanceToTemplateInterface->GeneratePatch(m_redoPatch, initialState, endState);
-            m_instanceToTemplateInterface->AppendEntityAliasPathToPatchPaths(m_redoPatch, entityAliasPath);
-
-            m_instanceToTemplateInterface->GeneratePatch(m_undoPatch, endState, initialState);
-            m_instanceToTemplateInterface->AppendEntityAliasPathToPatchPaths(m_undoPatch, entityAliasPath);
-
-            // Preemptively updates the cached DOM to prevent reloading instance DOM.
-            if (!entityAliasPath.empty())
-            {
-                //get the entity alias for future undo/redo
-                auto instanceReference = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
-                if (!instanceReference)
-                {
-                    AZ_Error("Prefab", false,
-                        "Failed to find an owning instance for the entity with id %llu.", static_cast<AZ::u64>(entityId));
-                    return;
-                }
-             
-                PrefabDomReference cachedDom = instanceReference->get().GetCachedInstanceDom();
-                if (cachedDom.has_value())
-                {
-                    // Create a copy of the DOM of the end state so that it shares the lifecycle of the cached DOM.
-                    PrefabDom endStateCopy;
-                    endStateCopy.CopyFrom(endState, cachedDom->get().GetAllocator());
-                    Prefab::PrefabDomPath entityPathInDom(entityAliasPath.c_str());
-
-                    // Update the cached instance DOM corresponding to the entity so that the same modified entity isn't reloaded again.
-                    entityPathInDom.Set(cachedDom->get(), AZStd::move(endStateCopy));
-                }
-            }
-        }
-
-        void PrefabUndoEntityUpdateOverrides::Undo()
-        {
-            UpdateLink(m_undoPatch);
-        }
-
-        void PrefabUndoEntityUpdateOverrides::Redo()
-        {
-            UpdateLink(m_redoPatch);
-        }
-
-        bool PrefabUndoEntityUpdateOverrides::UpdateLink(PrefabDom& patch)
-        {
-            LinkReference link = m_prefabSystemComponentInterface->FindLink(m_linkId);
-            if (link == AZStd::nullopt)
-            {
-                AZ_Error("Prefab", false, "PrefabUndoLinkUpdate: Link not found");
-                return false;
-            }
-            TemplateId targetTemplateId = link->get().GetTargetTemplateId();
-            PrefabDom& targetTemplateDomReference = m_prefabSystemComponentInterface->FindTemplateDom(targetTemplateId);
-
-            //apply patch to template
-            AZ::JsonSerializationResult::ResultCode result =
-                PrefabDomUtils::ApplyPatches(targetTemplateDomReference, targetTemplateDomReference.GetAllocator(), patch);
-
-            //trigger propagation
-            if (result.GetProcessing() != AZ::JsonSerializationResult::Processing::Completed)
-            {
-                AZ_Error("Prefab", false, "Patch was not successfully applied.");
-                return false;
-            }
-            else
-            {
-                AZ_Warning(
-                    "Prefab",
-                    (result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::Skipped) &&
-                    (result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::PartialSkip),
-                    "Some of the patches were not successfully applied.");
-                m_prefabSystemComponentInterface->SetTemplateDirtyFlag(targetTemplateId, true);
-                m_prefabSystemComponentInterface->PropagateTemplateChanges(targetTemplateId);
-                return true;
-            }
+            m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId);
         }
     }
 }

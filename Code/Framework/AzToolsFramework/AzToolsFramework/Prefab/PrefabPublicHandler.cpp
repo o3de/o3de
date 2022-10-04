@@ -725,26 +725,41 @@ namespace AzToolsFramework
                 if (!climbUpResult.m_isTargetInstanceReached)
                 {
                     return AZ::Failure(AZStd::string::format(
-                        "Parent entity id (id '%llu') is not owned by a descendant of the focused prefab instance.",
+                        "Parent entity (id: '%llu') is not owned by a descendant of the focused prefab instance.",
                         static_cast<AZ::u64>(parentId)));
                 }
 
                 LinkId linkId = climbUpResult.m_climbedInstances.back()->GetLinkId();
+                LinkReference link = m_prefabSystemComponentInterface->FindLink(linkId);
+                if (link == AZStd::nullopt)
+                {
+                    return AZ::Failure(AZStd::string::format(
+                        "Can't find link (id: '%llu') in prefab system.", static_cast<AZ::u64>(linkId)));
+                }
+                TemplateId targetTemplateId = link->get().GetTargetTemplateId();
+
                 AZStd::string entityAliasPathPrefix = PrefabInstanceUtils::GetRelativePathFromClimbedInstances(climbUpResult.m_climbedInstances);
+
+                auto newEntityOwningInstanceReference = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
+                auto parentEntityOwningInstanceReference = m_instanceEntityMapperInterface->FindOwningInstance(parentId);
+                if (!newEntityOwningInstanceReference || !parentEntityOwningInstanceReference || &newEntityOwningInstanceReference->get() != &parentEntityOwningInstanceReference->get())
+                {
+                    return AZ::Failure(AZStd::string::format("Prefab", false,
+                        "Failed to find owning instance for new entity (id: %llu) and parent entity (id:%llu ).", static_cast<AZ::u64>(entityId), static_cast<AZ::u64>(parentId)));
+                }
+                PrefabDomReference cachedOwningInstanceDom = newEntityOwningInstanceReference->get().GetCachedInstanceDom();
+
                 {
                     PrefabUndoAddEntityOverrides* addEntityOverridesUndoState = aznew PrefabUndoAddEntityOverrides("Undo Adding Entity Overrides");
                     addEntityOverridesUndoState->SetParent(undoBatch.GetUndoBatch());
-                    AZStd::string newEntityAliasRelativePath = m_instanceToTemplateInterface->GenerateEntityAliasPath(entityId, entityAliasPathPrefix);
-                    addEntityOverridesUndoState->Capture(newEntityDom, AZStd::move(newEntityAliasRelativePath), linkId);
-                    addEntityOverridesUndoState->Redo();
-                }
 
-                {
-                    PrefabUndoEntityUpdateOverrides* updateEntityOverridesUndoState = aznew PrefabUndoEntityUpdateOverrides("Undo Updating Entity Overrides");
-                    updateEntityOverridesUndoState->SetParent(undoBatch.GetUndoBatch());
+                    AZStd::string newEntityAliasRelativePath = m_instanceToTemplateInterface->GenerateEntityAliasPath(entityId, entityAliasPathPrefix);
                     AZStd::string parentEntityAliasRelativePath = m_instanceToTemplateInterface->GenerateEntityAliasPath(parentId, AZStd::move(entityAliasPathPrefix));
-                    updateEntityOverridesUndoState->Capture(parentEntityDomBeforeAddingEntity, parentEntityDomAfterAddingEntity, parentId, AZStd::move(parentEntityAliasRelativePath), linkId);
-                    updateEntityOverridesUndoState->Redo();
+                    addEntityOverridesUndoState->Capture(
+                        parentEntityDomBeforeAddingEntity, parentEntityDomAfterAddingEntity, AZStd::move(parentEntityAliasRelativePath),
+                        newEntityDom, AZStd::move(newEntityAliasRelativePath), cachedOwningInstanceDom, targetTemplateId);
+
+                    addEntityOverridesUndoState->Redo();
                 }
             }
             else

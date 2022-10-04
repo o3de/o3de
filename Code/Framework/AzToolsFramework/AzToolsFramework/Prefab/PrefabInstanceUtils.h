@@ -50,6 +50,8 @@ namespace AzToolsFramework
             //! @param climbedInstances The list of climbed instances from bottom to top.
             //! @return The relative path string.
             AZStd::string GetRelativePathFromClimbedInstances(const AZStd::vector<const Instance*>& climbedInstances);
+            AZStd::string GetRelativePathFromClimbedInstances(
+                AZStd::reverse_iterator<const Instance* const*> climbedInstancesBeginIter, AZStd::reverse_iterator<const Instance* const*> climbedInstancesEndIter);
 
             //! Checks if the child instance is a descendant of the parent instance.
             //! @param childInstance The given child instance.

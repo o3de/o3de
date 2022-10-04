@@ -185,39 +185,15 @@ namespace AzToolsFramework
 
             explicit PrefabUndoAddEntityOverrides(const AZStd::string& undoOperationName);
 
-            void Capture(const PrefabDomValue& entityDom, const AZStd::string& entityAliasPath, LinkId linkId);
+            void Capture(
+                const PrefabDomValue& parentEntityDomBeforeAddingEntity, const PrefabDomValue& parentEntityDomAfterAddingEntity, const AZStd::string& parentEntityAliasPath,
+                const PrefabDomValue& newEntityDom, const AZStd::string& newEntityAliasPath,
+                PrefabDomReference cachedInstanceDom, TemplateId templateId);
 
             void Undo() override;
             void Redo() override;
 
         private:
-            bool UpdateLink(PrefabDom& linkDom);
-
-            LinkId m_linkId = InvalidLinkId;
-            PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
-        };
-
-        //! Undo class for handling update of an entity to a prefab template.
-        class PrefabUndoEntityUpdateOverrides
-            : public PrefabUndoBase
-        {
-        public:
-            AZ_RTTI(PrefabUndoEntityUpdateOverrides, "{2A0F3C1A-1D87-4AAE-9E49-61636A9653B8}", PrefabUndoBase);
-            AZ_CLASS_ALLOCATOR(PrefabUndoEntityUpdateOverrides, AZ::SystemAllocator, 0);
-
-            explicit PrefabUndoEntityUpdateOverrides(const AZStd::string& undoOperationName);
-
-            void Capture(const PrefabDomValue& initialState, const PrefabDomValue& endState,
-                AZ::EntityId entityId, const AZStd::string& entityAliasPath, LinkId linkId);
-
-            void Undo() override;
-            void Redo() override;
-
-        private:
-            bool UpdateLink(PrefabDom& linkDom);
-
-            LinkId m_linkId = InvalidLinkId;
-            InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
         };
     }
