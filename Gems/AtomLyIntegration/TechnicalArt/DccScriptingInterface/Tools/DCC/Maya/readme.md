@@ -1,16 +1,81 @@
----
-Copyright (c) Contributors to the Open 3D Engine Project.
-For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# DCCsi.Tools.DCC.Maya
 
-SPDX-License-Identifier: Apache-2.0 OR MIT
----
+The "DccScriptingInterface" (aka DCCsi) is a Gem for O3DE to extend and interface with dcc tools in the python ecosystem.  This document contains the details of configuration of Maya as a DCC tool to be used with O3DE.
 
-# <u>DCCsi.Tools.DCC.Maya.Readme</u>
+###### Status: Prototype
 
-"DccScriptingInterface" (aka DCCsi) is a Gem for O3DE to extend and interface with dcc tools in the python ecosystem. Each dcc tool may have it's own specific version of python. Most are some version of py3+. O3DE provides an install of py3+ and manages package dependancies with requirements.txt files and the cmake build system.
+###### Version: 0.0.1
 
-However Autodesk Maya 2020 (and earlier) still uses a version of py2.7
-so we need an alternate way to deal with package management for some DCC tools.
+###### OS: Windows only (for now)
+
+###### Support:
+
+- Maya 2022 w/ Python3 (will not support py2.7)
+
+- Maya 2023+ w/ Python3 <-- default version
+
+## Setup
+
+You should enable the DCCsi Gem in your project, this can be done with 'Configure Gems' in the O3DE Project Manager (o3de.exe). This will enable a 'Studio Tools' menu within the O3DE Editor.exe from which some DCC tools can be launched. (*Note: Maya support to start from o3de menus is not yet implemented*.)  Before launching Maya for O3DE for the first time, you should follow the steps outlined below.
+
+## Configure Maya (TL/DR)
+
+Before the O3DE DCCsi tools will operate correctly in Maya, you will need to install the python package dependencies:
+
+    1. Open a Windows Command Prompt (CMD)
+
+    2. Change directory to: 
+
+```batch
+cd C:\path\to\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface
+```
+
+    3. Run the DCCsi foundation.py script with a target to the mayapy.exe of the vision you want to configure:
+
+```batch
+python foundation.py -py=C:\Program Files\Autodesk\Maya2023\bin\mayapy.exe"
+```
+
+This will install a version of all of the package dependencies into a folder such as the following, where the DCCsi will add them as a site-package based on the DCC tools version of python.
+
+`DccScriptingInterface\3rdParty\Python\Lib\3.x\3.9.x\site-packages\*`
+
+Since each DCC app, may be on a slightly different version of python, you may find more then one set of installed packages within that 3rdParty location, one for each version of python (the intent here is to maximize compatibility.)
+
+## Configure Maya Externally (Optional)
+
+The DCCsi assumes that DCC tools such as Maya are installed within their default install location, for Maya that usually would be:
+
+    `C:\Program Files\Autodesk\Maya2022`        
+
+    `C:\Program Files\Autodesk\Maya2023`
+
+If you'd like to use Maya with O3DE bootstrapped tools externally, outside of the o3de Editor, you can do that also.  There two ways, a windows environment via .bat file, or a start.py script (*DCCsi\Tools\DCC\Maya\start.py is not implemented yet*.)
+
+The DCCsi defaults to Maya 2023, and the default install location. We understand teams may want to use a specific version of maya, or may maintain a customized maya container, or IT managed install location.  If you want to alter the version, or the install location, you'll also want follow these instructions:
+
+The Maya env can be modified by adding this file:
+
+`"C:\path\tp\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\Tools\DCC\Maya\Env_Dev.bat"`
+
+Inside of that you can set/override envars to change the Maya version, it's python version information, as well as your custom install path.  Here is an example of those envars:
+
+```batch
+:: Set your preferred defualt Maya and Python version
+set MAYA_VERSION=2023
+set DCCSI_PY_VERSION_MAJOR=3
+set DCCSI_PY_VERSION_MINOR=9
+set DCCSI_PY_VERSION_RELEASE=7
+
+:: and you can alter the install path
+set MAYA_LOCATION=%ProgramFiles%\Autodesk\Maya%MAYA_VERSION%
+```
+
+A future PR will add an additional settings.json, and settings.local.json within the o3de DCCsi folder for Maya, this will coincide with the addition of a config.py and start.py, to follow the patterns similar to how Blender can be launched from the O3DE menus, or in a scripted manner rather then legacy windows .bat files.
+
+## Additional Information
+
+Each dcc tool likely has it's own design and architecture that is often not common, and many have it's own specific version of python. Most are some version of py3+. O3DE provides an install of py3+ and manages package dependencies with requirements.txt files and the cmake build system.  If you prefer not to use out included foundation.py script, the details below will walk you through haw you can manually configure on your own.
 
 Maya ships with it's own python interpreter called mayapy.exe
 
@@ -22,18 +87,19 @@ The python install and site-packages are here:
 
 A general goal of the DCCsi is be self-maintained, and to not taint the users installed applications of environment.
 
-So we boostrap additional access to site-packages in our userSetup.py:
+So as to not directly modify Maya, we bootstrap additional access to site-packages in our userSetup.py:
+
 `"C:/Depot/o3de/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/Tools/DCC/Maya/Scripts/userSetup.py"`
 
-We don't want users to have to install or use Python2.7 although with maya and possibly other dcc tools we don't have that control.  Maya 2020 and earlier versions are still on Python2.7, so instead of forcing another install of python we can just use mayapy to manage extensions.
+We don't want users to have to install or use any additional version of Python, especially use of legacy versions such as python2.7, although with older versions of  Maya and possibly other dcc tools we don't have that control.  Maya 2020 and earlier versions are still on Python2.7, so instead of forcing another install of python we can just use that versions mayapy to manage its extensions.
 
-Pip may already be installed, you can check like so (your maya install path may be different):
+Pip may already be installed, you can check like so (your Maya install path may be different):
 
 `C:\Program Files\Autodesk\Maya2020\bin>mayapy -m pip --version`
 
-Another way to check is: `mayapy.exe -m ensurepip`
+Another way to ensure pip exists is: `mayapy.exe -m ensurepip` 
 
-If pip is not available yet for your mayapy, there are a couple ways to address this.
+If pip is not available in your maya install for whatever reason, there are a couple ways to go about addressing this.
 
 ## Method 1, use get-pip
 
@@ -95,29 +161,34 @@ This command will ensure that pip is installed
 
     mayapy -m ensurepip
 
-This command will upgrade pip (for instance if a secutiry patch is released)
+This command will upgrade pip (for instance if a security patch is released)
 
     mayapy -m ensurepip --upgrade
 
-Now your local maya install is all set up with pip so you can install additional python packages to use in maya.  (note: not all packages are compatible with maya)
+Now your local Maya install is all set up with pip so you can install additional python packages to use in Maya.  (note: not all python packages are compatible with Maya)
 
-Now you will want to run the following file to finish setup...
+Now you will want to complete the following instructions to finish setup...
 
-We have a requirements.txt file with the extension packages we use in the DCCsi.
-You'll need the repo/branch path of your O3DE (aka Lumberyard) install.
-And you'll need to know where the DCCsi is located, we will install package dependancies there.
+We have a `requirements.txt`file with the extension packages we use in the DCCsi.
+You'll need the repo/branch path of your O3DE install.  And you'll need to know where the DCCsi is located, we will install package dependencies in a path such as (based on python version):
+
+   ` DccScriptingInterface\3rdParty\Python\Lib\3.x\3.9.x\site-packages`
 
 Note: you may need to update the paths below to match your local o3de engine install!
 
-This is py2.7 requirements: DccScriptingInterface\Tools\DCC\Maya\requirements.txt
+This is where the legacy py2.7 version of requirements is stored: `"C:\path\to\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\Tools\Resources\py27\requirements.txt"`
 
-The following will install those requirements into a sandbox area that we can boostrap in DCC tools running py2.7
+The following will install those requirements into a sandbox area that we can bootstrap in DCC tools running py2.7
 
-C:\Program Files\Autodesk\Maya2020\bin>
+`C:\Program Files\Autodesk\Maya2020\bin>`
 
-    mayapy -m pip install -r C:\Depot\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\Tools\DCC\Maya\requirements.txt -t C:\Depot\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\3rdParty\Python\Lib\2.x\2.7.x\site-packages
+```batch
+mayapy -m pip install -r C:\Depot\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\Tools\DCC\Maya\requirements.txt -t C:\Depot\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\3rdParty\Python\Lib\2.x\2.7.x\site-packages
+```
 
 ![image](https://user-images.githubusercontent.com/23222931/155037696-cab81e13-7910-433d-b038-75a07e6690ad.png)
+
+Note: These days most of the DCCsi has be written or refactored for Python3+ syntax, although it is technically possible to write code that is py2.7 and py3 compatible, we have not taken the time to do so (python2.7 is end of life, and Maya 2022+ now comes with python3).  This information is here mainly for historical context, you may be able to modify the code yourself to patch in python 2.7 support if you are working with an older version of Maya.
 
 ## Other versions of Maya (2022 and beyond)
 
@@ -140,11 +211,11 @@ This command will ensure that pip is installed
 
     C:\Program Files\Autodesk\Maya2020\bin>mayapy2 -m ensurepip
 
-This command will upgrade pip (for instance if a secutiry patch is released)
+This command will upgrade pip (for instance if a security patch is released)
 
     C:\Program Files\Autodesk\Maya2020\bin>mayapy2 -m ensurepip --upgrade
 
-The following will install those requirements into a sandbox area that we can boostrap in DCC tools running py2.7
+The following will install those requirements into a sandbox area that we can bootstrap in DCC tools running py2.7
 
     mayapy2 -m pip install -r C:\Depot\o3de-dev\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\Tools\DCC\Maya\requirements.txt -t C:\Depot\o3de-dev\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\3rdParty\Python\Lib\2.x\2.7.x\site-packages
 
@@ -173,3 +244,9 @@ The following will install those requirements into a sandbox area that we can bo
     mayapy -m pip install -r C:\Depot\o3de-dev\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\requirements.txt -t C:\Depot\o3de-dev\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\3rdParty\Python\Lib\3.x\3.10.x\site-packages
 
 ![image](https://user-images.githubusercontent.com/23222931/155037723-8f514a85-194f-46e8-b726-55a04f0860bb.png)
+
+```yaml
+Copyright (c) Contributors to the Open 3D Engine Project.For complete copyright and license terms please see the LICENSE at the root of this distribution.
+
+SPDX-License-Identifier: Apache-2.0 OR MIT
+```

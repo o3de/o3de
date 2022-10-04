@@ -1,5 +1,3 @@
-# coding:utf-8
-#!/usr/bin/python
 #
 # Copyright (c) Contributors to the Open 3D Engine Project.
 # For complete copyright and license terms please see the LICENSE at the root of this distribution.
@@ -22,17 +20,24 @@
 # @section Maya Materials Notes
 # - Comments are Doxygen compatible
 
-
+# standard imports
 import os
 import logging as _logging
 from pathlib import Path
+
+# o3de, dccsi imports
+from DccScriptingInterface.azpy.dcc.maya.helpers import convert_arnold_material as arnold
+from DccScriptingInterface.azpy.dcc.maya.helpers import convert_stingray_material as stingray
+
+# this breaks if you aren't running pycharm / pydev
+# need to wrap this safely with an envar or another mechanism
+# from azpy.dcc.maya.utils import pycharm_debugger
+
+# maya, pyside imports, etc
 import maya.cmds as mc
-from azpy.dcc.maya.utils import pycharm_debugger
-from azpy.dcc.maya.helpers import convert_arnold_material as arnold
-from azpy.dcc.maya.helpers import convert_stingray_material as stingray
 
-
-_LOGGER = _logging.getLogger('azpy.dcc.maya.utils.maya_materials')
+# module global scope
+_LOGGER = _logging.getLogger('DCCsi.azpy.dcc.maya.utils.maya_materials')
 
 
 # TODO - You need to provide for creating new files while Maya is already open

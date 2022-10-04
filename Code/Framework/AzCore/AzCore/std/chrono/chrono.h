@@ -94,7 +94,7 @@ namespace AZStd::chrono
 #else
     template<class Duration>
     using sys_time = time_point<system_clock, Duration>;
-    using sys_seconds = sys_time<seconds>;
+    using sys_seconds = sys_time<std::chrono::seconds>;
     using sys_days = sys_time<days>;
 #endif
 
@@ -119,12 +119,12 @@ namespace AZStd::chrono
         {
             return m_leap_second_date;
         }
-        constexpr seconds value() const noexcept
+        constexpr std::chrono::seconds value() const noexcept
         {
             return m_value;
         }
 
-        constexpr leap_second(sys_seconds leap_second_date, seconds value)
+        constexpr leap_second(sys_seconds leap_second_date, std::chrono::seconds value)
             : m_leap_second_date(leap_second_date)
             , m_value(value)
         {
@@ -132,7 +132,7 @@ namespace AZStd::chrono
 
     private:
         sys_seconds m_leap_second_date;
-        seconds m_value;
+        std::chrono::seconds m_value;
     };
 
     constexpr bool operator==(const leap_second& x, const leap_second& y) noexcept
@@ -228,27 +228,27 @@ namespace AZStd::chrono
         // http://eel.is/c++draft/time#zone.leap
         // https://www.ietf.org/timezones/data/leap-seconds.list
         static constexpr auto LeapSecondTable = to_array<leap_second>({
-            { sys_seconds{ seconds{ 78796800 } }, seconds{ 1 } },   { sys_seconds{ seconds{ 94694400 } }, seconds{ 1 } },
-            { sys_seconds{ seconds{ 126230400 } }, seconds{ 1 } },  { sys_seconds{ seconds{ 157766400 } }, seconds{ 1 } },
-            { sys_seconds{ seconds{ 189302400 } }, seconds{ 1 } },  { sys_seconds{ seconds{ 220924800 } }, seconds{ 1 } },
-            { sys_seconds{ seconds{ 252460800 } }, seconds{ 1 } },  { sys_seconds{ seconds{ 283996800 } }, seconds{ 1 } },
-            { sys_seconds{ seconds{ 315532800 } }, seconds{ 1 } },  { sys_seconds{ seconds{ 362793600 } }, seconds{ 1 } },
-            { sys_seconds{ seconds{ 394329600 } }, seconds{ 1 } },  { sys_seconds{ seconds{ 425865600 } }, seconds{ 1 } },
-            { sys_seconds{ seconds{ 489024000 } }, seconds{ 1 } },  { sys_seconds{ seconds{ 567993600 } }, seconds{ 1 } },
-            { sys_seconds{ seconds{ 631152000 } }, seconds{ 1 } },  { sys_seconds{ seconds{ 662688000 } }, seconds{ 1 } },
-            { sys_seconds{ seconds{ 709948800 } }, seconds{ 1 } },  { sys_seconds{ seconds{ 741484800 } }, seconds{ 1 } },
-            { sys_seconds{ seconds{ 773020800 } }, seconds{ 1 } },  { sys_seconds{ seconds{ 820454400 } }, seconds{ 1 } },
-            { sys_seconds{ seconds{ 867715200 } }, seconds{ 1 } },  { sys_seconds{ seconds{ 915148800 } }, seconds{ 1 } },
-            { sys_seconds{ seconds{ 1136073600 } }, seconds{ 1 } }, { sys_seconds{ seconds{ 1230768000 } }, seconds{ 1 } },
-            { sys_seconds{ seconds{ 1341100800 } }, seconds{ 1 } }, { sys_seconds{ seconds{ 1435708800 } }, seconds{ 1 } },
-            { sys_seconds{ seconds{ 1483228800 } }, seconds{ 1 } },
+            { sys_seconds{ std::chrono::seconds{ 78796800 } }, std::chrono::seconds{ 1 } },   { sys_seconds{ std::chrono::seconds{ 94694400 } }, std::chrono::seconds{ 1 } },
+            { sys_seconds{ std::chrono::seconds{ 126230400 } }, std::chrono::seconds{ 1 } },  { sys_seconds{ std::chrono::seconds{ 157766400 } }, std::chrono::seconds{ 1 } },
+            { sys_seconds{ std::chrono::seconds{ 189302400 } }, std::chrono::seconds{ 1 } },  { sys_seconds{ std::chrono::seconds{ 220924800 } }, std::chrono::seconds{ 1 } },
+            { sys_seconds{ std::chrono::seconds{ 252460800 } }, std::chrono::seconds{ 1 } },  { sys_seconds{ std::chrono::seconds{ 283996800 } }, std::chrono::seconds{ 1 } },
+            { sys_seconds{ std::chrono::seconds{ 315532800 } }, std::chrono::seconds{ 1 } },  { sys_seconds{ std::chrono::seconds{ 362793600 } }, std::chrono::seconds{ 1 } },
+            { sys_seconds{ std::chrono::seconds{ 394329600 } }, std::chrono::seconds{ 1 } },  { sys_seconds{ std::chrono::seconds{ 425865600 } }, std::chrono::seconds{ 1 } },
+            { sys_seconds{ std::chrono::seconds{ 489024000 } }, std::chrono::seconds{ 1 } },  { sys_seconds{ std::chrono::seconds{ 567993600 } }, std::chrono::seconds{ 1 } },
+            { sys_seconds{ std::chrono::seconds{ 631152000 } }, std::chrono::seconds{ 1 } },  { sys_seconds{ std::chrono::seconds{ 662688000 } }, std::chrono::seconds{ 1 } },
+            { sys_seconds{ std::chrono::seconds{ 709948800 } }, std::chrono::seconds{ 1 } },  { sys_seconds{ std::chrono::seconds{ 741484800 } }, std::chrono::seconds{ 1 } },
+            { sys_seconds{ std::chrono::seconds{ 773020800 } }, std::chrono::seconds{ 1 } },  { sys_seconds{ std::chrono::seconds{ 820454400 } }, std::chrono::seconds{ 1 } },
+            { sys_seconds{ std::chrono::seconds{ 867715200 } }, std::chrono::seconds{ 1 } },  { sys_seconds{ std::chrono::seconds{ 915148800 } }, std::chrono::seconds{ 1 } },
+            { sys_seconds{ std::chrono::seconds{ 1136073600 } }, std::chrono::seconds{ 1 } }, { sys_seconds{ std::chrono::seconds{ 1230768000 } }, std::chrono::seconds{ 1 } },
+            { sys_seconds{ std::chrono::seconds{ 1341100800 } }, std::chrono::seconds{ 1 } }, { sys_seconds{ std::chrono::seconds{ 1435708800 } }, std::chrono::seconds{ 1 } },
+            { sys_seconds{ std::chrono::seconds{ 1483228800 } }, std::chrono::seconds{ 1 } },
         });
     } // namespace Internal
 
     struct leap_second_info
     {
         bool is_leap_second{};
-        seconds elapsed{};
+        std::chrono::seconds elapsed{};
     };
 
     //! utc_clock and its associated time_point utc_time utc_time,
@@ -258,7 +258,7 @@ namespace AZStd::chrono
 
     template<class Duration>
     using utc_time = time_point<utc_clock, Duration>;
-    using utc_seconds = utc_time<seconds>;
+    using utc_seconds = utc_time<std::chrono::seconds>;
 
     class utc_clock
     {
@@ -266,8 +266,8 @@ namespace AZStd::chrono
         // Re-use the system_clock representation and tick period type
         using rep = system_clock::rep;
         using period = system_clock::period;
-        using duration = duration<rep, period>;
-        using time_point = time_point<utc_clock>;
+        using duration = chrono::duration<rep, period>;
+        using time_point = chrono::time_point<utc_clock>;
         static constexpr bool is_steady = system_clock::is_steady;
 
         static time_point now()
@@ -276,27 +276,27 @@ namespace AZStd::chrono
         }
 
         template<class Duration>
-        static sys_time<common_type_t<Duration, seconds>> to_sys(const utc_time<Duration>& t)
+        static sys_time<common_type_t<Duration, std::chrono::seconds>> to_sys(const utc_time<Duration>& t)
         {
-            using common_type = common_type_t<Duration, seconds>;
+            using common_type = common_type_t<Duration, std::chrono::seconds>;
             leap_second_info lsi = get_leap_second_info(t);
             common_type ticks;
             if (lsi.is_leap_second)
             {
                 // the leap second that is being inserted is not included in the sys_time
                 // and last representable value before the insertion of the leap second is returned
-                auto elapsedSeconds = floor<seconds>(t.time_since_epoch()) - lsi.elapsed;
+                auto elapsedSeconds = floor<std::chrono::seconds>(t.time_since_epoch()) - lsi.elapsed;
                 if constexpr (is_integral_v<typename duration::rep>)
                 {
                     // increment the last representable value for the common_type that is less than a second
-                    ticks = elapsedSeconds + seconds(1) - common_type(1);
+                    ticks = elapsedSeconds + std::chrono::seconds(1) - common_type(1);
                 }
                 else
                 {
                     // Find the next floating point value in the direction of 0.0
                     // This returns a value the last representable value for the common type that is
                     // round_to_next_lowest_representable_float_value(elapsedSeconds + 1)
-                    ticks = common_type{ nextafter(ceil<common_type>(elapsedSeconds + seconds(1)).count(), typename common_type::rep{ 0 }) };
+                    ticks = common_type{ nextafter(ceil<common_type>(elapsedSeconds + std::chrono::seconds(1)).count(), typename common_type::rep{ 0 }) };
                 }
             }
             else
@@ -306,10 +306,10 @@ namespace AZStd::chrono
             return sys_time<common_type>{ ticks };
         }
         template<class Duration>
-        static utc_time<common_type_t<Duration, seconds>> from_sys(const sys_time<Duration>& t)
+        static utc_time<common_type_t<Duration, std::chrono::seconds>> from_sys(const sys_time<Duration>& t)
         {
             // count the number of elapsed leap seconds
-            seconds elapsed{};
+            std::chrono::seconds elapsed{};
             for (size_t i = 0; i < Internal::LeapSecondTable.size(); ++i, ++elapsed)
             {
                 const leap_second& leapSecond = Internal::LeapSecondTable[i];
@@ -318,7 +318,7 @@ namespace AZStd::chrono
                     break;
                 }
             }
-            return utc_time<common_type_t<Duration, seconds>>{ t.time_since_epoch() + elapsed };
+            return utc_time<common_type_t<Duration, std::chrono::seconds>>{ t.time_since_epoch() + elapsed };
         }
     };
 
@@ -387,7 +387,7 @@ namespace AZStd::chrono
     };
     template<class Duration>
     using local_time = time_point<local_t, Duration>;
-    using local_seconds = local_time<seconds>;
+    using local_seconds = local_time<std::chrono::seconds>;
     using local_days = local_time<days>;
 #endif
     // [time.clock.cast](http://eel.is/c++draft/time#clock.cast), time_­point conversions
@@ -2309,7 +2309,7 @@ namespace AZStd::chrono
             return decimalExp == MaxExp ? 6 : decimalExp;
         }();
 
-        using precision = duration<common_type_t<typename Duration::rep, typename seconds::rep>, ratio<1, pow_10_exponentiate(fractional_width)>>;
+        using precision = duration<common_type_t<typename Duration::rep, typename std::chrono::seconds::rep>, ratio<1, pow_10_exponentiate(fractional_width)>>;
 
         hh_mm_ss() noexcept
             : hh_mm_ss(Duration::zero())
@@ -2320,7 +2320,7 @@ namespace AZStd::chrono
             : m_is_negative{ d < Duration::zero() }
             , m_hours{ duration_cast<chrono::hours>(abs(d)) }
             , m_minutes{ duration_cast<chrono::minutes>(abs(d) - m_hours) }
-            , m_seconds{ duration_cast<chrono::seconds>(abs(d) - m_hours - m_minutes) }
+            , m_seconds{ duration_cast<std::chrono::seconds>(abs(d) - m_hours - m_minutes) }
             , m_subseconds{ precision::zero() }
         {
             if constexpr (treat_as_floating_point_v<typename precision::rep>)
@@ -2346,7 +2346,7 @@ namespace AZStd::chrono
         {
             return m_minutes;
         }
-        constexpr chrono::seconds seconds() const noexcept
+        constexpr std::chrono::seconds seconds() const noexcept
         {
             return m_seconds;
         }
@@ -2370,7 +2370,7 @@ namespace AZStd::chrono
         bool m_is_negative{};
         chrono::hours m_hours;
         chrono::minutes m_minutes;
-        chrono::seconds m_seconds;
+        std::chrono::seconds m_seconds;
         precision m_subseconds;
     };
 #endif
