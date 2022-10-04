@@ -1,5 +1,3 @@
-# coding:utf-8
-#!/usr/bin/python
 #
 # Copyright (c) Contributors to the Open 3D Engine Project.
 # For complete copyright and license terms please see the LICENSE at the root of this distribution.
@@ -8,110 +6,174 @@
 #
 #
 # -------------------------------------------------------------------------
-"""! @brief
-Module Documentation:
-    < DCCsi >:: Tools/DCC/Maya/config.py
+"""! This module manages the dynamic config and settings for bootstrapping
+Maya DCC app integration with o3de inter-op, scripts, extensions, etc.
 
-This module manages the dynamic config and settings for boostrapping Blender
+:file: DccScriptingInterface\\Tools\\DCC\\Maya\\config.py
+:Status: Prototype
+:Version: 0.0.1
+:Notice: Currently only supports Maya 2022 and 2023 with Python3
 """
 # -------------------------------------------------------------------------
+import timeit
+_MODULE_START = timeit.default_timer()  # start tracking
+
 # standard imports
-import sys
-import os
-import re
-import site
-import inspect
-import traceback
-import importlib.util
 from pathlib import Path
 import logging as _logging
 # -------------------------------------------------------------------------
 
+# This module and others like Substance/config.py have a lot of duplicate
+# boilerplate code (as we are early, these are the first versions to stand up)
+# They could possibly be improved by unifying into a Class object designed
+# with extensibility
 
 # -------------------------------------------------------------------------
 # global scope
-_MODULENAME = 'Tools.DCC.Maya.config'
+from DccScriptingInterface.Tools.DCC.Blender import _PACKAGENAME
+_MODULENAME = f'{_PACKAGENAME}.config'
 _LOGGER = _logging.getLogger(_MODULENAME)
-_LOGGER.debug('Initializing: {}.'.format({_MODULENAME}))
+_LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
+
+_MODULE_PATH = Path(__file__)
+_LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH.as_posix()}')
+
+# ensure dccsi and o3de core access
+# in a future iteration it is suggested that the core config
+# be rewritten from ConfigClass, then BlenderConfig inherits core
+import DccScriptingInterface.config as dccsi_core_config
+
+_settings_core = dccsi_core_config.get_config_settings(enable_o3de_python=True,
+                                                       enable_o3de_pyside2=False,
+                                                       set_env=True)
+
+# local dccsi imports
+# this accesses common global state, e.g. DCCSI_GDEBUG (is True or False)
+from DccScriptingInterface.globals import *
+
+# this will auto-attach ide debugging at the earliest possible point in module
+from azpy.config_utils import attach_debugger
+if DCCSI_DEV_MODE: # from DccScriptingInterface.globals
+    attach_debugger(debugger_type=DCCSI_GDEBUGGER)
+
+# if the dccsi core config and it's settings are loaded this should pass
+try:
+    _settings_core.DCCSI_CONFIG_CORE
+except EnvironmentError as e:
+    _LOGGER.error('Setting does not exist: DCCSI_CONFIG_CORE')
+    _LOGGER.warning(f'EnvironmentError: {e}')
+
+# this is the root path for the wing pkg
+from DccScriptingInterface.Tools.DCC.Maya import ENVAR_PATH_DCCSI_TOOLS_DCC_MAYA
+from DccScriptingInterface.Tools.DCC.Maya import PATH_DCCSI_TOOLS_DCC_MAYA
+
+from DccScriptingInterface import SETTINGS_FILE_SLUG
+PATH_DCCSI_TOOLS_DCC_MAYA_SETTINGS = PATH_DCCSI_TOOLS_DCC_MAYA.joinpath(SETTINGS_FILE_SLUG).resolve()
+
+from DccScriptingInterface import LOCAL_SETTINGS_FILE_SLUG
+PATH_DCCSI_TOOLS_DCC_MAYA_LOCAL_SETTINGS = PATH_DCCSI_TOOLS_DCC_MAYA.joinpath(LOCAL_SETTINGS_FILE_SLUG).resolve()
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-# Maya is frozen
-# module path when frozen
-_MODULE_PATH = Path(os.path.abspath(inspect.getfile(inspect.currentframe())))
-_LOGGER.debug('_MODULE_PATH: {}'.format(_MODULE_PATH))
+# now we build the wing config class
+from DccScriptingInterface.azpy.config_class import ConfigClass
 
-_PATH_DCCSI_TOOLS_MAYA = Path(_MODULE_PATH.parent)
-_PATH_DCCSI_TOOLS_MAYA = Path(os.getenv('PATH_DCCSI_TOOLS_MAYA', _PATH_DCCSI_TOOLS_MAYA.as_posix()))
-site.addsitedir(_PATH_DCCSI_TOOLS_MAYA.as_posix())
+class MayaConfig(ConfigClass):
+    """Extend ConfigClass with new maya functionality"""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        _LOGGER.info(f'Initializing: {self.get_classname()}')
 
-_PATH_DCCSI_TOOLS_DCC = Path(_PATH_DCCSI_TOOLS_MAYA.parent)
-_PATH_DCCSI_TOOLS_DCC = Path(os.getenv('PATH_DCCSI_TOOLS_DCC', _PATH_DCCSI_TOOLS_DCC.as_posix()))
-site.addsitedir(_PATH_DCCSI_TOOLS_DCC.as_posix())
+# build config object
+maya_config = MayaConfig(config_name='dccsi_dcc_maya',
+                         settings_filepath = PATH_DCCSI_TOOLS_DCC_MAYA_SETTINGS,
+                         settings_local_filepath = PATH_DCCSI_TOOLS_DCC_MAYA_LOCAL_SETTINGS,
+                         auto_set=True)
 
-_PATH_DCCSI_TOOLS = Path(_PATH_DCCSI_TOOLS_DCC.parent)
-_PATH_DCCSI_TOOLS = Path(os.getenv('PATH_DCCSI_TOOLS', _PATH_DCCSI_TOOLS.as_posix()))
+# in another module someone could work this way
+# from DccScriptingInterface.Tools.DCC.Maya.config import maya_config
+# settings = maya_config.get_settings(set_env=True)
+# or
+# if maya_config.settings.THIS_SETTING: do this
 
-_PATH_DCCSIG = Path(_PATH_DCCSI_TOOLS.parent)
-_PATH_DCCSIG = Path(os.getenv('PATH_DCCSIG', _PATH_DCCSIG.as_posix()))
-site.addsitedir(_PATH_DCCSIG.as_posix())
+# now we can extend the environment specific to Maya
+from Tools.DCC.Blender.constants import ENVAR_DCCSI_CONFIG_DCC_BLENDER
+maya_config.add_setting(ENVAR_DCCSI_CONFIG_DCC_BLENDER, True)
 
-# now we have azpy api access
-from azpy.env_bool import env_bool
-from azpy.constants import ENVAR_DCCSI_GDEBUG
-from azpy.constants import ENVAR_DCCSI_DEV_MODE
-from azpy.constants import ENVAR_DCCSI_LOGLEVEL
-from azpy.constants import ENVAR_DCCSI_GDEBUGGER
-from azpy.constants import FRMT_LOG_LONG
-# -------------------------------------------------------------------------
+from Tools.DCC.Blender.constants import ENVAR_PATH_DCCSI_TOOLS
+from Tools.DCC.Blender import PATH_DCCSI_TOOLS
+PATH_DCCSI_TOOLS = Path(PATH_DCCSI_TOOLS).resolve()
+maya_config.add_setting(ENVAR_PATH_DCCSI_TOOLS,
+                           PATH_DCCSI_TOOLS.as_posix())
 
+from Tools.DCC.Blender.constants import ENVAR_PATH_DCCSI_TOOLS_DCC_BLENDER
+from Tools.DCC.Blender import PATH_DCCSI_TOOLS_DCC_BLENDER
+PATH_DCCSI_TOOLS_DCC_BLENDER = Path(PATH_DCCSI_TOOLS_DCC_BLENDER).resolve()
+maya_config.add_setting(ENVAR_PATH_DCCSI_TOOLS_DCC_BLENDER,
+                           PATH_DCCSI_TOOLS_DCC_BLENDER.as_posix())
 
-# -------------------------------------------------------------------------
-# _settings.setenv()  # doing this will add the additional DYNACONF_ envars
-def get_dccsi_config(PATH_DCCSIG=_PATH_DCCSIG.as_posix()):
-    """Convenience method to set and retrieve settings directly from module."""
-    
-    _PATH_DCCSIG = Path(PATH_DCCSIG)
-    _PATH_DCCSI_CONFIG = Path(PATH_DCCSIG, "config.py")
+from Tools.DCC.Blender.constants import ENVAR_PATH_DCCSI_TOOLS_DCC_BLENDER_SCRIPTS
+from Tools.DCC.Blender.constants import PATH_DCCSI_TOOLS_DCC_BLENDER_SCRIPTS
+PATH_DCCSI_TOOLS_DCC_BLENDER_SCRIPTS = Path(PATH_DCCSI_TOOLS_DCC_BLENDER_SCRIPTS).resolve()
+maya_config.add_setting(ENVAR_PATH_DCCSI_TOOLS_DCC_BLENDER_SCRIPTS,
+                           PATH_DCCSI_TOOLS_DCC_BLENDER_SCRIPTS.as_posix(),
+                           set_sys_path=True,
+                           set_pythonpath=True)
 
-    try:
-        _PATH_DCCSIG.exists()
-    except FileNotFoundError as e:
-        _LOGGER.debug(f"File does not exist: {PATH_DCCSIG}")
-        return None
+from Tools.DCC.Blender.constants import ENVAR_DCCSI_BLENDER_VERSION
+from Tools.DCC.Blender.constants import SLUG_DCCSI_BLENDER_VERSION
+maya_config.add_setting(ENVAR_DCCSI_BLENDER_VERSION,
+                           SLUG_DCCSI_BLENDER_VERSION)
 
-    # we can go ahead and just make sure the the DCCsi env is set
-    # _config is SO generic this ensures we are importing a specific one
-    _spec_dccsi_config = importlib.util.spec_from_file_location("dccsi._config",
-                                                                _PATH_DCCSI_CONFIG.as_posix())
-    _dccsi_config = importlib.util.module_from_spec(_spec_dccsi_config)
-    _spec_dccsi_config.loader.exec_module(_dccsi_config)
+from Tools.DCC.Blender.constants import ENVAR_DCCSI_BLENDER_LOCATION
+from Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_LOCATION
+PATH_DCCSI_BLENDER_LOCATION = Path(PATH_DCCSI_BLENDER_LOCATION).resolve()
+maya_config.add_setting(ENVAR_DCCSI_BLENDER_LOCATION,
+                           PATH_DCCSI_BLENDER_LOCATION.as_posix(),
+                           set_sys_path=True)
 
-    return _dccsi_config
-# -------------------------------------------------------------------------
+from Tools.DCC.Blender.constants import ENVAR_PATH_DCCSI_BLENDER_EXE
+from Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_EXE
+PATH_DCCSI_BLENDER_EXE = Path(PATH_DCCSI_BLENDER_EXE).resolve()
+maya_config.add_setting(ENVAR_PATH_DCCSI_BLENDER_EXE,
+                           PATH_DCCSI_BLENDER_EXE.as_posix())
 
+from Tools.DCC.Blender.constants import ENVAR_DCCSI_BLENDER_LAUNCHER_EXE
+from Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_LAUNCHER_EXE
+PATH_DCCSI_BLENDER_LAUNCHER_EXE = Path(PATH_DCCSI_BLENDER_LAUNCHER_EXE).resolve()
+maya_config.add_setting(ENVAR_DCCSI_BLENDER_LAUNCHER_EXE,
+                           PATH_DCCSI_BLENDER_LAUNCHER_EXE.as_posix())
 
-# -------------------------------------------------------------------------
-_CONFIG = get_dccsi_config()
-settings = _CONFIG.get_config_settings(enable_o3de_python=False,
-                                        enable_o3de_pyside2=True)
-# we don't init the O3DE python env settings!
-# that will cause conflicts with the DCC tools python!!!
-# we are enabling the O3DE PySide2 (aka QtForPython) access
+from Tools.DCC.Blender.constants import ENVAR_DCCSI_BLENDER_PYTHON_LOC
+from Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_PYTHON_LOC
+PATH_DCCSI_BLENDER_PYTHON_LOC = Path(PATH_DCCSI_BLENDER_PYTHON_LOC).resolve()
+maya_config.add_setting(ENVAR_DCCSI_BLENDER_PYTHON_LOC,
+                           PATH_DCCSI_BLENDER_PYTHON_LOC.as_posix(),
+                           set_sys_path=True)
 
-#_DCCSI_PATH_MAYA = Path(sys.prefix)
-#os.environ["DYNACONF_DCCSI_PATH_MAYA"] = _DCCSI_PATH_MAYA.resolve()
-#_LOGGER.debug(f"Maya Install: {_DCCSI_PATH_MAYA}")
+from Tools.DCC.Blender.constants import ENVAR_DCCSI_BLENDER_PY_EXE
+from Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_PY_EXE
+PATH_DCCSI_BLENDER_PY_EXE = Path(PATH_DCCSI_BLENDER_PY_EXE).resolve()
+maya_config.add_setting(ENVAR_DCCSI_BLENDER_PY_EXE,
+                           PATH_DCCSI_BLENDER_PY_EXE.as_posix())
 
-from dynaconf import settings
-settings.setenv()
-# -------------------------------------------------------------------------
+from Tools.DCC.Blender.constants import ENVAR_PATH_DCCSI_BLENDER_BOOTSTRAP
+from Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_BOOTSTRAP
+PATH_DCCSI_BLENDER_BOOTSTRAP = Path(PATH_DCCSI_BLENDER_BOOTSTRAP).resolve()
+maya_config.add_setting(ENVAR_PATH_DCCSI_BLENDER_BOOTSTRAP,
+                           PATH_DCCSI_BLENDER_BOOTSTRAP.as_posix())
 
+from Tools.DCC.Blender.constants import ENVAR_URL_DCCSI_BLENDER_WIKI
+from Tools.DCC.Blender.constants import URL_DCCSI_BLENDER_WIKI
+maya_config.add_setting(ENVAR_URL_DCCSI_BLENDER_WIKI,
+                           str(URL_DCCSI_BLENDER_WIKI))
+# --- END -----------------------------------------------------------------
 
-# -------------------------------------------------------------------------
-def get_dccsi_maya_settings(settings):
-    return settings
+settings = maya_config.get_config_settings()
+
+_MODULE_END = timeit.default_timer() - _MODULE_START
+_LOGGER.debug(f'{_MODULENAME} took: {_MODULE_END} sec')
 # -------------------------------------------------------------------------
 
 
@@ -119,5 +181,22 @@ def get_dccsi_maya_settings(settings):
 # Main Code Block, runs this script as main (testing)
 # -------------------------------------------------------------------------
 if __name__ == '__main__':
-    """Run this file as main (external commandline for testing)"""
-    pass
+    """Run this file as a standalone cli script for testing/debugging"""
+
+    # this should hit this modules location and load wing settings
+    settings = maya_config.get_config_settings()
+
+    try:
+        settings.CONFIG_DCC_BLENDER
+        _LOGGER.info('Blender config is enabled')
+    except:
+        _LOGGER.error('Setting does not exist')
+
+    _LOGGER.info(f'Exporting local settings: {PATH_DCCSI_TOOLS_DCC_BLENDER_LOCAL_SETTINGS}')
+
+    try:
+        maya_config.export_settings(set_env=True,
+                                       log_settings=True)
+    except Exception as e:
+        _LOGGER.error(f'{e}')
+# --- END -----------------------------------------------------------------
