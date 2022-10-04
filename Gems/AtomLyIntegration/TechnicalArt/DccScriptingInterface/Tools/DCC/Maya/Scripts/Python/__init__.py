@@ -8,9 +8,9 @@
 # -------------------------------------------------------------------------
 # standard imports
 import logging as _logging
-from DccScriptingInterface.azpy.dcc.blender import _PACKAGENAME
-_PACKAGENAME = f'{_PACKAGENAME}.helpers'
-_LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
 
-__all__ = ['blender_materials_conversion',
-           'convert_bsdf_material']
+from DccScriptingInterface.Tools.DCC.Maya.Scripts import _PACKAGENAME
+_PACKAGENAME = f'{_PACKAGENAME}.Python'
+_LOGGER = _logging.getLogger(_PACKAGENAME)
+
+__all__ = ['export']
