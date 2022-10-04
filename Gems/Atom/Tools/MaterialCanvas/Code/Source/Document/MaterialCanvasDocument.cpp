@@ -856,9 +856,6 @@ namespace MaterialCanvas
         const LineGenerationFn& lineGenerationFn,
         AZStd::vector<AZStd::string>& templateLines) const
     {
-        const bool reportAllCompileStatus =
-            AtomToolsFramework::GetSettingsValue("/O3DE/Atom/MaterialCanvasDocument/ReportAllCompileStatus", false);
-
         auto blockBeginItr = AZStd::find_if(
             templateLines.begin(),
             templateLines.end(),
@@ -869,7 +866,7 @@ namespace MaterialCanvas
 
         while (blockBeginItr != templateLines.end())
         {
-            AZ_TracePrintf_IfTrue("MaterialCanvasDocument", reportAllCompileStatus, "*blockBegin: %s\n", (*blockBeginItr).c_str());
+            AZ_TracePrintf_IfTrue("MaterialCanvasDocument", IsCompileLoggingEnabled(), "*blockBegin: %s\n", (*blockBeginItr).c_str());
 
             // We have to insert one line at a time because AZStd::vector does not include a standard
             // range insert that returns an iterator
@@ -879,12 +876,12 @@ namespace MaterialCanvas
                 ++blockBeginItr;
                 blockBeginItr = templateLines.insert(blockBeginItr, lineToInsert);
 
-                AZ_TracePrintf_IfTrue("MaterialCanvasDocument", reportAllCompileStatus, "lineToInsert: %s\n", lineToInsert.c_str());
+                AZ_TracePrintf_IfTrue("MaterialCanvasDocument", IsCompileLoggingEnabled(), "lineToInsert: %s\n", lineToInsert.c_str());
             }
 
             if (linesToInsert.empty())
             {
-                AZ_TracePrintf_IfTrue("MaterialCanvasDocument", reportAllCompileStatus, "Nothing was generated. This block will remain unmodified.\n");
+                AZ_TracePrintf_IfTrue("MaterialCanvasDocument", IsCompileLoggingEnabled(), "Nothing was generated. This block will remain unmodified.\n");
             }
 
             ++blockBeginItr;
@@ -898,7 +895,7 @@ namespace MaterialCanvas
                     return AZ::StringFunc::Contains(line, blockEndToken);
                 });
 
-            AZ_TracePrintf_IfTrue("MaterialCanvasDocument", reportAllCompileStatus, "*blockEnd: %s\n", (*blockEndItr).c_str());
+            AZ_TracePrintf_IfTrue("MaterialCanvasDocument", IsCompileLoggingEnabled(), "*blockEnd: %s\n", (*blockEndItr).c_str());
 
             if (!linesToInsert.empty())
             {
@@ -1039,10 +1036,7 @@ namespace MaterialCanvas
         AZStd::vector<AZStd::string> functionDefinitions;
         AZStd::vector<AZStd::string> inputDefinitions;
 
-        const bool reportAllCompileStatus =
-            AtomToolsFramework::GetSettingsValue("/O3DE/Atom/MaterialCanvasDocument/ReportAllCompileStatus", false);
-
-        AZ_TracePrintf_IfTrue("MaterialCanvasDocument", reportAllCompileStatus, "Dumping data scraped from traversing material graph.\n");
+        AZ_TracePrintf_IfTrue("MaterialCanvasDocument", IsCompileLoggingEnabled(), "Dumping data scraped from traversing material graph.\n");
 
         // Traverse all graph nodes and slots to collect global settings like include files and class definitions
         for (const auto& nodePair : m_graph->GetNodes())
@@ -1094,7 +1088,7 @@ namespace MaterialCanvas
                     continue;
                 }
 
-                AZ_TracePrintf_IfTrue("MaterialCanvasDocument", reportAllCompileStatus, "templatePath: %s\n", templatePath.c_str());
+                AZ_TracePrintf_IfTrue("MaterialCanvasDocument", IsCompileLoggingEnabled(), "templatePath: %s\n", templatePath.c_str());
 
                 // Attempt to load the template file to do symbol substitution and inject any code or data
                 if (auto result = AZ::Utils::ReadFile(templateInputPath))
@@ -1186,7 +1180,7 @@ namespace MaterialCanvas
                     continue;
                 }
 
-                AZ_TracePrintf_IfTrue("MaterialCanvasDocument", reportAllCompileStatus, "templatePath: %s\n", templatePath.c_str());
+                AZ_TracePrintf_IfTrue("MaterialCanvasDocument", IsCompileLoggingEnabled(), "templatePath: %s\n", templatePath.c_str());
 
                 if (!BuildMaterialTypeFromTemplate(currentNode, instructionNodesForAllBlocks, templateInputPath, templateOutputPath))
                 {
@@ -1217,4 +1211,10 @@ namespace MaterialCanvas
     {
         return m_compileGraphQueued;
     }
+
+    bool MaterialCanvasDocument::IsCompileLoggingEnabled() const
+    {
+        return AtomToolsFramework::GetSettingsValue("/O3DE/Atom/MaterialCanvasDocument/CompileLoggingEnabled", false);
+    }
+
 } // namespace MaterialCanvas

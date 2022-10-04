@@ -49,8 +49,6 @@ namespace AtomToolsFramework
 
     void DynamicNodeManager::LoadConfigFiles(const AZStd::string& extension)
     {
-        const bool reportAllConfigStatus = GetSettingsValue("/O3DE/AtomToolsFramework/DynamicNodeManager/ReportAllConfigStatus", false);
-
         // Load and register all discovered dynamic node configuration
         for (const auto& configPath : GetPathsInSourceFoldersMatchingWildcard(AZStd::string::format("*.%s", extension.c_str())))
         {
@@ -58,7 +56,7 @@ namespace AtomToolsFramework
             if (config.Load(configPath))
             {
                 AZ_TracePrintf_IfTrue(
-                    "DynamicNodeManager", reportAllConfigStatus, "DynamicNodeConfig \"%s\" loaded.\n", configPath.c_str());
+                    "DynamicNodeManager", IsNodeConfigLoggingEnabled(), "DynamicNodeConfig \"%s\" loaded.\n", configPath.c_str());
                 RegisterConfig(config);
             }
         }
@@ -66,10 +64,8 @@ namespace AtomToolsFramework
 
     bool DynamicNodeManager::RegisterConfig(const DynamicNodeConfig& config)
     {
-        const bool reportAllConfigStatus = GetSettingsValue("/O3DE/AtomToolsFramework/DynamicNodeManager/ReportAllConfigStatus", false);
-
         AZ_TracePrintf_IfTrue(
-            "DynamicNodeManager", reportAllConfigStatus, "DynamicNodeConfig \"%s\" registering.\n", config.m_id.ToFixedString().c_str());
+            "DynamicNodeManager", IsNodeConfigLoggingEnabled(), "DynamicNodeConfig \"%s\" registering.\n", config.m_id.ToFixedString().c_str());
 
         if (!ValidateSlotConfigVec(config.m_id, config.m_inputSlots) ||
             !ValidateSlotConfigVec(config.m_id, config.m_outputSlots) ||
@@ -88,7 +84,7 @@ namespace AtomToolsFramework
         m_nodeConfigMap[config.m_id] = config;
 
         AZ_TracePrintf_IfTrue(
-            "DynamicNodeManager", reportAllConfigStatus, "DynamicNodeConfig \"%s\" registered.\n", config.m_id.ToFixedString().c_str());
+            "DynamicNodeManager", IsNodeConfigLoggingEnabled(), "DynamicNodeConfig \"%s\" registered.\n", config.m_id.ToFixedString().c_str());
         return true;
     }
 
@@ -207,5 +203,10 @@ namespace AtomToolsFramework
         }
 
         return true;
+    }
+
+    bool DynamicNodeManager::IsNodeConfigLoggingEnabled() const
+    {
+        return GetSettingsValue("/O3DE/AtomToolsFramework/DynamicNodeManager/NodeConfigLoggingEnabled", false);
     }
 } // namespace AtomToolsFramework

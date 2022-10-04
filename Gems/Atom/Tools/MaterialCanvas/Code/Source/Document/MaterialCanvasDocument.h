@@ -152,6 +152,8 @@ namespace MaterialCanvas
             const AZStd::string& templateInputPath,
             const AZStd::string& templateOutputPath) const;
 
+        bool IsCompileLoggingEnabled() const;
+
         AZ::Entity* m_sceneEntity = {};
         GraphCanvas::GraphId m_graphId;
         GraphModel::GraphPtr m_graph;

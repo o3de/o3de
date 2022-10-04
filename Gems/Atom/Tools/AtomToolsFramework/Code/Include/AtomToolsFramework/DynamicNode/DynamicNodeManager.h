@@ -42,6 +42,7 @@ namespace AtomToolsFramework
     private:
         bool ValidateSlotConfig(const AZ::Uuid& configId, const DynamicNodeSlotConfig& slotConfig) const;
         bool ValidateSlotConfigVec(const AZ::Uuid& configId, const AZStd::vector<DynamicNodeSlotConfig>& slotConfigVec) const;
+        bool IsNodeConfigLoggingEnabled() const;
 
         const AZ::Crc32 m_toolId = {};
         GraphModel::DataTypeList m_registeredDataTypes;
