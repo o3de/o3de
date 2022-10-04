@@ -59,7 +59,7 @@ namespace AZ
 }
 
 class AssetImporterDocument;
-class ImporterRootDisplay;
+class ImporterRootDisplayWidget;
 class QCloseEvent;
 class QMenu;
 class QAction;
@@ -143,7 +143,7 @@ private:
     AZ::SerializeContext* m_serializeContext;
     AZStd::string m_fullSourcePath;
 
-    QScopedPointer<ImporterRootDisplay> m_rootDisplay;
+    QScopedPointer<ImporterRootDisplayWidget> m_rootDisplay;
     bool m_isClosed;
     bool m_isSaving = false;
 

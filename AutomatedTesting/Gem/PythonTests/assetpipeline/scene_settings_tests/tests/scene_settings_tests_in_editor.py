@@ -127,10 +127,10 @@ def Scene_Settings_Tests_In_Editor_Create_And_Verify_Scene_Settings_File():
         general.idle_wait_frames(30)
 
         widget_main_window = QtWidgets.QWidget.find(window_id)
-    
-        update_button = widget_main_window.findChild(QtWidgets.QPushButton, "m_updateButton")
-        
-        Report.critical_result(Tests.scene_settings_update_disabled_on_launch, not update_button.isEnabled())
+
+        # When the window is first opened, even if it's to a new scene settings file not yet saved to disk, it shouldn't be marked with unsaved changes.
+        has_unsaved_changes = azlmbr.qt.SceneSettingsRootDisplayPythonRequestBus(azlmbr.bus.Broadcast, "HasUnsavedChanges")
+        Report.critical_result(Tests.scene_settings_update_disabled_on_launch, not has_unsaved_changes)
         
         # Close the card generated on opening the scene file, this both tests the close button, and
         # makes it easier to find the processed card later.
@@ -178,9 +178,12 @@ def Scene_Settings_Tests_In_Editor_Create_And_Verify_Scene_Settings_File():
         update_material_checkbox.click()
         update_material_checkbox.click()
         
-        Report.critical_result(Tests.scene_settings_file_update_enabled_on_toggle, update_button.isEnabled())
+        # Verify the scene is actually marked as dirty
+        has_unsaved_changes = azlmbr.qt.SceneSettingsRootDisplayPythonRequestBus(azlmbr.bus.Broadcast, "HasUnsavedChanges")
+        Report.critical_result(Tests.scene_settings_update_disabled_on_launch, has_unsaved_changes)
     
-        update_button.click()
+        save_button = widget_main_window.findChild(QtWidgets.QPushButton, "m_saveButton")
+        save_button.click()
     
         # All other assets should already be processed, and this is a simple update, so it should be processed quickly.
         # Processing is done when the scene settings card with the save status can be closed.
@@ -207,7 +210,10 @@ def Scene_Settings_Tests_In_Editor_Create_And_Verify_Scene_Settings_File():
             general.idle_wait_frames(frames_to_wait_between_checks)
     
         Report.critical_result(Tests.scene_settings_saved_successfully, saving_completed)
-        Report.critical_result(Tests.scene_settings_file_update_disabled_after_save, not update_button.isEnabled())
+
+        # Make sure that the scene settings UI has updated this file to no longer be considered dirty.
+        has_unsaved_changes = azlmbr.qt.SceneSettingsRootDisplayPythonRequestBus(azlmbr.bus.Broadcast, "HasUnsavedChanges")
+        Report.critical_result(Tests.scene_settings_update_disabled_on_launch, not has_unsaved_changes)
         
         # Make sure the manifest was actually created
         Report.critical_result(Tests.scene_settings_file_created, os.path.exists(path_to_manifest))

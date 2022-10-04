@@ -169,8 +169,8 @@ void AssetImporterWindow::Init()
     // Setup the overlay system, and set the root to be the root display. The root display has the browse,
     //  the Import button & the cancel button, which are handled here by the window.
     m_overlay.reset(aznew AZ::SceneAPI::UI::OverlayWidget(this));
-    m_rootDisplay.reset(aznew ImporterRootDisplay(m_serializeContext));
-    connect(m_rootDisplay.data(), &ImporterRootDisplay::SaveClicked, this, &AssetImporterWindow::SaveClicked);
+    m_rootDisplay.reset(aznew ImporterRootDisplayWidget(m_serializeContext));
+    connect(m_rootDisplay.data(), &ImporterRootDisplayWidget::SaveClicked, this, &AssetImporterWindow::SaveClicked);
 
     connect(m_overlay.data(), &AZ::SceneAPI::UI::OverlayWidget::LayerAdded, this, &AssetImporterWindow::OverlayLayerAdded);
     connect(m_overlay.data(), &AZ::SceneAPI::UI::OverlayWidget::LayerRemoved, this, &AssetImporterWindow::OverlayLayerRemoved);

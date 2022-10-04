@@ -9,6 +9,8 @@
 #include <ImporterRootDisplay.h>
 #include <ui_ImporterRootDisplay.h>
 
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <IEditor.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneUI/CommonWidgets/OverlayWidget.h>
@@ -23,7 +25,48 @@
 #include <QFileInfo>
 #include <QUrl>
 
-ImporterRootDisplay::ImporterRootDisplay(AZ::SerializeContext* serializeContext, QWidget* parent)
+
+SceneSettingsRootDisplayPythonRequestHandler::SceneSettingsRootDisplayPythonRequestHandler()
+{
+    SceneSettingsRootDisplayPythonRequestBus::Handler::BusConnect();
+}
+
+SceneSettingsRootDisplayPythonRequestHandler::~SceneSettingsRootDisplayPythonRequestHandler()
+{
+    SceneSettingsRootDisplayPythonRequestBus::Handler::BusDisconnect();
+}
+
+void SceneSettingsRootDisplayPythonRequestHandler::Reflect(AZ::ReflectContext* context)
+{
+    if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serialize->Class<SceneSettingsRootDisplayPythonRequestHandler>()->Version(0);
+    }
+
+    if (AZ::BehaviorContext* behavior = azrtti_cast<AZ::BehaviorContext*>(context))
+    {
+        behavior->EBus<SceneSettingsRootDisplayPythonRequestBus>("SceneSettingsRootDisplayPythonRequestBus")
+            ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+            ->Attribute(AZ::Script::Attributes::Module, "qt")
+            ->Event("HasUnsavedChanges", &SceneSettingsRootDisplayPythonRequestBus::Events::HasUnsavedChanges);
+    }
+}
+
+void SceneSettingsRootDisplayPythonRequestHandler::SetRootDisplay(ImporterRootDisplayWidget* importerRootDisplay)
+{
+    m_importerRootDisplay = importerRootDisplay;
+}
+
+bool SceneSettingsRootDisplayPythonRequestHandler::HasUnsavedChanges() const
+{
+    if (m_importerRootDisplay)
+    {
+        return m_importerRootDisplay->HasUnsavedChanges();
+    }
+    return false;
+}
+
+ImporterRootDisplayWidget::ImporterRootDisplayWidget(AZ::SerializeContext* serializeContext, QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::ImporterRootDisplay())
     , m_manifestWidget(new AZ::SceneAPI::UI::ManifestWidget(serializeContext))
@@ -47,25 +90,27 @@ ImporterRootDisplay::ImporterRootDisplay(AZ::SerializeContext* serializeContext,
 
     ui->m_fullPathText->SetElideMode(Qt::TextElideMode::ElideMiddle);
 
-    connect(ui->m_saveButton, &QPushButton::clicked, this, &ImporterRootDisplay::SaveClicked);
+    connect(ui->m_saveButton, &QPushButton::clicked, this, &ImporterRootDisplayWidget::SaveClicked);
 
     ui->m_showInExplorer->setEnabled(false);
 
-    BusConnect();
+    AZ::SceneAPI::Events::ManifestMetaInfoBus::Handler::BusConnect();
+    m_requestHandler = AZStd::make_shared<SceneSettingsRootDisplayPythonRequestHandler>();
+    m_requestHandler->SetRootDisplay(this);
 }
 
-ImporterRootDisplay::~ImporterRootDisplay()
+ImporterRootDisplayWidget::~ImporterRootDisplayWidget()
 {
-    BusDisconnect();
+    AZ::SceneAPI::Events::ManifestMetaInfoBus::Handler::BusDisconnect();
     delete ui;
 }
 
-AZ::SceneAPI::UI::ManifestWidget* ImporterRootDisplay::GetManifestWidget()
+AZ::SceneAPI::UI::ManifestWidget* ImporterRootDisplayWidget::GetManifestWidget()
 {
     return m_manifestWidget.data();
 }
 
-void ImporterRootDisplay::SetSceneHeaderText(const QString& headerText)
+void ImporterRootDisplayWidget::SetSceneHeaderText(const QString& headerText)
 {
     QFileInfo fileInfo(headerText);
     ui->m_filePathText->setText(QString("<b>%1</b>").arg(fileInfo.fileName()));
@@ -80,18 +125,18 @@ void ImporterRootDisplay::SetSceneHeaderText(const QString& headerText)
     });
 }
 
-void ImporterRootDisplay::SetPythonBuilderText(QString pythonBuilderText)
+void ImporterRootDisplayWidget::SetPythonBuilderText(QString pythonBuilderText)
 {
     ui->m_pythonBuilderScript->setText(pythonBuilderText);
     ui->HeaderPythonBuilderLayoutWidget->setVisible(!pythonBuilderText.isEmpty());
 }
 
-QString ImporterRootDisplay::GetHeaderFileName() const
+QString ImporterRootDisplayWidget::GetHeaderFileName() const
 {
     return ui->m_filePathText->text();
 }
 
-void ImporterRootDisplay::SetSceneDisplay(const QString& headerText, const AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene>& scene)
+void ImporterRootDisplayWidget::SetSceneDisplay(const QString& headerText, const AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene>& scene)
 {
     AZ_PROFILE_FUNCTION(Editor);
     if (!scene)
@@ -109,7 +154,7 @@ void ImporterRootDisplay::SetSceneDisplay(const QString& headerText, const AZStd
     SetUnsavedChanges(false);
 }
 
-void ImporterRootDisplay::HandleSceneWasReset(const AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene>& scene)
+void ImporterRootDisplayWidget::HandleSceneWasReset(const AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene>& scene)
 {
     AZ_PROFILE_FUNCTION(Editor);
     // Don't accept updates while the widget is being filled in.
@@ -121,17 +166,18 @@ void ImporterRootDisplay::HandleSceneWasReset(const AZStd::shared_ptr<AZ::SceneA
     SetUnsavedChanges(true);
 }
 
-void ImporterRootDisplay::HandleSaveWasSuccessful()
+void ImporterRootDisplayWidget::HandleSaveWasSuccessful()
 {
     SetUnsavedChanges(false);
 }
 
-bool ImporterRootDisplay::HasUnsavedChanges() const
+bool ImporterRootDisplayWidget::HasUnsavedChanges() const
 {
     return m_hasUnsavedChanges;
 }
 
-void ImporterRootDisplay::ObjectUpdated(const AZ::SceneAPI::Containers::Scene& scene, const AZ::SceneAPI::DataTypes::IManifestObject* /*target*/, void* /*sender*/)
+void ImporterRootDisplayWidget::ObjectUpdated(
+    const AZ::SceneAPI::Containers::Scene& scene, const AZ::SceneAPI::DataTypes::IManifestObject* /*target*/, void* /*sender*/)
 {
     if (m_manifestWidget)
     {
@@ -142,7 +188,7 @@ void ImporterRootDisplay::ObjectUpdated(const AZ::SceneAPI::Containers::Scene& s
     }
 }
 
-void ImporterRootDisplay::UpdateTimeStamp(const QString& manifestFilePath)
+void ImporterRootDisplayWidget::UpdateTimeStamp(const QString& manifestFilePath)
 {
     const QFileInfo info(manifestFilePath);
     if (info.exists())
@@ -164,7 +210,7 @@ void ImporterRootDisplay::UpdateTimeStamp(const QString& manifestFilePath)
     ui->m_timeStamp->setVisible(true);
 }
 
-void ImporterRootDisplay::SetUnsavedChanges(bool hasUnsavedChanges)
+void ImporterRootDisplayWidget::SetUnsavedChanges(bool hasUnsavedChanges)
 {
     if (hasUnsavedChanges != m_hasUnsavedChanges)
     {

@@ -9,6 +9,7 @@
 #include <AssetImporterPlugin.h>
 #include <AssetImporterWindow.h>
 #include <AzCore/Component/ComponentApplication.h>
+#include <ImporterRootDisplay.h>
 #include <QtViewPaneManager.h>
 #include <SceneAPI/SceneCore/Events/AssetImportRequest.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
@@ -46,6 +47,7 @@ AssetImporterPlugin::AssetImporterPlugin(IEditor* editor)
             [](AZ::ReflectContext* context)
             {
                 SceneSettingsAssetImporterForPythonRequestHandler::Reflect(context);
+                SceneSettingsRootDisplayPythonRequestHandler::Reflect(context);
             });
     }
 
