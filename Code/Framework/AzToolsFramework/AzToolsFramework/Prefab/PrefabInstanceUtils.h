@@ -56,9 +56,6 @@ namespace AzToolsFramework
             //! @param parentInstance The given parent instance.
             //! @return bool on whether the relation is valid. Returns true if two instances are identical.
             bool IsDescendantInstance(const Instance& childInstance, const Instance& parentInstance);
-
-            AZStd::string CreateEntityAliasPathPrefixFromClimbedInstances(const AZStd::vector<const Instance*>& climbedInstances);
-
         } // namespace PrefabInstanceUtils
     } // namespace Prefab
 } // namespace AzToolsFramework

@@ -575,12 +575,12 @@ namespace AzToolsFramework
 
         void PrefabUndoEntityUpdateOverrides::Undo()
         {
-            UpdateLink(m_redoPatch);
+            UpdateLink(m_undoPatch);
         }
 
         void PrefabUndoEntityUpdateOverrides::Redo()
         {
-            UpdateLink(m_undoPatch);
+            UpdateLink(m_redoPatch);
         }
 
         bool PrefabUndoEntityUpdateOverrides::UpdateLink(PrefabDom& patch)

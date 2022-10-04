@@ -76,7 +76,7 @@ namespace AzToolsFramework
             {
                 AZStd::string relativePath = "";
 
-                for (auto instanceIter = climbedInstances.rbegin(); instanceIter != climbedInstances.rend(); ++instanceIter)
+                for (auto instanceIter = climbedInstances.crbegin(); instanceIter != climbedInstances.crend(); ++instanceIter)
                 {
                     relativePath.append(PrefabDomUtils::PathStartingWithInstances);
                     relativePath.append((*instanceIter)->GetInstanceAlias());
@@ -100,22 +100,6 @@ namespace AzToolsFramework
 
                 return false;
             }
-
-            AZStd::string CreateEntityAliasPathPrefixFromClimbedInstances(const AZStd::vector<const Instance*>& climbedInstances)
-            {
-                AZStd::string prefix = "";
-
-                // Skip the instance closest to the target instance.
-                auto startInstanceIter = ++climbedInstances.crbegin();
-                for (auto instanceIter = startInstanceIter; instanceIter != climbedInstances.crend(); ++instanceIter)
-                {
-                    prefix.append(PrefabDomUtils::PathStartingWithInstances);
-                    prefix.append((*instanceIter)->GetInstanceAlias());
-                }
-
-                return AZStd::move(prefix);
-            }
-
         } // namespace PrefabInstanceUtils
     } // namespace Prefab
 } // namespace AzToolsFramework

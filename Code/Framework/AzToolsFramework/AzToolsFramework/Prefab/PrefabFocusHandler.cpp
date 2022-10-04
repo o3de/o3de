@@ -424,8 +424,17 @@ namespace AzToolsFramework::Prefab
         // closest to the focused instance.
         if (!climbUpResult.m_climbedInstances.empty())
         {
-            AZStd::string entityAliasPathPrefix = PrefabInstanceUtils::CreateEntityAliasPathPrefixFromClimbedInstances(climbUpResult.m_climbedInstances);
-            AZStd::string entityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(entityId, AZStd::move(entityAliasPathPrefix));
+            AZStd::string prefix = "";
+
+            // Skip the instance closest to the target instance.
+            auto startInstanceIter = ++climbUpResult.m_climbedInstances.crbegin();
+            for (auto instanceIter = startInstanceIter; instanceIter != climbUpResult.m_climbedInstances.crend(); ++instanceIter)
+            {
+                prefix.append(PrefabDomUtils::PathStartingWithInstances);
+                prefix.append((*instanceIter)->GetInstanceAlias());
+            }
+
+            AZStd::string entityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(entityId, AZStd::move(prefix));
             m_instanceToTemplateInterface->AppendEntityAliasPathToPatchPaths(providedPatch, AZStd::move(entityAliasPath));
             return climbUpResult.m_climbedInstances.back()->GetLinkId();
         }

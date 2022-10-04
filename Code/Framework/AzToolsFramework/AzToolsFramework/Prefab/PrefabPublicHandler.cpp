@@ -730,20 +730,20 @@ namespace AzToolsFramework
                 }
 
                 LinkId linkId = climbUpResult.m_climbedInstances.back()->GetLinkId();
-                AZStd::string entityAliasPathPrefix = PrefabInstanceUtils::CreateEntityAliasPathPrefixFromClimbedInstances(climbUpResult.m_climbedInstances);
+                AZStd::string entityAliasPathPrefix = PrefabInstanceUtils::GetRelativePathFromClimbedInstances(climbUpResult.m_climbedInstances);
                 {
                     PrefabUndoAddEntityOverrides* addEntityOverridesUndoState = aznew PrefabUndoAddEntityOverrides("Undo Adding Entity Overrides");
                     addEntityOverridesUndoState->SetParent(undoBatch.GetUndoBatch());
-                    AZStd::string relativeNewEntityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(entityId, entityAliasPathPrefix);
-                    addEntityOverridesUndoState->Capture(newEntityDom, AZStd::move(relativeNewEntityAliasPath), linkId);
+                    AZStd::string newEntityAliasRelativePath = m_instanceToTemplateInterface->GenerateEntityAliasPath(entityId, entityAliasPathPrefix);
+                    addEntityOverridesUndoState->Capture(newEntityDom, AZStd::move(newEntityAliasRelativePath), linkId);
                     addEntityOverridesUndoState->Redo();
                 }
 
                 {
                     PrefabUndoEntityUpdateOverrides* updateEntityOverridesUndoState = aznew PrefabUndoEntityUpdateOverrides("Undo Updating Entity Overrides");
                     updateEntityOverridesUndoState->SetParent(undoBatch.GetUndoBatch());
-                    AZStd::string relativeParentEntityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(parentId, AZStd::move(entityAliasPathPrefix));
-                    updateEntityOverridesUndoState->Capture(parentEntityDomBeforeAddingEntity, parentEntityDomAfterAddingEntity, parentId, AZStd::move(relativeParentEntityAliasPath), linkId);
+                    AZStd::string parentEntityAliasRelativePath = m_instanceToTemplateInterface->GenerateEntityAliasPath(parentId, AZStd::move(entityAliasPathPrefix));
+                    updateEntityOverridesUndoState->Capture(parentEntityDomBeforeAddingEntity, parentEntityDomAfterAddingEntity, parentId, AZStd::move(parentEntityAliasRelativePath), linkId);
                     updateEntityOverridesUndoState->Redo();
                 }
             }
