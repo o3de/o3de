@@ -177,7 +177,8 @@ namespace AZ
                             m_flagRegistry->VisitTags(
                                 [&](AZ::Name shaderOption, Render::MeshFeatureProcessor::FlagRegistry::TagType tag)
                                 {
-                                    drawPacket.SetShaderOption(shaderOption, AZ::RPI::ShaderOptionValue((model.m_cullable.m_flags & tag.GetIndex()) > 0));
+                                    bool shaderOptionValue = (model.m_cullable.m_flags & tag.GetIndex()) > 0;
+                                    drawPacket.SetShaderOption(shaderOption, AZ::RPI::ShaderOptionValue(shaderOptionValue));
                                 }
                             );
                             drawPacket.Update(*GetParentScene(), true);

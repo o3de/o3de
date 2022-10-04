@@ -31,8 +31,7 @@
 #endif
 
 #ifndef ENABLE_DISK_LIGHTS
-//#define ENABLE_DISK_LIGHTS              ENABLE_AREA_LIGHTS
-#define ENABLE_DISK_LIGHTS              0
+#define ENABLE_DISK_LIGHTS              ENABLE_AREA_LIGHTS
 #endif
 
 #ifndef ENABLE_CAPSULE_LIGHTS
