@@ -15,6 +15,8 @@
 #include <Editor/View/Widgets/LoggingPanel/LiveWindowSession/LiveLoggingDataAggregator.h>
 #include <ScriptCanvas/Debugger/API.h>
 #include <ScriptCanvas/Asset/ExecutionLogAssetBus.h>
+#include <ScriptCanvas/Core/ExecutionNotificationsBus.h>
+#include <ScriptCanvas/Execution/RuntimeComponent.h>
 #include <ScriptCanvas/Utils/ScriptCanvasConstants.h>
 
 namespace ScriptCanvasEditor
@@ -121,18 +123,43 @@ namespace ScriptCanvasEditor
         SetupExternalEntities();
     }
 
-    void LiveLoggingDataAggregator::GraphActivated([[maybe_unused]] const ScriptCanvas::GraphActivation& activationSignal)
+    void LiveLoggingDataAggregator::GraphActivated(const ScriptCanvas::GraphActivation& activationSignal)
     {
-//        AZStd::lock(m_notificationMutex);
-//         RegisterScriptCanvas(activationSignal.m_runtimeEntity, activationSignal.m_graphIdentifier);
-//         RegisterEntityName(activationSignal.m_runtimeEntity, activationSignal.m_runtimeEntity.GetName());
-//         LoggingDataNotificationBus::Event(GetDataId(), &LoggingDataNotifications::OnEnabledStateChanged, activationSignal.m_entityIsObserved, activationSignal.m_runtimeEntity, activationSignal.m_graphIdentifier);
+        const auto userData =
+            AZStd::any_cast<const ScriptCanvas::RuntimeComponentUserData>(&activationSignal.m_executionState->GetUserData());
+        if (!userData)
+        {
+            AZ_Error("LiveLoggingDataAggregator", false, "Failed to get user data from graph");
+            return;
+        }
+
+        const ScriptCanvas::GraphIdentifier graphIdentifier(activationSignal.m_executionState->GetAssetId(), userData->component.GetId());
+
+        AZStd::lock(m_notificationMutex);
+        RegisterScriptCanvas(userData->entity, graphIdentifier);
+        RegisterEntityName(userData->entity, userData->entity.ToString());
+        LoggingDataNotificationBus::Event(
+            GetDataId(),
+            &LoggingDataNotifications::OnEnabledStateChanged,
+            activationSignal.m_entityIsObserved,
+            userData->entity,
+            graphIdentifier);
     }
 
-    void LiveLoggingDataAggregator::GraphDeactivated([[maybe_unused]] const ScriptCanvas::GraphDeactivation& deactivationSignal)
+    void LiveLoggingDataAggregator::GraphDeactivated(const ScriptCanvas::GraphDeactivation& deactivationSignal)
     {
-        // AZStd::lock(m_notificationMutex);
-        // UnregisterScriptCanvas(deactivationSignal.m_runtimeEntity, deactivationSignal.m_graphIdentifier);
+        const auto userData =
+            AZStd::any_cast<const ScriptCanvas::RuntimeComponentUserData>(&deactivationSignal.m_executionState->GetUserData());
+        if (!userData)
+        {
+            AZ_Error("LiveLoggingDataAggregator", false, "Failed to get user data from graph");
+            return;
+        }
+
+        const ScriptCanvas::GraphIdentifier graphIdentifier(deactivationSignal.m_executionState->GetAssetId(), userData->component.GetId());
+
+        AZStd::lock(m_notificationMutex);
+        UnregisterScriptCanvas(userData->entity, graphIdentifier);
     }
 
     void LiveLoggingDataAggregator::NodeStateChanged(const ScriptCanvas::NodeStateChange& nodeStateChangeSignal)
