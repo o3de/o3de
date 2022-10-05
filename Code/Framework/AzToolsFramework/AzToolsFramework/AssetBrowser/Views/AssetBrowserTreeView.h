@@ -145,22 +145,5 @@ namespace AzToolsFramework
             }
             return nullptr;
         }
-
-        class FixedSizeMessageBox
-            : public QMessageBox
-        {
-            Q_OBJECT
-        public:
-            FixedSizeMessageBox(
-                const QString& title,
-                const QString& text,
-                const QString& informativeText,
-                const QString& detailedText,
-                QMessageBox::Icon icon,
-                QMessageBox::StandardButton standardButton,
-                QMessageBox::StandardButton defaultButton,
-                QWidget* parent = nullptr);
-            void SetSize(int width, int height);
-        };
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

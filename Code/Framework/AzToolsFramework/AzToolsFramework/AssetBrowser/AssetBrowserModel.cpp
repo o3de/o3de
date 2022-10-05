@@ -214,51 +214,7 @@ namespace AzToolsFramework
 
             return QVariant();
         }
-#if 0
-        bool AssetBrowserModel::setData(const QModelIndex& index, const QVariant& value, [[maybe_unused]]int role)
-        {
-            using namespace AZ::IO;
-            AssetBrowserEntry* item = static_cast<AssetBrowserEntry*>(index.internalPointer());
-            Path oldPath = item->GetFullPath();
-            PathView extension = oldPath.Extension();
-            QByteArray newName = value.toString().toUtf8().data();
-            PathView newFile = newName.data();
-            if (newFile.Native().empty() || !AzQtComponents::FileDialog::IsValidFileName(newFile.Native().data()))
-            {
-                return false;
-            }
 
-            Path newPath = oldPath;
-            newPath.ReplaceFilename(newFile);
-            newPath.ReplaceExtension(extension);
-
-            {
-                using namespace AzFramework::AssetSystem;
-                AssetChangeReportRequest moveRequest(
-                    AZ::OSString(oldPath.c_str()), AZ::OSString(newPath.c_str()), AssetChangeReportRequest::ChangeType::Move);
-                AssetChangeReportResponse moveResponse;
-                if (SendRequest(moveRequest, moveResponse))
-                {
-                    AZStd::string message;
-                    AZ::StringFunc::Join(message, moveResponse.m_lines.begin(), moveResponse.m_lines.end(), "\n");
-                    if (!message.empty())
-                    {
-                        FixedSizeMessageBox msgBox(
-                            "After Rename Asset Information",
-                            "The asset has been renamed.",
-                            "More information can be found by pressing \"Show Details...\".",
-                            message.c_str(),
-                            QMessageBox::Information,
-                            QMessageBox::Ok,
-                            QMessageBox::Ok);
-                        msgBox.SetSize(600, 0);
-                        msgBox.exec();
-                    }
-                }
-            }
-            return false;
-        }
-#endif
         Qt::ItemFlags AssetBrowserModel::flags(const QModelIndex& index) const
         {
             Qt::ItemFlags defaultFlags = QAbstractItemModel::flags(index) | Qt::ItemIsEditable;

@@ -31,8 +31,8 @@
 #include <AzToolsFramework/Thumbnails/SourceControlThumbnail.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
 
-AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // conversion from 'int' to 'float', possible loss of data, needs to have dll-interface to be used by clients of class
-                                                                    // 'QFlags<QPainter::RenderHint>::Int': forcing value to bool 'true' or 'false' (performance warning)
+#include <AzQtComponents/Components/Widgets/MessageBox.h>
+
 #include <QMenu>
 #include <QFile>
 #include <QHeaderView>
@@ -46,8 +46,6 @@ AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // conversio
 #include <QtWidgets/QMessageBox>
 #include <QAbstractButton>
 #include <QHBoxLayout>
-
-AZ_POP_DISABLE_WARNING
 
 namespace AzToolsFramework
 {
@@ -540,33 +538,6 @@ namespace AzToolsFramework
             }
         }
 
-        FixedSizeMessageBox::FixedSizeMessageBox(
-            const QString& title,
-            const QString& text,
-            const QString& informativeText,
-            const QString& detailedText,
-            QMessageBox::Icon icon,
-            QMessageBox::StandardButton standardButton,
-            QMessageBox::StandardButton defaultButton,
-            QWidget* parent)
-            : QMessageBox(parent)
-        {
-            setWindowTitle(title);
-            setText(text);
-            setInformativeText(informativeText);
-            setDetailedText(detailedText);
-            setIcon(icon);
-            setStandardButtons(standardButton);
-            setDefaultButton(defaultButton);
-        }
-
-        void FixedSizeMessageBox::SetSize(int width, int height)
-        {
-            QSpacerItem* horizontalSpacer = new QSpacerItem(width, height, QSizePolicy::Minimum, QSizePolicy::Expanding);
-            QGridLayout* layout = (QGridLayout*)this->layout();
-            layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());
-        }
-
         void AssetBrowserTreeView::RenameEntry()
         {
             auto entries = GetSelectedAssets(false); // you cannot rename product files.
@@ -593,12 +564,13 @@ namespace AzToolsFramework
 
                 if (SendRequest(request, response))
                 {
-                    AZStd::string message;
-                    AZ::StringFunc::Join(message, response.m_lines.begin(), response.m_lines.end(), "\n");
 
-                    if (!message.empty())
+                    if (!response.m_lines.empty())
                     {
-                        FixedSizeMessageBox msgBox(
+                        AZStd::string message;
+                        AZ::StringFunc::Join(message, response.m_lines.begin(), response.m_lines.end(), "\n");
+                        AzQtComponents::FixedWidthMessageBox msgBox(
+                            600,
                            "Before Rename Asset Information",
                             "The asset you are renaming may be referenced in other assets.",
                             "More information can be found by pressing \"Show Details...\".",
@@ -608,7 +580,6 @@ namespace AzToolsFramework
                             QMessageBox::Yes,
                             this);
                         auto* renameButton = msgBox.addButton("Rename", QMessageBox::YesRole);
-                        msgBox.SetSize(600, 0);
                         msgBox.exec();
 
                         if (msgBox.clickedButton() == static_cast<QAbstractButton*>(renameButton))
@@ -646,11 +617,12 @@ namespace AzToolsFramework
             AssetChangeReportResponse moveResponse;
             if (SendRequest(moveRequest, moveResponse))
             {
-                AZStd::string message;
-                AZ::StringFunc::Join(message, moveResponse.m_lines.begin(), moveResponse.m_lines.end(), "\n");
-                if (!message.empty())
+                if (!moveResponse.m_lines.empty())
                 {
-                   FixedSizeMessageBox msgBox(
+                    AZStd::string message;
+                    AZ::StringFunc::Join(message, moveResponse.m_lines.begin(), moveResponse.m_lines.end(), "\n");
+                    AzQtComponents::FixedWidthMessageBox msgBox(
+                        600,
                         "After Rename Asset Information",
                         "The asset has been renamed.",
                         "More information can be found by pressing \"Show Details...\".",
@@ -659,15 +631,7 @@ namespace AzToolsFramework
                         QMessageBox::Ok,
                         QMessageBox::Ok,
                         this);
-                    msgBox.SetSize(600, 0);
-                    int dialogFlag = -1;
-                    connect(&msgBox, &FixedSizeMessageBox::accepted, &msgBox, [&dialogFlag]() {dialogFlag = 1; });
-                    connect(&msgBox, &FixedSizeMessageBox::rejected, &msgBox, [&dialogFlag]() {dialogFlag = 0; });
-                    msgBox.show();
-                    while (dialogFlag < 0)
-                    {
-                        qApp->processEvents();
-                    }
+                    msgBox.exec();
                 }
             }
         }
@@ -747,12 +711,13 @@ namespace AzToolsFramework
                             if (SendRequest(request, response))
                             {
                                 bool canMove = true;
-                                AZStd::string message;
-                                AZ::StringFunc::Join(message, response.m_lines.begin(), response.m_lines.end(), "\n");
 
-                                if (!message.empty())
+                                if (!response.m_lines.empty())
                                 {
-                                    FixedSizeMessageBox msgBox(
+                                    AZStd::string message;
+                                    AZ::StringFunc::Join(message, response.m_lines.begin(), response.m_lines.end(), "\n");
+                                    AzQtComponents::FixedWidthMessageBox msgBox(
+                                        600,
                                         "Before Move Asset Information",
                                         "The asset you are moving may be referenced in other assets.",
                                         "More information can be found by pressing \"Show Details...\".",
@@ -762,7 +727,6 @@ namespace AzToolsFramework
                                         QMessageBox::Yes,
                                         this);
                                     auto* moveButton = msgBox.addButton("Move", QMessageBox::YesRole);
-                                    msgBox.SetSize(600, 0);
                                     msgBox.exec();
 
                                     if (msgBox.clickedButton() != static_cast<QAbstractButton*>(moveButton))
@@ -779,12 +743,13 @@ namespace AzToolsFramework
                                     AssetChangeReportResponse moveResponse;
                                     if (SendRequest(moveRequest, moveResponse))
                                     {
-                                        AZStd::string moveMessage;
-                                        AZ::StringFunc::Join(moveMessage, response.m_lines.begin(), response.m_lines.end(), "\n");
 
-                                        if (!moveMessage.empty())
+                                        if (!response.m_lines.empty())
                                         {
-                                            FixedSizeMessageBox moveMsgBox(
+                                            AZStd::string moveMessage;
+                                            AZ::StringFunc::Join(moveMessage, response.m_lines.begin(), response.m_lines.end(), "\n");
+                                            AzQtComponents::FixedWidthMessageBox moveMsgBox(
+                                                600,
                                                 "After Move Asset Information",
                                                 "The asset has been moved.",
                                                 "More information can be found by pressing \"Show Details...\".",
@@ -793,7 +758,6 @@ namespace AzToolsFramework
                                                 QMessageBox::Ok,
                                                 QMessageBox::Ok,
                                                 this);
-                                            moveMsgBox.SetSize(600, 0);
                                             moveMsgBox.exec();
                                         }
                                     }
