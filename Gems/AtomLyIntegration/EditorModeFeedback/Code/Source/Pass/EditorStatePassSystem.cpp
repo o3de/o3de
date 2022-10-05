@@ -51,6 +51,7 @@ namespace AZ::Render
         const auto templateName = Name(MainPassParentTemplateName);
         if (RPI::PassSystemInterface::Get()->GetPassTemplate(templateName))
         {
+            // Template was created by another pipeline, do not to create again
             return;
         }
 

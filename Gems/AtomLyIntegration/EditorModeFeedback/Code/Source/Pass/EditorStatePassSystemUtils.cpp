@@ -41,6 +41,7 @@ namespace AZ::Render
         const auto templateName = state.GetPassTemplateName();
         if (RPI::PassSystemInterface::Get()->GetPassTemplate(templateName))
         {
+            // Template was created by another pipeline, do not to create again
             return;
         }
 
@@ -151,6 +152,7 @@ namespace AZ::Render
         const auto templateName = GetBufferCopyPassTemplateName(state);
         if (RPI::PassSystemInterface::Get()->GetPassTemplate(templateName))
         {
+            // Template was created by another pipeline, do not to create again
             return;
         }
 
@@ -222,6 +224,7 @@ namespace AZ::Render
         const auto templateName = GetMaskPassTemplateNameForDrawList(drawList);
         if (RPI::PassSystemInterface::Get()->GetPassTemplate(templateName))
         {
+            // Template was created by another pipeline, do not to create again
             return;
         }
 
