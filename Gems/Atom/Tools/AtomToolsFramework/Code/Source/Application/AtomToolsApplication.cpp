@@ -268,7 +268,7 @@ namespace AtomToolsFramework
 
     void AtomToolsApplication::RunMainLoop()
     {
-        // Start initial command line processing and application update as part of the Qt event loop 
+        // Start initial command line processing and application update as part of the Qt event loop
         QTimer::singleShot(0, this, [this]() { OnIdle(); ProcessCommandLine(m_commandLine); });
         exec();
     }
@@ -350,7 +350,7 @@ namespace AtomToolsFramework
             AzFramework::AssetSystem::AssetStatus status = AzFramework::AssetSystem::AssetStatus_Unknown;
             AzFramework::AssetSystemRequestBus::BroadcastResult(
                 status, &AzFramework::AssetSystemRequestBus::Events::CompileAssetSync, assetFilters);
-            if (status != AzFramework::AssetSystem::AssetStatus_Compiled)
+            if (status != AzFramework::AssetSystem::AssetStatus_Compiled && status != AzFramework::AssetSystem::AssetStatus_Unknown)
             {
                 failedAssets.append(assetFilters.c_str());
             }
