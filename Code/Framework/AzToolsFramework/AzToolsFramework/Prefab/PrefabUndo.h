@@ -7,10 +7,8 @@
  */
 
 #pragma once
-#include <AzToolsFramework/Undo/UndoSystem.h>
-#include <AzToolsFramework/Prefab/PrefabIdTypes.h>
-#include <AzToolsFramework/Prefab/Instance/InstanceToTemplateInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
+#include <Prefab/PrefabUndoBase.h>
 
 //for link undo
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
@@ -20,25 +18,6 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
-        class PrefabUndoBase
-            : public UndoSystem::URSequencePoint
-        {
-        public:
-            explicit PrefabUndoBase(const AZStd::string& undoOperationName);
-
-            bool Changed() const override { return m_changed; }
-
-        protected:
-            TemplateId m_templateId;
-
-            PrefabDom m_redoPatch;
-            PrefabDom m_undoPatch;
-
-            InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
-
-            bool m_changed;
-        };
-
         //! handles the addition and removal of entities from instances
         class PrefabUndoInstance
             : public PrefabUndoBase
@@ -55,20 +34,7 @@ namespace AzToolsFramework
             void Redo() override;
             void Redo(InstanceOptionalConstReference instance);
         };
-
-        //! Undo class for handling addition of an entity to a prefab template.
-        class PrefabUndoAddEntity
-            : public PrefabUndoBase
-        {
-        public:
-            explicit PrefabUndoAddEntity(const AZStd::string& undoOperationName);
-
-            void Capture(const PrefabDomValue& entityDom, AZ::EntityId entityId, TemplateId templateId);
-
-            void Undo() override;
-            void Redo() override;
-        };
-
+        
         //! Undo class for handling deletion of entities to a prefab template.
         class PrefabUndoRemoveEntities
             : public PrefabUndoBase
@@ -175,26 +141,26 @@ namespace AzToolsFramework
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
         };
 
-        //! Undo class for handling addition of an entity to a prefab instance.
-        class PrefabUndoAddEntityOverrides
-            : public PrefabUndoBase
-        {
-        public:
-            AZ_RTTI(PrefabUndoAddEntityOverrides, "{67EC7123-7F42-4BDD-9543-43349E2EA605}", PrefabUndoBase);
-            AZ_CLASS_ALLOCATOR(PrefabUndoAddEntityOverrides, AZ::SystemAllocator, 0);
+        ////! Undo class for handling addition of an entity to a prefab instance.
+        //class PrefabUndoAddEntityOverrides
+        //    : public PrefabUndoBase
+        //{
+        //public:
+        //    AZ_RTTI(PrefabUndoAddEntityOverrides, "{67EC7123-7F42-4BDD-9543-43349E2EA605}", PrefabUndoBase);
+        //    AZ_CLASS_ALLOCATOR(PrefabUndoAddEntityOverrides, AZ::SystemAllocator, 0);
 
-            explicit PrefabUndoAddEntityOverrides(const AZStd::string& undoOperationName);
+        //    explicit PrefabUndoAddEntityOverrides(const AZStd::string& undoOperationName);
 
-            void Capture(
-                const PrefabDomValue& parentEntityDomBeforeAddingEntity, const PrefabDomValue& parentEntityDomAfterAddingEntity, const AZStd::string& parentEntityAliasPath,
-                const PrefabDomValue& newEntityDom, const AZStd::string& newEntityAliasPath,
-                PrefabDomReference cachedInstanceDom, TemplateId templateId);
+        //    void Capture(
+        //        const PrefabDomValue& parentEntityDomBeforeAddingEntity, const PrefabDomValue& parentEntityDomAfterAddingEntity, const AZStd::string& parentEntityAliasPath,
+        //        const PrefabDomValue& newEntityDom, const AZStd::string& newEntityAliasPath,
+        //        PrefabDomReference cachedInstanceDom, TemplateId templateId);
 
-            void Undo() override;
-            void Redo() override;
+        //    void Undo() override;
+        //    void Redo() override;
 
-        private:
-            PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
-        };
+        //private:
+        //    PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
+        //};
     }
 }

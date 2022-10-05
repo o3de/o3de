@@ -799,6 +799,10 @@ set(FILES
     Prefab/PrefabPublicRequestHandler.cpp
     Prefab/PrefabUndo.h
     Prefab/PrefabUndo.cpp
+    Prefab/PrefabUndoAddEntity.h
+    Prefab/PrefabUndoAddEntity.cpp
+    Prefab/PrefabUndoBase.h
+    Prefab/PrefabUndoBase.cpp
     Prefab/PrefabUndoCache.cpp
     Prefab/PrefabUndoCache.h
     Prefab/PrefabUndoHelpers.cpp

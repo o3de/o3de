@@ -7,7 +7,7 @@
  */
 
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
-#include <AzToolsFramework/Prefab/PrefabUndo.h>
+#include <AzToolsFramework/Prefab/PrefabUndoHelpers.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
 namespace AzToolsFramework
@@ -52,14 +52,21 @@ namespace AzToolsFramework
             }
 
             void AddEntity(
-                const PrefabDomValue& newEntityDom,
-                AZ::EntityId entityId,
+                PrefabUndoAddEntity::ParentEntityInfo parentEntityInfo,
+                PrefabUndoAddEntity::NewEntityInfo newEntityInfo,
+                PrefabDomReference cachedInstanceDom,
                 TemplateId templateId,
-                UndoSystem::URSequencePoint* undoBatch)
+                UndoSystem::URSequencePoint* undoBatch,
+                AZStd::string entityAliasPathPrefix)
             {
                 PrefabUndoAddEntity* addEntityUndoState = aznew PrefabUndoAddEntity("Undo Adding Entity");
                 addEntityUndoState->SetParent(undoBatch);
-                addEntityUndoState->Capture(newEntityDom, entityId, templateId);
+                addEntityUndoState->Capture(
+                    AZStd::move(parentEntityInfo),
+                    AZStd::move(newEntityInfo),
+                    cachedInstanceDom,
+                    templateId,
+                    entityAliasPathPrefix);
                 addEntityUndoState->Redo();
             }
 
