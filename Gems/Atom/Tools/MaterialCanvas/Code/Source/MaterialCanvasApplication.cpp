@@ -133,7 +133,7 @@ namespace MaterialCanvas
 
         // This configuration data is passed through the main window and graph views to setup translation data, styling, and node palettes
         AtomToolsFramework::GraphViewConfig graphViewConfig;
-        graphViewConfig.m_translationPath = "@products@/translation/materialcanvas_en_us.qm";
+        graphViewConfig.m_translationPath = "@products@/materialcanvas/translation/materialcanvas_en_us.qm";
         graphViewConfig.m_styleManagerPath = "MaterialCanvas/StyleSheet/materialcanvas_style.json";
         graphViewConfig.m_nodeMimeType = "MaterialCanvas/node-palette-mime-event";
         graphViewConfig.m_nodeSaveIdentifier = "MaterialCanvas/ContextMenu";

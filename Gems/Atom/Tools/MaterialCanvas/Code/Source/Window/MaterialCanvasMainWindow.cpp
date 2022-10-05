@@ -84,20 +84,19 @@ namespace MaterialCanvas
         m_nodePalette = aznew GraphCanvas::NodePaletteDockWidget(this, "Node Palette", nodePaletteConfig);
         AddDockWidget("Node Palette", m_nodePalette, Qt::LeftDockWidgetArea);
 
-        AZStd::array<char, AZ::IO::MaxPathLength> unresolvedPath;
-        AZ::IO::FileIOBase::GetInstance()->ResolvePath(m_graphViewConfig.m_translationPath.c_str(), unresolvedPath.data(), unresolvedPath.size());
-
-        QString translationFilePath(unresolvedPath.data());
-        if (m_translator.load(QLocale::Language::English, translationFilePath))
+        AZ::IO::FixedMaxPath resolvedPath;
+        AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(resolvedPath, m_graphViewConfig.m_translationPath.c_str());
+        const AZ::IO::FixedMaxPathString translationFilePath = resolvedPath.LexicallyNormal().FixedMaxPathString();
+        if (m_translator.load(QLocale::Language::English, translationFilePath.c_str()))
         {
             if (!qApp->installTranslator(&m_translator))
             {
-                AZ_Warning("MaterialCanvas", false, "Error installing translation %s!", unresolvedPath.data());
+                AZ_Warning("MaterialCanvas", false, "Error installing translation %s!", translationFilePath.c_str());
             }
         }
         else
         {
-            AZ_Warning("MaterialCanvas", false, "Error loading translation file %s", unresolvedPath.data());
+            AZ_Warning("MaterialCanvas", false, "Error loading translation file %s", translationFilePath.c_str());
         }
 
         OnDocumentOpened(AZ::Uuid::CreateNull());
