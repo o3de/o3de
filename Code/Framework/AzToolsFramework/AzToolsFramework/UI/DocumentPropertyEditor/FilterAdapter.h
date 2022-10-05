@@ -77,6 +77,8 @@ namespace AZ::DocumentPropertyEditor
          *  All new nodes have their m_matchesSelf, m_matchingDescendants, and  m_matchableDomTerms set */
         void PopulateNodesAtPath(const Dom::Path& sourcePath, bool replaceExisting);
 
+        void CullUnmatchedChildRows(Dom::Value& rowValue, const MatchInfoNode* rowMatchNode);
+
         /*! updates the match states (m_matchesSelf, m_matchingDescendants) for the given row node,
             and updates the m_matchingDescendants state for all its ancestors
             \param rowState the row to operate on */

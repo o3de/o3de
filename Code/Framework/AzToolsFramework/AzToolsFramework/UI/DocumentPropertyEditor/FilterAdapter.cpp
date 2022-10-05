@@ -10,7 +10,7 @@
 
 namespace AZ::DocumentPropertyEditor
 {
-    RowFilterAdapter::RowFilterAdapter() 
+    RowFilterAdapter::RowFilterAdapter()
     {
     }
 
@@ -50,7 +50,6 @@ namespace AZ::DocumentPropertyEditor
     bool RowFilterAdapter::IsRow(const Dom::Value& domValue)
     {
         return (domValue.IsNode() && domValue.GetNodeName() == Dpe::GetNodeName<Dpe::Nodes::Row>());
-
     }
 
     bool RowFilterAdapter::IsRow(const Dom::Path& sourcePath) const
@@ -102,49 +101,8 @@ namespace AZ::DocumentPropertyEditor
         auto filteredContents = m_sourceAdapter->GetContents();
         if (m_filterActive)
         {
-            // cull row children based on their MatchInfoNode
-            AZStd::function<void(Dom::Value& rowValue, const MatchInfoNode* rowMatchNode)> cullUnmatchedChildRows =
-            [&](Dom::Value& rowValue, const MatchInfoNode* rowMatchNode)
-            {
-                auto& matchChildren = rowMatchNode->m_childMatchState;
-                const bool sizesMatch = (rowValue.ArraySize() == matchChildren.size());
-                AZ_Assert(sizesMatch, "DOM value and cached match node should have the same number of children!");
-
-                if (sizesMatch)
-                {
-                    auto valueIter = rowValue.MutableArrayBegin();
-                    for (auto matchIter = matchChildren.begin(); matchIter != matchChildren.end(); ++matchIter)
-                    {
-                        // non-row children will have a null MatchInfo -- we only need to worry about culling row values
-                        auto currMatch = *matchIter;
-                        if (currMatch != nullptr)
-                        {
-                            if (currMatch->m_matchesSelf)
-                            {
-                                // node matches directly. All descendants automatically match if m_includeAllMatchDescendants is set
-                                if (!m_includeAllMatchDescendants)
-                                {
-                                    cullUnmatchedChildRows(*valueIter, *matchIter);
-                                }
-                            }
-                            else if (!currMatch->m_matchingDescendants.empty())
-                            {
-                                // all nodes with matching descendants must be included so that there is a path to the matching node
-                                cullUnmatchedChildRows(*valueIter, *matchIter);
-                            }
-                            else
-                            {
-                                // neither the node nor its children match, cull the value from the returned tree
-                                valueIter = rowValue.ArrayErase(valueIter);
-                                continue; // we've already moved valueIter forward, skip the ++valueIter below
-                            }
-                        }
-                        ++valueIter;
-                    }
-                }
-            };
             // filter downwards from root
-            cullUnmatchedChildRows(filteredContents, m_root);
+            CullUnmatchedChildRows(filteredContents, m_root);
         }
         return filteredContents;
     }
@@ -158,7 +116,7 @@ namespace AZ::DocumentPropertyEditor
         // we can assume all direct children of an adapter must be rows; populate each of them
         for (size_t topIndex = 0; topIndex < sourceContents.ArraySize(); ++topIndex)
         {
-            PopulateNodesAtPath(Dom::Path({Dom::PathEntry(topIndex)}), false);
+            PopulateNodesAtPath(Dom::Path({ Dom::PathEntry(topIndex) }), false);
         }
         NotifyResetDocument(DocumentResetType::HardReset);
     }
@@ -233,7 +191,6 @@ namespace AZ::DocumentPropertyEditor
                         UpdateMatchState(matchingRow);
                     }
                 }
-
             }
             else if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Add)
             {
@@ -259,7 +216,7 @@ namespace AZ::DocumentPropertyEditor
         NotifyResetDocument();
     }
 
-    void RowFilterAdapter::HandleDomMessage(const AZ::DocumentPropertyEditor::AdapterMessage& message,[[maybe_unused]] Dom::Value& value)
+    void RowFilterAdapter::HandleDomMessage(const AZ::DocumentPropertyEditor::AdapterMessage& message, [[maybe_unused]] Dom::Value& value)
     {
         // forward all messages unaltered
         DocumentAdapter::SendAdapterMessage(message);
@@ -304,7 +261,7 @@ namespace AZ::DocumentPropertyEditor
         {
             // path is a node, populate its children (if any), dump its node info to the match string
             AZStd::function<void(MatchInfoNode*, const Dom::Value&)> recursivelyRegenerateMatches =
-            [&](MatchInfoNode* matchState, const Dom::Value& value)
+                [&](MatchInfoNode* matchState, const Dom::Value& value)
             {
                 // precondition: value is a node of type row, matchState is blank, other than its m_parentNode
                 CacheDomInfoForNode(value, matchState);
@@ -330,7 +287,7 @@ namespace AZ::DocumentPropertyEditor
             auto parentPath = startingPath;
             parentPath.Pop();
             auto parentMatchState = GetMatchNodeAtPath(parentPath);
-            
+
             MatchInfoNode* addedChild = nullptr;
             if (replaceExisting)
             {
@@ -368,6 +325,46 @@ namespace AZ::DocumentPropertyEditor
         }
     }
 
+    void RowFilterAdapter::CullUnmatchedChildRows(Dom::Value& rowValue, const MatchInfoNode* rowMatchNode)
+    {
+        auto& matchChildren = rowMatchNode->m_childMatchState;
+        const bool sizesMatch = (rowValue.ArraySize() == matchChildren.size());
+        AZ_Assert(sizesMatch, "DOM value and cached match node should have the same number of children!");
+
+        if (sizesMatch)
+        {
+            auto valueIter = rowValue.MutableArrayBegin();
+            for (auto matchIter = matchChildren.begin(); matchIter != matchChildren.end(); ++matchIter)
+            {
+                // non-row children will have a null MatchInfo -- we only need to worry about culling row values
+                auto currMatch = *matchIter;
+                if (currMatch != nullptr)
+                {
+                    if (currMatch->m_matchesSelf)
+                    {
+                        // node matches directly. All descendants automatically match if m_includeAllMatchDescendants is set
+                        if (!m_includeAllMatchDescendants)
+                        {
+                            CullUnmatchedChildRows(*valueIter, *matchIter);
+                        }
+                    }
+                    else if (!currMatch->m_matchingDescendants.empty())
+                    {
+                        // all nodes with matching descendants must be included so that there is a path to the matching node
+                        CullUnmatchedChildRows(*valueIter, *matchIter);
+                    }
+                    else
+                    {
+                        // neither the node nor its children match, cull the value from the returned tree
+                        valueIter = rowValue.ArrayErase(valueIter);
+                        continue; // we've already moved valueIter forward, skip the ++valueIter below
+                    }
+                }
+                ++valueIter;
+            }
+        }
+    }
+
     void RowFilterAdapter::UpdateMatchState(MatchInfoNode* rowState)
     {
         auto includeInFilter = [](MatchInfoNode* node) -> bool
@@ -376,7 +373,7 @@ namespace AZ::DocumentPropertyEditor
         };
         bool usedToMatch = includeInFilter(rowState);
 
-        rowState->m_matchesSelf = MatchesFilter(rowState); //update own match state
+        rowState->m_matchesSelf = MatchesFilter(rowState); // update own match state
 
         auto& matchingChildren = rowState->m_matchingDescendants;
         for (auto childIter = matchingChildren.begin(); childIter != matchingChildren.end(); /* omitted */)
@@ -392,7 +389,6 @@ namespace AZ::DocumentPropertyEditor
             {
                 ++childIter;
             }
-
         }
 
         // update each ancestor until updating their m_matchingDescendants doesn't change their inclusion state
@@ -466,7 +462,7 @@ namespace AZ::DocumentPropertyEditor
                     auto childName = currChild.GetNodeName();
                     if (childName != Dpe::GetNodeName<Dpe::Nodes::Row>()) // don't cache child rows, they have they're own entries
                     {
-                        static const Name valueName("Value");
+                        static const Name valueName = Name::FromStringLiteral("Value", AZ::Interface<AZ::NameDictionary>::Get());
                         auto foundValue = currChild.FindMember(valueName);
                         if (foundValue != currChild.MemberEnd())
                         {
@@ -475,7 +471,8 @@ namespace AZ::DocumentPropertyEditor
 
                         if (m_includeDescriptions)
                         {
-                            static const Name descriptionName("Description");
+                            static const Name descriptionName =
+                                Name::FromStringLiteral("Description", AZ::Interface<AZ::NameDictionary>::Get());
                             auto foundDescription = currChild.FindMember(descriptionName);
                             if (foundDescription != currChild.MemberEnd())
                             {
