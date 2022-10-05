@@ -16,6 +16,7 @@ namespace ScriptCanvas
     namespace Data
     {
         class Type;
+        enum class eType : AZ::u32;
 
         Type FromAZType(const AZ::Uuid& aztype);
         Type FromAZTypeChecked(const AZ::Uuid& aztype);
