@@ -415,11 +415,11 @@ namespace GradientSignal
 
     bool EditorImageGradientComponent::IsPaintFeatureEnabled() const
     {
-        // temporary setting to disable this feature unless the registry key is set.
+        // This enables the paint feature by default but provides a way to disable it if desired.
         if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get())
         {
             constexpr AZStd::string_view ImageGradientPaintFeature = "/O3DE/Preferences/ImageGradient/PaintFeature";
-            bool hasPaintFeature = false;
+            bool hasPaintFeature = true;
             settingsRegistry->Get(hasPaintFeature, ImageGradientPaintFeature);
 
             return hasPaintFeature;
