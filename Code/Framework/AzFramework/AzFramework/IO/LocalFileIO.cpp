@@ -830,7 +830,7 @@ namespace AZ
                         return false;
                     }
 
-                    // Check if the path is input path does not overlap the output path
+                    // Check if the input path does not overlap the output path
                     if (postAliasView.data() < replacedAliasPath.Native().data()
                         || postAliasView.data() >= replacedAliasPath.Native().data() + replacedAliasPath.Native().size())
                     {
