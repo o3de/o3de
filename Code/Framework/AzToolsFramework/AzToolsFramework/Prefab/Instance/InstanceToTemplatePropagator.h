@@ -45,8 +45,6 @@ namespace AzToolsFramework
 
             void ApplyPatchesToInstance(const AZ::EntityId& entityId, PrefabDom& patches, const Instance& instanceToAddPatches) override;
 
-            void AddPatchesToLink(const PrefabDom& patches, Link& link);
-
         private:
             InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
