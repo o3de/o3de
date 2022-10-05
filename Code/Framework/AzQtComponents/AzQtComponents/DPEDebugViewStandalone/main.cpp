@@ -81,6 +81,7 @@ namespace DPEDebugView
         }
 
         int m_simpleInt = 5;
+        int m_readOnlyInt = 33;
         double m_doubleSlider = 3.25;
         AZStd::vector<AZStd::string> m_vector;
         AZStd::map<AZStd::string, float> m_map;
@@ -101,6 +102,7 @@ namespace DPEDebugView
             {
                 serializeContext->Class<TestContainer>()
                     ->Field("simpleInt", &TestContainer::m_simpleInt)
+                    ->Field("readonlyInt", &TestContainer::m_readOnlyInt)
                     ->Field("doubleSlider", &TestContainer::m_doubleSlider)
                     ->Field("vector", &TestContainer::m_vector)
                     ->Field("map", &TestContainer::m_map)
@@ -159,7 +161,10 @@ namespace DPEDebugView
                         ->UIElement(AZ::Edit::UIHandlers::Button, "")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &Button2)
                         ->Attribute(AZ::Edit::Attributes::ButtonText, "Button 2 (should be at bottom)")
-                        ->Attribute(AZ::Edit::Attributes::AcceptsMultiEdit, true);
+                        ->Attribute(AZ::Edit::Attributes::AcceptsMultiEdit, true)
+                        ->ClassElement(AZ::Edit::ClassElements::Group, "ReadOnly")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_readOnlyInt, "readonly int", "")
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, true);
                 }
             }
         }

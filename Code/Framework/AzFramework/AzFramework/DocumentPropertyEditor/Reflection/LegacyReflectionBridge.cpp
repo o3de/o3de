@@ -355,6 +355,17 @@ namespace AZ::Reflection
                         }
                     }
                 }
+
+                // If the node has a ReadOnly attribute then we want to store it as a Disabled attribute for the DPE
+                if (classElement && classElement->m_editData)
+                {
+                    if (auto readOnlyAttribute = classElement->m_editData->FindAttribute(AZ::Crc32("ReadOnly")); readOnlyAttribute)
+                    {
+                        Dom::Value readOnlyValue = readOnlyAttribute->GetAsDomValue(instance);
+                        nodeData->m_disableEditor |= readOnlyValue.GetBool();
+                    }
+                }
+
                 CacheAttributes();
 
                 // Inherit the change notify attribute from our parent
