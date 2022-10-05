@@ -589,12 +589,18 @@ namespace AssetProcessor
         m_catalogIsDirty = true;
     }
 
-    void AssetCatalog::OnConnect(unsigned int /*connectionId*/, ::Connection* connection)
+    void AssetCatalog::OnConnect(unsigned int connectionId, ::Connection* connection)
     {
+        if(!connection || connection->Status() != ::Connection::ConnectionStatus::Connected)
+        {
+            return;
+        }
+
         // Send out a message for each asset to make sure the connected tools are aware of the existence of all previously built assets
         // since the assetcatalog might not have been written out to disk previously.
         for (QString platform : connection->AssetPlatforms())
         {
+            QMutexLocker locker(&m_registriesMutex);
             auto itr = m_registries.find(platform);
 
             if(itr == m_registries.end())
@@ -625,7 +631,7 @@ namespace AssetProcessor
                     message.m_legacyAssetIds.emplace_back(legacyId.first);
                 }
 
-                connection->Send(0, message);
+                AssetProcessor::ConnectionBus::Event(connectionId, &AssetProcessor::ConnectionBus::Events::Send, 0, message);
             }
         }
     }
