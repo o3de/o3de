@@ -224,7 +224,8 @@ namespace AzToolsFramework
             // Retrieves the container entity DOM of the root template DOM.
             PrefabDom containerEntityDom;
             {
-                // rootTemplateDom is only valid in this scope.
+                // DOM reference can't be relied upon if the original DOM gets modified after reference creation.
+                // This scope is added to limit their usage and ensure DOM is not modified when it is being used.
                 const PrefabDom& rootTemplateDom = m_prefabSystemComponentInterface->FindTemplateDom((*rootInstancePtr).GetTemplateId());
                 containerEntityDom.CopyFrom(*domPathToContainerEntity.Get(rootTemplateDom), instanceDom.GetAllocator());
             }

@@ -1340,7 +1340,8 @@ namespace AzToolsFramework
             // Step 2 - Removes entities.
             AZStd::unordered_set<AZ::EntityId> entitiesThatGotRemoved;
             {
-                // DOM value pointers are only valid in this scope.
+                // DOM value pointers can't be relied upon if the original DOM gets modified after pointer creation.
+                // This scope is added to limit their usage and ensure DOM is not modified when it is being used.
                 AZStd::vector<AZStd::pair<const PrefabDomValue*, AZStd::string>> removedEntityDomAndPathList;
 
                 for (const AZ::Entity* entity : entityList)
@@ -1776,7 +1777,8 @@ namespace AzToolsFramework
                 PrefabDomPath entityAliasDomPath(entityAliasPath.c_str());
 
                 {
-                    // entityDomPtr is only valid in this scope.
+                    // Entity DOM pointer can't be relied upon if the original DOM gets modified after pointer creation.
+                    // This scope is added to limit their usage and ensure DOM is not modified when it is being used.
                     const PrefabDomValue* entityDomPtr = entityAliasDomPath.Get(owningTemplateDom);
                     if (entityDomPtr)
                     {
