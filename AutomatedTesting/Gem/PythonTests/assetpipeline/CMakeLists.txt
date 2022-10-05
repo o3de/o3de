@@ -9,6 +9,19 @@
 add_subdirectory(asset_processor_tests)
 add_subdirectory(fbx_tests)
 
+    ly_add_pytest(
+        NAME AssetPipelineTests.Periodic
+        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Periodic.py
+        EXCLUDE_TEST_RUN_TARGET_FROM_IDE
+        TEST_SUITE periodic
+        RUNTIME_DEPENDENCIES
+            AssetProcessor
+            AutomatedTesting.Assets
+            Editor
+        COMPONENT
+            Atom
+    )
+
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
 ## AP Python Tests ##
     ly_add_pytest(
@@ -17,7 +30,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         EXCLUDE_TEST_RUN_TARGET_FROM_IDE
         TEST_SUITE periodic
         RUNTIME_DEPENDENCIES
-            AZ::AssetProcessorBatch   
+            AZ::AssetProcessorBatch
     )
-        
+   
 endif()
