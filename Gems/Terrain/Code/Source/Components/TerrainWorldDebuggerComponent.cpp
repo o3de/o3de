@@ -267,7 +267,7 @@ namespace Terrain
         }
 
         // Draw a translucent box around the terrain dirty region
-        AZ::Color dirtyRegionColor(1.0f, 0.0f, 1.0f, 0.25f);
+        const AZ::Color dirtyRegionColor(1.0f, 0.0f, 1.0f, 0.25f);
 
         if (m_lastDirtyRegion.IsValid())
         {
@@ -287,8 +287,8 @@ namespace Terrain
         }
 
         // Draw a wireframe box around the entire terrain world bounds
-        AZ::Color outlineColor(1.0f, 0.0f, 0.0f, 1.0f);
-        AZ::Aabb aabb = GetWorldBounds();
+        const AZ::Color outlineColor(1.0f, 0.0f, 0.0f, 1.0f);
+        const AZ::Aabb aabb = GetWorldBounds();
 
         if (aabb.IsValid())
         {
