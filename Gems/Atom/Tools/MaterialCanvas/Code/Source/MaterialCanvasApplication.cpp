@@ -34,6 +34,7 @@ void InitMaterialCanvasResources()
     Q_INIT_RESOURCE(MaterialCanvas);
     Q_INIT_RESOURCE(InspectorWidget);
     Q_INIT_RESOURCE(AtomToolsAssetBrowser);
+    Q_INIT_RESOURCE(GraphView);
 }
 
 namespace MaterialCanvas
