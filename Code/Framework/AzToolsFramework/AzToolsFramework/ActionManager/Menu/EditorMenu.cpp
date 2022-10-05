@@ -184,10 +184,10 @@ namespace AzToolsFramework
                 {
                 case MenuItemType::Action:
                     {
-                        if (QAction* action = m_actionManagerInternalInterface->GetAction(menuItem.m_identifier))
+                        if (QAction* action = s_actionManagerInternalInterface->GetAction(menuItem.m_identifier))
                         {
                             if (!action->isEnabled() &&
-                                m_actionManagerInternalInterface->GetHideFromMenusWhenDisabled(menuItem.m_identifier))
+                                s_actionManagerInternalInterface->GetHideFromMenusWhenDisabled(menuItem.m_identifier))
                             {
                                 continue;
                             }
@@ -198,7 +198,7 @@ namespace AzToolsFramework
                     }
                 case MenuItemType::SubMenu:
                     {
-                        if (QMenu* menu = m_menuManagerInternalInterface->GetMenu(menuItem.m_identifier))
+                        if (QMenu* menu = s_menuManagerInternalInterface->GetMenu(menuItem.m_identifier))
                         {
                             m_menu->addMenu(menu);
                         }
@@ -227,9 +227,9 @@ namespace AzToolsFramework
     {
         if (type == MenuItemType::Widget)
         {
-            if (QWidget* widget = m_actionManagerInternalInterface->GenerateWidgetFromWidgetAction(m_identifier))
+            if (QWidget* widget = s_actionManagerInternalInterface->GenerateWidgetFromWidgetAction(m_identifier))
             {
-                m_widgetAction = new QWidgetAction(m_defaultParentWidget);
+                m_widgetAction = new QWidgetAction(s_defaultParentWidget);
                 m_widgetAction->setDefaultWidget(widget);
             }
         }
@@ -237,19 +237,19 @@ namespace AzToolsFramework
 
     void EditorMenu::Initialize(QWidget* defaultParentWidget)
     {
-        m_defaultParentWidget = defaultParentWidget;
+        s_defaultParentWidget = defaultParentWidget;
 
-        m_actionManagerInterface = AZ::Interface<ActionManagerInterface>::Get();
-        AZ_Assert(m_actionManagerInterface, "EditorMenu - Could not retrieve instance of ActionManagerInterface");
+        s_actionManagerInterface = AZ::Interface<ActionManagerInterface>::Get();
+        AZ_Assert(s_actionManagerInterface, "EditorMenu - Could not retrieve instance of ActionManagerInterface");
 
-        m_actionManagerInternalInterface = AZ::Interface<ActionManagerInternalInterface>::Get();
-        AZ_Assert(m_actionManagerInternalInterface, "EditorMenu - Could not retrieve instance of ActionManagerInternalInterface");
+        s_actionManagerInternalInterface = AZ::Interface<ActionManagerInternalInterface>::Get();
+        AZ_Assert(s_actionManagerInternalInterface, "EditorMenu - Could not retrieve instance of ActionManagerInternalInterface");
 
-        m_menuManagerInterface = AZ::Interface<MenuManagerInterface>::Get();
-        AZ_Assert(m_menuManagerInterface, "EditorMenu - Could not retrieve instance of MenuManagerInterface");
+        s_menuManagerInterface = AZ::Interface<MenuManagerInterface>::Get();
+        AZ_Assert(s_menuManagerInterface, "EditorMenu - Could not retrieve instance of MenuManagerInterface");
 
-        m_menuManagerInternalInterface = AZ::Interface<MenuManagerInternalInterface>::Get();
-        AZ_Assert(m_menuManagerInternalInterface, "EditorMenu - Could not retrieve instance of MenuManagerInternalInterface");
+        s_menuManagerInternalInterface = AZ::Interface<MenuManagerInternalInterface>::Get();
+        AZ_Assert(s_menuManagerInternalInterface, "EditorMenu - Could not retrieve instance of MenuManagerInternalInterface");
     }
 
     void EditorMenu::Reflect(AZ::ReflectContext* context)
