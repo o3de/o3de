@@ -8,6 +8,7 @@
 
 #include <AtomToolsFramework/SettingsDialog/SettingsDialog.h>
 #include <AzCore/IO/FileIO.h>
+#include <AzQtComponents/Components/StyleManager.h>
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/NodePaletteTreeItem.h>
 #include <Window/MaterialCanvasMainWindow.h>
 #include <Window/MaterialCanvasViewportContent.h>
@@ -98,6 +99,9 @@ namespace MaterialCanvas
         {
             AZ_Warning("MaterialCanvas", false, "Error loading translation file %s", translationFilePath.c_str());
         }
+
+        // Set up style sheet to fix highlighting in the node palette
+        AzQtComponents::StyleManager::setStyleSheet(this, QStringLiteral(":/GraphView/GraphView.qss"));
 
         OnDocumentOpened(AZ::Uuid::CreateNull());
     }
