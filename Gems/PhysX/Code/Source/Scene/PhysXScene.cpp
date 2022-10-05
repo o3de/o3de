@@ -586,20 +586,26 @@ namespace PhysX
         {
             AZ_PROFILE_SCOPE(Physics, "PhysXScene::ActiveActors");
 
-            PHYSX_SCENE_READ_LOCK(m_pxScene);
-
-            physx::PxU32 numActiveActors = 0;
-            physx::PxActor** activeActors = m_pxScene->getActiveActors(numActiveActors);
             AzPhysics::SimulatedBodyHandleList activeBodyHandles;
-            activeBodyHandles.reserve(numActiveActors);
-            for (physx::PxU32 i = 0; i < numActiveActors; ++i)
+
             {
-                if (ActorData* actorData = Utils::GetUserData(activeActors[i]))
+                PHYSX_SCENE_READ_LOCK(m_pxScene);
+                physx::PxU32 numActiveActors = 0;
+                physx::PxActor** activeActors = m_pxScene->getActiveActors(numActiveActors);
+                activeBodyHandles.reserve(numActiveActors);
+                for (physx::PxU32 i = 0; i < numActiveActors; ++i)
                 {
-                    activeBodyHandles.emplace_back(actorData->GetBodyHandle());
+                    if (ActorData* actorData = Utils::GetUserData(activeActors[i]))
+                    {
+                        activeBodyHandles.emplace_back(actorData->GetBodyHandle());
+                    }
                 }
             }
-            m_sceneActiveSimulatedBodies.Signal(m_sceneHandle, activeBodyHandles);
+
+            // Keep the event signal outside of the scene lock since there may be handlers that want to lock the scene for write
+            m_sceneActiveSimulatedBodies.Signal(m_sceneHandle, activeBodyHandles, m_currentDeltaTime);
+
+            SyncActiveBodyTransform(activeBodyHandles);
         }
 
         FlushQueuedEvents();
@@ -1266,4 +1272,19 @@ namespace PhysX
         AZ_PROFILE_DATAPOINT(Physics, stats.nbLostTouches, RootCategory, CollisionsSubCategory, "LostTouches");
         AZ_PROFILE_DATAPOINT(Physics, stats.nbPartitions, RootCategory, CollisionsSubCategory, "Partitions");
     }
+
+    void PhysXScene::SyncActiveBodyTransform(const AzPhysics::SimulatedBodyHandleList& activeBodyHandles)
+    {
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            for (const AzPhysics::SimulatedBodyHandle& bodyHandle : activeBodyHandles)
+            {
+                if (AzPhysics::SimulatedBody* simBody = sceneInterface->GetSimulatedBodyFromHandle(m_sceneHandle, bodyHandle))
+                {
+                    simBody->SyncTransform(m_currentDeltaTime);
+                }
+            }
+        }
+    }
+
 }
