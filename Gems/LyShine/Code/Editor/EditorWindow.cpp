@@ -2196,6 +2196,8 @@ void EditorWindow::closeEvent(QCloseEvent* closeEvent)
     // Save the current window state
     SaveEditorWindowSettings();
 
+    m_animationWidget->EditorAboutToClose();
+
 #if defined(AZ_PLATFORM_LINUX)
     // Work-around for issue on Linux where closing (and destroying) the window an re-opening causes the Editor
     // to hang or crash. So instead of closing this window, replicate the action of unchecking UI Editor from the
