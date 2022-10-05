@@ -53,7 +53,6 @@ namespace AzNetworking
         , ReliableQueueFull
         , ConnectionRejected
         , ConnectionDeleted
-        , ServerNotReady
         , ServerNoLevelLoaded
         , ServerError
         , ClientMigrated
