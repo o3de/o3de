@@ -25,6 +25,11 @@ namespace MysticQt
     class LinkWidget;
 }
 
+namespace AzToolsFramework
+{
+    class ReflectedPropertyEditor;
+}
+
 namespace EMStudio
 {
     class MotionExtractionWindow : public QWidget
@@ -43,6 +48,7 @@ namespace EMStudio
     public slots:
         void UpdateInterface();
         void OnMotionExtractionFlagsUpdated();
+        void OnRootMotionCheckboxClicked();
 
         void OnSelectMotionExtractionNode();
         void OnMotionExtractionNodeSelected(AZStd::vector<SelectionItem> selection);
@@ -51,16 +57,23 @@ namespace EMStudio
         // helper functions
         void CreateFlagsWidget();
         void CreateWarningWidget();
+        void CreateRootMotionWidgets();
 
         // flags widget
         QWidget* m_flagsWidget = nullptr;
         QCheckBox* m_captureHeight = nullptr;
+
+        // Root motion extraction widgets
+        QCheckBox* m_extractRootMotion = nullptr;
 
         //
         QVBoxLayout* m_mainVerticalLayout = nullptr;
         QVBoxLayout* m_childVerticalLayout = nullptr;
         QWidget* m_warningWidget = nullptr;
         bool m_warningShowed = false;
+
+        //
+        AzToolsFramework::ReflectedPropertyEditor* m_rootMotionExtractionWidget = nullptr;
 
         // motion extraction node selection
         NodeSelectionWindow* m_motionExtractionNodeSelectionWindow = nullptr;

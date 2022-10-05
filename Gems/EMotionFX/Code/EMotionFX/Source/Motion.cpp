@@ -21,6 +21,7 @@
 #include <EMotionFX/Source/Node.h>
 #include <EMotionFX/Source/TransformData.h>
 #include <EMotionFX/Source/MotionData/MotionData.h>
+#include <EMotionFX/Source/MotionData/RootMotionExtractionData.h>
 
 namespace EMotionFX
 {
@@ -43,6 +44,8 @@ namespace EMotionFX
 #if defined(EMFX_DEVELOPMENT_BUILD)
         m_isOwnedByRuntime       = false;
 #endif // EMFX_DEVELOPMENT_BUILD
+
+        m_rootMotionExtractionData = AZStd::make_shared<RootMotionExtractionData>();
 
         // automatically register the motion
         GetMotionManager().AddMotion(this);
@@ -334,5 +337,15 @@ namespace EMotionFX
             delete m_motionData;
         }
         m_motionData = motionData;
+    }
+
+    void Motion::SetRootMotionExtractionData(const AZStd::shared_ptr<RootMotionExtractionData>& data)
+    {
+        m_rootMotionExtractionData = data;
+    }
+
+    const AZStd::shared_ptr<RootMotionExtractionData>& Motion::GetRootMotionExtractionData() const
+    {
+        return m_rootMotionExtractionData;
     }
 } // namespace EMotionFX
