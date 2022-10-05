@@ -47,6 +47,7 @@
 void initUiCanvasEditorResources()
 {
     Q_INIT_RESOURCE(UiCanvasEditor);
+    Q_INIT_RESOURCE(UiAnimViewDialog);
 }
 
 namespace
