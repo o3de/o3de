@@ -317,6 +317,10 @@ namespace AZ
             // Validate attachmentRef
             if (attachmentRef.m_pass.IsEmpty() || attachmentRef.m_attachment.IsEmpty())
             {
+                AZ_Error("Pass", attachmentRef.m_pass.IsEmpty() && attachmentRef.m_attachment.IsEmpty(),
+                    "Invalid attachment reference [Pass '%s', Attachment '%s']. Both values must be set.",
+                    attachmentRef.m_pass.GetCStr(), attachmentRef.m_attachment.GetCStr());
+
                 return nullptr;
             }
             // Find pass
@@ -670,6 +674,12 @@ namespace AZ
 
             // Setup attachment sources...
 
+            auto checkAttachmentSourceMissing = [this](const char* attachmentSourceType, const PassAttachmentRef& passAttachmentRef)
+            {
+                AZ_Warning("Pass", passAttachmentRef.m_pass.IsEmpty() && passAttachmentRef.m_attachment.IsEmpty(), "Pass [%s] could not find %s [Pass '%s', Attachment '%s']",
+                    m_path.GetCStr(), attachmentSourceType, passAttachmentRef.m_pass.GetCStr(), passAttachmentRef.m_attachment.GetCStr());
+            };
+
             if (desc.m_sizeSource.m_source.m_pass == PipelineKeyword)         // if source is pipeline
             {
                 attachment->m_renderPipelineSource = m_pipeline;
@@ -681,6 +691,10 @@ namespace AZ
                 attachment->m_sizeSource = source;
                 attachment->m_sizeMultipliers = desc.m_sizeSource.m_multipliers;
             }
+            else
+            {
+                checkAttachmentSourceMissing("SizeSource", desc.m_sizeSource.m_source);
+            }
 
             if (desc.m_formatSource.m_pass == PipelineKeyword)                // if source is pipeline
             {
@@ -691,6 +705,10 @@ namespace AZ
             {
                 attachment->m_formatSource = source;
             }
+            else
+            {
+                checkAttachmentSourceMissing("FormatSource", desc.m_formatSource);
+            }
 
             if (desc.m_multisampleSource.m_pass == PipelineKeyword)           // if source is pipeline
             {
@@ -700,6 +718,10 @@ namespace AZ
             else if (const PassAttachmentBinding* source = FindAdjacentBinding(desc.m_multisampleSource))
             {
                 attachment->m_multisampleSource = source;
+            }
+            else
+            {
+                checkAttachmentSourceMissing("MultisampleSource", desc.m_multisampleSource);
             }
 
             if (const PassAttachmentBinding* source = FindAdjacentBinding(desc.m_arraySizeSource))
@@ -1460,7 +1482,7 @@ namespace AZ
             // Return false if it's already readback
             if (m_attachmentReadback)
             {
-                AZ_Warning("Pass", false, "ReadbackAttachment: skip readback pass [%s] slot [%s]because there is an another active readback", m_name.GetCStr(), slotName.GetCStr());
+                AZ_Warning("Pass", false, "ReadbackAttachment: skip readback pass [%s] slot [%s] because there is an another active readback", m_path.GetCStr(), slotName.GetCStr());
                 return false;
             }
             uint32_t bindingIndex = 0;
@@ -1492,7 +1514,7 @@ namespace AZ
                 }
                 bindingIndex++;
             }
-            AZ_Warning("Pass", false, "ReadbackAttachment: failed to find slot [%s] from pass [%s]", slotName.GetCStr(), m_name.GetCStr());
+            AZ_Warning("Pass", false, "ReadbackAttachment: failed to find slot [%s] from pass [%s]", slotName.GetCStr(), m_path.GetCStr());
             return false;
         }
 
