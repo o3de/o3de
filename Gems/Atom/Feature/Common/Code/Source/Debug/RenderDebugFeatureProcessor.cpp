@@ -104,7 +104,7 @@ namespace AZ::Render
 
         for (const RPI::ViewPtr& view : packet.m_views)
         {
-            if (view->GetUsageFlags() & RPI::View::UsageFlags::UsageCamera)
+            if (view->GetUsageFlags() & (RPI::View::UsageFlags::UsageCamera | RPI::View::UsageFlags::UsageReflectiveCubeMap))
             {
                 Data::Instance<RPI::ShaderResourceGroup> viewSrg = view->GetShaderResourceGroup();
 

@@ -123,7 +123,9 @@ namespace AssetProcessorMessagesTests
             ASSERT_EQ(status, ApplicationManager::BeforeRunStatus::Status_Success);
 
             m_batchApplicationManager->m_platformConfiguration = new PlatformConfiguration();
-            m_batchApplicationManager->InitAssetProcessorManager();
+            
+            AZStd::vector<ApplicationManagerBase::APCommandLineSwitch> commandLineInfo;
+            m_batchApplicationManager->InitAssetProcessorManager(commandLineInfo);
 
             m_assetCatalog = AZStd::make_unique<MockAssetCatalog>(nullptr, m_batchApplicationManager->m_platformConfiguration);
 

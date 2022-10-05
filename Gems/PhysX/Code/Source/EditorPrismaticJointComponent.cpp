@@ -126,8 +126,16 @@ namespace PhysX
         return {};
     }
 
-    void EditorPrismaticJointComponent::SetBoolValue([[maybe_unused]] const AZStd::string& parameterName, [[maybe_unused]] bool value)
+    void EditorPrismaticJointComponent::SetBoolValue(const AZStd::string& parameterName, bool value)
     {
+        if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::EnableLimits)
+        {
+            m_linearLimit.m_standardLimitConfig.m_isLimited = value;
+        }
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::EnableSoftLimits)
+        {
+            m_linearLimit.m_standardLimitConfig.m_isSoftLimit = value;
+        }
     }
 
     void EditorPrismaticJointComponent::SetLinearValue(const AZStd::string& parameterName, float value)

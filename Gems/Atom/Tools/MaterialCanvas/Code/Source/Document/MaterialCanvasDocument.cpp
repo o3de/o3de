@@ -53,9 +53,10 @@ namespace MaterialCanvas
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Category, "Editor")
                 ->Attribute(AZ::Script::Attributes::Module, "materialcanvas")
+                ->Event("GetGraph", &MaterialCanvasDocumentRequests::GetGraph)
                 ->Event("GetGraphId", &MaterialCanvasDocumentRequests::GetGraphId)
-                ->Event("GetGeneratedFilePaths", &MaterialCanvasDocumentRequests::GetGeneratedFilePaths)
                 ->Event("GetGraphName", &MaterialCanvasDocumentRequests::GetGraphName)
+                ->Event("GetGeneratedFilePaths", &MaterialCanvasDocumentRequests::GetGeneratedFilePaths)
                 ->Event("CompileGraph", &MaterialCanvasDocumentRequests::CompileGraph)
                 ->Event("QueueCompileGraph", &MaterialCanvasDocumentRequests::QueueCompileGraph)
                 ->Event("IsCompileGraphQueued", &MaterialCanvasDocumentRequests::IsCompileGraphQueued);
@@ -203,9 +204,8 @@ namespace MaterialCanvas
         GraphModel::GraphPtr graph;
         graph.reset(serializeContext->CloneObject(AZStd::any_cast<const GraphModel::Graph>(&loadResult.GetValue())));
 
-        CreateGraph(graph);
         m_modified = false;
-
+        CreateGraph(graph);
         QueueCompileGraph();
         return OpenSucceeded();
     }
@@ -305,9 +305,23 @@ namespace MaterialCanvas
         return true;
     }
 
+    GraphModel::GraphPtr MaterialCanvasDocument::GetGraph() const
+    {
+        return m_graph;
+    }
+
     GraphCanvas::GraphId MaterialCanvasDocument::GetGraphId() const
     {
         return m_graphId;
+    }
+
+    AZStd::string MaterialCanvasDocument::GetGraphName() const
+    {
+        // Sanitize the document name to remove any illegal characters that could not be used as symbols in generated code
+        AZStd::string documentName;
+        AZ::StringFunc::Path::GetFullFileName(m_absolutePath.c_str(), documentName);
+        AZ::StringFunc::Replace(documentName, ".materialcanvas.azasset", "");
+        return AtomToolsFramework::GetSymbolNameFromText(documentName);
     }
 
     const AZStd::vector<AZStd::string>& MaterialCanvasDocument::GetGeneratedFilePaths() const
@@ -324,6 +338,15 @@ namespace MaterialCanvas
         m_modified = false;
 
         AtomToolsFramework::AtomToolsDocument::Clear();
+    }
+
+    void MaterialCanvasDocument::OnGraphModelSlotModified([[maybe_unused]] GraphModel::SlotPtr slot)
+    {
+        m_modified = true;
+        BuildEditablePropertyGroups();
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
+        QueueCompileGraph();
     }
 
     void MaterialCanvasDocument::OnGraphModelRequestUndoPoint()
@@ -344,8 +367,6 @@ namespace MaterialCanvas
             m_modified = true;
             BuildEditablePropertyGroups();
             AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
-                m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoInvalidated, m_id);
-            AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
                 m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
             QueueCompileGraph();
         }
@@ -364,8 +385,6 @@ namespace MaterialCanvas
     void MaterialCanvasDocument::OnSelectionChanged()
     {
         BuildEditablePropertyGroups();
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
-            m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoInvalidated, m_id);
     }
 
     void MaterialCanvasDocument::RecordGraphState()
@@ -385,11 +404,8 @@ namespace MaterialCanvas
         GraphModel::GraphPtr graph = AZStd::make_shared<GraphModel::Graph>(m_graphContext);
         AZ::Utils::LoadObjectFromStreamInPlace(undoGraphStateStream, *graph.get());
 
-        CreateGraph(graph);
-
         m_modified = true;
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
-            m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoInvalidated, m_id);
+        CreateGraph(graph);
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
             m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
         QueueCompileGraph();
@@ -404,12 +420,12 @@ namespace MaterialCanvas
             m_graph = graph;
             m_graph->PostLoadSetup(m_graphContext);
 
-            BuildEditablePropertyGroups();
-            RecordGraphState();
-
             // The graph controller will create all of the scene items on construction.
             GraphModelIntegration::GraphManagerRequestBus::Broadcast(
                 &GraphModelIntegration::GraphManagerRequests::CreateGraphController, m_graphId, m_graph);
+
+            RecordGraphState();
+            BuildEditablePropertyGroups();
         }
     }
 
@@ -507,15 +523,9 @@ namespace MaterialCanvas
                 m_groups.emplace_back(group);
             }
         }
-    }
 
-    AZStd::string MaterialCanvasDocument::GetGraphName() const
-    {
-        // Sanitize the document name to remove any illegal characters that could not be used as symbols in generated code
-        AZStd::string documentName;
-        AZ::StringFunc::Path::GetFullFileName(m_absolutePath.c_str(), documentName);
-        AZ::StringFunc::Replace(documentName, ".materialcanvas.azasset", "");
-        return AtomToolsFramework::GetSymbolNameFromText(documentName);
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoInvalidated, m_id);
     }
 
     AZStd::string MaterialCanvasDocument::GetOutputPathFromTemplatePath(const AZStd::string& templateInputPath) const

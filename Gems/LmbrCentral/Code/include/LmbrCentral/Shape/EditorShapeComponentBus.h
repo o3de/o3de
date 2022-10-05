@@ -42,6 +42,10 @@ namespace LmbrCentral
 
         //! @brief Returns true if the shape color can be set by the user in the editor.
         virtual bool GetShapeColorIsEditable() = 0;
+
+        //! @brief Sets if the shape is visible in game view
+        //! @param visible true for shape to be visible
+        virtual void SetVisibleInGame(bool visible) = 0;
     };
 
     // Bus to service the Shape component requests event group

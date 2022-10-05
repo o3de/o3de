@@ -12,14 +12,14 @@
 #include <GraphCanvas/Components/NodePropertyDisplay/VectorDataInterface.h>
 
 // Graph Model
+#include <GraphModel/GraphModelBus.h>
 #include <GraphModel/Integration/IntegrationBus.h>
 #include <GraphModel/Model/Slot.h>
 
 namespace GraphModelIntegration
 {
     template<class Type, int ElementCount>
-    class VectorDataInterface
-        : public GraphCanvas::VectorDataInterface
+    class VectorDataInterface : public GraphCanvas::VectorDataInterface
     {
     public:
         AZ_CLASS_ALLOCATOR(VectorDataInterface, AZ::SystemAllocator, 0);
@@ -32,23 +32,17 @@ namespace GraphModelIntegration
 
         const char* GetLabel(int index) const override
         {
-            if (index == 0)
+            switch (index)
             {
+            case 0:
                 return "X";
-            }
-            else if (index == 1)
-            {
+            case 1:
                 return "Y";
-            }
-            else if (index == 2)
-            {
+            case 2:
                 return "Z";
-            }
-            else if (index == 3)
-            {
+            case 3:
                 return "W";
             }
-
             return "???";
         }
         AZStd::string GetStyle() const override
@@ -68,26 +62,32 @@ namespace GraphModelIntegration
         {
             if (GraphModel::SlotPtr slot = m_slot.lock())
             {
-                return slot->GetValue<Type>().GetElement(index);
+                if (index < ElementCount)
+                {
+                    return slot->GetValue<Type>().GetElement(index);
+                }
             }
-            else
-            {
-                return 0.0;
-            }
+            return 0.0;
         }
         void SetValue(int index, double value) override
         {
             if (GraphModel::SlotPtr slot = m_slot.lock())
             {
-                Type vector = slot->GetValue<Type>();
-                if (value != vector.GetElement(index))
+                if (index < ElementCount)
                 {
-                    GraphCanvas::GraphId graphCanvasSceneId;
-                    IntegrationBus::BroadcastResult(graphCanvasSceneId, &IntegrationBusInterface::GetActiveGraphCanvasSceneId);
-                    GraphCanvas::ScopedGraphUndoBatch undoBatch(graphCanvasSceneId);
+                    Type vector = slot->GetValue<Type>();
+                    if (value != vector.GetElement(index))
+                    {
+                        const GraphCanvas::GraphId graphCanvasSceneId = GetDisplay()->GetSceneId();
+                        GraphCanvas::ScopedGraphUndoBatch undoBatch(graphCanvasSceneId);
 
-                    vector.SetElement(index, aznumeric_cast<float>(value));
-                    slot->SetValue(vector);
+                        vector.SetElement(index, aznumeric_cast<float>(value));
+                        slot->SetValue(vector);
+                        GraphControllerNotificationBus::Event(
+                            graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelSlotModified, slot);
+                        GraphControllerNotificationBus::Event(
+                            graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelGraphModified, slot->GetParentNode());
+                    }
                 }
             }
         }

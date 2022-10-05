@@ -171,12 +171,12 @@ namespace PhysX::Benchmarks
 
         void PrePostSimulationEventHandler::PreTick()
         {
-            m_tickStart = AZStd::chrono::system_clock::now();
+            m_tickStart = AZStd::chrono::steady_clock::now();
         }
 
         void PrePostSimulationEventHandler::PostTick()
         {
-            auto tickElapsedMilliseconds = Types::double_milliseconds(AZStd::chrono::system_clock::now() - m_tickStart);
+            auto tickElapsedMilliseconds = Types::double_milliseconds(AZStd::chrono::steady_clock::now() - m_tickStart);
             m_subTickTimes.emplace_back(tickElapsedMilliseconds.count());
         }
 

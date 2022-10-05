@@ -53,7 +53,7 @@ namespace LandscapeCanvas
 
     const BaseNode::BaseNodeType TerrainSurfaceGradientListNode::GetBaseNodeType() const
     {
-        return BaseNode::TerrainExtender;
+        return BaseNode::TerrainSurfaceExtender;
     }
 
     const char* TerrainSurfaceGradientListNode::GetTitle() const

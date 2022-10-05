@@ -228,7 +228,7 @@ namespace PhysX::Benchmarks
             }
             return AZ::Vector3(x, y, z);
         };
-        
+
         auto boxShapeConfiguration = AZStd::make_shared<Physics::BoxShapeConfiguration>(AZ::Vector3(RigidBodyConstants::RigidBodys::BoxSize));
         Utils::GenerateColliderFuncPtr colliderGenerator = [&boxShapeConfiguration]([[maybe_unused]] int idx)
         {
@@ -249,11 +249,11 @@ namespace PhysX::Benchmarks
         {
             for (AZ::u32 i = 0; i < RigidBodyConstants::GameFramesToSimulate; i++)
             {
-                auto start = AZStd::chrono::system_clock::now();
+                auto start = AZStd::chrono::steady_clock::now();
                 StepScene1Tick(DefaultTimeStep);
 
                 //time each physics tick and store it to analyze
-                auto tickElapsedMilliseconds = Types::double_milliseconds(AZStd::chrono::system_clock::now() - start);
+                auto tickElapsedMilliseconds = Types::double_milliseconds(AZStd::chrono::steady_clock::now() - start);
                 tickTimes.emplace_back(tickElapsedMilliseconds.count());
             }
         }
@@ -336,11 +336,11 @@ namespace PhysX::Benchmarks
         {
             for (AZ::u32 i = 0; i < RigidBodyConstants::GameFramesToSimulate; i++)
             {
-                auto start = AZStd::chrono::system_clock::now();
+                auto start = AZStd::chrono::steady_clock::now();
                 StepScene1Tick(DefaultTimeStep);
 
                 //time each physics tick and store it to analyze
-                auto tickElapsedMilliseconds = Types::double_milliseconds(AZStd::chrono::system_clock::now() - start);
+                auto tickElapsedMilliseconds = Types::double_milliseconds(AZStd::chrono::steady_clock::now() - start);
                 tickTimes.emplace_back(tickElapsedMilliseconds.count());
             }
         }
@@ -476,7 +476,7 @@ namespace PhysX::Benchmarks
         Utils::GenerateMassFuncPtr massGenerator = [&rand]([[maybe_unused]] int idx) -> float {
             return rand.GetRandomFloat() * 25.0f + 5.0f;
         };
-        
+
         Utils::GenerateEntityIdFuncPtr entityIdGenerator = [](int idx) -> AZ::EntityId {
             return AZ::EntityId(static_cast<AZ::u64>(idx) + RigidBodyConstants::RigidBodys::RigidBodyEntityIdStart);
         };
@@ -531,11 +531,11 @@ namespace PhysX::Benchmarks
         {
             for (AZ::u32 i = 0; i < RigidBodyConstants::GameFramesToSimulate; i++)
             {
-                auto start = AZStd::chrono::system_clock::now();
+                auto start = AZStd::chrono::steady_clock::now();
                 StepScene1Tick(DefaultTimeStep);
 
                 //time each physics tick and store it to analyze
-                auto tickElapsedMilliseconds = Types::double_milliseconds(AZStd::chrono::system_clock::now() - start);
+                auto tickElapsedMilliseconds = Types::double_milliseconds(AZStd::chrono::steady_clock::now() - start);
                 tickTimes.emplace_back(tickElapsedMilliseconds.count());
             }
         }

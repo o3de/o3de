@@ -57,6 +57,10 @@ namespace AZ
             // SceneProcessingConfigRequestBus END
 
             void AreCustomNormalsUsed(bool &value) override;
+            void GetPolicyName(AZStd::string& result) const override
+            {
+                result = "SceneProcessingConfigSystemComponent";
+            }
 
             static void Reflect(AZ::ReflectContext* context);
 

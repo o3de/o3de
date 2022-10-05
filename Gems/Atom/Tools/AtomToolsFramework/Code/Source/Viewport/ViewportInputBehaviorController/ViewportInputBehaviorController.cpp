@@ -68,19 +68,24 @@ namespace AtomToolsFramework
         m_isCameraCentered = false;
     }
 
-    float ViewportInputBehaviorController::GetDistanceToObject() const
+    float ViewportInputBehaviorController::GetObjectRadiusMin() const
+    {
+        return 0.5f;
+    }
+
+    float ViewportInputBehaviorController::GetObjectRadius() const
+    {
+        float radius = 0.0f;
+        AZ::Vector3 center = AZ::Vector3::CreateZero();
+        m_objectBounds.GetAsSphere(center, radius);
+        return AZ::GetMax(radius, GetObjectRadiusMin());
+    }
+
+    float ViewportInputBehaviorController::GetObjectDistance() const
     {
         AZ::Vector3 cameraPosition = AZ::Vector3::CreateZero();
         AZ::TransformBus::EventResult(cameraPosition, m_cameraEntityId, &AZ::TransformBus::Events::GetWorldTranslation);
         return cameraPosition.GetDistance(m_objectPosition);
-    }
-
-    float ViewportInputBehaviorController::GetRadius() const
-    {
-        float radius = 0.5f;
-        AZ::Vector3 center = AZ::Vector3::CreateZero();
-        m_objectBounds.GetAsSphere(center, radius);
-        return radius;
     }
 
     void ViewportInputBehaviorController::UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event)
@@ -222,14 +227,18 @@ namespace AtomToolsFramework
         // Reset object entity transform
         AZ::TransformBus::Event(m_objectEntityId, &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateIdentity());
 
-        // Reset object entity bounds
-        m_objectBounds = AZ::Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), 0.5f);
+        // Get the world bounds from the object entity. If the bounds are invalid then use bounds with the default position and radius.
+        m_objectBounds = AZ::Aabb::CreateNull();
         AzFramework::BoundsRequestBus::EventResult(
             m_objectBounds, m_objectEntityId, &AzFramework::BoundsRequestBus::Events::GetWorldBounds);
+        if (!m_objectBounds.IsValid() || !m_objectBounds.IsFinite())
+        {
+            m_objectBounds = AZ::Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), GetObjectRadiusMin());
+        }
 
-        // reset camera
+        // Reset the camera to target the object entity with the default offset and rotation.
         m_objectPosition = m_objectBounds.GetCenter();
-        const float distanceMin = GetRadius() * 0.5f + DepthNear;
+        const float distanceMin = GetObjectRadius() * 0.5f + DepthNear;
         const float distance = distanceMin * StartingDistanceMultiplier;
         const AZ::Quaternion cameraRotation = AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisZ(), StartingRotationAngle);
         const AZ::Vector3 cameraPosition = m_objectPosition - cameraRotation.TransformVector(AZ::Vector3::CreateAxisY() * distance);

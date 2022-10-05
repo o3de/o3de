@@ -598,7 +598,7 @@ namespace AZStd::chrono
 
     constexpr day operator+(const day& x, const days& y) noexcept
     {
-        return day{ static_cast<unsigned>(unsigned{ x } + y.count()) };
+        return day{ static_cast<unsigned>(static_cast<int>(unsigned{ x }) + y.count()) };
     }
     constexpr day operator+(const days& x, const day& y) noexcept
     {

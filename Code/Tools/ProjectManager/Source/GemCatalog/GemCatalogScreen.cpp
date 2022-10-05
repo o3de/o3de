@@ -21,6 +21,8 @@
 #include <DownloadController.h>
 #include <ProjectUtils.h>
 #include <AdjustableHeaderWidget.h>
+#include <ScreensCtrl.h>
+#include <CreateAGemScreen.h>
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -71,6 +73,16 @@ namespace O3DE::ProjectManager
         connect(m_headerWidget, &GemCatalogHeaderWidget::AddGem, this, &GemCatalogScreen::OnAddGemClicked);
         connect(m_headerWidget, &GemCatalogHeaderWidget::UpdateGemCart, this, &GemCatalogScreen::UpdateAndShowGemCart);
         connect(m_downloadController, &DownloadController::Done, this, &GemCatalogScreen::OnGemDownloadResult);
+
+        ScreensCtrl* screensControl = qobject_cast<ScreensCtrl*>(parent);
+        if (screensControl)
+        {
+            ScreenWidget* createGemScreen = screensControl->FindScreen(ProjectManagerScreen::CreateGem);
+            if (createGemScreen)
+            {
+                connect(static_cast<CreateGem*>(createGemScreen), &CreateGem::GemCreated, this, &GemCatalogScreen::HandleGemCreated);
+            }
+        }
 
         QHBoxLayout* hLayout = new QHBoxLayout();
         hLayout->setMargin(0);
@@ -228,12 +240,20 @@ namespace O3DE::ProjectManager
                 AZ::Outcome<GemInfo, void> gemInfoResult = PythonBindingsInterface::Get()->GetGemInfo(directory);
                 if (gemInfoResult)
                 {
-                    m_gemModel->AddGem(gemInfoResult.GetValue<GemInfo>());
-                    m_gemModel->UpdateGemDependencies();
-                    m_proxyModel->sort(/*column=*/0);
+                    // We added this local gem so set it's status to downloaded
+                    GemInfo& addedGemInfo = gemInfoResult.GetValue<GemInfo>();
+                    addedGemInfo.m_downloadStatus = GemInfo::DownloadStatus::Downloaded;
+                    AddToGemModel(addedGemInfo);
                 }
             }
         }
+    }
+
+    void GemCatalogScreen::AddToGemModel(const GemInfo& gemInfo)
+    {
+        m_gemModel->AddGem(gemInfo);
+        m_gemModel->UpdateGemDependencies();
+        m_proxyModel->sort(/*column=*/0);
     }
 
     void GemCatalogScreen::Refresh()
@@ -353,13 +373,19 @@ namespace O3DE::ProjectManager
             }
             notification += (added ? tr(" activated") : tr(" deactivated"));
 
-            AzQtComponents::ToastConfiguration toastConfiguration(AzQtComponents::ToastType::Custom, notification, "");
-            toastConfiguration.m_customIconImage = ":/gem.svg";
-            toastConfiguration.m_borderRadius = 4;
-            toastConfiguration.m_duration = AZStd::chrono::milliseconds(3000);
-            m_notificationsView->ShowToastNotification(toastConfiguration);
+            ShowStandardToastNotification(notification);
         }
     }
+
+    void GemCatalogScreen::ShowStandardToastNotification(const QString& notification)
+    {
+        AzQtComponents::ToastConfiguration toastConfiguration(AzQtComponents::ToastType::Custom, notification, "");
+        toastConfiguration.m_customIconImage = ":/gem.svg";
+        toastConfiguration.m_borderRadius = 4;
+        toastConfiguration.m_duration = AZStd::chrono::milliseconds(3000);
+        m_notificationsView->ShowToastNotification(toastConfiguration);
+    }
+    
 
     void GemCatalogScreen::OnDependencyGemStatusChanged(const QString& gemName)
     {
@@ -681,6 +707,18 @@ namespace O3DE::ProjectManager
                 GemModel::SetDownloadStatus(*m_gemModel, index, GemInfo::DownloadFailed);
             }
         }
+    }
+
+    void GemCatalogScreen::HandleGemCreated(const GemInfo& gemInfo)
+    {
+        // This signal occurs only upon successful completion of creating a gem. As such, the gemInfo data is assumed to be valid.
+
+        // make sure the project gem catalog model is updated
+        AddToGemModel(gemInfo);
+
+        // create Toast Notification for project gem catalog
+        QString notification = tr("%1 has been created.").arg(gemInfo.m_displayName);
+        ShowStandardToastNotification(notification);
     }
 
     ProjectManagerScreen GemCatalogScreen::GetScreenEnum()

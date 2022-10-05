@@ -94,6 +94,11 @@ namespace AZ::DocumentPropertyEditor
 
     Dom::Value RowFilterAdapter::GenerateContents()
     {
+        if (!m_sourceAdapter)
+        {
+            return Dom::Value();
+        }
+
         auto filteredContents = m_sourceAdapter->GetContents();
         if (m_filterActive)
         {
@@ -116,15 +121,15 @@ namespace AZ::DocumentPropertyEditor
                         {
                             if (currMatch->m_matchesSelf)
                             {
-                                // node matches directly. All descendents automatically match if m_includeAllMatchDescendents is set
-                                if (!m_includeAllMatchDescendents)
+                                // node matches directly. All descendants automatically match if m_includeAllMatchDescendants is set
+                                if (!m_includeAllMatchDescendants)
                                 {
                                     cullUnmatchedChildRows(*valueIter, *matchIter);
                                 }
                             }
-                            else if (!currMatch->m_matchingDescendents.empty())
+                            else if (!currMatch->m_matchingDescendants.empty())
                             {
-                                // all nodes with matching descendents must be included so that there is a path to the matching node
+                                // all nodes with matching descendants must be included so that there is a path to the matching node
                                 cullUnmatchedChildRows(*valueIter, *matchIter);
                             }
                             else
@@ -155,7 +160,7 @@ namespace AZ::DocumentPropertyEditor
         {
             PopulateNodesAtPath(Dom::Path({Dom::PathEntry(topIndex)}), false);
         }
-        NotifyResetDocument();
+        NotifyResetDocument(DocumentResetType::HardReset);
     }
 
     void RowFilterAdapter::HandleDomChange(const Dom::Patch& patch)
@@ -164,29 +169,34 @@ namespace AZ::DocumentPropertyEditor
         for (auto operationIterator = patch.begin(), endIterator = patch.end(); operationIterator != endIterator; ++operationIterator)
         {
             const auto& patchPath = operationIterator->GetDestinationPath();
-            auto rowPath = GetRowPath(patchPath);
-
             if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Remove)
             {
-                auto matchingRow = GetMatchNodeAtPath(rowPath);
-                if (rowPath == patchPath)
+                auto matchingRow = GetMatchNodeAtPath(patchPath);
+                if (matchingRow)
                 {
                     // node being removed is a row. We need to remove it from our graph
                     auto& parentContainer = matchingRow->m_parentNode->m_childMatchState;
-                    parentContainer.erase(parentContainer.begin() + (patchPath.end() - 1)->GetIndex());
+                    auto& lastPathEntry = *(patchPath.end() - 1);
+                    AZ_Assert(lastPathEntry.IsIndex(), "this removal entry must be an index!");
+                    parentContainer.erase(parentContainer.begin() + lastPathEntry.GetIndex());
 
-                    // update former parent's match state, as its m_matchingDescendents may have changed
+                    // update former parent's match state, as its m_matchingDescendants may have changed
                     UpdateMatchState(matchingRow->m_parentNode);
                 }
                 else
                 {
                     // removed node wasn't a row, so we need to re-cache the owning row's cached info
-                    CacheDomInfoForNode(sourceContents[rowPath], matchingRow);
-                    UpdateMatchState(matchingRow);
+                    auto parentPath = patchPath;
+                    parentPath.Pop();
+                    auto parentRow = GetMatchNodeAtPath(parentPath);
+                    CacheDomInfoForNode(sourceContents[parentPath], parentRow);
+                    UpdateMatchState(parentRow);
                 }
             }
             else if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Replace)
             {
+                auto rowPath = GetRowPath(patchPath);
+
                 // replace operations can change child values from or into rows. Handle all cases
                 auto existingMatchInfo = GetMatchNodeAtPath(patchPath);
                 if (patchPath == rowPath)
@@ -195,7 +205,7 @@ namespace AZ::DocumentPropertyEditor
                     PopulateNodesAtPath(patchPath, true);
                     if (!existingMatchInfo)
                     {
-                        // this value wasn't a row before, so its parent needs to recache its info
+                        // this value wasn't a row before, so its parent needs to re-cache its info
                         auto parentNode = GetMatchNodeAtPath(patchPath)->m_parentNode;
                         auto parentPath = patchPath;
                         parentPath.Pop();
@@ -212,7 +222,7 @@ namespace AZ::DocumentPropertyEditor
                         auto& parentContainer = existingMatchInfo->m_parentNode->m_childMatchState;
                         parentContainer.erase(parentContainer.begin() + (patchPath.end() - 1)->GetIndex());
 
-                        // update former parent's match state, as its m_matchingDescendents may have changed
+                        // update former parent's match state, as its m_matchingDescendants may have changed
                         UpdateMatchState(existingMatchInfo->m_parentNode);
                     }
                     else
@@ -227,9 +237,10 @@ namespace AZ::DocumentPropertyEditor
             }
             else if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Add)
             {
+                auto rowPath = GetRowPath(patchPath);
                 if (rowPath == patchPath)
                 {
-                    // given path is a new row, populate our tree with match information for this node and any row descendents
+                    // given path is a new row, populate our tree with match information for this node and any row descendants
                     PopulateNodesAtPath(rowPath, false);
                 }
                 else
@@ -315,19 +326,24 @@ namespace AZ::DocumentPropertyEditor
             };
 
             // we should start with the parentPath, so peel off the new index from the end of the address
-            size_t newRowIndex = startingPath[startingPath.Size() - 1].GetIndex();
-            startingPath.Pop();
-            auto parentMatchState = GetMatchNodeAtPath(startingPath);
+            auto& lastPathEntry = startingPath[startingPath.Size() - 1];
+            auto parentPath = startingPath;
+            parentPath.Pop();
+            auto parentMatchState = GetMatchNodeAtPath(parentPath);
             
+            MatchInfoNode* addedChild = nullptr;
             if (replaceExisting)
             {
                 // destroy existing entry, if present
+                AZ_Assert(lastPathEntry.IsIndex(), "if we're replacing, the last entry in the the path must by a valid index");
+                auto newRowIndex = lastPathEntry.GetIndex();
                 const bool hasEntryToReplace = (parentMatchState->m_childMatchState.size() > newRowIndex);
                 AZ_Assert(hasEntryToReplace, "PopulateNodesAtPath was called with replaceExisting, but no existing entry exists!");
                 if (hasEntryToReplace)
                 {
                     delete parentMatchState->m_childMatchState[newRowIndex];
-                    parentMatchState->m_childMatchState[newRowIndex] = NewMatchInfoNode(parentMatchState);
+                    addedChild = NewMatchInfoNode(parentMatchState);
+                    parentMatchState->m_childMatchState[newRowIndex] = addedChild;
                 }
                 else
                 {
@@ -337,14 +353,16 @@ namespace AZ::DocumentPropertyEditor
             }
             else
             {
+                auto newRowIndex = lastPathEntry.GetIndex();
+
                 // inserting or appending child entry, add it to the correct position
+                addedChild = NewMatchInfoNode(parentMatchState);
                 parentMatchState->m_childMatchState.insert(
                     parentMatchState->m_childMatchState.begin() + newRowIndex,
-                    NewMatchInfoNode(parentMatchState));
+                    addedChild);
             }
-            auto addedChild = parentMatchState->m_childMatchState[newRowIndex];
 
-            // recursively add descendents and cache their match status
+            // recursively add descendants and cache their match status
             const auto& sourceContents = m_sourceAdapter->GetContents();
             recursivelyRegenerateMatches(addedChild, sourceContents[sourcePath]);
         }
@@ -354,13 +372,13 @@ namespace AZ::DocumentPropertyEditor
     {
         auto includeInFilter = [](MatchInfoNode* node) -> bool
         {
-            return (node->m_matchesSelf || !node->m_matchingDescendents.empty());
+            return (node->m_matchesSelf || !node->m_matchingDescendants.empty());
         };
         bool usedToMatch = includeInFilter(rowState);
 
         rowState->m_matchesSelf = MatchesFilter(rowState); //update own match state
 
-        auto& matchingChildren = rowState->m_matchingDescendents;
+        auto& matchingChildren = rowState->m_matchingDescendants;
         for (auto childIter = matchingChildren.begin(); childIter != matchingChildren.end(); /* omitted */)
         {
             // it's a child's job to update its parents, but a parent still has to check if any
@@ -377,7 +395,7 @@ namespace AZ::DocumentPropertyEditor
 
         }
 
-        // update each ancestor until updating their m_matchingDescendents doesn't change their inclusion state
+        // update each ancestor until updating their m_matchingDescendants doesn't change their inclusion state
         MatchInfoNode* currState = rowState;
         bool nowMatches = includeInFilter(currState);
         while (currState->m_parentNode && nowMatches != usedToMatch)
@@ -385,11 +403,11 @@ namespace AZ::DocumentPropertyEditor
             usedToMatch = includeInFilter(currState->m_parentNode);
             if (nowMatches)
             {
-                currState->m_parentNode->m_matchingDescendents.insert(currState);
+                currState->m_parentNode->m_matchingDescendants.insert(currState);
             }
             else
             {
-                currState->m_parentNode->m_matchingDescendents.erase(currState);
+                currState->m_parentNode->m_matchingDescendants.erase(currState);
             }
             nowMatches = includeInFilter(currState->m_parentNode);
             currState = currState->m_parentNode;

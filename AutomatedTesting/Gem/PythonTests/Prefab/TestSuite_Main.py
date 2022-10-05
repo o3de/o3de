@@ -74,3 +74,9 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
 
     class test_PrefabNotifications_RootPrefabLoadedNotificationsReceived(EditorSharedTest):
         from .tests.prefab_notifications import PrefabNotifications_RootPrefabLoadedNotificationsReceived as test_module
+
+    class test_EditEntity_UnderImmediateInstance(EditorSharedTest):
+        from .tests.overrides import EditEntity_UnderImmediateInstance as test_module
+
+    class test_EditEntity_UnderNestedInstance(EditorSharedTest):
+        from .tests.overrides import EditEntity_UnderNestedInstance as test_module

@@ -48,7 +48,7 @@ namespace O3DE::ProjectManager
         AZ::Outcome<GemInfo> GetGemInfo(const QString& path, const QString& projectPath = {}) override;
         AZ::Outcome<QVector<GemInfo>, AZStd::string> GetEngineGemInfos() override;
         AZ::Outcome<QVector<GemInfo>, AZStd::string> GetAllGemInfos(const QString& projectPath) override;
-        AZ::Outcome<QVector<AZStd::string>, AZStd::string> GetEnabledGemNames(const QString& projectPath) override;
+        AZ::Outcome<QVector<AZStd::string>, AZStd::string> GetEnabledGemNames(const QString& projectPath) const override;
         AZ::Outcome<void, AZStd::string> RegisterGem(const QString& gemPath, const QString& projectPath = {}) override;
         AZ::Outcome<void, AZStd::string> UnregisterGem(const QString& gemPath, const QString& projectPath = {}) override;
 
@@ -84,7 +84,8 @@ namespace O3DE::ProjectManager
 
         // Templates
         AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplates() override;
-        AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplatesForAllRepos() override;
+        AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplatesForRepo(const QString& repoUri) const override;
+        AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplatesForAllRepos() const override;
         AZ::Outcome<QVector<TemplateInfo>> GetGemTemplates() override;
 
         void AddErrorString(AZStd::string errorString) override;
@@ -102,8 +103,8 @@ namespace O3DE::ProjectManager
         GemInfo GemInfoFromPath(pybind11::handle path, pybind11::handle pyProjectPath);
         GemRepoInfo GetGemRepoInfo(pybind11::handle repoUri);
         ProjectInfo ProjectInfoFromPath(pybind11::handle path);
-        ProjectTemplateInfo ProjectTemplateInfoFromPath(pybind11::handle path);
-        TemplateInfo TemplateInfoFromPath(pybind11::handle path);
+        ProjectTemplateInfo ProjectTemplateInfoFromPath(pybind11::handle path) const;
+        TemplateInfo TemplateInfoFromPath(pybind11::handle path) const;
         AZ::Outcome<void, AZStd::string> GemRegistration(const QString& gemPath, const QString& projectPath, bool remove = false);
         bool StopPython();
         IPythonBindings::ErrorPair GetErrorPair();

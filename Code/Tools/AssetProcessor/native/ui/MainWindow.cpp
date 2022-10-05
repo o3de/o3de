@@ -58,7 +58,6 @@
 #include <QKeyEvent>
 #include <QFileDialog>
 
-static const char* g_showContextDetailsKey = "ShowContextDetailsTable";
 static const QString g_jobFilteredSearchWidgetState = QStringLiteral("jobFilteredSearchWidget");
 static const qint64 AssetTabFilterUpdateIntervalMs = 5000;
 
@@ -151,6 +150,12 @@ MainWindow::Config MainWindow::loadConfig(QSettings& settings)
         ConfigHelpers::read<int>(settings, QStringLiteral("LogTypeColumnWidth"), config.logTypeColumnWidth);
     }
 
+    // Event Log Line Details
+    {
+        ConfigHelpers::GroupGuard eventLogDetails(&settings, QStringLiteral("EventLogLineDetails"));
+        ConfigHelpers::read<int>(settings, QStringLiteral("contextDetailsTableMaximumRows"), config.contextDetailsTableMaximumRows);
+    }
+
     return config;
 }
 
@@ -166,6 +171,8 @@ MainWindow::Config MainWindow::defaultConfig()
     config.jobCompletedColumnWidth = 160;
 
     config.logTypeColumnWidth = 150;
+
+    config.contextDetailsTableMaximumRows = 10;
 
     return config;
 }
@@ -337,29 +344,7 @@ void MainWindow::Activate()
     ui->jobContextLogTableView->setItemDelegate(new AzQtComponents::TableViewItemDelegate(ui->jobContextLogTableView));
     ui->jobContextLogTableView->setExpandOnSelection();
 
-    // Don't collapse the jobContextContainer
-    ui->jobDialogSplitter->setCollapsible(2, false);
-
-    // Note: the settings can't be used in ::MainWindow(), because the application name
-    // hasn't been set up and therefore the settings will load from somewhere different than later
-    // on.
-    QSettings settings;
-    bool showContextDetails = settings.value(g_showContextDetailsKey, false).toBool();
-    ui->jobContextLogDetails->setChecked(showContextDetails);
-
-    // The context log details are shown by default, so only do anything with them on startup
-    // if they should be hidden based on the loaded settings
-    if (!showContextDetails)
-    {
-        SetContextLogDetailsVisible(showContextDetails);
-    }
-
-    connect(ui->jobContextLogDetails, &QCheckBox::toggled, this, [this](bool visible) {
-        SetContextLogDetailsVisible(visible);
-
-        QSettings settingsObj;
-        settingsObj.setValue(g_showContextDetailsKey, visible);
-    });
+    ui->jobContextContainer->setVisible(false);
 
     connect(ui->jobLogTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &MainWindow::JobLogSelectionChanged);
 
@@ -594,6 +579,10 @@ void MainWindow::Activate()
     // Tools tab:
     connect(ui->fullScanButton, &QPushButton::clicked, this, &MainWindow::OnRescanButtonClicked);
 
+    // Note: the settings can't be used in ::MainWindow(), because the application name
+    // hasn't been set up and therefore the settings will load from somewhere different than later
+    // on.
+    QSettings settings;
     settings.beginGroup("Options");
     bool zeroAnalysisModeFromSettings = settings.value("EnableZeroAnalysis", QVariant(true)).toBool();
     bool enableBuilderDebugFlag = settings.value("EnableBuilderDebugFlag", QVariant(false)).toBool();
@@ -1679,44 +1668,24 @@ void MainWindow::LogSortFilterProxy::onTypeFilterChanged(const AzQtComponents::S
     endResetModel();
 }
 
-void MainWindow::SetContextLogDetailsVisible(bool visible)
-{
-    using namespace AzQtComponents;
-
-    const char* soloClass = "solo"; // see AssetsTab.qss; this is what provides the right margin around the widgets for the context details
-
-    if (visible)
-    {
-        Style::removeClass(ui->jobContextLogDetails, soloClass);
-
-        ui->jobLogLayout->removeWidget(ui->jobContextLogBar);
-        ui->jobContextLayout->insertWidget(0, ui->jobContextLogBar);
-    }
-    else
-    {
-        Style::addClass(ui->jobContextLogDetails, soloClass);
-
-        ui->jobContextLayout->removeWidget(ui->jobContextLogBar);
-        ui->jobLogLayout->addWidget(ui->jobContextLogBar);
-    }
-    ui->jobContextContainer->setVisible(visible);
-    ui->jobContextLogLabel->setVisible(visible);
-}
-
 void MainWindow::SetContextLogDetails(const QMap<QString, QString>& details)
 {
     auto model = qobject_cast<AzToolsFramework::Logging::ContextDetailsLogTableModel*>(ui->jobContextLogTableView->model());
-
-    if (details.isEmpty())
-    {
-        ui->jobContextLogStackedWidget->setCurrentWidget(ui->jobContextLogPlaceholderLabel);
-    }
-    else
-    {
-        ui->jobContextLogStackedWidget->setCurrentWidget(ui->jobContextLogTableView);
-    }
-
     model->SetDetails(details);
+
+    if (!details.isEmpty())
+    {
+        int tableRows = details.size();
+        if(tableRows > m_config.contextDetailsTableMaximumRows)
+        {
+            tableRows = m_config.contextDetailsTableMaximumRows;
+        }
+
+        ui->jobContextLogTableView->setMinimumHeight(ui->jobContextLogTableView->sizeHintForRow(0) * tableRows);
+        ui->jobDialogSplitter->setSizes({ ui->jobDialogSplitter->height(), ui->jobDialogSplitter->height(), 0 });
+    }
+
+    ui->jobContextContainer->setVisible(!details.isEmpty());
 }
 
 void MainWindow::ClearContextLogDetails()
