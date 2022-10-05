@@ -364,7 +364,7 @@ void Connection::OnConnectionEstablished(QString ipAddress, quint16 port)
     SetPort(port);
     SetStatus(Connected);
 
-    Q_EMIT ConnectionReady(ConnectionId(), this);
+    Q_EMIT ConnectionReady(ConnectionId(), AssetPlatforms());
 }
 
 void Connection::ReceiveMessage(unsigned int type, unsigned int serial, QByteArray payload)

@@ -103,7 +103,7 @@ Q_SIGNALS:
 
     void ConnectionError(unsigned int connId, QString error);
 
-    void ConnectionReady(unsigned int connectionId, Connection* connection);
+    void ConnectionReady(unsigned int connectionId, QStringList platforms);
 
     void ReadyToQuit(QObject* source);
 
