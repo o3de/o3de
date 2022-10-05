@@ -70,6 +70,8 @@ namespace AzToolsFramework::Prefab
 
         // Currently hide this button until we can correctly disable/enable it based on context.
         m_backButton->hide();
+
+        Refresh();
     }
 
     void PrefabViewportFocusPathHandler::OnPrefabFocusChanged(
@@ -85,14 +87,18 @@ namespace AzToolsFramework::Prefab
 
     void PrefabViewportFocusPathHandler::Refresh()
     {
-        // Push new Path
-        m_breadcrumbsWidget->pushPath(m_prefabFocusPublicInterface->GetPrefabFocusPath(m_editorEntityContextId).c_str());
+        if (int prefabFocusPathLength = m_prefabFocusPublicInterface->GetPrefabFocusPathLength(m_editorEntityContextId);
+            prefabFocusPathLength > 0)
+        {
+            // Push new Path
+            m_breadcrumbsWidget->pushPath(m_prefabFocusPublicInterface->GetPrefabFocusPath(m_editorEntityContextId).c_str());
 
-        // Set root icon
-        m_breadcrumbsWidget->setIconAt(0, QString(":/Level/level.svg"));
+            // Set root icon
+            m_breadcrumbsWidget->setIconAt(0, QString(":/Level/level.svg"));
 
-        // If root instance is focused, disable the back button; else enable it.
-        m_backButton->setEnabled(m_prefabFocusPublicInterface->GetPrefabFocusPathLength(m_editorEntityContextId) > 1);
+            // If root instance is focused, disable the back button; else enable it.
+            m_backButton->setEnabled(prefabFocusPathLength > 1);
+        }
     }
 
 } // namespace AzToolsFramework::Prefab

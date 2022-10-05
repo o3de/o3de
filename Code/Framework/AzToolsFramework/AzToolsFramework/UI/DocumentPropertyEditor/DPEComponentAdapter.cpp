@@ -20,9 +20,9 @@ namespace AZ::DocumentPropertyEditor
 
     ComponentAdapter::~ComponentAdapter()
     {
+        AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::BusDisconnect();
         AzToolsFramework::ToolsApplicationEvents::Bus::Handler::BusDisconnect();
         AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler::BusDisconnect(m_componentInstance->GetEntityId());
-        delete m_componentInstance;
     }
 
     void ComponentAdapter::OnEntityComponentPropertyChanged(AZ::ComponentId componentId)
@@ -53,11 +53,26 @@ namespace AZ::DocumentPropertyEditor
         }
     }
 
+    void ComponentAdapter::RequestRefresh(AzToolsFramework::PropertyModificationRefreshLevel level)
+    {
+        if (level > m_queuedRefreshLevel)
+        {
+            m_queuedRefreshLevel = level;
+            QTimer::singleShot(
+                0,
+                [this]()
+                {
+                    DoRefresh();
+                });
+        }
+    }
+
     void ComponentAdapter::SetComponent(AZ::Component* componentInstance)
     {
         m_componentInstance = componentInstance;
         AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler::BusConnect(m_componentInstance->GetEntityId());
         AzToolsFramework::ToolsApplicationEvents::Bus::Handler::BusConnect();
+        AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::BusConnect();
         AZ::Uuid instanceTypeId = azrtti_typeid(m_componentInstance);
         SetValue(m_componentInstance, instanceTypeId);
     }

@@ -308,24 +308,33 @@ namespace AZ
             {
                 // Create a render pipeline from the specified asset for the window context and add the pipeline to the scene.
                 // When running with no Asset Processor (for example in release), CompileAssetSync will return AssetStatus_Unknown.
-                AzFramework::AssetSystem::AssetStatus status = AzFramework::AssetSystem::AssetStatus_Unknown;
-                const AZ::CVarFixedString pipelineName = static_cast<AZ::CVarFixedString>(r_default_pipeline_name);
-                AzFramework::AssetSystemRequestBus::BroadcastResult(status, &AzFramework::AssetSystemRequestBus::Events::CompileAssetSync, pipelineName.data());
-                
-                AZ_Assert(status == AzFramework::AssetSystem::AssetStatus_Compiled || status == AzFramework::AssetSystem::AssetStatus_Unknown, "Could not compile the default render pipeline at '%s'", pipelineName.c_str());
-
-                Data::Asset<RPI::AnyAsset> pipelineAsset = RPI::AssetUtils::LoadAssetByProductPath<RPI::AnyAsset>(pipelineName.data(), RPI::AssetUtils::TraceLevel::Error);
-                RPI::RenderPipelineDescriptor renderPipelineDescriptor = *RPI::GetDataFromAnyAsset<RPI::RenderPipelineDescriptor>(pipelineAsset);
-                renderPipelineDescriptor.m_name = AZStd::string::format("%s_%i", renderPipelineDescriptor.m_name.c_str(), viewportContext->GetId());
-
-                // The default pipeline determines the initial MSAA state for the application
-                AZ::RPI::RPISystemInterface::Get()->SetApplicationMultisampleState(renderPipelineDescriptor.m_renderSettings.m_multisampleState);
-
-                if (!scene->GetRenderPipeline(AZ::Name(renderPipelineDescriptor.m_name)))
+                AZ::CVarFixedString pipelineName = static_cast<AZ::CVarFixedString>(r_default_pipeline_name);
+                AZ::RPI::XRRenderingInterface* xrSystem = AZ::RPI::RPISystemInterface::Get()->GetXRSystem();
+                if (xrSystem)
                 {
-                    RPI::RenderPipelinePtr renderPipeline = RPI::RenderPipeline::CreateRenderPipelineForWindow(renderPipelineDescriptor, *viewportContext->GetWindowContext().get());
-                    pipelineAsset.Release();
-                    scene->AddRenderPipeline(renderPipeline);
+                    //OpenXr uses low end render pipeline
+                    pipelineName = "passes/LowEndRenderPipeline.azasset";
+                }
+
+                bool isPipelineAssetLoadSuccessfull = true;
+                // Load XR pipelines if applicable
+                if (xrSystem)
+                {
+                    for (AZ::u32 i = 0; i < xrSystem->GetNumViews(); i++)
+                    {
+                        AZ::RPI::ViewType viewType = i == 0 ? AZ::RPI::ViewType::XrLeft : AZ::RPI::ViewType::XrRight;
+                        AZStd::string pipelineAssetName =
+                            i == 0 ? "passes/XRLeftRenderPipeline.azasset" : "passes/XRRightRenderPipeline.azasset";
+                        bool applyMSAAState = false; //Use the sampling state from the default pipeline
+                        isPipelineAssetLoadSuccessfull &= LoadPipeline(scene, viewportContext, pipelineAssetName, viewType, applyMSAAState);
+                    }
+                }
+
+                // Load the main default pipeline
+                isPipelineAssetLoadSuccessfull &= LoadPipeline(scene, viewportContext, pipelineName, AZ::RPI::ViewType::Default, true);
+                if (!isPipelineAssetLoadSuccessfull)
+                {
+                    return false;
                 }
 
                 // As part of our initialization we need to create the BRDF texture generation pipeline
@@ -365,6 +374,48 @@ namespace AZ
                 }
 
                 return true;
+            }
+
+            bool BootstrapSystemComponent::LoadPipeline( AZ::RPI::ScenePtr scene, AZ::RPI::ViewportContextPtr viewportContext,
+                                                    AZStd::string_view pipelineName, AZ::RPI::ViewType viewType, bool applyMSAAState)
+            {
+                AzFramework::AssetSystem::AssetStatus status = AzFramework::AssetSystem::AssetStatus_Unknown;
+                AzFramework::AssetSystemRequestBus::BroadcastResult(
+                    status, &AzFramework::AssetSystemRequestBus::Events::CompileAssetSync, pipelineName.data());
+                AZ_Assert(
+                    status == AzFramework::AssetSystem::AssetStatus_Compiled || status == AzFramework::AssetSystem::AssetStatus_Unknown,
+                    "Could not compile the default render pipeline at '%s'",
+                    pipelineName.data());
+
+                Data::Asset<RPI::AnyAsset> pipelineAsset =
+                    RPI::AssetUtils::LoadAssetByProductPath<RPI::AnyAsset>(pipelineName.data(), RPI::AssetUtils::TraceLevel::Error);
+                if (pipelineAsset)
+                {
+                    RPI::RenderPipelineDescriptor renderPipelineDescriptor =
+                        *RPI::GetDataFromAnyAsset<RPI::RenderPipelineDescriptor>(pipelineAsset);
+                    renderPipelineDescriptor.m_name =
+                        AZStd::string::format("%s_%i", renderPipelineDescriptor.m_name.c_str(), viewportContext->GetId());
+
+                    if (applyMSAAState)
+                    {
+                        AZ::RPI::RPISystemInterface::Get()->SetApplicationMultisampleState(
+                            renderPipelineDescriptor.m_renderSettings.m_multisampleState);
+                    }
+
+                    if (!scene->GetRenderPipeline(AZ::Name(renderPipelineDescriptor.m_name)))
+                    {
+                        RPI::RenderPipelinePtr renderPipeline = RPI::RenderPipeline::CreateRenderPipelineForWindow(
+                            renderPipelineDescriptor, *viewportContext->GetWindowContext().get(), viewType);
+                        pipelineAsset.Release();
+                        scene->AddRenderPipeline(renderPipeline);
+                    }
+                    return true;
+                }
+                else
+                {
+                    AZ_Error("AtomBootstrap", false, "Pipeline file failed to load from path: %s.", pipelineName.data());
+                    return false;
+                }
             }
 
             void BootstrapSystemComponent::CreateDefaultRenderPipeline()

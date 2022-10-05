@@ -17,16 +17,15 @@
 #include <PythonBindings.h>
 #endif
 
-class QButtonGroup;
-class QDialogButtonBox;
-class QRadioButton;
-class QScrollArea;
-class QVBoxLayout;
+QT_FORWARD_DECLARE_CLASS(QButtonGroup)
+QT_FORWARD_DECLARE_CLASS(QDialogButtonBox)
+QT_FORWARD_DECLARE_CLASS(QRadioButton)
+QT_FORWARD_DECLARE_CLASS(QScrollArea)
+QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
+QT_FORWARD_DECLARE_CLASS(QStackedWidget)
 
 namespace O3DE::ProjectManager
 {
-    class TabWidget;
-
     class CreateGem : public ScreenWidget
     {
         Q_OBJECT
@@ -35,21 +34,26 @@ namespace O3DE::ProjectManager
         ~CreateGem() = default;
 
     signals:
-        void CreateButtonPressed(const GemInfo& gemInfo);
+        void GemCreated(const GemInfo& gemInfo);
 
     private slots:
         void HandleBackButton();
         void HandleNextButton();
-        void UpdateNextButtonToCreate();
+        void HandleGemTemplateSelectionTab();
+        void HandleGemDetailsTab();
+        void HandleGemCreatorDetailsTab();
 
     private:
         void LoadButtonsFromGemTemplatePaths(QVBoxLayout* gemSetupLayout);
         QScrollArea* CreateGemSetupScrollArea();
         QScrollArea* CreateGemDetailsScrollArea();
         QScrollArea* CreateGemCreatorScrollArea();
+        QFrame* CreateTabButtonsFrame();
+        QFrame* CreateTabPaneFrame();
         bool ValidateGemTemplateLocation();
         bool ValidateGemDisplayName();
         bool ValidateGemName();
+        bool ValidateGemPath();
         bool ValidateFormNotEmpty(FormLineEditWidget* form);
         bool ValidateRepositoryURL();
 
@@ -76,13 +80,22 @@ namespace O3DE::ProjectManager
         FormLineEditWidget* m_originURL = nullptr;
         FormLineEditWidget* m_repositoryURL = nullptr;
 
-        TabWidget* m_tabWidget;
+        QStackedWidget* m_stackWidget = nullptr;
 
         QDialogButtonBox* m_backNextButtons = nullptr;
         QPushButton* m_backButton = nullptr;
         QPushButton* m_nextButton = nullptr;
 
+        
+        QRadioButton* m_gemTemplateSelectionTab = nullptr;
+        QRadioButton* m_gemDetailsTab = nullptr;
+        QRadioButton* m_gemCreatorDetailsTab = nullptr;
+
         GemInfo m_createGemInfo;
+
+        static constexpr int GemTemplateSelectionScreen = 0;
+        static constexpr int GemDetailsScreen = 1;
+        static constexpr int GemCreatorDetailsScreen = 2;
     };
 
 

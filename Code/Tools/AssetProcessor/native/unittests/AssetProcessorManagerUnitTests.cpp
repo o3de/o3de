@@ -2959,7 +2959,7 @@ namespace AssetProcessor
             {
                 // Verify FileC jobinfo
                 AssetBuilderSDK::SourceFileDependency& source = jobDetail.m_jobDependencyList[0].m_jobDependency.m_sourceFile;
-                UNIT_TEST_EXPECT_TRUE(QString(source.m_sourceFileDependencyPath.c_str()).compare("FileB.txt") == 0);
+                UNIT_TEST_EXPECT_TRUE(source.m_sourceFileDependencyUUID == sourceFileBUuid);
                 UNIT_TEST_EXPECT_TRUE(QString(jobDetail.m_jobDependencyList[0].m_jobDependency.m_jobKey.c_str()).compare("yyy") == 0);
 
                 response.m_outputProducts.clear();

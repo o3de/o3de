@@ -65,6 +65,8 @@ private:
 
     QPushButton* m_closeButton = nullptr;
     QSvgWidget* m_busySpinner = nullptr;
+    
+    friend class SceneSettingsCard;
 };
 
 AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING

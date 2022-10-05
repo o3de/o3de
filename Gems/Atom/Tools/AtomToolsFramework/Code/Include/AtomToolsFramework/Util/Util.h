@@ -28,6 +28,45 @@ class QMenu;
 class QMimeData;
 class QWidget;
 
+// Macros for printing information to the console if a condition is met.
+#if defined(AZ_ENABLE_TRACING)
+#define AZ_TracePrintf_IfTrue(window, expression, ...)\
+    AZ_PUSH_DISABLE_WARNING(4127, "-Wunknown-warning-option")\
+    if (expression)\
+    {\
+        AZ_TraceFmtCompileTimeCheck(\
+            expression,\
+            AZ_VA_HAS_ARGS(__VA_ARGS__),\
+            "String used in place of boolean expression for AZ_TracePrintf_IfTrue.",\
+            "Did you mean AZ_TracePrintf_IfTrue(" #window ", true, \"%s\", " #expression "); ?",\
+            "Did you mean AZ_TracePrintf_IfTrue(" #window ", true, " #expression ", " #__VA_ARGS__ "); ?");\
+        AZ::Debug::Trace::Instance().Printf(window, __VA_ARGS__);\
+    }\
+    AZ_POP_DISABLE_WARNING
+
+#define AZ_TracePrintfOnce_IfTrue(window, expression, ...)\
+    AZ_PUSH_DISABLE_WARNING(4127, "-Wunknown-warning-option")\
+    if (expression)\
+    {\
+        AZ_TraceFmtCompileTimeCheck(\
+            expression,\
+            AZ_VA_HAS_ARGS(__VA_ARGS__),\
+            "String used in place of boolean expression for AZ_TracePrintfOnce_IfTrue.",\
+            "Did you mean AZ_TracePrintfOnce_IfTrue(" #window ", true, \"%s\", " #expression "); ?",\
+            "Did you mean AZ_TracePrintfOnce_IfTrue(" #window ", true, " #expression ", " #__VA_ARGS__ "); ?");\
+        static bool AZ_CONCAT_VAR_NAME(azTraceDisplayed, __LINE__) = false;\
+        if (!AZ_CONCAT_VAR_NAME(azTraceDisplayed, __LINE__))\
+        {\
+            AZ::Debug::Trace::Instance().Printf(window, __VA_ARGS__);\
+            AZ_CONCAT_VAR_NAME(azTraceDisplayed, __LINE__) = true;\
+        }\
+    }\
+    AZ_POP_DISABLE_WARNING
+#else // !AZ_ENABLE_TRACING
+#define AZ_TracePrintf_IfTrue(...)
+#define AZ_TracePrintfOnce_IfTrue(...)
+#endif
+
 namespace AtomToolsFramework
 {
     using LoadImageAsyncCallback = AZStd::function<void(const QImage&)>;

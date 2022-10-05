@@ -8,6 +8,7 @@
 
 add_subdirectory(asset_processor_tests)
 add_subdirectory(fbx_tests)
+add_subdirectory(scene_settings_tests)
 
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
 ## AP Python Tests ##

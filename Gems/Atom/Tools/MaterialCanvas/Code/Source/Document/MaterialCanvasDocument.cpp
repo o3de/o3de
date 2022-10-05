@@ -204,9 +204,8 @@ namespace MaterialCanvas
         GraphModel::GraphPtr graph;
         graph.reset(serializeContext->CloneObject(AZStd::any_cast<const GraphModel::Graph>(&loadResult.GetValue())));
 
-        CreateGraph(graph);
         m_modified = false;
-
+        CreateGraph(graph);
         QueueCompileGraph();
         return OpenSucceeded();
     }
@@ -341,6 +340,15 @@ namespace MaterialCanvas
         AtomToolsFramework::AtomToolsDocument::Clear();
     }
 
+    void MaterialCanvasDocument::OnGraphModelSlotModified([[maybe_unused]] GraphModel::SlotPtr slot)
+    {
+        m_modified = true;
+        BuildEditablePropertyGroups();
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
+        QueueCompileGraph();
+    }
+
     void MaterialCanvasDocument::OnGraphModelRequestUndoPoint()
     {
         // Undo and redo is being handled differently for edits received directly from graph model and graph canvas. By the time this is
@@ -358,8 +366,6 @@ namespace MaterialCanvas
 
             m_modified = true;
             BuildEditablePropertyGroups();
-            AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
-                m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoInvalidated, m_id);
             AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
                 m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
             QueueCompileGraph();
@@ -379,8 +385,6 @@ namespace MaterialCanvas
     void MaterialCanvasDocument::OnSelectionChanged()
     {
         BuildEditablePropertyGroups();
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
-            m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoInvalidated, m_id);
     }
 
     void MaterialCanvasDocument::RecordGraphState()
@@ -400,11 +404,8 @@ namespace MaterialCanvas
         GraphModel::GraphPtr graph = AZStd::make_shared<GraphModel::Graph>(m_graphContext);
         AZ::Utils::LoadObjectFromStreamInPlace(undoGraphStateStream, *graph.get());
 
-        CreateGraph(graph);
-
         m_modified = true;
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
-            m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoInvalidated, m_id);
+        CreateGraph(graph);
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
             m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
         QueueCompileGraph();
@@ -419,12 +420,12 @@ namespace MaterialCanvas
             m_graph = graph;
             m_graph->PostLoadSetup(m_graphContext);
 
-            BuildEditablePropertyGroups();
-            RecordGraphState();
-
             // The graph controller will create all of the scene items on construction.
             GraphModelIntegration::GraphManagerRequestBus::Broadcast(
                 &GraphModelIntegration::GraphManagerRequests::CreateGraphController, m_graphId, m_graph);
+
+            RecordGraphState();
+            BuildEditablePropertyGroups();
         }
     }
 
@@ -443,26 +444,31 @@ namespace MaterialCanvas
 
     void MaterialCanvasDocument::BuildEditablePropertyGroups()
     {
-        // Get a list of currently selected nodes that will be used to populate the inspector
-        GraphModel::NodePtrList selectedNodes;
-        GraphModelIntegration::GraphControllerRequestBus::EventResult(
-            selectedNodes, m_graphId, &GraphModelIntegration::GraphControllerRequests::GetSelectedNodes);
-
-        // Sort all the nodes according to their connection so they appear in a consistent order in the inspector
-        AZStd::sort(
-            selectedNodes.begin(),
-            selectedNodes.end(),
-            [](GraphModel::ConstNodePtr nodeA, GraphModel::ConstNodePtr nodeB)
+        // Sort nodes according to their connection so they appear in a consistent order in the inspector
+        AZStd::vector<GraphModel::NodePtr> nodes;
+        if (m_graph)
+        {
+            // Retrieve nodes and sort them in the same order used for code generation.
+            nodes.reserve(m_graph->GetNodes().size());
+            for (auto& nodePair : m_graph->GetNodes())
             {
-                if (!nodeA->HasConnections() && nodeB->HasConnections())
-                {
-                    return true;
-                }
-                return nodeA != nodeB && nodeA->HasOutputConnectionToNode(nodeB);
+                nodes.push_back(nodePair.second);
+            }
+
+            SortNodesInExecutionOrder(nodes);
+
+            // Remove non selected nodes from the list that will be displayed in the inspector.
+            GraphModel::NodePtrList selectedNodes;
+            GraphModelIntegration::GraphControllerRequestBus::EventResult(
+                selectedNodes, m_graphId, &GraphModelIntegration::GraphControllerRequests::GetSelectedNodes);
+
+            AZStd::erase_if(nodes, [&](const auto& node) {
+                return AZStd::find(selectedNodes.begin(), selectedNodes.end(), node) == selectedNodes.end();
             });
+        }
 
         m_groups.clear();
-        for (auto currentNode : selectedNodes)
+        for (auto currentNode : nodes)
         {
             auto dynamicNode = azrtti_cast<const AtomToolsFramework::DynamicNode*>(currentNode.get());
             if (!dynamicNode)
@@ -522,6 +528,9 @@ namespace MaterialCanvas
                 m_groups.emplace_back(group);
             }
         }
+
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoInvalidated, m_id);
     }
 
     AZStd::string MaterialCanvasDocument::GetOutputPathFromTemplatePath(const AZStd::string& templateInputPath) const
@@ -651,32 +660,61 @@ namespace MaterialCanvas
         return false;
     }
 
+    template<typename NodeContainer>
+    void MaterialCanvasDocument::SortNodesInExecutionOrder(NodeContainer& nodes) const
+    {
+        // Perform an initial sort, arranging all of the nodes in the order they should execute based on their connections. This pass is
+        // mostly reliable but there are issues. A single output slot can connect to multiple input slots which will make their ordering
+        // nondeterministic. Some nodes with multiple connections or no connections can be shuffled multiple times throughout the short.
+        // Because of this, a secondary pass will be done to move those nodes to the front or back of the container.
+        AZStd::stable_sort(
+            nodes.begin(),
+            nodes.end(),
+            [&](const auto& nodeA, const auto& nodeB)
+            {
+                return nodeA->HasOutputConnectionToNode(nodeB);
+            });
+
+        // Perform a secondary sort, moving all of the constant nodes, material input nodes, and disconnected nodes to the front of the
+        // container while output nodes go to the end. This forces nodes that act as graph inputs to be processed first and appear at the
+        // top of the inspector.
+        AZStd::stable_sort(
+            nodes.begin(),
+            nodes.end(),
+            [&](const auto& nodeA, const auto& nodeB)
+            {
+                auto dynamicNodeA = azrtti_cast<const AtomToolsFramework::DynamicNode*>(nodeA.get());
+                auto dynamicNodeB = azrtti_cast<const AtomToolsFramework::DynamicNode*>(nodeB.get());
+                return AZStd::make_tuple(
+                           !dynamicNodeA->GetConfig().m_inputSlots.empty(),
+                           dynamicNodeA->HasConnections(),
+                           dynamicNodeA->GetConfig().m_outputSlots.empty()) <
+                    AZStd::make_tuple(
+                           !dynamicNodeB->GetConfig().m_inputSlots.empty(),
+                           dynamicNodeB->HasConnections(),
+                           dynamicNodeB->GetConfig().m_outputSlots.empty());
+            });
+    }
+
     AZStd::vector<GraphModel::ConstNodePtr> MaterialCanvasDocument::GetInstructionNodesInExecutionOrder(
         GraphModel::ConstNodePtr outputNode, const AZStd::vector<AZStd::string>& inputSlotNames) const
     {
         AZ_Assert(m_graph, "Attempting to generate data from invalid graph object.");
 
-        AZStd::vector<GraphModel::ConstNodePtr> sortedNodes;
-        sortedNodes.reserve(m_graph->GetNodes().size());
+        AZStd::vector<GraphModel::ConstNodePtr> nodes;
+        nodes.reserve(m_graph->GetNodes().size());
 
         for (const auto& nodePair : m_graph->GetNodes())
         {
             const auto& inputNode = nodePair.second;
             if (ShouldUseInstructionsFromInputNode(outputNode, inputNode, inputSlotNames))
             {
-                sortedNodes.push_back(inputNode);
+                nodes.push_back(inputNode);
             }
         }
 
-        AZStd::sort(
-            sortedNodes.begin(),
-            sortedNodes.end(),
-            [](GraphModel::ConstNodePtr nodeA, GraphModel::ConstNodePtr nodeB)
-            {
-                return nodeA != nodeB && nodeA->HasOutputConnectionToNode(nodeB);
-            });
-
-        return sortedNodes;
+        SortNodesInExecutionOrder(nodes);
+        return nodes;
     }
 
     AZStd::vector<AZStd::string> MaterialCanvasDocument::GetInstructionsFromConnectedNodes(
@@ -828,7 +866,7 @@ namespace MaterialCanvas
 
         while (blockBeginItr != templateLines.end())
         {
-            AZ_TracePrintf("MaterialCanvasDocument", "*blockBegin: %s\n", (*blockBeginItr).c_str());
+            AZ_TracePrintf_IfTrue("MaterialCanvasDocument", IsCompileLoggingEnabled(), "*blockBegin: %s\n", (*blockBeginItr).c_str());
 
             // We have to insert one line at a time because AZStd::vector does not include a standard
             // range insert that returns an iterator
@@ -837,12 +875,13 @@ namespace MaterialCanvas
             {
                 ++blockBeginItr;
                 blockBeginItr = templateLines.insert(blockBeginItr, lineToInsert);
-                AZ_TracePrintf("MaterialCanvasDocument", "lineToInsert: %s\n", lineToInsert.c_str());
+
+                AZ_TracePrintf_IfTrue("MaterialCanvasDocument", IsCompileLoggingEnabled(), "lineToInsert: %s\n", lineToInsert.c_str());
             }
 
             if (linesToInsert.empty())
             {
-                AZ_TracePrintf("MaterialCanvasDocument", "Nothing was generated. This block will remain unmodified.\n");
+                AZ_TracePrintf_IfTrue("MaterialCanvasDocument", IsCompileLoggingEnabled(), "Nothing was generated. This block will remain unmodified.\n");
             }
 
             ++blockBeginItr;
@@ -856,7 +895,7 @@ namespace MaterialCanvas
                     return AZ::StringFunc::Contains(line, blockEndToken);
                 });
 
-            AZ_TracePrintf("MaterialCanvasDocument", "*blockEnd: %s\n", (*blockEndItr).c_str());
+            AZ_TracePrintf_IfTrue("MaterialCanvasDocument", IsCompileLoggingEnabled(), "*blockEnd: %s\n", (*blockEndItr).c_str());
 
             if (!linesToInsert.empty())
             {
@@ -997,7 +1036,7 @@ namespace MaterialCanvas
         AZStd::vector<AZStd::string> functionDefinitions;
         AZStd::vector<AZStd::string> inputDefinitions;
 
-        AZ_TracePrintf("MaterialCanvasDocument", "Dumping data scraped from traversing material graph.\n");
+        AZ_TracePrintf_IfTrue("MaterialCanvasDocument", IsCompileLoggingEnabled(), "Dumping data scraped from traversing material graph.\n");
 
         // Traverse all graph nodes and slots to collect global settings like include files and class definitions
         for (const auto& nodePair : m_graph->GetNodes())
@@ -1049,7 +1088,7 @@ namespace MaterialCanvas
                     continue;
                 }
 
-                AZ_TracePrintf("MaterialCanvasDocument", "templatePath: %s\n", templatePath.c_str());
+                AZ_TracePrintf_IfTrue("MaterialCanvasDocument", IsCompileLoggingEnabled(), "templatePath: %s\n", templatePath.c_str());
 
                 // Attempt to load the template file to do symbol substitution and inject any code or data
                 if (auto result = AZ::Utils::ReadFile(templateInputPath))
@@ -1141,7 +1180,7 @@ namespace MaterialCanvas
                     continue;
                 }
 
-                AZ_TracePrintf("MaterialCanvasDocument", "templatePath: %s\n", templatePath.c_str());
+                AZ_TracePrintf_IfTrue("MaterialCanvasDocument", IsCompileLoggingEnabled(), "templatePath: %s\n", templatePath.c_str());
 
                 if (!BuildMaterialTypeFromTemplate(currentNode, instructionNodesForAllBlocks, templateInputPath, templateOutputPath))
                 {
@@ -1172,4 +1211,10 @@ namespace MaterialCanvas
     {
         return m_compileGraphQueued;
     }
+
+    bool MaterialCanvasDocument::IsCompileLoggingEnabled() const
+    {
+        return AtomToolsFramework::GetSettingsValue("/O3DE/Atom/MaterialCanvasDocument/CompileLoggingEnabled", false);
+    }
+
 } // namespace MaterialCanvas
