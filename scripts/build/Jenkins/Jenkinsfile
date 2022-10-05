@@ -272,6 +272,7 @@ def GetRemoteConfig(repositoryName, repositoryUrl) {
     def theRemoteConfig = [
         name: repositoryName,
         url: repositoryUrl,
+        refspec: '+refs/pull/*/head:refs/remotes/origin/* +refs/heads/*:refs/remotes/origin/*'
         credentialsId: scm.userRemoteConfigs.credentialsId[0]
     ]
     return theRemoteConfig
