@@ -589,16 +589,11 @@ namespace AssetProcessor
         m_catalogIsDirty = true;
     }
 
-    void AssetCatalog::OnConnect(unsigned int connectionId, ::Connection* connection)
+    void AssetCatalog::OnConnect(unsigned int connectionId, QStringList platforms)
     {
-        if(!connection || connection->Status() != ::Connection::ConnectionStatus::Connected)
-        {
-            return;
-        }
-
         // Send out a message for each asset to make sure the connected tools are aware of the existence of all previously built assets
         // since the assetcatalog might not have been written out to disk previously.
-        for (QString platform : connection->AssetPlatforms())
+        for (QString platform : platforms)
         {
             QMutexLocker locker(&m_registriesMutex);
             auto itr = m_registries.find(platform);
