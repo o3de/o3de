@@ -90,6 +90,11 @@ namespace LmbrCentral
         m_visibleInEditor = visible;
     }
 
+    void EditorBaseShapeComponent::SetVisibleInGame(bool visible)
+    {
+        m_visibleInGameView = visible;
+    }
+
     void EditorBaseShapeComponent::SetShapeColor(const AZ::Color& shapeColor)
     {
         m_shapeColor = shapeColor;

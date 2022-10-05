@@ -70,7 +70,7 @@ namespace EMotionFX
             m_treeView = m_skeletonOutliner->GetDockWidget()->findChild<ReselectingTreeView*>("EMFX.SkeletonOutlinerPlugin.SkeletonOutlinerTreeView");
 
             m_indexList.clear();
-            m_treeView->RecursiveGetAllChildren(m_treeView->model()->index(0, 0), m_indexList);
+            m_treeView->RecursiveGetAllChildren(m_treeView->model()->index(0, 0, m_treeView->model()->index(0, 0)), m_indexList);
         }
 
     protected:

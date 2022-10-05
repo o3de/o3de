@@ -7,9 +7,10 @@
  */
 
 #include <viewsrg.srgi>
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
-#include <Atom/Features/PBR/ForwardPassSrg.azsli>
-#include <Atom/Features/PBR/ForwardPassOutput.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli>
 #include <Atom/Features/PBR/AlphaUtils.azsli>
 #include <Atom/Features/SrgSemantics.azsli>
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
@@ -31,8 +32,7 @@ struct VSInput
 {
     float3 m_position : POSITION;
     float3 m_normal : NORMAL;
-    float4 m_tangent : TANGENT; 
-    float3 m_bitangent : BITANGENT;
+    float4 m_tangent : TANGENT;
     float2 m_uv0 : UV0;
     float2 m_uv1 : UV1;
 
@@ -44,14 +44,11 @@ struct VSOutput
 {
     precise linear centroid float4 m_position : SV_Position;
     float3 m_normal: NORMAL;
-    float3 m_tangent : TANGENT; 
-    float3 m_bitangent : BTANGENT;
+    float4 m_tangent : TANGENT;
     float2 m_uv0 : UV0;
     float2 m_uv1 : UV1;
     float3 m_worldPosition : UV3;
 };
-
-#include <Atom/Features/Vertex/VertexHelper.azsli>
 
 // O3DE_GENERATED_CLASSES_BEGIN
 // O3DE_GENERATED_CLASSES_END
@@ -76,7 +73,17 @@ VSOutput MaterialGraphName_MainPassVS(VSInput IN)
     float4 inPositionOffset = float4(0.0, 0.0, 0.0, 0.0);
     // O3DE_GENERATED_INSTRUCTIONS_END
 
-    VertexHelper(IN, OUT, worldPosition + inPositionOffset.xyz);
+    #undef O3DE_MC_POSITION
+    #undef O3DE_MC_UV
+    #undef O3DE_MC_NORMAL
+    #undef O3DE_MC_TANGENT
+    #undef O3DE_MC_BITANGENT
+    #undef O3DE_MC_WORLD_POSITION
+
+    OUT.m_worldPosition = worldPosition + inPositionOffset.xyz;
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(OUT.m_worldPosition, 1.0));
+    OUT.m_normal = IN.m_normal;
+    OUT.m_tangent = IN.m_tangent;
     OUT.m_uv1 = IN.m_uv0;
     OUT.m_uv1 = IN.m_uv1;
 
@@ -85,11 +92,17 @@ VSOutput MaterialGraphName_MainPassVS(VSInput IN)
 
 ForwardPassOutput MaterialGraphName_MainPassPS(VSOutput IN)
 {
+    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
+    float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
+
+    float3 vertexNormal, vertexTangent, vertexBitangent;
+    ConstructTBN(IN.m_normal, IN.m_tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
+
     #define O3DE_MC_POSITION IN.m_position
     #define O3DE_MC_UV(index) (index == 0 ? IN.m_uv0 : IN.m_uv1);
-    #define O3DE_MC_NORMAL IN.m_normal
-    #define O3DE_MC_TANGENT IN.m_tangent
-    #define O3DE_MC_BITANGENT IN.m_bitangent
+    #define O3DE_MC_NORMAL vertexNormal
+    #define O3DE_MC_TANGENT vertexTangent
+    #define O3DE_MC_BITANGENT vertexBitangent
     #define O3DE_MC_WORLD_POSITION IN.m_worldPosition
 
     // O3DE_GENERATED_INSTRUCTIONS_BEGIN: inBaseColor, inEmissive, inMetallic, inRoughness, inSpecularF0Factor
@@ -100,12 +113,19 @@ ForwardPassOutput MaterialGraphName_MainPassPS(VSOutput IN)
     float inSpecularF0Factor = 0.0;
     // O3DE_GENERATED_INSTRUCTIONS_END
 
+    #undef O3DE_MC_POSITION
+    #undef O3DE_MC_UV
+    #undef O3DE_MC_NORMAL
+    #undef O3DE_MC_TANGENT
+    #undef O3DE_MC_BITANGENT
+    #undef O3DE_MC_WORLD_POSITION
+
     // ------- Surface -------
 
     Surface surface;
     surface.position = IN.m_worldPosition.xyz;
-    surface.normal = normalize(IN.m_normal);
-    surface.vertexNormal = normalize(IN.m_normal);
+    surface.normal = vertexNormal;
+    surface.vertexNormal = vertexNormal;
     surface.roughnessLinear = inRoughness;
     surface.CalculateRoughnessA();
     surface.SetAlbedoAndSpecularF0(inBaseColor.rgb, inSpecularF0Factor, inMetallic);

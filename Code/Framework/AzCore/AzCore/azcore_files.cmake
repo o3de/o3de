@@ -97,9 +97,6 @@ set(FILES
     Debug/Budget.cpp
     Debug/BudgetTracker.h
     Debug/BudgetTracker.cpp
-    Debug/LocalFileEventLogger.h
-    Debug/LocalFileEventLogger.cpp
-    Debug/IEventLogger.h
     Debug/MemoryProfiler.h
     Debug/Profiler.cpp
     Debug/Profiler.inl
@@ -183,6 +180,8 @@ set(FILES
     IO/IStreamerTypes.cpp
     IO/GenericStreams.cpp
     IO/GenericStreams.h
+    IO/OpenMode.h
+    IO/OpenMode.cpp
     IO/Path/Path.cpp
     IO/Path/Path.h
     IO/Path/Path.inl
@@ -359,6 +358,7 @@ set(FILES
     Math/TransformSerializer.h
     Math/Uuid.cpp
     Math/Uuid.h
+    Math/Uuid.inl
     Math/UuidSerializer.h
     Math/UuidSerializer.cpp
     Math/Vector2.cpp
@@ -416,6 +416,14 @@ set(FILES
     Memory/SimpleSchemaAllocator.h
     Memory/SystemAllocator.cpp
     Memory/SystemAllocator.h
+    Metrics/EventLoggerFactoryImpl.h
+    Metrics/EventLoggerFactoryImpl.cpp
+    Metrics/JsonTraceEventLogger.h
+    Metrics/JsonTraceEventLogger.cpp
+    Metrics/IEventLogger.h
+    Metrics/IEventLogger.cpp
+    Metrics/IEventLogger.inl
+    Metrics/IEventLoggerFactory.h
     Module/DynamicModuleHandle.cpp
     Module/DynamicModuleHandle.h
     Module/Module.cpp
@@ -628,6 +636,7 @@ set(FILES
     JSON/pointer.h
     JSON/prettywriter.h
     JSON/rapidjson.h
+    JSON/RapidjsonAllocatorAdapter.h
     JSON/reader.h
     JSON/schema.h
     JSON/stream.h

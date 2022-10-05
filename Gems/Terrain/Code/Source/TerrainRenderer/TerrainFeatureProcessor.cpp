@@ -85,7 +85,7 @@ namespace Terrain
                 }
             }
         );
-        OnTerrainDataChanged(AZ::Aabb::CreateNull(), TerrainDataChangedMask::HeightData);
+        OnTerrainDataChanged(AZ::Aabb::CreateNull(), TerrainDataChangedMask(TerrainDataChangedMask::HeightData | TerrainDataChangedMask::Settings));
         m_meshManager.Initialize(*GetParentScene());
     }
 

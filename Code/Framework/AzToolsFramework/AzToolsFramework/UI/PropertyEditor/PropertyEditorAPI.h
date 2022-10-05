@@ -223,9 +223,9 @@ namespace AzToolsFramework
             return true;
         }
 
-        const AZ::Uuid& GetHandledType() const override
+        AZ::TypeId GetHandledType() const override
         {
-            return nullUuid;
+            return {};
         }
 
         void WriteGUIValuesIntoProperty_Internal(QWidget* widget, InstanceDataNode* node) override
@@ -255,8 +255,6 @@ namespace AzToolsFramework
             }
         }
 
-        // Needed since GetHandledType returns a reference
-        AZ::Uuid nullUuid = AZ::Uuid::CreateNull();
         PropertyEditorToolsSystemInterface::PropertyHandlerId m_registeredDpeHandlerId = PropertyEditorToolsSystemInterface::InvalidHandlerId;
     };
 

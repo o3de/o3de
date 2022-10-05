@@ -397,9 +397,9 @@ namespace Multiplayer
                 // @NetworkEntityManager::CreateEntitiesImmediate
                 AzFramework::GameEntityContextRequestBus::Broadcast(
                     &AzFramework::GameEntityContextRequestBus::Events::DestroyGameEntity, netBindComponent->GetEntityId());
-            }
 
-            m_networkEntityTracker.erase(entityId);
+                m_networkEntityTracker.erase(entityId);
+            }
         }
     }
 

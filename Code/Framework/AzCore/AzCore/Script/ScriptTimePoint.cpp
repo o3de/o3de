@@ -34,7 +34,7 @@ namespace AZ
         SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(reflection);
         if (serializeContext)
         {
-            serializeContext->Class<AZStd::chrono::system_clock::time_point>()
+            serializeContext->Class<AZStd::chrono::steady_clock::time_point>()
                 ;
 
             serializeContext->Class<ScriptTimePoint>()

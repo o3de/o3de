@@ -1,16 +1,14 @@
 {
-    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
     "materialTypeVersion": 5,
-    "parentMaterial": "TestData/Materials/StandardPbrTestCases/UvTilingBase.material",
+    "parentMaterial": "UvTilingBase.material",
     "propertyValues": {
-        "baseColor.textureMap": "TestData/Objects/cube/cube_diff.tif",
+        "baseColor.textureMap": "../../Objects/cube/cube_diff.tif",
         "metallic.factor": 1.0,
-        "metallic.textureMap": "TestData/Textures/checker8x8_512.png",
-        "parallax.algorithm": "POM",
-        "parallax.factor": 0.05000000074505806,
+        "metallic.textureMap": "../../Textures/checker8x8_512.png",
         "parallax.quality": "High",
-        "parallax.textureMap": "TestData/Objects/cube/cube_diff.tif",
-        "roughness.textureMap": "TestData/Textures/checker8x8_flip_512.png",
+        "parallax.textureMap": "../../Objects/cube/cube_diff.tif",
+        "roughness.textureMap": "../../Textures/checker8x8_flip_512.png",
         "uv.center": [
             0.5,
             0.25

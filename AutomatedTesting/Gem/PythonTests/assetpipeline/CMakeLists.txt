@@ -8,6 +8,7 @@
 
 add_subdirectory(asset_processor_tests)
 add_subdirectory(fbx_tests)
+add_subdirectory(scene_settings_tests)
 
     ly_add_pytest(
         NAME AssetPipelineTests.Periodic

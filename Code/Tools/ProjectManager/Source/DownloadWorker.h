@@ -30,7 +30,8 @@ namespace O3DE::ProjectManager
 
     public slots:
         void StartDownload();
-        void SetObjectToDownload(const QString& objectName, DownloadController::DownloadObjectType objectType, bool downloadNow = true);
+        void SetObjectToDownload(
+            const QString& objectName, const QString& destinationPath, DownloadController::DownloadObjectType objectType, bool downloadNow = true);
 
     signals:
         void UpdateProgress(int bytesDownloaded, int totalBytes);
@@ -39,6 +40,7 @@ namespace O3DE::ProjectManager
     private:
 
         QString m_objectName;
+        QString m_destinationPath;
         DownloadController::DownloadObjectType m_downloadType;
     };
 } // namespace O3DE::ProjectManager

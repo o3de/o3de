@@ -39,7 +39,7 @@ namespace GradientSignal
         bool m_is3dFalloff = false;
     };
 
-    static const AZ::Uuid ShapeAreaFalloffGradientComponentTypeId = "{F32A108B-7612-4AC2-B436-96DDDCE9E70B}";
+    inline constexpr AZ::TypeId ShapeAreaFalloffGradientComponentTypeId{ "{F32A108B-7612-4AC2-B436-96DDDCE9E70B}" };
 
     /**
     * calculates a gradient value based on distance from a shapes surface

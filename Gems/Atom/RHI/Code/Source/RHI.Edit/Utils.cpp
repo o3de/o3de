@@ -20,6 +20,7 @@
 #include <AzCore/std/optional.h>
 #include <AzCore/std/string/regex.h>
 #include <AzCore/Platform.h>
+#include <AzCore/std/time.h>
 
 #include <AzFramework/StringFunc/StringFunc.h>
 

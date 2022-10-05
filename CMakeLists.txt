@@ -47,14 +47,14 @@ include(cmake/Subdirectories.cmake)
 include(cmake/TestImpactFramework/LYTestImpactFramework.cmake) # Put at end as nothing else depends on it
 
 # Gather the list of o3de_manifest external Subdirectories
-# into the LY_EXTERNAL_SUBDIRS_O3DE_MANIFEST_PROPERTY
+# into the O3DE_EXTERNAL_SUBDIRS_O3DE_MANIFEST_PROPERTY
 add_o3de_manifest_json_external_subdirectories()
 
 # Add the projects first so the Launcher can find them
 include(cmake/Projects.cmake)
 
 # Add external subdirectories listed in the engine.json.
-# LY_EXTERNAL_SUBDIRS is a cache variable so the user can add extra
+# O3DE_EXTERNAL_SUBDIRS is a cache variable so the user can add extra
 # external subdirectories.
 add_engine_json_external_subdirectories()
 

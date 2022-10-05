@@ -45,7 +45,7 @@ namespace GradientSignal
         bool IsPointsPerUnitResdOnly() const;
     };
 
-    static const AZ::Uuid DitherGradientComponentTypeId = "{F69E885E-9D43-480D-A549-E5EE503A8F29}";
+    inline constexpr AZ::TypeId DitherGradientComponentTypeId{ "{F69E885E-9D43-480D-A549-E5EE503A8F29}" };
 
     /**
     * calculates a gradient output value by applying ordered dithering to the input gradient value

@@ -39,7 +39,7 @@ namespace Multiplayer
         ;
     }
 
-    void NetworkTransformComponent::OnActivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
+    void NetworkTransformComponent::OnActivate([[maybe_unused]] EntityIsMigrating entityIsMigrating)
     {
         GetNetBindComponent()->AddEntityPreRenderEventHandler(m_entityPreRenderEventHandler);
         GetNetBindComponent()->AddEntityCorrectionEventHandler(m_entityCorrectionEventHandler);
@@ -52,29 +52,26 @@ namespace Multiplayer
         }
     }
 
-    void NetworkTransformComponent::OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
+    void NetworkTransformComponent::OnDeactivate([[maybe_unused]] EntityIsMigrating entityIsMigrating)
     {
-        ;
+        m_resetCountChangedEventHandler.Disconnect();
+        m_parentChangedEventHandler.Disconnect();
+        m_entityCorrectionEventHandler.Disconnect();
+        m_entityPreRenderEventHandler.Disconnect();
     }
 
     void NetworkTransformComponent::OnPreRender([[maybe_unused]] float deltaTime)
     {
         if (!HasController())
         {
-            AZ::Transform blendTransform;
-            blendTransform.SetRotation(GetRotation());
-            blendTransform.SetTranslation(GetTranslation());
-            blendTransform.SetUniformScale(GetScale());
+            AZ::Transform blendTransform(GetTranslation(), GetRotation(), GetScale());
 
             if (!m_syncTransformImmediate)
             {
                 const float blendFactor = GetMultiplayer()->GetCurrentBlendFactor();
                 if (!AZ::IsClose(blendFactor, 1.0f))
                 {
-                    AZ::Transform blendTransformPrevious;
-                    blendTransformPrevious.SetRotation(GetRotationPrevious());
-                    blendTransformPrevious.SetTranslation(GetTranslationPrevious());
-                    blendTransformPrevious.SetUniformScale(GetScalePrevious());
+                    const AZ::Transform blendTransformPrevious(GetTranslationPrevious(), GetRotationPrevious(), GetScalePrevious());
 
                     if (!blendTransform.IsClose(blendTransformPrevious))
                     {

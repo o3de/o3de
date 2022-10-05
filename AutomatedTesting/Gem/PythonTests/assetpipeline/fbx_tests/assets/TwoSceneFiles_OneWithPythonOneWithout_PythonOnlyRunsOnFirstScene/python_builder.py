@@ -31,8 +31,10 @@ def on_update_manifest(args):
     scene = args[0]
     result = output_test_data(scene)
     global mySceneJobHandler
+    # do not delete or set sceneJobHandler to None, just disconnect from it.
+    # this call is occuring while the scene Job Handler itself is in the callstack, so deleting it here
+    # would cause a crash.
     mySceneJobHandler.disconnect()
-    mySceneJobHandler = None
     return result
 
 def main():

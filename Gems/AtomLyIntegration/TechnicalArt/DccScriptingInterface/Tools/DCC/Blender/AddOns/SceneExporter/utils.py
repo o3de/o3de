@@ -18,6 +18,14 @@ from . import constants
 from . import ui
 from . import o3de_utils
 
+def select_object(obj):
+    """!
+    This function will select just one object
+    """
+    bpy.ops.object.select_all(action='DESELECT')
+    bpy.context.view_layer.objects.active = obj
+    obj.select_set(True)
+
 def check_selected():
     """!
     This function will check to see if the user has selected a object
@@ -35,18 +43,23 @@ def check_selected_bone_names():
     context = bpy.context
     obj = context.object
 
+    invalid_bone_names = None
+    bone_are_in_selected = None
+
     for selected_obj in context.selected_objects:
         if selected_obj is not []:
             if selected_obj.type == "ARMATURE":
+                bone_are_in_selected = True
                 try:
                     for pb in obj.pose.bones:
                         # Validate all chars in string.
                         check_re =  re.compile(r"^[^<>/{}[\]~.`]*$")
                         if not check_re.match(pb.name):
                             # If any in the ARMATURE are named invalid return will fail.
-                            return False
+                            invalid_bone_names = False
                 except AttributeError:
                     pass
+    return invalid_bone_names, bone_are_in_selected
 
 def selected_hierarchy_and_rig_animation():
     """!
@@ -92,6 +105,28 @@ def valid_animation_selection():
                 selected_attachment_and_rig_animation()
             else:
                 selected_hierarchy_and_rig_animation()
+
+def check_for_animation_actions():
+    """!
+    This function will check to see if the current scene has animation actions
+    return actions[0] is the top level animation action
+    return len(actions) is the number of available actions
+    """
+    obj = bpy.context.object
+    actions = []
+    active_action_name = ""
+    # Look for animation actions available
+    for animations in bpy.data.actions:
+        actions.append(animations.name)
+    # Look for Active Animation Action
+    try:
+        if not obj.animation_data == None:
+            active_action_name = obj.animation_data.action.name
+        else:
+            active_action_name = ""
+    except AttributeError:
+        pass
+    return active_action_name, len(actions)
 
 def check_if_valid_path(file_path):
     """!
@@ -300,6 +335,29 @@ def check_for_blender_int_ext(duplicated_node_name):
         name = duplicated_node_name
     return name
 
+def check_for_udp():
+    """!
+    This function will check if selected has and custom properties 
+    Example: print( f"Value: {obj_upd_keys} Key: {bpy.data.objects[selected_obj.name][obj_upd_keys] } ")
+    """
+    context = bpy.context
+    # Create list to store selected meshs udps
+    lod_list = []
+    colliders_list = []
+
+    for selected_obj in context.selected_objects:
+        if selected_obj is not []:
+            if selected_obj.type == "MESH":
+                for obj_upd_keys in bpy.data.objects[selected_obj.name].keys():
+                    if obj_upd_keys not in '_RNA_UI':
+                        if obj_upd_keys == "o3de_atom_lod":
+                            lod_list.append(True)
+                        if obj_upd_keys == "o3de_atom_phys":
+                            colliders_list.append(True)
+    lods = any(lod_list)
+    colliders = any(colliders_list)      
+    return lods, colliders
+
 def create_udp():
     """!
     This function will create a copy of a selected mesh and create an o3de PhysX collider PhysX Mesh that will
@@ -330,11 +388,11 @@ def create_udp():
         if bpy.types.Scene.udp_type == "_phys":
             duplicate_object = duplicate_selected(selected_objects, f"{selected_objects.name}_phys")
             duplicate_object["o3de_atom_phys"] = "_phys"
-        # Set the copy active
-        bpy.context.view_layer.objects.active = duplicate_object
-        # Add the Decimate Modifier on for user.
-        bpy.ops.object.modifier_add(type="DECIMATE")
-        bpy.context.object.modifiers["Decimate"].ratio = 0.5
+        # Select the duplicated object only
+        select_object(duplicate_object)
+        # Add the Decimate Modifier on for user. Since both _lod and _phys will need this modifier
+        #  for now we will have it as a default.
+        add_remove_modifier("DECIMATE", True)
     else:
         if bpy.types.Scene.udp_type == "_lod":
                 selected_objects['o3de_atom_lod'] = "_lod0"
@@ -352,12 +410,99 @@ def compair_set(list_a, list_b):
     else:
         return False
 
+def add_remove_modifier(modifier_name, add):
+    """!
+    This function will add or remove a modifier to selected
+    @param modifier_name is the name of the modifier you wish to add or remove
+    @param add if Bool True will add the modifier, if False will remove 
+    """
+    context = bpy.context
+
+    for selected_obj in context.selected_objects:
+        if selected_obj is not []:
+            if selected_obj.type == "MESH":
+                if add:
+                    # Set the mesh active
+                    bpy.context.view_layer.objects.active = selected_obj
+                    # Add Modifier
+                    bpy.ops.object.modifier_add(type=modifier_name)
+                    if modifier_name == "TRIANGULATE":
+                        bpy.context.object.modifiers["Triangulate"].keep_custom_normals = True
+                else:
+                    # Set the mesh active
+                    bpy.context.view_layer.objects.active = selected_obj
+                    # Remove Modifier
+                    bpy.ops.object.modifier_remove(modifier=modifier_name)
+
+def check_selected_stats_count():
+    """!
+    This function will check selected and get poly counts
+    """
+    # We will make list for each selection
+    mesh_vertices_list = []
+    mesh_edges_list = []
+    mesh_polygons_list = []
+    mesh_material_list = []
+    
+    context = bpy.context
+    
+    for selected_obj in context.selected_objects:
+        if selected_obj is not []:
+            if selected_obj.type == "MESH":
+                mesh_stats = selected_obj.data
+                # Vert, Edge, Poly Counts
+                mesh_vertices = len(mesh_stats.vertices)
+                mesh_edges = len(mesh_stats.edges)
+                mesh_polygons = len(mesh_stats.polygons)
+                mesh_materials = len(mesh_stats.materials)
+                mesh_vertices_list.append(mesh_vertices)
+                mesh_edges_list.append(mesh_edges)
+                mesh_polygons_list.append(mesh_polygons)
+                # Material Count
+                mesh_material_list.append(mesh_materials)
+
+    vert_count = sum(mesh_vertices_list)
+    edge_count = sum(mesh_edges_list)
+    polygon_count = sum(mesh_polygons_list)
+    material_count = sum(mesh_material_list)
+    # Reset the list
+    mesh_vertices_list = []
+    mesh_edges_list = []
+    mesh_polygons_list = []
+    mesh_material_list = []
+    return vert_count, edge_count, polygon_count, material_count
+
+def check_selected_uvs():
+    """!
+    This function will check to see if there are UVs
+    """
+    context = bpy.context
+    # We will make list for each selection and compair if there are UVs.
+    mesh_uv_list = []
+    
+    for selected_obj in context.selected_objects:
+        if selected_obj is not []:
+            if selected_obj.type == "MESH":
+                if selected_obj.data.uv_layers:
+                    mesh_uv_list.append(True)
+                else:
+                    mesh_uv_list.append(False)
+    object_uv_list = all(mesh_uv_list)
+    # If all objects have UVs
+    if object_uv_list:
+        # Clear UV List
+        mesh_uv_list = []
+        return True
+    else:
+        # Clear UV List
+        mesh_uv_list = []
+        return False
+
 def check_selected_transforms():
     """!
     This function will check to see if there are unfrozen transfors and to warn the artist before export.
     """
     context = bpy.context
-    ob = context.object
     # We will make list for each selection and compair to a frozzen transfrom.
     location_list = []
     location_source = [0.0, 0.0, 0.0]
@@ -401,9 +546,9 @@ def check_selected_transforms():
             # Check if all are true or false
             check_transfroms_bools = [location_good, rotation_good, scale_good]
             if all(check_transfroms_bools):
-                return True
+                return True, location_list
             else:
-                return False
+                return False, location_list
         # Reset the list
         location_list = []
         rotation_list = []

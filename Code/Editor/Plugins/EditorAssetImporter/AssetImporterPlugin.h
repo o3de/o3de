@@ -20,6 +20,37 @@
 #include <AssetBrowserContextProvider.h>
 #include <SceneSerializationHandler.h>
 
+class AssetImporterWindow;
+
+//! Python interface for scene settings
+class SceneSettingsAssetImporterForPythonRequests
+    : public AZ::EBusTraits
+{
+public:
+    //////////////////////////////////////////////////////////////////////////
+    // EBusTraits overrides
+    static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+    static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+    //////////////////////////////////////////////////////////////////////////
+
+    //! Opens the scene settings tool to the specified source asset path.
+    //! Returns the window ID of the viewpane, because Python can't have QObjects sent to it.
+    virtual AZ::u64 EditImportSettings(const AZStd::string& sourceFilePath) = 0;
+};
+using SceneSettingsAssetImporterForPythonRequestBus = AZ::EBus<SceneSettingsAssetImporterForPythonRequests>;
+
+class SceneSettingsAssetImporterForPythonRequestHandler
+    : protected SceneSettingsAssetImporterForPythonRequestBus::Handler
+{
+public:
+    AZ_RTTI(SceneSettingsAssetImporterForPythonRequestHandler, "{C3B9DCFC-CD41-4130-B295-485905A7CECB}");
+    SceneSettingsAssetImporterForPythonRequestHandler();
+    ~SceneSettingsAssetImporterForPythonRequestHandler();
+
+    static void Reflect(AZ::ReflectContext* context);
+    AZ::u64 EditImportSettings(const AZStd::string& sourceFilePath) override;
+};
+
 class AssetImporterPlugin
     : public IPlugin
 {
@@ -29,6 +60,7 @@ class AssetImporterPlugin
     AssetImporterPlugin(IEditor* editor);
 
 public:
+
     // Get the singleton instance of the plugin
     static AssetImporterPlugin* GetInstance()
     {
@@ -73,7 +105,7 @@ public:
     }
     /////////////////////////////////////////////////////////////////////////////
 
-    void EditImportSettings(const AZStd::string& sourceFilePath);
+    QMainWindow* EditImportSettings(const AZStd::string& sourceFilePath);
 
 private:
     AZStd::unique_ptr<AZ::DynamicModuleHandle> LoadSceneLibrary(const char* name, bool explicitInit);
@@ -93,4 +125,5 @@ private:
     // Context provider for the Asset Browser
     AZ::AssetBrowserContextProvider m_assetBrowserContextProvider;
     AZ::SceneSerializationHandler m_sceneSerializationHandler;
+    AZStd::shared_ptr<SceneSettingsAssetImporterForPythonRequestHandler> m_requestHandler;
 };

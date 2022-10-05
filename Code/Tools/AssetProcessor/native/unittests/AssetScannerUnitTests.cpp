@@ -7,7 +7,7 @@
  */
 
 #include "AssetScannerUnitTests.h"
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <AzTest/Utils.h>
 #include <native/AssetManager/assetScanner.h>
 #include <native/utilities/PlatformConfiguration.h>
@@ -121,13 +121,13 @@ namespace UnitTest
         // it makes sure that if a folder is added NON-recursively, child folder files are not found.
 
         scanner.StartScan();
-        auto startTime = AZStd::chrono::system_clock::now();
+        auto startTime = AZStd::chrono::steady_clock::now();
         while (!doneScan)
         {
             QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 100);
 
             auto millisecondsSpentScanning =
-                AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::system_clock::now() - startTime);
+                AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - startTime);
             if (millisecondsSpentScanning > AZStd::chrono::milliseconds(10000))
             {
                 break;

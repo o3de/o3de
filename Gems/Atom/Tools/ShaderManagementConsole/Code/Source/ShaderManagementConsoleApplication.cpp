@@ -140,20 +140,43 @@ namespace ShaderManagementConsole
         // Find all material types that reference shaderFilePath
         AZStd::list<AZStd::string> materialTypeSources;
 
+        bool foundSourceInfo = false;
+        AZStd::string watchFolder;
+        AZ::Data::AssetInfo shaderAssetInfo;
+        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+            foundSourceInfo,
+            &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath,
+            shaderFilePath.c_str(),
+            shaderAssetInfo,
+            watchFolder);
+
+        if (!foundSourceInfo)
+        {
+            AZ_Error("FindMaterialAssetsUsingShader", false, "Failed to find source file info %s.", shaderFilePath.c_str());
+            return {};
+        }
+
         assetDatabaseConnection.QuerySourceDependencyByDependsOnSource(
-            shaderFilePath.c_str(), nullptr, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_Any,
+            shaderAssetInfo.m_assetId.m_guid, shaderAssetInfo.m_relativePath.c_str(), watchFolder.c_str(), AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_Any,
             [&](AzToolsFramework::AssetDatabase::SourceFileDependencyEntry& sourceFileDependencyEntry)
             {
-                if (AzFramework::StringFunc::Path::IsExtension(
-                        sourceFileDependencyEntry.m_source.c_str(), AZ::RPI::MaterialTypeSourceData::Extension))
+                AZStd::string relativeSourcePath;
+                assetDatabaseConnection.QuerySourceBySourceGuid(
+                    sourceFileDependencyEntry.m_sourceGuid,
+                    [&relativeSourcePath](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
+                    {
+                        relativeSourcePath = entry.m_sourceName;
+                        return false;
+                    });
+
+                if (AzFramework::StringFunc::Path::IsExtension(relativeSourcePath.c_str(), AZ::RPI::MaterialTypeSourceData::Extension))
                 {
-                    materialTypeSources.push_back(sourceFileDependencyEntry.m_source);
+                    materialTypeSources.push_back(relativeSourcePath);
                 }
                 return true;
             });
 
         // Find all materials that reference any of the material types using this shader
-        AZStd::string watchFolder;
         AZ::Data::AssetInfo materialTypeSourceAssetInfo;
         AZStd::list<AzToolsFramework::AssetDatabase::ProductDatabaseEntry> productDependencies;
         for (const auto& materialTypeSource : materialTypeSources)
@@ -188,7 +211,7 @@ namespace ShaderManagementConsole
                     results.push_back({ combined.m_sourceGuid, combined.m_subID });
                     return false;
                 },
-                nullptr);
+                {});
         }
 
         return results;

@@ -23,7 +23,7 @@ namespace LandscapeCanvas
         ReferenceShapeNode() = default;
         explicit ReferenceShapeNode(GraphModel::GraphPtr graph);
 
-        static const QString TITLE;
+        static const char* TITLE;
         const char* GetTitle() const override;
         const char* GetSubTitle() const override;
         const BaseNodeType GetBaseNodeType() const override;

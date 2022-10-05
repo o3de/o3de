@@ -307,6 +307,11 @@ namespace PhysX
         return m_pxShape.get();
     }
 
+    const void* Shape::GetNativePointer() const
+    {
+        return m_pxShape.get();
+    }
+
     AZ::Crc32 Shape::GetTag() const
     {
         return m_tag;

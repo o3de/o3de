@@ -6,6 +6,7 @@
  *
  */
 
+#include <AtomToolsFramework/DynamicNode/DynamicNodeManagerRequestBus.h>
 #include <AtomToolsFramework/DynamicNode/DynamicNodeUtil.h>
 
 namespace AtomToolsFramework
@@ -56,5 +57,37 @@ namespace AtomToolsFramework
         {
             container.insert(container.end(), settingsItr->second.begin(), settingsItr->second.end());
         }
+    }
+
+    AZStd::vector<AZStd::string> GetRegisteredDataTypeNames()
+    {
+        GraphModel::DataTypeList registeredDataTypes;
+        DynamicNodeManagerRequestBus::BroadcastResult(registeredDataTypes, &DynamicNodeManagerRequestBus::Events::GetRegisteredDataTypes);
+
+        AZStd::vector<AZStd::string> names;
+        names.reserve(registeredDataTypes.size());
+        for (const auto& dataType : registeredDataTypes)
+        {
+            names.push_back(dataType->GetDisplayName());
+        }
+        return names;
+    }
+
+    const AZ::Edit::ElementData* FindDynamicEditDataForSetting(const DynamicNodeSettingsMap& settings, const void* elementPtr)
+    {
+        for (const auto& settingsGroup : settings)
+        {
+            for (const auto& setting : settingsGroup.second)
+            {
+                if (elementPtr == &setting)
+                {
+                    const AZ::Edit::ElementData* registeredEditData = nullptr;
+                    DynamicNodeManagerRequestBus::BroadcastResult(
+                        registeredEditData, &DynamicNodeManagerRequestBus::Events::GetEditDataForSetting, settingsGroup.first);
+                    return registeredEditData;
+                }
+            }
+        }
+        return nullptr;
     }
 } // namespace AtomToolsFramework

@@ -102,7 +102,7 @@ namespace O3DE::ProjectManager
             gemfilterFeature.m_name = "F";
 
             gemfilterDisplayName.m_displayName = "Display Name";
-            gemfilterCreator.m_creator = "Johnathon Doe";
+            gemfilterCreator.m_origin = "Johnathon Doe";
             gemfilterSummary.m_summary = "Unique Summary";
             gemfilterFeature.m_features.append("Creative Feature");
 

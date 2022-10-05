@@ -37,7 +37,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString TerrainPhysicsHeightfieldColliderNode::TITLE = QObject::tr("Terrain Heightfield Physics Collider");
+    const char* TerrainPhysicsHeightfieldColliderNode::TITLE = "Terrain Heightfield Physics Collider";
 
     TerrainPhysicsHeightfieldColliderNode::TerrainPhysicsHeightfieldColliderNode(GraphModel::GraphPtr graph)
         : BaseNode(graph)
@@ -53,7 +53,7 @@ namespace LandscapeCanvas
 
     const char* TerrainPhysicsHeightfieldColliderNode::GetTitle() const
     {
-        return TITLE.toUtf8().constData();
+        return TITLE;
     }
 
     AZ::ComponentDescriptor::DependencyArrayType TerrainPhysicsHeightfieldColliderNode::GetOptionalRequiredServices() const

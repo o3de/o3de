@@ -18,7 +18,7 @@ namespace AZ
     {
         namespace DepthOfField
         {
-            static constexpr const char* const EditorDepthOfFieldComponentTypeId = "{E9B85017-18F3-4CD6-9EEC-221B0E6B0619}";
+            inline constexpr AZ::TypeId EditorDepthOfFieldComponentTypeId{ "{E9B85017-18F3-4CD6-9EEC-221B0E6B0619}" };
         }
 
         class EditorDepthOfFieldComponent final

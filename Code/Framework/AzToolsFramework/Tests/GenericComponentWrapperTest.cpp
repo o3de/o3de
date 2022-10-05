@@ -127,7 +127,7 @@ TEST_F(WrappedEditorComponentTest, ComponentId_MatchesWrapperId)
     EXPECT_EQ(m_componentFromSlice->GetId(), 11874523501682509824u);
 }
 
-const AZ::Uuid InGameOnlyComponentTypeId = "{1D538623-2052-464F-B0DA-D000E1520333}";
+static constexpr AZ::TypeId InGameOnlyComponentTypeId{ "{1D538623-2052-464F-B0DA-D000E1520333}" };
 class InGameOnlyComponent
     : public AZ::Component
 {
@@ -152,7 +152,7 @@ public:
     }
 };
 
-const AZ::Uuid NoneEditorComponentTypeId = "{AE3454BA-D785-4EE2-A55B-A089F2B2916A}";
+static constexpr AZ::Uuid NoneEditorComponentTypeId{ "{AE3454BA-D785-4EE2-A55B-A089F2B2916A}" };
 class NoneEditorComponent
     : public AZ::Component
 {

@@ -9,6 +9,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorEntityIdContainer.h>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyAudioCtrlTypes.h>
 #include <AzToolsFramework/UI/PropertyEditor/GenericComboBoxCtrl.h>
 
@@ -296,6 +297,8 @@ namespace AzToolsFramework
             EditorEntityIdContainer::Reflect(context);
             AzToolsFramework::CReflectedVarAudioControl::Reflect(context);
             ReflectPropertyEditor(context);
+
+            DocumentPropertyEditorSettings::Reflect(context);
 
             // reflect data for script, serialization, editing...
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
