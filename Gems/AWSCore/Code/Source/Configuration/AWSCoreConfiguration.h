@@ -29,7 +29,7 @@ namespace AWSCore
         static constexpr const char AWSCoreDefaultProfileName[] = "default";
         static constexpr const char AWSCoreProfileNameKey[] = "/AWSCore/ProfileName";
 
-        static constexpr const char AWSCoreAllowAWSMetadataQueriesKey[] = "/AWSCore/AllowAWSMetadataQueries";
+        static constexpr const char AWSCoreAllowAWSMetadataCredentialsKey[] = "/AWSCore/AllowAWSMetadataCredentials";
 
         static constexpr const char ProjectSourceFolderNotFoundErrorMessage[] =
             "Failed to get project source folder path.";
@@ -41,8 +41,8 @@ namespace AWSCore
             "Failed to load AWSCore settings registry file.";
         static constexpr const char GlobalSettingsRegistryLoadFailureErrorMessage[] =
             "Failed to load AWSCore configurations from global settings registry.";
-        static constexpr const char AllowAWSMetadataQueriesNotFoundMessage[] =
-            "Failed to get AllowAWSMetadataQueries setting, will default to false.";
+        static constexpr const char AllowAWSMetadataCredentialsNotFoundMessage[] =
+            "Failed to get AllowAWSMetadataCredentials setting, will default to false.";
 
 
         AWSCoreConfiguration();
@@ -55,7 +55,7 @@ namespace AWSCore
         // AWSCoreInternalRequestBus interface implementation
         AZStd::string GetResourceMappingConfigFilePath() const override;
         AZStd::string GetProfileName() const override;
-        bool IsAllowedAWSMetadataQueries() const override;
+        bool IsAllowedAWSMetadataCredentials() const override;
         void ReloadConfiguration() override;
 
     private:
@@ -71,6 +71,6 @@ namespace AWSCore
         AZStd::string m_sourceProjectFolder;
         AZStd::string m_profileName;
         AZStd::string m_resourceMappingConfigFileName;
-        bool m_allowAWSMetadataQueries;
+        bool m_allowAWSMetadataCredentials;
     };
 } // namespace AWSCore

@@ -70,7 +70,7 @@ namespace AWSCore
         {
             AZStd::lock_guard<AZStd::mutex> credentialsLock{ m_credentialMutex };
             bool allowAWSMetadata = false;
-            AWSCoreInternalRequestBus::BroadcastResult(allowAWSMetadata, &AWSCoreInternalRequests::IsAllowedAWSMetadataQueries);
+            AWSCoreInternalRequestBus::BroadcastResult(allowAWSMetadata, &AWSCoreInternalRequests::IsAllowedAWSMetadataCredentials);
             if (allowAWSMetadata)
             {
                 const auto ec2MetadataDisabled = Aws::Environment::GetEnv(AWS_EC2_METADATA_DISABLED);
@@ -117,7 +117,7 @@ namespace AWSCore
         }
 
         bool allowAWSMetadata = false;
-        AWSCoreInternalRequestBus::BroadcastResult(allowAWSMetadata, &AWSCoreInternalRequests::IsAllowedAWSMetadataQueries);
+        AWSCoreInternalRequestBus::BroadcastResult(allowAWSMetadata, &AWSCoreInternalRequests::IsAllowedAWSMetadataCredentials);
         if (allowAWSMetadata)
         {
             SetInstanceProfileCredentialProvider(

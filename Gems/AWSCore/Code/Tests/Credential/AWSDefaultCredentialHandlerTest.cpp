@@ -81,7 +81,7 @@ public:
     {
         m_credentialHandler->DeactivateHandler();
         m_credentialHandler.reset();
-        m_allowAWSMetadataQueries = false;
+        m_allowAWSMetadataCredentials = false;
         m_profileCredentialsProviderMock.reset();
         m_environmentCredentialsProviderMock.reset();
         m_instanceProfileCredentialsProviderMock.reset();
@@ -93,7 +93,7 @@ public:
     // AWSCoreInternalRequestBus interface implementation
     AZStd::string GetProfileName() const override { return m_profileName; }
     AZStd::string GetResourceMappingConfigFilePath() const override { return ""; }
-    bool IsAllowedAWSMetadataQueries() const override { return m_allowAWSMetadataQueries; }
+    bool IsAllowedAWSMetadataCredentials() const override { return m_allowAWSMetadataCredentials; }
     void ReloadConfiguration() override {}
 
     std::shared_ptr<EnvironmentAWSCredentialsProviderMock> m_environmentCredentialsProviderMock;
@@ -101,7 +101,7 @@ public:
     std::shared_ptr<InstanceProfileCredentialsProviderMock> m_instanceProfileCredentialsProviderMock;
     AZStd::unique_ptr<AWSDefaultCredentialHandlerMock> m_credentialHandler;
     AZStd::string m_profileName;
-    bool m_allowAWSMetadataQueries;
+    bool m_allowAWSMetadataCredentials;
 };
 
 TEST_F(AWSDefaultCredentialHandlerTest, GetCredentialsProvider_EnvironmentCredentialProviderReturnsNonEmptyCredentials_GetExpectedCredentialProvider)
@@ -152,21 +152,21 @@ TEST_F(AWSDefaultCredentialHandlerTest, GetCredentialHandlerOrder_Call_AlwaysGet
 }
 
 TEST_F(AWSDefaultCredentialHandlerTest,
-    GetCredentialsProvider_AllowAWSMetadataQueries_InstanceProfileReturnsNonEmptyCredentials_GetExpectedCredentialProvider)
+    GetCredentialsProvider_AllowAWSMetadataCredentials_InstanceProfileReturnsNonEmptyCredentials_GetExpectedCredentialProvider)
 {
     Aws::Auth::AWSCredentials emptyCredential;
     Aws::Auth::AWSCredentials nonEmptyCredential(AWS_ACCESS_KEY, AWS_SECRET_KEY);
     EXPECT_CALL(*m_environmentCredentialsProviderMock, GetAWSCredentials()).Times(1).WillOnce(::testing::Return(emptyCredential));
     EXPECT_CALL(*m_profileCredentialsProviderMock, GetAWSCredentials()).Times(1).WillOnce(::testing::Return(emptyCredential));
     EXPECT_CALL(*m_instanceProfileCredentialsProviderMock, GetAWSCredentials()).Times(1).WillOnce(::testing::Return(nonEmptyCredential));
-    m_allowAWSMetadataQueries = true;
+    m_allowAWSMetadataCredentials = true;
     auto credentialProvider = m_credentialHandler->GetCredentialsProvider();
     EXPECT_TRUE(credentialProvider == m_instanceProfileCredentialsProviderMock);
 }
 
 TEST_F(
     AWSDefaultCredentialHandlerTest,
-    GetCredentialsProvider_AllowAWSMetadataQueries_InstanceMetadataNonTrueValue_GetExpectedCredentialProvider)
+    GetCredentialsProvider_AllowAWSMetadataCredentials_InstanceMetadataNonTrueValue_GetExpectedCredentialProvider)
 {
     // save current value so we can restore it after the test
     const auto currentEc2MetadataDisabledValue = Aws::Environment::GetEnv(AWS_EC2_METADATA_DISABLED);
@@ -179,7 +179,7 @@ TEST_F(
     EXPECT_CALL(*m_environmentCredentialsProviderMock, GetAWSCredentials()).Times(1).WillOnce(::testing::Return(emptyCredential));
     EXPECT_CALL(*m_profileCredentialsProviderMock, GetAWSCredentials()).Times(1).WillOnce(::testing::Return(emptyCredential));
     EXPECT_CALL(*m_instanceProfileCredentialsProviderMock, GetAWSCredentials()).Times(1).WillOnce(::testing::Return(nonEmptyCredential));
-    m_allowAWSMetadataQueries = true;
+    m_allowAWSMetadataCredentials = true;
     auto credentialProvider = m_credentialHandler->GetCredentialsProvider();
     EXPECT_TRUE(credentialProvider == m_instanceProfileCredentialsProviderMock);
     // restore previous value
@@ -188,7 +188,7 @@ TEST_F(
 
 TEST_F(
     AWSDefaultCredentialHandlerTest,
-    GetCredentialsProvider_AllowAWSMetadataQueries_InstanceMetadataDisabled_GetDifferentCredentialProvider)
+    GetCredentialsProvider_AllowAWSMetadataCredentials_InstanceMetadataDisabled_GetDifferentCredentialProvider)
 {
     // save current value so we can restore it after the test
     const auto currentEc2MetadataDisabledValue = Aws::Environment::GetEnv(AWS_EC2_METADATA_DISABLED);
@@ -200,20 +200,20 @@ TEST_F(
     EXPECT_CALL(*m_environmentCredentialsProviderMock, GetAWSCredentials()).Times(1).WillOnce(::testing::Return(emptyCredential));
     EXPECT_CALL(*m_profileCredentialsProviderMock, GetAWSCredentials()).Times(1).WillOnce(::testing::Return(emptyCredential));
     EXPECT_CALL(*m_instanceProfileCredentialsProviderMock, GetAWSCredentials()).Times(0);
-    m_allowAWSMetadataQueries = true;
+    m_allowAWSMetadataCredentials = true;
     auto credentialProvider = m_credentialHandler->GetCredentialsProvider();
     EXPECT_TRUE(credentialProvider != m_instanceProfileCredentialsProviderMock);
     // restore previous value
     AZ::Utils::SetEnv(AWS_EC2_METADATA_DISABLED, currentEc2MetadataDisabledValue.c_str(), 1);
 }
 
-TEST_F(AWSDefaultCredentialHandlerTest, GetCredentialsProvider_AllowAWSMetadataQueries_NoCredentialFoundInChain_GetNullPointer)
+TEST_F(AWSDefaultCredentialHandlerTest, GetCredentialsProvider_AllowAWSMetadataCredentials_NoCredentialFoundInChain_GetNullPointer)
 {
     Aws::Auth::AWSCredentials emptyCredential;
     EXPECT_CALL(*m_environmentCredentialsProviderMock, GetAWSCredentials()).Times(1).WillOnce(::testing::Return(emptyCredential));
     EXPECT_CALL(*m_profileCredentialsProviderMock, GetAWSCredentials()).Times(1).WillOnce(::testing::Return(emptyCredential));
     EXPECT_CALL(*m_instanceProfileCredentialsProviderMock, GetAWSCredentials()).Times(1).WillOnce(::testing::Return(emptyCredential));
-    m_allowAWSMetadataQueries = true;
+    m_allowAWSMetadataCredentials = true;
     auto credentialProvider = m_credentialHandler->GetCredentialsProvider();
     EXPECT_FALSE(credentialProvider);
 }

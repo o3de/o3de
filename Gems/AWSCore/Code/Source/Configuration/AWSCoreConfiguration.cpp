@@ -20,7 +20,7 @@ namespace AWSCore
         : m_sourceProjectFolder("")
         , m_profileName(AWSCoreDefaultProfileName)
         , m_resourceMappingConfigFileName("")
-        , m_allowAWSMetadataQueries(false)
+        , m_allowAWSMetadataCredentials(false)
     {
     }
 
@@ -57,9 +57,9 @@ namespace AWSCore
         return configFilePath;
     }
 
-    bool AWSCoreConfiguration::IsAllowedAWSMetadataQueries() const
+    bool AWSCoreConfiguration::IsAllowedAWSMetadataCredentials() const
     {
-        return m_allowAWSMetadataQueries;
+        return m_allowAWSMetadataCredentials;
     }
 
     void AWSCoreConfiguration::InitConfig()
@@ -108,11 +108,11 @@ namespace AWSCore
         }
 
         auto allowAWSMetadataPath = AZStd::string::format("%s%s",
-            AZ::SettingsRegistryMergeUtils::OrganizationRootKey, AWSCoreAllowAWSMetadataQueriesKey);
-        if (!settingsRegistry->Get(m_allowAWSMetadataQueries, allowAWSMetadataPath))
+            AZ::SettingsRegistryMergeUtils::OrganizationRootKey, AWSCoreAllowAWSMetadataCredentialsKey);
+        if (!settingsRegistry->Get(m_allowAWSMetadataCredentials, allowAWSMetadataPath))
         {
-            AZ_Warning(AWSCoreConfigurationName, false, AllowAWSMetadataQueriesNotFoundMessage);
-            m_allowAWSMetadataQueries = false;
+            AZ_Warning(AWSCoreConfigurationName, false, AllowAWSMetadataCredentialsNotFoundMessage);
+            m_allowAWSMetadataCredentials = false;
         }
     }
 
@@ -136,9 +136,9 @@ namespace AWSCore
         m_resourceMappingConfigFileName.clear();
 
         auto allowAWSMetadataPath =
-            AZStd::string::format("%s%s", AZ::SettingsRegistryMergeUtils::OrganizationRootKey, AWSCoreAllowAWSMetadataQueriesKey);
+            AZStd::string::format("%s%s", AZ::SettingsRegistryMergeUtils::OrganizationRootKey, AWSCoreAllowAWSMetadataCredentialsKey);
         settingsRegistry->Remove(allowAWSMetadataPath);
-        m_allowAWSMetadataQueries = false;
+        m_allowAWSMetadataCredentials = false;
 
         // Reload the AWSCore setting registry file from disk.
         if (m_sourceProjectFolder.empty())
