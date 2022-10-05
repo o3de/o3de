@@ -109,6 +109,13 @@ namespace Multiplayer
         // Make scrim most pronounced from the center of the screen and fade out towards the top and bottom on the screen.
         void DrawScrim(float alphaMultiplier = 1.0f) const;
 
+        // Draws a message in the center of the viewport
+        // @param title text is displayed over the message
+        // @param title color is color of the title. Generally yellow or red (in the case of an error)
+        // @param message to display
+        // @param alpha value of the message (useful for fading out the message over time)
+        void DrawCenterViewportMessage(const char* title, AZ::Color titleColor, const char* message, float alpha);
+
         AZStd::fixed_string<MaxMessageLength> m_centerViewportDebugText;
         AZ::Color m_centerViewportDebugTextColor = AZ::Colors::Yellow;
 
