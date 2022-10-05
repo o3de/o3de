@@ -31,8 +31,7 @@
         precise linear centroid
         float4 position : SV_Position;
         float3 normal: NORMAL;
-        float3 tangent : TANGENT; 
-        float3 bitangent : BITANGENT; 
+        float4 tangent : TANGENT;
         float3 worldPosition : UV0;
 
         // Extended fields (only referenced in this azsl file)...

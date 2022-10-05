@@ -26,8 +26,7 @@ struct VsInput_Skin
     // Base fields (required by the template azsli file)...
     float3 position : POSITION;
     float3 normal : NORMAL;
-    float4 tangent : TANGENT; 
-    float3 bitangent : BITANGENT; 
+    float4 tangent : TANGENT;
  
     // Extended fields (only referenced in this azsl file)...
     float2 uv0_tiled : UV0;
@@ -46,8 +45,7 @@ struct VsOutput_Skin
     precise linear centroid
     float4 position : SV_Position;
     float3 normal: NORMAL;
-    float3 tangent : TANGENT; 
-    float3 bitangent : BITANGENT; 
+    float4 tangent : TANGENT;
     float3 worldPosition : UV0;
 
     // Extended fields (only referenced in this azsl file)...

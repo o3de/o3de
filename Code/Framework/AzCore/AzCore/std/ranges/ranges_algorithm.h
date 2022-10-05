@@ -1891,7 +1891,7 @@ namespace AZStd::ranges
             constexpr bool operator()(I1 first1, S1 last1, I2 first2, S2 last2, Pred pred = {},
                 Proj1 proj1 = {}, Proj2 proj2 = {}) const
             {
-                return first1 == last2 || !ranges::search(AZStd::move(first1), AZStd::move(last1),
+                return first2 == last2 || !ranges::search(AZStd::move(first1), AZStd::move(last1),
                     AZStd::move(first2), AZStd::move(last2),
                     AZStd::move(pred), AZStd::move(proj1), AZStd::move(proj2)).empty();
             }
