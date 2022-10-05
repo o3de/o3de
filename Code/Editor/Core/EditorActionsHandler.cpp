@@ -1032,7 +1032,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
 
         AzToolsFramework::ActionProperties actionProperties;
         actionProperties.m_name = "Show Helpers for Selected Entities Only";
-        actionProperties.m_description = "Show Helpers for Selected/All Entities";
+        actionProperties.m_description = "If enabled, shows Helpers for selected entities only. By default, shows Helpers for all entities.";
         actionProperties.m_category = "View";
 
         m_actionManagerInterface->RegisterCheckableAction(

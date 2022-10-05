@@ -81,7 +81,7 @@ namespace AzToolsFramework
     }
 
     // helper function to wrap Ebus call to check if helpers should only be drawn for selected entities
-    static bool OnlyDrawHelpersForSelectedEntities(const AzFramework::ViewportId viewportId)
+    static bool OnlyShowHelpersForSelectedEntities(const AzFramework::ViewportId viewportId)
     {
         bool onlyShowHelpersForSelectedEntities = false;
         ViewportInteraction::ViewportSettingsRequestBus::EventResult(
@@ -293,7 +293,7 @@ namespace AzToolsFramework
 
         const bool iconsVisible = IconsVisible(viewportInfo.m_viewportId);
         const bool helpersVisible = HelpersVisible(viewportInfo.m_viewportId);
-        const bool onlyDrawSelectedEntities = OnlyDrawHelpersForSelectedEntities(viewportInfo.m_viewportId);
+        const bool onlyDrawSelectedEntities = OnlyShowHelpersForSelectedEntities(viewportInfo.m_viewportId);
 
         if (helpersVisible)
         {
