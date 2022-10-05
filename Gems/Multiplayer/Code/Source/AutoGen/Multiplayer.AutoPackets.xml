@@ -11,10 +11,12 @@
         <Member Type="uint16_t" Name="networkProtocolVersion" Init="0" />
         <Member Type="uint64_t" Name="temporaryUserId" Init="0" />
         <Member Type="Multiplayer::LongNetworkString" Name="ticket" />
+        <Member Type="AZ::HashValue64" Name="holisticMultiplayerComponentsVersionHash" />
     </Packet>
 
     <Packet Name="Accept" HandshakePacket="true" Desc="Server accept packet">
         <Member Type="Multiplayer::LongNetworkString" Name="map" />
+        <Member Type="bool" Name="hasMultiplayerComponentMismatch" />
     </Packet>
 
     <Packet Name="ReadyForEntityUpdates" Desc="Client confirming it is ready to receive entity updates">

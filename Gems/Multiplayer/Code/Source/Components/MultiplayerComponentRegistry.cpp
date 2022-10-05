@@ -58,6 +58,23 @@ namespace Multiplayer
         return nullComponentData;
     }
 
+    AZ::HashValue64 MultiplayerComponentRegistry::CalculateHolisticMultiplayerComponentVersionHash()
+    {
+        // if we've already cached the holistic component version then return it
+        if (m_holisticComponentVersionHash != static_cast<AZ::HashValue64>(0))
+        {
+            return m_holisticComponentVersionHash;
+        }
+
+        // add all the component hashes together to create an app-wide holistic hash
+        for (const auto& componentData : m_componentData)
+        {
+            m_holisticComponentVersionHash += componentData.second.m_versionHash;
+        }
+
+        return m_holisticComponentVersionHash;
+    }
+
     void MultiplayerComponentRegistry::Reset()
     {
         m_componentData.clear();

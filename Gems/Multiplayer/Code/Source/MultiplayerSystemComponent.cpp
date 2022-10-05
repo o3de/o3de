@@ -625,7 +625,8 @@ namespace Multiplayer
             }
         }
 
-        if (connection->SendReliablePacket(MultiplayerPackets::Accept(sv_map)))
+        bool multiplayerComponentsMismatch = false;
+        if (connection->SendReliablePacket(MultiplayerPackets::Accept(sv_map, multiplayerComponentsMismatch)))
         {
             reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->SetDidHandshake(true);
             if (packet.GetTemporaryUserId() == 0)
@@ -836,7 +837,12 @@ namespace Multiplayer
                 providerTicket = m_pendingConnectionTickets.front();
                 m_pendingConnectionTickets.pop();
             }
-            connection->SendReliablePacket(MultiplayerPackets::Connect(0, m_temporaryUserIdentifier, providerTicket.c_str()));
+            
+            connection->SendReliablePacket(MultiplayerPackets::Connect(
+                0,
+                m_temporaryUserIdentifier,
+                providerTicket.c_str(),
+                GetMultiplayerComponentRegistry()->CalculateHolisticMultiplayerComponentVersionHash()));
         }
         else
         {
