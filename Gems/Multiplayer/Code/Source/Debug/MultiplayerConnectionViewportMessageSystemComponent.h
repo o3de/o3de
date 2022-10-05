@@ -114,7 +114,7 @@ namespace Multiplayer
         // @param title color is color of the title. Generally yellow or red (in the case of an error)
         // @param message to display
         // @param alpha value of the message (useful for fading out the message over time)
-        void DrawCenterViewportMessage(const char* title, AZ::Color titleColor, const char* message, float alpha);
+        void DrawCenterViewportMessage(const char* title, const AZ::Color& titleColor, const char* message, float alpha);
 
         AZStd::fixed_string<MaxMessageLength> m_centerViewportDebugText;
         AZ::Color m_centerViewportDebugTextColor = AZ::Colors::Yellow;

@@ -206,7 +206,7 @@ namespace Multiplayer
         }
     }
 
-    void MultiplayerConnectionViewportMessageSystemComponent::DrawCenterViewportMessage(const char* title, AZ::Color titleColor, const char* message, float alpha)
+    void MultiplayerConnectionViewportMessageSystemComponent::DrawCenterViewportMessage(const char* title, const AZ::Color& titleColor, const char* message, float alpha)
     {
         const AZ::RPI::ViewportContextPtr viewport = AZ::RPI::ViewportContextRequests::Get()->GetDefaultViewportContext();
         if (!viewport)
@@ -214,8 +214,13 @@ namespace Multiplayer
             return;
         }
         
-        // make sure there's a message to render
-        if (strlen(message) == 0)
+        // make sure there's a title and message to render
+        if (title == nullptr || strlen(title) == 0)
+        {
+            return;
+        }
+
+        if (message == nullptr || strlen(message) == 0)
         {
             return;
         }
