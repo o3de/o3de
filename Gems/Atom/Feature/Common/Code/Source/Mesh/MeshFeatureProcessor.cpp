@@ -166,21 +166,17 @@ namespace AZ
         {
             m_meshDataChecker.soft_lock();
 
-            for (auto& model : m_modelData)
+            if (m_enablePerMeshShaderOptionFlags && !r_enablePerMeshShaderOptionFlags)
             {
-                if (model.m_cullable.m_prevFlags != model.m_cullable.m_flags)
+                // Per mesh shader option flags was on, but now turned off, so reset all the shader options.
+                for (auto& model : m_modelData)
                 {
                     for (RPI::MeshDrawPacketList& drawPacketList : model.m_drawPacketListsByLod)
                     {
                         for (RPI::MeshDrawPacket& drawPacket : drawPacketList)
                         {
-                            m_flagRegistry->VisitTags(
-                                [&](AZ::Name shaderOption, Render::MeshFeatureProcessor::FlagRegistry::TagType tag)
-                                {
-                                    bool shaderOptionValue = (model.m_cullable.m_flags & tag.GetIndex()) > 0;
-                                    drawPacket.SetShaderOption(shaderOption, AZ::RPI::ShaderOptionValue(shaderOptionValue));
-                                }
-                            );
+                            model.m_cullable.m_flags = 0;
+                            drawPacket.ClearShaderOptions();
                             drawPacket.Update(*GetParentScene(), true);
                         }
                     }
@@ -188,6 +184,36 @@ namespace AZ
                     model.BuildCullable();
                 }
             }
+
+            m_enablePerMeshShaderOptionFlags = r_enablePerMeshShaderOptionFlags;
+
+            if (m_enablePerMeshShaderOptionFlags)
+            {
+                for (auto& model : m_modelData)
+                {
+                    if (model.m_cullable.m_prevFlags != model.m_cullable.m_flags)
+                    {
+                        // Per mesh shader option flags have changed, so rebuild the draw packet with the new shader options.
+                        for (RPI::MeshDrawPacketList& drawPacketList : model.m_drawPacketListsByLod)
+                        {
+                            for (RPI::MeshDrawPacket& drawPacket : drawPacketList)
+                            {
+                                m_flagRegistry->VisitTags(
+                                    [&](AZ::Name shaderOption, Render::MeshFeatureProcessor::FlagRegistry::TagType tag)
+                                    {
+                                        bool shaderOptionValue = (model.m_cullable.m_flags & tag.GetIndex()) > 0;
+                                        drawPacket.SetShaderOption(shaderOption, AZ::RPI::ShaderOptionValue(shaderOptionValue));
+                                    }
+                                );
+                                drawPacket.Update(*GetParentScene(), true);
+                            }
+                        }
+                        model.m_cullableNeedsRebuild = true;
+                        model.BuildCullable();
+                    }
+                }
+            }
+
         }
 
         void MeshFeatureProcessor::OnEndPrepareRender()

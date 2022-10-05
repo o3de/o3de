@@ -116,7 +116,10 @@ namespace AZ
                 m_deviceBufferNeedsUpdate = false;
             }
 
-            LightCommon::MarkMeshesWithLightType(GetParentScene(), AZStd::span(m_lightData.GetDataVector<1>()), m_lightMeshFlag.GetIndex());
+            if (r_enablePerMeshShaderOptionFlags)
+            {
+                LightCommon::MarkMeshesWithLightType(GetParentScene(), AZStd::span(m_lightData.GetDataVector<1>()), m_lightMeshFlag.GetIndex());
+            }
         }
 
         void SimpleSpotLightFeatureProcessor::Render(const SimpleSpotLightFeatureProcessor::RenderPacket& packet)

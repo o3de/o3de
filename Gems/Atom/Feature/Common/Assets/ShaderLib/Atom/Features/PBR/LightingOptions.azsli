@@ -66,14 +66,14 @@ option bool o_enableDirectionalLights = true;
 option bool o_enablePunctualLights = true;
 
 option bool o_enableAreaLights = true;
-option bool o_enableSphereLights = false;
-option bool o_enableSphereLightShadows = false;
-option bool o_enableDiskLights = false;
-option bool o_enableDiskLightShadows = false;
-option bool o_enableCapsuleLights = false;
-option bool o_enableQuadLightLTC = false;
-option bool o_enableQuadLightApprox = false;
-option bool o_enablePolygonLights = false;
+option bool o_enableSphereLights = true;
+option bool o_enableSphereLightShadows = true;
+option bool o_enableDiskLights = true;
+option bool o_enableDiskLightShadows = true;
+option bool o_enableCapsuleLights = true;
+option bool o_enableQuadLightLTC = true;
+option bool o_enableQuadLightApprox = true;
+option bool o_enablePolygonLights = true;
 
 option bool o_enableIBL = true;
 option bool o_enableSubsurfaceScattering = false;

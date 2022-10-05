@@ -133,7 +133,7 @@ namespace AZ
 
             AZ_RTTI(AZ::Render::MeshFeatureProcessor, "{6E3DFA1D-22C7-4738-A3AE-1E10AB88B29B}", AZ::Render::MeshFeatureProcessorInterface);
 
-            AZ_CONSOLEFUNC(MeshFeatureProcessor, ReportShaderOptionFlags, AZ::ConsoleFunctorFlags::Null, "Dump octreeSystemComponent stats to the console window");
+            AZ_CONSOLEFUNC(MeshFeatureProcessor, ReportShaderOptionFlags, AZ::ConsoleFunctorFlags::Null, "Report currently used shader option flags.");
 
             using FlagRegistry = RHI::TagBitRegistry<RPI::Cullable::FlagType>;
 
@@ -227,6 +227,7 @@ namespace AZ
             RHI::Ptr<FlagRegistry> m_flagRegistry = nullptr;
             bool m_forceRebuildDrawPackets = false;
             bool m_reportShaderOptionFlags = false;
+            bool m_enablePerMeshShaderOptionFlags = false;
         };
     } // namespace Render
 } // namespace AZ

@@ -155,7 +155,10 @@ namespace AZ::Render
             m_deviceBufferNeedsUpdate = false;
         }
 
-        LightCommon::MarkMeshesWithLightType(GetParentScene(), AZStd::span(m_lightData.GetDataVector<2>()), m_lightMeshFlag.GetIndex());
+        if (r_enablePerMeshShaderOptionFlags)
+        {
+            LightCommon::MarkMeshesWithLightType(GetParentScene(), AZStd::span(m_lightData.GetDataVector<2>()), m_lightMeshFlag.GetIndex());
+        }
     }
 
     void PolygonLightFeatureProcessor::Render(const PolygonLightFeatureProcessor::RenderPacket& packet)

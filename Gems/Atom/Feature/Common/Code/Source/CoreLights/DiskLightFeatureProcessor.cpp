@@ -143,29 +143,32 @@ namespace AZ
                 m_deviceBufferNeedsUpdate = false;
             }
 
-            // Helper lambdas
-            auto indexHasShadow = [&](LightHandle::IndexType index) -> bool
+            if (r_enablePerMeshShaderOptionFlags)
             {
-                ShadowId shadowId = ShadowId(m_lightData.GetData<0>(index).m_shadowIndex);
-                return shadowId.IsValid();
-            };
+                // Helper lambdas
+                auto indexHasShadow = [&](LightHandle::IndexType index) -> bool
+                {
+                    ShadowId shadowId = ShadowId(m_lightData.GetData<0>(index).m_shadowIndex);
+                    return shadowId.IsValid();
+                };
 
-            // Filter lambdas
-            auto hasShadow = [&](const LightCommon::LightBounds& bounds) -> bool
-            {
-                return indexHasShadow(m_lightData.GetIndexForData<1>(&bounds));
-            };
-            auto noShadow = [&](const LightCommon::LightBounds& bounds) -> bool
-            {
-                return !indexHasShadow(m_lightData.GetIndexForData<1>(&bounds));
-            };
+                // Filter lambdas
+                auto hasShadow = [&](const LightCommon::LightBounds& bounds) -> bool
+                {
+                    return indexHasShadow(m_lightData.GetIndexForData<1>(&bounds));
+                };
+                auto noShadow = [&](const LightCommon::LightBounds& bounds) -> bool
+                {
+                    return !indexHasShadow(m_lightData.GetIndexForData<1>(&bounds));
+                };
 
-            // Mark meshes that have point lights without shadow using only the light flag.
-            LightCommon::MarkMeshesWithLightType(GetParentScene(), AZStd::span(m_lightData.GetDataVector<1>()), m_lightMeshFlag.GetIndex(), noShadow);
+                // Mark meshes that have point lights without shadow using only the light flag.
+                LightCommon::MarkMeshesWithLightType(GetParentScene(), AZStd::span(m_lightData.GetDataVector<1>()), m_lightMeshFlag.GetIndex(), noShadow);
 
-            // Mark meshes that have point lights with shadow using a combination of light and shadow flags.
-            uint32_t lightAndShadow = m_lightMeshFlag.GetIndex() | m_shadowMeshFlag.GetIndex();
-            LightCommon::MarkMeshesWithLightType(GetParentScene(), AZStd::span(m_lightData.GetDataVector<1>()), lightAndShadow, hasShadow);
+                // Mark meshes that have point lights with shadow using a combination of light and shadow flags.
+                uint32_t lightAndShadow = m_lightMeshFlag.GetIndex() | m_shadowMeshFlag.GetIndex();
+                LightCommon::MarkMeshesWithLightType(GetParentScene(), AZStd::span(m_lightData.GetDataVector<1>()), lightAndShadow, hasShadow);
+            }
         }
 
         void DiskLightFeatureProcessor::Render(const DiskLightFeatureProcessor::RenderPacket& packet)

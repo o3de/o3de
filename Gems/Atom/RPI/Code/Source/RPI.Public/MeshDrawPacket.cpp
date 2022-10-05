@@ -102,6 +102,11 @@ namespace AZ
             return true;
         }
 
+        void MeshDrawPacket::ClearShaderOptions()
+        {
+            m_shaderOptions.clear();
+        }
+
         bool MeshDrawPacket::Update(const Scene& parentScene, bool forceUpdate /*= false*/)
         {
             // Why we need to check "!m_material->NeedsCompile()"...
