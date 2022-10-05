@@ -38,8 +38,8 @@ class QWidget;
             expression,\
             AZ_VA_HAS_ARGS(__VA_ARGS__),\
             "String used in place of boolean expression for AZ_TracePrintf_IfTrue.",\
-            "Did you mean AZ_TracePrintf_IfTrue(" #window ", false, \"%s\", " #expression "); ?",\
-            "Did you mean AZ_TracePrintf_IfTrue(" #window ", false, " #expression ", " #__VA_ARGS__ "); ?");\
+            "Did you mean AZ_TracePrintf_IfTrue(" #window ", true, \"%s\", " #expression "); ?",\
+            "Did you mean AZ_TracePrintf_IfTrue(" #window ", true, " #expression ", " #__VA_ARGS__ "); ?");\
         AZ::Debug::Trace::Instance().Printf(window, __VA_ARGS__);\
     }\
     AZ_POP_DISABLE_WARNING
@@ -52,8 +52,8 @@ class QWidget;
             expression,\
             AZ_VA_HAS_ARGS(__VA_ARGS__),\
             "String used in place of boolean expression for AZ_TracePrintfOnce_IfTrue.",\
-            "Did you mean AZ_TracePrintfOnce_IfTrue(" #window ", false, \"%s\", " #expression "); ?",\
-            "Did you mean AZ_TracePrintfOnce_IfTrue(" #window ", false, " #expression ", " #__VA_ARGS__ "); ?");\
+            "Did you mean AZ_TracePrintfOnce_IfTrue(" #window ", true, \"%s\", " #expression "); ?",\
+            "Did you mean AZ_TracePrintfOnce_IfTrue(" #window ", true, " #expression ", " #__VA_ARGS__ "); ?");\
         static bool AZ_CONCAT_VAR_NAME(azTraceDisplayed, __LINE__) = false;\
         if (!AZ_CONCAT_VAR_NAME(azTraceDisplayed, __LINE__))\
         {\
