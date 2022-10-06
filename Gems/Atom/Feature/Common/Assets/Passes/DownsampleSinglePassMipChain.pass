@@ -1,0 +1,90 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "DownsampleSinglePassMipChainTemplate",
+            "PassClass": "DownsampleSinglePassMipChainPass",
+            "PassData": {
+                "$type": "ComputePassData",
+                "Make Fullscreen Pass": false,
+                "ShaderAsset": {
+                    "FilePath": "Shaders/PostProcessing/DownsampleSinglePassMinAvgMax.shader" 
+                }
+            },
+            "Slots": [
+                {
+                    "Name": "MipChainInputOutput",
+                    "SlotType": "InputOutput",
+                    "ShaderInputName": "m_imageDestination",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "MipSliceMin": 0,
+                        "MipSliceMax": 12
+                    }
+                },
+                {
+                    "Name": "Mip6",
+                    "SlotType": "InputOutput",
+                    "ShaderInputName": "m_imageDestination6",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "GlobalAtomic",
+                    "SlotType": "InputOutput",
+                    "ShaderInputName": "m_globalAtomic",
+                    "ScopeAttachmentUsage": "Shader",
+                    "BufferViewDesc": {
+                        "m_elementSize": 4,
+                        "m_elementCount": 1
+                    }
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "Mip6",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "MipChainInputOutput"
+                        },
+                        "Multipliers": {
+                            "WidthMultiplier": 0.015625,
+                            "HeightMultiplier": 0.015625
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R16G16B16A16_FLOAT"
+                    }
+                }
+            ],
+            "BufferAttachments": [
+                {
+                    "Name": "GlobalAtomic",
+                    "BufferDescriptor": {
+                        "m_byteCount": 4,
+                        "m_alignment": 4,
+                        "m_bindFlags": 24
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Mip6",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "Mip6"
+                    }
+                },
+                {
+                    "LocalSlot": "GlobalAtomic",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "GlobalAtomic"
+                    }
+                }
+            ]
+        }
+    }
+}

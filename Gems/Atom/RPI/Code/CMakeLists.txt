@@ -17,6 +17,8 @@ else()
     set(MASKED_OCCLUSION_CULLING_FILES "")
 endif()
 
+include(3rdParty/FetchSPD.cmake)
+
 ly_add_target(
     NAME Atom_RPI.Public STATIC
     NAMESPACE Gem
@@ -32,6 +34,7 @@ ly_add_target(
         PRIVATE
             Source
             ${pal_source_dir}
+            ${SPD_INCLUDE_PATH}
         PUBLIC
             Include
             External

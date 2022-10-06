@@ -60,7 +60,7 @@
                 },
                 {
                     "Name": "DownsampleLuminanceMipChain",
-                    "TemplateName": "DownsampleMipChainTemplate",
+                    "TemplateName": "DownsampleSinglePassMipChainTemplate",
                     "Connections": [
                         {
                             "LocalSlot": "MipChainInputOutput",
@@ -69,13 +69,7 @@
                                 "Attachment": "Output"
                             }
                         }
-                    ],
-                    "PassData": {
-                        "$type": "DownsampleMipChainPassData",
-                        "ShaderAsset": {
-                            "FilePath": "Shaders/PostProcessing/DownsampleMinAvgMaxCS.shader"
-                        }
-                    }
+                    ]
                 },
                 {
                     "Name": "EyeAdaptationPass",
