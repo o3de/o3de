@@ -299,7 +299,7 @@ namespace GradientSignal
 
     void ShapeAreaFalloffGradientComponent::SetFalloffWidth(float falloffWidth)
     {
-        AZ::Aabb dirtyRegion;
+        AZ::Aabb dirtyRegion = AZ::Aabb::CreateNull();
 
         // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
         // execute an arbitrary amount of logic, including calls back to this component.
@@ -320,7 +320,7 @@ namespace GradientSignal
 
     void ShapeAreaFalloffGradientComponent::SetFalloffType(FalloffType type)
     {
-        AZ::Aabb dirtyRegion;
+        AZ::Aabb dirtyRegion = AZ::Aabb::CreateNull();
 
         // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
         // execute an arbitrary amount of logic, including calls back to this component.
@@ -342,7 +342,7 @@ namespace GradientSignal
 
     void ShapeAreaFalloffGradientComponent::Set3dFalloff(bool is3dFalloff)
     {
-        AZ::Aabb dirtyRegion;
+        AZ::Aabb dirtyRegion = AZ::Aabb::CreateNull();
 
         // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
         // execute an arbitrary amount of logic, including calls back to this component.
