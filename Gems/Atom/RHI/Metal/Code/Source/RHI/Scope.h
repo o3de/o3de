@@ -66,7 +66,7 @@ namespace AZ
             //!Queue a fence related to the transient resource for this scope
             void QueueResourceFence(ResourceFenceAction fenceAction, Fence& fence);
             
-            //! Signall all the transient resource fences associated with this scope
+            //! Signal all the transient resource fences associated with this scope
             void SignalAllResourceFences(CommandList& commandList) const;
             void SignalAllResourceFences(id <MTLCommandBuffer> mtlCommandBuffer) const;
             
