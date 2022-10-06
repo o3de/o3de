@@ -74,6 +74,7 @@ namespace O3DE::ProjectManager
         AZ::Outcome<QString, QString> RunGetPythonScript(const QString& enginePath);
 
         QString GetDefaultProjectPath();
+        QString GetDefaultTemplatePath();
 
         /**
          * Create a desktop shortcut.

@@ -20,16 +20,15 @@ namespace AZ::Render
     {
     public:
         //! Constructs the mask renderer for the specified draw tag.
-        EditorStateMaskRenderer(const Name& name, Data::Instance<RPI::Material> maskMaterial);
+        EditorStateMaskRenderer(const Name& name);
 
         //! Renders the specified entities to this mask.
-        void RenderMaskEntities(const AzToolsFramework::EntityIdSet& entityIds);
+        void RenderMaskEntities(Data::Instance<RPI::Material> maskMaterial, const AzToolsFramework::EntityIdSet& entityIds);
     private:
 
         //! The drawable components of the entities tagged for rendering to this mask.
         AZStd::unordered_map<EntityId, DrawableMeshEntity> m_drawableEntities;
 
         Name m_drawTag; //!< The draw tag for this mask.
-        Data::Instance<RPI::Material> m_maskMaterial = nullptr; //!< The material for this mask.
     };
 } // namespace AZ::Render
