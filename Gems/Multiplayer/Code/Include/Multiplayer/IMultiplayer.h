@@ -102,10 +102,10 @@ namespace Multiplayer
         virtual void InitializeMultiplayer(MultiplayerAgentType state) = 0;
 
         //! Starts hosting a server.
-        //! @param port The port to listen for connection on
+        //! @param port The port to listen for connection on, 0 means use the currently configured port value of sv_port
         //! @param isDedicated Whether the server is dedicated or client hosted
         //! @return if the application successfully started hosting
-        virtual bool StartHosting(uint16_t port, bool isDedicated = true) = 0;
+        virtual bool StartHosting(uint16_t port = 0, bool isDedicated = true) = 0;
 
         //! Connects to the specified IP as a Client.
         //! @param remoteAddress The domain or IP to connect to
