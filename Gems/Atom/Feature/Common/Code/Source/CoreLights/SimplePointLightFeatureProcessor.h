@@ -12,7 +12,7 @@
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
 #include <Atom/Feature/CoreLights/SimplePointLightFeatureProcessorInterface.h>
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
-#include <Atom/Feature/Utils/MultiIndexedDataVector.h>
+#include <Atom/Feature/Utils/IndexedDataVector.h>
 
 namespace AZ
 {
@@ -70,10 +70,9 @@ namespace AZ
 
             static constexpr const char* FeatureProcessorName = "SimplePointLightFeatureProcessor";
 
-            using LightContainer = MultiIndexedDataVector<ShaderData, AZ::Sphere>;
+            using LightContainer = IndexedDataVector<ShaderData>;
             LightContainer m_pointLightData;
             GpuBufferHandler m_lightBufferHandler;
-            RHI::Handle<uint32_t> m_lightMeshFlag;
             bool m_deviceBufferNeedsUpdate = false;
 
         };

@@ -14,7 +14,7 @@
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
 #include <Atom/Feature/CoreLights/SimpleSpotLightFeatureProcessorInterface.h>
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
-#include <Atom/Feature/Utils/MultiIndexedDataVector.h>
+#include <Atom/Feature/Utils/IndexedDataVector.h>
 
 namespace AZ
 {
@@ -74,13 +74,10 @@ namespace AZ
         private:
             SimpleSpotLightFeatureProcessor(const SimpleSpotLightFeatureProcessor&) = delete;
 
-            void UpdateBounds(LightHandle handle);
-
             static constexpr const char* FeatureProcessorName = "SimpleSpotLightFeatureProcessor";
 
-            MultiIndexedDataVector<SimpleSpotLightData, LightCommon::LightBounds> m_lightData;
+            IndexedDataVector<SimpleSpotLightData> m_lightData;
             GpuBufferHandler m_lightBufferHandler;
-            RHI::Handle<uint32_t> m_lightMeshFlag;
             bool m_deviceBufferNeedsUpdate = false;
         };
     } // namespace Render

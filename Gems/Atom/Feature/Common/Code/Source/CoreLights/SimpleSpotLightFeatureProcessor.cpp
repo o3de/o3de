@@ -50,12 +50,6 @@ namespace AZ
             desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
 
             m_lightBufferHandler = GpuBufferHandler(desc);
-
-            MeshFeatureProcessor* meshFeatureProcessor = GetParentScene()->GetFeatureProcessor<MeshFeatureProcessor>();
-            if (meshFeatureProcessor)
-            {
-                m_lightMeshFlag = meshFeatureProcessor->GetFlagRegistry()->AcquireTag(AZ::Name("SimpleSpotLight"));
-            }
         }
 
         void SimpleSpotLightFeatureProcessor::Deactivate()
@@ -68,7 +62,7 @@ namespace AZ
         {
             uint16_t id = m_lightData.GetFreeSlotIndex();
 
-            if (id == MultiIndexedDataVector<SimpleSpotLightData>::NoFreeSlot)
+            if (id == IndexedDataVector<SimpleSpotLightData>::NoFreeSlot)
             {
                 return LightHandle::Null;
             }
@@ -98,8 +92,7 @@ namespace AZ
             LightHandle handle = AcquireLight();
             if (handle.IsValid())
             {
-                m_lightData.GetData<0>(handle.GetIndex()) = m_lightData.GetData<0>(sourceLightHandle.GetIndex());
-                m_lightData.GetData<1>(handle.GetIndex()) = m_lightData.GetData<1>(sourceLightHandle.GetIndex());
+                m_lightData.GetData(handle.GetIndex()) = m_lightData.GetData(sourceLightHandle.GetIndex());
                 m_deviceBufferNeedsUpdate = true;
             }
             return handle;
@@ -112,13 +105,8 @@ namespace AZ
 
             if (m_deviceBufferNeedsUpdate)
             {
-                m_lightBufferHandler.UpdateBuffer(m_lightData.GetDataVector<0>());
+                m_lightBufferHandler.UpdateBuffer(m_lightData.GetDataVector());
                 m_deviceBufferNeedsUpdate = false;
-            }
-
-            if (r_enablePerMeshShaderOptionFlags)
-            {
-                LightCommon::MarkMeshesWithLightType(GetParentScene(), AZStd::span(m_lightData.GetDataVector<1>()), m_lightMeshFlag.GetIndex());
             }
         }
 
@@ -138,7 +126,7 @@ namespace AZ
 
             auto transformedColor = AZ::RPI::TransformColor(lightRgbIntensity, AZ::RPI::ColorSpaceId::LinearSRGB, AZ::RPI::ColorSpaceId::ACEScg);
 
-            AZStd::array<float, 3>& rgbIntensity = m_lightData.GetData<0>(handle.GetIndex()).m_rgbIntensity;
+            AZStd::array<float, 3>& rgbIntensity = m_lightData.GetData(handle.GetIndex()).m_rgbIntensity;
             rgbIntensity[0] = transformedColor.GetR();
             rgbIntensity[1] = transformedColor.GetG();
             rgbIntensity[2] = transformedColor.GetB();
@@ -150,11 +138,8 @@ namespace AZ
         {
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to SimpleSpotLightFeatureProcessor::SetPosition().");
 
-            AZStd::array<float, 3>& position = m_lightData.GetData<0>(handle.GetIndex()).m_position;
+            AZStd::array<float, 3>& position = m_lightData.GetData(handle.GetIndex()).m_position;
             lightPosition.StoreToFloat3(position.data());
-
-            UpdateBounds(handle);
-
             m_deviceBufferNeedsUpdate = true;
         }
         
@@ -162,21 +147,16 @@ namespace AZ
         {
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to SimpleSpotLightFeatureProcessor::SetDirection().");
 
-            AZStd::array<float, 3>& direction = m_lightData.GetData<0>(handle.GetIndex()).m_direction;
+            AZStd::array<float, 3>& direction = m_lightData.GetData(handle.GetIndex()).m_direction;
             lightDirection.StoreToFloat3(direction.data());
-
-            UpdateBounds(handle);
-
             m_deviceBufferNeedsUpdate = true;
         }
 
         void SimpleSpotLightFeatureProcessor::SetConeAngles(LightHandle handle, float innerRadians, float outerRadians)
         {
-            SimpleSpotLightData& data = m_lightData.GetData<0>(handle.GetIndex());
+            SimpleSpotLightData& data = m_lightData.GetData(handle.GetIndex());
             data.m_cosInnerConeAngle = cosf(innerRadians);
             data.m_cosOuterConeAngle = cosf(outerRadians);
-
-            UpdateBounds(handle);
         }
 
         void SimpleSpotLightFeatureProcessor::SetAttenuationRadius(LightHandle handle, float attenuationRadius)
@@ -186,11 +166,8 @@ namespace AZ
             attenuationRadius = AZStd::max<float>(attenuationRadius, 0.001f); // prevent divide by zero.
             float invAttenuationRadiusSquared = 1.0f / (attenuationRadius * attenuationRadius);
 
-            SimpleSpotLightData& data = m_lightData.GetData<0>(handle.GetIndex());
+            SimpleSpotLightData& data = m_lightData.GetData(handle.GetIndex());
             data.m_invAttenuationRadiusSquared = invAttenuationRadiusSquared;
-
-            UpdateBounds(handle);
-
             m_deviceBufferNeedsUpdate = true;
         }
 
@@ -198,7 +175,7 @@ namespace AZ
         {
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to SimpleSpotLightFeatureProcessor::SetAffectsGI().");
 
-            m_lightData.GetData<0>(handle.GetIndex()).m_affectsGI = affectsGI;
+            m_lightData.GetData(handle.GetIndex()).m_affectsGI = affectsGI;
             m_deviceBufferNeedsUpdate = true;
         }
 
@@ -206,7 +183,7 @@ namespace AZ
         {
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to SimpleSpotLightFeatureProcessor::SetAffectsGIFactor().");
 
-            m_lightData.GetData<0>(handle.GetIndex()).m_affectsGIFactor = affectsGIFactor;
+            m_lightData.GetData(handle.GetIndex()).m_affectsGIFactor = affectsGIFactor;
             m_deviceBufferNeedsUpdate = true;
         }
 
@@ -218,40 +195,6 @@ namespace AZ
         uint32_t SimpleSpotLightFeatureProcessor::GetLightCount() const
         {
             return m_lightBufferHandler.GetElementCount();
-        }
-
-        void SimpleSpotLightFeatureProcessor::UpdateBounds(LightHandle handle)
-        {
-            SimpleSpotLightData data = m_lightData.GetData<0>(handle.GetIndex());
-
-            float radius = LightCommon::GetRadiusFromInvRadiusSquared(data.m_invAttenuationRadiusSquared);
-            AZ::Vector3 position = AZ::Vector3::CreateFromFloat3(data.m_position.data());
-            AZ::Vector3 normal = AZ::Vector3::CreateFromFloat3(data.m_direction.data());
-
-            // At greater than a 68 degree cone angle, a hemisphere will have a smaller volume than a frustum.
-            constexpr float CosFrustumHemisphereVolumeCrossoverAngle = 0.37f;
-
-            if (data.m_cosOuterConeAngle < CosFrustumHemisphereVolumeCrossoverAngle)
-            {
-                // Wide angle, use a hemisphere for bounds instead of frustum
-                LightCommon::LightBounds& bounds = m_lightData.GetData<1>(handle.GetIndex());
-                bounds.emplace<Hemisphere>(Hemisphere(position, radius, normal));
-            }
-            else
-            {
-                ViewFrustumAttributes desc;
-                desc.m_aspectRatio = 1.0f;
-                desc.m_nearClip = radius * 0.1f; // near clip will be moved to the light position later
-                desc.m_farClip = radius;
-                desc.m_verticalFovRadians = GetMax(0.001f, acosf(data.m_cosOuterConeAngle) * 2.0f);
-                desc.m_worldTransform = AZ::Transform::CreateLookAt(position, position + normal);
-
-                AZ::Frustum frustum = AZ::Frustum(desc);
-
-                // Move the near plane onto the point of the light (the frustum can't be constructed this way due to divide by zero issues).
-                frustum.SetPlane(AZ::Frustum::Near, AZ::Plane::CreateFromNormalAndPoint(desc.m_worldTransform.GetBasisY(), position));
-                m_lightData.GetData<1>(handle.GetIndex()).emplace<Frustum>(frustum);
-            }
         }
     } // namespace Render
 } // namespace AZ
