@@ -69,6 +69,7 @@ namespace MaterialCanvas
         void Clear() override;
 
         // GraphModelIntegration::GraphControllerNotificationBus::Handler overrides...
+        void OnGraphModelSlotModified(GraphModel::SlotPtr slot) override;
         void OnGraphModelRequestUndoPoint() override;
         void OnGraphModelTriggerUndo() override;
         void OnGraphModelTriggerRedo() override;
@@ -106,6 +107,10 @@ namespace MaterialCanvas
             GraphModel::ConstNodePtr outputNode,
             GraphModel::ConstNodePtr inputNode,
             const AZStd::vector<AZStd::string>& inputSlotNames) const;
+
+        // Sort a container of nodes based on connections between nodes so they execute and appear in the inspector in the expected order.
+        template<typename NodeContainer>
+        void SortNodesInExecutionOrder(NodeContainer& nodes) const;
 
         // Get a list of all of the graph nodes sorted in execution order based on input connections.
         AZStd::vector<GraphModel::ConstNodePtr> GetInstructionNodesInExecutionOrder(
@@ -146,6 +151,8 @@ namespace MaterialCanvas
             const AZStd::vector<GraphModel::ConstNodePtr>& instructionNodes,
             const AZStd::string& templateInputPath,
             const AZStd::string& templateOutputPath) const;
+
+        bool IsCompileLoggingEnabled() const;
 
         AZ::Entity* m_sceneEntity = {};
         GraphCanvas::GraphId m_graphId;

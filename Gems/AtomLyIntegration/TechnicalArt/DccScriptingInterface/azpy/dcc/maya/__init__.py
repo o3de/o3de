@@ -30,7 +30,8 @@ _LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
 
 from DccScriptingInterface.globals import *
 
-__all__ = ['stub'] # only add here, if that sub-module does NOT require bpy!
+__all__ = ['stub'] # only add here, if that sub-module does NOT require
+# maya api such as maya.cmds, maya.OpenMaya, pymel, etc.
 # -------------------------------------------------------------------------
 
 
@@ -59,6 +60,7 @@ def init(_all=list()):
 try:
     import maya.cmds
     __all__ = init(__all__) # if we can import maya, we can load sub-modules
+    # which reply on maya apis
 except:
     pass # no changes to __all__
 

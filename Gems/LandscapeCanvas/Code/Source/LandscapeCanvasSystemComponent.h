@@ -61,7 +61,6 @@ namespace LandscapeCanvas
         ////////////////////////////////////////////////////////////////////////
         // LandscapeCanvas::LandscapeCanvasSerializationRequestBus::Handler overrides
         const LandscapeCanvasSerialization& GetSerializedMappings() override;
-        void SetSerializedNodeEntities(const AZStd::unordered_map<AZ::EntityId, AZ::Entity*>& nodeEntities) override;
         void SetDeserializedEntities(const AZStd::unordered_map<AZ::EntityId, AZ::EntityId>& entities) override;
         ////////////////////////////////////////////////////////////////////////
 

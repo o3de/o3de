@@ -316,7 +316,6 @@ namespace AZ
                     pipelineName = "passes/LowEndRenderPipeline.azasset";
                 }
 
-                RHI::MultisampleState multisampleState;
                 bool isPipelineAssetLoadSuccessfull = true;
                 // Load XR pipelines if applicable
                 if (xrSystem)
@@ -326,17 +325,17 @@ namespace AZ
                         AZ::RPI::ViewType viewType = i == 0 ? AZ::RPI::ViewType::XrLeft : AZ::RPI::ViewType::XrRight;
                         AZStd::string pipelineAssetName =
                             i == 0 ? "passes/XRLeftRenderPipeline.azasset" : "passes/XRRightRenderPipeline.azasset";
-                        isPipelineAssetLoadSuccessfull &= LoadPipeline(scene, viewportContext, pipelineAssetName, viewType, multisampleState);
+                        bool applyMSAAState = false; //Use the sampling state from the default pipeline
+                        isPipelineAssetLoadSuccessfull &= LoadPipeline(scene, viewportContext, pipelineAssetName, viewType, applyMSAAState);
                     }
                 }
 
                 // Load the main default pipeline
-                isPipelineAssetLoadSuccessfull &= LoadPipeline(scene, viewportContext, pipelineName, AZ::RPI::ViewType::Default, multisampleState);
+                isPipelineAssetLoadSuccessfull &= LoadPipeline(scene, viewportContext, pipelineName, AZ::RPI::ViewType::Default, true);
                 if (!isPipelineAssetLoadSuccessfull)
                 {
                     return false;
                 }
-                AZ::RPI::RPISystemInterface::Get()->SetApplicationMultisampleState(multisampleState);
 
                 // As part of our initialization we need to create the BRDF texture generation pipeline
                 AZ::RPI::RenderPipelineDescriptor pipelineDesc;
@@ -378,7 +377,7 @@ namespace AZ
             }
 
             bool BootstrapSystemComponent::LoadPipeline( AZ::RPI::ScenePtr scene, AZ::RPI::ViewportContextPtr viewportContext,
-                                                    AZStd::string_view pipelineName, AZ::RPI::ViewType viewType, RHI::MultisampleState& outMultisampleState)
+                                                    AZStd::string_view pipelineName, AZ::RPI::ViewType viewType, bool applyMSAAState)
             {
                 AzFramework::AssetSystem::AssetStatus status = AzFramework::AssetSystem::AssetStatus_Unknown;
                 AzFramework::AssetSystemRequestBus::BroadcastResult(
@@ -396,7 +395,12 @@ namespace AZ
                         *RPI::GetDataFromAnyAsset<RPI::RenderPipelineDescriptor>(pipelineAsset);
                     renderPipelineDescriptor.m_name =
                         AZStd::string::format("%s_%i", renderPipelineDescriptor.m_name.c_str(), viewportContext->GetId());
-                    outMultisampleState = renderPipelineDescriptor.m_renderSettings.m_multisampleState;
+
+                    if (applyMSAAState)
+                    {
+                        AZ::RPI::RPISystemInterface::Get()->SetApplicationMultisampleState(
+                            renderPipelineDescriptor.m_renderSettings.m_multisampleState);
+                    }
 
                     if (!scene->GetRenderPipeline(AZ::Name(renderPipelineDescriptor.m_name)))
                     {

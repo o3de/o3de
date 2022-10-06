@@ -35,20 +35,35 @@ QTabBar::tab:text {
     text-align:left;
 }
 
-#createGemTab QTabBar::tab {
-    background-color: #444444;
-    font-size:16px;
-    min-height:230px;
-    margin: 0px;
+#createAGemLHS QRadioButton{
+    font-size: 16px;
+    height: 40px;
+    min-width: 180px;
+    spacing: 10px;
+    color: #6b6b6b;
+}
+
+#createAGemLHS QRadioButton:enabled{
+    color: #aaaaaa;
+}
+
+#createAGemLHS QRadioButton:checked{
+    background-color: #333333;
+    spacing: 30px;
+    color: #FFFFFF;
+}
+
+#createAGemLHS QRadioButton::indicator{
+    image: url(:/nothing.png);
+}
+
+QStackedWidget#createAGemRHS{
+    background-color: #333333;
     text-align:left;
 }
 
-QTabWidget#createGemTab::tab-bar {
-    left: 0px;
-}
-
-QTabBar#createGemTab::tab:text {
-    text-align:left;
+#createAGemRHS #formFrame{
+    margin-left: 0px;
 }
 
 QTabWidget::pane {
@@ -235,6 +250,10 @@ QTabBar::tab:focus {
     margin-left: 50px;
 }
 
+#createAGemBody #formErrorLabel {
+    margin-left: 0px;
+}
+
 #addRemoteProjectDialog #formErrorLabel {
     margin-left: 0px;
 }
@@ -252,6 +271,10 @@ QTabBar::tab:focus {
 #rightPaneHeader {
     font-size:21px;
     qproperty-indent: 0;
+}
+
+#rightPaneDetailsHeader {
+    font-size:21px;
 }
 
 #rightPaneSubheader {
@@ -275,6 +298,10 @@ QTabBar::tab:focus {
     padding-bottom: 20px;
     padding-left: 23px;
     font-size: 12;
+}
+
+#createAGemRadioButtonSubFormField #formFrame{
+    margin-left: 23px;
 }
 
 /************** General (Modal windows) **************/
