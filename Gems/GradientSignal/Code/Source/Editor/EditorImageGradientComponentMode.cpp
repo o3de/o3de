@@ -89,21 +89,30 @@ namespace GradientSignal
             return !m_pixelIndices.empty();
         }
 
-        //! Grow our buffers based on the maximum number of points that we're expecting to add in this paint stroke.
-        void ReserveBuffer(size_t numPointsToAdd)
+        //! Add points to our undo buffer.
+        void AddPoints(
+            const AZStd::vector<AZ::Vector3>& positions, const AZStd::vector<PixelIndex>& pixelIndices,
+            const AZStd::vector<float>& oldValues, const AZStd::vector<float>& newValues)
         {
-            m_pixelIndices.reserve(m_pixelIndices.size() + numPointsToAdd);
-            m_oldValues.reserve(m_oldValues.size() + numPointsToAdd);
-            m_newValues.reserve(m_newValues.size() + numPointsToAdd);
-        }
+            if (positions.empty())
+            {
+                return;
+            }
 
-        //! Add a point change to our undo buffer.
-        void AddPoint(const AZ::Vector3& position, const PixelIndex& pixelIndex, float oldValue, float newValue)
-        {
-            m_pixelIndices.emplace_back(pixelIndex);
-            m_oldValues.emplace_back(oldValue);
-            m_newValues.emplace_back(newValue);
-            m_dirtyArea.AddPoint(position);
+            m_pixelIndices.reserve(m_pixelIndices.size() + positions.size());
+            m_oldValues.reserve(m_oldValues.size() + positions.size());
+            m_newValues.reserve(m_newValues.size() + positions.size());
+
+            for (size_t index = 0; index < positions.size(); index++)
+            {
+                if (oldValues[index] != newValues[index])
+                {
+                    m_pixelIndices.emplace_back(pixelIndices[index]);
+                    m_oldValues.emplace_back(oldValues[index]);
+                    m_newValues.emplace_back(newValues[index]);
+                    m_dirtyArea.AddPoint(positions[index]);
+                }
+            }
         }
 
         //! Set the fractional number of meters per pixel in the image.
@@ -223,7 +232,7 @@ namespace GradientSignal
         EndUndoBatch();
     }
 
-    void EditorImageGradientComponentMode::OnPaint(const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn)
+    void EditorImageGradientComponentMode::OnPaint(const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn, BlendFn& blendFn)
     {
         // The OnPaint notification means that we should paint new values into our image gradient.
         // To do this, we need to calculate the set of world space positions that map to individual pixels in the image,
@@ -243,66 +252,63 @@ namespace GradientSignal
 
         const AZ::Vector3 minDistances = dirtyArea.GetMin();
         const AZ::Vector3 maxDistances = dirtyArea.GetMax();
+        const float zMinDistance = minDistances.GetZ();
+
+        const int32_t xPoints = aznumeric_cast<int32_t>((maxDistances.GetX() - minDistances.GetX()) / xMetersPerPixel);
+        const int32_t yPoints = aznumeric_cast<int32_t>((maxDistances.GetY() - minDistances.GetY()) / yMetersPerPixel);
 
         // Calculate the minimum set of world space points that map to those pixels.
         AZStd::vector<AZ::Vector3> points;
+        points.reserve(xPoints * yPoints);
         for (float y = minDistances.GetY(); y <= maxDistances.GetY(); y += yMetersPerPixel)
         {
             for (float x = minDistances.GetX(); x <= maxDistances.GetX(); x += xMetersPerPixel)
             {
-                points.emplace_back(x, y, minDistances.GetZ());
+                points.emplace_back(x, y, zMinDistance);
             }
         }
 
-        // Get the painted value settings for each of those world space points.
-        AZStd::vector<float> intensities(points.size());
-        AZStd::vector<float> opacities(points.size());
-        AZStd::vector<bool> validFlags(points.size());
+        // Query the paintbrush with those points to get back the subset of points and brush values for each point that's
+        // affected by the brush.
+        AZStd::vector<AZ::Vector3> validPoints;
+        AZStd::vector<float> intensities;
+        AZStd::vector<float> opacities;
+        valueLookupFn(points, validPoints, intensities, opacities);
 
-        valueLookupFn(points, intensities, opacities, validFlags);
+        // Early out if none of the points were actually affected by the brush.
+        if (validPoints.empty())
+        {
+            return;
+        }
 
-        // Remove all of the positions that weren't affected by the paintbrush.
-        AZStd::erase_if(points, [&points, &validFlags](const AZ::Vector3& value)
-            {
-                return !validFlags[(&value) - (points.begin())];
-            });
-        AZStd::erase_if(intensities, [&intensities, &validFlags](const float& value)
-            {
-                return !validFlags[(&value) - (intensities.begin())];
-            });
-        AZStd::erase_if(opacities, [&opacities, &validFlags](const float& value)
-            {
-                return !validFlags[(&value) - (opacities.begin())];
-            });
-
-        AZStd::erase(validFlags, false);
-
-        AZStd::vector<PixelIndex> pixelIndices(points.size());
+        // Get the pixel indices and current image gradient values for each position.
+        AZStd::vector<PixelIndex> pixelIndices(validPoints.size());
+        AZStd::vector<float> gradientValues(validPoints.size());
         ImageGradientModificationBus::Event(
-            GetEntityId(), &ImageGradientModificationBus::Events::GetPixelIndicesForPositions, points, pixelIndices);
-
-        // Get the previous gradient image values
-        AZStd::vector<float> oldValues(points.size());
+            GetEntityId(), &ImageGradientModificationBus::Events::GetPixelIndicesForPositions, validPoints, pixelIndices);
         ImageGradientModificationBus::Event(
-            GetEntityId(), &ImageGradientModificationBus::Events::GetPixelValuesByPixelIndex, pixelIndices, oldValues);
+            GetEntityId(), &ImageGradientModificationBus::Events::GetPixelValuesByPixelIndex, pixelIndices, gradientValues);
 
         AZ_Assert(m_paintBrushUndoBuffer != nullptr, "Undo batch is expected to exist while painting");
-        m_paintBrushUndoBuffer->ReserveBuffer(points.size());
         m_paintBrushUndoBuffer->SetMetersPerPixel(xMetersPerPixel, yMetersPerPixel);
 
-        // For each value, blend it with the painted value and set the gradient image to the new value.
-        for (size_t index = 0; index < points.size(); index++)
+        // For each position, blend the original gradient value with the paintbrush value
+        AZStd::vector<float> paintedValues;
+        paintedValues.reserve(validPoints.size());
+
+        for (size_t index = 0; index < validPoints.size(); index++)
         {
-            float newValue = AZStd::lerp(oldValues[index], intensities[index], opacities[index]);
-
-            if (newValue != oldValues[index])
-            {
-                m_paintBrushUndoBuffer->AddPoint(points[index], pixelIndices[index], oldValues[index], newValue);
-
-                ImageGradientModificationBus::Event(
-                    GetEntityId(), &ImageGradientModificationBus::Events::SetPixelValueByPixelIndex, pixelIndices[index], newValue);
-            }
+            paintedValues.emplace_back(blendFn(gradientValues[index], intensities[index], opacities[index]));
         }
+
+        // For each position, save the new value into the undo buffer
+        m_paintBrushUndoBuffer->AddPoints(validPoints, pixelIndices, gradientValues, paintedValues);
+
+        // Finally, modify the image with all of the changed values
+        ImageGradientModificationBus::Event(
+            GetEntityId(), &ImageGradientModificationBus::Events::SetPixelValuesByPixelIndex,
+            pixelIndices,
+            paintedValues);
 
         // Notify anything listening to the image gradient that the modified region has changed.
         // Because Image Gradients support bilinear filtering, we need to expand our dirty area by an extra pixel in each direction

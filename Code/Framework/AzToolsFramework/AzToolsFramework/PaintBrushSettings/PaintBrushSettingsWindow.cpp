@@ -82,6 +82,11 @@ namespace PaintBrush
             m_propertyEditor->InvalidateValues();
         }
 
+        void PaintBrushSettingsWindow::OnBlendModeChanged([[maybe_unused]] AzToolsFramework::PaintBrushBlendMode blendMode)
+        {
+            m_propertyEditor->InvalidateValues();
+        }
+
         // simple factory method
         PaintBrushSettingsWindow* CreateNewPaintBrushSettingsWindow(QWidget* parent)
         {
@@ -98,7 +103,7 @@ namespace PaintBrush
         // and this is only visible while in a painting component mode, so we don't ever need to disable the controls.
         viewOptions.isDisabledInComponentMode = false;
         // Default size of the window
-        viewOptions.paneRect = QRect(50, 50, 350, 120);
+        viewOptions.paneRect = QRect(50, 50, 350, 145);
 
         AzToolsFramework::EditorRequestBus::Broadcast(
             &AzToolsFramework::EditorRequestBus::Events::RegisterViewPane,
