@@ -45,6 +45,10 @@ namespace Multiplayer
 {
     using namespace AzNetworking;
 
+    AZ_CVAR(int, editorsv_servertype, 1, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
+        "0: editor will launch and connect to a dedicated server. 1: Editor starts its own client server mode.");
+
+
     AZ_CVAR(bool, editorsv_enabled, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "Whether Editor launching a local server to connect to is supported");
     AZ_CVAR(bool, editorsv_launch, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
@@ -63,7 +67,7 @@ namespace Multiplayer
         "Whether Editor should print its server's logs to the Editor console. Useful for seeing server prints, warnings, and errors without having to open up the server console or server.log file. Note: Must be set before entering the editor play mode.");
 
     AZ_CVAR_EXTERNED(uint16_t, editorsv_port);
-    
+
     //////////////////////////////////////////////////////////////////////////
     void PyEnterGameMode()
     {
@@ -106,7 +110,7 @@ namespace Multiplayer
 
         }
     }
-    
+
     void MultiplayerEditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         Automation::MultiplayerEditorAutomationHandler::Reflect(context);
@@ -194,7 +198,7 @@ namespace Multiplayer
             // Kill the configured server if it's active
             AZ::TickBus::Handler::BusDisconnect();
             m_connectionEvent.RemoveFromQueue();
-            
+
             if (m_serverProcessWatcher)
             {
                 m_serverProcessWatcher->TerminateProcess(0);
@@ -210,7 +214,7 @@ namespace Multiplayer
             {
                 editorNetworkInterface->Disconnect(m_editorConnId, AzNetworking::DisconnectReason::TerminatedByClient);
             }
-            if (auto console = AZ::Interface<AZ::IConsole>::Get(); console)
+            if (const auto console = AZ::Interface<AZ::IConsole>::Get())
             {
                 console->PerformCommand("disconnect");
             }
@@ -225,7 +229,7 @@ namespace Multiplayer
             // Delete the spawnables we've stored for the server
             m_preAliasedSpawnablesForServer.clear();
 
-            // Turn off debug messaging: we've exiting playmode and intentionally disconnected from the server. 
+            // Turn off debug messaging: we've exiting playmode and intentionally disconnected from the server.
             MultiplayerEditorServerNotificationBus::Broadcast(&MultiplayerEditorServerNotificationBus::Events::OnPlayModeEnd);
             break;
         }
@@ -287,7 +291,7 @@ namespace Multiplayer
         if (!FindServerLauncher(serverPath))
         {
             return false;
-        }        
+        }
 
         // Start the configured server if it's available
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
@@ -357,7 +361,7 @@ namespace Multiplayer
             AZ_Error("MultiplayerEditor", !prefabSystemEnabled, "PrefabEditorEntityOwnershipInterface unavailable but prefabs are enabled");
             return;
         }
-        
+
         MultiplayerEditorServerNotificationBus::Broadcast(&MultiplayerEditorServerNotificationBus::Events::OnEditorSendingLevelData);
         AZ_TracePrintf("MultiplayerEditor", "Editor is sending the editor-server the level data packet.")
 
@@ -376,7 +380,7 @@ namespace Multiplayer
             byteStream.Write(preAliasedSpawnableData.assetHint.size(), preAliasedSpawnableData.assetHint.data());
             AZ::Utils::SaveObjectToStream(byteStream, AZ::DataStream::ST_BINARY, preAliasedSpawnableData.spawnable.get(), preAliasedSpawnableData.spawnable->GetType());
         }
-        
+
         // Spawnable library needs to be rebuilt since now we have newly registered in-memory spawnable assets
         AZ::Interface<INetworkSpawnableLibrary>::Get()->BuildSpawnablesList();
 
@@ -413,7 +417,7 @@ namespace Multiplayer
     {
         PyEnterGameMode();
     }
-    
+
     bool MultiplayerEditorSystemComponent::IsInGameMode()
     {
         return PyIsInGameMode();
@@ -478,7 +482,7 @@ namespace Multiplayer
         {
             return;
         }
-        
+
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         AZ_Assert(serializeContext, "Failed to retrieve application serialization context.")
@@ -500,6 +504,14 @@ namespace Multiplayer
             return;
         }
 
+        if (editorsv_servertype == 1)
+        {
+            // Start hosting as a client-server
+            const bool isDedicated = false;
+            AZ::Interface<IMultiplayer>::Get()->StartHosting(33450, isDedicated);
+            return;
+        }
+
         AZ_Assert(m_preAliasedSpawnablesForServer.empty(), "MultiplayerEditorSystemComponent already has pre-aliased spawnables! Please update code to clean-up the table between entering and existing play mode.")
         AzToolsFramework::Prefab::PrefabToInMemorySpawnableNotificationBus::Handler::BusConnect();
     }
@@ -510,6 +522,11 @@ namespace Multiplayer
         if (!editorsv_enabled || !mpTools)
         {
             // Early out if Editor server is not enabled.
+            return;
+        }
+
+        if (editorsv_servertype == 1)
+        {
             return;
         }
 
@@ -610,4 +627,16 @@ namespace Multiplayer
             AZ::ComponentTypeList{ azrtti_typeid<NetBindComponent>(), azrtti_typeid<NetworkTransformComponent>() }
         );
     }
+    void MultiplayerEditorSystemComponent::OnStopPlayInEditorBegin()
+    {
+        if (editorsv_servertype != 1)
+        {
+            return;
+        }
+
+        // Make sure the client-server stops before the editor leaves play mode.
+        // Otherwise network entities will be left hanging around.
+        AZ::Interface<IMultiplayer>::Get()->Terminate(DisconnectReason::TerminatedByUser);
+    }
+
 } // namespace Multiplayer
