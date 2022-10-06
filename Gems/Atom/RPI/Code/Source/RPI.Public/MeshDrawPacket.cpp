@@ -256,27 +256,17 @@ namespace AZ
                     return false;
                 }
 
-                auto drawSrgLayout = shader->GetAsset()->GetDrawSrgLayout(shader->GetSupervariantIndex());
-                Data::Instance<ShaderResourceGroup> drawSrg;
-                if (drawSrgLayout)
+                Data::Instance<ShaderResourceGroup> drawSrg = shader->CreateDrawSrgForShaderVariant(shaderOptions, false);
+                if (drawSrg)
                 {
-                    // If the DrawSrg exists we must create and bind it, otherwise the CommandList will fail validation for SRG being null
-                    drawSrg = RPI::ShaderResourceGroup::Create(shader->GetAsset(), shader->GetSupervariantIndex(), drawSrgLayout->GetName());
-
-                    if (!variant.IsFullyBaked() && drawSrgLayout->HasShaderVariantKeyFallbackEntry())
-                    {
-                        drawSrg->SetShaderVariantKeyFallbackValue(shaderOptions.GetShaderVariantKeyFallbackValue());
-                    }
-
                     // Pass UvStreamTangentBitmask to the shader if the draw SRG has it.
-                    {
-                        AZ::Name shaderUvStreamTangentBitmask = AZ::Name(UvStreamTangentBitmask::SrgName);
-                        auto index = drawSrg->FindShaderInputConstantIndex(shaderUvStreamTangentBitmask);
 
-                        if (index.IsValid())
-                        {
-                            drawSrg->SetConstant(index, uvStreamTangentBitmask.GetFullTangentBitmask());
-                        }
+                    AZ::Name shaderUvStreamTangentBitmask = AZ::Name(UvStreamTangentBitmask::SrgName);
+                    auto index = drawSrg->FindShaderInputConstantIndex(shaderUvStreamTangentBitmask);
+
+                    if (index.IsValid())
+                    {
+                        drawSrg->SetConstant(index, uvStreamTangentBitmask.GetFullTangentBitmask());
                     }
 
                     drawSrg->Compile();

@@ -835,13 +835,13 @@ namespace AZ
                 if (shaderAssetResult)
                 {
                     auto shaderAsset = shaderAssetResult.GetValue();
-                    auto optionsLayout = shaderAsset->GetShaderOptionGroupLayout();
-                    ShaderOptionGroup options{ optionsLayout };
+
+                    ShaderOptionGroup options = shaderAsset->GetDefaultShaderOptions();
                     for (auto& iter : shaderRef.m_shaderOptionValues)
                     {
                         if (!options.SetValue(iter.first, iter.second))
                         {
-                            return Failure();
+                            materialTypeAssetCreator.ReportWarning("Shader option '%s' not found.", iter.first.GetCStr());
                         }
                     }
 
