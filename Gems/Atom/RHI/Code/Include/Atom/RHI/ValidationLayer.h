@@ -25,7 +25,7 @@ namespace AZ
         };
 
         // Read the RHI validation mode considering configurations,
-        // cvars, comman line options and registry settings.
+        // cvars, command line options and registry settings.
         ValidationMode ReadValidationMode();
     }
 }
