@@ -164,10 +164,7 @@ namespace AZ
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to SimpleSpotLightFeatureProcessor::SetAttenuationRadius().");
 
             attenuationRadius = AZStd::max<float>(attenuationRadius, 0.001f); // prevent divide by zero.
-            float invAttenuationRadiusSquared = 1.0f / (attenuationRadius * attenuationRadius);
-
-            SimpleSpotLightData& data = m_lightData.GetData(handle.GetIndex());
-            data.m_invAttenuationRadiusSquared = invAttenuationRadiusSquared;
+            m_lightData.GetData(handle.GetIndex()).m_invAttenuationRadiusSquared = 1.0f / (attenuationRadius * attenuationRadius);
             m_deviceBufferNeedsUpdate = true;
         }
 

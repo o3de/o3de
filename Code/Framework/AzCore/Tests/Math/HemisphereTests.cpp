@@ -45,17 +45,14 @@ namespace UnitTest
         AZ::Vector3 pos = AZ::Vector3(10.0f, 10.0f, 10.0f);
         float radius = 15.0f;
         AZ::Vector3 direction = AZ::Vector3(1.0f, 0.0f, 0.0f);
-
         AZ::Hemisphere hemisphere1(pos, radius, direction);
 
         AZ::Vector3 newPos = AZ::Vector3(20.0f, 20.0f, 20.0f);
         float newRadius = 25.0f;
         AZ::Vector3 newDirection = AZ::Vector3(0.0f, 1.0f, 0.0f);
-
         AZ::Hemisphere hemisphere2(newPos, newRadius, newDirection);
 
         hemisphere1 = hemisphere2;
-
         EXPECT_EQ(hemisphere1, hemisphere2);
     }
 } // namespace UnitTest

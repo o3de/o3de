@@ -71,7 +71,7 @@ namespace AZ
             static constexpr const char* FeatureProcessorName = "SimplePointLightFeatureProcessor";
 
             using LightContainer = IndexedDataVector<ShaderData>;
-            LightContainer m_pointLightData;
+            LightContainer m_lightData;
             GpuBufferHandler m_lightBufferHandler;
             bool m_deviceBufferNeedsUpdate = false;
 

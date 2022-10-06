@@ -11,12 +11,15 @@
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Frustum.h>
 #include <AzCore/Math/Hemisphere.h>
-#include <AzCore/Math/ShapeIntersection.h>
 #include <AzCore/Math/Sphere.h>
 #include <AzCore/std/containers/variant.h>
 
-#include <Atom/RPI.Public/Scene.h>
-#include <Atom/RPI.Public/Culling.h>
+#include <Atom/Feature/Mesh/MeshCommon.h>
+
+namespace AZ::RPI
+{
+    class Scene;
+}
 
 namespace AZ::Render::LightCommon
 {
@@ -27,30 +30,6 @@ namespace AZ::Render::LightCommon
     {
         constexpr bool operator()(const BoundsType&) const { return true; }
     };
-
-    template <typename BoundsType>
-    void MarkMeshesForBounds(AZ::RPI::Scene* scene, const BoundsType& bounds, AZ::RPI::Cullable::FlagType flag)
-    {
-        AzFramework::IVisibilityScene* visScene = scene->GetVisibilityScene();
-
-        visScene->Enumerate(bounds, [flag, &lightBounds = bounds](const AzFramework::IVisibilityScene::NodeData& nodeData)
-            {
-                bool nodeIsContainedInFrustum = ShapeIntersection::Contains(lightBounds, nodeData.m_bounds);
-                for (auto* visibleEntry : nodeData.m_entries)
-                {
-                    if (visibleEntry->m_typeFlags == AzFramework::VisibilityEntry::TYPE_RPI_Cullable)
-                    {
-                        RPI::Cullable* cullable = static_cast<RPI::Cullable*>(visibleEntry->m_userData);
-
-                        if (nodeIsContainedInFrustum || ShapeIntersection::Overlaps(lightBounds, cullable->m_cullData.m_boundingSphere))
-                        {
-                            cullable->m_flags.fetch_or(flag);
-                        }
-                    }
-                }
-            }
-        );
-    }
 
     template <typename BoundsType, class Filter = EmptyFilter<BoundsType>>
     void MarkMeshesWithLightType(AZ::RPI::Scene* scene, AZStd::span<const BoundsType> bounds, AZ::RPI::Cullable::FlagType flag, Filter filter = {})
@@ -87,23 +66,6 @@ namespace AZ::Render::LightCommon
                 {
                     MarkMeshesForBounds(scene, AZStd::get<Aabb>(lightBounds), flag);
                 }
-                /*
-                switch (lightBounds.m_type)
-                {
-                case LightBounds::BoundsType::Sphere:
-                    MarkMeshesForBounds(scene, lightBounds.m_sphere, flag);
-                    break;
-                case LightBounds::BoundsType::Hemisphere:
-                    MarkMeshesForBounds(scene, lightBounds.m_hemisphere, flag);
-                    break;
-                case LightBounds::BoundsType::Frustum:
-                    MarkMeshesForBounds(scene, lightBounds.m_frustum, flag);
-                    break;
-                case LightBounds::BoundsType::Aabb:
-                    MarkMeshesForBounds(scene, lightBounds.m_aabb, flag);
-                    break;
-                }
-                */
             }
         }
     }

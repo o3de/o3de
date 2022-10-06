@@ -83,7 +83,6 @@ set(FILES
     Source/CoreLights/DiskLightFeatureProcessor.cpp
     Source/CoreLights/EsmShadowmapsPass.h
     Source/CoreLights/EsmShadowmapsPass.cpp
-    Source/CoreLights/LightCommon.cpp
     Source/CoreLights/LightCullingPass.cpp
     Source/CoreLights/LightCullingPass.h
     Source/CoreLights/LightCullingTilePreparePass.cpp
