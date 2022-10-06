@@ -115,7 +115,7 @@ namespace MaterialCanvas
         editData.m_elementId = AZ_CRC_CE("FilePathString");
         AtomToolsFramework::AddEditDataAttribute(editData, AZ_CRC_CE("Title"), AZStd::string("Template File"));
         AtomToolsFramework::AddEditDataAttribute(editData, AZ_CRC_CE("Extensions"),
-            AZStd::vector<AZStd::string>{ "azsl.template", "azsli.template", "material.template", "materialtype.template", "shader.template" });
+            AZStd::vector<AZStd::string>{ "azsl", "azsli", "material", "materialtype", "shader" });
         m_dynamicNodeManager->RegisterEditDataForSetting("templatePaths", editData);
 
         editData = {};
@@ -185,7 +185,7 @@ namespace MaterialCanvas
         // and will display a label widget that directs users to the property inspector.
         documentTypeInfo = AtomToolsFramework::AtomToolsAnyDocument::BuildDocumentTypeInfo(
             "Shader Source Data",
-            { "shader", "shader.template" },
+            { "shader" },
             AZStd::any(AZ::RPI::ShaderSourceData()),
             AZ::RPI::ShaderSourceData::TYPEINFO_Uuid()); // Supplying ID because it is not included in the JSON file
 
