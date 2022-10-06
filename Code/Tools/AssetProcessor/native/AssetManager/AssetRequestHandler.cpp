@@ -123,6 +123,46 @@ namespace
                     }
                     break;
                 }
+                case AssetChangeReportRequest::ChangeType::CheckDelete:
+                {
+                    auto resultCheck = relocationInterface->Delete(messageData.m_message->m_fromPath);
+
+                    if (resultCheck.IsSuccess())
+                    {
+                        AssetProcessor::RelocationSuccess success = resultCheck.TakeValue();
+
+                        // The report can be too long for the AZ_Printf buffer, so split it into individual lines
+                        AZStd::string report =
+                            relocationInterface->BuildChangeReport(success.m_relocationContainer, success.m_updateTasks);
+                        AzFramework::StringFunc::Tokenize(report.c_str(), lines, "\n");
+
+                        for (const AZStd::string& line : lines)
+                        {
+                            AZ_Printf(AssetProcessor::ConsoleChannel, (line + "\n").c_str());
+                        }
+                    }
+                    break;
+                }
+                case AssetChangeReportRequest::ChangeType::Delete:
+                {
+                    auto resultMove = relocationInterface->Delete(messageData.m_message->m_fromPath, false, true, true);
+
+                    if (resultMove.IsSuccess())
+                    {
+                        AssetProcessor::RelocationSuccess success = resultMove.TakeValue();
+
+                        // The report can be too long for the AZ_Printf buffer, so split it into individual lines
+                        AZStd::string report =
+                            relocationInterface->BuildChangeReport(success.m_relocationContainer, success.m_updateTasks);
+                        AzFramework::StringFunc::Tokenize(report.c_str(), lines, "\n");
+
+                        for (const AZStd::string& line : lines)
+                        {
+                            AZ_Printf(AssetProcessor::ConsoleChannel, (line + "\n").c_str());
+                        }
+                    }
+                    break;
+                }
             }
         }
         return AssetChangeReportResponse(lines);

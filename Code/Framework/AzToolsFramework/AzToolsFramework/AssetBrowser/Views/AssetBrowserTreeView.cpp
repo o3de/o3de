@@ -503,41 +503,80 @@ namespace AzToolsFramework
 
         void AssetBrowserTreeView::DeleteEntries()
         {
-            auto entries = GetSelectedAssets(false); // do not include products, you cannot delete those!
+            auto entries = GetSelectedAssets(false); // you cannot rename product files.
 
-            if (entries.empty())
-            {
-                return;
-            }
+            using namespace AzFramework::AssetSystem;
+            bool connectedToAssetProcessor = false;
+            AzFramework::AssetSystemRequestBus::BroadcastResult(
+                connectedToAssetProcessor, &AzFramework::AssetSystemRequestBus::Events::AssetProcessorIsReady);
 
-            // Create the callback to pass to the SourceControlAPI
-            AzToolsFramework::SourceControlResponseCallback callback =
-                []([[maybe_unused]] bool success, [[maybe_unused]] const AzToolsFramework::SourceControlFileInfo& info)
+            if (connectedToAssetProcessor)
             {
-            };
-
-            size_t numOfEntries = entries.size();
-            QMessageBox box;
-            box.setIcon(QMessageBox::Warning);
-            box.setWindowTitle(numOfEntries > 1 ? QObject::tr("Delete selected assets?") : QObject::tr("Delete selected asset?"));
-            box.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
-            QAbstractButton* okButton = box.button(QMessageBox::Ok);
-            okButton->setText("Delete");
-            box.setText(
-                numOfEntries > 1 ? QObject::tr("Are you sure you want to delete these assets?\nYou cannot undo this action.")
-                                 : QObject::tr("Are you sure you want to delete\n%1?\nYou cannot undo this action.")
-                                       .arg(entries.front()->GetFullPath().c_str()));
-            int ret = box.exec();
-            if (ret == QMessageBox::Ok)
-            {
-                using SCCommandBus = AzToolsFramework::SourceControlCommandBus;
-                for (auto entry : entries)
+                using namespace AZ::IO;
+                for (auto item : entries)
                 {
-                    SCCommandBus::Broadcast(&SCCommandBus::Events::RequestDelete, entry->GetFullPath().c_str(), callback);
+                    Path fromPath = item->GetFullPath();
+                    AssetChangeReportRequest request(
+                        AZ::OSString(fromPath.c_str()), AZ::OSString(""), AssetChangeReportRequest::ChangeType::CheckDelete);
+                    AssetChangeReportResponse response;
+
+                    if (SendRequest(request, response))
+                    {
+                        bool canDelete = true;
+
+                        if (!response.m_lines.empty())
+                        {
+                            AZStd::string message;
+                            AZ::StringFunc::Join(message, response.m_lines.begin(), response.m_lines.end(), "\n");
+                            AzQtComponents::FixedWidthMessageBox msgBox(
+                                600,
+                                "Before Delete Asset Information",
+                                "The asset you are deleting may be referenced in other assets.",
+                                "More information can be found by pressing \"Show Details...\".",
+                                message.c_str(),
+                                QMessageBox::Warning,
+                                QMessageBox::Cancel,
+                                QMessageBox::Yes,
+                                this);
+                            auto* deleteButton = msgBox.addButton("Delete", QMessageBox::YesRole);
+                            msgBox.exec();
+
+                            if (msgBox.clickedButton() != static_cast<QAbstractButton*>(deleteButton))
+                            {
+                                canDelete = false;
+                            }
+                        }
+                        if (canDelete)
+                        {
+                            AssetChangeReportRequest deleteRequest(
+                                AZ::OSString(fromPath.c_str()),
+                                AZ::OSString(""),
+                                AssetChangeReportRequest::ChangeType::Delete);
+                            AssetChangeReportResponse deleteResponse;
+                            if (SendRequest(deleteRequest, deleteResponse))
+                            {
+                                if (!response.m_lines.empty())
+                                {
+                                    AZStd::string deleteMessage;
+                                    AZ::StringFunc::Join(deleteMessage, response.m_lines.begin(), response.m_lines.end(), "\n");
+                                    AzQtComponents::FixedWidthMessageBox deleteMsgBox(
+                                        600,
+                                        "After Delete Asset Information",
+                                        "The asset has been deleted.",
+                                        "More information can be found by pressing \"Show Details...\".",
+                                        deleteMessage.c_str(),
+                                        QMessageBox::Information,
+                                        QMessageBox::Ok,
+                                        QMessageBox::Ok,
+                                        this);
+                                    deleteMsgBox.exec();
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
-
         void AssetBrowserTreeView::RenameEntry()
         {
             auto entries = GetSelectedAssets(false); // you cannot rename product files.
