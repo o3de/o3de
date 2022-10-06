@@ -101,7 +101,7 @@ public:
     std::shared_ptr<InstanceProfileCredentialsProviderMock> m_instanceProfileCredentialsProviderMock;
     AZStd::unique_ptr<AWSDefaultCredentialHandlerMock> m_credentialHandler;
     AZStd::string m_profileName;
-    bool m_allowAWSMetadataCredentials;
+    bool m_allowAWSMetadataCredentials{ false };
 };
 
 TEST_F(AWSDefaultCredentialHandlerTest, GetCredentialsProvider_EnvironmentCredentialProviderReturnsNonEmptyCredentials_GetExpectedCredentialProvider)
