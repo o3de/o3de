@@ -313,7 +313,7 @@ def CheckoutEngineBootstrapScripts(String branchName) {
             [$class: 'CloneOption', noTags: false, reference: '', shallow: false]
         ],
         submoduleCfg: [],
-        userRemoteConfigs: [GetEngineRemoteConfig()]
+        userRemoteConfigs: scm.userRemoteConfigs
     ])
 }
 
@@ -346,7 +346,7 @@ def CheckoutRepo(String branchName, userRemoteConfigs, boolean disableSubmodules
                 [$class: 'SubmoduleOption', disableSubmodules: disableSubmodules, recursiveSubmodules: true],
                 [$class: 'CheckoutOption', timeout: 60]
             ],
-            userRemoteConfigs: [userRemoteConfigs]
+            userRemoteConfigs: userRemoteConfigs
         ]
     }
 
@@ -435,7 +435,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
             UnInstallGitLFS() // Prevent git from pulling lfs objects during checkout
 
             //checkout the engine branch
-            CheckoutRepo(the_branch, GetEngineRemoteConfig(), disableSubmodules, setEnvCommit)
+            CheckoutRepo(the_branch, scm.userRemoteConfigs, disableSubmodules, setEnvCommit)
 
             // Get python and clean.
             // Always run the clean step, the scripts detect what variables were set, but it also cleans if
@@ -469,7 +469,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
             UnInstallGitLFS() // Prevent git from pulling lfs objects during checkout
 
             //checkout the engine branch
-            CheckoutRepo(the_branch, GetExtrasRemoteConfig(), disableSubmodules, setEnvCommit)
+            CheckoutRepo(the_branch, [GetExtrasRemoteConfig()], disableSubmodules, setEnvCommit)
 
             InstallAndPullGitLFS()
         }
