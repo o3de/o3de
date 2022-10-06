@@ -32,6 +32,7 @@ set(FILES
     EditorTransformComponentSelectionTests.cpp
     EditorVertexSelectionTests.cpp
     EditorViewportIconTests.cpp
+    EditorViewportOnlyDrawHelpersForSelectedEntityTests.cpp
     Entity/EditorEntityContextComponentTests.cpp
     Entity/EditorEntityHelpersTests.cpp
     Entity/EditorEntitySearchComponentTests.cpp

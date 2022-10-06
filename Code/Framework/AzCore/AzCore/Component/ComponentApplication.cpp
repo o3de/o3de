@@ -1096,7 +1096,7 @@ namespace AZ
     //=========================================================================
     // SetEntityName
     //=========================================================================
-    bool ComponentApplication::SetEntityName(const EntityId& id, const AZStd::string_view name)
+    bool ComponentApplication::SetEntityName(const EntityId& id, AZStd::string_view name)
     {
         Entity* entity = FindEntity(id);
         if (entity)
