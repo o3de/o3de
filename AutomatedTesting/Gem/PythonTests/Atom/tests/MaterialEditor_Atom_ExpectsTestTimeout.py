@@ -7,9 +7,9 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 
 class Tests:
-    material_editor_test_timed_out = (
-        "Inspector pane is not visible, MaterialEditor test timed out as expected",
-        "P0: Inspector pane is visible, MaterialEditor passed when it should have failed from time out"
+    material_editor_test_timed_out = (  # This test result is pytest.mark.xfail.
+        "AtomToolsBatchedTest class didn't time out and passed (it should fail from timing out).",
+        "P0: AtomToolsBatchedTest timed out before the test could complete (expected failure)."
     )
 
 
