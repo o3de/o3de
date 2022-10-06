@@ -80,6 +80,7 @@ struct EditorViewportSettings : public AzToolsFramework::ViewportInteraction::Vi
     AZ::Vector2 DefaultEditorCameraOrientation() const override;
     bool IconsVisible() const override;
     bool HelpersVisible() const override;
+    bool OnlyShowHelpersForSelectedEntities() const override;
 };
 
 //! EditorViewportWidget window
