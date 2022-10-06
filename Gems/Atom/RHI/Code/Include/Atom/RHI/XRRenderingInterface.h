@@ -101,10 +101,16 @@ namespace AZ::RHI
         virtual AZ::RHI::ResultCode CreateSwapChain() = 0;
 
         //! Rendering api to signal the beginning of a frame.
+        //! @note This function is called from the thread related to the presentation queue.
         virtual void BeginFrame() = 0;
 
         //! Rendering api to signal the end of a frame.
+        //! @note This function is called from the thread related to the presentation queue.
         virtual void EndFrame() = 0;
+
+        //! Rendering api to signal after EndFrame has been executed.
+        //! @note This function is called from the main thread.
+        virtual void PostFrame() = 0;
 
         //! Rendering api to get the native swapchain image to write into.
         virtual AZ::RHI::ResultCode GetSwapChainImage(AZ::RHI::XRSwapChainDescriptor* swapchainDescriptor) const = 0;
