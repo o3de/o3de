@@ -34,7 +34,6 @@ namespace AzToolsFramework
         : public AZ::EBusTraits
     {
     public:
-
         using MutexType = AZStd::recursive_mutex;
 
         virtual ~EditorEntityContextRequests() {}
