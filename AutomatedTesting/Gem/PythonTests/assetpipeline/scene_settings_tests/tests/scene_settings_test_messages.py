@@ -48,17 +48,20 @@ class Test_Messages:
         "Scene settings card was dismissed on click.",
         "Scene settings card was not dismissed on click."
     )
+    
+    scene_settings_found_update_materials_row = (
+        "Found Update materials root object.",
+        "Failed to find Update materials root object."
+    )
 
-    # This test uses an arbitrary interface element that can be toggled to test saving operations.
     scene_settings_found_update_materials_checkbox = (
         "Found the expected interface element in the scene settings UI.",
         "Unable to find the expected interface element in the scene settings UI."
     )
     
-    # Make sure that the save button becomes enabled after making a change to the scene settings.
-    scene_settings_file_update_enabled_on_toggle = (
-        "Scene settings UI update button is correctly enabled after changing a setting that marks the settings dirty.",
-        "Scene settings UI update button is incorrectly not enabled after changing a setting that should have marked these settings dirty."
+    scene_settings_found_only_one_update_materials_checkbox = (
+        "Found single Update materials checkbox object.",
+        "Update materials checkbox count is incorrect."
     )
 
     # Make sure the UI became responsive after the save finished.

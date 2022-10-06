@@ -16,8 +16,6 @@ def Scene_Settings_Tests_In_Editor_Change_Manifest_Vector_Widget_Child_Marks_Fil
         import PySide2
         from PySide2 import QtWidgets
         import azlmbr.bus as bus
-        import azlmbr.editor as editor
-        import azlmbr.legacy.general as general
         import scene_settings_test_messages as tm
         import scene_settings_test_helpers as scene_test_helpers
 
@@ -28,15 +26,11 @@ def Scene_Settings_Tests_In_Editor_Change_Manifest_Vector_Widget_Child_Marks_Fil
         
         # Find a toggle that used to not properly mark the UI as dirty because it was parented to a manifest vector widget.
         y_axis = reflected_property_root.findChild(QtWidgets.QWidget,"Ignore Y-Axis transition")
-        
         Report.critical_result(tm.Test_Messages.scene_settings_y_axis_row_found, y_axis is not None)
 
         check_boxes = y_axis.findChildren(QtWidgets.QCheckBox,"")
-        
         Report.critical_result(tm.Test_Messages.scene_settings_y_axis_check_box_found, check_boxes is not None)
-        
         Report.critical_result(tm.Test_Messages.scene_settings_y_axis_check_box_len_one, len(check_boxes) == 1)
-        print(len(check_boxes))
 
         # Click twice so the file saved to disk isn't changed, to minimize processing time.
         check_boxes[0].click()
