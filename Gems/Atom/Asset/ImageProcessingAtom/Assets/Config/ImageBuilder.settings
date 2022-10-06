@@ -201,6 +201,11 @@
             "_specular": [ "Reflectance" ],
 			"_SpecularReflectance": [ "Reflectance" ],
 			"_thickness": [ "Reflectance" ],
+			"_linear": [ "Reflectance" ],
+			"_sm": [ "Reflectance" ],
+			"_splat": [ "Reflectance" ],
+			"_splatmap": [ "Reflectance" ],
+            
             
             // Skybox
             "_skyboxcm": [ "Skybox" ],
