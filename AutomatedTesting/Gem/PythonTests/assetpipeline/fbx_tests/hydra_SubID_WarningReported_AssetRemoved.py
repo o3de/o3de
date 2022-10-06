@@ -31,7 +31,8 @@ def SubID_WarningReported_AssetRemoved():
     TestHelper.open_level("AssetPipeline", "SceneTests")
 
     # Test Setup: Set up source and destination for assetinfo file, then verify there is no file there already
-    dirpath = Path(__file__).parents[4]
+    parent_directory = 4 # This is how many folders up we need to move in the directory tree from the location of this test to locate AutomatedTesting.
+    dirpath = Path(__file__).parents[parent_directory]
     src = os.path.join(dirpath, 'Objects', 'ShaderBall_simple', 'shaderball_simple_NoMesh_NoID.fbx.assetinfo')
     dst = os.path.join(dirpath, 'Objects', 'shaderball_simple.fbx.assetinfo')
     if os.path.exists(dst):

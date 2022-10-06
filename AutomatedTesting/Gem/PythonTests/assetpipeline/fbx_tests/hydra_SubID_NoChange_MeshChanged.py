@@ -20,6 +20,8 @@ def SubID_NoChange_MeshChanged():
     from Atom.atom_utils.atom_constants import AtomComponentProperties
     from EditorPythonTestTools.editor_python_test_tools.editor_entity_utils import EditorEntity
     from EditorPythonTestTools.editor_python_test_tools.utils import Report, TestHelper, Tracer
+    from EditorPythonTestTools.editor_python_test_tools.asset_utils import Asset
+    from assetpipeline.ap_fixtures.check_model_ready_fixture import OnModelReady
 
     with Tracer() as error_tracer:
         # Test Setup: Wait for Editor idle before loading the level and executing Python hydra scripts.
@@ -27,23 +29,26 @@ def SubID_NoChange_MeshChanged():
         TestHelper.open_level("AssetPipeline", "SceneTests")
 
         # Test Setup: Set up source and destination for assetinfo file, then verify there is no file there already.
-        dirpath = Path(__file__).parents[4]
+        parent_directory = 4  # This is how many folders up we need to move in the directory tree from the location of this test to locate AutomatedTesting.
+        dirpath = Path(__file__).parents[parent_directory]
         src = os.path.join(dirpath, 'Objects', 'ShaderBall_simple', 'shaderball_simple_MeshChange_SameID.fbx.assetinfo')
         dst = os.path.join(dirpath, 'Objects', 'shaderball_simple.fbx.assetinfo')
         if os.path.exists(dst):
             os.remove(dst)
-            time.sleep(5) # Allow enough time for AP to pick up and process the test asset, replace with APIdle check once bus is exposed to python bindings.
 
         # Test Setup: Ensure level has enough time to load before attempting to find the entity
-        time.sleep(5)
         find_entity = EditorEntity.find_editor_entity(AtomComponentProperties.mesh())
         find_component = find_entity.get_components_of_type([AtomComponentProperties.mesh()])[0]
+        model_path = os.path.join('objects', 'shaderball_simple.azmodel')
+        model = Asset.find_asset_by_path(model_path)
+        checkModel = OnModelReady()
+        checkModel.wait_for_on_model_ready(find_entity.id, find_component, model.id)
         original_component_id = find_component.get_component_property_value(AtomComponentProperties.mesh('Model Asset'))
         original_vert_count = find_component.get_component_property_value(AtomComponentProperties.mesh('Vertex Count LOD0'))
 
         # 1. Copy an assetinfo file to change scene output
         shutil.copyfile(src, dst)
-        time.sleep(5)  # Replace with APIdle check once bus is exposed to python bindings.
+        checkModel.wait_for_on_model_ready(find_entity.id, find_component, model.id)
 
         # 2. Reload the level to reflect changes
         TestHelper.open_level("", "Base")
@@ -67,7 +72,7 @@ def SubID_NoChange_MeshChanged():
 
         # 5. Clean-up
         os.remove(dst)
-        time.sleep(5)  # Replace with APIdle check once bus is exposed to python bindings.
+        checkModel.wait_for_on_model_ready(find_entity.id, find_component, model.id)
 
         # 6. Report the test results gathered and end the test.
         Report.critical_result(Tests.asset_id_no_change, result)
