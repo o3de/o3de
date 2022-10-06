@@ -32,8 +32,9 @@ class TestMaterialEditor(AtomToolsTestSuite):
 
         from Atom.tests import MaterialEditor_Atom_ExpectsTestFailure as test_module
 
+    @pytest.mark.xfail
     class MaterialEditor_Atom_ExpectsTestTimeout(AtomToolsBatchedTest):
 
-        timeout = 10
+        timeout = 5
 
         from Atom.tests import MaterialEditor_Atom_ExpectsTestTimeout as test_module

@@ -22,8 +22,9 @@ def MaterialEditor_TestsTimeout_TimeoutFailure():
     The MaterialEditor test fails due to time out.
 
     Test Steps:
-    1) Verify Material Inspector pane visibility to confirm the MaterialEditor launched.
-    2) Look for errors and asserts.
+    1) Create callback function for timing out the test.
+    2) Trigger test timeout.
+    3) Look for errors and asserts.
 
     :return: None
     """
@@ -32,11 +33,15 @@ def MaterialEditor_TestsTimeout_TimeoutFailure():
     from editor_python_test_tools.utils import Report, Tracer, TestHelper
 
     with Tracer() as error_tracer:
-        # 1. Set MaterialEditor Inspector pane visibility to False.
-        atom_tools_utils.set_pane_visibility("Inspector", False)
 
-        # 2. Use wait_for_condition() to cause a timeout failure.
-        atom_tools_utils.wait_for_condition(lambda: atom_tools_utils.is_pane_visible("Inspector"), 1)
+        # 1. Create callback function for timing out the test.
+        def loop_variable():
+            return True
+
+        # 2. Trigger test timeout.
+        Report.result(
+            Tests.material_editor_test_timed_out,
+            atom_tools_utils.wait_for_condition(lambda: loop_variable() is False, 10))
 
         # 3. Look for errors and asserts.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
