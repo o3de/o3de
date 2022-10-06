@@ -31,22 +31,21 @@
 #include <AzToolsFramework/Thumbnails/SourceControlThumbnail.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
 
-AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // conversion from 'int' to 'float', possible loss of data, needs to have dll-interface to be used by clients of class
-                                                                    // 'QFlags<QPainter::RenderHint>::Int': forcing value to bool 'true' or 'false' (performance warning)
+#include <AzQtComponents/Components/Widgets/MessageBox.h>
+
 #include <QMenu>
 #include <QFile>
 #include <QHeaderView>
 #include <QMouseEvent>
 #include <QCoreApplication>
+#include <QLineEdit>
 #include <QPen>
 #include <QPainter>
+#include <QPushButton>
 #include <QTimer>
 #include <QtWidgets/QMessageBox>
 #include <QAbstractButton>
 #include <QHBoxLayout>
-#include <QPushButton>
-
-AZ_POP_DISABLE_WARNING
 
 namespace AzToolsFramework
 {
@@ -542,12 +541,101 @@ namespace AzToolsFramework
         void AssetBrowserTreeView::RenameEntry()
         {
             auto entries = GetSelectedAssets(false); // you cannot rename product files.
-            // you may not rename products.
-            if (entries.size() == 1)
+
+            if (entries.size() != 1)
             {
-                edit(currentIndex());
+                return;
+            }
+            using namespace AzFramework::AssetSystem;
+            bool connectedToAssetProcessor = false;
+            AzFramework::AssetSystemRequestBus::BroadcastResult(
+                connectedToAssetProcessor, &AzFramework::AssetSystemRequestBus::Events::AssetProcessorIsReady);
+
+            if (connectedToAssetProcessor)
+            {
+                using namespace AZ::IO;
+                AssetBrowserEntry* item = entries[0];
+                Path fromPath = item->GetFullPath();
+                Path toPath(fromPath);
+                toPath.ReplaceExtension("renameFileTestExtension");
+                AssetChangeReportRequest request(
+                    AZ::OSString(fromPath.c_str()), AZ::OSString(toPath.c_str()), AssetChangeReportRequest::ChangeType::CheckMove);
+                AssetChangeReportResponse response;
+
+                if (SendRequest(request, response))
+                {
+
+                    if (!response.m_lines.empty())
+                    {
+                        AZStd::string message;
+                        AZ::StringFunc::Join(message, response.m_lines.begin(), response.m_lines.end(), "\n");
+                        AzQtComponents::FixedWidthMessageBox msgBox(
+                            600,
+                           "Before Rename Asset Information",
+                            "The asset you are renaming may be referenced in other assets.",
+                            "More information can be found by pressing \"Show Details...\".",
+                            message.c_str(),
+                            QMessageBox::Warning,
+                            QMessageBox::Cancel,
+                            QMessageBox::Yes,
+                            this);
+                        auto* renameButton = msgBox.addButton("Rename", QMessageBox::YesRole);
+                        msgBox.exec();
+
+                        if (msgBox.clickedButton() == static_cast<QAbstractButton*>(renameButton))
+                        {
+                            edit(currentIndex());
+                        }
+                    }
+                    else
+                    {
+                        edit(currentIndex());
+                    }
+                }
             }
         }
+
+        void AssetBrowserTreeView::AfterRename(QString newVal)
+        {
+            auto entries = GetSelectedAssets(false); // you cannot rename product files.
+
+            if (entries.size() != 1)
+            {
+                return;
+            }
+            using namespace AZ::IO;
+            AssetBrowserEntry* item = entries[0];
+            Path fromPath = item->GetFullPath();
+            PathView extension = fromPath.Extension();
+            Path toPath(fromPath);
+            toPath.ReplaceFilename(newVal.toStdString().c_str());
+            toPath.ReplaceExtension(extension);
+
+            using namespace AzFramework::AssetSystem;
+            AssetChangeReportRequest moveRequest(
+                AZ::OSString(fromPath.c_str()), AZ::OSString(toPath.c_str()), AssetChangeReportRequest::ChangeType::Move);
+            AssetChangeReportResponse moveResponse;
+            if (SendRequest(moveRequest, moveResponse))
+            {
+                if (!moveResponse.m_lines.empty())
+                {
+                    AZStd::string message;
+                    AZ::StringFunc::Join(message, moveResponse.m_lines.begin(), moveResponse.m_lines.end(), "\n");
+                    AzQtComponents::FixedWidthMessageBox msgBox(
+                        600,
+                        "After Rename Asset Information",
+                        "The asset has been renamed.",
+                        "More information can be found by pressing \"Show Details...\".",
+                        message.c_str(),
+                        QMessageBox::Information,
+                        QMessageBox::Ok,
+                        QMessageBox::Ok,
+                        this);
+                    msgBox.exec();
+                }
+            }
+        }
+
         void AssetBrowserTreeView::DuplicateEntries()
         {
             auto entries = GetSelectedAssets(false); // you may not duplicate product files.
@@ -623,26 +711,22 @@ namespace AzToolsFramework
                             if (SendRequest(request, response))
                             {
                                 bool canMove = true;
-                                AZStd::string message;
-                                for (int i = 0; i < response.m_lines.size(); ++i)
-                                {
-                                    message += response.m_lines[i] + "\n";
-                                }
 
-                                if (message.size())
+                                if (!response.m_lines.empty())
                                 {
-                                    QMessageBox msgBox(this);
-                                    msgBox.setWindowTitle("Before Move Asset Information");
-                                    msgBox.setIcon(QMessageBox::Warning);
-                                    msgBox.setText("The asset you are moving may be referenced in other assets.");
-                                    msgBox.setInformativeText("More information can be found by pressing \"Show Details...\".");
+                                    AZStd::string message;
+                                    AZ::StringFunc::Join(message, response.m_lines.begin(), response.m_lines.end(), "\n");
+                                    AzQtComponents::FixedWidthMessageBox msgBox(
+                                        600,
+                                        "Before Move Asset Information",
+                                        "The asset you are moving may be referenced in other assets.",
+                                        "More information can be found by pressing \"Show Details...\".",
+                                        message.c_str(),
+                                        QMessageBox::Warning,
+                                        QMessageBox::Cancel,
+                                        QMessageBox::Yes,
+                                        this);
                                     auto* moveButton = msgBox.addButton("Move", QMessageBox::YesRole);
-                                    msgBox.setStandardButtons(QMessageBox::Cancel);
-                                    msgBox.setDefaultButton(QMessageBox::Yes);
-                                    msgBox.setDetailedText(message.c_str());
-                                    QSpacerItem* horizontalSpacer = new QSpacerItem(600, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
-                                    auto* layout = qobject_cast<QGridLayout*>(msgBox.layout());
-                                    layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());
                                     msgBox.exec();
 
                                     if (msgBox.clickedButton() != static_cast<QAbstractButton*>(moveButton))
@@ -659,26 +743,21 @@ namespace AzToolsFramework
                                     AssetChangeReportResponse moveResponse;
                                     if (SendRequest(moveRequest, moveResponse))
                                     {
-                                        AZStd::string message2;
-                                        for (int i = 0; i < moveResponse.m_lines.size(); ++i)
-                                        {
-                                            message2 += moveResponse.m_lines[i] + "\n";
-                                        }
 
-                                        if (message2.size())
+                                        if (!response.m_lines.empty())
                                         {
-                                            QMessageBox moveMsgBox(this);
-                                            moveMsgBox.setWindowTitle("After Move Asset Information");
-                                            moveMsgBox.setIcon(QMessageBox::Warning);
-                                            moveMsgBox.setText("The asset has been moved.");
-                                            moveMsgBox.setInformativeText("More information can be found by pressing \"Show Details...\".");
-                                            moveMsgBox.setStandardButtons(QMessageBox::Ok);
-                                            moveMsgBox.setDefaultButton(QMessageBox::Ok);
-                                            moveMsgBox.setDetailedText(message2.c_str());
-                                            QSpacerItem* horizontalSpacer2 =
-                                                new QSpacerItem(600, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
-                                            QGridLayout* moveLayout = (QGridLayout*)moveMsgBox.layout();
-                                            moveLayout->addItem(horizontalSpacer2, moveLayout->rowCount(), 0, 1, moveLayout->columnCount());
+                                            AZStd::string moveMessage;
+                                            AZ::StringFunc::Join(moveMessage, response.m_lines.begin(), response.m_lines.end(), "\n");
+                                            AzQtComponents::FixedWidthMessageBox moveMsgBox(
+                                                600,
+                                                "After Move Asset Information",
+                                                "The asset has been moved.",
+                                                "More information can be found by pressing \"Show Details...\".",
+                                                moveMessage.c_str(),
+                                                QMessageBox::Information,
+                                                QMessageBox::Ok,
+                                                QMessageBox::Ok,
+                                                this);
                                             moveMsgBox.exec();
                                         }
                                     }

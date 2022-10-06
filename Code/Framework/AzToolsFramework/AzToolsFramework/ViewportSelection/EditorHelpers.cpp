@@ -80,6 +80,15 @@ namespace AzToolsFramework
         return iconsVisible;
     }
 
+    // helper function to wrap Ebus call to check if helpers should only be drawn for selected entities
+    static bool OnlyShowHelpersForSelectedEntities(const AzFramework::ViewportId viewportId)
+    {
+        bool onlyShowHelpersForSelectedEntities = false;
+        ViewportInteraction::ViewportSettingsRequestBus::EventResult(
+            onlyShowHelpersForSelectedEntities, viewportId, &ViewportInteraction::ViewportSettingsRequestBus::Events::OnlyShowHelpersForSelectedEntities);
+        return onlyShowHelpersForSelectedEntities;
+    }
+
     float GetIconScale(const float distance)
     {
         return ed_iconMinScale +
@@ -284,6 +293,7 @@ namespace AzToolsFramework
 
         const bool iconsVisible = IconsVisible(viewportInfo.m_viewportId);
         const bool helpersVisible = HelpersVisible(viewportInfo.m_viewportId);
+        const bool onlyDrawSelectedEntities = OnlyShowHelpersForSelectedEntities(viewportInfo.m_viewportId);
 
         if (helpersVisible)
         {
@@ -292,8 +302,15 @@ namespace AzToolsFramework
                 if (const AZ::EntityId entityId = m_entityDataCache->GetVisibleEntityId(entityCacheIndex);
                     m_entityDataCache->IsVisibleEntityVisible(entityCacheIndex))
                 {
-                    // notify components to display
-                    DisplayComponents(entityId, viewportInfo, debugDisplay);
+                    if (onlyDrawSelectedEntities && m_entityDataCache->IsVisibleEntitySelected(entityCacheIndex))
+                    {
+                        // notify components to display
+                        DisplayComponents(entityId, viewportInfo, debugDisplay);
+                    }
+                    else if (!onlyDrawSelectedEntities)
+                    {
+                        DisplayComponents(entityId, viewportInfo, debugDisplay);
+                    }
                 }
             }
         }

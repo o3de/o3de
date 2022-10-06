@@ -20,6 +20,7 @@ namespace AZ::DocumentPropertyEditor
         : public ReflectionAdapter
         , private AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler
         , private AzToolsFramework::ToolsApplicationEvents::Bus::Handler
+        , private AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler
     {
     public:
         //! Creates an uninitialized (empty) ComponentAdapter.
@@ -31,6 +32,8 @@ namespace AZ::DocumentPropertyEditor
         void OnEntityComponentPropertyChanged(AZ::ComponentId componentId) override;
 
         void InvalidatePropertyDisplay(AzToolsFramework::PropertyModificationRefreshLevel level) override;
+
+        void RequestRefresh(AzToolsFramework::PropertyModificationRefreshLevel level) override;
 
         //! Sets the component, connects the appropriate Bus Handlers and sets the reflect data for this instance
         void SetComponent(AZ::Component* componentInstance);
