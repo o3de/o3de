@@ -25,6 +25,8 @@ namespace AZ::DocumentPropertyEditor
     protected:
         struct MatchInfoNode
         {
+            MatchInfoNode(const MatchInfoNode& nodeToCopy) = delete;
+
             ~MatchInfoNode()
             {
                 for (auto child : m_childMatchState)
@@ -34,7 +36,14 @@ namespace AZ::DocumentPropertyEditor
                 m_childMatchState.clear();
             }
 
+           bool IncludeInFilter()
+            {
+                return (m_matchesSelf || !m_matchingDescendants.empty());
+            };
+
             bool m_matchesSelf = false;
+            unsigned int m_lastFilterUpdateFrame = 0; //!< frame that this node's match state last changed
+
             AZStd::unordered_set<MatchInfoNode*> m_matchingDescendants;
             MatchInfoNode* m_parentNode = nullptr;
 
@@ -42,17 +51,18 @@ namespace AZ::DocumentPropertyEditor
             AZStd::deque<MatchInfoNode*> m_childMatchState;
 
         protected:
-            MatchInfoNode(MatchInfoNode* parentNode)
-                : m_parentNode(parentNode)
+            MatchInfoNode()
             {
             }
         };
 
         // pure virtual methods for new RowFilterAdapters
-        virtual MatchInfoNode* NewMatchInfoNode(MatchInfoNode* parentRow) const = 0;
+        virtual MatchInfoNode* NewMatchInfoNode() const = 0;
         virtual void CacheDomInfoForNode(const Dom::Value& domValue, MatchInfoNode* matchNode) const = 0;
         virtual bool MatchesFilter(MatchInfoNode* matchNode) const = 0;
 
+
+        MatchInfoNode* MakeNewNode(MatchInfoNode* parentNode, unsigned int creationFrame);
         static bool IsRow(const Dom::Value& domValue);
         bool IsRow(const Dom::Path& sourcePath) const;
 
@@ -76,16 +86,25 @@ namespace AZ::DocumentPropertyEditor
         /*! populates the MatchInfoNode nodes for the given path and any descendant row children created.
          *  All new nodes have their m_matchesSelf, m_matchingDescendants, and  m_matchableDomTerms set */
         void PopulateNodesAtPath(const Dom::Path& sourcePath, bool replaceExisting);
+        void GenerateFullTree();
 
         void CullUnmatchedChildRows(Dom::Value& rowValue, const MatchInfoNode* rowMatchNode);
+
+        enum PatchType { Incremental, RemovalsFromSource, AdditionsToSource };
+        void GeneratePatch(PatchType patchType);
 
         /*! updates the match states (m_matchesSelf, m_matchingDescendants) for the given row node,
             and updates the m_matchingDescendants state for all its ancestors
             \param rowState the row to operate on */
         void UpdateMatchState(MatchInfoNode* rowState);
+        void UpdateMatchSubtree(MatchInfoNode* startNode); //!< callls UpdateMatchState on the subtree starting at startNode
 
         //! returns the first path in the ancestry of sourcePath that is of type Row, including self
         Dom::Path GetRowPath(const Dom::Path& sourcePath) const;
+
+        /*! this increases every time the source Adapter changes or resets to keep track of which
+         *  node updates are new */
+        unsigned int m_updateFrame = 0;
 
         //! indicates whether all children of a direct match are considered matching as well
         bool m_includeAllMatchDescendants = true;
@@ -102,11 +121,6 @@ namespace AZ::DocumentPropertyEditor
 
         struct StringMatchNode : public RowFilterAdapter::MatchInfoNode
         {
-            StringMatchNode(MatchInfoNode* parentRow)
-                : MatchInfoNode(parentRow)
-            {
-            }
-
             void AddStringifyValue(const Dom::Value& domValue);
 
             QString m_matchableDomTerms;
@@ -114,7 +128,7 @@ namespace AZ::DocumentPropertyEditor
 
     protected:
         // pure virtual overrides
-        virtual MatchInfoNode* NewMatchInfoNode(MatchInfoNode* parentRow) const  override;
+        virtual MatchInfoNode* NewMatchInfoNode() const override;
         virtual void CacheDomInfoForNode(const Dom::Value& domValue, MatchInfoNode* matchNode) const override;
         virtual bool MatchesFilter(MatchInfoNode* matchNode) const override;
 
