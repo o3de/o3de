@@ -37,6 +37,7 @@ namespace Multiplayer
 
     void NetworkSpawnableLibrary::BuildSpawnablesList()
     {
+        AZ_Printf(__FUNCTION__, "clear");
         m_spawnables.clear();
         m_spawnablesReverseLookup.clear();
 
@@ -55,6 +56,9 @@ namespace Multiplayer
 
     void NetworkSpawnableLibrary::ProcessSpawnableAsset(const AZStd::string& relativePath, const AZ::Data::AssetId id)
     {
+        const auto temp = id.ToString<AZStd::string>();
+        AZ_Printf(__FUNCTION__, "%s @ %s", relativePath.c_str(), temp.c_str());
+
         const AZ::Name name = AZ::Name(relativePath);
         m_spawnables[name] = id;
         m_spawnablesReverseLookup[id] = name;
@@ -62,6 +66,9 @@ namespace Multiplayer
 
     AZ::Name NetworkSpawnableLibrary::GetSpawnableNameFromAssetId(AZ::Data::AssetId assetId)
     {
+        const auto temp = assetId.ToString<AZStd::string>();
+        AZ_Printf(__FUNCTION__, "%s", temp.c_str());
+
         if (assetId.IsValid())
         {
             auto it = m_spawnablesReverseLookup.find(assetId);
