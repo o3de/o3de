@@ -353,6 +353,97 @@ namespace AZ::Debug
         allocationInfo->m_byteSize = newSize;
     }
 
+    void AllocationRecords::RegisterReallocation(void* address, void* newAddress, size_t byteSize, size_t alignment, unsigned int stackSuppressCount)
+    {
+        if (m_mode == RECORD_NO_RECORDS)
+        {
+            return;
+        }
+        if (!address && !newAddress)
+        {
+            return;
+        }
+        if (!address)
+        {
+            RegisterAllocation(newAddress, byteSize, alignment, stackSuppressCount);
+            return;
+        }
+
+        Debug::AllocationInfo* ai{};
+        {
+            AZStd::scoped_lock lock(m_recordsMutex);
+            auto node = m_records.extract(address);
+            if (node.empty())
+            {
+                RegisterAllocation(newAddress, byteSize, alignment, stackSuppressCount);
+                return;
+            }
+
+            // Make a best effort to avoid reallocations from mutating the
+            // records map when recording a reallocation
+            node.key() = newAddress;
+            ai = &m_records.insert(AZStd::move(node)).position->second;
+        }
+
+        m_requestedBytes += (byteSize - ai->m_byteSize);
+
+        ai->m_byteSize = byteSize;
+        ai->m_alignment = static_cast<unsigned int>(alignment);
+        ai->m_name = nullptr;
+        ai->m_fileName = nullptr;
+        ai->m_namesBlock = nullptr;
+        ai->m_namesBlockSize = 0;
+        ai->m_lineNum = 0;
+        ai->m_timeStamp = AZStd::GetTimeNowMicroSecond();
+
+        // if we don't have a fileName,lineNum record the stack or if the user requested it.
+        if (m_mode == RECORD_STACK_IF_NO_FILE_LINE || m_mode == RECORD_FULL)
+        {
+            if (ai->m_stackFrames)
+            {
+                Debug::StackRecorder::Record(ai->m_stackFrames, m_numStackLevels, stackSuppressCount + 1);
+
+                if (m_decodeImmediately)
+                {
+                    // OPTIONAL DEBUGGING CODE - enable in app descriptor m_allocationRecordsAttemptDecodeImmediately
+                    // This is optionally-enabled code for tracking down memory allocations
+                    // that fail to be decoded. DecodeFrames() typically runs at the end of
+                    // your application when leaks were found. Sometimes you have stack prints
+                    // full of "(module-name not available)" and "(function-name not available)"
+                    // that are not actionable. If you have those, enable this code. It'll slow
+                    // down your process significantly because for every allocation recorded
+                    // we get the stack trace on the spot. Put a breakpoint in DecodeFrames()
+                    // at the "(module-name not available)" and "(function-name not available)"
+                    // locations and now at the moment those allocations happen you'll have the
+                    // full stack trace available and the ability to debug what could be causing it
+                    {
+                        const unsigned char decodeStep = 40;
+                        Debug::SymbolStorage::StackLine lines[decodeStep];
+                        unsigned char iFrame = 0;
+                        unsigned char numStackLevels = m_numStackLevels;
+                        while (numStackLevels > 0)
+                        {
+                            unsigned char numToDecode = AZStd::GetMin(decodeStep, numStackLevels);
+                            Debug::SymbolStorage::DecodeFrames(&ai->m_stackFrames[iFrame], numToDecode, lines);
+                            numStackLevels -= numToDecode;
+                            iFrame += numToDecode;
+                        }
+                    }
+                }
+            }
+        }
+
+        AllocatorManager::Instance().DebugBreak(address, *ai);
+
+        size_t currentRequestedBytePeak;
+        size_t newRequestedBytePeak;
+        do
+        {
+            currentRequestedBytePeak = m_requestedBytesPeak.load(std::memory_order::memory_order_relaxed);
+            newRequestedBytePeak = AZStd::GetMax(currentRequestedBytePeak, m_requestedBytes.load(std::memory_order::memory_order_relaxed));
+        } while (!m_requestedBytesPeak.compare_exchange_weak(currentRequestedBytePeak, newRequestedBytePeak));
+    }
+
     //=========================================================================
     // EnumerateAllocations
     // [9/29/2009]

@@ -105,13 +105,7 @@ namespace AZ
     OSAllocator::pointer OSAllocator::reallocate(pointer ptr, size_type newSize, align_type alignment)
     {
 #if defined(AZ_ENABLE_TRACING)
-        if (ptr)
-        {
-            const size_type previouslyAllocatedSize = get_allocated_size(ptr, 1);
-            m_numAllocatedBytes -= previouslyAllocatedSize;
-            AZ_PROFILE_MEMORY_FREE(MemoryReserved, ptr);
-            AZ_MEMORY_PROFILE(ProfileDeallocation(ptr, previouslyAllocatedSize, alignment, nullptr));
-        }
+        const size_type previouslyAllocatedSize = ptr ? get_allocated_size(ptr, 1) : 0;
 #endif
 
         // Realloc in most platforms doesnt support allocating from a nulltpr
@@ -120,9 +114,9 @@ namespace AZ
 
 #if defined(AZ_ENABLE_TRACING)
         const size_type allocatedSize = get_allocated_size(newPtr, 1);
-        m_numAllocatedBytes += allocatedSize;
+        m_numAllocatedBytes += (allocatedSize - previouslyAllocatedSize);
         AZ_PROFILE_MEMORY_ALLOC_EX(MemoryReserved, fileName, lineNum, address, byteSize, name);
-        AZ_MEMORY_PROFILE(ProfileAllocation(ptr, allocatedSize, alignment, 1));
+        AZ_MEMORY_PROFILE(ProfileReallocation(ptr, newPtr, allocatedSize, 1));
 #endif
 
         return newPtr;

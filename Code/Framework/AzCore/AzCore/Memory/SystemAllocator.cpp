@@ -144,11 +144,15 @@ namespace AZ
     {
         newSize = MemorySizeAdjustedUp(newSize);
 
-        AZ_MEMORY_PROFILE(ProfileReallocationBegin(ptr, newSize));
         AZ_PROFILE_MEMORY_FREE(MemoryReserved, ptr);
+
         pointer newAddress = m_subAllocator->reallocate(ptr, newSize, newAlignment);
+
+#if defined(AZ_ENABLE_TRACING)
+        const size_type allocatedSize = get_allocated_size(newAddress, 1);
         AZ_PROFILE_MEMORY_ALLOC(MemoryReserved, newAddress, newSize, "SystemAllocator realloc");
-        AZ_MEMORY_PROFILE(ProfileReallocationEnd(ptr, newAddress, newSize, newAlignment));
+        AZ_MEMORY_PROFILE(ProfileReallocation(ptr, newAddress, allocatedSize, newAlignment));
+#endif
 
         return newAddress;
     }

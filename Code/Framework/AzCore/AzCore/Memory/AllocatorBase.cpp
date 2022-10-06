@@ -246,27 +246,20 @@ namespace AZ
 #endif
     }
 
-    void AllocatorBase::ProfileReallocationBegin([[maybe_unused]] void* ptr, [[maybe_unused]] size_t newSize)
+    void AllocatorBase::ProfileReallocation(void* ptr, void* newPtr, size_t newSize, size_t newAlignment)
     {
-    }
-
-    void AllocatorBase::ProfileReallocationEnd(void* ptr, void* newPtr, size_t newSize, size_t newAlignment)
-    {
-        if (m_isProfilingActive)
+        if (newSize && m_isProfilingActive)
         {
-            Debug::AllocationInfo info;
-            ProfileDeallocation(ptr, 0, 0, &info);
-            ProfileAllocation(newPtr, newSize, newAlignment, 0);
+            auto records = GetRecords();
+            if (records)
+            {
+                records->RegisterReallocation(ptr, newPtr, newSize, newAlignment, 1);
+            }
         }
 #if O3DE_RECORDING_ENABLED
         RecordAllocatorOperation(AllocatorOperation::DEALLOCATE, ptr);
         RecordAllocatorOperation(AllocatorOperation::ALLOCATE, newPtr, newSize, newAlignment);
 #endif
-    }
-
-    void AllocatorBase::ProfileReallocation(void* ptr, void* newPtr, size_t newSize, size_t newAlignment)
-    {
-        ProfileReallocationEnd(ptr, newPtr, newSize, newAlignment);
     }
 
     void AllocatorBase::ProfileResize(void* ptr, size_t newSize)

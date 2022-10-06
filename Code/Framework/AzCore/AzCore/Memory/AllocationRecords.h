@@ -159,6 +159,8 @@ namespace AZ
             void    UnregisterAllocation(void* address, size_t byteSize, size_t alignment, AllocationInfo* info);
             // the address of the variable will not change we are just updating the statistics.
             void    ResizeAllocation(void* address, size_t newSize);
+
+            void RegisterReallocation(void* address, void* newAddress, size_t byteSize, size_t alignment, unsigned int stackSuppressCount);
             // @}
 
         protected:

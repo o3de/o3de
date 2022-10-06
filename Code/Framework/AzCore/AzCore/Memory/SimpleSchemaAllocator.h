@@ -101,17 +101,12 @@ namespace AZ
 
             newSize = MemorySizeAdjustedUp(newSize);
 
-            if (ProfileAllocations)
-            {
-                AZ_MEMORY_PROFILE(ProfileReallocationBegin(ptr, newSize));
-            }
-
             pointer newPtr = m_schema->reallocate(ptr, newSize, newAlignment);
 
             if (ProfileAllocations)
             {
                 AZ_PROFILE_MEMORY_ALLOC(MemoryReserved, newPtr, newSize, GetName());
-                AZ_MEMORY_PROFILE(ProfileReallocationEnd(ptr, newPtr, newSize, newAlignment));
+                AZ_MEMORY_PROFILE(ProfileReallocation(ptr, newPtr, newSize, newAlignment));
             }
 
             AZ_PUSH_DISABLE_WARNING(4127, "-Wunknown-warning-option") // conditional expression is constant
