@@ -200,6 +200,7 @@ set(FILES
     AZStd/Atomics.cpp
     AZStd/Any.cpp
     AZStd/Bitset.cpp
+    AZStd/Charconv.cpp
     AZStd/ConceptsTests.cpp
     AZStd/CreateDestroy.cpp
     AZStd/ConcurrentAllocators.cpp
@@ -224,6 +225,7 @@ set(FILES
     AZStd/Optional.cpp
     AZStd/Pair.cpp
     AZStd/Parallel.cpp
+    AZStd/RangesAlgorithmBenchmarks.cpp
     AZStd/RangesAlgorithmTests.cpp
     AZStd/RangesTests.cpp
     AZStd/RangesUtilityTests.cpp

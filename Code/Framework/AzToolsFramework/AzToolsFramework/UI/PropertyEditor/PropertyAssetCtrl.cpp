@@ -361,7 +361,7 @@ namespace AzToolsFramework
 
         if (pAssetType)
         {
-            (*pAssetType) = {};
+            (*pAssetType) = AZ::Data::AssetType{};
         }
 
         if (!pData)
@@ -535,7 +535,7 @@ namespace AzToolsFramework
             m_errorButton = nullptr;
         }
     }
-    
+
     void PropertyAssetCtrl::UpdateErrorButton()
     {
         if (m_errorButton)
@@ -600,11 +600,11 @@ namespace AzToolsFramework
             logDialog->show();
         });
     }
-    
+
     void PropertyAssetCtrl::UpdateErrorButtonWithMessage(const AZStd::string& message)
     {
         UpdateErrorButton();
-        
+
         connect(m_errorButton, &QPushButton::clicked, this, [this, message]() {
             QMessageBox::critical(nullptr, "Error", message.c_str());
 

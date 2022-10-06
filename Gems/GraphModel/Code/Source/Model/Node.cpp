@@ -280,7 +280,7 @@ namespace GraphModel
 
     bool Node::HasInputConnectionFromNode(ConstNodePtr node) const
     {
-        if (node)
+        if (node && node.get() != this)
         {
             for (const auto& slotPair : GetSlots())
             {
@@ -302,7 +302,7 @@ namespace GraphModel
 
     bool Node::HasOutputConnectionToNode(ConstNodePtr node) const
     {
-        if (node)
+        if (node && node.get() != this)
         {
             for (const auto& slotPair : GetSlots())
             {

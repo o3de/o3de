@@ -1193,17 +1193,14 @@ namespace AZ
             const Data::Instance<RPI::Material> material,
             const Data::Instance<RPI::Image> baseColorImage)
         {
-            RPI::MaterialPropertyIndex propertyIndex;
-
-            AZ::Name irradianceColorSource;
-            propertyIndex = material->FindPropertyIndex(AZ::Name("irradiance.irradianceColorSource"));
-            if (propertyIndex.IsValid())
+            RPI::MaterialPropertyIndex propertyIndex = material->FindPropertyIndex(AZ::Name("irradiance.irradianceColorSource"));
+            if (!propertyIndex.IsValid())
             {
-                uint32_t enumVal = material->GetPropertyValue<uint32_t>(propertyIndex);
-                irradianceColorSource = material->GetMaterialPropertiesLayout()
-                                                ->GetPropertyDescriptor(propertyIndex)
-                                                ->GetEnumName(enumVal);
+                return;
             }
+
+            uint32_t enumVal = material->GetPropertyValue<uint32_t>(propertyIndex);
+            AZ::Name irradianceColorSource = material->GetMaterialPropertiesLayout()->GetPropertyDescriptor(propertyIndex)->GetEnumName(enumVal);
 
             if (irradianceColorSource.IsEmpty() || irradianceColorSource == AZ::Name("Manual"))
             {
