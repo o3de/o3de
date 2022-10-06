@@ -29,7 +29,7 @@ class QtPyAssetEditor(QtPyCommon):
         self.asset_editor = editor_main_window.findChild(QtWidgets.QDockWidget, ASSET_EDITOR_UI)
         self.asset_editor_widget = self.asset_editor.findChild(QtWidgets.QWidget, "AssetEditorWindowClass")
         self.asset_editor_row_container = self.asset_editor_widget.findChild(QtWidgets.QWidget, "ContainerForRows")
-        self.menu_tool_bar = self.asset_editor_widget.findChild(QtWidgets.QMenuBar)
+        self.menu_bar = self.asset_editor_widget.findChild(QtWidgets.QMenuBar)
 
     def add_method_to_script_event(self, method_name: str) -> None:
         """
@@ -45,7 +45,8 @@ class QtPyAssetEditor(QtPyCommon):
 
         assert add_event is not None, "Failed to add new method to script event."
 
-        add_event.click()
+        #add_event.click()
+        QtTest.QTest.simulateEvent(add_event, True, 2, QtCore.Qt.NoModifier, "", False)
 
         helper.wait_for_condition(lambda: self.asset_editor_widget.findChild(
             QtWidgets.QFrame, DEFAULT_SCRIPT_EVENT) is not None, WAIT_TIME_SEC_3)
@@ -110,7 +111,7 @@ class QtPyAssetEditor(QtPyCommon):
         returns: None
         """
         editor.AssetEditorWidgetRequestsBus(bus.Broadcast, "SaveAssetAs", file_path)
-        action = pyside_utils.find_child_by_pattern(self.menu_tool_bar,
+        action = pyside_utils.find_child_by_pattern(self.menu_bar,
                                                     {"type": QtWidgets.QAction, "iconText": SAVE_STRING})
 
         assert action is not None, "Unable to complete save action. Filepath may be invalid."
@@ -144,7 +145,29 @@ class QtPyAssetEditor(QtPyCommon):
         returns: None
         """
         children = self.asset_editor_row_container.findChildren(QtWidgets.QFrame, category_name)
+        assert children, f"Category row by name {category_name} was not found."
         for child in children:
             check_box = child.findChild(QtWidgets.QCheckBox)
             if check_box and not check_box.isChecked():
-                QtTest.QTest.mouseClick(check_box, QtCore.Qt.LeftButton, QtCore.Qt.NoModifier)
+                check_box.click()
+
+                #check_box.setCheckState(QtCore.Qt.Checked)
+
+                #QtTest.QTest.mouseClick(check_box, QtCore.Qt.LeftButton, QtCore.Qt.NoModifier)
+
+
+    def gather_row_container_types(self):
+        children = self.asset_editor_row_container.children()
+        depth = 0
+        for child in children:
+            print(f"{depth}->Name:{child.objectName()}: {type(child)}")
+            self.print_types_recursive(child, "", depth)
+
+    def print_types_recursive(self, container, string, depth):
+        children = container.children()
+        string += "="
+        depth += 1
+        for child in children:
+            if child is not None:
+                print(f"{depth}->{string}: Name:{child.objectName()}: {type(child)}")
+                self.print_types_recursive(child, string, depth)

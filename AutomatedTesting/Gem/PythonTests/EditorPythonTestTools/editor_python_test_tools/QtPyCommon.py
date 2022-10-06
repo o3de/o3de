@@ -33,8 +33,6 @@ class QtPyCommon:
 
         action.trigger()
 
-
-
     def expand_qt_container_rows(self, object_name: str) -> None:
         """
         Function used for expanding qt container rows with expandable children. May need to refactor this to replace

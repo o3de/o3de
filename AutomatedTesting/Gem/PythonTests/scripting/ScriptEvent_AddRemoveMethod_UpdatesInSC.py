@@ -52,6 +52,8 @@ def ScriptEvent_AddRemoveMethod_UpdatesInSC():
     qtpy_asset_editor.click_menu_bar_option(SCRIPT_EVENT_UI)
 
     qtpy_asset_editor.add_method_to_script_event(f"{NODE_TEST_METHOD}_0")
+    qtpy_asset_editor.gather_row_container_types()
+    """
     qtpy_asset_editor.add_method_to_script_event(f"{NODE_TEST_METHOD}_1")
 
     # 3) Save the script event file to disk
@@ -74,6 +76,7 @@ def ScriptEvent_AddRemoveMethod_UpdatesInSC():
     # 7) close script canvas editor and asset editor
     qtpy_o3de_editor.close_script_canvas()
     qtpy_o3de_editor.close_asset_editor()
+    """
 
 
 if __name__ == "__main__":
