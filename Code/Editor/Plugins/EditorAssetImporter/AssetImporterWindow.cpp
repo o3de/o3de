@@ -600,6 +600,7 @@ void AssetImporterWindow::SetTitle(const char* filePath)
             AZStd::string fileName;
             AzFramework::StringFunc::Path::GetFileName(filePath, fileName);
             converted->setWindowTitle(QString("%1 Settings - %2").arg(extension.c_str(), fileName.c_str()));
+            m_rootDisplay->AppendUnsaveChangesToTitle(*converted);
             break;
         }
         else

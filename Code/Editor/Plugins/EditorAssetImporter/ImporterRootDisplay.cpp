@@ -22,42 +22,43 @@
 #include <QDateTime>
 #include <QDesktopServices>
 #include <QDir>
+#include <QDockWidget>
 #include <QFileInfo>
 #include <QUrl>
 
 
-SceneSettingsRootDisplayPythonRequestHandler::SceneSettingsRootDisplayPythonRequestHandler()
+SceneSettingsRootDisplayScriptRequestHandler::SceneSettingsRootDisplayScriptRequestHandler()
 {
-    SceneSettingsRootDisplayPythonRequestBus::Handler::BusConnect();
+    SceneSettingsRootDisplayScriptRequestBus::Handler::BusConnect();
 }
 
-SceneSettingsRootDisplayPythonRequestHandler::~SceneSettingsRootDisplayPythonRequestHandler()
+SceneSettingsRootDisplayScriptRequestHandler::~SceneSettingsRootDisplayScriptRequestHandler()
 {
-    SceneSettingsRootDisplayPythonRequestBus::Handler::BusDisconnect();
+    SceneSettingsRootDisplayScriptRequestBus::Handler::BusDisconnect();
 }
 
-void SceneSettingsRootDisplayPythonRequestHandler::Reflect(AZ::ReflectContext* context)
+void SceneSettingsRootDisplayScriptRequestHandler::Reflect(AZ::ReflectContext* context)
 {
     if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
     {
-        serialize->Class<SceneSettingsRootDisplayPythonRequestHandler>()->Version(0);
+        serialize->Class<SceneSettingsRootDisplayScriptRequestHandler>()->Version(0);
     }
 
     if (AZ::BehaviorContext* behavior = azrtti_cast<AZ::BehaviorContext*>(context))
     {
-        behavior->EBus<SceneSettingsRootDisplayPythonRequestBus>("SceneSettingsRootDisplayPythonRequestBus")
+        behavior->EBus<SceneSettingsRootDisplayScriptRequestBus>("SceneSettingsRootDisplayScriptRequestBus")
             ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
             ->Attribute(AZ::Script::Attributes::Module, "qt")
-            ->Event("HasUnsavedChanges", &SceneSettingsRootDisplayPythonRequestBus::Events::HasUnsavedChanges);
+            ->Event("HasUnsavedChanges", &SceneSettingsRootDisplayScriptRequestBus::Events::HasUnsavedChanges);
     }
 }
 
-void SceneSettingsRootDisplayPythonRequestHandler::SetRootDisplay(ImporterRootDisplayWidget* importerRootDisplay)
+void SceneSettingsRootDisplayScriptRequestHandler::SetRootDisplay(ImporterRootDisplayWidget* importerRootDisplay)
 {
     m_importerRootDisplay = importerRootDisplay;
 }
 
-bool SceneSettingsRootDisplayPythonRequestHandler::HasUnsavedChanges() const
+bool SceneSettingsRootDisplayScriptRequestHandler::HasUnsavedChanges() const
 {
     if (m_importerRootDisplay)
     {
@@ -95,7 +96,7 @@ ImporterRootDisplayWidget::ImporterRootDisplayWidget(AZ::SerializeContext* seria
     ui->m_showInExplorer->setEnabled(false);
 
     AZ::SceneAPI::Events::ManifestMetaInfoBus::Handler::BusConnect();
-    m_requestHandler = AZStd::make_shared<SceneSettingsRootDisplayPythonRequestHandler>();
+    m_requestHandler = AZStd::make_shared<SceneSettingsRootDisplayScriptRequestHandler>();
     m_requestHandler->SetRootDisplay(this);
 }
 
@@ -204,7 +205,7 @@ void ImporterRootDisplayWidget::UpdateTimeStamp(const QString& manifestFilePath)
         // Don't mark this as dirty, because standard dirty workflows (popup "Would you like to save changes?" on closing, for example)
         // shouldn't be applied to unsaved, unmodified scene settings.
         ui->m_timeStampTitle->setVisible(false);
-        ui->m_timeStamp->setText(tr("This file has not yet been saved to disk."));
+        ui->m_timeStamp->setText(tr("Unsaved file"));
     }
     ui->m_saveButton->setVisible(true);
     ui->m_timeStamp->setVisible(true);
@@ -212,13 +213,47 @@ void ImporterRootDisplayWidget::UpdateTimeStamp(const QString& manifestFilePath)
 
 void ImporterRootDisplayWidget::SetUnsavedChanges(bool hasUnsavedChanges)
 {
+    bool refreshTitle = false;
     if (hasUnsavedChanges != m_hasUnsavedChanges)
     {
-        // Include a marker on the save button to help content creators track if there are unsaved changes.
-        QString saveButtonText(tr("Save%1").arg(hasUnsavedChanges ? "*" : ""));
-        ui->m_saveButton->setText(saveButtonText);
+        refreshTitle = true;
     }
     m_hasUnsavedChanges = hasUnsavedChanges;
+
+    if (refreshTitle)
+    {
+        // Include a marker on the save button to help content creators track if there are unsaved changes.
+        QWidget* dock = parentWidget();
+        while (dock)
+        {
+            // This is how AssetImporterWindow::SetTitle finds the title to set it.
+            QDockWidget* dockWidget = qobject_cast<QDockWidget*>(dock);
+            if (dockWidget)
+            {
+                AppendUnsaveChangesToTitle(*dockWidget);
+                break;
+            }
+            else
+            {
+                dock = dock->parentWidget();
+            }
+        }
+    }
+}
+
+void ImporterRootDisplayWidget::AppendUnsaveChangesToTitle(QDockWidget& dockWidget)
+{
+    QString title(dockWidget.windowTitle());
+
+    if(m_hasUnsavedChanges && title.front() != "*")
+    {
+        title.push_front("*");
+    }
+    else if (!m_hasUnsavedChanges && title.front() == "*")
+    {
+        title.remove(0,1);
+    }
+    dockWidget.setWindowTitle(title);
 }
 
 #include <moc_ImporterRootDisplay.cpp>

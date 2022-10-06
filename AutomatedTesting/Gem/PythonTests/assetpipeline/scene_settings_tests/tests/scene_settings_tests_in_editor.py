@@ -68,7 +68,7 @@ def Scene_Settings_Tests_In_Editor_Create_And_Verify_Scene_Settings_File():
         update_material_checkbox.click()
         
         # Verify the scene is actually marked as dirty
-        has_unsaved_changes = azlmbr.qt.SceneSettingsRootDisplayPythonRequestBus(azlmbr.bus.Broadcast, "HasUnsavedChanges")
+        has_unsaved_changes = azlmbr.qt.SceneSettingsRootDisplayScriptRequestBus(azlmbr.bus.Broadcast, "HasUnsavedChanges")
         Report.critical_result(tm.Test_Messages.scene_settings_update_disabled_on_launch, has_unsaved_changes)
     
         scene_test_helpers.save_and_verify_manifest(path_to_manifest, widget_main_window)

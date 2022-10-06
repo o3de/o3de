@@ -43,7 +43,7 @@ def Scene_Settings_Tests_In_Editor_Change_Manifest_Vector_Widget_Child_Marks_Fil
         check_boxes[0].click()
         
         # Verify the scene is actually marked as dirty
-        has_unsaved_changes = azlmbr.qt.SceneSettingsRootDisplayPythonRequestBus(azlmbr.bus.Broadcast, "HasUnsavedChanges")
+        has_unsaved_changes = azlmbr.qt.SceneSettingsRootDisplayScriptRequestBus(azlmbr.bus.Broadcast, "HasUnsavedChanges")
         Report.critical_result(tm.Test_Messages.scene_settings_update_disabled_on_launch, has_unsaved_changes)
     
         # Save to prevent the unsaved changes popup from occuring

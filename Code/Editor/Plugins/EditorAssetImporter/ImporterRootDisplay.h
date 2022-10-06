@@ -22,6 +22,7 @@
 
 class ImporterRootDisplayWidget;
 class QAction;
+class QDockWidget;
 class QMenu;
 
 namespace AZ
@@ -50,7 +51,7 @@ namespace Ui
 } // namespace UI
 
 //! Python interface for the scene importer root display settings
-class SceneSettingsRootDisplayPythonRequests
+class SceneSettingsRootDisplayScriptRequests
     : public AZ::EBusTraits
 {
 public:
@@ -63,14 +64,14 @@ public:
     //! Returns true if the open scene settings file has unsaved changes, false if not.
     virtual bool HasUnsavedChanges() const = 0;
 };
-using SceneSettingsRootDisplayPythonRequestBus = AZ::EBus<SceneSettingsRootDisplayPythonRequests>;
+using SceneSettingsRootDisplayScriptRequestBus = AZ::EBus<SceneSettingsRootDisplayScriptRequests>;
 
-class SceneSettingsRootDisplayPythonRequestHandler : protected SceneSettingsRootDisplayPythonRequestBus::Handler
+class SceneSettingsRootDisplayScriptRequestHandler : protected SceneSettingsRootDisplayScriptRequestBus::Handler
 {
 public:
-    AZ_RTTI(SceneSettingsRootDisplayPythonRequestHandler, "{DF965807-DA41-4DFB-BD26-DD94E4955E8D}");
-    SceneSettingsRootDisplayPythonRequestHandler();
-    ~SceneSettingsRootDisplayPythonRequestHandler();
+    AZ_RTTI(SceneSettingsRootDisplayScriptRequestHandler, "{DF965807-DA41-4DFB-BD26-DD94E4955E8D}");
+    SceneSettingsRootDisplayScriptRequestHandler();
+    ~SceneSettingsRootDisplayScriptRequestHandler();
 
     static void Reflect(AZ::ReflectContext* context);
     bool HasUnsavedChanges() const override;
@@ -108,6 +109,8 @@ public:
 
     bool HasUnsavedChanges() const;
 
+    void AppendUnsaveChangesToTitle(QDockWidget& dockWidget);
+
 signals:
     void SaveClicked();
 
@@ -120,5 +123,5 @@ private:
     Ui::ImporterRootDisplay* ui;
     QScopedPointer<AZ::SceneAPI::UI::ManifestWidget> m_manifestWidget;
     bool m_hasUnsavedChanges;
-    AZStd::shared_ptr<SceneSettingsRootDisplayPythonRequestHandler> m_requestHandler;
+    AZStd::shared_ptr<SceneSettingsRootDisplayScriptRequestHandler> m_requestHandler;
 };

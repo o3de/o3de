@@ -28,7 +28,7 @@ def prepare_scene_ui_for_test(test_file_name, manifest_should_exist):
     if manifest_should_exist:
         manifest_expected_error_message = tm.Test_Messages.scene_settings_test_asset_manifest_exists
     Report.critical_result(manifest_expected_error_message, os.path.exists(path_to_manifest) == manifest_should_exist)
-    window_id = azlmbr.qt.SceneSettingsAssetImporterForPythonRequestBus(azlmbr.bus.Broadcast, "EditImportSettings", path_to_test_asset)
+    window_id = azlmbr.qt.SceneSettingsAssetImporterForScriptRequestBus(azlmbr.bus.Broadcast, "EditImportSettings", path_to_test_asset)
     
     # This test needs to pause between some operations to let asynchronous operations finish.
     general.idle_enable(True)
@@ -39,7 +39,7 @@ def prepare_scene_ui_for_test(test_file_name, manifest_should_exist):
     widget_main_window = QtWidgets.QWidget.find(window_id)
 
     # When the window is first opened, even if it's to a new scene settings file not yet saved to disk, it shouldn't be marked with unsaved changes.
-    has_unsaved_changes = azlmbr.qt.SceneSettingsRootDisplayPythonRequestBus(azlmbr.bus.Broadcast, "HasUnsavedChanges")
+    has_unsaved_changes = azlmbr.qt.SceneSettingsRootDisplayScriptRequestBus(azlmbr.bus.Broadcast, "HasUnsavedChanges")
     Report.critical_result(tm.Test_Messages.scene_settings_update_disabled_on_launch, not has_unsaved_changes)
 
     card_layout_area = widget_main_window.findChild(QtWidgets.QWidget, "m_cardAreaLayoutWidget")
@@ -108,7 +108,7 @@ def save_and_verify_manifest(path_to_manifest, widget_main_window):
     Report.critical_result(tm.Test_Messages.scene_settings_saved_successfully, saving_completed)
 
     # Make sure that the scene settings UI has updated this file to no longer be considered dirty.
-    has_unsaved_changes = azlmbr.qt.SceneSettingsRootDisplayPythonRequestBus(azlmbr.bus.Broadcast, "HasUnsavedChanges")
+    has_unsaved_changes = azlmbr.qt.SceneSettingsRootDisplayScriptRequestBus(azlmbr.bus.Broadcast, "HasUnsavedChanges")
     Report.critical_result(tm.Test_Messages.scene_settings_file_update_disabled_after_save, not has_unsaved_changes)
         
     # Make sure the manifest was actually created
