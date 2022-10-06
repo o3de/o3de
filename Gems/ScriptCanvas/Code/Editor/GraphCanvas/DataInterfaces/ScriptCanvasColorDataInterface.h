@@ -35,34 +35,33 @@ namespace ScriptCanvasEditor
             return 4;
         }
 
-        void SetSubmitValueEvent(SubmitValueEvent::Handler& handler) override {
-            handler.Connect(m_submitEvent);
-        }
-
         void OnPressButton() override
         {
-            const ScriptCanvas::Datum* object = GetSlotObject();
             ScriptCanvas::ModifiableDatumView datumView;
             ModifySlotObject(datumView);
-            if (datumView.IsValid() && object)
+            if (datumView.IsValid())
             {
-                const AZ::Color* retVal = object->GetAs<AZ::Color>();
-                if (retVal)
+                const AZ::Color currentColor = (*datumView.GetAs<AZ::Color>());
+
+                AzQtComponents::ColorPicker dialog(AzQtComponents::ColorPicker::Configuration::RGBA);
+                dialog.setCurrentColor(currentColor);
+                dialog.setSelectedColor(currentColor);
+                dialog.setWindowTitle(QObject::tr("Select Color"));
+                dialog.setWindowModality(Qt::ApplicationModal);
+                if (dialog.exec() == QDialog::DialogCode::Accepted)
                 {
-                    AzQtComponents::ColorPicker picker(AzQtComponents::ColorPicker::Configuration::RGBA);
-                    picker.setCurrentColor(*retVal);
-                    picker.setWindowTitle(QObject::tr("Select Color"));
-                    picker.setWindowModality(Qt::ApplicationModal);
-                    if (picker.exec() == QDialog::DialogCode::Accepted)
+                    if (datumView.IsValid())
                     {
-                        datumView.SetAs(picker.currentColor());
-                        m_submitEvent.Signal();
+                        datumView.SetAs(dialog.currentColor());
+
+                        PostUndoPoint();
+                        PropertyGridRequestBus::Broadcast(&PropertyGridRequests::RefreshPropertyGrid);
                     }
                 }
             }
         }
 
-        AZStd::optional<QPixmap> GetIcon() const override
+        QPixmap GetIcon() const override
         {
             const ScriptCanvas::Datum* object = GetSlotObject();
             if (object)
@@ -78,11 +77,11 @@ namespace ScriptCanvasEditor
                     QPainter painter(&pixmap);
                     painter.setPen(QColor("#333333"));
                     painter.drawRect(pixmap.rect().adjusted(0, 0, -1, -1));
-                    return { pixmap };
+                    return pixmap;
                 }
             }
 
-            return {};
+            return QPixmap();
         }
 
         double GetValue(int index) const override
@@ -203,7 +202,5 @@ namespace ScriptCanvasEditor
         {
             return 255.0;
         }
-    private:
-        SubmitValueEvent m_submitEvent;
     };
 }

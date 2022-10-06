@@ -131,7 +131,6 @@ namespace GraphCanvas
         IconLayoutItem*                             m_iconDisplay;
         AZStd::vector< ReadOnlyVectorControl* >     m_vectorDisplays;
 
-        VectorDataInterface::SubmitValueEvent::Handler m_submitHandler;
         bool                                        m_releaseLayout;
     };
 }

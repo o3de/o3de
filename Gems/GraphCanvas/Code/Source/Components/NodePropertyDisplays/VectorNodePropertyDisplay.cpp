@@ -134,8 +134,6 @@ namespace GraphCanvas
 
     void IconLayoutItem::setIcon(const QPixmap& pixmap)
     {
-        QSize size = pixmap.size();
-        setPreferredSize(size);
         m_pixmap->setPixmap(pixmap);
     }
 
@@ -156,13 +154,6 @@ namespace GraphCanvas
         , m_displayWidget(nullptr)
         , m_iconDisplay(nullptr)
     {
-        m_submitHandler = VectorDataInterface::SubmitValueEvent::Handler(
-            [&]()
-            {
-                UpdateDisplay();
-            });
-        m_dataInterface->SetSubmitValueEvent(m_submitHandler);
-
         m_displayWidget = new QGraphicsWidget();
         m_displayWidget->setContentsMargins(0, 0, 0, 0);
         m_displayWidget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
@@ -259,35 +250,43 @@ namespace GraphCanvas
 
     void VectorNodePropertyDisplay::UpdateDisplay()
     {
-        auto icon = m_dataInterface->GetIcon();
-        m_iconDisplay->setVisible(icon.has_value());
-        if (icon.has_value())
-        {
-            m_iconDisplay->setIcon(*icon);
-        }
-
         for (auto control : m_vectorDisplays)
         {
             control->UpdateDisplay();
         }
 
-        if (m_propertyVectorCtrl && m_button)
+        const auto buttonIcon = m_dataInterface->GetIcon();
+        if (m_iconDisplay)
+        {
+            if (!buttonIcon.isNull())
+            {
+                m_iconDisplay->setPreferredSize(buttonIcon.size());
+                m_iconDisplay->setIcon(buttonIcon);
+            }
+            m_iconDisplay->setVisible(!buttonIcon.isNull());
+        }
+
+        if (m_button)
+        {
+            if (!buttonIcon.isNull())
+            {
+                QIcon newIcon(buttonIcon);
+                m_button->setFixedSize(buttonIcon.size());
+                m_button->setIconSize(buttonIcon.size());
+                m_button->setIcon(newIcon);
+            }
+            m_button->setVisible(!buttonIcon.isNull());
+
+            m_proxyWidget->update();
+        }
+
+        if (m_propertyVectorCtrl)
         {
             for (int i = 0; i < m_vectorDisplays.size(); ++i)
             {
                 m_propertyVectorCtrl->setValuebyIndex(m_dataInterface->GetValue(i), i);
             }
 
-            auto buttonIcon = m_dataInterface->GetIcon();
-            if (buttonIcon.has_value())
-            {
-                QSize iconSize = buttonIcon->size();
-                QIcon newIcon(*buttonIcon);
-                m_button->setFixedSize(iconSize);
-                m_button->setIconSize(iconSize);
-                m_button->setIcon(newIcon);
-            }
-            m_button->setVisible(buttonIcon.has_value());
             m_proxyWidget->update();
         }
     }
@@ -370,6 +369,7 @@ namespace GraphCanvas
             m_button->setVisible(false);
             QObject::connect(m_button, &QToolButton::clicked, [this] () {
                 m_dataInterface->OnPressButton();
+                UpdateDisplay();
             });
             layout->addWidget(m_button);
 

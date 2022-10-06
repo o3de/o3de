@@ -45,9 +45,8 @@ namespace GraphCanvas
         // Returns the truncated display precision for the given index.
         virtual int GetDisplayDecimalPlaces(int /*index*/) const { return 4; }
 
-        virtual void SetSubmitValueEvent(SubmitValueEvent::Handler& handler) { }
         virtual void OnPressButton() { }
-        virtual AZStd::optional<QPixmap> GetIcon() const { return {}; }
+        virtual QPixmap GetIcon() const { return QPixmap(); }
         
         // Returns the minimum/maximum value for the given index.
         virtual double GetMinimum(int /*index*/) const { return -999999999; }
