@@ -6,11 +6,11 @@
  *
  */
 
+#pragma once
+
 #include <AzCore/Script/ScriptContextAttributes.h>
 #include <ScriptCanvas/Data/DataMacros.h>
 #include <ScriptCanvas/Data/DataTraitBase.h>
-
-#pragma once
 
 namespace ContainerTypeReflection
 {
