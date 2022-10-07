@@ -471,7 +471,7 @@ namespace Multiplayer
     {
         AZ_PROFILE_SCOPE(MULTIPLAYER, "MultiplayerSystemComponent: OnTick");
 
-        const AZStd::chrono::utc_clock::time_point startMultiplayerTickTime = AZStd::chrono::utc_clock::now();
+        const AZStd::chrono::steady_clock::time_point startMultiplayerTickTime = AZStd::chrono::steady_clock::now();
 
         if (bg_multiplayerDebugDraw)
         {
@@ -566,7 +566,7 @@ namespace Multiplayer
             m_networkInterface->GetConnectionSet().VisitConnections(visitor);
         }
 
-        const auto duration = AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(AZStd::chrono::utc_clock::now() - startMultiplayerTickTime);
+        const auto duration = AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(AZStd::chrono::steady_clock::now() - startMultiplayerTickTime);
         stats.RecordFrameTime(AZ::TimeUs{ duration.count() });
     }
 
@@ -900,9 +900,9 @@ namespace Multiplayer
         }
         else
         {
-            AZLOG_INFO("New incoming connection from remote address: %s", connection->GetRemoteAddress().GetString().c_str())
+            AZLOG_INFO("New incoming connection from remote address: %s", connection->GetRemoteAddress().GetString().c_str());
 
-                MultiplayerAgentDatum datum;
+            MultiplayerAgentDatum datum;
             datum.m_id = connection->GetConnectionId();
             datum.m_isInvited = false;
             datum.m_agentType = MultiplayerAgentType::Client;
