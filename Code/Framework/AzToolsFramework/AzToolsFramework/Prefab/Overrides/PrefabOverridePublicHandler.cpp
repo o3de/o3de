@@ -36,12 +36,12 @@ namespace AzToolsFramework
             AZ::Interface<PrefabOverridePublicInterface>::Unregister(this);
         }
 
-        bool PrefabOverridePublicHandler::IsOverridePresent(AZ::EntityId entityId)
+        bool PrefabOverridePublicHandler::AreOverridesPresent(AZ::EntityId entityId)
         {
             AzFramework::EntityContextId editorEntityContextId;
             AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
                 editorEntityContextId, &AzToolsFramework::EditorEntityContextRequests::GetEditorEntityContextId);
-            Prefab::InstanceOptionalReference focusedInstance = m_prefabFocusInterface->GetFocusedPrefabInstance(editorEntityContextId);
+            InstanceOptionalReference focusedInstance = m_prefabFocusInterface->GetFocusedPrefabInstance(editorEntityContextId);
 
             AZ::Dom::Path absoluteEntityAliasPath = m_instanceToTemplateInterface->GenerateEntityPathFromFocusedPrefab(entityId);
 
@@ -51,12 +51,12 @@ namespace AzToolsFramework
             if (focusedInstance.has_value() && absoluteEntityAliasPath.size() > 2)
             {
                 AZStd::string_view overriddenInstanceKey = absoluteEntityAliasPath[1].GetKey().GetStringView();
-                Prefab::InstanceOptionalReference overriddenInstance = focusedInstance->get().FindNestedInstance(overriddenInstanceKey);
+                InstanceOptionalReference overriddenInstance = focusedInstance->get().FindNestedInstance(overriddenInstanceKey);
                 if (overriddenInstance.has_value())
                 {
                     auto pathIterator = absoluteEntityAliasPath.begin() + 2;
                     AZ::Dom::Path modifiedPath(pathIterator, absoluteEntityAliasPath.end());
-                    return m_prefabOverrideHandler.IsOverridePresent(modifiedPath, overriddenInstance->get().GetLinkId());
+                    return m_prefabOverrideHandler.AreOverridesPresent(modifiedPath, overriddenInstance->get().GetLinkId());
                 }
             }
             return false;

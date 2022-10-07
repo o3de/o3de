@@ -8,6 +8,9 @@
 
 #pragma once
 
+#include <AzCore/DOM/DomPath.h>
+#include <AzToolsFramework/Prefab/PrefabIdTypes.h>
+
 namespace AzToolsFramework
 {
     namespace Prefab
@@ -19,7 +22,7 @@ namespace AzToolsFramework
             //! @param path The path to check for overrides on the link object.
             //! @param linkId The id of the link object to check for overrides
             //! @return true if overrides are present at the given path on the link object matching the link id.
-            bool IsOverridePresent(AZ::Dom::Path path, LinkId linkId);
+            bool AreOverridesPresent(AZ::Dom::Path path, LinkId linkId);
         };
     } // namespace Prefab
 } // namespace AzToolsFramework

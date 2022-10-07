@@ -54,6 +54,13 @@ namespace AzToolsFramework
             return;
         }
 
+        m_prefabOverridePublicInterface = AZ::Interface<Prefab::PrefabOverridePublicInterface>::Get();
+        if (m_prefabOverridePublicInterface == nullptr)
+        {
+            AZ_Assert(false, "PrefabUiHandler - could not get PrefabOverridePublicInterface on PrefabUiHandler construction.");
+            return;
+        }
+
         // Get EditorEntityContextId
         EditorEntityContextRequestBus::BroadcastResult(s_editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
     }
@@ -238,26 +245,23 @@ namespace AzToolsFramework
         if (descendantIndex.column() == EntityOutlinerListModel::ColumnName)
         {
             AZ::EntityId descendantEntityId = GetEntityIdFromIndex(descendantIndex);
-            auto* prefabOverridePublicInterface = AZ::Interface<Prefab::PrefabOverridePublicInterface>::Get();
 
             // Container entities will always have overrides because they need to maintain unique positions in the scene.
             // We are skipping checking for overrides on container entities for this reason.
-            if (!m_prefabPublicInterface->IsInstanceContainerEntity(descendantEntityId))
+            if (!m_prefabPublicInterface->IsInstanceContainerEntity(descendantEntityId) &&
+                m_prefabOverridePublicInterface->AreOverridesPresent(descendantEntityId))
             {
-                if (prefabOverridePublicInterface != nullptr && prefabOverridePublicInterface->IsOverridePresent(descendantEntityId))
-                {
-                    // Build the rect that will be used to paint the icon
-                    QRect readOnlyRect =
-                        QRect(option.rect.topLeft() + s_overrideIconOffset, QSize(s_overrideIconRadius * 2, s_overrideIconRadius * 2));
+                // Build the rect that will be used to paint the icon
+                QRect overrideRectangle =
+                    QRect(option.rect.topLeft() + s_overrideIconOffset, QSize(s_overrideIconSize * 2, s_overrideIconSize * 2));
 
-                    painter->save();
-                    painter->setRenderHint(QPainter::Antialiasing, true);
-                    painter->setPen(Qt::NoPen);
-                    painter->setBrush(s_overrideIconBackgroundColor);
-                    painter->drawEllipse(readOnlyRect.center(), s_overrideIconRadius, s_overrideIconRadius);
-                    s_overrideIcon.paint(painter, readOnlyRect);
-                    painter->restore();
-                }
+                painter->save();
+                painter->setRenderHint(QPainter::Antialiasing, true);
+                painter->setPen(Qt::NoPen);
+                painter->setBrush(s_overrideIconBackgroundColor);
+                painter->drawEllipse(overrideRectangle.center(), s_overrideIconSize, s_overrideIconSize);
+                s_overrideIcon.paint(painter, overrideRectangle);
+                painter->restore();
             }
         }
 

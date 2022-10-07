@@ -13,7 +13,7 @@
 {
     namespace Prefab
     {
-        bool PrefabOverrideHandler::IsOverridePresent(AZ::Dom::Path path, LinkId linkId)
+        bool PrefabOverrideHandler::AreOverridesPresent(AZ::Dom::Path path, LinkId linkId)
         {
             PrefabSystemComponentInterface* prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
             if (prefabSystemComponentInterface != nullptr)
@@ -21,7 +21,7 @@
                 LinkReference link = prefabSystemComponentInterface->FindLink(linkId);
                 if (link.has_value())
                 {
-                    return link->get().IsOverridePresent(path);
+                    return link->get().AreOverridesPresent(path);
                 }
             }
             return false;

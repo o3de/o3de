@@ -120,17 +120,19 @@ namespace AzToolsFramework
             return ConstructLinkDomFromPatches(linkDom, allocator);
         }
 
-        bool Link::IsOverridePresent(AZ::Dom::Path path, AZ::Dom::PrefixTreeTraversalFlags prefixTreeTraversalFlags)
+        bool Link::AreOverridesPresent(AZ::Dom::Path path, AZ::Dom::PrefixTreeTraversalFlags prefixTreeTraversalFlags)
         {
-            AZStd::vector<AZStd::pair<const AZ::Dom::Path&, const PrefabOverrideMetadata&>> results;
-            auto visitorFn = [&results](const AZ::Dom::Path& path, const PrefabOverrideMetadata& patch)
+            bool areOverridesPresent = false;
+            auto visitorFn = [&areOverridesPresent](AZ::Dom::Path, const PrefabOverrideMetadata&)
             {
-                results.emplace_back(path, patch);
-                return true;
+                areOverridesPresent = true;
+                // We just need to check if at least one override is present at the path.
+                // Return false here so that we don't keep looking for all patches at the path.
+                return false;
             };
 
             m_linkPatchesTree.VisitPath(path, visitorFn, prefixTreeTraversalFlags);
-            return (results.size() > 0);
+            return areOverridesPresent;
         }
 
         PrefabDomPath Link::GetInstancePath() const

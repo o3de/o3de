@@ -19,6 +19,7 @@ namespace AzToolsFramework
     namespace Prefab
     {
         class PrefabFocusPublicInterface;
+        class PrefabOverridePublicInterface;
         class PrefabPublicInterface;
     }; // namespace Prefab
 
@@ -56,6 +57,7 @@ namespace AzToolsFramework
         ContainerEntityInterface* m_containerEntityInterface = nullptr;
         Prefab::PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
         Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;
+        Prefab::PrefabOverridePublicInterface* m_prefabOverridePublicInterface = nullptr;
 
         static bool IsLastVisibleChild(const QModelIndex& parent, const QModelIndex& child);
         static QModelIndex GetLastVisibleChild(const QModelIndex& parent);
@@ -88,7 +90,7 @@ namespace AzToolsFramework
 
         inline static const QColor s_overrideIconBackgroundColor = QColor("#444444");
         inline static const QPoint s_overrideIconOffset = QPoint(10, 10);
-        inline static const int s_overrideIconRadius = 6;
+        inline static const int s_overrideIconSize = 6;
         QIcon s_overrideIcon = QIcon(QString(":/Entity/entity_overridden.svg"));
     };
 } // namespace AzToolsFramework
