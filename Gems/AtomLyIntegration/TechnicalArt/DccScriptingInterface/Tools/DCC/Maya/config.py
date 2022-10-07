@@ -30,7 +30,7 @@ import logging as _logging
 
 # -------------------------------------------------------------------------
 # global scope
-from DccScriptingInterface.Tools.DCC.Blender import _PACKAGENAME
+from DccScriptingInterface.Tools.DCC.Maya import _PACKAGENAME
 _MODULENAME = f'{_PACKAGENAME}.config'
 _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
@@ -67,6 +67,9 @@ except EnvironmentError as e:
 from DccScriptingInterface.Tools.DCC.Maya import ENVAR_PATH_DCCSI_TOOLS_DCC_MAYA
 from DccScriptingInterface.Tools.DCC.Maya import PATH_DCCSI_TOOLS_DCC_MAYA
 
+from DccScriptingInterface.Tools import ENVAR_PATH_DCCSI_TOOLS
+from DccScriptingInterface.Tools import PATH_DCCSI_TOOLS
+
 from DccScriptingInterface import SETTINGS_FILE_SLUG
 PATH_DCCSI_TOOLS_DCC_MAYA_SETTINGS = PATH_DCCSI_TOOLS_DCC_MAYA.joinpath(SETTINGS_FILE_SLUG).resolve()
 
@@ -97,77 +100,42 @@ maya_config = MayaConfig(config_name='dccsi_dcc_maya',
 # or
 # if maya_config.settings.THIS_SETTING: do this
 
-# now we can extend the environment specific to Maya
-from Tools.DCC.Blender.constants import ENVAR_DCCSI_CONFIG_DCC_BLENDER
-maya_config.add_setting(ENVAR_DCCSI_CONFIG_DCC_BLENDER, True)
+from Tools.DCC.Maya.constants import *
 
-from Tools.DCC.Blender.constants import ENVAR_PATH_DCCSI_TOOLS
-from Tools.DCC.Blender import PATH_DCCSI_TOOLS
+# now we can extend the environment specific to Maya
+maya_config.add_setting(ENVAR_DCCSI_CONFIG_DCC_MAYA, DCCSI_CONFIG_DCC_MAYA)
+
+PATH_DCCSI_TOOLS_DCC_MAYA = Path(PATH_DCCSI_TOOLS_DCC_MAYA).resolve()
+maya_config.add_setting(ENVAR_PATH_DCCSI_TOOLS_DCC_MAYA,
+                        PATH_DCCSI_TOOLS_DCC_MAYA.as_posix())
+
 PATH_DCCSI_TOOLS = Path(PATH_DCCSI_TOOLS).resolve()
 maya_config.add_setting(ENVAR_PATH_DCCSI_TOOLS,
                            PATH_DCCSI_TOOLS.as_posix())
 
-from Tools.DCC.Blender.constants import ENVAR_PATH_DCCSI_TOOLS_DCC_BLENDER
-from Tools.DCC.Blender import PATH_DCCSI_TOOLS_DCC_BLENDER
-PATH_DCCSI_TOOLS_DCC_BLENDER = Path(PATH_DCCSI_TOOLS_DCC_BLENDER).resolve()
-maya_config.add_setting(ENVAR_PATH_DCCSI_TOOLS_DCC_BLENDER,
-                           PATH_DCCSI_TOOLS_DCC_BLENDER.as_posix())
+PATH_DCCSI_TOOLS_DCC_MAYA = Path(PATH_DCCSI_TOOLS_DCC_MAYA).resolve()
+maya_config.add_setting(ENVAR_PATH_DCCSI_TOOLS_DCC_MAYA,
+                        PATH_DCCSI_TOOLS_DCC_MAYA.as_posix())
 
-from Tools.DCC.Blender.constants import ENVAR_PATH_DCCSI_TOOLS_DCC_BLENDER_SCRIPTS
-from Tools.DCC.Blender.constants import PATH_DCCSI_TOOLS_DCC_BLENDER_SCRIPTS
-PATH_DCCSI_TOOLS_DCC_BLENDER_SCRIPTS = Path(PATH_DCCSI_TOOLS_DCC_BLENDER_SCRIPTS).resolve()
-maya_config.add_setting(ENVAR_PATH_DCCSI_TOOLS_DCC_BLENDER_SCRIPTS,
-                           PATH_DCCSI_TOOLS_DCC_BLENDER_SCRIPTS.as_posix(),
-                           set_sys_path=True,
-                           set_pythonpath=True)
+maya_config.add_setting(ENVAR_DCCSI_PY_VERSION_MAJOR, DCCSI_PY_VERSION_MAJOR)
+maya_config.add_setting(ENVAR_DCCSI_PY_VERSION_MINOR, DCCSI_PY_VERSION_MINOR)
+maya_config.add_setting(ENVAR_DCCSI_PY_VERSION_RELEASE, DCCSI_PY_VERSION_RELEASE)
+maya_config.add_setting(ENVAR_MAYA_VERSION, MAYA_VERSION)
 
-from Tools.DCC.Blender.constants import ENVAR_DCCSI_BLENDER_VERSION
-from Tools.DCC.Blender.constants import SLUG_DCCSI_BLENDER_VERSION
-maya_config.add_setting(ENVAR_DCCSI_BLENDER_VERSION,
-                           SLUG_DCCSI_BLENDER_VERSION)
+from DccScriptingInterface import ENVAR_PATH_O3DE_PROJECT
+from DccScriptingInterface import PATH_O3DE_PROJECT
+PATH_O3DE_PROJECT = Path(PATH_O3DE_PROJECT).resolve()
+maya_config.add_setting(ENVAR_PATH_O3DE_PROJECT, PATH_O3DE_PROJECT.as_posix())
 
-from Tools.DCC.Blender.constants import ENVAR_DCCSI_BLENDER_LOCATION
-from Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_LOCATION
-PATH_DCCSI_BLENDER_LOCATION = Path(PATH_DCCSI_BLENDER_LOCATION).resolve()
-maya_config.add_setting(ENVAR_DCCSI_BLENDER_LOCATION,
-                           PATH_DCCSI_BLENDER_LOCATION.as_posix(),
-                           set_sys_path=True)
+MAYA_LOCATION = Path(MAYA_LOCATION).resolve()
+maya_config.add_setting(ENVAR_MAYA_LOCATION, MAYA_LOCATION.as_posix())
 
-from Tools.DCC.Blender.constants import ENVAR_PATH_DCCSI_BLENDER_EXE
-from Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_EXE
-PATH_DCCSI_BLENDER_EXE = Path(PATH_DCCSI_BLENDER_EXE).resolve()
-maya_config.add_setting(ENVAR_PATH_DCCSI_BLENDER_EXE,
-                           PATH_DCCSI_BLENDER_EXE.as_posix())
+MAYA_BIN_PATH = Path(MAYA_BIN_PATH).resolve()
+maya_config.add_setting(ENVAR_MAYA_BIN_PATH, MAYA_BIN_PATH.as_posix())
 
-from Tools.DCC.Blender.constants import ENVAR_DCCSI_BLENDER_LAUNCHER_EXE
-from Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_LAUNCHER_EXE
-PATH_DCCSI_BLENDER_LAUNCHER_EXE = Path(PATH_DCCSI_BLENDER_LAUNCHER_EXE).resolve()
-maya_config.add_setting(ENVAR_DCCSI_BLENDER_LAUNCHER_EXE,
-                           PATH_DCCSI_BLENDER_LAUNCHER_EXE.as_posix())
+DCCSI_MAYA_PLUG_IN_PATH = Path(DCCSI_MAYA_PLUG_IN_PATH).resolve()
+maya_config.add_setting(ENVAR_DCCSI_MAYA_PLUG_IN_PATH, DCCSI_MAYA_PLUG_IN_PATH.as_posix())
 
-from Tools.DCC.Blender.constants import ENVAR_DCCSI_BLENDER_PYTHON_LOC
-from Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_PYTHON_LOC
-PATH_DCCSI_BLENDER_PYTHON_LOC = Path(PATH_DCCSI_BLENDER_PYTHON_LOC).resolve()
-maya_config.add_setting(ENVAR_DCCSI_BLENDER_PYTHON_LOC,
-                           PATH_DCCSI_BLENDER_PYTHON_LOC.as_posix(),
-                           set_sys_path=True)
-
-from Tools.DCC.Blender.constants import ENVAR_DCCSI_BLENDER_PY_EXE
-from Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_PY_EXE
-PATH_DCCSI_BLENDER_PY_EXE = Path(PATH_DCCSI_BLENDER_PY_EXE).resolve()
-maya_config.add_setting(ENVAR_DCCSI_BLENDER_PY_EXE,
-                           PATH_DCCSI_BLENDER_PY_EXE.as_posix())
-
-from Tools.DCC.Blender.constants import ENVAR_PATH_DCCSI_BLENDER_BOOTSTRAP
-from Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_BOOTSTRAP
-PATH_DCCSI_BLENDER_BOOTSTRAP = Path(PATH_DCCSI_BLENDER_BOOTSTRAP).resolve()
-maya_config.add_setting(ENVAR_PATH_DCCSI_BLENDER_BOOTSTRAP,
-                           PATH_DCCSI_BLENDER_BOOTSTRAP.as_posix())
-
-from Tools.DCC.Blender.constants import ENVAR_URL_DCCSI_BLENDER_WIKI
-from Tools.DCC.Blender.constants import URL_DCCSI_BLENDER_WIKI
-maya_config.add_setting(ENVAR_URL_DCCSI_BLENDER_WIKI,
-                           str(URL_DCCSI_BLENDER_WIKI))
 # --- END -----------------------------------------------------------------
 
 settings = maya_config.get_config_settings()

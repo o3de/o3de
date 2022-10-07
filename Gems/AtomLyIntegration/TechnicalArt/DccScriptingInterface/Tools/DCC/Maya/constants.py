@@ -49,19 +49,20 @@ from DccScriptingInterface.Tools.DCC.Maya import ENVAR_PATH_DCCSI_TOOLS_DCC_MAYA
 
 from DccScriptingInterface.constants import ENVAR_PATH_DCCSI_TOOLS_DCC
 from DccScriptingInterface.constants import ENVAR_PATH_DCCSI_TOOLS
-ENVAR_DCCSI_CONFIG_DCC_MAYA = 'DCCSI_CONFIG_DCC_MAYA'
-DCCSI_CONFIG_DCC_MAYA = True
-
-# this is the shared default requirements.txt file to install for python 3.6.x+
-DCCSI_PYTHON_REQUIREMENTS = Path(PATH_DCCSIG, 'requirements.txt')
-# if using maya 2020 or less with py2.7 override with and use the one here:
-# "DccScriptingInterface\Tools\DCC\Maya\requirements.txt"
+from DccScriptingInterface.constants import ENVAR_DCCSI_PY_DEFAULT
+from DccScriptingInterface.constants import ENVAR_DCCSI_PY_IDE
 
 from DccScriptingInterface import PATH_PROGRAMFILES_X64
 from DccScriptingInterface import PATH_DCCSI_PYTHON_LIB
 from DccScriptingInterface import O3DE_DEV
-from DccScriptingInterface import ENVAR_DCCSI_PY_DEFAULT
-from DccScriptingInterface import ENVAR_DCCSI_PY_IDE
+
+ENVAR_DCCSI_CONFIG_DCC_MAYA = 'DCCSI_CONFIG_DCC_MAYA'
+DCCSI_CONFIG_DCC_MAYA = True
+
+# this is the shared default requirements.txt file to install for python 3.6.x+
+DCCSI_PYTHON_REQUIREMENTS = f'{PATH_DCCSIG}\\requirements.txt'
+# if using maya 2020 or less with py2.7 override with and use the one here:
+# "DccScriptingInterface\Tools\DCC\Maya\requirements.txt"
 
 # reference, here is a list of Maya envars
 # https://github.com/mottosso/Maya-Environment-Variables/blob/master/README.md
@@ -102,6 +103,7 @@ MAYA_LOCATION = f'{PATH_PROGRAMFILES_X64}\\Autodesk\\Maya {MAYA_VERSION}'
 
 # dccsi managed envar for finding maya's bin folder
 ENVAR_MAYA_BIN_PATH = 'MAYA_BIN_PATH'
+MAYA_BIN_PATH = f'{MAYA_LOCATION}\\bin'
 
 # some maya manged envars we are setting
 # disbales Autodesk Customer Involvement Program (CIP), improves shutdown time
@@ -195,7 +197,7 @@ DCCSI_MAYA_EXE = f'{MAYA_BIN_PATH}\\{SLUG_MAYA_EXE}'
 # dccsi envar to get maya batch executable (headless)
 SLUG_MAYABATCH_EXE = 'mayabatch.exe'
 ENVAR_DCCSI_MAYABATCH_EXE = 'DCCSI_MAYABATCH_EXE'
-DCCSI_MAYABATCH_EXE = f'{MAYA_BIN_PATH}\\{SLUG_MAYABATCH_EXE}}'
+DCCSI_MAYABATCH_EXE = f'{MAYA_BIN_PATH}\\{SLUG_MAYABATCH_EXE}'
 
 # slug for mayapy.exe
 SLUG_MAYAPY_EXE = 'mayapy.exe'
