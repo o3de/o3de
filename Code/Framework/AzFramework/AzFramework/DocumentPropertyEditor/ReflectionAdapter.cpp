@@ -347,6 +347,11 @@ namespace AZ::DocumentPropertyEditor
                     m_builder.Attribute(Nodes::PropertyEditor::UseMinimumWidth, true);
                     m_builder.Attribute(Nodes::PropertyEditor::Alignment, Nodes::PropertyEditor::Align::AlignRight);
                     m_builder.Attribute(Nodes::ContainerActionButton::Action, Nodes::ContainerAction::RemoveElement);
+                    auto disabledValue = attributes.Find(DocumentPropertyEditor::Nodes::PropertyEditor::AncestorDisabled.GetName());
+                    if (disabledValue.GetBool())
+                    {
+                        m_builder.Attribute(Nodes::PropertyEditor::Disabled, true);
+                    }
                     m_builder.AddMessageHandler(m_adapter, Nodes::ContainerActionButton::OnActivate.GetName());
                     m_builder.EndPropertyEditor();
                 }
@@ -423,9 +428,15 @@ namespace AZ::DocumentPropertyEditor
 
                     if (!container->IsFixedSize())
                     {
+                        bool isDisabled = attributes.Find(DocumentPropertyEditor::Nodes::PropertyEditor::Disabled.GetName()).GetBool();
+
                         m_builder.BeginPropertyEditor<Nodes::ContainerActionButton>();
                         m_builder.Attribute(Nodes::ContainerActionButton::Action, Nodes::ContainerAction::AddElement);
                         m_builder.Attribute(Nodes::PropertyEditor::UseMinimumWidth, true);
+                        if (isDisabled)
+                        {
+                            m_builder.Attribute(Nodes::PropertyEditor::Disabled, true);
+                        }
                         m_builder.AddMessageHandler(m_adapter, Nodes::ContainerActionButton::OnActivate.GetName());
                         m_builder.EndPropertyEditor();
 
@@ -434,6 +445,10 @@ namespace AZ::DocumentPropertyEditor
                         m_builder.Attribute(Nodes::PropertyEditor::UseMinimumWidth, true);
                         m_builder.Attribute(Nodes::PropertyEditor::Alignment, Nodes::PropertyEditor::Align::AlignRight);
                         m_builder.Attribute(Nodes::ContainerActionButton::Action, Nodes::ContainerAction::Clear);
+                        if (isDisabled)
+                        {
+                            m_builder.Attribute(Nodes::PropertyEditor::Disabled, true);
+                        }
                         m_builder.AddMessageHandler(m_adapter, Nodes::ContainerActionButton::OnActivate.GetName());
                         m_builder.EndPropertyEditor();
                     }
