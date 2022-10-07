@@ -6,9 +6,9 @@
  *
  */
 
-#include <CoreLights/QuadLightDelegate.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <AtomLyIntegration/CommonFeatures/CoreLights/AreaLightComponentConfig.h>
+#include <CoreLights/QuadLightDelegate.h>
 
 namespace AZ
 {
@@ -59,7 +59,8 @@ namespace AZ
             return GetWidth() * GetHeight();
         }
 
-        void QuadLightDelegate::DrawDebugDisplay(const Transform& transform, const Color& color, AzFramework::DebugDisplayRequests& debugDisplay, bool isSelected) const
+        void QuadLightDelegate::DrawDebugDisplay(
+            const Transform& transform, const Color& color, AzFramework::DebugDisplayRequests& debugDisplay, bool isSelected) const
         {
             if (isSelected)
             {
@@ -98,7 +99,7 @@ namespace AZ
 
         AZ::Aabb QuadLightDelegate::GetLocalVisualizationBounds() const
         {
-            return AZ::Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), 1.0f);
+            return AZ::Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), GetConfig()->m_attenuationRadius);
         }
     } // namespace Render
 } // namespace AZ

@@ -6,10 +6,10 @@
  *
  */
 
-#include <CoreLights/SimplePointLightDelegate.h>
-#include <Atom/RPI.Public/Scene.h>
 #include <Atom/Feature/CoreLights/SimplePointLightFeatureProcessorInterface.h>
+#include <Atom/RPI.Public/Scene.h>
 #include <AtomLyIntegration/CommonFeatures/CoreLights/AreaLightComponentConfig.h>
+#include <CoreLights/SimplePointLightDelegate.h>
 
 namespace AZ
 {
@@ -28,14 +28,14 @@ namespace AZ
         {
             // Calculate the radius at which the irradiance will be equal to cutoffIntensity.
             float intensity = GetPhotometricValue().GetCombinedIntensity(PhotometricUnit::Lumen);
-            return sqrt(intensity / lightThreshold);
+            return AZ::Sqrt(intensity / lightThreshold);
         }
-        
+
         float SimplePointLightDelegate::GetSurfaceArea() const
         {
             return 0.0f;
         }
-        
+
         void SimplePointLightDelegate::HandleShapeChanged()
         {
             if (GetLightHandle().IsValid())
@@ -44,12 +44,13 @@ namespace AZ
             }
         }
 
-        void SimplePointLightDelegate::DrawDebugDisplay(const Transform& transform, const Color& color, AzFramework::DebugDisplayRequests& debugDisplay, bool isSelected) const
+        void SimplePointLightDelegate::DrawDebugDisplay(
+            const Transform& transform, const Color& color, AzFramework::DebugDisplayRequests& debugDisplay, bool isSelected) const
         {
             if (isSelected)
             {
                 debugDisplay.SetColor(color);
-                
+
                 // Draw a sphere for the attenuation radius
                 debugDisplay.DrawWireSphere(transform.GetTranslation(), GetConfig()->m_attenuationRadius);
             }
@@ -73,7 +74,7 @@ namespace AZ
 
         AZ::Aabb SimplePointLightDelegate::GetLocalVisualizationBounds() const
         {
-            return AZ::Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), 1.0f);
+            return AZ::Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), GetConfig()->m_attenuationRadius);
         }
     } // namespace Render
 } // namespace AZ

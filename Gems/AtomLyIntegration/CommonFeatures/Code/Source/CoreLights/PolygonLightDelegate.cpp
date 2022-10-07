@@ -6,15 +6,16 @@
  *
  */
 
-#include <CoreLights/PolygonLightDelegate.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <AtomLyIntegration/CommonFeatures/CoreLights/AreaLightComponentConfig.h>
+#include <CoreLights/PolygonLightDelegate.h>
 
 namespace AZ
 {
     namespace Render
     {
-        PolygonLightDelegate::PolygonLightDelegate(LmbrCentral::PolygonPrismShapeComponentRequests* shapeBus, EntityId entityId, bool isVisible)
+        PolygonLightDelegate::PolygonLightDelegate(
+            LmbrCentral::PolygonPrismShapeComponentRequests* shapeBus, EntityId entityId, bool isVisible)
             : LightDelegateBase<PolygonLightFeatureProcessorInterface>(entityId, isVisible)
             , m_shapeBus(shapeBus)
         {
@@ -33,8 +34,8 @@ namespace AZ
         float PolygonLightDelegate::CalculateAttenuationRadius(float lightThreshold) const
         {
             // Calculate the radius at which the irradiance will be equal to cutoffIntensity.
-            float intensity = GetPhotometricValue().GetCombinedIntensity(PhotometricUnit::Lumen);
-            return sqrt(intensity / lightThreshold);
+            const float intensity = GetPhotometricValue().GetCombinedIntensity(PhotometricUnit::Lumen);
+            return AZ::Sqrt(intensity / lightThreshold);
         }
 
         void PolygonLightDelegate::HandleShapeChanged()
@@ -46,21 +47,27 @@ namespace AZ
                 AZStd::vector<Vector2> vertices = m_shapeBus->GetPolygonPrism()->m_vertexContainer.GetVertices();
 
                 Transform transform = GetTransform();
-                transform.SetUniformScale(transform.GetUniformScale()); // Poly Prism only supports uniform scale.
+                transform.SetUniformScale(transform.GetUniformScale()); // Polygon Prism only supports uniform scale.
 
                 AZStd::vector<Vector3> transformedVertices;
                 transformedVertices.reserve(vertices.size());
-                for (Vector2 vertex : vertices)
+                for (const Vector2& vertex : vertices)
                 {
-                    transformedVertices.push_back(transform.TransformPoint(Vector3(vertex.GetX(), vertex.GetY(), 0.0f)));
+                    transformedVertices.push_back(transform.TransformPoint(Vector3(vertex, 0.0f)));
                 }
-                GetFeatureProcessor()->SetPolygonPoints(GetLightHandle(), transformedVertices.data(), static_cast<uint32_t>(transformedVertices.size()), GetTransform().GetBasisZ());
+
+                GetFeatureProcessor()->SetPolygonPoints(
+                    GetLightHandle(),
+                    transformedVertices.data(),
+                    static_cast<uint32_t>(transformedVertices.size()),
+                    GetTransform().GetBasisZ());
             }
         }
 
         float PolygonLightDelegate::GetSurfaceArea() const
         {
-            // Surprisingly simple to calculate area of arbitrary polygon assuming no self-intersection. See https://en.wikipedia.org/wiki/Shoelace_formula
+            // Surprisingly simple to calculate area of arbitrary polygon assuming no self-intersection. See
+            // https://en.wikipedia.org/wiki/Shoelace_formula
             float twiceArea = 0.0f;
             AZStd::vector<Vector2> vertices = m_shapeBus->GetPolygonPrism()->m_vertexContainer.GetVertices();
             for (size_t i = 0; i < vertices.size(); ++i)
@@ -73,7 +80,8 @@ namespace AZ
             return GetAbs(twiceArea * 0.5f * scale * scale);
         }
 
-        void PolygonLightDelegate::DrawDebugDisplay(const Transform& transform, const Color& color, AzFramework::DebugDisplayRequests& debugDisplay, bool isSelected) const
+        void PolygonLightDelegate::DrawDebugDisplay(
+            const Transform& transform, const Color& color, AzFramework::DebugDisplayRequests& debugDisplay, bool isSelected) const
         {
             if (isSelected)
             {
@@ -87,7 +95,7 @@ namespace AZ
 
         AZ::Aabb PolygonLightDelegate::GetLocalVisualizationBounds() const
         {
-            return AZ::Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), 1.0f);
+            return AZ::Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), GetConfig()->m_attenuationRadius);
         }
     } // namespace Render
 } // namespace AZ
