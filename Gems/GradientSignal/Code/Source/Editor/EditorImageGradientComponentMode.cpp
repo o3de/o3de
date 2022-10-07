@@ -53,10 +53,16 @@ namespace GradientSignal
 
             // Run through our buffer in backwards order to make sure that positions that appear more than once in our list
             // end with the correct final value.
-            for (int32_t index = aznumeric_cast<int32_t>(m_pixelIndices.size()) - 1; index >= 0; index--)
+            for (int32_t paintIndex = aznumeric_cast<int32_t>(m_pixelIndices.size()) - 1; paintIndex >= 0; paintIndex--)
             {
-                ImageGradientModificationBus::Event(
-                    m_entityId, &ImageGradientModificationBus::Events::SetPixelValueByPixelIndex, m_pixelIndices[index], m_oldValues[index]);
+                for (int32_t index = aznumeric_cast<int32_t>(m_pixelIndices[paintIndex]->size()) - 1; index >= 0; index--)
+                {
+                    ImageGradientModificationBus::Event(
+                        m_entityId,
+                        &ImageGradientModificationBus::Events::SetPixelValueByPixelIndex,
+                        m_pixelIndices[paintIndex]->at(index),
+                        m_oldValues[paintIndex]->at(index));
+                }
             }
 
             // Notify anything listening to the image gradient that the modified region has changed.
@@ -74,8 +80,15 @@ namespace GradientSignal
             }
 
             // Replay all the changes in forward order.
-            ImageGradientModificationBus::Event(
-                m_entityId, &ImageGradientModificationBus::Events::SetPixelValuesByPixelIndex, m_pixelIndices, m_newValues);
+            for (int32_t paintIndex = 0; paintIndex < aznumeric_cast<int32_t>(m_pixelIndices.size()); paintIndex++)
+            {
+                // Replay all the changes in forward order for redo.
+                ImageGradientModificationBus::Event(
+                    m_entityId,
+                    &ImageGradientModificationBus::Events::SetPixelValuesByPixelIndex,
+                    (*m_pixelIndices[paintIndex]),
+                    (*m_newValues[paintIndex]));
+            }
 
             // Notify anything listening to the image gradient that the modified region has changed.
             // We expand the region by one pixel in each direction to account for any data affected by bilinear filtering as well.
@@ -99,20 +112,28 @@ namespace GradientSignal
                 return;
             }
 
-            m_pixelIndices.reserve(m_pixelIndices.size() + positions.size());
-            m_oldValues.reserve(m_oldValues.size() + positions.size());
-            m_newValues.reserve(m_newValues.size() + positions.size());
+            auto pixelIndexEntry = AZStd::make_unique<AZStd::vector<PixelIndex>>();
+            auto oldValuesEntry = AZStd::make_unique<AZStd::vector<float>>();
+            auto newValuesEntry = AZStd::make_unique<AZStd::vector<float>>();
+
+            pixelIndexEntry->reserve(positions.size());
+            oldValuesEntry->reserve(positions.size());
+            newValuesEntry->reserve(positions.size());
 
             for (size_t index = 0; index < positions.size(); index++)
             {
                 if (oldValues[index] != newValues[index])
                 {
-                    m_pixelIndices.emplace_back(pixelIndices[index]);
-                    m_oldValues.emplace_back(oldValues[index]);
-                    m_newValues.emplace_back(newValues[index]);
+                    pixelIndexEntry->emplace_back(pixelIndices[index]);
+                    oldValuesEntry->emplace_back(oldValues[index]);
+                    newValuesEntry->emplace_back(newValues[index]);
                     m_dirtyArea.AddPoint(positions[index]);
                 }
             }
+
+            m_pixelIndices.emplace_back(AZStd::move(pixelIndexEntry));
+            m_oldValues.emplace_back(AZStd::move(oldValuesEntry));
+            m_newValues.emplace_back(AZStd::move(newValuesEntry));
         }
 
         //! Set the fractional number of meters per pixel in the image.
@@ -129,9 +150,9 @@ namespace GradientSignal
         AZ::EntityId m_entityId;
 
         //! The undo/redo data for the paint strokes.
-        AZStd::vector<PixelIndex> m_pixelIndices;
-        AZStd::vector<float> m_oldValues;
-        AZStd::vector<float> m_newValues;
+        AZStd::vector<AZStd::unique_ptr<AZStd::vector<PixelIndex>>> m_pixelIndices;
+        AZStd::vector<AZStd::unique_ptr<AZStd::vector<float>>> m_oldValues;
+        AZStd::vector<AZStd::unique_ptr<AZStd::vector<float>>> m_newValues;
 
         //! Data for tracking the dirty area covered by these changes so that we can broadcast out the change region on undos/redos
         AZ::Aabb m_dirtyArea;
