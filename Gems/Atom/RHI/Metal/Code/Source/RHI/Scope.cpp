@@ -301,11 +301,15 @@ namespace AZ
             
             if (isPrologue)
             {
-                for (const auto& fence : m_resourceFences[static_cast<int>(ResourceFenceAction::Wait)])
+                //Check if the scope is part of merged group (i.e FrameGraphExecuteGroupMerged). For non-merged
+                //groups (i.e FrameGraphExecuteGroup) we handle fence waiting at the start of the group within FrameGraphExecuteGroup::BeginInternal
+                //The reason for this is that you can only wait on fences before the parallel encoders (within FrameGraphExecuteGroup) are created
+                const bool isScopePartOfMergedGroup = commandListCount == 1;
+                if (isScopePartOfMergedGroup)
                 {
-                    commandList.WaitOnResourceFence(fence);
+                    WaitOnAllResourceFences(commandList);
                 }
-                
+
                 for (RHI::ResourcePoolResolver* resolvePolicyBase : GetResourcePoolResolves())
                 {
                     static_cast<ResourcePoolResolver*>(resolvePolicyBase)->Resolve(commandList);
@@ -341,19 +345,50 @@ namespace AZ
             AZ::u32 commandListCount) const
         {
             AZ_PROFILE_FUNCTION(RHI);
-            const bool isEpilogue = (commandListIndex + 1) == commandListCount;
-            
             commandList.FlushEncoder();
             
-            if (isEpilogue)
+            //Check if the scope is part of merged group (i.e FrameGraphExecuteGroupMerged). For non-merged
+            //groups (i.e FrameGraphExecuteGroup) we handle signalling at the end of the group within FrameGraphExecuteGroup::EndInternal
+            //The reason for this is that you can only signal fences once the parallel encoders (within FrameGraphExecuteGroup) are flushed
+            const bool isScopePartOfMergedGroup = commandListCount == 1;
+            if (isScopePartOfMergedGroup)
             {
-                for (const auto& fence : m_resourceFences[static_cast<int>(ResourceFenceAction::Signal)])
-                {
-                    commandList.SignalResourceFence(fence);
-                }
+                SignalAllResourceFences(commandList);
             }
         }
         
+        void Scope::SignalAllResourceFences(CommandList& commandList) const
+        {
+            for (const auto& fence : m_resourceFences[static_cast<int>(ResourceFenceAction::Signal)])
+            {
+                commandList.SignalResourceFence(fence);
+            }
+        }
+    
+        void Scope::SignalAllResourceFences(id <MTLCommandBuffer> mtlCommandBuffer) const
+        {
+            for (const auto& fence : m_resourceFences[static_cast<int>(ResourceFenceAction::Signal)])
+            {
+                fence.SignalFromGpu(mtlCommandBuffer);
+            }
+        }
+    
+        void Scope::WaitOnAllResourceFences(CommandList& commandList) const
+        {
+            for (const auto& fence : m_resourceFences[static_cast<int>(ResourceFenceAction::Wait)])
+            {
+                commandList.WaitOnResourceFence(fence);
+            }
+        }
+    
+        void Scope::WaitOnAllResourceFences(id <MTLCommandBuffer> mtlCommandBuffer) const
+        {
+            for (const auto& fence : m_resourceFences[static_cast<int>(ResourceFenceAction::Wait)])
+            {
+                fence.WaitOnGpu(mtlCommandBuffer);
+            }
+        }
+    
         MTLRenderPassDescriptor* Scope::GetRenderPassDescriptor() const
         {
             return  m_renderPassDescriptor;
