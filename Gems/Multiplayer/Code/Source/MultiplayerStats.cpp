@@ -271,8 +271,8 @@ namespace Multiplayer
                 using EventObjectStorage = AZStd::fixed_vector<AZ::Metrics::EventField, 8>;
 
                 EventObjectStorage argsContainer;
-                const uint64_t averageFrameTime = m_framesSinceLastMetric > 0 ?
-                    static_cast<uint64_t>(m_accumulatedNetworkTimeSinceLastMetric) / m_framesSinceLastMetric : 0;
+                const AZ::u64 averageFrameTime = m_framesSinceLastMetric > 0 ?
+                    static_cast<AZ::u64>(m_accumulatedNetworkTimeSinceLastMetric) / m_framesSinceLastMetric : 0;
                 argsContainer.emplace_back("AverageNetworkFrameTimeUs", averageFrameTime);
                 argsContainer.emplace_back("NumEntities", m_entityCount);
 

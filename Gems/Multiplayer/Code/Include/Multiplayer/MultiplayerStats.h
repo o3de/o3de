@@ -26,9 +26,9 @@ namespace Multiplayer
         MultiplayerStats() { m_metricsEvent.Enqueue(AZ::TimeMs{ 1000 }, true); }
         ~MultiplayerStats() { m_metricsEvent.RemoveFromQueue(); }
 
-        uint64_t m_entityCount = 0;
-        uint64_t m_clientConnectionCount = 0;
-        uint64_t m_serverConnectionCount = 0;
+        AZ::u64 m_entityCount = 0;
+        AZ::u64 m_clientConnectionCount = 0;
+        AZ::u64 m_serverConnectionCount = 0;
 
         uint64_t m_recordMetricIndex = 0;
         AZ::TimeMs m_totalHistoryTimeMs = AZ::Time::ZeroTimeMs;
