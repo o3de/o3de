@@ -119,7 +119,7 @@
         <object-type name="ToolButtonWithWidget"/>
         <object-type name="VectorEdit"/>
         <object-type name="WindowDecorationWrapper">
-            <enum-type name="Option" flags="Options"/>
+            <!--enum-type name="Option" flags="Options"/-->
         </object-type>
           
         <!--Widgets-->
