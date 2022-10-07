@@ -68,12 +68,11 @@ def PhysX_ColliderFamily_Component_CRUD():
      - PhysX Shape Collider
 
     Test Steps:
-     1) Open Base Level
-     2) Add an Entity for each Collider Family Component
-     3) Add each Collider Family Component to its own entity
-     4) Manipulate each modifiable field and validate they are in expected state
-     5) Validate Fields are in expected state
-     6) Delete components and validate its removal
+     1) Add an Entity for each Collider Family Component
+     2) Add each Collider Family Component to its own entity (PhysX Collider, PhysX Shape Collider)
+     3) Manipulate each modifiable field and validate they are in expected state
+     4) Validate Fields are in expected state
+     5) Delete components and validate its removal
 
     :return: None
     """
@@ -81,24 +80,15 @@ def PhysX_ColliderFamily_Component_CRUD():
     # Helper file Imports
     import os
 
-    import azlmbr.math as math
-    import azlmbr.entity as EntityId
-    import azlmbr.editor as editor
-    import azlmbr.bus as bus
     import azlmbr.physics as physics
-    import azlmbr.scriptcanvas as scriptcanvas
-
     import editor_python_test_tools.hydra_editor_utils as hydra
 
-
-    from editor_python_test_tools.editor_entity_utils import EditorEntity
-    from editor_python_test_tools.editor_entity_utils import EditorComponent
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
+
+    from editor_python_test_tools.editor_entity_utils import EditorEntity as EE
     from editor_python_test_tools.utils import Tracer
     from editor_python_test_tools.asset_utils import Asset
-
-    from Physics.utils.physics_tools import (create_validated_entity, add_validated_component)
     from Physics.utils.physics_constants import (PHYSX_COLLIDER, PHYSX_SHAPE_COLLIDER,
                                                  BOX_SHAPE_COMPONENT, CAPSULE_SHAPE_COMPONENT,
                                                  PHSX_SHAPE_COLLIDER_SHAPE,
@@ -106,99 +96,63 @@ def PhysX_ColliderFamily_Component_CRUD():
                                                  QUAD_SHAPE_COMPONENT, SPHERE_SHAPE_COMPONENT, PHYSX_COLLIDER_MESH_PATH)
 
 
-    # 1) Load the level
+    # 0) Pre-conditions
+    PHYSX_MESH = os.path.join("objects", "_primitives", "_box_1x1.pxmesh")
+    px_asset = Asset.find_asset_by_path(PHYSX_MESH)
+
     hydra.open_base_level()
 
-    # 2) Create entities to hold PhysX Collider Components
-    physx_collider_box_entity = create_validated_entity("physx_collider_box_entity", Tests.create_collider_entity)
-    physx_collider_capsule_entity = create_validated_entity("physx_collider_capsule_entity", Tests.create_collider_entity)
-    physx_collider_sphere_entity = create_validated_entity("physx_collider_sphere_entity", Tests.create_collider_entity)
-    physx_collider_physicsasset_entity = create_validated_entity("physx_collider_physicsasset_entity", Tests.create_collider_entity)
+    # 1) Create entities to hold PhysX Collider Components
+    physx_collider_box_entity = EE.create_editor_entity("physx_collider_box_entity")
+    physx_collider_capsule_entity = EE.create_editor_entity("physx_collider_capsule_entity")
+    physx_collider_sphere_entity = EE.create_editor_entity("physx_collider_sphere_entity")
+    physx_collider_cylinder_entity = EE.create_editor_entity("physx_collider_cylinder_entity")
+    physx_collider_physicsasset_entity = EE.create_editor_entity("physx_collider_physicsasset_entity")
 
-    physx_shape_collider_box_entity = create_validated_entity("physx_shape_collider_box_entity", Tests.create_shape_collider_entity)
-    physx_shape_collider_capsule_entity = create_validated_entity("physx_shape_collider_capsule_entity", Tests.create_shape_collider_entity)
-    physx_shape_collider_cylinder_entity = create_validated_entity("physx_shape_collider_cylinder_entity", Tests.create_shape_collider_entity)
-    physx_shape_collider_polygon_prism_entity = create_validated_entity("physx_shape_collider_polygon_prism_entity", Tests.create_shape_collider_entity)
-    physx_shape_collider_quad_entity = create_validated_entity("physx_shape_collider_quad_entity", Tests.create_shape_collider_entity)
-    physx_shape_collider_sphere_entity = create_validated_entity("physx_shape_collider_sphere_entity", Tests.create_shape_collider_entity)
+    physx_shape_collider_box_entity = EE.create_editor_entity("physx_shape_collider_box_entity")
+    physx_shape_collider_capsule_entity = EE.create_editor_entity("physx_shape_collider_capsule_entity")
+    physx_shape_collider_cylinder_entity = EE.create_editor_entity("physx_shape_collider_cylinder_entity")
+    physx_shape_collider_polygon_prism_entity = EE.create_editor_entity("physx_shape_collider_polygon_prism_entity")
+    physx_shape_collider_quad_entity = EE.create_editor_entity("physx_shape_collider_quad_entity")
+    physx_shape_collider_sphere_entity = EE.create_editor_entity("physx_shape_collider_sphere_entity")
 
     with Tracer() as section_tracer:
 
         # 3) Adding Collider Components to their entities
-        physx_collider_box_shape_component = add_validated_component(physx_collider_box_entity, PHYSX_COLLIDER, Tests.create_physx_collider_component)
-        physx_collider_capsule_shape_component = add_validated_component(physx_collider_capsule_entity, PHYSX_COLLIDER, Tests.create_physx_collider_component)
-        physx_collider_sphere_shape_component = add_validated_component(physx_collider_sphere_entity, PHYSX_COLLIDER, Tests.create_physx_collider_component)
-        physx_collider_physicsasset_component = add_validated_component(physx_collider_physicsasset_entity, PHYSX_COLLIDER, Tests.create_physx_collider_component)
+        physx_collider_box_shape_component = physx_collider_box_entity.add_component(PHYSX_COLLIDER)
+        physx_collider_capsule_shape_component = physx_collider_capsule_entity.add_component(PHYSX_COLLIDER)
+        physx_collider_sphere_shape_component = physx_collider_sphere_entity.add_component(PHYSX_COLLIDER)
+        physx_collider_cylinder_shape_component = physx_collider_cylinder_entity.add_component(PHYSX_COLLIDER)
+        physx_collider_physicsasset_component = physx_collider_physicsasset_entity.add_component(PHYSX_COLLIDER)
 
-        physx_shape_collider_box_component = add_validated_component(physx_shape_collider_box_entity, PHYSX_SHAPE_COLLIDER, Tests.add_box_shape_component)
-        physx_shape_collider_capsule_component = add_validated_component(physx_shape_collider_capsule_entity, PHYSX_SHAPE_COLLIDER, Tests.add_capsule_shape_component)
-        physx_shape_collider_cylinder_component = add_validated_component(physx_shape_collider_cylinder_entity, PHYSX_SHAPE_COLLIDER, Tests.add_cylinder_shape_component)
-        physx_shape_collider_polygon_prism_component = add_validated_component(physx_shape_collider_polygon_prism_entity, PHYSX_SHAPE_COLLIDER, Tests.add_polygon_prism_shape_component)
-        physx_shape_collider_quad_component = add_validated_component(physx_shape_collider_quad_entity, PHYSX_SHAPE_COLLIDER, Tests.add_quad_shape_component)
-        physx_shape_collider_sphere_component = add_validated_component(physx_shape_collider_sphere_entity, PHYSX_SHAPE_COLLIDER, Tests.add_sphere_shape_component)
+        physx_shape_collider_box_component = physx_shape_collider_box_entity.add_component(PHYSX_SHAPE_COLLIDER)
+        physx_shape_collider_capsule_component = physx_shape_collider_capsule_entity.add_component(PHYSX_SHAPE_COLLIDER)
+        physx_shape_collider_cylinder_component = physx_shape_collider_cylinder_entity.add_component(PHYSX_SHAPE_COLLIDER)
+        physx_shape_collider_polygon_prism_component = physx_shape_collider_polygon_prism_entity.add_component(PHYSX_SHAPE_COLLIDER)
+        physx_shape_collider_quad_component = physx_shape_collider_quad_entity.add_component(PHYSX_SHAPE_COLLIDER)
+        physx_shape_collider_sphere_component = physx_shape_collider_sphere_entity.add_component(PHYSX_SHAPE_COLLIDER)
+
+        # 5) Adding Physx Shape Collider Components to corresponding Shape Collider Entities
+        box_shape_component = physx_shape_collider_box_entity.add_component(BOX_SHAPE_COMPONENT)
+        capsule_shape_component = physx_shape_collider_capsule_entity.add_component(CAPSULE_SHAPE_COMPONENT)
+        cylinder_shape_component = physx_shape_collider_cylinder_entity.add_component(CYLINDER_SHAPE_COMPONENT)
+        polygon_prism_shape_component = physx_shape_collider_polygon_prism_entity.add_component(POLYGON_PRISM_SHAPE_COMPONENT)
+        quad_shape_component = physx_shape_collider_quad_entity.add_component(QUAD_SHAPE_COMPONENT)
+        sphere_shape_component = physx_shape_collider_sphere_entity.add_component(SPHERE_SHAPE_COMPONENT)
 
         # 4) Setting Physx Collider Shapes
         physx_collider_box_shape_component.set_component_property_value(PHSX_SHAPE_COLLIDER_SHAPE, physics.ShapeType_Box)
         physx_collider_capsule_shape_component.set_component_property_value(PHSX_SHAPE_COLLIDER_SHAPE, physics.ShapeType_Capsule)
         physx_collider_sphere_shape_component.set_component_property_value(PHSX_SHAPE_COLLIDER_SHAPE, physics.ShapeType_Sphere)
-        physx_collider_physicsasset_component.set_component_property_value(PHYSX_COLLIDER_MESH_PATH, scriptcanvas.SourceHandleFromPath('E:\\gws\\o3de\\Gems\\PrimitiveAssets\\Assets\\Objects\\_Primitives\\_Box_1x1.fbx'))
+        physx_collider_cylinder_shape_component.set_component_property_value(PHSX_SHAPE_COLLIDER_SHAPE, physics.ShapeType_Cylinder)
+        physx_collider_physicsasset_component.set_component_property_value(PHYSX_COLLIDER_MESH_PATH, px_asset.id)
 
-        # 5) Adding Physx Shape Collider Components to corresponding Shape Collider Entities
-        box_shape_component = add_validated_component(physx_shape_collider_box_entity, BOX_SHAPE_COMPONENT, Tests.add_box_shape_component)
-        capsule_shape_component = add_validated_component(physx_shape_collider_capsule_entity, CAPSULE_SHAPE_COMPONENT, Tests.add_capsule_shape_component)
-        cylinder_shape_component = add_validated_component(physx_shape_collider_cylinder_entity, CYLINDER_SHAPE_COMPONENT, Tests.add_cylinder_shape_component)
-        polygon_prism_shape_component = add_validated_component(physx_shape_collider_polygon_prism_entity, POLYGON_PRISM_SHAPE_COMPONENT, Tests.add_polygon_prism_shape_component)
-        quad_shape_component = add_validated_component(physx_shape_collider_quad_entity, QUAD_SHAPE_COMPONENT, Tests.add_quad_shape_component)
-        sphere_shape_component = add_validated_component(physx_shape_collider_sphere_entity, SPHERE_SHAPE_COMPONENT, Tests.add_sphere_shape_component)
 
-        # 6) PhysX Collider PhysicsAsset Mesh Support
-
-        physx_collider_physicsasset_entity = "butts"
-
-        # --Crash--
-        proptree = physx_collider_physicsasset_component.get_property_tree(True)
-        proptree_count = proptree.get_container_count()
-        proptree_list = physx_collider_physicsasset_component.get_property_type_visibility()
-
-        #--Crash--
-        test_entity = EditorEntity.create_editor_entity("Test")
+        test_entity = EE.create_editor_entity("Test")
         test_component = test_entity.add_component("PhysX Collider")
-        has_component = test_entity.has_component("PhysX Collider")
+        output = [test_component.get_property_type_visibility(), test_component.get_property_type_visibility()]
         print(test_component.get_property_type_visibility())
 
-        # --Crash--
-        test_entity = EditorEntity.create_editor_entity("Test")
-        test_component = test_entity.add_component("PhysX Heightfield Collider")
-        print(test_component.get_property_type_visibility())
-
-        # --Crash--
-        test_entity = EditorEntity.create_editor_entity("Test")
-        test_component = add_validated_component(test_entity, "PhysX Shape Collider", ["Test Componenet Added", "Test Component Failed."])
-        print(test_component.get_property_type_visibility())
-        output = ["", "Proptree: " + str(test_component.get_property_type_visibility())]
-
-        # --Works--
-        # test_entity = EditorEntity.create_editor_entity("Test")
-        # test_component = test_entity.add_component("PhysX Collider")
-        # has_component = test_entity.has_component("PhysX Collider")
-        # test_tree = test_component.get_property_tree()
-        # output = ["", "Proptree: " + str(test_tree.build_paths_list())]
-        # print(test_tree.build_paths_list())
-        #
-        # # --Works--
-        # position = math.Vector3(0.0, 0.0, 0.0)
-        # test_entity = hydra.Entity("test")
-        # test_entity.create_entity(position, ["PhysX Collider"])
-        # component = test_entity.components[0]
-        # print(hydra.get_property_tree(component))
-        #
-        # # --Works--
-        # test_entity = EditorEntity.create_editor_entity("Test")
-        # test_component = test_entity.add_component("PhysX Collider")
-        # has_component = test_entity.has_component("PhysX Collider")
-        # test_tree = test_component.get_property_tree()
-        # print(test_tree.build_paths_list())
-        # print(has_component)
 
         Report.critical_result(output, False)
 

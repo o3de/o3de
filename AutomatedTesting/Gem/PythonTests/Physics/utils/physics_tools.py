@@ -14,7 +14,7 @@ from editor_python_test_tools.utils import Report
 from .physics_constants import WAIT_TIME_1
 
 
-def create_validated_entity(name, test_message):
+def create_validated_entity(name: str, test_message: tuple):
     entity = EditorEntity.create_editor_entity(name)
     Report.critical_result(test_message, helper.wait_for_condition(lambda: entity.id.IsValid(), WAIT_TIME_1))
 
