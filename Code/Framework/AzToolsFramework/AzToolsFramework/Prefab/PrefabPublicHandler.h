@@ -130,6 +130,12 @@ namespace AzToolsFramework
             PrefabDom ApplyContainerTransformAndGeneratePatch(AZ::EntityId containerEntityId, AZ::EntityId parentEntityId,
                 const AZ::Vector3& translation, const AZ::Quaternion& rotation);
 
+            //! Updates prefab template with a given prefab instance object.
+            //! This will deserialize an instance DOM that excludes transform information and update the template without undo support.
+            //! \param templateId The template to be updated.
+            //! \param instanceToUpdate The instance object used to update the template.
+            void UpdateTemplateForInstance(const TemplateId templateId, const Instance& instanceToUpdate);
+
             /**
              * Creates a link between the templates of an instance and its parent.
              * 
