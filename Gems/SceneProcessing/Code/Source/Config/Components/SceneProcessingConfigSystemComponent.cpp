@@ -53,8 +53,6 @@ namespace AZ
                 { FileSoftNameSetting::GraphType(SceneAPI::DataTypes::IAnimationData::TYPEINFO_Name()) }));
 
             m_UseCustomNormals = true;
-
-            LoadScriptSettings();
         }
 
         void SceneProcessingConfigSystemComponent::Activate()
@@ -63,6 +61,7 @@ namespace AZ
             AZ::SceneAPI::Events::AssetImportRequestBus::Handler::BusConnect();
             AZ::SceneAPI::Events::ScriptConfigEventBus::Handler::BusConnect();
             SceneProcessingConfig::GraphTypeSelector::Register();
+            LoadScriptSettings();
         }
 
         void SceneProcessingConfigSystemComponent::Deactivate()
@@ -240,12 +239,12 @@ namespace AZ
 
         void SceneProcessingConfigSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("SceneProcessingConfigService", 0x7b333b47));
+            provided.push_back(AZ_CRC_CE("SceneProcessingConfigService"));
         }
 
         void SceneProcessingConfigSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("SceneProcessingConfigService", 0x7b333b47));
+            incompatible.push_back(AZ_CRC_CE("SceneProcessingConfigService"));
         }
 
         void SceneProcessingConfigSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
