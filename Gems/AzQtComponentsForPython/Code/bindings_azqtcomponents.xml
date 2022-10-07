@@ -108,23 +108,15 @@
             <enum-type name="TitleBarDrawMode"/>
         </object-type>
         <object-type name="TitleBarOverdrawHandler"/>
-        <!--object-type name="ToastNotification"/>
-        
-        <enum-type name="ToastType"/>
-        <object-type name="ToastConfiguration"/-->
         
         <object-type name="ToolBarArea"/>
         <object-type name="ToolButtonComboBox"/>
         <object-type name="ToolButtonLineEdit"/>
         <object-type name="ToolButtonWithWidget"/>
         <object-type name="VectorEdit"/>
-        <object-type name="WindowDecorationWrapper">
-            <!--enum-type name="Option" flags="Options"/-->
-        </object-type>
-          
-        <!--Widgets-->
-        <!--object-type name="AssetFolderListView"/-->
-        
+        <object-type name="WindowDecorationWrapper"/>
+
+        <!--Widgets-->   
         <object-type name="AssetFolderThumbnailView">
             <object-type name="Config">
                 <object-type name="Thumbnail"/>
@@ -154,7 +146,6 @@
         <object-type name="CheckBox">
             <object-type name="Config"/>
         </object-type>
-        <!--object-type name="ColorLabel"/-->
                 
         <object-type name="ComboBoxValidator"/>
         <object-type name="ComboBox">
@@ -196,7 +187,6 @@
                 </inject-code>
             </modify-function>
         </object-type>
-        <!--object-type name="GradientSlider"/-->
         
         <rejection class="*" function-name="getBorderColor"/>
         <rejection class="*" function-name="getBackgroundColor"/>
@@ -215,7 +205,6 @@
         
         <namespace-type name="Internal" generate="yes"/>
         <object-type name="OverlayWidgetButton"/>
-        <!--object-type name="OverlayWidget"/-->
         
         <object-type name="ProgressBar">
             <object-type name="Config"/>
@@ -268,9 +257,6 @@
             <object-type name="Config"/>
         </object-type>
         
-        <!--object-type name="TableView">
-            <object-type name="Config"/>
-        </object-type-->
         <object-type name="TableViewModel">
             <enum-type name="TableViewModelRole"/>
         </object-type>
@@ -297,13 +283,6 @@
         <object-type name="ToolButton">
             <object-type name="Config"/>
         </object-type>
-        
-        <!--object-type name="TreeView">
-            <object-type name="Config"/>
-        </object-type>
-        <object-type name="BranchDelegate"/>
-        <object-type name="StyledTreeView"/>
-        <object-type name="StyledTreeWidget"/-->
         
         <object-type name="VectorEditElement">
             <enum-type name="Flavor"/>
