@@ -215,5 +215,4 @@ set(FILES
     Include/ScriptCanvas/Utils/VersionConverters.cpp
     Include/ScriptCanvas/Utils/VersioningUtils.cpp
     Include/ScriptCanvas/Utils/BehaviorContextUtils.cpp
-    Include/ScriptCanvas/Utils/ReplacementUtils.cpp
 )

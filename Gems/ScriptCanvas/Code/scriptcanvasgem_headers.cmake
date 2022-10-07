@@ -390,7 +390,6 @@ set(FILES
     Include/ScriptCanvas/Utils/SerializationUtils.h
     Include/ScriptCanvas/Utils/VersionConverters.h
     Include/ScriptCanvas/Utils/BehaviorContextUtils.h
-    Include/ScriptCanvas/Utils/ReplacementUtils.h
     Include/ScriptCanvas/Utils/ScriptCanvasConstants.h
 )
 
