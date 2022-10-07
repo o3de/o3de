@@ -10,6 +10,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QWidget>
+#include <FormLineEditTagsWidget.h>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QCompleter)
@@ -17,9 +18,6 @@ QT_FORWARD_DECLARE_CLASS(QPushButton)
 QT_FORWARD_DECLARE_CLASS(QLineEdit)
 QT_FORWARD_DECLARE_CLASS(QLabel)
 QT_FORWARD_DECLARE_CLASS(QFrame)
-QT_FORWARD_DECLARE_CLASS(QMovie)
-QT_FORWARD_DECLARE_CLASS(QHBoxLayout)
-QT_FORWARD_DECLARE_CLASS(QMouseEvent)
 QT_FORWARD_DECLARE_CLASS(QKeyEvent)
 
 namespace AzQtComponents
@@ -30,19 +28,10 @@ namespace AzQtComponents
 namespace O3DE::ProjectManager
 {
     class FormLineEditTagsWidget
-        : public QWidget 
+        : public FormLineEditWidget 
     {
-        Q_OBJECT
-
+     
     public:
-
-        enum class ValidationState
-        {
-            NotValidating,
-            Validating,
-            ValidationFailed,
-            ValidationSuccess
-        };
 
         FormLineEditTagsWidget(
             const QString& labelText,
@@ -53,48 +42,22 @@ namespace O3DE::ProjectManager
         explicit FormLineEditTagsWidget(const QString& labelText, const QString& valueText = "", QWidget* parent = nullptr);
         ~FormLineEditTagsWidget() = default;
 
-        //! Set the error message for to display when invalid.
-        void setErrorLabelText(const QString& labelText);
-        void setErrorLabelVisible(bool visible);
-
-        //! Returns a pointer to the underlying LineEdit.
-        QLineEdit* lineEdit() const;
-
-        virtual void setText(const QString& text);
-
-        void SetValidationState(ValidationState validationState);
-
         QStringList getTags()
         {
             return m_tags;
         }
 
     protected:
-        QLabel* m_errorLabel = nullptr;
-        QFrame* m_frame = nullptr;
-        QHBoxLayout* m_frameLayout = nullptr;
-        AzQtComponents::StyledLineEdit* m_lineEdit = nullptr;
         QPushButton* m_dropdownButton = nullptr;
         QFrame* m_tagFrame = nullptr;
         
-        //Validation icons
-        QMovie* m_processingSpinnerMovie = nullptr;
-        QLabel* m_processingSpinner = nullptr;
-        QLabel* m_validationErrorIcon = nullptr;
-        QLabel* m_validationSuccessIcon = nullptr;
-        ValidationState m_validationState = ValidationState::NotValidating;
 
     private slots:
-        void flavorChanged();
-        void onFocus();
-        void onFocusOut();
         void textChanged(const QString& text);
         void processTagDelete(int unused);
 
     private:
-        void mousePressEvent(QMouseEvent* event) override;
         void keyPressEvent(QKeyEvent* event) override;
-        void refreshStyle();
         void setupCompletionTags();
         void refreshTagFrame();
         void forceSetText(const QString& text);

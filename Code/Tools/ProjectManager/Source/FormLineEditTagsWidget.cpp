@@ -8,11 +8,13 @@
 
 #include <FormLineEditTagsWidget.h>
 #include <AzQtComponents/Components/StyledLineEdit.h>
+#include <FormLineEditWidget.h>
 #include <AzQtComponents/Components/Widgets/LineEdit.h>
 #include <QPushButton>
 #include <QAbstractItemView>
 #include <QSpacerItem>
 #include <QCompleter>
+#include <QFile>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QCheckBox>
@@ -38,112 +40,61 @@ namespace O3DE::ProjectManager
         const QString& placeholderText,
         const QString& errorText,
         QWidget* parent)
-        : QWidget(parent)
-        
+        :FormLineEditWidget(labelText, valueText, placeholderText, errorText, parent)        
     {
-        setObjectName("formLineEditWidget");
-
+        
         setupCompletionTags();
+        setMouseTracking(true);
+        //This logic will enable us to convert text into tag objects
+        connect(m_lineEdit, &AzQtComponents::StyledLineEdit::textChanged, this, &FormLineEditTagsWidget::textChanged);
 
-        QVBoxLayout* mainLayout = new QVBoxLayout();
-        mainLayout->setAlignment(Qt::AlignTop);
-        {
-            m_frame = new QFrame(this);
-            m_frame->setObjectName("formFrame");
 
-            // use a horizontal box layout so buttons can be added to the right of the field
-            m_frameLayout = new QHBoxLayout();
-            {
-                QVBoxLayout* fieldLayout = new QVBoxLayout();
+        //add auto-completion for the line edit
+        m_completer = new QCompleter(m_completionTags, this);
+        m_completer->setObjectName("formCompleter");
+        m_completer->setCaseSensitivity(Qt::CaseInsensitive);
+        m_completer->setCompletionMode(QCompleter::UnfilteredPopupCompletion);
+        m_completer->popup()->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        m_completer->popup()->setFixedWidth(m_lineEdit->rect().width()*3);
+        m_completer->popup()->setMouseTracking(true);
+        m_completer->popup()->setObjectName("formCompleterPopup");
 
-                QLabel* label = new QLabel(labelText, this);
-                fieldLayout->addWidget(label);
 
-                m_lineEdit = new AzQtComponents::StyledLineEdit(this);
-                m_lineEdit->setFlavor(AzQtComponents::StyledLineEdit::Question);
-                AzQtComponents::LineEdit::setErrorIconEnabled(m_lineEdit, false);
-                m_lineEdit->setText(valueText);
-                m_lineEdit->setPlaceholderText(placeholderText);
+        /* NOTE(tkothadev): Manually setting the stylesheet of this popup widget is not desired.
+         * However, the current styling rules of the Project Manager make the background color blend in
+         * with surroundings, making it difficult to see. Currently, attempts at rectifying this in the main
+         * stylesheet proved very difficult, so a stop-gap measure of hard-coding the stylesheet was used.
+         * I have discussed this with AMZN-alexpete.
+         */
+        QFile popupStyleSheetFile(":/ProjectManager/style/ProjectManagerCompleterPopup.qss");
+        popupStyleSheetFile.open(QFile::ReadOnly);
+        QString popupStyleSheet = QLatin1String(popupStyleSheetFile.readAll());
 
-                connect(m_lineEdit, &AzQtComponents::StyledLineEdit::flavorChanged, this, &FormLineEditTagsWidget::flavorChanged);
-                connect(m_lineEdit, &AzQtComponents::StyledLineEdit::onFocus, this, &FormLineEditTagsWidget::onFocus);
-                connect(m_lineEdit, &AzQtComponents::StyledLineEdit::onFocusOut, this, &FormLineEditTagsWidget::onFocusOut);
-                connect(m_lineEdit, &AzQtComponents::StyledLineEdit::textChanged, this, &FormLineEditTagsWidget::textChanged);
+        m_completer->popup()->setStyleSheet(popupStyleSheet);
 
-                m_lineEdit->setFrame(false);
-                fieldLayout->addWidget(m_lineEdit);
+        m_lineEdit->setCompleter(m_completer);
+        connect(m_completer, QOverload<const QString&>::of(&QCompleter::highlighted), this, &FormLineEditTagsWidget::forceSetText);
+        connect(m_completer, QOverload<const QString&>::of(&QCompleter::activated), this, &FormLineEditTagsWidget::forceSetText);
 
-                m_frameLayout->addLayout(fieldLayout);
+        //add the drop down button for completion options
+        m_dropdownButton = new QPushButton(QIcon(":/CarrotArrowDown.svg"), "", this);
+        m_dropdownButton->setObjectName("dropDownButton");
+        m_frameLayout->addWidget(m_dropdownButton);
+        connect(m_dropdownButton, &QPushButton::clicked, this, [=]([[maybe_unused]]bool ignore){ m_lineEdit->completer()->complete(QRect()); });
 
-                QWidget* emptyWidget = new QWidget(this);
-                m_frameLayout->addWidget(emptyWidget);
+        //section of form for showing tags
+        m_tagFrame = new QFrame(this);
+        m_tagFrame->setObjectName("formTagField");
+        
+        QHBoxLayout* tagsLayout = new QHBoxLayout();
+        tagsLayout->setSpacing(8);
+        tagsLayout->addStretch();
+        
+        m_tagFrame->setLayout(tagsLayout);
+        m_tagFrame->setVisible(false);
+        tagsLayout->setSizeConstraint(QLayout::SetNoConstraint);
 
-                m_processingSpinnerMovie = new QMovie(":/in_progress.gif");
-                m_processingSpinner = new QLabel(this);
-                m_processingSpinner->setScaledContents(true);
-                m_processingSpinner->setMaximumSize(32, 32);
-                m_processingSpinner->setMovie(m_processingSpinnerMovie);
-                m_frameLayout->addWidget(m_processingSpinner);
-
-                m_validationErrorIcon = new QLabel(this);
-                m_validationErrorIcon->setPixmap(QIcon(":/error.svg").pixmap(32, 32));
-                m_frameLayout->addWidget(m_validationErrorIcon);
-
-                m_validationSuccessIcon = new QLabel(this);
-                m_validationSuccessIcon->setPixmap(QIcon(":/checkmark.svg").pixmap(32, 32));
-                m_frameLayout->addWidget(m_validationSuccessIcon);
-
-                QFrame* buttonFrame = new QFrame(this);
-                buttonFrame->setObjectName("dropDownButtonFrame");
-                QVBoxLayout* buttonLayout = new QVBoxLayout(this);
-                m_dropdownButton = new QPushButton(QIcon(":/CarrotArrowDown.svg"), "", this);
-                buttonLayout->addWidget(m_dropdownButton);
-                buttonFrame->setLayout(buttonLayout);
-                m_frameLayout->addWidget(buttonFrame);
-
-                SetValidationState(ValidationState::NotValidating);
-
-                m_completer = new QCompleter(m_completionTags, this);
-                m_completer->setCaseSensitivity(Qt::CaseInsensitive);
-                m_completer->setCompletionMode(QCompleter::UnfilteredPopupCompletion);
-                m_completer->popup()->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-                m_completer->popup()->setFixedWidth(m_lineEdit->rect().width()*3);
-                m_lineEdit->setCompleter(m_completer);
-                //it's possible this responds best to signals from line edit?
-                connect(m_dropdownButton, &QPushButton::clicked, this, [=]([[maybe_unused]]bool ignore){ m_lineEdit->completer()->complete(QRect()); });
-                connect(m_completer, QOverload<const QString&>::of(&QCompleter::highlighted), this, &FormLineEditTagsWidget::forceSetText);
-                connect(m_completer, QOverload<const QString&>::of(&QCompleter::activated), this, &FormLineEditTagsWidget::forceSetText);
-            }
-
-            m_frame->setLayout(m_frameLayout);
-
-            mainLayout->addWidget(m_frame);
-
-            
-            m_errorLabel = new QLabel(this);
-            m_errorLabel->setObjectName("formErrorLabel");
-            m_errorLabel->setText(errorText);
-            m_errorLabel->setVisible(false);
-            mainLayout->addWidget(m_errorLabel);
-
-            m_tagFrame = new QFrame(this);
-            m_tagFrame->setObjectName("formTagField");
-            
-            QHBoxLayout* tagsLayout = new QHBoxLayout();
-            tagsLayout->setSpacing(8);
-            tagsLayout->addStretch();
-            
-            m_tagFrame->setLayout(tagsLayout);
-            m_tagFrame->setVisible(false);
-            
-
-            tagsLayout->setSizeConstraint(QLayout::SetNoConstraint);
-
-            mainLayout->addWidget(m_tagFrame);
-
-        }
-
-        setLayout(mainLayout);
+        m_mainLayout->addWidget(m_tagFrame);
     }
 
     FormLineEditTagsWidget::FormLineEditTagsWidget(const QString& labelText, const QString& valueText, QWidget* parent)
@@ -170,6 +121,7 @@ namespace O3DE::ProjectManager
         // cleanup the tag frame widget and re-add the tag list
         qDeleteAll(m_tagFrame->children());
         QHBoxLayout* layout = new QHBoxLayout(this);
+        layout->setSpacing(8);
 
         for (auto t : m_tags)
         {
@@ -179,6 +131,7 @@ namespace O3DE::ProjectManager
             connect(tc, &QCheckBox::stateChanged, this, &FormLineEditTagsWidget::processTagDelete);
             layout->addWidget(tc);
         }
+
         layout->addStretch();
         layout->setSizeConstraint(QLayout::SetNoConstraint);
         m_tagFrame->setLayout(layout);
@@ -237,103 +190,6 @@ namespace O3DE::ProjectManager
         refreshTagFrame();
     }
 
-    void FormLineEditTagsWidget::setErrorLabelText(const QString& labelText)
-    {
-        m_errorLabel->setText(labelText);
-    }
-
-    void FormLineEditTagsWidget::setErrorLabelVisible(bool visible)
-    {
-        m_errorLabel->setVisible(visible);
-        m_frame->setProperty("Valid", !visible);
-
-        refreshStyle();
-    }
-
-    QLineEdit* FormLineEditTagsWidget::lineEdit() const
-    {
-        return m_lineEdit;
-    }
-
-    void FormLineEditTagsWidget::flavorChanged()
-    {
-        if (m_lineEdit->flavor() == AzQtComponents::StyledLineEdit::Flavor::Invalid)
-        {
-            m_frame->setProperty("Valid", false);
-            m_errorLabel->setVisible(true);
-        }
-        else
-        {
-            m_frame->setProperty("Valid", true);
-            m_errorLabel->setVisible(false);
-        }
-        refreshStyle();
-    }
-
-    void FormLineEditTagsWidget::onFocus()
-    {
-        m_frame->setProperty("Focus", true);
-        refreshStyle();
-    }
-
-    void FormLineEditTagsWidget::onFocusOut()
-    {
-        m_frame->setProperty("Focus", false);
-        refreshStyle();
-    }
-
-    void FormLineEditTagsWidget::refreshStyle()
-    {
-        // we must unpolish/polish every child after changing a property
-        // or else they won't use the correct stylesheet selector
-        for (auto child : findChildren<QWidget*>())
-        {
-            child->style()->unpolish(child);
-            child->style()->polish(child);
-        }
-    }
-
-    void FormLineEditTagsWidget::setText(const QString& text)
-    {
-        m_lineEdit->setText(text);
-    }
-
-    void FormLineEditTagsWidget::SetValidationState(ValidationState validationState)
-    {
-        switch (validationState)
-        {
-        case ValidationState::Validating:
-            m_processingSpinnerMovie->start();
-            m_processingSpinner->setVisible(true);
-            m_validationErrorIcon->setVisible(false);
-            m_validationSuccessIcon->setVisible(false);
-            break;
-        case ValidationState::ValidationSuccess:
-            m_processingSpinnerMovie->stop();
-            m_processingSpinner->setVisible(false);
-            m_validationErrorIcon->setVisible(false);
-            m_validationSuccessIcon->setVisible(true);
-            break;
-        case ValidationState::ValidationFailed:
-            m_processingSpinnerMovie->stop();
-            m_processingSpinner->setVisible(false);
-            m_validationErrorIcon->setVisible(true);
-            m_validationSuccessIcon->setVisible(false);
-            break;
-        case ValidationState::NotValidating:
-        default:
-            m_processingSpinnerMovie->stop();
-            m_processingSpinner->setVisible(false);
-            m_validationErrorIcon->setVisible(false);
-            m_validationSuccessIcon->setVisible(false);
-            break;
-        }
-    }
-
-    void FormLineEditTagsWidget::mousePressEvent([[maybe_unused]] QMouseEvent* event)
-    {
-        m_lineEdit->setFocus();
-    }
 
     void FormLineEditTagsWidget::keyPressEvent(QKeyEvent* event)
     {

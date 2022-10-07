@@ -174,7 +174,7 @@ QTabBar::tab:focus {
 
 #formTagField QCheckBox{
     background-color: #555555;
-    padding-left:5px;
+    padding-left:7px;
     padding-top:2px;
     padding-bottom:2px;
     padding-right:5px;
@@ -187,6 +187,7 @@ QTabBar::tab:focus {
     image:url(:/X.svg);
     border:0px;
     width: 10%;
+    padding-left:px;
 }
 
 #createAGem #formFrame {
@@ -220,12 +221,15 @@ QTabBar::tab:focus {
     qproperty-flat: true;
 }
 
-#formFrame #dropDownButtonFrame QPushButton {
+#formFrame QPushButton#dropDownButton{
     background-color: transparent;
-    background:transparent url(:/CaarrotArrowDown.svg) no-repeat center;
+    background: url(:/CarrotArrowDown.svg) no-repeat center;
     qproperty-flat: true;
+    qproperty-iconSize: 40px;
+    padding-bottom:2px;
+    margin-left:-10px;
+    width: 35px;
 }
-
 
 #formFrame QPushButton:focus {
     border:none;

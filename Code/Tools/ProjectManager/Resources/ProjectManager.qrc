@@ -1,6 +1,7 @@
 <RCC>
     <qresource prefix="/ProjectManager/style">
         <file>ProjectManager.qss</file>
+        <file>ProjectManagerCompleterPopup.qss</file>
     </qresource>
     <qresource prefix="/">
         <file>Add.svg</file>
