@@ -22,6 +22,7 @@ namespace AZ::Render
             GetFeatureProcessor()->SetPosition(GetLightHandle(), GetTransform().GetTranslation());
         }
     }
+
     float SimplePointLightDelegate::CalculateAttenuationRadius(float lightThreshold) const
     {
         // Calculate the radius at which the irradiance will be equal to cutoffIntensity.

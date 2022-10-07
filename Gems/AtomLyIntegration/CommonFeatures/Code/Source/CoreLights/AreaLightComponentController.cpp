@@ -608,7 +608,7 @@ namespace AZ::Render
             return m_lightShapeDelegate->GetLocalVisualizationBounds();
         }
 
-        return AZ::Aabb::CreateFromPoint(AZ::Vector3::CreateZero());
+        return AZ::Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), 0.5f);
     }
 
     void AreaLightComponentController::CreateLightShapeDelegate()

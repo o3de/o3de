@@ -403,10 +403,8 @@ namespace AZ
 
         AZ::Aabb EditorAreaLightComponent::GetWorldBounds()
         {
-            // todo - should cache this
             Transform transform = Transform::CreateIdentity();
             TransformBus::EventResult(transform, GetEntityId(), &TransformBus::Events::GetWorldTM);
-
             return GetLocalBounds().GetTransformedAabb(transform);
         }
 
