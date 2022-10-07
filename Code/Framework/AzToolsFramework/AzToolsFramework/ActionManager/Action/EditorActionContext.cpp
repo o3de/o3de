@@ -19,6 +19,45 @@ namespace AzToolsFramework
     {
     }
 
+    bool EditorActionContext::HasMode(const AZStd::string& modeIdentifier) const
+    {
+        return m_modeIdentifiers.contains(modeIdentifier);
+    }
+
+    void EditorActionContext::AddMode(AZStd::string modeIdentifier)
+    {
+        m_modeIdentifiers.emplace(AZStd::move(modeIdentifier));
+    }
+
+    AZStd::string EditorActionContext::GetActiveMode() const
+    {
+        return m_activeModeIdentifier;
+    }
+
+    bool EditorActionContext::SetActiveMode(AZStd::string modeIdentifier)
+    {
+        bool modeChanged = (modeIdentifier != m_activeModeIdentifier);
+        m_activeModeIdentifier = AZStd::move(modeIdentifier);
+
+        return modeChanged;
+    }
+
+    void EditorActionContext::AddAction(AZStd::string actionIdentifier)
+    {
+        m_actionIdentifiers.emplace(AZStd::move(actionIdentifier));
+    }
+
+    void EditorActionContext::IterateActionIdentifiers(const AZStd::function<bool(const AZStd::string&)>& callback) const
+    {
+        for (const AZStd::string& actionIdentifier : m_actionIdentifiers)
+        {
+            if(!callback(actionIdentifier))
+            {
+                break;
+            }
+        }
+    }
+
     QWidget* EditorActionContext::GetWidget()
     {
         return m_widget;
