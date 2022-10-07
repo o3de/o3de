@@ -35,6 +35,9 @@ namespace AZ::SceneAPI::Events
 
         //! Copies the script config entries into scriptConfigList.
         virtual void GetScriptConfigList(AZStd::vector<SceneAPI::Events::ScriptConfig>& scriptConfigList) const = 0;
+
+        //! Determines of the script config matches a create jobs request
+        virtual AZStd::optional<SceneAPI::Events::ScriptConfig> MatchesScriptConfig(const AZStd::string& sourceFile) const = 0;
     };
 
     using ScriptConfigEventBus = AZ::EBus<ScriptConfigEvents>;

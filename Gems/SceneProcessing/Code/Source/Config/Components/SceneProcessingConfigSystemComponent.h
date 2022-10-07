@@ -70,6 +70,7 @@ namespace AZ
 
             // AZ::SceneAPI::Events::ScriptConfigEventBus START
             void GetScriptConfigList(AZStd::vector<SceneAPI::Events::ScriptConfig>& scriptConfigList) const override;
+            AZStd::optional<SceneAPI::Events::ScriptConfig> MatchesScriptConfig(const AZStd::string& sourceFile) const override;
             // AZ::SceneAPI::Events::ScriptConfigEventBus END
 
             static void Reflect(AZ::ReflectContext* context);

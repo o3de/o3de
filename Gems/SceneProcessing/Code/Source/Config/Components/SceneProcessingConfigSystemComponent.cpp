@@ -14,6 +14,7 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/std/string/regex.h>
 
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IAnimationData.h>
 #include <Config/SettingsObjects/NodeSoftNameSetting.h>
@@ -194,6 +195,20 @@ namespace AZ
         void SceneProcessingConfigSystemComponent::GetScriptConfigList(AZStd::vector<SceneAPI::Events::ScriptConfig>& scriptConfigList) const
         {
             scriptConfigList = m_scriptConfigList;
+        }
+
+        AZStd::optional<SceneAPI::Events::ScriptConfig> SceneProcessingConfigSystemComponent::MatchesScriptConfig(const AZStd::string& sourceFile) const
+        {
+            for (const auto& scriptConfig : m_scriptConfigList)
+            {
+                AZStd::regex comparer(scriptConfig.m_pattern, AZStd::regex::extended);
+                AZStd::smatch match;
+                if (AZStd::regex_search(sourceFile, match, comparer))
+                {
+                    return AZStd::make_optional(scriptConfig);
+                }
+            }
+            return AZStd::nullopt;
         }
 
         void SceneProcessingConfigSystemComponent::AreCustomNormalsUsed(bool &value)

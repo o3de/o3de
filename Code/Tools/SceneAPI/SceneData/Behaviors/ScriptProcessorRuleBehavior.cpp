@@ -247,15 +247,26 @@ namespace AZ::SceneAPI::Behaviors
 
     AZStd::optional<AZStd::string> ScriptProcessorRuleBehavior::FindMatchingDefaultScript(const AZ::SceneAPI::Containers::Scene& scene)
     {
-        for (const auto& scriptConfig : m_scriptConfigList)
+        AZStd::optional<AZ::SceneAPI::Events::ScriptConfig> scriptConfig;
+        AZ::SceneAPI::Events::ScriptConfigEventBus::BroadcastResult(
+            scriptConfig,
+            &AZ::SceneAPI::Events::ScriptConfigEventBus::Events::MatchesScriptConfig,
+            scene.GetSourceFilename());
+
+        if (scriptConfig)
         {
-            AZStd::regex comparer(scriptConfig.m_pattern, AZStd::regex::extended);
-            AZStd::smatch match;
-            if (AZStd::regex_search(scene.GetSourceFilename(), match, comparer))
-            {
-                return AZStd::make_optional(scriptConfig.m_scriptPath.c_str());
-            }
+            return AZStd::make_optional(scriptConfig.value().m_scriptPath.c_str());
         }
+
+        //for (const auto& scriptConfig : m_scriptConfigList)
+        //{
+        //    AZStd::regex comparer(scriptConfig.m_pattern, AZStd::regex::extended);
+        //    AZStd::smatch match;
+        //    if (AZStd::regex_search(scene.GetSourceFilename(), match, comparer))
+        //    {
+        //        return AZStd::make_optional(scriptConfig.m_scriptPath.c_str());
+        //    }
+        //}
         return AZStd::nullopt;
     }
 
@@ -561,5 +572,6 @@ namespace AZ::SceneAPI::Behaviors
     void ScriptProcessorRuleBehavior::GetManifestDependencyPaths(AZStd::vector<AZStd::string>& paths)
     {
         paths.emplace_back("/scriptFilename");
+//        paths.emplace_back("/defaultScriptFilename"); // TODO add test for this 
     }
 } // namespace AZ

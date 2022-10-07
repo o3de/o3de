@@ -38,6 +38,16 @@ namespace AZ
                     m_scriptFilename = AZStd::move(scriptFilename);
                 }
 
+//                inline const AZStd::string& GetDefaultScriptFilename() const
+//                {
+  //                  return m_defaultScriptFilename;
+    //            }
+
+//                inline void SetDefaultScriptFilename(AZStd::string defaultScriptFilename)
+  //              {
+    //                m_defaultScriptFilename = AZStd::move(defaultScriptFilename);
+      //          }
+
                 inline DataTypes::ScriptProcessorFallbackLogic GetScriptProcessorFallbackLogic() const override
                 {
                     return m_fallbackLogic;
@@ -47,6 +57,7 @@ namespace AZ
 
             protected:
                 AZStd::string m_scriptFilename;
+        //        AZStd::string m_defaultScriptFilename;
                 DataTypes::ScriptProcessorFallbackLogic m_fallbackLogic = DataTypes::ScriptProcessorFallbackLogic::FailBuild;
             };
         } // SceneData
