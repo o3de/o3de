@@ -77,7 +77,7 @@ namespace AzToolsFramework
                     relativePath.append((*instanceIter)->GetInstanceAlias());
                 }
 
-                return relativePath;
+                return AZStd::move(relativePath);
             }
 
             bool IsDescendantInstance(const Instance& childInstance, const Instance& parentInstance)

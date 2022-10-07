@@ -120,6 +120,19 @@ namespace AzToolsFramework
             return ConstructLinkDomFromPatches(linkDom, allocator);
         }
 
+        bool Link::IsOverridePresent(AZ::Dom::Path path, AZ::Dom::PrefixTreeTraversalFlags prefixTreeTraversalFlags)
+        {
+            AZStd::vector<AZStd::pair<const AZ::Dom::Path&, const PrefabOverrideMetadata&>> results;
+            auto visitorFn = [&results](const AZ::Dom::Path& path, const PrefabOverrideMetadata& patch)
+            {
+                results.emplace_back(path, patch);
+                return true;
+            };
+
+            m_linkPatchesTree.VisitPath(path, visitorFn, prefixTreeTraversalFlags);
+            return (results.size() > 0);
+        }
+
         PrefabDomPath Link::GetInstancePath() const
         {
             return PrefabDomUtils::GetPrefabDomInstancePath(m_instanceName.c_str());

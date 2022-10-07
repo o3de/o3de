@@ -10,7 +10,10 @@
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Component/Entity.h>
 
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
+#include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
+#include <AzToolsFramework/Prefab/PrefabInstanceUtils.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityIdMapper.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceToTemplatePropagator.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
@@ -19,9 +22,13 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
+        AzFramework::EntityContextId InstanceToTemplatePropagator::s_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+
         void InstanceToTemplatePropagator::RegisterInstanceToTemplateInterface()
         {
             AZ::Interface<InstanceToTemplateInterface>::Register(this);
+
+            EditorEntityContextRequestBus::BroadcastResult(s_editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
 
             //get instance id associated with entityId
             m_instanceEntityMapperInterface = AZ::Interface<InstanceEntityMapperInterface>::Get();
@@ -136,6 +143,39 @@ namespace AzToolsFramework
                 entityAliasPath += entityAliasRef->get();
             }
             return AZStd::move(entityAliasPath);
+        }
+
+        AZ::Dom::Path InstanceToTemplatePropagator::GenerateEntityPathFromFocusedPrefab(AZ::EntityId entityId)
+        {
+            InstanceOptionalReference owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
+            if (!owningInstance.has_value())
+            {
+                AZ_Error("Prefab", false, "Failed to find an owning instance for entity with id %llu.", static_cast<AZ::u64>(entityId));
+                return AZ::Dom::Path();
+            }
+
+            auto* prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
+            if (prefabFocusInterface == nullptr)
+            {
+                AZ_Error("Prefab", false, "Cannot find PrefabFocusInterface.");
+                return AZ::Dom::Path();
+            }
+
+            auto focusedInstance = prefabFocusInterface->GetFocusedPrefabInstance(s_editorEntityContextId);
+
+            if (!focusedInstance.has_value())
+            {
+                AZ_Error("Prefab", false, "Focused prefab instance is null.");
+                return AZ::Dom::Path();
+            }
+            
+            auto relativePathBetweenInstances =
+                PrefabInstanceUtils::GetRelativePathBetweenInstances(focusedInstance->get(), owningInstance->get());
+
+            AZ::Dom::Path fullPathBetweenInstances(relativePathBetweenInstances);
+            AZStd::string entityPath = GenerateEntityAliasPath(entityId);
+            fullPathBetweenInstances = fullPathBetweenInstances / AZ::Dom::Path(entityPath);
+            return AZStd::move(fullPathBetweenInstances);
         }
 
         void InstanceToTemplatePropagator::AppendEntityAliasToPatchPaths(PrefabDom& providedPatch, AZ::EntityId entityId, AZStd::string prefix)

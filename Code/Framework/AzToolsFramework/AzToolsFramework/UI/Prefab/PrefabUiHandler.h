@@ -85,5 +85,10 @@ namespace AzToolsFramework
         QString m_prefabEditIconPath = QString(":/Entity/prefab_edit.svg");
         QString m_prefabEditOpenIconPath = QString(":/Entity/prefab_edit_open.svg");
         QString m_prefabEditCloseIconPath = QString(":/Entity/prefab_edit_close.svg");
+
+        inline static const QColor s_overrideIconBackgroundColor = QColor("#444444");
+        inline static const QPoint s_overrideIconOffset = QPoint(10, 10);
+        inline static const int s_overrideIconRadius = 6;
+        QIcon s_overrideIcon = QIcon(QString(":/Entity/entity_overridden.svg"));
     };
 } // namespace AzToolsFramework

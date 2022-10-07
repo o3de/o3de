@@ -14,6 +14,7 @@
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
+#include <AzToolsFramework/Prefab/Overrides/PrefabOverridePublicInterface.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerListModel.hxx>
 #include <QAbstractItemModel>
 #include <QApplication>
@@ -232,6 +233,32 @@ namespace AzToolsFramework
         {
             AZ_Warning("PrefabUiHandler", false, "PrefabUiHandler - painter is nullptr, can't draw Prefab outliner background.");
             return;
+        }
+
+        if (descendantIndex.column() == EntityOutlinerListModel::ColumnName)
+        {
+            AZ::EntityId descendantEntityId = GetEntityIdFromIndex(descendantIndex);
+            auto* prefabOverridePublicInterface = AZ::Interface<Prefab::PrefabOverridePublicInterface>::Get();
+
+            // Container entities will always have overrides because they need to maintain unique positions in the scene.
+            // We are skipping checking for overrides on container entities for this reason.
+            if (!m_prefabPublicInterface->IsInstanceContainerEntity(descendantEntityId))
+            {
+                if (prefabOverridePublicInterface != nullptr && prefabOverridePublicInterface->IsOverridePresent(descendantEntityId))
+                {
+                    // Build the rect that will be used to paint the icon
+                    QRect readOnlyRect =
+                        QRect(option.rect.topLeft() + s_overrideIconOffset, QSize(s_overrideIconRadius * 2, s_overrideIconRadius * 2));
+
+                    painter->save();
+                    painter->setRenderHint(QPainter::Antialiasing, true);
+                    painter->setPen(Qt::NoPen);
+                    painter->setBrush(s_overrideIconBackgroundColor);
+                    painter->drawEllipse(readOnlyRect.center(), s_overrideIconRadius, s_overrideIconRadius);
+                    s_overrideIcon.paint(painter, readOnlyRect);
+                    painter->restore();
+                }
+            }
         }
 
         AZ::EntityId entityId = GetEntityIdFromIndex(index);
