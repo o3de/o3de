@@ -47,6 +47,12 @@ namespace AZ::DocumentPropertyEditor
         HandleReset();
     }
 
+    void RowFilterAdapter::SetIncludeAllMatchDescendants(bool includeAll)
+    {
+        m_includeAllMatchDescendants = includeAll;
+        UpdateMatchDescendants(m_root);
+    }
+
     bool RowFilterAdapter::IsRow(const Dom::Value& domValue)
     {
         return (domValue.IsNode() && domValue.GetNodeName() == Dpe::GetNodeName<Dpe::Nodes::Row>());
@@ -77,7 +83,7 @@ namespace AZ::DocumentPropertyEditor
                 // update entire tree if it exists, build it if it doesn't
                 if (m_root)
                 {
-                    UpdateMatchSubtree(m_root);
+                    UpdateMatchDescendants(m_root);
                 }
                 else
                 {
@@ -89,7 +95,7 @@ namespace AZ::DocumentPropertyEditor
             else
             {
                 // generate a patch that adds in any filtered out nodes, but leave tree alone in case the filter gets reactivated
-                GeneratePatch(AdditionsToSource);
+                GeneratePatch(PatchToSource);
             }
         }
     }
@@ -100,7 +106,7 @@ namespace AZ::DocumentPropertyEditor
         if (m_filterActive)
         {
             ++m_updateFrame;
-            UpdateMatchSubtree(m_root);
+            UpdateMatchDescendants(m_root);
             GeneratePatch(Incremental);
         }
     }
@@ -382,22 +388,12 @@ namespace AZ::DocumentPropertyEditor
                 auto currMatch = *matchIter;
                 if (currMatch != nullptr)
                 {
-                    if (currMatch->m_matchesSelf)
+                    if (currMatch->IncludeInFilter())
                     {
-                        // node matches directly. All descendants automatically match if m_includeAllMatchDescendants is set
-                        if (!m_includeAllMatchDescendants)
-                        {
-                            CullUnmatchedChildRows(*valueIter, *matchIter);
-                        }
-                    }
-                    else if (!currMatch->m_matchingDescendants.empty())
-                    {
-                        // all nodes with matching descendants must be included so that there is a path to the matching node
                         CullUnmatchedChildRows(*valueIter, *matchIter);
                     }
                     else
                     {
-                        // neither the node nor its children match, cull the value from the returned tree
                         valueIter = rowValue.ArrayErase(valueIter);
                         continue; // we've already moved valueIter forward, skip the ++valueIter below
                     }
@@ -412,42 +408,57 @@ namespace AZ::DocumentPropertyEditor
         Dom::Patch patch;
 
         AZStd::function<void(MatchInfoNode*, Dom::Path, const Dom::Value&)> generatePatchOperations =
-        [&](MatchInfoNode* matchNode, Dom::Path mappedPath, const Dom::Value& sourceValue)
+            [&](MatchInfoNode* matchNode, Dom::Path mappedPath, const Dom::Value& sourceValue)
         {
-            AZ_Assert(matchNode->m_childMatchState.size() == sourceValue.ArraySize(), "MatchInfoNode and sourceValue structure must match!");
+            AZ_Assert(
+                matchNode->m_childMatchState.size() == sourceValue.ArraySize(), "MatchInfoNode and sourceValue structure must match!");
 
-            // This is the FilterAdapter's mapped (not source!) child index. It will not increase when skipping a node *or* after removing a node
+            // This is the mapped (not source) child index. It will not increase when skipping a node or after removing a node
             int mappedChildIndex = 0;
 
-            for (size_t sourceChildIndex = 0, sourceChildCount = matchNode->m_childMatchState.size(); sourceChildIndex < sourceChildCount; ++sourceChildIndex)
+            for (size_t sourceChildIndex = 0, sourceChildCount = matchNode->m_childMatchState.size(); sourceChildIndex < sourceChildCount;
+                 ++sourceChildIndex)
             {
                 auto currChild = matchNode->m_childMatchState[sourceChildIndex];
-                if (currChild && (currChild->m_lastFilterUpdateFrame == m_updateFrame || patchType == RemovalsFromSource))
+                if (currChild && (currChild->m_lastFilterUpdateFrame == m_updateFrame || patchType != Incremental))
                 {
                     if (currChild->IncludeInFilter())
                     {
-                        if (patchType == RemovalsFromSource)
+                        if (patchType == Incremental)
                         {
-                            // only looking to generate removal patches, don't generate an add, but see if we need to remove any of its children
-                            generatePatchOperations(currChild, mappedPath / mappedChildIndex, sourceValue[sourceChildIndex]);
-                            ++mappedChildIndex;
-                        }
-                        else // incremental patch
-                        {
-                            // child was added or changed  state this frame and should be included, generate an add operation
+                            // child was added this frame and should be included, generate an add operation
                             Dom::Value culledValue = sourceValue[sourceChildIndex];
                             CullUnmatchedChildRows(culledValue, currChild);
                             patch.PushBack(Dom::PatchOperation::AddOperation(mappedPath / mappedChildIndex, culledValue));
                             ++mappedChildIndex;
                         }
+                        else
+                        {
+                            // RemovalsFromSource and PatchToSource types don't generate patches for matching children, but have to recurse
+                            // into them to check deeper
+                            generatePatchOperations(currChild, mappedPath / mappedChildIndex, sourceValue[sourceChildIndex]);
+                            ++mappedChildIndex;
+                        }
                     }
                     else
                     {
-                        // updated node is not IncludeInFilter, generate removal and don't increment mappedChildIndex
-                        patch.PushBack(Dom::PatchOperation::RemoveOperation(mappedPath / mappedChildIndex));
+                        // updated node is not IncludeInFilter
+                        if (patchType == PatchToSource)
+                        {
+                            // if we're trying to generate a patch to get us back to the source model, add this missing value back to the
+                            // DOM
+                            patch.PushBack(Dom::PatchOperation::AddOperation(mappedPath / mappedChildIndex, sourceValue[sourceChildIndex]));
+                            ++mappedChildIndex;
+                        }
+                        else
+                        {
+                            // otherwise, this is an non-matching node that should be removed. Generate removal and don't increment
+                            // mappedChildIndex
+                            patch.PushBack(Dom::PatchOperation::RemoveOperation(mappedPath / mappedChildIndex));
+                        }
                     }
                 }
-                else
+                else // patchType is Incremental and currChild wasn't updated this frame
                 {
                     // entries will be null for non-row children; recurse only into included row children
                     if (currChild)
@@ -478,8 +489,15 @@ namespace AZ::DocumentPropertyEditor
     void RowFilterAdapter::UpdateMatchState(MatchInfoNode* rowState)
     {
         bool usedToMatch = rowState->IncludeInFilter();
-
+        bool matchedDirectly = rowState->m_matchesSelf;
         rowState->m_matchesSelf = MatchesFilter(rowState); // update own match state
+
+        // if the filter is set to treat descendants of a match as matching themselves,
+        // and we now directly match, update all descendants
+        if (m_includeAllMatchDescendants && rowState->m_matchesSelf != matchedDirectly)
+        {
+            UpdateMatchDescendants(rowState);
+        }
 
         auto& matchingChildren = rowState->m_matchingDescendants;
         for (auto childIter = matchingChildren.begin(); childIter != matchingChildren.end(); /* omitted */)
@@ -496,6 +514,21 @@ namespace AZ::DocumentPropertyEditor
                 ++childIter;
             }
         }
+
+        bool hasMatchingAncestor = false;
+        if (m_includeAllMatchDescendants)
+        {
+            MatchInfoNode* ancestor = rowState->m_parentNode;
+            while (ancestor && !hasMatchingAncestor)
+            {
+                if (ancestor->m_matchesSelf)
+                {
+                    hasMatchingAncestor = true;
+                }
+                ancestor = ancestor->m_parentNode;
+            }
+        }
+        rowState->m_hasMatchingAncestor = hasMatchingAncestor;
 
         MatchInfoNode* currState = rowState;
         bool nowMatches = currState->IncludeInFilter();
@@ -529,14 +562,14 @@ namespace AZ::DocumentPropertyEditor
         }
     }
 
-    void RowFilterAdapter::UpdateMatchSubtree(MatchInfoNode* startNode)
+    void RowFilterAdapter::UpdateMatchDescendants(MatchInfoNode* startNode)
     {
         for (auto* childNode : startNode->m_childMatchState)
         {
             if (childNode)
             {
                 UpdateMatchState(childNode);
-                UpdateMatchSubtree(childNode);
+                UpdateMatchDescendants(childNode);
             }
         }
     }
