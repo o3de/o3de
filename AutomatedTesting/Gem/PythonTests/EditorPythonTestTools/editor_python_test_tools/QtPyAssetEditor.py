@@ -45,8 +45,7 @@ class QtPyAssetEditor(QtPyCommon):
 
         assert add_event is not None, "Failed to add new method to script event."
 
-        #add_event.click()
-        QtTest.QTest.simulateEvent(add_event, True, 2, QtCore.Qt.NoModifier, "", False)
+        add_event.click()
 
         helper.wait_for_condition(lambda: self.asset_editor_widget.findChild(
             QtWidgets.QFrame, DEFAULT_SCRIPT_EVENT) is not None, WAIT_TIME_SEC_3)
@@ -54,7 +53,6 @@ class QtPyAssetEditor(QtPyCommon):
         # Categories need to be expanded before we can manipulate fields hidden within
         self.expand_category_by_name(DEFAULT_SCRIPT_EVENT)
         self.expand_category_by_name("Name")
-
         self.update_new_method_name(DEFAULT_METHOD_NAME, method_name)
 
     def update_new_method_name(self, old_method_name: str, updated_method_name: str) -> None:
@@ -64,8 +62,6 @@ class QtPyAssetEditor(QtPyCommon):
         param: method_name: the name you want to give the new method.
 
         Returns: None
-        Note: I might want to make this function more robust and seek out a method by name instead of just looking for
-        methods with default names
         """
         children = self.asset_editor_row_container.findChildren(QtWidgets.QFrame, "Name")
         method_name_field = ""
@@ -80,27 +76,26 @@ class QtPyAssetEditor(QtPyCommon):
         assert old_method_exists, f"Failed to find method {old_method_name} in Asset Editor."
         assert method_name_field == updated_method_name, "Failed to set method name in Asset Editor."
 
-    def delete_method_from_script_events(self) -> None:
+    def delete_method_from_script_events(self, ) -> None:
         """
-        Function for deleting a script from an open script event file.
+        Function for deleting a method from an open script event file.
+
+        params method_name: The name of the method you want to remove.
 
         returns None
 
-        Note: I want to make this function more useful by allowing the user to delete a specific method by name. I
-        tried to do this but couldn't find a way to seek out a specific method then click its associated delete button.
-        The Qobjects don't seem to be organized in a way for you to easily drill down from one into the next nested
-        object.
+        Note: I want to make this function seek out the script event function by name. Unfortunately, the list of Qobjects
+        isn't organized in a way to make it easy to find and is regenerated every time a new method is added, preventing
+        us from naming/maintaining a handle on a specific object.
 
         The name of the delete button is also bugged. It should have something more meaningful than  "".
         Refer to github issue #12262. If it has been resolved and this comment still exists please update
         the QToolButton name
         """
-
         methods = self.asset_editor_row_container.findChildren(QtWidgets.QFrame, DEFAULT_SCRIPT_EVENT)
         for method in methods:
             if method.findChild(QtWidgets.QToolButton, ""):
                 method.findChild(QtWidgets.QToolButton, "").click()
-                break
 
     def save_script_event_file(self, file_path: str) -> None:
         """
@@ -145,16 +140,11 @@ class QtPyAssetEditor(QtPyCommon):
         returns: None
         """
         children = self.asset_editor_row_container.findChildren(QtWidgets.QFrame, category_name)
-        assert children, f"Category row by name {category_name} was not found."
+        assert children is not None, f"Category row by name {category_name} was not found."
         for child in children:
             check_box = child.findChild(QtWidgets.QCheckBox)
             if check_box and not check_box.isChecked():
                 check_box.click()
-
-                #check_box.setCheckState(QtCore.Qt.Checked)
-
-                #QtTest.QTest.mouseClick(check_box, QtCore.Qt.LeftButton, QtCore.Qt.NoModifier)
-
 
     def gather_row_container_types(self):
         children = self.asset_editor_row_container.children()

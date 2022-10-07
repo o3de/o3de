@@ -22,23 +22,43 @@ from base import TestAutomationBase
 TEST_DIRECTORY = os.path.dirname(__file__)
 
 #Bat
+@pytest.mark.REQUIRES_gpu
 @pytest.mark.SUITE_periodic
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestScriptCanvas(EditorTestSuite):
+
+    #needs editor to run doesn't pass
+    @pytest.mark.REQUIRES_gpu
+    class test_ScriptEvent_AddRemoveMethod_UpdatesInSC(EditorBatchedTest):
+        import ScriptEvent_AddRemoveMethod_UpdatesInSC as test_module
+
     class test_NodePalette_HappyPath_CanSelectNode(EditorBatchedTest):
         import NodePalette_HappyPath_CanSelectNode as test_module
 
     class test_EditMenu_Default_UndoRedo(EditorBatchedTest):
         import EditMenu_Default_UndoRedo as test_module
 
-    class test_ScriptEvent_AddRemoveMethod_UpdatesInSC(EditorBatchedTest):
-        import ScriptEvent_AddRemoveMethod_UpdatesInSC as test_module
-
+@pytest.mark.REQUIRES_gpu
 @pytest.mark.SUITE_periodic
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomation(TestAutomationBase):
+
+    #needs editor to run doesn't pass
+    @pytest.mark.REQUIRES_gpu
+    def test_ScriptEvent_AddRemoveMethod_UpdatesInSC(self, request, workspace, editor, launcher_platform, project):
+        def teardown():
+            file_system.delete(
+                [os.path.join(workspace.paths.project(), "ScriptCanvas", "test_file.scriptevent")], True, True
+            )
+
+        request.addfinalizer(teardown)
+        file_system.delete(
+            [os.path.join(workspace.paths.project(), "ScriptCanvas", "test_file.scriptevent")], True, True
+        )
+        from . import ScriptEvent_AddRemoveMethod_UpdatesInSC as test_module
+        self._run_test(request, workspace, editor, test_module)
 
     def test_Pane_HappyPath_OpenCloseSuccessfully(self, request, workspace, editor, launcher_platform):
         from . import Pane_HappyPath_OpenCloseSuccessfully as test_module
@@ -129,23 +149,6 @@ class TestAutomation(TestAutomationBase):
 @pytest.mark.parametrize("launcher_platform", ["windows_editor"])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestScriptCanvasTests(object):
-    """
-    The following tests use hydra_test_utils.py to launch the editor and validate the results.
-    """
-    def test_ogtest(self, request, editor, launcher_platform):
-
-        expected_lines = [
-            "",
-        ]
-        hydra.launch_and_validate_results(
-            request,
-            TEST_DIRECTORY,
-            editor,
-            "ogtest.py",
-            expected_lines,
-            auto_test_mode=False,
-            timeout=60,
-        )
 
     def test_ScriptEvents_Default_SendReceiveSuccessfully(self, request, editor, launcher_platform):
 

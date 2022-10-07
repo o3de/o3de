@@ -52,8 +52,6 @@ def ScriptEvent_AddRemoveMethod_UpdatesInSC():
     qtpy_asset_editor.click_menu_bar_option(SCRIPT_EVENT_UI)
 
     qtpy_asset_editor.add_method_to_script_event(f"{NODE_TEST_METHOD}_0")
-    qtpy_asset_editor.gather_row_container_types()
-    """
     qtpy_asset_editor.add_method_to_script_event(f"{NODE_TEST_METHOD}_1")
 
     # 3) Save the script event file to disk
@@ -62,7 +60,7 @@ def ScriptEvent_AddRemoveMethod_UpdatesInSC():
 
     # 4) Open script canvas editor and search the node palette for our new method
     qtpy_o3de_editor.open_script_canvas()
-    node_exists = qtpy_o3de_editor.sc_editor.node_palette.search_for_node(f"{NODE_TEST_METHOD}_1") is not None
+    node_exists = qtpy_o3de_editor.sc_editor.node_palette.search_for_node(f"{NODE_TEST_METHOD}_0") is not None
     Report.critical_result(Tests.node_exists, node_exists)
 
     # 5) Delete one of the methods from script event
@@ -76,9 +74,13 @@ def ScriptEvent_AddRemoveMethod_UpdatesInSC():
     # 7) close script canvas editor and asset editor
     qtpy_o3de_editor.close_script_canvas()
     qtpy_o3de_editor.close_asset_editor()
-    """
 
 
 if __name__ == "__main__":
+
+    import ImportPathHelper as imports
+
+    imports.init()
     from editor_python_test_tools.utils import Report
+
     Report.start_test(ScriptEvent_AddRemoveMethod_UpdatesInSC)
