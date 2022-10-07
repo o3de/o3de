@@ -27,9 +27,198 @@
 
 namespace GradientSignal
 {
-    //! Class that tracks data for undoing/redoing a paint stroke.
-    //! This is currently a naive implementation that just tracks a list of every point that's been modified during the paint stroke.
-    //! Duplicate positions will get recorded multiple times.
+    //! Tracks all of the image modifications for a single continuous paint stroke. Since most modifications will only affect a small
+    //! portion of an image, this buffer divides the total image space into fixed-size tiles and only creates an individual tile
+    //! buffer when at least one pixel in that tile's space is modified.
+    //! While painting the paint stroke, this buffer caches all of the unmodified gradient values and the modifications for each
+    //! modified pixel. The buffer is used to enforce that each pixel can only be modified once per brush stroke. If we modified each
+    //! pixel under the brush on each mouse movement, small movements would cause the same pixels to accumulate multiple changes in one
+    //! stroke, which creates very inconsistent and unexpected results.
+    //! After the paint stroke finishes, the buffer ownership is handed over to the undo/redo system so that it can be used to undo/redo
+    //! each individual paint stroke.
+    class ImageTileBuffer
+    {
+    public:
+        ImageTileBuffer(uint32_t imageWidth, uint32_t imageHeight, AZ::EntityId imageGradientEntityId)
+            : m_imageGradientEntityId(imageGradientEntityId)
+            // Calculate the number of image tiles in each direction that we'll need, rounding up so that we create an image tile
+            // for fractional tiles as well.
+            , m_numTilesX((imageWidth + ImageTileSize - 1) / ImageTileSize)
+            , m_numTilesY((imageHeight + ImageTileSize - 1) / ImageTileSize)
+        {
+            // Create empty entries for every tile. Each entry is just a null pointer at the start, so the memory overhead
+            // of these empty entries at 32x32 pixels per tile, a 1024x1024 image will have 8 KB of overhead.
+            m_paintedImageTiles.resize(m_numTilesX * m_numTilesY);
+        }
+
+        ~ImageTileBuffer() = default;
+
+        //! Returns true if we don't have any pixel modifications, false if we do.
+        bool Empty() const
+        {
+            return !m_modifiedAnyPixels;
+        }
+
+        //! Get the original gradient value for the given pixel index.
+        //! Since we "lazy-cache" our unmodified image as tiles, create it here the first time we request a pixel from a tile.
+        float GetOriginalPixelValue(const PixelIndex& pixelIndex)
+        {
+            uint32_t tileIndex = GetTileIndex(pixelIndex);
+            uint32_t pixelTileIndex = GetPixelTileIndex(pixelIndex);
+
+            // Create the tile if it doesn't already exist.
+            CreateImageTile(tileIndex);
+
+            return m_paintedImageTiles[tileIndex]->first[pixelTileIndex];
+        }
+
+        //! Set a modified gradient value for the given pixel index.
+        void SetModifiedPixelValue(const PixelIndex& pixelIndex, float modifiedValue)
+        {
+            uint32_t tileIndex = GetTileIndex(pixelIndex);
+            uint32_t pixelTileIndex = GetPixelTileIndex(pixelIndex);
+
+            AZ_Assert(m_paintedImageTiles[tileIndex], "Cached image tile hasn't been created yet!");
+
+            m_paintedImageTiles[tileIndex]->second[pixelTileIndex] = modifiedValue;
+        }
+
+        //! For undo/redo operations, apply the buffer of changes back to the image gradient.
+        void ApplyChangeBuffer(bool undo)
+        {
+            AZStd::array<PixelIndex, ImageTileSize * ImageTileSize> pixelIndices;
+
+            for (int32_t tileIndex = 0; tileIndex < m_paintedImageTiles.size(); tileIndex++)
+            {
+                // If we never created this tile, skip it and move on.
+                if (m_paintedImageTiles[tileIndex] == nullptr)
+                {
+                    continue;
+                }
+
+                // Create an array of pixel indices for every pixel in this tile.
+                PixelIndex startIndex = GetStartPixelIndex(tileIndex);
+                uint32_t index = 0;
+                for (int16_t y = 0; y < ImageTileSize; y++)
+                {
+                    for (int16_t x = 0; x < ImageTileSize; x++)
+                    {
+                        pixelIndices[index++] = PixelIndex(startIndex.first + x, startIndex.second + y);
+                    }
+                }
+
+                // Set the image gradient values for this tile either to the original or the modified values.
+                // It's possible that not every pixel in the tile was modified, but it's cheaper just to update per-tile
+                // than to track each individual pixel in the tile and set them individually.
+                if (undo)
+                {
+                    ImageGradientModificationBus::Event(
+                        m_imageGradientEntityId,
+                        &ImageGradientModificationBus::Events::SetPixelValuesByPixelIndex,
+                        pixelIndices,
+                        m_paintedImageTiles[tileIndex]->first);
+                }
+                else
+                {
+                    ImageGradientModificationBus::Event(
+                        m_imageGradientEntityId,
+                        &ImageGradientModificationBus::Events::SetPixelValuesByPixelIndex,
+                        pixelIndices,
+                        m_paintedImageTiles[tileIndex]->second);
+                }
+            }
+        }
+
+    private:
+        //! Given a pixel index, get the tile index that it maps to.
+        uint32_t GetTileIndex(const PixelIndex& pixelIndex) const
+        {
+            return ((pixelIndex.second / ImageTileSize) * m_numTilesX) + (pixelIndex.first / ImageTileSize);
+        }
+
+        //! Given a tile index, get the absolute start pixel index for the upper left corner of the tile.
+        PixelIndex GetStartPixelIndex(uint32_t tileIndex) const
+        {
+            return PixelIndex((tileIndex % m_numTilesX) * ImageTileSize, (tileIndex / m_numTilesX) * ImageTileSize);
+        }
+
+        // Given a pixel index, get the relative pixel index within the tile
+        uint32_t GetPixelTileIndex(const PixelIndex& pixelIndex) const
+        {
+            uint32_t xIndex = pixelIndex.first % ImageTileSize;
+            uint32_t yIndex = pixelIndex.second % ImageTileSize;
+
+            return (yIndex * ImageTileSize) + xIndex;
+        }
+
+        //! Create an image tile initialized with the image gradient values if it doesn't already exist.
+        void CreateImageTile(uint32_t tileIndex)
+        {
+            // If it already exists, there's nothing more to do.
+            if (m_paintedImageTiles[tileIndex])
+            {
+                return;
+            }
+
+            auto imageTile = AZStd::make_unique<ImageTile>();
+
+            // Initialize the list of pixel indices for this tile.
+            AZStd::array<PixelIndex, ImageTileSize * ImageTileSize> pixelIndices;
+            PixelIndex startIndex = GetStartPixelIndex(tileIndex);
+            for (int16_t index = 0; index < (ImageTileSize * ImageTileSize); index++)
+            {
+                pixelIndices[index] = PixelIndex(startIndex.first + (index % ImageTileSize), startIndex.second + (index / ImageTileSize));
+            }
+
+            AZ_Assert(imageTile->first.size() == pixelIndices.size(), "ImageTile and PixelIndices are out of sync.");
+
+            auto& [originalValues, modifiedValues] = (*imageTile);
+
+            // Read all of the original gradient values into the image tile buffer.
+            ImageGradientModificationBus::Event(
+                m_imageGradientEntityId, &ImageGradientModificationBus::Events::GetPixelValuesByPixelIndex, pixelIndices, originalValues);
+
+            // Initialize the modified value buffer with the original values. This way we can always undo/redo an entire tile at a time
+            // without tracking which pixels in the tile have been modified.
+            modifiedValues = originalValues;
+
+            m_paintedImageTiles[tileIndex] = AZStd::move(imageTile);
+
+            // If we create a tile, we'll use that as shorthand for tracking that changed data exists.
+            m_modifiedAnyPixels = true;
+        }
+
+        //! Size of each modified image tile that we'll cache off.
+        //! This size is chosen somewhat arbitrarily to keep the number of tiles balanced at a reasonable size.
+        static inline constexpr uint32_t ImageTileSize = 32;
+
+        //! Keeps track of all the unmodified and modified gradient values for an NxN tile.
+        //! We store it a pair of arrays instead of an array of pairs for better compatibility with the ImageGradient APIs,
+        //! where we can just pass in a full array of values to update a full tile of values at once.
+        using ImageTile = AZStd::pair<
+                AZStd::array<float, ImageTileSize * ImageTileSize>,         // Unmodified data
+                AZStd::array<float, ImageTileSize * ImageTileSize>>;        // Modified data
+
+        //! A vector of pointers to image tiles.
+        //! All of the tile pointer entries are always expected to exist, even if the pointers are null.
+        using ImageTileList = AZStd::vector<AZStd::unique_ptr<ImageTile>>;
+
+        //! The actual storage for the set of image tile pointers. Image tiles get created on-demand whenever pixels in them change.
+        //! This ultimately contains all of the changes for one continuous brush stroke.
+        ImageTileList m_paintedImageTiles;
+
+        //! The number of tiles we're creating in the X and Y directions to contain a full Image Gradient.
+        const uint32_t m_numTilesX = 0;
+        const uint32_t m_numTilesY = 0;
+
+        //! The entity ID of the Image Gradient that we're modifying.
+        const AZ::EntityId m_imageGradientEntityId;
+
+        //! Track whether or not we've modified any pixels.
+        bool m_modifiedAnyPixels = false;
+    };
+
+    //! Class that tracks the data for undoing/redoing a paint stroke.
     class PaintBrushUndoBuffer : public AzToolsFramework::UndoSystem::URSequencePoint
     {
     public:
@@ -46,118 +235,56 @@ namespace GradientSignal
 
         void Undo() override
         {
-            if (m_pixelIndices.empty())
+            if (m_strokeImageBuffer->Empty())
             {
                 return;
             }
 
-            // Run through our buffer in backwards order to make sure that positions that appear more than once in our list
-            // end with the correct final value.
-            for (int32_t paintIndex = aznumeric_cast<int32_t>(m_pixelIndices.size()) - 1; paintIndex >= 0; paintIndex--)
-            {
-                for (int32_t index = aznumeric_cast<int32_t>(m_pixelIndices[paintIndex]->size()) - 1; index >= 0; index--)
-                {
-                    ImageGradientModificationBus::Event(
-                        m_entityId,
-                        &ImageGradientModificationBus::Events::SetPixelValueByPixelIndex,
-                        m_pixelIndices[paintIndex]->at(index),
-                        m_oldValues[paintIndex]->at(index));
-                }
-            }
+            // Apply the "undo" buffer
+            const bool undo = true;
+            m_strokeImageBuffer->ApplyChangeBuffer(undo);
 
             // Notify anything listening to the image gradient that the modified region has changed.
-            // We expand the region by one pixel in each direction to account for any data affected by bilinear filtering as well.
-            AZ::Aabb expandedDirtyArea = m_dirtyArea.GetExpanded(AZ::Vector3(m_xMetersPerPixel, m_yMetersPerPixel, 0.0f));
             LmbrCentral::DependencyNotificationBus::Event(
-                m_entityId, &LmbrCentral::DependencyNotificationBus::Events::OnCompositionRegionChanged, expandedDirtyArea);
+                m_entityId, &LmbrCentral::DependencyNotificationBus::Events::OnCompositionRegionChanged, m_dirtyArea);
         }
 
         void Redo() override
         {
-            if (m_pixelIndices.empty())
+            if (m_strokeImageBuffer->Empty())
             {
                 return;
             }
 
-            // Replay all the changes in forward order.
-            for (int32_t paintIndex = 0; paintIndex < aznumeric_cast<int32_t>(m_pixelIndices.size()); paintIndex++)
-            {
-                // Replay all the changes in forward order for redo.
-                ImageGradientModificationBus::Event(
-                    m_entityId,
-                    &ImageGradientModificationBus::Events::SetPixelValuesByPixelIndex,
-                    (*m_pixelIndices[paintIndex]),
-                    (*m_newValues[paintIndex]));
-            }
+            // Apply the "redo" buffer
+            const bool undo = false;
+            m_strokeImageBuffer->ApplyChangeBuffer(undo);
 
             // Notify anything listening to the image gradient that the modified region has changed.
-            // We expand the region by one pixel in each direction to account for any data affected by bilinear filtering as well.
-            AZ::Aabb expandedDirtyArea = m_dirtyArea.GetExpanded(AZ::Vector3(m_xMetersPerPixel, m_yMetersPerPixel, 0.0f));
             LmbrCentral::DependencyNotificationBus::Event(
-                m_entityId, &LmbrCentral::DependencyNotificationBus::Events::OnCompositionRegionChanged, expandedDirtyArea);
+                m_entityId, &LmbrCentral::DependencyNotificationBus::Events::OnCompositionRegionChanged, m_dirtyArea);
         }
 
         bool Changed() const override
         {
-            return !m_pixelIndices.empty();
+            return !m_strokeImageBuffer->Empty();
         }
 
-        //! Add points to our undo buffer.
-        void AddPoints(
-            const AZStd::vector<AZ::Vector3>& positions, const AZStd::vector<PixelIndex>& pixelIndices,
-            const AZStd::vector<float>& oldValues, const AZStd::vector<float>& newValues)
+        void SetUndoBufferAndDirtyArea(AZStd::unique_ptr<ImageTileBuffer>&& buffer, const AZ::Aabb& dirtyArea)
         {
-            if (positions.empty())
-            {
-                return;
-            }
-
-            auto pixelIndexEntry = AZStd::make_unique<AZStd::vector<PixelIndex>>();
-            auto oldValuesEntry = AZStd::make_unique<AZStd::vector<float>>();
-            auto newValuesEntry = AZStd::make_unique<AZStd::vector<float>>();
-
-            pixelIndexEntry->reserve(positions.size());
-            oldValuesEntry->reserve(positions.size());
-            newValuesEntry->reserve(positions.size());
-
-            for (size_t index = 0; index < positions.size(); index++)
-            {
-                if (oldValues[index] != newValues[index])
-                {
-                    pixelIndexEntry->emplace_back(pixelIndices[index]);
-                    oldValuesEntry->emplace_back(oldValues[index]);
-                    newValuesEntry->emplace_back(newValues[index]);
-                    m_dirtyArea.AddPoint(positions[index]);
-                }
-            }
-
-            m_pixelIndices.emplace_back(AZStd::move(pixelIndexEntry));
-            m_oldValues.emplace_back(AZStd::move(oldValuesEntry));
-            m_newValues.emplace_back(AZStd::move(newValuesEntry));
-        }
-
-        //! Set the fractional number of meters per pixel in the image.
-        //! With bilinear filtering, world distances up to one pixel away in each direction from what we've changed
-        //! can potentially be affected by our painted pixels, so we use this to expand our dirty area on change notifications.
-        void SetMetersPerPixel(float xAmount, float yAmount)
-        {
-            m_xMetersPerPixel = xAmount;
-            m_yMetersPerPixel = yAmount;
+            m_strokeImageBuffer = AZStd::move(buffer);
+            m_dirtyArea = dirtyArea;
         }
 
     private:
         //! The entity containing the modified image gradient.
-        AZ::EntityId m_entityId;
+        const AZ::EntityId m_entityId;
 
         //! The undo/redo data for the paint strokes.
-        AZStd::vector<AZStd::unique_ptr<AZStd::vector<PixelIndex>>> m_pixelIndices;
-        AZStd::vector<AZStd::unique_ptr<AZStd::vector<float>>> m_oldValues;
-        AZStd::vector<AZStd::unique_ptr<AZStd::vector<float>>> m_newValues;
+        AZStd::unique_ptr<ImageTileBuffer> m_strokeImageBuffer;
 
-        //! Data for tracking the dirty area covered by these changes so that we can broadcast out the change region on undos/redos
+        //! Cached dirty area
         AZ::Aabb m_dirtyArea;
-        float m_xMetersPerPixel = 0.0f;
-        float m_yMetersPerPixel = 0.0f;
     };
 
     EditorImageGradientComponentMode::EditorImageGradientComponentMode(
@@ -246,19 +373,6 @@ namespace GradientSignal
     void EditorImageGradientComponentMode::OnPaintBegin()
     {
         BeginUndoBatch();
-    }
-
-    void EditorImageGradientComponentMode::OnPaintEnd()
-    {
-        EndUndoBatch();
-    }
-
-    void EditorImageGradientComponentMode::OnPaint(const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn, BlendFn& blendFn)
-    {
-        // The OnPaint notification means that we should paint new values into our image gradient.
-        // To do this, we need to calculate the set of world space positions that map to individual pixels in the image,
-        // then ask the paint brush for each position what value we should set that pixel to. Finally, we use those modified
-        // values to change the image gradient.
 
         // Get the spacing to map individual pixels to world space positions.
         AZ::Vector2 imagePixelsPerMeter(0.0f);
@@ -268,22 +382,61 @@ namespace GradientSignal
             return;
         }
 
-        const float xMetersPerPixel = 1.0f / imagePixelsPerMeter.GetX();
-        const float yMetersPerPixel = 1.0f / imagePixelsPerMeter.GetY();
+        m_metersPerPixelX = 1.0f / imagePixelsPerMeter.GetX();
+        m_metersPerPixelY = 1.0f / imagePixelsPerMeter.GetY();
+
+        uint32_t imageWidth = 0;
+        ImageGradientRequestBus::EventResult(imageWidth, GetEntityId(), &ImageGradientRequestBus::Events::GetImageWidth);
+
+        uint32_t imageHeight = 0;
+        ImageGradientRequestBus::EventResult(imageHeight, GetEntityId(), &ImageGradientRequestBus::Events::GetImageHeight);
+
+        // Create the buffer for holding all the changes for a single continuous paint brush stroke.
+        // This buffer will get used during the stroke for ensuring we only affect each pixel once,
+        // and then after the stroke finishes we'll hand the buffer over to the undo system as an undo/redo buffer.
+        m_paintStrokeBuffer = AZStd::make_unique<ImageTileBuffer>(imageWidth, imageHeight, GetEntityId());
+    }
+
+    void EditorImageGradientComponentMode::OnPaintEnd()
+    {
+        AZ_Assert(m_paintBrushUndoBuffer != nullptr, "Undo batch is expected to exist while painting");
+
+        // Expand the dirty region for this brush stroke by one pixel in each direction
+        // to account for any data affected by bilinear filtering as well.
+        m_paintStrokeDirtyRegion.Expand(AZ::Vector3(m_metersPerPixelX, m_metersPerPixelY, 0.0f));
+
+        // Hand over ownership of the paint stroke buffer to the undo/redo buffer.
+        m_paintBrushUndoBuffer->SetUndoBufferAndDirtyArea(AZStd::move(m_paintStrokeBuffer), m_paintStrokeDirtyRegion);
+
+        EndUndoBatch();
+
+        // Make sure we've cleared out our paint stroke data until the next paint stroke begins.
+        m_paintStrokeBuffer.reset();
+        m_metersPerPixelX = 0.0f;
+        m_metersPerPixelY = 0.0f;
+        m_paintStrokeDirtyRegion = AZ::Aabb::CreateNull();
+    }
+
+    void EditorImageGradientComponentMode::OnPaint(const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn, BlendFn& blendFn)
+    {
+        // The OnPaint notification means that we should paint new values into our image gradient.
+        // To do this, we need to calculate the set of world space positions that map to individual pixels in the image,
+        // then ask the paint brush for each position what value we should set that pixel to. Finally, we use those modified
+        // values to change the image gradient.
 
         const AZ::Vector3 minDistances = dirtyArea.GetMin();
         const AZ::Vector3 maxDistances = dirtyArea.GetMax();
         const float zMinDistance = minDistances.GetZ();
 
-        const int32_t xPoints = aznumeric_cast<int32_t>((maxDistances.GetX() - minDistances.GetX()) / xMetersPerPixel);
-        const int32_t yPoints = aznumeric_cast<int32_t>((maxDistances.GetY() - minDistances.GetY()) / yMetersPerPixel);
+        const int32_t xPoints = aznumeric_cast<int32_t>((maxDistances.GetX() - minDistances.GetX()) / m_metersPerPixelX);
+        const int32_t yPoints = aznumeric_cast<int32_t>((maxDistances.GetY() - minDistances.GetY()) / m_metersPerPixelY);
 
         // Calculate the minimum set of world space points that map to those pixels.
         AZStd::vector<AZ::Vector3> points;
         points.reserve(xPoints * yPoints);
-        for (float y = minDistances.GetY(); y <= maxDistances.GetY(); y += yMetersPerPixel)
+        for (float y = minDistances.GetY(); y <= maxDistances.GetY(); y += m_metersPerPixelY)
         {
-            for (float x = minDistances.GetX(); x <= maxDistances.GetX(); x += xMetersPerPixel)
+            for (float x = minDistances.GetX(); x <= maxDistances.GetX(); x += m_metersPerPixelX)
             {
                 points.emplace_back(x, y, zMinDistance);
             }
@@ -302,30 +455,35 @@ namespace GradientSignal
             return;
         }
 
-        // Get the pixel indices and current image gradient values for each position.
+        AZ::EntityId entityId = GetEntityId();
+
+        // Get the pixel indices for each position.
         AZStd::vector<PixelIndex> pixelIndices(validPoints.size());
-        AZStd::vector<float> gradientValues(validPoints.size());
         ImageGradientModificationBus::Event(
-            GetEntityId(), &ImageGradientModificationBus::Events::GetPixelIndicesForPositions, validPoints, pixelIndices);
-        ImageGradientModificationBus::Event(
-            GetEntityId(), &ImageGradientModificationBus::Events::GetPixelValuesByPixelIndex, pixelIndices, gradientValues);
+            entityId, &ImageGradientModificationBus::Events::GetPixelIndicesForPositions, validPoints, pixelIndices);
 
-        AZ_Assert(m_paintBrushUndoBuffer != nullptr, "Undo batch is expected to exist while painting");
-        m_paintBrushUndoBuffer->SetMetersPerPixel(xMetersPerPixel, yMetersPerPixel);
-
-        // For each position, blend the original gradient value with the paintbrush value
+        // Create a buffer for all of the modified, blended gradient values.
         AZStd::vector<float> paintedValues;
-        paintedValues.reserve(validPoints.size());
+        paintedValues.reserve(pixelIndices.size());
 
-        for (size_t index = 0; index < validPoints.size(); index++)
+        // For each pixel, blend the original gradient value with the paintbrush value.
+        // We use the paint stroke buffer instead of the gradient directly so that we only modify each pixel
+        // once per paint stroke instead of accumulating changes every time the brush touches the same pixels in the same stroke.
+        for (size_t index = 0; index < pixelIndices.size(); index++)
         {
-            paintedValues.emplace_back(blendFn(gradientValues[index], intensities[index], opacities[index]));
+            // Blend the pixel and store it back into our paint stroke buffer.
+            float gradientValue = m_paintStrokeBuffer->GetOriginalPixelValue(pixelIndices[index]);
+            float blendedValue = blendFn(gradientValue, intensities[index], opacities[index]);
+            m_paintStrokeBuffer->SetModifiedPixelValue(pixelIndices[index], blendedValue);
+
+            // Store the blended value into a second buffer that we'll use to immediately modify the image gradient.
+            paintedValues.emplace_back(blendedValue);
+
+            // Also track the overall dirty region for everything we modify.
+            m_paintStrokeDirtyRegion.AddPoint(validPoints[index]);
         }
 
-        // For each position, save the new value into the undo buffer
-        m_paintBrushUndoBuffer->AddPoints(validPoints, pixelIndices, gradientValues, paintedValues);
-
-        // Finally, modify the image with all of the changed values
+        // Modify the image gradient with all of the changed values
         ImageGradientModificationBus::Event(
             GetEntityId(), &ImageGradientModificationBus::Events::SetPixelValuesByPixelIndex,
             pixelIndices,
@@ -335,7 +493,7 @@ namespace GradientSignal
         // Because Image Gradients support bilinear filtering, we need to expand our dirty area by an extra pixel in each direction
         // so that the effects of the painted values on adjacent pixels are taken into account when refreshing.
         AZ::Aabb expandedDirtyArea(dirtyArea);
-        expandedDirtyArea.Expand(AZ::Vector3(xMetersPerPixel, yMetersPerPixel, 0.0f));
+        expandedDirtyArea.Expand(AZ::Vector3(m_metersPerPixelX, m_metersPerPixelY, 0.0f));
         LmbrCentral::DependencyNotificationBus::Event(
             GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionRegionChanged, expandedDirtyArea);
     }
