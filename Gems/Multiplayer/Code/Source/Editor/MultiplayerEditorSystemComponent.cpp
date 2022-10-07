@@ -63,6 +63,7 @@ namespace Multiplayer
         "Whether Editor should print its server's logs to the Editor console. Useful for seeing server prints, warnings, and errors without having to open up the server console or server.log file. Note: Must be set before entering the editor play mode.");
 
     AZ_CVAR_EXTERNED(uint16_t, editorsv_port);
+    AZ_CVAR_EXTERNED(bool, bg_enableNetworkingMetrics);
     
     //////////////////////////////////////////////////////////////////////////
     void PyEnterGameMode()
@@ -300,11 +301,12 @@ namespace Multiplayer
         }
 
         processLaunchInfo.m_commandlineParameters = AZStd::string::format(
-            R"("%s" --project-path "%s" --editorsv_isDedicated true --bg_ConnectToAssetProcessor false --rhi "%s" --editorsv_port %i)",
+            R"("%s" --project-path "%s" --editorsv_isDedicated true --bg_ConnectToAssetProcessor false --rhi "%s" --editorsv_port %i --bg_enableNetworkingMetrics %i)",
             serverPath.c_str(),
             AZ::Utils::GetProjectPath().c_str(),
             server_rhi.GetCStr(),
-            static_cast<uint16_t>(editorsv_port)
+            static_cast<uint16_t>(editorsv_port),
+            bg_enableNetworkingMetrics ? 1 : 0
         );
         processLaunchInfo.m_showWindow = !editorsv_hidden;
         processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_NORMAL;

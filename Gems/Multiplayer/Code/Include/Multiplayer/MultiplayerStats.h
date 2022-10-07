@@ -8,9 +8,10 @@
 
 #pragma once
 
-#include <AzCore/Time/ITime.h>
-#include <AzCore/std/containers/vector.h>
+#include <AzCore/EBus/ScheduledEvent.h>
 #include <AzCore/std/containers/array.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/Time/ITime.h>
 #include <Multiplayer/MultiplayerTypes.h>
 
 namespace AzNetworking
@@ -22,6 +23,9 @@ namespace Multiplayer
 {
     struct MultiplayerStats
     {
+        MultiplayerStats() { m_metricsEvent.Enqueue(AZ::TimeMs{ 1000 }, true); }
+        ~MultiplayerStats() { m_metricsEvent.RemoveFromQueue(); }
+
         uint64_t m_entityCount = 0;
         uint64_t m_clientConnectionCount = 0;
         uint64_t m_serverConnectionCount = 0;
@@ -57,6 +61,7 @@ namespace Multiplayer
         void RecordPropertyReceived(NetComponentId netComponentId, PropertyIndex propertyId, uint32_t totalBytes);
         void RecordRpcSent(AZ::EntityId entityId, const char* entityName, NetComponentId netComponentId, RpcIndex rpcId, uint32_t totalBytes);
         void RecordRpcReceived(AZ::EntityId entityId, const char* entityName, NetComponentId netComponentId, RpcIndex rpcId, uint32_t totalBytes);
+        void RecordFrameTime(AZ::TimeUs networkFrameTime);
         void TickStats(AZ::TimeMs metricFrameTimeMs);
 
         Metric CalculateComponentPropertyUpdateSentMetrics(NetComponentId netComponentId) const;
@@ -93,5 +98,15 @@ namespace Multiplayer
         };
 
         void ConnectHandlers(EventHandlers& handlers);
+
+    private:
+        AZ::TimeUs m_accumulatedNetworkTimeSinceLastMetric = AZ::Time::ZeroTimeUs;
+        uint64_t m_framesSinceLastMetric = 0;
+
+        void RecordMetrics();
+        AZ::ScheduledEvent m_metricsEvent{[this]()
+        {
+            RecordMetrics();
+        }, AZ::Name("MultiplayerStats")};
     };
 }

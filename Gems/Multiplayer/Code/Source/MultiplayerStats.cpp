@@ -6,7 +6,11 @@
  *
  */
 
+#include <AzCore/Metrics/IEventLogger.h>
+#include <AzCore/Metrics/IEventLoggerFactory.h>
 #include <Multiplayer/MultiplayerStats.h>
+
+#pragma optimize("", off)
 
 namespace Multiplayer
 {
@@ -253,4 +257,40 @@ namespace Multiplayer
         handlers.m_rpcSent.Connect(m_events.m_rpcSent);
         handlers.m_rpcReceived.Connect(m_events.m_rpcReceived);
     }
+
+    void MultiplayerStats::RecordFrameTime(AZ::TimeUs networkFrameTime)
+    {
+        m_framesSinceLastMetric++;
+        m_accumulatedNetworkTimeSinceLastMetric += networkFrameTime;
+    }
+
+    void MultiplayerStats::RecordMetrics()
+    {
+        if (const auto* eventLoggerFactory = AZ::Interface<AZ::Metrics::IEventLoggerFactory>::Get())
+        {
+            if (auto* eventLogger = eventLoggerFactory->FindEventLogger(NetworkingMetricsId))
+            {
+                using EventObjectStorage = AZStd::fixed_vector<AZ::Metrics::EventField, 8>;
+
+                EventObjectStorage argsContainer;
+                const uint64_t averageFrameTime = m_framesSinceLastMetric > 0 ?
+                    static_cast<uint64_t>(m_accumulatedNetworkTimeSinceLastMetric) / m_framesSinceLastMetric : 0;
+                argsContainer.emplace_back("AverageNetworkFrameTimeUs", averageFrameTime);
+                argsContainer.emplace_back("NumEntities", m_entityCount);
+
+                m_framesSinceLastMetric = 0;
+                m_accumulatedNetworkTimeSinceLastMetric = AZ::Time::ZeroTimeUs;
+
+                AZ::Metrics::InstantArgs instantArgs;
+                instantArgs.m_name = "Metrics Event";
+                instantArgs.m_cat = "Networking";
+                instantArgs.m_args = argsContainer;
+                instantArgs.m_scope = AZ::Metrics::InstantEventScope::Process;
+
+                eventLogger->RecordInstantEvent(instantArgs);
+            }
+        }
+    }
 }
+
+#pragma optimize("", on)
