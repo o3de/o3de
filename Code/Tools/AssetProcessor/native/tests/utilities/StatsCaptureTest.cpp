@@ -7,6 +7,7 @@
  */
 
 #include <native/tests/AssetProcessorTest.h>
+#include <native/tests/MockAssetDatabaseRequestsHandler.h>
 #include <native/utilities/StatsCapture.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
@@ -14,7 +15,6 @@
 #include <AzCore/Debug/TraceMessageBus.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
-#include <QTemporaryDir>
 #include <QDir>
 #include <QString>
 
@@ -25,47 +25,11 @@
 
 namespace AssetProcessor
 {
-    class StatsCaptureMockDatabaseLocationListener
-        : public AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Handler
-    {
-    public:
-        MOCK_METHOD1(GetAssetDatabaseLocation, bool(AZStd::string&));
-    };
-
     class StatsCaptureTest
         : public AssetProcessorTest
     {
     private:
-        //! These private members establish the connection to a temporary asset database, which StatsCapture may persist stat entries to.
-        QTemporaryDir m_temporaryDir;
-        AZStd::string m_temporaryDatabasePath;
-        testing::NiceMock<StatsCaptureMockDatabaseLocationListener> m_databaseLocationListener;
-
-    public:
-        void SetUp() override
-        {
-            AssetProcessorTest::SetUp();
-
-            //! Create a temporary directory to save temporary asset database.
-            //! Setup listener so AseetDatabaseConnection will connect to that temporary database.
-            {
-                using namespace testing;
-
-                QString canonicalTempDirPath = AssetUtilities::NormalizeDirectoryPath(QDir(m_temporaryDir.path()).canonicalPath());
-                m_temporaryDatabasePath = QDir(canonicalTempDirPath).absoluteFilePath("test_database.sqlite").toUtf8().data();
-
-                m_databaseLocationListener.BusConnect();
-                ON_CALL(m_databaseLocationListener, GetAssetDatabaseLocation(_))
-                    .WillByDefault(DoAll(SetArgReferee<0>(m_temporaryDatabasePath.c_str()), Return(true)));
-            }
-        }
-
-        void TearDown() override
-        {
-            m_databaseLocationListener.BusDisconnect();
-
-            AssetProcessorTest::TearDown();
-        }
+        MockAssetDatabaseRequestsHandler m_databaseLocationListener;
     };
 
     // Its okay to talk to this system when unintialized, you can gain some perf
