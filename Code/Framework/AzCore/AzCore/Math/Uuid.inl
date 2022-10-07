@@ -18,135 +18,31 @@
 namespace AZ::UuidInternal
 {
     // Lookup table to convert ascii values for 0-9, a-f, and A-F to hex values in the range 0-15.
-    constexpr static auto CharToHexDigit = AZStd::array<AZStd::byte, 128>(
-                                                                        { AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::byte(0), // '0'
-                                                                          AZStd::byte(1), // '1'
-                                                                          AZStd::byte(2), // '2'
-                                                                          AZStd::byte(3), // '3'
-                                                                          AZStd::byte(4), // '4'
-                                                                          AZStd::byte(5), // '5'
-                                                                          AZStd::byte(6), // '6'
-                                                                          AZStd::byte(7), // '7'
-                                                                          AZStd::byte(8), // '8'
-                                                                          AZStd::byte(9), // '9'
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::byte(10), // 'A'
-                                                                          AZStd::byte(11), // 'B'
-                                                                          AZStd::byte(12), // 'C'
-                                                                          AZStd::byte(13), // 'D'
-                                                                          AZStd::byte(14), // 'E'
-                                                                          AZStd::byte(15), // 'F'
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::byte(10), // 'a'
-                                                                          AZStd::byte(11), // 'b'
-                                                                          AZStd::byte(12), // 'c'
-                                                                          AZStd::byte(13), // 'd'
-                                                                          AZStd::byte(14), // 'e'
-                                                                          AZStd::byte(15), // 'f'
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max(),
-                                                                          AZStd::numeric_limits<AZStd::byte>::max() });
+    // Lambda expression populates the CharToHexDigit lookup table at compile time(it can't be invoked at runtime)
+    // It is invoked immediately
+    inline constexpr auto CharToHexDigit = []() constexpr
+    {
+        AZStd::array<AZStd::byte, 256> charToHexTable{};
+        AZStd::fill(charToHexTable.begin(), charToHexTable.end(), AZStd::numeric_limits<AZStd::byte>::max());
+        // Fill characters '0' - '9' with the byte range of 0 - 9
+        for (size_t i = 0; i < 10; ++i)
+        {
+            charToHexTable['0' + i] = AZStd::byte(i);
+        }
+        // Fill characters 'A' - 'F' with the byte range of 10-15(for hex digits)
+        for (size_t i = 0; i < 6; ++i)
+        {
+            charToHexTable['A' + i] = AZStd::byte(10 + i);
+        }
+        // Fill characters 'a' - 'f' with the byte range of 10-15(for hex digits)
+        for (size_t i = 0; i < 6; ++i)
+        {
+            charToHexTable['a' + i] = AZStd::byte(10 + i);
+        }
+
+        return charToHexTable;
+    }
+    ();
 
     constexpr AZStd::byte GetValue(char c)
     {
