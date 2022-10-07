@@ -45,7 +45,9 @@ namespace AzToolsFramework
         AZStd::string m_description; //!< The description for the Action.
         AZStd::string m_category; //!< The category for the Action to be used in UI.
         AZStd::string m_iconPath; //!< The qrc path to the icon to be used in UI.
-        AZStd::vector<AZStd::string> m_modes = {}; //! Determines in which mode this action should be accessible. 
+        //! Determines in which mode this action should be accessible.
+        //! Empty means action will always appear regardless of the mode.
+        AZStd::vector<AZStd::string> m_modes = {}; 
         bool m_hideFromMenusWhenDisabled = true; //!< Determines whether this actions should be hidden in menus when disabled.
         bool m_hideFromToolBarsWhenDisabled = false; //!< Determines whether this actions should be hidden in toolbars when disabled.
     };
@@ -258,7 +260,7 @@ namespace AzToolsFramework
         //! @param modeIdentifier The action context mode identifier to add to the action.
         //! @param actionIdentifier The action to set the mode to.
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
-        virtual ActionManagerOperationResult SetModeToAction(
+        virtual ActionManagerOperationResult AssignModeToAction(
             const AZStd::string& modeIdentifier, const AZStd::string& actionIdentifier) = 0;
 
         //! Sets the active mode for an action context via its identifier.

@@ -18,9 +18,10 @@
 
 namespace AzToolsFramework
 {
-    // TODO:  SOLVE ISSUES WITH REDEFINITION
     constexpr const char* DefaultModeIdentifier = "default";
 
+    //! Editor Action Context class definition.
+    //! Identifies a collection of Actions in the context of 
     class EditorActionContext
         : public QObject
     {
@@ -30,14 +31,14 @@ namespace AzToolsFramework
         EditorActionContext() = default;
         EditorActionContext(AZStd::string identifier, AZStd::string name, AZStd::string parentIdentifier, QWidget* widget);
 
-        bool HasMode(const AZStd::string& modeIdentifier);
+        bool HasMode(const AZStd::string& modeIdentifier) const;
         void AddMode(AZStd::string modeIdentifier);
 
-        AZStd::string GetActiveMode();
+        AZStd::string GetActiveMode() const;
         bool SetActiveMode(AZStd::string modeIdentifier);
 
         void AddAction(AZStd::string actionIdentifier);
-        void GetActionIdentifiers(const AZStd::function<bool(const AZStd::string&)>& callback) const;
+        void IterateActionIdentifiers(const AZStd::function<bool(const AZStd::string&)>& callback) const;
 
         QWidget* GetWidget();
 

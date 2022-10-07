@@ -168,7 +168,7 @@ namespace AzToolsFramework
         }
     }
 
-    void EditorAction::SetMode(AZStd::string modeIdentifier)
+    void EditorAction::AssignToMode(AZStd::string modeIdentifier)
     {
         m_modes.emplace(AZStd::move(modeIdentifier));
         Update();
@@ -239,7 +239,7 @@ namespace AzToolsFramework
         m_action->setToolTip(toolTipText.c_str());
     }
 
-    bool EditorAction::IsEnabledInCurrentMode()
+    bool EditorAction::IsEnabledInCurrentMode() const
     {
         auto outcome = s_actionManagerInterface->GetActiveActionContextMode(m_contextIdentifier);
 

@@ -20,6 +20,8 @@ namespace AzToolsFramework
 {
     class ActionManagerInterface;
 
+    //! Editor Action class definitions.
+    //! Wraps a QAction and provides additional metadata.
     class EditorAction
     {
     public:
@@ -63,7 +65,7 @@ namespace AzToolsFramework
         void SetEnabledStateCallback(AZStd::function<bool()> enabledStateCallback);
 
         //! Adds a mode to the list of modes this action is enabled in.
-        void SetMode(AZStd::string modeIdentifier);
+        void AssignToMode(AZStd::string modeIdentifier);
 
         //! Returns true if the EditorAction has an enabled state callback set, false otherwise.
         bool HasEnabledStateCallback() const;
@@ -74,14 +76,14 @@ namespace AzToolsFramework
         //! Returns whether the action is checkable.
         bool IsCheckable();
 
-        //! Calls the callbacks to update the action's checked and enabled state, if any.
+        //! Updates the action's checked and enabled state via the appropriate callbacks, if any.
         void Update();
 
     private:
         void UpdateIconFromPath();
         void UpdateTooltipText();
 
-        bool IsEnabledInCurrentMode();
+        bool IsEnabledInCurrentMode() const;
 
         QAction* m_action = nullptr;
         QIcon m_icon;
@@ -100,7 +102,7 @@ namespace AzToolsFramework
         bool m_hideFromToolBarsWhenDisabled;
 
         // If the modes vector is empty, the action will be enabled in all modes.
-        AZStd::unordered_set<AZStd::string> m_modes = {};
+        AZStd::unordered_set<AZStd::string> m_modes;
 
         inline static ActionManagerInterface* s_actionManagerInterface = nullptr;
     };

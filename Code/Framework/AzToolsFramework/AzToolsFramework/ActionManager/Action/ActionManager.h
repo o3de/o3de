@@ -79,7 +79,7 @@ namespace AzToolsFramework
             const AZStd::string& widgetActionIdentifier, const AZStd::string& category) override;
         ActionManagerOperationResult RegisterActionContextMode(
             const AZStd::string& actionContextIdentifier, const AZStd::string& modeIdentifier) override;
-        ActionManagerOperationResult SetModeToAction(
+        ActionManagerOperationResult AssignModeToAction(
             const AZStd::string& modeIdentifier, const AZStd::string& actionIdentifier) override;
         ActionManagerOperationResult SetActiveActionContextMode(
             const AZStd::string& actionContextIdentifier, const AZStd::string& modeIdentifier) override;

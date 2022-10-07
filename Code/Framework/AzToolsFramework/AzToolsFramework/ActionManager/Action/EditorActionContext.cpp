@@ -19,7 +19,7 @@ namespace AzToolsFramework
     {
     }
 
-    bool EditorActionContext::HasMode(const AZStd::string& modeIdentifier)
+    bool EditorActionContext::HasMode(const AZStd::string& modeIdentifier) const
     {
         return m_modeIdentifiers.contains(modeIdentifier);
     }
@@ -29,7 +29,7 @@ namespace AzToolsFramework
         m_modeIdentifiers.emplace(AZStd::move(modeIdentifier));
     }
 
-    AZStd::string EditorActionContext::GetActiveMode()
+    AZStd::string EditorActionContext::GetActiveMode() const
     {
         return m_activeModeIdentifier;
     }
@@ -47,7 +47,7 @@ namespace AzToolsFramework
         m_actionIdentifiers.emplace(AZStd::move(actionIdentifier));
     }
 
-    void EditorActionContext::GetActionIdentifiers(const AZStd::function<bool(const AZStd::string&)>& callback) const
+    void EditorActionContext::IterateActionIdentifiers(const AZStd::function<bool(const AZStd::string&)>& callback) const
     {
         for (const AZStd::string& actionIdentifier : m_actionIdentifiers)
         {

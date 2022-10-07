@@ -523,7 +523,7 @@ namespace AzToolsFramework
         return AZ::Success();
     }
 
-    ActionManagerOperationResult ActionManager::SetModeToAction(
+    ActionManagerOperationResult ActionManager::AssignModeToAction(
         const AZStd::string& modeIdentifier, const AZStd::string& actionIdentifier)
     {
         auto actionIterator = m_actions.find(actionIdentifier);
@@ -550,7 +550,7 @@ namespace AzToolsFramework
             );
         }
 
-        actionIterator->second.SetMode(modeIdentifier);
+        actionIterator->second.AssignToMode(modeIdentifier);
         return AZ::Success();
     }
 
@@ -580,8 +580,7 @@ namespace AzToolsFramework
             );
         }
 
-        bool changed = actionContextIterator->second->SetActiveMode(modeIdentifier);
-        if (changed)
+        if (actionContextIterator->second->SetActiveMode(modeIdentifier))
         {
             UpdateAllActionsInActionContext(actionContextIdentifier);
         }
@@ -689,7 +688,7 @@ namespace AzToolsFramework
             return;
         }
 
-        actionContextIterator->second->GetActionIdentifiers(
+        actionContextIterator->second->IterateActionIdentifiers(
             [&](const AZStd::string& actionIdentifier)
             {
                 UpdateAction(actionIdentifier);
