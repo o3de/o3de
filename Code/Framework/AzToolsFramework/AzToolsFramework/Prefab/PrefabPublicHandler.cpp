@@ -140,7 +140,19 @@ namespace AzToolsFramework
 
                 AZStd::unordered_map<AZ::EntityId, AZStd::string> oldEntityAliases;
 
-                // Detach the retrieved entities
+                // Calculate new transform data before updating the direct top level entities.
+                AZ::Vector3 containerEntityTranslation(AZ::Vector3::CreateZero());
+                AZ::Quaternion containerEntityRotation(AZ::Quaternion::CreateZero());
+                GenerateContainerEntityTransform(topLevelEntities, containerEntityTranslation, containerEntityRotation);
+
+                // Set the parent of top level entities to null, so the parent entity's child entity order array does not include the entities.
+                // This is needed before doing serialization on the parent entity to avoid referring to the detached entities.
+                for (AZ::Entity* topLevelEntity : topLevelEntities)
+                {
+                    AZ::TransformBus::Event(topLevelEntity->GetId(), &AZ::TransformBus::Events::SetParent, AZ::EntityId());
+                }
+
+                // Detach the retrieved entities. This includes the top level entities.
                 for (AZ::Entity* entity : entities)
                 {
                     AZ::EntityId entityId = entity->GetId();
@@ -197,7 +209,11 @@ namespace AzToolsFramework
                 containerEntityId = instanceToCreate->get().GetContainerEntityId();
 
                 // Apply the correct transform to the container for the new instance, and store the patch for use when creating the link.
-                PrefabDom patch = ApplyContainerTransformAndGeneratePatch(containerEntityId, commonRootEntityId, topLevelEntities);
+                PrefabDom patch = ApplyContainerTransformAndGeneratePatch(containerEntityId, commonRootEntityId,
+                    containerEntityTranslation, containerEntityRotation);
+
+                // Update the cache - this prevents these changes from being stored in the regular undo/redo nodes
+                m_prefabUndoCache.UpdateCache(containerEntityId);
 
                 // Parent the non-container top level entities to the container entity.
                 // Parenting the top level container entities will be done during the creation of links.
@@ -218,6 +234,7 @@ namespace AzToolsFramework
                     m_prefabSystemComponentInterface->UpdatePrefabTemplate(instanceToCreate->get().GetTemplateId(), serializedInstance);
                 }
 
+                // Set up links between the created prefab instance and its nested instances.
                 instanceToCreate->get().GetNestedInstances([&](AZStd::unique_ptr<Instance>& nestedInstance) {
                     AZ_Assert(nestedInstance, "Invalid nested instance found in the new prefab created.");
 
@@ -330,7 +347,8 @@ namespace AzToolsFramework
             return result;
         }
 
-        PrefabDom PrefabPublicHandler::ApplyContainerTransformAndGeneratePatch(AZ::EntityId containerEntityId, AZ::EntityId parentEntityId, const EntityList& childEntities)
+        PrefabDom PrefabPublicHandler::ApplyContainerTransformAndGeneratePatch(
+            AZ::EntityId containerEntityId, AZ::EntityId parentEntityId, const AZ::Vector3& translation, const AZ::Quaternion& rotation)
         {
             AZ::Entity* containerEntity = GetEntityById(containerEntityId);
             AZ_Assert(containerEntity, "Invalid container entity passed to ApplyContainerTransformAndGeneratePatch.");
@@ -340,16 +358,12 @@ namespace AzToolsFramework
             Prefab::PrefabDom containerEntityDomBefore;
             m_instanceToTemplateInterface->GenerateDomForEntity(containerEntityDomBefore, *containerEntity);
 
-            AZ::Vector3 containerEntityTranslation(AZ::Vector3::CreateZero());
-            AZ::Quaternion containerEntityRotation(AZ::Quaternion::CreateZero());
-
             // Set container entity to be child of common root
             AZ::TransformBus::Event(containerEntityId, &AZ::TransformBus::Events::SetParent, parentEntityId);
 
             // Set the transform (translation, rotation) of the container entity
-            GenerateContainerEntityTransform(childEntities, containerEntityTranslation, containerEntityRotation);
-            AZ::TransformBus::Event(containerEntityId, &AZ::TransformBus::Events::SetLocalTranslation, containerEntityTranslation);
-            AZ::TransformBus::Event(containerEntityId, &AZ::TransformBus::Events::SetLocalRotationQuaternion, containerEntityRotation);
+            AZ::TransformBus::Event(containerEntityId, &AZ::TransformBus::Events::SetLocalTranslation, translation);
+            AZ::TransformBus::Event(containerEntityId, &AZ::TransformBus::Events::SetLocalRotationQuaternion, rotation);
 
             PrefabDom containerEntityDomAfter;
             m_instanceToTemplateInterface->GenerateDomForEntity(containerEntityDomAfter, *containerEntity);
@@ -357,9 +371,6 @@ namespace AzToolsFramework
             PrefabDom patch;
             m_instanceToTemplateInterface->GeneratePatch(patch, containerEntityDomBefore, containerEntityDomAfter);
             m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(patch, containerEntityId);
-
-            // Update the cache - this prevents these changes from being stored in the regular undo/redo nodes
-            m_prefabUndoCache.Store(containerEntityId, parentEntityId);
 
             return AZStd::move(patch);
         }
@@ -1301,7 +1312,7 @@ namespace AzToolsFramework
             deselectAllCommand->SetParent(undoBatch.GetUndoBatch());
 
             const TemplateId commonOwningTemplateId = commonOwningInstance->get().GetTemplateId();
-            PrefabDom& commonOwningTemplateDom = m_prefabSystemComponentInterface->FindTemplateDom(commonOwningTemplateId);
+            const PrefabDom& commonOwningTemplateDom = m_prefabSystemComponentInterface->FindTemplateDom(commonOwningTemplateId);
 
             // Removing instances and entities...
 
@@ -1327,33 +1338,39 @@ namespace AzToolsFramework
             }
 
             // Step 2 - Removes entities.
-            AZStd::vector<AZStd::pair<const PrefabDomValue*, AZStd::string>> removedEntityDomAndPathList;
             AZStd::unordered_set<AZ::EntityId> entitiesThatGotRemoved;
-
-            for (const AZ::Entity* entity : entityList)
             {
-                const AZ::EntityId entityId = entity->GetId();
-                const AZStd::string entityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(entityId); // retrieve before detaching
+                // DOM value pointers can't be relied upon if the original DOM gets modified after pointer creation.
+                // This scope is added to limit their usage and ensure DOM is not modified when it is being used.
+                AZStd::vector<AZStd::pair<const PrefabDomValue*, AZStd::string>> removedEntityDomAndPathList;
 
-                // Captures the parent DOM if it is first seen in map.
-                AZ::EntityId parentEntityId;
-                AZ::TransformBus::EventResult(parentEntityId, entityId, &AZ::TransformBus::Events::GetParentId);
-                CaptureInitialEntityDomFromOwningTemplate(parentEntityDomBeforeRemovalMap, parentEntityId, commonOwningTemplateDom);
+                for (const AZ::Entity* entity : entityList)
+                {
+                    const AZ::EntityId entityId = entity->GetId();
+                    const AZStd::string entityAliasPath =
+                        m_instanceToTemplateInterface->GenerateEntityAliasPath(entityId); // retrieve before detaching
 
-                // Detaches the entity.
-                commonOwningInstance->get().DetachEntity(entityId).release();
-                AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationRequests::DeleteEntity, entityId);
+                    // Captures the parent DOM if it is first seen in map.
+                    AZ::EntityId parentEntityId;
+                    AZ::TransformBus::EventResult(parentEntityId, entityId, &AZ::TransformBus::Events::GetParentId);
+                    CaptureInitialEntityDomFromOwningTemplate(parentEntityDomBeforeRemovalMap, parentEntityId, commonOwningTemplateDom);
 
-                // Captures the entity DOM from the owning template DOM for undo purpose and puts the entity DOM into a list
-                // for batch processing.
-                PrefabDomPath entityDomInOwningTemplatePath(entityAliasPath.c_str());
-                const PrefabDomValue* removedEntityDomPtr = entityDomInOwningTemplatePath.Get(commonOwningTemplateDom);
-                removedEntityDomAndPathList.emplace_back(removedEntityDomPtr, AZStd::move(entityAliasPath));
+                    // Detaches the entity.
+                    commonOwningInstance->get().DetachEntity(entityId).release();
+                    AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationRequests::DeleteEntity, entityId);
 
-                entitiesThatGotRemoved.insert(entityId);
+                    // Captures the entity DOM from the owning template DOM for undo purpose and puts the entity DOM into a list
+                    // for batch processing.
+                    PrefabDomPath entityDomInOwningTemplatePath(entityAliasPath.c_str());
+
+                    removedEntityDomAndPathList.emplace_back(
+                        entityDomInOwningTemplatePath.Get(commonOwningTemplateDom), AZStd::move(entityAliasPath));
+
+                    entitiesThatGotRemoved.insert(entityId);
+                }
+
+                PrefabUndoHelpers::RemoveEntities(removedEntityDomAndPathList, commonOwningTemplateId, undoBatch.GetUndoBatch());
             }
-
-            PrefabUndoHelpers::RemoveEntities(removedEntityDomAndPathList, commonOwningTemplateId, undoBatch.GetUndoBatch());
 
             // Step 3 - Updates parent entity DOMs with new children information.
             for (const auto& [parentEntityId, parentEntityDomBefore] : parentEntityDomBeforeRemovalMap)
@@ -1758,13 +1775,18 @@ namespace AzToolsFramework
             {
                 const AZStd::string& entityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(entityId);
                 PrefabDomPath entityAliasDomPath(entityAliasPath.c_str());
-                const PrefabDomValue* entityDomPtr = entityAliasDomPath.Get(owningTemplateDom);
-                if (entityDomPtr)
+
                 {
-                    // Deep copy is needed to cache the current DOM state.
-                    PrefabDom initialEntityDom;
-                    initialEntityDom.CopyFrom(*entityDomPtr, initialEntityDom.GetAllocator());
-                    entityIdDomMap[entityId] = AZStd::move(initialEntityDom);
+                    // Entity DOM pointer can't be relied upon if the original DOM gets modified after pointer creation.
+                    // This scope is added to limit their usage and ensure DOM is not modified when it is being used.
+                    const PrefabDomValue* entityDomPtr = entityAliasDomPath.Get(owningTemplateDom);
+                    if (entityDomPtr)
+                    {
+                        // Deep copy is needed to cache the current DOM state.
+                        PrefabDom initialEntityDom;
+                        initialEntityDom.CopyFrom(*entityDomPtr, initialEntityDom.GetAllocator());
+                        entityIdDomMap[entityId] = AZStd::move(initialEntityDom);
+                    }
                 }
             }
         }

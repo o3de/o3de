@@ -46,11 +46,3 @@ from DccScriptingInterface import PATH_O3DE_TECHART_GEMS
 from DccScriptingInterface import PATH_DCCSIG
 from DccScriptingInterface.Tools import PATH_DCCSI_TOOLS
 from DccScriptingInterface.globals import *
-
-
-# dev mode will enable nested import tests
-if DCCSI_DEV_MODE:
-    from DccScriptingInterface.azpy.shared.utils.init import test_imports
-    # If in dev mode this will test imports of __all__
-    _LOGGER.debug(f'Testing Imports from {_PACKAGENAME}')
-    test_imports(_all=__all__, _pkg=_PACKAGENAME, _logger=_LOGGER)

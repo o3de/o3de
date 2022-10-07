@@ -75,6 +75,7 @@ namespace Terrain
 
         bool m_drawWireframe{ true };
         bool m_drawWorldBounds{ true };
+        bool m_drawLastDirtyRegion{ false };
         TerrainDebugQueryVisualizerConfig m_debugQueries;
     };
 
@@ -154,6 +155,7 @@ namespace Terrain
 
         void RebuildSectorWireframe(WireframeSector& sector, float gridResolution);
         void MarkDirtySectors(const AZ::Aabb& dirtyRegion);
+        void DrawLastDirtyRegion(AzFramework::DebugDisplayRequests& debugDisplay);
         void DrawWorldBounds(AzFramework::DebugDisplayRequests& debugDisplay);
         void DrawWireframe(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay);
         void DrawQueries(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay);
@@ -177,5 +179,7 @@ namespace Terrain
 
         // The size in sectors of our wireframe grid in each direction (i.e. a 5 x 5 sector grid has a sectorGridSize of 5)
         int32_t m_sectorGridSize{ 0 };
+
+        AZ::Aabb m_lastDirtyRegion{ AZ::Aabb::CreateNull() };
     };
 }

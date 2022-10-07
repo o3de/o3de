@@ -220,6 +220,8 @@ namespace AzToolsFramework
             virtual bool IconsVisible() const = 0;
             //! Returns if viewport helpers (additional debug drawing) are visible in the viewport.
             virtual bool HelpersVisible() const = 0;
+            //! Returns if viewport helpers are only drawn for selected entities in the viewport.
+            virtual bool OnlyShowHelpersForSelectedEntities() const = 0;
 
         protected:
             ~ViewportSettingsRequests() = default;
@@ -242,6 +244,9 @@ namespace AzToolsFramework
             {
             }
             virtual void OnIconsVisibilityChanged([[maybe_unused]] bool enabled)
+            {
+            }
+            virtual void OnOnlyShowHelpersForSelectedEntitiesChanged([[maybe_unused]] bool enabled)
             {
             }
 

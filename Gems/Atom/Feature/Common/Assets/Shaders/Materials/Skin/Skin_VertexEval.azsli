@@ -25,7 +25,6 @@ VsOutput EvaluateVertexGeometry_Skin(
     float3 position,
     float3 normal,
     float4 tangent,
-    float3 bitangent,
     float2 uv0_tiled,
     float2 uv1_unwrapped,
     float4 optionalBlendMask)
@@ -63,8 +62,8 @@ VsOutput EvaluateVertexGeometry_Skin(
         output.wrinkleBlendFactors = float4(0,0,0,0);
     }
 
-    float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
-    ConstructTBN(normal, tangent, bitangent, objectToWorld, objectToWorldIT, output.normal, output.tangent, output.bitangent);
+    output.normal = normal;
+    output.tangent = tangent;
 
     return output;
 }
@@ -75,7 +74,6 @@ VsOutput EvaluateVertexGeometry_Skin(VsInput IN)
         IN.position,
         IN.normal,
         IN.tangent,
-        IN.bitangent,
         IN.uv0_tiled,
         IN.uv1_unwrapped,
         IN.m_optional_blendMask);

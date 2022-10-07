@@ -379,6 +379,8 @@ namespace AZ
             m_limits.m_maxImageDimensionCube = 8192;
             m_limits.m_maxImageArraySize = 2048;
             m_limits.m_minConstantBufferViewOffset = Alignment::Constant;
+            m_limits.m_maxConstantBufferSize = m_metalDevice.maxBufferLength;
+            m_limits.m_maxBufferSize = m_metalDevice.maxBufferLength;
             
             AZ_Assert(m_metalDevice.argumentBuffersSupport, "Atom needs Argument buffer support to run");
         }
