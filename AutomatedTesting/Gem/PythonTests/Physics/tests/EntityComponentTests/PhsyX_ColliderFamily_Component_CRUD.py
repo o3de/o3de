@@ -86,6 +86,8 @@ def PhysX_ColliderFamily_Component_CRUD():
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
 
+
+    from editor_python_test_tools.editor_component.physx_collider import PhysxCollider
     from editor_python_test_tools.editor_entity_utils import EditorEntity as EE
     from editor_python_test_tools.utils import Tracer
     from editor_python_test_tools.asset_utils import Asset
@@ -123,7 +125,7 @@ def PhysX_ColliderFamily_Component_CRUD():
         physx_collider_capsule_shape_component = physx_collider_capsule_entity.add_component(PHYSX_COLLIDER)
         physx_collider_sphere_shape_component = physx_collider_sphere_entity.add_component(PHYSX_COLLIDER)
         physx_collider_cylinder_shape_component = physx_collider_cylinder_entity.add_component(PHYSX_COLLIDER)
-        physx_collider_physicsasset_component = physx_collider_physicsasset_entity.add_component(PHYSX_COLLIDER)
+        physx_collider_physicsasset_component = PhysxCollider(physx_collider_cylinder_entity.add_component(PHYSX_COLLIDER))
 
         physx_shape_collider_box_component = physx_shape_collider_box_entity.add_component(PHYSX_SHAPE_COLLIDER)
         physx_shape_collider_capsule_component = physx_shape_collider_capsule_entity.add_component(PHYSX_SHAPE_COLLIDER)
@@ -145,16 +147,19 @@ def PhysX_ColliderFamily_Component_CRUD():
         physx_collider_capsule_shape_component.set_component_property_value(PHSX_SHAPE_COLLIDER_SHAPE, physics.ShapeType_Capsule)
         physx_collider_sphere_shape_component.set_component_property_value(PHSX_SHAPE_COLLIDER_SHAPE, physics.ShapeType_Sphere)
         physx_collider_cylinder_shape_component.set_component_property_value(PHSX_SHAPE_COLLIDER_SHAPE, physics.ShapeType_Cylinder)
-        physx_collider_physicsasset_component.set_component_property_value(PHYSX_COLLIDER_MESH_PATH, px_asset.id)
+
+        PhysxCollider.set_physx_meshset_physx_mesh_from_path(physx_collider_physicsasset_component, PHYSX_MESH)
+
+        #physx_collider_physicsasset_component.set_component_property_value(PHYSX_COLLIDER_MESH_PATH, px_asset.id)
 
 
-        test_entity = EE.create_editor_entity("Test")
-        test_component = test_entity.add_component("PhysX Collider")
-        output = [test_component.get_property_type_visibility(), test_component.get_property_type_visibility()]
-        print(test_component.get_property_type_visibility())
-
-
-        Report.critical_result(output, False)
+        # test_entity = EE.create_editor_entity("Test")
+        # test_component = test_entity.add_component("PhysX Collider")
+        # output = [test_component.get_property_type_visibility(), test_component.get_property_type_visibility()]
+        # print(test_component.get_property_type_visibility())
+        #
+        #
+        # Report.critical_result(output, False)
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
