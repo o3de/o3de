@@ -306,7 +306,7 @@ namespace Multiplayer
             AZ::Utils::GetProjectPath().c_str(),
             server_rhi.GetCStr(),
             static_cast<uint16_t>(editorsv_port),
-            bg_enableNetworkingMetrics ? 1 : 0
+            (bg_enableNetworkingMetrics ? 1 : 0)
         );
         processLaunchInfo.m_showWindow = !editorsv_hidden;
         processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_NORMAL;

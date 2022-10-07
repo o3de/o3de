@@ -332,10 +332,6 @@ namespace Multiplayer
             if (m_networkInterface->Listen(sv_port))
             {
                 InitializeMultiplayer(isDedicated ? MultiplayerAgentType::DedicatedServer : MultiplayerAgentType::ClientServer);
-                if (bg_enableNetworkingMetrics)
-                {
-                    ConfigureEventLoggerHelper(sv_metricsFile);
-                }
                 return true;
             }
             AZLOG_WARN("Failed to start listening on port %u, port is in use?", static_cast<uint32_t>(sv_port));
@@ -346,10 +342,6 @@ namespace Multiplayer
 
     bool MultiplayerSystemComponent::Connect(const AZStd::string& remoteAddress, uint16_t port)
     {
-        if (bg_enableNetworkingMetrics)
-        {
-            ConfigureEventLoggerHelper(cl_metricsFile);
-        }
         InitializeMultiplayer(MultiplayerAgentType::Client);
         const IpAddress address(remoteAddress.c_str(), port, m_networkInterface->GetType());
         return m_networkInterface->Connect(address, cl_clientport) != InvalidConnectionId;
@@ -1102,6 +1094,11 @@ namespace Multiplayer
             }
         }
         AZLOG_INFO("Multiplayer operating in %s mode", GetEnumString(m_agentType));
+
+        if (bg_enableNetworkingMetrics)
+        {
+            OnEnableNetworkingMetricsChanged(true);
+        }
     }
 
     void MultiplayerSystemComponent::AddClientMigrationStartEventHandler(ClientMigrationStartEvent::Handler& handler)
