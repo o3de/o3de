@@ -437,18 +437,18 @@ class AndroidDeployment(object):
         self.adb_call(arg_list=['install', '-t', '-r', str(self.apk_path.resolve())],
                       device_id=target_device)
 
-    def path_exists_on_device(self, path, target_device):
+    def path_exists_on_device(self, path, device_id):
         try:
             result, output = self.adb_ls(path=path,
                                         args=None,
-                                        device_id=target_device)
+                                        device_id=device_id)
             return result
         except (common.LmbrCmdError, AttributeError):
             return False
 
-    def create_path_on_device(self, path, target_device):
-        if not self.path_exists_on_device(path, target_device):
-            self.adb_shell(command=f'mkdir {path}', device_id=target_device)
+    def create_path_on_device(self, path, device_id):
+        if not self.path_exists_on_device(path, device_id):
+            self.adb_shell(command=f'mkdir {path}', device_id=device_id)
 
     def install_assets_to_device(self, detected_storage, target_device):
         """
