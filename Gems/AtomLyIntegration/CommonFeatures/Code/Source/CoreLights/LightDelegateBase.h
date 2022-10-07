@@ -40,7 +40,7 @@ namespace AZ
             void SetConfig(const AreaLightComponentConfig* config) override;
 
             // LightDelegateInterface overrides...
-            void SetChroma(const AZ::Color& chroma) override;
+            void SetChroma(const Color& chroma) override;
             void SetIntensity(float intensity) override;
             float SetPhotometricUnit(PhotometricUnit unit) override;
             void SetAttenuationRadius(float radius) override;
@@ -70,7 +70,7 @@ namespace AZ
             FeatureProcessorType* GetFeatureProcessor() const { return m_featureProcessor; }
             const AreaLightComponentConfig* GetConfig() const { return m_componentConfig; }
             typename FeatureProcessorType::LightHandle GetLightHandle() const { return m_lightHandle; }
-            const AZ::Transform& GetTransform() const { return m_transform; }
+            const Transform& GetTransform() const { return m_transform; }
             bool GetShuttersEnabled() { return m_shuttersEnabled; }
             bool GetShadowsEnabled() { return m_shadowsEnabled; }
             virtual void HandleShapeChanged() = 0;
@@ -79,7 +79,7 @@ namespace AZ
             void OnShapeChanged(ShapeChangeReasons changeReason) override;
             
             // TransformNotificationBus::Handler overrides ...
-            void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
+            void OnTransformChanged(const Transform& local, const Transform& world) override;
 
         private:
             FeatureProcessorType* m_featureProcessor = nullptr;
@@ -87,7 +87,7 @@ namespace AZ
             const AreaLightComponentConfig* m_componentConfig = nullptr;
 
             LmbrCentral::ShapeComponentRequests* m_shapeBus = nullptr;
-            AZ::Transform m_transform;
+            Transform m_transform;
             PhotometricValue m_photometricValue;
             bool m_shuttersEnabled = false;
             bool m_shadowsEnabled = false;

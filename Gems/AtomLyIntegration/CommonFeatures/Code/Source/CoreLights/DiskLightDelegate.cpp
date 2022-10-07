@@ -24,8 +24,8 @@ namespace AZ::Render
     float DiskLightDelegate::CalculateAttenuationRadius(float lightThreshold) const
     {
         // Calculate the radius at which the irradiance will be equal to cutoffIntensity.
-        float intensity = GetPhotometricValue().GetCombinedIntensity(PhotometricUnit::Lumen);
-        return sqrt(intensity / lightThreshold);
+        const float intensity = GetPhotometricValue().GetCombinedIntensity(PhotometricUnit::Lumen);
+        return Sqrt(intensity / lightThreshold);
     }
 
     void DiskLightDelegate::HandleShapeChanged()
@@ -40,7 +40,7 @@ namespace AZ::Render
 
     float DiskLightDelegate::GetSurfaceArea() const
     {
-        float radius = GetRadius();
+        const float radius = GetRadius();
         return Constants::Pi * radius * radius;
     }
 
@@ -55,32 +55,31 @@ namespace AZ::Render
         const float shapeRadius = m_shapeBus->GetRadius();
 
         const float radians = DegToRad(degrees);
-        const float coneRadius = AZ::Sin(radians) * radius;
-        const float coneHeight = AZ::Cos(radians) * radius;
+        const float coneRadius = Sin(radians) * radius;
+        const float coneHeight = Cos(radians) * radius;
 
         return DiskVisualizationDimensions{ shapeRadius, shapeRadius + coneRadius, coneHeight };
     }
 
-    AZ::Aabb DiskLightDelegate::GetLocalVisualizationBounds() const
+    Aabb DiskLightDelegate::GetLocalVisualizationBounds() const
     {
         const auto [radius, height] = [this]
         {
             if (GetConfig()->m_enableShutters)
             {
                 const auto [innerTopRadius, innerBottomRadius, innerHeight] = CalculateDiskVisualizationDimensions(
-                    AZ::GetMin(GetConfig()->m_outerShutterAngleDegrees, GetConfig()->m_innerShutterAngleDegrees));
+                    GetMin(GetConfig()->m_outerShutterAngleDegrees, GetConfig()->m_innerShutterAngleDegrees));
                 const auto [outerTopRadius, outerBottomRadius, outerHeight] =
                     CalculateDiskVisualizationDimensions(GetConfig()->m_outerShutterAngleDegrees);
-                return AZStd::pair{ AZ::GetMax(
-                                        outerBottomRadius, AZ::GetMax(innerBottomRadius, AZ::GetMax(innerTopRadius, outerTopRadius))),
-                                    AZ::GetMax(innerHeight, outerHeight) };
+                return AZStd::pair{ GetMax(outerBottomRadius, GetMax(innerBottomRadius, GetMax(innerTopRadius, outerTopRadius))),
+                                    GetMax(innerHeight, outerHeight) };
             }
 
             const auto [topRadius, bottomRadius, height] = CalculateDiskVisualizationDimensions(DefaultConeAngleDegrees);
-            return AZStd::pair{ AZ::GetMax(topRadius, bottomRadius), height };
+            return AZStd::pair{ GetMax(topRadius, bottomRadius), height };
         }();
 
-        return AZ::Aabb::CreateFromMinMax(AZ::Vector3(-radius, -radius, 0.0f), AZ::Vector3(radius, radius, height));
+        return Aabb::CreateFromMinMax(Vector3(-radius, -radius, 0.0f), Vector3(radius, radius, height));
     }
 
     void DiskLightDelegate::DrawDebugDisplay(
@@ -102,8 +101,8 @@ namespace AZ::Render
             for (uint32_t i = 0; i < numRadiusLines; ++i)
             {
                 const float radiusLineAngle = float(i) / numRadiusLines * Constants::TwoPi;
-                const float cosAngle = AZ::Cos(radiusLineAngle);
-                const float sinAngle = AZ::Sin(radiusLineAngle);
+                const float cosAngle = Cos(radiusLineAngle);
+                const float sinAngle = Sin(radiusLineAngle);
                 debugDisplay.DrawLine(
                     Vector3(cosAngle * topRadius, sinAngle * topRadius, 0.0f),
                     Vector3(cosAngle * bottomRadius, sinAngle * bottomRadius, height));
@@ -116,7 +115,7 @@ namespace AZ::Render
         if (GetConfig()->m_enableShutters)
         {
             const auto [innerTopRadius, innerBottomRadius, innerHeight] = CalculateDiskVisualizationDimensions(
-                AZ::GetMin(GetConfig()->m_outerShutterAngleDegrees, GetConfig()->m_innerShutterAngleDegrees));
+                GetMin(GetConfig()->m_outerShutterAngleDegrees, GetConfig()->m_innerShutterAngleDegrees));
             const auto [outerTopRadius, outerBottomRadius, outerHeight] =
                 CalculateDiskVisualizationDimensions(GetConfig()->m_outerShutterAngleDegrees);
 

@@ -11,70 +11,67 @@
 #include <AtomLyIntegration/CommonFeatures/CoreLights/AreaLightComponentConfig.h>
 #include <CoreLights/SimplePointLightDelegate.h>
 
-namespace AZ
+namespace AZ::Render
 {
-    namespace Render
+    SimplePointLightDelegate::SimplePointLightDelegate(EntityId entityId, bool isVisible)
+        : LightDelegateBase<SimplePointLightFeatureProcessorInterface>(entityId, isVisible)
     {
-        SimplePointLightDelegate::SimplePointLightDelegate(EntityId entityId, bool isVisible)
-            : LightDelegateBase<SimplePointLightFeatureProcessorInterface>(entityId, isVisible)
+        InitBase(entityId);
+        if (GetLightHandle().IsValid())
         {
-            InitBase(entityId);
-            if (GetLightHandle().IsValid())
-            {
-                GetFeatureProcessor()->SetPosition(GetLightHandle(), GetTransform().GetTranslation());
-            }
+            GetFeatureProcessor()->SetPosition(GetLightHandle(), GetTransform().GetTranslation());
         }
-        float SimplePointLightDelegate::CalculateAttenuationRadius(float lightThreshold) const
-        {
-            // Calculate the radius at which the irradiance will be equal to cutoffIntensity.
-            float intensity = GetPhotometricValue().GetCombinedIntensity(PhotometricUnit::Lumen);
-            return AZ::Sqrt(intensity / lightThreshold);
-        }
+    }
+    float SimplePointLightDelegate::CalculateAttenuationRadius(float lightThreshold) const
+    {
+        // Calculate the radius at which the irradiance will be equal to cutoffIntensity.
+        const float intensity = GetPhotometricValue().GetCombinedIntensity(PhotometricUnit::Lumen);
+        return Sqrt(intensity / lightThreshold);
+    }
 
-        float SimplePointLightDelegate::GetSurfaceArea() const
-        {
-            return 0.0f;
-        }
+    float SimplePointLightDelegate::GetSurfaceArea() const
+    {
+        return 0.0f;
+    }
 
-        void SimplePointLightDelegate::HandleShapeChanged()
+    void SimplePointLightDelegate::HandleShapeChanged()
+    {
+        if (GetLightHandle().IsValid())
         {
-            if (GetLightHandle().IsValid())
-            {
-                GetFeatureProcessor()->SetPosition(GetLightHandle(), GetTransform().GetTranslation());
-            }
+            GetFeatureProcessor()->SetPosition(GetLightHandle(), GetTransform().GetTranslation());
         }
+    }
 
-        void SimplePointLightDelegate::DrawDebugDisplay(
-            const Transform& transform, const Color& color, AzFramework::DebugDisplayRequests& debugDisplay, bool isSelected) const
+    void SimplePointLightDelegate::DrawDebugDisplay(
+        const Transform& transform, const Color& color, AzFramework::DebugDisplayRequests& debugDisplay, bool isSelected) const
+    {
+        if (isSelected)
         {
-            if (isSelected)
-            {
-                debugDisplay.SetColor(color);
+            debugDisplay.SetColor(color);
 
-                // Draw a sphere for the attenuation radius
-                debugDisplay.DrawWireSphere(transform.GetTranslation(), GetConfig()->m_attenuationRadius);
-            }
+            // Draw a sphere for the attenuation radius
+            debugDisplay.DrawWireSphere(transform.GetTranslation(), GetConfig()->m_attenuationRadius);
         }
+    }
 
-        void SimplePointLightDelegate::SetAffectsGI(bool affectsGI)
+    void SimplePointLightDelegate::SetAffectsGI(bool affectsGI)
+    {
+        if (GetLightHandle().IsValid())
         {
-            if (GetLightHandle().IsValid())
-            {
-                GetFeatureProcessor()->SetAffectsGI(GetLightHandle(), affectsGI);
-            }
+            GetFeatureProcessor()->SetAffectsGI(GetLightHandle(), affectsGI);
         }
+    }
 
-        void SimplePointLightDelegate::SetAffectsGIFactor(float affectsGIFactor)
+    void SimplePointLightDelegate::SetAffectsGIFactor(float affectsGIFactor)
+    {
+        if (GetLightHandle().IsValid())
         {
-            if (GetLightHandle().IsValid())
-            {
-                GetFeatureProcessor()->SetAffectsGIFactor(GetLightHandle(), affectsGIFactor);
-            }
+            GetFeatureProcessor()->SetAffectsGIFactor(GetLightHandle(), affectsGIFactor);
         }
+    }
 
-        AZ::Aabb SimplePointLightDelegate::GetLocalVisualizationBounds() const
-        {
-            return AZ::Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), GetConfig()->m_attenuationRadius);
-        }
-    } // namespace Render
-} // namespace AZ
+    Aabb SimplePointLightDelegate::GetLocalVisualizationBounds() const
+    {
+        return Aabb::CreateCenterRadius(Vector3::CreateZero(), GetConfig()->m_attenuationRadius);
+    }
+} // namespace AZ::Render
