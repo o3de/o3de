@@ -437,6 +437,15 @@ class AndroidDeployment(object):
         self.adb_call(arg_list=['install', '-t', '-r', str(self.apk_path.resolve())],
                       device_id=target_device)
 
+    def check_path_exists_on_device(self, path, target_device):
+        try:
+            result, output = self.adb_ls(path=path,
+                                        args=None,
+                                        device_id=target_device)
+            return result
+        except (common.LmbrCmdError, AttributeError):
+            return False
+
     def install_assets_to_device(self, detected_storage, target_device):
         """
         Install the assets for the game to a target device
@@ -465,13 +474,16 @@ class AndroidDeployment(object):
 
         # On certain devices pushing files with adb fails with 'remote secure_mkdirs failed' error.
         # Creating all dirs first on target to surpass the issue.
-        self.adb_shell(command=f'mkdir {output_package}', device_id=target_device)
-        self.adb_shell(command=f'mkdir {output_target}', device_id=target_device)
+        if not self.check_path_exists_on_device(output_package, target_device):
+            self.adb_shell(command=f'mkdir {output_package}', device_id=target_device)
+        if not self.check_path_exists_on_device(output_target, target_device):
+            self.adb_shell(command=f'mkdir {output_target}', device_id=target_device)
         for asset_path in self.files_in_asset_path:
             if asset_path.is_dir():
                 relative_path = asset_path.relative_to(self.local_asset_path).as_posix()
                 target_path = f"{output_target}/{relative_path}"
-                self.adb_shell(command=f'mkdir {target_path}', device_id=target_device)
+                if not self.check_path_exists_on_device(target_path, target_device):
+                    self.adb_shell(command=f'mkdir {target_path}', device_id=target_device)
 
         if self.clean_deploy or not target_timestamp:
             logging.info(f"Device '{target_device}': Pushing {len(self.files_in_asset_path)} files from {str(self.local_asset_path)} to device {output_target} ...")
