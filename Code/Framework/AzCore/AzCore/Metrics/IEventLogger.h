@@ -112,6 +112,10 @@ namespace AZ::Metrics
         EventValue m_value;
     };
 
+    // Helper Type aliases that can be used to provide storage for JSON array and JSON object types inside of a function
+    // The fixed_vector capacity can be upped if more storage is needed
+    using EventArrayStorage = AZStd::fixed_vector<AZ::Metrics::EventValue, 32>;
+    using EventObjectStorage = AZStd::fixed_vector<AZ::Metrics::EventField, 32>;
 
     enum class EventPhase : char
     {
