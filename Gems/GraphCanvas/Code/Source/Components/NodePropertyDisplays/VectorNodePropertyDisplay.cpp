@@ -276,8 +276,6 @@ namespace GraphCanvas
                 m_button->setIcon(newIcon);
             }
             m_button->setVisible(!buttonIcon.isNull());
-
-            m_proxyWidget->update();
         }
 
         if (m_propertyVectorCtrl)
@@ -368,8 +366,10 @@ namespace GraphCanvas
             m_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
             m_button->setVisible(false);
             QObject::connect(m_button, &QToolButton::clicked, [this] () {
+                NodePropertiesRequestBus::Event(GetNodeId(), &NodePropertiesRequests::LockEditState, this);
                 m_dataInterface->OnPressButton();
                 UpdateDisplay();
+                NodePropertiesRequestBus::Event(GetNodeId(), &NodePropertiesRequests::UnlockEditState, this);
             });
             layout->addWidget(m_button);
 
