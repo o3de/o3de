@@ -166,7 +166,14 @@ namespace AZ
         {
             m_meshDataChecker.soft_lock();
 
-            if (m_enablePerMeshShaderOptionFlags && !r_enablePerMeshShaderOptionFlags)
+            // Must read cvar from AZ::Console due to static variable in multiple libraries, see ghi-5537
+            bool enablePerMeshShaderOptionFlagsCvar = false;
+            if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+            {
+                console->GetCvarValue("r_enablePerMeshShaderOptionFlags", enablePerMeshShaderOptionFlagsCvar);
+            }
+
+            if (m_enablePerMeshShaderOptionFlags && !enablePerMeshShaderOptionFlagsCvar)
             {
                 // Per mesh shader option flags was on, but now turned off, so reset all the shader options.
                 for (auto& model : m_modelData)
@@ -185,7 +192,7 @@ namespace AZ
                 }
             }
 
-            m_enablePerMeshShaderOptionFlags = r_enablePerMeshShaderOptionFlags;
+            m_enablePerMeshShaderOptionFlags = enablePerMeshShaderOptionFlagsCvar;
 
             if (m_enablePerMeshShaderOptionFlags)
             {
