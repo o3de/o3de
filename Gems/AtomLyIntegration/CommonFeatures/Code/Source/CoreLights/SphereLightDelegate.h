@@ -39,6 +39,7 @@ namespace AZ
             void SetNormalShadowBias(float bias) override;
             void SetAffectsGI(bool affectsGI) override;
             void SetAffectsGIFactor(float affectsGIFactor) override;
+            AZ::Aabb GetLocalVisualizationBounds() const override;
 
         private:
 

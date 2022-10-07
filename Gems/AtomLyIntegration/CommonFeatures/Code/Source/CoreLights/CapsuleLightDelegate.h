@@ -36,6 +36,7 @@ namespace AZ
             void DrawDebugDisplay(const Transform& transform, const Color& color, AzFramework::DebugDisplayRequests& debugDisplay, bool isSelected) const override;
             void SetAffectsGI(bool affectsGI) override;
             void SetAffectsGIFactor(float affectsGIFactor) override;
+            AZ::Aabb GetLocalVisualizationBounds() const override;
 
         private:
 
@@ -45,8 +46,28 @@ namespace AZ
             // Gets the height of the capsule shape without caps
             float GetInteriorHeight() const;
 
+            struct CapsuleVisualizationDimensions
+            {
+                float m_radius;
+                float m_height;
+            };
+
+            CapsuleVisualizationDimensions CalculateCapsuleVisualizationDimensions() const;
+
             LmbrCentral::CapsuleShapeComponentRequests* m_shapeBus = nullptr;
         };
+
+        inline CapsuleLightDelegate::CapsuleVisualizationDimensions CapsuleLightDelegate::CalculateCapsuleVisualizationDimensions() const
+        {
+            // Attenuation radius shape is just a capsule with the same internal height, but a radius of the attenuation radius.
+            const float radius = GetConfig()->m_attenuationRadius;
+
+            // Add on the caps for the attenuation radius
+            const float scale = GetTransform().GetUniformScale();
+            const float height = m_shapeBus->GetHeight() * scale;
+
+            return CapsuleLightDelegate::CapsuleVisualizationDimensions{ radius, height };
+        }
 
     } // namespace Render
 } // namespace AZ

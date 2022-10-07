@@ -31,6 +31,7 @@ namespace AZ
             float GetEffectiveSolidAngle() const override { return PhotometricValue::OmnidirectionalSteradians; }
             void SetAffectsGI(bool affectsGI) override;
             void SetAffectsGIFactor(float affectsGIFactor) override;
+            AZ::Aabb GetLocalVisualizationBounds() const override;
 
         private:
             void HandleShapeChanged() override;

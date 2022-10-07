@@ -98,4 +98,9 @@ namespace AZ::Render
             GetFeatureProcessor()->SetAffectsGIFactor(GetLightHandle(), affectsGIFactor);
         }
     }
+
+    AZ::Aabb SimpleSpotLightDelegate::GetLocalVisualizationBounds() const
+    {
+        return AZ::Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), 1.0f);
+    }
 } // namespace AZ::Render

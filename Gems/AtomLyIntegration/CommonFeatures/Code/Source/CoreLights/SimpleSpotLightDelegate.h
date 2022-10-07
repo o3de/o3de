@@ -34,6 +34,7 @@ namespace AZ
             void SetShutterAngles(float innerAngleDegrees, float outerAngleDegrees) override;
             void SetAffectsGI(bool affectsGI) override;
             void SetAffectsGIFactor(float affectsGIFactor) override;
+            AZ::Aabb GetLocalVisualizationBounds() const override;
 
         private:
             void HandleShapeChanged() override;

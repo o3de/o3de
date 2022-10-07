@@ -44,21 +44,21 @@ namespace AZ
             void SetIntensity(float intensity) override;
             float SetPhotometricUnit(PhotometricUnit unit) override;
             void SetAttenuationRadius(float radius) override;
-            const PhotometricValue& GetPhotometricValue() const override { return m_photometricValue; };
-            void SetLightEmitsBothDirections([[maybe_unused]] bool lightEmitsBothDirections) override {};
-            void SetUseFastApproximation([[maybe_unused]] bool useFastApproximation) override {};
+            const PhotometricValue& GetPhotometricValue() const override { return m_photometricValue; }
+            void SetLightEmitsBothDirections([[maybe_unused]] bool lightEmitsBothDirections) override {}
+            void SetUseFastApproximation([[maybe_unused]] bool useFastApproximation) override {}
             void SetVisibility(bool visibility) override;
             
-            void SetEnableShutters(bool enabled) override { m_shuttersEnabled = enabled; };
-            void SetShutterAngles([[maybe_unused]]float innerAngleDegrees, [[maybe_unused]]float outerAngleDegrees) override {};
+            void SetEnableShutters(bool enabled) override { m_shuttersEnabled = enabled; }
+            void SetShutterAngles([[maybe_unused]]float innerAngleDegrees, [[maybe_unused]]float outerAngleDegrees) override {}
 
-            void SetEnableShadow(bool enabled) override { m_shadowsEnabled = enabled; };
-            void SetShadowBias([[maybe_unused]] float bias) override {};
-            void SetShadowmapMaxSize([[maybe_unused]] ShadowmapSize size) override {};
-            void SetShadowFilterMethod([[maybe_unused]] ShadowFilterMethod method) override {};
-            void SetFilteringSampleCount([[maybe_unused]] uint32_t count) override {};
-            void SetEsmExponent([[maybe_unused]] float esmExponent) override{};
-            void SetNormalShadowBias([[maybe_unused]] float bias) override{};
+            void SetEnableShadow(bool enabled) override { m_shadowsEnabled = enabled; }
+            void SetShadowBias([[maybe_unused]] float bias) override {}
+            void SetShadowmapMaxSize([[maybe_unused]] ShadowmapSize size) override {}
+            void SetShadowFilterMethod([[maybe_unused]] ShadowFilterMethod method) override {}
+            void SetFilteringSampleCount([[maybe_unused]] uint32_t count) override {}
+            void SetEsmExponent([[maybe_unused]] float esmExponent) override {}
+            void SetNormalShadowBias([[maybe_unused]] float bias) override {}
 
             void SetAffectsGI([[maybe_unused]] bool affectsGI) override {}
             void SetAffectsGIFactor([[maybe_unused]] float affectsGIFactor) override {}
@@ -67,12 +67,12 @@ namespace AZ
             void InitBase(EntityId entityId);
 
             // Trivial getters
-            FeatureProcessorType* GetFeatureProcessor() const { return m_featureProcessor; };
-            const AreaLightComponentConfig* GetConfig() const { return m_componentConfig; };
-            typename FeatureProcessorType::LightHandle GetLightHandle() const { return m_lightHandle; };
-            const AZ::Transform& GetTransform() const { return m_transform; };
-            bool GetShuttersEnabled() { return m_shuttersEnabled; };
-            bool GetShadowsEnabled() { return m_shadowsEnabled; };
+            FeatureProcessorType* GetFeatureProcessor() const { return m_featureProcessor; }
+            const AreaLightComponentConfig* GetConfig() const { return m_componentConfig; }
+            typename FeatureProcessorType::LightHandle GetLightHandle() const { return m_lightHandle; }
+            const AZ::Transform& GetTransform() const { return m_transform; }
+            bool GetShuttersEnabled() { return m_shuttersEnabled; }
+            bool GetShadowsEnabled() { return m_shadowsEnabled; }
             virtual void HandleShapeChanged() = 0;
 
             // ShapeComponentNotificationsBus::Handler overrides...
@@ -86,7 +86,7 @@ namespace AZ
             typename FeatureProcessorType::LightHandle m_lightHandle;
             const AreaLightComponentConfig* m_componentConfig = nullptr;
 
-            LmbrCentral::ShapeComponentRequests* m_shapeBus;
+            LmbrCentral::ShapeComponentRequests* m_shapeBus = nullptr;
             AZ::Transform m_transform;
             PhotometricValue m_photometricValue;
             bool m_shuttersEnabled = false;

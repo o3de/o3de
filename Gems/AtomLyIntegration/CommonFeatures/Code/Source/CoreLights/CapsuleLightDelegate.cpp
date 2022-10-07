@@ -65,17 +65,12 @@ namespace AZ
             return (capsArea + sideArea) * scale * scale;
         }
 
-        void CapsuleLightDelegate::DrawDebugDisplay(const Transform& transform, const Color& color, AzFramework::DebugDisplayRequests& debugDisplay, bool isSelected) const
+        void CapsuleLightDelegate::DrawDebugDisplay(
+            const Transform& transform, const Color& color, AzFramework::DebugDisplayRequests& debugDisplay, bool isSelected) const
         {
             if (isSelected)
             {
-                // Attenuation radius shape is just a capsule with the same internal height, but a radius of the attenuation radius.
-                float radius = GetConfig()->m_attenuationRadius;
-
-                // Add on the caps for the attenuation radius
-                float scale = GetTransform().GetUniformScale();
-                float height = m_shapeBus->GetHeight() * scale;
-
+                const auto [radius, height] = CalculateCapsuleVisualizationDimensions();
                 debugDisplay.SetColor(color);
                 debugDisplay.DrawWireCapsule(transform.GetTranslation(), transform.GetBasisZ(), radius, height);
             }
@@ -100,6 +95,12 @@ namespace AZ
             {
                 GetFeatureProcessor()->SetAffectsGIFactor(GetLightHandle(), affectsGIFactor);
             }
+        }
+
+        AZ::Aabb CapsuleLightDelegate::GetLocalVisualizationBounds() const
+        {
+            const auto [radius, height] = CalculateCapsuleVisualizationDimensions();
+            return AZ::Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), AZ::GetMax(radius, height));
         }
     } // namespace Render
 } // namespace AZ

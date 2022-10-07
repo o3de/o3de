@@ -96,5 +96,9 @@ namespace AZ
             }
         }
 
+        AZ::Aabb QuadLightDelegate::GetLocalVisualizationBounds() const
+        {
+            return AZ::Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), 1.0f);
+        }
     } // namespace Render
 } // namespace AZ

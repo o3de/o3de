@@ -601,6 +601,16 @@ namespace AZ::Render
         }
     }
 
+    AZ::Aabb AreaLightComponentController::GetLocalVisualizationBounds() const
+    {
+        if (m_lightShapeDelegate)
+        {
+            return m_lightShapeDelegate->GetLocalVisualizationBounds();
+        }
+
+        return AZ::Aabb::CreateFromPoint(AZ::Vector3::CreateZero());
+    }
+
     void AreaLightComponentController::CreateLightShapeDelegate()
     {
         switch (m_configuration.m_lightType)

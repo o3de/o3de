@@ -142,17 +142,22 @@ namespace AZ
 
             // Global Illumination
 
-            //! Returns true if this light affects global illumination
+            //! Returns true if this light affects global illumination.
             virtual bool GetAffectsGI() const = 0;
 
-            //! Set whether this light affects global illumination
+            //! Set whether this light affects global illumination.
             virtual void SetAffectsGI(bool affectsGI) const = 0;
 
-            //! Returns the contribution multiplier for global illumination
+            //! Returns the contribution multiplier for global illumination.
             virtual float GetAffectsGIFactor() const = 0;
 
-            //! Sets the contribution multiplier for global illumination
+            //! Sets the contribution multiplier for global illumination.
             virtual void SetAffectsGIFactor(float affectsGIFactor) const = 0;
+
+            // Debug Visualization
+
+            //! Returns the Aabb for the debug visualization of the light.
+            virtual AZ::Aabb GetLocalVisualizationBounds() const = 0;
         };
 
         //! The EBus for requests to for setting and getting light component properties.

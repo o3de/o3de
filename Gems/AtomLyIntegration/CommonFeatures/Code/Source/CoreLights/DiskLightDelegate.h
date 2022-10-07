@@ -51,6 +51,8 @@ namespace AZ
             void SetAffectsGI(bool affectsGI) override;
             void SetAffectsGIFactor(float affectsGIFactor) override;
 
+            AZ::Aabb GetLocalVisualizationBounds() const override;
+
         private:
 
             // LightDelegateBase overrides...
@@ -58,9 +60,17 @@ namespace AZ
 
             float GetRadius() const;
 
+            struct DiskVisualizationDimensions
+            {
+                float m_topRadius;
+                float m_bottomRadius;
+                float m_height;
+            };
+
+            DiskVisualizationDimensions CalculateDiskVisualizationDimensions(float degrees) const;
+
             LmbrCentral::DiskShapeComponentRequests* m_shapeBus = nullptr;
         };
-
     } // namespace Render
 } // namespace AZ
 

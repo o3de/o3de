@@ -85,5 +85,9 @@ namespace AZ
             }
         }
 
+        AZ::Aabb PolygonLightDelegate::GetLocalVisualizationBounds() const
+        {
+            return AZ::Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), 1.0f);
+        }
     } // namespace Render
 } // namespace AZ

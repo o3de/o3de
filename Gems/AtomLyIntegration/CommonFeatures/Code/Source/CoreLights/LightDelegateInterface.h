@@ -34,23 +34,23 @@ namespace AZ
             virtual void SetConfig(const AreaLightComponentConfig* config) = 0;
             //! Sets the color of the light independent of light intensity. The color is a mask on the total light intensity.
             virtual void SetChroma(const AZ::Color& chroma) = 0;
-            //! Sets the light intensity
+            //! Sets the light intensity.
             virtual void SetIntensity(float intensity) = 0;
             //! Sets the light unit, and returns the converted light intensity.
             virtual float SetPhotometricUnit(PhotometricUnit unit) = 0;
             //! Sets the maximum distance from any part of the surface of the area light at which this light will have an effect.
             virtual void SetAttenuationRadius(float radius) = 0;
-            //! Gets the light intensity
+            //! Gets the light intensity.
             virtual const PhotometricValue& GetPhotometricValue() const = 0;
-            //! Gets the surface area of the shape
+            //! Gets the surface area of the shape.
             virtual float GetSurfaceArea() const = 0;
             //! Returns the number of steradians covered by this light type.
             virtual float GetEffectiveSolidAngle() const = 0;
-            //! Sets if this shape is double-sided (only applicable for 2d shapes)
+            //! Sets if this shape is double-sided (only applicable for 2d shapes).
             virtual void SetLightEmitsBothDirections([[maybe_unused]] bool lightEmitsBothDirections) = 0;
             //! Sets if this light uses linearly transformed cosines (false) or a faster approximation (true). Only applicable for shapes that support LTC.
             virtual void SetUseFastApproximation([[maybe_unused]] bool useFastApproximation) = 0;
-            //! Calculates the atteunation radius for this light type based on a threshold value.
+            //! Calculates the attenuation radius for this light type based on a threshold value.
             virtual float CalculateAttenuationRadius(float lightThreshold) const = 0;
             //! Handle any additional debug display drawing for beyond what the shape already provides.
             virtual void DrawDebugDisplay(const Transform& transform, const Color& color, AzFramework::DebugDisplayRequests& debugDisplay, bool isSelected) const = 0;
@@ -67,13 +67,13 @@ namespace AZ
 
             // Shadows
 
-            //! Sets if shadows should be enabled
+            //! Sets if shadows should be enabled.
             virtual void SetEnableShadow(bool enabled) = 0;
-            //! Sets the shadow bias
+            //! Sets the shadow bias.
             virtual void SetShadowBias(float bias) = 0;
-            //! Sets the maximum resolution of the shadow map
+            //! Sets the maximum resolution of the shadow map.
             virtual void SetShadowmapMaxSize(ShadowmapSize size) = 0;
-            //! Sets the filter method for the shadow
+            //! Sets the filter method for the shadow.
             virtual void SetShadowFilterMethod(ShadowFilterMethod method) = 0;
             //! Sets the sample count for filtering of the shadow boundary, max 64.
             virtual void SetFilteringSampleCount(uint32_t count) = 0;
@@ -84,10 +84,15 @@ namespace AZ
 
             // Global Illumination
             
-            //! Sets if the light should affect diffuse global illumination
+            //! Sets if the light should affect diffuse global illumination.
             virtual void SetAffectsGI(bool affectsGI) = 0;
-            //! Sets the multiplier on the contribution to diffuse global illumination
+            //! Sets the multiplier on the contribution to diffuse global illumination.
             virtual void SetAffectsGIFactor(float affectsGIFactor) = 0;
+
+            // Debug Visualization
+
+            //! Returns the Aabb for the debug visualization of the light.
+            virtual AZ::Aabb GetLocalVisualizationBounds() const = 0;
         };
     } //  namespace Render
 } // namespace AZ
