@@ -42,8 +42,6 @@
 
 #include <cmath>
 
-#pragma optimize("", off)
-
 AZ_DEFINE_BUDGET(MULTIPLAYER);
 
 namespace AZ
@@ -102,10 +100,10 @@ namespace Multiplayer
 
     // Metrics cvars
     void OnEnableNetworkingMetricsChanged(const bool& enabled);
-    AZ_CVAR(bool, bg_enableNetworkingMetrics, true, &OnEnableNetworkingMetricsChanged, AZ::ConsoleFunctorFlags::DontReplicate, "Whether to capture networking metrics");
+    AZ_CVAR(bool, bg_enableNetworkingMetrics, false, &OnEnableNetworkingMetricsChanged, AZ::ConsoleFunctorFlags::DontReplicate, "Whether to capture networking metrics");
     AZ_CVAR(AZ::CVarFixedString, cl_metricsFile, "client_network_metrics.json", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "File of the client metrics file if enabled, placed under <ProjectFolder>/user/metrics");
     AZ_CVAR(AZ::CVarFixedString, sv_metricsFile, "server_network_metrics.json", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "File of the server metrics file if enabled, placed under <ProjectFolder>/user/metrics");
-    
+
     void ConfigureEventLoggerHelper(const AZ::CVarFixedString& filename)
     {
         if (auto eventLoggerFactory = AZ::Interface<AZ::Metrics::IEventLoggerFactory>::Get())
@@ -1455,30 +1453,30 @@ namespace Multiplayer
 
             if (networkSpawnableAssetId.IsValid())
             {
-                AZLOG_WARN("MultiplayerSystemComponent blocked loading a network level. Your multiplayer agent is uninitialized; did you forget to host before loading a network level?")
-                    blockLevelLoad = true;
+                AZLOG_WARN("MultiplayerSystemComponent blocked loading a network level. Your multiplayer agent is uninitialized; did you forget to host before loading a network level?");
+                blockLevelLoad = true;
             }
             break;
         }
         case MultiplayerAgentType::Client:
             if (m_blockClientLoadLevel)
             {
-                AZLOG_WARN("MultiplayerSystemComponent blocked this client from loading a new level. Clients should only attempt to load level when instructed by their server. Disconnect from server before calling LoadLevel.")
-                    blockLevelLoad = true;
+                AZLOG_WARN("MultiplayerSystemComponent blocked this client from loading a new level. Clients should only attempt to load level when instructed by their server. Disconnect from server before calling LoadLevel.");
+                blockLevelLoad = true;
             }
             break;
         case MultiplayerAgentType::ClientServer:
             if (m_playersWaitingToBeSpawned.empty())
             {
-                AZLOG_WARN("MultiplayerSystemComponent blocked this host from loading a new level because you already have a player. Loading a new level could destroy the existing network player entity. Disconnect from the multiplayer simulation before changing levels.")
-                    blockLevelLoad = true;
+                AZLOG_WARN("MultiplayerSystemComponent blocked this host from loading a new level because you already have a player. Loading a new level could destroy the existing network player entity. Disconnect from the multiplayer simulation before changing levels.");
+                blockLevelLoad = true;
             }
             break;
         case MultiplayerAgentType::DedicatedServer:
             if (m_networkInterface->GetConnectionSet().GetConnectionCount() > 0)
             {
-                AZLOG_WARN("MultiplayerSystemComponent blocked this host from loading a new level because clients are connected. Loading a new level would destroy the existing clients' network player entity.")
-                    blockLevelLoad = true;
+                AZLOG_WARN("MultiplayerSystemComponent blocked this host from loading a new level because clients are connected. Loading a new level would destroy the existing clients' network player entity.");
+                blockLevelLoad = true;
             }
             break;
         default:
@@ -1599,5 +1597,3 @@ namespace Multiplayer
     }
     AZ_CONSOLEFREEFUNC(disconnect, AZ::ConsoleFunctorFlags::DontReplicate, "Disconnects any open multiplayer connections");
 }
-
-#pragma optimize("", on)

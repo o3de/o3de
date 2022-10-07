@@ -10,8 +10,6 @@
 #include <AzCore/Metrics/IEventLoggerFactory.h>
 #include <Multiplayer/MultiplayerStats.h>
 
-#pragma optimize("", off)
-
 namespace Multiplayer
 {
     MultiplayerStats::Metric::Metric()
@@ -281,16 +279,13 @@ namespace Multiplayer
                 m_framesSinceLastMetric = 0;
                 m_accumulatedNetworkTimeSinceLastMetric = AZ::Time::ZeroTimeUs;
 
-                AZ::Metrics::InstantArgs instantArgs;
-                instantArgs.m_name = "Metrics Event";
-                instantArgs.m_cat = "Networking";
-                instantArgs.m_args = argsContainer;
-                instantArgs.m_scope = AZ::Metrics::InstantEventScope::Process;
+                AZ::Metrics::CounterArgs counterArgs;
+                counterArgs.m_name = "Metrics Event";
+                counterArgs.m_cat = "Networking";
+                counterArgs.m_args = argsContainer;
 
-                eventLogger->RecordInstantEvent(instantArgs);
+                eventLogger->RecordCounterEvent(counterArgs);
             }
         }
     }
 }
-
-#pragma optimize("", on)
