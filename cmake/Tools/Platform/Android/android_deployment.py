@@ -439,7 +439,7 @@ class AndroidDeployment(object):
 
     def path_exists_on_device(self, path, device_id):
         try:
-            result, output = self.adb_ls(path=path,
+            result, _ = self.adb_ls(path=path,
                                         args=None,
                                         device_id=device_id)
             return result
