@@ -20,14 +20,14 @@ from typing import Union
 import logging as _logging
 # -------------------------------------------------------------------------
 # global scope
-from DccScriptingInterface.Tools.DCC.Blender import _PACKAGENAME
+from DccScriptingInterface.Tools.DCC.Maya import _PACKAGENAME
 _MODULENAME = f'{_PACKAGENAME}.discovery'
 _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 # -------------------------------------------------------------------------
 # dccsi imports
 # the default and currently only supported discovery path
-from DccScriptingInterface.Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_LOCATION
+from DccScriptingInterface.Tools.DCC.Maya.constants import PATH_DCCSI_BLENDER_LOCATION
 # -------------------------------------------------------------------------
 # currently we only support the default win install path for
 # for Blender 3.1, you can modify constants.py or you can

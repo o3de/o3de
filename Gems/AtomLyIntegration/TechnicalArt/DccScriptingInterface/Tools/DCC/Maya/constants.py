@@ -50,6 +50,7 @@ from DccScriptingInterface.Tools.DCC.Maya import ENVAR_PATH_DCCSI_TOOLS_DCC_MAYA
 from DccScriptingInterface.constants import ENVAR_PATH_DCCSI_TOOLS_DCC
 from DccScriptingInterface.constants import ENVAR_PATH_DCCSI_TOOLS
 ENVAR_DCCSI_CONFIG_DCC_MAYA = 'DCCSI_CONFIG_DCC_MAYA'
+DCCSI_CONFIG_DCC_MAYA = True
 
 # this is the shared default requirements.txt file to install for python 3.6.x+
 DCCSI_PYTHON_REQUIREMENTS = Path(PATH_DCCSIG, 'requirements.txt')
@@ -59,62 +60,161 @@ DCCSI_PYTHON_REQUIREMENTS = Path(PATH_DCCSIG, 'requirements.txt')
 from DccScriptingInterface import PATH_PROGRAMFILES_X64
 from DccScriptingInterface import PATH_DCCSI_PYTHON_LIB
 from DccScriptingInterface import O3DE_DEV
+from DccScriptingInterface import ENVAR_DCCSI_PY_DEFAULT
+from DccScriptingInterface import ENVAR_DCCSI_PY_IDE
 
 # reference, here is a list of Maya envars
 # https://github.com/mottosso/Maya-Environment-Variables/blob/master/README.md
+# https://www.regnareb.com/pro/2021/05/new-environment-variables-in-maya-2022/
 
 OBJ_DCCSI_MAINMENU = 'O3deDCCsiMainMenu'
 TAG_DCCSI_MAINMENU = 'O3DE(DCCsi)'
 
-# dcc: Maya ENVAR constants
-ENVAR_DCCSI_PY_VERSION_MAJOR = "DCCSI_PY_VERSION_MAJOR"
-ENVAR_DCCSI_PY_VERSION_MINOR = "DCCSI_PY_VERSION_MINOR"
-ENVAR_DCCSI_PY_VERSION_RELEASE = "DCCSI_PY_VERSION_RELEASE"
-
-ENVAR_MAYA_NO_CONSOLE_WINDOW = "MAYA_NO_CONSOLE_WINDOW"
-ENVAR_MAYA_SHOW_OUTPUT_WINDOW = "MAYA_SHOW_OUTPUT_WINDOW"
-
-TAG_O3DE_DCC_MAYA_MEL = 'dccsi_setup.mel'
-TAG_MAYA_WORKSPACE = 'workspace.mel'
-
-ENVAR_DCCSI_PY_MAYA = 'DCCSI_PY_MAYA'
-
-ENVAR_MAYA_VERSION = 'MAYA_VERSION'
-ENVAR_MAYA_LOCATION = 'MAYA_LOCATION'
-
-ENVAR_MAYA_MODULE_PATH = 'MAYA_MODULE_PATH'
-ENVAR_MAYA_BIN_PATH = 'MAYA_BIN_PATH'
-
-ENVAR_DCCSI_MAYA_PLUG_IN_PATH = 'DCCSI_MAYA_PLUG_IN_PATH'
-ENVAR_MAYA_PLUG_IN_PATH = 'MAYA_PLUG_IN_PATH'
-
-ENVAR_DCCSI_MAYA_SHELF_PATH = 'DCCSI_MAYA_SHELF_PATH'
-ENVAR_MAYA_SHELF_PATH = 'MAYA_SHELF_PATH'
-
-ENVAR_DCCSI_MAYA_XBMLANGPATH = 'DCCSI_MAYA_XBMLANGPATH'
-ENVAR_XBMLANGPATH = 'XBMLANGPATH'
-
-ENVAR_DCCSI_MAYA_SCRIPT_MEL_PATH = 'DCCSI_MAYA_SCRIPT_MEL_PATH'
-ENVAR_DCCSI_MAYA_SCRIPT_PY_PATH = 'DCCSI_MAYA_SCRIPT_PY_PATH'
-ENVAR_DCCSI_MAYA_SCRIPT_PATH = "DCCSI_MAYA_SCRIPT_PATH"
-ENVAR_MAYA_SCRIPT_PATH = 'MAYA_SCRIPT_PATH'
-
-ENVAR_DCCSI_MAYA_SET_CALLBACKS = 'DCCSI_MAYA_SET_CALLBACKS'
-
-ENVAR_MAYA_VP2_DEVICE_OVERRIDE = "MAYA_VP2_DEVICE_OVERRIDE"
-ENVAR_MAYA_OGS_DEVICE_OVERRIDE = "MAYA_OGS_DEVICE_OVERRIDE"
-
 # mimicing all values from: "DccScriptingInterface\Tools\Dev\Windows\Env_DCC_Maya.bat"
+
+# dcc: Maya ENVAR constants
+# default Maya 2023, python version 3.9.7
+# dccsi managed enavrs, the dcc apps python version is propogated
+ENVAR_DCCSI_PY_VERSION_MAJOR = "DCCSI_PY_VERSION_MAJOR"
 DCCSI_PY_VERSION_MAJOR = 3
+ENVAR_DCCSI_PY_VERSION_MINOR = "DCCSI_PY_VERSION_MINOR"
 DCCSI_PY_VERSION_MINOR = 7
+ENVAR_DCCSI_PY_VERSION_RELEASE = "DCCSI_PY_VERSION_RELEASE"
 DCCSI_PY_VERSION_RELEASE = 7
 
-# not actually a maya envar, to do: could rename DCCSI_MAYA_VERSION
-MAYA_VERSION=2022
+# a dccsi envar to set/override the maya version
+ENVAR_MAYA_VERSION = 'MAYA_VERSION'
+MAYA_VERSION = 2023
+
+# a maya managed envar to set/override the project root
+# Specifies the location of your project folder on startup.
+ENVAR_MAYA_PROJECT = 'MAYA_PROJECT'
+MAYA_PROJECT = None  # placeholder, we will populate with game project
+
+# imported above, dccsi managed envars for dccsi local folders
+# ENVAR_PATH_DCCSI_TOOLS_DCC_MAYA
+# PATH_DCCSI_TOOLS_DCC_MAYA
+
+# a maya managed envar for where maya is located
+# The path for the Maya installation directory (this is default win install path)
+ENVAR_MAYA_LOCATION = 'MAYA_LOCATION'
+MAYA_LOCATION = f'{PATH_PROGRAMFILES_X64}\\Autodesk\\Maya {MAYA_VERSION}'
+
+# dccsi managed envar for finding maya's bin folder
+ENVAR_MAYA_BIN_PATH = 'MAYA_BIN_PATH'
+
+# some maya manged envars we are setting
+# disbales Autodesk Customer Involvement Program (CIP), improves shutdown time
+ENVAR_MAYA_DISABLE_CIP = 'MAYA_DISABLE_CIP'
+MAYA_DISABLE_CIP = True
+
+# disables maya Customer Error Reporting (CER)
+ENVAR_MAYA_DISABLE_CER = 'MAYA_DISABLE_CER'
+MAYA_DISABLE_CER = True
+
+# disbales additional maya analytics
+ENVAR_MAYA_DISABLE_CLIC_IPM = 'MAYA_DISABLE_CLIC_IPM'
+MAYA_DISABLE_CLIC_IPM = True
+
+# disables additional maya analytics
+ENVAR_MAYA_DISABLE_ADP = 'MAYA_DISABLE_ADP'
+MAYA_DISABLE_ADP = True
+
+# enables/disables the maya boot console window
+ENVAR_MAYA_NO_CONSOLE_WINDOW = 'MAYA_NO_CONSOLE_WINDOW'
+# as a dev, I need the console for debugging
+MAYA_NO_CONSOLE_WINDOW = False
+
+# in 2022 they disabled the output window by default
+ENVAR_MAYA_SHOW_OUTPUT_WINDOW = 'MAYA_SHOW_OUTPUT_WINDOW'
+MAYA_SHOW_OUTPUT_WINDOW = True
+
+# a dccsi managed enavr to enable/disable our callbacks at boot
+ENVAR_DCCSI_MAYA_SET_CALLBACKS = 'DCCSI_MAYA_SET_CALLBACKS'
+DCCSI_MAYA_SET_CALLBACKS = True
+
+# dccsi managed envar for our local maya plugins path
+ENVAR_DCCSI_MAYA_PLUG_IN_PATH = 'DCCSI_MAYA_PLUG_IN_PATH'
+DCCSI_MAYA_PLUG_IN_PATH = f'{PATH_DCCSI_TOOLS_DCC_MAYA}\\plugins'
+
+# maya managed enavr for dding plugin search paths
+ENVAR_MAYA_PLUG_IN_PATH = 'MAYA_PLUG_IN_PATH'
+
+# dccsi managed envar for our local maya shelf data
+ENVAR_DCCSI_MAYA_SHELF_PATH = 'DCCSI_MAYA_SHELF_PATH'
+DCCSI_MAYA_SHELF_PATH = f'{PATH_DCCSI_TOOLS_DCC_MAYA}\\Prefs\\Shelves'
+
+# maya managed enavr for adding shelf paths
+ENVAR_MAYA_SHELF_PATH = 'MAYA_SHELF_PATH'
+
+# dccsi managed envar for our local icon images
+ENVAR_DCCSI_MAYA_XBMLANGPATH = 'DCCSI_MAYA_XBMLANGPATH'
+DCCSI_MAYA_XBMLANGPATH = f'{PATH_DCCSI_TOOLS_DCC_MAYA}\\Prefs\\Icons'
+
+# maya managed enavr for adding icon search paths
+ENVAR_XBMLANGPATH = 'XBMLANGPATH'
+
+# dccsi managed envar for ou local mel scripts (please, do not use mel if you can avoid it)
+ENVAR_DCCSI_MAYA_SCRIPT_MEL_PATH = 'DCCSI_MAYA_SCRIPT_MEL_PATH'
+DCCSI_MAYA_SCRIPT_MEL_PATH = f'{PATH_DCCSI_TOOLS_DCC_MAYA}\\Scripts\\Mel'
+
+# dccsi managed envar for ou local python scripts
+ENVAR_DCCSI_MAYA_SCRIPT_PY_PATH = 'DCCSI_MAYA_SCRIPT_PY_PATH'
+DCCSI_MAYA_SCRIPT_PY_PATH = f'{PATH_DCCSI_TOOLS_DCC_MAYA}\\Scripts\\Python'
+
+# dccsi managed enavr for our local scripts root (userSetup.py lives here)
+ENVAR_DCCSI_MAYA_SCRIPT_PATH = "DCCSI_MAYA_SCRIPT_PATH"
+DCCSI_MAYA_SCRIPT_PATH = f'{PATH_DCCSI_TOOLS_DCC_MAYA}\\Scripts'
+
+# maya managed envar for adding script search paths
+ENVAR_MAYA_SCRIPT_PATH = 'MAYA_SCRIPT_PATH'
+
+# a slug for the DX11 tag
+SLUG_MAYA_DX11 = 'VirtualDeviceDx11'
+
+# maya managed envar
+# "MAYA_VP2_DEVICE_OVERRIDE" can be set to "VirtualDeviceDx11",
+# "VirtualDeviceGLCore", or "VirtualDeviceGL"
+ENVAR_MAYA_VP2_DEVICE_OVERRIDE = "MAYA_VP2_DEVICE_OVERRIDE"
+MAYA_VP2_DEVICE_OVERRIDE = SLUG_MAYA_DX11
+
+# maya managed envar
+# "MAYA_OGS_DEVICE_OVERRIDE" can be set to "VirtualDeviceDx11"
+# to override the Viewport 2.0 rendering engine.
+ENVAR_MAYA_OGS_DEVICE_OVERRIDE = "MAYA_OGS_DEVICE_OVERRIDE"
+MAYA_OGS_DEVICE_OVERRIDE = SLUG_MAYA_DX11
+
+SLUG_O3DE_DCC_MAYA_MEL = 'dccsi_setup.mel'
+SLUG_MAYA_WORKSPACE = 'workspace.mel'
+
+# dccsi envar to find maya executable
+SLUG_MAYA_EXE = 'maya.exe'
+ENVAR_DCCSI_MAYA_EXE = 'DCCSI_MAYA_EXE'
+DCCSI_MAYA_EXE = f'{MAYA_BIN_PATH}\\{SLUG_MAYA_EXE}'
+
+# dccsi envar to get maya batch executable (headless)
+SLUG_MAYABATCH_EXE = 'mayabatch.exe'
+ENVAR_DCCSI_MAYABATCH_EXE = 'DCCSI_MAYABATCH_EXE'
+DCCSI_MAYABATCH_EXE = f'{MAYA_BIN_PATH}\\{SLUG_MAYABATCH_EXE}}'
+
+# slug for mayapy.exe
+SLUG_MAYAPY_EXE = 'mayapy.exe'
+
+# a dccsi envar to store the path to mayapy.exe
+# we can pass this to IDE's like wing to access as python launch interpreter
+ENVAR_DCCSI_PY_MAYA = 'DCCSI_PY_MAYA'
+DCCSI_PY_MAYA = f'{ENVAR_MAYA_BIN_PATH}\\{SLUG_MAYAPY_EXE}'
+
+DCCSI_MAYA_WIKI_URL = 'https://github.com/o3de/o3de/wiki/O3DE-DCCsi-Tools-DCC-Maya'
+
+# ---- everything below moves out of constants ----
+
+DCCSI_MAYA_EXE = Path(MAYA_BIN_PATH, 'maya.exe')
+
+DCCSI_MAYABATCH_EXE = Path(MAYA_BIN_PATH, 'mayabatch.exe')
 
 # is a maya envar
 MAYA_PROJECT = PATH_DCCSIG.as_posix()
-
 
 # is a maya envar
 MAYA_MODULE_PATH = PATH_DCCSI_TOOLS_DCC_MAYA.as_posix()
@@ -127,11 +227,7 @@ MAYA_LOCATION = Path(PATH_PROGRAMFILES_X64,
 # is a maya envar
 MAYA_BIN_PATH = Path(MAYA_LOCATION, 'bin').as_posix()
 
-DCCSI_MAYA_SET_CALLBACKS = True
 
-# is a maya envar
-MAYA_NO_CONSOLE_WINDOW = False
-MAYA_SHOW_OUTPUT_WINDOW = True
 
 DCCSI_MAYA_EXE = Path(MAYA_BIN_PATH, 'maya.exe')
 

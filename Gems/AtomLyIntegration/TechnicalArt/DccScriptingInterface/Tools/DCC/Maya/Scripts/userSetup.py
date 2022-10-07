@@ -70,11 +70,11 @@ DCCSI_TOOLS_MAYA_SCRIPTS_PATH = Path(_MODULE_PATH.parent.as_posix())
 _LOGGER.debug('_DCCSI_TOOLS_MAYA_SCRIPTS_PATH: {}'.format(DCCSI_TOOLS_MAYA_SCRIPTS_PATH))
 add_site_dir(DCCSI_TOOLS_MAYA_SCRIPTS_PATH)
 
-PATH_DCCSI_TOOLS_MAYA = Path(DCCSI_TOOLS_MAYA_SCRIPTS_PATH.parent)
-PATH_DCCSI_TOOLS_MAYA = Path(os.getenv('PATH_DCCSI_TOOLS_MAYA', PATH_DCCSI_TOOLS_MAYA.as_posix()))
-add_site_dir(PATH_DCCSI_TOOLS_MAYA.as_posix())
+PATH_DCCSI_TOOLS_DCC_MAYA = Path(DCCSI_TOOLS_MAYA_SCRIPTS_PATH.parent)
+PATH_DCCSI_TOOLS_DCC_MAYA = Path(os.getenv('PATH_DCCSI_TOOLS_DCC_MAYA', PATH_DCCSI_TOOLS_DCC_MAYA.as_posix()))
+add_site_dir(PATH_DCCSI_TOOLS_DCC_MAYA.as_posix())
 
-PATH_DCCSI_TOOLS_DCC = Path(PATH_DCCSI_TOOLS_MAYA.parent)
+PATH_DCCSI_TOOLS_DCC = Path(PATH_DCCSI_TOOLS_DCC_MAYA.parent)
 PATH_DCCSI_TOOLS_DCC = Path(os.getenv('PATH_DCCSI_TOOLS_DCC', PATH_DCCSI_TOOLS_DCC.as_posix()))
 
 PATH_DCCSI_TOOLS = Path(PATH_DCCSI_TOOLS_DCC.parent)
@@ -116,7 +116,7 @@ _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH}')
 _LOGGER.debug(f'PATH_DCCSIG: {PATH_DCCSIG}')
 _LOGGER.debug(f'PATH_DCCSI_TOOLS: {PATH_DCCSI_TOOLS}')
 _LOGGER.debug(f'PATH_DCCSI_TOOLS_DCC: {PATH_DCCSI_TOOLS_DCC}')
-_LOGGER.debug(f'PATH_DCCSI_TOOLS_MAYA: {PATH_DCCSI_TOOLS_MAYA}')
+_LOGGER.debug(f'PATH_DCCSI_TOOLS_DCC_MAYA: {PATH_DCCSI_TOOLS_DCC_MAYA}')
 
 # flag to turn off setting up callbacks, until they are fully implemented
 # To Do: consider making it a settings option to define and enable/disable
@@ -323,7 +323,7 @@ def post_startup():
     DccScriptingInterface.Tools.DCC.Maya.Scripts.set_callbacks.install_fix_paths()
 
     # set the project workspace
-    _project_workspace = os.path.join(_PATH_O3DE_PROJECT, TAG_MAYA_WORKSPACE)
+    _project_workspace = os.path.join(_PATH_O3DE_PROJECT, SLUG_MAYA_WORKSPACE)
     if os.path.isfile(_project_workspace):
         try:
             # load workspace
@@ -344,7 +344,7 @@ def post_startup():
         _LOGGER.info('Add UI dependent tools')
         # wrap in a try, because we haven't implmented it yet
         try:
-            mel.eval(str(r'source "{}"'.format(TAG_O3DE_DCC_MAYA_MEL)))
+            mel.eval(str(r'source "{}"'.format(SLUG_O3DE_DCC_MAYA_MEL)))
         except Exception as e:
             _LOGGER.exception(f'{e} , traceback =', exc_info=True)
             pass
