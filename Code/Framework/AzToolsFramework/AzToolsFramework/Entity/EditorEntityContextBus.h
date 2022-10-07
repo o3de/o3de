@@ -34,7 +34,7 @@ namespace AzToolsFramework
         : public AZ::EBusTraits
     {
     public:
-        static const bool LocklessDispatch = true;
+        static constexpr bool LocklessDispatch = true;
 
         virtual ~EditorEntityContextRequests() {}
 
