@@ -77,7 +77,7 @@ namespace AZ::Render
             }
 
             const auto [topRadius, bottomRadius, height] = CalculateDiskVisualizationDimensions(DefaultConeAngleDegrees);
-            return AZStd::pair{ topRadius, height };
+            return AZStd::pair{ AZ::GetMax(topRadius, bottomRadius), height };
         }();
 
         return AZ::Aabb::CreateFromMinMax(AZ::Vector3(-radius, -radius, 0.0f), AZ::Vector3(radius, radius, height));
