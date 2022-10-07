@@ -265,7 +265,7 @@ namespace Multiplayer
 
     bool MultiplayerSystemComponent::StartHosting(uint16_t port, bool isDedicated)
     {
-        if (port == 0)
+        if (port == UseDefaultHostPort)
         {
             port = sv_port;
         }
