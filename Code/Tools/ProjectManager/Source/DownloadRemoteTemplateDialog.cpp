@@ -61,7 +61,7 @@ namespace O3DE::ProjectManager
         m_installPath = new FormFolderBrowseEditWidget(tr("Local template directory"));
         m_installPath->setMinimumSize(QSize(600, 0));
         m_installPath->lineEdit()->setText(
-            QDir::toNativeSeparators(ProjectUtils::GetDefaultProjectPath() + "/" + projectTemplate.m_name));
+            QDir::toNativeSeparators(ProjectUtils::GetDefaultTemplatePath() + "/" + projectTemplate.m_name));
         vLayout->addWidget(m_installPath);
 
         vLayout->addSpacing(20);
