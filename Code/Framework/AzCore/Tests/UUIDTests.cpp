@@ -8,7 +8,7 @@
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/std/containers/unordered_set.h>
-
+#include <random>
 
 namespace UnitTest
 {
@@ -402,4 +402,66 @@ namespace UnitTest
     static_assert(AZ::UuidInternal::GetValue('f' + 1) == AZStd::numeric_limits<AZStd::byte>::max());
     static_assert(AZ::UuidInternal::GetValue('A' - 1) == AZStd::numeric_limits<AZStd::byte>::max());
     static_assert(AZ::UuidInternal::GetValue('F' + 1) == AZStd::numeric_limits<AZStd::byte>::max());
+
+    
+    class UuidBenchmark : public AllocatorsBenchmarkFixture
+    {
+    public:
+        void SetUp(::benchmark::State& st) override
+        {
+            AllocatorsBenchmarkFixture::SetUp(st);
+            SetUpInternal();
+        }
+
+        void SetUp(const ::benchmark::State& st) override
+        {
+            AllocatorsBenchmarkFixture::SetUp(st);
+            SetUpInternal();
+        }
+
+        void TearDown(::benchmark::State& st) override
+        {
+            TearDownInternal();
+            AllocatorsBenchmarkFixture::TearDown(st);
+        }
+
+        void TearDown(const ::benchmark::State& st) override
+        {
+            TearDownInternal();
+            AllocatorsBenchmarkFixture::TearDown(st);
+        }
+
+        void SetUpInternal()
+        {
+            std::mt19937 randomEngine(0);
+            m_uuidStrings.resize(100);
+            // Generate some random guid strings, using a random mix of guid formats
+            for (AZStd::string& uuidString : m_uuidStrings)
+            {
+                bool useBrackets = std::uniform_int_distribution<>{ 0, 1 }(randomEngine);
+                bool useDashes = std::uniform_int_distribution<>{ 0, 1 }(randomEngine);
+                uuidString = AZ::Uuid::CreateRandom().ToString<AZStd::string>(useBrackets, useDashes);
+            }
+        }
+
+        void TearDownInternal()
+        {
+            m_uuidStrings.clear();
+            m_uuidStrings.shrink_to_fit();
+        }
+
+        AZStd::vector<AZStd::string> m_uuidStrings;
+    };
+
+    BENCHMARK_DEFINE_F(UuidBenchmark, CreateString_Benchmark)(::benchmark::State& st)
+    {
+        while (st.KeepRunning())
+        {
+            for (const AZStd::string& uuidString : m_uuidStrings)
+            {
+                AZ::Uuid::CreateString(uuidString);
+            }
+        }
+    }
+    BENCHMARK_REGISTER_F(UuidBenchmark, CreateString_Benchmark)->Unit(benchmark::kNanosecond);
 }
