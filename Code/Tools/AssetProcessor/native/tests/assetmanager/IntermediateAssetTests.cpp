@@ -426,11 +426,6 @@ namespace UnitTests
         // Reprocess the file
         m_jobDetailsList.clear();
 
-        // AssessModifiedFile is going to set up a OneShotTimer with a 1ms delay on it.  We have to wait a short time for that timer to
-        // elapse before we can process that event. If we use the alternative processEvents that loops for X milliseconds we could
-        // accidentally process too many events.
-        AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(2));
-
         // Unfortunately we need to just process the events a few times without doing any checks here
         // due to the previous step queuing work which is sometimes executed immediately.
         // Without a way to consistently be sure whether the work has been done or not, we need to just run enough until the job is emitted
@@ -497,10 +492,10 @@ namespace UnitTests
         SourceDatabaseEntry source1{ m_scanfolder.m_scanFolderID, "folder/parent.txt", AZ::Uuid::CreateRandom(), "fingerprint" };
         SourceDatabaseEntry source2{ m_platformConfig->GetIntermediateAssetsScanFolderId().value(), "folder/child.txt", AZ::Uuid::CreateRandom(), "fingerprint" };
 
-        auto sourceFile = AZ::IO::Path(m_scanfolder.m_scanFolder) / "folder/parent.txt";
-        auto intermediateFile = MakePath("folder/child.txt", true);
-        auto cacheFile = MakePath("pc/folder/product.txt", false);
-        auto cacheFile2 = MakePath("pc/folder/product777.txt", false);
+        auto sourceFile = AZ::IO::Path(m_scanfolder.m_scanFolder) / "folder/parent.txt"; // This file should NOT be deleted
+        auto intermediateFile = MakePath("folder/child.txt", true); // This file should be deleted
+        auto cacheFile = MakePath("folder/product.txt", false); // This file should NOT be deleted
+        auto cacheFile2 = MakePath("folder/product777.txt", false); // This file should be deleted
         UnitTestUtils::CreateDummyFile(sourceFile.Native().c_str(), QString("tempdata"));
         UnitTestUtils::CreateDummyFile(intermediateFile.c_str(), QString("tempdata"));
         UnitTestUtils::CreateDummyFile(cacheFile.c_str(), QString("tempdata"));
@@ -562,10 +557,17 @@ namespace UnitTests
 
         RunFile(0);
 
-        // Only 1 file (the one in the intermediate folder) should be marked for delete
-        m_assetProcessorManager->CheckActiveFiles(1);
+        QCoreApplication::processEvents(); // execute ProcessFilesToExamineQueue
+
+        m_assetProcessorManager->CheckActiveFiles(0);
         m_assetProcessorManager->CheckFilesToExamine(0);
         m_assetProcessorManager->CheckJobEntries(0);
+
+        ProductDatabaseEntry checkEntry;
+        ASSERT_TRUE(m_stateData->GetProductByProductID(product1.m_productID, checkEntry));
+        ASSERT_FALSE(m_stateData->GetProductByProductID(product2.m_productID, checkEntry));
+        ASSERT_TRUE(AZ::IO::SystemFile::Exists(sourceFile.c_str()));
+        ASSERT_FALSE(AZ::IO::SystemFile::Exists(intermediateFile.c_str()));
     }
 
     TEST_F(IntermediateAssetTests, Override_IntermediateFileProcessedFirst_CausesFailure)

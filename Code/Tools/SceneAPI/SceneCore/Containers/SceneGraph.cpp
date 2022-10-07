@@ -89,16 +89,16 @@ namespace AZ
                         {
                             return self.Find(root, path);
                         })
-                        ->Method("GetNodeContent", [](const SceneGraph& self, NodeIndex node) -> GraphObjectProxy*
-                        {
+
+                        ->Method("GetNodeContent", [](const SceneGraph& self, NodeIndex node) -> GraphObjectProxy
+                         {
                             auto graphObject = self.GetNodeContent(node);
                             if (graphObject)
                             {
-                                GraphObjectProxy* proxy = aznew GraphObjectProxy(graphObject);
-                                return proxy;
+                                return GraphObjectProxy(graphObject);
                             }
-                            return aznew GraphObjectProxy(nullptr);
-                        });
+                            return GraphObjectProxy(nullptr);
+                         });
                 }
             }
 

@@ -1052,11 +1052,11 @@ namespace AZ
             m_pipelineStatesLookupNeedsRebuild = false;
         }
 
-        RenderPipelinePtr Scene::FindRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle)
+        RenderPipelinePtr Scene::FindRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle, ViewType viewType)
         {
             for (auto renderPipeline : m_pipelines)
             {
-                if (renderPipeline->GetWindowHandle() == windowHandle)
+                if (renderPipeline->GetWindowHandle() == windowHandle && renderPipeline->GetViewType() == viewType)
                 {
                     return renderPipeline;
                 }

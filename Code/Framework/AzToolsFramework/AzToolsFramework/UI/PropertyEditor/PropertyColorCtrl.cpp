@@ -9,6 +9,7 @@
 #include "PropertyQTConstants.h"
 #include <AzQtComponents/Components/Widgets/ColorPicker.h>
 #include <AzQtComponents/Utilities/Conversions.h>
+#include <AzQtComponents/Utilities/ColorUtilities.h>
 #include <QtWidgets/QSlider>
 #include <QtWidgets/QLineEdit>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
@@ -128,13 +129,7 @@ namespace AzToolsFramework
                 m_pColorDialog->setCurrentColor(azColor);
             }
 
-            int R, G, B, A;
-            m_color.getRgb(&R, &G, &B, &A);
-            auto colorStr =
-                m_alphaChannelEnabled
-                ? QStringLiteral("%1,%2,%3,%4").arg(R).arg(G).arg(B).arg(A)
-                : QStringLiteral("%1,%2,%3").arg(R).arg(G).arg(B)
-                ;
+            auto colorStr = AzQtComponents::MakePropertyDisplayStringInts(m_color, m_alphaChannelEnabled);
             m_colorEdit->setText(colorStr);
         }
     }
@@ -196,6 +191,8 @@ namespace AzToolsFramework
 
         if (m_config.m_propertyColorSpaceId != m_config.m_colorPickerDialogColorSpaceId)
         {
+            m_pColorDialog->setAlternateColorspaceEnabled(true);
+
             AZStd::string propertyColorSpaceName = m_config.m_colorSpaceNames[m_config.m_propertyColorSpaceId];
             AZStd::string dialogColorSpaceName = m_config.m_colorSpaceNames[m_config.m_colorPickerDialogColorSpaceId];
             if (!propertyColorSpaceName.empty() && !dialogColorSpaceName.empty())
@@ -203,12 +200,22 @@ namespace AzToolsFramework
                 QString comment = AZStd::string::format("Mixing space: %s | Final space: %s", dialogColorSpaceName.c_str(), propertyColorSpaceName.c_str()).c_str();
                 m_pColorDialog->setComment(comment);
             }
+
+            if (!propertyColorSpaceName.empty())
+            {
+                m_pColorDialog->setAlternateColorspaceName(propertyColorSpaceName.c_str());
+            }
+            else
+            {
+                m_pColorDialog->setAlternateColorspaceName("Output");
+            }
         }
 
         connect(m_pColorDialog, &AzQtComponents::ColorPicker::currentColorChanged, this, 
             [=](AZ::Color color)
         {
             color = TransformColor(color, m_config.m_colorPickerDialogColorSpaceId, m_config.m_propertyColorSpaceId);
+            m_pColorDialog->setAlternateColorspaceValue(color);
             onSelected(AzQtComponents::toQColor(color));
         });
 

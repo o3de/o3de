@@ -40,19 +40,10 @@ namespace AZ
                     ;
             }
         }
-        
+
         const Data::Asset<ImageMipChainAsset>& StreamingImageAsset::GetMipChainAsset(size_t mipChainIndex) const
         {
             return m_mipChains[mipChainIndex].m_asset;
-        }
-
-        void StreamingImageAsset::ReleaseMipChainAssets()
-        {
-            // Release loaded mipChain asset
-            for (uint32_t mipChainIndex = 0; mipChainIndex < m_mipChains.size() - 1; mipChainIndex++)
-            {
-                m_mipChains[mipChainIndex].m_asset.Release();
-            }
         }
 
         const ImageMipChainAsset& StreamingImageAsset::GetTailMipChain() const
@@ -176,6 +167,19 @@ namespace AZ
             }
 
             return mipChainAsset;
+        }
+
+        bool StreamingImageAsset::HasFullMipChainAssets() const
+        {
+            for (const auto& mipChain : m_mipChains)
+            {
+                if (mipChain.m_asset.GetId().IsValid() && !mipChain.m_asset.GetData())
+                {
+                    // if the asset id is valid but the asset doesn't contain asset data, return false
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }

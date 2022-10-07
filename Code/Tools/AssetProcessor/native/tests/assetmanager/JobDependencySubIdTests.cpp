@@ -45,7 +45,7 @@ namespace UnitTests
 
         SourceFileDependencyEntry dependency1{ AZ::Uuid::CreateRandom(),
                                                source2.m_sourceGuid,
-                                               source1.m_sourceName.c_str(),
+                                               PathOrUuid(source1.m_sourceName),
                                                SourceFileDependencyEntry::DEP_JobToJob,
                                                0,
                                                 useSubId ? AZStd::to_string(product2.m_subID).c_str() : "" };
@@ -79,10 +79,6 @@ namespace UnitTests
 
         m_assetProcessorManager->CheckActiveFiles(1);
 
-        // AssessModifiedFile is going to set up a OneShotTimer with a 1ms delay on it.  We have to wait a short time for that timer to
-        // elapse before we can process that event. If we use the alternative processEvents that loops for X milliseconds we could
-        // accidentally process too many events.
-        AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(10));
         QCoreApplication::processEvents();
 
         m_assetProcessorManager->CheckActiveFiles(0);
@@ -127,10 +123,6 @@ namespace UnitTests
 
         m_assetProcessorManager->CheckActiveFiles(1);
 
-        // AssessModifiedFile is going to set up a OneShotTimer with a 1ms delay on it.  We have to wait a short time for that timer to
-        // elapse before we can process that event. If we use the alternative processEvents that loops for X milliseconds we could
-        // accidentally process too many events.
-        AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(10));
         QCoreApplication::processEvents();
 
         m_assetProcessorManager->CheckActiveFiles(0);

@@ -140,8 +140,24 @@ namespace ShaderManagementConsole
         // Find all material types that reference shaderFilePath
         AZStd::list<AZStd::string> materialTypeSources;
 
+        bool foundSourceInfo = false;
+        AZStd::string watchFolder;
+        AZ::Data::AssetInfo shaderAssetInfo;
+        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+            foundSourceInfo,
+            &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath,
+            shaderFilePath.c_str(),
+            shaderAssetInfo,
+            watchFolder);
+
+        if (!foundSourceInfo)
+        {
+            AZ_Error("FindMaterialAssetsUsingShader", false, "Failed to find source file info %s.", shaderFilePath.c_str());
+            return {};
+        }
+
         assetDatabaseConnection.QuerySourceDependencyByDependsOnSource(
-            shaderFilePath.c_str(), AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_Any,
+            shaderAssetInfo.m_assetId.m_guid, shaderAssetInfo.m_relativePath.c_str(), watchFolder.c_str(), AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_Any,
             [&](AzToolsFramework::AssetDatabase::SourceFileDependencyEntry& sourceFileDependencyEntry)
             {
                 AZStd::string relativeSourcePath;
@@ -161,7 +177,6 @@ namespace ShaderManagementConsole
             });
 
         // Find all materials that reference any of the material types using this shader
-        AZStd::string watchFolder;
         AZ::Data::AssetInfo materialTypeSourceAssetInfo;
         AZStd::list<AzToolsFramework::AssetDatabase::ProductDatabaseEntry> productDependencies;
         for (const auto& materialTypeSource : materialTypeSources)
