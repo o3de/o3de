@@ -84,7 +84,10 @@ namespace AZ::Render
     }
 
     void DiskLightDelegate::DrawDebugDisplay(
-        const Transform& transform, [[maybe_unused]] const Color&, AzFramework::DebugDisplayRequests& debugDisplay, bool isSelected) const
+        const Transform& transform,
+        [[maybe_unused]] const Color& color,
+        AzFramework::DebugDisplayRequests& debugDisplay,
+        bool isSelected) const
     {
         debugDisplay.PushMatrix(transform);
 

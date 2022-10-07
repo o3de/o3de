@@ -38,6 +38,14 @@ namespace AZ
 
         private:
             void HandleShapeChanged() override;
+
+            struct SimpleSpotVisualizationDimensions
+            {
+                float m_radius;
+                float m_height;
+            };
+
+            SimpleSpotVisualizationDimensions CalculateSimpleSpotVisualizationDimensions(float degrees) const;
         };
 
     } // namespace Render

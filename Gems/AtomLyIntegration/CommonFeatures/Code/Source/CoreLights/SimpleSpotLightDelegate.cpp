@@ -6,9 +6,9 @@
  *
  */
 
-#include <CoreLights/SimpleSpotLightDelegate.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <AtomLyIntegration/CommonFeatures/CoreLights/AreaLightComponentConfig.h>
+#include <CoreLights/SimpleSpotLightDelegate.h>
 
 namespace AZ::Render
 {
@@ -17,7 +17,7 @@ namespace AZ::Render
     {
         InitBase(entityId);
     }
-    
+
     void SimpleSpotLightDelegate::HandleShapeChanged()
     {
         if (GetLightHandle().IsValid())
@@ -33,12 +33,12 @@ namespace AZ::Render
         float intensity = GetPhotometricValue().GetCombinedIntensity(PhotometricUnit::Lumen);
         return sqrt(intensity / lightThreshold);
     }
-        
+
     float SimpleSpotLightDelegate::GetSurfaceArea() const
     {
         return 0.0f;
     }
-    
+
     void SimpleSpotLightDelegate::SetShutterAngles(float innerAngleDegrees, float outerAngleDegrees)
     {
         if (GetLightHandle().IsValid())
@@ -46,41 +46,49 @@ namespace AZ::Render
             GetFeatureProcessor()->SetConeAngles(GetLightHandle(), DegToRad(innerAngleDegrees), DegToRad(outerAngleDegrees));
         }
     }
-    
-    void SimpleSpotLightDelegate::DrawDebugDisplay(const Transform& transform, const Color& /*color*/, AzFramework::DebugDisplayRequests& debugDisplay, bool isSelected) const
+
+    SimpleSpotLightDelegate::SimpleSpotVisualizationDimensions SimpleSpotLightDelegate::CalculateSimpleSpotVisualizationDimensions(
+        const float degrees) const
     {
-        if (isSelected)
+        const float attenuationRadius = GetConfig()->m_attenuationRadius;
+        const float shutterAngleRadians = DegToRad(degrees);
+        const float coneRadius = AZ::Sin(shutterAngleRadians) * attenuationRadius;
+        const float coneHeight = AZ::Cos(shutterAngleRadians) * attenuationRadius;
+        return SimpleSpotVisualizationDimensions{ coneRadius, coneHeight };
+    }
+
+    void SimpleSpotLightDelegate::DrawDebugDisplay(
+        const Transform& transform,
+        [[maybe_unused]] const Color& color,
+        AzFramework::DebugDisplayRequests& debugDisplay,
+        [[maybe_unused]] bool isSelected) const
+    {
+        // Draw a cone using the cone angle and attenuation radius
+        auto DrawCone = [&debugDisplay](uint32_t numRadiusLines, float radius, float height, const AZ::Color& color, float brightness)
         {
-            float innerRadians = DegToRad(GetConfig()->m_innerShutterAngleDegrees);
-            float outerRadians = DegToRad(GetConfig()->m_outerShutterAngleDegrees);
-            float radius = GetConfig()->m_attenuationRadius;
+            const Color displayColor = Color(color.GetAsVector3() * brightness);
+            debugDisplay.SetColor(displayColor);
+            debugDisplay.DrawWireDisk(Vector3(0.0, 0.0, height), Vector3::CreateAxisZ(), radius);
 
-            // Draw a cone using the cone angle and attenuation radius
-            innerRadians = GetMin(innerRadians, outerRadians);
-            float coneRadiusInner = sin(innerRadians) * radius;
-            float coneHeightInner = cos(innerRadians) * radius;
-            float coneRadiusOuter = sin(outerRadians) * radius;
-            float coneHeightOuter = cos(outerRadians) * radius;
-
-            debugDisplay.PushMatrix(transform);
-
-            auto DrawCone = [&debugDisplay](uint32_t numRadiusLines, float radius, float height, float brightness)
+            for (uint32_t i = 0; i < numRadiusLines; ++i)
             {
-                debugDisplay.SetColor(Color(brightness, brightness, brightness, 1.0f));
-                debugDisplay.DrawWireDisk(Vector3(0.0, 0.0, height), Vector3::CreateAxisZ(), radius);
-            
-                for (uint32_t i = 0; i < numRadiusLines; ++i)
-                {
-                    float radiusLineAngle = float(i) / numRadiusLines * Constants::TwoPi;
-                    debugDisplay.DrawLine(Vector3::CreateZero(), Vector3(cos(radiusLineAngle) * radius, sin(radiusLineAngle) * radius, height));
-                }
-            };
-            
-            DrawCone(16, coneRadiusInner, coneHeightInner, 1.0f);
-            DrawCone(16, coneRadiusOuter, coneHeightOuter, 0.65f);
+                float radiusLineAngle = float(i) / numRadiusLines * Constants::TwoPi;
+                debugDisplay.DrawLine(
+                    Vector3::CreateZero(), Vector3(AZ::Cos(radiusLineAngle) * radius, AZ::Sin(radiusLineAngle) * radius, height));
+            }
+        };
 
-            debugDisplay.PopMatrix();
-        }
+        debugDisplay.PushMatrix(transform);
+
+        const auto innerCone = CalculateSimpleSpotVisualizationDimensions(
+            AZ::GetMin(GetConfig()->m_innerShutterAngleDegrees, GetConfig()->m_outerShutterAngleDegrees));
+        const auto outerCone = CalculateSimpleSpotVisualizationDimensions(GetConfig()->m_outerShutterAngleDegrees);
+
+        const Color coneColor = isSelected ? Color::CreateOne() : Color(0.0f, 0.75f, 0.75f, 1.0f);
+        DrawCone(16, innerCone.m_radius, innerCone.m_height, coneColor, 1.0f);
+        DrawCone(16, outerCone.m_radius, outerCone.m_height, coneColor, 0.75f);
+
+        debugDisplay.PopMatrix();
     }
 
     void SimpleSpotLightDelegate::SetAffectsGI(bool affectsGI)
@@ -101,6 +109,14 @@ namespace AZ::Render
 
     AZ::Aabb SimpleSpotLightDelegate::GetLocalVisualizationBounds() const
     {
-        return AZ::Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), 1.0f);
+        const auto [radius, height] = [this]
+        {
+            const auto [innerRadius, innerHeight] = CalculateSimpleSpotVisualizationDimensions(
+                AZ::GetMin(GetConfig()->m_outerShutterAngleDegrees, GetConfig()->m_innerShutterAngleDegrees));
+            const auto [outerRadius, outerHeight] = CalculateSimpleSpotVisualizationDimensions(GetConfig()->m_outerShutterAngleDegrees);
+            return AZStd::pair{ AZ::GetMax(innerRadius, outerRadius), AZ::GetMax(innerHeight, outerHeight) };
+        }();
+
+        return AZ::Aabb::CreateFromMinMax(AZ::Vector3(-radius, -radius, 0.0f), AZ::Vector3(radius, radius, height));
     }
 } // namespace AZ::Render
