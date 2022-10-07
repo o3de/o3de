@@ -150,7 +150,7 @@ namespace AssetValidation
                         if (randomizer.GetRandom() % 100 < changePercent)
                         {
                             ++thisChangeCount;
-                            notificationInterface->AssetChanged(thisElement.second);
+                            notificationInterface->AssetChanged({ thisElement.second });
                         }
                     }
 

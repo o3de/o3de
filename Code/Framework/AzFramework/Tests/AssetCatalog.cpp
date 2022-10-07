@@ -114,7 +114,7 @@ namespace UnitTest
                 AzFramework::AssetSystem::AssetNotificationMessage message("test", AzFramework::AssetSystem::AssetNotificationMessage::AssetChanged, AZ::Uuid::CreateRandom(), "");
                 message.m_assetId = asset1;
                 message.m_dependencies.emplace_back(asset2, 0);
-                notificationInterface->AssetChanged(message);
+                notificationInterface->AssetChanged({ message });
             }
 
             {
@@ -123,7 +123,7 @@ namespace UnitTest
                 message.m_assetId = asset2;
                 message.m_dependencies.emplace_back(asset3, 0);
                 message.m_dependencies.emplace_back(asset4, 0);
-                notificationInterface->AssetChanged(message);
+                notificationInterface->AssetChanged({ message });
             }
 
             {
@@ -131,21 +131,21 @@ namespace UnitTest
                 AzFramework::AssetSystem::AssetNotificationMessage message("test", AzFramework::AssetSystem::AssetNotificationMessage::AssetChanged, AZ::Uuid::CreateRandom(), "");
                 message.m_assetId = asset3;
                 message.m_dependencies.emplace_back(asset5, 0);
-                notificationInterface->AssetChanged(message);
+                notificationInterface->AssetChanged({ message });
             }
 
             {
                 m_assetCatalog->RegisterAsset(asset4, info4);
                 AzFramework::AssetSystem::AssetNotificationMessage message("test", AzFramework::AssetSystem::AssetNotificationMessage::AssetChanged, AZ::Uuid::CreateRandom(), "");
                 message.m_assetId = asset4;
-                notificationInterface->AssetChanged(message);
+                notificationInterface->AssetChanged({ message });
             }
 
             {
                 m_assetCatalog->RegisterAsset(asset5, info5);
                 AzFramework::AssetSystem::AssetNotificationMessage message("test", AzFramework::AssetSystem::AssetNotificationMessage::AssetChanged, AZ::Uuid::CreateRandom(), "");
                 message.m_assetId = asset5;
-                notificationInterface->AssetChanged(message);
+                notificationInterface->AssetChanged({ message });
             }
 
         }
@@ -302,7 +302,7 @@ namespace UnitTest
             m_app.reset(aznew AzFramework::Application());
             AZ::ComponentApplication::Descriptor desc;
             desc.m_useExistingAllocator = true;
-            
+
             AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
             auto projectPathKey =
                 AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
@@ -316,7 +316,7 @@ namespace UnitTest
             m_app->Start(desc, startupParameters);
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
-            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
+            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
             // in the unit tests.
             AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
@@ -358,7 +358,7 @@ namespace UnitTest
                 AzFramework::AssetSystem::AssetNotificationMessage message(path3, AzFramework::AssetSystem::AssetNotificationMessage::AssetChanged, AZ::Uuid::CreateRandom(), "");
                 message.m_assetId = asset1;
                 message.m_dependencies.push_back(AZ::Data::ProductDependency(asset2, 0));
-                notificationInterface->AssetChanged(message);
+                notificationInterface->AssetChanged({ message });
             }
             AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::StopMonitoringAssets);
             // sourcecatalog1 - asset1 path3 (depends on asset 2), asset2 path2, asset4 path4
@@ -378,7 +378,7 @@ namespace UnitTest
                 AzFramework::AssetSystem::AssetNotificationMessage message(path5, AzFramework::AssetSystem::AssetNotificationMessage::AssetChanged, AZ::Uuid::CreateRandom(), "");
                 message.m_assetId = asset5;
                 message.m_dependencies.push_back(AZ::Data::ProductDependency(asset2, 0));
-                notificationInterface->AssetChanged(message);
+                notificationInterface->AssetChanged({ message });
             }
             AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::StopMonitoringAssets);
             // sourcecatalog2 - asset1 path3 (depends on asset 2), asset2 path2, asset4 path4, asset5 path5 (depends on asset 2)
@@ -389,7 +389,7 @@ namespace UnitTest
             // deltacatalog2 - asset5 path5 (depends on asset 2)
             deltaCatalogFiles2.push_back(path5);
             AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::SaveCatalog, deltaCatalogPath2);
-            
+
             AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::RegisterAsset, asset1, info6);
             AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::RegisterAsset, asset2, info2);
             AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::RegisterAsset, asset5, info4);
@@ -398,7 +398,7 @@ namespace UnitTest
                 AzFramework::AssetSystem::AssetNotificationMessage message(path4, AzFramework::AssetSystem::AssetNotificationMessage::AssetChanged, AZ::Uuid::CreateRandom(), "");
                 message.m_assetId = asset5;
                 message.m_dependencies.push_back(AZ::Data::ProductDependency(asset2, 0));
-                notificationInterface->AssetChanged(message);
+                notificationInterface->AssetChanged({ message });
             }
             AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::StopMonitoringAssets);
             //sourcecatalog3 - asset1 path6, asset2 path2, asset5 path4 (depends on asset 2)
@@ -466,7 +466,7 @@ namespace UnitTest
             AzFramework::AssetSystem::AssetNotificationMessage message("test", AzFramework::AssetSystem::AssetNotificationMessage::AssetChanged, AZ::Uuid::CreateRandom(), "");
             message.m_assetId = updatedAsset;
             message.m_dependencies.emplace_back(asset2, 0);
-            notificationInterface->AssetChanged(message);
+            notificationInterface->AssetChanged({ message });
         }
 
         AZ::Data::AssetInfo assetInfo;
@@ -779,7 +779,7 @@ namespace UnitTest
     TEST_F(AssetCatalogDeltaTest, DeltaCatalogCreationTest)
     {
         bool result = false;
-        AZStd::string assetPath;        
+        AZStd::string assetPath;
 
         // load source catalog 1
         AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::ClearCatalog);
@@ -1061,7 +1061,7 @@ namespace UnitTest
 
         char* m_data;
     };
-    
+
     class AssetType2
         : public AssetData
     {
@@ -1210,7 +1210,7 @@ namespace UnitTest
         handler->Unregister();
         delete handler;
     }
-    
+
     TEST_F(AssetCatalogDisplayNameTest, GetAssetTypeByDisplayName_NoRegisteredType)
     {
         // Get the Asset Type from a Display Name we did not register
