@@ -605,6 +605,11 @@ namespace AssetProcessor
 
             const auto& currentRegistry = *itr;
 
+            AzFramework::AssetSystem::BulkAssetNotificationMessage bulkMessage;
+
+            bulkMessage.m_messages.reserve(currentRegistry.m_assetIdToInfo.size());
+            bulkMessage.m_type = AzFramework::AssetSystem::AssetNotificationMessage::AssetChanged;
+
             for (const auto& assetInfo : currentRegistry.m_assetIdToInfo)
             {
                 AzFramework::AssetSystem::AssetNotificationMessage message(
@@ -615,7 +620,6 @@ namespace AssetProcessor
 
                 message.m_assetId = assetInfo.second.m_assetId;
                 message.m_sizeBytes = assetInfo.second.m_sizeBytes;
-
                 message.m_dependencies = AZStd::move(currentRegistry.GetAssetDependencies(assetInfo.second.m_assetId));
 
                 const auto& legacyIds =
@@ -626,8 +630,10 @@ namespace AssetProcessor
                     message.m_legacyAssetIds.emplace_back(legacyId.first);
                 }
 
-                AssetProcessor::ConnectionBus::Event(connectionId, &AssetProcessor::ConnectionBus::Events::Send, 0, message);
+                bulkMessage.m_messages.push_back(AZStd::move(message));
             }
+
+            AssetProcessor::ConnectionBus::Event(connectionId, &AssetProcessor::ConnectionBus::Events::Send, 0, bulkMessage);
         }
     }
 
