@@ -718,57 +718,12 @@ namespace AzToolsFramework
             PrefabDom newEntityDom;
             m_instanceToTemplateInterface->GenerateDomForEntity(newEntityDom, *entity);
 
-            //if (IsPrefabOverridesUxEnabled() && !m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(parentId))
-            //{
-            //    // Climb up the instance hierarchy from the owning instance until it hits the focused prefab instance.
-            //    InstanceClimbUpResult climbUpResult = m_prefabFocusHandler.ClimbUpToFocusedOrRootInstanceFromEntity(parentId);
-            //    if (!climbUpResult.m_isTargetInstanceReached)
-            //    {
-            //        return AZ::Failure(AZStd::string::format(
-            //            "Parent entity (id: '%llu') is not owned by a descendant of the focused prefab instance.",
-            //            static_cast<AZ::u64>(parentId)));
-            //    }
-
-            //    LinkId linkId = climbUpResult.m_climbedInstances.back()->GetLinkId();
-            //    LinkReference link = m_prefabSystemComponentInterface->FindLink(linkId);
-            //    if (link == AZStd::nullopt)
-            //    {
-            //        return AZ::Failure(AZStd::string::format(
-            //            "Can't find link (id: '%llu') in prefab system.", static_cast<AZ::u64>(linkId)));
-            //    }
-            //    TemplateId targetTemplateId = link->get().GetTargetTemplateId();
-
-            //    AZStd::string entityAliasPathPrefix = PrefabInstanceUtils::GetRelativePathFromClimbedInstances(climbUpResult.m_climbedInstances);
-
-            //    PrefabDomReference cachedOwningInstanceDom = entityOwningInstance.GetCachedInstanceDom();
-
-            //    {
-            //        PrefabUndoAddEntityOverrides* addEntityOverridesUndoState = aznew PrefabUndoAddEntityOverrides("Undo Adding Entity Overrides");
-            //        addEntityOverridesUndoState->SetParent(undoBatch.GetUndoBatch());
-
-            //        AZStd::string newEntityAliasRelativePath = m_instanceToTemplateInterface->GenerateEntityAliasPath(entityId, entityAliasPathPrefix);
-            //        AZStd::string parentEntityAliasRelativePath = m_instanceToTemplateInterface->GenerateEntityAliasPath(parentId, AZStd::move(entityAliasPathPrefix));
-            //        addEntityOverridesUndoState->Capture(
-            //            parentEntityDomBeforeAddingEntity, parentEntityDomAfterAddingEntity, AZStd::move(parentEntityAliasRelativePath),
-            //            newEntityDom, AZStd::move(newEntityAliasRelativePath), cachedOwningInstanceDom, targetTemplateId);
-
-            //        addEntityOverridesUndoState->Redo();
-            //    }
-            //}
-            //else
-            //{
-            //    PrefabUndoHelpers::AddEntity(newEntityDom, entityId, entityOwningInstance.GetTemplateId(), undoBatch.GetUndoBatch());
-
-            //    // Create undo node to account for changes to parent entity due to adding a new entity under it. Currently only the
-            //    // EditorEntitySortComponent get modified on the parent but more things can change in the future too.
-            //    PrefabUndoHelpers::UpdateEntity(parentEntityDomBeforeAddingEntity, parentEntityDomAfterAddingEntity, parentId,
-            //        undoBatch.GetUndoBatch());
-            //}
-
+//#define TEST_NEW_CODE
+#ifdef TEST_NEW_CODE
             TemplateId targetTemplateId;
             PrefabUndoAddEntity::ParentEntityInfo parentEntityInfo(parentId, parentEntityDomBeforeAddingEntity, parentEntityDomAfterAddingEntity);
             PrefabUndoAddEntity::NewEntityInfo newEntityInfo(entityId, newEntityDom);
-            AZStd::string entityAliasPathPrefix;
+            AZStd::string entityAliasPathPrefix = "";
 
             if (IsPrefabOverridesUxEnabled() && !m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(parentId))
             {
@@ -804,7 +759,12 @@ namespace AzToolsFramework
                 targetTemplateId,
                 undoBatch.GetUndoBatch(),
                 entityAliasPathPrefix);
-            
+#else
+            PrefabUndoHelpers::AddEntityOld(newEntityDom, entityId, entityOwningInstance.GetTemplateId(), undoBatch.GetUndoBatch());
+            PrefabUndoHelpers::UpdateEntity(parentEntityDomBeforeAddingEntity, parentEntityDomAfterAddingEntity, parentId,
+                undoBatch.GetUndoBatch());
+#endif
+
             AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
                 &AzToolsFramework::ToolsApplicationRequestBus::Events::ClearDirtyEntities);
 

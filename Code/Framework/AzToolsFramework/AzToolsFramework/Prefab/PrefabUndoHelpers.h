@@ -40,6 +40,12 @@ namespace AzToolsFramework
                 UndoSystem::URSequencePoint* undoBatch,
                 AZStd::string entityAliasPathPrefix = "");
 
+            void AddEntityOld(
+                const PrefabDomValue& newEntityDom,
+                AZ::EntityId entityId,
+                TemplateId templateId,
+                UndoSystem::URSequencePoint* undoBatch);
+
             //! Helper function for removing entities to a prefab template with undo-redo support.
             //! @param entityDomAndPathList The list of pairs of entity DOM before removal and its alias path in template.
             //! @param templateId The id of the prefab template under which the removed entity DOMs will live.

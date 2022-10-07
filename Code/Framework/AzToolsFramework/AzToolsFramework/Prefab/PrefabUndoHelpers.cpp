@@ -70,6 +70,18 @@ namespace AzToolsFramework
                 addEntityUndoState->Redo();
             }
 
+            void AddEntityOld(
+                const PrefabDomValue& newEntityDom,
+                AZ::EntityId entityId,
+                TemplateId templateId,
+                UndoSystem::URSequencePoint* undoBatch)
+            {
+                PrefabUndoAddEntityOld* addEntityUndoState = aznew PrefabUndoAddEntityOld("Undo Adding Entity");
+                addEntityUndoState->SetParent(undoBatch);
+                addEntityUndoState->Capture(newEntityDom, entityId, templateId);
+                addEntityUndoState->Redo();
+            }
+
             void RemoveEntities(
                 const AZStd::vector<AZStd::pair<const PrefabDomValue*, AZStd::string>>& entityDomAndPathList,
                 TemplateId templateId,
