@@ -878,6 +878,8 @@ namespace O3DE::ProjectManager
         }
         else
         {
+            //For Windows paths, need to normalize directory link to forward slashes
+            gemInfoResult.m_directoryLink.replace("\\", "/");
             return AZ::Success(AZStd::move(gemInfoResult));
         }
     }
