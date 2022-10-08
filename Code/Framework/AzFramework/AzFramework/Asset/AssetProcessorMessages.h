@@ -643,7 +643,6 @@ namespace AzFramework
             unsigned int GetMessageType() const override;
 
             AssetNotificationMessage::NotificationType m_type;
-            AZStd::unordered_map<AZ::Data::AssetId, AZ::Data::AssetId> m_legacyAssetIdMap;
             AZStd::vector<AssetNotificationMessage> m_messages;
         };
 
