@@ -13,12 +13,12 @@
 #include <FormLineEditTagsWidget.h>
 #endif
 
-QT_FORWARD_DECLARE_CLASS(QCompleter)
-QT_FORWARD_DECLARE_CLASS(QPushButton)
-QT_FORWARD_DECLARE_CLASS(QLineEdit)
-QT_FORWARD_DECLARE_CLASS(QLabel)
-QT_FORWARD_DECLARE_CLASS(QFrame)
-QT_FORWARD_DECLARE_CLASS(QKeyEvent)
+class QCompleter;
+class QPushButton;
+class QLineEdit;
+class QLabel;
+class QFrame;
+class QKeyEvent;
 
 namespace AzQtComponents
 {
@@ -67,6 +67,6 @@ namespace O3DE::ProjectManager
         QStringList m_completionTags;
         QStringList m_tags;
         QCompleter* m_completer;
-
+        const int tagSpacing = 8;
     };
 } // namespace O3DE::ProjectManager

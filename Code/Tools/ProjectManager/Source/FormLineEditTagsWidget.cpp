@@ -6,32 +6,42 @@
  *
  */
 
-#include <FormLineEditTagsWidget.h>
-#include <AzQtComponents/Components/StyledLineEdit.h>
-#include <FormLineEditWidget.h>
 #include <AzQtComponents/Components/Widgets/LineEdit.h>
-#include <QPushButton>
+#include <AzQtComponents/Components/StyledLineEdit.h>
+
+
+#include <FormLineEditTagsWidget.h>
+#include <FormLineEditWidget.h>
+
 #include <QAbstractItemView>
-#include <QSpacerItem>
+#include <QCheckBox>
 #include <QCompleter>
 #include <QFile>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QCheckBox>
-#include <QLineEdit>
-#include <QLabel>
-#include <QMovie>
 #include <QFrame>
-#include <QValidator>
-#include <QStyle>
+#include <QHBoxLayout>
 #include <QKeyEvent>
+#include <QLabel>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QSpacerItem>
+#include <QStyle>
+#include <QValidator>
+#include <QVBoxLayout>
 
 namespace O3DE::ProjectManager
 {
 
     void FormLineEditTagsWidget::setupCompletionTags()
     {
-        m_completionTags << "Audio" << "Animation" << "Physics" << "GameDevelopment" << "IK" << "Blender" << "Rendering" << "Terrain";
+        QFile completionTagFile(":/ProjectManager/text/ProjectManagerCompletionTags.txt");
+        completionTagFile.open(QFile::ReadOnly);
+        while(!completionTagFile.atEnd())
+        {
+            m_completionTags << completionTagFile.readLine().trimmed();
+        }
+
+        m_completionTags.removeDuplicates();
+        m_completionTags.sort();
     }
 
     FormLineEditTagsWidget::FormLineEditTagsWidget(
@@ -59,12 +69,10 @@ namespace O3DE::ProjectManager
         m_completer->popup()->setMouseTracking(true);
         m_completer->popup()->setObjectName("formCompleterPopup");
 
-
-        /* NOTE(tkothadev): Manually setting the stylesheet of this popup widget is not desired.
+        /* Manually setting the stylesheet of this popup widget is not desired.
          * However, the current styling rules of the Project Manager make the background color blend in
          * with surroundings, making it difficult to see. Currently, attempts at rectifying this in the main
          * stylesheet proved very difficult, so a stop-gap measure of hard-coding the stylesheet was used.
-         * I have discussed this with AMZN-alexpete.
          */
         QFile popupStyleSheetFile(":/ProjectManager/style/ProjectManagerCompleterPopup.qss");
         popupStyleSheetFile.open(QFile::ReadOnly);
@@ -87,7 +95,7 @@ namespace O3DE::ProjectManager
         m_tagFrame->setObjectName("formTagField");
         
         QHBoxLayout* tagsLayout = new QHBoxLayout();
-        tagsLayout->setSpacing(8);
+        tagsLayout->setSpacing(tagSpacing);
         tagsLayout->addStretch();
         
         m_tagFrame->setLayout(tagsLayout);
@@ -121,15 +129,15 @@ namespace O3DE::ProjectManager
         // cleanup the tag frame widget and re-add the tag list
         qDeleteAll(m_tagFrame->children());
         QHBoxLayout* layout = new QHBoxLayout(this);
-        layout->setSpacing(8);
+        layout->setSpacing(tagSpacing);
 
-        for (auto t : m_tags)
+        for (auto tag : m_tags)
         {
-            QCheckBox* tc = new QCheckBox(t, this);
-            tc->setLayoutDirection(Qt::RightToLeft);
+            QCheckBox* tagCheckbox = new QCheckBox(tag, this);
+            tagCheckbox->setLayoutDirection(Qt::RightToLeft);
             // connect the checked signal to a good slot
-            connect(tc, &QCheckBox::stateChanged, this, &FormLineEditTagsWidget::processTagDelete);
-            layout->addWidget(tc);
+            connect(tagCheckbox, &QCheckBox::stateChanged, this, &FormLineEditTagsWidget::processTagDelete);
+            layout->addWidget(tagCheckbox);
         }
 
         layout->addStretch();
@@ -156,9 +164,9 @@ namespace O3DE::ProjectManager
             //do tag adding
             QString interim = m_lineEdit->text();
             m_lineEdit->clear();
-            for(auto str : interim.split(" "))
+            for(auto tagStr : interim.split(" "))
             {
-                addToTagList(str);
+                addToTagList(tagStr);
             }
             refreshTagFrame();
         }
@@ -166,25 +174,11 @@ namespace O3DE::ProjectManager
 
     void FormLineEditTagsWidget::processTagDelete([[maybe_unused]] int unused)
     {
-        auto checkBoxes = m_tagFrame->findChildren<QCheckBox* >();
-        QString string;
-        bool found = false;
-        for(auto c : checkBoxes)
-        {
-            if(c->isChecked())
-            {
-                string = c->text();
-                found = true;
-                break;
-            }
-        }
+        //Only a checkbox's stateChanged signal causes this function to run
+        QCheckBox* checkBox = qobject_cast<QCheckBox*>(sender());
 
-        if(!found)
-        {
-            return;
-        }
         //remove the offending string
-        m_tags.removeOne(string);
+        m_tags.removeOne(checkBox->text());
 
         //now reconstruct the tag list
         refreshTagFrame();

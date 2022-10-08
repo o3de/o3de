@@ -269,7 +269,8 @@ namespace O3DE::ProjectManager
         m_licenseURL = new FormLineEditWidget(tr("License URL"), "", tr("Link to the license web site i.e. https://opensource.org/licenses/Apache-2.0"), "");
         gemDetailsLayout->addWidget(m_licenseURL);
 
-        m_userDefinedGemTags = new FormLineEditTagsWidget(tr("User-defined Gem Tags (Press Space or Return with non-empty text to create a new tag)"), "");
+        m_userDefinedGemTags = new FormLineEditTagsWidget(tr("User-defined Gem Tags"), "");
+        m_userDefinedGemTags->setToolTip("Press Space or Return with non-empty text to create a new tag");
         m_userDefinedGemTags->lineEdit()->setValidator(new QRegularExpressionValidator(QRegularExpression("(^$|((\\w+)(\\s?\\w*)*))"), this));
         gemDetailsLayout->addWidget(m_userDefinedGemTags);
 

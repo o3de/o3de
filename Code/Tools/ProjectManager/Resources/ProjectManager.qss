@@ -185,9 +185,8 @@ QTabBar::tab:focus {
 #formTagField QCheckBox::indicator{
     background-color: transparent;
     image:url(:/X.svg);
-    border:0px;
     width: 10%;
-    padding-left:px;
+    padding-left:3px;
 }
 
 #createAGem #formFrame {

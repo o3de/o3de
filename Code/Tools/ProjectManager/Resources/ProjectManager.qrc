@@ -3,6 +3,9 @@
         <file>ProjectManager.qss</file>
         <file>ProjectManagerCompleterPopup.qss</file>
     </qresource>
+    <qresource prefix="/ProjectManager/text">
+        <file>ProjectManagerCompletionTags.txt</file>
+    </qresource>
     <qresource prefix="/">
         <file>Add.svg</file>
         <file>AddOffset.svg</file>
