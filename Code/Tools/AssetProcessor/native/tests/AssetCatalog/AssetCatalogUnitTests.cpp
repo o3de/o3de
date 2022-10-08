@@ -541,11 +541,12 @@ namespace AssetProcessor
 
         virtual size_t Send([[maybe_unused]] unsigned int serial, const AzFramework::AssetSystem::BaseAssetProcessorMessage& message)
         {
-            auto* a = azrtti_cast<const AssetNotificationMessage*>(&message);
+            auto* bulkMessage = azrtti_cast<const BulkAssetNotificationMessage*>(&message);
 
-            EXPECT_TRUE(a);
-            EXPECT_EQ(a->m_type, AssetNotificationMessage::AssetChanged);
-            ++m_messages;
+            EXPECT_TRUE(bulkMessage);
+            EXPECT_EQ(bulkMessage->m_type, AssetNotificationMessage::AssetChanged);
+            EXPECT_GT(bulkMessage->m_messages.size(), 0);
+            m_messages += bulkMessage->m_messages.size();
 
             return sizeof(message);
         }
@@ -583,7 +584,7 @@ namespace AssetProcessor
             GTEST_NONFATAL_FAILURE_("Not supported");
         }
 
-        int m_messages = 0;
+        size_t m_messages = 0;
     };
 
     TEST_F(AssetCatalogTestWithProducts, SendAssetUpdateOnConnect)
