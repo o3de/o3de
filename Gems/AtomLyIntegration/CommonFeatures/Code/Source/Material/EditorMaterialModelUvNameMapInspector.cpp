@@ -95,7 +95,6 @@ namespace AZ
                     const AZStd::string shaderInput = m_materialUvNames[i].m_shaderInput.ToString();
                     const AZStd::string materialUvName = m_materialUvNames[i].m_uvName.GetStringView();
 
-                    propertyConfig.m_dataType = AtomToolsFramework::DynamicPropertyType::Enum;
                     propertyConfig.m_id = AZ::RPI::MaterialPropertyId(groupName, shaderInput);
                     propertyConfig.m_name = shaderInput;
                     propertyConfig.m_displayName = materialUvName;
@@ -247,7 +246,6 @@ namespace AZ
                     const AZStd::string shaderInput = m_materialUvNames[i].m_shaderInput.ToString();
                     const AZStd::string materialUvName = m_materialUvNames[i].m_uvName.GetStringView();
 
-                    propertyConfig.m_dataType = AtomToolsFramework::DynamicPropertyType::Enum;
                     propertyConfig.m_id = AZ::RPI::MaterialPropertyId(groupName, shaderInput);
                     propertyConfig.m_name = shaderInput;
                     propertyConfig.m_displayName = materialUvName;
