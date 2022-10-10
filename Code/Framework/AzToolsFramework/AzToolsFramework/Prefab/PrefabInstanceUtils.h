@@ -50,6 +50,11 @@ namespace AzToolsFramework
             //! @param climbedInstances The list of climbed instances from bottom to top.
             //! @return The relative path string.
             AZStd::string GetRelativePathFromClimbedInstances(const AZStd::vector<const Instance*>& climbedInstances);
+
+            //! Generates a relative path from reverse iterators of climbed instances.
+            //! @param climbedInstancesBeginIter The begin reverse iterator of climbed instances.
+            //! @param climbedInstancesBeginIter The end reverse iterator of climbed instances.
+            //! @return The relative path string.
             AZStd::string GetRelativePathFromClimbedInstances(
                 AZStd::reverse_iterator<const Instance* const*> climbedInstancesBeginIter, AZStd::reverse_iterator<const Instance* const*> climbedInstancesEndIter);
 

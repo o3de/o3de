@@ -140,27 +140,5 @@ namespace AzToolsFramework
 
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
         };
-
-        ////! Undo class for handling addition of an entity to a prefab instance.
-        //class PrefabUndoAddEntityOverrides
-        //    : public PrefabUndoBase
-        //{
-        //public:
-        //    AZ_RTTI(PrefabUndoAddEntityOverrides, "{67EC7123-7F42-4BDD-9543-43349E2EA605}", PrefabUndoBase);
-        //    AZ_CLASS_ALLOCATOR(PrefabUndoAddEntityOverrides, AZ::SystemAllocator, 0);
-
-        //    explicit PrefabUndoAddEntityOverrides(const AZStd::string& undoOperationName);
-
-        //    void Capture(
-        //        const PrefabDomValue& parentEntityDomBeforeAddingEntity, const PrefabDomValue& parentEntityDomAfterAddingEntity, const AZStd::string& parentEntityAliasPath,
-        //        const PrefabDomValue& newEntityDom, const AZStd::string& newEntityAliasPath,
-        //        PrefabDomReference cachedInstanceDom, TemplateId templateId);
-
-        //    void Undo() override;
-        //    void Redo() override;
-
-        //private:
-        //    PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
-        //};
     }
 }

@@ -28,10 +28,12 @@ namespace AzToolsFramework
                 PrefabDom linkPatches, UndoSystem::URSequencePoint* undoBatch);
 
             //! Helper function for adding an entity to a prefab template with undo-redo support.
-            //! @param newEntityDom The DOM of the added entity.
-            //! @param entityId The id of the added entity.
+            //! @param parentEntityInfo Data needed for creating patches to update the target parent entity of the new entity.
+            //! @param newEntityInfo Data needed for creating patches to add the new entity.
+            //! @param cachedInstanceDom The cached instance DOM that was last used.
             //! @param templateId The id of the prefab template under which the new entity DOM will live.
             //! @param undoBatch The undo batch node to register the add-entity undo node to.
+            //! @param entityAliasPathPrefix The optional entity alias path prefix which will be added into patches if given.
             void AddEntity(
                 PrefabUndoAddEntity::ParentEntityInfo parentEntityInfo,
                 PrefabUndoAddEntity::NewEntityInfo newEntityInfo,
@@ -39,12 +41,6 @@ namespace AzToolsFramework
                 TemplateId templateId,
                 UndoSystem::URSequencePoint* undoBatch,
                 AZStd::string entityAliasPathPrefix = "");
-
-            void AddEntityOld(
-                const PrefabDomValue& newEntityDom,
-                AZ::EntityId entityId,
-                TemplateId templateId,
-                UndoSystem::URSequencePoint* undoBatch);
 
             //! Helper function for removing entities to a prefab template with undo-redo support.
             //! @param entityDomAndPathList The list of pairs of entity DOM before removal and its alias path in template.
