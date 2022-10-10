@@ -8,6 +8,7 @@
 
 #include <AzFramework/Spawnable/Script/SpawnableScriptMediator.h>
 #include <ScriptCanvas/Libraries/Spawning/CreateSpawnTicketNodeable.h>
+#include <AzCore/Console/ILogger.h>
 
 namespace ScriptCanvas::Nodeables::Spawning
 {
@@ -22,10 +23,19 @@ namespace ScriptCanvas::Nodeables::Spawning
         return *this;
     }
 
-    AzFramework::EntitySpawnTicket CreateSpawnTicketNodeable::CreateTicket(const AzFramework::Scripts::SpawnableScriptAssetRef& prefab)
+    void CreateSpawnTicketNodeable::CreateTicket(const AzFramework::Scripts::SpawnableScriptAssetRef& prefab)
     {
         using namespace AzFramework;
-        
-        return m_spawnableScriptMediator.CreateSpawnTicket(prefab);
+
+        auto ticket = m_spawnableScriptMediator.CreateSpawnTicket(prefab);
+        if (ticket.IsSuccess())
+        {
+            CallSuccess(ticket.GetValue());
+        }
+        else
+        {
+            AZLOG_ERROR("Unable to Create Spawn Ticket - A valid prefab was not provided");
+            CallFailed();
+        }
     }
 }
