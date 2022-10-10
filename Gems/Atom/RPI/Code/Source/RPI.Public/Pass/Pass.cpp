@@ -312,24 +312,36 @@ namespace AZ
             return FindOwnedAttachment(slotName);
         }
 
-        const PassAttachmentBinding* Pass::FindAdjacentBinding(const PassAttachmentRef& attachmentRef)
+        const PassAttachmentBinding* Pass::FindAdjacentBinding(const PassAttachmentRef& attachmentRef, const char* attachmentSourceTypeDebugName)
         {
-            // Validate attachmentRef
-            if (attachmentRef.m_pass.IsEmpty() || attachmentRef.m_attachment.IsEmpty())
+            const PassAttachmentBinding* result = nullptr;
+
+            if (attachmentRef.m_pass.IsEmpty() && attachmentRef.m_attachment.IsEmpty())
             {
-                AZ_Error("Pass", attachmentRef.m_pass.IsEmpty() && attachmentRef.m_attachment.IsEmpty(),
-                    "Invalid attachment reference [Pass '%s', Attachment '%s']. Both values must be set.",
+                // The data isn't actually referencing anything, so this is not an error, just return null.
+                return result;
+            }
+
+            if (attachmentRef.m_pass.IsEmpty() != attachmentRef.m_attachment.IsEmpty())
+            {
+                AZ_Error("Pass", false,
+                    "Invalid attachment reference (Pass [%s], Attachment [%s]). Both Pass and Attachment must be set.",
                     attachmentRef.m_pass.GetCStr(), attachmentRef.m_attachment.GetCStr());
 
-                return nullptr;
+                return result;
             }
+
             // Find pass
             if (Ptr<Pass> pass = FindAdjacentPass(attachmentRef.m_pass))
             {
                 // Find attachment within pass
-                return pass->FindAttachmentBinding(attachmentRef.m_attachment);
+                result = pass->FindAttachmentBinding(attachmentRef.m_attachment);
             }
-            return nullptr;
+
+            AZ_Error("Pass", result, "Pass [%s] could not find %s (Pass [%s], Attachment [%s])",
+                m_path.GetCStr(), attachmentSourceTypeDebugName, attachmentRef.m_pass.GetCStr(), attachmentRef.m_attachment.GetCStr());
+
+            return result;
         }
 
         // --- PassTemplate related functions ---
@@ -674,26 +686,16 @@ namespace AZ
 
             // Setup attachment sources...
 
-            auto checkAttachmentSourceMissing = [this](const char* attachmentSourceType, const PassAttachmentRef& passAttachmentRef)
-            {
-                AZ_Warning("Pass", passAttachmentRef.m_pass.IsEmpty() && passAttachmentRef.m_attachment.IsEmpty(), "Pass [%s] could not find %s [Pass '%s', Attachment '%s']",
-                    m_path.GetCStr(), attachmentSourceType, passAttachmentRef.m_pass.GetCStr(), passAttachmentRef.m_attachment.GetCStr());
-            };
-
             if (desc.m_sizeSource.m_source.m_pass == PipelineKeyword)         // if source is pipeline
             {
                 attachment->m_renderPipelineSource = m_pipeline;
                 attachment->m_getSizeFromPipeline = true;
                 attachment->m_sizeMultipliers = desc.m_sizeSource.m_multipliers;
             }
-            else if (const PassAttachmentBinding* source = FindAdjacentBinding(desc.m_sizeSource.m_source))
+            else if (const PassAttachmentBinding* source = FindAdjacentBinding(desc.m_sizeSource.m_source, "SizeSource"))
             {
                 attachment->m_sizeSource = source;
                 attachment->m_sizeMultipliers = desc.m_sizeSource.m_multipliers;
-            }
-            else
-            {
-                checkAttachmentSourceMissing("SizeSource", desc.m_sizeSource.m_source);
             }
 
             if (desc.m_formatSource.m_pass == PipelineKeyword)                // if source is pipeline
@@ -701,13 +703,9 @@ namespace AZ
                 attachment->m_renderPipelineSource = m_pipeline;
                 attachment->m_getFormatFromPipeline = true;
             }
-            else if (const PassAttachmentBinding* source = FindAdjacentBinding(desc.m_formatSource))
+            else if (const PassAttachmentBinding* source = FindAdjacentBinding(desc.m_formatSource, "FormatSource"))
             {
                 attachment->m_formatSource = source;
-            }
-            else
-            {
-                checkAttachmentSourceMissing("FormatSource", desc.m_formatSource);
             }
 
             if (desc.m_multisampleSource.m_pass == PipelineKeyword)           // if source is pipeline
@@ -715,16 +713,12 @@ namespace AZ
                 attachment->m_renderPipelineSource = m_pipeline;
                 attachment->m_getMultisampleStateFromPipeline = true;
             }
-            else if (const PassAttachmentBinding* source = FindAdjacentBinding(desc.m_multisampleSource))
+            else if (const PassAttachmentBinding* source = FindAdjacentBinding(desc.m_multisampleSource, "MultisampleSource"))
             {
                 attachment->m_multisampleSource = source;
             }
-            else
-            {
-                checkAttachmentSourceMissing("MultisampleSource", desc.m_multisampleSource);
-            }
 
-            if (const PassAttachmentBinding* source = FindAdjacentBinding(desc.m_arraySizeSource))
+            if (const PassAttachmentBinding* source = FindAdjacentBinding(desc.m_arraySizeSource, "ArraySizeSource"))
             {
                 attachment->m_arraySizeSource = source;
             }
