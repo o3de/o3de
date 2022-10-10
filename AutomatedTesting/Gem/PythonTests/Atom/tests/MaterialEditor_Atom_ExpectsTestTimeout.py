@@ -8,23 +8,24 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 class Tests:
     material_editor_test_timed_out = (  # This test result is pytest.mark.xfail.
-        "AtomToolsBatchedTest class didn't time out and passed (it should fail from timing out).",
-        "P0: AtomToolsBatchedTest timed out before the test could complete (expected failure)."
+        "AtomToolsSingleTest class didn't time out and passed (it should fail from timing out).",
+        "P0: AtomToolsSingleTest timed out before the test could complete (expected failure)."
     )
 
 
 def MaterialEditor_TestsTimeout_TimeoutFailure():
     """
     Summary:
-    Tests that the MaterialEditor can fail from timed out tests.
+    Tests that the MaterialEditor can fail from timed out tests on the AtomToolsSingleTest class objects.
 
     Expected Behavior:
-    The MaterialEditor test fails due to time out.
+    The MaterialEditor test fails due to time out from the timeout value in AtomToolsSingleTest class.
 
     Test Steps:
-    1) Create callback function for timing out the test.
-    2) Trigger test timeout.
-    3) Look for errors and asserts.
+    1) Delay the start of the auto-success check so that timeout values in AtomToolsSingleTest take hold.
+    2) Create callback function to wait for the delay so that the test times out before success is reached.
+    3) Auto-pass the test now since it should time out before this point.
+    4) Look for errors and asserts.
 
     :return: None
     """
@@ -34,19 +35,18 @@ def MaterialEditor_TestsTimeout_TimeoutFailure():
     from editor_python_test_tools.utils import Report, Tracer, TestHelper
 
     with Tracer() as error_tracer:
-        # 1. Create start_time variable for the callback function to compare against.
+        # 1. Delay the start of the auto-success check so that timeout values in AtomToolsSingleTest take hold.
         start_time = time.time() + 12
 
-        # 2. Create callback function for timing out the test.
-        def loop_variable():
+        # 2. Create callback function to wait for the delay so that the test times out before success is reached.
+        def time_check():
             if time.time() > start_time:
-                return False
-            return True
+                return True
+            return False
+        atom_tools_utils.wait_for_condition(time_check(), 15)
 
-        # 3. Wait for test timeout from test launcher script before this Report can pass (xfail expected).
-        Report.result(
-            Tests.material_editor_test_timed_out,
-            atom_tools_utils.wait_for_condition(lambda: loop_variable() is False, 15))
+        # 3. Auto-pass the test now since it should time out before this point.
+        Report.success(Tests.material_editor_test_timed_out)
 
         # 4. Look for errors and asserts.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
