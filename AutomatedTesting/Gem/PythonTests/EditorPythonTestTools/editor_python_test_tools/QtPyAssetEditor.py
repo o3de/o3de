@@ -51,8 +51,8 @@ class QtPyAssetEditor(QtPyCommon):
             QtWidgets.QFrame, DEFAULT_SCRIPT_EVENT) is not None, WAIT_TIME_SEC_3)
 
         # Categories need to be expanded before we can manipulate fields hidden within
-        self.expand_category_by_name(DEFAULT_SCRIPT_EVENT)
-        self.expand_category_by_name("Name")
+        self.expand_qt_container_rows(DEFAULT_SCRIPT_EVENT)
+        self.expand_qt_container_rows("Name")
         self.update_new_method_name(DEFAULT_METHOD_NAME, method_name)
 
     def update_new_method_name(self, old_method_name: str, updated_method_name: str) -> None:
@@ -66,8 +66,11 @@ class QtPyAssetEditor(QtPyCommon):
         children = self.asset_editor_row_container.findChildren(QtWidgets.QFrame, "Name")
         method_name_field = ""
         old_method_exists = False
+
         for child in children:
+
             line_edit = child.findChild(QtWidgets.QLineEdit)
+
             if line_edit and line_edit.text() == old_method_name:
                 old_method_exists = True
                 line_edit.setText(f"{updated_method_name}")
@@ -130,34 +133,12 @@ class QtPyAssetEditor(QtPyCommon):
         assert saved, "Save file failed. Save action not detected in UI (* in label)."
         assert exists, "Save file failed. File not located on disk."
 
-    def expand_category_by_name(self, category_name: str) -> None:
+    def expand_qt_container_rows(self, category_name: str) -> None:
         """
-        Note: I think I want to move this to the Common class and make the container you want to explore a parameter
-        Function for expanding a category container in a list.
+        calls the parent class function but passes in the asset_editor_row_container we have a handle on from init
 
         param category_name: the category in the list you want to expand.
 
         returns: None
         """
-        children = self.asset_editor_row_container.findChildren(QtWidgets.QFrame, category_name)
-        assert children is not None, f"Category row by name {category_name} was not found."
-        for child in children:
-            check_box = child.findChild(QtWidgets.QCheckBox)
-            if check_box and not check_box.isChecked():
-                check_box.click()
-
-    def gather_row_container_types(self):
-        children = self.asset_editor_row_container.children()
-        depth = 0
-        for child in children:
-            print(f"{depth}->Name:{child.objectName()}: {type(child)}")
-            self.print_types_recursive(child, "", depth)
-
-    def print_types_recursive(self, container, string, depth):
-        children = container.children()
-        string += "="
-        depth += 1
-        for child in children:
-            if child is not None:
-                print(f"{depth}->{string}: Name:{child.objectName()}: {type(child)}")
-                self.print_types_recursive(child, string, depth)
+        super().expand_qt_container_rows(self.asset_editor_row_container, category_name)

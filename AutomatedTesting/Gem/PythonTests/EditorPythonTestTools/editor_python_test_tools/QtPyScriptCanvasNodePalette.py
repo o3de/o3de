@@ -52,6 +52,7 @@ class QtPyScriptCanvasNodePalette():
         self.node_palette_search_box.setText(node_name)
         search_field_set = self.node_palette_search_box.text() == node_name
         # this wait_for_condition call is placeholder while we wait on a better way to tell if the search filtering has ended
+        # see GHI #12277 for more information and update this if the issue has been resolved
         helper.wait_for_condition(lambda: True is False, WAIT_TIME_SEC_1)
         helper.wait_for_condition(lambda: search_field_set, WAIT_TIME_SEC_3)
 
