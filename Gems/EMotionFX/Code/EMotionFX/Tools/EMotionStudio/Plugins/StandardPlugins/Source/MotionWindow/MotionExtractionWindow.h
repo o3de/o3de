@@ -68,6 +68,7 @@ namespace EMStudio
         // Root motion extraction widgets
         QCheckBox* m_extractRootMotionCheck = nullptr;
         QPushButton* m_saveMotionButton = nullptr;
+        AzToolsFramework::ReflectedPropertyEditor* m_rootMotionExtractionWidget = nullptr;
 
         //
         QVBoxLayout* m_mainVerticalLayout = nullptr;
@@ -75,8 +76,6 @@ namespace EMStudio
         QWidget* m_warningWidget = nullptr;
         bool m_warningShowed = false;
 
-        //
-        AzToolsFramework::ReflectedPropertyEditor* m_rootMotionExtractionWidget = nullptr;
 
         // motion extraction node selection
         NodeSelectionWindow* m_motionExtractionNodeSelectionWindow = nullptr;

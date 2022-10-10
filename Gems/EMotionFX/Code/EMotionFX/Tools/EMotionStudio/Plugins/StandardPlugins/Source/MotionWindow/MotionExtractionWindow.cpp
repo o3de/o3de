@@ -106,7 +106,7 @@ namespace EMStudio
             return;
         }
 
-        // Create the extraction checkbox
+        // Create the checkbox that enable the root motion extraction options.
         m_extractRootMotionCheck = new QCheckBox();
         AzQtComponents::CheckBox::applyToggleSwitchStyle(m_extractRootMotionCheck);
         connect(m_extractRootMotionCheck, &QCheckBox::clicked, this, &MotionExtractionWindow::OnRootMotionCheckboxClicked);
@@ -121,7 +121,7 @@ namespace EMStudio
         exractRootMotionWidget->setLayout(layout);
         m_childVerticalLayout->addWidget(exractRootMotionWidget);
 
-        // Create the reflection widget
+        // Create the reflection widget.
         m_rootMotionExtractionWidget = aznew AzToolsFramework::ReflectedPropertyEditor(this);
         m_rootMotionExtractionWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
         m_rootMotionExtractionWidget->setObjectName("RootMotionExtractionWidget");
@@ -132,7 +132,7 @@ namespace EMStudio
         m_rootMotionExtractionWidget->setStyleSheet("QFrame, .QWidget, QSlider, QCheckBox { background-color: transparent }");
         m_childVerticalLayout->addWidget(m_rootMotionExtractionWidget);
 
-        // Create the save motion button
+        // Create the save motion button.
         m_saveMotionButton = new QPushButton("Save Motion");
         m_saveMotionButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
         connect(m_saveMotionButton, &QPushButton::clicked, this, &MotionExtractionWindow::OnSaveMotion);
@@ -337,9 +337,9 @@ namespace EMStudio
             m_extractRootMotionCheck->setChecked(false);
             if (numMotions == 1)
             {
-                EMotionFX::Motion* curMotion = selectionList.GetMotion(0);
+                const EMotionFX::Motion* curMotion = selectionList.GetMotion(0);
 
-                auto rootMotionDataPtr = curMotion->GetRootMotionExtractionData();
+                const auto& rootMotionDataPtr = curMotion->GetRootMotionExtractionData();
                 if (rootMotionDataPtr)
                 {
                     // Add the reflection widget for root motion extraction modifier
