@@ -408,7 +408,8 @@ namespace AZ::DocumentPropertyEditor
         Dom::Patch patch;
 
         auto generatePatchOperations =
-            [this, &patch, patchType](MatchInfoNode* matchNode, Dom::Path mappedPath, const Dom::Value& sourceValue, auto&& generatePatchOperations) -> void
+            [this, &patch, patchType](
+                MatchInfoNode* matchNode, Dom::Path mappedPath, const Dom::Value& sourceValue, auto&& generatePatchOperations) -> void
         {
             AZ_Assert(
                 matchNode->m_childMatchState.size() == sourceValue.ArraySize(), "MatchInfoNode and sourceValue structure must match!");
@@ -436,7 +437,8 @@ namespace AZ::DocumentPropertyEditor
                         {
                             // RemovalsFromSource and PatchToSource types don't generate patches for matching children, but have to recurse
                             // into them to check deeper
-                            generatePatchOperations(currChild, mappedPath / mappedChildIndex, sourceValue[sourceChildIndex], generatePatchOperations);
+                            generatePatchOperations(
+                                currChild, mappedPath / mappedChildIndex, sourceValue[sourceChildIndex], generatePatchOperations);
                             ++mappedChildIndex;
                         }
                     }
@@ -465,7 +467,8 @@ namespace AZ::DocumentPropertyEditor
                     {
                         if (currChild->IncludeInFilter())
                         {
-                            generatePatchOperations(currChild, mappedPath / mappedChildIndex, sourceValue[sourceChildIndex], generatePatchOperations);
+                            generatePatchOperations(
+                                currChild, mappedPath / mappedChildIndex, sourceValue[sourceChildIndex], generatePatchOperations);
                             ++mappedChildIndex;
                         }
                     }
