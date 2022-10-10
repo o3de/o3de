@@ -434,7 +434,7 @@ namespace AzToolsFramework::Prefab
         }
         else
         {
-            m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(providedPatch, entityId, "");
+            m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(providedPatch, entityId);
             return InvalidLinkId;
         }
     }

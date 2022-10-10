@@ -94,7 +94,9 @@ namespace AzToolsFramework
                 m_instanceToTemplateInterface->GenerateEntityAliasPath(parentEntityInfo.m_parentEntityId, AZStd::move(entityAliasPathPrefix));
 
             // Create redo patch.
-            m_redoPatch.SetArray();
+            m_instanceToTemplateInterface->GeneratePatch(m_redoPatch,
+                parentEntityInfo.m_parentEntityDomBeforeAddingEntity, parentEntityInfo.m_parentEntityDomAfterAddingEntity);
+            m_instanceToTemplateInterface->AppendEntityAliasPathToPatchPaths(m_redoPatch, parentEntityAliasPath);
 
             PrefabDomValue addNewEntityRedoPatch(rapidjson::kObjectType);
             rapidjson::Value path = rapidjson::Value(newEntityAliasPath.data(), aznumeric_caster(newEntityAliasPath.length()), m_redoPatch.GetAllocator());
@@ -105,26 +107,16 @@ namespace AzToolsFramework
                 .AddMember(rapidjson::StringRef("value"), AZStd::move(patchValue), m_redoPatch.GetAllocator());
             m_redoPatch.PushBack(addNewEntityRedoPatch.Move(), m_redoPatch.GetAllocator());
 
-            PrefabDom updateParentEntityRedoPatch(rapidjson::kObjectType);
-            m_instanceToTemplateInterface->GeneratePatch(
-                updateParentEntityRedoPatch, parentEntityInfo.m_parentEntityDomBeforeAddingEntity, parentEntityInfo.m_parentEntityDomAfterAddingEntity);
-            m_instanceToTemplateInterface->AppendEntityAliasPathToPatchPaths(updateParentEntityRedoPatch, parentEntityAliasPath);
-            m_redoPatch.PushBack(updateParentEntityRedoPatch.Move(), m_redoPatch.GetAllocator());
-
             // Create undo patch.
-            m_undoPatch.SetArray();
+            m_instanceToTemplateInterface->GeneratePatch(m_undoPatch,
+                parentEntityInfo.m_parentEntityDomAfterAddingEntity, parentEntityInfo.m_parentEntityDomBeforeAddingEntity);
+            m_instanceToTemplateInterface->AppendEntityAliasPathToPatchPaths(m_undoPatch, parentEntityAliasPath);
 
             PrefabDomValue addNewEntityUndoPatch(rapidjson::kObjectType);
             path = rapidjson::Value(newEntityAliasPath.data(), aznumeric_caster(newEntityAliasPath.length()), m_undoPatch.GetAllocator());
             addNewEntityUndoPatch.AddMember(rapidjson::StringRef("op"), rapidjson::StringRef("remove"), m_undoPatch.GetAllocator())
                 .AddMember(rapidjson::StringRef("path"), AZStd::move(path), m_undoPatch.GetAllocator());
             m_undoPatch.PushBack(addNewEntityUndoPatch.Move(), m_undoPatch.GetAllocator());
-
-            PrefabDom updateParentEntityUndoPatch(rapidjson::kObjectType);
-            m_instanceToTemplateInterface->GeneratePatch(updateParentEntityUndoPatch,
-                parentEntityInfo.m_parentEntityDomAfterAddingEntity, parentEntityInfo.m_parentEntityDomBeforeAddingEntity);
-            m_instanceToTemplateInterface->AppendEntityAliasPathToPatchPaths(updateParentEntityUndoPatch, parentEntityAliasPath);
-            m_undoPatch.PushBack(updateParentEntityUndoPatch.Move(), m_undoPatch.GetAllocator());
 
             // Preemptively updates the cached DOM to prevent reloading instance DOM.
             if (cachedInstanceDom.has_value())

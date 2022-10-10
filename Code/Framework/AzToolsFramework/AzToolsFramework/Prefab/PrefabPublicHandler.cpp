@@ -696,6 +696,8 @@ namespace AzToolsFramework
             }
 
             const PrefabDomValue& parentEntityDomBeforeAddingEntity = *parentEntityDomInOwningTemplate;
+            PrefabDom parentEntityDomBeforeAddingEntityCopy;
+            parentEntityDomBeforeAddingEntityCopy.CopyFrom(parentEntityDomBeforeAddingEntity, parentEntityDomBeforeAddingEntityCopy.GetAllocator());
 
             PrefabDom parentEntityDomAfterAddingEntity;
             AZ::Entity* parentEntity = GetEntityById(parentId);
@@ -718,12 +720,10 @@ namespace AzToolsFramework
             PrefabDom newEntityDom;
             m_instanceToTemplateInterface->GenerateDomForEntity(newEntityDom, *entity);
 
-//#define TEST_NEW_CODE
-#ifdef TEST_NEW_CODE
             TemplateId targetTemplateId;
-            PrefabUndoAddEntity::ParentEntityInfo parentEntityInfo(parentId, parentEntityDomBeforeAddingEntity, parentEntityDomAfterAddingEntity);
+            PrefabUndoAddEntity::ParentEntityInfo parentEntityInfo(parentId, parentEntityDomBeforeAddingEntityCopy, parentEntityDomAfterAddingEntity);
             PrefabUndoAddEntity::NewEntityInfo newEntityInfo(entityId, newEntityDom);
-            AZStd::string entityAliasPathPrefix = "";
+            AZStd::string entityAliasPathPrefix;
 
             if (IsPrefabOverridesUxEnabled() && !m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(parentId))
             {
@@ -758,12 +758,7 @@ namespace AzToolsFramework
                 entityOwningInstance.GetCachedInstanceDom(),
                 targetTemplateId,
                 undoBatch.GetUndoBatch(),
-                entityAliasPathPrefix);
-#else
-            PrefabUndoHelpers::AddEntityOld(newEntityDom, entityId, entityOwningInstance.GetTemplateId(), undoBatch.GetUndoBatch());
-            PrefabUndoHelpers::UpdateEntity(parentEntityDomBeforeAddingEntity, parentEntityDomAfterAddingEntity, parentId,
-                undoBatch.GetUndoBatch());
-#endif
+                AZStd::move(entityAliasPathPrefix));
 
             AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
                 &AzToolsFramework::ToolsApplicationRequestBus::Events::ClearDirtyEntities);
