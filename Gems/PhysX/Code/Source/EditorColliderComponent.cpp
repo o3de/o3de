@@ -1464,9 +1464,16 @@ namespace PhysX
 
     void EditorColliderComponent::SetCylinderRadius(float radius)
     {
-        m_shapeConfiguration.m_cylinder.m_radius = radius;
-        UpdateCylinderCookedMesh();
-        CreateStaticEditorCollider();
+        if (radius > 0.0f)
+        {
+            m_shapeConfiguration.m_cylinder.m_radius = radius;
+            UpdateCylinderCookedMesh();
+            CreateStaticEditorCollider();
+        }
+        else
+        {
+            AZ_Error("PhysX", false, "SetCylinderRadius: radius must be greater than zero.");
+        }
     }
 
     float EditorColliderComponent::GetCylinderRadius() const
@@ -1476,9 +1483,16 @@ namespace PhysX
 
     void EditorColliderComponent::SetCylinderHeight(float height)
     {
-        m_shapeConfiguration.m_cylinder.m_height = height;
-        UpdateCylinderCookedMesh();
-        CreateStaticEditorCollider();
+        if (height > 0.0f)
+        {
+            m_shapeConfiguration.m_cylinder.m_height = height;
+            UpdateCylinderCookedMesh();
+            CreateStaticEditorCollider();
+        }
+        else
+        {
+            AZ_Error("PhysX", false, "SetCylinderHeight: height must be greater than zero.");
+        }
     }
 
     float EditorColliderComponent::GetCylinderHeight() const
@@ -1525,11 +1539,20 @@ namespace PhysX
         const AZ::u8 subdivisionCount = m_shapeConfiguration.m_cylinder.m_subdivisionCount;
         const float height = m_shapeConfiguration.m_cylinder.m_height;
         const float radius = m_shapeConfiguration.m_cylinder.m_radius;
-        Utils::Geometry::PointList samplePoints = Utils::CreatePointsAtFrustumExtents(height, radius, radius, subdivisionCount).value();
 
-        const AZ::Vector3 scale = m_shapeConfiguration.m_cylinder.m_configuration.m_scale;
-        m_shapeConfiguration.m_cylinder.m_configuration
-            = Utils::CreatePxCookedMeshConfiguration(samplePoints, scale).value();
+        if (height > 0.0f && radius > 0.0f)
+        {
+            Utils::Geometry::PointList samplePoints = Utils::CreatePointsAtFrustumExtents(height, radius, radius, subdivisionCount).value();
+
+            const AZ::Vector3 scale = m_shapeConfiguration.m_cylinder.m_configuration.m_scale;
+            m_shapeConfiguration.m_cylinder.m_configuration = Utils::CreatePxCookedMeshConfiguration(samplePoints, scale).value();
+        }
+        else
+        {
+            AZ_Error("PhysX", false, "Cylinder radius and height must be greater than zero. Entity: %s",
+                GetEntity()->GetName().c_str());
+            m_shapeConfiguration.m_cylinder.m_configuration = {};
+        }
     }
 
     void EditorColliderComponentDescriptor::Reflect(AZ::ReflectContext* reflection) const
