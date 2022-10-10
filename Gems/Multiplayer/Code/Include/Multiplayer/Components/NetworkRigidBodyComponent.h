@@ -65,7 +65,9 @@ namespace Multiplayer
         void HandleSendApplyImpulse(AzNetworking::IConnection* invokingConnection, const AZ::Vector3& impulse, const AZ::Vector3& worldPoint) override;
 #endif
     private:
+#if AZ_TRAIT_SERVER_ENABLED
         void OnTransformUpdate();
         AZ::TransformChangedEvent::Handler m_transformChangedHandler;
+#endif
     };
 } // namespace Multiplayer

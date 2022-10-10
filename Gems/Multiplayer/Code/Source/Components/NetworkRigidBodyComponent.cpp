@@ -110,7 +110,9 @@ namespace Multiplayer
 
     NetworkRigidBodyComponentController::NetworkRigidBodyComponentController(NetworkRigidBodyComponent& parent)
         : NetworkRigidBodyComponentControllerBase(parent)
+#if AZ_TRAIT_SERVER_ENABLED
         , m_transformChangedHandler([this](const AZ::Transform&, const AZ::Transform&) { OnTransformUpdate(); })
+#endif
     {
         ;
     }
@@ -118,6 +120,7 @@ namespace Multiplayer
     void NetworkRigidBodyComponentController::OnActivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
     {
         GetParent().m_physicsRigidBodyComponent->SetKinematic(false);
+#if AZ_TRAIT_SERVER_ENABLED
         if (IsNetEntityRoleAuthority())
         {
             if (AzPhysics::RigidBody* rigidBody = GetParent().m_physicsRigidBodyComponent->GetRigidBody())
@@ -127,11 +130,14 @@ namespace Multiplayer
                 GetEntity()->GetTransform()->BindTransformChangedEventHandler(m_transformChangedHandler);
             }
         }
+#endif
     }
 
     void NetworkRigidBodyComponentController::OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
     {
+#if AZ_TRAIT_SERVER_ENABLED
         m_transformChangedHandler.Disconnect();
+#endif
         GetParent().m_physicsRigidBodyComponent->SetKinematic(true);
     }
 
@@ -148,7 +154,6 @@ namespace Multiplayer
             rigidBody->ApplyLinearImpulseAtWorldPoint(impulse, worldPoint);
         }
     }
-#endif
 
     void NetworkRigidBodyComponentController::OnTransformUpdate()
     {
@@ -158,4 +163,5 @@ namespace Multiplayer
             SetAngularVelocity(rigidBody->GetAngularVelocity());
         }
     }
+#endif
 } // namespace Multiplayer

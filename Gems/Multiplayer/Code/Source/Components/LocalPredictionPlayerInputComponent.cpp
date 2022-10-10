@@ -128,10 +128,12 @@ namespace Multiplayer
 
     LocalPredictionPlayerInputComponentController::LocalPredictionPlayerInputComponentController(LocalPredictionPlayerInputComponent& parent)
         : LocalPredictionPlayerInputComponentControllerBase(parent)
-        , m_autonomousUpdateEvent([this]() { UpdateAutonomous(m_autonomousUpdateEvent.TimeInQueueMs()); }, AZ::Name("AutonomousUpdate Event"))
         , m_updateBankedTimeEvent([this]() { UpdateBankedTime(m_updateBankedTimeEvent.TimeInQueueMs()); }, AZ::Name("BankTimeUpdate Event"))
+#if AZ_TRAIT_CLIENT_ENABLED
+        , m_autonomousUpdateEvent([this]() { UpdateAutonomous(m_autonomousUpdateEvent.TimeInQueueMs()); }, AZ::Name("AutonomousUpdate Event"))
         , m_migrateStartHandler([this](ClientInputId migratedInputId) { OnMigrateStart(migratedInputId); })
         , m_migrateEndHandler([this]() { OnMigrateEnd(); })
+#endif
     {
         ;
     }
@@ -479,6 +481,7 @@ namespace Multiplayer
         return (input.GetHostFrameId() == InvalidHostFrameId) ? m_serverMigrateFrameId : input.GetHostFrameId();
     }
 
+#if AZ_TRAIT_CLIENT_ENABLED
     void LocalPredictionPlayerInputComponentController::OnMigrateStart(ClientInputId migratedInputId)
     {
         m_lastMigratedInputId = migratedInputId;
@@ -622,6 +625,7 @@ namespace Multiplayer
             }
         }
     }
+#endif
 
     bool LocalPredictionPlayerInputComponentController::SerializeEntityCorrection(AzNetworking::ISerializer& serializer)
     {

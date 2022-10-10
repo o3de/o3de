@@ -230,7 +230,13 @@ void {{ ClassName }}::Set{{ UpperFirst(Property.attrib['Name']) }}(const {{ Prop
 {% macro DefineNetworkPropertyGets(Component, ReplicateFrom, ReplicateTo, IsProtected, ClassName, Prefix = '') %}
 {% call(Property) AutoComponentMacros.ParseNetworkProperties(Component, ReplicateFrom, ReplicateTo) %}
 {% if Property.attrib['IsPublic'] | booleanTrue != IsProtected %}
+{%     if (ReplicateFrom == 'Authority') and (ReplicateTo == 'Server') %}
+#if AZ_TRAIT_SERVER_ENABLED
 {{ DefineNetworkPropertyGet(ClassName, Property, Prefix) }}
+#endif
+{%     else %}
+{{ DefineNetworkPropertyGet(ClassName, Property, Prefix) }}
+{%     endif %}
 {% endif %}
 {% endcall %}
 {% endmacro %}
@@ -240,8 +246,20 @@ void {{ ClassName }}::Set{{ UpperFirst(Property.attrib['Name']) }}(const {{ Prop
 {% macro DefineNetworkPropertyAccessors(Component, ReplicateFrom, ReplicateTo, IsProtected, ClassName) %}
 {% call(Property) AutoComponentMacros.ParseNetworkProperties(Component, ReplicateFrom, ReplicateTo) %}
 {% if Property.attrib['IsPublic'] | booleanTrue != IsProtected %}
+{%     if ReplicateFrom == 'Authority' and ReplicateTo == 'Server' %}
+#if AZ_TRAIT_SERVER_ENABLED
 {{ DefineNetworkPropertyGet(ClassName, Property, "GetParent().") }}
+#endif
+{%     else %}
+{{ DefineNetworkPropertyGet(ClassName, Property, "GetParent().") }}
+{%     endif %}
+{%     if (ReplicateFrom == 'Authority' and ReplicateTo == 'Server') or (ReplicateTo == 'Client' and Property.attrib['IsPredictable'] | booleanTrue == false) %}
+#if AZ_TRAIT_SERVER_ENABLED
 {{ DefineNetworkPropertySet(Component, ReplicateFrom, ReplicateTo, ClassName, Property) }}
+#endif
+{%     else %}
+{{ DefineNetworkPropertySet(Component, ReplicateFrom, ReplicateTo, ClassName, Property) }}
+{%     endif %}
 {% endif %}
 {% endcall %}
 {% endmacro %}
@@ -261,6 +279,11 @@ void {{ ClassName }}::Set{{ UpperFirst(Property.attrib['Name']) }}(const {{ Prop
 {%     set paramTypes   = [] %}
 {%     set paramDefines = [] %}
 {{     AutoComponentMacros.ParseRpcParams(Property, paramNames, paramTypes, paramDefines) }}
+{% if (InvokeFrom == 'Client') or (InvokeFrom == 'Autonomous') %}
+#if AZ_TRAIT_CLIENT_ENABLED
+{% elif (InvokeFrom == 'Authority') or (InvokeFrom == 'Server') %}
+#if AZ_TRAIT_SERVER_ENABLED
+{% endif %}
 void {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}({{ PrintRpcParameters('', paramDefines) }})
 {
 {% if (InvokeFrom == 'Authority') %}
@@ -301,6 +324,7 @@ void {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}({{ PrintRpcParam
     rpcMessage.SetRpcParams(rpcStruct);
     GetNetBindComponent()->{{ "GetSend" + InvokeFrom + "To" + HandleOn + "RpcEvent" }}().Signal(rpcMessage);
 }
+#endif
 {% endmacro %}
 {#
 
@@ -616,6 +640,9 @@ bool {{ ClassName }}::Serialize{{ AutoComponentMacros.GetNetPropertiesSetName(Re
     [[maybe_unused]] Multiplayer::MultiplayerStats& stats = Multiplayer::GetMultiplayer()->GetStats();
     // We modify the record if we are writing an update so that we don't notify for a change that really didn't change the value (just a duplicated send from the server)
 {% call(Property) AutoComponentMacros.ParseNetworkProperties(Component, ReplicateFrom, ReplicateTo) %}
+{%     if ReplicateFrom == 'Authority' and ReplicateTo == 'Server' %}
+#if AZ_TRAIT_SERVER_ENABLED
+{%     endif %}
 {%     if Property.attrib['Container'] != 'None' and Property.attrib['Container'] != 'Object' %}
     { // Serialization for Vector and Array Network Properties
         const uint32_t firstBit = static_cast<uint32_t>({{ AutoComponentMacros.GetNetPropertiesQualifiedPropertyDirtyEnum(Component.attrib['Name'], ReplicateFrom, ReplicateTo, Property, 'Start') }});
@@ -655,6 +682,9 @@ bool {{ ClassName }}::Serialize{{ AutoComponentMacros.GetNetPropertiesSetName(Re
         static_cast<Multiplayer::PropertyIndex>({{ UpperFirst(Component.attrib['Name']) }}Internal::NetworkProperties::{{ UpperFirst(Property.attrib['Name']) }}),
         stats
     );
+{%     endif %}
+{%     if ReplicateFrom == 'Authority' and ReplicateTo == 'Server' %}
+#endif
 {%     endif %}
 {% endcall %}
 {% endif %}
@@ -1345,6 +1375,9 @@ namespace {{ Component.attrib['Namespace'] }}
         Multiplayer::MultiplayerAuditingElement output;
         output.m_name = "{{ ComponentName }}NetworkInput";
 {% call(Input) AutoComponentMacros.ParseNetworkInputs(Component) %}
+{% if Input.attrib['ReplicateFrom'] == 'Authority' and Input.attrib['ReplicateTo'] == 'Server' %}
+#if AZ_TRAIT_SERVER_ENABLED
+{% endif %}
         if (m_{{ LowerFirst(Input.attrib['Name']) }} != {{ Input.attrib['Type'] }}({{ Input.attrib['Init'] }}))
         {
 {% if Input.attrib['Init'] != '' %}
@@ -1353,6 +1386,9 @@ namespace {{ Component.attrib['Namespace'] }}
             output.m_elements.emplace_back(AZStd::make_unique<Multiplayer::MultiplayerAuditingDatum<AZStd::string>>("{{ LowerFirst(Input.attrib['Name']) }}"));
 {% endif %}
         }
+{% if Input.attrib['ReplicateFrom'] == 'Authority' and Input.attrib['ReplicateTo'] == 'Server' %}
+#endif
+{% endif %}
 {% endcall %}
 
         return output;
@@ -1361,7 +1397,13 @@ namespace {{ Component.attrib['Namespace'] }}
     bool {{ ComponentName }}NetworkInput::Serialize(AzNetworking::ISerializer& serializer)
     {
 {% call(Input) AutoComponentMacros.ParseNetworkInputs(Component) %}
+{% if Input.attrib['ReplicateFrom'] == 'Authority' and Input.attrib['ReplicateTo'] == 'Server' %}
+#if AZ_TRAIT_SERVER_ENABLED
         serializer.Serialize(m_{{ LowerFirst(Input.attrib['Name']) }}, "{{ UpperFirst(Input.attrib['Name']) }}");
+#endif
+{% else %}
+        serializer.Serialize(m_{{ LowerFirst(Input.attrib['Name']) }}, "{{ UpperFirst(Input.attrib['Name']) }}");
+{% endif %}
 {% endcall %}
         return serializer.IsValid();
     }

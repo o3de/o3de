@@ -78,9 +78,11 @@ namespace Multiplayer
 
     private:
 
+#if AZ_TRAIT_CLIENT_ENABLED
         void OnMigrateStart(ClientInputId migratedInputId);
         void OnMigrateEnd();
         void UpdateAutonomous(AZ::TimeMs deltaTimeMs);
+#endif
         void UpdateBankedTime(AZ::TimeMs deltaTimeMs);
 
         bool SerializeEntityCorrection(AzNetworking::ISerializer& serializer);

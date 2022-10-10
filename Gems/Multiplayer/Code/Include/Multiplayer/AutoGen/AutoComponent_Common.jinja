@@ -275,7 +275,7 @@ void Signal{{ PropertyName }}({{ ', '.join(paramDefines) }});
 {% macro ParseNetworkInputsExposedToScript(Component) -%}
 {% set NetworkInputsExposedToScript = namespace(value=0) %}
 {% for netInput in Component.findall('NetworkInput') %}
-{%      if ('ExposeToScript' in netInput.attrib) and (netInput.attrib['ExposeToScript'] |booleanTrue) %}
+{%      if ('ExposeToScript' in netInput.attrib) and (netInput.attrib['ExposeToScript'] |booleanTrue) and ('ReplicateFrom' not in netInput.attrib or (netInput.attrib['ReplicateFrom'] != 'Authority' and netInput.attrib['ReplicateTo'] != 'Server')) %}
 {{ caller(netInput) -}}
 {%      endif %}
 {% endfor %}
