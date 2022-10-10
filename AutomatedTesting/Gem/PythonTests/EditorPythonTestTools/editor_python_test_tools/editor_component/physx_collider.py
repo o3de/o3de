@@ -69,7 +69,8 @@ from editor_python_test_tools.utils import TestHelper as helper
 
 class PhysxCollider(EditorComponent):
     def __init__(self, editor_entity: EditorEntity, component_name: str) -> None:
-        super().__init__(editor_entity.add_component(component_name).type_id)
+        self.component = editor_entity.add_component(component_name)
+        super().__init__(self.component.type_id)
 
     class Path:
         class Box:
@@ -107,11 +108,9 @@ class PhysxCollider(EditorComponent):
         DRAW_COLLIDER = 'Debug draw settings'
         SHAPE = 'Shape Configuration|Shape'
 
-
-
     def set_physx_mesh_from_path(self, asset_product_path) -> None:
         px_asset = Asset.find_asset_by_path(asset_product_path)
-        super().set_component_property_value(self.Path.PhysicsAsset.PHYSX_MESH, px_asset.id)
+        self.component.set_component_property_value(self.Path.PhysicsAsset.PHYSX_MESH, px_asset.id)
 
 
 
