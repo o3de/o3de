@@ -530,15 +530,15 @@ namespace AzToolsFramework
                             AZ::StringFunc::Join(message, response.m_lines.begin(), response.m_lines.end(), "\n");
                             AzQtComponents::FixedWidthMessageBox msgBox(
                                 600,
-                                "Before Delete Asset Information",
-                                "The asset you are deleting may be referenced in other assets.",
-                                "More information can be found by pressing \"Show Details...\".",
+                                tr("Before Delete Asset Information"),
+                                tr("The asset you are deleting may be referenced in other assets."),
+                                tr("More information can be found by pressing \"Show Details...\"."),
                                 message.c_str(),
                                 QMessageBox::Warning,
                                 QMessageBox::Cancel,
                                 QMessageBox::Yes,
                                 this);
-                            auto* deleteButton = msgBox.addButton("Delete", QMessageBox::YesRole);
+                            auto* deleteButton = msgBox.addButton(tr("Delete"), QMessageBox::YesRole);
                             msgBox.exec();
 
                             if (msgBox.clickedButton() != static_cast<QAbstractButton*>(deleteButton))
@@ -561,9 +561,9 @@ namespace AzToolsFramework
                                     AZ::StringFunc::Join(deleteMessage, response.m_lines.begin(), response.m_lines.end(), "\n");
                                     AzQtComponents::FixedWidthMessageBox deleteMsgBox(
                                         600,
-                                        "After Delete Asset Information",
-                                        "The asset has been deleted.",
-                                        "More information can be found by pressing \"Show Details...\".",
+                                        tr("After Delete Asset Information"),
+                                        tr("The asset has been deleted."),
+                                        tr("More information can be found by pressing \"Show Details...\"."),
                                         deleteMessage.c_str(),
                                         QMessageBox::Information,
                                         QMessageBox::Ok,
@@ -610,15 +610,15 @@ namespace AzToolsFramework
                         AZ::StringFunc::Join(message, response.m_lines.begin(), response.m_lines.end(), "\n");
                         AzQtComponents::FixedWidthMessageBox msgBox(
                             600,
-                           "Before Rename Asset Information",
-                            "The asset you are renaming may be referenced in other assets.",
-                            "More information can be found by pressing \"Show Details...\".",
+                            tr("Before Rename Asset Information"),
+                            tr("The asset you are renaming may be referenced in other assets."),
+                            tr("More information can be found by pressing \"Show Details...\"."),
                             message.c_str(),
                             QMessageBox::Warning,
                             QMessageBox::Cancel,
                             QMessageBox::Yes,
                             this);
-                        auto* renameButton = msgBox.addButton("Rename", QMessageBox::YesRole);
+                        auto* renameButton = msgBox.addButton(tr("Rename"), QMessageBox::YesRole);
                         msgBox.exec();
 
                         if (msgBox.clickedButton() == static_cast<QAbstractButton*>(renameButton))
@@ -662,9 +662,9 @@ namespace AzToolsFramework
                     AZ::StringFunc::Join(message, moveResponse.m_lines.begin(), moveResponse.m_lines.end(), "\n");
                     AzQtComponents::FixedWidthMessageBox msgBox(
                         600,
-                        "After Rename Asset Information",
-                        "The asset has been renamed.",
-                        "More information can be found by pressing \"Show Details...\".",
+                        tr("After Rename Asset Information"),
+                        tr("The asset has been renamed."),
+                        tr("More information can be found by pressing \"Show Details...\"."),
                         message.c_str(),
                         QMessageBox::Information,
                         QMessageBox::Ok,
@@ -757,15 +757,15 @@ namespace AzToolsFramework
                                     AZ::StringFunc::Join(message, response.m_lines.begin(), response.m_lines.end(), "\n");
                                     AzQtComponents::FixedWidthMessageBox msgBox(
                                         600,
-                                        "Before Move Asset Information",
-                                        "The asset you are moving may be referenced in other assets.",
-                                        "More information can be found by pressing \"Show Details...\".",
+                                        tr("Before Move Asset Information"),
+                                        tr("The asset you are moving may be referenced in other assets."),
+                                        tr("More information can be found by pressing \"Show Details...\"."),
                                         message.c_str(),
                                         QMessageBox::Warning,
                                         QMessageBox::Cancel,
                                         QMessageBox::Yes,
                                         this);
-                                    auto* moveButton = msgBox.addButton("Move", QMessageBox::YesRole);
+                                    auto* moveButton = msgBox.addButton(tr("Move"), QMessageBox::YesRole);
                                     msgBox.exec();
 
                                     if (msgBox.clickedButton() != static_cast<QAbstractButton*>(moveButton))
@@ -789,9 +789,9 @@ namespace AzToolsFramework
                                             AZ::StringFunc::Join(moveMessage, response.m_lines.begin(), response.m_lines.end(), "\n");
                                             AzQtComponents::FixedWidthMessageBox moveMsgBox(
                                                 600,
-                                                "After Move Asset Information",
-                                                "The asset has been moved.",
-                                                "More information can be found by pressing \"Show Details...\".",
+                                                tr("After Move Asset Information"),
+                                                tr("The asset has been moved."),
+                                                tr("More information can be found by pressing \"Show Details...\"."),
                                                 moveMessage.c_str(),
                                                 QMessageBox::Information,
                                                 QMessageBox::Ok,
