@@ -6,6 +6,7 @@
  *
  */
 
+#include <Atom/RHI.Reflect/SamplerState.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RPI.Edit/Shader/ShaderSourceData.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
@@ -101,6 +102,7 @@ namespace MaterialCanvas
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("color"), AZ::Color::CreateOne(), "color"),
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("string"), AZStd::string{}, "string"),
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("image"), AZ::Data::Asset<AZ::RPI::StreamingImageAsset>{}, "image"),
+            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("sampler"), AZ::RHI::SamplerState{}, "sampler"),
         });
 
         // Registering custom property handlers for dynamic node configuration settings. The settings are just a map of string data.
