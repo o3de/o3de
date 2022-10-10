@@ -3625,10 +3625,10 @@ TEST_F(AssetProcessorManagerTest, SourceFileProcessFailure_AutoFailedLfsPointerF
     AZ::IO::FixedMaxPathString engineRoot, projectRoot;
     settingsRegistry->Get(engineRoot, AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
     settingsRegistry->Get(projectRoot, AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath);
-    settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder, m_tempDir.path().toUtf8().data());
-    settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath, m_tempDir.path().toUtf8().data());
+    settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder, m_assetRootDir.path().toUtf8().data());
+    settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath, m_assetRootDir.path().toUtf8().data());
 
-    QDir tempPath(m_tempDir.path());
+    QDir tempPath(m_assetRootDir.path());
     QString gitAttributesPath = tempPath.absoluteFilePath(".gitattributes");
     ASSERT_TRUE(UnitTestUtils::CreateDummyFile(gitAttributesPath, QString(
         "#\n"
