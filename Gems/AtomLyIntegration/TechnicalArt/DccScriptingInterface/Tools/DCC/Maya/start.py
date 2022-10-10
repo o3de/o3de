@@ -64,8 +64,13 @@ _LOGGER = _logging.getLogger(_MODULENAME)
 
 # auto-attach ide debugging at the earliest possible point in module
 if DCCSI_DEV_MODE:
-    import DccScriptingInterface.azpy.test.entry_test
-    DccScriptingInterface.azpy.test.entry_test.connect_wing()
+    if DCCSI_GDEBUGGER == 'WING':
+        import DccScriptingInterface.azpy.test.entry_test
+        DccScriptingInterface.azpy.test.entry_test.connect_wing()
+    elif DCCSI_GDEBUGGER == 'PYCHARM':
+        _LOGGER.warning(f'{DCCSI_GDEBUGGER} debugger auto-attach not yet implemented')
+    else:
+        _LOGGER.warning(f'{DCCSI_GDEBUGGER} not a supported debugger')
 
 _LOGGER.debug(f'Initializing: {_MODULENAME}')
 _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH.as_posix()}')

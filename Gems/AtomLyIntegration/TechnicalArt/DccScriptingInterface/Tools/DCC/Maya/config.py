@@ -70,6 +70,9 @@ from DccScriptingInterface.Tools.DCC.Maya import PATH_DCCSI_TOOLS_DCC_MAYA
 from DccScriptingInterface.Tools import ENVAR_PATH_DCCSI_TOOLS
 from DccScriptingInterface.Tools import PATH_DCCSI_TOOLS
 
+from DccScriptingInterface import ENVAR_PATH_O3DE_PROJECT
+from DccScriptingInterface import PATH_O3DE_PROJECT
+
 from DccScriptingInterface import SETTINGS_FILE_SLUG
 PATH_DCCSI_TOOLS_DCC_MAYA_SETTINGS = PATH_DCCSI_TOOLS_DCC_MAYA.joinpath(SETTINGS_FILE_SLUG).resolve()
 
@@ -122,8 +125,6 @@ maya_config.add_setting(ENVAR_DCCSI_PY_VERSION_MINOR, DCCSI_PY_VERSION_MINOR)
 maya_config.add_setting(ENVAR_DCCSI_PY_VERSION_RELEASE, DCCSI_PY_VERSION_RELEASE)
 maya_config.add_setting(ENVAR_MAYA_VERSION, MAYA_VERSION)
 
-from DccScriptingInterface import ENVAR_PATH_O3DE_PROJECT
-from DccScriptingInterface import PATH_O3DE_PROJECT
 PATH_O3DE_PROJECT = Path(PATH_O3DE_PROJECT).resolve()
 maya_config.add_setting(ENVAR_PATH_O3DE_PROJECT, PATH_O3DE_PROJECT.as_posix())
 
