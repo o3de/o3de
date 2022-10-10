@@ -286,7 +286,7 @@ namespace AtomToolsFramework
             return CheckRangeMetaDataValuesForType(azrtti_typeid<float>());
         }
 
-        auto warnIfNotEmpty = [&](const AZStd::any& any, [[maybe_unused]] const char* valueName)
+        auto warnIfNotEmpty = [&]([[maybe_unused]] const AZStd::any& any, [[maybe_unused]] const char* valueName)
         {
             AZ_Warning(
                 "AtomToolsFramework",
