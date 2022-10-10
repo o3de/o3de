@@ -29,6 +29,7 @@ set(FILES
     Components.cpp
     Console/LoggerSystemComponentTests.cpp
     Console/ConsoleTests.cpp
+    Date/DateFormatTests.cpp
     Debug.cpp
     DLL.cpp
     EBus.cpp
@@ -224,6 +225,7 @@ set(FILES
     AZStd/Optional.cpp
     AZStd/Pair.cpp
     AZStd/Parallel.cpp
+    AZStd/RangesAlgorithmBenchmarks.cpp
     AZStd/RangesAlgorithmTests.cpp
     AZStd/RangesTests.cpp
     AZStd/RangesUtilityTests.cpp

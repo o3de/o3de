@@ -1280,6 +1280,13 @@ void SplineWidget::mouseDoubleClickEvent(QMouseEvent* event)
     break;
     case HIT_KEY:
     {
+        // End recording that was started at the beginning of the double click sequence
+        if (UiAnimUndo::IsRecording())
+        {
+            UiAnimUndoManager::Get()->Cancel();
+            m_pCurrentUndo = nullptr;
+        }
+
         RemoveKey(m_pHitSpline, m_nHitKeyIndex);
     }
     break;

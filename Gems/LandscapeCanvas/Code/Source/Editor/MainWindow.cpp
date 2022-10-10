@@ -126,7 +126,7 @@ namespace LandscapeCanvasEditor
     static const int NODE_OFFSET_X_PIXELS = 350;
     static const int NODE_OFFSET_Y_PIXELS = 450;
     static constexpr int InvalidSlotIndex = -1;
-    static const char* PreviewEntityElementName = "PreviewEntity";
+    static const char* PreviewEntityElementName = "BoundsEntity";
     static const char* GradientIdElementName = "GradientId";
     static const char* GradientEntityIdElementName = "Gradient Entity";
     static const char* ShapeEntityIdElementName = "ShapeEntityId";

@@ -632,7 +632,7 @@ namespace GradientSignal
         // Invoke the QueueLoad before connecting to the AssetBus, so that
         // if the asset is already ready, then OnAssetReady will be triggered immediately
         UpdateCachedImageBufferData({}, {});
-        m_configuration.m_imageAsset.QueueLoad();
+        m_configuration.m_imageAsset.QueueLoad(AZ::Data::AssetLoadParameters(nullptr, AZ::Data::AssetDependencyLoadRules::LoadAll));
 
         AZ::Data::AssetBus::Handler::BusConnect(m_configuration.m_imageAsset.GetId());
 
@@ -703,11 +703,6 @@ namespace GradientSignal
         AZStd::unique_lock lock(m_queryMutex);
         m_configuration.m_imageAsset = asset;
         GetSubImageData();
-    }
-
-    void ImageGradientComponent::OnAssetMoved(AZ::Data::Asset<AZ::Data::AssetData> asset, [[maybe_unused]] void* oldDataPointer)
-    {
-        OnAssetReady(asset);
     }
 
     void ImageGradientComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
@@ -973,7 +968,7 @@ namespace GradientSignal
             // Only queue the load if it appears in the Asset Catalog. If it doesn't, we'll get notified when it shows up.
             if (assetInfo.m_assetId.IsValid())
             {
-                m_configuration.m_imageAsset.QueueLoad();
+                m_configuration.m_imageAsset.QueueLoad(AZ::Data::AssetLoadParameters(nullptr, AZ::Data::AssetDependencyLoadRules::LoadAll));
             }
 
             // Start listening for all events for this asset.

@@ -1060,6 +1060,24 @@ void MainWindow::InitActions()
                     &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnIconsVisibilityChanged,
                     AzToolsFramework::IconsVisible());
             });
+    am->AddAction(AzToolsFramework::OnlyShowHelpersForSelectedEntitiesAction, tr("Show Helpers for Selected Entities Only"))
+        .SetToolTip(tr("Show Helpers for Selected/All Entities"))
+        .SetCheckable(true)
+        .RegisterUpdateCallback(
+            [](QAction* action)
+            {
+                Q_ASSERT(action->isCheckable());
+                action->setChecked(AzToolsFramework::OnlyShowHelpersForSelectedEntities());
+            })
+        .Connect(
+            &QAction::triggered,
+            []()
+            {
+                AzToolsFramework::SetOnlyShowHelpersForSelectedEntities(!AzToolsFramework::OnlyShowHelpersForSelectedEntities());
+                AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
+                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnOnlyShowHelpersForSelectedEntitiesChanged,
+                    AzToolsFramework::OnlyShowHelpersForSelectedEntities());
+            });
 
     // Audio actions
     am->AddAction(ID_SOUND_STOPALLSOUNDS, tr("Stop All Sounds"))

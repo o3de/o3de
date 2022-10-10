@@ -686,21 +686,6 @@ namespace AzToolsFramework
             m_prefabUndoCache.UpdateCache(entityId);
             m_prefabUndoCache.UpdateCache(parentId);
 
-            // Get the alias of the parent entity in the owning template's DOM.
-            AZStd::string parentEntityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(parentId);
-            PrefabDomPath entityPathInOwningTemplate(parentEntityAliasPath.c_str());
-            
-            PrefabDom& owningTemplateDom =
-                m_prefabSystemComponentInterface->FindTemplateDom(owningInstanceOfParentEntity->get().GetTemplateId());
-            const PrefabDomValue* parentEntityDomInOwningTemplate = entityPathInOwningTemplate.Get(owningTemplateDom);
-            if (!parentEntityDomInOwningTemplate)
-            {
-                return AZ::Failure<AZStd::string>("Could not load entity DOM from the owning template's DOM.");
-            }
-
-            const PrefabDomValue& parentEntityDomBeforeAddingEntity = *parentEntityDomInOwningTemplate;
-
-            PrefabDom parentEntityDomAfterAddingEntity;
             AZ::Entity* parentEntity = GetEntityById(parentId);
 
             if (!parentEntity)
@@ -708,7 +693,30 @@ namespace AzToolsFramework
                 return AZ::Failure<AZStd::string>("Parent entity cannot be found while adding an entity.");
             }
 
-            m_instanceToTemplateInterface->GenerateDomForEntity(parentEntityDomAfterAddingEntity, *parentEntity);
+            // Get the alias of the parent entity in the owning template's DOM.
+            AZStd::string parentEntityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(parentId);
+            PrefabDomPath entityPathInOwningTemplate(parentEntityAliasPath.c_str());
+            
+            PrefabDom& owningTemplateDom =
+                m_prefabSystemComponentInterface->FindTemplateDom(owningInstanceOfParentEntity->get().GetTemplateId());
+
+            {
+                // DOM value pointers can't be relied upon if the original DOM gets modified after pointer creation.
+                // This scope is added to limit their usage and ensure DOM is not modified when it is being used.
+                const PrefabDomValue* parentEntityDomInOwningTemplate = entityPathInOwningTemplate.Get(owningTemplateDom);
+                if (!parentEntityDomInOwningTemplate)
+                {
+                    return AZ::Failure<AZStd::string>("Could not load entity DOM from the owning template's DOM.");
+                }
+
+                PrefabDom parentEntityDomAfterAddingEntity;
+                m_instanceToTemplateInterface->GenerateDomForEntity(parentEntityDomAfterAddingEntity, *parentEntity);
+
+                // Create undo node to account for changes to parent entity due to adding a new entity under it. Currently only the
+                // EditorEntitySortComponent get modified on the parent but more things can change in the future too.
+                PrefabUndoHelpers::UpdateEntity(
+                    *parentEntityDomInOwningTemplate, parentEntityDomAfterAddingEntity, parentId, undoBatch.GetUndoBatch());
+            }
 
             // Select the new entity (and deselect others).
             AzToolsFramework::EntityIdList selection = {entityId};
@@ -718,15 +726,11 @@ namespace AzToolsFramework
 
             ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, selection);
 
+            // Add entity DOM in owning template.
             PrefabDom newEntityDom;
             m_instanceToTemplateInterface->GenerateDomForEntity(newEntityDom, *entity);
 
             PrefabUndoHelpers::AddEntity(newEntityDom, entityId, entityOwningInstance.GetTemplateId(), undoBatch.GetUndoBatch());
-
-            // Create undo node to account for changes to parent entity due to adding a new entity under it. Currently only the
-            // EditorEntitySortComponent get modified on the parent but more things can change in the future too.
-            PrefabUndoHelpers::UpdateEntity(parentEntityDomBeforeAddingEntity, parentEntityDomAfterAddingEntity, parentId,
-                undoBatch.GetUndoBatch());
                 
             AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
                 &AzToolsFramework::ToolsApplicationRequestBus::Events::ClearDirtyEntities);
@@ -1298,7 +1302,7 @@ namespace AzToolsFramework
             deselectAllCommand->SetParent(undoBatch.GetUndoBatch());
 
             const TemplateId commonOwningTemplateId = commonOwningInstance->get().GetTemplateId();
-            PrefabDom& commonOwningTemplateDom = m_prefabSystemComponentInterface->FindTemplateDom(commonOwningTemplateId);
+            const PrefabDom& commonOwningTemplateDom = m_prefabSystemComponentInterface->FindTemplateDom(commonOwningTemplateId);
 
             // Removing instances and entities...
 
@@ -1324,33 +1328,39 @@ namespace AzToolsFramework
             }
 
             // Step 2 - Removes entities.
-            AZStd::vector<AZStd::pair<const PrefabDomValue*, AZStd::string>> removedEntityDomAndPathList;
             AZStd::unordered_set<AZ::EntityId> entitiesThatGotRemoved;
-
-            for (const AZ::Entity* entity : entityList)
             {
-                const AZ::EntityId entityId = entity->GetId();
-                const AZStd::string entityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(entityId); // retrieve before detaching
+                // DOM value pointers can't be relied upon if the original DOM gets modified after pointer creation.
+                // This scope is added to limit their usage and ensure DOM is not modified when it is being used.
+                AZStd::vector<AZStd::pair<const PrefabDomValue*, AZStd::string>> removedEntityDomAndPathList;
 
-                // Captures the parent DOM if it is first seen in map.
-                AZ::EntityId parentEntityId;
-                AZ::TransformBus::EventResult(parentEntityId, entityId, &AZ::TransformBus::Events::GetParentId);
-                CaptureInitialEntityDomFromOwningTemplate(parentEntityDomBeforeRemovalMap, parentEntityId, commonOwningTemplateDom);
+                for (const AZ::Entity* entity : entityList)
+                {
+                    const AZ::EntityId entityId = entity->GetId();
+                    const AZStd::string entityAliasPath =
+                        m_instanceToTemplateInterface->GenerateEntityAliasPath(entityId); // retrieve before detaching
 
-                // Detaches the entity.
-                commonOwningInstance->get().DetachEntity(entityId).release();
-                AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationRequests::DeleteEntity, entityId);
+                    // Captures the parent DOM if it is first seen in map.
+                    AZ::EntityId parentEntityId;
+                    AZ::TransformBus::EventResult(parentEntityId, entityId, &AZ::TransformBus::Events::GetParentId);
+                    CaptureInitialEntityDomFromOwningTemplate(parentEntityDomBeforeRemovalMap, parentEntityId, commonOwningTemplateDom);
 
-                // Captures the entity DOM from the owning template DOM for undo purpose and puts the entity DOM into a list
-                // for batch processing.
-                PrefabDomPath entityDomInOwningTemplatePath(entityAliasPath.c_str());
-                const PrefabDomValue* removedEntityDomPtr = entityDomInOwningTemplatePath.Get(commonOwningTemplateDom);
-                removedEntityDomAndPathList.emplace_back(removedEntityDomPtr, AZStd::move(entityAliasPath));
+                    // Detaches the entity.
+                    commonOwningInstance->get().DetachEntity(entityId).release();
+                    AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationRequests::DeleteEntity, entityId);
 
-                entitiesThatGotRemoved.insert(entityId);
+                    // Captures the entity DOM from the owning template DOM for undo purpose and puts the entity DOM into a list
+                    // for batch processing.
+                    PrefabDomPath entityDomInOwningTemplatePath(entityAliasPath.c_str());
+
+                    removedEntityDomAndPathList.emplace_back(
+                        entityDomInOwningTemplatePath.Get(commonOwningTemplateDom), AZStd::move(entityAliasPath));
+
+                    entitiesThatGotRemoved.insert(entityId);
+                }
+
+                PrefabUndoHelpers::RemoveEntities(removedEntityDomAndPathList, commonOwningTemplateId, undoBatch.GetUndoBatch());
             }
-
-            PrefabUndoHelpers::RemoveEntities(removedEntityDomAndPathList, commonOwningTemplateId, undoBatch.GetUndoBatch());
 
             // Step 3 - Updates parent entity DOMs with new children information.
             for (const auto& [parentEntityId, parentEntityDomBefore] : parentEntityDomBeforeRemovalMap)
@@ -1755,13 +1765,18 @@ namespace AzToolsFramework
             {
                 const AZStd::string& entityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(entityId);
                 PrefabDomPath entityAliasDomPath(entityAliasPath.c_str());
-                const PrefabDomValue* entityDomPtr = entityAliasDomPath.Get(owningTemplateDom);
-                if (entityDomPtr)
+
                 {
-                    // Deep copy is needed to cache the current DOM state.
-                    PrefabDom initialEntityDom;
-                    initialEntityDom.CopyFrom(*entityDomPtr, initialEntityDom.GetAllocator());
-                    entityIdDomMap[entityId] = AZStd::move(initialEntityDom);
+                    // Entity DOM pointer can't be relied upon if the original DOM gets modified after pointer creation.
+                    // This scope is added to limit their usage and ensure DOM is not modified when it is being used.
+                    const PrefabDomValue* entityDomPtr = entityAliasDomPath.Get(owningTemplateDom);
+                    if (entityDomPtr)
+                    {
+                        // Deep copy is needed to cache the current DOM state.
+                        PrefabDom initialEntityDom;
+                        initialEntityDom.CopyFrom(*entityDomPtr, initialEntityDom.GetAllocator());
+                        entityIdDomMap[entityId] = AZStd::move(initialEntityDom);
+                    }
                 }
             }
         }

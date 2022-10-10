@@ -199,6 +199,25 @@ namespace AZ::Utils
         return {};
     }
 
+    AZ::IO::FixedMaxPathString GetProjectUserPath(AZ::SettingsRegistryInterface* settingsRegistry)
+    {
+        if (settingsRegistry == nullptr)
+        {
+            settingsRegistry = AZ::SettingsRegistry::Get();
+        }
+
+
+        if (settingsRegistry != nullptr)
+        {
+            if (AZ::IO::FixedMaxPathString settingsValue;
+                settingsRegistry->Get(settingsValue, AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath))
+            {
+                return settingsValue;
+            }
+        }
+        return {};
+    }
+
     AZ::Outcome<void, AZStd::string> WriteFile(AZStd::string_view content, AZStd::string_view filePath)
     {
         return WriteFile(AZStd::span(reinterpret_cast<const AZStd::byte*>(content.data()), content.size()), filePath);
