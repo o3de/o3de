@@ -427,11 +427,13 @@ namespace EMStudio
         if (m_debugDisplay)
         {
             for (const auto* entity : m_renderer->GetActorEntities())
+            {
                 AzFramework::EntityDebugDisplayEventBus::Event(
                     entity->GetId(),
                     &AzFramework::EntityDebugDisplayEvents::DisplayEntityViewport,
                     AzFramework::ViewportInfo{ GetViewportId() },
                     *m_debugDisplay);
+            }
         }
     }
 } // namespace EMStudio
