@@ -392,4 +392,14 @@ namespace EMStudio
             iblFeatureProcessor, m_skyboxFeatureProcessor, exposureControlSettingInterface, m_directionalLightFeatureProcessor,
             cameraConfig, m_lightHandles, false);
     }
+
+    AZ::RPI::SceneId AnimViewportRenderer::GetRenderSceneId()
+    {
+        return m_scene->GetId();
+    }
+
+    const AZStd::vector<AZ::Entity*>& AnimViewportRenderer::GetActorEntities()
+    {
+        return m_actorEntities;
+    }
 } // namespace EMStudio
