@@ -1464,16 +1464,15 @@ namespace PhysX
 
     void EditorColliderComponent::SetCylinderRadius(float radius)
     {
-        if (radius > 0.0f)
-        {
-            m_shapeConfiguration.m_cylinder.m_radius = radius;
-            UpdateCylinderCookedMesh();
-            CreateStaticEditorCollider();
-        }
-        else
+        if (radius <= 0.0f)
         {
             AZ_Error("PhysX", false, "SetCylinderRadius: radius must be greater than zero.");
+            return;
         }
+
+        m_shapeConfiguration.m_cylinder.m_radius = radius;
+        UpdateCylinderCookedMesh();
+        CreateStaticEditorCollider();
     }
 
     float EditorColliderComponent::GetCylinderRadius() const
@@ -1483,16 +1482,15 @@ namespace PhysX
 
     void EditorColliderComponent::SetCylinderHeight(float height)
     {
-        if (height > 0.0f)
-        {
-            m_shapeConfiguration.m_cylinder.m_height = height;
-            UpdateCylinderCookedMesh();
-            CreateStaticEditorCollider();
-        }
-        else
+        if (height <= 0.0f)
         {
             AZ_Error("PhysX", false, "SetCylinderHeight: height must be greater than zero.");
+            return;
         }
+
+        m_shapeConfiguration.m_cylinder.m_height = height;
+        UpdateCylinderCookedMesh();
+        CreateStaticEditorCollider();
     }
 
     float EditorColliderComponent::GetCylinderHeight() const
