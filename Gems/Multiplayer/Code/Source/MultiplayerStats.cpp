@@ -258,7 +258,7 @@ namespace Multiplayer
 
     void MultiplayerStats::RecordFrameTime(AZ::TimeUs networkFrameTime)
     {
-        m_framesSinceLastMetric++;
+        m_framesSinceLastMetricRecorded++;
         m_accumulatedNetworkTimeSinceLastMetric += networkFrameTime;
     }
 
@@ -271,12 +271,13 @@ namespace Multiplayer
                 using EventObjectStorage = AZStd::fixed_vector<AZ::Metrics::EventField, 8>;
 
                 EventObjectStorage argsContainer;
-                const AZ::u64 averageFrameTime = m_framesSinceLastMetric > 0 ?
-                    static_cast<AZ::u64>(m_accumulatedNetworkTimeSinceLastMetric) / m_framesSinceLastMetric : 0;
+                const AZ::u64 averageFrameTime = m_framesSinceLastMetricRecorded > 0
+                    ? static_cast<AZ::u64>(m_accumulatedNetworkTimeSinceLastMetric) / m_framesSinceLastMetricRecorded
+                    : 0;
                 argsContainer.emplace_back("AverageNetworkFrameTimeUs", averageFrameTime);
                 argsContainer.emplace_back("NumEntities", m_entityCount);
 
-                m_framesSinceLastMetric = 0;
+                m_framesSinceLastMetricRecorded = 0;
                 m_accumulatedNetworkTimeSinceLastMetric = AZ::Time::ZeroTimeUs;
 
                 AZ::Metrics::CounterArgs counterArgs;

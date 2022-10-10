@@ -140,6 +140,7 @@ namespace Multiplayer
                 ConfigureEventLoggerHelper(cl_metricsFile);
                 break;
             default:
+                AZLOG_WARN("Unitialized or unsupported agent type for recording metrics.");
                 break;
             }
         }

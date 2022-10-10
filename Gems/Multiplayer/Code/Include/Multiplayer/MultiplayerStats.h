@@ -101,7 +101,7 @@ namespace Multiplayer
 
     private:
         AZ::TimeUs m_accumulatedNetworkTimeSinceLastMetric = AZ::Time::ZeroTimeUs;
-        uint64_t m_framesSinceLastMetric = 0;
+        uint64_t m_framesSinceLastMetricRecorded = 0;
 
         void RecordMetrics();
         AZ::ScheduledEvent m_metricsEvent{[this]()
