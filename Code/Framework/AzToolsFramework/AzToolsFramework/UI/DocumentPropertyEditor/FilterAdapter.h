@@ -26,8 +26,6 @@ namespace AZ::DocumentPropertyEditor
     protected:
         struct MatchInfoNode
         {
-            MatchInfoNode(const MatchInfoNode& nodeToCopy) = delete;
-
             ~MatchInfoNode()
             {
                 for (auto child : m_childMatchState)
@@ -92,7 +90,7 @@ namespace AZ::DocumentPropertyEditor
         void PopulateNodesAtPath(const Dom::Path& sourcePath, bool replaceExisting);
         void GenerateFullTree();
 
-        void CullUnmatchedChildRows(Dom::Value& rowValue, const MatchInfoNode* rowMatchNode);
+        static void CullUnmatchedChildRows(Dom::Value& rowValue, const MatchInfoNode* rowMatchNode);
 
         enum PatchType
         {
