@@ -20,6 +20,7 @@ _MODULE_START = timeit.default_timer()  # start tracking
 
 # standard imports
 from pathlib import Path
+from typing import Union
 import logging as _logging
 # -------------------------------------------------------------------------
 
@@ -82,15 +83,155 @@ PATH_DCCSI_TOOLS_DCC_MAYA_LOCAL_SETTINGS = PATH_DCCSI_TOOLS_DCC_MAYA.joinpath(LO
 
 
 # -------------------------------------------------------------------------
+# import all maya consts
+from Tools.DCC.Maya.constants import *
+
 # now we build the wing config class
 from DccScriptingInterface.azpy.config_class import ConfigClass
 
 class MayaConfig(ConfigClass):
     """Extend ConfigClass with new maya functionality"""
-    def __init__(self, *args, **kwargs):
+    def __init__(self, version = MAYA_VERSION, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
         _LOGGER.info(f'Initializing: {self.get_classname()}')
 
+        # defaults for version and location
+        self._maya_version = version
+
+        # paths we want to update if version changes
+        self._maya_location = Path(MAYA_LOCATION)
+        self._maya_bin_path = Path(MAYA_BIN_PATH)
+
+        # initializes version based defaults paths
+        self.update_version(self._maya_version)
+
+    # -- properties -------------------------------------------------------
+
+    @property
+    def maya_location(self):
+        ''':Class property: the location of maya'''
+        return self._maya_location
+
+    @maya_location.setter
+    def maya_location(self,
+                      value: Union[str, Path] = MAYA_LOCATION,
+                      envar = ENVAR_MAYA_LOCATION,
+                      check_envar = False,
+                      set_envar = True,
+                      set_sys_path = True):
+        ''':param value: set the path for maya location'''
+        self._maya_location = Path(value).resolve()
+
+        # store setting
+        self.add_setting(key = envar,
+                         value = self._maya_location,
+                         check_envar = check_envar,
+                         set_envar = set_envar,
+                         set_sys_path = set_sys_path)
+
+        # update the location to the bin folder
+        self.maya_bin_path = f'{self.maya_location}\\bin'
+
+        return self._maya_location
+
+    @maya_location.getter
+    def maya_location(self):
+        ''':return: the maya version'''
+        return self._maya_location
+
+    @property
+    def maya_bin_path(self):
+        ''':Class property: the location of maya binaries folder (exe)'''
+        return self._maya_bin_path
+
+    @maya_bin_path.setter
+    def maya_bin_path(self,
+                      value: Union[str, Path] = MAYA_BIN_PATH,
+                      envar = ENVAR_MAYA_BIN_PATH,
+                      check_envar = False,
+                      set_envar = True,
+                      set_sys_path = True):
+        ''':param value: set the path for maya location'''
+        self._maya_bin_path = Path(value).resolve()
+
+        # store setting
+        self.add_setting(key = envar,
+                         value = self._maya_bin_path,
+                         check_envar = check_envar,
+                         set_envar = set_envar,
+                         set_sys_path = set_sys_path)
+
+        # update the various exe paths
+        self.add_setting(key = ENVAR_DCCSI_MAYA_EXE,
+                         value = Path(f'{self.maya_bin_path}\\{SLUG_MAYA_EXE}'),
+                         check_envar = check_envar,
+                         set_envar = set_envar)
+
+        self.add_setting(key = ENVAR_DCCSI_PY_MAYA,
+                         value = Path(f'{self.maya_bin_path}\\{SLUG_MAYAPY_EXE}'),
+                         check_envar = check_envar,
+                         set_envar = set_envar)
+
+        self.add_setting(key = ENVAR_DCCSI_MAYABATCH_EXE,
+                         value = Path(f'{self.maya_bin_path}\\{SLUG_MAYABATCH_EXE}'),
+                         check_envar = check_envar,
+                         set_envar = set_envar)
+
+        return self._maya_location
+
+    @maya_bin_path.getter
+    def maya_bin_path(self):
+        ''':return: the maya version'''
+        return self._maya_bin_path
+
+    @property
+    def maya_version(self):
+        ''':Class property: the version of maya, e.g. 2023'''
+        return self._maya_version
+
+    @maya_version.setter
+    def maya_version(self,
+                     value: Union[int, str] = MAYA_VERSION,
+                     envar = ENVAR_MAYA_VERSION,
+                     check_envar = False,
+                     set_envar = True):
+        ''':param value: sets the version of maya and updates related paths.
+           :return: the maya version
+           '''
+        self._maya_version = value
+
+        # store setting
+        self.add_setting(envar, value,
+                         check_envar = check_envar,
+                         set_envar = set_envar)
+
+        # update the maya location
+        self.maya_location = Path(f'{PATH_PROGRAMFILES_X64}\\Autodesk\\Maya{self._maya_version}')
+
+        return self._maya_version
+
+    @maya_version.getter
+    def maya_version(self):
+        ''':return: the maya version'''
+        return self._maya_version
+
+    def update_version(self, value: Union[int, str] = MAYA_VERSION):
+        '''Class method: updates all path dependant on the version'''
+
+        # doing this first as a normal setting, will perform standard actions
+        # for a normal setting such as checking is the envar is set externally
+        self.add_setting(ENVAR_MAYA_VERSION, MAYA_VERSION)
+
+        # now we can utilize that default setting to trigger the initialization,
+        # or update, to the other paths/setting that are based off version
+        self.maya_version = self.settings.MAYA_VERSION
+        # even thought this ends up updating the internal version twice,
+        # it keeps up from having to write additional code.
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
 # build config object
 maya_config = MayaConfig(config_name='dccsi_dcc_maya',
                          settings_filepath = PATH_DCCSI_TOOLS_DCC_MAYA_SETTINGS,
@@ -103,40 +244,47 @@ maya_config = MayaConfig(config_name='dccsi_dcc_maya',
 # or
 # if maya_config.settings.THIS_SETTING: do this
 
-from Tools.DCC.Maya.constants import *
-
 # now we can extend the environment specific to Maya
 maya_config.add_setting(ENVAR_DCCSI_CONFIG_DCC_MAYA, DCCSI_CONFIG_DCC_MAYA)
 
-PATH_DCCSI_TOOLS_DCC_MAYA = Path(PATH_DCCSI_TOOLS_DCC_MAYA).resolve()
-maya_config.add_setting(ENVAR_PATH_DCCSI_TOOLS_DCC_MAYA,
-                        PATH_DCCSI_TOOLS_DCC_MAYA.as_posix())
+# store the dccsi tools dcc maya location in settings for retreival
+maya_config.add_setting(ENVAR_PATH_DCCSI_TOOLS_DCC_MAYA, Path(PATH_DCCSI_TOOLS_DCC_MAYA))
 
-PATH_DCCSI_TOOLS = Path(PATH_DCCSI_TOOLS).resolve()
-maya_config.add_setting(ENVAR_PATH_DCCSI_TOOLS,
-                           PATH_DCCSI_TOOLS.as_posix())
+# store the dccsi tools root in settings
+maya_config.add_setting(ENVAR_PATH_DCCSI_TOOLS, Path(PATH_DCCSI_TOOLS))
 
-PATH_DCCSI_TOOLS_DCC_MAYA = Path(PATH_DCCSI_TOOLS_DCC_MAYA).resolve()
-maya_config.add_setting(ENVAR_PATH_DCCSI_TOOLS_DCC_MAYA,
-                        PATH_DCCSI_TOOLS_DCC_MAYA.as_posix())
+# setting this is specially cased in the MayaConfig, it will store the version
+# in settings, then update the bin folder and some other related paths
+# maya_config.maya_version = 2023  # this is just the default version
+# leaving this comment here to document that feature, however setting it in
+# that manner also disbaled checking if the envar is externally set
 
-maya_config.add_setting(ENVAR_DCCSI_PY_VERSION_MAJOR, DCCSI_PY_VERSION_MAJOR)
-maya_config.add_setting(ENVAR_DCCSI_PY_VERSION_MINOR, DCCSI_PY_VERSION_MINOR)
-maya_config.add_setting(ENVAR_DCCSI_PY_VERSION_RELEASE, DCCSI_PY_VERSION_RELEASE)
-maya_config.add_setting(ENVAR_MAYA_VERSION, MAYA_VERSION)
+maya_config.add_setting(ENVAR_MAYA_PROJECT, Path(PATH_O3DE_PROJECT))
 
-PATH_O3DE_PROJECT = Path(PATH_O3DE_PROJECT).resolve()
-maya_config.add_setting(ENVAR_PATH_O3DE_PROJECT, PATH_O3DE_PROJECT.as_posix())
+# technically there can be more then one path for these, so we should in the future
+# refactor this to be handled specially with MayaConfig class object rather then
+# a simple niave setting
+maya_config.add_setting(ENVAR_DCCSI_MAYA_PLUG_IN_PATH, Path(DCCSI_MAYA_PLUG_IN_PATH))
+maya_config.add_setting(ENVAR_DCCSI_MAYA_SHELF_PATH, Path(DCCSI_MAYA_SHELF_PATH))
+maya_config.add_setting(ENVAR_DCCSI_MAYA_XBMLANGPATH, Path(DCCSI_MAYA_XBMLANGPATH))
+maya_config.add_setting(ENVAR_DCCSI_MAYA_SCRIPT_PATH, Path(DCCSI_MAYA_SCRIPT_PATH))
 
-MAYA_LOCATION = Path(MAYA_LOCATION).resolve()
-maya_config.add_setting(ENVAR_MAYA_LOCATION, MAYA_LOCATION.as_posix())
+# these are specifically ours and would not potentially be multi-path lists
+maya_config.add_setting(ENVAR_DCCSI_MAYA_SCRIPT_MEL_PATH, Path(DCCSI_MAYA_SCRIPT_MEL_PATH))
+maya_config.add_setting(ENVAR_DCCSI_MAYA_SCRIPT_PY_PATH, Path(DCCSI_MAYA_SCRIPT_PY_PATH))
 
-MAYA_BIN_PATH = Path(MAYA_BIN_PATH).resolve()
-maya_config.add_setting(ENVAR_MAYA_BIN_PATH, MAYA_BIN_PATH.as_posix())
+# non-path settings
+maya_config.add_setting(ENVAR_MAYA_DISABLE_CIP, MAYA_DISABLE_CIP)
+maya_config.add_setting(ENVAR_MAYA_DISABLE_CER, MAYA_DISABLE_CER)
+maya_config.add_setting(ENVAR_MAYA_DISABLE_CLIC_IPM, MAYA_DISABLE_CLIC_IPM)
+maya_config.add_setting(ENVAR_MAYA_DISABLE_ADP, MAYA_DISABLE_ADP)
+maya_config.add_setting(ENVAR_MAYA_NO_CONSOLE_WINDOW, MAYA_NO_CONSOLE_WINDOW)
+maya_config.add_setting(ENVAR_MAYA_SHOW_OUTPUT_WINDOW, MAYA_SHOW_OUTPUT_WINDOW)
+maya_config.add_setting(ENVAR_DCCSI_MAYA_SET_CALLBACKS, DCCSI_MAYA_SET_CALLBACKS)
 
-DCCSI_MAYA_PLUG_IN_PATH = Path(DCCSI_MAYA_PLUG_IN_PATH).resolve()
-maya_config.add_setting(ENVAR_DCCSI_MAYA_PLUG_IN_PATH, DCCSI_MAYA_PLUG_IN_PATH.as_posix())
-
+# these are possibly windows only, so may need to be refactored in the future
+maya_config.add_setting(ENVAR_MAYA_VP2_DEVICE_OVERRIDE, MAYA_VP2_DEVICE_OVERRIDE)
+maya_config.add_setting(ENVAR_MAYA_OGS_DEVICE_OVERRIDE, MAYA_OGS_DEVICE_OVERRIDE)
 # --- END -----------------------------------------------------------------
 
 settings = maya_config.get_config_settings()
@@ -156,16 +304,15 @@ if __name__ == '__main__':
     settings = maya_config.get_config_settings()
 
     try:
-        settings.CONFIG_DCC_BLENDER
-        _LOGGER.info('Blender config is enabled')
+        settings.DCCSI_CONFIG_DCC_MAYA
+        _LOGGER.info('Maya config is enabled')
     except:
         _LOGGER.error('Setting does not exist')
 
-    _LOGGER.info(f'Exporting local settings: {PATH_DCCSI_TOOLS_DCC_BLENDER_LOCAL_SETTINGS}')
+    _LOGGER.info(f'Exporting local settings: {PATH_DCCSI_TOOLS_DCC_MAYA_LOCAL_SETTINGS}')
 
     try:
-        maya_config.export_settings(set_env=True,
-                                       log_settings=True)
+        maya_config.export_settings(set_env=True, log_settings=True)
     except Exception as e:
         _LOGGER.error(f'{e}')
 # --- END -----------------------------------------------------------------

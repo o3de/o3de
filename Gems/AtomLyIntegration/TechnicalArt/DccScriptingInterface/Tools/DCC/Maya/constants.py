@@ -74,14 +74,15 @@ TAG_DCCSI_MAINMENU = 'O3DE(DCCsi)'
 # mimicing all values from: "DccScriptingInterface\Tools\Dev\Windows\Env_DCC_Maya.bat"
 
 # dcc: Maya ENVAR constants
-# default Maya 2023, python version 3.9.7
-# dccsi managed enavrs, the dcc apps python version is propogated
-ENVAR_DCCSI_PY_VERSION_MAJOR = "DCCSI_PY_VERSION_MAJOR"
-DCCSI_PY_VERSION_MAJOR = 3
-ENVAR_DCCSI_PY_VERSION_MINOR = "DCCSI_PY_VERSION_MINOR"
-DCCSI_PY_VERSION_MINOR = 7
-ENVAR_DCCSI_PY_VERSION_RELEASE = "DCCSI_PY_VERSION_RELEASE"
-DCCSI_PY_VERSION_RELEASE = 7
+
+# # default Maya 2023, python version 3.9.7
+# # dccsi managed enavrs, the dcc apps python version is propogated
+# ENVAR_DCCSI_PY_VERSION_MAJOR = "DCCSI_PY_VERSION_MAJOR"
+# DCCSI_PY_VERSION_MAJOR = 3
+# ENVAR_DCCSI_PY_VERSION_MINOR = "DCCSI_PY_VERSION_MINOR"
+# DCCSI_PY_VERSION_MINOR = 7
+# ENVAR_DCCSI_PY_VERSION_RELEASE = "DCCSI_PY_VERSION_RELEASE"
+# DCCSI_PY_VERSION_RELEASE = 7
 
 # a dccsi envar to set/override the maya version
 ENVAR_MAYA_VERSION = 'MAYA_VERSION'
@@ -99,7 +100,7 @@ MAYA_PROJECT = None  # placeholder, we will populate with game project
 # a maya managed envar for where maya is located
 # The path for the Maya installation directory (this is default win install path)
 ENVAR_MAYA_LOCATION = 'MAYA_LOCATION'
-MAYA_LOCATION = f'{PATH_PROGRAMFILES_X64}\\Autodesk\\Maya {MAYA_VERSION}'
+MAYA_LOCATION = f'{PATH_PROGRAMFILES_X64}\\Autodesk\\Maya{MAYA_VERSION}'
 
 # dccsi managed envar for finding maya's bin folder
 ENVAR_MAYA_BIN_PATH = 'MAYA_BIN_PATH'
@@ -205,46 +206,14 @@ SLUG_MAYAPY_EXE = 'mayapy.exe'
 # a dccsi envar to store the path to mayapy.exe
 # we can pass this to IDE's like wing to access as python launch interpreter
 ENVAR_DCCSI_PY_MAYA = 'DCCSI_PY_MAYA'
-DCCSI_PY_MAYA = f'{ENVAR_MAYA_BIN_PATH}\\{SLUG_MAYAPY_EXE}'
+DCCSI_PY_MAYA = f'{MAYA_BIN_PATH}\\{SLUG_MAYAPY_EXE}'
 
 DCCSI_MAYA_WIKI_URL = 'https://github.com/o3de/o3de/wiki/O3DE-DCCsi-Tools-DCC-Maya'
 
 # ---- everything below moves out of constants ----
 
-DCCSI_MAYA_EXE = Path(MAYA_BIN_PATH, 'maya.exe')
-
-DCCSI_MAYABATCH_EXE = Path(MAYA_BIN_PATH, 'mayabatch.exe')
-
 # is a maya envar
-MAYA_PROJECT = PATH_DCCSIG.as_posix()
-
-# is a maya envar
-MAYA_MODULE_PATH = PATH_DCCSI_TOOLS_DCC_MAYA.as_posix()
-
-# is a maya envar
-MAYA_LOCATION = Path(PATH_PROGRAMFILES_X64,
-                     'Autodesk',
-                     f'Maya{PATH_DCCSI_TOOLS_DCC_MAYA}').as_posix()
-
-# is a maya envar
-MAYA_BIN_PATH = Path(MAYA_LOCATION, 'bin').as_posix()
-
-
-
-DCCSI_MAYA_EXE = Path(MAYA_BIN_PATH, 'maya.exe')
-
-DCCSI_MAYABATCH_EXE = Path(MAYA_BIN_PATH, 'mayabatch.exe')
-
-DCCSI_PY_MAYA = Path(MAYA_BIN_PATH, 'mayapy.exe')
-
-# this is transient and will always track the exe this script is executing on
-O3DE_PY_EXE = Path(sys.executable).as_posix()
-DCCSI_PY_IDE = Path(DCCSI_PY_MAYA).as_posix()
-
-DCCSI_MAYA_PLUG_IN_PATH = Path(PATH_DCCSI_TOOLS_DCC_MAYA, 'plugins').as_posix()
-
-# is a maya envar
-MAYA_PLUG_IN_PATH = Path(DCCSI_MAYA_PLUG_IN_PATH).as_posix() # extend %MAYA_PLUG_IN_PATH%
+# MAYA_PLUG_IN_PATH = Path(DCCSI_MAYA_PLUG_IN_PATH).as_posix() # extend %MAYA_PLUG_IN_PATH%
 # to do: remove or extend next PR, technically there can be more then one plugin path
 #while MAYA_PLUG_IN_PATH:
     #if ENVAR_MAYA_PLUG_IN_PATH in os.environ:
@@ -258,13 +227,9 @@ MAYA_PLUG_IN_PATH = Path(DCCSI_MAYA_PLUG_IN_PATH).as_posix() # extend %MAYA_PLUG
     #MAYA_PLUG_IN_PATH = os.getenv(ENVAR_MAYA_PLUG_IN_PATH, "< NOT SET >")
     #break
 
-DCCSI_MAYA_SHELF_PATH = Path(PATH_DCCSI_TOOLS_DCC_MAYA, 'Prefs', 'Shelves').as_posix()
-
-DCCSI_MAYA_XBMLANGPATH = Path(PATH_DCCSI_TOOLS_DCC_MAYA, 'Prefs', 'icons').as_posix()
-
 # is a maya envar
 # maya resources, very oddly named
-XBMLANGPATH = Path(DCCSI_MAYA_XBMLANGPATH).as_posix() # extend %XBMLANGPATH%
+# XBMLANGPATH = Path(DCCSI_MAYA_XBMLANGPATH).as_posix() # extend %XBMLANGPATH%
 # to do: remove or extend next PR, technically there can be more then one resource path specified
 #while XBMLANGPATH:
     #if ENVAR_XBMLANGPATH in os.environ:
@@ -278,11 +243,7 @@ XBMLANGPATH = Path(DCCSI_MAYA_XBMLANGPATH).as_posix() # extend %XBMLANGPATH%
     #XBMLANGPATH = os.getenv(ENVAR_XBMLANGPATH, "< NOT SET >")
     #break
 
-DCCSI_MAYA_SCRIPT_PATH = Path(PATH_DCCSI_TOOLS_DCC_MAYA, 'Scripts').as_posix()
-DCCSI_MAYA_SCRIPT_MEL_PATH = Path(PATH_DCCSI_TOOLS_DCC_MAYA, 'Scripts', 'Mel').as_posix()
-DCCSI_MAYA_SCRIPT_PY_PATH = Path(PATH_DCCSI_TOOLS_DCC_MAYA, 'Scripts', 'Python').as_posix()
-
-MAYA_SCRIPT_PATH = Path(DCCSI_MAYA_SCRIPT_PATH).as_posix() # extend %MAYA_SCRIPT_PATH%
+# MAYA_SCRIPT_PATH = Path(DCCSI_MAYA_SCRIPT_PATH).as_posix() # extend %MAYA_SCRIPT_PATH%
 # to do: remove or extend next PR, technically there can be more then one script path specified
 #while MAYA_SCRIPT_PATH:
     #if ENVAR_MAYA_SCRIPT_PATH in os.environ:
@@ -299,12 +260,6 @@ MAYA_SCRIPT_PATH = Path(DCCSI_MAYA_SCRIPT_PATH).as_posix() # extend %MAYA_SCRIPT
 
     #MAYA_SCRIPT_PATH = os.getenv(ENVAR_MAYA_SCRIPT_PATH, "< NOT SET >")
     #break
-
-# is a maya envar
-MAYA_VP2_DEVICE_OVERRIDE="VirtualDeviceDx11"
-MAYA_OGS_DEVICE_OVERRIDE="VirtualDeviceDx11"
-
-DCCSI_MAYA_WIKI_URL =  'https://github.com/o3de/o3de/wiki/O3DE-DCCsi-Tools-DCC-Maya'
 
 _LOGGER.debug('{0} took: {1} sec'.format(_MODULENAME, timeit.default_timer() - _START))
 # -------------------------------------------------------------------------
