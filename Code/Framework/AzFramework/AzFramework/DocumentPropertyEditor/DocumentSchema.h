@@ -252,6 +252,9 @@ namespace AZ::DocumentPropertyEditor
     class EnumValuesAttributeDefinition final : public AttributeDefinition<EnumValuesContainer>
     {
     public:
+        static constexpr const char* EntryDescriptionKey = "description";
+        static constexpr const char* EntryValueKey = "value";
+
         explicit constexpr EnumValuesAttributeDefinition(AZStd::string_view name)
             : AttributeDefinition<EnumValuesContainer>(name)
         {

@@ -104,17 +104,14 @@ namespace AZ::DocumentPropertyEditor
         return Dom::Value(result.GetStringView(), false);
     }
 
-    static const AZ::Name enumEntryDescription = AZ_NAME_LITERAL("description");
-    static const AZ::Name enumEntryValue = AZ_NAME_LITERAL("value");
-
     Dom::Value EnumValuesAttributeDefinition::ValueToDom(const EnumValuesContainer& attribute) const
     {
         Dom::Value result(Dom::Type::Array);
         for (const auto& entry : attribute)
         {
             Dom::Value entryDom(Dom::Type::Object);
-            entryDom[enumEntryDescription] = Dom::Value(entry.m_description, true);
-            entryDom[enumEntryValue] = Dom::Value(static_cast<uint64_t>(entry.m_value));
+            entryDom[EntryDescriptionKey] = Dom::Value(entry.m_description, true);
+            entryDom[EntryValueKey] = Dom::Value(static_cast<uint64_t>(entry.m_value));
             result.ArrayPushBack(AZStd::move(entryDom));
         }
         return result;
@@ -130,11 +127,11 @@ namespace AZ::DocumentPropertyEditor
         EnumValuesContainer result;
         for (const Dom::Value& entryDom : value.GetArray())
         {
-            if (!entryDom.IsObject() || !entryDom.HasMember(enumEntryDescription) || !entryDom.HasMember(enumEntryValue))
+            if (!entryDom.IsObject() || !entryDom.HasMember(EntryDescriptionKey) || !entryDom.HasMember(EntryValueKey))
             {
                 continue;
             }
-            result.emplace_back(static_cast<AZ::u64>(entryDom[enumEntryValue].GetUint64()), entryDom[enumEntryDescription].GetString());
+            result.emplace_back(static_cast<AZ::u64>(entryDom[EntryValueKey].GetUint64()), entryDom[EntryDescriptionKey].GetString());
         }
 
         return result;
