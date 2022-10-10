@@ -76,12 +76,8 @@ _LOGGER.debug(f'Initializing: {_MODULENAME}')
 _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH.as_posix()}')
 
 # this should execute the core config.py first and grab settings
-from dynaconf import settings
-
-# may re-enable later
-# # retreive the blender_config class object and it's settings
-# from DccScriptingInterface.Tools.DCC.Blender.config import blender_config
-# blender_config.settings.setenv() # ensure env is set
+from DccScriptingInterface.Tools.DCC.Maya.config import maya_config
+maya_config.settings.setenv() # ensure env is set
 
 from DccScriptingInterface.azpy.config_utils import check_is_ascii
 
@@ -109,32 +105,13 @@ if DCCSI_GDEBUG:
 
 
 # -------------------------------------------------------------------------
-from DccScriptingInterface.Tools.DCC.Maya import PATH_DCCSI_TOOLS_DCC_MAYA
 
-from DccScriptingInterface.Tools.DCC.Blender import SLUG_DCCSI_BLENDER_VERSION
-from DccScriptingInterface.Tools.DCC.Blender import SLUG_BLENDER_EXE
-from DccScriptingInterface.Tools.DCC.Blender import PATH_DCCSI_BLENDER_LOCATION
-from DccScriptingInterface.Tools.DCC.Blender import PATH_DCCSI_BLENDER_EXE
-
-_BLENDER_EXE = Path(PATH_DCCSI_BLENDER_EXE).resolve(strict=True)
-
-from DccScriptingInterface.Tools.DCC.Blender import ENVAR_PATH_DCCSI_TOOLS_DCC_BLENDER_SCRIPTS
-from DccScriptingInterface.Tools.DCC.Blender import PATH_DCCSI_TOOLS_DCC_BLENDER_SCRIPTS
-_BLENDER_SCRIPTS = Path(PATH_DCCSI_TOOLS_DCC_BLENDER_SCRIPTS).resolve(strict=True)
-from DccScriptingInterface import add_site_dir
-add_site_dir(_BLENDER_SCRIPTS)
-os.environ[ENVAR_PATH_DCCSI_TOOLS_DCC_BLENDER_SCRIPTS] = _BLENDER_SCRIPTS.as_posix()
-
-from DccScriptingInterface.Tools.DCC.Blender import SLUG_DCCSI_BLENDER_BOOTSTRAP
-from DccScriptingInterface.Tools.DCC.Blender import PATH_DCCSI_BLENDER_BOOTSTRAP
-
-_DEFAULT_BOOTSTRAP = Path(PATH_DCCSI_BLENDER_BOOTSTRAP).resolve(strict=True)
-#_DEFAULT_BOOTSTRAP = Path(blender_config.settings.PATH_DCCSI_BLENDER_BOOTSTRAP)
 
 # default launch command
-_LAUNCH_COMMAND = [f'{str(_BLENDER_EXE)}',
-                   f'--python', # this must be seperate from the .py file
-                   f'{str(_DEFAULT_BOOTSTRAP)}']
+# let us make sure that we are passing a windows path
+_LAUNCH_EXE = Path(maya_config.settings.DCCSI_MAYA_EXE)
+
+_LAUNCH_COMMAND = [f'{str(_LAUNCH_EXE)}']
 
 # command args but be seperated properly
 #https://blender.stackexchange.com/questions/169259/issue-running-blender-command-line-arguments-using-python-subprocess

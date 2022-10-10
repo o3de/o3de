@@ -267,7 +267,16 @@ maya_config.add_setting(ENVAR_MAYA_PROJECT, Path(PATH_O3DE_PROJECT))
 maya_config.add_setting(ENVAR_DCCSI_MAYA_PLUG_IN_PATH, Path(DCCSI_MAYA_PLUG_IN_PATH))
 maya_config.add_setting(ENVAR_DCCSI_MAYA_SHELF_PATH, Path(DCCSI_MAYA_SHELF_PATH))
 maya_config.add_setting(ENVAR_DCCSI_MAYA_XBMLANGPATH, Path(DCCSI_MAYA_XBMLANGPATH))
-maya_config.add_setting(ENVAR_DCCSI_MAYA_SCRIPT_PATH, Path(DCCSI_MAYA_SCRIPT_PATH))
+maya_config.add_setting(ENVAR_DCCSI_MAYA_SCRIPT_PATH, Path(DCCSI_MAYA_SCRIPT_PATH), set_pythonpath = True)
+
+# Add the non DCCSI_ maya specific envar versions
+# we do these with another method such that they don't persist the maya enavr
+# into our settings. These could become a path-list in the future and require a
+# a refactor to extend the MayaConfig class with additional special halnding.
+maya_config.add_path_to_envar(maya_config.settings.DCCSI_MAYA_PLUG_IN_PATH, ENVAR_MAYA_PLUG_IN_PATH)
+maya_config.add_path_to_envar(maya_config.settings.DCCSI_MAYA_SHELF_PATH, ENVAR_MAYA_SHELF_PATH)
+maya_config.add_path_to_envar(maya_config.settings.DCCSI_MAYA_XBMLANGPATH, ENVAR_XBMLANGPATH)
+maya_config.add_path_to_envar(maya_config.settings.DCCSI_MAYA_SCRIPT_PATH, ENVAR_MAYA_SCRIPT_PATH)
 
 # these are specifically ours and would not potentially be multi-path lists
 maya_config.add_setting(ENVAR_DCCSI_MAYA_SCRIPT_MEL_PATH, Path(DCCSI_MAYA_SCRIPT_MEL_PATH))
