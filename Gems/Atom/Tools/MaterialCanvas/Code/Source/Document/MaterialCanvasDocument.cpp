@@ -889,7 +889,7 @@ namespace MaterialCanvas
                     {
                         if (slotConfig.m_settings.contains("materialInputs"))
                         {
-                            const auto materialInputValueSlot = inputNode->GetSlot(slotConfig.m_name);
+                            const auto& materialInputValueSlot = inputNode->GetSlot(slotConfig.m_name);
                             if (materialInputValueSlot &&
                                 !materialInputValueSlot->GetValue().empty() &&
                                 !materialInputValueSlot->GetValue().is<AZ::RHI::SamplerState>())
@@ -936,7 +936,7 @@ namespace MaterialCanvas
             }
 
             // Register all the properties that were parsed out of the slots with the material type. 
-            for (const auto materialInputValueSlot : materialInputValueSlots)
+            for (const auto& materialInputValueSlot : materialInputValueSlots)
             {
                 // The variable name is generated from the node ID and the slot name.
                 const auto& variableName = GetSymbolNameFromNode(inputNode) + "_" + materialInputValueSlot->GetName();
