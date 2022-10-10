@@ -1,19 +1,16 @@
 {
-    "description": "",
-    "parentMaterial": "03_blue_sky.material",
     "materialType": "../../Types/StandardPBR.materialtype",
     "materialTypeVersion": 5,
-    "properties": {
-        "baseColor": {
-            "color": [
-                1.0,
-                1.0,
-                1.0,
-                1.0
-            ],
-            "textureBlendMode": "Lerp",
-            "textureMap": "03_blue_sky_sRGB.tif",
-            "useTexture": true
-        }
+    "parentMaterial": "03_blue_sky.material",
+    "propertyValues": {
+        "baseColor.color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "baseColor.textureBlendMode": "Lerp",
+        "baseColor.textureMap": "03_blue_sky_sRGB.tif",
+        "baseColor.useTexture": true
     }
 }

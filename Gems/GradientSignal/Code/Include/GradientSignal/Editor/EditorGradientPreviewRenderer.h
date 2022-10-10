@@ -10,7 +10,7 @@
 
 // AZ
 #include <AzCore/Math/MathUtils.h>
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/std/parallel/condition_variable.h>

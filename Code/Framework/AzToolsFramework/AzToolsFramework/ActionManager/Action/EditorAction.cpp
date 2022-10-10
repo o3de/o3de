@@ -7,12 +7,18 @@
  */
 
 #include <AzToolsFramework/ActionManager/Action/EditorAction.h>
+
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerNotificationBus.h>
+
+#include <QAction>
+#include <QIcon>
 
 namespace AzToolsFramework
 {
     EditorAction::EditorAction(
         QWidget* parentWidget,
+        AZStd::string contextIdentifier,
         AZStd::string identifier,
         AZStd::string name,
         AZStd::string description,
@@ -22,7 +28,8 @@ namespace AzToolsFramework
         bool hideFromToolBarsWhenDisabled,
         AZStd::function<void()> handler,
         AZStd::function<bool()> checkStateCallback)
-        : m_identifier(AZStd::move(identifier))
+        : m_contextIdentifier(AZStd::move(contextIdentifier))
+        , m_identifier(AZStd::move(identifier))
         , m_name(AZStd::move(name))
         , m_description(AZStd::move(description))
         , m_category(AZStd::move(category))
@@ -60,6 +67,17 @@ namespace AzToolsFramework
                 }
             );
         }
+    }
+
+    void EditorAction::Initialize()
+    {
+        s_actionManagerInterface = AZ::Interface<ActionManagerInterface>::Get();
+        AZ_Assert(s_actionManagerInterface, "EditorAction - Could not retrieve instance of ActionManagerInterface");
+    }
+
+    const AZStd::string& EditorAction::GetActionContextIdentifier() const
+    {
+        return m_contextIdentifier;
     }
 
     const AZStd::string& EditorAction::GetName() const
@@ -150,6 +168,12 @@ namespace AzToolsFramework
         }
     }
 
+    void EditorAction::AssignToMode(AZStd::string modeIdentifier)
+    {
+        m_modes.emplace(AZStd::move(modeIdentifier));
+        Update();
+    }
+
     bool EditorAction::HasEnabledStateCallback() const
     {
         return m_enabledStateCallback != nullptr;
@@ -162,19 +186,29 @@ namespace AzToolsFramework
 
     void EditorAction::Update()
     {
+        bool previousCheckedState = m_action->isChecked();
+        bool previousEnabledState = m_action->isEnabled();
+
         if (m_checkStateCallback)
         {
             // Refresh checkable state.
             m_action->setChecked(m_checkStateCallback());
         }
 
+        // Refresh enabled state.
         if (m_enabledStateCallback)
         {
-            // Refresh enabled state.
-            m_action->setEnabled(m_enabledStateCallback());
+            m_action->setEnabled(m_enabledStateCallback() && IsEnabledInCurrentMode());
+        }
+        else
+        {
+            m_action->setEnabled(IsEnabledInCurrentMode());
         }
 
-        ActionManagerNotificationBus::Broadcast(&ActionManagerNotificationBus::Handler::OnActionStateChanged, m_identifier);
+        if (previousCheckedState != m_action->isChecked() || previousEnabledState != m_action->isEnabled())
+        {
+            ActionManagerNotificationBus::Broadcast(&ActionManagerNotificationBus::Handler::OnActionStateChanged, m_identifier);
+        }
     }
 
     bool EditorAction::IsCheckable()
@@ -203,6 +237,28 @@ namespace AzToolsFramework
         }
 
         m_action->setToolTip(toolTipText.c_str());
+    }
+
+    bool EditorAction::IsEnabledInCurrentMode() const
+    {
+        auto outcome = s_actionManagerInterface->GetActiveActionContextMode(m_contextIdentifier);
+
+        AZStd::string currentMode = [outcome]() -> AZStd::string
+        {
+            // If no mode can be retrieved, consider it to be the default.
+            if (!outcome.IsSuccess())
+            {
+                return "default";
+            }
+
+            return AZStd::move(outcome.GetValue());
+        }();
+
+        // If no modes are defined, the actions is always active regardless of the mode.
+        return (
+            m_modes.empty() ||
+            (AZStd::find(m_modes.begin(), m_modes.end(), currentMode) != m_modes.end())
+        );
     }
 
 } // namespace AzToolsFramework

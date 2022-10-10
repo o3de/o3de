@@ -516,8 +516,6 @@ namespace AZ
     {
     private:
         typedef typename AZStd::RemoveEnum<T>::type UnderlyingType;
-        // Used to provide a reference to a Uuid with a null value = {00000000-0000-0000-0000-000000000000}
-        inline static constexpr AZ::TypeId s_nullTypeId_v;
     public:
         static constexpr const char* Name()
         {
@@ -532,7 +530,7 @@ namespace AZ
         }
 
         template<typename TypeIdResolverTag = CanonicalTypeIdTag>
-        static constexpr AZ::TypeId Uuid() { return s_nullTypeId_v; }
+        static constexpr AZ::TypeId Uuid() { return AZ::TypeId{}; }
         static constexpr TypeTraits GetTypeTraits()
         {
             TypeTraits typeTraits{};

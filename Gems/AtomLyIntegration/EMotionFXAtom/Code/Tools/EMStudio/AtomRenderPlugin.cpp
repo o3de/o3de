@@ -119,6 +119,7 @@ namespace EMStudio
         SetupManipulators();
 
         m_picking = AZStd::make_unique<EMotionFX::Picking>();
+        m_picking->SetRenderFlags(GetRenderOptions()->GetRenderFlags());
 
         SetupMetrics();
 

@@ -1,19 +1,16 @@
 {
-    "description": "",
-    "parentMaterial": "14_green.material",
     "materialType": "../../Types/StandardPBR.materialtype",
     "materialTypeVersion": 5,
-    "properties": {
-        "baseColor": {
-            "color": [
-                1.0,
-                1.0,
-                1.0,
-                1.0
-            ],
-            "textureBlendMode": "Lerp",
-            "textureMap": "14_green_sRGB.tif",
-            "useTexture": true
-        }
+    "parentMaterial": "14_green.material",
+    "propertyValues": {
+        "baseColor.color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "baseColor.textureBlendMode": "Lerp",
+        "baseColor.textureMap": "14_green_sRGB.tif",
+        "baseColor.useTexture": true
     }
 }

@@ -122,7 +122,7 @@ void AssetProcessingStateDataUnitTest::DataTest(AssetProcessor::AssetDatabaseCon
             }
             return false;
         };
-    
+
     auto ScanFoldersContainPortableKey = [](const ScanFolderDatabaseEntryContainer& scanFolders, const char* portableKey) -> bool
     {
         for (const auto& scanFolder : scanFolders)
@@ -884,7 +884,7 @@ void AssetProcessingStateDataUnitTest::DataTest(AssetProcessor::AssetDatabaseCon
     UNIT_TEST_EXPECT_TRUE(stateData->CreateOrUpdateLegacySubID(legacyEntry));
     AZ::s64 newPK = legacyEntry.m_subIDsEntryID;
     UNIT_TEST_EXPECT_TRUE(newPK != AzToolsFramework::AssetDatabase::InvalidEntryId); // it should have also updated the PK
-    
+
     legacyEntry = LegacySubIDsEntry(AzToolsFramework::AssetDatabase::InvalidEntryId, product.m_productID, 4);
     UNIT_TEST_EXPECT_TRUE(stateData->CreateOrUpdateLegacySubID(legacyEntry));
     UNIT_TEST_EXPECT_TRUE(legacyEntry.m_subIDsEntryID != AzToolsFramework::AssetDatabase::InvalidEntryId); // it should have also updated the PK
@@ -903,7 +903,7 @@ void AssetProcessingStateDataUnitTest::DataTest(AssetProcessor::AssetDatabaseCon
     };
     UNIT_TEST_EXPECT_TRUE(stateData->QueryLegacySubIdsByProductID(product.m_productID, handler));
     UNIT_TEST_EXPECT_TRUE(entriesReturned.size() == 2);
-    
+
     bool foundSubID3 = false;
     bool foundSubID4 = false;
     for (const LegacySubIDsEntry& entryFound : entriesReturned)
@@ -935,7 +935,7 @@ void AssetProcessingStateDataUnitTest::DataTest(AssetProcessor::AssetDatabaseCon
     entriesReturned[0].m_subID = 6;
     UNIT_TEST_EXPECT_TRUE(stateData->CreateOrUpdateLegacySubID(entriesReturned[0]));
     entriesReturned.clear();
-    
+
     UNIT_TEST_EXPECT_TRUE(stateData->QueryLegacySubIdsByProductID(product2.m_productID, handler));
     UNIT_TEST_EXPECT_TRUE(entriesReturned.size() == 1);
     UNIT_TEST_EXPECT_TRUE(entriesReturned[0].m_subIDsEntryID != AzToolsFramework::AssetDatabase::InvalidEntryId);
@@ -945,16 +945,16 @@ void AssetProcessingStateDataUnitTest::DataTest(AssetProcessor::AssetDatabaseCon
     // test delete by product ID
     UNIT_TEST_EXPECT_TRUE(stateData->RemoveLegacySubIDsByProductID(product2.m_productID));
     entriesReturned.clear();
-    
+
     UNIT_TEST_EXPECT_TRUE(stateData->QueryLegacySubIdsByProductID(product2.m_productID, handler));
     UNIT_TEST_EXPECT_TRUE(entriesReturned.empty());
-    
+
     // test delete by PK.  The prior entries should be here for product1. This also makes sure the above
     // delete statement didn't delete more than it should have.
-    
+
     UNIT_TEST_EXPECT_TRUE(stateData->QueryLegacySubIdsByProductID(product.m_productID, handler));
     UNIT_TEST_EXPECT_TRUE(entriesReturned.size() == 2);
-    
+
     AZ::s64 toRemove = entriesReturned[0].m_subIDsEntryID;
     AZ::u32 removingSubID = entriesReturned[0].m_subID;
 
@@ -1133,7 +1133,7 @@ void AssetProcessingStateDataUnitTest::DataTest(AssetProcessor::AssetDatabaseCon
     UNIT_TEST_EXPECT_TRUE(ProductDependenciesContainDependencySoureGuid(productDependencies, productDependency.m_dependencySourceGuid));
     UNIT_TEST_EXPECT_TRUE(ProductDependenciesContainDependencySubID(productDependencies, productDependency.m_dependencySubID));
     UNIT_TEST_EXPECT_TRUE(ProductDependenciesContainDependencyFlags(productDependencies, productDependency.m_dependencyFlags));
-    
+
     // Setup some more dependencies
 
     //Product2 -> Product3
@@ -1155,10 +1155,10 @@ void AssetProcessingStateDataUnitTest::DataTest(AssetProcessor::AssetDatabaseCon
     /* Dependency Tree
     *
     * Product -> Product2 -> Product3 -> Product5 -> Product 6->
-    *                    \                          
+    *                    \
     *                     -> Product4
     */
-    
+
     // Direct Deps
 
     // Product -> Product2
@@ -1235,7 +1235,7 @@ void AssetProcessingStateDataUnitTest::DataTest(AssetProcessor::AssetDatabaseCon
     UNIT_TEST_EXPECT_TRUE(products.size() == 1);
     UNIT_TEST_EXPECT_TRUE(ProductsContainProductID(products, product6.m_productID));
 
-    // Product6 -> 
+    // Product6 ->
     products.clear();
     UNIT_TEST_EXPECT_FALSE(stateData->GetAllProductDependencies(product6.m_productID, products));
     UNIT_TEST_EXPECT_TRUE(products.size() == 0);
@@ -1313,7 +1313,7 @@ void AssetProcessingStateDataUnitTest::BuilderInfoTest(AssetProcessor::AssetData
         results.push_back(AZStd::move(element));
         return true; // returning false would stop iterating.  We want all results, so we return true.
     };
-    
+
     UNIT_TEST_EXPECT_TRUE(stateData->QueryBuilderInfoTable(resultGatherer));
     UNIT_TEST_EXPECT_TRUE(results.empty());
 
@@ -1369,72 +1369,73 @@ void AssetProcessingStateDataUnitTest::BuilderInfoTest(AssetProcessor::AssetData
 
 void AssetProcessingStateDataUnitTest::SourceDependencyTest(AssetProcessor::AssetDatabaseConnection* stateData)
 {
-    using SourceFileDependencyEntry = AzToolsFramework::AssetDatabase::SourceFileDependencyEntry;
-    using SourceFileDependencyEntryContainer = AzToolsFramework::AssetDatabase::SourceFileDependencyEntryContainer;
+    using namespace AzToolsFramework::AssetDatabase;
 
     //  A depends on B, which depends on both C and D
+    AZ::Uuid aUuid{ "{B3FCF51E-BDB3-430D-B360-E57913725250}" };
+    AZ::Uuid bUuid{ "{E040466C-8B26-4ABB-9E7A-2FF9D1660DB6}" };
 
     SourceFileDependencyEntry newEntry1;  // a depends on B
     newEntry1.m_sourceDependencyID = AzToolsFramework::AssetDatabase::InvalidEntryId;
     newEntry1.m_builderGuid = AZ::Uuid::CreateRandom();
-    newEntry1.m_source = "a.txt";
-    newEntry1.m_dependsOnSource = "b.txt";
-    
+    newEntry1.m_sourceGuid = aUuid;
+    newEntry1.m_dependsOnSource = PathOrUuid(bUuid);
+
     SourceFileDependencyEntry newEntry2; // b depends on C
     newEntry2.m_sourceDependencyID = AzToolsFramework::AssetDatabase::InvalidEntryId;
     newEntry2.m_builderGuid = AZ::Uuid::CreateRandom();
-    newEntry2.m_source = "b.txt";
-    newEntry2.m_dependsOnSource = "c.txt";
+    newEntry2.m_sourceGuid = bUuid;
+    newEntry2.m_dependsOnSource = PathOrUuid("c.txt");
 
     SourceFileDependencyEntry newEntry3;  // b also depends on D
     newEntry3.m_sourceDependencyID = AzToolsFramework::AssetDatabase::InvalidEntryId;
     newEntry3.m_builderGuid = AZ::Uuid::CreateRandom();
-    newEntry3.m_source = "b.txt";
-    newEntry3.m_dependsOnSource = "d.txt";
+    newEntry3.m_sourceGuid = bUuid;
+    newEntry3.m_dependsOnSource = PathOrUuid("d.txt");
 
     UNIT_TEST_EXPECT_TRUE(stateData->SetSourceFileDependency(newEntry1));
     UNIT_TEST_EXPECT_TRUE(stateData->SetSourceFileDependency(newEntry2));
     UNIT_TEST_EXPECT_TRUE(stateData->SetSourceFileDependency(newEntry3));
-    
+
     SourceFileDependencyEntryContainer results;
 
     // what depends on b?  a does.
-    UNIT_TEST_EXPECT_TRUE(stateData->GetSourceFileDependenciesByDependsOnSource("b.txt", SourceFileDependencyEntry::DEP_Any, results));
+    UNIT_TEST_EXPECT_TRUE(stateData->GetSourceFileDependenciesByDependsOnSource(bUuid, "b.txt", "unused", SourceFileDependencyEntry::DEP_Any, results));
     UNIT_TEST_EXPECT_TRUE(results.size() == 1);
-    UNIT_TEST_EXPECT_TRUE(results[0].m_source == "a.txt");
+    UNIT_TEST_EXPECT_TRUE(results[0].m_sourceGuid == aUuid);
     UNIT_TEST_EXPECT_TRUE(results[0].m_builderGuid == newEntry1.m_builderGuid);
     UNIT_TEST_EXPECT_TRUE(results[0].m_sourceDependencyID == newEntry1.m_sourceDependencyID);
 
     // what does B depend on?
     results.clear();
-    UNIT_TEST_EXPECT_TRUE(stateData->GetDependsOnSourceBySource("b.txt", SourceFileDependencyEntry::DEP_Any, results));
+    UNIT_TEST_EXPECT_TRUE(stateData->GetDependsOnSourceBySource(bUuid, SourceFileDependencyEntry::DEP_Any, results));
     // b depends on 2 things: c and d
     UNIT_TEST_EXPECT_TRUE(results.size() == 2);
-    UNIT_TEST_EXPECT_TRUE(results[0].m_source == "b.txt");  // note that both of these are B, since its B that has the dependency on the others.
-    UNIT_TEST_EXPECT_TRUE(results[1].m_source == "b.txt");
-    UNIT_TEST_EXPECT_TRUE(results[0].m_dependsOnSource == "c.txt"); 
-    UNIT_TEST_EXPECT_TRUE(results[1].m_dependsOnSource == "d.txt");
+    UNIT_TEST_EXPECT_TRUE(results[0].m_sourceGuid == bUuid);  // note that both of these are B, since its B that has the dependency on the others.
+    UNIT_TEST_EXPECT_TRUE(results[1].m_sourceGuid == bUuid);
+    UNIT_TEST_EXPECT_TRUE(results[0].m_dependsOnSource.GetPath() == "c.txt");
+    UNIT_TEST_EXPECT_TRUE(results[1].m_dependsOnSource.GetPath() == "d.txt");
 
     // what does b depend on, but filtered to only one builder?
     results.clear();
-    UNIT_TEST_EXPECT_TRUE(stateData->GetSourceFileDependenciesByBuilderGUIDAndSource(newEntry2.m_builderGuid, "b.txt", SourceFileDependencyEntry::DEP_SourceToSource, results));
+    UNIT_TEST_EXPECT_TRUE(stateData->GetSourceFileDependenciesByBuilderGUIDAndSource(newEntry2.m_builderGuid, bUuid, SourceFileDependencyEntry::DEP_SourceToSource, results));
     // b depends on 1 thing from that builder: c
     UNIT_TEST_EXPECT_TRUE(results.size() == 1);
-    UNIT_TEST_EXPECT_TRUE(results[0].m_source == "b.txt");
-    UNIT_TEST_EXPECT_TRUE(results[0].m_dependsOnSource == "c.txt");
+    UNIT_TEST_EXPECT_TRUE(results[0].m_sourceGuid == bUuid);
+    UNIT_TEST_EXPECT_TRUE(results[0].m_dependsOnSource.GetPath() == "c.txt");
 
     // make sure that we can look these up by ID (a)
     UNIT_TEST_EXPECT_TRUE(stateData->GetSourceFileDependencyBySourceDependencyId(newEntry1.m_sourceDependencyID, results[0]));
-    UNIT_TEST_EXPECT_TRUE(results[0].m_source == "a.txt");
+    UNIT_TEST_EXPECT_TRUE(results[0].m_sourceGuid == aUuid);
     UNIT_TEST_EXPECT_TRUE(results[0].m_builderGuid == newEntry1.m_builderGuid);
     UNIT_TEST_EXPECT_TRUE(results[0].m_sourceDependencyID == newEntry1.m_sourceDependencyID);
 
     // remove D, b now should only depend on C
     results.clear();
     UNIT_TEST_EXPECT_TRUE(stateData->RemoveSourceFileDependency(newEntry3.m_sourceDependencyID));
-    UNIT_TEST_EXPECT_TRUE(stateData->GetDependsOnSourceBySource("b.txt", SourceFileDependencyEntry::DEP_Any, results));
+    UNIT_TEST_EXPECT_TRUE(stateData->GetDependsOnSourceBySource(bUuid, SourceFileDependencyEntry::DEP_Any, results));
     UNIT_TEST_EXPECT_TRUE(results.size() == 1);
-    UNIT_TEST_EXPECT_TRUE(results[0].m_dependsOnSource == "c.txt");
+    UNIT_TEST_EXPECT_TRUE(results[0].m_dependsOnSource.GetPath() == "c.txt");
 
 
     // clean up
@@ -1464,7 +1465,7 @@ void AssetProcessingStateDataUnitTest::SourceFingerprintTest(AssetProcessor::Ass
     sourceFile1.m_sourceGuid = AZ::Uuid::CreateRandom();
     sourceFile1.m_sourceName = "a.txt";
     UNIT_TEST_EXPECT_TRUE(stateData->SetSource(sourceFile1));
-    
+
     SourceDatabaseEntry sourceFile2;
     sourceFile2.m_analysisFingerprint = "54321";
     sourceFile2.m_scanFolderPK = scanFolder.m_scanFolderID;
@@ -1492,7 +1493,7 @@ void AssetProcessingStateDataUnitTest::AssetProcessingStateDataTest()
     QDir dirPath;
 
     // intentional scope to contain QTemporaryDir since it cleans up on destruction!
-    { 
+    {
         QTemporaryDir tempDir;
         ProductDatabaseEntryContainer products;
         dirPath = QDir(tempDir.path());

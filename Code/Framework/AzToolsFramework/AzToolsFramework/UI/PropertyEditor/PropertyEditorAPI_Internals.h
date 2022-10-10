@@ -512,7 +512,22 @@ namespace AzToolsFramework
 
             const AZ::Uuid& desiredUUID = GetHandledType();
 
-            PropertyType* actualCast = static_cast<PropertyType*>(serializeContext->DownCast(tempValue, propertyType, desiredUUID));
+            PropertyType* actualCast = [&]() -> PropertyType*
+            {
+                if (serializeContext->CanDowncast(propertyType, desiredUUID))
+                {
+                    return static_cast<PropertyType*>(serializeContext->DownCast(tempValue, propertyType, desiredUUID));
+                }
+                // Cover the case of Asset<T> property handling
+                else if (const auto* genericTypeInfo = serializeContext->FindGenericClassInfo(propertyType);
+                            genericTypeInfo && genericTypeInfo->GetGenericTypeId() == desiredUUID)
+                {
+                    return reinterpret_cast<PropertyType*>(tempValue);
+                }
+
+                return nullptr;
+            }();
+
             AZ_Assert(actualCast, "Could not cast from the existing type ID to the actual typeid required by the editor.");
             WriteGUIValuesIntoProperty(0, wid, *actualCast, nullptr);
         }

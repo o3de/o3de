@@ -95,6 +95,7 @@ namespace AtomToolsFramework
 
         static void PyIdleWaitFrames(uint32_t frames);
         static void PyExit();
+        static void PyCrash();
         static void PyTestOutput(const AZStd::string& output);
 
         // Adding static instance access for static Python methods

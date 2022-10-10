@@ -123,6 +123,9 @@ namespace AtomToolsFramework
                 "exit", &AtomToolsApplication::PyExit, nullptr,
                 "Exit application. Primarily used for auto-testing."));
             addGeneral(behaviorContext->Method(
+                "crash", &AtomToolsApplication::PyCrash, nullptr,
+                "Crashes the application, useful for testing crash reporting and other automation tools."));
+            addGeneral(behaviorContext->Method(
                 "test_output", &AtomToolsApplication::PyTestOutput, nullptr,
                 "Report test information."));
         }
@@ -247,7 +250,7 @@ namespace AtomToolsFramework
 
         // This will only save modified registry settings that match the following filters
         const AZStd::vector<AZStd::string> filters = {
-            "/O3DE/AtomToolsFramework", AZStd::string::format("/O3DE/Atom/%s", m_targetName.c_str()) }; 
+            "/O3DE/AtomToolsFramework", "/O3DE/Atom/Tools", AZStd::string::format("/O3DE/Atom/%s", m_targetName.c_str()) }; 
 
         SaveSettingsToFile(settingsFilePath, filters);
 
@@ -683,6 +686,11 @@ namespace AtomToolsFramework
     void AtomToolsApplication::PyExit()
     {
         AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
+    }
+
+    void AtomToolsApplication::PyCrash()
+    {
+        AZ_Crash();
     }
 
     void AtomToolsApplication::PyTestOutput(const AZStd::string& output)

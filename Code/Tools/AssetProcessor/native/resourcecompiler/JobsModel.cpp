@@ -20,7 +20,8 @@ namespace AssetProcessor
         : QAbstractItemModel(parent)
         , m_pendingIcon(QStringLiteral(":/stylesheet/img/logging/pending.svg"))
         , m_errorIcon(QStringLiteral(":/stylesheet/img/logging/error.svg"))
-        , m_warningIcon(QStringLiteral(":/stylesheet/img/logging/warning-yellow.svg"))
+        , m_failureIcon(QStringLiteral(":/stylesheet/img/logging/failure.svg"))
+        , m_warningIcon(QStringLiteral(":/stylesheet/img/logging/warning.svg"))
         , m_okIcon(QStringLiteral(":/stylesheet/img/logging/valid.svg"))
         , m_processingIcon(QStringLiteral(":/stylesheet/img/logging/processing.svg"))
     {
@@ -134,14 +135,18 @@ namespace AssetProcessor
                     return m_pendingIcon;
                 case JobStatus::Failed_InvalidSourceNameExceedsMaxLimit:  // fall through intentional
                 case JobStatus::Failed:
-                    return m_errorIcon;
+                    return m_failureIcon;
                 case JobStatus::Completed:
                 {
                     CachedJobInfo* jobInfo = getItem(index.row());
 
-                    if(jobInfo->m_warningCount > 0 || jobInfo->m_errorCount > 0)
+                    if(jobInfo->m_errorCount > 0)
                     {
-                        // Warning icon is used for both warnings and errors.
+                        return m_errorIcon;
+                    }
+
+                    if(jobInfo->m_warningCount > 0)
+                    {
                         return m_warningIcon;
                     }
 
@@ -190,19 +195,8 @@ namespace AssetProcessor
                     {
                         return "";
                     }
-                    if (processDuration.hour() > 0)
-                    {
-                        return processDuration.toString("zzz' ms, 'ss' sec, 'mm' min, 'hh' hr'");
-                    }
-                    if (processDuration.minute() > 0)
-                    {
-                        return processDuration.toString("zzz' ms, 'ss' sec, 'mm' min'");
-                    }
-                    if (processDuration.second() > 0)
-                    {
-                        return processDuration.toString("zzz' ms, 'ss' sec'");
-                    }
-                    return processDuration.toString("zzz' ms'");
+
+                    return processDuration.toString("hh:mm:ss.zzz");
                 }
             default:
                 break;
@@ -382,9 +376,9 @@ namespace AssetProcessor
                         "this warning, report an issue on GitHub with O3DE version number.",
                         entry.m_statName.c_str(),
                         numTokensExpected,
-                        tokens.size()); 
+                        tokens.size());
                 }
-                
+
                 return true;
             };
             assetDatabaseConnection.QueryStatLikeStatName("ProcessJob,%", statsFunction);
@@ -537,7 +531,7 @@ namespace AssetProcessor
             }
         }
 
-        // now that we've collected all the elements to remove, we can remove them.  
+        // now that we've collected all the elements to remove, we can remove them.
         // Doing it this way avoids problems with mutating these cache structures while iterating them.
         for (const AssetProcessor::QueueElementID& removal : elementsToRemove)
         {
@@ -561,8 +555,8 @@ namespace AssetProcessor
             m_cachedJobs.erase(m_cachedJobs.begin() + jobIndex);
             delete jobInfo;
             m_cachedJobsLookup.erase(iter);
-            // Since we are storing the jobIndex for each job for faster lookup therefore 
-            // we need to update the jobIndex for jobs that were after the removed job. 
+            // Since we are storing the jobIndex for each job for faster lookup therefore
+            // we need to update the jobIndex for jobs that were after the removed job.
             for (int idx = jobIndex; idx < m_cachedJobs.size(); idx++)
             {
                 jobInfo = m_cachedJobs[idx];
@@ -577,4 +571,3 @@ namespace AssetProcessor
         }
     }
 } //namespace AssetProcessor
-

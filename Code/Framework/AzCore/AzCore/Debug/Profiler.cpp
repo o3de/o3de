@@ -11,6 +11,7 @@
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
 #include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/std/time.h>
 
 namespace AZ::Debug
 {
