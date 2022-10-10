@@ -107,7 +107,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr auto ValueHashed = AttributeDefinition<AZ::Uuid>("ValueHashed");
 
         //! In some cases, a node may need to know that it is descended from a disabled ancestor. For example, disabled
-        //! elements of a disabled container might requrie different treatment than disabled elements of an enabled container.
+        //! elements of a disabled container might require different treatment than disabled elements of an enabled container.
         static constexpr auto AncestorDisabled = AttributeDefinition<bool>("AncestorDisabled");
 
         //! If set to true, specifies that this PropertyEditor shouldn't be allocated its own column, but instead appended
