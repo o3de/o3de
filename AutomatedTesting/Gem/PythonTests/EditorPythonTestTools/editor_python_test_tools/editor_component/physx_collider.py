@@ -38,16 +38,20 @@ PhysX Collider Property Tree
 'Shape Configuration|Asset|PhysX Mesh': ('Asset<MeshAsset>', 'Visible'), 
 'Shape Configuration|Asset|Configuration|Asset Scale': ('Vector3', 'Visible'),
 'Shape Configuration|Asset|Configuration|Physics materials from asset': ('bool', 'Visible')}
+
 ---Capsule
 'Shape Configuration|Capsule': ('CapsuleShapeConfiguration', 'NotVisible'),  
 'Shape Configuration|Capsule|Height': ('float', 'Visible'),
-'Shape Configuration|Capsule|Radius': ('float', 'Visible'),  
+'Shape Configuration|Capsule|Radius': ('float', 'Visible'), 
+ 
 ---Box
 'Shape Configuration|Box': ('BoxShapeConfiguration', 'NotVisible'),
 'Shape Configuration|Box|Dimensions': ('Vector3', 'Visible'), 
+
 ---Sphere
 'Shape Configuration|Sphere': ('SphereShapeConfiguration', 'NotVisible'), 
 'Shape Configuration|Sphere|Radius': ('float', 'Visible'), 
+
 ---Cylinder
 'Shape Configuration|Cylinder': ('EditorProxyCylinderShapeConfig', 'NotVisible'), 
 'Shape Configuration|Cylinder|Configuration': ('CookedMeshShapeConfiguration', 'ShowChildrenOnly'),  
@@ -64,6 +68,9 @@ from editor_python_test_tools.utils import TestHelper as helper
 
 
 class PhysxCollider(EditorComponent):
+    def __init__(self, editor_entity: EditorEntity, component_name: str) -> None:
+        super().__init__(editor_entity.add_component(component_name).type_id)
+
     class Path:
         class Box:
             BASE = 'Shape Configuration|Box'
@@ -100,8 +107,7 @@ class PhysxCollider(EditorComponent):
         DRAW_COLLIDER = 'Debug draw settings'
         SHAPE = 'Shape Configuration|Shape'
 
-    def __init__(self, editor_entity: EditorEntity, component_name: str) -> None:
-        EditorComponent.__init__(self, editor_entity.add_component(component_name).type_id)
+
 
     def set_physx_mesh_from_path(self, asset_product_path) -> None:
         px_asset = Asset.find_asset_by_path(asset_product_path)

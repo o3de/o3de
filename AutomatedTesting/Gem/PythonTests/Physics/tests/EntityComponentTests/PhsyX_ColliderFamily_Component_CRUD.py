@@ -110,7 +110,7 @@ def PhysX_ColliderFamily_Component_CRUD():
     physx_collider_capsule_entity = EE.create_editor_entity("physx_collider_capsule_entity")
     physx_collider_sphere_entity = EE.create_editor_entity("physx_collider_sphere_entity")
     physx_collider_cylinder_entity = EE.create_editor_entity("physx_collider_cylinder_entity")
-    physx_collider_physicsasset_entity = EE.create_editor_entity("physx_collider_physicsasset_entity")
+
 
     physx_shape_collider_box_entity = EE.create_editor_entity("physx_shape_collider_box_entity")
     physx_shape_collider_capsule_entity = EE.create_editor_entity("physx_shape_collider_capsule_entity")
@@ -121,12 +121,12 @@ def PhysX_ColliderFamily_Component_CRUD():
 
     with Tracer() as section_tracer:
 
-        # 3) Adding Collider Components to their entities
+        # 2) Adding Collider Components to their entities
         physx_collider_box_shape_component = physx_collider_box_entity.add_component(PHYSX_COLLIDER)
         physx_collider_capsule_shape_component = physx_collider_capsule_entity.add_component(PHYSX_COLLIDER)
         physx_collider_sphere_shape_component = physx_collider_sphere_entity.add_component(PHYSX_COLLIDER)
         physx_collider_cylinder_shape_component = physx_collider_cylinder_entity.add_component(PHYSX_COLLIDER)
-        physx_collider_physicsasset_component = PhysxCollider(physx_collider_physicsasset_entity, PHYSX_COLLIDER)
+
 
         physx_shape_collider_box_component = physx_shape_collider_box_entity.add_component(PHYSX_SHAPE_COLLIDER)
         physx_shape_collider_capsule_component = physx_shape_collider_capsule_entity.add_component(PHYSX_SHAPE_COLLIDER)
@@ -135,7 +135,7 @@ def PhysX_ColliderFamily_Component_CRUD():
         physx_shape_collider_quad_component = physx_shape_collider_quad_entity.add_component(PHYSX_SHAPE_COLLIDER)
         physx_shape_collider_sphere_component = physx_shape_collider_sphere_entity.add_component(PHYSX_SHAPE_COLLIDER)
 
-        # 5) Adding Physx Shape Collider Components to corresponding Shape Collider Entities
+        # 3) Adding Physx Shape Collider Components to corresponding Shape Collider Entities
         box_shape_component = physx_shape_collider_box_entity.add_component(BOX_SHAPE_COMPONENT)
         capsule_shape_component = physx_shape_collider_capsule_entity.add_component(CAPSULE_SHAPE_COMPONENT)
         cylinder_shape_component = physx_shape_collider_cylinder_entity.add_component(CYLINDER_SHAPE_COMPONENT)
@@ -149,7 +149,11 @@ def PhysX_ColliderFamily_Component_CRUD():
         physx_collider_sphere_shape_component.set_component_property_value(PHSX_SHAPE_COLLIDER_SHAPE, physics.ShapeType_Sphere)
         physx_collider_cylinder_shape_component.set_component_property_value(PHSX_SHAPE_COLLIDER_SHAPE, physics.ShapeType_Cylinder)
 
+        #Erroring Code
+        physx_collider_physicsasset_entity = EE.create_editor_entity("physx_collider_physicsasset_entity")
+        physx_collider_physicsasset_component = PhysxCollider(physx_collider_physicsasset_entity, PHYSX_COLLIDER)
         physx_collider_physicsasset_component.set_physx_mesh_from_path(PHYSX_MESH)
+
 
         #physx_collider_physicsasset_component.set_component_property_value(PHYSX_COLLIDER_MESH_PATH, px_asset.id)
 
