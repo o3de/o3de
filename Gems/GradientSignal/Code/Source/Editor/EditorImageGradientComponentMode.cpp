@@ -405,6 +405,13 @@ namespace GradientSignal
         // to account for any data affected by bilinear filtering as well.
         m_paintStrokeDirtyRegion.Expand(AZ::Vector3(m_metersPerPixelX, m_metersPerPixelY, 0.0f));
 
+        // Expand the dirty region to encompass the full Z range since image gradients are 2D.
+        auto dirtyRegionMin = m_paintStrokeDirtyRegion.GetMin();
+        auto dirtyRegionMax = m_paintStrokeDirtyRegion.GetMax();
+        m_paintStrokeDirtyRegion.Set(
+            AZ::Vector3(dirtyRegionMin.GetX(), dirtyRegionMin.GetY(), AZStd::numeric_limits<float>::lowest()),
+            AZ::Vector3(dirtyRegionMax.GetX(), dirtyRegionMax.GetY(), AZStd::numeric_limits<float>::max()));
+
         // Hand over ownership of the paint stroke buffer to the undo/redo buffer.
         m_paintBrushUndoBuffer->SetUndoBufferAndDirtyArea(AZStd::move(m_paintStrokeBuffer), m_paintStrokeDirtyRegion);
 
