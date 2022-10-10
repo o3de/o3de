@@ -167,20 +167,6 @@ void JobModelUnitTests::SetUp()
         using namespace testing;
         m_data.reset(new StaticData());
 
-        //! Setup temporary database
-        m_data->m_temporaryDatabaseDir = QDir(m_data->m_temporaryDir.path());
-        QString canonicalTempDirPath = AssetUtilities::NormalizeDirectoryPath(m_data->m_temporaryDatabaseDir.canonicalPath());
-        m_data->m_temporaryDatabaseDir = QDir(canonicalTempDirPath);
-        m_data->m_temporaryDatabasePath = m_data->m_temporaryDatabaseDir.absoluteFilePath("test_database.sqlite").toUtf8().data();
-
-        //! Setup Asset Database connection.
-        //! There will be two database connection: one for CreateDatabaseTestData, and one inside UnitTestJobModel::PopulateJobsFromDatabase.
-        //! In-memory databases can have only a single connection, so we need a file-backed SQLite database to serve the needs.
-        m_data->m_databaseLocationListener.BusConnect();
-        ON_CALL(m_data->m_databaseLocationListener, GetAssetDatabaseLocation(_))
-            .WillByDefault(DoAll(
-                SetArgReferee<0>(m_data->m_temporaryDatabasePath.c_str()),
-                Return(true)));
         m_data->m_connection.ClearData();
     }
 

@@ -100,12 +100,12 @@ namespace GraphCanvas
     
     private:
 
-        void OnFocusIn();
-        void OnFocusOut();
+        void EditStart();
+        void EditFinished();
         void SetupProxyWidget();
         void CleanupProxyWidget();
         
-        void SubmitValue(int elementIndex, double newValue);
+        void SubmitValue();
     
         Styling::StyleHelper m_styleHelper;
         VectorDataInterface*  m_dataInterface;

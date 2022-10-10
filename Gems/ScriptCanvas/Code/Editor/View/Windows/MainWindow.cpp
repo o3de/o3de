@@ -1051,7 +1051,7 @@ namespace ScriptCanvasEditor
         , AZStd::string scanFolder
         , AZ::Uuid fileAssetId)
     {
-        auto handle = SourceHandle::FromRelativePathAndScenFolder(scanFolder, relativePath, fileAssetId);
+        auto handle = SourceHandle::FromRelativePathAndScanFolder(scanFolder, relativePath, fileAssetId);
 
         if (!IsRecentSave(handle))
         {

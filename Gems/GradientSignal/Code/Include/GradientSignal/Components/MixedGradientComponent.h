@@ -41,6 +41,7 @@ namespace GradientSignal
             Average,
             Normal,
             Overlay,
+            Screen
         };
 
         bool m_enabled = true;
@@ -119,6 +120,8 @@ namespace GradientSignal
                 return currentUnpremultiplied;
             case MixedGradientLayer::MixingOperation::Multiply:
                 return prevValue * currentUnpremultiplied;
+            case MixedGradientLayer::MixingOperation::Screen:
+                return 1.0f - ((1.0f - prevValue) * (1.0f - currentUnpremultiplied));
             case MixedGradientLayer::MixingOperation::Add:
                 return prevValue + currentUnpremultiplied;
             case MixedGradientLayer::MixingOperation::Subtract:

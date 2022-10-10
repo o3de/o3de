@@ -115,19 +115,20 @@ namespace AzToolsFramework
             void DuplicateNestedInstancesInInstance(Instance& commonOwningInstance,
                 const AZStd::vector<Instance*>& instances, PrefabDom& domToAddDuplicatedInstancesUnder,
                 EntityIdList& duplicatedEntityIds, AZStd::unordered_map<InstanceAlias, Instance*>& newInstanceAliasToOldInstanceMap);
-            
+
             /**
-             * Applies the correct transform changes to the container entity based on the parent and child entities provided, and returns an appropriate patch.
-             * The container will be parented to parentId, moved to the average transform of the future direct children and its cache will be updated.
-             * This helper function won't support undo/redo, update the templates or create any links. All that needs to be done by the caller.
-             * 
+             * Applies the correct transform to the container entity, and returns an appropriate patch.
+             * This helper function won't support undo/redo, update the templates or create any links.
+             * All that needs to be done by the caller.
+             *
              * \param containerEntityId The container to apply the changes to.
              * \param parentEntityId The id of the entity the container should be parented to.
-             * \param childEntities A list of entities that will subsequently be parented to this container.
+             * \param translation New translation for the container entity.
+             * \param rotation New rotation for the container entity.
              * \return The PrefabDom containing the patches that should be stored in the parent link.
              */
-            PrefabDom ApplyContainerTransformAndGeneratePatch(
-                AZ::EntityId containerEntityId, AZ::EntityId parentEntityId, const EntityList& childEntities);
+            PrefabDom ApplyContainerTransformAndGeneratePatch(AZ::EntityId containerEntityId, AZ::EntityId parentEntityId,
+                const AZ::Vector3& translation, const AZ::Quaternion& rotation);
 
             /**
              * Creates a link between the templates of an instance and its parent.
@@ -193,6 +194,12 @@ namespace AzToolsFramework
 
             static Instance* GetParentInstance(Instance* instance);
             static Instance* GetAncestorOfInstanceThatIsChildOfRoot(const Instance* ancestor, Instance* descendant);
+
+            //! Generates the transform based on the input list of entities.
+            //! The transform will be based on the average transform of the direct children.
+            //! \param topLevelEntities The direct children entities provided to calculate the average transform.
+            //! \param[out] translation The output translation.
+            //! \param[out] rotation The output rotation.
             static void GenerateContainerEntityTransform(const EntityList& topLevelEntities, AZ::Vector3& translation, AZ::Quaternion& rotation);
 
             InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;

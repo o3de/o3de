@@ -127,6 +127,8 @@ set(FILES
     AssetBundle/AssetBundleComponent.h
     AssetDatabase/AssetDatabaseConnection.cpp
     AssetDatabase/AssetDatabaseConnection.h
+    AssetDatabase/PathOrUuid.h
+    AssetDatabase/PathOrUuid.cpp
     Debug/TraceContext.inl
     Debug/TraceContext.h
     Debug/TraceContextStackInterface.h
@@ -376,8 +378,13 @@ set(FILES
     UI/Docking/DockWidgetUtils.h
     UI/DocumentPropertyEditor/ContainerActionButtonHandler.cpp
     UI/DocumentPropertyEditor/ContainerActionButtonHandler.h
+    UI/DocumentPropertyEditor/DPEComponentAdapter.h
+    UI/DocumentPropertyEditor/DPEComponentAdapter.cpp
     UI/DocumentPropertyEditor/FilterAdapter.cpp
     UI/DocumentPropertyEditor/FilterAdapter.h
+    UI/DocumentPropertyEditor/FilteredDPE.cpp
+    UI/DocumentPropertyEditor/FilteredDPE.h
+    UI/DocumentPropertyEditor/FilteredDPE.ui
     UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h
     UI/DocumentPropertyEditor/PropertyEditorToolsSystem.cpp
     UI/DocumentPropertyEditor/PropertyEditorToolsSystem.h
@@ -527,8 +534,6 @@ set(FILES
     UI/UICore/ConsoleTextEdit.cpp
     UI/UICore/IconButton.hxx
     UI/UICore/IconButton.cpp
-    UI/UICore/PlainTextEdit.hxx
-    UI/UICore/PlainTextEdit.cpp
     UI/UICore/ProgressShield.hxx
     UI/UICore/ProgressShield.cpp
     UI/UICore/ProgressShield.ui
@@ -849,7 +854,7 @@ set(FILES
     UI/Outliner/EntityOutlinerTreeView.cpp
     UI/Outliner/EntityOutlinerWidget.hxx
     UI/Outliner/EntityOutlinerWidget.cpp
-    UI/Outliner/EntityOutlinerCacheBus.h 
+    UI/Outliner/EntityOutlinerCacheBus.h
     UI/Outliner/EntityOutlinerDragAndDropContext.h
     UI/Outliner/EntityOutlinerListModel.hxx
     UI/Outliner/EntityOutlinerListModel.cpp
