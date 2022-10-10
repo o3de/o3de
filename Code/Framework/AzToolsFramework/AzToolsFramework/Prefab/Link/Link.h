@@ -106,6 +106,15 @@ namespace AzToolsFramework
             //! @param allocator The allocator to use for memory allocations of patches.
             void GetLinkDom(PrefabDomValue& linkDom, PrefabDomAllocator& allocator) const;
 
+            //! Checks whether overrides are present by querying the patches tree with the provided path
+            //! @param path The path to query the overrides tree with.
+            //! @param prefixTreeTraversalFlags The traversal flags for the prefix tree. The default is to exclude parent paths because
+            //!                                 we usually check for overrides on one or more components/properties within an entity.
+            //! @return true if overrides are present at the provided path.
+            bool AreOverridesPresent(
+                AZ::Dom::Path path,
+                AZ::Dom::PrefixTreeTraversalFlags prefixTreeTraversalFlags = AZ::Dom::PrefixTreeTraversalFlags::ExcludeParentPaths);
+
             PrefabDomPath GetInstancePath() const;
             const AZStd::string& GetInstanceName() const;
 
