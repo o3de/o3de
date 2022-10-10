@@ -81,6 +81,7 @@ def PhysX_ColliderFamily_Component_CRUD():
     import os
 
     import azlmbr.physics as physics
+    import azlmbr.legacy.general as general
     import editor_python_test_tools.hydra_editor_utils as hydra
 
     from editor_python_test_tools.utils import Report
@@ -125,7 +126,7 @@ def PhysX_ColliderFamily_Component_CRUD():
         physx_collider_capsule_shape_component = physx_collider_capsule_entity.add_component(PHYSX_COLLIDER)
         physx_collider_sphere_shape_component = physx_collider_sphere_entity.add_component(PHYSX_COLLIDER)
         physx_collider_cylinder_shape_component = physx_collider_cylinder_entity.add_component(PHYSX_COLLIDER)
-        physx_collider_physicsasset_component = PhysxCollider(physx_collider_cylinder_entity.add_component(PHYSX_COLLIDER))
+        physx_collider_physicsasset_component = PhysxCollider(physx_collider_physicsasset_entity, PHYSX_COLLIDER)
 
         physx_shape_collider_box_component = physx_shape_collider_box_entity.add_component(PHYSX_SHAPE_COLLIDER)
         physx_shape_collider_capsule_component = physx_shape_collider_capsule_entity.add_component(PHYSX_SHAPE_COLLIDER)
@@ -148,7 +149,7 @@ def PhysX_ColliderFamily_Component_CRUD():
         physx_collider_sphere_shape_component.set_component_property_value(PHSX_SHAPE_COLLIDER_SHAPE, physics.ShapeType_Sphere)
         physx_collider_cylinder_shape_component.set_component_property_value(PHSX_SHAPE_COLLIDER_SHAPE, physics.ShapeType_Cylinder)
 
-        PhysxCollider.set_physx_meshset_physx_mesh_from_path(physx_collider_physicsasset_component, PHYSX_MESH)
+        physx_collider_physicsasset_component.set_physx_mesh_from_path(PHYSX_MESH)
 
         #physx_collider_physicsasset_component.set_component_property_value(PHYSX_COLLIDER_MESH_PATH, px_asset.id)
 

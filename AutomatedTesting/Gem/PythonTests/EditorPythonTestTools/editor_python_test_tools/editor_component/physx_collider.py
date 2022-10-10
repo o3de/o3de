@@ -58,7 +58,7 @@ PhysX Collider Property Tree
 
 """
 
-from editor_python_test_tools.editor_entity_utils import EditorComponent
+from editor_python_test_tools.editor_entity_utils import EditorComponent, EditorEntity
 from editor_python_test_tools.asset_utils import Asset
 from editor_python_test_tools.utils import TestHelper as helper
 
@@ -100,12 +100,12 @@ class PhysxCollider(EditorComponent):
         DRAW_COLLIDER = 'Debug draw settings'
         SHAPE = 'Shape Configuration|Shape'
 
-    def __init__(self, _EditorComponenet):
-        super().__init__(_EditorComponenet.type_id)
+    def __init__(self, editor_entity: EditorEntity, component_name: str) -> None:
+        EditorComponent.__init__(self, editor_entity.add_component(component_name).type_id)
 
-    def set_physx_mesh_from_path(self, asset_product_path):
+    def set_physx_mesh_from_path(self, asset_product_path) -> None:
         px_asset = Asset.find_asset_by_path(asset_product_path)
-        self.set_component_property_value(self.Path.PhysicsAsset.PHYSX_MESH, px_asset.id)
+        super().set_component_property_value(self.Path.PhysicsAsset.PHYSX_MESH, px_asset.id)
 
 
 
