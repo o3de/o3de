@@ -105,8 +105,8 @@ namespace AZ
             //! Returns the root variant.
             const ShaderVariant& GetRootVariant();
 
-            //! Returns the variant that uses the default shader option values.
-            //! Of course this could return the root variant or a fallback variant if there is no variant baked for that combination of option values.
+            //! Returns the closest variant that uses the default shader option values.
+            //! This could return the root variant or a fallback variant if there is no variant baked for that combination of option values.
             const ShaderVariant& GetDefaultVariant();
 
             //! Returns the default shader option values.
