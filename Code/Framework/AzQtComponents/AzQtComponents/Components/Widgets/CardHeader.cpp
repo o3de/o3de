@@ -220,6 +220,7 @@ namespace AzQtComponents
     void CardHeader::setExpandable(bool expandable)
     {
         m_expanderButton->setEnabled(expandable);
+        m_expanderButton->setVisible(expandable);
     }
 
     bool CardHeader::isExpandable() const
