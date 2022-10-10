@@ -388,7 +388,7 @@ namespace UnitTest
         ASSERT_TRUE(AzToolsFramework::Prefab::PrefabDomUtils::LoadInstanceFromPrefabDom(instance, *prefabDomRef));
         EXPECT_TRUE(IsChildOfParent(instance, "3", "2")); // Mesh entity is child of a transform entity
         EXPECT_TRUE(IsChildOfParent(instance, "6", "2")); // Transform entity is child of another transform entity
-        EXPECT_FALSE(IsChildOfParent(instance, "5", "4")); // First transform entity is not a child of the mesh entity
+        EXPECT_FALSE(IsChildOfParent(instance, "4", "3")); // First transform entity is not a child of the mesh entity
         EXPECT_TRUE(IsChildOfParent(instance, "5", "3")); // Second transform entity is child of the mesh entity
     }
 
