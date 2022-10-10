@@ -2073,11 +2073,6 @@ namespace EMotionFX
         {
             importParams.m_motion->SetRootMotionExtractionData(
                 AZStd::shared_ptr<EMotionFX::RootMotionExtractionData>(resultRootMotionExtractionData));
-
-            
-            // Apply root motion extraction
-            // FIX: WRONG INDEX
-            importParams.m_motion->GetMotionData()->ExtractRootMotion(0, 1, *resultRootMotionExtractionData);
         }
 
         return true;

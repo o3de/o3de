@@ -15,8 +15,12 @@
 
 namespace EMotionFX::Pipeline::Rule
 {
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    RootMotionExtractionRule::RootMotionExtractionRule(const RootMotionExtractionData& data)
+    RootMotionExtractionRule::RootMotionExtractionRule()
+    {
+        m_data = AZStd::make_shared<RootMotionExtractionData>();
+    }
+
+    RootMotionExtractionRule::RootMotionExtractionRule(const AZStd::shared_ptr<RootMotionExtractionData>& data)
         : m_data(data)
     {
     }

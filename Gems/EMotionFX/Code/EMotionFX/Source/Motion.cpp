@@ -45,8 +45,6 @@ namespace EMotionFX
         m_isOwnedByRuntime       = false;
 #endif // EMFX_DEVELOPMENT_BUILD
 
-        m_rootMotionExtractionData = AZStd::make_shared<RootMotionExtractionData>();
-
         // automatically register the motion
         GetMotionManager().AddMotion(this);
     }

@@ -8,6 +8,7 @@
 
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MotionWindow/MotionExtractionWindow.h>
+#include <EMotionStudio/EMStudioSDK/Source/FileManager.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/SceneManager/ActorPropertiesWindow.h>
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
@@ -24,7 +25,6 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 
-#pragma optimize("", off)
 namespace EMStudio
 {
     MotionExtractionWindow::MotionExtractionWindow(QWidget* parent)
@@ -107,10 +107,19 @@ namespace EMStudio
         }
 
         // Create the extraction checkbox
-        m_extractRootMotion = new QCheckBox();
-        AzQtComponents::CheckBox::applyToggleSwitchStyle(m_extractRootMotion);
-        connect(m_extractRootMotion, &QCheckBox::clicked, this, &MotionExtractionWindow::OnRootMotionCheckboxClicked);
-        m_childVerticalLayout->addWidget(m_extractRootMotion);
+        m_extractRootMotionCheck = new QCheckBox();
+        AzQtComponents::CheckBox::applyToggleSwitchStyle(m_extractRootMotionCheck);
+        connect(m_extractRootMotionCheck, &QCheckBox::clicked, this, &MotionExtractionWindow::OnRootMotionCheckboxClicked);
+
+        QWidget* exractRootMotionWidget = new QWidget();
+        QGridLayout* layout = new QGridLayout();
+        layout->setAlignment(Qt::AlignTop);
+        layout->setSpacing(3);
+        layout->addWidget(new QLabel(tr("Extract Root Motion")), 0, 0);
+        layout->addWidget(m_extractRootMotionCheck, 0, 1);
+        layout->setContentsMargins(0, 0, 0, 0);
+        exractRootMotionWidget->setLayout(layout);
+        m_childVerticalLayout->addWidget(exractRootMotionWidget);
 
         // Create the reflection widget
         m_rootMotionExtractionWidget = aznew AzToolsFramework::ReflectedPropertyEditor(this);
@@ -122,6 +131,12 @@ namespace EMStudio
         m_rootMotionExtractionWidget->SetLeafIndentation(0);
         m_rootMotionExtractionWidget->setStyleSheet("QFrame, .QWidget, QSlider, QCheckBox { background-color: transparent }");
         m_childVerticalLayout->addWidget(m_rootMotionExtractionWidget);
+
+        // Create the save motion button
+        m_saveMotionButton = new QPushButton("Save Motion");
+        m_saveMotionButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+        connect(m_saveMotionButton, &QPushButton::clicked, this, &MotionExtractionWindow::OnSaveMotion);
+        m_childVerticalLayout->addWidget(m_saveMotionButton);
     }
 
     // init after the parent dock window has been created
@@ -147,7 +162,7 @@ namespace EMStudio
         m_mainVerticalLayout->setSpacing(0);
         setLayout(m_mainVerticalLayout);
 
-        QCheckBox* checkBox = new QCheckBox(tr("Motion extraction"));
+        QCheckBox* checkBox = new QCheckBox(tr("Motion Extraction"));
         checkBox->setChecked(true);
         checkBox->setStyleSheet("QCheckBox::indicator\
                 {\
@@ -319,25 +334,29 @@ namespace EMStudio
             m_warningShowed = false;
 
             m_rootMotionExtractionWidget->ClearInstances();
-            if (m_extractRootMotion->isChecked() && numMotions == 1)
+            m_extractRootMotionCheck->setChecked(false);
+            if (numMotions == 1)
             {
                 EMotionFX::Motion* curMotion = selectionList.GetMotion(0);
 
                 auto rootMotionDataPtr = curMotion->GetRootMotionExtractionData();
-                if (!rootMotionDataPtr)
+                if (rootMotionDataPtr)
                 {
-                    rootMotionDataPtr = AZStd::make_shared<EMotionFX::RootMotionExtractionData>();
-                    curMotion->SetRootMotionExtractionData(rootMotionDataPtr);
+                    // Add the reflection widget for root motion extraction modifier
+                    EMotionFX::RootMotionExtractionData* rootMotionData = rootMotionDataPtr.get();
+                    const AZ::TypeId& typeId = azrtti_typeid(rootMotionData);
+                    m_rootMotionExtractionWidget->AddInstance(rootMotionData, typeId);
+                    m_rootMotionExtractionWidget->show();
+                    m_rootMotionExtractionWidget->ExpandAll();
+
+                    m_extractRootMotionCheck->setChecked(true);
                 }
-  
-                // Add the reflection widget for root motion extraction modifier
-                EMotionFX::RootMotionExtractionData* rootMotionData = rootMotionDataPtr.get();
-                const AZ::TypeId& typeId = azrtti_typeid(rootMotionData);
-                m_rootMotionExtractionWidget->AddInstance(rootMotionData, typeId);
-                m_rootMotionExtractionWidget->show();
-                m_rootMotionExtractionWidget->ExpandAll();
-                m_rootMotionExtractionWidget->InvalidateAll();
+                else
+                {
+                    m_extractRootMotionCheck->setChecked(false);
+                }
             }
+            m_rootMotionExtractionWidget->InvalidateAll();
         }
     }
 
@@ -411,7 +430,45 @@ namespace EMStudio
 
     void MotionExtractionWindow::OnRootMotionCheckboxClicked()
     {
+        const CommandSystem::SelectionList& selectionList = GetCommandManager()->GetCurrentSelection();
+        const size_t numSelectedMotions = selectionList.GetNumSelectedMotions();
+
+        if (numSelectedMotions == 1)
+        {
+            EMotionFX::Motion* curMotion = selectionList.GetMotion(0);
+            auto rootMotionDataPtr = curMotion->GetRootMotionExtractionData();
+            if (!rootMotionDataPtr && m_extractRootMotionCheck->isChecked())
+            {
+                rootMotionDataPtr = AZStd::make_shared<EMotionFX::RootMotionExtractionData>();
+                EMotionFX::ActorInstance* actorInstance = GetCommandManager()->GetCurrentSelection().GetSingleActorInstance();
+                if (actorInstance)
+                {
+                    rootMotionDataPtr->FindBestMatchedJoints(actorInstance->GetActor());
+                }
+                curMotion->SetRootMotionExtractionData(rootMotionDataPtr);
+            }
+
+            if (rootMotionDataPtr && !m_extractRootMotionCheck->isChecked())
+            {
+                curMotion->SetRootMotionExtractionData(nullptr);
+            }
+
+            curMotion->SetDirtyFlag(true);
+        }
+
         UpdateInterface();
+    }
+
+    void MotionExtractionWindow::OnSaveMotion()
+    {
+        const CommandSystem::SelectionList& selectionList = GetCommandManager()->GetCurrentSelection();
+        const size_t numSelectedMotions = selectionList.GetNumSelectedMotions();
+
+        if (numSelectedMotions == 1)
+        {
+            EMotionFX::Motion* curMotion = selectionList.GetMotion(0);
+            GetMainWindow()->GetFileManager()->SaveMotion(curMotion->GetID());
+        }
     }
 
     // open node selection window so that we can select a motion extraction node
@@ -502,4 +559,3 @@ namespace EMStudio
         return true;
     }
 } // namespace EMStudio
-#pragma optimize("", on)

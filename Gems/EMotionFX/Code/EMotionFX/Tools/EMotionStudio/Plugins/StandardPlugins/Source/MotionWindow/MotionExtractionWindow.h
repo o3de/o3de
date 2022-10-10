@@ -19,6 +19,7 @@
 
 QT_FORWARD_DECLARE_CLASS(QCheckBox)
 QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
+QT_FORWARD_DECLARE_CLASS(QPushButton)
 
 namespace MysticQt
 {
@@ -49,6 +50,7 @@ namespace EMStudio
         void UpdateInterface();
         void OnMotionExtractionFlagsUpdated();
         void OnRootMotionCheckboxClicked();
+        void OnSaveMotion();
 
         void OnSelectMotionExtractionNode();
         void OnMotionExtractionNodeSelected(AZStd::vector<SelectionItem> selection);
@@ -64,7 +66,8 @@ namespace EMStudio
         QCheckBox* m_captureHeight = nullptr;
 
         // Root motion extraction widgets
-        QCheckBox* m_extractRootMotion = nullptr;
+        QCheckBox* m_extractRootMotionCheck = nullptr;
+        QPushButton* m_saveMotionButton = nullptr;
 
         //
         QVBoxLayout* m_mainVerticalLayout = nullptr;

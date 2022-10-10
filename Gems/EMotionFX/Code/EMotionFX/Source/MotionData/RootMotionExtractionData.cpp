@@ -9,6 +9,8 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <EMotionFX/Source/MotionData/RootMotionExtractionData.h>
+#include <EMotionFX/Source/Actor.h>
+#include <EMotionFX/Source/Node.h>
 
 namespace EMotionFX
 {
@@ -62,5 +64,19 @@ namespace EMotionFX
     AZ::Crc32 RootMotionExtractionData::GetVisibilitySmoothEnabled() const
     {
         return m_smoothingMethod == SmoothingMethod::None ? AZ::Edit::PropertyVisibility::Hide : AZ::Edit::PropertyVisibility::Show;
+    }
+
+    void RootMotionExtractionData::FindBestMatchedJoints(const Actor* actor)
+    {
+        const Skeleton* skeleton = actor->GetSkeleton();
+        for (size_t boneIndex = 0; boneIndex < skeleton->GetNumNodes(); boneIndex++)
+        {
+            const AZStd::string_view boneName = skeleton->GetNode(boneIndex)->GetNameString();
+            if (AzFramework::StringFunc::Find(boneName, m_sampleJoint) != AZStd::string::npos)
+            {
+                m_sampleJoint = boneName;
+                break;
+            }
+        }
     }
 }
