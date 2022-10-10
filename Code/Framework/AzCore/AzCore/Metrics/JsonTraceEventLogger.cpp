@@ -247,7 +247,6 @@ namespace AZ::Metrics
         {
             extraParams.emplace_back(ThreadDurationKey, EventValue{ AZStd::in_place_type<AZ::s64>, completeArgs.m_tdur->count() });
         }
-
         eventDesc.SetExtraParams(extraParams);
 
         if (FlushRequest(eventDesc))

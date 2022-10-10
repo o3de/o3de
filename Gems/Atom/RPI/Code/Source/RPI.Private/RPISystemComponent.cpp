@@ -95,6 +95,8 @@ namespace AZ
 
         void RPISystemComponent::Activate()
         {
+            InitializePerformanceCollector();
+
             auto settingsRegistry = AZ::SettingsRegistry::Get();
             const char* settingPath = "/O3DE/Atom/RPI/Initialization";
 
@@ -132,8 +134,24 @@ namespace AZ
 
         void RPISystemComponent::OnSystemTick()
         {
-            m_rpiSystem.SimulationTick();
-            m_rpiSystem.RenderTick();
+            if (m_performanceCollector)
+            {
+                if (!m_performanceCollector->IsWaitingBeforeCapture())
+                {
+                    m_performanceCollector->RecordPeriodicEvent(PerformanceSpecEngineCpuTime);
+                }
+                m_performanceCollector->FrameTick();
+            }
+
+            {
+                AZ::Debug::ScopeDuration performanceScopeDuration(m_performanceCollector.get(), PerformanceSpecGraphicsSimulationTime);
+                m_rpiSystem.SimulationTick();
+            }
+
+            {
+                AZ::Debug::ScopeDuration performanceScopeDuration(m_performanceCollector.get(), PerformanceSpecGraphicsRenderTime);
+                m_rpiSystem.RenderTick();
+            }
         }
         
         void RPISystemComponent::OnDeviceRemoved([[maybe_unused]] RHI::Device* device)
@@ -164,6 +182,32 @@ namespace AZ
         void RPISystemComponent::UnRegisterXRInterface()
         {
             m_rpiSystem.UnregisterXRSystem();
+        }
+
+        AZ_CVAR_EXTERNED(AZ::u32, r_metricsNumberOfCaptureBatches);
+        AZ_CVAR_EXTERNED(AZ::CVarFixedString, r_metricsDataLogType);
+        AZ_CVAR_EXTERNED(AZ::u32, r_metricsWaitTimePerCaptureBatch);
+        AZ_CVAR_EXTERNED(AZ::u32, r_metricsFrameCountPerCaptureBatch);
+
+        void RPISystemComponent::InitializePerformanceCollector()
+        {
+            auto onBatchCompleteCallback = [](AZ::u32 pendingBatches) {
+                AZ_TracePrintf("RPISystem", "Completed a performance batch, still %llu batches are pending", pendingBatches);
+                r_metricsNumberOfCaptureBatches = pendingBatches;
+            };
+
+            AZStd::vector<AZStd::string_view> performanceMetrics = {
+                PerformanceSpecGraphicsSimulationTime,
+                PerformanceSpecGraphicsRenderTime,
+                PerformanceSpecEngineCpuTime,
+            };
+            m_performanceCollector = AZStd::make_unique<AZ::Debug::PerformanceCollector>(
+                PerformanceLogCategory, performanceMetrics, onBatchCompleteCallback);
+            //Feed the CVAR values.
+            m_performanceCollector->UpdateDataLogType(GetDataLogTypeFromCVar(r_metricsDataLogType));
+            m_performanceCollector->UpdateFrameCountPerCaptureBatch(r_metricsFrameCountPerCaptureBatch);
+            m_performanceCollector->UpdateWaitTimeBeforeEachBatch(AZStd::chrono::seconds(r_metricsWaitTimePerCaptureBatch));
+            m_performanceCollector->UpdateNumberOfCaptureBatches(r_metricsNumberOfCaptureBatches);
         }
 
     } // namespace RPI

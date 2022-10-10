@@ -28,7 +28,7 @@ set(FILES
     AZStd/ConcurrentAllocators.cpp
     AZStd/ConcurrentContainers.cpp
     AZStd/ChronoTests.cpp
-    AZStd/DequeAndSimilar.cpp
+    AZStd/DequeAndSimilar.cppD
     AZStd/Examples.cpp
     AZStd/FunctionalBasic.cpp
     AZStd/FunctorsBind.cpp
@@ -74,6 +74,7 @@ set(FILES
     Console/LoggerSystemComponentTests.cpp
     Console/ConsoleTests.cpp
     Date/DateFormatTests.cpp
+    Debug/PerformanceCollectorTests.cpp
     Debug/Trace.cpp
     Debug.cpp
     DLL.cpp
