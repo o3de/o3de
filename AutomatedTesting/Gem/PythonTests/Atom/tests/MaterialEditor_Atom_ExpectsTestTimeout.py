@@ -28,22 +28,27 @@ def MaterialEditor_TestsTimeout_TimeoutFailure():
 
     :return: None
     """
-    import Atom.atom_utils.atom_tools_utils as atom_tools_utils
+    import time
 
+    import Atom.atom_utils.atom_tools_utils as atom_tools_utils
     from editor_python_test_tools.utils import Report, Tracer, TestHelper
 
     with Tracer() as error_tracer:
+        # 1. Create start_time variable for the callback function to compare against.
+        start_time = time.time() + 12
 
-        # 1. Create callback function for timing out the test.
+        # 2. Create callback function for timing out the test.
         def loop_variable():
+            if time.time() > start_time:
+                return False
             return True
 
-        # 2. Trigger test timeout.
+        # 3. Wait for test timeout from test launcher script before this Report can pass (xfail expected).
         Report.result(
             Tests.material_editor_test_timed_out,
-            atom_tools_utils.wait_for_condition(lambda: loop_variable() is False, 10))
+            atom_tools_utils.wait_for_condition(lambda: loop_variable() is False, 15))
 
-        # 3. Look for errors and asserts.
+        # 4. Look for errors and asserts.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
         for error_info in error_tracer.errors:
             Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")

@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import logging
 import pytest
 
-from ly_test_tools.o3de.atom_tools_test import AtomToolsBatchedTest, AtomToolsTestSuite
+from ly_test_tools.o3de.atom_tools_test import AtomToolsBatchedTest, AtomToolsTestSuite, AtomToolsSingleTest
 
 logger = logging.getLogger(__name__)
 
@@ -33,8 +33,7 @@ class TestMaterialEditor(AtomToolsTestSuite):
         from Atom.tests import MaterialEditor_Atom_ExpectsTestFailure as test_module
 
     @pytest.mark.xfail
-    class MaterialEditor_Atom_ExpectsTestTimeout(AtomToolsBatchedTest):
-
-        timeout = 5
+    class MaterialEditor_Atom_ExpectsTestTimeout(AtomToolsSingleTest):
+        timeout = 10
 
         from Atom.tests import MaterialEditor_Atom_ExpectsTestTimeout as test_module
