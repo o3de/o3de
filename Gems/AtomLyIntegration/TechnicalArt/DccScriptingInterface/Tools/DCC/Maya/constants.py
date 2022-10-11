@@ -117,11 +117,11 @@ MAYA_DISABLE_ADP = True
 # enables/disables the maya boot console window
 ENVAR_MAYA_NO_CONSOLE_WINDOW = 'MAYA_NO_CONSOLE_WINDOW'
 # as a dev, I need the console for debugging
-MAYA_NO_CONSOLE_WINDOW = False
+MAYA_NO_CONSOLE_WINDOW = 0
 
 # in 2022 they disabled the output window by default
 ENVAR_MAYA_SHOW_OUTPUT_WINDOW = 'MAYA_SHOW_OUTPUT_WINDOW'
-MAYA_SHOW_OUTPUT_WINDOW = True
+MAYA_SHOW_OUTPUT_WINDOW = 1
 
 # a dccsi managed enavr to enable/disable our callbacks at boot
 ENVAR_DCCSI_MAYA_SET_CALLBACKS = 'DCCSI_MAYA_SET_CALLBACKS'

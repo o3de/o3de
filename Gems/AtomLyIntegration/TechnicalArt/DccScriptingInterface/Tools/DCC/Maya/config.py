@@ -19,6 +19,7 @@ import timeit
 _MODULE_START = timeit.default_timer()  # start tracking
 
 # standard imports
+import sys
 from pathlib import Path
 from typing import Union
 import logging as _logging
@@ -26,21 +27,29 @@ import logging as _logging
 
 
 # -------------------------------------------------------------------------
+# need to self bootstrap if debugging maya config
+_MODULE_PATH = Path(__file__)
+PATH_O3DE_TECHART_GEMS = _MODULE_PATH.parents[4].resolve()
+sys.path.insert(0, str(PATH_O3DE_TECHART_GEMS))
+
 # global scope
 from DccScriptingInterface.Tools.DCC.Maya import _PACKAGENAME
 _MODULENAME = f'{_PACKAGENAME}.config'
 _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 
-_MODULE_PATH = Path(__file__)
+
 _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH.as_posix()}')
+
+from DccScriptingInterface import add_site_dir
+add_site_dir(PATH_O3DE_TECHART_GEMS) # cleaner add
 
 # ensure dccsi and o3de core access
 # in a future iteration it is suggested that the core config
 # be rewritten from ConfigClass, then BlenderConfig inherits core
 import DccScriptingInterface.config as dccsi_core_config
 
-_settings_core = dccsi_core_config.get_config_settings(enable_o3de_python=True,
+_settings_core = dccsi_core_config.get_config_settings(enable_o3de_python=False,
                                                        enable_o3de_pyside2=False,
                                                        set_env=True)
 
@@ -283,8 +292,8 @@ maya_config.add_setting(ENVAR_MAYA_DISABLE_CIP, MAYA_DISABLE_CIP)
 maya_config.add_setting(ENVAR_MAYA_DISABLE_CER, MAYA_DISABLE_CER)
 maya_config.add_setting(ENVAR_MAYA_DISABLE_CLIC_IPM, MAYA_DISABLE_CLIC_IPM)
 maya_config.add_setting(ENVAR_MAYA_DISABLE_ADP, MAYA_DISABLE_ADP)
-maya_config.add_setting(ENVAR_MAYA_NO_CONSOLE_WINDOW, MAYA_NO_CONSOLE_WINDOW)
-maya_config.add_setting(ENVAR_MAYA_SHOW_OUTPUT_WINDOW, MAYA_SHOW_OUTPUT_WINDOW)
+maya_config.add_setting(ENVAR_MAYA_NO_CONSOLE_WINDOW, str(MAYA_NO_CONSOLE_WINDOW))
+maya_config.add_setting(ENVAR_MAYA_SHOW_OUTPUT_WINDOW, str(MAYA_SHOW_OUTPUT_WINDOW))
 maya_config.add_setting(ENVAR_DCCSI_MAYA_SET_CALLBACKS, DCCSI_MAYA_SET_CALLBACKS)
 
 # these are possibly windows only, so may need to be refactored in the future
@@ -294,6 +303,9 @@ maya_config.add_setting(ENVAR_MAYA_OGS_DEVICE_OVERRIDE, MAYA_OGS_DEVICE_OVERRIDE
 
 # always init defaults
 settings = maya_config.get_config_settings()
+
+# make sure the MAYA_SCRIPT_PATH is up front on search path
+add_site_dir(maya_config.settings.DCCSI_MAYA_SCRIPT_PATH)
 
 _MODULE_END = timeit.default_timer() - _MODULE_START
 _LOGGER.debug(f'{_MODULENAME} took: {_MODULE_END} sec')
