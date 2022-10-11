@@ -27,6 +27,7 @@ namespace AssetProcessor
         : public ::UnitTest::ScopedAllocatorSetupFixture
     {
     protected:
+        AZ::Test::ScopedAutoTempDirectory m_tempDir;
         AZStd::unique_ptr<UnitTestUtils::AssertAbsorber> m_errorAbsorber{};
         AZStd::unique_ptr<FileStatePassthrough> m_fileStateCache{};
 
