@@ -10,6 +10,7 @@
 
 #include <native/resourcecompiler/JobsModel.h>
 #include <native/tests/AssetProcessorTest.h>
+#include <native/tests/MockAssetDatabaseRequestsHandler.h>
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
 #include <QCoreApplication>
 
@@ -35,12 +36,6 @@ public:
     friend class JobModelUnitTests;
 };
 
-class JobModelTestMockDatabaseLocationListener : public AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Handler
-{
-public:
-    MOCK_METHOD1(GetAssetDatabaseLocation, bool(AZStd::string&));
-};
-
 class JobModelUnitTests
     : public AssetProcessor::AssetProcessorTest
 {
@@ -55,11 +50,7 @@ public:
 protected:
     struct StaticData
     {
-        QTemporaryDir m_temporaryDir;
-        QDir m_temporaryDatabaseDir;
-        AZStd::string m_temporaryDatabasePath;
-
-        testing::NiceMock<JobModelTestMockDatabaseLocationListener> m_databaseLocationListener;
+        AssetProcessor::MockAssetDatabaseRequestsHandler m_databaseLocationListener;
         AssetProcessor::AssetDatabaseConnection m_connection;
 
         const AZStd::string m_sourceName{ "theFile.fbx" };

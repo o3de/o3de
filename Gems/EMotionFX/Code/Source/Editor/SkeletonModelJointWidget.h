@@ -10,6 +10,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/RTTI/TypeInfo.h>
+#include <EMotionFX/Source/ActorInstance.h>
 #include <QWidget>
 #include <QItemSelection>
 #endif

@@ -21,7 +21,9 @@ VsOutput VertexShader(VsInput IN)
 
 // --- Pixel Shader ---
 
-[earlydepthstencil]
+#if !OUTPUT_DEPTH
+    [earlydepthstencil]
+#endif
 ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 {
     // ------- Geometry -> Surface -> Lighting -------

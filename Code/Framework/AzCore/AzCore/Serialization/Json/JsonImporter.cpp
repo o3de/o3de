@@ -61,20 +61,32 @@ namespace AZ
                     const rapidjson::Value& importDirective = field.value;
                     AZ::IO::FixedMaxPath importAbsPath = importPathStack.back();
                     importAbsPath.RemoveFilename();
-                    AZStd::string importName;
+                    AZ::IO::FixedMaxPath importName;
                     if (importDirective.IsObject())
                     {
                         auto filenameField = importDirective.FindMember("filename");
                         if (filenameField != importDirective.MemberEnd())
                         {
-                            importName = AZStd::string(filenameField->value.GetString(), filenameField->value.GetStringLength());
+                            importName = AZ::IO::FixedMaxPath(
+                                AZStd::string_view(filenameField->value.GetString(), filenameField->value.GetStringLength()));
                         }
                     }
                     else
                     {
-                        importName = AZStd::string(importDirective.GetString(), importDirective.GetStringLength());
+                        importName =
+                            AZ::IO::FixedMaxPath(AZStd::string_view(importDirective.GetString(), importDirective.GetStringLength()));
                     }
-                    importAbsPath.Append(importName);
+
+                    // Resolve the any file @..@ aliases in the relative importName if it starts with one
+                    if (auto fileIo = AZ::IO::FileIOBase::GetInstance(); fileIo != nullptr)
+                    {
+                        // Replace alias doesn't "resolve" the path as FileIOBase::ResolvePath would
+                        // It only replaces an alias, it doesn't make a relative path absolute by
+                        // making subpath of the asset cache
+                        fileIo->ReplaceAlias(importName, importName);
+                    }
+
+                    importAbsPath /= importName;
 
                     rapidjson::Value patch;
                     ResultCode resolveResult = settings.m_importer->ResolveImport(&jsonDoc, patch, importDirective, importAbsPath, allocator, settings);
@@ -86,7 +98,7 @@ namespace AZ
                     if ((settings.m_resolveFlags & ImportTracking::Imports) == ImportTracking::Imports)
                     {
                         rapidjson::Pointer path(element.Get().data(), element.Get().size());
-                        settings.m_importer->AddImportDirective(path, importName);
+                        settings.m_importer->AddImportDirective(path, importName.String());
                     }
                     if ((settings.m_resolveFlags & ImportTracking::Dependencies) == ImportTracking::Dependencies)
                     {
