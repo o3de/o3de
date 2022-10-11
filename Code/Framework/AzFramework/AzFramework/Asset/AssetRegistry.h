@@ -69,6 +69,9 @@ namespace AzFramework
         AssetPathToIdMap m_assetPathToId; // for legacy lookups only
         LegacyAssetIdToRealAssetIdMap m_legacyAssetIdToRealAssetId; // for when we change the UUID-creation scheme
         
+        // for reverse look-ups of the above, provides a list of legacy AssetIds for a given real AssetId
+        AZStd::unordered_multimap<AZ::Data::AssetId, AZ::Data::AssetId> m_realAssetIdToLegacyAssetIdMap;
+
         //! LEGACY - do not use in new code unless interfacing with legacy systems.
         //! given an assetPath and AssetID, this stores it in the registry to use with the above GetAssetIdByPath function.
         //! Called automatically by RegisterAsset.

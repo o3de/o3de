@@ -18,6 +18,18 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
     # Enable only -BatchMode for these tests. Some tests cannot run in -autotest_mode due to UI interactions
     global_extra_cmdline_args = ["-BatchMode"]
 
+    class test_AddEntity_UnderLevelPrefab(EditorSharedTest):
+        from .tests.add_entity import AddEntity_UnderLevelPrefab as test_module
+
+    class test_AddEntity_UnderAnotherEntity(EditorSharedTest):
+       from .tests.add_entity import AddEntity_UnderAnotherEntity as test_module
+
+    class test_AddEntity_UnderContainerEntityOfPrefab(EditorSharedTest):
+        from .tests.add_entity import AddEntity_UnderContainerEntityOfPrefab as test_module
+
+    class test_AddEntity_UnderChildEntityOfPrefab(EditorSharedTest):
+        from .tests.add_entity import AddEntity_UnderChildEntityOfPrefab as test_module
+
     class test_DeletePrefab_DuplicatedPrefabInstance(EditorSharedTest):
         from .tests.delete_prefab import DeletePrefab_DuplicatedPrefabInstance as test_module
 

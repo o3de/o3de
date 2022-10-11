@@ -20,13 +20,13 @@
 namespace AzToolsFramework
 {
     EditorToolBar::EditorToolBar()
-        : m_toolBar(new QToolBar("", m_defaultParentWidget))
+        : m_toolBar(new QToolBar("", s_defaultParentWidget))
     {
         m_toolBar->setMovable(false);
     }
 
     EditorToolBar::EditorToolBar(const AZStd::string& name)
-        : m_toolBar(new QToolBar(name.c_str(), m_defaultParentWidget))
+        : m_toolBar(new QToolBar(name.c_str(), s_defaultParentWidget))
     {
         m_toolBar->setMovable(false);
     }
@@ -140,10 +140,10 @@ namespace AzToolsFramework
                 {
                     case ToolBarItemType::Action:
                         {
-                            if (QAction* action = m_actionManagerInternalInterface->GetAction(toolBarItem.m_identifier))
+                            if (QAction* action = s_actionManagerInternalInterface->GetAction(toolBarItem.m_identifier))
                             {
                                 if (!action->isEnabled() &&
-                                    m_actionManagerInternalInterface->GetHideFromToolBarsWhenDisabled(toolBarItem.m_identifier))
+                                    s_actionManagerInternalInterface->GetHideFromToolBarsWhenDisabled(toolBarItem.m_identifier))
                                 {
                                     continue;
                                 }
@@ -179,7 +179,7 @@ namespace AzToolsFramework
         {
             case ToolBarItemType::Widget:
                 {
-                    if (QWidget* widget = m_actionManagerInternalInterface->GenerateWidgetFromWidgetAction(m_identifier))
+                    if (QWidget* widget = s_actionManagerInternalInterface->GenerateWidgetFromWidgetAction(m_identifier))
                     {
                         m_widgetAction = new QWidgetAction(nullptr);
                         m_widgetAction->setDefaultWidget(widget);
@@ -189,19 +189,19 @@ namespace AzToolsFramework
 
             case ToolBarItemType::ActionAndSubMenu:
                 {
-                    QAction* action = m_actionManagerInternalInterface->GetAction(m_identifier);
-                    QMenu* subMenu = m_menuManagerInternalInterface->GetMenu(m_subMenuIdentifier);
+                    QAction* action = s_actionManagerInternalInterface->GetAction(m_identifier);
+                    QMenu* subMenu = s_menuManagerInternalInterface->GetMenu(m_subMenuIdentifier);
 
                     if (action && subMenu)
                     {
-                        QToolButton* toolButton = new QToolButton(m_defaultParentWidget);
+                        QToolButton* toolButton = new QToolButton(s_defaultParentWidget);
 
                         toolButton->setPopupMode(QToolButton::MenuButtonPopup);
                         toolButton->setAutoRaise(true);
                         toolButton->setMenu(subMenu);
                         toolButton->setDefaultAction(action);
 
-                        m_widgetAction = new QWidgetAction(m_defaultParentWidget);
+                        m_widgetAction = new QWidgetAction(s_defaultParentWidget);
                         m_widgetAction->setDefaultWidget(toolButton);
                     }
                 }
@@ -216,22 +216,22 @@ namespace AzToolsFramework
 
     void EditorToolBar::Initialize(QWidget* defaultParentWidget)
     {
-        m_defaultParentWidget = defaultParentWidget;
+        s_defaultParentWidget = defaultParentWidget;
 
-        m_actionManagerInterface = AZ::Interface<ActionManagerInterface>::Get();
-        AZ_Assert(m_actionManagerInterface, "EditorToolBar - Could not retrieve instance of ActionManagerInterface");
+        s_actionManagerInterface = AZ::Interface<ActionManagerInterface>::Get();
+        AZ_Assert(s_actionManagerInterface, "EditorToolBar - Could not retrieve instance of ActionManagerInterface");
 
-        m_actionManagerInternalInterface = AZ::Interface<ActionManagerInternalInterface>::Get();
-        AZ_Assert(m_actionManagerInternalInterface, "EditorToolBar - Could not retrieve instance of ActionManagerInternalInterface");
+        s_actionManagerInternalInterface = AZ::Interface<ActionManagerInternalInterface>::Get();
+        AZ_Assert(s_actionManagerInternalInterface, "EditorToolBar - Could not retrieve instance of ActionManagerInternalInterface");
 
-        m_menuManagerInterface = AZ::Interface<MenuManagerInterface>::Get();
-        AZ_Assert(m_menuManagerInterface, "EditorToolBar - Could not retrieve instance of MenuManagerInterface");
+        s_menuManagerInterface = AZ::Interface<MenuManagerInterface>::Get();
+        AZ_Assert(s_menuManagerInterface, "EditorToolBar - Could not retrieve instance of MenuManagerInterface");
 
-        m_menuManagerInternalInterface = AZ::Interface<MenuManagerInternalInterface>::Get();
-        AZ_Assert(m_menuManagerInternalInterface, "EditorToolBar - Could not retrieve instance of MenuManagerInternalInterface");
+        s_menuManagerInternalInterface = AZ::Interface<MenuManagerInternalInterface>::Get();
+        AZ_Assert(s_menuManagerInternalInterface, "EditorToolBar - Could not retrieve instance of MenuManagerInternalInterface");
 
-        m_toolBarManagerInterface = AZ::Interface<ToolBarManagerInterface>::Get();
-        AZ_Assert(m_toolBarManagerInterface, "EditorToolBar - Could not retrieve instance of ToolBarManagerInterface");
+        s_toolBarManagerInterface = AZ::Interface<ToolBarManagerInterface>::Get();
+        AZ_Assert(s_toolBarManagerInterface, "EditorToolBar - Could not retrieve instance of ToolBarManagerInterface");
     }
 
     void EditorToolBar::Reflect(AZ::ReflectContext* context)

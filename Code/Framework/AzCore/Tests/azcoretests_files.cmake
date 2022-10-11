@@ -29,6 +29,7 @@ set(FILES
     Components.cpp
     Console/LoggerSystemComponentTests.cpp
     Console/ConsoleTests.cpp
+    Date/DateFormatTests.cpp
     Debug.cpp
     DLL.cpp
     EBus.cpp

@@ -37,9 +37,11 @@ namespace AzToolsFramework
         float GetRadius() const override;
         float GetIntensity() const override;
         float GetOpacity() const override;
+        PaintBrushBlendMode GetBlendMode() const override;
         void SetRadius(float radius) override;
         void SetIntensity(float intensity) override;
         void SetOpacity(float opacity) override;
+        void SetBlendMode(PaintBrushBlendMode blendMode) override;
 
         PaintBrushSettings m_settings;
     };

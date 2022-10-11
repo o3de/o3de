@@ -20,18 +20,9 @@ namespace UnitTest
     // Fixtures
 
     // Fixture for non-typed tests
-    class DurationTest : public AllocatorsFixture
+    class DurationTest
+        : public ScopedAllocatorSetupFixture
     {
-    protected:
-        void SetUp() override
-        {
-            AllocatorsFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            AllocatorsFixture::TearDown();
-        }
     };
 
     /*
@@ -675,18 +666,6 @@ namespace UnitTest
             static_assert(AZStd::chrono::make24(1h, true) == 13h);
             static_assert(AZStd::chrono::make24(11h, true) == 23h);
             static_assert(AZStd::chrono::make24(12h, true) == 12h);
-        }
-    }
-
-    namespace UTCTimestamp
-    {
-        // Outputs a UTC timestamp to microseconds the output window
-        TEST_F(DurationTest, CanOutput_UTCMcrosecondTimestamp)
-        {
-            const AZStd::chrono::utc_clock::time_point currentUtcTime = AZStd::chrono::utc_clock::now();
-            AZStd::UTCTimestampString utcTimestamp;
-            EXPECT_TRUE(AZStd::GetUTCTimestampMicroseconds(utcTimestamp, currentUtcTime));
-            AZ::Debug::Trace::Instance().RawOutput("chrono", utcTimestamp.c_str());
         }
     }
 }

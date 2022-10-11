@@ -645,6 +645,8 @@ namespace AZ
 
                 presentationQueue.QueueCommand(AZStd::move(presentCommand));
                 presentationQueue.FlushCommands();
+
+                xrSystem->PostFrame();
             }
 
             m_commandQueueContext.End();
