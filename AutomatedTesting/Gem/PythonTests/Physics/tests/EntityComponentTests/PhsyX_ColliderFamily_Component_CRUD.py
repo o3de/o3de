@@ -92,11 +92,10 @@ def PhysX_ColliderFamily_Component_CRUD():
     from editor_python_test_tools.editor_entity_utils import EditorEntity as EE
     from editor_python_test_tools.utils import Tracer
     from editor_python_test_tools.asset_utils import Asset
-    from Physics.utils.physics_constants import (PHYSX_COLLIDER, PHYSX_SHAPE_COLLIDER,
-                                                 BOX_SHAPE_COMPONENT, CAPSULE_SHAPE_COMPONENT,
-                                                 PHSX_SHAPE_COLLIDER_SHAPE,
-                                                 CYLINDER_SHAPE_COMPONENT, POLYGON_PRISM_SHAPE_COMPONENT,
-                                                 QUAD_SHAPE_COMPONENT, SPHERE_SHAPE_COMPONENT, PHYSX_COLLIDER_MESH_PATH)
+    from Physics.utils.physics_constants import (PHYSX_SHAPE_COLLIDER, BOX_SHAPE_COMPONENT, CAPSULE_SHAPE_COMPONENT,
+                                                 PHSX_SHAPE_COLLIDER_SHAPE, CYLINDER_SHAPE_COMPONENT,
+                                                 POLYGON_PRISM_SHAPE_COMPONENT, QUAD_SHAPE_COMPONENT,
+                                                 SPHERE_SHAPE_COMPONENT, PHYSX_COLLIDER_MESH_PATH)
 
 
     # 0) Pre-conditions
@@ -123,11 +122,11 @@ def PhysX_ColliderFamily_Component_CRUD():
     with Tracer() as section_tracer:
 
         # 2) Adding Collider Components to their entities
-        physx_collider_box_shape_component = PhysxCollider(physx_collider_box_entity, PHYSX_COLLIDER)
-        physx_collider_capsule_shape_component = PhysxCollider(physx_collider_capsule_entity, PHYSX_COLLIDER)
-        physx_collider_sphere_shape_component = PhysxCollider(physx_collider_sphere_entity, PHYSX_COLLIDER)
-        physx_collider_cylinder_shape_component = PhysxCollider(physx_collider_cylinder_entity, PHYSX_COLLIDER)
-        physx_collider_physicsasset_component = PhysxCollider(physx_collider_physicsasset_entity, PHYSX_COLLIDER)
+        physx_collider_box_shape_component = PhysxCollider(physx_collider_box_entity)
+        physx_collider_capsule_shape_component = PhysxCollider(physx_collider_capsule_entity)
+        physx_collider_sphere_shape_component = PhysxCollider(physx_collider_sphere_entity)
+        physx_collider_cylinder_shape_component = PhysxCollider(physx_collider_cylinder_entity)
+        physx_collider_physicsasset_component = PhysxCollider(physx_collider_physicsasset_entity)
 
 
         physx_shape_collider_box_component = physx_shape_collider_box_entity.add_component(PHYSX_SHAPE_COLLIDER)
@@ -151,9 +150,6 @@ def PhysX_ColliderFamily_Component_CRUD():
         physx_collider_sphere_shape_component.set_sphere_shape()
         physx_collider_cylinder_shape_component.set_cylinder_shape()
         physx_collider_physicsasset_component.set_physx_mesh_from_path(PHYSX_MESH)
-
-
-        #physx_collider_physicsasset_component.set_component_property_value(PHYSX_COLLIDER_MESH_PATH, px_asset.id)
 
 
         # test_entity = EE.create_editor_entity("Test")
