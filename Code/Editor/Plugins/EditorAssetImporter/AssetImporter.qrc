@@ -6,8 +6,6 @@
         <file alias="DeleteGroup.png">../../../../Assets/Editor/Icons/PropertyEditor/remove.png</file>
         <file alias="Error.png">../../../../Assets/Editor/Icons/PropertyEditor/error_icon.png</file>
         <file alias="RefreshGroup.png">../../../../Assets/Editor/Icons/PropertyEditor/reset_icon.png</file>
-        <file alias="MeshSelectorBrowse.png">../../../../Assets/Editor/Icons/AssetImporter/mesh.png</file>
-        <file alias="MeshSelectorBrowse_On.png">../../../../Assets/Editor/Icons/AssetImporter/mesh_on.png</file>
         <file alias="MeshTreeIcon.png">../../../../Assets/Editor/Icons/AssetImporter/mesh_on.png</file>
         <file alias="GroupTreeIcon.png">../../../../Assets/Editor/Icons/AssetImporter/group_icon.png</file>
         <file alias="CheckMark_Checked.png">../../../../Assets/Editor/Icons/checkmark_checked.png</file>

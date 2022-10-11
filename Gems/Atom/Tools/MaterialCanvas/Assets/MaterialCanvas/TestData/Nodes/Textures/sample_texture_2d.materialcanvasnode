@@ -8,10 +8,7 @@
         "title": "Sample Texture 2d",
         "settings": {
             "instructions": [
-                "float4 NODEID_outColor = MaterialSrg::NODEINPUTID.Sample(MaterialSrg::NODEINPUTID_sampler, NODEID_inUV);"
-            ],
-            "materialInputs": [
-                "Texture2D NODEINPUTID;\nSampler NODEINPUTID_sampler\n{\n    MaxAnisotropy = 16;\n    AddressU = Wrap;\n    AddressV = Wrap;\n    AddressW = Wrap;\n};\n"
+                "float4 NODEID_outColor = MaterialSrg::NODEID_inValue.Sample(MaterialSrg::NODEID_inSampler, NODEID_inUV);"
             ]
         },
         "propertySlots": [
@@ -43,11 +40,29 @@
             },
             {
                 "name": "inValue",
-                "displayName": "Value",
-                "description": "Value",
+                "displayName": "Image",
+                "description": "Image",
                 "supportedDataTypes": [
                     "image"
-                ]
+                ],
+                "settings": {
+                    "materialInputs": [
+                        "SLOTSTANDARDSRGMEMBER"
+                    ]
+                }
+            },
+            {
+                "name": "inSampler",
+                "displayName": "Sampler",
+                "description": "Sampler",
+                "supportedDataTypes": [
+                    "sampler"
+                ],
+                "settings": {
+                    "materialInputs": [
+                        "SLOTSTANDARDSRGMEMBER"
+                    ]
+                }
             }
         ],
         "inputSlots": [

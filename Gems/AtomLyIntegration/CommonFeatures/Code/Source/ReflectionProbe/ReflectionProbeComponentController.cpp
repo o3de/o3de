@@ -168,7 +168,7 @@ namespace AZ
             if (m_featureProcessor)
             {
                 m_featureProcessor->RemoveReflectionProbe(m_handle);
-                m_handle = nullptr;
+                m_handle = ReflectionProbeHandle{};
             }
 
             LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();

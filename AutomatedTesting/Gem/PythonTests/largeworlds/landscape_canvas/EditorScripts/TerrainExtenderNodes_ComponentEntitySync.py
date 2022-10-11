@@ -125,7 +125,6 @@ def TerrainExtenderNodes_ComponentEntitySync():
             extenderNode = landscapecanvas.LandscapeCanvasNodeFactoryRequestBus(bus.Broadcast,
                                                                                 'CreateNodeForTypeName', newGraph,
                                                                                 extenderName)
-            graph.GraphControllerRequestBus(bus.Event, 'AddNode', newGraphId, extenderNode, nodePosition)
             graph.GraphControllerRequestBus(bus.Event, 'WrapNode', newGraphId, areaNode, extenderNode)
 
             # Check that the appropriate Component(s) were added when the extender node was added

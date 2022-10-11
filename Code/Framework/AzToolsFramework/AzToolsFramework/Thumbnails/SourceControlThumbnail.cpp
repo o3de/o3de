@@ -23,7 +23,7 @@ namespace AzToolsFramework
             , m_fileName(fileName)
             , m_updateInterval(4)
         {
-            m_nextUpdate = AZStd::chrono::system_clock::now();
+            m_nextUpdate = AZStd::chrono::steady_clock::now();
         }
 
         const AZStd::string& SourceControlThumbnailKey::GetFileName() const
@@ -38,7 +38,7 @@ namespace AzToolsFramework
                 return false;
             }
 
-            const auto now(AZStd::chrono::system_clock::now());
+            const auto now(AZStd::chrono::steady_clock::now());
             if (m_nextUpdate >= now)
             {
                 return false;

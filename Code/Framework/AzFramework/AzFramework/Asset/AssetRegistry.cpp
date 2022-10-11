@@ -14,42 +14,31 @@
 
 namespace AssetRegistryInternal
 {
-    // to prevent people from shooting themselves in the foot here we are going to normalize the path.
+    // normalize the path.
     // since sha1 is sensitive to both slash direction and case!
     // note that this is not generating asset IDs, its merely creating UUIDs that map from
     // asset path -> asset Id, so that storing asset path as strings is not necessary.
-    AZ::Uuid CreateUUIDForName(const char* name)
+    AZ::Uuid CreateUUIDForName(AZStd::string_view name)
     {
-        if (!name)
+        if (name.empty())
         {
-            return AZ::Uuid::CreateNull();
+            return {};
         }
-
-        // avoid allocating memory.  Note that the input paths are expected to be relative paths
-        // from the root and thus should be much shorter than AZ_MAX_PATH_LEN
-        char tempBuffer[AZ_MAX_PATH_LEN] = { 0 };
-        tempBuffer[AZ_ARRAY_SIZE(tempBuffer) - 1] = 0;
         
-        // here we try to pass over the memory only once.
-        for (AZStd::size_t pos = 0; pos < AZ_ARRAY_SIZE(tempBuffer) - 1; ++pos)
+        // pass over the memory only once
+        auto TransformPath = [](const char elem) -> char
         {
-            char currentValue = name[pos];
-            if (!currentValue)
+            if (elem == AZ::IO::WindowsPathSeparator)
             {
-                tempBuffer[pos] = 0;
-                break;
-            }
-            else if (currentValue == '\\')
-            {
-                tempBuffer[pos] = '/';
+                return AZ::IO::PosixPathSeparator;
             }
             else
             {
-                tempBuffer[pos] = (char)tolower(currentValue);
+                return AZStd::tolower(elem);
             }
-        }
+        };
 
-        return AZ::Uuid::CreateName(tempBuffer);
+        return AZ::Uuid::CreateData(name | AZStd::views::transform(TransformPath));
     }
 }
 
@@ -86,10 +75,11 @@ namespace AzFramework
                 ->Field("flags", &AZ::Data::ProductDependency::m_flags);
 
             serializeContext->Class<AssetRegistry>()
-                ->Version(5)
+                ->Version(6)
                 ->Field("m_assetIdToInfo", &AssetRegistry::m_assetIdToInfo)
                 ->Field("m_assetPathToIdMap", &AssetRegistry::m_assetPathToId)
                 ->Field("m_legacyAssetIdToRealAssetId", &AssetRegistry::m_legacyAssetIdToRealAssetId)
+                ->Field("m_realAssetIdToLegacyAssetIdMap", &AssetRegistry::m_realAssetIdToLegacyAssetIdMap)
                 ->Field("m_assetDependencies", &AssetRegistry::m_assetDependencies);
             // note that the above m_assetPathToIdMap used to be called m_assetPathToId in prior serialization
             // and m_assetPathToIdByUUID prior to that, so do not rename it to those more obvious fields in the future.
@@ -136,7 +126,7 @@ namespace AzFramework
         auto existingAsset = m_assetIdToInfo.find(id);
         if (existingAsset != m_assetIdToInfo.end())
         {
-            m_assetPathToId.erase(CreateUUIDForName(existingAsset->second.m_relativePath.c_str()));
+            m_assetPathToId.erase(CreateUUIDForName(existingAsset->second.m_relativePath));
         }
         
         m_assetIdToInfo.erase(id);
@@ -146,11 +136,28 @@ namespace AzFramework
     void AssetRegistry::RegisterLegacyAssetMapping(const AZ::Data::AssetId& legacyId, const AZ::Data::AssetId& newId)
     {
         m_legacyAssetIdToRealAssetId[legacyId] = newId;
+        m_realAssetIdToLegacyAssetIdMap.emplace(newId, legacyId);
     }
 
     void AssetRegistry::UnregisterLegacyAssetMapping(const AZ::Data::AssetId& legacyId)
     {
-        m_legacyAssetIdToRealAssetId.erase(legacyId);
+        auto itr = m_legacyAssetIdToRealAssetId.find(legacyId);
+
+        if(itr != m_legacyAssetIdToRealAssetId.end())
+        {
+            auto range = m_realAssetIdToLegacyAssetIdMap.equal_range(itr->second);
+
+            for(auto rangeItr = range.first; rangeItr != range.second; ++rangeItr)
+            {
+                if(rangeItr->second == legacyId)
+                {
+                    m_realAssetIdToLegacyAssetIdMap.erase(rangeItr);
+                    break;
+                }
+            }
+
+            m_legacyAssetIdToRealAssetId.erase(itr);
+        }
     }
 
     void AssetRegistry::SetAssetDependencies(const AZ::Data::AssetId& id, const AZStd::vector<AZ::Data::ProductDependency>& dependencies)
@@ -181,15 +188,17 @@ namespace AzFramework
     AzFramework::AssetRegistry::LegacyAssetIdToRealAssetIdMap AssetRegistry::GetLegacyMappingSubsetFromRealIds(const AZStd::vector<AZ::Data::AssetId>& realIds) const
     {
         LegacyAssetIdToRealAssetIdMap subset;
-        auto realIdsBeginItr = realIds.begin();
-        auto realIdsEndItr = realIds.end();
-        for (const auto& legacyToRealPair : m_legacyAssetIdToRealAssetId)
+
+        for(AZ::Data::AssetId assetId : realIds)
         {
-            if (AZStd::find(realIdsBeginItr, realIdsEndItr, legacyToRealPair.second) != realIdsEndItr)
+            auto range = m_realAssetIdToLegacyAssetIdMap.equal_range(assetId);
+
+            for(auto itr = range.first; itr != range.second; ++itr)
             {
-                subset.insert(legacyToRealPair);
+                subset.emplace(itr->second, itr->first);
             }
         }
+
         return subset;
     }
 
@@ -241,6 +250,9 @@ namespace AzFramework
         {
             m_legacyAssetIdToRealAssetId[element.first] = element.second;
         }
+
+        m_realAssetIdToLegacyAssetIdMap.insert(
+            assetRegistry->m_realAssetIdToLegacyAssetIdMap.begin(), assetRegistry->m_realAssetIdToLegacyAssetIdMap.end());
     }
 
 } // namespace AzFramework

@@ -546,7 +546,7 @@ namespace AZ
         //////////////////////////////////////////////////////////////////////////
         void* LuaScriptValueStackRead(lua_State* lua, int stackIndex, const AZ::Uuid typeId)
         {
-            if (typeId == nullptr || lua_islightuserdata(lua, stackIndex))
+            if (typeId.IsNull() || lua_islightuserdata(lua, stackIndex))
             {
                 return lua_touserdata(lua, stackIndex);
             }

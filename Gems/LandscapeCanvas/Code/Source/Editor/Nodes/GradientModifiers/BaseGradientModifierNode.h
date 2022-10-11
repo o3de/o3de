@@ -30,7 +30,7 @@ namespace LandscapeCanvas
         BaseGradientModifierNode() = default;
         explicit BaseGradientModifierNode(GraphModel::GraphPtr graph);
 
-        const char* GetSubTitle() const override { return LandscapeCanvas::GRADIENT_MODIFIER_TITLE.toUtf8().constData(); }
+        const char* GetSubTitle() const override { return LandscapeCanvas::GRADIENT_MODIFIER_TITLE; }
 
         const BaseNodeType GetBaseNodeType() const override { return BaseNode::GradientModifier; }
 

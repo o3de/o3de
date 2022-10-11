@@ -101,8 +101,8 @@ namespace AssetProcessor
 
             //Calculating fingerprints for the file for pc and android platforms
             AZ::Uuid sourceId = AZ::Uuid("{2206A6E0-FDBC-45DE-B6FE-C2FC63020BD5}");
-            JobEntry jobEntryPC(scanFolderPath, relPath, relPath, 0, { "pc", {"desktop", "renderer"} }, "", 0, 1, sourceId);
-            JobEntry jobEntryANDROID(scanFolderPath, relPath, relPath, 0, { "android", {"mobile", "renderer"} }, "", 0, 2, sourceId);
+            JobEntry jobEntryPC(scanFolderPath, relPath, relPath, {}, { "pc", {"desktop", "renderer"} }, "", 0, 1, sourceId);
+            JobEntry jobEntryANDROID(scanFolderPath, relPath, relPath, {}, { "android", {"mobile", "renderer"} }, "", 0, 2, sourceId);
 
             JobDetails jobDetailsPC;
             jobDetailsPC.m_extraInformationForFingerprinting = extraInfoForPC.toUtf8().constData();
@@ -2959,7 +2959,7 @@ namespace AssetProcessor
             {
                 // Verify FileC jobinfo
                 AssetBuilderSDK::SourceFileDependency& source = jobDetail.m_jobDependencyList[0].m_jobDependency.m_sourceFile;
-                UNIT_TEST_EXPECT_TRUE(QString(source.m_sourceFileDependencyPath.c_str()).compare("FileB.txt") == 0);
+                UNIT_TEST_EXPECT_TRUE(source.m_sourceFileDependencyUUID == sourceFileBUuid);
                 UNIT_TEST_EXPECT_TRUE(QString(jobDetail.m_jobDependencyList[0].m_jobDependency.m_jobKey.c_str()).compare("yyy") == 0);
 
                 response.m_outputProducts.clear();

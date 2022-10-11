@@ -1,5 +1,5 @@
 {
-    "materialType": "Materials/Types/StandardMultilayerPBR.materialtype",
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardMultilayerPBR.materialtype",
     "materialTypeVersion": 3,
     "propertyValues": {
         "blend.blendSource": "BlendMaskVertexColors",

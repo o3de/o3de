@@ -17,6 +17,7 @@
 #include <AzCore/std/containers/fixed_vector.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/parallel/mutex.h>
+#include <AzCore/std/parallel/scoped_lock.h>
 
 // Using a define instead of a static string to avoid the need for temporary buffers to composite the full paths.
 #define AZ_SETTINGS_REGISTRY_HISTORY_KEY "/Amazon/AzCore/Runtime/Registry/FileHistory"
@@ -117,7 +118,15 @@ namespace AZ
 
         void SignalNotifier(AZStd::string_view jsonPath, SettingsType type);
 
-        
+        //! Locks the m_settingMutex but also checks to make sure that someone is not currently
+        //! visiting/iterating over the registry, which is invalid if you're about to modify it
+        AZStd::scoped_lock<AZStd::recursive_mutex> LockForWriting() const;
+
+        //! For symmetry with the above, locks with intent to only read data.  This can be done
+        //! even during iteration/visiting.
+        AZStd::scoped_lock<AZStd::recursive_mutex> LockForReading() const;
+
+        // only use the setting mutex via the above functions.
         mutable AZStd::recursive_mutex m_settingMutex;
         mutable AZStd::recursive_mutex m_notifierMutex;
         NotifyEvent m_notifiers;
@@ -159,5 +168,10 @@ namespace AZ
         //! Stack tracking the files currently being merged
         //! This is protected by m_settingsMutex
         AZStd::stack<AZ::IO::FixedMaxPath> m_mergeFilePathStack;
+
+        // if this is nonzero, we are in a visit operation.  It can be used to detect illegal modifications
+        // of the tree during visit.
+        mutable int m_visitDepth = 0; // mutable due to it being a debugging value used in const.
+
     };
 } // namespace AZ

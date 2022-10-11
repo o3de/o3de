@@ -27,15 +27,15 @@ namespace O3DE::ProjectManager
         IPythonBindings::DetailedOutcome objectInfoResult;
         if (m_downloadType == DownloadController::DownloadObjectType::Gem)
         {
-            objectInfoResult = PythonBindingsInterface::Get()->DownloadGem(m_objectName, objectDownloadProgress, /*force*/ true);
+            objectInfoResult = PythonBindingsInterface::Get()->DownloadGem(m_objectName, m_destinationPath , objectDownloadProgress, /*force*/ true);
         }
         else if (m_downloadType == DownloadController::DownloadObjectType::Project)
         {
-            objectInfoResult = PythonBindingsInterface::Get()->DownloadProject(m_objectName, objectDownloadProgress, /*force*/ true);
+            objectInfoResult = PythonBindingsInterface::Get()->DownloadProject(m_objectName, m_destinationPath, objectDownloadProgress, /*force*/ true);
         }
         else if (m_downloadType == DownloadController::DownloadObjectType::Template)
         {
-            objectInfoResult = PythonBindingsInterface::Get()->DownloadTemplate(m_objectName, objectDownloadProgress, /*force*/ true);
+            objectInfoResult = PythonBindingsInterface::Get()->DownloadTemplate(m_objectName, m_destinationPath, objectDownloadProgress, /*force*/ true);
         }
         else
         {
@@ -52,9 +52,10 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void DownloadWorker::SetObjectToDownload(const QString& objectName, DownloadController::DownloadObjectType objectType, bool downloadNow)
+    void DownloadWorker::SetObjectToDownload(const QString& objectName, const QString& destinationPath, DownloadController::DownloadObjectType objectType, bool downloadNow)
     {
         m_objectName = objectName;
+        m_destinationPath = destinationPath;
         m_downloadType = objectType;
         if (downloadNow)
         {

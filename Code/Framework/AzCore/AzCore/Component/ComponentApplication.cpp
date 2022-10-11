@@ -17,13 +17,13 @@
 #include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/Component/TickBus.h>
 
-#include <AzCore/Debug/LocalFileEventLogger.h>
 
 #include <AzCore/Memory/AllocationRecords.h>
 
 #include <AzCore/Memory/OverrunDetectionAllocator.h>
 #include <AzCore/Memory/AllocatorManager.h>
 #include <AzCore/Memory/MallocSchema.h>
+#include <AzCore/Metrics/EventLoggerFactoryImpl.h>
 
 #include <AzCore/NativeUI/NativeUIRequests.h>
 
@@ -117,18 +117,6 @@ namespace AZ
     {
         AZ::EnvironmentVariable<ReflectionEnvironment> environment = AZ::Environment::FindVariable<ReflectionEnvironment>(s_reflectionEnvironmentName);
         return environment ? environment->Get() : nullptr;
-    }
-
-    ComponentApplication::EventLoggerDeleter::EventLoggerDeleter() noexcept= default;
-    ComponentApplication::EventLoggerDeleter::EventLoggerDeleter(bool skipDelete) noexcept
-        : m_skipDelete{skipDelete}
-    {}
-    void ComponentApplication::EventLoggerDeleter::operator()(AZ::Debug::LocalFileEventLogger* ptr)
-    {
-        if (!m_skipDelete)
-        {
-            delete ptr;
-        }
     }
 
     //=========================================================================
@@ -402,8 +390,7 @@ namespace AZ
     }
 
     ComponentApplication::ComponentApplication(int argC, char** argV)
-        : m_eventLogger{}
-        , m_timeSystem(AZStd::make_unique<TimeSystem>())
+        : m_timeSystem(AZStd::make_unique<TimeSystem>())
     {
         if (Interface<ComponentApplicationRequests>::Get() == nullptr)
         {
@@ -424,18 +411,6 @@ namespace AZ
             m_argV = &m_commandLineBufferAddress;
         }
 
-        // Create the Event logger if it doesn't exist, otherwise reuse the one registered
-        // with the AZ::Interface
-        if (AZ::Interface<AZ::Debug::IEventLogger>::Get() == nullptr)
-        {
-            m_eventLogger.reset(new AZ::Debug::LocalFileEventLogger);
-        }
-        else
-        {
-            m_eventLogger = EventLoggerPtr(static_cast<AZ::Debug::LocalFileEventLogger*>(AZ::Interface<AZ::Debug::IEventLogger>::Get()),
-                EventLoggerDeleter{ true });
-        }
-
         // we are about to create allocators, so make sure that
         // the descriptor is filled with at least the defaults:
         m_descriptor.m_recordingMode = AllocatorManager::Instance().GetDefaultTrackingMode();
@@ -443,6 +418,13 @@ namespace AZ
         // Initializes the OSAllocator and SystemAllocator as soon as possible
         CreateOSAllocator();
         CreateSystemAllocator();
+
+        // Create the EventLoggerFactory as soon as the Allocators are available
+        m_eventLoggerFactory = AZStd::make_unique<AZ::Metrics::EventLoggerFactoryImpl>();
+        if (AZ::Metrics::EventLoggerFactory::Get() == nullptr)
+        {
+            AZ::Metrics::EventLoggerFactory::Register(m_eventLoggerFactory.get());
+        }
 
         // Now that the Allocators are initialized, the Command Line parameters can be parsed
         m_commandLine.Parse(m_argC, m_argV);
@@ -585,6 +567,14 @@ namespace AZ
         }
         m_nameDictionary.reset();
 
+        // Unregister the Event Factory with th AZ Interface if it is registered
+        if (AZ::Metrics::EventLoggerFactory::Get() == m_eventLoggerFactory.get())
+        {
+            AZ::Metrics::EventLoggerFactory::Unregister(m_eventLoggerFactory.get());
+        }
+
+        m_eventLoggerFactory.reset();
+
         // Set AZ::CommandLine to an empty object to clear out allocated memory before the allocators
         // are destroyed
         m_commandLine = {};
@@ -666,17 +656,6 @@ namespace AZ
     //=========================================================================
     void ComponentApplication::CreateCommon()
     {
-        {
-            AZ::IO::FixedMaxPath outputPath;
-            m_settingsRegistry->Get(outputPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_DevWriteStorage);
-            outputPath /= "eventlogger";
-
-            AZ::IO::FixedMaxPathString baseFileName{ "EventLog" }; // default name
-            m_settingsRegistry->Get(baseFileName, AZ::SettingsRegistryMergeUtils::BuildTargetNameKey);
-
-            m_eventLogger->Start(outputPath.Native(), baseFileName);
-        }
-
         Sfmt::Create();
 
         CreateReflectionManager();
@@ -801,8 +780,6 @@ namespace AZ
         // Disconnect from application and tick request buses
         ComponentApplicationBus::Handler::BusDisconnect();
         TickRequestBus::Handler::BusDisconnect();
-
-        m_eventLogger->Stop();
 
         // Clear the descriptor to deallocate all strings (owned by ModuleDescriptor)
         m_descriptor = Descriptor();

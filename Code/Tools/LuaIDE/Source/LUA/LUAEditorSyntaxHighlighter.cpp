@@ -111,8 +111,13 @@ namespace LUAEditor
         };
     }
 
+    // GCC triggers a subobject linkage warning if a symbol in an anonymous namespace in included in another file
+    // When unity files are enabled in CMake, this file is included in a .cxx file which triggers this warning
+    // The code is actually OK as this file is a translation unit and not a header file where this warning would normally be triggered
+    AZ_PUSH_DISABLE_WARNING_GCC("-Wsubobject-linkage");
     class LUASyntaxHighlighter::StateMachine
     {
+    AZ_POP_DISABLE_WARNING_GCC
     public:
         StateMachine();
         ~StateMachine();
@@ -121,7 +126,7 @@ namespace LUAEditor
         void SetState(ParserStates state, int extraBack = 0);
         void PassState(ParserStates state); //change state but keep data captured so far, use if we are in "wrong" state
         void Reset();
-        AZStd::function<void(ParserStates state, int position, int length)> CaptureToken;
+
         int CurrentLength() const { return m_currentChar - m_start + 1; }
         QStringRef CurrentString() const { return QStringRef(m_currentString, m_start, CurrentLength()); }
         const QString* GetFullLine() const { return m_currentString; }
@@ -159,22 +164,20 @@ namespace LUAEditor
         template<typename T>
         void SetOnDecFoldLevel(const T& callable) { m_onDecFoldLevel = callable; }
 
+        AZStd::function<void(ParserStates state, int position, int length)> CaptureToken;
+
     private:
         BaseParserState* GetCurrentState() const { return m_states[static_cast<int>(m_currentState)]; }
 
-        typedef AZStd::fixed_vector<BaseParserState*, static_cast<int>(ParserStates::NumStates)> StatesListType;
+        using StatesListType = AZStd::fixed_vector<BaseParserState*, static_cast<int>(ParserStates::NumStates)>;
         StatesListType m_states;
-        ParserStates m_currentState {
-            ParserStates::Null
-        };
+        ParserStates m_currentState{ ParserStates::Null };
         int m_currentChar;
         int m_start;
         const QString* m_currentString;
         int m_foldLevel;
 
-        bool m_joinNames {
-            true
-        };                      //consider names seperated by . and : as one for highlighting purposes
+        bool m_joinNames{ true }; //consider names seperated by . and : as one for highlighting purposes
 
         AZStd::function<void(int)> m_onIncFoldLevel;
         AZStd::function<void(int)> m_onDecFoldLevel;

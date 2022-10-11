@@ -233,7 +233,7 @@ namespace O3DE::ProjectManager
     {
         if (m_stack->currentWidget() == m_newProjectSettingsScreen)
         {
-            return m_newProjectSettingsScreen->Validate();
+            return m_newProjectSettingsScreen->Validate().IsSuccess();
         }
 
         return true;
@@ -241,7 +241,8 @@ namespace O3DE::ProjectManager
 
     void CreateProjectCtrl::CreateProject()
     {
-        if (m_newProjectSettingsScreen->Validate())
+        AZ::Outcome<void, QString> settingsValidation = m_newProjectSettingsScreen->Validate();
+        if (settingsValidation.IsSuccess())
         {
             if (!m_projectGemCatalogScreen->GetDownloadController()->IsDownloadQueueEmpty())
             {
@@ -279,8 +280,16 @@ namespace O3DE::ProjectManager
         }
         else
         {
-            QMessageBox::warning(
-                this, tr("Invalid project settings"), tr("Please correct the indicated project settings and try again."));
+            const QString& errorMessage = settingsValidation.GetError();
+            if (errorMessage.isEmpty())
+            {
+                QMessageBox::warning(
+                    this, tr("Invalid project settings"), tr("Please correct the indicated project settings and try again."));
+            }
+            else
+            {
+                QMessageBox::warning(this, tr("Invalid project settings"), errorMessage);
+            }
         }
     }
 

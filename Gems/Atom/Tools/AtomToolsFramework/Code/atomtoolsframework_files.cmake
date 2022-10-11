@@ -98,6 +98,8 @@ set(FILES
     Include/AtomToolsFramework/GraphView/GraphView.h
     Include/AtomToolsFramework/GraphView/GraphViewConfig.h
     Source/GraphView/GraphView.cpp
+    Source/GraphView/GraphView.qrc
+    Source/GraphView/GraphView.qss
 
     Include/AtomToolsFramework/Inspector/InspectorGroupHeaderWidget.h
     Include/AtomToolsFramework/Inspector/InspectorGroupWidget.h
@@ -111,6 +113,8 @@ set(FILES
     Source/Inspector/InspectorWidget.cpp
     Source/Inspector/InspectorWidget.qrc
     Source/Inspector/InspectorWidget.ui
+    Source/Inspector/PropertyWidgets/PropertyStringBrowseEditCtrl.cpp
+    Source/Inspector/PropertyWidgets/PropertyStringBrowseEditCtrl.h
 
     Include/AtomToolsFramework/PerformanceMonitor/PerformanceMetrics.h
     Include/AtomToolsFramework/PerformanceMonitor/PerformanceMonitorRequestBus.h

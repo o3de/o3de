@@ -54,15 +54,4 @@ namespace AZStd
         timeNowSecond =  ts.tv_sec;
         return timeNowSecond;
     }
-
-    AZ::u64 GetTimeUTCMilliSecond()
-    {
-        AZ::u64 utc;
-        struct timespec ts;
-        int result = clock_gettime(CLOCK_REALTIME, &ts);
-        (void)result;
-        AZ_Assert(result != -1, "clock_gettime error %s\n", strerror(errno));
-        utc =  ts.tv_sec * 1000L +  ts.tv_nsec / 1000000L;
-        return utc;
-    }
 }

@@ -48,8 +48,15 @@ namespace AZ::Render
 
     void EditorStatePassSystem::AddPassesToRenderPipeline(RPI::RenderPipeline* renderPipeline)
     {
+        const auto templateName = Name(MainPassParentTemplateName);
+        if (RPI::PassSystemInterface::Get()->GetPassTemplate(templateName))
+        {
+            // Template was created by another pipeline, do not to create again
+            return;
+        }
+
         auto mainParentPassTemplate = AZStd::make_shared<RPI::PassTemplate>();
-        mainParentPassTemplate->m_name = Name(MainPassParentTemplateName);
+        mainParentPassTemplate->m_name = templateName;
         mainParentPassTemplate->m_passClass = Name(MainPassParentTemplatePassClassName);
         
         // Input depth slot

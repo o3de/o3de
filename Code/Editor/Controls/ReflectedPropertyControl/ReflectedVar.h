@@ -388,11 +388,9 @@ public:
     AZ_RTTI(CReflectedVarMotion, "{66397EFB-620A-40B8-8C66-D6AECF690DF5}", CReflectedVar)
 
     CReflectedVarMotion(const AZStd::string& name)
-        : CReflectedVar(name)
-        , m_assetId(0) {}
+        : CReflectedVar(name) {}
 
-    CReflectedVarMotion()
-        : m_assetId(0) {}
+    CReflectedVarMotion() = default;
 
     AZStd::string varName() const { return m_varName; }
     AZStd::string description() const { return m_description; }

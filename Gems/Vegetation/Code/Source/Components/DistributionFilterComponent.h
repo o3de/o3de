@@ -40,7 +40,7 @@ namespace Vegetation
         GradientSignal::GradientSampler* GetSampler();
     };
 
-    static const AZ::Uuid DistributionFilterComponentTypeId = "{7A1D2AB7-2F32-4CBE-B7F1-2C08D427BE50}";
+    inline constexpr AZ::TypeId DistributionFilterComponentTypeId{ "{7A1D2AB7-2F32-4CBE-B7F1-2C08D427BE50}" };
 
     /**
     * Component implementing VegetationFilterRequestBus that accepts/rejects based on noise generator passing threshold

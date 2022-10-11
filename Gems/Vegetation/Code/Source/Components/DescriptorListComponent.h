@@ -50,7 +50,7 @@ namespace Vegetation
         void AddDescriptor(Descriptor* descriptor);
     };
 
-    static const AZ::Uuid DescriptorListComponentTypeId = "{8427ED43-9B1F-497F-A356-0FD9AADD2FDB}";
+    inline constexpr AZ::TypeId  DescriptorListComponentTypeId{ "{8427ED43-9B1F-497F-A356-0FD9AADD2FDB}" };
 
     /**
     * Default placement logic for vegetation in an area

@@ -49,6 +49,7 @@ namespace MaterialCanvas
         void OnDocumentOpened(const AZ::Uuid& documentId) override;
 
         // AtomToolsFramework::AtomToolsDocumentMainWindow overrides...
+        AZStd::vector<AZStd::shared_ptr<AtomToolsFramework::DynamicPropertyGroup>> GetSettingsDialogGroups() const override;
         AZStd::string GetHelpDialogText() const override;
 
     private:

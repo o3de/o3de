@@ -37,6 +37,10 @@ namespace EMotionFX
                 SceneEvents::ProcessingResult UpdateManifest(SceneContainers::Scene& scene, ManifestAction action,
                     RequestingApplication requester) override;
 
+                void GetPolicyName(AZStd::string& result) const override
+                {
+                    result = "SkeletonOptimizationRuleBehavior";
+                }
             private:
                 AZ::SceneAPI::Events::ProcessingResult UpdateSelection(AZ::SceneAPI::Containers::Scene& scene) const;
             };
