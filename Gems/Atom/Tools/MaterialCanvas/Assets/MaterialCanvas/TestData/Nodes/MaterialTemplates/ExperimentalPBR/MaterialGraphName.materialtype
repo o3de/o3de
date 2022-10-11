@@ -6,10 +6,10 @@
             "file": "./MaterialGraphName_ForwardPass.shader"
         },
         {
-            "file": "Shaders/Shadow/Shadowmap.shader"
+            "file": "./MaterialGraphName_ShadowPass.shader"
         },
         {
-            "file": "Shaders/Depth/DepthPass.shader"
+            "file": "./MaterialGraphName_DepthPass.shader"
         }
     ],
     "functors": [
