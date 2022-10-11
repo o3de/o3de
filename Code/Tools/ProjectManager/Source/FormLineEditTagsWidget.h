@@ -42,7 +42,7 @@ namespace O3DE::ProjectManager
         explicit FormLineEditTagsWidget(const QString& labelText, const QString& valueText = "", QWidget* parent = nullptr);
         ~FormLineEditTagsWidget() = default;
 
-        QStringList getTags()
+        const QStringList getTags()
         {
             return m_tags;
         }
