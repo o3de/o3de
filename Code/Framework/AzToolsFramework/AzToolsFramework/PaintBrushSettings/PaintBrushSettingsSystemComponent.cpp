@@ -56,6 +56,11 @@ namespace AzToolsFramework
         return m_settings.GetOpacity();
     }
 
+    PaintBrushBlendMode PaintBrushSettingsSystemComponent::GetBlendMode() const
+    {
+        return m_settings.GetBlendMode();
+    }
+
     void PaintBrushSettingsSystemComponent::SetRadius(float radius)
     {
         m_settings.SetRadius(radius);
@@ -69,5 +74,10 @@ namespace AzToolsFramework
     void PaintBrushSettingsSystemComponent::SetOpacity(float opacity)
     {
         m_settings.SetOpacity(opacity);
+    }
+
+    void PaintBrushSettingsSystemComponent::SetBlendMode(PaintBrushBlendMode blendMode)
+    {
+        m_settings.SetBlendMode(blendMode);
     }
 } // namespace AzToolsFramework

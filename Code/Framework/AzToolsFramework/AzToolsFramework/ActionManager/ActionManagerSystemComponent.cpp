@@ -84,6 +84,8 @@ namespace AzToolsFramework
         AzToolsFramework::ActionManagerRegistrationNotificationBus::Broadcast(
             &AzToolsFramework::ActionManagerRegistrationNotifications::OnActionContextRegistrationHook);
         AzToolsFramework::ActionManagerRegistrationNotificationBus::Broadcast(
+            &AzToolsFramework::ActionManagerRegistrationNotifications::OnActionContextModeRegistrationHook);
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Broadcast(
             &AzToolsFramework::ActionManagerRegistrationNotifications::OnActionUpdaterRegistrationHook);
         AzToolsFramework::ActionManagerRegistrationNotificationBus::Broadcast(
             &AzToolsFramework::ActionManagerRegistrationNotifications::OnMenuBarRegistrationHook);
