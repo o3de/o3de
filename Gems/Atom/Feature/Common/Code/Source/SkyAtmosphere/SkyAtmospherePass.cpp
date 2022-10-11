@@ -111,6 +111,7 @@ namespace AZ::Render
 
             bindImageToSlot(m_transmittanceLUTImage, Name("SkyTransmittanceLUTOutput"), Name("SkyTransmittanceLUTPass"));
             bindImageToSlot(m_transmittanceLUTImage, Name("SkyTransmittanceLUTInput"), Name("SkyViewLUTPass"));
+            bindImageToSlot(m_transmittanceLUTImage, Name("SkyTransmittanceLUTInput"), Name("SkyVolumeLUTPass"));
             bindImageToSlot(m_transmittanceLUTImage, Name("SkyTransmittanceLUTInput"), Name("SkyRayMarchingPass"));
         }
 
@@ -127,6 +128,22 @@ namespace AZ::Render
 
             bindImageToSlot(m_skyViewLUTImage, Name("SkyViewLUTOutput"), Name("SkyViewLUTPass"));
             bindImageToSlot(m_skyViewLUTImage, Name("SkyViewLUTInput"), Name("SkyRayMarchingPass"));
+        }
+
+        {
+            // create and bind sky volume LUT
+            constexpr AZ::u32 width = 32;
+            constexpr AZ::u32 height = 32;
+            constexpr AZ::u32 depth = 32;
+            RHI::ImageDescriptor imageDesc = RHI::ImageDescriptor::Create3D(
+                RHI::ImageBindFlags::Color | RHI::ImageBindFlags::ShaderReadWrite, width, height, depth, RHI::Format::R16G16B16A16_FLOAT);
+            if (!m_skyVolumeLUTImage)
+            {
+                CreateImage(Name("SkyVolumeLUTImageAttachment"), imageDesc, m_skyVolumeLUTImage);
+            }
+
+            bindImageToSlot(m_skyViewLUTImage, Name("SkyVolumeLUTOutput"), Name("SkyVolumeLUTPass"));
+            bindImageToSlot(m_skyViewLUTImage, Name("SkyVolumeLUTInput"), Name("SkyRayMarchingPass"));
         }
     }
 
@@ -355,6 +372,7 @@ namespace AZ::Render
     {
         m_transmittanceLUTImage.reset();
         m_skyViewLUTImage.reset();
+        m_skyVolumeLUTImage.reset();
         m_atmospherePassData.clear();
 
         Base::ResetInternal();

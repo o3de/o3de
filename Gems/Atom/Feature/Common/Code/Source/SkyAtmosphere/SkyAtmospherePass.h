@@ -109,6 +109,7 @@ namespace AZ::Render
 
         ImageInstance m_transmittanceLUTImage;
         ImageInstance m_skyViewLUTImage;
+        ImageInstance m_skyVolumeLUTImage;
 
         RHI::ShaderInputNameIndex m_constantsIndexName = "m_constants";
 
@@ -121,6 +122,7 @@ namespace AZ::Render
         AZStd::vector<AtmospherePassData> m_atmospherePassData;
 
         RPI::Ptr<RPI::Pass> m_skyTransmittanceLUTPass = nullptr;
+        RPI::Ptr<RPI::Pass> m_skyVolumeLUTPass = nullptr;
 
         AtmosphereGPUParams m_constants;
         SkyAtmosphereParams m_atmosphereParams;
