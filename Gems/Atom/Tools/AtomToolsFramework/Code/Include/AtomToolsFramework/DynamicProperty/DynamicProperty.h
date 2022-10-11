@@ -18,7 +18,7 @@ namespace AtomToolsFramework
 {
     enum class DynamicPropertyType : uint32_t
     {
-        Invalid,
+        Unspecified,
 
         Bool,
         Int,
@@ -42,7 +42,7 @@ namespace AtomToolsFramework
         AZ_TYPE_INFO(DynamicPropertyConfig, "{9CA40E92-7F03-42BE-B6AA-51F30EE5796C}");
         AZ_CLASS_ALLOCATOR(DynamicPropertyConfig, AZ::SystemAllocator, 0);
 
-        DynamicPropertyType m_dataType = DynamicPropertyType::Invalid;
+        DynamicPropertyType m_dataType = DynamicPropertyType::Unspecified;
         AZ::Name m_id; //!< The full property ID, which will normally be "groupName.propertyName"
         AZStd::string m_name;
         AZStd::string m_displayName;

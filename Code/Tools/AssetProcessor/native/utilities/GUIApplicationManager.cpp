@@ -699,7 +699,7 @@ FileServer* GUIApplicationManager::GetFileServer() const
 
 void GUIApplicationManager::ShowTrayIconErrorMessage(QString msg)
 {
-    AZStd::chrono::system_clock::time_point currentTime = AZStd::chrono::system_clock::now();
+    AZStd::chrono::steady_clock::time_point currentTime = AZStd::chrono::steady_clock::now();
 
     if (m_trayIcon && m_mainWindow)
     {

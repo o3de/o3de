@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Math/MathUtils.h>
 #include <Material/BlastMaterial.h>
 
 namespace Blast

@@ -31,10 +31,6 @@ namespace GradientSignal
                 ->Field("OutputImagePath", &EditorImageGradientComponent::m_outputImagePath)
                 ->Field("Configuration", &EditorImageGradientComponent::m_configuration)
                 ->Field("ComponentMode", &EditorImageGradientComponent::m_componentModeDelegate)
-                // For now, we need to serialize the paint brush settings so that they can be displayed via the EditContext
-                // while in the component mode. This can eventually be removed if we add support for paint brush settting
-                // modifications in-viewport.
-                ->Field("PaintBrush", &EditorImageGradientComponent::m_paintBrush)
                 ;
 
             if (auto editContext = serializeContext->GetEditContext())
@@ -153,14 +149,6 @@ namespace GradientSignal
                         "Paint Image", "Paint into an image asset")
                         ->Attribute(AZ::Edit::Attributes::ButtonText, "Paint")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &EditorImageGradientComponent::GetPaintModeVisibility)
-
-                    // For now, we need to display the paint brush settings here to make them editable while we're in component mode.
-                    // If we ever provide in-viewport editing for the properties, this can be removed.
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &EditorImageGradientComponent::m_paintBrush,
-                        "Paint Brush", "Paint Brush Properties")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &EditorImageGradientComponent::InComponentMode)
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorImageGradientComponent::PaintBrushSettingsChanged)
                     ;
             }
         }
@@ -241,17 +229,10 @@ namespace GradientSignal
         auto entityComponentIdPair = AZ::EntityComponentIdPair(GetEntityId(), GetId());
         m_componentModeDelegate.ConnectWithSingleComponentMode<EditorImageGradientComponent, EditorImageGradientComponentMode>(
             entityComponentIdPair, nullptr);
-
-        // The PaintBrushNotificationBus is needed so that we can keep our viewable / editable paint brush settings in sync
-        // with the ones on the brush manipulator itself.
-        AzToolsFramework::PaintBrushNotificationBus::Handler::BusConnect(entityComponentIdPair);
-
     }
 
     void EditorImageGradientComponent::Deactivate()
     {
-        AzToolsFramework::PaintBrushNotificationBus::Handler::BusDisconnect();
-
         m_componentModeDelegate.Disconnect();
 
         m_currentImageAssetStatus = AZ::Data::AssetData::AssetStatus::NotLoaded;
@@ -435,18 +416,6 @@ namespace GradientSignal
 
     AZ::Crc32 EditorImageGradientComponent::GetPaintModeVisibility() const
     {
-        // temporary setting to disable this feature unless the registry key is set.
-        if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get())
-        {
-            constexpr AZStd::string_view ImageGradientPaintFeature = "/O3DE/Preferences/ImageGradient/PaintFeature";
-            bool hasPaintFeature = false;
-            settingsRegistry->Get(hasPaintFeature, ImageGradientPaintFeature);
-            if (!hasPaintFeature)
-            {
-                return AZ::Edit::PropertyVisibility::Hide;
-            }
-        }
-
         // Only show the image painting button while we're using an image, not while we're creating one.
         return ((GetImageOptionsVisibility() != AZ::Edit::PropertyVisibility::Hide)
                 && m_configuration.m_imageAsset.IsReady()
@@ -495,44 +464,6 @@ namespace GradientSignal
     {
         return m_componentModeDelegate.AddedToComponentMode();
     }
-
-    void EditorImageGradientComponent::OnIntensityChanged(float intensity)
-    {
-        // Any time the paint brush manipulator changes a brush setting, keep our displayed settings in sync with it.
-        m_paintBrush.m_intensity = intensity;
-    }
-
-    void EditorImageGradientComponent::OnOpacityChanged(float opacity)
-    {
-        // Any time the paint brush manipulator changes a brush setting, keep our displayed settings in sync with it.
-        m_paintBrush.m_opacity = opacity;
-    }
-
-    void EditorImageGradientComponent::OnRadiusChanged(float radius)
-    {
-        // Any time the paint brush manipulator changes a brush setting, keep our displayed settings in sync with it.
-        m_paintBrush.m_radius = radius;
-    }
-
-    AZ::u32 EditorImageGradientComponent::PaintBrushSettingsChanged()
-    {
-        // Any time a paint brush setting is edited via the component UX, broadcast it out so that the paint brush manipulator
-        // stays in sync with it.
-
-        auto entityComponentIdPair = AZ::EntityComponentIdPair(GetEntityId(), GetId());
-
-        AzToolsFramework::PaintBrushRequestBus::Event(
-            entityComponentIdPair, &AzToolsFramework::PaintBrushRequestBus::Events::SetRadius, m_paintBrush.m_radius);
-
-        AzToolsFramework::PaintBrushRequestBus::Event(
-            entityComponentIdPair, &AzToolsFramework::PaintBrushRequestBus::Events::SetIntensity, m_paintBrush.m_intensity);
-
-        AzToolsFramework::PaintBrushRequestBus::Event(
-            entityComponentIdPair, &AzToolsFramework::PaintBrushRequestBus::Events::SetOpacity, m_paintBrush.m_opacity);
-
-        return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
-    }
-
 
     bool EditorImageGradientComponent::GetSaveLocation(AZ::IO::Path& fullPath, AZStd::string& relativePath)
     {
@@ -698,7 +629,7 @@ namespace GradientSignal
         auto createdAsset = AZ::Data::AssetManager::Instance().FindOrCreateAsset(
             AZ::Data::AssetId(sourceInfo.m_assetId.m_guid, AZ::RPI::StreamingImageAsset::GetImageAssetSubId()),
             azrtti_typeid<AZ::RPI::StreamingImageAsset>(),
-            AZ::Data::AssetLoadBehavior::QueueLoad);
+            AZ::Data::AssetLoadBehavior::PreLoad);
 
         // Set the asset hint to the source path so that we can display something reasonably correct in the component while waiting
         // for the product asset to get created.

@@ -310,15 +310,12 @@ namespace GraphCanvas
             m_comboBox = aznew GraphCanvasComboBox(m_dataInterface->GetItemInterface());
             m_comboBox->setContextMenuPolicy(Qt::CustomContextMenu);
 
-            QObject::connect(m_comboBox, &AzToolsFramework::PropertyEntityIdCtrl::customContextMenuRequested, [this](const QPoint& pos) { this->ShowContextMenu(pos); });
-
-            QObject::connect(m_comboBox, &GraphCanvasComboBox::SelectedIndexChanged, [this](const QModelIndex& /*index*/) { this->m_valueDirty = true; });
-
-            QObject::connect(m_comboBox, &GraphCanvasComboBox::OnFocusIn, [this]() { this->EditStart();  });
-            QObject::connect(m_comboBox, &GraphCanvasComboBox::OnFocusOut, [this]() { this->EditFinished();  });
-            QObject::connect(m_comboBox, &GraphCanvasComboBox::OnMenuAboutToDisplay, [this]() { this->OnMenuAboutToDisplay(); });
-
-            QObject::connect(m_comboBox, &GraphCanvasComboBox::OnUserActionComplete, [this]() { this->SubmitValue();  });
+            QObject::connect(m_comboBox, &AzToolsFramework::PropertyEntityIdCtrl::customContextMenuRequested, [this](const QPoint& pos) { ShowContextMenu(pos); });
+            QObject::connect(m_comboBox, &GraphCanvasComboBox::SelectedIndexChanged, [this](const QModelIndex& /*index*/) { m_valueDirty = true; });
+            QObject::connect(m_comboBox, &GraphCanvasComboBox::OnFocusIn, [this]() { EditStart(); });
+            QObject::connect(m_comboBox, &GraphCanvasComboBox::OnFocusOut, [this]() { EditFinished(); });
+            QObject::connect(m_comboBox, &GraphCanvasComboBox::OnUserActionComplete, [this]() { SubmitValue(); });
+            QObject::connect(m_comboBox, &GraphCanvasComboBox::OnMenuAboutToDisplay, [this]() { OnMenuAboutToDisplay(); });
 
             m_proxyWidget->setWidget(m_comboBox);
 
@@ -359,6 +356,7 @@ namespace GraphCanvas
 
             m_menuDisplayDirty = false;
 
+            ViewNotificationBus::Handler::BusDisconnect();
             GeometryNotificationBus::Handler::BusDisconnect(GetNodeId());
         }
     }

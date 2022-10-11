@@ -29,7 +29,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString ImageGradientNode::TITLE = QObject::tr("Image");
+    const char* ImageGradientNode::TITLE = "Image";
 
     ImageGradientNode::ImageGradientNode(GraphModel::GraphPtr graph)
         : BaseGradientNode(graph)

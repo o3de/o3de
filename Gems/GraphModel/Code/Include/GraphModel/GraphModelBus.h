@@ -109,6 +109,9 @@ namespace GraphModelIntegration
         //! This results in a no-op if node isn't actually wrapped on the wrapperNode
         virtual void UnwrapNode(GraphModel::NodePtr wrapperNode, GraphModel::NodePtr node) = 0;
 
+        //! Return if the specified node is a wrapped node
+        virtual bool IsNodeWrapped(GraphModel::NodePtr node) const = 0;
+
         //! Set the action string for the specified node (used by wrapper nodes for
         //! setting the action widget label)
         virtual void SetWrapperNodeActionString(GraphModel::NodePtr node, const char* actionString) = 0;
@@ -122,6 +125,13 @@ namespace GraphModelIntegration
             GraphModel::SlotId sourceSlotId,
             GraphModel::NodePtr targetNode,
             GraphModel::SlotId targetSlotId) = 0;
+
+        //! Check if there is a connection between the specified source and target specified slots
+        virtual bool AreSlotsConnected(
+            GraphModel::NodePtr sourceNode,
+            GraphModel::SlotId sourceSlotId,
+            GraphModel::NodePtr targetNode,
+            GraphModel::SlotId targetSlotId) const = 0;
 
         //! Remove the specified connection
         virtual bool RemoveConnection(GraphModel::ConnectionPtr connection) = 0;
@@ -211,11 +221,18 @@ namespace GraphModelIntegration
         //! A connection has been removed from the scene.
         virtual void OnGraphModelConnectionRemoved(GraphModel::ConnectionPtr /*connection*/){};
 
+        //! The specified node is about to be wrapped (embedded) onto the wrapperNode
+        virtual void PreOnGraphModelNodeWrapped([[maybe_unused]] GraphModel::NodePtr wrapperNode, [[maybe_unused]] GraphModel::NodePtr node) {};
+
         //! The specified node has been wrapped (embedded) onto the wrapperNode
         virtual void OnGraphModelNodeWrapped(GraphModel::NodePtr /*wrapperNode*/, GraphModel::NodePtr /*node*/){};
 
         //! The specified node has been unwrapped (removed) from the wrapperNode
         virtual void OnGraphModelNodeUnwrapped(GraphModel::NodePtr /*wrapperNode*/, GraphModel::NodePtr /*node*/){};
+
+        //! Sent whenever a graph model slot value changes
+        //! \param slot The slot that was modified in the graph.
+        virtual void OnGraphModelSlotModified(GraphModel::SlotPtr slot){};
 
         //! Something in the graph has been modified
         //! \param node The node that was modified in the graph.  If this is nullptr, some metadata on the graph itself was modified

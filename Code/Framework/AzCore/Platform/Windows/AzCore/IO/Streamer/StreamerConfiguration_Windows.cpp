@@ -12,6 +12,7 @@
 #include <AzCore/IO/Streamer/StreamerConfiguration_Windows.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Settings/SettingsRegistryVisitorUtils.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
@@ -231,64 +232,27 @@ namespace AZ::IO
 
     }
 
-    static bool IsDriveUsed(AZStd::string_view driveId)
+    static bool IsDriveUsed(AZ::IO::PathView driveId)
     {
-        struct PathVisitor : SettingsRegistryInterface::Visitor
+        bool driveFound{};
+        auto IsDriveInUse = [&driveId, &driveFound](const AZ::SettingsRegistryInterface::VisitArgs& visitArgs)
         {
-            ~PathVisitor() override = default;
-
-            AZStd::string_view m_driveId;
-            bool m_firstObject = true;
-            bool m_found = false;
-
-            SettingsRegistryInterface::VisitResponse Traverse([[maybe_unused]] AZStd::string_view path,
-                [[maybe_unused]] AZStd::string_view valueName, [[maybe_unused]] SettingsRegistryInterface::VisitAction action,
-                [[maybe_unused]] SettingsRegistryInterface::Type type) override
+            AZ::IO::FixedMaxPath runtimePath;
+            if (visitArgs.m_registry.Get(runtimePath.Native(), visitArgs.m_jsonKeyPath) && runtimePath.RootName() == driveId)
             {
-                if (m_found)
-                {
-                    return SettingsRegistryInterface::VisitResponse::Done;
-                }
-
-                if (type == SettingsRegistryInterface::Type::Object)
-                {
-                    if (m_firstObject)
-                    {
-                        m_firstObject = false;
-                        return SettingsRegistryInterface::VisitResponse::Continue;
-                    }
-                    else
-                    {
-                        return SettingsRegistryInterface::VisitResponse::Skip;
-                    }
-                }
-
-                return type == SettingsRegistryInterface::Type::String ?
-                    SettingsRegistryInterface::VisitResponse::Continue : SettingsRegistryInterface::VisitResponse::Skip;
+                // Halt iteration if there exist O3DE is using a path from the drive
+                driveFound = true;
+                return AZ::SettingsRegistryInterface::VisitResponse::Done;
             }
 
-            using SettingsRegistryInterface::Visitor::Visit;
-            void Visit([[maybe_unused]] AZStd::string_view path, [[maybe_unused]] AZStd::string_view valueName,
-                [[maybe_unused]] AZ::SettingsRegistryInterface::Type type, AZStd::string_view value) override
-            {
-                constexpr bool caseSensitive = false;
-                if (AZ::StringFunc::StartsWith(value, m_driveId, caseSensitive))
-                {
-                    m_found = true;
-                }
-            }
+            return AZ::SettingsRegistryInterface::VisitResponse::Skip;
         };
-        PathVisitor visitor;
-        visitor.m_driveId = driveId;
-        if (driveId.back() == AZ_CORRECT_FILESYSTEM_SEPARATOR || driveId.back() == AZ_WRONG_FILESYSTEM_SEPARATOR)
-        {
-            visitor.m_driveId.remove_suffix(1);
-        }
+
 
         auto settingsRegistry = SettingsRegistry::Get();
-        settingsRegistry->Visit(visitor, SettingsRegistryMergeUtils::FilePathsRootKey);
+        AZ::SettingsRegistryVisitorUtils::VisitObject(*settingsRegistry, IsDriveInUse, SettingsRegistryMergeUtils::FilePathsRootKey);
 
-        return visitor.m_found;
+        return driveFound;
     }
 
     static bool CollectHardwareInfo(HardwareInformation& hardwareInfo, bool addAllDrives, bool reportHardware)
@@ -301,6 +265,7 @@ namespace AZ::IO
             do
             {
                 UINT driveType = ::GetDriveTypeA(driveIt);
+                AZ::IO::PathView driveRootName = AZ::IO::PathView(driveIt).RootName();
                 // Only a selective set of devices that share similar behavior are supported, in particular
                 // drives that have magnetic or solid state storage. All types of buses (usb, sata, etc)
                 // are supported except network drives. If network support is needed it's better to use the
@@ -308,7 +273,7 @@ namespace AZ::IO
                 // on any platform for games, as games are expected to be downloaded or installed to storage.
                 if (driveType == DRIVE_FIXED || driveType == DRIVE_REMOVABLE || driveType == DRIVE_RAMDISK)
                 {
-                    if (!addAllDrives && !IsDriveUsed(driveIt))
+                    if (!addAllDrives && !IsDriveUsed(driveRootName))
                     {
                         if (reportHardware)
                         {
@@ -319,8 +284,7 @@ namespace AZ::IO
                     }
 
                     AZStd::string deviceName = R"(\\.\)";
-                    deviceName += driveIt;
-                    deviceName.erase(deviceName.length() - 1); // Erase the slash.
+                    deviceName += driveRootName.Native();
 
                     HANDLE deviceHandle = ::CreateFileA(
                         deviceName.c_str(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr);

@@ -8,6 +8,19 @@
                 "Key": 1,
                 "Value": {
                     "$type": "DynamicNode",
+                    "m_propertySlots": [
+                        {
+                            "Key": {
+                                "m_name": "inDescription"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": ""
+                                }
+                            }
+                        }
+                    ],
                     "m_inputDataSlots": [
                         {
                             "Key": {
@@ -94,7 +107,7 @@
                     "toolId": {
                         "Value": 2034248906
                     },
-                    "configId": "{E1C4E4F9-94E9-46F2-920B-011F2B4BE502}"
+                    "configId": "{B352A2E4-D6A6-4178-9406-57716051024F}"
                 }
             },
             {

@@ -5,7 +5,7 @@
     "ClassData": {
         "id": "{7EFA6DFB-263B-47D6-AE3E-D68CE909CEBD}",
         "category": "Math Functions",
-        "title": "Split 2",
+        "title": "split2",
         "inputSlots": [
             {
                 "name": "inValue",

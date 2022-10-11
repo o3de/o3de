@@ -27,7 +27,7 @@ namespace AzToolsFramework
                 {
                     while (instancePtr != targetInstance && instancePtr->HasParentInstance())
                     {
-                        result.m_climbedInstances.emplace_back(*instancePtr);
+                        result.m_climbedInstances.emplace_back(instancePtr);
                         instancePtr = &(instancePtr->GetParentInstance()->get());
                     }
                 }
@@ -36,7 +36,7 @@ namespace AzToolsFramework
                     // Returns the root.
                     while (instancePtr->HasParentInstance())
                     {
-                        result.m_climbedInstances.emplace_back(*instancePtr);
+                        result.m_climbedInstances.emplace_back(instancePtr);
                         instancePtr = &(instancePtr->GetParentInstance()->get());
                     }
                 }
@@ -48,12 +48,12 @@ namespace AzToolsFramework
             AZStd::string GetRelativePathBetweenInstances(const Instance& parentInstance, const Instance& childInstance)
             {
                 const Instance* instancePtr = &childInstance;
-                AZStd::vector<InstanceOptionalConstReference> climbedInstances;
+                AZStd::vector<const Instance*> climbedInstances;
 
                 // Climbs up the instance hierarchy from the child instance until it hits the parent instance.
                 while (instancePtr != &parentInstance && instancePtr->HasParentInstance())
                 {
-                    climbedInstances.emplace_back(*instancePtr);
+                    climbedInstances.emplace_back(instancePtr);
                     instancePtr = &(instancePtr->GetParentInstance()->get());
                 }
 
@@ -67,15 +67,14 @@ namespace AzToolsFramework
                 return GetRelativePathFromClimbedInstances(climbedInstances);
             }
 
-            AZStd::string GetRelativePathFromClimbedInstances(const AZStd::vector<InstanceOptionalConstReference>& climbedInstances)
+            AZStd::string GetRelativePathFromClimbedInstances(const AZStd::vector<const Instance*>& climbedInstances)
             {
                 AZStd::string relativePath = "";
 
                 for (auto instanceIter = climbedInstances.rbegin(); instanceIter != climbedInstances.rend(); ++instanceIter)
                 {
                     relativePath.append(PrefabDomUtils::PathStartingWithInstances);
-                    const Instance& instance = (*instanceIter)->get();
-                    relativePath.append(instance.GetInstanceAlias());
+                    relativePath.append((*instanceIter)->GetInstanceAlias());
                 }
 
                 return relativePath;

@@ -92,8 +92,14 @@ set(FILES
     Source/AdjustableHeaderWidget.cpp
     Source/AddRemoteProjectDialog.h
     Source/AddRemoteProjectDialog.cpp
+    Source/AddRemoteTemplateDialog.h
+    Source/AddRemoteTemplateDialog.cpp
+    Source/DownloadRemoteTemplateDialog.h
+    Source/DownloadRemoteTemplateDialog.cpp
     Source/TextOverflowWidget.h
     Source/TextOverflowWidget.cpp
+    Source/CreateAGemScreen.h
+    Source/CreateAGemScreen.cpp
     Source/GemCatalog/GemCatalogHeaderWidget.h
     Source/GemCatalog/GemCatalogHeaderWidget.cpp
     Source/GemCatalog/GemCatalogScreen.h

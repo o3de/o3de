@@ -85,7 +85,7 @@ namespace Multiplayer
     AZ_CVAR(uint16_t, cl_serverport, DefaultServerPort, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The port of the remote host to connect to for game traffic");
     AZ_CVAR(uint16_t, sv_port, DefaultServerPort, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The port that this multiplayer gem will bind to for game traffic");
     AZ_CVAR(uint16_t, sv_portRange, 999, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The range of ports the host will incrementally attempt to bind to when initializing");
-    AZ_CVAR(AZ::CVarFixedString, sv_map, "nolevel", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The map the server should load");
+    AZ_CVAR(AZ::CVarFixedString, sv_map, "", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The map the server should load");
     AZ_CVAR(ProtocolType, sv_protocol, ProtocolType::Udp, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "This flag controls whether we use TCP or UDP for game networking");
     AZ_CVAR(bool, sv_isDedicated, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether the host command creates an independent or client hosted server");
     AZ_CVAR(bool, sv_isTransient, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether a dedicated server shuts down if all existing connections disconnect.");
@@ -98,6 +98,7 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::Reflect(AZ::ReflectContext* context)
     {
+        NetworkSpawnable::Reflect(context);
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<MultiplayerSystemComponent, AZ::Component>()
@@ -229,6 +230,7 @@ namespace Multiplayer
         AzFramework::RootSpawnableNotificationBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
         SessionNotificationBus::Handler::BusConnect();
+        AzFramework::LevelSystemLifecycleRequestBus::Handler::BusConnect();
         const AZ::Name interfaceName = AZ::Name(MpNetworkInterfaceName);
         m_networkInterface = AZ::Interface<INetworking>::Get()->CreateNetworkInterface(interfaceName, sv_protocol, TrustZone::ExternalClientToServer, *this);
 
@@ -254,6 +256,7 @@ namespace Multiplayer
         m_consoleCommandHandler.Disconnect();
         const AZ::Name interfaceName = AZ::Name(MpNetworkInterfaceName);
         AZ::Interface<INetworking>::Get()->DestroyNetworkInterface(interfaceName);
+        AzFramework::LevelSystemLifecycleRequestBus::Handler::BusDisconnect();
         SessionNotificationBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
         AzFramework::RootSpawnableNotificationBus::Handler::BusDisconnect();
@@ -263,6 +266,11 @@ namespace Multiplayer
 
     bool MultiplayerSystemComponent::StartHosting(uint16_t port, bool isDedicated)
     {
+        if (port == UseDefaultHostPort)
+        {
+            port = sv_port;
+        }
+
         if (port != sv_port)
         {
             sv_port = port;
@@ -622,6 +630,15 @@ namespace Multiplayer
             }
         }
 
+        if (static_cast<AZ::CVarFixedString>(sv_map).empty())
+        {
+            AZLOG_WARN("Server does not have a multiplayer level loaded! Make sure the server has a level loaded before accepting clients.");
+            m_noServerLevelLoadedEvent.Signal();
+
+            connection->Disconnect(DisconnectReason::ServerNoLevelLoaded, TerminationEndpoint::Local);
+            return true;
+        }
+
         if (connection->SendReliablePacket(MultiplayerPackets::Accept(sv_map)))
         {
             reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->SetDidHandshake(true);
@@ -643,13 +660,14 @@ namespace Multiplayer
         [[maybe_unused]] MultiplayerPackets::Accept& packet
     )
     {
-        reinterpret_cast<ClientToServerConnectionData*>(connection->GetUserData())->SetDidHandshake(true);
+        reinterpret_cast<IConnectionData*>(connection->GetUserData())->SetDidHandshake(true);
         if (m_temporaryUserIdentifier == 0)
         {
-            AZ::CVarFixedString commandString = "sv_map " + packet.GetMap();
-            AZ::Interface<AZ::IConsole>::Get()->PerformCommand(commandString.c_str());
+            sv_map = packet.GetMap().c_str();
             AZ::CVarFixedString loadLevelString = "LoadLevel " + packet.GetMap();
+            m_blockClientLoadLevel = false;
             AZ::Interface<AZ::IConsole>::Get()->PerformCommand(loadLevelString.c_str());
+            m_blockClientLoadLevel = true;
         }
         else
         {
@@ -878,6 +896,12 @@ namespace Multiplayer
         if (m_agentType == MultiplayerAgentType::Client)
         {
             AZ_Assert(connection->GetConnectionRole() == ConnectionRole::Connector, "Client connection role should only ever be Connector");
+
+            if (reason == DisconnectReason::ServerNoLevelLoaded)
+            {
+                AZLOG_WARN("Server did not provide a valid level to load! Make sure the server has a level loaded before connecting.");
+                m_noServerLevelLoadedEvent.Signal();
+            }
         }
         else if (m_agentType == MultiplayerAgentType::DedicatedServer || m_agentType == MultiplayerAgentType::ClientServer)
         {
@@ -1075,6 +1099,16 @@ namespace Multiplayer
     void MultiplayerSystemComponent::AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler)
     {
         handler.Connect(m_shutdownEvent);
+    }
+
+    void MultiplayerSystemComponent::AddLevelLoadBlockedHandler(LevelLoadBlockedEvent::Handler& handler)
+    {
+        handler.Connect(m_levelLoadBlockedEvent);
+    }
+
+    void MultiplayerSystemComponent::AddNoServerLevelLoadedHandler(NoServerLevelLoadedEvent::Handler& handler)
+    {
+        handler.Connect(m_noServerLevelLoadedEvent);
     }
 
     void MultiplayerSystemComponent::SendNotifyClientMigrationEvent(AzNetworking::ConnectionId connectionId, const HostId& hostId, uint64_t userIdentifier, ClientInputId lastClientInputId, NetEntityId controlledEntityId)
@@ -1356,6 +1390,62 @@ namespace Multiplayer
         }
 
         m_playersWaitingToBeSpawned.clear();
+    }
+
+    bool MultiplayerSystemComponent::ShouldBlockLevelLoading(const char* levelName)
+    {
+        bool blockLevelLoad = false;
+        switch (m_agentType)
+        {
+        case MultiplayerAgentType::Uninitialized:
+        {
+            // replace .spawnable with .network.spawnable
+            AZStd::string networkSpawnablePath(levelName);
+            networkSpawnablePath.erase(networkSpawnablePath.size() - strlen(AzFramework::Spawnable::DotFileExtension));
+            networkSpawnablePath += NetworkSpawnableFileExtension;
+
+            AZ::Data::AssetId networkSpawnableAssetId;
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                networkSpawnableAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, networkSpawnablePath.c_str(), azrtti_typeid<AzFramework::Spawnable>(), false);
+
+            if (networkSpawnableAssetId.IsValid())
+            {
+                AZLOG_WARN("MultiplayerSystemComponent blocked loading a network level. Your multiplayer agent is uninitialized; did you forget to host before loading a network level?")
+                blockLevelLoad = true;
+            }
+            break;
+        }
+        case MultiplayerAgentType::Client:
+            if (m_blockClientLoadLevel)
+            {
+                AZLOG_WARN("MultiplayerSystemComponent blocked this client from loading a new level. Clients should only attempt to load level when instructed by their server. Disconnect from server before calling LoadLevel.")
+                blockLevelLoad = true;
+            }
+            break;
+        case MultiplayerAgentType::ClientServer:
+            if (m_playersWaitingToBeSpawned.empty())
+            {
+                AZLOG_WARN("MultiplayerSystemComponent blocked this host from loading a new level because you already have a player. Loading a new level could destroy the existing network player entity. Disconnect from the multiplayer simulation before changing levels.")
+                blockLevelLoad = true;
+            }
+            break;
+        case MultiplayerAgentType::DedicatedServer:
+            if (m_networkInterface->GetConnectionSet().GetConnectionCount() > 0)
+            {
+                AZLOG_WARN("MultiplayerSystemComponent blocked this host from loading a new level because clients are connected. Loading a new level would destroy the existing clients' network player entity.")
+                blockLevelLoad = true;
+            }
+            break;
+        default:
+            AZLOG_WARN("MultiplayerSystemComponent::ShouldBlockLevelLoading called with unsupported agent type. Please update code to support agent type: %s.", GetEnumString(m_agentType));
+        }
+
+        if (blockLevelLoad)
+        {
+            m_levelLoadBlockedEvent.Signal();
+        }
+
+        return blockLevelLoad;
     }
 
     void MultiplayerSystemComponent::StartServerToClientReplication(uint64_t userId, NetworkEntityHandle controlledEntity, IConnection* connection)

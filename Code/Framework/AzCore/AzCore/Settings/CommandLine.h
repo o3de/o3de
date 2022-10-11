@@ -9,6 +9,7 @@
 
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/std/containers/span.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/fixed_string.h>
 #include <AzCore/std/string/string.h>
@@ -58,6 +59,7 @@ namespace AZ
          * Unlike the ARGC/ARGV version above, this function doesn't skip over the first parameter
          * It allows for round trip conversion with the Dump() method
          */
+        void Parse(AZStd::span<const AZStd::string_view> commandLine);
         void Parse(const ParamContainer& commandLine);
 
         /**
@@ -88,8 +90,16 @@ namespace AZ
         /**
         * Get the actual value of a switch
         * @param switchName The switch to search for
+        * @return The last value of the switch. This is follows the standard command line workflow
+        * that the last one wins
+        */
+        const AZStd::string& GetSwitchValue(AZStd::string_view switchName) const;
+
+        /**
+        * Get the actual value of a switch
+        * @param switchName The switch to search for
         * @param index The 0-based index to retrieve the switch value for
-        * @return The value at that index.  This will Assert if you attempt to index out of bounds
+        * @return The value at that index. This will Assert if you attempt to index out of bounds
         */
         const AZStd::string& GetSwitchValue(AZStd::string_view switchName, AZStd::size_t index) const;
 
@@ -126,7 +136,6 @@ namespace AZ
         void ParseOptionArgument(AZStd::string_view newOption, AZStd::string_view newValue, CommandArgument* inProgressArgument);
 
         ArgumentVector m_allValues;
-        AZStd::string m_emptyValue;
 
         inline static constexpr size_t MaxCommandOptionPrefixes = 8;
         AZStd::fixed_string<MaxCommandOptionPrefixes> m_commandLineOptionPrefix;

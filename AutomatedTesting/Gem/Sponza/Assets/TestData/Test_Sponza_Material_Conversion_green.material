@@ -1,6 +1,6 @@
 {
-    "materialType": "Materials/Types/StandardPBR.materialtype",
-    "materialTypeVersion": 3,
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 5,
     "propertyValues": {
         "baseColor.color": [
             0.0,
@@ -14,7 +14,7 @@
             0.0,
             1.0
         ],
-        "irradiance.color": [
+        "irradiance.manualColor": [
             0.0,
             1.0,
             0.0,

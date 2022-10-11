@@ -12,6 +12,7 @@
 #include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
+#include <AzFramework/IO/LocalFileIO.h>
 #include <QCoreApplication>
 #include <native/tests/assetmanager/AssetManagerTestingBase.h>
 #include <native/utilities/AssetUtilEBusHelper.h>
@@ -19,12 +20,6 @@
 
 namespace UnitTests
 {
-    bool TestingDatabaseLocationListener::GetAssetDatabaseLocation(AZStd::string& location)
-    {
-        location = m_databaseLocation;
-        return true;
-    }
-
     void TestingAssetProcessorManager::CheckActiveFiles(int count)
     {
         ASSERT_EQ(m_activeFiles.size(), count);
@@ -52,8 +47,7 @@ namespace UnitTests
         }
 
         // Specify the database lives in the temp directory
-        AZ::IO::Path tempDir(m_tempDir.GetDirectory());
-        m_databaseLocationListener.m_databaseLocation = (tempDir / "test_database.sqlite").Native();
+        AZ::IO::Path assetRootDir(m_databaseLocationListener.GetAssetRootDir());
 
         // We need a settings registry in order for APM to figure out the cache path
         m_settingsRegistry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
@@ -61,7 +55,7 @@ namespace UnitTests
 
         auto projectPathKey =
             AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
-        m_settingsRegistry->Set(projectPathKey, m_tempDir.GetDirectory());
+        m_settingsRegistry->Set(projectPathKey, m_databaseLocationListener.GetAssetRootDir().c_str());
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*m_settingsRegistry);
 
         // We need a QCoreApplication set up in order for QCoreApplication::processEvents to function
@@ -82,7 +76,7 @@ namespace UnitTests
         m_platformConfig->PopulatePlatformsForScanFolder(platforms);
 
         m_platformConfig->AddScanFolder(
-            AssetProcessor::ScanFolderInfo{ (tempDir / "folder").c_str(), "folder", "folder", false, true, platforms });
+            AssetProcessor::ScanFolderInfo{ (assetRootDir / "folder").c_str(), "folder", "folder", false, true, platforms });
 
         m_platformConfig->AddIntermediateScanFolder();
 
@@ -159,10 +153,6 @@ namespace UnitTests
 
         m_assetProcessorManager->CheckActiveFiles(expectedFileCount);
 
-        // AssessModifiedFile is going to set up a OneShotTimer with a 1ms delay on it.  We have to wait a short time for that timer to
-        // elapse before we can process that event. If we use the alternative processEvents that loops for X milliseconds we could
-        // accidentally process too many events.
-        AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(10));
         QCoreApplication::processEvents();
 
         m_assetProcessorManager->CheckActiveFiles(0);

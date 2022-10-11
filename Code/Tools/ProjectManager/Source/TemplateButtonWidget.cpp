@@ -115,6 +115,10 @@ namespace O3DE::ProjectManager
 
     void TemplateButton::SetIsRemote(bool isRemote)
     {
+        if (!isRemote)
+        {
+            ShowDownloadProgress(false);
+        }
         m_cloudIcon->setVisible(isRemote);
     }
 

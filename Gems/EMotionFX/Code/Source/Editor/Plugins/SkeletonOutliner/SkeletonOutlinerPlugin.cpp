@@ -10,11 +10,18 @@
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/CommandSystem/Source/ColliderCommands.h>
 #include <EMotionFX/CommandSystem/Source/RagdollCommands.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/NodeWindow/ActorInfo.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/NodeWindow/MeshInfo.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/NodeWindow/NamedPropertyStringValue.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/NodeWindow/NodeGroupInfo.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/NodeWindow/NodeInfo.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/NodeWindow/SubMeshInfo.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
 #include <Editor/ReselectingTreeView.h>
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QHeaderView>
+#include <QEvent>
 
 namespace EMotionFX
 {
@@ -41,6 +48,19 @@ namespace EMotionFX
         m_commandCallbacks.clear();
 
         EMotionFX::SkeletonOutlinerRequestBus::Handler::BusDisconnect();
+
+        delete m_propertyWidget;
+        m_propertyWidget = nullptr;
+    }
+
+    void SkeletonOutlinerPlugin::Reflect(AZ::ReflectContext* context)
+    {
+        EMStudio::NamedPropertyStringValue::Reflect(context);
+        EMStudio::SubMeshInfo::Reflect(context);
+        EMStudio::MeshInfo::Reflect(context);
+        EMStudio::NodeInfo::Reflect(context);
+        EMStudio::NodeGroupInfo::Reflect(context);
+        EMStudio::ActorInfo::Reflect(context);
     }
 
     bool SkeletonOutlinerPlugin::Init()
@@ -92,6 +112,7 @@ namespace EMotionFX
         m_treeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
         m_treeView->setContextMenuPolicy(Qt::DefaultContextMenu);
         m_treeView->setExpandsOnDoubleClick(false);
+        m_treeView->setMouseTracking(true);
 
         QHeaderView* header = m_treeView->header();
         header->setStretchLastSection(false);
@@ -114,11 +135,17 @@ namespace EMotionFX
         connect(m_searchWidget, &AzQtComponents::FilteredSearchWidget::TextFilterChanged, this, &SkeletonOutlinerPlugin::OnTextFilterChanged);
         connect(m_searchWidget, &AzQtComponents::FilteredSearchWidget::TypeFilterChanged, this, &SkeletonOutlinerPlugin::OnTypeFilterChanged);
 
+        connect(m_treeView, &QAbstractItemView::entered, this, &SkeletonOutlinerPlugin::OnEntered);
+        m_treeView->installEventFilter(this);
+
         mainLayout->addWidget(m_treeView);
         m_dock->setWidget(m_mainWidget);
 
         EMotionFX::SkeletonOutlinerRequestBus::Handler::BusConnect();
         Reinit();
+
+        m_propertyWidget = new JointPropertyWidget{m_dock};
+        m_propertyWidget->hide();
 
         m_commandCallbacks.emplace_back(new DataChangedCallback(/*executePreUndo*/ false));
         CommandSystem::GetCommandManager()->RegisterCommandCallback(CommandAddCollider::s_commandName, m_commandCallbacks.back());
@@ -164,6 +191,24 @@ namespace EMotionFX
     void SkeletonOutlinerPlugin::OnTypeFilterChanged([[maybe_unused]] const AzQtComponents::SearchTypeFilterList& activeTypeFilters)
     {
         m_treeView->expandAll();
+    }
+
+    void SkeletonOutlinerPlugin::OnEntered(const QModelIndex& index)
+    {
+        Node* hoveredNode = index.data(SkeletonModel::ROLE_POINTER).value<Node*>();
+        if (hoveredNode)
+        {
+            SkeletonOutlinerNotificationBus::Broadcast(&SkeletonOutlinerNotifications::JointHoveredChanged, hoveredNode->GetNodeIndex());
+        }
+    }
+
+    bool SkeletonOutlinerPlugin::eventFilter([[maybe_unused]] QObject* object, QEvent* event)
+    {
+        if (event->type() == QEvent::Type::Leave)
+        {
+            SkeletonOutlinerNotificationBus::Broadcast(&SkeletonOutlinerNotifications::JointHoveredChanged, InvalidIndex);
+        }
+        return false;
     }
 
     Node* SkeletonOutlinerPlugin::GetSingleSelectedNode()
@@ -234,12 +279,18 @@ namespace EMotionFX
         }
 
         SkeletonOutlinerNotificationBus::Broadcast(&SkeletonOutlinerNotifications::JointSelectionChanged);
+        EMStudio::InspectorRequestBus::Broadcast(&EMStudio::InspectorRequestBus::Events::Update, m_propertyWidget);
     }
 
     void SkeletonOutlinerPlugin::OnContextMenu(const QPoint& position)
     {
         const QModelIndexList selectedRowIndices = m_skeletonModel->GetSelectionModel().selectedRows();
         if (selectedRowIndices.empty())
+        {
+            return;
+        }
+
+        if (selectedRowIndices.size() == 1 && SkeletonModel::IndexIsRootNode(selectedRowIndices[0]))
         {
             return;
         }

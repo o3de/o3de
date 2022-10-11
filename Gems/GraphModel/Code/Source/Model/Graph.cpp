@@ -221,6 +221,12 @@ namespace GraphModel
         }
     }
 
+    bool Graph::IsNodeWrapped(NodePtr node) const
+    {
+        auto it = m_nodeWrappings.find(node->GetId());
+        return it != m_nodeWrappings.end();
+    }
+
 
     const Graph::NodeWrappingMap& Graph::GetNodeWrappings()
     {

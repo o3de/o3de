@@ -188,6 +188,51 @@ namespace AzFramework
         // This is useful to unload certain resources before any entities are destroyed.
         virtual void OnApplicationAboutToStop() {}
     };
+
+    class LevelSystemLifecycleRequests
+        : public AZ::EBusTraits
+    {
+    public:
+        // Bus Configuration
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+
+        // Gives handlers the opportunity to block the loadlevel command.
+        // Return true to stop loading.
+        virtual bool ShouldBlockLevelLoading([[maybe_unused]]const char* levelName) { return false; }
+    };
+    using LevelSystemLifecycleRequestBus = AZ::EBus<LevelSystemLifecycleRequests>;
+
+    class LevelSystemLifecycleNotifications
+        : public AZ::EBusTraits
+    {
+    public:
+        // Bus Configuration
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+
+        // Called when loading a level fails due to it not being found.
+        virtual void OnLevelNotFound([[maybe_unused]] const char* levelName) {}
+
+        // Called after ILevelSystem::PrepareNextLevel() completes.
+        virtual void OnPrepareNextLevel([[maybe_unused]] const char* levelName) {}
+
+        // Called after ILevelSystem::OnLoadingStart() completes, before the level actually starts loading.
+        virtual void OnLoadingStart([[maybe_unused]] const char* levelName) {}
+
+        // Called after the level finished
+        virtual void OnLoadingComplete([[maybe_unused]] const char* levelName) {}
+
+        // Called when there's an error loading a level, with the level info and a description of the error.
+        virtual void OnLoadingError([[maybe_unused]] const char* levelName, [[maybe_unused]] const char* error) {}
+
+        // Called whenever the loading status of a level changes. progressAmount goes from 0->100.
+        virtual void OnLoadingProgress([[maybe_unused]] const char* levelName, [[maybe_unused]] int progressAmount) {}
+
+        // Called after a level is unloaded, before the data is freed.
+        virtual void OnUnloadComplete([[maybe_unused]] const char* levelName) {}
+    };
+    using LevelSystemLifecycleNotificationBus = AZ::EBus<LevelSystemLifecycleNotifications>;
 } // namespace AzFramework
 
 #endif // AZFRAMEWORK_APPLICATIONAPI_H

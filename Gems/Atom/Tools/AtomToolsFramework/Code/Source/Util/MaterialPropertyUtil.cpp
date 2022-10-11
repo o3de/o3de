@@ -59,7 +59,7 @@ namespace AtomToolsFramework
         }
 
         AZ_Assert(false, "Attempting to convert an unsupported property type.");
-        return AtomToolsFramework::DynamicPropertyType::Invalid;
+        return AtomToolsFramework::DynamicPropertyType::Unspecified;
     }
 
     void ConvertToPropertyConfig(AtomToolsFramework::DynamicPropertyConfig& propertyConfig, const AZ::RPI::MaterialTypeSourceData::PropertyDefinition& propertyDefinition)

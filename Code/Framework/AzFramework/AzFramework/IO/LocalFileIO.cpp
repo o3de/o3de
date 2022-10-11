@@ -829,8 +829,21 @@ namespace AZ
                     {
                         return false;
                     }
-                    replacedAliasPath.Native() = AZ::IO::FixedMaxPathString(AZStd::string_view{ aliasValue });
-                    replacedAliasPath.Native() += postAliasView;
+
+                    // Check if the input path does not overlap the output path
+                    if (postAliasView.data() < replacedAliasPath.Native().data()
+                        || postAliasView.data() >= replacedAliasPath.Native().data() + replacedAliasPath.Native().size())
+                    {
+                        replacedAliasPath.Native() = AZ::IO::FixedMaxPathString(AZStd::string_view{ aliasValue });
+                        replacedAliasPath.Native() += postAliasView;
+                    }
+                    else
+                    {
+                        // inplace case, copy the postAliasView to a temporary fixed string buffer
+                        AZ::IO::FixedMaxPathString postAliasCopy(postAliasView);
+                        replacedAliasPath.Native() = AZ::IO::FixedMaxPathString(AZStd::string_view{ aliasValue });
+                        replacedAliasPath.Native() += postAliasCopy;
+                    }
                     return true;
                 }
             }

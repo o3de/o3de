@@ -61,15 +61,34 @@ namespace GraphCanvas
 #endif
             initStyleOption(&options, index);
 
+            QModelIndex sourceIndex = static_cast<const NodePaletteSortFilterProxyModel*>(index.model())->mapToSource(index);
+            NodePaletteTreeItem* treeItem = static_cast<NodePaletteTreeItem*>(sourceIndex.internalPointer());
+
+            if (treeItem)
+            {
+                // Make the text slightly transparent if the item is disabled
+                if (!treeItem->IsEnabled())
+                {
+                    QVariant roleColor = index.data(Qt::ForegroundRole);
+                    QColor textColor = (roleColor.type() == QVariant::Type::Color)
+                        ? roleColor.value<QColor>() : options.palette.color(QPalette::Text);
+
+                    int fontAlpha = aznumeric_cast<int>(textColor.alpha() * 0.5f);
+                    fontAlpha = AZStd::min(AZStd::min(fontAlpha, 127), textColor.alpha());
+
+                    textColor.setAlpha(fontAlpha);
+
+                    options.palette.setColor(QPalette::Text, textColor);
+                }
+            }
+
             // paint the original node item
-            IconDecoratedNameDelegate::paint(painter, option, index);
+            IconDecoratedNameDelegate::paint(painter, options, index);
 
             const int textMargin = options.widget->style()->pixelMetric(QStyle::PM_FocusFrameHMargin, 0, options.widget) + 1;
             QRect textRect = options.widget->style()->subElementRect(QStyle::SE_ItemViewItemText, &options);
             textRect = textRect.adjusted(textMargin, 0, -textMargin, 0);
 
-            QModelIndex sourceIndex = static_cast<const NodePaletteSortFilterProxyModel*>(index.model())->mapToSource(index);
-            NodePaletteTreeItem* treeItem = static_cast<NodePaletteTreeItem*>(sourceIndex.internalPointer());
             if (treeItem && treeItem->HasHighlight())
             {
                 // pos, len

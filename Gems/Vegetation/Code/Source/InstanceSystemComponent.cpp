@@ -8,7 +8,7 @@
 #include <VegetationProfiler.h>
 #include "InstanceSystemComponent.h"
 
-#include <AzCore/Debug/Profiler.h> 
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -186,7 +186,7 @@ namespace Vegetation
                 if (*existingDescriptorPtr == descriptor)
                 {
                     DescriptorDetails& details = descPair.second;
-                    details.m_refCount++;  
+                    details.m_refCount++;
                     return existingDescriptorPtr;
                 }
 
@@ -559,8 +559,8 @@ namespace Vegetation
 
         AZStd::lock_guard<decltype(m_mainThreadTaskInProgressMutex)> scopedLock(m_mainThreadTaskInProgressMutex);
 
-        AZStd::chrono::system_clock::time_point initialTime = AZStd::chrono::system_clock::now();
-        AZStd::chrono::system_clock::time_point currentTime = initialTime;
+        AZStd::chrono::steady_clock::time_point initialTime = AZStd::chrono::steady_clock::now();
+        AZStd::chrono::steady_clock::time_point currentTime = initialTime;
 
         auto removedTasksPtr = AZStd::make_shared<TaskList>();
         while (GetTasks(*removedTasksPtr))
@@ -570,8 +570,8 @@ namespace Vegetation
                 task();
             }
 
-            currentTime = AZStd::chrono::system_clock::now();
-            if (AZStd::chrono::microseconds(currentTime - initialTime).count() > m_configuration.m_maxInstanceProcessTimeMicroseconds)
+            currentTime = AZStd::chrono::steady_clock::now();
+            if (AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(currentTime - initialTime).count() > m_configuration.m_maxInstanceProcessTimeMicroseconds)
             {
                 break;
             }

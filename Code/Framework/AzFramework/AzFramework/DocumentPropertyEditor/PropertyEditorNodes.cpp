@@ -62,6 +62,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::AddNotify);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::RemoveNotify);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ClearNotify);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ValueHashed);
 
         system->RegisterPropertyEditor<UIElement>();
         system->RegisterNodeAttribute<UIElement>(UIElement::Handler);

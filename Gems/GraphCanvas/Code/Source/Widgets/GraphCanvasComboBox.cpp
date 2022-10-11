@@ -114,6 +114,9 @@ namespace GraphCanvas
         escapeAction->setShortcut(Qt::Key_Escape);
 
         addAction(escapeAction);
+        connect(this, &QDialog::finished, this, [&]() {
+            Q_EMIT OnFocusOut();
+        });
 
         QObject::connect(escapeAction, &QAction::triggered, this, &GraphCanvasComboBoxMenu::CancelMenu);
     }
@@ -335,8 +338,6 @@ namespace GraphCanvas
         m_closeConnection = QObject::connect(&m_closeTimer, &QTimer::timeout, this, &QDialog::reject);
 
         m_closeTimer.start();
-
-        emit OnFocusOut();
     }
 
     ////////////////////////

@@ -91,6 +91,9 @@ namespace TestImpact
         //! Returns the test target standard output capture policy to use.
         Policy::TargetOutputCapture GetTargetOutputCapture() const;
 
+        //! Returns the test runner policy to use
+        Policy::TestRunner GetTestRunnerPolicy() const;
+
         //! Returns the individual test target timeout to use (if any).
         const AZStd::optional<AZStd::chrono::milliseconds>& GetTestTargetTimeout() const;
 
@@ -122,6 +125,7 @@ namespace TestImpact
         Policy::TestFailure m_testFailurePolicy = Policy::TestFailure::Abort;
         Policy::IntegrityFailure m_integrityFailurePolicy = Policy::IntegrityFailure::Abort;
         Policy::TargetOutputCapture m_targetOutputCapture = Policy::TargetOutputCapture::None;
+        Policy::TestRunner m_testRunnerPolicy = Policy::TestRunner::UseLiveTestRunner;
         AZStd::optional<AZStd::chrono::milliseconds> m_testTargetTimeout;
         AZStd::optional<AZStd::chrono::milliseconds> m_globalTimeout;
         SuiteType m_suiteFilter;

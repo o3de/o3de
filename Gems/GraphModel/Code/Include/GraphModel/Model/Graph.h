@@ -113,6 +113,9 @@ namespace GraphModel
         //! Remove the wrapping from the specified node
         void UnwrapNode(ConstNodePtr node);
 
+        //! Return if the specified node is a wrapped node
+        bool IsNodeWrapped(NodePtr node) const;
+
         //! Return our full map of node wrappings
         const NodeWrappingMap& GetNodeWrappings();
 

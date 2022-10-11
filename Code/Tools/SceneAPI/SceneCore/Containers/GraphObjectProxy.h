@@ -16,10 +16,32 @@ namespace AZ
     struct BehaviorArgument;
     class BehaviorClass;
     class BehaviorMethod;
+    class BehaviorProperty;
 
     namespace Python
     {
-        class PythonBehaviorInfo;
+        class PythonBehaviorInfo final
+        {
+        public:
+            AZ_RTTI(PythonBehaviorInfo, "{8055BD03-5B3B-490D-AEC5-1B1E2616D529}");
+            AZ_CLASS_ALLOCATOR(PythonBehaviorInfo, AZ::SystemAllocator, 0);
+
+            static void Reflect(AZ::ReflectContext* context);
+
+            explicit PythonBehaviorInfo(const AZ::BehaviorClass* behaviorClass);
+            PythonBehaviorInfo() = delete;
+
+        protected:
+            bool IsMemberLike(const AZ::BehaviorMethod& method, const AZ::TypeId& typeId) const;
+            AZStd::string FetchPythonType(const AZ::BehaviorParameter& param) const;
+            void PrepareMethod(AZStd::string_view methodName, const AZ::BehaviorMethod& behaviorMethod);
+            void PrepareProperty(AZStd::string_view propertyName, const AZ::BehaviorProperty& behaviorProperty);
+
+        private:
+            const AZ::BehaviorClass* m_behaviorClass = nullptr;
+            AZStd::vector<AZStd::string> m_methodList;
+            AZStd::vector<AZStd::string> m_propertyList;
+        };
     }
 
     namespace SceneAPI
@@ -39,6 +61,8 @@ namespace AZ
                 static void Reflect(AZ::ReflectContext* context);
 
                 GraphObjectProxy(AZStd::shared_ptr<const DataTypes::IGraphObject> graphObject);
+                GraphObjectProxy() = default;
+                GraphObjectProxy(const GraphObjectProxy&);
                 ~GraphObjectProxy();
 
                 bool CastWithTypeName(const AZStd::string& classTypeName);

@@ -72,13 +72,12 @@ namespace Audio
 
         bool Initialize() override;
         void Release() override;
+        void ExternalUpdate() override;
 
         void PushRequest(AudioRequestVariant&& request) override;
         void PushRequests(AudioRequestsQueue& requests) override;
         void PushRequestBlocking(AudioRequestVariant&& request) override;
         void PushCallback(AudioRequestVariant&& callback) override;
-
-        void ExternalUpdate() override;
 
         TAudioControlID GetAudioTriggerID(const char* const sAudioTriggerName) const override;
         TAudioControlID GetAudioRtpcID(const char* const sAudioRtpcName) const override;

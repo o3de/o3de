@@ -208,6 +208,14 @@ namespace AZ
             // If, in the future, the need arises across other RHIs and platforms
             // We can revisit these hard coded parameters.
             auto dxcArguments = shaderBuildArguments.m_dxcArguments;
+
+            //Add debug symbols within spirv
+            const bool graphicsDevMode = RHI::IsGraphicsDevModeEnabled();
+            if (graphicsDevMode || BuildHasDebugInfo(shaderBuildArguments))
+            {
+                RHI::ShaderBuildArguments::AppendArguments(dxcArguments, { "-fspv-debug=line" });
+            }
+
             switch (shaderStageType)
             {
             case RHI::ShaderHardwareStage::Vertex:
@@ -244,7 +252,6 @@ namespace AZ
             args.m_destinationFolder = tempFolder.c_str();
 
             const auto dxcInputFile = RHI::PrependFile(args);  // Prepend header
-            const bool graphicsDevMode = RHI::IsGraphicsDevModeEnabled();
 
             if (graphicsDevMode || BuildHasDebugInfo(shaderBuildArguments))
             {

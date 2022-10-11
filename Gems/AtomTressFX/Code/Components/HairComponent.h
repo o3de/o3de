@@ -24,7 +24,7 @@ namespace AZ
         {
             class HairRenderObject;
 
-            static constexpr const char* const HairComponentTypeId = "{9556883B-6F3C-4010-BB3F-EBB480515D68}";
+            inline constexpr AZ::TypeId HairComponentTypeId{ "{9556883B-6F3C-4010-BB3F-EBB480515D68}" };
 
             //! Parallel to the 'EditorHairComponent' this class is used in game mode.
             class HairComponent final

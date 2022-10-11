@@ -28,11 +28,11 @@ namespace AssetBundler
             AzFramework::ApplicationRequests::Bus::Handler::BusConnect();
             m_localFileIO = aznew AZ::IO::LocalFileIO();
             m_priorFileIO = AZ::IO::FileIOBase::GetInstance();
-            // we need to set it to nullptr first because otherwise the 
+            // we need to set it to nullptr first because otherwise the
             // underneath code assumes that we might be leaking the previous instance
             AZ::IO::FileIOBase::SetInstance(nullptr);
             AZ::IO::FileIOBase::SetInstance(m_localFileIO);
-            m_tempDir = new UnitTest::ScopedTemporaryDirectory();
+            m_tempDir = new AZ::Test::ScopedAutoTempDirectory();
             auto settingsRegistry = AZ::SettingsRegistry::Get();
             if (settingsRegistry == nullptr)
             {
@@ -74,7 +74,7 @@ namespace AssetBundler
 
         AZ::IO::FileIOBase* m_priorFileIO = nullptr;
         AZ::IO::FileIOBase* m_localFileIO = nullptr;
-        UnitTest::ScopedTemporaryDirectory* m_tempDir = nullptr;
+        AZ::Test::ScopedAutoTempDirectory* m_tempDir = nullptr;
         AZStd::unique_ptr<AZ::SettingsRegistryInterface> m_settingsRegistry;
         AZ::IO::Path m_oldEngineRoot;
     };

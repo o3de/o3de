@@ -20,10 +20,9 @@ namespace AzToolsFramework
     {
         class PrefabFocusPublicInterface;
         class PrefabPublicInterface;
-    };
+    }; // namespace Prefab
 
-    class PrefabUiHandler
-        : public EditorEntityUiHandlerBase
+    class PrefabUiHandler : public EditorEntityUiHandlerBase
     {
     public:
         AZ_CLASS_ALLOCATOR(PrefabUiHandler, AZ::SystemAllocator, 0);
@@ -74,6 +73,7 @@ namespace AzToolsFramework
         int m_prefabCapsuleRadius = 6;
         int m_prefabBorderThickness = 2;
         int m_prefabFileNameFontSize = 10;
+        int m_prefabEditIconSize = 16;
 
         QColor m_backgroundColor = QColor("#444444");
         QColor m_backgroundHoverColor = QColor("#5A5A5A");

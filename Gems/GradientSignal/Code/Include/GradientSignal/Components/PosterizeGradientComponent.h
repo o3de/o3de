@@ -42,7 +42,7 @@ namespace GradientSignal
         GradientSampler m_gradientSampler;
     };
 
-    static const AZ::Uuid PosterizeGradientComponentTypeId = "{BDA78E8D-DEEE-477B-B1FD-11F9930322AA}";
+    inline constexpr AZ::TypeId PosterizeGradientComponentTypeId{ "{BDA78E8D-DEEE-477B-B1FD-11F9930322AA}" };
 
     /**
     * calculates a gradient value by converting values from another gradient to another's range

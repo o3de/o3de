@@ -25,6 +25,7 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Module/ModuleManagerBus.h>
 #include <AzCore/PlatformId/PlatformId.h>
+#include <AzTest/Utils.h>
 
 #include <TestFramework/AWSCoreFixture.h>
 #include <QSysInfo>
@@ -165,6 +166,7 @@ namespace AWSAttributionUnitTest
         AZStd::unique_ptr<AZ::JobManager> m_jobManager;
         AZStd::array<char, AZ::IO::MaxPathLength> m_resolvedSettingsPath;
         ModuleManagerRequestBusMock m_moduleManagerRequestBusMock;
+        AZ::Test::ScopedAutoTempDirectory m_tempDirectory;
 
         void SetUp() override
         {
@@ -172,7 +174,7 @@ namespace AWSAttributionUnitTest
 
             char rootPath[AZ_MAX_PATH_LEN];
             AZ::Utils::GetExecutableDirectory(rootPath, AZ_MAX_PATH_LEN);
-            m_localFileIO->SetAlias("@user@", AZ_TRAIT_TEST_ROOT_FOLDER);
+            m_localFileIO->SetAlias("@user@", m_tempDirectory.GetDirectory());
 
             m_localFileIO->ResolvePath("@user@/Registry/", m_resolvedSettingsPath.data(), m_resolvedSettingsPath.size());
             AZ::IO::SystemFile::CreateDir(m_resolvedSettingsPath.data());

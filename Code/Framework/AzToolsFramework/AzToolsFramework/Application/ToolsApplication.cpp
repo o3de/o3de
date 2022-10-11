@@ -18,7 +18,7 @@
 
 #include <AzToolsFramework/AzToolsFrameworkModule.h>
 #include <AzToolsFramework/ActionManager/ActionManagerSystemComponent.h>
-#include <AzToolsFramework/Manipulators/PaintBrushManipulator.h>
+#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsSystemComponent.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/Commands/EntityStateCommand.h>
@@ -298,6 +298,7 @@ namespace AzToolsFramework
                 azrtti_typeid<AzToolsFramework::EntityUtilityComponent>(),
                 azrtti_typeid<AzToolsFramework::Script::LuaSymbolsReporterSystemComponent>(),
                 azrtti_typeid<AzToolsFramework::Script::LuaEditorSystemComponent>(),
+                azrtti_typeid<AzToolsFramework::PaintBrushSettingsSystemComponent>(),
             });
 
         return components;
@@ -387,7 +388,6 @@ namespace AzToolsFramework
         Prefab::PrefabIntegrationManager::Reflect(context);
 
         ComponentModeFramework::ComponentModeDelegate::Reflect(context);
-        PaintBrushConfig::Reflect(context);
 
         ViewportInteraction::ViewportInteractionReflect(context);
         ViewportEditorModeNotifications::Reflect(context);
@@ -450,6 +450,8 @@ namespace AzToolsFramework
                 ->Event("RegisterCustomViewPane", &EditorRequests::RegisterCustomViewPane)
                 ->Event("UnregisterViewPane", &EditorRequests::UnregisterViewPane)
                 ->Event("GetComponentTypeEditorIcon", &EditorRequests::GetComponentTypeEditorIcon)
+                ->Event("IsLevelDocumentOpen", &EditorRequests::IsLevelDocumentOpen)
+                ->Event("GetLevelName", &EditorRequests::GetLevelName)
                 ;
 
             behaviorContext->EBus<EditorEventsBus>("EditorEventBus")

@@ -22,7 +22,8 @@ namespace TestImpact
         AZStd::vector<TestEnumerationSuite> TestEnumerationSuitesFactory(const AZStd::string& testEnumerationData)
         {
             // Keys for pertinent XML node and attribute names
-            constexpr const char* Keys[] = {
+            constexpr const char* Keys[] =
+            {
                 "testsuites",
                 "testsuite",
                 "name",

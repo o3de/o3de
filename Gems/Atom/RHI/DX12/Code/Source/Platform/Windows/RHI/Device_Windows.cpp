@@ -683,7 +683,7 @@ namespace AZ
                         const auto* node = pageFaultOutput.pHeadExistingAllocationNode;
                         while (node)
                         {
-                            line = AZStd::string::format("    0x%zx (%S) %s\n",
+                            line = AZStd::string::format("    0x%p (%S) %s\n",
 #ifdef __ID3D12DeviceRemovedExtendedDataSettings1_INTERFACE_DEFINED__
                                 node->pObject,
 #else
@@ -699,7 +699,7 @@ namespace AZ
                         node = pageFaultOutput.pHeadRecentFreedAllocationNode;
                         while (node)
                         {
-                            line = AZStd::string::format("    0x%zx (%S) %s\n",
+                            line = AZStd::string::format("    0x%p (%S) %s\n",
 #ifdef __ID3D12DeviceRemovedExtendedDataSettings1_INTERFACE_DEFINED__
                                 node->pObject,
 #else

@@ -13,9 +13,8 @@ import json
 import logging
 import os
 import pathlib
-import hashlib
 
-from o3de import validation, utils
+from o3de import validation, utils, repo
 
 logger = logging.getLogger('o3de.manifest')
 logging.basicConfig(format=utils.LOG_FORMAT)
@@ -598,12 +597,9 @@ def get_repo_json_data(repo_uri: str) -> dict or None:
 
 
 def get_repo_path(repo_uri: str, cache_folder: str or pathlib.Path = None) -> pathlib.Path:
-    if not cache_folder:
-        cache_folder = get_o3de_cache_folder()
-
     repo_manifest = f'{repo_uri}/repo.json'
-    repo_sha256 = hashlib.sha256(repo_manifest.encode())
-    return cache_folder / str(repo_sha256.hexdigest() + '.json')
+    cache_file, _ = repo.get_cache_file_uri(repo_manifest)
+    return cache_file
 
 
 def get_registered(engine_name: str = None,
@@ -685,7 +681,16 @@ def get_registered(engine_name: str = None,
                             return project_path
 
     elif isinstance(gem_name, str):
-        gems = get_all_gems(project_path)
+        gems = []
+        if project_path:
+            gems = get_all_gems(project_path)
+        else:
+            # If project_path is not supplied
+            # query all registered projects
+            for registered_project_path in get_all_projects():
+                gems.extend(get_all_gems(registered_project_path))
+            gems = list(dict.fromkeys(gems))
+
         for gem_path in gems:
             gem_path = pathlib.Path(gem_path).resolve()
             gem_json = gem_path / 'gem.json'
@@ -703,7 +708,16 @@ def get_registered(engine_name: str = None,
                             return gem_path
 
     elif isinstance(template_name, str):
-        templates = get_all_templates(project_path)
+        templates = []
+        if project_path:
+            templates = get_all_templates(project_path)
+        else:
+            # If project_path is not supplied
+            # query all registered projects
+            for registered_project_path in get_all_projects():
+                templates.extend(get_all_templates(registered_project_path))
+            templates = list(dict.fromkeys(templates))
+
         for template_path in templates:
             template_path = pathlib.Path(template_path).resolve()
             template_json = template_path / 'template.json'

@@ -542,30 +542,11 @@ QString DockWidget::settingsKey(const QString& paneName)
     return QStringLiteral("ViewPane-") + paneName;
 }
 
-// run generic function on all widgets considered for greying out/disabling
-template<typename Fn>
-void SetDefaultActionsEnabled(
-    const bool enabled, QtViewPanes& registeredPanes, const Fn& fn)
+void EnableAllWidgetInstances(QList<DockWidget*>& widgetInstances, bool enable)
 {
-    for (QtViewPane& p : registeredPanes)
+    for (auto& dockWidget : widgetInstances)
     {
-        if (!p.m_dockWidgetInstances.empty())
-        {
-            for (auto& dockWidget : p.m_dockWidgetInstances)
-            {
-                const auto& paneName = dockWidget->PaneName();
-                // disable/fade all widgets other than those in the EntityInspector, EntityOutliner and Console
-                // note: The Console is not greyed out and the EntityInspector and EntityOutliner handle their
-                // own fading when entering/leaving ComponentMode
-                if (paneName != LyViewPane::EntityInspector &&
-                    paneName != LyViewPane::EntityInspectorPinned &&
-                    paneName != LyViewPane::Console &&
-                    paneName != LyViewPane::EntityOutliner)
-                {
-                    fn(dockWidget->widget(), enabled);
-                }
-            }
-        }
+        AzQtComponents::SetWidgetInteractEnabled(dockWidget->widget(), enable);
     }
 }
 
@@ -585,35 +566,42 @@ QtViewPaneManager::QtViewPaneManager(QObject* parent)
     m_windowRequest.BusConnect();
 
     m_componentModeNotifications->SetEnteredComponentModeFunc(
-        [this](const AzToolsFramework::ViewportEditorModesInterface&)
-    {
-        // gray out panels when entering ComponentMode
-        SetDefaultActionsEnabled(false, m_registeredPanes, [](QWidget* widget, bool on)
+        [this]([[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModes)
         {
-            AzQtComponents::SetWidgetInteractEnabled(widget, on);
+            for (QtViewPane& p : m_registeredPanes)
+            {
+                if (p.m_options.isDisabledInComponentMode)
+                {
+                    // By default, disable all widgets when entering Component Mode
+                    EnableAllWidgetInstances(p.m_dockWidgetInstances, false);
+                }
+            }
         });
-    });
 
     m_componentModeNotifications->SetLeftComponentModeFunc(
-        [this](const AzToolsFramework::ViewportEditorModesInterface&)
+        [this]([[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModes)
     {
-        // enable panels again when leaving ComponentMode
-        SetDefaultActionsEnabled(true, m_registeredPanes, [](QWidget* widget, bool on)
-        {
-            AzQtComponents::SetWidgetInteractEnabled(widget, on);
+            for (QtViewPane& p : m_registeredPanes)
+            {
+                if (p.m_options.isDisabledInComponentMode)
+                {
+                    // By default, enable all widgets again when leaving Component Mode
+                    EnableAllWidgetInstances(p.m_dockWidgetInstances, true);
+                }
+            }
         });
-    });
 
     m_windowRequest.SetEnableEditorUiFunc(
         [this](bool enable)
         {
-            // gray out panels when entering ImGui mode
-            SetDefaultActionsEnabled(
-                enable, m_registeredPanes,
-                [](QWidget* widget, bool on)
+            for (QtViewPane& p : m_registeredPanes)
+            {
+                if (p.m_options.isDisabledInImGuiMode)
                 {
-                    AzQtComponents::SetWidgetInteractEnabled(widget, on);
-                });
+                    // By default, disable/enable all widgets when entering/exiting IMGUI
+                    EnableAllWidgetInstances(p.m_dockWidgetInstances, enable);
+                }
+            }
         });
 }
 

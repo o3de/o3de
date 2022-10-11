@@ -14,13 +14,12 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzFramework/IO/LocalFileIO.h>
-#include <Tests/AZTestShared/Utils/Utils.h>
+#include <AZTestShared/Utils/Utils.h>
 #include <AzToolsFramework/UnitTest/ToolsTestApplication.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzTest/AzTest.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
-#include <Utils/Utils.h>
 
 namespace
 {
@@ -117,7 +116,7 @@ namespace UnitTest
 
         AzToolsFramework::PlatformAddressedAssetCatalogManager* m_PlatformAddressedAssetCatalogManager = nullptr;
         ToolsTestApplication* m_application = nullptr;
-        UnitTest::ScopedTemporaryDirectory m_tempDir;
+        AZ::Test::ScopedAutoTempDirectory m_tempDir;
         AZ::IO::FileIOStream m_fileStreams[AzFramework::PlatformId::NumPlatformIds][s_totalAssets];
 
         AZ::Data::AssetId m_assets[AzFramework::PlatformId::NumPlatformIds][s_totalAssets];
@@ -206,7 +205,7 @@ namespace UnitTest
         }
         ToolsTestApplication* m_application = nullptr;
         AZStd::unique_ptr<AzToolsFramework::PlatformAddressedAssetCatalogManager> m_platformAddressedAssetCatalogManager;
-        UnitTest::ScopedTemporaryDirectory m_tempDir;
+        AZ::Test::ScopedAutoTempDirectory m_tempDir;
     };
 
     TEST_F(MessageTest, PlatformAddressedAssetCatalogManagerMessageTest_MessagesForwarded_CountsMatch)

@@ -24,7 +24,7 @@ namespace Benchmark
 
     void PropagationBenchmarkFixture::UpdateComponent(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             float worldX = 0.0f;
             AZ::TransformBus::EventResult(worldX, m_entityToModify->GetId(), &AZ::TransformInterface::GetWorldX);
@@ -40,7 +40,7 @@ namespace Benchmark
     void PropagationBenchmarkFixture::AddComponent(benchmark::State& state)
     {
         m_entityToModify->Deactivate();
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             // Add another component and update the template to capture this change.
             AZ::Component* inspectorComponent = m_entityToModify->CreateComponent<AzToolsFramework::Components::EditorInspectorComponent>();
@@ -60,7 +60,7 @@ namespace Benchmark
     {
         m_entityToModify->Deactivate();
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             const AZStd::vector<AZ::Component*>& components = m_entityToModify->GetComponents();
             AZ::Component* transformComponent = components.front();
@@ -79,7 +79,7 @@ namespace Benchmark
 
     void PropagationBenchmarkFixture::AddEntity(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             // Add an entity and update the template.
             AZStd::unique_ptr<AZ::Entity> newEntity = AZStd::make_unique<AZ::Entity>("Added Entity");
@@ -97,7 +97,7 @@ namespace Benchmark
 
     void PropagationBenchmarkFixture::RemoveEntity(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             // Remove an entity and update the template.
             AZStd::unique_ptr<AZ::Entity> detachedEntity = m_instanceToModify->DetachEntity(m_entityToModify->GetId());
@@ -113,7 +113,7 @@ namespace Benchmark
 
     void PropagationBenchmarkFixture::AddNestedInstance(benchmark::State& state, TemplateId nestedPrefabTemplateId)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             // Add a nested instance and update the template.
             AZStd::unique_ptr<Instance> nestedInstance = AZStd::make_unique<Instance>("Added nested instance");
@@ -132,7 +132,7 @@ namespace Benchmark
 
     void PropagationBenchmarkFixture::RemoveNestedInstance(benchmark::State& state, TemplateId nestedPrefabTemplateId)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             AZStd::vector<InstanceAlias> nestedInstanceAliases = m_instanceCreated->GetNestedInstanceAliases(nestedPrefabTemplateId);
             AZStd::unique_ptr<Instance> detachedNestedInstance = m_instanceCreated->DetachNestedInstance(nestedInstanceAliases.back());

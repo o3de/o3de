@@ -133,7 +133,7 @@ namespace AZ::DocumentPropertyEditor
                     m_inEdit = true;
                     settingsRegistry.Set(keyPath, static_cast<AZ::u64>(domValue));
                     m_inEdit = false;
-                    return AZ::Dom::Value(domValue);
+                    return AZ::Dom::Value();
                 }
                 return {};
             };
@@ -205,7 +205,7 @@ namespace AZ::DocumentPropertyEditor
     }
 
     bool SettingsRegistryAdapter::BuildField(
-        AZStd::string_view path, AZStd::string_view fieldName, AZ::SettingsRegistryInterface::Type type)
+        AZStd::string_view path, AZStd::string_view fieldName, AZ::SettingsRegistryInterface::SettingsType type)
     {
         struct ScopedAdapterBuilderRowCreation
         {
@@ -230,11 +230,7 @@ namespace AZ::DocumentPropertyEditor
         }
         else if (type == AZ::SettingsRegistryInterface::Type::Integer)
         {
-            using SettingsType = AZ::SettingsRegistryInterface::SettingsType;
-
-            AZ::SettingsRegistryInterface& settingsRegistry = m_originTracker->GetSettingsRegistry();
-            const SettingsType settingsType = settingsRegistry.GetType(path);
-            if (settingsType.m_signedness == AZ::SettingsRegistryInterface::Signedness::Signed)
+            if (type.m_signedness == AZ::SettingsRegistryInterface::Signedness::Signed)
             {
                 BuildInt64(path);
             }
@@ -253,9 +249,10 @@ namespace AZ::DocumentPropertyEditor
         }
         else if (type == AZ::SettingsRegistryInterface::Type::Object || type == AZ::SettingsRegistryInterface::Type::Array)
         {
-            auto visitorCallback = [this](AZStd::string_view path, AZStd::string_view fieldName, AZ::SettingsRegistryInterface::Type type)
+            auto visitorCallback = [this](const AZ::SettingsRegistryInterface::VisitArgs& visitArgs)
             {
-                BuildField(path, fieldName, type);
+                BuildField(visitArgs.m_jsonKeyPath, visitArgs.m_fieldName, visitArgs.m_type);
+                return AZ::SettingsRegistryInterface::VisitResponse::Skip;
             };
             AZ::SettingsRegistryInterface& settingsRegistry = m_originTracker->GetSettingsRegistry();
             AZ::SettingsRegistryVisitorUtils::VisitField(settingsRegistry, visitorCallback, path);

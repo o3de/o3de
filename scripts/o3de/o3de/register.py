@@ -140,7 +140,7 @@ def register_all_o3de_objects_of_type_in_folder(o3de_object_path: pathlib.Path,
                                                 stop_iteration_callable: callable,
                                                 **register_kwargs) -> int:
     if not o3de_object_path:
-        logger.error(f'Engines path cannot be empty.')
+        logger.error(f'{o3de_object_type} path cannot be empty.')
         return 1
 
     o3de_object_path = pathlib.Path(o3de_object_path).resolve()
@@ -271,7 +271,8 @@ def register_o3de_object_path(json_data: dict,
                               validation_func: callable,
                               remove: bool = False,
                               engine_path: pathlib.Path = None,
-                              project_path: pathlib.Path = None) -> int:
+                              project_path: pathlib.Path = None,
+                              gem_path: pathlib.Path = None) -> int:
     # save_path variable is used to save the changes to the store the path to the file to save
     # if the registration is for the project or engine
     save_path = None
@@ -287,7 +288,16 @@ def register_o3de_object_path(json_data: dict,
                      'A subdirectory can only be registered to either the engine path or project in one command')
 
     manifest_data = None
-    if engine_path:
+
+    if gem_path:
+        manifest_data = manifest.get_gem_json_data(gem_path=gem_path)
+        if not manifest_data:
+            logger.error(f'Cannot load gem.json data at path {gem_path}')
+            return 1
+
+        save_path = (gem_path / 'gem.json').resolve()
+
+    elif engine_path:
         manifest_data = manifest.get_engine_json_data(engine_path=engine_path)
         if not manifest_data:
             logger.error(f'Cannot load engine.json data at path {engine_path}')
@@ -365,19 +375,23 @@ def register_external_subdirectory(json_data: dict,
                                    external_subdir_path: pathlib.Path,
                                    remove: bool = False,
                                    engine_path: pathlib.Path = None,
-                                   project_path: pathlib.Path = None) -> int:
+                                   project_path: pathlib.Path = None,
+                                   gem_path: pathlib.Path = None) -> int:
     """
     :return An integer return code indicating whether registration or removal of the external subdirectory
     completed successfully
     """
-    # If a project path or engine path has not been supplied auto detect which manifest to register the input path with
-    if not project_path and not engine_path:
+    # If a gem path, project path or engine path has not been supplied auto detect which manifest to register the input path with
+    if not gem_path:
+        gem_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('gem.json'), external_subdir_path)
+    elif not project_path:
         project_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('project.json'), external_subdir_path)
-        if not project_path:
-            engine_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('engine.json'), external_subdir_path)
+    elif not engine_path:
+        engine_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('engine.json'), external_subdir_path)
     return register_o3de_object_path(json_data, external_subdir_path, 'external_subdirectories', '', None, remove,
                                      pathlib.Path(engine_path).resolve() if engine_path else None,
-                                     pathlib.Path(project_path).resolve() if project_path else None)
+                                     pathlib.Path(project_path).resolve() if project_path else None,
+                                     pathlib.Path(gem_path).resolve() if gem_path else None)
 
 
 def register_gem_path(json_data: dict,
@@ -683,6 +697,7 @@ def register(engine_path: pathlib.Path = None,
              default_third_party_folder: pathlib.Path = None,
              external_subdir_engine_path: pathlib.Path = None,
              external_subdir_project_path: pathlib.Path = None,
+             external_subdir_gem_path: pathlib.Path = None,
              remove: bool = False,
              force: bool = False
              ) -> int:
@@ -706,6 +721,8 @@ def register(engine_path: pathlib.Path = None,
      The registration occurs in the engine.json file in this case
     :param external_subdir_project_path: Path to the project to use when registering an external subdirectory.
      The registrations occurs in the project.json in this case
+    :param external_subdir_gem_path: Path to the gem to use when registering an external subdirectory.
+     The registrations occurs in the gem.json in this case
     :param remove: add/remove the entries
     :param force: force update of the engine_path for specified "engine_name" from the engine.json file
 
@@ -746,7 +763,8 @@ def register(engine_path: pathlib.Path = None,
             logger.error(f'External Subdirectory path is None.')
             return 1
         result = result or register_external_subdirectory(json_data, external_subdir_path, remove,
-                                                          external_subdir_engine_path, external_subdir_project_path)
+                                                          external_subdir_engine_path, external_subdir_project_path, 
+                                                          external_subdir_gem_path)
 
     if isinstance(template_path, pathlib.PurePath):
         if not template_path:
@@ -834,6 +852,7 @@ def _run_register(args: argparse) -> int:
                         default_third_party_folder=args.default_third_party_folder,
                         external_subdir_engine_path=args.external_subdirectory_engine_path,
                         external_subdir_project_path=args.external_subdirectory_project_path,
+                        external_subdir_gem_path=args.external_subdirectory_gem_path,
                         remove=args.remove,
                         force=args.force)
 
@@ -908,6 +927,7 @@ def add_parser_args(parser):
                                             help='If supplied, registers the external subdirectory with the engine.json at' \
                                             ' the engine-path location')
     external_subdir_path_group.add_argument('-espp', '--external-subdirectory-project-path', type=pathlib.Path)
+    external_subdir_path_group.add_argument('-esgp', '--external-subdirectory-gem-path', type=pathlib.Path,  help='If supplied, registers the external subdirectory with the gem.json at the gem-path location')
     parser.set_defaults(func=_run_register)
 
 

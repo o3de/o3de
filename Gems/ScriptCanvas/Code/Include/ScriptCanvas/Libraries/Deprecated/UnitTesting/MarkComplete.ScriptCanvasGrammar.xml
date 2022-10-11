@@ -8,7 +8,6 @@
            Base="ScriptCanvas::Node"
            Icon="Icons/ScriptCanvas/MarkComplete.png"
            Version="0"
-           GeneratePropertyFriend="True"
            DeprecationUUID="{E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF}"
            ReplacementClassName="Unit Testing"
            ReplacementMethodName="Mark Complete"

@@ -18,7 +18,7 @@ namespace UnitTest
 {
     using PrefabDeleteTest = PrefabTestFixture;
 
-    TEST_F(PrefabDeleteTest, DeleteEntitiesInInstance_DeleteSingleEntitySucceeds)
+    TEST_F(PrefabDeleteTest, DeleteEntitiesAndAllDescendantsInInstance_DeleteSingleEntitySucceeds)
     {
         PrefabEntityResult createEntityResult = m_prefabPublicInterface->CreateEntity(AZ::EntityId(), AZ::Vector3());
 
@@ -35,7 +35,7 @@ namespace UnitTest
         EXPECT_TRUE(testEntity == nullptr);
     }
 
-    TEST_F(PrefabDeleteTest, DeleteEntitiesInInstance_DeleteSinglePrefabSucceeds)
+    TEST_F(PrefabDeleteTest, DeleteEntitiesAndAllDescendantsInInstance_DeleteSinglePrefabSucceeds)
     {
         PrefabEntityResult createEntityResult = m_prefabPublicInterface->CreateEntity(AZ::EntityId(), AZ::Vector3());
 

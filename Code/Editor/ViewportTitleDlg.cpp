@@ -46,6 +46,7 @@
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
+#include <Editor/EditorSettingsAPIBus.h>
 #include <EditorModeFeedback/EditorStateRequestsBus.h>
 
 #include <LmbrCentral/Audio/AudioSystemComponentBus.h>
@@ -106,7 +107,7 @@ CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
     LoadCustomPresets("AspectRatioPresets", "AspectRatioPreset", m_customAspectRatioPresets);
     LoadCustomPresets("ResPresets", "ResPreset", m_customResPresets);
 
-    SetupEditModeMenu();
+    SetupPrefabEditModeMenu();
     SetupCameraDropdownMenu();
     SetupResolutionDropdownMenu();
     SetupViewportInformationMenu();
@@ -217,11 +218,13 @@ void CViewportTitleDlg::SetupResolutionDropdownMenu()
     m_ui->m_resolutionMenu->setPopupMode(QToolButton::InstantPopup);
 }
 
-void CViewportTitleDlg::SetupEditModeMenu()
+void CViewportTitleDlg::SetupPrefabEditModeMenu()
 {
-    m_ui->m_editModeMenu->setMenu(GetEditModeMenu());
-    m_ui->m_editModeMenu->setAutoRaise(true);
-    m_ui->m_editModeMenu->setPopupMode(QToolButton::InstantPopup);
+    m_prefabEditMode = AzToolsFramework::PrefabEditModeEffectEnabled() ? PrefabEditModeUXSetting::Monochromatic : PrefabEditModeUXSetting::Normal;
+    m_ui->m_prefabEditModeMenu->setMenu(GetPrefabEditModeMenu());
+    m_ui->m_prefabEditModeMenu->setAutoRaise(true);
+    m_ui->m_prefabEditModeMenu->setPopupMode(QToolButton::InstantPopup);
+    UpdatePrefabEditMode();
 }
 
 void CViewportTitleDlg::SetupViewportInformationMenu()
@@ -230,6 +233,11 @@ void CViewportTitleDlg::SetupViewportInformationMenu()
     m_ui->m_debugInformationMenu->setMenu(GetViewportInformationMenu());
     connect(m_ui->m_debugInformationMenu, &QToolButton::clicked, this, &CViewportTitleDlg::OnToggleDisplayInfo);
     m_ui->m_debugInformationMenu->setPopupMode(QToolButton::MenuButtonPopup);
+}
+
+static bool ShouldHelpersBeChecked()
+{
+    return AzToolsFramework::HelpersVisible() || AzToolsFramework::IconsVisible() || AzToolsFramework::OnlyShowHelpersForSelectedEntities();
 }
 
 void CViewportTitleDlg::SetupHelpersButton()
@@ -243,15 +251,27 @@ void CViewportTitleDlg::SetupHelpersButton()
             helperAction, &QAction::triggered, this,
             [this]
             {
-                m_ui->m_helpers->setChecked(AzToolsFramework::HelpersVisible() || AzToolsFramework::IconsVisible());
+                m_ui->m_helpers->setChecked(ShouldHelpersBeChecked());
             });
 
         auto iconAction = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::Icons);
         connect(
-            iconAction, &QAction::triggered, this,
+            iconAction,
+            &QAction::triggered,
+            this,
             [this]
             {
-                m_ui->m_helpers->setChecked(AzToolsFramework::HelpersVisible() || AzToolsFramework::IconsVisible());
+                m_ui->m_helpers->setChecked(ShouldHelpersBeChecked());
+            });
+
+        auto onlySelectedAction = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::OnlyShowHelpersForSelectedEntitiesAction);
+        connect(
+            onlySelectedAction,
+            &QAction::triggered,
+            this,
+            [this]
+            {
+                m_ui->m_helpers->setChecked(ShouldHelpersBeChecked());
             });
 
         m_helpersAction = new QAction(tr("Helpers"), m_helpersMenu);
@@ -272,8 +292,20 @@ void CViewportTitleDlg::SetupHelpersButton()
                 iconAction->trigger();
             });
 
+        m_onlySelectedAction = new QAction(tr("Helpers for Selected Entities Only"), m_helpersMenu);
+        m_onlySelectedAction->setCheckable(true);
+        connect(
+             m_onlySelectedAction,
+            &QAction::triggered,
+            this,
+            [onlySelectedAction]
+            {
+                onlySelectedAction->trigger();
+            });
+
         m_helpersMenu->addAction(m_helpersAction);
         m_helpersMenu->addAction(m_iconsAction);
+        m_helpersMenu->addAction(m_onlySelectedAction);
 
         connect(
             m_helpersMenu, &QMenu::aboutToShow, this,
@@ -281,6 +313,7 @@ void CViewportTitleDlg::SetupHelpersButton()
             {
                 m_helpersAction->setChecked(AzToolsFramework::HelpersVisible());
                 m_iconsAction->setChecked(AzToolsFramework::IconsVisible());
+                m_onlySelectedAction->setChecked(AzToolsFramework::OnlyShowHelpersForSelectedEntities());
             });
 
         m_ui->m_helpers->setCheckable(true);
@@ -288,7 +321,7 @@ void CViewportTitleDlg::SetupHelpersButton()
         m_ui->m_helpers->setPopupMode(QToolButton::InstantPopup);
     }
 
-    m_ui->m_helpers->setChecked(AzToolsFramework::HelpersVisible() || AzToolsFramework::IconsVisible());
+    m_ui->m_helpers->setChecked(ShouldHelpersBeChecked());
 }
 
 void CViewportTitleDlg::SetupOverflowMenu()
@@ -456,16 +489,16 @@ void CViewportTitleDlg::OnMaximize()
     }
 }
 
-void CViewportTitleDlg::SetNormalEditMode()
+void CViewportTitleDlg::SetNormalPrefabEditMode()
 {
-    m_editMode = FocusModeUxSetting::Normal;
-    UpdateEditMode();
+    m_prefabEditMode = PrefabEditModeUXSetting::Normal;
+    UpdatePrefabEditMode();
 }
 
-void CViewportTitleDlg::SetMonochromaticEditMode()
+void CViewportTitleDlg::SetMonochromaticPrefabEditMode()
 {
-    m_editMode = FocusModeUxSetting::Monochromatic;
-    UpdateEditMode();
+    m_prefabEditMode = PrefabEditModeUXSetting::Monochromatic;
+    UpdatePrefabEditMode();
 }
 
 void CViewportTitleDlg::SetNoViewportInfo()
@@ -493,35 +526,39 @@ void CViewportTitleDlg::SetCompactViewportInfo()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CViewportTitleDlg::UpdateEditMode()
+void CViewportTitleDlg::UpdatePrefabEditMode()
 {
-    if (m_editModeMenu == nullptr)
+    if (m_prefabEditModeMenu == nullptr)
     {
         // Nothing to update, just return;
         return;
     }
 
-    m_normalEditModeAction->setChecked(false);
-    m_monochromaticEditModeAction->setChecked(false);
+    m_normalPrefabEditModeAction->setChecked(false);
+    m_monochromaticPrefabEditModeAction->setChecked(false);
 
-    switch (m_editMode)
+    switch (m_prefabEditMode)
     {
-    case FocusModeUxSetting::Normal:
+    case PrefabEditModeUXSetting::Normal:
         {
-            m_normalEditModeAction->setChecked(true);
+            m_normalPrefabEditModeAction->setChecked(true);
             AZ::Render::EditorStateRequestsBus::Event(
                 AZ::Render::EditorState::FocusMode, &AZ::Render::EditorStateRequestsBus::Events::SetEnabled, false);
+            AzToolsFramework::SetPrefabEditModeEffectEnabled(false);
+            AzToolsFramework::EditorSettingsAPIBus::Broadcast(&AzToolsFramework::EditorSettingsAPIBus::Events::SaveSettingsRegistryFile);
             break;
         }
-    case FocusModeUxSetting::Monochromatic:
+    case PrefabEditModeUXSetting::Monochromatic:
         {
-            m_monochromaticEditModeAction->setChecked(true);
+            m_monochromaticPrefabEditModeAction->setChecked(true);
             AZ::Render::EditorStateRequestsBus::Event(
                 AZ::Render::EditorState::FocusMode, &AZ::Render::EditorStateRequestsBus::Events::SetEnabled, true);
+            AzToolsFramework::SetPrefabEditModeEffectEnabled(true);
+            AzToolsFramework::EditorSettingsAPIBus::Broadcast(&AzToolsFramework::EditorSettingsAPIBus::Events::SaveSettingsRegistryFile);
             break;
         }
     default:
-        AZ_Error("EditMode", false, AZStd::string::format("Unexpected edit mode: %zu", static_cast<size_t>(m_editMode)).c_str());
+        AZ_Error("PrefabEditMode", false, AZStd::string::format("Unexpected edit mode: %zu", static_cast<size_t>(m_prefabEditMode)).c_str());
     }
 }
 
@@ -619,7 +656,7 @@ void CViewportTitleDlg::AddFOVMenus(QMenu* menu, std::function<void(float)> call
                 break;
             }
 
-            float fov = gSettings.viewports.fDefaultFov;
+            float fov = SandboxEditor::CameraDefaultFovRadians();
             bool ok;
             float f = customPreset.toFloat(&ok);
             if (ok)
@@ -775,29 +812,29 @@ QMenu* const CViewportTitleDlg::GetAspectMenu()
     return m_aspectMenu;
 }
 
-QMenu* const CViewportTitleDlg::GetEditModeMenu()
+QMenu* const CViewportTitleDlg::GetPrefabEditModeMenu()
 {
-    CreateEditModeMenu();
-    return m_editModeMenu;
+    CreatePrefabEditModeMenu();
+    return m_prefabEditModeMenu;
 }
 
-void CViewportTitleDlg::CreateEditModeMenu()
+void CViewportTitleDlg::CreatePrefabEditModeMenu()
 {
-    if (m_editModeMenu == nullptr)
+    if (m_prefabEditModeMenu == nullptr)
     {
-        m_editModeMenu = new QMenu("Edit Mode");
+        m_prefabEditModeMenu = new QMenu("Edit Mode");
 
-        m_normalEditModeAction = new QAction(tr("Normal"), m_editModeMenu);
-        m_normalEditModeAction->setCheckable(true);
-        connect(m_normalEditModeAction, &QAction::triggered, this, &CViewportTitleDlg::SetNormalEditMode);
-        m_editModeMenu->addAction(m_normalEditModeAction);
+        m_normalPrefabEditModeAction = new QAction(tr("Normal"), m_prefabEditModeMenu);
+        m_normalPrefabEditModeAction->setCheckable(true);
+        connect(m_normalPrefabEditModeAction, &QAction::triggered, this, &CViewportTitleDlg::SetNormalPrefabEditMode);
+        m_prefabEditModeMenu->addAction(m_normalPrefabEditModeAction);
 
-        m_monochromaticEditModeAction = new QAction(tr("Monochromatic"), m_editModeMenu);
-        m_monochromaticEditModeAction->setCheckable(true);
-        connect(m_monochromaticEditModeAction, &QAction::triggered, this, &CViewportTitleDlg::SetMonochromaticEditMode);
-        m_editModeMenu->addAction(m_monochromaticEditModeAction);
+        m_monochromaticPrefabEditModeAction = new QAction(tr("Monochromatic"), m_prefabEditModeMenu);
+        m_monochromaticPrefabEditModeAction->setCheckable(true);
+        connect(m_monochromaticPrefabEditModeAction, &QAction::triggered, this, &CViewportTitleDlg::SetMonochromaticPrefabEditMode);
+        m_prefabEditModeMenu->addAction(m_monochromaticPrefabEditModeAction);
 
-        UpdateEditMode();
+        UpdatePrefabEditMode();
     }
 }
 

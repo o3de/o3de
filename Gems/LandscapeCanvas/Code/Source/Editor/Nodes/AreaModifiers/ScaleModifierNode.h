@@ -33,10 +33,10 @@ namespace LandscapeCanvas
         ScaleModifierNode() = default;
         explicit ScaleModifierNode(GraphModel::GraphPtr graph);
 
-        static const QString TITLE;
+        static const char* TITLE;
         const char* GetTitle() const override
         {
-            return TITLE.toUtf8().constData();
+            return TITLE;
         }
 
     protected:

@@ -20,6 +20,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         INTERFACE
             Gem::Atom_Feature_Common.Public
+            Gem::AtomImGuiTools.Public
 )
 
 ly_add_target(

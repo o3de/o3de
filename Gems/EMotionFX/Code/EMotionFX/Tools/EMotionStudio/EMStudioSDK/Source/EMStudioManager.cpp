@@ -360,6 +360,10 @@ namespace EMStudio
         }
     }
 
+    void EMStudioManager::JointHoveredChanged(size_t hoveredJointIndex)
+    {
+        m_hoveredJointIndex = hoveredJointIndex;
+    }
 
     // before executing a command
     void EMStudioManager::EventProcessingCallback::OnPreExecuteCommand(MCore::CommandGroup* group, MCore::Command* command, const MCore::CommandLine& commandLine)

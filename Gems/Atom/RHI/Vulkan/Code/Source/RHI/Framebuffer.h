@@ -72,9 +72,11 @@ namespace AZ
 
             bool AreResourcesReady() const;
             void Invalidate();
+            void SetSizeFromAttachment();
 
             VkFramebuffer m_nativeFramebuffer = VK_NULL_HANDLE;
             AZStd::vector<RHI::ConstPtr<ImageView>> m_attachments;
+            RHI::Size   m_size;
             RHI::ConstPtr<RenderPass> m_renderPass;
         };
     }

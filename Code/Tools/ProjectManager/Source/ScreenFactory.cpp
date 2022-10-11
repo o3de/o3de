@@ -18,6 +18,7 @@
 #include <EngineScreenCtrl.h>
 #include <EngineSettingsScreen.h>
 #include <GemRepo/GemRepoScreen.h>
+#include <CreateAGemScreen.h>
 #include <DownloadController.h>
 
 namespace O3DE::ProjectManager
@@ -32,7 +33,7 @@ namespace O3DE::ProjectManager
             newScreen = new CreateProjectCtrl(downloadController, parent);
             break;
         case (ProjectManagerScreen::NewProjectSettings):
-            newScreen = new NewProjectSettingsScreen(parent);
+            newScreen = new NewProjectSettingsScreen(downloadController, parent);
             break;
         case (ProjectManagerScreen::GemCatalog):
             newScreen = new GemCatalogScreen(downloadController, true, parent);
@@ -60,6 +61,9 @@ namespace O3DE::ProjectManager
             break;
         case (ProjectManagerScreen::GemRepos):
             newScreen = new GemRepoScreen(parent);
+            break;
+        case (ProjectManagerScreen::CreateGem):
+            newScreen = new CreateGem(parent);
             break;
         case (ProjectManagerScreen::Empty):
         default:

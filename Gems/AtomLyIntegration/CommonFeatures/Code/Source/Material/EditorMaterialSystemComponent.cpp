@@ -12,6 +12,7 @@
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <AtomLyIntegration/CommonFeatures/Material/EditorMaterialSystemComponentNotificationBus.h>
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>
+#include <AtomLyIntegration/AtomImGuiTools/AtomImGuiToolsBus.h>
 #include <AtomToolsFramework/PreviewRenderer/PreviewRendererCaptureRequest.h>
 #include <AtomToolsFramework/PreviewRenderer/PreviewRendererInterface.h>
 #include <AtomToolsFramework/Util/Util.h>
@@ -104,6 +105,7 @@ namespace AZ
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
             AzToolsFramework::EditorMenuNotificationBus::Handler::BusConnect();
             AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
+            AzToolsFramework::ToolsApplicationNotificationBus::Handler::BusConnect();
             AZ::SystemTickBus::Handler::BusConnect();
 
             m_materialBrowserInteractions.reset(aznew MaterialBrowserInteractions);
@@ -118,6 +120,7 @@ namespace AZ
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
             AzToolsFramework::EditorMenuNotificationBus::Handler::BusDisconnect();
             AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect(); 
+            AzToolsFramework::ToolsApplicationNotificationBus::Handler::BusDisconnect(); 
             AZ::SystemTickBus::Handler::BusDisconnect();
 
             m_materialBrowserInteractions.reset();
@@ -297,16 +300,23 @@ namespace AZ
             [[maybe_unused]] const AZ::Render::MaterialAssignmentId& materialAssignmentId,
             [[maybe_unused]] const QPixmap& pixmap)
         {
-            PurgePreviews();
+            // Since the "preview rendered" event is not called on the main thread, queue
+            // the handling code to be executed on the main thread. This prevents any non
+            // thread-safe code, such as Qt updates, from running on alternate threads
+            AZ::SystemTickBus::QueueFunction(
+                [=]()
+                {
+                    PurgePreviews();
 
-            // Caching preview so the image will not have to be regenerated every time it's requested
-            m_materialPreviews[entityId][materialAssignmentId] = pixmap;
+                    // Caching preview so the image will not have to be regenerated every time it's requested
+                    m_materialPreviews[entityId][materialAssignmentId] = pixmap;
 
-            AZ::Render::EditorMaterialSystemComponentNotificationBus::Broadcast(
-                &AZ::Render::EditorMaterialSystemComponentNotificationBus::Events::OnRenderMaterialPreviewReady,
-                entityId,
-                materialAssignmentId,
-                pixmap);
+                    AZ::Render::EditorMaterialSystemComponentNotificationBus::Broadcast(
+                        &AZ::Render::EditorMaterialSystemComponentNotificationBus::Events::OnRenderMaterialPreviewReady,
+                        entityId,
+                        materialAssignmentId,
+                        pixmap);
+                });
         }
 
         void EditorMaterialSystemComponent::OnMaterialSlotLayoutChanged()
@@ -378,6 +388,18 @@ namespace AZ
             inspectorOptions.showOnToolsToolbar = false;
             AzToolsFramework::RegisterViewPane<AZ::Render::EditorMaterialComponentInspector::MaterialPropertyInspector>(
                 "Material Property Inspector", LyViewPane::CategoryTools, inspectorOptions);
+        }
+        
+        void EditorMaterialSystemComponent::AfterEntitySelectionChanged(const AzToolsFramework::EntityIdList& newlySelectedEntities, const AzToolsFramework::EntityIdList&)
+        {
+            if (newlySelectedEntities.size() == 1)
+            {
+                AtomImGuiTools::AtomImGuiToolsRequestBus::Broadcast(&AtomImGuiTools::AtomImGuiToolsRequests::ShowMaterialShaderDetailsForEntity, newlySelectedEntities[0], false);
+            }
+            else
+            {
+                AtomImGuiTools::AtomImGuiToolsRequestBus::Broadcast(&AtomImGuiTools::AtomImGuiToolsRequests::ShowMaterialShaderDetailsForEntity, AZ::EntityId{}, false);
+            }
         }
 
         AzToolsFramework::AssetBrowser::SourceFileDetails EditorMaterialSystemComponent::GetSourceFileDetails(

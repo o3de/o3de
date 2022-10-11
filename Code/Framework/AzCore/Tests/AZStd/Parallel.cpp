@@ -83,11 +83,11 @@ namespace UnitTest
         auto minDuration = AZStd::chrono::milliseconds(WAIT_TIME_MS);
         auto minDurationWithMarginForError = minDuration - AZStd::chrono::milliseconds(MARGIN_OF_ERROR_MS);
 
-        auto startTime = AZStd::chrono::system_clock::now();
+        auto startTime = AZStd::chrono::steady_clock::now();
         
         EXPECT_FALSE(sema.try_acquire_for(minDuration));
         
-        auto actualDuration = AZStd::chrono::system_clock::now() - startTime;
+        auto actualDuration = AZStd::chrono::steady_clock::now() - startTime;
         EXPECT_GE(actualDuration, minDurationWithMarginForError);
     }
 
@@ -97,12 +97,12 @@ namespace UnitTest
         semaphore sema;
         auto minDuration = AZStd::chrono::milliseconds(WAIT_TIME_MS);
         auto minDurationWithMarginForError = minDuration - AZStd::chrono::milliseconds(MARGIN_OF_ERROR_MS);
-        auto startTime = AZStd::chrono::system_clock::now();
+        auto startTime = AZStd::chrono::steady_clock::now();
         auto absTime = startTime + minDuration;
         
         EXPECT_FALSE(sema.try_acquire_until(absTime));
         
-        auto duration = AZStd::chrono::system_clock::now() - startTime;
+        auto duration = AZStd::chrono::steady_clock::now() - startTime;
         EXPECT_GE(duration, minDurationWithMarginForError);
     }
 
@@ -112,11 +112,11 @@ namespace UnitTest
 
         // this duration should not matter since it should not wait at all so we don't need an error margin.
         auto minDuration = AZStd::chrono::milliseconds(WAIT_TIME_MS);
-        auto startTime = AZStd::chrono::system_clock::now();
+        auto startTime = AZStd::chrono::steady_clock::now();
         sema.release();
         EXPECT_TRUE(sema.try_acquire_for(minDuration));
         
-        auto durationSpent = AZStd::chrono::system_clock::now() - startTime;
+        auto durationSpent = AZStd::chrono::steady_clock::now() - startTime;
         EXPECT_LT(durationSpent, minDuration);
     }
 
@@ -125,12 +125,12 @@ namespace UnitTest
         semaphore sema;
         // we should not wait all at here, since we start with it already signalled.
         auto minDuration = AZStd::chrono::milliseconds(WAIT_TIME_MS);
-        auto startTime = AZStd::chrono::system_clock::now();
+        auto startTime = AZStd::chrono::steady_clock::now();
         auto absTime = startTime + minDuration;
         sema.release();
         EXPECT_TRUE(sema.try_acquire_until(absTime));
         
-        auto duration = AZStd::chrono::system_clock::now() - startTime;
+        auto duration = AZStd::chrono::steady_clock::now() - startTime;
         EXPECT_LT(duration, minDuration);
     }
 
@@ -530,12 +530,12 @@ namespace UnitTest
             trDel.join();
             AZ_TEST_ASSERT(m_data == m_dataMax);
 
-            chrono::system_clock::time_point startTime = chrono::system_clock::now();
+            chrono::steady_clock::time_point startTime = chrono::steady_clock::now();
             {
                 AZStd::thread tr1(desc1, AZStd::bind(&Parallel_Thread::sleep_thread, this, chrono::milliseconds(100)));
                 tr1.join();
             }
-            auto sleepTime = chrono::system_clock::now() - startTime;
+            auto sleepTime = chrono::steady_clock::now() - startTime;
             //printf("\nSleeptime: %d Ms\n",(unsigned int)  ());
             // On Windows we use Sleep. Sleep is dependent on MM timers.
             // 99000 can be used only if we support 1 ms resolution timeGetDevCaps() and we set it timeBeginPeriod(1) timeEndPeriod(1)
@@ -1136,7 +1136,7 @@ namespace UnitTest
         AZStd::condition_variable cv;
         AZStd::mutex cv_mutex;
         AZStd::atomic<AZStd::cv_status> status = { AZStd::cv_status::no_timeout };
-        AZStd::chrono::system_clock::time_point startTime;
+        AZStd::chrono::steady_clock::time_point startTime;
         // note that we capture the start and end time in the thread - this is because threads starting and stopping
         // can have unpredictable scheduling.
 
@@ -1146,10 +1146,10 @@ namespace UnitTest
         {
             AZStd::unique_lock<AZStd::mutex> lock(cv_mutex);
             auto waitDuration = AZStd::chrono::milliseconds(WAIT_TIME_MS);
-            startTime = AZStd::chrono::system_clock::now();
+            startTime = AZStd::chrono::steady_clock::now();
             auto waitUntilTime = startTime + waitDuration;
             status = cv.wait_until(lock, waitUntilTime);
-            timeSpent = AZStd::chrono::system_clock::now() - startTime;
+            timeSpent = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - startTime);
         };
         
         // we aren't going to signal it, and ensure the timeout was reached.
@@ -1167,16 +1167,16 @@ namespace UnitTest
         AZStd::condition_variable cv;
         AZStd::mutex cv_mutex;
         AZStd::atomic<AZStd::cv_status> status = { AZStd::cv_status::no_timeout };
-        AZStd::chrono::system_clock::time_point startTime;
+        AZStd::chrono::steady_clock::time_point startTime;
         AZStd::chrono::milliseconds timeSpent;
 
         auto wait = [&]()
         {
             AZStd::unique_lock<AZStd::mutex> lock(cv_mutex);
-            auto waitUntilTime = AZStd::chrono::system_clock::now();
+            auto waitUntilTime = AZStd::chrono::steady_clock::now();
             startTime = waitUntilTime;
             status = cv.wait_until(lock, waitUntilTime);
-            timeSpent = AZStd::chrono::system_clock::now() - startTime;
+            timeSpent = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - startTime);
         };
         
         AZStd::thread waitThread1(wait);
@@ -1193,22 +1193,22 @@ namespace UnitTest
         AZStd::mutex cv_mutex;
         AZStd::atomic_bool status = { true };
         auto pred = [](){ return false; };
-        AZStd::chrono::system_clock::time_point startTime;
+        AZStd::chrono::steady_clock::time_point startTime;
         AZStd::chrono::milliseconds timeSpent;
         
         auto wait = [&]()
         {
             AZStd::unique_lock<AZStd::mutex> lock(cv_mutex);
-            auto waitUntilTime = AZStd::chrono::system_clock::now();
+            auto waitUntilTime = AZStd::chrono::steady_clock::now();
             startTime = waitUntilTime;
             status = cv.wait_until(lock, waitUntilTime, pred);
-            timeSpent = AZStd::chrono::system_clock::now() - startTime;
+            timeSpent = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - startTime);
         };
-        
-        
+
+
         AZStd::thread waitThread1(wait);
         waitThread1.join();
-        
+
         // we should have timed out immediately:
         EXPECT_LT(timeSpent, AZStd::chrono::milliseconds(MARGIN_OF_ERROR_MS));
         EXPECT_FALSE(status); // if the time has passed, the status should be false.
@@ -1220,25 +1220,25 @@ namespace UnitTest
         AZStd::condition_variable cv;
         AZStd::mutex cv_mutex;
         AZStd::atomic_bool retVal = { true };
-        
+
         auto pred = []() { return false; }; // should cause it to wait the entire duration
 
-        AZStd::chrono::system_clock::time_point startTime;
+        AZStd::chrono::steady_clock::time_point startTime;
         AZStd::chrono::milliseconds timeSpent;
 
         auto wait = [&]()
         {
             AZStd::unique_lock<AZStd::mutex> lock(cv_mutex);
             auto waitDuration = AZStd::chrono::milliseconds(WAIT_TIME_MS);
-            startTime = AZStd::chrono::system_clock::now();
-            auto waitUntilTime =  startTime + waitDuration;
+            startTime = AZStd::chrono::steady_clock::now();
+            auto waitUntilTime = startTime + waitDuration;
             retVal = cv.wait_until(lock, waitUntilTime, pred);
-            timeSpent = AZStd::chrono::system_clock::now() - startTime;
+            timeSpent = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - startTime);
         };
-        
+
         // we aren't going to signal it, and ensure the timeout was reached.
         AZStd::thread waitThread1(wait);
-        
+
         waitThread1.join();
 
         // the duration given is a minimum time, for wait_until, so we should have timed out above
@@ -1251,26 +1251,26 @@ namespace UnitTest
     {
         AZStd::condition_variable cv;
         AZStd::mutex cv_mutex;
-        AZStd::atomic_bool retVal = {true};
-        AZStd::chrono::system_clock::time_point startTime;
+        AZStd::atomic_bool retVal = { true };
+        AZStd::chrono::steady_clock::time_point startTime;
         AZStd::chrono::milliseconds timeSpent;
 
         auto pred = []() { return true; }; // should cause it to immediately return
-        
+
         auto wait = [&]()
         {
             AZStd::unique_lock<AZStd::mutex> lock(cv_mutex);
             auto waitDuration = AZStd::chrono::milliseconds(WAIT_TIME_MS);
-            startTime = AZStd::chrono::system_clock::now();
+            startTime = AZStd::chrono::steady_clock::now();
             auto waitUntilTime = startTime + waitDuration;
-            
+
             retVal = cv.wait_until(lock, waitUntilTime, pred);
-            timeSpent = AZStd::chrono::system_clock::now() - startTime;
+            timeSpent = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - startTime);
         };
-        
+
         AZStd::thread waitThread1(wait);
         waitThread1.join();
-        
+
         // we should NOT have reached the minimum time or in fact waited at all:
         EXPECT_LE(timeSpent, AZStd::chrono::milliseconds(MARGIN_OF_ERROR_MS));
         EXPECT_TRUE(retVal); // we didn't wake up but still returned true.
@@ -1284,16 +1284,16 @@ namespace UnitTest
         AZStd::mutex cv_mutex;
         AZStd::atomic<AZStd::cv_status> status = { AZStd::cv_status::no_timeout };
 
-        AZStd::chrono::system_clock::time_point startTime;
+        AZStd::chrono::steady_clock::time_point startTime;
         AZStd::chrono::milliseconds timeSpent;
 
         auto wait = [&]()
         {
             AZStd::unique_lock<AZStd::mutex> lock(cv_mutex);
             auto waitDuration = AZStd::chrono::milliseconds(WAIT_TIME_MS);
-            startTime = AZStd::chrono::system_clock::now();
+            startTime = AZStd::chrono::steady_clock::now();
             status = cv.wait_for(lock, waitDuration);
-            timeSpent = AZStd::chrono::system_clock::now() - startTime;
+            timeSpent = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - startTime);
         };
         
         // we aren't going to signal it, and ensure the timeout was reached.
@@ -1314,16 +1314,16 @@ namespace UnitTest
         AZStd::atomic_bool status = {true};
         auto pred = []() { return false; };
 
-        AZStd::chrono::system_clock::time_point startTime;
+        AZStd::chrono::steady_clock::time_point startTime;
         AZStd::chrono::milliseconds timeSpent;
 
         auto wait = [&]()
         {
             AZStd::unique_lock<AZStd::mutex> lock(cv_mutex);
-            startTime = AZStd::chrono::system_clock::now();
+            startTime = AZStd::chrono::steady_clock::now();
             auto waitDuration = AZStd::chrono::milliseconds(WAIT_TIME_MS);
             status = cv.wait_for(lock, waitDuration, pred);
-            timeSpent = AZStd::chrono::system_clock::now() - startTime;
+            timeSpent = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - startTime);
         };
         
         // we aren't going to signal it, and ensure the timeout was reached.
@@ -1341,7 +1341,7 @@ namespace UnitTest
         AZStd::mutex cv_mutex;
         AZStd::atomic_int i(0);
         AZStd::atomic_bool done(false);
-        AZStd::chrono::system_clock::time_point startTime;
+        AZStd::chrono::steady_clock::time_point startTime;
         AZStd::chrono::milliseconds timeSpent;
         constexpr AZStd::chrono::seconds waitTimeCrossThread(10);
         // normally we'd wait for WAIT_TIME_MS, but in this case, a completely different thread is doing the signalling,
@@ -1354,11 +1354,11 @@ namespace UnitTest
             AZStd::unique_lock<AZStd::mutex> lock(cv_mutex);
             
             auto waitDuration = waitTimeCrossThread;
-            startTime = AZStd::chrono::system_clock::now();
+            startTime = AZStd::chrono::steady_clock::now();
             auto waitUntilTime = startTime + waitDuration;
             // we expect the other thread to wake us up before the timeout expires so the following should return true
             EXPECT_TRUE(cv.wait_until(lock, waitUntilTime, [&]{ return i == 1; }));
-            timeSpent = AZStd::chrono::system_clock::now() - startTime;
+            timeSpent = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - startTime);
             EXPECT_EQ(1, i);
             done = true;
         };
@@ -1540,11 +1540,11 @@ namespace UnitTest
 
             AZStd::thread deadlocker_thread = AZStd::thread(deadlocker_function);
 
-            chrono::system_clock::time_point startTime = chrono::system_clock::now();
+            chrono::steady_clock::time_point startTime = chrono::steady_clock::now();
             while (!doneIt.load())
             {
                 AZStd::this_thread::yield();
-                auto sleepTime = chrono::system_clock::now() - startTime;
+                auto sleepTime = chrono::steady_clock::now() - startTime;
 
                 // the test normally succeeds in under a second
                 // but machines can be slow, so we'll give it 20x the

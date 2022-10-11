@@ -13,7 +13,6 @@ import logging
 import os
 import socket
 from datetime import datetime
-from warnings import warn
 
 import pytest
 
@@ -25,7 +24,7 @@ import ly_test_tools.environment.file_system
 import ly_test_tools.launchers.launcher_helper
 import ly_test_tools.launchers.platforms.base
 import ly_test_tools.environment.watchdog
-from ly_test_tools import ALL_PLATFORM_OPTIONS, HOST_OS_PLATFORM, HOST_OS_DEDICATED_SERVER, HOST_OS_GENERIC_EXECUTABLE
+from ly_test_tools import ALL_PLATFORM_OPTIONS, HOST_OS_PLATFORM
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +45,7 @@ def pytest_addoption(parser):
                      help="An existing CMake binary output directory which contains the lumberyard executables,"
                           "such as: D:/ly/dev/windows_vs2017/bin/profile/")
 
+
 def pytest_configure(config):
     """
     Save custom CLI options during Pytest configuration, so they are later accessible without using fixtures
@@ -54,6 +54,7 @@ def pytest_configure(config):
     """
     ly_test_tools._internal.pytest_plugin.build_directory = _get_build_directory(config)
     ly_test_tools._internal.pytest_plugin.output_path = _get_output_path(config)
+
 
 def _get_build_directory(config):
     """
@@ -252,34 +253,6 @@ def _launcher(request, workspace, launcher_platform, level=""):
     request.addfinalizer(teardown)
 
     return launcher
-
-
-@pytest.fixture(scope="function")
-def material_editor(workspace, request, crash_log_watchdog):
-    # type: (...) -> ly_test_tools.launchers.platforms.base.Launcher
-    return _material_editor(
-        request=request,
-        workspace=workspace,
-        launcher_platform=get_fixture_argument(request, 'launcher_platform', HOST_OS_PLATFORM))
-
-
-def _material_editor(request, workspace, launcher_platform):
-    """Separate implementation to call directly during unit tests"""
-    return ly_test_tools.launchers.launcher_helper.create_material_editor(workspace, launcher_platform)
-
-
-@pytest.fixture(scope="function")
-def generic_launcher(workspace, request, crash_log_watchdog):
-    # type: (...) -> ly_test_tools.launchers.platforms.base.Launcher
-    return _generic_launcher(
-        workspace=workspace,
-        launcher_platform=get_fixture_argument(request, 'launcher_platform', HOST_OS_GENERIC_EXECUTABLE),
-        exe_file_name=get_fixture_argument(request, 'exe_file_name', ''))
-
-
-def _generic_launcher(workspace, launcher_platform, exe_file_name):
-    """Separate implementation to call directly during unit tests"""
-    return ly_test_tools.launchers.launcher_helper.create_generic_launcher(workspace, launcher_platform, exe_file_name)
 
 
 @pytest.fixture

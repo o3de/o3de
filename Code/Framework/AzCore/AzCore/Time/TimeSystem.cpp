@@ -109,6 +109,20 @@ namespace AZ
         return m_realAccumulatedTimeUs;
     }
 
+    void TimeSystem::SetElapsedTimeMsDebug([[maybe_unused]] TimeMs time)
+    {
+#ifndef AZ_RELEASE_BUILD
+        m_accumulatedTimeUs = TimeMsToUs(time);
+#endif
+    }
+
+    void TimeSystem::SetElapsedTimeUsDebug([[maybe_unused]] TimeUs time)
+    {
+#ifndef AZ_RELEASE_BUILD
+        m_accumulatedTimeUs = time;
+#endif
+    }
+
     TimeUs TimeSystem::GetSimulationTickDeltaTimeUs() const
     {
         return m_simulationTickDeltaTimeUs;

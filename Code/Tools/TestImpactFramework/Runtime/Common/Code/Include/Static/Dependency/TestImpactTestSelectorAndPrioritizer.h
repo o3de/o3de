@@ -8,13 +8,15 @@
 
 #pragma once
 
+#include <BuildTarget/Common/TestImpactBuildGraph.h>
 #include <TestImpactFramework/TestImpactPolicy.h>
 
 #include <Dependency/TestImpactChangeDependencyList.h>
 
-#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/containers/set.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/unordered_set.h>
+#include <AzCore/std/containers/vector.h>
 
 namespace TestImpact
 {
@@ -43,10 +45,10 @@ namespace TestImpact
         AZStd::vector<const TestTarget*> SelectTestTargets(
             const ChangeDependencyList<ProductionTarget, TestTarget>& changeDependencyList, Policy::TestPrioritization testSelectionStrategy);
 
-    private:
+    protected:
         //! Map of selected test targets and the production targets they cover for the given set of source changes.
         using SelectedTestTargetAndDependerMap = AZStd::unordered_map<const TestTarget*, AZStd::unordered_set<const ProductionTarget*>>;
-
+    private:
         //! Selects the test targets covering the set of source changes in the change dependency list.
         //! @param changeDependencyList The change dependency list containing the CRUD source changes to select tests for.
         //! @returns The selected tests and their covering production targets for the given set of source changes.
@@ -59,44 +61,68 @@ namespace TestImpact
         AZStd::vector<const TestTarget*> PrioritizeSelectedTestTargets(
             const SelectedTestTargetAndDependerMap& selectedTestTargetAndDependerMap, Policy::TestPrioritization testSelectionStrategy);
 
-        const DynamicDependencyMap<ProductionTarget, TestTarget>* m_dynamicDependencyMap;
-
     protected:
+        //! Result of source dependency action.
+        enum class SourceOperationActionResult : AZ::u8
+        {
+            Continue, //!< Continue with actions for this CRUD operation.
+            ConcludeSelection, //!< Conclude selection (no further actions).
+        };
+        
+        //! Iterate over the production and test targets for newly created sources with no coverage and act on them.
+        [[nodiscard]] virtual SourceOperationActionResult IterateCreateParentedSourcesWithNoCoverage(
+            const SourceDependency<ProductionTarget, TestTarget>& sourceDependency,
+            SelectedTestTargetAndDependerMap& selectedTestTargetMap);
+        
+        //! Iterate over the production and test targets for updated sources with coverage and act on them.
+        [[nodiscard]] virtual SourceOperationActionResult IterateUpdateParentedSourcesWithCoverage(
+            const SourceDependency<ProductionTarget, TestTarget>& sourceDependency,
+            SelectedTestTargetAndDependerMap& selectedTestTargetMap);
+        
+        //! Iterate over the production and test targets for updated sources with no coverage and act on them.
+        [[nodiscard]] virtual SourceOperationActionResult IterateUpdateParentedSourcesWithoutCoverage(
+            const SourceDependency<ProductionTarget, TestTarget>& sourceDependency,
+            SelectedTestTargetAndDependerMap& selectedTestTargetMap);
+
         //! Action to perform when production sources are created.
-        virtual void CreateProductionSourceAction(const ProductionTarget* target, SelectedTestTargetAndDependerMap& selectedTestTargetMap);
+        [[nodiscard]] virtual SourceOperationActionResult CreateProductionSourceWithoutCoverageAction(
+            const ProductionTarget* target, SelectedTestTargetAndDependerMap& selectedTestTargetMap);
 
         //! Action to perform when test sources are created.
-        virtual void CreateTestSourceAction(const TestTarget* target, SelectedTestTargetAndDependerMap& selectedTestTargetMap);
+        [[nodiscard]] virtual SourceOperationActionResult CreateTestSourceCreateProductionSourceWithoutCoverageAction(
+            const TestTarget* target, SelectedTestTargetAndDependerMap& selectedTestTargetMap);
 
         //! Action to perform when production sources with coverage are updated.
-        virtual void UpdateProductionSourceWithCoverageAction(
+        [[nodiscard]] virtual SourceOperationActionResult UpdateProductionSourceWithCoverageAction(
             const ProductionTarget* target,
             SelectedTestTargetAndDependerMap& selectedTestTargetMap,
             const SourceDependency<ProductionTarget, TestTarget>& sourceDependency);
 
         //! Action to perform when test sources with coverage are updated.
-        virtual void UpdateTestSourceWithCoverageAction(
+        [[nodiscard]] virtual SourceOperationActionResult UpdateTestSourceWithCoverageAction(
             const TestTarget* target,
             SelectedTestTargetAndDependerMap& selectedTestTargetMap);
 
         //! Action to perform when production sources without coverage are updated.
-        virtual void UpdateProductionSourceWithoutCoverageAction(
+        [[nodiscard]] virtual SourceOperationActionResult UpdateProductionSourceWithoutCoverageAction(
             const ProductionTarget* target,
             SelectedTestTargetAndDependerMap& selectedTestTargetMap);
 
         //! Action to perform when test sources without coverage are updated.
-        virtual void UpdateTestSourceWithoutCoverageAction(
+        [[nodiscard]] virtual SourceOperationActionResult UpdateTestSourceWithoutCoverageAction(
             const TestTarget* target,
             SelectedTestTargetAndDependerMap& selectedTestTargetMap);
 
-        //! Action to perform when sources that cannot be determined to be production or test sources without coverage are updated.
-        virtual void UpdateIndeterminateSourceWithoutCoverageAction(
+        //! Action to perform when sources that cannot be determined to be production or test sources with coverage are updated.
+        [[nodiscard]] virtual SourceOperationActionResult UpdateIndeterminateSourceWithCoverageAction(
             SelectedTestTargetAndDependerMap& selectedTestTargetMap,
             const SourceDependency<ProductionTarget, TestTarget>& sourceDependency);
 
-        //! Action to perform when sources that cannot be determined to be production or test sources without coverage are deleted.
-        virtual void DeleteIndeterminateSourceWithoutCoverageAction(
+        //! Action to perform when sources that cannot be determined to be production or test sources with coverage are deleted.
+        [[nodiscard]] virtual SourceOperationActionResult DeleteIndeterminateSourceWithCoverageAction(
             SelectedTestTargetAndDependerMap& selectedTestTargetMap, const SourceDependency<ProductionTarget, TestTarget>& sourceDependency);
+
+        const DynamicDependencyMap<ProductionTarget, TestTarget>* m_dynamicDependencyMap;
     };
 
     template<typename ProductionTarget, typename TestTarget>
@@ -116,7 +142,143 @@ namespace TestImpact
     }
 
     template<typename ProductionTarget, typename TestTarget>
-    void TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::CreateProductionSourceAction(
+    typename TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::SourceOperationActionResult
+    TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::IterateCreateParentedSourcesWithNoCoverage(
+        const SourceDependency<ProductionTarget, TestTarget>& sourceDependency,
+        SelectedTestTargetAndDependerMap& selectedTestTargetMap)
+    {
+        for (const auto& parentTarget : sourceDependency.GetParentTargets())
+        {
+            if (parentTarget.GetTarget()->GetType() == TargetType::ProductionTarget)
+            {
+                // Parent Targets: Yes
+                // Coverage Data : No
+                // Source Type   : Production
+                //
+                // Scenario
+                // 1. The file has been newly created
+                // 2. This file exists in one or more source to production target mapping artifacts
+                // 3. There exists no coverage data for this file in the source covering test list
+                if (SourceOperationActionResult::ConcludeSelection ==
+                    CreateProductionSourceWithoutCoverageAction(parentTarget.GetProductionTarget(), selectedTestTargetMap))
+                {
+                    return SourceOperationActionResult::ConcludeSelection;
+                }
+            }
+            else
+            {
+                // Parent Targets: Yes
+                // Coverage Data : No
+                // Source Type   : Test
+                //
+                // Scenario
+                // 1. The file has been newly created
+                // 2. This file exists in one or more source to test target mapping artifacts
+                // 3. There exists no coverage data for this file in the source covering test list
+                if (SourceOperationActionResult::ConcludeSelection ==
+                    CreateTestSourceCreateProductionSourceWithoutCoverageAction(parentTarget.GetTestTarget(), selectedTestTargetMap))
+                {
+                    return SourceOperationActionResult::ConcludeSelection;
+                }
+            }
+        }
+    
+        return SourceOperationActionResult::Continue;
+    }
+    
+    template<typename ProductionTarget, typename TestTarget>
+    typename TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::SourceOperationActionResult
+    TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::IterateUpdateParentedSourcesWithCoverage(
+        const SourceDependency<ProductionTarget, TestTarget>& sourceDependency,
+        SelectedTestTargetAndDependerMap& selectedTestTargetMap)
+    {
+        for (const auto& parentTarget : sourceDependency.GetParentTargets())
+        {
+            if (parentTarget.GetTarget()->GetType() == TargetType::ProductionTarget)
+            {
+                // Parent Targets: Yes
+                // Coverage Data : Yes
+                // Source Type   : Production
+                //
+                // Scenario
+                // 1. The existing file has been modified
+                // 2. This file exists in one or more source to production target mapping artifacts
+                // 3. There exists coverage data for this file in the source covering test list
+                if (SourceOperationActionResult::ConcludeSelection ==
+                    UpdateProductionSourceWithCoverageAction(parentTarget.GetProductionTarget(), selectedTestTargetMap, sourceDependency))
+                {
+                    return SourceOperationActionResult::ConcludeSelection;
+                }
+            }
+            else
+            {
+                // Parent Targets: Yes
+                // Coverage Data : Yes
+                // Source Type   : Test
+                //
+                // Scenario
+                // 1. The existing file has been modified
+                // 2. This file exists in one or more source to test target mapping artifacts
+                // 3. There exists coverage data for this file in the source covering test list
+                if (SourceOperationActionResult::ConcludeSelection ==
+                    UpdateTestSourceWithCoverageAction(parentTarget.GetTestTarget(), selectedTestTargetMap))
+                {
+                    return SourceOperationActionResult::ConcludeSelection;
+                }
+            }
+        }
+    
+        return SourceOperationActionResult::Continue;
+    }
+    
+    template<typename ProductionTarget, typename TestTarget>
+    typename TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::SourceOperationActionResult
+    TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::IterateUpdateParentedSourcesWithoutCoverage(
+        const SourceDependency<ProductionTarget, TestTarget>& sourceDependency,
+        SelectedTestTargetAndDependerMap& selectedTestTargetMap)
+    {
+        for (const auto& parentTarget : sourceDependency.GetParentTargets())
+        {
+            if (parentTarget.GetTarget()->GetType() == TargetType::ProductionTarget)
+            {
+                // Parent Targets: Yes
+                // Coverage Data : No
+                // Source Type   : Production
+                //
+                // Scenario
+                // 1. The existing file has been modified
+                // 2. This file exists in one or more source to test target mapping artifacts
+                // 3. There exists no coverage data for this file in the source covering test list
+                if (SourceOperationActionResult::ConcludeSelection ==
+                    UpdateProductionSourceWithoutCoverageAction(parentTarget.GetProductionTarget(), selectedTestTargetMap))
+                {
+                    return SourceOperationActionResult::ConcludeSelection;
+                }
+            }
+            else
+            {
+                // Parent Targets: Yes
+                // Coverage Data : No
+                // Source Type   : Test
+                //
+                // Scenario
+                // 1. The existing file has been modified
+                // 2. This file exists in one or more source to test target mapping artifacts
+                // 3. There exists no coverage data for this file in the source covering test list
+                if (SourceOperationActionResult::ConcludeSelection ==
+                    UpdateTestSourceWithoutCoverageAction(parentTarget.GetTestTarget(), selectedTestTargetMap))
+                {
+                    return SourceOperationActionResult::ConcludeSelection;
+                }
+            }
+        }
+    
+        return SourceOperationActionResult::Continue;
+    }
+
+    template<typename ProductionTarget, typename TestTarget>
+    typename TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::SourceOperationActionResult
+    TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::CreateProductionSourceWithoutCoverageAction(
         const ProductionTarget* target, SelectedTestTargetAndDependerMap& selectedTestTargetMap)
     {
         // Action
@@ -126,19 +288,26 @@ namespace TestImpact
         {
             selectedTestTargetMap[testTarget].insert(target);
         }
+
+        return SourceOperationActionResult::Continue;
     }
 
     template<typename ProductionTarget, typename TestTarget>
-    void TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::CreateTestSourceAction(
+    typename TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::SourceOperationActionResult
+    TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::CreateTestSourceCreateProductionSourceWithoutCoverageAction(
         const TestTarget* target, SelectedTestTargetAndDependerMap& selectedTestTargetMap)
     {
         // Action
         // 1. Select all parent test targets
         selectedTestTargetMap.insert(target);
+
+        return SourceOperationActionResult::Continue;
     }
 
     template<typename ProductionTarget, typename TestTarget>
-    void TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::UpdateProductionSourceWithCoverageAction(
+    typename TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::SourceOperationActionResult
+    TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::
+        UpdateProductionSourceWithCoverageAction(
         const ProductionTarget* target,
         SelectedTestTargetAndDependerMap& selectedTestTargetMap,
         const SourceDependency<ProductionTarget, TestTarget>& sourceDependency)
@@ -149,61 +318,81 @@ namespace TestImpact
         {
             selectedTestTargetMap[testTarget].insert(target);
         }
+
+        return SourceOperationActionResult::Continue;
     }
 
     template<typename ProductionTarget, typename TestTarget>
-    void TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::UpdateTestSourceWithCoverageAction(
+    typename TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::SourceOperationActionResult
+    TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::
+        UpdateTestSourceWithCoverageAction(
         const TestTarget* target, SelectedTestTargetAndDependerMap& selectedTestTargetMap)
     {
         // Action
         // 1. Select the parent test targets for this file
         selectedTestTargetMap.insert(target);
+
+        return SourceOperationActionResult::Continue;
     }
 
     template<typename ProductionTarget, typename TestTarget>
-    void TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::UpdateProductionSourceWithoutCoverageAction(
+    typename TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::SourceOperationActionResult
+    TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::
+        UpdateProductionSourceWithoutCoverageAction(
         [[maybe_unused]] const ProductionTarget* target,
         [[maybe_unused]] SelectedTestTargetAndDependerMap& selectedTestTargetMap)
     {
         // Action
-        // 1. Do nothing
+        // 1. Skip the file
+        return SourceOperationActionResult::Continue;
     }
 
     template<typename ProductionTarget, typename TestTarget>
-    void TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::UpdateTestSourceWithoutCoverageAction(
+    typename TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::SourceOperationActionResult
+    TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::
+        UpdateTestSourceWithoutCoverageAction(
         const TestTarget* target, SelectedTestTargetAndDependerMap& selectedTestTargetMap)
     {
         // Action
         // 1. Select the parent test targets for this file
         selectedTestTargetMap.insert(target);
+
+        return SourceOperationActionResult::Continue;
     }
 
     template<typename ProductionTarget, typename TestTarget>
-    void TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::UpdateIndeterminateSourceWithoutCoverageAction(
+    typename TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::SourceOperationActionResult
+    TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::
+        UpdateIndeterminateSourceWithCoverageAction(
         SelectedTestTargetAndDependerMap& selectedTestTargetMap, const SourceDependency<ProductionTarget, TestTarget>& sourceDependency)
     {
         // Action
-        // 1. Log potential orphaned source file warning (handled prior by DynamicDependencyMap)
+        // 1. Log potential orphaned source file warning (handled prior by DynamicDependencyMap::ApplyAndResoveChangeList)
         // 2. Select all test targets covering this file
-        // 3. Delete the existing coverage data from the source covering test list (handled prior by DynamicDependencyMap)
+        // 3. Delete the existing coverage data from the source covering test list (handled prior by DynamicDependencyMap::ApplyAndResoveChangeList)
 
         for (const auto* testTarget : sourceDependency.GetCoveringTestTargets())
         {
             selectedTestTargetMap.insert(testTarget);
         }
+
+        return SourceOperationActionResult::Continue;
     }
 
     template<typename ProductionTarget, typename TestTarget>
-    void TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::DeleteIndeterminateSourceWithoutCoverageAction(
+    typename TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::SourceOperationActionResult
+    TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::DeleteIndeterminateSourceWithCoverageAction(
         SelectedTestTargetAndDependerMap& selectedTestTargetMap, const SourceDependency<ProductionTarget, TestTarget>& sourceDependency)
     {
         // Action
         // 1. Select all test targets covering this file
-        // 2. Delete the existing coverage data from the source covering test list (handled prior by DynamicDependencyMap)
+        // 2. Delete the existing coverage data from the source covering test list (handled prior by DynamicDependencyMap::ApplyAndResoveChangeList)
         for (const auto* testTarget : sourceDependency.GetCoveringTestTargets())
         {
             selectedTestTargetMap.insert(testTarget);
         }
+
+        return SourceOperationActionResult::Continue;
     }
 
     template<typename ProductionTarget, typename TestTarget>
@@ -215,32 +404,91 @@ namespace TestImpact
         // Create operations
         for (const auto& sourceDependency : changeDependencyList.GetCreateSourceDependencies())
         {
-            for (const auto& parentTarget : sourceDependency.GetParentTargets())
+            if (sourceDependency.GetNumParentTargets())
             {
-
-                if (parentTarget.GetTarget()->GetType() == TargetType::ProductionTarget)
+                if (sourceDependency.GetNumCoveringTestTargets())
                 {
                     // Parent Targets: Yes
-                    // Coverage Data : No
-                    // Source Type   : Production
+                    // Coverage Data : Yes
+                    // Source Type   : Irrelevant
                     //
                     // Scenario
-                    // 1. The file has been newly created
-                    // 2. This file exists in one or more source to production target mapping artifacts
-                    // 3. There exists no coverage data for this file in the source covering test list
-                    CreateProductionSourceAction(parentTarget.GetProductionTarget(), selectedTestTargetMap);
+                    // 1. This file previously existed in one or more source to target mapping artifacts
+                    // 2. The file has since been deleted yet no delete crud operation acted upon:
+                    //    a) The coverage data for this file was not deleted from the Source Covering Test List
+                    // 3. The file has since been recreated
+                    // 4. This file exists in one or more source to target mapping artifacts
+                    //
+                    // Action (handled prior by DynamicDependencyMap::ApplyAndResoveChangeList)
+                    // 1. Log Source Covering Test List compromised error
+                    // 2. Throw exception
+                    AZ_Warning(
+                        "TestSelectorAndPrioritizer",
+                        false,
+                        AZStd::string::format(
+                            "Create operation for file with parent targets and coverage data was not expected to be handled here for "
+                            "file '%s'",
+                            sourceDependency.GetPath().c_str())
+                            .c_str());
+                    continue;
                 }
                 else
                 {
                     // Parent Targets: Yes
                     // Coverage Data : No
-                    // Source Type   : Test
+                    // Source Type   : Production or test
+                    if (SourceOperationActionResult::ConcludeSelection ==
+                        IterateCreateParentedSourcesWithNoCoverage(sourceDependency, selectedTestTargetMap))
+                    {
+                        return selectedTestTargetMap;
+                    }
+                }
+            }
+            else
+            {
+                if (sourceDependency.GetNumCoveringTestTargets())
+                {
+                    // Parent Targets: No
+                    // Coverage Data : Yes
+                    // Source Type   : Indeterminate
+                    //
+                    // Scenario
+                    // 1. This file previously existed in one or more source to target mapping artifacts
+                    // 2. The file has since been deleted yet no delete crud operation acted upon:
+                    //    a) The coverage data for this file was not deleted from the Source Covering Test List
+                    // 3. The file has since been recreated
+                    // 4. This file does not exist in any source to target mapping artifacts
+                    //
+                    // Action (handled prior by DynamicDependencyMap::ApplyAndResoveChangeList)
+                    // 1. Log Source Covering Test List compromised error
+                    // 2. Throw exception
+                    AZ_Warning(
+                        "TestSelectorAndPrioritizer",
+                        false,
+                        "Create operation for file with no parent targets but coverage data was not expected to be handled here for "
+                        "file '%s'",
+                        sourceDependency.GetPath().c_str());
+                    continue;
+                }
+                else
+                {
+                    // Parent Targets: No
+                    // Coverage Data : No
+                    // Source Type   : Irrelevant
                     //
                     // Scenario
                     // 1. The file has been newly created
-                    // 2. This file exists in one or more source to test target mapping artifacts
-                    // 3. There exists no coverage data for this file in the source covering test list
-                    CreateTestSourceAction(parentTarget.GetTestTarget(), selectedTestTargetMap);
+                    // 2. This file does not exists in any source to target mapping artifacts.
+                    //
+                    // Action
+                    // 1. Skip the file
+                    AZ_Warning(
+                        "TestSelectorAndPrioritizer",
+                        false,
+                        "Create operation for file with no parent targets or coverage data was not expected to be handled here for "
+                        "file '%s'",
+                        sourceDependency.GetPath().c_str());
+                    continue;
                 }
             }
         }
@@ -252,98 +500,172 @@ namespace TestImpact
             {
                 if (sourceDependency.GetNumCoveringTestTargets())
                 {
-                    for (const auto& parentTarget : sourceDependency.GetParentTargets())
+                    // Parent Targets: Yes
+                    // Coverage Data : Yes
+                    // Source Type   : Production or test
+                    if (SourceOperationActionResult::ConcludeSelection ==
+                        IterateUpdateParentedSourcesWithCoverage(sourceDependency, selectedTestTargetMap))
                     {
-                        if (parentTarget.GetTarget()->GetType() == TargetType::ProductionTarget)
-                        {
-                            // Parent Targets: Yes
-                            // Coverage Data : Yes
-                            // Source Type   : Production
-                            //
-                            // Scenario
-                            // 1. The existing file has been modified
-                            // 2. This file exists in one or more source to production target mapping artifacts
-                            // 3. There exists coverage data for this file in the source covering test list
-                            UpdateProductionSourceWithCoverageAction(parentTarget.GetProductionTarget(), selectedTestTargetMap, sourceDependency);
-                        }
-                        else
-                        {
-                            // Parent Targets: Yes
-                            // Coverage Data : Yes
-                            // Source Type   : Test
-                            //
-                            // Scenario
-                            // 1. The existing file has been modified
-                            // 2. This file exists in one or more source to test target mapping artifacts
-                            // 3. There exists coverage data for this file in the source covering test list
-                            UpdateTestSourceWithCoverageAction(parentTarget.GetTestTarget(), selectedTestTargetMap);
-                        }
+                        return selectedTestTargetMap;
                     }
                 }
                 else
                 {
-                    for (const auto& parentTarget : sourceDependency.GetParentTargets())
+                    // Parent Targets: Yes
+                    // Coverage Data : No
+                    // Source Type   : Production or test
+                    if (SourceOperationActionResult::ConcludeSelection ==
+                        IterateUpdateParentedSourcesWithoutCoverage(sourceDependency, selectedTestTargetMap))
                     {
-                        if (parentTarget.GetTarget()->GetType() == TargetType::ProductionTarget)
-                        {
-                            // Parent Targets: Yes
-                            // Coverage Data : No
-                            // Source Type   : Production
-                            //
-                            // Scenario
-                            // 1. The existing file has been modified
-                            // 2. This file exists in one or more source to test target mapping artifacts
-                            // 3. There exists no coverage data for this file in the source covering test list
-                            UpdateProductionSourceWithoutCoverageAction(parentTarget.GetProductionTarget(), selectedTestTargetMap);
-                        }
-                        else
-                        {
-                            // Parent Targets: Yes
-                            // Coverage Data : No
-                            // Source Type   : Test
-                            //
-                            // Scenario
-                            // 1. The existing file has been modified
-                            // 2. This file exists in one or more source to test target mapping artifacts
-                            // 3. There exists no coverage data for this file in the source covering test list
-                            UpdateTestSourceWithoutCoverageAction(parentTarget.GetTestTarget(), selectedTestTargetMap);
-                        }
+                        return selectedTestTargetMap;
                     }
                 }
             }
             else
             {
-                // Parent Targets: No
-                // Coverage Data : Yes
-                // Source Type   : Indeterminate
-                //
-                // Scenario
-                // 1. The existing file has been modified
-                // 2. Either:
-                //  a) This file previously existed in one or more source to target mapping artifacts
-                //  b) This file no longer exists in any source to target mapping artifacts
-                //  c) The coverage data for this file was has yet to be deleted from the source covering test list
-                // 3. Or:
-                //  a) The file is being used by build targets but has erroneously not been explicitly added to the build
-                //     system (e.g. include directive pulling in a header from the repository that has not been added to
-                //     any build targets due to an oversight)
-                UpdateIndeterminateSourceWithoutCoverageAction(selectedTestTargetMap, sourceDependency);
+                if (sourceDependency.GetNumCoveringTestTargets())
+                {
+                    // Parent Targets: No
+                    // Coverage Data : Yes
+                    // Source Type   : Indeterminate
+                    //
+                    // Scenario
+                    // 1. The existing file has been modified
+                    // 2. Either:
+                    //  a) This file previously existed in one or more source to target mapping artifacts
+                    //  b) This file no longer exists in any source to target mapping artifacts
+                    //  c) The coverage data for this file was has yet to be deleted from the source covering test list
+                    // 3. Or:
+                    //  a) The file is being used by build targets but has erroneously not been explicitly added to the build
+                    //     system (e.g. include directive pulling in a header from the repository that has not been added to
+                    //     any build targets due to an oversight)
+                    if (SourceOperationActionResult::ConcludeSelection ==
+                        UpdateIndeterminateSourceWithCoverageAction(selectedTestTargetMap, sourceDependency))
+                    {
+                        return selectedTestTargetMap;
+                    }
+                }
+                else
+                {
+                    // Parent Targets: No
+                    // Coverage Data : No
+                    // Source Type   : Indeterminate
+                    //
+                    // Scenario
+                    // 1. The existing file has been modified
+                    // 2. This file does not exist in any source to target mapping artifacts
+                    // 3. There exists no coverage data for this file in the Source Covering Test List
+                    //
+                    // Action (handled prior by DynamicDependencyMap::ApplyAndResoveChangeList)
+                    // 1. Skip the file
+                    AZ_Warning(
+                        "TestSelectorAndPrioritizer",
+                        false,
+                        "Update operation for file with no parent targets or coverage data was not expected to be handled here for "
+                        "file '%s'",
+                        sourceDependency.GetPath().c_str());
+                    continue;
+                }
             }
         }
 
         // Delete operations
         for (const auto& sourceDependency : changeDependencyList.GetDeleteSourceDependencies())
         {
-            // Parent Targets: No
-            // Coverage Data : Yes
-            // Source Type   : Indeterminate
-            //
-            // Scenario
-            // 1. The existing file has been deleted
-            // 2. This file previously existed in one or more source to target mapping artifacts
-            // 2. This file does not exist in any source to target mapping artifacts
-            // 4. The coverage data for this file was has yet to be deleted from the source covering test list
-            DeleteIndeterminateSourceWithoutCoverageAction(selectedTestTargetMap, sourceDependency);
+            if (sourceDependency.GetNumParentTargets())
+            {
+                if (sourceDependency.GetNumCoveringTestTargets())
+                {
+                    // Parent Targets: Yes
+                    // Coverage Data : Yes
+                    // Source Type   : Irrelevant
+                    //
+                    // Scenario
+                    // 1. The file has been deleted.
+                    // 2. This file still exists in one or more source to target mapping artifacts
+                    // 2. There exists coverage data for this file in the Source Covering Test List
+                    //
+                    // Action (handled prior by DynamicDependencyMap::ApplyAndResoveChangeList)
+                    // 1. Log source to target mapping and Source Covering Test List integrity compromised error
+                    // 2. Throw exception
+                    AZ_Warning(
+                        "TestSelectorAndPrioritizer",
+                        false,
+                        "Delete operation for file with parent targets and coverage data was not expected to be handled here for "
+                        "file '%s'",
+                        sourceDependency.GetPath().c_str());
+                    continue;
+                }
+                else
+                {
+                    // Parent Targets: Yes
+                    // Coverage Data : No
+                    // Source Type   : Irrelevant
+                    //
+                    // Scenario
+                    // 1. The file has been deleted.
+                    // 2. This file still exists in one or more source to target mapping artifacts
+                    // 2. There exists no coverage data for this file in the Source Covering Test List
+                    //
+                    // Action (handled prior by DynamicDependencyMap::ApplyAndResoveChangeList)
+                    // 1. Log source to target mapping and Source Covering Test List integrity compromised error
+                    // 2. Throw exception
+                    AZ_Warning(
+                        "TestSelectorAndPrioritizer",
+                        false,
+                        "Delete operation for file with parent targets but no coverage data was not expected to be handled here for "
+                        "file '%s'",
+                        sourceDependency.GetPath().c_str());
+                    continue;
+                }
+            }
+            else
+            {
+                if (sourceDependency.GetNumCoveringTestTargets())
+                {
+                    // Parent Targets: No
+                    // Coverage Data : Yes
+                    // Source Type   : Indeterminate
+                    //
+                    // Scenario
+                    // 1. The existing file has been deleted
+                    // 2. This file previously existed in one or more source to target mapping artifacts
+                    // 2. This file does not exist in any source to target mapping artifacts
+                    // 4. The coverage data for this file was has yet to be deleted from the source covering test list
+                    //
+                    // Action (handled prior by DynamicDependencyMap::ApplyAndResoveChangeList)
+                    // 1. Delete the existing coverage data from the Source Covering Test List
+                    // 2. Skip the file
+                    if (SourceOperationActionResult::ConcludeSelection ==
+                        DeleteIndeterminateSourceWithCoverageAction(selectedTestTargetMap, sourceDependency))
+                    {
+                        return selectedTestTargetMap;
+                    }
+                }
+                else
+                {
+                    // Parent Targets: No
+                    // Coverage Data : No
+                    // Source Type   : Indeterminate
+                    //
+                    // Scenario
+                    // 1. The file has been deleted
+                    // 2. This file does not exist in any source to target mapping artifacts
+                    // 3. There exists no coverage data for this file in the Source Covering Test List
+                    //
+                    // Action (handled prior by DynamicDependencyMap::ApplyAndResoveChangeList)
+                    // 1. Skip the file
+                    AZ_Warning(
+                        "TestSelectorAndPrioritizer",
+                        false,
+                        AZStd::string::format(
+                            "Delete operation for file with no parent targets or coverage data was not expected to be handled here for "
+                            "file '%s'",
+                            sourceDependency.GetPath().c_str())
+                            .c_str());
+                    continue;
+                }
+            }
         }
 
         return selectedTestTargetMap;
@@ -351,16 +673,87 @@ namespace TestImpact
 
     template<typename ProductionTarget, typename TestTarget>
     AZStd::vector<const TestTarget*> TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::PrioritizeSelectedTestTargets(
-        const SelectedTestTargetAndDependerMap& selectedTestTargetAndDependerMap,
-        [[maybe_unused]] Policy::TestPrioritization testSelectionStrategy)
+        const SelectedTestTargetAndDependerMap& selectedTestTargetAndDependerMap, const Policy::TestPrioritization testSelectionStrategy)
     {
         AZStd::vector<const TestTarget*> selectedTestTargets;
+        selectedTestTargets.reserve(selectedTestTargetAndDependerMap.size());
 
-        // Prioritization disabled for now
-        // SPEC-6563
-        for (const auto& [testTarget, dependerTargets] : selectedTestTargetAndDependerMap)
+        const auto fillSelectedTestTargets = [&selectedTestTargets](const auto& containerOfPairs)
         {
-            selectedTestTargets.push_back(testTarget);
+            AZStd::transform(
+                containerOfPairs.begin(),
+                containerOfPairs.end(),
+                AZStd::back_inserter(selectedTestTargets),
+                [](const auto& pair)
+                {
+                    return pair.first;
+                });
+        };
+
+        if (testSelectionStrategy == Policy::TestPrioritization::DependencyLocality)
+        {
+            const BuildTargetList<ProductionTarget, TestTarget>* buildTargetList = m_dynamicDependencyMap->GetBuildTargetList();
+            const BuildGraph<ProductionTarget, TestTarget>& buildGraph = buildTargetList->GetBuildGraph();
+
+            AZStd::vector<AZStd::pair<const TestTarget*, AZStd::optional<AZStd::size_t>>> testTargetDistancePairs;
+            testTargetDistancePairs.reserve(selectedTestTargetAndDependerMap.size());
+
+            // Loop through each test target in our map, walk the build dependency graph for that target and retrieve the vertices for the
+            // production targets in productionTargets. Find and store the distance to the closest productionTarget if one exists.
+            for (const auto [testTarget, productionTargets] : selectedTestTargetAndDependerMap)
+            {
+                AZStd::optional<AZStd::size_t> minimum;
+                buildGraph.WalkBuildDependencies(
+                    buildTargetList->GetBuildTargetOrThrow(testTarget->GetName()),
+                    [&](const BuildGraphVertex<ProductionTarget, TestTarget>& vertex, AZStd::size_t distance)
+                    {
+                        if (const auto productionTarget = vertex.m_buildTarget.GetProductionTarget();
+                            productionTarget && productionTargets.contains(productionTarget))
+                        {
+                            if (!minimum.has_value() || distance < minimum)
+                            {
+                                minimum = distance;
+                            };
+                        }
+                        return BuildGraphVertexVisitResult::Continue;
+                    });
+
+                // If we found any productionTargets, store the distance to the closest one.
+                // Else we didn't find any vertices, store the testTarget with no distance. This will be interpreted as infinite distance
+                // and the test targets priority will be lower
+                if (minimum.has_value())
+                {
+                    testTargetDistancePairs.emplace_back(testTarget, minimum);
+                }
+                else
+                {
+                    testTargetDistancePairs.emplace_back(testTarget);
+                }
+            }
+
+            // Sort our pairs by distance and put our test targets into the vector in order of distance (closest first)
+            AZStd::sort(
+                testTargetDistancePairs.begin(),
+                testTargetDistancePairs.end(),
+                [](const auto& left, const auto& right)
+                {
+                    if (!left.second.has_value())
+                    {
+                        return false;
+                    }
+                    else if (!right.second.has_value())
+                    {
+                        return true;
+                    }
+
+                    return left.second.value() < right.second.value();
+                });
+
+            fillSelectedTestTargets(testTargetDistancePairs);
+        }
+        else
+        {
+            fillSelectedTestTargets(selectedTestTargetAndDependerMap);
         }
 
         return selectedTestTargets;

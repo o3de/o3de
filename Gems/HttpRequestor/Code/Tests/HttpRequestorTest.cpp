@@ -8,7 +8,6 @@
 
 #include <AzTest/AzTest.h>
 #include <AzCore/UnitTest/TestTypes.h>
-#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/parallel/atomic.h>
 #include <AzCore/std/parallel/condition_variable.h>
 
@@ -36,7 +35,8 @@ TEST_F(HttpTest, HttpRequesterTest)
     }
 
     httpRequestManager.AddTextRequest(HttpRequestor::TextParameters(
-        "https://httpbin.org/ip", Aws::Http::HttpMethod::HTTP_GET,
+        "https://httpbin.org/ip",
+        Aws::Http::HttpMethod::HTTP_GET,
         [&resultData, &resultCode, &requestConditionVar](const AZStd::string& data, Aws::Http::HttpResponseCode code)
         {
             resultData = data;

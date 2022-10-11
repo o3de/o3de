@@ -165,9 +165,9 @@ namespace ScriptEventData
 
         //! Data can only be set into a property through this function.
         template <typename T>
-        void Set(T& data)
+        void Set(T&& data)
         {
-            m_data = AZStd::any(data);
+            m_data = AZStd::any(AZStd::forward<T>(data));
         }
 
         //! Returns the latest version of the property

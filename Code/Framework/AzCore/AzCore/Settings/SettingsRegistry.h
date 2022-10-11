@@ -142,7 +142,7 @@ namespace AZ
         struct NotifyEventArgs
         {
             AZStd::string_view m_jsonKeyPath;
-            Type m_type = Type::NoType;
+            SettingsType m_type;
             AZStd::string_view m_mergeFilePath;
         };
         using NotifyCallback = AZStd::function<void(const NotifyEventArgs& notifierArgs)>;
@@ -161,8 +161,28 @@ namespace AZ
         using PreMergeEventHandler = typename PreMergeEvent::Handler;
         using PostMergeEventHandler = typename PostMergeEvent::Handler;
 
+        //! Stores the data about the settings field being visited
+        //! The full key path to the settings field is supplied, along with the settings type
+        struct VisitArgs
+        {
+            VisitArgs(const AZ::SettingsRegistryInterface& registry)
+                : m_registry(registry)
+            {}
+
+            //! Full key path to the settings field being visited. Includes field name
+            //! i.e "/O3DE/Settings/FieldName"
+            AZStd::string_view m_jsonKeyPath;
+            //! The specific field name being visited. The field name is parented to an object or array
+            //! i.e "FieldName"
+            AZStd::string_view m_fieldName;
+            //! The type of the setting stored within the registry.
+            SettingsType m_type;
+            //! Reference to the Settings Registry instance performing the visit operations
+            const AZ::SettingsRegistryInterface& m_registry;
+        };
+
         using VisitorCallback =
-            AZStd::function<VisitResponse(AZStd::string_view path, AZStd::string_view valueName, VisitAction action, Type type)>;
+            AZStd::function<VisitResponse(const VisitArgs&, VisitAction action)>;
         //! Base class for the visitor class during traversal over the Settings Registry. The type-agnostic function is always
         //! called and, if applicable, the overloaded functions with the appropriate values.
         class Visitor
@@ -170,18 +190,18 @@ namespace AZ
         public:
             virtual ~Visitor() = 0;
 
-            virtual VisitResponse Traverse(AZStd::string_view path, AZStd::string_view valueName, VisitAction action, Type type)
-            { AZ_UNUSED(path); AZ_UNUSED(valueName); AZ_UNUSED(action); AZ_UNUSED(type); return VisitResponse::Continue; }
-            virtual void Visit(AZStd::string_view path, AZStd::string_view valueName, Type type, bool value)
-            { AZ_UNUSED(path); AZ_UNUSED(valueName); AZ_UNUSED(type); AZ_UNUSED(value); }
-            virtual void Visit(AZStd::string_view path, AZStd::string_view valueName, Type type, s64 value)
-            { AZ_UNUSED(path); AZ_UNUSED(valueName); AZ_UNUSED(type); AZ_UNUSED(value); }
-            virtual void Visit(AZStd::string_view path, AZStd::string_view valueName, Type type, u64 value)
-            { AZ_UNUSED(path); AZ_UNUSED(valueName); AZ_UNUSED(type); AZ_UNUSED(value); }
-            virtual void Visit(AZStd::string_view path, AZStd::string_view valueName, Type type, double value)
-            { AZ_UNUSED(path); AZ_UNUSED(valueName); AZ_UNUSED(type); AZ_UNUSED(value); }
-            virtual void Visit(AZStd::string_view path, AZStd::string_view valueName, Type type, AZStd::string_view value)
-            { AZ_UNUSED(path); AZ_UNUSED(valueName); AZ_UNUSED(type); AZ_UNUSED(value); }
+            virtual VisitResponse Traverse([[maybe_unused]] const VisitArgs& visitArgs, [[maybe_unused]] VisitAction action)
+            { return VisitResponse::Continue; }
+            virtual void Visit([[maybe_unused]] const VisitArgs& visitArgs, [[maybe_unused]] bool value)
+            {}
+            virtual void Visit([[maybe_unused]] const VisitArgs& visitArgs, [[maybe_unused]] s64 value)
+            {}
+            virtual void Visit([[maybe_unused]] const VisitArgs& visitArgs, [[maybe_unused]] u64 value)
+            {}
+            virtual void Visit([[maybe_unused]] const VisitArgs& visitArgs, [[maybe_unused]] double value)
+            {}
+            virtual void Visit([[maybe_unused]] const VisitArgs& visitArgs, [[maybe_unused]] AZStd::string_view value)
+            {}
         };
 
         SettingsRegistryInterface() = default;
@@ -189,7 +209,7 @@ namespace AZ
         virtual ~SettingsRegistryInterface() = default;
 
         //! Returns the type of an entry in the Settings Registry or Type::None if there's no value or the path is invalid.
-        virtual SettingsType GetType(AZStd::string_view path) const = 0;
+        [[nodiscard]] virtual SettingsType GetType(AZStd::string_view path) const = 0;
         //! Traverses over the entries in the Settings Registry. Use this version to retrieve the values of entries as well.
         //! @param visitor An instance of a class derived from Visitor that will repeatedly be called as entries are encountered.
         //! @param path An offset at which traversal should start.

@@ -266,17 +266,17 @@ namespace AZ
             if (modelAsset.IsReady())
             {
                 MaterialAssignmentLodIndex lodIndex = 0;
-                for (const auto& lod : modelAsset->GetLodAssets())
+                for (const Data::Asset<RPI::ModelLodAsset>& lod : modelAsset->GetLodAssets())
                 {
-                    for (const auto& mesh : lod->GetMeshes())
+                    for (const RPI::ModelLodAsset::Mesh& mesh : lod->GetMeshes())
                     {
-                        const auto slotId = mesh.GetMaterialSlotId();
-                        const auto& slot = modelAsset->FindMaterialSlot(slotId);
+                        const RPI::ModelMaterialSlot::StableId slotId = mesh.GetMaterialSlotId();
+                        const RPI::ModelMaterialSlot& slot = modelAsset->FindMaterialSlot(slotId);
 
-                        const auto generalId = MaterialAssignmentId::CreateFromStableIdOnly(slotId);
+                        const MaterialAssignmentId generalId = MaterialAssignmentId::CreateFromStableIdOnly(slotId);
                         labels[generalId] = slot.m_displayName.GetStringView();
 
-                        const auto specificId = MaterialAssignmentId::CreateFromLodAndStableId(lodIndex, slotId);
+                        const MaterialAssignmentId specificId = MaterialAssignmentId::CreateFromLodAndStableId(lodIndex, slotId);
                         labels[specificId] = slot.m_displayName.GetStringView();
                     }
                     ++lodIndex;

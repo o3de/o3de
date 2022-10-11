@@ -62,7 +62,7 @@ namespace AZ
         class AtomActorInstance
             : public EMotionFX::Integration::RenderActorInstance
             , public AZ::TransformNotificationBus::Handler
-            , public AZ::Render::MaterialReceiverRequestBus::Handler
+            , public AZ::Render::MaterialConsumerRequestBus::Handler
             , public AzFramework::BoundsRequestBus::Handler
             , public AZ::Render::MaterialComponentNotificationBus::Handler
             , public AZ::Render::MeshComponentRequestBus::Handler
@@ -123,7 +123,7 @@ namespace AZ
             void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            // MaterialReceiverRequestBus::Handler overrides...
+            // MaterialConsumerRequestBus::Handler overrides...
             MaterialAssignmentId FindMaterialAssignmentId(
                 const MaterialAssignmentLodIndex lod, const AZStd::string& label) const override;
             MaterialAssignmentLabelMap GetMaterialLabels() const override;

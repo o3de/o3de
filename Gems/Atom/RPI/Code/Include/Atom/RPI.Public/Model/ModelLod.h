@@ -75,6 +75,7 @@ namespace AZ
                 StreamInfoList m_streamInfo;
 
                 ModelMaterialSlot::StableId m_materialSlotStableId = ModelMaterialSlot::InvalidStableId;
+                AZ::Name m_materialSlotName;
                 
                 //! The default material assigned to the mesh by the asset.
                 Data::Instance<Material> m_material;

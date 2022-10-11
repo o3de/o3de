@@ -39,10 +39,11 @@ from _pytest.skipping import pytest_runtest_setup as skip_pytest_runtest_setup
 
 import ly_test_tools.o3de.editor_test_utils as editor_utils
 from ly_test_tools._internal.managers.workspace import AbstractWorkspaceManager
+from ly_test_tools._internal.exceptions import EditorToolsFrameworkException, TestResultException
 from ly_test_tools.launchers import launcher_helper
 from ly_test_tools.launchers.exceptions import WaitTimeoutError
-from ly_test_tools.launchers.platforms.linux.launcher import LinuxEditor, LinuxMaterialEditor
-from ly_test_tools.launchers.platforms.win.launcher import WinEditor, WinMaterialEditor
+from ly_test_tools.launchers.platforms.linux.launcher import LinuxEditor, LinuxAtomToolsLauncher
+from ly_test_tools.launchers.platforms.win.launcher import WinEditor, WinAtomToolsLauncher
 
 logger = logging.getLogger(__name__)
 
@@ -119,11 +120,6 @@ class BatchedTest(SharedTest):
     """Test that will be run as serially batched with other tests in a single instance."""
     is_batchable = True
     is_parallelizable = False
-
-
-class TestResultException(Exception):
-    """Indicates that an unknown result was found during the tests"""
-    pass
 
 
 class Result(object):
@@ -205,7 +201,7 @@ class Result(object):
                 "------------\n"
                 f"{self.get_output_str()}\n"
                 "----------------------------------------------------\n"
-                f"| Executable (i.e. Editor or MaterialEditor) log  |\n"
+                f"| Application log  |\n"
                 "----------------------------------------------------\n"
                 f"{self.get_log_output_str()}\n"
             )
@@ -246,7 +242,7 @@ class Result(object):
                 "------------\n"
                 f"{self.get_output_str()}\n"
                 "----------------------------------------------------\n"
-                f"| Executable (i.e. Editor or MaterialEditor) log  |\n"
+                f"| Application log  |\n"
                 "----------------------------------------------------\n"
                 f"{self.get_log_output_str()}\n"
             )
@@ -280,7 +276,7 @@ class Result(object):
                 "------------\n"
                 f"{self.get_output_str()}\n"
                 "----------------------------------------------------\n"
-                f"| Executable (i.e. Editor or MaterialEditor) log  |\n"
+                f"| Application log  |\n"
                 "----------------------------------------------------\n"
                 f"{self.get_log_output_str()}\n"
             )
@@ -313,7 +309,7 @@ class Result(object):
                 "------------\n"
                 f"{self.get_output_str()}\n"
                 "----------------------------------------------------\n"
-                f"| Executable (i.e. Editor or MaterialEditor) log  |\n"
+                f"| Application log  |\n"
                 "----------------------------------------------------\n"
                 f"{self.get_log_output_str()}\n"
             )
@@ -332,6 +328,10 @@ class MultiTestSuite(object):
     use_null_renderer = True
     # Maximum time in seconds for a single executable to stay open across the set of shared tests
     timeout_shared_test = 300
+    # Name of the executable's log file.
+    log_name = ""
+    # Executable name to look for if the test is an Atom Tools test, leave blank if not an Atom Tools test.
+    atom_tools_executable_name = ""
     # Maximum time (seconds) for waiting for a crash file to finish being dumped to disk
     _timeout_crash_log = 20
     # Return code for test failure
@@ -340,10 +340,6 @@ class MultiTestSuite(object):
     _single_test_class = SingleTest
     # Test class to use for shared test collection
     _shared_test_class = SharedTest
-    # Name of the executable's log file.
-    _log_name = ""
-    # Executable function to call when launching executable.
-    _executable_function = launcher_helper.create_game_launcher
 
     class TestData:
         __test__ = False  # Avoid pytest collection & warnings since "test" is in the class name.
@@ -424,19 +420,19 @@ class MultiTestSuite(object):
                         if is_single_test:
                             # Setup step for wrap_run
                             wrap = inner_test_spec.wrap_run(
-                                self, request, workspace, collected_test_data, launcher_platform)
-                            assert isinstance(wrap, types.GeneratorType), (
-                                "wrap_run must return a generator, did you forget 'yield'?")
+                                self, request, workspace, collected_test_data)
+                            if not isinstance(wrap, types.GeneratorType):
+                                raise EditorToolsFrameworkException("wrap_run must return a generator, did you forget 'yield'?")
                             next(wrap, None)
                             # Setup step
                             inner_test_spec.setup(
-                                self, request, workspace, collected_test_data, launcher_platform)
+                                self, request, workspace)
                         # Run
                         self._run_single_test(request, workspace, collected_test_data, inner_test_spec)
                         if is_single_test:
                             # Teardown
                             inner_test_spec.teardown(
-                                self, request, workspace, collected_test_data, launcher_platform)
+                                self, request, workspace, collected_test_data)
                             # Teardown step for wrap_run
                             next(wrap, None)
 
@@ -708,8 +704,11 @@ class MultiTestSuite(object):
         :param test_spec: The test class that should be a subclass of SingleTest
         :return: None
         """
-        # Set the self.executable program for Launcher ad re-bind our param workspace to it.
-        self.executable = self._executable_function(workspace)
+        # Set the self.executable program for Launcher and re-bind our param workspace to it.
+        if self.atom_tools_executable_name:  # Atom Tools test.
+            self.executable = launcher_helper.create_atom_tools_launcher(workspace, self.atom_tools_executable_name)
+        else:  # Editor test.
+            self.executable = launcher_helper.create_editor(workspace)
         self.executable.workspace = workspace
 
         # Setup AP, kill processes, and configure the executable.
@@ -722,13 +721,13 @@ class MultiTestSuite(object):
         if hasattr(test_spec, "extra_cmdline_args"):
             extra_cmdline_args = test_spec.extra_cmdline_args
         result = self._exec_single_test(
-            request, workspace, self.executable, 1, self._log_name, test_spec, extra_cmdline_args)
+            request, workspace, self.executable, 1, self.log_name, test_spec, extra_cmdline_args)
         if result is None:
-            logger.error(f"Unexpectedly found no test run in the {self._log_name} during {test_spec}")
+            logger.error(f"Unexpectedly found no test run in the {self.log_name} during {test_spec}")
             result = {"Unknown":
                       Result.Unknown(
                           test_spec=test_spec,
-                          extra_info=f"Unexpectedly found no test run information on stdout in the {self._log_name}")}
+                          extra_info=f"Unexpectedly found no test run information on stdout in the {self.log_name}")}
         collected_test_data.results.update(result)
         test_name, test_result = next(iter(result.items()))
         self._report_result(test_name, test_result)
@@ -791,9 +790,9 @@ class MultiTestSuite(object):
                        f"-pythontestcase={test_case_name}",
                        "-logfile", f"@log@/{log_name}",
                        "-project-log-path", log_path_function(run_id, workspace)] + test_cmdline_args
-        elif type(executable) in [WinMaterialEditor, LinuxMaterialEditor]:
-            log_path_function = editor_utils.retrieve_material_editor_log_path
-            log_content_function = editor_utils.retrieve_material_editor_log_content
+        elif type(executable) in [LinuxAtomToolsLauncher, WinAtomToolsLauncher]:
+            log_path_function = editor_utils.atom_tools_log_path
+            log_content_function = editor_utils.retrieve_non_editor_log_content
             cmdline = ["-runpythontest", test_filename,
                        "-logfile", os.path.join(log_path_function(run_id, workspace), log_name)] + test_cmdline_args
         executable.args.extend(cmdline)
@@ -859,8 +858,11 @@ class MultiTestSuite(object):
         :param extra_cmdline_args: Any extra command line args in a list
         :return: None
         """
-        # Set the self.executable program for Launcher ad re-bind our param workspace to it.
-        self.executable = self._executable_function(workspace)
+        # Set the self.executable program for Launcher and re-bind our param workspace to it.
+        if self.atom_tools_executable_name:  # Atom Tools test.
+            self.executable = launcher_helper.create_atom_tools_launcher(workspace, self.atom_tools_executable_name)
+        else:  # Editor test.
+            self.executable = launcher_helper.create_editor(workspace)
         self.executable.workspace = workspace
 
         # Setup AP, kill processes, and configure the executable.
@@ -875,7 +877,7 @@ class MultiTestSuite(object):
             return
 
         results = self._exec_multitest(
-            request, workspace, self.executable, 1, self._log_name, test_spec_list, extra_cmdline_args)
+            request, workspace, self.executable, 1, self.log_name, test_spec_list, extra_cmdline_args)
         collected_test_data.results.update(results)
         # If at least one test did not pass, save assets with errors and warnings
         for result in results:
@@ -906,8 +908,11 @@ class MultiTestSuite(object):
         :param extra_cmdline_args: Any extra command line args in a list
         :return: None
         """
-        # Set the self.executable program for Launcher ad re-bind our param workspace to it.
-        self.executable = self._executable_function(workspace)
+        # Set the self.executable program for Launcher and re-bind our param workspace to it.
+        if self.atom_tools_executable_name:  # Atom Tools test.
+            self.executable = launcher_helper.create_atom_tools_launcher(workspace, self.atom_tools_executable_name)
+        else:  # Editor test.
+            self.executable = launcher_helper.create_editor(workspace)
         self.executable.workspace = workspace
 
         # Setup AP, kill processes, and configure the executable.
@@ -922,7 +927,9 @@ class MultiTestSuite(object):
             return
 
         parallel_executables = self._get_number_parallel_executables(request)
-        assert parallel_executables > 0, "Must have at least one executable"
+        if not parallel_executables > 0:
+            logger.warning("Expected 1 or more parallel_executables, found 0. Setting to 1.")
+            parallel_executables = 1
 
         # If there are more tests than max parallel executables, we will split them into multiple consecutive runs.
         num_iterations = int(math.ceil(len(test_spec_list) / parallel_executables))
@@ -935,8 +942,10 @@ class MultiTestSuite(object):
                 def make_parallel_test_func(test_spec, index, current_executable):
                     def run(request, workspace, extra_cmdline_args):
                         results = self._exec_single_test(
-                            request, workspace, current_executable, index + 1, self._log_name, test_spec, extra_cmdline_args)
-                        assert results is not None
+                            request, workspace, current_executable, index + 1, self.log_name, test_spec, extra_cmdline_args)
+                        if results is None:
+                            raise EditorToolsFrameworkException(f"Results were None. Current log name is "
+                                                                f"{self.log_name} and test is {str(test_spec)}")
                         results_per_thread[index] = results
                     return run
 
@@ -988,8 +997,11 @@ class MultiTestSuite(object):
         :extra_cmdline_args: Any extra command line args in a list
         :return: None
         """
-        # Set the self.executable program for Launcher ad re-bind our param workspace to it.
-        self.executable = self._executable_function(workspace)
+        # Set the self.executable program for Launcher and re-bind our param workspace to it.
+        if self.atom_tools_executable_name:  # Atom Tools test.
+            self.executable = launcher_helper.create_atom_tools_launcher(workspace, self.atom_tools_executable_name)
+        else:  # Editor test.
+            self.executable = launcher_helper.create_editor(workspace)
         self.executable.workspace = workspace
 
         # Setup AP, kill processes, and configure the executable.
@@ -1004,7 +1016,10 @@ class MultiTestSuite(object):
             return
 
         total_threads = self._get_number_parallel_executables(request)
-        assert total_threads > 0, "Must have at least one executable"
+        if not total_threads > 0:
+            logger.warning("Expected 1 or more total_threads, found 0. Setting to 1.")
+            total_threads = 1
+
         threads = []
         tests_per_executable = int(math.ceil(len(test_spec_list) / total_threads))
         results_per_thread = [None] * total_threads
@@ -1016,9 +1031,12 @@ class MultiTestSuite(object):
                     results = None
                     if len(test_spec_list_for_executable) > 0:
                         results = self._exec_multitest(
-                            request, workspace, current_executable, index + 1, self._log_name,
+                            request, workspace, current_executable, index + 1, self.log_name,
                             test_spec_list_for_executable, extra_cmdline_args)
-                        assert results is not None
+                        if results is None:
+                            raise EditorToolsFrameworkException(f"Results were None. Current log name is "
+                                                                f"{self.log_name} and tests are "
+                                                                f"{str(test_spec_list_for_executable)}")
                     else:
                         results = {}
                     results_per_thread[index] = results
@@ -1132,10 +1150,10 @@ class MultiTestSuite(object):
                        "-pythontestcase", temp_batched_case_file.name,
                        "-logfile", f"@log@/{log_name}",
                        "-project-log-path", log_path_function(run_id, workspace)] + test_cmdline_args
-        # MaterialEditor
-        elif type(executable) in [WinMaterialEditor, LinuxMaterialEditor]:
-            log_path_function = editor_utils.retrieve_material_editor_log_path
-            log_content_function = editor_utils.retrieve_material_editor_log_content
+        # Atom Tools application
+        elif type(executable) in [LinuxAtomToolsLauncher, WinAtomToolsLauncher]:
+            log_path_function = editor_utils.atom_tools_log_path
+            log_content_function = editor_utils.retrieve_non_editor_log_content
             test_filenames_str = ";".join(
                 editor_utils.get_testcase_module_filepath(test_spec.test_module) for test_spec in test_spec_list)
             cmdline = ["-runpythontest", test_filenames_str,
@@ -1157,7 +1175,7 @@ class MultiTestSuite(object):
                 if type(executable) in [WinEditor, LinuxEditor]:
                     destination_path = workspace.artifact_manager.save_artifact(path_to_artifact, full_log_name)
                     editor_utils.split_batched_editor_log_file(workspace, path_to_artifact, destination_path)
-                elif type(executable) in [WinMaterialEditor, LinuxMaterialEditor]:
+                elif type(executable) in [LinuxAtomToolsLauncher, WinAtomToolsLauncher]:
                     workspace.artifact_manager.save_artifact(path_to_artifact, full_log_name)
 
             except FileNotFoundError:
@@ -1172,8 +1190,9 @@ class MultiTestSuite(object):
                 # This function should always populate the result list.
                 # If it didn't then it will have "Unknown" as the type of result.
                 results = self._get_results_using_output(test_spec_list, output, executable_log_content)
-                assert len(results) == len(test_spec_list), (
-                    "bug in get_results_using_output(), the number of results don't match the tests ran")
+                if not len(results) == len(test_spec_list):
+                    raise EditorToolsFrameworkException("bug in get_results_using_output(), the number of results "
+                                                        "don't match the tests ran")
 
                 # If the executable crashed, find out in which test it happened and update the results.
                 has_crashed = return_code != self._test_fail_retcode
@@ -1212,7 +1231,7 @@ class MultiTestSuite(object):
                         crash_error = editor_utils.retrieve_crash_output(run_id, workspace, self._timeout_crash_log)
                         editor_utils.cycle_crash_report(run_id, workspace)
                         results[test_spec_name] = Result.Crash(
-                            crashed_result.test_spec, output, return_code, crash_error, crashed_result.log_output)
+                            result.test_spec, output, return_code, crash_error, result.log_output)
         except WaitTimeoutError:
             executable.stop()
             output = executable.get_output()
@@ -1220,8 +1239,9 @@ class MultiTestSuite(object):
 
             # The executable timed out when running the tests, get the data from the output to find out which ones ran
             results = self._get_results_using_output(test_spec_list, output, executable_log_content)
-            assert len(results) == len(test_spec_list), (
-                "bug in _get_results_using_output(), the number of results don't match the tests ran")
+            if not len(results) == len(test_spec_list):
+                raise EditorToolsFrameworkException("bug in _get_results_using_output(), the number of results "
+                                                    "don't match the tests ran")
 
             # Similar logic here as crashes, the first test that has no result is the one that timed out
             timed_out_result = None

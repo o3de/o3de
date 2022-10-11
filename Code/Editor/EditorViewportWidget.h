@@ -80,6 +80,7 @@ struct EditorViewportSettings : public AzToolsFramework::ViewportInteraction::Vi
     AZ::Vector2 DefaultEditorCameraOrientation() const override;
     bool IconsVisible() const override;
     bool HelpersVisible() const override;
+    bool OnlyShowHelpersForSelectedEntities() const override;
 };
 
 //! EditorViewportWidget window
@@ -406,6 +407,7 @@ private:
     SandboxEditor::GridSnappingChangedEvent::Handler m_gridSnappingHandler;
     SandboxEditor::NearFarPlaneChangedEvent::Handler m_nearPlaneDistanceHandler;
     SandboxEditor::NearFarPlaneChangedEvent::Handler m_farPlaneDistanceHandler;
+    SandboxEditor::PerspectiveChangedEvent::Handler m_perspectiveChangeHandler;
     AZStd::unique_ptr<SandboxEditor::EditorViewportSettingsCallbacks> m_editorViewportSettingsCallbacks;
 
     // Used for some legacy logic which lets the widget release a grabbed keyboard at the right times

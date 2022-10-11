@@ -678,6 +678,9 @@ void CLevelSystem::PrepareNextLevel(const char* levelName)
     {
         (*it)->OnPrepareNextLevel(pLevelInfo->GetName());
     }
+
+    AzFramework::LevelSystemLifecycleNotificationBus::Broadcast(
+        &AzFramework::LevelSystemLifecycleNotifications::OnPrepareNextLevel, levelName);
 }
 
 //------------------------------------------------------------------------
@@ -687,6 +690,9 @@ void CLevelSystem::OnLevelNotFound(const char* levelName)
     {
         (*it)->OnLevelNotFound(levelName);
     }
+
+    AzFramework::LevelSystemLifecycleNotificationBus::Broadcast(
+        &AzFramework::LevelSystemLifecycleNotifications::OnLevelNotFound, levelName);
 }
 
 //------------------------------------------------------------------------
@@ -706,6 +712,9 @@ void CLevelSystem::OnLoadingStart(const char* levelName)
     {
         (*it)->OnLoadingStart(levelName);
     }
+
+    AzFramework::LevelSystemLifecycleNotificationBus::Broadcast(
+        &AzFramework::LevelSystemLifecycleNotifications::OnLoadingStart, levelName);
 }
 
 //------------------------------------------------------------------------
@@ -722,6 +731,9 @@ void CLevelSystem::OnLoadingError(const char* levelName, const char* error)
     {
         (*it)->OnLoadingError(levelName, error);
     }
+
+    AzFramework::LevelSystemLifecycleNotificationBus::Broadcast(
+        &AzFramework::LevelSystemLifecycleNotifications::OnLoadingError, levelName, error);
 
     ((CLevelInfo*)pLevelInfo)->CloseLevelPak();
 }
@@ -746,6 +758,9 @@ void CLevelSystem::OnLoadingComplete(const char* levelName)
         (*it)->OnLoadingComplete(levelName);
     }
 
+    AzFramework::LevelSystemLifecycleNotificationBus::Broadcast(
+        &AzFramework::LevelSystemLifecycleNotifications::OnLoadingComplete, levelName);
+
 #if AZ_LOADSCREENCOMPONENT_ENABLED
     EBUS_EVENT(LoadScreenBus, Stop);
 #endif // if AZ_LOADSCREENCOMPONENT_ENABLED
@@ -758,6 +773,9 @@ void CLevelSystem::OnLoadingProgress(const char* levelName, int progressAmount)
     {
         (*it)->OnLoadingProgress(levelName, progressAmount);
     }
+
+    AzFramework::LevelSystemLifecycleNotificationBus::Broadcast(
+        &AzFramework::LevelSystemLifecycleNotifications::OnLoadingProgress, levelName, progressAmount);
 }
 
 //------------------------------------------------------------------------
@@ -767,6 +785,9 @@ void CLevelSystem::OnUnloadComplete(const char* levelName)
     {
         (*it)->OnUnloadComplete(levelName);
     }
+
+    AzFramework::LevelSystemLifecycleNotificationBus::Broadcast(
+        &AzFramework::LevelSystemLifecycleNotifications::OnUnloadComplete, levelName);
 }
 
 //////////////////////////////////////////////////////////////////////////
