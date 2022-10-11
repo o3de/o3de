@@ -10,9 +10,10 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
-#include <AzCore/Component/TransformBus.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/Component/TransformBus.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Visibility/BoundsBus.h>
 
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
@@ -42,6 +43,7 @@ namespace EMotionFX
             , private LmbrCentral::AttachmentComponentNotificationBus::Handler
             , private AzToolsFramework::EditorComponentSelectionRequestsBus::Handler
             , private AzToolsFramework::EditorVisibilityNotificationBus::Handler
+            , private AzFramework::EntityDebugDisplayEventBus::Handler
             , public AzFramework::BoundsRequestBus::Handler
         {
         public:
@@ -86,6 +88,11 @@ namespace EMotionFX
             // BoundsRequestBus overrides ...
             AZ::Aabb GetWorldBounds() override;
             AZ::Aabb GetLocalBounds() override;
+
+            // AzFramework::EntityDebugDisplayEventBus overrides ...
+            void DisplayEntityViewport(
+                const AzFramework::ViewportInfo& viewportInfo,
+                AzFramework::DebugDisplayRequests& debugDisplay) override;
 
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
             {

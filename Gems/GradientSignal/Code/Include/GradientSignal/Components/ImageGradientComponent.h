@@ -145,7 +145,6 @@ namespace GradientSignal
 
         // AZ::Data::AssetBus overrides...
         void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
-        void OnAssetMoved(AZ::Data::Asset<AZ::Data::AssetData> asset, void* oldDataPointer) override;
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
 
         // ImageGradientRequestBus overrides...

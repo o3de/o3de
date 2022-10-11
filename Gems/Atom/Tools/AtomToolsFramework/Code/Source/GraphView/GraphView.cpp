@@ -9,6 +9,7 @@
 #include <AtomToolsFramework/GraphView/GraphView.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/IO/FileIO.h>
+#include <AzQtComponents/Components/StyleManager.h>
 #include <GraphCanvas/Components/Connections/ConnectionBus.h>
 #include <GraphCanvas/Components/MimeDataHandlerBus.h>
 #include <GraphCanvas/Components/Nodes/NodeBus.h>
@@ -90,6 +91,10 @@ namespace AtomToolsFramework
         nodePaletteConfig.m_rootTreeItem = m_graphViewConfig.m_createNodeTreeItemsFn(m_toolId);
         m_sceneContextMenu = aznew GraphCanvas::SceneContextMenu(m_toolId, this);
         m_sceneContextMenu->AddNodePaletteMenuAction(nodePaletteConfig);
+
+        // Set up style sheet to fix highlighting in the node palette
+        AzQtComponents::StyleManager::setStyleSheet(
+            const_cast<GraphCanvas::NodePaletteWidget*>(m_sceneContextMenu->GetNodePalette()), QStringLiteral(":/GraphView/GraphView.qss"));
 
         // Setup the context menu with node palette for proposing a new node
         // when dropping a connection in an empty space in the graph

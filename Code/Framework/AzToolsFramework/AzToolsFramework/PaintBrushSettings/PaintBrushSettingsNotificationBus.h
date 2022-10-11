@@ -13,6 +13,8 @@
 
 namespace AzToolsFramework
 {
+    enum class PaintBrushBlendMode : uint8_t;
+
     //! PaintBrushSettingsNotificationBus is used to send out notifications whenever the global paintbrush settings have changed.
     class PaintBrushSettingsNotifications : public AZ::EBusTraits
     {
@@ -34,6 +36,12 @@ namespace AzToolsFramework
         //! Notifies listeners that the paintbrush radius setting has changed.
         //! @param radius The new radius setting for the paintbrush, in meters.
         virtual void OnRadiusChanged([[maybe_unused]] float radius)
+        {
+        }
+
+        //! Notifies listeners that the paintbrush radius setting has changed.
+        //! @param radius The new radius setting for the paintbrush, in meters.
+        virtual void OnBlendModeChanged([[maybe_unused]] PaintBrushBlendMode blendMode)
         {
         }
     };

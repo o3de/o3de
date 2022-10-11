@@ -20,7 +20,11 @@ namespace Multiplayer
     AZStd::unique_ptr<IMultiplayerComponentInput> MultiplayerComponentRegistry::AllocateComponentInput(NetComponentId netComponentId)
     {
         const ComponentData& componentData = GetMultiplayerComponentData(netComponentId);
-        return AZStd::move(componentData.m_allocComponentInputFunction());
+        if (componentData.m_allocComponentInputFunction)
+        {
+            return AZStd::move(componentData.m_allocComponentInputFunction());
+        }
+        return nullptr;
     }
 
     const char* MultiplayerComponentRegistry::GetComponentGemName(NetComponentId netComponentId) const
@@ -38,13 +42,21 @@ namespace Multiplayer
     const char* MultiplayerComponentRegistry::GetComponentPropertyName(NetComponentId netComponentId, PropertyIndex propertyIndex) const
     {
         const ComponentData& componentData = GetMultiplayerComponentData(netComponentId);
-        return componentData.m_componentPropertyNameLookupFunction(propertyIndex);
+        if (componentData.m_componentPropertyNameLookupFunction)
+        {
+            return componentData.m_componentPropertyNameLookupFunction(propertyIndex);
+        }
+        return "Unknown component";
     }
 
     const char* MultiplayerComponentRegistry::GetComponentRpcName(NetComponentId netComponentId, RpcIndex rpcIndex) const
     {
         const ComponentData& componentData = GetMultiplayerComponentData(netComponentId);
-        return componentData.m_componentRpcNameLookupFunction(rpcIndex);
+        if (componentData.m_componentRpcNameLookupFunction)
+        {
+            return componentData.m_componentRpcNameLookupFunction(rpcIndex);
+        }
+        return "Unknown component";
     }
 
     const MultiplayerComponentRegistry::ComponentData& MultiplayerComponentRegistry::GetMultiplayerComponentData(NetComponentId netComponentId) const

@@ -364,7 +364,7 @@ void WatchesDataModel::AddWatch(AZStd::string newName)
     dv.m_name = newName;
     dv.m_value = "<invalid>";
     dv.m_type = LUA_TNONE;
-    dv.m_typeId = {};
+    dv.m_typeId = AZ::ScriptTypeId{};
     dv.m_flags = 0;
 
     AddWatch(dv);
