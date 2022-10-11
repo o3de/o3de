@@ -109,9 +109,9 @@
             // Gradient
             "_grad": [ "Gradient" ],
             "_gradient": [ "Gradient" ],
-                "_sm": [ "Gradient" ],
-                "_splat": [ "Gradient" ],
-                "_splatmap": [ "Gradient" ],
+            "_sm": [ "Gradient" ],
+            "_splat": [ "Gradient" ],
+            "_splatmap": [ "Gradient" ],
 
             // Greyscale
             "_grey": [ "Greyscale" ],
