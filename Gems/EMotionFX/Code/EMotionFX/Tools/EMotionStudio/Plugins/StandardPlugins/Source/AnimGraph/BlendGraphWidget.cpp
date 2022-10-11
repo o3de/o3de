@@ -72,10 +72,24 @@ namespace EMStudio
         return m_namePrefix;
     }
 
-    BlendGraphNodePaletteTreeItem::BlendGraphNodePaletteTreeItem(AZStd::string_view name, const QString& typeString,
-        GraphCanvas::EditorId editorId)
-        : GraphCanvas::IconDecoratedNodePaletteTreeItem(name, editorId), m_typeString(typeString)
+    BlendGraphNodePaletteTreeItem::BlendGraphNodePaletteTreeItem(
+        AZStd::string_view name, const QString& typeString, GraphCanvas::EditorId editorId, const AZ::Color& color)
+        : GraphCanvas::IconDecoratedNodePaletteTreeItem(name, editorId)
+        , m_typeString(typeString)
     {
+        // Draw a pixmap with the provided color to use as an icon adjacent to the name text
+        QSize pixmapSize(20, 20);
+        QPixmap pixmap(pixmapSize);
+        // Fill with transparency for the padding around the solid color
+        pixmap.fill(Qt::transparent);
+
+        QPainter painter(&pixmap);
+        painter.fillRect(
+            // leave some padding
+            QRect(QPoint(8, 4), QSize(pixmapSize.width() - 8, pixmapSize.height() - 8)),
+            AzQtComponents::toQColor(color));
+
+        m_colorPixmap = pixmap;
     }
 
     void BlendGraphNodePaletteTreeItem::SetTypeString(const QString& typeString)
@@ -86,6 +100,16 @@ namespace EMStudio
     QString BlendGraphNodePaletteTreeItem::GetTypeString() const
     {
         return m_typeString;
+    }
+
+    QVariant BlendGraphNodePaletteTreeItem::OnData(const QModelIndex& index, int role) const
+    {
+        // Show a square of the color adjacent to the name text
+        if (role == Qt::DecorationRole && index.column() == Column::Name)
+        {
+            return QVariant(m_colorPixmap);
+        }
+        return NodePaletteTreeItem::OnData(index, role);
     }
 
     BlendGraphMimeEvent* BlendGraphNodePaletteTreeItem::CreateMimeEvent() const

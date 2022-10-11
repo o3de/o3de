@@ -276,6 +276,7 @@ namespace Multiplayer
     {
         if (alwaysRelevant)
         {
+            AZ_Assert(entityHandle.GetNetBindComponent()->IsNetEntityRoleAuthority(), "Marking an entity always relevant can only be done on an authoritative entity");
             m_alwaysRelevantToClients.emplace(entityHandle);
         }
         else
@@ -288,6 +289,7 @@ namespace Multiplayer
     {
         if (alwaysRelevant)
         {
+            AZ_Assert(entityHandle.GetNetBindComponent()->IsNetEntityRoleAuthority(), "Marking an entity always relevant can only be done on an authoritative entity");
             m_alwaysRelevantToServers.emplace(entityHandle);
         }
         else
