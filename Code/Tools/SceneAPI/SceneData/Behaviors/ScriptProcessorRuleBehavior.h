@@ -53,10 +53,6 @@ namespace AZ::SceneAPI::Behaviors
             ManifestAction action,
             RequestingApplication requester) override;
 
-        SCENE_DATA_API Events::ProcessingResult PrepareForAssetLoading(
-            Containers::Scene& scene,
-            RequestingApplication requester) override;
-
         SCENE_DATA_API void GetManifestDependencyPaths(AZStd::vector<AZStd::string>& paths) override;
 
         SCENE_DATA_API void GetPolicyName(AZStd::string& result) const override
@@ -80,6 +76,5 @@ namespace AZ::SceneAPI::Behaviors
 
         struct EventHandler;
         AZStd::shared_ptr<EventHandler> m_eventHandler;
-        AZStd::vector<Events::ScriptConfig> m_scriptConfigList;
     };
 } // namespace AZ::SceneAPI::Behaviors

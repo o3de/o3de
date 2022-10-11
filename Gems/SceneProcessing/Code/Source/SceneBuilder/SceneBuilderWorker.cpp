@@ -508,8 +508,6 @@ namespace SceneBuilder
 
     void SceneBuilderWorker::DefaultSriptDependencyCheck(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response)
     {
-        // TODO: reuse MatchesScriptConfig inside the SceneAPI logic?
-
         AZStd::optional<AZ::SceneAPI::Events::ScriptConfig> scriptConfig;
         AZ::SceneAPI::Events::ScriptConfigEventBus::BroadcastResult(
             scriptConfig,

@@ -131,3 +131,31 @@ TEST_F(SceneProcessingConfigTest, SceneProcessingConfigSystemComponent_ScriptCon
     EXPECT_EQ(scriptConfigList.size(), 1);
     sceneProcessingConfigSystemComponent.Deactivate();
 }
+
+TEST_F(SceneProcessingConfigTest, SceneProcessingConfigSystemComponent_ScriptConfigEventBus_MatchesScriptConfig)
+{
+    const char* settings = R"JSON(
+    {
+        "O3DE": {
+            "AssetProcessor": {
+                "SceneBuilder": {
+                  "defaultScripts": {
+                    "foo*": "@projectroot@/test_foo.py"
+                  }
+                }
+            }
+        }
+    }
+    )JSON";
+    m_settingsRegistry->MergeSettings(settings, AZ::SettingsRegistryInterface::Format::JsonMergePatch);
+
+    AZ::SceneProcessingConfig::SceneProcessingConfigSystemComponent sceneProcessingConfigSystemComponent;
+    sceneProcessingConfigSystemComponent.Activate();
+    AZStd::optional<AZ::SceneAPI::Events::ScriptConfig> result;
+    AZ::SceneAPI::Events::ScriptConfigEventBus::BroadcastResult(
+        result,
+        &AZ::SceneAPI::Events::ScriptConfigEventBus::Events::MatchesScriptConfig,
+        "fake/folder/foo_bar.asset");
+        EXPECT_TRUE(result.has_value());
+    sceneProcessingConfigSystemComponent.Deactivate();
+}
