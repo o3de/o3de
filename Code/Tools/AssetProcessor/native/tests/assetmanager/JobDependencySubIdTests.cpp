@@ -16,6 +16,8 @@ namespace UnitTests
     {
         using namespace AzToolsFramework::AssetDatabase;
 
+        AZ::IO::Path tempDir(m_tempDir.GetDirectory());
+
         SourceDatabaseEntry source1{ m_scanfolder.m_scanFolderID, "parent.txt", AZ::Uuid::CreateRandom(), "fingerprint" };
         SourceDatabaseEntry source2{ m_scanfolder.m_scanFolderID, "child.txt", AZ::Uuid::CreateRandom(), "fingerprint" };
 
@@ -53,7 +55,7 @@ namespace UnitTests
 
     void JobDependencySubIdTest::RunTest(bool firstProductChanged, bool secondProductChanged)
     {
-        AZ::IO::Path cacheDir(m_databaseLocationListener.GetAssetRootDir());
+        AZ::IO::Path cacheDir(m_tempDir.GetDirectory());
         cacheDir /= "Cache";
         cacheDir /= "pc";
 

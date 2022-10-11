@@ -10,7 +10,6 @@
 
 #include <utilities/BatchApplicationManager.h>
 #include <AzCore/UnitTest/TestTypes.h>
-#include <native/tests/MockAssetDatabaseRequestsHandler.h>
 #include "assetmanager/MockAssetProcessorManager.h"
 #include "assetmanager/MockFileProcessor.h"
 
@@ -26,13 +25,31 @@ namespace UnitTests
         using BatchApplicationManager::BatchApplicationManager;
     };
 
+    class DatabaseLocationListener : public AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Handler
+    {
+    public:
+        DatabaseLocationListener()
+        {
+            BusConnect();
+        }
+        ~DatabaseLocationListener() override
+        {
+            BusDisconnect();
+        }
+
+        bool GetAssetDatabaseLocation(AZStd::string& location) override;
+
+        AZStd::string m_databaseLocation;
+    };
+
     struct ApplicationManagerTest : ::UnitTest::ScopedAllocatorSetupFixture
     {
     protected:
         void SetUp() override;
         void TearDown() override;
 
-        AssetProcessor::MockAssetDatabaseRequestsHandler m_databaseLocationListener;
+        AZ::Test::ScopedAutoTempDirectory m_tempDir;
+        DatabaseLocationListener m_databaseLocationListener;
 
         AZStd::unique_ptr<QCoreApplication> m_coreApplication;
         AZStd::unique_ptr<MockBatchApplicationManager> m_applicationManager;

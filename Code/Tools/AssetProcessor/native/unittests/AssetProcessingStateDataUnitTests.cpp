@@ -9,6 +9,40 @@
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
 #include "native/AssetDatabase/AssetDatabase.h"
 
+namespace AssetProcessingStateDataUnitTestInternal
+{
+    // a utility class to redirect the location the database is stored to a different location so that we don't
+    // touch real data during unit tests.
+    class FakeDatabaseLocationListener
+        : protected AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Handler
+    {
+    public:
+        FakeDatabaseLocationListener(const char* desiredLocation, const char* assetPath)
+            : m_location(desiredLocation)
+            , m_assetPath(assetPath)
+        {
+            AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Handler::BusConnect();
+        }
+        ~FakeDatabaseLocationListener()
+        {
+            AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Handler::BusDisconnect();
+        }
+    protected:
+        // IMPLEMENTATION OF -------------- AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Listener
+        bool GetAssetDatabaseLocation(AZStd::string& location) override
+        {
+            location = m_location;
+            return true;
+        }
+
+        // ------------------------------------------------------------
+
+    private:
+        AZStd::string m_location;
+        AZStd::string m_assetPath;
+    };
+}
+
 // perform some operations on the state data given.  (Does not perform save and load tests)
 void AssetProcessingStateDataUnitTest::DataTest(AssetProcessor::AssetDatabaseConnection* stateData)
 {
@@ -1260,9 +1294,9 @@ void AssetProcessingStateDataUnitTest::DataTest(AssetProcessor::AssetDatabaseCon
 
 void AssetProcessingStateDataUnitTest::ExistenceTest(AssetProcessor::AssetDatabaseConnection* stateData)
 {
-    // The asset database has already been created when the application manager was activated.
+    UNIT_TEST_EXPECT_FALSE(stateData->DataExists());
+    stateData->ClearData(); // this is expected to initialize a database.
     UNIT_TEST_EXPECT_TRUE(stateData->DataExists());
-    UNIT_TEST_EXPECT_TRUE(stateData->OpenDatabase());
 }
 
 // test is broken out into its own function so as to be more compatible with a future GTEST-like API.
@@ -1453,44 +1487,58 @@ void AssetProcessingStateDataUnitTest::SourceFingerprintTest(AssetProcessor::Ass
 
 void AssetProcessingStateDataUnitTest::AssetProcessingStateDataTest()
 {
+    using namespace AssetProcessingStateDataUnitTestInternal;
     using namespace AzToolsFramework::AssetDatabase;
 
-    bool testsFailed = false;
-    connect(this, &UnitTestRun::UnitTestFailed, this, [&testsFailed]()
-    {
-        testsFailed = true;
-    }, Qt::DirectConnection);
+    QDir dirPath;
 
+    // intentional scope to contain QTemporaryDir since it cleans up on destruction!
     {
+        QTemporaryDir tempDir;
+        ProductDatabaseEntryContainer products;
+        dirPath = QDir(tempDir.path());
+
+        bool testsFailed = false;
+        connect(this, &UnitTestRun::UnitTestFailed, this, [&testsFailed]()
+        {
+            testsFailed = true;
+        }, Qt::DirectConnection);
+
         // now test the SQLite version of the database on its own.
-        AssetProcessor::AssetDatabaseConnection connection;
-
-        ExistenceTest(&connection);
-        if (testsFailed)
         {
-            return;
-        }
+            FakeDatabaseLocationListener listener(dirPath.filePath("statedatabase.sqlite").toUtf8().constData(), "displayString");
+            AssetProcessor::AssetDatabaseConnection connection;
 
-        DataTest(&connection);
-        if (testsFailed)
-        {
-            return;
-        }
+            ExistenceTest(&connection);
+            if (testsFailed)
+            {
+                return;
+            }
 
-        BuilderInfoTest(&connection);
-        if (testsFailed)
-        {
-            return;
-        }
+            DataTest(&connection);
+            if (testsFailed)
+            {
+                return;
+            }
 
-        SourceFingerprintTest(&connection);
-        if (testsFailed)
-        {
-            return;
-        }
+            BuilderInfoTest(&connection);
+            if (testsFailed)
+            {
+                return;
+            }
 
-        SourceDependencyTest(&connection);
+            SourceFingerprintTest(&connection);
+            if (testsFailed)
+            {
+                return;
+            }
+
+            SourceDependencyTest(&connection);
+        }
     }
+    // scope ending for the QTempDir
+    // if this fails it means someone left a handle to the database open.
+    UNIT_TEST_EXPECT_FALSE(dirPath.exists());
 
     Q_EMIT UnitTestPassed();
 }

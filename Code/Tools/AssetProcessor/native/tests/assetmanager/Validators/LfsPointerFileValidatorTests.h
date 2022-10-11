@@ -22,7 +22,7 @@ namespace UnitTests
         bool CreateTestFile(const AZStd::string& filePath, const AZStd::string& content);
         bool RemoveTestFile(const AZStd::string& filePath);
 
-        AZ::IO::Path m_assetRootDir;
+        AZ::IO::Path m_tempFolder;
         AssetProcessor::LfsPointerFileValidator m_validator;
     };
 }
