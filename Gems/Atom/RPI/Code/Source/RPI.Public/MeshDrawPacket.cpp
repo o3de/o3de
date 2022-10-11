@@ -202,10 +202,12 @@ namespace AZ
                     return false;
                 }
 
+                RPI::ShaderOptionGroup shaderOptions = *shaderItem.GetShaderOptions();
+
                 // Set all unspecified shader options to default values, so that we get the most specialized variant possible.
                 // (because FindVariantStableId treats unspecified options as a request specifically for a variant that doesn't specify those options)
                 // [GFX TODO][ATOM-3883] We should consider updating the FindVariantStableId algorithm to handle default values for us, and remove this step here.
-                RPI::ShaderOptionGroup shaderOptions = *shaderItem.GetShaderOptions();
+                // This might not be necessary anymore though, since ShaderAsset::GetDefaultShaderOptions() does this when the material type builder is creating the ShaderCollection.
                 shaderOptions.SetUnspecifiedToDefaultValues();
 
                 // [GFX_TODO][ATOM-14476]: according to this usage, we should make the shader input contract uniform across all shader variants.

@@ -841,7 +841,7 @@ namespace AZ
                     {
                         if (!options.SetValue(iter.first, iter.second))
                         {
-                            materialTypeAssetCreator.ReportWarning("Shader option '%s' not found.", iter.first.GetCStr());
+                            materialTypeAssetCreator.ReportWarning("Could not set shader option '%s' to '%s'.", iter.first.GetCStr(), iter.second.GetCStr());
                         }
                     }
 
