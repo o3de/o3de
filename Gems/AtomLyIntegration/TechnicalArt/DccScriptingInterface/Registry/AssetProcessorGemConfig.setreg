@@ -4,7 +4,7 @@
             "RPI": {
                 "MaterialTypeBuilder": {
                     "CreateAllPropertiesMaterial": true
-				}
+		}
             }
         }
     }
