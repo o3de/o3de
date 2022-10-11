@@ -262,6 +262,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     Editor
             BUILD_DEPENDENCIES
                 PRIVATE
+                    AZ::AzCoreTestCommon
                     AZ::AzTest
                     Gem::ScriptCanvas.Editor.Static
         )
