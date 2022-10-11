@@ -122,11 +122,6 @@ namespace DPEDebugView
 
                 if (auto editContext = serializeContext->GetEditContext())
                 {
-                    editContext->Enum<EnumType>("EnumType", "")
-                        ->Value("Value1", EnumType::Value1)
-                        ->Value("Value2", EnumType::Value2)
-                        ->Value("ValueZ", EnumType::ValueZ);
-
                     editContext->Class<TestContainer>("TestContainer", "")
                         ->UIElement(AZ::Edit::UIHandlers::Button, "")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &Button1)
