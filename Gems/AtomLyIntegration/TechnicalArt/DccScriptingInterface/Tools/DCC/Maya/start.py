@@ -31,6 +31,7 @@ _MODULE_START = timeit.default_timer()  # start tracking
 # standard imports
 import sys
 import os
+import inspect
 import subprocess
 from pathlib import Path
 import logging as _logging
@@ -38,22 +39,38 @@ import logging as _logging
 
 
 # -------------------------------------------------------------------------
+# this is an entry point, we must self bootstrap
+def get_module_path() -> Path:
+    """Returns the callee (`__file__`) directory name"""
+    module_name = inspect.currentframe().f_back.f_globals["__name__"]
+    module = sys.modules[module_name]
+    assert module
+    return Path(module.__file__).absolute()
+
+# maya is frozen, and this might fail
+#_MODULE_PATH = Path(__file__)
+_MODULE_PATH = get_module_path() #using this instead
+
+PATH_O3DE_TECHART_GEMS = _MODULE_PATH.parents[4].resolve()
+os.chdir(PATH_O3DE_TECHART_GEMS.as_posix())
+sys.path.insert(0, str(PATH_O3DE_TECHART_GEMS))
+
+import DccScriptingInterface
+from DccScriptingInterface import add_site_dir
+add_site_dir(PATH_O3DE_TECHART_GEMS) # cleaner add
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
 # global scope
 from DccScriptingInterface.Tools.DCC.Maya import _PACKAGENAME
 _MODULENAME = f'{_PACKAGENAME}.start'
-_MODULE_PATH = Path(__file__)
-
-# this is an entry point, we must self bootstrap
-PATH_O3DE_TECHART_GEMS = _MODULE_PATH.parents[4].resolve()
-os.chdir(PATH_O3DE_TECHART_GEMS.as_posix())
-
-#sys.path.append(PATH_O3DE_TECHART_GEMS.as_posix())
-from DccScriptingInterface import add_site_dir
-add_site_dir(PATH_O3DE_TECHART_GEMS)
 
 # get the global dccsi state
-from DccScriptingInterface.globals import DCCSI_GDEBUG
-from DccScriptingInterface.globals import DCCSI_DEV_MODE
+from DccScriptingInterface.globals import *
+
+DCCSI_GDEBUG = True
+DCCSI_DEV_MODE = True
 
 from azpy.constants import FRMT_LOG_LONG
 _logging.basicConfig(level=_logging.DEBUG,
@@ -87,11 +104,17 @@ orig_env = os.environ.copy()
 # we are going to pass the system environ
 maya_env = os.environ.copy()
 
+# maybe bypass copying the entire env, and just pass our dccsi maya config as env dict
+# maya_env = maya_config.settings.as_dict() # app won't start, something important is missing from env
+
 # prunes non-string key:value envars
 maya_env = {key: value for key, value in maya_env.items() if check_is_ascii(key) and check_is_ascii(value)}
 
 # will prune QT_ envars, to be used with QT bases apps like Maya or Wing
 maya_env = {key: value for key, value in maya_env.items() if not key.startswith("QT_")}
+
+# if o3de env passes PYTHONHOME it will cause systemic boot failure for maya
+maya_env = {key: value for key, value in maya_env.items() if not 'PYTHONHOM' in key}
 
 if DCCSI_GDEBUG:
     # we can see what was pruned
@@ -101,6 +124,10 @@ if DCCSI_GDEBUG:
         _LOGGER.debug(f'prune diff is ...')
         for p in pruned.items():
             _LOGGER.debug(f'{p}')
+
+
+# make sure that our MAYA_SCRIPT_PATH is
+
 # -------------------------------------------------------------------------
 
 
