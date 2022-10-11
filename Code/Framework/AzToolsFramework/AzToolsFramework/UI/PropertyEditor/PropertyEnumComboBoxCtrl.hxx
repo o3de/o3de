@@ -110,7 +110,7 @@ namespace AzToolsFramework
                 AZ::Edit::EnumConstant<ValueType> enumConstant;
                 if (attrValue->Read<AZ::Edit::EnumConstant<ValueType>>(enumConstant))
                 {
-                    enumValue.first = enumConstant.m_value;
+                    enumValue.first = ValueType(enumConstant.m_value);
                     enumValue.second = enumConstant.m_description;
 
                     genericGUI->addElement(enumValue);
@@ -150,7 +150,7 @@ namespace AzToolsFramework
                 {
                     for (const AZ::Edit::EnumConstant<ValueType>& constantValue : enumConstantValues)
                     {
-                        enumValues.emplace_back(constantValue.m_value, constantValue.m_description);
+                        enumValues.emplace_back(static_cast<ValueType>(constantValue.m_value), constantValue.m_description);
                     }
                     genericGUI->setElements(enumValues);
                 }
