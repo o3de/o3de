@@ -10,6 +10,8 @@
 #include <AzCore/UnitTest/TestTypes.h>
 #include <QObject>
 
+#include <native/unittests/AssetProcessorUnitTests.h>
+
 class ApplicationServer;
 
 namespace AzFramework
@@ -19,16 +21,11 @@ namespace AzFramework
 
 namespace UnitTest
 {
-    class AssetProcessorServerUnitTestAppManager;
-
     class AssetProcessorServerUnitTest
         : public QObject
-        , public ScopedAllocatorSetupFixture
+        , public AssetProcessorUnitTestBase
     {
         Q_OBJECT
-    public:
-        AssetProcessorServerUnitTest();
-        ~AssetProcessorServerUnitTest();
 
     public Q_SLOTS:
         void AssetProcessorConnectionStressTest();
@@ -36,13 +33,12 @@ namespace UnitTest
 
     protected:
         void SetUp() override;
-        void TearDown() override;
 
         void RunAssetProcessorConnectionStressTest(bool failNegotiation);
         AZStd::unique_ptr<ApplicationServer> m_applicationServer;
         AZStd::unique_ptr<AzFramework::Application> m_application;
 
-        AZStd::unique_ptr<AssetProcessorServerUnitTestAppManager> m_batchApplicationManager;
+        AZStd::unique_ptr<AssetProcessorUnitTestAppManager> m_batchApplicationManager;
         
         QMetaObject::Connection m_connection;
 
