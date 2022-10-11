@@ -6,6 +6,7 @@
  *
  */
 
+#include <Atom/RHI.Reflect/SamplerState.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RPI.Edit/Shader/ShaderSourceData.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
@@ -101,6 +102,7 @@ namespace MaterialCanvas
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("color"), AZ::Color::CreateOne(), "color"),
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("string"), AZStd::string{}, "string"),
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("image"), AZ::Data::Asset<AZ::RPI::StreamingImageAsset>{}, "image"),
+            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("sampler"), AZ::RHI::SamplerState{}, "sampler"),
         });
 
         // Registering custom property handlers for dynamic node configuration settings. The settings are just a map of string data.
@@ -115,7 +117,7 @@ namespace MaterialCanvas
         editData.m_elementId = AZ_CRC_CE("FilePathString");
         AtomToolsFramework::AddEditDataAttribute(editData, AZ_CRC_CE("Title"), AZStd::string("Template File"));
         AtomToolsFramework::AddEditDataAttribute(editData, AZ_CRC_CE("Extensions"),
-            AZStd::vector<AZStd::string>{ "azsl.template", "azsli.template", "material.template", "materialtype.template", "shader.template" });
+            AZStd::vector<AZStd::string>{ "azsl", "azsli", "material", "materialtype", "shader" });
         m_dynamicNodeManager->RegisterEditDataForSetting("templatePaths", editData);
 
         editData = {};
@@ -185,7 +187,7 @@ namespace MaterialCanvas
         // and will display a label widget that directs users to the property inspector.
         documentTypeInfo = AtomToolsFramework::AtomToolsAnyDocument::BuildDocumentTypeInfo(
             "Shader Source Data",
-            { "shader", "shader.template" },
+            { "shader" },
             AZStd::any(AZ::RPI::ShaderSourceData()),
             AZ::RPI::ShaderSourceData::TYPEINFO_Uuid()); // Supplying ID because it is not included in the JSON file
 
