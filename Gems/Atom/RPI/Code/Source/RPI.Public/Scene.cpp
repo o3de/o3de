@@ -133,6 +133,7 @@ namespace AZ
 
             Deactivate();
 
+            AZ::Interface<AzFramework::IVisibilitySystem>::Get()->DestroyVisibilityScene(m_visibilityScene);
             delete m_cullingScene;
         }
 
