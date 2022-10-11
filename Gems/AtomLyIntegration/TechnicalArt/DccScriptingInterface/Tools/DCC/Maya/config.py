@@ -296,6 +296,7 @@ maya_config.add_setting(ENVAR_MAYA_VP2_DEVICE_OVERRIDE, MAYA_VP2_DEVICE_OVERRIDE
 maya_config.add_setting(ENVAR_MAYA_OGS_DEVICE_OVERRIDE, MAYA_OGS_DEVICE_OVERRIDE)
 # --- END -----------------------------------------------------------------
 
+# always init defaults
 settings = maya_config.get_config_settings()
 
 _MODULE_END = timeit.default_timer() - _MODULE_START

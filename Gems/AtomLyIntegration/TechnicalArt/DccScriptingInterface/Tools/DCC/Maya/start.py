@@ -77,7 +77,7 @@ _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH.as_posix()}')
 
 # this should execute the core config.py first and grab settings
 from DccScriptingInterface.Tools.DCC.Maya.config import maya_config
-maya_config.settings.setenv() # ensure env is set
+maya_config.settings.setenv() # init settings, ensure env is set
 
 from DccScriptingInterface.azpy.config_utils import check_is_ascii
 
@@ -105,16 +105,11 @@ if DCCSI_GDEBUG:
 
 
 # -------------------------------------------------------------------------
-
-
 # default launch command
 # let us make sure that we are passing a windows path
 _LAUNCH_EXE = Path(maya_config.settings.DCCSI_MAYA_EXE)
 
 _LAUNCH_COMMAND = [f'{str(_LAUNCH_EXE)}']
-
-# command args but be seperated properly
-#https://blender.stackexchange.com/questions/169259/issue-running-blender-command-line-arguments-using-python-subprocess
 
 # suggestion for future PR is to refactor this method into something like
 # DccScriptingInterface.azpy.utils.start.popen()
@@ -144,12 +139,6 @@ def popen(command: list = _LAUNCH_COMMAND,
         _LOGGER.info(f'Success: {_PACKAGENAME} started correctly!')
 
     return process
-# -------------------------------------------------------------------------
-
-
-# -------------------------------------------------------------------------
-#
-#https://docs.blender.org/manual/en/2.79/advanced/command_line/introduction.html#:~:text=Microsoft%20Windows&text=To%20display%20the%20console%20again,Window%20%E2%80%A3%20Toggle%20System%20Console.&text=Blender's%20Console%20Window%20on%20Microsoft,along%20with%20the%20relevant%20messages.
 # -------------------------------------------------------------------------
 
 
@@ -185,7 +174,7 @@ if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(
         description=f'O3DE {_MODULENAME}',
-        epilog=(f"Attempts to start Blender with the DCCsi and O3DE bootstrapping"))
+        epilog=(f"Attempts to start Maya with the DCCsi and O3DE bootstrapping"))
 
     parser.add_argument('-gd', '--global-debug',
                         type=bool,
@@ -205,7 +194,7 @@ if __name__ == '__main__':
         process = popen(command = _LAUNCH_COMMAND,
                         env = maya_env)
     except Exception as e:
-        _LOGGER.warning(f'Could not start Wing')
+        _LOGGER.warning(f'Could not start {_MODULENAME}')
         _LOGGER.error(f'{e} , traceback =', exc_info=True)
         if DCCSI_STRICT:
             _LOGGER.exception(f'{e} , traceback =', exc_info=True)

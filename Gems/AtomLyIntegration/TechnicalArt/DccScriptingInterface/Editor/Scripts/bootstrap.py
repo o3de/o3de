@@ -175,13 +175,12 @@ from DccScriptingInterface.azpy.shared.ui.samples import SampleUI
 # ---- dccsi app modules --------------------------------------------------
 # Blender
 from DccScriptingInterface.Tools.DCC.Blender.config import blender_config
-import DccScriptingInterface.Tools.DCC.Blender.start as blender_start
+
+# Maya
+from DccScriptingInterface.Tools.DCC.Maya.config import maya_config
 
 # Wing
 from DccScriptingInterface.Tools.IDE.Wing.config import wing_config
-import DccScriptingInterface.Tools.IDE.Wing.start as wing_start
-
-# Maya, not implemented yet
 # -------------------------------------------------------------------------
 
 
@@ -299,6 +298,16 @@ def click_action_start_blender() -> start_service:
 
 # - slot ------------------------------------------------------------------
 @Slot()
+def click_action_start_maya() -> start_service:
+    """Start Maya DCC application"""
+    _LOGGER.debug(f'Clicked: click_action_start_maya')
+    py_file = Path(maya_config.settings.PATH_DCCSI_TOOLS_DCC_MAYA, 'start.py').resolve()
+    return start_service(py_file)
+# -------------------------------------------------------------------------
+
+
+# - slot ------------------------------------------------------------------
+@Slot()
 def click_action_start_wing() -> start_service:
     """Start Wing IDE"""
     _LOGGER.debug(f'Clicked: click_action_start_wing')
@@ -358,6 +367,11 @@ def bootstrap_Editor():
     action_start_blender = add_action(parent=dccsi_dcc_menu,
                                       title="Blender",
                                       action_slot = click_action_start_blender)
+
+    # Editor MenuBar, Studio Tools > DCC > Maya
+    action_start_maya = add_action(parent=dccsi_dcc_menu,
+                                   title="Maya",
+                                   action_slot = click_action_start_maya)
 
     # Editor MenuBar, Studio Tools > IDE
     # nest a menu with hooks to start python IDE tools like Wing
