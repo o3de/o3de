@@ -62,16 +62,17 @@ PhysX Collider Property Tree
 
 """
 import azlmbr.physics as physics
+import azlmbr.math as math
 
 from editor_python_test_tools.editor_entity_utils import EditorComponent, EditorEntity
 from editor_python_test_tools.asset_utils import Asset
 from editor_python_test_tools.utils import TestHelper as helper
+from Physics.utils.physics_constants import (PHYSX_COLLIDER)
 
 
-class PhysxCollider(EditorComponent):
-    def __init__(self, editor_entity: EditorEntity, component_name: str) -> None:
-        self.component = editor_entity.add_component(component_name)
-        super().__init__(self.component.type_id)
+class PhysxCollider:
+    def __init__(self, editor_entity: EditorEntity) -> None:
+        self.component = editor_entity.add_component(PHYSX_COLLIDER)
 
     class Path:
         class Box:
@@ -109,12 +110,28 @@ class PhysxCollider(EditorComponent):
         DRAW_COLLIDER = 'Debug draw settings'
         SHAPE = 'Shape Configuration|Shape'
 
-    def set_physx_mesh_from_path(self, asset_product_path) -> None:
+    # Shape: Box
+    def set_box_shape(self) -> None:
+        self.component.set_component_property_value(self.Path.SHAPE, physics.ShapeType_Box)
+
+    def set_box_dimensions(self, x: float, y: float, z: float) -> None:
+        self.component.set_vector3_component_property(self.Path.Box.DIMENSIONS, math.Vector3(x, y, z))
+
+    # Shape: PhysicsAsset
+    # Once we can set and check for PhysicsAsset, error checking can be performed.
+    def set_physicsasset_shape(self) -> None:
+        raise NotImplementedError("GHI#<INSERT_HERE> - PhysicsAsset needs to be exposed to Python.")
+
+    def set_physx_mesh_from_path(self, asset_product_path: str) -> None:
         px_asset = Asset.find_asset_by_path(asset_product_path)
         self.component.set_component_property_value(self.Path.PhysicsAsset.PHYSX_MESH, px_asset.id)
 
-    def set_box_shape(self) -> None:
-        self.component.set_component_property_value(self.Path.SHAPE, physics.ShapeType_Box)
+    def set_physx_mesh_asset_scale(self, x: float, y: float, z: float) -> None:
+        position = math.Vector3(x, y, z)
+        self.component.set_component_property_value(self.path.PhysicsAsset.ASSET_SCALE, position)
+
+    def toggle_physics_materials_from_asset(self) -> None:
+        self.component.toggle_component_switch(self.path.PhysicsAsset.PHYSICS_MATERIALS_FROM_ASSET)
 
     def set_capsule_shape(self) -> None:
         self.component.set_component_property_value(self.Path.SHAPE, physics.ShapeType_Capsule)
@@ -124,6 +141,7 @@ class PhysxCollider(EditorComponent):
 
     def set_sphere_shape(self) -> None:
         self.component.set_component_property_value(self.Path.SHAPE, physics.ShapeType_Sphere)
+
 
 
 
