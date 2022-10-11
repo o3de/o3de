@@ -103,6 +103,12 @@ void CDraw2d::OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene)
     AZ::RPI::SceneId sceneId = scene->GetId();
     LyShinePassRequestBus::EventResult(uiCanvasPass, sceneId, &LyShinePassRequestBus::Events::GetUiCanvasPass);
 
+    if (!uiCanvasPass)
+    {
+        AZ_Error("Draw2d", false, "No UiCanvasPass found in Render-Pipeline.");
+        return;
+    }
+
     m_dynamicDraw = AZ::RPI::DynamicDrawInterface::Get()->CreateDynamicDrawContext();
     m_dynamicDraw->InitShader(shader);
     m_dynamicDraw->InitVertexFormat(

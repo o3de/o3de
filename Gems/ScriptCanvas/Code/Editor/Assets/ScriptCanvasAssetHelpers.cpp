@@ -34,7 +34,7 @@ namespace ScriptCanvasEditor
         }
 
         // Given the full path to the asset, attempt to get the AssetInfo
-        bool GetAssetInfo(AZStd::string_view fullPath, AZ::Data::AssetInfo& outAssetInfo)
+        bool GetSourceInfo(AZStd::string_view fullPath, AZ::Data::AssetInfo& outAssetInfo)
         {
             AZStd::string watchFolder;
             AZ::Data::AssetInfo catalogAssetInfo;
@@ -49,37 +49,6 @@ namespace ScriptCanvasEditor
 
             return false;
         }
-        
-        // Given the AssetId to the asset, attempt to get the AssetInfo
-        AZ::Data::AssetInfo GetAssetInfo(AZ::Data::AssetId assetId)
-        {
-            AZ::Data::AssetInfo assetInfo;
-            AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, assetId);
-            return assetInfo;
-        }
-
-        // Find the AssetType for a given asset by path
-        AZ::Data::AssetType GetAssetType(const char* assetPath)
-        {
-            AZStd::string watchFolder;
-            AZ::Data::AssetInfo assetInfo;
-            bool sourceInfoFound{};
-            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(sourceInfoFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, assetPath, assetInfo, watchFolder);
-            if (sourceInfoFound)
-            {
-                return GetAssetType(assetInfo.m_assetId);
-            }
-            return AZ::Data::AssetType::CreateNull();
-        }
-
-        // Get AssetInfo from the AssetSystem as opposed to the catalog
-        AZ::Data::AssetInfo GetAssetInfo(AZ::Data::AssetId assetId, AZStd::string& rootFilePath)
-        {
-            AZ::Data::AssetInfo assetInfo;
-            const AZStd::string platformName = ""; // Empty for default
-            AzToolsFramework::AssetSystemRequestBus::Broadcast(&AzToolsFramework::AssetSystemRequestBus::Events::GetAssetInfoById, assetId, GetAssetType(assetId), platformName, assetInfo, rootFilePath);
-            return assetInfo;
-        }
 
         AZ::Data::AssetInfo GetSourceInfo(const AZStd::string& sourceFilePath, AZStd::string& watchFolder)
         {
@@ -91,10 +60,6 @@ namespace ScriptCanvasEditor
 
         AZ::Data::AssetInfo GetSourceInfoByProductId(AZ::Data::AssetId assetId, AZ::Data::AssetType assetType)
         {
-            AZStd::string watchFolder;
-            AZ::Data::AssetInfo assetInfo;
-            const AZStd::string platformName = ""; // Empty for default
-
             AzToolsFramework::AssetSystemRequestBus::Events* assetSystem = AzToolsFramework::AssetSystemRequestBus::FindFirstHandler();
 
             if (assetSystem == nullptr)
@@ -102,19 +67,11 @@ namespace ScriptCanvasEditor
                 return AZ::Data::AssetInfo();
             }
 
+            AZStd::string watchFolder;
+            AZ::Data::AssetInfo assetInfo;
+            const AZStd::string platformName = ""; // Empty for default
+
             if (!assetSystem->GetAssetInfoById(assetId, assetType, platformName, assetInfo, watchFolder))
-            {
-                return AZ::Data::AssetInfo();
-            }
-
-            AZStd::string sourcePath;
-
-            if (!assetSystem->GetFullSourcePathFromRelativeProductPath(assetInfo.m_relativePath, sourcePath))
-            {
-                return AZ::Data::AssetInfo();
-            }
-
-            if (!assetSystem->GetSourceInfoBySourcePath(sourcePath.c_str(), assetInfo, watchFolder))
             {
                 return AZ::Data::AssetInfo();
             }
@@ -130,7 +87,7 @@ namespace ScriptCanvasEditor
                 return;
             }
 
-            AZ::Data::AssetInfo assetInfo = GetAssetInfo(assetId);
+            AZ::Data::AssetInfo assetInfo = GetSourceInfoByProductId(assetId, {});
             if (assetInfo.m_assetId.IsValid())
             {
                 AZ_TracePrintf("Script Canvas", "-------------------------------------\n");

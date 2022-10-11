@@ -1,6 +1,0 @@
-<download name="ragdoll_demo" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="8382" md5="904225843b6567e2b31ca6b87452cb9a"/>
- </files>
-</download>

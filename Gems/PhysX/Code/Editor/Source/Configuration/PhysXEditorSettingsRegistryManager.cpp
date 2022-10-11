@@ -10,6 +10,7 @@
 
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/IO/TextStreamWriters.h>
+#include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/JSON/document.h>
 #include <AzCore/JSON/pointer.h>
 #include <AzCore/JSON/prettywriter.h>

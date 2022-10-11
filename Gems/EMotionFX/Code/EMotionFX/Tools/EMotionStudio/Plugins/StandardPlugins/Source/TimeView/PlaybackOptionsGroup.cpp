@@ -7,9 +7,9 @@
  */
 
 #include <MysticQt/Source/MysticQtManager.h>
+#include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/TimeView/PlaybackOptionsGroup.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/TimeView/TimeViewToolBar.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/MotionWindow/MotionWindowPlugin.h>
 #include <QAction>
 
 namespace EMStudio
@@ -95,32 +95,21 @@ namespace EMStudio
 
             if (isEnabled)
             {
-                MotionWindowPlugin* motionWindowPlugin = TimeViewToolBar::GetMotionWindowPlugin();
-                if (motionWindowPlugin)
+                const size_t numMotions = selection.GetNumSelectedMotions();
+                for (size_t i = 0; i < numMotions; ++i)
                 {
-                    const size_t numMotions = selection.GetNumSelectedMotions();
-                    for (size_t i = 0; i < numMotions; ++i)
-                    {
-                        MotionWindowPlugin::MotionTableEntry* entry = motionWindowPlugin->FindMotionEntryByID(selection.GetMotion(i)->GetID());
-                        if (!entry)
-                        {
-                            AZ_Warning("EMotionFX", false, "Cannot find motion table entry for the given motion.");
-                            continue;
-                        }
+                    EMotionFX::Motion* motion = selection.GetMotion(i);
+                    const EMotionFX::PlayBackInfo* defaultPlayBackInfo = motion->GetDefaultPlayBackInfo();
 
-                        EMotionFX::Motion* motion = entry->m_motion;
-                        const EMotionFX::PlayBackInfo* defaultPlayBackInfo = motion->GetDefaultPlayBackInfo();
+                    m_loopForeverAction->setChecked(defaultPlayBackInfo->m_numLoops == EMFX_LOOPFOREVER);
+                    m_mirrorAction->setChecked(defaultPlayBackInfo->m_mirrorMotion);
+                    m_inPlaceAction->setChecked(defaultPlayBackInfo->m_inPlace);
+                    m_retargetAction->setChecked(defaultPlayBackInfo->m_retarget);
 
-                        m_loopForeverAction->setChecked(defaultPlayBackInfo->m_numLoops == EMFX_LOOPFOREVER);
-                        m_mirrorAction->setChecked(defaultPlayBackInfo->m_mirrorMotion);
-                        m_inPlaceAction->setChecked(defaultPlayBackInfo->m_inPlace);
-                        m_retargetAction->setChecked(defaultPlayBackInfo->m_retarget);
+                    const bool playBackward = (defaultPlayBackInfo->m_playMode == EMotionFX::PLAYMODE_BACKWARD);
+                    m_backwardAction->setChecked(playBackward);
 
-                        const bool playBackward = (defaultPlayBackInfo->m_playMode == EMotionFX::PLAYMODE_BACKWARD);
-                        m_backwardAction->setChecked(playBackward);
-
-                        SetPlaySpeed(defaultPlayBackInfo->m_playSpeed);
-                    }
+                    SetPlaySpeed(defaultPlayBackInfo->m_playSpeed);
                 }
             }
             else
@@ -183,8 +172,8 @@ namespace EMStudio
 
     void PlaybackOptionsGroup::OnSpeedSliderValueChanged(double newPlayspeed)
     {
-        const AZStd::vector<EMotionFX::MotionInstance*>& motionInstances = MotionWindowPlugin::GetSelectedMotionInstances();
-        for (EMotionFX::MotionInstance* motionInstance : motionInstances)
+        const AZStd::vector<EMotionFX::MotionInstance*>& selectedMotionInstances = CommandSystem::GetCommandManager()->GetCurrentSelection().GetSelectedMotionInstances();
+        for (EMotionFX::MotionInstance* motionInstance : selectedMotionInstances)
         {
             motionInstance->SetPlaySpeed(aznumeric_cast<float>(newPlayspeed));
         }

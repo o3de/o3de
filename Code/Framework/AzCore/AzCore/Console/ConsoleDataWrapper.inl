@@ -99,7 +99,7 @@ namespace AZ
         const BASE_TYPE currentValue = this->m_value;
         BASE_TYPE newValue = currentValue;
 
-        if (ConsoleTypeHelpers::StringSetToValue(newValue, arguments))
+        if (ConsoleTypeHelpers::ToValue(newValue, arguments))
         {
             if (newValue != currentValue)
             {
@@ -117,7 +117,7 @@ namespace AZ
     void ConsoleDataWrapper<BASE_TYPE, THREAD_SAFETY>::ValueToString(CVarFixedString& outString) const
     {
         const BASE_TYPE currentValue = this->m_value;
-        outString = ConsoleTypeHelpers::ValueToString(currentValue);
+        outString = ConsoleTypeHelpers::ToString(currentValue);
     }
 
     template <typename BASE_TYPE, ThreadSafety THREAD_SAFETY>

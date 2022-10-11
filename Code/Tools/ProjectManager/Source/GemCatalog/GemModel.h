@@ -118,6 +118,7 @@ namespace O3DE::ProjectManager
 
     protected slots: 
         void OnRowsAboutToBeRemoved(const QModelIndex& parent, int first, int last);
+        void OnRowsRemoved(const QModelIndex& parent, int first, int last);
 
     private:
         void GetAllDependingGems(const QModelIndex& modelIndex, QSet<QModelIndex>& inOutGems);

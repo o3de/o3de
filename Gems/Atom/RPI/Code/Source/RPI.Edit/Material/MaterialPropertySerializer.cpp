@@ -269,7 +269,7 @@ namespace AZ
                 }
                 else
                 {
-                    property->m_outputConnections.push_back();
+                    property->m_outputConnections.emplace_back();
                     result.Combine(ContinueLoading(&property->m_outputConnections.back(), azrtti_typeid(property->m_outputConnections.back()), inputValue[Field::connection], context));
                 }
             }

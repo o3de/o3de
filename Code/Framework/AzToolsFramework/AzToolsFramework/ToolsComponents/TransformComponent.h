@@ -241,10 +241,6 @@ namespace AzToolsFramework
             bool m_worldTransformDirty = true;
             bool m_isStatic = false;
 
-            // This is a workaround for a bug which causes the button to appear with incorrect placement if a UI
-            // element is used rather than a data element.
-            bool m_addNonUniformScaleButton = false;
-
             // Used to check whether entity was just created vs manually reactivated. Set true after OnEntityActivated is called the first time.
             bool m_initialized = false;
 

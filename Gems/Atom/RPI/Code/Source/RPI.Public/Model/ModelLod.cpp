@@ -287,35 +287,22 @@ namespace AZ
                 {
                     if (contractStreamChannel.m_isOptional)
                     {
-                        //We are using R8G8B8A8_UINT as on Metal mesh stream formats need to be atleast 4 byte aligned.
-                        RHI::Format dummyStreamFormat = RHI::Format::R8G8B8A8_UINT;
+                        // The configuration of the dummy input stream is a bit touchy, and could result in crashes or validation failures that are platform-specific.
+                        // If you modify this code, be sure to test with "-rhi-device-validation=enable" on every platform.
+                        // Here are some criteria that we've noticed before, even for empty buffers:
+                        // Metal: Mesh stream formats need to be at least 4 byte aligned.
+                        // Vulkan: Mesh stream data type (float vs uint) must match the shader, or validation errors are reported
+                        //        ("does not match vertex shader input type")
+                        // Vulkan: We can't just use a null buffer pointer because vulkan will occasionally crash. So we bind some valid non-null buffer and view it with length 0.
+                        // Dx12: Mesh stream data type (float vs uint) must match the shader, or validation warnings are reported
+                        //       ("the matching entry in the Input Layout declaration ... specifies mismatched format").
+                        //
+                        // The stride value does not seem to matter, just the Format type. Still, we use GetFormatSize to set an accurate stride.
+
+                        RHI::Format dummyStreamFormat = RHI::Format::R32G32B32A32_FLOAT;
                         layoutBuilder.AddBuffer()->Channel(contractStreamChannel.m_semantic, dummyStreamFormat);
-                        // We can't just use a null buffer pointer here because vulkan will occasionally crash. So we bind some valid non-null buffer and view it with length 0.
-                        RHI::StreamBufferView dummyBuffer{*mesh.m_indexBufferView.GetBuffer(), 0, 0, 4};
+                        RHI::StreamBufferView dummyBuffer{*mesh.m_indexBufferView.GetBuffer(), 0, 0, RHI::GetFormatSize(dummyStreamFormat)};
                         streamBufferViewsOut.push_back(dummyBuffer);
-
-                        // Note that all of the below scenarios seem to work find on PC, for both dx12 and vulkan. If the above approach proves to be incompatible
-                        // with another platform, consider trying one of the approaches below.
-
-                        //RHI::Format formatDoesntReallyMatter = RHI::Format::R8_UNORM;
-                        //layoutBuilder.AddBuffer(RHI::StreamStepFunction::PerInstance)->Channel(contractStreamChannel.m_semantic, formatDoesntReallyMatter);
-                        //RHI::StreamBufferView dummyBuffer{*mesh.m_indexBufferView.GetBuffer(), 0, 0, 0};
-                        //streamBufferViewsOut.push_back(dummyBuffer);
-
-                        //RHI::Format formatDoesntReallyMatter = RHI::Format::R8G8B8A8_UINT;
-                        //layoutBuilder.AddBuffer(RHI::StreamStepFunction::PerInstance)->Channel(contractStreamChannel.m_semantic, formatDoesntReallyMatter);
-                        //RHI::StreamBufferView dummyBuffer{*mesh.m_indexBufferView.GetBuffer(), 0, 4, 4};
-                        //streamBufferViewsOut.push_back(dummyBuffer);
-
-                        //RHI::Format formatDoesntMatter = RHI::Format::R32G32B32A32_FLOAT;
-                        //layoutBuilder.AddBuffer()->Channel(contractStreamChannel.m_semantic, formatDoesntMatter);
-                        //RHI::StreamBufferView emptyBuffer{*m_buffers[0]->GetRHIBuffer(), 0, 16, 16};
-                        //streamBufferViewsOut.push_back(emptyBuffer);
-
-                        //RHI::Format formatDoesntMatter = RHI::Format::R32G32B32A32_FLOAT;
-                        //layoutBuilder.AddBuffer()->Channel(contractStreamChannel.m_semantic, formatDoesntMatter);
-                        //RHI::StreamBufferView emptyBuffer{*m_buffers[0]->GetRHIBuffer(), 0, 0, 16};
-                        //streamBufferViewsOut.push_back(emptyBuffer);
                     }
                     else
                     {

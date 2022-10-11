@@ -1,0 +1,7 @@
+{
+    "DCCSI_LOCAL_SETTINGS": "True",
+    "DCCSI_DEV_MODE": "True",
+    "DCCSI_GDEBUG": "True",
+    "DCCSI_LOGLEVEL": 10,
+    "DCCSI_LOG_PATH": "{your_path}/user/log/DCCsi"
+}

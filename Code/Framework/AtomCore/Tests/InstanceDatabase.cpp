@@ -221,7 +221,7 @@ namespace UnitTest
         Orphan
     };
 
-    ParralleInstanceCurrentAction ParallelInstanceGetCurrentAction(ParallelInstanceTestCases testCase)
+    ParralleInstanceCurrentAction ParallelInstanceGetCurrentAction(const ParallelInstanceTestCases& testCase)
     {
         switch (testCase)
         {
@@ -250,9 +250,9 @@ namespace UnitTest
         }
     }
 
-    void ParallelInstanceCreateHelper(size_t threadCountMax, size_t assetIdCount, float durationSeconds, ParallelInstanceTestCases testCase)
+    void ParallelInstanceCreateHelper(const size_t& threadCountMax, const size_t& assetIdCount, const uint32_t& iterations, const ParallelInstanceTestCases& testCase)
     {
-        printf("Testing threads=%zu assetIds=%zu ... ", threadCountMax, assetIdCount);
+        //printf("Testing threads=%zu assetIds=%zu ... ", threadCountMax, assetIdCount);
 
         AZ::Debug::Timer timer;
         timer.Stamp();
@@ -297,16 +297,13 @@ namespace UnitTest
         for (size_t i = 0; i < threadCountMax; ++i)
         {
             threads.emplace_back(
-                [&instanceManager, &threadCount, &cv, &guids, &instances, &assets, &durationSeconds, &testCase, &referenceTableMutex]()
+                [&instanceManager, &threadCount, &cv, &guids, &instances, &assets, &iterations, &testCase, &referenceTableMutex]()
                 {
-                    AZ::Debug::Timer timer;
-                    timer.Stamp();
 
                     bool deferRemoval = testCase == ParallelInstanceTestCases::CreateAndDeferRemoval ||
-                            testCase == ParallelInstanceTestCases::CreateDeferRemovalAndOrphan
-                        ? true : false;
+                            testCase == ParallelInstanceTestCases::CreateDeferRemovalAndOrphan;
 
-                    while (timer.GetDeltaTimeInSeconds() < durationSeconds)
+                    for (uint32_t i = 0; i < iterations; ++i) // queue up a bunch of work
                     {
                         const size_t index = rand() % guids.size();
                         const Uuid uuid = guids[index];
@@ -355,12 +352,10 @@ namespace UnitTest
         // Used to detect a deadlock.  If we wait for more than 10 seconds, it's likely a deadlock has occurred
         while (threadCount > 0 && !timedOut)
         {
-            size_t durationSecondsRoundedUp = static_cast<size_t>(std::ceil(durationSeconds));
-
             AZStd::unique_lock<AZStd::mutex> lock(mutex);
             timedOut =
                 (AZStd::cv_status::timeout ==
-                 cv.wait_until(lock, AZStd::chrono::system_clock::now() + AZStd::chrono::seconds(durationSecondsRoundedUp * 2)));
+                 cv.wait_until(lock, AZStd::chrono::system_clock::now() + AZStd::chrono::seconds(1)));
         }
 
         EXPECT_TRUE(threadCount == 0) << "One or more threads appear to be deadlocked at " << timer.GetDeltaTimeInSeconds() << " seconds";
@@ -373,10 +368,10 @@ namespace UnitTest
         keepDispatching = false;
         dispatchThread.join();
 
-        printf("Took %f seconds\n", timer.GetDeltaTimeInSeconds());
+        //printf("Took %f seconds\n", timer.GetDeltaTimeInSeconds());
     }
 
-    void ParallelCreateTest(ParallelInstanceTestCases testCase)
+    void ParallelCreateTest(const ParallelInstanceTestCases& testCase)
     {
         // This is the original test scenario from when InstanceDatabase was first implemented
         //                           threads, AssetIds,  seconds
@@ -387,33 +382,33 @@ namespace UnitTest
 
         for (size_t i = 0; i < attempts; ++i)
         {
-            printf("Attempt %zu of %zu... \n", i, attempts);
+            //printf("Attempt %zu of %zu... \n", i, attempts);
 
             // The idea behind this series of tests is that there are two threads sharing one Instance, and both threads try to
             // create or release that instance at the same time.
             // At the time, this set of scenarios has something like a 10% failure rate.
-            const float duration = 2.0f;
-            //                           threads, AssetIds, seconds
-            ParallelInstanceCreateHelper(2, 1, duration, testCase);
-            ParallelInstanceCreateHelper(4, 1, duration, testCase);
-            ParallelInstanceCreateHelper(8, 1, duration, testCase);
+            const uint32_t iterations = 1000;
+            //                           threads, AssetIds, iterations
+            ParallelInstanceCreateHelper(2, 1, iterations, testCase);
+            ParallelInstanceCreateHelper(4, 1, iterations, testCase);
+            ParallelInstanceCreateHelper(8, 1, iterations, testCase);
         }
 
         for (size_t i = 0; i < attempts; ++i)
         {
-            printf("Attempt %zu of %zu... \n", i, attempts);
+            //printf("Attempt %zu of %zu... \n", i, attempts);
 
             // Here we try a bunch of different threadCount:assetCount ratios to be thorough
-            const float duration = 2.0f;
-            //                           threads, AssetIds, seconds
-            ParallelInstanceCreateHelper(2, 1, duration, testCase);
-            ParallelInstanceCreateHelper(4, 1, duration, testCase);
-            ParallelInstanceCreateHelper(4, 2, duration, testCase);
-            ParallelInstanceCreateHelper(4, 4, duration, testCase);
-            ParallelInstanceCreateHelper(8, 1, duration, testCase);
-            ParallelInstanceCreateHelper(8, 2, duration, testCase);
-            ParallelInstanceCreateHelper(8, 3, duration, testCase);
-            ParallelInstanceCreateHelper(8, 4, duration, testCase);
+            const uint32_t iterations = 1000;
+            //                           threads, AssetIds, iterations
+            ParallelInstanceCreateHelper(2, 1, iterations, testCase);
+            ParallelInstanceCreateHelper(4, 1, iterations, testCase);
+            ParallelInstanceCreateHelper(4, 2, iterations, testCase);
+            ParallelInstanceCreateHelper(4, 4, iterations, testCase);
+            ParallelInstanceCreateHelper(8, 1, iterations, testCase);
+            ParallelInstanceCreateHelper(8, 2, iterations, testCase);
+            ParallelInstanceCreateHelper(8, 3, iterations, testCase);
+            ParallelInstanceCreateHelper(8, 4, iterations, testCase);
         }
     }
 

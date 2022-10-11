@@ -46,6 +46,7 @@ namespace UnitTest
         AddMaterialPropertyForSrg(materialTypeCreator, Name{ propertyGroupPrefix + "MyColor" }, MaterialPropertyDataType::Color, Name{ "m_color" });
         AddMaterialPropertyForSrg(materialTypeCreator, Name{ propertyGroupPrefix + "MyImage" }, MaterialPropertyDataType::Image, Name{ "m_image" });
         AddMaterialPropertyForSrg(materialTypeCreator, Name{ propertyGroupPrefix + "MyEnum" }, MaterialPropertyDataType::Enum, Name{ "m_enum" });
+        AddMaterialPropertyForSrg(materialTypeCreator, Name{ propertyGroupPrefix + "MyAttachmentImage" }, MaterialPropertyDataType::Image, Name{ "m_attachmentImage" });
     }
 
     AZ::RHI::Ptr<AZ::RHI::ShaderResourceGroupLayout> CreateCommonTestMaterialSrgLayout()
@@ -75,6 +76,7 @@ namespace UnitTest
         srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name{ "m_float4x4" }, 120, 64, 0});
         srgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{Name{ "m_unusedImage" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1});
         srgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{Name{ "m_image" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 2});
+        srgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{Name{ "m_attachmentImage" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 2});
 
         EXPECT_TRUE(srgLayout->Finalize());
 

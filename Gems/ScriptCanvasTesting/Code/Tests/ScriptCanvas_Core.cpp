@@ -18,6 +18,7 @@
 #include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
 #include <ScriptCanvas/Execution/RuntimeComponent.h>
 #include <ScriptCanvas/Variable/GraphVariableManagerComponent.h>
+#include <ScriptCanvas/Libraries/Core/Start.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Color.h>
 

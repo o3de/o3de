@@ -240,7 +240,7 @@ namespace UnitTest
     {
         AZStd::atomic_int32_t x = 0;
 
-        TaskGraph graph;
+        TaskGraph graph{ "SingleTask" };
         graph.AddTask(
             defaultTD,
             [&x]
@@ -248,7 +248,7 @@ namespace UnitTest
                 x = 1;
             });
 
-        TaskGraphEvent ev;
+        TaskGraphEvent ev{ "ev" };
         graph.SubmitOnExecutor(*m_executor, &ev);
         ev.Wait();
 
@@ -260,7 +260,7 @@ namespace UnitTest
     {
         AZStd::atomic_int32_t x = 0;
 
-        TaskGraph graph;
+        TaskGraph graph{ "SingleTaskChain" };
         auto a = graph.AddTask(
             defaultTD,
             [&x]
@@ -275,7 +275,7 @@ namespace UnitTest
             });
         b.Precedes(a);
 
-        TaskGraphEvent ev;
+        TaskGraphEvent ev{ "ev" };
         graph.SubmitOnExecutor(*m_executor, &ev);
         ev.Wait();
 
@@ -287,7 +287,7 @@ namespace UnitTest
         AZStd::atomic_int32_t x = 0;
         constexpr int numChains = 5;
 
-        TaskGraph graph;
+        TaskGraph graph{ "MultipleIndependentTaskChains" };
         for( int i = 0; i < numChains; ++i)
         {
             auto a = graph.AddTask(
@@ -305,7 +305,7 @@ namespace UnitTest
             b.Precedes(a);
         }
 
-        TaskGraphEvent ev;
+        TaskGraphEvent ev{ "ev" };
         graph.SubmitOnExecutor(*m_executor, &ev);
         ev.Wait();
 
@@ -316,7 +316,7 @@ namespace UnitTest
     {
         int x = 0;
 
-        TaskGraph graph;
+        TaskGraph graph{ "VariadicInterface" };
         auto [a, b, c] = graph.AddTasks(
             defaultTD,
             [&]
@@ -335,7 +335,7 @@ namespace UnitTest
         a.Precedes(b);
         b.Precedes(c);
 
-        TaskGraphEvent ev;
+        TaskGraphEvent ev{ "ev" };
         graph.SubmitOnExecutor(*m_executor, &ev);
         ev.Wait();
 
@@ -346,7 +346,7 @@ namespace UnitTest
     {
         int x = 0;
 
-        TaskGraph graph;
+        TaskGraph graph{ "SerialGraph" };
         auto a = graph.AddTask(
             defaultTD,
             [&]
@@ -369,7 +369,7 @@ namespace UnitTest
         a.Precedes(b);
         b.Precedes(c);
 
-        TaskGraphEvent ev;
+        TaskGraphEvent ev{ "ev" };
         graph.SubmitOnExecutor(*m_executor, &ev);
         ev.Wait();
 
@@ -380,10 +380,10 @@ namespace UnitTest
     {
         int x = 0;
 
-        TaskGraphEvent ev;
+        TaskGraphEvent ev{ "ev" };
 
         {
-            TaskGraph graph;
+            TaskGraph graph{ "DetachedGraph" };
             auto a = graph.AddTask(
                 defaultTD,
                 [&]
@@ -422,7 +422,7 @@ namespace UnitTest
         // Task b and c toggles the lowest two bits atomically
         // Task d decrements x
 
-        TaskGraph graph;
+        TaskGraph graph{ "ForkJoin" };
         auto a = graph.AddTask(
             defaultTD,
             [&]
@@ -457,7 +457,7 @@ namespace UnitTest
         a.Precedes(b, c);
         d.Follows(b, c);
 
-        TaskGraphEvent ev;
+        TaskGraphEvent ev{ "ev" };
         graph.SubmitOnExecutor(*m_executor, &ev);
         ev.Wait();
 
@@ -469,7 +469,7 @@ namespace UnitTest
     {
         AZStd::atomic<int> x = 0;
 
-        TaskGraph graph;
+        TaskGraph graph{ "SpawnSubgraph" };
         auto a = graph.AddTask(
             defaultTD,
             [&]
@@ -488,7 +488,7 @@ namespace UnitTest
             {
                 x ^= 2;
 
-                TaskGraph subgraph;
+                TaskGraph subgraph{ "InnerSubgraph" };
                 auto e = subgraph.AddTask(
                     defaultTD,
                     [&]
@@ -509,7 +509,7 @@ namespace UnitTest
                     });
                 e.Precedes(g);
                 f.Precedes(g);
-                TaskGraphEvent ev;
+                TaskGraphEvent ev{ "ev" };
                 subgraph.SubmitOnExecutor(*m_executor, &ev);
                 // TaskGraphEvent::Wait asserts if called on a worker thread, suppress & validate assert
                 AZ_TEST_START_TRACE_SUPPRESSION;
@@ -541,7 +541,7 @@ namespace UnitTest
         b.Precedes(d);
         c.Precedes(d);
 
-        TaskGraphEvent ev;
+        TaskGraphEvent ev{ "ev" };
         graph.SubmitOnExecutor(*m_executor, &ev);
         ev.Wait();
     }
@@ -550,7 +550,7 @@ namespace UnitTest
     {
         AZStd::atomic<int> x = 0;
 
-        TaskGraph graph;
+        TaskGraph graph{ "RetainedGraph" };
         auto a = graph.AddTask(
             defaultTD,
             [&]
@@ -610,14 +610,14 @@ namespace UnitTest
         g.Follows(e, f);
         g.Precedes(d);
 
-        TaskGraphEvent ev1;
+        TaskGraphEvent ev1{ "ev1" };
         graph.SubmitOnExecutor(*m_executor, &ev1);
         ev1.Wait();
 
         EXPECT_EQ(3 | 0b100000, x);
         x = 0;
 
-        TaskGraphEvent ev2;
+        TaskGraphEvent ev2{ "ev2" };
         graph.SubmitOnExecutor(*m_executor, &ev2);
         ev2.Wait();
 
@@ -633,7 +633,7 @@ namespace Benchmark
         void internalSetUp()
         {
             executor = new TaskExecutor;
-            graph = new TaskGraph;
+            graph = new TaskGraph{ "BenchmarkFixture" };
         }
 
         void internalTearDown()
@@ -679,7 +679,7 @@ namespace Benchmark
             });
         for ([[maybe_unused]] auto _ : state)
         {
-            TaskGraphEvent ev;
+            TaskGraphEvent ev{ "ev" };
             graph->SubmitOnExecutor(*executor, &ev);
             ev.Wait();
         }
@@ -701,7 +701,7 @@ namespace Benchmark
 
         for ([[maybe_unused]] auto _ : state)
         {
-            TaskGraphEvent ev;
+            TaskGraphEvent ev{ "ev" };
             graph->SubmitOnExecutor(*executor, &ev);
             ev.Wait();
         }
@@ -731,7 +731,7 @@ namespace Benchmark
 
         for ([[maybe_unused]] auto _ : state)
         {
-            TaskGraphEvent ev;
+            TaskGraphEvent ev{ "ev" };
             graph->SubmitOnExecutor(*executor, &ev);
             ev.Wait();
         }

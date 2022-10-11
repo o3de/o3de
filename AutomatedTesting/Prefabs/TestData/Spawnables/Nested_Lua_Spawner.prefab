@@ -1,0 +1,188 @@
+{
+    "ContainerEntity": {
+        "Id": "ContainerEntity",
+        "Name": "Nested_Lua_Spawner",
+        "Components": {
+            "Component_[14363244811339395579]": {
+                "$type": "EditorPrefabComponent",
+                "Id": 14363244811339395579
+            },
+            "Component_[15071162963676156388]": {
+                "$type": "EditorEntityIconComponent",
+                "Id": 15071162963676156388
+            },
+            "Component_[15815590660642703096]": {
+                "$type": "EditorInspectorComponent",
+                "Id": 15815590660642703096
+            },
+            "Component_[16558383820461130276]": {
+                "$type": "EditorLockComponent",
+                "Id": 16558383820461130276
+            },
+            "Component_[172601215824706284]": {
+                "$type": "EditorVisibilityComponent",
+                "Id": 172601215824706284
+            },
+            "Component_[3773037296016269316]": {
+                "$type": "EditorPendingCompositionComponent",
+                "Id": 3773037296016269316
+            },
+            "Component_[4554449116082806738]": {
+                "$type": "EditorOnlyEntityComponent",
+                "Id": 4554449116082806738
+            },
+            "Component_[502061096902226064]": {
+                "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                "Id": 502061096902226064,
+                "Parent Entity": ""
+            },
+            "Component_[5724976328606993051]": {
+                "$type": "EditorDisabledCompositionComponent",
+                "Id": 5724976328606993051
+            },
+            "Component_[613862236085360375]": {
+                "$type": "SelectionComponent",
+                "Id": 613862236085360375
+            },
+            "Component_[7179097817171074218]": {
+                "$type": "EditorEntitySortComponent",
+                "Id": 7179097817171074218,
+                "Child Entity Order": [
+                    "Entity_[168156819832776]"
+                ]
+            }
+        }
+    },
+    "Entities": {
+        "Entity_[168156819832776]": {
+            "Id": "Entity_[168156819832776]",
+            "Name": "Nested_Lua_Spawner",
+            "Components": {
+                "Component_[10681212608114495004]": {
+                    "$type": "EditorInspectorComponent",
+                    "Id": 10681212608114495004,
+                    "ComponentOrderEntryArray": [
+                        {
+                            "ComponentId": 8318485693858881385
+                        },
+                        {
+                            "ComponentId": 12318808987409996274,
+                            "SortIndex": 1
+                        }
+                    ]
+                },
+                "Component_[10913864789357357744]": {
+                    "$type": "EditorLockComponent",
+                    "Id": 10913864789357357744
+                },
+                "Component_[12318808987409996274]": {
+                    "$type": "ScriptEditorComponent",
+                    "Id": 12318808987409996274,
+                    "ScriptComponent": {
+                        "Properties": {
+                            "Properties": [
+                                {
+                                    "$type": "AzFramework::ScriptPropertyGenericClass",
+                                    "id": 2785736188,
+                                    "name": "Prefab",
+                                    "value": {
+                                        "$type": "AzFramework::Scripts::SpawnableScriptAssetRef",
+                                        "value": {
+                                            "asset": {
+                                                "assetId": {
+                                                    "guid": "{80C0CF4E-9A5E-544B-B89E-BC980175A259}",
+                                                    "subId": 3875079122
+                                                },
+                                                "loadBehavior": "QueueLoad",
+                                                "assetHint": "Assets/Prefabs/PinkFlower.prefab"
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "$type": "AzFramework::ScriptPropertyGenericClass",
+                                    "id": 696031473,
+                                    "name": "Rotation",
+                                    "value": {
+                                        "$type": "Vector3",
+                                        "value": [
+                                            0.0,
+                                            0.0,
+                                            0.0
+                                        ]
+                                    }
+                                },
+                                {
+                                    "$type": "AzFramework::ScriptPropertyNumber",
+                                    "id": 3964020100,
+                                    "name": "Scale",
+                                    "value": 1.0
+                                },
+                                {
+                                    "$type": "AzFramework::ScriptPropertyGenericClass",
+                                    "id": 3026797935,
+                                    "name": "Translation",
+                                    "value": {
+                                        "$type": "Vector3",
+                                        "value": [
+                                            0.0,
+                                            0.0,
+                                            0.0
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        "Script": {
+                            "assetId": {
+                                "guid": "{0246B6C4-BC01-5DDB-B010-492C316C8DDE}",
+                                "subId": 1
+                            },
+                            "assetHint": "luascripts/spawnables/nestedspawner.luac"
+                        }
+                    },
+                    "ScriptAsset": {
+                        "assetId": {
+                            "guid": "{0246B6C4-BC01-5DDB-B010-492C316C8DDE}",
+                            "subId": 1
+                        },
+                        "assetHint": "luascripts/spawnables/nestedspawner.luac"
+                    }
+                },
+                "Component_[13977989399816809187]": {
+                    "$type": "EditorEntitySortComponent",
+                    "Id": 13977989399816809187
+                },
+                "Component_[18095772974646277855]": {
+                    "$type": "SelectionComponent",
+                    "Id": 18095772974646277855
+                },
+                "Component_[3946807323415188606]": {
+                    "$type": "EditorVisibilityComponent",
+                    "Id": 3946807323415188606
+                },
+                "Component_[567999458888425824]": {
+                    "$type": "EditorEntityIconComponent",
+                    "Id": 567999458888425824
+                },
+                "Component_[5810143193433148456]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 5810143193433148456
+                },
+                "Component_[8061433484055444436]": {
+                    "$type": "EditorDisabledCompositionComponent",
+                    "Id": 8061433484055444436
+                },
+                "Component_[8318485693858881385]": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 8318485693858881385,
+                    "Parent Entity": "ContainerEntity"
+                },
+                "Component_[8880075318567040260]": {
+                    "$type": "EditorPendingCompositionComponent",
+                    "Id": 8880075318567040260
+                }
+            }
+        }
+    }
+}

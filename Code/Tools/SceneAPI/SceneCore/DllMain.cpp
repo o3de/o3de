@@ -23,6 +23,7 @@
 #include <SceneAPI/SceneCore/Components/SceneSystemComponent.h>
 
 #include <SceneAPI/SceneCore/Containers/RuleContainer.h>
+#include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Containers/SceneManifest.h>
 #include <SceneAPI/SceneCore/DataTypes/IManifestObject.h>
 #include <SceneAPI/SceneCore/DataTypes/IGraphObject.h>
@@ -51,7 +52,6 @@
 #include <SceneAPI/SceneCore/DataTypes/GraphData/ITransform.h>
 
 #include <SceneAPI/SceneCore/DataTypes/ManifestBase/ISceneNodeSelectionList.h>
-#include <SceneAPI/SceneCore/Export/MtlMaterialExporter.h>
 #include <SceneAPI/SceneCore/Import/ManifestImportRequestHandler.h>
 #include <SceneAPI/SceneCore/Utilities/PatternMatcher.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
@@ -148,7 +148,6 @@ namespace AZ
                     AZ::SceneAPI::SceneCore::LoadingComponent::Reflect(context);
                     AZ::SceneAPI::SceneCore::GenerationComponent::Reflect(context);
                     AZ::SceneAPI::SceneCore::ExportingComponent::Reflect(context);
-                    AZ::SceneAPI::SceneCore::RCExportingComponent::Reflect(context);
                     AZ::SceneAPI::SceneCore::SceneSystemComponent::Reflect(context);
                     // Register group interfaces
                     context->Class<AZ::SceneAPI::DataTypes::IGroup, AZ::SceneAPI::DataTypes::IManifestObject>()->Version(1);
@@ -199,8 +198,6 @@ namespace AZ
                 // there's an application.
                 if (g_componentDescriptors.empty())
                 {
-                    g_componentDescriptors.push_back(AZ::SceneAPI::Export::MaterialExporterComponent::CreateDescriptor());
-                    g_componentDescriptors.push_back(AZ::SceneAPI::Export::RCMaterialExporterComponent::CreateDescriptor());
                     for (AZ::ComponentDescriptor* descriptor : g_componentDescriptors)
                     {
                         AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Handler::RegisterComponentDescriptor, descriptor);
@@ -284,14 +281,15 @@ namespace AZ
     } // namespace SceneAPI
 } // namespace AZ
 
-extern "C" AZ_DLL_EXPORT void InitializeDynamicModule(void* env)
+static bool g_sceneCoreInitialized = false;
+
+extern "C" AZ_DLL_EXPORT void InitializeDynamicModule()
 {
-    if (AZ::Environment::IsReady())
+    if (g_sceneCoreInitialized)
     {
         return;
     }
-
-    AZ::Environment::Attach(static_cast<AZ::EnvironmentInstance>(env));
+    g_sceneCoreInitialized = true;
 
     AZ::SceneAPI::SceneCore::Initialize();
 }
@@ -323,10 +321,12 @@ extern "C" AZ_DLL_EXPORT void Deactivate()
 
 extern "C" AZ_DLL_EXPORT void UninitializeDynamicModule()
 {
-    if (!AZ::Environment::IsReady())
+    if (!g_sceneCoreInitialized)
     {
         return;
     }
+    g_sceneCoreInitialized = false;
+
     AZ::SceneAPI::SceneCore::Uninitialize();
 
     // This module does not own these allocators, but must clear its cached EnvironmentVariables
@@ -339,8 +339,6 @@ extern "C" AZ_DLL_EXPORT void UninitializeDynamicModule()
     {
         AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();
     }
-
-    AZ::Environment::Detach();
 }
 
 #endif // !defined(AZ_MONOLITHIC_BUILD)

@@ -124,15 +124,13 @@ namespace UnitTest
 
         envVariable = AZ::Environment::FindVariable<UnitTest::DLLTestVirtualClass>(envVariableName);
         EXPECT_TRUE(envVariable);
-        EXPECT_TRUE(envVariable.IsConstructed());
         EXPECT_EQ(1, envVariable->m_data);
 
         UnloadModule();
 
         // the variable is owned by the module (due to the vtable reference), once the module
-        // is unloaded the variable should be destroyed, but still valid
-        EXPECT_TRUE(envVariable);                    // variable should be valid
-        EXPECT_FALSE(envVariable.IsConstructed());   // but destroyed
+        // is unloaded the variable should be unconstructed
+        EXPECT_FALSE(envVariable);
 
         //////////////////////////////////////////////////////////////////////////
         // load the module and see if we recreate our variable
@@ -143,7 +141,7 @@ namespace UnitTest
         createDLLVar(envVariableName);
 
         envVariable = AZ::Environment::FindVariable<UnitTest::DLLTestVirtualClass>(envVariableName);
-        EXPECT_TRUE(envVariable.IsConstructed()); // createDLLVar should construct the variable if already there
+        EXPECT_TRUE(envVariable); // createDLLVar should construct the variable if already there
         EXPECT_EQ(1, envVariable->m_data);
 
         UnloadModule();
@@ -151,11 +149,11 @@ namespace UnitTest
         //////////////////////////////////////////////////////////////////////////
         // Since the variable is valid till the last reference is gone, we have the option
         // to recreate the variable from a different module
-        EXPECT_TRUE(envVariable.IsValid());          // variable should be valid
-        EXPECT_FALSE(envVariable.IsConstructed());   // but destroyed
+        EXPECT_FALSE(envVariable); // Validate that the variable is not constructed
 
-        envVariable.Construct(); // since the variable is destroyed, we can create it from a different module, the new module will be owner
-        EXPECT_TRUE(envVariable.IsConstructed()); // createDLLVar should construct the variable if already there
+         // since the variable is destroyed, we can create it from a different module, the new module will be owner
+        envVariable = AZ::Environment::CreateVariable<UnitTest::DLLTestVirtualClass>(envVariableName);
+        EXPECT_TRUE(envVariable); // createDLLVar should construct the variable if already there
         EXPECT_EQ(1, envVariable->m_data);
     }
 

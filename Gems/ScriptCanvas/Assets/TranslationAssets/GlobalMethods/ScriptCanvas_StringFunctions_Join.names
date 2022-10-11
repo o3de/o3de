@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_StringFunctions_Join",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Join",
+                "category": "String"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_StringFunctions_Join",
+                    "details": {
+                        "name": "Join",
+                        "tooltip": "Join all input strings into a string by using separator."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{99DAD0BC-740E-5E82-826B-8FC7968CC02C}",
+                            "details": {
+                                "name": "String Array",
+                                "tooltip": "The array of strings to join."
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Separator",
+                                "tooltip": "Will use this string when concatenating the strings from the array."
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Result",
+                                "tooltip": "The string created by joining input strings with separator."
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

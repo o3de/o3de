@@ -39,25 +39,29 @@ namespace AZ
 
             namespace Device
             {
-                /**
-                 * Maximum number of GPU frames that can be buffered before the CPU will
-                 * stall. This includes the current frame being built by the CPU. For example,
-                 * a value of 1 means only single frame is allowed to be build and dispatched at
-                 * a time. In this example, the CPU timeline would serialize with the GPU timeline
-                 * because only a single copy of CPU state is available.
-                 *
-                 * In a more realistic scenario, a value of 3 would allow the CPU to build the current
-                 * frame, while the GPU could have up to two frames queued up before the CPU would wait.
-                 */
+                // Maximum number of GPU frames that can be buffered before the CPU will
+                // stall. This includes the current frame being built by the CPU. For example,
+                // a value of 1 means only single frame is allowed to be build and dispatched at
+                // a time. In this example, the CPU timeline would serialize with the GPU timeline
+                // because only a single copy of CPU state is available.
+                //
+                // In a more realistic scenario, a value of 3 would allow the CPU to build the current
+                // frame, while the GPU could have up to two frames queued up before the CPU would wait.
+#if defined(AZ_FORCE_CPU_GPU_INSYNC)
+                constexpr uint32_t FrameCountMax = 1;
+#else
                 constexpr uint32_t FrameCountMax = 3;
+#endif
+            
+                // Due to the fact that D3D12 only supports the flip model we need to allocate at least
+                // a minimum of 2 swapChain images or the drivers will complain.
+                constexpr uint32_t MinSwapChainImages = 2;
             }
 
             namespace APIType
             {
-                /**
-                 * RHI::Factory has a virtual method called GetAPIUniqueIndex(), see its documentation
-                 * for details. GetAPIUniqueIndex() should not return a value greater than this.
-                 */
+                // RHI::Factory has a virtual method called GetAPIUniqueIndex(), see its documentation
+                // for details. GetAPIUniqueIndex() should not return a value greater than this.
                 constexpr uint32_t PerPlatformApiUniqueIndexMax = 3;
             }
         } // namespace Limits
@@ -67,7 +71,6 @@ namespace AZ
             namespace Memory
             {
                 constexpr uint64_t StagingBufferBudgetInBytes          = 128ul * 1024 * 1024;
-
                 constexpr uint64_t AsyncQueueStagingBufferSizeInBytes  = 4ul   * 1024 * 1024;
                 constexpr uint64_t MediumStagingBufferPageSizeInBytes  = 2ul   * 1024 * 1024;
                 constexpr uint64_t LargestStagingBufferPageSizeInBytes = 128ul * 1024 * 1024;

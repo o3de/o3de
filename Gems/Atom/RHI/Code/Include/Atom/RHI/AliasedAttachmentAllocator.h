@@ -154,7 +154,7 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             // Adds a new heap page to the allocator of the provided size.
-            AliasedHeap* AddAliasedHeapPage(size_t sizeInBytes);
+            AliasedHeap* AddAliasedHeapPage(size_t sizeInBytes, uint32_t heapIndex = 0);
 
             // Calculates the size of a new page depending on the strategy of the allocator.
             // The heap must at least have "minSizeInBytes" size.
@@ -343,7 +343,7 @@ namespace AZ
                     if (m_descriptor.m_allocationParameters.m_type != HeapAllocationStrategy::Fixed)
                     {
                         ResourceMemoryRequirements memRequirements = GetDevice().GetResourceMemoryRequirements(descriptor.m_bufferDescriptor);
-                        heap = AddAliasedHeapPage(CalculateHeapPageSize(memRequirements.m_sizeInBytes));
+                        heap = AddAliasedHeapPage(CalculateHeapPageSize(memRequirements.m_sizeInBytes), aznumeric_cast<uint32_t>(m_heapPages.size()));
                         result = heap->ActivateBuffer(descriptor, scope, &buffer);
                     }
 
@@ -410,7 +410,7 @@ namespace AZ
                     if (m_descriptor.m_allocationParameters.m_type != HeapAllocationStrategy::Fixed)
                     {
                         ResourceMemoryRequirements memRequirements = GetDevice().GetResourceMemoryRequirements(descriptor.m_imageDescriptor);
-                        heap = AddAliasedHeapPage(CalculateHeapPageSize(memRequirements.m_sizeInBytes));
+                        heap = AddAliasedHeapPage(CalculateHeapPageSize(memRequirements.m_sizeInBytes), aznumeric_cast<uint32_t>(m_heapPages.size()));
                         AZ_Assert(heap, "Failed to allocated aliased heap page");
                         if (!heap)
                         {
@@ -428,6 +428,17 @@ namespace AZ
             }
 
             m_attachmentToHeapMap.insert({ descriptor.m_attachmentId, heap });
+
+            // Remove any stale resource entries made in pages other than the one where it currently resides. 
+            for (const HeapPage& page : m_heapPages)
+            {
+                Ptr<AliasedHeap> aliasedHeap = page.m_heap;
+                if (heap == aliasedHeap)
+                {
+                    continue;
+                }
+                aliasedHeap->RemoveFromCache(descriptor.m_attachmentId);
+            }
             return image;
         }
 
@@ -502,14 +513,14 @@ namespace AZ
         }
 
         template<class Heap>
-        AliasedHeap* AliasedAttachmentAllocator<Heap>::AddAliasedHeapPage(size_t sizeInBytes)
+        AliasedHeap* AliasedAttachmentAllocator<Heap>::AddAliasedHeapPage(size_t sizeInBytes, uint32_t heapIndex)
         {
             size_t newHeapSize = static_cast<size_t>(GetHeapPageScaleFactor() * sizeInBytes);
 
             typename Heap::Descriptor heapDescriptor = m_descriptor;
             heapDescriptor.m_budgetInBytes = newHeapSize;
             Ptr<AliasedHeap> newHeap = Heap::Create();
-            newHeap->SetName(GetName());
+            newHeap->SetName(Name(AZStd::string::format("%s_Page%i", GetName().GetCStr(), heapIndex)));
             ResultCode result = newHeap->Init(GetDevice(), heapDescriptor);
             if (result != ResultCode::Success)
             {
@@ -571,7 +582,7 @@ namespace AZ
                         }
                         else
                         {
-                            AddAliasedHeapPage(watermarkSize);
+                            AddAliasedHeapPage(watermarkSize, i);
                             AZStd::iter_swap(m_heapPages.begin() + i, m_heapPages.rbegin());
                             m_heapPages.pop_back();
                         }

@@ -100,6 +100,11 @@ EditorPreferencesDialog::~EditorPreferencesDialog()
 {
 }
 
+void EditorPreferencesDialog::SetFilterText(const QString& filter)
+{
+    ui->filter->SetTextFilter(filter);
+}
+
 void EditorPreferencesDialog::showEvent(QShowEvent* event)
 {
     origAutoBackup.bEnabled = gSettings.autoBackupEnabled;

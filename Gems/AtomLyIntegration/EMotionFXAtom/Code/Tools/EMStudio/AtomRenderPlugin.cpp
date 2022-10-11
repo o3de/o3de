@@ -41,13 +41,16 @@ namespace EMStudio
 
     AtomRenderPlugin::~AtomRenderPlugin()
     {
+        AzToolsFramework::ViewportInteraction::ViewportMouseRequestBus::Handler::BusDisconnect();
+        delete m_animViewportWidget;
+
         SaveRenderOptions();
         GetCommandManager()->RemoveCommandCallback(m_importActorCallback, false);
         GetCommandManager()->RemoveCommandCallback(m_removeActorCallback, false);
         delete m_importActorCallback;
         delete m_removeActorCallback;
 
-        AzToolsFramework::ViewportInteraction::ViewportMouseRequestBus::Handler::BusDisconnect();
+        m_picking.reset();
     }
 
     const char* AtomRenderPlugin::GetName() const
@@ -58,16 +61,6 @@ namespace EMStudio
     uint32 AtomRenderPlugin::GetClassID() const
     {
         return static_cast<uint32>(AtomRenderPlugin::CLASS_ID);
-    }
-
-    const char* AtomRenderPlugin::GetCreatorName() const
-    {
-        return "O3DE";
-    }
-
-    float AtomRenderPlugin::GetVersion() const
-    {
-        return 1.0f;
     }
 
     bool AtomRenderPlugin::GetIsClosable() const
@@ -83,11 +76,6 @@ namespace EMStudio
     bool AtomRenderPlugin::GetIsVertical() const
     {
         return false;
-    }
-
-    EMStudioPlugin* AtomRenderPlugin::Clone()
-    {
-        return new AtomRenderPlugin();
     }
 
     EMStudioPlugin::EPluginType AtomRenderPlugin::GetPluginType() const
@@ -129,6 +117,9 @@ namespace EMStudio
 
         m_manipulatorManager = AZStd::make_shared<AzToolsFramework::ManipulatorManager>(g_animManipulatorManagerId);
         SetupManipulators();
+
+        m_picking = AZStd::make_unique<EMotionFX::Picking>();
+        m_picking->SetRenderFlags(GetRenderOptions()->GetRenderFlags());
 
         SetupMetrics();
 
@@ -206,14 +197,16 @@ namespace EMStudio
             {
                 const AZ::EntityId entityId = m_animViewportWidget->GetAnimViewportRenderer()->GetEntityId();
                 AZ::TransformBus::EventResult(m_mouseDownStartTransform, entityId, &AZ::TransformBus::Events::GetLocalTM);
+                m_rotateManipulators.SetLocalOrientation(m_mouseDownStartTransform.GetRotation());
             });
 
         m_rotateManipulators.InstallMouseMoveCallback(
             [this](const AzToolsFramework::AngularManipulator::Action& action)
             {
                 const AZ::EntityId entityId = m_animViewportWidget->GetAnimViewportRenderer()->GetEntityId();
-                AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetLocalRotationQuaternion,
-                    m_mouseDownStartTransform.GetRotation() * action.m_current.m_delta);
+                AZ::Quaternion localRotation = m_mouseDownStartTransform.GetRotation() * action.m_current.m_delta;
+                AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetLocalRotationQuaternion, localRotation);
+                m_rotateManipulators.SetLocalOrientation(localRotation);
             });
 
         // Setup the scale manipulator
@@ -365,33 +358,51 @@ namespace EMStudio
     bool AtomRenderPlugin::HandleMouseInteraction(
         const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteractionEvent)
     {
-        if (!m_manipulatorManager)
+        bool eventHandled = false;
+        if (m_manipulatorManager)
         {
-            return false;
-        }
-
-        using AzToolsFramework::ViewportInteraction::MouseEvent;
-        const auto& mouseInteraction = mouseInteractionEvent.m_mouseInteraction;
-
-        switch (mouseInteractionEvent.m_mouseEvent)
-        {
-        case MouseEvent::Down:
-            return m_manipulatorManager->ConsumeViewportMousePress(mouseInteraction);
-        case MouseEvent::DoubleClick:
-            return false;
-        case MouseEvent::Move:
+            auto eventHandledByManipulators = [&mouseInteractionEvent, this]()
             {
-                const AzToolsFramework::ManipulatorManager::ConsumeMouseMoveResult mouseMoveResult =
-                    m_manipulatorManager->ConsumeViewportMouseMove(mouseInteraction);
-                return mouseMoveResult == AzToolsFramework::ManipulatorManager::ConsumeMouseMoveResult::Interacting;
-            }
-        case MouseEvent::Up:
-            return m_manipulatorManager->ConsumeViewportMouseRelease(mouseInteraction);
-        case MouseEvent::Wheel:
-            return m_manipulatorManager->ConsumeViewportMouseWheel(mouseInteraction);
-        default:
-            return false;
+                using AzToolsFramework::ViewportInteraction::MouseEvent;
+                const auto& mouseInteraction = mouseInteractionEvent.m_mouseInteraction;
+
+                switch (mouseInteractionEvent.m_mouseEvent)
+                {
+                case MouseEvent::Down:
+                    return m_manipulatorManager->ConsumeViewportMousePress(mouseInteraction);
+                case MouseEvent::DoubleClick:
+                    return false;
+                case MouseEvent::Move:
+                {
+                    const AzToolsFramework::ManipulatorManager::ConsumeMouseMoveResult mouseMoveResult =
+                        m_manipulatorManager->ConsumeViewportMouseMove(mouseInteraction);
+                    return mouseMoveResult == AzToolsFramework::ManipulatorManager::ConsumeMouseMoveResult::Interacting;
+                }
+                case MouseEvent::Up:
+                    return m_manipulatorManager->ConsumeViewportMouseRelease(mouseInteraction);
+                case MouseEvent::Wheel:
+                    return m_manipulatorManager->ConsumeViewportMouseWheel(mouseInteraction);
+                default:
+                    return false;
+                }
+            };
+            eventHandled = eventHandledByManipulators();
         }
+
+        if (!eventHandled)
+        {
+            if (m_picking)
+            {
+                eventHandled = m_picking->HandleMouseInteraction(mouseInteractionEvent);
+            }
+        }
+
+        return eventHandled;
+    }
+
+    void AtomRenderPlugin::UpdatePickingRenderFlags(EMotionFX::ActorRenderFlags renderFlags)
+    {
+        m_picking->SetRenderFlags(renderFlags);
     }
 
     // Command callbacks

@@ -63,10 +63,5 @@ namespace AzToolsFramework
         {
             return false;
         }
-
-        QThreadPool* ThumbnailerNullComponent::GetThreadPool()
-        {
-            return nullptr;
-        }
     } // namespace Thumbnailer
 } // namespace AzToolsFramework

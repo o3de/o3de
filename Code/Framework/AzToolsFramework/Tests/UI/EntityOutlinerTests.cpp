@@ -56,17 +56,6 @@ namespace UnitTest
         // Parents to parentId, or the root prefab container entity if parentId is invalid
         AZ::EntityId CreateNamedEntity(AZStd::string name, AZ::EntityId parentId = AZ::EntityId())
         {
-            auto createResult = m_prefabPublicInterface->CreateEntity(parentId, AZ::Vector3());
-            AZ_Assert(createResult.IsSuccess(), "Failed to create entity: %s", createResult.GetError().c_str());
-            AZ::EntityId entityId = createResult.GetValue();
-
-            AZ::Entity* entity = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, entityId);
-
-            entity->Deactivate();
-
-            entity->SetName(name);
-
             // Normally, in invalid parent ID should automatically parent us to the root prefab, but currently in the unit test
             // environment entities aren't created with a default transform component, so CreateEntity won't correctly parent.
             // We get the actual target parent ID here, then create our missing transform component.
@@ -76,6 +65,15 @@ namespace UnitTest
                 parentId = prefabEditorEntityOwnershipInterface->GetRootPrefabInstance()->get().GetContainerEntityId();
             }
 
+            auto createResult = m_prefabPublicInterface->CreateEntity(parentId, AZ::Vector3());
+            AZ_Assert(createResult.IsSuccess(), "Failed to create entity: %s", createResult.GetError().c_str());
+            AZ::EntityId entityId = createResult.GetValue();
+
+            AZ::Entity* entity = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, entityId);
+
+            entity->Deactivate();
+            entity->SetName(name);
             auto transform = aznew AzToolsFramework::Components::TransformComponent;
             entity->AddComponent(transform);
             transform->SetParent(parentId);

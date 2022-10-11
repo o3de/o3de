@@ -1,136 +1,133 @@
 {
     "O3DE": {
         "Gems": {
-            "ImGui":
-            {
+            "LyShine": {
+                "Targets": {
+                    "LyShine.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "AWSGameLift": {
+                "Targets": {
+                    "AWSGameLift.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "ImGui": {
                 "Targets": {
                     "ImGui.Editor": {
                         "AutoLoad": false
                     }
                 }
             },
-            "Gestures":
-            {
+            "Gestures": {
                 "Targets": {
                     "Gestures.Editor": {
                         "AutoLoad": false
                     }
                 }
             },
-            "GraphCanvas":
-            {
+            "GraphCanvas": {
                 "Targets": {
                     "GraphCanvas.Editor": {
                         "AutoLoad": false
                     }
                 }
             },
-            "GraphModel":
-            {
+            "GraphModel": {
                 "Targets": {
                     "GraphModel.Editor": {
                         "AutoLoad": false
                     }
                 }
             },
-            "PhysX":
-            {
+            "PhysX": {
                 "Targets": {
                     "PhysX.Editor": {
                         "AutoLoad": false
                     }
                 }
             },
-            "PhysXDebug":
-            {
+            "PhysXDebug": {
                 "Targets": {
                     "PhysXDebug.Editor": {
                         "AutoLoad": false
                     }
                 }
             },
-            "Blast":
-            {
+            "Blast": {
                 "Targets": {
                     "Blast.Editor": {
                         "AutoLoad": false
                     }
                 }
             },
-            "NVCloth":
-            {
+            "NVCloth": {
                 "Targets": {
                     "NVCloth.Editor": {
                         "AutoLoad": false
                     }
                 }
             },
-            "ScriptCanvas":
-            {
+            "ScriptCanvas": {
                 "Targets": {
                     "ScriptCanvas.Editor": {
                         "AutoLoad": false
                     }
                 }
             },
-            "ScriptCanvasDeveloper":
-            {
+            "ScriptCanvasDeveloper": {
                 "Targets": {
                     "ScriptCanvasDeveloper.Editor": {
                         "AutoLoad": false
                     }
                 }
             },
-            "ScriptCanvasPhysics":
-            {
+            "ScriptCanvasPhysics": {
                 "Targets": {
                     "ScriptCanvasPhysics": {
                         "AutoLoad": false
                     }
                 }
             },
-            "ScriptCanvasTesting":
-            {
+            "ScriptCanvasTesting": {
                 "Targets": {
                     "ScriptCanvasTesting.Editor": {
                         "AutoLoad": false
                     }
                 }
             },
-            "LandscapeCanvas":
-            {
+            "LandscapeCanvas": {
                 "Targets": {
                     "LandscapeCanvas.Editor": {
                         "AutoLoad": false
                     }
                 }
             },
-            "HttpRequestor":
-            {
+            "HttpRequestor": {
                 "Targets": {
                     "HttpRequestor.Editor": {
                         "AutoLoad": false
                     }
                 }
             },
-            "WhiteBox":
-            {
+            "WhiteBox": {
                 "Targets": {
                     "WhiteBox.Editor": {
                         "AutoLoad": false
                     }
                 }
             },
-            "PythonAssetBuilder":
-            {
+            "PythonAssetBuilder": {
                 "Targets": {
                     "PythonAssetBuilder.Editor": {
                         "AutoLoad": false
                     }
                 }
             },
-            "AWSCore":
-            {
+            "AWSCore": {
                 "Targets": {
                     "AWSCore": {
                         "AutoLoad": false
@@ -140,8 +137,7 @@
                     }
                 }
             },
-            "AWSClientAuth":
-            {
+            "AWSClientAuth": {
                 "Targets": {
                     "AWSClientAuth": {
                         "AutoLoad": false

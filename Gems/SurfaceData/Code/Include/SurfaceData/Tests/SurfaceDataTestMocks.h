@@ -130,7 +130,7 @@ namespace UnitTest
         }
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("PhysXColliderService", 0x4ff43f7c));
+            provided.push_back(AZ_CRC_CE("PhysicsColliderService"));
         }
     };
 
@@ -185,12 +185,14 @@ namespace UnitTest
     {
         MockSurfaceDataSystem()
         {
+            AZ::Interface<SurfaceDataSystem>::Register(this);
             BusConnect();
         }
 
         ~MockSurfaceDataSystem()
         {
             BusDisconnect();
+            AZ::Interface<SurfaceDataSystem>::Unregister(this);
         }
 
         AZStd::unordered_map<AZStd::pair<float, float>, SurfaceData::SurfacePointList> m_surfacePoints;
@@ -246,7 +248,8 @@ namespace UnitTest
             UpdateEntry(handle, entry, m_modifiers);
         }
 
-        void RefreshSurfaceData([[maybe_unused]] const AZ::Aabb& dirtyBounds) override
+        void RefreshSurfaceData([[maybe_unused]] const SurfaceData::SurfaceDataRegistryHandle& providerHandle,
+            [[maybe_unused]] const AZ::Aabb& dirtyBounds) override
         {
         }
 

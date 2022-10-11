@@ -180,7 +180,7 @@ def process_exists(name, ignore_extensions=False):
                          f"during process_exists()", exc_info=True)
             continue
         except psutil.AccessDenied as e:
-            logger.info(f"Permissions issue on {process} during process_exists check", exc_info=True)
+            logger.warning(f"Permissions issue on {process} during process_exists check", exc_info=True)
             continue
 
         if proc_name == name:  # abc.exe matches abc.exe
@@ -384,9 +384,19 @@ def _safe_kill_processes(processes):
             logger.debug("Unexpected exception ignored while terminating process, with stacktrace:", exc_info=True)
 
     def on_terminate(proc):
-        logger.info(f"process '{proc.name()}' with id '{proc.pid}' terminated with exit code {proc.returncode}")
+        try:
+            logger.info(f"process '{proc.name()}' with id '{proc.pid}' terminated with exit code {proc.returncode}")
+        except psutil.AccessDenied:
+            logger.warning("Termination failed, Access Denied with stacktrace:", exc_info=True)
+        except psutil.NoSuchProcess:
+            logger.debug("Termination request ignored, process was already terminated during iteration with stacktrace:", exc_info=True)
+
     try:
         psutil.wait_procs(processes, timeout=30, callback=on_terminate)
+    except psutil.AccessDenied:
+        logger.warning("Termination failed, Access Denied with stacktrace:", exc_info=True)
+    except psutil.NoSuchProcess:
+        logger.debug("Termination request ignored, process was already terminated during iteration with stacktrace:", exc_info=True)
     except Exception:  # purposefully broad
         logger.debug("Unexpected exception while waiting for processes to terminate, with stacktrace:", exc_info=True)
 

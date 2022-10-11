@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/Name/NameDictionary.h>
 #include <AzCore/Name/NameSerializer.h>
@@ -18,7 +19,6 @@
 
 namespace AZ
 {
-    AZStd::thread::id Name::s_staticNameListThread = 0;
     Name* Name::s_staticNameBegin = nullptr;
 
     NameRef::NameRef(Name name)
@@ -77,19 +77,28 @@ namespace AZ
         return m_data == nullptr ? 0 : m_data->GetHash();
     }
 
-    Name::Name()
-        : m_view("")
-    {
-    }
+    Name::Name() = default;
 
     Name::Name(AZStd::string_view name)
     {
         SetName(name);
     }
+    Name::Name(AZStd::string_view name, NameDictionary& nameDictionary)
+    {
+        SetName(name, nameDictionary);
+    }
 
     Name::Name(Hash hash)
     {
-        *this = NameDictionary::Instance().FindName(hash);
+        auto nameDictionary = AZ::Interface<NameDictionary>::Get();
+        AZ_Assert(nameDictionary != nullptr, "hash value %u cannot be looked up before the global before the NameDictionary is ready.\n"
+            "If an explicit name dictionary is available, it can be passed to the Name(Hash, NameDictionary&) overload instead.", hash);
+        *this = nameDictionary->FindName(hash);
+    }
+
+    Name::Name(Hash hash, NameDictionary& nameDictionary)
+    {
+        *this = nameDictionary.FindName(hash);
     }
 
     Name::Name(Internal::NameData* data)
@@ -110,10 +119,10 @@ namespace AZ
     {
     }
 
-    Name Name::FromStringLiteral(AZStd::string_view name)
+    Name Name::FromStringLiteral(AZStd::string_view name, NameDictionary* nameDictionary)
     {
         Name literalName;
-        literalName.SetNameLiteral(name);
+        literalName.SetNameLiteral(name, nameDictionary);
         return literalName;
     }
 
@@ -121,17 +130,21 @@ namespace AZ
     {
         // If we're copying a string literal and it's not yet initialized,
         // we need to flag ourselves as a string literal
-        if (rhs.m_supportsDeferredLoad && rhs.m_data == nullptr)
+        if (this != &rhs)
         {
-            m_hash = rhs.m_hash;
-            m_data = rhs.m_data;
-            SetNameLiteral(rhs.GetStringView());
-        }
-        else
-        {
-            m_data = rhs.m_data;
-            m_hash = rhs.m_hash;
-            m_view = rhs.m_view;
+            if (rhs.m_supportsDeferredLoad && rhs.m_data == nullptr)
+            {
+                m_hash = rhs.m_hash;
+                m_data = rhs.m_data;
+                AZ::NameDictionary* nameDictionary = m_data != nullptr ? m_data->m_nameDictionary : nullptr;
+                SetNameLiteral(rhs.m_view, nameDictionary);
+            }
+            else
+            {
+                m_data = rhs.m_data;
+                m_hash = rhs.m_hash;
+                m_view = rhs.m_view;
+            }
         }
         return *this;
     }
@@ -139,7 +152,7 @@ namespace AZ
     Name& Name::operator=(Name&& rhs)
     {
         // If we're moving a string literal (generally from FromStringLiteral)
-        // we promote outselves to a string literal so that we respect all deferred initialization
+        // we promote this instance to a string literal so that we respect all deferred initialization
         // This covers cases like a static Name being created at function scope while the dictionary is
         // active, when a test then destroys and recreates the name dictionary, meaning the Name needs to be
         // restored via the deferred initialization logic.
@@ -147,7 +160,8 @@ namespace AZ
         {
             m_hash = rhs.m_hash;
             m_data = rhs.m_data;
-            SetNameLiteral(rhs.m_view);
+            AZ::NameDictionary* nameDictionary = m_data != nullptr ? m_data->m_nameDictionary : nullptr;
+            SetNameLiteral(rhs.m_view, nameDictionary);
         }
         else
         {
@@ -181,49 +195,49 @@ namespace AZ
 
     void Name::SetName(AZStd::string_view name)
     {
-        if (!name.empty())
-        {
-            AZ_Assert(NameDictionary::IsReady(), "Attempted to initialize Name '%.*s' before the NameDictionary is ready.\nIf this name is being constructed from a string literal, consider using AZ::Name::FromStringLiteral instead.", AZ_STRING_ARG(name));
-
-            *this = AZStd::move(NameDictionary::Instance().MakeName(name));
-        }
-        else
+        if (name.empty())
         {
             *this = Name();
+            return;
         }
+
+        auto nameDictionary = AZ::Interface<NameDictionary>::Get();
+        AZ_Assert(nameDictionary != nullptr, "Attempted to initialize Name '%.*s' using the global NameDictionary before it is ready.\n"
+            "If this name is being constructed from a string literal, consider using AZ::Name::FromStringLiteral instead.\n"
+            "Alternatively the SetName(string_view, NameDictionary&) reference overload can be used to supply an explicit name dictionary reference", AZ_STRING_ARG(name));
+
+        SetName(name, *nameDictionary);
     }
 
-    void Name::SetNameLiteral(AZStd::string_view name)
+    void Name::SetName(AZStd::string_view name, NameDictionary& nameDictionary)
     {
-        if (!name.empty())
-        {
-            if (s_staticNameListThread == 0)
-            {
-                s_staticNameListThread = AZStd::this_thread::get_id();
-            }
-            AZ_Assert(s_staticNameListThread == AZStd::this_thread::get_id(), "Attempted to construct a name literal on a different thread from the first initialized static name, this is unsafe");
-            m_view = name;
-            if (!NameDictionary::IsReady(false))
-            {
-                // Link ourselves into the deferred list if we're not already in there
-                if (!m_supportsDeferredLoad)
-                {
-                    LinkStaticName(&s_staticNameBegin);
-                }
-            }
-            else
-            {
-                NameDictionary::Instance().LoadDeferredName(*this);
-            }
+        *this = nameDictionary.MakeName(name);
+    }
 
-            m_supportsDeferredLoad = true;
-        }
-        else
+
+    void Name::SetNameLiteral(AZStd::string_view name, NameDictionary* nameDictionary)
+    {
+        if (name.empty())
         {
             *this = Name();
+            return;
         }
+
+        m_view = name;
+        if (nameDictionary != nullptr)
+        {
+            nameDictionary->LoadDeferredName(*this);
+        }
+        else if (!m_supportsDeferredLoad)
+        {
+            // Link ourselves into the deferred list if we're not already in there
+            LinkStaticName(&s_staticNameBegin);
+        }
+
+        m_supportsDeferredLoad = true;
     }
-    
+
+
     AZStd::string_view Name::GetStringView() const
     {
         return m_view;
@@ -254,22 +268,17 @@ namespace AZ
             }
             m_nextName = *name;
             m_previousName = (*name)->m_previousName;
+            (*name)->m_previousName = this;
             if (m_previousName != nullptr)
             {
                 m_previousName->m_nextName = this;
             }
-            (*name)->m_previousName = this;
             *name = this;
         }
     }
 
     void Name::UnlinkStaticName()
     {
-        if (NameDictionary::IsReady(false))
-        {
-            NameDictionary::Instance().UnregisterDeferredHead(*this);
-        }
-
         if (s_staticNameBegin == this)
         {
             s_staticNameBegin = m_nextName;
@@ -283,6 +292,7 @@ namespace AZ
             m_previousName->m_nextName = m_nextName;
         }
         m_nextName = m_previousName = nullptr;
+        m_linkedToDictionary = false;
     }
 
     void Name::ScriptConstructor(Name* thisPtr, ScriptDataContext& dc)
@@ -331,7 +341,7 @@ namespace AZ
                 ->Constructor()
                 ->Constructor<AZStd::string_view>()
                 ->Method("ToString", &Name::GetCStr)
-                ->Method("Set", &Name::SetName)
+                ->Method("Set", [](Name* thisPtr, AZStd::string_view name) { thisPtr->SetName(name); })
                 ->Method("IsEmpty", &Name::IsEmpty)
                 ->Method("Equal", static_cast<bool(Name::*)(const Name&)const>(&Name::operator==))
                 ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::Equal)
@@ -343,6 +353,6 @@ namespace AZ
             jsonContext->Serializer<NameJsonSerializer>()->HandlesType<Name>();
         }
     }
-    
+
 } // namespace AZ
 

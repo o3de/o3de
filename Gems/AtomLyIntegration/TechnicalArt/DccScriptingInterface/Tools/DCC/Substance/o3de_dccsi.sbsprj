@@ -1,0 +1,390 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+	<showresourcesinlibrary>true</showresourcesinlibrary>
+	<showgraphsinlibrary>true</showgraphsinlibrary>
+	<settingsinfo>
+		<version>2</version>
+	</settingsinfo>
+	<projectinfo>
+		<label>O3de dccsi</label>
+	</projectinfo>
+	<preferences>
+		<view3d>
+			<ispointlight2enable>false</ispointlight2enable>
+			<ispointlight1enable>false</ispointlight1enable>
+			<isambientlightenable>true</isambientlightenable>
+			<defaultshaderurl>sd-3dview-shaders://adobe_standard_material.glslfx</defaultshaderurl>
+			<defaultenvironmentmapurl>sd-3dview-maps://panorama_map.hdr</defaultenvironmentmapurl>
+		</view3d>
+		<versioncontrol>
+			<workspaces>
+				<size>0</size>
+			</workspaces>
+			<settingsinfo>
+				<version>2</version>
+			</settingsinfo>
+		</versioncontrol>
+		<scripting>
+			<interpreters>
+				<size>0</size>
+			</interpreters>
+			<actions>
+				<size>5</size>
+				<_5 prefix="_">
+					<label>getGraphExportOptions</label>
+					<id>getGraphExportOptions</id>
+					<enabled>true</enabled>
+				</_5>
+				<_4 prefix="_">
+					<label>onAfterFileSaved</label>
+					<id>onAfterFileSaved</id>
+					<enabled>true</enabled>
+				</_4>
+				<_3 prefix="_">
+					<label>onBeforeFileSaved</label>
+					<id>onBeforeFileSaved</id>
+					<enabled>true</enabled>
+				</_3>
+				<_2 prefix="_">
+					<label>onAfterFileLoaded</label>
+					<id>onAfterFileLoaded</id>
+					<enabled>true</enabled>
+				</_2>
+				<_1 prefix="_">
+					<label>onBeforeFileLoaded</label>
+					<id>onBeforeFileLoaded</id>
+					<enabled>true</enabled>
+				</_1>
+			</actions>
+		</scripting>
+		<scenes3d>
+			<tangentspaceplugin>file:///C:/Program Files/Adobe/Adobe Substance 3D Designer/plugins/tangentspace/mikktspace.dll</tangentspaceplugin>
+			<smoothingangle>180</smoothingangle>
+			<alwaysrecomputetangentframe>false</alwaysrecomputetangentframe>
+		</scenes3d>
+		<sbstemplates>
+			<dirs>
+				<size>0</size>
+			</dirs>
+		</sbstemplates>
+		<resources>
+			<urlaliases>
+				<size>4</size>
+				<_4 prefix="_">
+					<path>file:../../../../../../..</path>
+					<name>O3DE</name>
+				</_4>
+				<_3 prefix="_">
+					<path>file:.</path>
+					<name>O3DE_DCCSI_SUBSTANCE</name>
+				</_3>
+				<_2 prefix="_">
+					<path>file:Resources</path>
+					<name>O3DE_DCCSI_SUBSTANCE_RESOURCES</name>
+				</_2>
+				<_1 prefix="_">
+					<path>file:../../..</path>
+					<name>O3DE_DCCSI</name>
+				</_1>
+			</urlaliases>
+		</resources>
+		<python>
+			<plugin_paths>
+				<size>1</size>
+				<_1 prefix="_">
+					<url>$(PROJECT_DIR)://resources/python</url>
+				</_1>
+			</plugin_paths>
+		</python>
+		<ocio>
+			<ociofloatbitmapcolorspace>role_matte_paint</ociofloatbitmapcolorspace>
+			<ociodefaultview>sRGB</ociodefaultview>
+			<ociodefaultdisplay>ACES</ociodefaultdisplay>
+			<ocioconfig>aces_1.0.3</ocioconfig>
+			<ociocolormanagegraphthumbnails>true</ociocolormanagegraphthumbnails>
+			<ocioautodetectcolorspacefromfilenamemethod>parse_filename</ocioautodetectcolorspacefromfilenamemethod>
+			<ocio8bitbitmapcolorspace>Utility - sRGB - Texture</ocio8bitbitmapcolorspace>
+			<ocio16bitbitmapcolorspace>Utility - sRGB - Texture</ocio16bitbitmapcolorspace>
+		</ocio>
+		<mdl>
+			<iray>
+				<mdl_paths>
+					<size>0</size>
+				</mdl_paths>
+			</iray>
+		</mdl>
+		<library>
+			<watchedpaths>
+				<size>1</size>
+				<_1 prefix="_">
+					<url>$(PROJECT_DIR)://resources/library</url>
+					<isrecursive>true</isrecursive>
+					<isenabled>true</isenabled>
+					<excludepattern></excludepattern>
+					<excludefilter></excludefilter>
+				</_1>
+			</watchedpaths>
+			<settingsinfo>
+				<version>2</version>
+			</settingsinfo>
+		</library>
+		<general>
+			<normal_map_format>directx</normal_map_format>
+			<normal_filter_alpha_channel_content>alpha_to_one</normal_filter_alpha_channel_content>
+			<image_options>
+				<webp>
+					<write>
+						<webp_quality>75</webp_quality>
+						<webp_lossless>false</webp_lossless>
+					</write>
+				</webp>
+				<tif>
+					<write>
+						<tif_compression>lzw</tif_compression>
+					</write>
+				</tif>
+				<tga>
+					<write>
+						<tga_compression>default</tga_compression>
+					</write>
+				</tga>
+				<png>
+					<write>
+						<png_interlaced>false</png_interlaced>
+						<png_compression>best_speed</png_compression>
+					</write>
+				</png>
+				<jpg>
+					<write>
+						<jpg_quality>75</jpg_quality>
+						<jpg_progressive>false</jpg_progressive>
+						<jpg_optimize>false</jpg_optimize>
+					</write>
+				</jpg>
+				<exr>
+					<write>
+						<exr_use_float>true</exr_use_float>
+						<exr_lc>false</exr_lc>
+						<exr_compression>piz</exr_compression>
+					</write>
+				</exr>
+				<bmp>
+					<write>
+						<bmp_compression>default</bmp_compression>
+					</write>
+				</bmp>
+			</image_options>
+			<dependencies>
+				<path_storage_methods>
+					<not_near_or_under>relative</not_near_or_under>
+					<near_or_under>relative</near_or_under>
+				</path_storage_methods>
+			</dependencies>
+		</general>
+		<colormanagement>
+			<colormanagementengine>ocio</colormanagementengine>
+		</colormanagement>
+		<bakers>
+			<namefilters>
+				<size>3</size>
+				<_3 prefix="_">
+					<namefilter>
+						<size>1</size>
+						<_1 prefix="_">
+							<value>_ignorebf</value>
+							<namefilter>suffix</namefilter>
+						</_1>
+					</namefilter>
+					<meshid>ignore_backfaces</meshid>
+				</_3>
+				<_2 prefix="_">
+					<namefilter>
+						<size>1</size>
+						<_1 prefix="_">
+							<value>_high</value>
+							<namefilter>suffix</namefilter>
+						</_1>
+					</namefilter>
+					<meshid>high_poly_mesh</meshid>
+				</_2>
+				<_1 prefix="_">
+					<namefilter>
+						<size>1</size>
+						<_1 prefix="_">
+							<value>_low</value>
+							<namefilter>suffix</namefilter>
+						</_1>
+					</namefilter>
+					<meshid>low_poly_mesh</meshid>
+				</_1>
+			</namefilters>
+			<bakersmacros>
+				<size>17</size>
+				<_9 prefix="_">
+					<macros>
+						<size>1</size>
+						<_1 prefix="_">
+							<key>$(custom)</key>
+						</_1>
+					</macros>
+					<bakerid>BakerMeshConverterGLMapBakerManager.NormalFromDetail</bakerid>
+				</_9>
+				<_8 prefix="_">
+					<macros>
+						<size>1</size>
+						<_1 prefix="_">
+							<key>$(custom)</key>
+						</_1>
+					</macros>
+					<bakerid>BakerMeshConverterGLMapBakerManager.MaskFromDetail</bakerid>
+				</_8>
+				<_7 prefix="_">
+					<macros>
+						<size>1</size>
+						<_1 prefix="_">
+							<key>$(custom)</key>
+						</_1>
+					</macros>
+					<bakerid>BakerMeshConverterGLMapBakerManager.HeightFromDetail</bakerid>
+				</_7>
+				<_6 prefix="_">
+					<macros>
+						<size>1</size>
+						<_1 prefix="_">
+							<key>$(custom)</key>
+						</_1>
+					</macros>
+					<bakerid>BakerMeshConverterGLMapBakerManager.CurvatureFromDetail</bakerid>
+				</_6>
+				<_5 prefix="_">
+					<macros>
+						<size>1</size>
+						<_1 prefix="_">
+							<key>$(custom)</key>
+						</_1>
+					</macros>
+					<bakerid>BakerMeshConverterGLMapBakerManager.Curvature1FromDetail</bakerid>
+				</_5>
+				<_4 prefix="_">
+					<macros>
+						<size>1</size>
+						<_1 prefix="_">
+							<key>$(custom)</key>
+						</_1>
+					</macros>
+					<bakerid>BakerMeshConverterGLMapBakerManager.Curvature</bakerid>
+				</_4>
+				<_3 prefix="_">
+					<macros>
+						<size>1</size>
+						<_1 prefix="_">
+							<key>$(custom)</key>
+						</_1>
+					</macros>
+					<bakerid>BakerMeshConverterGLMapBakerManager.ColorFromDetail</bakerid>
+				</_3>
+				<_2 prefix="_">
+					<macros>
+						<size>1</size>
+						<_1 prefix="_">
+							<key>$(custom)</key>
+						</_1>
+					</macros>
+					<bakerid>BakerMeshConverterGLMapBakerManager.BentNormalsFromDetail</bakerid>
+				</_2>
+				<_17 prefix="_">
+					<macros>
+						<size>1</size>
+						<_1 prefix="_">
+							<key>$(custom)</key>
+						</_1>
+					</macros>
+					<bakerid>VectorialMeshConverter</bakerid>
+				</_17>
+				<_16 prefix="_">
+					<macros>
+						<size>1</size>
+						<_1 prefix="_">
+							<key>$(custom)</key>
+						</_1>
+					</macros>
+					<bakerid>BakerMeshConverterGLMapBakerManager.WorldDirection</bakerid>
+				</_16>
+				<_15 prefix="_">
+					<macros>
+						<size>1</size>
+						<_1 prefix="_">
+							<key>$(custom)</key>
+						</_1>
+					</macros>
+					<bakerid>BakerMeshConverterGLMapBakerManager.ThicknessFromDetail</bakerid>
+				</_15>
+				<_14 prefix="_">
+					<macros>
+						<size>1</size>
+						<_1 prefix="_">
+							<key>$(custom)</key>
+						</_1>
+					</macros>
+					<bakerid>BakerMeshConverterGLMapBakerManager.TextureFromDetail</bakerid>
+				</_14>
+				<_13 prefix="_">
+					<macros>
+						<size>1</size>
+						<_1 prefix="_">
+							<key>$(custom)</key>
+						</_1>
+					</macros>
+					<bakerid>BakerMeshConverterGLMapBakerManager.SeAO</bakerid>
+				</_13>
+				<_12 prefix="_">
+					<macros>
+						<size>1</size>
+						<_1 prefix="_">
+							<key>$(custom)</key>
+						</_1>
+					</macros>
+					<bakerid>BakerMeshConverterGLMapBakerManager.PositionFromDetail</bakerid>
+				</_12>
+				<_11 prefix="_">
+					<macros>
+						<size>1</size>
+						<_1 prefix="_">
+							<key>$(custom)</key>
+						</_1>
+					</macros>
+					<bakerid>BakerMeshConverterGLMapBakerManager.Position</bakerid>
+				</_11>
+				<_10 prefix="_">
+					<macros>
+						<size>1</size>
+						<_1 prefix="_">
+							<key>$(custom)</key>
+						</_1>
+					</macros>
+					<bakerid>BakerMeshConverterGLMapBakerManager.NormalWS</bakerid>
+				</_10>
+				<_1 prefix="_">
+					<macros>
+						<size>1</size>
+						<_1 prefix="_">
+							<key>$(custom)</key>
+						</_1>
+					</macros>
+					<bakerid>BakerMeshConverterGLMapBakerManager.AOFromDetail</bakerid>
+				</_1>
+			</bakersmacros>
+		</bakers>
+		<ace>
+			<aceuseembeddedprofiles>true</aceuseembeddedprofiles>
+			<acerenderingintent>relative-colorimetric</acerenderingintent>
+			<acefloatbitmapcolorspace>Raw</acefloatbitmapcolorspace>
+			<acedefaultworkingspace>srgb</acedefaultworkingspace>
+			<acedefaultdisplayspace>sRGB IEC61966-2.1</acedefaultdisplayspace>
+			<acecolormanagegraphthumbnails>false</acecolormanagegraphthumbnails>
+			<ace8bitbitmapcolorspace>sRGB IEC61966-2.1</ace8bitbitmapcolorspace>
+			<ace16bitbitmapcolorspace>sRGB IEC61966-2.1</ace16bitbitmapcolorspace>
+		</ace>
+	</preferences>
+	<isvisible>true</isvisible>
+</root>

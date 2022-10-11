@@ -29,26 +29,16 @@ namespace AZ::SerializeContextTools
 {
     AZStd::string Utilities::ReadOutputTargetFromCommandLine(Application& application, const char* defaultFileOrFolder)
     {
-        AZ::IO::Path sourceGameFolder;
-        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
-        {
-            settingsRegistry->Get(sourceGameFolder.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath);
-        }
-
         AZ::IO::Path outputPath;
         if (application.GetAzCommandLine()->HasSwitch("output"))
         {
             outputPath.Native() = application.GetAzCommandLine()->GetSwitchValue("output", 0);
-            if (outputPath.IsRelative())
-            {
-                outputPath = sourceGameFolder / outputPath;
-            }
         }
         else
         {
-            outputPath = sourceGameFolder / defaultFileOrFolder;
+            outputPath = defaultFileOrFolder;
         }
-        return outputPath.Native();
+        return AZStd::move(outputPath.Native());
     }
 
     AZStd::vector<AZStd::string> Utilities::ReadFileListFromCommandLine(Application& application, AZStd::string_view switchName)
@@ -69,12 +59,6 @@ namespace AZ::SerializeContextTools
             return result;
         }
 
-        AZ::IO::Path sourceGameFolder;
-        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
-        {
-            settingsRegistry->Get(sourceGameFolder.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath);
-        }
-
         AZStd::vector<AZStd::string_view> fileList;
         auto AppendFileList = [&fileList](AZStd::string_view filename)
         {
@@ -84,7 +68,7 @@ namespace AZ::SerializeContextTools
         {
             AZ::StringFunc::TokenizeVisitor(commandLine->GetSwitchValue(switchName, switchIndex), AppendFileList, ";");
         }
-        return Utilities::ExpandFileList(sourceGameFolder.c_str(), fileList);
+        return Utilities::ExpandFileList(".", fileList);
     }
 
     AZStd::vector<AZStd::string> Utilities::ExpandFileList(const char* root, const AZStd::vector<AZStd::string_view>& fileList)

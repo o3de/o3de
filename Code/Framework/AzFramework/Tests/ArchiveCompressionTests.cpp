@@ -35,29 +35,6 @@ namespace UnitTest
             : m_application { AZStd::make_unique<AzFramework::Application>() }
         {}
 
-        void SetUp() override
-        {
-            AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
-
-            auto projectPathKey =
-                AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
-            AZ::IO::FixedMaxPath enginePath;
-            registry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
-            registry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
-            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
-
-            m_application->Start({});
-            // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
-            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
-            // in the unit tests.
-            AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
-        }
-
-        void TearDown() override
-        {
-            m_application->Stop();
-        }
-
     private:
         AZStd::unique_ptr<AzFramework::Application> m_application;
     };

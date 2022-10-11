@@ -554,6 +554,14 @@ namespace AzToolsFramework
 
                 // If we're looking at element data that's part of the child list, keep track of the index for adjacent UIElement insertion
                 // Children appear in the order specified by m_elements, so we can scan as we go
+                // There can be elements in the child list that have no edit data, so they won't appear
+                // in nodeEditData->m_elements, so we need to skip over them but still need to track
+                // them as a valid child index since they do appear in the nodes child list
+                while (nodeIt != node->m_children.end() && !nodeIt->m_classElement->m_editData)
+                {
+                    ++m_childIndexOverride;
+                    ++nodeIt;
+                }
                 if (nodeIt != node->m_children.end() && nodeIt->m_classElement->m_editData == &element)
                 {
                     ++m_childIndexOverride;
@@ -572,8 +580,7 @@ namespace AzToolsFramework
                         // For every UIElement, generate an InstanceDataNode pointed at our instance with the corresponding attributes
                         for (size_t i = 0; i < numInstances; ++i)
                         {
-                            m_supplementalElementData.push_back();
-                            auto& serializeFieldElement = m_supplementalElementData.back();
+                            auto& serializeFieldElement = m_supplementalElementData.emplace_back();
 
                             serializeFieldElement.m_name = element.m_description;
                             serializeFieldElement.m_nameCrc = AZ::Crc32(element.m_description);
@@ -662,36 +669,6 @@ namespace AzToolsFramework
 
     namespace InstanceDataHierarchyHelper
     {
-        template <class T>
-        bool GetEnumStringRepresentation(AZStd::string& value, const AZ::Edit::ElementData* data, void* instance, const AZ::Uuid& storageTypeId)
-        {
-            if (storageTypeId == azrtti_typeid<T>())
-            {
-                for (const AZ::AttributePair& attributePair : data->m_attributes)
-                {
-                    PropertyAttributeReader reader(instance, attributePair.second);
-                    AZ::Edit::EnumConstant<T> enumPair;
-                    if (reader.Read<AZ::Edit::EnumConstant<T>>(enumPair))
-                    {
-                        T* enumValue = reinterpret_cast<T*>(instance);
-                        if (enumPair.m_value == *enumValue)
-                        {
-                            value = enumPair.m_description;
-                            return true;
-                        }
-                    }
-                }
-            }
-            return false;
-        }
-
-        // Try GetEnumStringRepresentation<Type> on all of the specified types 
-        template <class T1, class T2, class... TRest>
-        bool GetEnumStringRepresentation(AZStd::string& value, const AZ::Edit::ElementData* data, void* instance, const AZ::Uuid& storageTypeId)
-        {
-            return GetEnumStringRepresentation<T1>(value, data, instance, storageTypeId) || GetEnumStringRepresentation<T2, TRest...>(value, data, instance, storageTypeId);
-        }
-
         bool GetValueStringRepresentation(const InstanceDataNode* node, AZStd::string& value)
         {
             const AZ::SerializeContext::ClassData* classData = node->GetClassMetadata();
@@ -721,7 +698,7 @@ namespace AzToolsFramework
                     if (data)
                     {
                         // Check all underlying enum storage types
-                        if (GetEnumStringRepresentation<
+                        if (AZ::Utils::GetEnumStringRepresentation<
                             AZ::u8, AZ::u16, AZ::u32, AZ::u64,
                             AZ::s8, AZ::s16, AZ::s32, AZ::s64>(value, data, node->FirstInstance(), node->GetClassMetadata()->m_typeId))
                         {
@@ -806,8 +783,7 @@ namespace AzToolsFramework
                     for (auto it = node->m_children.begin(); it != node->m_children.end(); ++it, ++i)
                     {
                         InstanceDataNode& childNode = *it;
-                        m_supplementalEditData.push_back();
-                        AZ::Edit::ElementData* editData = &m_supplementalEditData.back().m_editElementData;
+                        AZ::Edit::ElementData* editData = &m_supplementalEditData.emplace_back().m_editElementData;
                         if (childNode.GetElementEditMetadata())
                         {
                             *editData = *node->GetElementEditMetadata();
@@ -830,8 +806,7 @@ namespace AzToolsFramework
                 }
             }
 
-            m_supplementalEditData.push_back();
-            AZ::Edit::ElementData* editData = &m_supplementalEditData.back().m_editElementData;
+            AZ::Edit::ElementData* editData = &m_supplementalEditData.emplace_back().m_editElementData;
             if (node->GetElementEditMetadata())
             {
                 *editData = *node->GetElementEditMetadata();
@@ -1038,8 +1013,7 @@ namespace AzToolsFramework
                 }
                 else
                 {
-                    m_curParentNode->m_children.push_back();
-                    node = &m_curParentNode->m_children.back();
+                    node = &m_curParentNode->m_children.emplace_back();
                 }
             }
             node->m_instances.push_back(ptr);
@@ -1097,8 +1071,7 @@ namespace AzToolsFramework
         // if our data contains dynamic edit data handler, push it on the stack
         if (classData && classData->m_editData && classData->m_editData->m_editDataProvider)
         {
-            m_editDataOverrides.push_back();
-            m_editDataOverrides.back().m_override = classData->m_editData->m_editDataProvider;
+            m_editDataOverrides.emplace_back().m_override = classData->m_editData->m_editDataProvider;
             m_editDataOverrides.back().m_overridingInstance = ptr;
             m_editDataOverrides.back().m_overridingNode = node;
         }
@@ -1250,8 +1223,7 @@ namespace AzToolsFramework
                         if (targetNodeParent)
                         {
                             // Insert a node to mark the removed element, with no data, but relating to the node in the source hierarchy.
-                            targetNodeParent->m_children.push_back();
-                            InstanceDataNode& removedMarker = targetNodeParent->m_children.back();
+                            InstanceDataNode& removedMarker = targetNodeParent->m_children.emplace_back();
                             removedMarker = *sourceNode;
                             removedMarker.m_instances.clear();
                             removedMarker.m_children.clear();

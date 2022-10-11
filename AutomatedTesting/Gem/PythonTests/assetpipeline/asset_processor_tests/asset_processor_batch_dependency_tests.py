@@ -43,6 +43,7 @@ def local_resources(request, workspace, ap_setup_fixture):
 @pytest.mark.usefixtures("local_resources")
 @pytest.mark.parametrize("project", targetProjects)
 @pytest.mark.assetpipeline
+@pytest.mark.SUITE_periodic
 class TestsAssetProcessorBatch_DependenycyTests(object):
     """
     AssetProcessorBatch Dependency tests

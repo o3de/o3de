@@ -15,6 +15,15 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
 
+// Enable this macro to force the cpu to run in lockstep with gpu. It will force
+// every RHI::Scope (i.e pass) into its own command list that is explicitly flushed and
+// waited on the cpu after an execute is called. This ensures that an execution for gpu
+// work related to a specific scope (i.e pass) finished successfully on the gpu
+// before the next scope is processed on the cpu. As long as you can repro this crash
+// in this mode use it to debug GPU device removals/TDR's when
+// you need to know which scope was executing right before the crash.
+//#define AZ_FORCE_CPU_GPU_INSYNC
+
 AZ_DECLARE_BUDGET(RHI);
 inline static constexpr AZ::Crc32 rhiMetricsId = AZ_CRC_CE("RHI");
 

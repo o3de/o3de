@@ -13,7 +13,7 @@ namespace AZ
     namespace Render
     {
         // AsyncLoadTracker is for use by Feature Processors to track in-flight loading of assets that their sub-objects need.
-        // For instance, the individual decals that are controlled by the DecalFeatureProcessor will need materials to be loaded in asynchronously before use.
+        // For instance, the individual decals that are controlled by the decal FeatureProcessor will need materials to be loaded in asynchronously before use.
         template<typename FeatureProcessorHandle>
         class AsyncLoadTracker
         {

@@ -19,13 +19,13 @@ namespace ScriptCanvas
         AZ_RTTI(ExecutionStateInterpretedPure, "{EF702F22-F727-476A-A66A-A7F44687C194}", ExecutionStateInterpreted);
         AZ_CLASS_ALLOCATOR(ExecutionStateInterpretedPure, AZ::SystemAllocator, 0);
 
-        static void Reflect(AZ::ReflectContext* reflectContext);
-
-        ExecutionStateInterpretedPure(const ExecutionStateConfig& config);
+        ExecutionStateInterpretedPure(ExecutionStateConfig& config);
 
         void Execute() override;
 
         void Initialize() override;
+
+        bool IsPure() const override;
 
         void StopExecution() override;
     };
@@ -37,9 +37,7 @@ namespace ScriptCanvas
         AZ_RTTI(ExecutionStateInterpretedPureOnGraphStart, "{D4CA9731-31CE-4B27-A91F-6E71E1DE8B7D}", ExecutionStateInterpretedPure);
         AZ_CLASS_ALLOCATOR(ExecutionStateInterpretedPureOnGraphStart, AZ::SystemAllocator, 0);
 
-        static void Reflect(AZ::ReflectContext* reflectContext);
-
-        ExecutionStateInterpretedPureOnGraphStart(const ExecutionStateConfig& config);
+        ExecutionStateInterpretedPureOnGraphStart(ExecutionStateConfig& config);
 
         void Execute() override;
     };

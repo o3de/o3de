@@ -102,7 +102,7 @@ namespace CryEditPythonBindingsUnitTests
         timer.start(100);
 
         const unsigned int framesToWait = 5;
-        AZStd::array<AZ::BehaviorValueParameter, 1> args;
+        AZStd::array<AZ::BehaviorArgument, 1> args;
         args[0].Set(&framesToWait);
         behaviorContext->m_methods.find("idle_wait_frames")->second->Call(args.begin(), static_cast<unsigned int>(args.size()));
         loop.disconnect(&timer);

@@ -81,7 +81,7 @@ def SlopeAlignmentModifierOverrides_InstanceSurfaceAlignment():
         ["Mesh", "Mesh Surface Tag Emitter"]
     )
     Report.critical_result(Tests.surface_entity_created, surface_entity.id.IsValid())
-    hydra.get_set_test(surface_entity, 0, "Controller|Configuration|Mesh Asset", mesh_asset)
+    hydra.get_set_test(surface_entity, 0, "Controller|Configuration|Model Asset", mesh_asset)
     components.TransformBus(bus.Event, "SetLocalRotation", surface_entity.id, rotation)
     components.TransformBus(bus.Event, "SetLocalUniformScale", surface_entity.id, 30.0)
 

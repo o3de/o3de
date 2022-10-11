@@ -62,9 +62,12 @@ namespace AZ
                 "Models/ReflectionProbeSphere.azmodel",
                 AZ::RPI::AssetUtils::TraceLevel::Assert);
 
-            m_visualizationMeshHandle = m_meshFeatureProcessor->AcquireMesh(MeshHandleDescriptor{ m_visualizationModelAsset });
+            MeshHandleDescriptor visualizationMeshDescriptor;
+            visualizationMeshDescriptor.m_modelAsset = m_visualizationModelAsset;
+            visualizationMeshDescriptor.m_isRayTracingEnabled = false;
+            m_visualizationMeshHandle = m_meshFeatureProcessor->AcquireMesh(visualizationMeshDescriptor);
+
             m_meshFeatureProcessor->SetExcludeFromReflectionCubeMaps(m_visualizationMeshHandle, true);
-            m_meshFeatureProcessor->SetRayTracingEnabled(m_visualizationMeshHandle, false);
             m_meshFeatureProcessor->SetTransform(m_visualizationMeshHandle, AZ::Transform::CreateIdentity());
 
             // We have to pre-load this asset before creating a Material instance because the InstanceDatabase will attempt a blocking load which could deadlock,
@@ -366,6 +369,8 @@ namespace AZ
             m_cullable.m_cullData.m_visibilityEntry.m_boundingVolume = outerAabb;
             m_cullable.m_cullData.m_visibilityEntry.m_userData = &m_cullable;
             m_cullable.m_cullData.m_visibilityEntry.m_typeFlags = AzFramework::VisibilityEntry::TYPE_RPI_Cullable;
+            m_cullable.m_cullData.m_componentUuid = m_uuid;
+            m_cullable.m_cullData.m_componentType = Culling::ComponentType::ReflectionProbe;
 
             // register with culling system
             m_scene->GetCullingScene()->RegisterOrUpdateCullable(m_cullable);

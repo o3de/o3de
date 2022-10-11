@@ -13,6 +13,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Component/Component.h>
 #include "PropertyEditorAPI.h"
+#include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystem.h>
 
 // the property manager component's job is to provide the services for registration of property editors.
 // it also registers all of our built-in property manager types
@@ -23,6 +24,7 @@ namespace AzToolsFramework
         class PropertyManagerComponent
             : public AZ::Component
             , private PropertyTypeRegistrationMessages::Bus::Handler
+            , private PropertyEditorGUIMessages::Bus::Handler
         {
         public:
             friend class PropertyManagerComponentFactory;
@@ -61,9 +63,19 @@ namespace AzToolsFramework
             void UnregisterPropertyType(PropertyHandlerBase* pHandler) override;
             //////////////////////////////////////////////////////////////////////////
 
+            //////////////////////////////////////////////////////////////////////////
+            // PropertyEditorGUIMessages::Bus::Handler
+            void RequestWrite(QWidget* editorGUI) override;
+            void OnEditingFinished(QWidget* editorGUI) override;
+            void RequestPropertyNotify(QWidget* editorGUI) override;
+            //////////////////////////////////////////////////////////////////////////
+
             typedef AZStd::unordered_multimap<AZ::u32, PropertyHandlerBase*> HandlerMap;
             typedef AZStd::unordered_multimap<AZ::Uuid, PropertyHandlerBase*> DefaultHandlerMap;
 
+            // PropertyEditorToolsSystem adds support for registering handlers for the DocumentPropertyEditor
+            // RPE handlers have a `RegisterDpeHandler` method that bridges the two systems
+            AZStd::unique_ptr<PropertyEditorToolsSystem> m_dpeSystem;
             HandlerMap m_Handlers;
             DefaultHandlerMap m_DefaultHandlers;
 

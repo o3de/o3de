@@ -86,8 +86,7 @@ void PropertyHandlerEntityIdComboBox::ConsumeAttribute(PropertyEntityIdComboBoxC
         {
             for (const AZ::Edit::EnumConstant<AZ::EntityId>& constantValue : enumConstantValues)
             {
-                guiEnumValues.push_back();
-                auto& enumValue = guiEnumValues.back();
+                auto& enumValue = guiEnumValues.emplace_back();
                 enumValue.first = constantValue.m_value;
                 enumValue.second = constantValue.m_description;
             }

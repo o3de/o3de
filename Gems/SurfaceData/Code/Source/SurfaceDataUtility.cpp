@@ -24,16 +24,22 @@ namespace SurfaceData
         // Transform everything into model space
         const AZ::Vector3 rayStartLocal = meshTransformInverse.TransformPoint(rayStart) / clampedScale;
         const AZ::Vector3 rayEndLocal = meshTransformInverse.TransformPoint(rayEnd) / clampedScale;
-        const AZ::Vector3 rayDirectionLocal = (rayEndLocal - rayStartLocal).GetNormalized();
-        float distance = rayEndLocal.GetDistance(rayStartLocal);
+
+        // LocalRayIntersectionAgainstModel expects the direction to contain both the direction and the distance of the raycast,
+        // so it's important not to normalize this value.
+        const AZ::Vector3 rayDirectionLocal = (rayEndLocal - rayStartLocal);
+
+        float normalizedDistance = 0.0f;
 
         AZ::Vector3 normalLocal;
 
         constexpr bool AllowBruteForce = true;
-        if (meshAsset.LocalRayIntersectionAgainstModel(rayStartLocal, rayDirectionLocal, AllowBruteForce, distance, normalLocal))
+        if (meshAsset.LocalRayIntersectionAgainstModel(rayStartLocal, rayDirectionLocal, AllowBruteForce, normalizedDistance, normalLocal))
         {
             // Transform everything back to world space
-            outPosition = meshTransform.TransformPoint((rayStartLocal + (rayDirectionLocal * distance)) * clampedScale);
+            // The distance that's returned is normalized from 0-1, so multiplying with the rayDirectionLocal gives the
+            // actual collision point.
+            outPosition = meshTransform.TransformPoint((rayStartLocal + (rayDirectionLocal * normalizedDistance)) * clampedScale);
             outNormal = meshTransform.TransformVector(normalLocal).GetNormalized();
             return true;
         }

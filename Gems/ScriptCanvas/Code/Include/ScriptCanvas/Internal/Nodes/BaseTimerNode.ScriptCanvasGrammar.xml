@@ -2,22 +2,18 @@
 
 <ScriptCanvas Include="Include/ScriptCanvas/Internal/Nodes/BaseTimerNode.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Class Name="BaseTimerNode"
-	       QualifiedName="ScriptCanvas::Nodes::Internal::BaseTimerNode"
-	       PreferredClassName="BaseTimerNode"
-           Uuid="{BAD6C904-6078-49E8-B461-CA4410B785A4}"
-           Base="ScriptCanvas::Node"
-           Icon="Icons/ScriptCanvas/Placeholder.png"
-           Category="Utilities"
-           Version="0"
-           GeneratePropertyFriend="True"
-           Description="Provides a basic interaction layer for all time based nodes for users(handles swapping between ticks and seconds).">
+        QualifiedName="ScriptCanvas::Nodes::Internal::BaseTimerNode"
+        PreferredClassName="BaseTimerNode"
+        Uuid="{BAD6C904-6078-49E8-B461-CA4410B785A4}"
+        BaseClass="True"
+        Category="Utilities"
+        Description="Provides a basic interaction layer for all time based nodes for users(handles swapping between ticks and seconds).">
         <SerializedProperty Name="m_timeUnits" />
         <SerializedProperty Name="m_tickOrder" />
         <EditProperty UiHandler="AZ::Edit::UIHandlers::ComboBox" FieldName="m_timeUnits" Name="m_timeUnits" >
             <EditAttribute Key="AZ::Edit::Attributes::GenericValueList" Value="&amp;BaseTimerNode::GetTimeUnitList"/>
             <EditAttribute Key="AZ::Edit::Attributes::PostChangeNotify" Value="&amp;BaseTimerNode::OnTimeUnitsChanged"/>
         </EditProperty>
-        <EditProperty UiHandler="AZ::Edit::UIHandlers::Default" FieldName="m_tickOrder" Name="m_tickOrder" >
-        </EditProperty>
+        <EditProperty UiHandler="AZ::Edit::UIHandlers::Default" FieldName="m_tickOrder" Name="m_tickOrder"/>
     </Class>
 </ScriptCanvas>

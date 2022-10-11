@@ -65,9 +65,6 @@ class TestAutomation(EditorTestSuite):
     class test_LandscapeCanvas_GraphUpdates_UpdateComponents(EditorSharedTest):
         from .EditorScripts import GraphUpdates_UpdateComponents as test_module
 
-    class test_LandscapeCanvas_LayerBlender_NodeConstruction(EditorSharedTest):
-        from .EditorScripts import LayerBlender_NodeConstruction as test_module
-
     class test_LandscapeCanvas_LayerExtenderNodes_ComponentEntitySync(EditorSharedTest):
         from .EditorScripts import LayerExtenderNodes_ComponentEntitySync as test_module
 

@@ -37,7 +37,7 @@ namespace O3DE::ProjectManager
         bool operator!=(const ProjectInfo& rhs) const;
 
         bool IsValid() const;
-        const QString& GetProjectDisplayName() const; 
+        const QString& GetProjectDisplayName() const;
 
         // from o3de_manifest.json and o3de_projects.json
         QString m_path;
@@ -45,15 +45,21 @@ namespace O3DE::ProjectManager
         // From project.json
         QString m_projectName;
         QString m_displayName;
+        QString m_engineName;
+        QString m_enginePath;
         QString m_id;
         QString m_origin;
         QString m_summary;
         QString m_iconPath;
+        QString m_requirements;
+        QString m_license;
         QStringList m_userTags;
 
         // Used as temp variable for replace images
         QString m_newPreviewImagePath;
         QString m_newBackgroundImagePath;
+
+        bool m_remote = false;
 
         // Used in project creation
         bool m_needsBuild = false; //! Does this project need to be built

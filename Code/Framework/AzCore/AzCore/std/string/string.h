@@ -13,11 +13,13 @@
 #include <cstring>
 
 #include <AzCore/std/containers/compressed_pair.h>
+#include <AzCore/std/containers/containers_concepts.h>
 #include <AzCore/std/base.h>
 #include <AzCore/std/iterator.h>
 #include <AzCore/std/allocator.h>
 #include <AzCore/std/allocator_traits.h>
 #include <AzCore/std/algorithm.h>
+#include <AzCore/std/typetraits/aligned_storage.h>
 #include <AzCore/std/typetraits/alignment_of.h>
 #include <AzCore/std/typetraits/is_convertible.h>
 #include <AzCore/std/typetraits/is_integral.h>
@@ -29,7 +31,7 @@ namespace AZStd::StringInternal
     template<class Element, size_t ElementSize = sizeof(Element)>
     struct Padding
     {
-        AZ::u8 m_padding[ElementSize - 1];
+        AZ::u8 m_packed[ElementSize - 1];
     };
 
     template<class Element>
@@ -90,7 +92,9 @@ namespace AZStd
 
         inline static constexpr size_type npos = size_type(-1);
 
-        inline basic_string(const Allocator& alloc = Allocator())
+        // Constructors and Assignment operators
+        // https://eel.is/c++draft/strings#string.cons
+        inline constexpr basic_string(const Allocator& alloc = Allocator())
             : m_storage{ skip_element_tag{}, alloc }
         {
             Traits::assign(m_storage.first().GetData()[0], Element());
@@ -119,6 +123,16 @@ namespace AZStd
             : m_storage{ skip_element_tag{}, alloc }
         {   // construct from [first, last)
             assign(first, last);
+        }
+        template<class R, class = enable_if_t<Internal::container_compatible_range<R, value_type>>>
+        basic_string(from_range_t, R&& rg, const Allocator& alloc = Allocator())
+            : m_storage{ skip_element_tag{}, alloc }
+        {
+            assign_range(AZStd::forward<R>(rg));
+        }
+        basic_string(initializer_list<Element> ilist, const Allocator& alloc = Allocator())
+            : basic_string(ilist.begin(), ilist.end(), alloc)
+        {
         }
 
         inline basic_string(const this_type& rhs)
@@ -149,6 +163,11 @@ namespace AZStd
         {
         }
 
+        basic_string(AZStd::basic_string_view<Element, Traits> view, size_type pos, size_type n, const Allocator& alloc = Allocator())
+            : basic_string(view.substr(pos, n), alloc)
+        {
+        }
+
         // C++23 overload to prevent initializing a string_view via a nullptr or integer type
         constexpr basic_string(AZStd::nullptr_t) = delete;
 
@@ -158,7 +177,7 @@ namespace AZStd
             deallocate_memory(m_storage.first().GetData(), 0, typename allocator_type::allow_memory_leaks());
         }
 
-        operator AZStd::basic_string_view<Element, Traits>() const
+        constexpr operator AZStd::basic_string_view<Element, Traits>() const
         {
             return AZStd::basic_string_view<Element, Traits>(data(), size());
         }
@@ -249,7 +268,7 @@ namespace AZStd
             -> enable_if_t<input_iterator<InputIt> && !is_convertible_v<InputIt, size_type>, this_type&>
         {   // append [first, last)
             if constexpr (contiguous_iterator<InputIt>
-                && is_same_v<typename AZStd::iterator_traits<InputIt>::value_type, value_type>)
+                && is_same_v<iter_value_t<InputIt>, value_type>)
             {
                 return append(AZStd::to_address(first), AZStd::distance(first, last));
             }
@@ -290,6 +309,16 @@ namespace AZStd
         inline this_type& append(const_pointer first, const_pointer last)
         {   // append [first, last), const pointers
             return replace(end(), end(), first, last);
+        }
+        template<class R>
+        auto append_range(R&& rg) -> enable_if_t<Internal::container_compatible_range<R, value_type>, basic_string&>
+        {
+            return append(basic_string(from_range, AZStd::forward<R>(rg), get_allocator()));
+        }
+
+        basic_string& append(initializer_list<Element> iList)
+        {
+            return append(iList.begin(), iList.end());
         }
 
         inline this_type& assign(const this_type& rhs)
@@ -394,7 +423,7 @@ namespace AZStd
             -> enable_if_t<input_iterator<InputIt> && !is_convertible_v<InputIt, size_type>, this_type&>
         {
             if constexpr (contiguous_iterator<InputIt>
-                && is_same_v<typename AZStd::iterator_traits<InputIt>::value_type, value_type>)
+                && is_same_v<iter_value_t<InputIt>, value_type>)
             {
                 return assign(AZStd::to_address(first), AZStd::distance(first, last));
             }
@@ -430,6 +459,17 @@ namespace AZStd
                 return assign(AZStd::move(inputCopy));
             }
         }
+        template<class R>
+        auto assign_range(R&& rg) -> enable_if_t<Internal::container_compatible_range<R, value_type>, basic_string&>
+        {
+            return assign(ranges::begin(rg), ranges::end(rg));
+        }
+
+        basic_string& assign(initializer_list<Element> iList)
+        {
+            return assign(iList.begin(), iList.end());
+        }
+
         inline this_type& insert(size_type offset, const this_type& rhs) { return insert(offset, rhs, 0, npos); }
         this_type& insert(size_type offset, const this_type& rhs, size_type rhsOffset, size_type count)
         {
@@ -539,7 +579,7 @@ namespace AZStd
         {   // insert [_First, _Last) at _Where
             size_type insertOffset = AZStd::distance(cbegin(), insertPos);
             if constexpr (contiguous_iterator<InputIt>
-                && is_same_v<typename AZStd::iterator_traits<InputIt>::value_type, value_type>)
+                && is_same_v<iter_value_t<InputIt>, value_type>)
             {
                 insert(insertOffset, AZStd::to_address(first), AZStd::distance(first, last));
             }
@@ -579,6 +619,19 @@ namespace AZStd
             return begin() + insertOffset;
         }
 
+        template<class R>
+        auto insert_range(const_iterator insertPos, R&& rg) -> enable_if_t<Internal::container_compatible_range<R, value_type>, iterator>
+        {
+            size_t offset = insertPos - begin();
+            insert(offset, basic_string(from_range, AZStd::forward<R>(rg), get_allocator()));
+            return begin() + offset;
+        }
+
+        iterator insert(const_iterator insertPos, initializer_list<Element> iList)
+        {
+            return insert(insertPos, iList.begin(), iList.end());
+        }
+
         this_type& erase(size_type offset = 0, size_type count = npos)
         {   // erase elements [offset, offset + count)
             AZSTD_CONTAINER_ASSERT(size() >= offset, "Invalid offset");
@@ -596,7 +649,7 @@ namespace AZStd
                 Traits::move(data + offset, data + offset + count, size() - offset - count);
                 m_storage.first().SetSize(size() - count);
                 Traits::assign(data[size()], Element());  // terminate
-        }
+            }
             return *this;
         }
 
@@ -833,7 +886,7 @@ namespace AZStd
             -> enable_if_t<input_iterator<InputIt> && !is_convertible_v<InputIt, size_type>, this_type&>
         {
             if constexpr (contiguous_iterator<InputIt>
-                && is_same_v<typename AZStd::iterator_traits<InputIt>::value_type, value_type>)
+                && is_same_v<iter_value_t<InputIt>, value_type>)
             {
                 return replace(first, last, AZStd::to_address(replaceFirst), AZStd::distance(replaceFirst, replaceLast));
             }
@@ -874,6 +927,18 @@ namespace AZStd
 
                 return replace(first, last, inputCopy.c_str(), inputCopy.size());
             }
+        }
+
+        template<class R>
+        auto replace_with_range(const_iterator first, const_iterator last, R&& rg)
+            -> enable_if_t<Internal::container_compatible_range<R, value_type>, basic_string&>
+        {
+            return replace(first, last, basic_string(from_range, AZStd::forward<R>(rg), get_allocator()));
+        }
+
+        basic_string& replace(const_iterator first, const_iterator last, initializer_list<Element> iList)
+        {
+            return replace(first, last, iList.begin(), iList.end());
         }
 
         inline reference at(size_type offset)
@@ -1715,8 +1780,8 @@ namespace AZStd
             {
                 // Make sure the short string buffer is null-terminated
                 m_buffer[0] = Element{};
-                m_size = 0;
-                m_ssoActive = true;
+                m_packed.m_size = 0;
+                m_packed.m_ssoActive = true;
             }
 
             // bit offset: 0, bits: 184
@@ -1730,7 +1795,7 @@ namespace AZStd
             // to have the StringInternal::Padding<Element> struct
             // take 0 bytes when the Element type is 1-byte type like `char`
             // When C++20 support is added, this can be changed to use [[no_unique_address]]
-            struct
+            struct PackedSize
                 : StringInternal::Padding<Element>
             {
 
@@ -1739,7 +1804,7 @@ namespace AZStd
 
                 // bit offset: 191, bits: 1
                 AZ::u8 m_ssoActive : 1;
-            };
+            } m_packed;
             // Total size 192 bits(24 bytes)
         };
 
@@ -1761,7 +1826,7 @@ namespace AZStd
 
             bool ShortStringOptimizationActive() const
             {
-                return m_shortData.m_ssoActive;
+                return m_shortData.m_packed.m_ssoActive;
             }
             const_pointer GetData() const
             {
@@ -1788,14 +1853,14 @@ namespace AZStd
             }
             size_type GetSize() const
             {
-                return ShortStringOptimizationActive() ? m_shortData.m_size
+                return ShortStringOptimizationActive() ? m_shortData.m_packed.m_size
                     : reinterpret_cast<const AllocatedStringData&>(m_shortData).m_size;
             }
             void SetSize(size_type size)
             {
                 if (ShortStringOptimizationActive())
                 {
-                    m_shortData.m_size = size;
+                    m_shortData.m_packed.m_size = size;
                 }
                 else
                 {
@@ -1811,11 +1876,11 @@ namespace AZStd
             {
                 if (capacity <= ShortStringData::Capacity)
                 {
-                    m_shortData.m_ssoActive = true;
+                    m_shortData.m_packed.m_ssoActive = true;
                 }
                 else
                 {
-                    m_shortData.m_ssoActive = false;
+                    m_shortData.m_packed.m_ssoActive = false;
                     reinterpret_cast<AllocatedStringData&>(m_shortData).m_capacity = capacity;
                 }
             }
@@ -1876,6 +1941,25 @@ namespace AZStd
         }
 #endif
     };
+
+    // AZStd::basic_string deduction guides
+    template<class InputIt, class Alloc = allocator>
+    basic_string(InputIt, InputIt, Alloc = Alloc()) -> basic_string<iter_value_t<InputIt>,
+        AZStd::char_traits<iter_value_t<InputIt>>,
+        Alloc>;
+
+    template<class R, class Alloc = allocator, class = enable_if_t<ranges::input_range<R>>>
+    basic_string(from_range_t, R&&, Alloc = Alloc())
+        -> basic_string<ranges::range_value_t<R>, char_traits<ranges::range_value_t<R>>, Alloc>;
+
+    template<class CharT, class Traits, class Alloc = allocator>
+    explicit basic_string(AZStd::basic_string_view<CharT, Traits>, const Alloc& = Alloc()) ->
+        basic_string<CharT,Traits, Alloc>;
+
+    template<class CharT, class Traits, class Alloc = allocator>
+    explicit basic_string(AZStd::basic_string_view<CharT, Traits>, typename allocator_traits<Alloc>::size_type,
+        typename allocator_traits<Alloc>::size_type, const Alloc& = Alloc()) ->
+        basic_string<CharT, Traits, Alloc>;
 
     template<class Element, class Traits, class Allocator>
     inline void swap(basic_string<Element, Traits, Allocator>& left, basic_string<Element, Traits, Allocator>& right)

@@ -22,7 +22,7 @@ namespace AZ
     namespace Internal
     {
         // Pushes an any onto the Lua stack
-        void AnyToLua(lua_State* lua, BehaviorValueParameter& param)
+        void AnyToLua(lua_State* lua, BehaviorArgument& param)
         {
             AZStd::any* value = param.GetAsUnsafe<AZStd::any>();
 
@@ -58,7 +58,7 @@ namespace AZ
         }
 
         // Reads the value in on top of the stack into an any
-        bool AnyFromLua(lua_State* lua, int stackIndex, BehaviorValueParameter& value, BehaviorClass* /*ignore, it's any*/, ScriptContext::StackVariableAllocator* stackTempAllocator)
+        bool AnyFromLua(lua_State* lua, int stackIndex, BehaviorArgument& value, BehaviorClass* /*ignore, it's any*/, ScriptContext::StackVariableAllocator* stackTempAllocator)
         {
             void* anyPtr = stackTempAllocator->allocate(sizeof(AZStd::any), AZStd::alignment_of<AZStd::any>::value);
 

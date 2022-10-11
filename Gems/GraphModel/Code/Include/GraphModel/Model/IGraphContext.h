@@ -52,11 +52,8 @@ namespace GraphModel
         virtual DataTypePtr GetDataType(DataType::Enum typeEnum) const = 0;
 
         //! Utility function to returns a DataType object representing the given template type T, or Invalid if it doesn't exist.
-        //! Subclasses may need to implement this function too, and just call IGraphContext::GetDataType<T>()
-        //! in order to avoid "error C2275: 'Type': illegal use of this type as an expression"
         template<typename T>
         DataTypePtr GetDataType() const { return GetDataType(azrtti_typeid<T>()); }
-
     };
     
 } // namespace GraphModel

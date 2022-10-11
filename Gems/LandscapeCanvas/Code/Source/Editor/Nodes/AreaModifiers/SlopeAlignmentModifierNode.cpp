@@ -32,7 +32,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString SlopeAlignmentModifierNode::TITLE = QObject::tr("Slope Alignment Modifier");
+    const char* SlopeAlignmentModifierNode::TITLE = "Slope Alignment Modifier";
 
     SlopeAlignmentModifierNode::SlopeAlignmentModifierNode(GraphModel::GraphPtr graph)
         : BaseAreaModifierNode(graph)
@@ -43,13 +43,12 @@ namespace LandscapeCanvas
 
     void SlopeAlignmentModifierNode::RegisterSlots()
     {
-        GraphModel::DataTypePtr invalidEntityDataType = GraphContext::GetInstance()->GetDataType(LandscapeCanvasDataTypeEnum::InvalidEntity);
-        GraphModel::DataTypePtr gradientDataType = GraphContext::GetInstance()->GetDataType(LandscapeCanvasDataTypeEnum::Gradient);
+        GraphModel::DataTypePtr gradientDataType = GetGraphContext()->GetDataType(LandscapeCanvasDataTypeEnum::Gradient);
 
         RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
             INBOUND_GRADIENT_SLOT_ID,
             INBOUND_GRADIENT_SLOT_LABEL.toUtf8().constData(),
-            { gradientDataType, invalidEntityDataType },
+            { gradientDataType },
             AZStd::any(AZ::EntityId()),
             INBOUND_GRADIENT_INPUT_SLOT_DESCRIPTION.toUtf8().constData()));
     }

@@ -60,7 +60,7 @@ Configures several useful environment config settings and paths,
     (activates the env, starts py interpreter)
     set DCCSI_PY_BASE=%PATH_O3DE_PYTHON_INSTALL%\python.exe
 
-    :: shared location for 64bit python 3.7 BASE location 
+    :: shared location for 64bit python 3.10 BASE location 
     set DCCSI_PY_DCCSI=%DCCSI_LAUNCHERS_PATH%\Launch_pyBASE.bat
 
     :: Override DCCSI_PY_DCCSI to set a defualt version for the DCCsi

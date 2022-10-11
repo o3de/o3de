@@ -28,7 +28,7 @@ namespace AZ
             {
                 serializeContext
                     ->Class<AuxGeomFeatureProcessor, FeatureProcessor>()
-                    ->Version(0);
+                    ->Version(1);
             }
         }
 

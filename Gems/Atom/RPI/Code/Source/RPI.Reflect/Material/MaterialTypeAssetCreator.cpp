@@ -89,66 +89,16 @@ namespace AZ
 
         bool MaterialTypeAssetCreator::ValidateMaterialVersion()
         {
-            if (m_asset->m_materialVersionUpdates.empty())
-            {
-                return true;
-            }
-
-            uint32_t prevVersion = 0;
-            for(const MaterialVersionUpdate& versionUpdate : m_asset->m_materialVersionUpdates)
-            {
-                if (versionUpdate.GetVersion() <= prevVersion)
-                {
-                    ReportError("Version updates are not sequential. See version update '%u'.", versionUpdate.GetVersion());
-                    return false;
-                }
-                
-                if (versionUpdate.GetVersion() > m_asset->m_version)
-                {
-                    ReportError("Version updates go beyond the current material type version. See version update '%u'.", versionUpdate.GetVersion());
-                    return false;
-                }
-
-                // We don't allow previously renamed property names to be reused for new properties. This would just complicate too many things,
-                // as every use of every property name (like in Material Component, or in scripts, for example) would have to have a version number
-                // associated with it, in order to know whether or which rename to apply.
-                for (size_t propertyIndex = 0; propertyIndex < m_asset->m_materialPropertiesLayout->GetPropertyCount(); ++propertyIndex)
-                {
-                    Name originalPropertyName = m_asset->m_materialPropertiesLayout->GetPropertyDescriptor(MaterialPropertyIndex{propertyIndex})->GetName();
-                    Name newPropertyName = originalPropertyName;
-                    if (versionUpdate.ApplyPropertyRenames(newPropertyName))
-                    {
-                        ReportError("There was a material property named '%s' at material type version %d. This name cannot be reused for another property.",
-                            originalPropertyName.GetCStr(), versionUpdate.GetVersion());
-                        return false;
-                    }
-                }
-
-                prevVersion = versionUpdate.GetVersion();
-            }
-
-            const auto& lastMaterialVersionUpdate = m_asset->m_materialVersionUpdates.back();
-            for (const auto& action : lastMaterialVersionUpdate.GetActions())
-            {                
-                const auto propertyIndex = m_asset->m_materialPropertiesLayout->FindPropertyIndex(AZ::Name{ action.m_toPropertyId });
-                if (!propertyIndex.IsValid())
-                {
-                    ReportError("Renamed property '%s' not found in material property layout. Check that the property name has been "
-                            "upgraded to the correct version",
-                            action.m_toPropertyId.GetCStr());
-                    return false;
-                }
-
-            }
-
-            return true;
+            return m_asset->m_materialVersionUpdates.ValidateUpdates(
+                m_asset->m_version, m_asset->GetMaterialPropertiesLayout(),
+                [this](const char* message){ ReportError("%s", message); });
         }
 
-        void MaterialTypeAssetCreator::AddShader(const AZ::Data::Asset<ShaderAsset>& shaderAsset, const ShaderVariantId& shaderVaraintId, const AZ::Name& shaderTag)
+        void MaterialTypeAssetCreator::AddShader(const AZ::Data::Asset<ShaderAsset>& shaderAsset, const ShaderVariantId& shaderVariantId, const AZ::Name& shaderTag)
         {
             if (ValidateIsReady() && ValidateNotNull(shaderAsset, "ShaderAsset"))
             {
-                m_asset->m_shaderCollection.m_shaderItems.push_back(ShaderCollection::Item{shaderAsset, shaderTag, shaderVaraintId});
+                m_asset->m_shaderCollection.m_shaderItems.push_back(ShaderCollection::Item{shaderAsset, shaderTag, shaderVariantId});
                 if (!m_asset->m_shaderCollection.m_shaderTagIndexMap.Insert(shaderTag, RHI::Handle<uint32_t>(m_asset->m_shaderCollection.m_shaderItems.size() - 1)))
                 {
                     ReportError(AZStd::string::format("Failed to insert shader tag '%s'. Shader tag must be unique.", shaderTag.GetCStr()).c_str());
@@ -160,6 +110,11 @@ namespace AZ
 
                 CacheMaterialSrgLayout();
             }
+        }
+
+        void MaterialTypeAssetCreator::AddShader(const AZ::Data::Asset<ShaderAsset>& shaderAsset, const ShaderVariantId& shaderVariantId)
+        {
+            AddShader(shaderAsset, shaderVariantId, AZ::Name(AZ::Uuid::CreateRandom().ToFixedString()));
         }
 
         void MaterialTypeAssetCreator::AddShader(const AZ::Data::Asset<ShaderAsset>& shaderAsset, const AZ::Name& shaderTag)
@@ -174,7 +129,7 @@ namespace AZ
 
         void MaterialTypeAssetCreator::AddVersionUpdate(const MaterialVersionUpdate& materialVersionUpdate)
         {
-            m_asset->m_materialVersionUpdates.push_back(materialVersionUpdate);
+            m_asset->m_materialVersionUpdates.AddVersionUpdate(materialVersionUpdate);
         }
 
         void MaterialTypeAssetCreator::ClaimShaderOptionOwnership(const Name& shaderOptionName)

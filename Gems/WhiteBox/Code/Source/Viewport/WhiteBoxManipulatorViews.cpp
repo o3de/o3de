@@ -51,6 +51,7 @@ namespace WhiteBox
         polygonBounds.m_triangles = TransformToWorldSpace(manipulatorState.m_worldFromLocal, m_triangles);
 
         // draw fill
+        debugDisplay.PushMatrix(m_polygonViewOverlapOffset);
         debugDisplay.DepthTestOn();
         debugDisplay.SetColor(m_fillColor);
         debugDisplay.DrawTriangles(polygonBounds.m_triangles, m_fillColor);
@@ -73,6 +74,7 @@ namespace WhiteBox
         }
 
         debugDisplay.DepthTestOff();
+        debugDisplay.PopMatrix();
 
         RefreshBoundInternal(managerId, manipulatorId, polygonBounds);
     }

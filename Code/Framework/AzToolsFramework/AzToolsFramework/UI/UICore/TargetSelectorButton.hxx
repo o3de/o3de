@@ -12,7 +12,7 @@
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include "AzFramework/TargetManagement/TargetManagementAPI.h"
+#include <AzFramework/Network/IRemoteTools.h>
 #include <QtWidgets/QPushButton>
 #include <qwidgetaction.h>
 #endif
@@ -23,21 +23,23 @@ namespace AzToolsFramework
 {
     class TargetSelectorButton
         : public QPushButton
-        , private AzFramework::TargetManagerClient::Bus::Handler
     {
         Q_OBJECT
     public:
         AZ_CLASS_ALLOCATOR(TargetSelectorButton, AZ::SystemAllocator, 0);
 
-        TargetSelectorButton(QWidget* pParent = 0);
-        virtual ~TargetSelectorButton();
+        TargetSelectorButton(AZ::Crc32 key, QWidget* pParent = 0);
+        virtual ~TargetSelectorButton() = default;
 
         // implement AzFramework::TargetManagerClient::Bus::Handler
         void DesiredTargetConnected(bool connected);
 
     private:
         void UpdateStatus();
-        void ConstructDisplayTargetString(QString& outputString, const AzFramework::TargetInfo& info);
+        void ConstructDisplayTargetString(QString& outputString, const AzFramework::RemoteToolsEndpointInfo& info);
+
+        AZ::Crc32 m_remoteToolsKey;
+        AzFramework::RemoteToolsEndpointConnectedEvent::Handler m_connectedEventHandler;
 
     private slots:
         void DoPopup();
@@ -51,10 +53,13 @@ namespace AzToolsFramework
     public:
         AZ_CLASS_ALLOCATOR(TargetSelectorButtonAction, AZ::SystemAllocator, 0);
 
-        TargetSelectorButtonAction(QObject* pParent);                                     // create default action
+        TargetSelectorButtonAction(AZ::Crc32 key, QObject* pParent); // create default action
 
     protected:
         virtual QWidget* createWidget(QWidget* pParent);
+
+    private:
+        AZ::Crc32 m_remoteToolsKey;
     };
 }
 

@@ -24,60 +24,67 @@ DATE = datetime.datetime.now().strftime(TIMESTAMP_FORMAT)
 ROOT_LOG_FOLDER = os.path.join("TestResults", DATE, "pytest_results")
 
 
-@mock.patch('os.makedirs', mock.MagicMock())
 class TestSetTestName(unittest.TestCase):
     def setUp(self):
         self.mock_root = ROOT_LOG_FOLDER
         self.mock_artifact_manager = ly_test_tools._internal.managers.artifact_manager.ArtifactManager(
             self.mock_root)
 
+    @mock.patch('ly_test_tools._internal.managers.artifact_manager.ArtifactManager.set_dest_path')
+    def test_Init_Called_CallsSetDestPath(self, mock_set_dest_path):
+        self.mock_artifact_manager = ly_test_tools._internal.managers.artifact_manager.ArtifactManager(
+            self.mock_root)
+        assert mock_set_dest_path.called
+
+    @mock.patch('os.makedirs', mock.MagicMock())
     @mock.patch('os.path.exists', mock.MagicMock(return_value=False))
-    def test_Init_NoPathExists_CreatesPathSetsAttributes(self):
+    def test_SetDestPath_NoPathExists_CreatesPathSetsAttributes(self):
         create_amount = 1
         updated_path = "{}".format(self.mock_artifact_manager.artifact_path, create_amount)
+        self.mock_artifact_manager.dest_path = None  # Reset the value to test the function
+        self.mock_artifact_manager.set_dest_path(test_name=None, amount=create_amount)
 
-        assert self.mock_artifact_manager.artifact_path == self.mock_root, (
-            'artifact_path does not match self.mock_root')
-        assert self.mock_artifact_manager.dest_path == updated_path, (
-            'dest_path does not match updated_path')
+        assert self.mock_artifact_manager.artifact_path == self.mock_root
+        assert self.mock_artifact_manager.dest_path == updated_path
 
     @mock.patch('os.path.exists', mock.MagicMock(return_value=True))
-    def test_Init_PathExists_NoPathCreatedSetsAttributes(self):
-        assert self.mock_artifact_manager.artifact_path == self.mock_root, (
-            'artifact_path does not match self.mock_root')
-        assert self.mock_artifact_manager.dest_path == self.mock_artifact_manager.artifact_path, (
-            'dest_path does not match artifact_path')
+    @mock.patch('os.makedirs')
+    def test_SetDestPath_PathExists_NoPathCreatedSetsAttributes(self, mock_makedirs):
+        self.mock_artifact_manager.dest_path = None  # Reset the value to test the function
+        self.mock_artifact_manager.set_dest_path()
 
+        assert self.mock_artifact_manager.artifact_path == self.mock_root
+        assert self.mock_artifact_manager.dest_path == self.mock_artifact_manager.artifact_path
+        assert not mock_makedirs.called
+
+    @mock.patch('os.makedirs', mock.MagicMock())
     @mock.patch('os.path.exists', mock.MagicMock(return_value=False))
-    def test_SetTestNameAmount_ValidNameNoPathExists_CreatesPathSetsAttributes(self):
-        create_amount = 5
+    @mock.patch('ly_test_tools._internal.managers.artifact_manager.ArtifactManager._get_collision_handled_filename')
+    def test_SetDestPathAmount_IsCalled_CallsGetCollision(self, mock_get_collision):
+        create_amount = 2
         test_name = 'dummy'
-        updated_path = "{}_1".format(os.path.join(self.mock_artifact_manager.artifact_path,
-                                                  test_name))
+        mock_get_collision.return_value = test_name
 
-        self.mock_artifact_manager.set_test_name(test_name, create_amount)
-        assert self.mock_artifact_manager.dest_path == updated_path, (
-            'dest_path does not match updated_path')
+        self.mock_artifact_manager.set_dest_path(test_name, create_amount)
+        mock_get_collision.assert_called_once_with(os.path.join(self.mock_root, test_name), create_amount)
 
+    @mock.patch('os.makedirs', mock.MagicMock())
     @mock.patch('os.path.exists', mock.MagicMock(return_value=True))
-    def test_SetTestNameAmount_ValidNamePathExists_NoPathCreatedSetsAttributes(self):
+    def test_SetDestPathAmount_ValidFilePathExists_NoFilePathCreatedSetsAttributes(self):
         test_name = 'dummy'
-        create_amount = 5  # Ignored because the path already exists.
-        updated_path = "{}".format(os.path.join(self.mock_artifact_manager.artifact_path, test_name),
-                                   create_amount)
+        expected_path = os.path.join(self.mock_artifact_manager.artifact_path, test_name)
 
-        self.mock_artifact_manager.set_test_name(test_name, create_amount)
-        assert self.mock_artifact_manager.dest_path == updated_path, (
-            'dest_path does not match updated_path')
+        self.mock_artifact_manager.set_dest_path(test_name)
+        assert self.mock_artifact_manager.dest_path == expected_path
 
 
-@mock.patch('os.path.exists', mock.MagicMock(return_value=True))
 class TestSaveArtifact(unittest.TestCase):
 
     def setUp(self):
         self.mock_root = ROOT_LOG_FOLDER
         self.mock_artifact_manager = ly_test_tools._internal.managers.artifact_manager.ArtifactManager(self.mock_root)
 
+    @mock.patch('os.path.exists', mock.MagicMock(return_value=False))
     @mock.patch('shutil.copytree')
     @mock.patch('os.path.isdir')
     @mock.patch('ly_test_tools.environment.file_system.reduce_file_name_length')
@@ -91,15 +98,14 @@ class TestSaveArtifact(unittest.TestCase):
         mock_copy_tree.return_value = True
         mock_reducer.return_value = mock_artifact_name[:-5]
 
-        self.mock_artifact_manager.set_test_name(test_name)
+        self.mock_artifact_manager.set_dest_path(test_name)
         self.mock_artifact_manager.save_artifact(updated_path, mock_artifact_name)
 
-        assert self.mock_artifact_manager.dest_path == updated_path, (
-            'dest_path does not match updated_path')
-        mock_copy_tree.assert_called_once_with(
-            updated_path, os.path.join(updated_path, mock_artifact_name[:-5]))
+        assert self.mock_artifact_manager.dest_path == updated_path
+        mock_copy_tree.assert_called_once_with(updated_path, os.path.join(updated_path, mock_artifact_name[:-5]))
         mock_reducer.assert_called_once_with(file_name=mock_artifact_name, max_length=25)
 
+    @mock.patch('os.path.exists', mock.MagicMock(return_value=False))
     @mock.patch('shutil.copytree')
     @mock.patch('os.path.isdir')
     @mock.patch('ly_test_tools.environment.file_system.reduce_file_name_length')
@@ -111,13 +117,13 @@ class TestSaveArtifact(unittest.TestCase):
 
         self.mock_artifact_manager.save_artifact(self.mock_artifact_manager.artifact_path, mock_artifact_name)
 
-        assert self.mock_artifact_manager.dest_path == self.mock_artifact_manager.artifact_path, (
-            'dest_path does not match self.mock_artifact_manager.artifact_path')
+        assert self.mock_artifact_manager.dest_path == self.mock_artifact_manager.artifact_path
         mock_copy_tree.assert_called_once_with(
             self.mock_artifact_manager.artifact_path,
             os.path.join(self.mock_artifact_manager.artifact_path, 'pytest_results'))
         mock_reducer.assert_not_called()
 
+    @mock.patch('os.path.exists', mock.MagicMock(return_value=False))
     @mock.patch('os.chmod', mock.MagicMock())
     @mock.patch('shutil.copy')
     @mock.patch('os.path.isdir')
@@ -131,13 +137,13 @@ class TestSaveArtifact(unittest.TestCase):
 
         self.mock_artifact_manager.save_artifact(self.mock_artifact_manager.artifact_path, mock_artifact_name)
 
-        assert self.mock_artifact_manager.dest_path == self.mock_artifact_manager.artifact_path, (
-            'dest_path does not match self.mock_artifact_manager.artifact_path')
+        assert self.mock_artifact_manager.dest_path == self.mock_artifact_manager.artifact_path
         mock_copy.assert_called_once_with(
             self.mock_artifact_manager.artifact_path,
             os.path.join(self.mock_artifact_manager.artifact_path, mock_artifact_name[:-5]))
         mock_reducer.assert_called_once_with(file_name=mock_artifact_name, max_length=25)
 
+    @mock.patch('os.path.exists', mock.MagicMock(return_value=False))
     @mock.patch('os.chmod', mock.MagicMock())
     @mock.patch('shutil.copy')
     @mock.patch('os.path.isdir')
@@ -150,13 +156,13 @@ class TestSaveArtifact(unittest.TestCase):
 
         self.mock_artifact_manager.save_artifact(self.mock_artifact_manager.artifact_path, mock_artifact_name)
 
-        assert self.mock_artifact_manager.dest_path == self.mock_artifact_manager.artifact_path, (
-            'dest_path does not match self.mock_artifact_manager.artifact_path')
+        assert self.mock_artifact_manager.dest_path == self.mock_artifact_manager.artifact_path
         mock_copy.assert_called_once_with(
             self.mock_artifact_manager.artifact_path,
             os.path.join(self.mock_artifact_manager.artifact_path, 'pytest_results'))
         mock_reducer.assert_not_called()
 
+    @mock.patch('os.path.exists', mock.MagicMock(return_value=False))
     @mock.patch('shutil.copy', mock.MagicMock())
     @mock.patch('os.chmod')
     @mock.patch('os.path.isdir')
@@ -171,10 +177,10 @@ class TestSaveArtifact(unittest.TestCase):
             os.path.join(self.mock_artifact_manager.artifact_path, mock_artifact_name[:-5]),
             stat.S_IWRITE | stat.S_IREAD | stat.S_IEXEC)
 
-        assert self.mock_artifact_manager.dest_path == self.mock_artifact_manager.artifact_path, (
-            'dest_path does not match self.mock_artifact_manager.artifact_path')
+        assert self.mock_artifact_manager.dest_path == self.mock_artifact_manager.artifact_path
         mock_reducer.assert_called_once_with(file_name=mock_artifact_name, max_length=25)
 
+    @mock.patch('os.path.exists', mock.MagicMock(return_value=False))
     @mock.patch('shutil.copy', mock.MagicMock())
     @mock.patch('os.chmod')
     @mock.patch('os.path.isdir')
@@ -188,17 +194,15 @@ class TestSaveArtifact(unittest.TestCase):
             os.path.join(self.mock_artifact_manager.artifact_path, 'pytest_results'),
             stat.S_IWRITE | stat.S_IREAD | stat.S_IEXEC)
 
-        assert self.mock_artifact_manager.dest_path == self.mock_artifact_manager.artifact_path, (
-            'dest_path does not match self.mock_artifact_manager.artifact_path')
+        assert self.mock_artifact_manager.dest_path == self.mock_artifact_manager.artifact_path
         mock_reducer.assert_not_called()
 
+    @mock.patch('os.path.exists', mock.MagicMock(return_value=True))
+    @mock.patch('os.path.isdir', mock.MagicMock(return_value=False))
     @mock.patch('shutil.copy', mock.MagicMock())
     @mock.patch('os.chmod', mock.MagicMock())
     @mock.patch('ly_test_tools._internal.managers.artifact_manager.ArtifactManager._get_collision_handled_filename')
-    @mock.patch('os.path.isdir')
-    def test_SaveArtifact_DestinationCollides_CallsGetCollisionHandledFilename(self, mock_path_isdir, under_test):
-        mock_path_isdir.return_value = False
-
+    def test_SaveArtifact_DestinationCollides_CallsGetCollisionHandledFilename(self, under_test):
         self.mock_artifact_manager.save_artifact(self.mock_artifact_manager.artifact_path)
 
         under_test.assert_called_once()
@@ -257,7 +261,7 @@ class TestGatherArtifacts(unittest.TestCase):
         mock_destination = 'mock_destination'
         mock_sanitize_file_name.return_value = test_name
 
-        self.mock_artifact_manager.set_test_name(test_name)
+        self.mock_artifact_manager.set_dest_path(test_name)
         self.mock_artifact_manager.gather_artifacts(mock_destination)
 
         mock_make_archive.assert_called_once_with(
@@ -270,6 +274,15 @@ class TestGetCollisionHandledFilename(unittest.TestCase):
     def setUp(self):
         self.mock_root = ROOT_LOG_FOLDER
         self.mock_artifact_manager = ly_test_tools._internal.managers.artifact_manager.ArtifactManager(self.mock_root)
+
+    @mock.patch('os.path.exists', mock.MagicMock(return_value=False))
+    def test_GetCollisionHandledFilename_FileNameExists_FileNameAppendsNumber(self):
+        create_amount = 2
+        test_name = 'dummy'
+        updated_path = f"{test_name}_1"
+
+        under_test = self.mock_artifact_manager._get_collision_handled_filename(test_name, create_amount)
+        assert under_test == updated_path
 
     def test_GetCollisionHandledFilename_AmountOne_ReturnsParam(self):
         mock_file_path = 'foo'

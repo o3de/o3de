@@ -9,7 +9,7 @@
 
 #include "AzCore/Interface/Interface.h"
 
-#include <Blast/BlastMaterial.h>
+#include <Material/BlastMaterial.h>
 #include <Family/ActorTracker.h>
 #include <Blast/BlastSystemBus.h>
 #include <AzCore/Interface/Interface.h>
@@ -41,7 +41,7 @@ namespace Blast
         template<typename T>
         using DamagePair = AZStd::pair<AZStd::unique_ptr<T>, AZStd::unique_ptr<NvBlastExtProgramParams>>;
 
-        DamageManager(const BlastMaterial& blastMaterial, ActorTracker& actorTracker)
+        DamageManager(const Material* blastMaterial, ActorTracker& actorTracker)
             : m_blastMaterial(blastMaterial)
             , m_actorTracker(actorTracker)
         {
@@ -82,14 +82,14 @@ namespace Blast
 
         static AZ::Vector3 TransformToLocal(BlastActor& actor, const AZ::Vector3& globalPosition);
 
-        BlastMaterial m_blastMaterial;
+        const Material* m_blastMaterial = nullptr;
         [[maybe_unused]] ActorTracker& m_actorTracker;
     };
 
     template<class T, class... Args>
     void DamageManager::Damage(T damageType, float damage, const Args&... args)
     {
-        const float normalizedDamage = m_blastMaterial.GetNormalizedDamage(damage);
+        const float normalizedDamage = m_blastMaterial->GetNormalizedDamage(damage);
         if (normalizedDamage <= 0.f)
         {
             return;
@@ -126,7 +126,7 @@ namespace Blast
     template<class T, class... Args>
     void DamageManager::Damage(T damageType, BlastActor& actor, float damage, const Args&... args)
     {
-        const float normalizedDamage = m_blastMaterial.GetNormalizedDamage(damage);
+        const float normalizedDamage = m_blastMaterial->GetNormalizedDamage(damage);
         if (normalizedDamage <= 0.f)
         {
             return;

@@ -129,7 +129,7 @@ void CFFMPEGPlugin::RegisterTheCommand()
     CommandManagerHelper::RegisterCommand<const char*, const char*, const char*, int, int, const char*>(
         GetIEditor()->GetICommandManager(),
         COMMAND_MODULE, COMMAND_NAME, "Encodes a video using ffmpeg.",
-        "plugin.ffmpeg_encode 'input.avi' 'result.mov' 'libx264' 200 30",
+        "plugin.ffmpeg_encode 'input.avi' 'result.webm' 'libvpx-vp9' 200 30",
         AZStd::bind(Command_FFMPEGEncode, _1, _2, _3, _4, _5, _6));
 }
 

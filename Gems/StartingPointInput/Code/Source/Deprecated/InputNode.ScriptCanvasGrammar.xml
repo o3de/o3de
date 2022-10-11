@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScriptCanvas Include="Source/Deprecated/InputNode.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Class Name="InputNode"
+	       QualifiedName="StartingPointInput::InputNode"
+	       PreferredClassName="Input Handler"
+           Uuid="{0B0AC61B-4BBA-42BF-BDCD-DAF2D3CA41A8}"
+           Base="ScriptCanvas::Node"
+           Icon="Editor/Icons/ScriptCanvas/Bus.png"
+           EditAttributes="AZ::Edit::Attributes::Category@Gameplay/Input"
+           DeprecationUUID="{0A2EB488-5A6A-E166-BB62-23FF81499E33}"
+           Deprecated="This node has been deprecated in favor of the nodeable form"
+           GraphEntryPoint="True"
+           GeneratePropertyFriend="True"
+           Description="Handle processed input events found in input binding assets">
+        <Out Name="Pressed" Description="Signaled when the input event begins."/>
+        <Out Name="Held" Description="Signaled while the input event is active."/>
+        <Out Name="Released" Description="Signaled when the input event ends."/>
+        <Property Name="Event Name"
+                  Description="The input event name as defined in an inputbinding asset.  Example 'Fireball'"
+                  Type="AZStd::string"
+                  IsInput="True"
+                  IsOutput="False" />
+        <Property Name="Value"
+                  Description="The current value from the input."
+                  Type="float"
+                  IsInput="False"
+                  IsOutput="True" />
+    </Class>
+</ScriptCanvas>

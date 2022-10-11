@@ -2,10 +2,11 @@
     "description": "",
     "materialType": "Materials/Types/StandardPBR.materialtype",
     "parentMaterial": "",
-    "materialTypeVersion": 3,
+    "materialTypeVersion": 5,
     "properties": {
         "general": {
-            "texcoord": 0
+            "texcoord": 0,
+            "doubleSided": false
         },
         "occlusion": {
             "diffuseFactor": 1.0,
@@ -63,7 +64,6 @@
             "subsurfaceScatterFactor": 1
         },
         "opacity": {
-            "doubleSided": false,
             "factor": 1.0,
             "cutoutAlpha": false,
             "cutoutThreshold": 0.5,

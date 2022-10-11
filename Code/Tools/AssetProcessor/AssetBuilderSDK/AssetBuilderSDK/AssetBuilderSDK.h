@@ -38,6 +38,14 @@ namespace AZ
     class Entity;
 }
 
+namespace AzToolsFramework
+{
+    namespace AssetDatabase
+    {
+        class ProductDatabaseEntry;
+    }
+}
+
 // This needs to be up here because it needs to be defined before the hash definition, and the hash needs to be defined before the first use (which occurs further down in this file)
 namespace AssetBuilderSDK
 {
@@ -108,6 +116,8 @@ namespace AssetBuilderSDK
 
     extern const char* const s_processJobRequestFileName; //!< File name for having job requests send from the Asset Processor.
     extern const char* const s_processJobResponseFileName; //!< File name for having job responses returned to the Asset Processor.
+
+    constexpr const char* CommonPlatformName = "common"; // Use for platform-agnostic jobs
 
     // SubIDs uniquely identify a particular output product of a specific source asset
     // currently we use a scheme where various bits of the subId (which is a 32 bit unsigned) are used to designate different things.
@@ -199,6 +209,9 @@ namespace AssetBuilderSDK
     class FilePatternMatcher
     {
     public:
+        AZ_CLASS_ALLOCATOR(FilePatternMatcher, AZ::SystemAllocator, 0);
+        AZ_TYPE_INFO(FilePatternMatcher, "{3649C0D9-D9D5-4878-B14B-C7E1E1137894}");
+
         FilePatternMatcher() = default;
         explicit FilePatternMatcher(const AssetBuilderSDK::AssetBuilderPattern& pattern);
         FilePatternMatcher(const AZStd::string& pattern, AssetBuilderSDK::AssetBuilderPattern::PatternType type);
@@ -624,6 +637,19 @@ namespace AssetBuilderSDK
         static void Reflect(AZ::ReflectContext* context);
     };
 
+    // A set of bit flags for a JobProduct
+    enum class ProductOutputFlags : AZ::u32
+    {
+        // Indicates this JobProduct is a product asset which should be output to the cache.  This is the default.
+        // Currently it is not supported to use this with IntermediateAsset since the Common platform is required for IntermediateAsset and not yet supported for ProductAsset.
+        ProductAsset = 1,
+        IntermediateAsset = 2 // Indicates this JobProduct is an intermediate asset which should be output to the intermediate asset folder.  Must be used with the Common platform.
+    };
+
+    bool IsProductOutputFlagSet(const AzToolsFramework::AssetDatabase::ProductDatabaseEntry& product, ProductOutputFlags flag);
+
+    AZ_DEFINE_ENUM_BITWISE_OPERATORS(ProductOutputFlags);
+
     using ProductPathDependencySet = AZStd::unordered_set<AssetBuilderSDK::ProductPathDependency>;
 
     //! JobProduct is used by the builder to store job product information
@@ -673,6 +699,18 @@ namespace AssetBuilderSDK
         /// When false, AP will emit a warning that dependencies have not been handled.
         bool m_dependenciesHandled{ false };
 
+        /// Bit flags for the output product
+        ProductOutputFlags m_outputFlags = ProductOutputFlags::ProductAsset;
+
+        /// Scan-folder relative path to use for the output product instead of the default.  An empty string will use the default pathing rules.
+        /// Only allowed for products with the IntermediateAsset flag.
+        /// Example:
+        /// Input: game/examples/example.shader
+        /// Output: IntermediateAsset - example.pdb
+        /// By default the product would output to <IntermediateAssetsFolder>/game/examples/example.pdb
+        /// With a PathOverride of shaders/debug the product is instead written to <IntermediateAssetsFolder>/shaders/debug
+        AZStd::string m_outputPathOverride;
+
         JobProduct() = default;
         JobProduct(const AZStd::string& productName, AZ::Data::AssetType productAssetType = AZ::Data::AssetType::CreateNull(), AZ::u32 productSubID = 0);
         JobProduct(AZStd::string&& productName, AZ::Data::AssetType productAssetType = AZ::Data::AssetType::CreateNull(), AZ::u32 productSubID = 0);
@@ -701,7 +739,7 @@ namespace AssetBuilderSDK
         JobDescriptor m_jobDescription; ///! job descriptor for this job.  Note that this still contains the job parameters from when you emitted it during CreateJobs
         PlatformInfo m_platformInfo; ///! the information about the platform that this job was emitted for.
         AZStd::string m_tempDirPath; // temp directory that the builder should use to create job outputs for this job request
-        AZ::u64 m_jobId; ///! job id for this job, this is also the address for the JobCancelListener
+        AZ::u64 m_jobId{}; ///! job id for this job, this is also the address for the JobCancelListener
         AZ::Uuid m_sourceFileUUID; ///! the UUID of the source file.  Will be used as the uuid of the AssetID of the product when combined with the subID.
         AZStd::vector<SourceFileDependency> m_sourceFileDependencyList;
 
@@ -732,6 +770,9 @@ namespace AssetBuilderSDK
         AZStd::vector<AZStd::string> m_sourcesToReprocess;
 
         bool Succeeded() const;
+
+        //! Detects if any products ids created by the builder collide. Call this once the builder has completed processing. Any colliding ids will be logged.
+        bool ReportProductCollisions() const;
 
         static void Reflect(AZ::ReflectContext* context);
     };
@@ -824,6 +865,7 @@ namespace AZ
     AZ_TYPE_INFO_SPECIALIZE(AssetBuilderSDK::ProcessJobResultCode, "{15797D63-4980-436A-9DE1-E0CCA9B5DB19}");
     AZ_TYPE_INFO_SPECIALIZE(AssetBuilderSDK::ProductPathDependencyType, "{EF77742B-9627-4072-B431-396AA7183C80}");
     AZ_TYPE_INFO_SPECIALIZE(AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType, "{BE9C8805-DB17-4500-944A-EB33FD0BE347}");
+    AZ_TYPE_INFO_SPECIALIZE(AssetBuilderSDK::ProductOutputFlags, "{247B6AEB-D92E-40BE-B741-70E18DE5F888}");
 }
 
 namespace AZStd

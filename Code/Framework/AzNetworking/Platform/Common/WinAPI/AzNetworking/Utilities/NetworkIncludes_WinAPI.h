@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <winsock2.h>
+#include <AzCore/PlatformIncl.h>
 #include <ws2tcpip.h>
 
 using socklen_t = int32_t;

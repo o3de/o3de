@@ -321,7 +321,37 @@
              </property>
             </widget>
            </item>
-           <item row="5" column="7">
+           <item row="5" column="6">
+            <widget class="QCheckBox" name="forceUpgrade">
+             <property name="text">
+              <string>Force Upgrade</string>
+             </property>
+             <property name="checked">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="9">
+            <widget class="QCheckBox" name="updateReportingOnly">
+             <property name="text">
+              <string>Update Reporting Only</string>
+             </property>
+             <property name="tristate">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="1">
+            <widget class="QCheckBox" name="onlyShowOutdated">
+             <property name="text">
+              <string>Only show outdated graphs</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="8">
             <widget class="QCheckBox" name="verbose">
              <property name="text">
               <string>Verbose</string>
@@ -344,33 +374,10 @@
              </property>
             </widget>
            </item>
-           <item row="5" column="1">
-            <widget class="QCheckBox" name="onlyShowOutdated">
+           <item row="5" column="7">
+            <widget class="QCheckBox" name="saveParserFailures">
              <property name="text">
-              <string>Only show outdated graphs</string>
-             </property>
-             <property name="checked">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="5" column="6">
-            <widget class="QCheckBox" name="forceUpgrade">
-             <property name="text">
-              <string>Force Upgrade</string>
-             </property>
-             <property name="checked">
-              <bool>false</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="5" column="8">
-            <widget class="QCheckBox" name="updateReportingOnly">
-             <property name="text">
-              <string>Update Reporting Only</string>
-             </property>
-             <property name="tristate">
-              <bool>true</bool>
+              <string>Save Graphs that do not Parse</string>
              </property>
             </widget>
            </item>

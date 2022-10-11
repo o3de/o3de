@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScriptCanvas>
+    <Library
+        Include="World.h"
+        Namespace="ScriptCanvasPhysics::WorldFunctions"
+        Category="PhysX/World">
+
+        <Function Name="RayCastWorldSpaceWithGroup">
+            <Parameter Name="Start"/>
+            <Parameter Name="Direction"/>
+            <Parameter Name="Distance"/>
+            <Parameter Name="Collision Group"/>
+            <Parameter Name="Ignore"/>
+        </Function>
+
+        <Function Name="RayCastFromScreenWithGroup">
+            <Parameter Name="Screen Position"/>
+            <Parameter Name="Distance"/>
+            <Parameter Name="Collision Group"/>
+            <Parameter Name="Ignore"/>
+        </Function>
+
+        <Function Name="RayCastLocalSpaceWithGroup">
+            <Parameter Name="Source"/>
+            <Parameter Name="Direction"/>
+            <Parameter Name="Distance"/>
+            <Parameter Name="Collision Group"/>
+            <Parameter Name="Ignore"/>
+        </Function>
+
+        <Function Name="RayCastMultipleLocalSpaceWithGroup">
+            <Parameter Name="Source"/>
+            <Parameter Name="Direction"/>
+            <Parameter Name="Distance"/>
+            <Parameter Name="Collision Group"/>
+            <Parameter Name="Ignore"/>
+        </Function>
+
+        <Function Name="OverlapSphereWithGroup">
+            <Parameter Name="Position"/>
+            <Parameter Name="Radius"/>
+            <Parameter Name="Collision Group"/>
+            <Parameter Name="Ignore"/>
+        </Function>
+
+        <Function Name="OverlapBoxWithGroup">
+            <Parameter Name="Pose"/>
+            <Parameter Name="Dimensions"/>
+            <Parameter Name="Collision Group"/>
+            <Parameter Name="Ignore"/>
+        </Function>
+
+        <Function Name="OverlapCapsuleWithGroup">
+            <Parameter Name="Pose"/>
+            <Parameter Name="Height"/>
+            <Parameter Name="Radius"/>
+            <Parameter Name="Collision Group"/>
+            <Parameter Name="Ignore"/>
+        </Function>
+
+        <Function Name="SphereCastWithGroup">
+            <Parameter Name="Distance"/>
+            <Parameter Name="Pose"/>
+            <Parameter Name="Direction"/>
+            <Parameter Name="Radius"/>
+            <Parameter Name="Collision Group"/>
+            <Parameter Name="Ignore"/>
+        </Function>
+
+        <Function Name="BoxCastWithGroup">
+            <Parameter Name="Distance"/>
+            <Parameter Name="Pose"/>
+            <Parameter Name="Direction"/>
+            <Parameter Name="Dimensions"/>
+            <Parameter Name="Collision Group"/>
+            <Parameter Name="Ignore"/>
+        </Function>
+
+        <Function Name="CapsuleCastWithGroup">
+            <Parameter Name="Distance"/>
+            <Parameter Name="Pose"/>
+            <Parameter Name="Direction"/>
+            <Parameter Name="Height"/>
+            <Parameter Name="Radius"/>
+            <Parameter Name="Collision Group"/>
+            <Parameter Name="Ignore"/>
+        </Function>
+    </Library>
+</ScriptCanvas>

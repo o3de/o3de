@@ -22,8 +22,8 @@ namespace EMotionFX::MotionMatching
     class KdTree
     {
     public:
-        AZ_RTTI(KdTree, "{CDA707EC-4150-463B-8157-90D98351ACED}")
-        AZ_CLASS_ALLOCATOR_DECL
+        AZ_RTTI(KdTree, "{CDA707EC-4150-463B-8157-90D98351ACED}");
+        AZ_CLASS_ALLOCATOR_DECL;
 
         KdTree() = default;
         virtual ~KdTree();
@@ -53,6 +53,10 @@ namespace EMotionFX::MotionMatching
     private:
         struct Node
         {
+            AZ_RTTI(KdTree::Node, "{8A7944B3-86F1-4A33-84BC-A3B6D599E0C9}");
+            AZ_CLASS_ALLOCATOR_DECL;
+            virtual ~Node() = default;
+
             Node* m_leftNode = nullptr;
             Node* m_rightNode = nullptr;
             Node* m_parent = nullptr;
@@ -63,17 +67,16 @@ namespace EMotionFX::MotionMatching
 
         void BuildTreeNodes(const FrameDatabase& frameDatabase,
             const FeatureMatrix& featureMatrix,
-            const AZStd::vector<Feature*>& features,
+            const AZStd::vector<size_t>& localToSchemaFeatureColumns,
             Node* node,
             Node* parent,
             size_t dimension = 0,
             bool leftSide = true);
-        void FillFeatureValues(const FeatureMatrix& featureMatrix, const Feature* feature, size_t frameIndex, size_t startIndex);
-        void FillFeatureValues(const FeatureMatrix& featureMatrix, const AZStd::vector<Feature*>& features, size_t frameIndex);
         void FillFramesForNode(Node* node,
             const FrameDatabase& frameDatabase,
             const FeatureMatrix& featureMatrix,
-            const AZStd::vector<Feature*>& features,
+            const AZStd::vector<size_t>& localToSchemaFeatureColumns,
+            AZStd::vector<float>& frameFeatureValues,
             Node* parent,
             bool leftSide);
         void RecursiveCalcNumFrames(Node* node, size_t& outNumFrames) const;
@@ -82,10 +85,10 @@ namespace EMotionFX::MotionMatching
         void RemoveZeroFrameLeafNodes();
         void RemoveLeafNode(Node* node);
         void FindNearestNeighbors(Node* node, const AZStd::vector<float>& frameFloats, AZStd::vector<size_t>& resultFrameIndices) const;
+        AZStd::vector<size_t> CalcLocalToSchemaFeatureColumns(const AZStd::vector<Feature*>& features) const;
 
     private:
         AZStd::vector<Node*> m_nodes;
-        AZStd::vector<float> m_featureValues;
         size_t m_numDimensions = 0;
         size_t m_maxDepth = 20;
         size_t m_minFramesPerLeaf = 1000;

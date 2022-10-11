@@ -22,6 +22,17 @@
 			{
 				"DefaultGenerationMethod": "FromSourceScene",
 				"DebugBitangentFlip": false
+			},
+			"SkinRule":
+			{
+				"DefaultMaxSkinInfluencesPerVertex": 8,
+				"DefaultWeightThreshold": 0.001
+			},
+			"ModelBuilder": 
+			{
+				// When false, scenes with multiple meshes assigned to the same material but with different vertex layouts will successfully process
+				// When true, stricter error checking will cause the asset to fail to process with an error message indicating why
+				"MismatchedVertexLayoutsAreErrors": false 
 			}
 		}
 	}

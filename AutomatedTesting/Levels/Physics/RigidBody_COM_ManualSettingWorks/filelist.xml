@@ -1,6 +1,0 @@
-<download name="C4976210_Manual_COM_Computation" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="9913" md5="c1cb3771fd2d4d055bffb18e03073cc0"/>
- </files>
-</download>

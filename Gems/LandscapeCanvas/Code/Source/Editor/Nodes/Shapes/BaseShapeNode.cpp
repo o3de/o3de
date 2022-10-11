@@ -23,7 +23,7 @@
 
 namespace LandscapeCanvas
 {
-    const QString BaseShapeNode::SHAPE_CATEGORY_TITLE = QObject::tr("Shape");
+    const char* BaseShapeNode::SHAPE_CATEGORY_TITLE = "Shape";
     const QString BaseShapeNode::BOUNDS_SLOT_LABEL = QObject::tr("Bounds");
     const QString BaseShapeNode::BOUNDS_OUTPUT_SLOT_DESCRIPTION = QObject::tr("Bounds output slot");
     const char* BaseShapeNode::BOUNDS_SLOT_ID = "Bounds";
@@ -58,7 +58,7 @@ namespace LandscapeCanvas
     {
         CreateEntityNameSlot();
 
-        GraphModel::DataTypePtr dataType = GraphContext::GetInstance()->GetDataType(LandscapeCanvasDataTypeEnum::Bounds);
+        GraphModel::DataTypePtr dataType = GetGraphContext()->GetDataType(LandscapeCanvasDataTypeEnum::Bounds);
         RegisterSlot(GraphModel::SlotDefinition::CreateOutputData(
             BOUNDS_SLOT_ID,
             BOUNDS_SLOT_LABEL.toUtf8().constData(),

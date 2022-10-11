@@ -609,7 +609,6 @@ namespace PhysX
         {
             query->Join();
             EXPECT_EQ(query->GetRequest(), query->m_result);
-            query.release();
         }
         setterGetterQueries.clear();
 

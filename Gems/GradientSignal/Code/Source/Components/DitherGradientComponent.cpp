@@ -44,6 +44,7 @@ namespace GradientSignal
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &DitherGradientConfig::m_patternType, "Pattern Type", "")
                     ->EnumAttribute(DitherGradientConfig::BayerPatternType::PATTERN_SIZE_4x4, "4x4")
                     ->EnumAttribute(DitherGradientConfig::BayerPatternType::PATTERN_SIZE_8x8, "8x8")
+
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Sample Settings")
                     ->DataElement(AZ::Edit::UIHandlers::CheckBox, &DitherGradientConfig::m_useSystemPointsPerUnit, "Use System Points Per Unit", "Automatically sets points per unit.  Value is equal to Sector Density / Sector Size")
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &DitherGradientConfig::m_pointsPerUnit, "Points Per Unit", "Scales input position before sampling")
@@ -51,8 +52,8 @@ namespace GradientSignal
                     ->Attribute(AZ::Edit::Attributes::Min, 0.001f)
                     ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
                     ->Attribute(AZ::Edit::Attributes::SoftMax, 100.0f)
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "")
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->EndGroup()
+
                     ->DataElement(0, &DitherGradientConfig::m_gradientSampler, "Gradient", "Input gradient whose values will be dithered.")
                     ;
             }
@@ -141,15 +142,19 @@ namespace GradientSignal
         m_dependencyMonitor.Reset();
         m_dependencyMonitor.ConnectOwner(GetEntityId());
         m_dependencyMonitor.ConnectDependency(m_configuration.m_gradientSampler.m_gradientId);
-        GradientRequestBus::Handler::BusConnect(GetEntityId());
         DitherGradientRequestBus::Handler::BusConnect(GetEntityId());
         SectorDataNotificationBus::Handler::BusConnect();
+
+        // Connect to GradientRequestBus last so that everything is initialized before listening for gradient queries.
+        GradientRequestBus::Handler::BusConnect(GetEntityId());
     }
 
     void DitherGradientComponent::Deactivate()
     {
-        m_dependencyMonitor.Reset();
+        // Disconnect from GradientRequestBus first to ensure no queries are in process when deactivating.
         GradientRequestBus::Handler::BusDisconnect();
+
+        m_dependencyMonitor.Reset();
         DitherGradientRequestBus::Handler::BusDisconnect();
         SectorDataNotificationBus::Handler::BusDisconnect();
     }
@@ -250,6 +255,8 @@ namespace GradientSignal
 
     float DitherGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
+        AZStd::shared_lock lock(m_queryMutex);
+
         const AZ::Vector3& coordinate = sampleParams.m_position;
 
         const float pointsPerUnit = GetCalculatedPointsPerUnit();
@@ -271,6 +278,8 @@ namespace GradientSignal
             AZ_Assert(false, "input and output lists are different sizes (%zu vs %zu).", positions.size(), outValues.size());
             return;
         }
+
+        AZStd::shared_lock lock(m_queryMutex);
 
         const float pointsPerUnit = GetCalculatedPointsPerUnit();
 
@@ -309,7 +318,13 @@ namespace GradientSignal
 
     void DitherGradientComponent::SetUseSystemPointsPerUnit(bool value)
     {
-        m_configuration.m_useSystemPointsPerUnit = value;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_useSystemPointsPerUnit = value;
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -320,7 +335,12 @@ namespace GradientSignal
 
     void DitherGradientComponent::SetPointsPerUnit(float points)
     {
-        m_configuration.m_pointsPerUnit = points;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_pointsPerUnit = points;
+        }
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -331,7 +351,12 @@ namespace GradientSignal
 
     void DitherGradientComponent::SetPatternOffset(AZ::Vector3 offset)
     {
-        m_configuration.m_patternOffset = offset;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_patternOffset = offset;
+        }
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -342,7 +367,12 @@ namespace GradientSignal
 
     void DitherGradientComponent::SetPatternType(AZ::u8 type)
     {
-        m_configuration.m_patternType = (DitherGradientConfig::BayerPatternType)type;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_patternType = (DitherGradientConfig::BayerPatternType)type;
+        }
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 

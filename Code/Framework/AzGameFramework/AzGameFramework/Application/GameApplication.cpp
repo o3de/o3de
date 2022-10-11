@@ -12,7 +12,6 @@
 #include <AzCore/Utils/Utils.h>
 
 #include <AzFramework/Archive/Archive.h>
-#include <AzFramework/TargetManagement/TargetManagementComponent.h>
 #include <AzGameFramework/AzGameFrameworkModule.h>
 
 namespace AzGameFramework
@@ -108,17 +107,6 @@ namespace AzGameFramework
 #endif
         // Update the Runtime file paths in case the "{BootstrapSettingsRootKey}/assets" key was overriden by a setting registry
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(registry);
-    }
-
-    AZ::ComponentTypeList GameApplication::GetRequiredSystemComponents() const
-    {
-        AZ::ComponentTypeList components = Application::GetRequiredSystemComponents();
-
-#if !defined(_RELEASE)
-        components.emplace_back(azrtti_typeid<AzFramework::TargetManagementComponent>());
-#endif
-
-        return components;
     }
 
     void GameApplication::CreateStaticModules(AZStd::vector<AZ::Module*>& outModules)

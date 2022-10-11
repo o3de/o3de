@@ -10,9 +10,12 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Math/Aabb.h>
+#include <AzCore/Asset/AssetCommon.h>
 
 #include <AzFramework/Physics/HeightfieldProviderBus.h>
-#include <AzFramework/Physics/Material.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialAsset.h>
+#include <AzFramework/Physics/Material/Legacy/LegacyPhysicsMaterialSelection.h>
+#include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <SurfaceData/SurfaceTag.h>
 #include <TerrainSystem/TerrainSystemBus.h>
 
@@ -34,29 +37,32 @@ namespace Terrain
     {
     public:
         AZ_CLASS_ALLOCATOR(TerrainPhysicsSurfaceMaterialMapping, AZ::SystemAllocator, 0);
-        AZ_RTTI(TerrainPhysicsSurfaceMaterialMapping, "{A88B5289-DFCD-4564-8395-E2177DFE5B18}");
+        AZ_TYPE_INFO(TerrainPhysicsSurfaceMaterialMapping, "{A88B5289-DFCD-4564-8395-E2177DFE5B18}");
         static void Reflect(AZ::ReflectContext* context);
-        static AZ::Data::AssetId GetMaterialLibraryId();
 
         AZStd::vector<AZStd::pair<AZ::u32, AZStd::string>> BuildSelectableTagList() const;
         void SetTagListProvider(const EditorSurfaceTagListProvider* tagListProvider);
+        AZ::Data::AssetId GetDefaultPhysicsAssetId() const;
 
         SurfaceData::SurfaceTag m_surfaceTag;
-        Physics::MaterialId m_materialId;
+        AZ::Data::Asset<Physics::MaterialAsset> m_materialAsset;
+        PhysicsLegacy::MaterialId m_legacyMaterialId; // Kept to convert old physics material assets.
 
     private:
         const EditorSurfaceTagListProvider* m_tagListProvider = nullptr;
     };
 
     class TerrainPhysicsColliderConfig
-        : public AZ::ComponentConfig
     {
     public:
         AZ_CLASS_ALLOCATOR(TerrainPhysicsColliderConfig, AZ::SystemAllocator, 0);
-        AZ_RTTI(TerrainPhysicsColliderConfig, "{E9EADB8F-C3A5-4B9C-A62D-2DBC86B4CE59}", AZ::ComponentConfig);
+        AZ_TYPE_INFO(TerrainPhysicsColliderConfig, "{E9EADB8F-C3A5-4B9C-A62D-2DBC86B4CE59}");
         static void Reflect(AZ::ReflectContext* context);
 
-        Physics::MaterialSelection m_defaultMaterialSelection;
+        AZ::Data::AssetId GetDefaultPhysicsAssetId() const;
+
+        AZ::Data::Asset<Physics::MaterialAsset> m_defaultMaterialAsset;
+        PhysicsLegacy::MaterialSelection m_legacyDefaultMaterialSelection; // Kept to convert old physics material assets.
         AZStd::vector<TerrainPhysicsSurfaceMaterialMapping> m_surfaceMaterialMappings;
     };
 
@@ -68,13 +74,13 @@ namespace Terrain
         , protected AzFramework::Terrain::TerrainDataNotificationBus::Handler
     {
     public:
-        template<typename, typename>
-        friend class LmbrCentral::EditorWrappedComponentBase;
+        friend class EditorTerrainPhysicsColliderComponent;
         AZ_COMPONENT(TerrainPhysicsColliderComponent, "{33C20287-1D37-44D0-96A0-2C3766E23624}");
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services);
+        static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& services);
         static void Reflect(AZ::ReflectContext* context);
 
         TerrainPhysicsColliderComponent(const TerrainPhysicsColliderConfig& configuration);
@@ -83,37 +89,50 @@ namespace Terrain
 
         // HeightfieldProviderRequestsBus
         AZ::Vector2 GetHeightfieldGridSpacing() const override;
-        void GetHeightfieldGridSize(int32_t& numColumns, int32_t& numRows) const override;
-        int32_t GetHeightfieldGridColumns() const override;
-        int32_t GetHeightfieldGridRows() const override;
+        void GetHeightfieldGridSize(size_t& numColumns, size_t& numRows) const override;
+        size_t GetHeightfieldGridColumns() const override;
+        size_t GetHeightfieldGridRows() const override;
         void GetHeightfieldHeightBounds(float& minHeightBounds, float& maxHeightBounds) const override;
         float GetHeightfieldMinHeight() const override;
         float GetHeightfieldMaxHeight() const override;
         AZ::Aabb GetHeightfieldAabb() const override;
         AZ::Transform GetHeightfieldTransform() const override;
-        AZStd::vector<Physics::MaterialId> GetMaterialList() const override;
+        AZStd::vector<AZ::Data::Asset<Physics::MaterialAsset>> GetMaterialList() const override;
         AZStd::vector<float> GetHeights() const override;
         AZStd::vector<Physics::HeightMaterialPoint> GetHeightsAndMaterials() const override;
-        void UpdateHeightsAndMaterials(const Physics::UpdateHeightfieldSampleFunction& updateHeightsMaterialsCallback,
-            const AZ::Aabb& region = AZ::Aabb::CreateNull()) const override;
+
+        void GetHeightfieldIndicesFromRegion(
+            const AZ::Aabb& region, size_t& startColumn, size_t& startRow, size_t& numColumns, size_t& numRows) const override;
+
+        //! Updates the list of heights and materials within the region.
+        void UpdateHeightsAndMaterials(
+            const Physics::UpdateHeightfieldSampleFunction& updateHeightsMaterialsCallback,
+            size_t startColumn, size_t startRow, size_t numColumns, size_t numRows) const override;
+
+        void UpdateHeightsAndMaterialsAsync(
+            const Physics::UpdateHeightfieldSampleFunction& updateHeightsMaterialsCallback,
+            const Physics::UpdateHeightfieldCompleteFunction& updateHeightsCompleteCallback,
+            size_t startColumn,
+            size_t startRow,
+            size_t numColumns,
+            size_t numRows) const override;
+
+        void UpdateConfiguration(const TerrainPhysicsColliderConfig& newConfiguration);
 
     protected:
         //////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation
         void Activate() override;
         void Deactivate() override;
-        bool ReadInConfig(const AZ::ComponentConfig* baseConfig) override;
-        bool WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const override;
 
-        uint8_t GetMaterialIdIndex(const Physics::MaterialId& materialId, const AZStd::vector<Physics::MaterialId>& materialList) const;
-        Physics::MaterialId FindMaterialIdForSurfaceTag(const SurfaceData::SurfaceTag tag) const;
+        uint8_t GetMaterialIndex(const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset, const AZStd::vector<AZ::Data::Asset<Physics::MaterialAsset>>& materialList) const;
+        AZ::Data::Asset<Physics::MaterialAsset> FindMaterialAssetForSurfaceTag(const SurfaceData::SurfaceTag tag) const;
 
         void GenerateHeightsInBounds(AZStd::vector<float>& heights) const;
-        AZ::Aabb GetRegionClampedToGrid(const AZ::Aabb& region) const;
 
-        void NotifyListenersOfHeightfieldDataChange(const AZ::Aabb* dirtyRegion = nullptr,
-            Physics::HeightfieldProviderNotifications::HeightfieldChangeMask heightfieldChangeMask =
-                Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::Unspecified);
+        void NotifyListenersOfHeightfieldDataChange(
+            Physics::HeightfieldProviderNotifications::HeightfieldChangeMask heightfieldChangeMask,
+            const AZ::Aabb& dirtyRegion);
 
         // ShapeComponentNotificationsBus
         void OnShapeChanged(ShapeChangeReasons changeReason) override;
@@ -122,7 +141,19 @@ namespace Terrain
         void OnTerrainDataDestroyBegin() override;
         void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
 
+        void CalculateHeightfieldRegion();
+        void BuildSurfaceTagToMaterialIndexLookup();
+
     private:
+        // The default material will always be the first material in the material list.
+        static inline constexpr uint8_t DefaultMaterialIndex = 0;
+
         TerrainPhysicsColliderConfig m_configuration;
+        AZStd::atomic_bool m_terrainDataActive = false;
+        AzFramework::Terrain::TerrainQueryRegion m_heightfieldRegion;
+        AZStd::unordered_map<SurfaceData::SurfaceTag, uint8_t> m_surfaceTagToMaterialIndexLookup;
+
+        // Protect state reads from happening in parallel with state writes.
+        mutable AZStd::shared_mutex m_stateMutex;
     };
 }

@@ -8,6 +8,7 @@
 
 #include "ProjectSettingsContainer.h"
 
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/JSON/prettywriter.h>
 #include <AzCore/JSON/stringbuffer.h>
@@ -18,20 +19,14 @@
 
 namespace ProjectSettingsTool
 {
-    using namespace AZ;
-    using StringOutcome = Outcome<void, AZStd::string>;
-    using XmlDocument = rapidxml::xml_document<char>;
-    using XmlNode = rapidxml::xml_node<char>;
-
-    const int xmlFlags = rapidxml::parse_doctype_node | rapidxml::parse_declaration_node | rapidxml::parse_no_data_nodes;
-
-    SettingsError::SettingsError(const AZStd::string& error, const AZStd::string& reason)
+    SettingsError::SettingsError(const AZStd::string& error, const AZStd::string& reason, bool shouldAbort)
+        : m_error(error)
+        , m_reason(reason)
+        , m_shouldAbort(shouldAbort)
     {
-        m_error = error;
-        m_reason = reason;
     }
 
-    StringOutcome WriteConfigFile(const AZStd::string& fileName, const AZStd::string& fileContents)
+    AZ::Outcome<void, AZStd::string> WriteConfigFile(const AZStd::string& fileName, const AZStd::string& fileContents)
     {
         using AZ::IO::SystemFile;
         const char* filePath = fileName.c_str();
@@ -39,9 +34,11 @@ namespace ProjectSettingsTool
         // Attempt to make file writable or check it out in source control
         if (CFileUtil::OverwriteFile(filePath))
         {
-            if (!CFileUtil::CreateDirectory(fileName.substr(0, fileName.find_last_of('/')).data()))
+            AZStd::string dir = filePath;
+            AZ::StringFunc::Path::StripFullName(dir);
+            if (!CFileUtil::CreateDirectory(dir.c_str()))
             {
-                return AZ::Failure(AZStd::string::format("Could not create the directory for file \"%s\".", filePath));
+                return AZ::Failure(AZStd::string::format("Could not create the directory for file \"%s\".", dir.c_str()));
             }
 
             SystemFile settingsFile;
@@ -63,7 +60,7 @@ namespace ProjectSettingsTool
         return AZ::Failure(AZStd::string::format("Could not check out or make file writable: \"%s\".", filePath));
     }
 
-    StringOutcome ReadConfigFile(const AZStd::string& fileName, AZStd::string& fileContents)
+    AZ::Outcome<void, AZStd::string> ReadConfigFile(const AZStd::string& fileName, AZStd::string& fileContents)
     {
         using AZ::IO::SystemFile;
         const char* filePath = fileName.c_str();
@@ -87,20 +84,29 @@ namespace ProjectSettingsTool
     }
 
 
-    ProjectSettingsContainer::ProjectSettingsContainer(const AZStd::string& projectJsonFileName, PlistInitVector& plistPaths)
+    ProjectSettingsContainer::ProjectSettingsContainer(const AZStd::string& projectJsonFileName, const PlatformResources& platformResources)
         : m_projectJson(JsonSettings{ projectJsonFileName, "", AZStd::make_unique<rapidjson::Document>() })
     {
-        LoadProjectJsonData();
+        LoadJson(m_projectJson);
 
-        for (PlatformAndPath& plistInfo : plistPaths)
+        for (const auto& [platformId, path] : platformResources)
         {
-            m_pListsMap.insert(AZStd::pair<PlatformId, PlistSettings>(
-                plistInfo.first,
-                PlistSettings{ plistInfo.second, "", AZStd::make_unique<XmlDocument>() }));
+            if (AZ::IO::PathView(path).Extension() == ".json")
+            {
+                m_platformSettingsMap.insert(AZStd::pair<PlatformId, PlatformSettings>(
+                    platformId,
+                    JsonSettings{ path, "", AZStd::make_unique<rapidjson::Document>() }));
 
-            // We will have to find it then because unique_ptrs are not copy constructible
-            // And a move constructor would copy large strings
-            LoadPlist(m_pListsMap.find(plistInfo.first)->second);
+                LoadJson(AZStd::get<JsonSettings>(m_platformSettingsMap[platformId]));
+            }
+            else
+            {
+                m_platformSettingsMap.insert(AZStd::pair<PlatformId, PlatformSettings>(
+                    platformId,
+                    PlistSettings{ path, "", AZStd::make_unique<XmlDocument>() }));
+
+                LoadPlist(AZStd::get<PlistSettings>(m_platformSettingsMap[platformId]));
+            }
         }
     }
 
@@ -108,15 +114,15 @@ namespace ProjectSettingsTool
     {
     }
 
-    ProjectSettingsContainer::PlistSettings* ProjectSettingsContainer::GetPlistSettingsForPlatform(const Platform& plat)
+    ProjectSettingsContainer::PlatformSettings* ProjectSettingsContainer::GetPlatformData(const Platform& plat)
     {
-        PlistSettings* result = nullptr;
+        PlatformSettings* result = nullptr;
 
-        if (plat.m_type == PlatformDataType::Plist)
+        if (plat.m_type == PlatformDataType::PlatformResource)
         {
-            auto iter = m_pListsMap.find(plat.m_id);
+            auto iter = m_platformSettingsMap.find(plat.m_id);
 
-            if (iter != m_pListsMap.end())
+            if (iter != m_platformSettingsMap.end())
             {
                 result = &iter->second;
             }
@@ -129,13 +135,13 @@ namespace ProjectSettingsTool
         return result;
     }
 
-    bool ProjectSettingsContainer::IsPlistPlatform(const Platform& plat)
+    bool ProjectSettingsContainer::HasPlatformData(const Platform& plat) const
     {
-        if (plat.m_type == PlatformDataType::Plist)
+        if (plat.m_type == PlatformDataType::PlatformResource)
         {
-            auto iter = m_pListsMap.find(plat.m_id);
+            auto iter = m_platformSettingsMap.find(plat.m_id);
 
-            if (iter != m_pListsMap.end())
+            if (iter != m_platformSettingsMap.end())
             {
                 return true;
             }
@@ -155,80 +161,104 @@ namespace ProjectSettingsTool
         return AZ::Success();
     }
 
-    void ProjectSettingsContainer::SavePlatformData(const Platform& plat)
+    void ProjectSettingsContainer::SaveSettings(const Platform& plat)
     {
-        PlistSettings* plistSettings = GetPlistSettingsForPlatform(plat);
-        if (plistSettings != nullptr)
+        const PlatformSettings* platformSettings = GetPlatformData(plat);
+        if (platformSettings != nullptr)
         {
-            SavePlist(*plistSettings);
+            if (AZStd::holds_alternative<JsonSettings>(*platformSettings))
+            {
+                SaveJson(AZStd::get<JsonSettings>(*platformSettings));
+            }
+            else
+            {
+                SavePlist(AZStd::get<PlistSettings>(*platformSettings));
+            }
         }
         else
         {
-            SaveProjectJsonData();
+            SaveJson(m_projectJson);
         }
     }
 
     void ProjectSettingsContainer::SaveProjectJsonData()
     {
-        // Needed to write a document out to a string
-        rapidjson::StringBuffer jsonDataBuffer;
-        // Use pretty writer so it can be read easier
-        rapidjson::PrettyWriter<rapidjson::StringBuffer> jsonDatawriter(jsonDataBuffer);
-
-        m_projectJson.m_document->Accept(jsonDatawriter);
-        const AZStd::string jsonDataString = jsonDataBuffer.GetString();
-
-        StringOutcome outcome = WriteConfigFile(m_projectJson.m_path, jsonDataString);
-
-        if (!outcome.IsSuccess())
-        {
-            m_errors.push(SettingsError("Failed to save project.json", outcome.GetError()));
-        }
+        SaveJson(m_projectJson);
     }
 
     void ProjectSettingsContainer::ReloadProjectJsonData()
     {
         m_projectJson.m_document.reset(new rapidjson::Document);
-        LoadProjectJsonData();
+        LoadJson(m_projectJson);
     }
 
-    void ProjectSettingsContainer::SavePlistsData()
+    void ProjectSettingsContainer::SaveAllPlatformsData()
     {
-        for (AZStd::pair<PlatformId, PlistSettings>& plist : m_pListsMap)
+        for (const auto& platformData : m_platformSettingsMap)
         {
-            LoadPlist(plist.second);
+            const PlatformSettings& platformSettings = platformData.second;
+
+            if (AZStd::holds_alternative<JsonSettings>(platformSettings))
+            {
+                SaveJson(AZStd::get<JsonSettings>(platformSettings));
+            }
+            else
+            {
+                SavePlist(AZStd::get<PlistSettings>(platformSettings));
+            }
         }
     }
 
-    void ProjectSettingsContainer::SavePlistData(const Platform& plat)
+    void ProjectSettingsContainer::SavePlatformData(const Platform& plat)
     {
-        PlistSettings* settings = GetPlistSettingsForPlatform(plat);
-        if (settings != nullptr)
+        const PlatformSettings* platformSettings = GetPlatformData(plat);
+        if (platformSettings != nullptr)
         {
-            SavePlist(*settings);
+            if (AZStd::holds_alternative<JsonSettings>(*platformSettings))
+            {
+                SaveJson(AZStd::get<JsonSettings>(*platformSettings));
+            }
+            else
+            {
+                SavePlist(AZStd::get<PlistSettings>(*platformSettings));
+            }
         }
     }
 
-    void ProjectSettingsContainer::ReloadPlistData()
+    void ProjectSettingsContainer::ReloadAllPlatformsData()
     {
-        for (AZStd::pair<PlatformId, PlistSettings>& plist : m_pListsMap)
+        for (AZStd::pair<PlatformId, PlatformSettings>& platformData : m_platformSettingsMap)
         {
-            PlistSettings& plistSettings = plist.second;
+            PlatformSettings& platformSettings = platformData.second;
 
-            plistSettings.m_document.reset(new XmlDocument());
-            LoadPlist(plistSettings);
+            if (AZStd::holds_alternative<JsonSettings>(platformSettings))
+            {
+                auto& jsonSettings = AZStd::get<JsonSettings>(platformSettings);
+                jsonSettings.m_document.reset(new rapidjson::Document);
+                LoadJson(jsonSettings);
+            }
+            else
+            {
+                auto& plistSettings = AZStd::get<PlistSettings>(platformSettings);
+                plistSettings.m_document.reset(new XmlDocument());
+                LoadPlist(plistSettings);
+            }
         }
     }
 
     rapidjson::Document& ProjectSettingsContainer::GetProjectJsonDocument()
     {
-        return *m_projectJson.m_document.get();
+        return *m_projectJson.m_document;
     }
 
     AZ::Outcome<rapidjson::Value*, void> ProjectSettingsContainer::GetProjectJsonValue(const char* key)
     {
+        return GetJsonValue(*m_projectJson.m_document, key);
+    }
+
+    AZ::Outcome<rapidjson::Value*, void> ProjectSettingsContainer::GetJsonValue(rapidjson::Document& settings, const char* key)
+    {
         // Try to find member
-        rapidjson::Document& settings = *m_projectJson.m_document;
         rapidjson::Value::MemberIterator memberIterator = settings.FindMember(key);
         if (memberIterator != settings.MemberEnd())
         {
@@ -242,38 +272,32 @@ namespace ProjectSettingsTool
         }
     }
 
-    AZStd::unique_ptr<PlistDictionary> ProjectSettingsContainer::GetPlistDictionary(const Platform& plat)
+    AZStd::unique_ptr<PlistDictionary> ProjectSettingsContainer::CreatePlistDictionary(const Platform& plat)
     {
-        if (plat.m_type == PlatformDataType::Plist)
+        if (plat.m_type == PlatformDataType::PlatformResource)
         {
-            PlistSettings* settings = GetPlistSettingsForPlatform(plat);
-            if (settings != nullptr)
+            const PlatformSettings* platformSettings = GetPlatformData(plat);
+            if (platformSettings != nullptr)
             {
-
-                if (PlistDictionary::ContainsValidDict(settings->m_document.get()))
+                if (!AZStd::holds_alternative<PlistSettings>(*platformSettings))
                 {
-                    return AZStd::make_unique<PlistDictionary>(settings->m_document.get());
+                    AZ_Warning("ProjectSettingsContainer", false, "PlistDictionary can only be created from plist settings.");
+                    return nullptr;
+                }
+
+                const auto& plistSettings = AZStd::get<PlistSettings>(*platformSettings);
+                if (PlistDictionary::ContainsValidDict(plistSettings.m_document.get()))
+                {
+                    return AZStd::make_unique<PlistDictionary>(plistSettings.m_document.get());
                 }
                 else
                 {
-                    //TODO: Query user if they would like to remake a valid plist then do it
-                    AZStd::string platformName;
-                    switch (plat.m_id)
-                    {
-                    case PlatformId::Ios:
-                        platformName = "iOS";
-                        break;
-                    default:
-                        platformName = "unknown";
-                        break;
-                    }
-                    AZ_Assert(false, "%s pList is in invalid state.", platformName.c_str());
+                    AZ_Error("ProjectSettingsContainer", false, "File %s contains an invalid PlistDictionary.", plistSettings.m_path.c_str());
                     return nullptr;
                 }
             }
         }
         
-        AZ_Assert(false, "This platform does not use pLists to store data.");
         return nullptr;
     }
 
@@ -282,45 +306,59 @@ namespace ProjectSettingsTool
         return m_projectJson.m_document->GetAllocator();
     }
 
-    const char* ProjectSettingsContainer::GetFailedLoadingPlistText()
-    {   
-        return "Failed to load info.plist"; 
-    }
-
-    void ProjectSettingsContainer::LoadProjectJsonData()
+    void ProjectSettingsContainer::LoadJson(JsonSettings& jsonSettings)
     {
-        StringOutcome outcome = ReadConfigFile(m_projectJson.m_path, m_projectJson.m_rawData);
+        AZ::Outcome<void, AZStd::string> outcome = ReadConfigFile(jsonSettings.m_path, jsonSettings.m_rawData);
         if (!outcome.IsSuccess())
         {
-            m_errors.push(SettingsError("Failed to load project.json", outcome.GetError()));
+            m_errors.push(SettingsError(AZStd::string::format("Failed to load %s", jsonSettings.m_path.c_str()), outcome.GetError(), true /*shouldAbort*/));
         }
 
-        m_projectJson.m_document->Parse(m_projectJson.m_rawData.c_str());
+        jsonSettings.m_document->Parse(jsonSettings.m_rawData.c_str());
     }
 
-    // Loads info.plist for iOS from disk
+    void ProjectSettingsContainer::SaveJson(const JsonSettings& jsonSettings)
+    {
+        // Needed to write a document out to a string
+        rapidjson::StringBuffer jsonDataBuffer;
+        // Use pretty writer so it can be read easier
+        rapidjson::PrettyWriter<rapidjson::StringBuffer> jsonDatawriter(jsonDataBuffer);
+
+        jsonSettings.m_document->Accept(jsonDatawriter);
+        const AZStd::string jsonDataString = jsonDataBuffer.GetString();
+
+        AZ::Outcome<void, AZStd::string> outcome = WriteConfigFile(jsonSettings.m_path, jsonDataString);
+
+        if (!outcome.IsSuccess())
+        {
+            m_errors.push(SettingsError(AZStd::string::format("Failed to save %s", jsonSettings.m_path.c_str()), outcome.GetError()));
+        }
+    }
+
     void ProjectSettingsContainer::LoadPlist(PlistSettings& plistSettings)
     {
-        StringOutcome outcome = ReadConfigFile(plistSettings.m_path, plistSettings.m_rawData);
+        AZ::Outcome<void, AZStd::string> outcome = ReadConfigFile(plistSettings.m_path, plistSettings.m_rawData);
         if (!outcome.IsSuccess())
         {
-            m_errors.push(SettingsError(GetFailedLoadingPlistText(), outcome.GetError()));
+            m_errors.push(SettingsError(AZStd::string::format("Failed to load %s", plistSettings.m_path.c_str()), outcome.GetError(), true /*shouldAbort*/));
         }
+
+        const int xmlFlags = AZ::rapidxml::parse_doctype_node | AZ::rapidxml::parse_declaration_node | AZ::rapidxml::parse_no_data_nodes;
 
         plistSettings.m_document->parse<xmlFlags>(plistSettings.m_rawData.data());
     }
 
-    void ProjectSettingsContainer::SavePlist(PlistSettings& plistSettings)
+    void ProjectSettingsContainer::SavePlist(const PlistSettings& plistSettings)
     {
         // Needed to write a document out to a string
         AZStd::string xmlDocString;
-        rapidxml::print(std::back_inserter(xmlDocString), *plistSettings.m_document);
+        AZ::rapidxml::print(std::back_inserter(xmlDocString), *plistSettings.m_document);
 
-        StringOutcome outcome = WriteConfigFile(plistSettings.m_path, xmlDocString);
+        AZ::Outcome<void, AZStd::string> outcome = WriteConfigFile(plistSettings.m_path, xmlDocString);
 
         if (!outcome.IsSuccess())
         {
-            m_errors.push(SettingsError("Failed to save info.pList", outcome.GetError()));
+            m_errors.push(SettingsError(AZStd::string::format("Failed to save %s", plistSettings.m_path.c_str()), outcome.GetError()));
         }
     }
 } // namespace ProjectSettingsTool

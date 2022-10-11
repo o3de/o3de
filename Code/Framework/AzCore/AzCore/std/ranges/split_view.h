@@ -40,6 +40,13 @@ namespace AZStd::ranges
                     return split_view(AZStd::forward<View>(view), AZStd::forward<Pattern>(pattern));
                 }
 
+                // Create a range_adaptor arugment forwarder which binds the pattern for later
+                template <class Pattern, class = enable_if_t<constructible_from<decay_t<Pattern>, Pattern>>>
+                constexpr auto operator()(Pattern&& pattern) const
+                {
+                    return range_adaptor_argument_forwarder(
+                        *this, AZStd::forward<Pattern>(pattern));
+                }
             };
         }
         inline namespace customization_point_object

@@ -6,6 +6,7 @@
  *
  */
 
+#include <Editor/InspectorBus.h>
 #include <AzCore/Math/MathUtils.h>
 #include "TimeViewPlugin.h"
 #include "TrackDataHeaderWidget.h"
@@ -14,14 +15,13 @@
 #include "TimeInfoWidget.h"
 #include "TimeViewToolBar.h"
 
-#include "../MotionWindow/MotionWindowPlugin.h"
-#include "../MotionWindow/MotionListWindow.h"
-#include "../MotionSetsWindow/MotionSetsWindowPlugin.h"
-#include "../MotionEvents/MotionEventsPlugin.h"
-#include "../MotionEvents/MotionEventPresetsWidget.h"
+#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/MotionSetsWindow/MotionSetsWindowPlugin.h>
+#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/MotionEvents/MotionEventsPlugin.h>
+#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/MotionEvents/MotionEventPresetsWidget.h>
+#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/MotionEvents/MotionEventWidget.h>
 
-#include "../../../../EMStudioSDK/Source/EMStudioManager.h"
-#include "../../../../EMStudioSDK/Source/MainWindow.h"
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/MainWindow.h>
 
 #include <QCheckBox>
 #include <QDir>
@@ -77,9 +77,7 @@ namespace EMStudio
         m_eventEmitterNode   = nullptr;
 
         m_mainWidget                 = nullptr;
-        m_motionWindowPlugin         = nullptr;
         m_motionEventsPlugin         = nullptr;
-        m_motionListWindow           = nullptr;
         m_motionSetPlugin           = nullptr;
         m_motion                     = nullptr;
 
@@ -91,6 +89,12 @@ namespace EMStudio
 
     TimeViewPlugin::~TimeViewPlugin()
     {
+        if (m_motionEventWidget)
+        {
+            delete m_motionEventWidget;
+            m_motionEventWidget = nullptr;
+        }
+
         EMotionFX::AnimGraphEditorNotificationBus::Handler::BusDisconnect();
 
         for (MCore::Command::Callback* callback : m_commandCallbacks)
@@ -113,14 +117,6 @@ namespace EMStudio
         }
     }
 
-
-    // get the compile date
-    const char* TimeViewPlugin::GetCompileDate() const
-    {
-        return MCORE_DATE;
-    }
-
-
     // get the name
     const char* TimeViewPlugin::GetName() const
     {
@@ -134,37 +130,9 @@ namespace EMStudio
         return TimeViewPlugin::CLASS_ID;
     }
 
-
-    // get the creator name
-    const char* TimeViewPlugin::GetCreatorName() const
-    {
-        return "O3DE";
-    }
-
-
-    // get the version
-    float TimeViewPlugin::GetVersion() const
-    {
-        return 1.0f;
-    }
-
-
-    // clone the log window
-    EMStudioPlugin* TimeViewPlugin::Clone()
-    {
-        TimeViewPlugin* newPlugin = new TimeViewPlugin();
-        return newPlugin;
-    }
-
-
     // on before remove plugin
     void TimeViewPlugin::OnBeforeRemovePlugin(uint32 classID)
     {
-        if (classID == MotionWindowPlugin::CLASS_ID)
-        {
-            m_motionWindowPlugin = nullptr;
-        }
-
         if (classID == MotionEventsPlugin::CLASS_ID)
         {
             m_motionEventsPlugin = nullptr;
@@ -277,6 +245,35 @@ namespace EMStudio
         m_timeViewToolBar->UpdateInterface();
 
         EMotionFX::AnimGraphEditorNotificationBus::Handler::BusConnect();
+
+        // Create the motion event properties widget.
+        m_motionEventWidget = new MotionEventWidget();
+        m_motionEventWidget->hide();
+        connect(this, &TimeViewPlugin::SelectionChanged, this, [=]
+            {
+                if (!m_motionEventWidget)
+                {
+                    return;
+                }
+
+                UpdateSelection();
+                if (GetNumSelectedEvents() != 1)
+                {
+                    m_motionEventWidget->ReInit();
+                    m_motionEventWidget->hide();
+                    EMStudio::InspectorRequestBus::Broadcast(&EMStudio::InspectorRequestBus::Events::Clear); // This also gets called when just switching a motion
+                }
+                else
+                {
+                    EventSelectionItem selectionItem = GetSelectedEvent(0);
+                    m_motionEventWidget->ReInit(selectionItem.m_motion, selectionItem.GetMotionEvent());
+                    EMStudio::InspectorRequestBus::Broadcast(&EMStudio::InspectorRequestBus::Events::UpdateWithHeader,
+                        "Motion Event",
+                        MotionEventWidget::s_headerIcon,
+                        m_motionEventWidget);
+                }
+            });
+
         return true;
     }
 
@@ -814,11 +811,11 @@ namespace EMStudio
                 }
                 else
                 {
-                    const AZStd::vector<EMotionFX::MotionInstance*>& motionInstances = MotionWindowPlugin::GetSelectedMotionInstances();
-                    if (motionInstances.size() == 1 &&
-                        motionInstances[0]->GetMotion() == m_motion)
+                    const AZStd::vector<EMotionFX::MotionInstance*>& selectedMotionInstances = CommandSystem::GetCommandManager()->GetCurrentSelection().GetSelectedMotionInstances();
+                    if (selectedMotionInstances.size() == 1 &&
+                        selectedMotionInstances[0]->GetMotion() == m_motion)
                     {
-                        EMotionFX::MotionInstance* motionInstance = motionInstances[0];
+                        EMotionFX::MotionInstance* motionInstance = selectedMotionInstances[0];
                         if (!AZ::IsClose(aznumeric_cast<float>(m_curTime), motionInstance->GetCurrentTime(), MCore::Math::epsilon))
                         {
                             newCurrentTime = motionInstance->GetCurrentTime();
@@ -1059,20 +1056,10 @@ namespace EMStudio
 
     void TimeViewPlugin::ValidatePluginLinks()
     {
-        m_motionWindowPlugin = nullptr;
-        m_motionListWindow = nullptr;
         m_motionEventsPlugin = nullptr;
         m_motionSetPlugin = nullptr;
 
         EMStudio::PluginManager* pluginManager = EMStudio::GetPluginManager();
-
-        EMStudioPlugin* motionBasePlugin = pluginManager->FindActivePlugin(MotionWindowPlugin::CLASS_ID);
-        if (motionBasePlugin)
-        {
-            m_motionWindowPlugin = static_cast<MotionWindowPlugin*>(motionBasePlugin);
-            m_motionListWindow   = m_motionWindowPlugin->GetMotionListWindow();
-            connect(m_motionListWindow, &MotionListWindow::MotionSelectionChanged, this, &TimeViewPlugin::MotionSelectionChanged, Qt::UniqueConnection); // UniqueConnection as we could connect multiple times.
-        }
 
         EMStudioPlugin* motionSetBasePlugin = pluginManager->FindActivePlugin(MotionSetsWindowPlugin::CLASS_ID);
         if (motionSetBasePlugin)
@@ -1093,8 +1080,8 @@ namespace EMStudio
     void TimeViewPlugin::MotionSelectionChanged()
     {
         ValidatePluginLinks();
-        if ((m_motionListWindow && m_motionListWindow->isVisible()) ||
-            (m_motionSetPlugin && m_motionSetPlugin->GetMotionSetWindow() && m_motionSetPlugin->GetMotionSetWindow()->isVisible()))
+        if (m_motionSetPlugin && m_motionSetPlugin->GetMotionSetWindow() &&
+            m_motionSetPlugin->GetMotionSetWindow()->isVisible())
         {
             SetMode(TimeViewMode::Motion);
         }

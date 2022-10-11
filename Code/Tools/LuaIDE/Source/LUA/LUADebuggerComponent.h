@@ -10,7 +10,7 @@
 #define LUADEBUGGER_COMPONENT_H
 
 #include "LUAEditorDebuggerMessages.h"
-#include <AzFramework/TargetManagement/TargetManagementAPI.h>
+#include <AzFramework/Network/IRemoteTools.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 
@@ -27,8 +27,7 @@ namespace LUADebugger
     class Component
         : public AZ::Component
         , public LUAEditor::LUAEditorDebuggerMessages::Bus::Handler
-        , public AzFramework::TargetManagerClient::Bus::Handler
-        , public AzFramework::TmMsgBus::Handler
+        , public AZ::SystemTickBus::Handler
     {
     public:
         AZ_COMPONENT(Component, "{7854C9F4-D7E5-4420-A14E-FA5B19822F39}");
@@ -43,6 +42,11 @@ namespace LUADebugger
         virtual void Deactivate();
         //////////////////////////////////////////////////////////////////////////
 
+        //! AZ::SystemTickBus::Handler overrides.
+        //! @{
+        void OnSystemTick() override;
+        //! @}
+        //
         //////////////////////////////////////////////////////////////////////////
         //Debugger Messages, from the LUAEditor::LUAEditorDebuggerMessages::Bus
         // Enumerate script contexts on the target
@@ -58,10 +62,6 @@ namespace LUADebugger
         virtual void EnumRegisteredEBuses(const char* scriptContextName);
         // Request enumeration of global methods and properties registered in the current context
         virtual void EnumRegisteredGlobals(const char* scriptContextName);
-        // Execute a script.  If executeInEditor is true, this means execute it in THIS script context that belongs to the editor
-        // otherwise we'll have to use target management.
-        // the debugname is the name of this script blob for breakpoint purposes, and the buffer length is how long the data is, including a null.
-        virtual void ExecuteScript(const AZStd::string& debugName, const char* scriptData, AZStd::size_t bufferLength);
         // create a breakpoint.  The debugName is the name that was given when the script was executed and represents
         // the 'document' (or blob of script) that the breakpoint is for.  The line number is relative to the start of that blob.
         // the combination of line number and debug name uniquely identify a debug breakpoint.
@@ -94,12 +94,10 @@ namespace LUADebugger
         virtual void DesiredTargetChanged(AZ::u32 newTargetID, AZ::u32 oldTargetID);
         //////////////////////////////////////////////////////////////////////////
 
-        //////////////////////////////////////////////////////////////////////////
-        // TmMsgBus
-        virtual void OnReceivedMsg(AzFramework::TmMsgPtr msg);
-        //////////////////////////////////////////////////////////////////////////
-
         static void Reflect(AZ::ReflectContext* reflection);
+
+     private:
+        AzFramework::IRemoteTools* m_remoteTools = nullptr;
     };
 };
 

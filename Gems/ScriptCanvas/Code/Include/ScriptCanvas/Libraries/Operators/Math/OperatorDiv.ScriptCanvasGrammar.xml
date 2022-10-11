@@ -2,12 +2,11 @@
 
 <ScriptCanvas Include="Include/ScriptCanvas/Libraries/Operators/Math/OperatorDiv.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Class Name="OperatorDiv"
-	       QualifiedName="ScriptCanvas::Nodes::Operators::OperatorDiv"
-	       PreferredClassName="Divide (/)"
-           Uuid="{DC17E19F-3829-410D-9A0B-AD60C6066DAA}"
-           Base="ScriptCanvas::Nodes::Operators::OperatorArithmetic"
-           Category="Math"
-           Version="0"
-           Description="Divides two or more values">
+        QualifiedName="ScriptCanvas::Nodes::Operators::OperatorDiv"
+        PreferredClassName="Divide (/)"
+        Uuid="{DC17E19F-3829-410D-9A0B-AD60C6066DAA}"
+        Base="ScriptCanvas::Nodes::Operators::OperatorArithmetic"
+        Category="Math"
+        Description="Divides two or more values">
     </Class>
 </ScriptCanvas>

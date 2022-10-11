@@ -139,12 +139,12 @@ namespace UnitTest
         return testEntity;
     }
 
-    AZStd::unique_ptr<AZ::Entity> GradientSignalBaseFixture::BuildTestConstantGradient(float shapeHalfBounds)
+    AZStd::unique_ptr<AZ::Entity> GradientSignalBaseFixture::BuildTestConstantGradient(float shapeHalfBounds, float value)
     {
         // Create a Constant Gradient Component with arbitrary parameters.
         auto entity = CreateTestEntity(shapeHalfBounds);
         GradientSignal::ConstantGradientConfig config;
-        config.m_value = 0.75f;
+        config.m_value = value;
         entity->CreateComponent<GradientSignal::ConstantGradientComponent>(config);
 
         ActivateEntity(entity.get());
@@ -159,8 +159,7 @@ namespace UnitTest
         const uint32_t imageSize = 4096;
         const int32_t imageSeed = 12345;
         config.m_imageAsset = UnitTest::CreateImageAsset(imageSize, imageSize, imageSeed);
-        config.m_tilingX = 1.0f;
-        config.m_tilingY = 1.0f;
+        config.m_tiling = AZ::Vector2::CreateOne();
         entity->CreateComponent<GradientSignal::ImageGradientComponent>(config);
 
         // Create a Gradient Transform Component with arbitrary parameters.
@@ -422,6 +421,12 @@ namespace UnitTest
         GradientSignal::GradientSampler gradientSampler;
         gradientSampler.m_gradientId = gradientEntityId;
 
+        TestFixedDataSampler(expectedOutput, size, gradientSampler);
+    }
+
+    void GradientSignalTest::TestFixedDataSampler(
+        const AZStd::vector<float>& expectedOutput, int size, GradientSignal::GradientSampler& gradientSampler)
+    {
         for (int y = 0; y < size; ++y)
         {
             for (int x = 0; x < size; ++x)
@@ -437,5 +442,6 @@ namespace UnitTest
             }
         }
     }
+
 }
 

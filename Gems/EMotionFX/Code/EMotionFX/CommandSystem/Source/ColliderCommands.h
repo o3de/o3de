@@ -130,7 +130,7 @@ namespace EMotionFX
         void SetIsTrigger(bool isTrigger) { m_isTrigger = isTrigger; }
         void SetPosition(AZ::Vector3 position) { m_position = AZStd::move(position); }
         void SetRotation(AZ::Quaternion rotation) { m_rotation = AZStd::move(rotation); }
-        void SetMaterial(Physics::MaterialSelection material) { m_material = AZStd::move(material); }
+        void SetMaterialSlots(Physics::MaterialSlots materialSlots) { m_materialSlots = AZStd::move(materialSlots); }
         void SetTag(AZStd::string tag) { m_tag = AZStd::move(tag); }
 
         void SetOldCollisionLayer(AzPhysics::CollisionLayer collisionLayer) { m_oldCollisionLayer = collisionLayer; }
@@ -138,7 +138,7 @@ namespace EMotionFX
         void SetOldIsTrigger(bool isTrigger) { m_oldIsTrigger = isTrigger; }
         void SetOldPosition(AZ::Vector3 position) { m_oldPosition = AZStd::move(position); }
         void SetOldRotation(AZ::Quaternion rotation) { m_oldRotation = AZStd::move(rotation); }
-        void SetOldMaterial(Physics::MaterialSelection material) { m_oldMaterial = AZStd::move(material); }
+        void SetOldMaterialSlots(Physics::MaterialSlots materialSlots) { m_oldMaterialSlots = AZStd::move(materialSlots); }
         void SetOldTag(AZStd::string tag) { m_oldTag = AZStd::move(tag); }
 
         const AZStd::optional<AZStd::string>& GetOldTag() const { return m_oldTag; }
@@ -166,7 +166,7 @@ namespace EMotionFX
         AZStd::optional<bool> m_isTrigger;
         AZStd::optional<AZ::Vector3> m_position;
         AZStd::optional<AZ::Quaternion> m_rotation;
-        AZStd::optional<Physics::MaterialSelection> m_material;
+        AZStd::optional<Physics::MaterialSlots> m_materialSlots;
         AZStd::optional<AZStd::string> m_tag;
 
         AZStd::optional<AzPhysics::CollisionLayer> m_oldCollisionLayer;
@@ -174,7 +174,7 @@ namespace EMotionFX
         AZStd::optional<bool> m_oldIsTrigger;
         AZStd::optional<AZ::Vector3> m_oldPosition;
         AZStd::optional<AZ::Quaternion> m_oldRotation;
-        AZStd::optional<Physics::MaterialSelection> m_oldMaterial;
+        AZStd::optional<Physics::MaterialSlots> m_oldMaterialSlots;
         AZStd::optional<AZStd::string> m_oldTag;
 
         // ShapeConfiguration

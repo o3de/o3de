@@ -45,7 +45,7 @@ namespace AZ
             {
                 // if we get here, it means nobody has initialized this module yet.  We will initialize it and create the variable.
                 m_initialized = AZ::Environment::CreateVariable<bool>(variableName.c_str());
-                initFunc(AZ::Environment::GetInstance());
+                initFunc();
             }
         }
         else if (isInitializeFunctionRequired)

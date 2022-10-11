@@ -58,7 +58,6 @@ ApplicationManagerBase::ApplicationManagerBase(int* argc, char*** argv, QObject*
 ApplicationManagerBase::~ApplicationManagerBase()
 {
     AzToolsFramework::SourceControlNotificationBus::Handler::BusDisconnect();
-    AssetProcessor::DiskSpaceInfoBus::Handler::BusDisconnect();
     AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
     AssetProcessor::AssetBuilderRegistrationBus::Handler::BusDisconnect();
     AssetBuilderSDK::AssetBuilderBus::Handler::BusDisconnect();
@@ -94,7 +93,7 @@ int ApplicationManagerBase::ProcessedAssetCount() const
 }
 int ApplicationManagerBase::FailedAssetsCount() const
 {
-    return m_failedAssetsCount;
+    return static_cast<int>(m_failedAssets.size());
 }
 
 void ApplicationManagerBase::ResetProcessedAssetCount()
@@ -104,7 +103,7 @@ void ApplicationManagerBase::ResetProcessedAssetCount()
 
 void ApplicationManagerBase::ResetFailedAssetCount()
 {
-    m_failedAssetsCount = 0;
+    m_failedAssets = AZStd::set<AZStd::string>{};
 }
 
 
@@ -133,7 +132,7 @@ ApplicationServer* ApplicationManagerBase::GetApplicationServer() const
     return m_applicationServer;
 }
 
-void ApplicationManagerBase::InitAssetProcessorManager()
+void ApplicationManagerBase::InitAssetProcessorManager(AZStd::vector<ApplicationManagerBase::APCommandLineSwitch>& commandLineInfo)
 {
     AssetProcessor::ThreadController<AssetProcessor::AssetProcessorManager>* assetProcessorHelper = new AssetProcessor::ThreadController<AssetProcessor::AssetProcessorManager>();
 
@@ -152,34 +151,20 @@ void ApplicationManagerBase::InitAssetProcessorManager()
     const AzFramework::CommandLine* commandLine = nullptr;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetCommandLine);
 
-    struct APCommandLineSwitch
-    {
-        APCommandLineSwitch(const char* switchTitle, const char* helpText)
-            : m_switch(switchTitle)
-            , m_helpText(helpText)
-        {
-
-        }
-        const char* m_switch;
-        const char* m_helpText;
-    };
-
-    const APCommandLineSwitch Command_waitOnLaunch("waitOnLaunch", "Briefly pauses Asset Processor during initializiation. Useful if you want to attach a debugger.");
-    const APCommandLineSwitch Command_zeroAnalysisMode("zeroAnalysisMode", "Enables using file modification time when examining source assets for processing.");
-    const APCommandLineSwitch Command_enableQueryLogging("enableQueryLogging", "Enables logging database queries.");
-    const APCommandLineSwitch Command_dependencyScanPattern("dependencyScanPattern", "Scans assets that match the given pattern for missing product dependencies.");
-    const APCommandLineSwitch Command_dsp("dsp", Command_dependencyScanPattern.m_helpText);
-    const APCommandLineSwitch Command_fileDependencyScanPattern("fileDependencyScanPattern", "Used with dependencyScanPattern to farther filter the scan.");
-    const APCommandLineSwitch Command_fdsp("fdsp", Command_fileDependencyScanPattern.m_helpText);
-    const APCommandLineSwitch Command_additionalScanFolders("additionalScanFolders", "Used with dependencyScanPattern to farther filter the scan.");
-    const APCommandLineSwitch Command_dependencyScanMaxIteration("dependencyScanMaxIteration", "Used to limit the number of recursive searches per line when running dependencyScanPattern.");
-    const APCommandLineSwitch Command_warningLevel("warningLevel", "Configure the error and warning reporting level for AssetProcessor. Pass in 1 for fatal errors, 2 for fatal errors and warnings.");
-    const APCommandLineSwitch Command_acceptInput("acceptInput", "Enable external control messaging via the ControlRequestHandler, used with automated tests.");
-    const APCommandLineSwitch Command_debugOutput("debugOutput", "When enabled, builders that support it will output debug information as product assets. Used primarily with scene files.");
-    const APCommandLineSwitch Command_sortJobsByDBSourceName("sortJobsByDBSourceName", "When enabled, sorts pending jobs with equal priority and dependencies by database source name instead of job ID. Useful for automated tests to process assets in the same order each time.");
-    const APCommandLineSwitch Command_truncatefingerprint("truncatefingerprint", "Truncates the fingerprint used for processed assets. Useful if you plan to compress product assets to share on another machine because some compression formats like zip will truncate file mod timestamps.");
-    const APCommandLineSwitch Command_help("help", "Displays this message.");
-    const APCommandLineSwitch Command_h("h", Command_help.m_helpText);
+    const APCommandLineSwitch Command_waitOnLaunch(commandLineInfo, "waitOnLaunch", "Briefly pauses Asset Processor during initializiation. Useful if you want to attach a debugger.");
+    const APCommandLineSwitch Command_zeroAnalysisMode(commandLineInfo, "zeroAnalysisMode", "Enables using file modification time when examining source assets for processing.");
+    const APCommandLineSwitch Command_enableQueryLogging(commandLineInfo, "enableQueryLogging", "Enables logging database queries.");
+    const APCommandLineSwitch Command_dependencyScanPattern(commandLineInfo, "dependencyScanPattern", "Scans assets that match the given pattern for missing product dependencies.");
+    const APCommandLineSwitch Command_dsp(commandLineInfo, "dsp", Command_dependencyScanPattern.m_helpText);
+    const APCommandLineSwitch Command_fileDependencyScanPattern(commandLineInfo, "fileDependencyScanPattern", "Used with dependencyScanPattern to farther filter the scan.");
+    const APCommandLineSwitch Command_fdsp(commandLineInfo, "fdsp", Command_fileDependencyScanPattern.m_helpText);
+    const APCommandLineSwitch Command_additionalScanFolders(commandLineInfo, "additionalScanFolders", "Used with dependencyScanPattern to farther filter the scan.");
+    const APCommandLineSwitch Command_dependencyScanMaxIteration(commandLineInfo, "dependencyScanMaxIteration", "Used to limit the number of recursive searches per line when running dependencyScanPattern.");
+    const APCommandLineSwitch Command_warningLevel(commandLineInfo, "warningLevel", "Configure the error and warning reporting level for AssetProcessor. Pass in 1 for fatal errors, 2 for fatal errors and warnings.");
+    const APCommandLineSwitch Command_acceptInput(commandLineInfo, "acceptInput", "Enable external control messaging via the ControlRequestHandler, used with automated tests.");
+    const APCommandLineSwitch Command_debugOutput(commandLineInfo, "debugOutput", "When enabled, builders that support it will output debug information as product assets. Used primarily with scene files.");
+    const APCommandLineSwitch Command_truncatefingerprint(commandLineInfo, "truncatefingerprint", "Truncates the fingerprint used for processed assets. Useful if you plan to compress product assets to share on another machine because some compression formats like zip will truncate file mod timestamps.");
+    const APCommandLineSwitch Command_reprocessFileList(commandLineInfo, "reprocessFileList", "Reprocesses files in the passed in newline separated text file.");
 
     if (commandLine->HasSwitch(Command_waitOnLaunch.m_switch))
     {
@@ -204,6 +189,11 @@ void ApplicationManagerBase::InitAssetProcessorManager()
     else if (commandLine->HasSwitch(Command_dsp.m_switch))
     {
         m_dependencyScanPattern = commandLine->GetSwitchValue(Command_dsp.m_switch, 0).c_str();
+    }
+
+    if (commandLine->HasSwitch(Command_reprocessFileList.m_switch))
+    {
+        m_reprocessFileList = commandLine->GetSwitchValue(Command_reprocessFileList.m_switch, 0).c_str();
     }
 
     m_fileDependencyScanPattern = "*";
@@ -259,11 +249,6 @@ void ApplicationManagerBase::InitAssetProcessorManager()
         m_assetProcessorManager->SetBuilderDebugFlag(true);
     }
 
-    if (commandLine->HasSwitch(Command_sortJobsByDBSourceName.m_switch))
-    {
-        m_sortJobsByDBSourceName = true;
-    }
-
     if (commandLine->HasSwitch(Command_truncatefingerprint.m_switch))
     {
         // Zip archive format uses 2 second precision truncated
@@ -283,29 +268,36 @@ void ApplicationManagerBase::InitAssetProcessorManager()
         AssetUtilities::SetTruncateFingerprintTimestamp(precision);
     }
 
+}
+
+void ApplicationManagerBase::HandleCommandLineHelp(AZStd::vector<ApplicationManagerBase::APCommandLineSwitch>& commandLineInfo)
+{
+    const AzFramework::CommandLine* commandLine = nullptr;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetCommandLine);
+    if (!commandLine)
+    {
+        AZ_TracePrintf(
+            "AssetProcessor",
+            "Asset Processor Command Line information not available, help cannot be printed. This is an application initialization problem "
+            "and should be resolved in code.\n");
+        return;
+    }
+    const APCommandLineSwitch Command_help(commandLineInfo, "help", "Displays this message.");
+    const APCommandLineSwitch Command_h(commandLineInfo, "h", Command_help.m_helpText);
+
+    // The regset command line flag is checked elsewhere, but handled here to make the help text complete.
+    const APCommandLineSwitch Command_regset(commandLineInfo, "regset", "Set the given registry key to the given value.");
+
     if (commandLine->HasSwitch(Command_help.m_switch) || commandLine->HasSwitch(Command_h.m_switch))
     {
         // Other O3DE tools have a more full featured system for registering command flags
         // that includes help output, but right now the AssetProcessor just checks strings
         // via HasSwitch. This means this help output has to be updated manually.
         AZ_TracePrintf("AssetProcessor", "Asset Processor Command Line Flags:\n");
-        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_waitOnLaunch.m_switch, Command_waitOnLaunch.m_helpText);
-        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_zeroAnalysisMode.m_switch, Command_zeroAnalysisMode.m_helpText);
-        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_enableQueryLogging.m_switch, Command_enableQueryLogging.m_helpText);
-        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_dependencyScanPattern.m_switch, Command_dependencyScanPattern.m_helpText);
-        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_dsp.m_switch, Command_dsp.m_helpText);
-        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_fileDependencyScanPattern.m_switch, Command_fileDependencyScanPattern.m_helpText);
-        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_fdsp.m_switch, Command_fdsp.m_helpText);
-        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_additionalScanFolders.m_switch, Command_additionalScanFolders.m_helpText);
-        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_dependencyScanMaxIteration.m_switch, Command_dependencyScanMaxIteration.m_helpText);
-        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_warningLevel.m_switch, Command_warningLevel.m_helpText);
-        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_acceptInput.m_switch, Command_acceptInput.m_helpText);
-        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_debugOutput.m_switch, Command_debugOutput.m_helpText);
-        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_sortJobsByDBSourceName.m_switch, Command_sortJobsByDBSourceName.m_helpText);
-        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_truncatefingerprint.m_switch, Command_truncatefingerprint.m_helpText);
-        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_help.m_switch, Command_help.m_helpText);
-        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_h.m_switch, Command_h.m_helpText);
-        AZ_TracePrintf("AssetProcessor", "\tregset : set the given registry key to the given value.\n");
+        for ([[maybe_unused]] const auto& command : commandLineInfo)
+        {
+            AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", command.m_switch, command.m_helpText);
+        }
     }
 }
 
@@ -342,11 +334,6 @@ void ApplicationManagerBase::InitRCController()
 {
     m_rcController = new AssetProcessor::RCController(m_platformConfiguration->GetMinJobs(), m_platformConfiguration->GetMaxJobs());
 
-    if (m_sortJobsByDBSourceName)
-    {
-        m_rcController->SetQueueSortOnDBSourceName();
-    }
-
     QObject::connect(m_assetProcessorManager, &AssetProcessor::AssetProcessorManager::AssetToProcess, m_rcController, &AssetProcessor::RCController::JobSubmitted);
     QObject::connect(m_rcController, &AssetProcessor::RCController::FileCompiled, m_assetProcessorManager, &AssetProcessor::AssetProcessorManager::AssetProcessed, Qt::UniqueConnection);
     QObject::connect(m_rcController, &AssetProcessor::RCController::FileFailed, m_assetProcessorManager, &AssetProcessor::AssetProcessorManager::AssetFailed);
@@ -374,6 +361,7 @@ void ApplicationManagerBase::InitAssetScanner()
     // asset processor manager
     QObject::connect(m_assetScanner, &AssetScanner::AssetScanningStatusChanged, m_assetProcessorManager, &AssetProcessorManager::OnAssetScannerStatusChange);
     QObject::connect(m_assetScanner, &AssetScanner::FilesFound,                 m_assetProcessorManager, &AssetProcessorManager::AssessFilesFromScanner);
+    QObject::connect(m_assetScanner, &AssetScanner::FoldersFound,                 m_assetProcessorManager, &AssetProcessorManager::RecordFoldersFromScanner);
 
     QObject::connect(m_assetScanner, &AssetScanner::FilesFound, [this](QSet<AssetFileInfo> files) { m_fileStateCache->AddInfoSet(files); });
     QObject::connect(m_assetScanner, &AssetScanner::FoldersFound, [this](QSet<AssetFileInfo> files) { m_fileStateCache->AddInfoSet(files); });
@@ -456,7 +444,7 @@ void ApplicationManagerBase::InitFileMonitor(AZStd::unique_ptr<FileWatcher> file
 
         const auto OnFileAdded = [this, cachePath](QString path)
         {
-            const bool isCacheRoot = path.startsWith(cachePath);
+            const bool isCacheRoot = AssetUtilities::IsInCacheFolder(path.toUtf8().constData(), cachePath.toUtf8().constData());
             if (!isCacheRoot)
             {
                 [[maybe_unused]] bool result = QMetaObject::invokeMethod(m_assetProcessorManager, [this, path]()
@@ -488,18 +476,19 @@ void ApplicationManagerBase::InitFileMonitor(AZStd::unique_ptr<FileWatcher> file
 
         const auto OnFileModified = [this, cachePath](QString path)
         {
-            const bool isCacheRoot = path.startsWith(cachePath);
+            const bool isCacheRoot = AssetUtilities::IsInCacheFolder(path.toUtf8().constData(), cachePath.toUtf8().constData());
             if (!isCacheRoot)
             {
                 m_fileStateCache->UpdateFile(path);
             }
-            
+
             [[maybe_unused]] bool result = QMetaObject::invokeMethod(
                 m_assetProcessorManager,
                 [this, path]
                 {
                     m_assetProcessorManager->AssessModifiedFile(path);
-                }, Qt::QueuedConnection);
+                },
+                Qt::QueuedConnection);
 
             AZ_Assert(result, "Failed to invoke m_assetProcessorManager::AssessModifiedFile");
         };
@@ -507,7 +496,7 @@ void ApplicationManagerBase::InitFileMonitor(AZStd::unique_ptr<FileWatcher> file
         const auto OnFileRemoved = [this, cachePath](QString path)
         {
             [[maybe_unused]] bool result = false;
-            const bool isCacheRoot = path.startsWith(cachePath);
+            const bool isCacheRoot = AssetUtilities::IsInCacheFolder(path.toUtf8().constData(), cachePath.toUtf8().constData());
             if (!isCacheRoot)
             {
                 result = QMetaObject::invokeMethod(m_fileProcessor.get(), [this, path]()
@@ -889,7 +878,6 @@ ApplicationManager::BeforeRunStatus ApplicationManagerBase::BeforeRun()
     AssetProcessor::AssetBuilderRegistrationBus::Handler::BusConnect();
     AssetProcessor::AssetBuilderInfoBus::Handler::BusConnect();
     AZ::Debug::TraceMessageBus::Handler::BusConnect();
-    AssetProcessor::DiskSpaceInfoBus::Handler::BusConnect();
     AzToolsFramework::SourceControlNotificationBus::Handler::BusConnect();
 
     return ApplicationManager::BeforeRunStatus::Status_Success;
@@ -940,6 +928,19 @@ bool ApplicationManagerBase::Run()
 
     AZ_Printf(AssetProcessor::ConsoleChannel, "-----------------------------------------\n");
     AZ_Printf(AssetProcessor::ConsoleChannel, "Asset Processor Batch Processing complete\n");
+
+    if (!m_failedAssets.empty())
+    {
+        AZ_Printf(AssetProcessor::ConsoleChannel, "---------------FAILED ASSETS-------------\n");
+
+        for (const auto& failedAsset : m_failedAssets)
+        {
+            AZ_Printf(AssetProcessor::ConsoleChannel, "%s\n", failedAsset.c_str());
+        }
+
+        AZ_Printf(AssetProcessor::ConsoleChannel, "-----------------------------------------\n");
+    }
+
     AZ_Printf(AssetProcessor::ConsoleChannel, "Number of Assets Successfully Processed: %d.\n", ProcessedAssetCount());
     AZ_Printf(AssetProcessor::ConsoleChannel, "Number of Assets Failed to Process: %d.\n", FailedAssetsCount());
     AZ_Printf(AssetProcessor::ConsoleChannel, "Number of Warnings Reported: %d.\n", m_warningCount);
@@ -1206,6 +1207,11 @@ void ApplicationManagerBase::CheckForIdle()
 
     if (CheckFullIdle())
     {
+        if (CheckReprocessFileList())
+        {
+            return;
+        }
+
         if (shouldExit)
         {
             // If everything else is done, and it was requested to scan for missing product dependencies, perform that scan now.
@@ -1268,14 +1274,14 @@ void ApplicationManagerBase::ShutdownBuilderManager()
     }
 }
 
-bool ApplicationManagerBase::InitAssetDatabase()
+bool ApplicationManagerBase::InitAssetDatabase(bool ignoreFutureAssetDBVersionError)
 {
     AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Handler::BusConnect();
 
     // create or upgrade the asset database here, so that it is already good for the rest of the application and the rest
     // of the application does not have to worry about a failure to upgrade or create it.
     AssetProcessor::AssetDatabaseConnection database;
-    if (!database.OpenDatabase())
+    if (!database.OpenDatabase(ignoreFutureAssetDBVersionError))
     {
         return false;
     }
@@ -1309,9 +1315,7 @@ void ApplicationManagerBase::ShutDownFileProcessor()
 void ApplicationManagerBase::InitAssetServerHandler()
 {
     m_assetServerHandler = new AssetProcessor::AssetServerHandler();
-    // This will cache whether AP is running in server mode or not.
-    // It is also important to invoke it here because incase the asset server address is invalid, the error message should get captured in the AP log.
-    AssetUtilities::InServerMode();
+    m_assetServerHandler->HandleRemoteConfiguration();
 }
 
 void ApplicationManagerBase::DestroyAssetServerHandler()
@@ -1335,6 +1339,48 @@ bool ApplicationManagerBase::GetAssetDatabaseLocation(AZStd::string& location)
 
 // ------------------------------------------------------------
 
+bool ApplicationManagerBase::CheckReprocessFileList()
+{
+    if (m_reprocessFileList.isEmpty() && m_filesToReprocess.isEmpty())
+    {
+        return false;
+    }
+
+    if (!m_reprocessFileList.isEmpty())
+    {
+        QFile reprocessFile(m_reprocessFileList);
+        m_reprocessFileList.clear();
+        if (!reprocessFile.open(QIODevice::ReadOnly))
+        {
+            AZ_Error("AssetProcessor", false, "Unable to open reprocess file list with path %s.", reprocessFile.fileName().toUtf8().data());
+            return false;
+        }
+
+        while (!reprocessFile.atEnd())
+        {
+            m_filesToReprocess.append(reprocessFile.readLine());
+        }
+
+        reprocessFile.close();
+
+        if (m_filesToReprocess.empty())
+        {
+            AZ_Error(
+                "AssetProcessor", false, "No files listed to reprocess in the file at path %s.", reprocessFile.fileName().toUtf8().data());
+            return false;
+        }
+
+    }
+
+    // Queue one at a time, and wait for idle.
+    // This makes sure the files in the list are processed in the same order.
+    // Otherwise, the order can shuffle based on Asset Processor state.
+    m_assetProcessorManager->RequestReprocess(m_filesToReprocess.front());
+    m_filesToReprocess.pop_front();
+
+    return true;
+}
+
 bool ApplicationManagerBase::Activate()
 {
     QDir projectCache;
@@ -1348,7 +1394,7 @@ bool ApplicationManagerBase::Activate()
         "AssetProcessor will process assets from project root %s.\n", AssetUtilities::ComputeProjectPath().toUtf8().data());
 
     // Shutdown if the disk has less than 128MB of free space
-    if (!CheckSufficientDiskSpace(projectCache.absolutePath(), 128 * 1024 * 1024, true))
+    if (!CheckSufficientDiskSpace(128 * 1024 * 1024, true))
     {
         // CheckSufficientDiskSpace reports an error if disk space is low.
         return false;
@@ -1362,7 +1408,21 @@ bool ApplicationManagerBase::Activate()
         return false;
     }
 
-    if (!InitAssetDatabase())
+    const AzFramework::CommandLine* commandLine = nullptr;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetCommandLine);
+
+    AZStd::vector<APCommandLineSwitch> commandLineInfo;
+    const APCommandLineSwitch Command_ignoreFutureDBError(
+        commandLineInfo,
+        "ignoreFutureAssetDatabaseVersionError",
+        "When not set, if the Asset Processor encounters an Asset Database "
+        "with a future version, it will emit an error and shut down. When set, instead it will print the error as a log and erase the "
+        "Asset Database, then it will proceed to initialize. "
+        "This is intended for use with automated builds, and shouldn't be used by individuals. If an individual finds they want to use "
+        "this flag frequently, the team should "
+        "examine their workflows to determine why some team members encounter issues with future versioned Asset Databases.");
+
+    if (!InitAssetDatabase(commandLine->HasSwitch(Command_ignoreFutureDBError.m_switch)))
     {
         // AssetDatabaseConnection::OpenDatabase reports any errors it encounters.
         return false;
@@ -1383,7 +1443,8 @@ bool ApplicationManagerBase::Activate()
     InitBuilderConfiguration();
     PopulateApplicationDependencies();
 
-    InitAssetProcessorManager();
+    InitAssetProcessorManager(commandLineInfo);
+    HandleCommandLineHelp(commandLineInfo);
     AssetBuilderSDK::InitializeSerializationContext();
     AssetBuilderSDK::InitializeBehaviorContext();
     AssetBuilder::InitializeSerializationContext();
@@ -1454,6 +1515,11 @@ bool ApplicationManagerBase::Activate()
     AssetProcessor::AssetProcessorStatusEntry entry(AssetProcessor::AssetProcessorStatus::Initializing_Builders, 0, QString());
     Q_EMIT AssetProcessorStatusChanged(entry);
 
+    // Start up a thread which will request a builder to start to handle the registration of gems/builders
+    // Builder info will be sent back to the AP via the network connection, start up will wait for the info before continuing
+    // See ApplicationManagerBase::InitConnectionManager BuilderRegistrationRequest for the resume point here
+    // Waiting here is not possible because the message comes back as a network message, which requires the main thread to process it
+    // Since execution has to continue, this also means the thread object will go out of scope, so it must be detached before exiting.
     AZStd::thread_desc desc;
     desc.m_name = "Builder Component Registration";
     AZStd::thread builderRegistrationThread(
@@ -1461,7 +1527,13 @@ bool ApplicationManagerBase::Activate()
         []()
         {
             AssetProcessor::BuilderRef builder;
-            AssetProcessor::BuilderManagerBus::BroadcastResult(builder, &AssetProcessor::BuilderManagerBus::Events::GetBuilder, true);
+            AssetProcessor::BuilderManagerBus::BroadcastResult(builder, &AssetProcessor::BuilderManagerBus::Events::GetBuilder, AssetProcessor::BuilderPurpose::Registration);
+
+            if (!builder)
+            {
+                AZ_Error("ApplicationManagerBase", false, "AssetBuilder process failed to start.  Builder registration cannot complete.  Shutting down.");
+                AssetProcessor::MessageInfoBus::Broadcast(&AssetProcessor::MessageInfoBus::Events::OnBuilderRegistrationFailure);
+            }
         });
 
     builderRegistrationThread.detach();
@@ -1510,11 +1582,11 @@ bool ApplicationManagerBase::InitializeInternalBuilders()
     return result;
 }
 
-static void HandleConditionalRetry(const AssetProcessor::BuilderRunJobOutcome& result, int retryCount, AssetProcessor::BuilderRef& builderRef)
+static void HandleConditionalRetry(const AssetProcessor::BuilderRunJobOutcome& result, int retryCount, AssetProcessor::BuilderRef& builderRef, AssetProcessor::BuilderPurpose purpose)
 {
     // If a lost connection occured or the process was terminated before a response can be read, and there is another retry to get the
     // response from a Builder, then handle the logic to log and sleep before attempting the retry of the job
-    if ((result == AssetProcessor::BuilderRunJobOutcome::LostConnection || 
+    if ((result == AssetProcessor::BuilderRunJobOutcome::LostConnection ||
          result == AssetProcessor::BuilderRunJobOutcome::ProcessTerminated ) && (retryCount <= AssetProcessor::RetriesForJobLostConnection))
     {
         const int delay = 1 << (retryCount-1);
@@ -1525,14 +1597,27 @@ static void HandleConditionalRetry(const AssetProcessor::BuilderRunJobOutcome& r
             // If the connection was lost and the process handle is no longer valid, then we need to request a new builder to reprocess the job
             AZStd::string oldBuilderId = builderRef->GetUuid().ToString<AZStd::string>();
             builderRef.release();
-            AssetProcessor::BuilderManagerBus::BroadcastResult(builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder, false);
 
-            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Lost connection to builder %s. Retrying with a new builder %s (Attempt %d with %d second delay)",
-                            oldBuilderId.c_str(),
-                            builderRef->GetUuid().ToString<AZStd::string>().c_str(),
-                            retryCount+1,
-                            delay);
-        } 
+            AssetProcessor::BuilderManagerBus::BroadcastResult(builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder, purpose);
+            
+            if (builderRef)
+            {
+                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Lost connection to builder %s. Retrying with a new builder %s (Attempt %d with %d second delay)",
+                                oldBuilderId.c_str(),
+                                builderRef->GetUuid().ToString<AZStd::string>().c_str(),
+                                retryCount+1,
+                                delay);
+            }
+            else
+            {
+                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Lost connection to builder %s and no further builders are available. Job will not retry.\n",
+                               oldBuilderId.c_str());
+                // if we failed to get a builder ref, it means we're probably
+                // shutting down, in which case we do not want to do an exponential
+                // backoff delay and need to return immediately.
+                return;
+            }
+        }
         else
         {
             AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Lost connection to builder %s. Retrying (Attempt %d  with %d second delay)",
@@ -1574,15 +1659,20 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
         // We're going to override the createJob function so we can run it externally in AssetBuilder, rather than having it run
         // inside the AP
         modifiedBuilderDesc.m_createJobFunction =
-            [](const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response)
+            [this](const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response)
         {
             AssetProcessor::BuilderRef builderRef;
-            AssetProcessor::BuilderManagerBus::BroadcastResult(builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder, false);
+            AssetProcessor::BuilderManagerBus::BroadcastResult(builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder, AssetProcessor::BuilderPurpose::CreateJobs);
 
             if (builderRef)
             {
                 int retryCount = 0;
                 AssetProcessor::BuilderRunJobOutcome result;
+
+                if (this->InitiatedShutdown())
+                {
+                    return; // exit early if you're shutting down!
+                }
 
                 do
                 {
@@ -1590,9 +1680,9 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
                     result = builderRef->RunJob<AssetBuilder::CreateJobsNetRequest, AssetBuilder::CreateJobsNetResponse>(
                         request, response, s_MaximumCreateJobsTimeSeconds, "create", "", nullptr);
 
-                    HandleConditionalRetry(result, retryCount, builderRef);
+                    HandleConditionalRetry(result, retryCount, builderRef, AssetProcessor::BuilderPurpose::CreateJobs);
 
-                } while ((result == AssetProcessor::BuilderRunJobOutcome::LostConnection || 
+                } while ((result == AssetProcessor::BuilderRunJobOutcome::LostConnection ||
                           result == AssetProcessor::BuilderRunJobOutcome::ProcessTerminated) &&
                           retryCount <= AssetProcessor::RetriesForJobLostConnection);
             }
@@ -1602,28 +1692,48 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
             }
         };
 
+        const bool debugOutput = m_assetProcessorManager->GetBuilderDebugFlag();
         // Also override the processJob function to run externally
         modifiedBuilderDesc.m_processJobFunction =
-            [](const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response)
+            [this, debugOutput](const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response)
         {
             AssetBuilderSDK::JobCancelListener jobCancelListener(request.m_jobId);
 
             AssetProcessor::BuilderRef builderRef;
-            AssetProcessor::BuilderManagerBus::BroadcastResult(builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder, false);
+            AssetProcessor::BuilderManagerBus::BroadcastResult(builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder, AssetProcessor::BuilderPurpose::ProcessJob);
 
             if (builderRef)
             {
+                if (debugOutput)
+                {
+                    AssetProcessor::BuilderManagerBus::Broadcast(
+                        &AssetProcessor::BuilderManagerBusTraits::AddAssetToBuilderProcessedList, builderRef->GetUuid(),
+                        request.m_fullPath);
+                }
+
                 int retryCount = 0;
                 AssetProcessor::BuilderRunJobOutcome result;
 
                 do
                 {
+                    if (jobCancelListener.IsCancelled())
+                    {
+                        // do not attempt to continue to retry or spawn
+                        // new builders during shut down.
+                        break;
+                    }
+
+                    if (this->InitiatedShutdown())
+                    {
+                        return; // exit early if you're shutting down!
+                    }
+                    
                     retryCount++;
                     result = builderRef->RunJob<AssetBuilder::ProcessJobNetRequest, AssetBuilder::ProcessJobNetResponse>(
                         request, response, s_MaximumProcessJobsTimeSeconds, "process", "", &jobCancelListener, request.m_tempDirPath);
-                    
-                    HandleConditionalRetry(result, retryCount, builderRef);
-                    
+
+                    HandleConditionalRetry(result, retryCount, builderRef, AssetProcessor::BuilderPurpose::ProcessJob);
+
                 } while ((result == AssetProcessor::BuilderRunJobOutcome::LostConnection ||
                           result == AssetProcessor::BuilderRunJobOutcome::ProcessTerminated) &&
                           retryCount <= AssetProcessor::RetriesForJobLostConnection);
@@ -1778,10 +1888,23 @@ bool ApplicationManagerBase::OnError(const char* /*window*/, const char* /*messa
     return true;
 }
 
-bool ApplicationManagerBase::CheckSufficientDiskSpace(const QString& savePath, qint64 requiredSpace, bool shutdownIfInsufficient)
+bool ApplicationManagerBase::CheckSufficientDiskSpace(qint64 requiredSpace, bool shutdownIfInsufficient)
 {
+    QDir cacheDir;
+    if (!AssetUtilities::ComputeProjectCacheRoot(cacheDir))
+    {
+        AZ_Error(
+            "AssetProcessor",
+            false,
+            "Could not compute project cache root, please configure your project correctly to launch Asset Processor.");
+        return false;
+    }
+
+    QString savePath = cacheDir.absolutePath();
+
     if (!QDir(savePath).exists())
     {
+        // GetFreeDiskSpace will fail if the path does not exist
         QDir dir;
         dir.mkpath(savePath);
     }
@@ -1857,6 +1980,11 @@ void ApplicationManagerBase::RemoveOldTempFolders()
 void ApplicationManagerBase::ConnectivityStateChanged(const AzToolsFramework::SourceControlState /*newState*/)
 {
     Q_EMIT SourceControlReady();
+}
+
+void ApplicationManagerBase::OnBuilderRegistrationFailure()
+{
+    QMetaObject::invokeMethod(this, "QuitRequested");
 }
 
 void ApplicationManagerBase::OnAssetProcessorManagerIdleState(bool isIdle)

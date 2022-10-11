@@ -24,7 +24,7 @@
 
 class QWindow;
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     class EditorAutomationTestDialogRequests
         : public AZ::EBusTraits

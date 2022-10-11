@@ -10,6 +10,7 @@
 #include <AzCore/Asset/AssetJsonSerializer.h>
 #include <AzCore/JSON/prettywriter.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
+#include <AzCore/Component/EntitySerializer.h>
 
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
@@ -28,6 +29,10 @@ namespace AzToolsFramework
         {
             namespace Internal
             {
+                static constexpr const char* const ComponentRemovalNotice =
+                    "[INFORMATION] %s data has been altered to remove component '%s'. "
+                    "Please edit and save %s to persist the change.";
+
                 static AZ::JsonSerializationResult::ResultCode JsonIssueReporter(AZStd::string& scratchBuffer,
                     AZStd::string_view message, AZ::JsonSerializationResult::ResultCode result, AZStd::string_view path)
                 {
@@ -156,21 +161,90 @@ namespace AzToolsFramework
                     settings.m_metadata.Add(&entityIdMapper);
                     settings.m_metadata.Add(tracker);
 
+                    if ((flags & LoadFlags::UseSelectiveDeserialization) == LoadFlags::UseSelectiveDeserialization)
+                    {
+                        settings.m_metadata.Create<InstanceDomMetadata>();
+                    }
+
+                    // Returns whether to track deprecated components for the instance being deserialized
+                    auto shouldTrackDeprecated = [&instance, &entityIdMapper]()
+                    {
+                        // Only track the instance that was passed in
+                        return (&instance == entityIdMapper.GetLoadingInstance());
+                    }; 
+
+                    if ((flags & LoadFlags::ReportDeprecatedComponents) == LoadFlags::ReportDeprecatedComponents)
+                    {
+                        // Add metadata to track components that are deprecated
+                        auto deprecationTracker = AZ::DeprecatedComponentMetadata{};
+                        deprecationTracker.SetEnableDeprecationTrackingCallback(shouldTrackDeprecated);
+                        settings.m_metadata.Add(deprecationTracker);
+                    }
+
                     AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::Load(instance, prefabDom, settings);
+                    bool succeeded = (result.GetProcessing() != AZ::JsonSerializationResult::Processing::Halted);
+#ifdef AZ_ENABLE_TRACING
+                    if (succeeded)
+                    {
+                        // Display a message for skipped components
+                        auto deprecatedComponents = settings.m_metadata.Find<AZ::DeprecatedComponentMetadata>();
+                        if (deprecatedComponents)
+                        {
+                            const char* prefabName = instance.GetTemplateSourcePath().Filename().Native().data();
+                            AZStd::vector<AZStd::string> componentNames = deprecatedComponents->GetComponentNames();
+                            for (const auto& componentName : componentNames)
+                            {
+                                AZ_Warning(
+                                    "JSON Serialization",
+                                    false,
+                                    Internal::ComponentRemovalNotice,
+                                    prefabName,
+                                    componentName.c_str(),
+                                    instance.GetTemplateSourcePath().c_str());
+                            }
+                        }
+                    }
+                    else
+                    {
+                        AZ_Error(
+                            "Prefab",
+                            false,
+                            "Failed to de-serialize Prefab Instance from Prefab DOM. "
+                            "Unable to proceed.");
+                    }
+#endif // AZ_ENABLE_TRACING
 
                     AZ::Data::AssetManager::Instance().ResumeAssetRelease();
 
-                    if (result.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
+                    return succeeded;
+                }
+
+                //! Identifies instance members to be added or removed by inspecting the patch entry provided.
+                //! @param patchEntry The patch entry to inspect.
+                //! @param membersToAdd The set to add the instance member to if an addition operation is detected.
+                //! @param membersToRemove The set to add the instance member to if a remove operation is detected.
+                //! @param memberName The name of the instance member found in the patch.
+                static void IdentifyInstanceMembersToAddAndRemove(
+                    const PrefabDomValue& patchEntry,
+                    AZStd::unordered_set<AZStd::string>& membersToAdd,
+                    AZStd::unordered_set<AZStd::string>& membersToRemove,
+                    AZStd::string_view memberName)
+                {
+                    PrefabDomValue::ConstMemberIterator patchEntryIterator = patchEntry.FindMember("op");
+                    if (patchEntryIterator != patchEntry.MemberEnd())
                     {
-                        AZ_Error(
-                            "Prefab", false,
-                            "Failed to de-serialize Prefab Instance from Prefab DOM. "
-                            "Unable to proceed.");
+                        AZStd::string opPath = patchEntryIterator->value.GetString();
 
-                        return false;
+                        if (opPath == "remove")
+                        {
+                            membersToRemove.emplace(AZStd::move(memberName));
+                        }
+                        else if (opPath == "add" || opPath == "replace")
+                        {
+                            // Could be an add or change from empty->full. The later case is rare but not impossible.
+                            membersToAdd.emplace(AZStd::move(memberName));
+                        }
                     }
-
-                    return true;
                 }
             }
 
@@ -244,6 +318,20 @@ namespace AzToolsFramework
             bool LoadInstanceFromPrefabDom(Instance& instance, const PrefabDom& prefabDom, LoadFlags flags)
             {
                 AZ::JsonDeserializerSettings settings;
+
+                // Set a custom Json reporting handler to only report "Processing::Halted" warnings
+                // and skip any "Processing::Altered" warnings which end up spamming the logs when
+                // a component has been deprecated. This aligns with the same behavior as saving and
+                // instantiating a prefab
+                AZStd::string scratchBuffer;
+                auto issueReportingCallback = [&scratchBuffer](
+                    AZStd::string_view message, AZ::JsonSerializationResult::ResultCode result,
+                    AZStd::string_view path) -> AZ::JsonSerializationResult::ResultCode
+                {
+                    return Internal::JsonIssueReporter(scratchBuffer, message, result, path);
+                };
+                settings.m_reporting = AZStd::move(issueReportingCallback);
+
                 return Internal::LoadInstanceHelper(instance, prefabDom, flags, settings);
             }
 
@@ -317,6 +405,17 @@ namespace AzToolsFramework
                 return findInstancesResult->get();
             }
 
+            PrefabDomValueReference GetInstancesValue(PrefabDomValue& prefabDom)
+            {
+                PrefabDomValueReference findInstancesResult = FindPrefabDomValue(prefabDom, PrefabDomUtils::InstancesName);
+                if (!findInstancesResult.has_value() || !(findInstancesResult->get().IsObject()))
+                {
+                    return AZStd::nullopt;
+                }
+
+                return findInstancesResult->get();
+            }
+
             AZ::JsonSerializationResult::ResultCode ApplyPatches(
                 PrefabDomValue& prefabDomToApplyPatchesOn, PrefabDom::AllocatorType& allocator, const PrefabDomValue& patches)
             {
@@ -334,6 +433,92 @@ namespace AzToolsFramework
                     prefabDomToApplyPatchesOn, allocator, patches, AZ::JsonMergeApproach::JsonPatch, applyPatchSettings);
             }
 
+            //! Identifies the instance members to reload by parsing through the patches provided.
+            PatchesMetadata IdentifyModifiedInstanceMembers(const PrefabDom& patches)
+            {
+                PrefabDomUtils::PatchesMetadata patchesMetadata;
+                for (const PrefabDomValue& patchEntry : patches.GetArray())
+                {
+                    PrefabDomValue::ConstMemberIterator patchEntryIterator = patchEntry.FindMember("path");
+                    if (patchEntryIterator == patchEntry.MemberEnd())
+                    {
+                        continue;
+                    }
+                
+                    AZStd::string_view patchPath = patchEntryIterator->value.GetString();
+
+                    // Entities
+                    if (patchPath == PathMatchingEntities) // Path is /Entities
+                    {
+                        patchesMetadata.m_clearAndLoadAllEntities = true;
+                    }
+                    else if (patchPath.starts_with(PathStartingWithEntities)) // Path begins with /Entities/
+                    {
+                        if (patchesMetadata.m_clearAndLoadAllEntities)
+                        {
+                            continue;
+                        }
+
+                        patchPath.remove_prefix(strlen(PathStartingWithEntities));
+                        AZStd::size_t pathSeparatorIndex = patchPath.find('/');
+                        if (pathSeparatorIndex != AZStd::string::npos) // Path begins with /Entities/{someString}/
+                        {
+                            patchesMetadata.m_entitiesToReload.emplace(patchPath.substr(0, pathSeparatorIndex));
+                        }
+                        else // Path is with /Entities/{someString}
+                        {
+                            Internal::IdentifyInstanceMembersToAddAndRemove(
+                                patchEntry, patchesMetadata.m_entitiesToReload, patchesMetadata.m_entitiesToRemove, AZStd::move(patchPath));
+                        }
+                    }
+                    // Instances
+                    else if (patchPath == PathMatchingInstances) // Path is /Instances
+                    {
+                        patchesMetadata.m_clearAndLoadAllInstances = true;
+                    }
+                    else if (patchPath.starts_with(PathStartingWithInstances))// Path begins with /Instances/
+                    {
+                        if (patchesMetadata.m_clearAndLoadAllInstances)
+                        {
+                            continue;
+                        }
+
+                        patchPath.remove_prefix(strlen(PathStartingWithInstances));
+                        AZStd::size_t pathSeparatorIndex = patchPath.find('/');
+                        if (pathSeparatorIndex != AZStd::string::npos) // Path begins with /Instances/{someString}/
+                        {
+                            patchesMetadata.m_instancesToReload.emplace(patchPath.substr(0, pathSeparatorIndex));
+                        }
+                        else // Path is /Instances/{someString}
+                        {
+                            Internal::IdentifyInstanceMembersToAddAndRemove(
+                                patchEntry, patchesMetadata.m_instancesToAdd, patchesMetadata.m_instancesToRemove, AZStd::move(patchPath));
+                        }
+                    }
+                    // ContainerEntity
+                    else if (patchPath.starts_with(PathMatchingContainerEntity)) // Path begins with /ContainerEntity
+                    {
+                        patchesMetadata.m_shouldReloadContainerEntity = true;
+                    }
+                    // LinkId
+                    else if (patchPath == PathMatchingLinkId) // Path is /LinkId
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        AZ_Warning(
+                            "Prefab",
+                            false,
+                            "A patch targeting '%.*s' is identified. Patches must be routed to Entities, Instances, "
+                            "ContainerEntity, or LinkId.",
+                            AZ_STRING_ARG(patchPath));
+                    }
+                }
+
+                return AZStd::move(patchesMetadata);
+            }
+
             void PrintPrefabDomValue(
                 [[maybe_unused]] const AZStd::string_view printMessage,
                 [[maybe_unused]] const PrefabDomValue& prefabDomValue)
@@ -344,6 +529,16 @@ namespace AzToolsFramework
 
                 qDebug() << printMessage.data() << "\n" << prefabBuffer.GetString();
             }
+
+            AZStd::string PrefabDomValueToString(const PrefabDomValue& prefabDomValue)
+            {
+                rapidjson::StringBuffer prefabBuffer;
+                rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(prefabBuffer);
+                prefabDomValue.Accept(writer);
+
+                return prefabBuffer.GetString();
+            }
+
         } // namespace PrefabDomUtils
     } // namespace Prefab
 } // namespace AzToolsFramework

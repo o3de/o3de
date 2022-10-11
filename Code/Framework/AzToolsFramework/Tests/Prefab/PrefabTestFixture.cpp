@@ -50,6 +50,11 @@ namespace UnitTest
         m_instanceToTemplateInterface = AZ::Interface<AzToolsFramework::Prefab::InstanceToTemplateInterface>::Get();
         EXPECT_TRUE(m_instanceToTemplateInterface);
 
+        m_prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
+        EXPECT_TRUE(m_instanceToTemplateInterface);
+
+        InitializeRootPrefab();
+
         GetApplication()->RegisterComponentDescriptor(PrefabTestComponent::CreateDescriptor());
         GetApplication()->RegisterComponentDescriptor(PrefabTestComponentWithUnReflectedTypeMember::CreateDescriptor());
 
@@ -73,12 +78,28 @@ namespace UnitTest
         auto entityOwnershipService = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
         ASSERT_TRUE(entityOwnershipService != nullptr);
         entityOwnershipService->CreateNewLevelPrefab("UnitTestRoot.prefab", "");
+
+        InitializeRootPrefab();
+        
         auto rootEntityReference = entityOwnershipService->GetRootPrefabInstance()->get().GetContainerEntity();
         ASSERT_TRUE(rootEntityReference.has_value());
         auto& rootEntity = rootEntityReference->get();
         rootEntity.Deactivate();
         rootEntity.CreateComponent<AzToolsFramework::Components::TransformComponent>();
         rootEntity.Activate();
+    }
+
+    void PrefabTestFixture::InitializeRootPrefab()
+    {
+        InstanceOptionalReference rootInstance = m_prefabEditorEntityOwnershipInterface->GetRootPrefabInstance();
+        if (rootInstance.has_value())
+        {
+            EntityOptionalReference rootContainerEntity = rootInstance->get().GetContainerEntity();
+            if (rootContainerEntity.has_value() && rootContainerEntity->get().GetState() == AZ::Entity::State::Constructed)
+            {
+                rootContainerEntity->get().Init();
+            }
+        }
     }
 
     void PrefabTestFixture::PropagateAllTemplateChanges()

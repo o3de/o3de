@@ -16,12 +16,12 @@
 
 // Graph Model
 #include <GraphModel/Model/Graph.h>
-#include <GraphModel/Model/IGraphContext.h>
+#include <GraphModel/Model/GraphContext.h>
 #include <GraphModel/Model/Module/ModuleGraphManager.h>
 
 namespace GraphModel
 {
-    ModuleGraphManager::ModuleGraphManager(IGraphContextPtr graphContext, AZ::SerializeContext* serializeContext)
+    ModuleGraphManager::ModuleGraphManager(GraphContextPtr graphContext, AZ::SerializeContext* serializeContext)
         : m_graphContext(graphContext)
         , m_moduleFileExtension(graphContext->GetModuleFileExtension())
         , m_serializeContext(serializeContext)

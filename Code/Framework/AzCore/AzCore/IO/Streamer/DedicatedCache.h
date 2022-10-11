@@ -24,6 +24,7 @@ namespace AZ::IO
     {
         struct CreateDedicatedCacheData;
         struct DestroyDedicatedCacheData;
+        struct ReportData;
     } // namespace Requests
 
     struct DedicatedCacheConfig final :
@@ -80,6 +81,8 @@ namespace AZ::IO
 
         void FlushCache(const RequestPath& filePath);
         void FlushEntireCache();
+
+        void Report(const Requests::ReportData& data) const;
 
         AZStd::vector<RequestPath> m_cachedFileNames;
         AZStd::vector<FileRange> m_cachedFileRanges;

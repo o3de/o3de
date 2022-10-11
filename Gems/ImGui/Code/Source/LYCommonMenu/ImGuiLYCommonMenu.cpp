@@ -11,9 +11,12 @@
 #ifdef IMGUI_ENABLED
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/sort.h>
+#include <AzCore/StringFunc/StringFunc.h>
 #include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
+#include <AzFramework/Spawnable/Spawnable.h>
 #include <AzFramework/Viewport/ViewportBus.h>
+#include <imgui/imgui_internal.h>
 #include <ILevelSystem.h>
 #include "ImGuiColorDefines.h"
 #include "LYImGuiUtils/ImGuiDrawHelpers.h"
@@ -111,6 +114,50 @@ namespace ImGui
             viewportBorderPaddingOpt, &AzFramework::ViewportBorderRequestBus::Events::GetViewportBorderPadding);
 
         AzFramework::ViewportBorderPadding viewportBorderPadding = viewportBorderPaddingOpt.value_or(AzFramework::ViewportBorderPadding{});
+
+        auto ctx = ImGui::GetCurrentContext();
+
+        // determine if the window is the drop down and if it is active
+        const auto windowIt = AZStd::find_if(
+            ctx->Windows.begin(),
+            ctx->Windows.end(),
+            [](const ImGuiWindow* window)
+            {
+                // there is a drop down if the BeginOrder is 2 (1 below main menu),
+                // drop down items are called "##Menu_00"
+                return window->BeginOrderWithinContext == 2 && strcmp(window->Name, "##Menu_00") == 0 && window->WasActive;
+            });
+
+        if (windowIt != ctx->Windows.end())
+        {
+            m_markedForHiding = false;
+            // this conditional stops the notification from repeatedly broadcasting
+            if (m_dropdownState != ImGuiDropdownState::Shown)
+            {
+                m_dropdownState = ImGuiDropdownState::Shown;
+                AzFramework::ViewportImGuiNotificationBus::Broadcast(
+                    &AzFramework::ViewportImGuiNotificationBus::Events::OnImGuiDropDownShown);
+            }
+        }
+        else
+        {
+            // if it has already been marked that it is hidden, notify that it has done so
+            if (m_dropdownState != ImGuiDropdownState::Hidden && m_markedForHiding)
+            {
+                m_dropdownState = ImGuiDropdownState::Hidden;
+                AzFramework::ViewportImGuiNotificationBus::Broadcast(
+                    &AzFramework::ViewportImGuiNotificationBus::Events::OnImGuiDropDownHidden);
+                m_markedForHiding = false;
+            }
+            else
+            {
+                // when the dropdown switches between options it counts as hidden, but it isn't known if it is
+                // actually hidden or just switching, this acts as an intermediary for the next update
+                // in the above conditional
+                m_markedForHiding = true;
+            }
+        }
+        
         // Utility function to return the current offset (scaled by DPI) if a viewport border
         // is active (otherwise 0.0)
         auto dpiAwareBorderOffsetFn = [&viewportBorderPaddingOpt, &dpiAwareSizeFn](float size)
@@ -275,12 +322,28 @@ namespace ImGui
 
                         AZ::Data::AssetType levelAssetType = lvlSystem->GetLevelAssetType();
                         AZStd::vector<AZStd::string> levelNames;
+                        AZStd::set<AZStd::string> networkedLevelNames;
                         auto enumerateCB =
-                            [levelAssetType, &levelNames]([[maybe_unused]] const AZ::Data::AssetId id, const AZ::Data::AssetInfo& assetInfo)
+                            [levelAssetType, &levelNames, &networkedLevelNames]([[maybe_unused]] const AZ::Data::AssetId id, const AZ::Data::AssetInfo& assetInfo)
                         {
                             if (assetInfo.m_assetType == levelAssetType)
                             {
-                                levelNames.emplace_back(assetInfo.m_relativePath);
+                                // A network spawnable is serialized to file as a ".network.spawnable". (See Multiplayer Gem's MultiplayerConstants.h)
+                                // Filter out network spawnables from the level list, 
+                                // but keep track of which levels require networking so they can be recognized in the level selection menu. 
+                                constexpr AZStd::fixed_string<32> networkSpawnablePrefix(".network");
+                                constexpr AZStd::fixed_string<32> networkSpawnableFileExtension = networkSpawnablePrefix + AzFramework::Spawnable::DotFileExtension;
+
+                                if (assetInfo.m_relativePath.ends_with(networkSpawnableFileExtension))
+                                {   
+                                    AZStd::string spawnablePath(assetInfo.m_relativePath); 
+                                    AZ::StringFunc::Replace(spawnablePath, networkSpawnablePrefix.c_str(), "");
+                                    networkedLevelNames.emplace(spawnablePath);
+                                }
+                                else
+                                {
+                                    levelNames.emplace_back(assetInfo.m_relativePath);
+                                }
                             }
                         };
 
@@ -294,7 +357,8 @@ namespace ImGui
                         ImGui::TextColored(ImGui::Colors::s_PlainLabelColor, "Load Level: ");
                         for (int i = 0; i < levelNames.size(); i++)
                         {
-                            if (ImGui::MenuItem(AZStd::string::format("%d- %s", i, levelNames[i].c_str()).c_str()))
+                            bool isNetworked = networkedLevelNames.contains(levelNames[i]);
+                            if (ImGui::MenuItem(AZStd::string::format("%d- %s%s", i, levelNames[i].c_str(), isNetworked ? " (Multiplayer)":"").c_str()))
                             {
                                 AZ::TickBus::QueueFunction(
                                     [lvlSystem, levelNames, i]()
@@ -494,6 +558,8 @@ namespace ImGui
                     }
 
                     // Discrete Input Mode
+                    // Not available in edit mode because inputs are discrete there anyway.
+                    if (!gEnv->IsEditor() || gEnv->IsEditorGameMode())
                     {
                         bool discreteInputEnabledCheckbox = discreteInputEnabled;
                         ImGui::Checkbox(AZStd::string::format("Discrete Input %s (Click Checkbox to Toggle)", discreteInputEnabledCheckbox ? "On" : "Off").c_str(), &discreteInputEnabledCheckbox);

@@ -1101,8 +1101,7 @@ namespace AZ
                 return FailureCode(DependencySortResult::DescriptorNotRegistered, "No descriptor registered for Component class '%s'.", component->RTTI_GetTypeName());
             }
 
-            componentInfos.push_back();
-            ComponentInfo& componentInfo = componentInfos.back();
+            ComponentInfo& componentInfo = componentInfos.emplace_back();
             componentInfo.m_component = component;
             componentInfo.m_componentId = component->GetId();
             componentInfo.m_descriptor = componentDescriptor;
@@ -1209,8 +1208,7 @@ namespace AZ
 
                     // put new entry into "linked-list" of components that depend upon this service
                     size_t newEntryIndex = dependentComponentBuffer.size();
-                    dependentComponentBuffer.push_back();
-                    DependentComponentEntry& dependentEntry = dependentComponentBuffer.back();
+                    DependentComponentEntry& dependentEntry = dependentComponentBuffer.emplace_back();
                     dependentEntry.m_dependentComponentInfo = &componentInfo;
 
                     if (serviceInfo.m_firstDependentComponentEntry == InvalidEntry)

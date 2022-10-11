@@ -1912,6 +1912,11 @@ namespace AZStd
         }
     };
 
+    // AZStd::basic_regex deduction guides
+    template <class ForwardIt>
+    basic_regex(ForwardIt, ForwardIt, AZStd::regex_constants::syntax_option_type = AZStd::regex_constants::ECMAScript)
+        -> basic_regex<typename iterator_traits<ForwardIt>::value_type>;
+
     // exchange contents of left with right
     template<class Element, class RegExTraits>
     void swap(basic_regex<Element, RegExTraits>& left, basic_regex<Element, RegExTraits>& right)

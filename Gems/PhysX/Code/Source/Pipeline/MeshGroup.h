@@ -29,6 +29,8 @@ namespace AZ
 
 namespace PhysX
 {
+    struct FixPhysXMeshGroup;
+
     namespace Pipeline
     {
         class MeshGroup;
@@ -187,8 +189,7 @@ namespace PhysX
             bool GetExportAsTriMesh() const;
             bool GetExportAsPrimitive() const;
             bool GetDecomposeMeshes() const;
-            const AZStd::vector<AZStd::string>& GetPhysicsMaterials() const;
-            const AZStd::vector<AZStd::string>& GetMaterialSlots() const;
+            const Physics::MaterialSlots& GetMaterialSlots() const;
 
             void SetSceneGraph(const AZ::SceneAPI::Containers::SceneGraph* graph);
             void UpdateMaterialSlots();
@@ -220,11 +221,6 @@ namespace PhysX
 
             bool GetDecomposeMeshesVisibility() const;
 
-            AZStd::string GetMaterialSlotLabel(int index) const;
-            AZStd::vector<AZStd::string> GetPhysicsMaterialNames() const;
-
-            void OnMaterialLibraryChanged(const AZ::Data::AssetId& materialLibraryAssetId);
-
             AZ::Uuid m_id{};
             AZStd::string m_name{};
             AZ::SceneAPI::SceneData::SceneNodeSelectionList m_nodeSelectionList{};
@@ -235,12 +231,13 @@ namespace PhysX
             PrimitiveAssetParams m_primitiveAssetParams{};
             ConvexDecompositionParams m_convexDecompositionParams{};
             AZ::SceneAPI::Containers::RuleContainer m_rules{};
-            AZStd::vector<AZStd::string> m_materialSlots;
-            AZStd::vector<AZStd::string> m_physicsMaterials;
+            Physics::MaterialSlots m_physicsMaterialSlots;
+            // O3DE_DEPRECATION_NOTICE(GHI-9840)
+            AZStd::vector<AZStd::string> m_legacyMaterialSlots; // Kept to convert old physics material assets.
+            AZStd::vector<AZStd::string> m_legacyPhysicsMaterials; // Kept to convert old physics material assets.
+            friend FixPhysXMeshGroup;
 
             const AZ::SceneAPI::Containers::SceneGraph* m_graph = nullptr;
-            
-            AzPhysics::SystemEvents::OnMaterialLibraryChangedEvent::Handler m_materialLibraryChangedHandler;
         };
     }
 }

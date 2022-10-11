@@ -37,15 +37,16 @@ namespace AzPhysics
 
         //! Add a shape to the static rigid body.
         //! @param shape A shared pointer of the shape to add.
-        virtual void AddShape(const AZStd::shared_ptr<Physics::Shape>& shape) = 0;
+        virtual void AddShape(AZStd::shared_ptr<Physics::Shape> shape) = 0;
 
         //! Returns the number of shapes that make up this static rigid body.
         //! @return Returns the number of shapes as a AZ::u32.
-        virtual AZ::u32 GetShapeCount() { return 0; }
+        virtual AZ::u32 GetShapeCount() const { return 0; }
 
         //! Returns a shared pointer to the requested shape index.
         //! @param index The index of the shapes to return. Expected to be between 0 and GetShapeCount().
         //! @return Returns a shared pointer of the shape requested or nullptr if index is out of bounds.
-        virtual AZStd::shared_ptr<Physics::Shape> GetShape([[maybe_unused]]AZ::u32 index) { return nullptr; }
+        virtual AZStd::shared_ptr<Physics::Shape> GetShape([[maybe_unused]] AZ::u32 index) { return nullptr; }
+        virtual AZStd::shared_ptr<const Physics::Shape> GetShape([[maybe_unused]] AZ::u32 index) const { return nullptr; }
     };
 }

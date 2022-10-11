@@ -17,6 +17,17 @@
 #include <AzCore/std/typetraits/is_base_of.h>
 #include <Tests/Serialization/Json/BaseJsonSerializerFixture.h>
 
+// It is difficult to isolate individual conformity tests or types with gtest_filter.
+// Use the macros below to disable all tests except the one you need to work on.
+#define JSON_CONFORMITY_ENABLED
+
+#if defined JSON_CONFORMITY_ENABLED
+#define IF_JSON_CONFORMITY_ENABLED(X) X
+#else
+#define IF_JSON_CONFORMITY_ENABLED(X) 
+#endif
+
+
 namespace JsonSerializationTests
 {
     static constexpr char DefaultPath[] = "Test";
@@ -48,6 +59,8 @@ namespace JsonSerializationTests
         bool m_fixedSizeArray{ false };
         //! Set to false if the type the serializer targets can't be partially initialized.
         bool m_supportsPartialInitialization{ true };
+        //! Set to false if partial defaults are supported, but not reported as a PartialDefaults. This can be true in container/pointer cases.
+        bool m_partialDefaultReportingIsStrict{ true };
         //! The serializer will look up the type id in the Serialize Context.
         //! Normally serializer only get the exact type they support, but some serializers support
         //! multiple types such as templated code. By settings this option to true tests will be added
@@ -66,6 +79,8 @@ namespace JsonSerializationTests
         //! the Serialize Context. This test is automatically disabled for classes that don't have a factory or
         //! have a null factory as well as for classes that have mandatory fields.
         bool m_enableNewInstanceTests{ true };
+        //! Disable this test if the empty json is not equal to the default constructed object
+        bool m_defaultIsEqualToEmpty{ true };
 
     private:
         // There's no way to retrieve the number of types from RapidJSON so they're hard-coded here.
@@ -85,6 +100,36 @@ namespace JsonSerializationTests
             return result;
         }
     }
+
+    // The word "default" has three meanings in the json serialization conformity tests. Each is reflected in an emum.
+    // 1) Is JSON serializing keeping or dropping default values from serialization? (DefaultJSONStorage)
+    // 2) How much default values remain in the serialized C++ object? (DefaultSerializedObjectStatus)
+    // 3) Did JSON serialization supply a default object to the store/load call? (DefaultObjectSuppliedInSerialization)
+    enum DefaultJSONStorage
+    {
+        Store,
+        Drop
+    };
+
+    enum DefaultSerializedObjectStatus
+    {
+        Full,
+        Partial,
+        None
+    };
+
+    enum DefaultObjectSuppliedInSerialization
+    {
+        True,
+        False
+    };
+
+    struct JSONRequestSpec
+    {
+        DefaultJSONStorage jsonStorage;
+        DefaultSerializedObjectStatus objectStatus;
+        DefaultObjectSuppliedInSerialization objectSupplied;
+    };
 
     template<typename T>
     class JsonSerializerConformityTestDescriptor
@@ -113,7 +158,11 @@ namespace JsonSerializationTests
         //! If the target type doesn't support arrays or requires more than one entry this can be ignored and
         //! tests using this value will be skipped.
         virtual AZStd::shared_ptr<T> CreateSingleArrayDefaultInstance() { return nullptr; }
-
+        //! Use this function evaluating which JSON to return based on the full spec of the test
+        virtual AZStd::optional<AZStd::string_view> GetJSON([[maybe_unused]] const JSONRequestSpec& requestSpec)
+        {
+            return AZStd::nullopt;
+        }
         //! Get the json that represents the default instance.
         //! If the target type doesn't support partial specialization this can be ignored and
         //! tests for partial support will be skipped.
@@ -124,6 +173,10 @@ namespace JsonSerializationTests
         //! If the target type doesn't support arrays or requires more than one entry this can be ignored and
         //! tests using this value will be skipped.
         virtual AZStd::string_view GetJsonForSingleArrayDefaultInstance() { return "[{}]"; }
+        //! Get the json that represents an empty array that has only defaults.
+        //! If the target type doesn't support arrays, this can be ignored and
+        //! tests using this value will be skipped.
+        virtual AZStd::string_view GetJsonForEmptyArrayDefaultInstance() { return "[]"; }
         //! Get the json where additional values are added to the json file.
         //! If this function is not overloaded, but features.m_supportsInjection is enabled then
         //! the Json Serializer Conformity Tests will inject extra values in the json for a fully.
@@ -170,6 +223,7 @@ namespace JsonSerializationTests
         using Description = T;
         using Type = typename T::Type;
 
+
         struct PointerWrapper
         {
             AZ_TYPE_INFO(PointerWrapper, "{32FA6645-074A-458A-B79C-B173D0BD4B42}");
@@ -197,7 +251,7 @@ namespace JsonSerializationTests
             descriptor->Reflect(this->m_serializeContext);
             descriptor->Reflect(this->m_jsonRegistrationContext);
             this->m_serializeContext->template Class<PointerWrapper>()->Field("Value", &PointerWrapper::m_value);
-            
+
             this->m_deserializationSettings->m_reporting = &Internal::VerifyCallback;
             this->m_serializationSettings->m_reporting = &Internal::VerifyCallback;
             this->ResetJsonContexts();
@@ -683,7 +737,11 @@ namespace JsonSerializationTests
             ResultCode result = serializer->Load(instance.get(), azrtti_typeid(*instance),
                 *this->m_jsonDocument, *this->m_jsonDeserializationContext);
 
-            EXPECT_EQ(Outcomes::PartialDefaults, result.GetOutcome());
+            if (this->m_features.m_partialDefaultReportingIsStrict)
+            {
+                EXPECT_EQ(Outcomes::PartialDefaults, result.GetOutcome());
+            }
+
             EXPECT_EQ(Processing::Completed, result.GetProcessing());
             EXPECT_TRUE(this->m_description.AreEqual(*instance, *compare));
         }
@@ -724,12 +782,14 @@ namespace JsonSerializationTests
     {
         using namespace AZ::JsonSerializationResult;
 
-        if (this->m_features.m_enableNewInstanceTests && this->m_features.m_mandatoryFields.empty())
+        if (this->m_features.m_enableNewInstanceTests
+        && this->m_features.m_mandatoryFields.empty()
+        && this->m_features.m_defaultIsEqualToEmpty)
         {
             AZ::SerializeContext* serializeContext = this->m_jsonDeserializationContext->GetSerializeContext();
             const AZ::SerializeContext::ClassData* classData = serializeContext->FindClassData(azrtti_typeid<typename TypeParam::Type>());
             ASSERT_NE(nullptr, classData);
-            // Skip this test if the target type doesn't have a factor to create a new instance with or if the factor explicit
+            // Skip this test if the target type doesn't have a factory to create a new instance with or if the factory explicitly
             // prohibits construction.
             if (classData->m_factory && classData->m_factory != AZ::Internal::NullFactory::GetInstance())
             {
@@ -747,6 +807,7 @@ namespace JsonSerializationTests
                 EXPECT_EQ(Outcomes::DefaultsUsed, result.GetOutcome());
                 EXPECT_EQ(Processing::Completed, result.GetProcessing());
                 ASSERT_NE(nullptr, instance.m_value);
+                ASSERT_NE(nullptr, compare);
                 EXPECT_TRUE(this->m_description.AreEqual(*instance.m_value, *compare));
             }
         }
@@ -763,16 +824,18 @@ namespace JsonSerializationTests
             if ((serializer->GetOperationsFlags() & BaseJsonSerializer::OperationFlags::InitializeNewInstance) ==
                 BaseJsonSerializer::OperationFlags::InitializeNewInstance)
             {
-                typename TypeParam::Type instance;
+                auto instance = this->m_description.CreateDefaultConstructedInstance();
                 auto compare = this->m_description.CreateDefaultInstance();
                 this->m_jsonDocument->SetObject();
 
                 ResultCode result =
-                    serializer->Load(&instance, azrtti_typeid(instance), *this->m_jsonDocument, *this->m_jsonDeserializationContext);
+                    serializer->Load(instance.get(), azrtti_typeid(instance.get()), *this->m_jsonDocument, *this->m_jsonDeserializationContext);
 
                 EXPECT_EQ(Outcomes::DefaultsUsed, result.GetOutcome());
                 EXPECT_EQ(Processing::Completed, result.GetProcessing());
-                EXPECT_TRUE(this->m_description.AreEqual(instance, *compare));
+                ASSERT_NE(nullptr, instance);
+                ASSERT_NE(nullptr, compare);
+                EXPECT_TRUE(this->m_description.AreEqual(*instance, *compare));
             }
         }
     }
@@ -884,6 +947,11 @@ namespace JsonSerializationTests
     {
         using namespace AZ::JsonSerializationResult;
 
+        if (!this->m_features.m_defaultIsEqualToEmpty)
+        {
+            return;
+        }
+
         this->m_serializationSettings->m_keepDefaults = false;
         this->ResetJsonContexts();
         this->m_jsonSerializationContext->PushPath(DefaultPath);
@@ -914,6 +982,11 @@ namespace JsonSerializationTests
     TYPED_TEST_P(JsonSerializerConformityTests, Store_SerializeDefaultInstanceThroughMainStore_EmptyJsonReturned)
     {
         using namespace AZ::JsonSerializationResult;
+
+        if (!this->m_features.m_defaultIsEqualToEmpty)
+        {
+            return;
+        }
 
         auto serializer = this->m_description.CreateSerializer();
         auto instance = this->m_description.CreateDefaultInstance();
@@ -951,12 +1024,13 @@ namespace JsonSerializationTests
 
         auto serializer = this->m_description.CreateSerializer();
         auto instance = this->m_description.CreateFullySetInstance();
-
+        auto defaultInstance = this->m_description.CreateDefaultInstance();
         ResultCode result = serializer->Store(*this->m_jsonDocument, instance.get(), instance.get(), azrtti_typeid(*instance),
             *this->m_jsonSerializationContext);
 
         EXPECT_EQ(Processing::Completed, result.GetProcessing());
         EXPECT_EQ(Outcomes::Success, result.GetOutcome());
+
         this->Expect_DocStrEq(this->m_description.GetJsonFor_Store_SerializeWithDefaultsKept());
     }
 
@@ -977,7 +1051,21 @@ namespace JsonSerializationTests
 
         EXPECT_EQ(Processing::Completed, result.GetProcessing());
         EXPECT_EQ(Outcomes::Success, result.GetOutcome());
-        this->Expect_DocStrEq(this->m_description.GetJsonFor_Store_SerializeFullySetInstance());
+
+        JSONRequestSpec spec;
+        spec.jsonStorage = this->m_jsonSerializationContext->ShouldKeepDefaults() ? DefaultJSONStorage::Store : DefaultJSONStorage::Drop;
+        spec.objectStatus = DefaultSerializedObjectStatus::None;
+        spec.objectSupplied = DefaultObjectSuppliedInSerialization::True;
+
+        if (auto json = this->m_description.GetJSON(spec))
+        {
+            this->Expect_DocStrEq(*json);
+
+        }
+        else
+        {
+            this->Expect_DocStrEq(this->m_description.GetJsonFor_Store_SerializeFullySetInstance());
+        }
     }
 
     TYPED_TEST_P(JsonSerializerConformityTests, Store_SerializeWithoutDefault_StoredSuccessfullyAndJsonMatches)
@@ -996,7 +1084,20 @@ namespace JsonSerializationTests
 
         EXPECT_EQ(Processing::Completed, result.GetProcessing());
         EXPECT_EQ(Outcomes::Success, result.GetOutcome());
-        this->Expect_DocStrEq(this->m_description.GetJsonFor_Store_SerializeWithoutDefault());
+
+        JSONRequestSpec spec;
+        spec.jsonStorage = this->m_jsonSerializationContext->ShouldKeepDefaults() ? DefaultJSONStorage::Store : DefaultJSONStorage::Drop;
+        spec.objectStatus = DefaultSerializedObjectStatus::None;
+        spec.objectSupplied = DefaultObjectSuppliedInSerialization::False;
+
+        if (auto json = this->m_description.GetJSON(spec))
+        {
+            this->Expect_DocStrEq(*json);
+        }
+        else
+        {
+            this->Expect_DocStrEq(this->m_description.GetJsonFor_Store_SerializeWithoutDefault());
+        }
     }
 
     TYPED_TEST_P(JsonSerializerConformityTests, Store_SerializeWithoutDefaultAndDefaultsKept_StoredSuccessfullyAndJsonMatches)
@@ -1060,7 +1161,7 @@ namespace JsonSerializationTests
 
             EXPECT_EQ(Processing::Completed, result.GetProcessing());
             EXPECT_EQ(Outcomes::Success, result.GetOutcome());
-            this->Expect_DocStrEq("[]");
+            this->Expect_DocStrEq(this->m_description.GetJsonForEmptyArrayDefaultInstance());
         }
     }
 
@@ -1203,8 +1304,10 @@ namespace JsonSerializationTests
         {
             auto instance = this->m_description.CreateDefaultInstance();
             AZ_PUSH_DISABLE_WARNING(4701, "-Wuninitialized-const-reference")
-            typename TypeParam::Type compare;
-            if (!this->m_description.AreEqual(*instance, compare))
+            auto compare = this->m_description.CreateDefaultConstructedInstance();
+            ASSERT_NE(compare, nullptr);
+            ASSERT_NE(instance, nullptr);
+            if (!this->m_description.AreEqual(*instance, *compare))
             AZ_POP_DISABLE_WARNING
             {
                 auto serializer = this->m_description.CreateSerializer();

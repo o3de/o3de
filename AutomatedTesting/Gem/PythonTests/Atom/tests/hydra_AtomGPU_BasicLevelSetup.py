@@ -37,9 +37,9 @@ class Tests:
     ground_plane_material_component_added = (
         "Ground Plane Material component added",
         "Ground Plane Material component wasn't added")
-    ground_plane_mesh_asset_set = (
-        "Ground Plane Mesh Asset property was set",
-        "Ground Plane Mesh Asset property wasn't set")
+    ground_plane_model_asset_set = (
+        "Ground Plane Model Asset property was set",
+        "Ground Plane Model Asset property wasn't set")
     hdri_skybox_component_added = (
         "HDRi Skybox component added",
         "HDRi Skybox component wasn't added")
@@ -64,9 +64,9 @@ class Tests:
     sphere_material_set = (
         "Sphere Material Asset was set",
         "Sphere Material Asset wasn't set")
-    sphere_mesh_asset_set = (
-        "Sphere Mesh Asset was set",
-        "Sphere Mesh Asset wasn't set")
+    sphere_model_asset_set = (
+        "Sphere Model Asset was set",
+        "Sphere Model Asset wasn't set")
     viewport_set = (
         "Viewport set to correct size",
         "Viewport not set to correct size")
@@ -99,12 +99,12 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
     10. Set the Specular Image property of the Global Skylight (IBL) component.
     11. Create a Ground Plane Entity with a Material component that is a child entity of the Default Level Entity.
     12. Set the Material Asset property of the Material component for the Ground Plane Entity.
-    13. Add the Mesh component to the Ground Plane Entity and set the Mesh component Mesh Asset property.
+    13. Add the Mesh component to the Ground Plane Entity and set the Mesh component Model Asset property.
     14. Create a Directional Light Entity as a child entity of the Default Level Entity.
     15. Add Directional Light component to Directional Light Entity and set entity rotation.
     16. Create a Sphere Entity as a child entity of the Default Level Entity then add a Material component.
     17. Set the Material Asset property of the Material component for the Sphere Entity.
-    18. Add Mesh component to Sphere Entity and set the Mesh Asset property for the Mesh component.
+    18. Add Mesh component to Sphere Entity and set the Model Asset property for the Mesh component.
     19. Create a Camera Entity as a child entity of the Default Level Entity then add a Camera component.
     20. Set the Camera Entity rotation value and set the Camera component Field of View value.
     21. Enter/Exit game mode taking screenshot.
@@ -180,7 +180,7 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
             AtomComponentProperties.global_skylight()))
 
         # 8. Set the Cubemap Texture property of the HDRi Skybox component.
-        global_skylight_image_asset_path = os.path.join("LightingPresets", "default_iblskyboxcm.exr.streamingimage")
+        global_skylight_image_asset_path = os.path.join("lightingpresets", "default_iblskyboxcm.exr.streamingimage")
         global_skylight_image_asset = Asset.find_asset_by_path(global_skylight_image_asset_path, False)
         hdri_skybox_component.set_component_property_value(
             AtomComponentProperties.hdri_skybox('Cubemap Texture'), global_skylight_image_asset.id)
@@ -192,7 +192,7 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
         # 9. Set the Diffuse Image property of the Global Skylight (IBL) component.
         # Re-use the same image that was used in the previous test step.
         global_skylight_diffuse_image_asset_path = os.path.join(
-            "LightingPresets", "default_iblskyboxcm_ibldiffuse.exr.streamingimage")
+            "lightingpresets", "default_iblskyboxcm_ibldiffuse.exr.streamingimage")
         global_skylight_diffuse_image_asset = Asset.find_asset_by_path(global_skylight_diffuse_image_asset_path, False)
         global_skylight_component.set_component_property_value(
             AtomComponentProperties.global_skylight('Diffuse Image'), global_skylight_diffuse_image_asset.id)
@@ -204,7 +204,7 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
         # 10. Set the Specular Image property of the Global Skylight (IBL) component.
         # Re-use the same image that was used in the previous test step.
         global_skylight_specular_image_asset_path = os.path.join(
-            "LightingPresets", "default_iblskyboxcm_iblspecular.exr.streamingimage")
+            "lightingpresets", "default_iblskyboxcm_iblspecular.exr.streamingimage")
         global_skylight_specular_image_asset = Asset.find_asset_by_path(
             global_skylight_specular_image_asset_path, False)
         global_skylight_component.set_component_property_value(
@@ -225,7 +225,7 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
 
         # 12. Set the Material Asset property of the Material component for the Ground Plane Entity.
         ground_plane_entity.set_local_uniform_scale(32.0)
-        ground_plane_material_asset_path = os.path.join("Materials", "Presets", "PBR", "metal_chrome.azmaterial")
+        ground_plane_material_asset_path = os.path.join("materials", "presets", "pbr", "metal_chrome.azmaterial")
         ground_plane_material_asset = Asset.find_asset_by_path(ground_plane_material_asset_path, False)
         ground_plane_material_component.set_component_property_value(
             AtomComponentProperties.material('Material Asset'), ground_plane_material_asset.id)
@@ -234,17 +234,17 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
             ground_plane_material_component.get_component_property_value(
                 AtomComponentProperties.material('Material Asset')) == ground_plane_material_asset.id)
 
-        # 13. Add the Mesh component to the Ground Plane Entity and set the Mesh component Mesh Asset property.
+        # 13. Add the Mesh component to the Ground Plane Entity and set the Mesh component Model Asset property.
         ground_plane_mesh_component = ground_plane_entity.add_component(AtomComponentProperties.mesh())
         Report.result(Tests.mesh_component_added, ground_plane_entity.has_component(AtomComponentProperties.mesh()))
-        ground_plane_mesh_asset_path = os.path.join("TestData", "Objects", "plane.azmodel")
-        ground_plane_mesh_asset = Asset.find_asset_by_path(ground_plane_mesh_asset_path, False)
+        ground_plane_model_asset_path = os.path.join("testdata", "objects", "plane.azmodel")
+        ground_plane_model_asset = Asset.find_asset_by_path(ground_plane_model_asset_path, False)
         ground_plane_mesh_component.set_component_property_value(
-            AtomComponentProperties.mesh('Mesh Asset'), ground_plane_mesh_asset.id)
+            AtomComponentProperties.mesh('Model Asset'), ground_plane_model_asset.id)
         Report.result(
-            Tests.ground_plane_mesh_asset_set,
+            Tests.ground_plane_model_asset_set,
             ground_plane_mesh_component.get_component_property_value(
-                AtomComponentProperties.mesh('Mesh Asset')) == ground_plane_mesh_asset.id)
+                AtomComponentProperties.mesh('Model Asset')) == ground_plane_model_asset.id)
 
         # 14. Create a Directional Light Entity as a child entity of the Default Level Entity.
         directional_light_entity = EditorEntity.create_editor_entity_at(
@@ -266,21 +266,21 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
             AtomComponentProperties.material()))
 
         # 17. Set the Material Asset property of the Material component for the Sphere Entity.
-        sphere_material_asset_path = os.path.join("Materials", "Presets", "PBR", "metal_brass_polished.azmaterial")
+        sphere_material_asset_path = os.path.join("materials", "presets", "pbr", "metal_brass_polished.azmaterial")
         sphere_material_asset = Asset.find_asset_by_path(sphere_material_asset_path, False)
         sphere_material_component.set_component_property_value(
             AtomComponentProperties.material('Material Asset'), sphere_material_asset.id)
         Report.result(Tests.sphere_material_set, sphere_material_component.get_component_property_value(
             AtomComponentProperties.material('Material Asset')) == sphere_material_asset.id)
 
-        # 18. Add Mesh component to Sphere Entity and set the Mesh Asset property for the Mesh component.
+        # 18. Add Mesh component to Sphere Entity and set the Model Asset property for the Mesh component.
         sphere_mesh_component = sphere_entity.add_component(AtomComponentProperties.mesh())
-        sphere_mesh_asset_path = os.path.join("Models", "sphere.azmodel")
-        sphere_mesh_asset = Asset.find_asset_by_path(sphere_mesh_asset_path, False)
+        sphere_model_asset_path = os.path.join("models", "sphere.azmodel")
+        sphere_model_asset = Asset.find_asset_by_path(sphere_model_asset_path, False)
         sphere_mesh_component.set_component_property_value(
-            AtomComponentProperties.mesh('Mesh Asset'), sphere_mesh_asset.id)
-        Report.result(Tests.sphere_mesh_asset_set, sphere_mesh_component.get_component_property_value(
-            AtomComponentProperties.mesh('Mesh Asset')) == sphere_mesh_asset.id)
+            AtomComponentProperties.mesh('Model Asset'), sphere_model_asset.id)
+        Report.result(Tests.sphere_model_asset_set, sphere_mesh_component.get_component_property_value(
+            AtomComponentProperties.mesh('Model Asset')) == sphere_model_asset.id)
 
         # 19. Create a Camera Entity as a child entity of the Default Level Entity then add a Camera component.
         camera_entity = EditorEntity.create_editor_entity_at(

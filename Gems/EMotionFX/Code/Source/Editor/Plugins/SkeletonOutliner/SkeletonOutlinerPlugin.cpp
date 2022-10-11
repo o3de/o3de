@@ -15,6 +15,7 @@
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QHeaderView>
+#include <QEvent>
 
 namespace EMotionFX
 {
@@ -92,6 +93,7 @@ namespace EMotionFX
         m_treeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
         m_treeView->setContextMenuPolicy(Qt::DefaultContextMenu);
         m_treeView->setExpandsOnDoubleClick(false);
+        m_treeView->setMouseTracking(true);
 
         QHeaderView* header = m_treeView->header();
         header->setStretchLastSection(false);
@@ -113,6 +115,9 @@ namespace EMotionFX
 
         connect(m_searchWidget, &AzQtComponents::FilteredSearchWidget::TextFilterChanged, this, &SkeletonOutlinerPlugin::OnTextFilterChanged);
         connect(m_searchWidget, &AzQtComponents::FilteredSearchWidget::TypeFilterChanged, this, &SkeletonOutlinerPlugin::OnTypeFilterChanged);
+
+        connect(m_treeView, &QAbstractItemView::entered, this, &SkeletonOutlinerPlugin::OnEntered);
+        m_treeView->installEventFilter(this);
 
         mainLayout->addWidget(m_treeView);
         m_dock->setWidget(m_mainWidget);
@@ -164,6 +169,24 @@ namespace EMotionFX
     void SkeletonOutlinerPlugin::OnTypeFilterChanged([[maybe_unused]] const AzQtComponents::SearchTypeFilterList& activeTypeFilters)
     {
         m_treeView->expandAll();
+    }
+
+    void SkeletonOutlinerPlugin::OnEntered(const QModelIndex& index)
+    {
+        Node* hoveredNode = index.data(SkeletonModel::ROLE_POINTER).value<Node*>();
+        if (hoveredNode)
+        {
+            SkeletonOutlinerNotificationBus::Broadcast(&SkeletonOutlinerNotifications::JointHoveredChanged, hoveredNode->GetNodeIndex());
+        }
+    }
+
+    bool SkeletonOutlinerPlugin::eventFilter([[maybe_unused]] QObject* object, QEvent* event)
+    {
+        if (event->type() == QEvent::Type::Leave)
+        {
+            SkeletonOutlinerNotificationBus::Broadcast(&SkeletonOutlinerNotifications::JointHoveredChanged, InvalidIndex);
+        }
+        return false;
     }
 
     Node* SkeletonOutlinerPlugin::GetSingleSelectedNode()
@@ -226,6 +249,7 @@ namespace EMotionFX
             Node* selectedNode = modelIndex.data(SkeletonModel::ROLE_POINTER).value<Node*>();
             Actor* selectedActor = modelIndex.data(SkeletonModel::ROLE_ACTOR_POINTER).value<Actor*>();
             SkeletonOutlinerNotificationBus::Broadcast(&SkeletonOutlinerNotifications::SingleNodeSelectionChanged, selectedActor, selectedNode);
+            m_treeView->scrollTo(modelIndex);
         }
         else
         {

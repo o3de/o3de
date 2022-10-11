@@ -60,5 +60,7 @@ namespace EMotionFX
             EXPECT_TRUE(rootItem->data(0, Qt::EditRole) == AZStd::string::format("joint%i", i).c_str());
             EXPECT_TRUE(rootItem->data(1, Qt::EditRole) == "Node");
         }
+
+        actorInstance->Destroy();
     }
 }   // namespace EMotionFX

@@ -11,6 +11,7 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Obb.h>
+#include <AzCore/std/parallel/shared_mutex.h>
 #include <AzCore/Component/NonUniformScaleBus.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <LmbrCentral/Shape/BoxShapeComponentBus.h>
@@ -94,6 +95,7 @@ namespace LmbrCentral
         AZ::NonUniformScaleChangedEvent::Handler m_nonUniformScaleChangedHandler; ///< Responds to changes in non-uniform scale.
         AZ::Vector3 m_currentNonUniformScale = AZ::Vector3::CreateOne(); ///< Caches the current non-uniform scale.
         BoxShapeConfig m_boxShapeConfig; ///< Underlying box configuration.
+        mutable AZStd::shared_mutex m_mutex; ///< Mutex to allow multiple readers but single writer for efficient thread safety
     };
 
     void DrawBoxShape(

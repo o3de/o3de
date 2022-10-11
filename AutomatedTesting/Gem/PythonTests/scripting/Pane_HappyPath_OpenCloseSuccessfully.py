@@ -41,7 +41,7 @@ def Pane_HappyPath_OpenCloseSuccessfully():
 
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
-    import editor_python_test_tools.pyside_utils as pyside_utils
+    import pyside_utils
 
     # Open 3D Engine Imports
     import azlmbr.legacy.general as general

@@ -4698,9 +4698,6 @@ namespace GraphCanvas
         : m_scene(scene)
         , m_suppressContextMenu(false)
     {
-        // Workaround for QTBUG-18021
-        setItemIndexMethod(QGraphicsScene::NoIndex);
-
         setMinimumRenderSize(2.0f);
         connect(this, &QGraphicsScene::selectionChanged, this, [this]() { m_scene.OnSelectionChanged(); });
         setSceneRect(-20000, -20000, 40000, 40000);

@@ -12,9 +12,9 @@
 #include <AzQtComponents/Components/Style.h>
 
 #include <QApplication>
+#include <QEvent>
 #include <QStyleOptionToolButton>
 #include <QStylePainter>
-#include <QTimer>
 
 namespace AzQtComponents
 {
@@ -76,6 +76,12 @@ namespace AzQtComponents
                 break;
         }
 
+        QWidget* topLevelWindow = window();
+        if (topLevelWindow)
+        {
+            topLevelWindow->installEventFilter(this);
+        }
+
         if (m_isDarkStyle)
         {
             Style::addClass(this, QStringLiteral("dark"));
@@ -87,6 +93,15 @@ namespace AzQtComponents
         // Our dock bar buttons only need click focus, they don't need to accept
         // focus by tabbing
         setFocusPolicy(Qt::ClickFocus);
+    }
+
+    bool DockBarButton::eventFilter(QObject* object, QEvent* event)
+    {
+        if (event->type() == QEvent::WindowStateChange && m_buttonType == DockBarButton::MaximizeButton)
+        {
+            SetMaximizeRestoreButton();
+        }
+        return QWidget::eventFilter(object, event);
     }
 
     void DockBarButton::paintEvent(QPaintEvent *)
@@ -130,16 +145,6 @@ namespace AzQtComponents
         }
 
         emit buttonPressed(m_buttonType);
-
-        // We need to update the Maximize/Restore button to display the right icon, but for
-        // floating windows, the window() maximize state won't be updated until the following
-        // tick, so we need to delay this update until the next check
-        QTimer::singleShot(0, [this] {
-            if (m_buttonType == DockBarButton::MaximizeButton)
-            {
-                SetMaximizeRestoreButton();
-            }
-        });
     }
 
     void DockBarButton::SetMaximizeRestoreButton()

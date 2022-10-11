@@ -8,6 +8,7 @@
 #include <Atom/RHI/SwapChain.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
+#include <Atom/RHI/RHISystemInterface.h>
 namespace AZ
 {
     namespace RHI
@@ -40,6 +41,12 @@ namespace AZ
             if (!ValidateDescriptor(descriptor))
             {
                 return ResultCode::InvalidArgument;
+            }
+
+            if (descriptor.m_isXrSwapChain)
+            {
+                m_xrSystem = RHI::RHISystemInterface::Get()->GetXRSystem();
+                AZ_Assert(m_xrSystem, "XR System is null");
             }
 
             SwapChainDimensions nativeDimensions = descriptor.m_dimensions;
@@ -173,6 +180,10 @@ namespace AZ
 
         Image* SwapChain::GetCurrentImage() const
         {
+            if (m_descriptor.m_isXrSwapChain)
+            {
+                return m_images[m_xrSystem->GetCurrentImageIndex(m_descriptor.m_xrSwapChainIndex)].get();
+            }
             return m_images[m_currentImageIndex].get();
         }
 
@@ -196,6 +207,11 @@ namespace AZ
                 m_currentImageIndex = PresentInternal();
                 AZ_Assert(m_currentImageIndex < imageCount, "Invalid image index");
             }
+        }
+
+        RHI::XRRenderingInterface* SwapChain::GetXRSystem() const
+        {
+            return m_xrSystem;
         }
     }
 }

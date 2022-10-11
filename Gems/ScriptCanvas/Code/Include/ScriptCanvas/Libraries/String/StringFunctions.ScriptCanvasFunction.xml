@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScriptCanvas>
+    <Library
+        Include="Include/ScriptCanvas/Libraries/String/StringFunctions.h"
+        Namespace="ScriptCanvas::StringFunctions"
+        Category="String">
+
+        <Function Name="ToLower">
+            <Parameter Name="Source" Description="Source string to be converted to lower case."/>
+        </Function>
+
+        <Function Name="ToUpper">
+            <Parameter Name="Source" Description="Source string to be converted to upper case."/>
+        </Function>
+        
+        <Function Name="Substring">
+            <Parameter Name="Source" Description="Source string to construct substring."/>
+            <Parameter Name="From" Description="Position of the first character to be copied as a substring."/>
+            <Parameter Name="Length" Description="Number of characters to include in the substring."/>
+        </Function>
+        
+        <Function Name="IsValidFindPosition">
+            <Parameter Name="Position" Description="The string find position to check against"/>
+        </Function>
+
+        <Function Name="ContainsString" Branch="IsValidFindPosition" BranchWithValue="True">
+            <Parameter Name="Source" Description="The string to search in."/>
+            <Parameter Name="Pattern" Description="The substring to search for."/>
+            <Parameter Name="Search From End" Description="Start the match checking from the end of a string."/>
+            <Parameter Name="Case Sensitive" Description="Take into account the case of the string when searching."/>
+        </Function>
+
+        <Function Name="StartsWith" Branch="Boolean">
+            <Parameter Name="Source" Description="The string to search in."/>
+            <Parameter Name="Pattern" Description="The substring to search for."/>
+            <Parameter Name="Case Sensitive" Description="Take into account the case of the string when searching."/>
+        </Function>
+
+        <Function Name="EndsWith" Branch="Boolean">
+            <Parameter Name="Source" Description="The string to search in."/>
+            <Parameter Name="Pattern" Description="The substring to search for."/>
+            <Parameter Name="Case Sensitive" Description="Take into account the case of the string when searching."/>
+        </Function>
+
+        <Function Name="Join">
+            <Parameter Name="String Array" Description="The array of strings to join."/>
+            <Parameter Name="Separator" Description="Will use this string when concatenating the strings from the array."/>
+        </Function>
+
+        <Function Name="ReplaceString">
+            <Parameter Name="Source" Description="The string to search in."/>
+            <Parameter Name="Replace" Description="The substring to search for."/>
+            <Parameter Name="With" Description="The string to replace the substring with."/>
+            <Parameter Name="Case Sensitive" Description="Take into account the case of the string when searching."/>
+        </Function>
+
+        <Function Name="Split">
+            <Parameter Name="Source" Description="The string to search in."/>
+            <Parameter Name="Delimiters" Description="The characters that can be used as delimiters."/>
+        </Function>
+    </Library>
+</ScriptCanvas>

@@ -32,6 +32,9 @@ namespace AZ
 
             virtual bool IsEnabled() const = 0;
 
+            //! Returns a fingerprint string that can be used to salt the SceneAPI builder's fingerprint.
+            virtual AZStd::string GetFingerprintInfo() const = 0;
+
             //! Converts data from a IMaterialData object to an Atom MaterialSourceData.
             //! Only works when IsEnabled() is true.
             //! @return true if the MaterialSourceData output was populated with converted material data.

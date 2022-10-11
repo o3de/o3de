@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <RHI/TileAllocator.h>
 #include <RHI/MemoryView.h>
 #include <Atom/RHI/Image.h>
 #include <Atom/RHI/Allocator.h>
@@ -141,6 +142,9 @@ namespace AZ
             void SetDescriptor(const RHI::ImageDescriptor& descriptor) override;
             //////////////////////////////////////////////////////////////////////////
 
+            // Calculate the size of all the tiles allocated for this image and save the number in m_residentSizeInBytes
+            void UpdateResidentTilesSizeInBytes(uint32_t sizePerTile);
+
             void GenerateSubresourceLayouts();
             
             // The memory view allocated to this image.
@@ -154,9 +158,9 @@ namespace AZ
             // The layout of tiles with respect to each subresource in the image.
             ImageTileLayout m_tileLayout;
 
-            // A flat list of tile allocations. The index of each allocation is described
-            // by the tile layout. The value at each index is a tile in the backing heap.
-            AZStd::vector<RHI::VirtualAddress> m_tiles;
+            // The map of heap tiles allocated for each subresources
+            // Note: the tiles allocated for each subreource may come from mutiple heap pages 
+            AZStd::unordered_map<uint32_t, AZStd::vector<HeapTiles>> m_heapTiles;
 
             // Tracking the actual mip level data uploaded. It's also used for invalidate image view. 
             uint32_t m_streamedMipLevel = 0;

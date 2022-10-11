@@ -31,7 +31,7 @@ namespace EMotionFX
         const AnimGraphConnectionId connectionId = AnimGraphConnectionId::CreateFromString(results.back());
 
         // Pre checks
-        const AnimGraph* animGraph = GetAnimGraphManager().FindAnimGraphByID(0);
+        const AnimGraph* animGraph = GetAnimGraphManager().FindAnimGraphByID(100);
         ASSERT_TRUE(animGraph) << "Anim Graph not created";
         AnimGraphNode* motionNode0 = animGraph->GetRootStateMachine()->FindChildNode("Motion0");
         ASSERT_TRUE(motionNode0) << "Motion0 node not created";
@@ -66,11 +66,11 @@ namespace EMotionFX
 
     INSTANTIATE_TEST_CASE_P(CanDeleteAnimGraphNode_AnimGraphModelUpdates, CanDeleteAnimGraphNode,
         ::testing::Values(std::vector<std::string> {
-            R"str(CreateAnimGraph)str",
-            R"str(Select -animGraphID 0)str",
-            R"str(AnimGraphCreateNode -animGraphID 0 -type {B8B8AAE6-E532-4BF8-898F-3D40AA41BC82} -parentName Root -xPos 0 -yPos 0 -name Motion0)str",
-            R"str(AnimGraphCreateNode -animGraphID 0 -type {B8B8AAE6-E532-4BF8-898F-3D40AA41BC82} -parentName Root -xPos 50 -yPos 0 -name Motion1)str",
-            R"str(AnimGraphCreateConnection -animGraphID 0 -sourceNode Motion0 -targetNode Motion1 -sourcePort 0 -targetPort 0 -startOffsetX 98 -startOffsetY 17 -endOffsetX 4 -endOffsetY 17 -transitionType {E69C8C6E-7066-43DD-B1BF-0D2FFBDDF457})str",
+            R"str(CreateAnimGraph -animGraphID 100)str",
+            R"str(Select -animGraphID 100)str",
+            R"str(AnimGraphCreateNode -animGraphID 100 -type {B8B8AAE6-E532-4BF8-898F-3D40AA41BC82} -parentName Root -xPos 0 -yPos 0 -name Motion0)str",
+            R"str(AnimGraphCreateNode -animGraphID 100 -type {B8B8AAE6-E532-4BF8-898F-3D40AA41BC82} -parentName Root -xPos 50 -yPos 0 -name Motion1)str",
+            R"str(AnimGraphCreateConnection -animGraphID 100 -sourceNode Motion0 -targetNode Motion1 -sourcePort 0 -targetPort 0 -startOffsetX 98 -startOffsetY 17 -endOffsetX 4 -endOffsetY 17 -transitionType {E69C8C6E-7066-43DD-B1BF-0D2FFBDDF457})str",
             // Don't add more commands here, the result of the CreateConnection command is used to find a pointer to that connection after the commands have been executed
         }
     ));

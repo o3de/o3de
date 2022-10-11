@@ -2,14 +2,13 @@
 
 <ScriptCanvas Include="Include/ScriptCanvas/Libraries/String/Print.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Class Name="Print"
-	       QualifiedName="ScriptCanvas::Nodes::String::Print"
-	       PreferredClassName="Print"
-           Uuid="{E1940FB4-83FE-4594-9AFF-375FF7603338}"
-           Base="ScriptCanvas::Nodes::Internal::StringFormatted"
-           Category="Utilities/Debug"
-           Version="0"
-           DynamicSlotOrdering="True"
-           EditAttributes="AZ::Edit::Attributes::CategoryStyle@.string;ScriptCanvas::Attributes::Node::TitlePaletteOverride@StringNodeTitlePalette"
-           Description="Formats and prints the provided text in the debug console.\nAny word within {} will create a data pin on this node.">
+        QualifiedName="ScriptCanvas::Nodes::String::Print"
+        PreferredClassName="Print"
+        Uuid="{E1940FB4-83FE-4594-9AFF-375FF7603338}"
+        Base="ScriptCanvas::Nodes::Internal::StringFormatted"
+        Category="Utilities/Debug"
+        DynamicSlotOrdering="True"
+        EditAttributes="AZ::Edit::Attributes::CategoryStyle@.string;ScriptCanvas::Attributes::Node::TitlePaletteOverride@StringNodeTitlePalette"
+        Description="Formats and prints the provided text in the debug console.\nAny word within {} will create a data pin on this node.">
     </Class>
 </ScriptCanvas>

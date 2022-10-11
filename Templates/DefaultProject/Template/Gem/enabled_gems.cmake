@@ -19,7 +19,6 @@ set(ENABLED_GEMS
     ImGui
     LandscapeCanvas
     LyShine
-    Multiplayer
     PhysX
     PrimitiveAssets
     PrefabBuilder
@@ -29,4 +28,5 @@ set(ENABLED_GEMS
     StartingPointInput
     TextureAtlas
     WhiteBox
+    DiffuseProbeGrid
 )

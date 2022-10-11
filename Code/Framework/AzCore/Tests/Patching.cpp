@@ -420,7 +420,7 @@ namespace UnitTest
         {
             public:
             AZ_CLASS_ALLOCATOR(ObjectDerivedClass3, SystemAllocator, 0);
-            AZ_RTTI(ObjectDerivedClass2, "{E80E926B-5750-4E8D-80E0-D06057692847}", ObjectBaseClass);
+            AZ_RTTI(ObjectDerivedClass3, "{E80E926B-5750-4E8D-80E0-D06057692847}", ObjectBaseClass);
             static void Reflect(AZ::SerializeContext& sc)
             {
                 sc.Class<ObjectDerivedClass3>();
@@ -619,11 +619,11 @@ namespace UnitTest
             {
                 editableAddress = GetValidAddressForXMLDataPatchV1AddressTypeIntXML();
             }
-            
+
             return AZStd::string::format(m_XMLDataPatchV1AddressTypeIntOverrideTemplate, editableAddress.c_str(), intValue);
         }
 
-        /* 
+        /*
            Sets the data values and persistentId values for the ContainedObjectPersistentId type stored in m_XMLDataPatchV1AddressTypeIntVectorOverrideTemplate's xml stream
            Can also optionally set the address of the first element otherwise defaults to a valid address if testAddress is nullptr
            The stream contains 5 elements within the vector
@@ -676,15 +676,15 @@ namespace UnitTest
         {
             ObjectToPatch sourceObj;
             sourceObj.m_intValue = 101;
-            sourceObj.m_objectArray.push_back();
-            sourceObj.m_objectArray.push_back();
-            sourceObj.m_objectArray.push_back();
+            sourceObj.m_objectArray.emplace_back();
+            sourceObj.m_objectArray.emplace_back();
+            sourceObj.m_objectArray.emplace_back();
             sourceObj.m_dynamicField.Set(aznew ContainedObjectNoPersistentId(40));
             {
                 // derived
-                sourceObj.m_derivedObjectArray.push_back();
-                sourceObj.m_derivedObjectArray.push_back();
-                sourceObj.m_derivedObjectArray.push_back();
+                sourceObj.m_derivedObjectArray.emplace_back();
+                sourceObj.m_derivedObjectArray.emplace_back();
+                sourceObj.m_derivedObjectArray.emplace_back();
             }
 
             // test generic containers with persistent ID
@@ -706,17 +706,17 @@ namespace UnitTest
 
             ObjectToPatch targetObj;
             targetObj.m_intValue = 121;
-            targetObj.m_objectArray.push_back();
-            targetObj.m_objectArray.push_back();
-            targetObj.m_objectArray.push_back();
+            targetObj.m_objectArray.emplace_back();
+            targetObj.m_objectArray.emplace_back();
+            targetObj.m_objectArray.emplace_back();
             targetObj.m_objectArray[0].m_persistentId = 1;
             targetObj.m_objectArray[0].m_data = 301;
             targetObj.m_dynamicField.Set(aznew ContainedObjectNoPersistentId(50));
             {
                 // derived
-                targetObj.m_derivedObjectArray.push_back();
-                targetObj.m_derivedObjectArray.push_back();
-                targetObj.m_derivedObjectArray.push_back();
+                targetObj.m_derivedObjectArray.emplace_back();
+                targetObj.m_derivedObjectArray.emplace_back();
+                targetObj.m_derivedObjectArray.emplace_back();
                 targetObj.m_derivedObjectArray[0].m_persistentId = 1;
                 targetObj.m_derivedObjectArray[0].m_data = 3010;
             }
@@ -1499,7 +1499,7 @@ namespace UnitTest
             ObjectDerivedClass3::Reflect(*m_serializeContext);
             ObjectWithVectorOfBaseClasses::Reflect(*m_serializeContext);
 
-            // step 1:  Make a patch that includes deprecated classes. 
+            // step 1:  Make a patch that includes deprecated classes.
             ObjectWithVectorOfBaseClasses sourceObject;
             ObjectWithVectorOfBaseClasses targetObject;
             targetObject.m_vectorOfBaseClasses.push_back(new ObjectDerivedClass1());
@@ -1588,7 +1588,7 @@ namespace UnitTest
             // Apply provides the remaining class data to complete the conversion
             DataPatch patch;
             LoadPatchFromXML(legacyPatchXML, patch);
-            
+
             // Apply the patch and complete conversion
             ObjectToPatch sourceObj;
             AZStd::unique_ptr<ObjectToPatch> generatedObj(patch.Apply(&sourceObj, m_serializeContext.get()));
@@ -1733,7 +1733,7 @@ namespace UnitTest
                     </Class>
             </ObjectStream>
             )";
-            
+
             // Load the patch from XML
             // This triggers the Legacy DataPatch converter
             // Patch Data will be wrapped in the StreamWrapper type until Apply is called
@@ -2433,7 +2433,7 @@ namespace UnitTest
             const int expectedAddressElement = 4321;
             const int expectedVersion = 2222;
 
-            DataPatch::AddressTypeElement addressTypeElement = 
+            DataPatch::AddressTypeElement addressTypeElement =
                 m_addressTypeSerializer->LoadAddressElementFromPath(AZStd::string::format("somecharacters(%s)#%i%s%i/",
                 expectedTypeId,
                 expectedAddressElement,
@@ -2475,7 +2475,7 @@ namespace UnitTest
 
         TEST_F(PatchingTest, AddressTypeElementLoad_TypeIdMissingParentheses_LoadFails_FT)
         {
-            AZStd::string pathMissingParentheses = AZStd::string::format("somecharacters{3A8D5EC9-D70E-41CB-879C-DEF6A6D6ED03}::classE%s3000%s", 
+            AZStd::string pathMissingParentheses = AZStd::string::format("somecharacters{3A8D5EC9-D70E-41CB-879C-DEF6A6D6ED03}::classE%s3000%s",
                                                                          V1AddressTypeElementVersionDelimiter,
                                                                          V1AddressTypeElementPathDelimiter);
 
@@ -2486,7 +2486,7 @@ namespace UnitTest
 
         TEST_F(PatchingTest, AddressTypeElementLoad_TypeIdMissingCurlyBraces_LoadFails_FT)
         {
-            AZStd::string pathMissingCurlyBraces = AZStd::string::format("somecharacters(07DEDB71-0585-5BE6-83FF-1C9029B9E5DB)::classF%s9876%s", 
+            AZStd::string pathMissingCurlyBraces = AZStd::string::format("somecharacters(07DEDB71-0585-5BE6-83FF-1C9029B9E5DB)::classF%s9876%s",
                                                                          V1AddressTypeElementVersionDelimiter,
                                                                          V1AddressTypeElementPathDelimiter);
 
@@ -2497,7 +2497,7 @@ namespace UnitTest
 
         TEST_F(PatchingTest, AddressTypeElementLoad_ClassTypePathElementMissingColons_LoadFails_FT)
         {
-            AZStd::string pathElementMissingColons = AZStd::string::format("somecharacters({861A12B0-BD91-528E-9CEC-505246EE98DE})classC%s5432%s", 
+            AZStd::string pathElementMissingColons = AZStd::string::format("somecharacters({861A12B0-BD91-528E-9CEC-505246EE98DE})classC%s5432%s",
                                                                            V1AddressTypeElementVersionDelimiter,
                                                                            V1AddressTypeElementPathDelimiter);
 
@@ -2508,7 +2508,7 @@ namespace UnitTest
 
         TEST_F(PatchingTest, AddressTypeElementLoad_IndexTypePathElementMissingPound_LoadFails_FT)
         {
-            AZStd::string pathElementMissingPound = AZStd::string::format("somecharacters({ADFD596B-7177-5519-9752-BC418FE42963})91011%s1122%s", 
+            AZStd::string pathElementMissingPound = AZStd::string::format("somecharacters({ADFD596B-7177-5519-9752-BC418FE42963})91011%s1122%s",
                                                                           V1AddressTypeElementVersionDelimiter,
                                                                           V1AddressTypeElementPathDelimiter);
 
@@ -2565,7 +2565,7 @@ namespace UnitTest
             InnerObjectFieldConverterV1::Reflect(m_serializeContext.get());
             InnerObjectFieldConverterDerivedV1::Reflect(m_serializeContext.get());
             ObjectFieldConverterV1::Reflect(m_serializeContext.get());
-            
+
             const ObjectFieldConverterV1 initialObject;
             ObjectFieldConverterV1 testObject;
             // Change the defaults of elements on the ObjectFieldConverterV1 object
@@ -2573,7 +2573,7 @@ namespace UnitTest
             testObject.m_rootStringVector.emplace_back("Test2");
             testObject.m_rootInnerObject.m_stringField = "InnerTest1";
             testObject.m_rootInnerObject.m_stringVector.emplace_back("InnerTest2");
-            
+
             auto derivedInnerObject = aznew InnerObjectFieldConverterDerivedV1;
             derivedInnerObject->m_stringField = "DerivedTest1";
             derivedInnerObject->m_stringVector.emplace_back("DerivedTest2");
@@ -2634,7 +2634,7 @@ namespace UnitTest
                             // This occurs when patched element is a pointer to a class. In that case the entire class is serialized out
                             // Therefore when the DataPatch is loaded, the patch Data will load it's AZStd::any, which goes through the normal
                             // serialization flow, so if the class stored in the AZStd::any is an old version it needs to run through a Version Converter
-                            ->Version(2, &VersionConverter) 
+                            ->Version(2, &VersionConverter)
                             ->Field("InnerBaseIntField", &InnerObjectFieldConverterV2::m_int64Field)
                             ->TypeChange("InnerBaseStringField", 1, 2, AZStd::function<int64_t(const AZStd::string&)>(&StringToInt64))
                             ->NameChange(1, 2, "InnerBaseStringField", "InnerBaseIntField")
@@ -2736,7 +2736,7 @@ namespace UnitTest
                     AZ::IO::ByteContainerStream<decltype(byteBuffer)> byteStream(&byteBuffer);
                     WritePatchToByteStream(testPatch, byteBuffer);
                 }
-                // Now unreflect the ObjectFieldConverterV1, InnerObjectFieldConverterDerivedV1 and InnerObjectFieldConverterDerivedV1 
+                // Now unreflect the ObjectFieldConverterV1, InnerObjectFieldConverterDerivedV1 and InnerObjectFieldConverterDerivedV1
                 // and reflect ObjectFieldConverterV1WithMemberVersionChange, InnerObjectFieldConverterV2 and InnerObjectFieldConverterDerivedV1WithV2Base
                 {
                     m_serializeContext->EnableRemoveReflection();
@@ -2751,7 +2751,7 @@ namespace UnitTest
                 }
 
                 // Read DataPatch from ByteStream after reflecting Version 2 of the InnerObjectFieldConverterV2 class
-                // the reason this is required is the testPatch variable has as part of the patch data AZStd::any 
+                // the reason this is required is the testPatch variable has as part of the patch data AZStd::any
                 // that wraps a instance of an InnerObjectFieldConverterDerivedV1 stored in an InnerObjectFieldConverterV1 pointer
                 // The virtual table points to the InnerObjectFieldConverterDerivedV1 class, which in a normal patching scenario
                 // The Data Patch would be loaded from disk after the new version of the InnerObjectFieldConverterV2 has reflected
@@ -3070,7 +3070,7 @@ namespace UnitTest
                     if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext))
                     {
                         // Because containers are implicitly reflected when used as part of a class reflection
-                        // the ObjectFieldConverterV1 AZStd::vector<AZStd::string> class is not reflected 
+                        // the ObjectFieldConverterV1 AZStd::vector<AZStd::string> class is not reflected
                         // if the ObjectFieldConverterV1 did not reflect
                         serializeContext->RegisterGenericType<AZStd::vector<AZStd::string>>();
                         serializeContext->Class<ClassType>()
@@ -3126,7 +3126,7 @@ namespace UnitTest
                             ->Version(3)
                             ->Field("RootStringField", &ClassType::m_rootStringField)
                             ->Field("RootStringList", &ClassType::m_rootStringList)
-                            // The TypeChange and NameChange converters are interleaved purposefully to make sure that the order of declaration 
+                            // The TypeChange and NameChange converters are interleaved purposefully to make sure that the order of declaration
                             // of the converters doesn't affect the conversion result
                             ->TypeChange("RootStringVector", 1, 3, AZStd::function<AZStd::list<AZStd::string>(const AZStd::vector<AZStd::string>&)>(&ConvertStringVectorToStringList))
                             ->NameChange(1, 3, "RootStringVector", "RootStringList")

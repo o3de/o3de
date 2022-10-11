@@ -52,7 +52,7 @@ def AssetBrowser_TreeNavigation():
 
     import azlmbr.legacy.general as general
 
-    import editor_python_test_tools.pyside_utils as pyside_utils
+    import pyside_utils
     import editor_python_test_tools.hydra_editor_utils as hydra
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper

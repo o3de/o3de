@@ -26,6 +26,8 @@
 #include <Editor/EditorStreamingImageAssetCtrl.h>
 #include <Editor/EditorSurfaceMaskGradientComponent.h>
 #include <Editor/EditorGradientSurfaceDataComponent.h>
+#include <GradientSignal/Editor/GradientPreviewer.h>
+#include <GradientSignal/Editor/EditorGradientBakerComponent.h>
 #include <GradientSignal/Editor/EditorGradientComponentBase.h>
 #include <UI/GradientPreviewDataWidget.h>
 
@@ -36,6 +38,7 @@ namespace GradientSignal
         m_descriptors.insert(m_descriptors.end(), {
             GradientSignalEditorSystemComponent::CreateDescriptor(),
 
+            EditorGradientBakerComponent::CreateDescriptor(),
             EditorSurfaceAltitudeGradientComponent::CreateDescriptor(),
             EditorSmoothStepGradientComponent::CreateDescriptor(),
             EditorSurfaceSlopeGradientComponent::CreateDescriptor(),
@@ -68,6 +71,8 @@ namespace GradientSignal
 
     void GradientSignalEditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
+        GradientPreviewer::Reflect(context);
+
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<GradientSignalEditorSystemComponent, AZ::Component>()

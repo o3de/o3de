@@ -33,7 +33,8 @@ namespace AZ
 
             //! Adds a shader to the built-in shader collection, which will be run for this material.
             //! shaderTag must be unique within the material type's list of shaders.
-            void AddShader(const AZ::Data::Asset<ShaderAsset>& shaderAsset, const ShaderVariantId& shaderVaraintId = ShaderVariantId{}, const AZ::Name& shaderTag = Uuid::CreateRandom().ToString<AZ::Name>());
+            void AddShader(const AZ::Data::Asset<ShaderAsset>& shaderAsset, const ShaderVariantId& shaderVariantId = ShaderVariantId{});
+            void AddShader(const AZ::Data::Asset<ShaderAsset>& shaderAsset, const ShaderVariantId& shaderVariantId, const AZ::Name& shaderTag);
             void AddShader(const AZ::Data::Asset<ShaderAsset>& shaderAsset, const AZ::Name& shaderTag);
 
             //! Sets the version of the MaterialTypeAsset

@@ -24,6 +24,9 @@ namespace AZ::SceneAPI::SceneBuilder
 
     bool IsSkinnedMesh(const aiNode& node, const aiScene& scene);
 
+    // Check if the all the meshes under the node are valid meshes.
+    bool AreAllMeshesValid(const aiNode& node, const aiScene& scene);
+
     // Checks if a node name is a pivot node and optionally returns the position in the name of the pivot marker (for splitting out the parts later)
     bool IsPivotNode(const aiString& nodeName, size_t* pos = nullptr);
 
@@ -41,7 +44,7 @@ namespace AZ::SceneAPI::SceneBuilder
     // Find the first bone with the name of the given node.
     const aiBone* FindFirstBoneByNodeName(const aiNode* node, AZStd::unordered_multimap<AZStd::string, const aiBone*>& boneByNameMap);
 
-    // Check if the given node or any of its children, or children of children, is a bone by checking if the node name is part of the given map.
-    bool RecursiveHasChildBone(const aiNode* node, const AZStd::unordered_multimap<AZStd::string, const aiBone*>& boneByNameMap);
+    // Check if the given node or any of its children, or children of children, is a bone by checking if the node name is part of the given maps.
+    bool RecursiveHasChildBone(const aiNode* node, const AZStd::unordered_multimap<AZStd::string, const aiBone*>& boneByNameMap, const AZStd::unordered_set<AZStd::string>& animatedNodesMap);
 } // namespace AZ
 

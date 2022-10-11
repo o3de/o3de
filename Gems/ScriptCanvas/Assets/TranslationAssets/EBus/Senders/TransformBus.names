@@ -503,6 +503,28 @@
                     ]
                 },
                 {
+                    "base": "SetWorldRotation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set World Rotation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetWorldRotation is invoked"
+                    },
+                    "details": {
+                        "name": "Set World Rotation"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Euler Angles (Radians)"
+                            }
+                        }
+                    ]
+                },
+                {
                     "base": "SetWorldRotationQuaternion",
                     "entry": {
                         "name": "In",

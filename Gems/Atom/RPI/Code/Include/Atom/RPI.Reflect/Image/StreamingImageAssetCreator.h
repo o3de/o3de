@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Math/Color.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <Atom/RPI.Reflect/AssetCreator.h>
 
@@ -44,6 +45,9 @@ namespace AZ
 
             //! Set streaming image asset's flags.
             void SetFlags(StreamingImageFlags flag);
+
+            //! Set the average color of the image.
+            void SetAverageColor(Color avgColor);
             
             //! Finalizes and assigns ownership of the asset to result, if successful. 
             //! Otherwise false is returned and result is left untouched.

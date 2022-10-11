@@ -6,14 +6,16 @@
  *
  */
 
+#include <PythonCoverageEditorSystemComponent.h>
+
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/JSON/document.h>
 #include <AzCore/Module/ModuleManagerBus.h>
 #include <AzCore/Module/Module.h>
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/Serialization/SerializeContext.h>
-
-#include <PythonCoverageEditorSystemComponent.h>
+#include <AzCore/std/string/regex.h>
+#include <AzCore/StringFunc/StringFunc.h>
 
 namespace PythonCoverage
 {
@@ -100,7 +102,7 @@ namespace PythonCoverage
             return m_coverageState;
         }
 
-        const auto& tempConfig = configurationFile["workspace"]["temp"];
+        const auto& tempConfig = configurationFile["common"]["workspace"]["temp"];
 
         // Temp directory root path is absolute
         const AZ::IO::Path tempWorkspaceRootDir = tempConfig["root"].GetString();
@@ -118,20 +120,19 @@ namespace PythonCoverage
     {
         AZStd::string contents;
 
-        // Compile the coverage for all test cases in this script
-        for (const auto& [testCase, entityComponents] : m_entityComponentMap)
+        // Compile the coverage for this test case
+        const auto coveringModules = GetParentComponentModulesForAllActivatedEntities(m_entityComponents);
+        if (coveringModules.empty())
         {
-            const auto coveringModules = GetParentComponentModulesForAllActivatedEntities(entityComponents);
-            if (coveringModules.empty())
-            {
-                return;
-            }
+            return;
+        }
 
-            contents = testCase + "\n";
-            for (const auto& coveringModule : coveringModules)
-            {
-                contents += AZStd::string::format(" %s\n", coveringModule.c_str());
-            }
+        contents = AZStd::string::format(
+            "%s\n%s\n%s\n%s\n", m_parentScriptPath.c_str(), m_scriptPath.c_str(), m_testFixture.c_str(), m_testCase.c_str());
+
+        for (const auto& coveringModule : coveringModules)
+        {
+            contents += AZStd::string::format("%s\n", coveringModule.c_str());
         }
     
         AZ::IO::SystemFile file;
@@ -177,14 +178,13 @@ namespace PythonCoverage
     
         if (entity)
         {
-            auto& entityComponents = m_entityComponentMap[m_testCase];
             for (const auto& entityComponent : entity->GetComponents())
             {
                 const auto componentTypeId = entityComponent->GetUnderlyingComponentType();
                 AZ::ComponentDescriptor* componentDescriptor = nullptr;
                 AZ::ComponentDescriptorBus::EventResult(
                     componentDescriptor, componentTypeId, &AZ::ComponentDescriptorBus::Events::GetDescriptor);
-                entityComponents[componentTypeId] = componentDescriptor;
+                m_entityComponents[componentTypeId] = componentDescriptor;
             }
         }
     }
@@ -203,8 +203,18 @@ namespace PythonCoverage
     
         return coveringModuleOutputNames;
     }
+
+    AZStd::string CompileParentFolderName(const AZStd::string& parentScriptPath)
+    {
+        // Compile a unique folder name based on the aprent script path
+        auto parentfolder = parentScriptPath;
+        AZ::StringFunc::Replace(parentfolder, '/', '_');
+        AZ::StringFunc::Replace(parentfolder, '\\', '_');
+        AZ::StringFunc::Replace(parentfolder, '.', '_');
+        return parentfolder;
+    }
     
-    void PythonCoverageEditorSystemComponent::OnStartExecuteByFilenameAsTest([[maybe_unused]]AZStd::string_view filename, AZStd::string_view testCase, [[maybe_unused]] const AZStd::vector<AZStd::string_view>& args)
+    void PythonCoverageEditorSystemComponent::OnStartExecuteByFilenameAsTest(AZStd::string_view filename, AZStd::string_view testCase, [[maybe_unused]] const AZStd::vector<AZStd::string_view>& args)
     {
         if (m_coverageState == CoverageState::Disabled)
         {
@@ -217,7 +227,7 @@ namespace PythonCoverage
             WriteCoverageFile();
             m_coverageState = CoverageState::Idle;
         }
-        
+
         if (testCase.empty())
         {
             // We need to be able to pinpoint the coverage data to the specific test case names otherwise we will not be able
@@ -226,16 +236,28 @@ namespace PythonCoverage
             return;
         }
 
-        const auto coverageFile = m_coverageDir / AZStd::string::format("%.*s.pycoverage", AZ_STRING_ARG(testCase));
-
-        // If this is a different python script we clear the existing entity components and start afresh
-        if (m_coverageFile != coverageFile)
+        const auto matcherPattern = AZStd::regex("(.*)::(.*)::(.*)");
+        const auto strTestCase = AZStd::string(testCase);
+        AZStd::smatch testCaseMatches;
+        if (!AZStd::regex_search(strTestCase, testCaseMatches, matcherPattern))
         {
-            m_entityComponentMap.clear();
-            m_coverageFile = coverageFile;
+            AZ_Error(
+                LogCallSite,
+                false,
+                "The test case name '%s' did not comply to the format expected by the coverage gem "
+                "'parent_script_path::fixture_name::test_case_name', coverage data gathering will be disabled for this test",
+                strTestCase.c_str());
+            return;
         }
 
-        m_testCase = testCase;
+        m_parentScriptPath = testCaseMatches[1];
+        m_testFixture = testCaseMatches[2];
+        m_testCase = testCaseMatches[3];
+        m_entityComponents.clear();
+        m_scriptPath = filename;
+        const auto coverageFile = m_coverageDir / CompileParentFolderName(m_parentScriptPath) / AZStd::string::format("%s.pycoverage", m_testCase.c_str());
+        m_coverageFile = coverageFile;
         m_coverageState = CoverageState::Gathering;
     }
 } // namespace PythonCoverage
+

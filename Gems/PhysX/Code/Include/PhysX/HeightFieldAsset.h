@@ -9,6 +9,8 @@
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Asset/AssetSerializer.h>
+#include <AzFramework/Asset/GenericAssetHandler.h>
 
 namespace physx
 {
@@ -21,7 +23,7 @@ namespace PhysX
     {
 
         /// Represents a PhysX height field asset.
-        class HeightFieldAsset
+        class HeightFieldAsset final
             : public AZ::Data::AssetData
         {
         public:

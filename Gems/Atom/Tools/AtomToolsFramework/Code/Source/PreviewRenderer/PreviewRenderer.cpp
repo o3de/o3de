@@ -130,8 +130,19 @@ namespace AtomToolsFramework
             m_currentCaptureRequest = m_captureRequestQueue.front();
             m_captureRequestQueue.pop();
 
-            m_state.reset();
-            m_state.reset(new PreviewRendererLoadState(this));
+            bool canCapture = false;
+            AZ::Render::FrameCaptureRequestBus::BroadcastResult(canCapture, &AZ::Render::FrameCaptureRequestBus::Events::CanCapture);
+
+            // if we're not on a device that can capture, immediately trigger the "failed" state.
+            if (!canCapture)
+            {
+                CancelCaptureRequest();
+            }
+            else
+            {
+                m_state.reset();
+                m_state.reset(new PreviewRendererLoadState(this));
+            }
         }
     }
 
@@ -183,7 +194,7 @@ namespace AtomToolsFramework
         m_currentCaptureRequest.m_content->Update();
     }
 
-    bool PreviewRenderer::StartCapture()
+    uint32_t PreviewRenderer::StartCapture()
     {
         auto captureCompleteCallback = m_currentCaptureRequest.m_captureCompleteCallback;
         auto captureFailedCallback = m_currentCaptureRequest.m_captureFailedCallback;
@@ -194,8 +205,10 @@ namespace AtomToolsFramework
                 if (captureCompleteCallback)
                 {
                     captureCompleteCallback(QPixmap::fromImage(QImage(
-                        result.m_dataBuffer.get()->data(), result.m_imageDescriptor.m_size.m_width,
-                        result.m_imageDescriptor.m_size.m_height, QImage::Format_RGBA8888)));
+                        result.m_dataBuffer.get()->data(),
+                        result.m_imageDescriptor.m_size.m_width,
+                        result.m_imageDescriptor.m_size.m_height,
+                        QImage::Format_RGBA8888)));
                 }
             }
             else
@@ -214,11 +227,11 @@ namespace AtomToolsFramework
 
         m_renderPipeline->AddToRenderTickOnce();
 
-        bool startedCapture = false;
+        uint32_t frameCaptureId = AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId;
         AZ::Render::FrameCaptureRequestBus::BroadcastResult(
-            startedCapture, &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachmentWithCallback, m_passHierarchy,
+            frameCaptureId, &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachmentWithCallback, m_passHierarchy,
             AZStd::string("Output"), captureCallback, AZ::RPI::PassAttachmentReadbackOption::Output);
-        return startedCapture;
+        return frameCaptureId;
     }
 
     void PreviewRenderer::EndCapture()

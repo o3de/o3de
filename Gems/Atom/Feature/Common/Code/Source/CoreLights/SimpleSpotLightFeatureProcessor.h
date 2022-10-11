@@ -29,6 +29,11 @@ namespace AZ
             float m_cosInnerConeAngle = 0.0f; // Cosine of the inner cone angle
             AZStd::array<float, 3> m_rgbIntensity = { { 0.0f, 0.0f, 0.0f } };
             float m_cosOuterConeAngle = 0.0f; // Cosine of the outer cone angle
+
+            float m_affectsGIFactor = 1.0f;
+            bool m_affectsGI = true;
+            float m_padding0 = 0.0f;
+            float m_padding1 = 0.0f;
         };
 
         class SimpleSpotLightFeatureProcessor final
@@ -57,6 +62,8 @@ namespace AZ
             void SetDirection(LightHandle handle, const AZ::Vector3& lightDirection) override;
             virtual void SetConeAngles(LightHandle handle, float innerRadians, float outerRadians) override;
             void SetAttenuationRadius(LightHandle handle, float attenuationRadius) override;
+            void SetAffectsGI(LightHandle handle, bool affectsGI) override;
+            void SetAffectsGIFactor(LightHandle handle, float affectsGIFactor) override;
 
             const Data::Instance<RPI::Buffer>  GetLightBuffer() const;
             uint32_t GetLightCount()const;

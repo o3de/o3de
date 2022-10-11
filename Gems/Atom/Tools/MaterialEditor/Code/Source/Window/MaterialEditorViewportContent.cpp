@@ -69,7 +69,7 @@ namespace MaterialEditor
             AZ::RPI::AssetUtils::GetAssetIdForProductPath("materialeditor/viewportmodels/plane_1x1.azmodel"));
 
         AZ::Render::MaterialComponentRequestBus::Event(
-            GetShadowCatcherEntityId(), &AZ::Render::MaterialComponentRequestBus::Events::SetMaterialOverride,
+            GetShadowCatcherEntityId(), &AZ::Render::MaterialComponentRequestBus::Events::SetMaterialAssetId,
             AZ::Render::DefaultMaterialAssignmentId,
             AZ::RPI::AssetUtils::GetAssetIdForProductPath("materials/special/shadowcatcher.azmaterial"));
 
@@ -131,7 +131,7 @@ namespace MaterialEditor
         materialAssignment.m_materialInstancePreCreated = true;
 
         AZ::Render::MaterialComponentRequestBus::Event(
-            GetObjectEntityId(), &AZ::Render::MaterialComponentRequestBus::Events::SetMaterialOverrides, materials);
+            GetObjectEntityId(), &AZ::Render::MaterialComponentRequestBus::Events::SetMaterialMap, materials);
     }
 
     void MaterialEditorViewportContent::OnViewportSettingsChanged()
@@ -170,7 +170,7 @@ namespace MaterialEditor
                     viewportRequests->GetShadowCatcherEnabled());
 
                 AZ::Render::MaterialComponentRequestBus::Event(
-                    GetShadowCatcherEntityId(), &AZ::Render::MaterialComponentRequestBus::Events::SetPropertyOverride,
+                    GetShadowCatcherEntityId(), &AZ::Render::MaterialComponentRequestBus::Events::SetPropertyValue,
                     AZ::Render::DefaultMaterialAssignmentId, "settings.opacity", AZStd::any(lightingPreset.m_shadowCatcherOpacity));
 
                 AZ::Render::DisplayMapperComponentRequestBus::Event(

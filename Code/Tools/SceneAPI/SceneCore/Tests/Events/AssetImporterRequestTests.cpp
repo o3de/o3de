@@ -189,6 +189,49 @@ namespace AZ
                 EXPECT_EQ(nullptr, result);
             }
 
+            TEST_F(AssetImporterRequestTests, LoadSceneFromVerifiedPath_LoadWithEmptySceneManifest_ResultsInDefault)
+            {
+                NiceMock<MockAssetImportRequestHandler> manifestHandler;
+                manifestHandler.SetDefaultExtensions();
+                NiceMock<MockAssetImportRequestHandler> assetHandler;
+                assetHandler.SetDefaultExtensions();
+
+                ON_CALL(manifestHandler, PrepareForAssetLoading(Matcher<Containers::Scene&>(_), Matcher<AssetImportRequest::RequestingApplication>(_)))
+                    .WillByDefault(Return(ProcessingResult::Success));
+
+                ON_CALL(assetHandler, PrepareForAssetLoading(Matcher<Containers::Scene&>(_), Matcher<AssetImportRequest::RequestingApplication>(_)))
+                    .WillByDefault(Return(ProcessingResult::Success));
+
+                bool anEmptyManifestWorks = false;
+                ON_CALL(manifestHandler, UpdateManifest).WillByDefault([&anEmptyManifestWorks](Containers::Scene&, AssetImportRequest::ManifestAction action, AssetImportRequest::RequestingApplication)
+                {
+                    if (action == AssetImportRequest::ManifestAction::ConstructDefault)
+                    {
+                        anEmptyManifestWorks = true;
+                        return ProcessingResult::Success;
+                    }
+                    return ProcessingResult::Failure;
+                });
+
+                ON_CALL(manifestHandler, LoadAsset(
+                    Matcher<Containers::Scene&>(_), Matcher<const AZStd::string&>(_), Matcher<const Uuid&>(_), Matcher<AssetImportRequest::RequestingApplication>(_)))
+                    .WillByDefault(Return(LoadingResult::ManifestLoaded));
+
+                ON_CALL(assetHandler, LoadAsset(
+                    Matcher<Containers::Scene&>(_), Matcher<const AZStd::string&>(_), Matcher<const Uuid&>(_), Matcher<AssetImportRequest::RequestingApplication>(_)))
+                    .WillByDefault(Return(LoadingResult::AssetLoaded));
+
+                EXPECT_CALL(manifestHandler, GetManifestExtension(_)).Times(0);
+                EXPECT_CALL(manifestHandler, GetSupportedFileExtensions(_)).Times(0);
+                EXPECT_CALL(manifestHandler, PrepareForAssetLoading(_, _)).Times(1);
+                EXPECT_CALL(manifestHandler, LoadAsset(_, _, _, _)).Times(1);
+
+                AZStd::shared_ptr<Containers::Scene> result =
+                    AssetImportRequest::LoadSceneFromVerifiedPath("test.asset", m_testId, Events::AssetImportRequest::RequestingApplication::Generic, SceneCore::LoadingComponent::TYPEINFO_Uuid());
+                EXPECT_NE(nullptr, result);
+                EXPECT_TRUE(anEmptyManifestWorks);
+            }
+
             TEST_F(AssetImporterRequestTests, LoadSceneFromVerifiedPath_AssetFailureToLoad_UpdateManifestNotCalledAndReturnsNullptr)
             {
                 StrictMock<MockAssetImportRequestHandler> handler;

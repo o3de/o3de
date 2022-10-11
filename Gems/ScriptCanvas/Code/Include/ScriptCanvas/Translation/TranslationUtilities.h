@@ -31,8 +31,6 @@ namespace ScriptCanvas
 
         struct Configuration;
 
-        AZStd::string EntityIdToU64String(const AZ::EntityId& entityId);
-
         AZStd::string EntityIdValueToString(const AZ::EntityId& entityId, const Configuration& config);
 
         AZStd::string_view GetCopyright();

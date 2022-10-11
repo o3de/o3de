@@ -344,6 +344,7 @@
     <file>img/UI20/toolbar/Align_to_Object.svg</file>
     <file>img/UI20/toolbar/Angle.svg</file>
     <file>img/UI20/toolbar/Audio.svg</file>
+    <file>img/UI20/toolbar/AutoFit.svg</file>
     <file>img/UI20/toolbar/Database_view.svg</file>
     <file>img/UI20/toolbar/Debugging.svg</file>
     <file>img/UI20/toolbar/Deploy.svg</file>
@@ -367,10 +368,11 @@
     <file>img/UI20/toolbar/Parent.svg</file>
     <file>img/UI20/toolbar/particle.svg</file>
     <file>img/UI20/toolbar/Play.svg</file>
+    <file>img/UI20/toolbar/Question.svg</file>
     <file>img/UI20/toolbar/Redo.svg</file>
     <file>img/UI20/toolbar/remove_link.svg</file>
     <file>img/UI20/toolbar/Reset_physics_state.svg</file>
-	<file>img/UI20/toolbar/RestoreMode.svg</file>
+    <file>img/UI20/toolbar/RestoreMode.svg</file>
     <file>img/UI20/toolbar/Save.svg</file>
     <file>img/UI20/toolbar/Scale.svg</file>
     <file>img/UI20/toolbar/Select.svg</file>
@@ -378,7 +380,7 @@
     <file>img/UI20/toolbar/Select_terrain.svg</file>
     <file>img/UI20/toolbar/Simulate_Physics.svg</file>
     <file>img/UI20/toolbar/Simulate_Physics_on_selected_objects.svg</file>
-	<file>img/UI20/toolbar/SketchMode.svg</file>
+    <file>img/UI20/toolbar/SketchMode.svg</file>
     <file>img/UI20/toolbar/Terrain.svg</file>
     <file>img/UI20/toolbar/Terrain_Texture.svg</file>
     <file>img/UI20/toolbar/Rotate.svg</file>
@@ -390,9 +392,11 @@
     <file>img/UI20/toolbar/Y_axis.svg</file>
     <file>img/UI20/toolbar/Z_axis.svg</file>
     <file>img/UI20/toolbar/XY2_copy.svg</file>
+    <file>img/UI20/toolbar/joints/ChildFrame.svg</file>
     <file>img/UI20/toolbar/joints/Damping.svg</file>
     <file>img/UI20/toolbar/joints/MaxForce.svg</file>
     <file>img/UI20/toolbar/joints/MaxTorque.svg</file>
+    <file>img/UI20/toolbar/joints/ParentFrame.svg</file>
     <file>img/UI20/toolbar/joints/SnapPosition.svg</file>
     <file>img/UI20/toolbar/joints/SnapRotation.svg</file>
     <file>img/UI20/toolbar/joints/Stiffness.svg</file>

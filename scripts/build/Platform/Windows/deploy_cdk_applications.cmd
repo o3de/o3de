@@ -17,15 +17,15 @@ SET SOURCE_DIRECTORY=%CD%
 SET PATH=%SOURCE_DIRECTORY%\python;%PATH%
 SET GEM_DIRECTORY=%SOURCE_DIRECTORY%\Gems
 
-ECHO [cdk_installation] Install the latest version of CDK
+ECHO [cdk_installation] Install aws-cdk@%CDK_VERSION%
 CALL npm uninstall -g aws-cdk
 IF ERRORLEVEL 1 (
     ECHO [cdk_bootstrap] Failed to uninstall the current version of CDK
     exit /b 1
 )
-CALL npm install -g aws-cdk@latest
+CALL npm install -g aws-cdk@%CDK_VERSION%
 IF ERRORLEVEL 1 (
-    ECHO [cdk_bootstrap] Failed to install the latest version of CDK
+    ECHO [cdk_bootstrap] Failed to install aws-cdk@%CDK_VERSION%
     exit /b 1
 )
 

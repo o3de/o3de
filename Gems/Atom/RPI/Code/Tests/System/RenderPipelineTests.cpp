@@ -84,8 +84,10 @@ namespace UnitTest
 
         const RPI::PipelineViewTag viewTag1{ "viewTag1" };
         const RPI::PipelineViewTag viewTag2{ "viewTag2" };
+        const RPI::PipelineViewTag viewTag3{ "viewTag3" };
         const Name drawListTagString1{ "drawListTag1" };
         const Name drawListTagString2{ "drawListTag2" };
+        const Name drawListTagString3{ "drawListTag3" };
 
         // Create render pipeline
         RPI::RenderPipelineDescriptor desc;
@@ -108,22 +110,31 @@ namespace UnitTest
         RPI::Ptr<TestPass> testPassC = aznew TestPass(passDescriptor);
         testPassC->Initialize(drawListTagString2, viewTag2);
 
+        passDescriptor.m_passName = "TestPassD";
+        RPI::Ptr<TestPass> testPassD = aznew TestPass(passDescriptor);
+        testPassD->Initialize(drawListTagString3, viewTag3);
+
         EXPECT_TRUE(testPassA->HasDrawListTag());
         EXPECT_TRUE(testPassB->HasDrawListTag());
         EXPECT_TRUE(testPassC->HasDrawListTag());
+        EXPECT_TRUE(testPassD->HasDrawListTag());
 
         RHI::DrawListTag drawListTag1 = drawListTagRegistry->FindTag(drawListTagString1);
         RHI::DrawListTag drawListTag2 = drawListTagRegistry->FindTag(drawListTagString2);
+        RHI::DrawListTag drawListTag3 = drawListTagRegistry->FindTag(drawListTagString3);
 
         EXPECT_TRUE(testPassA->GetDrawListTag() == drawListTag1);
         EXPECT_TRUE(testPassB->GetDrawListTag() == drawListTag1);
         EXPECT_TRUE(testPassC->GetDrawListTag() == drawListTag2);
+        EXPECT_TRUE(testPassD->GetDrawListTag() == drawListTag3);
 
-        rootPass->AddChild(testPassA);
-        testPassA->AddChild(testPassB);
-        testPassA->AddChild(testPassC);
+        bool skipStateCheckWhenRunningTests = true;
+        rootPass->AddChild(testPassA, skipStateCheckWhenRunningTests);
+        testPassA->AddChild(testPassB, skipStateCheckWhenRunningTests);
+        testPassA->AddChild(testPassC, skipStateCheckWhenRunningTests);
+        testPassA->AddChild(testPassD, skipStateCheckWhenRunningTests);
 
-        pipeline->OnPassModified();
+        pipeline->UpdatePasses();
 
         EXPECT_TRUE(pipeline->HasViewTag(viewTag1));
 
@@ -146,10 +157,12 @@ namespace UnitTest
         // View functions
         RPI::ViewPtr view1 = RPI::View::CreateView(AZ::Name("testViewA"), RPI::View::UsageCamera);
         RPI::ViewPtr view2 = RPI::View::CreateView(AZ::Name("testViewB"), RPI::View::UsageCamera);
+        RPI::ViewPtr view3 = RPI::View::CreateView(AZ::Name("testViewC"), RPI::View::UsageCamera);
 
         // Persistent view
         pipeline->SetPersistentView(viewTag1, view1);
         EXPECT_TRUE(pipeline->GetViews(viewTag1).size() == 1);
+        // Replace persistent view
         pipeline->SetPersistentView(viewTag1, view2);
         auto& viewsFromTag1 = pipeline->GetViews(viewTag1);
         EXPECT_TRUE(viewsFromTag1.size() == 1);
@@ -160,6 +173,23 @@ namespace UnitTest
         pipeline->AddTransientView(viewTag1, view1);
         AZ_TEST_STOP_ASSERTTEST(1); 
         EXPECT_TRUE(pipeline->GetViews(viewTag1).size() == 1);
+
+        // Try to register a view with multiple viewTags, persistent or transient
+        AZ_TEST_START_ASSERTTEST;
+        pipeline->SetPersistentView(viewTag3, view2);
+        AZ_TEST_STOP_ASSERTTEST(1);
+        EXPECT_TRUE(pipeline->GetViews(viewTag3).size() == 0);
+
+        AZ_TEST_START_ASSERTTEST;
+        pipeline->AddTransientView(viewTag2, view2);
+        AZ_TEST_STOP_ASSERTTEST(1);
+        EXPECT_TRUE(pipeline->GetViews(viewTag2).size() == 0);
+
+        // overwrite persistent view 2 with view 3;
+        pipeline->SetPersistentView(viewTag1, view3);
+        auto& viewsFromTag1_2 = pipeline->GetViews(viewTag1);
+        EXPECT_TRUE(viewsFromTag1_2.size() == 1);
+        EXPECT_TRUE(view3 == viewsFromTag1_2[0]);
 
         // Transient view
         pipeline->AddTransientView(viewTag2, view1);

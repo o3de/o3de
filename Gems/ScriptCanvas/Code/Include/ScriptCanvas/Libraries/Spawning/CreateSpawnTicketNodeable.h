@@ -9,18 +9,25 @@
 #pragma once
 
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
+#include <AzFramework/Spawnable/Script/SpawnableScriptAssetRef.h>
+#include <AzFramework/Spawnable/Script/SpawnableScriptMediator.h>
+#include <Include/ScriptCanvas/Libraries/Spawning/CreateSpawnTicketNodeable.generated.h>
 #include <ScriptCanvas/CodeGen/NodeableCodegen.h>
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Core/Nodeable.h>
-#include <Libraries/Spawning/SpawnableAsset.h>
-#include <Libraries/Spawning/SpawnTicketInstance.h>
-#include <Include/ScriptCanvas/Libraries/Spawning/CreateSpawnTicketNodeable.generated.h>
 
 namespace ScriptCanvas::Nodeables::Spawning
 {
     class CreateSpawnTicketNodeable
-        : public ScriptCanvas::Nodeable
+        : public Nodeable
     {
         SCRIPTCANVAS_NODE(CreateSpawnTicketNodeable);
+    public:
+        CreateSpawnTicketNodeable() = default;
+        CreateSpawnTicketNodeable(const CreateSpawnTicketNodeable& rhs);
+        CreateSpawnTicketNodeable& operator=(const CreateSpawnTicketNodeable& rhs);
+
+    private:
+        AzFramework::Scripts::SpawnableScriptMediator m_spawnableScriptMediator;
     };
 }

@@ -143,7 +143,7 @@ namespace EMotionFX
                 if (modelIndex == attributesWindow->GetModelIndex())
                 {
                     m_transitionSelector.ResetUI();
-                    attributesWindow->Init();
+                    attributesWindow->UpdateAndShowInInspector();
                 }
             }
         }

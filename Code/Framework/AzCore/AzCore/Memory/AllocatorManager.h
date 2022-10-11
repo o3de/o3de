@@ -44,7 +44,6 @@ namespace AZ
 
         typedef AZStd::function<void (IAllocator* allocator, size_t /*byteSize*/, size_t /*alignment*/, int/* flags*/, const char* /*name*/, const char* /*fileName*/, int lineNum /*=0*/)>    OutOfMemoryCBType;
 
-        static void PreRegisterAllocator(IAllocator* allocator);  // Only call if the environment is not yet attached
         static IAllocator* CreateLazyAllocator(size_t size, size_t alignment, IAllocator*(*creationFn)(void*));  // May be called at any time before shutdown
         static AllocatorManager& Instance();
         static bool IsReady();

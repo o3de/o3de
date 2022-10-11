@@ -36,7 +36,8 @@ namespace AzToolsFramework
 
         //! Update the box select for various mouse events.
         //! Call HandleMouseInteraction from type/system implementing MouseViewportRequests interface.
-        void HandleMouseInteraction(
+        //! @return Returns true if box select is active.
+        bool HandleMouseInteraction(
             const ViewportInteraction::MouseInteractionEvent& mouseInteraction);
 
         //! Responsible for drawing the 2d box representing the selection in screen space.

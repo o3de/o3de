@@ -5,12 +5,14 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_SLIST_H
-#define AZSTD_SLIST_H 1
 
-#include <AzCore/std/allocator.h>
+#pragma once
+
 #include <AzCore/std/algorithm.h>
+#include <AzCore/std/allocator_traits.h>
+#include <AzCore/std/containers/containers_concepts.h>
 #include <AzCore/std/createdestroy.h>
+#include <AzCore/std/ranges/ranges_algorithm.h>
 
 namespace AZStd
 {
@@ -131,13 +133,12 @@ namespace AZStd
 
 
     /**
-    * The list container (double linked list) is complaint with \ref CStd (23.2.2). In addition we introduce the following \ref ListExtensions "extensions".
+    * The list container (single linked list) is complaint with \ref CStd (23.2.2). In addition we introduce the following \ref ListExtensions "extensions".
     *
     * \par
-    * The list keep the values in nodes (with prev and next element pointers).
+    * The forward_list keep the values in nodes (next element pointers).
     * Each node is allocated separately, so adding 100 elements will cause 100 allocations,
     * that's why it's generally good idea (when speed is important), to either use \ref fixed_list or pool allocator like \ref static_pool_allocator.
-    * To find the node size and alignment use AZStd::forward_list::node_type.
     * You can see examples of all that \ref AZStdExamples.
     * \todo We should change the forward_list default allocator to be pool allocator based on the default allocator. This will reduce the number of allocations
     * in the general case.
@@ -153,36 +154,42 @@ namespace AZStd
             CONTAINER_VERSION = 1
         };
 
-        typedef forward_list<T, Allocator>               this_type;
+        using this_type = forward_list<T, Allocator>;
     public:
-        typedef T*                                      pointer;
-        typedef const T*                                const_pointer;
+        using value_type = T;
+        using pointer = T*;
+        using const_pointer = const T*;
 
-        typedef T&                                      reference;
-        typedef const T&                                const_reference;
-        typedef typename Allocator::difference_type     difference_type;
-        typedef typename Allocator::size_type           size_type;
-        typedef Allocator                               allocator_type;
+        using reference = T&;
+        using const_reference = const T&;
+    private:
+        using node_type = Internal::forward_list_node<T>;
 
+    public:
+        using allocator_type = Allocator;
+        using difference_type = typename AZStd::allocator_traits<allocator_type>::difference_type;
+        using size_type = typename AZStd::allocator_traits<allocator_type>::size_type;
+
+    private:
         // AZSTD extension.
-        typedef T                                       value_type;
-        typedef Internal::forward_list_node<T>          node_type;
-        typedef node_type*                              node_ptr_type;
-        typedef Internal::forward_list_node_base        base_node_type;
-        typedef base_node_type*                         base_node_ptr_type;
+        using node_ptr_type = node_type*;
+        using base_node_type = Internal::forward_list_node_base;
+        using base_node_ptr_type = base_node_type*;
 
-        typedef forward_list_const_iterator<T>          const_iterator_impl;
-        typedef forward_list_iterator<T>                iterator_impl;
+        using const_iterator_impl = forward_list_const_iterator<T>;
+        using iterator_impl = forward_list_iterator<T>;
 
+    public:
+        // Non-extension type aliases
 #ifdef AZSTD_HAS_CHECKED_ITERATORS
-        typedef Debug::checked_forward_iterator<iterator_impl, this_type>        iterator;
-        typedef Debug::checked_forward_iterator<const_iterator_impl, this_type>  const_iterator;
+        using iterator = Debug::checked_forward_iterator<iterator_impl, this_type>;
+        using const_iterator = Debug::checked_forward_iterator<const_iterator_impl, this_type>;
 #else
-        typedef iterator_impl                           iterator;
-        typedef const_iterator_impl                     const_iterator;
+        using iterator = iterator_impl;
+        using const_iterator = const_iterator_impl;
 #endif
 
-        AZ_FORCE_INLINE explicit forward_list()
+        AZ_FORCE_INLINE forward_list()
             : m_numElements(0)
         {
             m_head.m_next = m_lastNode = &m_head;
@@ -200,48 +207,47 @@ namespace AZStd
             m_head.m_next = m_lastNode = &m_head;
             insert_after(before_begin(), numElements, value);
         }
-        AZ_FORCE_INLINE explicit forward_list(size_type numElements, const_reference value, const allocator_type& allocator)
+        AZ_FORCE_INLINE forward_list(size_type numElements, const_reference value, const allocator_type& allocator)
             : m_numElements(0)
             , m_allocator(allocator)
         {
             m_head.m_next = m_lastNode = &m_head;
             insert_after(before_begin(), numElements, value);
         }
-        template<class InputIterator>
-        AZ_FORCE_INLINE forward_list(const InputIterator& first, const InputIterator& last)
-            : m_numElements(0)
-        {
-            m_head.m_next = m_lastNode = &m_head;
-            insert_after_iter(before_begin(), first, last, is_integral<InputIterator>());
-        }
-        template<class InputIterator>
-        AZ_FORCE_INLINE forward_list(const InputIterator& first, const InputIterator& last, const allocator_type& allocator)
-            : m_numElements(0)
-            , m_allocator(allocator)
-        {
-            m_head.m_next = m_lastNode = &m_head;
-            insert_after_iter(before_begin(), first, last, is_integral<InputIterator>());
-        }
-        AZ_FORCE_INLINE forward_list(const this_type& rhs)
-            : m_numElements(0)
-            , m_allocator(rhs.m_allocator)
+
+        forward_list(const forward_list& rhs)
+            : m_allocator(rhs.m_allocator)
         {
             m_head.m_next = m_lastNode = &m_head;
             insert_after(before_begin(), rhs.begin(), rhs.end());
         }
 
-        AZ_FORCE_INLINE forward_list(std::initializer_list<T> list)
-            : m_numElements(0)
+        forward_list(forward_list&& rhs)
+            : m_allocator(rhs.m_allocator)
         {
             m_head.m_next = m_lastNode = &m_head;
-            insert_after_iter(before_begin(), list.begin(), list.end(), is_integral<std::initializer_list<T>>());
+            swap(rhs);
         }
-        AZ_FORCE_INLINE forward_list(std::initializer_list<T> list, const allocator_type& allocator)
-            : m_numElements(0)
-            , m_allocator(allocator)
+
+        template<class InputIterator>
+        AZ_FORCE_INLINE forward_list(InputIterator first, InputIterator last, const allocator_type& allocator = allocator_type())
+            : m_allocator(allocator)
         {
             m_head.m_next = m_lastNode = &m_head;
-            insert_after_iter(before_begin(), list.begin(), list.end(), is_integral<std::initializer_list<T>>());
+            insert_after_iter(before_begin(), first, last, is_integral<InputIterator>());
+        }
+
+        template<class R, class = enable_if_t<Internal::container_compatible_range<R, value_type>>>
+        forward_list(from_range_t, R&& rg, const allocator_type& alloc = allocator_type())
+            : m_allocator(alloc)
+        {
+            m_head.m_next = m_lastNode = &m_head;
+            assign_range(AZStd::forward<R>(rg));
+        }
+
+        forward_list(initializer_list<T> list, const allocator_type& allocator = allocator_type())
+            : forward_list(list.begin(), list.end(), allocator)
+        {
         }
 
         AZ_FORCE_INLINE ~forward_list()
@@ -249,7 +255,7 @@ namespace AZStd
             clear();
         }
 
-        AZ_FORCE_INLINE this_type& operator=(const this_type& rhs)
+        AZ_FORCE_INLINE forward_list& operator=(const forward_list& rhs)
         {
             if (this == &rhs)
             {
@@ -257,6 +263,16 @@ namespace AZStd
             }
             assign(rhs.begin(), rhs.end());
             return (*this);
+        }
+
+        forward_list& operator=(forward_list&& rhs)
+        {
+            if (this == &rhs)
+            {
+                return *this;
+            }
+            swap(rhs);
+            return *this;
         }
         inline void assign(size_type numElements, const_reference value)
         {
@@ -272,7 +288,7 @@ namespace AZStd
 
             if (numToInsert > 0)
             {
-                insert_after(last(), numToInsert, value);
+                insert_after(before_end(), numToInsert, value);
             }
             else
             {
@@ -280,21 +296,49 @@ namespace AZStd
             }
         }
         template <class InputIterator>
-        AZ_FORCE_INLINE void assign(const InputIterator& first, const InputIterator& last)
+        AZ_FORCE_INLINE void assign(InputIterator first, InputIterator last)
         {
             assign_iter(first, last, is_integral<InputIterator>());
         }
 
-        AZ_FORCE_INLINE size_type   size() const            { return m_numElements; }
-        AZ_FORCE_INLINE size_type   max_size() const        { return AZStd::allocator_traits<allocator_type>::max_size(m_allocator) / sizeof(node_type); }
-        AZ_FORCE_INLINE bool    empty() const               { return (m_numElements == 0); }
+        template<class R>
+        auto assign_range(R&& rg) -> enable_if_t<Internal::container_compatible_range<R, value_type>>
+        {
+            if constexpr (is_lvalue_reference_v<R>)
+            {
+                assign_iter(ranges::begin(rg), ranges::end(rg), false_type{});
+            }
+            else
+            {
+                assign_iter(make_move_iterator(ranges::begin(rg)), make_move_iterator(ranges::end(rg)), false_type{});
+            }
+        }
 
-        AZ_FORCE_INLINE iterator begin()                    { return iterator(AZSTD_CHECKED_ITERATOR(iterator_impl, m_head.m_next)); }
-        AZ_FORCE_INLINE const_iterator begin() const        { return const_iterator(AZSTD_CHECKED_ITERATOR(const_iterator_impl, m_head.m_next)); }
-        AZ_FORCE_INLINE iterator end()                      { return iterator(AZSTD_CHECKED_ITERATOR(iterator_impl, &m_head)); }
-        AZ_FORCE_INLINE const_iterator end() const          { return const_iterator(AZSTD_CHECKED_ITERATOR(const_iterator_impl, const_cast<base_node_ptr_type>(&m_head))); }
-        AZ_FORCE_INLINE iterator before_begin()             { return iterator(AZSTD_CHECKED_ITERATOR(iterator_impl, &m_head)); }
+        void assign(initializer_list<T> ilist)
+        {
+            assign(ilist.begin(), ilist.end());
+        }
+
+        // AZStd Extensions - std::forward_list minimizes size as much as possible
+        // so it doesn't store the size of the container.
+        // The extension here is to store off size in a member variable
+        AZ_FORCE_INLINE size_type   size() const { return m_numElements; }
+
+        // Non-extension members
+        AZ_FORCE_INLINE size_type   max_size() const { return AZStd::allocator_traits<allocator_type>::max_size(m_allocator) / sizeof(node_type); }
+        [[nodiscard]] bool    empty() const { return (m_numElements == 0); }
+
+        AZ_FORCE_INLINE iterator begin() { return iterator(AZSTD_CHECKED_ITERATOR(iterator_impl, m_head.m_next)); }
+        AZ_FORCE_INLINE const_iterator begin() const { return const_iterator(AZSTD_CHECKED_ITERATOR(const_iterator_impl, m_head.m_next)); }
+        AZ_FORCE_INLINE iterator end() { return iterator(AZSTD_CHECKED_ITERATOR(iterator_impl, &m_head)); }
+        AZ_FORCE_INLINE const_iterator end() const { return const_iterator(AZSTD_CHECKED_ITERATOR(const_iterator_impl, const_cast<base_node_ptr_type>(&m_head))); }
+        AZ_FORCE_INLINE iterator before_begin() { return iterator(AZSTD_CHECKED_ITERATOR(iterator_impl, &m_head)); }
         AZ_FORCE_INLINE const_iterator before_begin() const { return const_iterator(AZSTD_CHECKED_ITERATOR(const_iterator_impl, const_cast<base_node_ptr_type>(&m_head))); }
+
+        // AZStd Extensions for tracking the last node within the forward_list
+        // This isn't a fast function, as it involves traversing the list from the beginning
+        // until until the spuplied iter in order to find the previous entry
+        // This gives it a big-O run time of O(n)(as opposed to a double linked list where it is O(1))
         AZ_FORCE_INLINE iterator previous(iterator iter)
         {
 #ifdef AZSTD_HAS_CHECKED_ITERATORS
@@ -313,8 +357,8 @@ namespace AZStd
 #endif
             return const_iterator(AZSTD_CHECKED_ITERATOR(const_iterator_impl, previous(iNode)));
         }
-        AZ_FORCE_INLINE iterator last()                     { return iterator(AZSTD_CHECKED_ITERATOR(iterator_impl, m_lastNode)); }
-        AZ_FORCE_INLINE const_iterator last() const         { return const_iterator(AZSTD_CHECKED_ITERATOR(const_iterator_impl, const_cast<base_node_ptr_type>(m_lastNode))); }
+        AZ_FORCE_INLINE iterator before_end() { return iterator(AZSTD_CHECKED_ITERATOR(iterator_impl, m_lastNode)); }
+        AZ_FORCE_INLINE const_iterator before_end() const { return const_iterator(AZSTD_CHECKED_ITERATOR(const_iterator_impl, const_cast<base_node_ptr_type>(m_lastNode))); }
 
         inline void resize(size_type newNumElements, const_reference value = value_type())
         {
@@ -334,43 +378,108 @@ namespace AZStd
             }
         }
 
-        AZ_FORCE_INLINE reference front()                   { return *begin(); }
-        AZ_FORCE_INLINE const_reference front() const       { return *begin(); }
-        AZ_FORCE_INLINE reference back()                    { return *last(); }
-        AZ_FORCE_INLINE const_reference back() const        { return *last(); }
+        AZ_FORCE_INLINE reference front() { return *begin(); }
+        AZ_FORCE_INLINE const_reference front() const { return *begin(); }
 
-        AZ_FORCE_INLINE void push_front(const_reference value)  { insert_after(before_begin(), value); }
-        AZ_FORCE_INLINE void pop_front()                        { erase_after(before_begin()); }
-        AZ_FORCE_INLINE void push_back(const_reference value)   { insert_after(last(), value);  }
+        void push_front(const_reference value) { emplace_front(value); }
+        void push_front(value_type&& value) { emplace_front(AZStd::move(value)); }
+        template<class... Args>
+        reference emplace_front(Args&&... args)
+        {
+            return *emplace_after(before_begin(), AZStd::forward<Args>(args)...);
+        }
+        void pop_front() { erase_after(before_begin()); }
 
-        AZ_FORCE_INLINE iterator insert(iterator insertPos, const_reference value)
+        template<class R>
+        auto prepend_range(R&& rg) -> enable_if_t<Internal::container_compatible_range<R, value_type>>
+        {
+            insert_range_after(before_begin(), AZStd::forward<R>(rg));
+        }
+
+        // AZStd extension - back operations
+        // std::forward_list doesn't keep track of the last dereference node within the list
+        // so operations such as back/push_back/emplace_back/append_range aren't implemented in the standard
+        // since it would involve traversing the entire list to find the end.
+        reference back() { return *before_end(); }
+        const_reference back() const { return *before_end(); }
+        void push_back(const_reference value) { emplace_back(value); }
+        void push_back(value_type&& value) { emplace_back(AZStd::move(value)); }
+        template<class... Args>
+        reference emplace_back(Args&&... args)
+        {
+            return *emplace_after(before_end(), AZStd::forward<Args>(args)...);
+        }
+
+        template<class R>
+        auto append_range(R&& rg) -> enable_if_t<Internal::container_compatible_range<R, value_type>>
+        {
+            insert_range_after(before_end(), AZStd::forward<R>(rg));
+        }
+
+        // AZStd extension - insert operations
+        // It has performance characteristics of O(n)
+        // If this function is needed, then it is preferred to use a doubly linked list(AZStd::list)
+        //
+        // In order for insert to work with a forward_list the list has to be traversed
+        // from the beginning to the specified iterator position in order to find the previous node
+        // since it each node only has pointers to the next node(reverse iteration can't be done)
+        AZ_FORCE_INLINE iterator insert(const_iterator insertPos, const_reference value)
         {
             return insert_after(previous(insertPos), value);
         }
 
-        AZ_FORCE_INLINE void insert(iterator insertPos, size_type numElements, const_reference value)
+        AZ_FORCE_INLINE iterator insert(const_iterator insertPos, size_type numElements, const_reference value)
         {
-            insert_after(previous(insertPos), numElements, value);
+            return insert_after(previous(insertPos), numElements, value);
         }
 
         template <class InputIterator>
-        AZ_FORCE_INLINE void insert(iterator insertPos, InputIterator first, InputIterator last)
+        AZ_FORCE_INLINE iterator insert(const_iterator insertPos, InputIterator first, InputIterator last)
         {
-            insert_after_iter(previous(insertPos), first, last, is_integral<InputIterator>());
+            return insert_after_iter(previous(insertPos), first, last, is_integral<InputIterator>());
         }
+
         template <class InputIterator>
-        AZ_FORCE_INLINE void insert_after(iterator insertPos, InputIterator first, InputIterator last)
+        iterator insert_after(const_iterator insertPos, InputIterator first, InputIterator last)
         {
-            insert_after_iter(insertPos, first, last, is_integral<InputIterator>());
+            return insert_after_iter(insertPos, first, last, is_integral<InputIterator>());
         }
 
-        inline iterator insert_after(iterator insertPos, const_reference value)
+        template<class R>
+        auto insert_range_after(const_iterator insertPos, R&& rg)
+            -> enable_if_t<Internal::container_compatible_range<R, value_type>, iterator>
         {
-            node_ptr_type newNode = reinterpret_cast<node_ptr_type>(m_allocator.allocate(sizeof(node_type), alignment_of<node_type>::value));
+            if constexpr (is_lvalue_reference_v<R>)
+            {
+                return insert_after_iter(insertPos, ranges::begin(rg), ranges::end(rg), false_type{});
+            }
+            else
+            {
+                return insert_after_iter(insertPos, make_move_iterator(ranges::begin(rg)), make_move_iterator(ranges::end(rg)), false_type{});
+            }
+        }
 
-            // copy construct
+        iterator insert_after(const_iterator insertPos, initializer_list<T> ilist)
+        {
+            return insert_after(insertPos, ilist.begin(), ilist.end());
+        }
+
+        iterator insert_after(const_iterator insertPos, const_reference value)
+        {
+            return emplace_after(insertPos, value);
+        }
+        iterator insert_after(const_iterator insertPos, value_type&& value)
+        {
+            return emplace_after(insertPos, AZStd::move(value));
+        }
+        template<class... Args>
+        iterator emplace_after(const_iterator insertPos, Args&&... args)
+        {
+            node_ptr_type newNode = reinterpret_cast<node_ptr_type>(m_allocator.allocate(sizeof(node_type), alignof(node_type)));
+
+            // forward to the constructor
             pointer ptr = &newNode->m_value;
-            Internal::construct<pointer>::single(ptr, value);
+            construct_at(ptr, AZStd::forward<Args>(args)...);
 
 #ifdef AZSTD_HAS_CHECKED_ITERATORS
             base_node_ptr_type prevNode = insertPos.get_iterator().m_node;
@@ -385,13 +494,13 @@ namespace AZStd
                 m_lastNode = newNode;
             }
 
-            newNode->m_next     = prevNode->m_next;
-            prevNode->m_next    = newNode;
+            newNode->m_next = prevNode->m_next;
+            prevNode->m_next = newNode;
 
             return iterator(AZSTD_CHECKED_ITERATOR(iterator_impl, newNode));
         }
 
-        inline void insert_after(iterator insertPos, size_type numElements, const_reference value)
+        iterator insert_after(const_iterator insertPos, size_type numElements, const_reference value)
         {
             m_numElements += numElements;
 
@@ -400,12 +509,19 @@ namespace AZStd
 #else
             base_node_ptr_type prevNode = insertPos.m_node;
 #endif
+            // Tracks the first insert node to return as the iterator value
+            iterator returnIter(insertPos.m_node);
             base_node_ptr_type insNode = prevNode->m_next;
 
-            for (; 0  < numElements; --numElements)
+            for (bool firstIteration = true; 0 < numElements; --numElements, firstIteration = false)
             {
                 node_ptr_type newNode = reinterpret_cast<node_ptr_type>(m_allocator.allocate(sizeof(node_type), alignment_of<node_type>::value));
-                AZSTD_CONTAINER_ASSERT(newNode != NULL, "AZSTD::forward_list::insert - failed to allocate node!");
+                AZSTD_CONTAINER_ASSERT(newNode != nullptr, "AZSTD::forward_list::insert - failed to allocate node!");
+
+                if (firstIteration)
+                {
+                    returnIter = iterator(newNode);
+                }
 
                 if (m_lastNode == prevNode)
                 {
@@ -416,11 +532,13 @@ namespace AZStd
                 pointer ptr = &newNode->m_value;
                 Internal::construct<pointer>::single(ptr, value);
 
-                newNode->m_next     = insNode;
+                newNode->m_next = insNode;
                 insNode = newNode;
             }
 
             prevNode->m_next = insNode;
+
+            return returnIter;
         }
 
         inline iterator erase_after(const_iterator toEraseNext)
@@ -464,6 +582,13 @@ namespace AZStd
             return last;
         }
 
+        // AZStd extension - erase operations
+        // It has performance characteristics of O(n)
+        // If this function is needed, then it is preferred to use a doubly linked list(AZStd::list)
+        //
+        // In order for eraseto work with a forward_list the list has to be traversed
+        // from the beginning to the specified iterator position in order to find the previous node
+        // since it each node only has pointers to the next node(reverse iteration can't be done)
         AZ_FORCE_INLINE iterator erase(const_iterator toErase)
         {
             return erase_after(previous(toErase));
@@ -494,6 +619,18 @@ namespace AZStd
             m_head.m_next = m_lastNode = &m_head;
             m_numElements = 0;
         }
+
+        friend bool operator==(const forward_list& left, const forward_list& right)
+        {
+            // test for list equality
+            return ranges::equal(left, right);
+        }
+
+        friend bool operator!=(const forward_list& left, const forward_list& right)
+        {
+            return !(left == right);
+        }
+
         void swap(this_type& rhs)
         {
             AZSTD_CONTAINER_ASSERT(this != &rhs, "AZStd::forward_list::swap - it's pointless to swap the vector itself!");
@@ -528,12 +665,6 @@ namespace AZStd
                 {
                     if (rhs.m_numElements == 0)
                     {
-                        // if( IsLinear )
-                        // {
-                        //   rhs.m_head->m_next = m_head->m_next;
-                        //   m_head->m_next = 0;
-                        // }
-                        // else
                         {
                             base_node_ptr_type first = m_head.m_next;
                             base_node_ptr_type last = m_lastNode;
@@ -547,12 +678,6 @@ namespace AZStd
                     }
                     else
                     {
-                        // if( IsLinear )
-                        // {
-                        //      // for linear the end iterator is 0.
-                        //      AZStd::swap(m_head.m_next,rhs.m_head.m_next);
-                        // }
-                        // else
                         {
                             base_node_ptr_type rhsFirst = rhs.m_head.m_next;
                             base_node_ptr_type rhsLast = rhs.m_lastNode;
@@ -586,136 +711,74 @@ namespace AZStd
             }
         }
 
-        AZ_FORCE_INLINE void splice(iterator splicePos, this_type& rhs)
+        // AZStd extension - splice operations
+        // It has performance characteristics of O(n)
+        // If this function is needed, then it is preferred to use a doubly linked list(AZStd::list)
+        //
+        // In order for splice to work with a forward_list the list has to be traversed
+        // from the beginning to the specified iterator position in order to find the previous node
+        // to splice onto
+        AZ_FORCE_INLINE void splice(const_iterator splicePos, this_type& rhs)
         {
             splice_after(previous(splicePos), rhs);
         }
-        AZ_FORCE_INLINE void splice(iterator splicePos, this_type& rhs, iterator first)
+        AZ_FORCE_INLINE void splice(const_iterator splicePos, this_type& rhs, const_iterator first)
         {
-            splice_after(previous(splicePos), rhs, first);
+            splice_after(previous(splicePos), rhs, previous(first));
         }
 
-        AZ_FORCE_INLINE void splice(iterator splicePos, this_type& rhs, iterator first, iterator last)
+        AZ_FORCE_INLINE void splice(const_iterator splicePos, this_type& rhs, const_iterator first, const_iterator last)
         {
-            splice_after(previous(splicePos), rhs, first, last);
+            splice_after(previous(splicePos), rhs, previous(first), last);
         }
 
-        void splice_after(iterator splicePos, this_type& rhs)
+        // C++ standard splice_after functions
+        void splice_after(const_iterator splicePos, this_type&& rhs)
         {
-            AZSTD_CONTAINER_ASSERT(this != &rhs, "AZSTD::forward_list::splice_after - splicing it self!");
-            AZSTD_CONTAINER_ASSERT(rhs.m_numElements > 0, "AZSTD::forward_list::splice_after - No elements to splice!");
-
-            if (m_allocator == rhs.m_allocator)
-            {
-#ifdef AZSTD_HAS_CHECKED_ITERATORS
-                base_node_ptr_type firstNode = rhs.begin().get_iterator().m_node;
-                base_node_ptr_type splicePosNode = splicePos.get_iterator().m_node;
-                rhs.orphan_all();
-#else
-                base_node_ptr_type firstNode = rhs.begin().m_node;
-                base_node_ptr_type splicePosNode = splicePos.m_node;
-#endif
-
-                m_numElements += rhs.m_numElements;
-                rhs.m_numElements = 0;
-
-                // get the last valid node
-                base_node_ptr_type lastNode = rhs.m_lastNode;
-
-                lastNode->m_next = splicePosNode->m_next;
-                splicePosNode->m_next = firstNode;
-
-                if (m_lastNode == splicePosNode)
-                {
-                    m_lastNode = rhs.m_lastNode;
-                }
-
-                rhs.m_head.m_next = rhs.m_lastNode = &rhs.m_head;
-            }
-            else
-            {
-                insert_after(splicePos, rhs.begin(), rhs.end());
-                rhs.clear();
-            }
+            return splice_after(splicePos, rhs, rhs.before_begin(), rhs.end());
         }
-        void splice_after(iterator splicePos, this_type& rhs, iterator first)
+        void splice_after(const_iterator splicePos, this_type& rhs)
         {
-            AZSTD_CONTAINER_ASSERT(first != rhs.end(), "AZSTD::forward_list::splice_after invalid iterator!");
-            iterator last = first;
-            ++last;
-            if (splicePos == first || splicePos == last)
-            {
-                return;
-            }
-            if (m_allocator == rhs.m_allocator)
-            {
-                m_numElements += 1;
-                rhs.m_numElements -= 1;
-
-#ifdef AZSTD_HAS_CHECKED_ITERATORS
-                base_node_ptr_type firstNode = first.get_iterator().m_node;
-                base_node_ptr_type lastNode = last.get_iterator().m_node;
-                base_node_ptr_type splicePosNode = splicePos.get_iterator().m_node;
-                if (this != &rhs)  // only if we actually moving nodes, from different lists.
-                {
-                    for (iterator next = first; next != last; )
-                    {
-                        base_node_ptr_type node = next.get_iterator().m_node;
-                        ++next;
-                        rhs.orphan_node(node);
-                    }
-                }
-#else
-                base_node_ptr_type firstNode = first.m_node;
-                base_node_ptr_type lastNode = last.m_node;
-                base_node_ptr_type splicePosNode = splicePos.m_node;
-#endif
-                base_node_ptr_type prevFirst = rhs.previous(firstNode);
-
-                if (rhs.m_lastNode == firstNode)
-                {
-                    rhs.m_lastNode = prevFirst;
-                }
-
-                prevFirst->m_next = lastNode;
-                firstNode->m_next = splicePosNode->m_next;
-                splicePosNode->m_next = firstNode;
-
-                if (m_lastNode == splicePosNode)
-                {
-                    m_lastNode = firstNode;
-                }
-            }
-            else
-            {
-                insert_after(splicePos, *first);
-                rhs.erase(first);
-            }
+            return splice_after(splicePos, rhs, rhs.before_begin(), rhs.end());
         }
 
-        void splice_after(iterator splicePos, this_type& rhs, iterator first, iterator last)
+        // The splice_after overloads which accepts an iterator
+        // moves elements after the input iterator
+        void splice_after(const_iterator splicePos, this_type&& rhs, const_iterator beforeFirst)
         {
-            AZSTD_CONTAINER_ASSERT(first != last, "AZSTD::forward_list::splice_after - no elements for splice");
+            return splice_after(splicePos, rhs, beforeFirst, ranges::next(beforeFirst, 2));
+        }
+        void splice_after(const_iterator splicePos, this_type& rhs, const_iterator beforeFirst)
+        {
+            // The last iterator must be 2 links apart, since the beforeFirst iterator is
+            // before the element being spliced
+            return splice_after(splicePos, rhs, beforeFirst, ranges::next(beforeFirst, 2));
+        }
+
+        void splice_after(const_iterator splicePos, this_type&& rhs, const_iterator beforeFirst, const_iterator last)
+        {
+            // calls lvalue reference overload
+            return splice_after(splicePos, rhs, beforeFirst, last);
+        }
+        void splice_after(const_iterator splicePos, this_type& rhs, const_iterator beforeFirst, const_iterator last)
+        {
             AZSTD_CONTAINER_ASSERT(this != &rhs || splicePos != last, "AZSTD::forward_list::splice_after invalid iterators");
 
+            if (AZStd::next(beforeFirst) == last)
+            {
+                // There are no nodes after "beforeFirst" and before "last" that can be spliced
+                return;
+            }
+
             if (m_allocator == rhs.m_allocator)
             {
-                if (this != &rhs) // otherwise we are just rearranging the list
-                {
-                    if (first == rhs.begin() && last == rhs.end())  // optimization for the whole list
-                    {
-                        splice_after(splicePos, rhs);
-                        return;
-                    }
-                }
-
 #ifdef AZSTD_HAS_CHECKED_ITERATORS
-                base_node_ptr_type firstNode = first.get_iterator().m_node;
+                base_node_ptr_type beforeFirstNode = beforeFirst.get_iterator().m_node;
                 base_node_ptr_type lastNode = last.get_iterator().m_node;
                 base_node_ptr_type splicePosNode = splicePos.get_iterator().m_node;
                 if (this != &rhs)  // only if we actually moving nodes, from different lists.
                 {
-                    for (iterator next = first; next != last; )
+                    for (iterator next = beforeFirst; next != last; )
                     {
                         base_node_ptr_type node = next.get_iterator().m_node;
                         ++next;
@@ -723,39 +786,65 @@ namespace AZStd
                     }
                 }
 #else
-                base_node_ptr_type firstNode = first.m_node;
+                base_node_ptr_type beforeFirstNode = beforeFirst.m_node;
+                base_node_ptr_type firstNode = beforeFirstNode->m_next;
                 base_node_ptr_type lastNode = last.m_node;
                 base_node_ptr_type splicePosNode = splicePos.m_node;
 #endif
 
-                base_node_ptr_type preLastNode = firstNode;
-                size_type numElements  = 1;  // 1 for the first element
+                base_node_ptr_type preLastNode = beforeFirstNode;
+                // The beforeFirst != last check at the beginning of this function
+                // protects from preLastNode->m_next from iterating out of bounds for the first iteration
+                // It also validates that at least one element is being spliced
+                size_type numElements = 0;
                 while (preLastNode->m_next != lastNode)
                 {
                     preLastNode = preLastNode->m_next;
                     ++numElements;
-                    //if( IsLinear)
-                    // AZSTD_CONTAINER_ASSERT(preLastNode!=0,("AZSTD::forward_list::splice_after you passed the end of the list");
-                    //else
                     AZSTD_CONTAINER_ASSERT(numElements <= rhs.m_numElements, "AZSTD::forward_list::splice_after rhs container is corrupted!");
                 }
 
-                base_node_ptr_type prevFirstNode = rhs.previous(firstNode);
-
+                // Make sure to update the last deferenceable node reference in the spliced forward_list
+                // to account for the node being moved to this forward_list
                 if (rhs.m_lastNode == preLastNode)
                 {
-                    rhs.m_lastNode = prevFirstNode;
+                    rhs.m_lastNode = beforeFirstNode;
                 }
 
                 // if the container is the same this is pointless... but is very fast.
                 m_numElements += numElements;
                 rhs.m_numElements -= numElements;
 
-                prevFirstNode->m_next = lastNode;
+                // Current splice state
+                // this: X1 -> X2 -> ... -> X_before_insert -> X_after_insert
+                // rhs: Y1 -> Y2 ->  ... -> Y_before_splice -> Y_splice_1 -> ... -> Y_splice_n -> Y_after_splice
+                // The "Y_before_splice" node is being updated to point to the "Y_after_splice" node
+                beforeFirstNode->m_next = lastNode;
 
+                // Current splice state
+                // this: X1 -> X2 -> ... -> X_before_insert -> X_after_insert
+                // rhs: Y1 -> Y2 ->  ... -> Y_before_splice -> Y_after_splice (Complete)
+                // unhooked nodes: Y_splice_1 -> ... -> Y_splice_n
+                // The "Y_splice_n" node is being hooked to point to the "X_after_insert" node
                 preLastNode->m_next = splicePosNode->m_next;
+
+                // Current splice state
+                // this: X1 -> X2 -> ... -> X_before_insert -> X_after_insert
+                // rhs: Y1 -> Y2 ->  ... -> Y_before_splice -> Y_after_splice (Complete)
+                // unhooked nodes: Y_splice_1 -> ... -> Y_splice_n -> X_after_insert
+
+                // The "X_before_insert" node is being hooked to the beginning of the spliced forward list "Y_splice_1"
                 splicePosNode->m_next = firstNode;
 
+                // Current splice state
+                // this: X1 -> X2 -> ... -> X_before_insert -> Y_splice_1 -> ... -> Y_splice_n -> X_after_insert (Complete)
+                // rhs: Y1 -> Y2 ->  ... -> Y_before_splice -> Y_after_splice (Complete)
+                // unhooked nodes: <empty>
+
+
+                // If the spliced node was the last deferenceable node in this forward_list
+                // then update the last reference to point to the last dereferenceable node that was just inserted
+                // "Y_splice_n"
                 if (m_lastNode == splicePosNode)
                 {
                     m_lastNode = preLastNode;
@@ -763,8 +852,10 @@ namespace AZStd
             }
             else
             {
-                insert_after(splicePos, first, last);
-                rhs.erase(first, last);
+                // The input iterator need points to the beginning of the range that is being copied
+                // Therefore the beginning of the range needs to supplied to insert_after
+                insert_after(splicePos, make_move_iterator(ranges::next(beforeFirst)), make_move_iterator(last));
+                rhs.erase_after(beforeFirst, last);
             }
         }
 
@@ -793,8 +884,7 @@ namespace AZStd
                         prevFirst = first;
                         ++first;
                     }
-                }
-                while (first != last);
+                } while (first != last);
             }
 
             return removeCount;
@@ -821,8 +911,7 @@ namespace AZStd
                         prevFirst = first;
                         ++first;
                     }
-                }
-                while (first != last);
+                } while (first != last);
             }
 
             return removeCount;
@@ -892,7 +981,7 @@ namespace AZStd
                     if (compare(rhs.front(), *iter1))
                     {
                         //AZSTD_CONTAINER_ASSERT(!compare(*first1, rhs.front()),("AZStd::forward_list::merge invalid predicate!"));
-                        splice_after(prevIter1, rhs, /*rhs.before_begin()*/ rhs.begin());
+                        splice_after(prevIter1, rhs, rhs.before_begin());
                     }
                     else
                     {
@@ -908,8 +997,8 @@ namespace AZStd
             }
             else
             {
-                iterator iter2  = rhs.begin();
-                iterator end2   = rhs.end();
+                iterator iter2 = rhs.begin();
+                iterator end2 = rhs.end();
 
                 while (iter1 != end1 && iter2 != end2)
                 {
@@ -953,7 +1042,7 @@ namespace AZStd
                 while (!empty())
                 {
                     // sort another element, using bins
-                    _Templist.splice_after(_Templist.before_begin(), *this, begin(), ++begin() /*, 1, true*/);    // don't invalidate iterators
+                    _Templist.splice_after(_Templist.before_begin(), *this, before_begin());    // don't invalidate iterators
 
                     size_t _Bin;
                     for (_Bin = 0; _Bin < _Maxbin && !_Binlist[_Bin].empty(); ++_Bin)
@@ -1066,67 +1155,6 @@ namespace AZStd
             return isf_valid | isf_can_dereference;
         }
 
-        //////////////////////////////////////////////////////////////////////////
-        // Insert methods without provided src value.
-        /**
-        *  Pushes an element at the back of the list, without a provided instance. This can be used for value types
-        *  with expensive constructors so we don't want to create temporary one.
-        */
-        AZ_FORCE_INLINE void                        push_back()
-        {
-            node_ptr_type newNode = reinterpret_cast<node_ptr_type>(m_allocator.allocate(sizeof(node_type), alignment_of<node_type>::value));
-
-            Internal::construct<node_ptr_type>::single(newNode);
-            ++m_numElements;
-
-            newNode->m_next = m_lastNode->m_next;
-            m_lastNode->m_next = newNode;
-            m_lastNode = newNode;
-        }
-        /**
-        *  Pushes an element at the front of the list, without a provided instance. This can be used for value types
-        *  with expensive constructors so we don't want to create temporary one.
-        */
-        AZ_FORCE_INLINE void                        push_front()
-        {
-            node_ptr_type newNode = reinterpret_cast<node_ptr_type>(m_allocator.allocate(sizeof(node_type), alignment_of<node_type>::value));
-
-            Internal::construct<node_ptr_type>::single(newNode);
-            ++m_numElements;
-
-            base_node_ptr_type insertNode = m_head.m_next;
-            newNode->m_next = insertNode;
-            m_head.m_next = newNode;
-        }
-
-        /**
-        *  Inserts an element at the user position in the list without a provided instance. This can be used for value types
-        *  with expensive constructors so we don't want to create temporary one.
-        */
-        inline iterator insert(iterator insertPos)
-        {
-            node_ptr_type newNode = reinterpret_cast<node_ptr_type>(m_allocator.allocate(sizeof(node_type), alignment_of<node_type>::value));
-
-            // construct
-            pointer ptr = &newNode->m_value;
-            Internal::construct<pointer>::single(ptr);
-
-#ifdef AZSTD_HAS_CHECKED_ITERATORS
-            base_node_ptr_type insNode = insertPos.get_iterator().m_node;
-#else
-            base_node_ptr_type insNode = insertPos.m_node;
-#endif
-            base_node_ptr_type prevInsNode = previous(insNode);
-            ++m_numElements;
-
-            newNode->m_next = insNode;
-            prevInsNode->m_next = newNode;
-
-            return iterator(AZSTD_CHECKED_ITERATOR(iterator_impl, newNode));
-        }
-
-        //////////////////////////////////////////////////////////////////////////
-
         /**
         * Resets the container without deallocating any memory or calling any destructor.
         * This function should be used when we need very quick tear down. Generally it's used for temporary vectors and we can just nuke them that way.
@@ -1177,19 +1205,25 @@ namespace AZStd
         }
 
         template <class InputIterator>
-        AZ_FORCE_INLINE void    insert_after_iter(iterator insertPos, const InputIterator& first, const InputIterator& last, const true_type& /* is_integral<InputIterator> */)
+        iterator insert_after_iter(const_iterator insertPos, const InputIterator& first, const InputIterator& last, const true_type& /* is_integral<InputIterator> */)
         {
-            insert_after(insertPos, (size_type)first, (value_type)last);
+            return insert_after(insertPos, (size_type)first, (value_type)last);
         }
 
         template <class InputIterator>
-        AZ_FORCE_INLINE void    insert_after_iter(iterator insertPos, const InputIterator& first, const InputIterator& last, const false_type& /* !is_integral<InputIterator> */)
+        iterator insert_after_iter(const_iterator insertPos, InputIterator first, InputIterator last, const false_type& /* !is_integral<InputIterator> */)
         {
-            InputIterator iter(first);
-            for (; iter != last; ++iter, ++insertPos)
+            iterator returnIter(insertPos.m_node);
+            for (bool firstIteration = true; first != last; ++first, ++insertPos, firstIteration = false)
             {
-                insert_after(insertPos, *iter);
+                // The first iteration of the loop sets the iterator to the beginning of the inserted elements
+                if (iterator insertIter = insert_after(insertPos, *first); firstIteration)
+                {
+                    returnIter = insertIter;
+                }
             }
+
+            return returnIter;
         }
 
         template <class InputIterator>
@@ -1219,8 +1253,8 @@ namespace AZStd
         }
 
         base_node_type      m_head;             ///< Node header.
-        base_node_ptr_type  m_lastNode;         ///< Cached last valid node.
-        size_type           m_numElements;      ///< Number of elements so size() is O(1).
+        base_node_ptr_type  m_lastNode{};         ///< Cached last valid node.
+        size_type           m_numElements{};      ///< Number of elements so size() is O(1).
         allocator_type      m_allocator;        ///< Instance of the allocator.
 
         // Debug
@@ -1262,19 +1296,17 @@ namespace AZStd
 #endif
     };
 
-    template< class T, class Allocator >
-    AZ_FORCE_INLINE bool operator==(const forward_list<T, Allocator>& left, const forward_list<T, Allocator>& right)
-    {
-        // test for list equality
-        return (left.size() == right.size() && equal(left.begin(), left.end(), right.begin()));
-    }
+    // AZStd::forward_list deduction guides
+    template <class InputIt, class Alloc = allocator>
+    forward_list(InputIt, InputIt, Alloc = Alloc{})
+        -> forward_list<iter_value_t<InputIt>, Alloc>;
 
-    template< class T, class Allocator >
-    AZ_FORCE_INLINE bool operator!=(const forward_list<T, Allocator>& left, const forward_list<T, Allocator>& right)
-    {
-        return !(left == right);
-    }
+    template<class R, class Alloc = allocator, class = enable_if_t<ranges::input_range<R>>>
+    forward_list(from_range_t, R&&, Alloc = Alloc{})
+        -> forward_list<ranges::range_value_t<R>, Alloc>;
 
+
+    // C++20 erase and erase_if impl
     template<class T, class Allocator, class U>
     decltype(auto) erase(forward_list<T, Allocator>& container, const U& value)
     {
@@ -1286,6 +1318,3 @@ namespace AZStd
         return container.remove_if(predicate);
     }
 }
-
-#endif // AZSTD_SLIST_H
-#pragma once

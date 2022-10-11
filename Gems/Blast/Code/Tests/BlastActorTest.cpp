@@ -32,7 +32,7 @@ namespace Blast
 
     protected:
         Physics::ColliderConfiguration CalculateColliderConfiguration(
-            [[maybe_unused]] const AZ::Transform& transform, [[maybe_unused]] Physics::MaterialId material) override
+            [[maybe_unused]] const AZ::Transform& transform, [[maybe_unused]] const AZ::Data::Asset<Physics::MaterialAsset>& physicsMaterialAsset) override
         {
             return Physics::ColliderConfiguration();
         }
@@ -50,9 +50,14 @@ namespace Blast
             m_mockPhysicsSystemRequestsHandler = AZStd::make_unique<MockPhysicsSystemRequestsHandler>();
             m_mockPhysicsDefaultWorldRequestsHandler = AZStd::make_unique<MockPhysicsDefaultWorldRequestsHandler>();
             m_mockRigidBodyRequestBusHandler = AZStd::make_unique<MockRigidBodyRequestBusHandler>();
+            m_physicsMaterialManager = AZStd::make_unique<DummyPhysicsMaterialManager>();
+            m_physicsMaterialManager->Init();
         }
 
-        void TearDown() override {}
+        void TearDown() override
+        {
+            m_physicsMaterialManager.reset();
+        }
 
         AZStd::unique_ptr<FakeBlastFamily> m_mockFamily;
         AZStd::unique_ptr<MockTkActor> m_mockTkActor;
@@ -60,6 +65,7 @@ namespace Blast
         AZStd::unique_ptr<MockPhysicsSystemRequestsHandler> m_mockPhysicsSystemRequestsHandler;
         AZStd::unique_ptr<MockPhysicsDefaultWorldRequestsHandler> m_mockPhysicsDefaultWorldRequestsHandler;
         AZStd::unique_ptr<MockRigidBodyRequestBusHandler> m_mockRigidBodyRequestBusHandler;
+        AZStd::unique_ptr<DummyPhysicsMaterialManager> m_physicsMaterialManager;
 
         AZStd::unique_ptr<BlastActor> m_blastActor;
     };

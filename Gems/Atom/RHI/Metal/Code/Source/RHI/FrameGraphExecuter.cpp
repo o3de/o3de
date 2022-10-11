@@ -30,7 +30,11 @@ namespace AZ
 
         FrameGraphExecuter::FrameGraphExecuter()
         {
-            SetJobPolicy(RHI::JobPolicy::Parallel);
+            RHI::JobPolicy graphJobPolicy = RHI::JobPolicy::Parallel;
+#if defined(AZ_FORCE_CPU_GPU_INSYNC)
+            graphJobPolicy = RHI::JobPolicy::Serial;
+#endif
+            SetJobPolicy(graphJobPolicy);
         }
         
         RHI::ResultCode FrameGraphExecuter::InitInternal(const RHI::FrameGraphExecuterDescriptor& descriptor)
@@ -53,6 +57,20 @@ namespace AZ
         void FrameGraphExecuter::BeginInternal(const RHI::FrameGraph& frameGraph)
         {
             Device& device = GetDevice();
+
+#if defined(AZ_FORCE_CPU_GPU_INSYNC)
+            // Forces all scopes to issue a dedicated merged scope group with one command list.
+            // This will ensure that the Commit is done on only one scope and if an error happens
+            // we can be sure about the work gpu was working on before the crash.
+            AZStd::vector<const Scope*> mergedScopes;
+            for (const RHI::Scope* scopeBase : frameGraph.GetScopes())
+            {
+                mergedScopes.push_back(static_cast<const Scope*>(scopeBase));
+                FrameGraphExecuteGroupMerged* scopeContextGroup = AddGroup<FrameGraphExecuteGroupMerged>();
+                scopeContextGroup->Init(device, AZStd::move(mergedScopes), GetGroupCount());
+            }
+#else
+     
             bool hasUserFencesToSignal = false;
             RHI::HardwareQueueClass mergedHardwareQueueClass = RHI::HardwareQueueClass::Graphics;
             AZ::u32 mergedGroupCost = 0;
@@ -142,6 +160,7 @@ namespace AZ
                 FrameGraphExecuteGroupMerged* multiScopeContextGroup = AddGroup<FrameGraphExecuteGroupMerged>();
                 multiScopeContextGroup->Init(device, AZStd::move(mergedScopes), GetGroupCount());
             }
+#endif
         }
 
         void FrameGraphExecuter::ExecuteGroupInternal(RHI::FrameGraphExecuteGroup& groupBase)

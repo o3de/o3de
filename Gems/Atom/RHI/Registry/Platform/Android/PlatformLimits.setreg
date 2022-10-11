@@ -16,7 +16,7 @@
             {
                 "PlatformLimits":
                 {
-                    "metal":
+                    "vulkan":
                     {
                         "$type": "AZ::Vulkan::PlatformLimitsDescriptor"
                     }

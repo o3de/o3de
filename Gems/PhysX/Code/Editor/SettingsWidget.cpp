@@ -18,7 +18,7 @@ namespace PhysX
 {
     namespace Editor
     {
-        static const char* const s_settingsDocumentationLink = "Learn more about <a href=%0>configuring PhysX</a>";
+        static const char* const s_settingsDocumentationLink = "Learn more about <a href=%0>configuring PhysX.</a>";
         static const char* const s_settingsDocumentationAddress = "configuring/configuration-global";
 
         SettingsWidget::SettingsWidget(QWidget* parent)
@@ -32,15 +32,12 @@ namespace PhysX
             const Debug::DebugDisplayData& debugDisplayData)
         {
             m_physxSystemConfiguration = physxSystemConfiguration;
-            m_physicsMaterialInfo.m_defaultMaterialConfiguration = m_physxSystemConfiguration.m_defaultMaterialConfiguration;
-            m_physicsMaterialInfo.m_materialLibraryAsset = m_physxSystemConfiguration.m_materialLibraryAsset;
             m_defaultSceneConfiguration = defaultSceneConfiguration;
             m_debugDisplayData = debugDisplayData;
 
             blockSignals(true);
             m_propertyEditor->ClearInstances();
             m_propertyEditor->AddInstance(&m_physxSystemConfiguration);
-            m_propertyEditor->AddInstance(&m_physicsMaterialInfo);
             m_propertyEditor->AddInstance(&m_defaultSceneConfiguration);
             m_propertyEditor->AddInstance(&m_debugDisplayData);
             m_propertyEditor->AddInstance(&m_physxSystemConfiguration.m_windConfiguration);
@@ -84,8 +81,6 @@ namespace PhysX
 
         void SettingsWidget::SetPropertyEditingComplete(AzToolsFramework::InstanceDataNode* /*node*/)
         {
-            m_physxSystemConfiguration.m_defaultMaterialConfiguration = m_physicsMaterialInfo.m_defaultMaterialConfiguration;
-            m_physxSystemConfiguration.m_materialLibraryAsset = m_physicsMaterialInfo.m_materialLibraryAsset;
             emit onValueChanged(m_physxSystemConfiguration,
                 m_defaultSceneConfiguration,
                 m_debugDisplayData

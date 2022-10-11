@@ -11,41 +11,53 @@
 #include <Source/Translation/TranslationBus.h>
 #include <ScriptCanvas/Data/Data.h>
 
-namespace Translation
-{
-    namespace GlobalKeys
-    {
-        static constexpr const char* EBusSenderIDKey = "Globals.EBusSenderBusId";
-        static constexpr const char* EBusHandlerIDKey = "Globals.EBusHandlerBusId";
-        static constexpr const char* MissingFunctionKey = "Globals.MissingFunction";
-        static constexpr const char* EBusHandlerOutSlot = "Globals.EBusHandler.OutSlot";
-    }
-}
-
 namespace ScriptCanvasEditor
 {
     namespace TranslationHelper
     {
-        inline AZStd::string GetSafeTypeName(ScriptCanvas::Data::Type dataType)
+        namespace GlobalKeys
         {
-            if (!dataType.IsValid())
-            {
-                return "";
-            }
+            static constexpr const char* EBusSenderIDKey = "Globals.EBusSenderBusId";
+            static constexpr const char* EBusHandlerIDKey = "Globals.EBusHandlerBusId";
+            static constexpr const char* MissingFunctionKey = "Globals.MissingFunction";
+            static constexpr const char* EBusHandlerOutSlot = "Globals.EBusHandler.OutSlot";
+        } // namespace GlobalKeys
 
-            AZStd::string azType = dataType.GetAZType().ToString<AZStd::string>();
+        namespace AssetContext
+        {
+            static constexpr char AZEventContext[] = "AZEventHandler";
+            static constexpr char BehaviorClassContext[] = "BehaviorClass";
+            static constexpr char BehaviorGlobalMethodContext[] = "BehaviorMethod";
+            static constexpr char BehaviorGlobalPropertyContext[] = "Constant";
+            static constexpr char CustomNodeContext[] = "ScriptCanvas::Node";
+            static constexpr char EBusHandlerContext[] = "EBusHandler";
+            static constexpr char EBusSenderContext[] = "EBusSender";
+        } // namespace AssetContext
 
-            GraphCanvas::TranslationKey key;
-            key << "BehaviorType" << azType << "details";
+        namespace AssetPath
+        {
+            static constexpr char AZEventPath[] = "AZEvents";
+            static constexpr char BehaviorClassPath[] = "Classes";
+            static constexpr char BehaviorGlobalMethodPath[] = "GlobalMethods";
+            static constexpr char BehaviorGlobalPropertyPath[] = "Properties";
+            static constexpr char CustomNodePath[] = "Nodes";
+            static constexpr char EBusHandlerPath[] = "EBus\\Handlers";
+            static constexpr char EBusSenderPath[] = "EBus\\Senders";
+        } // namespace AssetPath
 
-            GraphCanvas::TranslationRequests::Details details;
+        AZStd::string SanitizeText(const AZStd::string& text);
 
-            details.m_name = ScriptCanvas::Data::GetName(dataType);
+        AZStd::string SanitizeCustomNodeFileName(const AZStd::string& nodeName, const AZ::Uuid& nodeUuid);
 
-            GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
+        AZStd::string GetSafeTypeName(ScriptCanvas::Data::Type dataType);
 
-            return details.m_name;
-        }
+        //! Utility function to get the path to the specified gem asset folder
+        AZ::IO::Path GetGemAssetPath(const AZStd::string& gemName);
+
+        //! Utility function to get translation file default folder path
+        AZ::IO::Path GetTranslationDefaultFolderPath();
+
+        //! Utility function to look for translation file path based on file name
+        AZ::IO::Path GetTranslationFilePath(const AZStd::string& fileName);
     }
 }
-

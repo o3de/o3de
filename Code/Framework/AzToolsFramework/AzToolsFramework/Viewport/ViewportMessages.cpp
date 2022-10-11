@@ -65,7 +65,7 @@ namespace AzToolsFramework
         return circleBoundWidth;
     }
 
-    AZ::Vector3 FindClosestPickIntersection(const AzFramework::RenderGeometry::RayRequest& rayRequest, const float defaultDistance)
+    AZStd::optional<AZ::Vector3> FindClosestPickIntersection(const AzFramework::RenderGeometry::RayRequest& rayRequest)
     {
         using AzFramework::RenderGeometry::IntersectorBus;
         using AzFramework::RenderGeometry::RayResult;
@@ -85,6 +85,20 @@ namespace AzToolsFramework
         }
         else
         {
+            return {};
+        }
+    }
+
+    AZ::Vector3 FindClosestPickIntersection(const AzFramework::RenderGeometry::RayRequest& rayRequest, const float defaultDistance)
+    {
+        auto result = FindClosestPickIntersection(rayRequest);
+
+        if (result.has_value())
+        {
+            return result.value();
+        }
+        else
+        {
             const AZ::Vector3 rayDirection = (rayRequest.m_endWorldPosition - rayRequest.m_startWorldPosition).GetNormalized();
             return rayRequest.m_startWorldPosition + rayDirection * defaultDistance;
         }
@@ -98,6 +112,17 @@ namespace AzToolsFramework
         AZ_Assert(rayLength > 0.0f, "Invalid ray length passed to RefreshRayRequest");
         rayRequest.m_startWorldPosition = viewportRay.m_origin;
         rayRequest.m_endWorldPosition = viewportRay.m_origin + viewportRay.m_direction * rayLength;
+    }
+
+    AZStd::optional<AZ::Vector3> FindClosestPickIntersection(
+        const AzFramework::ViewportId viewportId, const AzFramework::ScreenPoint& screenPoint, const float rayLength)
+    {
+        AzFramework::RenderGeometry::RayRequest ray;
+        ray.m_onlyVisible = true; // only consider visible objects
+
+        RefreshRayRequest(ray, ViewportInteraction::ViewportScreenToWorldRay(viewportId, screenPoint), rayLength);
+
+        return FindClosestPickIntersection(ray);
     }
 
     AZ::Vector3 FindClosestPickIntersection(

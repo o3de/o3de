@@ -8,14 +8,16 @@
 
 #pragma once
 
-#include <LmbrCentral/Dependency/DependencyMonitor.h>
-#include <GradientSignal/GradientSampler.h>
 #include <AzCore/Component/Component.h>
+#include <AzCore/std/parallel/shared_mutex.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Ebuses/SurfaceMaskGradientRequestBus.h>
+#include <GradientSignal/GradientSampler.h>
+#include <LmbrCentral/Dependency/DependencyMonitor.h>
+#include <SurfaceData/SurfaceDataSystemNotificationBus.h>
+#include <SurfaceData/SurfaceDataSystemRequestBus.h>
 #include <SurfaceData/SurfaceDataTypes.h>
 #include <SurfaceData/SurfacePointList.h>
-#include <SurfaceData/SurfaceDataSystemRequestBus.h>
 
 namespace LmbrCentral
 {
@@ -49,6 +51,7 @@ namespace GradientSignal
         : public AZ::Component
         , private GradientRequestBus::Handler
         , private SurfaceMaskGradientRequestBus::Handler
+        , private SurfaceData::SurfaceDataSystemNotificationBus::Handler
     {
     public:
         template<typename, typename> friend class LmbrCentral::EditorWrappedComponentBase;
@@ -81,8 +84,17 @@ namespace GradientSignal
         void RemoveTag(int tagIndex) override;
         void AddTag(AZStd::string tag) override;
 
+        //////////////////////////////////////////////////////////////////////////
+        // SurfaceDataSystemNotificationBus
+        void OnSurfaceChanged(
+            const AZ::EntityId& entityId,
+            const AZ::Aabb& oldBounds,
+            const AZ::Aabb& newBounds,
+            const SurfaceData::SurfaceTagSet& changedSurfaceTags) override;
+
     private:
         SurfaceMaskGradientConfig m_configuration;
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
+        mutable AZStd::shared_mutex m_queryMutex;
     };
 }

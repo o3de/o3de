@@ -89,7 +89,7 @@ namespace EMotionFX::MotionMatching
         void SamplePose(MotionInstance* motionInstance, Pose& outputPose);
         void SamplePose(Motion* motion, Pose& outputPose, float sampleTime) const;
 
-        size_t FindLowestCostFrameIndex(const Feature::FrameCostContext& context);
+        size_t FindLowestCostFrameIndex(const Feature::QueryVectorContext& queryVectorContext, const Feature::FrameCostContext& frameCostContext);
 
         MotionMatchingData* m_data = nullptr;
         ActorInstance* m_actorInstance = nullptr;
@@ -100,9 +100,11 @@ namespace EMotionFX::MotionMatching
         MotionInstance* m_prevMotionInstance = nullptr;
         Transform m_motionExtractionDelta = Transform::CreateIdentity();
 
+        QueryVector m_queryVector; //!< The input query features to be compared to every entry/row in the feature matrix with the motion matching search.
+
         /// Buffers used for the broad-phase KD-tree search.
-        AZStd::vector<float> m_queryFeatureValues; //< The input query features to be compared to every entry/row in the feature matrix with the motion matching search.
-        AZStd::vector<size_t> m_nearestFrames; //< Stores the nearest matching frames / search result from the KD-tree.
+        QueryVector m_kdTreeQueryVector; //!< The input query for only the features that are present in the KD-tree.
+        AZStd::vector<size_t> m_nearestFrames; //!< Stores the nearest matching frames / search result from the KD-tree.
 
         FeatureTrajectory* m_cachedTrajectoryFeature = nullptr; //< Cached pointer to the trajectory feature in the feature schema.
         TrajectoryQuery m_trajectoryQuery;

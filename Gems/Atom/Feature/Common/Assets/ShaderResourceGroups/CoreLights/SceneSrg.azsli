@@ -17,7 +17,9 @@ partial ShaderResourceGroup SceneSrg
         float3 m_direction;
         float m_angularRadius;
         float3 m_rgbIntensityLux;
-        float padding2; // explicit padding between float3s, can use this for other data later.
+        float m_affectsGIFactor;
+        bool m_affectsGI;
+        float3 m_padding;
     };
 
     StructuredBuffer<DirectionalLight> m_directionalLights;

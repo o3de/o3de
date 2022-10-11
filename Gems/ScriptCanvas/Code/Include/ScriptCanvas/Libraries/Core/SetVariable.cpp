@@ -71,6 +71,11 @@ namespace ScriptCanvas
                 return m_variableId;
             }
 
+            const Slot* SetVariableNode::GetVariableInputSlot() const
+            {
+                return GetSlot(m_variableDataInSlotId);
+            }
+
             const Slot* SetVariableNode::GetVariableOutputSlot() const
             {
                 return GetSlot(m_variableDataOutSlotId);

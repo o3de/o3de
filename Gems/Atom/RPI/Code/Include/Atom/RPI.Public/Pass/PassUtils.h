@@ -10,6 +10,7 @@
 // This header file is for declaring types used for RPI System classes to avoid recursive includes
  
 #include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 
 #include <Atom/RPI.Reflect/Pass/PassData.h>
@@ -61,7 +62,9 @@ namespace AZ
                 return passData;
             }
 
-        }   // namespace PassUtils
-    }   // namespace RPI
-}   // namespace AZ
+            void SortPassListAscending(AZStd::vector< Ptr<Pass> >& passList);
+            void SortPassListDescending(AZStd::vector< Ptr<Pass> >& passList);
+        }
+    }
+}
 

@@ -62,7 +62,8 @@ def edit_project_props(proj_path: pathlib.Path = None,
                        replace_tags: str or list = None,
                        new_gem_names: str or list = None,
                        delete_gem_names: str or list = None,
-                       replace_gem_names: str or list = None
+                       replace_gem_names: str or list = None,
+                       new_engine_name: str or list = None
                        ) -> int:
     proj_json = get_project_props(proj_name, proj_path)
     
@@ -75,6 +76,8 @@ def edit_project_props(proj_path: pathlib.Path = None,
         proj_json['project_name'] = new_name
     if new_id:
         proj_json['project_id'] = new_id
+    if new_engine_name:
+        proj_json['engine'] = new_engine_name
     if new_origin:
         proj_json['origin'] = new_origin
     if new_display:
@@ -119,7 +122,8 @@ def _edit_project_props(args: argparse) -> int:
                               args.replace_tags,
                               args.add_gem_names,
                               args.delete_gem_names,
-                              args.replace_gem_names)
+                              args.replace_gem_names,
+                              args.engine_name)
 
 
 def add_parser_args(parser):
@@ -133,6 +137,8 @@ def add_parser_args(parser):
                        help='Sets the name for the project.')
     group.add_argument('-pid', '--project-id', type=str, required=False,
                        help='Sets the ID for the project.')
+    group.add_argument('-en', '--engine-name', type=str, required=False,
+                       help='Sets the engine name for the project.')
     group.add_argument('-po', '--project-origin', type=str, required=False,
                        help='Sets description or url for project origin (such as project host, repository, owner...etc).')
     group.add_argument('-pd', '--project-display', type=str, required=False,

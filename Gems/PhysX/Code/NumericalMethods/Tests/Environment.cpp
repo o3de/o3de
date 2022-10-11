@@ -47,10 +47,6 @@ namespace NumericalMethods
 
     void NumericalMethodsTestEnvironment::SetupEnvironment()
     {
-#if AZ_TRAIT_UNITTEST_USE_TEST_RUNNER_ENVIRONMENT
-        AZ::EnvironmentInstance inst = AZ::Test::GetPlatform().GetTestRunnerEnvironment();
-        AZ::Environment::Attach(inst);
-#endif
         AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
 
         // Create application and descriptor

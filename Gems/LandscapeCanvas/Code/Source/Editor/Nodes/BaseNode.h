@@ -45,6 +45,9 @@ namespace LandscapeCanvas
             Gradient,
             GradientGenerator,
             GradientModifier,
+            TerrainArea,
+            TerrainExtender,
+            TerrainSurfaceExtender,
             VegetationAreaModifier,
             VegetationAreaFilter,
             VegetationAreaSelector
@@ -66,10 +69,6 @@ namespace LandscapeCanvas
         /// Retrieve a pointer to the Component on the respective Entity that
         /// this Node represents
         AZ::Component* GetComponent() const;
-
-        /// By default our Landscape Canvas nodes will have a property display
-        /// to show the name of the Entity the component lives on
-        virtual const bool ShouldShowEntityName() const { return true; }
 
         /// Returns whether or not this node is a Vegetation Area Extender (Filter/Modifier/Selector)
         bool IsAreaExtender() const;

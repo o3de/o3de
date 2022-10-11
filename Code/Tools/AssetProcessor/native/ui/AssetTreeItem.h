@@ -27,6 +27,8 @@ namespace AssetProcessor
 
         AssetTreeItemData(const AZStd::string& assetDbName, QString name, bool isFolder, const AZ::Uuid& uuid);
         virtual ~AssetTreeItemData() {}
+        virtual int GetColumnCount() const;
+        virtual QVariant GetDataForColumn(int column) const;
 
         AZStd::string m_assetDbName;
         QString m_name;

@@ -53,6 +53,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ_NUMERICCAST_ENABLED
         BUILD_DEPENDENCIES
             PRIVATE
+                AZ::AzFramework
                 AZ::AzNetworking
                 AZ::AzTestShared
                 AZ::AzTest
@@ -69,4 +70,3 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     )
     
 endif()
-

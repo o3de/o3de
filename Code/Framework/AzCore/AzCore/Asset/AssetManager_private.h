@@ -28,11 +28,19 @@ namespace AZ
             using MutexType = AZStd::recursive_mutex;
             using BusIdType = AssetId;
 
+            template<typename Bus>
+            using ConnectionPolicy = AssetEvents::AssetConnectionPolicy<Bus>;
+
             virtual ~AssetLoadEvents() {}
 
             /// Called when an asset's data is loaded into memory for assets which have dependencies
-            /// which have been set to load first (Preload dependencies) 
+            /// which have been set to load first (Preload dependencies)
             virtual void OnAssetDataLoaded([[maybe_unused]] Asset<AssetData> rootAsset) {}
+
+            virtual void OnAssetReady([[maybe_unused]] Asset<AssetData> asset){}
+            virtual void OnAssetReloaded([[maybe_unused]] Asset<AssetData> asset){}
+            virtual void OnAssetError([[maybe_unused]] Asset<AssetData> asset){}
+            virtual void OnAssetReloadError([[maybe_unused]] Asset<AssetData> asset){}
         };
         using AssetLoadBus = EBus<AssetLoadEvents>;
 

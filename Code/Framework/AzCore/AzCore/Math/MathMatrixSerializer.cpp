@@ -306,36 +306,18 @@ namespace AZ::JsonMathMatrixSerializerInternal
         }
     }
 
-    template<typename MatrixType>
-    AZ::Quaternion CreateQuaternion(const MatrixType& matrix);
-
-    template<>
-    AZ::Quaternion CreateQuaternion<AZ::Matrix3x3>(const AZ::Matrix3x3& matrix)
+    template<typename MatrixType, size_t RowCount, size_t ColumnCount>
+    JsonSerializationResult::Result StoreArray(rapidjson::Value& outputValue, const void* inputValue, const void* defaultValue,
+        [[maybe_unused]] const Uuid& valueTypeId, JsonSerializerContext& context)
     {
-        return Quaternion::CreateFromMatrix3x3(matrix);
-    }
+        namespace JSR = JsonSerializationResult; // Used to remove name conflicts in AzCore in uber builds.
 
-    template<>
-    AZ::Quaternion CreateQuaternion<AZ::Matrix3x4>(const AZ::Matrix3x4& matrix)
-    {
-        return Quaternion::CreateFromMatrix3x4(matrix);
-    }
-
-    template<>
-    AZ::Quaternion CreateQuaternion<AZ::Matrix4x4>(const AZ::Matrix4x4& matrix)
-    {
-        return Quaternion::CreateFromMatrix4x4(matrix);
-    }
-
-    template<typename MatrixType>
-    JsonSerializationResult::Result StoreRotationAndScale(rapidjson::Value& outputValue, const void* inputValue, const void* defaultValue,
-        const Uuid& valueTypeId, JsonSerializerContext& context)
-    {
-        namespace JSR = JsonSerializationResult; // Used remove name conflicts in AzCore in uber builds.
-        AZ_UNUSED(valueTypeId);
+        constexpr size_t ElementCount = RowCount * ColumnCount;
+        static_assert(ElementCount == 9 || ElementCount == 12 || ElementCount == 16,
+            "MathMatrixSerializer only support Matrix3x3, Matrix3x4 and Matrix4x4.");
 
         const MatrixType* matrix = reinterpret_cast<const MatrixType*>(inputValue);
-        AZ_Assert(matrix, "Input value for JsonMatrixSerializer can't be null.");
+        AZ_Assert(matrix, "Input value for JsonMatrix%zux%zuSerializer can't be null.", RowCount, ColumnCount);
         const MatrixType* defaultMatrix = reinterpret_cast<const MatrixType*>(defaultValue);
 
         if (!context.ShouldKeepDefaults() && defaultMatrix && *matrix == *defaultMatrix)
@@ -343,39 +325,14 @@ namespace AZ::JsonMathMatrixSerializerInternal
             return context.Report(JSR::Tasks::WriteValue, JSR::Outcomes::DefaultsUsed, "Default math Matrix used.");
         }
 
-        MatrixType matrixToExport = *matrix;
-        AZ::Vector3 scale = matrixToExport.ExtractScale();
-
-        AZ::Quaternion rotation = CreateQuaternion(matrixToExport);
-        auto degrees = rotation.GetEulerDegrees();
-        outputValue.AddMember(rapidjson::StringRef("roll"), degrees.GetX(), context.GetJsonAllocator());
-        outputValue.AddMember(rapidjson::StringRef("pitch"), degrees.GetY(), context.GetJsonAllocator());
-        outputValue.AddMember(rapidjson::StringRef("yaw"), degrees.GetZ(), context.GetJsonAllocator());
-        outputValue.AddMember(rapidjson::StringRef("scale"), scale.GetX(), context.GetJsonAllocator());
-
-        return context.Report(JSR::Tasks::WriteValue, JSR::Outcomes::Success, "Math Matrix successfully stored.");
-    }
-
-    template<typename MatrixType>
-    JsonSerializationResult::Result StoreTranslation(rapidjson::Value& outputValue, const void* inputValue,
-        const void* defaultValue, const Uuid& valueTypeId, JsonSerializerContext& context)
-    {
-        namespace JSR = JsonSerializationResult; // Used remove name conflicts in AzCore in uber builds.
-        AZ_UNUSED(valueTypeId);
-
-        const MatrixType* matrix = reinterpret_cast<const MatrixType*>(inputValue);
-        AZ_Assert(matrix, "Input value for JsonMatrixSerializer can't be null.");
-        const MatrixType* defaultMatrix = reinterpret_cast<const MatrixType*>(defaultValue);
-
-        if (!context.ShouldKeepDefaults() && defaultMatrix && *matrix == *defaultMatrix)
+        outputValue.SetArray();
+        for (int rowIndex = 0; rowIndex < RowCount; ++rowIndex)
         {
-            return context.Report(JSR::Tasks::WriteValue, JSR::Outcomes::DefaultsUsed, "Default math Matrix used.");
+            for (int columnIndex = 0; columnIndex < ColumnCount; ++columnIndex)
+            {
+                outputValue.PushBack(matrix->GetElement(rowIndex, columnIndex), context.GetJsonAllocator());
+            }
         }
-
-        auto translation = matrix->GetTranslation();
-        outputValue.AddMember(rapidjson::StringRef("x"), translation.GetX(), context.GetJsonAllocator());
-        outputValue.AddMember(rapidjson::StringRef("y"), translation.GetY(), context.GetJsonAllocator());
-        outputValue.AddMember(rapidjson::StringRef("z"), translation.GetZ(), context.GetJsonAllocator());
 
         return context.Report(JSR::Tasks::WriteValue, JSR::Outcomes::Success, "Math Matrix successfully stored.");
     }
@@ -409,7 +366,7 @@ namespace AZ
     {
         outputValue.SetObject();
 
-        return JsonMathMatrixSerializerInternal::StoreRotationAndScale<Matrix3x3>(
+        return JsonMathMatrixSerializerInternal::StoreArray<Matrix3x3, 3, 3>(
             outputValue, inputValue, defaultValue, valueTypeId, context);
     }
 
@@ -430,14 +387,8 @@ namespace AZ
     {
         outputValue.SetObject();
 
-        auto result =
-            JsonMathMatrixSerializerInternal::StoreRotationAndScale<Matrix3x4>(outputValue, inputValue, defaultValue, valueTypeId, context);
-
-        auto resultTranslation =
-            JsonMathMatrixSerializerInternal::StoreTranslation<Matrix3x4>(outputValue, inputValue, defaultValue, valueTypeId, context);
-
-        result.GetResultCode().Combine(resultTranslation);
-        return result;
+        return JsonMathMatrixSerializerInternal::StoreArray<Matrix3x4, 3, 4>(
+            outputValue, inputValue, defaultValue, valueTypeId, context);
     }
 
     // Matrix4x4
@@ -456,13 +407,7 @@ namespace AZ
     {
         outputValue.SetObject();
 
-        auto result =
-            JsonMathMatrixSerializerInternal::StoreRotationAndScale<Matrix4x4>(outputValue, inputValue, defaultValue, valueTypeId, context);
-
-        auto resultTranslation =
-            JsonMathMatrixSerializerInternal::StoreTranslation<Matrix4x4>(outputValue, inputValue, defaultValue, valueTypeId, context);
-
-        result.GetResultCode().Combine(resultTranslation);
-        return result;
+        return JsonMathMatrixSerializerInternal::StoreArray<Matrix4x4, 4, 4>(
+            outputValue, inputValue, defaultValue, valueTypeId, context);
     }
 }

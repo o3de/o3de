@@ -7,159 +7,203 @@
  */
 
 #include <AzCore/Math/IntersectSegment.h>
+#include <AzCore/Casting/numeric_cast.h>
 
 namespace AZ
 {
-    //=========================================================================
-    // IntersectSegmentTriangleCCW
-    // [10/21/2009]
-    //=========================================================================
-    bool Intersect::IntersectSegmentTriangleCCW(
-        const Vector3& p,
-        const Vector3& q,
-        const Vector3& a,
-        const Vector3& b,
-        const Vector3& c,
-        /*float &u, float &v, float &w,*/ Vector3& normal,
-        float& t)
+    // SegmentTriangleHitTester is an implementation of the "Watertight Ray/Triangle Intersection" algorithm
+    // by Sven Woop, Carsten Benthin, and Ingo Wald: https://jcgt.org/published/0002/01/05/paper.pdf .
+    // This algorithm is "watertight" at edges and vertices, meaning that numerical precision issues won't cause edge and vertex
+    // collisions to get false negatives regardless of segment and triangle orientations and distances. It is ~2.5% slower than the
+    // Arenberg algorithm for single segment/triangle tests, but the API also provides a split into a setup stage and a testing stage
+    // for testing a single segment against multiple triangles that is ~23% faster than just using the single segment/triangle
+    // Arenberg algorithm. Most use cases involve testing a segment against multiple triangles, so this algorithm wins out on both
+    // accuracy *and* speed (a rarity!).
+
+    Intersect::SegmentTriangleHitTester::SegmentTriangleHitTester(const Vector3& p, const Vector3& q)
     {
-        float v, w; // comment this and enable input params if we need the barycentric coordinates
+        // The setup phase of the algorithm consists of caching off the segment itself for later use and calculating the remappings and
+        // constants needed to transform each triangle so that it can be tested in a unit-space Z-axis intersection test.
 
-        Vector3 ab = b - a;
-        Vector3 ac = c - a;
-        Vector3 qp = p - q;
+        // Cache off the line segment. The algorithm only needs p, but we also store pq so that we can offer GetIntersectionPoint()
+        // as a convenience API to turn the hit distance 't' back into a usable point.
+        m_p = p;
+        m_pq = q - p;
 
-        // Compute triangle normal. Can be pre-calculated/cached if
-        // intersecting multiple segments against the same triangle
-        normal = ab.Cross(ac); // Right hand CCW
+        // The watertight algorithm requires the z dimension to contain the component of the segment direction with the largest
+        // absolute value. This is calculated by comparing the absolute value of the 3 dimensions and then creating axis remapping
+        // indices that put the largest axis onto the z dimension. The other 2 axes are mapped based on preserving the triangle
+        // winding order. 
+        const float xMagnitude = abs(m_pq.GetX());
+        const float yMagnitude = abs(m_pq.GetY());
+        const float zMagnitude = abs(m_pq.GetZ());
 
-        // Compute denominator d. If d <= 0, segment is parallel to or points
-        // away from triangle, so exit early
-        float d = qp.Dot(normal);
-        if (d <= 0.0f)
+        // Start with initializing the remapping to seg Y -> kx, seg Z -> ky, seg X -> kz .
+        // We'll only keep this remapping if the X component of the segment is the largest.
+        m_kz = 0;
+        m_kx = 1;
+        m_ky = 2;
+
+        if (zMagnitude >= yMagnitude)
         {
-            return false;
-        }
-
-        // Compute intersection t value of pq with plane of triangle. A ray
-        // intersects iff 0 <= t. Segment intersects iff 0 <= t <= 1. Delay
-        // dividing by d until intersection has been found to pierce triangle
-        Vector3 ap = p - a;
-        t = ap.Dot(normal);
-
-        // range segment check t[0,1] (it this case [0,d])
-        if (t < 0.0f || t > d)
-        {
-            return false;
-        }
-
-        // Compute barycentric coordinate components and test if within bounds
-        Vector3 e = qp.Cross(ap);
-        v = ac.Dot(e);
-        if (v < 0.0f || v > d)
-        {
-            return false;
-        }
-        w = -ab.Dot(e);
-        if (w < 0.0f || v + w > d)
-        {
-            return false;
-        }
-
-        // Segment/ray intersects triangle. Perform delayed division and
-        // compute the last barycentric coordinate component
-        float ood = 1.0f / d;
-        t *= ood;
-        /*v *= ood;
-        w *= ood;
-        u = 1.0f - v - w;*/
-
-        normal.Normalize();
-
-        return true;
-    }
-
-    //=========================================================================
-    // IntersectSegmentTriangle
-    // [10/21/2009]
-    //=========================================================================
-    bool Intersect::IntersectSegmentTriangle(
-        const Vector3& p,
-        const Vector3& q,
-        const Vector3& a,
-        const Vector3& b,
-        const Vector3& c,
-        /*float &u, float &v, float &w,*/ Vector3& normal,
-        float& t)
-    {
-        float v, w; // comment this and enable input params if we need the barycentric coordinates
-
-        Vector3 ab = b - a;
-        Vector3 ac = c - a;
-        Vector3 qp = p - q;
-        Vector3 ap = p - a;
-
-        // Compute triangle normal. Can be pre-calculated or cached if
-        // intersecting multiple segments against the same triangle
-        normal = ab.Cross(ac); // Right hand CCW
-
-        // Compute denominator d. If d <= 0, segment is parallel to or points
-        // away from triangle, so exit early
-        float d = qp.Dot(normal);
-        Vector3 e;
-        if (d > Constants::FloatEpsilon)
-        {
-            // the normal is on the right side
-            e = qp.Cross(ap);
+            if (zMagnitude >= xMagnitude)
+            {
+                // The Z component is the largest, so instead remap to seg X -> kx, seg Y -> ky, seg Z -> kz 
+                m_kz = 2;
+                m_kx = 0;
+                m_ky = 1;
+            }
         }
         else
         {
-            normal = -normal;
-
-            // so either have a parallel ray or our normal is flipped
-            if (d >= -Constants::FloatEpsilon)
+            if (yMagnitude >= xMagnitude)
             {
-                return false; // parallel
+                // The Y component is the largest, so instead remap to seg Z -> kx, seg X -> ky, seg Y -> kz
+                m_kz = 1;
+                m_kx = 2;
+                m_ky = 0;
             }
-            d = -d;
-            e = ap.Cross(qp);
         }
 
-        // Compute intersection t value of pq with plane of triangle. A ray
-        // intersects iff 0 <= t. Segment intersects iff 0 <= t <= 1. Delay
-        // dividing by d until intersection has been found to pierce triangle
-        t = ap.Dot(normal);
+        // If the largest segment component (kz) is negative, reverse the winding order of the axes so that kz is pointing
+        // upwards.
+        if (m_pq.GetElement(m_kz) < 0.0f)
+        {
+            AZStd::swap(m_kx, m_ky);
+        }
 
-        // range segment check t[0,1] (it this case [0,d])
-        if (t < 0.0f || t > d)
+        // Now that the axis remappings have been calculated, use the remapped axes to calculate the shearing constants that
+        // will displace each triangle relative to the rotated segment.
+        m_sz = 1.0f / m_pq.GetElement(m_kz);
+        m_sx = m_pq.GetElement(m_kx) * m_sz;
+        m_sy = m_pq.GetElement(m_ky) * m_sz;
+    }
+
+    template<bool oneSided>
+    bool Intersect::SegmentTriangleHitTester::Intersect(
+            const AZ::Vector3& a, const AZ::Vector3& b, const AZ::Vector3& c, AZ::Vector3& normal, float& t) const
+    {
+        // NOTE: The code in this method doesn't follow the o3de naming standards for variables.
+        // This is an intentional departure so that the code aligns with the original algorithm in the paper and is easier to compare.
+        // Variables starting with capital letters are values in the transformed coordinate space.
+
+        // Translate the triangle to be relative to the segment origin
+        const Vector3 A = a - m_p;
+        const Vector3 B = b - m_p;
+        const Vector3 C = c - m_p;
+
+        // Shear and scale the triangle vertices so that they're fully in the coordinate space in which our segment
+        // is a unit segment of (0, 0, 1).
+        const float Ax = A.GetElement(m_kx) - m_sx * A.GetElement(m_kz);
+        const float Ay = A.GetElement(m_ky) - m_sy * A.GetElement(m_kz);
+        const float Bx = B.GetElement(m_kx) - m_sx * B.GetElement(m_kz);
+        const float By = B.GetElement(m_ky) - m_sy * B.GetElement(m_kz);
+        const float Cx = C.GetElement(m_kx) - m_sx * C.GetElement(m_kz);
+        const float Cy = C.GetElement(m_ky) - m_sy * C.GetElement(m_kz);
+
+        // Calculate the scaled barycentric coordinates. These would normally be calculated by using expressions like
+        // ray.dot(c.cross(b)), but since we've transformed our ray into a unit Z ray, the expressions simplify down
+        // to 2D equations.
+        float U = Cx * By - Cy * Bx;
+        float V = Ax * Cy - Ay * Cx;
+        float W = Bx * Ay - By * Ax;
+
+        // If any of these coordinates land exactly at 0, recalculate them using double precision to reduce the amount of precision-based
+        // errors that occur in the intersection testing.
+        if (U == 0.0f || V == 0.0f || W == 0.0f)
+        {
+            double CxBy = aznumeric_cast<double>(Cx) * aznumeric_cast<double>(By);
+            double CyBx = aznumeric_cast<double>(Cy) * aznumeric_cast<double>(Bx);
+            U = aznumeric_cast<float>(CxBy - CyBx);
+            double AxCy = aznumeric_cast<double>(Ax) * aznumeric_cast<double>(Cy);
+            double AyCx = aznumeric_cast<double>(Ay) * aznumeric_cast<double>(Cx);
+            V = aznumeric_cast<float>(AxCy - AyCx);
+            double BxAy = aznumeric_cast<double>(Bx) * aznumeric_cast<double>(Ay);
+            double ByAx = aznumeric_cast<double>(By) * aznumeric_cast<double>(Ax);
+            W = aznumeric_cast<float>(BxAy - ByAx);
+        }
+
+        // Edge test: if any of our coordinates are < 0, the segment misses the triangle.
+        if (U < 0.0f || V < 0.0f || W < 0.0f)
+        {
+            // For two-sided triangle intersection tests, the segment misses the triangle if at least one coordinate is < 0
+            // and at least one coordinate is > 0.
+            if constexpr(oneSided)
+            {
+                return false;
+            }
+            else if (U > 0.0f || V > 0.0f || W > 0.0f)
+            {
+                return false;
+            }
+        }
+
+        // Calculate the determinant for the system of barycentric coordinate equations
+        const float det = U + V + W;
+
+        // If the determinant is 0, the ray is co-planar to the triangle, so it cannot intersect.
+        if (det == 0.0f)
         {
             return false;
         }
 
-        // Compute barycentric coordinate components and test if within bounds
-        v = ac.Dot(e);
-        if (v < 0.0f || v > d)
+        // At this point, we've determined that the *ray* (segment with infinite length) intersects the triangle,
+        // so now we need to transform the Z coordinates of the triangle vertices and use them to calculate the hit distance along the ray.
+        const float Az = m_sz * A.GetElement(m_kz);
+        const float Bz = m_sz * B.GetElement(m_kz);
+        const float Cz = m_sz * C.GetElement(m_kz);
+        const float T = U * Az + V * Bz + W * Cz;
+
+        // Since we're testing a segment, not a ray, T/det needs to be in [0,1] to be considered a hit, as anything outside those
+        // bounds will fall beyond the endpoints of the segment. 
+        if constexpr(oneSided)
         {
-            return false;
+            // For one-sided triangles, we need to have 0 <= T < = det, or else T is beyond the endpoints.
+            if (T < 0.0f || T > det)
+            {
+                return false;
+            }
+
+            // We've determined it's a hit, so use the untransformed triangle vertices to calculate the normal of the triangle face
+            // in the original coordinate space to return back from the API.
+            normal = (b - a).Cross((c - a)).GetNormalized();
         }
-        w = -ab.Dot(e);
-        if (w < 0.0f || v + w > d)
+        else
         {
-            return false;
+            // For two-sided triangles, we either need to have 0 <= T <= det if det is positive,
+            // or 0 <= -T <= -det if det is negative. Otherwise, T is beyond the endpoints.
+            const float detSign = signbit(det) ? -1.0f : 1.0f;
+            if ((T * detSign) < 0.0f || (T * detSign) > (det * detSign))
+            {
+                return false;
+            }
+
+            // We've determined it's a hit, so use the untransformed triangle vertices to calculate the normal of the triangle face
+            // in the original coordinate space to return back from the API. For two-sided triangles, we use the sign of the determinant
+            // to potentially flip the normal in the case that the back side of the triangle had the intersection.
+            normal = detSign * (b - a).Cross((c - a)).GetNormalized();
         }
 
-        // Segment/ray intersects the triangle. Perform delayed division and
-        // compute the last barycentric coordinate component
-        float ood = 1.0f / d;
-        t *= ood;
-        // v *= ood;
-        // w *= ood;
-        // u = 1.0f - v - w;
+        // Finally, normalize T into [0, 1] space so that it represents the hit distance along the segment.
+        const float detReciprocal = 1.0f / det;
+        t = T * detReciprocal;
 
-        normal.Normalize();
+        // If the barycentric coordinates of the hit point are ever needed, they would need to be normalized into [0,1] space
+        // before getting returned:
+        // u = U * detReciprocal;
+        // v = V * detReciprocal;
+        // w = W * detReciprocal;
 
         return true;
     }
+
+    // Force instantiation in this library of the one-sided Intersect() method.
+    template bool Intersect::SegmentTriangleHitTester::Intersect<true>(
+        const AZ::Vector3& a, const AZ::Vector3& b, const AZ::Vector3& c, AZ::Vector3& normal, float& t) const;
+
+    // Force instantiation in this library of the two-sided Intersect() method.
+    template bool Intersect::SegmentTriangleHitTester::Intersect<false>(
+        const AZ::Vector3& a, const AZ::Vector3& b, const AZ::Vector3& c, AZ::Vector3& normal, float& t) const;
 
     //=========================================================================
     // TestSegmentAABBOrigin
@@ -999,11 +1043,12 @@ namespace AZ
         Vector3 E = rayDir.Cross(QA);
         float dnAbs = 0.0f;
 
-        if (dn < -EPSILON) // vertices have counter-clock wise winding when looking at the quad from rayOrigin
+        const float triNLength = triN.GetLength();
+        if (dn < -EPSILON * triNLength) // vertices have counter-clock wise winding when looking at the quad from rayOrigin
         {
             dnAbs = -dn;
         }
-        else if (dn > EPSILON)
+        else if (dn > EPSILON * triNLength)
         {
             E = -E;
             dnAbs = dn;

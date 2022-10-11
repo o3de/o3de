@@ -87,9 +87,8 @@ class TestFixtures(object):
         mock_config.getoption.return_value = None
 
         expected = os.path.join(mock_cwd,
-                                'TestResults',
-                                '2019-10-11T00-00-00-000000',
-                                'pytest_results')
+                                'pytest_results',
+                                '2019-10-11T00-00-00-000000')
         actual = test_tools_fixtures._get_output_path(mock_config)
 
         assert actual == expected
@@ -188,13 +187,6 @@ class TestFixtures(object):
         retval = mock.MagicMock()
         mock_create.return_value = retval
         mock_workspace = mock.MagicMock()
-        mock_workspace.paths.waf.return_value = "dummy"
-        mock_workspace.paths.autoexec_file.return_value = "dummy2"
-        file_handler = mock.mock_open()
-
-        with mock.patch('ly_test_tools._internal.pytest_plugin.test_tools_fixtures.open', file_handler, create=True):
-            with open(mock_workspace.paths.autoexec_file(), 'w') as autoexec_file:
-                autoexec_file.write('map ' + 'level')
 
         under_test = test_tools_fixtures._launcher(mock.MagicMock(), mock_workspace, 'windows', 'level')
 
@@ -209,9 +201,6 @@ class TestFixtures(object):
         mock_create.return_value = retval
         mock_request = mock.MagicMock()
         mock_workspace = mock.MagicMock()
-        mock_workspace.paths.waf.return_value = "dummy"
-        mock_workspace.paths.autoexec_file.return_value = "dummy2"
-        file_handler = mock.mock_open()
 
         def _fail_finalizer():
             assert False, "teardown should have been added to finalizer"
@@ -222,48 +211,9 @@ class TestFixtures(object):
 
         _finalizer = _fail_finalizer
         mock_request.addfinalizer = _capture_finalizer
-
-        with mock.patch('ly_test_tools._internal.pytest_plugin.test_tools_fixtures.open', file_handler, create=True):
-            with open(mock_workspace.paths.autoexec_file(), 'w') as autoexec_file:
-                autoexec_file.write('map ' + 'level')
 
         under_test = test_tools_fixtures._launcher(mock_request, mock_workspace, 'windows', 'level')
 
-        assert retval is under_test
-        assert _finalizer is not None
-        _finalizer()
-        retval.stop.assert_called_once()
-
-    @mock.patch("ly_test_tools.launchers.launcher_helper.create_server_launcher")
-    def test_DedicatedLauncher_MockHelper_Passthrough(self, mock_create):
-        retval = mock.MagicMock()
-        mock_create.return_value = retval
-
-        under_test = test_tools_fixtures._dedicated_launcher(mock.MagicMock(), mock.MagicMock(), 'windows')
-
-        mock_create.assert_called_once()
-        assert retval is under_test
-
-    @mock.patch("ly_test_tools.launchers.launcher_helper.create_server_launcher")
-    def test_DedicatedLauncher_MockHelper_TeardownCalled(self, mock_create):
-        retval = mock.MagicMock()
-        retval.stop = mock.MagicMock()
-        mock_request = mock.MagicMock()
-        mock_create.return_value = retval
-
-        def _fail_finalizer():
-            assert False, "teardown should have been added to finalizer"
-
-        def _capture_finalizer(func):
-            nonlocal _finalizer
-            _finalizer = func
-
-        _finalizer = _fail_finalizer
-        mock_request.addfinalizer = _capture_finalizer
-
-        under_test = test_tools_fixtures._dedicated_launcher(mock_request, mock.MagicMock(), 'windows')
-
-        mock_create.assert_called_once()
         assert retval is under_test
         assert _finalizer is not None
         _finalizer()

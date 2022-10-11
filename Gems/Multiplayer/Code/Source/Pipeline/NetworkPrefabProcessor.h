@@ -28,32 +28,21 @@ namespace Multiplayer
             "{AF6C36DA-CBB9-4DF4-AE2D-7BC6CCE65176}",
             AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessor);
 
+        NetworkPrefabProcessor();
         ~NetworkPrefabProcessor() override = default;
 
         void Process(AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext& context) override;
 
         static void Reflect(AZ::ReflectContext* context);
-
-        //! The format the network spawnables are going to be stored in.
-        enum class SerializationFormats
-        {
-            Binary, //!< Binary is generally preferable for performance.
-            Text //!< Store in text format which is usually slower but helps with debugging.
-        };
-
-        AZ::DataStream::StreamType GetAzSerializationFormat() const;
-
     protected:
-        static bool ProcessPrefab(
+        bool ProcessPrefab(
             AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext& context,
-            AzToolsFramework::Prefab::PrefabConversionUtils::PrefabDocument& prefab,
-            AZ::DataStream::StreamType serializationFormat);
+            AzToolsFramework::Prefab::PrefabConversionUtils::PrefabDocument& prefab);
 
-        SerializationFormats m_serializationFormat = SerializationFormats::Binary;
+        void PostProcessSpawnable(const AZStd::string& prefabName, AzFramework::Spawnable& spawnable);
+
+        AZStd::unordered_set<AZStd::string> m_processedNetworkPrefabs;
+
+        AzToolsFramework::Prefab::PrefabConversionUtils::PrefabSpawnablePostProcessEvent::Handler m_postProcessHandler;
     };
-}
-
-namespace AZ
-{
-    AZ_TYPE_INFO_SPECIALIZE(Multiplayer::NetworkPrefabProcessor::SerializationFormats, "{F69B49EB-9D67-4D9C-99E7-DFA35D4ACCD2}");
 }

@@ -41,6 +41,7 @@ namespace Vegetation
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Preview")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                     ->UIElement("GradientPreviewer", "Previewer")
@@ -48,8 +49,8 @@ namespace Vegetation
                     ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
                     ->Attribute(AZ_CRC("GradientSampler", 0xaec97010), &DistributionFilterConfig::GetSampler)
                     ->Attribute(AZ_CRC("GradientFilter", 0x99bf0362), &DistributionFilterConfig::GetFilterFunc)
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "")
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->EndGroup()
+
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &DistributionFilterConfig::m_filterStage, "Filter Stage", "Determines if filter is applied before (PreProcess) or after (PostProcess) modifiers.")
                     ->EnumAttribute(FilterStage::Default, "Default")
                     ->EnumAttribute(FilterStage::PreProcess, "PreProcess")

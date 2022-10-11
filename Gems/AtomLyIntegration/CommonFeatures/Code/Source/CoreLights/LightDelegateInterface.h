@@ -81,6 +81,13 @@ namespace AZ
             virtual void SetEsmExponent(float exponent) = 0;
             //! Sets the normal bias. Reduces acne by biasing the shadowmap lookup along the geometric normal.
             virtual void SetNormalShadowBias(float bias) = 0;
+
+            // Global Illumination
+            
+            //! Sets if the light should affect diffuse global illumination
+            virtual void SetAffectsGI(bool affectsGI) = 0;
+            //! Sets the multiplier on the contribution to diffuse global illumination
+            virtual void SetAffectsGIFactor(float affectsGIFactor) = 0;
         };
     } //  namespace Render
 } // namespace AZ

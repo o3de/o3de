@@ -9,6 +9,7 @@
 #include <Mesh/MeshComponentController.h>
 
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentConstants.h>
+#include <AtomLyIntegration/CommonFeatures/Mesh/MeshHandleStateBus.h>
 
 #include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 
@@ -55,7 +56,7 @@ namespace AZ
             {
                 if (classElement.GetVersion() < 2)
                 {
-                    RPI::Cullable::LodOverride lodOverride = aznumeric_cast<RPI::Cullable::LodOverride>(classElement.FindElement(AZ_CRC("LodOverride")));
+                    RPI::Cullable::LodOverride lodOverride = aznumeric_cast<RPI::Cullable::LodOverride>(classElement.FindElement(AZ_CRC_CE("LodOverride")));
                     static constexpr uint8_t old_NoLodOverride = AZStd::numeric_limits <RPI::Cullable::LodOverride>::max();
                     if (lodOverride == old_NoLodOverride)
                     {
@@ -126,11 +127,11 @@ namespace AZ
             }
 
             values.reserve(lodCount + 1);
-            values.push_back({ aznumeric_cast<RPI::Cullable::LodOverride>(0), "Default (Highest)" });
+            values.push_back({ aznumeric_cast<RPI::Cullable::LodOverride>(0), "Default LOD 0 (Highest Detail)" });
 
             for (uint32_t i = 1; i < lodCount; ++i)
             {
-                AZStd::string enumDescription = AZStd::string::format("Lod %i", i);
+                AZStd::string enumDescription = AZStd::string::format("LOD %i", i);
                 values.push_back({ aznumeric_cast<RPI::Cullable::LodOverride>(i), enumDescription.c_str() });
             }
 
@@ -183,6 +184,8 @@ namespace AZ
                     ->Event("GetQualityDecayRate", &MeshComponentRequestBus::Events::GetQualityDecayRate)
                     ->Event("SetRayTracingEnabled", &MeshComponentRequestBus::Events::SetRayTracingEnabled)
                     ->Event("GetRayTracingEnabled", &MeshComponentRequestBus::Events::GetRayTracingEnabled)
+                    ->Event("SetVisibility", &MeshComponentRequestBus::Events::SetVisibility)
+                    ->Event("GetVisibility", &MeshComponentRequestBus::Events::GetVisibility)
                     ->VirtualProperty("ModelAssetId", "GetModelAssetId", "SetModelAssetId")
                     ->VirtualProperty("ModelAssetPath", "GetModelAssetPath", "SetModelAssetPath")
                     ->VirtualProperty("SortKey", "GetSortKey", "SetSortKey")
@@ -191,6 +194,7 @@ namespace AZ
                     ->VirtualProperty("MinimumScreenCoverage", "GetMinimumScreenCoverage", "SetMinimumScreenCoverage")
                     ->VirtualProperty("QualityDecayRate", "GetQualityDecayRate", "SetQualityDecayRate")
                     ->VirtualProperty("RayTracingEnabled", "GetRayTracingEnabled", "SetRayTracingEnabled")
+                    ->VirtualProperty("Visibility", "GetVisibility", "SetVisibility")
                     ;
                 
                 behaviorContext->EBus<MeshComponentNotificationBus>("MeshComponentNotificationBus")
@@ -203,20 +207,20 @@ namespace AZ
 
         void MeshComponentController::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
-            dependent.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+            dependent.push_back(AZ_CRC_CE("TransformService"));
             dependent.push_back(AZ_CRC_CE("NonUniformScaleService"));
         }
 
         void MeshComponentController::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("MaterialReceiverService", 0x0d1a6a74));
-            provided.push_back(AZ_CRC("MeshService", 0x71d8a455));
+            provided.push_back(AZ_CRC_CE("MaterialConsumerService"));
+            provided.push_back(AZ_CRC_CE("MeshService"));
         }
 
         void MeshComponentController::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("MaterialReceiverService", 0x0d1a6a74));
-            incompatible.push_back(AZ_CRC("MeshService", 0x71d8a455));
+            incompatible.push_back(AZ_CRC_CE("MaterialConsumerService"));
+            incompatible.push_back(AZ_CRC_CE("MeshService"));
         }
 
         MeshComponentController::MeshComponentController(const MeshComponentConfig& config)
@@ -252,8 +256,9 @@ namespace AZ
 
             const auto entityContextId = FindOwningContextId(entityId);
             MeshComponentRequestBus::Handler::BusConnect(entityId);
+            MeshHandleStateRequestBus::Handler::BusConnect(entityId);
             TransformNotificationBus::Handler::BusConnect(entityId);
-            MaterialReceiverRequestBus::Handler::BusConnect(entityId);
+            MaterialConsumerRequestBus::Handler::BusConnect(entityId);
             MaterialComponentNotificationBus::Handler::BusConnect(entityId);
             AzFramework::BoundsRequestBus::Handler::BusConnect(entityId);
             AzFramework::RenderGeometry::IntersectionRequestBus::Handler::BusConnect({ entityId, entityContextId });
@@ -270,10 +275,11 @@ namespace AZ
 
             AzFramework::RenderGeometry::IntersectionRequestBus::Handler::BusDisconnect();
             AzFramework::BoundsRequestBus::Handler::BusDisconnect();
-            MeshComponentRequestBus::Handler::BusDisconnect();
-            TransformNotificationBus::Handler::BusDisconnect();
-            MaterialReceiverRequestBus::Handler::BusDisconnect();
             MaterialComponentNotificationBus::Handler::BusDisconnect();
+            MaterialConsumerRequestBus::Handler::BusDisconnect();
+            TransformNotificationBus::Handler::BusDisconnect();
+            MeshComponentRequestBus::Handler::BusDisconnect();
+            MeshHandleStateRequestBus::Handler::BusDisconnect();
 
             m_nonUniformScaleChangedHandler.Disconnect();
 
@@ -315,28 +321,20 @@ namespace AZ
             }
         }
 
-        RPI::ModelMaterialSlotMap MeshComponentController::GetModelMaterialSlots() const
+        MaterialAssignmentLabelMap MeshComponentController::GetMaterialLabels() const
         {
-            Data::Asset<const RPI::ModelAsset> modelAsset = GetModelAsset();
-            if (modelAsset.IsReady())
-            {
-                return modelAsset->GetMaterialSlots();
-            }
-            else
-            {
-                return {};
-            }
+            return GetMaterialSlotLabelsFromModelAsset(GetModelAsset());
         }
 
         MaterialAssignmentId MeshComponentController::FindMaterialAssignmentId(
             const MaterialAssignmentLodIndex lod, const AZStd::string& label) const
         {
-            return FindMaterialAssignmentIdInModel(GetModel(), lod, label);
+            return GetMaterialSlotIdFromModelAsset(GetModelAsset(), lod, label);
         }
 
-        MaterialAssignmentMap MeshComponentController::GetMaterialAssignments() const
+        MaterialAssignmentMap MeshComponentController::GetDefautMaterialMap() const
         {
-            return GetMaterialAssignmentsFromModel(GetModel());
+            return GetDefautMaterialMapFromModelAsset(GetModelAsset());
         }
 
         AZStd::unordered_set<AZ::Name> MeshComponentController::GetModelUvNames() const
@@ -380,11 +378,13 @@ namespace AZ
                 const AZ::EntityId entityId = m_entityComponentIdPair.GetEntityId();
                 m_configuration.m_modelAsset = modelAsset;
                 MeshComponentNotificationBus::Event(entityId, &MeshComponentNotificationBus::Events::OnModelReady, m_configuration.m_modelAsset, model);
-                MaterialReceiverNotificationBus::Event(entityId, &MaterialReceiverNotificationBus::Events::OnMaterialAssignmentsChanged);
+                MaterialConsumerNotificationBus::Event(entityId, &MaterialConsumerNotificationBus::Events::OnMaterialAssignmentSlotsChanged);
                 AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(entityId);
                 AzFramework::RenderGeometry::IntersectionNotificationBus::Event(
                     m_intersectionNotificationBus, &AzFramework::RenderGeometry::IntersectionNotificationBus::Events::OnGeometryChanged,
                     m_entityComponentIdPair.GetEntityId());
+
+                MeshHandleStateNotificationBus::Event(entityId, &MeshHandleStateNotificationBus::Events::OnMeshHandleSet, &m_meshHandle);
             }
         }
 
@@ -395,7 +395,7 @@ namespace AZ
                 const AZ::EntityId entityId = m_entityComponentIdPair.GetEntityId();
 
                 MaterialAssignmentMap materials;
-                MaterialComponentRequestBus::EventResult(materials, entityId, &MaterialComponentRequests::GetMaterialOverrides);
+                MaterialComponentRequestBus::EventResult(materials, entityId, &MaterialComponentRequests::GetMaterialMap);
 
                 m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
                 MeshHandleDescriptor meshDescriptor;
@@ -422,8 +422,8 @@ namespace AZ
             else
             {
                 // If there is no model asset to be loaded then we need to invalidate the material slot configuration
-                MaterialReceiverNotificationBus::Event(
-                    m_entityComponentIdPair.GetEntityId(), &MaterialReceiverNotificationBus::Events::OnMaterialAssignmentsChanged);
+                MaterialConsumerNotificationBus::Event(
+                    m_entityComponentIdPair.GetEntityId(), &MaterialConsumerNotificationBus::Events::OnMaterialAssignmentSlotsChanged);
             }
         }
 
@@ -435,9 +435,12 @@ namespace AZ
                     m_entityComponentIdPair.GetEntityId(), &MeshComponentNotificationBus::Events::OnModelPreDestroy);
                 m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
 
+                MeshHandleStateNotificationBus::Event(
+                    m_entityComponentIdPair.GetEntityId(), &MeshHandleStateNotificationBus::Events::OnMeshHandleSet, &m_meshHandle);
+
                 // Model has been released which invalidates the material slot configuration
-                MaterialReceiverNotificationBus::Event(
-                    m_entityComponentIdPair.GetEntityId(), &MaterialReceiverNotificationBus::Events::OnMaterialAssignmentsChanged);
+                MaterialConsumerNotificationBus::Event(
+                    m_entityComponentIdPair.GetEntityId(), &MaterialConsumerNotificationBus::Events::OnMaterialAssignmentSlotsChanged);
             }
         }
 
@@ -657,6 +660,11 @@ namespace AZ
             }
 
             return result;
+        }
+
+        const MeshFeatureProcessorInterface::MeshHandle* MeshComponentController::GetMeshHandle() const
+        {
+            return &m_meshHandle;
         }
     } // namespace Render
 } // namespace AZ

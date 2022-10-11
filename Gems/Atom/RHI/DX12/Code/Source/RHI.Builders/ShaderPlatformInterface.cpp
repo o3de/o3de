@@ -127,6 +127,8 @@ namespace AZ
                     {
                         srgVisibility.m_descriptorTableShaderStageMask |= bindInfo.second.m_shaderStageMask;
                     }
+
+                    srgVisibility.m_descriptorTableShaderStageMask |= srgInfo.m_bindingInfo.m_constantDataBindingInfo.m_shaderStageMask;
                 }
 
                 pipelineLayoutDescriptor->AddShaderResourceGroupVisibility(srgVisibility);

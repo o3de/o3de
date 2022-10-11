@@ -9,14 +9,14 @@
 
 #include <AzCore/std/string/string.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     typedef AZStd::string AutomationStateModelId;
     namespace StateModelIds
     {
-        static const char* GraphCanvasId = "::GraphCanvasId";
-        static const char* ScriptCanvasId = "::ScriptCanvasId";
-        static const char* ViewId = "::ViewId";
-        static const char* MinorStep = "::MinorStep";
+        static constexpr const char* GraphCanvasId = "::GraphCanvasId";
+        static constexpr const char* ScriptCanvasId = "::ScriptCanvasId";
+        static constexpr const char* ViewId = "::ViewId";
+        static constexpr const char* MinorStep = "::MinorStep";
     }
 }

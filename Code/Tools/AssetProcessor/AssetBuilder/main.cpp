@@ -11,6 +11,7 @@
 
 int main(int argc, char** argv)
 {
+    const AZ::Debug::Trace tracer;
     AssetBuilderApplication app(&argc, &argv);
     AssetBuilder::TraceMessageHook traceMessageHook; // Hook AZ Debug messages and redirect them to stdout
     traceMessageHook.EnableTraceContext(true);

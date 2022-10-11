@@ -32,6 +32,8 @@
 #include <EMotionFX/CommandSystem/Source/SelectionList.h>
 #include <EMotionFX/Source/TransformData.h>
 #include <EMotionFX/Source/AttachmentNode.h>
+#include <EMotionFX/Source/AttachmentSkin.h>
+#include <EMotionFX/Source/Mesh.h>
 #include <MCore/Source/AzCoreConversions.h>
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentConstants.h>
 
@@ -58,7 +60,6 @@ namespace EMotionFX
                     ->Field("UpdateJointTransformsWhenOutOfView", &EditorActorComponent::m_forceUpdateJointsOOV)
                     ->Field("LodLevel", &EditorActorComponent::m_lodLevel)
                     ->Field("BBoxConfig", &EditorActorComponent::m_bboxConfig)
-                    ->Field("AddMaterialComponentFlag", &EditorActorComponent::m_addMaterialComponentFlag)
                     ;
 
                 AZ::EditContext* editContext = serializeContext->GetEditContext();
@@ -160,7 +161,7 @@ namespace EMotionFX
                         ->DataElement(0, &EditorActorComponent::m_bboxConfig,
                                       "Bounding box configuration", "")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnBBoxConfigChanged)
-                        ->DataElement(AZ::Edit::UIHandlers::Button, &EditorActorComponent::m_addMaterialComponentFlag, "Add Material Component", "Add Material Component")
+                        ->UIElement(AZ::Edit::UIHandlers::Button, "Add Material Component", "Add Material Component")
                         ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
                         ->Attribute(AZ::Edit::Attributes::ButtonText, "Add Material Component")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::AddEditorMaterialComponent)
@@ -233,6 +234,7 @@ namespace EMotionFX
             AZ::TransformNotificationBus::Handler::BusDisconnect();
             AZ::TickBus::Handler::BusDisconnect();
             AZ::Data::AssetBus::Handler::BusDisconnect();
+            ActorComponentNotificationBus::Handler::BusDisconnect();
 
             DestroyActorInstance();
             m_actorAsset.Release();
@@ -300,6 +302,8 @@ namespace EMotionFX
         //////////////////////////////////////////////////////////////////////////
         void EditorActorComponent::DestroyActorInstance()
         {
+            DetachFromEntity();
+
             if (m_actorInstance)
             {
                 ActorComponentNotificationBus::Event(
@@ -433,8 +437,13 @@ namespace EMotionFX
         {
             if (!IsValidAttachment(GetEntityId(), m_attachmentTarget))
             {
-                m_attachmentTarget.SetInvalid();
                 AZ_Error("EMotionFX", false, "You cannot attach to yourself or create circular dependencies! Attachment cannot be performed.");
+                m_attachmentTarget.SetInvalid();
+                m_attachmentJointName.clear();
+            }
+            else
+            {
+                CheckAttachToEntity();
             }
             return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
         }
@@ -542,12 +551,7 @@ namespace EMotionFX
         void EditorActorComponent::SetActorAsset(AZ::Data::Asset<ActorAsset> actorAsset)
         {
             m_actorAsset = actorAsset;
-
-            Actor* actor = m_actorAsset->GetActor();
-            if (actor)
-            {
-                CheckActorCreation();
-            }
+            CheckActorCreation();
         }
 
         void EditorActorComponent::InitializeMaterial(ActorAsset& actorAsset)
@@ -884,20 +888,20 @@ namespace EMotionFX
             // Enable/disable debug drawing.
             OnRenderFlagChanged();
 
+            if (m_actorInstance)
+            {
+                ActorComponentNotificationBus::Event(
+                    GetEntityId(), &ActorComponentNotificationBus::Events::OnActorInstanceDestroyed, m_actorInstance.get());
+                m_renderActorInstance.reset(nullptr);
+                m_actorInstance.reset();
+            }
+
             // Create actor instance.
             auto* actorAsset = m_actorAsset.GetAs<ActorAsset>();
             AZ_Error("EMotionFX", actorAsset, "Actor asset is not valid.");
             if (!actorAsset)
             {
                 return;
-            }
-
-            if (m_actorInstance)
-            {
-                ActorComponentNotificationBus::Event(
-                    GetEntityId(),
-                    &ActorComponentNotificationBus::Events::OnActorInstanceDestroyed,
-                    m_actorInstance.get());
             }
 
             m_actorInstance = actorAsset->CreateInstance(GetEntity());
@@ -978,10 +982,42 @@ namespace EMotionFX
                 }
             }
 
+            // Remember the parent entity before we re-parent (attach) it.
+            AZ::TransformBus::EventResult(m_attachmentPreviousParent, GetEntityId(), &AZ::TransformBus::Events::GetParentId);
+
             // Reattach all attachments
             for (AZ::EntityId& attachment : m_attachments)
             {
                 LmbrCentral::AttachmentComponentRequestBus::Event(attachment, &LmbrCentral::AttachmentComponentRequestBus::Events::Reattach, true);
+            }
+
+            CheckAttachToEntity();
+        }
+
+        void EditorActorComponent::CheckAttachToEntity()
+        {
+            if (m_actorInstance)
+            {
+                if (m_attachmentTarget.IsValid())
+                {
+                    // Create the attachment if the target instance is already created.
+                    // Otherwise, listen to the actor instance creation event.
+                    ActorInstance* targetActorInstance = nullptr;
+                    ActorComponentRequestBus::EventResult(targetActorInstance, m_attachmentTarget, &ActorComponentRequestBus::Events::GetActorInstance);
+                    if (targetActorInstance)
+                    {
+                        AttachToInstance(targetActorInstance);
+                    }
+                    else
+                    {
+                        ActorComponentNotificationBus::Handler::BusDisconnect();
+                        ActorComponentNotificationBus::Handler::BusConnect(m_attachmentTarget);
+                    }
+                }
+                else
+                {
+                    DetachFromEntity();
+                }
             }
         }
 
@@ -1009,6 +1045,60 @@ namespace EMotionFX
         AZ::u32 EditorActorComponent::GetEditorMaterialComponentVisibility() const
         {
             return HasEditorMaterialComponent() ? AZ::Edit::PropertyVisibility::Hide : AZ::Edit::PropertyVisibility::Show;
+        }
+
+        void EditorActorComponent::DetachFromEntity()
+        {
+            if (!m_actorInstance)
+            {
+                return;
+            }
+
+            ActorInstance* attachedTo = m_actorInstance->GetAttachedTo();
+            if (attachedTo)
+            {
+                attachedTo->RemoveAttachment(m_actorInstance.get());
+                AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetParent, m_attachmentPreviousParent);
+            }
+        }
+
+        void EditorActorComponent::OnActorInstanceCreated(ActorInstance* actorInstance)
+        {
+            auto attachmentIt = AZStd::find(m_attachments.begin(), m_attachments.end(), actorInstance->GetEntityId());
+            if (attachmentIt != m_attachments.end())
+            {
+                if (m_actorInstance)
+                {
+                    LmbrCentral::AttachmentComponentRequestBus::Event(actorInstance->GetEntityId(), &LmbrCentral::AttachmentComponentRequestBus::Events::Reattach, true);
+                }
+            }
+            else
+            {
+                AttachToInstance(actorInstance);
+            }
+        }
+
+        void EditorActorComponent::OnActorInstanceDestroyed([[maybe_unused]] ActorInstance* actorInstance)
+        {
+            DetachFromEntity();
+        }
+
+        void EditorActorComponent::AttachToInstance(ActorInstance* targetActorInstance)
+        {
+            if (!targetActorInstance)
+            {
+                return;
+            }
+
+            // Remember the parent entity before we re-parent (attach) it.
+            AZ::TransformBus::EventResult(m_attachmentPreviousParent, GetEntityId(), &AZ::TransformBus::Events::GetParentId);
+
+            DetachFromEntity();
+            Attachment* attachmentSkin = AttachmentSkin::Create(targetActorInstance, m_actorInstance.get());
+            m_actorInstance->SetLocalSpaceTransform(Transform::CreateIdentity());
+            targetActorInstance->AddAttachment(attachmentSkin);
+            AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetParent, targetActorInstance->GetEntityId());
+            AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetLocalTM, AZ::Transform::CreateIdentity());
         }
     } //namespace Integration
 } // namespace EMotionFX

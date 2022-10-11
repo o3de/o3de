@@ -18,7 +18,7 @@ namespace AZ
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<AreaLightComponentConfig, ComponentConfig>()
-                    ->Version(7) // ATOM-16034
+                    ->Version(8) // Added AffectsGI
                     ->Field("LightType", &AreaLightComponentConfig::m_lightType)
                     ->Field("Color", &AreaLightComponentConfig::m_color)
                     ->Field("IntensityMode", &AreaLightComponentConfig::m_intensityMode)
@@ -39,6 +39,9 @@ namespace AZ
                     ->Field("Shadow Filter Method", &AreaLightComponentConfig::m_shadowFilterMethod)
                     ->Field("Filtering Sample Count", &AreaLightComponentConfig::m_filteringSampleCount)
                     ->Field("Esm Exponent", &AreaLightComponentConfig::m_esmExponent)
+                    // Global Illumination
+                    ->Field("Affects GI", &AreaLightComponentConfig::m_affectsGI)
+                    ->Field("Affects GI Factor", &AreaLightComponentConfig::m_affectsGIFactor)
                     ;
             }
         }
@@ -110,6 +113,16 @@ namespace AZ
         bool AreaLightComponentConfig::SupportsShadows() const
         {
             return m_lightType == LightType::SpotDisk || m_lightType == LightType::Sphere;
+        }
+
+        bool AreaLightComponentConfig::SupportsAffectsGI() const
+        {
+            return m_lightType == LightType::Sphere
+                || m_lightType == LightType::SpotDisk
+                || m_lightType == LightType::Capsule
+                || m_lightType == LightType::Quad
+                || m_lightType == LightType::SimplePoint
+                || m_lightType == LightType::SimpleSpot;
         }
         
         bool AreaLightComponentConfig::ShadowsDisabled() const

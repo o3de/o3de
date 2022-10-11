@@ -2676,7 +2676,7 @@ namespace UnitTest
             m_val = x + (y * z);
             if (m_maxSleep)
             {
-                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(m_val % m_maxSleep));
+                AZStd::this_thread::sleep_for(AZStd::chrono::microseconds(m_val % m_maxSleep));
             }
         }
     };
@@ -2696,10 +2696,11 @@ namespace UnitTest
             char* end = sentinel + AZ_ARRAY_SIZE(sentinel);
             for (int i = 1; i < cycleCount; ++i)
             {
-                uint32_t ms = maxSleep ? rand() % maxSleep : 0;
-                if (ms % 3)
+                // Calculate() already includes a modulo-cycled sleep, add more random jitter
+                uint32_t extraSleep_us = maxSleep ? rand() % maxSleep : 0;
+                if (extraSleep_us % 3)
                 {
-                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(ms));
+                    AZStd::this_thread::sleep_for(AZStd::chrono::microseconds(extraSleep_us));
                 }
                 LocklessBus::Broadcast(&LocklessBus::Events::Calculate, i, i * 2, i << 4);
                 bool failed = (AZStd::find_if(&sentinel[0], end, [](char s) { return s != 0; }) != end);
@@ -2804,7 +2805,7 @@ namespace UnitTest
                 m_val = x + (y * z);
                 if (m_maxSleep)
                 {
-                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(m_val % m_maxSleep));
+                    AZStd::this_thread::sleep_for(AZStd::chrono::microseconds(m_val % m_maxSleep));
                 }
             }
 
@@ -2847,10 +2848,11 @@ namespace UnitTest
 
                 LocklessConnectorBus::Event(id, &LocklessConnectorBus::Events::DoConnect);
 
-                uint32_t ms = maxSleep ? rand() % maxSleep : 0;
-                if (ms % 3)
+                // Calculate() already includes a modulo-cycled sleep, add more random jitter
+                uint32_t extraSleep_us = maxSleep ? rand() % maxSleep : 0;
+                if (extraSleep_us % 3)
                 {
-                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(ms));
+                    AZStd::this_thread::sleep_for(AZStd::chrono::microseconds(extraSleep_us));
                 }
 
                 MyEventGroupBus::Event(id, &MyEventGroupBus::Events::Calculate, i, i * 2, i << 4);
@@ -2858,7 +2860,7 @@ namespace UnitTest
                 LocklessConnectorBus::Event(id, &LocklessConnectorBus::Events::DoDisconnect);
 
                 bool failed = (AZStd::find_if(&sentinel[0], end, [](char s) { return s != 0; }) != end);
-                EXPECT_FALSE(failed);
+                EXPECT_FALSE(failed) << "sentinel memory unexpectedly tampered with while handling EBus events";
             }
         };
 
@@ -2929,10 +2931,11 @@ namespace UnitTest
             {
                 handler.DoConnect();
 
-                uint32_t ms = maxSleep ? rand() % maxSleep : 0;
-                if (ms % 3)
+                // add random jitter
+                uint32_t extraSleep_us = maxSleep ? rand() % maxSleep : 0;
+                if (extraSleep_us % 3)
                 {
-                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(ms));
+                    AZStd::this_thread::sleep_for(AZStd::chrono::microseconds(extraSleep_us));
                 }
 
                 handler.DoDisconnect();
@@ -2995,11 +2998,12 @@ namespace UnitTest
         {
             for (int i = 0; i < cycleCount; ++i)
             {
+                // add random jitter
                 constexpr int maxSleep = 3;
-                uint32_t ms = rand() % maxSleep;
-                if (ms != 0)
+                uint32_t extraSleep_us = rand() % maxSleep;
+                if (extraSleep_us != 0)
                 {
-                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(ms));
+                    AZStd::this_thread::sleep_for(AZStd::chrono::microseconds(extraSleep_us));
                 }
                 LocklessNullMutexBus::Broadcast(&LocklessNullMutexBus::Events::AtomicIncrement);
             }
@@ -3507,14 +3511,14 @@ namespace UnitTest
         {
             static void Connect(typename Bus::BusPtr&, typename Bus::Context&, typename Bus::HandlerNode& handler, typename Bus::Context::ConnectLockGuard& connectLock, const typename Bus::BusIdType&)
             {
-                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(handler->GetPreUnlockDelay()));
+                AZStd::this_thread::sleep_for(AZStd::chrono::microseconds(handler->GetPreUnlockDelay()));
 
                 if (handler->ShouldUnlock())
                 {
                     connectLock.unlock();
                 }
 
-                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(handler->GetPostUnlockDelay()));
+                AZStd::this_thread::sleep_for(AZStd::chrono::microseconds(handler->GetPostUnlockDelay()));
                 handler->MessageWhichOccursDuringConnect();
             }
         };

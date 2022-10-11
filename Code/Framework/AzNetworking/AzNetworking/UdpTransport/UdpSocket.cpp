@@ -62,7 +62,7 @@ namespace AzNetworking
             if (!IsOpen())
             {
                 const int32_t error = GetLastNetworkError();
-                AZLOG_ERROR("Failed to create socket (%d:%s)", error, GetNetworkErrorDesc(error));
+                AZLOG_WARN("Failed to create socket (%d:%s)", error, GetNetworkErrorDesc(error));
                 m_socketFd = InvalidSocketFd;
                 return false;
             }
@@ -78,7 +78,7 @@ namespace AzNetworking
             if (::bind(static_cast<int32_t>(m_socketFd), (const sockaddr *)&hints, sizeof(hints)) != 0)
             {
                 const int32_t error = GetLastNetworkError();
-                AZLOG_ERROR("Failed to bind UDP socket to port %u (%d:%s)", uint32_t(port), error, GetNetworkErrorDesc(error));
+                AZLOG_WARN("Failed to bind UDP socket to port %u (%d:%s)", uint32_t(port), error, GetNetworkErrorDesc(error));
                 Close();
                 return false;
             }
@@ -149,7 +149,7 @@ namespace AzNetworking
                     return SocketOpResultSuccess;
                 }
 
-                AZLOG_ERROR("Failed to write to socket (%d:%s)", error, GetNetworkErrorDesc(error));
+                AZLOG_WARN("Failed to write to socket (%d:%s)", error, GetNetworkErrorDesc(error));
             }
         }
 #ifdef ENABLE_LATENCY_DEBUG
@@ -211,7 +211,7 @@ namespace AzNetworking
                 }
             }
 
-            AZLOG_ERROR("Failed to read from socket (%d:%s)", error, GetNetworkErrorDesc(error));
+            AZLOG_WARN("Failed to read from socket (%d:%s)", error, GetNetworkErrorDesc(error));
         }
 
         if (receivedBytes <= 0)

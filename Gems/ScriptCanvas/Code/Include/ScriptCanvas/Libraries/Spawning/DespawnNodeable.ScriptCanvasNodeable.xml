@@ -1,23 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <ScriptCanvas Include="Include/ScriptCanvas/Libraries/Spawning/DespawnNodeable.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <Class Name="DespawnNodeable"
-         QualifiedName="Nodeables::Spawning::DespawnNodeable"
-         PreferredClassName="Despawn"
-         Base="ScriptCanvas::Nodeable"
-         Icon="Icons/ScriptCanvas/Placeholder.png"
-         Category="Prefab/Spawning"
-         Version="0"
-         GeneratePropertyFriend="True"
-         Namespace="ScriptCanvas"
-         Description="Despawns a selected prefab">
+    <Class Name="DespawnNodeable"
+        QualifiedName="Nodeables::Spawning::DespawnNodeable"
+        PreferredClassName="Despawn"
+        Category="Prefab/Spawning"
+        Namespace="ScriptCanvas"
+        Description="Despawns a selected prefab">
 
-    <Input Name="Request Despawn" OutputName="Despawn Requested">
-        <Parameter Name="SpawnTicket" Type="ScriptCanvas::Nodeables::Spawning::SpawnTicketInstance" Description="Ticket instance assosiated with spawnable asset."/>
-    </Input>
+        <Input Name="Request Despawn" OutputName="Despawn Requested">
+            <Parameter Name="SpawnTicket" Type="AzFramework::EntitySpawnTicket" Description="Ticket instance assosiated with spawnable asset."/>
+        </Input>
 
-    <Output Name="On Despawn" Description="Called when despawning entities has completed.">
-        <Parameter Name="SpawnTicket" Type="ScriptCanvas::Nodeables::Spawning::SpawnTicketInstance" Description="Ticket instance of the despawn result."/>
-    </Output>/>
-  </Class>
+        <Output Name="On Despawn" Description="Called when despawning entities has completed.">
+            <Parameter Name="SpawnTicketOut" Type="AzFramework::EntitySpawnTicket" Description="Ticket instance of the despawn result."/>
+        </Output>/>
+    </Class>
 </ScriptCanvas>

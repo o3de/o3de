@@ -199,7 +199,7 @@ namespace AzToolsFramework
                 if (applyPatchResult.GetOutcome() == AZ::JsonSerializationResult::Outcomes::PartialSkip ||
                     applyPatchResult.GetOutcome() == AZ::JsonSerializationResult::Outcomes::Skipped)
                 {
-                    AZ_Error(
+                    AZ_Warning(
                         "Prefab", false,
                         "Link::UpdateTarget - Some of the patches couldn't be applied on the source template '%s' present under the  "
                         "target Template '%s'.",

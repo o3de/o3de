@@ -24,6 +24,7 @@
         "AtomViewportDisplayIcons",
         "AtomViewportDisplayInfo",
         "CommonFeaturesAtom",
+        "EditorModeFeedback",
         "EMotionFX_Atom",
         "ImguiAtom"
     ],
@@ -34,6 +35,7 @@
         "AtomViewportDisplayIcons",
         "AtomViewportDisplayInfo",
         "CommonFeatures",
+        "EditorModeFeedback",
         "EMotionFXAtom",
         "ImguiAtom",
         "TechnicalArt/DccScriptingInterface"

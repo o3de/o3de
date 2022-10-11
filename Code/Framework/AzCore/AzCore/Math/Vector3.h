@@ -42,8 +42,13 @@ namespace AZ
 
         Vector3(float x, float y, float z);
 
+        //! Sets x,y components from a Vector2, sets z to 0.0.
         explicit Vector3(const Vector2& source);
 
+        //! Sets x,y components from a Vector2, specify z separately.
+        Vector3(const Vector2& source, float z);
+
+        //! Sets x,y,z components from a Vector4.
         explicit Vector3(const Vector4& source);
 
         //! For internal use only, arrangement of values in SIMD type is not guaranteed.

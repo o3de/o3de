@@ -82,8 +82,6 @@ namespace AssetProcessor
 
                     return first.m_jobEntry.m_platformInfo.m_identifier < second.m_jobEntry.m_platformInfo.m_identifier;
                 });
-
-            //AZ_TracePrintf("test", "-------------------------\n");
         }
 
         void ComputeFingerprints(unsigned int& fingerprintForPC, unsigned int& fingerprintForANDROID, PlatformConfiguration& config, QString scanFolderPath, QString relPath)
@@ -95,10 +93,10 @@ namespace AssetProcessor
             config.GetMatchingRecognizers(filePath, output);
             for (const AssetRecognizer* assetRecogniser : output)
             {
-                extraInfoForPC.append(assetRecogniser->m_platformSpecs["pc"].m_extraRCParams);
-                extraInfoForANDROID.append(assetRecogniser->m_platformSpecs["android"].m_extraRCParams);
-                extraInfoForPC.append(assetRecogniser->m_version);
-                extraInfoForANDROID.append(assetRecogniser->m_version);
+                extraInfoForPC.append(assetRecogniser->m_platformSpecs.at("pc") == AssetInternalSpec::Copy ? "copy" : "skip");
+                extraInfoForANDROID.append(assetRecogniser->m_platformSpecs.at("android") == AssetInternalSpec::Copy ? "copy" : "skip");
+                extraInfoForPC.append(assetRecogniser->m_version.c_str());
+                extraInfoForANDROID.append(assetRecogniser->m_version.c_str());
             }
 
             //Calculating fingerprints for the file for pc and android platforms
@@ -171,7 +169,7 @@ namespace AssetProcessor
         UNIT_TEST_EXPECT_FALSE(gameName.isEmpty());
         // should create cache folder in the root, and read everything from there.
 
-        // There is a sub-case of handling mixed cases, but is only supported on case-insensitive filesystems. 
+        // There is a sub-case of handling mixed cases, but is only supported on case-insensitive filesystems.
 #if defined(AZ_PLATFORM_LINUX)
         // Linux is case-sensitive, so 'basefile.txt' will stay the same case as the other subfolder versions
         constexpr const char* subfolder3BaseFilePath = "subfolder3/basefile.txt";
@@ -192,7 +190,7 @@ namespace AssetProcessor
         expectedFiles << tempPath.absoluteFilePath("subfolder2/aaa/bbb/ccc/basefile.txt");
         expectedFiles << tempPath.absoluteFilePath("subfolder2/aaa/bbb/ccc/ddd/basefile.txt");
 
-        expectedFiles << tempPath.absoluteFilePath(subfolder3BaseFilePath); 
+        expectedFiles << tempPath.absoluteFilePath(subfolder3BaseFilePath);
 
         expectedFiles << tempPath.absoluteFilePath("subfolder8/a/b/c/test.txt");
 
@@ -261,31 +259,23 @@ namespace AssetProcessor
         config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder1"), "subfolder1", "subfolder1", false, true,  platforms, -1)); // subfolder1 overrides root
         config.AddScanFolder(ScanFolderInfo(tempPath.absolutePath(),         "temp",       "tempfolder", true, false,  platforms, 0)); // add the root
 
+        config.AddIntermediateScanFolder();
 
         config.AddMetaDataType("exportsettings", QString());
 
-        AZ::Uuid buildIDRcLegacy;
-        BUILDER_ID_RC.GetUuid(buildIDRcLegacy);
-
         AssetRecognizer rec;
-        AssetPlatformSpec specpc;
-        AssetPlatformSpec specandroid;
 
-        specandroid.m_extraRCParams = "somerandomparam";
         rec.m_name = "random files";
         rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.random", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
-        rec.m_platformSpecs.insert("pc", specpc);
+        rec.m_platformSpecs.insert({"pc", AssetInternalSpec::Copy});
         config.AddRecognizer(rec);
         UNIT_TEST_EXPECT_TRUE(mockAppManager.RegisterAssetRecognizerAsBuilder(rec));
-
-        specpc.m_extraRCParams = ""; // blank must work
-        specandroid.m_extraRCParams = "testextraparams";
 
         const char* builderTxt1Name = "txt files";
         rec.m_name = builderTxt1Name;
         rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
-        rec.m_platformSpecs.insert("pc", specpc);
-        rec.m_platformSpecs.insert("android", specandroid);
+        rec.m_platformSpecs.insert({"pc", AssetInternalSpec::Copy});
+        rec.m_platformSpecs.insert({"android", AssetInternalSpec::Copy});
 
         config.AddRecognizer(rec);
 
@@ -306,7 +296,7 @@ namespace AssetProcessor
         rec.m_name = "tiff files";
         rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.tiff", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
         rec.m_platformSpecs.clear();
-        rec.m_platformSpecs.insert("pc", specpc);
+        rec.m_platformSpecs.insert({"pc", AssetInternalSpec::Copy});
         rec.m_testLockSource = true;
         config.AddRecognizer(rec);
         mockAppManager.RegisterAssetRecognizerAsBuilder(rec);
@@ -314,33 +304,26 @@ namespace AssetProcessor
         rec.m_platformSpecs.clear();
         rec.m_testLockSource = false;
 
-        specpc.m_extraRCParams = "pcparams";
-        specandroid.m_extraRCParams = "androidparams";
-
         rec.m_name = "xxx files";
         rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.xxx", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
-        rec.m_platformSpecs.insert("pc", specpc);
-        rec.m_platformSpecs.insert("android", specandroid);
+        rec.m_platformSpecs.insert({"pc", AssetInternalSpec::Copy});
+        rec.m_platformSpecs.insert({"android", AssetInternalSpec::Copy});
         config.AddRecognizer(rec);
         mockAppManager.RegisterAssetRecognizerAsBuilder(rec);
 
         // two recognizers for the same pattern.
         rec.m_name = "xxx files 2 (builder2)";
-        specpc.m_extraRCParams = "pcparams2";
-        specandroid.m_extraRCParams = "androidparams2";
-        rec.m_platformSpecs.insert("pc", specpc);
-        rec.m_platformSpecs.insert("android", specandroid);
+        rec.m_platformSpecs.insert({"pc", AssetInternalSpec::Copy});
+        rec.m_platformSpecs.insert({"android", AssetInternalSpec::Copy});
         config.AddRecognizer(rec);
         mockAppManager.RegisterAssetRecognizerAsBuilder(rec);
 
         // Ignore recognizer
-        AssetPlatformSpec ignore_spec;
-        ignore_spec.m_extraRCParams = "skip";
         AssetRecognizer ignore_rec;
         ignore_rec.m_name = "ignore files";
         ignore_rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.ignore", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
-        ignore_rec.m_platformSpecs.insert("pc", specpc);
-        ignore_rec.m_platformSpecs.insert("android", ignore_spec);
+        ignore_rec.m_platformSpecs.insert({"pc", AssetInternalSpec::Copy});
+        ignore_rec.m_platformSpecs.insert({"android", AssetInternalSpec::Skip});
         config.AddRecognizer(ignore_rec);
         mockAppManager.RegisterAssetRecognizerAsBuilder(ignore_rec);
 
@@ -483,9 +466,14 @@ namespace AssetProcessor
             UNIT_TEST_EXPECT_TRUE(processResults[checkIdx].m_jobEntry.m_watchFolderPath == AssetUtilities::NormalizeFilePath(watchFolderPath));
             UNIT_TEST_EXPECT_TRUE(processResults[checkIdx].m_jobEntry.m_pathRelativeToWatchFolder == "uniquefile.txt");
             UNIT_TEST_EXPECT_TRUE(processResults[checkIdx].m_jobEntry.m_databaseSourceName == "uniquefile.txt");
+
             QString platformFolder = cacheRoot.filePath(QString::fromUtf8(processResults[checkIdx].m_jobEntry.m_platformInfo.m_identifier.c_str()));
             platformFolder = AssetUtilities::NormalizeDirectoryPath(platformFolder);
-            UNIT_TEST_EXPECT_TRUE(processResults[checkIdx].m_destinationPath.startsWith(platformFolder));
+            AZ::IO::Path expectedCachePath = normalizedCacheRootDir.absoluteFilePath(platformFolder).toUtf8().constData();
+            AZ::IO::FixedMaxPath intermediateAssetsFolder = AssetUtilities::GetIntermediateAssetsFolder(normalizedCacheRoot.toUtf8().constData());
+
+            UNIT_TEST_EXPECT_TRUE(processResults[checkIdx].m_cachePath == expectedCachePath);
+            UNIT_TEST_EXPECT_TRUE(processResults[checkIdx].m_intermediatePath == intermediateAssetsFolder);
             UNIT_TEST_EXPECT_TRUE(processResults[checkIdx].m_jobEntry.m_computedFingerprint != 0);
 
             QMetaObject::invokeMethod(&apm, "OnJobStatusChanged", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[checkIdx].m_jobEntry), Q_ARG(JobStatus, JobStatus::Queued));
@@ -669,6 +657,15 @@ namespace AssetProcessor
             }
         }
 
+        // Takes an absolute cache path and returns the portion after cache/platform/
+        auto absProductPathToRelative = [&cacheRoot](QString absolutePath) -> AZStd::string
+        {
+            AZ::IO::Path platformRelativePath = absolutePath.toUtf8().constData();
+            platformRelativePath = platformRelativePath.LexicallyRelative(cacheRoot.absolutePath().toUtf8().constData());
+
+            return (*++platformRelativePath.begin()).StringAsPosix();
+        };
+
         // ---------- test successes ----------
 
 
@@ -683,8 +680,8 @@ namespace AssetProcessor
         //Invoke Asset Processed for android platform , txt files job description
         AssetBuilderSDK::ProcessJobResponse response;
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(androidouts[0].toUtf8().constData(), AZ::Uuid::CreateNull(), 1));
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(androidouts[1].toUtf8().constData(), AZ::Uuid::CreateNull(), 2));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(absProductPathToRelative(androidouts[0]), AZ::Uuid::CreateNull(), 1));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(absProductPathToRelative(androidouts[1]), AZ::Uuid::CreateNull(), 2));
 
         // make sure legacy SubIds get stored in the DB and in asset response messages.
         // also make sure they don't get filed for the wrong asset.
@@ -810,7 +807,7 @@ namespace AssetProcessor
         //Invoke Asset Processed for android platform , txt files2 job description
         response.m_outputProducts.clear();
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(androidouts[0].toUtf8().constData()));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(absProductPathToRelative(androidouts[0])));
 
         QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[1].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
 
@@ -834,7 +831,7 @@ namespace AssetProcessor
 
         response.m_outputProducts.clear();
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(pcouts[0].toUtf8().constData()));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(absProductPathToRelative(pcouts[0])));
 
         //Invoke Asset Processed for pc platform , txt files job description
         QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[2].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
@@ -862,7 +859,7 @@ namespace AssetProcessor
 
         response.m_outputProducts.clear();
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(pcouts[0].toUtf8().constData()));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(absProductPathToRelative(pcouts[0])));
 
         //Invoke Asset Processed for pc platform , txt files 2 job description
         QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[3].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
@@ -970,7 +967,7 @@ namespace AssetProcessor
 
         response.m_outputProducts.clear();
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(pcouts[0].toUtf8().constData()));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(absProductPathToRelative(pcouts[0])));
 
         QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[0].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
 
@@ -1028,8 +1025,11 @@ namespace AssetProcessor
             UNIT_TEST_EXPECT_TRUE(AssetUtilities::NormalizeFilePath(processFile1) == AssetUtilities::NormalizeFilePath(absolutePath));
             QString platformFolder = cacheRoot.filePath(QString::fromUtf8(processResults[checkIdx].m_jobEntry.m_platformInfo.m_identifier.c_str()));
             platformFolder = AssetUtilities::NormalizeDirectoryPath(platformFolder);
-            processFile1 = processResults[checkIdx].m_destinationPath;
-            UNIT_TEST_EXPECT_TRUE(processFile1.startsWith(platformFolder));
+            AZ::IO::Path expectedCachePath = normalizedCacheRootDir.absoluteFilePath(platformFolder).toUtf8().constData();
+            AZ::IO::FixedMaxPath intermediateAssetsFolder = AssetUtilities::GetIntermediateAssetsFolder(normalizedCacheRoot.toUtf8().constData());
+
+            UNIT_TEST_EXPECT_TRUE(processResults[checkIdx].m_cachePath == expectedCachePath);
+            UNIT_TEST_EXPECT_TRUE(processResults[checkIdx].m_intermediatePath == intermediateAssetsFolder);
             UNIT_TEST_EXPECT_TRUE(processResults[checkIdx].m_jobEntry.m_computedFingerprint != 0);
         }
 
@@ -1065,22 +1065,22 @@ namespace AssetProcessor
 
         response.m_outputProducts.clear();
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(androidouts[0].toUtf8().constData()));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(absProductPathToRelative(androidouts[0])));
         QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[0].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
 
         response.m_outputProducts.clear();
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(androidouts2[0].toUtf8().constData()));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(absProductPathToRelative(androidouts2[0])));
         QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[1].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
 
         response.m_outputProducts.clear();
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(pcouts[0].toUtf8().constData()));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(absProductPathToRelative(pcouts[0])));
         QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[2].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
 
         response.m_outputProducts.clear();
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(pcouts2[0].toUtf8().constData()));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(absProductPathToRelative(pcouts2[0])));
         QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[3].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
 
         // let events bubble through:
@@ -1164,37 +1164,45 @@ namespace AssetProcessor
         UNIT_TEST_EXPECT_TRUE((processResults[3].m_jobEntry.m_platformInfo.m_identifier == "pc"));
         UNIT_TEST_EXPECT_TRUE(processResults[0].m_jobEntry.m_computedFingerprint != 0);
 
+        auto verifyProductPaths = [&cacheRoot, this](const JobDetails& jobDetails)
+        {
+            QString platformFolder = cacheRoot.filePath(QString::fromUtf8(jobDetails.m_jobEntry.m_platformInfo.m_identifier.c_str()));
+            platformFolder = AssetUtilities::NormalizeDirectoryPath(platformFolder);
+            AZ::IO::Path expectedCachePath = cacheRoot.absoluteFilePath(platformFolder).toUtf8().constData();
+            AZ::IO::FixedMaxPath intermediateAssetsFolder = AssetUtilities::GetIntermediateAssetsFolder(cacheRoot.absolutePath().toUtf8().constData());
+
+            UNIT_TEST_EXPECT_TRUE(jobDetails.m_cachePath == expectedCachePath);
+            UNIT_TEST_EXPECT_TRUE(jobDetails.m_intermediatePath == intermediateAssetsFolder);
+        };
+
         // send all the done messages simultaneously:
         for (int checkIdx = 0; checkIdx < 4; ++checkIdx)
         {
             QString processFile1 = processResults[checkIdx].m_jobEntry.GetAbsoluteSourcePath();
             UNIT_TEST_EXPECT_TRUE(AssetUtilities::NormalizeFilePath(processFile1) == AssetUtilities::NormalizeFilePath(absolutePath));
-            QString platformFolder = cacheRoot.filePath(QString::fromUtf8(processResults[checkIdx].m_jobEntry.m_platformInfo.m_identifier.c_str()));
-            platformFolder = AssetUtilities::NormalizeDirectoryPath(platformFolder);
-            processFile1 = processResults[checkIdx].m_destinationPath;
-            UNIT_TEST_EXPECT_TRUE(processFile1.startsWith(platformFolder));
+            verifyProductPaths(processResults[checkIdx]);
             UNIT_TEST_EXPECT_TRUE(processResults[checkIdx].m_jobEntry.m_computedFingerprint != 0);
         }
 
 
         response.m_outputProducts.clear();
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(androidouts[0].toUtf8().constData()));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(absProductPathToRelative(androidouts[0])));
         QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[0].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
 
         response.m_outputProducts.clear();
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(androidouts2[0].toUtf8().constData()));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(absProductPathToRelative(androidouts2[0])));
         QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[1].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
 
         response.m_outputProducts.clear();
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(pcouts[0].toUtf8().constData()));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(absProductPathToRelative(pcouts[0])));
         QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[2].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
 
         response.m_outputProducts.clear();
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(pcouts2[0].toUtf8().constData()));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(absProductPathToRelative(pcouts2[0])));
         QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[3].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
 
         // let events bubble through:
@@ -1230,22 +1238,22 @@ namespace AssetProcessor
 
         response.m_outputProducts.clear();
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(androidouts[0].toUtf8().constData()));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(absProductPathToRelative(androidouts[0])));
         QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[0].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
 
         response.m_outputProducts.clear();
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(androidouts2[0].toUtf8().constData()));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(absProductPathToRelative(androidouts2[0])));
         QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[1].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
 
         response.m_outputProducts.clear();
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(pcouts[0].toUtf8().constData()));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(absProductPathToRelative(pcouts[0])));
         QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[2].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
 
         response.m_outputProducts.clear();
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(pcouts2[0].toUtf8().constData()));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(absProductPathToRelative(pcouts2[0])));
         QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[3].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
 
         // let events bubble through:
@@ -1347,23 +1355,23 @@ namespace AssetProcessor
         // send both done messages simultaneously!
         response.m_outputProducts.clear();
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(androidouts[0].toUtf8().constData()));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(absProductPathToRelative(androidouts[0])));
         QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[0].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
 
         response.m_outputProducts.clear();
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(androidouts2[0].toUtf8().constData()));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(absProductPathToRelative(androidouts2[0])));
         QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[1].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
 
         // send one failure only for PC :
         response.m_outputProducts.clear();
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(pcouts[0].toUtf8().constData()));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(absProductPathToRelative(pcouts[0])));
         QMetaObject::invokeMethod(&apm, "AssetFailed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[2].m_jobEntry));
 
         response.m_outputProducts.clear();
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(pcouts2[0].toUtf8().constData()));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(absProductPathToRelative(pcouts2[0])));
         QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[3].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
 
         // let events bubble through:
@@ -1469,7 +1477,7 @@ namespace AssetProcessor
 
         response.m_outputProducts.clear();
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(pcouts[0].toUtf8().constData()));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(absProductPathToRelative(pcouts[0])));
         QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[0].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
 
         // let events bubble through:
@@ -1511,9 +1519,9 @@ namespace AssetProcessor
         //Invoke Asset Processed for pc platform , txt files job description
         response.m_outputProducts.clear();
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(pcouts[0].toUtf8().constData(), AZ::Uuid::CreateNull(), 1));
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(pcouts[1].toUtf8().constData(), AZ::Uuid::CreateNull(), 2));
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(pcouts[2].toUtf8().constData(), AZ::Uuid::CreateNull(), 3));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(absProductPathToRelative(pcouts[0]), AZ::Uuid::CreateNull(), 1));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(absProductPathToRelative(pcouts[1]), AZ::Uuid::CreateNull(), 2));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(absProductPathToRelative(pcouts[2]), AZ::Uuid::CreateNull(), 3));
         QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[0].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
 
         // let events bubble through:
@@ -1566,22 +1574,22 @@ namespace AssetProcessor
         // send all the done messages simultaneously:
         response.m_outputProducts.clear();
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(androidouts[0].toUtf8().constData(), AZ::Uuid::CreateNull(), 1));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(absProductPathToRelative(androidouts[0]), AZ::Uuid::CreateNull(), 1));
         QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[0].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
 
         response.m_outputProducts.clear();
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(androidouts2[0].toUtf8().constData(), AZ::Uuid::CreateNull(), 2));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(absProductPathToRelative(androidouts2[0]), AZ::Uuid::CreateNull(), 2));
         QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[1].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
 
         response.m_outputProducts.clear();
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(pcouts[0].toUtf8().constData(), AZ::Uuid::CreateNull(), 3));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(absProductPathToRelative(pcouts[0]), AZ::Uuid::CreateNull(), 3));
         QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[2].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
 
         response.m_outputProducts.clear();
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(pcouts2[0].toUtf8().constData(), AZ::Uuid::CreateNull(), 4));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(absProductPathToRelative(pcouts2[0]), AZ::Uuid::CreateNull(), 4));
         QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[3].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
 
         // let events bubble through:
@@ -1648,10 +1656,7 @@ namespace AssetProcessor
         {
             QString processFile1 = processResults[checkIdx].m_jobEntry.GetAbsoluteSourcePath();
             UNIT_TEST_EXPECT_TRUE(processFile1 == expectedReplacementInputFile);
-            QString platformFolder = cacheRoot.filePath(QString::fromUtf8(processResults[checkIdx].m_jobEntry.m_platformInfo.m_identifier.c_str()));
-            platformFolder = AssetUtilities::NormalizeDirectoryPath(platformFolder);
-            processFile1 = processResults[checkIdx].m_destinationPath;
-            UNIT_TEST_EXPECT_TRUE(processFile1.startsWith(platformFolder));
+            verifyProductPaths(processResults[checkIdx]);
             UNIT_TEST_EXPECT_TRUE(processResults[checkIdx].m_jobEntry.m_computedFingerprint != 0);
         }
 #endif // defined(AZ_PLATFORM_LINUX)
@@ -1682,8 +1687,7 @@ namespace AssetProcessor
         UNIT_TEST_EXPECT_TRUE(mockAppManager.UnRegisterAssetRecognizerAsBuilder("xxx files 2 (builder2)"));
 
         //Changing specs for pc
-        specpc.m_extraRCParams = "new pcparams";
-        rec.m_platformSpecs.insert("pc", specpc);
+        rec.m_platformSpecs.insert({"pc", AssetInternalSpec::Copy});
 
         config.AddRecognizer(rec);
         mockAppManager.RegisterAssetRecognizerAsBuilder(rec);
@@ -1709,61 +1713,15 @@ namespace AssetProcessor
         for (const auto& processResult : processResults)
         {
             ++resultIdx;
-            QString outputFile = normalizedCacheRootDir.absoluteFilePath(processResult.m_destinationPath + "/doesn'tmatter.dds" + processResult.m_jobEntry.m_jobKey);
+            AZStd::string filename = ("doesn'tmatter.dds" + processResult.m_jobEntry.m_jobKey).toUtf8().constData();
+            QString outputFile = (processResult.m_cachePath / filename).AsPosix().c_str();
             CreateDummyFile(outputFile);
             response = {};
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-            response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(outputFile.toUtf8().constData(), AZ::Uuid::CreateNull(), resultIdx));
+            response.m_outputProducts.push_back(
+                AssetBuilderSDK::JobProduct((processResult.m_relativePath / filename).StringAsPosix(), AZ::Uuid::CreateNull(), resultIdx));
             apm.AssetProcessed(processResult.m_jobEntry, response);
         }
-
-        // now re-perform the same test, this time only the pc ones should re-appear.
-        // this should happen because we're changing the extra params, which should be part of the fingerprint
-        // if this unit test fails, check to make sure that the extra params are being ingested into the fingerprint computation functions
-        // and also make sure that the jobs that are for the remaining android platform don't change.
-
-        // store the UUID so that we can insert the new one with the same UUID
-        AZStd::shared_ptr<InternalMockBuilder> builderTxt2Builder;
-        UNIT_TEST_EXPECT_TRUE(mockAppManager.GetBuilderByID("xxx files 2 (builder2)", builderTxt2Builder));
-
-        AZ::Uuid builderUuid;
-        UNIT_TEST_EXPECT_TRUE(mockAppManager.GetBuildUUIDFromName("xxx files 2 (builder2)", builderUuid));
-
-        builderTxt2Builder.reset();
-
-        config.RemoveRecognizer("xxx files 2 (builder2)");
-        mockAppManager.UnRegisterAssetRecognizerAsBuilder("xxx files 2 (builder2)");
-        //Changing specs for pc
-        specpc.m_extraRCParams = "new pcparams---"; // make sure the xtra params are different.
-        rec.m_platformSpecs.remove("pc");
-        rec.m_platformSpecs.insert("pc", specpc);
-
-        config.AddRecognizer(rec);
-        mockAppManager.RegisterAssetRecognizerAsBuilder(rec);
-
-        processResults.clear();
-
-        QCoreApplication::processEvents(QEventLoop::AllEvents);
-        QCoreApplication::processEvents(QEventLoop::AllEvents);
-
-        QMetaObject::invokeMethod(&apm, "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, absolutePath));
-
-        UNIT_TEST_EXPECT_TRUE(BlockUntil(idling, 5000));
-
-        sortAssetToProcessResultList(processResults);
-
-        UNIT_TEST_EXPECT_TRUE(processResults.size() == 1); // only 1 for pc
-        UNIT_TEST_EXPECT_TRUE((processResults[0].m_jobEntry.m_platformInfo.m_identifier == "pc"));
-
-        // ---------------------
-
-        unsigned int newfingerprintForPC = 0;
-        unsigned int newfingerprintForANDROID = 0;
-
-        ComputeFingerprints(newfingerprintForPC, newfingerprintForANDROID, config, watchFolderPath, relativePathFromWatchFolder);
-
-        UNIT_TEST_EXPECT_TRUE(newfingerprintForPC != fingerprintForPC);//Fingerprints should be different
-        UNIT_TEST_EXPECT_TRUE(newfingerprintForANDROID == fingerprintForANDROID);//Fingerprints are same
 
         config.RemoveRecognizer("xxx files 2 (builder2)");
         mockAppManager.UnRegisterAssetRecognizerAsBuilder("xxx files 2 (builder2)");
@@ -1783,16 +1741,8 @@ namespace AssetProcessor
         UNIT_TEST_EXPECT_TRUE((processResults[0].m_jobEntry.m_platformInfo.m_identifier == "pc") || (processResults[0].m_jobEntry.m_platformInfo.m_identifier == "android"));
         UNIT_TEST_EXPECT_TRUE((processResults[1].m_jobEntry.m_platformInfo.m_identifier == "pc") || (processResults[1].m_jobEntry.m_platformInfo.m_identifier == "android"));
 
-        unsigned int newfingerprintForPCAfterVersionChange = 0;
-        unsigned int newfingerprintForANDROIDAfterVersionChange = 0;
-
-        ComputeFingerprints(newfingerprintForPCAfterVersionChange, newfingerprintForANDROIDAfterVersionChange, config, watchFolderPath, relativePathFromWatchFolder);
-
-        UNIT_TEST_EXPECT_TRUE((newfingerprintForPCAfterVersionChange != fingerprintForPC) || (newfingerprintForPCAfterVersionChange != newfingerprintForPC));//Fingerprints should be different
-        UNIT_TEST_EXPECT_TRUE((newfingerprintForANDROIDAfterVersionChange != fingerprintForANDROID) || (newfingerprintForANDROIDAfterVersionChange != newfingerprintForANDROID));//Fingerprints should be different
-
         processResults.clear();
-        
+
         // ------------- Test querying asset status -------------------
         {
             absolutePath = tempPath.absoluteFilePath("subfolder2/folder/ship.tiff");
@@ -1804,13 +1754,15 @@ namespace AssetProcessor
             for (const JobDetails& processResult : processResults)
             {
                 ++resultIdx;
-                QString outputFile = normalizedCacheRootDir.absoluteFilePath(processResult.m_destinationPath + "/ship_nrm.dds");
+                AZStd::string filename = "ship_nrm.dds";
+                QString outputFile = (processResult.m_cachePath / filename).AsPosix().c_str();
 
                 CreateDummyFile(outputFile);
 
                 AssetBuilderSDK::ProcessJobResponse jobResponse;
                 jobResponse.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-                jobResponse.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(outputFile.toUtf8().constData(), AZ::Uuid::CreateNull(), resultIdx));
+                jobResponse.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(
+                    (processResult.m_relativePath / filename).StringAsPosix(), AZ::Uuid::CreateNull(), resultIdx));
 
                 apm.AssetProcessed(processResult.m_jobEntry, jobResponse);
             }
@@ -1899,12 +1851,13 @@ namespace AssetProcessor
         for (int index = 0; index < processResults.size(); ++index)
         {
             QFileInfo fi(processResults[index].m_jobEntry.GetAbsoluteSourcePath());
-            QString pcout = QDir(processResults[index].m_destinationPath).absoluteFilePath(fi.fileName());
+            AZStd::string filename = fi.fileName().toUtf8().constData();
+            QString pcout = (processResults[index].m_cachePath / filename).c_str();
             UNIT_TEST_EXPECT_TRUE(CreateDummyFile(pcout, "products."));
 
             response.m_outputProducts.clear();
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-            response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(pcout.toUtf8().constData(), AZ::Uuid::CreateNull(), index));
+            response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct((processResults[index].m_relativePath / filename).StringAsPosix(), AZ::Uuid::CreateNull(), index));
             QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[index].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
         }
 
@@ -1955,12 +1908,14 @@ namespace AssetProcessor
         for (int index = 0; index < processResults.size(); ++index)
         {
             QFileInfo fi(processResults[index].m_jobEntry.GetAbsoluteSourcePath());
-            QString pcout = QDir(processResults[index].m_destinationPath).absoluteFilePath(fi.fileName());
+            AZStd::string filename = fi.fileName().toUtf8().constData();
+            QString pcout = (processResults[index].m_cachePath / filename).c_str();
             UNIT_TEST_EXPECT_TRUE(CreateDummyFile(pcout, "products."));
 
             response.m_outputProducts.clear();
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-            response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(pcout.toUtf8().constData(), AZ::Uuid::CreateNull(), index));
+            response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(
+                (processResults[index].m_relativePath / filename).StringAsPosix(), AZ::Uuid::CreateNull(), index));
             QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[index].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
         }
 
@@ -2016,12 +1971,14 @@ namespace AssetProcessor
         for (int index = 0; index < processResults.size(); ++index)
         {
             QFileInfo fi(processResults[index].m_jobEntry.GetAbsoluteSourcePath());
-            QString pcout = QDir(processResults[index].m_destinationPath).absoluteFilePath(fi.fileName());
+            AZStd::string filename = fi.fileName().toUtf8().constData();
+            QString pcout = (processResults[index].m_cachePath / filename).c_str();
             UNIT_TEST_EXPECT_TRUE(CreateDummyFile(pcout, "products."));
 
             response.m_outputProducts.clear();
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-            response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(pcout.toUtf8().constData(), AZ::Uuid::CreateNull(), index));
+            response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(
+                (processResults[index].m_relativePath / filename).StringAsPosix(), AZ::Uuid::CreateNull(), index));
             QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[index].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
         }
 
@@ -2071,12 +2028,14 @@ namespace AssetProcessor
         for (int index = 0; index < processResults.size(); ++index)
         {
             QFileInfo fi(processResults[index].m_jobEntry.GetAbsoluteSourcePath());
-            QString pcout = QDir(processResults[index].m_destinationPath).absoluteFilePath(fi.fileName());
+            AZStd::string filename = fi.fileName().toUtf8().constData();
+            QString pcout = (processResults[index].m_cachePath / filename).c_str();
             UNIT_TEST_EXPECT_TRUE(CreateDummyFile(pcout, "products."));
 
             response.m_outputProducts.clear();
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-            response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(pcout.toUtf8().constData(), AZ::Uuid::CreateNull(), index));
+            response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(
+                (processResults[index].m_relativePath / filename).StringAsPosix(), AZ::Uuid::CreateNull(), index));
             QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[index].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
         }
 
@@ -2130,13 +2089,18 @@ namespace AssetProcessor
             // this time, ouput 2 files for each job instead of just one:
             QFileInfo fi(processResults[index].m_jobEntry.GetAbsoluteSourcePath());
 
-            response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(QDir(processResults[index].m_destinationPath).absoluteFilePath(fi.fileName() + ".0.txt").toUtf8().constData(), AZ::Uuid::CreateNull(), index));
-            response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(QDir(processResults[index].m_destinationPath).absoluteFilePath(fi.fileName() + ".1.txt").toUtf8().constData(), AZ::Uuid::CreateNull(), index + 100));
+            AZStd::string filename0 = (fi.fileName() + ".0.txt").toUtf8().constData();
+            AZStd::string filename1 = (fi.fileName() + ".1.txt").toUtf8().constData();
 
-            createdDummyFiles.push_back(response.m_outputProducts[0].m_productFileName.c_str()); // we're only gong to delete this one out of the two, which is why we don't push the other one.
+            response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(
+                (processResults[index].m_relativePath / filename0).StringAsPosix(), AZ::Uuid::CreateNull(), index));
+            response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(
+                (processResults[index].m_relativePath / filename1).StringAsPosix(), AZ::Uuid::CreateNull(), index + 100));
 
-            UNIT_TEST_EXPECT_TRUE(CreateDummyFile(response.m_outputProducts[0].m_productFileName.c_str(), "product 0"));
-            UNIT_TEST_EXPECT_TRUE(CreateDummyFile(response.m_outputProducts[1].m_productFileName.c_str(), "product 1"));
+            createdDummyFiles.push_back((processResults[index].m_cachePath / filename0).c_str()); // we're only gong to delete this one out of the two, which is why we don't push the other one.
+
+            UNIT_TEST_EXPECT_TRUE(CreateDummyFile((processResults[index].m_cachePath / filename0).c_str(), "product 0"));
+            UNIT_TEST_EXPECT_TRUE(CreateDummyFile((processResults[index].m_cachePath / filename1).c_str(), "product 1"));
 
             QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[index].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
         }
@@ -2169,8 +2133,11 @@ namespace AssetProcessor
             // this time, ouput only one file for each job instead of just one:
             QFileInfo fi(processResults[index].m_jobEntry.GetAbsoluteSourcePath());
 
-            response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(QDir(processResults[index].m_destinationPath).absoluteFilePath(fi.fileName() + ".1.txt").toUtf8().constData(), AZ::Uuid::CreateNull(), index));
-            UNIT_TEST_EXPECT_TRUE(CreateDummyFile(response.m_outputProducts[0].m_productFileName.c_str(), "product 1 changed"));
+            AZStd::string filename = (fi.fileName() + ".1.txt").toUtf8().constData();
+
+            response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(
+                (processResults[index].m_relativePath / filename).StringAsPosix(), AZ::Uuid::CreateNull(), index));
+            UNIT_TEST_EXPECT_TRUE(CreateDummyFile((processResults[index].m_cachePath / filename).c_str(), "product 1 changed"));
 
             QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[index].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
         }
@@ -2222,21 +2189,15 @@ namespace AssetProcessor
         mockAppManager.UnRegisterAllBuilders();
 
         AssetRecognizer abt_rec1;
-        AssetPlatformSpec abt_specandroid;
         abt_rec1.m_name = "UnitTestTextBuilder1";
         abt_rec1.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
-        //abt_rec1.m_regexp.setPatternSyntax(QRegExp::Wildcard);
-        //abt_rec1.m_regexp.setPattern("*.txt");
-        abt_rec1.m_platformSpecs.insert("android", specandroid);
+        abt_rec1.m_platformSpecs.insert({"android", AssetInternalSpec::Copy});
         mockAppManager.RegisterAssetRecognizerAsBuilder(abt_rec1);
 
         AssetRecognizer abt_rec2;
-        AssetPlatformSpec abt_specpc;
         abt_rec2.m_name = "UnitTestTextBuilder2";
         abt_rec2.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
-        //abt_rec2.m_regexp.setPatternSyntax(QRegExp::Wildcard);
-        //abt_rec2.m_regexp.setPattern("*.txt");
-        abt_rec2.m_platformSpecs.insert("pc", specpc);
+        abt_rec2.m_platformSpecs.insert({"pc", AssetInternalSpec::Copy});
         mockAppManager.RegisterAssetRecognizerAsBuilder(abt_rec2);
 
         processResults.clear();
@@ -2281,8 +2242,8 @@ namespace AssetProcessor
         UNIT_TEST_EXPECT_TRUE(processResults[1].m_jobEntry.m_platformInfo.m_identifier == "pc");
         UNIT_TEST_EXPECT_TRUE(QString::compare(processResults[0].m_jobEntry.GetAbsoluteSourcePath(), absolutePath, Qt::CaseInsensitive) == 0);
         UNIT_TEST_EXPECT_TRUE(QString::compare(processResults[1].m_jobEntry.GetAbsoluteSourcePath(), absolutePath, Qt::CaseInsensitive) == 0);
-        UNIT_TEST_EXPECT_TRUE(QString::compare(QString(processResults[0].m_jobEntry.m_jobKey), QString(abt_rec1.m_name)) == 0);
-        UNIT_TEST_EXPECT_TRUE(QString::compare(QString(processResults[1].m_jobEntry.m_jobKey), QString(abt_rec2.m_name)) == 0);
+        UNIT_TEST_EXPECT_TRUE(QString::compare(QString(processResults[0].m_jobEntry.m_jobKey), QString(abt_rec1.m_name.c_str())) == 0);
+        UNIT_TEST_EXPECT_TRUE(QString::compare(QString(processResults[1].m_jobEntry.m_jobKey), QString(abt_rec2.m_name.c_str())) == 0);
         Q_EMIT UnitTestPassed();
 
         // Stop file watching, disconnect everything and process all events so nothing gets called after the method finishes
@@ -2335,6 +2296,8 @@ namespace AssetProcessor
         //                                               PATH                 DisplayName  PortKey       outputfolder  root recurse order
         config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder1"), "subfolder1", "subfolder1", false, true, platforms,-1)); // subfolder1 overrides root
         config.AddScanFolder(ScanFolderInfo(tempPath.absolutePath(), "temp", "tempfolder", true, false, platforms, 0)); // add the root
+
+        config.AddIntermediateScanFolder();
 
         AssetProcessorManager_Test apm(&config);
 
@@ -2406,8 +2369,8 @@ namespace AssetProcessor
         // Invoke Asset Processed for pc platform for the first job
         AssetBuilderSDK::ProcessJobResponse response;
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(pcouts[0].toUtf8().constData(), AZ::Uuid::CreateNull(), 1));
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(pcouts[1].toUtf8().constData(), AZ::Uuid::CreateNull(), 2));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct("basefile.arc1", AZ::Uuid::CreateNull(), 1));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct("basefile.arc2", AZ::Uuid::CreateNull(), 2));
 
         QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[0].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
 
@@ -2435,7 +2398,7 @@ namespace AssetProcessor
 
         // Invoke Asset Processed for pc platform for the second job
         response.m_outputProducts.clear();
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(pcouts[0].toUtf8().constData()));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct("basefile.arc3"));
         assetMessages.clear();
         changedInputResults.clear();
         QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[1].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
@@ -2791,6 +2754,8 @@ namespace AssetProcessor
         config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder1"), "subfolder1", "subfolder1", false, true, platforms, -1)); // subfolder1 overrides root
         config.AddScanFolder(ScanFolderInfo(tempPath.absolutePath(), "temp", "tempfolder", true, false, platforms, 0)); // add the root
 
+        config.AddIntermediateScanFolder();
+
         AssetProcessorManager_Test apm(&config);
 
         QList<JobDetails> processResults;
@@ -2818,11 +2783,17 @@ namespace AssetProcessor
         QDir cacheRoot;
         UNIT_TEST_EXPECT_TRUE(AssetUtilities::ComputeProjectCacheRoot(cacheRoot));
 
-        QString productFileAPath = cacheRoot.filePath(QString("pc/fileaproduct.txt"));
-        QString productFileBPath = cacheRoot.filePath(QString("pc/filebproduct1.txt"));
-        QString product2FileBPath = cacheRoot.filePath(QString("pc/filebproduct2.txt"));
-        QString productFileCPath = cacheRoot.filePath(QString("pc/filecproduct.txt"));
-        QString product2FileCPath = cacheRoot.filePath(QString("pc/filecproduct2.txt"));
+        constexpr const char* productFileAFilename = "fileaproduct.txt";
+        constexpr const char* productFileBFilename = "filebproduct1.txt";
+        constexpr const char* product2FileBFilename = "filebproduct2.txt";
+        constexpr const char* productFileCFilename = "filecproduct.txt";
+        constexpr const char* product2FileCFilename = "filecproduct2.txt";
+
+        QString productFileAPath = cacheRoot.filePath(QString("pc/") + productFileAFilename);
+        QString productFileBPath = cacheRoot.filePath(QString("pc/") + productFileBFilename);
+        QString product2FileBPath = cacheRoot.filePath(QString("pc/") + product2FileBFilename);
+        QString productFileCPath = cacheRoot.filePath(QString("pc/") + productFileCFilename);
+        QString product2FileCPath = cacheRoot.filePath(QString("pc/") + product2FileCFilename);
 
         UNIT_TEST_EXPECT_TRUE(CreateDummyFile(sourceFileAPath, ""));
         UNIT_TEST_EXPECT_TRUE(CreateDummyFile(sourceFileBPath, ""));
@@ -2832,6 +2803,8 @@ namespace AssetProcessor
         UNIT_TEST_EXPECT_TRUE(CreateDummyFile(product2FileBPath, "product"));
         UNIT_TEST_EXPECT_TRUE(CreateDummyFile(productFileCPath, "product"));
         UNIT_TEST_EXPECT_TRUE(CreateDummyFile(product2FileCPath, "product"));
+
+        AZStd::string cacheWithPlatform = cacheRoot.absoluteFilePath("pc").toUtf8().constData();
 
         // Analyze FileA
         QMetaObject::invokeMethod(&apm, "AssessAddedFile", Qt::QueuedConnection, Q_ARG(QString, sourceFileAPath));
@@ -2844,7 +2817,8 @@ namespace AssetProcessor
         // Invoke Asset Processed for pc platform for the FileA job
         AssetBuilderSDK::ProcessJobResponse response;
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(productFileAPath.toUtf8().constData()));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(productFileAFilename));
+        response.m_outputProducts.back().m_outputPathOverride = cacheWithPlatform;
 
         QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[0].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
 
@@ -2876,7 +2850,8 @@ namespace AssetProcessor
         UNIT_TEST_EXPECT_TRUE(onlyOneJobHaveJobDependency);
 
         // Invoke Asset Processed for pc platform for the first FileB job
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(productFileBPath.toUtf8().constData()));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(productFileBFilename));
+        response.m_outputProducts.back().m_outputPathOverride = cacheWithPlatform;
 
         QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[0].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
         UNIT_TEST_EXPECT_TRUE(BlockUntil(idling, 5000));
@@ -2884,7 +2859,8 @@ namespace AssetProcessor
         response.m_outputProducts.clear();
 
         // Invoke Asset Processed for pc platform for the second FileB job
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(product2FileBPath.toUtf8().constData()));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(product2FileBFilename));
+        response.m_outputProducts.back().m_outputPathOverride = cacheWithPlatform;
 
         QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[1].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
         UNIT_TEST_EXPECT_TRUE(BlockUntil(idling, 5000000));
@@ -2903,20 +2879,24 @@ namespace AssetProcessor
 
         for (JobDetails& jobDetail : processResults)
         {
+            UNIT_TEST_EXPECT_TRUE(processResults.size() == 2); // Repeat to ensure count doesn't change while looping
+
             if (QString(jobDetail.m_jobEntry.m_pathRelativeToWatchFolder).endsWith("FileB.txt"))
             {
                 // Ensure that we are processing the right FileB job
                 UNIT_TEST_EXPECT_TRUE(QString(jobDetail.m_jobEntry.m_jobKey).compare("yyy") == 0);
 
                 response.m_outputProducts.clear();
-                response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(product2FileBPath.toUtf8().constData()));
+                response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(product2FileBFilename));
+                response.m_outputProducts.back().m_outputPathOverride = cacheWithPlatform;
                 QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, jobDetail.m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
                 UNIT_TEST_EXPECT_TRUE(BlockUntil(idling, 5000));
             }
             else
             {
                 response.m_outputProducts.clear();
-                response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(productFileAPath.toUtf8().constData()));
+                response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(productFileAFilename));
+                response.m_outputProducts.back().m_outputPathOverride = cacheWithPlatform;
                 QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, jobDetail.m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
                 UNIT_TEST_EXPECT_TRUE(BlockUntil(idling, 5000));
             }
@@ -2944,14 +2924,16 @@ namespace AssetProcessor
                 UNIT_TEST_EXPECT_TRUE(QString(jobDetail.m_jobEntry.m_jobKey).compare("yyy") == 0);
 
                 response.m_outputProducts.clear();
-                response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(product2FileBPath.toUtf8().constData()));
+                response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(product2FileBFilename));
+                response.m_outputProducts.back().m_outputPathOverride = cacheWithPlatform;
                 QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, jobDetail.m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
                 UNIT_TEST_EXPECT_TRUE(BlockUntil(idling, 5000));
             }
             else
             {
                 response.m_outputProducts.clear();
-                response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(productFileAPath.toUtf8().constData()));
+                response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(productFileAFilename));
+                response.m_outputProducts.back().m_outputPathOverride = cacheWithPlatform;
                 QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, jobDetail.m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
                 UNIT_TEST_EXPECT_TRUE(BlockUntil(idling, 5000));
             }
@@ -2981,14 +2963,16 @@ namespace AssetProcessor
                 UNIT_TEST_EXPECT_TRUE(QString(jobDetail.m_jobDependencyList[0].m_jobDependency.m_jobKey.c_str()).compare("yyy") == 0);
 
                 response.m_outputProducts.clear();
-                response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(product2FileCPath.toUtf8().constData()));
+                response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(product2FileCFilename));
+                response.m_outputProducts.back().m_outputPathOverride = cacheWithPlatform;
                 QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, jobDetail.m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
                 UNIT_TEST_EXPECT_TRUE(BlockUntil(idling, 5000));
             }
             else
             {
                 response.m_outputProducts.clear();
-                response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(productFileCPath.toUtf8().constData()));
+                response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(productFileCFilename));
+                response.m_outputProducts.back().m_outputPathOverride = cacheWithPlatform;
                 QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, jobDetail.m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
                 UNIT_TEST_EXPECT_TRUE(BlockUntil(idling, 5000));
             }

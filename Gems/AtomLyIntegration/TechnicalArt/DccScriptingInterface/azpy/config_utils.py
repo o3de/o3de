@@ -6,8 +6,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-#
-# note: this module should reamin py2.7 compatible (Maya) so no f'strings
 # -------------------------------------------------------------------------
 """@module docstring
 This module is part of the O3DE DccScriptingInterface Gem
@@ -28,72 +26,96 @@ get_check_global_project() :get global project path from user .o3de data
 get_o3de_project_path()    :get the project path while within editor
 bootstrap_dccsi_py_libs()  :extends code access (mainly used in Maya py27)
 """
-import time
-start = time.process_time() # start tracking
+# --------------------------------------------------------------------------
+# Now that we no longer need to support py2.7 this module can be improved.
+
+import timeit
+_MODULE_START = timeit.default_timer()  # start tracking
 
 import sys
 import os
 import re
 import site
+from os.path import expanduser
 import logging as _logging
-# -------------------------------------------------------------------------
+
+# note: this module originally took into account py2.7 not having pathlib
+# and other modules, we no longer intend to write code to support py2.7
+# to do: modernize this modules code to py3.7+ with pathlib
+# these are new imports since then, this note is left here as a reminder
+# for a future PR to refactor
+import pathlib
+from pathlib import Path
+import importlib.util
+# --------------------------------------------------------------------------
 
 
 # --------------------------------------------------------------------------
-# global scope
+# Global Scope
 _MODULENAME = 'azpy.config_utils'
-    
-__all__ = ['get_os',
-           'return_stub',
+_LOGGER = _logging.getLogger(_MODULENAME)
+_LOGGER.debug('Initializing: {}.'.format({_MODULENAME}))
+
+__all__ = ['attach_debugger',
+           'get_os',
+           'return_stub_dir',
            'get_stub_check_path',
+           'get_o3de_engine_root',
+           'get_o3de_build_path',
            'get_dccsi_config',
-           'get_current_project']
+           'get_current_project_cfg',
+           'get_check_global_project',
+           'get_o3de_project_path',
+           'bootstrap_dccsi_py_libs']
 
 # dccsi site/code access
-#os.environ['PYTHONINSPECT'] = 'True'
-_MODULE_PATH = os.path.abspath(__file__)
+_MODULE_PATH = Path(__file__)  # To Do: what if frozen?
 
+# note: this module is called in other root modules
+# this module avoids cyclical imports by not importing azpy.constants
+# to do: cleanup and maybe remove these from azpy.constants?
+# CONSTANTS
+ENVAR_DCCSI_GDEBUG = 'DCCSI_GDEBUG'
+ENVAR_DCCSI_DEV_MODE = 'DCCSI_DEV_MODE'
+ENVAR_DCCSI_LOGLEVEL = 'DCCSI_LOGLEVEL'
+ENVAR_DCCSI_GDEBUGGER = 'DCCSI_GDEBUGGER'
+
+# turn all of these off/on for local testing
+_DCCSI_GDEBUG = False
+_DCCSI_DEV_MODE = False
+_DCCSI_LOGLEVEL = _logging.INFO
+_DCCSI_GDEBUGGER = 'WING'
+
+FRMT_LOG_LONG = "[%(name)s][%(levelname)s] >> %(message)s (%(asctime)s; %(filename)s:%(lineno)d)"
+
+# this is the DCCsi envar used for discovering the engine path (if set)
+ENVAR_O3DE_DEV = 'O3DE_DEV'
+
+# this is a known file at the root of the engine folder we can use as marker
+STUB_O3DE_DEV = 'engine.json'
+
+# this is the DCCsi envar used for discovering the project path (if set)
+ENVAR_PATH_O3DE_PROJECT = 'PATH_O3DE_PROJECT'
+
+# python related envars and paths
+STR_PATH_DCCSI_PYTHON_LIB = '{0}\\3rdParty\\Python\\Lib\\{1}.x\\{1}.{2}.x\\site-packages'
+
+PATH_USER_HOME = expanduser("~")
+
+STR_CROSSBAR = str('{0}'.format('-' * 74))
+# --------------------------------------------------------------------------
+
+
+# --------------------------------------------------------------------------
 # we don't have access yet to the DCCsi Lib\site-packages
 # (1) this will give us import access to azpy (always?)
 # we know where the dccsi root should be from here
-_PATH_DCCSIG = os.path.abspath(os.path.dirname(os.path.dirname(_MODULE_PATH)))
+_PATH_DCCSIG = Path(_MODULE_PATH, '../../..').resolve()
 # it can be set or overrriden by dev with envar
-_PATH_DCCSIG = os.getenv('PATH_DCCSIG', _PATH_DCCSIG)
+_PATH_DCCSIG = Path(os.getenv('PATH_DCCSIG', _PATH_DCCSIG)).resolve()
 # ^ we assume this config is in the root of the DCCsi
 # if it's not, be sure to set envar 'PATH_DCCSIG' to ensure it
-site.addsitedir(_PATH_DCCSIG)  # must be done for azpy
-    
-# note: this module is called in other root modules
-# must avoid cyclical imports, no imports from azpy.constants
-ENVAR_DCCSI_GDEBUG = 'DCCSI_GDEBUG'
-ENVAR_DCCSI_DEV_MODE = 'DCCSI_DEV_MODE'
-ENVAR_DCCSI_GDEBUGGER = 'DCCSI_GDEBUGGER'
-ENVAR_DCCSI_LOGLEVEL = 'DCCSI_LOGLEVEL'
-FRMT_LOG_LONG = "[%(name)s][%(levelname)s] >> %(message)s (%(asctime)s; %(filename)s:%(lineno)d)"
-
-from azpy.env_bool import env_bool
-_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
-_DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
-_DCCSI_GDEBUGGER = env_bool(ENVAR_DCCSI_GDEBUGGER, 'WING')
-
-# default loglevel to info unless set
-_DCCSI_LOGLEVEL = int(env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO))
-if _DCCSI_GDEBUG:
-    # override loglevel if runnign debug
-    _DCCSI_LOGLEVEL = _logging.DEBUG
-    
-# set up module logging
-#for handler in _logging.root.handlers[:]:
-    #_logging.root.removeHandler(handler)
-    
-# configure basic logger
-# note: not using a common logger to reduce cyclical imports
-_logging.basicConfig(level=_DCCSI_LOGLEVEL,
-                    format=FRMT_LOG_LONG,
-                    datefmt='%m-%d %H:%M')
-
-_LOGGER = _logging.getLogger(_MODULENAME)
-_LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
+site.addsitedir(_PATH_DCCSIG.as_posix())  # must be done for azpy
 # -------------------------------------------------------------------------
 
 
@@ -110,6 +132,7 @@ if _DCCSI_GDEBUG:
 # -------------------------------------------------------------------------
 # this import can fail in Maya 2020 (and earlier) stuck on py2.7
 # wrapped in a try, to trap and providing messaging to help user correct
+# to do: deprecate this code block when Maya boostrapping is refactored
 try:
     from pathlib import Path  # note: we provide this in py2.7
     # so using it here suggests some boostrapping has occured before using azpy
@@ -125,32 +148,63 @@ except Exception as e:
 
 
 # -------------------------------------------------------------------------
-def attach_debugger():
+# to do: move to a azpy.dev module with plugins for multiple IDEs
+def attach_debugger(debugger_type=_DCCSI_GDEBUGGER):
+    """!
+    This will attempt to attach the WING debugger
+    To Do: other IDEs for debugging not yet implemented.
+    This should be replaced with a plugin based dev package."""
+
+    # we only support wing right now
+    # your WING_VERSION_PATH as of version 7.x defaults to either Wing Personal 7.x or Wing Pro 7.x
+    # your WING_IDE_DIR is your installation path, which defaults to: C:\Program Files (x86)\WING_VERSION_PATH
+    # your APP_DATA_PATH defaults to C:\Users\[Your User Name]\AppData\Roaming\WING_VERSION_PATH (without the .x minor version)
+
+    # after installing wing, opy the WING_IDE_DIR\wingdbstub.py file to APP_DATA_PATH
+
+    # Open the APP_DATA_PATH \wingdbstub.py file and modify line 96 to
+    #kEmbedded = 1
+
+    # or alternatively you can manually edit the copy in the ide install location.
+    # such as: "WINGHOME": "C:\Program Files (x86)\Wing Pro 7.2"
+
+    from azpy.constants import PATH_USER_HOME
+    from azpy.constants import TAG_WING_PRO
+    from azpy.constants import TAG_DEFAULT_WING_MAJOR_VER
+    # this will need to be improved, a azpy.dev module should be written
+    # this should have an IDE plugin pattern, attach_debugger() would be moved there
+    # and the IDE type, version and related data would be data driven (config.py, settings.local.json)
+    wingstub_appdata = Path(PATH_USER_HOME,
+                            'AppData',
+                            'Roaming',
+                            f'{TAG_WING_PRO} {str(TAG_DEFAULT_WING_MAJOR_VER)}').resolve()
+
+    # we can set this here in anticipation of importing from this location,
+    # however currently entry_test is setup to use WINGHOME
+    # there is suggested improvement here to move all of this to a azpy.dev module
+    # and make it much more user friendly, configurable and data-driven
+    sys.path.append(wingstub_appdata.as_posix())
+
     _DCCSI_GDEBUG = True
-    os.environ["DYNACONF_DCCSI_GDEBUG"] = str(_DCCSI_GDEBUG)
-    
+    os.environ["DCCSI_GDEBUG"] = str(_DCCSI_GDEBUG)  # cast bools
+
     _DCCSI_DEV_MODE = True
-    os.environ["DYNACONF_DCCSI_DEV_MODE"] = str(_DCCSI_DEV_MODE)
-    
+    os.environ["DCCSI_DEV_MODE"] = str(_DCCSI_DEV_MODE)
+
     from azpy.test.entry_test import connect_wing
-    _debugger = connect_wing()
-    
+    if debugger_type == 'WING':
+        _debugger = connect_wing()
+    else:
+        _LOGGER.warning(f'Debugger type: {debugger_type}, is Not Implemented!')
+
     return _debugger
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-# exapnd the global scope and module CONST
-
-# this is the DCCsi envar used for discovering the engine path (if set)
-ENVAR_O3DE_DEV = 'O3DE_DEV'
-STUB_O3DE_DEV = 'engine.json'
-
 # this block is related to .o3de data
 # os.path.expanduser("~") returns different values in py2.7 vs 3
 # Note: py27 support will be deprecated in the future
-from os.path import expanduser
-PATH_USER_HOME = expanduser("~")
 _LOGGER.debug('user home: {}'.format(PATH_USER_HOME))
 
 # special case, make sure didn't return <user>\documents
@@ -161,15 +215,9 @@ if str(user_home_parts[1].lower()) == 'documents':
     _LOGGER.debug('user home CORRECTED: {}'.format(PATH_USER_HOME))
 
 # the global project may be defined in the registry
-PATH_USER_O3DE = Path(PATH_USER_HOME, '.o3de')    
+PATH_USER_O3DE = Path(PATH_USER_HOME, '.o3de')
 PATH_USER_O3DE_REGISTRY = Path(PATH_USER_O3DE, 'Registry')
 PATH_USER_O3DE_BOOTSTRAP = Path(PATH_USER_O3DE_REGISTRY, 'bootstrap.setreg')
-
-# this is the DCCsi envar used for discovering the project path (if set)
-ENVAR_PATH_O3DE_PROJECT = 'PATH_O3DE_PROJECT'
-
-# python related envars and paths
-STR_PATH_DCCSI_PYTHON_LIB = '{0}\\3rdParty\\Python\\Lib\\{1}.x\\{1}.{2}.x\\site-packages'
 # -------------------------------------------------------------------------
 
 
@@ -234,7 +282,7 @@ def get_stub_check_path(in_path=os.getcwd(), check_stub=STUB_O3DE_DEV):
     Returns the branch root directory of the dev\\'engine.json'
     (... or you can pass it another known stub) so we can safely build
     relative filepaths within that branch.
-    
+
     Input:  a starting directory, default is os.getcwd()
     Input:  a file name stub (to search for)
     Output: a path (the stubs parent directory)
@@ -260,7 +308,7 @@ def get_stub_check_path(in_path=os.getcwd(), check_stub=STUB_O3DE_DEV):
 # -------------------------------------------------------------------------
 def get_o3de_engine_root(check_stub=STUB_O3DE_DEV):
     '''Discovers the engine root
-    Input:  a file name stub, default engine.json 
+    Input:  a file name stub, default engine.json
     Output: engine root path (if found)
     '''
     # get the O3DE engine root folder
@@ -287,73 +335,102 @@ def get_o3de_engine_root(check_stub=STUB_O3DE_DEV):
 # -------------------------------------------------------------------------
 def get_o3de_build_path(root_directory=get_o3de_engine_root(),
                         marker='CMakeCache.txt'):
-    """Returns a path for the O3DE\build root if found. Searchs down from a 
+    """Returns a path for the O3DE\build root if found. Searches down from a
     known engine root path.
     Input:  a root directory, default is to discover the engine root
     Output: the path of the build folder (if found)
     """
-    
-    if _DCCSI_GDEBUG:
-        import time
-        start = time.process_time()        
-    
-    for root, dirs, files in os.walk(root_directory):
+
+    root_directory = Path(root_directory)
+
+    import timeit
+    start = timeit.default_timer()
+
+    for root, dirs, files in os.walk(root_directory.as_posix()):
         if marker in files:
             if _DCCSI_GDEBUG:
                 _LOGGER.debug('Find PATH_O3DE_BUILD took: {} sec'
-                              ''.format(time.process_time() - start))            
+                              ''.format(timeit.default_timer() - start))
             return Path(root)
     else:
         if _DCCSI_GDEBUG:
             _LOGGER.debug('Not fidning PATH_O3DE_BUILD took: {} sec'
-                          ''.format(time.process_time() - start))
+                          ''.format(timeit.default_timer() - start))
         return None
-    
+
 # note: if we use this method to find PATH_O3DE_BUILD
 # by searching for the 'CMakeCache.txt' it can take 1 or more seconds
 # this will slow down boot times!
-# 
+#
 # this works fine for a engine dev, but is not really suitable for end users
 # it assumes that the engine is being built and 'CMakeCache.txt' exists
 # but the engine could be pre-built or packaged somehow
 #
 # other ways to deal with it:
 # 1 - Use the running application .exe to discover the build path?
-# 2 - Set PATH_O3DE_BUILD envar in
+# 2 - If developer set PATH_O3DE_BUILD envar in
 #        "C:\Depot\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\.env"
-# 3 - Set in commandline (or from .bat file)
-# 4 - To Do (maybe): Set in a dccsi_configuration.setreg? 
+# 3 - Set envar in commandline before executing script (or from .bat file)
+# 4 - To Do (maybe): Set in a dccsi_configuration.setreg?
 # -------------------------------------------------------------------------
 
 
+# # -------------------------------------------------------------------------
+# # DEPRECATION: this is a warning that this version will be deprecated.
+# # This version was written to support py2.7 as pre-Maya2020 was stuck on that
+# # We no longer intend to support py2.7
+# def get_dccsi_config(dccsi_dirpath=return_stub_dir()):
+    # """Convenience method to set and retreive settings directly from module."""
+
+    # # we can go ahead and just make sure the the DCCsi env is set
+    # # config is SO generic this ensures we are importing a specific one
+    # _module_tag = "dccsi.config"
+    # _dccsi_path = Path(dccsi_dirpath, "config.py")
+    # if _dccsi_path.exists():
+        # if sys.version_info.major >= 3:
+            # import importlib  # note: py2.7 doesn't have importlib.util
+            # import importlib.util
+            # #from importlib import util
+            # _spec_dccsi_config = importlib.util.spec_from_file_location(_module_tag,
+                                                                        # str(_dccsi_path.as_posix()))
+            # _dccsi_config = importlib.util.module_from_spec(_spec_dccsi_config)
+            # _spec_dccsi_config.loader.exec_module(_dccsi_config)
+
+            # _LOGGER.debug('Executed config: {}'.format(_spec_dccsi_config))
+        # else:  # py2.x
+            # import imp
+            # _dccsi_config = imp.load_source(_module_tag, str(_dccsi_path.as_posix()))
+            # _LOGGER.debug('Imported config: {}'.format(_spec_dccsi_config))
+        # return _dccsi_config
+
+    # else:
+        # return None
+# # After getting the config you can do the following.
+# # settings.setenv()  # doing this will add the additional DYNACONF_ envars
+# # -------------------------------------------------------------------------
+
+
 # -------------------------------------------------------------------------
-# settings.setenv()  # doing this will add the additional DYNACONF_ envars
-def get_dccsi_config(dccsi_dirpath=return_stub_dir()):
+def get_dccsi_config(PATH_DCCSIG=_PATH_DCCSIG.resolve()):
     """Convenience method to set and retreive settings directly from module."""
 
-    # we can go ahead and just make sure the the DCCsi env is set
-    # config is SO generic this ensures we are importing a specific one
-    _module_tag = "dccsi.config"
-    _dccsi_path = Path(dccsi_dirpath, "config.py")
-    if _dccsi_path.exists():
-        if sys.version_info.major >= 3:
-            import importlib  # note: py2.7 doesn't have importlib.util
-            import importlib.util
-            #from importlib import util
-            _spec_dccsi_config = importlib.util.spec_from_file_location(_module_tag,
-                                                                        str(_dccsi_path.resolve()))
-            _dccsi_config = importlib.util.module_from_spec(_spec_dccsi_config)
-            _spec_dccsi_config.loader.exec_module(_dccsi_config)
-
-            _LOGGER.debug('Executed config: {}'.format(_spec_dccsi_config))
-        else:  # py2.x
-            import imp
-            _dccsi_config = imp.load_source(_module_tag, str(_dccsi_path.resolve()))
-            _LOGGER.debug('Imported config: {}'.format(_spec_dccsi_config))
-        return _dccsi_config
-
-    else:
+    try:
+        Path(PATH_DCCSIG).exists()
+    except FileNotFoundError as e:
+        _LOGGER.debug(f"File does not exist: {PATH_DCCSIG}")
         return None
+
+    # we can go ahead and just make sure the the DCCsi env is set
+    # module name config.py is SO generic this ensures we are importing a specific one
+    _spec_dccsi_config = importlib.util.spec_from_file_location("dccsi._DCCSI_CORE_CONFIG",
+                                                                Path(PATH_DCCSIG,
+                                                                     "config.py"))
+    _dccsi_config = importlib.util.module_from_spec(_spec_dccsi_config)
+    _spec_dccsi_config.loader.exec_module(_dccsi_config)
+
+    return _dccsi_config
+# After getting the config you can do the following.
+# settings.setenv()  # doing this will add the additional DYNACONF_ envars
 # -------------------------------------------------------------------------
 
 
@@ -380,19 +457,19 @@ def get_check_global_project():
     """Gets o3de project via .o3de data in user directory"""
 
     from collections import OrderedDict
-    from box import Box
-    
+    import box
+
     bootstrap_box = None
     json_file_path = Path(PATH_USER_O3DE_BOOTSTRAP)
     if json_file_path.exists():
         try:
-            bootstrap_box = Box.from_json(filename=str(json_file_path.resolve()),
-                                          encoding="utf-8",
-                                          errors="strict",
-                                          object_pairs_hook=OrderedDict)
+            bootstrap_box = box.Box.from_json(filename=str(json_file_path.as_posix()),
+                                              encoding="utf-8",
+                                              errors="strict",
+                                              object_pairs_hook=OrderedDict)
         except IOError as e:
             # this file runs in py2.7 for Maya 2020, FileExistsError is not defined
-            _LOGGER.error('Bad file interaction: {}'.format(json_file_path.resolve()))
+            _LOGGER.error('Bad file interaction: {}'.format(json_file_path.as_posix()))
             _LOGGER.error('Exception is: {}'.format(e))
             pass
     if bootstrap_box:
@@ -422,10 +499,10 @@ def get_o3de_project_path():
         # (fallback 2) if None, fallback to engine folder
         if not _PATH_O3DE_PROJECT:
             _PATH_O3DE_PROJECT = get_o3de_engine_root()
-        
+
         if _DCCSI_GDEBUG: # to verbose, used often
             # note: can't use fstrings as this module gets called with py2.7 in maya
-            _LOGGER.debug('O3DE project root: {}'.format(_PATH_O3DE_PROJECT.resolve()))
+            _LOGGER.debug('O3DE project root: {}'.format(_PATH_O3DE_PROJECT.as_posix()))
     return _PATH_O3DE_PROJECT
 # -------------------------------------------------------------------------
 
@@ -438,9 +515,9 @@ def bootstrap_dccsi_py_libs(dccsi_dirpath=return_stub_dir()):
                                                                    sys.version_info[1]))
 
     if _PATH_DCCSI_PYTHON_LIB.exists():
-        site.addsitedir(_PATH_DCCSI_PYTHON_LIB.resolve())  # PYTHONPATH
+        site.addsitedir(_PATH_DCCSI_PYTHON_LIB.as_posix())  # PYTHONPATH
         _LOGGER.debug('Performed site.addsitedir({})'
-                      ''.format(_PATH_DCCSI_PYTHON_LIB.resolve()))
+                      ''.format(_PATH_DCCSI_PYTHON_LIB.as_posix()))
         return _PATH_DCCSI_PYTHON_LIB
     else:
         message = "Doesn't exist: {}".format(_PATH_DCCSI_PYTHON_LIB)
@@ -449,41 +526,72 @@ def bootstrap_dccsi_py_libs(dccsi_dirpath=return_stub_dir()):
 # -------------------------------------------------------------------------
 
 
+# -------------------------------------------------------------------------
+_MODULE_END = timeit.default_timer() - _MODULE_START
+_LOGGER.debug(f'Module {_MODULENAME} took: {_MODULE_END} sec')
+# -------------------------------------------------------------------------
+
+
 ###########################################################################
 # Main Code Block, runs this script as main (testing)
 # -------------------------------------------------------------------------
 if __name__ == '__main__':
     """Run this file as a standalone cli script for testing/debugging"""
-    
-    # global scope
-    _MODULENAME = 'azpy.config_utils'
-        
-    # enable debug
-    _DCCSI_GDEBUG = False # enable here to force temporarily
-    _DCCSI_DEV_MODE = False
-    _DCCSI_LOGLEVEL = _logging.INFO   
-    
+
+    _MODULENAME = 'DCCsi.azpy.config_utils.cli'
+
+    # default loglevel to info unless set
+    _DCCSI_LOGLEVEL = _logging.INFO
+    if _DCCSI_GDEBUG:
+        # override loglevel if runnign debug
+        _DCCSI_LOGLEVEL = _logging.DEBUG
+
+    # configure basic logger
+    # note: not using a common logger to reduce cyclical imports
+    _logging.basicConfig(level=_DCCSI_LOGLEVEL,
+                        format=FRMT_LOG_LONG,
+                        datefmt='%m-%d %H:%M')
+    _LOGGER = _logging.getLogger(_MODULENAME)
+
+    _LOGGER.info("# {0} #".format('-' * 72))
+    _LOGGER.info(f'~ {_MODULENAME} ... Running module as __main__')
+    _LOGGER.info("# {0} #".format('-' * 72))
+
     # parse the command line args
     import argparse
     parser = argparse.ArgumentParser(
-        description='O3DE DCCsi: {}'.format(_MODULENAME),
+        description=f'O3DE DCCsi: {_MODULENAME}',
         epilog="Coomandline args enable deeper testing and info from commandline")
-    
+
     parser.add_argument('-gd', '--global-debug',
                         type=bool,
                         required=False,
+                        default=True,
                         help='Enables global debug flag.')
-    
-    parser.add_argument('-sd', '--set-debugger',
-                        type=str,
-                        required=False,
-                        help='Default debugger: WING, others: PYCHARM, VSCODE (not yet implemented).')
-    
+
     parser.add_argument('-dm', '--developer-mode',
                         type=bool,
                         required=False,
+                        default=False,
                         help='Enables dev mode for early auto attaching debugger.')
-    
+
+    parser.add_argument('-sd', '--set-debugger',
+                        type=str,
+                        required=False,
+                        default='WING',
+                        help='(NOT IMPLEMENTED) Default debugger: WING, thers: PYCHARM and VSCODE.')
+
+    parser.add_argument('-rt', '--run-tests',
+                        type=bool,
+                        required=False,
+                        default=True,
+                        help='Runs local module tests from cli (default=True).')
+
+    parser.add_argument('-ex', '--exit',
+                        type=bool,
+                        required=False,
+                        help='(NOT IMPLEMENTED) Exits python. Do not exit if you want to be in interactive interpreter after config')
+
     args = parser.parse_args()
 
     # easy overrides
@@ -500,40 +608,49 @@ if __name__ == '__main__':
         _DCCSI_DEV_MODE = True
         attach_debugger()  # attempts to start debugger
 
-    # happy print
-    _LOGGER.info("# {0} #".format('-' * 72))
-    _LOGGER.info('~ config_utils.py ... Running script as __main__')
-    _LOGGER.info("# {0} #".format('-' * 72))
-    
-    from pathlib import Path
-
     # built in simple tests and info from commandline
     _LOGGER.info('Current Work dir: {0}'.format(os.getcwd()))
 
-    _LOGGER.info('OS: {}'.format(get_os()))
-    
-    _PATH_DCCSIG = Path(return_stub_dir('dccsi_stub'))
-    _LOGGER.info('PATH_DCCSIG: {}'.format(_PATH_DCCSIG.resolve()))
+    if args.run_tests:
+        _LOGGER.info(f'Running local module tests ...')
 
-    _O3DE_DEV = get_o3de_engine_root(check_stub='engine.json')
-    _LOGGER.info('O3DE_DEV: {}'.format(_O3DE_DEV.resolve()))
-    
-    _PATH_O3DE_BUILD = get_o3de_build_path(_O3DE_DEV, 'CMakeCache.txt')
-    _LOGGER.info('PATH_O3DE_BUILD: {}'.format(_PATH_O3DE_BUILD.resolve()))
+        _LOGGER.info('Active OS: {}'.format(get_os()))
 
-    # new o3de version
-    _PATH_O3DE_PROJECT = get_check_global_project()
-    _LOGGER.info('PATH_O3DE_PROJECT: {}'.format(_PATH_O3DE_PROJECT.resolve()))
+        # attempts to retreiv the global o3de project
+        _PATH_O3DE_PROJECT = Path(get_check_global_project()).resolve()
+        _LOGGER.info(f'PATH_O3DE_PROJECT: {_PATH_O3DE_PROJECT.as_posix()}')
 
-    _PATH_DCCSI_PYTHON_LIB = bootstrap_dccsi_py_libs(_PATH_DCCSIG)
-    _LOGGER.info('PATH_DCCSI_PYTHON_LIB: {}'.format(_PATH_DCCSI_PYTHON_LIB.resolve()))
+        # used a stub file name to walk to a location
+        _PATH_DCCSIG = Path(return_stub_dir('dccsi_stub')).resolve()
+        _LOGGER.info(f'PATH_DCCSIG: {_PATH_DCCSIG.as_posix()}')
 
-    _DCCSI_CONFIG = get_dccsi_config(_PATH_DCCSIG)
-    _LOGGER.info('PATH_DCCSI_CONFIG: {}'.format(_DCCSI_CONFIG))
-    # ---------------------------------------------------------------------
-    
+        # retreives the core dccsi config module
+        _DCCSI_CONFIG = get_dccsi_config(_PATH_DCCSIG)
+        _LOGGER.info(f'PATH_DCCSI_CONFIG: {_DCCSI_CONFIG}')
+
+        # bootstraps site lib access to dccsi installed package dependancies
+        _PATH_DCCSI_PYTHON_LIB = Path(bootstrap_dccsi_py_libs(_PATH_DCCSIG)).resolve()
+        _LOGGER.info(f'PATH_DCCSI_PYTHON_LIB: {_PATH_DCCSI_PYTHON_LIB.resolve()}')
+
+        # uses a known file to walk and discover the engine root
+        _O3DE_DEV = Path(get_o3de_engine_root(check_stub='engine.json')).resolve()
+        _LOGGER.info(f'O3DE_DEV: {_O3DE_DEV.as_posix()}')
+
+        # uses a cmake file to try and find the build directory
+        # to do: this method is not great, it doesn't work with installer
+        # need to find a better approach
+        # possibly the o3de.py package to retreive from manifest?
+        _PATH_O3DE_BUILD = Path(get_o3de_build_path(_O3DE_DEV,
+                                                    'CMakeCache.txt')).resolve()
+        _LOGGER.info('PATH_O3DE_BUILD: {}'.format(_PATH_O3DE_BUILD.as_posix()))
+
+    _MODULE_END = timeit.default_timer() - _MODULE_START
+    _LOGGER.info(f'CLI {_MODULENAME} took: {_MODULE_END} sec')
+
     # custom prompt
-    sys.ps1 = "[azpy]>>"
-    
-_LOGGER.debug('DCCsi: config_utils.py took: {} sec'.format(time.process_time() - start)) 
+    sys.ps1 = f"[{_MODULENAME}]>>"
+
+    if args.exit:
+        # return
+        sys.exit()
 # --- END -----------------------------------------------------------------

@@ -39,6 +39,10 @@
         <Member Type="Multiplayer::NetworkEntityRpcVector" Name="entityRpcs" />
     </Packet>
 
+    <Packet Name="RequestReplicatorReset" Desc="Asks the remote host to reset any entity replicators matching the provided ids">
+        <Member Type="Multiplayer::NetEntityIdsForReset" Name="entityIds" />
+    </Packet>
+
     <Packet Name="ClientMigration" Desc="Tell a client to migrate to a new server">
         <Member Type="AzNetworking::IpAddress" Name="remoteServerAddress" Init="AzNetworking::IpAddress()" />
         <Member Type="uint64_t" Name="temporaryUserIdentifier" Init="0" />

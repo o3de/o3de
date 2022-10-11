@@ -12,8 +12,6 @@
 
 namespace AZ
 {
-    enum class ObjectStreamWriteOverrideResponse;
-
     namespace VariantSerializationInternal
     {
         template <class ValueType>
@@ -272,7 +270,7 @@ namespace AZ
                     return true;
                 }
 
-                // Next check if the convertible type id is exactly equal to one of the non-pointer alternatives 
+                // Next check if the convertible type id is exactly equal to one of the non-pointer alternatives
                 // i.e Variant<int*, int> would match can only match the `int` alternative at this point
                 for (const SerializeContext::ClassElement& altClassElement : m_dataContainer.m_alternativeClassElements)
                 {
@@ -424,7 +422,7 @@ namespace AZ
         public:
             AZ_TYPE_INFO(GenericClassVariant, AZ::s_variantTypeId);
             GenericClassVariant()
-                : m_classData{ SerializeContext::ClassData::Create<VariantType>("variant", GetSpecializedTypeId(), &m_variantInstanceFactory, nullptr, &m_variantContainer) }
+                : m_classData{ SerializeContext::ClassData::Create<VariantType>(AZ::AzTypeInfo<VariantType>::Name(), GetSpecializedTypeId(), &m_variantInstanceFactory, nullptr, &m_variantContainer) }
             {
                 m_classData.m_dataConverter = &m_dataConverter;
                 // As the SerializeGenericTypeInfo is created on demand when a variant is reflected(in static memory)
@@ -498,16 +496,14 @@ namespace AZ
                     altClassElement.m_offset = 0;
                     VariantSerializationInternal::SetupClassElementFromType<AltType>(altClassElement);
                     const AZ::Uuid& altTypeId = altClassElement.m_typeId;
-                    
+
                     const SerializeContext::ClassData* altClassData = context.FindClassData(altTypeId);
                     AZ_Error("Serialize", altClassData, "Unable to find ClassData for variant alternative with name %s and typeid of %s", AzTypeInfo<AltType>::Name(), altTypeId.ToString<AZStd::string>().data());
                     return altClassData ? callContext.m_context->EnumerateInstanceConst(&callContext, &elementAlt, altTypeId, altClassData, &altClassElement) : false;
                 };
 
                 AZStd::visit(AZStd::move(alternativeVisitor), *reinterpret_cast<const VariantType*>(variantPtr));
-                // To avoid including ObjectStream.h into this file, we static cast the value of 0
-                // to an AZ::ObjectStreamWriteElemntResponse which corresponds to the CompletedWrite enum value
-                return static_cast<AZ::ObjectStreamWriteOverrideResponse>(0);
+                return AZ::ObjectStreamWriteOverrideResponse::CompletedWrite;
             }
 
             VariantSerializationInternal::AZStdVariantContainer<Types...> m_variantContainer;

@@ -16,9 +16,8 @@ namespace AZ
     {
         bool SceneCoreStandaloneAllocator::m_allocatorInitialized = false;
 
-        void SceneCoreStandaloneAllocator::Initialize(AZ::EnvironmentInstance environment)
+        void SceneCoreStandaloneAllocator::Initialize()
         {
-            AZ::Environment::Attach(environment);
             if (!AZ::AllocatorInstance<AZ::SystemAllocator>().IsReady())
             {
                 AZ::AllocatorInstance<AZ::SystemAllocator>().Create();
@@ -32,7 +31,6 @@ namespace AZ
             {
                 AZ::AllocatorInstance<AZ::SystemAllocator>().Destroy();
             }
-            AZ::Environment::Detach();
         }
     }
 }

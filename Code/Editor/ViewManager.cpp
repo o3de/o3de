@@ -31,10 +31,19 @@
 
 #include <AzCore/Console/IConsole.h>
 
+static constexpr AZStd::string_view MultiViewportToggleKey = "/O3DE/Viewport/MultiViewportEnabled";
+
 bool CViewManager::IsMultiViewportEnabled()
 {
-    // Enable multi-viewport for legacy renderer, or if we're using the new fully Atom-native viewport
-    return true;
+    bool isMultiViewportEnabled = false;
+
+    // Retrieve new action manager setting
+    if (auto* registry = AZ::SettingsRegistry::Get())
+    {
+        registry->Get(isMultiViewportEnabled, MultiViewportToggleKey);
+    }
+
+    return isMultiViewportEnabled;
 }
 
 //////////////////////////////////////////////////////////////////////

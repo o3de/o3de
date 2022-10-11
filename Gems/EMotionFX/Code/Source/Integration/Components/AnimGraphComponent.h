@@ -179,7 +179,6 @@ namespace EMotionFX
 
             static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
             {
-                dependent.push_back(AZ_CRC("PhysicsService", 0xa7350d22));
                 dependent.push_back(AZ_CRC("MeshService", 0x71d8a455));
             }
 

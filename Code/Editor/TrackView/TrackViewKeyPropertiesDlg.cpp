@@ -9,6 +9,7 @@
 
 #include "EditorDefs.h"
 
+#include "KeyUIControls.h"
 #include "TrackViewKeyPropertiesDlg.h"
 
 // Qt
@@ -59,17 +60,19 @@ CTrackViewKeyPropertiesDlg::CTrackViewKeyPropertiesDlg(QWidget* hParentWnd)
     m_pVarBlock = new CVarBlock;
 
     // Add key UI classes
-    std::vector<IClassDesc*> classes;
-    GetIEditor()->GetClassFactory()->GetClassesByCategory("TrackViewKeyUI", classes);  // BySystemID(ESYSTEM_CLASS_TRACKVIEW_KEYUI, classes);
-    for (IClassDesc* iclass : classes)
-    {
-        if (QObject* pObj = iclass->CreateQObject())
-        {
-            auto keyControl = qobject_cast<CTrackViewKeyUIControls*>(pObj);
-            Q_ASSERT(keyControl);
-            m_keyControls.push_back(keyControl);
-        }
-    }
+    m_keyControls.push_back(new C2DBezierKeyUIControls());
+    m_keyControls.push_back(new CAssetBlendKeyUIControls());
+    m_keyControls.push_back(new CCaptureKeyUIControls());
+    m_keyControls.push_back(new CCommentKeyUIControls());
+    m_keyControls.push_back(new CConsoleKeyUIControls());
+    m_keyControls.push_back(new CEventKeyUIControls());
+    m_keyControls.push_back(new CGotoKeyUIControls());
+    m_keyControls.push_back(new CScreenFaderKeyUIControls());
+    m_keyControls.push_back(new CSelectKeyUIControls());
+    m_keyControls.push_back(new CSequenceKeyUIControls());
+    m_keyControls.push_back(new CSoundKeyUIControls());
+    m_keyControls.push_back(new CTimeRangeKeyUIControls());
+    m_keyControls.push_back(new CTrackEventKeyUIControls());
 
     // Sort key controls by descending priority
     std::stable_sort(m_keyControls.begin(), m_keyControls.end(),

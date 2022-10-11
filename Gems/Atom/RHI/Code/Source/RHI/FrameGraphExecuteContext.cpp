@@ -15,29 +15,10 @@ namespace AZ
             : m_descriptor{descriptor}
         {}
 
-        const ScopeId& FrameGraphExecuteContext::GetScopeId() const
-        {
-            return m_descriptor.m_scopeId;
-        }
-
-        uint32_t FrameGraphExecuteContext::GetCommandListIndex() const
-        {
-            return m_descriptor.m_commandListIndex;
-        }
-
-        uint32_t FrameGraphExecuteContext::GetCommandListCount() const
-        {
-            return m_descriptor.m_commandListCount;
-        }
-
-        CommandList* FrameGraphExecuteContext::GetCommandList() const
-        {
-            return m_descriptor.m_commandList;
-        }
-
         void FrameGraphExecuteContext::SetCommandList(CommandList& commandList)
         {
             m_descriptor.m_commandList = &commandList;
+            m_descriptor.m_commandList->SetSubmitRange(m_descriptor.m_submitRange);
         }
     }
 }

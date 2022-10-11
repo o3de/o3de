@@ -22,12 +22,15 @@ ly_add_target(
     COMPILE_DEFINITIONS
         PRIVATE
             ${SCRIPT_CANVAS_DEV_COMMON_DEFINES}
+            IMGUI_ENABLED
     BUILD_DEPENDENCIES
         PUBLIC
             Gem::ScriptCanvas
         PRIVATE
             AZ::AzCore
             AZ::AzFramework
+            Gem::ImGui.imguilib
+            Gem::ImGui            
 )
 
 ly_add_target(

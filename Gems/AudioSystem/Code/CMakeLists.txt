@@ -10,7 +10,7 @@ set(AUDIOSYSTEM_COMPILEDEFINITIONS
     $<IF:$<CONFIG:Release>,AUDIO_RELEASE,ENABLE_AUDIO_LOGGING>
 )
 
-o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
 ly_add_target(
     NAME AudioSystem.Static STATIC
@@ -34,6 +34,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Legacy::CryCommon
+            Gem::Atom_RPI.Public
 )
 
 ly_add_target(
@@ -195,6 +196,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Legacy::EditorCore
                 Legacy::EditorCommon
                 Gem::AudioSystem.Static
+                Gem::Atom_RPI.Public
     )
     ly_add_target(
         NAME AudioSystem.Editor GEM_MODULE

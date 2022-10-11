@@ -130,8 +130,7 @@ namespace AZ
             if (ValidateIsInitialized() && ValidateIsNotInFrame())
             {
                 m_isInFrame = true;
-                BeginFrameInternal();
-                return ResultCode::Success;
+                return BeginFrameInternal();
             }
             return ResultCode::InvalidOperation;
         }
@@ -304,6 +303,16 @@ namespace AZ
                     m_nearestSupportedFormats[i] = static_cast<Format>(i);
                 }
             }
+        }
+
+        void Device::SetLastExecutingScope(const AZStd::string_view scopeName)
+        {
+            m_lastExecutingScope = scopeName;
+        }
+
+        AZStd::string_view Device::GetLastExecutingScope() const
+        {
+            return m_lastExecutingScope;
         }
     }
 }

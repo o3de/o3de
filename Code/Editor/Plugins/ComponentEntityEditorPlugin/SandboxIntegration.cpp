@@ -24,7 +24,6 @@
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/Entity/EntityContextBus.h>
-#include <AzFramework/Physics/Material.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/Visibility/BoundsBus.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
@@ -38,6 +37,7 @@
 #include <AzToolsFramework/Commands/SelectionCommand.h>
 #include <AzToolsFramework/Commands/SliceDetachEntityCommand.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
@@ -180,12 +180,21 @@ void SandboxIntegrationManager::Setup()
 
     AzFramework::DisplayContextRequestBus::Handler::BusConnect();
 
-    MainWindow::instance()->GetActionManager()->RegisterActionHandler(ID_FILE_SAVE_SLICE_TO_ROOT, [this]() {
-        SaveSlice(false);
-    });
-    MainWindow::instance()->GetActionManager()->RegisterActionHandler(ID_FILE_SAVE_SELECTED_SLICE, [this]() {
-        SaveSlice(true);
-    });
+    if (!AzToolsFramework::IsNewActionManagerEnabled())
+    {
+        MainWindow::instance()->GetActionManager()->RegisterActionHandler(
+            ID_FILE_SAVE_SLICE_TO_ROOT,
+            [this]()
+            {
+                SaveSlice(false);
+            });
+        MainWindow::instance()->GetActionManager()->RegisterActionHandler(
+            ID_FILE_SAVE_SELECTED_SLICE,
+            [this]()
+            {
+                SaveSlice(true);
+            });
+    }
 
     // Keep a reference to the interface EditorEntityUiInterface.
     // This is used to register layer entities to their UI handler when the layer component is activated.
@@ -608,7 +617,8 @@ int SandboxIntegrationManager::GetMenuPosition() const
     return aznumeric_cast<int>(AzToolsFramework::EditorContextMenuOrdering::TOP);
 }
 
-void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags)
+void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(
+    QMenu* menu, const AZStd::optional<AzFramework::ScreenPoint>& point, int flags)
 {
     if (!IsLevelDocumentOpen())
     {
@@ -617,18 +627,18 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, con
 
     if (flags & AzToolsFramework::EditorEvents::eECMF_USE_VIEWPORT_CENTER)
     {
-        CViewport* view = GetIEditor()->GetViewManager()->GetGameViewport();
         int width = 0;
         int height = 0;
         // If there is no 3D Viewport active to aid in the positioning of context menu
         // operations, we don't need to store anything but default values here. Any code
         // using these numbers for placement should default to the origin when there's
         // no 3D viewport to raycast into.
-        if (view)
+        if (const CViewport* view = GetIEditor()->GetViewManager()->GetGameViewport())
         {
             view->GetDimensions(&width, &height);
         }
-        m_contextMenuViewPoint.Set(static_cast<float>(width / 2), static_cast<float>(height / 2));
+
+        m_contextMenuViewPoint = AzFramework::ScreenPoint{ width / 2, height / 2 };
     }
     else
     {
@@ -1411,10 +1421,11 @@ void SandboxIntegrationManager::ContextMenu_NewEntity()
 
     // If we don't have a viewport active to aid in placement, the object
     // will be created at the origin.
-    if (CViewport* view = GetIEditor()->GetViewManager()->GetGameViewport())
+    if (CViewport* view = GetIEditor()->GetViewManager()->GetGameViewport();
+        view && m_contextMenuViewPoint.has_value())
     {
         worldPosition = AzToolsFramework::FindClosestPickIntersection(
-            view->GetViewportId(), AzFramework::ScreenPointFromVector2(m_contextMenuViewPoint), AzToolsFramework::EditorPickRayLength,
+            view->GetViewportId(), m_contextMenuViewPoint.value(), AzToolsFramework::EditorPickRayLength,
             AzToolsFramework::GetDefaultEntityPlacementDistance());
     }
 
@@ -1599,12 +1610,12 @@ void SandboxIntegrationManager::InstantiateSliceFromAssetId(const AZ::Data::Asse
 {
     AZ::Transform sliceWorldTransform = AZ::Transform::CreateIdentity();
 
-    CViewport* view = GetIEditor()->GetViewManager()->GetGameViewport();
     // If we don't have a viewport active to aid in placement, the slice
     // will be instantiated at the origin.
-    if (view)
+    if (CViewport* view = GetIEditor()->GetViewManager()->GetGameViewport())
     {
-        const QPoint viewPoint(static_cast<int>(m_contextMenuViewPoint.GetX()), static_cast<int>(m_contextMenuViewPoint.GetY()));
+        const QPoint viewPoint =
+            AzToolsFramework::ViewportInteraction::QPointFromScreenPoint(m_contextMenuViewPoint.value_or(AzFramework::ScreenPoint{}));
         sliceWorldTransform = AZ::Transform::CreateTranslation(LYVec3ToAZVec3(view->SnapToGrid(view->ViewToWorld(viewPoint))));
     }
 

@@ -6,6 +6,7 @@
  *
  */
 
+#include <Editor/InspectorBus.h>
 #include "MotionEventWidget.h"
 #include "MotionEventEditor.h"
 #include <QVBoxLayout>
@@ -22,6 +23,11 @@ namespace EMStudio
         ReInit();
     }
 
+    MotionEventWidget::~MotionEventWidget()
+    {
+        // Clear the inspector in case this window is currently shown.
+        EMStudio::InspectorRequestBus::Broadcast(&EMStudio::InspectorRequestBus::Events::ClearIfShown, this);
+    }
 
     void MotionEventWidget::Init()
     {
@@ -36,5 +42,3 @@ namespace EMStudio
         m_editor->SetMotionEvent(motion, motionEvent);
     }
 } // namespace EMStudio
-
-#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/MotionEvents/moc_MotionEventWidget.cpp>

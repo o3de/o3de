@@ -9,6 +9,7 @@
 #include <AudioEngineWwiseGemSystemComponent.h>
 
 #include <AzCore/PlatformDef.h>
+#include <AzCore/Console/ILogger.h>
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -17,7 +18,6 @@
 #include <AzFramework/Platform/PlatformDefaults.h>
 
 #include <AudioAllocators.h>
-#include <AudioLogger.h>
 #include <AudioSystemImplCVars.h>
 #include <AudioSystemImpl_wwise.h>
 #include <Common_wwise.h>
@@ -30,8 +30,6 @@
 
 namespace Audio
 {
-    CAudioLogger g_audioImplLogger_wwise;
-
     namespace Platform
     {
         void* InitializeSecondaryMemoryPool(size_t& secondarySize);
@@ -88,7 +86,7 @@ namespace AudioEngineWwiseGem
 
     void AudioEngineWwiseGemSystemComponent::Activate()
     {
-        Audio::Gem::AudioEngineGemRequestBus::Handler::BusConnect();
+        Audio::Gem::EngineRequestBus::Handler::BusConnect();
 
     #if defined(AUDIO_ENGINE_WWISE_EDITOR)
         AudioControlsEditor::EditorImplPluginEventBus::Handler::BusConnect();
@@ -97,7 +95,7 @@ namespace AudioEngineWwiseGem
 
     void AudioEngineWwiseGemSystemComponent::Deactivate()
     {
-        Audio::Gem::AudioEngineGemRequestBus::Handler::BusDisconnect();
+        Audio::Gem::EngineRequestBus::Handler::BusDisconnect();
 
     #if defined(AUDIO_ENGINE_WWISE_EDITOR)
         AudioControlsEditor::EditorImplPluginEventBus::Handler::BusDisconnect();
@@ -143,23 +141,20 @@ namespace AudioEngineWwiseGem
             AZ::SettingsRegistryMergeUtils::PlatformGet(*settingsRegistry, assetPlatform,
                 AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey, "assets");
         }
+
         m_engineWwise = AZStd::make_unique<Audio::CAudioSystemImpl_wwise>(assetPlatform.c_str());
         if (m_engineWwise)
         {
-            Audio::g_audioImplLogger_wwise.Log(Audio::eALT_ALWAYS, "AudioEngineWwise created!");
+            AZLOG_INFO("%s", "AudioEngineWwise created!");
 
-            Audio::SAudioRequest oAudioRequestData;
-            oAudioRequestData.nFlags = (Audio::eARF_PRIORITY_HIGH | Audio::eARF_EXECUTE_BLOCKING);
-
-            Audio::SAudioManagerRequestData<Audio::eAMRT_INIT_AUDIO_IMPL> oAMData;
-            oAudioRequestData.pData = &oAMData;
-            Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
+            Audio::SystemRequest::Initialize initRequest;
+            AZ::Interface<Audio::IAudioSystem>::Get()->PushRequestBlocking(AZStd::move(initRequest));
 
             success = true;
         }
         else
         {
-            Audio::g_audioImplLogger_wwise.Log(Audio::eALT_ALWAYS, "Could not create AudioEngineWwise!");
+            AZLOG_ERROR("%s", "Could not create AudioEngineWwise!");
         }
 
         return success;

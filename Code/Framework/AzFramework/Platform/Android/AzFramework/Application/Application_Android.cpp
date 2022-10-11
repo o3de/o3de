@@ -92,7 +92,9 @@ namespace AzFramework
     private:
         AndroidEventDispatcher* m_eventDispatcher;
         ApplicationLifecycleEvents::Event m_lastEvent;
+#if !defined(AZ_RELEASE_BUILD)
         AZStd::unique_ptr<ThermalInfoHandler> m_thermalInfoHandler;
+#endif
 
         AZStd::atomic<bool> m_requestResponseReceived;
         AZStd::unique_ptr<AZ::Android::JNI::Object> m_lumberyardActivity;

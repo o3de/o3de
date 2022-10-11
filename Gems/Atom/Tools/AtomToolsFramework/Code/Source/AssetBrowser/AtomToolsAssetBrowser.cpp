@@ -40,7 +40,19 @@ namespace AtomToolsFramework
         m_ui->m_searchWidget->Setup(true, true);
         m_ui->m_searchWidget->setMinimumSize(QSize(150, 0));
 
-        m_ui->m_viewOptionButton->setIcon(QIcon(":/Icons/view.svg"));
+        // Create pop-up menu to toggle the visibility of the asset browser preview window
+        QMenu* viewOptionsMenu= new QMenu(this);
+        QMenu::connect(viewOptionsMenu, &QMenu::aboutToShow, [this, viewOptionsMenu]() {
+            viewOptionsMenu->clear();
+            QAction* action = viewOptionsMenu->addAction(tr("Show Asset Preview"), this, &AtomToolsAssetBrowser::TogglePreview);
+            action->setCheckable(true);
+            action->setChecked(m_ui->m_previewerFrame->isVisible());
+        });
+
+        m_ui->m_viewOptionButton->setMenu(viewOptionsMenu);
+        m_ui->m_viewOptionButton->setIcon(QIcon(":/Icons/menu.svg"));
+        m_ui->m_viewOptionButton->setPopupMode(QToolButton::InstantPopup);
+
         m_ui->m_splitter->setSizes(QList<int>() << 400 << 200);
         m_ui->m_splitter->setStretchFactor(0, 1);
 
@@ -64,17 +76,14 @@ namespace AtomToolsFramework
         connect(m_filterModel, &AssetBrowserFilterModel::filterChanged, this, &AtomToolsAssetBrowser::UpdateFilter);
         connect(m_ui->m_assetBrowserTreeViewWidget, &AssetBrowserTreeView::activated, this, &AtomToolsAssetBrowser::OpenSelectedEntries);
         connect(m_ui->m_assetBrowserTreeViewWidget, &AssetBrowserTreeView::selectionChangedSignal, this, &AtomToolsAssetBrowser::UpdatePreview);
-        connect(m_ui->m_viewOptionButton, &QPushButton::clicked, this, &AtomToolsAssetBrowser::OpenOptionsMenu);
-        connect(
-            m_ui->m_searchWidget->GetFilter().data(), &AssetBrowserEntryFilter::updatedSignal, m_filterModel,
-            &AssetBrowserFilterModel::filterUpdatedSlot);
+        connect(m_ui->m_searchWidget->GetFilter().data(), &AssetBrowserEntryFilter::updatedSignal, m_filterModel, &AssetBrowserFilterModel::filterUpdatedSlot);
     }
 
     AtomToolsAssetBrowser::~AtomToolsAssetBrowser()
     {
         // Maintains the tree expansion state between runs
         m_ui->m_assetBrowserTreeViewWidget->SaveState();
-        AZ::TickBus::Handler::BusDisconnect();
+        AZ::SystemTickBus::Handler::BusDisconnect();
     }
 
     void AtomToolsAssetBrowser::SetFilterState(const AZStd::string& category, const AZStd::string& displayName, bool enabled)
@@ -89,7 +98,7 @@ namespace AtomToolsFramework
 
     void AtomToolsAssetBrowser::SelectEntries(const AZStd::string& absolutePath)
     {
-        AZ::TickBus::Handler::BusDisconnect();
+        AZ::SystemTickBus::Handler::BusDisconnect();
 
         m_pathToSelect = absolutePath;
         if (ValidateDocumentPath(m_pathToSelect))
@@ -97,7 +106,7 @@ namespace AtomToolsFramework
             // Selecting a new asset in the browser is not guaranteed to happen immediately.
             // The asset browser model notifications are sent before the model is updated.
             // Instead of relying on the notifications, queue the selection and process it on tick until this change occurs.
-            AZ::TickBus::Handler::BusConnect();
+            AZ::SystemTickBus::Handler::BusConnect();
         }
     }
 
@@ -130,15 +139,6 @@ namespace AtomToolsFramework
                 m_openHandler(entry->GetFullPath().c_str());
             }
         }
-    }
-
-    void AtomToolsAssetBrowser::OpenOptionsMenu()
-    {
-        QMenu menu;
-        QAction* action = menu.addAction(tr("Show Asset Preview"), this, &AtomToolsAssetBrowser::TogglePreview);
-        action->setCheckable(true);
-        action->setChecked(m_ui->m_previewerFrame->isVisible());
-        menu.exec(QCursor::pos());
     }
 
     AzToolsFramework::AssetBrowser::FilterConstType AtomToolsAssetBrowser::CreateFilter() const
@@ -197,14 +197,11 @@ namespace AtomToolsFramework
         }
     }
 
-    void AtomToolsAssetBrowser::OnTick(float deltaTime, AZ::ScriptTimePoint time)
+    void AtomToolsAssetBrowser::OnSystemTick()
     {
-        AZ_UNUSED(time);
-        AZ_UNUSED(deltaTime);
-
         if (!ValidateDocumentPath(m_pathToSelect))
         {
-            AZ::TickBus::Handler::BusDisconnect();
+            AZ::SystemTickBus::Handler::BusDisconnect();
             m_pathToSelect.clear();
             return;
         }
@@ -221,7 +218,7 @@ namespace AtomToolsFramework
                 if (ValidateDocumentPath(sourcePath) && AZ::StringFunc::Equal(m_pathToSelect, sourcePath))
                 {
                     // Once the selection is confirmed, cancel the operation and disconnect
-                    AZ::TickBus::Handler::BusDisconnect();
+                    AZ::SystemTickBus::Handler::BusDisconnect();
                     m_pathToSelect.clear();
                 }
             }

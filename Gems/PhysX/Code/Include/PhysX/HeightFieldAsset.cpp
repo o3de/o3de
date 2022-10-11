@@ -30,9 +30,11 @@ namespace PhysX
 
         void HeightFieldAsset::SetHeightField(physx::PxHeightField* heightField)
         {
-            ReleaseMemory();
-
-            m_heightField = heightField;
+            if (heightField != m_heightField)
+            {
+                ReleaseMemory();
+                m_heightField = heightField;
+            }
             m_status = AssetStatus::Ready;
         }
 

@@ -46,12 +46,12 @@ namespace AZ::Data
         // Open the AssetDataStream and load it via file streaming
         using OnCompleteCallback = AZStd::function<void(AZ::IO::IStreamerTypes::RequestStatus)>;
         void Open(const AZStd::string& filePath, size_t fileOffset, size_t assetSize,
-            AZStd::chrono::milliseconds deadline = AZ::IO::IStreamerTypes::s_noDeadline,
+            AZ::IO::IStreamerTypes::Deadline deadline = AZ::IO::IStreamerTypes::s_noDeadline,
             AZ::IO::IStreamerTypes::Priority priority = AZ::IO::IStreamerTypes::s_priorityMedium,
             OnCompleteCallback loadCallback = {});
 
         // Reschedule the outstanding request.  Will only update with shorter deadline values or higher priority values
-        void Reschedule(AZStd::chrono::milliseconds newDeadline, AZ::IO::IStreamerTypes::Priority newPriority);
+        void Reschedule(AZ::IO::IStreamerTypes::Deadline newDeadline, AZ::IO::IStreamerTypes::Priority newPriority);
 
         // Optionally block until the Open and data load has completed.
         void BlockUntilLoadComplete();
@@ -79,7 +79,7 @@ namespace AZ::Data
 
         const char* GetFilename() const override { return m_filePath.c_str(); }
 
-        AZStd::chrono::milliseconds GetStreamingDeadline() const { return m_curDeadline; }
+        AZ::IO::IStreamerTypes::Deadline GetStreamingDeadline() const { return m_curDeadline; }
         AZ::IO::IStreamerTypes::Priority GetStreamingPriority() const { return m_curPriority; }
 
         // AssetDataStream specific APIs
@@ -128,7 +128,7 @@ namespace AZ::Data
         size_t m_curOffset{ 0 };
 
         //! The current request deadline.  Used to avoid requesting a reschedule to the same (current) deadline.
-        AZStd::chrono::milliseconds m_curDeadline{ AZ::IO::IStreamerTypes::s_noDeadline };
+        AZ::IO::IStreamerTypes::Deadline m_curDeadline{ AZ::IO::IStreamerTypes::s_noDeadline };
 
         //! The current request priority.  Used to avoid requesting a reschedule to the same (current) priority.
         AZ::IO::IStreamerTypes::Priority m_curPriority{ AZ::IO::IStreamerTypes::s_priorityMedium };

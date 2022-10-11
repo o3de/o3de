@@ -6,13 +6,17 @@
  *
  */
 
+#include <CommonBenchmarkSetup.h>
 #include <CommonHierarchySetup.h>
 #include <MockInterfaces.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UnitTest/UnitTest.h>
 #include <AzCore/Name/NameDictionary.h>
 #include <AzCore/Name/Name.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Spawnable/SpawnableSystemComponent.h>
+#include <AzNetworking/UdpTransport/UdpPacketHeader.h>
 #include <AzNetworking/Framework/NetworkingSystemComponent.h>
 #include <AzTest/AzTest.h>
 #include <MultiplayerSystemComponent.h>
@@ -20,11 +24,13 @@
 #include <IMultiplayerSpawnerMock.h>
 #include <ConnectionData/ServerToClientConnectionData.h>
 #include <ReplicationWindows/ServerToClientReplicationWindow.h>
+#include <Multiplayer/Components/NetBindComponent.h>
+#include <Multiplayer/MultiplayerConstants.h>
+#include <Multiplayer/Session/SessionConfig.h>
 
-namespace UnitTest
+namespace Multiplayer
 {
-    class MultiplayerSystemTests
-        : public AllocatorsFixture
+    class MultiplayerSystemTests : public AllocatorsFixture
     {
     public:
         void SetUp() override
@@ -32,18 +38,51 @@ namespace UnitTest
             SetupAllocator();
             AZ::NameDictionary::Create();
 
-            m_mockComponentApplicationRequests = AZStd::make_unique<testing::NiceMock<MockComponentApplicationRequests>>();
-            AZ::Interface<AZ::ComponentApplicationRequests>::Register(m_mockComponentApplicationRequests.get());
+            m_ComponentApplicationRequests = AZStd::make_unique<BenchmarkComponentApplicationRequests>();
+            AZ::Interface<AZ::ComponentApplicationRequests>::Register(m_ComponentApplicationRequests.get());
+
+            m_mockTime = AZStd::make_unique<AZ::NiceTimeSystemMock>();
+
+            m_console.reset(aznew AZ::Console());
+            AZ::Interface<AZ::IConsole>::Register(m_console.get());
+
+            // register components involved in testing
+            m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
+            m_behaviorContext = AZStd::make_unique<AZ::BehaviorContext>();
+            m_transformDescriptor.reset(AzFramework::TransformComponent::CreateDescriptor());
+            m_transformDescriptor->Reflect(m_serializeContext.get());
+            m_netBindDescriptor.reset(NetBindComponent::CreateDescriptor());
+            m_netBindDescriptor->Reflect(m_serializeContext.get());
 
             m_netComponent = new AzNetworking::NetworkingSystemComponent();
             m_mpComponent = new Multiplayer::MultiplayerSystemComponent();
+            m_mpComponent->Reflect(m_serializeContext.get());
+            m_mpComponent->Reflect(m_behaviorContext.get());
 
-            m_initHandler = Multiplayer::SessionInitEvent::Handler([this](AzNetworking::INetworkInterface* value) { TestInitEvent(value); });
+            m_initHandler = Multiplayer::SessionInitEvent::Handler(
+                [this](AzNetworking::INetworkInterface* value)
+                {
+                    TestInitEvent(value);
+                });
             m_mpComponent->AddSessionInitHandler(m_initHandler);
-            m_shutdownHandler = Multiplayer::SessionShutdownEvent::Handler([this](AzNetworking::INetworkInterface* value) { TestShutdownEvent(value); });
+            m_shutdownHandler = Multiplayer::SessionShutdownEvent::Handler(
+                [this](AzNetworking::INetworkInterface* value)
+                {
+                    TestShutdownEvent(value);
+                });
             m_mpComponent->AddSessionShutdownHandler(m_shutdownHandler);
-            m_connAcquiredHandler = Multiplayer::ConnectionAcquiredEvent::Handler([this](Multiplayer::MultiplayerAgentDatum value) { TestConnectionAcquiredEvent(value); });
+            m_connAcquiredHandler = Multiplayer::ConnectionAcquiredEvent::Handler(
+                [this](Multiplayer::MultiplayerAgentDatum value)
+                {
+                    TestConnectionAcquiredEvent(value);
+                });
             m_mpComponent->AddConnectionAcquiredHandler(m_connAcquiredHandler);
+            m_endpointDisconnectedHandler = Multiplayer::EndpointDisconnectedEvent::Handler(
+                [this](Multiplayer::MultiplayerAgentType value)
+                {
+                    TestEndpointDisconnectedEvent(value);
+                });
+            m_mpComponent->AddEndpointDisconnectedHandler(m_endpointDisconnectedHandler);
             m_mpComponent->Activate();
         }
 
@@ -52,9 +91,18 @@ namespace UnitTest
             m_mpComponent->Deactivate();
             delete m_mpComponent;
             delete m_netComponent;
-            AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(m_mockComponentApplicationRequests.get());
-            m_mockComponentApplicationRequests.reset();
+            AZ::Interface<AZ::IConsole>::Unregister(m_console.get());
+            m_console.reset();
+            m_mockTime.reset();
+            AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(m_ComponentApplicationRequests.get());
+            m_ComponentApplicationRequests.reset();
             AZ::NameDictionary::Destroy();
+
+            m_transformDescriptor.reset();
+            m_netBindDescriptor.reset();
+            m_serializeContext.reset();
+            m_behaviorContext.reset();
+
             TeardownAllocator();
         }
 
@@ -73,46 +121,82 @@ namespace UnitTest
             m_connectionAcquiredCount += aznumeric_cast<uint32_t>(datum.m_id);
         }
 
+        void TestEndpointDisconnectedEvent([[maybe_unused]] Multiplayer::MultiplayerAgentType value)
+        {
+            ++m_endpointDisconnectedCount;
+        }
+
+        void CreateAndRegisterNetBindComponent(
+            AZ::Entity& playerEntity, NetworkEntityTracker& playerNetworkEntityTracker, NetEntityRole netEntityRole)
+        {
+            playerEntity.CreateComponent<AzFramework::TransformComponent>();
+            const auto playerNetBindComponent = playerEntity.CreateComponent<NetBindComponent>();
+            playerNetBindComponent->m_netEntityRole = netEntityRole;
+            playerNetworkEntityTracker.RegisterNetBindComponent(&playerEntity, playerNetBindComponent);
+            playerEntity.Init();
+            playerEntity.Activate();
+        }
+
+        AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
+        AZStd::unique_ptr<AZ::BehaviorContext> m_behaviorContext;
+        AZStd::unique_ptr<AZ::ComponentDescriptor> m_transformDescriptor;
+        AZStd::unique_ptr<AZ::ComponentDescriptor> m_netBindDescriptor;
+        AZStd::unique_ptr<AZ::IConsole> m_console;
+        AZStd::unique_ptr<AZ::NiceTimeSystemMock> m_mockTime;
+
         uint32_t m_initEventTriggerCount = 0;
         uint32_t m_shutdownEventTriggerCount = 0;
         uint32_t m_connectionAcquiredCount = 0;
+        uint32_t m_endpointDisconnectedCount = 0;
 
         Multiplayer::SessionInitEvent::Handler m_initHandler;
         Multiplayer::SessionShutdownEvent::Handler m_shutdownHandler;
         Multiplayer::ConnectionAcquiredEvent::Handler m_connAcquiredHandler;
+        Multiplayer::EndpointDisconnectedEvent::Handler m_endpointDisconnectedHandler;
 
         AzNetworking::NetworkingSystemComponent* m_netComponent = nullptr;
         Multiplayer::MultiplayerSystemComponent* m_mpComponent = nullptr;
 
-        AZStd::unique_ptr<testing::NiceMock<MockComponentApplicationRequests>> m_mockComponentApplicationRequests;
+        AZStd::unique_ptr<BenchmarkComponentApplicationRequests> m_ComponentApplicationRequests;
 
         IMultiplayerSpawnerMock m_mpSpawnerMock;
     };
 
     TEST_F(MultiplayerSystemTests, TestInitEvent)
     {
-        m_mpComponent->InitializeMultiplayer(Multiplayer::MultiplayerAgentType::DedicatedServer);
-        m_mpComponent->InitializeMultiplayer(Multiplayer::MultiplayerAgentType::ClientServer);
-        m_mpComponent->InitializeMultiplayer(Multiplayer::MultiplayerAgentType::Client);
+        m_mpComponent->InitializeMultiplayer(MultiplayerAgentType::DedicatedServer);
+        EXPECT_EQ(m_mpComponent->GetAgentType(), MultiplayerAgentType::DedicatedServer);
+
+        m_mpComponent->InitializeMultiplayer(MultiplayerAgentType::ClientServer);
+        EXPECT_EQ(m_mpComponent->GetAgentType(), MultiplayerAgentType::ClientServer);
+
+        m_mpComponent->InitializeMultiplayer(MultiplayerAgentType::Client);
+        EXPECT_EQ(m_mpComponent->GetAgentType(), MultiplayerAgentType::Client);
+
         EXPECT_EQ(m_initEventTriggerCount, 1);
     }
 
     TEST_F(MultiplayerSystemTests, TestShutdownEvent)
     {
         m_mpComponent->InitializeMultiplayer(Multiplayer::MultiplayerAgentType::DedicatedServer);
-        IMultiplayerConnectionMock connMock1 = IMultiplayerConnectionMock(AzNetworking::ConnectionId(), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Acceptor);
-        IMultiplayerConnectionMock connMock2 = IMultiplayerConnectionMock(AzNetworking::ConnectionId(), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Connector);
+        IMultiplayerConnectionMock connMock1 =
+            IMultiplayerConnectionMock(AzNetworking::ConnectionId(), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Acceptor);
+        IMultiplayerConnectionMock connMock2 =
+            IMultiplayerConnectionMock(AzNetworking::ConnectionId(), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Connector);
         m_mpComponent->OnDisconnect(&connMock1, AzNetworking::DisconnectReason::None, AzNetworking::TerminationEndpoint::Local);
         m_mpComponent->OnDisconnect(&connMock2, AzNetworking::DisconnectReason::None, AzNetworking::TerminationEndpoint::Local);
 
+        EXPECT_EQ(m_endpointDisconnectedCount, 2);
         EXPECT_EQ(m_shutdownEventTriggerCount, 1);
     }
 
     TEST_F(MultiplayerSystemTests, TestConnectionDatum)
     {
         using namespace testing;
-        NiceMock<IMultiplayerConnectionMock> connMock1(aznumeric_cast<AzNetworking::ConnectionId>(10), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Acceptor);
-        NiceMock<IMultiplayerConnectionMock> connMock2(aznumeric_cast<AzNetworking::ConnectionId>(15), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Acceptor);
+        NiceMock<IMultiplayerConnectionMock> connMock1(
+            aznumeric_cast<AzNetworking::ConnectionId>(10), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Acceptor);
+        NiceMock<IMultiplayerConnectionMock> connMock2(
+            aznumeric_cast<AzNetworking::ConnectionId>(15), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Acceptor);
         m_mpComponent->OnConnect(&connMock1);
         m_mpComponent->OnConnect(&connMock2);
 
@@ -121,6 +205,8 @@ namespace UnitTest
         // Clean up connection data
         m_mpComponent->OnDisconnect(&connMock1, AzNetworking::DisconnectReason::None, AzNetworking::TerminationEndpoint::Local);
         m_mpComponent->OnDisconnect(&connMock2, AzNetworking::DisconnectReason::None, AzNetworking::TerminationEndpoint::Local);
+
+        EXPECT_EQ(m_endpointDisconnectedCount, 2);
     }
 
     TEST_F(MultiplayerSystemTests, TestSpawnerEvents)
@@ -133,15 +219,255 @@ namespace UnitTest
         Multiplayer::NetworkEntityHandle controlledEntity;
         IMultiplayerConnectionMock connMock =
             IMultiplayerConnectionMock(AzNetworking::ConnectionId(), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Acceptor);
-        Multiplayer::ServerToClientConnectionData* connectionData = new Multiplayer::ServerToClientConnectionData(&connMock, *m_mpComponent);
-        connectionData->GetReplicationManager().SetReplicationWindow(AZStd::make_unique<Multiplayer::ServerToClientReplicationWindow>(controlledEntity, &connMock));
+        Multiplayer::ServerToClientConnectionData* connectionData =
+            new Multiplayer::ServerToClientConnectionData(&connMock, *m_mpComponent);
+        connectionData->GetReplicationManager().SetReplicationWindow(
+            AZStd::make_unique<Multiplayer::ServerToClientReplicationWindow>(controlledEntity, &connMock));
         connMock.SetUserData(connectionData);
 
         m_mpComponent->OnDisconnect(&connMock, AzNetworking::DisconnectReason::None, AzNetworking::TerminationEndpoint::Local);
         AZ_TEST_STOP_TRACE_SUPPRESSION(2);
 
+        EXPECT_EQ(m_endpointDisconnectedCount, 1);
         EXPECT_EQ(m_mpSpawnerMock.m_playerCount, 0);
         AZ::Interface<Multiplayer::IMultiplayerSpawner>::Unregister(&m_mpSpawnerMock);
     }
-}
 
+    TEST_F(MultiplayerSystemTests, TestClientServerConnectingWithoutPlayerEntity)
+    {
+        AZ::Interface<IMultiplayerSpawner>::Register(&m_mpSpawnerMock);
+
+        m_mpSpawnerMock.m_networkEntityHandle = NetworkEntityHandle();
+        EXPECT_FALSE(m_mpSpawnerMock.m_networkEntityHandle.Exists());
+
+        m_mpComponent->InitializeMultiplayer(MultiplayerAgentType::ClientServer);
+        EXPECT_EQ(m_mpSpawnerMock.m_playerEntityRequestedCount, 1);
+
+        // We don't have a player entity yet, so MultiplayerSystemComponent should request another player entity when root spawnable (a new
+        // level) is finished loading
+        AzFramework::RootSpawnableNotificationBus::Broadcast(
+            &AzFramework::RootSpawnableNotificationBus::Events::OnRootSpawnableReady, AZ::Data::Asset<AzFramework::Spawnable>(), 0);
+        EXPECT_EQ(m_mpSpawnerMock.m_playerEntityRequestedCount, 2);
+
+        AZ::Interface<IMultiplayerSpawner>::Unregister(&m_mpSpawnerMock);
+    }
+
+    TEST_F(MultiplayerSystemTests, TestClientServerConnectingWithPlayerEntity)
+    {
+        AZ::Interface<IMultiplayerSpawner>::Register(&m_mpSpawnerMock);
+
+        // Setup a net player entity
+        AZ::Entity playerEntity;
+        NetworkEntityTracker playerNetworkEntityTracker;
+        CreateAndRegisterNetBindComponent(playerEntity, playerNetworkEntityTracker, NetEntityRole::Authority);
+        m_mpSpawnerMock.m_networkEntityHandle = NetworkEntityHandle(&playerEntity, &playerNetworkEntityTracker);
+        EXPECT_TRUE(m_mpSpawnerMock.m_networkEntityHandle.Exists());
+
+        // Initialize the ClientServer (this will also spawn a player for the host)
+        m_mpComponent->InitializeMultiplayer(MultiplayerAgentType::ClientServer);
+        EXPECT_EQ(m_mpSpawnerMock.m_playerEntityRequestedCount, 1);
+
+        // Send a connection request. This should cause another player to be spawned.
+        MultiplayerPackets::Connect connectPacket(0, 1, "connect_ticket");
+        IMultiplayerConnectionMock connection(
+            ConnectionId{ 1 }, IpAddress("127.0.0.1", DefaultServerPort, ProtocolType::Udp), ConnectionRole::Connector);
+        ServerToClientConnectionData connectionUserData(&connection, *m_mpComponent);
+        connection.SetUserData(&connectionUserData);
+
+        m_mpComponent->HandleRequest(&connection, UdpPacketHeader(), connectPacket);
+
+        EXPECT_EQ(m_mpSpawnerMock.m_playerEntityRequestedCount, 2);
+
+        // Players should already be created and we should not request another player entity when root spawnable (a new
+        // level) is finished loading
+        AzFramework::RootSpawnableNotificationBus::Broadcast(
+            &AzFramework::RootSpawnableNotificationBus::Events::OnRootSpawnableReady, AZ::Data::Asset<AzFramework::Spawnable>(), 0);
+        EXPECT_EQ(m_mpSpawnerMock.m_playerEntityRequestedCount, 2); // player count is still 2 (stays the same)
+
+        AZ::Interface<IMultiplayerSpawner>::Unregister(&m_mpSpawnerMock);
+    }
+
+    TEST_F(MultiplayerSystemTests, TestMultiplayerTick)
+    {
+        m_mpComponent->InitializeMultiplayer(MultiplayerAgentType::DedicatedServer);
+        EXPECT_EQ(m_mpComponent->GetAgentType(), MultiplayerAgentType::DedicatedServer);
+
+        IMultiplayerConnectionMock connection(
+            ConnectionId{ 1 }, IpAddress("127.0.0.1", DefaultServerPort, ProtocolType::Udp), ConnectionRole::Connector);
+        ServerToClientConnectionData connectionUserData(&connection, *m_mpComponent);
+        connection.SetUserData(&connectionUserData);
+
+         m_mpComponent->OnTick(1, AZ::ScriptTimePoint());
+    }
+
+    TEST_F(MultiplayerSystemTests, TestHandleAccept)
+    {
+        m_mpComponent->InitializeMultiplayer(MultiplayerAgentType::Client);
+        EXPECT_EQ(m_mpComponent->GetAgentType(), MultiplayerAgentType::Client);
+
+        IMultiplayerConnectionMock connection(
+            ConnectionId{ 1 }, IpAddress("127.0.0.1", DefaultServerPort, ProtocolType::Udp), ConnectionRole::Connector);
+        ServerToClientConnectionData connectionUserData(&connection, *m_mpComponent);
+        connection.SetUserData(&connectionUserData);
+
+        MultiplayerPackets::Accept accept;
+        EXPECT_TRUE(m_mpComponent->HandleRequest(&connection, UdpPacketHeader(), accept));
+
+        MultiplayerPackets::ClientMigration clientMigration;
+        clientMigration.SetTemporaryUserIdentifier(1);
+        EXPECT_TRUE(m_mpComponent->HandleRequest(&connection, UdpPacketHeader(), clientMigration));
+        EXPECT_TRUE(m_mpComponent->HandleRequest(&connection, UdpPacketHeader(), accept));
+        m_mpComponent->RequestPlayerLeaveSession();
+        m_netComponent->ForceUpdate();
+    }
+
+    TEST_F(MultiplayerSystemTests, TestHandleReadyForEntityUpdate)
+    {
+        m_mpComponent->InitializeMultiplayer(MultiplayerAgentType::Client);
+        EXPECT_EQ(m_mpComponent->GetAgentType(), MultiplayerAgentType::Client);
+
+        IMultiplayerConnectionMock connection(
+            ConnectionId{ 1 }, IpAddress("127.0.0.1", DefaultServerPort, ProtocolType::Udp), ConnectionRole::Connector);
+
+        MultiplayerPackets::ReadyForEntityUpdates readyForEntityUpdates;
+        EXPECT_FALSE(m_mpComponent->HandleRequest(&connection, UdpPacketHeader(), readyForEntityUpdates));
+        ServerToClientConnectionData connectionUserData(&connection, *m_mpComponent);
+        connection.SetUserData(&connectionUserData);
+        EXPECT_TRUE(m_mpComponent->HandleRequest(&connection, UdpPacketHeader(), readyForEntityUpdates));
+    }
+
+    TEST_F(MultiplayerSystemTests, TestHandleClientMigrationFailOnServer)
+    {
+        m_mpComponent->InitializeMultiplayer(MultiplayerAgentType::DedicatedServer);
+        EXPECT_EQ(m_mpComponent->GetAgentType(), MultiplayerAgentType::DedicatedServer);
+
+        IMultiplayerConnectionMock connection(
+            ConnectionId{ 1 }, IpAddress("127.0.0.1", DefaultServerPort, ProtocolType::Udp), ConnectionRole::Connector);
+        MultiplayerPackets::ClientMigration clientMigration;
+        EXPECT_FALSE(m_mpComponent->HandleRequest(&connection, UdpPacketHeader(), clientMigration));
+    }
+
+    TEST_F(MultiplayerSystemTests, TestHandleSyncConsole)
+    {
+        m_mpComponent->InitializeMultiplayer(MultiplayerAgentType::DedicatedServer);
+        EXPECT_EQ(m_mpComponent->GetAgentType(), MultiplayerAgentType::DedicatedServer);
+
+        IMultiplayerConnectionMock connection(
+            ConnectionId{ 1 }, IpAddress("127.0.0.1", DefaultServerPort, ProtocolType::Udp), ConnectionRole::Connector);
+        MultiplayerPackets::SyncConsole syncConsole;
+        EXPECT_FALSE(m_mpComponent->HandleRequest(&connection, UdpPacketHeader(), syncConsole));
+
+        m_mpComponent->InitializeMultiplayer(MultiplayerAgentType::Client);
+        EXPECT_EQ(m_mpComponent->GetAgentType(), MultiplayerAgentType::Client);
+        EXPECT_TRUE(m_mpComponent->HandleRequest(&connection, UdpPacketHeader(), syncConsole));
+    }
+
+    TEST_F(MultiplayerSystemTests, TestHandleConsoleCommand)
+    {
+        m_mpComponent->InitializeMultiplayer(MultiplayerAgentType::DedicatedServer);
+        EXPECT_EQ(m_mpComponent->GetAgentType(), MultiplayerAgentType::DedicatedServer);
+
+        IMultiplayerConnectionMock connection(
+            ConnectionId{ 1 }, IpAddress("127.0.0.1", DefaultServerPort, ProtocolType::Udp), ConnectionRole::Connector);
+        MultiplayerPackets::ConsoleCommand consoleCommand;
+        EXPECT_TRUE(m_mpComponent->HandleRequest(&connection, UdpPacketHeader(), consoleCommand));
+
+        m_mpComponent->InitializeMultiplayer(MultiplayerAgentType::Client);
+        EXPECT_EQ(m_mpComponent->GetAgentType(), MultiplayerAgentType::Client);
+        EXPECT_TRUE(m_mpComponent->HandleRequest(&connection, UdpPacketHeader(), consoleCommand));
+    }
+
+    TEST_F(MultiplayerSystemTests, TestHandleEntityUpdates)
+    {
+        m_mpComponent->InitializeMultiplayer(MultiplayerAgentType::Client);
+        EXPECT_EQ(m_mpComponent->GetAgentType(), MultiplayerAgentType::Client);
+
+        IMultiplayerConnectionMock connection(
+            ConnectionId{ 1 }, IpAddress("127.0.0.1", DefaultServerPort, ProtocolType::Udp), ConnectionRole::Connector);
+
+        MultiplayerPackets::EntityUpdates entityUpdates;
+        EXPECT_TRUE(m_mpComponent->HandleRequest(&connection, UdpPacketHeader(), entityUpdates));
+
+        ServerToClientConnectionData connectionUserData(&connection, *m_mpComponent);
+        connection.SetUserData(&connectionUserData);
+
+        entityUpdates.SetHostFrameId(HostFrameId(100));
+        NetworkEntityUpdateVector entityUpdateVector;
+        NetworkEntityUpdateMessage entityUpdateMessage;
+        entityUpdateVector.push_back(entityUpdateMessage);
+        entityUpdates.SetEntityMessages(entityUpdateVector);
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        EXPECT_FALSE(m_mpComponent->HandleRequest(&connection, UdpPacketHeader(), entityUpdates));
+        AZ_TEST_STOP_TRACE_SUPPRESSION(2);
+    }
+
+    TEST_F(MultiplayerSystemTests, TestHandleEntityRpcs)
+    {
+        m_mpComponent->InitializeMultiplayer(MultiplayerAgentType::Client);
+        EXPECT_EQ(m_mpComponent->GetAgentType(), MultiplayerAgentType::Client);
+
+        IMultiplayerConnectionMock connection(
+            ConnectionId{ 1 }, IpAddress("127.0.0.1", DefaultServerPort, ProtocolType::Udp), ConnectionRole::Connector);
+
+        MultiplayerPackets::EntityRpcs entityRpcs;
+        EXPECT_TRUE(m_mpComponent->HandleRequest(&connection, UdpPacketHeader(), entityRpcs));
+
+        ServerToClientConnectionData connectionUserData(&connection, *m_mpComponent);
+        connection.SetUserData(&connectionUserData);
+
+        EXPECT_TRUE(m_mpComponent->HandleRequest(&connection, UdpPacketHeader(), entityRpcs));
+    }
+
+    TEST_F(MultiplayerSystemTests, TestHandleRequestReplicatorReset)
+    {
+        m_mpComponent->InitializeMultiplayer(MultiplayerAgentType::Client);
+        EXPECT_EQ(m_mpComponent->GetAgentType(), MultiplayerAgentType::Client);
+
+        IMultiplayerConnectionMock connection(
+            ConnectionId{ 1 }, IpAddress("127.0.0.1", DefaultServerPort, ProtocolType::Udp), ConnectionRole::Connector);
+
+        MultiplayerPackets::RequestReplicatorReset replicatorReset;
+        EXPECT_TRUE(m_mpComponent->HandleRequest(&connection, UdpPacketHeader(), replicatorReset));
+
+        ServerToClientConnectionData connectionUserData(&connection, *m_mpComponent);
+        connection.SetUserData(&connectionUserData);
+
+        EXPECT_TRUE(m_mpComponent->HandleRequest(&connection, UdpPacketHeader(), replicatorReset));
+    }
+
+    TEST_F(MultiplayerSystemTests, TestGetTime)
+    {
+        m_mpComponent->InitializeMultiplayer(MultiplayerAgentType::Client);
+        EXPECT_EQ(m_mpComponent->GetAgentType(), MultiplayerAgentType::Client);
+        EXPECT_EQ(m_mpComponent->GetCurrentHostTimeMs(), AZ::Time::ZeroTimeMs);
+
+        m_mpComponent->InitializeMultiplayer(MultiplayerAgentType::DedicatedServer);
+        EXPECT_EQ(m_mpComponent->GetAgentType(), MultiplayerAgentType::DedicatedServer);
+        EXPECT_EQ(m_mpComponent->GetCurrentHostTimeMs(), AZ::Time::ZeroTimeMs);
+
+        EXPECT_EQ(m_mpComponent->GetNetworkTime()->GetHostTimeMs(), AZ::Time::ZeroTimeMs);
+    }
+
+    TEST_F(MultiplayerSystemTests, TestMiscellaneous)
+    {
+        m_mpComponent->DumpStats({});
+        m_mpComponent->SetShouldSpawnNetworkEntities(true);
+        EXPECT_TRUE(m_mpComponent->GetShouldSpawnNetworkEntities());
+        EXPECT_EQ(m_mpComponent->GetTickOrder(), AZ::TICK_PLACEMENT + 1);
+        EXPECT_TRUE(m_mpComponent->OnSessionHealthCheck());
+        m_mpComponent->RegisterPlayerIdentifierForRejoin(0, NetEntityId(0));
+        m_mpComponent->OnCreateSessionEnd();
+        m_mpComponent->OnDestroySessionEnd();
+        Multiplayer::SessionConfig sessionConfig;
+
+        m_mpComponent->OnUpdateSessionBegin(sessionConfig, "");
+        m_mpComponent->OnUpdateSessionEnd();
+        EXPECT_EQ(m_mpComponent->GetCurrentBlendFactor(), 0.0f);
+
+        IMultiplayerConnectionMock connection(
+            ConnectionId{ 1 }, IpAddress("127.0.0.1", DefaultServerPort, ProtocolType::Udp), ConnectionRole::Connector);
+        ServerToClientConnectionData connectionUserData(&connection, *m_mpComponent);
+        connection.SetUserData(&connectionUserData);
+        EXPECT_FALSE(m_mpComponent->IsHandshakeComplete(&connection));
+    }
+} // namespace Multiplayer

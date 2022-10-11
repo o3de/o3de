@@ -287,7 +287,7 @@ namespace AZ
                 ->Attribute(AZ::Script::Attributes::MethodOverride, &Internal::GetSinCosMultipleReturn)
             ->Method<bool(double, double, double)>("IsClose", &AZ::IsClose, context.MakeDefaultValues(static_cast<double>(Constants::FloatEpsilon)))
             ->Method<float(float)>("Abs", &GetAbs)
-            ->Method("Divide By Number", [](float lhs, float rhs) { return lhs / rhs; })
+            ->Method("Divide By Number", [](float lhs, float rhs) { return lhs / rhs; }, { "Source", "The source value gets divided." }, { { { "Divisor", "The value that divides Source." } } })
             ->Attribute(AZ::ScriptCanvasAttributes::ExplicitOverloadCrc, ExplicitOverloadInfo("Divide By Number (/)", "Math"))
             ->Attribute(AZ::ScriptCanvasAttributes::OperatorOverride, AZ::Script::Attributes::OperatorType::Div)
             ->Attribute(AZ::ScriptCanvasAttributes::OverloadArgumentGroup, AZ::OverloadArgumentGroupInfo({ "DivideGroup", "" }, { "DivideGroup" }))

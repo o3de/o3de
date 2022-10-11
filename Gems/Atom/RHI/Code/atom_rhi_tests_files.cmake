@@ -18,6 +18,7 @@ set(FILES
     Tests/IndirectBufferTests.cpp
     Tests/InputStreamLayoutBuilderTests.cpp
     Tests/NameIdReflectionMapTests.cpp
+    Tests/PageTileAllocatorTests.cpp
     Tests/PipelineStateTests.cpp
     Tests/QueryTests.cpp
     Tests/RenderAttachmentLayoutBuilderTests.cpp

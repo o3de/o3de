@@ -190,6 +190,8 @@ namespace AzToolsFramework
             if (newTab)
             {
                 int newTabIndex = m_impl->pTabWidget->addTab(newTab, QString::fromUtf8(settings.m_tabName.c_str()));
+                AzQtComponents::TabWidget::applySecondaryStyle(m_impl->pTabWidget);
+
                 m_impl->pTabWidget->setCurrentIndex(newTabIndex);
                 m_impl->settingsForTabs.insert(AZStd::make_pair(qobject_cast<QObject*>(newTab), settings));
                 
@@ -322,8 +324,7 @@ namespace AzToolsFramework
             {
                 m_numLinesRemoved++; // this line will cause a line to be removed.
             }
-            m_lines.push_back();
-            m_lines.back() = AZStd::move(source);
+            m_lines.emplace_back() = AZStd::move(source);
             ++m_numLinesAdded;
         }
 
@@ -446,8 +447,7 @@ namespace AzToolsFramework
                 m_linesAdded = 0;
             }
 
-            m_lines.push_back();
-            m_lines.back() = AZStd::move(source);
+            m_lines.emplace_back() = AZStd::move(source);
             ++m_linesAdded;
         }
 

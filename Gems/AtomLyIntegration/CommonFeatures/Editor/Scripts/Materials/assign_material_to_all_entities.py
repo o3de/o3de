@@ -56,8 +56,8 @@ if __name__ == '__main__':
                 editor.EditorComponentAPIBus(bus.Broadcast, 'AddComponentsOfType', current_entity_id, [material_component_type_id])
             
             # Clear all material overrides
-            render.MaterialComponentRequestBus(bus.Event, 'ClearAllMaterialOverrides', current_entity_id)
+            render.MaterialComponentRequestBus(bus.Event, 'ClearMaterialMap', current_entity_id)
 
             # Set the default material to the one we want, which will apply it to every slot since we've cleared all overrides
-            render.MaterialComponentRequestBus(bus.Event, 'SetDefaultMaterialOverride', current_entity_id, material_asset_id)
+            render.MaterialComponentRequestBus(bus.Event, 'SetMaterialAssetIdOnDefaultSlot', current_entity_id, material_asset_id)
 

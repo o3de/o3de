@@ -80,7 +80,7 @@ namespace EMStudio
         bool Init();
         void ReInit();
 
-        void SelectItemsById(uint32 motionSetId);
+        void SelectItemsById(uint32 motionSetId, bool clearSelectionUpfront = false);
         void GetSelectedMotionSets(AZStd::vector<EMotionFX::MotionSet*>& outSelectedMotionSets) const;
 
         static void RecursiveRemoveMotionsFromSet(EMotionFX::MotionSet* motionSet, MCore::CommandGroup& commandGroup, AZStd::vector<EMotionFX::Motion*>& failedRemoveMotions);
@@ -94,8 +94,6 @@ namespace EMStudio
         void OnClearMotionSets();
 
         void OnSelectionChanged();
-
-        //void OnAdjustMotionSetDirectory();
 
         void OnOpen();
         void OnSave();
@@ -112,7 +110,6 @@ namespace EMStudio
         void contextMenuEvent(QContextMenuEvent* event) override;
 
     private:
-        QVBoxLayout* m_vLayout = nullptr;
         QTreeWidget* m_motionSetsTree = nullptr;
         QAction* m_addAction = nullptr;
         QAction* m_openAction = nullptr;

@@ -25,7 +25,6 @@
 namespace EMotionFX
 {
     // forward declarations
-    class AnimGraphGameControllerSettings;
     class AnimGraphInstance;
     class AnimGraphMotionNode;
     class AnimGraphNode;
@@ -369,7 +368,6 @@ namespace EMotionFX
 
         //-------------------------------------------------------------------------------------------------------------
 
-        AnimGraphGameControllerSettings& GetGameControllerSettings();
         bool GetRetargetingEnabled() const;
         void SetRetargetingEnabled(bool enabled);
 
@@ -421,7 +419,6 @@ namespace EMotionFX
         AZStd::vector<AnimGraphInstance*>               m_animGraphInstances;
         AZStd::string                                   m_fileName;
         AnimGraphStateMachine*                          m_rootStateMachine;
-        AnimGraphGameControllerSettings*                m_gameControllerSettings;
         MCore::Mutex                                    m_lock;
         uint32                                          m_id;                    /**< The unique identification number for this anim graph. */
         bool                                            m_autoUnregister;        /**< Specifies whether we will automatically unregister this anim graph set from this anim graph manager or not, when deleting this object. */

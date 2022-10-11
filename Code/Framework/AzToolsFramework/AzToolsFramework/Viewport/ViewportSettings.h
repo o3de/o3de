@@ -37,6 +37,10 @@ namespace AzToolsFramework
         return value;
     }
 
+    inline constexpr float DefaultManipulatorViewBaseScale = 1.0f;
+    inline constexpr float MinManipulatorViewBaseScale = 0.25f;
+    inline constexpr float MaxManipulatorViewBaseScale = 2.0f;
+
     bool FlipManipulatorAxesTowardsView();
     void SetFlipManipulatorAxesTowardsView(bool enabled);
 
@@ -72,4 +76,10 @@ namespace AzToolsFramework
 
     bool HelpersVisible();
     void SetHelpersVisible(bool visible);
+
+    bool ComponentSwitcherEnabled();
+
+    bool PrefabEditModeEffectEnabled();
+    void SetPrefabEditModeEffectEnabled(bool enabled);
+
 } // namespace AzToolsFramework

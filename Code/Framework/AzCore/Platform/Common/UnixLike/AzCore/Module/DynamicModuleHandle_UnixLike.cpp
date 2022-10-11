@@ -119,7 +119,7 @@ namespace AZ
 
         LoadStatus LoadModule() override
         {
-            AZ::Debug::Trace::Printf("Module", "Attempting to load module:%s\n", m_fileName.c_str());
+            AZ::Debug::Trace::Instance().Printf("Module", "Attempting to load module:%s\n", m_fileName.c_str());
             bool alreadyOpen = false;
 
             m_handle = Platform::OpenModule(m_fileName, alreadyOpen);
@@ -128,7 +128,7 @@ namespace AZ
             {
                 if (alreadyOpen)
                 {
-                    AZ::Debug::Trace::Printf("Module", "Success! System already had it opened.\n");
+                    AZ::Debug::Trace::Instance().Printf("Module", "Success! System already had it opened.\n");
                     // We want to return LoadSuccess and not AlreadyLoaded
                     // because the system may have already loaded the DLL (because
                     // it is a dependency of another library we have loaded) but
@@ -140,13 +140,13 @@ namespace AZ
                 }
                 else
                 {
-                    AZ::Debug::Trace::Printf("Module", "Success!\n");
+                    AZ::Debug::Trace::Instance().Printf("Module", "Success!\n");
                     return LoadStatus::LoadSuccess;
                 }
             }
             else
             {
-                AZ::Debug::Trace::Printf("Module", "Failed with error:\n%s\n", dlerror());
+                AZ::Debug::Trace::Instance().Printf("Module", "Failed with error:\n%s\n", dlerror());
                 return LoadStatus::LoadFailure;
             }
         }

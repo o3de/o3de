@@ -67,7 +67,7 @@ namespace ScriptCanvas
             return *this;
         }
 
-        void OutInterpreted::operator()(AZ::BehaviorValueParameter* /*resultBVP*/, AZ::BehaviorValueParameter* argsBVPs, int numArguments)
+        void OutInterpreted::operator()(AZ::BehaviorArgument* /*resultBVP*/, AZ::BehaviorArgument* argsBVPs, int numArguments)
         {
             auto behaviorContext = AZ::ScriptContext::FromNativeContext(m_lua)->GetBoundContext();
             // Lua:
@@ -107,7 +107,7 @@ namespace ScriptCanvas
 
         OutInterpretedResult::OutInterpretedResult(const OutInterpretedResult& /*source*/)
         {
-            AZ_Assert(false, "This will result in a double delete of a Lua function. Don't use this");
+            AZ_Assert(false, "OutInterpretedResult::OutInterpretedResult copy ctr is for compiler compatibility only.");
         }
 
         OutInterpretedResult& OutInterpretedResult::operator=(OutInterpretedResult&& source) noexcept
@@ -120,9 +120,9 @@ namespace ScriptCanvas
             return *this;
         }
 
-        void OutInterpretedResult::operator()(AZ::BehaviorValueParameter* resultBVP, AZ::BehaviorValueParameter* argsBVPs, int numArguments)
+        void OutInterpretedResult::operator()(AZ::BehaviorArgument* resultBVP, AZ::BehaviorArgument* argsBVPs, int numArguments)
         {
-            AZ_Assert(resultBVP && resultBVP->m_value, "This function is only expected for BehaviorConext bound event handling, and will always have a location for a return value");
+            SC_RUNTIME_CHECK(resultBVP && resultBVP->m_value, "This function is only expected for BehaviorConext bound event handling, and must always have a location for a return value");
 
             auto behaviorContext = AZ::ScriptContext::FromNativeContext(m_lua)->GetBoundContext();
             // Lua:

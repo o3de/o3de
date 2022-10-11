@@ -54,9 +54,24 @@ ly_create_alias(NAME ScriptCanvasDebugger.Clients  NAMESPACE Gem TARGETS Gem::Sc
 ly_create_alias(NAME ScriptCanvasDebugger.Servers  NAMESPACE Gem TARGETS Gem::ScriptCanvasDebugger)
 
 ly_add_target(
+    NAME ScriptCanvas.Extensions STATIC
+    NAMESPACE Gem
+    FILES_CMAKE
+        scriptcanvasgem_extensions_files.cmake
+    INCLUDE_DIRECTORIES
+        PUBLIC
+            Include
+    BUILD_DEPENDENCIES
+        PUBLIC
+            AZ::AzCore
+            AZ::AzFramework
+)
+
+ly_add_target(
     NAME ScriptCanvas.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
+        scriptcanvasgem_autogen_files.cmake
         scriptcanvasgem_headers.cmake
         scriptcanvasgem_common_files.cmake
         scriptcanvasgem_runtime_asset_files.cmake
@@ -77,15 +92,22 @@ ly_add_target(
         PUBLIC
             Gem::ScriptEvents.Static
             Gem::ExpressionEvaluation.Static
+            Gem::ScriptCanvas.Extensions
         PRIVATE
             AZ::AzCore
             AZ::AzFramework
             Gem::ScriptCanvasDebugger
     AUTOGEN_RULES
+        *.ScriptCanvasFunction.xml,ScriptCanvasFunctionRegistry_Header.jinja,AutoGenFunctionRegistry.generated.h
+        *.ScriptCanvasFunction.xml,ScriptCanvasFunctionRegistry_Source.jinja,AutoGenFunctionRegistry.generated.cpp
         *.ScriptCanvasGrammar.xml,ScriptCanvasGrammar_Header.jinja,$path/$fileprefix.generated.h
         *.ScriptCanvasGrammar.xml,ScriptCanvasGrammar_Source.jinja,$path/$fileprefix.generated.cpp
+        *.ScriptCanvasGrammar.xml,ScriptCanvasGrammarRegistry_Header.jinja,AutoGenGrammarRegistry.generated.h
+        *.ScriptCanvasGrammar.xml,ScriptCanvasGrammarRegistry_Source.jinja,AutoGenGrammarRegistry.generated.cpp
         *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Header.jinja,$path/$fileprefix.generated.h
         *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Source.jinja,$path/$fileprefix.generated.cpp
+        *.ScriptCanvasNodeable.xml,ScriptCanvasNodeableRegistry_Header.jinja,AutoGenNodeableRegistry.generated.h
+        *.ScriptCanvasNodeable.xml,ScriptCanvasNodeableRegistry_Source.jinja,AutoGenNodeableRegistry.generated.cpp
     RUNTIME_DEPENDENCIES
         Gem::ScriptCanvasDebugger
 )
@@ -230,18 +252,13 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         INCLUDE_DIRECTORIES
             PRIVATE
                 Include
-                Source
-        COMPILE_DEFINITIONS
-            PRIVATE
-                SCRIPTCANVAS_EDITOR
-                SCRIPTCANVAS_ERRORS_ENABLED
-                ${SCRIPT_CANVAS_COMMON_DEFINES}
+                Tests
         BUILD_DEPENDENCIES
             PRIVATE
-                AZ::AzTest
+                AZ::AzCore
                 AZ::AzFramework
-        RUNTIME_DEPENDENCIES
-            Gem::ScriptCanvas
+                AZ::AzTest
+                Gem::ScriptCanvas.Static
     )
     ly_add_googletest(
         NAME Gem::ScriptCanvas.Tests
@@ -252,7 +269,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             NAME ScriptCanvas.Editor.Tests MODULE
             NAMESPACE Gem
             FILES_CMAKE
-                scriptcanvasgem_tests_files.cmake
                 scriptcanvasgem_editor_tests_files.cmake
             INCLUDE_DIRECTORIES
                 PRIVATE
@@ -260,11 +276,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     Include
                     Include/ScriptCanvas
                     Source
-            COMPILE_DEFINITIONS
-                PRIVATE
-                    SCRIPTCANVAS_EDITOR
-                    SCRIPTCANVAS_ERRORS_ENABLED
-                    ${SCRIPT_CANVAS_COMMON_DEFINES}
             BUILD_DEPENDENCIES
                 PRIVATE
                     AZ::AzTest

@@ -25,7 +25,7 @@ namespace PhysX
         static void Reflect(AZ::ReflectContext* context);
 
         RagdollNode() = default;
-        explicit RagdollNode(AzPhysics::SceneHandle sceneHandle, Physics::RagdollNodeConfiguration& nodeConfig);
+        explicit RagdollNode(AzPhysics::SceneHandle sceneHandle, const Physics::RagdollNodeConfiguration& nodeConfig);
         ~RagdollNode();
 
         void SetJoint(AzPhysics::Joint* joint);
@@ -54,7 +54,7 @@ namespace PhysX
         AzPhysics::SimulatedBodyHandle GetRigidBodyHandle() const;
 
     private:
-        void CreatePhysicsBody(AzPhysics::SceneHandle sceneHandle, Physics::RagdollNodeConfiguration& nodeConfig);
+        void CreatePhysicsBody(AzPhysics::SceneHandle sceneHandle, const Physics::RagdollNodeConfiguration& nodeConfig);
         void DestroyPhysicsBody();
         void DestroyJoint();
 

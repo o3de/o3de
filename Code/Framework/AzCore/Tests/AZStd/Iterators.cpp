@@ -8,6 +8,7 @@
 #include "UserTypes.h"
 #include <AzCore/std/concepts/concepts.h>
 #include <AzCore/std/iterator.h>
+#include <AzCore/std/iterator/common_iterator.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/list.h>
@@ -208,5 +209,128 @@ namespace UnitTest
         static_assert(AZStd::is_same_v<AZStd::iterator_traits<pointer_type>::pointer, const char*>);
         static_assert(AZStd::is_same_v<AZStd::iterator_traits<pointer_type>::reference, const char&>);
         static_assert(AZStd::contiguous_iterator<pointer_type>);
+    }
+
+    namespace IteratorInternal
+    {
+        struct TestIterator
+        {
+            using difference_type = ptrdiff_t;
+            using value_type = int;
+            using pointer = void;
+            using reference = int&;
+            using iterator_category = AZStd::bidirectional_iterator_tag;
+            using iterator_concept = AZStd::bidirectional_iterator_tag;
+
+            struct TestOperatorArrow
+            {
+                bool m_boolValue{};
+            };
+
+            int& operator*()
+            {
+                return m_value;
+            }
+            const int& operator*() const
+            {
+                return m_value;
+            }
+            TestOperatorArrow* operator->()
+            {
+                return &m_operatorArrow;
+            }
+            const TestOperatorArrow* operator->() const
+            {
+                return &m_operatorArrow;
+            }
+            TestIterator& operator++()
+            {
+                ++m_value;
+                return *this;
+            }
+            TestIterator operator++(int)
+            {
+                auto oldThis = *this;
+                m_value++;
+                return oldThis;
+            }
+            TestIterator& operator--()
+            {
+                --m_value;
+                return *this;
+            }
+            TestIterator operator--(int)
+            {
+                auto oldThis = *this;
+                m_value--;
+                return oldThis;
+            }
+            bool operator==(const TestIterator& other) const
+            {
+                return m_value == other.m_value;
+            }
+            bool operator!=(const TestIterator& other) const
+            {
+                return m_value != other.m_value;
+            }
+
+            static constexpr int EndValue()
+            {
+                return 10;
+            }
+            int m_value{};
+            TestOperatorArrow m_operatorArrow;
+        };
+        struct TestSentinel
+        {
+            int m_end = TestIterator::EndValue();
+        };
+
+        bool operator==(const TestIterator& iter, const TestSentinel& sen)
+        {
+            return iter.m_value == sen.m_end;
+        }
+        bool operator==(const TestSentinel& sen, const TestIterator& iter)
+        {
+            return operator==(iter, sen);
+        }
+        bool operator!=(const TestIterator& iter, const TestSentinel& sen)
+        {
+            return !operator==(iter, sen);
+        }
+        bool operator!=(const TestSentinel& sen, const TestIterator& iter)
+        {
+            return !operator==(iter, sen);
+        }
+
+        ptrdiff_t operator-(const TestIterator& iter, const TestSentinel& sen)
+        {
+            return iter.m_value - sen.m_end;
+        }
+        ptrdiff_t operator-(const TestSentinel& sen, const TestIterator& iter)
+        {
+            return sen.m_end - iter.m_value;
+        }
+    }
+
+    TEST_F(Iterators, CommonIterator_CanWrapIteratorWithDifferentSentinelType_Succeeds)
+    {
+        using CommonTestIterator = AZStd::common_iterator<IteratorInternal::TestIterator, IteratorInternal::TestSentinel>;
+        CommonTestIterator testIter{ IteratorInternal::TestIterator{} };
+        constexpr CommonTestIterator testSen{ IteratorInternal::TestSentinel{} };
+        ASSERT_NE(testSen, testIter);
+        EXPECT_EQ(IteratorInternal::TestIterator::EndValue(), AZStd::ranges::distance(testIter, testSen));
+        EXPECT_EQ(0, *testIter);
+        ++testIter;
+        EXPECT_EQ(1, *testIter);
+        AZStd::ranges::advance(testIter, testSen);
+        EXPECT_EQ(testSen, testIter);
+    }
+
+    TEST_F(Iterators, CommonIterator_OperatorArrow_Compiles)
+    {
+        using CommonTestIterator = AZStd::common_iterator<IteratorInternal::TestIterator, IteratorInternal::TestSentinel>;
+        CommonTestIterator testIter{ IteratorInternal::TestIterator{} };
+        EXPECT_FALSE(testIter.operator->()->m_boolValue);
     }
 }

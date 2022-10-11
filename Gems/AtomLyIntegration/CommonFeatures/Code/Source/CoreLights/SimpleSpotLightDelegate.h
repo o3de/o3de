@@ -32,6 +32,8 @@ namespace AZ
             float GetSurfaceArea() const override;
             float GetEffectiveSolidAngle() const override { return PhotometricValue::DirectionalEffectiveSteradians; }
             void SetShutterAngles(float innerAngleDegrees, float outerAngleDegrees) override;
+            void SetAffectsGI(bool affectsGI) override;
+            void SetAffectsGIFactor(float affectsGIFactor) override;
 
         private:
             void HandleShapeChanged() override;

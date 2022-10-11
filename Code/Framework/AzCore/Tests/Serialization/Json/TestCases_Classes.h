@@ -30,6 +30,7 @@ namespace JsonSerializationTests
         void release();
 
         static const bool SupportsPartialDefaults = true;
+        static const bool PartialDefaultReportingIsStrict = true;
 
         bool Equals(const SimpleClass& rhs, bool fullReflection) const;
         static void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context, bool fullReflection);
@@ -56,7 +57,9 @@ namespace JsonSerializationTests
         ~SimpleInheritence() override = default;
 
         static const bool SupportsPartialDefaults = true;
+        static const bool PartialDefaultReportingIsStrict = true;
 
+        BaseClass* Clone() const override;
         bool Equals(const SimpleInheritence& rhs, bool fullReflection) const;
         static void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context, bool fullReflection);
         static InstanceWithSomeDefaults<SimpleInheritence> GetInstanceWithSomeDefaults();
@@ -74,6 +77,7 @@ namespace JsonSerializationTests
         ~MultipleInheritence() override = default;
 
         static const bool SupportsPartialDefaults = true;
+        static const bool PartialDefaultReportingIsStrict = true;
 
         bool Equals(const MultipleInheritence& rhs, bool fullReflection) const;
         static void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context, bool fullReflection);
@@ -89,6 +93,7 @@ namespace JsonSerializationTests
         AZ_RTTI(SimpleNested, "{6BB50CDB-BD78-4CB6-94F3-A586E785D95C}");
 
         static const bool SupportsPartialDefaults = true;
+        static const bool PartialDefaultReportingIsStrict = true;
 
         virtual ~SimpleNested() = default;
 
@@ -117,6 +122,7 @@ namespace JsonSerializationTests
         AZ_RTTI(SimpleEnumWrapper, "{CC95FF00-8D04-437A-9849-80D5AD7AD5DC}");
         
         static constexpr bool SupportsPartialDefaults = true;
+        static const bool PartialDefaultReportingIsStrict = true;
 
         SimpleEnumWrapper() = default;
         virtual ~SimpleEnumWrapper() = default;
@@ -146,6 +152,7 @@ namespace JsonSerializationTests
         AZ_RTTI(NonReflectedEnumWrapper, "{A80D5B6B-2FD1-46E9-A7A9-44C5E2650526}");
         
         static constexpr bool SupportsPartialDefaults = true;
+        static const bool PartialDefaultReportingIsStrict = true;
 
         NonReflectedEnumWrapper() = default;
         virtual ~NonReflectedEnumWrapper() = default;
@@ -168,6 +175,7 @@ namespace JsonSerializationTests
     struct TemplatedClass<int>
     {
         static const bool SupportsPartialDefaults = false;
+        static const bool PartialDefaultReportingIsStrict = false;
 
         bool Equals(const TemplatedClass<int>& rhs, bool fullReflection) const;
         static void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context, bool fullReflection);

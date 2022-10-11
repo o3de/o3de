@@ -231,7 +231,7 @@ namespace EMStudio
 
         // Group drawing
         QFont                       m_groupFont;
-        QFontMetrics*               m_groupFontMetrics;
+        QScopedPointer<QFontMetrics> m_groupFontMetrics;
 
     protected slots:
         void UpdateAnimatedScrollOffset();

@@ -74,10 +74,10 @@ namespace AZ
             void SetScissors(const RHI::Scissor* scissors, uint32_t count) override;
             void SetShaderResourceGroupForDraw(const RHI::ShaderResourceGroup& shaderResourceGroup) override;
             void SetShaderResourceGroupForDispatch(const RHI::ShaderResourceGroup& shaderResourceGroup) override;
-            void Submit(const RHI::DrawItem& drawItem) override;
-            void Submit(const RHI::CopyItem& copyItem) override;
-            void Submit(const RHI::DispatchItem& dispatchItem) override;
-            void Submit(const RHI::DispatchRaysItem& dispatchRaysItem) override;
+            void Submit(const RHI::DrawItem& drawItem, uint32_t submitIndex = 0) override;
+            void Submit(const RHI::CopyItem& copyItem, uint32_t submitIndex = 0) override;
+            void Submit(const RHI::DispatchItem& dispatchItem, uint32_t submitIndex = 0) override;
+            void Submit(const RHI::DispatchRaysItem& dispatchRaysItem, uint32_t submitIndex = 0) override;
             void BeginPredication(const RHI::Buffer& buffer, uint64_t offset, RHI::PredicationOp operation) override;
             void EndPredication() override;
             void BuildBottomLevelAccelerationStructure(const RHI::RayTracingBlas& rayTracingBlas) override;
@@ -123,11 +123,9 @@ namespace AZ
                 // are mapped to null.
                 ID3D12Heap* m_destinationHeap = nullptr;
 
-                // If m_destinationHeap is valid, the size of this vector must match the number of tiles
-                // in m_sourceSize. Each index is the source tile index in the resource, and the value is
-                // the destination heap tile index. If m_destinationHeap is null, this vector is ignored and
-                // may be left empty.
-                AZStd::vector<uint32_t> m_destinationTileMap;
+                AZStd::vector<D3D12_TILE_RANGE_FLAGS> m_rangeFlags;     // pRangeFlags in UpdateTileMappings 
+                AZStd::vector<uint32_t> m_rangeStartOffsets;            // pHeapRangeStartOffsets in UpdateTileMappings 
+                AZStd::vector<uint32_t> m_rangeTileCounts;              // pRangeTileCounts in UpdateTileMappings 
             };
 
             // Queues a new tile map requests.
@@ -422,7 +420,8 @@ namespace AZ
 
                         // this assert typically happens when a shader needs a particular Srg (e.g., the ViewSrg) but the code did not bind it,
                         // check the pass code in this callstack to determine why it was not bound
-                        AZ_Assert(false, "ShaderResourceGroup in slot '%d' is null at DrawItem submit time. This is not valid and means the shader is expecting an Srg that isF not currently bound in the pipeline. Current bindings: %s",
+                        AZ_Assert(false, "The DrawItem being submitted doesn't provide an SRG for slot '%zu', which the shader is expecting. If this slot is for a Pass, View or Scene SRG, this likely means "
+                            "the pass didn't collect it (for the view SRG, check if your pass provides a PipelineViewTag). The SRGs currently provided by the DrawItem are: %s",
                             srgSlot,
                             slotSrgString.c_str());
 

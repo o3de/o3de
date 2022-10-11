@@ -2,7 +2,7 @@
     "description": "",
     "materialType": "Materials/Types/StandardPBR.materialtype",
     "parentMaterial": "",
-    "materialTypeVersion": 3,
+    "materialTypeVersion": 5,
     "properties": {
         "baseColor": {
             "textureMap": "Materials/MixedStones/mixed_stones_diffuse.jpg"

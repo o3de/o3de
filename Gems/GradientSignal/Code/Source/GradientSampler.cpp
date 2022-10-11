@@ -64,6 +64,7 @@ namespace GradientSignal
 
                     ->GroupElementToggle("Enable Transform", &GradientSampler::m_enableTransform)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                     ->DataElement(0, &GradientSampler::m_translate, "Translate", "")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientSampler::AreTransformSettingsDisabled)
                     ->DataElement(0, &GradientSampler::m_scale, "Scale", "")
@@ -73,6 +74,7 @@ namespace GradientSignal
 
                     ->GroupElementToggle("Enable Levels", &GradientSampler::m_enableLevels)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &GradientSampler::m_inputMid, "Input Mid", "")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 10.0f)
@@ -197,6 +199,19 @@ namespace GradientSignal
         GradientRequestBus::EventResult(inHierarchy, m_gradientId, &GradientRequestBus::Events::IsEntityInHierarchy, entityId);
 
         return inHierarchy;
+    }
+
+    AZ::Aabb GradientSampler::TransformDirtyRegion(const AZ::Aabb& dirtyRegion) const
+    {
+        if ((!m_enableTransform) || (!dirtyRegion.IsValid()))
+        {
+            return dirtyRegion;
+        }
+
+        // We do *not* use the inverse transform here because we're transforming from world space to world space.
+        AZ::Matrix3x4 transformMatrix = GetTransformMatrix();
+
+        return dirtyRegion.GetTransformedAabb(transformMatrix);
     }
 
     bool GradientSampler::AreLevelSettingsDisabled() const

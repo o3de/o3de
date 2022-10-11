@@ -1,0 +1,19 @@
+{
+    "indications": [
+      {
+        "name": "CTest failure(s)/error(s)",
+        "description": "Errors while running CTest",
+        "comment": "Errors while running CTest",
+        "single_line": false,
+        "find_all": false,
+        "log_patterns": [
+          "The following tests FAILED:.*Errors while running CTest"
+        ],
+        "log_testcases": [
+          "The following tests FAILED:"
+        ],
+        "owners": []
+      }
+    ]
+  }
+  

@@ -7,7 +7,7 @@
  */
 #include <RHI/ComputePipeline.h>
 #include <RHI/Device.h>
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/PipelineLayout.h>
 #include <RHI/PipelineLibrary.h>
 
@@ -56,13 +56,8 @@ namespace AZ
             createInfo.basePipelineHandle = VK_NULL_HANDLE;
             createInfo.basePipelineIndex = -1;
 
-            VkResult result = vkCreateComputePipelines(
-                descriptor.m_device->GetNativeDevice(),
-                VK_NULL_HANDLE,
-                1,
-                &createInfo,
-                nullptr,
-                &GetNativePipelineRef());
+            VkResult result = descriptor.m_device->GetContext().CreateComputePipelines(
+                descriptor.m_device->GetNativeDevice(), VK_NULL_HANDLE, 1, &createInfo, nullptr, &GetNativePipelineRef());
 
             return ConvertResult(result);
         }

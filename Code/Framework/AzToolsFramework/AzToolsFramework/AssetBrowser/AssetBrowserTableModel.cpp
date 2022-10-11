@@ -24,12 +24,12 @@ namespace AzToolsFramework
             AZ_Assert(
                 m_filterModel,
                 "Error in AssetBrowserTableModel initialization, class expects source model to be an AssetBrowserFilterModel.");
+
             QSortFilterProxyModel::setSourceModel(sourceModel);
 
-            connect(m_filterModel, &QAbstractItemModel::rowsInserted, this, &AssetBrowserTableModel::UpdateTableModelMaps);
-            connect(m_filterModel, &QAbstractItemModel::rowsRemoved, this, &AssetBrowserTableModel::UpdateTableModelMaps);
-            connect(m_filterModel, &QAbstractItemModel::layoutChanged, this, &AssetBrowserTableModel::UpdateTableModelMaps);
-            connect(m_filterModel, &AssetBrowserFilterModel::filterChanged, this, &AssetBrowserTableModel::beginResetModel);
+            connect(m_filterModel, &QAbstractItemModel::rowsInserted, this, &AssetBrowserTableModel::StartUpdateModelMapTimer);
+            connect(m_filterModel, &QAbstractItemModel::rowsRemoved, this, &AssetBrowserTableModel::StartUpdateModelMapTimer);
+            connect(m_filterModel, &QAbstractItemModel::layoutChanged, this, &AssetBrowserTableModel::StartUpdateModelMapTimer);
             connect(m_filterModel, &AssetBrowserFilterModel::filterChanged, this, &AssetBrowserTableModel::UpdateTableModelMaps);
             connect(m_filterModel, &QAbstractItemModel::dataChanged, this, &AssetBrowserTableModel::SourceDataChanged);
         }
@@ -53,6 +53,11 @@ namespace AzToolsFramework
             }
 
             return createIndex(m_rowMap[sourceIndex], sourceIndex.column());
+        }
+
+        bool AssetBrowserTableModel::filterAcceptsRow(int source_row, [[maybe_unused]] const QModelIndex& source_parent) const
+        {
+            return m_indexMap.contains(source_row);
         }
 
         QVariant AssetBrowserTableModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -103,6 +108,23 @@ namespace AzToolsFramework
         int AssetBrowserTableModel::rowCount(const QModelIndex& parent) const
         {
             return !parent.isValid() ? m_indexMap.size() : 0;
+        }
+
+        void AssetBrowserTableModel::timerEvent([[maybe_unused]] QTimerEvent* event)
+        {
+            killTimer(m_updateModelMapTimerId);
+            m_updateModelMapTimerId = 0;
+            UpdateTableModelMaps();
+        }
+
+        void AssetBrowserTableModel::StartUpdateModelMapTimer()
+        {
+            constexpr int ModelRefreshWaitTimeMS = 250;
+            if (m_updateModelMapTimerId > 0)
+            {
+                killTimer(m_updateModelMapTimerId);
+            }
+            m_updateModelMapTimerId = startTimer(ModelRefreshWaitTimeMS);
         }
 
         int AssetBrowserTableModel::BuildTableModelMap(

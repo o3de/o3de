@@ -37,6 +37,7 @@ namespace Multiplayer
         {
             Wrapper() : m_networkInput() {}
             Wrapper(const NetworkInput& networkInput) : m_networkInput(networkInput) {}
+            bool Serialize(AzNetworking::ISerializer& serializer) { return serializer.Serialize(m_networkInput, "Input"); }
             NetworkInput m_networkInput;
         };
 

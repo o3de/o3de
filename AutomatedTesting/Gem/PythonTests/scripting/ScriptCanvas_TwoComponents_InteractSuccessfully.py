@@ -4,22 +4,32 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
+import os
+import pyside_utils
+from editor_python_test_tools.utils import TestHelper as helper
+from editor_python_test_tools.utils import Report, Tracer
+import editor_python_test_tools.hydra_editor_utils as hydra
+import scripting_utils.scripting_tools as scripting_tools
+import azlmbr.legacy.general as general
+import azlmbr.paths as paths
+from scripting_utils.scripting_constants import (BASE_LEVEL_NAME, WAIT_TIME_3, SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
 
 
 # fmt: off
-class Tests():
-    level_created     = ("New level created",              "New level not created")
+class Tests:
+    entity_created     = ("New entity created",              "New entity not created")
     game_mode_entered = ("Game Mode successfully entered", "Game mode failed to enter")
     game_mode_exited  = ("Game Mode successfully exited",  "Game mode failed to exited")
-    found_lines       = ("Expected log lines were found",  "Expected log lines were not found")
+    lines_found       = ("Expected log lines were found",  "Expected log lines were not found")
 # fmt: on
 
 
-class LogLines:
-    expected_lines = ["Greetings from the first script", "Greetings from the second script"]
+EXPECTED_LINES = ["Greetings from the first script", "Greetings from the second script"]
+SOURCE_FILES = [os.path.join(paths.projectroot, "ScriptCanvas", "ScriptCanvas_TwoComponents0.scriptcanvas"),
+                os.path.join(paths.projectroot, "ScriptCanvas", "ScriptCanvas_TwoComponents1.scriptcanvas")]
+TEST_ENTITY_NAME = "test_entity"
 
-
-def ScriptCanvas_TwoComponents_InteractSuccessfully():
+class TestScriptCanvas_TwoComponents_InteractSuccessfully:
     """
     Summary:
      A test entity contains two Script Canvas components with different unique script canvas files.
@@ -31,11 +41,10 @@ def ScriptCanvas_TwoComponents_InteractSuccessfully():
     Test Steps:
      1) Create level
      2) Create entity with SC components
-     3) Start Tracer
-     4) Enter game mode
-     5) Wait for expected lines to be found
-     6) Report if expected lines were found
-     7) Exit game mode
+     3) Enter game mode
+     4) Wait for expected lines to be found
+     5) Report if expected lines were found
+     6) Exit game mode
 
     Note:
      - This test file must be called from the Open 3D Engine Editor command terminal
@@ -44,67 +53,41 @@ def ScriptCanvas_TwoComponents_InteractSuccessfully():
 
     :return: None
     """
-    import os
 
-    from utils import TestHelper as helper
-    import hydra_editor_utils as hydra
-    from utils import Report
-    from utils import Tracer
+    def __init__(self):
+        self.editor_main_window = None
 
-    import azlmbr.legacy.general as general
-    import azlmbr.math as math
-    import azlmbr.asset as asset
-    import azlmbr.bus as bus
+    @pyside_utils.wrap_async
+    async def run_test(self):
 
-    LEVEL_NAME = "tmp_level"
-    ASSET_1 = os.path.join("scriptcanvas", "ScriptCanvas_TwoComponents0.scriptcanvas")
-    ASSET_2 = os.path.join("scriptcanvas", "ScriptCanvas_TwoComponents1.scriptcanvas")
-    WAIT_TIME = 3.0  # SECONDS
+        # Preconditions
+        general.idle_enable(True)
 
-    def get_asset(asset_path):
-        return asset.AssetCatalogRequestBus(bus.Broadcast, "GetAssetIdByPath", asset_path, math.Uuid(), False)
+        # 1) Create level
+        hydra.open_base_level()
+        helper.wait_for_condition(lambda: general.get_current_level_name() == BASE_LEVEL_NAME, WAIT_TIME_3)
+        general.close_pane("Error Report")
 
-    def locate_expected_lines():
-        found_lines = []
-        for printInfo in section_tracer.prints:
-            found_lines.append(printInfo.message.strip())
+        # 2) Create entity with SC components
+        entity = scripting_tools.create_entity_with_multiple_sc_component_asset(TEST_ENTITY_NAME, SOURCE_FILES)
+        helper.wait_for_condition(lambda: entity is not None, WAIT_TIME_3)
+        Report.critical_result(Tests.entity_created, entity.id.isValid())
 
-        return all(line in found_lines for line in LogLines.expected_lines)
+        with Tracer() as section_tracer:
 
-    # 1) Create level
-    general.idle_enable(True)
-    result = general.create_level_no_prompt(LEVEL_NAME, 128, 1, 512, True)
-    Report.critical_result(Tests.level_created, result == 0)
-    helper.wait_for_condition(lambda: general.get_current_level_name() == LEVEL_NAME, WAIT_TIME)
-    general.close_pane("Error Report")
+            # 3) Enter game mode
+            helper.enter_game_mode(Tests.game_mode_entered)
 
-    # 2) Create entity with SC components
-    position = math.Vector3(512.0, 512.0, 32.0)
-    test_entity = hydra.Entity("test_entity")
-    test_entity.create_entity(position, ["Script Canvas", "Script Canvas"])
-    test_entity.get_set_test(0, "Script Canvas Asset|Script Canvas Asset", get_asset(ASSET_1))
-    test_entity.get_set_test(1, "Script Canvas Asset|Script Canvas Asset", get_asset(ASSET_2))
-
-    # 3) Start Tracer
-    with Tracer() as section_tracer:
-
-        # 4) Enter game mode
-        helper.enter_game_mode(Tests.game_mode_entered)
-
-        # 5) Wait for expected lines to be found
-        helper.wait_for_condition(locate_expected_lines, WAIT_TIME)
-
-        # 6) Report if expected lines were found
-        Report.result(Tests.found_lines, locate_expected_lines())
-
-    # 7) Exit game mode
-    helper.exit_game_mode(Tests.game_mode_exited)
+            # 4) Wait for expected lines to be found
+            lines_located = helper.wait_for_condition(
+                lambda: scripting_tools.located_expected_tracer_lines(self, section_tracer, EXPECTED_LINES),
+                WAIT_TIME_3)
+            Report.result(Tests.lines_found, lines_located)
 
 
-if __name__ == "__main__":
-    import ImportPathHelper as imports
+        # 5) Exit game mode
+        helper.exit_game_mode(Tests.game_mode_exited)
 
-    imports.init()
-    from utils import Report
 
-    Report.start_test(ScriptCanvas_TwoComponents_InteractSuccessfully)
+test = TestScriptCanvas_TwoComponents_InteractSuccessfully()
+test.run_test()

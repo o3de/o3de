@@ -23,18 +23,12 @@
 
 #include <QStandardItem>
 
-namespace Audio
-{
-    struct IAudioProxy;
-} // namespace Audio
-
 
 class CImplementationManager;
 
 //-------------------------------------------------------------------------------------------//
 class CAudioControlsEditorPlugin
     : public IPlugin
-    , public ISystemEventListener
 {
 public:
     explicit CAudioControlsEditorPlugin(IEditor* editor);
@@ -58,18 +52,12 @@ public:
     static void ExecuteTrigger(const AZStd::string_view sTriggerName);
     static void StopTriggerExecution();
 
-    ///////////////////////////////////////////////////////////////////////////
-    // ISystemEventListener
-    void OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam) override;
-    ///////////////////////////////////////////////////////////////////////////
-
 private:
     static AudioControls::CATLControlsModel ms_ATLModel;
     static AudioControls::QATLTreeModel ms_layoutModel;
     static AudioControls::FilepathSet ms_currentFilenames;
-    static Audio::IAudioProxy* ms_pIAudioProxy;
-    static Audio::TAudioControlID ms_nAudioTriggerID;
     static CImplementationManager ms_implementationManager;
+    static Audio::TAudioControlID ms_audioTriggerId;
 
     AudioControls::AudioControlSelectorHandler m_controlSelector;
 };

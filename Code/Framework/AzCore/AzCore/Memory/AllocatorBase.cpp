@@ -206,14 +206,7 @@ namespace AZ
     {
         if (m_registrationEnabled)
         {
-            if (AZ::Environment::IsReady())
-            {
-                AllocatorManager::Instance().RegisterAllocator(this);
-            }
-            else
-            {
-                AllocatorManager::PreRegisterAllocator(this);
-            }
+            AllocatorManager::Instance().RegisterAllocator(this);
         }
 
         const auto debugConfig = GetDebugConfig();

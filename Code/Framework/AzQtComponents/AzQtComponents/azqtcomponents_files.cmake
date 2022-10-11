@@ -171,6 +171,8 @@ set(FILES
     Components/Widgets/MessageBox.h
     Components/Widgets/OverlayWidget.cpp
     Components/Widgets/OverlayWidget.h
+    Components/Widgets/Internal/RectangleWidget.cpp
+    Components/Widgets/Internal/RectangleWidget.h
     Components/Widgets/Internal/OverlayWidgetLayer.cpp
     Components/Widgets/Internal/OverlayWidgetLayer.h
     Components/Widgets/Internal/OverlayWidgetLayer.ui

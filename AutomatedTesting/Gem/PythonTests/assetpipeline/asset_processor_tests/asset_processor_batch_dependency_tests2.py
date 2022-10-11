@@ -43,6 +43,7 @@ def local_resources(request, workspace, ap_setup_fixture):
 @pytest.mark.usefixtures("local_resources")
 @pytest.mark.parametrize("project", targetProjects)
 @pytest.mark.assetpipeline
+@pytest.mark.SUITE_periodic
 class TestsAssetProcessorBatch_DependenycyTests(object):
     """
     AssetProcessorBatch Dependency tests
@@ -68,13 +69,13 @@ class TestsAssetProcessorBatch_DependenycyTests(object):
         """
         schema_name = "Font.xmlschema"
         asset_processor.create_temp_asset_root()
-        asset_processor.add_source_folder_assets("Engine/Fonts")
+        asset_processor.add_source_folder_assets("Assets/Engine/Fonts")
         asset_processor.add_source_folder_assets("Gems/LyShineExamples/Assets/UI/Fonts")
         asset_processor.add_scan_folder("Engine")
         asset_processor.add_scan_folder("Gems/LyShineExamples/Assets")
         gem_asset_path = "Gems/CertificateManager/Assets"
         asset_processor.add_scan_folder(gem_asset_path)
-        engine_schema_path = os.path.join(workspace.paths.engine_root(), "Engine", "Schema")
+        engine_schema_path = os.path.join(workspace.paths.engine_root(), "Assets", "Engine", "Schema")
         gem_schema_path = os.path.join(asset_processor.temp_asset_root(), gem_asset_path, "Schema")
 
         # EXPECT Assets process successfully

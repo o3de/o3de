@@ -21,10 +21,16 @@
 
 namespace AZ
 {
+    namespace RPI
+    {
+        class ParentPass;
+    }
+
     namespace Render
     {
         class CascadedShadowmapsPass;
         class EsmShadowmapsPass;
+        class FullscreenShadowPass;
 
         //! Cascaded shadow specific camera configuration.
         struct CascadeShadowCameraConfiguration
@@ -66,7 +72,12 @@ namespace AZ
             AZStd::array<float, 3> m_direction = { { 1.0f, 0.0f, 0.0f } };
             float m_angularRadius = 0.0f;
             AZStd::array<float, 3> m_rgbIntensity = { { 0.0f, 0.0f, 0.0f } };
-            float padding2 = 0.0f; // Padding between float3s in shader, can be used for other data later.
+            float m_affectsGIFactor = 1.0f;
+
+            bool m_affectsGI = true;
+            float m_padding0 = 0.0f;
+            float m_padding1 = 0.0f;
+            float m_padding2 = 0.0f;
         };
 
         // [GFX TODO][ATOM-15172] Look into compacting struct DirectionalLightShadowData
@@ -92,9 +103,9 @@ namespace AZ
             uint32_t m_shadowmapSize = 1; // width and height of shadowmap
             uint32_t m_cascadeCount = 1;
             // Reduce acne by applying a small amount of bias to apply along shadow-space z.
-            float m_shadowBias = 0.0f;
+            float m_shadowBias = 0.0015f;
             // Reduces acne by biasing the shadowmap lookup along the geometric normal.
-            float m_normalShadowBias;
+            float m_normalShadowBias = 2.5f;
             uint32_t m_filteringSampleCount = 0;
             uint32_t m_debugFlags = 0;
             uint32_t m_shadowFilterMethod = 0; 
@@ -178,6 +189,17 @@ namespace AZ
                 bool m_isReceiverPlaneBiasEnabled = true;
 
                 bool m_blendBetwenCascades = false;
+
+                // Fullscreen Blur...
+
+                bool m_fullscreenBlurEnabled = true;
+
+                //! How much a value is reduced from pixel to pixel on a perfectly flat surface
+                float m_fullscreenBlurConstFalloff = 2.0f / 3.0f;
+
+                //! How much the difference in depth slopes between pixels affects the blur falloff.
+                //! The higher this value, the sharper edges will appear
+                float m_fullscreenBlurDepthFalloffStrength = 50.0f;
             };
 
             static void Reflect(ReflectContext* context);
@@ -220,9 +242,15 @@ namespace AZ
             void SetCascadeBlendingEnabled(LightHandle handle, bool enable) override;
             void SetShadowBias(LightHandle handle, float bias) override;
             void SetNormalShadowBias(LightHandle handle, float normalShadowBias) override;
+            void SetFullscreenBlurEnabled(LightHandle handle, bool enable) override;
+            void SetFullscreenBlurConstFalloff(LightHandle handle, float blurConstFalloff) override;
+            void SetFullscreenBlurDepthFalloffStrength(LightHandle handle, float blurDepthFalloffStrength) override;
+            void SetAffectsGI(LightHandle handle, bool affectsGI) override;
+            void SetAffectsGIFactor(LightHandle handle, float affectsGIFactor) override;
 
-            const Data::Instance<RPI::Buffer> GetLightBuffer() const;
-            uint32_t GetLightCount() const;
+            const Data::Instance<RPI::Buffer> GetLightBuffer() const { return m_lightBufferHandler.GetBuffer(); }
+            uint32_t GetLightCount() const { return m_lightBufferHandler.GetElementCount(); }
+            ShadowProperty& GetShadowProperty(LightHandle handle) { return m_shadowProperties.GetData(handle.GetIndex()); }
 
         private:
             // RPI::SceneNotificationBus::Handler overrides...
@@ -237,6 +265,7 @@ namespace AZ
             void CacheCascadedShadowmapsPass();
             //! This caches valid EsmShadowmapsPass.
             void CacheEsmShadowmapsPass();
+            void CacheFullscreenPass();
             //! This add/remove camera views in shadow properties.
             void PrepareCameraViews();
             //! This create/destruct shadow buffer for each render pipeline.
@@ -288,6 +317,7 @@ namespace AZ
             void UpdateShadowmapViews(LightHandle handle);
 
             void UpdateViewsOfCascadeSegments();
+            void SetFullscreenPassSettings();
 
             //! This calculate shadow view AABB.
             Aabb CalculateShadowViewAabb(
@@ -361,6 +391,9 @@ namespace AZ
 
             RPI::AuxGeomFeatureProcessorInterface* m_auxGeomFeatureProcessor = nullptr;
             AZStd::vector<const RPI::View*> m_viewsRetainingAuxGeomDraw;
+            FullscreenShadowPass* m_fullscreenShadowPass = nullptr;
+
+            RPI::ParentPass* m_fullscreenShadowBlurPass = nullptr;
 
             bool m_lightBufferNeedsUpdate = false;
             bool m_shadowBufferNeedsUpdate = false;

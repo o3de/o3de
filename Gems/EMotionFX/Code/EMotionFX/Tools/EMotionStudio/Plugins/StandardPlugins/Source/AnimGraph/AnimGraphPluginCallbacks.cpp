@@ -17,7 +17,6 @@
 #include "GraphNode.h"
 #include "NavigateWidget.h"
 #include "AttributesWindow.h"
-#include "GameControllerWindow.h"
 #include "BlendTreeVisualNode.h"
 #include "StateGraphNode.h"
 #include "ParameterWindow.h"

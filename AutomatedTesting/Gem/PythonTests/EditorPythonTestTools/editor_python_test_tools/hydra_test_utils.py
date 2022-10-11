@@ -13,6 +13,7 @@ import ly_test_tools.log.log_monitor
 import ly_test_tools.environment.process_utils as process_utils
 import ly_test_tools.environment.waiter as waiter
 from ly_remote_console.remote_console_commands import send_command_and_expect_response as send_command_and_expect_response
+from ly_test_tools.o3de.editor_test_utils import compile_test_case_name_from_request
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +26,6 @@ def teardown_editor(editor):
     process_utils.kill_processes_named('AssetProcessor.exe')
     logger.debug('Ensuring Editor is stopped')
     editor.ensure_stopped()
-
 
 def launch_and_validate_results(request, test_directory, editor, editor_script, expected_lines, unexpected_lines=[],
                                 halt_on_unexpected=False, run_python="--runpythontest", auto_test_mode=True, null_renderer=True, cfg_args=[],
@@ -49,11 +49,12 @@ def launch_and_validate_results(request, test_directory, editor, editor_script, 
     test_case = os.path.join(test_directory, editor_script)
     request.addfinalizer(lambda: teardown_editor(editor))
     logger.debug("Running automated test: {}".format(editor_script))
+    compiled_test_case_name = compile_test_case_name_from_request(request)
     editor.args.extend(["--skipWelcomeScreenDialog", "--regset=/Amazon/Settings/EnableSourceControl=false", 
                         run_python, test_case,
                         "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
                         f"--regset-file={os.path.join(editor.workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}",
-                        f"--pythontestcase={request.node.name}", "--runpythonargs", " ".join(cfg_args)])
+                        f"--pythontestcase={compiled_test_case_name}", "--runpythonargs", " ".join(cfg_args)])
     if auto_test_mode:
         editor.args.extend(["--autotest_mode"])
     if null_renderer:

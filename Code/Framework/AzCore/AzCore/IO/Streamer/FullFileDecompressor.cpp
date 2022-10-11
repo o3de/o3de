@@ -124,6 +124,10 @@ namespace AZ::IO
             }
             else
             {
+                if constexpr (AZStd::is_same_v<Command, Requests::ReportData>)
+                {
+                    Report(args);
+                }
                 StreamStackEntry::QueueRequest(request);
             }
         }, request->GetCommand());
@@ -305,28 +309,57 @@ namespace AZ::IO
 
     void FullFileDecompressor::CollectStatistics(AZStd::vector<Statistic>& statistics) const
     {
-        constexpr double bytesToMB = 1.0 / (1024.0 * 1024.0);
         constexpr double usToSec = 1.0 / (1000.0 * 1000.0);
         constexpr double usToMs = 1.0 / 1000.0;
 
         if (m_bytesDecompressed.GetNumRecorded() > 1) // There's always a default added.
         {
             //It only makes sense to add decompression statistics when reading from PAK files.
-            statistics.push_back(Statistic::CreateInteger(m_name, "Available decompression slots", m_maxNumJobs - m_numRunningJobs));
-            statistics.push_back(Statistic::CreateInteger(m_name, "Available read slots", m_maxNumReads - m_numInFlightReads));
-            statistics.push_back(Statistic::CreateInteger(m_name, "Pending decompression", m_numPendingDecompression));
-            statistics.push_back(Statistic::CreateFloat(m_name, "Buffer memory (MB)", m_memoryUsage * bytesToMB));
+            statistics.push_back(Statistic::CreateInteger(
+                m_name, "Available decompression slots", m_maxNumJobs - m_numRunningJobs,
+                "The number of available slots to decompress files with. Increasing the number of slots will require more hardware "
+                "resources and may negatively impact other cpu utilization but improves performance of Streamer."));
+            statistics.push_back(Statistic::CreateInteger(
+                m_name, "Available read slots", m_maxNumReads - m_numInFlightReads,
+                "The number of slots available to queue read requests into. Increasing this number will allow more read requests to be "
+                "processed but new slots will not become available until a read file can queued in a decompression slot. Increasing this "
+                "number will only be helpful if decompressing is faster than reading, otherwise the number of slots can be kept around the "
+                "same number as there are decompression slots."));
+            statistics.push_back(Statistic::CreateInteger(
+                m_name, "Pending decompression", m_numPendingDecompression,
+                "The number of requests that have completed reading and are waiting for a decompression slot to become available. If this "
+                "value is frequently more than zero than the number of decompression slots may need to be increased, a faster decompressor "
+                "is needed or the number of read slots can be reduced."));
+            statistics.push_back(Statistic::CreateByteSize(
+                m_name, "Buffer memory", m_memoryUsage, 
+                "The total amount of memory in megabytes used by the decompressor. This is depended on the compressed file sizes and may "
+                "improve by reducing the file sizes of the largest files in the archive."));
 
             double averageJobStartDelay = m_decompressionJobDelayMicroSec.CalculateAverage() * usToMs;
-            statistics.push_back(Statistic::CreateFloat(m_name, "Decompression job delay (avg. ms)", averageJobStartDelay));
+            statistics.push_back(Statistic::CreateFloat(
+                m_name, "Decompression job delay (avg. ms)", averageJobStartDelay,
+                "The amount of time in milliseconds between queuing a decompression job and it starting. If this is too long it may "
+                "indicate that the job system is too saturated to pick decompression jobs."));
 
-            double totalBytesDecompressedMB = m_bytesDecompressed.GetTotal() * bytesToMB;
+            u64 totalBytesDecompressed = m_bytesDecompressed.GetTotal();
             double totalDecompressionTimeSec = m_decompressionDurationMicroSec.GetTotal() * usToSec;
-            statistics.push_back(Statistic::CreateFloat(m_name, "Decompression Speed per job (avg. mbps)", totalBytesDecompressedMB / totalDecompressionTimeSec));
+            statistics.push_back(Statistic::CreateBytesPerSecond(
+                m_name, "Decompression Speed per job", totalBytesDecompressed / totalDecompressionTimeSec,
+                "The average speed that the decompressor can handle. If this is not higher than the average read "
+                "speed than decompressing can't keep up with file reads. Increasing the number of jobs can help hide this issue, but only "
+                "for parallel reads, while individual reads will still remain decompression bound."));
 
 #if AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
-            statistics.push_back(Statistic::CreatePercentage(m_name, DecompBoundName, m_decompressionBoundStat.GetAverage()));
-            statistics.push_back(Statistic::CreatePercentage(m_name, ReadBoundName, m_readBoundStat.GetAverage()));
+            statistics.push_back(Statistic::CreatePercentageRange(
+                m_name, DecompBoundName, m_decompressionBoundStat.GetAverage(), m_decompressionBoundStat.GetMinimum(),
+                m_decompressionBoundStat.GetMaximum(),
+                "The percentage of time that Streamer was decompression bound. High values mean that more jobs are needed, although this "
+                "may only help if there are a sufficient number of requests."));
+            statistics.push_back(Statistic::CreatePercentageRange(
+                m_name, ReadBoundName, m_readBoundStat.GetAverage(), m_readBoundStat.GetMinimum(),
+                m_readBoundStat.GetMaximum(),
+                "The percentage of time that Streamer was read bound. High values are generally good if there is a sufficient number of "
+                "requests."));
 #endif
         }
 
@@ -733,5 +766,31 @@ namespace AZ::IO
 
         context->MarkRequestAsCompleted(info.m_waitRequest);
         context->WakeUpSchedulingThread();
+    }
+
+    void FullFileDecompressor::Report(const Requests::ReportData& data) const
+    {
+        switch (data.m_reportType)
+        {
+        case IStreamerTypes::ReportType::Config:
+            data.m_output.push_back(Statistic::CreateInteger(
+                m_name, "Max number of reads", m_maxNumReads, "The maximum number of parallel reads this decompressor node will support."));
+            data.m_output.push_back(Statistic::CreateInteger(
+                m_name, "Max number of jobs", m_maxNumJobs,
+                "The maximum number of decompression jobs that can run in parallel. A thread per job will be used. A dedicated job system "
+                "is used as not to interfere with the regular job/task system, but this does add additional thread scheduling work to the "
+                "operating system and may impact how stable the performance on the rest of the engine is. If there are functions that "
+                "periodically take much longer, look for excessive context switches by the operating systems and if found lowering this "
+                "value may help reduce those at the cost or streaming speeds."));
+            data.m_output.push_back(Statistic::CreateByteSize(
+                m_name, "Alignment", m_alignment,
+                "The alignment for read buffer. This allows enough memory to be reserved in the read buffer to allow for alignment to "
+                "happen by later nodes without requiring additional temporary buffers. This does not adjust the offset or read size in "
+                "order to allow cache nodes to remain effective."));
+            data.m_output.push_back(Statistic::CreateReferenceString(
+                m_name, "Next node", m_next ? AZStd::string_view(m_next->GetName()) : AZStd::string_view("<None>"),
+                "The name of the node that follows this node or none."));
+            break;
+        };
     }
 } // namespace AZ::IO

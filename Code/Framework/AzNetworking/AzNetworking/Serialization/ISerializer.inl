@@ -14,8 +14,6 @@
 #include <AzCore/std/typetraits/is_enum.h>
 #include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/RTTI/TypeSafeIntegral.h>
-#include <AzCore/Name/Name.h>
-#include <AzCore/Name/NameDictionary.h>
 
 namespace AzNetworking
 {
@@ -110,24 +108,25 @@ namespace AzNetworking
         return SerializeHelper<IsEnum, IsTypeSafeIntegral>::Serialize(*this, value, name);
     }
 
-    // SerializeHelper for objects and structures
+    // Helper for objects and structures
     template <>
     struct ISerializer::SerializeHelper<false, false>
     {
         template <typename TYPE>
         static bool Serialize(ISerializer& serializer, TYPE& value, const char* name)
         {
-            if (serializer.BeginObject(name, "Type name unknown"))
+            if (serializer.BeginObject(name))
             {
                 if (SerializeObjectHelper<TYPE>::SerializeObject(serializer, value))
                 {
-                    return serializer.EndObject(name, "Type name unknown");
+                    return serializer.EndObject(name);
                 }
             }
             return false;
         }
     };
 
+    // Helper for enums
     template <>
     struct ISerializer::SerializeHelper<true, false>
     {
@@ -153,6 +152,7 @@ namespace AzNetworking
         }
     };
 
+    // Helper for type-safe integrals
     template <>
     struct ISerializer::SerializeHelper<true, true>
     {
@@ -169,22 +169,6 @@ namespace AzNetworking
             }
 
             return true;
-        }
-    };
-
-    template<>
-    struct SerializeObjectHelper<AZ::Name>
-    {
-        static bool SerializeObject(ISerializer& serializer, AZ::Name& value)
-        {
-            AZ::Name::Hash nameHash = value.GetHash();
-            bool result = serializer.Serialize(nameHash, "NameHash");
-
-            if (result && serializer.GetSerializerMode() == SerializerMode::WriteToObject)
-            {
-                value = AZ::NameDictionary::Instance().FindName(nameHash);
-            }
-            return result;
         }
     };
 }

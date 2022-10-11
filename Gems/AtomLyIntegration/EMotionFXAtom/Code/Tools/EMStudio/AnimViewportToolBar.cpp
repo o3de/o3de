@@ -93,6 +93,8 @@ namespace EMStudio
 
             contextMenu->addSeparator();
             CreateViewOptionEntry(contextMenu, "Motion Extraction", EMotionFX::ActorRenderFlagIndex::MOTIONEXTRACTION);
+            CreateViewOptionEntry(contextMenu, "Root Motion", EMotionFX::ActorRenderFlagIndex::ROOTMOTION);
+            CreateViewOptionEntry(contextMenu, "Debug Rendering", EMotionFX::ActorRenderFlagIndex::EMFX_DEBUG);
         }
 
         // Add the camera button

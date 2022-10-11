@@ -26,6 +26,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/UserSettings/UserSettings.h>
 
 namespace AZ
@@ -208,7 +209,28 @@ namespace AZ
     {
         if (m_streamer)
         {
-            m_streamer->QueueRequest(m_streamer->Report(AZ::IO::Requests::ReportType::FileLocks));
+            auto locks = new AZStd::vector<AZ::IO::Statistic>();
+            AZ::IO::FileRequestPtr request = m_streamer->Report(*locks, AZ::IO::IStreamerTypes::ReportType::FileLocks);
+            auto callback = [locks](AZ::IO::FileRequestHandle)
+            {
+                if (!locks->empty())
+                {
+                    for (AZ::IO::Statistic& lock : *locks)
+                    {
+                        const AZStd::string* path = AZStd::get_if<AZStd::string>(&lock.GetValue());
+                        AZ_Printf(
+                            "Streamer", "File lock in %.*s : '%s'.\n", AZ_STRING_ARG(lock.GetName()),
+                            path ? path->c_str() : "<Unsupported path type>");
+                    }
+                }
+                else
+                {
+                    AZ_Printf("Streamer", "No files are locked.\n");
+                }
+                delete locks;
+            };
+            m_streamer->SetRequestCompleteCallback(request, AZStd::move(callback));
+            m_streamer->QueueRequest(request);
         }
     }
 

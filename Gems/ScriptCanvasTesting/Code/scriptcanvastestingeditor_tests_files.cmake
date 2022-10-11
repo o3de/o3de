@@ -19,9 +19,9 @@ set(FILES
     Tests/ScriptCanvas_ContainerSupport.cpp
     Tests/ScriptCanvas_Core.cpp
     Tests/ScriptCanvas_EventHandlers.cpp
+    Tests/ScriptCanvas_FileHandling.cpp
     Tests/ScriptCanvas_Math.cpp
     Tests/ScriptCanvas_MethodOverload.cpp
-    Tests/ScriptCanvas_NodeGenerics.cpp
     Tests/ScriptCanvas_RuntimeInterpreted.cpp
     Tests/ScriptCanvas_Slots.cpp
     Tests/ScriptCanvas_StringNodes.cpp

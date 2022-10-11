@@ -18,6 +18,7 @@ set(FILES
     Tests/PythonLogSymbolsComponentTests.cpp
     Tests/PythonPairTests.cpp
     Tests/PythonPairTests.h
+    Tests/PythonTupleTests.cpp
     Tests/PythonProxyBusTests.cpp
     Tests/PythonProxyObjectTests.cpp
     Tests/PythonReflectionComponentTests.cpp

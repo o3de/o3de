@@ -7,6 +7,7 @@
 #
 
 set(FILES
+    Mocks/MockBehaviorUtils.h
     Mocks/Containers/MockScene.h
     Mocks/DataTypes/GraphData/MockIMeshData.h
     Mocks/DataTypes/MockIGraphObject.h
@@ -30,5 +31,6 @@ set(FILES
     Tests/Containers/Utilities/FiltersTests.cpp
     Tests/Utilities/SceneGraphSelectorTests.cpp
     Tests/Utilities/PatternMatcherTests.cpp
+    Tests/Utilities/CoordinateSystemConverterTests.cpp
     Tests/Export/MaterialIOTests.cpp
 )

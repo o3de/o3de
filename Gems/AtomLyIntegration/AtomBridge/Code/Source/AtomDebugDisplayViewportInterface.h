@@ -135,9 +135,7 @@ namespace AZ::AtomBridge
         // Commented out function prototypes are remaining part of the api
         // waiting to be implemented.
         // work tracked in [ATOM-3459]
-        void SetColor(float r, float g, float b, float a = 1.f) override;
         void SetColor(const AZ::Color& color) override;
-        void SetColor(const AZ::Vector4& color) override;
         void SetAlpha(float a) override;
         void DrawQuad(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector3& p3, const AZ::Vector3& p4) override;
         void DrawQuad(float width, float height) override;
@@ -156,6 +154,7 @@ namespace AZ::AtomBridge
         void DrawLine(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector4& col1, const AZ::Vector4& col2) override;
         void DrawLines(const AZStd::vector<AZ::Vector3>& lines, const AZ::Color& color) override;
         void DrawPolyLine(const AZ::Vector3* pnts, int numPoints, bool cycled = true) override;
+        void DrawPolyLine(AZStd::span<const AZ::Vector3>, bool cycled = true) override;
         void DrawWireQuad2d(const AZ::Vector2& p1, const AZ::Vector2& p2, float z) override;
         void DrawLine2d(const AZ::Vector2& p1, const AZ::Vector2& p2, float z) override;
         void DrawLine2dGradient(const AZ::Vector2& p1, const AZ::Vector2& p2, float z, const AZ::Vector4& firstColor, const AZ::Vector4& secondColor) override;

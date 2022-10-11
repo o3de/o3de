@@ -1,0 +1,236 @@
+{
+    "entries": [
+        {
+            "base": "MacroMaterialData",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Macro Material Data"
+            },
+            "methods": [
+                {
+                    "base": "GetNormalFactor",
+                    "context": "Getter",
+                    "details": {
+                        "name": "Get Normal Factor"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{DC68E20A-3251-4E4E-8BC7-F6A2521FEF46}",
+                            "details": {
+                                "name": "Macro Material Data*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Normal Factor"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetNormalFactor",
+                    "context": "Setter",
+                    "details": {
+                        "name": "Set Normal Factor"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{DC68E20A-3251-4E4E-8BC7-F6A2521FEF46}",
+                            "details": {
+                                "name": "Macro Material Data*"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Normal Factor"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetNormalFlipY",
+                    "context": "Getter",
+                    "details": {
+                        "name": "Get Normal FlipY"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{DC68E20A-3251-4E4E-8BC7-F6A2521FEF46}",
+                            "details": {
+                                "name": "Macro Material Data*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Normal FlipY"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetNormalFlipY",
+                    "context": "Setter",
+                    "details": {
+                        "name": "Set Normal FlipY"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{DC68E20A-3251-4E4E-8BC7-F6A2521FEF46}",
+                            "details": {
+                                "name": "Macro Material Data*"
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Normal FlipY"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetNormalFlipX",
+                    "context": "Getter",
+                    "details": {
+                        "name": "Get Normal FlipX"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{DC68E20A-3251-4E4E-8BC7-F6A2521FEF46}",
+                            "details": {
+                                "name": "Macro Material Data*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Normal FlipX"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetNormalFlipX",
+                    "context": "Setter",
+                    "details": {
+                        "name": "Set Normal FlipX"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{DC68E20A-3251-4E4E-8BC7-F6A2521FEF46}",
+                            "details": {
+                                "name": "Macro Material Data*"
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Normal FlipX"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetBounds",
+                    "context": "Getter",
+                    "details": {
+                        "name": "Get Bounds"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{DC68E20A-3251-4E4E-8BC7-F6A2521FEF46}",
+                            "details": {
+                                "name": "Macro Material Data*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "Bounds"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetBounds",
+                    "context": "Setter",
+                    "details": {
+                        "name": "Set Bounds"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{DC68E20A-3251-4E4E-8BC7-F6A2521FEF46}",
+                            "details": {
+                                "name": "Macro Material Data*"
+                            }
+                        },
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "Bounds"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetEntityId",
+                    "context": "Getter",
+                    "details": {
+                        "name": "Get Entity Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{DC68E20A-3251-4E4E-8BC7-F6A2521FEF46}",
+                            "details": {
+                                "name": "Macro Material Data*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetEntityId",
+                    "context": "Setter",
+                    "details": {
+                        "name": "Set Entity Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{DC68E20A-3251-4E4E-8BC7-F6A2521FEF46}",
+                            "details": {
+                                "name": "Macro Material Data*"
+                            }
+                        },
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

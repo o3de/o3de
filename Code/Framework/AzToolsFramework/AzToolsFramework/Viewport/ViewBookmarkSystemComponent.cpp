@@ -12,12 +12,12 @@ namespace AzToolsFramework
 {
     void ViewBookmarkSystemComponent::Activate()
     {
-        m_viewBookmarkLoader.RegisterViewBookmarkLoaderInterface();
+        m_viewBookmarkLoader.RegisterViewBookmarkInterface();
     }
 
     void ViewBookmarkSystemComponent::Deactivate()
     {
-        m_viewBookmarkLoader.UnregisterViewBookmarkLoaderInterface();
+        m_viewBookmarkLoader.UnregisterViewBookmarkInterface();
     }
 
     void ViewBookmarkSystemComponent::Reflect(AZ::ReflectContext* context)

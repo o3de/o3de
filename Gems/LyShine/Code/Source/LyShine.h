@@ -70,7 +70,7 @@ public:
     void ReleaseCanvasDeferred(AZ::EntityId canvas) override;
 
     ISprite* LoadSprite(const AZStd::string& pathname) override;
-    ISprite* CreateSprite(const AZStd::string& renderTargetName) override;
+    ISprite* CreateSprite(const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& attachmentImageAsset) override;
     bool DoesSpriteTextureAssetExist(const AZStd::string& pathname) override;
     AZ::Data::Instance<AZ::RPI::Image> LoadTexture(const AZStd::string& pathname) override;
 

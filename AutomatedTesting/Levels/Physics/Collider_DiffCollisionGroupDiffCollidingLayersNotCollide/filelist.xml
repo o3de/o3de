@@ -1,6 +1,0 @@
-<download name="C4976245_PhysxCollider_CollisionLayerTest" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="9870" md5="c5d4eddc05ae40d8557c5a52c311a1c3"/>
- </files>
-</download>

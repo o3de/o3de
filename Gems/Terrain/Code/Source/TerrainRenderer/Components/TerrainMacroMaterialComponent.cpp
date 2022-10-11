@@ -18,6 +18,8 @@
 
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 
+#include <Components/TerrainLayerSpawnerComponent.h>
+
 namespace Terrain
 {
     bool TerrainMacroMaterialConfig::NormalMapAttributesAreReadOnly() const
@@ -36,6 +38,7 @@ namespace Terrain
                 ->Field("NormalFlipX", &TerrainMacroMaterialConfig::m_normalFlipX)
                 ->Field("NormalFlipY", &TerrainMacroMaterialConfig::m_normalFlipY)
                 ->Field("NormalFactor", &TerrainMacroMaterialConfig::m_normalFactor)
+                ->Field("Priority", &TerrainMacroMaterialConfig::m_priority)
                 ;
 
             if (auto* editContext = serialize->GetEditContext(); editContext)
@@ -69,7 +72,14 @@ namespace Terrain
                         ->Attribute(AZ::Edit::Attributes::Max, 10.0f)
                         ->Attribute(AZ::Edit::Attributes::SoftMin, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::SoftMax, 2.0f)
-                    ->Attribute(AZ::Edit::Attributes::ReadOnly, &TerrainMacroMaterialConfig::NormalMapAttributesAreReadOnly)
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &TerrainMacroMaterialConfig::NormalMapAttributesAreReadOnly)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Slider, &TerrainMacroMaterialConfig::m_priority, "Priority",
+                        "Defines order macro materials are applied.  Larger numbers = higher priority")
+                        ->Attribute(AZ::Edit::Attributes::Min, AreaConstants::s_priorityMin)
+                        ->Attribute(AZ::Edit::Attributes::Max, AreaConstants::s_priorityMax)
+                        ->Attribute(AZ::Edit::Attributes::SoftMin, AreaConstants::s_priorityMin)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, AreaConstants::s_prioritySoftMax)
                     ;
             }
         }
@@ -286,6 +296,7 @@ namespace Terrain
         macroMaterial.m_normalFactor = m_configuration.m_normalFactor;
         macroMaterial.m_normalFlipX = m_configuration.m_normalFlipX;
         macroMaterial.m_normalFlipY = m_configuration.m_normalFlipY;
+        macroMaterial.m_priority = m_configuration.m_priority;
 
         return macroMaterial;
     }

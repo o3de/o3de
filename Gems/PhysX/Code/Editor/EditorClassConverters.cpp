@@ -54,10 +54,10 @@ namespace PhysX
             // Any new upgrade functions should steer clear of this, as it is not handling collision groups
             // correctly. But it is left here to maintain backwards compatibility.
             Physics::ColliderConfiguration colliderConfig;
-            FindElementRecursiveAndGetData(node, AZ_CRC("CollisionLayer", 0x39931633), colliderConfig.m_collisionLayer);
-            FindElementRecursiveAndGetData(node, AZ_CRC("Trigger", 0x1a6b0f5d), colliderConfig.m_isTrigger);
-            FindElementRecursiveAndGetData(node, AZ_CRC("Rotation", 0x297c98f1), colliderConfig.m_rotation);
-            FindElementRecursiveAndGetData(node, AZ_CRC("Position", 0x462ce4f5), colliderConfig.m_position);
+            FindElementRecursiveAndGetData(node, AZ_CRC_CE("CollisionLayer"), colliderConfig.m_collisionLayer);
+            FindElementRecursiveAndGetData(node, AZ_CRC_CE("Trigger"), colliderConfig.m_isTrigger);
+            FindElementRecursiveAndGetData(node, AZ_CRC_CE("Rotation"), colliderConfig.m_rotation);
+            FindElementRecursiveAndGetData(node, AZ_CRC_CE("Position"), colliderConfig.m_position);
             return colliderConfig;
         }
 
@@ -66,7 +66,7 @@ namespace PhysX
         {
             // collision group id
             AzPhysics::CollisionGroups::Id collisionGroupId;
-            FindElementRecursiveAndGetData(classElement, AZ_CRC("CollisionGroupId", 0x84fe4bbe), collisionGroupId);
+            FindElementRecursiveAndGetData(classElement, AZ_CRC_CE("CollisionGroupId"), collisionGroupId);
 
             // collider config
             Physics::ColliderConfiguration colliderConfig = FindColliderConfig(classElement);
@@ -81,7 +81,7 @@ namespace PhysX
                 AZ::Data::Asset<Pipeline::MeshAsset> meshAsset;
                 if (shapeConfig.IsAssetConfig())
                 {
-                    FindElementAndGetData(classElement, AZ_CRC("PxMesh", 0xb369e226), meshAsset);
+                    FindElementAndGetData(classElement, AZ_CRC_CE("PxMesh"), meshAsset);
                 }
                 classElement.AddElementWithData<AZ::Data::Asset<Pipeline::MeshAsset>>(context, "MeshAsset", meshAsset);
 
@@ -95,15 +95,15 @@ namespace PhysX
         {
             // capsule specific geometry data
             Physics::CapsuleShapeConfiguration capsuleConfig;
-            const int capsuleConfigIndex = classElement.FindElement(AZ_CRC("Configuration", 0xa5e2a5d7));
+            const int capsuleConfigIndex = classElement.FindElement(AZ_CRC_CE("Configuration"));
             if (capsuleConfigIndex == -1)
             {
                 return false;
             }
 
             AZ::SerializeContext::DataElementNode& capsuleConfigNode = classElement.GetSubElement(capsuleConfigIndex);
-            FindElementAndGetData(capsuleConfigNode, AZ_CRC("Height", 0xf54de50f), capsuleConfig.m_height);
-            FindElementAndGetData(capsuleConfigNode, AZ_CRC("Radius", 0x3b7c6e5a), capsuleConfig.m_radius);
+            FindElementAndGetData(capsuleConfigNode, AZ_CRC_CE("Height"), capsuleConfig.m_height);
+            FindElementAndGetData(capsuleConfigNode, AZ_CRC_CE("Radius"), capsuleConfig.m_radius);
 
             EditorProxyShapeConfig shapeConfig(capsuleConfig);
             return ConvertToNewEditorColliderComponent(context, classElement, shapeConfig);
@@ -113,14 +113,14 @@ namespace PhysX
         {
             // box specific geometry data
             Physics::BoxShapeConfiguration boxConfig;
-            const int boxConfigIndex = classElement.FindElement(AZ_CRC("Configuration", 0xa5e2a5d7));
+            const int boxConfigIndex = classElement.FindElement(AZ_CRC_CE("Configuration"));
             if (boxConfigIndex == -1)
             {
                 return false;
             }
 
             AZ::SerializeContext::DataElementNode& boxConfigNode = classElement.GetSubElement(boxConfigIndex);
-            FindElementAndGetData(boxConfigNode, AZ_CRC("Configuration", 0xa5e2a5d7), boxConfig.m_dimensions);
+            FindElementAndGetData(boxConfigNode, AZ_CRC_CE("Configuration"), boxConfig.m_dimensions);
 
             EditorProxyShapeConfig shapeConfig(boxConfig);
             return ConvertToNewEditorColliderComponent(context, classElement, shapeConfig);
@@ -130,14 +130,14 @@ namespace PhysX
         {
             // sphere specific geometry data
             Physics::SphereShapeConfiguration sphereConfig;
-            const int sphereConfigIndex = classElement.FindElement(AZ_CRC("Configuration", 0xa5e2a5d7));
+            const int sphereConfigIndex = classElement.FindElement(AZ_CRC_CE("Configuration"));
             if (sphereConfigIndex == -1)
             {
                 return false;
             }
 
             AZ::SerializeContext::DataElementNode& sphereConfigNode = classElement.GetSubElement(sphereConfigIndex);
-            FindElementAndGetData(sphereConfigNode, AZ_CRC("Radius", 0x3b7c6e5a), sphereConfig.m_radius);
+            FindElementAndGetData(sphereConfigNode, AZ_CRC_CE("Radius"), sphereConfig.m_radius);
 
             EditorProxyShapeConfig shapeConfig(sphereConfig);
             return ConvertToNewEditorColliderComponent(context, classElement, shapeConfig);
@@ -147,14 +147,14 @@ namespace PhysX
         {
             // native shape specific geometry data
             Physics::NativeShapeConfiguration nativeShapeConfig;
-            const int nativeShapeConfigIndex = classElement.FindElement(AZ_CRC("Configuration", 0xa5e2a5d7));
+            const int nativeShapeConfigIndex = classElement.FindElement(AZ_CRC_CE("Configuration"));
             if (nativeShapeConfigIndex == -1)
             {
                 return false;
             }
 
             AZ::SerializeContext::DataElementNode& nativeShapeConfigNode = classElement.GetSubElement(nativeShapeConfigIndex);
-            FindElementAndGetData(nativeShapeConfigNode, AZ_CRC("Scale", 0xec462584), nativeShapeConfig.m_nativeShapeScale);
+            FindElementAndGetData(nativeShapeConfigNode, AZ_CRC_CE("Scale"), nativeShapeConfig.m_nativeShapeScale);
 
             EditorProxyShapeConfig shapeConfig(nativeShapeConfig);
             return ConvertToNewEditorColliderComponent(context, classElement, shapeConfig);
@@ -166,16 +166,16 @@ namespace PhysX
             if (dataElement.GetVersion() <= 1)
             {
                 // Remove the collision group id field from the EditorColliderComponent
-                const int index = dataElement.FindElement(AZ_CRC("CollisionGroupId", 0x84fe4bbe));
+                const int index = dataElement.FindElement(AZ_CRC_CE("CollisionGroupId"));
                 AzPhysics::CollisionGroups::Id groupId;
-                dataElement.GetChildData<AzPhysics::CollisionGroups::Id>(AZ_CRC("CollisionGroupId", 0x84fe4bbe), groupId);
+                dataElement.GetChildData<AzPhysics::CollisionGroups::Id>(AZ_CRC_CE("CollisionGroupId"), groupId);
                 dataElement.RemoveElement(index);
 
                 // Find the collider configuration on the EditorColliderComponent
-                auto colliderConfigurationDataElement = dataElement.FindSubElement(AZ_CRC("ColliderConfiguration", 0x55d2e97a));
+                auto colliderConfigurationDataElement = dataElement.FindSubElement(AZ_CRC_CE("ColliderConfiguration"));
 
                 // Replace the CollisionGroupId with the old one from the component
-                auto collisionGroupIdDataElement = colliderConfigurationDataElement->FindSubElement(AZ_CRC("CollisionGroupId", 0x84fe4bbe));
+                auto collisionGroupIdDataElement = colliderConfigurationDataElement->FindSubElement(AZ_CRC_CE("CollisionGroupId"));
                 if (!collisionGroupIdDataElement)
                 {
                     return false;
@@ -186,23 +186,23 @@ namespace PhysX
             if (dataElement.GetVersion() <= 2)
             {
                 // Find the shape configuration on the EditorColliderComponent
-                AZ::SerializeContext::DataElementNode* shapeConfigurationElement = dataElement.FindSubElement(AZ_CRC("ShapeConfiguration", 0xe29d5a5c));
+                AZ::SerializeContext::DataElementNode* shapeConfigurationElement = dataElement.FindSubElement(AZ_CRC_CE("ShapeConfiguration"));
                 if (!shapeConfigurationElement)
                 {
                     return false;
                 }
 
                 Physics::ShapeType shapeType = Physics::ShapeType::Sphere;
-                FindElementAndGetData(*shapeConfigurationElement, AZ_CRC("ShapeType", 0xf6826a28), shapeType);
+                FindElementAndGetData(*shapeConfigurationElement, AZ_CRC_CE("ShapeType"), shapeType);
 
                 if (shapeType == Physics::ShapeType::PhysicsAsset)
                 {
                     // Set the asset from the component to the configuration
                     AZ::Data::Asset<Pipeline::MeshAsset> meshAsset;
-                    FindElementAndGetData(dataElement, AZ_CRC("MeshAsset", 0x2e843642), meshAsset);
+                    FindElementAndGetData(dataElement, AZ_CRC_CE("MeshAsset"), meshAsset);
 
-                    AZ::SerializeContext::DataElementNode* assetConfigNode = shapeConfigurationElement->FindSubElement(AZ_CRC("PhysicsAsset", 0x4a3b5e62));
-                    AZ::SerializeContext::DataElementNode* assetNode = assetConfigNode->FindSubElement(AZ_CRC("PhysicsAsset", 0x4a3b5e62));
+                    AZ::SerializeContext::DataElementNode* assetConfigNode = shapeConfigurationElement->FindSubElement(AZ_CRC_CE("PhysicsAsset"));
+                    AZ::SerializeContext::DataElementNode* assetNode = assetConfigNode->FindSubElement(AZ_CRC_CE("PhysicsAsset"));
                     assetNode->SetData<AZ::Data::Asset<AZ::Data::AssetData>>(context, meshAsset);
                 }
             }
@@ -212,27 +212,27 @@ namespace PhysX
             {
                 // version 6 moves the settings "DebugDraw" and "DebugDrawButtonState" into a separate object,
                 // "DebugDrawSettings", which is owned by the editor collider component.
-                //AZ::SerializeContext::DataElementNode* debugDrawElement = dataElement.FindSubElement(AZ_CRC("DebugDraw", 0x42ef6229));
+                //AZ::SerializeContext::DataElementNode* debugDrawElement = dataElement.FindSubElement(AZ_CRC_CE("DebugDraw"));
 
                 bool debugDraw = false;
-                const int debugDrawIndex = dataElement.FindElement(AZ_CRC("DebugDraw", 0x42ef6229));
+                const int debugDrawIndex = dataElement.FindElement(AZ_CRC_CE("DebugDraw"));
                 if (debugDrawIndex != -1)
                 {
-                    dataElement.GetChildData<bool>(AZ_CRC("DebugDraw", 0x42ef6229), debugDraw);
+                    dataElement.GetChildData<bool>(AZ_CRC_CE("DebugDraw"), debugDraw);
                     dataElement.RemoveElement(debugDrawIndex);
                 }
 
                 bool debugDrawButtonState = false;
-                const int debugDrawButtonStateIndex = dataElement.FindElement(AZ_CRC("DebugDrawButtonState", 0x7a4f440f));
+                const int debugDrawButtonStateIndex = dataElement.FindElement(AZ_CRC_CE("DebugDrawButtonState"));
                 if (debugDrawButtonStateIndex != -1)
                 {
-                    dataElement.GetChildData<bool>(AZ_CRC("DebugDrawButtonState", 0x7a4f440f), debugDrawButtonState);
+                    dataElement.GetChildData<bool>(AZ_CRC_CE("DebugDrawButtonState"), debugDrawButtonState);
                     dataElement.RemoveElement(debugDrawButtonStateIndex);
                 }
 
                 dataElement.AddElement<DebugDraw::Collider>(context, "DebugDrawSettings");
 
-                const int debugDrawSettingsIndex = dataElement.FindElement(AZ_CRC("DebugDrawSettings", 0xda74260a));
+                const int debugDrawSettingsIndex = dataElement.FindElement(AZ_CRC_CE("DebugDrawSettings"));
                 if (debugDrawSettingsIndex != -1)
                 {
                     AZ::SerializeContext::DataElementNode& debugDrawSettingsNode = dataElement.GetSubElement(debugDrawSettingsIndex);
@@ -252,7 +252,7 @@ namespace PhysX
             if (dataElement.GetVersion() <= 7)
             {
                 // Find the shape configuration on the EditorColliderComponent
-                AZ::SerializeContext::DataElementNode* shapeConfigurationElement = dataElement.FindSubElement(AZ_CRC("ShapeConfiguration", 0xe29d5a5c));
+                AZ::SerializeContext::DataElementNode* shapeConfigurationElement = dataElement.FindSubElement(AZ_CRC_CE("ShapeConfiguration"));
                 if (!shapeConfigurationElement)
                 {
                     return false;
@@ -263,12 +263,12 @@ namespace PhysX
                 //    EditorColliderComponent::ShapeConfiguration::PhysicsAsset -> EditorColliderComponent::ShapeConfiguration::PhysicsAsset::Configuration
                 
                 Physics::PhysicsAssetShapeConfiguration physAssetConfig;
-                FindElementAndGetData(*shapeConfigurationElement, AZ_CRC("PhysicsAsset", 0x4a3b5e62), physAssetConfig);
-                shapeConfigurationElement->RemoveElementByName(AZ_CRC("PhysicsAsset", 0x4a3b5e62));
+                FindElementAndGetData(*shapeConfigurationElement, AZ_CRC_CE("PhysicsAsset"), physAssetConfig);
+                shapeConfigurationElement->RemoveElementByName(AZ_CRC_CE("PhysicsAsset"));
 
                 AZ::Data::Asset<Pipeline::MeshAsset> meshAsset;
-                FindElementAndGetData(dataElement, AZ_CRC("MeshAsset", 0x2e843642), meshAsset);
-                dataElement.RemoveElementByName(AZ_CRC("MeshAsset", 0x2e843642));
+                FindElementAndGetData(dataElement, AZ_CRC_CE("MeshAsset"), meshAsset);
+                dataElement.RemoveElementByName(AZ_CRC_CE("MeshAsset"));
 
                 EditorProxyAssetShapeConfig newAssetShapeConfig;
                 newAssetShapeConfig.m_pxAsset = meshAsset;
@@ -279,7 +279,7 @@ namespace PhysX
             
             if (dataElement.GetVersion() <= 8)
             {
-                dataElement.RemoveElementByName(AZ_CRC("LinkedRenderMeshAssetId", 0x466f4230));
+                dataElement.RemoveElementByName(AZ_CRC_CE("LinkedRenderMeshAssetId"));
             }
 
             if (dataElement.GetVersion() <= 9)
@@ -297,16 +297,16 @@ namespace PhysX
             {
                 // Remove the old NativeShape configuration
                 Physics::NativeShapeConfiguration nativeShapeConfiguration;
-                if (!FindElementAndGetData(classElement, AZ_CRC("Mesh", 0xe16f3a56), nativeShapeConfiguration))
+                if (!FindElementAndGetData(classElement, AZ_CRC_CE("Mesh"), nativeShapeConfiguration))
                 {
                     return false;
                 }
 
-                classElement.RemoveElementByName(AZ_CRC("Mesh", 0xe16f3a56));
+                classElement.RemoveElementByName(AZ_CRC_CE("Mesh"));
 
                 // Change shapeType from Native to PhysicsAsset
                 Physics::ShapeType currentShapeType = Physics::ShapeType::Sphere;
-                AZ::SerializeContext::DataElementNode* shapeTypeElement = classElement.FindSubElement(AZ_CRC("ShapeType", 0xf6826a28));
+                AZ::SerializeContext::DataElementNode* shapeTypeElement = classElement.FindSubElement(AZ_CRC_CE("ShapeType"));
                 if (shapeTypeElement && shapeTypeElement->GetData<Physics::ShapeType>(currentShapeType) &&
                     currentShapeType == Physics::ShapeType::Native)
                 {
@@ -332,20 +332,20 @@ namespace PhysX
             {
                 // Get the diagonal values from the old field
                 AZ::Vector3 diagonalElements;
-                if (FindElementAndGetData(classElement, AZ_CRC("Inertia diagonal values", 0x00d27839), diagonalElements))
+                if (FindElementAndGetData(classElement, AZ_CRC_CE("Inertia diagonal values"), diagonalElements))
                 {
                     // Remove the old field
-                    classElement.RemoveElementByName(AZ_CRC("Inertia diagonal values", 0x00d27839));
+                    classElement.RemoveElementByName(AZ_CRC_CE("Inertia diagonal values"));
 
-                    const int rigidBodyConfigIndex = classElement.FindElement(AZ_CRC("BaseClass1", 0xd4925735));
+                    const int rigidBodyConfigIndex = classElement.FindElement(AZ_CRC_CE("BaseClass1"));
                     if (rigidBodyConfigIndex != -1)
                     {
                         AZ::SerializeContext::DataElementNode rigidBodyConfigElement = classElement.GetSubElement(rigidBodyConfigIndex);
                         // Update the inertia tensor
-                        if (rigidBodyConfigElement.FindElement(AZ_CRC("Inertia tensor", 0xdd452265)) != -1)
+                        if (rigidBodyConfigElement.FindElement(AZ_CRC_CE("Inertia tensor")) != -1)
                         {
                             AZ::Matrix3x3 inertiaTensor = AZ::Matrix3x3::CreateDiagonal(diagonalElements);
-                            rigidBodyConfigElement.RemoveElementByName(AZ_CRC("Inertia tensor", 0xdd452265));
+                            rigidBodyConfigElement.RemoveElementByName(AZ_CRC_CE("Inertia tensor"));
                             rigidBodyConfigElement.AddElementWithData<AZ::Matrix3x3>(context, "Inertia tensor", inertiaTensor);
                         }
                     }
@@ -360,7 +360,7 @@ namespace PhysX
             // This field was made redundant by the in-memory terrain asset introduced in version 2.
             if (classElement.GetVersion() <= 1)
             {
-                classElement.RemoveElementByName(AZ_CRC("ExportOnSave", 0xa7865698));
+                classElement.RemoveElementByName(AZ_CRC_CE("ExportOnSave"));
             }
 
             return true;

@@ -1,19 +1,16 @@
 {
-    "description": "",
-    "parentMaterial": "06_bluish_green.material",
     "materialType": "../../Types/StandardPBR.materialtype",
-    "materialTypeVersion": 4,
-    "properties": {
-        "baseColor": {
-            "color": [
-                1.0,
-                1.0,
-                1.0,
-                1.0
-            ],
-            "textureBlendMode": "Lerp",
-            "textureMap": "06_bluish_green_sRGB.tif",
-            "useTexture": true
-        }
+    "materialTypeVersion": 5,
+    "parentMaterial": "06_bluish_green.material",
+    "propertyValues": {
+        "baseColor.color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "baseColor.textureBlendMode": "Lerp",
+        "baseColor.textureMap": "06_bluish_green_sRGB.tif",
+        "baseColor.useTexture": true
     }
 }

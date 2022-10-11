@@ -77,6 +77,7 @@ namespace AzToolsFramework
     namespace Prefab
     {
         class PrefabPublicInterface;
+        class InstanceUpdateExecutorInterface;
     };
 
     namespace UndoSystem
@@ -635,6 +636,7 @@ namespace AzToolsFramework
         EntityIdSet m_overrideSelectedEntityIds;
 
         Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;
+        Prefab::InstanceUpdateExecutorInterface* m_instanceUpdateExecutorInterface = nullptr;
         bool m_prefabsAreEnabled = false;
 
         ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;

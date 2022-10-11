@@ -18,7 +18,5 @@ namespace ScriptCanvas
     public:
         AZ_RTTI(ExecutionStateInterpretedSingleton, "{DB5F5ABD-2F06-4BBC-9528-F0512800C09F}", ExecutionStateInterpreted);
         AZ_CLASS_ALLOCATOR(ExecutionStateInterpretedSingleton, AZ::SystemAllocator, 0);
-
-        static void Reflect(AZ::ReflectContext* reflectContext);
     };
 }

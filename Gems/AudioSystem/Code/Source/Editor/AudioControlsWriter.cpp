@@ -115,8 +115,7 @@ namespace AudioControls
     //-------------------------------------------------------------------------------------------//
     void CAudioControlsWriter::WriteLibrary(const AZStd::string_view libraryName, QModelIndex root)
     {
-        const char* controlsPath = nullptr;
-        Audio::AudioSystemRequestBus::BroadcastResult(controlsPath, &Audio::AudioSystemRequestBus::Events::GetControlsPath);
+        const char* controlsPath = AZ::Interface<Audio::IAudioSystem>::Get()->GetControlsPath();
 
         if (root.isValid() && controlsPath)
         {

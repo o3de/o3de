@@ -36,6 +36,7 @@ namespace WhiteBox
         WhiteBoxColliderComponent& operator=(const WhiteBoxColliderComponent&) = delete;
 
     private:
+        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 

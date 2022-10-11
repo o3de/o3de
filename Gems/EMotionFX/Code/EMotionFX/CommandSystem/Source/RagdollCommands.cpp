@@ -94,7 +94,7 @@ namespace EMotionFX
         const AZ::Quaternion& parentBindRotationWorld = parentBindTransform.m_rotation;
 
         AZ::Vector3 boneDirection = GetBoneDirection(skeleton, node);
-        AZStd::vector<AZ::Quaternion> exampleRotationsLocal;
+        AZStd::vector<AZ::Quaternion> locaRotationSamples;
 
         if (auto* jointHelpers = AZ::Interface<AzPhysics::JointHelpersInterface>::Get())
         {
@@ -102,7 +102,7 @@ namespace EMotionFX
                 jointTypeId.has_value())
             {
                 AZStd::unique_ptr<AzPhysics::JointConfiguration> jointLimitConfig = jointHelpers->ComputeInitialJointLimitConfiguration(
-                    *jointTypeId, parentBindRotationWorld, nodeBindRotationWorld, boneDirection, exampleRotationsLocal);
+                    *jointTypeId, parentBindRotationWorld, nodeBindRotationWorld, boneDirection, locaRotationSamples);
 
                 AZ_Assert(jointLimitConfig, "Could not create joint limit configuration.");
                 jointLimitConfig->SetPropertyVisibility(AzPhysics::JointConfiguration::PropertyVisibility::ParentLocalRotation, true);

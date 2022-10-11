@@ -16,6 +16,7 @@
 #include <Shape/PolygonPrismShapeComponent.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AZTestShared/Math/MathTestHelpers.h>
+#include <ShapeThreadsafeTest.h>
 
 namespace UnitTest
 {
@@ -847,4 +848,103 @@ namespace UnitTest
         // then
         EXPECT_TRUE(polygonPrismMesh.m_triangles.empty());
     }
-}
+
+    TEST_F(PolygonPrismShapeTest, ShapeHasThreadsafeGetSetCalls)
+    {
+        // Verify that setting values from one thread and querying values from multiple other threads in parallel produces
+        // correct, consistent results.
+
+        // Create our polygon prism centered at 0 with our height and a starting radius.
+        AZ::Entity entity;
+
+        const AZ::Vector2 baseVertices[] = { AZ::Vector2(-1.0f, -1.0f),
+                                             AZ::Vector2( 1.0f, -1.0f),
+                                             AZ::Vector2( 1.0f,  1.0f),
+                                             AZ::Vector2(-1.0f,  1.0f)};
+
+        CreatePolygonPrism(
+            AZ::Transform::CreateTranslation(AZ::Vector3::CreateZero()), ShapeThreadsafeTest::ShapeHeight / 2.0f,
+            AZStd::vector<AZ::Vector2>({ baseVertices[0] * ShapeThreadsafeTest::MinDimension,
+                                         baseVertices[1] * ShapeThreadsafeTest::MinDimension,
+                                         baseVertices[2] * ShapeThreadsafeTest::MinDimension,
+                                         baseVertices[3] * ShapeThreadsafeTest::MinDimension }),
+            entity);
+
+        // Define the function for setting unimportant dimensions on the shape while queries take place.
+        auto setDimensionFn = [baseVertices](AZ::EntityId shapeEntityId, float minDimension, uint32_t dimensionVariance, float height)
+        {
+            LmbrCentral::PolygonPrismShapeComponentRequestBus::Event(
+                shapeEntityId, &LmbrCentral::PolygonPrismShapeComponentRequestBus::Events::SetHeight, height / 2.0f);
+
+            AZ::PolygonPrismPtr polygonPrism;
+            LmbrCentral::PolygonPrismShapeComponentRequestBus::EventResult(
+                polygonPrism, shapeEntityId, &LmbrCentral::PolygonPrismShapeComponentRequestBus::Events::GetPolygonPrism);
+            for (size_t index = 0; index < 4; index++)
+            {
+                float vertexScale = minDimension + aznumeric_cast<float>(rand() % dimensionVariance);
+                polygonPrism->m_vertexContainer.UpdateVertex(index, baseVertices[index] * vertexScale);
+            }
+        };
+
+        // Run the test, which will run multiple queries in parallel with each other and with the dimension-setting function.
+        // The number of iterations is arbitrary - it's set high enough to catch most failures, but low enough to keep the test
+        // time to a minimum.
+        const int numIterations = 30000;
+        ShapeThreadsafeTest::TestShapeGetSetCallsAreThreadsafe(entity, numIterations, setDimensionFn);
+    }
+
+    TEST_F(PolygonPrismShapeTest, StaleCallbacksAreNotCalledDuringActivation)
+    {
+        // If callbacks are set on the underlying polygon prism for the PolygonPrismShape Component, they should get cleared out
+        // and reset on every deactivation / activation. There was previously a bug in which stale callbacks would get triggered
+        // during the Activate call before getting cleared out at the end of Activate().
+
+        // Create a simple polygon prism component.
+
+        AZ::Entity entity;
+        constexpr float ShapeHeight = 2.0f;
+        CreatePolygonPrism(
+            AZ::Transform::CreateTranslation(AZ::Vector3::CreateZero()), ShapeHeight,
+            AZStd::vector<AZ::Vector2>(
+                { AZ::Vector2(-2.0f, -2.0f), AZ::Vector2(2.0f, -2.0f), AZ::Vector2(2.0f, 2.0f), AZ::Vector2(-2.0f, 2.0f) }),
+            entity);
+
+        // Set the callbacks on the underlying polygonPrism shape so that we can detect when they get called.
+
+        AZ::PolygonPrismPtr polygonPrism;
+        LmbrCentral::PolygonPrismShapeComponentRequestBus::EventResult(
+            polygonPrism, entity.GetId(), &LmbrCentral::PolygonPrismShapeComponentRequestBus::Events::GetPolygonPrism);
+
+        int numCalls = 0;
+        auto notificationCallback = [&numCalls]()
+        {
+            numCalls++;
+        };
+
+        auto vertexNotificationCallback = [&numCalls]([[maybe_unused]] size_t index)
+        {
+            numCalls++;
+        };
+
+        polygonPrism->SetCallbacks(
+            vertexNotificationCallback, vertexNotificationCallback, vertexNotificationCallback,
+            notificationCallback, notificationCallback, notificationCallback, notificationCallback);
+
+        // Deactivate the component.
+        entity.Deactivate();
+
+        // No callbacks should have been triggered during the deactivate.
+        EXPECT_EQ(numCalls, 0);
+
+        // Activate the component.
+        entity.Activate();
+
+        // Our callbacks should not have been triggered during an activation.
+        EXPECT_EQ(numCalls, 0);
+
+        // Verify that setting the height at this point doesn't trigger our callbacks - they should have been reset back to default
+        // during the component activation.
+        polygonPrism->SetHeight(ShapeHeight + 1.0f);
+        EXPECT_EQ(numCalls, 0);
+    }
+} // namespace UnitTest

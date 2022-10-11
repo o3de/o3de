@@ -13,57 +13,13 @@ namespace GraphModelIntegrationTest
 {
     // TestGraphContext
     TestGraphContext::TestGraphContext()
+        : GraphModel::GraphContext("GraphModelIntegrationTest", ".nodeTest", {})
     {
         // Construct basic data types
         const AZ::Uuid stringTypeUuid = azrtti_typeid<AZStd::string>();
         const AZ::Uuid entityIdTypeUuid = azrtti_typeid<AZ::EntityId>();
         m_dataTypes.push_back(AZStd::make_shared<GraphModel::DataType>(TestDataTypeEnum::TestDataTypeEnum_String, stringTypeUuid, AZStd::any(AZStd::string("")), "String", "AZStd::string"));
         m_dataTypes.push_back(AZStd::make_shared<GraphModel::DataType>(TestDataTypeEnum::TestDataTypeEnum_EntityId, entityIdTypeUuid, AZStd::any(AZ::EntityId()), "EntityId", "AZ::EntityId"));
-    }
-
-    const char* TestGraphContext::GetSystemName() const
-    {
-        return "GraphModelIntegrationTest";
-    }
-
-    const char* TestGraphContext::GetModuleFileExtension() const
-    {
-        return ".nodeTest";
-    }
-
-    const GraphModel::DataTypeList& TestGraphContext::GetAllDataTypes() const
-    {
-        return m_dataTypes;
-    }
-
-    GraphModel::DataTypePtr TestGraphContext::GetDataType(AZ::Uuid typeId) const
-    {
-        for (GraphModel::DataTypePtr dataType : m_dataTypes)
-        {
-            if (dataType->GetTypeUuid() == typeId)
-            {
-                return dataType;
-            }
-        }
-
-        return AZStd::make_shared<GraphModel::DataType>();
-    }
-
-    GraphModel::DataTypePtr TestGraphContext::GetDataType(GraphModel::DataType::Enum typeEnum) const
-    {
-        if (typeEnum < m_dataTypes.size())
-        {
-            return m_dataTypes[typeEnum];
-        }
-        else
-        {
-            return AZStd::make_shared<GraphModel::DataType>();
-        }
-    }
-
-    GraphModel::ModuleGraphManagerPtr TestGraphContext::GetModuleGraphManager() const
-    {
-        return nullptr;
     }
 
     // TestNode

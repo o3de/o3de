@@ -48,24 +48,24 @@ namespace PhysX
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("PhysicsWorldBodyService", 0x944da0cc));
-            provided.push_back(AZ_CRC("PhysXCharacterControllerService", 0x428de4fa));
+            provided.push_back(AZ_CRC_CE("PhysicsWorldBodyService"));
+            provided.push_back(AZ_CRC_CE("PhysicsCharacterControllerService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("PhysXCharacterControllerService", 0x428de4fa));
+            incompatible.push_back(AZ_CRC_CE("PhysicsCharacterControllerService"));
             incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
         }
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+            required.push_back(AZ_CRC_CE("TransformService"));
         }
 
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
-            dependent.push_back(AZ_CRC("PhysXColliderService", 0x4ff43f7c));
+            dependent.push_back(AZ_CRC_CE("PhysicsColliderService"));
         }
 
         Physics::CharacterConfiguration& GetCharacterConfiguration()
@@ -92,7 +92,8 @@ namespace PhysX
         float GetMaximumSpeed() const override;
         void SetMaximumSpeed(float maximumSpeed) override;
         AZ::Vector3 GetVelocity() const override;
-        void AddVelocity(const AZ::Vector3& velocity) override;
+        void AddVelocityForTick(const AZ::Vector3& velocity) override;
+        void AddVelocityForPhysicsTimestep(const AZ::Vector3& velocity) override;
         bool IsPresent() const override { return IsPhysicsEnabled(); }
         Physics::Character* GetCharacter() override;
 
@@ -137,13 +138,15 @@ namespace PhysX
         // Cleans up all references and events used with the physics character controller.
         void DestroyController();
 
-        void OnPreSimulate(float deltaTime);
+        void OnPostSimulate(float deltaTime);
+        void OnSceneSimulationStart(float physicsTimestep);
 
         AZStd::unique_ptr<Physics::CharacterConfiguration> m_characterConfig;
         AZStd::shared_ptr<Physics::ShapeConfiguration> m_shapeConfig;
         AzPhysics::SimulatedBodyHandle m_controllerBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
         AzPhysics::SceneHandle m_attachedSceneHandle = AzPhysics::InvalidSceneHandle;
-        AzPhysics::SystemEvents::OnPresimulateEvent::Handler m_preSimulateHandler;
+        AzPhysics::SystemEvents::OnPostsimulateEvent::Handler m_postSimulateHandler;
+        AzPhysics::SceneEvents::OnSceneSimulationStartHandler m_sceneSimulationStartHandler;
         AzPhysics::SceneEvents::OnSimulationBodyRemoved::Handler m_onSimulatedBodyRemovedHandler;
     };
 } // namespace PhysX

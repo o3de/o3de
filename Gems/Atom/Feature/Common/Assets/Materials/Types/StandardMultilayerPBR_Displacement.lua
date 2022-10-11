@@ -17,6 +17,7 @@ function GetMaterialPropertyDependencies()
         "blend.enableLayer2",
         "blend.enableLayer3",
         "parallax.enable",
+        "parallax.pdo",
         "layer1_parallax.textureMap",
         "layer2_parallax.textureMap",
         "layer3_parallax.textureMap",
@@ -174,8 +175,14 @@ function ProcessEditor(context)
     context:SetMaterialPropertyVisibility("parallax.algorithm", parallaxSettingVisibility)
     context:SetMaterialPropertyVisibility("parallax.quality", parallaxSettingVisibility)
     context:SetMaterialPropertyVisibility("parallax.pdo", parallaxSettingVisibility)
+    context:SetMaterialPropertyVisibility("parallax.shadowFactor", parallaxSettingVisibility)
     context:SetMaterialPropertyVisibility("parallax.showClipping", parallaxSettingVisibility)
     
+    local pdoEnabled = context:GetMaterialPropertyValue_bool("parallax.pdo")
+    if(not pdoEnabled) then
+        context:SetMaterialPropertyVisibility("parallax.shadowFactor", MaterialPropertyVisibility_Hidden)
+    end
+
     if BlendSourceUsesDisplacement(context) then
         context:SetMaterialPropertyVisibility("blend.displacementBlendDistance", MaterialPropertyVisibility_Enabled)
     else

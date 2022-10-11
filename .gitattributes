@@ -104,6 +104,7 @@
 *.smtl filter=lfs diff=lfs merge=lfs -text
 *.so filter=lfs diff=lfs merge=lfs -text
 *.sprite filter=lfs diff=lfs merge=lfs -text
+*.stars filter=lfs diff=lfs merge=lfs -text
 *.sub filter=lfs diff=lfs merge=lfs -text
 *.tga filter=lfs diff=lfs merge=lfs -text
 *.tif filter=lfs diff=lfs merge=lfs -text

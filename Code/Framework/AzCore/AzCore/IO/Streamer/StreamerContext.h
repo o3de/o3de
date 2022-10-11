@@ -115,7 +115,7 @@ namespace AZ::IO
 #if AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
         //! By how much time the prediction was off. This mostly covers the latter part of scheduling, which
         //! gets more precise the closer the request gets to completion.
-        AZ::Statistics::RunningStatistic m_predictionAccuracyUsStat;
+        TimedAverageWindow<s_statisticsWindowSize> m_predictionAccuracyStat;
 
         //! Tracks the percentage of requests with late predictions where the request completed earlier than expected,
         //! versus the requests that completed later than predicted.
@@ -124,6 +124,11 @@ namespace AZ::IO
         //! Percentage of requests that missed their deadline. If percentage is too high it can indicate that
         //! there are too many file requests or the deadlines for requests are too tight.
         AZ::Statistics::RunningStatistic m_missedDeadlinePercentageStat;
+
+        //! The average amount of time spend on completing internal completion callbacks.
+        TimedAverageWindow<s_statisticsWindowSize> m_internalCompletionTimeAverage;
+        //! The average amount of time spend on completing external completion callbacks.
+        TimedAverageWindow<s_statisticsWindowSize> m_externalCompletionTimeAverage;
 #endif // AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
 
         //! Platform-specific synchronization object used to suspend the Streamer thread and wake it up to resume procesing.

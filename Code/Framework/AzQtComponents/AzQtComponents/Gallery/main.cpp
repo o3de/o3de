@@ -41,7 +41,7 @@ const QString g_ui_1_0_SettingKey = QStringLiteral("useUI_1_0");
 static void LogToDebug([[maybe_unused]] QtMsgType Type, [[maybe_unused]] const QMessageLogContext& Context, const QString& message)
 {
     AZ::Debug::Platform::OutputToDebugger("Qt", message.toStdString().c_str());
-    AZ::Debug::Platform::OutputToDebugger(nullptr, "\n");
+    AZ::Debug::Platform::OutputToDebugger({}, "\n");
 }
 
 /*
@@ -123,6 +123,7 @@ private:
 
 int main(int argc, char **argv)
 {
+    const AZ::Debug::Trace tracer;
     ComponentApplicationWrapper componentApplicationWrapper;
 
     QApplication::setOrganizationName("O3DE");

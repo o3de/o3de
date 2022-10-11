@@ -91,6 +91,7 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/RTTI/RTTI.h>
+#include <AzCore/Preprocessor/Enum.h>
 
 namespace AZ
 {
@@ -139,15 +140,14 @@ namespace AZ
             float m_scale = 1.0f;
         };
 
-        enum class DisplayMapperOperationType : uint32_t
-        {
-            Aces = 0,
+        AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(DisplayMapperOperationType, uint32_t,
+            Aces,
             AcesLut,
             Passthrough,
             GammaSRGB,
             Reinhard,
             Invalid
-        };
+        );
 
         enum class ShaperPresetType
         {

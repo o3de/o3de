@@ -1,0 +1,36 @@
+@echo off
+
+REM
+REM Copyright (c) Contributors to the Open 3D Engine Project.
+REM For complete copyright and license terms please see the LICENSE at the root of this distribution.
+REM
+REM SPDX-License-Identifier: Apache-2.0 OR MIT
+REM
+REM
+
+echo.
+echo _____________________________________________________________________
+echo.
+echo ~    O3DE DCCsi Env Dev ...
+echo _____________________________________________________________________
+echo.
+echo ~    local env settings
+echo.
+
+set O3DE_BUILD_FOO=True
+echo     O3DE_BUILD_FOO = %O3DE_BUILD_FOO%
+
+set O3DE_BUILD_FOLDER=build
+echo     O3DE_BUILD_FOLDER = %O3DE_BUILD_FOLDER%
+
+set DCCSI_GDEBUG=True
+echo     DCCSI_GDEBUG = %DCCSI_GDEBUG%
+
+set DCCSI_DEV_MODE=True
+echo     DCCSI_DEV_MODE = %DCCSI_DEV_MODE%
+
+set DCCSI_GDEBUGGER=WING
+echo     DCCSI_GDEBUGGER = %DCCSI_GDEBUGGER%
+
+set DCCSI_LOGLEVEL=10
+echo     DCCSI_LOGLEVEL = %DCCSI_LOGLEVEL%

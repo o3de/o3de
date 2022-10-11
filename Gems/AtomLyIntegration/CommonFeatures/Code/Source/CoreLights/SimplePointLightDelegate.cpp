@@ -54,5 +54,21 @@ namespace AZ
                 debugDisplay.DrawWireSphere(transform.GetTranslation(), GetConfig()->m_attenuationRadius);
             }
         }
+
+        void SimplePointLightDelegate::SetAffectsGI(bool affectsGI)
+        {
+            if (GetLightHandle().IsValid())
+            {
+                GetFeatureProcessor()->SetAffectsGI(GetLightHandle(), affectsGI);
+            }
+        }
+
+        void SimplePointLightDelegate::SetAffectsGIFactor(float affectsGIFactor)
+        {
+            if (GetLightHandle().IsValid())
+            {
+                GetFeatureProcessor()->SetAffectsGIFactor(GetLightHandle(), affectsGIFactor);
+            }
+        }
     } // namespace Render
 } // namespace AZ

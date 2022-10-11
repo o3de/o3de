@@ -30,6 +30,7 @@ namespace AZ
                     ->Field("ImageSystemDescriptor", &RPISystemDescriptor::m_imageSystemDescriptor)
                     ->Field("GpuQuerySystemDescriptor", &RPISystemDescriptor::m_gpuQuerySystemDescriptor)
                     ->Field("DynamicDrawSystemDescriptor", &RPISystemDescriptor::m_dynamicDrawSystemDescriptor)
+                    ->Field("NullRenderer", &RPISystemDescriptor::m_isNullRenderer)
                     ;
             }
         }

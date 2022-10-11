@@ -20,7 +20,7 @@ namespace AzToolsFramework
          /// functionality all ComponentModes require.
         class EditorBaseComponentMode
             : public ComponentModeRequestBus::Handler
-            , private ToolsApplicationNotificationBus::Handler
+            , protected ToolsApplicationNotificationBus::Handler
         {
         public:
             AZ_CLASS_ALLOCATOR_DECL

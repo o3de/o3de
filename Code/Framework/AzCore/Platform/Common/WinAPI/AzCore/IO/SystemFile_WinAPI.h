@@ -56,6 +56,7 @@ namespace AZ
                 NoFollow     = 0,             // (Not applicable in windows) If the trailing component (i.e., basename) of pathname is a symbolic link, then the open fails, with the error ELOOP. Symbolic links in earlier components of the pathname will still be followed.
                 NoAccessTime = 0,             // (Not applicable in windows) Do not update the file last access time.
                 Path         = 0,             // (Not applicable in windows) Obtain a file descriptor that can be used for two purposes: to indicate a location in the filesystem tree and to perform operations that act purely at the file descriptor level.
+                NonBlock     = 0,             // (Not applicable in windows) Opens a pipe in non-blocking mode. If the process tries to perform incompatible access on a file region with an incompatible mandatory lock when this flag is set, then system call fails and returns EAGAIN.
             };
             AZ_DEFINE_ENUM_BITWISE_OPERATORS(OpenFlags);
 
@@ -106,6 +107,8 @@ namespace AZ
             {
                 return _dup2(fileDescriptorSource, fileDescriptorDestination);
             }
+
+            int Pipe(int(&pipeFileDescriptors)[2], int pipeSize, OpenFlags flags);
         } // namespace AZ::IO::PosixInternal
     } // namespace AZ::IO
 } // namespace AZ

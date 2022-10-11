@@ -251,6 +251,19 @@ namespace AZ::SceneAPI::Utilities
             productList.AddProduct(
                 (productName + ".xml"), AZ::Uuid::CreateName((productName + ".xml").c_str()), dbgSceneGraphXmlAssetType,
                 AZStd::nullopt, AZStd::nullopt);
+
+            // save out debug text for the Scene Manifest
+            AZStd::string productNameDebugManifest { debugSceneFile };
+            AzFramework::StringFunc::Path::ReplaceExtension(productNameDebugManifest, "assetinfo.dbg");
+            scene->GetManifest().SaveToFile(productNameDebugManifest.c_str());
+
+            static const AZ::Data::AssetType dbgSceneManifstAssetType("{48A78BE7-B3F2-44B8-8AA6-F0607E9A75A5}");
+            productList.AddProduct(
+                productNameDebugManifest,
+                AZ::Uuid::CreateName((productName + ".assetinfo.dbg").c_str()),
+                dbgSceneManifstAssetType,
+                AZStd::nullopt,
+                AZStd::nullopt);
         }
     }
 }

@@ -42,23 +42,26 @@ namespace Camera
 
         static void Reflect(AZ::ReflectContext* reflection);
 
-        // AZ::Component interface
+        // AZ::Component overrides ...
         void Activate() override;
         void Deactivate() override;
         AZ::u32 OnConfigurationChanged() override;
 
-        // AzFramework::DebugDisplayRequestBus::Handler interface
+        // AzFramework::DebugDisplayRequestBus::Handler overrides ...
         void DisplayEntityViewport(
             const AzFramework::ViewportInfo& viewportInfo,
             AzFramework::DebugDisplayRequests& debugDisplay) override;
 
-        /// EditorCameraViewRequestBus::Handler interface
-        void ToggleCameraAsActiveView() override { OnPossessCameraButtonClicked(); }
+        /// EditorCameraViewRequestBus::Handler overrides ...
+        void ToggleCameraAsActiveView() override;
+        void MatchViewport() override;
+        bool IsActiveCamera() const override;
         bool GetCameraState(AzFramework::CameraState& cameraState) override;
 
     protected:
         void EditorDisplay(AzFramework::DebugDisplayRequests& displayInterface, const AZ::Transform& world);
         AZ::Crc32 OnPossessCameraButtonClicked();
+        AZ::Crc32 OnMatchViewportClicked();
         AZStd::string GetCameraViewButtonText() const;
 
         float m_frustumViewPercentLength = 1.f;

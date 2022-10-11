@@ -36,9 +36,7 @@ namespace Multiplayer
             Multiplayer::NetworkRigidBodyComponent, s_networkRigidBodyComponentConcreteUuid, Multiplayer::NetworkRigidBodyComponentBase);
 
         static void Reflect(AZ::ReflectContext* context);
-        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
-        static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
         NetworkRigidBodyComponent();
 

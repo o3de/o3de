@@ -31,8 +31,7 @@ namespace WhiteBox
 
         //! Take White Box render data and populate the render mesh from it.
         virtual void BuildMesh(
-            const WhiteBoxRenderData& renderData, const AZ::Transform& worldFromLocal,
-            AZ::EntityId entityId) = 0; // TODO: LYN-786
+            const WhiteBoxRenderData& renderData, const AZ::Transform& worldFromLocal) = 0;
 
         //! Update the transform of the render mesh.
         virtual void UpdateTransform(const AZ::Transform& worldFromLocal) = 0;

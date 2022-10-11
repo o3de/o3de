@@ -11,6 +11,7 @@
 #include <AtomToolsFramework/Viewport/ModularViewportCameraController.h>
 #include <AzCore/Math/MatrixUtils.h>
 #include <AzFramework/Viewport/CameraInput.h>
+#include <AzFramework/Viewport/ViewportBus.h>
 #include <AzFramework/Viewport/ViewportControllerList.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 
@@ -24,6 +25,7 @@ namespace EMStudio
     AnimViewportWidget::AnimViewportWidget(AtomRenderPlugin* parentPlugin)
         : AtomToolsFramework::RenderViewportWidget(parentPlugin->GetInnerWidget())
         , m_plugin(parentPlugin)
+        , m_renderOverlay(m_plugin->GetInnerWidget())
     {
         setObjectName(QString::fromUtf8("AtomViewportWidget"));
         QSizePolicy qSize(QSizePolicy::Preferred, QSizePolicy::Preferred);
@@ -43,10 +45,22 @@ namespace EMStudio
 
         AnimViewportRequestBus::Handler::BusConnect();
         ViewportPluginRequestBus::Handler::BusConnect();
+
+        m_renderOverlay.setVisible(true);
+        m_renderOverlay.setUpdatesEnabled(false);
+        m_renderOverlay.setMouseTracking(true);
+        m_renderOverlay.setObjectName("renderOverlay");
+        m_renderOverlay.setContentsMargins(0, 0, 0, 0);
+        m_renderOverlay.winId(); // Force the render overlay to create a backing native window
+        m_renderOverlay.lower();
+
+        m_viewportUiManager.InitializeViewportUi(this, &m_renderOverlay);
+        m_viewportUiManager.ConnectViewportUiBus(GetViewportId());
     }
 
     AnimViewportWidget::~AnimViewportWidget()
     {
+        m_viewportUiManager.DisconnectViewportUiBus();
         ViewportPluginRequestBus::Handler::BusDisconnect();
         AnimViewportRequestBus::Handler::BusDisconnect();
     }
@@ -241,6 +255,7 @@ namespace EMStudio
         CalculateCameraProjection();
         RenderCustomPluginData();
         FollowCharacter();
+        m_viewportUiManager.Update();
     }
 
     void AnimViewportWidget::CalculateCameraProjection()
@@ -262,11 +277,16 @@ namespace EMStudio
 
     void AnimViewportWidget::RenderCustomPluginData()
     {
-        const size_t numPlugins = GetPluginManager()->GetNumActivePlugins();
-        for (size_t i = 0; i < numPlugins; ++i)
+        const EMotionFX::ActorRenderFlagsNamespace::ActorRenderFlags renderFlags = m_plugin->GetRenderOptions()->GetRenderFlags();
+
+        for (EMStudioPlugin* plugin : GetPluginManager()->GetActivePlugins())
         {
-            EMStudioPlugin* plugin = GetPluginManager()->GetActivePlugin(i);
-            plugin->Render(m_plugin->GetRenderOptions()->GetRenderFlags());
+            plugin->Render(renderFlags);
+        }
+
+        for (const AZStd::unique_ptr<PersistentPlugin>& plugin : GetPluginManager()->GetPersistentPlugins())
+        {
+            plugin->Render(renderFlags);
         }
     }
 
@@ -285,6 +305,7 @@ namespace EMStudio
     void AnimViewportWidget::UpdateRenderFlags(EMotionFX::ActorRenderFlags renderFlags)
     {
         m_renderer->UpdateActorRenderFlag(renderFlags);
+        m_plugin->UpdatePickingRenderFlags(renderFlags);
     }
 
     AZ::s32 AnimViewportWidget::GetViewportId() const
@@ -381,5 +402,12 @@ namespace EMStudio
         {
             menu->popup(event->globalPos());
         }
+    }
+
+    void AnimViewportWidget::resizeEvent(QResizeEvent* event)
+    {
+        QWidget::resizeEvent(event);
+        m_renderOverlay.setGeometry(geometry());
+        m_viewportUiManager.Update();
     }
 } // namespace EMStudio

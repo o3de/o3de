@@ -40,7 +40,7 @@ namespace AZ
                     RHI::BufferDescriptor bufferDescriptor;
                     bufferDescriptor.m_byteCount = descriptor.m_queriesCount * SizeInBytesPerQuery;
                     bufferDescriptor.m_bindFlags = RHI::BufferBindFlags::Constant;
-                    m_visibilityResultBuffer = device.CreateBufferCommitted(bufferDescriptor);
+                    m_visibilityResultBuffer = device.CreateBufferCommitted(bufferDescriptor, RHI::HeapMemoryLevel::Host);
                     break;
                 }
 #if AZ_TRAIT_ATOM_METAL_COUNTER_SAMPLING

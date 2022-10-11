@@ -21,24 +21,28 @@
 #endif
 
 #if defined(SCRIPT_CANVAS_PERFORMANCE_TRACKING_ENABLED)
-#define SCRIPT_CANVAS_PERFORMANCE_FINALIZE_TIMER(scriptCanvasId, assetId) ScriptCanvas::Execution::FinalizePerformanceReport(scriptCanvasId, assetId);
-#define SCRIPT_CANVAS_PERFORMANCE_SCOPE_INITIALIZATION(scriptCanvasId, assetId) ScriptCanvas::Execution::PerformanceScopeInitialization initializationScope(scriptCanvasId, assetId);
-#define SCRIPT_CANVAS_PERFORMANCE_SCOPE_EXECUTION(scriptCanvasId, assetId) ScriptCanvas::Execution::PerformanceScopeExecution executionScope(scriptCanvasId, assetId);
-#define SCRIPT_CANVAS_PERFORMANCE_SCOPE_LATENT(scriptCanvasId, assetId) ScriptCanvas::Execution::PerformanceScopeLatent latentScope(scriptCanvasId, assetId);
+#define SCRIPT_CANVAS_PERFORMANCE_FINALIZE_TIMER(executionState) ScriptCanvas::Execution::FinalizePerformanceReport(executionState);
+#define SCRIPT_CANVAS_PERFORMANCE_SCOPE_INITIALIZATION(executionState) ScriptCanvas::Execution::PerformanceScopeInitialization initializationScope(executionState);
+#define SCRIPT_CANVAS_PERFORMANCE_SCOPE_EXECUTION(executionState) ScriptCanvas::Execution::PerformanceScopeExecution executionScope(executionState);
+#define SCRIPT_CANVAS_PERFORMANCE_SCOPE_LATENT(executionState) ScriptCanvas::Execution::PerformanceScopeLatent latentScope(executionState);
+// use this to protect nodeables from implementation changes
+#define SCRIPT_CANVAS_PERFORMANCE_SCOPE_LATENT_NODEABLE ScriptCanvas::Execution::PerformanceScopeLatent latentScope(GetExecutionState());
 #else
-#define SCRIPT_CANVAS_PERFORMANCE_FINALIZE_TIMER(scriptCanvasId, assetId)
-#define SCRIPT_CANVAS_PERFORMANCE_SCOPE_INITIALIZATION(scriptCanvasId, assetId)
-#define SCRIPT_CANVAS_PERFORMANCE_SCOPE_EXECUTION(scriptCanvasId, assetId)
-#define SCRIPT_CANVAS_PERFORMANCE_SCOPE_LATENT(scriptCanvasId, assetId)
+#define SCRIPT_CANVAS_PERFORMANCE_FINALIZE_TIMER(executionState)
+#define SCRIPT_CANVAS_PERFORMANCE_SCOPE_INITIALIZATION(executionState)
+#define SCRIPT_CANVAS_PERFORMANCE_SCOPE_EXECUTION(executionState)
+#define SCRIPT_CANVAS_PERFORMANCE_SCOPE_LATENT(executionState)
+#define SCRIPT_CANVAS_PERFORMANCE_SCOPE_LATENT_NODEABLE
 #endif
 
 namespace ScriptCanvas
 {    
     GraphInfo CreateGraphInfo(ScriptCanvasId executionId, const GraphIdentifier& graphIdentifier);
+    class ExecutionState;
 
     namespace Execution
     {
-        using PerformanceKey = AZ::EntityId; // ScriptCanvasId
+        using PerformanceKey = const ExecutionState*;
 
         struct PerformanceTimingReport
         {
@@ -76,37 +80,36 @@ namespace ScriptCanvas
             PerformanceReportByAsset byAsset;
         };
 
-        void FinalizePerformanceReport(PerformanceKey key, const AZ::Data::AssetId& assetId);
+        void FinalizePerformanceReport(PerformanceKey key);
 
         class PerformanceScope
         {
         public:
-            PerformanceScope(const PerformanceKey& key, const AZ::Data::AssetId& assetId);
+            PerformanceScope(const PerformanceKey& key);
 
         protected:
             PerformanceKey m_key;
-            AZ::Data::AssetId m_assetId;
             AZStd::chrono::system_clock::time_point m_startTime;
         };
 
         class PerformanceScopeExecution : public PerformanceScope
         {
         public:
-            PerformanceScopeExecution(const PerformanceKey& key, const AZ::Data::AssetId& assetId);
+            PerformanceScopeExecution(const PerformanceKey& key);
             ~PerformanceScopeExecution();
         };
 
         class PerformanceScopeInitialization : public PerformanceScope
         {
         public:
-            PerformanceScopeInitialization(const PerformanceKey& key, const AZ::Data::AssetId& assetId);
+            PerformanceScopeInitialization(const PerformanceKey& key);
             ~PerformanceScopeInitialization();
         };
 
         class PerformanceScopeLatent : public PerformanceScope
         {
         public:
-            PerformanceScopeLatent(const PerformanceKey& key, const AZ::Data::AssetId& assetId);
+            PerformanceScopeLatent(const PerformanceKey& key);
             ~PerformanceScopeLatent();
         };
     }

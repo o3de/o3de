@@ -9,4 +9,5 @@
 set(FILES
     Editor/Core/QtEditorApplication_linux.cpp
     ../Common/Unimplemented/Util/Mailer_Unimplemented.cpp
+    ../../Util/Platform/Linux/FileUtil_Linux.cpp
 )

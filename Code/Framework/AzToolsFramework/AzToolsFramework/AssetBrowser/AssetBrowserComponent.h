@@ -50,6 +50,7 @@ namespace AzToolsFramework
             , public AZ::TickBus::Handler
             , public AssetSystemBus::Handler
             , public AssetBrowserInteractionNotificationBus::Handler
+            , private AssetBrowserFileCreationNotificationBus::Handler
         {
         public:
             AZ_COMPONENT(AssetBrowserComponent, "{4BC5F93F-2F9E-412E-B00A-396C68CFB5FB}")
@@ -107,6 +108,7 @@ namespace AzToolsFramework
 
             void PopulateAssets();
             void UpdateAssets();
+
         private:
             AZStd::shared_ptr<AssetDatabase::AssetDatabaseConnection> m_databaseConnection;
             AZStd::shared_ptr<RootAssetBrowserEntry> m_rootEntry;
@@ -127,12 +129,17 @@ namespace AzToolsFramework
 
             AzFramework::SocketConnection::TMessageCallbackHandle m_cbHandle = 0;
 
+            AzQtComponents::StyledBusyLabel* m_styledBusyLabel;
+
             //! Notify to start the query thread
             void NotifyUpdateThread();
 
             void HandleFileInfoNotification(const void* buffer, unsigned int bufferSize);
 
-            AzQtComponents::StyledBusyLabel* m_styledBusyLabel;
+            //////////////////////////////////////////////////////////////////////////
+            // AssetBrowserFileCreationNotificationBus
+            void HandleAssetCreatedInEditor(const AZStd::string_view assetPath, const AZ::Crc32& creatorBusId /*= AZ::Crc32()*/) override;
+            //////////////////////////////////////////////////////////////////////////
         };
-    }
-} // namespace AssetBrowser
+    } // namespace AssetBrowser
+} // namespace AzToolsFramework

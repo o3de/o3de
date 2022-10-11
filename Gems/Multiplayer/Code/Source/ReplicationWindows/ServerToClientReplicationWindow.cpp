@@ -165,17 +165,18 @@ namespace Multiplayer
         }
 
         // Add in all entities that have forced relevancy
-        for (const ConstNetworkEntityHandle& entityHandle : GetNetworkEntityManager()->GetAlwaysRelevantToClientsSet())
+        const Multiplayer::NetEntityHandleSet& alwaysRelevantToClients = GetNetworkEntityManager()->GetAlwaysRelevantToClientsSet();
+        for (const ConstNetworkEntityHandle& entityHandle : alwaysRelevantToClients)
         {
             if (entityHandle.Exists())
             {
-                m_replicationSet[entityHandle] = { NetEntityRole::Client, 1.0f };  // Always replicate entities with forced relevancy
+                m_replicationSet[entityHandle] = { NetEntityRole::Client, 1.0f }; // Always replicate entities with forced relevancy
             }
         }
 
         // Add in Autonomous Entities
         // Note: Do not add any Client entities after this point, otherwise you stomp over the Autonomous mode
-        m_replicationSet[m_controlledEntity] = { NetEntityRole::Autonomous, 1.0f };  // Always replicate autonomous entities
+        m_replicationSet[m_controlledEntity] = { NetEntityRole::Autonomous, 1.0f }; // Always replicate autonomous entities
 
         auto* hierarchyComponent = m_controlledEntity.FindComponent<NetworkHierarchyRootComponent>();
         if (hierarchyComponent != nullptr)
@@ -204,6 +205,25 @@ namespace Multiplayer
         else
         {
             m_connection->SendUnreliablePacket(entityRpcsPacket);
+        }
+    }
+
+    void ServerToClientReplicationWindow::SendEntityResets(const NetEntityIdSet& resetIds)
+    {
+        MultiplayerPackets::RequestReplicatorReset entityResetPacket;
+        for (NetEntityId entityId : resetIds)
+        {
+            if (entityResetPacket.GetEntityIds().full())
+            {
+                m_connection->SendUnreliablePacket(entityResetPacket);
+                entityResetPacket.ModifyEntityIds().clear();
+            }
+            entityResetPacket.ModifyEntityIds().push_back(entityId);
+        }
+
+        if (!entityResetPacket.GetEntityIds().empty())
+        {
+            m_connection->SendUnreliablePacket(entityResetPacket);
         }
     }
 

@@ -21,7 +21,7 @@ class TestAutomation(EditorTestSuite):
         from .tests import UserDefinedProperties_Works as test_module
 
         @classmethod
-        def setup(cls, instance, request, workspace, editor, editor_test_results, launcher_platform):
+        def setup(cls, instance, request, workspace, editor_test_results, launcher_platform):
             # close out any previous O3DE active tool instances
             editor_test_utils.kill_all_ly_processes(include_asset_processor=True)
 
@@ -36,7 +36,7 @@ class TestAutomation(EditorTestSuite):
             workspace.asset_processor.batch_process(extra_params="--debugOutput")
 
         @classmethod
-        def teardown(cls, instance, request, workspace, editor, editor_test_results, launcher_platform):
+        def teardown(cls, instance, request, workspace, editor_test_results, launcher_platform):
             if os.path.exists(instance.default_mat_dst):
                 os.remove(instance.default_mat_dst)
 
@@ -53,8 +53,8 @@ class TestAutomation(EditorTestSuite):
             if os.path.isfile(dbgsg_path) == False:
                 raise Exception(f"Missing file {dbgsg_path}")
 
-            # find the user defined property o3de.default.material in the .dbgsg file
-            material_UDP = 'o3de.default.material: gem/sponza/assets/objects/sponza_mat_bricks.azmaterial'
+            # find the user defined property o3de_default_material in the .dbgsg file
+            material_UDP = 'o3de_default_material: gem/sponza/assets/objects/sponza_mat_bricks.azmaterial'
             found_UDP = False
             with open(dbgsg_path) as f:
                 content = f.readlines()

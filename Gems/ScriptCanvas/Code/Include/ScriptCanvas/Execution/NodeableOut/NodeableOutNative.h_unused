@@ -21,7 +21,7 @@ namespace ScriptCanvas
         template<typename Callable, typename Allocator, typename... Args, size_t... IndexSequence>
         FunctorOut CreateOutWithArgs(Callable&& callable, Allocator& allocator, AZStd::Internal::pack_traits_arg_sequence<Args...>, std::index_sequence<IndexSequence...>, ReturnTypeIsNotVoid)
         {
-            auto nodeCallWrapper = [callable = AZStd::forward<Callable>(callable)](AZ::BehaviorValueParameter* result, AZ::BehaviorValueParameter* arguments, int numArguments) mutable
+            auto nodeCallWrapper = [callable = AZStd::forward<Callable>(callable)](AZ::BehaviorArgument* result, AZ::BehaviorArgument* arguments, int numArguments) mutable
             {
                 [[maybe_unused]] constexpr size_t numFunctorArguments = sizeof...(Args);
                 (void)numArguments;
@@ -37,7 +37,7 @@ namespace ScriptCanvas
         template<typename Callable, typename Allocator, typename... Args, size_t... IndexSequence>
         FunctorOut CreateOutWithArgs(Callable&& callable, Allocator& allocator, AZStd::Internal::pack_traits_arg_sequence<Args...>, std::index_sequence<IndexSequence...>, ReturnTypeIsVoid)
         {
-            auto nodeCallWrapper = [callable = AZStd::forward<Callable>(callable)](AZ::BehaviorValueParameter*, AZ::BehaviorValueParameter* arguments, int numArguments) mutable
+            auto nodeCallWrapper = [callable = AZStd::forward<Callable>(callable)](AZ::BehaviorArgument*, AZ::BehaviorArgument* arguments, int numArguments) mutable
             {
                 [[maybe_unused]] constexpr size_t numFunctorArguments = sizeof...(Args);
                 (void)numArguments;

@@ -1,6 +1,0 @@
-<download name="C5932045_PhysX_ForceRegion_Spline" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="7414" md5="bc86882fb2e08ea90f2ccc2bbdd2cd00"/>
- </files>
-</download>

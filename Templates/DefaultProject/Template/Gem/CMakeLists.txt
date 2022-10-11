@@ -16,7 +16,7 @@ o3de_restricted_path(${gem_json} gem_restricted_path gem_parent_relative_path)
 #       in which case it will see if that platform is present here or in the restricted folder.
 #       i.e. It could here : ${Name}/Code/Platform/<platform_name>  or
 #            <restricted_folder>/<platform_name>/${Name}/Code
-o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
 # Now that we have the platform abstraction layer (PAL) folder for this folder, thats where we will find the
 # traits for this platform. Traits for a platform are defines for things like whether or not something in this project

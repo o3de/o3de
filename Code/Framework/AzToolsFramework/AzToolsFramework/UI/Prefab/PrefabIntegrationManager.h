@@ -13,6 +13,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 #include <AzToolsFramework/UI/Prefab/LevelRootUiHandler.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationBus.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
@@ -23,6 +24,7 @@
 
 namespace AzToolsFramework
 {
+    class ActionManagerInterface;
     class ContainerEntityInterface;
     class ReadOnlyEntityPublicInterface;
 
@@ -38,6 +40,7 @@ namespace AzToolsFramework
             , public EditorEventsBus::Handler
             , public PrefabInstanceContainerNotificationBus::Handler
             , public PrefabIntegrationInterface
+            , private PrefabPublicNotificationBus::Handler
             , private EditorEntityContextNotificationBus::Handler
         {
         public:
@@ -51,7 +54,7 @@ namespace AzToolsFramework
             // EditorContextMenuBus overrides ...
             int GetMenuPosition() const override;
             AZStd::string GetMenuIdentifier() const override;
-            void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags) override;
+            void PopulateEditorGlobalContextMenu(QMenu* menu, const AZStd::optional<AzFramework::ScreenPoint>& point, int flags) override;
 
             // EditorEventsBus overrides ...
             void OnEscape() override;
@@ -70,6 +73,9 @@ namespace AzToolsFramework
             void SaveCurrentPrefab() override;
 
         private:
+            // PrefabPublicNotificationBus overrides ...
+            void OnRootPrefabInstanceLoaded() override;
+
             // Handles the UI for prefab save operations.
             PrefabSaveHandler m_prefabSaveHandler;
 
@@ -86,26 +92,31 @@ namespace AzToolsFramework
             ProceduralPrefabReadOnlyHandler m_proceduralPrefabReadOnlyHandler;
 
             // Context menu item handlers
-            static void ContextMenu_CreatePrefab(AzToolsFramework::EntityIdList selectedEntities);
-            static void ContextMenu_InstantiatePrefab();
-            static void ContextMenu_InstantiateProceduralPrefab();
-            static void ContextMenu_ClosePrefab();
-            static void ContextMenu_EditPrefab(AZ::EntityId containerEntity);
-            static void ContextMenu_SavePrefab(AZ::EntityId containerEntity);
-            static void ContextMenu_Duplicate();
-            static void ContextMenu_DeleteSelected();
-            static void ContextMenu_DetachPrefab(AZ::EntityId containerEntity);
+            void ContextMenu_CreatePrefab(AzToolsFramework::EntityIdList selectedEntities);
+            void ContextMenu_InstantiatePrefab();
+            void ContextMenu_InstantiateProceduralPrefab();
+            void ContextMenu_ClosePrefab();
+            void ContextMenu_EditPrefab(AZ::EntityId containerEntity);
+            void ContextMenu_SavePrefab(AZ::EntityId containerEntity);
+            void ContextMenu_ClosePrefabInstance(AZ::EntityId containerEntity);
+            void ContextMenu_OpenPrefabInstance(AZ::EntityId containerEntity);
+            void ContextMenu_Duplicate();
+            void ContextMenu_DeleteSelected();
+            void ContextMenu_DetachPrefab(AZ::EntityId containerEntity);
 
             // Shortcut setup handlers
             void InitializeShortcuts();
             void UninitializeShortcuts();
 
             // Reference detection
-            static void GatherAllReferencedEntitiesAndCompare(const EntityIdSet& entities, EntityIdSet& entitiesAndReferencedEntities,
-                bool& hasExternalReferences);
+            static void GatherAllReferencedEntitiesAndCompare(
+                const EntityIdSet& entities, EntityIdSet& entitiesAndReferencedEntities, bool& hasExternalReferences);
             static void GatherAllReferencedEntities(EntityIdSet& entitiesWithReferences, AZ::SerializeContext& serializeContext);
-            static bool QueryAndPruneMissingExternalReferences(EntityIdSet& entities, EntityIdSet& selectedAndReferencedEntities,
-                bool& useReferencedEntities, bool defaultMoveExternalRefs = false);
+            static bool QueryAndPruneMissingExternalReferences(
+                EntityIdSet& entities,
+                EntityIdSet& selectedAndReferencedEntities,
+                bool& useReferencedEntities,
+                bool defaultMoveExternalRefs = false);
 
             static AZ::u32 GetSliceFlags(const AZ::Edit::ElementData* editData, const AZ::Edit::ClassData* classData);
 
@@ -120,6 +131,7 @@ namespace AzToolsFramework
             static PrefabLoaderInterface* s_prefabLoaderInterface;
             static PrefabPublicInterface* s_prefabPublicInterface;
 
+            ActionManagerInterface* m_actionManagerInterface = nullptr;
             ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
         };
     }

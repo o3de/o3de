@@ -1,0 +1,111 @@
+{
+    "Type": "JsonSerialization",
+    "Description" : "This is the group of passes that render the sky atmosphere.",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "SkyAtmosphereTemplate",
+            "PassClass": "SkyAtmospherePass",
+            "Slots": [
+                {
+                    "Name": "SpecularInputOutput",
+                    "SlotType": "InputOutput"
+                },
+                {
+                    "Name": "ReflectionInputOutput",
+                    "SlotType": "InputOutput"
+                },
+                {
+                    "Name": "SkyBoxDepth",
+                    "SlotType": "Input"
+                },
+                {
+                    "Name": "DirectionalShadowmap",
+                    "SlotType": "Input"
+                },
+                {
+                    "Name": "DirectionalESM",
+                    "SlotType": "Input"
+                }
+            ],
+            "PassRequests": [
+                {
+                    "Name": "SkyTransmittanceLUTPass",
+                    "TemplateName": "SkyTransmittanceLUTTemplate",
+                    "Enabled": true
+                },
+                {
+                    "Name": "SkyViewLUTPass",
+                    "TemplateName": "SkyViewLUTTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkyTransmittanceLUTInput",
+                            "AttachmentRef": {
+                                "Pass": "SkyTransmittanceLUTPass",
+                                "Attachment": "SkyTransmittanceLUTOutput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "SkyRayMarchingPass",
+                    "TemplateName": "SkyRayMarchingTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkyTransmittanceLUTInput",
+                            "AttachmentRef": {
+                                "Pass": "SkyTransmittanceLUTPass",
+                                "Attachment": "SkyTransmittanceLUTOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "SkyViewLUTInput",
+                            "AttachmentRef": {
+                                "Pass": "SkyViewLUTPass",
+                                "Attachment": "SkyViewLUTOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "SpecularInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "SpecularInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ReflectionInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "ReflectionInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthStencilTextureInput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "SkyBoxDepth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DirectionalShadowmap",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DirectionalShadowmap"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DirectionalESM",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DirectionalESM"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

@@ -12,6 +12,7 @@
 #include <EMotionFX/Source/AnimGraphStateMachine.h>
 #include <EMotionFX/Source/BlendTreeMorphTargetNode.h>
 #include <EMotionFX/Source/MorphSetup.h>
+#include <EMotionFX/Source/Mesh.h>
 #include <EMotionFX/Source/MorphTargetStandard.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MorphTargetsWindow/MorphTargetsWindowPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MorphTargetsWindow/MorphTargetGroupWidget.h>

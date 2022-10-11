@@ -31,7 +31,7 @@ namespace GradientSignal
 
             QVBoxLayout* layout = new QVBoxLayout(this);
             layout->setContentsMargins(QMargins(IconMargin, IconMargin, IconMargin, IconMargin));
-            layout->setAlignment(Qt::AlignTop | Qt::AlignRight);
+            layout->setAlignment(Qt::AlignTop | Qt::AlignLeft);
 
             QIcon icon;
             icon.addPixmap(QPixmap(":/Application/popout-overlay.svg"), QIcon::Normal);

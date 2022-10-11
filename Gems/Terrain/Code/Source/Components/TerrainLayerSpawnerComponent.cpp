@@ -29,7 +29,7 @@ namespace Terrain
         if (serialize)
         {
             serialize->Class<TerrainLayerSpawnerConfig, AZ::ComponentConfig>()
-                ->Version(1)
+                ->Version(2)
                 ->Field("Layer", &TerrainLayerSpawnerConfig::m_layer)
                 ->Field("Priority", &TerrainLayerSpawnerConfig::m_priority)
                 ->Field("UseGroundPlane", &TerrainLayerSpawnerConfig::m_useGroundPlane)
@@ -155,7 +155,7 @@ namespace Terrain
         RefreshArea();
     }
     
-    void TerrainLayerSpawnerComponent::GetPriority(AZ::u32& outLayer, AZ::u32& outPriority)
+    void TerrainLayerSpawnerComponent::GetPriority(uint32_t& outLayer, int32_t& outPriority)
     {
         outLayer = m_configuration.m_layer;
         outPriority = m_configuration.m_priority;

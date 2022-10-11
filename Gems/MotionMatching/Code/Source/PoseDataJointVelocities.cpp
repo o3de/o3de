@@ -186,14 +186,22 @@ namespace EMotionFX::MotionMatching
 
             for (size_t jointIndex = 0; jointIndex < numJoints; ++jointIndex)
             {
-                const AZ::Vector3 prevWorldPosition = prevPose->GetPose().GetWorldSpaceTransform(jointIndex).m_position;
-                const AZ::Vector3 currentWorldPosition = currentPose->GetPose().GetWorldSpaceTransform(jointIndex).m_position;
-                const AZ::Vector3 prevPosition = inverseJointWorldTransform.TransformPoint(prevWorldPosition);
-                const AZ::Vector3 currentPosition = inverseJointWorldTransform.TransformPoint(currentWorldPosition);
+                const Transform prevWorldTransform = prevPose->GetPose().GetWorldSpaceTransform(jointIndex);
+                const Transform currentWorldTransform = currentPose->GetPose().GetWorldSpaceTransform(jointIndex);
 
                 // Calculate the linear velocity.
-                const AZ::Vector3 velocity = CalculateLinearVelocity(prevPosition, currentPosition, frameDelta);
-                m_velocities[jointIndex] += velocity;
+                const AZ::Vector3 prevPosition = inverseJointWorldTransform.TransformPoint(prevWorldTransform.m_position);
+                const AZ::Vector3 currentPosition = inverseJointWorldTransform.TransformPoint(currentWorldTransform.m_position);
+
+                const AZ::Vector3 linearVelocity = CalculateLinearVelocity(prevPosition, currentPosition, frameDelta);
+                m_velocities[jointIndex] += linearVelocity;
+
+                // Calculate the angular velocity.
+                const AZ::Quaternion prevRotation = inverseJointWorldTransform.m_rotation * prevWorldTransform.m_rotation;
+                const AZ::Quaternion currentRotation = inverseJointWorldTransform.m_rotation * currentWorldTransform.m_rotation;
+
+                const AZ::Vector3 angularVelocity = CalculateAngularVelocity(prevRotation, currentRotation, frameDelta);
+                m_angularVelocities[jointIndex] += angularVelocity;
             }
 
             *prevPose = *currentPose;

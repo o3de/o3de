@@ -24,6 +24,11 @@ class QLabel;
 
 namespace AzQtComponents
 {
+    namespace Internal
+    {
+        class RectangleWidget;
+    }
+
     //! Header bar for Card widgets.
     //! Provides a bar with an expander arrow, a text title and a button to trigger a context menu.
     //! Also has an optional icon and help button. 
@@ -46,6 +51,8 @@ namespace AzQtComponents
             Standard,   //!< Hamburger menu button.
             Plus        //!< Plus button, usually tied to add actions.
         };
+
+        static void applyContainerStyle(CardHeader* header);
 
         CardHeader(QWidget* parent = nullptr);
 
@@ -129,6 +136,10 @@ namespace AzQtComponents
         //! Sets the icon to be displayed for the context menu.
         void setContextMenuIcon(ContextMenuIcon iconType);
 
+        //! Sets the small solid color underline under the header. If color is
+        //! invalid or transparent, the underline will disappear completely.
+        void setUnderlineColor(const QColor& color);
+
     Q_SIGNALS:
         //! Triggered when the context menu button is clicked, or on a right click.
         void contextMenuRequested(const QPoint& position);
@@ -162,6 +173,7 @@ namespace AzQtComponents
         QLabel* m_warningLabel = nullptr;
         QPushButton* m_contextMenuButton = nullptr;
         QPushButton* m_helpButton = nullptr;
+        Internal::RectangleWidget* m_underlineWidget = nullptr;
         bool m_warning = false;
         bool m_readOnly = false;
         bool m_modified = false;

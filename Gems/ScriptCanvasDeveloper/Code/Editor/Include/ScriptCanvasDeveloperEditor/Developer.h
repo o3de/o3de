@@ -8,20 +8,15 @@
 
 #pragma once
 
-#include <ScriptCanvas/Libraries/Libraries.h>
+#include <AzCore/std/containers/vector.h>
 
-namespace ScriptCanvasDeveloper
+namespace AZ
 {
-    namespace Libraries
-    {
-        struct Developer
-            : public ScriptCanvas::Library::LibraryDefinition
-        {
-            AZ_RTTI(Developer, "{2284A0BC-44A0-47A2-B67C-DF8862CF859B}", ScriptCanvas::Library::LibraryDefinition);
+    class ComponentDescriptor;
+} // namespace AZ
 
-            static void Reflect(AZ::ReflectContext*);
-            static void InitNodeRegistry(ScriptCanvas::NodeRegistry& nodeRegistry);
-            static AZStd::vector<AZ::ComponentDescriptor*> GetComponentDescriptors();
-        };
-    }
-}
+namespace ScriptCanvas::Developer
+{
+    void InitNodeRegistry();
+    AZStd::vector<AZ::ComponentDescriptor*> GetComponentDescriptors();
+} // namespace ScriptCanvas::Developer

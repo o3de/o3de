@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <Atom/RPI/Math.azsli>
+
 //! Transform cubemap coordinates to the expected cubemap orientation
 float3 GetCubemapCoords(float3 original)
 {
@@ -67,6 +69,16 @@ float3 ApplyParallaxCorrectionAABB(float3 aabbMin, float3 aabbMax, float3 aabbPo
 // compute parallax corrected reflection vector, OBB version
 float3 ApplyParallaxCorrectionOBB(float4x4 obbTransformInverse, float3 obbHalfExtents, float3 positionWS, float3 reflectDir)
 {
+    // Convert point and reflection direction to object space (object here being the reflection probe)
     float3 p = mul(obbTransformInverse, float4(positionWS, 1.0f)).xyz;
-    return ApplyParallaxCorrectionAABB(-obbHalfExtents, obbHalfExtents, float3(0.0f, 0.0f, 0.0f), p, reflectDir);
+    float3 r = mul(obbTransformInverse, float4(reflectDir, 0.0f)).xyz;
+
+    // Apply parallax correction in object aligned space
+    r = ApplyParallaxCorrectionAABB(-obbHalfExtents, obbHalfExtents, float3(0.0f, 0.0f, 0.0f), p, r);
+
+    // Rotate the result back to world space
+    float3x3 probeToWorldRotation = transpose(ExtractFloat3x3(obbTransformInverse));
+    r = mul(probeToWorldRotation, r);
+
+    return normalize(r);
 }

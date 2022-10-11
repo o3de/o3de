@@ -9,20 +9,35 @@
 #pragma once
 
 #include <AzCore/UserSettings/UserSettings.h>
-
-#include <AzToolsFramework/AssetBrowser/AssetBrowserSourceDropBus.h>
+namespace AZ
+{
+    class Vector3;
+}
 #include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 
+#include <AzQtComponents/Buses/DragAndDrop.h>
 #include <AzQtComponents/Components/Widgets/Card.h>
+
+class QMimeData;
+class QDragEvent;
+class QDropEvent;
+class QDragMoveEvent;
+class QDragLeaveEvent;
 
 namespace AzToolsFramework
 {
+    namespace AssetBrowser
+    {
+        class AssetBrowserEntry;
+    }
+
     namespace Prefab
     {
         class PrefabLoaderInterface;
         class PrefabPublicInterface;
         class PrefabSystemComponentInterface;
+        class InstanceEntityMapperInterface;
 
         //! Structure for saving/retrieving user settings related to prefab workflows.
         class PrefabUserSettings : public AZ::UserSettings
@@ -43,7 +58,8 @@ namespace AzToolsFramework
         //! Class to handle dialogs and windows related to prefab save operations.
         class PrefabSaveHandler final
             : public QObject
-            , public AssetBrowser::AssetBrowserSourceDropBus::Handler
+            , public AzQtComponents::DragAndDropEventsBus::Handler
+            , public AzQtComponents::DragAndDropItemViewEventsBus::Handler
         {
         public:
             AZ_CLASS_ALLOCATOR(PrefabSaveHandler, AZ::SystemAllocator, 0);
@@ -55,11 +71,23 @@ namespace AzToolsFramework
             static bool GetPrefabSaveLocation(AZStd::string& path, AZ::u32 settingsId);
             static void SetPrefabSaveLocation(const AZStd::string& path, AZ::u32 settingsId);
 
-            // EntityOutlinerSourceDropHandlingBus overrides ...
-            void HandleSourceFileType(AZStd::string_view sourceFilePath, AZ::EntityId parentId, AZ::Vector3 position) const override;
+            // Drag and drop overrides:
+            int GetDragAndDropEventsPriority() const override;
+
+            // DragAndDropEventsBus- dragging over widgets
+            void DragEnter(QDragEnterEvent* event, AzQtComponents::DragAndDropContextBase& context) override;
+            void DragMove(QDragMoveEvent* event, AzQtComponents::DragAndDropContextBase& context) override;
+            void DragLeave(QDragLeaveEvent* event) override;
+            void Drop(QDropEvent* event, AzQtComponents::DragAndDropContextBase& context) override;
+
+            // DragAndDropItemViewEventsBus - listview/outliner dragging:
+            int GetDragAndDropItemViewEventsPriority() const override;
+            void CanDropItemView(bool& accepted, AzQtComponents::DragAndDropContextBase& context) override;
+            void DoDropItemView(bool& accepted, AzQtComponents::DragAndDropContextBase& context) override;
 
             // Dialogs
             int ExecuteClosePrefabDialog(TemplateId templateId);
+            void ExecuteSavePrefabDialog(AZ::EntityId entityId);
             void ExecuteSavePrefabDialog(TemplateId templateId, bool useSaveAllPrefabsPreference);
             static bool QueryUserForPrefabFilePath(AZStd::string& outPrefabFilePath);
             static bool QueryUserForProceduralPrefabAsset(AZStd::string& outPrefabAssetPath);
@@ -92,10 +120,24 @@ namespace AzToolsFramework
             void SavePrefabsInDialog(QDialog* unsavedPrefabsDialog);
 
             static const AZStd::string s_prefabFileExtension;
+            static const AZStd::string s_procPrefabFileExtension;
 
             static PrefabLoaderInterface* s_prefabLoaderInterface;
             static PrefabPublicInterface* s_prefabPublicInterface;
             static PrefabSystemComponentInterface* s_prefabSystemComponentInterface;
+
+            InstanceEntityMapperInterface* m_instanceEntityMapperInterface;
+
+            bool CanDragAndDropData(
+                const QMimeData* data,
+                AZStd::vector<AZStd::string>* prefabsToInstantiate = nullptr,
+                AZStd::vector<AZStd::string>* prefabsToDetach = nullptr) const;
+
+            void DoDragAndDropData(
+                const AZ::Vector3& instantiateLocation,
+                const AZ::EntityId& parentEntity,
+                const AZStd::vector<AZStd::string>& prefabsToInstantiate,
+                const AZStd::vector<AZStd::string>& prefabsToDetach);
         };
     }
 }

@@ -71,6 +71,8 @@ function(ly_create_alias)
         ly_add_dependencies(${ly_create_alias_NAME} ${final_targets})
         # copy over all the dependent target interface properties to the alias
         o3de_copy_targets_usage_requirements(TARGET ${ly_create_alias_NAME} SOURCE_TARGETS ${final_targets})
+        # Register the targets this alias aliases
+        set_property(GLOBAL APPEND PROPERTY O3DE_ALIASED_TARGETS_${ly_create_alias_NAME} ${final_targets})
     endif()
 
     # now add the final alias:
@@ -250,6 +252,8 @@ function(ly_add_gem_dependencies_to_project_variants)
                 ${PREFIX_CLAUSE}
                 TARGETS ${ly_add_gem_dependencies_TARGET}
                 DEPENDENT_TARGETS ${dealiased_gem_target})
+        else()
+            message(VERBOSE "Gem \"${gem_name}\" does not expose a variant of ${ly_add_gem_dependencies_VARIANT}")
         endif()
     endforeach()
 endfunction()
@@ -266,6 +270,9 @@ function(ly_enable_gems_delayed)
         if (NOT TARGET ${target})
             message(FATAL_ERROR "ly_set_gem_variant_to_load specified TARGET '${target}' but no such target was found.")
         endif()
+
+        get_property(target_gem_variants GLOBAL PROPERTY LY_GEM_VARIANTS_"${target}")
+        message(VERBOSE "Adding gem dependencies for \"${target}\" associated with the Gem variants of \"${target_gem_variants}\"")
 
         # Lookup if the target is scoped to a project
         # In that case the target can only use gem targets that is
@@ -302,7 +309,6 @@ function(ly_enable_gems_delayed)
 
             # Gather the Gem variants associated with this target and iterate over them to combine them with the enabled
             # gems for the each project
-            get_property(target_gem_variants GLOBAL PROPERTY LY_GEM_VARIANTS_"${target}")
             foreach(variant ${target_gem_variants})
                 ly_add_gem_dependencies_to_project_variants(
                     PROJECT_NAME ${project}

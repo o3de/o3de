@@ -18,6 +18,7 @@ set(FILES
     Tests/PhysXTestEnvironment.h
     Tests/PhysXTestEnvironment.cpp
     Tests/PhysXGenericTest.cpp
+    Tests/PhysXMaterialTest.cpp
     Tests/PhysXSpecificTest.cpp
     Tests/PhysXForceRegionTest.cpp
     Tests/PhysXCollisionFilteringTest.cpp

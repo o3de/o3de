@@ -87,8 +87,6 @@ namespace ScriptCanvas
 
         bool IsDetectableSelfDeactivation(const ExecutionTreeConstPtr& execution);
 
-        bool IsEntityIdThatRequiresRuntimeRemap(const VariableConstPtr& variable);
-
         bool IsEventConnectCall(const ExecutionTreeConstPtr& execution);
 
         bool IsEventDisconnectCall(const ExecutionTreeConstPtr& execution);
@@ -119,7 +117,12 @@ namespace ScriptCanvas
 
         bool IsInLoop(const ExecutionTreeConstPtr& execution);
 
-        bool IsInputSelf(const ExecutionTreeConstPtr& execution, size_t index);
+        // #scriptcanvas_component_extension
+        bool IsSelfInput(const ExecutionInput& input);
+
+        bool IsSelfInput(const ExecutionTreeConstPtr& execution, size_t index);
+
+        bool IsSelfReturnValue(ReturnValueConstPtr returnValue);
 
         bool IsIsNull(const ExecutionTreeConstPtr& execution);
 
@@ -157,6 +160,8 @@ namespace ScriptCanvas
 
         bool IsRandomSwitchStatement(const ExecutionTreeConstPtr& execution);
 
+        bool IsSelf(VariableConstPtr variable);
+
         bool IsSequenceNode(const Node* node);
 
         bool IsSequenceNode(const ExecutionTreeConstPtr& execution);
@@ -166,6 +171,10 @@ namespace ScriptCanvas
         bool IsUserFunctionCall(const ExecutionTreeConstPtr& execution);
 
         bool IsUserFunctionCallPure(const ExecutionTreeConstPtr& execution);
+
+        bool IsUserFunctionCallLocallyDefined(const AbstractCodeModel& model, const Node& node);
+
+        bool IsUserFunctionCallLocallyDefined(const ExecutionTreeConstPtr& execution);
 
         bool IsUserFunctionDefinition(const ExecutionTreeConstPtr& execution);
 
@@ -197,8 +206,6 @@ namespace ScriptCanvas
 
         OutputAssignmentPtr RemoveOutput(ExecutionChild& execution, const SlotId& slotId);
 
-        bool RequiresRuntimeRemap(const AZ::EntityId& entityId);
-
         AZStd::string SlotNameToIndexString(const Slot& slot);
 
         AZStd::string ToIdentifier(AZStd::string_view name);
@@ -208,5 +215,10 @@ namespace ScriptCanvas
         void TraverseTree(const AbstractCodeModel& execution, ExecutionTreeTraversalListener& listener);
 
         void TraverseTree(const ExecutionTreeConstPtr& execution, ExecutionTreeTraversalListener& listener);
+
+        // #scriptcanvas_component_extension
+        bool EntityIdValueIsNotUseable(const AZ::EntityId& entityId);
+
+        bool IsEntityIdAndValueIsNotUseable(const VariableConstPtr& variable);
     }
 }

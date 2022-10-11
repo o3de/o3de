@@ -40,7 +40,8 @@ namespace EMotionFX
         SIMULATEDOBJECT_COLLIDERS = 21,
         SIMULATEJOINTS = 22,
         EMFX_DEBUG = 23,
-        NUM_RENDERFLAGINDEXES = 24
+        ROOTMOTION = 24,
+        NUM_RENDERFLAGINDEXES = 25
     };
 
     //! A set of combinable flags which indicate which render option in turned on for the actor.
@@ -70,7 +71,8 @@ namespace EMotionFX
         (ClothColliders, AZ_BIT(ActorRenderFlagIndex::CLOTH_COLLIDERS)),
         (SimulatedObjectColliders, AZ_BIT(ActorRenderFlagIndex::SIMULATEDOBJECT_COLLIDERS)),
         (SimulatedJoints, AZ_BIT(ActorRenderFlagIndex::SIMULATEJOINTS)),
-        (EmfxDebug, AZ_BIT(ActorRenderFlagIndex::EMFX_DEBUG))
+        (EmfxDebug, AZ_BIT(ActorRenderFlagIndex::EMFX_DEBUG)),
+        (RootMotion, AZ_BIT(ActorRenderFlagIndex::ROOTMOTION))
     );
 
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(ActorRenderFlags);

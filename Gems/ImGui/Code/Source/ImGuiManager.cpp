@@ -23,6 +23,7 @@
 #include <AzFramework/Input/Devices/Gamepad/InputDeviceGamepad.h>
 #include <AzFramework/Input/Devices/Touch/InputDeviceTouch.h>
 #include <AzFramework/Input/Devices/VirtualKeyboard/InputDeviceVirtualKeyboard.h>
+#include <AzFramework/Viewport/ViewportBus.h>
 #include <IConsole.h>
 #include <imgui/imgui_internal.h>
 #include <sstream>
@@ -246,6 +247,17 @@ void ImGuiManager::Render()
 {
     if (m_clientMenuBarState == DisplayState::Hidden && m_editorWindowState == DisplayState::Hidden)
     {
+        // the first frame that this is true means that it has been deactivated, the following condtional is to avoid
+        // continuous bus notifications
+        if (m_imGuiBroadcastState.m_deactivationBroadcastStatus == ImGuiStateBroadcast::NotBroadcast)
+        {
+            AzFramework::ViewportImGuiNotificationBus::Broadcast(&AzFramework::ViewportImGuiNotificationBus::Events::OnImGuiDeactivated);
+            m_imGuiBroadcastState.m_deactivationBroadcastStatus = ImGuiStateBroadcast::Broadcast;
+
+            // reset the following state to ActivationNotBroadcasted so when ImGui is first activated,
+            // it sends the activation bus notification
+            m_imGuiBroadcastState.m_activationBroadcastStatus = ImGuiStateBroadcast::NotBroadcast;
+        } 
         return;
     }
 
@@ -383,6 +395,13 @@ void ImGuiManager::Render()
 
     // Render!
     RenderImGuiBuffers(scaleRects);
+
+    if (m_imGuiBroadcastState.m_activationBroadcastStatus == ImGuiStateBroadcast::NotBroadcast)
+    {
+        AzFramework::ViewportImGuiNotificationBus::Broadcast(&AzFramework::ViewportImGuiNotificationBus::Events::OnImGuiActivated);
+        m_imGuiBroadcastState.m_activationBroadcastStatus = ImGuiStateBroadcast::Broadcast;
+        m_imGuiBroadcastState.m_deactivationBroadcastStatus = ImGuiStateBroadcast::NotBroadcast;
+    }
 
     // Clear the simulated backspace key
     if (m_simulateBackspaceKeyPressed)
@@ -634,19 +653,24 @@ void ImGuiManager::ToggleThroughImGuiVisibleState()
         case DisplayState::Hidden:
             m_clientMenuBarState = DisplayState::Visible;
             
-            // Draw the ImGui Mouse cursor if either the hardware mouse is connected, or the controller mouse is enabled.
-            ImGui::GetIO().MouseDrawCursor = m_hardwardeMouseConnected || IsControllerSupportModeEnabled(ImGuiControllerModeFlags::Mouse);
-
-            // Disable system cursor if it's in editor and it's not editor game mode
             if (gEnv->IsEditor() && !gEnv->IsEditorGameMode())
             {
-                // Constrain and hide the system cursor
-                AzFramework::InputSystemCursorRequestBus::Event(
-                    AzFramework::InputDeviceMouse::Id, &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
-                    AzFramework::SystemCursorState::ConstrainedAndHidden);
+                // The system cursor is visible so we don't need ImGui's cursor
+                ImGui::GetIO().MouseDrawCursor = false; 
 
-                // Disable discrete input mode
+                // Disable discrete input in edit mode because the user has to click in the viewport to navigate,
+                // so there's no concern about ImGui mouse movements also navigating the camera.
                 m_enableDiscreteInputMode = false;
+            }
+            else
+            {
+                // We're either in game launcher or in Editor game mode and the system cursor is hidden so we'll
+                // show ImGui's cursor instead, but only if a mouse is available.
+                ImGui::GetIO().MouseDrawCursor = m_hardwardeMouseConnected || IsControllerSupportModeEnabled(ImGuiControllerModeFlags::Mouse);
+
+                // During gameplay, the mouse usually affects the camera, so we want the discrete mode to be available by default,
+                // so the user can easily turn off gameplay input while interacting with ImGui.
+                m_enableDiscreteInputMode = true;
             }
 
             // get window size if it wasn't initialized
@@ -670,7 +694,7 @@ void ImGuiManager::ToggleThroughImGuiVisibleState()
             // Enable system cursor if it's in editor and it's not editor game mode
             if (gEnv->IsEditor() && !gEnv->IsEditorGameMode())
             {
-                // unconstrain and show the system cursor
+                // unconstrain and show the system cursor, because there's an ImGui menu item that allows the user to change the cursor state
                 AzFramework::InputSystemCursorRequestBus::Event(
                     AzFramework::InputDeviceMouse::Id, &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
                     AzFramework::SystemCursorState::UnconstrainedAndVisible);

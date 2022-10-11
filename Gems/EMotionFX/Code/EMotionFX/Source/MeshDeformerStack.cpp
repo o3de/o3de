@@ -109,11 +109,13 @@ namespace EMotionFX
     {
         // if we have deformers in the stack
         const size_t numDeformers = m_deformers.size();
+        
+        const uint16 highestJointIndex = m_mesh->GetHighestJointIndex();
 
         // iterate through the deformers and reinitialize them
         for (size_t i = 0; i < numDeformers; ++i)
         {
-            m_deformers[i]->Reinitialize(actor, node, lodLevel);
+            m_deformers[i]->Reinitialize(actor, node, lodLevel, highestJointIndex);
         }
     }
 

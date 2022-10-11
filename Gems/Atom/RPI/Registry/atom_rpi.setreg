@@ -5,9 +5,9 @@
                 "Initialization": {
                     "CommonSrgsShaderAssetPath": "shaders/sceneandviewsrgs.azshader",
                     "ImageSystemDescriptor": {
-                        "AssetStreamingImagePoolSize": 2147483648, // 2 * 1024 * 1024 * 1024
+                        "AssetStreamingImagePoolSize": 0,
                         "SystemStreamingImagePoolSize": 134217728, // 128 * 1024 * 1024
-                        "SystemAttachmentImagePoolSize": 536870912 // 512 * 1024 * 1024
+                        "SystemAttachmentImagePoolSize": 0 
                     },
                     "GpuQuerySystemDescriptor": {
                         "OcclusionQueryCount": 128,

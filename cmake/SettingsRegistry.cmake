@@ -243,6 +243,7 @@ function(ly_delayed_generate_settings_registry)
 
         # Get the gem dependencies for the given project and target combination
         get_property(gem_dependencies GLOBAL PROPERTY LY_DELAYED_LOAD_"${prefix_target}")
+        message(VERBOSE "${prefix_target} has direct gem load dependencies of ${gem_dependencies}")
         list(REMOVE_DUPLICATES gem_dependencies) # Strip out any duplicate gem targets
         unset(all_gem_dependencies)
 

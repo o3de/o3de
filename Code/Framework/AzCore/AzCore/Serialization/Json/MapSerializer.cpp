@@ -108,7 +108,7 @@ namespace AZ
         rapidjson::SizeType maximumSize = 0;
         const rapidjson::Value defaultValue(rapidjson::kObjectType);
         JSR::ResultCode retVal(JSR::Tasks::ReadField);
-        if (containerSize > 0 && context.ShouldClearContainers())
+        if (containerSize > 0 && ShouldClearContainer(context))
         {
             JSR::Result result = context.Report(JSR::Tasks::Clear, JSR::Outcomes::Success, "Clearing associative container.");
             if (result.GetResultCode().GetOutcome() == JSR::Outcomes::Success)
@@ -193,10 +193,19 @@ namespace AZ
             // mark is with success so the result can at best be partial defaults.
             retVal.Combine(JSR::ResultCode(JSR::Tasks::ReadField, JSR::Outcomes::Success));
         }
-        AZStd::string_view message =
-            addedCount >= maximumSize ? "Successfully read associative container." :
-            addedCount == 0 ? "Unable to read data for the associative container." : 
-            "Partially read data for the associative container.";
+        AZStd::string_view message;
+        if (addedCount >= maximumSize)
+        {
+            message =
+                retVal.GetProcessing() == JSR::Processing::Completed ? "Successfully read associative container." :
+                "Partially read element data for the associative container.";
+        }
+        else
+        {
+            message =
+                addedCount == 0 ? "Unable to read data for the associative container." : 
+                "Partially read data for the associative container.";
+        }
         return context.Report(retVal, message);
     }
 
@@ -297,9 +306,13 @@ namespace AZ
                     "Unable to store the element that was read to the associative container.");
             }
         }
-        
-        return context.Report(JSR::ResultCode::Combine(keyResult, valueResult),
-            "Successfully loaded an entry into the associative container.");
+
+        JSR::ResultCode result = JSR::ResultCode::Combine(keyResult, valueResult);
+
+        AZStd::string_view message = result.GetProcessing() == JSR::Processing::Completed
+            ? "Successfully loaded an entry into the associative container."
+            : "Partially loaded an entry into the associative container.";
+        return context.Report(result, message);
     }
 
     JsonSerializationResult::Result JsonMapSerializer::Store(rapidjson::Value& outputValue, const void* inputValue, const void* defaultValue,
@@ -446,6 +459,10 @@ namespace AZ
         return true;
     }
 
+    bool JsonMapSerializer::ShouldClearContainer(const JsonDeserializerContext& context) const
+    {
+        return context.ShouldClearContainers();
+    }
 
     
     // JsonUnorderedMapSerializer

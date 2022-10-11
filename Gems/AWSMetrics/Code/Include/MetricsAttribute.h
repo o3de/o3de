@@ -8,12 +8,15 @@
 
 #pragma once
 
-#include <Framework/JsonWriter.h>
-
 #include <AzCore/JSON/document.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/std/string/string.h>
+
+namespace AWSCore
+{
+    class JsonWriter;
+}
 
 namespace AWSMetrics
 {

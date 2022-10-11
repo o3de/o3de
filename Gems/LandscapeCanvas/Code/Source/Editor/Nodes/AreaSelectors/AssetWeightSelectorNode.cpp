@@ -42,7 +42,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString AssetWeightSelectorNode::TITLE = QObject::tr("Vegetation Asset Weight Selector");
+    const char* AssetWeightSelectorNode::TITLE = "Vegetation Asset Weight Selector";
 
     AssetWeightSelectorNode::AssetWeightSelectorNode(GraphModel::GraphPtr graph)
         : BaseNode(graph)
@@ -56,28 +56,20 @@ namespace LandscapeCanvas
         return BaseNode::VegetationAreaSelector;
     }
 
-    const bool AssetWeightSelectorNode::ShouldShowEntityName() const
-    {
-        // Don't show the entity name for Area Selectors since they will
-        // be wrapped on a Vegetation Area it would be redundant
-        return false;
-    }
-
     const char* AssetWeightSelectorNode::GetTitle() const
     {
-        return TITLE.toUtf8().constData();
+        return TITLE;
     }
 
     void AssetWeightSelectorNode::RegisterSlots()
     {
-        GraphModel::DataTypePtr invalidEntityDataType = GraphContext::GetInstance()->GetDataType(LandscapeCanvasDataTypeEnum::InvalidEntity);
-        GraphModel::DataTypePtr gradientDataType = GraphContext::GetInstance()->GetDataType(LandscapeCanvasDataTypeEnum::Gradient);
+        GraphModel::DataTypePtr gradientDataType = GetGraphContext()->GetDataType(LandscapeCanvasDataTypeEnum::Gradient);
 
         RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
             INBOUND_GRADIENT_SLOT_ID,
             INBOUND_GRADIENT_SLOT_LABEL.toUtf8().constData(),
-            { gradientDataType, invalidEntityDataType },
-            gradientDataType->GetDefaultValue(),
+            { gradientDataType },
+            AZStd::any(AZ::EntityId()),
             INBOUND_GRADIENT_INPUT_SLOT_DESCRIPTION.toUtf8().constData()));
     }
 } // namespace LandscapeCanvas

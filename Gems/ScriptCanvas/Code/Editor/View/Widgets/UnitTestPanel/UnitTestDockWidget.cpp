@@ -432,7 +432,7 @@ namespace ScriptCanvasEditor
 
         AZ::Outcome<int, AZStd::string> openOutcome = AZ::Failure(AZStd::string());
         GeneralRequestBus::BroadcastResult(openOutcome, &GeneralRequests::OpenScriptCanvasAssetId
-            , ScriptCanvasEditor::SourceHandle(nullptr, sourceUuid, {})
+            , SourceHandle(nullptr, sourceUuid)
             , Tracker::ScriptCanvasFileState::UNMODIFIED);
 
         if (!openOutcome)
@@ -520,7 +520,7 @@ namespace ScriptCanvasEditor
                         continue;
                     }
 
-                    ScriptCanvasEditor::SourceHandle source(nullptr, scriptUuid, "");
+                    SourceHandle source(nullptr, scriptUuid);
                     ScriptCanvasEditor::CompleteDescriptionInPlace(source);
                     RunTestGraph(source, mode);
                 }
@@ -614,14 +614,14 @@ namespace ScriptCanvasEditor
         }
     }
 
-    void UnitTestDockWidget::PendingTests::Add(ScriptCanvasEditor::SourceHandle assetId, ExecutionMode mode)
+    void UnitTestDockWidget::PendingTests::Add(SourceHandle assetId, ExecutionMode mode)
     {
         m_pendingTests.push_back(AZStd::make_pair(assetId, mode));
     }
 
-    void UnitTestDockWidget::PendingTests::Complete(ScriptCanvasEditor::SourceHandle assetId, ExecutionMode mode)
+    void UnitTestDockWidget::PendingTests::Complete(SourceHandle assetId, ExecutionMode mode)
     {
-        AZStd::erase_if(m_pendingTests, [assetId, mode](const AZStd::pair<ScriptCanvasEditor::SourceHandle, ExecutionMode>& pending)
+        AZStd::erase_if(m_pendingTests, [assetId, mode](const AZStd::pair<SourceHandle, ExecutionMode>& pending)
             {
                 return (assetId == pending.first && mode == pending.second);
             });

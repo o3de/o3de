@@ -39,9 +39,15 @@ namespace AWSClientAuth
         //! std shared_ptr as the ownership has to be shared with AWS Native SDK.
         //! @return AWS Native SDK Cognito Identity client
         virtual std::shared_ptr<Aws::CognitoIdentity::CognitoIdentityClient> GetCognitoIdentityClient() = 0;
+
+        //! Sanity check for Cognito identity and user controllers to see if they have been configured. Gem will skip set up of controllers
+        //! when configuration is missing to avoid making calls to Cognito that are guaranteed to fail.
+        //! @return True, the controllers configured to support user and identify management have been initialized.
+        //! If False, then either user pool or identity pool configuration is missing. Refer to the Gem documentation about how to provide this configuration.
+        virtual bool HasCognitoControllers() const = 0;
     };
 
-    //! Responsible for fetching AWS Cognito IDP and Identity service client objetcs.
+    //! Responsible for fetching AWS Cognito IDP and Identity service client objects.
     class AWSClientAuthRequests
         : public AZ::EBusTraits
     {

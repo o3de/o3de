@@ -35,15 +35,15 @@ namespace AZ
 
         void CommandQueueContext::Init(RHI::Device& deviceBase)
         {
-            Device& device = static_cast<Device&>(deviceBase);
+            m_device = static_cast<Device*>(&deviceBase);
             m_currentFrameIndex = 0;
             m_frameFences.resize(RHI::Limits::Device::FrameCountMax);
             for (FenceSet& fences : m_frameFences)
             {
-                fences.Init(device.GetDevice(), RHI::FenceState::Signaled);
+                fences.Init(m_device->GetDevice(), RHI::FenceState::Signaled);
             }
 
-            m_compiledFences.Init(device.GetDevice(), RHI::FenceState::Reset);
+            m_compiledFences.Init(m_device->GetDevice(), RHI::FenceState::Reset);
 
             for (uint32_t hardwareQueueIdx = 0; hardwareQueueIdx < RHI::HardwareQueueClassCount; ++hardwareQueueIdx)
             {
@@ -53,7 +53,7 @@ namespace AZ
                 commandQueueDesc.m_hardwareQueueClass = static_cast<RHI::HardwareQueueClass>(hardwareQueueIdx);
                 commandQueueDesc.m_hardwareQueueSubclass = HardwareQueueSubclass::Primary;
                 m_commandQueues[hardwareQueueIdx]->SetName(Name{ EventTrace::GpuQueueNames[hardwareQueueIdx] });
-                m_commandQueues[hardwareQueueIdx]->Init(device, commandQueueDesc);
+                m_commandQueues[hardwareQueueIdx]->Init(*m_device, commandQueueDesc);
             }
 
             CalibrateClocks();
@@ -156,7 +156,14 @@ namespace AZ
         {
             GetCommandQueue(hardwareQueueClass).ExecuteWork(request);
 
-#if defined (AZ_DX12_FORCE_FLUSH_SCOPES)
+#if defined(AZ_FORCE_CPU_GPU_INSYNC)
+            // Cache the name of the scope we just queued and wait for it to finish on the cpu
+            m_device->SetLastExecutingScope(request.m_commandLists.front()->GetName().GetStringView());
+            // We call wait for idle on all queues for the following reason -> Dx12 will signal a fence on the
+            // queue that was executing work that may have caused the crash hence if we wait on that explicit queue
+            // that is executing the work we will not catch the crash at the correct place. The cpu will think that
+            // the pass finished executing successfully. In order to get around it we try to make
+            // every queue signal a fence causing a crash for other queues but at the correct place.
             WaitForIdle();
 #endif
         }

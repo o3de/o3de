@@ -2,18 +2,15 @@
 
 <ScriptCanvas Include="Include/ScriptCanvas/Libraries/Core/EBusEventHandler.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Class Name="EBusEventHandler"
-	       QualifiedName="ScriptCanvas::Nodes::Core::EBusEventHandler"
-	       PreferredClassName="Event Handler"
-           Uuid="{33E12915-EFCA-4AA7-A188-D694DAD58980}"
-           Base="ScriptCanvas::Node"
-           Icon="Icons/ScriptCanvas/Bus.png"
-           Version="5"
-           VersionConverter="ScriptCanvas::VersionConverters::EBusEventHandlerVersionConverter"
-           EventHandler="SerializeContextOnWriteEndHandler&lt;EBusEventHandler&gt;"
-           EditAttributes="AZ::Script::Attributes::ExcludeFrom@AZ::Script::Attributes::ExcludeFlags::All"
-           GraphEntryPoint="True"
-           GeneratePropertyFriend="True"
-           Description="Allows you to handle a event.">
+        QualifiedName="ScriptCanvas::Nodes::Core::EBusEventHandler"
+        PreferredClassName="Event Handler"
+        Uuid="{33E12915-EFCA-4AA7-A188-D694DAD58980}"
+        Version="5"
+        VersionConverter="ScriptCanvas::VersionConverters::EBusEventHandlerVersionConverter"
+        EventHandler="SerializeContextOnWriteEndHandler&lt;EBusEventHandler&gt;"
+        EditAttributes="AZ::Script::Attributes::ExcludeFrom@AZ::Script::Attributes::ExcludeFlags::All"
+        GraphEntryPoint="True"
+        Description="Allows you to handle a event.">
         <In Name="Connect" Description="Connect this event handler to the specified entity."/>
         <In Name="Disconnect" Description="Disconnect this event handler."/>
         <Out Name="OnConnected" Description="Signaled when a connection has taken place."/>

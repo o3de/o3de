@@ -29,9 +29,14 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 #include "{{ xml.attrib['Include'] }}"
 
 {%     for Class in xml.iter('Class') %}
-{% set baseClass = Class.attrib['Base'].split(';')[0] if Class.attrib['Base'] is string else "ScriptCanvas::Node" %}
-{% set attribute_Namespace = undefined %}
-{%- if Class.attrib['Namespace'] is defined %}
+
+{%- set baseClass = "ScriptCanvas::Node" %}
+{% if Class.attrib['Base'] is defined and Class.attrib['Base'] %}
+{%    set baseClass = Class.attrib['Base'] %}
+{% endif %}
+
+{%- set attribute_Namespace = undefined %}
+{% if Class.attrib['Namespace'] is defined %}
 {%      if Class.attrib['Namespace'] != "None" %}
 {%          set attribute_Namespace = Class.attrib['Namespace'] %}
 {%      endif %}
@@ -187,9 +192,9 @@ bool {{ Class.attrib['QualifiedName'] }}::IsDeprecated() const
 
 {% set deprecationUuid = Class.attrib['DeprecationUUID'] %}
 {% if deprecationUuid is defined %}
-ScriptCanvas::NodeConfiguration {{ Class.attrib['QualifiedName'] }}::GetReplacementNodeConfiguration() const
+ScriptCanvas::NodeReplacementConfiguration {{ Class.attrib['QualifiedName'] }}::GetReplacementNodeConfiguration() const
 {
-    ScriptCanvas::NodeConfiguration nodeConfig{};
+    ScriptCanvas::NodeReplacementConfiguration nodeConfig{};
     nodeConfig.m_type = AZ::Uuid("{{ deprecationUuid }}");
     {% if Class.attrib['ReplacementMethodName'] is defined %}
     nodeConfig.m_methodName = "{{Class.attrib['ReplacementMethodName']}}";
@@ -221,6 +226,8 @@ void {{ Class.attrib['QualifiedName'] }}::Reflect(AZ::ReflectContext* context)
 {% endif %}
 {% if Class.attrib['Version'] is defined %}
             ->Version({{ Class.attrib['Version'] }}{% if Class.attrib['VersionConverter'] is defined %}, &{{ Class.attrib['VersionConverter'] }}{% endif %})
+{% else %}
+            ->Version(0)
 {% endif %}
 {% for Property in Class.iter('SerializedProperty') %}
             ->Field("{{ Property.attrib['Name'] }}", &{{ Class.attrib['Name'] }}::{{ Property.attrib['Name'] | replace(' ','') }})

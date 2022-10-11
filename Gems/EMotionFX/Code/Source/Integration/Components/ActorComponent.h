@@ -146,27 +146,22 @@ namespace EMotionFX
             //////////////////////////////////////////////////////////////////////////
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
             {
-                provided.push_back(AZ_CRC("EMotionFXActorService", 0xd6e8f48d));
-                provided.push_back(AZ_CRC("MeshService", 0x71d8a455));
-                provided.push_back(AZ_CRC("CharacterPhysicsDataService", 0x34757927));
-                provided.push_back(AZ_CRC("MaterialReceiverService", 0x0d1a6a74));
+                provided.push_back(AZ_CRC_CE("EMotionFXActorService"));
+                provided.push_back(AZ_CRC_CE("MeshService"));
+                provided.push_back(AZ_CRC_CE("CharacterPhysicsDataService"));
+                provided.push_back(AZ_CRC_CE("MaterialConsumerService"));
             }
 
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
             {
-                incompatible.push_back(AZ_CRC("EMotionFXActorService", 0xd6e8f48d));
-                incompatible.push_back(AZ_CRC("MeshService", 0x71d8a455));
+                incompatible.push_back(AZ_CRC_CE("EMotionFXActorService"));
+                incompatible.push_back(AZ_CRC_CE("MeshService"));
                 incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
-            }
-
-            static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
-            {
-                dependent.push_back(AZ_CRC("PhysicsService", 0xa7350d22));
             }
 
             static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
             {
-                required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+                required.push_back(AZ_CRC_CE("TransformService"));
             }
 
             static void Reflect(AZ::ReflectContext* context);
@@ -193,9 +188,8 @@ namespace EMotionFX
             void CheckAttachToEntity();
 
             Configuration                                   m_configuration;            ///< Component configuration.
-                                                                                        /// Live state
-            ActorAsset::ActorInstancePtr                    m_attachmentTargetActor;    ///< Target actor instance to attach to.
             AZ::EntityId                                    m_attachmentTargetEntityId; ///< Target actor entity ID
+            AZ::EntityId                                    m_attachmentPreviousParent; ///< The parent entity id before attaching to the attachment target.
             ActorAsset::ActorInstancePtr                    m_actorInstance;            ///< Live actor instance.
             AZStd::vector<AZ::EntityId>                     m_attachments;
 

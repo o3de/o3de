@@ -11,7 +11,7 @@
 #include <AzCore/Module/Module.h>
 #include <ScriptCanvasTestingSystemComponent.h>
 #include <Editor/Framework/ScriptCanvasTraceUtilities.h>
-#include <Source/Nodes/Nodeables/NodeableTestingLibrary.h>
+#include <TestAutoGenNodeableRegistry.generated.h>
 
 namespace ScriptCanvasTesting
 {
@@ -30,9 +30,6 @@ namespace ScriptCanvasTesting
                 ScriptCanvasTestingSystemComponent::CreateDescriptor(),
                 TraceMessageComponent::CreateDescriptor(),
             });
-
-            AZStd::vector<AZ::ComponentDescriptor*> componentDescriptors(NodeableTestingLibrary::GetComponentDescriptors());
-            m_descriptors.insert(m_descriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
         }
 
         /**

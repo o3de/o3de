@@ -105,7 +105,7 @@ namespace AZ
     /// The very first function invoked in a dynamic module.
     /// Implementations should attach to the environment.
     /// \param sharedEnvironment is an \ref AZ::EnvironmentInstance.
-    using InitializeDynamicModuleFunction = void(*)(void* sharedEnvironment);
+    using InitializeDynamicModuleFunction = void(*)();
     const char InitializeDynamicModuleFunctionName[] = "InitializeDynamicModule";
 
     /// \code

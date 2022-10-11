@@ -15,6 +15,7 @@
 #include <AzCore/Console/Console.h>
 #include <AzCore/Console/ILogger.h>
 
+#include <openssl/opensslv.h>
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <openssl/rand.h>
@@ -51,11 +52,16 @@ namespace AzNetworking
     {
 #if AZ_TRAIT_USE_OPENSSL
 
-        const int32_t errorCode = ERR_get_error();
-            const int32_t systemError = GetLastNetworkError();
+        #if OPENSSL_VERSION_NUMBER >= 0x30000000L
+            const char *func = nullptr;
+            const int32_t errorCode = ERR_get_error_all(nullptr, nullptr, &func, nullptr, nullptr);
+        #else
+            const int32_t errorCode = ERR_get_error();
+        #endif 
+        const int32_t systemError = GetLastNetworkError();
 
-            switch (errorCode)
-            {
+        switch (errorCode)
+        {
             case SSL_ERROR_NONE:
                 AZLOG_ERROR("%X - SSL_ERROR_NONE: last system error is (%d:%s)", errorCode, systemError, GetNetworkErrorDesc(systemError));
                 break;
@@ -75,16 +81,24 @@ namespace AzNetworking
                 AZLOG_ERROR("%X - SSL_ERROR_WANT_ACCEPT: socket is non-blocking, accept failed and should be retried", errorCode);
                 break;
             case SSL_ERROR_WANT_X509_LOOKUP:
-            AZLOG_ERROR("%X - SSL_ERROR_WANT_X509_LOOKUP: operation did not complete, SSL_CTX_set_client_cert_cb() has asked to be called again, operation should be retried", errorCode);
+                AZLOG_ERROR("%X - SSL_ERROR_WANT_X509_LOOKUP: operation did not complete, SSL_CTX_set_client_cert_cb() has asked to be called again, operation should be retried", errorCode);
                 break;
             case SSL_ERROR_SYSCALL:
-            AZLOG_ERROR("%X - SSL_ERROR_SYSCALL: system error, check errno (%d:%s)", errorCode, systemError, GetNetworkErrorDesc(systemError));
+                AZLOG_ERROR("%X - SSL_ERROR_SYSCALL: system error, check errno (%d:%s)", errorCode, systemError, GetNetworkErrorDesc(systemError));
                 break;
             case SSL_ERROR_SSL:
-            AZLOG_ERROR("%X - SSL_ERROR_SSL: lib %s, func %s, reason %s", errorCode, ERR_lib_error_string(errorCode), ERR_func_error_string(errorCode), ERR_reason_error_string(errorCode));
+                #if OPENSSL_VERSION_NUMBER >= 0x30000000L
+                    AZLOG_ERROR("%X - SSL_ERROR_SSL: lib %s, func %s, reason %s", errorCode, ERR_lib_error_string(errorCode), func, ERR_reason_error_string(errorCode));
+                #else
+                    AZLOG_ERROR("%X - SSL_ERROR_SSL: lib %s, func %s, reason %s", errorCode, ERR_lib_error_string(errorCode), ERR_func_error_string(errorCode), ERR_reason_error_string(errorCode));
+                #endif
                 break;
             default:
-            AZLOG_ERROR("%X - Unknown error code: lib %s, func %s, reason %s", errorCode, ERR_lib_error_string(errorCode), ERR_func_error_string(errorCode), ERR_reason_error_string(errorCode));
+                #if OPENSSL_VERSION_NUMBER >= 0x30000000L
+                    AZLOG_ERROR("%X - Unknown error code: lib %s, func %s, reason %s", errorCode, ERR_lib_error_string(errorCode), func, ERR_reason_error_string(errorCode));
+                #else
+                    AZLOG_ERROR("%X - Unknown error code: lib %s, func %s, reason %s", errorCode, ERR_lib_error_string(errorCode), ERR_func_error_string(errorCode), ERR_reason_error_string(errorCode));
+                #endif
                 break;
         }
 #endif
@@ -366,7 +380,9 @@ namespace AzNetworking
         {
             SSL_library_init();
             SSL_load_error_strings();
-            ERR_load_BIO_strings();
+            #if !(OPENSSL_VERSION_NUMBER >= 0x30000000L)
+                ERR_load_BIO_strings();
+            #endif
             OpenSSL_add_all_algorithms();
             g_azNetworkingTrustDataIndex = SSL_get_ex_new_index(0, const_cast<void*>(reinterpret_cast<const void*>("AzNetworking TrustZone data index")), nullptr, nullptr, nullptr);
 

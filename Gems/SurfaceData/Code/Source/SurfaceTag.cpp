@@ -82,6 +82,13 @@ namespace SurfaceData
                 ->Method("SetTag", &SurfaceTag::SetTag)
                 ->Method("Equal", &SurfaceTag::operator==)
                 ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::Equal)
+                ->Method(
+                    "ToString",
+                    [](const SurfaceTag& tag) -> AZStd::string
+                    {
+                        return tag.GetDisplayName();
+                    })
+                    ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::ToString)
                 ;
         }
     }

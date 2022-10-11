@@ -34,6 +34,20 @@ namespace AZ::Render
             float m_farPlaneDistance = 10000.0f;
             float m_aspectRatio = 1.0f;
             float m_fieldOfViewYRadians = DegToRad(90.0f);
+            
+            bool operator==(const ProjectedShadowDescriptor & rhs) const
+            {
+                return m_transform == rhs.m_transform &&
+                    m_nearPlaneDistance == rhs.m_nearPlaneDistance &&
+                    m_farPlaneDistance == rhs.m_farPlaneDistance &&
+                    m_aspectRatio == rhs.m_aspectRatio &&
+                    m_fieldOfViewYRadians == rhs.m_fieldOfViewYRadians;
+            }
+
+            bool operator!=(const ProjectedShadowDescriptor & rhs) const
+            {
+                return !(*this == rhs);
+            }
         };
 
         //! Creates a new projected shadow and returns a handle that can be used to reference it later.

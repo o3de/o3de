@@ -65,6 +65,7 @@ namespace AzToolsFramework
 
         private Q_SLOTS:
             void DrainMessages();
+            void ScheduleDrainMessages();
 
         public slots:
             virtual void Clear();

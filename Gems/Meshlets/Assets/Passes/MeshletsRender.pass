@@ -1,0 +1,41 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "MeshletsRenderPassTemplate",
+            "PassClass": "MeshletsRenderPass",
+            "Slots": [
+                // OUtput shared buffer for dynamic meshlets data
+                {
+                    "Name": "MeshletsSharedBuffer",
+                    "ShaderInputName": "m_meshletsSharedBuffer",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+
+                // Input/Outputs...
+                {
+                    "Name": "DepthStencilInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "DepthStencil"
+                },
+                {
+                    "Name": "RenderTargetInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget"
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "MeshletsSharedBuffer",
+                    "AttachmentRef": {
+                        "Pass": "MeshletsComputePass",
+                        "Attachment": "MeshletsSharedBuffer"
+                    }
+                }
+            ]
+        }
+    }
+}

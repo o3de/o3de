@@ -1,4 +1,5 @@
 {
-    "materialType": "Materials/Types/StandardPBR.materialtype",
-    "parentMaterial": "Materials/Presets/PBR/default_grid.material"
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 5,
+    "parentMaterial": "@gemroot:Atom_Feature_Common@/Assets/Materials/Presets/PBR/default_grid.material"
 }

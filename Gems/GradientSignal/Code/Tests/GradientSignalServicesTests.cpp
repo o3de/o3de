@@ -15,6 +15,7 @@
 #include <GradientSignal/Components/ConstantGradientComponent.h>
 #include <GradientSignal/Components/DitherGradientComponent.h>
 #include <GradientSignal/Components/InvertGradientComponent.h>
+#include <GradientSignal/Ebuses/ShapeAreaFalloffGradientRequestBus.h>
 
 namespace UnitTest
 {
@@ -343,6 +344,127 @@ namespace UnitTest
         auto entity = BuildTestInvertGradient(HalfBounds, entityMock->GetId());
 
         TestFixedDataSampler(expectedOutput, dataSize, entity->GetId());
+    }
+
+    TEST_F(GradientSignalServicesTestsFixture, ShapeAreaFalloffGradientComponent_ValidateKnownPoints)
+    {
+        // Create a shape area falloff gradient centered at (10,10,10) with a box of size 20 and falloff of 10.
+        // This will give us the following:
+        //   |_______________|------------------|_______________|
+        // (-10)  falloff   (0)       box      (20)  falloff   (30)
+
+        const float HalfBounds = 10.0f;
+        auto entity = BuildTestShapeAreaFalloffGradient(HalfBounds);
+
+        const float FalloffWidth = 10.0f;
+        GradientSignal::ShapeAreaFalloffGradientRequestBus::Event(
+            entity->GetId(), &GradientSignal::ShapeAreaFalloffGradientRequestBus::Events::SetFalloffWidth, FalloffWidth);
+
+        GradientSignal::ShapeAreaFalloffGradientRequestBus::Event(
+            entity->GetId(), &GradientSignal::ShapeAreaFalloffGradientRequestBus::Events::Set3dFalloff, false);
+
+        GradientSignal::GradientSampler gradientSampler;
+        gradientSampler.m_gradientId = entity->GetId();
+
+        const AZStd::vector<AZStd::pair<AZ::Vector3, float>> positionsAndOutputs =
+        {
+            // Verify that points that occur within the box get a gradient value of 1.
+            { {   0.0f,  0.0f, 0.0f }, 1.0f },
+            { {  10.0f,  0.0f, 0.0f }, 1.0f },
+            { {  20.0f,  0.0f, 0.0f }, 1.0f },
+            { {   0.0f, 10.0f, 0.0f }, 1.0f },
+            { {   0.0f, 20.0f, 0.0f }, 1.0f },
+
+            // Verify that points far away from the box get a gradient value of 0. (i.e. outside of -10 to 30)
+            { { -11.0f,   0.0f, 0.0f }, 0.0f },
+            { {  31.0f,   0.0f, 0.0f }, 0.0f },
+            { {   0.0f, -11.0f, 0.0f }, 0.0f },
+            { {   0.0f,  31.0f, 0.0f }, 0.0f },
+
+            // Verify that points halfway into the falloff get a value of 0.5.
+            // The box goes from 0 to 20, and the falloff is 10, so -5 and 25 should be halfway into the falloff in each direction.
+            { {  -5.0f,   0.0f, 0.0f }, 0.5f },
+            { {  25.0f,   0.0f, 0.0f }, 0.5f },
+            { {   0.0f,  -5.0f, 0.0f }, 0.5f },
+            { {   0.0f,  25.0f, 0.0f }, 0.5f },
+
+            // Verify that the Z height of the query has no bearing on the falloff value.
+            { { -5.0f, 0.0f, 1000.0f }, 0.5f },
+            { { 25.0f, 0.0f, 1000.0f }, 0.5f },
+            { { 0.0f, -5.0f, 1000.0f }, 0.5f },
+            { { 0.0f, 25.0f, 1000.0f }, 0.5f },
+        };
+
+        for (auto& [queryPosition, expectedOutput] : positionsAndOutputs)
+        {
+            GradientSignal::GradientSampleParams params;
+            params.m_position = queryPosition;
+
+            float actualValue = gradientSampler.GetValue(params);
+            EXPECT_NEAR(actualValue, expectedOutput, 0.01f);
+        }
+    }
+
+    TEST_F(GradientSignalServicesTestsFixture, ShapeAreaFalloffGradientComponent_Validate3dFalloff)
+    {
+        // Create a shape area falloff gradient centered at (10,10,10) with a box of size 20 and falloff of 10.
+        // This will give us the following:
+        //   |_______________|------------------|_______________|
+        // (-10)  falloff   (0)       box      (20)  falloff   (30)
+
+        const float HalfBounds = 10.0f;
+        auto entity = BuildTestShapeAreaFalloffGradient(HalfBounds);
+
+        const float FalloffWidth = 10.0f;
+        GradientSignal::ShapeAreaFalloffGradientRequestBus::Event(
+            entity->GetId(), &GradientSignal::ShapeAreaFalloffGradientRequestBus::Events::SetFalloffWidth, FalloffWidth);
+
+        // Enable 3d falloff 
+        GradientSignal::ShapeAreaFalloffGradientRequestBus::Event(
+            entity->GetId(), &GradientSignal::ShapeAreaFalloffGradientRequestBus::Events::Set3dFalloff, true);
+
+        GradientSignal::GradientSampler gradientSampler;
+        gradientSampler.m_gradientId = entity->GetId();
+
+        const AZStd::vector<AZStd::pair<AZ::Vector3, float>> positionsAndOutputs = {
+            // Verify that points halfway into the falloff in the X direction get a value of 0.5.
+            // The box goes from 0 to 20, and the falloff is 10, so -5 and 25 should be halfway into the falloff in each direction.
+            { { -5.0f, 0.0f, 0.0f }, 0.5f },
+            { { -5.0f, 0.0f, 10.0f }, 0.5f },
+            { { -5.0f, 0.0f, 20.0f }, 0.5f },
+            { { 25.0f, 0.0f, 0.0f }, 0.5f },
+            { { 25.0f, 0.0f, 10.0f }, 0.5f },
+            { { 25.0f, 0.0f, 20.0f }, 0.5f },
+
+            // Verify that points halfway into the falloff in the Y direction get a value of 0.5.
+            { { 0.0f, -5.0f, 0.0f }, 0.5f },
+            { { 0.0f, -5.0f, 10.0f }, 0.5f },
+            { { 0.0f, -5.0f, 20.0f }, 0.5f },
+            { { 0.0f, 25.0f, 0.0f }, 0.5f },
+            { { 0.0f, 25.0f, 10.0f }, 0.5f },
+            { { 0.0f, 25.0f, 20.0f }, 0.5f },
+
+            // Verify that points halfway into the falloff in the Z direction get a value of 0.5.
+            { { 0.0f, 0.0f, -5.0f }, 0.5f },
+            { { 10.0f, 10.0f, -5.0f }, 0.5f },
+            { { 20.0f, 20.0f, -5.0f }, 0.5f },
+            { { 0.0f, 0.0f, 25.0f }, 0.5f },
+            { { 10.0f, 10.0f, 25.0f }, 0.5f },
+            { { 20.0f, 20.0f, 25.0f }, 0.5f },
+
+            // Verify that faraway Z points have 0 falloff, even though the XY points are within the box.
+            { { 10.0f, 10.0f, -1000.0f }, 0.0f },
+            { { 10.0f, 10.0f, 1000.0f }, 0.0f },
+        };
+
+        for (auto& [queryPosition, expectedOutput] : positionsAndOutputs)
+        {
+            GradientSignal::GradientSampleParams params;
+            params.m_position = queryPosition;
+
+            float actualValue = gradientSampler.GetValue(params);
+            EXPECT_NEAR(actualValue, expectedOutput, 0.01f);
+        }
     }
 }
 

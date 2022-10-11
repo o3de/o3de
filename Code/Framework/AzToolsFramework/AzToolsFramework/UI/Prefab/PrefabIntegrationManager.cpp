@@ -16,13 +16,16 @@
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/Prefab/EditorPrefabComponent.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceToTemplateInterface.h>
+#include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
@@ -39,6 +42,8 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QTimer>
+
+static constexpr AZStd::string_view LevelLoadedUpdaterIdentifier = "o3de.updater.onLevelLoaded";
 
 namespace AzToolsFramework
 {
@@ -109,11 +114,25 @@ namespace AzToolsFramework
             auto prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
             prefabFocusInterface->InitializeEditorInterfaces();
 
+            if (IsNewActionManagerEnabled())
+            {
+                m_actionManagerInterface = AZ::Interface<ActionManagerInterface>::Get();
+                AZ_Assert(
+                    m_actionManagerInterface, "Prefab - could not get m_actionManagerInterface on PrefabIntegrationManager construction.");
+
+                // Register an updater that will refresh actions when a level is loaded.
+                if (m_actionManagerInterface)
+                {
+                    m_actionManagerInterface->RegisterActionUpdater(LevelLoadedUpdaterIdentifier);
+                }
+            }
+            
             EditorContextMenuBus::Handler::BusConnect();
             EditorEventsBus::Handler::BusConnect();
             PrefabInstanceContainerNotificationBus::Handler::BusConnect();
             AZ::Interface<PrefabIntegrationInterface>::Register(this);
             EditorEntityContextNotificationBus::Handler::BusConnect();
+            PrefabPublicNotificationBus::Handler::BusConnect();
 
             InitializeShortcuts();
         }
@@ -122,6 +141,7 @@ namespace AzToolsFramework
         {
             UninitializeShortcuts();
 
+            PrefabPublicNotificationBus::Handler::BusDisconnect();
             EditorEntityContextNotificationBus::Handler::BusDisconnect();
             AZ::Interface<PrefabIntegrationInterface>::Unregister(this);
             PrefabInstanceContainerNotificationBus::Handler::BusDisconnect();
@@ -147,7 +167,7 @@ namespace AzToolsFramework
 
                 QObject::connect(
                     m_actions.back().get(), &QAction::triggered, m_actions.back().get(),
-                    []
+                    [this]
                     {
                         AzToolsFramework::EntityIdList selectedEntities;
                         AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
@@ -186,7 +206,7 @@ namespace AzToolsFramework
 
                 QObject::connect(
                     m_actions.back().get(), &QAction::triggered, m_actions.back().get(),
-                    []
+                    [this]
                     {
                         ContextMenu_ClosePrefab();
                     });
@@ -213,7 +233,7 @@ namespace AzToolsFramework
         }
 
         void PrefabIntegrationManager::PopulateEditorGlobalContextMenu(
-            QMenu* menu, [[maybe_unused]] const AZ::Vector2& point, [[maybe_unused]] int flags)
+            QMenu* menu, [[maybe_unused]] const AZStd::optional<AzFramework::ScreenPoint>& point, [[maybe_unused]] int flags)
         {
             AzToolsFramework::EntityIdList selectedEntities;
             AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
@@ -272,7 +292,7 @@ namespace AzToolsFramework
 
                                 QObject::connect(
                                     editAction, &QAction::triggered, editAction,
-                                    [selectedEntity]
+                                    [this, selectedEntity]
                                     {
                                         ContextMenu_EditPrefab(selectedEntity);
                                     }
@@ -287,14 +307,46 @@ namespace AzToolsFramework
 
                                 QObject::connect(
                                     editAction, &QAction::triggered, editAction,
-                                    [selectedEntity]
+                                    [this, selectedEntity]
                                     {
                                         ContextMenu_EditPrefab(selectedEntity);
                                     }
                                 );
                             }
+
+                            if (IsPrefabOverridesUxEnabled())
+                            {
+                                if (!s_containerEntityInterface->IsContainerOpen(selectedEntity))
+                                {
+                                    // Open Prefab Instance
+                                    QAction* overrideAction = menu->addAction(QObject::tr("Override Prefab Instance"));
+                                    overrideAction->setToolTip(QObject::tr("Open the prefab instance to apply overrides."));
+
+                                    QObject::connect(
+                                        overrideAction, &QAction::triggered, overrideAction,
+                                        [this, selectedEntity]
+                                    {
+                                        ContextMenu_OpenPrefabInstance(selectedEntity);
+                                    }
+                                    );
+                                }
+                                else
+                                {
+                                    // Close Prefab
+                                    QAction* closeAction = menu->addAction(QObject::tr("Close Prefab Instance"));
+                                    closeAction->setToolTip(QObject::tr("Close this prefab instance."));
+
+                                    QObject::connect(
+                                        closeAction, &QAction::triggered, closeAction,
+                                        [this, selectedEntity]
+                                    {
+                                        ContextMenu_ClosePrefabInstance(selectedEntity);
+                                    }
+                                    );
+                                }
+                            }                           
                         }
-                        else
+                        else if (selectedEntity != s_prefabPublicInterface->GetLevelInstanceContainerEntityId())
                         {
                             // Close Prefab
                             QAction* closeAction = menu->addAction(QObject::tr("Close Prefab"));
@@ -303,7 +355,7 @@ namespace AzToolsFramework
 
                             QObject::connect(
                                 closeAction, &QAction::triggered, closeAction,
-                                []
+                                [this]
                                 {
                                     ContextMenu_ClosePrefab();
                                 }
@@ -350,7 +402,7 @@ namespace AzToolsFramework
 
                             QObject::connect(
                                 createAction, &QAction::triggered, createAction,
-                                [selectedEntities]
+                                [this, selectedEntities]
                                 {
                                     ContextMenu_CreatePrefab(selectedEntities);
                                 }
@@ -370,7 +422,7 @@ namespace AzToolsFramework
                 QAction* detachPrefabAction = menu->addAction(QObject::tr("Detach Prefab..."));
                 QObject::connect(
                     detachPrefabAction, &QAction::triggered, detachPrefabAction,
-                    [selectedEntityId]
+                    [this, selectedEntityId]
                     {
                         ContextMenu_DetachPrefab(selectedEntityId);
                     }
@@ -386,7 +438,7 @@ namespace AzToolsFramework
 
                 QObject::connect(
                     instantiateAction, &QAction::triggered, instantiateAction,
-                    []
+                    [this]
                     {
                         ContextMenu_InstantiatePrefab();
                     }
@@ -400,7 +452,7 @@ namespace AzToolsFramework
 
                     QObject::connect(
                         action, &QAction::triggered, action,
-                        []
+                        [this]
                         {
                             ContextMenu_InstantiateProceduralPrefab();
                         }
@@ -434,7 +486,7 @@ namespace AzToolsFramework
 
                             QObject::connect(
                                 saveAction, &QAction::triggered, saveAction,
-                                [selectedEntity]
+                                [this, selectedEntity]
                                 {
                                     ContextMenu_SavePrefab(selectedEntity);
                                 }
@@ -468,7 +520,7 @@ namespace AzToolsFramework
                     duplicateAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_D));
                     QObject::connect(
                         duplicateAction, &QAction::triggered, duplicateAction,
-                        []
+                        [this]
                         {
                             ContextMenu_Duplicate();
                         }
@@ -485,7 +537,7 @@ namespace AzToolsFramework
                 deleteAction->setShortcut(QKeySequence(Qt::Key_Delete));
                 QObject::connect(
                     deleteAction, &QAction::triggered, deleteAction,
-                    []
+                    [this]
                     {
                         ContextMenu_DeleteSelected();
                     }
@@ -691,14 +743,17 @@ namespace AzToolsFramework
 
         void PrefabIntegrationManager::ContextMenu_SavePrefab(AZ::EntityId containerEntity)
         {
-            auto prefabPath = s_prefabPublicInterface->GetOwningInstancePrefabPath(containerEntity);
+            m_prefabSaveHandler.ExecuteSavePrefabDialog(containerEntity);
+        }
 
-            auto savePrefabOutcome = s_prefabPublicInterface->SavePrefab(prefabPath);
+        void PrefabIntegrationManager::ContextMenu_ClosePrefabInstance(AZ::EntityId containerEntity)
+        {
+            s_prefabFocusPublicInterface->SetOwningPrefabInstanceOpenState(containerEntity, false);
+        }
 
-            if (!savePrefabOutcome.IsSuccess())
-            {
-                WarningDialog("Prefab Save Error", savePrefabOutcome.GetError());
-            }
+        void PrefabIntegrationManager::ContextMenu_OpenPrefabInstance(AZ::EntityId containerEntity)
+        {
+            s_prefabFocusPublicInterface->SetOwningPrefabInstanceOpenState(containerEntity, true);
         }
 
         void PrefabIntegrationManager::ContextMenu_Duplicate()
@@ -1013,6 +1068,14 @@ namespace AzToolsFramework
             {
                 TemplateId currentTemplateId = s_prefabFocusInterface->GetFocusedPrefabTemplateId(s_editorEntityContextId);
                 m_prefabSaveHandler.ExecuteSavePrefabDialog(currentTemplateId, true);
+            }
+        }
+
+        void PrefabIntegrationManager::OnRootPrefabInstanceLoaded()
+        {
+            if (m_actionManagerInterface)
+            {
+                m_actionManagerInterface->TriggerActionUpdater(LevelLoadedUpdaterIdentifier);
             }
         }
 

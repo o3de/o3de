@@ -1121,27 +1121,27 @@
         {
             "type": "Lua",
             "args": {
-                "file": "StandardPBR_Roughness.lua",
+                "file": "Materials/Types/StandardPBR_Roughness.lua",
                 "propertyNamePrefix": "roughness."
             }
         },
         {
             "type": "Lua",
             "args": {
-                "file": "EnhancedPBR_SubsurfaceState.lua",
+                "file": "Materials/Types/EnhancedPBR_SubsurfaceState.lua",
                 "propertyNamePrefix": "subsurfaceScattering."
             }
         },
         {
             "type": "Lua",
             "args": {
-                "file": "Skin_WrinkleMaps.lua"
+                "file": "Materials/Types/Skin_WrinkleMaps.lua"
             }
         },
         {
             "type": "Lua",
             "args": {
-                "file": "Skin_SpecularF0.lua"
+                "file": "Materials/Types/Skin_SpecularF0.lua"
             }
         }
     ],

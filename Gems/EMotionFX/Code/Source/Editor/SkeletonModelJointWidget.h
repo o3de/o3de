@@ -39,6 +39,7 @@ namespace EMotionFX
 
     protected:
         Actor* GetActor() const;
+        ActorInstance* GetActorInstance();
         Node* GetNode() const;
         QModelIndexList GetSelectedModelIndices() const;
         virtual QWidget* CreateContentWidget(QWidget* parent) = 0;

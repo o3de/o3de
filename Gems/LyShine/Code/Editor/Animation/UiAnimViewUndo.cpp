@@ -596,9 +596,9 @@ CUndoTrackEventRemove::CUndoTrackEventRemove(CUiAnimViewSequence* pSequence, con
 void CUndoTrackEventRemove::Undo(bool bUndo)
 {
     AZ_UNUSED(bUndo);
-    const char* rawName = m_eventName.toUtf8().data();
+    const AZStd::string rawName = m_eventName.toUtf8().data();
 
-    m_pSequence->AddTrackEvent(rawName);
+    m_pSequence->AddTrackEvent(rawName.c_str());
 
     const uint numKeys = m_changedKeys.GetKeyCount();
     for (uint keyIndex = 0; keyIndex < numKeys; ++keyIndex)

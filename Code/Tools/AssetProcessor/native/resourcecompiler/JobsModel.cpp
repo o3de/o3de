@@ -12,6 +12,7 @@
 #include <native/AssetDatabase/AssetDatabase.h>
 #include <native/resourcecompiler/RCJobSortFilterProxyModel.h>
 #include <native/utilities/JobDiagnosticTracker.h>
+#include <AzCore/StringFunc/StringFunc.h>
 
 namespace AssetProcessor
 {
@@ -84,6 +85,8 @@ namespace AssetProcessor
                     return tr("Job Key");
                 case ColumnCompleted:
                     return tr("Completed");
+                case ColumnProcessDuration:
+                    return tr("Last Processing Job Duration");
                 default:
                     break;
                 }
@@ -174,6 +177,32 @@ namespace AssetProcessor
                 else
                 {
                     return getItem(index.row())->m_completedTime.toString("hh:mm:ss.zzz MMM dd, yyyy");
+                }
+            case ColumnProcessDuration:
+                if (role == SortRole)
+                {
+                    return getItem(index.row())->m_processDuration;
+                }
+                else
+                {
+                    QTime processDuration = getItem(index.row())->m_processDuration;
+                    if (!processDuration.isValid())
+                    {
+                        return "";
+                    }
+                    if (processDuration.hour() > 0)
+                    {
+                        return processDuration.toString("zzz' ms, 'ss' sec, 'mm' min, 'hh' hr'");
+                    }
+                    if (processDuration.minute() > 0)
+                    {
+                        return processDuration.toString("zzz' ms, 'ss' sec, 'mm' min'");
+                    }
+                    if (processDuration.second() > 0)
+                    {
+                        return processDuration.toString("zzz' ms, 'ss' sec'");
+                    }
+                    return processDuration.toString("zzz' ms'");
                 }
             default:
                 break;
@@ -327,7 +356,41 @@ namespace AssetProcessor
             AssetProcessor::AssetDatabaseConnection assetDatabaseConnection;
             assetDatabaseConnection.OpenDatabase();
 
-            auto jobsFunction = [this, &assetDatabaseConnection](AzToolsFramework::AssetDatabase::JobDatabaseEntry& entry)
+            // Get historical ProcessJob stats from asset database
+            AZStd::unordered_map<QueueElementID, AZ::s64> historicalStats;
+            auto statsFunction = [&historicalStats](AzToolsFramework::AssetDatabase::StatDatabaseEntry entry)
+            {
+                static constexpr int numTokensExpected = 5;
+                AZStd::vector<AZStd::string> tokens;
+                AZ::StringFunc::Tokenize(entry.m_statName, tokens, ',');
+
+                if (tokens.size() == numTokensExpected)
+                {
+                    QueueElementID elementId;
+                    elementId.SetInputAssetName(tokens[1].c_str());
+                    elementId.SetJobDescriptor(tokens[2].c_str());
+                    elementId.SetPlatform(tokens[3].c_str());
+                    historicalStats[elementId] = entry.m_statValue;
+                }
+                else
+                {
+                    AZ_Warning(
+                        "AssetProcessor",
+                        false,
+                        "ProcessJob stat entry \"%s\" could not be parsed and will not be used. Expected %d tokens, but found %d. A wrong "
+                        "stat name may be used in Asset Processor code, or the asset database may be corrupted. If you keep encountering "
+                        "this warning, report an issue on GitHub with O3DE version number.",
+                        entry.m_statName.c_str(),
+                        numTokensExpected,
+                        tokens.size()); 
+                }
+                
+                return true;
+            };
+            assetDatabaseConnection.QueryStatLikeStatName("ProcessJob,%", statsFunction);
+
+            // Get jobs from asset database
+            auto jobsFunction = [this, &assetDatabaseConnection, &historicalStats](AzToolsFramework::AssetDatabase::JobDatabaseEntry& entry)
             {
                 AzToolsFramework::AssetDatabase::SourceDatabaseEntry source;
                 assetDatabaseConnection.GetSourceBySourceID(entry.m_sourcePK, source);
@@ -341,6 +404,11 @@ namespace AssetProcessor
                 jobInfo->m_completedTime = QDateTime::fromMSecsSinceEpoch(entry.m_lastLogTime);
                 jobInfo->m_warningCount = entry.m_warningCount;
                 jobInfo->m_errorCount = entry.m_errorCount;
+                if (historicalStats.count(jobInfo->m_elementId))
+                {
+                    jobInfo->m_processDuration =
+                        QTime::fromMSecsSinceStartOfDay(aznumeric_cast<int>(historicalStats.at(jobInfo->m_elementId)));
+                }
                 m_cachedJobs.push_back(jobInfo);
                 m_cachedJobsLookup.insert(jobInfo->m_elementId, aznumeric_caster(m_cachedJobs.size() - 1));
                 return true;
@@ -443,6 +511,20 @@ namespace AssetProcessor
         }
     }
 
+    void JobsModel::OnJobProcessDurationChanged(JobEntry jobEntry, int durationMs)
+    {
+        QueueElementID elementId(jobEntry.m_databaseSourceName, jobEntry.m_platformInfo.m_identifier.c_str(), jobEntry.m_jobKey);
+
+        if (auto iter = m_cachedJobsLookup.find(elementId); iter != m_cachedJobsLookup.end())
+        {
+            unsigned int jobIndex = iter.value();
+            CachedJobInfo* jobInfo = m_cachedJobs[jobIndex];
+            jobInfo->m_processDuration = QTime::fromMSecsSinceStartOfDay(durationMs);
+            Q_EMIT dataChanged(
+                index(jobIndex, ColumnProcessDuration, QModelIndex()), index(jobIndex, ColumnProcessDuration, QModelIndex()));
+        }
+    }
+
     void JobsModel::OnSourceRemoved(QString sourceDatabasePath)
     {
         // when a source is removed, we need to eliminate all job entries for that source regardless of all other details of it.
@@ -461,26 +543,6 @@ namespace AssetProcessor
         {
             RemoveJob(removal);
         }
-    }
-
-    void JobsModel::OnFolderRemoved(QString folderPath)
-    {
-        QList<AssetProcessor::QueueElementID> elementsToRemove;
-        for (int index = 0; index < m_cachedJobs.size(); ++index)
-        {
-            if (m_cachedJobs[index]->m_elementId.GetInputAssetName().startsWith(folderPath, Qt::CaseSensitive))
-            {
-                elementsToRemove.push_back(m_cachedJobs[index]->m_elementId);
-            }
-        }
-
-        // now that we've collected all the elements to remove, we can remove them.  
-        // Doing it this way avoids problems with mutating these cache structures while iterating them.
-        for (const AssetProcessor::QueueElementID& removal : elementsToRemove)
-        {
-            RemoveJob(removal);
-        }
-
     }
 
     void JobsModel::OnJobRemoved(AzToolsFramework::AssetSystem::JobInfo jobInfo)

@@ -41,7 +41,7 @@ namespace AzNetworking
         using ReceivedPackets = AZStd::fixed_vector<ReceivedPacket, MaxUdpReceivePacketCount>;
 
         UdpReaderThread();
-        ~UdpReaderThread();
+        ~UdpReaderThread() override;
 
         //! Adds the provided socket to the socket reader for processing.
         //! @param socket pointer to the UdpSocket to read incoming data from

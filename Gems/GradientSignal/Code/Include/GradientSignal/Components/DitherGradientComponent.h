@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/ComponentBus.h>
+#include <AzCore/std/parallel/shared_mutex.h>
 #include <GradientSignal/GradientSampler.h>
 #include <GradientSignal/Ebuses/DitherGradientRequestBus.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
@@ -112,5 +113,6 @@ namespace GradientSignal
 
         DitherGradientConfig m_configuration;
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
+        mutable AZStd::shared_mutex m_queryMutex;
     };
 }

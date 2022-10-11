@@ -18,7 +18,7 @@
                 },
                 // SwapChain here is only used to reference the frame height and format
                 {
-                    "Name": "SwapChainOutput",
+                    "Name": "PipelineOutput",
                     "SlotType": "InputOutput"
                 },
                 {
@@ -47,11 +47,7 @@
                                 "Attachment": "Depth"
                             }
                         }
-                    ],
-                    "PassData": {
-                        "$type": "RasterPassData",
-                        "PipelineViewTag": "MainCamera"
-                    }
+                    ]
                 },
                 {
                     "Name": "MeshMotionVectorPass",

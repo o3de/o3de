@@ -15,6 +15,8 @@
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/Commands.h>
 #include <EMotionStudio/EMStudioSDK/Source/Allocators.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.h>
+#include <EMotionFX/CommandSystem/Source/MotionCommands.h>
+#include <EMotionFX/CommandSystem/Source/MotionSetCommands.h>
 
 // include MCore related
 #include <MCore/Source/LogManager.h>
@@ -150,7 +152,8 @@ namespace EMStudio
         GetMainWindow()->Reset();
         EMotionFX::GetAnimGraphManager().RemoveAllAnimGraphInstances(true);
         EMotionFX::GetAnimGraphManager().RemoveAllAnimGraphs(true);
-        EMotionFX::GetMotionManager().Clear(true);
+        CommandSystem::ClearMotionSetsCommand();
+        CommandSystem::ClearMotions();
     }
 
 
@@ -183,14 +186,16 @@ namespace EMStudio
         if (serializeContext)
         {
             // Reflect plugin related data.
-            const size_t numPlugins = m_pluginManager->GetNumPlugins();
-            if (numPlugins)
+            const PluginManager::PluginVector& registeredPlugins = m_pluginManager->GetRegisteredPlugins();
+            for (EMStudioPlugin* plugin : registeredPlugins)
             {
-                for (size_t i = 0; i < numPlugins; ++i)
-                {
-                    EMStudioPlugin* plugin = m_pluginManager->GetPlugin(i);
-                    plugin->Reflect(serializeContext);
-                }
+                plugin->Reflect(serializeContext);
+            }
+
+            const PluginManager::PersistentPluginVector& persistentPlugins = m_pluginManager->GetPersistentPlugins();
+            for (const AZStd::unique_ptr<PersistentPlugin>& plugin : persistentPlugins)
+            {
+                plugin->Reflect(serializeContext);
             }
 
             // Reflect shared data that might be used by multiple plugins.
@@ -355,6 +360,10 @@ namespace EMStudio
         }
     }
 
+    void EMStudioManager::JointHoveredChanged(size_t hoveredJointIndex)
+    {
+        m_hoveredJointIndex = hoveredJointIndex;
+    }
 
     // before executing a command
     void EMStudioManager::EventProcessingCallback::OnPreExecuteCommand(MCore::CommandGroup* group, MCore::Command* command, const MCore::CommandLine& commandLine)
@@ -427,39 +436,6 @@ namespace EMStudio
     {
         return AZ::Interface<EMStudioManager>().Get();
     }
-
-
-    // function to add a gizmo to the manager
-    MCommon::TransformationManipulator* EMStudioManager::AddTransformationManipulator(MCommon::TransformationManipulator* manipulator)
-    {
-        // check if manipulator exists
-        if (manipulator == nullptr)
-        {
-            return nullptr;
-        }
-
-        // add and return the manipulator
-        m_transformationManipulators.emplace_back(manipulator);
-        return manipulator;
-    }
-
-
-    // remove the given gizmo from the array
-    void EMStudioManager::RemoveTransformationManipulator(MCommon::TransformationManipulator* manipulator)
-    {
-        if (const auto it = AZStd::find(begin(m_transformationManipulators), end(m_transformationManipulators), manipulator); it != end(m_transformationManipulators))
-        {
-            m_transformationManipulators.erase(it);
-        }
-    }
-
-
-    // returns the gizmo array
-    AZStd::vector<MCommon::TransformationManipulator*>* EMStudioManager::GetTransformationManipulators()
-    {
-        return &m_transformationManipulators;
-    }
-
 
     // new temporary helper function for text drawing
     void EMStudioManager::RenderText(QPainter& painter, const QString& text, const QColor& textColor, const QFont& font, const QFontMetrics& fontMetrics, Qt::Alignment textAlignment, const QRect& rect)

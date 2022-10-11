@@ -35,7 +35,7 @@
 #include <EditorAutomationTests/NodeCreationTests.h>
 #include <EditorAutomationTests/VariableTests.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     //////////////////
     // TestListModel

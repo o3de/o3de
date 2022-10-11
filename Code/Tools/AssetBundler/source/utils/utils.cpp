@@ -684,8 +684,7 @@ namespace AssetBundler
 
     void ScopedTraceHandler::ClearErrors()
     {
-        m_errors.clear();
-        m_errors.swap(AZStd::vector<AZStd::string>());
+        m_errors = {};
     }
 
     AZ::Outcome<AzToolsFramework::AssetFileInfoListComparison::ComparisonType, AZStd::string> ParseComparisonType(

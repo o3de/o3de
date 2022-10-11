@@ -1,11 +1,80 @@
 {
 	"folders": [
 		{
-			"path": "..\\.."
+			"path": "../../../../.."
 		}
 	],
 	"settings": {
-		"python.envFile": "${workspaceFolder}/../../.env",
+		"python.envFile": "${env:PATH_DCCSIG}/.env",
 		"python.pythonPath": "${env:DCCSI_PY_DEFAULT}"
+	},
+	"launch": {
+		"version": "0.2.0",
+		"configurations": [
+		
+
+			{
+				"name": "Python: Current File (Integrated Terminal)",
+				"type": "python",
+				"request": "launch",
+				"program": "${file}",
+				"console": "integratedTerminal"
+			},
+			{
+				"name": "Python: Remote Attach",
+				"type": "python",
+				"request": "attach",
+				"port": 5678,
+				"host": "localhost",
+				"pathMappings": [
+					{
+						"localRoot": "${env:PATH_DCCSIG}",
+						"remoteRoot": "."
+					}
+				]
+			},
+			{
+				"name": "Python: Module",
+				"type": "python",
+				"request": "launch",
+				"module": "enter-your-module-name-here",
+				"console": "integratedTerminal"
+			},
+			{
+				"name": "Python: Django",
+				"type": "python",
+				"request": "launch",
+				"program": "${workspaceFolder}/manage.py",
+				"console": "integratedTerminal",
+				"args": [
+					"runserver",
+					"--noreload",
+					"--nothreading"
+				],
+				"django": true
+			},
+			{
+				"name": "Python: Flask",
+				"type": "python",
+				"request": "launch",
+				"module": "flask",
+				"env": {
+					"FLASK_APP": "app.py"
+				},
+				"args": [
+					"run",
+					"--no-debugger",
+					"--no-reload"
+				],
+				"jinja": true
+			},
+			{
+				"name": "Python: Current File (External Terminal)",
+				"type": "python",
+				"request": "launch",
+				"program": "${file}",
+				"console": "externalTerminal"
+			}
+		]
 	}
 }

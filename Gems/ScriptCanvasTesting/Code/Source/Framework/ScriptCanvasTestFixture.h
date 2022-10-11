@@ -20,9 +20,10 @@
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzTest/AzTest.h>
 
+#include <TestAutoGenFunctionRegistry.generated.h>
+#include <TestAutoGenNodeableRegistry.generated.h>
 #include <Nodes/BehaviorContextObjectTestNode.h>
-#include <Nodes/Nodeables/SharedDataSlotExample.h>
-#include <Nodes/Nodeables/ValuePointerReferenceExample.h>
+#include <Nodes/TestAutoGenFunctions.h>
 #include <ScriptCanvas/Core/Graph.h>
 #include <ScriptCanvas/Core/SlotConfigurationDefaults.h>
 #include <ScriptCanvas/ScriptCanvasGem.h>
@@ -36,6 +37,9 @@
 
 #define SC_EXPECT_DOUBLE_EQ(candidate, reference) EXPECT_NEAR(candidate, reference, 0.001)
 #define SC_EXPECT_FLOAT_EQ(candidate, reference) EXPECT_NEAR(candidate, reference, 0.001f)
+
+REGISTER_SCRIPTCANVAS_AUTOGEN_FUNCTION(ScriptCanvasTestingEditorStatic);
+REGISTER_SCRIPTCANVAS_AUTOGEN_NODEABLE(ScriptCanvasTestingEditorStatic);
 
 namespace ScriptCanvasTests
 {
@@ -111,19 +115,6 @@ namespace ScriptCanvasTests
             ScriptCanvasTestingNodes::BehaviorContextObjectTest::Reflect(m_serializeContext);
             ScriptCanvasTestingNodes::BehaviorContextObjectTest::Reflect(m_behaviorContext);
 
-            ::Nodes::InputMethodSharedDataSlotExampleNode::Reflect(m_serializeContext);
-            ::Nodes::InputMethodSharedDataSlotExampleNode::Reflect(m_behaviorContext);
-            ::Nodes::BranchMethodSharedDataSlotExampleNode::Reflect(m_serializeContext);
-            ::Nodes::BranchMethodSharedDataSlotExampleNode::Reflect(m_behaviorContext);
-            ::Nodes::ReturnTypeExampleNode::Reflect(m_serializeContext);
-            ::Nodes::ReturnTypeExampleNode::Reflect(m_behaviorContext);
-            ::Nodes::InputTypeExampleNode::Reflect(m_serializeContext);
-            ::Nodes::InputTypeExampleNode::Reflect(m_behaviorContext);
-            ::Nodes::BranchInputTypeExampleNode::Reflect(m_serializeContext);
-            ::Nodes::BranchInputTypeExampleNode::Reflect(m_behaviorContext);
-            ::Nodes::PropertyExampleNode::Reflect(m_serializeContext);
-            ::Nodes::PropertyExampleNode::Reflect(m_behaviorContext);
-
             TestNodeableObject::Reflect(m_serializeContext);
             TestNodeableObject::Reflect(m_behaviorContext);
             ScriptUnitTestEventHandler::Reflect(m_serializeContext);
@@ -132,6 +123,9 @@ namespace ScriptCanvasTests
 
         static void TearDownTestCase()
         {
+            ScriptCanvas::AutoGenRegistryManager::GetInstance()->UnregisterRegistry("ScriptCanvasTestingEditorStaticFunctionRegistry");
+            ScriptCanvas::AutoGenRegistryManager::GetInstance()->UnregisterRegistry("ScriptCanvasTestingEditorStaticNodeableRegistry");
+
             // don't hang on to dangling assets
             AZ::Data::AssetManager::Instance().DispatchEvents();
 
@@ -186,7 +180,7 @@ namespace ScriptCanvasTests
                 GetApplication()->UnregisterComponentDescriptor(componentDescriptor);
             }
 
-            m_descriptors.clear();            
+            m_descriptors.clear();
         }
 
         ScriptCanvas::Graph* CreateGraph()
@@ -202,7 +196,7 @@ namespace ScriptCanvasTests
 
         TestNodes::ConfigurableUnitTestNode* CreateConfigurableNode(AZStd::string entityName = "ConfigurableNodeEntity")
         {
-            AZ::Entity* configurableNodeEntity = new AZ::Entity(entityName.c_str());         
+            AZ::Entity* configurableNodeEntity = new AZ::Entity(entityName.c_str());
             auto configurableNode = configurableNodeEntity->CreateComponent<TestNodes::ConfigurableUnitTestNode>();
 
             if (m_graph == nullptr)

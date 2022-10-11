@@ -1196,8 +1196,7 @@ namespace AZ::Dom
         if (entry.IsEndOfArray())
         {
             Array::ContainerType& array = GetArrayInternal();
-            array.push_back();
-            return array[array.size() - 1];
+            return array.emplace_back();
         }
         return entry.IsIndex() ? operator[](entry.GetIndex()) : operator[](entry.GetKey());
     }
@@ -1259,8 +1258,7 @@ namespace AZ::Dom
         if (entry.IsEndOfArray())
         {
             Array::ContainerType& array = GetArrayInternal();
-            array.push_back();
-            return &array[array.size() - 1];
+            return &array.emplace_back();
         }
         else if (entry.IsIndex())
         {

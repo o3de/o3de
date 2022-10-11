@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_PP_SEQUENCES
-#define AZCORE_PP_SEQUENCES
+#pragma once
 
 // Scripted bus event macros support up to 50 expansions.
 
@@ -289,5 +288,3 @@
 #define AZ_INC_29 30
 #define AZ_INC_30 31
 #define AZ_INC_31 32
-
-#endif  // AZCORE_PP_SEQUENCES

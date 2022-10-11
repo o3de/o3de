@@ -38,8 +38,12 @@ namespace AZ::RPI
         {
             AZ_TYPE_INFO(MorphTargetMetaAsset::MorphTarget, "{13AA0784-26EE-48D4-9418-691B693716B1}")
 
-            AZStd::string m_meshNodeName; /**< The name of the mesh we are referring to. */
+            AZStd::string m_meshNodeName; /**< The name of the mesh we are referring to. One morph target may refer to multiple meshes.*/
             AZStd::string m_morphTargetName; /**< The name of the morph target we are referring to. */
+
+            // !The index of the sub-mesh impacted by this morph target.
+            // !There may be multiple MorphTarget objects which all refer to different meshes for the same animation, linked by m_morphTargetName.
+            uint32_t m_meshIndex;
 
             //! All vertex deltas for all meshes and for all morph targets are stored in a giant buffer.
             //! This indicates the start index for the deform deltas for the given mesh and morph target.
@@ -55,9 +59,6 @@ namespace AZ::RPI
 
             //! Reference to the wrinkle mask, if it exists
             AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_wrinkleMask;
-
-            //! Boolean to indicate the presence or absence of color deltas
-            bool m_hasColorDeltas = false;
 
             static void Reflect(AZ::ReflectContext* context);
         };

@@ -104,6 +104,8 @@ namespace AZ
             MaterialPropertyDescriptor() = default;
 
             MaterialPropertyDataType GetDataType() const;
+            //! Returns the TypeId that is used within assets for this material property.
+            AZ::TypeId GetAssetDataTypeId() const;
             //! Returns the TypeId that is used to store values for this material property.
             AZ::TypeId GetStorageDataTypeId() const;
 

@@ -209,6 +209,10 @@
 #   define AZ_PROFILE_BUILD
 #endif
 
+#if !defined(AZ_RELEASE_BUILD) && defined(_RELEASE)
+#   define AZ_RELEASE_BUILD
+#endif
+
 // note that many include ONLY PlatformDef.h and not base.h, so flags such as below need to be here.
 // AZ_ENABLE_DEBUG_TOOLS - turns on and off interaction with the debugger.
 // Things like being able to check whether the current process is being debugged, to issue a "debug break" command, etc.
@@ -277,18 +281,44 @@
 // define builtin functions used by char_traits class for efficient compile time and runtime
 // operations
 #if defined(__has_builtin)
-    #if __has_builtin(__builtin_memcpy)
+    #if __has_builtin(__builtin_memcpy) && (!defined(AZ_COMPILER_GCC) || AZ_COMPILER_GCC >= 130000)
         #define az_has_builtin_memcpy true
     #endif
-    #if __has_builtin(__builtin_wmemcpy)
+    #if __has_builtin(__builtin_wmemcpy) && (!defined(AZ_COMPILER_GCC) || AZ_COMPILER_GCC >= 130000)
         #define az_has_builtin_wmemcpy true
     #endif
-    #if __has_builtin(__builtin_memmove)
+    #if __has_builtin(__builtin_memmove) && (!defined(AZ_COMPILER_GCC) || AZ_COMPILER_GCC >= 130000)
         #define az_has_builtin_memmove true
     #endif
-    #if __has_builtin(__builtin_wmemmove)
+    #if __has_builtin(__builtin_wmemmove) && (!defined(AZ_COMPILER_GCC) || AZ_COMPILER_GCC >= 130000)
         #define az_has_builtin_wmemmove true
     #endif
+    #if (__has_builtin(__builtin_strlen) && (!defined(AZ_COMPILER_GCC) || AZ_COMPILER_GCC >= 130000)) || defined(AZ_COMPILER_MSVC)
+        #define az_has_builtin_strlen true
+    #endif
+    #if (__has_builtin(__builtin_wcslen) && (!defined(AZ_COMPILER_GCC) || AZ_COMPILER_GCC >= 130000)) || defined(AZ_COMPILER_MSVC)
+        #define az_has_builtin_wcslen true
+    #endif
+    #if (__has_builtin(__builtin_char_memchr) && (!defined(AZ_COMPILER_GCC) || AZ_COMPILER_GCC >= 130000)) || defined(AZ_COMPILER_MSVC)
+        #define az_has_builtin_char_memchr true
+    #endif
+    #if (__has_builtin(__builtin_wmemchr) && (!defined(AZ_COMPILER_GCC) || AZ_COMPILER_GCC >= 130000)) || defined(AZ_COMPILER_MSVC)
+        #define az_has_builtin_wmemchr true
+    #endif
+    #if (__has_builtin(__builtin_memcmp) && (!defined(AZ_COMPILER_GCC) || AZ_COMPILER_GCC >= 130000)) || defined(AZ_COMPILER_MSVC)
+        #define az_has_builtin_memcmp true
+    #endif
+    #if (__has_builtin(__builtin_wmemcmp) && (!defined(AZ_COMPILER_GCC) || AZ_COMPILER_GCC >= 130000)) || defined(AZ_COMPILER_MSVC)
+        #define az_has_builtin_wmemcmp true
+    #endif
+#elif defined(AZ_COMPILER_MSVC)
+//  MSVC doesn't support the __has_builtin macro, so instead hardcode the list of known compile time builtins
+    #define az_has_builtin_strlen true
+    #define az_has_builtin_wcslen true
+    #define az_has_builtin_char_memchr true
+    #define az_has_builtin_wmemchr true
+    #define az_has_builtin_memcmp true
+    #define az_has_builtin_wmemcmp true
 #endif
 
 #if !defined(az_has_builtin_memcpy)
@@ -302,6 +332,24 @@
 #endif
 #if !defined(az_has_builtin_wmemmove)
     #define az_has_builtin_wmemmove false
+#endif
+#if !defined(az_has_builtin_strlen)
+    #define az_has_builtin_strlen false
+#endif
+#if !defined(az_has_builtin_wcslen)
+    #define az_has_builtin_wcslen false
+#endif
+#if !defined(az_has_builtin_char_memchr)
+    #define az_has_builtin_char_memchr false
+#endif
+#if !defined(az_has_builtin_wmemchr)
+    #define az_has_builtin_wmemchr false
+#endif
+#if !defined(az_has_builtin_memcmp)
+    #define az_has_builtin_memcmp false
+#endif
+#if !defined(az_has_builtin_wmemcmp)
+    #define az_has_builtin_wmemcmp false
 #endif
 
 // no unique address attribute support in C++17

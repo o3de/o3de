@@ -59,6 +59,8 @@ namespace AzQtComponents
             qreal disabledIconAlpha;    //!< Alpha value for disabled icons. Must be a value between 0.0 and 1.0.
         };
 
+        static void applyContainerStyle(Card* card);
+
         Card(QWidget* parent = nullptr);
 
         //! Sets the Primary Content Widget for this Card.

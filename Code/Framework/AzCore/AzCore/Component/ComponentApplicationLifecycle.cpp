@@ -59,7 +59,6 @@ namespace AZ::ComponentApplicationLifecycle
         AZ::SettingsRegistryInterface::NotifyCallback callback, AZStd::string_view eventName, bool autoRegisterEvent)
     {
         using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
-        using Type = AZ::SettingsRegistryInterface::Type;
         using NotifyEventHandler = AZ::SettingsRegistryInterface::NotifyEventHandler;
 
         // Some systems may attempt to register a handler before the settings registry has been loaded
@@ -77,11 +76,12 @@ namespace AZ::ComponentApplicationLifecycle
         }
         auto eventNameRegistrationKey = FixedValueString::format("%.*s/%.*s", AZ_STRING_ARG(ApplicationLifecycleEventRegistrationKey),
             AZ_STRING_ARG(eventName));
-        auto lifecycleCallback = [callback = AZStd::move(callback), eventNameRegistrationKey](AZStd::string_view path, Type type)
+        auto lifecycleCallback = [callback = AZStd::move(callback), eventNameRegistrationKey](
+            const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
-            if (path == eventNameRegistrationKey)
+            if (notifyEventArgs.m_jsonKeyPath == eventNameRegistrationKey)
             {
-                callback(path, type);
+                callback(notifyEventArgs);
             }
         };
 

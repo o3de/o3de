@@ -25,8 +25,8 @@ PROJECT_PATH_KEY = ('Amazon', 'AzCore', 'Bootstrap', 'project_path')
 class TestSetGlobalProject:
     @pytest.mark.parametrize(
         "output_path, project_path, force, expected_result", [
-            pytest.param(pathlib.Path('~/.o3de/Registry/bootstrap.setreg'), pathlib.Path('A:/'), False, False),
-            pytest.param(pathlib.Path('~/.o3de/Registry/bootstrap.setreg'), pathlib.Path('A:/'), True, True)
+            pytest.param(pathlib.Path('~/.o3de/Registry/bootstrap.setreg').expanduser(), pathlib.Path('A:/'), False, False),
+            pytest.param(pathlib.Path('~/.o3de/Registry/bootstrap.setreg').expanduser(), pathlib.Path('A:/'), True, True)
         ]
     )
     def test_set_global_project_non_existent_project_path(self, output_path, project_path, force, expected_result):

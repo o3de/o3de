@@ -10,7 +10,7 @@
 
 namespace StandaloneTools
 {
-    bool BaseApplication::LaunchDiscoveryService()
+    bool BaseApplication::StartDebugService()
     {
         return true;
     }

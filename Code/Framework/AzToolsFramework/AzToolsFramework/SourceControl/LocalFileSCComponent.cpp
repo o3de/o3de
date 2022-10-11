@@ -82,8 +82,7 @@ namespace AzToolsFramework
                 {
                     for (QString file : GetFiles(fullFilePath.c_str()))
                     {
-                        fileInfo.push_back();
-                        fileInfo.back().m_filePath = file.toUtf8().constData();
+                        fileInfo.emplace_back().m_filePath = file.toUtf8().constData();
 
                         RefreshInfoFromFileSystem(fileInfo.back());
                     }
@@ -121,8 +120,7 @@ namespace AzToolsFramework
 
                 for (const auto& filePath : fullFilePaths)
                 {
-                    info.push_back();
-                    auto& fileInfo = info.back();
+                    auto& fileInfo = info.emplace_back();
 
                     fileInfo.m_filePath = filePath;
                     RefreshInfoFromFileSystem(fileInfo);
@@ -346,8 +344,7 @@ namespace AzToolsFramework
 
                 for (QString file : files)
                 {
-                    info.push_back();
-                    auto& fileInfo = info.back();
+                    auto& fileInfo = info.emplace_back();
 
                     fileInfo.m_filePath = file.toUtf8().constData();
                     RefreshInfoFromFileSystem(fileInfo);

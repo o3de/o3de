@@ -11,7 +11,7 @@
 #include <AzCore/PlatformDef.h>
 
 #include <LyShine/UiBase.h>
-#include <AtomCore/Instance/Instance.h>
+#include <AtomCore/Instance/InstanceData.h>
 
 class IDraw2d;
 class ISprite;
@@ -21,6 +21,7 @@ class UiEntityContext;
 namespace AZ::RPI
 {
     class Image;
+    class AttachmentImageAsset;
 }
 
 // The following ifdef block is the standard way of creating macros which make exporting
@@ -87,8 +88,8 @@ public:
     //! Load a sprite object.
     virtual ISprite* LoadSprite(const AZStd::string& pathname) = 0;
 
-    //! Create a sprite that references the specified render target
-    virtual ISprite* CreateSprite(const AZStd::string& renderTargetName) = 0;
+    //! Create a sprite that references the specified render target asset
+    virtual ISprite* CreateSprite(const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& attachmentImageAsset) = 0;
 
     //! Check if a sprite's texture asset exists. The .sprite sidecar file is optional and is not checked
     virtual bool DoesSpriteTextureAssetExist(const AZStd::string& pathname) = 0;

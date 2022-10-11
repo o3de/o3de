@@ -10,8 +10,8 @@
 
 #ifdef IMGUI_ENABLED
 #include <AzCore/std/containers/deque.h>
+#include <AzCore/std/string/string.h>
 #include "imgui/imgui.h"
-#include <ISystem.h>
 
 namespace ImGui
 {

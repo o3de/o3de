@@ -54,8 +54,6 @@ namespace AzToolsFramework
 
             RootAssetBrowserEntry();
 
-            static void Reflect(AZ::ReflectContext* context);
-
             AssetEntryType GetEntryType() const override;
 
             //! Update root node to new engine location
@@ -83,9 +81,9 @@ namespace AzToolsFramework
             AZ::IO::Path m_enginePath;
 
             //! Create folder entry child
-            FolderAssetBrowserEntry* CreateFolder(AZStd::string_view folderName, AssetBrowserEntry* parent);
+            FolderAssetBrowserEntry* CreateFolder(AZStd::string_view folderName, AssetBrowserEntry* parent, bool isScanFolder);
             //! Recursively create folder structure leading to  path from parent
-            AssetBrowserEntry* CreateFolders(AZStd::string_view absolutePath, AssetBrowserEntry* parent);
+            AssetBrowserEntry* CreateFolders(AZStd::string_view absolutePath, AssetBrowserEntry* parent, bool isScanFolder);
             // Retrieves the nearest ancestor AssetBrowserEntry from the absolutePath
             static AssetBrowserEntry* GetNearestAncestor(AZ::IO::PathView absolutePath, AssetBrowserEntry* parent,
                 AZStd::unordered_set<AssetBrowserEntry*>& visitedSet);

@@ -67,12 +67,12 @@ namespace AzNetworking
 
         //! Opens a new connection to the provided address.
         //! @param remoteAddress the IpAddress of the remote process to open a connection to
+        //! @param localPort     the local port number to open a socket on to initiate the connection, 0 binds to any available port
         //! @return the connectionId of the new connection, or InvalidConnectionId if the operation failed
-        virtual ConnectionId Connect(const IpAddress& remoteAddress) = 0;
+        virtual ConnectionId Connect(const IpAddress& remoteAddress, uint16_t localPort = 0) = 0;
 
         //! Updates the INetworkInterface.
-        //! @param deltaTimeMs milliseconds since update was last invoked
-        virtual void Update(AZ::TimeMs deltaTimeMs) = 0;
+        virtual void Update() = 0;
 
         //! A helper function that transmits a packet on this connection reliably.
         //! Note that a packetId is not returned here, since retransmits may cause the packetId to change
@@ -118,6 +118,14 @@ namespace AzNetworking
         //! Non-const access to the metrics tracked by this network interface.
         //! @return reference to the metrics tracked by this network interface
         NetworkInterfaceMetrics& GetMetrics();
+
+        //! Returns true if communications on this network interface are encrypted, false if not.
+        //! @return boolean true if communciations are encrypted, false if not
+        virtual bool IsEncrypted() const = 0;
+
+        //! Returns true if this connection instance is in an open state, and is capable of actively sending and receiving packets.
+        //! @return boolean true if this connection instance is in an open state
+        virtual bool IsOpen() const = 0;
 
     private:
 

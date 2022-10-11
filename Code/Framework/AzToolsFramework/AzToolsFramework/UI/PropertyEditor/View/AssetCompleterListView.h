@@ -30,6 +30,7 @@ namespace AzToolsFramework
 
     private:
         static const int s_rowHeight = 20;
+        inline static const QColor m_hoverColor = QColor(255, 255, 255, 30);
     };
 
     //! List View of suggestions in the Asset Autocompleter for PropertyAssetCtrl

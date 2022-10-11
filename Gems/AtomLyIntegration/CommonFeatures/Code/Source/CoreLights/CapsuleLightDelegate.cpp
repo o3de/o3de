@@ -85,5 +85,21 @@ namespace AZ
         {
             return m_shapeBus->GetHeight() - m_shapeBus->GetRadius() * 2.0f;
         }
+
+        void CapsuleLightDelegate::SetAffectsGI(bool affectsGI)
+        {
+            if (GetLightHandle().IsValid())
+            {
+                GetFeatureProcessor()->SetAffectsGI(GetLightHandle(), affectsGI);
+            }
+        }
+
+        void CapsuleLightDelegate::SetAffectsGIFactor(float affectsGIFactor)
+        {
+            if (GetLightHandle().IsValid())
+            {
+                GetFeatureProcessor()->SetAffectsGIFactor(GetLightHandle(), affectsGIFactor);
+            }
+        }
     } // namespace Render
 } // namespace AZ

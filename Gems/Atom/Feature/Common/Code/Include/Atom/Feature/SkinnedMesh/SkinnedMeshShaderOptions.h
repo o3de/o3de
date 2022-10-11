@@ -24,7 +24,6 @@ namespace AZ
         {
             SkinningMethod m_skinningMethod = SkinningMethod::LinearSkinning;
             bool m_applyMorphTargets = false;
-            bool m_applyColorMorphTargets = false;
         };
     }
 }

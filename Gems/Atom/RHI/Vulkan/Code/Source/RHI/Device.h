@@ -64,6 +64,8 @@ namespace AZ
 
             VkDevice GetNativeDevice() const;
 
+            const GladVulkanContext& GetContext() const;
+
             uint32_t FindMemoryTypeIndex(VkMemoryPropertyFlags memoryPropertyFlags, uint32_t memoryTypeBits) const;
 
             VkMemoryRequirements GetImageMemoryRequirements(const RHI::ImageDescriptor& descriptor);
@@ -126,7 +128,7 @@ namespace AZ
             RHI::ResultCode InitInternal(RHI::PhysicalDevice& physicalDevice) override;
 
             void ShutdownInternal() override;
-            void BeginFrameInternal() override;
+            RHI::ResultCode BeginFrameInternal() override;
             void EndFrameInternal() override;
             void WaitForIdleInternal() override;
             void CompileMemoryStatisticsInternal(RHI::MemoryStatisticsBuilder& builder) override;
@@ -158,6 +160,8 @@ namespace AZ
             VkPhysicalDeviceFeatures m_enabledDeviceFeatures{};
             VkPipelineStageFlags m_supportedPipelineStageFlagsMask = std::numeric_limits<VkPipelineStageFlags>::max();
 
+            GladVulkanContext m_context = {};
+
             AZStd::vector<VkQueueFamilyProperties> m_queueFamilyProperties;
             RHI::Ptr<AsyncUploadQueue> m_asyncUploadQueue;
             CommandListAllocator m_commandListAllocator;
@@ -187,6 +191,7 @@ namespace AZ
             RHI::ThreadLocalContext<AZStd::lru_cache<uint64_t, VkMemoryRequirements>> m_bufferMemoryRequirementsCache;
 
             RHI::Ptr<NullDescriptorManager> m_nullDescriptorManager;
+            bool m_isXrNativeDevice = false;
         };
 
         template<typename ObjectType, typename ...Args>

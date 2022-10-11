@@ -12,11 +12,11 @@ namespace EMotionFX
 {
     INSTANTIATE_TEST_CASE_P(CanRenameParameter_ParameterNodeUpdates, CommandRunnerFixture,
         ::testing::Values(std::vector<std::string> {
-            R"str(CreateAnimGraph)str",
-            R"str(AnimGraphCreateNode -animGraphID 0 -type {A8B5BB1E-5BA9-4B0A-88E9-21BB7A199ED2} -parentName Root -xPos 240 -yPos 230 -name GENERATE -namePrefix BlendTree)str",
-            R"str(AnimGraphCreateNode -animGraphID 0 -type {1A755218-AD9D-48EA-86FC-D571C11ECA4D} -parentName BlendTree0 -xPos 0 -yPos 0 -name GENERATE -namePrefix FinalNode)str",
-            R"str(AnimGraphCreateNode -animGraphID 0 -type {4510529A-323F-40F6-B773-9FA8FC4DE53D} -parentName BlendTree0 -xPos -120 -yPos 30 -name GENERATE -namePrefix Parameters)str",
-            R"str(AnimGraphCreateParameter -animGraphID 0 -type {2ED6BBAF-5C82-4EAA-8678-B220667254F2} -name Parameter0 -contents <ObjectStream version="3">
+            R"str(CreateAnimGraph -animGraphID 100)str",
+            R"str(AnimGraphCreateNode -animGraphID 100 -type {A8B5BB1E-5BA9-4B0A-88E9-21BB7A199ED2} -parentName Root -xPos 240 -yPos 230 -name GENERATE -namePrefix BlendTree)str",
+            R"str(AnimGraphCreateNode -animGraphID 100 -type {1A755218-AD9D-48EA-86FC-D571C11ECA4D} -parentName BlendTree0 -xPos 0 -yPos 0 -name GENERATE -namePrefix FinalNode)str",
+            R"str(AnimGraphCreateNode -animGraphID 100 -type {4510529A-323F-40F6-B773-9FA8FC4DE53D} -parentName BlendTree0 -xPos -120 -yPos 30 -name GENERATE -namePrefix Parameters)str",
+            R"str(AnimGraphCreateParameter -animGraphID 100 -type {2ED6BBAF-5C82-4EAA-8678-B220667254F2} -name Parameter0 -contents <ObjectStream version="3">
                 <Class name="FloatSliderParameter" version="1" type="{2ED6BBAF-5C82-4EAA-8678-B220667254F2}">
                     <Class name="FloatParameter" field="BaseClass1" version="1" type="{0F0B8531-0B07-4D9B-A8AC-3A32D15E8762}">
                         <Class name="(RangedValueParameter&lt;ValueType, Derived&gt;)&lt;float FloatParameter &gt;" field="BaseClass1" version="1" type="{01CABBF8-9500-5ABB-96BD-9989198146C2}">
@@ -37,7 +37,7 @@ namespace EMotionFX
                     </Class>
                 </Class>
             </ObjectStream>)str",
-            R"str(AnimGraphCreateParameter -animGraphID 0 -type {2ED6BBAF-5C82-4EAA-8678-B220667254F2} -name Parameter1 -contents <ObjectStream version="3">
+            R"str(AnimGraphCreateParameter -animGraphID 100 -type {2ED6BBAF-5C82-4EAA-8678-B220667254F2} -name Parameter1 -contents <ObjectStream version="3">
                 <Class name="FloatSliderParameter" version="1" type="{2ED6BBAF-5C82-4EAA-8678-B220667254F2}">
                     <Class name="FloatParameter" field="BaseClass1" version="1" type="{0F0B8531-0B07-4D9B-A8AC-3A32D15E8762}">
                         <Class name="(RangedValueParameter&lt;ValueType, Derived&gt;)&lt;float FloatParameter &gt;" field="BaseClass1" version="1" type="{01CABBF8-9500-5ABB-96BD-9989198146C2}">
@@ -58,15 +58,15 @@ namespace EMotionFX
                     </Class>
                 </Class>
             </ObjectStream>)str",
-            R"str(AnimGraphRemoveParameter -animGraphID 0 -name Parameter0)str",
+            R"str(AnimGraphRemoveParameter -animGraphID 100 -name Parameter0)str",
             R"str(UNDO)str",
-            R"str(AnimGraphAdjustNode -animGraphID 0 -name Parameters0 -attributesString -parameterNames {<ObjectStream version="3">
+            R"str(AnimGraphAdjustNode -animGraphID 100 -name Parameters0 -attributesString -parameterNames {<ObjectStream version="3">
                 <Class name="AZStd::vector" type="{99DAD0BC-740E-5E82-826B-8FC7968CC02C}">
                     <Class name="AZStd::string" field="element" value="Parameter1" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
                 </Class>
             </ObjectStream>
             })str",
-            R"str(AnimGraphRemoveParameter -animGraphID 0 -name Parameter1)str"
+            R"str(AnimGraphRemoveParameter -animGraphID 100 -name Parameter1)str"
         }
     ));
 } // end namespace EMotionFX

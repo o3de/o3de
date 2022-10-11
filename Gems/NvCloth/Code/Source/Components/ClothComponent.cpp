@@ -34,13 +34,13 @@ namespace NvCloth
     
     void ClothComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("ClothMeshService", 0x6ffcbca5));
+        provided.push_back(AZ_CRC_CE("ClothMeshService"));
     }
     
     void ClothComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("MeshService", 0x71d8a455));
-        required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+        required.push_back(AZ_CRC_CE("MeshService"));
+        required.push_back(AZ_CRC_CE("TransformService"));
     }
 
     void ClothComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)

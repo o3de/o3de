@@ -51,11 +51,11 @@ def open_material(file_path):
     return azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(bus.Broadcast, "OpenDocument", file_path)
 
 
-def is_open(document_id):
+def is_document_open(document_id):
     """
     :return: bool
     """
-    return azlmbr.atomtools.AtomToolsDocumentRequestBus(bus.Event, "IsOpen", document_id)
+    return azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(bus.Broadcast, "IsDocumentOpen", document_id)
 
 
 def save_document(document_id):

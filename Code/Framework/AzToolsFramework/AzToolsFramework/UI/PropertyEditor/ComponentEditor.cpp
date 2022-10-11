@@ -8,6 +8,7 @@
 #include "ComponentEditor.hxx"
 #include "ComponentEditorHeader.hxx"
 
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/unordered_set.h>
@@ -16,6 +17,7 @@
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/Slice/SliceEntityBus.h>
@@ -152,13 +154,25 @@ namespace AzToolsFramework
         m_propertyEditor->Setup(context, notifyTarget, false, ComponentEditorConstants::kPropertyLabelWidth, this);
         m_propertyEditor->SetHideRootProperties(true);
         m_propertyEditor->setProperty("ComponentBlock", true); // used by stylesheet
+        connect(m_propertyEditor, &ReflectedPropertyEditor::OnExpansionContractionDone, this, &ComponentEditor::OnExpansionContractionDone);
+
+        if (DocumentPropertyEditor::ShouldReplaceRPE())
+        {
+            // since the RPE and the ComponentEditor/EntityPropertyEditor are so entwined,
+            // leave m_propertyEditor in place, but replace it in the UI with the DPE
+            m_adapter = AZStd::make_shared<AZ::DocumentPropertyEditor::ReflectionAdapter>();
+            m_dpe = new DocumentPropertyEditor(this);
+            m_dpe->SetAdapter(m_adapter);
+            setContentWidget(m_dpe);
+        }
+        else
+        {
+            setContentWidget(m_propertyEditor);
+        }
+
         m_savedKeySeed = AZ_CRC("WorldEditorEntityEditor_Component", 0x926c865f);
-
-        setContentWidget(m_propertyEditor);
-
         connect(this, &AzQtComponents::Card::expandStateChanged, this, &ComponentEditor::OnExpanderChanged);
         connect(GetHeader(), &ComponentEditorHeader::OnContextMenuClicked, this, &ComponentEditor::OnContextMenuClicked);
-        connect(m_propertyEditor, &ReflectedPropertyEditor::OnExpansionContractionDone, this, &ComponentEditor::OnExpansionContractionDone);
 
         SetExpanded(true);
         SetSelected(false);
@@ -190,6 +204,11 @@ namespace AzToolsFramework
         m_propertyEditor->SetSavedStateKey(entityUniqueSavedStateKey);
 
         m_propertyEditor->AddInstance(componentInstance, instanceTypeId, aggregateInstance, compareInstance);
+
+        if (DocumentPropertyEditor::ShouldReplaceRPE())
+        {
+            m_adapter->SetValue(componentInstance, instanceTypeId);
+        }
 
         // When first instance is set, use its data to fill out the header.
         if (m_componentType.IsNull())

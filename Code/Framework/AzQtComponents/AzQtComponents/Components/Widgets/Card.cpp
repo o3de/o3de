@@ -25,6 +25,9 @@
 
 namespace AzQtComponents
 {
+
+    static QString g_containerCardClass = QStringLiteral("ContainerCard");
+
     static QPixmap ApplyAlphaToPixmap(const QPixmap& pixmap, float alpha)
     {
         QImage image = pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
@@ -38,6 +41,12 @@ namespace AzQtComponents
             }
         }
         return QPixmap::fromImage(image);
+    }
+
+    void Card::applyContainerStyle(Card* card)
+    {
+        Style::addClass(card, g_containerCardClass);
+        CardHeader::applyContainerStyle(card->header());
     }
 
     Card::Card(QWidget* parent /* = nullptr */)

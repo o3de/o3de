@@ -523,8 +523,7 @@ namespace Vegetation
         AZStd::lock_guard<decltype(m_mainThreadTaskMutex)> mainThreadTaskLock(m_mainThreadTaskMutex);
         if (m_mainThreadTaskQueue.empty() || m_mainThreadTaskQueue.back().size() >= m_configuration.m_maxInstanceTaskBatchSize)
         {
-            m_mainThreadTaskQueue.push_back();
-            m_mainThreadTaskQueue.back().reserve(m_configuration.m_maxInstanceTaskBatchSize);
+            m_mainThreadTaskQueue.emplace_back().reserve(m_configuration.m_maxInstanceTaskBatchSize);
         }
         m_mainThreadTaskQueue.back().emplace_back(task);
     }

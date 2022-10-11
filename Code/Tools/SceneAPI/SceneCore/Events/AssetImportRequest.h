@@ -136,6 +136,20 @@ namespace AZ
             using AssetImportRequestBus = AZ::EBus<AssetImportRequest>;
 
             inline AssetImportRequest::~AssetImportRequest() = default;
+
+            //! Queue EBus to resolve events during the scene import phases
+            class SCENE_CORE_API AssetPostImportRequest
+                : public AZ::EBusTraits
+            {
+            public:
+                using MutexType = AZStd::recursive_mutex;
+                using EventQueueMutexType = AZStd::recursive_mutex;
+                static constexpr bool EnableEventQueue = true;
+
+                virtual void CallAfterSceneExport(AZStd::function<void()> callback) = 0;
+            };
+            using AssetPostImportRequestBus = AZ::EBus<AssetPostImportRequest>;
+
         } // namespace Events
     } // namespace SceneAPI
 } // namespace AZ

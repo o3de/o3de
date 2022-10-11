@@ -270,8 +270,8 @@ namespace AZ
                 const RHI::ShaderResourceGroupBindingInfo& groupBindInfo = dx12Descriptor->GetShaderResourceGroupBindingInfo(groupLayoutIndex);
                 const ShaderResourceGroupVisibility& groupVisibility = dx12Descriptor->GetShaderResourceGroupVisibility(groupLayoutIndex);
 
-                bool hasSrvUnboundedArray = false;
-                bool hasUavUnboundedArray = false;
+                [[maybe_unused]] bool hasSrvUnboundedArray = false;
+                [[maybe_unused]] bool hasUavUnboundedArray = false;
 
                 if (groupLayout.GetGroupSizeForBufferUnboundedArrays() || groupLayout.GetGroupSizeForImageUnboundedArrays())
                 {

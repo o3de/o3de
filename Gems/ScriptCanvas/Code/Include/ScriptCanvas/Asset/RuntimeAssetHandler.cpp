@@ -86,14 +86,14 @@ namespace ScriptCanvas
 
     void RuntimeAssetHandler::InitAsset(const AZ::Data::Asset<AZ::Data::AssetData>& asset, bool loadStageSucceeded, bool isReload)
     {
-        AssetHandler::InitAsset(asset, loadStageSucceeded, isReload);
-
-        if (loadStageSucceeded && !isReload)
+        if (loadStageSucceeded)
         {
             RuntimeAsset* runtimeAsset = asset.GetAs<RuntimeAsset>();
             AZ_Assert(runtimeAsset, "RuntimeAssetHandler::InitAsset This should be a Script Canvas runtime asset, as this is the only type this handler processes!");
-            Execution::Context::InitializeActivationData(runtimeAsset->m_runtimeData);
+            Execution::Context::InitializeStaticActivationData(runtimeAsset->m_runtimeData);
         }
+
+        AssetHandler::InitAsset(asset, loadStageSucceeded, isReload);
     }
 
     AZ::Data::AssetHandler::LoadResult RuntimeAssetHandler::LoadAssetData(const AZ::Data::Asset<AZ::Data::AssetData>& asset, AZStd::shared_ptr<AZ::Data::AssetDataStream> stream, const AZ::Data::AssetFilterCB& assetLoadFilterCB)
@@ -123,7 +123,7 @@ namespace ScriptCanvas
         {
             AZ::ObjectStream* binaryObjStream = AZ::ObjectStream::Create(stream, *m_serializeContext
                 , g_saveRuntimeAssetsAsPlainTextForDebug
-                    ? AZ::ObjectStream::ST_XML
+                    ? AZ::ObjectStream::ST_JSON
                     : AZ::ObjectStream::ST_BINARY);
             bool graphSaved = binaryObjStream->WriteClass(&runtimeAsset->m_runtimeData);
             binaryObjStream->Finalize();
@@ -135,8 +135,6 @@ namespace ScriptCanvas
 
     void RuntimeAssetHandler::DestroyAsset(AZ::Data::AssetPtr ptr)
     {
-        RuntimeAsset* runtimeAsset = azrtti_cast<RuntimeAsset*>(ptr);
-        Execution::Context::UnloadData(runtimeAsset->m_runtimeData);
         delete ptr;
     }
 

@@ -2,22 +2,19 @@
 
 <ScriptCanvas Include="Include/ScriptCanvas/Libraries/Time/TimeDelayNodeable.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Class Name="TimeDelayNodeable"
-           QualifiedName="Nodeables::Time::TimeDelayNodeable"
-           PreferredClassName="Time Delay"
-           Base="Nodeables::Time::BaseTimer"
-           Icon="Icons/ScriptCanvas/Placeholder.png"
-           Category="Nodeables"
-           GeneratePropertyFriend="True"
-           Namespace="ScriptCanvas"
-           Description="Delays all incoming execution for the specified number of ticks">
+        QualifiedName="Nodeables::Time::TimeDelayNodeable"
+        PreferredClassName="Time Delay"
+        Base="Nodeables::Time::BaseTimer"
+        Category="Timing"
+        Namespace="ScriptCanvas"
+        Description="Delays all incoming execution for the specified number of ticks">
 
-      <Input Name="Start" Description="">
-        <Parameter Name="Delay" Type="Data::NumberType" DefaultValue="0.0" Description="The amount of time to delay before the Done is signalled."/>
-      </Input>
+        <Input Name="Start" Description="">
+            <Parameter Name="Delay" Type="Data::NumberType" DefaultValue="0.0" Description="The amount of time to delay before the Done is signalled."/>
+        </Input>
 
-      <Output Name="Done" Description="Signaled after waiting for the specified amount of times."/>
+        <Output Name="Done" Description="Signaled after waiting for the specified amount of times."/>
 
-      <PropertyInterface Property="m_timeUnitsInterface" Name="Units" Type="Input" Description="Units to represent the time in."/>
-
+        <PropertyInterface Property="m_timeUnitsInterface" Name="Units" Type="Input" Description="Units to represent the time in."/>
     </Class>
 </ScriptCanvas>

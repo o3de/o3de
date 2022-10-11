@@ -2885,8 +2885,7 @@ namespace AzToolsFramework
     //=========================================================================
     void SlicePushWidget::AddStatusMessage(StatusMessageType messageType, const QString& messageText)
     {
-        m_statusMessages.push_back();
-        AzToolsFramework::SlicePushWidget::StatusMessage& newMessage = m_statusMessages.back();
+        AzToolsFramework::SlicePushWidget::StatusMessage& newMessage = m_statusMessages.emplace_back();
         newMessage.m_type = messageType;
         newMessage.m_text = messageText;
     }

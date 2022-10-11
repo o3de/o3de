@@ -15,7 +15,7 @@
 #include <Atom/RHI/SwapChainFrameAttachment.h>
 #include <RHI/Buffer.h>
 #include <RHI/BufferView.h>
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/FrameGraphCompiler.h>
 #include <RHI/Image.h>
@@ -208,12 +208,17 @@ namespace AZ
                 scopeAttachment = scopeAttachment->GetNext();
             }
 
-            /**
-             * If this is the last usage of a swap chain, we require that it be in the common state for presentation.
-             */
+            // If this is the last usage of a swap chain, we require that it be in the common state for presentation.
             if (auto swapchainAttachment = azrtti_cast<RHI::SwapChainFrameAttachment*>(&imageFrameAttachment))
             {
                 SwapChain* swapChain = static_cast<SwapChain*>(swapchainAttachment->GetSwapChain());
+
+                // Skip adding synchronization constructs for XR swapchain as that is managed by OpenXr api
+                if (swapChain->GetDescriptor().m_isXrSwapChain)
+                {
+                    return;
+                }
+
                 const SwapChain::FrameContext& frameContext = swapChain->GetCurrentFrameContext();
 
                 // We need to wait until the presentation engine finish presenting the swapchain image

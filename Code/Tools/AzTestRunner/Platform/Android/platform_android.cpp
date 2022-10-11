@@ -75,12 +75,6 @@ namespace AzTestRunner
     }
 }
 
-static AZ::EnvironmentInstance s_envInst = nullptr;
-AZTEST_EXPORT AZ::EnvironmentInstance GetTestRunnerEnvironment()
-{
-    return s_envInst;
-}
-
 namespace
 {
     class NativeEventDispatcher
@@ -297,7 +291,6 @@ void android_main(android_app* appState)
 
     // setup the android environment
     AZ::AllocatorInstance<AZ::OSAllocator>::Create();
-    s_envInst = AZ::Environment::GetInstance();
 
     // setup the system command handler which are guaranteed to be called on the same
     // thread the events are pumped

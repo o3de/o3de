@@ -32,7 +32,7 @@ namespace PhysX
             {
                 dataElement.RemoveElementByName(AZ_CRC_CE("DefaultMaterialLibrary"));
                 AZ_Warning("PhysXSystemConfigurationConverter", false,
-                    "Old version of PhysX Configuration data found. Physics material library will be reset to default.");
+                    "Old version of PhysX Configuration data found. 'DefaultMaterialLibrary' element removed."); 
             }
 
             return true;

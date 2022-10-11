@@ -9,6 +9,7 @@
 #include <Atom/Features/ParallaxMapping.azsli>
 #include "../MaterialInputs/ParallaxInput.azsli"
 #include <Atom/Features/MatrixUtility.azsli>
+#include "ParallaxShadowUtil.azsli"
 
  void MultilayerSetPixelDepth(
      float3 blendMask,
@@ -27,6 +28,9 @@
 
     float parallaxOverallOffset = MaterialSrg::m_displacementMax;
     float parallaxOverallFactor = MaterialSrg::m_displacementMax - MaterialSrg::m_displacementMin;
+    
+    AdjustParallaxShadowCaster(parallaxOverallFactor, parallaxOverallOffset, MaterialSrg::m_parallax_pdo_shadowFactor);
+
     GetParallaxInput(
         normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex],
         parallaxOverallFactor, parallaxOverallOffset, 

@@ -89,6 +89,11 @@ namespace AZ
             float GetNormalShadowBias() const override;
             void SetNormalShadowBias(float bias) override;
 
+            bool GetAffectsGI() const override;
+            void SetAffectsGI(bool affectsGI) const override;
+            float GetAffectsGIFactor() const override;
+            void SetAffectsGIFactor(float affectsGIFactor) const override;
+
             void HandleDisplayEntityViewport(
                 const AzFramework::ViewportInfo& viewportInfo,
                 AzFramework::DebugDisplayRequests& debugDisplay,

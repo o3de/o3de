@@ -51,8 +51,6 @@ set(FILES
     Components/BehaviorComponent.cpp
     Components/ExportingComponent.h
     Components/ExportingComponent.cpp
-    Components/RCExportingComponent.h
-    Components/RCExportingComponent.cpp
     Components/GenerationComponent.h
     Components/GenerationComponent.cpp
     Components/LoadingComponent.h
@@ -121,8 +119,6 @@ set(FILES
     Events/SceneSerializationBus.h
     Import/ManifestImportRequestHandler.h
     Import/ManifestImportRequestHandler.cpp
-    Export/MtlMaterialExporter.h
-    Export/MtlMaterialExporter.cpp
     Utilities/CoordinateSystemConverter.h
     Utilities/CoordinateSystemConverter.cpp
     Utilities/SceneGraphSelector.h

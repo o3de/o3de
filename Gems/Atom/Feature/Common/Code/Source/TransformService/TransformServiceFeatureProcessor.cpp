@@ -182,9 +182,9 @@ namespace AZ
             else
             {
                 modelIndex = aznumeric_cast<uint32_t>(m_objectToWorldTransforms.size());
-                m_objectToWorldTransforms.push_back();
-                m_objectToWorldInverseTransposeTransforms.push_back();
-                m_objectToWorldHistoryTransforms.push_back();
+                m_objectToWorldTransforms.emplace_back();
+                m_objectToWorldInverseTransposeTransforms.emplace_back();
+                m_objectToWorldHistoryTransforms.emplace_back();
             }
             return ObjectId(modelIndex);
         }

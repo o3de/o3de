@@ -13,18 +13,18 @@ namespace PhysX
 {
     void EditorCharacterGameplayComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("PhysXCharacterGameplayService", 0xfacd7876));
+        provided.push_back(AZ_CRC_CE("PhysicsCharacterGameplayService"));
     }
 
     void EditorCharacterGameplayComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("PhysXCharacterGameplayService", 0xfacd7876));
+        incompatible.push_back(AZ_CRC_CE("PhysicsCharacterGameplayService"));
         incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
     }
 
     void EditorCharacterGameplayComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("PhysXCharacterControllerService", 0x428de4fa));
+        required.push_back(AZ_CRC_CE("PhysicsCharacterControllerService"));
     }
 
     void EditorCharacterGameplayComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -48,7 +48,7 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXCharacter.svg")
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/PhysXCharacter.svg")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx/character-gameplay/")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorCharacterGameplayComponent::m_gameplayConfig,
                         "Gameplay Configuration", "Gameplay Configuration.")

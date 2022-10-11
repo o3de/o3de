@@ -11,6 +11,7 @@
 
 #include <ACEEnums.h>
 #include <ACETypes.h>
+#include <AudioControlsEditorUndo.h>
 #include <QAudioControlEditorIcons.h>
 
 using namespace AudioControls;
@@ -65,7 +66,7 @@ QAudioControlSortProxy::QAudioControlSortProxy(QObject* pParent /*= 0*/)
 //-----------------------------------------------------------------------------------------------//
 bool QAudioControlSortProxy::setData(const QModelIndex& index, const QVariant& value, int role /* = Qt::EditRole */)
 {
-    if ((role == Qt::EditRole))
+    if (role == Qt::EditRole)
     {
         QString sInitialName = value.toString();
         if (sInitialName.isEmpty() || sInitialName.contains(" "))
@@ -78,6 +79,7 @@ bool QAudioControlSortProxy::setData(const QModelIndex& index, const QVariant& v
         {
             // Validate that the new folder name is valid
             bool bFoundValidName = false;
+            QString sOriginalName = index.data(Qt::DisplayRole).toString();
             QString sCandidateName = sInitialName;
             int nNumber = 1;
             while (!bFoundValidName)
@@ -99,10 +101,32 @@ bool QAudioControlSortProxy::setData(const QModelIndex& index, const QVariant& v
                     sibiling = index.sibling(i, 0);
                 }
             }
+
+            if (sCandidateName != sOriginalName && !CUndo::IsSuspended())
+            {
+                if (QStandardItem* folderItem = GetStandardItemFromIndex(index); folderItem != nullptr)
+                {
+                    CUndo undo("ATL Folder Rename");
+                    CUndo::Record(new CUndoFolderRename(folderItem));
+                }
+            }
             return QSortFilterProxyModel::setData(index, sCandidateName, role);
         }
     }
     return QSortFilterProxyModel::setData(index, value, role);
+}
+
+//-----------------------------------------------------------------------------------------------//
+QStandardItem* QAudioControlSortProxy::GetStandardItemFromIndex(const QModelIndex& index)
+{
+    if (auto srcModel = reinterpret_cast<QATLTreeModel*>(sourceModel()); srcModel != nullptr)
+    {
+        if (auto abstractItem = srcModel->itemFromIndex(mapToSource(index)); abstractItem != nullptr)
+        {
+            return reinterpret_cast<QStandardItem*>(abstractItem);
+        }
+    }
+    return nullptr;
 }
 
 //-----------------------------------------------------------------------------------------------//

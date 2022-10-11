@@ -10,6 +10,20 @@ namespace AZ
 {
     namespace Intersect
     {
+        AZ_MATH_INLINE bool IntersectSegmentTriangleCCW(
+            const Vector3& p, const Vector3& q, const Vector3& a, const Vector3& b, const Vector3& c, Vector3& normal, float& t)
+        {
+            SegmentTriangleHitTester hitTester(p, q);
+            return hitTester.IntersectSegmentTriangleCCW(a, b, c, normal, t);
+        }
+
+        AZ_MATH_INLINE bool IntersectSegmentTriangle(
+            const Vector3& p, const Vector3& q, const Vector3& a, const Vector3& b, const Vector3& c, Vector3& normal, float& t)
+        {
+            SegmentTriangleHitTester hitTester(p, q);
+            return hitTester.IntersectSegmentTriangle(a, b, c, normal, t);
+        }
+
         AZ_MATH_INLINE bool ClipRayWithAabb(const Aabb& aabb, Vector3& rayStart, Vector3& rayEnd, float& tClipStart, float& tClipEnd)
         {
             Vector3 startNormal;

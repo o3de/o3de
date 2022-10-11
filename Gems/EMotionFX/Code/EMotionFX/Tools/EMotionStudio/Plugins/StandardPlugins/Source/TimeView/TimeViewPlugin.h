@@ -28,9 +28,8 @@ namespace EMStudio
     class TrackHeaderWidget;
     class TimeInfoWidget;
     class TimeViewToolBar;
-    class MotionWindowPlugin;
     class MotionEventsPlugin;
-    class MotionListWindow;
+    class MotionEventWidget;
     class MotionEventPresetsWidget;
     class MotionSetsWindowPlugin;
 
@@ -68,18 +67,15 @@ namespace EMStudio
         ~TimeViewPlugin();
 
         // overloaded
-        const char* GetCompileDate() const override;
         const char* GetName() const override;
         uint32 GetClassID() const override;
-        const char* GetCreatorName() const override;
-        float GetVersion() const override;
         bool GetIsClosable() const override             { return true; }
         bool GetIsFloatable() const override            { return true; }
         bool GetIsVertical() const override             { return false; }
 
         // overloaded main init function
         bool Init() override;
-        EMStudioPlugin* Clone() override;
+        EMStudioPlugin* Clone() const override { return new TimeViewPlugin(); }
 
         void OnBeforeRemovePlugin(uint32 classID) override;
 
@@ -214,9 +210,7 @@ namespace EMStudio
 
         TimeViewMode m_mode = TimeViewMode::None;
         EMotionFX::Motion*                  m_motion;
-        MotionWindowPlugin*                 m_motionWindowPlugin;
         MotionEventsPlugin*                 m_motionEventsPlugin;
-        MotionListWindow*                   m_motionListWindow;
         MotionSetsWindowPlugin*             m_motionSetPlugin;
         AZStd::vector<EventSelectionItem>    m_selectedEvents;
 
@@ -266,5 +260,7 @@ namespace EMStudio
         QPen                m_penTimeHandles;
         QPen                m_penCurTimeHelper;
         QBrush              m_brushCurTimeHandle;
+
+        MotionEventWidget* m_motionEventWidget = nullptr;
     };
 }   // namespace EMStudio

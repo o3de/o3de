@@ -298,6 +298,14 @@ namespace AZ
             if (path && assetAliasPath)
             {
                 const AZ::IO::PathView pathView(path);
+
+                const auto devWriteStoragePath = AZ::Utils::GetDevWriteStoragePath();
+                if (devWriteStoragePath.has_value() &&
+                    pathView.IsRelativeTo(AZStd::string_view(*devWriteStoragePath)))
+                {
+                    return;
+                }
+
                 if (pathView.IsRelativeTo(assetAliasPath))
                 {
                     AZ_Error("FileIO", false, "You may not alter data inside the asset cache.  Please check the call stack and consider writing into the source asset folder instead.\n"
@@ -480,22 +488,32 @@ namespace AZ
                 return false;
             }
 
-            if (AZ::IO::PathView(path).HasRootPath())
+            if (AZ::IO::PathView pathView(path);
+                pathView.HasRootPath())
             {
-                size_t pathLen = strlen(path);
-                if (pathLen + 1 < resolvedPathSize)
+                if (pathView.RelativePath().Native().starts_with("@"))
                 {
-                    azstrncpy(resolvedPath, resolvedPathSize, path, pathLen + 1);
-
-                    //see if the absolute path matches the resolved value of @products@, if it does lowercase the relative part
-                    LowerIfBeginsWith(resolvedPath, resolvedPathSize, GetAlias("@products@"));
-
-                    ToUnixSlashes(resolvedPath, resolvedPathSize);
-                    return true;
+                    // If the absolute path starts with an alias then
+                    // remove the root so it can be resolved correctly.
+                    path += AZStd::string_view(path).find_first_of('@');
                 }
                 else
                 {
-                    return false;
+                    size_t pathSize = strlen(path) + 1;
+                    if (pathSize <= resolvedPathSize)
+                    {
+                        azstrncpy(resolvedPath, resolvedPathSize, path, pathSize);
+
+                        //see if the absolute path matches the resolved value of @products@, if it does lowercase the relative part
+                        LowerIfBeginsWith(resolvedPath, resolvedPathSize, GetAlias("@products@"));
+
+                        ToUnixSlashes(resolvedPath, resolvedPathSize);
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
                 }
             }
 

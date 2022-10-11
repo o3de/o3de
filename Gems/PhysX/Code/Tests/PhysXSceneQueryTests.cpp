@@ -17,6 +17,7 @@
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 #include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialManager.h>
 
 #include <RigidBodyComponent.h>
 #include <SphereColliderComponent.h>
@@ -161,12 +162,9 @@ namespace PhysX
 
         //Verify shape and material
         ASSERT_NE(rigidBody->GetShape(0), nullptr);
-        ASSERT_NE(hit.m_material, nullptr);
+        EXPECT_TRUE(hit.m_physicsMaterialId.IsValid());
         ASSERT_EQ(hit.m_shape, rigidBody->GetShape(0).get());
-        ASSERT_EQ(hit.m_material, rigidBody->GetShape(0).get()->GetMaterial().get());
-
-        const AZStd::string& typeName = hit.m_material->GetSurfaceTypeName();
-        ASSERT_EQ(typeName, Physics::DefaultPhysicsMaterialLabel);
+        ASSERT_EQ(hit.m_physicsMaterialId, rigidBody->GetShape(0).get()->GetMaterial()->GetId());
     }
 
     TEST_F(PhysXSceneQueryFixture, RayCast_AgainstStaticObject_ReturnsHit)

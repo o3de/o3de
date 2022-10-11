@@ -95,7 +95,7 @@ namespace AZ
             }
 
             materialFunctorRegistration->RegisterMaterialFunctor("UseTexture", azrtti_typeid<UseTextureFunctorSourceData>());
-            materialFunctorRegistration->RegisterMaterialFunctor("OverrideDrawList",         azrtti_typeid<DrawListFunctorSourceData>());
+            materialFunctorRegistration->RegisterMaterialFunctor("OverrideDrawList",         azrtti_typeid<DrawListFunctorSourceData>()); // Deprecated, use "Lua" with SetDrawListTagOverride() instead
             materialFunctorRegistration->RegisterMaterialFunctor("Transform2D",              azrtti_typeid<Transform2DFunctorSourceData>());
             materialFunctorRegistration->RegisterMaterialFunctor("ConvertEmissiveUnit",      azrtti_typeid<ConvertEmissiveUnitFunctorSourceData>());
             materialFunctorRegistration->RegisterMaterialFunctor("HandleSubsurfaceScatteringParameters", azrtti_typeid<SubsurfaceTransmissionParameterFunctorSourceData>());

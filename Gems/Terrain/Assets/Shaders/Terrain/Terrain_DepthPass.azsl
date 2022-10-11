@@ -8,7 +8,7 @@
 #include <Atom/Features/SrgSemantics.azsli>
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
-#include "TerrainCommon.azsli"
+#include <TerrainCommon.azsli>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 
 struct VSDepthOutput
@@ -20,29 +20,13 @@ VSDepthOutput MainVS(in VertexInput input)
 {
     VSDepthOutput output;
 
-    HeightContext heightContext;
-    heightContext.Initialize(SceneSrg::m_heightmapImage, input.m_position, ObjectSrg::m_patchData, SceneSrg::m_terrainWorldData.m_min, SceneSrg::m_terrainWorldData.m_max);
+    float3 worldPosition; // ignored
+    float3 normal; // ignored
 
-    if (heightContext.IsVertexOutsideOfTerrainBounds())
-    {
-        // Output a NaN to remove this vertex.
-        output.m_position = 1.0 / 0.0;
-        return output;
-    }
+    CalculateTerrainPosition(
+        SceneSrg::m_terrainWorldData, ObjectSrg::m_patchData, input, // input params
+        worldPosition, output.m_position, normal // output params
+        );
 
-    float height = 0.0;
-
-    if (o_useTerrainSmoothing)
-    {
-        height = heightContext.GetSmoothedHeight(SceneSrg::m_heightmapImage, SceneSrg::HeightmapSampler);
-    }
-    else
-    {
-        height = heightContext.GetHeight(SceneSrg::m_heightmapImage);
-    }
-
-    float3 worldPosition = float3(heightContext.m_xyPosition, height);
-    output.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(worldPosition, 1.0));
-    
     return output;
 }

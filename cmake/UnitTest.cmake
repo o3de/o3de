@@ -99,6 +99,6 @@ function(ly_delayed_generate_unit_test_module_registry)
     list(JOIN target_test_dependencies_names ",\n" target_test_dependencies_names)
     string(CONFIGURE ${test_json_template} testrunner_json @ONLY)
     set(dependencies_setreg ${CMAKE_BINARY_DIR}/unit_test_modules.json)
-    file(GENERATE OUTPUT ${dependencies_setreg} CONTENT ${testrunner_json})
+    file(GENERATE OUTPUT ${dependencies_setreg} CONTENT "${testrunner_json}")
 
 endfunction()

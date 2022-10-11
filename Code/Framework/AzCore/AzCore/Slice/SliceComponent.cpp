@@ -2116,8 +2116,7 @@ namespace AZ
             if (!newReference)
             {
                 Data::AssetBus::MultiHandler::BusConnect(sliceReference->m_asset.GetId());
-                m_slices.push_back();
-                newReference = &m_slices.back();
+                newReference = &m_slices.emplace_back();
                 newReference->m_component = this;
                 newReference->m_asset = sliceReference->m_asset;
                 newReference->m_isInstantiated = m_slicesAreInstantiated;
@@ -3394,8 +3393,7 @@ namespace AZ
         if (!reference)
         {
             Data::AssetBus::MultiHandler::BusConnect(sliceAsset.GetId());
-            m_slices.push_back();
-            reference = &m_slices.back();
+            reference = &m_slices.emplace_back();
 
             auto loadBehavior = reference->m_asset.GetAutoLoadBehavior();
 
@@ -3873,8 +3871,7 @@ namespace AZ
         // Anything left in the instance list are references that haven't been loaded yet, so load them.
         for (AZStd::pair<Data::Asset<SliceAsset>, SliceInstancePtrSet> refToAdd : sliceInstances)
         {
-            m_slices.push_back();
-            SliceReference *newReference = &m_slices.back();
+            SliceReference *newReference = &m_slices.emplace_back();
             newReference->m_component = this;
             newReference->m_asset = refToAdd.first;
 

@@ -19,6 +19,7 @@ namespace O3DE::ProjectManager
     {
         m_selectionModel = new QItemSelectionModel(this, parent);
         connect(this, &QAbstractItemModel::rowsAboutToBeRemoved, this, &GemModel::OnRowsAboutToBeRemoved);
+        connect(this, &QAbstractItemModel::rowsRemoved, this, &GemModel::OnRowsRemoved);
     }
 
     QItemSelectionModel* GemModel::GetSelectionModel() const
@@ -32,7 +33,7 @@ namespace O3DE::ProjectManager
         {
             // do not add gems with duplicate names
             // this can happen by mistake or when a gem repo has a gem with the same name as a local gem
-            AZ_TracePrintf("GemModel", "Ignoring duplicate gem: %s", gemInfo.m_name.toUtf8().constData());
+            AZ_TracePrintf("GemModel", "Ignoring duplicate gem: %s\n", gemInfo.m_name.toUtf8().constData());
             return QModelIndex();
         }
 
@@ -42,7 +43,7 @@ namespace O3DE::ProjectManager
 
         item->setData(gemInfo.m_name, RoleName);
         item->setData(gemInfo.m_displayName, RoleDisplayName);
-        item->setData(gemInfo.m_creator, RoleCreator);
+        item->setData(gemInfo.m_origin, RoleCreator);
         item->setData(gemInfo.m_gemOrigin, RoleGemOrigin);
         item->setData(aznumeric_cast<int>(gemInfo.m_platforms), RolePlatforms);
         item->setData(aznumeric_cast<int>(gemInfo.m_types), RoleTypes);
@@ -197,6 +198,16 @@ namespace O3DE::ProjectManager
     QStringList GemModel::GetDependingGems(const QModelIndex& modelIndex)
     {
         return modelIndex.data(RoleDependingGems).toStringList();
+    }
+
+    void GemModel::OnRowsRemoved(const QModelIndex& parent, int first, [[maybe_unused]] int last)
+    {
+        // fix up the name to index map for all rows that changed
+        for (int row = first; row < rowCount(); ++row)
+        {
+            const QModelIndex modelIndex = index(row, 0, parent);
+            m_nameToIndexMap[GetName(modelIndex)] = modelIndex;
+        }
     }
 
     void GemModel::GetAllDependingGems(const QModelIndex& modelIndex, QSet<QModelIndex>& inOutGems)

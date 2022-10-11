@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/std/ranges/ranges_adaptor.h>
+#include <AzCore/std/typetraits/is_reference.h>
 #include <AzCore/std/tuple.h>
 
 // Specializing tuple in std:: namespace since tuple_size and tuple_element structs
@@ -215,10 +216,14 @@ namespace AZStd::ranges
                 }
             }
 
-            auto actualAdvanceDist = n - ranges::advance(m_begin, n, m_end);
             if constexpr (StoreSize)
             {
+                auto actualAdvanceDist = n - ranges::advance(m_begin, n, m_end);
                 m_size -= static_cast<unsigned_difference_type>(actualAdvanceDist);
+            }
+            else
+            {
+                ranges::advance(m_begin, n, m_end);
             }
 
             return *this;

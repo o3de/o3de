@@ -48,7 +48,6 @@ struct ErrorCollector
 
 class GUIApplicationManager
     : public ApplicationManagerBase
-    , public AssetProcessor::MessageInfoBus::Handler
 {
     Q_OBJECT
 public:
@@ -92,6 +91,7 @@ protected Q_SLOTS:
     void ShowMessageBox(QString title, QString msg, bool isCritical);
     void ShowTrayIconMessage(QString msg);
     void ShowTrayIconErrorMessage(QString msg);
+    void QuitRequested() override;
 
 private:
     bool Restart();

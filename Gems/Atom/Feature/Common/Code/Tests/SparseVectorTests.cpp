@@ -128,7 +128,7 @@ namespace UnitTest
     {
         SparseVector<TestData> container;
         constexpr size_t Count = 10;
-        size_t indices[Count];
+        [[maybe_unused]] size_t indices[Count];
 
         // Create some elements
         for (size_t i = 0; i < Count; ++i)
@@ -247,7 +247,7 @@ namespace UnitTest
     {
         MultiSparseVector<TestData, int, float> container;
         constexpr size_t Count = 10;
-        size_t indices[Count];
+        [[maybe_unused]] size_t indices[Count];
 
         // Create some elements and give them values to check later.
         for (size_t i = 0; i < Count; ++i)

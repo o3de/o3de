@@ -49,53 +49,55 @@ namespace AzFramework
                 ->Field("canQueue", &ScriptUserEBusInfo::m_canQueue)
                 ->Field("hasHandler", &ScriptUserEBusInfo::m_hasHandler);
 
-            serializeContext->Class<ScriptDebugRequest, TmMsg>()
+            AzFramework::RemoteToolsMessage::ReflectRemoteToolsMessage(reflection);
+
+            serializeContext->Class<ScriptDebugRequest, RemoteToolsMessage>()
                 ->Field("request", &ScriptDebugRequest::m_request)
                 ->Field("context", &ScriptDebugRequest::m_context);
 
             serializeContext->Class<ScriptDebugBreakpointRequest, ScriptDebugRequest>()
                 ->Field("line", &ScriptDebugBreakpointRequest::m_line);
 
-            serializeContext->Class<ScriptDebugSetValue, TmMsg>()
+            serializeContext->Class<ScriptDebugSetValue, RemoteToolsMessage>()
                 ->Field("value", &ScriptDebugSetValue::m_value);
 
-            serializeContext->Class<ScriptDebugAck, TmMsg>()
+            serializeContext->Class<ScriptDebugAck, RemoteToolsMessage>()
                 ->Field("request", &ScriptDebugAck::m_request)
                 ->Field("ackCode", &ScriptDebugAck::m_ackCode);
 
-            serializeContext->Class<ScriptDebugAckBreakpoint, TmMsg>()
+            serializeContext->Class<ScriptDebugAckBreakpoint, RemoteToolsMessage>()
                 ->Field("id", &ScriptDebugAckBreakpoint::m_id)
                 ->Field("moduleName", &ScriptDebugAckBreakpoint::m_moduleName)
                 ->Field("line", &ScriptDebugAckBreakpoint::m_line);
 
-            serializeContext->Class<ScriptDebugAckExecute, TmMsg>()
+            serializeContext->Class<ScriptDebugAckExecute, RemoteToolsMessage>()
                 ->Field("moduleName", &ScriptDebugAckExecute::m_moduleName)
                 ->Field("result", &ScriptDebugAckExecute::m_result);
 
-            serializeContext->Class<ScriptDebugEnumLocalsResult, TmMsg>()
+            serializeContext->Class<ScriptDebugEnumLocalsResult, RemoteToolsMessage>()
                 ->Field("names", &ScriptDebugEnumLocalsResult::m_names);
 
-            serializeContext->Class<ScriptDebugEnumContextsResult, TmMsg>()
+            serializeContext->Class<ScriptDebugEnumContextsResult, RemoteToolsMessage>()
                 ->Field("names", &ScriptDebugEnumContextsResult::m_names);
 
-            serializeContext->Class<ScriptDebugGetValueResult, TmMsg>()
+            serializeContext->Class<ScriptDebugGetValueResult, RemoteToolsMessage>()
                 ->Field("value", &ScriptDebugGetValueResult::m_value);
 
-            serializeContext->Class<ScriptDebugSetValueResult, TmMsg>()
+            serializeContext->Class<ScriptDebugSetValueResult, RemoteToolsMessage>()
                 ->Field("name", &ScriptDebugSetValueResult::m_name)
                 ->Field("result", &ScriptDebugSetValueResult::m_result);
 
-            serializeContext->Class<ScriptDebugCallStackResult, TmMsg>()
+            serializeContext->Class<ScriptDebugCallStackResult, RemoteToolsMessage>()
                 ->Field("callstack", &ScriptDebugCallStackResult::m_callstack);
 
-            serializeContext->Class<ScriptDebugRegisteredGlobalsResult, TmMsg>()
+            serializeContext->Class<ScriptDebugRegisteredGlobalsResult, RemoteToolsMessage>()
                 ->Field("methods", &ScriptDebugRegisteredGlobalsResult::m_methods)
                 ->Field("properties", &ScriptDebugRegisteredGlobalsResult::m_properties);
 
-            serializeContext->Class<ScriptDebugRegisteredClassesResult, TmMsg>()
+            serializeContext->Class<ScriptDebugRegisteredClassesResult, RemoteToolsMessage>()
                 ->Field("classes", &ScriptDebugRegisteredClassesResult::m_classes);
 
-            serializeContext->Class<ScriptDebugRegisteredEBusesResult, TmMsg>()
+            serializeContext->Class<ScriptDebugRegisteredEBusesResult, RemoteToolsMessage>()
                 ->Field("EBusses", &ScriptDebugRegisteredEBusesResult::m_ebusList);
         }
     }

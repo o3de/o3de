@@ -39,7 +39,7 @@ namespace AzToolsFramework
         bool GetFreeDiskSpace(const QString& path, qint64& outFreeDiskSpace)
         {
             QStorageInfo storageInfo(path);
-            outFreeDiskSpace = storageInfo.bytesFree();
+            outFreeDiskSpace = storageInfo.bytesAvailable();
 
             return outFreeDiskSpace >= 0;
         }

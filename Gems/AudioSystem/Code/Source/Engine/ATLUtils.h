@@ -10,8 +10,8 @@
 #pragma once
 
 #include <AudioAllocators.h>
-#include <AudioLogger.h>
 
+#include <AzCore/Console/ILogger.h>
 #include <AzCore/Math/Random.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/std/typetraits/is_integral.h>
@@ -23,8 +23,6 @@
 
 namespace Audio
 {
-    extern CAudioLogger g_audioLogger;
-
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     inline float frand_symm()
     {
@@ -83,7 +81,7 @@ namespace Audio
             }
             else
             {
-                g_audioLogger.Log(eALT_ERROR, "An AudioSystem InstanceManager ID counter wrapped around.");
+                AZLOG_WARN("InstanceManager ID counter wrapped around");
                 m_nIDCounter = m_nMinCounterValue;
                 return m_nIDCounter;
             }

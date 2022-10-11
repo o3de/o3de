@@ -9,9 +9,10 @@
 #pragma once
 
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <ScriptCanvas/Core/Node.h>
+#include <ScriptCanvas/Execution/ExecutionState.h>
 
 #include "NodeableOut.h"
-#include <ScriptCanvas/Execution/ExecutionState.h>
 
 namespace AZ
 {
@@ -61,19 +62,13 @@ namespace ScriptCanvas
 
         virtual ~Nodeable() = default;
 
-        void CallOut(size_t index, AZ::BehaviorValueParameter* resultBVP, AZ::BehaviorValueParameter* argsBVPs, int numArguments) const;
-
-        AZ::Data::AssetId GetAssetId() const;
-
-        AZ::EntityId GetEntityId() const;
+        void CallOut(size_t index, AZ::BehaviorArgument* resultBVP, AZ::BehaviorArgument* argsBVPs, int numArguments) const;
 
         const Execution::FunctorOut& GetExecutionOut(size_t index) const;
         
         const Execution::FunctorOut& GetExecutionOutChecked(size_t index) const;
 
         virtual NodePropertyInterface* GetPropertyInterface(AZ::Crc32 /*propertyId*/) { return nullptr; }
-
-        AZ::EntityId GetScriptCanvasId() const;
 
         void Deactivate();
 
@@ -88,6 +83,8 @@ namespace ScriptCanvas
         void SetExecutionOutChecked(size_t index, Execution::FunctorOut&& out);
 
     protected:
+        ExecutionStateWeakConstPtr GetExecutionState() const;
+
         void InitializeExecutionOutByRequiredCount();
 
         void InitializeExecutionState(ExecutionState* executionState);
@@ -111,10 +108,10 @@ namespace ScriptCanvas
         {
             // it is up to the FunctorOut referenced by key to decide what to do with these params (whether to modify or handle strings differently)
             AZStd::tuple<decay_array<t_Args>...> lvalueWrapper(AZStd::forward<t_Args>(args)...);
-            using BVPReserveArray = AZStd::array<AZ::BehaviorValueParameter, sizeof...(args)>;
+            using BVPReserveArray = AZStd::array<AZ::BehaviorArgument, sizeof...(args)>;
             auto MakeBVPArrayFunction = [](auto&&... element)
             {
-                return BVPReserveArray{ {AZ::BehaviorValueParameter{&element}...} };
+                return BVPReserveArray{ {AZ::BehaviorArgument{&element}...} };
             };
 
             BVPReserveArray argsBVPs = AZStd::apply(MakeBVPArrayFunction, lvalueWrapper);
@@ -130,10 +127,10 @@ namespace ScriptCanvas
         void ExecutionOutResult(size_t index, t_Return& result) const
         {
             // It is up to the FunctorOut referenced by the index to decide what to do with these params (whether to modify or handle strings differently)
-            AZ::BehaviorValueParameter resultBVP(&result);
+            AZ::BehaviorArgument resultBVP(&result);
             CallOut(index, &resultBVP, nullptr, 0);
 
-#if !defined(RELEASE) 
+#if defined(SC_RUNTIME_CHECKS_ENABLED) 
             if (!resultBVP.GetAsUnsafe<t_Return>())
             {
                 AZ_Error("ScriptCanvas", false, "%s:CallOut(%zu) failed to provide a useable result", TYPEINFO_Name(), index);
@@ -148,17 +145,17 @@ namespace ScriptCanvas
         {
             // it is up to the FunctorOut referenced by key to decide what to do with these params (whether to modify or handle strings differently)
             AZStd::tuple<decay_array<t_Args>...> lvalueWrapper(AZStd::forward<t_Args>(args)...);
-            using BVPReserveArray = AZStd::array<AZ::BehaviorValueParameter, sizeof...(args)>;
+            using BVPReserveArray = AZStd::array<AZ::BehaviorArgument, sizeof...(args)>;
             auto MakeBVPArrayFunction = [](auto&&... element)
             {
-                return BVPReserveArray{ {AZ::BehaviorValueParameter{&element}...} };
+                return BVPReserveArray{ {AZ::BehaviorArgument{&element}...} };
             };
 
             BVPReserveArray argsBVPs = AZStd::apply(MakeBVPArrayFunction, lvalueWrapper);
-            AZ::BehaviorValueParameter resultBVP(&result);
+            AZ::BehaviorArgument resultBVP(&result);
             CallOut(index, &resultBVP, argsBVPs.data(), sizeof...(t_Args));
 
-#if !defined(RELEASE) 
+#if defined(SC_RUNTIME_CHECKS_ENABLED) 
             if (!resultBVP.GetAsUnsafe<t_Return>())
             {
                 AZ_Error("ScriptCanvas", false, "%s:CallOut(%zu) failed to provide a useable result", TYPEINFO_Name(), index);

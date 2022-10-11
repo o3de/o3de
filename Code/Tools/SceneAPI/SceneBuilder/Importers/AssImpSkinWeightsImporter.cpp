@@ -97,6 +97,8 @@ namespace AZ
                         }
                         Pending pending;
                         pending.m_bone = bone;
+                        pending.m_sanitizedName = bone->mName.C_Str();
+                        RenamedNodesMap::SanitizeNodeName(pending.m_sanitizedName, context.m_scene.GetGraph(), context.m_currentGraphPosition);
                         pending.m_numVertices = static_cast<unsigned int>(totalVertices);
                         pending.m_skinWeightData = skinWeightData;
                         pending.m_vertOffset = vertexCount;
@@ -126,9 +128,7 @@ namespace AZ
                 for (auto& it : m_pendingSkinWeights)
                 {
                     it.m_skinWeightData->ResizeContainerSpace(it.m_numVertices);
-
-                    AZStd::string boneName = it.m_bone->mName.C_Str();
-                    int boneId = it.m_skinWeightData->GetBoneId(boneName);
+                    int boneId = it.m_skinWeightData->GetBoneId(it.m_sanitizedName);
 
                     for(unsigned weight = 0; weight < it.m_bone->mNumWeights; ++weight)
                     {

@@ -8,6 +8,7 @@
 
 #include <AzCore/Utils/Utils.h>
 
+#include <cerrno>
 #include <cstdlib>
 #include <pwd.h>
 
@@ -20,11 +21,16 @@ namespace AZ::Utils
 
     void NativeErrorMessageBox(const char*, const char*) {}
 
-    AZ::IO::FixedMaxPathString GetHomeDirectory()
+    AZ::IO::FixedMaxPathString GetHomeDirectory(AZ::SettingsRegistryInterface* settingsRegistry)
     {
         constexpr AZStd::string_view overrideHomeDirKey = "/Amazon/Settings/override_home_dir";
         AZ::IO::FixedMaxPathString overrideHomeDir;
-        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        if (settingsRegistry == nullptr)
+        {
+            settingsRegistry = AZ::SettingsRegistry::Get();
+        }
+
+        if (settingsRegistry != nullptr)
         {
             if (settingsRegistry->Get(overrideHomeDir, overrideHomeDirKey))
             {
@@ -67,6 +73,21 @@ namespace AZ::Utils
             {
                 azstrcpy(absolutePath, maxLength, absolutePathBuffer);
                 return true;
+            }
+            else if (errno == ENOENT)
+            {
+                // realpath will fail if the source path doesn't refer to an existing file
+                // and set errno to [ENOENT]
+                // > A component of file_name does not name an existing file or file_name points to an empty string.
+
+                // Attempt to create an absolute path by appending path to current working
+                // directory and normalizing it
+                if (AZ::IO::FixedMaxPath normalizedPath; getcwd(absolutePathBuffer, UnixMaxPathLength) != nullptr)
+                {
+                    normalizedPath = (AZ::IO::FixedMaxPath(absolutePathBuffer) / path).LexicallyNormal();
+                    azstrcpy(absolutePath, maxLength, normalizedPath.c_str());
+                    return true;
+                }
             }
         }
         azstrcpy(absolutePath, maxLength, path);

@@ -13,4 +13,5 @@ set(FILES
     Tests/ActorRenderManagerTest.cpp
     Tests/BlastFamilyTest.cpp
     Tests/BlastActorTest.cpp
+    Tests/BlastMaterialTest.cpp
 )

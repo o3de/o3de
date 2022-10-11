@@ -5,9 +5,14 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #include <Atom/RHI.Reflect/RenderStates.h>
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Preprocessor/Enum.h>
 #include <AzCore/Preprocessor/EnumReflectUtils.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Utils/TypeHash.h>
 
 namespace AZ
@@ -315,7 +320,7 @@ namespace AZ
 
         void RasterState::Reflect(ReflectContext* context)
         {
-            if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
+            if (auto serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<RasterState>()
                     ->Version(1)
@@ -327,38 +332,154 @@ namespace AZ
                     ->Field("multisampleEnable", &RasterState::m_multisampleEnable)
                     ->Field("depthClipEnable", &RasterState::m_depthClipEnable)
                     ->Field("conservativeRasterEnable", &RasterState::m_conservativeRasterEnable)
-                    ->Field("forcedSampleCount", &RasterState::m_forcedSampleCount);
+                    ->Field("forcedSampleCount", &RasterState::m_forcedSampleCount)
+                    ;
+
+                if (auto editContext = serializeContext->GetEditContext())
+                {
+                    editContext->Class<RasterState>("RasterState", "")
+                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_depthBias, "Depth Bias", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_depthBiasClamp, "Depth Bias Clamp", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_depthBiasSlopeScale, "Depth Bias Slope Scale", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_fillMode, "Fill Mode", "")
+                            ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<FillMode>())
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_cullMode, "Cull Mode", "")
+                            ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<CullMode>())
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_multisampleEnable, "Multisample Enable", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_depthClipEnable, "Depth Clip Enable", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_conservativeRasterEnable, "Conservative Raster Enable", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_forcedSampleCount, "Forced Sample Count", "")
+                        ;
+                }
+            }
+
+            if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+            {
+                behaviorContext->Class<RasterState>("RasterState")
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                    ->Attribute(AZ::Script::Attributes::Category, "RHI")
+                    ->Attribute(AZ::Script::Attributes::Module, "rhi")
+                    ->Constructor()
+                    ->Constructor<const RasterState&>()
+                    ->Property("depthBias", BehaviorValueProperty(&RasterState::m_depthBias))
+                    ->Property("depthBiasClamp", BehaviorValueProperty(&RasterState::m_depthBiasClamp))
+                    ->Property("depthBiasSlopeScale", BehaviorValueProperty(&RasterState::m_depthBiasSlopeScale))
+                    ->Property("fillMode", BehaviorValueProperty(&RasterState::m_fillMode))
+                    ->Property("cullMode", BehaviorValueProperty(&RasterState::m_cullMode))
+                    ->Property("multisampleEnable", BehaviorValueProperty(&RasterState::m_multisampleEnable))
+                    ->Property("depthClipEnable", BehaviorValueProperty(&RasterState::m_depthClipEnable))
+                    ->Property("conservativeRasterEnable", BehaviorValueProperty(&RasterState::m_conservativeRasterEnable))
+                    ->Property("forcedSampleCount", BehaviorValueProperty(&RasterState::m_forcedSampleCount))
+                    ;
             }
         }
 
         void StencilOpState::Reflect(ReflectContext* context)
         {
-            if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
+            if (auto serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<StencilOpState>()
                     ->Version(1)
                     ->Field("failOp", &StencilOpState::m_failOp)
                     ->Field("depthFailOp", &StencilOpState::m_depthFailOp)
                     ->Field("passOp", &StencilOpState::m_passOp)
-                    ->Field("func", &StencilOpState::m_func);
+                    ->Field("func", &StencilOpState::m_func)
+                    ;
+
+                if (auto editContext = serializeContext->GetEditContext())
+                {
+                    editContext->Class<StencilOpState>("StencilOpState", "")
+                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &StencilOpState::m_failOp, "Fail Op", "")
+                            ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<StencilOp>())
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &StencilOpState::m_depthFailOp, "Depth Fail Op", "")
+                            ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<StencilOp>())
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &StencilOpState::m_passOp, "Pass Op", "")
+                            ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<StencilOp>())
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &StencilOpState::m_func, "Func", "")
+                            ->Attribute(AZ::Edit::Attributes::EnumValues, AZStd::vector<AZ::Edit::EnumConstant<ComparisonFunc>>{
+                                AZ::Edit::EnumConstant<ComparisonFunc>(ComparisonFunc::Never, ToString(ComparisonFunc::Never)),
+                                AZ::Edit::EnumConstant<ComparisonFunc>(ComparisonFunc::Less, ToString(ComparisonFunc::Less)),
+                                AZ::Edit::EnumConstant<ComparisonFunc>(ComparisonFunc::Equal, ToString(ComparisonFunc::Equal)),
+                                AZ::Edit::EnumConstant<ComparisonFunc>(ComparisonFunc::LessEqual, ToString(ComparisonFunc::LessEqual)),
+                                AZ::Edit::EnumConstant<ComparisonFunc>(ComparisonFunc::Greater, ToString(ComparisonFunc::Greater)),
+                                AZ::Edit::EnumConstant<ComparisonFunc>(ComparisonFunc::NotEqual, ToString(ComparisonFunc::NotEqual)),
+                                AZ::Edit::EnumConstant<ComparisonFunc>(ComparisonFunc::GreaterEqual, ToString(ComparisonFunc::GreaterEqual)),
+                                AZ::Edit::EnumConstant<ComparisonFunc>(ComparisonFunc::Always, ToString(ComparisonFunc::Always)) })
+                        ;
+                }
+            }
+
+            if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+            {
+                behaviorContext->Class<StencilOpState>("StencilOpState")
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                    ->Attribute(AZ::Script::Attributes::Category, "RHI")
+                    ->Attribute(AZ::Script::Attributes::Module, "rhi")
+                    ->Constructor()
+                    ->Constructor<const StencilOpState&>()
+                    ->Property("failOp", BehaviorValueProperty(&StencilOpState::m_failOp))
+                    ->Property("depthFailOp", BehaviorValueProperty(&StencilOpState::m_depthFailOp))
+                    ->Property("passOp", BehaviorValueProperty(&StencilOpState::m_passOp))
+                    ->Property("func", BehaviorValueProperty(&StencilOpState::m_func))
+                    ;
             }
         }
 
         void DepthState::Reflect(ReflectContext* context)
         {
-            if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
+            if (auto serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<DepthState>()
                     ->Version(1)
                     ->Field("enable", &DepthState::m_enable)
                     ->Field("writeMask", &DepthState::m_writeMask)
-                    ->Field("compareFunc", &DepthState::m_func);
+                    ->Field("compareFunc", &DepthState::m_func)
+                    ;
+
+                if (auto editContext = serializeContext->GetEditContext())
+                {
+                    editContext->Class<DepthState>("DepthState", "")
+                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &DepthState::m_enable, "Enable", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &DepthState::m_writeMask, "Write Mask", "")
+                            ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<DepthWriteMask>())
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &DepthState::m_func, "Func", "")
+                            ->Attribute(AZ::Edit::Attributes::EnumValues, AZStd::vector<AZ::Edit::EnumConstant<ComparisonFunc>>{
+                                AZ::Edit::EnumConstant<ComparisonFunc>(ComparisonFunc::Never, ToString(ComparisonFunc::Never)),
+                                AZ::Edit::EnumConstant<ComparisonFunc>(ComparisonFunc::Less, ToString(ComparisonFunc::Less)),
+                                AZ::Edit::EnumConstant<ComparisonFunc>(ComparisonFunc::Equal, ToString(ComparisonFunc::Equal)),
+                                AZ::Edit::EnumConstant<ComparisonFunc>(ComparisonFunc::LessEqual, ToString(ComparisonFunc::LessEqual)),
+                                AZ::Edit::EnumConstant<ComparisonFunc>(ComparisonFunc::Greater, ToString(ComparisonFunc::Greater)),
+                                AZ::Edit::EnumConstant<ComparisonFunc>(ComparisonFunc::NotEqual, ToString(ComparisonFunc::NotEqual)),
+                                AZ::Edit::EnumConstant<ComparisonFunc>(ComparisonFunc::GreaterEqual, ToString(ComparisonFunc::GreaterEqual)),
+                                AZ::Edit::EnumConstant<ComparisonFunc>(ComparisonFunc::Always, ToString(ComparisonFunc::Always)) })
+                        ;
+                }
+            }
+
+            if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+            {
+                behaviorContext->Class<DepthState>("DepthState")
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                    ->Attribute(AZ::Script::Attributes::Category, "RHI")
+                    ->Attribute(AZ::Script::Attributes::Module, "rhi")
+                    ->Constructor()
+                    ->Constructor<const DepthState&>()
+                    ->Property("enable", BehaviorValueProperty(&DepthState::m_enable))
+                    ->Property("writeMask", BehaviorValueProperty(&DepthState::m_writeMask))
+                    ->Property("compareFunc", BehaviorValueProperty(&DepthState::m_func))
+                    ;
             }
         }
 
         void StencilState::Reflect(ReflectContext* context)
         {
-            if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
+            if (auto serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<StencilState>()
                     ->Version(1)
@@ -366,24 +487,78 @@ namespace AZ
                     ->Field("readMask", &StencilState::m_readMask)
                     ->Field("writeMask", &StencilState::m_writeMask)
                     ->Field("frontFace", &StencilState::m_frontFace)
-                    ->Field("backFace", &StencilState::m_backFace);
+                    ->Field("backFace", &StencilState::m_backFace)
+                    ;
+
+                if (auto editContext = serializeContext->GetEditContext())
+                {
+                    editContext->Class<StencilState>("StencilState", "")
+                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &StencilState::m_enable, "Enable", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &StencilState::m_readMask, "Read Mask", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &StencilState::m_writeMask, "Write Mask", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &StencilState::m_frontFace, "Front Face", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &StencilState::m_backFace, "Back Face", "")
+                        ;
+                }
+            }
+
+            if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+            {
+                behaviorContext->Class<StencilState>("StencilState")
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                    ->Attribute(AZ::Script::Attributes::Category, "RHI")
+                    ->Attribute(AZ::Script::Attributes::Module, "rhi")
+                    ->Constructor()
+                    ->Constructor<const StencilState&>()
+                    ->Property("enable", BehaviorValueProperty(&StencilState::m_enable))
+                    ->Property("readMask", BehaviorValueProperty(&StencilState::m_readMask))
+                    ->Property("writeMask", BehaviorValueProperty(&StencilState::m_writeMask))
+                    ->Property("frontFace", BehaviorValueProperty(&StencilState::m_frontFace))
+                    ->Property("backFace", BehaviorValueProperty(&StencilState::m_backFace))
+                    ;
             }
         }
 
         void DepthStencilState::Reflect(ReflectContext* context)
         {
-            if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
+            if (auto serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<DepthStencilState>()
                     ->Version(1)
                     ->Field("depth", &DepthStencilState::m_depth)
-                    ->Field("stencil", &DepthStencilState::m_stencil);
+                    ->Field("stencil", &DepthStencilState::m_stencil)
+                    ;
+
+                if (auto editContext = serializeContext->GetEditContext())
+                {
+                    editContext->Class<DepthStencilState>("DepthStencilState", "")
+                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &DepthStencilState::m_depth, "Depth", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &DepthStencilState::m_stencil, "Stencil", "")
+                        ;
+                }
+            }
+
+            if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+            {
+                behaviorContext->Class<DepthStencilState>("DepthStencilState")
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                    ->Attribute(AZ::Script::Attributes::Category, "RHI")
+                    ->Attribute(AZ::Script::Attributes::Module, "rhi")
+                    ->Constructor()
+                    ->Constructor<const DepthStencilState&>()
+                    ->Property("depth", BehaviorValueProperty(&DepthStencilState::m_depth))
+                    ->Property("stencil", BehaviorValueProperty(&DepthStencilState::m_stencil))
+                    ;
             }
         }
 
         void TargetBlendState::Reflect(ReflectContext* context)
         {
-            if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
+            if (auto serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<TargetBlendState>()
                     ->Version(1)
@@ -394,30 +569,121 @@ namespace AZ
                     ->Field("blendAlphaSource", &TargetBlendState::m_blendAlphaSource)
                     ->Field("blendAlphaDest", &TargetBlendState::m_blendAlphaDest)
                     ->Field("blendAlphaOp", &TargetBlendState::m_blendAlphaOp)
-                    ->Field("writeMask", &TargetBlendState::m_writeMask);
+                    ->Field("writeMask", &TargetBlendState::m_writeMask)
+                    ;
+
+                if (auto editContext = serializeContext->GetEditContext())
+                {
+                    editContext->Class<TargetBlendState>("TargetBlendState", "")
+                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &TargetBlendState::m_enable, "Enable", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &TargetBlendState::m_blendSource, "Blend Source", "")
+                            ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<BlendFactor>())
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &TargetBlendState::m_blendDest, "Blend Dest", "")
+                            ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<BlendFactor>())
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &TargetBlendState::m_blendOp, "Blend Op", "")
+                            ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<BlendOp>())
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &TargetBlendState::m_blendAlphaSource, "Blend Alpha Source", "")
+                            ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<BlendFactor>())
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &TargetBlendState::m_blendAlphaDest, "Blend Alpha Dest", "")
+                            ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<BlendFactor>())
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &TargetBlendState::m_blendAlphaOp, "Blend Alpha Op", "")
+                            ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<BlendOp>())
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &TargetBlendState::m_writeMask, "Write Mask", "")
+                        ;
+                }
+            }
+
+            if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+            {
+                behaviorContext->Class<TargetBlendState>("TargetBlendState")
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                    ->Attribute(AZ::Script::Attributes::Category, "RHI")
+                    ->Attribute(AZ::Script::Attributes::Module, "rhi")
+                    ->Constructor()
+                    ->Constructor<const TargetBlendState&>()
+                    ->Property("enable", BehaviorValueProperty(&TargetBlendState::m_enable))
+                    ->Property("blendSource", BehaviorValueProperty(&TargetBlendState::m_blendSource))
+                    ->Property("blendDest", BehaviorValueProperty(&TargetBlendState::m_blendDest))
+                    ->Property("blendOp", BehaviorValueProperty(&TargetBlendState::m_blendOp))
+                    ->Property("blendAlphaSource", BehaviorValueProperty(&TargetBlendState::m_blendAlphaSource))
+                    ->Property("blendAlphaDest", BehaviorValueProperty(&TargetBlendState::m_blendAlphaDest))
+                    ->Property("blendAlphaOp", BehaviorValueProperty(&TargetBlendState::m_blendAlphaOp))
+                    ->Property("writeMask", BehaviorValueProperty(&TargetBlendState::m_writeMask))
+                    ;
             }
         }
 
         void BlendState::Reflect(ReflectContext* context)
         {
-            if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
+            if (auto serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<BlendState>()
                     ->Version(1)
                     ->Field("alphaToCoverageEnable", &BlendState::m_alphaToCoverageEnable)
                     ->Field("independentBlendEnable", &BlendState::m_independentBlendEnable)
-                    ->Field("targets", &BlendState::m_targets);
+                    ->Field("targets", &BlendState::m_targets)
+                    ;
+
+                if (auto editContext = serializeContext->GetEditContext())
+                {
+                    editContext->Class<BlendState>("BlendState", "")
+                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &BlendState::m_alphaToCoverageEnable, "Alpha To Coverage Enable", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &BlendState::m_independentBlendEnable, "Independent Blend Enable", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &BlendState::m_targets, "Targets", "")
+                        ;
+                }
+            }
+
+            if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+            {
+                behaviorContext->Class<BlendState>("BlendState")
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                    ->Attribute(AZ::Script::Attributes::Category, "RHI")
+                    ->Attribute(AZ::Script::Attributes::Module, "rhi")
+                    ->Constructor()
+                    ->Constructor<const BlendState&>()
+                    ->Property("alphaToCoverageEnable", BehaviorValueProperty(&BlendState::m_alphaToCoverageEnable))
+                    ->Property("independentBlendEnable", BehaviorValueProperty(&BlendState::m_independentBlendEnable))
+                    ->Property("targets", BehaviorValueProperty(&BlendState::m_targets))
+                    ;
             }
         }
 
         void SamplePosition::Reflect(ReflectContext* context)
         {
-            if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
+            if (auto serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<SamplePosition>()
                     ->Version(1)
                     ->Field("x", &SamplePosition::m_x)
                     ->Field("y", &SamplePosition::m_y)
+                    ;
+
+                if (auto editContext = serializeContext->GetEditContext())
+                {
+                    editContext->Class<SamplePosition>("SamplePosition", "")
+                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SamplePosition::m_x, "X", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SamplePosition::m_y, "Y", "")
+                        ;
+                }
+            }
+
+            if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+            {
+                behaviorContext->Class<SamplePosition>("SamplePosition")
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                    ->Attribute(AZ::Script::Attributes::Category, "RHI")
+                    ->Attribute(AZ::Script::Attributes::Module, "rhi")
+                    ->Constructor()
+                    ->Constructor<const SamplePosition&>()
+                    ->Property("x", BehaviorValueProperty(&SamplePosition::m_x))
+                    ->Property("y", BehaviorValueProperty(&SamplePosition::m_y))
                     ;
             }
         }
@@ -425,7 +691,7 @@ namespace AZ
         void MultisampleState::Reflect(ReflectContext* context)
         {
             SamplePosition::Reflect(context);
-            if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
+            if (auto serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<MultisampleState>()
                     ->Version(1)
@@ -434,19 +700,74 @@ namespace AZ
                     ->Field("customPositions", &MultisampleState::m_customPositions)
                     ->Field("customPositionsCount", &MultisampleState::m_customPositionsCount)
                     ;
+
+                if (auto editContext = serializeContext->GetEditContext())
+                {
+                    editContext->Class<MultisampleState>("MultisampleState", "")
+                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &MultisampleState::m_samples, "Samples", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &MultisampleState::m_quality, "Quality", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &MultisampleState::m_customPositions, "Custom Positions", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &MultisampleState::m_customPositionsCount, "Custom Positions Count", "")
+                        ;
+                }
+            }
+
+            if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+            {
+                behaviorContext->Class<MultisampleState>("MultisampleState")
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                    ->Attribute(AZ::Script::Attributes::Category, "RHI")
+                    ->Attribute(AZ::Script::Attributes::Module, "rhi")
+                    ->Constructor()
+                    ->Constructor<const MultisampleState&>()
+                    ->Property("samples", BehaviorValueProperty(&MultisampleState::m_samples))
+                    ->Property("quality", BehaviorValueProperty(&MultisampleState::m_quality))
+                    ->Property("customPositions", BehaviorValueProperty(&MultisampleState::m_customPositions))
+                    ->Property("customPositionsCount", BehaviorValueProperty(&MultisampleState::m_customPositionsCount))
+                    ;
             }
         }
 
         void RenderStates::Reflect(ReflectContext* context)
         {
-            if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
+            if (auto serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<RenderStates>()
                     ->Version(1)
                     ->Field("rasterState", &RenderStates::m_rasterState)
                     ->Field("multisampleState", &RenderStates::m_multisampleState)
                     ->Field("depthStencilState", &RenderStates::m_depthStencilState)
-                    ->Field("blendState", &RenderStates::m_blendState);
+                    ->Field("blendState", &RenderStates::m_blendState)
+                    ;
+
+                if (auto editContext = serializeContext->GetEditContext())
+                {
+                    editContext->Class<RenderStates>("RenderStates", "")
+                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &RenderStates::m_rasterState, "Raster State", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &RenderStates::m_multisampleState, "Multisample State", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &RenderStates::m_depthStencilState, "DepthStencil State", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &RenderStates::m_blendState, "Blend State", "")
+                        ;
+                }
+            }
+
+            if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+            {
+                behaviorContext->Class<RenderStates>("RenderStates")
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                    ->Attribute(AZ::Script::Attributes::Category, "RHI")
+                    ->Attribute(AZ::Script::Attributes::Module, "rhi")
+                    ->Constructor()
+                    ->Constructor<const RenderStates&>()
+                    ->Property("rasterState", BehaviorValueProperty(&RenderStates::m_rasterState))
+                    ->Property("multisampleState", BehaviorValueProperty(&RenderStates::m_multisampleState))
+                    ->Property("depthStencilState", BehaviorValueProperty(&RenderStates::m_depthStencilState))
+                    ->Property("blendState", BehaviorValueProperty(&RenderStates::m_blendState))
+                    ;
             }
         }
 

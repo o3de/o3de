@@ -93,8 +93,6 @@ namespace AZ
             void MakeHeapsResident(MTLRenderStages renderStages);
         private:
             
-            
-
             bool m_isEncoded                                    = false;
             bool m_isNullDescHeapBound                          = false;
             RHI::HardwareQueueClass m_hardwareQueueClass        = RHI::HardwareQueueClass::Graphics;

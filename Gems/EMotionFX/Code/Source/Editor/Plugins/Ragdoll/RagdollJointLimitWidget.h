@@ -11,8 +11,9 @@
 #if !defined(Q_MOC_RUN)
 #include <AzFramework/Physics/Ragdoll.h>
 #include <AzQtComponents/Components/Widgets/Card.h>
-#include <QModelIndex>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <MCore/Source/Command.h>
+#include <QModelIndex>
 #endif
 
 
@@ -23,6 +24,19 @@ QT_FORWARD_DECLARE_CLASS(QLabel)
 namespace EMotionFX
 {
     class ObjectEditor;
+    class RagdollJointLimitWidget;
+
+    class RagdollJointLimitPropertyNotify
+        : public AzToolsFramework::IPropertyEditorNotify
+    {
+    public:
+        // AzToolsFramework::IPropertyEditorNotify overrides ...
+        void BeforePropertyModified([[maybe_unused]] AzToolsFramework::InstanceDataNode* node) override {};
+        void AfterPropertyModified(AzToolsFramework::InstanceDataNode* node) override;
+        void SetPropertyEditingActive([[maybe_unused]] AzToolsFramework::InstanceDataNode* node) override {}
+        void SetPropertyEditingComplete([[maybe_unused]] AzToolsFramework::InstanceDataNode* node) override {};
+        void SealUndoStack() override {}
+    };
 
     class RagdollJointLimitWidget
         : public AzQtComponents::Card
@@ -36,9 +50,11 @@ namespace EMotionFX
         void Update(const QModelIndex& modelIndex);
         void Update() { Update(m_nodeIndex); }
         bool HasJointLimit() const;
+        void InvalidateValues();
 
     signals:
         void JointLimitCopied(const AZStd::string& serializedJointLimits) const;
+        void JointLimitTypeChanged() const;
 
     private slots:
         void OnJointTypeChanged(int index);
@@ -49,6 +65,7 @@ namespace EMotionFX
         Physics::RagdollNodeConfiguration* GetRagdollNodeConfig() const;
         void ChangeLimitType(const AZ::TypeId& type);
         void ChangeLimitType(int supportedTypeIndex);
+        AZStd::unique_ptr<RagdollJointLimitPropertyNotify> m_propertyNotify;
 
         QModelIndex                     m_nodeIndex;
         QIcon                           m_cardHeaderIcon;

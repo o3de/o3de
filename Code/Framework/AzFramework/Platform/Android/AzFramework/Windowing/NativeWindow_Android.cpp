@@ -41,8 +41,19 @@ namespace AzFramework
     {
         m_nativeWindow = AZ::Android::Utils::GetWindow();
 
-        m_width = geometry.m_width;
-        m_height = geometry.m_height;
+        int windowWidth = 0;
+        int windowHeight = 0;
+        if (AZ::Android::Utils::GetWindowSize(windowWidth, windowHeight))
+        {
+            // Use native window size from the device if available
+            m_width = static_cast<uint32_t>(windowWidth);
+            m_height = static_cast<uint32_t>(windowHeight);
+        }
+        else
+        {
+            m_width = geometry.m_width;
+            m_height = geometry.m_height;
+        }
 
         if (m_nativeWindow)
         {

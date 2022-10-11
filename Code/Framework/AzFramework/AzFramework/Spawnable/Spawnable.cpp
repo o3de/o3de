@@ -177,6 +177,11 @@ namespace AzFramework
 
     bool Spawnable::EntityAliasVisitor::HasAliases() const
     {
+        if (m_entityAliasList == nullptr)
+        {
+            return false;
+        }
+
         return EntityAliasVisitorBase::HasAliases(m_entityAliasList);
     }
 

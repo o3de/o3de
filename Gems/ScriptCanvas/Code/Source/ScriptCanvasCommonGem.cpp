@@ -10,6 +10,7 @@
 #include <SystemComponent.h>
 
 #include <Asset/RuntimeAssetSystemComponent.h>
+#include <ScriptCanvas/AutoGen/ScriptCanvasAutoGenRegistry.h>
 #include <ScriptCanvas/Core/Graph.h>
 #include <ScriptCanvas/Core/Connection.h>
 
@@ -35,7 +36,7 @@ namespace ScriptCanvas
         m_descriptors.insert(m_descriptors.end(), {
             // System Component
             ScriptCanvas::SystemComponent::CreateDescriptor(),
-            
+
             // Components
             ScriptCanvas::Connection::CreateDescriptor(),
             ScriptCanvas::Node::CreateDescriptor(),
@@ -43,28 +44,37 @@ namespace ScriptCanvas
             ScriptCanvas::Graph::CreateDescriptor(),
             ScriptCanvas::GraphVariableManagerComponent::CreateDescriptor(),
             ScriptCanvas::RuntimeComponent::CreateDescriptor(),
-            
+
             // ScriptCanvasBuilder
             ScriptCanvas::RuntimeAssetSystemComponent::CreateDescriptor(),
         });
-        
-        ScriptCanvas::InitNodeRegistry();
+
+        ScriptCanvas::InitLibraries();
         AZStd::vector<AZ::ComponentDescriptor*> libraryDescriptors = ScriptCanvas::GetLibraryDescriptors();
         m_descriptors.insert(m_descriptors.end(), libraryDescriptors.begin(), libraryDescriptors.end());
 
         MathNodeUtilities::RandomEngineInit();
         InitDataRegistry();
+
+        ScriptCanvas::AutoGenRegistryManager::Init();
+        if (auto componentApplication = AZ::Interface<AZ::ComponentApplicationRequests>::Get())
+        {
+            for (auto descriptor : ScriptCanvas::AutoGenRegistryManager::GetComponentDescriptors())
+            {
+                componentApplication->RegisterComponentDescriptor(descriptor);
+            }
+        }
     }
 
     ScriptCanvasModuleCommon::~ScriptCanvasModuleCommon()
     {
         MathNodeUtilities::RandomEngineReset();
-        ScriptCanvas::ResetNodeRegistry();
+        ScriptCanvas::ResetLibraries();
         ResetDataRegistry();
     }
-    
+
     AZ::ComponentTypeList ScriptCanvasModuleCommon::GetCommonSystemComponents() const
-    {   
+    {
         return std::initializer_list<AZ::Uuid> {
             azrtti_typeid<ScriptCanvas::SystemComponent>(),
             azrtti_typeid<ScriptCanvas::RuntimeAssetSystemComponent>(),

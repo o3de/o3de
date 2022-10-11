@@ -44,8 +44,9 @@ namespace AzNetworking
 
         //! Opens the TCP socket and connects to the requested remote address.
         //! @param address the remote endpoint to connect to
+        //! @param localPort the local port to open a connection from, 0 binds to any available port
         //! @return boolean true on success
-        bool Connect(const IpAddress& address) override;
+        bool Connect(const IpAddress& address, uint16_t localPort) override;
 
         //! Closes an open socket.
         void Close() override;

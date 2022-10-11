@@ -28,7 +28,7 @@ namespace AzPhysics
         if (auto* serializeContext = azdynamic_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<AzPhysics::SystemConfiguration>()
-                ->Version(2)
+                ->Version(3)
                 ->Field("AutoManageSimulationUpdate", &SystemConfiguration::m_autoManageSimulationUpdate)
                 ->Field("MaxTimestep", &SystemConfiguration::m_maxTimestep)
                 ->Field("FixedTimeStep", &SystemConfiguration::m_fixedTimestep)
@@ -36,8 +36,6 @@ namespace AzPhysics
                 ->Field("ShapecastBufferSize", &SystemConfiguration::m_shapecastBufferSize)
                 ->Field("OverlapBufferSize", &SystemConfiguration::m_overlapBufferSize)
                 ->Field("CollisionConfig", &SystemConfiguration::m_collisionConfig)
-                ->Field("DefaultMaterial", &SystemConfiguration::m_defaultMaterialConfiguration)
-                ->Field("MaterialLibrary", &SystemConfiguration::m_materialLibraryAsset)
                 ;
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
@@ -78,9 +76,7 @@ namespace AzPhysics
             m_overlapBufferSize == other.m_overlapBufferSize &&
             AZ::IsClose(m_maxTimestep, other.m_maxTimestep) &&
             AZ::IsClose(m_fixedTimestep, other.m_fixedTimestep) &&
-            m_collisionConfig == other.m_collisionConfig &&
-            m_defaultMaterialConfiguration == other.m_defaultMaterialConfiguration &&
-            m_materialLibraryAsset == other.m_materialLibraryAsset
+            m_collisionConfig == other.m_collisionConfig
             ;
     }
 

@@ -32,7 +32,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString ShapeAreaFalloffGradientNode::TITLE = QObject::tr("Shape Falloff");
+    const char* ShapeAreaFalloffGradientNode::TITLE = "Shape Falloff";
 
     ShapeAreaFalloffGradientNode::ShapeAreaFalloffGradientNode(GraphModel::GraphPtr graph)
         : BaseGradientNode(graph)
@@ -46,13 +46,12 @@ namespace LandscapeCanvas
         BaseGradientNode::RegisterSlots();
 
         // Shape Falloff Gradient has an additional input slot for an inbound shape
-        GraphModel::DataTypePtr invalidEntityDataType = GraphContext::GetInstance()->GetDataType(LandscapeCanvasDataTypeEnum::InvalidEntity);
-        GraphModel::DataTypePtr boundsDataType = GraphContext::GetInstance()->GetDataType(LandscapeCanvasDataTypeEnum::Bounds);
+        GraphModel::DataTypePtr boundsDataType = GetGraphContext()->GetDataType(LandscapeCanvasDataTypeEnum::Bounds);
 
         RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
             INBOUND_SHAPE_SLOT_ID,
             INBOUND_SHAPE_SLOT_LABEL.toUtf8().constData(),
-            { boundsDataType, invalidEntityDataType },
+            { boundsDataType },
             AZStd::any(AZ::EntityId()),
             INBOUND_SHAPE_INPUT_SLOT_DESCRIPTION.toUtf8().constData()));
     }

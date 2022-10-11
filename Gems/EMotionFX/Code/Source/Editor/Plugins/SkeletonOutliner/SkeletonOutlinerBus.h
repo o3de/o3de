@@ -30,6 +30,7 @@ namespace EMotionFX
         virtual Node* GetSingleSelectedNode() { return nullptr; }
         virtual QModelIndex GetSingleSelectedModelIndex() { return QModelIndex(); }
         virtual AZ::Outcome<const QModelIndexList&> GetSelectedRowIndices() { return AZ::Failure(); }
+        virtual size_t GetHoveredRowIndex() { return InvalidIndex; }
         virtual SkeletonModel* GetModel() = 0;
 
         virtual void DataChanged([[maybe_unused]] const QModelIndex& modelIndex) {}
@@ -49,6 +50,7 @@ namespace EMotionFX
         virtual void SingleNodeSelectionChanged([[maybe_unused]] Actor* actor, [[maybe_unused]] Node* node) {}
         virtual void ZoomToJoints([[maybe_unused]] ActorInstance* actorInstance, [[maybe_unused]] const AZStd::vector<Node*>& joints) {}
         virtual void JointSelectionChanged() {}
+        virtual void JointHoveredChanged([[maybe_unused]] size_t hoveredJointIndex) {};
 
         virtual void OnContextMenu([[maybe_unused]] QMenu* menuconst, [[maybe_unused]] const QModelIndexList& selectedRowIndices) {}
     };

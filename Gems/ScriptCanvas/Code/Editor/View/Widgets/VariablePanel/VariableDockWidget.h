@@ -100,7 +100,8 @@ namespace ScriptCanvasEditor
         : public QMenu
     {
     public:
-        VariablePanelContextMenu(VariableDockWidget* contextMenu, const ScriptCanvas::ScriptCanvasId& scriptCanvasExecutionId, ScriptCanvas::VariableId varId);
+        VariablePanelContextMenu(VariableDockWidget* contextMenu, const ScriptCanvas::ScriptCanvasId& scriptCanvasExecutionId
+            , ScriptCanvas::VariableId varId, QPoint position);
     };
 
     class VariableDockWidget
@@ -164,6 +165,7 @@ namespace ScriptCanvasEditor
         void OnHighlightVariables(const AZStd::unordered_set< ScriptCanvas::VariableId>& variableIds);
 
         void OnRemoveUnusedVariables();
+        void OnConfigureVariable(const ScriptCanvas::VariableId& variableId, QPoint position);
 
     Q_SIGNALS:
         void OnVariableSelectionChanged(const AZStd::vector<AZ::EntityId>& variableIds);

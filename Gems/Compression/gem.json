@@ -1,0 +1,21 @@
+{
+    "gem_name": "Compression",
+    "display_name": "Compression",
+    "license": "Apache-2.0 Or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
+    "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/o3de",
+    "type": "Code",
+    "summary": "Compression Interface Gem which provides an API for registering Compression Algoirithms interfaces with. Comes with a sub gem implementation for LZ4 Compression",
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Compression"
+    ],
+    "icon_path": "preview.png",
+    "requirements": "",
+    "documentation_url": "",
+    "dependencies": [],
+    "restricted": "Compression"
+}

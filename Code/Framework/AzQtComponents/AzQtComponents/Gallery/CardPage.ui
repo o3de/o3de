@@ -76,6 +76,9 @@
       <widget class="AzQtComponents::Card" name="functionalCard" native="true"/>
      </item>
      <item>
+      <widget class="AzQtComponents::Card" name="containerCard" native="true"/>
+     </item>
+     <item>
       <spacer name="verticalSpacer_2">
        <property name="orientation">
         <enum>Qt::Vertical</enum>

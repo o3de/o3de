@@ -10,6 +10,7 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 
+#include <Atom/RPI.Reflect/Asset/AssetHandler.h>
 #include <Atom/RHI.Reflect/ImageDescriptor.h>
 #include <Atom/RHI.Reflect/ImageViewDescriptor.h>
 
@@ -27,6 +28,10 @@ namespace AZ
             : public Data::AssetData
         {
         public:
+            static const char* DisplayName;
+            static const char* Group;
+            static const char* Extension;
+
             AZ_RTTI(ImageAsset, "{C53AB73A-5BC9-462D-805B-43BAFA8C8167}", Data::AssetData);
             AZ_CLASS_ALLOCATOR(ImageAsset, AZ::SystemAllocator, 0);
 
@@ -48,7 +53,9 @@ namespace AZ
             RHI::ImageDescriptor m_imageDescriptor;
 
             // [Serialized] The descriptor used to initialize the RHI image view.
-            RHI::ImageViewDescriptor m_imageViewDescriptor;            
+            RHI::ImageViewDescriptor m_imageViewDescriptor;
         };
+
+        using ImageAssetHandler = AssetHandler<ImageAsset>;
     }
 }

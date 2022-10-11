@@ -262,7 +262,7 @@ namespace ScriptCanvasEditor
                 {
                     GeneralRequestBus::Broadcast
                         ( &GeneralRequests::OpenScriptCanvasAssetId
-                        , SourceHandle(nullptr, treeItem->GetAssetId().m_guid, "")
+                        , SourceHandle(nullptr, treeItem->GetAssetId().m_guid)
                         , Tracker::ScriptCanvasFileState::UNMODIFIED);
                 }
             }

@@ -36,7 +36,7 @@ namespace ScriptCanvas
 
             void ClearSnapshotReport();
 
-            void FinalizeReport(PerformanceKey key, const AZ::Data::AssetId& assetId);
+            void FinalizeReport(PerformanceKey key);
 
             PerformanceTrackingReport GetGlobalReport() const;
 
@@ -83,11 +83,11 @@ namespace ScriptCanvas
 
             PerformanceTimer* GetOrCreateTimer(PerformanceKey key);
 
-            void ReportExecutionTime(PerformanceKey key, const AZ::Data::AssetId& assetId, AZStd::sys_time_t);
+            void ReportExecutionTime(PerformanceKey key, AZStd::sys_time_t);
 
-            void ReportLatentTime(PerformanceKey key, const AZ::Data::AssetId& assetId, AZStd::sys_time_t);
+            void ReportLatentTime(PerformanceKey key, AZStd::sys_time_t);
 
-            void ReportInitializationTime(PerformanceKey key, const AZ::Data::AssetId& assetId, AZStd::sys_time_t);
+            void ReportInitializationTime(PerformanceKey key, AZStd::sys_time_t);
         };
     }
 }

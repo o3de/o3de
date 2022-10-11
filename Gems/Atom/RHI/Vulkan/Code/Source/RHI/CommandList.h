@@ -79,10 +79,10 @@ namespace AZ
             void SetScissors(const RHI::Scissor* rhiScissors, uint32_t count) override;
             void SetShaderResourceGroupForDraw(const RHI::ShaderResourceGroup& shaderResourceGroup) override;
             void SetShaderResourceGroupForDispatch(const RHI::ShaderResourceGroup& shaderResourceGroup) override;
-            void Submit(const RHI::CopyItem& copyItems) override;
-            void Submit(const RHI::DrawItem& itemList) override;
-            void Submit(const RHI::DispatchItem& dispatchItems) override;
-            void Submit(const RHI::DispatchRaysItem& dispatchRaysItem) override;
+            void Submit(const RHI::CopyItem& copyItems, uint32_t submitIndex = 0) override;
+            void Submit(const RHI::DrawItem& itemList, uint32_t submitIndex = 0) override;
+            void Submit(const RHI::DispatchItem& dispatchItems, uint32_t submitIndex = 0) override;
+            void Submit(const RHI::DispatchRaysItem& dispatchRaysItem, uint32_t submitIndex = 0) override;
             void BeginPredication(const RHI::Buffer& buffer, uint64_t offset, RHI::PredicationOp operation) override;
             void EndPredication() override;
             void BuildBottomLevelAccelerationStructure(const RHI::RayTracingBlas& rayTracingBlas) override;
@@ -163,6 +163,7 @@ namespace AZ
 
             template <class Item>
             bool CommitShaderResource(const Item& item);
+            void CommitShaderResourcePushConstants(VkPipelineLayout pipelineLayout, uint8_t rootConstantSize, const uint8_t* rootConstants);
             void CommitDescriptorSets(RHI::PipelineStateType type);
             ShaderResourceBindings& GetShaderResourceBindingsByPipelineType(RHI::PipelineStateType type);
             VkPipelineBindPoint GetPipelineBindPoint(const PipelineState& pipelineState) const;
@@ -219,13 +220,7 @@ namespace AZ
             auto pipelineLayout = pipelineState->GetPipelineLayout();
             if (item.m_rootConstantSize && pipelineLayout->GetPushContantsSize() > 0)
             {
-                vkCmdPushConstants(
-                    m_nativeCommandBuffer,
-                    pipelineLayout->GetNativePipelineLayout(),
-                    VK_SHADER_STAGE_ALL,
-                    0,
-                    item.m_rootConstantSize,
-                    item.m_rootConstants);
+                CommitShaderResourcePushConstants(pipelineLayout->GetNativePipelineLayout(), item.m_rootConstantSize, item.m_rootConstants);
             }
 
             m_state.m_bindingsByPipe[static_cast<uint32_t>(pipelineType)].m_dirtyShaderResourceGroupFlags.reset();

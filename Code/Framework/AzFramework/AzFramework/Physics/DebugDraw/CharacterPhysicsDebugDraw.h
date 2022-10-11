@@ -28,6 +28,7 @@ namespace Physics
             AZ::Transform m_worldTransform = AZ::Transform::CreateIdentity();
             AZ::Vector3 m_scale = AZ::Vector3::CreateOne();
             bool m_selected = false;
+            bool m_hovered = false;
             bool m_valid = false;
         };
 
@@ -59,6 +60,7 @@ namespace Physics
         {
             AZ::Color m_defaultColor;
             AZ::Color m_selectedColor;
+            AZ::Color m_hoveredColor;
             AZ::Color m_errorColor;
         };
 
@@ -70,13 +72,22 @@ namespace Physics
             AzFramework::DebugDisplayRequests* debugDisplay,
             const Physics::CharacterColliderNodeConfiguration& nodeConfig,
             NodeDebugDrawDataFunction nodeDebugDrawDataFunction,
-            const ColorSettings& colorSettings);
+            const ColorSettings& colorSettings,
+            uint32_t invalidShapeBitArray = 0);
 
         //! Debug draw all the colliders for an entire CharacterColliderConfiguration.
         void RenderColliders(
             AzFramework::DebugDisplayRequests* debugDisplay,
             const Physics::CharacterColliderConfiguration* colliderConfig,
             NodeDebugDrawDataFunction nodeDebugDrawDataFunction,
+            const ColorSettings& colorSettings);
+
+        //! Debug draw all the colliders for an entire ragdoll
+        void RenderRagdollColliders(
+            AzFramework::DebugDisplayRequests* debugDisplay,
+            const Physics::CharacterColliderConfiguration* colliderConfig,
+            NodeDebugDrawDataFunction nodeDebugDrawDataFunction,
+            const ParentIndices& parentIndices,
             const ColorSettings& colorSettings);
 
         using JointDebugDrawDataFunction = AZStd::function<JointDebugDrawData(const RagdollNodeConfiguration& ragdollNodeConfig)>;

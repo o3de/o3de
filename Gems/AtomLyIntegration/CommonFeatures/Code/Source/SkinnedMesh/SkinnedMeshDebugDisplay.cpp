@@ -86,11 +86,9 @@ namespace AZ
                     "Skinned Mesh Scene Stats:\n"
                     "  SkinnedMeshRenderProxy count: %zu\n"
                     "  DispatchItem count: %zu\n"
-                    "  Read only buffer view count: %zu\n"
-                    "  Writable buffer view count: %zu\n"
                     "  Bone count: %zu\n"
                     "  Vertex count: %zu\n",
-                    stats.skinnedMeshRenderProxyCount, stats.dispatchItemCount, stats.readOnlyBufferViewCount, stats.writableBufferViewCount, stats.boneCount, stats.vertexCount
+                    stats.skinnedMeshRenderProxyCount, stats.dispatchItemCount, stats.boneCount, stats.vertexCount
                 );
 
                 debugDisplay.Draw2dTextLabel(x, y, size, debugString.c_str(), center);

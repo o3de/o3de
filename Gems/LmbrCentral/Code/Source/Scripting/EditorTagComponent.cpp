@@ -113,7 +113,8 @@ namespace LmbrCentral
 
         TagComponentNotificationsBus::Event(entityId, &TagComponentNotificationsBus::Events::OnTagAdded, tag);
         TagGlobalNotificationBus::Event(tag, &TagGlobalNotificationBus::Events::OnEntityTagAdded, entityId);
-        TagGlobalRequestBus::MultiHandler::BusConnect(tag);
+        // Intentionally don't connect to the TagGlobalRequestBus for the editor component because its bus Id and params are
+        // not tied to any entity Id. This can collide with the runtime tag component which will have the same tag name
     }
 
     void EditorTagComponent::DeactivateTag(const char* tagName)
@@ -121,7 +122,6 @@ namespace LmbrCentral
         Tag tag(tagName);
         const AZ::EntityId entityId = GetEntityId();
 
-        TagGlobalRequestBus::MultiHandler::BusDisconnect(tag);
         TagGlobalNotificationBus::Event(tag, &TagGlobalNotificationBus::Events::OnEntityTagRemoved, entityId);
         TagComponentNotificationsBus::Event(entityId, &TagComponentNotificationsBus::Events::OnTagRemoved, tag);
 

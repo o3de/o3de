@@ -29,7 +29,6 @@ namespace AZ
         // are ready.  NoLoad dependencies are not loaded by default but can be loaded along with their dependencies using the
         // same rules as above by using the LoadAll dependency rule.
         class AssetContainer :
-            AZ::Data::AssetBus::MultiHandler,
             AZ::Data::AssetLoadBus::MultiHandler
         {
         public:
@@ -37,7 +36,7 @@ namespace AZ
 
             AssetContainer() = default;
 
-            AssetContainer(Asset<AssetData> asset, const AssetLoadParameters& loadParams);
+            AssetContainer(Asset<AssetData> asset, const AssetLoadParameters& loadParams, bool isReload = false);
             ~AssetContainer();
 
             bool IsReady() const;
@@ -73,13 +72,12 @@ namespace AZ
             const AZStd::unordered_set<AZ::Data::AssetId>& GetUnloadedDependencies() const;
 
             //////////////////////////////////////////////////////////////////////////
-            // AssetBus
-            void OnAssetReady(Asset<AssetData> asset) override;
-            void OnAssetError(Asset<AssetData> asset) override;
-
-            //////////////////////////////////////////////////////////////////////////
             // AssetLoadBus
             void OnAssetDataLoaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+            void OnAssetReady(Asset<AssetData> asset) override;
+            void OnAssetReloaded(Asset<AssetData> asset) override;
+            void OnAssetError(Asset<AssetData> asset) override;
+            void OnAssetReloadError(Asset<AssetData> asset) override;
         protected:
 
             virtual AZStd::vector<AZStd::pair<AssetInfo, Asset<AssetData>>> CreateAndQueueDependentAssets(
@@ -127,6 +125,8 @@ namespace AZ
             // The root asset id is stored here semi-redundantly on initialization so that we can still refer to it even if the
             // root asset reference gets cleared.
             AssetId m_containerAssetId;
+
+            bool m_isReload{ false };
 
             mutable AZStd::recursive_mutex m_dependencyMutex;
             DependencyList m_dependencies;

@@ -9,10 +9,12 @@
 #include "ProductAssetTreeModel.h"
 #include "ProductAssetTreeItemData.h"
 
+#include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzCore/Console/IConsole.h>
+
 
 namespace AssetProcessor
 {
@@ -169,6 +171,22 @@ namespace AssetProcessor
         const AzToolsFramework::AssetDatabase::ProductDatabaseEntry& product,
         bool modelIsResetting)
     {
+        AZStd::string platform;
+        m_sharedDbConnection->QueryJobByProductID(
+            product.m_productID,
+            [&](AzToolsFramework::AssetDatabase::JobDatabaseEntry& jobEntry)
+            {
+                platform = jobEntry.m_platform;
+                return true;
+            });
+
+        // Intermediate assets are functionally source assets, output as products from other source assets.
+        // Don't display them in the product assets tab.
+        if (product.m_flags.test(static_cast<int>(AssetBuilderSDK::ProductOutputFlags::IntermediateAsset)))
+        {
+            return;
+        }
+
         const auto& existingEntry = m_productIdToTreeItem.find(product.m_productID);
         if (existingEntry != m_productIdToTreeItem.end())
         {

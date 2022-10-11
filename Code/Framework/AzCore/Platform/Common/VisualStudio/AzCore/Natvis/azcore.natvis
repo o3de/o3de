@@ -44,6 +44,17 @@
     </Expand>
   </Type>
 
+  <Type Name="AZStd::span&lt;*&gt;">
+    <DisplayString>span[{m_size}]</DisplayString>
+    <Expand>
+      <Item Name="[size]">m_size</Item>
+      <ArrayItems>
+        <Size>m_size</Size>
+        <ValuePointer>m_data</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
   <Type Name="AZStd::Internal::fixed_zero_size_storage&lt;*&gt;">
     <AlternativeType Name="AZStd::fixed_vector&lt;*,0&gt;" />
     <DisplayString>fixed_vector[0] capacity 0</DisplayString>
@@ -137,7 +148,7 @@
         <Size>m_numElements</Size>
         <HeadPointer>m_head.m_next</HeadPointer>
         <NextPointer>m_next</NextPointer>
-        <ValueNode>*($T1*)(this+1)</ValueNode>
+        <ValueNode>(*(Internal::forward_list_node&lt;$T1&gt;*)(this)).m_value</ValueNode>
       </LinkedListItems>
     </Expand>
   </Type>
@@ -150,7 +161,7 @@
         <Size>m_numElements</Size>
         <HeadPointer>m_head.m_next</HeadPointer>
         <NextPointer>m_next</NextPointer>
-        <ValueNode>*($T1*)(this+1)</ValueNode>
+        <ValueNode>(*(Internal::list_node&lt;$T1&gt;*)(this)).m_value</ValueNode>
       </LinkedListItems>
     </Expand>
   </Type>
@@ -163,7 +174,7 @@
         <Size>m_numElements</Size>
         <HeadPointer>m_head.m_next</HeadPointer>
         <NextPointer>m_next</NextPointer>
-        <ValueNode>*($T1*)(this+1)</ValueNode>
+        <ValueNode>(*(Internal::forward_list_node&lt;$T1&gt;*)(this)).m_value</ValueNode>
       </LinkedListItems>
     </Expand>
   </Type>
@@ -245,14 +256,24 @@
 
   <Type Name="AZStd::list_const_iterator&lt;*&gt;">
     <AlternativeType Name="AZStd::list_iterator&lt;*&gt;" />
-    <AlternativeType Name="AZStd::forward_list_iterator&lt;*&gt;" />
-    <AlternativeType Name="AZStd::forward_list_const_iterator&lt;*&gt;" />
     <DisplayString>{*((Internal::list_node&lt;$T1&gt;*)(m_node))}</DisplayString>
     <Expand>
       <Item Name="[ptr]">(void*)(m_node), x</Item>
       <Item Name="[value]">*((Internal::list_node&lt;$T1&gt;*)(m_node))</Item>
+      <Item Name="[next]">*(AZStd::list_const_iterator&lt;$T1&gt;*) (((Internal::list_node&lt;$T1&gt;*)(m_node))->m_next)</Item>
+      <Item Name="[prev]">*(AZStd::list_const_iterator&lt;$T1&gt;*) (((Internal::list_node&lt;$T1&gt;*)(m_node))->m_prev)</Item>
     </Expand>
   </Type>
+
+    <Type Name="AZStd::forward_list_const_iterator&lt;*&gt;">
+        <AlternativeType Name="AZStd::forward_list_iterator&lt;*&gt;" />
+        <DisplayString>{*((Internal::forward_list_node&lt;$T1&gt;*)(m_node))}</DisplayString>
+        <Expand>
+            <Item Name="[ptr]">(void*)(m_node), x</Item>
+            <Item Name="[value]">*((Internal::forward_list_node&lt;$T1&gt;*)(m_node))</Item>
+            <Item Name="[next]">*(AZStd::forward_list_const_iterator&lt;$T1&gt;*) (((Internal::forward_list_node&lt;$T1&gt;*)(m_node))->m_next)</Item>
+        </Expand>
+    </Type>
 
   <Type Name="AZStd::intrusive_list&lt;*&gt;::const_iterator_impl">
     <AlternativeType Name="AZStd::intrusive_list&lt;*&gt;::iterator_impl" />
@@ -396,40 +417,42 @@
   <!-- -->
 
   <Type Name="AZStd::basic_string&lt;char,*,*&gt;">
-    <DisplayString Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">{((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_buffer,s}</DisplayString>
-    <DisplayString Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">{((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_data,s}</DisplayString>
-    <StringView Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_buffer,s</StringView>
-    <StringView Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_data,s</StringView>
+    <DisplayString Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">{((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_buffer,s}</DisplayString>
+    <DisplayString Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">{((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_data,s}</DisplayString>
+    <StringView Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_buffer,s</StringView>
+    <StringView Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_data,s</StringView>
     <Expand>
-      <Item Name="[size]" Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">(size_t)((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_size</Item>
-      <Item Name="[size]" Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_size</Item>
-      <Item Name="[capacity]" Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.Capacity</Item>
-      <Item Name="[capacity]" Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_capacity</Item>
+      <Item Name="[size]" Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">(size_t)((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_size</Item>
+      <Item Name="[size]" Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_size</Item>
+      <Item Name="[capacity]" Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.Capacity</Item>
+      <Item Name="[capacity]" Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_capacity</Item>
+      <Item Name="[is packed]">(bool)((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive</Item>
       <ArrayItems>
-        <Size Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_size,u</Size>
-        <Size Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_size</Size>
-        <ValuePointer Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_buffer</ValuePointer>
-        <ValuePointer Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_data</ValuePointer>
+        <Size Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_size,u</Size>
+        <Size Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_size</Size>
+        <ValuePointer Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_buffer</ValuePointer>
+        <ValuePointer Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_data</ValuePointer>
       </ArrayItems>
     </Expand>
   </Type>
 
   <Type Name="AZStd::basic_string&lt;wchar_t,*&gt;">
     <AlternativeType Name="AZStd::basic_string&lt;unsigned short,*&gt;" />
-    <DisplayString Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">{((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_buffer,su}</DisplayString>
-    <DisplayString Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">{((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_data,su}</DisplayString>
-    <StringView Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_buffer,su</StringView>
-    <StringView Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_data,su</StringView>
+    <DisplayString Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">{((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_buffer,su}</DisplayString>
+    <DisplayString Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">{((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_data,su}</DisplayString>
+    <StringView Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_buffer,su</StringView>
+    <StringView Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_data,su</StringView>
     <Expand>
-      <Item Name="[size]" Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">(size_t)((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_size</Item>
-      <Item Name="[size]" Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_size</Item>
-      <Item Name="[capacity]" Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.Capacity</Item>
-      <Item Name="[capacity]" Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_capacity</Item>
+      <Item Name="[size]" Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">(size_t)((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_size</Item>
+      <Item Name="[size]" Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_size</Item>
+      <Item Name="[capacity]" Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.Capacity</Item>
+      <Item Name="[capacity]" Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_capacity</Item>
+      <Item Name="[is packed]">(bool)((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive</Item>
       <ArrayItems>
-        <Size Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_size,u</Size>
-        <Size Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_size</Size>
-        <ValuePointer Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_buffer</ValuePointer>
-        <ValuePointer Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_data</ValuePointer>
+        <Size Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_size,u</Size>
+        <Size Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_size</Size>
+        <ValuePointer Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_buffer</ValuePointer>
+        <ValuePointer Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_data</ValuePointer>
       </ArrayItems>
     </Expand>
   </Type>
@@ -708,20 +731,6 @@
     <Expand/>
   </Type>
 
-  <Type Name="AZStd::nullopt_t">
-    <DisplayString>nullopt</DisplayString>
-  </Type>
-
-  <Type Name="AZStd::optional&lt;*&gt;">
-    <Intrinsic Name="has_value" Expression="this-&gt;m_engaged"/>
-    <Intrinsic Name="value" Expression="this-&gt;m_object"/>
-    <DisplayString Condition="!has_value()">nullopt</DisplayString>
-    <DisplayString Condition="has_value()">{value()}</DisplayString>
-    <Expand>
-      <Item Condition="has_value()" Name="value">value()</Item>
-    </Expand>
-  </Type>
-
   <Type Name="AZStd::variant_detail::alternative_impl&lt;*,*&gt;">
     <DisplayString>{m_value}</DisplayString>
   </Type>
@@ -729,38 +738,72 @@
   <Type Name="AZStd::variant&lt;*&gt;">
     <Intrinsic Name="index" Expression="(size_t)m_impl.m_index"/>
     <DisplayString Condition="index() == AZStd::variant_npos">[valueless]</DisplayString>
-    <DisplayString Condition="index() == 0" Optional="true"> {{ index={index()}, value={m_impl.m_union_data.m_head} }}</DisplayString>
-    <DisplayString Condition="index() == 1" Optional="true"> {{ index={index()}, value={m_impl.m_union_data.m_tail.m_head} }}</DisplayString>
-    <DisplayString Condition="index() == 2" Optional="true"> {{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_head} }}</DisplayString>
-    <DisplayString Condition="index() == 3" Optional="true"> {{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
-    <DisplayString Condition="index() == 4" Optional="true"> {{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
-    <DisplayString Condition="index() == 5" Optional="true"> {{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
-    <DisplayString Condition="index() == 6" Optional="true"> {{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
-    <DisplayString Condition="index() == 7" Optional="true"> {{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
-    <DisplayString Condition="index() == 8" Optional="true"> {{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
-    <DisplayString Condition="index() == 9" Optional="true"> {{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
-    <DisplayString Condition="index() == 10" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
-    <DisplayString Condition="index() == 11" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
-    <DisplayString Condition="index() == 12" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
-    <DisplayString Condition="index() == 13" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
-    <DisplayString Condition="index() == 14" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
-    <DisplayString Condition="index() == 15" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
-    <DisplayString Condition="index() == 16" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
-    <DisplayString Condition="index() == 17" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
-    <DisplayString Condition="index() == 18" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
-    <DisplayString Condition="index() == 19" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
-    <DisplayString Condition="index() == 20" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
-    <DisplayString Condition="index() == 21" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
-    <DisplayString Condition="index() == 22" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
-    <DisplayString Condition="index() == 23" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
-    <DisplayString Condition="index() == 24" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
-    <DisplayString Condition="index() == 25" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
-    <DisplayString Condition="index() == 26" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
-    <DisplayString Condition="index() == 27" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
-    <DisplayString Condition="index() == 28" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
-    <DisplayString Condition="index() == 29" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
-    <DisplayString Condition="index() == 30" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
-    <DisplayString Condition="index() == 31" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
+    <!-- Shows the value of the selected variant alternative without any other formatting. Available when the simple view is used !-->
+    <DisplayString IncludeView="simple" Condition="index() == 0" Optional="true">{m_impl.m_union_data.m_head}</DisplayString>
+    <DisplayString IncludeView="simple" Condition="index() == 1" Optional="true">{m_impl.m_union_data.m_tail.m_head}</DisplayString>
+    <DisplayString IncludeView="simple" Condition="index() == 2" Optional="true">{m_impl.m_union_data.m_tail.m_tail.m_head}</DisplayString>
+    <DisplayString IncludeView="simple" Condition="index() == 3" Optional="true">{m_impl.m_union_data.m_tail.m_tail.m_tail.m_head}</DisplayString>
+    <DisplayString IncludeView="simple" Condition="index() == 4" Optional="true">{m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_head}</DisplayString>
+    <DisplayString IncludeView="simple" Condition="index() == 5" Optional="true">{m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_head}</DisplayString>
+    <DisplayString IncludeView="simple" Condition="index() == 6" Optional="true">{m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head}</DisplayString>
+    <DisplayString IncludeView="simple" Condition="index() == 7" Optional="true">{m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head}</DisplayString>
+    <DisplayString IncludeView="simple" Condition="index() == 8" Optional="true">{m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head}</DisplayString>
+    <DisplayString IncludeView="simple" Condition="index() == 9" Optional="true">{m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head}</DisplayString>
+    <DisplayString IncludeView="simple" Condition="index() == 10" Optional="true">{m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head}</DisplayString>
+    <DisplayString IncludeView="simple" Condition="index() == 11" Optional="true">{m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head}</DisplayString>
+    <DisplayString IncludeView="simple" Condition="index() == 12" Optional="true">{m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head}</DisplayString>
+    <DisplayString IncludeView="simple" Condition="index() == 13" Optional="true">{m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head}</DisplayString>
+    <DisplayString IncludeView="simple" Condition="index() == 14" Optional="true">{m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head}</DisplayString>
+    <DisplayString IncludeView="simple" Condition="index() == 15" Optional="true">{m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head}</DisplayString>
+    <DisplayString IncludeView="simple" Condition="index() == 16" Optional="true">{m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head}</DisplayString>
+    <DisplayString IncludeView="simple" Condition="index() == 17" Optional="true">{m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head}</DisplayString>
+    <DisplayString IncludeView="simple" Condition="index() == 18" Optional="true">{m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head}</DisplayString>
+    <DisplayString IncludeView="simple" Condition="index() == 19" Optional="true">{m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head}</DisplayString>
+    <DisplayString IncludeView="simple" Condition="index() == 20" Optional="true">{m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head}</DisplayString>
+    <DisplayString IncludeView="simple" Condition="index() == 21" Optional="true">{m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head}</DisplayString>
+    <DisplayString IncludeView="simple" Condition="index() == 22" Optional="true">{m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head}</DisplayString>
+    <DisplayString IncludeView="simple" Condition="index() == 23" Optional="true">{m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head}</DisplayString>
+    <DisplayString IncludeView="simple" Condition="index() == 24" Optional="true">{m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head}</DisplayString>
+    <DisplayString IncludeView="simple" Condition="index() == 25" Optional="true">{m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head}</DisplayString>
+    <DisplayString IncludeView="simple" Condition="index() == 26" Optional="true">{m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head}</DisplayString>
+    <DisplayString IncludeView="simple" Condition="index() == 27" Optional="true">{m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head}</DisplayString>
+    <DisplayString IncludeView="simple" Condition="index() == 28" Optional="true">{m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head}</DisplayString>
+    <DisplayString IncludeView="simple" Condition="index() == 29" Optional="true">{m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head}</DisplayString>
+    <DisplayString IncludeView="simple" Condition="index() == 30" Optional="true">{m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head}</DisplayString>
+    <DisplayString IncludeView="simple" Condition="index() == 31" Optional="true">{m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head}</DisplayString>
+    <!-- Shows the elements of the variant with the index of the alternative. It is not used in simple views !-->
+    <DisplayString ExcludeView="simple" Condition="index() == 0" Optional="true"> {{ index={index()}, value={m_impl.m_union_data.m_head} }}</DisplayString>
+    <DisplayString ExcludeView="simple" Condition="index() == 1" Optional="true"> {{ index={index()}, value={m_impl.m_union_data.m_tail.m_head} }}</DisplayString>
+    <DisplayString ExcludeView="simple" Condition="index() == 2" Optional="true"> {{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_head} }}</DisplayString>
+    <DisplayString ExcludeView="simple" Condition="index() == 3" Optional="true"> {{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
+    <DisplayString ExcludeView="simple" Condition="index() == 4" Optional="true"> {{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
+    <DisplayString ExcludeView="simple" Condition="index() == 5" Optional="true"> {{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
+    <DisplayString ExcludeView="simple" Condition="index() == 6" Optional="true"> {{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
+    <DisplayString ExcludeView="simple" Condition="index() == 7" Optional="true"> {{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
+    <DisplayString ExcludeView="simple" Condition="index() == 8" Optional="true"> {{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
+    <DisplayString ExcludeView="simple" Condition="index() == 9" Optional="true"> {{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
+    <DisplayString ExcludeView="simple" Condition="index() == 10" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
+    <DisplayString ExcludeView="simple" Condition="index() == 11" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
+    <DisplayString ExcludeView="simple" Condition="index() == 12" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
+    <DisplayString ExcludeView="simple" Condition="index() == 13" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
+    <DisplayString ExcludeView="simple" Condition="index() == 14" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
+    <DisplayString ExcludeView="simple" Condition="index() == 15" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
+    <DisplayString ExcludeView="simple" Condition="index() == 16" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
+    <DisplayString ExcludeView="simple" Condition="index() == 17" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
+    <DisplayString ExcludeView="simple" Condition="index() == 18" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
+    <DisplayString ExcludeView="simple" Condition="index() == 19" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
+    <DisplayString ExcludeView="simple" Condition="index() == 20" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
+    <DisplayString ExcludeView="simple" Condition="index() == 21" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
+    <DisplayString ExcludeView="simple" Condition="index() == 22" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
+    <DisplayString ExcludeView="simple" Condition="index() == 23" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
+    <DisplayString ExcludeView="simple" Condition="index() == 24" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
+    <DisplayString ExcludeView="simple" Condition="index() == 25" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
+    <DisplayString ExcludeView="simple" Condition="index() == 26" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
+    <DisplayString ExcludeView="simple" Condition="index() == 27" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
+    <DisplayString ExcludeView="simple" Condition="index() == 28" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
+    <DisplayString ExcludeView="simple" Condition="index() == 29" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
+    <DisplayString ExcludeView="simple" Condition="index() == 30" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
+    <DisplayString ExcludeView="simple" Condition="index() == 31" Optional="true">{{ index={index()}, value={m_impl.m_union_data.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head} }}</DisplayString>
     <Expand>
       <Item Name="index">index()</Item>
       <Item Name="[value]" Condition="index() == 0" Optional="true">m_impl.m_union_data.m_head</Item>
@@ -893,6 +936,52 @@
             <ExpandedItem Condition="IsArray()">Array()</ExpandedItem>
             <ExpandedItem Condition="IsNode()">Node()</ExpandedItem>
             <ExpandedItem Condition="IsOpaque()">Opaque()</ExpandedItem>
+        </Expand>
+    </Type>
+
+    <Type Name="AZ::Dom::PathEntry">
+        <!-- Shows the DomPathEntry m_value variant using a view option of simple to only show the plain value !-->
+        <DisplayString>{m_value, view(simple)}</DisplayString>
+        <Expand>
+            <ExpandedItem>m_value</ExpandedItem>
+        </Expand>
+    </Type>
+
+    <Type Name="AZ::Dom::DomPrefixTree&lt;*&gt;::Node">
+        <DisplayString Condition="m_data.has_value()">{m_data}</DisplayString>
+        <Expand>
+            <CustomListItems>
+                <Variable Name="rootNode" InitialValue="this"/>
+                <Variable Name="prefixPathEntry" InitialValue="(AZ::Dom::PathEntry*)0"/>
+                <Variable Name="childPrefixNode" InitialValue="(AZ::Dom::DomPrefixTree&lt;$T1&gt;::Node*)0"/>
+                <Variable Name="listHead" InitialValue="(AZStd::Internal::list_node&lt;AZStd::pair&lt;AZ::Dom::PathEntry,AZ::Dom::DomPrefixTree&lt;$T1&gt;::Node&gt; &gt;*)(&amp;rootNode-&gt;m_values.m_data.m_list.m_head)"/>
+                <Variable Name="listNode" InitialValue="(AZStd::Internal::list_node&lt;AZStd::pair&lt;AZ::Dom::PathEntry,AZ::Dom::DomPrefixTree&lt;$T1&gt;::Node&gt; &gt;*)(listHead-&gt;m_next)"/>
+                <Loop>
+                    <!-- If the prefix tree child value hash table is empty(via checking the unordered_map list), then teminate iteration of the DomPrefixTree -->
+                    <Break Condition="listNode == listHead"/>
+                    <Exec>prefixPathEntry = &amp;listNode-&gt;m_value.first</Exec>
+                    <Exec>childPrefixNode = &amp;listNode-&gt;m_value.second</Exec>
+                    <Item Name="{*prefixPathEntry}">*childPrefixNode</Item>
+                    <Exec>listNode = (AZStd::Internal::list_node&lt;AZStd::pair&lt;AZ::Dom::PathEntry,AZ::Dom::DomPrefixTree&lt;$T1&gt;::Node&gt; &gt;*)(listNode-&gt;m_next)</Exec>
+                </Loop>
+            </CustomListItems>
+        </Expand>
+    </Type>
+
+    <!-- Protip - Natvis uses pre-C++11 parsing of templates as it concerns the double greater than symbol token(>>)
+    It still parses it as a the right shift operator, whether than two template closing braces. So a space is needed between
+    two consecutive &gt; tokens in that case -->
+    <Type Name="AZ::Dom::DomPrefixTree&lt;*&gt;">
+        <DisplayString Condition="m_rootNode.m_data.has_value()">{m_rootNode.m_data}</DisplayString>
+        <Expand>
+            <Item Condition="m_rootNode.m_data.has_value()" Name="&quot;&quot;">m_rootNode</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="AZ::SettingsRegistryImpl">
+        <DisplayString>{m_settings}</DisplayString>
+        <Expand>
+            <ExpandedItem>m_settings</ExpandedItem>
         </Expand>
     </Type>
 

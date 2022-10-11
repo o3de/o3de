@@ -47,8 +47,10 @@ namespace AZ
             //! Create one dispatch item per mesh for each actor instance
             explicit SkinnedMeshDispatchItem(
                 AZStd::intrusive_ptr<SkinnedMeshInputBuffers> inputBuffers,
-                const AZStd::vector<uint32_t>& outputBufferOffsetsInBytes,
-                size_t lodIndex,
+                const SkinnedMeshOutputVertexOffsets& outputBufferOffsetsInBytes,
+                uint32_t positionHistoryOutputBufferOffsetInBytes,
+                uint32_t lodIndex,
+                uint32_t meshIndex,
                 Data::Instance<RPI::Buffer> skinningMatrices,
                 const SkinnedMeshShaderOptions& shaderOptions,
                 SkinnedMeshFeatureProcessor* skinnedMeshFeatureProcessor,
@@ -65,9 +67,10 @@ namespace AZ
             const RHI::DispatchItem& GetRHIDispatchItem() const;
 
             Data::Instance<RPI::Buffer> GetBoneTransforms() const;
-            AZStd::span<const RHI::Ptr<RHI::BufferView>> GetSourceUnskinnedBufferViews() const;
-            AZStd::span<const RHI::Ptr<RHI::BufferView>> GetTargetSkinnedBufferViews() const;
-            size_t GetVertexCount() const;
+            uint32_t GetVertexCount() const;
+            void Enable();
+            void Disable();
+            bool IsEnabled() const;
         private:
             // SkinnedMeshShaderOptionNotificationBus::Handler
             void OnShaderReinitialized(const CachedSkinnedMeshShaderOptions* cachedShaderOptions) override;
@@ -77,19 +80,25 @@ namespace AZ
             // The skinning shader used for this instance
             Data::Instance<RPI::Shader> m_skinningShader;
 
-            // Offsets into the SkinnedMeshOutputVertexStream where the lod streams start 
-            AZStd::vector<uint32_t> m_outputBufferOffsetsInBytes;
+            // Offsets into the SkinnedMeshOutputVertexStream where the lod streams start for this mesh
+            SkinnedMeshOutputVertexOffsets m_outputBufferOffsetsInBytes;
+
+            // Offset into the SkinnedMeshOutputVertexStream where the position history stream starts for this mesh
+            uint32_t m_positionHistoryBufferOffsetInBytes;
 
             // The unskinned vertices used as the source of the skinning
             AZStd::intrusive_ptr<SkinnedMeshInputBuffers> m_inputBuffers;
 
             // The index of the lod within m_inputBuffers that is represented by the DispatchItem
-            size_t m_lodIndex;
+            uint32_t m_lodIndex;
+
+            // The index of the mesh within the lod that is represented by the DispatchItem
+            uint32_t m_meshIndex;
+
             // The per-object shader resource group
             Data::Instance<RPI::ShaderResourceGroup> m_instanceSrg;
 
-            // Writable buffer views used for writing the per-actorInstance skinning data in the skinning shader
-            AZStd::array<AZ::RHI::Ptr<RHI::BufferView>, static_cast<uint8_t>(SkinnedMeshOutputVertexStreams::NumVertexStreams)> m_actorInstanceBufferViews;
+            // Buffer with the bone transforms
             Data::Instance<RPI::Buffer> m_boneTransforms;
 
             // Options for the skinning shader
@@ -100,6 +109,9 @@ namespace AZ
             MorphTargetInstanceMetaData m_morphTargetInstanceMetaData;
             // A conservative value for encoding/decoding the accumulated deltas
             float m_morphTargetDeltaIntegerEncoding;
+
+            // Skip the skinning dispatch if this is false
+            bool m_isEnabled = true;
         };
 
         //! The skinned mesh compute shader has Nx1x1 threads per group and dispatches a total number of threads greater than or equal to the number of vertices in the mesh, with one vertex skinned per thread.

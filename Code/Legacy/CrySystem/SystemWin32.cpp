@@ -301,7 +301,7 @@ void CSystem::FatalError(const char* format, ...)
 #endif
 
     // app can not continue
-    AZ::Debug::Trace::Break();
+    AZ::Debug::Trace::Instance().Break();
 
 #ifdef _DEBUG
     #if defined(WIN32) || defined(WIN64)

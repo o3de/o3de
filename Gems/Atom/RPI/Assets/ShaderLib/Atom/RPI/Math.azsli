@@ -87,6 +87,17 @@ float max4(float4 abcd)
     return max4(abcd.x, abcd.y, abcd.z, abcd.w);
 }
 
+// ---------- Matrix ----------
+
+float3x3 ExtractFloat3x3(float3x4 input)
+{
+    return float3x3(input[0].xyz, input[1].xyz, input[2].xyz);
+}
+
+float3x3 ExtractFloat3x3(float4x4 input)
+{
+    return float3x3(input[0].xyz, input[1].xyz, input[2].xyz);
+}
 
 // ---------- Intersection -----------
 
@@ -237,6 +248,32 @@ float3 DecodedNormalSphereMap(float2 encodedNormal)
     return (encodedNormal.x + encodedNormal.y) > EPSILON ? normal : float3(0.0, 0.0, -1.0);
 }
 
+// ---------- Unorm 2-bit Encoding -----------
+
+// The four possible values in a UNORM 2-bit channel are encoded as: 0/3, 1/3, 2/3, 3/3
+static const float UNORM_2BIT_FLAG1ONLY = 1.0f / 3.0f;
+static const float UNORM_2BIT_FLAG2ONLY = 2.0f / 3.0f;
+static const float UNORM_2BIT_BOTHFLAGS = 3.0f / 3.0f;
+static const float UNORM_2BIT_EPSILON = 10e-3f;
+
+// Encode two flags into a UNORM 2-bit channel
+float EncodeUnorm2BitFlags(bool flag1, bool flag2)
+{
+    return (flag1 + (flag2 * 2)) / 3.0f;
+}
+
+// Decode flag1 from a UNORM 2-bit channel
+bool DecodeUnorm2BitFlag1(float value)
+{
+    return (abs(value - UNORM_2BIT_FLAG1ONLY) < UNORM_2BIT_EPSILON) || (value == UNORM_2BIT_BOTHFLAGS);
+}
+
+// Decode flag2 from a UNORM 2-bit channel
+bool DecodeUnorm2BitFlag2(float value)
+{
+    return (abs(value - UNORM_2BIT_FLAG2ONLY) < UNORM_2BIT_EPSILON) || (value == UNORM_2BIT_BOTHFLAGS);
+}
+
 // ---------- Quaternion -----------
 
 float3 MultiplyVectorQuaternion(float3 v, float4 q)
@@ -272,6 +309,7 @@ float PerspectiveDepthToLinear(float clipDepth, float3 coefficients)
 }
 
 // ---------- Random number generators -----------
+
 // George Marsaglia's Xorshift RNGs
 // https://www.jstatsoft.org/article/view/v008i14/xorshift.pdf
 uint Xorshift(in uint value) 
@@ -307,7 +345,9 @@ float LerpInverse(float a, float b, float value)
         return (value - a) / (b - a);
     }
 }
-//-------- Gaussinan distribution functions ---------
+
+// -------- Gaussinan distribution functions ---------
+
 // https://en.wikipedia.org/wiki/Gaussian_function
 // Parameter:
 // amplitude - the height of the curve's peak

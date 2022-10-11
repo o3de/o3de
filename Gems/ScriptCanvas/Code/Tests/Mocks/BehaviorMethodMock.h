@@ -20,7 +20,7 @@ namespace ScriptCanvasUnitTest
     public:
         BehaviorMethodMock() : AZ::BehaviorMethod(nullptr) {};
 
-        MOCK_CONST_METHOD3(Call, bool(AZ::BehaviorValueParameter*, unsigned int, AZ::BehaviorValueParameter*));
+        MOCK_CONST_METHOD3(Call, bool(AZ::BehaviorArgument*, unsigned int, AZ::BehaviorArgument*));
         MOCK_CONST_METHOD0(HasResult, bool());
         MOCK_CONST_METHOD0(IsMember, bool());
         MOCK_CONST_METHOD0(HasBusId, bool());

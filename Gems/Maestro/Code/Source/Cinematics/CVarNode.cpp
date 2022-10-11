@@ -69,7 +69,7 @@ int CAnimCVarNode::GetDefaultKeyTangentFlags() const
 {
     int retTangentFlags = SPLINE_KEY_TANGENT_UNIFIED;
 
-    ICVar* var = gEnv->pConsole->GetCVar(GetNameFast());
+    ICVar* var = gEnv->pConsole->GetCVar(GetName());
 
     // use step in tangents for int cvars
     if (var && var->GetType() == CVAR_INT)

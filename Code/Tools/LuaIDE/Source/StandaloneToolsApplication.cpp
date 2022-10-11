@@ -8,15 +8,19 @@
 
 #include "StandaloneToolsApplication.h"
 
-#include <AzCore/std/containers/array.h>
-#include <AzCore/UserSettings/UserSettingsComponent.h>
-#include <AzFramework/Asset/AssetCatalogComponent.h>
-#include <AzFramework/StringFunc/StringFunc.h>
-#include <AzFramework/TargetManagement/TargetManagementComponent.h>
-#include <AzToolsFramework/UI/LegacyFramework/Core/IPCComponent.h>
-#include <AzFramework/API/ApplicationAPI.h>
-#include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
+#include <AzCore/Jobs/JobManagerComponent.h>
+#include <AzCore/UserSettings/UserSettingsComponent.h>
+#include <AzCore/std/containers/array.h>
+#include <AzFramework/API/ApplicationAPI.h>
+#include <AzFramework/Asset/AssetCatalogComponent.h>
+#include <AzFramework/Network/IRemoteTools.h>
+#include <AzFramework/Script/ScriptRemoteDebuggingConstants.h>
+#include <AzFramework/StringFunc/StringFunc.h>
+#include <AzNetworking/Framework/INetworkInterface.h>
+#include <AzNetworking/Framework/INetworking.h>
+#include <AzNetworking/Framework/NetworkingSystemComponent.h>
+#include <AzToolsFramework/UI/LegacyFramework/Core/IPCComponent.h>
 
 namespace StandaloneTools
 {
@@ -37,8 +41,9 @@ namespace StandaloneTools
 
         RegisterComponentDescriptor(LegacyFramework::IPCComponent::CreateDescriptor());
 
+        RegisterComponentDescriptor(AzNetworking::NetworkingSystemComponent::CreateDescriptor());
+
         RegisterComponentDescriptor(AZ::UserSettingsComponent::CreateDescriptor());
-        RegisterComponentDescriptor(AzFramework::TargetManagementComponent::CreateDescriptor());
 
         RegisterComponentDescriptor(AZ::JobManagerComponent::CreateDescriptor());
         RegisterComponentDescriptor(AZ::StreamerComponent::CreateDescriptor());
@@ -54,11 +59,9 @@ namespace StandaloneTools
 
     void BaseApplication::CreateApplicationComponents()
     {
-        LegacyFramework::Application::CreateApplicationComponents();
-
         EnsureComponentCreated(AZ::StreamerComponent::RTTI_Type());
         EnsureComponentCreated(AZ::JobManagerComponent::RTTI_Type());
-        EnsureComponentCreated(AzFramework::TargetManagementComponent::RTTI_Type());
+        EnsureComponentCreated(AzNetworking::NetworkingSystemComponent::RTTI_Type());
         EnsureComponentCreated(LegacyFramework::IPCComponent::RTTI_Type());
 
         // Check for user settings components already added (added by the app descriptor
@@ -83,16 +86,30 @@ namespace StandaloneTools
         }
     }
 
+    bool BaseApplication::StartDebugService()
+    {
+#if defined(ENABLE_REMOTE_TOOLS)
+        auto* remoteToolsInterface = AzFramework::RemoteToolsInterface::Get();
+        if (remoteToolsInterface)
+        {
+            remoteToolsInterface->RegisterToolingServiceHost(
+                AzFramework::LuaToolsKey, AzFramework::LuaToolsName, AzFramework::LuaToolsPort);
+            return true;
+        }
+#endif
+        return false;
+    }
+
     void BaseApplication::OnApplicationEntityActivated()
     {
-        [[maybe_unused]] bool launched = LaunchDiscoveryService();
-        AZ_Warning("EditorApplication", launched, "Could not launch GridHub; Only replay is available.");
+        [[maybe_unused]] bool launched = StartDebugService();
+        AZ_Warning("EditorApplication", launched, "Could not start hosting; Only replay is available.");
     }
 
     void BaseApplication::SetSettingsRegistrySpecializations(AZ::SettingsRegistryInterface::Specializations& specializations)
     {
-        LegacyFramework::Application::SetSettingsRegistrySpecializations(specializations);
-        specializations.Append("standalone_tools");
+        ComponentApplication::SetSettingsRegistrySpecializations(specializations);
+        specializations.Append("luaide");
     }
 
     AZStd::string BaseApplication::GetStoragePath() const
@@ -131,4 +148,4 @@ namespace StandaloneTools
         AzFramework::StringFunc::Path::Join(userStoragePath.c_str(), fileName.c_str(), userStoragePath);
         return userStoragePath;
     }
-}
+} // namespace StandaloneTools

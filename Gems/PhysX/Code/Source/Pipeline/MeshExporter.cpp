@@ -19,7 +19,6 @@
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IMaterialData.h>
 
 #include <PhysX/MeshAsset.h>
-#include <Source/Material.h>
 #include <Source/Pipeline/MeshAssetHandler.h>
 #include <Source/Pipeline/MeshExporter.h>
 #include <Source/Pipeline/PrimitiveShapeFitter/PrimitiveShapeFitter.h>
@@ -36,7 +35,6 @@
 #include <AzCore/XML/rapidxml.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-#include <GFxFramework/MaterialIO/Material.h>
 
 // A utility macro helping set/clear bits in a single line
 #define SET_BITS(flags, condition, bits) flags = (condition) ? ((flags) | (bits)) : ((flags) & ~(bits))
@@ -167,49 +165,84 @@ namespace PhysX
                 return newIndex;
             }
 
-            bool UpdateAssetPhysicsMaterials(
+            void UpdateAssetPhysicsMaterials(
                 const AZStd::vector<AZStd::string>& newMaterials,
-                AZStd::vector<AZStd::string>& materials,
-                AZStd::vector<AZStd::string>& physicsMaterials)
+                Physics::MaterialSlots& physicsMaterialSlots)
             {
-                if (materials.size() != physicsMaterials.size())
+                Physics::MaterialSlots newSlots;
+                newSlots.SetSlots(newMaterials);
+
+                // The new material list could have different names or be in a different order,
+                // because they are obtained from the current mesh nodes selected.
+                // Go through the previous slots and keep the same physics material
+                // association if the slot name is the same.
+                // Example:
+                // 
+                //     Previous Material Slots from MeshGroup:
+                //        Material_A: glass.physicsmaterial
+                //        Material_B: sand.physicsmaterial
+                //        Material_C: gold.physicsmaterial
+                // 
+                //     Materials now extracted from mesh nodes selected:
+                //        Material_C
+                //        Material_A
+                // 
+                //     New Material Slots have to keep the same physics materials association:
+                //        Material_C: gold.physicsmaterial
+                //        Material_A: glass.physicsmaterial
+                //
+                for (size_t newSlotId = 0; newSlotId < newSlots.GetSlotsCount(); ++newSlotId)
                 {
-                    AZ_TracePrintf(
-                        AZ::SceneAPI::Utilities::WarningWindow,
-                        "Materials and Physics Materials have different number of elements. %d materials and %d physics materials.",
-                        materials.size(), physicsMaterials.size());
-                    return false;
-                }
-
-                AZStd::vector<AZStd::string> newPhysicsMaterials;
-                newPhysicsMaterials.reserve(newMaterials.size());
-
-                // In the new material list, the materials might have changed slots.
-                // Form the new list of physics materials by looking at the previous list
-                // and keeping the same physics materials association when found.
-                for (const auto& newMaterial : newMaterials)
-                {
-                    AZStd::string physicsMaterialName = Physics::DefaultPhysicsMaterialLabel;
-
-                    for (size_t slotId = 0; slotId < materials.size(); ++slotId)
+                    for (size_t prevSlotId = 0; prevSlotId < physicsMaterialSlots.GetSlotsCount(); ++prevSlotId)
                     {
-                        if (AZ::StringFunc::Equal(materials[slotId], newMaterial, false/*bCaseSensitive*/))
+                        if (AZ::StringFunc::Equal(physicsMaterialSlots.GetSlotName(prevSlotId), newSlots.GetSlotName(newSlotId), false/*bCaseSensitive*/))
                         {
-                            if (!physicsMaterials[slotId].empty())
+                            const auto materialAsset = physicsMaterialSlots.GetMaterialAsset(prevSlotId);
+                            // Note: Material asset is also valid if it's got a path hint (which will be resolved
+                            // by PhysX MeshAssetHandler after loading the MeshAsset).
+                            if (materialAsset.GetId().IsValid() || !materialAsset.GetHint().empty())
                             {
-                                physicsMaterialName = physicsMaterials[slotId];
+                                newSlots.SetMaterialAsset(newSlotId, materialAsset);
                             }
                             break;
                         }
                     }
-
-                    newPhysicsMaterials.emplace_back(AZStd::move(physicsMaterialName));
                 }
 
-                materials = newMaterials;
-                physicsMaterials = AZStd::move(newPhysicsMaterials);
+                // The material slots data come from MeshGroup. MeshGroup created from FBX Settings
+                // will always generate Material Slots with a valid name in them (extracted from the mesh).
+                // But when MeshGroup data is generated procedurally it's not possible to know what's the
+                // material name from the mesh nodes. In order to cover this case, when the slot name is
+                // default or empty the physics materials assigned will still be used in the new slots.
+                // Example:
+                // 
+                //     Previous Material Slots from MeshGroup:
+                //        "": glass.physicsmaterial
+                // 
+                //     Materials now extracted from mesh nodes selected:
+                //        Material_C
+                //        Material_A
+                // 
+                //     New Material Slots will keep physics materials from empty slot names
+                //        Material_C: glass.physicsmaterial
+                //        Material_A:
+                //
+                for (size_t slotId = 0; slotId < physicsMaterialSlots.GetSlotsCount(); ++slotId)
+                {
+                    if (physicsMaterialSlots.GetSlotName(slotId).empty() ||
+                        physicsMaterialSlots.GetSlotName(slotId) == Physics::MaterialSlots::EntireObjectSlotName)
+                    {
+                        const auto materialAsset = physicsMaterialSlots.GetMaterialAsset(slotId);
+                        // Note: Material asset is also valid if it's got a path hint (which will be resolved
+                        // by PhysX MeshAssetHandler after loading the MeshAsset).
+                        if (materialAsset.GetId().IsValid() || !materialAsset.GetHint().empty())
+                        {
+                            newSlots.SetMaterialAsset(slotId, materialAsset);
+                        }
+                    }
+                }
 
-                return true;
+                physicsMaterialSlots = AZStd::move(newSlots);
             }
 
             bool ValidateCookedTriangleMesh(void* assetData, AZ::u32 assetDataSize)
@@ -509,17 +542,13 @@ namespace PhysX
             MeshAssetData assetData;
 
             // Assign the materials into cooked data
-            assetData.m_materialNames = meshGroup.GetMaterialSlots();
-            assetData.m_physicsMaterialNames = meshGroup.GetPhysicsMaterials();
+            assetData.m_materialSlots = meshGroup.GetMaterialSlots();
 
             // Updating materials lists from new materials gathered from the source scene file 
             // because this exporter runs when the source scene is being processed, which
             // could have a different content from when the mesh group info was
             // entered in Scene Settings Editor.
-            if (!Utils::UpdateAssetPhysicsMaterials(assetMaterialsData.m_sourceSceneMaterialNames, assetData.m_materialNames, assetData.m_physicsMaterialNames))
-            {
-                return SceneEvents::ProcessingResult::Failure;
-            }
+            Utils::UpdateAssetPhysicsMaterials(assetMaterialsData.m_sourceSceneMaterialNames, assetData.m_materialSlots);
 
             for (const NodeCollisionGeomExportData& subMesh : totalExportData)
             {

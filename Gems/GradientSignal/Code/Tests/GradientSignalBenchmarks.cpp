@@ -277,8 +277,7 @@ namespace UnitTest
                     AZ::Vector3 queryPosition(x, y, 0.0f);
                     points.Clear();
 
-                    SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
-                        &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePoints, queryPosition, filterTags, points);
+                    AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->GetSurfacePoints(queryPosition, filterTags, points);
                     benchmark::DoNotOptimize(points);
                 }
             }
@@ -301,8 +300,7 @@ namespace UnitTest
 
             AZ::Aabb inRegion = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.0f), AZ::Vector3(worldSize));
             AZ::Vector2 stepSize(1.0f);
-            SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
-                &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromRegion, inRegion, stepSize, filterTags, points);
+            AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->GetSurfacePointsFromRegion(inRegion, stepSize, filterTags, points);
             benchmark::DoNotOptimize(points);
         }
     }
@@ -333,8 +331,7 @@ namespace UnitTest
 
             SurfaceData::SurfacePointList points;
 
-            SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
-                &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromList, queryPositions, filterTags, points);
+            AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->GetSurfacePointsFromList(queryPositions, filterTags, points);
             benchmark::DoNotOptimize(points);
         }
     }

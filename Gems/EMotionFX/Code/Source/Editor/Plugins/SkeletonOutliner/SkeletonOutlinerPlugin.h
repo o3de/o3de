@@ -43,7 +43,7 @@ namespace EMotionFX
         bool GetIsClosable() const override                 { return true;  }
         bool GetIsFloatable() const override                { return true;  }
         bool GetIsVertical() const override                 { return false; }
-        EMStudioPlugin* Clone() override                    { return new SkeletonOutlinerPlugin(); }
+        EMStudioPlugin* Clone() const override              { return new SkeletonOutlinerPlugin(); }
         bool Init() override;
 
         // SkeletalOutlinerRequestBus overrides
@@ -58,11 +58,14 @@ namespace EMotionFX
         void OnSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
         void OnTextFilterChanged(const QString& text);
         void OnTypeFilterChanged(const AzQtComponents::SearchTypeFilterList& activeTypeFilters);
+        void OnEntered(const QModelIndex& index);
         void Reinit();
 
         void OnContextMenu(const QPoint& position);
 
     private:
+        bool eventFilter(QObject* object, QEvent* event) override;
+
         QWidget*                                m_mainWidget;
         QLabel*                                 m_noSelectionLabel;
 

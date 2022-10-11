@@ -35,6 +35,12 @@ namespace ScriptCanvas
         bool IsReferenceInLuaAndValueInScriptCanvas(const Data::Type& type);
 
         AZStd::string ToValueString(const Datum& datum, const Configuration& config);
+
+        AZStd::string EqualSigns(size_t numEqualSignsRequired);
+
+        AZStd::string MakeLongBracketString(const AZStd::string& formattedString);
+
+        AZStd::string MakeRuntimeSafeStringLiteral(const AZStd::string& formattedString);
     } 
 
 }

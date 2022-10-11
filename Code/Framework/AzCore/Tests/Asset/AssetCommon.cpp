@@ -73,6 +73,22 @@ namespace UnitTest
         ASSERT_FALSE(left < right);
     }
 
+    TEST_F(AssetIdTest, ToFixedString_ResultIsAccurate_Succeeds)
+    {
+        AssetId id("{A9F596D7-9913-4BA4-AD4E-7E477FB9B542}", 0xFEDC1234);
+        const AZStd::string dynamic = id.ToString<AZStd::string>(AZ::Data::AssetId::SubIdDisplayType::Hex);
+        const AssetId::FixedString fixed = id.ToFixedString();
+        EXPECT_STREQ(dynamic.c_str(), fixed.c_str());
+    }
+
+    TEST_F(AssetIdTest, ToFixedString_FormatSpecifier_Succeeds)
+    {
+        AssetId source("{A9F596D7-9913-4BA4-AD4E-7E477FB9B542}", 0xFEDC1234);
+        const AZStd::string dynamic = AZStd::string::format("%s", source.ToString<AZStd::string>().c_str());
+        const AZStd::string fixed = AZStd::string::format("%s", source.ToFixedString().c_str());
+        EXPECT_EQ(dynamic, fixed);
+    }
+
     using AssetTest = AllocatorsFixture;
 
     TEST_F(AssetTest, AssetPreserveHintTest_Const_Copy)

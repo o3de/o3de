@@ -14,7 +14,7 @@ namespace AZ::RPI
 
     PackedCompressedMorphTargetDelta PackMorphTargetDelta(const CompressedMorphTargetDelta& compressedDelta)
     {
-        PackedCompressedMorphTargetDelta packedDelta{ 0,0,0,0,0,0,{0,0} };
+        PackedCompressedMorphTargetDelta packedDelta{ 0,0,0,0,0, {0,0,0} };
         packedDelta.m_morphedVertexIndex = compressedDelta.m_morphedVertexIndex;
 
         // Position x is in the most significant 16 bits, y is in the least significant 16 bits
@@ -40,12 +40,6 @@ namespace AZ::RPI
         packedDelta.m_padBitangentXYZ |= static_cast<uint32_t>(compressedDelta.m_bitangentX) << 16;
         packedDelta.m_padBitangentXYZ |= static_cast<uint32_t>(compressedDelta.m_bitangentY) << 8;
         packedDelta.m_padBitangentXYZ |= static_cast<uint32_t>(compressedDelta.m_bitangentZ);
-
-        // Colors are in the least significant 24 bits (8 bits per channel)
-        packedDelta.m_colorRGBA |= static_cast<uint32_t>(compressedDelta.m_colorR) << 24;
-        packedDelta.m_colorRGBA |= static_cast<uint32_t>(compressedDelta.m_colorG) << 16;
-        packedDelta.m_colorRGBA |= static_cast<uint32_t>(compressedDelta.m_colorB) << 8;
-        packedDelta.m_colorRGBA |= static_cast<uint32_t>(compressedDelta.m_colorA);
 
         return packedDelta;
     }
@@ -78,12 +72,6 @@ namespace AZ::RPI
         compressedDelta.m_bitangentX = (packedDelta.m_padBitangentXYZ >> 16) & 0x000000FF;
         compressedDelta.m_bitangentY = (packedDelta.m_padBitangentXYZ >> 8 ) & 0x000000FF;
         compressedDelta.m_bitangentZ =  packedDelta.m_padBitangentXYZ        & 0x000000FF;
-
-        // Colors are 4 channels, 8 bits per channel
-        compressedDelta.m_colorR = (packedDelta.m_colorRGBA >> 24) & 0x000000FF;
-        compressedDelta.m_colorG = (packedDelta.m_colorRGBA >> 16) & 0x000000FF;
-        compressedDelta.m_colorB = (packedDelta.m_colorRGBA >> 8)  & 0x000000FF;
-        compressedDelta.m_colorA =  packedDelta.m_colorRGBA        & 0x000000FF;
 
         return compressedDelta;
     }

@@ -20,16 +20,14 @@ namespace LmbrCentral
         : public AZ::ComponentBus
     {
     public:
+        //! Execute a single ATL trigger on a proxy
+        virtual bool ExecuteTrigger(
+            const Audio::TAudioControlID triggerID) = 0;
+
         //! Execute a single ATL source trigger on a proxy
         virtual bool ExecuteSourceTrigger(
             const Audio::TAudioControlID triggerID,
-            const Audio::SAudioCallBackInfos& callbackInfo,
             const Audio::SAudioSourceInfo& sourceInfo) = 0;
-
-        //! Execute a single ATL trigger on a proxy
-        virtual bool ExecuteTrigger(
-            const Audio::TAudioControlID triggerID,
-            const Audio::SAudioCallBackInfos& callbackInfo) = 0;
 
         //! Kill a single or all ATL triggers on a proxy
         virtual void KillTrigger(const Audio::TAudioControlID triggerID) = 0;
@@ -48,7 +46,7 @@ namespace LmbrCentral
         virtual void SetMovesWithEntity(bool shouldTrackEntity) = 0;
 
         //! Set the Occlusion/Obstruction calculation type
-        virtual void SetObstructionCalcType(const Audio::EAudioObjectObstructionCalcType type) = 0;
+        virtual void SetObstructionCalcType(const Audio::ObstructionType type) = 0;
 
         //! Set the position of the audio proxy directly.
         virtual void SetPosition(const Audio::SATLWorldPosition& position) = 0;

@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/RTTI/ReflectContext.h>
@@ -17,7 +18,7 @@ namespace AtomToolsFramework
 {
     enum class DynamicPropertyType : uint32_t
     {
-        Invalid,
+        Unspecified,
 
         Bool,
         Int,
@@ -41,7 +42,7 @@ namespace AtomToolsFramework
         AZ_TYPE_INFO(DynamicPropertyConfig, "{9CA40E92-7F03-42BE-B6AA-51F30EE5796C}");
         AZ_CLASS_ALLOCATOR(DynamicPropertyConfig, AZ::SystemAllocator, 0);
 
-        DynamicPropertyType m_dataType = DynamicPropertyType::Invalid;
+        DynamicPropertyType m_dataType = DynamicPropertyType::Unspecified;
         AZ::Name m_id; //!< The full property ID, which will normally be "groupName.propertyName"
         AZStd::string m_name;
         AZStd::string m_displayName;
@@ -62,6 +63,8 @@ namespace AtomToolsFramework
         bool m_readOnly = false;
         bool m_showThumbnail = false;
         AZStd::function<AZ::u32(const AZStd::any&)> m_dataChangeCallback;
+        AZStd::vector<AZ::Data::AssetType> m_supportedAssetTypes;
+        AZ::u32 m_customHandler = 0;
     };
 
     //! Wraps an AZStd::any value and configuration so that it can be displayed and edited in a ReflectedPropertyEditor.

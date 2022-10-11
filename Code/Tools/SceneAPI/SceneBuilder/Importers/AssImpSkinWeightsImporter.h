@@ -51,6 +51,7 @@ namespace AZ
                 struct Pending
                 {
                     const aiBone* m_bone = nullptr;
+                    AZStd::string m_sanitizedName;
                     unsigned m_numVertices = 0;
                     unsigned m_vertOffset = 0;
                     AZStd::shared_ptr<SceneData::GraphData::SkinWeightData> m_skinWeightData;

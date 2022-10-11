@@ -18,6 +18,11 @@ namespace O3DE::ProjectManager
     {
     }
 
+    bool EngineInfo::operator<(const EngineInfo& engineInfo) const
+    {
+        return (m_name < engineInfo.m_name);
+    }
+
     bool EngineInfo::IsValid() const
     {
         return !m_path.isEmpty();

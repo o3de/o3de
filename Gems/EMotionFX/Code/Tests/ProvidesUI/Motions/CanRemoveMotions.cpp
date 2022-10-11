@@ -18,14 +18,12 @@
 #include <Tests/UI/ModalPopupHandler.h>
 #include <EMotionFX/Source/MotionManager.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/MotionWindow/MotionWindowPlugin.h>
 #include <Source/Integration/Assets/MotionAsset.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetPicker/AssetPickerDialog.h>
 
 namespace EMotionFX
 {
-
     TEST_F(UIFixture, CanRemoveMotions)
     {
         /*
@@ -35,45 +33,51 @@ namespace EMotionFX
         */
         RecordProperty("test_case_id", "C1559123");
 
-        const QString assetName = "rin_idle";  // Asset name to appear in table
-        const AZStd::string motionCmd = "ImportMotion -filename @exefolder@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin_idle.motion";
+        AZStd::string command;
+        AZStd::string result;
+        const char* assetName = "rin_idle";  // Asset name to appear in table
+        const char* filename = "@gemroot:EMotionFX@/Code/Tests/TestAssets/Rin/rin_idle.motion";
 
-        auto motionWindowPlugin = static_cast<EMStudio::MotionWindowPlugin*>(EMStudio::GetPluginManager()->FindActivePlugin(EMStudio::MotionWindowPlugin::CLASS_ID));
-        ASSERT_TRUE(motionWindowPlugin) << "Could not find the Motion Window Plugin";
-
-        QTableWidget* table = qobject_cast<QTableWidget*>(FindTopLevelWidget("EMFX.MotionListWindow.MotionTable"));
-        ASSERT_TRUE(table) << "Could not find the Motion Table";
+        auto motionSetsWindowPlugin = static_cast<EMStudio::MotionSetsWindowPlugin*>(EMStudio::GetPluginManager()->FindActivePlugin(EMStudio::MotionSetsWindowPlugin::CLASS_ID));
+        ASSERT_TRUE(motionSetsWindowPlugin) << "Could not find the Motion Sets Window Plugin";
+        EMStudio::MotionSetWindow* motionSetWindow = motionSetsWindowPlugin->GetMotionSetWindow();
+        ASSERT_TRUE(motionSetWindow) << "Could not find the Motion Sets Window.";
+        EMStudio::MotionSetTableWidget* tableWidget = motionSetWindow->GetTableWidget();
+        ASSERT_TRUE(tableWidget) << "Could not find the motion set table widget.";
 
         // Make sure no motions exists yet
         EXPECT_EQ(GetMotionManager().GetNumMotions(), 0) << "Expected to have no motions for the Manager";
-        EXPECT_EQ(table->rowCount(), 0) << "Expected the table to have no rows yet";
+        EXPECT_EQ(tableWidget->rowCount(), 0) << "Expected the table to have no rows yet";
 
-        // Run command to import motion
+        ASSERT_EQ(GetMotionManager().GetNumMotionSets(), 1) << "Expected the editor to automatically create a default motion set.";
+        MotionSet* motionSet = GetMotionManager().GetMotionSet(0);
+
+        auto AddMotion = [motionSet](const char* assetName, const char* filename)
         {
             AZStd::string result;
-            EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand(motionCmd, result)) << result.c_str();
-        }
+            const AZStd::string command = AZStd::string::format("ImportMotion -filename %s", filename);
+            EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand(command, result)) << result.c_str();
 
-        // Assert motion was added
-        ASSERT_EQ(GetMotionManager().GetNumMotions(), 1) << "Expected to have 1 motions for the Manager";
-        ASSERT_EQ(table->rowCount(), 1) << "Expected the table to have 1 row";
+            MCore::CommandGroup commandGroup("Add new motion set entry");
+            CommandSystem::AddMotionSetEntry(motionSet->GetID(), assetName, {}, filename, &commandGroup);
+            EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommandGroup(commandGroup, result)) << result.c_str();
+        };
+
+        AddMotion(assetName, filename);
+        ASSERT_EQ(GetMotionManager().GetNumMotions(), 1) << "Expected to have 1 motion for the Manager";
+        ASSERT_EQ(motionSet->GetNumMotionEntries(), 1) << "Expected the newly added motion entry to be there.";
+        ASSERT_EQ(tableWidget->rowCount(), 1) << "Expected the table to have 1 row";
 
         // Add another motion
-        const QString assetJumpName = "rin_jump";  // Asset name to appear in table
-        const AZStd::string motionJumpCmd = "ImportMotion -filename @exefolder@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin_jump.motion";
-
-        // Run command to import motion
-        {
-            AZStd::string jump_results;
-            EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand(motionJumpCmd, jump_results)) << jump_results.c_str();
-        }
-
-        // Assert motion was added
-        ASSERT_EQ(GetMotionManager().GetNumMotions(), 2) << "Expected to have 2 motions for the Manager";
-        ASSERT_EQ(table->rowCount(), 2) << "Expected the table to have 2 rows";
+        const char* assetJumpName = "rin_jump";  // Asset name to appear in table
+        const char* motionJumpFilename = "@exefolder@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin_jump.motion";
+        AddMotion(assetJumpName, motionJumpFilename);
+        EXPECT_EQ(GetMotionManager().GetNumMotions(), 2);
+        EXPECT_EQ(motionSet->GetNumMotionEntries(), 2);
+        EXPECT_EQ(tableWidget->rowCount(), 2);
 
         // Assert asset name is in table
-        QTableWidgetItem* item = table->item(0, 0);
+        QTableWidgetItem* item = tableWidget->item(0, 1);
         ASSERT_TRUE(item) << "First table entry is invalid (unexpectedly)";
         EXPECT_EQ(item->text(), assetName) << "Asset name does not match table entry";
 
@@ -82,12 +86,12 @@ namespace EMotionFX
 
         // Remove the first motion
         ModalPopupHandler menuHandler;
-        menuHandler.ShowContextMenuAndTriggerAction(table, "EMFX.MotionListWindow.RemoveSelectionMotionsAction", 3000, nullptr);
+        menuHandler.ShowContextMenuAndTriggerAction(tableWidget, "EMFX.MotionSetTableWidget.RemoveSelectedMotionsAction", 3000, nullptr);
         EXPECT_EQ(GetMotionManager().GetNumMotions(), 1) << "Expected to have 1 motion for the Manager";
-        EXPECT_EQ(table->rowCount(), 1) << "Expected the table to have 1 row after removal";
+        EXPECT_EQ(tableWidget->rowCount(), 1) << "Expected the table to have 1 row after removal";
 
         // Assert asset name is in table
-        item = table->item(0, 0);
+        item = tableWidget->item(0, 1);
         ASSERT_TRUE(item) << "First table entry is invalid (unexpectedly)";
         EXPECT_EQ(item->text(), assetJumpName) << "Asset name does not match table entry";
         
@@ -95,8 +99,8 @@ namespace EMotionFX
         item->setSelected(true);
 
         // Remove the second motion
-        menuHandler.ShowContextMenuAndTriggerAction(table, "EMFX.MotionListWindow.RemoveSelectionMotionsAction", 3000, nullptr);
+        menuHandler.ShowContextMenuAndTriggerAction(tableWidget, "EMFX.MotionSetTableWidget.RemoveSelectedMotionsAction", 3000, nullptr);
         EXPECT_EQ(GetMotionManager().GetNumMotions(), 0) << "Expected to have 0 motions for the Manager";
-        EXPECT_EQ(table->rowCount(), 0) << "Expected the table to have 0 row after removal";
+        EXPECT_EQ(tableWidget->rowCount(), 0) << "Expected the table to have 0 row after removal";
     }
 } // namespace EMotionFX

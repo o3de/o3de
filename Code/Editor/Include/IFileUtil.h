@@ -12,6 +12,8 @@
 #include <CryCommon/LegacyAllocator.h>
 #include <set>
 
+#include <QStringList>
+
 class QWidget;
 
 #ifdef CreateDirectory

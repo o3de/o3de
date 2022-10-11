@@ -41,6 +41,7 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
         AzToolsFramework::Prefab::Instance& source,
         AZStd::string targetPrefabName,
         AzToolsFramework::Prefab::Instance& target,
+        AzToolsFramework::Prefab::Instance& parentInstance,
         AZ::EntityId entityId,
         AzToolsFramework::Prefab::PrefabConversionUtils::EntityAliasType aliasType,
         AzToolsFramework::Prefab::PrefabConversionUtils::EntityAliasSpawnableLoadBehavior loadBehavior,

@@ -40,7 +40,7 @@ namespace GraphModelIntegration
         {
             // Setting the palette override (if specified) is mainly used to set the icon color for this
             // node palette item, but it can also be used to override other styling aspects as well
-            AZStd::string paletteOverride = Helpers::GetTitlePaletteOverride(azrtti_typeid<NodeType>());
+            AZStd::string paletteOverride = Helpers::GetTitlePaletteOverride(nullptr, azrtti_typeid<NodeType>());
             if (!paletteOverride.empty())
             {
                 SetTitlePalette(paletteOverride);
@@ -59,7 +59,7 @@ namespace GraphModelIntegration
         : public GraphCanvas::GraphCanvasMimeEvent
     {
     public:
-        AZ_RTTI( ( (CreateStandardNodeMimeEvent<NodeType>), "{DF6213A0-5C60-4C22-88F1-4CEA6D8A17EF}", NodeType), GraphCanvas::GraphCanvasMimeEvent);
+        AZ_RTTI((CreateStandardNodeMimeEvent, "{DF6213A0-5C60-4C22-88F1-4CEA6D8A17EF}", NodeType), GraphCanvas::GraphCanvasMimeEvent);
         AZ_CLASS_ALLOCATOR(CreateStandardNodeMimeEvent, AZ::SystemAllocator, 0);
 
         static void Reflect(AZ::ReflectContext* reflectContext)

@@ -1,0 +1,44 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_Vector3Functions_IsZero",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Is Zero",
+                "category": "Math/Vector3"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_Vector3Functions_IsZero",
+                    "details": {
+                        "name": "Is Zero",
+                        "tooltip": "Returns true if A is within tolerance of the zero vector, else false."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Source"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "Tolerance"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Result"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

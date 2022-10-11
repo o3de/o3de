@@ -142,7 +142,12 @@ namespace UnitTest
 
     AZ::Vector3 ViewportSettingsTestImpl::DefaultEditorCameraPosition() const
     {
-        return {};
+        return AZ::Vector3::CreateZero();
+    }
+
+    AZ::Vector2 ViewportSettingsTestImpl::DefaultEditorCameraOrientation() const
+    {
+        return AZ::Vector2::CreateZero();
     }
 
     bool TestWidget::eventFilter(QObject* watched, QEvent* event)
@@ -367,7 +372,6 @@ namespace UnitTest
 
     ToolsApplicationMessageHandler::ToolsApplicationMessageHandler()
     {
-        m_gridMateMessageHandler = AZStd::make_unique<ErrorHandler>("GridMate");
         m_enginePathMessageHandler = AZStd::make_unique<ErrorHandler>("Engine Path");
         m_skippingDriveMessageHandler = AZStd::make_unique<ErrorHandler>("Skipping drive");
         m_storageDriveMessageHandler = AZStd::make_unique<ErrorHandler>("Storage drive");

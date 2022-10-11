@@ -23,6 +23,8 @@
 #   include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #   include <AzToolsFramework/API/EditorAnimationSystemRequestBus.h>
 #   include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
+#   include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
+#   include <AzToolsFramework/Physics/Material/Legacy/LegacyPhysicsMaterialConversionUtils.h>
 #   include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #endif // EMOTIONFXANIMATION_EDITOR
 
@@ -51,6 +53,7 @@ namespace EMotionFX
             , private AzToolsFramework::EditorEvents::Bus::Handler
             , private AzToolsFramework::EditorAnimationSystemRequestsBus::Handler
             , private AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
+            , private Physics::Utils::PhysicsMaterialConversionRequestBus::Handler
 #endif // EMOTIONFXANIMATION_EDITOR
 
         {
@@ -114,6 +117,14 @@ namespace EMotionFX
             //////////////////////////////////////////////////////////////////////////////////////
             // AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
             AzToolsFramework::AssetBrowser::SourceFileDetails GetSourceFileDetails(const char* fullSourceFileName) override;
+            void AddSourceFileOpeners(const char* fullSourceFileName, const AZ::Uuid& sourceUUID, AzToolsFramework::AssetBrowser::SourceFileOpenerList& openers) override;
+            void AddSourceFileCreators(const char* fullSourceFolderName, const AZ::Uuid& sourceUUID, AzToolsFramework::AssetBrowser::SourceFileCreatorList& creators) override;
+            //////////////////////////////////////////////////////////////////////////////////////
+
+            bool HandlesSource(AZStd::string_view fileName) const;
+            //////////////////////////////////////////////////////////////////////////////////////
+            // Physics::Utils::PhysicsMaterialConversionRequestBus::Handler
+            void FixPhysicsLegacyMaterials(const Physics::Utils::LegacyMaterialIdToNewAssetIdMap& legacyMaterialIdToNewAssetIdMap) override;
             //////////////////////////////////////////////////////////////////////////////////////
 
             AZStd::vector<AzToolsFramework::PropertyHandlerBase*> m_propertyHandlers;

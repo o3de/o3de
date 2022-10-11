@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScriptCanvas>
+    <Library
+        Include="Include/ScriptCanvas/Libraries/Math/OBB.h"
+        Namespace="ScriptCanvas::OBBFunctions"
+        Category="Math/OBB">
+        
+        <Function Name="FromAabb">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="FromPositionRotationAndHalfLengths">
+            <Parameter Name="Position"/>
+            <Parameter Name="Rotation"/>
+            <Parameter Name="HalfLengths"/>
+        </Function>
+        
+        <Function Name="IsFinite">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="GetAxisX">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="GetAxisY">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="GetAxisZ">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="GetPosition">
+            <Parameter Name="Source"/>
+        </Function>
+    </Library>
+</ScriptCanvas>

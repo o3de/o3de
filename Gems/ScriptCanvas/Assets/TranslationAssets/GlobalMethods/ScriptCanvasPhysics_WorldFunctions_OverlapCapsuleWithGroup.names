@@ -1,0 +1,69 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvasPhysics_WorldFunctions_OverlapCapsuleWithGroup",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Overlap Capsule With Group",
+                "category": "PhysX/World"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvasPhysics_WorldFunctions_OverlapCapsuleWithGroup",
+                    "details": {
+                        "name": "Overlap Capsule With Group",
+                        "tooltip": "Returns the objects overlapping a capsule at a position"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "Pose"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Height"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Radius"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Collision Group"
+                            }
+                        },
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Ignore",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Is Overlapping"
+                            }
+                        },
+                        {
+                            "typeid": "{4841CFF0-7A5C-519C-BD16-D3625E99605E}",
+                            "details": {
+                                "name": "Entity Ids"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

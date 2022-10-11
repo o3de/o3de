@@ -15,6 +15,12 @@
 #include <SceneAPI/SceneUI/SceneWidgets/ManifestWidget.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzQtComponents/Components/Widgets/Text.h>
+
+#include <QDesktopServices>
+#include <QDir>
+#include <QFileInfo>
+#include <QUrl>
 
 ImporterRootDisplay::ImporterRootDisplay(AZ::SerializeContext* serializeContext, QWidget* parent)
     : QWidget(parent)
@@ -27,8 +33,17 @@ ImporterRootDisplay::ImporterRootDisplay(AZ::SerializeContext* serializeContext,
 
     ui->m_updateButton->setEnabled(false);
     ui->m_updateButton->setProperty("class", "Primary");
+    
+    ui->locationLabel->setVisible(false);
+    ui->nameLabel->setVisible(false);
+
+    ui->headerFrame->setVisible(false);
+
+    ui->m_fullPathText->SetElideMode(Qt::TextElideMode::ElideMiddle);
 
     connect(ui->m_updateButton, &QPushButton::clicked, this, &ImporterRootDisplay::UpdateClicked);
+
+    ui->m_showInExplorer->setEnabled(false);
 
     BusConnect();
 }
@@ -46,7 +61,17 @@ AZ::SceneAPI::UI::ManifestWidget* ImporterRootDisplay::GetManifestWidget()
 
 void ImporterRootDisplay::SetSceneHeaderText(const QString& headerText)
 {
-    ui->m_filePathText->setText(headerText);
+    QFileInfo fileInfo(headerText);
+    ui->m_filePathText->setText(tr("<b>%1</b>").arg(fileInfo.fileName()));
+    QString fullPath = tr("<b>%1%2</b>").arg(QDir::toNativeSeparators(fileInfo.path())).arg(QDir::separator());
+    ui->m_fullPathText->setText(fullPath);
+    
+    ui->m_showInExplorer->setEnabled(true);
+    ui->m_showInExplorer->disconnect();
+    connect(ui->m_showInExplorer, &QPushButton::clicked, this, [fullPath]()
+    {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fullPath));
+    });
 }
 
 void ImporterRootDisplay::SetSceneDisplay(const QString& headerText, const AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene>& scene)
@@ -59,6 +84,9 @@ void ImporterRootDisplay::SetSceneDisplay(const QString& headerText, const AZStd
     }
 
     SetSceneHeaderText(headerText);
+    ui->locationLabel->setVisible(true);
+    ui->nameLabel->setVisible(true);
+    ui->headerFrame->setVisible(true);
 
     HandleSceneWasReset(scene);
 

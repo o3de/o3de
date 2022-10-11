@@ -20,7 +20,6 @@
                 "Id": 14126657869720434043,
                 "Child Entity Order": [
                     "Entity_[1176639161715]",
-                    "Entity_[2670735447885]",
                     "Entity_[2670735447885]"
                 ]
             },
@@ -575,15 +574,18 @@
                 "Component_[1921474395300693283]": {
                     "$type": "EditorScriptCanvasComponent",
                     "Id": 1921474395300693283,
-                    "m_name": "ConitoAnonymousAuthorization.scriptcanvas",
-                    "runtimeDataIsValid": true,
-                    "runtimeDataOverrides": {
-                        "source": {
-                            "id": "{C0B0CEBA-064E-580F-AD81-CFE8CE0D61B1}"
+                    "configuration": {
+                        "sourceHandle": {
+                            "id": "{C0B0CEBA-064E-580F-AD81-CFE8CE0D61B1}",
+                            "path": "Levels/AWS/ClientAuth/ConitoAnonymousAuthorization.scriptcanvas"
+                        },
+                        "sourceName": "ConitoAnonymousAuthorization.scriptcanvas",
+                        "propertyOverrides": {
+                            "source": {
+                                "id": "{C0B0CEBA-064E-580F-AD81-CFE8CE0D61B1}",
+                                "path": "Levels/AWS/ClientAuth/ConitoAnonymousAuthorization.scriptcanvas"
+                            }
                         }
-                    },
-                    "sourceHandle": {
-                        "id": "{C0B0CEBA-064E-580F-AD81-CFE8CE0D61B1}"
                     }
                 },
                 "Component_[2312432053711106201]": {

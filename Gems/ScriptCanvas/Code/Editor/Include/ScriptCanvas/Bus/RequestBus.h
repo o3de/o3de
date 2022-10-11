@@ -25,7 +25,11 @@ class QPushButton;
 class QTableView;
 class QToolButton;
 
-namespace ScriptCanvas { class Slot; }
+namespace ScriptCanvas
+{
+    class Slot;
+    class GraphVariable;
+}
 
 namespace GraphCanvas
 {
@@ -197,13 +201,27 @@ namespace ScriptCanvasEditor
 
         virtual bool IsValidVariableType(const ScriptCanvas::Data::Type& variableType) const = 0;
 
-        struct SlotSetup
+        struct VariableConfigurationInput
         {
-            AZStd::string m_name;
-            AZ::Uuid m_type = AZ::Uuid::CreateNull();
+            bool m_createVariable = false;
+            bool m_changeVariableType = false;
+            bool m_changeVariableName = false;
+            ScriptCanvas::GraphVariable* m_graphVariable = nullptr;
+            AZStd::string m_currentName;
+            ScriptCanvas::Data::Type m_currentType;
+            AZStd::string m_configurationVariableTitle = "Variable";
         };
 
-        virtual bool ShowSlotTypeSelector(ScriptCanvas::Slot* slot, const QPoint& scenePosition, SlotSetup&) = 0;
+        struct VariableConfigurationOutput
+        {
+            bool m_actionIsValid = false;
+            bool m_nameChanged = false;
+            bool m_typeChanged = false;
+            AZStd::string m_name;
+            ScriptCanvas::Data::Type m_type;
+        };
+
+        virtual VariableConfigurationOutput ShowVariableConfigurationWidget(const VariableConfigurationInput& input, const QPoint& scenePosition) = 0;
     };
 
     using VariablePaletteRequestBus = AZ::EBus<VariablePaletteRequests>;

@@ -18,14 +18,6 @@ namespace ScriptCanvas
 {
     namespace MathNodeUtilities
     {
-        AZ_INLINE void DefaultAxisLength(Node& node) { SetDefaultValuesByIndex<0>::_(node, Data::One()); }
-
-        template<int t_Index>
-        AZ_INLINE void DefaultToleranceSIMD(Node& node) { SetDefaultValuesByIndex<t_Index>::_(node, Data::ToleranceSIMD()); }
-
-        template<int t_Index>
-        AZ_INLINE void DefaultToleranceEpsilon(Node& node) { SetDefaultValuesByIndex<t_Index>::_(node, Data::ToleranceEpsilon()); }
-
         Data::NumberType GetRandom(Data::NumberType lhs, Data::NumberType rhs);
 
         AZ::s64 GetRandom(AZ::s64 lhs, AZ::s64 rhs);

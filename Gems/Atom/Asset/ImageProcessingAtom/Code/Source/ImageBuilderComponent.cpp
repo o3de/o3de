@@ -74,7 +74,7 @@ namespace ImageProcessingAtom
         builderDescriptor.m_busId = azrtti_typeid<ImageBuilderWorker>();
         builderDescriptor.m_createJobFunction = AZStd::bind(&ImageBuilderWorker::CreateJobs, &m_imageBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
         builderDescriptor.m_processJobFunction = AZStd::bind(&ImageBuilderWorker::ProcessJob, &m_imageBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
-        builderDescriptor.m_version = 27;   // [ATOM-16958]
+        builderDescriptor.m_version = 31;   // [GHI-6381]
         builderDescriptor.m_analysisFingerprint = ImageProcessingAtom::BuilderSettingManager::Instance()->GetAnalysisFingerprint();
         m_imageBuilder.BusConnect(builderDescriptor.m_busId);
         AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBusTraits::RegisterBuilderInformation, builderDescriptor);
@@ -196,6 +196,50 @@ namespace ImageProcessingAtom
         return outProducts;
     }
 
+    IImageObjectPtr BuilderPluginComponent::ConvertImageObjectInMemory(
+        IImageObjectPtr imageObject,
+        const AZStd::string& presetName,
+        const AZStd::string& platformName,
+        const AZ::Data::AssetId& sourceAssetId,
+        const AZStd::string& sourceAssetName)
+    {
+        AZStd::vector<AssetBuilderSDK::JobProduct> outProducts;
+
+        AZStd::string_view presetFilePath;
+        const PresetSettings* preset = BuilderSettingManager::Instance()->GetPreset(PresetName(presetName), platformName, &presetFilePath);
+        if (preset == nullptr)
+        {
+            AZ_Assert(false, "Cannot find preset with name %s.", presetName.c_str());
+            return nullptr;
+        }
+
+        AZStd::unique_ptr<ImageConvertProcessDescriptor> desc = AZStd::make_unique<ImageConvertProcessDescriptor>();
+        TextureSettings& textureSettings = desc->m_textureSetting;
+        textureSettings.m_preset = preset->m_name;
+        desc->m_inputImage = imageObject;
+        desc->m_presetSetting = *preset;
+        desc->m_isPreview = false;
+        desc->m_platform = platformName;
+        desc->m_filePath = presetFilePath;
+        desc->m_isStreaming = BuilderSettingManager::Instance()->GetBuilderSetting(platformName)->m_enableStreaming;
+        desc->m_imageName = sourceAssetName;
+        desc->m_shouldSaveFile = false;
+        desc->m_sourceAssetId = sourceAssetId;
+        
+        // Create an image convert process
+        ImageConvertProcess process(AZStd::move(desc));
+        process.ProcessAll();
+        bool result = process.IsSucceed();
+        if (result)
+        {
+            return process.GetOutputImage();
+        }
+        else
+        {
+            return nullptr;
+        }
+    }
+
     bool BuilderPluginComponent::DoesSupportPlatform(const AZStd::string& platformId)
     {
         return ImageProcessingAtom::BuilderSettingManager::Instance()->DoesSupportPlatform(platformId);
@@ -213,6 +257,36 @@ namespace ImageProcessingAtom
 
         const PixelFormatInfo* info = CPixelFormats::GetInstance().GetPixelFormatInfo(preset->m_pixelFormat);
         return info->bSquarePow2;
+    }
+
+    FileMask BuilderPluginComponent::GetFileMask(AZStd::string_view imageFilePath)
+    {
+        return ImageProcessingAtom::BuilderSettingManager::Instance()->GetFileMask(imageFilePath);
+    }
+
+    AZStd::vector<AZStd::string> BuilderPluginComponent::GetFileMasksForPreset(const PresetName& presetName)
+    {
+        return ImageProcessingAtom::BuilderSettingManager::Instance()->GetFileMasksForPreset(presetName);
+    }
+
+    AZStd::vector<PresetName> BuilderPluginComponent::GetPresetsForFileMask(const FileMask& fileMask)
+    {
+        return ImageProcessingAtom::BuilderSettingManager::Instance()->GetPresetsForFileMask(fileMask);
+    }
+
+    PresetName BuilderPluginComponent::GetDefaultPreset()
+    {
+        return ImageProcessingAtom::BuilderSettingManager::Instance()->GetDefaultPreset();
+    }
+
+    PresetName BuilderPluginComponent::GetDefaultAlphaPreset()
+    {
+        return ImageProcessingAtom::BuilderSettingManager::Instance()->GetDefaultAlphaPreset();
+    }
+
+    bool BuilderPluginComponent::IsValidPreset(PresetName presetName)
+    {
+        return ImageProcessingAtom::BuilderSettingManager::Instance()->IsValidPreset(presetName);
     }
 
     void ImageBuilderWorker::ShutDown()

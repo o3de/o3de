@@ -34,6 +34,7 @@ namespace AzFramework
         void SetWindowTitle(const AZStd::string& title) override;
 
         void ResizeClientArea( WindowSize clientAreaSize ) override;
+        bool SupportsClientAreaResize() const override { return true; }
         bool GetFullScreenState() const override;
         void SetFullScreenState(bool fullScreenState) override;
         bool CanToggleFullScreenState() const override { return true; }

@@ -15,28 +15,38 @@ namespace AtomToolsFramework
         : PreviewRendererState(renderer)
     {
         m_renderer->PoseContent();
-        AZ::TickBus::Handler::BusConnect();
+        AZ::SystemTickBus::Handler::BusConnect();
     }
 
     PreviewRendererCaptureState::~PreviewRendererCaptureState()
     {
         AZ::Render::FrameCaptureNotificationBus::Handler::BusDisconnect();
-        AZ::TickBus::Handler::BusDisconnect();
+        AZ::SystemTickBus::Handler::BusDisconnect();
         m_renderer->EndCapture();
     }
 
-    void PreviewRendererCaptureState::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+    void PreviewRendererCaptureState::OnSystemTick()
     {
-        if ((m_ticksToCapture-- <= 0) && m_renderer->StartCapture())
+        if (m_ticksToCapture-- <= 0)
         {
-            AZ::Render::FrameCaptureNotificationBus::Handler::BusConnect();
-            AZ::TickBus::Handler::BusDisconnect();
+            m_frameCaptureId = m_renderer->StartCapture();
+            if (m_frameCaptureId != AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId)
+            {
+                AZ::Render::FrameCaptureNotificationBus::Handler::BusConnect();
+                AZ::SystemTickBus::Handler::BusDisconnect();
+            }
+            // if the start capture call fails the capture will be retried next tick.
         }
     }
 
-    void PreviewRendererCaptureState::OnCaptureFinished(
+    void PreviewRendererCaptureState::OnCaptureFinished( uint32_t frameCaptureId,
         [[maybe_unused]] AZ::Render::FrameCaptureResult result, [[maybe_unused]] const AZStd::string& info)
     {
-        m_renderer->CompleteCaptureRequest();
+        if (frameCaptureId == m_frameCaptureId) // validate this event is for the frame capture request this state made
+        {
+            m_renderer->CompleteCaptureRequest();
+            m_frameCaptureId = AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId;
+        }
     }
 } // namespace AtomToolsFramework
+

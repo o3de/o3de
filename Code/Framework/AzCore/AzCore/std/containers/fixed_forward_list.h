@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_FIXED_SLIST_H
-#define AZSTD_FIXED_SLIST_H 1
+#pragma once
 
 #include <AzCore/std/containers/forward_list.h>
 #include <AzCore/std/allocator_static.h>
@@ -23,55 +22,25 @@ namespace AZStd
     */
     template< class T, AZStd::size_t NumberOfNodes>
     class fixed_forward_list
-        : public forward_list<T, static_pool_allocator<typename Internal::forward_list_node<T>, NumberOfNodes > >
+        : public forward_list<T, static_pool_allocator<Internal::forward_list_node<T>, NumberOfNodes > >
     {
-        enum
-        {
-            CONTAINER_VERSION = 1
-        };
-
-        typedef fixed_forward_list<T, NumberOfNodes> this_type;
-        typedef forward_list<T, static_pool_allocator<typename Internal::forward_list_node<T>, NumberOfNodes> > base_type;
+        using base_type = forward_list<T, static_pool_allocator<Internal::forward_list_node<T>, NumberOfNodes>>;
     public:
-        //////////////////////////////////////////////////////////////////////////
-        // 23.2.2 construct/copy/destroy
-        AZ_FORCE_INLINE explicit fixed_forward_list() {}
-        AZ_FORCE_INLINE explicit fixed_forward_list(typename base_type::size_type numElements, typename base_type::const_reference value = typename base_type::value_type())
-            : base_type(numElements, value) {}
-        template<class InputIterator>
-        AZ_FORCE_INLINE fixed_forward_list(const InputIterator& first, const InputIterator& last)
-            : base_type(first, last)   {}
-        AZ_FORCE_INLINE fixed_forward_list(const this_type& rhs)
-            : base_type(rhs)   {}
-        AZ_FORCE_INLINE fixed_forward_list(std::initializer_list<T> list)
-            : base_type(list) {}
-        AZ_FORCE_INLINE this_type& operator=(const this_type& rhs)
+        using base_type::base_type;
+        friend bool operator==(const fixed_forward_list& x, const fixed_forward_list& y)
         {
-            if (this != &rhs)
-            {
-                base_type::assign(rhs.begin(), rhs.end());
-            }
-            return *this;
+            return static_cast<const base_type&>(x) == static_cast<const base_type&>(y);
         }
 
-        //AZ_FORCE_INLINE void * data() const ...
-    private:
-        // You are not allowed to change the allocator type.
-        void                        set_allocator(const typename base_type::allocator_type& allocator) { (void)allocator; }
+        friend bool operator!=(const fixed_forward_list& x, const fixed_forward_list& y)
+        {
+            return !operator==(x, y);
+        }
+
+        friend void swap(fixed_forward_list& x, fixed_forward_list& y)
+            noexcept(noexcept(x.swap(y)))
+        {
+            static_cast<base_type&>(x).swap(static_cast<base_type&>(y));
+        }
     };
-
-    template< class T, AZStd::size_t NumberOfNodes >
-    AZ_FORCE_INLINE bool operator==(const fixed_forward_list<T, NumberOfNodes>& left, const fixed_forward_list<T, NumberOfNodes>& right)
-    {
-        return (left.size() == right.size() && equal(left.begin(), left.end(), right.begin()));
-    }
-
-    template< class T, AZStd::size_t NumberOfNodes >
-    AZ_FORCE_INLINE bool operator!=(const fixed_forward_list<T, NumberOfNodes>& left, const fixed_forward_list<T, NumberOfNodes>& right)
-    {
-        return !(left == right);
-    }
 }
-
-#endif // AZSTD_FIXED_SLIST_H
-#pragma once

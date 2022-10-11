@@ -562,12 +562,8 @@ namespace AZ
                     // Assert here before attempting to resolve. Otherwise a module-local
                     // environment will be created which will result in a much more difficult to
                     // locate problem
-                    AZ_Assert(AZ::Environment::IsReady(), "Environment has not been attached yet, allocator cannot be created/resolved");
-                    if (AZ::Environment::IsReady())
-                    {
-                        s_allocator = Environment::FindVariable<Allocator>(AzTypeInfo<Allocator>::Name());
-                        AZ_Assert(s_allocator, "Allocator '%s' NOT ready for use! Call Create first!", AzTypeInfo<Allocator>::Name());
-                    }
+                    s_allocator = Environment::FindVariable<Allocator>(AzTypeInfo<Allocator>::Name());
+                    AZ_Assert(s_allocator, "Allocator '%s' NOT ready for use! Call Create first!", AzTypeInfo<Allocator>::Name());
                 }
                 return *s_allocator;
             }
@@ -608,18 +604,11 @@ namespace AZ
 
             AZ_FORCE_INLINE static bool IsReady()
             {
-                if (Environment::IsReady())
+                if (!s_allocator)
                 {
-                    if (!s_allocator) // if not there check the environment (if available)
-                    {
-                        s_allocator = Environment::FindVariable<Allocator>(AzTypeInfo<Allocator>::Name());
-                    }
-                    return s_allocator && s_allocator->IsReady();
+                    s_allocator = Environment::FindVariable<Allocator>(AzTypeInfo<Allocator>::Name());
                 }
-                else
-                {
-                    return false;
-                }
+                return s_allocator && s_allocator->IsReady();
             }
 
             static EnvironmentVariable<Allocator> s_allocator;

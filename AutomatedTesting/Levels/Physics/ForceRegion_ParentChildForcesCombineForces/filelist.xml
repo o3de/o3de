@@ -1,6 +1,0 @@
-<download name="review2" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="8514" md5="0be672c45f7ba3867c4d66fcc94f2198"/>
- </files>
-</download>

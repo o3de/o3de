@@ -67,10 +67,55 @@ namespace UnitTest
         const auto screenPosition = AzFramework::WorldToScreen(expectedWorldPosition, m_cameraState);
 
         // perform ray intersection against mesh
+        constexpr float defaultPickDistance = 10.0f;
         const auto worldIntersectionPoint = AzToolsFramework::FindClosestPickIntersection(
             m_viewportManipulatorInteraction->GetViewportInteraction().GetViewportId(), screenPosition,
-            AzToolsFramework::EditorPickRayLength, AzToolsFramework::GetDefaultEntityPlacementDistance());
+            AzToolsFramework::EditorPickRayLength, defaultPickDistance);
 
         EXPECT_THAT(worldIntersectionPoint, IsCloseTolerance(expectedWorldPosition, 0.01f));
+
+        // Verify that the overloaded version of the API that returns an optional Vector3 also detects the hit correctly.
+        const auto optionalWorldIntersectionPoint = AzToolsFramework::FindClosestPickIntersection(
+            m_viewportManipulatorInteraction->GetViewportInteraction().GetViewportId(),
+            screenPosition,
+            AzToolsFramework::EditorPickRayLength);
+
+        EXPECT_TRUE(optionalWorldIntersectionPoint.has_value());
+        EXPECT_THAT(*optionalWorldIntersectionPoint, IsCloseTolerance(expectedWorldPosition, 0.01f));
+    }
+
+    TEST_F(IndirectCallManipulatorViewportInteractionIntersectionFixture, FindClosestPickIntersectionWithNoHitReturnsExpectedResult)
+    {
+        const int screenSize = 1000;
+        const AZ::Vector3 cameraLocation(100.0f);
+
+        // Create a simple default camera located at (100,100,100) pointing straight up.
+        m_cameraState.m_viewportSize = AzFramework::ScreenSize(screenSize, screenSize);
+        AzFramework::SetCameraTransform(m_cameraState, AZ::Transform::CreateTranslation(cameraLocation));
+        m_actionDispatcher->CameraState(m_cameraState);
+
+        // Query from the center of the screen.
+        const AzFramework::ScreenPoint screenPosition(screenSize / 2, screenSize / 2);
+
+        // perform ray intersection. With no collision, it should pick a point directly pointing into the camera
+        // at the default distance, starting from the camera's position + near clip plane distance.
+        constexpr float defaultPickDistance = 25.0f;
+        const auto expectedWorldPosition = cameraLocation + AZ::Vector3(0.0f, defaultPickDistance + m_cameraState.m_nearClip, 0.0f);
+
+        const auto worldIntersectionPoint = AzToolsFramework::FindClosestPickIntersection(
+            m_viewportManipulatorInteraction->GetViewportInteraction().GetViewportId(),
+            screenPosition,
+            AzToolsFramework::EditorPickRayLength,
+            defaultPickDistance);
+
+        EXPECT_THAT(worldIntersectionPoint, IsCloseTolerance(expectedWorldPosition, 0.01f));
+
+        // Verify that the overloaded version of the API that returns an optional Vector3 doesn't find a hit.
+        const auto optionalWorldIntersectionPoint = AzToolsFramework::FindClosestPickIntersection(
+            m_viewportManipulatorInteraction->GetViewportInteraction().GetViewportId(),
+            screenPosition,
+            AzToolsFramework::EditorPickRayLength);
+
+        EXPECT_FALSE(optionalWorldIntersectionPoint.has_value());
     }
 } // namespace UnitTest

@@ -15,18 +15,17 @@
 #include <GemCatalog/GemModel.h>
 #include <GemCatalog/GemListHeaderWidget.h>
 #include <GemCatalog/GemSortFilterProxyModel.h>
-#include <GemCatalog/GemRequirementDialog.h>
-#include <GemCatalog/GemDependenciesDialog.h>
 #include <GemCatalog/GemUpdateDialog.h>
 #include <GemCatalog/GemUninstallDialog.h>
 #include <GemCatalog/GemItemDelegate.h>
 #include <DownloadController.h>
 #include <ProjectUtils.h>
 #include <AdjustableHeaderWidget.h>
+#include <ScreensCtrl.h>
+#include <CreateAGemScreen.h>
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
-#include <QPushButton>
 #include <QTimer>
 #include <PythonBindingsInterface.h>
 #include <QMessageBox>
@@ -39,8 +38,10 @@
 
 namespace O3DE::ProjectManager
 {
-    GemCatalogScreen::GemCatalogScreen(QWidget* parent)
+    GemCatalogScreen::GemCatalogScreen(DownloadController* downloadController, bool readOnly, QWidget* parent)
         : ScreenWidget(parent)
+        , m_readOnly(readOnly)
+        , m_downloadController(downloadController)
     {
         // The width of either side panel (filters, inspector) in the catalog
         constexpr int sidePanelWidth = 240;
@@ -60,8 +61,6 @@ namespace O3DE::ProjectManager
         vLayout->setSpacing(0);
         setLayout(vLayout);
 
-        m_downloadController = new DownloadController();
-
         m_headerWidget = new GemCatalogHeaderWidget(m_gemModel, m_proxyModel, m_downloadController);
         vLayout->addWidget(m_headerWidget);
 
@@ -70,9 +69,20 @@ namespace O3DE::ProjectManager
         connect(m_gemModel->GetSelectionModel(), &QItemSelectionModel::selectionChanged, this, [this]{ ShowInspector(); });
         connect(m_headerWidget, &GemCatalogHeaderWidget::RefreshGems, this, &GemCatalogScreen::Refresh);
         connect(m_headerWidget, &GemCatalogHeaderWidget::OpenGemsRepo, this, &GemCatalogScreen::HandleOpenGemRepo);
+        connect(m_headerWidget, &GemCatalogHeaderWidget::CreateGem, this, &GemCatalogScreen::HandleCreateGem);
         connect(m_headerWidget, &GemCatalogHeaderWidget::AddGem, this, &GemCatalogScreen::OnAddGemClicked);
         connect(m_headerWidget, &GemCatalogHeaderWidget::UpdateGemCart, this, &GemCatalogScreen::UpdateAndShowGemCart);
         connect(m_downloadController, &DownloadController::Done, this, &GemCatalogScreen::OnGemDownloadResult);
+
+        ScreensCtrl* screensControl = qobject_cast<ScreensCtrl*>(parent);
+        if (screensControl)
+        {
+            ScreenWidget* createGemScreen = screensControl->FindScreen(ProjectManagerScreen::CreateGem);
+            if (createGemScreen)
+            {
+                connect(static_cast<CreateGem*>(createGemScreen), &CreateGem::GemCreated, this, &GemCatalogScreen::HandleGemCreated);
+            }
+        }
 
         QHBoxLayout* hLayout = new QHBoxLayout();
         hLayout->setMargin(0);
@@ -95,6 +105,7 @@ namespace O3DE::ProjectManager
         filterWidget->setLayout(m_filterWidgetLayout);
 
         GemListHeaderWidget* catalogHeaderWidget = new GemListHeaderWidget(m_proxyModel);
+        connect(catalogHeaderWidget, &GemListHeaderWidget::OnRefresh, this, &GemCatalogScreen::Refresh);
 
         constexpr int minHeaderSectionWidth = 100;
         AdjustableHeaderWidget* listHeaderWidget = new AdjustableHeaderWidget(
@@ -115,7 +126,7 @@ namespace O3DE::ProjectManager
             },
             this);
 
-        m_gemListView = new GemListView(m_proxyModel, m_proxyModel->GetSelectionModel(), listHeaderWidget, this);
+        m_gemListView = new GemListView(m_proxyModel, m_proxyModel->GetSelectionModel(), listHeaderWidget, m_readOnly, this);
 
         QHBoxLayout* listHeaderLayout = new QHBoxLayout();
         listHeaderLayout->setMargin(0);
@@ -142,8 +153,23 @@ namespace O3DE::ProjectManager
         m_notificationsView->SetMaxQueuedNotifications(1);
     }
 
+    void GemCatalogScreen::NotifyCurrentScreen()
+    {
+        if (m_readOnly && m_gemModel->rowCount() == 0)
+        {
+            // init the read only catalog the first time it is shown
+            ReinitForProject(m_projectPath);
+        }
+    }
+
     void GemCatalogScreen::ReinitForProject(const QString& projectPath)
     {
+        // avoid slow rebuilding, user can manually refresh if needed
+        if (m_gemModel->rowCount() > 0 && QDir(projectPath) == QDir(m_projectPath))
+        {
+            return;
+        }
+
         m_projectPath = projectPath;
         m_gemModel->Clear();
         m_gemsToRegisterWithProject.clear();
@@ -214,12 +240,20 @@ namespace O3DE::ProjectManager
                 AZ::Outcome<GemInfo, void> gemInfoResult = PythonBindingsInterface::Get()->GetGemInfo(directory);
                 if (gemInfoResult)
                 {
-                    m_gemModel->AddGem(gemInfoResult.GetValue<GemInfo>());
-                    m_gemModel->UpdateGemDependencies();
-                    m_proxyModel->sort(/*column=*/0);
+                    // We added this local gem so set it's status to downloaded
+                    GemInfo& addedGemInfo = gemInfoResult.GetValue<GemInfo>();
+                    addedGemInfo.m_downloadStatus = GemInfo::DownloadStatus::Downloaded;
+                    AddToGemModel(addedGemInfo);
                 }
             }
         }
+    }
+
+    void GemCatalogScreen::AddToGemModel(const GemInfo& gemInfo)
+    {
+        m_gemModel->AddGem(gemInfo);
+        m_gemModel->UpdateGemDependencies();
+        m_proxyModel->sort(/*column=*/0);
     }
 
     void GemCatalogScreen::Refresh()
@@ -324,7 +358,7 @@ namespace O3DE::ProjectManager
                 if (added && (GemModel::GetDownloadStatus(modelIndex) == GemInfo::DownloadStatus::NotDownloaded) ||
                     (GemModel::GetDownloadStatus(modelIndex) == GemInfo::DownloadStatus::DownloadFailed))
                 {
-                    m_downloadController->AddGemDownload(GemModel::GetName(modelIndex));
+                    m_downloadController->AddObjectDownload(GemModel::GetName(modelIndex), "", DownloadController::DownloadObjectType::Gem);
                     GemModel::SetDownloadStatus(*m_gemModel, modelIndex, GemInfo::DownloadStatus::Downloading);
                 }
             }
@@ -339,13 +373,19 @@ namespace O3DE::ProjectManager
             }
             notification += (added ? tr(" activated") : tr(" deactivated"));
 
-            AzQtComponents::ToastConfiguration toastConfiguration(AzQtComponents::ToastType::Custom, notification, "");
-            toastConfiguration.m_customIconImage = ":/gem.svg";
-            toastConfiguration.m_borderRadius = 4;
-            toastConfiguration.m_duration = AZStd::chrono::milliseconds(3000);
-            m_notificationsView->ShowToastNotification(toastConfiguration);
+            ShowStandardToastNotification(notification);
         }
     }
+
+    void GemCatalogScreen::ShowStandardToastNotification(const QString& notification)
+    {
+        AzQtComponents::ToastConfiguration toastConfiguration(AzQtComponents::ToastType::Custom, notification, "");
+        toastConfiguration.m_customIconImage = ":/gem.svg";
+        toastConfiguration.m_borderRadius = 4;
+        toastConfiguration.m_duration = AZStd::chrono::milliseconds(3000);
+        m_notificationsView->ShowToastNotification(toastConfiguration);
+    }
+    
 
     void GemCatalogScreen::OnDependencyGemStatusChanged(const QString& gemName)
     {
@@ -354,7 +394,7 @@ namespace O3DE::ProjectManager
         if (added && (GemModel::GetDownloadStatus(modelIndex) == GemInfo::DownloadStatus::NotDownloaded) ||
             (GemModel::GetDownloadStatus(modelIndex) == GemInfo::DownloadStatus::DownloadFailed))
         {
-            m_downloadController->AddGemDownload(GemModel::GetName(modelIndex));
+            m_downloadController->AddObjectDownload(GemModel::GetName(modelIndex), "" , DownloadController::DownloadObjectType::Gem);
             GemModel::SetDownloadStatus(*m_gemModel, modelIndex, GemInfo::DownloadStatus::Downloading);
         }
     }
@@ -420,7 +460,7 @@ namespace O3DE::ProjectManager
         GemUpdateDialog* confirmUpdateDialog = new GemUpdateDialog(selectedGemName, updateAvaliable, this);
         if (confirmUpdateDialog->exec() == QDialog::Accepted)
         {
-            m_downloadController->AddGemDownload(selectedGemName);
+            m_downloadController->AddObjectDownload(selectedGemName, "" , DownloadController::DownloadObjectType::Gem);
         }
     }
 
@@ -533,6 +573,13 @@ namespace O3DE::ProjectManager
             }
 
             m_gemModel->UpdateGemDependencies();
+
+            // if we don't have a project path early out
+            if (m_projectPath.isEmpty())
+            {
+                return;
+            }
+
             m_notificationsEnabled = false;
 
             // Gather enabled gems for the given project.
@@ -576,85 +623,21 @@ namespace O3DE::ProjectManager
         m_headerWidget->GemCartShown();
     }
 
-    GemCatalogScreen::EnableDisableGemsResult GemCatalogScreen::EnableDisableGemsForProject(const QString& projectPath)
-    {
-        IPythonBindings* pythonBindings = PythonBindingsInterface::Get();
-        QVector<QModelIndex> toBeAdded = m_gemModel->GatherGemsToBeAdded();
-        QVector<QModelIndex> toBeRemoved = m_gemModel->GatherGemsToBeRemoved();
-
-        if (m_gemModel->DoGemsToBeAddedHaveRequirements())
-        {
-            GemRequirementDialog* confirmRequirementsDialog = new GemRequirementDialog(m_gemModel, this);
-            if(confirmRequirementsDialog->exec() == QDialog::Rejected)
-            {
-                return EnableDisableGemsResult::Cancel;
-            }
-        }
-
-        if (m_gemModel->HasDependentGemsToRemove())
-        {
-            GemDependenciesDialog* dependenciesDialog = new GemDependenciesDialog(m_gemModel, this);
-            if(dependenciesDialog->exec() == QDialog::Rejected)
-            {
-                return EnableDisableGemsResult::Cancel;
-            }
-
-            toBeAdded = m_gemModel->GatherGemsToBeAdded();
-            toBeRemoved = m_gemModel->GatherGemsToBeRemoved();
-        }
-
-        for (const QModelIndex& modelIndex : toBeAdded)
-        {
-            const QString& gemPath = GemModel::GetPath(modelIndex);
-
-            // make sure any remote gems we added were downloaded successfully 
-            const GemInfo::DownloadStatus status = GemModel::GetDownloadStatus(modelIndex);
-            if (GemModel::GetGemOrigin(modelIndex) == GemInfo::Remote &&
-                !(status == GemInfo::Downloaded || status == GemInfo::DownloadSuccessful))
-            {
-                QMessageBox::critical(
-                    nullptr, "Cannot add gem that isn't downloaded",
-                    tr("Cannot add gem %1 to project because it isn't downloaded yet or failed to download.")
-                        .arg(GemModel::GetDisplayName(modelIndex)));
-
-                return EnableDisableGemsResult::Failed;
-            }
-
-            const AZ::Outcome<void, AZStd::string> result = pythonBindings->AddGemToProject(gemPath, projectPath);
-            if (!result.IsSuccess())
-            {
-                QMessageBox::critical(nullptr, "Failed to add gem to project",
-                    tr("Cannot add gem %1 to project.<br><br>Error:<br>%2").arg(GemModel::GetDisplayName(modelIndex), result.GetError().c_str()));
-
-                return EnableDisableGemsResult::Failed;
-            }
-
-            // register external gems that were added with relative paths
-            if (m_gemsToRegisterWithProject.contains(gemPath))
-            {
-                pythonBindings->RegisterGem(QDir(projectPath).relativeFilePath(gemPath), projectPath);
-            }
-        }
-
-        for (const QModelIndex& modelIndex : toBeRemoved)
-        {
-            const QString gemPath = GemModel::GetPath(modelIndex);
-            const AZ::Outcome<void, AZStd::string> result = pythonBindings->RemoveGemFromProject(gemPath, projectPath);
-            if (!result.IsSuccess())
-            {
-                QMessageBox::critical(nullptr, "Failed to remove gem from project",
-                    tr("Cannot remove gem %1 from project.<br><br>Error:<br>%2").arg(GemModel::GetDisplayName(modelIndex), result.GetError().c_str()));
-
-                return EnableDisableGemsResult::Failed;
-            }
-        }
-
-        return EnableDisableGemsResult::Success;
-    }
-
     void GemCatalogScreen::HandleOpenGemRepo()
     {
-        emit ChangeScreenRequest(ProjectManagerScreen::GemRepos);
+        if (m_readOnly)
+        {
+            emit ChangeScreenRequest(ProjectManagerScreen::GemsGemRepos);
+        }
+        else
+        {
+            emit ChangeScreenRequest(ProjectManagerScreen::GemRepos);
+        }
+    }
+
+    void GemCatalogScreen::HandleCreateGem()
+    {
+        emit ChangeScreenRequest(ProjectManagerScreen::CreateGem);
     }
 
     void GemCatalogScreen::UpdateAndShowGemCart(QWidget* cartWidget)
@@ -726,8 +709,30 @@ namespace O3DE::ProjectManager
         }
     }
 
+    void GemCatalogScreen::HandleGemCreated(const GemInfo& gemInfo)
+    {
+        // This signal occurs only upon successful completion of creating a gem. As such, the gemInfo data is assumed to be valid.
+
+        // make sure the project gem catalog model is updated
+        AddToGemModel(gemInfo);
+
+        // create Toast Notification for project gem catalog
+        QString notification = tr("%1 has been created.").arg(gemInfo.m_displayName);
+        ShowStandardToastNotification(notification);
+    }
+
     ProjectManagerScreen GemCatalogScreen::GetScreenEnum()
     {
         return ProjectManagerScreen::GemCatalog;
+    }
+
+    QString GemCatalogScreen::GetTabText()
+    {
+        return "Gems";
+    }
+
+    bool GemCatalogScreen::IsTab()
+    {
+        return true;
     }
 } // namespace O3DE::ProjectManager

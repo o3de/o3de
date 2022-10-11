@@ -108,6 +108,11 @@ namespace AzFramework
         m_pimpl->ResizeClientArea(clientAreaSize);
     }
 
+    bool NativeWindow::SupportsClientAreaResize() const
+    {
+        return m_pimpl->SupportsClientAreaResize();
+    }
+
     bool NativeWindow::GetFullScreenState() const
     {
         return m_pimpl->GetFullScreenState();
@@ -149,6 +154,21 @@ namespace AzFramework
         return true;
     }
 
+    /*static*/ bool NativeWindow::SupportsClientAreaResizeOfDefaultWindow()
+    {
+        NativeWindowHandle defaultWindowHandle = nullptr;
+        WindowSystemRequestBus::BroadcastResult(defaultWindowHandle,
+                                                &WindowSystemRequestBus::Events::GetDefaultWindowHandle);
+
+        bool supportsClientAreaResizeOfDefaultWindow = false;
+        if (defaultWindowHandle)
+        {
+            WindowRequestBus::EventResult(supportsClientAreaResizeOfDefaultWindow,
+                                          defaultWindowHandle,
+                                          &WindowRequestBus::Events::SupportsClientAreaResize);
+        }
+        return supportsClientAreaResizeOfDefaultWindow;
+    }
 
     /*static*/ bool NativeWindow::GetFullScreenStateOfDefaultWindow()
     {
@@ -243,6 +263,12 @@ namespace AzFramework
 
     void NativeWindow::Implementation::ResizeClientArea([[maybe_unused]] WindowSize clientAreaSize)
     {
+    }
+
+    bool NativeWindow::Implementation::SupportsClientAreaResize() const
+    {
+        // Default to client area resize is unsupported, supported platforms will override this function
+        return false;
     }
 
     bool NativeWindow::Implementation::GetFullScreenState() const

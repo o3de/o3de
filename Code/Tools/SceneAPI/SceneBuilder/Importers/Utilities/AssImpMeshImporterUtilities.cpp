@@ -72,12 +72,13 @@ namespace AZ::SceneAPI::SceneBuilder
             {
                 aiFace face = mesh->mFaces[faceIdx];
                 AZ::SceneAPI::DataTypes::IMeshData::Face meshFace;
-                if (face.mNumIndices != 3)
+                if (face.mNumIndices > 3)
                 {
                     // AssImp should have triangulated everything, so if this happens then someone has
                     // probably changed AssImp's import settings. The engine only supports triangles.
                     AZ_Error(Utilities::ErrorWindow, false,
-                        "Mesh on node %s has a face with %d vertices, only 3 vertices are supported per face.",
+                        "Mesh on node %s has a face with %d vertices, only 3 vertices are supported per face. You could "
+                        "fix it by triangulating the meshes in the dcc tool.",
                         currentNode->mName.C_Str(),
                         face.mNumIndices);
                     continue;

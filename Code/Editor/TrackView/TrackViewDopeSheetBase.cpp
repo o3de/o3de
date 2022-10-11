@@ -3403,7 +3403,6 @@ void CTrackViewDopeSheetBase::DrawSummary(QPainter* painter, const QRect& rcUpda
 
     const QPen prevPen = painter->pen();
     painter->setPen(QPen(lineCol, 3));
-    Range timeRange = m_timeRange;
 
     // Draw a short thick line at each place where there is a key in any tracks.
     CTrackViewKeyBundle keys = pSequence->GetAllKeys();

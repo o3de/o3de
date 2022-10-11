@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+	<projects>
+		<projectfiles>
+			<size>1</size>
+			<_1 prefix="_">
+				<path>o3de_dccsi.sbsprj</path>
+			</_1>
+		</projectfiles>
+	</projects>
+	<preferences>
+		<configuration>
+			<compatibilitymode>sbs_engine_v8</compatibilitymode>
+		</configuration>
+	</preferences>
+</root>

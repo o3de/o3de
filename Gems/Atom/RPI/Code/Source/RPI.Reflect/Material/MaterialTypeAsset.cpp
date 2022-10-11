@@ -37,7 +37,7 @@ namespace AZ
 
         void MaterialTypeAsset::Reflect(ReflectContext* context)
         {
-            MaterialVersionUpdate::Reflect(context);
+            MaterialVersionUpdates::Reflect(context);
             UvNamePair::Reflect(context);
 
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
@@ -172,17 +172,7 @@ namespace AZ
 
         bool MaterialTypeAsset::ApplyPropertyRenames(AZ::Name& propertyId) const
         {
-            bool renamed = false;
-
-            for (const auto& versionUpdates : m_materialVersionUpdates)
-            {
-                if (versionUpdates.ApplyPropertyRenames(propertyId))
-                {
-                    renamed = true;
-                }
-            }
-
-            return renamed;
+            return m_materialVersionUpdates.ApplyPropertyRenames(propertyId);
         }
 
         void MaterialTypeAsset::SetReady()

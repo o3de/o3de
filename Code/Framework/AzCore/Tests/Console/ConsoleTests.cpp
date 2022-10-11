@@ -39,6 +39,17 @@ namespace AZ
     AZ_CVAR(AZ::Color, testColorNormalizedMixed, AZ::Color(0.0f, 0.0f, 0.0f, 0.0f), nullptr, ConsoleFunctorFlags::Null, "");
     AZ_CVAR(AZ::Color, testColorRgba, AZ::Color(0.0f, 0.0f, 0.0f, 0.0f), nullptr, ConsoleFunctorFlags::Null, "");
 
+    // Creates an enum class with values that aren't consecutive(0, 5, 6)
+    AZ_ENUM_CLASS(ConsoleTestEnum,
+        Option1,
+        (Option2, 5),
+        Option3);
+    AZ_CVAR(ConsoleTestEnum, testEnum, ConsoleTestEnum::Option1, nullptr, ConsoleFunctorFlags::Null,
+        "Supports setting the ConsoleTestEnum via the string or integer argument."
+        " Option1/0 sets the CVar to the Option1 value"
+        ", Option2/5 sets the CVar to the Option2 value"
+        ", Option3/6 sets the CVar to the Option3 value");
+
     class ConsoleTests
         : public AllocatorsFixture
     {
@@ -77,23 +88,23 @@ namespace AZ
             _TYPE getCVarTest = testInit;
 
             ConsoleFunctorBase* foundCommand = console->FindCommand(cVarName);
-            AZ_TEST_ASSERT(foundCommand != nullptr); // Find command works and returns a non-null result
-            AZ_TEST_ASSERT(strcmp(foundCommand->GetName(), cVarName) == 0); // Find command actually returned the correct command
+            ASSERT_NE(nullptr, foundCommand); // Find command works and returns a non-null result
+            EXPECT_STREQ(cVarName, foundCommand->GetName()); // Find command actually returned the correct command
 
-            AZ_TEST_ASSERT(console->GetCvarValue(cVarName, getCVarTest) == GetValueResult::Success); // Console finds and retrieves cvar value
-            AZ_TEST_ASSERT(getCVarTest == initialValue); // Retrieved cvar value
+            EXPECT_EQ(GetValueResult::Success, console->GetCvarValue(cVarName, getCVarTest)); // Console finds and retrieves cvar value
+            EXPECT_EQ(initialValue, getCVarTest); // Retrieved cvar value
 
             console->PerformCommand(setCommand);
 
-            AZ_TEST_ASSERT(_TYPE(cvarInstance) == setValue); // Set works for type
+            EXPECT_EQ(setValue, _TYPE(cvarInstance)); // Set works for type
 
-            AZ_TEST_ASSERT(console->GetCvarValue(cVarName, getCVarTest) == GetValueResult::Success); // Console finds and retrieves cvar value
-            AZ_TEST_ASSERT(getCVarTest == setValue); // Retrieved cvar value
+            EXPECT_EQ(GetValueResult::Success, console->GetCvarValue(cVarName, getCVarTest)); // Console finds and retrieves cvar value
+            EXPECT_EQ(setValue, getCVarTest); // Retrieved cvar value
 
             if (failCommand != nullptr)
             {
                 console->PerformCommand(failCommand);
-                AZ_TEST_ASSERT(_TYPE(cvarInstance) == setValue); // Failed command did not affect cvar state
+                EXPECT_EQ(setValue, _TYPE(cvarInstance)); // Failed command did not affect cvar state
             }
         }
     };
@@ -230,6 +241,32 @@ namespace AZ
         TestCVarHelper(
             testColorRgba, "testColorRgba", "testColorRgba 255 255 255 255", "testColorRgba asdf",
             AZ::Color(0.5f, 0.5f, 0.5f, 0.5f), AZ::Color(0.0f, 0.0f, 0.0f, 0.0f), AZ::Color(1.0f, 1.0f, 1.0f, 1.0f));
+    }
+
+    TEST_F(ConsoleTests, CVar_GetSetTest_EnumType_SupportsNumericValue)
+    {
+        testEnum = ConsoleTestEnum::Option1;
+        TestCVarHelper(
+            testEnum, "testEnum", "testEnum 0", "testEnum RandomOption",
+            static_cast<ConsoleTestEnum>(2), ConsoleTestEnum::Option1, ConsoleTestEnum::Option1);
+
+        testEnum = ConsoleTestEnum::Option1;
+        TestCVarHelper(
+            testEnum, "testEnum", "testEnum 3", "testEnum RandomOption",
+            static_cast<ConsoleTestEnum>(2), ConsoleTestEnum::Option1, static_cast<ConsoleTestEnum>(3));
+    }
+
+    TEST_F(ConsoleTests, CVar_GetSetTest_EnumType_SupportsEnumOptionString)
+    {
+        testEnum = ConsoleTestEnum::Option1;
+        TestCVarHelper(
+            testEnum, "testEnum", "testEnum Option2", "testEnum RandomOption",
+            static_cast<ConsoleTestEnum>(2), ConsoleTestEnum::Option1, ConsoleTestEnum::Option2);
+
+        testEnum = ConsoleTestEnum::Option1;
+        TestCVarHelper(
+            testEnum, "testEnum", "testEnum Option3", "testEnum RandomOption",
+            static_cast<ConsoleTestEnum>(47), ConsoleTestEnum{}, ConsoleTestEnum::Option3);
     }
 
     TEST_F(ConsoleTests, CVar_ConstructAfterDeferredInit)

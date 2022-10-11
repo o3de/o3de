@@ -15,8 +15,6 @@
 
 namespace ScriptCanvas
 {
-    class Graph;
-
     namespace Translation
     {
         AZ::Outcome<Grammar::AbstractCodeModelConstPtr, AZStd::string> ParseGraph(const Grammar::Request& request);

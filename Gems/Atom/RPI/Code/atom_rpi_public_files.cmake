@@ -9,10 +9,12 @@
 set(FILES
     Include/Atom/RPI.Public/AssetInitBus.h
     Include/Atom/RPI.Public/Base.h
+    Include/Atom/RPI.Public/BlockCompression.h
     Include/Atom/RPI.Public/Culling.h
     Include/Atom/RPI.Public/FeatureProcessor.h
     Include/Atom/RPI.Public/FeatureProcessorFactory.h
     Include/Atom/RPI.Public/MeshDrawPacket.h
+    Include/Atom/RPI.Public/PipelinePassChanges.h
     Include/Atom/RPI.Public/PipelineState.h
     Include/Atom/RPI.Public/RenderPipeline.h
     Include/Atom/RPI.Public/RPISystem.h
@@ -63,6 +65,7 @@ set(FILES
     Include/Atom/RPI.Public/Pass/ParentPass.h
     Include/Atom/RPI.Public/Pass/Pass.h
     Include/Atom/RPI.Public/Pass/PassAttachment.h
+    Include/Atom/RPI.Public/Pass/PassTree.h
     Include/Atom/RPI.Public/Pass/PassDefines.h
     Include/Atom/RPI.Public/Pass/PassFactory.h
     Include/Atom/RPI.Public/Pass/PassFilter.h
@@ -89,9 +92,6 @@ set(FILES
     Include/Atom/RPI.Public/Shader/ShaderResourceGroupPool.h
     Include/Atom/RPI.Public/Shader/ShaderSystem.h
     Include/Atom/RPI.Public/Shader/ShaderSystemInterface.h
-    Include/Atom/RPI.Public/Shader/Metrics/ShaderMetrics.h
-    Include/Atom/RPI.Public/Shader/Metrics/ShaderMetricsSystem.h
-    Include/Atom/RPI.Public/Shader/Metrics/ShaderMetricsSystemInterface.h
     Include/Atom/RPI.Public/Shader/ShaderVariantAsyncLoader.h
     Include/Atom/RPI.Public/GpuQuery/GpuQuerySystem.h
     Include/Atom/RPI.Public/GpuQuery/GpuQuerySystemInterface.h
@@ -99,10 +99,12 @@ set(FILES
     Include/Atom/RPI.Public/GpuQuery/Query.h
     Include/Atom/RPI.Public/GpuQuery/QueryPool.h
     Include/Atom/RPI.Public/GpuQuery/TimestampQueryPool.h
+    Include/Atom/RPI.Public/XR/XRRenderingInterface.h
     Source/RPI.Public/Culling.cpp
     Source/RPI.Public/FeatureProcessor.cpp
     Source/RPI.Public/FeatureProcessorFactory.cpp
     Source/RPI.Public/MeshDrawPacket.cpp
+    Source/RPI.Public/PipelinePassChanges.cpp
     Source/RPI.Public/PipelineState.cpp
     Source/RPI.Public/RenderPipeline.cpp
     Source/RPI.Public/RPISystem.cpp
@@ -142,6 +144,7 @@ set(FILES
     Source/RPI.Public/Pass/ParentPass.cpp
     Source/RPI.Public/Pass/Pass.cpp
     Source/RPI.Public/Pass/PassAttachment.cpp
+    Source/RPI.Public/Pass/PassTree.cpp
     Source/RPI.Public/Pass/PassFactory.cpp
     Source/RPI.Public/Pass/PassFilter.cpp
     Source/RPI.Public/Pass/PassLibrary.cpp
@@ -164,8 +167,6 @@ set(FILES
     Source/RPI.Public/Shader/ShaderResourceGroup.cpp
     Source/RPI.Public/Shader/ShaderResourceGroupPool.cpp
     Source/RPI.Public/Shader/ShaderSystem.cpp
-    Source/RPI.Public/Shader/Metrics/ShaderMetrics.cpp
-    Source/RPI.Public/Shader/Metrics/ShaderMetricsSystem.cpp
     Source/RPI.Public/Shader/ShaderVariantAsyncLoader.cpp
     Source/RPI.Public/ColorManagement/GeneratedTransforms/ColorConversionConstants.inl
     Source/RPI.Public/ColorManagement/GeneratedTransforms/LinearSrgb_To_AcesCg.inl

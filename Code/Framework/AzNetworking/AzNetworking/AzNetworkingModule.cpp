@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Module/Module.h>
 #include <AzNetworking/AzNetworkingModule.h>
 #include <AzNetworking/Framework/NetworkingSystemComponent.h>
 
@@ -23,7 +24,7 @@ namespace AzNetworking
     {
         return AZ::ComponentTypeList
         {
-            azrtti_typeid<NetworkingSystemComponent>(),
+            azrtti_typeid<NetworkingSystemComponent>()
         };
     }
-}
+} // namespace AzNetworking

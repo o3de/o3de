@@ -20,7 +20,8 @@ namespace ImageProcessingAtom
     IImageObject* LoadImageFromFile(const AZStd::string& filename)
     {
         QFileInfo fileInfo(filename.c_str());
-        QString ext = fileInfo.suffix();
+        auto suffix = fileInfo.suffix().toUtf8(); // need to cache the utf8 object so its data can be referenced below
+        const char* ext = suffix.data();
 
         if (!fileInfo.exists())
         {
@@ -28,21 +29,30 @@ namespace ImageProcessingAtom
         }
 
         IImageObject* loadedImage = nullptr;
-        if (TIFFLoader::IsExtensionSupported(ext.toUtf8()))
+
+        if (TIFFLoader::IsExtensionSupported(ext))
         {
             loadedImage = TIFFLoader::LoadImageFromTIFF(filename);
         }
-        else if (DdsLoader::IsExtensionSupported(ext.toUtf8()))
+        else if (DdsLoader::IsExtensionSupported(ext))
         {
             loadedImage = DdsLoader::LoadImageFromFile(filename);
         }
-        else if (QtImageLoader::IsExtensionSupported(ext.toUtf8()))
+        else if (TgaLoader::IsExtensionSupported(ext))
+        {
+            loadedImage = TgaLoader::LoadImageFromFile(filename);
+        }
+        else if (QtImageLoader::IsExtensionSupported(ext))
         {
             loadedImage = QtImageLoader::LoadImageFromFile(filename);
         }
-        else if (ExrLoader::IsExtensionSupported(ext.toUtf8()))
+        else if (ExrLoader::IsExtensionSupported(ext))
         {
             loadedImage = ExrLoader::LoadImageFromFile(filename);
+        }
+        else
+        {
+            AZ_Warning("ImageProcessing", false, "No proper image loader to load file: %s", filename.c_str());
         }
 
         if (loadedImage)
@@ -53,42 +63,20 @@ namespace ImageProcessingAtom
             }
             return loadedImage;
         }
-
-        AZ_Warning("ImageProcessing", false, "No proper image loader to load file: %s", filename.c_str());
-        return nullptr;
+        else
+        {
+            AZ_Warning("ImageProcessing", false, "Failed to load image file: %s", filename.c_str());
+            return nullptr;
+        }
     }
 
     bool IsExtensionSupported(const char* extension)
     {
-        if (TIFFLoader::IsExtensionSupported(extension))
-        {
-            return true;
-        }
-        else if (DdsLoader::IsExtensionSupported(extension))
-        {
-            return true;
-        }
-        else if (QtImageLoader::IsExtensionSupported(extension))
-        {
-            return true;
-        }
-        else if (ExrLoader::IsExtensionSupported(extension))
-        {
-            return true;
-        }
-
-        return false;
+        return TIFFLoader::IsExtensionSupported(extension)
+            || DdsLoader::IsExtensionSupported(extension)
+            || TgaLoader::IsExtensionSupported(extension)
+            || QtImageLoader::IsExtensionSupported(extension)
+            || ExrLoader::IsExtensionSupported(extension);
     }
 
-    const AZStd::string LoadEmbeddedSettingFromFile(const AZStd::string& filename)
-    {
-        QFileInfo fileInfo(filename.c_str());
-        QString ext = fileInfo.suffix();
-
-        if (TIFFLoader::IsExtensionSupported(ext.toUtf8()))
-        {
-            return TIFFLoader::LoadSettingFromTIFF(filename);
-        }
-        return "";
-    }
 }// namespace ImageProcessingAtom

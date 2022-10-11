@@ -114,7 +114,7 @@ Q_SIGNALS:
 
 public Q_SLOTS:
     void ReadyToQuit(QObject* source);
-    void QuitRequested();
+    virtual void QuitRequested();
     void ObjectDestroyed(QObject* source);
     void Restart();
 

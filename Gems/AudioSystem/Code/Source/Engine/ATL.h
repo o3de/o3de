@@ -11,10 +11,16 @@
 
 #include <ATLEntities.h>
 #include <ATLComponents.h>
-#include <AudioInternalInterfaces.h>
 #include <FileCacheManager.h>
 
 #include <ISystem.h>
+
+#if !defined(AUDIO_RELEASE)
+namespace AzFramework
+{
+    class DebugDisplayRequests;
+}
+#endif
 
 namespace Audio
 {
@@ -35,9 +41,9 @@ namespace Audio
 
         bool Initialize();
         bool ShutDown();
-
-        void ProcessRequest(CAudioRequestInternal& rRequest);
         void Update();
+
+        void ProcessRequest(AudioRequestVariant&& request);
 
         TAudioControlID GetAudioTriggerID(const char* const sAudioTriggerName) const;
         TAudioControlID GetAudioRtpcID(const char* const sAudioRtpcName) const;
@@ -46,36 +52,24 @@ namespace Audio
         TAudioPreloadRequestID GetAudioPreloadRequestID(const char* const sAudioPreloadRequestName) const;
         TAudioEnvironmentID GetAudioEnvironmentID(const char* const sAudioEnvironmentName) const;
 
-        bool ReserveAudioObjectID(TAudioObjectID& rAudioObjectID);
+        bool ReserveAudioObjectID(TAudioObjectID& rAudioObjectID, const char* const sAudioObjectName);
         bool ReleaseAudioObjectID(const TAudioObjectID nAudioObjectID);
 
         bool ReserveAudioListenerID(TAudioObjectID& rAudioObjectID);
         bool ReleaseAudioListenerID(const TAudioObjectID nAudioObjectID);
         bool SetAudioListenerOverrideID(const TAudioObjectID nAudioObjectID);
 
-        void AddRequestListener(const SAudioEventListener& listener);
-        void RemoveRequestListener(const SAudioEventListener& listener);
-
         bool CanProcessRequests() const { return (m_nFlags & eAIS_AUDIO_MIDDLEWARE_SHUTTING_DOWN) == 0; }
 
         EAudioRequestStatus ParseControlsData(const char* const pFolderPath, const EATLDataScope eDataScope);
         EAudioRequestStatus ClearControlsData(const EATLDataScope eDataScope);
-        EAudioRequestStatus ParsePreloadsData(const char* const pFolderPath, const EATLDataScope eDataScope);
-        EAudioRequestStatus ClearPreloadsData(const EATLDataScope eDataScope);
 
         const AZStd::string& GetControlsImplSubPath() const;
 
         TAudioSourceId CreateAudioSource(const SAudioInputConfig& sourceConfig);
         void DestroyAudioSource(TAudioSourceId sourceId);
 
-        void NotifyListener(const CAudioRequestInternal& rRequest);
-
     private:
-        EAudioRequestStatus ProcessAudioManagerRequest(const CAudioRequestInternal& rRequest);
-        EAudioRequestStatus ProcessAudioCallbackManagerRequest(const SAudioRequestDataInternal* const pPassedRequestData);
-        EAudioRequestStatus ProcessAudioObjectRequest(const CAudioRequestInternal& rRequest);
-        EAudioRequestStatus ProcessAudioListenerRequest(const CAudioRequestInternal& rRequest);
-
         EAudioRequestStatus InitializeImplComponent();
         void ReleaseImplComponent();
 
@@ -86,11 +80,7 @@ namespace Audio
         EAudioRequestStatus ActivateTrigger(
             CATLAudioObjectBase* const pAudioObject,
             const CATLTrigger* const pTrigger,
-            const float fTimeUntilRemovalMS,
             void* const pOwner = nullptr,
-            void* const pUserData = nullptr,
-            void* const pUserDataOwner = nullptr,
-            const TATLEnumFlagsType nFlags = INVALID_AUDIO_ENUM_FLAG_TYPE,
             const SATLSourceData* pSourceData = nullptr);
         EAudioRequestStatus StopTrigger(
             CATLAudioObjectBase* const pAudioObject,
@@ -130,10 +120,17 @@ namespace Audio
             const IATLEnvironmentImplData* const pEnvironmentImplData,
             const float fAmount);
 
+        EAudioRequestStatus RefreshAudioSystem(
+            const char* const controlsPath, const char* const levelName, TAudioPreloadRequestID levelPreloadId);
+
         EAudioRequestStatus MuteAll();
         EAudioRequestStatus UnmuteAll();
+        EAudioRequestStatus LoseFocus();
+        EAudioRequestStatus GetFocus();
         void UpdateSharedData();
         void SetImplLanguage();
+
+        CATLAudioObjectBase* GetRequestObject(TAudioObjectID objectId);
 
         enum EATLInternalStates : TATLEnumFlagsType
         {
@@ -163,7 +160,6 @@ namespace Audio
         CAudioObjectManager m_oAudioObjectMgr;
         CAudioListenerManager m_oAudioListenerMgr;
         CFileCacheManager m_oFileCacheMgr;
-        CAudioEventListenerManager m_oAudioEventListenerMgr;
         CATLXmlProcessor m_oXmlProcessor;
 
         // Utility members
@@ -177,15 +173,13 @@ namespace Audio
 
 #if !defined(AUDIO_RELEASE)
     public:
-        EAudioRequestStatus RefreshAudioSystem(const char* const controlsPath, const char* const levelName, TAudioPreloadRequestID levelPreloadId);
-        bool ReserveAudioObjectID(TAudioObjectID& rAudioObjectID, const char* const sAudioObjectName);
         void DrawAudioSystemDebugInfo();
         const CATLDebugNameStore& GetDebugStore() const { return m_oDebugNameStore; }
 
     private:
-        void DrawAudioObjectDebugInfo(IRenderAuxGeom& auxGeom);
-        void DrawATLComponentDebugInfo(IRenderAuxGeom& auxGeom, float fPosX, const float fPosY);
-        void DrawImplMemoryPoolDebugInfo(IRenderAuxGeom& auxGeom, float fPosX, float fPosY);
+        void DrawAudioObjectDebugInfo(AzFramework::DebugDisplayRequests& debugDisplay);
+        void DrawATLComponentDebugInfo(AzFramework::DebugDisplayRequests& debugDisplay, float posX, float posY);
+        void DrawImplMemoryPoolDebugInfo(AzFramework::DebugDisplayRequests& debugDisplay, float posX, float posY);
 
         CATLDebugNameStore m_oDebugNameStore;
         AZStd::string m_implementationName;

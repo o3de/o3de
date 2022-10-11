@@ -6,6 +6,8 @@
  *
  */
 
+#include <AzCore/Math/IntersectSegment.h>
+
 namespace AZ
 {
     namespace ShapeIntersection
@@ -111,6 +113,19 @@ namespace AZ
         }
 
 
+        AZ_MATH_INLINE bool Overlaps(const Sphere& sphere, const Obb& obb)
+        {
+            const float radius = sphere.GetRadius();
+            return obb.GetDistanceSq(sphere.GetCenter()) < radius * radius;
+        }
+
+
+        AZ_MATH_INLINE bool Overlaps(const Sphere& sphere, const Capsule& capsule)
+        {
+            return Overlaps(capsule, sphere);
+        }
+
+
         AZ_MATH_INLINE bool Overlaps(const Frustum& frustum, const Sphere& sphere)
         {
             for (Frustum::PlaneId planeId = Frustum::PlaneId::Near; planeId < Frustum::PlaneId::MAX; ++planeId)
@@ -145,7 +160,7 @@ namespace AZ
                 }
             }
             return true;
-        }        
+        }
 
 
         AZ_MATH_INLINE bool Overlaps(const Frustum& frustum, const Obb& obb)
@@ -159,6 +174,30 @@ namespace AZ
             }
 
             return true;
+        }
+
+
+        AZ_MATH_INLINE bool Overlaps(const Capsule& capsule1, const Capsule& capsule2)
+        {
+            Vector3 closestPointSegment1;
+            Vector3 closestPointSegment2;
+            float segment1Proportion;
+            float segment2Proportion;
+            Intersect::ClosestSegmentSegment(
+                capsule1.GetFirstHemisphereCenter(), capsule1.GetSecondHemisphereCenter(), capsule2.GetFirstHemisphereCenter(),
+                capsule2.GetSecondHemisphereCenter(), segment1Proportion, segment2Proportion, closestPointSegment1, closestPointSegment2);
+            const float radiusSum = capsule1.GetRadius() + capsule2.GetRadius();
+            return closestPointSegment1.GetDistanceSq(closestPointSegment2) <= radiusSum * radiusSum;
+        }
+
+
+        AZ_MATH_INLINE bool Overlaps(const Capsule& capsule, const Sphere& sphere)
+        {
+            float proportion;
+            Vector3 closestPointOnCapsuleAxis;
+            Intersect::ClosestPointSegment(sphere.GetCenter(), capsule.GetFirstHemisphereCenter(), capsule.GetSecondHemisphereCenter(), proportion, closestPointOnCapsuleAxis);
+            const float radiusSum = sphere.GetRadius() + capsule.GetRadius();
+            return closestPointOnCapsuleAxis.GetDistanceSq(sphere.GetCenter()) <= radiusSum * radiusSum;
         }
 
 

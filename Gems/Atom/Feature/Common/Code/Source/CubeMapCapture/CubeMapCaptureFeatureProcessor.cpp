@@ -20,7 +20,7 @@ namespace AZ
             {
                 serializeContext
                     ->Class<CubeMapCaptureFeatureProcessor, FeatureProcessor>()
-                    ->Version(0);
+                    ->Version(1);
             }
         }
 

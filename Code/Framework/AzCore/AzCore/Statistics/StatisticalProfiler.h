@@ -34,7 +34,7 @@ namespace AZ
         //!
         //! Even though you can create, subclass and use your own StatisticalProfiler<*,*>, there
         //! are some things to consider when working with the StatisticalProfilerProxy:
-        //! The StatisticalProfilerProxy OWNS an array of StatisticalProfiler<AZStd::string, AZStd::shared_spin_mutex>.
+        //! The StatisticalProfilerProxy OWNS an array of StatisticalProfiler<AZStd::string, AZStd::shared_mutex>.
         //! You can "manage" one of those StatisticalProfiler by getting a reference to it and
         //! add Running statistics etc.
         template <class StatIdType = AZStd::string, class MutexType = AZ::NullMutex>

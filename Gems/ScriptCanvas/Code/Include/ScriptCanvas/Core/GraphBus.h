@@ -21,9 +21,11 @@
 
 namespace ScriptCanvas
 {
-    struct GraphData;
+    class Datum;
     class Graph;
     class Slot;
+
+    struct GraphData;
 
     using EndpointMapConstIterator = AZStd::unordered_multimap<Endpoint, Endpoint>::const_iterator;
 
@@ -147,6 +149,8 @@ namespace ScriptCanvas
         //! returns a pair of <variable datum pointer, variable name> with the supplied id
         //! The variable datum pointer is non-null if the variable has been found
         virtual GraphVariable* FindVariableById(const VariableId& variableId) = 0;
+
+        virtual void RefreshVariableReferences(const VariableId& variableId) = 0;
     };
     using GraphRequestBus = AZ::EBus<GraphRequests>;
 

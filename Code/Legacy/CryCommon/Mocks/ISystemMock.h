@@ -67,8 +67,6 @@ public:
         ICryFont * ());
     MOCK_METHOD0(GetIMovieSystem,
         IMovieSystem * ());
-    MOCK_METHOD0(GetIAudioSystem,
-        Audio::IAudioSystem * ());
     MOCK_METHOD0(GetIConsole,
         ::IConsole * ());
     MOCK_METHOD0(GetIRemoteConsole,

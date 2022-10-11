@@ -74,7 +74,7 @@ def GradientPreviewSettings_DefaultPinnedEntityIsSelf():
         entity_ptr = Scoped(create_entity, delete_entity)
         added_components = attach_components(param.required_components, entity_ptr.data)
         value = hydra.get_component_property_value(added_components[param.accessed_component],
-            'Preview Settings|Pin Preview to Shape')
+            'Previewer|Preview Settings|Pin Preview to Shape')
         return entity_ptr.data.Equal(value)
 
     param_list = [

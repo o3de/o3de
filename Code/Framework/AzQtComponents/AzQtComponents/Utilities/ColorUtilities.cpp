@@ -60,6 +60,35 @@ namespace AzQtComponents
         return left.IsClose(right, tolerance);
     }
 
+
+    QString MakePropertyDisplayStringInts(const QColor& color, bool includeAlphaChannel)
+    {
+        int R, G, B, A;
+        color.getRgb(&R, &G, &B, &A);
+        auto colorStr =
+            includeAlphaChannel
+            ? QStringLiteral("%1,%2,%3,%4").arg(R).arg(G).arg(B).arg(A)
+            : QStringLiteral("%1,%2,%3").arg(R).arg(G).arg(B)
+            ;
+        return colorStr;
+    }
+
+    QString MakePropertyDisplayStringFloats(const QColor& color, bool includeAlphaChannel)
+    {
+        static const int FieldWidth = 0;
+        static const char Format = 'f';
+        static const int Precision = 3;
+
+        qreal R, G, B, A;
+        color.getRgbF(&R, &G, &B, &A);
+        auto colorStr =
+            includeAlphaChannel
+            ? QStringLiteral("%1, %2, %3, %4").arg(R, FieldWidth, Format, Precision).arg(G, FieldWidth, Format, Precision).arg(B, FieldWidth, Format, Precision).arg(A, FieldWidth, Format, Precision)
+            : QStringLiteral("%1, %2, %3").arg(R, FieldWidth, Format, Precision).arg(G, FieldWidth, Format, Precision).arg(B, FieldWidth, Format, Precision)
+            ;
+        return colorStr;
+    }
+
 } // namespace AzQtComponents
 
 

@@ -29,7 +29,7 @@
    <enum>Qt::StrongFocus</enum>
   </property>
   <property name="windowTitle">
-   <string>Import Asset(s)</string>
+   <string>Import Assets</string>
   </property>
   <property name="class" stdset="0">
    <string>AssetImporterDialog</string>

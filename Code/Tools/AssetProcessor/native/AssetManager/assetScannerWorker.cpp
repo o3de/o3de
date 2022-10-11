@@ -101,16 +101,6 @@ void AssetScannerWorker::ScanForSourceFiles(const ScanFolderInfo& scanFolderInfo
         AZ::u64 fileSize = isDirectory ? 0 : entry.size();
         AssetFileInfo assetFileInfo(absPath, modTime, fileSize, &rootScanFolder, isDirectory);
 
-        // Skip over the Cache folder if the file entry is the project cache root
-        QDir projectCacheRoot;
-        AssetUtilities::ComputeProjectCacheRoot(projectCacheRoot);
-        QString relativeToProjectCacheRoot = projectCacheRoot.relativeFilePath(absPath);
-        if (QDir::isRelativePath(relativeToProjectCacheRoot) && !relativeToProjectCacheRoot.startsWith(".."))
-        {
-            // The Cache folder should not be scanned
-            continue;
-        }
-
         // Filtering out excluded files
         if (m_platformConfiguration->IsFileExcluded(absPath))
         {
@@ -121,11 +111,12 @@ void AssetScannerWorker::ScanForSourceFiles(const ScanFolderInfo& scanFolderInfo
         if (isDirectory)
         {
             //Entry is a directory
+            // The AP needs to know about all directories so it knows when a delete occurs if the path refers to a folder or a file
             m_folderList.insert(AZStd::move(assetFileInfo));
             ScanFolderInfo tempScanFolderInfo(absPath, "", "", false, true);
             ScanForSourceFiles(tempScanFolderInfo, rootScanFolder);
         }
-        else
+        else if (!AssetUtilities::IsInCacheFolder(absPath.toUtf8().constData())) // Ignore files in the cache
         {
             //Entry is a file
             m_fileList.insert(AZStd::move(assetFileInfo));

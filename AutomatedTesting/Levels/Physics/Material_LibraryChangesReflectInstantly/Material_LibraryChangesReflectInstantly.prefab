@@ -130,6 +130,13 @@
                             0.0,
                             0.9999622702598572
                         ],
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        },
                         "MaterialSelection": {
                             "MaterialIds": [
                                 {}
@@ -317,10 +324,17 @@
                     "$type": "EditorColliderComponent",
                     "Id": 5742240157833915092,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
+                        "MaterialSlots": {
+                            "Slots": [
                                 {
-                                    "MaterialId": "{990FB3E0-0F65-46E0-9D91-FD948263D204}"
+                                    "Name": "Entire object",
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{9E9E926C-A302-52B1-87D2-4DF1029B56A1}",
+                                            "subId": 1
+                                        },
+                                        "assetHint": "levels/physics/material_librarychangesreflectinstantly/to_change_restitution_1.physicsmaterial"
+                                    }
                                 }
                             ]
                         }
@@ -413,10 +427,17 @@
                     "$type": "EditorColliderComponent",
                     "Id": 9243168508986239530,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
+                        "MaterialSlots": {
+                            "Slots": [
                                 {
-                                    "MaterialId": "{4CE235BC-9483-4C13-8A3A-D9DF0DEB34BE}"
+                                    "Name": "Entire object",
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{C460F722-202D-5CC1-B97B-ED7628C74162}",
+                                            "subId": 1
+                                        },
+                                        "assetHint": "levels/physics/material_librarychangesreflectinstantly/to_change_restitution_combine.physicsmaterial"
+                                    }
                                 }
                             ]
                         }
@@ -516,10 +537,17 @@
                     "$type": "EditorColliderComponent",
                     "Id": 8037889069626634204,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
+                        "MaterialSlots": {
+                            "Slots": [
                                 {
-                                    "MaterialId": "{DE5438E9-52CE-4294-B2EE-250BB4D45A30}"
+                                    "Name": "Entire object",
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{12074E27-08A6-5F88-8741-C319B79E0B8C}",
+                                            "subId": 1
+                                        },
+                                        "assetHint": "levels/physics/material_librarychangesreflectinstantly/to_delete_1.physicsmaterial"
+                                    }
                                 }
                             ]
                         }
@@ -595,10 +623,17 @@
                             0.0,
                             0.0
                         ],
-                        "MaterialSelection": {
-                            "MaterialIds": [
+                        "MaterialSlots": {
+                            "Slots": [
                                 {
-                                    "MaterialId": "{34AD1046-240B-448C-A694-AE80F595C431}"
+                                    "Name": "Entire object",
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{B9100A77-5ACF-5FCC-B9DD-2DAF8EF82F9E}",
+                                            "subId": 1
+                                        },
+                                        "assetHint": "levels/physics/material_librarychangesreflectinstantly/to_change_static_friction_1.physicsmaterial"
+                                    }
                                 }
                             ]
                         }
@@ -745,10 +780,17 @@
                     "$type": "EditorColliderComponent",
                     "Id": 8062409581128028241,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
+                        "MaterialSlots": {
+                            "Slots": [
                                 {
-                                    "MaterialId": "{6DB5BFA8-8D3F-4A62-BB00-80CD20DE4FC3}"
+                                    "Name": "Entire object",
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{AE1F51C6-F885-5231-8358-1E5167F2116C}",
+                                            "subId": 1
+                                        },
+                                        "assetHint": "levels/physics/material_librarychangesreflectinstantly/to_change_dynamic_friction.physicsmaterial"
+                                    }
                                 }
                             ]
                         }
@@ -840,10 +882,17 @@
                     "$type": "EditorColliderComponent",
                     "Id": 17055748108217384148,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
+                        "MaterialSlots": {
+                            "Slots": [
                                 {
-                                    "MaterialId": "{C4EE226F-2344-48EB-855C-5E7DC1FF30DE}"
+                                    "Name": "Entire object",
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{17B0E089-8DE5-55FA-8F93-6EA9B986BF97}",
+                                            "subId": 1
+                                        },
+                                        "assetHint": "levels/physics/material_librarychangesreflectinstantly/to_change_friction_combine.physicsmaterial"
+                                    }
                                 }
                             ]
                         }
@@ -958,10 +1007,17 @@
                     "$type": "EditorColliderComponent",
                     "Id": 9873641921497409447,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
+                        "MaterialSlots": {
+                            "Slots": [
                                 {
-                                    "MaterialId": "{C05FBCC0-F28E-49CD-92BC-F317B50BD459}"
+                                    "Name": "Entire object",
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{1614E284-833F-5D37-AB39-63717EA8B97E}",
+                                            "subId": 1
+                                        },
+                                        "assetHint": "levels/physics/material_librarychangesreflectinstantly/ramp_1.physicsmaterial"
+                                    }
                                 }
                             ]
                         }

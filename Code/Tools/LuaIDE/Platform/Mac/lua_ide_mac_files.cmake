@@ -5,7 +5,3 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
-
-set(FILES
-    Source/StandaloneApplication_Mac.cpp
-)

@@ -12,4 +12,5 @@ set(FILES
     Tests/CommonTest.cpp
     Tests/OptimizationTest.cpp
     Tests/EigenanalysisTest.cpp
+    Tests/DoublePrecisionMath/QuaternionTest.cpp
 )

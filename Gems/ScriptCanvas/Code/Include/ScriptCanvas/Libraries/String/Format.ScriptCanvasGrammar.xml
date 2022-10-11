@@ -2,20 +2,18 @@
 
 <ScriptCanvas Include="Include/ScriptCanvas/Libraries/String/Format.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Class Name="Format"
-	       QualifiedName="ScriptCanvas::Nodes::String::Format"
-	       PreferredClassName="Build String"
-           Uuid="{B16259BA-9CF6-4143-B09B-5A0F3B4585E6}"
-           Base="ScriptCanvas::Nodes::Internal::StringFormatted"
-           Category="String"
-           Version="0"
-           DynamicSlotOrdering="True"
-           GeneratePropertyFriend="True"
-           Description="Formats and creates a string from the provided text.\nAny word within {} will create a data pin on this node.">
+        QualifiedName="ScriptCanvas::Nodes::String::Format"
+        PreferredClassName="Build String"
+        Uuid="{B16259BA-9CF6-4143-B09B-5A0F3B4585E6}"
+        Base="ScriptCanvas::Nodes::Internal::StringFormatted"
+        Category="String"
+        DynamicSlotOrdering="True"
+        Description="Formats and creates a string from the provided text.\nAny word within {} will create a data pin on this node.">
         <Property Name="String"
-                  Description="The resulting string."
-                  Type="AZStd::string"
-                  DisplayGroup="PrintDisplayGroup"
-                  IsInput="False"
-                  IsOutput="True" />
+            Description="The resulting string."
+            Type="AZStd::string"
+            DisplayGroup="PrintDisplayGroup"
+            IsInput="False"
+            IsOutput="True" />
     </Class>
 </ScriptCanvas>

@@ -7,5 +7,6 @@
 #
 
 set(FILES
+    Tests/ScriptCanvasTest.cpp
     Tests/ScriptCanvasBuilderTests.cpp
 )

@@ -708,8 +708,7 @@ namespace AZ
             }
             else
             {
-                primBuffer.m_primitiveBuffer.push_back();
-                auto& primitive = primBuffer.m_primitiveBuffer.back();
+                auto& primitive = primBuffer.m_primitiveBuffer.emplace_back();
                 primitive.m_primitiveType = primitiveType;
                 primitive.m_depthReadType = depthRead;
                 primitive.m_depthWriteType = depthWrite;
@@ -784,8 +783,7 @@ namespace AZ
             }
             else
             {
-                primBuffer.m_primitiveBuffer.push_back();
-                auto& primitive = primBuffer.m_primitiveBuffer.back();
+                auto& primitive = primBuffer.m_primitiveBuffer.emplace_back();
                 primitive.m_primitiveType = primitiveType;
                 primitive.m_depthReadType = depthRead;
                 primitive.m_depthWriteType = depthWrite;

@@ -1,6 +1,0 @@
-<download name="C12905527_ForceRegion_MagnituteDeviation" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="39331" md5="b7c3b662c62a733435f5c19750ef18b3"/>
- </files>
-</download>

@@ -8,9 +8,10 @@
 
 #pragma once
 
+#include <AzCore/Math/MathUtils.h>
 #include <AzCore/base.h>
 #include <AzCore/std/hash.h>
-#include <AzCore/Math/MathUtils.h>
+#include <AzCore/std/string/fixed_string.h>
 
 #if AZ_TRAIT_UUID_SUPPORTS_GUID_CONVERSION
 struct  _GUID;
@@ -43,12 +44,12 @@ namespace AZ
         };
 
         static constexpr int ValidUuidStringLength = 32; /// Number of characters (data only, no extra formatting) in a valid UUID string
-        static const size_t MaxStringBuffer = 39; /// 32 Uuid + 4 dashes + 2 brackets + 1 terminate
-        
-        Uuid() = default;
+        static constexpr size_t MaxStringBuffer = 39; /// 32 Uuid + 4 dashes + 2 brackets + 1 terminate
+        using FixedString = AZStd::fixed_string<MaxStringBuffer>;
+        constexpr Uuid() = default;
         Uuid(const char* string, size_t stringLength = 0) { *this = CreateString(string, stringLength); }
 
-        static Uuid CreateNull();
+        static constexpr Uuid CreateNull() { return Uuid{}; };
         /// Create a Uuid (VAR_RFC_4122,VER_RANDOM)
         static Uuid Create()        { return CreateRandom(); }
         /**
@@ -120,6 +121,8 @@ namespace AZ
             ToString(&result[0], static_cast<int>(result.size()) + 1, isBrackets, isDashes);
         }
 
+        FixedString ToFixedString(bool isBrackets = true, bool isDashes = true) const;
+
         AZ_MATH_INLINE bool operator==(const Uuid& rhs) const
         {
             const AZ::u64* lhs64 = reinterpret_cast<const AZ::u64*>(data);
@@ -175,7 +178,7 @@ namespace AZ
         }
 
         // or _m128i and VMX ???
-        alignas(16) unsigned char data[16];
+        alignas(16) unsigned char data[16]{};
     };
 } // namespace AZ
 

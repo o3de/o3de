@@ -10,6 +10,7 @@
 #include <AzCore/Serialization/ObjectStream.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/Serialization/EditContext.h>
 
 namespace AZ
 {
@@ -87,6 +88,39 @@ namespace AZ
         {
             return LoadObjectFromFileInPlace(filePath, AzTypeInfo<ObjectType>::Uuid(), &destination, context, filterDesc);
         }
+
+        template<class T>
+        bool GetEnumStringRepresentation(
+            AZStd::string& value, const AZ::Edit::ElementData* data, void* instance, const AZ::Uuid& storageTypeId)
+        {
+            if (storageTypeId == azrtti_typeid<T>())
+            {
+                for (const AZ::AttributePair& attributePair : data->m_attributes)
+                {
+                    AZ::AttributeReader reader(instance, attributePair.second);
+                    AZ::Edit::EnumConstant<T> enumPair;
+                    if (reader.Read<AZ::Edit::EnumConstant<T>>(enumPair))
+                    {
+                        T* enumValue = reinterpret_cast<T*>(instance);
+                        if (enumPair.m_value == *enumValue)
+                        {
+                            value = enumPair.m_description;
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        // Try GetEnumStringRepresentation<Type> on all of the specified types
+        template<class T1, class T2, class... TRest>
+        bool GetEnumStringRepresentation(
+            AZStd::string& value, const AZ::Edit::ElementData* data, void* instance, const AZ::Uuid& storageTypeId)
+        {
+            return GetEnumStringRepresentation<T1>(value, data, instance, storageTypeId) ||
+                GetEnumStringRepresentation<T2, TRest...>(value, data, instance, storageTypeId);
+        }
         
         bool IsVectorContainerType(const AZ::Uuid& type);
         bool IsSetContainerType(const AZ::Uuid& type);
@@ -94,6 +128,7 @@ namespace AZ
         bool IsContainerType(const AZ::Uuid& type);
         bool IsOutcomeType(const AZ::Uuid& type);
         bool IsPairContainerType(const AZ::Uuid& type);
+        bool IsTupleContainerType(const AZ::Uuid& type);
 
         AZ::TypeId GetGenericContainerType(const AZ::TypeId& type);
         bool IsGenericContainerType(const AZ::TypeId& type);

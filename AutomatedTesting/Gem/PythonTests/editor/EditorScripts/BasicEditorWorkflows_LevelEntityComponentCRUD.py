@@ -39,7 +39,7 @@ class Tests:
 
 def BasicEditorWorkflows_LevelEntityComponentCRUD():
 
-    import editor_python_test_tools.pyside_utils as pyside_utils
+    import pyside_utils
 
     @pyside_utils.wrap_async
     async def run_test():
@@ -155,7 +155,7 @@ def BasicEditorWorkflows_LevelEntityComponentCRUD():
 
         # 5) Verify the save/export of the level
         level_prefab_path = os.path.join(paths.products, "levels", lvl_name, f"{lvl_name}.spawnable")
-        success = await pyside_utils.wait_for_condition(lambda: os.path.exists(level_prefab_path), 5.0)
+        success = await pyside_utils.wait_for_condition(lambda: os.path.exists(level_prefab_path), 10.0)
         Report.result(Tests.saved_and_exported, success)
 
     run_test()

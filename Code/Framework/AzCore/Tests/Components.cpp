@@ -792,7 +792,7 @@ namespace UnitTest
 
         m_entity->RemoveComponent(componentC);
         delete componentC;
-        
+
         EXPECT_TRUE(m_entity->IsComponentReadyToRemove(componentB)); // we should be ready for remove
     }
 
@@ -1062,19 +1062,20 @@ namespace UnitTest
         : public ComponentApplication
         , public UserSettingsFileLocatorBus::Handler
     {
+        AZ::Test::ScopedAutoTempDirectory m_tempDir;
     public:
         AZStd::string ResolveFilePath(u32 providerId) override
         {
-            AZStd::string filePath;
+            auto filePath = AZ::IO::Path(m_tempDir.GetDirectory());
             if (providerId == UserSettings::CT_GLOBAL)
             {
-                filePath = (AZ::IO::Path(GetTestFolderPath()) / "GlobalUserSettings.xml").Native();
+                filePath /= "GlobalUserSettings.xml";
             }
             else if (providerId == UserSettings::CT_LOCAL)
             {
-                filePath = (AZ::IO::Path(GetTestFolderPath()) / "LocalUserSettings.xml").Native();
+                filePath /= "LocalUserSettings.xml";
             }
-            return filePath;
+            return filePath.Native();
         }
 
         void SetSettingsRegistrySpecializations(SettingsRegistryInterface::Specializations& specializations) override
@@ -1111,12 +1112,6 @@ namespace UnitTest
         appDesc.m_memoryBlocksByteSize = 10 * 1024 * 1024;
         Entity* systemEntity = app.Create(appDesc);
         app.UserSettingsFileLocatorBus::Handler::BusConnect();
-
-        // Make sure user settings file does not exist at this point
-        {
-            IO::SystemFile::Delete(app.ResolveFilePath(UserSettings::CT_GLOBAL).c_str());
-            IO::SystemFile::Delete(app.ResolveFilePath(UserSettings::CT_LOCAL).c_str());
-        }
 
         MyUserSettings::Reflect(app.GetSerializeContext());
         systemEntity->CreateComponent<MemoryComponent>();
@@ -1341,7 +1336,7 @@ namespace UnitTest
             testComponent1.m_entityIdHashSet.insert(EntityId(32));
             testComponent1.m_entityIdHashSet.insert(EntityId(5));
             testComponent1.m_entityIdHashSet.insert(EntityId(16));
-            // map 
+            // map
             testComponent1.m_entityIdIntMap.insert(AZStd::make_pair(id2, 1));
             testComponent1.m_entityIdIntMap.insert(AZStd::make_pair(id3, 2));
             testComponent1.m_entityIdIntMap.insert(AZStd::make_pair(EntityId(32), 3));
@@ -1582,18 +1577,18 @@ namespace UnitTest
 
         EntityIdRemapContainer clonedContainer;
         context.CloneObjectInplace(clonedContainer, &testContainer1);
-        
+
         // Check cloned entity has same ids
         EXPECT_NE(nullptr, clonedContainer.m_entity);
         EXPECT_EQ(testContainer1.m_entity->GetId(), clonedContainer.m_entity->GetId());
         EXPECT_EQ(testContainer1.m_id, clonedContainer.m_id);
         EXPECT_EQ(testContainer1.m_otherId, clonedContainer.m_otherId);
-        
+
         // Generated new Ids in the testContainer store the results in the newIdMap
         // The m_entity Entity id values should be remapped to a new value
         AZStd::unordered_map<AZ::EntityId, AZ::EntityId> newIdMap;
         EntityUtils::GenerateNewIdsAndFixRefs(&testContainer1, newIdMap, &context);
-        
+
         EXPECT_EQ(testContainer1.m_entity->GetId(), testContainer1.m_id);
         EXPECT_NE(clonedContainer.m_entity->GetId(), testContainer1.m_entity->GetId());
         EXPECT_NE(clonedContainer.m_id, testContainer1.m_id);
@@ -1729,7 +1724,7 @@ namespace UnitTest
 
                 return true;
             }
-            
+
             if (auto v3 = azrtti_cast<HydraConfigV3*>(outBaseConfig))
             {
                 *v3 = m_config;

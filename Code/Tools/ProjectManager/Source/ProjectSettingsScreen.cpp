@@ -16,7 +16,6 @@
 #include <QFrame>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
-#include <QLabel>
 #include <QLineEdit>
 #include <QStandardPaths>
 #include <QScrollArea>
@@ -35,14 +34,8 @@ namespace O3DE::ProjectManager
         QFrame* projectSettingsFrame = new QFrame(this);
         projectSettingsFrame->setObjectName("projectSettings");
 
-        QVBoxLayout* vLayout = new QVBoxLayout();
-        vLayout->setMargin(0);
-        vLayout->setAlignment(Qt::AlignTop);
-        projectSettingsFrame->setLayout(vLayout);
-
         QScrollArea* scrollArea = new QScrollArea(this);
         scrollArea->setWidgetResizable(true);
-        vLayout->addWidget(scrollArea);
 
         QWidget* scrollWidget = new QWidget(this);
         scrollArea->setWidget(scrollWidget);
@@ -97,7 +90,7 @@ namespace O3DE::ProjectManager
         return projectInfo;
     }
 
-    bool ProjectSettingsScreen::ValidateProjectName()
+    bool ProjectSettingsScreen::ValidateProjectName() const
     {
         bool projectNameIsValid = true;
         if (m_projectName->lineEdit()->text().isEmpty())
@@ -123,7 +116,7 @@ namespace O3DE::ProjectManager
         return projectNameIsValid;
     }
 
-    bool ProjectSettingsScreen::ValidateProjectPath()
+    bool ProjectSettingsScreen::ValidateProjectPath() const
     {
         bool projectPathIsValid = true;
         QDir path(m_projectPath->lineEdit()->text());
@@ -152,8 +145,14 @@ namespace O3DE::ProjectManager
         ValidateProjectName() && ValidateProjectPath();
     }
 
-    bool ProjectSettingsScreen::Validate()
+    AZ::Outcome<void, QString> ProjectSettingsScreen::Validate() const
     {
-        return ValidateProjectName() && ValidateProjectPath();
+        if (ValidateProjectName() && ValidateProjectPath())
+        {
+            return AZ::Success();
+        }
+
+        // Returning empty string to use the default error message
+        return AZ::Failure<QString>("");
     }
 } // namespace O3DE::ProjectManager

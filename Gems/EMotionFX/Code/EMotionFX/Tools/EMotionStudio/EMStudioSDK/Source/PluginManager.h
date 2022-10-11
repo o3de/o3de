@@ -8,35 +8,41 @@
 
 #pragma once
 
-#include <AzCore/std/typetraits/conditional.h>
-#include <AzCore/std/typetraits/is_convertible.h>
-
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #if !defined(Q_MOC_RUN)
 #include "EMStudioConfig.h"
 #include "EMStudioPlugin.h"
 #include <AzCore/PlatformIncl.h>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/PersistentPlugin.h>
 #endif
 
 namespace EMStudio
 {
-    /**
-     *
-     *
-     */
     class EMSTUDIO_API PluginManager
     {
-        MCORE_MEMORYOBJECTCATEGORY(PluginManager, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_EMSTUDIOSDK)
-
     public:
         typedef AZStd::vector<EMStudioPlugin*> PluginVector;
+        typedef AZStd::vector<AZStd::unique_ptr<PersistentPlugin>> PersistentPluginVector;
 
-        PluginManager();
+        PluginManager() = default;
         ~PluginManager();
 
-        void RegisterPlugin(EMStudioPlugin* plugin);
+        // Plugin prototypes (persistent plugins are not included)
+        void RegisterPlugin(EMStudioPlugin* plugin) { m_registeredPlugins.push_back(plugin); }
+        size_t GetNumRegisteredPlugins() const { return m_registeredPlugins.size(); }
+        EMStudioPlugin* GetRegisteredPlugin(size_t index) { return m_registeredPlugins[index]; }
+        size_t FindRegisteredPluginIndex(const char* pluginType) const;
+        const PluginVector& GetRegisteredPlugins() { return m_registeredPlugins; }
+
+        // Active window plugins
         EMStudioPlugin* CreateWindowOfType(const char* pluginType, const char* objectName = nullptr);
-        size_t FindPluginByTypeString(const char* pluginType) const;
-        EMStudioPlugin* GetActivePluginByTypeString(const char* pluginType) const;
+        void RemoveActivePlugin(EMStudioPlugin* plugin);
+
+        size_t GetNumActivePlugins() const { return m_activePlugins.size(); }
+        EMStudioPlugin* GetActivePlugin(uint32 index) { return m_activePlugins[index]; }
+        const PluginVector& GetActivePlugins() { return m_activePlugins; }
+
+        EMStudioPlugin* FindActivePluginByTypeString(const char* pluginType) const;
 
         // Reqire that PluginType is a subclass of EMStudioPlugin
         template<class PluginType>
@@ -44,26 +50,27 @@ namespace EMStudio
         {
             return static_cast<PluginType*>(FindActivePlugin(PluginType::CLASS_ID));
         }
-        EMStudioPlugin* FindActivePlugin(uint32 classID) const;   // find first active plugin, or nullptr when not found
+        EMStudioPlugin* FindActivePlugin(uint32 classID) const;
 
-        MCORE_INLINE size_t GetNumPlugins() const                           { return m_plugins.size(); }
-        MCORE_INLINE EMStudioPlugin* GetPlugin(const size_t index)          { return m_plugins[index]; }
+        size_t CalcNumActivePluginsOfType(const char* pluginType) const;
+        size_t CalcNumActivePluginsOfType(uint32 classID) const;
 
-        MCORE_INLINE size_t GetNumActivePlugins() const                     { return m_activePlugins.size(); }
-        MCORE_INLINE EMStudioPlugin* GetActivePlugin(const size_t index)    { return m_activePlugins[index]; }
-        MCORE_INLINE const PluginVector& GetActivePlugins() { return m_activePlugins; }
-
-        size_t GetNumActivePluginsOfType(const char* pluginType) const;
-        size_t GetNumActivePluginsOfType(uint32 classID) const;
-        void RemoveActivePlugin(EMStudioPlugin* plugin);
+        // Persistent plugins
+        void AddPersistentPlugin(PersistentPlugin* plugin) { m_persistentPlugins.push_back(AZStd::unique_ptr<PersistentPlugin>(plugin)); }
+        void RemovePersistentPlugin(PersistentPlugin* plugin);
+        size_t GetNumPersistentPlugins() const { return m_persistentPlugins.size(); }
+        PersistentPlugin* GetPersistentPlugin(size_t index) { return m_persistentPlugins[index].get(); }
+        const PersistentPluginVector& GetPersistentPlugins() { return m_persistentPlugins; }
 
         QString GenerateObjectName() const;
+        void RegisterDefaultPlugins();
 
     private:
-        PluginVector m_plugins;
-
+        PluginVector m_registeredPlugins;
         PluginVector m_activePlugins;
+
+        PersistentPluginVector m_persistentPlugins;
 
         void UnloadPlugins();
     };
-}   // namespace EMStudio
+} // namespace EMStudio

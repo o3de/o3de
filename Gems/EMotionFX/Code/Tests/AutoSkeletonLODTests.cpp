@@ -70,7 +70,7 @@ namespace EMotionFX
             // This way we simplify the test code slightly, while achieving the same correct test results.
             Node* meshNode = AddNode(7, "MeshNode");
             Mesh* mesh = Mesh::Create();
-            SubMesh* subMesh = SubMesh::Create(mesh, 0, 0, 0, 8, 24, 12, 0, numSubMeshJoints); // The numbers are just some dummy values for a fake mesh.
+            SubMesh* subMesh = SubMesh::Create(mesh, 0, 0, 0, 8, 24, 12, numSubMeshJoints); // The numbers are just some dummy values for a fake mesh.
             mesh->AddSubMesh(subMesh);
             if (numSubMeshJoints)
             {

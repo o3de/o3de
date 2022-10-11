@@ -22,7 +22,7 @@ namespace AZ
     class BehaviorContext;
     class SerializeContext;
 
-    struct BehaviorValueParameter;
+    struct BehaviorArgument;
 }
 
 namespace ScriptCanvas
@@ -46,7 +46,7 @@ namespace ScriptCanvas
                 
         bool Connect();
 
-        bool ConnectTo(AZ::BehaviorValueParameter& busId);
+        bool ConnectTo(AZ::BehaviorArgument& busId);
         
         void Disconnect();
         
@@ -58,7 +58,7 @@ namespace ScriptCanvas
 
         bool IsConnected() const;
         
-        bool IsConnectedTo(AZ::BehaviorValueParameter& busId) const;
+        bool IsConnectedTo(AZ::BehaviorArgument& busId) const;
 
         void HandleEvent(int eventIndex);
 
@@ -66,7 +66,7 @@ namespace ScriptCanvas
         void OnDeactivate() override;
 
     private:
-        static void OnEventGenericHook(void* userData, const char* eventName, int eventIndex, AZ::BehaviorValueParameter* result, int numParameters, AZ::BehaviorValueParameter* parameters);
+        static void OnEventGenericHook(void* userData, const char* eventName, int eventIndex, AZ::BehaviorArgument* result, int numParameters, AZ::BehaviorArgument* parameters);
 
         AZ::BehaviorEBusHandler* m_handler = nullptr;
         AZ::BehaviorEBus* m_ebus = nullptr;
@@ -77,6 +77,6 @@ namespace ScriptCanvas
         
         void InitializeEBusHandling(AZStd::string_view busName, AZ::BehaviorContext* behaviorContext);
 
-        void OnEvent(const char* eventName, const int eventIndex, AZ::BehaviorValueParameter* result, const int numParameters, AZ::BehaviorValueParameter* parameters);
+        void OnEvent(const char* eventName, const int eventIndex, AZ::BehaviorArgument* result, const int numParameters, AZ::BehaviorArgument* parameters);
     };
 }

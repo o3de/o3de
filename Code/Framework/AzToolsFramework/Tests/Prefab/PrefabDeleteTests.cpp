@@ -18,7 +18,7 @@ namespace UnitTest
 {
     using PrefabDeleteTest = PrefabTestFixture;
 
-    TEST_F(PrefabDeleteTest, DeleteEntitiesInInstance_DeleteSingleEntitySucceeds)
+    TEST_F(PrefabDeleteTest, DeleteEntitiesAndAllDescendantsInInstance_DeleteSingleEntitySucceeds)
     {
         PrefabEntityResult createEntityResult = m_prefabPublicInterface->CreateEntity(AZ::EntityId(), AZ::Vector3());
 
@@ -28,14 +28,14 @@ namespace UnitTest
         AZ::Entity* testEntity = AzToolsFramework::GetEntityById(testEntityId);
         ASSERT_TRUE(testEntity != nullptr);
 
-        m_prefabPublicInterface->DeleteEntitiesInInstance(AzToolsFramework::EntityIdList{ testEntityId });
+        m_prefabPublicInterface->DeleteEntitiesAndAllDescendantsInInstance(AzToolsFramework::EntityIdList{ testEntityId });
 
         // Verify that entity can't be found after deletion.
         testEntity = AzToolsFramework::GetEntityById(testEntityId);
         EXPECT_TRUE(testEntity == nullptr);
     }
 
-    TEST_F(PrefabDeleteTest, DeleteEntitiesInInstance_DeleteSinglePrefabSucceeds)
+    TEST_F(PrefabDeleteTest, DeleteEntitiesAndAllDescendantsInInstance_DeleteSinglePrefabSucceeds)
     {
         PrefabEntityResult createEntityResult = m_prefabPublicInterface->CreateEntity(AZ::EntityId(), AZ::Vector3());
 
@@ -58,7 +58,7 @@ namespace UnitTest
         ASSERT_TRUE(prefabContainerEntity != nullptr);
 
         // Verify that the prefab container entity and the entity within are deleted.
-        m_prefabPublicInterface->DeleteEntitiesInInstance(AzToolsFramework::EntityIdList{ createdPrefabContainerId });
+        m_prefabPublicInterface->DeleteEntitiesAndAllDescendantsInInstance(AzToolsFramework::EntityIdList{ createdPrefabContainerId });
         prefabContainerEntity = AzToolsFramework::GetEntityById(createdPrefabContainerId);
         EXPECT_TRUE(prefabContainerEntity == nullptr);
         createdEntity = AzToolsFramework::GetEntityById(createdEntityId);

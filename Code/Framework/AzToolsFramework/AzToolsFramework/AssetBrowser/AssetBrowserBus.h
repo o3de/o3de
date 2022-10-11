@@ -128,6 +128,39 @@ namespace AzToolsFramework
 
         typedef AZStd::vector<SourceFileOpenerDetails> SourceFileOpenerList;
 
+        //! This struct is used to respond about being able to create source files.
+        //! See AssetBrowserInteractionNotifications::OpenSourceFileInEditor below
+        struct SourceFileCreatorDetails
+        {
+            //! You provide a function to call if your creator is chosen to handle the create operation.
+            //! Using a lambda is the prefered method to use for performance reasons.
+            using SourceFileCreatorFunctionType = AZStd::function<void(const AZStd::string& /*fullSourceFileName*/, const AZ::Uuid& /*source uuid*/)>;
+
+            AZStd::string m_identifier; ///< choose something unique for your opener.  It may be used to restore state.  it will not be shown to user.
+
+            //! m_displayText is used when more than one listener offers to create this kind of file and
+            //! we need the user to pick which one they want.  They will be offered all the available creators in a menu
+            //! which shows this text, and the one they pick will get its SourceFileCreatorFunctionType called.
+            AZStd::string m_displayText;
+            QIcon m_iconToUse; ///< optional.  Same as m_displayText.  Used when there's ambiguity.  If empty, no icon.
+
+            //! This is the function to call.  If you fill a nullptr in here, then the default operating system behavior will be suppressed
+            //! but no creator will be opened.  This will also cause the 'create' option in context menus to disappear if the only creators
+            //! are nullptr ones.
+            SourceFileCreatorFunctionType m_creator;
+
+            SourceFileCreatorDetails() = default;
+            SourceFileCreatorDetails(const AZStd::string& identifier, const AZStd::string& displayText, QIcon icon, SourceFileCreatorFunctionType functionToCall)
+                : m_identifier(AZStd::move(identifier))
+                , m_displayText(AZStd::move(displayText))
+                , m_iconToUse(icon)
+                , m_creator(functionToCall)
+            {
+            }
+        };
+
+        typedef AZStd::vector<SourceFileCreatorDetails> SourceFileCreatorList;
+
         //! used by the API to (optionally) let systems describe details about source files
         //! see /ref AssetBrowserInteractionNotifications to see how it is used.
         //! The intended behavior of this is that listeners respond with a SourceFileDetails struct
@@ -200,6 +233,15 @@ namespace AzToolsFramework
             //! will be called (whatever that kind of file is associated with).
             virtual void AddSourceFileOpeners(const char* /*fullSourceFileName*/, const AZ::Uuid& /*sourceUUID*/, SourceFileOpenerList& /*openers*/) {}
 
+            //! Implement AddSourceFilereators to provide your own creator for source files
+            //! This gets called to collect the list of available creators for a file.
+            //! Add your detail(s) to the creators list if you would like to be one of the options available to create the file.
+            //! You can also add more than one to the list, or check the existing list to determine your behavior.
+            //! If there is more than one in the list, the user will be given the choice of creators to use.
+            //! If nobody responds (nobody adds their entry into the creators list), then the default operating system handler
+            //! will be called (whatever that kind of file is associated with).
+            virtual void AddSourceFileCreators(const char* /*fullSourceFileName*/, const AZ::Uuid& /*sourceUUID*/, SourceFileCreatorList& /*creators*/) {}
+
             //! If you have an Asset Entry and would like to try to open it using the associated editor, you can use this bus to do so.
             //! Note that you can override this bus with a higher-than-zero priorit handler, and set alreadyHandled to true in your handler
             //! to prevent the default behavior from occuring.
@@ -262,6 +304,10 @@ namespace AzToolsFramework
 
         using AssetBrowserModelNotificationBus = AZ::EBus<AssetBrowserModelNotifications>;
 
+        //////////////////////////////////////////////////////////////////////////
+        // AssetBrowserView
+        //////////////////////////////////////////////////////////////////////////
+
         //! Sends requests to the Asset Browser view.
         class AssetBrowserViewRequests
             : public AZ::EBusTraits
@@ -283,6 +329,40 @@ namespace AzToolsFramework
             virtual void Update() = 0;
         };
         using AssetBrowserViewRequestBus = AZ::EBus<AssetBrowserViewRequests>;
+
+        //////////////////////////////////////////////////////////////////////////
+        // File creation notifications
+        //////////////////////////////////////////////////////////////////////////
+
+        //! Used for sending and/or recieving notifications regarding events related to files created through the Asset Browser.
+        class AssetBrowserFileCreationNotifications
+            : public AZ::EBusTraits
+        {
+        public:
+            //////////////////////////////////////////////////////////////////////////
+            // EBusTraits overrides
+            static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+            static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+            using BusIdType = AZ::Crc32;
+            //////////////////////////////////////////////////////////////////////////
+
+            //! Notifies the handler that a new asset was created from the editor so they can handle renaming or other behavior as necessary.
+            //! @param assetPath The full path to the asset that was created.
+            //! @param creatorBusId The file creator's bus handler address. A default constructed Crc32 implies no one is listening.
+            virtual void HandleAssetCreatedInEditor(const AZStd::string_view /*assetPath*/, const AZ::Crc32& /*creatorBusId*/) {}
+
+            //! Notifies a given handler that an asset which was recently created has been given a non-default name.
+            //! @param assetPath The full path to the asset that had its initial name change.
+            virtual void HandleInitialFilenameChange(const AZStd::string_view /*fullFilepath*/) {}
+
+            //! The ebus address to use when notifying the Asset Browser component that a new file was created through the Asset Browser.
+            //! Note that addresses for individual asset creators should be specified in their respective code.
+            static constexpr AZ::Crc32 FileCreationNotificationBusId = AZ::Crc32("AssetBrowserFileCreationNotification");
+
+        protected:
+            ~AssetBrowserFileCreationNotifications() = default;
+        };
+        using AssetBrowserFileCreationNotificationBus = AZ::EBus<AssetBrowserFileCreationNotifications>;
 
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

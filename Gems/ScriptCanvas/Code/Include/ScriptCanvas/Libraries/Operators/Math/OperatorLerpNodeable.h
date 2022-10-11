@@ -44,8 +44,27 @@ namespace ScriptCanvas
             using ThisType = LerpBetweenNodeable<t_Operand>;
 
         public:
-            AZ_RTTI(((LerpBetweenNodeable<t_Operand>), "{3467EB2B-801E-4799-B47A-AFEA621A152B}", t_Operand), Nodeable);
+            AZ_RTTI((LerpBetweenNodeable, "{3467EB2B-801E-4799-B47A-AFEA621A152B}", t_Operand), Nodeable);
             AZ_CLASS_ALLOCATOR(LerpBetweenNodeable<t_Operand>, AZ::SystemAllocator, 0);
+
+            static constexpr void DeprecatedTypeNameVisitor(
+                const AZ::DeprecatedTypeNameCallback& visitCallback)
+            {
+                // LerpBetweenNodeable previously restricted the typename to 128 bytes
+                AZStd::array<char, 128> deprecatedName{};
+
+                // Due to the extra set of parenthesis, the actual type name of LerpBetweenNodeable started out literally as
+                // "(LerpBetweenNodeable<t_Operand>)"
+                AZ::Internal::AzTypeInfoSafeCat(deprecatedName.data(), deprecatedName.size(), "(LerpBetweenNodeable<t_Operand>)<");
+                AZ::Internal::AzTypeInfoSafeCat(deprecatedName.data(), deprecatedName.size(), AZ::AzTypeInfo<t_Operand>::Name());
+                // The old AZ::Internal::AggregateTypes implementations placed a space after each argument as a separator
+                AZ::Internal::AzTypeInfoSafeCat(deprecatedName.data(), deprecatedName.size(), " >");
+
+                if (visitCallback)
+                {
+                    visitCallback(deprecatedName.data());
+                }
+            }
 
             static void Reflect(AZ::ReflectContext* reflectContext)
             {

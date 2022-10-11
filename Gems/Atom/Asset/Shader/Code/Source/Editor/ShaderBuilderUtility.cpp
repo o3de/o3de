@@ -52,18 +52,26 @@ namespace AZ
             {
                 RPI::ShaderSourceData shaderSourceData;
 
-                auto document = JsonSerializationUtils::ReadJsonFile(fullPathToJsonFile, AZ::RPI::JsonUtils::DefaultMaxFileSize);
+                AZ::Outcome<rapidjson::Document, AZStd::string> loadOutcome =
+                    JsonSerializationUtils::ReadJsonFile(fullPathToJsonFile, AZ::RPI::JsonUtils::DefaultMaxFileSize);
 
-                if (!document.IsSuccess())
+                if (!loadOutcome.IsSuccess())
                 {
-                    return Failure(document.GetError());
+                    return Failure(loadOutcome.GetError());
                 }
+
+                rapidjson::Document document = loadOutcome.TakeValue();
 
                 JsonDeserializerSettings settings;
                 RPI::JsonReportingHelper reportingHelper;
                 reportingHelper.Attach(settings);
 
-                JsonSerialization::Load(shaderSourceData, document.GetValue(), settings);
+                JsonSerialization::Load(shaderSourceData, document, settings);
+
+                if (reportingHelper.WarningsReported() || reportingHelper.ErrorsReported())
+                {
+                    return AZ::Failure(reportingHelper.GetErrorMessage());
+                }
 
                 return AZ::Success(shaderSourceData);
             }
@@ -680,8 +688,7 @@ namespace AZ
                         continue;
                     }
 
-                    contract.m_streamChannels.push_back();
-                    contract.m_streamChannels.back().m_semantic = streamChannelSemantic;
+                    contract.m_streamChannels.emplace_back().m_semantic = streamChannelSemantic;
 
                     if (member.m_variable.m_typeModifier == MatrixMajor::ColumnMajor)
                     {
@@ -763,9 +770,8 @@ namespace AZ
 
                     if (semantic.m_name.GetStringView() == "SV_Target")
                     {
-                        contract.m_requiredColorAttachments.push_back();
                         // Render targets only support 1-D vector types and those are always column-major (per DXC)
-                        contract.m_requiredColorAttachments.back().m_componentCount = member.m_variable.m_cols;
+                        contract.m_requiredColorAttachments.emplace_back().m_componentCount = member.m_variable.m_cols;
                     }
                     else if (
                         semantic.m_name.GetStringView() == "SV_Depth" || semantic.m_name.GetStringView() == "SV_DepthGreaterEqual" ||

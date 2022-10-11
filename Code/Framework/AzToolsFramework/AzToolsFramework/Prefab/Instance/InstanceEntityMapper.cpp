@@ -6,10 +6,13 @@
  *
  */
 
-#include <AzToolsFramework/Prefab/Instance/Instance.h>
-
 #include <AzCore/Interface/Interface.h>
+
+#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
+#include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
+#include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapper.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceEntityIdMapper.h>
 
 namespace AzToolsFramework
 {
@@ -27,7 +30,18 @@ namespace AzToolsFramework
 
         bool InstanceEntityMapper::RegisterEntityToInstance(const AZ::EntityId& entityId, Instance& instance)
         {
-            return m_entityToInstanceMap.emplace(AZStd::make_pair(entityId, &instance)).second;
+            auto findResult = m_entityToInstanceMap.find(entityId);
+
+            if (findResult != m_entityToInstanceMap.end())
+            {
+                AZ_Warning("Prefab", false, "Entity with id '%llu' is already registered to an instance whose source path is '%s'.",
+                    static_cast<AZ::u64>(entityId), findResult->second->GetTemplateSourcePath().c_str());
+                return false;
+            }
+            else
+            {
+                return m_entityToInstanceMap.emplace(AZStd::make_pair(entityId, &instance)).second;
+            }
         }
 
         bool InstanceEntityMapper::UnregisterEntity(const AZ::EntityId& entityId)

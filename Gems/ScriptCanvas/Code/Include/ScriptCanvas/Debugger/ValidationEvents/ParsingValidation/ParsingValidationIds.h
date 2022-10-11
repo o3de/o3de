@@ -15,6 +15,9 @@ namespace ScriptCanvas
 
     namespace ParsingValidationIds
     {
+        constexpr const char* EmptyGraph = "PA-0000";
+        static const AZ::Crc32 EmptyGraphCrc = AZ_CRC(EmptyGraph);
+
         constexpr const char* InactiveGraph = "PA-0001";
         static const AZ::Crc32 InactiveGraphCrc = AZ_CRC(InactiveGraph);
 
@@ -30,7 +33,7 @@ namespace ScriptCanvas
     {
         namespace ParsingValidationIds
         {
-            constexpr const char* ParseError = "P0-0000";
+            constexpr const char* ParseError = "PI-0000";
             static const AZ::Crc32 ParseErrorCrc = AZ_CRC(ParseError);
 
             constexpr const char* DuplicateInputProcessed = "PI-0001";

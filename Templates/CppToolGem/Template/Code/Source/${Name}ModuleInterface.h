@@ -10,7 +10,7 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Module/Module.h>
-#include <${Name}SystemComponent.h>
+#include <Clients/${Name}SystemComponent.h>
 
 namespace ${SanitizedCppName}
 {

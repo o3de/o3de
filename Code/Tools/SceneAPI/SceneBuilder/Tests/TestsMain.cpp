@@ -29,7 +29,7 @@ protected:
         AZ_Assert(loaded, "SceneBuilder unit tests failed to load SceneCore module.");
         auto init = sceneCoreModule->GetFunction<AZ::InitializeDynamicModuleFunction>(AZ::InitializeDynamicModuleFunctionName);
         AZ_Assert(init, "SceneBuilder unit tests failed to find the initialization function the SceneCore module.");
-        (*init)(AZ::Environment::GetInstance());
+        (*init)();
 
         sceneDataModule = AZ::DynamicModuleHandle::Create("SceneData");
         AZ_Assert(sceneDataModule, "SceneData unit tests failed to create SceneData module.");
@@ -37,7 +37,7 @@ protected:
         AZ_Assert(loaded, "SceneBuilder unit tests failed to load SceneData module.");
         init = sceneDataModule->GetFunction<AZ::InitializeDynamicModuleFunction>(AZ::InitializeDynamicModuleFunctionName);
         AZ_Assert(init, "SceneBuilder unit tests failed to find the initialization function the SceneData module.");
-        (*init)(AZ::Environment::GetInstance());
+        (*init)();
     }
 
     void TeardownEnvironment() override

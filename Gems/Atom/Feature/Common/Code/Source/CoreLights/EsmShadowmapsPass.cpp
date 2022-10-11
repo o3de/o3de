@@ -19,6 +19,8 @@ namespace AZ
 {
     namespace Render
     {
+        // --- Pass Creation ---
+
         RPI::Ptr<EsmShadowmapsPass> EsmShadowmapsPass::Create(const RPI::PassDescriptor& descriptor)
         {
             return aznew EsmShadowmapsPass(descriptor);
@@ -37,6 +39,8 @@ namespace AZ
             m_lightTypeName = esmData->m_lightType;
         }
 
+        // --- Setters/Getters ---
+
         const Name& EsmShadowmapsPass::GetLightTypeName() const
         {
             return m_lightTypeName;
@@ -50,6 +54,43 @@ namespace AZ
         void EsmShadowmapsPass::SetFilterParameterBuffer(const Data::Instance<RPI::Buffer>& dataBuffer)
         {
             m_filterParameterBuffer = dataBuffer;
+        }
+
+        void EsmShadowmapsPass::SetBlurParameters(Data::Instance<RPI::ShaderResourceGroup> srg, const uint32_t childPassIndex)
+        {
+            if (m_shadowmapIndexTableBufferIndices[childPassIndex].IsNull())
+            {
+                m_shadowmapIndexTableBufferIndices[childPassIndex] = srg->FindShaderInputBufferIndex(Name("m_shadowmapIndexTable"));
+            }
+            srg->SetBuffer(m_shadowmapIndexTableBufferIndices[childPassIndex], m_shadowmapIndexTableBuffer);
+
+            if (m_filterParameterBufferIndices[childPassIndex].IsNull())
+            {
+                m_filterParameterBufferIndices[childPassIndex] = srg->FindShaderInputBufferIndex(Name("m_filterParameters"));
+            }
+            srg->SetBuffer(m_filterParameterBufferIndices[childPassIndex], m_filterParameterBuffer);
+        }
+
+        void EsmShadowmapsPass::SetKawaseBlurSpecificParameters(Data::Instance<RPI::ShaderResourceGroup> srg, uint32_t kawaseBlurIndex)
+        {
+            if (m_kawaseBlurConstantIndices[kawaseBlurIndex].IsNull())
+            {
+                m_kawaseBlurConstantIndices[kawaseBlurIndex] = srg->FindShaderInputConstantIndex(Name("m_rcpResolutionAndIteration"));
+            }
+            const AZ::Vector4 data(
+                1.0f / m_shadowmapImageSize.m_width, 1.0f / m_shadowmapImageSize.m_height, aznumeric_cast<float>(kawaseBlurIndex), 0.0f);
+
+            srg->SetConstant(m_kawaseBlurConstantIndices[kawaseBlurIndex], data);
+        }
+
+        // --- Frame Render ---
+
+        void EsmShadowmapsPass::FrameBeginInternal(FramePrepareParams params)
+        {
+            SetEnabledComputation(m_computationEnabled);
+            UpdateChildren();
+
+            Base::FrameBeginInternal(params);
         }
 
         void EsmShadowmapsPass::SetEnabledComputation(bool enabled)
@@ -83,19 +124,6 @@ namespace AZ
             }
 
             m_computationEnabled = enabled;
-        }
-
-        void EsmShadowmapsPass::ResetInternal()
-        {
-            SetEnabledComputation(m_computationEnabled);
-            Base::ResetInternal();
-        }
-
-        void EsmShadowmapsPass::FrameBeginInternal(FramePrepareParams params)
-        {
-            UpdateChildren();
-
-            Base::FrameBeginInternal(params);
         }
 
         void EsmShadowmapsPass::UpdateChildren()
@@ -135,32 +163,6 @@ namespace AZ
             }
         }
 
-        void EsmShadowmapsPass::SetBlurParameters(Data::Instance<RPI::ShaderResourceGroup> srg, const uint32_t childPassIndex)
-        {
-            if (m_shadowmapIndexTableBufferIndices[childPassIndex].IsNull())
-            {
-                m_shadowmapIndexTableBufferIndices[childPassIndex] = srg->FindShaderInputBufferIndex(Name("m_shadowmapIndexTable"));
-            }
-            srg->SetBuffer(m_shadowmapIndexTableBufferIndices[childPassIndex], m_shadowmapIndexTableBuffer);
-
-            if (m_filterParameterBufferIndices[childPassIndex].IsNull())
-            {
-                m_filterParameterBufferIndices[childPassIndex] = srg->FindShaderInputBufferIndex(Name("m_filterParameters"));
-            }
-            srg->SetBuffer(m_filterParameterBufferIndices[childPassIndex], m_filterParameterBuffer);
-        }
-
-        void EsmShadowmapsPass::SetKawaseBlurSpecificParameters(Data::Instance<RPI::ShaderResourceGroup> srg, uint32_t kawaseBlurIndex)
-        {
-            if (m_kawaseBlurConstantIndices[kawaseBlurIndex].IsNull())
-            {
-                m_kawaseBlurConstantIndices[kawaseBlurIndex] = srg->FindShaderInputConstantIndex(Name("m_rcpResolutionAndIteration"));
-            }
-            const AZ::Vector4 data(
-                1.0f / m_shadowmapImageSize.m_width, 1.0f / m_shadowmapImageSize.m_height, aznumeric_cast<float>(kawaseBlurIndex), 0.0f);
-
-            srg->SetConstant(m_kawaseBlurConstantIndices[kawaseBlurIndex], data);
-        }
 
     } // namespace Render
 } // namespace AZ

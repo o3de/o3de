@@ -35,6 +35,8 @@ namespace AzToolsFramework
         virtual float GetCapsuleHeight() const = 0;
         virtual void SetCapsuleRadius(float radius) = 0;
         virtual void SetCapsuleHeight(float height) = 0;
+        virtual void BeginEditing();
+        virtual void FinishEditing();
 
     protected:
         void OnCameraStateChanged(const AzFramework::CameraState& cameraState);

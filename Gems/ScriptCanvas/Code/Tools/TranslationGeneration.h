@@ -22,6 +22,7 @@ namespace AZ
     class BehaviorContext;
     class BehaviorEBus;
     class BehaviorMethod;
+    struct BehaviorParameter;
     class BehaviorProperty;
     class Entity;
     class SerializeContext;
@@ -125,6 +126,9 @@ namespace ScriptCanvasEditorTools
         //! Generates the translation data for all global properties and methods in the BehaviorContext
         void TranslateBehaviorGlobals();
 
+        //! Generates the translation data for the specified global method in the BehaviorContext (global, by name)
+        void TranslateBehaviorGlobalMethod(const AZStd::string& methodName);
+
         //! Generates the translation data for the specified property in the BehaviorContext (global, by name)
         void TranslateBehaviorProperty(const AZStd::string& propertyName);
 
@@ -141,6 +145,12 @@ namespace ScriptCanvasEditorTools
 
         //! Utility to populate a BehaviorMethod's translation data
         void TranslateMethod(AZ::BehaviorMethod* behaviorMethod, Method& methodEntry);
+
+        //! Utility function to populate BehaviorMethod arguments translation data
+        void TranslateMethodArguments(const AZ::BehaviorMethod* behaviorMethod, Method& methodEntry);
+
+        //! Utility function to populate BehaviorMethod results translation data
+        void TranslateMethodResults(const AZ::BehaviorParameter* resultParameter, Method& methodEntry);
 
         //! Generates the translation data for a BehaviorEBus that has an BehaviorEBusHandler
         bool TranslateEBusHandler(const AZ::BehaviorEBus* behaviorEbus, TranslationFormat& translationRoot);
@@ -196,14 +206,10 @@ namespace ScriptCanvasEditorTools
         //! Utility function to find a valid name from the ClassData/EditContext
         void GetTypeNameAndDescription(AZ::TypeId typeId, AZStd::string& outName, AZStd::string& outDescription);
 
-        //! Utility function to get the path to the specified gem
-        AZStd::string GetGemPath(const AZStd::string& gemName);
-
         //! Get the category attribute for a given ClassData
         AZStd::string GetCategory(const AZ::SerializeContext::ClassData* classData);
 
-        //! Get the category for a ScriptCanvas node library
-        AZStd::string GetLibraryCategory(const AZ::SerializeContext& serializeContext, const AZStd::string& nodeName);
+        AZStd::vector<AZ::TypeId> GetUnpackedTypes(const AZ::TypeId& typeID);
     }
 
 }

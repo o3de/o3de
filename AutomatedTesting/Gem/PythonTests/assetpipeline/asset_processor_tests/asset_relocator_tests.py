@@ -58,7 +58,7 @@ def local_resources(request, workspace, ap_setup_fixture):
 @pytest.mark.usefixtures("clear_testingAssets_dir")
 @pytest.mark.parametrize("project", targetProjects)
 @pytest.mark.assetpipeline
-@pytest.mark.SUITE_sandbox
+@pytest.mark.SUITE_periodic
 class TestsAssetRelocator_WindowsAndMac(object):
     """
     Specific Tests for Asset Processor GUI To Only Run on Windows and Mac
@@ -2620,7 +2620,7 @@ move_a_file_tests = [
             encoded_command="bad_file\\badfile.bad,bad_file\\MoveOutput\\formerBadFile.txt",
             encoded_output_dir="project_test_assets_dir\\MoveOutput\\",
             move_successful=False,
-            output_messages=["File not found."],
+            output_messages=["matched an existing file but it is not a source asset"],
         ),
         id="C19462844",
         marks=pytest.mark.test_case_id("C19462844"),
@@ -3774,7 +3774,7 @@ move_a_folder_tests = [
 @pytest.mark.usefixtures("clear_moveoutput")
 @pytest.mark.parametrize("project", targetProjects)
 @pytest.mark.assetpipeline
-@pytest.mark.SUITE_sandbox
+@pytest.mark.SUITE_periodic
 class TestsAssetProcessorMove_WindowsAndMac:
 
     # run one test:

@@ -50,7 +50,7 @@ namespace ScriptEvents
         // BehaviorContext Ebus Events require an Id, it is passed in as the first parameter to the method.
         if (!m_busIdType.IsNull())
         {
-            AZ::BehaviorValueParameter busId;
+            AZ::BehaviorArgument busId;
             Internal::Utils::BehaviorParameterFromType(m_busIdType, true, busId);
             m_behaviorParameters.emplace_back(busId);
             SetArgumentName(index, busId.m_name);
@@ -65,7 +65,7 @@ namespace ScriptEvents
             const AZStd::string& argumentName = parameter.GetName();
             SetArgumentName(index, argumentName);
 
-            m_behaviorParameters.push_back();
+            m_behaviorParameters.emplace_back();
             Internal::Utils::BehaviorParameterFromParameter(behaviorContext, parameter, m_argumentNames[index].c_str(), m_behaviorParameters.back());
 
             const AZStd::string& tooltip = parameter.GetTooltip();
@@ -81,7 +81,7 @@ namespace ScriptEvents
 
     }
 
-    bool ScriptEventMethod::Call(AZ::BehaviorValueParameter* params, unsigned int paramCount, AZ::BehaviorValueParameter* returnValue) const
+    bool ScriptEventMethod::Call(AZ::BehaviorArgument* params, unsigned int paramCount, AZ::BehaviorArgument* returnValue) const
     {
         Internal::BindingRequest::BindingParameters parameters;
         parameters.m_eventName = m_name;

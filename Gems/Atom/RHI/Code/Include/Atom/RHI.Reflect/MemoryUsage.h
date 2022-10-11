@@ -54,18 +54,37 @@ namespace AZ
                 return true;
             }
 
+            //! This helper function checks whether a new allocation is within the budget
+            bool CanAllocate(size_t sizeInBytes) const
+            {
+                if (m_budgetInBytes && (m_totalResidentInBytes + sizeInBytes) > m_budgetInBytes)
+                {
+                    return false;
+                }
+                return true;
+            }
+
             //! Helper function to validate sizes
             void Validate()
             {
                 if (Validation::IsEnabled())
                 {
                     AZ_Assert(
-                        m_budgetInBytes >= m_reservedInBytes,
+                        m_budgetInBytes >= m_reservedInBytes || m_budgetInBytes == 0,
                         "Reserved memory is larger than memory budget. Memory budget %zu Reserved %zu", m_budgetInBytes, m_reservedInBytes.load());
                     AZ_Assert(
                         m_reservedInBytes >= m_residentInBytes,
                         "Resident memory is larger than reserved memory. Reserved Memory %zu Resident memory %zu", m_reservedInBytes.load(),
                         m_residentInBytes.load());
+
+                    
+                    AZ_Assert(
+                        m_budgetInBytes >= m_totalResidentInBytes || m_budgetInBytes == 0,
+                        "Total resident memory is larger than memory budget. Memory budget %zu Total resident %zu", m_budgetInBytes, m_totalResidentInBytes.load());
+                    AZ_Assert(
+                        m_totalResidentInBytes >= m_usedResidentInBytes,
+                        "Used resident memory is larger than total resident memory. Total Resident Memory %zu Used Resident memory %zu", m_totalResidentInBytes.load(),
+                        m_usedResidentInBytes.load());
                 }
             }
 
@@ -83,6 +102,14 @@ namespace AZ
             // here instead of marking the entire routine mutable.
             mutable float m_fragmentation{ 0 };
 
+            // Total number of bytes allocated on the physical memory. This may not exceed the budget if it's non zero.
+            AZStd::atomic_size_t m_totalResidentInBytes{ 0 };
+
+            // Number of bytes are used for resources or objects. This ususally tracks the sub-allocations out of the total resident.
+            // It may not exceed the total resident.
+            AZStd::atomic_size_t m_usedResidentInBytes{ 0 };
+
+            // ----------- members to be deprecated. use m_totalResidentInBytes and m_usedResidentInBytes instead -----
             // Number of bytes reserved on the heap for allocations. This value represents the allocation capacity for
             // the platform. It is validated against the budget and may not exceed it.
             AZStd::atomic_size_t m_reservedInBytes{ 0 };
@@ -90,6 +117,7 @@ namespace AZ
             // Number of bytes physically allocated on the heap. This may not exceed the reservation. Certain platforms
             // may choose to transfer memory down the heap level hierarchy in response to memory trim events from the driver.
             AZStd::atomic_size_t m_residentInBytes{ 0 };
+            // ----------- end deprecation ----------- 
         };
 
         //!

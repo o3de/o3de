@@ -37,11 +37,11 @@ class TestAutomation(EditorTestSuite):
     class test_AssetWeightSelector_InstancesExpressBasedOnWeight(EditorSharedTest):
         from .EditorScripts import AssetWeightSelector_InstancesExpressBasedOnWeight as test_module
 
-    @pytest.mark.xfail(reason="https://github.com/o3de/o3de/issues/4155")
+    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/4155")
     class test_DistanceBetweenFilter_InstancesPlantAtSpecifiedRadius(EditorSharedTest):
         from .EditorScripts import DistanceBetweenFilter_InstancesPlantAtSpecifiedRadius as test_module
 
-    @pytest.mark.xfail(reason="https://github.com/o3de/o3de/issues/4155")
+    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/4155")
     class test_DistanceBetweenFilterOverrides_InstancesPlantAtSpecifiedRadius(EditorSharedTest):
         from .EditorScripts import DistanceBetweenFilterOverrides_InstancesPlantAtSpecifiedRadius as test_module
 
@@ -55,10 +55,10 @@ class TestAutomation(EditorTestSuite):
         from .EditorScripts import LayerBlender_E2E_Editor as test_module
 
         # Custom setup/teardown to remove test level created during test
-        def setup(self, request, workspace, editor, editor_test_results, launcher_platform):
+        def setup(self, request, workspace, editor_test_results, launcher_platform):
             TestAutomation.cleanup_test_level(self, workspace)
 
-        def teardown(self, request, workspace, editor, editor_test_results, launcher_platform):
+        def teardown(self, request, workspace, editor_test_results, launcher_platform):
             TestAutomation.cleanup_test_level(self, workspace)
 
     class test_LayerBlocker_InstancesBlockedInConfiguredArea(EditorSharedTest):
@@ -103,20 +103,20 @@ class TestAutomation(EditorTestSuite):
         from .EditorScripts import PrefabInstanceSpawner_Embedded_E2E as test_module
 
         # Custom setup/teardown to remove test level created during test
-        def setup(self, request, workspace, editor, editor_test_results, launcher_platform):
+        def setup(self, request, workspace, editor_test_results, launcher_platform):
             TestAutomation.cleanup_test_level(self, workspace)
 
-        def teardown(self, request, workspace, editor, editor_test_results, launcher_platform):
+        def teardown(self, request, workspace, editor_test_results, launcher_platform):
             TestAutomation.cleanup_test_level(self, workspace)
 
     class test_PrefabInstanceSpawner_External_E2E_Editor(EditorSingleTest):
         from .EditorScripts import PrefabInstanceSpawner_External_E2E as test_module
 
         # Custom setup/teardown to remove test level created during test
-        def setup(self, request, workspace, editor, editor_test_results, launcher_platform):
+        def setup(self, request, workspace, editor_test_results, launcher_platform):
             TestAutomation.cleanup_test_level(self, workspace)
 
-        def teardown(self, request, workspace, editor, editor_test_results, launcher_platform):
+        def teardown(self, request, workspace, editor_test_results, launcher_platform):
             TestAutomation.cleanup_test_level(self, workspace)
 
     class test_RotationModifier_InstancesRotateWithinRange(EditorSharedTest):

@@ -1,0 +1,110 @@
+{
+    "entries": [
+        {
+            "base": "TerrainSurfaceGradientMapping",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Terrain Surface Gradient Mapping"
+            },
+            "methods": [
+                {
+                    "base": "GetGradientEntityId",
+                    "context": "Getter",
+                    "details": {
+                        "name": "Get Gradient Entity Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{473AD2CE-F22A-45A9-803F-2192F3D9F2BF}",
+                            "details": {
+                                "name": "Terrain Surface Gradient Mapping",
+                                "tooltip": "Mapping between a gradient and a surface."
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Gradient Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetGradientEntityId",
+                    "context": "Setter",
+                    "details": {
+                        "name": "Set Gradient Entity Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{473AD2CE-F22A-45A9-803F-2192F3D9F2BF}",
+                            "details": {
+                                "name": "Terrain Surface Gradient Mapping",
+                                "tooltip": "Mapping between a gradient and a surface."
+                            }
+                        },
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Gradient Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetSurfaceTag",
+                    "context": "Getter",
+                    "details": {
+                        "name": "Get Surface Tag"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{473AD2CE-F22A-45A9-803F-2192F3D9F2BF}",
+                            "details": {
+                                "name": "Terrain Surface Gradient Mapping",
+                                "tooltip": "Mapping between a gradient and a surface."
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{67C8C6ED-F32A-443E-A777-1CAE48B22CD7}",
+                            "details": {
+                                "name": "Surface Tag",
+                                "tooltip": "Matches a surface value like a mask or material"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetSurfaceTag",
+                    "context": "Setter",
+                    "details": {
+                        "name": "Set Surface Tag"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{473AD2CE-F22A-45A9-803F-2192F3D9F2BF}",
+                            "details": {
+                                "name": "Terrain Surface Gradient Mapping",
+                                "tooltip": "Mapping between a gradient and a surface."
+                            }
+                        },
+                        {
+                            "typeid": "{67C8C6ED-F32A-443E-A777-1CAE48B22CD7}",
+                            "details": {
+                                "name": "Surface Tag",
+                                "tooltip": "Matches a surface value like a mask or material"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

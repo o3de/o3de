@@ -77,8 +77,8 @@ if __name__ == "__main__":
         logger.warning("Failed to load style sheet for resource mapping tool")
 
     try:
-        schema_path: str = file_utils.join_path(file_utils.get_parent_directory_path(__file__),
-                                                'resource_mapping_schema.json')
+        schema_path: str = file_utils.join_path(file_utils.get_parent_directory_path(__file__, 4),
+                                                'Assets/resource_mapping_schema.json')
         json_utils.load_resource_mapping_json_schema(schema_path)
     except (FileNotFoundError, ValueError, KeyError) as e:
         logger.error(f"Failed to load schema file {e}")

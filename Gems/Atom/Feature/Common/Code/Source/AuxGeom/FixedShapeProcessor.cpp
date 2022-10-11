@@ -473,12 +473,12 @@ namespace AZ
                     for (uint32_t section = 0; section < numSections; ++section)
                     {
                         uint32_t nextSection = (section + 1) % numSections;
-                        indices.push_back(static_cast<uint16_t>(firstVertOfThisRing + nextSection));
                         indices.push_back(static_cast<uint16_t>(firstVertOfThisRing + section));
+                        indices.push_back(static_cast<uint16_t>(firstVertOfThisRing + nextSection));
                         indices.push_back(static_cast<uint16_t>(firstVertOfNextRing + nextSection));
 
-                        indices.push_back(static_cast<uint16_t>(firstVertOfNextRing + section));
                         indices.push_back(static_cast<uint16_t>(firstVertOfNextRing + nextSection));
+                        indices.push_back(static_cast<uint16_t>(firstVertOfNextRing + section));
                         indices.push_back(static_cast<uint16_t>(firstVertOfThisRing + section));
                     }
                 }
@@ -489,8 +489,8 @@ namespace AZ
                 for (uint32_t section = 0; section < numSections; ++section)
                 {
                     uint32_t nextSection = (section + 1) % numSections;
-                    indices.push_back(static_cast<uint16_t>(firstVertOfFirstRing + section));
                     indices.push_back(static_cast<uint16_t>(firstVertOfFirstRing + nextSection));
+                    indices.push_back(static_cast<uint16_t>(firstVertOfFirstRing + section));
                     indices.push_back(static_cast<uint16_t>(firstPoleVert));
                 }
 
@@ -501,8 +501,8 @@ namespace AZ
                     for (uint32_t section = 0; section < numSections; ++section)
                     {
                         uint32_t nextSection = (section + 1) % numSections;
-                        indices.push_back(static_cast<uint16_t>(firstVertOfLastRing + nextSection));
                         indices.push_back(static_cast<uint16_t>(firstVertOfLastRing + section));
+                        indices.push_back(static_cast<uint16_t>(firstVertOfLastRing + nextSection));
                         indices.push_back(static_cast<uint16_t>(lastPoleVert));
                     }
                 }

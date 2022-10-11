@@ -44,5 +44,15 @@ namespace AZ
             // Used in pass range: Forward -> DiffuseGlobalIllumination
             const uint32_t UseDiffuseGIPass = 0x80;
         }
+
+        namespace Culling
+        {
+            // Component types used in the RPI CullData
+            enum ComponentType : uint32_t
+            {
+                Unknown,
+                ReflectionProbe
+            };
+        }
     }
 }

@@ -154,7 +154,7 @@ namespace PhysX
                         ->DataElement(AZ::Edit::UIHandlers::ComboBox, &DebugDisplayData::m_globalCollisionDebugDrawColorMode, "Global Collision Debug Color Mode",
                             "Set up debug color mode."
                             "<ul style=\"margin-left:15px; margin-top:-10px; -qt-list-indent:0;\">"
-                            "<li><b>Material Color Mode</b><br>Uses material's debug color specified in material library.\n</li>"
+                            "<li><b>Material Color Mode</b><br>Uses debug color specified in material.\n</li>"
                             "<li><b>Error Mode</b><br>Shows glowing red error colors for cases like meshes with too many triangles.\n</li>"
                             "</ul>")
                         ->EnumAttribute(DebugDisplayData::GlobalCollisionDebugColorMode::MaterialColor, "Material Color Mode")

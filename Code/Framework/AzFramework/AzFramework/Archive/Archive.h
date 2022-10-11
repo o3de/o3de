@@ -150,7 +150,7 @@ namespace AZ::IO
         ~Archive();
 
         //! CompressionBus Handler implementation.
-        void FindCompressionInfo(bool& found, AZ::IO::CompressionInfo& info, const AZStd::string_view filename) override;
+        void FindCompressionInfo(bool& found, AZ::IO::CompressionInfo& info, const AZ::IO::PathView filePath) override;
 
         // Set the localization folder
         void SetLocalizationFolder(AZStd::string_view sLocalizationFolder) override;
@@ -170,8 +170,6 @@ namespace AZ::IO
         void* PoolMalloc(size_t size) override;
         //! Free pool
         void PoolFree(void* p) override;
-
-        AZStd::intrusive_ptr<AZ::IO::MemoryBlock> PoolAllocMemoryBlock(size_t nSize, const char* sUsage, size_t nAlign) override;
 
         // interface IArchive ---------------------------------------------------------------------------
 

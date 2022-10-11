@@ -8,10 +8,7 @@
 
 #pragma once
 
-#include <AzCore/Outcome/Outcome.h>
-#include <ScriptCanvas/Core/Datum.h>
-
-struct lua_State;
+#include <ScriptCanvas/Data/Data.h>
 
 namespace ScriptCanvas
 {

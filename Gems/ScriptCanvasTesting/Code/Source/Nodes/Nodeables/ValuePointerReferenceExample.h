@@ -44,11 +44,5 @@ namespace ScriptCanvasTesting
         {
             SCRIPTCANVAS_NODE(InputTypeExample);
         };
-
-        class PropertyExample
-            : public ScriptCanvas::Nodeable
-        {
-            SCRIPTCANVAS_NODE(PropertyExample);
-        };
     }
 }

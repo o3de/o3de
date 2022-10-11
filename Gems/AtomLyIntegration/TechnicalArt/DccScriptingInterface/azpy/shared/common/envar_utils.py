@@ -80,12 +80,15 @@ def get_envar_default(envar, envar_default=None, envar_set=Box(ordered_box=True)
     :param var:
     :return: Some value for the variable, current or default.
     '''
+    
+    from pathlib import Path
+    
     envar = str(envar)
     value = os.getenv(envar, envar_default)
     if not value:
         value = envar_set.get(envar)
     if value is not None:
-        value = Path(value).expand_vars()
+        value = Path(os.path.expandvars(value)).as_posix()
     return value
 # -------------------------------------------------------------------------
 
@@ -97,12 +100,15 @@ def set_envar_defaults(envar_set, env_root=get_envar_default(ENVAR_O3DE_DEV)):
     Must be safe, will not over-write existing.
     :return: envarSet
     """
+    
+    from pathlib import Path
+    
     if env_root:
         env_root = Path(env_root)
 
     if env_root.exists():
-        os.environ[ENVAR_O3DE_DEV] = env_root
-        envar_set[ENVAR_O3DE_DEV] = env_root
+        os.environ[ENVAR_O3DE_DEV] = env_root.as_posix()
+        envar_set[ENVAR_O3DE_DEV] = env_root.as_posix()
     else:
         raise ValueError("EnvVar Root is not valid: {0}".format(env_root))
 
@@ -118,11 +124,10 @@ def set_envar_defaults(envar_set, env_root=get_envar_default(ENVAR_O3DE_DEV)):
             value = envar_set.get(envar)
 
         elif value:
-            if Path(value).exists():
-                #  re-set to Path object, if it is a valid existing path
-                value = Path(value)
-                envar_set[envar] = value
-                os.environ[envar] = value.expand_vars()
+            if Path(os.path.expandvars(value)).exists():
+                value = Path(os.path.expandvars(value))
+                envar_set[envar] = value.as_posix()
+                os.environ[envar] = value.as_posix()
 
             elif value:
                 envar_set[envar] = value

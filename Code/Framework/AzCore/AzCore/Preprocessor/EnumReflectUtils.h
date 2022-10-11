@@ -15,37 +15,46 @@
 
 //! Call this macro in the same namespace where the AZ_ENUM was defined to generate ReflectEnumType() utility functions.
 //! @param EnumTypeName an enum that was defined using one of the AZ_ENUM macros.
-#define AZ_ENUM_DEFINE_REFLECT_UTILITIES(EnumTypeName)                                                                                                  \
-                                                                                                                                                        \
-    static void AZ_JOIN(EnumTypeName, Reflect)(AZ::SerializeContext& context)                                                                           \
-    {                                                                                                                                                   \
-        auto enumMaker = context.Enum<EnumTypeName>();                                                                                                  \
-        for (auto&& member : AzEnumTraits<EnumTypeName>::Members)                                                                                       \
-        {                                                                                                                                               \
-            enumMaker.Value(member.m_string.data(), member.m_value);                                                                                    \
-        }                                                                                                                                               \
-    }                                                                                                                                                   \
-                                                                                                                                                        \
-    template <size_t Index>                                                                                                                             \
-    void AZ_JOIN(EnumTypeName, ReflectValue)(AZ::BehaviorContext& context, AZStd::string_view typeName = {})                                            \
-    {                                                                                                                                                   \
-        if (typeName.empty())                                                                                                                           \
-        {                                                                                                                                               \
-            typeName = AzEnumTraits<EnumTypeName>::EnumName;                                                                                            \
-        }                                                                                                                                               \
-        constexpr auto& enumValueStringPair = AzEnumTraits<EnumTypeName>::Members[Index];                                                               \
-        auto qualifiedEnumName = AZStd::fixed_string<256>::format("%.*s_%.*s", AZ_STRING_ARG(typeName), AZ_STRING_ARG(enumValueStringPair.m_string));   \
-        context.Enum<aznumeric_cast<int>(enumValueStringPair.m_value)>(qualifiedEnumName.c_str());                                                      \
-    }                                                                                                                                                   \
-                                                                                                                                                        \
-    template <size_t... Indices>                                                                                                                        \
-    void AZ_JOIN(EnumTypeName, ReflectValues)(AZ::BehaviorContext& context, AZStd::string_view typeName, AZStd::index_sequence<Indices...>)             \
-    {                                                                                                                                                   \
-        (AZ_JOIN(EnumTypeName, ReflectValue)<Indices>(context, typeName), ...);                                                                         \
-    }                                                                                                                                                   \
-                                                                                                                                                        \
-    void AZ_JOIN(EnumTypeName, Reflect)(AZ::BehaviorContext& context, AZStd::string_view typeName = {})                                                 \
-    {                                                                                                                                                   \
-        AZ_JOIN(EnumTypeName, ReflectValues)(context, typeName, AZStd::make_index_sequence<AzEnumTraits<EnumTypeName>::Members.size()>());              \
-    }                                                                                                                                                   
-
+#define AZ_ENUM_DEFINE_REFLECT_UTILITIES(EnumTypeName)                                                                                             \
+                                                                                                                                                   \
+    static void AZ_JOIN(EnumTypeName, Reflect)(AZ::SerializeContext& context)                                                                      \
+    {                                                                                                                                              \
+        auto enumMaker = context.Enum<EnumTypeName>();                                                                                             \
+        for (auto&& member : AZ::AzEnumTraits<EnumTypeName>::Members)                                                                              \
+        {                                                                                                                                          \
+            enumMaker.Value(member.m_string.data(), member.m_value);                                                                               \
+        }                                                                                                                                          \
+    }                                                                                                                                              \
+                                                                                                                                                   \
+    template <size_t Index>                                                                                                                        \
+    void AZ_JOIN(EnumTypeName, ReflectValue)(AZ::BehaviorContext& context, AZ::BehaviorContext::ClassBuilder<EnumTypeName>& enumTypeBuilder,       \
+        AZStd::string_view typeName)                                                                                                               \
+    {                                                                                                                                              \
+        constexpr auto&& enumValue = AZ::AzEnumTraits<EnumTypeName>::Members[Index].m_value;                                                       \
+        constexpr auto&& enumOptionName = AZ::AzEnumTraits<EnumTypeName>::Members[Index].m_string;                                                 \
+        auto qualifiedEnumName = AZStd::fixed_string<256>::format("%.*s_%.*s", AZ_STRING_ARG(typeName), AZ_STRING_ARG(enumOptionName));            \
+        /* Reflect the enum option as a global Behavior Context property of the form "<enum-type-name>_<enum-option-name>" */                      \
+        context.Enum<enumValue>(qualifiedEnumName.c_str());                                                                                        \
+        /* Reflect the enum option as a property on the Behavior Class <enum-type-name>. This allows <dot> syntax to be used to access the enum */ \
+        /* i.e <enum-type-name>.<enum-option-name> */                                                                                              \
+        enumTypeBuilder.Enum<enumValue>(enumOptionName.data());                                                                                    \
+    }                                                                                                                                              \
+                                                                                                                                                   \
+    template <size_t... Indices>                                                                                                                   \
+    void AZ_JOIN(EnumTypeName, ReflectValues)(AZ::BehaviorContext& context, AZ::BehaviorContext::ClassBuilder<EnumTypeName>& enumTypeBuilder,      \
+        AZStd::string_view typeName, AZStd::index_sequence<Indices...>)                                                                            \
+    {                                                                                                                                              \
+        (AZ_JOIN(EnumTypeName, ReflectValue)<Indices>(context, enumTypeBuilder, typeName), ...);                                                   \
+    }                                                                                                                                              \
+                                                                                                                                                   \
+    void AZ_JOIN(EnumTypeName, Reflect)(AZ::BehaviorContext& context, AZStd::string_view typeName = {})                                            \
+    {                                                                                                                                              \
+        if (typeName.empty())                                                                                                                      \
+        {                                                                                                                                          \
+            typeName = AZ::AzEnumTraits<EnumTypeName>::EnumName;                                                                                   \
+        }                                                                                                                                          \
+        /* Reflect the enum type as behavior class for storing constants of the enum option */                                                     \
+        auto enumTypeBuilder = context.Class<EnumTypeName>();                                                                                      \
+        AZ_JOIN(EnumTypeName, ReflectValues)(context, enumTypeBuilder, typeName,                                                                   \
+        AZStd::make_index_sequence<AZ::AzEnumTraits<EnumTypeName>::Members.size()>());                                                             \
+    }

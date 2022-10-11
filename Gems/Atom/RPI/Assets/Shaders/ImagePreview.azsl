@@ -13,6 +13,8 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     Texture2D m_image;
     Texture2DMS<float4> m_msImage;
 
+    float2 m_colorRangeMinMax;
+
     Sampler m_sampler
     {
         MaxAnisotropy = 16;
@@ -89,5 +91,8 @@ PSOutput MainPS(VSOutput psInput)
             break;
         }
     }  
+
+    OUT.m_color.xyz = (OUT.m_color.xyz - PassSrg::m_colorRangeMinMax[0].xxx) / (PassSrg::m_colorRangeMinMax[1] - PassSrg::m_colorRangeMinMax[0]);
+
     return OUT;
 }

@@ -7,12 +7,17 @@
  */
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Component/Component.h>
+#include <AzCore/Name/NameDictionary.h>
 
 #include <AzCore/std/functional.h>
 #include <AzCore/std/string/string.h>
 
 namespace AZ
 {
+    const AZ::Name Attribute::s_typeField = AZ::Name::FromStringLiteral("$type", AZ::Interface<AZ::NameDictionary>::Get());
+    const AZ::Name Attribute::s_instanceField = AZ::Name::FromStringLiteral("instance", AZ::Interface<AZ::NameDictionary>::Get());
+    const AZ::Name Attribute::s_attributeField = AZ::Name::FromStringLiteral("attribute", AZ::Interface<AZ::NameDictionary>::Get());
+
     //=========================================================================
     // OnDemandReflectionOwner
     //=========================================================================

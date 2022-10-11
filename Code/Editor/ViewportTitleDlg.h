@@ -52,7 +52,7 @@ public:
     void SetViewPane(CLayoutViewPane* pViewPane);
     void SetTitle(const QString& title);
     void OnViewportSizeChanged(int width, int height);
-    void OnViewportFOVChanged(float fov);
+    void OnViewportFOVChanged(float fovRadians);
 
     static void AddFOVMenus(QMenu* menu, std::function<void(float)> callback, const QStringList& customPresets);
     static void AddAspectRatioMenus(QMenu* menu, std::function<void(int, int)> callback, const QStringList& customPresets);
@@ -82,10 +82,12 @@ protected:
     void OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam) override;
 
     void OnMaximize();
+    void UpdatePrefabEditMode();
     void UpdateDisplayInfo();
 
     void SetupCameraDropdownMenu();
     void SetupResolutionDropdownMenu();
+    void SetupPrefabEditModeMenu();
     void SetupViewportInformationMenu();
     void SetupOverflowMenu();
     void SetupHelpersButton();
@@ -112,7 +114,6 @@ protected:
 
     double m_fieldWidthMultiplier = 1.8;
 
-
     void OnMenuFOVCustom();
 
     void CreateFOVMenu();
@@ -122,6 +123,11 @@ protected:
 
     void OnMenuResolutionCustom();
     void CreateResolutionMenu();
+    
+    void CreatePrefabEditModeMenu();
+    QMenu* const GetPrefabEditModeMenu();
+    void SetNormalPrefabEditMode();
+    void SetMonochromaticPrefabEditMode();
 
     void CreateViewportInformationMenu();
     QMenu* const GetViewportInformationMenu();
@@ -150,9 +156,12 @@ protected:
 
     void UpdateOverFlowMenuState();
 
+    QAction* m_normalPrefabEditModeAction = nullptr;
+    QAction* m_monochromaticPrefabEditModeAction = nullptr;
     QMenu* m_fovMenu = nullptr;
     QMenu* m_aspectMenu = nullptr;
     QMenu* m_resolutionMenu = nullptr;
+    QMenu* m_prefabEditModeMenu = nullptr;
     QMenu* m_viewportInformationMenu = nullptr;
     QMenu* m_helpersMenu = nullptr;
     QAction* m_helpersAction = nullptr;
@@ -174,6 +183,16 @@ protected:
     AzToolsFramework::Prefab::PrefabViewportFocusPathHandler* m_prefabViewportFocusPathHandler = nullptr;
 
     QScopedPointer<Ui::ViewportTitleDlg> m_ui;
+
+    //! The different prefab edit mode effects available in the Edit mode menu.
+    enum class PrefabEditModeUXSetting
+    {
+        Normal, //!< No effect.
+        Monochromatic //!< Monochromatic effect.
+    };
+
+    //! The currently active edit mode effect.
+    PrefabEditModeUXSetting m_prefabEditMode = PrefabEditModeUXSetting::Monochromatic;
 };
 
 namespace AzToolsFramework

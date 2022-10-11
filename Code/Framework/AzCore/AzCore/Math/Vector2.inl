@@ -6,6 +6,10 @@
  *
  */
 
+#include <AzCore/Math/MathUtils.h>
+#include <AzCore/Math/Vector4.h>
+#include <AzCore/Math/Vector3.h>
+
 namespace AZ
 {
     AZ_MATH_INLINE Vector2::Vector2(float x)
@@ -26,6 +30,16 @@ namespace AZ
         : m_value(value)
     {
         ;
+    }
+
+    AZ_MATH_INLINE Vector2::Vector2(const Vector3& source)
+        : m_value(Simd::Vec3::ToVec2(source.GetSimdValue()))
+    {
+    }
+
+    AZ_MATH_INLINE Vector2::Vector2(const Vector4& source)
+        : m_value(Simd::Vec4::ToVec2(source.GetSimdValue()))
+    {
     }
 
     AZ_MATH_INLINE Vector2 Vector2::CreateZero()

@@ -241,7 +241,9 @@ namespace SliceBuilder
 
             if (!m_settingsWarning.empty())
             {
-                jobDescriptor.m_jobParameters.insert(AZStd::make_pair(AZ::u32(AZ_CRC("JobParam_SettingsFileWarning", 0xae8d98ac)), AZStd::string("Requires Re-save")));
+                jobDescriptor.m_jobParameters.insert(
+                    AZStd::make_pair(AZ_CRC_CE("JobParam_SettingsFileWarning"), m_settingsWarning)
+                    );
             }
 
             if (requiresUpgrade)
@@ -282,10 +284,12 @@ namespace SliceBuilder
         }
 
         // Emit a settings file warning if required. We wait until now so the warnings will be clearly visible in the AP GUI.
-        if (request.m_jobDescription.m_jobParameters.find(AZ_CRC("JobParam_SettingsFileWarning", 0xae8d98ac)) != request.m_jobDescription.m_jobParameters.end())
+        const auto& settingsWarning = request.m_jobDescription.m_jobParameters.find(AZ_CRC_CE("JobParam_SettingsFileWarning"));
+        
+        if (settingsWarning != request.m_jobDescription.m_jobParameters.end())
         {
             // .../dev/SliceBuilderSettings.json must exist and must be readable.
-            AZ_Warning(s_sliceBuilder, false, m_settingsWarning.c_str());
+            AZ_Warning(s_sliceBuilder, false, settingsWarning->second.c_str());
         }
 
         AZStd::string fullPath;

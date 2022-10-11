@@ -170,7 +170,7 @@ namespace PhysXDebug
                 ec->Class<SystemComponent>("PhysX Debug Visualization", "A debug visualization system component for PhysX.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SystemComponent::m_settings, "Settings", "PhysX debug visualization settings")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SystemComponent::m_culling, "Culling", "PhysX culling options")
@@ -194,19 +194,19 @@ namespace PhysXDebug
 
     void SystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("PhysXDebugService"));
+        provided.push_back(AZ_CRC_CE("PhysXDebugService"));
     }
 
     void SystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("PhysXDebugService"));
+        incompatible.push_back(AZ_CRC_CE("PhysXDebugService"));
     }
 
     void SystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("PhysXService"));
+        required.push_back(AZ_CRC_CE("PhysicsService"));
 #ifdef PHYSXDEBUG_GEM_EDITOR
-        required.push_back(AZ_CRC("PhysXEditorService"));
+        required.push_back(AZ_CRC_CE("PhysicsEditorService"));
 #endif // PHYSXDEBUG_GEM_EDITOR
     }
 
@@ -454,7 +454,7 @@ namespace PhysXDebug
         if (dirty)
         {
             // The physics scene is dirty and contains changes to be gathered.
-            if (auto* scene = GetCurrentPxScene())
+            if (GetCurrentPxScene())
             {
                 ConfigurePhysXVisualizationParameters();
                 ConfigureCullingBox();
@@ -835,7 +835,7 @@ namespace PhysXDebug
             if (AzFramework::DebugDisplayRequests* debugDisplay = AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus))
             {
                 const AZ::Color wireframeColor = MapOriginalPhysXColorToUserDefinedValues(1);
-                debugDisplay->SetColor(wireframeColor.GetAsVector4());
+                debugDisplay->SetColor(wireframeColor);
                 debugDisplay->DrawWireBox(cullingBoxAabb.GetMin(), cullingBoxAabb.GetMax());
             }
         }

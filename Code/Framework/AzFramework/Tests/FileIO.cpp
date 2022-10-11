@@ -436,10 +436,9 @@ namespace UnitTest
                     fclose(tempFile);
                 }
 
-                // make sure attributes are copied (such as modtime) even if they're copied:
-                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(1500));
+                // make sure attributes are copied, such as original modtime:
+                AZStd::this_thread::sleep_for(AZStd::chrono::seconds(1));
                 AZ_TEST_ASSERT(local.Copy(m_file01Name.c_str(), m_file02Name.c_str()));
-                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(1500));
                 AZ_TEST_ASSERT(local.Copy(m_file01Name.c_str(), m_file03Name.c_str()));
 
                 AZ_TEST_ASSERT(local.Exists(m_file01Name.c_str()));
@@ -467,9 +466,6 @@ namespace UnitTest
                 EXPECT_TRUE(file.Open(m_file01Name.c_str(), SystemFile::SF_OPEN_WRITE_ONLY));
                 file.Write("this is just a test that is longer", 34);
                 file.Close();
-
-                // make sure attributes are copied (such as modtime) even if they're copied:
-                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(1500));
 
                 EXPECT_TRUE(local.Copy(m_file01Name.c_str(), m_file02Name.c_str()));
 
@@ -514,7 +510,6 @@ namespace UnitTest
                 AZ_TEST_ASSERT(local.Write(fileHandle, "more", 4));
                 AZ_TEST_ASSERT(local.Close(fileHandle));
 
-                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(1500));
                 // No-append-mode
                 AZ_TEST_ASSERT(local.Open(m_file03Name.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeBinary, fileHandle));
                 AZ_TEST_ASSERT(fileHandle != AZ::IO::InvalidHandle);
@@ -524,7 +519,7 @@ namespace UnitTest
                 modTimeC = local.ModificationTime(m_file02Name.c_str());
                 modTimeD = local.ModificationTime(m_file03Name.c_str());
 
-                AZ_TEST_ASSERT(modTimeD > modTimeC);
+                AZ_TEST_ASSERT(modTimeD >= modTimeC); // should never be descending
 
                 AZ::u64 f1s = 0;
                 AZ::u64 f2s = 0;

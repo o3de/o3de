@@ -8,10 +8,13 @@
 
 #include <Atom/RPI.Public/ColorManagement/TransformColor.h>
 #include <Atom/RPI.Public/Material/Material.h>
+#include <Atom/RPI.Reflect/Image/AttachmentImageAsset.h>
+#include <Atom/RPI.Public/Image/AttachmentImage.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadDebugTracker.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
+#include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
@@ -30,15 +33,12 @@ namespace AZ
         Data::Instance<Material> Material::FindOrCreate(const Data::Asset<MaterialAsset>& materialAsset)
         {
             return Data::InstanceDatabase<Material>::Instance().FindOrCreate(
-                Data::InstanceId::CreateFromAssetId(materialAsset.GetId()),
-                materialAsset);
+                Data::InstanceId::CreateFromAsset(materialAsset), materialAsset);
         }
 
         Data::Instance<Material> Material::Create(const Data::Asset<MaterialAsset>& materialAsset)
         {
-            return Data::InstanceDatabase<Material>::Instance().FindOrCreate(
-                Data::InstanceId::CreateRandom(),
-                materialAsset);
+            return Data::InstanceDatabase<Material>::Instance().FindOrCreate(Data::InstanceId::CreateRandom(), materialAsset);
         }
 
         AZ::Data::Instance<Material> Material::CreateInternal(MaterialAsset& materialAsset)
@@ -206,6 +206,22 @@ namespace AZ
             return AZ::Success(appliedCount);
         }
 
+        void Material::ApplyGlobalShaderOptions()
+        {
+            // [GFX TODO][ATOM-5625] This really needs to be optimized to put the burden on setting global shader options, not applying global shader options.
+            // For example, make the shader system collect a map of all shaders and ShaderVaraintIds, and look up the shader option names at set-time.
+            ShaderSystemInterface* shaderSystem = ShaderSystemInterface::Get();
+            for (auto iter : shaderSystem->GetGlobalShaderOptions())
+            {
+                const Name& shaderOptionName = iter.first;
+                ShaderOptionValue value = iter.second;
+                if (!SetSystemShaderOption(shaderOptionName, value).IsSuccess())
+                {
+                    AZ_Warning("Material", false, "Shader option '%s' is owned by this material. Global value for this option was ignored.", shaderOptionName.GetCStr());
+                }
+            }
+        }
+
         void Material::SetPsoHandlingOverride(MaterialPropertyPsoHandling psoHandlingOverride)
         {
             m_psoHandling = psoHandlingOverride;
@@ -233,9 +249,7 @@ namespace AZ
         {
             ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->Material::OnAssetReloaded %s", this, asset.GetHint().c_str());
 
-            Data::Asset<MaterialAsset> newMaterialAsset = Data::static_pointer_cast<MaterialAsset>(asset);
-
-            if (newMaterialAsset)
+            if (Data::Asset<MaterialAsset> newMaterialAsset = asset)
             {
                 Init(*newMaterialAsset);
                 MaterialReloadNotificationBus::Event(newMaterialAsset.GetId(), &MaterialReloadNotifications::OnMaterialReinitialized, this);
@@ -321,7 +335,12 @@ namespace AZ
         {
             AZ_PROFILE_FUNCTION(RPI);
 
-            if (NeedsCompile() && CanCompile())
+            if (!NeedsCompile())
+            {
+                return true;
+            }
+
+            if (CanCompile())
             {
                 // On some platforms, PipelineStateObjects must be pre-compiled and shipped with the game; they cannot be compiled at runtime. So at some
                 // point the material system needs to be smart about when it allows PSO changes and when it doesn't. There is a task scheduled to
@@ -598,33 +617,50 @@ namespace AZ
             }
             else
             {
-                if (!imageAsset.IsReady())
+                AZ::Data::AssetType assetType = imageAsset.GetType();
+                if (assetType != azrtti_typeid<StreamingImageAsset>() && assetType != azrtti_typeid<AttachmentImageAsset>())
                 {
-                    imageAsset = Data::AssetManager::Instance().GetAsset<StreamingImageAsset>(imageAsset.GetId(), AZ::Data::AssetLoadBehavior::PreLoad);
-                    imageAsset.BlockUntilLoadComplete();
-                    if (!imageAsset.IsReady())
-                    {
-                        AZ_Error(s_debugTraceName, false, "Image asset could not be loaded");
-                        return false;
-                    }
+                    AZ::Data::AssetInfo assetInfo;
+                    AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                        assetInfo, &AZ::Data::AssetCatalogRequests::GetAssetInfoById, imageAsset.GetId());
+                    assetType = assetInfo.m_assetType;
                 }
 
-                if (Data::Asset<StreamingImageAsset> streamingImageAsset = Data::static_pointer_cast<StreamingImageAsset>(imageAsset))
+                // There is an issue in the Asset<T>(Asset<U>) copy constructor which is used with the FindOrCreate() calls below.
+                // If the AssetData is valid, then it will get the actual asset type ID from the AssetData. However, if it is null
+                // then it will continue using the original type ID. The InstanceDatabase will end up asking the AssetManager for
+                // the asset using the wrong type (ImageAsset) and will lead to various error messages and in the end the asset
+                // will never be loaded. So we work around this issue by forcing the asset type ID to the correct value first.
+                // See https://github.com/o3de/o3de/issues/12224
+                if (!imageAsset.Get())
                 {
-                    Data::Instance<Image> image = StreamingImage::FindOrCreate(streamingImageAsset);
-                    if (!image)
-                    {
-                        AZ_Error(s_debugTraceName, false, "Could not create StreamingImage");
-                        return false;
-                    }
+                    imageAsset = Data::Asset<ImageAsset>{imageAsset.GetId(), assetType, imageAsset.GetHint()};
+                }
 
-                    return SetPropertyValue(index, image);
+                Data::Instance<Image> image = nullptr;
+                if (assetType == azrtti_typeid<StreamingImageAsset>())
+                {
+                    Data::Asset<StreamingImageAsset> streamingImageAsset = imageAsset;
+                    image = StreamingImage::FindOrCreate(streamingImageAsset);
+                }
+                else if (assetType == azrtti_typeid<AttachmentImageAsset>())
+                {
+                    Data::Asset<AttachmentImageAsset> attachmentImageAsset = imageAsset;
+                    image = AttachmentImage::FindOrCreate(attachmentImageAsset);
                 }
                 else
                 {
-                    AZ_Error(s_debugTraceName, false, "Unsupported image asset type");
+                    AZ_Error(s_debugTraceName, false, "Unsupported image asset type: %s", assetType.ToString<AZStd::string>().c_str());
                     return false;
                 }
+
+                if (!image)
+                {
+                    AZ_Error(s_debugTraceName, false, "Image asset could not be loaded");
+                    return false;
+                }
+
+                return SetPropertyValue(index, image);
             }
         }
 

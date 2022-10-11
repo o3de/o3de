@@ -10,7 +10,6 @@
 
 #include <AzCore/Math/IntersectPoint.h>
 #include <AzCore/Math/IntersectSegment.h>
-#include <AzCore/Math/VectorConversions.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <Shape/ShapeDisplay.h>
@@ -77,10 +76,10 @@ namespace LmbrCentral
                 float aa, bb;
                 AZ::Vector3 a, b;
                 AZ::Intersect::ClosestSegmentSegment(
-                    AZ::Vector2ToVector3(vertices[i]),
-                    AZ::Vector2ToVector3(vertices[(i + 1) % vertexCount]),
-                    AZ::Vector2ToVector3(vertices[j]),
-                    AZ::Vector2ToVector3(vertices[(j + 1) % vertexCount]),
+                    AZ::Vector3(vertices[i]),
+                    AZ::Vector3(vertices[(i + 1) % vertexCount]),
+                    AZ::Vector3(vertices[j]),
+                    AZ::Vector3(vertices[(j + 1) % vertexCount]),
                     aa, bb, a, b);
 
                 if ((a - b).GetLength() < 0.001f)
@@ -169,10 +168,10 @@ namespace LmbrCentral
                     for (size_t j = (nextIndex + 1) % vertices.size(); j != prevIndex; j = (j + 1) % vertices.size())
                     {
                         if (AZ::Intersect::TestPointTriangle(
-                            AZ::Vector2ToVector3(vertices[j]),
-                            AZ::Vector2ToVector3(prev),
-                            AZ::Vector2ToVector3(curr),
-                            AZ::Vector2ToVector3(next)))
+                            AZ::Vector3(vertices[j]),
+                            AZ::Vector3(prev),
+                            AZ::Vector3(curr),
+                            AZ::Vector3(next)))
                         {
                             pointInside = true;
                             break;
@@ -186,9 +185,9 @@ namespace LmbrCentral
                 }
 
                 // form new triangle from 'ear'
-                triangles.push_back(AZ::Vector2ToVector3(prev));
-                triangles.push_back(AZ::Vector2ToVector3(curr));
-                triangles.push_back(AZ::Vector2ToVector3(next));
+                triangles.push_back(AZ::Vector3(prev));
+                triangles.push_back(AZ::Vector3(curr));
+                triangles.push_back(AZ::Vector3(next));
 
                 // if work is still do be done, remove vertex from list and iterate again
                 if (vertices.size() > 3)

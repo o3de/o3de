@@ -22,9 +22,9 @@ namespace ScriptCanvas
             return *tracker;
         }
 
-        void FinalizePerformanceReport(PerformanceKey key, const AZ::Data::AssetId& assetId)
+        void FinalizePerformanceReport(PerformanceKey key)
         {
-            ModPerformanceTracker().FinalizeReport(key, assetId);
+            ModPerformanceTracker().FinalizeReport(key);
         }
 
         PerformanceTimingReport& PerformanceTimingReport::operator+=(const PerformanceTimingReport& rhs)
@@ -44,37 +44,36 @@ namespace ScriptCanvas
             return *this;
         }
 
-        PerformanceScope::PerformanceScope(const PerformanceKey& key, const AZ::Data::AssetId& assetId)
+        PerformanceScope::PerformanceScope(const PerformanceKey& key)
             : m_key(key)
-            , m_assetId(assetId)
             , m_startTime(AZStd::chrono::system_clock::now())
         {}
 
-        PerformanceScopeExecution::PerformanceScopeExecution(const PerformanceKey& key, const AZ::Data::AssetId& assetId)
-            : PerformanceScope(key, assetId)
+        PerformanceScopeExecution::PerformanceScopeExecution(const PerformanceKey& key)
+            : PerformanceScope(key)
         {}
 
         PerformanceScopeExecution::~PerformanceScopeExecution()
         {
-            ModPerformanceTracker().ReportExecutionTime(m_key, m_assetId, AZStd::chrono::microseconds(AZStd::chrono::system_clock::now() - m_startTime).count());
+            ModPerformanceTracker().ReportExecutionTime(m_key, AZStd::chrono::microseconds(AZStd::chrono::system_clock::now() - m_startTime).count());
         }
 
-        PerformanceScopeInitialization::PerformanceScopeInitialization(const PerformanceKey& key, const AZ::Data::AssetId& assetId)
-            : PerformanceScope(key, assetId)
+        PerformanceScopeInitialization::PerformanceScopeInitialization(const PerformanceKey& key)
+            : PerformanceScope(key)
         {}
 
         PerformanceScopeInitialization::~PerformanceScopeInitialization()
         {
-            ModPerformanceTracker().ReportInitializationTime(m_key, m_assetId, AZStd::chrono::microseconds(AZStd::chrono::system_clock::now() - m_startTime).count());
+            ModPerformanceTracker().ReportInitializationTime(m_key, AZStd::chrono::microseconds(AZStd::chrono::system_clock::now() - m_startTime).count());
         }
 
-        PerformanceScopeLatent::PerformanceScopeLatent(const PerformanceKey& key, const AZ::Data::AssetId& assetId)
-            : PerformanceScope(key, assetId)
+        PerformanceScopeLatent::PerformanceScopeLatent(const PerformanceKey& key)
+            : PerformanceScope(key)
         {}
 
         PerformanceScopeLatent::~PerformanceScopeLatent()
         {
-            ModPerformanceTracker().ReportLatentTime(m_key, m_assetId, AZStd::chrono::microseconds(AZStd::chrono::system_clock::now() - m_startTime).count());
+            ModPerformanceTracker().ReportLatentTime(m_key, AZStd::chrono::microseconds(AZStd::chrono::system_clock::now() - m_startTime).count());
         }
 
         PerformanceTimer::PerformanceTimer()

@@ -10,6 +10,11 @@
 
 #include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/std/function/function_fwd.h>
+#include <AzCore/std/ranges/common_view.h>
+#include <AzCore/std/ranges/join_with_view.h>
+#include <AzCore/std/ranges/transform_view.h>
+#include <AzCore/std/ranges/ranges_algorithm.h>
+#include <AzCore/std/ranges/subrange.h>
 #include <AzCore/std/string/fixed_string.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/set.h>
@@ -247,7 +252,7 @@ namespace AZ
         StringFunc::Strip(s = "Abracadabra", 'a', true, false); s == "Abracadabra"
         Example: Case Insensitive Strip last 'a' character
         StringFunc::Strip(s = "Abracadabra", 'a', false, false, true); s == "Abracadabr"
-        Example: Case Insensitive Strip first and last 'a' character 
+        Example: Case Insensitive Strip first and last 'a' character
         StringFunc::Strip(s = "Abracadabra", 'a', false, true, true); s == "bracadabr"
         Example: Case Sensitive Strip first and last 'l' character (No Match)
         StringFunc::Strip(s = "HeLlo HeLlo HELlO", 'l', true, true, true); s == "HeLlo HeLlo HELlO"
@@ -318,7 +323,7 @@ namespace AZ
          output = StringFunc::TokenizeNext(input, " "); input = "World", output(valid) = "Hello"
          output = StringFunc::TokenizeNext(input, " "); input = "", output(valid) = "World"
          output = StringFunc::TokenizeNext(input, " "); input = "", output(invalid)
-         Example: Tokenize a  delimited string with multiple whitespace 
+         Example: Tokenize a  delimited string with multiple whitespace
          AZStd::string_view input = "Hello World  More   Tokens";
          AZStd::optional<AZStd::string_view> output;
          output = StringFunc::TokenizeNext(input, ' '); input = "World  More   Tokens", output(valid) = "Hello"
@@ -407,7 +412,7 @@ namespace AZ
             The joinTarget variable will be appended to, if you need it cleared first
             you must reset it yourself before calling join
         Example: Join a list of the strings "test", "string" and "joining"
-            AZStd::list<AZStd::string> example; 
+            AZStd::list<AZStd::string> example;
             // add three strings: "test", "string" and "joining"
             AZStd::string output;
             Join(output, example.begin(), example.end(), " -- ");
@@ -423,36 +428,29 @@ namespace AZ
             const ConvertableToStringViewIterator& iteratorEnd,
             const SeparatorString& separator)
         {
-            if (iteratorBegin == iteratorEnd)
-            {
-                return;
-            }
-
             using CharType = typename StringType::value_type;
-            using CharTraitsType = typename StringType::traits_type;
-            size_t size = joinTarget.size() + AZStd::basic_string_view<CharType, CharTraitsType>(*iteratorBegin).size();
-            for (auto currentIterator = AZStd::next(iteratorBegin); currentIterator != iteratorEnd; ++currentIterator)
+            using StringViewType = AZStd::basic_string_view<CharType>;
+            StringViewType separatorView;
+            if constexpr (AZStd::convertible_to<SeparatorString, CharType>)
             {
-                size += AZStd::basic_string_view<CharType, CharTraitsType>(*currentIterator).size();
-
-                // Special case for when the separator is just the character type
-                if constexpr (AZStd::is_same_v<AZStd::remove_cvref_t<SeparatorString>, CharType>)
-                {
-                    size += 1;
-                }
-                else
-                {
-                    size += AZStd::basic_string_view<CharType, CharTraitsType>(separator).size();
-                }
+                separatorView = StringViewType{ &separator, 1 };
             }
-
-            joinTarget.reserve(size);
-            joinTarget += *iteratorBegin;
-            for (auto currentIterator = AZStd::next(iteratorBegin); currentIterator != iteratorEnd; ++currentIterator)
+            else
             {
-                joinTarget += separator;
-                joinTarget += *currentIterator;
+                separatorView = separator;
             }
+            auto ConvertToStringView = [](AZStd::iter_reference_t<ConvertableToStringViewIterator> convertToView)
+                 -> StringViewType { return convertToView; };
+
+            auto stringJoinView = AZStd::ranges::views::join_with(
+                AZStd::ranges::views::transform(AZStd::ranges::subrange(iteratorBegin, iteratorEnd), ConvertToStringView),
+                separatorView);
+
+            // Get the amount of additional characters to reserve in the join target
+            joinTarget.reserve(joinTarget.size() + AZStd::ranges::distance(stringJoinView));
+            // Append characters to join target
+            auto&& stringCommonJoinView = AZStd::ranges::views::common(stringJoinView);
+            joinTarget.insert(joinTarget.end(), stringCommonJoinView.begin(), stringCommonJoinView.end());
         }
 
         template<typename StringType, typename Range, typename SeparatorString,
@@ -491,7 +489,7 @@ namespace AZ
 
         //////////////////////////////////////////////////////////////////////////
         //! StringFunc::AssetPath Namespace
-        /*! For string functions for support asset path calculations 
+        /*! For string functions that support asset path calculations
         */
         namespace AssetPath
         {
@@ -556,7 +554,7 @@ namespace AZ
             *! Specifically, that it uses the last absolute path as the anchor for the resulting path
             *! https://docs.python.org/3/library/pathlib.html#pathlib.PurePath
             *! This means that joining StringFunc::AssetDatabasePath::Join("/etc/", "/usr/bin") results in "/usr/bin"
-            *! not "/etc/usr/bin" 
+            *! not "/etc/usr/bin"
             *! EX: StringFunc::AssetDatabasePath::Join("p4/game","info/some.file", a) == true; a== "p4/game/info/some.file"
             *! EX: StringFunc::AssetDatabasePath::Join("p4/game/info", "game/info/some.file", a) == true; a== "p4/game/info/game/info/some.file"
             *! EX: StringFunc::AssetDataPathPath::Join("p4/game/info", "/game/info/some.file", a) == true; a== "/game/info/some.file"
@@ -939,15 +937,27 @@ namespace AZ
             */
             void ReplaceExtension(AZStd::string& inout, const char* pFileExtension);
 
-            //! AppendSeparator 
+            //! AppendSeparator
             /*! Appends the correct separator to the path
             *! EX: StringFunc::Path::AppendSeparator("C:\\project\\intermediateassets", &path);
             *! path=="C:\\project\\intermediateassets\\"
             */
             AZStd::string& AppendSeparator(AZStd::string& inout);
+
+            //! MakeUniqueFilenameWithSuffix
+            /*! given a directory path, a filename and an optional extension will return a unique filename
+            *! EX: StringFunc::Path::MakeUniqueFilenameWithSuffix("c:\\folder","NewFile.txt", outPath, "-copy")
+            *! if "NewFile.txt" doesn't exist, returns "c:\\folder\\Newfile.txt" in outFilePath
+            *! if "NewFile.txt" exists, returns "c:\\folder\\Newfile-copy1.txt" in outFilePath
+            *! if both "NewFile.txt" and "NewFile-copy1.txt" exist, returns "c:\\folder\\Newfile-copy2.txt" in outFilePath
+            *! etc.
+            */
+            void MakeUniqueFilenameWithSuffix(
+                const AZStd::string& directoryPath, const AZStd::string& filename, AZStd::string& outFilePath, const AZStd::string& suffix = "");
+
         } // namespace Path
 
-        namespace Json 
+        namespace Json
         {
             //! ToEscapedString
             /* Escape a string to make it compatible for saving to the json format

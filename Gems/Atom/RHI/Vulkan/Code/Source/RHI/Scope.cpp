@@ -23,7 +23,7 @@
 #include <RHI/SwapChain.h>
 #include <RHI/Framebuffer.h>
 #include <RHI/Device.h>
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/BufferView.h>
 
 namespace AZ
@@ -67,6 +67,7 @@ namespace AZ
 
         void Scope::Begin(CommandList& commandList) const
         {
+            commandList.SetName(GetId());
             commandList.GetValidator().BeginScope(*this);
             commandList.BeginDebugLabel(AZStd::string::format("%s Scope", GetId().GetCStr()).c_str());
 
@@ -169,17 +170,19 @@ namespace AZ
                     break;
                 }
 
-                vkCmdPipelineBarrier(
-                    commandList.GetNativeCommandBuffer(),
-                    barrier.m_srcStageMask,
-                    barrier.m_dstStageMask,
-                    barrier.m_dependencyFlags,
-                    memoryBarriers ? 1 : 0,
-                    memoryBarriers,
-                    bufferBarriers ? 1 : 0,
-                    bufferBarriers,
-                    imageBarriers ? 1 : 0,
-                    imageBarriers);
+                static_cast<Device&>(commandList.GetDevice())
+                    .GetContext()
+                    .CmdPipelineBarrier(
+                        commandList.GetNativeCommandBuffer(),
+                        barrier.m_srcStageMask,
+                        barrier.m_dstStageMask,
+                        barrier.m_dependencyFlags,
+                        memoryBarriers ? 1 : 0,
+                        memoryBarriers,
+                        bufferBarriers ? 1 : 0,
+                        bufferBarriers,
+                        imageBarriers ? 1 : 0,
+                        imageBarriers);
             }
         }
 
@@ -318,17 +321,9 @@ namespace AZ
             for (const auto* scopeAttachment : attachments)
             {
                 const auto& bindingDescriptor = scopeAttachment->GetDescriptor();
-                const bool isClearAction = bindingDescriptor.m_loadStoreAction.m_loadAction == RHI::AttachmentLoadAction::Clear;
-                const bool isClearActionStencil = bindingDescriptor.m_loadStoreAction.m_loadActionStencil == RHI::AttachmentLoadAction::Clear;
-                bool isClear = isClearAction || isClearActionStencil;
-
-                for (const RHI::ScopeAttachmentUsageAndAccess& usageAndAccess : scopeAttachment->GetUsageAndAccess())
+                if (HasExplicitClear(*scopeAttachment, bindingDescriptor))
                 {
-                    if (usageAndAccess.m_usage == RHI::ScopeAttachmentUsage::Shader && isClear)
-                    {
-                        clearRequests.push_back({ bindingDescriptor.m_loadStoreAction.m_clearValue, scopeAttachment->GetResourceView() });
-                        break;
-                    }
+                    clearRequests.push_back({ bindingDescriptor.m_loadStoreAction.m_clearValue, scopeAttachment->GetResourceView() });
                 }
             }
         }
@@ -617,14 +612,16 @@ namespace AZ
                             region.dstSubresource.layerCount = dstImageSubresourceRange.layerCount;
                             region.dstSubresource.mipLevel = dstImageSubresourceRange.baseMipLevel;
 
-                            vkCmdResolveImage(
-                                commandList.GetNativeCommandBuffer(),
-                                srcImage.GetNativeImage(),
-                                VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                                dstImage.GetNativeImage(),
-                                GetImageAttachmentLayout(*resolveAttachment),
-                                1,
-                                &region);
+                            static_cast<Device&>(commandList.GetDevice())
+                                .GetContext()
+                                .CmdResolveImage(
+                                    commandList.GetNativeCommandBuffer(),
+                                    srcImage.GetNativeImage(),
+                                    VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                                    dstImage.GetNativeImage(),
+                                    GetImageAttachmentLayout(*resolveAttachment),
+                                    1,
+                                    &region);
 
                             break;
                         }

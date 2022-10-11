@@ -523,7 +523,7 @@ namespace UnitTest
         return data + 30;
     }
 
-    void OnEventGenericHook(void* userData, const char* eventName, int eventIndex, BehaviorValueParameter* result, int numParameters, BehaviorValueParameter* parameters)
+    void OnEventGenericHook(void* userData, const char* eventName, int eventIndex, BehaviorArgument* result, int numParameters, BehaviorArgument* parameters)
     {
         (void)userData; (void)numParameters; (void)result; (void)eventName; (void)eventIndex;
         AZ_Assert(result == nullptr || strstr(eventName, "OnEventWithResult"), "We don't exepct result here");
@@ -772,8 +772,8 @@ namespace UnitTest
             // EBus
             const AZStd::string_view defaultStringViewValue = "DEFAULT!!!!";
             AZStd::string expectedDefaultValueAndStringResult = AZStd::string::format("Default Value: %s", defaultStringViewValue.data());
-            BehaviorDefaultValuePtr defaultStringViewBehaviorValue = aznew BehaviorDefaultValue(defaultStringViewValue);
-            BehaviorDefaultValuePtr superDefaultStringViewBehaviorValue = aznew BehaviorDefaultValue(AZStd::string_view("SUPER DEFAULT!!!!"));
+            BehaviorDefaultValuePtr defaultStringViewBehaviorValue = m_behaviorContext->MakeDefaultValue(defaultStringViewValue);
+            BehaviorDefaultValuePtr superDefaultStringViewBehaviorValue = m_behaviorContext->MakeDefaultValue(AZStd::string_view("SUPER DEFAULT!!!!"));
 
             m_behaviorContext->EBus<BehaviorTestBus>("TestBus")
                     ->Attribute("EBusAttr", 40)
@@ -3436,8 +3436,7 @@ namespace UnitTest
             AZ_TEST_ASSERT(values[2].m_elements.size() == valueCheck.m_elements.size());
 
             // set a table value with metatable
-            values[3].m_elements.push_back();
-            ScriptContextDebug::DebugValue& subValue = values[3].m_elements.back();
+            ScriptContextDebug::DebugValue& subValue = values[3].m_elements.emplace_back();
             subValue.m_name = "valueA";
             subValue.m_type = LUA_TNUMBER;
             subValue.m_value = "16";

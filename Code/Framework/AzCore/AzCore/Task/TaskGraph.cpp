@@ -16,7 +16,7 @@ namespace AZ
 
     void TaskGraphEvent::Wait()
     {
-        AZ_Assert(m_executor->GetTaskWorker() == nullptr, "Waiting in a task is unsupported");
+        AZ_Assert(m_executor->GetTaskWorker() == nullptr, "Event %s waiting in a task is unsupported", m_label);
         m_semaphore.acquire();
     }
 
@@ -27,7 +27,7 @@ namespace AZ
         while(!m_waitCount.compare_exchange_weak(expectedValue, expectedValue + 1))
         {
              // value will be negative once event is ready to signal or has been signaled. Shouldn't happen.
-            AZ_Assert(expectedValue >= 0, "Called TaskGraphEvent::IncWaitCount on a signalled event");
+            AZ_Assert(expectedValue >= 0, "Called TaskGraphEvent::IncWaitCount on a signalled event %s", m_label);
             if (expectedValue < 0) // event already signaled, skip
             {
                 return;
@@ -42,7 +42,7 @@ namespace AZ
         while(!m_waitCount.compare_exchange_weak(expectedValue, expectedValue - 1))
         {
             // It's an error for Signal to be called if no one is waiting, or the event has already been signaled
-            AZ_Assert(expectedValue > 0, "Called TaskGraphEvent::Signal when event is either signaled or unused");
+            AZ_Assert(expectedValue > 0, "Called %s TaskGraphEvent::Signal when event is either signaled or unused", m_label);
             if (expectedValue < 0) // return if already signaled
             {
                 return;
@@ -62,7 +62,7 @@ namespace AZ
 
     void TaskToken::PrecedesInternal(TaskToken& comesAfter)
     {
-        AZ_Assert(!m_parent.m_submitted, "Cannot mutate a TaskGraph that was previously submitted.");
+        AZ_Assert(!m_parent.m_submitted, "Cannot mutate a TaskGraph %s that was previously submitted.", m_parent.m_label);
 
         // Increment inbound/outbound edge counts
         m_parent.m_tasks[m_index].Link(m_parent.m_tasks[comesAfter.m_index]);
@@ -70,6 +70,11 @@ namespace AZ
         m_parent.m_links[m_index].emplace_back(comesAfter.m_index);
 
         ++m_parent.m_linkCount;
+    }
+
+    TaskGraph::TaskGraph(const char* label)
+        : m_label{ label }
+    {
     }
 
     TaskGraph::~TaskGraph()
@@ -86,7 +91,7 @@ namespace AZ
 
     void TaskGraph::Reset()
     {
-        AZ_Assert(!m_submitted, "Cannot reset a job graph while it is in flight");
+        AZ_Assert(!m_submitted, "Cannot reset task graph %s while it is in flight", m_label);
         if (m_compiledTaskGraph)
         {
             azdestroy(m_compiledTaskGraph);
@@ -99,6 +104,18 @@ namespace AZ
 
     void TaskGraph::Submit(TaskGraphEvent* waitEvent)
     {
+        // If this is a new empty task graph (and not a retained taskgraph that was previously run),
+        // return immediately
+        if (IsEmpty() && !m_compiledTaskGraph)
+        {
+            if (waitEvent)
+            {
+                // TaskGraphEvent asserts if it has a wait count of 0, increment it before signaling.
+                waitEvent->IncWaitCount();
+                waitEvent->Signal();
+            }
+            return;
+        }
         SubmitOnExecutor(TaskExecutor::Instance(), waitEvent);
     }
 
@@ -106,7 +123,7 @@ namespace AZ
     {
         if (!m_compiledTaskGraph)
         {
-            m_compiledTaskGraph = aznew CompiledTaskGraph(AZStd::move(m_tasks), m_links, m_linkCount, m_retained ? this : nullptr);
+            m_compiledTaskGraph = aznew CompiledTaskGraph(AZStd::move(m_tasks), m_links, m_linkCount, m_retained ? this : nullptr, m_label);
         }
 
         m_compiledTaskGraph->m_waitEvent = waitEvent;

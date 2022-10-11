@@ -58,7 +58,9 @@ namespace AzNetworking
     {
         if (m_state == ConnectionState::Connected)
         {
+            m_state = ConnectionState::Disconnecting;
             m_networkInterface.GetConnectionListener().OnDisconnect(this, DisconnectReason::ConnectionDeleted, TerminationEndpoint::Local);
+            m_state = ConnectionState::Disconnected;
         }
     }
 
@@ -118,8 +120,7 @@ namespace AzNetworking
         }
         if (m_state == ConnectionState::Disconnecting)
         {
-            AZStd::string reasonString = ToString(reason);
-            AZLOG_ERROR("Disconnecting an already disconnecting connection due to %s", reasonString.c_str());
+            AZLOG_WARN("Disconnecting an already disconnecting connection due to %s", ToString(reason).data());
             return false;
         }
         m_state = ConnectionState::Disconnecting;

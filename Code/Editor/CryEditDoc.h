@@ -133,8 +133,9 @@ public: // Create from serialization only
     void UnregisterListener(IDocListener* listener);
 
     static bool IsBackupOrTempLevelSubdirectory(const QString& folderName);
-protected:
+    virtual void OnFileSaveAs();
 
+protected:
     virtual void DeleteContents();
 
     struct TOpenDocContext
@@ -173,7 +174,6 @@ protected:
     bool AfterSaveDocument(const QString& lpszPathName, TSaveDocContext& context, bool bShowPrompt = true);
 
     virtual bool OnSaveDocument(const QString& lpszPathName);
-    virtual void OnFileSaveAs();
     //! called immediately after saving the level.
     void AfterSave();
     void OnStartLevelResourceList();

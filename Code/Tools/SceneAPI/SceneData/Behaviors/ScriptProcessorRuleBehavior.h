@@ -44,7 +44,7 @@ namespace AZ::SceneAPI::Behaviors
 
         SCENE_DATA_API void Activate() override;
         SCENE_DATA_API void Deactivate() override;
-        static void Reflect(ReflectContext* context);
+        SCENE_DATA_API static void Reflect(ReflectContext* context);
         
         // AssetImportRequestBus::Handler
         SCENE_DATA_API Events::ProcessingResult UpdateManifest(
@@ -61,7 +61,7 @@ namespace AZ::SceneAPI::Behaviors
     private:
         AzToolsFramework::EditorPythonEventsInterface* m_editorPythonEventsInterface = nullptr;
 
-        struct ExportEventHandler;
-        AZStd::shared_ptr<ExportEventHandler> m_exportEventHandler;
+        struct EventHandler;
+        AZStd::shared_ptr<EventHandler> m_eventHandler;
     };
 } // namespace AZ::SceneAPI::Behaviors

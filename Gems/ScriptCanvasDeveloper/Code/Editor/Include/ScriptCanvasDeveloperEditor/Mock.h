@@ -16,13 +16,10 @@
 
 #include <ScriptCanvasDeveloperEditor/MockBus.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     namespace Nodes
     {
-        using namespace ScriptCanvas;
-
-
         enum class SlotConfigState : AZ::u8
         {
             New,

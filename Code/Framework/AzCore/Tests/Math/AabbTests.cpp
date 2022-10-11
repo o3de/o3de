@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/std/containers/span.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Obb.h>
 #include <AzCore/Math/Vector3.h>
@@ -69,6 +70,32 @@ namespace UnitTest
         Aabb aabb = Aabb::CreatePoints(points, numPoints);
         EXPECT_TRUE(aabb.GetMin().IsClose(Vector3(-10.0f)));
         EXPECT_TRUE(aabb.GetMax().IsClose(Vector3(10.0f)));
+    }
+
+    TEST(MATH_Aabb, TestCreatePointsSlice)
+    {
+        Vector3 points[] =
+        { 
+            Vector3(10.0f, 0.0f, -10.0f),
+            Vector3(-10.0f, 10.0f, 0.0f),
+            Vector3(0.0f, -10.0f, 10.0f)
+        };
+        Aabb aabb = Aabb::CreatePoints(points);
+        EXPECT_TRUE(aabb.GetMin().IsClose(Vector3(-10.0f)));
+        EXPECT_TRUE(aabb.GetMax().IsClose(Vector3(10.0f)));
+    }
+
+    TEST(MATH_Aabb, TestCreatePointsEmpty)
+    {
+        Aabb aabb = Aabb::CreatePoints(nullptr, 0);
+        EXPECT_FALSE(aabb.IsValid());
+    }
+
+    TEST(MATH_Aabb, TestCreatePointsEmptySlice)
+    {
+        AZStd::span<Vector3> points = {};
+        Aabb aabb = Aabb::CreatePoints(points);
+        EXPECT_FALSE(aabb.IsValid());
     }
 
     TEST(MATH_Aabb, TestCreateFromObb)

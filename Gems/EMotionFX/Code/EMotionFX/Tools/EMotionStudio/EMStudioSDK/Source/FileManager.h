@@ -97,6 +97,9 @@ namespace EMStudio
         // anim graph files
         AZStd::string LoadAnimGraphFileDialog(QWidget* parent);
         AZStd::string SaveAnimGraphFileDialog(QWidget* parent);
+        void SaveAnimGraph(const char* filename, size_t animGraphIndex, MCore::CommandGroup* commandGroup = nullptr);
+        void SaveAnimGraph(QWidget* parent, EMotionFX::AnimGraph* animGraph, MCore::CommandGroup* commandGroup = nullptr);
+        void SaveAnimGraphAs(QWidget* parent, EMotionFX::AnimGraph* animGraph, const EMotionFX::AnimGraph* focusedAnimGraph, MCore::CommandGroup* commandGroup = nullptr);
 
         // game controller preset files
         AZStd::string LoadControllerPresetFileDialog(QWidget* parent, const char* defaultFolder);

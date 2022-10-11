@@ -10,7 +10,7 @@ if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
     return()
 endif()
 
-o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
+o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
 include(${pal_source_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake) # PAL_TRAIT_ATOM_MATERIAL_CANVAS_APPLICATION_SUPPORTED
 
@@ -40,13 +40,8 @@ ly_add_target(
             Gem::AtomLyIntegration_CommonFeatures.Static
             Gem::AtomToolsFramework.Editor
             Gem::AtomToolsFramework.Static
-            Gem::GraphCanvasWidgets
-            Gem::GraphModel.Editor.Static
     RUNTIME_DEPENDENCIES
         Gem::AtomToolsFramework.Editor
-        Gem::GraphCanvas.Editor
-        Gem::GraphCanvasWidgets
-        Gem::GraphModel.Editor
 )
 
 ly_set_gem_variant_to_load(TARGETS MaterialCanvas VARIANTS Tools)

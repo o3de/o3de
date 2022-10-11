@@ -50,9 +50,9 @@
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorOnlyEntityComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
-#include <AzToolsFramework/ToolsComponents/SelectionComponent.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 #include  <AzToolsFramework/Editor/RichTextHighlighter.h>
 
 #include "OutlinerDisplayOptionsMenu.h"
@@ -801,15 +801,18 @@ void OutlinerListModel::DecodeAssetMimeData(const QMimeData* data, AZStd::vector
 {
     using namespace AzToolsFramework;
 
-    AZStd::vector<AssetBrowser::AssetBrowserEntry*> entries;
-    AssetBrowser::AssetBrowserEntry::FromMimeData(data, entries);
+    AZStd::vector<const AssetBrowser::AssetBrowserEntry*> entries;
+    if (!AssetBrowser::Utils::FromMimeData(data, entries))
+    {
+        return;
+    }
 
     AZStd::vector<const AssetBrowser::ProductAssetBrowserEntry*> products;
     products.reserve(entries.size());
 
     // Look at all products and determine if they have an associated component.
     // If so, store the componentType->assetId pair.
-    for (AssetBrowser::AssetBrowserEntry* entry : entries)
+    for (const AssetBrowser::AssetBrowserEntry* entry : entries)
     {
         products.clear();
         const AssetBrowser::ProductAssetBrowserEntry* browserEntry = azrtti_cast<const AssetBrowser::ProductAssetBrowserEntry*>(entry);

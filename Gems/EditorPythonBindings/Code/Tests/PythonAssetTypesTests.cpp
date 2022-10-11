@@ -386,7 +386,7 @@ namespace UnitTest
         EXPECT_TRUE(behaviorClasses.find("Asset<AssetData>") != behaviorClasses.end());
         EXPECT_TRUE(behaviorClasses.find("Asset<MyTestAssetData>") != behaviorClasses.end());
         EXPECT_TRUE(behaviorClasses.find("SimpleAssetReferenceBase") != behaviorClasses.end());
-        EXPECT_TRUE(behaviorClasses.find("SimpleAssetReference<AssetType><FooMockSimpleAsset >") != behaviorClasses.end());
+        EXPECT_TRUE(behaviorClasses.find("SimpleAssetReference<FooMockSimpleAsset>") != behaviorClasses.end());
     }
 
     TEST_F(PythonAssetTypesTests, AssetIdValues)
@@ -655,7 +655,7 @@ namespace UnitTest
 
                 # using FooMockSimpleAsset inside a SimpleAssetReference<> template
                 newFakeAssetPath = 'another/fake/asset_file.foo'
-                simpleRef = azlmbr.object.construct('SimpleAssetReference<AssetType><FooMockSimpleAsset >')
+                simpleRef = azlmbr.object.construct('SimpleAssetReference<FooMockSimpleAsset>')
                 simpleRef.set_asset_path(newFakeAssetPath)
                 if(simpleRef.assetPath == newFakeAssetPath):
                     print('SimpleAssetReference: simpleRef {}'.format(newFakeAssetPath))

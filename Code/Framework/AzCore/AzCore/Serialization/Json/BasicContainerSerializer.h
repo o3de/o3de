@@ -24,6 +24,11 @@ namespace AZ
         JsonSerializationResult::Result Store(rapidjson::Value& outputValue, const void* inputValue, const void* defaultValue,
             const Uuid& valueTypeId, JsonSerializerContext& context) override;
 
+    protected:
+        //! When this function returns true then the container will be cleared before applying the data from the json document.
+        //! When returns false any elements in the container will be kept and not overwritten.
+        virtual bool ShouldClearContainer(const JsonDeserializerContext& context) const;
+
     private:
         JsonSerializationResult::Result LoadContainer(void* outputValue, const Uuid& outputValueTypeId, const rapidjson::Value& inputValue,
             JsonDeserializerContext& context);

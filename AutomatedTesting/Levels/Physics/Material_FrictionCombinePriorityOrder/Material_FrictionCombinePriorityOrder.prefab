@@ -140,10 +140,17 @@
                     "$type": "EditorColliderComponent",
                     "Id": 4637782058154060578,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
+                        "MaterialSlots": {
+                            "Slots": [
                                 {
-                                    "MaterialId": "{05A7DE35-5FD6-4496-B93B-FAF78262FEEC}"
+                                    "Name": "Entire object",
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{7D320D01-0BD3-5AF1-B341-0049F2CCA675}",
+                                            "subId": 1
+                                        },
+                                        "assetHint": "levels/physics/material_restitutioncombine/ramp.physicsmaterial"
+                                    }
                                 }
                             ]
                         }
@@ -269,10 +276,17 @@
                     "$type": "EditorColliderComponent",
                     "Id": 16270212748521211284,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
+                        "MaterialSlots": {
+                            "Slots": [
                                 {
-                                    "MaterialId": "{2A116DF5-FD14-4A6C-B3B2-5068AE83C9EF}"
+                                    "Name": "Entire object",
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{FDC9696F-EF9A-5BA1-9F48-258DC91CCE6D}",
+                                            "subId": 1
+                                        },
+                                        "assetHint": "levels/physics/material_staticfriction/mid_static_friction.physicsmaterial"
+                                    }
                                 }
                             ]
                         }
@@ -406,10 +420,17 @@
                     "$type": "EditorColliderComponent",
                     "Id": 4637782058154060578,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
+                        "MaterialSlots": {
+                            "Slots": [
                                 {
-                                    "MaterialId": "{AAAADE4F-9A35-476B-9424-20D40CBD8E59}"
+                                    "Name": "Entire object",
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{4A8ACFB8-79C9-573D-82DC-4A4017E6E279}",
+                                            "subId": 1
+                                        },
+                                        "assetHint": "levels/physics/material_restitutioncombinepriorityorder/ramp_minimum.physicsmaterial"
+                                    }
                                 }
                             ]
                         }
@@ -562,10 +583,17 @@
                     "$type": "EditorColliderComponent",
                     "Id": 4637782058154060578,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
+                        "MaterialSlots": {
+                            "Slots": [
                                 {
-                                    "MaterialId": "{C0067490-4214-4ADC-857A-FA978B6609D8}"
+                                    "Name": "Entire object",
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{BCE0CBE4-F89D-5522-B7C3-02C6D5BA7E33}",
+                                            "subId": 1
+                                        },
+                                        "assetHint": "levels/physics/material_frictioncombinepriorityorder/ramp_multiply.physicsmaterial"
+                                    }
                                 }
                             ]
                         }
@@ -718,10 +746,17 @@
                     "$type": "EditorColliderComponent",
                     "Id": 4637782058154060578,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
+                        "MaterialSlots": {
+                            "Slots": [
                                 {
-                                    "MaterialId": "{EC70218A-5C2F-4E4C-A606-DB0985D80BD9}"
+                                    "Name": "Entire object",
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{B4D50C0C-AF2A-5A2A-8098-2FA0537E2664}",
+                                            "subId": 1
+                                        },
+                                        "assetHint": "levels/physics/material_frictioncombinepriorityorder/ramp_maximum.physicsmaterial"
+                                    }
                                 }
                             ]
                         }
@@ -847,10 +882,17 @@
                     "$type": "EditorColliderComponent",
                     "Id": 16270212748521211284,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
+                        "MaterialSlots": {
+                            "Slots": [
                                 {
-                                    "MaterialId": "{777C0A7E-ADF9-48EA-B6C5-7AF8247B2467}"
+                                    "Name": "Entire object",
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{6E61FDAB-07D1-5B86-87F0-7D32E24D586B}",
+                                            "subId": 1
+                                        },
+                                        "assetHint": "levels/physics/material_restitutioncombinepriorityorder/box_minimum.physicsmaterial"
+                                    }
                                 }
                             ]
                         }
@@ -957,10 +999,17 @@
                     "$type": "EditorColliderComponent",
                     "Id": 16270212748521211284,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
+                        "MaterialSlots": {
+                            "Slots": [
                                 {
-                                    "MaterialId": "{EE923310-0BAE-4F41-8784-DD8DC0D1DD4A}"
+                                    "Name": "Entire object",
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{410F7B84-0F8F-5BCF-AD90-E3B2C2E8FD25}",
+                                            "subId": 1
+                                        },
+                                        "assetHint": "levels/physics/material_restitution/zero_restitution.physicsmaterial"
+                                    }
                                 }
                             ]
                         }
@@ -1067,10 +1116,17 @@
                     "$type": "EditorColliderComponent",
                     "Id": 16270212748521211284,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
+                        "MaterialSlots": {
+                            "Slots": [
                                 {
-                                    "MaterialId": "{34DA60BA-CE15-4205-AF43-3F44CFACB165}"
+                                    "Name": "Entire object",
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{5DC7FE5B-E7D3-5FD4-9256-002980439C65}",
+                                            "subId": 1
+                                        },
+                                        "assetHint": "levels/physics/material_staticfriction/low_static_friction.physicsmaterial"
+                                    }
                                 }
                             ]
                         }

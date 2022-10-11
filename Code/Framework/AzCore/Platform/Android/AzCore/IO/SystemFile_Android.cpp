@@ -107,17 +107,14 @@ bool SystemFile::PlatformOpen(int mode, int platformFlags)
         CreatePath(m_fileName.c_str());
     }
 
-    int errorCode = 0;
     if (isApkFile)
     {
         AZ::u64 size = 0;
         m_handle = AZ::Android::APKFileHandler::Open(m_fileName.c_str(), openMode, size);
-        errorCode = EACCES; // general error when a file can't be opened from inside the APK
     }
     else
     {
         m_handle = fopen(m_fileName.c_str(), openMode);
-        errorCode = errno;
     }
 
     if (m_handle == PlatformSpecificInvalidHandle)
@@ -357,3 +354,11 @@ namespace Platform
 } // namespace AZ::IO::Platform
 
 } // namespace AZ::IO
+
+namespace AZ::IO::PosixInternal
+{
+    int Pipe(int(&pipeFileDescriptors)[2], int, OpenFlags pipeFlags)
+    {
+        return pipe2(pipeFileDescriptors, static_cast<int>(pipeFlags));
+    }
+} // namespace AZ::IO::PosixInternal

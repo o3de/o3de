@@ -13,6 +13,7 @@
 #include <AzCore/StringFunc/StringFunc.h>
 #include <SceneAPI/SDKWrapper/AssImpTypeConverter.h>
 #include <SceneAPI/SceneBuilder/Importers/AssImpImporterUtilities.h>
+#include <SceneAPI/SceneCore/Utilities/Reporting.h>
 
 namespace AZ
 {
@@ -39,6 +40,32 @@ namespace AZ
                 }
 
                 return boneCount > 0;
+            }
+
+            bool AreAllMeshesValid(const aiNode& node, const aiScene& scene)
+            {
+                for (unsigned meshIdx = 0; meshIdx < node.mNumMeshes; ++meshIdx)
+                {
+                    const aiMesh* mesh = scene.mMeshes[node.mMeshes[meshIdx]];
+                    for (unsigned int faceIdx = 0; faceIdx < mesh->mNumFaces; ++faceIdx)
+                    {
+                        aiFace face = mesh->mFaces[faceIdx];
+                        if (face.mNumIndices < 3)
+                        {
+                            // If the mesh has any faces that have less than 3 indices, mark this mesh as invalid.
+                            // This is commonly a control curve object that should be ignored by the mesh importer.
+                            // NOTE: meshes that contain more than 3 vertices are still considered a valid mesh at this step,
+                            // although they should be triangulated already in the assImp import process. Non triangulated meshes
+                            // will be ignored in the later process.
+                            AZ_Printf(Utilities::LogWindow,
+                                "Mesh on node %s has a face with %d vertices. This is likely a control curve object and therefore will be ignored.",
+                                node.mName.C_Str(),
+                                face.mNumIndices);
+                            return false;
+                        }
+                    }
+                }
+                return true;
             }
 
             bool IsPivotNode(const aiString& nodeName, size_t* pos)
@@ -163,9 +190,9 @@ namespace AZ
                 return nullptr;
             }
 
-            bool RecursiveHasChildBone(const aiNode* node, const AZStd::unordered_multimap<AZStd::string, const aiBone*>& boneByNameMap)
+            bool RecursiveHasChildBone(const aiNode* node, const AZStd::unordered_multimap<AZStd::string, const aiBone*>& boneByNameMap, const AZStd::unordered_set<AZStd::string>& animatedNodesMap)
             {
-                const bool isBone = boneByNameMap.contains(node->mName.C_Str());
+                const bool isBone = boneByNameMap.contains(node->mName.C_Str()) || animatedNodesMap.contains(node->mName.C_Str());
                 if (isBone)
                 {
                     return true;
@@ -174,7 +201,7 @@ namespace AZ
                 for (unsigned int childIndex = 0; childIndex < node->mNumChildren; ++childIndex)
                 {
                     const aiNode* childNode = node->mChildren[childIndex];
-                    if (RecursiveHasChildBone(childNode, boneByNameMap))
+                    if (RecursiveHasChildBone(childNode, boneByNameMap, animatedNodesMap))
                     {
                         return true;
                     }

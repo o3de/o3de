@@ -120,8 +120,8 @@ namespace ScriptCanvasEditor
 
     void SourceHandlePropertyHandler::ConsumeAttribute(SourceHandlePropertyAssetCtrl* GUI, AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue, const char* debugName)
     {
-        // Let the AssetPropertyHandlerDefault handle all of the common attributes
-        AzToolsFramework::AssetPropertyHandlerDefault::ConsumeAttributeInternal(GUI, attrib, attrValue, debugName);
+        // Let ConsumeAttributeForPropertyAssetCtrl handle all of the common attributes
+        AzToolsFramework::ConsumeAttributeForPropertyAssetCtrl(GUI, attrib, attrValue, debugName);
 
         if (attrib == AZ::Edit::Attributes::SourceAssetFilterPattern)
         {
@@ -133,12 +133,16 @@ namespace ScriptCanvasEditor
         }
     }
 
-    void SourceHandlePropertyHandler::WriteGUIValuesIntoProperty(size_t index, SourceHandlePropertyAssetCtrl* GUI, property_t& instance, AzToolsFramework::InstanceDataNode* node)
+    void SourceHandlePropertyHandler::WriteGUIValuesIntoProperty
+        ( [[maybe_unused]] size_t index
+        , [[maybe_unused]] SourceHandlePropertyAssetCtrl* GUI
+        , [[maybe_unused]] property_t& instance
+        , [[maybe_unused]] AzToolsFramework::InstanceDataNode* node)
     {
         (void)index;
         (void)node;
 
-        auto sourceHandle = SourceHandle(nullptr, GUI->GetSelectedSourcePath());
+        auto sourceHandle = SourceHandle::FromRelativePath(nullptr, GUI->GetSelectedSourcePath());
         auto completeSourceHandle = CompleteDescription(sourceHandle);
         if (completeSourceHandle)
         {
@@ -157,7 +161,7 @@ namespace ScriptCanvasEditor
 
         GUI->blockSignals(true);
 
-        GUI->SetSelectedSourcePath(instance.Path());
+        GUI->SetSelectedSourcePath(instance.RelativePath());
         GUI->SetEditNotifyTarget(node->GetParent()->GetInstance(0));
 
         GUI->blockSignals(false);

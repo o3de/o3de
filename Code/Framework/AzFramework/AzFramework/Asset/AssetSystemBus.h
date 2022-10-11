@@ -306,8 +306,8 @@ namespace AzFramework
 
         namespace ConnectionIdentifiers
         {
-            static const char* Editor = "EDITOR";
-            static const char* Game = "GAME";
+            static constexpr const char* Editor = "EDITOR";
+            static constexpr const char* Game = "GAME";
         }
 
         //! AssetSystemStatusBusTraits

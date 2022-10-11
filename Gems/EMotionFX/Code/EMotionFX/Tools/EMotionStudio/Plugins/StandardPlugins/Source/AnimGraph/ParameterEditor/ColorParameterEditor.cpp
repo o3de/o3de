@@ -63,7 +63,7 @@ namespace EMStudio
         if (!m_attributes.empty())
         {
             MCore::AttributeColor* attribute = static_cast<MCore::AttributeColor*>(m_attributes[0]);
-            m_currentValue = AZ::Color(attribute->GetValue().m_r, attribute->GetValue().m_g, attribute->GetValue().m_b, attribute->GetValue().m_a);
+            m_currentValue = attribute->GetValue();
         }
         else
         {
@@ -89,7 +89,7 @@ namespace EMStudio
         for (MCore::Attribute* attribute : m_attributes)
         {
             MCore::AttributeColor* typedAttribute = static_cast<MCore::AttributeColor*>(attribute);
-            typedAttribute->SetValue(MCore::RGBAColor(m_currentValue.GetR(), m_currentValue.GetG(), m_currentValue.GetB(), m_currentValue.GetA()));
+            typedAttribute->SetValue(m_currentValue);
         }
     }
 }

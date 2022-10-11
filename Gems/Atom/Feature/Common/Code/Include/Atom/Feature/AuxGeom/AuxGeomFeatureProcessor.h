@@ -26,7 +26,7 @@ namespace AZ
         {
         public: // functions
 
-            AZ_RTTI(AuxGeomFeatureProcessor, "{75E17417-C8E3-4B64-8469-7662D1E0904A}", RPI::AuxGeomFeatureProcessorInterface);
+            AZ_RTTI(AZ::Render::AuxGeomFeatureProcessor, "{75E17417-C8E3-4B64-8469-7662D1E0904A}", AZ::RPI::AuxGeomFeatureProcessorInterface);
             AZ_FEATURE_PROCESSOR(AuxGeomFeatureProcessor);
 
             static void Reflect(AZ::ReflectContext* context);

@@ -54,6 +54,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             emotionfx_atom_editor_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
+                Editor
                 Source
                 Tools
         BUILD_DEPENDENCIES

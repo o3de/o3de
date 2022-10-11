@@ -2,23 +2,19 @@
 
 <ScriptCanvas Include="Include/ScriptCanvas/Libraries/Time/DurationNodeable.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Class Name="DurationNodeable"
-           QualifiedName="ScriptCanvas::Nodeables::Time::DurationNodeable"
-           PreferredClassName="Duration"
-           Base="ScriptCanvas::Nodeable"
-           Icon="Icons/ScriptCanvas/Placeholder.png"
-           Category="Nodeables"
-           GeneratePropertyFriend="True"
-           Namespace="ScriptCanvas"
-           Description="Triggers a signal every frame during the specified duration.">
+        QualifiedName="ScriptCanvas::Nodeables::Time::DurationNodeable"
+        PreferredClassName="Duration"
+        Category="Timing"
+        Namespace="ScriptCanvas"
+        Description="Triggers a signal every frame during the specified duration.">
 
-      <Input Name="Start" Description="">
-        <Parameter Name="Duration" Type="Data::NumberType" DefaultValue="0.0" Description="The amount of time to delay before the Done is signalled."/>
-      </Input>
+        <Input Name="Start" Description="">
+            <Parameter Name="Duration" Type="Data::NumberType" DefaultValue="0.0" Description="The amount of time to delay before the Done is signalled."/>
+        </Input>
 
-      <Output Name="OnTick" Description="Signaled every frame while the duration is active." >
-        <Parameter Name="Elapsed" Type="Data::NumberType" DefaultValue="0.0" Description="The amount of time that has elapsed since the countdown began."/>
-      </Output>
-      <Output Name="Done" Description="Signaled after waiting for the specified amount of times." />
-
+        <Output Name="OnTick" Description="Signaled every frame while the duration is active." >
+            <Parameter Name="Elapsed" Type="Data::NumberType" DefaultValue="0.0" Description="The amount of time that has elapsed since the countdown began."/>
+        </Output>
+        <Output Name="Done" Description="Signaled after waiting for the specified amount of times." />
     </Class>
 </ScriptCanvas>

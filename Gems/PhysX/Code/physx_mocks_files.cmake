@@ -7,5 +7,8 @@
 #
 
 set(FILES
+    Mocks/PhysX/MockPhysicsShape.h
     Mocks/PhysX/MockPhysXHeightfieldProviderComponent.h
+    Mocks/PhysX/MockSceneInterface.h
+    Mocks/PhysX/MockSimulatedBody.h
 )

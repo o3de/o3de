@@ -29,8 +29,10 @@ namespace AZ
             AZStd::vector<Task>&& tasks,
             AZStd::unordered_map<uint32_t, AZStd::vector<uint32_t>>& links,
             size_t linkCount,
-            TaskGraph* parent)
+            TaskGraph* parent,
+            const char* parentLabel)
             : m_parent{ parent }
+            , m_parentLabel{ parentLabel }
         {
             m_tasks = AZStd::move(tasks);
             m_successors.resize(linkCount);

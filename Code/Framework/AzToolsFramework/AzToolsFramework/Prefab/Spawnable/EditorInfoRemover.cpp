@@ -510,7 +510,7 @@ exportComponent, prefabProcessorContext);
         m_componentRequirementsValidator.SetPlatformTags(prefabProcessorContext.GetPlatformTags());
 
         // grab all nested entities from the Instance as source entities.
-        Instance& sourceInstance = prefab.GetInstance();
+        AzToolsFramework::Prefab::Instance& sourceInstance = prefab.GetInstance();
         EntityList sourceEntities;
         GetEntitiesFromInstance(sourceInstance, sourceEntities);
 

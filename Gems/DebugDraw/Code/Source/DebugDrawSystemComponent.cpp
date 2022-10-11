@@ -753,8 +753,7 @@ namespace DebugDraw
     void DebugDrawSystemComponent::DrawAabb(const AZ::Aabb& aabb, const AZ::Color& color, float duration)
     {
         AZStd::lock_guard<AZStd::mutex> locker(m_activeAabbsMutex);
-        m_activeAabbs.push_back();
-        DebugDrawAabbElement& newElement = m_activeAabbs.back();
+        DebugDrawAabbElement& newElement = m_activeAabbs.emplace_back();
         newElement.m_aabb = aabb;
         newElement.m_color = color;
         newElement.m_duration = duration;
@@ -764,8 +763,7 @@ namespace DebugDraw
     void DebugDrawSystemComponent::DrawAabbOnEntity(const AZ::EntityId& targetEntity, const AZ::Aabb& aabb, const AZ::Color& color, float duration)
     {
         AZStd::lock_guard<AZStd::mutex> locker(m_activeAabbsMutex);
-        m_activeAabbs.push_back();
-        DebugDrawAabbElement& newElement = m_activeAabbs.back();
+        DebugDrawAabbElement& newElement = m_activeAabbs.emplace_back();
         newElement.m_targetEntityId = targetEntity;
         newElement.m_aabb = aabb;
         newElement.m_color = color;
@@ -797,8 +795,7 @@ namespace DebugDraw
     void DebugDrawSystemComponent::DrawLineLocationToLocation(const AZ::Vector3& startLocation, const AZ::Vector3& endLocation, const AZ::Color& color, float duration)
     {
         AZStd::lock_guard<AZStd::mutex> locker(m_activeLinesMutex);
-        m_activeLines.push_back();
-        DebugDrawLineElement& newElement = m_activeLines.back();
+        DebugDrawLineElement& newElement = m_activeLines.emplace_back();
 
         newElement.m_color = color;
         newElement.m_duration = duration;
@@ -810,8 +807,7 @@ namespace DebugDraw
     void DebugDrawSystemComponent::DrawLineEntityToLocation(const AZ::EntityId& startEntity, const AZ::Vector3& endLocation, const AZ::Color& color, float duration)
     {
         AZStd::lock_guard<AZStd::mutex> locker(m_activeLinesMutex);
-        m_activeLines.push_back();
-        DebugDrawLineElement& newElement = m_activeLines.back();
+        DebugDrawLineElement& newElement = m_activeLines.emplace_back();
         newElement.m_color = color;
         newElement.m_duration = duration;
         newElement.m_startEntityId = startEntity; // Start of line is at this entity's location
@@ -822,8 +818,7 @@ namespace DebugDraw
     void DebugDrawSystemComponent::DrawLineEntityToEntity(const AZ::EntityId& startEntity, const AZ::EntityId& endEntity, const AZ::Color& color, float duration)
     {
         AZStd::lock_guard<AZStd::mutex> locker(m_activeLinesMutex);
-        m_activeLines.push_back();
-        DebugDrawLineElement& newElement = m_activeLines.back();
+        DebugDrawLineElement& newElement = m_activeLines.emplace_back();
         newElement.m_color = color;
         newElement.m_duration = duration;
         newElement.m_startEntityId = startEntity; // Start of line is at start entity's location
@@ -849,8 +844,7 @@ namespace DebugDraw
     void DebugDrawSystemComponent::DrawObb(const AZ::Obb& obb, const AZ::Color& color, float duration)
     {
         AZStd::lock_guard<AZStd::mutex> locker(m_activeObbsMutex);
-        m_activeObbs.push_back();
-        DebugDrawObbElement& newElement = m_activeObbs.back();
+        DebugDrawObbElement& newElement = m_activeObbs.emplace_back();
         newElement.m_obb = obb;
         newElement.m_color = color;
         newElement.m_duration = duration;
@@ -860,8 +854,7 @@ namespace DebugDraw
     void DebugDrawSystemComponent::DrawObbOnEntity(const AZ::EntityId& targetEntity, const AZ::Obb& obb, const AZ::Color& color, float duration)
     {
         AZStd::lock_guard<AZStd::mutex> locker(m_activeObbsMutex);
-        m_activeObbs.push_back();
-        DebugDrawObbElement& newElement = m_activeObbs.back();
+        DebugDrawObbElement& newElement = m_activeObbs.emplace_back();
         newElement.m_targetEntityId = targetEntity;
         newElement.m_obb = obb;
         newElement.m_color = color;
@@ -887,8 +880,7 @@ namespace DebugDraw
     void DebugDrawSystemComponent::DrawRayLocationToDirection(const AZ::Vector3& worldLocation, const AZ::Vector3& worldDirection, const AZ::Color& color, float duration)
     {
         AZStd::lock_guard<AZStd::mutex> locker(m_activeRaysMutex);
-        m_activeRays.push_back();
-        DebugDrawRayElement& newElement = m_activeRays.back();
+        DebugDrawRayElement& newElement = m_activeRays.emplace_back();
         newElement.m_color = color;
         newElement.m_duration = duration;
         newElement.m_worldLocation = worldLocation;
@@ -899,8 +891,7 @@ namespace DebugDraw
     void DebugDrawSystemComponent::DrawRayEntityToDirection(const AZ::EntityId& startEntity, const AZ::Vector3& worldDirection, const AZ::Color& color, float duration)
     {
         AZStd::lock_guard<AZStd::mutex> locker(m_activeRaysMutex);
-        m_activeRays.push_back();
-        DebugDrawRayElement& newElement = m_activeRays.back();
+        DebugDrawRayElement& newElement = m_activeRays.emplace_back();
         newElement.m_color = color;
         newElement.m_duration = duration;
         newElement.m_startEntityId = startEntity;
@@ -911,8 +902,7 @@ namespace DebugDraw
     void DebugDrawSystemComponent::DrawRayEntityToEntity(const AZ::EntityId& startEntity, const AZ::EntityId& endEntity, const AZ::Color& color, float duration)
     {
         AZStd::lock_guard<AZStd::mutex> locker(m_activeRaysMutex);
-        m_activeRays.push_back();
-        DebugDrawRayElement& newElement = m_activeRays.back();
+        DebugDrawRayElement& newElement = m_activeRays.emplace_back();
         newElement.m_color = color;
         newElement.m_duration = duration;
         newElement.m_startEntityId = startEntity;
@@ -938,8 +928,7 @@ namespace DebugDraw
     void DebugDrawSystemComponent::DrawSphereAtLocation(const AZ::Vector3& worldLocation, float radius, const AZ::Color& color, float duration)
     {
         AZStd::lock_guard<AZStd::mutex> locker(m_activeSpheresMutex);
-        m_activeSpheres.push_back();
-        DebugDrawSphereElement& newElement = m_activeSpheres.back();
+        DebugDrawSphereElement& newElement = m_activeSpheres.emplace_back();
         newElement.m_worldLocation = worldLocation;
         newElement.m_radius = radius;
         newElement.m_color = color;
@@ -950,8 +939,7 @@ namespace DebugDraw
     void DebugDrawSystemComponent::DrawSphereOnEntity(const AZ::EntityId& targetEntity, float radius, const AZ::Color& color, float duration)
     {
         AZStd::lock_guard<AZStd::mutex> locker(m_activeSpheresMutex);
-        m_activeSpheres.push_back();
-        DebugDrawSphereElement& newElement = m_activeSpheres.back();
+        DebugDrawSphereElement& newElement = m_activeSpheres.emplace_back();
         newElement.m_targetEntityId = targetEntity;
         newElement.m_radius = radius;
         newElement.m_color = color;
@@ -975,8 +963,7 @@ namespace DebugDraw
     void DebugDrawSystemComponent::DrawTextAtLocation(const AZ::Vector3& worldLocation, const AZStd::string& text, const AZ::Color& color, float duration)
     {
         AZStd::lock_guard<AZStd::mutex> locker(m_activeTextsMutex);
-        m_activeTexts.push_back();
-        DebugDrawTextElement& newText = m_activeTexts.back();
+        DebugDrawTextElement& newText = m_activeTexts.emplace_back();
         newText.m_drawMode = DebugDrawTextElement::DrawMode::InWorld;
         newText.m_text = text;
         newText.m_color = color;
@@ -988,8 +975,7 @@ namespace DebugDraw
     void DebugDrawSystemComponent::DrawTextOnEntity(const AZ::EntityId& targetEntity, const AZStd::string& text, const AZ::Color& color, float duration)
     {
         AZStd::lock_guard<AZStd::mutex> locker(m_activeTextsMutex);
-        m_activeTexts.push_back();
-        DebugDrawTextElement& newText = m_activeTexts.back();
+        DebugDrawTextElement& newText = m_activeTexts.emplace_back();
         newText.m_drawMode = DebugDrawTextElement::DrawMode::InWorld;
         newText.m_text = text;
         newText.m_color = color;
@@ -1001,8 +987,7 @@ namespace DebugDraw
     void DebugDrawSystemComponent::DrawTextOnScreen(const AZStd::string& text, const AZ::Color& color, float duration)
     {
         AZStd::lock_guard<AZStd::mutex> locker(m_activeTextsMutex);
-        m_activeTexts.push_back();
-        DebugDrawTextElement& newText = m_activeTexts.back();
+        DebugDrawTextElement& newText = m_activeTexts.emplace_back();
         newText.m_drawMode = DebugDrawTextElement::DrawMode::OnScreen;
         //newText.m_category = 0;
         newText.m_text = text;

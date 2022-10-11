@@ -455,17 +455,20 @@ void CLayoutViewPane::SetAspectRatio(unsigned int x, unsigned int y)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CLayoutViewPane::SetViewportFOV(float fov)
+void CLayoutViewPane::SetViewportFOV(const float fovDegrees)
 {
     if (EditorViewportWidget* pRenderViewport = qobject_cast<EditorViewportWidget*>(m_viewport))
     {
-        pRenderViewport->SetFOV(DEG2RAD(fov));
+        const auto fovRadians = AZ::DegToRad(fovDegrees);
+        pRenderViewport->SetFOV(fovRadians);
 
         // if viewport camera is active, make selected fov new default
         if (pRenderViewport->GetViewManager()->GetCameraObjectId() == GUID_NULL)
         {
-            gSettings.viewports.fDefaultFov = DEG2RAD(fov);
+            gSettings.viewports.fDefaultFov = fovRadians;
         }
+
+        OnFOVChanged(fovRadians);
     }
 }
 
@@ -628,9 +631,9 @@ void CLayoutViewPane::SetFocusToViewport()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CLayoutViewPane::OnFOVChanged(float fov)
+void CLayoutViewPane::OnFOVChanged(const float fovRadians)
 {
-    m_viewportTitleDlg.OnViewportFOVChanged(fov);
+    m_viewportTitleDlg.OnViewportFOVChanged(fovRadians);
 }
 
 //////////////////////////////////////////////////////////////////////////

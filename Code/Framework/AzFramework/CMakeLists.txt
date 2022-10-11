@@ -29,7 +29,7 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
         PUBLIC
-            AZ::GridMate
+            AZ::AzNetworking
             3rdParty::zstd
             3rdParty::lz4
 )

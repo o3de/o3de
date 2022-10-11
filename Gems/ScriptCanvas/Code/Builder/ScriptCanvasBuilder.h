@@ -10,16 +10,19 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
+#include <ScriptCanvas/Core/Core.h>
 #include <ScriptCanvas/Grammar/PrimitivesDeclarations.h>
 #include <ScriptCanvas/Variable/VariableCore.h>
 
-namespace ScriptCanvasEditor
+namespace ScriptCanvas
 {
-    class EditorAssetTree;
+    class SourceTree;
 }
 
 namespace ScriptCanvasBuilder
 {
+    using SourceHandle = ScriptCanvas::SourceHandle;
+
     class BuildVariableOverrides
     {
     public:
@@ -41,7 +44,7 @@ namespace ScriptCanvasBuilder
         void SetHandlesToDescription();
 
         // #functions2 provide an identifier for the node/variable in the source that caused the dependency. the root will not have one.
-        ScriptCanvasEditor::SourceHandle m_source;
+        SourceHandle m_source;
         
         // all of the variables here are overrides
         AZStd::vector<ScriptCanvas::GraphVariable> m_variables;
@@ -51,10 +54,22 @@ namespace ScriptCanvasBuilder
         AZStd::vector<ScriptCanvas::GraphVariable> m_overrides;
         AZStd::vector<ScriptCanvas::GraphVariable> m_overridesUnused;
         AZStd::vector<BuildVariableOverrides> m_dependencies;
+
+        // #scriptcanvas_component_extension
+        bool m_isComponentScript = false;
     };
 
     // copy the variables overridden during editor / prefab build time back to runtime data
     ScriptCanvas::RuntimeDataOverrides ConvertToRuntime(const BuildVariableOverrides& overrides);
+    /// Replace the provided overrides asset hierarchy with the provided loaded one.
+    /// Returns false if there is a size mismatch in dependencies or if any of the asset has not yet loaded
+    bool ReplaceAsset(ScriptCanvas::RuntimeDataOverrides& overrides, ScriptCanvas::RuntimeAssetPtr asset);
 
-    AZ::Outcome<BuildVariableOverrides, AZStd::string> ParseEditorAssetTree(const ScriptCanvasEditor::EditorAssetTree& editorAssetTree);
+    AZ::Outcome<BuildVariableOverrides, AZStd::string> ParseEditorAssetTree(const ScriptCanvas::SourceTree& editorAssetTree);
 }
+
+namespace AZStd
+{
+    AZStd::string to_string(const ScriptCanvasBuilder::BuildVariableOverrides& overrides);
+}
+

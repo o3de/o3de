@@ -141,7 +141,7 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
         // AssetTypeFilter
         //////////////////////////////////////////////////////////////////////////
-        //! AssetTypeFilter filters products based on their asset id
+        //! AssetTypeFilter filters products based on their asset type
         class AssetTypeFilter
             : public AssetBrowserEntryFilter
         {

@@ -60,7 +60,6 @@ namespace AZ
             std::shared_ptr<IModuleHandle> GetModule(const std::string& lib);
             std::string GetModuleNameFromPath(const std::string& path);
             void Printf(const char* format, ...);
-            AZ::EnvironmentInstance GetTestRunnerEnvironment();
         };
 
         Platform& GetPlatform();

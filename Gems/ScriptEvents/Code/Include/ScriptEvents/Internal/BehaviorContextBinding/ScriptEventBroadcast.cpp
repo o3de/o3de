@@ -56,7 +56,7 @@ namespace ScriptEvents
 
             SetArgumentName(index, argumentName);
 
-            m_behaviorParameters.push_back();
+            m_behaviorParameters.emplace_back();
             Internal::Utils::BehaviorParameterFromParameter(behaviorContext, parameter, m_argumentNames[index].c_str(), m_behaviorParameters.back());
 
             const AZStd::string& tooltip = parameter.GetTooltip();
@@ -71,7 +71,7 @@ namespace ScriptEvents
         //AZ_TracePrintf("Script Events", "Script Broadcast Method: %s %s::%s (Arguments: %zu)\n", m_returnType.ToString<AZStd::string>().c_str(), busName.c_str(), m_name.c_str(), method.GetParameters().size());
     }
 
-    bool ScriptEventBroadcast::Call(AZ::BehaviorValueParameter* params, unsigned int paramCount, AZ::BehaviorValueParameter* returnValue) const
+    bool ScriptEventBroadcast::Call(AZ::BehaviorArgument* params, unsigned int paramCount, AZ::BehaviorArgument* returnValue) const
     {
         Internal::BindingRequest::BindingParameters parameters;
         parameters.m_eventName = m_name;

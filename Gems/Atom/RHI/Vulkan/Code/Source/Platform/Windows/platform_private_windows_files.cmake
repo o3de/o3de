@@ -10,4 +10,7 @@ set(FILES
     RHI/WSISurface_Windows.cpp
     Vulkan_Traits_Windows.h
     Vulkan_Traits_Platform.h
+    RHI/NsightAftermathGpuCrashTracker_Windows.cpp
+    RHI/NsightAftermathGpuCrashTracker_Windows.h
+    RHI/NsightAftermathHelpers.h
 )

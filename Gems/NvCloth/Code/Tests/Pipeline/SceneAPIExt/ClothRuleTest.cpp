@@ -38,7 +38,7 @@ namespace UnitTest
 
     void NvClothRule::SetUpTestCase()
     {
-        AZ::SceneAPI::SceneCoreStandaloneAllocator::Initialize(AZ::Environment::GetInstance()); // Allocator needed by SceneCore
+        AZ::SceneAPI::SceneCoreStandaloneAllocator::Initialize(); // Allocator needed by SceneCore
     }
 
     void NvClothRule::TearDownTestCase()

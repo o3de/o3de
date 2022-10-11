@@ -24,7 +24,7 @@ namespace O3DE::ProjectManager
         Q_OBJECT
 
     public:
-        explicit GemListView(QAbstractItemModel* model, QItemSelectionModel* selectionModel, AdjustableHeaderWidget* header, QWidget* parent = nullptr);
+        explicit GemListView(QAbstractItemModel* model, QItemSelectionModel* selectionModel, AdjustableHeaderWidget* header, bool readOnly, QWidget* parent = nullptr);
         ~GemListView() = default;
     };
 } // namespace O3DE::ProjectManager

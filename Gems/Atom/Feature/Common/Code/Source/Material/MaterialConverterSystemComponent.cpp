@@ -26,6 +26,7 @@ namespace AZ
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<MaterialConverterSettings>()
+                    // If new settings are added here, be sure to update MaterialConverterSystemComponent::GetFingerprintInfo() as well.
                     ->Version(2)
                     ->Field("Enable", &MaterialConverterSettings::m_enable)
                     ->Field("DefaultMaterial", &MaterialConverterSettings::m_defaultMaterial);
@@ -37,6 +38,8 @@ namespace AZ
             if (auto* serialize = azrtti_cast<SerializeContext*>(context))
             {
                 serialize->Class<MaterialConverterSystemComponent, Component>()
+                    // If changes are made to the material conversion process, update the version number in
+                    // MaterialConverterSystemComponent::GetFingerprintInfo(), not this one.
                     ->Version(3)
                     ->Attribute(Edit::Attributes::SystemComponentTags, AZStd::vector<Crc32>({ AssetBuilderSDK::ComponentTags::AssetBuilder }));
             }
@@ -67,6 +70,23 @@ namespace AZ
         bool MaterialConverterSystemComponent::IsEnabled() const
         {
             return m_settings.m_enable;
+        }
+        
+        AZStd::string MaterialConverterSystemComponent::GetFingerprintInfo() const
+        {
+            static constexpr int Version = 1; // Bump this version whenever changes are made to the material conversion code to force the AP to reprocess scene files
+
+            AZStd::string fingerprintInfo = AZStd::string::format("[MaterialConverter version=%d enabled=%d", Version, IsEnabled());
+             
+            if (!IsEnabled())
+            {
+                fingerprintInfo += AZStd::string::format(" defaultMaterial=%s", GetDefaultMaterialPath().c_str());
+            }
+
+            fingerprintInfo += "]";
+
+
+            return fingerprintInfo;
         }
 
         bool MaterialConverterSystemComponent::ConvertMaterial(
@@ -164,7 +184,7 @@ namespace AZ
             applyOptionalPropertiesFunc("emissive", "useTexture", materialData.GetUseEmissiveMap());
 
             handleTexture("occlusion", "diffuseTextureMap", SceneAPI::DataTypes::IMaterialData::TextureMapType::AmbientOcclusion);
-            applyOptionalPropertiesFunc("ambientOcclusion", "diffuseUseTexture", materialData.GetUseAOMap());
+            applyOptionalPropertiesFunc("occlusion", "diffuseUseTexture", materialData.GetUseAOMap());
 
             if (!anyPBRInUse)
             {

@@ -109,81 +109,6 @@ namespace AZ
             return m_wasPreFinalized;
         }
 
-        //! Attempts to convert a numeric MaterialPropertyValue to another numeric type @T,
-        //! since MaterialPropertyValue itself does not support any kind of casting.
-        //! If the original MaterialPropertyValue is not a numeric type, the original value is returned.
-        template<typename T>
-        MaterialPropertyValue CastNumericMaterialPropertyValue(const MaterialPropertyValue& value)
-        {
-            TypeId typeId = value.GetTypeId();
-
-            if (typeId == azrtti_typeid<bool>())
-            {
-                return aznumeric_cast<T>(value.GetValue<bool>());
-            }
-            else if (typeId == azrtti_typeid<int32_t>())
-            {
-                return aznumeric_cast<T>(value.GetValue<int32_t>());
-            }
-            else if (typeId == azrtti_typeid<uint32_t>())
-            {
-                return aznumeric_cast<T>(value.GetValue<uint32_t>());
-            }
-            else if (typeId == azrtti_typeid<float>())
-            {
-                return aznumeric_cast<T>(value.GetValue<float>());
-            }
-            else
-            {
-                return value;
-            }
-        }
-        
-        //! Attempts to convert an AZ::Vector[2-4] MaterialPropertyValue to another AZ::Vector[2-4] type @T.
-        //! Any extra elements will be dropped or set to 0.0 as needed.
-        //! If the original MaterialPropertyValue is not a Vector type, the original value is returned.
-        template<typename VectorT>
-        MaterialPropertyValue CastVectorMaterialPropertyValue(const MaterialPropertyValue& value)
-        {
-            float values[4] = {};
-
-            TypeId typeId = value.GetTypeId();
-            if (typeId == azrtti_typeid<Vector2>())
-            {
-                value.GetValue<Vector2>().StoreToFloat2(values);
-            }
-            else if (typeId == azrtti_typeid<Vector3>())
-            {
-                value.GetValue<Vector3>().StoreToFloat3(values);
-            }
-            else if (typeId == azrtti_typeid<Vector4>())
-            {
-                value.GetValue<Vector4>().StoreToFloat4(values);
-            }
-            else
-            {
-                return value;
-            }
-
-            typeId = azrtti_typeid<VectorT>();
-            if (typeId == azrtti_typeid<Vector2>())
-            {
-                return Vector2::CreateFromFloat2(values);
-            }
-            else if (typeId == azrtti_typeid<Vector3>())
-            {
-                return Vector3::CreateFromFloat3(values);
-            }
-            else if (typeId == azrtti_typeid<Vector4>())
-            {
-                return Vector4::CreateFromFloat4(values);
-            }
-            else
-            {
-                return value;
-            }
-        }
-        
         void MaterialAsset::Finalize(AZStd::function<void(const char*)> reportWarning, AZStd::function<void(const char*)> reportError)
         {
             if (m_wasPreFinalized)
@@ -212,15 +137,11 @@ namespace AZ
                 };
             }
 
-            const uint32_t materialTypeVersion = m_materialTypeAsset->GetVersion();
-            if (m_materialTypeVersion < materialTypeVersion || m_materialTypeVersion == UnspecifiedMaterialTypeVersion)
-            {
-                // It is possible that the material type has had some properties renamed or otherwise updated. If that's the case,
-                // and this material is still referencing the old property layout, we need to apply any auto updates to rename those
-                // properties before using them to realign the property values.
-                ApplyVersionUpdates();
-            }
-            
+            // It is possible that the material type has had some properties renamed or otherwise updated. If that's the case,
+            // and this material is still referencing the old property layout, we need to apply any auto updates to rename those
+            // properties before using them to realign the property values.
+            ApplyVersionUpdates(reportError);
+
             const MaterialPropertiesLayout* propertyLayout = GetMaterialPropertiesLayout();
 
             AZStd::vector<MaterialPropertyValue> finalizedPropertyValues(m_materialTypeAsset->GetDefaultPropertyValues().begin(), m_materialTypeAsset->GetDefaultPropertyValues().end());
@@ -260,57 +181,7 @@ namespace AZ
                         // and here we have the first opportunity to resolve that value with the actual type. For example, a float property could have been specified in
                         // the JSON as 7 instead of 7.0, which is valid. Similarly, a Color and a Vector3 can both be specified as "[0.0,0.0,0.0]" in the JSON file.
 
-                        MaterialPropertyValue finalValue = value;
-
-                        switch (propertyDescriptor->GetDataType())
-                        {
-                        case MaterialPropertyDataType::Bool:
-                            finalValue = CastNumericMaterialPropertyValue<bool>(value);
-                            break;
-                        case MaterialPropertyDataType::Int:
-                            finalValue = CastNumericMaterialPropertyValue<int32_t>(value);
-                            break;
-                        case MaterialPropertyDataType::UInt:
-                            finalValue = CastNumericMaterialPropertyValue<uint32_t>(value);
-                            break;
-                        case MaterialPropertyDataType::Float:
-                            finalValue = CastNumericMaterialPropertyValue<float>(value);
-                            break;
-                        case MaterialPropertyDataType::Color:
-                            if (value.GetTypeId() == azrtti_typeid<Vector3>())
-                            {
-                                finalValue = Color::CreateFromVector3(value.GetValue<Vector3>());
-                            }
-                            else if (value.GetTypeId() == azrtti_typeid<Vector4>())
-                            {
-                                Vector4 vector4 = value.GetValue<Vector4>();
-                                finalValue = Color::CreateFromVector3AndFloat(vector4.GetAsVector3(), vector4.GetW());
-                            }
-                            break;
-                        case MaterialPropertyDataType::Vector2:
-                            finalValue = CastVectorMaterialPropertyValue<Vector2>(value);
-                            break;
-                        case MaterialPropertyDataType::Vector3:
-                            if (value.GetTypeId() == azrtti_typeid<Color>())
-                            {
-                                finalValue = value.GetValue<Color>().GetAsVector3();
-                            }
-                            else
-                            {
-                                finalValue = CastVectorMaterialPropertyValue<Vector3>(value);
-                            }
-                            break;
-                        case MaterialPropertyDataType::Vector4:
-                            if (value.GetTypeId() == azrtti_typeid<Color>())
-                            {
-                                finalValue = value.GetValue<Color>().GetAsVector4();
-                            }
-                            else
-                            {
-                                finalValue = CastVectorMaterialPropertyValue<Vector4>(value);
-                            }
-                            break;
-                        }
+                        MaterialPropertyValue finalValue = value.CastToType(propertyDescriptor->GetStorageDataTypeId());
 
                         if (ValidateMaterialPropertyDataType(finalValue.GetTypeId(), name, propertyDescriptor, reportError))
                         {
@@ -393,35 +264,25 @@ namespace AZ
             }
         }
         
-        void MaterialAsset::ApplyVersionUpdates()
+        void MaterialAsset::ApplyVersionUpdates(AZStd::function<void(const char*)> reportError)
         {
             if (m_materialTypeVersion == m_materialTypeAsset->GetVersion())
             {
                 return;
             }
-
             [[maybe_unused]] const uint32_t originalVersion = m_materialTypeVersion;
-            [[maybe_unused]] bool changesWereApplied = false;
 
-            for (const MaterialVersionUpdate& versionUpdate : m_materialTypeAsset->GetMaterialVersionUpdateList())
-            {
-                if (m_materialTypeVersion < versionUpdate.GetVersion() || m_materialTypeVersion == UnspecifiedMaterialTypeVersion)
-                {
-                    if (versionUpdate.ApplyVersionUpdates(*this))
-                    {
-                        changesWereApplied = true;
-                        m_materialTypeVersion = versionUpdate.GetVersion();
-                    }
-                }
-            }
-            
+            [[maybe_unused]] bool changesWereApplied =
+                m_materialTypeAsset->GetMaterialVersionUpdates().ApplyVersionUpdates(*this, reportError);
+
 #if AZ_ENABLE_TRACING
             if (changesWereApplied)
             {
-                const AZStd::string versionString = (originalVersion == UnspecifiedMaterialTypeVersion) ? "<Unspecified>" : AZStd::string::format("'%u'", originalVersion);
-                
+                const AZStd::string versionString = (originalVersion == UnspecifiedMaterialTypeVersion) ?
+                    "<Unspecified>" : AZStd::string::format("'%u'", originalVersion);
+
                 AZStd::string assetString = GetId().ToString<AZStd::string>().c_str();
-                
+
                 AZ::Data::AssetInfo assetInfo;
                 AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo,
                     &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, GetId());
@@ -434,7 +295,8 @@ namespace AZ
                     "MaterialAsset", false,
                     "This material is based on version %s of %s, and the material type is now at version '%u'. "
                     "Automatic updates have been applied. Consider updating the .material source file for %s.",
-                    versionString.c_str(), m_materialTypeAsset.ToString<AZStd::string>().c_str(), m_materialTypeAsset->GetVersion(), assetString.c_str());
+                    versionString.c_str(), m_materialTypeAsset.ToString<AZStd::string>().c_str(),
+                    m_materialTypeAsset->GetVersion(), assetString.c_str());
             }
 #endif
 

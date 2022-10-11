@@ -6,7 +6,7 @@
     "origin": "Open 3D Engine - o3de.org",
     "origin_url": "https://github.com/o3de/o3de",
     "type": "Tool",
-    "summary": "The Landscape Canvas Gem provides the Landscape Canvas editor, a node-based graph tool for authoring workflows to populate landscape with dynamic vegetation.",
+    "summary": "The Landscape Canvas Gem provides the Landscape Canvas editor, a node-based graph tool for authoring gradient-based workflows to populate the landscape, such as dynamic vegetation and/or terrain.",
     "canonical_tags": [
         "Gem"
     ],
@@ -22,7 +22,6 @@
         "GraphModel",
         "GradientSignal",
         "SurfaceData",
-        "Vegetation",
         "LmbrCentral",
         "GraphCanvas"
     ]

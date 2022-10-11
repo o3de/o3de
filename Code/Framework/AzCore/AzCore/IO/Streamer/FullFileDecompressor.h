@@ -24,6 +24,7 @@ namespace AZ::IO
     namespace Requests
     {
         struct ReadRequestData;
+        struct ReportData;
     }
 
     struct FullFileDecompressorConfig final :
@@ -106,6 +107,8 @@ namespace AZ::IO
 
         static void FullDecompression(StreamerContext* context, DecompressionInformation& info);
         static void PartialDecompression(StreamerContext* context, DecompressionInformation& info);
+
+        void Report(const Requests::ReportData& data) const;
 
         AZStd::deque<FileRequest*> m_pendingReads;
         AZStd::deque<FileRequest*> m_pendingFileExistChecks;

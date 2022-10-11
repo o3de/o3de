@@ -15,6 +15,10 @@
 class ProcessCommunicatorTracePrinter
 {
 public:
+    //! Wraps a ProcessCommunicatorTracePrinter around an existing ProcessCommunicator, which it will then
+    //! invoke to read from stdout/stderr.
+    //! Because it is going to invoke functions on the given ProcessCommuncator which you pass in, it is important
+    //! that the 'communicator' you pass in is only destroyed after you destroyProcessCommunicatorTracePrinter.
     ProcessCommunicatorTracePrinter(AzFramework::ProcessCommunicator* communicator, const char* window);
     ~ProcessCommunicatorTracePrinter();
 

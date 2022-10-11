@@ -71,6 +71,8 @@ namespace ImageProcessingAtom
         void SetColorRange(const AZ::Color& minColor, const AZ::Color& maxColor) override;
         float GetAverageBrightness() const override;
         void SetAverageBrightness(float avgBrightness) override;
+        AZ::Color GetAverageColor() const override;
+        void SetAverageColor(const AZ::Color& averageColor) override;
         AZ::u32 GetNumPersistentMips() const override;
         void SetNumPersistentMips(AZ::u32 nMips) override;
 
@@ -150,6 +152,7 @@ namespace ImageProcessingAtom
 
         AZ::Color         m_colMinARGB;             // ARGB will be added the properties of the DDS file
         AZ::Color         m_colMaxARGB;             // ARGB will be added the properties of the DDS file
+        AZ::Color         m_averageColor;
         float        m_averageBrightness;           // will be added to the properties of the DDS file
         AZ::u32       m_imageFlags;                  //
         AZ::u32       m_numPersistentMips;           // number of mipmaps won't be splitted

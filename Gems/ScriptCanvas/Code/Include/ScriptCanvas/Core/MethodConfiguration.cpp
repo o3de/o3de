@@ -72,28 +72,24 @@ namespace ScriptCanvas
             const AZ::BehaviorMethod& method = outputConfig.config.m_method;
             const AZ::BehaviorParameter* result = method.GetResult();
             AZStd::vector<AZ::TypeId> unpackedTypes = BehaviorContextUtils::GetUnpackedTypes(result->m_typeId);
+            size_t resultNum = unpackedTypes.size();
 
-            for (size_t resultIndex = 0; resultIndex < unpackedTypes.size(); ++resultIndex)
+            for (size_t resultIndex = 0; resultIndex < resultNum; ++resultIndex)
             {
-                const Data::Type outputType = (unpackedTypes.size() == 1 && AZ::BehaviorContextHelper::IsStringParameter(*result)) ? Data::Type::String() : Data::FromAZType(unpackedTypes[resultIndex]);
+                const Data::Type outputType = (resultNum == 1 && AZ::BehaviorContextHelper::IsStringParameter(*result))
+                    ? Data::Type::String()
+                    : Data::FromAZType(unpackedTypes[resultIndex]);
 
                 AZStd::string resultSlotName(Data::GetName(outputType));
+                if (resultNum != 1)
+                {
+                    resultSlotName = AZStd::string::format("%s:%2zu", resultSlotName.c_str(), resultIndex);
+                }
 
                 AZStd::string className = outputConfig.config.m_className ? *outputConfig.config.m_className : "";
                 if (className.empty())
                 {
                     className = outputConfig.config.m_prettyClassName;
-                }
-
-                GraphCanvas::TranslationKey key;
-                key << "BehaviorClass" << className << "methods" << *outputConfig.config.m_lookupName << "results" << resultIndex << "details";
-
-                GraphCanvas::TranslationRequests::Details details;
-                GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
-
-                if (!details.m_name.empty())
-                {
-                    resultSlotName = details.m_name;
                 }
 
                 SlotId addedSlotId;

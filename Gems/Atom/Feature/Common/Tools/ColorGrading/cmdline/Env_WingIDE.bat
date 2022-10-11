@@ -28,7 +28,7 @@ CALL %~dp0\Env_Core.bat
 CALL %~dp0\Env_Python.bat
 
 :: Wing and other IDEs probably prefer access directly to the python.exe
-set DCCSI_PY_IDE = %DCCSI_PYTHON_INSTALL%\runtime\python-3.7.10-rev1-windows\python
+set DCCSI_PY_IDE = %DCCSI_PYTHON_INSTALL%\runtime\python-3.10.5-rev1-windows\python
 echo     DCCSI_PY_IDE = %DCCSI_PY_IDE%
 
 :: ide and debugger plug

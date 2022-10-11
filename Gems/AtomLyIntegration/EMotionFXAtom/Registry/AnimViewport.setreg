@@ -1,0 +1,32 @@
+{
+    "O3DE": {
+        "Editor": {
+            "Viewport": {
+                "Animation": {
+                    "Scene": {
+                        "FeatureProcessors": [
+                            "AZ::Render::AcesDisplayMapperFeatureProcessor",
+                            "AZ::Render::DirectionalLightFeatureProcessor",
+                            "AZ::Render::MeshFeatureProcessor",
+                            "AZ::Render::ImageBasedLightFeatureProcessor",
+                            "AZ::Render::PostProcessFeatureProcessor",
+                            "AZ::Render::SkinnedMeshFeatureProcessor",
+                            "AZ::Render::SkyBoxFeatureProcessor",
+                            "AZ::Render::TransformServiceFeatureProcessor",
+                            "AZ::Render::AuxGeomFeatureProcessor",
+
+                            // These FPs can be removed once the LightCullingPass issue [ATOM-17812] is addressed 
+                            "AZ::Render::SimplePointLightFeatureProcessor",
+                            "AZ::Render::SimpleSpotLightFeatureProcessor",
+                            "AZ::Render::PointLightFeatureProcessor",
+                            "AZ::Render::DiskLightFeatureProcessor",
+                            "AZ::Render::CapsuleLightFeatureProcessor",
+                            "AZ::Render::QuadLightFeatureProcessor",
+                            "AZ::Render::DecalTextureArrayFeatureProcessor"
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}

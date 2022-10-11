@@ -16,7 +16,7 @@
 namespace O3DE::ProjectManager
 {
     GemListView::GemListView(
-        QAbstractItemModel* model, QItemSelectionModel* selectionModel, AdjustableHeaderWidget* header, QWidget* parent)
+        QAbstractItemModel* model, QItemSelectionModel* selectionModel, AdjustableHeaderWidget* header, bool readOnly, QWidget* parent)
         : QListView(parent)
     {
         setObjectName("GemCatalogListView");
@@ -24,7 +24,7 @@ namespace O3DE::ProjectManager
 
         setModel(model);
         setSelectionModel(selectionModel);
-        GemItemDelegate* itemDelegate = new GemItemDelegate(model, header, this);
+        GemItemDelegate* itemDelegate = new GemItemDelegate(model, header, readOnly, this);
         
         connect(itemDelegate, &GemItemDelegate::MovieStartedPlaying, [=](const QMovie* playingMovie)
             {

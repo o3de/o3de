@@ -107,7 +107,13 @@ namespace LyShineExamples
         }
 
         ISprite* sprite = (m_overrideSprite) ? m_overrideSprite : m_sprite;
-        AZ::Data::Instance<AZ::RPI::Image> image = sprite->GetImage();
+        AZ::Data::Instance<AZ::RPI::Image> image;
+
+        if (sprite != nullptr)
+        {
+            image = sprite->GetImage();
+        }
+
         bool isTextureSRGB = false;
         bool isTexturePremultipliedAlpha = false; // we are not rendering from a render target with alpha in it
         LyShine::BlendMode blendMode = LyShine::BlendMode::Normal;

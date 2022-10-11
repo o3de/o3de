@@ -9,19 +9,10 @@
 --
 ----------------------------------------------------------------------------------------------------
 
-local PropertyOverrideTest = 
+local PropertyValueTest = 
 {
     Properties = 
     {
-        Textures = 
-        {
-            "materials/presets/macbeth/05_blue_flower_srgb.tif.streamingimage",
-            "materials/presets/macbeth/06_bluish_green_srgb.tif.streamingimage",
-            "materials/presets/macbeth/09_moderate_red_srgb.tif.streamingimage",
-            "materials/presets/macbeth/11_yellow_green_srgb.tif.streamingimage",
-            "materials/presets/macbeth/12_orange_yellow_srgb.tif.streamingimage",
-            "materials/presets/macbeth/17_magenta_srgb.tif.streamingimage"
-        }, 
     }, 
 }
 
@@ -42,7 +33,7 @@ function randomDir()
     return dir
 end
 
-function PropertyOverrideTest:OnActivate()
+function PropertyValueTest:OnActivate()
     self.timer = 0.0
     self.totalTime = 0.0
     self.totalTimeMax = 200.0
@@ -50,44 +41,44 @@ function PropertyOverrideTest:OnActivate()
     self.colors = {}
     self.lerpDirs = {}
 
-    self.originalAssignments = MaterialComponentRequestBus.Event.GetOriginalMaterialAssignments(self.entityId);
-    self.assignmentIds = self.originalAssignments:GetKeys()
+    self.textures = 
+    {
+        "materials/presets/macbeth/05_blue_flower_srgb.tif.streamingimage",
+        "materials/presets/macbeth/06_bluish_green_srgb.tif.streamingimage",
+        "materials/presets/macbeth/09_moderate_red_srgb.tif.streamingimage",
+        "materials/presets/macbeth/11_yellow_green_srgb.tif.streamingimage",
+        "materials/presets/macbeth/12_orange_yellow_srgb.tif.streamingimage",
+        "materials/presets/macbeth/17_magenta_srgb.tif.streamingimage"
+    } 
 
-    for index = 1, self.assignmentIds:GetSize() do
-        local id = self.assignmentIds[index]
-        if (id ~= nil) then
-            self.colors[index] = randomColor()
-            self.lerpDirs[index] = randomDir()
-        end
-    end
     self.tickBusHandler = TickBus.Connect(self);
 end
 
-function PropertyOverrideTest:UpdateFactor(assignmentId)
+function PropertyValueTest:UpdateFactor(assignmentId)
     local propertyName = "baseColor.factor"
     local propertyValue = math.random()
-    MaterialComponentRequestBus.Event.SetPropertyOverride(self.entityId, assignmentId, propertyName, propertyValue);
+    MaterialComponentRequestBus.Event.SetPropertyValue(self.entityId, assignmentId, propertyName, propertyValue);
 end
 
-function PropertyOverrideTest:UpdateColor(assignmentId, color)
+function PropertyValueTest:UpdateColor(assignmentId, color)
     local propertyName = "baseColor.color"
     local propertyValue = color
-    MaterialComponentRequestBus.Event.SetPropertyOverride(self.entityId, assignmentId, propertyName, propertyValue);
+    MaterialComponentRequestBus.Event.SetPropertyValue(self.entityId, assignmentId, propertyName, propertyValue);
 end
 
-function PropertyOverrideTest:UpdateTexture(assignmentId)
-    if (#self.Properties.Textures > 0) then
+function PropertyValueTest:UpdateTexture(assignmentId)
+    if (#self.textures > 0) then
         local propertyName = "baseColor.textureMap"
-        local textureName = self.Properties.Textures[ math.random( #self.Properties.Textures ) ]
+        local textureName = self.textures[ math.random( #self.textures ) ]
         Debug.Log(textureName)
         local textureAssetId = AssetCatalogRequestBus.Broadcast.GetAssetIdByPath(textureName, Uuid(), false)
-        MaterialComponentRequestBus.Event.SetPropertyOverride(self.entityId, assignmentId, propertyName, textureAssetId);
+        MaterialComponentRequestBus.Event.SetPropertyValue(self.entityId, assignmentId, propertyName, textureAssetId);
     end
 end
 
-function PropertyOverrideTest:UpdateProperties()
+function PropertyValueTest:UpdateProperties()
     Debug.Log("Overriding properties...")
-    for index = 1, self.assignmentIds:GetSize() do
+    for index = 1, #self.assignmentIds do
         local id = self.assignmentIds[index]
         if (id ~= nil) then
             self:UpdateFactor(id)
@@ -96,9 +87,9 @@ function PropertyOverrideTest:UpdateProperties()
     end
 end
 
-function PropertyOverrideTest:ClearProperties()
+function PropertyValueTest:ClearProperties()
     Debug.Log("Clearing properties...")
-    MaterialComponentRequestBus.Event.ClearAllPropertyOverrides(self.entityId);
+    MaterialComponentRequestBus.Event.ClearAllPropertyValues(self.entityId);
 end
 
 function lerpColor(color, lerpDir, deltaTime)
@@ -131,8 +122,8 @@ function lerpColor(color, lerpDir, deltaTime)
     end
 end
 
-function PropertyOverrideTest:lerpColors(deltaTime)
-    for index = 1, self.assignmentIds:GetSize() do
+function PropertyValueTest:lerpColors(deltaTime)
+    for index = 1, #self.assignmentIds do
         local id = self.assignmentIds[index]
         if (id ~= nil) then
             lerpColor(self.colors[index], self.lerpDirs[index], deltaTime)
@@ -141,7 +132,25 @@ function PropertyOverrideTest:lerpColors(deltaTime)
     end
 end
 
-function PropertyOverrideTest:OnTick(deltaTime, timePoint)
+function PropertyValueTest:OnTick(deltaTime, timePoint)
+
+    if(nil == self.assignmentIds) then
+        local originalAssignments = MaterialComponentRequestBus.Event.GetDefautMaterialMap(self.entityId)
+        if(nil == originalAssignments or #originalAssignments <= 1) then -- There is always 1 entry for the default assignment; a loaded model will have at least 2 assignments
+            return
+        end
+        
+        self.assignmentIds = originalAssignments:GetKeys()
+
+        for index = 1, #self.assignmentIds do
+            local id = self.assignmentIds[index]
+            if (id ~= nil) then
+                self.colors[index] = randomColor()
+                self.lerpDirs[index] = randomDir()
+            end
+        end
+    end
+
     self.timer = self.timer + deltaTime
     self.totalTime = self.totalTime + deltaTime
     self:lerpColors(deltaTime)
@@ -155,4 +164,4 @@ function PropertyOverrideTest:OnTick(deltaTime, timePoint)
     end
 end
 
-return PropertyOverrideTest
+return PropertyValueTest

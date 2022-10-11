@@ -18,9 +18,12 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/typetraits/decay.h>
 #include <AzCore/std/typetraits/function_traits.h>
+#include <AzCore/std/typetraits/has_member_function.h>
 #include <AzCore/std/typetraits/is_function.h>
 #include <AzCore/std/typetraits/is_member_function_pointer.h>
 #include <AzCore/std/typetraits/is_same.h>
+#include <AzCore/DOM/DomValue.h>
+#include <AzCore/DOM/DomUtils.h>
 
 namespace AZ
 {
@@ -141,6 +144,11 @@ namespace AZ
     public:
         using ContextDeleter = void(*)(void* contextData);
 
+        static const AZ::Name s_typeField;
+        static constexpr AZStd::string_view s_typeName = "AZ::Attribute";
+        static const AZ::Name s_instanceField;
+        static const AZ::Name s_attributeField;
+
         AZ_RTTI(AZ::Attribute, "{2C656E00-12B0-476E-9225-5835B92209CC}");
         Attribute()
             : m_contextData(nullptr, &DefaultDelete)
@@ -155,6 +163,39 @@ namespace AZ
         void* GetContextData() const
         {
             return m_contextData.get();
+        }
+
+        /// Returns true if this attribute is an invokable function or method.
+        virtual bool IsInvokable() const
+        {
+            return false;
+        }
+
+        /// Returns true if this attribute is invokable, given a set of arguments.
+        /// @param arguments A Dom::Value that must contain an Array of arguments for this invokable attribute.
+        virtual bool CanDomInvoke([[maybe_unused]] const AZ::Dom::Value& arguments) const
+        {
+            return false;
+        }
+
+        /// Attempts to execute this attribute given an array of Dom::Values as parameters.
+        /// @param arguments A Dom::Value that must contain an Array of arguments for this invokable attribute.
+        /// @return A Dom::Value containing the marshalled result of the function call (null if the call returned void)
+        virtual AZ::Dom::Value DomInvoke([[maybe_unused]] void* instance, [[maybe_unused]] const AZ::Dom::Value& arguments)
+        {
+            return {};
+        }
+
+        /// Gets a marshaleld Dom::Value representation of this attribute bound to a given instance.
+        /// By default this just serializes a pointer to the instance and this attribute, but for non-invokable
+        /// attributes this is just abbreviated to a marshalled version of the data stored in the attribute.
+        virtual AZ::Dom::Value GetAsDomValue([[maybe_unused]] void* instance)
+        {
+            AZ::Dom::Value result(AZ::Dom::Type::Object);
+            result[s_typeField] = Dom::Value(s_typeName, false);
+            result[s_instanceField] = AZ::Dom::Utils::ValueFromType(instance);
+            result[s_attributeField] = AZ::Dom::Utils::ValueFromType(this);
+            return result;
         }
 
         bool m_describesChildren = false;
@@ -200,6 +241,18 @@ namespace AZ
         virtual const T& Get(void* instance) const { (void)instance; return m_data; }
         T& operator = (T& data) { m_data = data; return m_data; }
         T& operator = (const T& data) { m_data = data; return m_data; }
+
+        AZ::Dom::Value GetAsDomValue(void*) override
+        {
+            if constexpr (AZStd::is_copy_constructible_v<T>)
+            {
+                return AZ::Dom::Utils::ValueFromType(m_data);
+            }
+            else
+            {
+                return AZ::Dom::Utils::ValueFromType(&m_data);
+            }
+        }
     private:
         T   m_data;
     };
@@ -225,8 +278,113 @@ namespace AZ
             , m_dataPtr(p) {}
         const T& Get(void* instance) const override { return (reinterpret_cast<C*>(instance)->*m_dataPtr); }
         DataPtr GetMemberDataPtr() const { return m_dataPtr; }
+
+        AZ::Dom::Value GetAsDomValue(void* instance) override
+        {
+            return AZ::Dom::Utils::ValueFromType(Get(instance));
+        }
     private:
         DataPtr m_dataPtr;
+    };
+
+    template <typename Arg>
+    bool CanInvokeFromDomArrayEntry(const AZ::Dom::Value& domArray, size_t index)
+    {
+        // Args must be packed as an array
+        if (!domArray.IsArray())
+        {
+            return false;
+        }
+
+        // Unneeded arguments will be discarded, so larger array sizes are OK
+        if (index >= domArray.ArraySize())
+        {
+            return true;
+        }
+
+        // Args should be convertible to our parameter type
+        const Dom::Value& entry = domArray[index];
+        if (!AZ::Dom::Utils::CanConvertValueToType<Arg>(entry))
+        {
+            // If it's not a safe conversion but it's a pointer type and we've got a void*, allow it
+            if constexpr (AZStd::is_pointer_v<Arg>)
+            {
+                return entry.IsOpaqueValue() && entry.GetOpaqueValue().is<void*>();
+            }
+            // Otherwise, this is not a valid call
+            else
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    template <typename... T>
+    bool CanInvokeFromDomArray(const AZ::Dom::Value& domArray)
+    {
+        size_t index = 0;
+        if (!domArray.IsArray() || domArray.ArraySize() < sizeof...(T))
+        {
+            return false;
+        }
+        return (CanInvokeFromDomArrayEntry<T>(domArray, index++) && ...);
+    }
+
+    template <typename R, typename... Args, size_t... Is>
+    Dom::Value InvokeFromDomArrayInternal(
+        const AZStd::function<R(Args...)>& invokeFunction, const AZ::Dom::Value& domArray, AZStd::index_sequence<Is...>)
+    {
+        if constexpr (AZStd::is_same_v<R, void>)
+        {
+            invokeFunction(AZ::Dom::Utils::ValueToTypeUnsafe<Args>(domArray[Is])...);
+            return {};
+        }
+        else
+        {
+            return AZ::Dom::Utils::ValueFromType(invokeFunction(AZ::Dom::Utils::ValueToTypeUnsafe<Args>(domArray[Is])...));
+        }
+    }
+
+    template <typename R, typename... Args>
+    Dom::Value InvokeFromDomArray(const AZStd::function<R(Args...)>& invokeFunction, const AZ::Dom::Value& domArray)
+    {
+        if (!domArray.IsArray() || domArray.ArraySize() < sizeof...(Args))
+        {
+            return {};
+        }
+
+        auto indexSequence = AZStd::make_index_sequence<sizeof...(Args)>{};
+        return InvokeFromDomArrayInternal<R, Args...>(invokeFunction, domArray, indexSequence);
+    }
+
+    template <typename T>
+    struct DomInvokeHelper
+    {
+        static bool CanInvoke(const AZ::Dom::Value&)
+        {
+            return false;
+        }
+
+        static AZ::Dom::Value Invoke(const T&, const AZ::Dom::Value&)
+        {
+            return {};
+        }
+    };
+
+    template <typename R, typename... Args>
+    struct DomInvokeHelper<AZStd::function<R(Args...)>>
+    {
+        static bool CanInvoke(const AZ::Dom::Value& args)
+        {
+            return CanInvokeFromDomArray<Args...>(args);
+        }
+
+        static AZ::Dom::Value Invoke(const AZStd::function<R(Args...)>& invokeFunction, const AZ::Dom::Value& args)
+        {
+            return InvokeFromDomArray<R, Args...>(invokeFunction, args);
+        }
     };
 
     /**
@@ -256,6 +414,24 @@ namespace AZ
         virtual AZ::Uuid GetInstanceType() const
         {
             return AZ::Uuid::CreateNull();
+        }
+
+        virtual bool IsInvokable() const
+        {
+            return true;
+        }
+
+        virtual bool CanDomInvoke([[maybe_unused]] const AZ::Dom::Value& arguments) const
+        {
+            return CanInvokeFromDomArray<Args...>(arguments);
+        }
+
+        virtual AZ::Dom::Value DomInvoke(void* instance, const AZ::Dom::Value& arguments)
+        {
+            return InvokeFromDomArray<R, Args...>(AZStd::function<R(Args...)>([&](Args... args) -> R
+            {
+                return Invoke(instance, args...);
+            }), arguments);
         }
 
         FunctionPtr m_function;
@@ -290,6 +466,21 @@ namespace AZ
             {
                 return m_callable;
             }
+        }
+
+        virtual bool IsInvokable() const
+        {
+            return AZStd::function_traits<Invocable>::value;
+        }
+
+        virtual bool CanDomInvoke(const AZ::Dom::Value& arguments) const
+        {
+            return DomInvokeHelper<Callable>::CanInvoke(arguments);
+        }
+
+        virtual AZ::Dom::Value DomInvoke(void*, const AZ::Dom::Value& arguments)
+        {
+            return DomInvokeHelper<Callable>::Invoke(m_callable, arguments);
         }
     private:
         Callable m_callable;
@@ -336,6 +527,24 @@ namespace AZ
         FunctionPtr GetMemberFunctionPtr() const
         {
             return m_memFunction;
+        }
+
+        virtual bool IsInvokable() const
+        {
+            return true;
+        }
+
+        virtual bool CanDomInvoke([[maybe_unused]] const AZ::Dom::Value& arguments) const
+        {
+            return CanInvokeFromDomArray<Args...>(arguments);
+        }
+
+        virtual AZ::Dom::Value DomInvoke(void* instance, const AZ::Dom::Value& arguments)
+        {
+            return InvokeFromDomArray<R, Args...>(AZStd::function<R(Args...)>([&](Args... args) -> R
+            {
+                return Invoke(instance, args...);
+            }), arguments);
         }
     private:
         FunctionPtr m_memFunction;

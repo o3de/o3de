@@ -151,7 +151,7 @@ namespace AzFramework
     {
         // Don't create any barriers if we are debugging. This will cause artifacts but better then
         // a confined cursor during debugging.
-        if (AZ::Debug::Trace::IsDebuggerPresent())
+        if (AZ::Debug::Trace::Instance().IsDebuggerPresent())
         {
             AZ_Warning("XcbInput", false, "Debugger running. Barriers will not be created.");
             return;
@@ -542,8 +542,19 @@ namespace AzFramework
                 const xcb_focus_in_event_t* focusInEvent = reinterpret_cast<const xcb_focus_in_event_t*>(event);
                 if (m_focusWindow != focusInEvent->event)
                 {
+                    if (m_focusWindow != XCB_WINDOW_NONE)
+                    {
+                        HandleCursorState(m_focusWindow, SystemCursorState::UnconstrainedAndVisible);
+                    }
+
                     m_focusWindow = focusInEvent->event;
-                    HandleCursorState(m_focusWindow, m_systemCursorState);
+
+                    // If the cursor state is Unknown, then calling HandleCursorState would hide the cursor, 
+                    // but we should only hide the cursor if m_systemCursorState is explicitly hidden.
+                    if(SystemCursorState::Unknown != m_systemCursorState) 
+                    {
+                        HandleCursorState(m_focusWindow, m_systemCursorState);
+                    }
                 }
 
                 auto* interface = AzFramework::XcbConnectionManagerInterface::Get();
