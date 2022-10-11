@@ -18,10 +18,11 @@ namespace AzToolsFramework
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<PaintBrushSettings>()
-                ->Version(1)
+                ->Version(2)
                 ->Field("Radius", &PaintBrushSettings::m_radius)
                 ->Field("Intensity", &PaintBrushSettings::m_intensity)
-                ->Field("Opacity", &PaintBrushSettings::m_opacity);
+                ->Field("Opacity", &PaintBrushSettings::m_opacity)
+                ->Field("BlendMode", &PaintBrushSettings::m_blendMode);
 
             if (auto editContext = serializeContext->GetEditContext())
             {
@@ -46,7 +47,19 @@ namespace AzToolsFramework
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                     ->Attribute(AZ::Edit::Attributes::Step, 0.025f)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnOpacityChange);
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnOpacityChange)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::ComboBox, &PaintBrushSettings::m_blendMode, "Mode", "Blend mode of the paint brush.")
+                    ->EnumAttribute(PaintBrushBlendMode::Normal, "Normal")
+                    ->EnumAttribute(PaintBrushBlendMode::Multiply, "Multiply")
+                    ->EnumAttribute(PaintBrushBlendMode::Screen, "Screen")
+                    ->EnumAttribute(PaintBrushBlendMode::Add, "Linear Dodge (Add)")
+                    ->EnumAttribute(PaintBrushBlendMode::Subtract, "Subtract")
+                    ->EnumAttribute(PaintBrushBlendMode::Darken, "Darken (Min)")
+                    ->EnumAttribute(PaintBrushBlendMode::Lighten, "Lighten (Max)")
+                    ->EnumAttribute(PaintBrushBlendMode::Average, "Average")
+                    ->EnumAttribute(PaintBrushBlendMode::Overlay, "Overlay")
+                    ;
             }
         }
     }
@@ -69,6 +82,12 @@ namespace AzToolsFramework
         OnOpacityChange();
     }
 
+    void PaintBrushSettings::SetBlendMode(PaintBrushBlendMode blendMode)
+    {
+        m_blendMode = blendMode;
+        OnBlendModeChange();
+    }
+
     AZ::u32 PaintBrushSettings::OnIntensityChange()
     {
         // Notify listeners that the configuration changed. This is used to synchronize the paint brush settings with the manipulator.
@@ -87,6 +106,13 @@ namespace AzToolsFramework
     {
         // Notify listeners that the configuration changed. This is used to synchronize the paint brush settings with the manipulator.
         PaintBrushSettingsNotificationBus::Broadcast(&PaintBrushSettingsNotificationBus::Events::OnRadiusChanged, m_radius);
+        return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
+    }
+
+    AZ::u32 PaintBrushSettings::OnBlendModeChange()
+    {
+        // Notify listeners that the configuration changed. This is used to synchronize the paint brush settings with the manipulator.
+        PaintBrushSettingsNotificationBus::Broadcast(&PaintBrushSettingsNotificationBus::Events::OnBlendModeChanged, m_blendMode);
         return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
     }
 

@@ -3625,18 +3625,18 @@ TEST_F(AssetProcessorManagerTest, SourceFileProcessFailure_AutoFailedLfsPointerF
     AZ::IO::FixedMaxPathString engineRoot, projectRoot;
     settingsRegistry->Get(engineRoot, AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
     settingsRegistry->Get(projectRoot, AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath);
-    settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder, m_tempDir.path().toUtf8().data());
-    settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath, m_tempDir.path().toUtf8().data());
+    settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder, m_assetRootDir.path().toUtf8().data());
+    settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath, m_assetRootDir.path().toUtf8().data());
 
-    QDir tempPath(m_tempDir.path());
-    QString gitAttributesPath = tempPath.absoluteFilePath(".gitattributes");
+    QDir assetRootDir(m_assetRootDir.path());
+    QString gitAttributesPath = assetRootDir.absoluteFilePath(".gitattributes");
     ASSERT_TRUE(UnitTestUtils::CreateDummyFile(gitAttributesPath, QString(
         "#\n"
         "# Git LFS(see https ://git-lfs.github.com/)\n"
         "#\n"
         "*.txt filter=lfs diff=lfs merge=lfs -text\n")));
 
-    QString sourcePath = tempPath.absoluteFilePath("subfolder1/test.txt");
+    QString sourcePath = assetRootDir.absoluteFilePath("subfolder1/test.txt");
     ASSERT_TRUE(UnitTestUtils::CreateDummyFile(sourcePath, QString(
         "version https://git-lfs.github.com/spec/v1\n"
         "oid sha256:ee4799379bfcfa99e95afd6494da51fbeda95f21ea71d267ae7102f048edec85\n"
