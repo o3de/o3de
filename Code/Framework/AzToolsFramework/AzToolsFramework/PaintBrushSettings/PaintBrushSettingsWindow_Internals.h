@@ -72,7 +72,7 @@ namespace PaintBrush
             void OnIntensityChanged(float intensity) override;
             void OnOpacityChanged(float opacity) override;
             void OnRadiusChanged(float radius) override;
-
+            void OnBlendModeChanged(AzToolsFramework::PaintBrushBlendMode blendMode) override;
 
             // RPE Support
             AzToolsFramework::ReflectedPropertyEditor* m_propertyEditor = nullptr;

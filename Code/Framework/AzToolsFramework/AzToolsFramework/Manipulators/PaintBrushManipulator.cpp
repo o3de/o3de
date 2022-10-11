@@ -107,6 +107,8 @@ namespace AzToolsFramework
 
     bool PaintBrushManipulator::HandleMouseInteraction(const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {
+        AZ_PROFILE_FUNCTION(Entity);
+
         if (mouseInteraction.m_mouseEvent == AzToolsFramework::ViewportInteraction::MouseEvent::Move)
         {
             const bool isFirstPaintedPoint = false;
@@ -177,10 +179,12 @@ namespace AzToolsFramework
             float radius = 0.0f;
             float intensity = 0.0f;
             float opacity = 0.0f;
+            PaintBrushBlendMode blendMode = PaintBrushBlendMode::Normal;
 
             PaintBrushSettingsRequestBus::BroadcastResult(radius, &PaintBrushSettingsRequestBus::Events::GetRadius);
             PaintBrushSettingsRequestBus::BroadcastResult(intensity, &PaintBrushSettingsRequestBus::Events::GetIntensity);
             PaintBrushSettingsRequestBus::BroadcastResult(opacity, &PaintBrushSettingsRequestBus::Events::GetOpacity);
+            PaintBrushSettingsRequestBus::BroadcastResult(blendMode, &PaintBrushSettingsRequestBus::Events::GetBlendMode);
 
             // Create an AABB that contains both endpoints. By definition, it will contain all of the brush stroke
             // points that fall in-between as well.
@@ -195,9 +199,23 @@ namespace AzToolsFramework
             // for the world positions it cares about.
             PaintBrushNotifications::ValueLookupFn valueLookupFn(
                 [manipulatorRadiusSq, previousCenter2D, center2D, intensity, opacity](
-                AZStd::span<const AZ::Vector3> points, AZStd::span<float> intensities,
-                AZStd::span<float> opacities, AZStd::span<bool> validFlags)
+                AZStd::span<const AZ::Vector3> points,
+                AZStd::vector<AZ::Vector3>& validPoints, AZStd::vector<float>& intensities, AZStd::vector<float>& opacities)
             {
+                validPoints.clear();
+                intensities.clear();
+                opacities.clear();
+
+                // Early out if the paintbrush is 100% transparent.
+                if (opacity == 0.0f)
+                {
+                    return;
+                }
+
+                validPoints.reserve(points.size());
+                intensities.reserve(points.size());
+                opacities.reserve(points.size());
+
                 for (size_t index = 0; index < points.size(); index++)
                 {
                     // Any point that falls within our brush stroke is considered valid. Since our brush is a circle, the brush stroke
@@ -209,21 +227,91 @@ namespace AzToolsFramework
                     if (AZ::Geometry2DUtils::ShortestDistanceSqPointSegment(AZ::Vector2(points[index]), previousCenter2D, center2D) <=
                          manipulatorRadiusSq)
                     {
-                        intensities[index] = intensity;
-                        opacities[index] = opacity;
-                        validFlags[index] = true;
-                    }
-                    else
-                    {
-                        intensities[index] = 0.0f;
-                        opacities[index] = 0.0f;
-                        validFlags[index] = false;
+                        validPoints.emplace_back(points[index]);
+                        intensities.emplace_back(intensity);
+                        opacities.emplace_back(opacity);
                     }
                 }
             });
 
+            // Set the blending operation based on the current paintbrush blend mode setting.
+            PaintBrushNotifications::BlendFn blendFn;
+            switch (blendMode)
+            {
+                case PaintBrushBlendMode::Normal:
+                    blendFn = [](float baseValue, float intensity, float opacity)
+                    {
+                        const float operationResult = intensity;
+                        return AZStd::clamp(AZStd::lerp(baseValue, operationResult, opacity), 0.0f, 1.0f);
+                    };
+                    break;
+                case PaintBrushBlendMode::Add:
+                    blendFn = [](float baseValue, float intensity, float opacity)
+                    {
+                        const float operationResult = baseValue + intensity;
+                        return AZStd::clamp(AZStd::lerp(baseValue, operationResult, opacity), 0.0f, 1.0f);
+                    };
+                    break;
+                case PaintBrushBlendMode::Subtract:
+                    blendFn = [](float baseValue, float intensity, float opacity)
+                    {
+                        const float operationResult = baseValue - intensity;
+                        return AZStd::clamp(AZStd::lerp(baseValue, operationResult, opacity), 0.0f, 1.0f);
+                    };
+                    break;
+                case PaintBrushBlendMode::Multiply:
+                    blendFn = [](float baseValue, float intensity, float opacity)
+                    {
+                        const float operationResult = baseValue * intensity;
+                        return AZStd::clamp(AZStd::lerp(baseValue, operationResult, opacity), 0.0f, 1.0f);
+                    };
+                    break;
+                case PaintBrushBlendMode::Screen:
+                    blendFn = [](float baseValue, float intensity, float opacity)
+                    {
+                        const float operationResult = 1.0f - ((1.0f - baseValue) * (1.0f - intensity));
+                        return AZStd::clamp(AZStd::lerp(baseValue, operationResult, opacity), 0.0f, 1.0f);
+                    };
+                    break;
+                case PaintBrushBlendMode::Darken:
+                    blendFn = [](float baseValue, float intensity, float opacity)
+                    {
+                        const float operationResult = AZStd::min(baseValue, intensity);
+                        return AZStd::clamp(AZStd::lerp(baseValue, operationResult, opacity), 0.0f, 1.0f);
+                    };
+                    break;
+                case PaintBrushBlendMode::Lighten:
+                    blendFn = [](float baseValue, float intensity, float opacity)
+                    {
+                        const float operationResult = AZStd::max(baseValue, intensity);
+                        return AZStd::clamp(AZStd::lerp(baseValue, operationResult, opacity), 0.0f, 1.0f);
+                    };
+                    break;
+                case PaintBrushBlendMode::Average:
+                    blendFn = [](float baseValue, float intensity, float opacity)
+                    {
+                        const float operationResult = (baseValue + intensity) / 2.0f;
+                        return AZStd::clamp(AZStd::lerp(baseValue, operationResult, opacity), 0.0f, 1.0f);
+                    };
+                    break;
+                case PaintBrushBlendMode::Overlay:
+                    blendFn = [](float baseValue, float intensity, float opacity)
+                    {
+                        const float operationResult = (baseValue >= 0.5f) ? (1.0f - (2.0f * (1.0f - baseValue) * (1.0f - intensity)))
+                                                                          : (2.0f * baseValue * intensity);
+                        return AZStd::clamp(AZStd::lerp(baseValue, operationResult, opacity), 0.0f, 1.0f);
+                    };
+                    break;
+                default:
+                    AZ_Assert(false, "Unknown PaintBrushBlendMode type: %u", blendMode);
+                    break;
+            }
+
+            // Trigger the OnPaint notification, and provider the listener with the valueLookupFn to find out the paint brush
+            // values at specific world positions, and the blendFn to perform blending operations based on the provided base and
+            // paint brush values.
             PaintBrushNotificationBus::Event(
-                m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnPaint, strokeRegion, valueLookupFn);
+                m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnPaint, strokeRegion, valueLookupFn, blendFn);
 
             m_previousCenter = m_center;
         }

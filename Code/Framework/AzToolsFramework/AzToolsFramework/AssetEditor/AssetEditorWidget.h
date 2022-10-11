@@ -39,6 +39,7 @@ namespace AzToolsFramework
 {
     class ReflectedPropertyEditor;
     class DocumentPropertyEditor;
+    class FilteredDPE;
 
     namespace AssetEditor
     {
@@ -151,6 +152,7 @@ namespace AzToolsFramework
             Ui::AssetEditorHeader* m_header = nullptr;
             ReflectedPropertyEditor* m_propertyEditor = nullptr;
             AZStd::shared_ptr<AZ::DocumentPropertyEditor::ReflectionAdapter> m_adapter;
+            FilteredDPE* m_filteredWidget = nullptr;
             DocumentPropertyEditor* m_dpe = nullptr;
             AZ::SerializeContext* m_serializeContext = nullptr;
 

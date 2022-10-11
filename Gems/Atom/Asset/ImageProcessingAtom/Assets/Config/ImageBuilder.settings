@@ -109,6 +109,9 @@
             // Gradient
             "_grad": [ "Gradient" ],
             "_gradient": [ "Gradient" ],
+			"_sm": [ "Gradient" ],
+			"_splat": [ "Gradient" ],
+			"_splatmap": [ "Gradient" ],
             
             // Greyscale
             "_grey": [ "Greyscale" ],
@@ -201,6 +204,8 @@
             "_specular": [ "Reflectance" ],
 			"_SpecularReflectance": [ "Reflectance" ],
 			"_thickness": [ "Reflectance" ],
+			"_linear": [ "Reflectance" ],
+            
             
             // Skybox
             "_skyboxcm": [ "Skybox" ],
