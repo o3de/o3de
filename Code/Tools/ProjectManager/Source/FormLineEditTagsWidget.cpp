@@ -55,9 +55,9 @@ namespace O3DE::ProjectManager
         
         setupCompletionTags();
         setMouseTracking(true);
+
         //This logic will enable us to convert text into tag objects
         connect(m_lineEdit, &AzQtComponents::StyledLineEdit::textChanged, this, &FormLineEditTagsWidget::textChanged);
-
 
         //add auto-completion for the line edit
         m_completer = new QCompleter(m_completionTags, this);
