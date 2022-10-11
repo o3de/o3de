@@ -393,12 +393,12 @@ namespace EMStudio
             cameraConfig, m_lightHandles, false);
     }
 
-    AZ::RPI::SceneId AnimViewportRenderer::GetRenderSceneId()
+    AZ::RPI::SceneId AnimViewportRenderer::GetRenderSceneId() const
     {
         return m_scene->GetId();
     }
 
-    const AZStd::vector<AZ::Entity*>& AnimViewportRenderer::GetActorEntities()
+    const AZStd::vector<AZ::Entity*>& AnimViewportRenderer::GetActorEntities() const
     {
         return m_actorEntities;
     }

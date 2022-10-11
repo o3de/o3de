@@ -66,10 +66,10 @@ namespace EMStudio
         void MoveActorEntitiesToOrigin();
 
         //! Get the ID for the render scene.
-        AZ::RPI::SceneId GetRenderSceneId();
+        AZ::RPI::SceneId GetRenderSceneId() const;
 
         //! Get a list of actor entities in the animation viewport.
-        const AZStd::vector<AZ::Entity*>& GetActorEntities();
+        const AZStd::vector<AZ::Entity*>& GetActorEntities() const;
     private:
 
         // This function resets the light, camera and other environment settings.
