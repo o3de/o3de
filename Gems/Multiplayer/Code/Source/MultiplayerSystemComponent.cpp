@@ -972,7 +972,7 @@ namespace Multiplayer
         }
 
         // Signal to session management when there are no remaining players in a dedicated server for potential cleanup
-        // We avoid this for client server as the host itself is a user and non-transient dedicated servers
+        // We avoid this for client server as the host itself is a user and dedicated servers that do not terminate when all players have exited
         // Replaced sv_isTransient with sv_terminateOnPlayerExit
         if (sv_terminateOnPlayerExit && m_agentType == MultiplayerAgentType::DedicatedServer && connection->GetConnectionRole() == ConnectionRole::Acceptor)
         {   
