@@ -38,11 +38,15 @@ namespace AzToolsFramework
         float GetIntensity() const override;
         float GetOpacity() const override;
         float GetHardness() const override;
+        float GetFlow() const override;
+        float GetDistancePercent() const override;
         PaintBrushBlendMode GetBlendMode() const override;
         void SetSize(float size) override;
         void SetIntensity(float intensity) override;
         void SetOpacity(float opacity) override;
         void SetHardness(float hardness) override;
+        void SetFlow(float flow) override;
+        void SetDistancePercent(float distancePercent) override;
         void SetBlendMode(PaintBrushBlendMode blendMode) override;
 
         PaintBrushSettings m_settings;

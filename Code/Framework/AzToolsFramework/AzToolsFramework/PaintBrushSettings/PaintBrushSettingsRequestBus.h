@@ -42,6 +42,12 @@ namespace AzToolsFramework
         //! Returns the current paintbrush hardness (0 to 1).
         virtual float GetHardness() const = 0;
 
+        //! Returns the current paintbrush flow setting (0 to 1)
+        virtual float GetFlow() const = 0;
+
+        //! Returns the current paintbrush distance between daubs in % of paintbrush size.
+        virtual float GetDistancePercent() const = 0;
+
         //! Returns the current paintbrush blend mode.
         virtual PaintBrushBlendMode GetBlendMode() const = 0;
 
@@ -60,6 +66,14 @@ namespace AzToolsFramework
         //! Sets the paintbrush hardness.
         //! @param hardness The new hardness, in 0-1 range.
         virtual void SetHardness(float hardness) = 0;
+
+        //! Sets the paintbrush flow setting.
+        //! @param flow The new flow, in 0-1 range.
+        virtual void SetFlow(float flow) = 0;
+
+        //! Set the paintbrush distance % between daubs.
+        //! @param distancePercent The new distance %, in 0-1 range.
+        virtual void SetDistancePercent(float distancePercent) = 0;
 
         //! Sets the paintbrush blend mode.
         //! @param blendMode The new blend mode.

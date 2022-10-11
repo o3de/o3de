@@ -56,6 +56,14 @@ namespace AzToolsFramework
         {
             return m_hardness;
         }
+        float GetFlow() const
+        {
+            return m_flow;
+        }
+        float GetDistancePercent() const
+        {
+            return m_distancePercent;
+        }
 
         PaintBrushBlendMode GetBlendMode() const
         {
@@ -66,6 +74,8 @@ namespace AzToolsFramework
         void SetIntensity(float intensity);
         void SetOpacity(float opacity);
         void SetHardness(float hardness);
+        void SetFlow(float flow);
+        void SetDistancePercent(float distancePercent);
         void SetBlendMode(PaintBrushBlendMode blendMode);
 
     protected:
@@ -77,6 +87,10 @@ namespace AzToolsFramework
         float m_opacity = 0.5f;
         //! Paintbrush hardness
         float m_hardness = 1.0f;
+        //! Paintbrush flow setting
+        float m_flow = 1.0f;
+        //! Paintbrush distance setting in % of paintbrush size. 25% is the default in Photoshop.
+        float m_distancePercent = 0.25f;
 
         //! Paintbrush blend mode
         PaintBrushBlendMode m_blendMode = PaintBrushBlendMode::Normal;

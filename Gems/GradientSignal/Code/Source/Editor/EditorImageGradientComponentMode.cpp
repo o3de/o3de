@@ -82,20 +82,15 @@ namespace GradientSignal
         }
 
         //! Set a modified gradient value for the given pixel index.
-        float SetModifiedPixelValue(const PixelIndex& pixelIndex, float modifiedValue, float opacity)
+        void SetModifiedPixelValue(const PixelIndex& pixelIndex, float modifiedValue, float opacity)
         {
             uint32_t tileIndex = GetTileIndex(pixelIndex);
             uint32_t pixelTileIndex = GetPixelTileIndex(pixelIndex);
 
             AZ_Assert(m_paintedImageTiles[tileIndex], "Cached image tile hasn't been created yet!");
 
-            if (m_paintedImageTiles[tileIndex]->m_modifiedDataOpacity[pixelTileIndex] <= opacity)
-            {
-                m_paintedImageTiles[tileIndex]->m_modifiedData[pixelTileIndex] = modifiedValue;
-                m_paintedImageTiles[tileIndex]->m_modifiedDataOpacity[pixelTileIndex] = opacity;
-            }
-
-            return m_paintedImageTiles[tileIndex]->m_modifiedData[pixelTileIndex];
+            m_paintedImageTiles[tileIndex]->m_modifiedData[pixelTileIndex] = modifiedValue;
+            m_paintedImageTiles[tileIndex]->m_modifiedDataOpacity[pixelTileIndex] = opacity;
         }
 
         //! For undo/redo operations, apply the buffer of changes back to the image gradient.
@@ -493,11 +488,10 @@ namespace GradientSignal
             float opacityValue = m_paintStrokeData.m_strokeBuffer->GetOpacityValue(pixelIndices[index]);
             opacityValue = AZStd::clamp(perPixelOpacities[index] + opacityValue, 0.0f, 1.0f);
             float blendedValue = blendFn(gradientValue, m_paintStrokeData.m_intensity, opacityValue * m_paintStrokeData.m_opacity);
-            float modifiedValue =
-                m_paintStrokeData.m_strokeBuffer->SetModifiedPixelValue(pixelIndices[index], blendedValue, opacityValue);
+            m_paintStrokeData.m_strokeBuffer->SetModifiedPixelValue(pixelIndices[index], blendedValue, opacityValue);
 
             // Store the blended value into a second buffer that we'll use to immediately modify the image gradient.
-            paintedValues.emplace_back(modifiedValue);
+            paintedValues.emplace_back(blendedValue);
 
             // Also track the overall dirty region for everything we modify.
             m_paintStrokeData.m_dirtyRegion.AddPoint(validPoints[index]);

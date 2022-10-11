@@ -23,7 +23,11 @@ namespace AzToolsFramework
                 ->Field("Intensity", &PaintBrushSettings::m_intensity)
                 ->Field("Opacity", &PaintBrushSettings::m_opacity)
                 ->Field("Hardness", &PaintBrushSettings::m_hardness)
-                ->Field("BlendMode", &PaintBrushSettings::m_blendMode);
+                ->Field("Flow", &PaintBrushSettings::m_flow)
+                ->Field("DistancePercent", &PaintBrushSettings::m_distancePercent)
+                ->Field("BlendMode", &PaintBrushSettings::m_blendMode)
+                ;
+
 
             if (auto editContext = serializeContext->GetEditContext())
             {
@@ -53,6 +57,20 @@ namespace AzToolsFramework
                         "Falloff around the edges of the paint brush.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
+                    ->Attribute(AZ::Edit::Attributes::Step, 0.025f)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PaintBrushSettings::m_flow, "Flow",
+                        "The opacity of each brush 'daub'.")
+                    ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                    ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
+                    ->Attribute(AZ::Edit::Attributes::Step, 0.025f)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PaintBrushSettings::m_distancePercent, "Distance",
+                        "The spacing between each brush 'daub' in % of paintbrush size.")
+                    ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
+                    ->Attribute(AZ::Edit::Attributes::SoftMin, 0.01f)
+                    ->Attribute(AZ::Edit::Attributes::SoftMax, 1.0f)
+                    ->Attribute(AZ::Edit::Attributes::Max, 2.0f)
                     ->Attribute(AZ::Edit::Attributes::Step, 0.025f)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
                     ->DataElement(
@@ -99,6 +117,18 @@ namespace AzToolsFramework
     void PaintBrushSettings::SetBlendMode(PaintBrushBlendMode blendMode)
     {
         m_blendMode = blendMode;
+        OnSettingsChanged();
+    }
+
+    void PaintBrushSettings::SetFlow(float flow)
+    {
+        m_flow = flow;
+        OnSettingsChanged();
+    }
+
+    void PaintBrushSettings::SetDistancePercent(float distancePercent)
+    {
+        m_distancePercent = distancePercent;
         OnSettingsChanged();
     }
 

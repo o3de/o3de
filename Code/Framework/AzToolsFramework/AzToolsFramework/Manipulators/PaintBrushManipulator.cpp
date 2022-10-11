@@ -131,7 +131,7 @@ namespace AzToolsFramework
                 PaintBrushSettingsRequestBus::BroadcastResult(intensity, &PaintBrushSettingsRequestBus::Events::GetIntensity);
                 PaintBrushSettingsRequestBus::BroadcastResult(opacity, &PaintBrushSettingsRequestBus::Events::GetOpacity);
 
-                // Notify that a paint stroke has begun.
+                // Notify that a paint stroke has begun, and provide the stroke intensity and opacity.
                 m_isPainting = true;
                 PaintBrushNotificationBus::Event(
                     m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnPaintBegin, intensity, opacity);
@@ -170,54 +170,102 @@ namespace AzToolsFramework
         }
 
         // We found a collision point, so move the paintbrush.
-        m_center = worldSurfacePosition.value();
-        AZ::Transform space = AZ::Transform::CreateTranslation(m_center);
+        AZ::Vector3 brushCenter = worldSurfacePosition.value();
+        AZ::Transform space = AZ::Transform::CreateTranslation(brushCenter);
         SetSpace(space);
         PaintBrushNotificationBus::Event(m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnWorldSpaceChanged, space);
 
         // If we're currently painting, send off a paint notification.
         if (m_isPainting)
         {
-            // Keep track of the previous painted point and the current one. We'll use that to create a brush stroke
-            // that covers everything in-between.
-            if (isFirstPaintedPoint)
-            {
-                m_previousCenter = m_center;
-            }
+            AZ::Vector2 currentCenter2D(brushCenter);
 
             // Get our current paint brush settings.
 
             float diameter = 0.0f;
             float opacity = 0.0f;
             float hardness = 0.0f;
+            float flow = 0.0f;
+            float distancePercent = 0.0f;
             PaintBrushBlendMode blendMode = PaintBrushBlendMode::Normal;
 
             PaintBrushSettingsRequestBus::BroadcastResult(diameter, &PaintBrushSettingsRequestBus::Events::GetSize);
             PaintBrushSettingsRequestBus::BroadcastResult(opacity, &PaintBrushSettingsRequestBus::Events::GetOpacity);
             PaintBrushSettingsRequestBus::BroadcastResult(hardness, &PaintBrushSettingsRequestBus::Events::GetHardness);
+            PaintBrushSettingsRequestBus::BroadcastResult(flow, &PaintBrushSettingsRequestBus::Events::GetFlow);
+            PaintBrushSettingsRequestBus::BroadcastResult(distancePercent, &PaintBrushSettingsRequestBus::Events::GetDistancePercent);
             PaintBrushSettingsRequestBus::BroadcastResult(blendMode, &PaintBrushSettingsRequestBus::Events::GetBlendMode);
 
-            // Early out if we're completely transparent.
-            if (opacity == 0.0f)
+            // Early out if we're completely transparent or if our brush daubs aren't supposed to move.
+            if ((opacity == 0.0f) || (flow == 0.0f) || (distancePercent == 0.0f))
+            {
+                return;
+            }
+
+            // Get the distance between each brush daub in world space.
+            const float distanceBetweenBrushDaubs = diameter * distancePercent;
+
+            // Track the list of center points for each brush daub to draw for this mouse movement.
+            AZStd::vector<AZ::Vector2> brushDaubs;
+
+            // If this is the first point that we're painting, add this location to the list of brush daubs and use it
+            // as the starting point.
+            if (isFirstPaintedPoint)
+            {
+                brushDaubs.emplace_back(currentCenter2D);
+                m_lastBrushCenter = currentCenter2D;
+                m_distanceSinceLastDraw = 0.0f;
+            }
+
+            // Get the direction that we've moved the mouse since the last mouse movement we handled.
+            AZ::Vector2 direction = (currentCenter2D - m_lastBrushCenter).GetNormalized();
+
+            // Get the total distance that we've moved since the last time we drew a brush daub (which might
+            // have been many small mouse movements ago).
+            float totalDistance = m_lastBrushCenter.GetDistance(currentCenter2D) + m_distanceSinceLastDraw;
+
+            // Find the location for each brush daub that we can draw based on the total distance the mouse moved since
+            // the last time we drew a daub.
+            for (; totalDistance >= distanceBetweenBrushDaubs; totalDistance -= distanceBetweenBrushDaubs)
+            {
+                // Add another daub to the list to draw this time.
+                AZ::Vector2 daubCenter = m_lastBrushCenter + direction * (distanceBetweenBrushDaubs - m_distanceSinceLastDraw);
+                brushDaubs.emplace_back(daubCenter);
+
+                // Reset our tracking so that our next daub location will be based off of this one.
+                m_distanceSinceLastDraw = 0.0f;
+                m_lastBrushCenter = daubCenter;
+            }
+
+            // If we have any distance remaining that we haven't used, keep it for next time.
+            // Note that totalDistance already includes the previous m_distanceSinceLastDraw, so we just replace it with our
+            // leftovers here, we don't add them.
+            m_distanceSinceLastDraw = totalDistance;
+
+            // Save the current location as the last one we processed.
+            m_lastBrushCenter = currentCenter2D;
+
+            // If we don't have any daubs on this mouse movement, then we're done.
+            if (brushDaubs.empty())
             {
                 return;
             }
 
             const float radius = diameter / 2.0f;
 
-            // Create an AABB that contains both endpoints. By definition, it will contain all of the brush stroke
-            // points that fall in-between as well.
-            AZ::Aabb strokeRegion = AZ::Aabb::CreateCenterRadius(m_center, radius);
-            strokeRegion.AddAabb(AZ::Aabb::CreateCenterRadius(m_previousCenter, radius));
+            // Create an AABB that contains every brush daub.
+            AZ::Aabb strokeRegion = AZ::Aabb::CreateNull(); 
+            for (auto& brushDaub : brushDaubs)
+            {
+                strokeRegion.AddAabb(AZ::Aabb::CreateCenterRadius(AZ::Vector3(brushDaub, 0.0f), radius));
+            }
 
             const float manipulatorRadiusSq = radius * radius;
-            const AZ::Vector2 previousCenter2D(m_previousCenter);
-            const AZ::Vector2 center2D(m_center);
 
             // Callback function that we pass into OnPaint so that paint handling code can request specific paint values
             // for the world positions it cares about.
             PaintBrushNotifications::ValueLookupFn valueLookupFn(
-                [radius, manipulatorRadiusSq, previousCenter2D, center2D, hardness](
+                [radius, manipulatorRadiusSq, &brushDaubs, hardness, flow](
                 AZStd::span<const AZ::Vector3> points,
                 AZStd::vector<AZ::Vector3>& validPoints, AZStd::vector<float>& opacities)
             {
@@ -227,30 +275,42 @@ namespace AzToolsFramework
                 validPoints.reserve(points.size());
                 opacities.reserve(points.size());
 
-                float hardnessRecip = (hardness < 1.0f) ? (1.0f / (1.0f - hardness)) : 0.0f;
+                // Calculate 1/(1 - hardness) once to use for all points. If hardness is 1, set this to 0 instead of 1/0.
+                const float inverseHardnessReciprocal = (hardness < 1.0f) ? (1.0f / (1.0f - hardness)) : 0.0f;
 
+                // Loop through every point that's been provided and see if it has a valid paint opacity.
                 for (size_t index = 0; index < points.size(); index++)
                 {
-                    // Any point that falls within our brush stroke is considered valid. Since our brush is a circle, the brush stroke
-                    // ends up being a capsule with a circle on each end, and effectively a box connecting the two circles.
-                    // We can easily check to see if the point falls in the capsule by getting the distance between the point
-                    // and the line segment formed between the center of the start and end circles.
-                    // If this distance is less than the radius of the circle, then it falls within the brush stroke.
-                    // This works equally well whether the point is closest to an endpoint of the segment or a point along the segment.
-                    if (float shortestDistanceSquared =
-                        AZ::Geometry2DUtils::ShortestDistanceSqPointSegment(AZ::Vector2(points[index]), previousCenter2D, center2D);
-                        shortestDistanceSquared <= manipulatorRadiusSq)
-                    {
-                        // For hardness, we'll use a nonlinear falloff that's approximately the same as a squared cosine
-                        // 2x^3 - 3x^2 + 1
-                        float shortestDistanceNormalized = sqrt(shortestDistanceSquared) / radius;
-                        float hardnessDistance = AZStd::max(shortestDistanceNormalized - hardness, 0.0f) * hardnessRecip;
-                        float curHardness = 
-                            (2.0f * hardnessDistance * hardnessDistance * hardnessDistance) -
-                            (3.0f * hardnessDistance * hardnessDistance) + 1.0f;
+                    float opacity = 0.0f;
+                    AZ::Vector2 point2D(points[index]);
 
+                    // Loop through each daub that we're drawing and accumulate the results for this point.
+                    for (auto& brushCenter : brushDaubs)
+                    {
+                        // Since each daub is a circle, we can just compare distance to the center of the circle vs radius.
+                        if (float shortestDistanceSquared = brushCenter.GetDistanceSq(point2D);
+                            shortestDistanceSquared <= manipulatorRadiusSq)
+                        {
+                            // It's a valid point, so calculate the opacity. The per-point opacity for a paint daub is a combination
+                            // of the hardness falloff and the flow. The flow value gives the overall opacity for each daub, and the
+                            // hardness falloff gives per-pixel opacity within the daub.
+                            // For the falloff function, we use a nonlinear falloff that's approximately the same as a squared cosine:
+                            // 2x^3 - 3x^2 + 1
+                            float shortestDistanceNormalized = sqrt(shortestDistanceSquared) / radius;
+                            float hardnessDistance = AZStd::max(shortestDistanceNormalized - hardness, 0.0f) * inverseHardnessReciprocal;
+                            float curHardness = (2.0f * hardnessDistance * hardnessDistance * hardnessDistance) -
+                                (3.0f * hardnessDistance * hardnessDistance) + 1.0f;
+
+                            // For the opacity at this point, combine the opacity from previous daubs with the current hardness and flow.
+                            opacity = AZStd::min(opacity + (curHardness * flow), 1.0f);
+                        }
+                    }
+
+                    // As long as our opacity isn't transparent, return this as a valid point and opacity.
+                    if (opacity > 0.0f)
+                    {
                         validPoints.emplace_back(points[index]);
-                        opacities.emplace_back(curHardness);
+                        opacities.emplace_back(opacity);
                     }
                 }
             });
@@ -333,8 +393,6 @@ namespace AzToolsFramework
             // paint brush values.
             PaintBrushNotificationBus::Event(
                 m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnPaint, strokeRegion, valueLookupFn, blendFn);
-
-            m_previousCenter = m_center;
         }
     }
 

@@ -61,6 +61,16 @@ namespace AzToolsFramework
         return m_settings.GetHardness();
     }
 
+    float PaintBrushSettingsSystemComponent::GetFlow() const
+    {
+        return m_settings.GetFlow();
+    }
+
+    float PaintBrushSettingsSystemComponent::GetDistancePercent() const
+    {
+        return m_settings.GetDistancePercent();
+    }
+
     PaintBrushBlendMode PaintBrushSettingsSystemComponent::GetBlendMode() const
     {
         return m_settings.GetBlendMode();
@@ -84,6 +94,16 @@ namespace AzToolsFramework
     void PaintBrushSettingsSystemComponent::SetHardness(float hardness)
     {
         m_settings.SetHardness(hardness);
+    }
+
+    void PaintBrushSettingsSystemComponent::SetFlow(float flow)
+    {
+        m_settings.SetFlow(flow);
+    }
+
+    void PaintBrushSettingsSystemComponent::SetDistancePercent(float distancePercent)
+    {
+        m_settings.SetDistancePercent(distancePercent);
     }
 
     void PaintBrushSettingsSystemComponent::SetBlendMode(PaintBrushBlendMode blendMode)

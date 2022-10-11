@@ -90,10 +90,10 @@ namespace AzToolsFramework
         //! True if we're currently painting, false if not.
         bool m_isPainting = false;
 
-        //! Tracks the previous location we painted so that we can generate a continuous brush stroke.
-        AZ::Vector3 m_previousCenter;
+        //! Location of the last mouse point that we processed while painting.
+        AZ::Vector2 m_lastBrushCenter;
 
-        //! Current center of the paintbrush in world space.
-        AZ::Vector3 m_center;
+        //! Distance that the mouse has traveled since the last time we drew a paint daub.
+        float m_distanceSinceLastDraw = 0.0f;
     };
 } // namespace AzToolsFramework
