@@ -86,7 +86,7 @@ namespace AZ
             bool IsTiled() const;
             
             void SetUploadFenceValue(uint64_t fenceValue);
-            uint64_t GetUploadFenceValue();
+            uint64_t GetUploadFenceValue() const;
 
             // Describes the state of a subresource by index.
             struct SubresourceAttachmentState

@@ -57,6 +57,9 @@ namespace AZ
             // reserved resource in this copy queue
             void QueueTileMapping(const CommandList::TileMapRequest& request);
 
+            // Queue a wait command
+            void QueueWaitFence(const Fence& fence, uint64_t fenceValue);
+
             bool IsUploadFinished(uint64_t fenceValue);
             void WaitForUpload(uint64_t fenceValue);
 

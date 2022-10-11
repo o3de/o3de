@@ -13,6 +13,9 @@
 #include <RHI/ResourcePoolResolver.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
 
+// enable debug output for DX12::StreamingImagePool
+#define AZ_RHI_DX12_DEBUG_STREAMINGIMAGEPOOL 0
+
 // enable tiled resource implementation
 #define AZ_RHI_USE_TILED_RESOURCES
 
@@ -37,8 +40,9 @@ namespace AZ
             AZ_CLASS_ALLOCATOR(StreamingImagePoolResolver, AZ::SystemAllocator, 0);
             AZ_RTTI(StreamingImagePoolResolver, "{C69BD5E1-15CD-4F60-A899-29E9DEDFA056}", ResourcePoolResolver);
 
-            void QueuePrologueTransitionBarriers(CommandList& commandList) const override
+            void QueuePrologueTransitionBarriers(CommandList& commandList) override
             {
+                AZStd::shared_lock<AZStd::shared_mutex> lock(m_mutex);
                 for (const auto& barrier : m_prologueBarriers)
                 {
                     commandList.QueueTransitionBarrier(barrier.second);
@@ -47,6 +51,7 @@ namespace AZ
 
             void Deactivate() override
             {
+                AZStd::unique_lock<AZStd::shared_mutex> lock(m_mutex);
                 AZStd::for_each(m_prologueBarriers.begin(), m_prologueBarriers.end(), [](auto& barrier)
                 {
                     Image* image = barrier.first;
@@ -58,6 +63,7 @@ namespace AZ
 
             void AddImageTransitionBarrier(Image& image, uint32_t beforeMip, uint32_t afterMip)
             {
+                AZStd::unique_lock<AZStd::shared_mutex> lock(m_mutex);
                 // Expand or Trim
                 bool isExpand = beforeMip > afterMip;
 
@@ -88,6 +94,10 @@ namespace AZ
                         }
                         m_prologueBarriers.push_back(ImageBarrier{ &image, transition });
                         image.m_pendingResolves++;
+
+#if AZ_RHI_DX12_DEBUG_STREAMINGIMAGEPOOL
+                        AZ_TracePrintf("DX12 StreamingImagePool", "Add resource barrier for image [%s] [%d] expand: %d]\n", image.GetName().GetCStr(), subresourceId, isExpand);
+#endif
                     }
                 }
             }
@@ -105,12 +115,14 @@ namespace AZ
                     return barrier.first == &image;
                 };
 
+                AZStd::unique_lock<AZStd::shared_mutex> lock(m_mutex);
                 m_prologueBarriers.erase(AZStd::remove_if(m_prologueBarriers.begin(), m_prologueBarriers.end(), predicateBarriers), m_prologueBarriers.end());
             }
 
         private:
             using ImageBarrier = AZStd::pair<Image*, D3D12_RESOURCE_TRANSITION_BARRIER>;
             AZStd::vector<ImageBarrier> m_prologueBarriers;
+            AZStd::shared_mutex m_mutex;
         };
 
         RHI::Ptr<StreamingImagePool> StreamingImagePool::Create()
@@ -400,6 +412,13 @@ namespace AZ
             // Only proceed if the interval is still valid.
             if (mipInterval.m_min < mipInterval.m_max)
             {
+                // add wait frame fence to async upload queue before queue tile mapping
+                auto& device = static_cast<Device&>(GetDevice());
+                CommandQueueContext& context = device.GetCommandQueueContext();
+                const FenceSet &compiledFences = context.GetFrameFences(context.GetLastFrameIndex());
+                const Fence& fence = compiledFences.GetFence(RHI::HardwareQueueClass::Graphics);
+                GetDevice().GetAsyncUploadQueue().QueueWaitFence(fence, fence.GetPendingValue());
+
                 AZStd::lock_guard<AZStd::mutex> lock(m_tileMutex);
                 for (uint32_t arrayIndex = 0; arrayIndex < descriptor.m_arraySize; ++arrayIndex)
                 {
@@ -605,8 +624,12 @@ namespace AZ
             {
                 Image& dxImage = static_cast<Image&>(*request.m_image);
                 dxImage.FinalizeAsyncUpload(residentMipLevelAfter);
-                GetResolver()->AddImageTransitionBarrier(dxImage, residentMipLevelBefore, residentMipLevelAfter);
                 request.m_completeCallback();
+                GetResolver()->AddImageTransitionBarrier(dxImage, residentMipLevelBefore, residentMipLevelAfter);
+                
+#if AZ_RHI_DX12_DEBUG_STREAMINGIMAGEPOOL
+                AZ_TracePrintf("DX12 StreamingImagePool", "Image upload complete [%s]\n", request.m_image->GetName().GetCStr());
+#endif
             };
 
             GetDevice().GetAsyncUploadQueue().QueueUpload(newRequest, residentMipLevelBefore);
@@ -634,6 +657,10 @@ namespace AZ
                 DeAllocateStandardImageTiles(imageImpl, RHI::Interval{ residentMipLevelBefore, targetMipLevel});
             }
 
+#if AZ_RHI_DX12_DEBUG_STREAMINGIMAGEPOOL
+            AZ_TracePrintf("DX12 StreamingImagePool", "Image mips were trimmer from %d to %d\n", residentMipLevelBefore, targetMipLevel);
+#endif
+
             GetResolver()->AddImageTransitionBarrier(imageImpl, residentMipLevelBefore, targetMipLevel);
 
             return RHI::ResultCode::Success;
@@ -642,6 +669,12 @@ namespace AZ
         RHI::ResultCode StreamingImagePool::SetMemoryBudgetInternal(size_t newBudget)
         {
             RHI::HeapMemoryUsage& heapMemoryUsage = m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
+
+            if (newBudget == 0)
+            {
+                heapMemoryUsage.m_budgetInBytes = newBudget;
+                return RHI::ResultCode::Success;
+            }
 
             // Can't set to new budget if the new budget is smaller than allocated and there is no memory release handling
             if (newBudget < heapMemoryUsage.m_totalResidentInBytes && !m_memoryReleaseCallback)

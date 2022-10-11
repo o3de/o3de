@@ -219,7 +219,7 @@ namespace AZ
             m_uploadFenceValue = fenceValue;
         }
 
-        uint64_t Image::GetUploadFenceValue()
+        uint64_t Image::GetUploadFenceValue() const
         {
             return m_uploadFenceValue;
         }

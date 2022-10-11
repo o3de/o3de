@@ -104,8 +104,10 @@ namespace AZ
                     StreamingImageContextPtr context = m_mipExpandQueue.front();
                     if (context->m_queuedForMipExpand)
                     {
+                    
                         if (StreamingImage* image = context->TryGetImage())
                         {
+                            StreamingDebugOutput("StreamingImageController", "ExpandMipChain for [%s]\n", image->GetRHIImage()->GetName().GetCStr());
                             [[maybe_unused]] const RHI::ResultCode resultCode = image->ExpandMipChain();
                             AZ_Warning("StreamingImageController", resultCode == RHI::ResultCode::Success, "Failed to expand mip chain for streaming image.");
 
@@ -119,13 +121,12 @@ namespace AZ
                                 m_streamableImages.insert(image);
 
                                 StreamingDebugOutput("StreamingImageController", "Image [%s] expanded mip level to %d\n",
-                                    image->GetRHIImage()->GetName().GetCStr(), image->m_imageAsset->GetMipChainIndex(image->m_state.m_residencyTarget));
+                                    image->GetRHIImage()->GetName().GetCStr(), image->m_imageAsset->GetMipChainIndex(image->m_mipChainState.m_residencyTarget));
                             }
                         }
                         context->m_queuedForMipExpand = false;
                     }
                     m_mipExpandQueue.pop();
-                    context = m_mipExpandQueue.front();
 
                     jobCount++;
                     if (jobCount >= c_jobCount || m_lastLowMemory > 0)
@@ -248,6 +249,7 @@ namespace AZ
             // if the mipBias increased (using smaller size of mips), go throw each streaming image and evict unneeded mips
             if (m_globalMipBias > prevMipBias)
             {
+                StreamingDebugOutput("StreamingImageController", "SetMipBias. EvictUnusedMips %u\n");
                 EvictUnusedMips();
             }
         }

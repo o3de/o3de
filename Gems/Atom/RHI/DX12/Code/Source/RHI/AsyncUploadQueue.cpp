@@ -507,11 +507,18 @@ namespace AZ
         {
             AZ_PROFILE_SCOPE(RHI, "AsyncUploadQueue: ProcessCallbacks");
             AZStd::lock_guard<AZStd::mutex> lock(m_callbackMutex);
+            uint64_t completedValue = m_uploadFence.GetCompletedValue();
+            fenceValue = AZStd::min(completedValue, fenceValue);
             while (m_callbacks.size() > 0 && m_callbacks.front().second <= fenceValue)
             {
                 AZStd::function<void()> callback = m_callbacks.front().first;
                 m_callbacks.pop();
                 callback();
+            }
+
+            if (!m_callbacks.empty())
+            {
+                AZ::SystemTickBus::QueueFunction([this] { ProcessCallbacks(uint64_t(-1)); });
             }
         }
 
@@ -525,6 +532,15 @@ namespace AZ
 
                 ID3D12CommandQueue* dx12CommandQueue = static_cast<ID3D12CommandQueue*>(commandQueue);
                 UpdateTileMap(dx12CommandQueue, requestCopy);
+            });
+        }
+
+        void AsyncUploadQueue::QueueWaitFence(const Fence& fence, uint64_t fenceValue)
+        {
+            m_copyQueue->QueueCommand([=](void* commandQueue)
+            {
+                ID3D12CommandQueue* dx12CommandQueue = static_cast<ID3D12CommandQueue*>(commandQueue);
+                    dx12CommandQueue->Wait(fence.Get(), fenceValue);
             });
         }
     }
