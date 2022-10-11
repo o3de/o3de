@@ -32,8 +32,8 @@ namespace UnitTest
         // Disable saving global user settings to prevent failure due to detecting file updates
         AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
-        m_platformConfig.reset(new AssetProcessor::PlatformConfiguration);
-        m_connectionManager.reset(new ConnectionManager(m_platformConfig.get()));
+        m_platformConfig = AZStd::make_unique<AssetProcessor::PlatformConfiguration>();
+        m_connectionManager = AZStd::make_unique<ConnectionManager>(m_platformConfig.get());
         RegisterObjectForQuit(m_connectionManager.get());
 
         return true;
@@ -73,9 +73,6 @@ namespace UnitTest
 
     void AssetProcessorUnitTestBase::TearDown()
     {
-        UnitTestUtils::AssertAbsorber absorber;
-        AZ_UNUSED(absorber);
-
         m_appManager.reset();
 
         // The temporary folder for storing the database should be removed at the end of the test.
