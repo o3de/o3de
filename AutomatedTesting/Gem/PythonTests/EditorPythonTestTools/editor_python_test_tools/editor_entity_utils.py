@@ -318,13 +318,13 @@ class EditorComponent:
         """
 
         """
-        start_value = self.component.get_component_property_value(component_property_path)
+        start_value = self.get_component_property_value(component_property_path)
         if start_value:
-            self.component.set_component_property_value(component_property_path, False)
+            self.set_component_property_value(component_property_path, False)
         else:
-            self.component.set_component_property_value(component_property_path, True)
+            self.set_component_property_value(component_property_path, True)
 
-        end_value = self.component.get_component_property_value(component_property_path)
+        end_value = self.get_component_property_value(component_property_path)
 
         assert (start_value == end_value), \
             f"Failure: Could not toggle the switch for {self.get_component_name()} : {component_property_path}."
@@ -339,10 +339,6 @@ class EditorComponent:
         assert (position == set_position), \
             f"Failure: Expected Position did not match Set Position when setting the vector3 on " \
             f"{self.get_component_name()} : {component_property_path}."
-
-
-
-
 
 
 def convert_to_azvector3(xyz) -> azlmbr.math.Vector3:
