@@ -41,9 +41,9 @@ namespace AzToolsFramework
         return &m_settings;
     }
 
-    float PaintBrushSettingsSystemComponent::GetRadius() const
+    float PaintBrushSettingsSystemComponent::GetSize() const
     {
-        return m_settings.GetRadius();
+        return m_settings.GetSize();
     }
 
     float PaintBrushSettingsSystemComponent::GetIntensity() const
@@ -56,14 +56,19 @@ namespace AzToolsFramework
         return m_settings.GetOpacity();
     }
 
+    float PaintBrushSettingsSystemComponent::GetHardness() const
+    {
+        return m_settings.GetHardness();
+    }
+
     PaintBrushBlendMode PaintBrushSettingsSystemComponent::GetBlendMode() const
     {
         return m_settings.GetBlendMode();
     }
 
-    void PaintBrushSettingsSystemComponent::SetRadius(float radius)
+    void PaintBrushSettingsSystemComponent::SetSize(float size)
     {
-        m_settings.SetRadius(radius);
+        m_settings.SetSize(size);
     }
 
     void PaintBrushSettingsSystemComponent::SetIntensity(float intensity)
@@ -74,6 +79,11 @@ namespace AzToolsFramework
     void PaintBrushSettingsSystemComponent::SetOpacity(float opacity)
     {
         m_settings.SetOpacity(opacity);
+    }
+
+    void PaintBrushSettingsSystemComponent::SetHardness(float hardness)
+    {
+        m_settings.SetHardness(hardness);
     }
 
     void PaintBrushSettingsSystemComponent::SetBlendMode(PaintBrushBlendMode blendMode)

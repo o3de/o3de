@@ -73,12 +73,12 @@ namespace AzToolsFramework
         //! Returns the actions that we want any Component Mode using the Paint Brush Manipulator to support.
         AZStd::vector<AzToolsFramework::ActionOverride> PopulateActionsImpl();
  
-        void AdjustRadius(float radiusDelta);
+        void AdjustSize(float sizeDelta);
         void AdjustIntensity(float intensityDelta);
         void AdjustOpacity(float opacityDelta);
 
     private:
-        void OnRadiusChanged(float radius) override;
+        void OnSettingsChanged(const PaintBrushSettings& newSettings) override;
 
         void MovePaintBrush(int viewportId, const AzFramework::ScreenPoint& screenCoordinates, bool isFirstPaintedPoint);
 

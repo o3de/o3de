@@ -40,9 +40,9 @@ namespace AzToolsFramework
         PaintBrushSettings() = default;
         ~PaintBrushSettings() = default;
 
-        float GetRadius() const
+        float GetSize() const
         {
-            return m_radius;
+            return m_size;
         }
         float GetIntensity() const
         {
@@ -52,31 +52,36 @@ namespace AzToolsFramework
         {
             return m_opacity;
         }
+        float GetHardness() const
+        {
+            return m_hardness;
+        }
 
         PaintBrushBlendMode GetBlendMode() const
         {
             return m_blendMode;
         }
 
-        void SetRadius(float radius);
+        void SetSize(float size);
         void SetIntensity(float intensity);
         void SetOpacity(float opacity);
+        void SetHardness(float hardness);
         void SetBlendMode(PaintBrushBlendMode blendMode);
 
     protected:
-        //! Paintbrush radius
-        float m_radius = 5.0f;
+        //! Paintbrush diameter
+        float m_size = 10.0f;
         //! Paintbrush intensity (black to white)
         float m_intensity = 1.0f;
         //! Paintbrush opacity (transparent to opaque)
         float m_opacity = 0.5f;
+        //! Paintbrush hardness
+        float m_hardness = 1.0f;
+
         //! Paintbrush blend mode
         PaintBrushBlendMode m_blendMode = PaintBrushBlendMode::Normal;
 
-        AZ::u32 OnIntensityChange();
-        AZ::u32 OnOpacityChange();
-        AZ::u32 OnRadiusChange();
-        AZ::u32 OnBlendModeChange();
+        AZ::u32 OnSettingsChanged();
     };
 
 }; // namespace AzToolsFramework

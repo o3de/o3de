@@ -30,12 +30,10 @@ namespace AzToolsFramework
         //! to get the specific painted values at every position the listener cares about within the dirtyRegion.
         //! @points The input world space positions to query.
         //! @validPoints [out] The output positions that are valid for this paintbrush.
-        //! @intensities [out] The output intensities of the paintbrush that have been painted at this position.
-        //! @opacity [out] The output opacities of the paintbrush that have been painted at this position.
+        //! @opacities [out] The output per-pixel opacities of the paintbrush that have been painted at this position.
         using ValueLookupFn = AZStd::function<void(
             AZStd::span<const AZ::Vector3> points,
             AZStd::vector<AZ::Vector3>& validPoints,
-            AZStd::vector<float>& intensities,
             AZStd::vector<float>& opacities)>;
 
         //! Returns the base value blended with the paint brush intensity / opacity based on paint brush blend mode.
@@ -66,7 +64,7 @@ namespace AzToolsFramework
         }
 
         //! Notifies listeners that painting has begun.
-        virtual void OnPaintBegin()
+        virtual void OnPaintBegin([[maybe_unused]] float intensity, [[maybe_unused]] float opacity)
         {
         }
 

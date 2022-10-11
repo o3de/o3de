@@ -34,13 +34,15 @@ namespace AzToolsFramework
 
         // PaintBrushSettingsRequestBus overrides...
         PaintBrushSettings* GetSettings() override;
-        float GetRadius() const override;
+        float GetSize() const override;
         float GetIntensity() const override;
         float GetOpacity() const override;
+        float GetHardness() const override;
         PaintBrushBlendMode GetBlendMode() const override;
-        void SetRadius(float radius) override;
+        void SetSize(float size) override;
         void SetIntensity(float intensity) override;
         void SetOpacity(float opacity) override;
+        void SetHardness(float hardness) override;
         void SetBlendMode(PaintBrushBlendMode blendMode) override;
 
         PaintBrushSettings m_settings;

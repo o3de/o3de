@@ -28,9 +28,9 @@ namespace AzToolsFramework
         //! @return The paintbrush settings
         virtual PaintBrushSettings* GetSettings() = 0;
 
-        //! Returns the current paintbrush radius.
-        //! @return The radius of the paintbrush
-        virtual float GetRadius() const = 0;
+        //! Returns the current paintbrush size (diameter).
+        //! @return The size of the paintbrush in meters
+        virtual float GetSize() const = 0;
 
         //! Returns the current paintbrush intensity (0=black, 1=white).
         //! @return The intensity of the paintbrush
@@ -39,12 +39,15 @@ namespace AzToolsFramework
         //! Returns the current paintbrush opacity (0=transparent, 1=opaque).
         virtual float GetOpacity() const = 0;
 
+        //! Returns the current paintbrush hardness (0 to 1).
+        virtual float GetHardness() const = 0;
+
         //! Returns the current paintbrush blend mode.
         virtual PaintBrushBlendMode GetBlendMode() const = 0;
 
-        //! Sets the paintbrush radius.
-        //! @param radius The new radius, in meters.
-        virtual void SetRadius(float radius) = 0;
+        //! Sets the paintbrush size (diameter).
+        //! @param size The new size, in meters.
+        virtual void SetSize(float size) = 0;
 
         //! Sets the paintbrush intensity.
         //! @param intensity The new intensity, in 0-1 range (0=black, 1=white).
@@ -53,6 +56,10 @@ namespace AzToolsFramework
         //! Sets the paintbrush opacity.
         //! @param opacity The new opacity, in 0-1 range (0=transparent, 1=opaque).
         virtual void SetOpacity(float opacity) = 0;
+
+        //! Sets the paintbrush hardness.
+        //! @param hardness The new hardness, in 0-1 range.
+        virtual void SetHardness(float hardness) = 0;
 
         //! Sets the paintbrush blend mode.
         //! @param blendMode The new blend mode.
