@@ -701,10 +701,6 @@ namespace AzToolsFramework
                 return AZ::Failure<AZStd::string>("Parent entity cannot be found while adding an entity.");
             }
 
-            // Get the alias of the parent entity in the owning template's DOM.
-            AZStd::string parentEntityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(parentId);
-            PrefabDomPath entityPathInOwningTemplate(parentEntityAliasPath.c_str());
-
             // Select the new entity (and deselect others).
             AzToolsFramework::EntityIdList selection = { entityId };
 
@@ -714,6 +710,9 @@ namespace AzToolsFramework
             ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, selection);
 
             {
+                // Get the alias of the parent entity in the owning template's DOM.
+                AZStd::string parentEntityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(parentId);
+                PrefabDomPath entityPathInOwningTemplate(parentEntityAliasPath.c_str());
                 PrefabDom& owningTemplateDom =
                     m_prefabSystemComponentInterface->FindTemplateDom(owningInstanceOfParentEntity->get().GetTemplateId());
 
