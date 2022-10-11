@@ -75,15 +75,6 @@ TAG_DCCSI_MAINMENU = 'O3DE(DCCsi)'
 
 # dcc: Maya ENVAR constants
 
-# # default Maya 2023, python version 3.9.7
-# # dccsi managed enavrs, the dcc apps python version is propogated
-# ENVAR_DCCSI_PY_VERSION_MAJOR = "DCCSI_PY_VERSION_MAJOR"
-# DCCSI_PY_VERSION_MAJOR = 3
-# ENVAR_DCCSI_PY_VERSION_MINOR = "DCCSI_PY_VERSION_MINOR"
-# DCCSI_PY_VERSION_MINOR = 7
-# ENVAR_DCCSI_PY_VERSION_RELEASE = "DCCSI_PY_VERSION_RELEASE"
-# DCCSI_PY_VERSION_RELEASE = 7
-
 # a dccsi envar to set/override the maya version
 ENVAR_MAYA_VERSION = 'MAYA_VERSION'
 MAYA_VERSION = 2023
@@ -209,57 +200,6 @@ ENVAR_DCCSI_PY_MAYA = 'DCCSI_PY_MAYA'
 DCCSI_PY_MAYA = f'{MAYA_BIN_PATH}\\{SLUG_MAYAPY_EXE}'
 
 DCCSI_MAYA_WIKI_URL = 'https://github.com/o3de/o3de/wiki/O3DE-DCCsi-Tools-DCC-Maya'
-
-# ---- everything below moves out of constants ----
-
-# is a maya envar
-# MAYA_PLUG_IN_PATH = Path(DCCSI_MAYA_PLUG_IN_PATH).as_posix() # extend %MAYA_PLUG_IN_PATH%
-# to do: remove or extend next PR, technically there can be more then one plugin path
-#while MAYA_PLUG_IN_PATH:
-    #if ENVAR_MAYA_PLUG_IN_PATH in os.environ:
-        #maya_plug_pathlist = os.getenv(ENVAR_MAYA_PLUG_IN_PATH).split(os.pathsep)
-        #maya_plug_new_pathlist = maya_plug_pathlist.copy()
-        #maya_plug_new_pathlist.insert(0, Path(DCCSI_MAYA_PLUG_IN_PATH).as_posix())
-        #os.environ[ENVAR_MAYA_PLUG_IN_PATH] = os.pathsep.join(maya_plug_new_pathlist)
-    #else:
-        #os.environ[ENVAR_MAYA_PLUG_IN_PATH] = DCCSI_MAYA_PLUG_IN_PATH
-
-    #MAYA_PLUG_IN_PATH = os.getenv(ENVAR_MAYA_PLUG_IN_PATH, "< NOT SET >")
-    #break
-
-# is a maya envar
-# maya resources, very oddly named
-# XBMLANGPATH = Path(DCCSI_MAYA_XBMLANGPATH).as_posix() # extend %XBMLANGPATH%
-# to do: remove or extend next PR, technically there can be more then one resource path specified
-#while XBMLANGPATH:
-    #if ENVAR_XBMLANGPATH in os.environ:
-        #maya_xbm_pathlist = os.getenv(ENVAR_XBMLANGPATH).split(os.pathsep)
-        #maya_xbm_new_pathlist = maya_xbm_pathlist.copy()
-        #maya_xbm_new_pathlist.insert(0, Path(DCCSI_MAYA_XBMLANGPATH).as_posix())
-        #os.environ[ENVAR_XBMLANGPATH] = os.pathsep.join(maya_xbm_new_pathlist)
-    #else:
-        #os.environ[ENVAR_XBMLANGPATH] = DCCSI_MAYA_XBMLANGPATH
-
-    #XBMLANGPATH = os.getenv(ENVAR_XBMLANGPATH, "< NOT SET >")
-    #break
-
-# MAYA_SCRIPT_PATH = Path(DCCSI_MAYA_SCRIPT_PATH).as_posix() # extend %MAYA_SCRIPT_PATH%
-# to do: remove or extend next PR, technically there can be more then one script path specified
-#while MAYA_SCRIPT_PATH:
-    #if ENVAR_MAYA_SCRIPT_PATH in os.environ:
-        #maya_script_pathlist = os.getenv(ENVAR_MAYA_SCRIPT_PATH).split(os.pathsep)
-        #maya_script_new_pathlist = maya_script_pathlist.copy()
-        #maya_script_new_pathlist.insert(0, DCCSI_MAYA_SCRIPT_MEL_PATH)
-        #maya_script_new_pathlist.insert(0, DCCSI_MAYA_SCRIPT_PY_PATH)
-        #maya_script_new_pathlist.insert(0, DCCSI_MAYA_SCRIPT_PATH)
-        #os.environ[ENVAR_MAYA_SCRIPT_PATH] = os.pathsep.join(maya_script_new_pathlist)
-    #else:
-        #os.environ[ENVAR_MAYA_SCRIPT_PATH] = os.pathsep.join( (DCCSI_MAYA_SCRIPT_PATH,
-                                                               #DCCSI_MAYA_SCRIPT_PY_PATH,
-                                                               #DCCSI_MAYA_SCRIPT_MEL_PATH) )
-
-    #MAYA_SCRIPT_PATH = os.getenv(ENVAR_MAYA_SCRIPT_PATH, "< NOT SET >")
-    #break
 
 _LOGGER.debug('{0} took: {1} sec'.format(_MODULENAME, timeit.default_timer() - _START))
 # -------------------------------------------------------------------------

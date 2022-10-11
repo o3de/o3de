@@ -24,10 +24,6 @@ from typing import Union
 import logging as _logging
 # -------------------------------------------------------------------------
 
-# This module and others like Substance/config.py have a lot of duplicate
-# boilerplate code (as we are early, these are the first versions to stand up)
-# They could possibly be improved by unifying into a Class object designed
-# with extensibility
 
 # -------------------------------------------------------------------------
 # global scope
