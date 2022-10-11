@@ -10,7 +10,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QWidget>
-#include <FormLineEditTagsWidget.h>
+#include <FormLineEditWidget.h>
 #endif
 
 class QCompleter;
