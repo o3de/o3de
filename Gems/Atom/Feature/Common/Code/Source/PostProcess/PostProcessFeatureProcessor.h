@@ -52,7 +52,7 @@ namespace AZ
 
             void UpdateTime();
 
-            // Sorts all post processing settings into buckets based on category (level, 
+            // Sorts all post processing settings into buckets based on category (level,
             void SortPostProcessSettings();
 
             // Aggregates all level settings into a single level setting based their priorities and override settings
@@ -82,7 +82,7 @@ namespace AZ
             bool m_settingsChanged = true;
 
             // Time...
-            AZStd::chrono::system_clock::time_point m_currentTime;
+            AZStd::chrono::steady_clock::time_point m_currentTime;
             float m_deltaTime;
 
             // Each camera/view will have its own PostProcessSettings

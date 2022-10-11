@@ -175,6 +175,8 @@ namespace AZ
             m_limits.m_minConstantBufferViewOffset = D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT;
             m_limits.m_maxIndirectDrawCount = static_cast<uint32_t>(-1);
             m_limits.m_maxIndirectDispatchCount = static_cast<uint32_t>(-1);
+            m_limits.m_maxConstantBufferSize = D3D12_REQ_CONSTANT_BUFFER_ELEMENT_COUNT * 4u * 4u; // 4096 vectors * 4 values per vector * 4 bytes per value
+            m_limits.m_maxBufferSize = D3D12_REQ_RESOURCE_SIZE_IN_MEGABYTES_EXPRESSION_C_TERM * (1024u * 1024u); // 2048 MB
         }
 
         void Device::CompileMemoryStatisticsInternal(RHI::MemoryStatisticsBuilder& builder)

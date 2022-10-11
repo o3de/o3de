@@ -150,7 +150,7 @@ namespace AzToolsFramework
         if (DocumentPropertyEditor::ShouldReplaceRPE())
         {
             // Instantiate the DPE without the RPE
-            m_adapter = AZStd::make_shared<AZ::DocumentPropertyEditor::ReflectionAdapter>();
+            m_adapter = AZStd::make_shared<AZ::DocumentPropertyEditor::ComponentAdapter>();
             m_dpe = new DocumentPropertyEditor(this);
             m_dpe->SetAdapter(m_adapter);
             setContentWidget(m_dpe);
@@ -198,7 +198,7 @@ namespace AzToolsFramework
 
         if (DocumentPropertyEditor::ShouldReplaceRPE())
         {
-            m_adapter->SetValue(componentInstance, instanceTypeId);
+            m_adapter->SetComponent(componentInstance);
         }
         else
         {

@@ -8,14 +8,13 @@
 
 #pragma once
 
+#include <AzFramework/Viewport/ViewportBus.h>
 #include <AzToolsFramework/API/EntityCompositionNotificationBus.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/ViewportUi/Button.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
-
-#include <AzFramework/Viewport/ViewportBus.h>
 
 namespace AZ
 {
@@ -128,8 +127,9 @@ namespace AzToolsFramework
             AZ::Event<ViewportUi::ButtonId>::Handler m_handler; //!< Handler for onclick of switcher buttons, activates component mode.
             ViewportUi::SwitcherId m_switcherId; //!< Id of linked switcher.
             AZ::EntityComponentIdPair m_componentModePair; //!< The component mode pair in onEntityCompositionChanged.
-            AddOrRemoveComponent m_addOrRemove; //!< Setting to either add or remove component.
-            bool m_hiddenByImGui = false; //!< Protects the switcher from being opened by OnImGuiDropDownShown if it has been hidden elsewhere.
+            AddOrRemoveComponent m_addOrRemove = AddOrRemoveComponent::Add; //!< Setting to either add or remove component.
+            //! Protects the switcher from being opened by OnImGuiDropDownShown if it has been hidden elsewhere.
+            bool m_hiddenByImGui = false;
         };
 
     } // namespace ComponentModeFramework

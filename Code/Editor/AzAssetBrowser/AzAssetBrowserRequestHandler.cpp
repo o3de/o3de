@@ -578,6 +578,14 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                 });
             action->setShortcut(QKeySequence("Ctrl+D"));
             action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+
+            // Add Move to option
+            menu->addAction(
+                QObject::tr("Move to"),
+                [treeView]()
+                {
+                    treeView->MoveEntries();
+                });
         }
     }
     break;

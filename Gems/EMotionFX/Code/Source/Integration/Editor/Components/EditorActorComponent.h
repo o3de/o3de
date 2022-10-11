@@ -10,9 +10,10 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
-#include <AzCore/Component/TransformBus.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/Component/TransformBus.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Visibility/BoundsBus.h>
 
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
@@ -25,6 +26,7 @@
 #include <LmbrCentral/Rendering/MaterialAsset.h>
 
 #include <EMotionFX/Source/ActorBus.h>
+#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 
 namespace EMotionFX
 {
@@ -41,6 +43,7 @@ namespace EMotionFX
             , private LmbrCentral::AttachmentComponentNotificationBus::Handler
             , private AzToolsFramework::EditorComponentSelectionRequestsBus::Handler
             , private AzToolsFramework::EditorVisibilityNotificationBus::Handler
+            , private AzFramework::EntityDebugDisplayEventBus::Handler
             , public AzFramework::BoundsRequestBus::Handler
         {
         public:
@@ -80,10 +83,16 @@ namespace EMotionFX
             // AZ::Data::AssetBus overrides ...
             void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
             void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+            void OnAssetUnloaded(AZ::Data::AssetId assetId, AZ::Data::AssetType assetType) override;
 
             // BoundsRequestBus overrides ...
             AZ::Aabb GetWorldBounds() override;
             AZ::Aabb GetLocalBounds() override;
+
+            // AzFramework::EntityDebugDisplayEventBus overrides ...
+            void DisplayEntityViewport(
+                const AzFramework::ViewportInfo& viewportInfo,
+                AzFramework::DebugDisplayRequests& debugDisplay) override;
 
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
             {
@@ -174,7 +183,7 @@ namespace EMotionFX
             size_t                              m_lodLevel;
             ActorComponent::BoundingBoxConfiguration m_bboxConfig;
             bool                                m_forceUpdateJointsOOV = false;
-            ActorRenderFlags                    m_renderFlags;              ///< Actor render flag               
+            ActorRenderFlags                    m_renderFlags;              ///< Actor render flag
             // \todo attachmentTarget node nr
 
             // Note: LOD work in progress. For now we use one material instead of a list of material, because we don't have the support for LOD with multiple scene files.
@@ -185,6 +194,10 @@ namespace EMotionFX
 
             ActorAsset::ActorInstancePtr        m_actorInstance;            ///< Live actor instance.
             AZStd::unique_ptr<RenderActorInstance> m_renderActorInstance;
+
+            AZ::Render::ModelReloadedEvent::Handler m_modelReloadedEventHandler;
+
+            bool m_reloading = false;
         };
     } // namespace Integration
 } // namespace EMotionFX

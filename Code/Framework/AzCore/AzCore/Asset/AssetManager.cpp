@@ -2223,14 +2223,14 @@ namespace AZ::Data
         const AssetFilterCB& assetLoadFilterCB)
     {
 #ifdef AZ_ENABLE_TRACING
-        auto start = AZStd::chrono::system_clock::now();
+        auto start = AZStd::chrono::steady_clock::now();
 #endif
 
         LoadResult result = LoadAssetData(asset, stream, assetLoadFilterCB);
 
 #ifdef AZ_ENABLE_TRACING
         auto loadMs = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(
-            AZStd::chrono::system_clock::now() - start);
+            AZStd::chrono::steady_clock::now() - start);
         if (loadMs.count() > 0)
         {
             const double seconds = loadMs.count() / 1000.0;
