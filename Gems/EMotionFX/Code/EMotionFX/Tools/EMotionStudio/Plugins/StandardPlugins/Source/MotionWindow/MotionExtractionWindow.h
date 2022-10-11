@@ -76,7 +76,6 @@ namespace EMStudio
         QWidget* m_warningWidget = nullptr;
         bool m_warningShowed = false;
 
-
         // motion extraction node selection
         NodeSelectionWindow* m_motionExtractionNodeSelectionWindow = nullptr;
         AzQtComponents::BrowseEdit* m_warningSelectNodeLink = nullptr;

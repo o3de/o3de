@@ -25,7 +25,7 @@ namespace EMotionFX::Pipeline::Rule
         AZ_CLASS_ALLOCATOR(RootMotionExtractionRule, AZ::SystemAllocator, 0)
 
         RootMotionExtractionRule();
-        RootMotionExtractionRule(const AZStd::shared_ptr<RootMotionExtractionData>& data);
+        RootMotionExtractionRule(AZStd::shared_ptr<RootMotionExtractionData> data);
         ~RootMotionExtractionRule() = default;
 
         const AZStd::shared_ptr<RootMotionExtractionData>& GetData() const override { return m_data; }

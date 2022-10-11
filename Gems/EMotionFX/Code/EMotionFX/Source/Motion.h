@@ -252,7 +252,7 @@ namespace EMotionFX
         void SetMotionData(MotionData* motionData, bool delOldFromMem=true);
 
         //------------------------------------------------
-        void SetRootMotionExtractionData(const AZStd::shared_ptr<RootMotionExtractionData>& data);
+        void SetRootMotionExtractionData(AZStd::shared_ptr<RootMotionExtractionData> data);
         const AZStd::shared_ptr<RootMotionExtractionData>& GetRootMotionExtractionData() const;
 
     protected:

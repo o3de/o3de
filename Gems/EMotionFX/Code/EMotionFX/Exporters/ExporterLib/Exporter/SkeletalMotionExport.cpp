@@ -73,9 +73,8 @@ namespace ExporterLib
 
         AZStd::vector<AZ::u8> buffer;
         AZ::IO::ByteContainerStream<AZStd::vector<AZ::u8>> stream(&buffer);
-        const bool result = AZ::Utils::SaveObjectToStream<EMotionFX::RootMotionExtractionData>(
-            stream, AZ::ObjectStream::ST_BINARY, motion->GetRootMotionExtractionData().get(), serializeContext);
-        if (result)
+        if (AZ::Utils::SaveObjectToStream<EMotionFX::RootMotionExtractionData>(
+                stream, AZ::ObjectStream::ST_BINARY, motion->GetRootMotionExtractionData().get(), serializeContext))
         {
             const AZ::u32 bufferSize = static_cast<AZ::u32>(buffer.size());
 
@@ -90,7 +89,7 @@ namespace ExporterLib
             // Write the number of bytes again as inside the chunk processor we don't have access to the file chunk.
             AZ::u32 endianBufferSize = bufferSize;
             ConvertUnsignedInt(&endianBufferSize, targetEndianType);
-            file->Write(&endianBufferSize, sizeof(AZ::u32));
+            file->Write(&endianBufferSize, sizeof(endianBufferSize));
 
             file->Write(buffer.data(), bufferSize);
         }

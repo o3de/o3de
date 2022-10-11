@@ -337,9 +337,9 @@ namespace EMotionFX
         m_motionData = motionData;
     }
 
-    void Motion::SetRootMotionExtractionData(const AZStd::shared_ptr<RootMotionExtractionData>& data)
+    void Motion::SetRootMotionExtractionData(AZStd::shared_ptr<RootMotionExtractionData> data)
     {
-        m_rootMotionExtractionData = data;
+        m_rootMotionExtractionData = AZStd::move(data);
     }
 
     const AZStd::shared_ptr<RootMotionExtractionData>& Motion::GetRootMotionExtractionData() const

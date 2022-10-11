@@ -436,7 +436,7 @@ namespace EMStudio
         if (numSelectedMotions == 1)
         {
             EMotionFX::Motion* curMotion = selectionList.GetMotion(0);
-            auto rootMotionDataPtr = curMotion->GetRootMotionExtractionData();
+            AZStd::shared_ptr<EMotionFX::RootMotionExtractionData> rootMotionDataPtr = curMotion->GetRootMotionExtractionData();
             if (!rootMotionDataPtr && m_extractRootMotionCheck->isChecked())
             {
                 rootMotionDataPtr = AZStd::make_shared<EMotionFX::RootMotionExtractionData>();

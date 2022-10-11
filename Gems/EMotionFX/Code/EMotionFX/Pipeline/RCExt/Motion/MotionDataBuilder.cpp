@@ -539,7 +539,6 @@ namespace EMotionFX
             delete motionData;
             context.m_motion.SetMotionData(finalMotionData);
 
-            
             // Set root motion extraction data on the motion itself, so we can later edit it in animation editor.
             AZStd::shared_ptr<EMotionFX::RootMotionExtractionData> rootMotionData;
             if (EMotionFX::Pipeline::Rule::LoadFromGroup<EMotionFX::Pipeline::Rule::RootMotionExtractionRule>(motionGroup, rootMotionData))

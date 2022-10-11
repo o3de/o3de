@@ -2057,7 +2057,7 @@ namespace EMotionFX
         }
 
         AZ::u32 bufferSize;
-        file->Read(&bufferSize, sizeof(AZ::u32));
+        file->Read(&bufferSize, sizeof(bufferSize));
         MCore::Endian::ConvertUnsignedInt32(&bufferSize, importParams.m_endianType);
 
         AZStd::vector<AZ::u8> buffer;

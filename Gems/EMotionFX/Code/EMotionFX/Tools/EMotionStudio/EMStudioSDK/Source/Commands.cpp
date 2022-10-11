@@ -322,8 +322,7 @@ namespace EMStudio
                 EMotionFX::Pipeline::Rule::SaveToGroup<EMotionFX::Pipeline::Rule::MotionMetaDataRule, AZStd::shared_ptr<EMotionFX::Pipeline::Rule::MotionMetaData>>(*scene, group, motionMetaData);
 
                 // Save RootMotionExtractionRule
-                auto rootMotionData = motion->GetRootMotionExtractionData();
-                if (rootMotionData)
+                if (auto rootMotionData = motion->GetRootMotionExtractionData())
                 {
                     EMotionFX::Pipeline::Rule::SaveToGroup<
                         EMotionFX::Pipeline::Rule::RootMotionExtractionRule,

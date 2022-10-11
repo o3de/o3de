@@ -78,4 +78,4 @@ namespace EMotionFX
             }
         }
     }
-}
+} // namespace EMotionFX
