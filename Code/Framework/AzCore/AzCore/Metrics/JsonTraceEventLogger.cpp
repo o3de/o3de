@@ -149,7 +149,7 @@ namespace AZ::Metrics
     {
         if (m_stream != nullptr)
         {
-            m_stream->Write(ArrayStart.size(), ArrayStart.data());
+            Start(*m_stream);
         }
     }
 
@@ -248,6 +248,8 @@ namespace AZ::Metrics
             extraParams.emplace_back(ThreadDurationKey, EventValue{ AZStd::in_place_type<AZ::s64>, completeArgs.m_tdur->count() });
         }
 
+        eventDesc.SetExtraParams(extraParams);
+
         if (FlushRequest(eventDesc))
         {
             return AZ::Success();
@@ -283,6 +285,8 @@ namespace AZ::Metrics
         AZStd::fixed_vector<EventField, MaxExtraFieldCount> extraParams;
         char scopeChar = static_cast<char>(instantArgs.m_scope);
         extraParams.emplace_back(ScopeKey, EventValue{ AZStd::in_place_type<AZStd::string_view>, &scopeChar });
+
+        eventDesc.SetExtraParams(extraParams);
 
         if (FlushRequest(eventDesc))
         {
@@ -351,6 +355,8 @@ namespace AZ::Metrics
             extraParams.emplace_back(ScopeKey, EventValue{ AZStd::in_place_type<AZStd::string_view>, *asyncArgs.m_scope });
         }
 
+        eventDesc.SetExtraParams(extraParams);
+
         if (FlushRequest(eventDesc))
         {
             return AZ::Success();
@@ -388,6 +394,8 @@ namespace AZ::Metrics
         {
             extraParams.emplace_back(ScopeKey, EventValue{ AZStd::in_place_type<AZStd::string_view>, *asyncArgs.m_scope });
         }
+
+        eventDesc.SetExtraParams(extraParams);
 
         if (FlushRequest(eventDesc))
         {
@@ -427,6 +435,8 @@ namespace AZ::Metrics
             extraParams.emplace_back(ScopeKey, EventValue{ AZStd::in_place_type<AZStd::string_view>, *asyncArgs.m_scope });
         }
 
+        eventDesc.SetExtraParams(extraParams);
+
         if (FlushRequest(eventDesc))
         {
             return AZ::Success();
@@ -448,6 +458,11 @@ namespace AZ::Metrics
         if (stream != nullptr)
         {
             Complete(*stream);
+        }
+
+        if (m_stream != nullptr)
+        {
+            Start(*m_stream);
         }
     }
 
@@ -535,5 +550,10 @@ namespace AZ::Metrics
         }();
 
         return stream.Write(jsonCompleteString.size(), jsonCompleteString.data()) == jsonCompleteString.size();
+    }
+
+    bool JsonTraceEventLogger::Start(AZ::IO::GenericStream& stream)
+    {
+        return stream.Write(ArrayStart.size(), ArrayStart.data()) == ArrayStart.size();
     }
 } // namespace AZ::Metrics
