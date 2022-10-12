@@ -488,8 +488,8 @@ namespace Profiler
         AZStd::sys_time_t frameTime = 0;
         for (const auto& entry : deserializedData)
         {
-            const auto [groupNameItr, wasGroupNameInserted] = m_deserializedStringPool.emplace(entry.m_groupName.GetCStr());
-            const auto [regionNameItr, wasRegionNameInserted] = m_deserializedStringPool.emplace(entry.m_regionName.GetCStr());
+            const auto [groupNameItr, wasGroupNameInserted] = m_deserializedStringPool.emplace(entry.m_groupName.GetStringView());
+            const auto [regionNameItr, wasRegionNameInserted] = m_deserializedStringPool.emplace(entry.m_regionName.GetStringView());
             const auto [groupRegionNameItr, wasGroupRegionNameInserted] =
                 m_deserializedGroupRegionNamePool.emplace(groupNameItr->c_str(), regionNameItr->c_str());
 

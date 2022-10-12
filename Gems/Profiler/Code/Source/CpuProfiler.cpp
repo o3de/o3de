@@ -101,7 +101,7 @@ namespace Profiler
                 va_list args;
                 va_start(args, eventNameArgCount);
                 // Push it to the stack
-                CachedTimeRegion timeRegion({ budget->Name(), AZStd::string::format_arg(eventName, args).c_str() });
+                CachedTimeRegion timeRegion({ budget->Name(), AZStd::fixed_string<512>::format_arg(eventName, args).c_str() });
                 ms_threadLocalStorage->RegionStackPushBack(timeRegion);
             }
 
@@ -318,7 +318,7 @@ namespace Profiler
     // Gets called when region ends and all data is set
     void CpuTimingLocalStorage::AddCachedRegion(const CachedTimeRegion& timeRegionCached)
     {
-        if (auto iter = m_hitSizeLimitMap.find(timeRegionCached.m_groupRegionName.m_regionName.GetCStr());
+        if (auto iter = m_hitSizeLimitMap.find(timeRegionCached.m_groupRegionName.m_regionName.GetStringView());
             iter != m_hitSizeLimitMap.end() && iter->second)
         {
             return;
@@ -351,7 +351,7 @@ namespace Profiler
             // Add the cached regions to the map
             for (auto& cachedTimeRegion : m_cachedTimeRegions)
             {
-                const AZStd::string regionName = cachedTimeRegion.m_groupRegionName.m_regionName.GetCStr();
+                const AZStd::string regionName = cachedTimeRegion.m_groupRegionName.m_regionName.GetStringView();
                 AZStd::vector<CachedTimeRegion>& regionVec = m_cachedTimeRegionMap[regionName];
                 regionVec.push_back(cachedTimeRegion);
                 if (regionVec.size() >= TimeRegionStackSize)
