@@ -1,5 +1,3 @@
-# coding:utf-8
-#!/usr/bin/python
 #
 # Copyright (c) Contributors to the Open 3D Engine Project.
 # For complete copyright and license terms please see the LICENSE at the root of this distribution.
@@ -8,12 +6,12 @@
 #
 #
 # -------------------------------------------------------------------------
-"""! A module to discover installed versions of Blender for selection
+"""! A module to discover installed versions of Maya for selection
 
-:file: < DCCsi >/Tools/DCC/Blender/discovery.py
+:file: < DCCsi >/Tools/DCC/Maya/discovery.py
 :Status: Prototype, very bare bones
 :Version: 0.0.1
-Future: provide a variety of ways to discover Blender, i.e. use winreg
+Future: provide a variety of ways to discover Maya, i.e. use winreg
 """
 # -------------------------------------------------------------------------
 # standard imports
@@ -22,14 +20,14 @@ from typing import Union
 import logging as _logging
 # -------------------------------------------------------------------------
 # global scope
-from DccScriptingInterface.Tools.DCC.Blender import _PACKAGENAME
+from DccScriptingInterface.Tools.DCC.Maya import _PACKAGENAME
 _MODULENAME = f'{_PACKAGENAME}.discovery'
 _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 # -------------------------------------------------------------------------
 # dccsi imports
 # the default and currently only supported discovery path
-from DccScriptingInterface.Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_LOCATION
+from DccScriptingInterface.Tools.DCC.Maya.constants import PATH_DCCSI_BLENDER_LOCATION
 # -------------------------------------------------------------------------
 # currently we only support the default win install path for
 # for Blender 3.1, you can modify constants.py or you can
