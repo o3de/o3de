@@ -64,7 +64,6 @@ namespace AtomToolsFramework
         const AZStd::string& id, const AZStd::string& displayName, const AZStd::string& description, const AZStd::string& defaultValue)
     {
         DynamicPropertyConfig config;
-        config.m_dataType = DynamicPropertyType::String;
         config.m_id = id;
         config.m_name = displayName;
         config.m_displayName = displayName;
@@ -82,7 +81,6 @@ namespace AtomToolsFramework
         const AZStd::string& id, const AZStd::string& displayName, const AZStd::string& description, const bool& defaultValue)
     {
         DynamicPropertyConfig config;
-        config.m_dataType = DynamicPropertyType::Bool;
         config.m_id = id;
         config.m_name = displayName;
         config.m_displayName = displayName;
@@ -100,7 +98,6 @@ namespace AtomToolsFramework
         const AZStd::string& id, const AZStd::string& displayName, const AZStd::string& description, const double& defaultValue)
     {
         DynamicPropertyConfig config;
-        config.m_dataType = DynamicPropertyType::Float;
         config.m_id = id;
         config.m_name = displayName;
         config.m_displayName = displayName;
@@ -118,7 +115,6 @@ namespace AtomToolsFramework
         const AZStd::string& id, const AZStd::string& displayName, const AZStd::string& description, const AZ::u64& defaultValue)
     {
         DynamicPropertyConfig config;
-        config.m_dataType = DynamicPropertyType::UInt;
         config.m_id = id;
         config.m_name = displayName;
         config.m_displayName = displayName;
@@ -136,7 +132,6 @@ namespace AtomToolsFramework
         const AZStd::string& id, const AZStd::string& displayName, const AZStd::string& description, const AZ::s64& defaultValue)
     {
         DynamicPropertyConfig config;
-        config.m_dataType = DynamicPropertyType::Int;
         config.m_id = id;
         config.m_name = displayName;
         config.m_displayName = displayName;
