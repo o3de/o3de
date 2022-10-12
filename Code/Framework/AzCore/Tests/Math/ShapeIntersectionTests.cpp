@@ -822,15 +822,20 @@ namespace UnitTest
         EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(hemisphere2, unitSphere));
         EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(hemisphere2, sphere1));
 
-        // hemisphere faces away from unit sphere but is out of range.
-        const AZ::Hemisphere hemisphere3(AZ::Vector3(0.0f, 0.0f, -1.0f), 2.0f, AZ::Vector3(0.0f, 0.0f, -1.0f));
-        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(hemisphere3, unitSphere));
+        // hemisphere faces away from unit sphere and off to the side but is still barely within range
+        const AZ::Hemisphere hemisphere3(AZ::Vector3(0.0f, 2.0f, -0.9f), 2.0f, AZ::Vector3(0.0f, 0.0f, -1.0f));
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(hemisphere3, unitSphere));
         EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(hemisphere3, sphere1));
 
-        // hemisphere faces towards unit sphere and is in range
-        const AZ::Hemisphere hemisphere4(AZ::Vector3(0.0f, 0.0f, -1.5f), 1.0f, AZ::Vector3(0.0f, 0.0f, 1.0f));
-        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(hemisphere4, unitSphere));
+        // hemisphere faces away from unit sphere but is out of range.
+        const AZ::Hemisphere hemisphere4(AZ::Vector3(0.0f, 0.0f, -1.0f), 2.0f, AZ::Vector3(0.0f, 0.0f, -1.0f));
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(hemisphere4, unitSphere));
         EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(hemisphere4, sphere1));
+
+        // hemisphere faces towards unit sphere and is in range
+        const AZ::Hemisphere hemisphere5(AZ::Vector3(0.0f, 0.0f, -1.5f), 1.0f, AZ::Vector3(0.0f, 0.0f, 1.0f));
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(hemisphere5, unitSphere));
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(hemisphere5, sphere1));
     }
 
     TEST(MATH_ShapeIntersection, HemisphereVsAabb)

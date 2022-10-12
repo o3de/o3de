@@ -80,25 +80,21 @@ namespace AzFramework
         //! Intersects an axis aligned bounding box against the visibility system.
         //! @param aabb the axis aligned bounding box to test against
         //! @param callback the callback to invoke when a node is visible
-        //! @return the intersection result of the aabb against the visibility system
         virtual void Enumerate(const AZ::Aabb& aabb, const EnumerateCallback& callback) const = 0;
 
         //! Intersects a sphere against the visibility system.
         //! @param sphere the sphere to test against
         //! @param callback the callback to invoke when a node is visible
-        //! @return the intersection result of the sphere against the visibility system
         virtual void Enumerate(const AZ::Sphere& sphere, const EnumerateCallback& callback) const = 0;
 
         //! Intersects a hemisphere against the visibility system.
         //! @param hemisphere the hemisphere to test against
         //! @param callback the callback to invoke when a node is visible
-        //! @return the intersection result of the sphere against the visibility system
         virtual void Enumerate(const AZ::Hemisphere& hemisphere, const EnumerateCallback& callback) const = 0;
 
         //! Intersects a frustum against the visibility system.
         //! @param frustum the frustum to test against
         //! @param callback the callback to invoke when a node is visible
-        //! @return the intersection result of the frustum against the visibility system
         virtual void Enumerate(const AZ::Frustum& frustum, const EnumerateCallback& callback) const = 0;
 
         //! Enumerate *all* OctreeNodes that have any entries in them (without any culling).

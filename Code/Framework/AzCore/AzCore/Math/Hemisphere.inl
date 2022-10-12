@@ -10,15 +10,16 @@
 
 namespace AZ
 {
-    AZ_MATH_INLINE Hemisphere::Hemisphere(const Vector3& center, float radius, const Vector3& direction)
+    AZ_MATH_INLINE Hemisphere::Hemisphere(const Vector3& center, float radius, const Vector3& normalizedDirection)
         : m_centerRadius(AZ::Vector4(center, radius))
-        , m_direction(direction)
+        , m_direction(normalizedDirection)
     {
+        AZ_MATH_ASSERT(normalizedDirection.IsNormalized(), "The direction is not normalized");
     }
 
-    AZ_MATH_INLINE Hemisphere Hemisphere::CreateFromSphereAndDirection(const Sphere& sphere, const Vector3& direction)
+    AZ_MATH_INLINE Hemisphere Hemisphere::CreateFromSphereAndDirection(const Sphere& sphere, const Vector3& normalizedDirection)
     {
-        return Hemisphere(sphere.GetCenter(), sphere.GetRadius(), direction);
+        return Hemisphere(sphere.GetCenter(), sphere.GetRadius(), normalizedDirection);
     }
 
     AZ_MATH_INLINE Vector3 Hemisphere::GetCenter() const

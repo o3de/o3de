@@ -22,9 +22,9 @@ namespace AZ
         AZ_TYPE_INFO(Hemisphere, "{B246E336-780E-494B-B330-0985025B7888}");
 
         Hemisphere() = default;
-        Hemisphere(const Vector3& center, float radius, const Vector3& direction);
+        Hemisphere(const Vector3& center, float radius, const Vector3& normalizedDirection);
 
-        static Hemisphere CreateFromSphereAndDirection(const Sphere& sphere, const Vector3& direction);
+        static Hemisphere CreateFromSphereAndDirection(const Sphere& sphere, const Vector3& normalizedDirection);
 
         Vector3 GetCenter() const;
         float GetRadius() const;

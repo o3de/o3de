@@ -124,7 +124,7 @@ namespace AZ
         {
             float sphereDistanceToPlane = hemisphere.GetDirection().Dot(sphere.GetCenter() - hemisphere.GetCenter());
 
-            if (sphereDistanceToPlane >= 0)
+            if (sphereDistanceToPlane >= 0.0f)
             {
                 // Sphere is in front of hemisphere, so treat the hemisphere as a sphere
                 return Overlaps(Sphere(hemisphere.GetCenter(), hemisphere.GetRadius()), sphere);
@@ -132,7 +132,7 @@ namespace AZ
             else if (sphereDistanceToPlane > -sphere.GetRadius())
             {
                 // Sphere is behind hemisphere, project the sphere onto the plane, then check radius of circle.
-                Vector3 projectedSphereCenter = sphere.GetCenter() + hemisphere.GetDirection() * sphereDistanceToPlane;
+                Vector3 projectedSphereCenter = sphere.GetCenter() + hemisphere.GetDirection() * -sphereDistanceToPlane;
                 float circleRadius = AZStd::sqrt(sphere.GetRadius() * sphere.GetRadius() - sphereDistanceToPlane * sphereDistanceToPlane);
                 const float radiusSum = hemisphere.GetRadius() + circleRadius;
                 return hemisphere.GetCenter().GetDistanceSq(projectedSphereCenter) < (radiusSum * radiusSum);
