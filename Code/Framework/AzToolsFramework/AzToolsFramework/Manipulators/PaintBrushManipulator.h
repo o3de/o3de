@@ -93,7 +93,7 @@ namespace AzToolsFramework
         //! Location of the last mouse point that we processed while painting.
         AZ::Vector2 m_lastBrushCenter;
 
-        //! Distance that the mouse has traveled since the last time we drew a paint daub.
+        //! Distance that the mouse has traveled since the last time we drew a paint stamp.
         float m_distanceSinceLastDraw = 0.0f;
     };
 } // namespace AzToolsFramework

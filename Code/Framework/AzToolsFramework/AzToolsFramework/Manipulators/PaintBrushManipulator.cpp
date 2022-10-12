@@ -189,7 +189,7 @@ namespace AzToolsFramework
             PaintBrushSettings currentSettings;
             PaintBrushSettingsRequestBus::BroadcastResult(currentSettings, &PaintBrushSettingsRequestBus::Events::GetSettings);
 
-            // Early out if we're completely transparent, there's no distance between daubs, or a 0-sized daub.
+            // Early out if we're completely transparent, there's no distance between brush stamps, or the brush stamp size is 0.
             if ((currentSettings.GetOpacityPercent() == 0.0f) ||
                 (currentSettings.GetFlowPercent() == 0.0f) ||
                 (currentSettings.GetDistancePercent() == 0.0f) ||
@@ -202,17 +202,17 @@ namespace AzToolsFramework
             const float hardness = currentSettings.GetHardnessPercent() / 100.0f;
             const float flow = currentSettings.GetFlowPercent() / 100.0f;
 
-            // Get the distance between each brush daub in world space.
-            const float distanceBetweenBrushDaubs = currentSettings.GetSize() * (currentSettings.GetDistancePercent() / 100.0f);
+            // Get the distance between each brush stamp in world space.
+            const float distanceBetweenBrushStamps = currentSettings.GetSize() * (currentSettings.GetDistancePercent() / 100.0f);
 
-            // Track the list of center points for each brush daub to draw for this mouse movement.
-            AZStd::vector<AZ::Vector2> brushDaubs;
+            // Track the list of center points for each brush stamp to draw for this mouse movement.
+            AZStd::vector<AZ::Vector2> brushStamps;
 
-            // If this is the first point that we're painting, add this location to the list of brush daubs and use it
+            // If this is the first point that we're painting, add this location to the list of brush stamps and use it
             // as the starting point.
             if (isFirstPaintedPoint)
             {
-                brushDaubs.emplace_back(currentCenter2D);
+                brushStamps.emplace_back(currentCenter2D);
                 m_lastBrushCenter = currentCenter2D;
                 m_distanceSinceLastDraw = 0.0f;
             }
@@ -220,21 +220,21 @@ namespace AzToolsFramework
             // Get the direction that we've moved the mouse since the last mouse movement we handled.
             AZ::Vector2 direction = (currentCenter2D - m_lastBrushCenter).GetNormalized();
 
-            // Get the total distance that we've moved since the last time we drew a brush daub (which might
+            // Get the total distance that we've moved since the last time we drew a brush stamp (which might
             // have been many small mouse movements ago).
             float totalDistance = m_lastBrushCenter.GetDistance(currentCenter2D) + m_distanceSinceLastDraw;
 
-            // Find the location for each brush daub that we can draw based on the total distance the mouse moved since
-            // the last time we drew a daub.
-            for (; totalDistance >= distanceBetweenBrushDaubs; totalDistance -= distanceBetweenBrushDaubs)
+            // Find the location for each brush stamp that we can draw based on the total distance the mouse moved since
+            // the last time we drew a stamp.
+            for (; totalDistance >= distanceBetweenBrushStamps; totalDistance -= distanceBetweenBrushStamps)
             {
-                // Add another daub to the list to draw this time.
-                AZ::Vector2 daubCenter = m_lastBrushCenter + direction * (distanceBetweenBrushDaubs - m_distanceSinceLastDraw);
-                brushDaubs.emplace_back(daubCenter);
+                // Add another stamp to the list to draw this time.
+                AZ::Vector2 stampCenter = m_lastBrushCenter + direction * (distanceBetweenBrushStamps - m_distanceSinceLastDraw);
+                brushStamps.emplace_back(stampCenter);
 
-                // Reset our tracking so that our next daub location will be based off of this one.
+                // Reset our tracking so that our next stamp location will be based off of this one.
                 m_distanceSinceLastDraw = 0.0f;
-                m_lastBrushCenter = daubCenter;
+                m_lastBrushCenter = stampCenter;
             }
 
             // If we have any distance remaining that we haven't used, keep it for next time.
@@ -245,19 +245,19 @@ namespace AzToolsFramework
             // Save the current location as the last one we processed.
             m_lastBrushCenter = currentCenter2D;
 
-            // If we don't have any daubs on this mouse movement, then we're done.
-            if (brushDaubs.empty())
+            // If we don't have any stamps on this mouse movement, then we're done.
+            if (brushStamps.empty())
             {
                 return;
             }
 
             const float radius = currentSettings.GetSize() / 2.0f;
 
-            // Create an AABB that contains every brush daub.
+            // Create an AABB that contains every brush stamp.
             AZ::Aabb strokeRegion = AZ::Aabb::CreateNull(); 
-            for (auto& brushDaub : brushDaubs)
+            for (auto& brushStamp : brushStamps)
             {
-                strokeRegion.AddAabb(AZ::Aabb::CreateCenterRadius(AZ::Vector3(brushDaub, 0.0f), radius));
+                strokeRegion.AddAabb(AZ::Aabb::CreateCenterRadius(AZ::Vector3(brushStamp, 0.0f), radius));
             }
 
             const float manipulatorRadiusSq = radius * radius;
@@ -265,7 +265,7 @@ namespace AzToolsFramework
             // Callback function that we pass into OnPaint so that paint handling code can request specific paint values
             // for the world positions it cares about.
             PaintBrushNotifications::ValueLookupFn valueLookupFn(
-                [radius, manipulatorRadiusSq, &brushDaubs, hardness, flow](
+                [radius, manipulatorRadiusSq, &brushStamps, hardness, flow](
                 AZStd::span<const AZ::Vector3> points,
                 AZStd::vector<AZ::Vector3>& validPoints, AZStd::vector<float>& opacities)
             {
@@ -284,16 +284,16 @@ namespace AzToolsFramework
                     float opacity = 0.0f;
                     AZ::Vector2 point2D(points[index]);
 
-                    // Loop through each daub that we're drawing and accumulate the results for this point.
-                    for (auto& brushCenter : brushDaubs)
+                    // Loop through each stamp that we're drawing and accumulate the results for this point.
+                    for (auto& brushCenter : brushStamps)
                     {
-                        // Since each daub is a circle, we can just compare distance to the center of the circle vs radius.
+                        // Since each stamp is a circle, we can just compare distance to the center of the circle vs radius.
                         if (float shortestDistanceSquared = brushCenter.GetDistanceSq(point2D);
                             shortestDistanceSquared <= manipulatorRadiusSq)
                         {
-                            // It's a valid point, so calculate the opacity. The per-point opacity for a paint daub is a combination
-                            // of the hardness falloff and the flow. The flow value gives the overall opacity for each daub, and the
-                            // hardness falloff gives per-pixel opacity within the daub.
+                            // It's a valid point, so calculate the opacity. The per-point opacity for a paint stamp is a combination
+                            // of the hardness falloff and the flow. The flow value gives the overall opacity for each stamp, and the
+                            // hardness falloff gives per-pixel opacity within the stamp.
                             // For the falloff function, we use a nonlinear falloff that's approximately the same as a squared cosine:
                             // 2x^3 - 3x^2 + 1
                             float shortestDistanceNormalized = sqrt(shortestDistanceSquared) / radius;
@@ -301,7 +301,7 @@ namespace AzToolsFramework
                             float curHardness = (2.0f * hardnessDistance * hardnessDistance * hardnessDistance) -
                                 (3.0f * hardnessDistance * hardnessDistance) + 1.0f;
 
-                            // For the opacity at this point, combine the opacity from previous daubs with the current hardness and flow.
+                            // For the opacity at this point, combine the opacity from previous stamps with the current hardness and flow.
                             opacity = AZStd::min(opacity + (curHardness * flow), 1.0f);
                         }
                     }

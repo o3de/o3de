@@ -55,34 +55,34 @@ namespace AzToolsFramework
         //! @param blendMode The new blend mode.
         virtual void SetBlendMode(PaintBrushBlendMode blendMode) = 0;
 
-        // Paint Brush Daub settings
+        // Paint Brush Stamp settings
 
-        //! Returns the brush daub size (diameter).
+        //! Returns the brush stamp size (diameter).
         //! @return The size of the paintbrush in meters
         virtual float GetSize() const = 0;
 
-        //! Returns the brush daub hardness (0=soft falloff, 100=hard edge).
+        //! Returns the brush stamp hardness (0=soft falloff, 100=hard edge).
         virtual float GetHardnessPercent() const = 0;
 
-        //! Returns the brush daub flow setting (0=transparent daub, 100=opaque daub)
+        //! Returns the brush stamp flow setting (0=transparent stamp, 100=opaque stamp)
         virtual float GetFlowPercent() const = 0;
 
-        //! Returns the brush distance to move between each daub placement in % of paintbrush size.
+        //! Returns the brush distance to move between each stamp placement in % of paintbrush size.
         virtual float GetDistancePercent() const = 0;
 
-        //! Sets the brush daub size (diameter).
+        //! Sets the brush stamp size (diameter).
         //! @param size The new size, in meters.
         virtual void SetSize(float size) = 0;
 
-        //! Sets the brush daub hardness.
+        //! Sets the brush stamp hardness.
         //! @param hardness The new hardness, in 0-100 range.
         virtual void SetHardnessPercent(float hardnessPercent) = 0;
 
-        //! Sets the brush daub flow setting.
+        //! Sets the brush stamp flow setting.
         //! @param flow The new flow, in 0-100 range.
         virtual void SetFlowPercent(float flowPercent) = 0;
 
-        //! Set the brush distance % to move between each daub placement.
+        //! Set the brush distance % to move between each stamp placement.
         //! @param distancePercent The new distance %, typically in the 0-100 range.
         virtual void SetDistancePercent(float distancePercent) = 0;
 

@@ -21,7 +21,7 @@ namespace AzToolsFramework
        Painting consists of "brush strokes", where each stroke consists of pushing a brush against a canvas, moving it, and lifting
        it. Our equivalent is holding down the mouse button, moving the mouse in continuous movements while holding down the button,
        then lifting the button at the end of the stroke. However, instead of a continuous brush stroke, paint programs use something
-       closer to pointillism, where the stroke consists of many discrete brush "daubs", where a "daub" is a single discrete imprint
+       closer to pointillism, where the stroke consists of many discrete brush "stamps", where a "stamp" is a single discrete imprint
        of the brush shape.
 
        With that description in mind, here's how the settings play together:
@@ -33,18 +33,18 @@ namespace AzToolsFramework
          itself. The blending only occurs after the stroke is complete.
        - Blend Mode: The blend mode for blending the brush stroke down to the base layer.
 
-       Daub settings:
-       - Size: The size of the paintbrush, which is the size of each daub.
-       - Distance: The amount the brush needs to move before leaving another daub, expressed in a % of the paintbrush size.
-         100% roughly means each daub will have 0% overlap and be adjacent to each other, where 25% means each daub will overlap
+       Stamp settings:
+       - Size: The size of the paintbrush, which is the size of each stamp.
+       - Distance: The amount the brush needs to move before leaving another stamp, expressed in a % of the paintbrush size.
+         100% roughly means each stamp will have 0% overlap and be adjacent to each other, where 25% means each stamp will overlap
          by 75% while creating the stroke. If the brush moves back and forth in small amounts, it's possible to get higher amounts
-         of overlap, since this is distance of brush movement, not distance between daubs.
-       - Flow: The opacity of each daub. This conceptually maps to the amount of paint flowing through an airbrush.
-       - Hardness: The amount of falloff from the center of each daub, which affects the opacity within each pixel of the daub.
+         of overlap, since this is distance of brush movement, not distance between stamps.
+       - Flow: The opacity of each stamp. This conceptually maps to the amount of paint flowing through an airbrush.
+       - Hardness: The amount of falloff from the center of each stamp, which affects the opacity within each pixel of the stamp.
          This sort of represents how hard the brush is being pressed against the canvas.
 
        Each brush stroke conceptually occurs on a separate stroke layer that gets blended into the base, and the layer is merged down
-       into the base at the end of the stroke. As the brush moves, it creates discrete daubs based on the Size and Distance. Each daub
+       into the base at the end of the stroke. As the brush moves, it creates discrete stamps based on the Size and Distance. Each stamp
        paints per-pixel opacity data into the stroke layer based on the combination of Flow and Hardness. The stroke layer itself is
        then blended down using the Intensity, Opacity, and Blend Mode.
     */
@@ -95,7 +95,7 @@ namespace AzToolsFramework
         void SetOpacityPercent(float opacityPercent);
         void SetBlendMode(PaintBrushBlendMode blendMode);
 
-        // Daub settings
+        // Stamp settings
 
         float GetSize() const
         {
@@ -128,13 +128,13 @@ namespace AzToolsFramework
         //! Brush stroke blend mode
         PaintBrushBlendMode m_blendMode = PaintBrushBlendMode::Normal;
 
-        //! Brush daub diameter in meters
+        //! Brush stamp diameter in meters
         float m_size = 10.0f;
-        //! Brush daub hardness percent (0=soft falloff, 100=hard edge)
+        //! Brush stamp hardness percent (0=soft falloff, 100=hard edge)
         float m_hardnessPercent = 100.0f;
-        //! Brush daub flow percent (0=transparent daubs, 100=opaque daubs)
+        //! Brush stamp flow percent (0=transparent stamps, 100=opaque stamps)
         float m_flowPercent = 100.0f;
-        //! Brush distance to move between daubs in % of paintbrush size. (25% is the default in Photoshop.)
+        //! Brush distance to move between stamps in % of paintbrush size. (25% is the default in Photoshop.)
         float m_distancePercent = 25.0f;
 
         AZ::u32 OnSettingsChanged();
