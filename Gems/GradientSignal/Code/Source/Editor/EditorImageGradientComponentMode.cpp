@@ -31,11 +31,10 @@ namespace GradientSignal
     //! portion of an image, this buffer divides the total image space into fixed-size tiles and only creates an individual tile
     //! buffer when at least one pixel in that tile's space is modified.
     //! While painting the paint stroke, this buffer caches all of the unmodified gradient values and the modifications for each
-    //! modified pixel. The buffer is used to enforce that each pixel can only be modified once per brush stroke. If we modified each
-    //! pixel under the brush on each mouse movement, small movements would cause the same pixels to accumulate multiple changes in one
-    //! stroke, which creates very inconsistent and unexpected results.
-    //! After the paint stroke finishes, the buffer ownership is handed over to the undo/redo system so that it can be used to undo/redo
-    //! each individual paint stroke.
+    //! modified pixel. The buffer is used to create a special "stroke layer" that accumulates opacity for each stroke, which 
+    //! then combines with the stroke opacity, stroke intensity, and blend mode to blend back into the base layer.
+    //! After the paint stroke finishes, the stroke buffer ownership is handed over to the undo/redo system so that it can
+    //! be used to undo/redo each individual paint stroke.
     class ImageTileBuffer
     {
     public:
@@ -194,7 +193,7 @@ namespace GradientSignal
         //! This size is chosen somewhat arbitrarily to keep the number of tiles balanced at a reasonable size.
         static inline constexpr uint32_t ImageTileSize = 32;
 
-        //! Keeps track of all the unmodified and modified gradient values for an NxN tile.
+        //! Keeps track of all the unmodified and modified gradient values, as well as our paint stroke opacity layer, for an NxN tile.
         //! We store it a struct of arrays instead of an array of structs for better compatibility with the ImageGradient APIs,
         //! where we can just pass in a full array of values to update a full tile of values at once.
         struct ImageTile
@@ -400,7 +399,7 @@ namespace GradientSignal
         ImageGradientRequestBus::EventResult(imageHeight, GetEntityId(), &ImageGradientRequestBus::Events::GetImageHeight);
 
         // Create the buffer for holding all the changes for a single continuous paint brush stroke.
-        // This buffer will get used during the stroke for ensuring we only affect each pixel once,
+        // This buffer will get used during the stroke to hold our accumulated stroke opacity layer,
         // and then after the stroke finishes we'll hand the buffer over to the undo system as an undo/redo buffer.
         m_paintStrokeData.m_strokeBuffer = AZStd::make_unique<ImageTileBuffer>(imageWidth, imageHeight, GetEntityId());
     }
@@ -455,7 +454,7 @@ namespace GradientSignal
             }
         }
 
-        // Query the paintbrush with those points to get back the subset of points and brush values for each point that's
+        // Query the paintbrush with those points to get back the subset of points and brush opacities for each point that's
         // affected by the brush.
         AZStd::vector<AZ::Vector3> validPoints;
         AZStd::vector<float> perPixelOpacities;
@@ -478,22 +477,25 @@ namespace GradientSignal
         AZStd::vector<float> paintedValues;
         paintedValues.reserve(pixelIndices.size());
 
-        // For each pixel, blend the original gradient value with the paintbrush value.
-        // We use the paint stroke buffer instead of the gradient directly so that we only modify each pixel
-        // once per paint stroke instead of accumulating changes every time the brush touches the same pixels in the same stroke.
+        // For each pixel, accumulate the per-pixel opacity in the stroke layer, then (re)blend the stroke layer with
+        // the original data by using the stroke intensity, stroke opacity, per-pixel opacity, and original pre-stroke gradient value.
+        // The (re)blended value gets sent immediately to the image gradient, as well as getting cached off into the stroke buffer
+        // for easier and faster undo/redo operations.
         for (size_t index = 0; index < pixelIndices.size(); index++)
         {
-            // Blend the pixel and store it back into our paint stroke buffer.
-            float gradientValue = m_paintStrokeData.m_strokeBuffer->GetOriginalPixelValue(pixelIndices[index]);
+            // Add the new per-pixel opacity to the existing opacity in our stroke layer.
             float opacityValue = m_paintStrokeData.m_strokeBuffer->GetOpacityValue(pixelIndices[index]);
             opacityValue = AZStd::clamp(perPixelOpacities[index] + opacityValue, 0.0f, 1.0f);
+
+            // Blend the pixel and store the blended pixel and new opacity back into our paint stroke buffer.
+            float gradientValue = m_paintStrokeData.m_strokeBuffer->GetOriginalPixelValue(pixelIndices[index]);
             float blendedValue = blendFn(gradientValue, m_paintStrokeData.m_intensity, opacityValue * m_paintStrokeData.m_opacity);
             m_paintStrokeData.m_strokeBuffer->SetModifiedPixelValue(pixelIndices[index], blendedValue, opacityValue);
 
-            // Store the blended value into a second buffer that we'll use to immediately modify the image gradient.
+            // Also store the blended value into a second buffer that we'll use to immediately modify the image gradient.
             paintedValues.emplace_back(blendedValue);
 
-            // Also track the overall dirty region for everything we modify.
+            // Track the overall dirty region for everything we modify so that we don't have to recalculate it for undos/redos.
             m_paintStrokeData.m_dirtyRegion.AddPoint(validPoints[index]);
         }
 
@@ -503,11 +505,19 @@ namespace GradientSignal
             pixelIndices,
             paintedValues);
 
-        // Notify anything listening to the image gradient that the modified region has changed.
         // Because Image Gradients support bilinear filtering, we need to expand our dirty area by an extra pixel in each direction
         // so that the effects of the painted values on adjacent pixels are taken into account when refreshing.
         AZ::Aabb expandedDirtyArea(dirtyArea);
         expandedDirtyArea.Expand(AZ::Vector3(m_paintStrokeData.m_metersPerPixelX, m_paintStrokeData.m_metersPerPixelY, 0.0f));
+
+        // Expand the dirty region to encompass the full Z range since image gradients are 2D.
+        auto dirtyRegionMin = expandedDirtyArea.GetMin();
+        auto dirtyRegionMax = expandedDirtyArea.GetMax();
+        expandedDirtyArea.Set(
+            AZ::Vector3(dirtyRegionMin.GetX(), dirtyRegionMin.GetY(), AZStd::numeric_limits<float>::lowest()),
+            AZ::Vector3(dirtyRegionMax.GetX(), dirtyRegionMax.GetY(), AZStd::numeric_limits<float>::max()));
+
+        // Notify anything listening to the image gradient that the modified region has changed.
         LmbrCentral::DependencyNotificationBus::Event(
             GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionRegionChanged, expandedDirtyArea);
     }
