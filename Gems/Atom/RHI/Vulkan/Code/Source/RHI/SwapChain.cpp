@@ -30,6 +30,19 @@ namespace AZ
 {
     namespace Vulkan
     {
+        static bool IsDefaultSwapChainNeeded()
+        {
+#if AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
+            const bool isDefaultSwapChainNeeded = true;
+#else
+            // On non-host platforms do not create the default swapchain image if an XR system is present
+            // since it's not used.
+            const bool xrSystemRegistered = (RHI::RHISystemInterface::Get()->GetXRSystem() != nullptr);
+            const bool isDefaultSwapChainNeeded = !xrSystemRegistered;
+#endif
+            return isDefaultSwapChainNeeded;
+        }
+
         RHI::Ptr<SwapChain> SwapChain::Create()
         {
             return aznew SwapChain();
@@ -117,8 +130,12 @@ namespace AZ
                 auto& presentationQueue = device.GetCommandQueueContext().GetOrCreatePresentationCommandQueue(*this);
                 m_presentationQueue = &presentationQueue;
 
-                result = CreateSwapchain();
-                RETURN_RESULT_IF_UNSUCCESSFUL(result);
+                if (IsDefaultSwapChainNeeded())
+                {
+                    result = CreateSwapchain();
+                    RETURN_RESULT_IF_UNSUCCESSFUL(result);
+                }
+
                 if (nativeDimensions)
                 {
                     // Fill out the real swapchain dimensions to return
@@ -169,8 +186,11 @@ namespace AZ
             }
             else
             {
-                imageDesc.m_format = ConvertFormat(m_surfaceFormat.format);
-                result = image->Init(device, m_swapchainNativeImages[request.m_imageIndex], imageDesc);
+                if (IsDefaultSwapChainNeeded())
+                {
+                    imageDesc.m_format = ConvertFormat(m_surfaceFormat.format);
+                    result = image->Init(device, m_swapchainNativeImages[request.m_imageIndex], imageDesc);
+                }
             }
 
             if (result != RHI::ResultCode::Success)
