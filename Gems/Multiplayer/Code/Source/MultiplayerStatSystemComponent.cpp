@@ -8,33 +8,13 @@
 
 #include <Source/MultiplayerStatSystemComponent.h>
 
-#pragma optimize("", off)
-
 namespace Multiplayer
 {
     // Metrics cvars
     void OnEnableNetworkingMetricsChanged(const bool& enabled);
-    AZ_CVAR(
-        bool,
-        bg_enableNetworkingMetrics,
-        true,
-        &OnEnableNetworkingMetricsChanged,
-        AZ::ConsoleFunctorFlags::DontReplicate,
-        "Whether to capture networking metrics");
-    AZ_CVAR(
-        AZ::CVarFixedString,
-        cl_metricsFile,
-        "client_network_metrics.json",
-        nullptr,
-        AZ::ConsoleFunctorFlags::DontReplicate,
-        "File of the client metrics file if enabled, placed under <ProjectFolder>/user/metrics");
-    AZ_CVAR(
-        AZ::CVarFixedString,
-        sv_metricsFile,
-        "server_network_metrics.json",
-        nullptr,
-        AZ::ConsoleFunctorFlags::DontReplicate,
-        "File of the server metrics file if enabled, placed under <ProjectFolder>/user/metrics");
+    AZ_CVAR(bool, bg_enableNetworkingMetrics, true, &OnEnableNetworkingMetricsChanged, AZ::ConsoleFunctorFlags::DontReplicate, "Whether to capture networking metrics");
+    AZ_CVAR(AZ::CVarFixedString, cl_metricsFile, "client_network_metrics.json", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "File of the client metrics file if enabled, placed under <ProjectFolder>/user/metrics");
+    AZ_CVAR(AZ::CVarFixedString, sv_metricsFile, "server_network_metrics.json", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "File of the server metrics file if enabled, placed under <ProjectFolder>/user/metrics");
 
     void ConfigureEventLoggerHelper(const AZ::CVarFixedString& filename)
     {
@@ -209,5 +189,3 @@ namespace Multiplayer
         }
     }
 } // namespace Multiplayer
-
-#pragma optimize("", on)
