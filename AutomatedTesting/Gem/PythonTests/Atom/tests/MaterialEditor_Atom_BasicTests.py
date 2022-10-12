@@ -90,12 +90,13 @@ def MaterialEditor_BasicTests_ConfirmsBasicFunctionality():
             atom_tools_utils.close_all_documents() is True)
 
         # 4. Open multiple material asset files then use the CloseAllDocumentsExcept bus call to close all but one.
-        for material in [test_material_1, test_material_2, test_material_3]:
+        for material in [test_material_2, test_material_3]:
             atom_tools_utils.open_document(os.path.join(test_data_path, material))
+        test_material_1_document_id = atom_tools_utils.open_document(os.path.join(test_data_path, test_material_1))
+        atom_tools_utils.close_all_except_selected(test_material_1_document_id)
         Report.result(
             Tests.close_all_opened_assets_except_one,
-            atom_tools_utils.close_all_except_selected(test_material_1) is True and
-            atom_tools_utils.is_document_open(test_material_1) is True)
+            atom_tools_utils.is_document_open(test_material_1_document_id) is True)
 
         # 5. Verify Material Asset Browser pane visibility.
         atom_tools_utils.set_pane_visibility("Asset Browser", True)
