@@ -140,7 +140,7 @@ namespace AZ::Debug
     public:
         ScopeDuration() = delete;
     
-        explicit ScopeDuration(PerformanceCollector* performanceCollector, const AZStd::string_view metricName)
+        ScopeDuration(PerformanceCollector* performanceCollector, const AZStd::string_view metricName)
             : m_performanceCollector(performanceCollector)
             , m_metricName(metricName)
         {

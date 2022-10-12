@@ -11,6 +11,7 @@
 #include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Date/DateFormat.h>
 
 #include "PerformanceCollector.h"
 
@@ -227,22 +228,25 @@ namespace AZ::Debug
 
     void PerformanceCollector::CreateOutputJsonFile()
     {
-        AZStd::chrono::steady_clock::time_point now = AZStd::chrono::steady_clock::now();
-
         m_outputFilePath.clear();
         m_outputDataBuffer.clear();
 
         AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get();
         if (!settingsRegistry)
         {
-            // Most likely running under unit test.
+            // Most likely running under unit test. It is a good idea to not use File I/O during unit tests
+            // if possible, as it reduces flaky errors with File I/O failures in Jenkins, etc. Also prevents
+            // pollution of the filesystem.
             auto bufferStream = AZStd::make_unique<AZ::IO::ByteContainerStream<AZStd::string>>(&m_outputDataBuffer);
             m_eventLogger.ResetStream(AZStd::move(bufferStream));
         }
         else
         {
             settingsRegistry->Get(m_outputFilePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath);
-            m_outputFilePath /= AZStd::string::format("Performance_%s_%lld.json", m_logCategory.c_str(), now.time_since_epoch().count());
+            auto now = AZStd::chrono::utc_clock::now();
+            AZ::Date::Iso8601TimestampString utcTimestamp;
+            AZ::Date::GetFilenameCompatibleFormatWithMicroseconds(utcTimestamp, now);
+            m_outputFilePath /= AZStd::string::format("Performance_%s_%s.json", m_logCategory.c_str(), utcTimestamp.c_str());
 
             constexpr AZ::IO::OpenMode openMode = AZ::IO::OpenMode::ModeWrite;
             auto stream = AZStd::make_unique<AZ::IO::SystemFileStream>(m_outputFilePath.c_str(), openMode);

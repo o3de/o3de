@@ -11,33 +11,13 @@
 
 #include <AzCore/Debug/PerformanceCollector.h>
 #include <AzCore/JSON/document.h>
-
-using namespace AZ;
-using namespace Debug;
+#include <AzCore/std/ranges/ranges_algorithm.h>
 
 namespace UnitTest
 {
     class PerformanceCollectorTest
-        : public AllocatorsFixture
+        : public ScopedAllocatorSetupFixture
     {
-    public:
-        PerformanceCollectorTest()
-        {
-        }
-
-        void SetUp() override
-        {
-            AllocatorsFixture::SetUp();
-        }
-
-        ~PerformanceCollectorTest() override
-        {
-        }
-
-        void TearDown() override
-        {
-            AllocatorsFixture::TearDown();
-        }
     }; //class PerformanceCollectorTest
 
     TEST_F(PerformanceCollectorTest, CreatePerformanceCollector_CollectPerformance_ValidateStatisticalOutput)
@@ -47,7 +27,7 @@ namespace UnitTest
         // In this test we run 3 batches, which means we expect 3 rows (aka json object) per measured
         // parameter. Each json object will contain statistical summary of a batch made of 10 frames.
 
-        const AZStd::string LogCategory("PerformanceCollectorTest");
+        constexpr AZStd::string_view LogCategory("PerformanceCollectorTest");
         constexpr AZStd::string_view PerfParam1("param1");
         constexpr AZStd::string_view PerfParam2("param2");
         constexpr AZStd::string_view PerfParam3("param3");
@@ -63,7 +43,7 @@ namespace UnitTest
         auto onCompleteCallback = [&](AZ::u32 batchCount) {
             pendingBatchCount = batchCount;
         };
-        AZStd::vector<AZStd::string_view> paramList = { PerfParam1, PerfParam2, PerfParam3 };
+        auto paramList = AZStd::to_array<AZStd::string_view>({ PerfParam1, PerfParam2, PerfParam3 });
         AZ::Debug::PerformanceCollector performanceCollector(LogCategory, paramList, onCompleteCallback);
         performanceCollector.UpdateDataLogType(dataLogType);
         performanceCollector.UpdateFrameCountPerCaptureBatch(frameCountPerCaptureBatch);
@@ -100,7 +80,7 @@ namespace UnitTest
         ASSERT_TRUE(jsonDoc.IsArray());
         // We have 3 paramaters and 3 capture batches. So we expect 9 arrays.
         auto expectedArraySize = paramList.size() * numberOfCaptureBatches;
-        ASSERT_TRUE(jsonDoc.Size() == expectedArraySize);
+        ASSERT_EQ(jsonDoc.Size(), expectedArraySize);
         for (rapidjson::SizeType i = 0; i < expectedArraySize; i += aznumeric_cast<rapidjson::SizeType>(paramList.size()))
         {
             AZStd::unordered_set<AZStd::string> validatedParams;
@@ -160,7 +140,7 @@ namespace UnitTest
         auto onCompleteCallback = [&](AZ::u32 batchCount) {
             pendingBatchCount = batchCount;
         };
-        AZStd::vector<AZStd::string_view> paramList = { PerfParam1, PerfParam2, PerfParam3 };
+        auto paramList = AZStd::to_array<AZStd::string_view>({ PerfParam1, PerfParam2, PerfParam3 });
         AZ::Debug::PerformanceCollector performanceCollector(LogCategory, paramList, onCompleteCallback);
         performanceCollector.UpdateDataLogType(dataLogType);
         performanceCollector.UpdateFrameCountPerCaptureBatch(frameCountPerCaptureBatch);
@@ -201,7 +181,7 @@ namespace UnitTest
         // which always skips the first frame because that frame is used to store the first previous value.
         auto expectedArraySize = (paramList.size() - 1) * numberOfCaptureBatches * frameCountPerCaptureBatch;
         expectedArraySize += numberOfCaptureBatches * (frameCountPerCaptureBatch - 1);
-        ASSERT_TRUE(jsonDoc.Size() == expectedArraySize);
+        ASSERT_EQ(jsonDoc.Size(), expectedArraySize);
         for (rapidjson::SizeType i = 0; i < expectedArraySize; i++)
         {
             AZStd::string paramName = jsonDoc[i]["name"].GetString();

@@ -31,7 +31,7 @@ namespace AZ
 
             static void OnDataLogTypeChanged(const AZ::CVarFixedString& newCaptureType)
             {
-                AZ_TracePrintf(LogName, "%s cvar changed to %s", __FUNCTION__, newCaptureType.c_str());
+                AZ_TracePrintf(LogName, "%s cvar changed to %s.\n", __FUNCTION__, newCaptureType.c_str());
                 auto performanceCollectorOwner = PerformanceCollectorOwner::Get();
                 if (!performanceCollectorOwner)
                 {
@@ -47,7 +47,7 @@ namespace AZ
 
             static void OnNumberOfCaptureBatchesChanged(const AZ::u32& newValue)
             {
-                AZ_TracePrintf(LogName, "%s cvar changed to %u", __FUNCTION__, newValue);
+                AZ_TracePrintf(LogName, "%s cvar changed to %u.\n", __FUNCTION__, newValue);
                 auto performanceCollectorOwner = PerformanceCollectorOwner::Get();
                 if (!performanceCollectorOwner)
                 {
@@ -63,7 +63,7 @@ namespace AZ
 
             static void OnWaitTimePerCaptureBatchChanged(const AZ::u32& newValue)
             {
-                AZ_TracePrintf(LogName, "%s cvar changed to %u", __FUNCTION__, newValue);
+                AZ_TracePrintf(LogName, "%s cvar changed to %u.\n", __FUNCTION__, newValue);
                 auto performanceCollectorOwner = PerformanceCollectorOwner::Get();
                 if (!performanceCollectorOwner)
                 {
@@ -79,7 +79,7 @@ namespace AZ
 
             static void OnFrameCountPerCaptureBatchChanged(const AZ::u32& newValue)
             {
-                AZ_TracePrintf(LogName, "%s cvar changed to %u", __FUNCTION__, newValue);
+                AZ_TracePrintf(LogName, "%s cvar changed to %u.\n", __FUNCTION__, newValue);
                 auto performanceCollectorOwner = PerformanceCollectorOwner::Get();
                 if (!performanceCollectorOwner)
                 {

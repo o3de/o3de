@@ -192,15 +192,15 @@ namespace AZ
         void RPISystemComponent::InitializePerformanceCollector()
         {
             auto onBatchCompleteCallback = [](AZ::u32 pendingBatches) {
-                AZ_TracePrintf("RPISystem", "Completed a performance batch, still %llu batches are pending", pendingBatches);
+                AZ_TracePrintf("RPISystem", "Completed a performance batch, still %u batches are pending.\n", pendingBatches);
                 r_metricsNumberOfCaptureBatches = pendingBatches;
             };
 
-            AZStd::vector<AZStd::string_view> performanceMetrics = {
+            auto performanceMetrics = AZStd::to_array<AZStd::string_view>({
                 PerformanceSpecGraphicsSimulationTime,
                 PerformanceSpecGraphicsRenderTime,
                 PerformanceSpecEngineCpuTime,
-            };
+                });
             m_performanceCollector = AZStd::make_unique<AZ::Debug::PerformanceCollector>(
                 PerformanceLogCategory, performanceMetrics, onBatchCompleteCallback);
             //Feed the CVAR values.
