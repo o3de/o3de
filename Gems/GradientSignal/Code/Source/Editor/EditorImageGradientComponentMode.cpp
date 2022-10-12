@@ -60,7 +60,7 @@ namespace GradientSignal
 
         //! Get the original gradient value for the given pixel index.
         //! Since we "lazy-cache" our unmodified image as tiles, create it here the first time we request a pixel from a tile.
-        float GetOriginalPixelValue(const PixelIndex& pixelIndex)
+        AZStd::pair<float, float> GetOriginalPixelValueAndOpacity(const PixelIndex& pixelIndex)
         {
             uint32_t tileIndex = GetTileIndex(pixelIndex);
             uint32_t pixelTileIndex = GetPixelTileIndex(pixelIndex);
@@ -68,16 +68,11 @@ namespace GradientSignal
             // Create the tile if it doesn't already exist.
             CreateImageTile(tileIndex);
 
-            return m_paintedImageTiles[tileIndex]->m_unmodifiedData[pixelTileIndex];
-        }
-
-        //! Get the current opacity value for the given pixel index.
-        float GetOpacityValue(const PixelIndex& pixelIndex)
-        {
-            uint32_t tileIndex = GetTileIndex(pixelIndex);
-            uint32_t pixelTileIndex = GetPixelTileIndex(pixelIndex);
-
-            return m_paintedImageTiles[tileIndex]->m_modifiedDataOpacity[pixelTileIndex];
+            return
+            {
+                m_paintedImageTiles[tileIndex]->m_unmodifiedData[pixelTileIndex],
+                m_paintedImageTiles[tileIndex]->m_modifiedDataOpacity[pixelTileIndex]
+            };
         }
 
         //! Set a modified gradient value for the given pixel index.
@@ -483,12 +478,12 @@ namespace GradientSignal
         // for easier and faster undo/redo operations.
         for (size_t index = 0; index < pixelIndices.size(); index++)
         {
+            auto [gradientValue, opacityValue] = m_paintStrokeData.m_strokeBuffer->GetOriginalPixelValueAndOpacity(pixelIndices[index]);
+
             // Add the new per-pixel opacity to the existing opacity in our stroke layer.
-            float opacityValue = m_paintStrokeData.m_strokeBuffer->GetOpacityValue(pixelIndices[index]);
             opacityValue = AZStd::clamp(perPixelOpacities[index] + opacityValue, 0.0f, 1.0f);
 
             // Blend the pixel and store the blended pixel and new opacity back into our paint stroke buffer.
-            float gradientValue = m_paintStrokeData.m_strokeBuffer->GetOriginalPixelValue(pixelIndices[index]);
             float blendedValue = blendFn(gradientValue, m_paintStrokeData.m_intensity, opacityValue * m_paintStrokeData.m_opacity);
             m_paintStrokeData.m_strokeBuffer->SetModifiedPixelValue(pixelIndices[index], blendedValue, opacityValue);
 

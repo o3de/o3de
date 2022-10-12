@@ -152,12 +152,28 @@ namespace AzToolsFramework
             if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left())
             {
                 // Notify that the paint stroke has ended.
-                m_isPainting = false;
-                PaintBrushNotificationBus::Event(m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnPaintStrokeEnd);
+                // We need to verify that we're currently painting, because clicks/double-clicks can cause us to end up here
+                // without ever getting the mouse Down event.
+                if (m_isPainting)
+                {
+                    m_isPainting = false;
+                    PaintBrushNotificationBus::Event(m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnPaintStrokeEnd);
+                }
 
                 return true;
             }
         }
+        else if (mouseInteraction.m_mouseEvent == AzToolsFramework::ViewportInteraction::MouseEvent::DoubleClick)
+        {
+            if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left())
+            {
+                // Swallow up double-click events so that the default component mode behavior doesn't detect it and try
+                // to leave component mode. It's too easy to double-click by accident when painting, so double-clicking
+                // to exit just doesn't work well.
+                return true;
+            }
+        }
+
         return false;
     }
 
