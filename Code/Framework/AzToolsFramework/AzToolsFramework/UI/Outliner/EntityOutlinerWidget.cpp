@@ -342,6 +342,13 @@ namespace AzToolsFramework
     //  Currently, the first behavior is implemented.
     void EntityOutlinerWidget::OnSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
     {
+        // If we have an open context menu when the selection changes, it is no longer relevant and needs closing.
+        QMenu* menu = qobject_cast<QMenu*>(QApplication::activePopupWidget());
+        if (menu && menu->parentWidget() == this)
+        {
+            menu->close();
+        }
+
         if (m_selectionChangeInProgress || !m_enableSelectionUpdates
             || (selected.empty() && deselected.empty()))
         {
