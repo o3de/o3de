@@ -61,7 +61,7 @@ namespace AzFramework
 
         //! Set the client area size. This is the size that can be rendered to.
         //! \param[in] clientAreaSize Size of the client area in pixels
-        //! \param[in] ignoreScreenSizeLimit Flag to disable clipping the client area to the screen resolution if supported.
+        //! \param[in] options Options for resizing and moving the window.
         virtual void ResizeClientArea(WindowSize clientAreaSize, const WindowPosOptions& options) = 0;
 
         //! Does this platform support window resizing.
