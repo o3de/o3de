@@ -607,6 +607,13 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
             action->setShortcut(Qt::Key_F2);
             action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         }
+        // Add Move to option
+        menu->addAction(
+            QObject::tr("Move to"),
+            [treeView]()
+            {
+                treeView->MoveEntries();
+            });
         AddCreateMenu(menu, fullFilePath);
     }
     break;

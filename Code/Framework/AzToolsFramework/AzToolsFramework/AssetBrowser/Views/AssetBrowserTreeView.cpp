@@ -732,6 +732,16 @@ namespace AzToolsFramework
 
         void AssetBrowserTreeView::MoveEntries()
         {
+            auto entries = GetSelectedAssets(false); // you cannot rename product files.
+            if (entries.empty())
+            {
+                return;
+            }
+            bool isFolder = entries[0]->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder;
+            if (isFolder && entries.size() != 1)
+            {
+                return;
+            }
             using namespace AzFramework::AssetSystem;
             EntryTypeFilter* foldersFilter = new EntryTypeFilter();
             foldersFilter->SetEntryType(AssetBrowserEntry::AssetEntryType::Folder);
@@ -755,15 +765,24 @@ namespace AzToolsFramework
 
                     if (connectedToAssetProcessor)
                     {
-                        auto entries = GetSelectedAssets();
-
                         for (auto entry : entries)
                         {
                             using namespace AZ::IO;
-                            Path fromPath = entry->GetFullPath();
-                            PathView filename = fromPath.Filename();
-                            Path toPath(folderPath);
-                            toPath /= filename;
+                            Path fromPath;
+                            Path toPath;
+                            if (isFolder)
+                            {
+                                fromPath = entry->GetFullPath() + "/*";
+                                Path filename = static_cast<Path>(entry->GetFullPath()).Filename();
+                                toPath = folderPath + "/" + filename.c_str() + "/*";
+                            }
+                            else
+                            {
+                                fromPath = entry->GetFullPath();
+                                PathView filename = fromPath.Filename();
+                                toPath = folderPath;
+                                toPath /= filename;
+                            }
                             AssetChangeReportRequest request(
                                 AZ::OSString(fromPath.c_str()),
                                 AZ::OSString(toPath.c_str()),
