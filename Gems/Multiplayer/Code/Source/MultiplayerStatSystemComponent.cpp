@@ -12,10 +12,34 @@ namespace Multiplayer
 {
     // Metrics cvars
     void OnEnableNetworkingMetricsChanged(const bool& enabled);
-    AZ_CVAR(bool, bg_enableNetworkingMetrics, true, &OnEnableNetworkingMetricsChanged, AZ::ConsoleFunctorFlags::DontReplicate, "Whether to capture networking metrics");
-    AZ_CVAR(AZ::TimeMs, bg_networkingMetricCollectionPeriod, AZ::TimeMs{1000}, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "How often to capture metrics by default.");
-    AZ_CVAR(AZ::CVarFixedString, cl_metricsFile, "client_network_metrics.json", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "File of the client metrics file if enabled, placed under <ProjectFolder>/user/metrics");
-    AZ_CVAR(AZ::CVarFixedString, sv_metricsFile, "server_network_metrics.json", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "File of the server metrics file if enabled, placed under <ProjectFolder>/user/metrics");
+    AZ_CVAR(
+        bool,
+        bg_enableNetworkingMetrics,
+        true,
+        &OnEnableNetworkingMetricsChanged,
+        AZ::ConsoleFunctorFlags::DontReplicate,
+        "Whether to capture networking metrics");
+    AZ_CVAR(
+        AZ::TimeMs,
+        bg_networkingMetricCollectionPeriod,
+        AZ::TimeMs{ 1000 },
+        nullptr,
+        AZ::ConsoleFunctorFlags::DontReplicate,
+        "How often to capture metrics by default.");
+    AZ_CVAR(
+        AZ::CVarFixedString,
+        cl_metricsFile,
+        "client_network_metrics.json",
+        nullptr,
+        AZ::ConsoleFunctorFlags::DontReplicate,
+        "File of the client metrics file if enabled, placed under <ProjectFolder>/user/metrics");
+    AZ_CVAR(
+        AZ::CVarFixedString,
+        sv_metricsFile,
+        "server_network_metrics.json",
+        nullptr,
+        AZ::ConsoleFunctorFlags::DontReplicate,
+        "File of the server metrics file if enabled, placed under <ProjectFolder>/user/metrics");
 
     void ConfigureEventLoggerHelper(const AZ::CVarFixedString& filename)
     {
@@ -105,12 +129,12 @@ namespace Multiplayer
             case MultiplayerAgentType::Client:
                 ConfigureEventLoggerHelper(cl_metricsFile);
                 break;
-            default:
-                AZLOG_WARN("Unitialized or unsupported agent type for recording metrics.");
+            case MultiplayerAgentType::Uninitialized:
+                AZLOG_WARN("Unitialized agent type isn't supported networking metrics.");
                 break;
             }
         }
-        
+
         m_metricsEvent.Enqueue(bg_networkingMetricCollectionPeriod, true);
     }
 
@@ -131,17 +155,27 @@ namespace Multiplayer
     void MultiplayerStatSystemComponent::DeclareStatGroup(int uniqueGroupId, const char* groupName)
     {
         AZStd::lock_guard lock(m_access);
-        m_groups[uniqueGroupId].m_name = groupName;
+        StatGroup* newGroup = m_statGroups.AddNew(uniqueGroupId);
+        newGroup->m_name = groupName;
     }
 
-    void MultiplayerStatSystemComponent::DeclareStatTypeIntU64(int uniqueGroupId, int uniqueStatId, const char* statName)
+    void MultiplayerStatSystemComponent::DeclareStat(int uniqueGroupId, int uniqueStatId, const char* statName)
     {
         AZStd::lock_guard lock(m_access);
-        const auto groupIterator = m_groups.find(uniqueGroupId);
-        if (groupIterator != m_groups.end())
+        if (StatGroup* group = m_statGroups.Find(uniqueGroupId))
         {
-            groupIterator->second.m_stats[uniqueStatId].m_name = statName;
-            m_statToGroupId[uniqueStatId] = &groupIterator->second;
+            auto* newStat = group->m_stats.AddNew(uniqueStatId);
+            newStat->m_name = statName;
+
+            const auto statIterator = m_statIdToGroupId.find(uniqueStatId);
+            if (statIterator == m_statIdToGroupId.end())
+            {
+                m_statIdToGroupId.insert(AZStd::make_pair(uniqueStatId, uniqueGroupId));
+            }
+            else
+            {
+                AZLOG_WARN("A stat has already been declared using DECLARE_STAT_INT64 with id %d", uniqueStatId);
+            }
         }
         else
         {
@@ -149,18 +183,27 @@ namespace Multiplayer
         }
     }
 
-    void MultiplayerStatSystemComponent::SetStatTypeIntU64(int uniqueStatId, AZ::u64 value)
+    void MultiplayerStatSystemComponent::SetStat(int uniqueStatId, double value)
     {
         AZStd::lock_guard lock(m_access);
-        const auto groupIterator = m_statToGroupId.find(uniqueStatId);
-        if (groupIterator != m_statToGroupId.end())
+        const auto statIterator = m_statIdToGroupId.find(uniqueStatId);
+        if (statIterator != m_statIdToGroupId.end())
         {
-            groupIterator->second->m_stats[uniqueStatId].m_value = value;
+            if (const auto group = m_statGroups.Find(statIterator->second))
+            {
+                if (auto stat = group->m_stats.Find(uniqueStatId))
+                {
+                    stat->m_average.PushEntry(value);
+                }
+                else
+                {
+                    AZLOG_WARN("SET_STAT_UINT64 was called on a stat with id %d of a non-INT64 type", uniqueStatId);
+                }
+                return;
+            }
         }
-        else
-        {
-            AZLOG_WARN("Stat with id %d has not been declared using DECLARE_STAT_UINT64", uniqueStatId);
-        }
+
+        AZLOG_WARN("Stat with id %d has not been declared using DECLARE_STAT_UINT64", uniqueStatId);
     }
 
     void MultiplayerStatSystemComponent::RecordMetrics()
@@ -170,17 +213,21 @@ namespace Multiplayer
             if (auto* eventLogger = eventLoggerFactory->FindEventLogger(NetworkingMetricsId))
             {
                 AZStd::lock_guard lock(m_access);
-                for (const AZStd::pair<int, Group>& group : m_groups)
+                for (StatGroup& group : m_statGroups.m_items)
                 {
                     AZStd::vector<AZ::Metrics::EventField> argsContainer;
-                    for (const auto& stats : group.second.m_stats)
-                    {
-                        argsContainer.emplace_back(stats.second.m_name, stats.second.m_value);
-                    }
+
+                    AZStd::for_each(
+                        group.m_stats.m_items.begin(),
+                        group.m_stats.m_items.end(),
+                        [&argsContainer](const CumulativeAverage& stat)
+                        {
+                            argsContainer.emplace_back(stat.m_name.c_str(), stat.m_average.CalculateAverage());
+                        });
 
                     AZ::Metrics::CounterArgs counterArgs;
                     counterArgs.m_name = "Stats";
-                    counterArgs.m_cat = group.second.m_name;
+                    counterArgs.m_cat = group.m_name;
                     counterArgs.m_args = argsContainer;
 
                     eventLogger->RecordCounterEvent(counterArgs);

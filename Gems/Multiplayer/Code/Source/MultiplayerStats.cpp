@@ -129,7 +129,7 @@ namespace Multiplayer
 
     void MultiplayerStats::TickStats(AZ::TimeMs metricFrameTimeMs)
     {
-        SET_STAT_UINT64(MultiplayerStat_EntityCount, m_entityCount);
+        SET_INTEGER_STAT(MultiplayerStat_EntityCount, m_entityCount);
 
         m_totalHistoryTimeMs = metricFrameTimeMs * static_cast<AZ::TimeMs>(RingbufferSamples);
         m_recordMetricIndex = ++m_recordMetricIndex % RingbufferSamples;
@@ -260,6 +260,6 @@ namespace Multiplayer
 
     void MultiplayerStats::RecordFrameTime(AZ::TimeUs networkFrameTime)
     {
-        SET_STAT_UINT64(MultiplayerStat_FrameTime, aznumeric_cast<AZ::u64>(networkFrameTime));
+        SET_INTEGER_STAT(MultiplayerStat_FrameTime, networkFrameTime);
     }
 } // namespace Multiplayer

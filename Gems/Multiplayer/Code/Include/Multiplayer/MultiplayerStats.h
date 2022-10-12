@@ -24,12 +24,12 @@ namespace Multiplayer
 {
     enum MultiplayerGroupIds
     {
-        MultiplayerGroup_Networking
+        MultiplayerGroup_Networking = 101
     };
 
     enum MultiplayerStatIds
     {
-        MultiplayerStat_EntityCount = 1000,
+        MultiplayerStat_EntityCount = 1001,
         MultiplayerStat_FrameTime
     };
 

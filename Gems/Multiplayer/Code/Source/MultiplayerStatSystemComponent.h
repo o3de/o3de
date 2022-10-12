@@ -9,6 +9,8 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <AzCore/IO/Streamer/Statistics.h>
+#include <AzCore/IO/Streamer/StreamerConfiguration.h>
 #include <AzCore/Metrics/IEventLogger.h>
 #include <Multiplayer/MultiplayerStatSystem.h>
 
@@ -42,8 +44,8 @@ namespace Multiplayer
         void Unregister() override;
         void SetReportPeriod(AZ::TimeMs period) override;
         void DeclareStatGroup(int uniqueGroupId, const char* groupName) override;
-        void DeclareStatTypeIntU64(int uniqueGroupId, int uniqueStatId, const char* statName) override;
-        void SetStatTypeIntU64(int uniqueStatId, AZ::u64 value) override;
+        void DeclareStat(int uniqueGroupId, int uniqueStatId, const char* statName) override;
+        void SetStat(int uniqueStatId, double value) override;
         //! @}
 
     private:
@@ -53,15 +55,53 @@ namespace Multiplayer
                                                RecordMetrics();
                                            },
                                            AZ::Name("MultiplayerStats") };
-        
-        struct Group
+
+        struct CumulativeAverage
         {
-            const char* m_name = nullptr;
-            AZStd::unordered_map<int, AZ::Metrics::EventField> m_stats;
+            AZStd::string m_name;
+            AZ::IO::AverageWindow<double, double, AZ::IO::s_statisticsWindowSize> m_average;
+            AZ::u64 m_sampleCount = 0;
         };
 
-        AZStd::unordered_map<int, Group> m_groups;
-        AZStd::unordered_map<int, Group*> m_statToGroupId;
+        //! A custom combined data structure for fast iteration and fast insertion.
+        //! Items can only be added, never removed.
+        template<typename ID, typename Value>
+        class MappedArrayWithNonRemovableItems
+        {
+        public:
+            Value* AddNew(ID newId)
+            {
+                auto newItem = &m_items.emplace_back();
+                m_idToItems[newId] = m_items.size() - 1;
+                return newItem;
+            }
+
+            Value* Find(ID byId)
+            {
+                auto valueIterator = m_idToItems.find(byId);
+                if (valueIterator != m_idToItems.end())
+                {
+                    return &m_items[valueIterator->second];
+                }
+
+                return nullptr;
+            }
+
+            AZStd::vector<Value> m_items;
+            AZStd::unordered_map<ID, AZStd::size_t> m_idToItems;
+        };
+
+        struct StatGroup
+        {
+            AZStd::string m_name;
+
+            // For fast iteration and fast insertion
+            MappedArrayWithNonRemovableItems<int, CumulativeAverage> m_stats;
+        };
+
+        MappedArrayWithNonRemovableItems<int, StatGroup> m_statGroups;
+
+        AZStd::unordered_map<int, int> m_statIdToGroupId;
 
         AZStd::mutex m_access;
     };

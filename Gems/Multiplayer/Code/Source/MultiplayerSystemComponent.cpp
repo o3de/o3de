@@ -230,8 +230,8 @@ namespace Multiplayer
     void MultiplayerSystemComponent::Activate()
     {
         DECLARE_STAT_GROUP(MultiplayerGroup_Networking, "Networking");
-        DECLARE_STAT_UINT64(MultiplayerGroup_Networking, MultiplayerStat_EntityCount, "NumEntities");
-        DECLARE_STAT_UINT64(MultiplayerGroup_Networking, MultiplayerStat_FrameTime, "FrameTimeUs");
+        DECLARE_STAT(MultiplayerGroup_Networking, MultiplayerStat_EntityCount, "NumEntities");
+        DECLARE_STAT(MultiplayerGroup_Networking, MultiplayerStat_FrameTime, "FrameTimeUs");
 
         AzFramework::RootSpawnableNotificationBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();

@@ -8,10 +8,10 @@
 
 #pragma once
 
-#include <AzCore/base.h>
 #include <AzCore/Console/ILogger.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Time/ITime.h>
+#include <AzCore/base.h>
 
 // If not defined, compiles out all stat calls.
 #define ENABLE_STAT_GATHERING
@@ -29,11 +29,11 @@ namespace Multiplayer
     //! With a group defined, define a stat belonging to an existing group.
     //!
     //! enum { MYSTAT = 1001 };
-    //! DECLARE_STAT_UINT64(MYGROUP, MYSTAT, "MyStat");
+    //! DECLARE_STAT(MYGROUP, MYSTAT, "MyStat");
     //!
     //! And then call SET_STAT_UINT64 to update the stat as often as needed.
     //!
-    //! SET_STAT_UINT64(MYSTAT, 1337);
+    //! SET_INTEGER_STAT(MYSTAT, 1337);
     //!
     //! Stats will be written together within a group using AZ::EventLogger subsystem, which is configured using these cvars:
     //!     @cl_metricsFile, @sv_metricsFile and @bg_enableNetworkingMetrics.
@@ -44,20 +44,32 @@ namespace Multiplayer
 
         virtual ~IMultiplayerStatSystem() = default;
 
-        //! Initialize stat system.
+        //! Initialize the system.
         virtual void Register() = 0;
-        //! De-initialize stat system.
+        //! De-initialize the system.
         virtual void Unregister() = 0;
-        //! Sets how often metrics are written to AZ::EventLogger.
+
+        //! Change how often metrics are written to AZ::EventLogger.
+        //! @param period time in milliseconds between recording events
         virtual void SetReportPeriod(AZ::TimeMs period) = 0;
 
         //! Declares a stat group with a name using a unique id.
+        //! @param uniqueGroupId a unique id for a group of stats
+        //! @param groupName a name for the group
         virtual void DeclareStatGroup(int uniqueGroupId, const char* groupName) = 0;
-        //! Declares a stat belonging to an existing group.
-        virtual void DeclareStatTypeIntU64(int uniqueGroupId, int uniqueStatId, const char* statName) = 0;
 
-        //! Overwrites the counter value.
-        virtual void SetStatTypeIntU64(int uniqueStatId, AZ::u64 value) = 0;
+        //! Declares a stat belonging to an existing group.
+        //! @param uniqueGroupId a group id already declared with  DECLARE_STAT_GROUP
+        //! @param uniqueStatId a stat id already declared with DECLARE_STAT
+        //! @param statName name of the stat, this does NOT take the ownership of the string
+        virtual void DeclareStat(int uniqueGroupId, int uniqueStatId, const char* statName) = 0;
+
+        //! It's recommended to use SET_INTEGER_STAT macro instead.
+        //! Updates the value of a given stat already declared with DECLARE_STAT
+        //! Note: metrics will take the average value of a stat within the period configured with @SetReportPeriod
+        //! @param uniqueStatId a unique stat id
+        //! @param value current value
+        virtual void SetStat(int uniqueStatId, double value) = 0;
     };
 } // namespace Multiplayer
 
@@ -75,11 +87,11 @@ namespace Multiplayer
         }                                                                                                                                  \
     }
 
-#define DECLARE_STAT_UINT64(GROUPID, STATID, NAME)                                                                                         \
+#define DECLARE_STAT(GROUPID, STATID, NAME)                                                                                                \
     {                                                                                                                                      \
         if (auto* statSystem = AZ::Interface<IMultiplayerStatSystem>::Get())                                                               \
         {                                                                                                                                  \
-            statSystem->DeclareStatTypeIntU64(GROUPID, STATID, NAME);                                                                      \
+            statSystem->DeclareStat(GROUPID, STATID, NAME);                                                                            \
         }                                                                                                                                  \
         else                                                                                                                               \
         {                                                                                                                                  \
@@ -87,11 +99,11 @@ namespace Multiplayer
         }                                                                                                                                  \
     }
 
-#define SET_STAT_UINT64(STATID, VALUE)                                                                                                     \
+#define SET_INTEGER_STAT(STATID, VALUE)                                                                                                    \
     {                                                                                                                                      \
         if (auto* statSystem = AZ::Interface<IMultiplayerStatSystem>::Get())                                                               \
         {                                                                                                                                  \
-            statSystem->SetStatTypeIntU64(STATID, VALUE);                                                                                  \
+            statSystem->SetStat(STATID, aznumeric_cast<double>(VALUE));                                                                    \
         }                                                                                                                                  \
         else                                                                                                                               \
         {                                                                                                                                  \
@@ -103,8 +115,8 @@ namespace Multiplayer
 
 #define DECLARE_STAT_GROUP()
 
-#define DECLARE_STAT_UINT64()
+#define DECLARE_STAT()
 
-#define SET_STAT_UINT64()
+#define SET_INTEGER_STAT()
 
 #endif
