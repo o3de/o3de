@@ -136,10 +136,7 @@ namespace AZ
         {
             if (m_performanceCollector)
             {
-                if (!m_performanceCollector->IsWaitingBeforeCapture())
-                {
-                    m_performanceCollector->RecordPeriodicEvent(PerformanceSpecEngineCpuTime);
-                }
+                m_performanceCollector->RecordPeriodicEvent(PerformanceSpecEngineCpuTime);
                 m_performanceCollector->FrameTick();
             }
 

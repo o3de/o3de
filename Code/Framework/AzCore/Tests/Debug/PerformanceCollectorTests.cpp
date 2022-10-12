@@ -55,14 +55,14 @@ namespace UnitTest
         const AZ::u32 EXCESS_FRAME_LOOP = 5;
         for (AZ::u32 frameLoop = 0; frameLoop < ((numberOfCaptureBatches*frameCountPerCaptureBatch) + EXCESS_FRAME_LOOP); frameLoop++)
         {
-            performanceCollector.FrameTick();
-            if (!performanceCollector.IsWaitingBeforeCapture())
-            {
-                performanceCollector.RecordPeriodicEvent(PerfParam1);
-            }
+            performanceCollector.FrameTick(); // Required Heart beat.
+
+            performanceCollector.RecordPeriodicEvent(PerfParam1);
+
             {
                 AZ::Debug::ScopeDuration param1Scope(&performanceCollector, PerfParam2);
             }
+
             {
                 AZ::Debug::ScopeDuration param1Scope(&performanceCollector, PerfParam3);
             }
@@ -152,14 +152,14 @@ namespace UnitTest
         const AZ::u32 EXCESS_FRAME_LOOP = 5;
         for (AZ::u32 frameLoop = 0; frameLoop < ((numberOfCaptureBatches*frameCountPerCaptureBatch) + EXCESS_FRAME_LOOP); frameLoop++)
         {
-            performanceCollector.FrameTick();
-            if (!performanceCollector.IsWaitingBeforeCapture())
-            {
-                performanceCollector.RecordPeriodicEvent(PerfParam1);
-            }
+            performanceCollector.FrameTick(); // Required Heart beat.
+
+            performanceCollector.RecordPeriodicEvent(PerfParam1);
+
             {
                 AZ::Debug::ScopeDuration param1Scope(&performanceCollector, PerfParam2);
             }
+
             {
                 AZ::Debug::ScopeDuration param1Scope(&performanceCollector, PerfParam3);
             }

@@ -115,6 +115,10 @@ namespace AZ::Debug
 
     void PerformanceCollector::RecordPeriodicEvent(AZStd::string_view metricName)
     {
+        if (IsWaitingBeforeCapture())
+        {
+            return;
+        }
         auto prevStamp = m_periodicEventStamps[metricName];
         AZStd::chrono::steady_clock::time_point now = AZStd::chrono::steady_clock::now();
         m_periodicEventStamps[metricName] = now;
