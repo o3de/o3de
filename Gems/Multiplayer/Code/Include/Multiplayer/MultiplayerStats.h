@@ -13,6 +13,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Time/ITime.h>
 #include <Multiplayer/MultiplayerTypes.h>
+#include <Multiplayer/MultiplayerStatSystem.h>
 
 namespace AzNetworking
 {
@@ -21,11 +22,19 @@ namespace AzNetworking
 
 namespace Multiplayer
 {
+    enum MultiplayerGroupIds
+    {
+        MultiplayerGroup_Networking
+    };
+
+    enum MultiplayerStatIds
+    {
+        MultiplayerStat_EntityCount = 1000,
+        MultiplayerStat_FrameTime
+    };
+
     struct MultiplayerStats
     {
-        MultiplayerStats() { m_metricsEvent.Enqueue(AZ::TimeMs{ 1000 }, true); }
-        ~MultiplayerStats() { m_metricsEvent.RemoveFromQueue(); }
-
         AZ::u64 m_entityCount = 0;
         AZ::u64 m_clientConnectionCount = 0;
         AZ::u64 m_serverConnectionCount = 0;
@@ -98,15 +107,5 @@ namespace Multiplayer
         };
 
         void ConnectHandlers(EventHandlers& handlers);
-
-    private:
-        AZ::TimeUs m_accumulatedNetworkTimeSinceLastMetric = AZ::Time::ZeroTimeUs;
-        uint64_t m_framesSinceLastMetricRecorded = 0;
-
-        void RecordMetrics();
-        AZ::ScheduledEvent m_metricsEvent{[this]()
-        {
-            RecordMetrics();
-        }, AZ::Name("MultiplayerStats")};
     };
 }

@@ -129,6 +129,8 @@ namespace Multiplayer
 
     void MultiplayerStats::TickStats(AZ::TimeMs metricFrameTimeMs)
     {
+        SET_STAT_UINT64(MultiplayerStat_EntityCount, m_entityCount);
+
         m_totalHistoryTimeMs = metricFrameTimeMs * static_cast<AZ::TimeMs>(RingbufferSamples);
         m_recordMetricIndex = ++m_recordMetricIndex % RingbufferSamples;
         for (ComponentStats& componentStats : m_componentStats)
@@ -258,35 +260,6 @@ namespace Multiplayer
 
     void MultiplayerStats::RecordFrameTime(AZ::TimeUs networkFrameTime)
     {
-        m_framesSinceLastMetricRecorded++;
-        m_accumulatedNetworkTimeSinceLastMetric += networkFrameTime;
+        SET_STAT_UINT64(MultiplayerStat_FrameTime, aznumeric_cast<AZ::u64>(networkFrameTime));
     }
-
-    void MultiplayerStats::RecordMetrics()
-    {
-        if (const auto* eventLoggerFactory = AZ::Interface<AZ::Metrics::IEventLoggerFactory>::Get())
-        {
-            if (auto* eventLogger = eventLoggerFactory->FindEventLogger(NetworkingMetricsId))
-            {
-                using EventObjectStorage = AZStd::fixed_vector<AZ::Metrics::EventField, 8>;
-
-                EventObjectStorage argsContainer;
-                const AZ::u64 averageFrameTime = m_framesSinceLastMetricRecorded > 0
-                    ? static_cast<AZ::u64>(m_accumulatedNetworkTimeSinceLastMetric) / m_framesSinceLastMetricRecorded
-                    : 0;
-                argsContainer.emplace_back("AverageNetworkFrameTimeUs", averageFrameTime);
-                argsContainer.emplace_back("NumEntities", m_entityCount);
-
-                m_framesSinceLastMetricRecorded = 0;
-                m_accumulatedNetworkTimeSinceLastMetric = AZ::Time::ZeroTimeUs;
-
-                AZ::Metrics::CounterArgs counterArgs;
-                counterArgs.m_name = "Metrics Event";
-                counterArgs.m_cat = "Networking";
-                counterArgs.m_args = argsContainer;
-
-                eventLogger->RecordCounterEvent(counterArgs);
-            }
-        }
-    }
-}
+} // namespace Multiplayer

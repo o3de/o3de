@@ -96,56 +96,7 @@ namespace Multiplayer
         "slow down quicker and may be better suited to connections with highly variable latency");
     AZ_CVAR(bool, bg_multiplayerDebugDraw, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Enables debug draw for the multiplayer gem");
     AZ_CVAR(bool, cl_connect_onstartup, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether to call connect as soon as the Multiplayer SystemComponent is activated.");
-
-    // Metrics cvars
-    void OnEnableNetworkingMetricsChanged(const bool& enabled);
-    AZ_CVAR(bool, bg_enableNetworkingMetrics, false, &OnEnableNetworkingMetricsChanged, AZ::ConsoleFunctorFlags::DontReplicate, "Whether to capture networking metrics");
-    AZ_CVAR(AZ::CVarFixedString, cl_metricsFile, "client_network_metrics.json", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "File of the client metrics file if enabled, placed under <ProjectFolder>/user/metrics");
-    AZ_CVAR(AZ::CVarFixedString, sv_metricsFile, "server_network_metrics.json", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "File of the server metrics file if enabled, placed under <ProjectFolder>/user/metrics");
-
-    void ConfigureEventLoggerHelper(const AZ::CVarFixedString& filename)
-    {
-        if (auto eventLoggerFactory = AZ::Interface<AZ::Metrics::IEventLoggerFactory>::Get())
-        {
-            const AZ::IO::FixedMaxPath metricsFilepath = AZ::IO::FixedMaxPath(AZ::Utils::GetProjectPath()) / "user/Metrics" / filename;
-            constexpr AZ::IO::OpenMode openMode = AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath;
-
-            auto stream = AZStd::make_unique<AZ::IO::SystemFileStream>(metricsFilepath.c_str(), openMode);
-            auto eventLogger = AZStd::make_unique<AZ::Metrics::JsonTraceEventLogger>(AZStd::move(stream));
-            eventLoggerFactory->RegisterEventLogger(NetworkingMetricsId, AZStd::move(eventLogger));
-        }
-    }
-
-    void UnregisterEventLoggerHelper()
-    {
-        if (auto* eventLoggerFactory = AZ::Interface<AZ::Metrics::IEventLoggerFactory>::Get())
-        {
-            eventLoggerFactory->UnregisterEventLogger(NetworkingMetricsId);
-        }
-    }
-
-    void OnEnableNetworkingMetricsChanged(const bool& enabled)
-    {
-        UnregisterEventLoggerHelper();
-
-        if (enabled && GetMultiplayer())
-        {
-            switch (GetMultiplayer()->GetAgentType())
-            {
-            case MultiplayerAgentType::DedicatedServer: // fallthrough
-            case MultiplayerAgentType::ClientServer:
-                ConfigureEventLoggerHelper(sv_metricsFile);
-                break;
-            case MultiplayerAgentType::Client:
-                ConfigureEventLoggerHelper(cl_metricsFile);
-                break;
-            default:
-                AZLOG_WARN("Unitialized or unsupported agent type for recording metrics.");
-                break;
-            }
-        }
-    }
-
+    
     void MultiplayerSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         NetworkSpawnable::Reflect(context);
@@ -245,6 +196,7 @@ namespace Multiplayer
     void MultiplayerSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         required.push_back(AZ_CRC_CE("NetworkingService"));
+        required.push_back(AZ_CRC_CE("MultiplayerStatSystemComponent"));
     }
 
     void MultiplayerSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -277,6 +229,10 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::Activate()
     {
+        DECLARE_STAT_GROUP(MultiplayerGroup_Networking, "Networking");
+        DECLARE_STAT_UINT64(MultiplayerGroup_Networking, MultiplayerStat_EntityCount, "NumEntities");
+        DECLARE_STAT_UINT64(MultiplayerGroup_Networking, MultiplayerStat_FrameTime, "FrameTimeUs");
+
         AzFramework::RootSpawnableNotificationBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
         SessionNotificationBus::Handler::BusConnect();
@@ -302,11 +258,6 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::Deactivate()
     {
-        if (bg_enableNetworkingMetrics)
-        {
-            UnregisterEventLoggerHelper();
-        }
-
         AZ::Interface<ISessionHandlingClientRequests>::Unregister(this);
         m_consoleCommandHandler.Disconnect();
         const AZ::Name interfaceName = AZ::Name(MpNetworkInterfaceName);
@@ -1116,9 +1067,9 @@ namespace Multiplayer
         }
         AZLOG_INFO("Multiplayer operating in %s mode", GetEnumString(m_agentType));
 
-        if (bg_enableNetworkingMetrics)
+        if (auto* statSystem = AZ::Interface<IMultiplayerStatSystem>::Get())
         {
-            OnEnableNetworkingMetricsChanged(true);
+            statSystem->Register();
         }
     }
 
