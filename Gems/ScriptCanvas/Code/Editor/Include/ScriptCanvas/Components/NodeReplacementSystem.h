@@ -17,13 +17,6 @@
 
 namespace ScriptCanvasEditor
 {
-    static constexpr const char NodeReplacementRootPath[] = "/Amazon/ScriptCanvas/NodeReplacement";
-    static constexpr const char NodeReplacementOldNodeFieldName[] = "OldNode";
-    static constexpr const char NodeReplacementNewNodeFieldName[] = "NewNode";
-    static constexpr const char NodeReplacementUuidFieldName[] = "Uuid";
-    static constexpr const char NodeReplacementClassFieldName[] = "Class";
-    static constexpr const char NodeReplacementMethodFieldName[] = "Method";
-
     class NodeReplacementSystem final
         : public NodeReplacementRequestBus::Handler
     {

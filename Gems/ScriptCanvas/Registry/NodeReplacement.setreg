@@ -1,7 +1,7 @@
 {
-    "Amazon": {
-        "ScriptCanvas": {
-            "NodeReplacement": [
+    "O3DE": {
+        "NodeReplacement": {
+            "ScriptCanvas": [
                 {
                     "OldNode" : {
                         "Uuid": "E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF",

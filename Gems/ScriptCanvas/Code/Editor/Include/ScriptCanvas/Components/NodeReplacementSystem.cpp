@@ -15,14 +15,21 @@
 
 namespace ScriptCanvasEditor
 {
+    static constexpr const char NodeReplacementRootPath[] = "/O3DE/NodeReplacement/ScriptCanvas";
+    static constexpr const char NodeReplacementOldNodeFieldName[] = "OldNode";
+    static constexpr const char NodeReplacementNewNodeFieldName[] = "NewNode";
+    static constexpr const char NodeReplacementUuidFieldName[] = "Uuid";
+    static constexpr const char NodeReplacementClassFieldName[] = "Class";
+    static constexpr const char NodeReplacementMethodFieldName[] = "Method";
+
     NodeReplacementId NodeReplacementSystem::GenerateReplacementId(const AZ::Uuid& id, const AZStd::string& className, const AZStd::string& methodName)
     {
         NodeReplacementId result = id.ToFixedString().c_str();
-        if (!className.empty())
+        if (!className.empty() && !methodName.empty())
         {
-            result += AZStd::string::format("_%s", className.c_str());
+            result += AZStd::string::format("_%s_%s", className.c_str(), methodName.c_str());
         }
-        if (!methodName.empty())
+        else if (!methodName.empty())
         {
             result += AZStd::string::format("_%s", methodName.c_str());
         }
@@ -35,11 +42,24 @@ namespace ScriptCanvasEditor
         {
             if (auto* methodNode = azrtti_cast<ScriptCanvas::Nodes::Core::Method*>(node))
             {
-                return GenerateReplacementId(methodNode->TYPEINFO_Uuid(), methodNode->GetRawMethodClassName(), methodNode->GetRawMethodName());
+                return GenerateReplacementId(methodNode->RTTI_GetType(),
+                    methodNode->GetRawMethodClassName().empty() ? "" : methodNode->GetMethodClassName(),
+                    methodNode->GetName());
             }
             // extend further here to support all types of node
         }
         return "";
+    }
+
+    ScriptCanvas::NodeReplacementConfiguration NodeReplacementSystem::GetNodeReplacementConfiguration(
+        const NodeReplacementId& replacementId) const
+    {
+        auto foundIter = m_replacementMetadata.find(replacementId);
+        if (foundIter != m_replacementMetadata.end())
+        {
+            return foundIter->second;
+        }
+        return {};
     }
 
     void NodeReplacementSystem::LoadReplacementMetadata()
@@ -98,16 +118,5 @@ namespace ScriptCanvasEditor
     {
         NodeReplacementRequestBus::Handler::BusDisconnect();
         m_replacementMetadata.clear();
-    }
-
-    ScriptCanvas::NodeReplacementConfiguration NodeReplacementSystem::GetNodeReplacementConfiguration(
-        const NodeReplacementId& replacementId) const
-    {
-        auto foundIter = m_replacementMetadata.find(replacementId);
-        if (foundIter != m_replacementMetadata.end())
-        {
-            return foundIter->second;
-        }
-        return {};
     }
 }
