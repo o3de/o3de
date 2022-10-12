@@ -143,15 +143,15 @@ namespace AssetProcessor
         ScanFolderDatabaseEntry dupeScanFolder("c:/O3DE/dev2", "dev", "rootportkey");
         dupeScanFolder.m_scanFolderID = AzToolsFramework::AssetDatabase::InvalidEntryId;
         EXPECT_TRUE(m_connection.SetScanFolder(dupeScanFolder));
-        EXPECT_TRUE(dupeScanFolder == scanFolder) << "AssetProcessingStateDataTest Failed - scan folder failed to add";
+        EXPECT_EQ(dupeScanFolder, scanFolder) << "AssetProcessingStateDataTest Failed - scan folder failed to add";
 
-        EXPECT_TRUE(dupeScanFolder.m_portableKey == scanFolder.m_portableKey);
-        EXPECT_TRUE(dupeScanFolder.m_scanFolderID == scanFolder.m_scanFolderID);
+        EXPECT_EQ(dupeScanFolder.m_portableKey, scanFolder.m_portableKey);
+        EXPECT_EQ(dupeScanFolder.m_scanFolderID, scanFolder.m_scanFolderID);
 
         //get all scan folders, there should only the one we added
         scanFolders.clear();
         EXPECT_TRUE(m_connection.GetScanFolders(scanFolders));
-        EXPECT_TRUE(scanFolders.size() == 1);
+        EXPECT_EQ(scanFolders.size(), 1);
         EXPECT_TRUE(ScanFoldersContainScanPath(scanFolders, "c:/O3DE/dev2"));
         EXPECT_TRUE(ScanFoldersContainScanFolderID(scanFolders, scanFolder.m_scanFolderID));
         EXPECT_TRUE(ScanFoldersContainPortableKey(scanFolders, scanFolder.m_portableKey.c_str()));
@@ -160,25 +160,25 @@ namespace AssetProcessor
         //retrieve the one we just made by id
         ScanFolderDatabaseEntry retrieveScanfolderById;
         EXPECT_TRUE(m_connection.GetScanFolderByScanFolderID(scanFolder.m_scanFolderID, retrieveScanfolderById));
-        EXPECT_FALSE(retrieveScanfolderById.m_scanFolderID == AzToolsFramework::AssetDatabase::InvalidEntryId ||
-            retrieveScanfolderById.m_scanFolderID != scanFolder.m_scanFolderID) << "AssetProcessingStateDataTest Failed - scan folder failed to add";
+        EXPECT_NE(retrieveScanfolderById.m_scanFolderID, AzToolsFramework::AssetDatabase::InvalidEntryId) << "AssetProcessingStateDataTest Failed - scan folder failed to add";
+        EXPECT_EQ(retrieveScanfolderById.m_scanFolderID, scanFolder.m_scanFolderID) << "AssetProcessingStateDataTest Failed - scan folder failed to add";
 
         //retrieve the one we just made by portable key
         ScanFolderDatabaseEntry retrieveScanfolderByScanPath;
         EXPECT_TRUE(m_connection.GetScanFolderByPortableKey("rootportkey", retrieveScanfolderByScanPath));
-        EXPECT_FALSE(retrieveScanfolderByScanPath.m_scanFolderID == AzToolsFramework::AssetDatabase::InvalidEntryId ||
-            retrieveScanfolderByScanPath.m_scanFolderID != scanFolder.m_scanFolderID) << "AssetProcessingStateDataTest Failed - scan folder failed to add";
+        EXPECT_NE(retrieveScanfolderByScanPath.m_scanFolderID, AzToolsFramework::AssetDatabase::InvalidEntryId) << "AssetProcessingStateDataTest Failed - scan folder failed to add";
+        EXPECT_EQ(retrieveScanfolderByScanPath.m_scanFolderID, scanFolder.m_scanFolderID) << "AssetProcessingStateDataTest Failed - scan folder failed to add";
 
         //add another folder
         ScanFolderDatabaseEntry gameScanFolderEntry("c:/O3DE/game", "game", "gameportkey");
         EXPECT_TRUE(m_connection.SetScanFolder(gameScanFolderEntry));
-        EXPECT_FALSE(gameScanFolderEntry.m_scanFolderID == AzToolsFramework::AssetDatabase::InvalidEntryId ||
-            gameScanFolderEntry.m_scanFolderID == scanFolder.m_scanFolderID)<< "AssetProcessingStateDataTest Failed - scan folder failed to add";
+        EXPECT_NE(gameScanFolderEntry.m_scanFolderID, AzToolsFramework::AssetDatabase::InvalidEntryId) << "AssetProcessingStateDataTest Failed - scan folder failed to add";
+        EXPECT_NE(gameScanFolderEntry.m_scanFolderID, scanFolder.m_scanFolderID)<< "AssetProcessingStateDataTest Failed - scan folder failed to add";
 
         //get all scan folders, there should only the two we added
         scanFolders.clear();
         EXPECT_TRUE(m_connection.GetScanFolders(scanFolders));
-        EXPECT_TRUE(scanFolders.size() == 2);
+        EXPECT_EQ(scanFolders.size(), 2);
         EXPECT_TRUE(ScanFoldersContainScanPath(scanFolders, "c:/O3DE/dev2"));
         EXPECT_TRUE(ScanFoldersContainScanPath(scanFolders, "c:/O3DE/game"));
         EXPECT_TRUE(ScanFoldersContainScanFolderID(scanFolders, scanFolder.m_scanFolderID));
@@ -191,20 +191,20 @@ namespace AssetProcessor
         //get all scan folders again, there should now only the first we added
         scanFolders.clear();
         EXPECT_TRUE(m_connection.GetScanFolders(scanFolders));
-        EXPECT_TRUE(scanFolders.size() == 1);
+        EXPECT_EQ(scanFolders.size(), 1);
         EXPECT_TRUE(ScanFoldersContainScanPath(scanFolders, "c:/O3DE/dev2"));
         EXPECT_TRUE(ScanFoldersContainScanFolderID(scanFolders, scanFolder.m_scanFolderID));
 
         //add another folder again
         gameScanFolderEntry = ScanFolderDatabaseEntry("c:/O3DE/game", "game", "gameportkey2");
         EXPECT_TRUE(m_connection.SetScanFolder(gameScanFolderEntry));
-        EXPECT_FALSE(gameScanFolderEntry.m_scanFolderID == AzToolsFramework::AssetDatabase::InvalidEntryId ||
-            gameScanFolderEntry.m_scanFolderID == scanFolder.m_scanFolderID) << "AssetProcessingStateDataTest Failed - scan folder failed to add";
+        EXPECT_NE(gameScanFolderEntry.m_scanFolderID, AzToolsFramework::AssetDatabase::InvalidEntryId) << "AssetProcessingStateDataTest Failed - scan folder failed to add";
+        EXPECT_NE(gameScanFolderEntry.m_scanFolderID, scanFolder.m_scanFolderID) << "AssetProcessingStateDataTest Failed - scan folder failed to add";
 
         //get all scan folders, there should only the two we added
         scanFolders.clear();
         EXPECT_TRUE(m_connection.GetScanFolders(scanFolders));
-        EXPECT_TRUE(scanFolders.size() == 2);
+        EXPECT_EQ(scanFolders.size(), 2);
         EXPECT_TRUE(ScanFoldersContainScanPath(scanFolders, "c:/O3DE/dev2"));
         EXPECT_TRUE(ScanFoldersContainScanPath(scanFolders, "c:/O3DE/game"));
         EXPECT_TRUE(ScanFoldersContainScanFolderID(scanFolders, scanFolder.m_scanFolderID));
@@ -277,7 +277,7 @@ namespace AssetProcessor
         {
             UnitTestUtils::AssertAbsorber absorber;
             EXPECT_FALSE(m_connection.SetSource(source));
-            EXPECT_TRUE(absorber.m_numWarningsAbsorbed > 0);
+            EXPECT_GE(absorber.m_numWarningsAbsorbed, 0);
         }
 
         //setting a valid scan folder pk should allow it to be added
@@ -288,8 +288,8 @@ namespace AssetProcessor
         //get all sources, there should only the one we added
         sources.clear();
         EXPECT_TRUE(m_connection.GetSources(sources));
-        EXPECT_TRUE(sources.size() == 1);
-        EXPECT_TRUE(sources[0].m_analysisFingerprint == "tEsTFingerPrint_TEST");
+        EXPECT_EQ(sources.size(), 1);
+        EXPECT_EQ(sources[0].m_analysisFingerprint, "tEsTFingerPrint_TEST");
         EXPECT_TRUE(SourcesContainSourceName(sources, "SomeSource1.tif"));
         EXPECT_TRUE(SourcesContainSourceID(sources, source.m_sourceID));
         EXPECT_TRUE(SourcesContainSourceGuid(sources, source.m_sourceGuid));
@@ -303,8 +303,8 @@ namespace AssetProcessor
         //get all sources, there should still only the one we added
         sources.clear();
         EXPECT_TRUE(m_connection.GetSources(sources));
-        EXPECT_TRUE(sources.size() == 1);
-        EXPECT_TRUE(sources[0].m_analysisFingerprint == "tEsTFingerPrint_TEST");
+        EXPECT_EQ(sources.size(), 1);
+        EXPECT_EQ(sources[0].m_analysisFingerprint, "tEsTFingerPrint_TEST");
         EXPECT_TRUE(SourcesContainSourceName(sources, "SomeSource1.tif"));
         EXPECT_TRUE(SourcesContainSourceID(sources, source.m_sourceID));
         EXPECT_TRUE(SourcesContainSourceGuid(sources, source.m_sourceGuid));
@@ -314,11 +314,11 @@ namespace AssetProcessor
         SourceDatabaseEntry sourceWithDifferentFingerprint(source);
         sourceWithDifferentFingerprint.m_analysisFingerprint = "otherFingerprint";
         EXPECT_TRUE(m_connection.SetSource(sourceWithDifferentFingerprint));
-        EXPECT_TRUE(sourceWithDifferentFingerprint.m_sourceID == source.m_sourceID);
+        EXPECT_EQ(sourceWithDifferentFingerprint.m_sourceID, source.m_sourceID);
         sources.clear();
         EXPECT_TRUE(m_connection.GetSources(sources));
-        EXPECT_TRUE(sources.size() == 1);
-        EXPECT_TRUE(sources[0].m_analysisFingerprint == "otherFingerprint");
+        EXPECT_EQ(sources.size(), 1);
+        EXPECT_EQ(sources[0].m_analysisFingerprint, "otherFingerprint");
         EXPECT_TRUE(SourcesContainSourceName(sources, "SomeSource1.tif"));
         EXPECT_TRUE(SourcesContainSourceID(sources, source.m_sourceID));
         EXPECT_TRUE(SourcesContainSourceGuid(sources, source.m_sourceGuid));
@@ -337,8 +337,8 @@ namespace AssetProcessor
         //get all sources, there should still only the one we added
         sources.clear();
         EXPECT_TRUE(m_connection.GetSources(sources));
-        EXPECT_TRUE(sources.size() == 1);
-        EXPECT_TRUE(sources[0].m_analysisFingerprint == "new different fingerprint"); // verify that this column IS updated.
+        EXPECT_EQ(sources.size(), 1);
+        EXPECT_EQ(sources[0].m_analysisFingerprint, "new different fingerprint"); // verify that this column IS updated.
         EXPECT_TRUE(SourcesContainSourceName(sources, "SomeSource1.tif"));
         EXPECT_TRUE(SourcesContainSourceID(sources, source.m_sourceID));
         EXPECT_TRUE(SourcesContainSourceGuid(sources, source.m_sourceGuid));
@@ -352,7 +352,7 @@ namespace AssetProcessor
         //get all sources, there should still only the one we added
         sources.clear();
         EXPECT_TRUE(m_connection.GetSources(sources));
-        EXPECT_TRUE(sources.size() == 1);
+        EXPECT_EQ(sources.size(), 1);
         EXPECT_TRUE(SourcesContainSourceName(sources, "SomeSource1.tif"));
         EXPECT_TRUE(SourcesContainSourceID(sources, source.m_sourceID));
         EXPECT_TRUE(SourcesContainSourceGuid(sources, source.m_sourceGuid));
@@ -361,7 +361,7 @@ namespace AssetProcessor
         EXPECT_TRUE(m_connection.RemoveScanFolder(scanfolder2.m_scanFolderID));
         sources.clear();
         EXPECT_TRUE(m_connection.GetSources(sources));
-        EXPECT_TRUE(sources.size() == 1);
+        EXPECT_EQ(sources.size(), 1);
         EXPECT_TRUE(SourcesContainSourceName(sources, "SomeSource1.tif"));
         EXPECT_TRUE(SourcesContainSourceID(sources, source.m_sourceID));
         EXPECT_TRUE(SourcesContainSourceGuid(sources, source.m_sourceGuid));
@@ -369,20 +369,20 @@ namespace AssetProcessor
         //try retrieving this source by id
         SourceDatabaseEntry retrieveSourceBySourceID;
         EXPECT_TRUE(m_connection.GetSourceBySourceID(source.m_sourceID, retrieveSourceBySourceID));
-        EXPECT_FALSE(retrieveSourceBySourceID.m_sourceID == AzToolsFramework::AssetDatabase::InvalidEntryId ||
-            retrieveSourceBySourceID.m_sourceID != source.m_sourceID ||
-            retrieveSourceBySourceID.m_scanFolderPK != source.m_scanFolderPK ||
-            retrieveSourceBySourceID.m_sourceGuid != source.m_sourceGuid ||
-            retrieveSourceBySourceID.m_sourceName != source.m_sourceName) << "AssetProcessingStateDataTest Failed - GetSourceBySourceID failed";
+        EXPECT_NE(retrieveSourceBySourceID.m_sourceID, AzToolsFramework::AssetDatabase::InvalidEntryId) << "AssetProcessingStateDataTest Failed - GetSourceBySourceID failed";
+        EXPECT_EQ(retrieveSourceBySourceID.m_sourceID, source.m_sourceID) << "AssetProcessingStateDataTest Failed - GetSourceBySourceID failed";
+        EXPECT_EQ(retrieveSourceBySourceID.m_scanFolderPK, source.m_scanFolderPK) << "AssetProcessingStateDataTest Failed - GetSourceBySourceID failed";
+        EXPECT_EQ(retrieveSourceBySourceID.m_sourceGuid, source.m_sourceGuid) << "AssetProcessingStateDataTest Failed - GetSourceBySourceID failed";
+        EXPECT_EQ(retrieveSourceBySourceID.m_sourceName, source.m_sourceName) << "AssetProcessingStateDataTest Failed - GetSourceBySourceID failed";
 
         //try retrieving this source by guid
         SourceDatabaseEntry retrieveSourceBySourceGuid;
         EXPECT_TRUE(m_connection.GetSourceBySourceGuid(source.m_sourceGuid, retrieveSourceBySourceGuid));
-        EXPECT_FALSE(retrieveSourceBySourceGuid.m_sourceID == AzToolsFramework::AssetDatabase::InvalidEntryId ||
-            retrieveSourceBySourceGuid.m_sourceID != source.m_sourceID ||
-            retrieveSourceBySourceGuid.m_scanFolderPK != source.m_scanFolderPK ||
-            retrieveSourceBySourceGuid.m_sourceGuid != source.m_sourceGuid ||
-            retrieveSourceBySourceGuid.m_sourceName != source.m_sourceName) << "AssetProcessingStateDataTest Failed - GetSourceBySourceID failed";
+        EXPECT_NE(retrieveSourceBySourceGuid.m_sourceID, AzToolsFramework::AssetDatabase::InvalidEntryId) << "AssetProcessingStateDataTest Failed - GetSourceBySourceID failed";
+        EXPECT_EQ(retrieveSourceBySourceGuid.m_sourceID, source.m_sourceID) << "AssetProcessingStateDataTest Failed - GetSourceBySourceID failed";
+        EXPECT_EQ(retrieveSourceBySourceGuid.m_scanFolderPK, source.m_scanFolderPK) << "AssetProcessingStateDataTest Failed - GetSourceBySourceID failed";
+        EXPECT_EQ(retrieveSourceBySourceGuid.m_sourceGuid, source.m_sourceGuid) << "AssetProcessingStateDataTest Failed - GetSourceBySourceID failed";
+        EXPECT_EQ(retrieveSourceBySourceGuid.m_sourceName, source.m_sourceName) << "AssetProcessingStateDataTest Failed - GetSourceBySourceID failed";
 
         //try retrieving this source by source name
         sources.clear();
@@ -391,13 +391,13 @@ namespace AssetProcessor
         EXPECT_FALSE(m_connection.GetSourcesLikeSourceName("_SomeSource1_", AzToolsFramework::AssetDatabase::AssetDatabaseConnection::Raw, sources));
         sources.clear();
         EXPECT_TRUE(m_connection.GetSourcesLikeSourceName("SomeSource1%", AzToolsFramework::AssetDatabase::AssetDatabaseConnection::Raw, sources));
-        EXPECT_TRUE(sources.size() == 1);
+        EXPECT_EQ(sources.size(), 1);
         EXPECT_TRUE(SourcesContainSourceName(sources, "SomeSource1.tif"));
         EXPECT_TRUE(SourcesContainSourceID(sources, source.m_sourceID));
         EXPECT_TRUE(SourcesContainSourceGuid(sources, source.m_sourceGuid));
         sources.clear();
         EXPECT_TRUE(m_connection.GetSourcesLikeSourceName("%SomeSource1%", AzToolsFramework::AssetDatabase::AssetDatabaseConnection::Raw, sources));
-        EXPECT_TRUE(sources.size() == 1);
+        EXPECT_EQ(sources.size(), 1);
         EXPECT_TRUE(SourcesContainSourceName(sources, "SomeSource1.tif"));
         EXPECT_TRUE(SourcesContainSourceID(sources, source.m_sourceID));
         EXPECT_TRUE(SourcesContainSourceGuid(sources, source.m_sourceGuid));
@@ -405,7 +405,7 @@ namespace AssetProcessor
         EXPECT_FALSE(m_connection.GetSourcesLikeSourceName("Source1", AzToolsFramework::AssetDatabase::AssetDatabaseConnection::StartsWith, sources));
         sources.clear();
         EXPECT_TRUE(m_connection.GetSourcesLikeSourceName("Some", AzToolsFramework::AssetDatabase::AssetDatabaseConnection::StartsWith, sources));
-        EXPECT_TRUE(sources.size() == 1);
+        EXPECT_EQ(sources.size(), 1);
         EXPECT_TRUE(SourcesContainSourceName(sources, "SomeSource1.tif"));
         EXPECT_TRUE(SourcesContainSourceID(sources, source.m_sourceID));
         EXPECT_TRUE(SourcesContainSourceGuid(sources, source.m_sourceGuid));
@@ -413,7 +413,7 @@ namespace AssetProcessor
         EXPECT_FALSE(m_connection.GetSourcesLikeSourceName("SomeSource", AzToolsFramework::AssetDatabase::AssetDatabaseConnection::EndsWith, sources));
         sources.clear();
         EXPECT_TRUE(m_connection.GetSourcesLikeSourceName(".tif", AzToolsFramework::AssetDatabase::AssetDatabaseConnection::EndsWith, sources));
-        EXPECT_TRUE(sources.size() == 1);
+        EXPECT_EQ(sources.size(), 1);
         EXPECT_TRUE(SourcesContainSourceName(sources, "SomeSource1.tif"));
         EXPECT_TRUE(SourcesContainSourceID(sources, source.m_sourceID));
         EXPECT_TRUE(SourcesContainSourceGuid(sources, source.m_sourceGuid));
@@ -421,7 +421,7 @@ namespace AssetProcessor
         EXPECT_FALSE(m_connection.GetSourcesLikeSourceName("blah", AzToolsFramework::AssetDatabase::AssetDatabaseConnection::Matches, sources));
         sources.clear();
         EXPECT_TRUE(m_connection.GetSourcesLikeSourceName("meSour", AzToolsFramework::AssetDatabase::AssetDatabaseConnection::Matches, sources));
-        EXPECT_TRUE(sources.size() == 1);
+        EXPECT_EQ(sources.size(), 1);
         EXPECT_TRUE(SourcesContainSourceName(sources, "SomeSource1.tif"));
         EXPECT_TRUE(SourcesContainSourceID(sources, source.m_sourceID));
         EXPECT_TRUE(SourcesContainSourceGuid(sources, source.m_sourceGuid));
@@ -444,7 +444,7 @@ namespace AssetProcessor
         //get all sources, there should only the two we added
         sources.clear();
         EXPECT_TRUE(m_connection.GetSources(sources));
-        EXPECT_TRUE(sources.size() == 2);
+        EXPECT_EQ(sources.size(), 2);
         EXPECT_TRUE(SourcesContainSourceName(sources, "SomeSource2.tif"));
         EXPECT_TRUE(SourcesContainSourceName(sources, "SomeSource3.tif"));
         EXPECT_TRUE(SourcesContainSourceID(sources, source2.m_sourceID));
@@ -604,7 +604,7 @@ namespace AssetProcessor
             UnitTestUtils::AssertAbsorber absorber;
             job = JobDatabaseEntry(234234, "jobkey", validFingerprint1, "pc", validBuilderGuid1, statusQueued, 1);
             EXPECT_FALSE(m_connection.SetJob(job));
-            EXPECT_TRUE(absorber.m_numWarningsAbsorbed > 0);
+            EXPECT_GE(absorber.m_numWarningsAbsorbed, 0);
         }
 
         //trying to add a job with a valid source pk but an invalid job id  should fail:
@@ -612,20 +612,20 @@ namespace AssetProcessor
             UnitTestUtils::AssertAbsorber absorber;
             job = JobDatabaseEntry(source.m_sourceID, "jobkey", validFingerprint1, "pc", validBuilderGuid1, statusQueued, 0);
             EXPECT_FALSE(m_connection.SetJob(job));
-            EXPECT_TRUE(absorber.m_numErrorsAbsorbed > 0);
+            EXPECT_GE(absorber.m_numErrorsAbsorbed, 0);
         }
 
         //setting a valid scan folder pk should allow it to be added AND should tell you what the job ID will be.
         // the run key should be untouched.
         job = JobDatabaseEntry(source.m_sourceID, "jobKey1", validFingerprint1, "pc", validBuilderGuid1, statusQueued, 1);
         EXPECT_TRUE(m_connection.SetJob(job));
-        EXPECT_TRUE(job.m_jobID != AzToolsFramework::AssetDatabase::InvalidEntryId);
-        EXPECT_TRUE(job.m_jobRunKey == 1);
+        EXPECT_NE(job.m_jobID, AzToolsFramework::AssetDatabase::InvalidEntryId);
+        EXPECT_EQ(job.m_jobRunKey, 1);
 
         //get all jobs, there should only the one we added
         jobs.clear();
         EXPECT_TRUE(m_connection.GetJobs(jobs));
-        EXPECT_TRUE(jobs.size() == 1);
+        EXPECT_EQ(jobs.size(), 1);
         EXPECT_TRUE(JobsContainJobID(jobs, job.m_jobID));
         EXPECT_TRUE(JobsContainJobKey(jobs, job.m_jobKey.c_str()));
         EXPECT_TRUE(JobsContainFingerprint(jobs, job.m_fingerprint));
@@ -643,7 +643,7 @@ namespace AssetProcessor
         //get all jobs, there should still only the one we added
         jobs.clear();
         EXPECT_TRUE(m_connection.GetJobs(jobs));
-        EXPECT_TRUE(jobs.size() == 1);
+        EXPECT_EQ(jobs.size(), 1);
         EXPECT_TRUE(JobsContainJobID(jobs, job.m_jobID));
         EXPECT_TRUE(JobsContainJobKey(jobs, job.m_jobKey.c_str()));
         EXPECT_TRUE(JobsContainFingerprint(jobs, job.m_fingerprint));
@@ -658,7 +658,7 @@ namespace AssetProcessor
         //try retrieving jobs by source id
         jobs.clear();
         EXPECT_TRUE(m_connection.GetJobsBySourceID(source.m_sourceID, jobs));
-        EXPECT_TRUE(jobs.size() == 1);
+        EXPECT_EQ(jobs.size(), 1);
         EXPECT_TRUE(JobsContainJobID(jobs, job.m_jobID));
         EXPECT_TRUE(JobsContainJobKey(jobs, job.m_jobKey.c_str()));
         EXPECT_TRUE(JobsContainFingerprint(jobs, job.m_fingerprint));
@@ -669,7 +669,7 @@ namespace AssetProcessor
         //try retrieving jobs by source name
         jobs.clear();
         EXPECT_TRUE(m_connection.GetJobsBySourceName(source.m_sourceName.c_str(), jobs));
-        EXPECT_TRUE(jobs.size() == 1);
+        EXPECT_EQ(jobs.size(), 1);
         EXPECT_TRUE(JobsContainJobID(jobs, job.m_jobID));
         EXPECT_TRUE(JobsContainJobKey(jobs, job.m_jobKey.c_str()));
         EXPECT_TRUE(JobsContainFingerprint(jobs, job.m_fingerprint));
@@ -694,7 +694,7 @@ namespace AssetProcessor
         //get all jobs, there should be 3
         jobs.clear();
         EXPECT_TRUE(m_connection.GetJobs(jobs));
-        EXPECT_TRUE(jobs.size() == 2);
+        EXPECT_EQ(jobs.size(), 2);
         EXPECT_TRUE(JobsContainJobID(jobs, job2.m_jobID));
         EXPECT_TRUE(JobsContainJobKey(jobs, job2.m_jobKey.c_str()));
         EXPECT_TRUE(JobsContainFingerprint(jobs, job2.m_fingerprint));
@@ -802,7 +802,7 @@ namespace AssetProcessor
         {
             UnitTestUtils::AssertAbsorber absorber;
             EXPECT_FALSE(m_connection.CreateOrUpdateLegacySubID(legacyEntry));
-            EXPECT_TRUE(absorber.m_numWarningsAbsorbed > 0);
+            EXPECT_GT(absorber.m_numWarningsAbsorbed, 0);
         }
 
         // test invalid insert for non-existant legacy product FK constraint
@@ -810,19 +810,19 @@ namespace AssetProcessor
         {
             UnitTestUtils::AssertAbsorber absorber;
             EXPECT_FALSE(m_connection.CreateOrUpdateLegacySubID(legacyEntry));
-            EXPECT_TRUE(absorber.m_numWarningsAbsorbed > 0);
+            EXPECT_GT(absorber.m_numWarningsAbsorbed, 0);
         }
 
         // test valid insert of another for same product
         legacyEntry = LegacySubIDsEntry(AzToolsFramework::AssetDatabase::InvalidEntryId, product.m_productID, 3);
         EXPECT_TRUE(m_connection.CreateOrUpdateLegacySubID(legacyEntry));
         AZ::s64 newPK = legacyEntry.m_subIDsEntryID;
-        EXPECT_TRUE(newPK != AzToolsFramework::AssetDatabase::InvalidEntryId); // it should have also updated the PK
+        EXPECT_NE(newPK, AzToolsFramework::AssetDatabase::InvalidEntryId); // it should have also updated the PK
 
         legacyEntry = LegacySubIDsEntry(AzToolsFramework::AssetDatabase::InvalidEntryId, product.m_productID, 4);
         EXPECT_TRUE(m_connection.CreateOrUpdateLegacySubID(legacyEntry));
-        EXPECT_TRUE(legacyEntry.m_subIDsEntryID != AzToolsFramework::AssetDatabase::InvalidEntryId); // it should have also updated the PK
-        EXPECT_TRUE(legacyEntry.m_subIDsEntryID != newPK); // pk should be unique
+        EXPECT_NE(legacyEntry.m_subIDsEntryID, AzToolsFramework::AssetDatabase::InvalidEntryId); // it should have also updated the PK
+        EXPECT_NE(legacyEntry.m_subIDsEntryID, newPK); // pk should be unique
 
                                                                      // test valid insert of another for different product
         legacyEntry = LegacySubIDsEntry(AzToolsFramework::AssetDatabase::InvalidEntryId, product2.m_productID, 5);
@@ -836,14 +836,14 @@ namespace AssetProcessor
             return true;
         };
         EXPECT_TRUE(m_connection.QueryLegacySubIdsByProductID(product.m_productID, handler));
-        EXPECT_TRUE(entriesReturned.size() == 2);
+        EXPECT_EQ(entriesReturned.size(), 2);
 
         bool foundSubID3 = false;
         bool foundSubID4 = false;
         for (const LegacySubIDsEntry& entryFound : entriesReturned)
         {
-            EXPECT_TRUE(entryFound.m_subIDsEntryID != AzToolsFramework::AssetDatabase::InvalidEntryId);
-            EXPECT_TRUE(entryFound.m_productPK == product.m_productID);
+            EXPECT_NE(entryFound.m_subIDsEntryID, AzToolsFramework::AssetDatabase::InvalidEntryId);
+            EXPECT_EQ(entryFound.m_productPK, product.m_productID);
             if (entryFound.m_subID == 3)
             {
                 foundSubID3 = true;
@@ -860,10 +860,10 @@ namespace AssetProcessor
         entriesReturned.clear();
 
         EXPECT_TRUE(m_connection.QueryLegacySubIdsByProductID(product2.m_productID, handler));
-        EXPECT_TRUE(entriesReturned.size() == 1);
-        EXPECT_TRUE(entriesReturned[0].m_subIDsEntryID != AzToolsFramework::AssetDatabase::InvalidEntryId);
-        EXPECT_TRUE(entriesReturned[0].m_productPK == product2.m_productID);
-        EXPECT_TRUE(entriesReturned[0].m_subID == 5);
+        EXPECT_EQ(entriesReturned.size(), 1);
+        EXPECT_NE(entriesReturned[0].m_subIDsEntryID, AzToolsFramework::AssetDatabase::InvalidEntryId);
+        EXPECT_EQ(entriesReturned[0].m_productPK, product2.m_productID);
+        EXPECT_EQ(entriesReturned[0].m_subID, 5);
 
         // test UPDATE -> overwrite existing.
         entriesReturned[0].m_subID = 6;
@@ -871,10 +871,10 @@ namespace AssetProcessor
         entriesReturned.clear();
 
         EXPECT_TRUE(m_connection.QueryLegacySubIdsByProductID(product2.m_productID, handler));
-        EXPECT_TRUE(entriesReturned.size() == 1);
-        EXPECT_TRUE(entriesReturned[0].m_subIDsEntryID != AzToolsFramework::AssetDatabase::InvalidEntryId);
-        EXPECT_TRUE(entriesReturned[0].m_productPK == product2.m_productID);
-        EXPECT_TRUE(entriesReturned[0].m_subID == 6);
+        EXPECT_EQ(entriesReturned.size(), 1);
+        EXPECT_NE(entriesReturned[0].m_subIDsEntryID, AzToolsFramework::AssetDatabase::InvalidEntryId);
+        EXPECT_EQ(entriesReturned[0].m_productPK, product2.m_productID);
+        EXPECT_EQ(entriesReturned[0].m_subID, 6);
 
         // test delete by product ID
         EXPECT_TRUE(m_connection.RemoveLegacySubIDsByProductID(product2.m_productID));
@@ -887,7 +887,7 @@ namespace AssetProcessor
         // delete statement didn't delete more than it should have.
 
         EXPECT_TRUE(m_connection.QueryLegacySubIdsByProductID(product.m_productID, handler));
-        EXPECT_TRUE(entriesReturned.size() == 2);
+        EXPECT_EQ(entriesReturned.size(), 2);
 
         AZ::s64 toRemove = entriesReturned[0].m_subIDsEntryID;
         AZ::u32 removingSubID = entriesReturned[0].m_subID;
@@ -895,11 +895,11 @@ namespace AssetProcessor
         EXPECT_TRUE(m_connection.RemoveLegacySubID(toRemove));
         entriesReturned.clear();
         EXPECT_TRUE(m_connection.QueryLegacySubIdsByProductID(product.m_productID, handler));
-        EXPECT_TRUE(entriesReturned.size() == 1);
-        EXPECT_TRUE(entriesReturned[0].m_subIDsEntryID != AzToolsFramework::AssetDatabase::InvalidEntryId);
-        EXPECT_TRUE(entriesReturned[0].m_subIDsEntryID != toRemove);
-        EXPECT_TRUE(entriesReturned[0].m_productPK == product.m_productID);
-        EXPECT_TRUE(entriesReturned[0].m_subID != removingSubID);
+        EXPECT_EQ(entriesReturned.size(), 1);
+        EXPECT_NE(entriesReturned[0].m_subIDsEntryID, AzToolsFramework::AssetDatabase::InvalidEntryId);
+        EXPECT_NE(entriesReturned[0].m_subIDsEntryID, toRemove);
+        EXPECT_EQ(entriesReturned[0].m_productPK, product.m_productID);
+        EXPECT_NE(entriesReturned[0].m_subID, removingSubID);
 
         ////////////////////////////////////////////////////////////////
         //Setup for product dependency tests by having a some sources and jobs
@@ -1024,7 +1024,7 @@ namespace AssetProcessor
         {
             UnitTestUtils::AssertAbsorber absorber;
             EXPECT_FALSE(m_connection.SetProductDependency(productDependency));
-            EXPECT_TRUE(absorber.m_numWarningsAbsorbed > 0);
+            EXPECT_GE(absorber.m_numWarningsAbsorbed, 0);
         }
 
         //setting a valid product pk should allow it to be added
@@ -1036,7 +1036,7 @@ namespace AssetProcessor
         //get all product dependencies, there should only the one we added
         productDependencies.clear();
         EXPECT_TRUE(m_connection.GetProductDependencies(productDependencies));
-        EXPECT_TRUE(productDependencies.size() == 1);
+        EXPECT_EQ(productDependencies.size(), 1);
 
         EXPECT_TRUE(ProductDependenciesContainProductDependencyID(productDependencies, productDependency.m_productDependencyID));
         EXPECT_TRUE(ProductDependenciesContainProductID(productDependencies, productDependency.m_productPK));
@@ -1053,7 +1053,7 @@ namespace AssetProcessor
         //get all product dependencies, there should still only the one we added
         productDependencies.clear();
         EXPECT_TRUE(m_connection.GetProductDependencies(productDependencies));
-        EXPECT_TRUE(productDependencies.size() == 1);
+        EXPECT_EQ(productDependencies.size(), 1);
         EXPECT_TRUE(ProductDependenciesContainProductDependencyID(productDependencies, productDependency.m_productDependencyID));
         EXPECT_TRUE(ProductDependenciesContainProductID(productDependencies, productDependency.m_productPK));
         EXPECT_TRUE(ProductDependenciesContainDependencySoureGuid(productDependencies, productDependency.m_dependencySourceGuid));
@@ -1090,44 +1090,44 @@ namespace AssetProcessor
         // Product -> Product2
         products.clear();
         EXPECT_TRUE(m_connection.GetDirectProductDependencies(product.m_productID, products));
-        EXPECT_TRUE(products.size() == 1);
+        EXPECT_EQ(products.size(), 1);
         EXPECT_TRUE(ProductsContainProductID(products, product2.m_productID));
 
         // Product2 -> Product3, Product4
         products.clear();
         EXPECT_TRUE(m_connection.GetDirectProductDependencies(product2.m_productID, products));
-        EXPECT_TRUE(products.size() == 2);
+        EXPECT_EQ(products.size(), 2);
         EXPECT_TRUE(ProductsContainProductID(products, product3.m_productID));
         EXPECT_TRUE(ProductsContainProductID(products, product4.m_productID));
 
         // Product3 -> Product5
         products.clear();
         EXPECT_TRUE(m_connection.GetDirectProductDependencies(product3.m_productID, products));
-        EXPECT_TRUE(products.size() == 1);
+        EXPECT_EQ(products.size(), 1);
         EXPECT_TRUE(ProductsContainProductID(products, product5.m_productID));
 
         // Product4 ->
         products.clear();
         EXPECT_FALSE(m_connection.GetDirectProductDependencies(product4.m_productID, products));
-        EXPECT_TRUE(products.size() == 0);
+        EXPECT_EQ(products.size(), 0);
 
         // Product5 -> Product6
         products.clear();
         EXPECT_TRUE(m_connection.GetDirectProductDependencies(product5.m_productID, products));
-        EXPECT_TRUE(products.size() == 1);
+        EXPECT_EQ(products.size(), 1);
         EXPECT_TRUE(ProductsContainProductID(products, product6.m_productID));
 
         // Product6 ->
         products.clear();
         EXPECT_FALSE(m_connection.GetDirectProductDependencies(product6.m_productID, products));
-        EXPECT_TRUE(products.size() == 0);
+        EXPECT_EQ(products.size(), 0);
 
         // All Deps
 
         // Product -> Product2, Product3, Product4, Product5, Product6
         products.clear();
         EXPECT_TRUE(m_connection.GetAllProductDependencies(product.m_productID, products));
-        EXPECT_TRUE(products.size() == 5);
+        EXPECT_EQ(products.size(), 5);
         EXPECT_TRUE(ProductsContainProductID(products, product2.m_productID));
         EXPECT_TRUE(ProductsContainProductID(products, product3.m_productID));
         EXPECT_TRUE(ProductsContainProductID(products, product4.m_productID));
@@ -1137,7 +1137,7 @@ namespace AssetProcessor
         // Product2 -> Product3, Product4, Product5, Product6
         products.clear();
         EXPECT_TRUE(m_connection.GetAllProductDependencies(product2.m_productID, products));
-        EXPECT_TRUE(products.size() == 4);
+        EXPECT_EQ(products.size(), 4);
         EXPECT_TRUE(ProductsContainProductID(products, product3.m_productID));
         EXPECT_TRUE(ProductsContainProductID(products, product4.m_productID));
         EXPECT_TRUE(ProductsContainProductID(products, product5.m_productID));
@@ -1146,25 +1146,25 @@ namespace AssetProcessor
         // Product3 -> Product5, Product6
         products.clear();
         EXPECT_TRUE(m_connection.GetAllProductDependencies(product3.m_productID, products));
-        EXPECT_TRUE(products.size() == 2);
+        EXPECT_EQ(products.size(), 2);
         EXPECT_TRUE(ProductsContainProductID(products, product5.m_productID));
         EXPECT_TRUE(ProductsContainProductID(products, product6.m_productID));
 
         // Product4 ->
         products.clear();
         EXPECT_FALSE(m_connection.GetAllProductDependencies(product4.m_productID, products));
-        EXPECT_TRUE(products.size() == 0);
+        EXPECT_EQ(products.size(), 0);
 
         // Product5 -> Product6
         products.clear();
         EXPECT_TRUE(m_connection.GetAllProductDependencies(product5.m_productID, products));
-        EXPECT_TRUE(products.size() == 1);
+        EXPECT_EQ(products.size(), 1);
         EXPECT_TRUE(ProductsContainProductID(products, product6.m_productID));
 
         // Product6 ->
         products.clear();
         EXPECT_FALSE(m_connection.GetAllProductDependencies(product6.m_productID, products));
-        EXPECT_TRUE(products.size() == 0);
+        EXPECT_EQ(products.size(), 0);
 
         //Product6 -> Product (This creates a circular dependency)
         productDependency = ProductDependencyDatabaseEntry(product6.m_productID, validSourceGuid1, 1, 0, platform, true);
@@ -1181,13 +1181,13 @@ namespace AssetProcessor
         // Product6 -> Product
         products.clear();
         EXPECT_TRUE(m_connection.GetDirectProductDependencies(product6.m_productID, products));
-        EXPECT_TRUE(products.size() == 1);
+        EXPECT_EQ(products.size(), 1);
         EXPECT_TRUE(ProductsContainProductID(products, product.m_productID));
 
         // Product3 -> Product5, Product6, Product, Product2, Product4
         products.clear();
         EXPECT_TRUE(m_connection.GetAllProductDependencies(product3.m_productID, products));
-        EXPECT_TRUE(products.size() == 5);
+        EXPECT_EQ(products.size(), 5);
         EXPECT_TRUE(ProductsContainProductID(products, product5.m_productID));
         EXPECT_TRUE(ProductsContainProductID(products, product6.m_productID));
         EXPECT_TRUE(ProductsContainProductID(products, product.m_productID));
@@ -1197,7 +1197,7 @@ namespace AssetProcessor
         m_connection.RemoveProductDependencyByProductId(product5.m_productID);
         products.clear();
         EXPECT_TRUE(m_connection.GetAllProductDependencies(product2.m_productID, products));
-        EXPECT_TRUE(products.size() == 3);
+        EXPECT_EQ(products.size(), 3);
         EXPECT_TRUE(ProductsContainProductID(products, product3.m_productID));
         EXPECT_TRUE(ProductsContainProductID(products, product4.m_productID));
         EXPECT_TRUE(ProductsContainProductID(products, product5.m_productID));
@@ -1242,13 +1242,13 @@ namespace AssetProcessor
 
         EXPECT_TRUE(m_connection.SetBuilderInfoTable(newEntries));
         // make sure each entry has a number assigned:
-        EXPECT_TRUE(newEntries[0].m_builderInfoID != AzToolsFramework::AssetDatabase::InvalidEntryId);
-        EXPECT_TRUE(newEntries[1].m_builderInfoID != AzToolsFramework::AssetDatabase::InvalidEntryId);
+        EXPECT_NE(newEntries[0].m_builderInfoID, AzToolsFramework::AssetDatabase::InvalidEntryId);
+        EXPECT_NE(newEntries[1].m_builderInfoID, AzToolsFramework::AssetDatabase::InvalidEntryId);
 
         EXPECT_TRUE(m_connection.QueryBuilderInfoTable(resultGatherer));
-        EXPECT_TRUE(results.size() == 2);
-        EXPECT_TRUE(results[0].m_builderInfoID != AzToolsFramework::AssetDatabase::InvalidEntryId);
-        EXPECT_TRUE(results[1].m_builderInfoID != AzToolsFramework::AssetDatabase::InvalidEntryId);
+        EXPECT_EQ(results.size(), 2);
+        EXPECT_NE(results[0].m_builderInfoID, AzToolsFramework::AssetDatabase::InvalidEntryId);
+        EXPECT_NE(results[1].m_builderInfoID, AzToolsFramework::AssetDatabase::InvalidEntryId);
 
         // they could be in any order, so fix that first:
         bool isInCorrectOrder = (results[0].m_builderInfoID == newEntries[0].m_builderInfoID) && (results[1].m_builderInfoID == newEntries[1].m_builderInfoID);
@@ -1265,9 +1265,9 @@ namespace AssetProcessor
 
         for (size_t idx = 0; idx < 2; ++idx)
         {
-            EXPECT_TRUE(results[idx].m_builderUuid == newEntries[idx].m_builderUuid);
-            EXPECT_TRUE(results[idx].m_builderInfoID == newEntries[idx].m_builderInfoID);
-            EXPECT_TRUE(results[idx].m_analysisFingerprint == newEntries[idx].m_analysisFingerprint);
+            EXPECT_EQ(results[idx].m_builderUuid, newEntries[idx].m_builderUuid);
+            EXPECT_EQ(results[idx].m_builderInfoID, newEntries[idx].m_builderInfoID);
+            EXPECT_EQ(results[idx].m_analysisFingerprint, newEntries[idx].m_analysisFingerprint);
         }
 
         // now REPLACE the entries with fewer and make sure it actually chops it down and also replaces the fields.
@@ -1276,13 +1276,13 @@ namespace AssetProcessor
         newEntries.emplace_back(BuilderInfoEntry(AzToolsFramework::AssetDatabase::InvalidEntryId, AZ::Uuid::CreateString("{8863194A-BCB2-4A4C-A7D9-4E90D68814D4}"), "Finger_Print2"));
         EXPECT_TRUE(m_connection.SetBuilderInfoTable(newEntries));
         // make sure each entry has a number assigned:
-        EXPECT_TRUE(newEntries[0].m_builderInfoID != AzToolsFramework::AssetDatabase::InvalidEntryId);
+        EXPECT_NE(newEntries[0].m_builderInfoID, AzToolsFramework::AssetDatabase::InvalidEntryId);
         EXPECT_TRUE(m_connection.QueryBuilderInfoTable(resultGatherer));
-        EXPECT_TRUE(results.size() == 1);
-        EXPECT_TRUE(results[0].m_builderInfoID != AzToolsFramework::AssetDatabase::InvalidEntryId);
-        EXPECT_TRUE(results[0].m_builderUuid == newEntries[0].m_builderUuid);
-        EXPECT_TRUE(results[0].m_builderInfoID == newEntries[0].m_builderInfoID);
-        EXPECT_TRUE(results[0].m_analysisFingerprint == newEntries[0].m_analysisFingerprint);
+        EXPECT_EQ(results.size(), 1);
+        EXPECT_NE(results[0].m_builderInfoID, AzToolsFramework::AssetDatabase::InvalidEntryId);
+        EXPECT_EQ(results[0].m_builderUuid, newEntries[0].m_builderUuid);
+        EXPECT_EQ(results[0].m_builderInfoID, newEntries[0].m_builderInfoID);
+        EXPECT_EQ(results[0].m_analysisFingerprint, newEntries[0].m_analysisFingerprint);
     }
 
     TEST_F(AssetProcessingStateDataUnitTest, SourceDependencyTest_ValidDatabaseConnectionProvided_OperationsSucceed)
@@ -1319,41 +1319,41 @@ namespace AssetProcessor
 
         // what depends on b?  a does.
         EXPECT_TRUE(m_connection.GetSourceFileDependenciesByDependsOnSource(bUuid, "b.txt", "unused", SourceFileDependencyEntry::DEP_Any, results));
-        EXPECT_TRUE(results.size() == 1);
-        EXPECT_TRUE(results[0].m_sourceGuid == aUuid);
-        EXPECT_TRUE(results[0].m_builderGuid == newEntry1.m_builderGuid);
-        EXPECT_TRUE(results[0].m_sourceDependencyID == newEntry1.m_sourceDependencyID);
+        EXPECT_EQ(results.size(), 1);
+        EXPECT_EQ(results[0].m_sourceGuid, aUuid);
+        EXPECT_EQ(results[0].m_builderGuid, newEntry1.m_builderGuid);
+        EXPECT_EQ(results[0].m_sourceDependencyID, newEntry1.m_sourceDependencyID);
 
         // what does B depend on?
         results.clear();
         EXPECT_TRUE(m_connection.GetDependsOnSourceBySource(bUuid, SourceFileDependencyEntry::DEP_Any, results));
         // b depends on 2 things: c and d
-        EXPECT_TRUE(results.size() == 2);
-        EXPECT_TRUE(results[0].m_sourceGuid == bUuid);  // note that both of these are B, since its B that has the dependency on the others.
-        EXPECT_TRUE(results[1].m_sourceGuid == bUuid);
-        EXPECT_TRUE(results[0].m_dependsOnSource.GetPath() == "c.txt");
-        EXPECT_TRUE(results[1].m_dependsOnSource.GetPath() == "d.txt");
+        EXPECT_EQ(results.size(), 2);
+        EXPECT_EQ(results[0].m_sourceGuid, bUuid);  // note that both of these are B, since its B that has the dependency on the others.
+        EXPECT_EQ(results[1].m_sourceGuid, bUuid);
+        EXPECT_EQ(results[0].m_dependsOnSource.GetPath(), "c.txt");
+        EXPECT_EQ(results[1].m_dependsOnSource.GetPath(), "d.txt");
 
         // what does b depend on, but filtered to only one builder?
         results.clear();
         EXPECT_TRUE(m_connection.GetSourceFileDependenciesByBuilderGUIDAndSource(newEntry2.m_builderGuid, bUuid, SourceFileDependencyEntry::DEP_SourceToSource, results));
         // b depends on 1 thing from that builder: c
-        EXPECT_TRUE(results.size() == 1);
-        EXPECT_TRUE(results[0].m_sourceGuid == bUuid);
-        EXPECT_TRUE(results[0].m_dependsOnSource.GetPath() == "c.txt");
+        EXPECT_EQ(results.size(), 1);
+        EXPECT_EQ(results[0].m_sourceGuid, bUuid);
+        EXPECT_EQ(results[0].m_dependsOnSource.GetPath(), "c.txt");
 
         // make sure that we can look these up by ID (a)
         EXPECT_TRUE(m_connection.GetSourceFileDependencyBySourceDependencyId(newEntry1.m_sourceDependencyID, results[0]));
-        EXPECT_TRUE(results[0].m_sourceGuid == aUuid);
-        EXPECT_TRUE(results[0].m_builderGuid == newEntry1.m_builderGuid);
-        EXPECT_TRUE(results[0].m_sourceDependencyID == newEntry1.m_sourceDependencyID);
+        EXPECT_EQ(results[0].m_sourceGuid, aUuid);
+        EXPECT_EQ(results[0].m_builderGuid, newEntry1.m_builderGuid);
+        EXPECT_EQ(results[0].m_sourceDependencyID, newEntry1.m_sourceDependencyID);
 
         // remove D, b now should only depend on C
         results.clear();
         EXPECT_TRUE(m_connection.RemoveSourceFileDependency(newEntry3.m_sourceDependencyID));
         EXPECT_TRUE(m_connection.GetDependsOnSourceBySource(bUuid, SourceFileDependencyEntry::DEP_Any, results));
-        EXPECT_TRUE(results.size() == 1);
-        EXPECT_TRUE(results[0].m_dependsOnSource.GetPath() == "c.txt");
+        EXPECT_EQ(results.size(), 1);
+        EXPECT_EQ(results[0].m_dependsOnSource.GetPath(), "c.txt");
 
 
         // clean up
@@ -1397,8 +1397,8 @@ namespace AssetProcessor
         // but we do expect it to empty the result:
         EXPECT_TRUE(resultString.empty());
         EXPECT_TRUE(m_connection.QuerySourceAnalysisFingerprint("a.txt", scanFolder.m_scanFolderID, resultString));
-        EXPECT_TRUE(resultString == "12345");
+        EXPECT_EQ(resultString, "12345");
         EXPECT_TRUE(m_connection.QuerySourceAnalysisFingerprint("b.txt", scanFolder.m_scanFolderID, resultString));
-        EXPECT_TRUE(resultString == "54321");
+        EXPECT_EQ(resultString, "54321");
     }
 }
