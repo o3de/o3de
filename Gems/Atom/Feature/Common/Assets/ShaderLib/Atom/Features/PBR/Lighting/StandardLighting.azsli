@@ -63,8 +63,6 @@ float3 GetSpecularLighting(Surface surface, LightingData lightingData, const flo
 
 // Then include everything else
 #include <Atom/Features/PBR/Lights/Lights.azsli>
-#include <Atom/Features/PBR/Lights/Ibl.azsli>
-
 
 struct PbrLightingOutput
 {

@@ -243,13 +243,7 @@ namespace AZ
             AZ_PROFILE_SCOPE(RHI, "AsyncUploadQueue: QueueUpload");
             uint64_t fenceValue = 0;
 
-            // Use the mutex in following scope so it won't have dead lock issue when the request has m_waitForUpload set to true
             {
-                AZStd::scoped_lock lock{m_copyQueueMutex};
-
-                // cache the request until request was processed
-                m_imageExpandRequests.push(request);
-
                 fenceValue = m_uploadFence.Increment();
 
                 Image* image = static_cast<Image*>(request.m_image);
@@ -260,7 +254,7 @@ namespace AZ
 
                 Memory* imageMemory = static_cast<Image&>(*request.m_image).GetMemoryView().GetMemory();
 
-                const RHI::StreamingImageExpandRequest& cachedRequest = m_imageExpandRequests.back();
+                RHI::StreamingImageExpandRequest cachedRequest = request;
 
                 m_copyQueue->QueueCommand([=](void* commandQueue)
                 {
@@ -475,10 +469,6 @@ namespace AZ
                         AZ::SystemTickBus::QueueFunction([this] { ProcessCallbacks(uint64_t(-1)); });
                     }
 
-                    // remove the request from the queue
-                    AZStd::scoped_lock lock{m_copyQueueMutex};
-                    m_imageExpandRequests.pop();
-
                     return 0;
                 }); // End m_copyQueue->QueueCommand
             }
@@ -517,31 +507,46 @@ namespace AZ
         {
             AZ_PROFILE_SCOPE(RHI, "AsyncUploadQueue: ProcessCallbacks");
             AZStd::lock_guard<AZStd::mutex> lock(m_callbackMutex);
+
+            // It's possible the completed fence value is less than the input fence value
+            // Choose the small one.
+            uint64_t completedValue = m_uploadFence.GetCompletedValue();
+            fenceValue = AZStd::min(completedValue, fenceValue);
+
             while (m_callbacks.size() > 0 && m_callbacks.front().second <= fenceValue)
             {
                 AZStd::function<void()> callback = m_callbacks.front().first;
                 m_callbacks.pop();
                 callback();
             }
+
+            // if there are some callbacks not processed due to pending fence values, 
+            // queue this function so they would be checked in next system tick
+            if (!m_callbacks.empty())
+            {
+                AZ::SystemTickBus::QueueFunction([this] { ProcessCallbacks(uint64_t(-1)); });
+            }
         }
 
         void AsyncUploadQueue::QueueTileMapping(const CommandList::TileMapRequest& request)
         {
-            AZStd::scoped_lock lock{m_copyQueueMutex};
-            m_tileMapRequests.push(request);
-
-            const CommandList::TileMapRequest& cachedRequest = m_tileMapRequests.back();
+            CommandList::TileMapRequest requestCopy = request;
 
             m_copyQueue->QueueCommand([=](void* commandQueue)
             {
                 AZ_PROFILE_SCOPE(RHI, "QueueTileMapping");
 
                 ID3D12CommandQueue* dx12CommandQueue = static_cast<ID3D12CommandQueue*>(commandQueue);
-                UpdateTileMap(dx12CommandQueue, cachedRequest);
-                                
-                // remove the request from the queue
-                AZStd::scoped_lock lock{m_copyQueueMutex};
-                m_tileMapRequests.pop();
+                UpdateTileMap(dx12CommandQueue, requestCopy);
+            });
+        }
+
+        void AsyncUploadQueue::QueueWaitFence(const Fence& fence, uint64_t fenceValue)
+        {
+            m_copyQueue->QueueCommand([=](void* commandQueue)
+            {
+                ID3D12CommandQueue* dx12CommandQueue = static_cast<ID3D12CommandQueue*>(commandQueue);
+                dx12CommandQueue->Wait(fence.Get(), fenceValue);
             });
         }
     }
