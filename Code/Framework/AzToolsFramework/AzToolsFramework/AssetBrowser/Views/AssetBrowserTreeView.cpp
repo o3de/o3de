@@ -594,23 +594,33 @@ namespace AzToolsFramework
             {
                 using namespace AZ::IO;
                 AssetBrowserEntry* item = entries[0];
-                Path fromPath = item->GetFullPath();
-                Path toPath(fromPath);
-                toPath.ReplaceExtension("renameFileTestExtension");
+                bool isFolder = item->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder;
+                Path toPath;
+                Path fromPath;
+                if (isFolder)
+                {
+                    fromPath = item->GetFullPath() + "/*";
+                    toPath = item->GetFullPath() + "TempFolderTestName/*";
+                }
+                else
+                {
+                    fromPath = item->GetFullPath();
+                    toPath = fromPath;
+                    toPath.ReplaceExtension("renameFileTestExtension");
+                }
                 AssetChangeReportRequest request(
                     AZ::OSString(fromPath.c_str()), AZ::OSString(toPath.c_str()), AssetChangeReportRequest::ChangeType::CheckMove);
                 AssetChangeReportResponse response;
 
                 if (SendRequest(request, response))
                 {
-
                     if (!response.m_lines.empty())
                     {
                         AZStd::string message;
                         AZ::StringFunc::Join(message, response.m_lines.begin(), response.m_lines.end(), "\n");
                         AzQtComponents::FixedWidthMessageBox msgBox(
                             600,
-                            tr("Before Rename Asset Information"),
+                            tr(isFolder ? "Before Rename Folder Information" : "Before Rename Asset Information"),
                             tr("The asset you are renaming may be referenced in other assets."),
                             tr("More information can be found by pressing \"Show Details...\"."),
                             message.c_str(),
@@ -644,11 +654,24 @@ namespace AzToolsFramework
             }
             using namespace AZ::IO;
             AssetBrowserEntry* item = entries[0];
-            Path fromPath = item->GetFullPath();
-            PathView extension = fromPath.Extension();
-            Path toPath(fromPath);
-            toPath.ReplaceFilename(newVal.toStdString().c_str());
-            toPath.ReplaceExtension(extension);
+            bool isFolder = item->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder;
+            Path toPath;
+            Path fromPath;
+            if (isFolder)
+            {
+                fromPath = item->GetFullPath() + "/*";
+                Path tempPath = item->GetFullPath();
+                tempPath.ReplaceFilename(newVal.toStdString().c_str());
+                toPath = tempPath.String() + "/*";
+            }
+            else
+            {
+                fromPath = item->GetFullPath();
+                PathView extension = fromPath.Extension();
+                toPath = fromPath;
+                toPath.ReplaceFilename(newVal.toStdString().c_str());
+                toPath.ReplaceExtension(extension);
+            }
 
             using namespace AzFramework::AssetSystem;
             AssetChangeReportRequest moveRequest(
@@ -662,7 +685,7 @@ namespace AzToolsFramework
                     AZ::StringFunc::Join(message, moveResponse.m_lines.begin(), moveResponse.m_lines.end(), "\n");
                     AzQtComponents::FixedWidthMessageBox msgBox(
                         600,
-                        tr("After Rename Asset Information"),
+                        tr(isFolder ? "After Rename Folder Information" : "After Rename Asset Information"),
                         tr("The asset has been renamed."),
                         tr("More information can be found by pressing \"Show Details...\"."),
                         message.c_str(),

@@ -595,6 +595,18 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
 
         CFileUtil::PopulateQMenu(caller, menu, fullFilePath);
 
+        if (calledFromAssetBrowser)
+        {
+            // Add Rename option
+            QAction* action = menu->addAction(
+                QObject::tr("Rename Folder"),
+                [treeView]()
+                {
+                    treeView->RenameEntry();
+                });
+            action->setShortcut(Qt::Key_F2);
+            action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+        }
         AddCreateMenu(menu, fullFilePath);
     }
     break;
