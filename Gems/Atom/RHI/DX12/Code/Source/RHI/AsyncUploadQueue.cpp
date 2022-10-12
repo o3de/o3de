@@ -507,8 +507,12 @@ namespace AZ
         {
             AZ_PROFILE_SCOPE(RHI, "AsyncUploadQueue: ProcessCallbacks");
             AZStd::lock_guard<AZStd::mutex> lock(m_callbackMutex);
+
+            // It's possible the completed fence value is less than the input fence value
+            // Choose the small one.
             uint64_t completedValue = m_uploadFence.GetCompletedValue();
             fenceValue = AZStd::min(completedValue, fenceValue);
+
             while (m_callbacks.size() > 0 && m_callbacks.front().second <= fenceValue)
             {
                 AZStd::function<void()> callback = m_callbacks.front().first;
@@ -516,6 +520,8 @@ namespace AZ
                 callback();
             }
 
+            // if there are some callbacks not processed due to pending fence values, 
+            // queue this function so they would be checked in next system tick
             if (!m_callbacks.empty())
             {
                 AZ::SystemTickBus::QueueFunction([this] { ProcessCallbacks(uint64_t(-1)); });
@@ -540,7 +546,7 @@ namespace AZ
             m_copyQueue->QueueCommand([=](void* commandQueue)
             {
                 ID3D12CommandQueue* dx12CommandQueue = static_cast<ID3D12CommandQueue*>(commandQueue);
-                    dx12CommandQueue->Wait(fence.Get(), fenceValue);
+                dx12CommandQueue->Wait(fence.Get(), fenceValue);
             });
         }
     }

@@ -339,7 +339,12 @@ namespace AZ
         void StreamingImagePool::DeAllocateImageTilesInternal(Image& image, uint32_t subresourceIndex)
         {
             const AZStd::vector<HeapTiles>& heapTilesList = image.m_heapTiles[subresourceIndex];
-            AZ_Assert(heapTilesList.size() > 0, "Attempting to map a tile to null when it's already null.");
+
+            // The tile list can be empty if the subresource was using the default tile
+            if (heapTilesList.size() == 0)
+            {
+                return;
+            }
 
             // map all the tiles to NULL
             CommandList::TileMapRequest request;
