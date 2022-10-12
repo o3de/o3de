@@ -72,7 +72,8 @@ namespace AZ
             };
 
             void DeInit();
-            void Init(Data::Instance<RPI::Model> model);
+            void QueueInit(const Data::Instance<RPI::Model>& model);
+            void Init();
             void BuildDrawPacketList(size_t modelLodIndex);
             void SetRayTracingData();
             void RemoveRayTracingData();
@@ -113,6 +114,7 @@ namespace AZ
 
             bool m_cullBoundsNeedsUpdate = false;
             bool m_cullableNeedsRebuild = false;
+            bool m_needsInit = false;
             bool m_objectSrgNeedsUpdate = true;
             bool m_excludeFromReflectionCubeMaps = false;
             bool m_visible = true;

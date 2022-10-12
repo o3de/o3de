@@ -368,7 +368,7 @@ namespace AZ
             for (uint32_t i = interval.m_min; i < interval.m_max; ++i)
             {
                 ShaderResourceGroup* group = m_groupsToCompile[i];
-                AZ_PROFILE_SCOPE(RHI, "CompileGroupsForInterval %s", group->GetName().GetCStr());
+                RHI_PROFILE_SCOPE_VERBOSE("CompileGroupsForInterval %s", group->GetName().GetCStr());
 
                 CompileGroup(*group, group->GetData());
                 group->m_isQueuedForCompile = false;
