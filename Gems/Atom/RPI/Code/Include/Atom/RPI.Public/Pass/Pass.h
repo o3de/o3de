@@ -334,7 +334,7 @@ namespace AZ
 
             // Searches adjacent passes for an attachment binding matching the PassAttachmentRef. An adjacent pass is either:
             // a parent pass, a child pass, a sibling pass or the pass itself (this).
-            const PassAttachmentBinding* FindAdjacentBinding(const PassAttachmentRef& attachmentRef);
+            const PassAttachmentBinding* FindAdjacentBinding(const PassAttachmentRef& attachmentRef, const char* attachmentSourceTypeDebugName = "attachment");
 
             // --- Template related setup ---
 

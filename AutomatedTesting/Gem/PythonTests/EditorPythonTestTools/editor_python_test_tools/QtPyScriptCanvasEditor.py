@@ -8,7 +8,8 @@ Object to house all the Qt Objects used when testing and manipulating the Script
 """
 from PySide2 import QtWidgets
 import pyside_utils
-import editor_python_test_tools.QtPyScriptCanvasVariableManager as QtPyScriptCanvasVariableManager
+from editor_python_test_tools.QtPyScriptCanvasVariableManager import QtPyScriptCanvasVariableManager
+from editor_python_test_tools.QtPyScriptCanvasNodePalette import QtPyScriptCanvasNodePalette
 from consts.scripting import (SCRIPT_CANVAS_UI)
 
 
@@ -25,7 +26,8 @@ class QtPyScriptCanvasEditor():
     def __init__(self, editor_main_window: QtWidgets.QMainWindow):
         self.sc_editor = editor_main_window.findChild(QtWidgets.QDockWidget, SCRIPT_CANVAS_UI)
         self.sc_editor_main_pane = self.sc_editor.findChild(QtWidgets.QMainWindow)
-        self.variable_manager = QtPyScriptCanvasVariableManager.QtPyScriptCanvasVariableManager(self)
+        self.variable_manager = QtPyScriptCanvasVariableManager(self)
+        self.node_palette = QtPyScriptCanvasNodePalette(self)
 
     def trigger_undo_action(self) -> None:
         """
