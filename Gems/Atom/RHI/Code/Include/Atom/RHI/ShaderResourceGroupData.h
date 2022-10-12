@@ -341,6 +341,8 @@ namespace AZ
             {
                 if (imageDescriptor.m_dimension != expected)
                 {
+                    AZ_UNUSED(shaderInputImage);
+                    AZ_UNUSED(arrayIndex);
                     AZ_Error("ShaderResourceGroupData", false,
                         "Image Input '%s[%d]': The image is %dD but the shader expected %dD",
                         shaderInputImage.m_name.GetCStr(),
