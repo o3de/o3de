@@ -155,7 +155,7 @@ namespace AZ
             //! Enable/disable this pass
             //! If the pass is disabled, it (and any children if it's a ParentPass) won't be rendered.  
             void SetEnabled(bool enabled);
-            virtual bool IsEnabled() const { return m_flags.m_enabled; }
+            virtual bool IsEnabled() const { return m_flags.m_enabled && m_flags.m_parentEnabled && m_parent != nullptr; }
 
             bool HasDrawListTag() const { return m_flags.m_hasDrawListTag; }
             bool HasPipelineViewTag() const { return m_flags.m_hasPipelineViewTag; }
@@ -335,6 +335,14 @@ namespace AZ
             // Searches adjacent passes for an attachment binding matching the PassAttachmentRef. An adjacent pass is either:
             // a parent pass, a child pass, a sibling pass or the pass itself (this).
             const PassAttachmentBinding* FindAdjacentBinding(const PassAttachmentRef& attachmentRef);
+            
+            // --- Hierarchy related functions ---
+
+            // Called when the pass gets a new spot in the pass hierarchy, or the Enabled state changes.
+            virtual void OnHierarchyChange();
+
+            // Called when the pass is removed from it's parent list of children
+            virtual void OnOrphan();
 
             // --- Template related setup ---
 
@@ -517,12 +525,6 @@ namespace AZ
             void RegisterPipelineGlobalConnections();
 
             // --- Hierarchy related functions ---
-
-            // Called when the pass gets a new spot in the pass hierarchy
-            virtual void OnHierarchyChange();
-
-            // Called when the pass is removed from it's parent list of children
-            virtual void OnOrphan();
 
             // The pass removes itself from its parent.
             void RemoveFromParent();
