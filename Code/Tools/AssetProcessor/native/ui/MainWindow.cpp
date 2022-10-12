@@ -831,7 +831,7 @@ void MainWindow::AddPatternRow(AZStd::string_view name, AssetBuilderSDK::AssetBu
     button->setStyleSheet("QPushButton { background-color: transparent; border: 0px }");
     ui->sharedCacheTable->setCellWidget(row, aznumeric_cast<int>(PatternColumns::Remove), button);
     ui->sharedCacheTable->setColumnWidth(aznumeric_cast<int>(PatternColumns::Remove), 16);
-    button->setToolTip(tr("Removes the pattern from to be considered for caching"));
+    button->setToolTip(tr("Removes the pattern to be considered for caching"));
     QObject::connect(button, &QPushButton::clicked, this,
         [this]()
         {
