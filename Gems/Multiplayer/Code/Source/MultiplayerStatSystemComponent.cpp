@@ -13,6 +13,7 @@ namespace Multiplayer
     // Metrics cvars
     void OnEnableNetworkingMetricsChanged(const bool& enabled);
     AZ_CVAR(bool, bg_enableNetworkingMetrics, true, &OnEnableNetworkingMetricsChanged, AZ::ConsoleFunctorFlags::DontReplicate, "Whether to capture networking metrics");
+    AZ_CVAR(AZ::TimeMs, bg_networkingMetricCollectionPeriod, AZ::TimeMs{1000}, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "How often to capture metrics by default.");
     AZ_CVAR(AZ::CVarFixedString, cl_metricsFile, "client_network_metrics.json", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "File of the client metrics file if enabled, placed under <ProjectFolder>/user/metrics");
     AZ_CVAR(AZ::CVarFixedString, sv_metricsFile, "server_network_metrics.json", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "File of the server metrics file if enabled, placed under <ProjectFolder>/user/metrics");
 
@@ -110,7 +111,7 @@ namespace Multiplayer
             }
         }
         
-        m_metricsEvent.Enqueue(AZ::TimeMs{ 1000 }, true);
+        m_metricsEvent.Enqueue(bg_networkingMetricCollectionPeriod, true);
     }
 
     void MultiplayerStatSystemComponent::Unregister()

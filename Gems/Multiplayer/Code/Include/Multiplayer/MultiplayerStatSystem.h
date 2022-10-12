@@ -19,12 +19,14 @@
 namespace Multiplayer
 {
     //! @class IMultiplayerStatSystem
-    //! Provides a high level stat system for Multiplayer systems.
+    //! Provides a high level stat system for Multiplayer gem and projects.
     //!
-    //! Recommend use is through using macros. Here is an example of setting up a group and a stat once.
+    //! Recommended use is through the following macros. Here is an example of setting up a stat group.
     //!
-    //! enum { MYGROUP = 123 };
+    //! enum { MYGROUP = 101 };
     //! DECLARE_STAT_GROUP(MYGROUP, "MyGroup");
+    //!
+    //! With a group defined, define a stat belonging to an existing group.
     //!
     //! enum { MYSTAT = 1001 };
     //! DECLARE_STAT_UINT64(MYGROUP, MYSTAT, "MyStat");
@@ -33,7 +35,7 @@ namespace Multiplayer
     //!
     //! SET_STAT_UINT64(MYSTAT, 1337);
     //!
-    //! Stats will be written down the AZ::EventLogger, which is configured using these cvars:
+    //! Stats will be written together within a group using AZ::EventLogger subsystem, which is configured using these cvars:
     //!     @cl_metricsFile, @sv_metricsFile and @bg_enableNetworkingMetrics.
     class IMultiplayerStatSystem
     {
