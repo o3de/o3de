@@ -17,6 +17,7 @@
 #include <AssetManager/FileStateCache.h>
 #include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <tests/ApplicationManagerTests.h>
+#include "UnitTestUtilities.h"
 
 namespace AssetProcessor
 {

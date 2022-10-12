@@ -101,8 +101,8 @@ namespace AssetProcessor
 
             //Calculating fingerprints for the file for pc and android platforms
             AZ::Uuid sourceId = AZ::Uuid("{2206A6E0-FDBC-45DE-B6FE-C2FC63020BD5}");
-            JobEntry jobEntryPC(scanFolderPath, relPath, relPath, {}, { "pc", {"desktop", "renderer"} }, "", 0, 1, sourceId);
-            JobEntry jobEntryANDROID(scanFolderPath, relPath, relPath, {}, { "android", {"mobile", "renderer"} }, "", 0, 2, sourceId);
+            JobEntry jobEntryPC(SourceAssetReference(scanFolderPath, relPath), {}, { "pc", {"desktop", "renderer"} }, "", 0, 1, sourceId);
+            JobEntry jobEntryANDROID(SourceAssetReference(scanFolderPath, relPath), {}, { "android", {"mobile", "renderer"} }, "", 0, 2, sourceId);
 
             JobDetails jobDetailsPC;
             jobDetailsPC.m_extraInformationForFingerprinting = extraInfoForPC.toUtf8().constData();
@@ -463,9 +463,8 @@ namespace AssetProcessor
         {
             UNIT_TEST_EXPECT_TRUE(processResults[checkIdx].m_jobEntry.m_computedFingerprint != 0);
             UNIT_TEST_EXPECT_TRUE(processResults[checkIdx].m_jobEntry.m_jobRunKey != 0);
-            UNIT_TEST_EXPECT_TRUE(processResults[checkIdx].m_jobEntry.m_watchFolderPath == AssetUtilities::NormalizeFilePath(watchFolderPath));
-            UNIT_TEST_EXPECT_TRUE(processResults[checkIdx].m_jobEntry.m_pathRelativeToWatchFolder == "uniquefile.txt");
-            UNIT_TEST_EXPECT_TRUE(processResults[checkIdx].m_jobEntry.m_databaseSourceName == "uniquefile.txt");
+            UNIT_TEST_EXPECT_TRUE(QString(processResults[checkIdx].m_jobEntry.m_sourceAssetReference.ScanfolderPath().c_str()) == AssetUtilities::NormalizeFilePath(watchFolderPath));
+            UNIT_TEST_EXPECT_TRUE(processResults[checkIdx].m_jobEntry.m_sourceAssetReference.RelativePath().Native() == "uniquefile.txt");
 
             QString platformFolder = cacheRoot.filePath(QString::fromUtf8(processResults[checkIdx].m_jobEntry.m_platformInfo.m_identifier.c_str()));
             platformFolder = AssetUtilities::NormalizeDirectoryPath(platformFolder);
@@ -490,8 +489,8 @@ namespace AssetProcessor
                 info.m_builderGuid = processResults[checkIdx].m_jobEntry.m_builderGuid;
                 info.m_jobKey = processResults[checkIdx].m_jobEntry.m_jobKey.toUtf8().data();
                 info.m_platform = processResults[checkIdx].m_jobEntry.m_platformInfo.m_identifier.c_str();
-                info.m_sourceFile = processResults[checkIdx].m_jobEntry.m_pathRelativeToWatchFolder.toUtf8().data();
-                info.m_watchFolder = processResults[checkIdx].m_jobEntry.m_watchFolderPath.toUtf8().data();
+                info.m_sourceFile = processResults[checkIdx].m_jobEntry.m_sourceAssetReference.RelativePath().c_str();
+                info.m_watchFolder = processResults[checkIdx].m_jobEntry.m_sourceAssetReference.ScanfolderPath().c_str();
 
                 AZStd::string logFolder = AZStd::string::format("%s/%s", AssetUtilities::ComputeJobLogFolder().c_str(), AssetUtilities::ComputeJobLogFileName(info).c_str());
                 AZ::IO::HandleType logHandle;
@@ -536,8 +535,9 @@ namespace AssetProcessor
 
                 for (const JobDetails& details : processResults)
                 {
-                    if ((QString::compare(jobInfo.m_sourceFile.c_str(), details.m_jobEntry.m_pathRelativeToWatchFolder, Qt::CaseSensitive) == 0) &&
-                        (QString::compare(jobInfo.m_watchFolder.c_str(), details.m_jobEntry.m_watchFolderPath, Qt::CaseSensitive) == 0) &&
+                    if ((QString::compare(jobInfo.m_sourceFile.c_str(), details.m_jobEntry.m_sourceAssetReference.RelativePath().c_str(), Qt::CaseSensitive) == 0) &&
+                        (QString::compare(jobInfo.m_watchFolder.c_str(), details.m_jobEntry.m_sourceAssetReference.ScanfolderPath().c_str(), Qt::CaseSensitive) ==
+                         0) &&
                         (QString::compare(jobInfo.m_platform.c_str(), details.m_jobEntry.m_platformInfo.m_identifier.c_str(), Qt::CaseInsensitive) == 0) &&
                         (QString::compare(jobInfo.m_jobKey.c_str(), details.m_jobEntry.m_jobKey, Qt::CaseInsensitive) == 0) &&
                         (jobInfo.m_builderGuid == details.m_jobEntry.m_builderGuid) &&
@@ -642,8 +642,8 @@ namespace AssetProcessor
 
                 for (const JobDetails& details : processResults)
                 {
-                    if ((QString::compare(jobInfo.m_sourceFile.c_str(), details.m_jobEntry.m_pathRelativeToWatchFolder, Qt::CaseSensitive) == 0) &&
-                        (QString::compare(jobInfo.m_watchFolder.c_str(), details.m_jobEntry.m_watchFolderPath, Qt::CaseSensitive) == 0) &&
+                    if ((QString::compare(jobInfo.m_sourceFile.c_str(), details.m_jobEntry.m_sourceAssetReference.RelativePath().c_str(), Qt::CaseSensitive) == 0) &&
+                        (QString::compare(jobInfo.m_watchFolder.c_str(), details.m_jobEntry.m_sourceAssetReference.ScanfolderPath().c_str(), Qt::CaseSensitive) == 0) &&
                         (QString::compare(jobInfo.m_platform.c_str(), details.m_jobEntry.m_platformInfo.m_identifier.c_str(), Qt::CaseInsensitive) == 0) &&
                         (QString::compare(jobInfo.m_jobKey.c_str(), details.m_jobEntry.m_jobKey, Qt::CaseInsensitive) == 0) &&
                         (jobInfo.m_builderGuid == details.m_jobEntry.m_builderGuid) &&
@@ -773,8 +773,8 @@ namespace AssetProcessor
                 {
                     const JobDetails& details = processResults[detailsIdx];
 
-                    if ((QString::compare(jobInfo.m_sourceFile.c_str(), details.m_jobEntry.m_pathRelativeToWatchFolder, Qt::CaseSensitive) == 0) &&
-                        (QString::compare(jobInfo.m_watchFolder.c_str(), details.m_jobEntry.m_watchFolderPath, Qt::CaseSensitive) == 0) &&
+                    if ((QString::compare(jobInfo.m_sourceFile.c_str(), details.m_jobEntry.m_sourceAssetReference.RelativePath().c_str(), Qt::CaseSensitive) == 0) &&
+                        (QString::compare(jobInfo.m_watchFolder.c_str(), details.m_jobEntry.m_sourceAssetReference.ScanfolderPath().c_str(), Qt::CaseSensitive) == 0) &&
                         (QString::compare(jobInfo.m_jobKey.c_str(), details.m_jobEntry.m_jobKey, Qt::CaseInsensitive) == 0) &&
                         (jobInfo.m_builderGuid == details.m_jobEntry.m_builderGuid) &&
                         (jobInfo.GetHash() == details.m_jobEntry.GetHash()))
@@ -910,8 +910,8 @@ namespace AssetProcessor
 
                 for (const JobDetails& details : processResults)
                 {
-                    if ((QString::compare(jobInfo.m_sourceFile.c_str(), details.m_jobEntry.m_pathRelativeToWatchFolder, Qt::CaseSensitive) == 0) &&
-                        (QString::compare(jobInfo.m_watchFolder.c_str(), details.m_jobEntry.m_watchFolderPath, Qt::CaseSensitive) == 0) &&
+                    if ((QString::compare(jobInfo.m_sourceFile.c_str(), details.m_jobEntry.m_sourceAssetReference.RelativePath().c_str(), Qt::CaseSensitive) == 0) &&
+                        (QString::compare(jobInfo.m_watchFolder.c_str(), details.m_jobEntry.m_sourceAssetReference.ScanfolderPath().c_str(), Qt::CaseSensitive) == 0) &&
                         (QString::compare(jobInfo.m_platform.c_str(), details.m_jobEntry.m_platformInfo.m_identifier.c_str(), Qt::CaseInsensitive) == 0) &&
                         (QString::compare(jobInfo.m_jobKey.c_str(), details.m_jobEntry.m_jobKey, Qt::CaseInsensitive) == 0) &&
                         (jobInfo.m_builderGuid == details.m_jobEntry.m_builderGuid) &&
@@ -1409,8 +1409,8 @@ namespace AssetProcessor
                 {
                     const JobDetails& details = processResults[detailsIdx];
 
-                    if ((QString::compare(jobInfo.m_sourceFile.c_str(), details.m_jobEntry.m_pathRelativeToWatchFolder, Qt::CaseSensitive) == 0) &&
-                        (QString::compare(jobInfo.m_watchFolder.c_str(), details.m_jobEntry.m_watchFolderPath, Qt::CaseSensitive) == 0) &&
+                    if ((QString::compare(jobInfo.m_sourceFile.c_str(), details.m_jobEntry.m_sourceAssetReference.RelativePath().c_str(), Qt::CaseSensitive) == 0) &&
+                        (QString::compare(jobInfo.m_watchFolder.c_str(), details.m_jobEntry.m_sourceAssetReference.ScanfolderPath().c_str(), Qt::CaseSensitive) == 0) &&
                         (QString::compare(jobInfo.m_platform.c_str(), details.m_jobEntry.m_platformInfo.m_identifier.c_str(), Qt::CaseInsensitive) == 0) &&
                         (QString::compare(jobInfo.m_jobKey.c_str(), details.m_jobEntry.m_jobKey, Qt::CaseInsensitive) == 0) &&
                         (jobInfo.m_builderGuid == details.m_jobEntry.m_builderGuid) &&
@@ -2353,7 +2353,7 @@ namespace AssetProcessor
         for (int idx = 0; idx < processResults.size(); idx++)
         {
             UNIT_TEST_EXPECT_TRUE((processResults[idx].m_jobEntry.m_platformInfo.m_identifier == "pc"));
-            UNIT_TEST_EXPECT_TRUE(processResults[idx].m_jobEntry.m_pathRelativeToWatchFolder.startsWith("basefile.foo"));
+            UNIT_TEST_EXPECT_TRUE(processResults[idx].m_jobEntry.m_sourceAssetReference.RelativePath().Native().starts_with("basefile.foo"));
         }
         UNIT_TEST_EXPECT_TRUE(processResults[0].m_jobEntry.m_jobKey.compare(processResults[1].m_jobEntry.m_jobKey) != 0);
 
@@ -2434,7 +2434,7 @@ namespace AssetProcessor
         for (int idx = 0; idx < processResults.size(); idx++)
         {
             UNIT_TEST_EXPECT_TRUE((processResults[idx].m_jobEntry.m_platformInfo.m_identifier == "pc"));
-            UNIT_TEST_EXPECT_TRUE(processResults[idx].m_jobEntry.m_pathRelativeToWatchFolder.startsWith("basefile.foo"));
+            UNIT_TEST_EXPECT_TRUE(processResults[idx].m_jobEntry.m_sourceAssetReference.RelativePath().Native().starts_with("basefile.foo"));
         }
 
         mockAssetBuilderInfoHandler.m_numberOfJobsToCreate = 1; //Create one job for this file this time
@@ -2469,7 +2469,7 @@ namespace AssetProcessor
         for (int idx = 0; idx < processResults.size(); idx++)
         {
             UNIT_TEST_EXPECT_TRUE((processResults[idx].m_jobEntry.m_platformInfo.m_identifier == "pc"));
-            UNIT_TEST_EXPECT_TRUE(processResults[idx].m_jobEntry.m_pathRelativeToWatchFolder.startsWith("basefile.foo"));
+            UNIT_TEST_EXPECT_TRUE(processResults[idx].m_jobEntry.m_sourceAssetReference.RelativePath().Native().starts_with("basefile.foo"));
         }
 
         Q_EMIT UnitTestPassed();
@@ -2881,7 +2881,7 @@ namespace AssetProcessor
         {
             UNIT_TEST_EXPECT_TRUE(processResults.size() == 2); // Repeat to ensure count doesn't change while looping
 
-            if (QString(jobDetail.m_jobEntry.m_pathRelativeToWatchFolder).endsWith("FileB.txt"))
+            if (QString(jobDetail.m_jobEntry.m_sourceAssetReference.RelativePath().c_str()).endsWith("FileB.txt"))
             {
                 // Ensure that we are processing the right FileB job
                 UNIT_TEST_EXPECT_TRUE(QString(jobDetail.m_jobEntry.m_jobKey).compare("yyy") == 0);
@@ -2918,7 +2918,7 @@ namespace AssetProcessor
 
         for (JobDetails& jobDetail : processResults)
         {
-            if (QString(jobDetail.m_jobEntry.m_pathRelativeToWatchFolder).endsWith("FileB.txt"))
+            if (QString(jobDetail.m_jobEntry.m_sourceAssetReference.RelativePath().c_str()).endsWith("FileB.txt"))
             {
                 // Ensure that we are processing the right FileB job
                 UNIT_TEST_EXPECT_TRUE(QString(jobDetail.m_jobEntry.m_jobKey).compare("yyy") == 0);
@@ -2954,7 +2954,7 @@ namespace AssetProcessor
 
         for (JobDetails& jobDetail : processResults)
         {
-            UNIT_TEST_EXPECT_TRUE(QString(jobDetail.m_jobEntry.m_pathRelativeToWatchFolder).endsWith("FileC.txt"));
+            UNIT_TEST_EXPECT_TRUE(QString(jobDetail.m_jobEntry.m_sourceAssetReference.RelativePath().c_str()).endsWith("FileC.txt"));
             if (jobDetail.m_jobDependencyList.size())
             {
                 // Verify FileC jobinfo
@@ -2991,18 +2991,17 @@ namespace AssetProcessor
 
         for (JobDetails& jobDetail : processResults)
         {
-            if (QString(jobDetail.m_jobEntry.m_pathRelativeToWatchFolder).endsWith("FileA.txt"))
+            if (QString(jobDetail.m_jobEntry.m_sourceAssetReference.RelativePath().c_str()).endsWith("FileA.txt"))
             {
                 // Verify FileA jobinfo
                 UNIT_TEST_EXPECT_TRUE(QString(jobDetail.m_jobEntry.m_jobKey).compare("xxx") == 0);
             }
-            else if(QString(jobDetail.m_jobEntry.m_pathRelativeToWatchFolder).endsWith("FileB.txt"))
+            else if (QString(jobDetail.m_jobEntry.m_sourceAssetReference.RelativePath().c_str()).endsWith("FileB.txt"))
             {
                 // Verify FileB jobinfo
                 UNIT_TEST_EXPECT_TRUE(QString(jobDetail.m_jobEntry.m_jobKey).compare("yyy") == 0);
-
             }
-            else if (QString(jobDetail.m_jobEntry.m_pathRelativeToWatchFolder).endsWith("FileC.txt"))
+            else if (QString(jobDetail.m_jobEntry.m_sourceAssetReference.RelativePath().c_str()).endsWith("FileC.txt"))
             {
                 // Verify FileC jobinfo
                 UNIT_TEST_EXPECT_TRUE(QString(jobDetail.m_jobEntry.m_jobKey).compare("zzz") == 0);
@@ -3026,12 +3025,12 @@ namespace AssetProcessor
 
         for (JobDetails& jobDetail : processResults)
         {
-            if (QString(jobDetail.m_jobEntry.m_pathRelativeToWatchFolder).endsWith("FileB.txt"))
+            if (QString(jobDetail.m_jobEntry.m_sourceAssetReference.RelativePath().c_str()).endsWith("FileB.txt"))
             {
                 // Verify FileB jobinfo
                 UNIT_TEST_EXPECT_TRUE(QString(jobDetail.m_jobEntry.m_jobKey).compare("yyy") == 0);
             }
-            else if (QString(jobDetail.m_jobEntry.m_pathRelativeToWatchFolder).endsWith("FileC.txt"))
+            else if (QString(jobDetail.m_jobEntry.m_sourceAssetReference.RelativePath().c_str()).endsWith("FileC.txt"))
             {
                 // Verify FileC jobinfo
                 UNIT_TEST_EXPECT_TRUE(QString(jobDetail.m_jobEntry.m_jobKey).compare("zzz") == 0);
@@ -3057,18 +3056,17 @@ namespace AssetProcessor
 
         for (JobDetails& jobDetail : processResults)
         {
-            if (QString(jobDetail.m_jobEntry.m_pathRelativeToWatchFolder).endsWith("FileA.txt"))
+            if (QString(jobDetail.m_jobEntry.m_sourceAssetReference.RelativePath().c_str()).endsWith("FileA.txt"))
             {
                 // Verify FileA jobinfo
                 UNIT_TEST_EXPECT_TRUE(QString(jobDetail.m_jobEntry.m_jobKey).compare("xxx") == 0);
             }
-            else if (QString(jobDetail.m_jobEntry.m_pathRelativeToWatchFolder).endsWith("FileB.txt"))
+            else if (QString(jobDetail.m_jobEntry.m_sourceAssetReference.RelativePath().c_str()).endsWith("FileB.txt"))
             {
                 // Verify FileB jobinfo
                 UNIT_TEST_EXPECT_TRUE(QString(jobDetail.m_jobEntry.m_jobKey).compare("yyy") == 0);
-
             }
-            else if (QString(jobDetail.m_jobEntry.m_pathRelativeToWatchFolder).endsWith("FileC.txt"))
+            else if (QString(jobDetail.m_jobEntry.m_sourceAssetReference.RelativePath().c_str()).endsWith("FileC.txt"))
             {
                 // Verify FileC jobinfo
                 UNIT_TEST_EXPECT_TRUE(QString(jobDetail.m_jobEntry.m_jobKey).compare("zzz") == 0);

@@ -12,6 +12,7 @@
 #include <native/tests/AssetProcessorTest.h>
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
 #include <QCoreApplication>
+#include <tests/UnitTestUtilities.h>
 
 namespace AzToolsFramework
 {
@@ -21,7 +22,7 @@ namespace AzToolsFramework
     }
 }
 
-class UnitTestJobModel 
+class UnitTestJobModel
     : public AssetProcessor::JobsModel
 {
 public:
@@ -64,6 +65,7 @@ protected:
 
         const AZStd::string m_sourceName{ "theFile.fbx" };
         AZStd::vector<AzToolsFramework::AssetDatabase::JobDatabaseEntry> m_jobEntries;
+        UnitTests::MockPathConversion mockPathConversion;
     };
     AZStd::unique_ptr<StaticData> m_data;
     void CreateDatabaseTestData();

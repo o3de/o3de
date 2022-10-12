@@ -17,7 +17,7 @@ TEST_F(JobModelUnitTests, Test_RemoveMiddleJob)
     jobInfo.m_sourceFile = "source2.txt";
     jobInfo.m_platform = "platform";
     jobInfo.m_jobKey = "jobKey";
-    AssetProcessor::QueueElementID elementId("source2.txt", "platform", "jobKey");
+    AssetProcessor::QueueElementID elementId(AssetProcessor::SourceAssetReference("c:/test/source2.txt"), "platform", "jobKey");
     auto iter = m_unitTestJobModel->m_cachedJobsLookup.find(elementId);
     ASSERT_NE(iter, m_unitTestJobModel->m_cachedJobsLookup.end());
     unsigned int jobIndex = iter.value();
@@ -28,9 +28,9 @@ TEST_F(JobModelUnitTests, Test_RemoveMiddleJob)
     iter = m_unitTestJobModel->m_cachedJobsLookup.find(elementId);
     ASSERT_EQ(iter, m_unitTestJobModel->m_cachedJobsLookup.end());
     AssetProcessor::CachedJobInfo* cachedJobInfo = m_unitTestJobModel->m_cachedJobs[jobIndex];
-    ASSERT_EQ(cachedJobInfo->m_elementId.GetInputAssetName(), QString("source3.txt"));
+    ASSERT_EQ(cachedJobInfo->m_elementId.GetSourceAssetReference().AbsolutePath().Native(), "c:/test/source3.txt");
     // Checking index of last job
-    elementId.SetInputAssetName("source6.txt");
+    elementId.SetSourceAssetReference(AssetProcessor::SourceAssetReference("c:/test/source6.txt"));
     iter = m_unitTestJobModel->m_cachedJobsLookup.find(elementId);
     ASSERT_NE(iter, m_unitTestJobModel->m_cachedJobsLookup.end());
     jobIndex = iter.value();
@@ -46,7 +46,7 @@ TEST_F(JobModelUnitTests, Test_RemoveFirstJob)
     jobInfo.m_sourceFile = "source1.txt";
     jobInfo.m_platform = "platform";
     jobInfo.m_jobKey = "jobKey";
-    AssetProcessor::QueueElementID elementId("source1.txt", "platform", "jobKey");
+    AssetProcessor::QueueElementID elementId(AssetProcessor::SourceAssetReference ("c:/test/source1.txt"), "platform", "jobKey");
     auto iter = m_unitTestJobModel->m_cachedJobsLookup.find(elementId);
     ASSERT_NE(iter, m_unitTestJobModel->m_cachedJobsLookup.end());
     unsigned int jobIndex = iter.value();
@@ -57,9 +57,9 @@ TEST_F(JobModelUnitTests, Test_RemoveFirstJob)
     iter = m_unitTestJobModel->m_cachedJobsLookup.find(elementId);
     ASSERT_EQ(iter, m_unitTestJobModel->m_cachedJobsLookup.end());
     AssetProcessor::CachedJobInfo* cachedJobInfo = m_unitTestJobModel->m_cachedJobs[jobIndex];
-    ASSERT_EQ(cachedJobInfo->m_elementId.GetInputAssetName(), QString("source2.txt"));
+    ASSERT_EQ(cachedJobInfo->m_elementId.GetSourceAssetReference().AbsolutePath().Native(), "c:/test/source2.txt");
     // Checking index of last job
-    elementId.SetInputAssetName("source6.txt");
+    elementId.SetSourceAssetReference(AssetProcessor::SourceAssetReference("c:/test/source6.txt"));
     iter = m_unitTestJobModel->m_cachedJobsLookup.find(elementId);
     ASSERT_NE(iter, m_unitTestJobModel->m_cachedJobsLookup.end());
     jobIndex = iter.value();
@@ -75,7 +75,7 @@ TEST_F(JobModelUnitTests, Test_RemoveLastJob)
     jobInfo.m_sourceFile = "source6.txt";
     jobInfo.m_platform = "platform";
     jobInfo.m_jobKey = "jobKey";
-    AssetProcessor::QueueElementID elementId("source6.txt", "platform", "jobKey");
+    AssetProcessor::QueueElementID elementId(AssetProcessor::SourceAssetReference("c:/test/source6.txt"), "platform", "jobKey");
     auto iter = m_unitTestJobModel->m_cachedJobsLookup.find(elementId);
     ASSERT_NE(iter, m_unitTestJobModel->m_cachedJobsLookup.end());
     unsigned int jobIndex = iter.value();
@@ -86,9 +86,9 @@ TEST_F(JobModelUnitTests, Test_RemoveLastJob)
     iter = m_unitTestJobModel->m_cachedJobsLookup.find(elementId);
     ASSERT_EQ(iter, m_unitTestJobModel->m_cachedJobsLookup.end());
     AssetProcessor::CachedJobInfo* cachedJobInfo = m_unitTestJobModel->m_cachedJobs[jobIndex - 1];
-    ASSERT_EQ(cachedJobInfo->m_elementId.GetInputAssetName(), QString("source5.txt"));
+    ASSERT_EQ(cachedJobInfo->m_elementId.GetSourceAssetReference().AbsolutePath().Native(), "c:/test/source5.txt");
     // Checking index of first job
-    elementId.SetInputAssetName("source1.txt");
+    elementId.SetSourceAssetReference(AssetProcessor::SourceAssetReference("c:/test/source1.txt"));
     iter = m_unitTestJobModel->m_cachedJobsLookup.find(elementId);
     ASSERT_NE(iter, m_unitTestJobModel->m_cachedJobsLookup.end());
     jobIndex = iter.value();
@@ -102,7 +102,8 @@ TEST_F(JobModelUnitTests, Test_RemoveAllJobsBySource)
     VerifyModel(); // verify up front for sanity.
 
     AssetProcessor::CachedJobInfo* jobInfo1 = new AssetProcessor::CachedJobInfo();
-    jobInfo1->m_elementId.SetInputAssetName("source3.txt"); // this is the second job for this source - the fixture creates one
+    jobInfo1->m_elementId.SetSourceAssetReference(
+        AssetProcessor::SourceAssetReference("c:/test/source3.txt")); // this is the second job for this source - the fixture creates one
     jobInfo1->m_elementId.SetPlatform("platform_2"); // differing job keys
     jobInfo1->m_elementId.SetJobDescriptor("jobKey_3"); // differing descriptor
 
@@ -110,14 +111,14 @@ TEST_F(JobModelUnitTests, Test_RemoveAllJobsBySource)
     m_unitTestJobModel->m_cachedJobs.push_back(jobInfo1);
     m_unitTestJobModel->m_cachedJobsLookup.insert(jobInfo1->m_elementId, aznumeric_caster(m_unitTestJobModel->m_cachedJobs.size() - 1));
 
-    AssetProcessor::QueueElementID elementId("source3.txt", "platform_2", "jobKey_3");
+    AssetProcessor::QueueElementID elementId(AssetProcessor::SourceAssetReference("c:/test/source3.txt"), "platform_2", "jobKey_3");
     auto iter = m_unitTestJobModel->m_cachedJobsLookup.find(elementId);
     ASSERT_NE(iter, m_unitTestJobModel->m_cachedJobsLookup.end());
     unsigned int jobIndex = iter.value();
     ASSERT_EQ(jobIndex, 6); //last job
 
     ASSERT_EQ(m_unitTestJobModel->m_cachedJobs.size(), 7);
-    m_unitTestJobModel->OnSourceRemoved("source3.txt");
+    m_unitTestJobModel->OnSourceRemoved(AssetProcessor::SourceAssetReference("c:/test/source3.txt"));
 
     // both  sources should be removed!
     ASSERT_EQ(m_unitTestJobModel->m_cachedJobs.size(), 5);
@@ -127,7 +128,7 @@ TEST_F(JobModelUnitTests, Test_RemoveAllJobsBySource)
     for (int idx = 0; idx < m_unitTestJobModel->m_cachedJobs.size(); idx++)
     {
         AssetProcessor::CachedJobInfo* jobInfo = m_unitTestJobModel->m_cachedJobs[idx];
-        ASSERT_NE(jobInfo->m_elementId.GetInputAssetName(), QString::fromUtf8("source3.txt"));
+        ASSERT_NE(jobInfo->m_elementId.GetSourceAssetReference().AbsolutePath().Native(), "c:/test/source3.txt");
     }
 }
 
@@ -140,7 +141,7 @@ TEST_F(JobModelUnitTests, Test_PopulateJobsFromDatabase)
 
     for (const auto& jobEntry : m_data->m_jobEntries)
     {
-        AssetProcessor::QueueElementID elementId(m_data->m_sourceName.c_str(), jobEntry.m_platform.c_str(), jobEntry.m_jobKey.c_str());
+        AssetProcessor::QueueElementID elementId(AssetProcessor::SourceAssetReference("c:/test", m_data->m_sourceName.c_str()), jobEntry.m_platform.c_str(), jobEntry.m_jobKey.c_str());
         auto iter = m_unitTestJobModel->m_cachedJobsLookup.find(elementId);
         ASSERT_NE(iter, m_unitTestJobModel->m_cachedJobsLookup.end());
 
@@ -186,7 +187,7 @@ void JobModelUnitTests::SetUp()
 
     m_unitTestJobModel = new UnitTestJobModel();
     AssetProcessor::CachedJobInfo* jobInfo1 = new AssetProcessor::CachedJobInfo();
-    jobInfo1->m_elementId.SetInputAssetName("source1.txt");
+    jobInfo1->m_elementId.SetSourceAssetReference(AssetProcessor::SourceAssetReference("c:/somepath/source1.txt"));
     jobInfo1->m_elementId.SetPlatform("platform");
     jobInfo1->m_elementId.SetJobDescriptor("jobKey");
     jobInfo1->m_jobState = AzToolsFramework::AssetSystem::JobStatus::Completed;
@@ -194,35 +195,35 @@ void JobModelUnitTests::SetUp()
     m_unitTestJobModel->m_cachedJobsLookup.insert(jobInfo1->m_elementId, aznumeric_caster(m_unitTestJobModel->m_cachedJobs.size() - 1));
 
     AssetProcessor::CachedJobInfo* jobInfo2 = new AssetProcessor::CachedJobInfo();
-    jobInfo2->m_elementId.SetInputAssetName("source2.txt");
+    jobInfo2->m_elementId.SetSourceAssetReference(AssetProcessor::SourceAssetReference("c:/somepath/source2.txt"));
     jobInfo2->m_elementId.SetPlatform("platform");
     jobInfo2->m_elementId.SetJobDescriptor("jobKey");
     m_unitTestJobModel->m_cachedJobs.push_back(jobInfo2);
     m_unitTestJobModel->m_cachedJobsLookup.insert(jobInfo2->m_elementId, aznumeric_caster(m_unitTestJobModel->m_cachedJobs.size() - 1));
 
     AssetProcessor::CachedJobInfo* jobInfo3 = new AssetProcessor::CachedJobInfo();
-    jobInfo3->m_elementId.SetInputAssetName("source3.txt");
+    jobInfo3->m_elementId.SetSourceAssetReference(AssetProcessor::SourceAssetReference("c:/somepath/source3.txt"));
     jobInfo3->m_elementId.SetPlatform("platform");
     jobInfo3->m_elementId.SetJobDescriptor("jobKey");
     m_unitTestJobModel->m_cachedJobs.push_back(jobInfo3);
     m_unitTestJobModel->m_cachedJobsLookup.insert(jobInfo3->m_elementId, aznumeric_caster(m_unitTestJobModel->m_cachedJobs.size() - 1));
 
     AssetProcessor::CachedJobInfo* jobInfo4 = new AssetProcessor::CachedJobInfo();
-    jobInfo4->m_elementId.SetInputAssetName("source4.txt");
+    jobInfo4->m_elementId.SetSourceAssetReference(AssetProcessor::SourceAssetReference("c:/somepath/source4.txt"));
     jobInfo4->m_elementId.SetPlatform("platform");
     jobInfo4->m_elementId.SetJobDescriptor("jobKey");
     m_unitTestJobModel->m_cachedJobs.push_back(jobInfo4);
     m_unitTestJobModel->m_cachedJobsLookup.insert(jobInfo4->m_elementId, aznumeric_caster(m_unitTestJobModel->m_cachedJobs.size() - 1));
 
     AssetProcessor::CachedJobInfo* jobInfo5 = new AssetProcessor::CachedJobInfo();
-    jobInfo5->m_elementId.SetInputAssetName("source5.txt");
+    jobInfo5->m_elementId.SetSourceAssetReference(AssetProcessor::SourceAssetReference("c:/somepath/source5.txt"));
     jobInfo5->m_elementId.SetPlatform("platform");
     jobInfo5->m_elementId.SetJobDescriptor("jobKey");
     m_unitTestJobModel->m_cachedJobs.push_back(jobInfo5);
     m_unitTestJobModel->m_cachedJobsLookup.insert(jobInfo5->m_elementId, aznumeric_caster(m_unitTestJobModel->m_cachedJobs.size() - 1));
 
     AssetProcessor::CachedJobInfo* jobInfo6 = new AssetProcessor::CachedJobInfo();
-    jobInfo6->m_elementId.SetInputAssetName("source6.txt");
+    jobInfo6->m_elementId.SetSourceAssetReference(AssetProcessor::SourceAssetReference("c:/somepath/source6.txt"));
     jobInfo6->m_elementId.SetPlatform("platform");
     jobInfo6->m_elementId.SetJobDescriptor("jobKey");
     m_unitTestJobModel->m_cachedJobs.push_back(jobInfo6);

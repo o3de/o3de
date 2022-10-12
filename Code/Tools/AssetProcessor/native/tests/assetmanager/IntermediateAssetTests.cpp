@@ -222,7 +222,7 @@ namespace UnitTests
             m_jobDetailsList.begin(), m_jobDetailsList.end(),
             [](const AssetProcessor::JobDetails& a, const AssetProcessor::JobDetails& b) -> bool
             {
-                return a.m_jobEntry.m_databaseSourceName.compare(b.m_jobEntry.m_databaseSourceName) < 0;
+                return a.m_jobEntry.m_sourceAssetReference < b.m_jobEntry.m_sourceAssetReference;
             });
 
         ProcessJob(*m_rc, m_jobDetailsList[jobToRun]);
@@ -337,12 +337,12 @@ namespace UnitTests
 
         ProcessFileMultiStage(3, false);
 
-        EXPECT_EQ(m_jobDetailsList.size(), 3);
+        ASSERT_EQ(m_jobDetailsList.size(), 3);
         EXPECT_TRUE(m_jobDetailsList[1].m_autoFail);
         EXPECT_TRUE(m_jobDetailsList[2].m_autoFail);
 
-        EXPECT_EQ(m_jobDetailsList[1].m_jobEntry.m_databaseSourceName, "test.stage3");
-        EXPECT_EQ(m_jobDetailsList[2].m_jobEntry.m_databaseSourceName, "test.stage1");
+        EXPECT_EQ(m_jobDetailsList[1].m_jobEntry.m_sourceAssetReference.RelativePath().Native(), "test.stage3");
+        EXPECT_EQ(m_jobDetailsList[2].m_jobEntry.m_sourceAssetReference.RelativePath().Native(), "test.stage1");
     }
 
     TEST_F(IntermediateAssetTests, AALoop_CausesFailure)
@@ -354,12 +354,12 @@ namespace UnitTests
 
         ProcessFileMultiStage(2, false);
 
-        EXPECT_EQ(m_jobDetailsList.size(), 3);
+        ASSERT_EQ(m_jobDetailsList.size(), 3);
         EXPECT_TRUE(m_jobDetailsList[1].m_autoFail);
         EXPECT_TRUE(m_jobDetailsList[2].m_autoFail);
 
-        EXPECT_EQ(m_jobDetailsList[1].m_jobEntry.m_databaseSourceName, "test.stage2");
-        EXPECT_EQ(m_jobDetailsList[2].m_jobEntry.m_databaseSourceName, "test.stage1");
+        EXPECT_EQ(m_jobDetailsList[1].m_jobEntry.m_sourceAssetReference.RelativePath().Native(), "test.stage2");
+        EXPECT_EQ(m_jobDetailsList[2].m_jobEntry.m_sourceAssetReference.RelativePath().Native(), "test.stage1");
     }
 
     TEST_F(IntermediateAssetTests, SelfLoop_CausesFailure)
@@ -370,10 +370,10 @@ namespace UnitTests
 
         ProcessFileMultiStage(1, false);
 
-        EXPECT_EQ(m_jobDetailsList.size(), 2);
+        ASSERT_EQ(m_jobDetailsList.size(), 2);
         EXPECT_TRUE(m_jobDetailsList[1].m_autoFail);
 
-        EXPECT_EQ(m_jobDetailsList[1].m_jobEntry.m_databaseSourceName, "test.stage1");
+        EXPECT_EQ(m_jobDetailsList[1].m_jobEntry.m_sourceAssetReference.RelativePath().Native(), "test.stage1");
     }
 
     TEST_F(IntermediateAssetTests, CopyJob_Works)
@@ -386,7 +386,7 @@ namespace UnitTests
 
         auto expectedProduct = AZ::IO::Path(m_tempDir.GetDirectory()) / "Cache" / "pc" / "test.stage1";
 
-        EXPECT_EQ(m_jobDetailsList.size(), 1);
+        ASSERT_EQ(m_jobDetailsList.size(), 1);
         EXPECT_TRUE(AZ::IO::SystemFile::Exists(expectedProduct.c_str())) << expectedProduct.c_str();
     }
 
@@ -478,10 +478,10 @@ namespace UnitTests
         // Only go to stage 1 since we're expecting a failure at that point
         ProcessFileMultiStage(1, false);
 
-        EXPECT_EQ(m_jobDetailsList.size(), 2);
+        ASSERT_EQ(m_jobDetailsList.size(), 2);
         EXPECT_TRUE(m_jobDetailsList[1].m_autoFail);
 
-        EXPECT_EQ(m_jobDetailsList[1].m_jobEntry.m_databaseSourceName, "test.stage1");
+        EXPECT_EQ(m_jobDetailsList[1].m_jobEntry.m_sourceAssetReference.RelativePath().Native(), "test.stage1");
     }
 
     TEST_F(IntermediateAssetTests, DeleteFileInIntermediateFolder_CorrectlyDeletesOneFile)

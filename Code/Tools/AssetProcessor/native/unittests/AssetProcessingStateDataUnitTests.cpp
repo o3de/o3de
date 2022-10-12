@@ -655,7 +655,7 @@ void AssetProcessingStateDataUnitTest::DataTest(AssetProcessor::AssetDatabaseCon
     UNIT_TEST_EXPECT_FALSE(stateData->GetJobs(jobs));
     UNIT_TEST_EXPECT_FALSE(stateData->GetJobByJobID(3443, job));
     UNIT_TEST_EXPECT_FALSE(stateData->GetJobsBySourceID(3234, jobs));
-    UNIT_TEST_EXPECT_FALSE(stateData->GetJobsBySourceName("none", jobs));
+    UNIT_TEST_EXPECT_FALSE(stateData->GetJobsBySourceName(AssetProcessor::SourceAssetReference("c:/O3DE/dev/none"), jobs));
 
     //trying to add a job without a valid source pk should fail:
     {
@@ -734,7 +734,7 @@ void AssetProcessingStateDataUnitTest::DataTest(AssetProcessor::AssetDatabaseCon
 
     //try retrieving jobs by source name
     jobs.clear();
-    UNIT_TEST_EXPECT_TRUE(stateData->GetJobsBySourceName(source.m_sourceName.c_str(), jobs));
+    UNIT_TEST_EXPECT_TRUE(stateData->GetJobsBySourceName(AssetProcessor::SourceAssetReference(source.m_scanFolderPK, source.m_sourceName.c_str()), jobs));
     UNIT_TEST_EXPECT_TRUE(jobs.size() == 1);
     UNIT_TEST_EXPECT_TRUE(JobsContainJobID(jobs, job.m_jobID));
     UNIT_TEST_EXPECT_TRUE(JobsContainJobKey(jobs, job.m_jobKey.c_str()));
