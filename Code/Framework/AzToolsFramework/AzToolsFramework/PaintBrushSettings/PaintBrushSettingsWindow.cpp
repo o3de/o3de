@@ -88,7 +88,7 @@ namespace PaintBrush
         // and this is only visible while in a painting component mode, so we don't ever need to disable the controls.
         viewOptions.isDisabledInComponentMode = false;
         // Default size of the window
-        viewOptions.paneRect = QRect(50, 50, 350, 200);
+        viewOptions.paneRect = QRect(50, 50, 350, 210);
 
         AzToolsFramework::EditorRequestBus::Broadcast(
             &AzToolsFramework::EditorRequestBus::Events::RegisterViewPane,

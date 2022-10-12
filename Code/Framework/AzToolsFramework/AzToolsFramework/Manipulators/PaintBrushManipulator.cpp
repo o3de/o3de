@@ -240,8 +240,10 @@ namespace AzToolsFramework
             // have been many small mouse movements ago).
             float totalDistance = m_lastBrushCenter.GetDistance(currentCenter2D) + m_distanceSinceLastDraw;
 
-            // Find the location for each brush stamp that we can draw based on the total distance the mouse moved since
-            // the last time we drew a stamp.
+            // Keep adding brush stamps to the list for as long as the total remaining mouse distance is
+            // greater than the stamp distance. If the mouse moved a large enough distance in one frame,
+            // this will add multiple stamps. If the mouse moved a tiny amount, it's possible that no stamps
+            // will get added, and we'll just save the accumulated distance for next frame.
             for (; totalDistance >= distanceBetweenBrushStamps; totalDistance -= distanceBetweenBrushStamps)
             {
                 // Add another stamp to the list to draw this time.
@@ -310,15 +312,25 @@ namespace AzToolsFramework
                             // It's a valid point, so calculate the opacity. The per-point opacity for a paint stamp is a combination
                             // of the hardness falloff and the flow. The flow value gives the overall opacity for each stamp, and the
                             // hardness falloff gives per-pixel opacity within the stamp.
-                            // For the falloff function, we use a nonlinear falloff that's approximately the same as a squared cosine:
-                            // 2x^3 - 3x^2 + 1
-                            float shortestDistanceNormalized = sqrt(shortestDistanceSquared) / radius;
-                            float hardnessDistance = AZStd::max(shortestDistanceNormalized - hardness, 0.0f) * inverseHardnessReciprocal;
-                            float curHardness = (2.0f * hardnessDistance * hardnessDistance * hardnessDistance) -
-                                (3.0f * hardnessDistance * hardnessDistance) + 1.0f;
 
-                            // For the opacity at this point, combine the opacity from previous stamps with the current hardness and flow.
-                            opacity = AZStd::min(opacity + (curHardness * flow), 1.0f);
+                            // Normalize the distance into the 0-1 range, where 0 is the center of the stamp, and 1 is the edge.
+                            float shortestDistanceNormalized = sqrt(shortestDistanceSquared) / radius;
+
+                            // The hardness parameter describes what % of the total distance gets the falloff curve.
+                            // i.e. hardness=0.25 means that distances < 0.25 will have no falloff, and the falloff curve will
+                            // be mapped to distances of 0.25 to 1.
+                            // This scaling basically just uses the ratio "(dist - hardness) / (1 - hardness)" and clamps the
+                            // minimum to 0, so our output hardnessDistance is the 0 to 1 number that we input into the falloff function.
+                            float hardnessDistance = AZStd::max(shortestDistanceNormalized - hardness, 0.0f) * inverseHardnessReciprocal;
+
+                            // For the falloff function itself, we use a nonlinear falloff that's approximately the same
+                            // as a squared cosine: 2x^3 - 3x^2 + 1 . This produces a nice backwards S curve that starts at 1, ends at 0,
+                            // and has a midpoint at (0.5, 0.5).
+                            float perPixelOpacity = ((hardnessDistance * hardnessDistance) * (2.0f * hardnessDistance - 3.0f)) + 1.0f;
+
+                            // For the opacity at this point, combine any opacity from previous stamps with the
+                            // currently-computed perPixelOpacity and flow.
+                            opacity = AZStd::min(opacity + (perPixelOpacity * flow), 1.0f);
                         }
                     }
 
