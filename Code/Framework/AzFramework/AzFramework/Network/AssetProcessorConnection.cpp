@@ -67,8 +67,6 @@ namespace AzFramework
             , m_connectionState(EConnectionState::Disconnected)
             , m_port(0)
             , m_sendEventNotEmpty()
-            , m_lastErrorResult{ 0 }
-            , m_lastErrorMessage{}
         {
             m_requestSerial = 1;
             m_unitTesting = false;

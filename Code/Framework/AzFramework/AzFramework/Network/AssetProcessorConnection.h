@@ -210,7 +210,7 @@ namespace AzFramework
             // has yet to finish cleaning everything up.
             AZStd::atomic_bool m_isBusyDisconnecting;
 
-            AZ::s32 m_lastErrorResult;
+            AZ::s32 m_lastErrorResult = 0;
             AZStd::string m_lastErrorMessage;
         };
 
