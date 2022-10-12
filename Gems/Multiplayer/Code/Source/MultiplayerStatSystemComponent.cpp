@@ -109,8 +109,7 @@ namespace Multiplayer
                 break;
             }
         }
-
-        OnEnableNetworkingMetricsChanged(true);
+        
         m_metricsEvent.Enqueue(AZ::TimeMs{ 1000 }, true);
     }
 
