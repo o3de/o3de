@@ -269,9 +269,9 @@ namespace O3DE::ProjectManager
         m_licenseURL = new FormLineEditWidget(tr("License URL"), "", tr("Link to the license web site i.e. https://opensource.org/licenses/Apache-2.0"), "");
         gemDetailsLayout->addWidget(m_licenseURL);
 
-        m_userDefinedGemTags = new FormLineEditTagsWidget(tr("User-defined Gem Tags"), "");
-        m_userDefinedGemTags->setToolTip("Press Space or Return with non-empty text to create a new tag");
-        m_userDefinedGemTags->lineEdit()->setValidator(new QRegularExpressionValidator(QRegularExpression("(^$|((\\w+)(\\s?\\w*)*))"), this));
+        m_userDefinedGemTags = new FormLineEditTagsWidget(
+            tr("User-defined Gem Tags <i>&nbsp;&nbsp;&nbsp;(Press enter to create Gem Tag)</i>"), "", tr("Tags without spaces: i.e. SampleGame"), "");
+        m_userDefinedGemTags->lineEdit()->setValidator(new QRegularExpressionValidator(QRegularExpression("(^$|((\\w+)(\\w*)*))"), this));
         gemDetailsLayout->addWidget(m_userDefinedGemTags);
 
         m_gemLocation = new FormFolderBrowseEditWidget(tr("Gem Location"), "", tr("The path that the gem will be created at."), tr("The chosen directory must either not exist or be empty."));

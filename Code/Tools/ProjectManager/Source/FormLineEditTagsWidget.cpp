@@ -56,14 +56,11 @@ namespace O3DE::ProjectManager
         setupCompletionTags();
         setMouseTracking(true);
 
-        //This logic will enable us to convert text into tag objects
-        connect(m_lineEdit, &AzQtComponents::StyledLineEdit::textChanged, this, &FormLineEditTagsWidget::textChanged);
-
         //add auto-completion for the line edit
         m_completer = new QCompleter(m_completionTags, this);
         m_completer->setObjectName("formCompleter");
         m_completer->setCaseSensitivity(Qt::CaseInsensitive);
-        m_completer->setCompletionMode(QCompleter::UnfilteredPopupCompletion);
+        m_completer->setCompletionMode(QCompleter::PopupCompletion);
         m_completer->popup()->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         m_completer->popup()->setFixedWidth(m_lineEdit->rect().width()*3);
         m_completer->popup()->setMouseTracking(true);
@@ -157,21 +154,6 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void FormLineEditTagsWidget::textChanged(const QString& text)
-    {
-        if(text.contains(" "))
-        {
-            //do tag adding
-            QString interim = m_lineEdit->text();
-            m_lineEdit->clear();
-            for(auto tagStr : interim.split(" "))
-            {
-                addToTagList(tagStr);
-            }
-            refreshTagFrame();
-        }
-    } 
-
     void FormLineEditTagsWidget::processTagDelete([[maybe_unused]] int unused)
     {
         //Only a checkbox's stateChanged signal causes this function to run
@@ -189,6 +171,7 @@ namespace O3DE::ProjectManager
     {
         if (event->key() == Qt::Key_Return)
         {
+            m_lineEdit->setFocus();
             forceSubmitCurrentText();
         }
     }

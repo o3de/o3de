@@ -68,10 +68,6 @@ namespace O3DE::ProjectManager
         
 
     private slots:
-        //! Checks if 'Space' was inserted into the string. If so, it splits the string in m_lineEdit,
-        //! and adds each string as a tag to the tag list. Afterwards, it clears m_lineEdit and refreshes the tag frame.
-        void textChanged(const QString& text);
-
         //! Identifies tag that was clicked, deletes it from the tag list, and refreshes tag frame. 
         void processTagDelete(int unused);
 
