@@ -488,7 +488,6 @@ namespace AZ
                 desc.m_verticalFovRadians = GetMax(0.001f, acosf(data.m_cosOuterConeAngle) * 2.0f);
                 desc.m_worldTransform = AZ::Transform::CreateLookAt(position, position + normal);
 
-                AZ::Frustum frustum = AZ::Frustum(desc);
                 m_lightData.GetData<1>(handle.GetIndex()) = AZ::Frustum(desc);
             }
 
