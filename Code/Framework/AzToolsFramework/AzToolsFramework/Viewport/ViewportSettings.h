@@ -77,6 +77,9 @@ namespace AzToolsFramework
     bool HelpersVisible();
     void SetHelpersVisible(bool visible);
 
+    bool OnlyShowHelpersForSelectedEntities();
+    void SetOnlyShowHelpersForSelectedEntities(bool visible);
+
     bool ComponentSwitcherEnabled();
 
     bool PrefabEditModeEffectEnabled();

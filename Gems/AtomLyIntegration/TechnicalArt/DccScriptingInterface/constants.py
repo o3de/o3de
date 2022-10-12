@@ -120,6 +120,10 @@ ENVAR_PATH_DCCSI_TOOLS_DCC = 'PATH_DCCSI_TOOLS_DCC'
 # envar to get/set the < dccsi>/tools/IDE folder
 ENVAR_PATH_DCCSI_TOOLS_IDE = 'PATH_DCCSI_TOOLS_IDE'
 
+# dccsi envar to set the default py for IDE
+ENVAR_DCCSI_PY_DEFAULT = 'DCCSI_PY_DEFAULT'
+ENVAR_DCCSI_PY_IDE = 'DCCSI_PY_IDE'
+
 # envar to get/set the < dccsi>/tools/IDE/Wing folder
 ENVAR_PATH_DCCSI_TOOLS_IDE_WING = 'PATH_DCCSI_TOOLS_IDE_WING'
 

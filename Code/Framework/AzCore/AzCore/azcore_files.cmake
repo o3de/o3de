@@ -77,6 +77,8 @@ set(FILES
     Console/ILogger.h
     Console/LoggerSystemComponent.cpp
     Console/LoggerSystemComponent.h
+    Date/DateFormat.cpp
+    Date/DateFormat.h
     Slice/SliceAsset.cpp
     Slice/SliceAsset.h
     Slice/SliceAssetHandler.cpp

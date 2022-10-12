@@ -1266,7 +1266,9 @@ namespace AzFramework
             enum ChangeType
             {
                 CheckMove,
-                Move
+                Move,
+                CheckDelete,
+                Delete
             };
 
             // The default constructor is only required for the SerializeContext.

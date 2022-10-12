@@ -15,6 +15,7 @@
 #include "BaseAssetProcessorTest.h"
 #include <native/utilities/BatchApplicationManager.h>
 #include <native/connection/connectionManager.h>
+#include <tests/MockAssetDatabaseRequestsHandler.h>
 
 #include <QCoreApplication>
 
@@ -78,6 +79,8 @@ namespace AssetProcessor
             AzFramework::StringFunc::AssetPath::CalculateBranchToken(enginePath.c_str(), token);
             registry->Set(branchTokenKey, token.c_str());
 
+            m_assetDatabaseRequestsHandler = AZStd::make_unique<MockAssetDatabaseRequestsHandler>();
+
             m_application.reset(new UnitTestAppManager(&numParams, &paramStringArray));
             ASSERT_EQ(m_application->BeforeRun(), ApplicationManager::Status_Success);
             ASSERT_TRUE(m_application->PrepareForTests());
@@ -86,10 +89,20 @@ namespace AssetProcessor
         void TearDown() override
         {
             m_application.reset();
+
+            // The temporary folder for storing the database should be removed at the end of the test.
+            // If this fails it means someone left a handle to the database open.
+            AZStd::string databaseLocation;
+            ASSERT_TRUE(m_assetDatabaseRequestsHandler->GetAssetDatabaseLocation(databaseLocation));
+            ASSERT_FALSE(databaseLocation.empty());
+            m_assetDatabaseRequestsHandler.reset();
+            ASSERT_FALSE(QFileInfo(databaseLocation.c_str()).dir().exists());
+
             AssetProcessorTest::TearDown();
         }
 
         AZStd::unique_ptr<UnitTestAppManager> m_application;
+        AZStd::unique_ptr<MockAssetDatabaseRequestsHandler> m_assetDatabaseRequestsHandler;
 
     };
 
