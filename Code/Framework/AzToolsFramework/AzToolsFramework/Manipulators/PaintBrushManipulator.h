@@ -74,8 +74,8 @@ namespace AzToolsFramework
         AZStd::vector<AzToolsFramework::ActionOverride> PopulateActionsImpl();
  
         void AdjustSize(float sizeDelta);
-        void AdjustIntensity(float intensityDelta);
-        void AdjustOpacity(float opacityDelta);
+        void AdjustIntensityPercent(float intensityPercentDelta);
+        void AdjustOpacityPercent(float opacityPercentDelta);
 
     private:
         void OnSettingsChanged(const PaintBrushSettings& newSettings) override;

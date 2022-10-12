@@ -44,7 +44,7 @@ namespace PaintBrush
 
             AzToolsFramework::PaintBrushSettings* settings = nullptr;
             AzToolsFramework::PaintBrushSettingsRequestBus::BroadcastResult(
-                settings, &AzToolsFramework::PaintBrushSettingsRequestBus::Events::GetSettings);
+                settings, &AzToolsFramework::PaintBrushSettingsRequestBus::Events::GetSettingsPointerForPropertyEditor);
 
             m_propertyEditor->ClearInstances();
             m_propertyEditor->AddInstance(settings, azrtti_typeid(*settings), nullptr);

@@ -35,8 +35,8 @@ namespace GradientSignal
 
     protected:
         // PaintBrushNotificationBus overrides
-        void OnPaintBegin(float intensity, float opacity) override;
-        void OnPaintEnd() override;
+        void OnPaintStrokeBegin(float intensity, float opacity) override;
+        void OnPaintStrokeEnd() override;
         void OnPaint(const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn, BlendFn& blendFn) override;
 
         void BeginUndoBatch();

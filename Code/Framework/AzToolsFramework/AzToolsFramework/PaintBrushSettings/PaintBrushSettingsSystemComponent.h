@@ -33,19 +33,20 @@ namespace AzToolsFramework
         void Deactivate() override;
 
         // PaintBrushSettingsRequestBus overrides...
-        PaintBrushSettings* GetSettings() override;
+        PaintBrushSettings* GetSettingsPointerForPropertyEditor() override;
+        PaintBrushSettings GetSettings() const override;
         float GetSize() const override;
-        float GetIntensity() const override;
-        float GetOpacity() const override;
-        float GetHardness() const override;
-        float GetFlow() const override;
+        float GetIntensityPercent() const override;
+        float GetOpacityPercent() const override;
+        float GetHardnessPercent() const override;
+        float GetFlowPercent() const override;
         float GetDistancePercent() const override;
         PaintBrushBlendMode GetBlendMode() const override;
         void SetSize(float size) override;
-        void SetIntensity(float intensity) override;
-        void SetOpacity(float opacity) override;
-        void SetHardness(float hardness) override;
-        void SetFlow(float flow) override;
+        void SetIntensityPercent(float intensityPercent) override;
+        void SetOpacityPercent(float opacityPercent) override;
+        void SetHardnessPercent(float hardnessPercent) override;
+        void SetFlowPercent(float flowPercent) override;
         void SetDistancePercent(float distancePercent) override;
         void SetBlendMode(PaintBrushBlendMode blendMode) override;
 

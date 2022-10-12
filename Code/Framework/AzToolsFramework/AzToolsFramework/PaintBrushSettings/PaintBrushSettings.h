@@ -14,6 +14,41 @@
 
 namespace AzToolsFramework
 {
+    /*
+       Paint brushes have multiple settings that all come together to produce the results that we're used to seeing in
+       paint programs. For those who aren't familiar, here's a quick explanation of how it all works.
+
+       Painting consists of "brush strokes", where each stroke consists of pushing a brush against a canvas, moving it, and lifting
+       it. Our equivalent is holding down the mouse button, moving the mouse in continuous movements while holding down the button,
+       then lifting the button at the end of the stroke. However, instead of a continuous brush stroke, paint programs use something
+       closer to pointillism, where the stroke consists of many discrete brush "daubs", where a "daub" is a single discrete imprint
+       of the brush shape.
+
+       With that description in mind, here's how the settings play together:
+
+       Stroke settings:
+       - Intensity: The color of the paint on the paintbrush. We only support monochromatic painting, so this is just a greyscale
+         intensity from black to white. This color is fully applied to each brush stroke.
+       - Opacity: The opacity of an entire brush stroke. Because it's per-stroke, a stroke that crosses itself won't blend with
+         itself. The blending only occurs after the stroke is complete.
+       - Blend Mode: The blend mode for blending the brush stroke down to the base layer.
+
+       Daub settings:
+       - Size: The size of the paintbrush, which is the size of each daub.
+       - Distance: The amount the brush needs to move before leaving another daub, expressed in a % of the paintbrush size.
+         100% roughly means each daub will have 0% overlap and be adjacent to each other, where 25% means each daub will overlap
+         by 75% while creating the stroke. If the brush moves back and forth in small amounts, it's possible to get higher amounts
+         of overlap, since this is distance of brush movement, not distance between daubs.
+       - Flow: The opacity of each daub. This conceptually maps to the amount of paint flowing through an airbrush.
+       - Hardness: The amount of falloff from the center of each daub, which affects the opacity within each pixel of the daub.
+         This sort of represents how hard the brush is being pressed against the canvas.
+
+       Each brush stroke conceptually occurs on a separate stroke layer that gets blended into the base, and the layer is merged down
+       into the base at the end of the stroke. As the brush moves, it creates discrete daubs based on the Size and Distance. Each daub
+       paints per-pixel opacity data into the stroke layer based on the combination of Flow and Hardness. The stroke layer itself is
+       then blended down using the Intensity, Opacity, and Blend Mode.
+    */
+
     //! The different types of blend modes supported by the paint brush tool.
     enum class PaintBrushBlendMode : uint8_t
     {
@@ -40,29 +75,15 @@ namespace AzToolsFramework
         PaintBrushSettings() = default;
         ~PaintBrushSettings() = default;
 
-        float GetSize() const
+        // Stroke settings
+
+        float GetIntensityPercent() const
         {
-            return m_size;
+            return m_intensityPercent;
         }
-        float GetIntensity() const
+        float GetOpacityPercent() const
         {
-            return m_intensity;
-        }
-        float GetOpacity() const
-        {
-            return m_opacity;
-        }
-        float GetHardness() const
-        {
-            return m_hardness;
-        }
-        float GetFlow() const
-        {
-            return m_flow;
-        }
-        float GetDistancePercent() const
-        {
-            return m_distancePercent;
+            return m_opacityPercent;
         }
 
         PaintBrushBlendMode GetBlendMode() const
@@ -70,30 +91,51 @@ namespace AzToolsFramework
             return m_blendMode;
         }
 
-        void SetSize(float size);
-        void SetIntensity(float intensity);
-        void SetOpacity(float opacity);
-        void SetHardness(float hardness);
-        void SetFlow(float flow);
-        void SetDistancePercent(float distancePercent);
+        void SetIntensityPercent(float intensityPercent);
+        void SetOpacityPercent(float opacityPercent);
         void SetBlendMode(PaintBrushBlendMode blendMode);
 
-    protected:
-        //! Paintbrush diameter
-        float m_size = 10.0f;
-        //! Paintbrush intensity (black to white)
-        float m_intensity = 1.0f;
-        //! Paintbrush opacity (transparent to opaque)
-        float m_opacity = 0.5f;
-        //! Paintbrush hardness
-        float m_hardness = 1.0f;
-        //! Paintbrush flow setting
-        float m_flow = 1.0f;
-        //! Paintbrush distance setting in % of paintbrush size. 25% is the default in Photoshop.
-        float m_distancePercent = 0.25f;
+        // Daub settings
 
-        //! Paintbrush blend mode
+        float GetSize() const
+        {
+            return m_size;
+        }
+
+        float GetHardnessPercent() const
+        {
+            return m_hardnessPercent;
+        }
+        float GetFlowPercent() const
+        {
+            return m_flowPercent;
+        }
+        float GetDistancePercent() const
+        {
+            return m_distancePercent;
+        }
+
+        void SetSize(float size);
+        void SetHardnessPercent(float hardnessPercent);
+        void SetFlowPercent(float flowPercent);
+        void SetDistancePercent(float distancePercent);
+
+    protected:
+        //! Brush stroke intensity percent (0=black, 100=white)
+        float m_intensityPercent = 100.0f;
+        //! Brush stroke opacity percent (0=transparent brush stroke, 100=opaque brush stroke)
+        float m_opacityPercent = 100.0f;
+        //! Brush stroke blend mode
         PaintBrushBlendMode m_blendMode = PaintBrushBlendMode::Normal;
+
+        //! Brush daub diameter in meters
+        float m_size = 10.0f;
+        //! Brush daub hardness percent (0=soft falloff, 100=hard edge)
+        float m_hardnessPercent = 100.0f;
+        //! Brush daub flow percent (0=transparent daubs, 100=opaque daubs)
+        float m_flowPercent = 100.0f;
+        //! Brush distance to move between daubs in % of paintbrush size. (25% is the default in Photoshop.)
+        float m_distancePercent = 25.0f;
 
         AZ::u32 OnSettingsChanged();
     };

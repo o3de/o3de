@@ -20,10 +20,10 @@ namespace AzToolsFramework
             serializeContext->Class<PaintBrushSettings>()
                 ->Version(3)
                 ->Field("Size", &PaintBrushSettings::m_size)
-                ->Field("Intensity", &PaintBrushSettings::m_intensity)
-                ->Field("Opacity", &PaintBrushSettings::m_opacity)
-                ->Field("Hardness", &PaintBrushSettings::m_hardness)
-                ->Field("Flow", &PaintBrushSettings::m_flow)
+                ->Field("Intensity", &PaintBrushSettings::m_intensityPercent)
+                ->Field("Opacity", &PaintBrushSettings::m_opacityPercent)
+                ->Field("Hardness", &PaintBrushSettings::m_hardnessPercent)
+                ->Field("Flow", &PaintBrushSettings::m_flowPercent)
                 ->Field("DistancePercent", &PaintBrushSettings::m_distancePercent)
                 ->Field("BlendMode", &PaintBrushSettings::m_blendMode)
                 ;
@@ -35,46 +35,55 @@ namespace AzToolsFramework
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PaintBrushSettings::m_size, "Size", "Size/diameter of the paint brush (m).")
-                    ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PaintBrushSettings::m_size, "Size",
+                        "Size/diameter of the brush daub in meters.")
+                    ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::SoftMin, 1.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1024.0f)
                     ->Attribute(AZ::Edit::Attributes::SoftMax, 100.0f)
                     ->Attribute(AZ::Edit::Attributes::Step, 0.25f)
+                    ->Attribute(AZ::Edit::Attributes::Suffix, " m")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Slider, &PaintBrushSettings::m_intensity, "Intensity", "Intensity of the paint brush.")
+                        AZ::Edit::UIHandlers::Slider, &PaintBrushSettings::m_intensityPercent, "Intensity",
+                        "Intensity/color percent of the paint brush. 0% = black, 100% = white.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                    ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-                    ->Attribute(AZ::Edit::Attributes::Step, 0.025f)
+                    ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
+                    ->Attribute(AZ::Edit::Attributes::Step, 0.5f)
+                    ->Attribute(AZ::Edit::Attributes::Suffix, " %")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PaintBrushSettings::m_opacity, "Opacity", "Opacity of the paint brush.")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PaintBrushSettings::m_opacityPercent, "Opacity",
+                        "Opacity percent of each paint brush stroke. 0% = transparent, 100% = opaque.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                    ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-                    ->Attribute(AZ::Edit::Attributes::Step, 0.025f)
+                    ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
+                    ->Attribute(AZ::Edit::Attributes::Step, 0.5f)
+                    ->Attribute(AZ::Edit::Attributes::Suffix, " %")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PaintBrushSettings::m_hardness, "Hardness",
-                        "Falloff around the edges of the paint brush.")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PaintBrushSettings::m_hardnessPercent, "Hardness",
+                        "Falloff percent around the edges of each paint brush daub. 0% = soft falloff, 100% = hard edges.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                    ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-                    ->Attribute(AZ::Edit::Attributes::Step, 0.025f)
+                    ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
+                    ->Attribute(AZ::Edit::Attributes::Step, 0.5f)
+                    ->Attribute(AZ::Edit::Attributes::Suffix, " %")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PaintBrushSettings::m_flow, "Flow",
-                        "The opacity of each brush 'daub'.")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PaintBrushSettings::m_flowPercent, "Flow",
+                        "The opacity percent of each paint brush daub. 0% = transparent, 100% = opaque.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                    ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-                    ->Attribute(AZ::Edit::Attributes::Step, 0.025f)
+                    ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
+                    ->Attribute(AZ::Edit::Attributes::Step, 0.5f)
+                    ->Attribute(AZ::Edit::Attributes::Suffix, " %")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &PaintBrushSettings::m_distancePercent, "Distance",
-                        "The spacing between each brush 'daub' in % of paintbrush size.")
-                    ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
-                    ->Attribute(AZ::Edit::Attributes::SoftMin, 0.01f)
-                    ->Attribute(AZ::Edit::Attributes::SoftMax, 1.0f)
-                    ->Attribute(AZ::Edit::Attributes::Max, 2.0f)
-                    ->Attribute(AZ::Edit::Attributes::Step, 0.025f)
+                        "Brush distance to move between daubs in % of brush size. 1% = high overlap, 100% = non-overlapping daubs.")
+                    ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                    ->Attribute(AZ::Edit::Attributes::SoftMin, 1.0f)
+                    ->Attribute(AZ::Edit::Attributes::SoftMax, 100.0f)
+                    ->Attribute(AZ::Edit::Attributes::Max, 300.0f)
+                    ->Attribute(AZ::Edit::Attributes::Step, 0.5f)
+                    ->Attribute(AZ::Edit::Attributes::Suffix, " %")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::ComboBox, &PaintBrushSettings::m_blendMode, "Mode", "Blend mode of the paint brush.")
+                        AZ::Edit::UIHandlers::ComboBox, &PaintBrushSettings::m_blendMode, "Mode", "Blend mode of the brush stroke.")
                     ->EnumAttribute(PaintBrushBlendMode::Normal, "Normal")
                     ->EnumAttribute(PaintBrushBlendMode::Multiply, "Multiply")
                     ->EnumAttribute(PaintBrushBlendMode::Screen, "Screen")
@@ -90,27 +99,15 @@ namespace AzToolsFramework
         }
     }
 
-    void PaintBrushSettings::SetSize(float size)
+    void PaintBrushSettings::SetIntensityPercent(float intensityPercent)
     {
-        m_size = size;
+        m_intensityPercent = AZStd::clamp(intensityPercent, 0.0f, 100.0f);
         OnSettingsChanged();
     }
 
-    void PaintBrushSettings::SetIntensity(float intensity)
+    void PaintBrushSettings::SetOpacityPercent(float opacityPercent)
     {
-        m_intensity = intensity;
-        OnSettingsChanged();
-    }
-
-    void PaintBrushSettings::SetOpacity(float opacity)
-    {
-        m_opacity = opacity;
-        OnSettingsChanged();
-    }
-
-    void PaintBrushSettings::SetHardness(float hardness)
-    {
-        m_hardness = hardness;
+        m_opacityPercent = AZStd::clamp(opacityPercent, 0.0f, 100.0f);
         OnSettingsChanged();
     }
 
@@ -120,15 +117,28 @@ namespace AzToolsFramework
         OnSettingsChanged();
     }
 
-    void PaintBrushSettings::SetFlow(float flow)
+    void PaintBrushSettings::SetSize(float size)
     {
-        m_flow = flow;
+        m_size = AZStd::max(size, 0.0f);
+        OnSettingsChanged();
+    }
+
+    void PaintBrushSettings::SetHardnessPercent(float hardnessPercent)
+    {
+        m_hardnessPercent = AZStd::clamp(hardnessPercent, 0.0f, 100.0f);
+        OnSettingsChanged();
+    }
+
+    void PaintBrushSettings::SetFlowPercent(float flowPercent)
+    {
+        m_flowPercent = AZStd::clamp(flowPercent, 0.0f, 100.0f);
         OnSettingsChanged();
     }
 
     void PaintBrushSettings::SetDistancePercent(float distancePercent)
     {
-        m_distancePercent = distancePercent;
+        // Distance percent is *normally* 0-100%, but values above 100% are reasonable as well, so we don't clamp the upper limit.
+        m_distancePercent = AZStd::max(distancePercent, 0.0f);
         OnSettingsChanged();
     }
 

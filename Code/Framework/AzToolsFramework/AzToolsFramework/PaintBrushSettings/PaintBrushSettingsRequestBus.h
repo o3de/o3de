@@ -22,62 +22,69 @@ namespace AzToolsFramework
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
         using MutexType = AZStd::recursive_mutex;
 
-        //! Returns all of the current paintbrush settings.
+        //! Returns a pointer to the current paintbrush settings.
         //! This shouldn't normally be used, but it's necessary for exposing the global paintbrush settings
         //! outwards to the Property Editor window.
-        //! @return The paintbrush settings
-        virtual PaintBrushSettings* GetSettings() = 0;
+        //! @return The paintbrush settings pointer
+        virtual PaintBrushSettings* GetSettingsPointerForPropertyEditor() = 0;
 
-        //! Returns the current paintbrush size (diameter).
+        //! Returns a copy of the current paintbrush settings
+        virtual PaintBrushSettings GetSettings() const = 0;
+
+        // Paint Brush Stroke settings
+
+        //! Returns the brush stroke intensity (0=black, 100=white).
+        //! @return The intensity of the brush stroke
+        virtual float GetIntensityPercent() const = 0;
+
+        //! Returns the brush stroke opacity (0=transparent, 100=opaque).
+        virtual float GetOpacityPercent() const = 0;
+
+        //! Returns the current brush stroke blend mode.
+        virtual PaintBrushBlendMode GetBlendMode() const = 0;
+
+        //! Sets the brush stroke intensity.
+        //! @param intensity The new intensity, in 0-100 range (0=black, 100=white).
+        virtual void SetIntensityPercent(float intensityPercent) = 0;
+
+        //! Sets the brush stroke opacity.
+        //! @param opacity The new opacity, in 0-100 range (0=transparent, 100=opaque).
+        virtual void SetOpacityPercent(float opacityPercent) = 0;
+
+        //! Sets the brush stroke blend mode.
+        //! @param blendMode The new blend mode.
+        virtual void SetBlendMode(PaintBrushBlendMode blendMode) = 0;
+
+        // Paint Brush Daub settings
+
+        //! Returns the brush daub size (diameter).
         //! @return The size of the paintbrush in meters
         virtual float GetSize() const = 0;
 
-        //! Returns the current paintbrush intensity (0=black, 1=white).
-        //! @return The intensity of the paintbrush
-        virtual float GetIntensity() const = 0;
+        //! Returns the brush daub hardness (0=soft falloff, 100=hard edge).
+        virtual float GetHardnessPercent() const = 0;
 
-        //! Returns the current paintbrush opacity (0=transparent, 1=opaque).
-        virtual float GetOpacity() const = 0;
+        //! Returns the brush daub flow setting (0=transparent daub, 100=opaque daub)
+        virtual float GetFlowPercent() const = 0;
 
-        //! Returns the current paintbrush hardness (0 to 1).
-        virtual float GetHardness() const = 0;
-
-        //! Returns the current paintbrush flow setting (0 to 1)
-        virtual float GetFlow() const = 0;
-
-        //! Returns the current paintbrush distance between daubs in % of paintbrush size.
+        //! Returns the brush distance to move between each daub placement in % of paintbrush size.
         virtual float GetDistancePercent() const = 0;
 
-        //! Returns the current paintbrush blend mode.
-        virtual PaintBrushBlendMode GetBlendMode() const = 0;
-
-        //! Sets the paintbrush size (diameter).
+        //! Sets the brush daub size (diameter).
         //! @param size The new size, in meters.
         virtual void SetSize(float size) = 0;
 
-        //! Sets the paintbrush intensity.
-        //! @param intensity The new intensity, in 0-1 range (0=black, 1=white).
-        virtual void SetIntensity(float intensity) = 0;
+        //! Sets the brush daub hardness.
+        //! @param hardness The new hardness, in 0-100 range.
+        virtual void SetHardnessPercent(float hardnessPercent) = 0;
 
-        //! Sets the paintbrush opacity.
-        //! @param opacity The new opacity, in 0-1 range (0=transparent, 1=opaque).
-        virtual void SetOpacity(float opacity) = 0;
+        //! Sets the brush daub flow setting.
+        //! @param flow The new flow, in 0-100 range.
+        virtual void SetFlowPercent(float flowPercent) = 0;
 
-        //! Sets the paintbrush hardness.
-        //! @param hardness The new hardness, in 0-1 range.
-        virtual void SetHardness(float hardness) = 0;
-
-        //! Sets the paintbrush flow setting.
-        //! @param flow The new flow, in 0-1 range.
-        virtual void SetFlow(float flow) = 0;
-
-        //! Set the paintbrush distance % between daubs.
-        //! @param distancePercent The new distance %, in 0-1 range.
+        //! Set the brush distance % to move between each daub placement.
+        //! @param distancePercent The new distance %, typically in the 0-100 range.
         virtual void SetDistancePercent(float distancePercent) = 0;
-
-        //! Sets the paintbrush blend mode.
-        //! @param blendMode The new blend mode.
-        virtual void SetBlendMode(PaintBrushBlendMode blendMode) = 0;
 
     protected:
         ~PaintBrushSettingsRequests() = default;

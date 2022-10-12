@@ -375,7 +375,7 @@ namespace GradientSignal
         }
     }
 
-    void EditorImageGradientComponentMode::OnPaintBegin(float intensity, float opacity)
+    void EditorImageGradientComponentMode::OnPaintStrokeBegin(float intensity, float opacity)
     {
         BeginUndoBatch();
 
@@ -405,7 +405,7 @@ namespace GradientSignal
         m_paintStrokeData.m_strokeBuffer = AZStd::make_unique<ImageTileBuffer>(imageWidth, imageHeight, GetEntityId());
     }
 
-    void EditorImageGradientComponentMode::OnPaintEnd()
+    void EditorImageGradientComponentMode::OnPaintStrokeEnd()
     {
         AZ_Assert(m_paintBrushUndoBuffer != nullptr, "Undo batch is expected to exist while painting");
 
