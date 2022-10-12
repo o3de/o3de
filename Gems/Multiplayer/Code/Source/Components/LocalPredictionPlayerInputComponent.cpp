@@ -26,12 +26,14 @@ namespace Multiplayer
     AZ_CVAR(uint32_t, cl_PredictiveStateHistorySize, 120, nullptr, AZ::ConsoleFunctorFlags::Null, "Controls how many inputs of predictive state should be retained for debugging desyncs");
 #endif
 
+#if AZ_TRAIT_SERVER_ENABLED
     AZ_CVAR(bool, sv_ForceCorrections, false, nullptr, AZ::ConsoleFunctorFlags::Null, "If enabled, the server will force a correction for every input received for debugging");
     AZ_CVAR(bool, sv_EnableCorrections, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Enables server corrections on autonomous proxy desyncs");
     AZ_CVAR(double, sv_MaxBankTimeWindowSec, 0.2, nullptr, AZ::ConsoleFunctorFlags::Null, "Maximum bank time we allow before we start rejecting autonomous proxy move inputs due to anticheat kicking in");
     AZ_CVAR(double, sv_BankTimeDecay, 0.025, nullptr, AZ::ConsoleFunctorFlags::Null, "Amount to decay bank time by, in case of more permanent shifts in client latency");
     AZ_CVAR(AZ::TimeMs, sv_MinCorrectionTimeMs, AZ::TimeMs{ 100 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Minimum time to wait between sending out corrections in order to avoid flooding corrections on high-latency connections");
     AZ_CVAR(AZ::TimeMs, sv_InputUpdateTimeMs, AZ::TimeMs{ 5 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Minimum time between component updates");
+#endif
 
     void PrintCorrectionDifferences(const AzNetworking::StringifySerializer& client, const AzNetworking::StringifySerializer& server, MultiplayerAuditingElement* detail = nullptr)
     {
@@ -128,7 +130,10 @@ namespace Multiplayer
 
     LocalPredictionPlayerInputComponentController::LocalPredictionPlayerInputComponentController(LocalPredictionPlayerInputComponent& parent)
         : LocalPredictionPlayerInputComponentControllerBase(parent)
+#if AZ_TRAIT_SERVER_ENABLED
         , m_updateBankedTimeEvent([this]() { UpdateBankedTime(m_updateBankedTimeEvent.TimeInQueueMs()); }, AZ::Name("BankTimeUpdate Event"))
+#endif
+
 #if AZ_TRAIT_CLIENT_ENABLED
         , m_autonomousUpdateEvent([this]() { UpdateAutonomous(m_autonomousUpdateEvent.TimeInQueueMs()); }, AZ::Name("AutonomousUpdate Event"))
         , m_migrateStartHandler([this](ClientInputId migratedInputId) { OnMigrateStart(migratedInputId); })
@@ -146,22 +151,26 @@ namespace Multiplayer
             m_serverMigrateFrameId = GetNetworkTime()->GetHostFrameId();
         }
 
+#if AZ_TRAIT_CLIENT_ENABLED
         if (IsNetEntityRoleAutonomous())
         {
             m_autonomousUpdateEvent.Enqueue(AZ::TimeMs{ 1 }, true);
             GetMultiplayer()->AddClientMigrationStartEventHandler(m_migrateStartHandler);
             GetMultiplayer()->AddClientMigrationEndEventHandler(m_migrateEndHandler);
         }
+#endif
     }
 
     void LocalPredictionPlayerInputComponentController::OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
     {
+#if AZ_TRAIT_CLIENT_ENABLED
         if (IsNetEntityRoleAutonomous())
         {
             m_autonomousUpdateEvent.RemoveFromQueue();
             m_migrateStartHandler.Disconnect();
             m_migrateEndHandler.Disconnect();
         }
+#endif
     }
 
 #if AZ_TRAIT_SERVER_ENABLED
@@ -366,6 +375,35 @@ namespace Multiplayer
             // So this highly constrains anything a malicious client can do
         }
     }
+
+    void LocalPredictionPlayerInputComponentController::UpdateBankedTime(AZ::TimeMs deltaTimeMs)
+    {
+        const double deltaTime = static_cast<double>(deltaTimeMs) / 1000.0;
+        const double clientInputRateSec = static_cast<double>(static_cast<AZ::TimeMs>(cl_InputRateMs)) / 1000.0;
+
+        // Update banked time accumulator
+        m_clientBankedTime -= deltaTime;
+
+        // Forcibly tick any clients who are too far behind our variable latency window
+        // Client may be slow hacking
+        if (m_clientBankedTime < -sv_MaxBankTimeWindowSec)
+        {
+            m_clientBankedTime = -sv_MaxBankTimeWindowSec; // clamp to boundary
+
+            NetworkInput& input = m_lastInputReceived[0];
+            {
+                ScopedAlterTime scopedTime(
+                    input.GetHostFrameId(), input.GetHostTimeMs(), DefaultBlendFactor, GetNetBindComponent()->GetOwningConnectionId());
+                GetNetBindComponent()->ProcessInput(input, static_cast<float>(clientInputRateSec));
+            }
+
+            AZLOG(NET_Prediction, "Forced InputId=%d", aznumeric_cast<int32_t>(input.GetClientInputId()));
+        }
+
+        // Decay our bank time window, in case the remote endpoint has suffered a more persistent shift in latency, this should cause the
+        // client to eventually recover
+        m_clientBankedTime = m_clientBankedTime * (1.0 - sv_BankTimeDecay);
+    }
 #endif
 
 #if AZ_TRAIT_CLIENT_ENABLED
@@ -450,7 +488,6 @@ namespace Multiplayer
             AZLOG(NET_Prediction, "Replayed InputId=%d", aznumeric_cast<int32_t>(input.GetClientInputId()));
         }
     }
-#endif
 
     void LocalPredictionPlayerInputComponentController::ForceEnableAutonomousUpdate()
     {
@@ -462,26 +499,6 @@ namespace Multiplayer
         m_autonomousUpdateEvent.RemoveFromQueue();
     }
 
-    bool LocalPredictionPlayerInputComponentController::IsMigrating() const
-    {
-        return m_lastMigratedInputId != ClientInputId{ 0 };
-    }
-
-    ClientInputId LocalPredictionPlayerInputComponentController::GetLastInputId() const
-    {
-        return m_lastClientInputId;
-    }
-
-    HostFrameId LocalPredictionPlayerInputComponentController::GetInputFrameId(const NetworkInput& input) const
-    {
-        // If the client has sent us an invalid server frame id
-        // this is because they are in the process of migrating from one server to another
-        // In this situation, use whatever the server frame id was when this component was migrated
-        // This will match the closest state to what the client sees
-        return (input.GetHostFrameId() == InvalidHostFrameId) ? m_serverMigrateFrameId : input.GetHostFrameId();
-    }
-
-#if AZ_TRAIT_CLIENT_ENABLED
     void LocalPredictionPlayerInputComponentController::OnMigrateStart(ClientInputId migratedInputId)
     {
         m_lastMigratedInputId = migratedInputId;
@@ -627,6 +644,25 @@ namespace Multiplayer
     }
 #endif
 
+    bool LocalPredictionPlayerInputComponentController::IsMigrating() const
+    {
+        return m_lastMigratedInputId != ClientInputId{ 0 };
+    }
+
+    ClientInputId LocalPredictionPlayerInputComponentController::GetLastInputId() const
+    {
+        return m_lastClientInputId;
+    }
+
+    HostFrameId LocalPredictionPlayerInputComponentController::GetInputFrameId(const NetworkInput& input) const
+    {
+        // If the client has sent us an invalid server frame id
+        // this is because they are in the process of migrating from one server to another
+        // In this situation, use whatever the server frame id was when this component was migrated
+        // This will match the closest state to what the client sees
+        return (input.GetHostFrameId() == InvalidHostFrameId) ? m_serverMigrateFrameId : input.GetHostFrameId();
+    }
+
     bool LocalPredictionPlayerInputComponentController::SerializeEntityCorrection(AzNetworking::ISerializer& serializer)
     {
         bool result = GetNetBindComponent()->SerializeEntityCorrection(serializer);
@@ -637,32 +673,5 @@ namespace Multiplayer
             result = hierarchyComponent->SerializeEntityCorrection(serializer);
         }
         return result;
-    }
-
-    void LocalPredictionPlayerInputComponentController::UpdateBankedTime(AZ::TimeMs deltaTimeMs)
-    {
-        const double deltaTime = static_cast<double>(deltaTimeMs) / 1000.0;
-        const double clientInputRateSec = static_cast<double>(static_cast<AZ::TimeMs>(cl_InputRateMs)) / 1000.0;
-
-        // Update banked time accumulator
-        m_clientBankedTime -= deltaTime;
-
-        // Forcibly tick any clients who are too far behind our variable latency window
-        // Client may be slow hacking
-        if (m_clientBankedTime < -sv_MaxBankTimeWindowSec)
-        {
-            m_clientBankedTime = -sv_MaxBankTimeWindowSec; // clamp to boundary
-
-            NetworkInput& input = m_lastInputReceived[0];
-            {
-                ScopedAlterTime scopedTime(input.GetHostFrameId(), input.GetHostTimeMs(), DefaultBlendFactor, GetNetBindComponent()->GetOwningConnectionId());
-                GetNetBindComponent()->ProcessInput(input, static_cast<float>(clientInputRateSec));
-            }
-
-            AZLOG(NET_Prediction, "Forced InputId=%d", aznumeric_cast<int32_t>(input.GetClientInputId()));
-        }
-
-        // Decay our bank time window, in case the remote endpoint has suffered a more persistent shift in latency, this should cause the client to eventually recover
-        m_clientBankedTime = m_clientBankedTime * (1.0 - sv_BankTimeDecay);
     }
 }

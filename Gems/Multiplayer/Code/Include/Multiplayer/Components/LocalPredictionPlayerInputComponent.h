@@ -59,7 +59,6 @@ namespace Multiplayer
             const Multiplayer::ClientInputId& inputId,
             const AzNetworking::PacketEncodingBuffer& correction
         ) override;
-#endif
 
         //! Forcibly enables ProcessInput to execute on the entity.
         //! Note that this function is quite dangerous and should normally never be used
@@ -68,6 +67,7 @@ namespace Multiplayer
         //! Forcibly disables ProcessInput from executing on the entity.
         //! Note that this function is quite dangerous and should normally never be used
         void ForceDisableAutonomousUpdate();
+#endif
 
         //! Return true if we're currently migrating from one host to another.
         //! @return boolean true if we're currently migrating from one host to another
@@ -83,7 +83,10 @@ namespace Multiplayer
         void OnMigrateEnd();
         void UpdateAutonomous(AZ::TimeMs deltaTimeMs);
 #endif
+
+#if AZ_TRAIT_SERVER_ENABLED
         void UpdateBankedTime(AZ::TimeMs deltaTimeMs);
+#endif
 
         bool SerializeEntityCorrection(AzNetworking::ISerializer& serializer);
 
@@ -96,11 +99,15 @@ namespace Multiplayer
         // Anti-cheat accumulator for clients who purposely mess with their clock rate
         NetworkInputArray m_lastInputReceived;
 
-        AZ::ScheduledEvent m_autonomousUpdateEvent; // Drives autonomous input collection
+#if AZ_TRAIT_SERVER_ENABLED
         AZ::ScheduledEvent m_updateBankedTimeEvent; // Drives authority bank time updates
+#endif
 
+#if AZ_TRAIT_CLIENT_ENABLED
+        AZ::ScheduledEvent m_autonomousUpdateEvent; // Drives autonomous input collection
         ClientMigrationStartEvent::Handler m_migrateStartHandler;
         ClientMigrationEndEvent::Handler m_migrateEndHandler;
+#endif
 
         double m_moveAccumulator = 0.0;
         double m_clientBankedTime = 0.0;
