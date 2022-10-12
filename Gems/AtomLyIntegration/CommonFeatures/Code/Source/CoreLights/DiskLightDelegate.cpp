@@ -49,7 +49,7 @@ namespace AZ::Render
         return m_shapeBus->GetRadius() * GetTransform().GetUniformScale();
     }
 
-    DiskLightDelegate::DiskVisualizationDimensions DiskLightDelegate::CalculateDiskVisualizationDimensions(const float degrees) const
+    DiskLightDelegate::DiskVisualizationConeDimensions DiskLightDelegate::CalculateDiskVisualizationDimensions(const float degrees) const
     {
         const float radius = GetConfig()->m_attenuationRadius;
         const float shapeRadius = m_shapeBus->GetRadius();
@@ -58,7 +58,7 @@ namespace AZ::Render
         const float coneRadius = Sin(radians) * radius;
         const float coneHeight = Cos(radians) * radius;
 
-        return DiskVisualizationDimensions{ shapeRadius, shapeRadius + coneRadius, coneHeight };
+        return DiskVisualizationConeDimensions{ shapeRadius, shapeRadius + coneRadius, coneHeight };
     }
 
     Aabb DiskLightDelegate::GetLocalVisualizationBounds() const
