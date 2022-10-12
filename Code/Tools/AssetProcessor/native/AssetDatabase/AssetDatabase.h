@@ -18,6 +18,7 @@
 #include <QtCore/QString>
 
 #include "AzToolsFramework/API/EditorAssetSystemAPI.h"
+#include <native/AssetManager/SourceAssetReference.h>
 
 class QStringList;
 
@@ -111,7 +112,7 @@ namespace AssetProcessor
         bool GetJobByProductID(AZ::s64 productID, AzToolsFramework::AssetDatabase::JobDatabaseEntry& entry);
 
         bool GetJobsBySourceID(AZ::s64 sourceID, AzToolsFramework::AssetDatabase::JobDatabaseEntryContainer& container, AZ::Uuid builderGuid = AZ::Uuid::CreateNull(), QString jobKey = QString(), QString platform = QString(), AzToolsFramework::AssetSystem::JobStatus status = AzToolsFramework::AssetSystem::JobStatus::Any);
-        bool GetJobsBySourceName(QString exactSourceName, AzToolsFramework::AssetDatabase::JobDatabaseEntryContainer& container, AZ::Uuid builderGuid = AZ::Uuid::CreateNull(), QString jobKey = QString(), QString platform = QString(), AzToolsFramework::AssetSystem::JobStatus status = AzToolsFramework::AssetSystem::JobStatus::Any);
+        bool GetJobsBySourceName(const AssetProcessor::SourceAssetReference& sourceAsset, AzToolsFramework::AssetDatabase::JobDatabaseEntryContainer& container, AZ::Uuid builderGuid = AZ::Uuid::CreateNull(), QString jobKey = QString(), QString platform = QString(), AzToolsFramework::AssetSystem::JobStatus status = AzToolsFramework::AssetSystem::JobStatus::Any);
         bool GetJobsLikeSourceName(QString likeSourceName, LikeType likeType, AzToolsFramework::AssetDatabase::JobDatabaseEntryContainer& container, AZ::Uuid builderGuid = AZ::Uuid::CreateNull(), QString jobKey = QString(), QString platform = QString(), AzToolsFramework::AssetSystem::JobStatus status = AzToolsFramework::AssetSystem::JobStatus::Any);
 
         bool GetJobsByProductName(QString exactProductName, AzToolsFramework::AssetDatabase::JobDatabaseEntryContainer& container, AZ::Uuid builderGuid = AZ::Uuid::CreateNull(), QString jobKey = QString(), QString platform = QString(), AzToolsFramework::AssetSystem::JobStatus status = AzToolsFramework::AssetSystem::JobStatus::Any);

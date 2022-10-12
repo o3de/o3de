@@ -1039,7 +1039,7 @@ namespace AssetUtilities
                 // we do not want to include the fingerprint of dependent jobs if the job dependency type is OrderOnce.
                 continue;
             }
-            AssetProcessor::JobDesc jobDesc(jobDependencyInternal.m_jobDependency.m_sourceFile.m_sourceFileDependencyPath,
+            AssetProcessor::JobDesc jobDesc(AssetProcessor::SourceAssetReference(jobDependencyInternal.m_jobDependency.m_sourceFile.m_sourceFileDependencyPath.c_str()),
                 jobDependencyInternal.m_jobDependency.m_jobKey, jobDependencyInternal.m_jobDependency.m_platformIdentifier);
 
             for (auto builderIter = jobDependencyInternal.m_builderUuidList.begin(); builderIter != jobDependencyInternal.m_builderUuidList.end(); ++builderIter)
@@ -1399,7 +1399,7 @@ namespace AssetUtilities
         return (platformPrefix / relativePath).LexicallyNormal().StringAsPosix();
     }
 
-    AZStd::optional<AzToolsFramework::AssetDatabase::SourceDatabaseEntry> GetTopLevelSourceForProduct(
+    AZStd::optional<AzToolsFramework::AssetDatabase::SourceDatabaseEntry> GetTopLevelSourceForIntermediateAsset(
         const AssetProcessor::SourceAssetReference& sourceAsset, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db)
     {
         AzToolsFramework::AssetDatabase::SourceDatabaseEntryContainer sources;
@@ -1432,7 +1432,7 @@ namespace AssetUtilities
     {
         AZStd::vector<AssetProcessor::SourceAssetReference> sources;
 
-        auto topLevelSource = GetTopLevelSourceForProduct(sourceAsset, db);
+        auto topLevelSource = GetTopLevelSourceForIntermediateAsset(sourceAsset, db);
 
         if (!topLevelSource)
         {
@@ -1440,11 +1440,16 @@ namespace AssetUtilities
             db->GetSourcesBySourceNameScanFolderId(sourceAsset.RelativePath().c_str(), sourceAsset.ScanfolderId(), source);
 
             AZ_Assert(
-                source.size() == 1,
+                source.size() <= 1,
                 "Should find exactly 1 source for the given path (%s) and scanfolder (%d).  Found %d",
                 sourceAsset.RelativePath().c_str(),
                 sourceAsset.ScanfolderId(),
                 source.size());
+
+            if(source.empty())
+            {
+                return {};
+            }
 
             topLevelSource = source[0];
         }
@@ -1452,7 +1457,7 @@ namespace AssetUtilities
         AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry scanFolder;
         db->GetScanFolderByScanFolderID(topLevelSource->m_scanFolderPK, scanFolder);
 
-        sources.emplace_back(scanFolder.m_scanFolder, topLevelSource->m_sourceName);
+        sources.emplace_back(scanFolder.m_scanFolder.c_str(), topLevelSource->m_sourceName.c_str());
 
         AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer products;
         db->GetProductsBySourceID(topLevelSource->m_sourceID, products);
@@ -1465,7 +1470,7 @@ namespace AssetUtilities
             if ((static_cast<AssetBuilderSDK::ProductOutputFlags>(product.m_flags.to_ullong()) & AssetBuilderSDK::ProductOutputFlags::IntermediateAsset) == AssetBuilderSDK::ProductOutputFlags::IntermediateAsset)
             {
                 auto productSourceName = StripAssetPlatformNoCopy(product.m_productName);
-                sources.emplace_back(productSourceName);
+                sources.emplace_back(scanFolder.m_scanFolder.c_str(), productSourceName);
 
                 // Note: This call is intentionally re-using the products array.  The new results will be appended to the end (via push_back).
                 // The array will not be cleared.  We're essentially using products as a queue

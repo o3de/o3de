@@ -368,6 +368,7 @@ namespace AssetProcessor
                     //elementId.SetJobDescriptor(tokens[2].c_str());
                     //elementId.SetPlatform(tokens[3].c_str());
                     //historicalStats[elementId] = entry.m_statValue;
+                    AZ_UNUSED(historicalStats);
                 }
                 else
                 {

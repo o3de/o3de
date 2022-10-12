@@ -72,7 +72,7 @@ namespace AssetProcessor
         virtual AzFramework::AssetSystem::GetUnresolvedDependencyCountsResponse HandleGetUnresolvedDependencyCountsRequest(MessageData<AzFramework::AssetSystem::GetUnresolvedDependencyCountsRequest> messageData);
         virtual void HandleSaveAssetCatalogRequest(MessageData<AzFramework::AssetSystem::SaveAssetCatalogRequest> messageData);
         void BuildRegistry();
-        void OnSourceQueued(AZ::Uuid sourceUuid, AZ::Uuid legacyUuid, QString rootPath, QString relativeFilePath);
+        void OnSourceQueued(AZ::Uuid sourceUuid, AZ::Uuid legacyUuid, const SourceAssetReference& sourceAsset);
         void OnSourceFinished(AZ::Uuid sourceUuid, AZ::Uuid legacyUuid);
         void AsyncAssetCatalogStatusRequest();
 
@@ -134,22 +134,22 @@ namespace AssetProcessor
         void ProcessGetFullSourcePathFromRelativeProductPathRequest(const AZStd::string& relPath, AZStd::string& fullSourcePath);
 
         //! Gets the source file info for an Asset by checking the DB first and the APM queue second
-        bool GetSourceFileInfoFromAssetId(const AZ::Data::AssetId &assetId, AZStd::string& watchFolder, AZStd::string& relativePath);
+        bool GetSourceFileInfoFromAssetId(const AZ::Data::AssetId &assetId, SourceAssetReference& sourceAsset);
 
         //! Gets the product AssetInfo based on a platform and assetId.  If you specify a null or empty platform the current or first available will be used.
         AZ::Data::AssetInfo GetProductAssetInfo(const char* platformName, const AZ::Data::AssetId& id);
 
         //! GetAssetInfo that tries to figure out if the asset is a product or source so it can return info about the product or source respectively
-        bool GetAssetInfoByIdOnly(const AZ::Data::AssetId& id, const AZStd::string& platformName, AZ::Data::AssetInfo& assetInfo, AZStd::string& rootFilePath);
+        bool GetAssetInfoByIdOnly(const AZ::Data::AssetId& id, const AZStd::string& platformName, AZ::Data::AssetInfo& assetInfo, SourceAssetReference& sourceAsset);
 
         //! Checks in the currently-in-queue assets list for info on an asset (by source Id)
-        bool GetQueuedAssetInfoById(const AZ::Uuid& guid, AZStd::string& watchFolder, AZStd::string& relativePath);
+        bool GetQueuedAssetInfoById(const AZ::Uuid& guid, SourceAssetReference& sourceAsset);
 
         //! Checks in the currently-in-queue assets list for info on an asset (by source name)
-        bool GetQueuedAssetInfoByRelativeSourceName(const char* sourceName, AZ::Data::AssetInfo& assetInfo, AZStd::string& watchFolder);
+        bool GetQueuedAssetInfoByRelativeSourceName(const SourceAssetReference& sourceAsset, AZ::Data::AssetInfo& assetInfo);
 
         //! Gets the source info for a source that is not in the DB or APM queue
-        bool GetUncachedSourceInfoFromDatabaseNameAndWatchFolder(const char* sourceDatabasePath, const char* watchFolder, AZ::Data::AssetInfo& assetInfo);
+        bool GetUncachedSourceInfoFromDatabaseNameAndWatchFolder(const SourceAssetReference& sourceAsset, AZ::Data::AssetInfo& assetInfo);
 
         bool ConnectToDatabase();
 
@@ -181,15 +181,9 @@ namespace AssetProcessor
         //! Used to protect access to the database connection, only one thread can use it at a time
         AZStd::mutex m_databaseMutex;
 
-        struct SourceInfo
-        {
-            QString m_watchFolder;
-            QString m_sourceName;
-        };
-
         AZStd::mutex m_sourceUUIDToSourceNameMapMutex;
-        using SourceUUIDToSourceNameMap = AZStd::unordered_map<AZ::Uuid, SourceInfo>;
-        using SourceNameToSourceUuidMap = AZStd::unordered_map<AZStd::string, AZ::Uuid>;
+        using SourceUUIDToSourceNameMap = AZStd::unordered_map<AZ::Uuid, SourceAssetReference>;
+        using SourceNameToSourceUuidMap = AZStd::unordered_map<SourceAssetReference, AZ::Uuid>;
 
         SourceUUIDToSourceNameMap m_sourceUUIDToSourceNameMap; // map of uuids to source file names for assets that are currently in the processing queue
         SourceNameToSourceUuidMap m_sourceNameToSourceUUIDMap;

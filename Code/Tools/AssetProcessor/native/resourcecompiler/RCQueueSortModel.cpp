@@ -61,7 +61,14 @@ namespace AssetProcessor
                     if (jobDepedencyInternal.m_jobDependency.m_type == AssetBuilderSDK::JobDependencyType::Order || jobDepedencyInternal.m_jobDependency.m_type == AssetBuilderSDK::JobDependencyType::OrderOnce)
                     {
                         const AssetBuilderSDK::JobDependency& jobDependency = jobDepedencyInternal.m_jobDependency;
-                        QueueElementID elementId(jobDependency.m_sourceFile.m_sourceFileDependencyPath.c_str(), jobDependency.m_platformIdentifier.c_str(), jobDependency.m_jobKey.c_str());
+                        AZ_Assert(
+                            AZ::IO::PathView(jobDependency.m_sourceFile.m_sourceFileDependencyPath).IsAbsolute(),
+                            "Dependency path %s is not an absolute path",
+                            jobDependency.m_sourceFile.m_sourceFileDependencyPath.c_str());
+                        QueueElementID elementId(
+                            SourceAssetReference(jobDependency.m_sourceFile.m_sourceFileDependencyPath.c_str()),
+                            jobDependency.m_platformIdentifier.c_str(),
+                            jobDependency.m_jobKey.c_str());
 
                         if (m_sourceModel->isInFlight(elementId) || m_sourceModel->isInQueue(elementId))
                         {

@@ -197,6 +197,8 @@ namespace AssetProcessor
         //! Retrieve the scan folder at a given index.
         const AssetProcessor::ScanFolderInfo& GetScanFolderAt(int index) const;
 
+        const AssetProcessor::ScanFolderInfo* GetScanFolderById(AZ::s64 id) const override;
+
         //!  Manually add a scan folder.  Also used for testing.
         void AddScanFolder(const AssetProcessor::ScanFolderInfo& source, bool isUnitTesting = false);
 

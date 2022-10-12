@@ -26,5 +26,7 @@ namespace AssetProcessor
 
         //! given a full file name (assumed already fed through the normalization funciton), return the first matching scan folder
         virtual const AssetProcessor::ScanFolderInfo* GetScanFolderForFile(const QString& fullFileName) const = 0;
+
+        virtual const AssetProcessor::ScanFolderInfo* GetScanFolderById(AZ::s64 id) const = 0;
     };
 }

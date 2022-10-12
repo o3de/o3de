@@ -249,19 +249,19 @@ namespace AssetProcessor
     //! because of job dependency declared on them by other jobs
     struct JobDesc
     {
-        AZStd::string m_databaseSourceName;
+        SourceAssetReference m_sourceAsset;
         AZStd::string m_jobKey;
         AZStd::string m_platformIdentifier;
 
         bool operator==(const JobDesc& rhs) const
         {
-            return AzFramework::StringFunc::Equal(m_databaseSourceName.c_str(), rhs.m_databaseSourceName.c_str())
+            return m_sourceAsset == rhs.m_sourceAsset
                 && m_platformIdentifier == rhs.m_platformIdentifier
                 && m_jobKey == rhs.m_jobKey;
         }
 
-        JobDesc(const AZStd::string& databaseSourceName, const AZStd::string& jobKey, const AZStd::string& platformIdentifier)
-            : m_databaseSourceName(databaseSourceName)
+        JobDesc(SourceAssetReference sourceAsset, const AZStd::string& jobKey, const AZStd::string& platformIdentifier)
+            : m_sourceAsset(AZStd::move(sourceAsset))
             , m_jobKey(jobKey)
             , m_platformIdentifier(platformIdentifier)
         {
@@ -269,7 +269,7 @@ namespace AssetProcessor
 
         AZStd::string ToString() const
         {
-            AZStd::string lowerSourceName = m_databaseSourceName;
+            AZStd::string lowerSourceName = m_sourceAsset.AbsolutePath().Native();
             AZStd::to_lower(lowerSourceName.begin(), lowerSourceName.end());
 
             return AZStd::string::format("%s %s %s", lowerSourceName.c_str(), m_platformIdentifier.c_str(), m_jobKey.c_str());

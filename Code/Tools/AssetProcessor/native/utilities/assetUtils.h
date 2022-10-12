@@ -265,7 +265,7 @@ namespace AssetUtilities
     AZStd::string GetIntermediateAssetDatabaseName(AZ::IO::PathView relativePath);
 
     //! Finds the top level source that produced an intermediate product.  If the source is not yet recorded in the database or has no top level source, this will return nothing
-    AZStd::optional<AzToolsFramework::AssetDatabase::SourceDatabaseEntry> GetTopLevelSourceForProduct(AZ::IO::PathView relativePath, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db);
+    AZStd::optional<AzToolsFramework::AssetDatabase::SourceDatabaseEntry> GetTopLevelSourceForIntermediateAsset(const AssetProcessor::SourceAssetReference& sourceAsset, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db);
 
     //! Finds all the sources (up and down) in an intermediate output chain
     AZStd::vector<AssetProcessor::SourceAssetReference> GetAllIntermediateSources(

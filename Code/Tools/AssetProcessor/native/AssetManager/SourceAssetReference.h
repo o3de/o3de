@@ -21,6 +21,16 @@ namespace AssetProcessor
     public:
         SourceAssetReference() = default;
 
+        explicit SourceAssetReference(const char* absolutePath)
+            : SourceAssetReference(AZ::IO::PathView(absolutePath))
+        {
+        }
+
+        explicit SourceAssetReference(QString absolutePath)
+            : SourceAssetReference(absolutePath.toUtf8().constData())
+        {
+        }
+
         explicit SourceAssetReference(AZ::IO::PathView absolutePath)
         {
             IPathConversion* pathConversion = AZ::Interface<IPathConversion>::Get();
@@ -41,10 +51,26 @@ namespace AssetProcessor
             Normalize();
         }
 
-        SourceAssetReference(AZ::IO::PathView scanfolderPath, AZ::IO::PathView pathRelativeToScanfolder)
+        SourceAssetReference(AZ::s64 scanFolderId, AZ::IO::PathView pathRelativeToScanFolder)
+            : SourceAssetReference(AZ::Interface<IPathConversion>::Get()->GetScanFolderById(scanFolderId)->ScanPath().toUtf8().constData(), pathRelativeToScanFolder)
         {
-            m_scanfolderPath = scanfolderPath;
-            m_relativePath = pathRelativeToScanfolder;
+        }
+
+        SourceAssetReference(QString scanFolderPath, QString pathRelativeToScanFolder) : SourceAssetReference(AZ::IO::Path(scanFolderPath.toUtf8().constData()), AZ::IO::Path(pathRelativeToScanFolder.toUtf8().constData()))
+        {
+        }
+
+        SourceAssetReference(const char* scanFolderPath, const char* pathRelativeToScanFolder) : SourceAssetReference(AZ::IO::Path(scanFolderPath), AZ::IO::Path(pathRelativeToScanFolder))
+        {
+        }
+
+        SourceAssetReference(AZ::IO::PathView scanFolderPath, AZ::IO::PathView pathRelativeToScanFolder)
+        {
+            AZ_Assert(!scanFolderPath.Native().empty(), "scanfolderPath is empty");
+            AZ_Assert(!pathRelativeToScanFolder.Native().empty(), "pathRelativeToScanFolder is empty");
+
+            m_scanfolderPath = scanFolderPath;
+            m_relativePath = pathRelativeToScanFolder;
             m_absolutePath = m_scanfolderPath / m_relativePath;
 
             IPathConversion* pathConversion = AZ::Interface<IPathConversion>::Get();
@@ -75,6 +101,11 @@ namespace AssetProcessor
         bool operator<(const SourceAssetReference& other) const
         {
             return m_absolutePath < other.m_absolutePath;
+        }
+
+        explicit operator bool() const
+        {
+            return !m_absolutePath.empty();
         }
 
         AZ::IO::Path AbsolutePath() const
@@ -109,5 +140,22 @@ namespace AssetProcessor
         AZ::IO::Path m_relativePath;
         AZ::IO::Path m_scanfolderPath;
         AZ::s64 m_scanfolderId{};
+    };
+}
+
+namespace AZStd
+{
+    template<>
+    struct hash<AssetProcessor::SourceAssetReference>
+    {
+        using argument_type = AssetProcessor::SourceAssetReference;
+        using result_type = size_t;
+
+        result_type operator()(const argument_type& obj) const
+        {
+            size_t h = 0;
+            hash_combine(h, obj.AbsolutePath());
+            return h;
+        }
     };
 }

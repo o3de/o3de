@@ -337,7 +337,7 @@ namespace AssetProcessor
         void CheckDeletedCacheFolder(QString normalizedPath);
         void CheckDeletedSourceFolder(QString normalizedPath, QString relativePath, const ScanFolderInfo* scanFolderInfo);
         void CheckCreatedSourceFolder(QString normalizedPath);
-        void FailTopLevelSourceForIntermediate(AZ::IO::PathView relativePathToIntermediateProduct, AZStd::string_view errorMessage);
+        void FailTopLevelSourceForIntermediate(const SourceAssetReference& intermediateAsset, AZStd::string_view errorMessage);
         void CheckMetaDataRealFiles(QString relativePath);
         bool DeleteProducts(const AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer& products);
         void DispatchFileChange();
@@ -385,8 +385,8 @@ namespace AssetProcessor
 
             ConflictType m_type;
 
-            //! Full path to the file that has caused the conflict.  If ConflictType == Intermediate, this is the path to the source, if ConflictType == Source, this is the intermediate
-            AZ::IO::Path m_conflictingFile;
+            //! The file that has caused the conflict.  If ConflictType == Intermediate, this is the source, if ConflictType == Source, this is the intermediate
+            SourceAssetReference m_conflictingFile;
         };
 
         //! Search the database and the the source dependency maps for the the sourceUuid. if found returns the cached info
@@ -490,7 +490,7 @@ namespace AssetProcessor
         AZStd::multimap<AZStd::string, AZ::u64> m_jobKeyToJobRunKeyMap;
 
         using SourceUUIDToSourceInfoMap = AZStd::unordered_map<AZ::Uuid, SourceAssetReference>;
-        SourceUUIDToSourceInfoMap m_sourceUUIDToSourceInfoMap; // contains UUID -> SourceInfo, which includes database name and relative to watch folder:
+        SourceUUIDToSourceInfoMap m_sourceUUIDToSourceInfoMap; // contains UUID -> SourceAssetReference, which includes database name and relative to watch folder:
         AZStd::mutex m_sourceUUIDToSourceInfoMapMutex;
 
         QString m_normalizedCacheRootPath;
