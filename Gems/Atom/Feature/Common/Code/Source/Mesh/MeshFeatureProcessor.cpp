@@ -124,6 +124,11 @@ namespace AZ
                             continue;
                         }
 
+                        if (meshDataIter->m_needsInit)
+                        {
+                            meshDataIter->Init(m_rayTracingFeatureProcessor);
+                        }
+
                         if (meshDataIter->m_objectSrgNeedsUpdate)
                         {
                             meshDataIter->UpdateObjectSrg();
@@ -356,7 +361,7 @@ namespace AZ
                     Data::Instance<RPI::Model> model = meshHandle->m_model;
                     meshHandle->DeInit(m_rayTracingFeatureProcessor);
                     meshHandle->m_materialAssignments = materials;
-                    meshHandle->Init(model, m_rayTracingFeatureProcessor);
+                    meshHandle->QueueInit(model);
                 }
                 else
                 {
@@ -747,7 +752,7 @@ namespace AZ
             {
                 RayTracingFeatureProcessor* rayTracingFeatureProcessor = m_parent->m_scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
                 m_parent->RemoveRayTracingData(rayTracingFeatureProcessor);
-                m_parent->Init(model, rayTracingFeatureProcessor);
+                m_parent->QueueInit(model);
                 m_modelChangedEvent.Signal(AZStd::move(model));
             }
             else
@@ -827,9 +832,14 @@ namespace AZ
             m_model = {};
         }
 
-        void ModelDataInstance::Init(Data::Instance<RPI::Model> model, RayTracingFeatureProcessor* rayTracingFeatureProcessor)
+        void ModelDataInstance::QueueInit(const Data::Instance<RPI::Model>& model)
         {
             m_model = model;
+            m_needsInit = true;
+        }
+
+        void ModelDataInstance::Init(RayTracingFeatureProcessor* rayTracingFeatureProcessor)
+        {
             const size_t modelLodCount = m_model->GetLodCount();
             m_drawPacketListsByLod.resize(modelLodCount);
             for (size_t modelLodIndex = 0; modelLodIndex < modelLodCount; ++modelLodIndex)
@@ -859,11 +869,12 @@ namespace AZ
                 SetRayTracingData(rayTracingFeatureProcessor);
             }
 
-            m_aabb = model->GetModelAsset()->GetAabb();
+            m_aabb = m_model->GetModelAsset()->GetAabb();
 
             m_cullableNeedsRebuild = true;
             m_cullBoundsNeedsUpdate = true;
             m_objectSrgNeedsUpdate = true;
+            m_needsInit = false;
         }
 
         void ModelDataInstance::BuildDrawPacketList(size_t modelLodIndex)

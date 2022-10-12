@@ -80,7 +80,8 @@ namespace AZ
             };
 
             void DeInit(RayTracingFeatureProcessor* rayTracingFeatureProcessor);
-            void Init(Data::Instance<RPI::Model> model, RayTracingFeatureProcessor* rayTracingFeatureProcessor);
+            void QueueInit(const Data::Instance<RPI::Model>& model);
+            void Init(RayTracingFeatureProcessor* rayTracingFeatureProcessor);
             void BuildDrawPacketList(size_t modelLodIndex);
             void SetRayTracingData(RayTracingFeatureProcessor* rayTracingFeatureProcessor);
             void RemoveRayTracingData(RayTracingFeatureProcessor* rayTracingFeatureProcessor);
@@ -124,6 +125,7 @@ namespace AZ
 
             bool m_cullBoundsNeedsUpdate = false;
             bool m_cullableNeedsRebuild = false;
+            bool m_needsInit = false;
             bool m_objectSrgNeedsUpdate = true;
             bool m_excludeFromReflectionCubeMaps = false;
             bool m_visible = true;
