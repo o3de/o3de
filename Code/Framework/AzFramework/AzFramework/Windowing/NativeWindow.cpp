@@ -103,9 +103,9 @@ namespace AzFramework
         return m_pimpl->GetClientAreaSize();
     }
 
-    void NativeWindow::ResizeClientArea(WindowSize clientAreaSize, bool ignoreScreenSizeLimit)
+    void NativeWindow::ResizeClientArea(WindowSize clientAreaSize, const WindowPosOptions& options)
     {
-        m_pimpl->ResizeClientArea(clientAreaSize, ignoreScreenSizeLimit);
+        m_pimpl->ResizeClientArea(clientAreaSize, options);
     }
 
     bool NativeWindow::SupportsClientAreaResize() const
@@ -263,7 +263,7 @@ namespace AzFramework
 
     void NativeWindow::Implementation::ResizeClientArea(
         [[maybe_unused]] WindowSize clientAreaSize,
-        [[maybe_unused]] bool ignoreScreenSizeLimit)
+        [[maybe_unused]] const WindowPosOptions& options)
     {
     }
 

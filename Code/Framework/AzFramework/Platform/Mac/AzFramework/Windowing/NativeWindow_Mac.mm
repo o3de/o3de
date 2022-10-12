@@ -30,7 +30,7 @@ namespace AzFramework
         NativeWindowHandle GetWindowHandle() const override;
         void SetWindowTitle(const AZStd::string& title) override;
 
-        void ResizeClientArea(WindowSize clientAreaSize, bool ignoreScreenSizeLimit) override;
+        void ResizeClientArea(WindowSize clientAreaSize, const WindowPosOptions& options) override;
         bool SupportsClientAreaResize() const override { return true; }
         bool GetFullScreenState() const override;
         void SetFullScreenState(bool fullScreenState) override;

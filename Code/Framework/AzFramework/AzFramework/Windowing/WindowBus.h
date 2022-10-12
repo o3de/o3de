@@ -32,6 +32,13 @@ namespace AzFramework
         uint32_t m_height = 0;
     };
 
+    //! Options for resizing and moving the window.
+    struct WindowPosOptions
+    {
+        //! This flag will allow the window to be resized bigger than the screen width or height.
+        bool m_ignoreScreenSizeLimit = false;
+    };
+
     //! Bus for sending requests to any kind of window.
     //! It could be a NativeWindow or an Editor window.
     class WindowRequests
@@ -55,7 +62,7 @@ namespace AzFramework
         //! Set the client area size. This is the size that can be rendered to.
         //! \param[in] clientAreaSize Size of the client area in pixels
         //! \param[in] ignoreScreenSizeLimit Flag to disable clipping the client area to the screen resolution if supported.
-        virtual void ResizeClientArea(WindowSize clientAreaSize, bool ignoreScreenSizeLimit) = 0;
+        virtual void ResizeClientArea(WindowSize clientAreaSize, const WindowPosOptions& options) = 0;
 
         //! Does this platform support window resizing.
         //! Generally desktop platforms support resizing, mobile platforms don't.
