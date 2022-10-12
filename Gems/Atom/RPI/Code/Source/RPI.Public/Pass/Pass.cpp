@@ -312,7 +312,7 @@ namespace AZ
             return FindOwnedAttachment(slotName);
         }
 
-        const PassAttachmentBinding* Pass::FindAdjacentBinding(const PassAttachmentRef& attachmentRef, const char* attachmentSourceTypeDebugName)
+        const PassAttachmentBinding* Pass::FindAdjacentBinding(const PassAttachmentRef& attachmentRef, [[maybe_unused]] const char* attachmentSourceTypeDebugName)
         {
             const PassAttachmentBinding* result = nullptr;
 
