@@ -53,7 +53,9 @@ namespace AzFramework
         virtual WindowSize GetClientAreaSize() const = 0;
 
         //! Set the client area size. This is the size that can be rendered to.
-        virtual void ResizeClientArea(WindowSize clientAreaSize) = 0;
+        //! \param[in] clientAreaSize Size of the client area in pixels
+        //! \param[in] ignoreScreenSizeLimit Flag to disable clipping the client area to the screen resolution if supported.
+        virtual void ResizeClientArea(WindowSize clientAreaSize, bool ignoreScreenSizeLimit) = 0;
 
         //! Does this platform support window resizing.
         //! Generally desktop platforms support resizing, mobile platforms don't.
