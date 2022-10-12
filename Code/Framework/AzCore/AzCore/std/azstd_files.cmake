@@ -264,6 +264,10 @@ set(FILES
     utility/as_const.h
     utility/charconv.h
     utility/declval.h
+    utility/expected.h
+    utility/expected.inl
+    utility/expected_internal.h
+    utility/expected_internal.inl
     utility/move.h
     utility/to_underlying.h
 )
