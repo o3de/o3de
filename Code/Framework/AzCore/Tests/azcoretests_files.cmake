@@ -19,6 +19,7 @@ set(FILES
     AssetJsonSerializerTests.cpp
     EBus/EBusSharedDispatchMutexTests.cpp
     EBus/ScheduledEventTests.cpp
+    EBus/TestEventProcessingPolicy.cpp
     AssetManager.cpp
     AttributeDomInteropTests.cpp
     TestCatalog.h
