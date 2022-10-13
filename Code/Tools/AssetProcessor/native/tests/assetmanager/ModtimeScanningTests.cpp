@@ -265,7 +265,6 @@ namespace UnitTests
         AssetUtilities::SetUseFileHashOverride(true, true);
 
         // Enable android platform after the initial SetUp has already processed the files for pc
-        QDir tempPath(m_tempDir.path());
         AssetBuilderSDK::PlatformInfo androidPlatform("android", { "host", "renderer" });
         m_config->EnablePlatform(androidPlatform, true);
 
@@ -629,9 +628,9 @@ namespace UnitTests
         };
 
         // Create test files
-        QDir tempPath(m_tempDir.path());
-        const auto* scanFolder1 = m_config->GetScanFolderByPath(tempPath.absoluteFilePath("subfolder1"));
-        const auto* scanFolder4 = m_config->GetScanFolderByPath(tempPath.absoluteFilePath("subfolder4"));
+        QDir assetRootPath(m_assetRootDir);
+        const auto* scanFolder1 = m_config->GetScanFolderByPath(assetRootPath.absoluteFilePath("subfolder1"));
+        const auto* scanFolder4 = m_config->GetScanFolderByPath(assetRootPath.absoluteFilePath("subfolder4"));
 
         createFileAndAddToDatabaseFunc(scanFolder1, QString("textures/a.txt"));
         createFileAndAddToDatabaseFunc(scanFolder4, QString("textures/b.txt"));
@@ -672,8 +671,8 @@ namespace UnitTests
         ExpectNoWork();
 
         // Delete one of the folders
-        QDir tempPath(m_tempDir.path());
-        QString absPath(tempPath.absoluteFilePath("subfolder1/textures"));
+        QDir assetRootPath(m_assetRootDir);
+        QString absPath(assetRootPath.absoluteFilePath("subfolder1/textures"));
         QDir(absPath).removeRecursively();
 
         AZStd::vector<AZStd::string> deletedFolders;

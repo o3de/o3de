@@ -66,7 +66,9 @@ namespace AzFramework::Scripts
 
     EntitySpawnTicket SpawnableScriptMediator::CreateSpawnTicket(const SpawnableScriptAssetRef& spawnableAsset)
     {
-        return EntitySpawnTicket(spawnableAsset.GetAsset());
+        EntitySpawnTicket ticket = EntitySpawnTicket(spawnableAsset.GetAsset());
+        m_cachedSpawnTickets.insert(ticket);
+        return ticket;
     }
 
     bool SpawnableScriptMediator::Spawn(EntitySpawnTicket spawnTicket)
@@ -185,6 +187,7 @@ namespace AzFramework::Scripts
 
     void SpawnableScriptMediator::Clear()
     {
+        m_cachedSpawnTickets.clear();
         m_resultCommands.clear();
         AZ::TickBus::Handler::BusDisconnect();
     }

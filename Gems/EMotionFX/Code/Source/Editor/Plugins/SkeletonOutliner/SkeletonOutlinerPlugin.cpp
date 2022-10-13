@@ -10,6 +10,12 @@
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/CommandSystem/Source/ColliderCommands.h>
 #include <EMotionFX/CommandSystem/Source/RagdollCommands.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/NodeWindow/ActorInfo.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/NodeWindow/MeshInfo.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/NodeWindow/NamedPropertyStringValue.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/NodeWindow/NodeGroupInfo.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/NodeWindow/NodeInfo.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/NodeWindow/SubMeshInfo.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
 #include <Editor/ReselectingTreeView.h>
 #include <QLabel>
@@ -42,6 +48,19 @@ namespace EMotionFX
         m_commandCallbacks.clear();
 
         EMotionFX::SkeletonOutlinerRequestBus::Handler::BusDisconnect();
+
+        delete m_propertyWidget;
+        m_propertyWidget = nullptr;
+    }
+
+    void SkeletonOutlinerPlugin::Reflect(AZ::ReflectContext* context)
+    {
+        EMStudio::NamedPropertyStringValue::Reflect(context);
+        EMStudio::SubMeshInfo::Reflect(context);
+        EMStudio::MeshInfo::Reflect(context);
+        EMStudio::NodeInfo::Reflect(context);
+        EMStudio::NodeGroupInfo::Reflect(context);
+        EMStudio::ActorInfo::Reflect(context);
     }
 
     bool SkeletonOutlinerPlugin::Init()
@@ -124,6 +143,9 @@ namespace EMotionFX
 
         EMotionFX::SkeletonOutlinerRequestBus::Handler::BusConnect();
         Reinit();
+
+        m_propertyWidget = new JointPropertyWidget{m_dock};
+        m_propertyWidget->hide();
 
         m_commandCallbacks.emplace_back(new DataChangedCallback(/*executePreUndo*/ false));
         CommandSystem::GetCommandManager()->RegisterCommandCallback(CommandAddCollider::s_commandName, m_commandCallbacks.back());
@@ -257,6 +279,7 @@ namespace EMotionFX
         }
 
         SkeletonOutlinerNotificationBus::Broadcast(&SkeletonOutlinerNotifications::JointSelectionChanged);
+        EMStudio::InspectorRequestBus::Broadcast(&EMStudio::InspectorRequestBus::Events::Update, m_propertyWidget);
     }
 
     void SkeletonOutlinerPlugin::OnContextMenu(const QPoint& position)

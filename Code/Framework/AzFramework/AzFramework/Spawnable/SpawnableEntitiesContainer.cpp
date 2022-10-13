@@ -40,8 +40,7 @@ namespace AzFramework
     void SpawnableEntitiesContainer::SpawnEntities(AZStd::vector<uint32_t> entityIndices)
     {
         AZ_Assert(m_threadData, "Calling SpawnEntities on a Spawnable container that's not set.");
-        SpawnableEntitiesInterface::Get()->SpawnEntities(
-            m_threadData->m_spawnedEntitiesTicket, AZStd::move(entityIndices));
+        SpawnableEntitiesInterface::Get()->SpawnEntities(m_threadData->m_spawnedEntitiesTicket, AZStd::move(entityIndices));
     }
 
     void SpawnableEntitiesContainer::DespawnAllEntities()

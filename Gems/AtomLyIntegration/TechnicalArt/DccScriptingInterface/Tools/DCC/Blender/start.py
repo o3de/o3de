@@ -33,12 +33,21 @@ _MODULE_START = timeit.default_timer()  # start tracking
 # standard imports
 import sys
 import os
-import site
-import inspect
 import subprocess
 from pathlib import Path
 import logging as _logging
-from typing import Union
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+# this is an entry point, we must self bootstrap
+_MODULE_PATH = Path(__file__)
+PATH_O3DE_TECHART_GEMS = _MODULE_PATH.parents[4].resolve()
+os.chdir(PATH_O3DE_TECHART_GEMS.as_posix())
+sys.path.insert(0, PATH_O3DE_TECHART_GEMS.as_posix())
+
+from DccScriptingInterface import add_site_dir
+add_site_dir(PATH_O3DE_TECHART_GEMS) # cleaner add
 # -------------------------------------------------------------------------
 
 
@@ -47,19 +56,9 @@ from typing import Union
 # global scope
 from DccScriptingInterface.Tools.DCC.Blender import _PACKAGENAME
 _MODULENAME = f'{_PACKAGENAME}.start'
-_MODULE_PATH = Path(__file__)
-
-# this is an entry point, we must self bootstrap
-PATH_O3DE_TECHART_GEMS = _MODULE_PATH.parents[4].resolve()
-os.chdir(PATH_O3DE_TECHART_GEMS.as_posix())
-
-#sys.path.append(PATH_O3DE_TECHART_GEMS.as_posix())
-from DccScriptingInterface import add_site_dir
-add_site_dir(PATH_O3DE_TECHART_GEMS)
 
 # get the global dccsi state
-from DccScriptingInterface.globals import DCCSI_GDEBUG
-from DccScriptingInterface.globals import DCCSI_DEV_MODE
+from DccScriptingInterface.globals import *
 
 from azpy.constants import FRMT_LOG_LONG
 _logging.basicConfig(level=_logging.DEBUG,
@@ -70,8 +69,13 @@ _LOGGER = _logging.getLogger(_MODULENAME)
 
 # auto-attach ide debugging at the earliest possible point in module
 if DCCSI_DEV_MODE:
-    import DccScriptingInterface.azpy.test.entry_test
-    DccScriptingInterface.azpy.test.entry_test.connect_wing()
+    if DCCSI_GDEBUGGER == 'WING':
+        import DccScriptingInterface.azpy.test.entry_test
+        DccScriptingInterface.azpy.test.entry_test.connect_wing()
+    elif DCCSI_GDEBUGGER == 'PYCHARM':
+        _LOGGER.warning(f'{DCCSI_GDEBUGGER} debugger auto-attach not yet implemented')
+    else:
+        _LOGGER.warning(f'{DCCSI_GDEBUGGER} not a supported debugger')
 
 _LOGGER.debug(f'Initializing: {_MODULENAME}')
 _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH.as_posix()}')
