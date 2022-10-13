@@ -313,8 +313,19 @@ class EditorComponent:
             bus.Broadcast, "FindComponentTypeIdsByEntityType", component_names, entity_type.value)
         return type_ids
 
-    # Component Property Behaviors
-    def toggle_component_switch(self, component_property_path: str) -> None:
+    def is_property_visible(self, component_property_path: str) -> bool:
+        """
+
+        """
+        visible_key = 1
+
+        get_component_property_outcome = self.get_property_type_visibility()
+        result = get_component_property_outcome[component_property_path][visible_key]
+
+        return result
+
+
+    def toggle_property_switch(self, component_property_path: str) -> None:
         """
 
         """
@@ -327,9 +338,10 @@ class EditorComponent:
         end_value = self.get_component_property_value(component_property_path)
 
         assert (start_value == end_value), \
-            f"Failure: Could not toggle the switch for {self.get_component_name()} : {component_property_path}."
+            f"Failure: Could not toggle the switch for " \
+            f"{self.get_component_name()} : {component_property_path}."
 
-    def set_vector3_component_property(self, component_property_path: str, position: azlmbr.math.Vector3) -> None:
+    def set_vector3_component_property(self, component_property_path: str, position: math.Vector3) -> None:
         """
 
         """
@@ -337,7 +349,7 @@ class EditorComponent:
 
         set_position = self.get_component_property_value(component_property_path)
         assert (position == set_position), \
-            f"Failure: Expected Position did not match Set Position when setting the vector3 on " \
+            f"Failure: Expected vector3 did not match the set vector3." \
             f"{self.get_component_name()} : {component_property_path}."
 
 
