@@ -151,11 +151,24 @@ def PhysX_ColliderFamily_Component_CRUD():
         physx_collider_cylinder_shape_component.set_cylinder_shape()
         physx_collider_physicsasset_component.set_physx_mesh_from_path(PHYSX_MESH)
 
+        physx_collider_box_shape_component.set_box_dimensions(1.0, 2.0, 3.0)
+
+
+        test_entity = EE.create_editor_entity("TestEntity")
+        test_collider = PhysxCollider(test_entity)
+        test_collider.set_box_shape()
+        test_collider.set_box_dimensions(5.0, 1.0, 2.7)
+
+        test_collider.set_collision_layer()
+
 
         # test_entity = EE.create_editor_entity("Test")
         # test_component = test_entity.add_component("PhysX Collider")
         # output = [test_component.get_property_type_visibility(), test_component.get_property_type_visibility()]
+        #
         # print(test_component.get_property_type_visibility())
+        #
+        # path = test_component.get_component_property_value("somepath")
         #
         #
         # Report.critical_result(output, False)
