@@ -80,6 +80,17 @@ namespace AZ
             heapMemoryUsage->m_usedResidentInBytes += tileCount * m_descriptor.m_tileSizeInBytes;
         }
 
+        size_t TileAllocator::EvaluateMemoryAllocation(uint32_t tileCount)
+        {
+            uint32_t freeTileCount = m_totalTileCount - m_allocatedTileCount;
+            if (freeTileCount < tileCount)
+            {
+                uint32_t newPageCount = AZ::DivideAndRoundUp(tileCount - freeTileCount, m_tileCountPerPage);
+                return newPageCount * m_heapAllocator->GetPageSize();
+            }
+            return 0;
+        }
+
         AZStd::vector<HeapTiles> TileAllocator::Allocate(uint32_t tileCount)
         {
             AZStd::vector<HeapTiles> tilesList;

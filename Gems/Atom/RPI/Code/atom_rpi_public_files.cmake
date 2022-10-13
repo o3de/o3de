@@ -44,7 +44,6 @@ set(FILES
     Include/Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h
     Include/Atom/RPI.Public/Image/AttachmentImage.h
     Include/Atom/RPI.Public/Image/AttachmentImagePool.h
-    Include/Atom/RPI.Public/Image/DefaultStreamingImageController.h
     Include/Atom/RPI.Public/Image/ImageSystem.h
     Include/Atom/RPI.Public/Image/ImageSystemInterface.h
     Include/Atom/RPI.Public/Image/StreamingImage.h
@@ -126,7 +125,6 @@ set(FILES
     Source/RPI.Public/DynamicDraw/DynamicDrawSystem.cpp
     Source/RPI.Public/Image/AttachmentImage.cpp
     Source/RPI.Public/Image/AttachmentImagePool.cpp
-    Source/RPI.Public/Image/DefaultStreamingImageController.cpp
     Source/RPI.Public/Image/ImageSystem.cpp
     Source/RPI.Public/Image/StreamingImage.cpp
     Source/RPI.Public/Image/StreamingImageContext.cpp

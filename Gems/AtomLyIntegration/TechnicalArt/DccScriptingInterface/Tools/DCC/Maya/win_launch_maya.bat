@@ -66,11 +66,6 @@ echo     DCCSI_GDEBUGGER = %DCCSI_GDEBUGGER%
 IF "%DCCSI_LOGLEVEL%"=="" (set DCCSI_LOGLEVEL=20)
 echo     DCCSI_LOGLEVEL = %DCCSI_LOGLEVEL%
 
-CALL %~dp0..\..\Dev\Windows\Env_O3DE_Core.bat
-
-:: add to the PATH here (this is global)
-SET PATH=%PATH_O3DE_BIN%;%PATH_DCCSIG%;%PATH%
-
 CALL %~dp0..\..\Dev\Windows\Env_DCC_Maya.bat
 
 :: ide and debugger plug
@@ -81,12 +76,10 @@ echo     DCCSI_PY_DEFAULT = %DCCSI_PY_DEFAULT%
 set "DCCSI_PY_IDE=%MAYA_BIN_PATH%\mayapy.exe"
 echo     DCCSI_PY_IDE = %DCCSI_PY_IDE%
 
+:: add to the PATH here (this is global)
+SET PATH=%PATH_O3DE_BIN%;%PATH_DCCSIG%;%PATH%
+
 SET PATH=%MAYA_BIN_PATH%;%DCCSI_PY_IDE%;%DCCSI_PY_DEFAULT%;%PATH%
-
-CALL %~dp0..\Env_O3DE_Python.bat
-
-:: add to the PATH
-SET PATH=%MAYA_BIN_PATH%;%PATH%
 
 :: add all python related paths to PYTHONPATH for package imports
 set PYTHONPATH=%DCCSI_MAYA_SCRIPT_PATH%;%PATH_O3DE_TECHART_GEMS%;%PATH_DCCSIG%;%PATH_DCCSI_PYTHON_LIB%;%PATH_O3DE_BIN%;%PYTHONPATH%
@@ -99,7 +92,7 @@ IF EXIST "%~dp0Env_Dev.bat" CALL %~dp0Env_Dev.bat
 echo.
 echo _____________________________________________________________________
 echo.
-echo ~    Launching O3DE DCCsi MayaPy (%MAYA_VERSION%) ...
+echo ~    Launching O3DE DCCsi Maya (%MAYA_VERSION%) ...
 echo ________________________________________________________________
 echo.
 
