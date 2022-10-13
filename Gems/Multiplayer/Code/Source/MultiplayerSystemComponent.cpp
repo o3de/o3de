@@ -585,6 +585,7 @@ namespace Multiplayer
         reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->SetProviderTicket(packet.GetTicket().c_str());
 
         // Hosts will handle spawning for a player on connect
+        // @todo: why is this required? aren't servers the only one's receiving Connect packet?
         if (GetAgentType() == MultiplayerAgentType::ClientServer
          || GetAgentType() == MultiplayerAgentType::DedicatedServer)
         {
@@ -625,7 +626,7 @@ namespace Multiplayer
             }
         }
 
-        bool multiplayerComponentsMismatch = false;
+        bool multiplayerComponentsMismatch = GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHash() != packet.GetMultiplayerComponentVersionHash();
         if (connection->SendReliablePacket(MultiplayerPackets::Accept(sv_map, multiplayerComponentsMismatch)))
         {
             reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->SetDidHandshake(true);
@@ -816,6 +817,14 @@ namespace Multiplayer
         return true;
     }
 
+    bool MultiplayerSystemComponent::HandleRequest(
+        [[maybe_unused]] IConnection* connection,
+        [[maybe_unused]] const IPacketHeader& packetHeader,
+        [[maybe_unused]] MultiplayerPackets::SyncComponentMismatch& packet)
+    {
+        return true;
+    }
+
     ConnectResult MultiplayerSystemComponent::ValidateConnect
     (
         [[maybe_unused]] const IpAddress& remoteAddress,
@@ -842,7 +851,7 @@ namespace Multiplayer
                 0,
                 m_temporaryUserIdentifier,
                 providerTicket.c_str(),
-                GetMultiplayerComponentRegistry()->CalculateHolisticMultiplayerComponentVersionHash()));
+                GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHash()));
         }
         else
         {

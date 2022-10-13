@@ -10,7 +10,6 @@
 
 #include <AzCore/Name/Name.h>
 #include <AzCore/std/containers/unordered_map.h>
-#include <Multiplayer/Components/MultiplayerComponent.h>
 #include <Multiplayer/NetworkInput/IMultiplayerComponentInput.h>
 
 namespace Multiplayer
@@ -68,9 +67,9 @@ namespace Multiplayer
         //! @return reference to the requested component data, an empty container will be returned if the NetComponentId does not exist
         const ComponentData& GetMultiplayerComponentData(NetComponentId netComponentId) const;
 
-        //! Iterates over all the multiplayer components and combines their version hash into a single version hash that can be compared between the server and client app.
+        //! Returns the combined hashes of all the multiplayer components creating a single holistic version hash that can be compared between the server and client app.
         //! @return a 64-bit hash value representing of all of the multiplayer components
-        AZ::HashValue64 CalculateHolisticMultiplayerComponentVersionHash();
+        AZ::HashValue64 GetMultiplayerComponentVersionHash();
 
         //! This releases all owned memory, should only be called during multiplayer shutdown.
         void Reset();
@@ -78,6 +77,6 @@ namespace Multiplayer
     private:
         NetComponentId m_nextNetComponentId = NetComponentId{ 0 };
         AZStd::unordered_map<NetComponentId, ComponentData> m_componentData;
-        AZ::HashValue64 m_holisticComponentVersionHash = AZ::HashValue64{ 0 };
+        AZ::HashValue64 m_componentVersionHash = AZ::HashValue64{ 0 };
     };
 }

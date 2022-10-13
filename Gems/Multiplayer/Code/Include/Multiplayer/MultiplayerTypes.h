@@ -113,6 +113,20 @@ namespace Multiplayer
         Enabled
     };
 
+        //! The maximum number of component version hashes we want to stuff into a single packet
+    static constexpr uint32_t MaxComponentVersionHashes = 64;
+
+    struct ComponentVersionMessageData
+    {
+        AZ::Name m_componentName;
+        AZ::HashValue64 m_componentVersionHash;
+        ComponentVersionMessageData() = default;
+        explicit ComponentVersionMessageData(AZ::Name name, AZ::HashValue64 versionHash);
+        bool operator==(const ComponentVersionMessageData& rhs) const;
+        bool operator!=(const ComponentVersionMessageData& rhs) const;
+        bool Serialize(AzNetworking::ISerializer& serializer);
+    };
+
     //! Structure for identifying a specific entity within a spawnable.
     struct PrefabEntityId
     {
@@ -169,6 +183,29 @@ namespace Multiplayer
             return "Authority";
         }
         return "Unknown";
+    }
+
+    inline ComponentVersionMessageData::ComponentVersionMessageData(AZ::Name name, AZ::HashValue64 versionHash)
+        : m_componentName(name)
+        , m_componentVersionHash(versionHash)
+    {
+    }
+
+    inline bool ComponentVersionMessageData::operator==(const ComponentVersionMessageData& rhs) const
+    {
+        return m_componentName == rhs.m_componentName && m_componentVersionHash == rhs.m_componentVersionHash;
+    }
+
+    inline bool ComponentVersionMessageData::operator!=(const ComponentVersionMessageData& rhs) const
+    {
+        return !(*this == rhs);
+    }
+
+    inline bool ComponentVersionMessageData::Serialize(AzNetworking::ISerializer& serializer)
+    {
+        serializer.Serialize(m_componentName, "componentName");
+        serializer.Serialize(m_componentVersionHash, "componentVersionHash");
+        return serializer.IsValid();
     }
 
     inline PrefabEntityId::PrefabEntityId(AZ::Name name, uint32_t entityOffset)

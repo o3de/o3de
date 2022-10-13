@@ -11,12 +11,16 @@
         <Member Type="uint16_t" Name="networkProtocolVersion" Init="0" />
         <Member Type="uint64_t" Name="temporaryUserId" Init="0" />
         <Member Type="Multiplayer::LongNetworkString" Name="ticket" />
-        <Member Type="AZ::HashValue64" Name="holisticMultiplayerComponentsVersionHash" />
+        <Member Type="AZ::HashValue64" Name="multiplayerComponentVersionHash" />
     </Packet>
 
     <Packet Name="Accept" HandshakePacket="true" Desc="Server accept packet">
         <Member Type="Multiplayer::LongNetworkString" Name="map" />
         <Member Type="bool" Name="hasMultiplayerComponentMismatch" />
+    </Packet>
+
+    <Packet Name="SyncComponentMismatch" Desc="Sends a vector of multiplayer components with their name and version hashes in order to compare which components exactly are mismatched.">
+        <Member Type="Multiplayer::ComponentVersionMessageData" Name="componentVersions" Container="Vector" Count="Multiplayer::MaxComponentVersionHashes"/>
     </Packet>
 
     <Packet Name="ReadyForEntityUpdates" Desc="Client confirming it is ready to receive entity updates">
