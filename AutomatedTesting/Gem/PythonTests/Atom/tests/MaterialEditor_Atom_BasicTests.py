@@ -71,16 +71,16 @@ def MaterialEditor_BasicTests_ConfirmsBasicFunctionality():
         test_material_3 = "003_MetalMatte.material"
 
         # 1. Open an existing material asset file.
-        material_asset_file_document_id = atom_tools_utils.open_document(material_type_path)
+        material_document_id = atom_tools_utils.open_document(material_type_path)
         Report.result(
             Tests.open_existing_asset,
-            atom_tools_utils.is_document_open(material_asset_file_document_id) is True)
+            atom_tools_utils.is_document_open(material_document_id) is True)
 
         # 2. Close the selected material asset file.
-        atom_tools_utils.close_document(material_asset_file_document_id)
+        atom_tools_utils.close_document(material_document_id)
         Report.result(
             Tests.close_opened_asset,
-            atom_tools_utils.is_document_open(material_asset_file_document_id) is False)
+            atom_tools_utils.is_document_open(material_document_id) is False)
 
         # 3. Open multiple material asset files then use the CloseAllDocuments bus call to close them all.
         for material in [test_material_1, test_material_2, test_material_3]:
@@ -106,7 +106,7 @@ def MaterialEditor_BasicTests_ConfirmsBasicFunctionality():
             Tests.inspector_pane_visible,
             atom_tools_utils.is_pane_visible("Asset Browser") is True)
 
-        # 6. Change the baseColor.color property of the test_material_1 material asset file document.
+        # 6. Change the baseColor.color property of the test_material_1 material document.
         base_color_property_name = "baseColor.color"
         document_id = atom_tools_utils.open_document(os.path.join(test_data_path, test_material_1))
         initial_color = material_editor_utils.get_property(document_id, base_color_property_name)
@@ -116,7 +116,7 @@ def MaterialEditor_BasicTests_ConfirmsBasicFunctionality():
             Tests.changed_material_asset_color,
             material_editor_utils.get_property(document_id, base_color_property_name) == expected_color)
 
-        # 7. Revert the baseColor.color property of the test_material_1 material asset file document.
+        # 7. Revert the baseColor.color property of the test_material_1 material document.
         material_editor_utils.set_property(document_id, base_color_property_name, initial_color)
         Report.result(
             Tests.reverted_material_asset_color_change,
