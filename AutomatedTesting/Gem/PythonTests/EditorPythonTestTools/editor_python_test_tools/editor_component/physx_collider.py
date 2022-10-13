@@ -156,7 +156,8 @@ class PhysxCollider:
         assert self.component.is_property_visible(self.Path.Box.DIMENSIONS), \
             f"Failure: Cannot set box dimensions when property is not visible."
 
-        self.component.set_component_property_value(self.Path.Box.DIMENSIONS, math.Vector3(x, y, z))
+        self.component.set_component_property_value(self.Path.Box.DIMENSIONS,
+                                                    math.Vector3(float(x), float(y), float(z)))
 
     # Shape: Capsule
     def set_capsule_shape(self) -> None:
@@ -172,7 +173,7 @@ class PhysxCollider:
         assert self.component.is_property_visible(self.Path.Capsule.RADIUS), \
             f"Failure: Cannot set capsule radius when property is not visible. Set the shape to capsule first."
 
-        self.component.set_component_property_value(self.Path.Capsule.HEIGHT, radius)
+        self.component.set_component_property_value(self.Path.Capsule.HEIGHT, float(radius))
 
     # Shape: Cylinder
     def set_cylinder_shape(self) -> None:
@@ -188,13 +189,13 @@ class PhysxCollider:
         assert self.component.is_property_visible(self.Path.Cylinder.HEIGHT), \
             f"Failure: Cannot set cylinder height when property is not visible. Set the shape to cylinder first."
 
-        self.component.set_component_property_value(self.Path.Cylinder.HEIGHT, height)
+        self.component.set_component_property_value(self.Path.Cylinder.HEIGHT, float(height))
 
     def set_cylinder_radius(self, radius: float):
         assert self.component.is_property_visible(self.Path.Cylinder.RADIUS), \
             f"Failure: Cannot set cylinder radius when property is not visible. Set the shape to cylinder first."
 
-        self.component.set_component_property_value(self.Path.Cylinder.RADIUS, radius)
+        self.component.set_component_property_value(self.Path.Cylinder.RADIUS, float(radius))
 
     # Shape: PhysicsAsset
     def set_physicsasset_shape(self) -> None:
@@ -211,7 +212,8 @@ class PhysxCollider:
         assert self.component.is_property_visible(self.Path.PhysicsAsset.ASSET_SCALE), \
             f"Failure: Cannot set Physics Mesh Asset Scale when property is not visible."
 
-        self.component.set_component_property_value(self.Path.PhysicsAsset.ASSET_SCALE, math.Vector3(x, y, z))
+        self.component.set_component_property_value(self.Path.PhysicsAsset.ASSET_SCALE,
+                                                    math.Vector3(float(x), float(y), float(z)))
 
     def toggle_physics_materials_from_asset(self) -> None:
         assert self.component.is_property_visible(self.Path.PhysicsAsset.PHYSICS_MATERIALS_FROM_ASSET), \
