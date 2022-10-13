@@ -106,7 +106,7 @@ namespace EMStudio
             return;
         }
 
-        // Create the checkbox that enable the root motion extraction options.
+        // Create the checkbox that enables the root motion extraction options.
         m_extractRootMotionCheck = new QCheckBox();
         AzQtComponents::CheckBox::applyToggleSwitchStyle(m_extractRootMotionCheck);
         connect(m_extractRootMotionCheck, &QCheckBox::clicked, this, &MotionExtractionWindow::OnRootMotionCheckboxClicked);

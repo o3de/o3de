@@ -691,7 +691,7 @@ namespace EMotionFX
     {
         if (m_rootMotionExtracted)
         {
-            AZ_Assert(false, "Root motion extraction already processed on this motion. Abort because run the extraction algorithm again could cause unexpected behavior.");
+            AZ_Assert(false, "Root motion extraction already processed on this motion. Abort because running the extraction algorithm again could cause unexpected behavior.");
             return;
         }
 
