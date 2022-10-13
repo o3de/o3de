@@ -285,7 +285,7 @@ namespace AZ
                 if (!instance.GetFunctionLoader().LoadProcAddresses(
                         &m_context, instance.GetNativeInstance(), physicalDevice.GetNativePhysicalDevice(), m_nativeDevice))
                 {
-                    AZ_Warning("Vulkan", false, "Could not initialized function loader.");
+                    AZ_Warning("Vulkan", false, "Could not initialize function loader.");
                     return RHI::ResultCode::Fail;
                 }
             }
