@@ -25,13 +25,7 @@ namespace AZ
     namespace Vulkan
     {
         [[maybe_unused]] static const char* VulkanShaderPlatformName = "VulkanShaderPlatform";
-        static const char* WindowsPlatformShaderHeader = "Builders/ShaderHeaders/Platform/Windows/Vulkan/PlatformHeader.hlsli";
-        static const char* LinuxPlatformShaderHeader = "Builders/ShaderHeaders/Platform/Linux/Vulkan/PlatformHeader.hlsli";
-        static const char* AndroidPlatformShaderHeader = "Builders/ShaderHeaders/Platform/Android/Vulkan/PlatformHeader.hlsli";
-        static const char* WindowsAzslShaderHeader = "Builders/ShaderHeaders/Platform/Windows/Vulkan/AzslcHeader.azsli";
-        static const char* LinuxAzslShaderHeader = "Builders/ShaderHeaders/Platform/Linux/Vulkan/AzslcHeader.azsli";
-        static const char* AndroidAzslShaderHeader = "Builders/ShaderHeaders/Platform/Android/Vulkan/AzslcHeader.azsli";
-    
+
         RHI::APIType ShaderPlatformInterface::GetAPIType() const
         {
             return Vulkan::RHIType;
@@ -100,14 +94,7 @@ namespace AZ
 
         const char* ShaderPlatformInterface::GetAzslHeader(const AssetBuilderSDK::PlatformInfo& platform) const
         {
-            if(platform.HasTag("mobile"))
-            {
-                return AndroidAzslShaderHeader;
-            }
-            else
-            {
-                return AZ_TRAIT_ATOM_AZSL_SHADER_HEADER;
-            }
+            return AZ_TRAIT_ATOM_AZSL_SHADER_HEADER;
         }
 
         // Takes in HLSL source file path and then compiles the HLSL to bytecode and
@@ -238,15 +225,7 @@ namespace AZ
                 AZ_Assert(false, "Invalid Shader stage.");
             }
 
-            AZStd::string prependFile;
-            if(platform.HasTag("mobile"))
-            {
-                prependFile = AndroidPlatformShaderHeader;
-            }
-            else
-            {
-                prependFile = AZ_TRAIT_ATOM_AZSL_PLATFORM_HEADER;
-            }
+            AZStd::string prependFile{ AZ_TRAIT_ATOM_AZSL_PLATFORM_HEADER };
 
             RHI::PrependArguments args;
             args.m_sourceFile = shaderSourceFile.c_str();
