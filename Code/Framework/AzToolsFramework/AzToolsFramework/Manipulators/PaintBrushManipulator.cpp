@@ -234,7 +234,7 @@ namespace AzToolsFramework
             }
 
             // Get the direction that we've moved the mouse since the last mouse movement we handled.
-            AZ::Vector2 direction = (currentCenter2D - m_lastBrushCenter).GetNormalized();
+            AZ::Vector2 direction = (currentCenter2D - m_lastBrushCenter).GetNormalizedSafe();
 
             // Get the total distance that we've moved since the last time we drew a brush stamp (which might
             // have been many small mouse movements ago).
@@ -314,7 +314,7 @@ namespace AzToolsFramework
                             // hardness falloff gives per-pixel opacity within the stamp.
 
                             // Normalize the distance into the 0-1 range, where 0 is the center of the stamp, and 1 is the edge.
-                            float shortestDistanceNormalized = sqrt(shortestDistanceSquared) / radius;
+                            float shortestDistanceNormalized = AZStd::sqrt(shortestDistanceSquared) / radius;
 
                             // The hardness parameter describes what % of the total distance gets the falloff curve.
                             // i.e. hardness=0.25 means that distances < 0.25 will have no falloff, and the falloff curve will
@@ -330,7 +330,7 @@ namespace AzToolsFramework
 
                             // For the opacity at this point, combine any opacity from previous stamps with the
                             // currently-computed perPixelOpacity and flow.
-                            opacity = AZStd::min(opacity + (perPixelOpacity * flow), 1.0f);
+                            opacity = AZStd::min(opacity + (1.0f - opacity) * (perPixelOpacity * flow), 1.0f);
                         }
                     }
 

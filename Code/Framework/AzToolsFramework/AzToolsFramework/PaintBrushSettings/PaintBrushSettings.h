@@ -30,7 +30,8 @@ namespace AzToolsFramework
        - Intensity: The color of the paint on the paintbrush. We only support monochromatic painting, so this is just a greyscale
          intensity from black to white. This color is fully applied to each brush stroke.
        - Opacity: The opacity of an entire brush stroke. Because it's per-stroke, a stroke that crosses itself won't blend with
-         itself. The blending only occurs after the stroke is complete.
+         itself when this opacity setting is lowered. The blending only occurs after the stroke is complete. (A stroke can still
+         blend with itself from flow and hardness settings below, just not from the stroke opacity setting)
        - Blend Mode: The blend mode for blending the brush stroke down to the base layer.
 
        Stamp settings:

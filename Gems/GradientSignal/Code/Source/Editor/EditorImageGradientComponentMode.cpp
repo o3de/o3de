@@ -107,7 +107,8 @@ namespace GradientSignal
                 {
                     for (int16_t x = 0; x < ImageTileSize; x++)
                     {
-                        pixelIndices[index++] = PixelIndex(startIndex.first + x, startIndex.second + y);
+                        pixelIndices[index++] = PixelIndex(
+                            aznumeric_cast<int16_t>(startIndex.first + x), aznumeric_cast<int16_t>(startIndex.second + y));
                     }
                 }
 
@@ -481,7 +482,7 @@ namespace GradientSignal
             auto [gradientValue, opacityValue] = m_paintStrokeData.m_strokeBuffer->GetOriginalPixelValueAndOpacity(pixelIndices[index]);
 
             // Add the new per-pixel opacity to the existing opacity in our stroke layer.
-            opacityValue = AZStd::clamp(perPixelOpacities[index] + opacityValue, 0.0f, 1.0f);
+            opacityValue = AZStd::clamp(opacityValue + (1.0f - opacityValue) * perPixelOpacities[index], 0.0f, 1.0f);
 
             // Blend the pixel and store the blended pixel and new opacity back into our paint stroke buffer.
             float blendedValue = blendFn(gradientValue, m_paintStrokeData.m_intensity, opacityValue * m_paintStrokeData.m_opacity);
