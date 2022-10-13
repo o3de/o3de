@@ -78,4 +78,4 @@ class QtPyScriptCanvasNodePalette():
         search_field_text = self.node_palette_search_box.text()
         search_field_cleared = search_field_text == ""
 
-        assert search_field_cleared, f"Failed to clear the node palette search field. Remaining strike was {search_field_text} "
+        assert search_field_cleared, f"Failed to clear the node palette search field. Remaining text was {search_field_text} "
