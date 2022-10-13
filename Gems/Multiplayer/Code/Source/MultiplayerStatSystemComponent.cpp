@@ -130,7 +130,7 @@ namespace Multiplayer
                 ConfigureEventLoggerHelper(cl_metricsFile);
                 break;
             case MultiplayerAgentType::Uninitialized:
-                AZLOG_WARN("Unitialized agent type isn't supported networking metrics.");
+                AZLOG_WARN("Unitialized agent type isn't supported for networking metrics.");
                 break;
             }
         }
