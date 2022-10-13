@@ -80,13 +80,10 @@ def PhysX_ColliderFamily_Component_CRUD():
     # Helper file Imports
     import os
 
-    import azlmbr.physics as physics
-    import azlmbr.legacy.general as general
     import editor_python_test_tools.hydra_editor_utils as hydra
 
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
-
 
     from editor_python_test_tools.editor_component.physx_collider import PhysxCollider
     from editor_python_test_tools.editor_entity_utils import EditorEntity as EE
@@ -95,6 +92,8 @@ def PhysX_ColliderFamily_Component_CRUD():
 
     # 0) Pre-conditions
     physx_mesh = os.path.join("objects", "_primitives", "_box_1x1.pxmesh")
+    physx_material = os.path.join("physx", "glass.physxmaterial")
+
     hydra.open_base_level()
 
     # 1) Create entities to hold PhysX Collider Components

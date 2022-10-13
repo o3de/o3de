@@ -113,7 +113,6 @@ class PhysxCollider:
 
     # General Properties
     #TODO: Need to figure out how to set dropdowns for Collison Layer and Collides With
-    #TODO: Need to figure out how to set the Physics Material
 
     def toggle_trigger(self):
         self.component.toggle_property_switch(self.Path.TRIGGER)
@@ -141,6 +140,13 @@ class PhysxCollider:
 
     def toggle_draw_collider(self):
         self.component.toggle_property_switch(self.Path.DRAW_COLLIDER)
+
+    def set_physx_material_from_path(self, asset_product_path: str) -> None:
+        assert self.component.is_property_visible(self.Path.PHYSX_MATERIAL_ASSET), \
+            f"Failure: Cannot set box dimensions when property is not visible."
+
+        px_material = Asset.find_asset_by_path(asset_product_path)
+        self.component.set_component_property_value(self.Path.PHYSX_MATERIAL_ASSET, px_material.id)
 
     # Shape: Box
     def set_box_shape(self) -> None:
