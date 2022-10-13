@@ -115,6 +115,14 @@ namespace EMotionFX
         Reinit();
     }
 
+    void SkeletonModelJointWidget::SetFilterString(AZStd::string str)
+    {
+        if (m_collidersWidget)
+        {
+            m_collidersWidget->SetFilterString(str);
+        }
+    }
+
     void SkeletonModelJointWidget::OnSelectionChanged([[maybe_unused]] const QItemSelection& selected, [[maybe_unused]] const QItemSelection& deselected)
     {
         SkeletonModel* skeletonModel = nullptr;

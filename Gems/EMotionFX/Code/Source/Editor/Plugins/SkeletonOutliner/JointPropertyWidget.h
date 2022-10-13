@@ -45,6 +45,7 @@ namespace EMotionFX
     private slots:
         void OnAddCollider(PhysicsSetup::ColliderConfigType configType, AZ::TypeId colliderType);
         void OnAddToRagdoll();
+        void OnSearchTextChanged();
 
     private:
         AzToolsFramework::ReflectedPropertyEditor* m_propertyWidget{nullptr};
@@ -56,6 +57,9 @@ namespace EMotionFX
 
         AZStd::unique_ptr<EMStudio::ActorInfo> m_actorInfo;
         AZStd::unique_ptr<EMStudio::NodeInfo> m_nodeInfo;
+
+        QLineEdit* m_filterEntityBox = nullptr;
+        AZStd::string m_filterString;
     };
 
 

@@ -72,6 +72,8 @@ namespace EMotionFX
         void Update();
         void Reset();
 
+        void SetFilterString([[maybe_unused]] AZStd::string str);
+
         Actor* GetActor() const { return m_actor; };
         Node* GetJoint() const { return m_joint; }
         size_t GetColliderIndex() const { return m_colliderIndex; }
@@ -142,6 +144,9 @@ namespace EMotionFX
         void Update(Actor* actor, Node* joint, PhysicsSetup::ColliderConfigType colliderType, const AzPhysics::ShapeColliderPairList& colliders, AZ::SerializeContext* serializeContext);
         void Update();
         void Reset();
+
+        void SetFilterString([[maybe_unused]] AZStd::string str);
+
         PhysicsSetup::ColliderConfigType ColliderType() { return m_colliderType; }
 
         void contextMenuEvent(QContextMenuEvent* event) override;

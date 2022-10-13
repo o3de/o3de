@@ -24,6 +24,7 @@ namespace EMotionFX
     class Actor;
     class ActorInstance;
     class Node;
+    class ColliderContainerWidget;
 
     class SkeletonModelJointWidget
         : public QWidget
@@ -39,6 +40,9 @@ namespace EMotionFX
         void Reinit();
 
         void showEvent(QShowEvent* event) override;
+
+        // TODO QString
+        void SetFilterString([[maybe_unused]] AZStd::string str);
 
         virtual QString GetCardTitle() const = 0;
         virtual QColor GetColor() const = 0;
@@ -58,6 +62,7 @@ namespace EMotionFX
 
     protected:
         AzQtComponents::Card*   m_contentCard;
+        ColliderContainerWidget* m_collidersWidget = nullptr;
 
         QLabel*         m_jointNameLabel;
         static int      s_jointLabelSpacing;

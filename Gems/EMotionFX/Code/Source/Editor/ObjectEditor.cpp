@@ -59,6 +59,15 @@ namespace EMotionFX
         m_object = nullptr;
     }
 
+    void ObjectEditor::SetFilterString(AZStd::string str)
+    {
+        m_propertyEditor->SetFilterString(str);
+
+        //m_propertyEditor->InvalidateAll();
+        //TODO
+        m_propertyEditor->update();
+    }
+
 
     void ObjectEditor::InvalidateAll()
     {

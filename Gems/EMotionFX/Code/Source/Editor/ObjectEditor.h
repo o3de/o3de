@@ -38,6 +38,8 @@ namespace EMotionFX
         void AddInstance(void* object, const AZ::TypeId& objectTypeId, void* aggregateInstance = nullptr, void* compareInstance = nullptr);
         void ClearInstances(bool invalidateImmediately);
 
+        void SetFilterString([[maybe_unused]] AZStd::string str);
+
         void* GetObject() { return m_object; }
 
     public slots:

@@ -48,7 +48,5 @@ namespace EMotionFX
         void InternalReinit() override;
 
         Physics::CharacterColliderNodeConfiguration* GetNodeConfig() const;
-
-        ColliderContainerWidget*    m_collidersWidget;
     };
 } // namespace EMotionFX

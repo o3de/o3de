@@ -330,6 +330,12 @@ namespace EMotionFX
         m_editor->InvalidateValues();
     }
 
+    void ColliderWidget::SetFilterString(AZStd::string str)
+    {
+        m_editor->SetFilterString(str);
+        m_editor->InvalidateAll();
+    }
+
     void ColliderWidget::OnCardContextMenu(const QPoint& position)
     {
         const AzQtComponents::Card* card = static_cast<AzQtComponents::Card*>(sender());
@@ -538,6 +544,15 @@ namespace EMotionFX
         const size_t numColliders = colliders.size();
         size_t numAvailableColliderWidgets = m_colliderWidgets.size();
 
+        if (numColliders)
+        {
+            this->show();
+        }
+        else
+        {
+            this->hide();
+        }
+
         // Create new collider widgets in case we don't have enough.
         if (numColliders > numAvailableColliderWidgets)
         {
@@ -582,6 +597,14 @@ namespace EMotionFX
     void ColliderContainerWidget::Reset()
     {
         Update(nullptr, nullptr, PhysicsSetup::ColliderConfigType::Unknown, AzPhysics::ShapeColliderPairList(), nullptr);
+    }
+
+    void ColliderContainerWidget::SetFilterString(AZStd::string str)
+    {
+        for (auto* widget : m_colliderWidgets)
+        {
+            widget->SetFilterString(str);
+        }
     }
 
     void ColliderContainerWidget::contextMenuEvent(QContextMenuEvent* event)

@@ -22,6 +22,7 @@
 #include <QItemSelectionModel>
 #include <QBoxLayout>
 #include <QLabel>
+#include <QLineEdit>
 
 namespace EMotionFX
 {
@@ -67,6 +68,10 @@ namespace EMotionFX
             connect(skeletonModel, &SkeletonModel::modelReset, this, &JointPropertyWidget::Reset);
             connect(&skeletonModel->GetSelectionModel(), &QItemSelectionModel::selectionChanged, this, &JointPropertyWidget::Reset);
         }
+
+        m_filterEntityBox = new QLineEdit{ this };
+        mainLayout->addWidget(m_filterEntityBox);
+        connect(m_filterEntityBox, &QLineEdit::textChanged, this, &JointPropertyWidget::OnSearchTextChanged);
 
         m_clothJointWidget = new ClothJointWidget;
         m_hitDetectionJointWidget = new HitDetectionJointWidget;
@@ -210,6 +215,14 @@ namespace EMotionFX
 //        {
 //            AZ_Error("EMotionFX", false, result.c_str());
 //        }
+    }
+
+    void JointPropertyWidget::OnSearchTextChanged()
+    {
+        m_filterString = m_filterEntityBox->text().toLatin1().data();
+
+        m_clothJointWidget->SetFilterString(m_filterString);
+        // UpdateContents()
     }
 
     // AddCollidersButton

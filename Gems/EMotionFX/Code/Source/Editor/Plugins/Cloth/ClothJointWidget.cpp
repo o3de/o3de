@@ -28,7 +28,6 @@ namespace EMotionFX
 {
     ClothJointWidget::ClothJointWidget(QWidget* parent)
         : SkeletonModelJointWidget(parent)
-        , m_collidersWidget(nullptr)
     {
     }
 
