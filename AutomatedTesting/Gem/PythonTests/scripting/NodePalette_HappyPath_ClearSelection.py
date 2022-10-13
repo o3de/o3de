@@ -23,10 +23,9 @@ def NodePalette_HappyPath_ClearSelection():
     Test Steps:
      1) Initialize our O3DE editor object
      2) Open and initialize Script Canvas window (Tools > Script Canvas)
-     3) Get a local handle on the Node Palette QtPy object
-     4) Search for a node (this test uses a node from the Math category)
-     5) Verify the node was found
-     6) Clear search strin
+     3) Search for a node (this test uses a node from the Math category)
+     4) Verify the node was found
+     5) Clear search strin
 
     Note:
      - Any passed and failed tests are written to the Editor.log file.
@@ -46,19 +45,17 @@ def NodePalette_HappyPath_ClearSelection():
     # 1) Initialize our O3DE editor object
     qtpy_o3de_editor = QtPyO3DEEditor()
 
-    # 2) Open and initialize Script Canvas window (Tools > Script Canvas)
+    # 2) Open and initialize Script Canvas test objects (Tools > Script Canvas)
     qtpy_o3de_editor.open_script_canvas()
-
-    # 3) Get a local handle on the Node Palette QtPy object
     qtpy_node_palette = qtpy_o3de_editor.sc_editor.node_palette
 
-    # 4) Search for a node (this test uses a node from the Math category)
+    # 3) Search for a node (this test uses a node from the Math category)
     node_palette_search_results = qtpy_node_palette.search_for_node(NODE_STRING_TO_NUMBER)
 
-    # 5) Verify the node was found
+    # 4) Verify the node was found
     Report.result(Tests.set_search_string, node_palette_search_results is not None)
 
-    # 6) Clear search string
+    # 5) Clear search string
     qtpy_node_palette.click_clear_search_button()
 
 
