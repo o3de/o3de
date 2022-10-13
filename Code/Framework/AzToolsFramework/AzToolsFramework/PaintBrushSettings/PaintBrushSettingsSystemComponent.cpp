@@ -36,24 +36,44 @@ namespace AzToolsFramework
         PaintBrushSettingsRequestBus::Handler::BusDisconnect();
     }
 
-    PaintBrushSettings* PaintBrushSettingsSystemComponent::GetSettings(void)
+    PaintBrushSettings* PaintBrushSettingsSystemComponent::GetSettingsPointerForPropertyEditor()
     {
         return &m_settings;
     }
 
-    float PaintBrushSettingsSystemComponent::GetRadius() const
+    PaintBrushSettings PaintBrushSettingsSystemComponent::GetSettings() const
     {
-        return m_settings.GetRadius();
+        return m_settings;
     }
 
-    float PaintBrushSettingsSystemComponent::GetIntensity() const
+    float PaintBrushSettingsSystemComponent::GetSize() const
     {
-        return m_settings.GetIntensity();
+        return m_settings.GetSize();
     }
 
-    float PaintBrushSettingsSystemComponent::GetOpacity() const
+    float PaintBrushSettingsSystemComponent::GetIntensityPercent() const
     {
-        return m_settings.GetOpacity();
+        return m_settings.GetIntensityPercent();
+    }
+
+    float PaintBrushSettingsSystemComponent::GetOpacityPercent() const
+    {
+        return m_settings.GetOpacityPercent();
+    }
+
+    float PaintBrushSettingsSystemComponent::GetHardnessPercent() const
+    {
+        return m_settings.GetHardnessPercent();
+    }
+
+    float PaintBrushSettingsSystemComponent::GetFlowPercent() const
+    {
+        return m_settings.GetFlowPercent();
+    }
+
+    float PaintBrushSettingsSystemComponent::GetDistancePercent() const
+    {
+        return m_settings.GetDistancePercent();
     }
 
     PaintBrushBlendMode PaintBrushSettingsSystemComponent::GetBlendMode() const
@@ -61,19 +81,34 @@ namespace AzToolsFramework
         return m_settings.GetBlendMode();
     }
 
-    void PaintBrushSettingsSystemComponent::SetRadius(float radius)
+    void PaintBrushSettingsSystemComponent::SetSize(float size)
     {
-        m_settings.SetRadius(radius);
+        m_settings.SetSize(size);
     }
 
-    void PaintBrushSettingsSystemComponent::SetIntensity(float intensity)
+    void PaintBrushSettingsSystemComponent::SetIntensityPercent(float intensityPercent)
     {
-        m_settings.SetIntensity(intensity);
+        m_settings.SetIntensityPercent(intensityPercent);
     }
 
-    void PaintBrushSettingsSystemComponent::SetOpacity(float opacity)
+    void PaintBrushSettingsSystemComponent::SetOpacityPercent(float opacityPercent)
     {
-        m_settings.SetOpacity(opacity);
+        m_settings.SetOpacityPercent(opacityPercent);
+    }
+
+    void PaintBrushSettingsSystemComponent::SetHardnessPercent(float hardnessPercent)
+    {
+        m_settings.SetHardnessPercent(hardnessPercent);
+    }
+
+    void PaintBrushSettingsSystemComponent::SetFlowPercent(float flowPercent)
+    {
+        m_settings.SetFlowPercent(flowPercent);
+    }
+
+    void PaintBrushSettingsSystemComponent::SetDistancePercent(float distancePercent)
+    {
+        m_settings.SetDistancePercent(distancePercent);
     }
 
     void PaintBrushSettingsSystemComponent::SetBlendMode(PaintBrushBlendMode blendMode)

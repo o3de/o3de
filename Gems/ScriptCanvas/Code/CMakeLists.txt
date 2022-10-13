@@ -115,22 +115,6 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME ScriptCanvas.API HEADERONLY
-    NAMESPACE Gem
-    FILES_CMAKE
-        scriptcanvasgem_headers.cmake
-    COMPILE_DEFINITIONS
-        INTERFACE
-            SCRIPTCANVAS_ERRORS_ENABLED
-            ${SCRIPT_CANVAS_COMMON_DEFINES}
-    INCLUDE_DIRECTORIES
-        INTERFACE
-            .
-            Include
-            ${SCRIPT_CANVAS_AUTOGEN_BUILD_DIR}
-)
-
-ly_add_target(
     NAME ScriptCanvas ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
