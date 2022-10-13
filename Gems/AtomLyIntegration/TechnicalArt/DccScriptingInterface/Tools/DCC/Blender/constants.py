@@ -46,15 +46,14 @@ from DccScriptingInterface.constants import USER_HOME
 from DccScriptingInterface.Tools.DCC.Blender import PATH_DCCSI_TOOLS_DCC_BLENDER
 from DccScriptingInterface.Tools.DCC.Blender import ENVAR_PATH_DCCSI_TOOLS_DCC_BLENDER
 
-ENVAR_PATH_DCCSI_TOOLS_DCC = "PATH_DCCSI_TOOLS_DCC"
-ENVAR_PATH_DCCSI_TOOLS = "PATH_DCCSI_TOOLS"
+from DccScriptingInterface.constants import ENVAR_PATH_DCCSI_TOOLS_DCC
+from DccScriptingInterface.constants import ENVAR_PATH_DCCSI_TOOLS
 ENVAR_DCCSI_CONFIG_DCC_BLENDER = 'DCCSI_CONFIG_DCC_BLENDER'
 
 from DccScriptingInterface.Tools.DCC.Blender import ENVAR_DCCSI_BLENDER_VERSION
 from DccScriptingInterface.Tools.DCC.Blender import SLUG_DCCSI_BLENDER_VERSION
 
 ENVAR_DCCSI_BLENDER_PROJECT = "DCCSI_BLENDER_PROJECT"  # project name
-EBVAR_DCCSI_BLENDER_PROJECT = "DCCSI_BLENDER_PROJECT"
 
 from DccScriptingInterface.Tools.DCC.Blender import ENVAR_DCCSI_BLENDER_LOCATION
 from DccScriptingInterface.Tools.DCC.Blender import PATH_DCCSI_BLENDER_ROOT

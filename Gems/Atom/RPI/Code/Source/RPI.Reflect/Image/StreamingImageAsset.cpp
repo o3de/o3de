@@ -58,6 +58,11 @@ namespace AZ
 
         size_t StreamingImageAsset::GetMipChainIndex(size_t mipLevel) const
         {
+            if (mipLevel >= m_imageDescriptor.m_mipLevels)
+            {
+                AZ_Assert(false, "Input mipLevel doesn't exist");
+                mipLevel = m_imageDescriptor.m_mipLevels - 1;
+            }
             return m_mipLevelToChainIndex[mipLevel];
         }
 

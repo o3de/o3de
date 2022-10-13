@@ -122,6 +122,7 @@ namespace AtomToolsFramework
     {
         // Create a dialog that will display a list of string options and prompt the user for input.
         QDialog dialog(GetToolMainWindow());
+        dialog.setModal(true);
         dialog.setWindowTitle(title.c_str());
         dialog.setLayout(new QVBoxLayout());
 

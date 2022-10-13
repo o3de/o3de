@@ -14,6 +14,7 @@
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <Tests/Utils/Utils.h>
 #include <native/AssetManager/assetProcessorManager.h>
+#include <native/tests/MockAssetDatabaseRequestsHandler.h>
 #include <resourcecompiler/rccontroller.h>
 #include <tests/UnitTestUtilities.h>
 #include <QCoreApplication>
@@ -29,23 +30,6 @@ namespace UnitTests
     {
     public:
         MOCK_METHOD2(CheckSufficientDiskSpace, bool(qint64, bool));
-    };
-
-    class TestingDatabaseLocationListener : public AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Handler
-    {
-    public:
-        TestingDatabaseLocationListener()
-        {
-            BusConnect();
-        }
-        ~TestingDatabaseLocationListener() override
-        {
-            BusDisconnect();
-        }
-
-        bool GetAssetDatabaseLocation(AZStd::string& location) override;
-
-        AZStd::string m_databaseLocation;
     };
 
     class JobSignalReceiver : AZ::Interface<AssetProcessor::IRCJobSignal>::Registrar
@@ -108,8 +92,7 @@ namespace UnitTests
         AZStd::unique_ptr<AZ::SettingsRegistryImpl> m_settingsRegistry;
         AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> m_stateData;
         AZStd::unique_ptr<::testing::NiceMock<MockDiskSpaceResponder>> m_diskSpaceResponder;
-        AZ::Test::ScopedAutoTempDirectory m_tempDir;
-        TestingDatabaseLocationListener m_databaseLocationListener;
+        AssetProcessor::MockAssetDatabaseRequestsHandler m_databaseLocationListener;
         AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry m_scanfolder;
         MockMultiBuilderInfoHandler m_builderInfoHandler;
         AZ::IO::LocalFileIO* m_localFileIo;

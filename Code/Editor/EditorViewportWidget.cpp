@@ -648,12 +648,6 @@ void EditorViewportWidget::OnBeginPrepareRender()
     auto prevState = m_debugDisplay->GetState();
     m_debugDisplay->SetState(e_Mode3D | e_AlphaBlended | e_FillModeSolid | e_CullModeBack | e_DepthWriteOn | e_DepthTestOn);
 
-    if (gSettings.viewports.bShowSafeFrame)
-    {
-        UpdateSafeFrame();
-        RenderSafeFrame();
-    }
-
     AzFramework::ViewportDebugDisplayEventBus::Event(
         AzToolsFramework::GetEntityContextId(), &AzFramework::ViewportDebugDisplayEvents::DisplayViewport2d,
         AzFramework::ViewportInfo{ GetViewportId() }, *m_debugDisplay);
@@ -692,79 +686,6 @@ void EditorViewportWidget::RenderAll()
                 AztfVi::MouseButtons(AztfVi::TranslateMouseButtons(QGuiApplication::mouseButtons())), keyboardModifiers,
                 BuildMousePick(WidgetToViewport(mapFromGlobal(QCursor::pos())))));
         m_debugDisplay->DepthTestOn();
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::UpdateSafeFrame()
-{
-    m_safeFrame = m_rcClient;
-
-    if (m_safeFrame.height() == 0)
-    {
-        return;
-    }
-
-    const bool allowSafeFrameBiggerThanViewport = false;
-
-    float safeFrameAspectRatio = float(m_safeFrame.width()) / m_safeFrame.height();
-    float targetAspectRatio = GetAspectRatio();
-    bool viewportIsWiderThanSafeFrame = (targetAspectRatio <= safeFrameAspectRatio);
-    if (viewportIsWiderThanSafeFrame || allowSafeFrameBiggerThanViewport)
-    {
-        float maxSafeFrameWidth = m_safeFrame.height() * targetAspectRatio;
-        float widthDifference = m_safeFrame.width() - maxSafeFrameWidth;
-
-        m_safeFrame.setLeft(static_cast<int>(m_safeFrame.left() + widthDifference * 0.5f));
-        m_safeFrame.setRight(static_cast<int>(m_safeFrame.right() - widthDifference * 0.5f));
-    }
-    else
-    {
-        float maxSafeFrameHeight = m_safeFrame.width() / targetAspectRatio;
-        float heightDifference = m_safeFrame.height() - maxSafeFrameHeight;
-
-        m_safeFrame.setTop(static_cast<int>(m_safeFrame.top() + heightDifference * 0.5f));
-        m_safeFrame.setBottom(static_cast<int>(m_safeFrame.bottom() - heightDifference * 0.5f));
-    }
-
-    m_safeFrame.adjust(0, 0, -1, -1); // <-- aesthetic improvement.
-
-    const float SAFE_ACTION_SCALE_FACTOR = 0.05f;
-    m_safeAction = m_safeFrame;
-    m_safeAction.adjust(
-        static_cast<int>(m_safeFrame.width() * SAFE_ACTION_SCALE_FACTOR), static_cast<int>(m_safeFrame.height() * SAFE_ACTION_SCALE_FACTOR),
-        static_cast<int>(-m_safeFrame.width() * SAFE_ACTION_SCALE_FACTOR),
-        static_cast<int>(-m_safeFrame.height() * SAFE_ACTION_SCALE_FACTOR));
-
-    const float SAFE_TITLE_SCALE_FACTOR = 0.1f;
-    m_safeTitle = m_safeFrame;
-    m_safeTitle.adjust(
-        static_cast<int>(m_safeFrame.width() * SAFE_TITLE_SCALE_FACTOR), static_cast<int>(m_safeFrame.height() * SAFE_TITLE_SCALE_FACTOR),
-        static_cast<int>(-m_safeFrame.width() * SAFE_TITLE_SCALE_FACTOR),
-        static_cast<int>(-m_safeFrame.height() * SAFE_TITLE_SCALE_FACTOR));
-}
-
-//////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::RenderSafeFrame()
-{
-    RenderSafeFrame(m_safeFrame, 0.75f, 0.75f, 0, 0.8f);
-    RenderSafeFrame(m_safeAction, 0, 0.85f, 0.80f, 0.8f);
-    RenderSafeFrame(m_safeTitle, 0.80f, 0.60f, 0, 0.8f);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::RenderSafeFrame(const QRect& frame, float r, float g, float b, float a)
-{
-    m_debugDisplay->SetColor(AZ::Color(r, g, b, a));
-
-    const int LINE_WIDTH = 2;
-    for (int i = 0; i < LINE_WIDTH; i++)
-    {
-        AZ::Vector3 topLeft(static_cast<float>(frame.left() + i), static_cast<float>(frame.top() + i), 0.0f);
-        AZ::Vector3 bottomRight(static_cast<float>(frame.right() - i), static_cast<float>(frame.bottom() - i), 0.0f);
-        m_debugDisplay->DrawWireBox(topLeft, bottomRight);
     }
 }
 
@@ -1055,7 +976,6 @@ void EditorViewportWidget::OnTitleMenu(QMenu* menu)
     action->setCheckable(true);
     action->setChecked(bDisplayLabels);
 
-    AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Safe Frame"), &gSettings.viewports.bShowSafeFrame);
     AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Construction Plane"), &gSettings.snap.constructPlaneDisplay);
     AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Trigger Bounds"), &gSettings.viewports.bShowTriggerBounds);
     AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Helpers of Frozen Objects"), &gSettings.viewports.nShowFrozenHelpers);
