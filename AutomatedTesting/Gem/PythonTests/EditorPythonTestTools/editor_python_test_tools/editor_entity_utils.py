@@ -313,7 +313,7 @@ class EditorComponent:
             bus.Broadcast, "FindComponentTypeIdsByEntityType", component_names, entity_type.value)
         return type_ids
 
-    def is_property_visible(self, component_property_path: str) -> bool:
+    def is_property_visible(self, component_property_path: str, expected: bool = True) -> bool:
         """
 
         """
@@ -321,6 +321,10 @@ class EditorComponent:
 
         get_component_property_outcome = self.get_property_type_visibility()
         result = get_component_property_outcome[component_property_path][visible_key]
+
+        assert result == expected, \
+            f"Failure: Property visibility was not {expected} for" \
+            f"'{self.get_component_name()}' : '{component_property_path}'"
 
         return result
 

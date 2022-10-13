@@ -91,17 +91,10 @@ def PhysX_ColliderFamily_Component_CRUD():
     from editor_python_test_tools.editor_component.physx_collider import PhysxCollider
     from editor_python_test_tools.editor_entity_utils import EditorEntity as EE
     from editor_python_test_tools.utils import Tracer
-    from editor_python_test_tools.asset_utils import Asset
-    from Physics.utils.physics_constants import (PHYSX_SHAPE_COLLIDER, BOX_SHAPE_COMPONENT, CAPSULE_SHAPE_COMPONENT,
-                                                 PHSX_SHAPE_COLLIDER_SHAPE, CYLINDER_SHAPE_COMPONENT,
-                                                 POLYGON_PRISM_SHAPE_COMPONENT, QUAD_SHAPE_COMPONENT,
-                                                 SPHERE_SHAPE_COMPONENT, PHYSX_COLLIDER_MESH_PATH)
 
 
     # 0) Pre-conditions
-    PHYSX_MESH = os.path.join("objects", "_primitives", "_box_1x1.pxmesh")
-    px_asset = Asset.find_asset_by_path(PHYSX_MESH)
-
+    physx_mesh = os.path.join("objects", "_primitives", "_box_1x1.pxmesh")
     hydra.open_base_level()
 
     # 1) Create entities to hold PhysX Collider Components
@@ -129,27 +122,14 @@ def PhysX_ColliderFamily_Component_CRUD():
         physx_collider_physicsasset_component = PhysxCollider(physx_collider_physicsasset_entity)
 
 
-        physx_shape_collider_box_component = physx_shape_collider_box_entity.add_component(PHYSX_SHAPE_COLLIDER)
-        physx_shape_collider_capsule_component = physx_shape_collider_capsule_entity.add_component(PHYSX_SHAPE_COLLIDER)
-        physx_shape_collider_cylinder_component = physx_shape_collider_cylinder_entity.add_component(PHYSX_SHAPE_COLLIDER)
-        physx_shape_collider_polygon_prism_component = physx_shape_collider_polygon_prism_entity.add_component(PHYSX_SHAPE_COLLIDER)
-        physx_shape_collider_quad_component = physx_shape_collider_quad_entity.add_component(PHYSX_SHAPE_COLLIDER)
-        physx_shape_collider_sphere_component = physx_shape_collider_sphere_entity.add_component(PHYSX_SHAPE_COLLIDER)
-
         # 3) Adding Physx Shape Collider Components to corresponding Shape Collider Entities
-        box_shape_component = physx_shape_collider_box_entity.add_component(BOX_SHAPE_COMPONENT)
-        capsule_shape_component = physx_shape_collider_capsule_entity.add_component(CAPSULE_SHAPE_COMPONENT)
-        cylinder_shape_component = physx_shape_collider_cylinder_entity.add_component(CYLINDER_SHAPE_COMPONENT)
-        polygon_prism_shape_component = physx_shape_collider_polygon_prism_entity.add_component(POLYGON_PRISM_SHAPE_COMPONENT)
-        quad_shape_component = physx_shape_collider_quad_entity.add_component(QUAD_SHAPE_COMPONENT)
-        sphere_shape_component = physx_shape_collider_sphere_entity.add_component(SPHERE_SHAPE_COMPONENT)
 
         # 4) Setting Physx Collider Shapes
         physx_collider_box_shape_component.set_box_shape()
         physx_collider_capsule_shape_component.set_capsule_shape()
         physx_collider_sphere_shape_component.set_sphere_shape()
         physx_collider_cylinder_shape_component.set_cylinder_shape()
-        physx_collider_physicsasset_component.set_physx_mesh_from_path(PHYSX_MESH)
+        physx_collider_physicsasset_component.set_physx_mesh_from_path(physx_mesh)
 
         physx_collider_box_shape_component.set_box_dimensions(1.0, 2.0, 3.0)
 

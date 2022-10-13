@@ -68,12 +68,12 @@ import azlmbr.legacy.general as general
 from editor_python_test_tools.editor_entity_utils import EditorEntity
 from editor_python_test_tools.asset_utils import Asset
 from editor_python_test_tools.utils import TestHelper as helper
-from Physics.utils.physics_constants import (PHYSX_COLLIDER)
 
+COMPONENT_NAME = "PhysX Collider"
 
 class PhysxCollider:
     def __init__(self, editor_entity: EditorEntity) -> None:
-        self.component = editor_entity.add_component(PHYSX_COLLIDER)
+        self.component = editor_entity.add_component(COMPONENT_NAME)
 
     class Path:
         class Box:

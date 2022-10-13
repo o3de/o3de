@@ -8,16 +8,8 @@ Holds constants used across both hydra and non-hydra scripts.
 """
 
 """
-General Constants
-"""
-IDLE_FRAMES_1 = 1
-WAIT_TIME_1 = 1
-WAIT_TIME_3 = 3
-
-"""
 PhysX Components
 """
-PHYSX_COLLIDER = "PhysX Collider"
 PHYSX_SHAPE_COLLIDER = "PhysX Shape Collider"
 
 """
@@ -30,11 +22,6 @@ POLYGON_PRISM_SHAPE_COMPONENT = "Polygon Prism Shape"
 QUAD_SHAPE_COMPONENT = "Quad Shape"
 SPHERE_SHAPE_COMPONENT = "Sphere Shape"
 
-"""
-Component Properties
-"""
-PHSX_SHAPE_COLLIDER_SHAPE = 'Shape Configuration|Shape'
-PHYSX_COLLIDER_MESH_PATH = 'Shape Configuration|Asset|PhysX Mesh'
 
 
 
