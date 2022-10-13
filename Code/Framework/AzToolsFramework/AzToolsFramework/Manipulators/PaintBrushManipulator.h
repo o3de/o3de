@@ -73,12 +73,12 @@ namespace AzToolsFramework
         //! Returns the actions that we want any Component Mode using the Paint Brush Manipulator to support.
         AZStd::vector<AzToolsFramework::ActionOverride> PopulateActionsImpl();
  
-        void AdjustRadius(float radiusDelta);
-        void AdjustIntensity(float intensityDelta);
-        void AdjustOpacity(float opacityDelta);
+        void AdjustSize(float sizeDelta);
+        void AdjustIntensityPercent(float intensityPercentDelta);
+        void AdjustOpacityPercent(float opacityPercentDelta);
 
     private:
-        void OnRadiusChanged(float radius) override;
+        void OnSettingsChanged(const PaintBrushSettings& newSettings) override;
 
         void MovePaintBrush(int viewportId, const AzFramework::ScreenPoint& screenCoordinates, bool isFirstPaintedPoint);
 
@@ -90,10 +90,10 @@ namespace AzToolsFramework
         //! True if we're currently painting, false if not.
         bool m_isPainting = false;
 
-        //! Tracks the previous location we painted so that we can generate a continuous brush stroke.
-        AZ::Vector3 m_previousCenter;
+        //! Location of the last mouse point that we processed while painting.
+        AZ::Vector2 m_lastBrushCenter;
 
-        //! Current center of the paintbrush in world space.
-        AZ::Vector3 m_center;
+        //! Distance that the mouse has traveled since the last time we drew a paint stamp.
+        float m_distanceSinceLastDraw = 0.0f;
     };
 } // namespace AzToolsFramework
