@@ -6,6 +6,8 @@
  *
  */
 
+#pragma once
+
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Metrics/IEventLoggerFactory.h>

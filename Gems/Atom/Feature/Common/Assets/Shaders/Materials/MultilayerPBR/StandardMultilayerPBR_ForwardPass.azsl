@@ -20,6 +20,7 @@
 
 // Custom Surface & Lighting
 #include <Atom/Features/PBR/Lighting/StandardLighting.azsli>
+#include <Atom/Features/PBR/Lights/IblForward.azsli>
 
 // Decals
 #include <Atom/Features/PBR/Decals.azsli>
@@ -62,8 +63,7 @@ struct VSInput
     // Base fields (required by the template azsli file)...
     float3 m_position : POSITION;
     float3 m_normal : NORMAL;
-    float4 m_tangent : TANGENT; 
-    float3 m_bitangent : BITANGENT; 
+    float4 m_tangent : TANGENT;
  
     // Extended fields (only referenced in this azsl file)...
     float2 m_uv0 : UV0;
@@ -76,14 +76,12 @@ struct VSInput
     float4 m_optional_blendMask : COLOR0;
 };
 
-
 struct VSOutput
 {
     // Base fields (required by the template azsli file)...
     precise linear centroid float4 m_position : SV_Position;
     float3 m_normal: NORMAL;
-    float3 m_tangent : TANGENT; 
-    float3 m_bitangent : BITANGENT; 
+    float4 m_tangent : TANGENT;
     float3 m_worldPosition : UV0;
 
     // Extended fields (only referenced in this azsl file)...
@@ -91,8 +89,6 @@ struct VSOutput
     
     float3 m_blendMask : UV7;
 };
-
-#include <Atom/Features/Vertex/VertexHelper.azsli>
 
 VSOutput VertexShader(VSInput IN)
 {
@@ -116,7 +112,11 @@ VSOutput VertexShader(VSInput IN)
     
     // Shadow coords will be calculated in the pixel shader in this case
     bool skipShadowCoords = ShouldHandleParallax() && o_parallax_enablePixelDepthOffset;
-    VertexHelper(IN, OUT, worldPosition, skipShadowCoords);
+    
+    OUT.m_worldPosition = worldPosition;
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(OUT.m_worldPosition, 1.0));
+    OUT.m_normal = IN.m_normal;
+    OUT.m_tangent = IN.m_tangent;
 
     return OUT;
 }
@@ -124,14 +124,14 @@ VSOutput VertexShader(VSInput IN)
 //! Collects all the raw Standard material inputs for a single layer. See ProcessStandardMaterialInputs().
 struct StandardMaterialInputs
 {
-    COMMON_SRG_INPUTS_BASE_COLOR()  
-    COMMON_SRG_INPUTS_ROUGHNESS()   
-    COMMON_SRG_INPUTS_METALLIC()    
-    COMMON_SRG_INPUTS_SPECULAR_F0() 
-    COMMON_SRG_INPUTS_NORMAL()      
-    COMMON_SRG_INPUTS_CLEAR_COAT()  
-    COMMON_SRG_INPUTS_OCCLUSION()   
-    COMMON_SRG_INPUTS_EMISSIVE()  
+    COMMON_SRG_INPUTS_BASE_COLOR()
+    COMMON_SRG_INPUTS_ROUGHNESS()
+    COMMON_SRG_INPUTS_METALLIC()
+    COMMON_SRG_INPUTS_SPECULAR_F0()
+    COMMON_SRG_INPUTS_NORMAL()
+    COMMON_SRG_INPUTS_CLEAR_COAT()
+    COMMON_SRG_INPUTS_OCCLUSION()
+    COMMON_SRG_INPUTS_EMISSIVE()
     // Note parallax is omitted here because that requires special handling.
 
     bool m_normal_useTexture;
@@ -301,7 +301,12 @@ ProcessedMaterialInputs ProcessStandardMaterialInputs(StandardMaterialInputs inp
 
 PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float depthNDC)
 {
-    const float3 vertexNormal = normalize(IN.m_normal);
+    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
+    float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
+
+    float3 vertexNormal, vertexTangent, vertexBitangent;
+    ConstructTBN(IN.m_normal, IN.m_tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
+
     depthNDC = IN.m_position.z;
 
     s_blendMaskFromVertexStream = IN.m_blendMask;
@@ -309,8 +314,8 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     LayerBlendSource blendSource = GetFinalLayerBlendSource();
 
     // ------- Tangents & Bitangets -------
-    float3 tangents[UvSetCount] = { IN.m_tangent.xyz, IN.m_tangent.xyz };
-    float3 bitangents[UvSetCount] = { IN.m_bitangent.xyz, IN.m_bitangent.xyz };
+    float3 tangents[UvSetCount] = { vertexTangent, vertexTangent };
+    float3 bitangents[UvSetCount] = { vertexBitangent, vertexBitangent };
 
     if ((o_parallax_feature_enabled && !o_enableSubsurfaceScattering)
         || o_layer1_o_normal_useTexture
@@ -507,7 +512,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     ApplyDirectLighting(surface, lightingData, IN.m_position);
 
     // Apply Image Based Lighting (IBL)
-    ApplyIBL(surface, lightingData);
+    ApplyIblForward(surface, lightingData);
 
     // Finalize Lighting
     lightingData.FinalizeLighting();

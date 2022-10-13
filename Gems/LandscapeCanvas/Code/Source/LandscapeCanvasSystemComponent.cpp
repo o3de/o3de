@@ -388,17 +388,6 @@ namespace LandscapeCanvas
         return m_serialization;
     }
 
-    void LandscapeCanvasSystemComponent::SetSerializedNodeEntities(const AZStd::unordered_map<AZ::EntityId, AZ::Entity*>& nodeEntities)
-    {
-        // Delete any entities we had previously serialized before updating our mappings
-        for (auto it : m_serialization.m_serializedNodeEntities)
-        {
-            delete it.second;
-        }
-
-        m_serialization.m_serializedNodeEntities = nodeEntities;
-    }
-
     void LandscapeCanvasSystemComponent::SetDeserializedEntities(const AZStd::unordered_map<AZ::EntityId, AZ::EntityId>& entities)
     {
         m_serialization.m_deserializedEntities = entities;

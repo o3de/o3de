@@ -179,6 +179,16 @@ def print_project_templates(verbose: int, project_path: pathlib.Path, project_na
     return 0
 
 
+def print_project_engine_name(verbose: int, project_path: pathlib.Path, project_name: str) -> int:
+    project_path = get_project_path(project_path, project_name)
+    if not project_path:
+        return 1
+
+    project_json_data = manifest.get_project_json_data(project_path=project_path)
+    print(f'Engine Name:\n{project_json_data.get("engine", "")}')
+    return 0
+
+
 def print_all_projects(verbose: int) -> int:
     all_projects_data = manifest.get_all_projects()
     print(f'Project Paths:\n{json.dumps(all_projects_data, indent=4)}')

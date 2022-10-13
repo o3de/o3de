@@ -9,40 +9,6 @@
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
 #include "native/AssetDatabase/AssetDatabase.h"
 
-namespace AssetProcessingStateDataUnitTestInternal
-{
-    // a utility class to redirect the location the database is stored to a different location so that we don't
-    // touch real data during unit tests.
-    class FakeDatabaseLocationListener
-        : protected AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Handler
-    {
-    public:
-        FakeDatabaseLocationListener(const char* desiredLocation, const char* assetPath)
-            : m_location(desiredLocation)
-            , m_assetPath(assetPath)
-        {
-            AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Handler::BusConnect();
-        }
-        ~FakeDatabaseLocationListener()
-        {
-            AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Handler::BusDisconnect();
-        }
-    protected:
-        // IMPLEMENTATION OF -------------- AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Listener
-        bool GetAssetDatabaseLocation(AZStd::string& location) override
-        {
-            location = m_location;
-            return true;
-        }
-
-        // ------------------------------------------------------------
-
-    private:
-        AZStd::string m_location;
-        AZStd::string m_assetPath;
-    };
-}
-
 // perform some operations on the state data given.  (Does not perform save and load tests)
 void AssetProcessingStateDataUnitTest::DataTest(AssetProcessor::AssetDatabaseConnection* stateData)
 {
@@ -1294,9 +1260,9 @@ void AssetProcessingStateDataUnitTest::DataTest(AssetProcessor::AssetDatabaseCon
 
 void AssetProcessingStateDataUnitTest::ExistenceTest(AssetProcessor::AssetDatabaseConnection* stateData)
 {
-    UNIT_TEST_EXPECT_FALSE(stateData->DataExists());
-    stateData->ClearData(); // this is expected to initialize a database.
+    // The asset database has already been created when the application manager was activated.
     UNIT_TEST_EXPECT_TRUE(stateData->DataExists());
+    UNIT_TEST_EXPECT_TRUE(stateData->OpenDatabase());
 }
 
 // test is broken out into its own function so as to be more compatible with a future GTEST-like API.
@@ -1369,8 +1335,7 @@ void AssetProcessingStateDataUnitTest::BuilderInfoTest(AssetProcessor::AssetData
 
 void AssetProcessingStateDataUnitTest::SourceDependencyTest(AssetProcessor::AssetDatabaseConnection* stateData)
 {
-    using SourceFileDependencyEntry = AzToolsFramework::AssetDatabase::SourceFileDependencyEntry;
-    using SourceFileDependencyEntryContainer = AzToolsFramework::AssetDatabase::SourceFileDependencyEntryContainer;
+    using namespace AzToolsFramework::AssetDatabase;
 
     //  A depends on B, which depends on both C and D
     AZ::Uuid aUuid{ "{B3FCF51E-BDB3-430D-B360-E57913725250}" };
@@ -1380,19 +1345,19 @@ void AssetProcessingStateDataUnitTest::SourceDependencyTest(AssetProcessor::Asse
     newEntry1.m_sourceDependencyID = AzToolsFramework::AssetDatabase::InvalidEntryId;
     newEntry1.m_builderGuid = AZ::Uuid::CreateRandom();
     newEntry1.m_sourceGuid = aUuid;
-    newEntry1.m_dependsOnSource = "b.txt";
+    newEntry1.m_dependsOnSource = PathOrUuid(bUuid);
 
     SourceFileDependencyEntry newEntry2; // b depends on C
     newEntry2.m_sourceDependencyID = AzToolsFramework::AssetDatabase::InvalidEntryId;
     newEntry2.m_builderGuid = AZ::Uuid::CreateRandom();
     newEntry2.m_sourceGuid = bUuid;
-    newEntry2.m_dependsOnSource = "c.txt";
+    newEntry2.m_dependsOnSource = PathOrUuid("c.txt");
 
     SourceFileDependencyEntry newEntry3;  // b also depends on D
     newEntry3.m_sourceDependencyID = AzToolsFramework::AssetDatabase::InvalidEntryId;
     newEntry3.m_builderGuid = AZ::Uuid::CreateRandom();
     newEntry3.m_sourceGuid = bUuid;
-    newEntry3.m_dependsOnSource = "d.txt";
+    newEntry3.m_dependsOnSource = PathOrUuid("d.txt");
 
     UNIT_TEST_EXPECT_TRUE(stateData->SetSourceFileDependency(newEntry1));
     UNIT_TEST_EXPECT_TRUE(stateData->SetSourceFileDependency(newEntry2));
@@ -1401,7 +1366,7 @@ void AssetProcessingStateDataUnitTest::SourceDependencyTest(AssetProcessor::Asse
     SourceFileDependencyEntryContainer results;
 
     // what depends on b?  a does.
-    UNIT_TEST_EXPECT_TRUE(stateData->GetSourceFileDependenciesByDependsOnSource("b.txt", SourceFileDependencyEntry::DEP_Any, results));
+    UNIT_TEST_EXPECT_TRUE(stateData->GetSourceFileDependenciesByDependsOnSource(bUuid, "b.txt", "unused", SourceFileDependencyEntry::DEP_Any, results));
     UNIT_TEST_EXPECT_TRUE(results.size() == 1);
     UNIT_TEST_EXPECT_TRUE(results[0].m_sourceGuid == aUuid);
     UNIT_TEST_EXPECT_TRUE(results[0].m_builderGuid == newEntry1.m_builderGuid);
@@ -1414,8 +1379,8 @@ void AssetProcessingStateDataUnitTest::SourceDependencyTest(AssetProcessor::Asse
     UNIT_TEST_EXPECT_TRUE(results.size() == 2);
     UNIT_TEST_EXPECT_TRUE(results[0].m_sourceGuid == bUuid);  // note that both of these are B, since its B that has the dependency on the others.
     UNIT_TEST_EXPECT_TRUE(results[1].m_sourceGuid == bUuid);
-    UNIT_TEST_EXPECT_TRUE(results[0].m_dependsOnSource == "c.txt");
-    UNIT_TEST_EXPECT_TRUE(results[1].m_dependsOnSource == "d.txt");
+    UNIT_TEST_EXPECT_TRUE(results[0].m_dependsOnSource.GetPath() == "c.txt");
+    UNIT_TEST_EXPECT_TRUE(results[1].m_dependsOnSource.GetPath() == "d.txt");
 
     // what does b depend on, but filtered to only one builder?
     results.clear();
@@ -1423,7 +1388,7 @@ void AssetProcessingStateDataUnitTest::SourceDependencyTest(AssetProcessor::Asse
     // b depends on 1 thing from that builder: c
     UNIT_TEST_EXPECT_TRUE(results.size() == 1);
     UNIT_TEST_EXPECT_TRUE(results[0].m_sourceGuid == bUuid);
-    UNIT_TEST_EXPECT_TRUE(results[0].m_dependsOnSource == "c.txt");
+    UNIT_TEST_EXPECT_TRUE(results[0].m_dependsOnSource.GetPath() == "c.txt");
 
     // make sure that we can look these up by ID (a)
     UNIT_TEST_EXPECT_TRUE(stateData->GetSourceFileDependencyBySourceDependencyId(newEntry1.m_sourceDependencyID, results[0]));
@@ -1436,7 +1401,7 @@ void AssetProcessingStateDataUnitTest::SourceDependencyTest(AssetProcessor::Asse
     UNIT_TEST_EXPECT_TRUE(stateData->RemoveSourceFileDependency(newEntry3.m_sourceDependencyID));
     UNIT_TEST_EXPECT_TRUE(stateData->GetDependsOnSourceBySource(bUuid, SourceFileDependencyEntry::DEP_Any, results));
     UNIT_TEST_EXPECT_TRUE(results.size() == 1);
-    UNIT_TEST_EXPECT_TRUE(results[0].m_dependsOnSource == "c.txt");
+    UNIT_TEST_EXPECT_TRUE(results[0].m_dependsOnSource.GetPath() == "c.txt");
 
 
     // clean up
@@ -1488,58 +1453,44 @@ void AssetProcessingStateDataUnitTest::SourceFingerprintTest(AssetProcessor::Ass
 
 void AssetProcessingStateDataUnitTest::AssetProcessingStateDataTest()
 {
-    using namespace AssetProcessingStateDataUnitTestInternal;
     using namespace AzToolsFramework::AssetDatabase;
 
-    QDir dirPath;
-
-    // intentional scope to contain QTemporaryDir since it cleans up on destruction!
+    bool testsFailed = false;
+    connect(this, &UnitTestRun::UnitTestFailed, this, [&testsFailed]()
     {
-        QTemporaryDir tempDir;
-        ProductDatabaseEntryContainer products;
-        dirPath = QDir(tempDir.path());
+        testsFailed = true;
+    }, Qt::DirectConnection);
 
-        bool testsFailed = false;
-        connect(this, &UnitTestRun::UnitTestFailed, this, [&testsFailed]()
-        {
-            testsFailed = true;
-        }, Qt::DirectConnection);
-
+    {
         // now test the SQLite version of the database on its own.
+        AssetProcessor::AssetDatabaseConnection connection;
+
+        ExistenceTest(&connection);
+        if (testsFailed)
         {
-            FakeDatabaseLocationListener listener(dirPath.filePath("statedatabase.sqlite").toUtf8().constData(), "displayString");
-            AssetProcessor::AssetDatabaseConnection connection;
-
-            ExistenceTest(&connection);
-            if (testsFailed)
-            {
-                return;
-            }
-
-            DataTest(&connection);
-            if (testsFailed)
-            {
-                return;
-            }
-
-            BuilderInfoTest(&connection);
-            if (testsFailed)
-            {
-                return;
-            }
-
-            SourceFingerprintTest(&connection);
-            if (testsFailed)
-            {
-                return;
-            }
-
-            SourceDependencyTest(&connection);
+            return;
         }
+
+        DataTest(&connection);
+        if (testsFailed)
+        {
+            return;
+        }
+
+        BuilderInfoTest(&connection);
+        if (testsFailed)
+        {
+            return;
+        }
+
+        SourceFingerprintTest(&connection);
+        if (testsFailed)
+        {
+            return;
+        }
+
+        SourceDependencyTest(&connection);
     }
-    // scope ending for the QTempDir
-    // if this fails it means someone left a handle to the database open.
-    UNIT_TEST_EXPECT_FALSE(dirPath.exists());
 
     Q_EMIT UnitTestPassed();
 }

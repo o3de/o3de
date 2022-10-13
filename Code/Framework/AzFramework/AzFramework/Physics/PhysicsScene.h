@@ -35,6 +35,11 @@ namespace AzPhysics
         //! @returns Will return a SceneHandle to a Scene connected with the given name, otherwise will return InvalidSceneHandle.
         virtual SceneHandle GetSceneHandle(const AZStd::string& sceneName) = 0;
 
+        //! Get the Scene of the requested SceneHandle.
+        //! @param handle The SceneHandle of the requested scene.
+        //! @return Returns a Scene pointer if found, otherwise nullptr.
+        virtual Scene* GetScene(SceneHandle handle) = 0;
+
         //! Start the simulation process.
         //! As an example, this is a good place to trigger and queue any long running work in separate threads.
         //! @param sceneHandle The SceneHandle of the scene to use.
