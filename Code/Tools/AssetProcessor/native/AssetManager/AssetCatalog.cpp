@@ -598,7 +598,7 @@ namespace AssetProcessor
             QMutexLocker locker(&m_registriesMutex);
             auto itr = m_registries.find(platform);
 
-            if(itr == m_registries.end())
+            if (itr == m_registries.end())
             {
                 continue;
             }

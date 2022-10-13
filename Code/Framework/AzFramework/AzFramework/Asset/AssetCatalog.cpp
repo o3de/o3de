@@ -843,7 +843,7 @@ namespace AzFramework
                     {
                         AZ_TracePrintf(
                             "AssetCatalog",
-                            "Registering asset \"%s\" via AssetSystem message, but type is not set.\n",
+                            "Received `AssetNotificationMessage` network message with no AssetType.  Asset \"%s\" will be registered without a type.\n",
                             relativePath.c_str());
                     }
 #endif
@@ -918,7 +918,7 @@ namespace AzFramework
             }
             else
             {
-                AZ_TracePrintf("AssetCatalog", "AssetChanged: invalid asset id: %s\n", assetId.ToString<AZStd::string>().c_str());
+                AZ_TracePrintf("AssetCatalog", "AssetNotificationMessage network message received with invalid asset id: %s.  Asset will not be registered.\n", assetId.ToString<AZStd::string>().c_str());
             }
         }
     }

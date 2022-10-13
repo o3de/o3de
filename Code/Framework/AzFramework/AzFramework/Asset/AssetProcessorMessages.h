@@ -628,8 +628,8 @@ namespace AzFramework
             AZStd::vector<AZ::Data::ProductDependency> m_dependencies;
         };
 
-        // Bulk message for sending updates for multiple assets all at once.
-        // All updates must be of the same type and for the same platform.  The only supported types are AssetChanged and AssetRemoved.
+        //! Bulk message for sending updates for multiple assets all at once.
+        //! All updates must be of the same type and for the same platform.  The only supported types are AssetChanged and AssetRemoved.
         class BulkAssetNotificationMessage
             : public BaseAssetProcessorMessage
         {
