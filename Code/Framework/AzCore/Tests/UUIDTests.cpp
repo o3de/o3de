@@ -388,20 +388,20 @@ namespace UnitTest
     static_assert(AZ::UuidInternal::GetValue('F') == AZStd::byte(15));
 
     // Common characters in a Uuid
-    static_assert(AZ::UuidInternal::GetValue('{') == AZStd::numeric_limits<AZStd::byte>::max());
-    static_assert(AZ::UuidInternal::GetValue('-') == AZStd::numeric_limits<AZStd::byte>::max());
-    static_assert(AZ::UuidInternal::GetValue('}') == AZStd::numeric_limits<AZStd::byte>::max());
-    static_assert(AZ::UuidInternal::GetValue(' ') == AZStd::numeric_limits<AZStd::byte>::max());
+    static_assert(AZ::UuidInternal::GetValue('{') == AZ::UuidInternal::InvalidValue);
+    static_assert(AZ::UuidInternal::GetValue('-') == AZ::UuidInternal::InvalidValue);
+    static_assert(AZ::UuidInternal::GetValue('}') == AZ::UuidInternal::InvalidValue);
+    static_assert(AZ::UuidInternal::GetValue(' ') == AZ::UuidInternal::InvalidValue);
 
     // Boundary conditions with invalid Uuid characters
-    static_assert(AZ::UuidInternal::GetValue(0) == AZStd::numeric_limits<AZStd::byte>::max());
-    static_assert(AZ::UuidInternal::GetValue(AZStd::numeric_limits<char>::max()) == AZStd::numeric_limits<AZStd::byte>::max());
-    static_assert(AZ::UuidInternal::GetValue('0' - 1) == AZStd::numeric_limits<AZStd::byte>::max());
-    static_assert(AZ::UuidInternal::GetValue('9' + 1) == AZStd::numeric_limits<AZStd::byte>::max());
-    static_assert(AZ::UuidInternal::GetValue('a' - 1) == AZStd::numeric_limits<AZStd::byte>::max());
-    static_assert(AZ::UuidInternal::GetValue('f' + 1) == AZStd::numeric_limits<AZStd::byte>::max());
-    static_assert(AZ::UuidInternal::GetValue('A' - 1) == AZStd::numeric_limits<AZStd::byte>::max());
-    static_assert(AZ::UuidInternal::GetValue('F' + 1) == AZStd::numeric_limits<AZStd::byte>::max());
+    static_assert(AZ::UuidInternal::GetValue(0) == AZ::UuidInternal::InvalidValue);
+    static_assert(AZ::UuidInternal::GetValue(AZStd::numeric_limits<char>::max()) == AZ::UuidInternal::InvalidValue);
+    static_assert(AZ::UuidInternal::GetValue('0' - 1) == AZ::UuidInternal::InvalidValue);
+    static_assert(AZ::UuidInternal::GetValue('9' + 1) == AZ::UuidInternal::InvalidValue);
+    static_assert(AZ::UuidInternal::GetValue('a' - 1) == AZ::UuidInternal::InvalidValue);
+    static_assert(AZ::UuidInternal::GetValue('f' + 1) == AZ::UuidInternal::InvalidValue);
+    static_assert(AZ::UuidInternal::GetValue('A' - 1) == AZ::UuidInternal::InvalidValue);
+    static_assert(AZ::UuidInternal::GetValue('F' + 1) == AZ::UuidInternal::InvalidValue);
 
     
     class UuidBenchmark : public AllocatorsBenchmarkFixture

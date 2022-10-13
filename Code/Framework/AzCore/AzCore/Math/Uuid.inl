@@ -17,13 +17,15 @@
 
 namespace AZ::UuidInternal
 {
+    constexpr AZStd::byte InvalidValue = AZStd::byte(255);
+
     // Lookup table to convert ascii values for 0-9, a-f, and A-F to hex values in the range 0-15.
     // Lambda expression populates the CharToHexDigit lookup table at compile time(it can't be invoked at runtime)
     // It is invoked immediately
     inline constexpr auto CharToHexDigit = []() constexpr
     {
         AZStd::array<AZStd::byte, 256> charToHexTable{};
-        AZStd::fill(charToHexTable.begin(), charToHexTable.end(), AZStd::numeric_limits<AZStd::byte>::max());
+        AZStd::fill(charToHexTable.begin(), charToHexTable.end(), InvalidValue);
         // Fill characters '0' - '9' with the byte range of 0 - 9
         for (size_t i = 0; i < 10; ++i)
         {
