@@ -73,6 +73,26 @@ namespace
     using namespace AzToolsFramework::AssetSystem;
     using namespace AzFramework::AssetSystem;
 
+    template<typename T>
+    void BuildReport(AssetProcessor::ISourceFileRelocation* relocationInterface, T& result, AZStd::vector<AZStd::string>& lines)
+    {
+        if (result.IsSuccess())
+        {
+            AssetProcessor::RelocationSuccess success = result.TakeValue();
+
+            // The report can be too long for the AZ_Printf buffer, so split it into individual lines
+            AZStd::string report = relocationInterface->BuildChangeReport(success.m_relocationContainer, success.m_updateTasks);
+            AzFramework::StringFunc::TokenizeVisitor(
+                report.c_str(),
+                [&lines](AZStd::string line)
+                {
+                    lines.push_back(line);
+                    AZ::Debug::Trace::Instance().Output(AssetProcessor::ConsoleChannel, (line + "\n").c_str());
+                },
+                "\n");
+        }
+    }
+
     AssetChangeReportResponse HandleAssetChangeReportRequest(MessageData < AssetChangeReportRequest> messageData)
     {
         AZStd::vector<AZStd::string> lines;
@@ -86,20 +106,7 @@ namespace
                 {
                     auto resultCheck = relocationInterface->Move(messageData.m_message->m_fromPath, messageData.m_message->m_toPath);
 
-                    if (resultCheck.IsSuccess())
-                    {
-                        AssetProcessor::RelocationSuccess success = resultCheck.TakeValue();
-
-                        // The report can be too long for the AZ_Printf buffer, so split it into individual lines
-                        AZStd::string report =
-                            relocationInterface->BuildChangeReport(success.m_relocationContainer, success.m_updateTasks);
-                        AzFramework::StringFunc::Tokenize(report.c_str(), lines, "\n");
-
-                        for (const AZStd::string& line : lines)
-                        {
-                            AZ_Printf(AssetProcessor::ConsoleChannel, (line + "\n").c_str());
-                        }
-                    }
+                    BuildReport(relocationInterface, resultCheck, lines);
                     break;
                 }
                 case AssetChangeReportRequest::ChangeType::Move:
@@ -107,20 +114,21 @@ namespace
                     auto resultMove = relocationInterface->Move(
                         messageData.m_message->m_fromPath, messageData.m_message->m_toPath, false, true, true, true);
 
-                    if (resultMove.IsSuccess())
-                    {
-                        AssetProcessor::RelocationSuccess success = resultMove.TakeValue();
+                    BuildReport(relocationInterface, resultMove, lines);
+                    break;
+                }
+                case AssetChangeReportRequest::ChangeType::CheckDelete:
+                {
+                    auto resultCheck = relocationInterface->Delete(messageData.m_message->m_fromPath);
 
-                        // The report can be too long for the AZ_Printf buffer, so split it into individual lines
-                        AZStd::string report =
-                            relocationInterface->BuildChangeReport(success.m_relocationContainer, success.m_updateTasks);
-                        AzFramework::StringFunc::Tokenize(report.c_str(), lines, "\n");
+                    BuildReport(relocationInterface, resultCheck, lines);
+                    break;
+                }
+                case AssetChangeReportRequest::ChangeType::Delete:
+                {
+                    auto resultDelete = relocationInterface->Delete(messageData.m_message->m_fromPath, false, true, true);
 
-                        for (const AZStd::string& line : lines)
-                        {
-                            AZ_Printf(AssetProcessor::ConsoleChannel, (line + "\n").c_str());
-                        }
-                    }
+                    BuildReport(relocationInterface, resultDelete, lines);
                     break;
                 }
             }

@@ -318,6 +318,7 @@ namespace EMotionFX
         float m_duration = 0.0f;
         float m_sampleRate = 30.0f;
         bool m_additive = false;
+        bool m_rootMotionExtracted = false;
 
     private:
         void ClearBaseData();

@@ -77,6 +77,8 @@ set(FILES
     Source/Editor/Plugins/Cloth/ClothJointInspectorPlugin.cpp
     Source/Editor/Plugins/Cloth/ClothJointWidget.h
     Source/Editor/Plugins/Cloth/ClothJointWidget.cpp
+    Source/Editor/Plugins/SkeletonOutliner/JointPropertyWidget.h
+    Source/Editor/Plugins/SkeletonOutliner/JointPropertyWidget.cpp
     Source/Editor/Plugins/SkeletonOutliner/SkeletonOutlinerBus.h
     Source/Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h
     Source/Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.cpp

@@ -64,14 +64,14 @@ class TestEditorTest:
 
     # Test runs #
     @classmethod
-    def _run_single_test(cls, testdir, workspace, module_name):
+    def _run_single_test(cls, pytester, workspace, module_name):
         # Keep the AP open for all tests
         if cls._asset_processor is None:
             if not process_utils.process_exists("AssetProcessor", ignore_extensions=True):
                 cls._asset_processor = AssetProcessor(workspace)
                 cls._asset_processor.start()
 
-        testdir.makepyfile(
+        pytester.makepyfile(
             f"""
             import pytest
             import os
@@ -88,7 +88,7 @@ class TestEditorTest:
                     import {module_name} as test_module
 
             """)
-        result = testdir.runpytest(*TestEditorTest.args)
+        result = pytester.runpytest(*TestEditorTest.args)
 
         def get_class(module_name):
             class test_single(EditorSingleTest):
@@ -101,25 +101,25 @@ class TestEditorTest:
         return extracted_result[1], result
 
     @pytest.mark.skip(reason="Skipped for test efficiency, but keeping for reference.")
-    def test_single_pass_test(self, request, workspace, launcher_platform, testdir):
-        (extracted_result, result) = TestEditorTest._run_single_test(testdir, workspace, "EditorTest_That_Passes")
+    def test_single_pass_test(self, request, workspace, launcher_platform, pytester):
+        (extracted_result, result) = TestEditorTest._run_single_test(pytester, workspace, "EditorTest_That_Passes")
         result.assert_outcomes(passed=1)
         assert isinstance(extracted_result, Result.Pass)
 
-    def test_single_fail_test(self, request, workspace, launcher_platform, testdir):
-        (extracted_result, result) = TestEditorTest._run_single_test(testdir, workspace, "EditorTest_That_Fails")
+    def test_single_fail_test(self, request, workspace, launcher_platform, pytester):
+        (extracted_result, result) = TestEditorTest._run_single_test(pytester, workspace, "EditorTest_That_Fails")
         result.assert_outcomes(failed=1)
         assert isinstance(extracted_result, Result.Fail)
 
-    def test_single_crash_test(self, request, workspace, launcher_platform, testdir):
-        (extracted_result, result) = TestEditorTest._run_single_test(testdir, workspace, "EditorTest_That_Crashes")
+    def test_single_crash_test(self, request, workspace, launcher_platform, pytester):
+        (extracted_result, result) = TestEditorTest._run_single_test(pytester, workspace, "EditorTest_That_Crashes")
         result.assert_outcomes(failed=1)
         # TODO: For the python 3.10.5 update on windows, a crashed test results in a fail, but on linux it results in an Unknown
         #       We will need to investigate the appropriate assertion here
         assert isinstance(extracted_result, Result.Unknown) or isinstance(extracted_result, Result.Fail)
 
     @classmethod
-    def _run_shared_test(cls, testdir, workspace, module_class_code, extra_cmd_line=None):
+    def _run_shared_test(cls, pytester, workspace, module_class_code, extra_cmd_line=None):
         if not extra_cmd_line:
             extra_cmd_line = []
 
@@ -129,7 +129,7 @@ class TestEditorTest:
                 cls._asset_processor = AssetProcessor(workspace)
                 cls._asset_processor.start()
 
-        testdir.makepyfile(
+        pytester.makepyfile(
             f"""
             import pytest
             import os
@@ -144,14 +144,14 @@ class TestEditorTest:
             class TestAutomation(EditorTestSuite):
             {module_class_code}
             """)
-        result = testdir.runpytest(*TestEditorTest.args + extra_cmd_line)
+        result = pytester.runpytest(*TestEditorTest.args + extra_cmd_line)
         return result
 
 # Here and throughout- the batch/parallel runner counts towards pytest's Passes, so we must include it in the asserts
 
     @pytest.mark.skip(reason="Skipped for test efficiency, but keeping for reference.")
-    def test_batched_2_pass(self, request, workspace, launcher_platform, testdir):
-        result = self._run_shared_test(testdir, workspace,
+    def test_batched_2_pass(self, request, workspace, launcher_platform, pytester):
+        result = self._run_shared_test(pytester, workspace,
             """
                 class test_pass(EditorSharedTest):
                     import EditorTest_That_Passes as test_module
@@ -166,8 +166,8 @@ class TestEditorTest:
         result.assert_outcomes(passed=3)
 
     @pytest.mark.skip(reason="Skipped for test efficiency, but keeping for reference.")
-    def test_batched_1_pass_1_fail(self, request, workspace, launcher_platform, testdir):
-        result = self._run_shared_test(testdir, workspace,
+    def test_batched_1_pass_1_fail(self, request, workspace, launcher_platform, pytester):
+        result = self._run_shared_test(pytester, workspace,
             """
                 class test_pass(EditorSharedTest):
                     import EditorTest_That_Passes as test_module
@@ -181,8 +181,8 @@ class TestEditorTest:
         # 1 Fail, 1 Passes +1(batch runner)
         result.assert_outcomes(passed=2, failed=1)
 
-    def test_batched_1_pass_1_fail_1_crash(self, request, workspace, launcher_platform, testdir):
-        result = self._run_shared_test(testdir, workspace,
+    def test_batched_1_pass_1_fail_1_crash(self, request, workspace, launcher_platform, pytester):
+        result = self._run_shared_test(pytester, workspace,
             """
                 class test_pass(EditorSharedTest):
                     import EditorTest_That_Passes as test_module
@@ -201,8 +201,8 @@ class TestEditorTest:
         result.assert_outcomes(passed=2, failed=2)
 
     @pytest.mark.skip(reason="Skipped for test efficiency, but keeping for reference.")
-    def test_parallel_2_pass(self, request, workspace, launcher_platform, testdir):
-        result = self._run_shared_test(testdir, workspace,
+    def test_parallel_2_pass(self, request, workspace, launcher_platform, pytester):
+        result = self._run_shared_test(pytester, workspace,
             """
                 class test_pass_1(EditorSharedTest):
                     import EditorTest_That_Passes as test_module
@@ -216,8 +216,8 @@ class TestEditorTest:
         # 2 Passes +1(parallel runner)
         result.assert_outcomes(passed=3)
 
-    def test_parallel_1_pass_1_fail_1_crash(self, request, workspace, launcher_platform, testdir):
-        result = self._run_shared_test(testdir, workspace,
+    def test_parallel_1_pass_1_fail_1_crash(self, request, workspace, launcher_platform, pytester):
+        result = self._run_shared_test(pytester, workspace,
             """
                 class test_pass(EditorSharedTest):
                     import EditorTest_That_Passes as test_module
@@ -236,8 +236,8 @@ class TestEditorTest:
         result.assert_outcomes(passed=2, failed=2)
 
     @pytest.mark.skip(reason="Skipped for test efficiency, but keeping for reference.")
-    def test_parallel_batched_2_pass(self, request, workspace, launcher_platform, testdir):
-        result = self._run_shared_test(testdir, workspace,
+    def test_parallel_batched_2_pass(self, request, workspace, launcher_platform, pytester):
+        result = self._run_shared_test(pytester, workspace,
             """
                 class test_pass_1(EditorSharedTest):
                     import EditorTest_That_Passes as test_module
@@ -249,8 +249,8 @@ class TestEditorTest:
         # 2 Passes +1(batched+parallel runner)
         result.assert_outcomes(passed=3)
 
-    def test_parallel_batched_1_pass_1_fail_1_crash(self, request, workspace, launcher_platform, testdir):
-        result = self._run_shared_test(testdir, workspace,
+    def test_parallel_batched_1_pass_1_fail_1_crash(self, request, workspace, launcher_platform, pytester):
+        result = self._run_shared_test(pytester, workspace,
             """
                 class test_pass(EditorSharedTest):
                     import EditorTest_That_Passes as test_module
@@ -265,8 +265,8 @@ class TestEditorTest:
         # 2 Fail, 1 Passes + 1(batched+parallel runner)
         result.assert_outcomes(passed=2, failed=2)
 
-    def test_selection_2_deselected_1_selected(self, request, workspace, launcher_platform, testdir):
-        result = self._run_shared_test(testdir, workspace,
+    def test_selection_2_deselected_1_selected(self, request, workspace, launcher_platform, pytester):
+        result = self._run_shared_test(pytester, workspace,
             """
                 class test_pass(EditorSharedTest):
                     import EditorTest_That_Passes as test_module
