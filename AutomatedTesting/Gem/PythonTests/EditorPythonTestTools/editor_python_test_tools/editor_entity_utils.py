@@ -345,17 +345,6 @@ class EditorComponent:
             f"Failure: Could not toggle the switch for " \
             f"{self.get_component_name()} : {component_property_path}."
 
-    def set_vector3_component_property(self, component_property_path: str, position: math.Vector3) -> None:
-        """
-
-        """
-        self.set_component_property_value(component_property_path, position)
-
-        set_position = self.get_component_property_value(component_property_path)
-        assert (position == set_position), \
-            f"Failure: Expected vector3 did not match the set vector3." \
-            f"{self.get_component_name()} : {component_property_path}."
-
 
 def convert_to_azvector3(xyz) -> azlmbr.math.Vector3:
     """

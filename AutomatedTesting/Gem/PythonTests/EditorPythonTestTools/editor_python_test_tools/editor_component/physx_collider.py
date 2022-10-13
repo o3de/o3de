@@ -124,11 +124,11 @@ class PhysxCollider:
     def toggle_in_scene_queries(self):
         self.component.toggle_property_switch(self.Path.IN_SCENE_QUERIES)
 
-    def set_offset(self, offset: math.Vector3):
-        self.component.set_vector3_component_property(self.Path.OFFSET, offset)
+    def set_offset(self, x: float, y: float, z: float):
+        self.component.set_component_property_value(self.Path.OFFSET, math.Vector3(x, y, z))
 
-    def set_rotation(self, rotation: math.Vector3):
-        self.component.set_vector3_component_property(self.Path.ROTATION, rotation)
+    def set_rotation(self, x: float, y: float, z: float):
+        self.component.set_component_property_value(self.Path.ROTATION, math.Vector3(x, y, z))
 
     def set_tag(self, tag: str):
         self.component.set_component_property_value(self.Path.TAG, tag)
@@ -150,7 +150,7 @@ class PhysxCollider:
         assert self.component.is_property_visible(self.Path.Box.DIMENSIONS), \
             f"Failure: Cannot set box dimensions when property is not visible."
 
-        self.component.set_vector3_component_property(self.Path.Box.DIMENSIONS, math.Vector3(x, y, z))
+        self.component.set_component_property_value(self.Path.Box.DIMENSIONS, math.Vector3(x, y, z))
 
     # Shape: Capsule
     def set_capsule_shape(self) -> None:
@@ -205,14 +205,13 @@ class PhysxCollider:
         assert self.component.is_property_visible(self.Path.PhysicsAsset.ASSET_SCALE), \
             f"Failure: Cannot set Physics Mesh Asset Scale when property is not visible."
 
-        position = math.Vector3(x, y, z)
-        self.component.set_component_property_value(self.path.PhysicsAsset.ASSET_SCALE, position)
+        self.component.set_component_property_value(self.Path.PhysicsAsset.ASSET_SCALE, math.Vector3(x, y, z))
 
     def toggle_physics_materials_from_asset(self) -> None:
         assert self.component.is_property_visible(self.Path.PhysicsAsset.PHYSICS_MATERIALS_FROM_ASSET), \
             f"Failure: Cannot toggle Physics Materials From Asset when property is not visible."
 
-        self.component.toggle_property_switch(self.path.PhysicsAsset.PHYSICS_MATERIALS_FROM_ASSET)
+        self.component.toggle_property_switch(self.Path.PhysicsAsset.PHYSICS_MATERIALS_FROM_ASSET)
 
     # Shape: Sphere
     def set_sphere_shape(self) -> None:
