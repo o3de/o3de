@@ -597,24 +597,38 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
 
         if (calledFromAssetBrowser)
         {
-            // Add Rename option
-            QAction* action = menu->addAction(
-                QObject::tr("Rename Folder"),
-                [treeView]()
-                {
-                    treeView->RenameEntry();
-                });
-            action->setShortcut(Qt::Key_F2);
-            action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-        }
-        // Add Move to option
-        menu->addAction(
-            QObject::tr("Move to"),
-            [treeView]()
+            if (numOfEntries == 1)
             {
-                treeView->MoveEntries();
-            });
-        AddCreateMenu(menu, fullFilePath);
+                // Add Rename option
+                QAction* action = menu->addAction(
+                    QObject::tr("Rename Folder"),
+                    [treeView]()
+                    {
+                        treeView->RenameEntry();
+                    });
+                action->setShortcut(Qt::Key_F2);
+                action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+
+                // Add Delete option
+                action = menu->addAction(
+                    QObject::tr("Delete Folder"),
+                    [treeView]()
+                    {
+                        treeView->DeleteEntries();
+                    });
+                action->setShortcut(QKeySequence::Delete);
+                action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+
+                // Add Move to option
+                menu->addAction(
+                    QObject::tr("Move to"),
+                    [treeView]()
+                    {
+                        treeView->MoveEntries();
+                    });
+                AddCreateMenu(menu, fullFilePath);
+            }
+        }
     }
     break;
     default:

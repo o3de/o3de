@@ -504,7 +504,15 @@ namespace AzToolsFramework
         void AssetBrowserTreeView::DeleteEntries()
         {
             auto entries = GetSelectedAssets(false); // you cannot rename product files.
-
+            if (entries.empty())
+            {
+                return;
+            }
+            bool isFolder = entries[0]->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder;
+            if (isFolder && entries.size() != 1)
+            {
+                return;
+            }
             using namespace AzFramework::AssetSystem;
             bool connectedToAssetProcessor = false;
             AzFramework::AssetSystemRequestBus::BroadcastResult(
@@ -515,7 +523,15 @@ namespace AzToolsFramework
                 using namespace AZ::IO;
                 for (auto item : entries)
                 {
-                    Path fromPath = item->GetFullPath();
+                    Path fromPath;
+                    if (isFolder)
+                    {
+                        fromPath = item->GetFullPath() + "/*";
+                    }
+                    else
+                    {
+                        fromPath = item->GetFullPath();
+                    }
                     AssetChangeReportRequest request(
                         AZ::OSString(fromPath.c_str()), AZ::OSString(""), AssetChangeReportRequest::ChangeType::CheckDelete);
                     AssetChangeReportResponse response;
@@ -530,7 +546,7 @@ namespace AzToolsFramework
                             AZ::StringFunc::Join(message, response.m_lines.begin(), response.m_lines.end(), "\n");
                             AzQtComponents::FixedWidthMessageBox msgBox(
                                 600,
-                                tr("Before Delete Asset Information"),
+                                tr(isFolder ? "Before Delete Folder Information" : "Before Delete Asset Information"),
                                 tr("The asset you are deleting may be referenced in other assets."),
                                 tr("More information can be found by pressing \"Show Details...\"."),
                                 message.c_str(),
@@ -561,7 +577,7 @@ namespace AzToolsFramework
                                     AZ::StringFunc::Join(deleteMessage, response.m_lines.begin(), response.m_lines.end(), "\n");
                                     AzQtComponents::FixedWidthMessageBox deleteMsgBox(
                                         600,
-                                        tr("After Delete Asset Information"),
+                                        tr(isFolder ? "After Delete Folder Information" : "After Delete Asset Information"),
                                         tr("The asset has been deleted."),
                                         tr("More information can be found by pressing \"Show Details...\"."),
                                         deleteMessage.c_str(),
@@ -577,6 +593,7 @@ namespace AzToolsFramework
                 }
             }
         }
+
         void AssetBrowserTreeView::RenameEntry()
         {
             auto entries = GetSelectedAssets(false); // you cannot rename product files.
