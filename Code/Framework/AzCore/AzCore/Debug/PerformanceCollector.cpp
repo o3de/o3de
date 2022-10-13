@@ -247,9 +247,8 @@ namespace AZ::Debug
         else
         {
             settingsRegistry->Get(m_outputFilePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath);
-            //auto now = AZStd::chrono::utc_clock::now();
             AZ::Date::Iso8601TimestampString utcTimestamp;
-            AZ::Date::GetFilenameCompatibleFormatNowWithMicroseconds(utcTimestamp);// , now);
+            AZ::Date::GetFilenameCompatibleFormatNowWithMicroseconds(utcTimestamp);
             m_outputFilePath /= AZStd::string::format("Performance_%s_%s.json", m_logCategory.c_str(), utcTimestamp.c_str());
 
             constexpr AZ::IO::OpenMode openMode = AZ::IO::OpenMode::ModeWrite;

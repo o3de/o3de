@@ -28,7 +28,7 @@ set(FILES
     AZStd/ConcurrentAllocators.cpp
     AZStd/ConcurrentContainers.cpp
     AZStd/ChronoTests.cpp
-    AZStd/DequeAndSimilar.cppD
+    AZStd/DequeAndSimilar.cpp
     AZStd/Examples.cpp
     AZStd/FunctionalBasic.cpp
     AZStd/FunctorsBind.cpp
