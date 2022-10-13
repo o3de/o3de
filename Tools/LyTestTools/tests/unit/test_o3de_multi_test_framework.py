@@ -13,8 +13,8 @@ import ly_test_tools
 import ly_test_tools.launchers.exceptions
 import ly_test_tools.o3de.multi_test_framework as multi_test_framework
 from ly_test_tools.o3de.editor_test_utils import prepare_asset_processor
-from ly_test_tools.launchers.platforms.linux.launcher import LinuxLauncher
-from ly_test_tools.launchers.platforms.win.launcher import WinLauncher
+from ly_test_tools.launchers.platforms.linux.launcher import LinuxAtomToolsLauncher
+from ly_test_tools.launchers.platforms.win.launcher import WinAtomToolsLauncher
 
 
 pytestmark = pytest.mark.SUITE_smoke
@@ -560,7 +560,7 @@ class TestUtils(unittest.TestCase):
             "------------\n"
             f"{mock_output}\n"
             "----------------------------------------------------\n"
-            f"| Executable (i.e. Editor or MaterialEditor) log  |\n"
+            f"| Application log  |\n"
             "----------------------------------------------------\n"
             f"{mock_log_output}\n")
 
@@ -869,6 +869,7 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('ly_test_tools.o3de.multi_test_framework.MultiTestSuite._exec_multitest')
     def test_RunBatchedTests_ValidTests_CallsCorrectly(self, mock_exec_multitest):
         mock_test_suite = ly_test_tools.o3de.multi_test_framework.MultiTestSuite()
+        mock_test_suite.atom_tools_executable_name = "dummy_executable"
         mock_request = mock.MagicMock()
         mock_workspace = mock.MagicMock()
         mock_collected_test_data = mock.MagicMock()
@@ -880,7 +881,7 @@ class TestRunningTests(unittest.TestCase):
 
         assert mock_exec_multitest.called
         assert mock_collected_test_data.results.update.called
-        assert type(mock_test_suite.executable) in [WinLauncher, LinuxLauncher]
+        assert type(mock_test_suite.executable) in [WinAtomToolsLauncher, LinuxAtomToolsLauncher]
         assert mock_test_suite.executable.workspace == mock_workspace
 
     @mock.patch('threading.Thread')

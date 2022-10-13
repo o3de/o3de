@@ -63,4 +63,34 @@ namespace AzQtComponents
 
         return ret;
     }
+
+    FixedWidthMessageBox::FixedWidthMessageBox(
+        int width,
+        const QString& title,
+        const QString& text,
+        const QString& informativeText,
+        const QString& detailedText,
+        QMessageBox::Icon icon,
+        QMessageBox::StandardButton standardButton,
+        QMessageBox::StandardButton defaultButton,
+        QWidget* parent)
+        : QMessageBox(parent)
+    {
+        setWindowTitle(title);
+        setText(text);
+        setInformativeText(informativeText);
+        setDetailedText(detailedText);
+        setIcon(icon);
+        setStandardButtons(standardButton);
+        setDefaultButton(defaultButton);
+        SetWidth(width);
+    }
+
+    void FixedWidthMessageBox::SetWidth(int width)
+    {
+        QSpacerItem* horizontalSpacer = new QSpacerItem(width, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        QGridLayout* layout = (QGridLayout*)this->layout();
+        layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());
+    }
+
 } // namespace AzQtComponents

@@ -608,9 +608,11 @@ namespace AzToolsFramework
                 m_domOrderedChildren.erase(childIterator);
 
                 // check if the last row widget child was removed, and hide the expander if necessary
-                auto isDPERow = [](auto* widget)
+                const bool expanded = IsExpanded();
+                auto isDPERow = [expanded](auto* widget)
                 {
-                    return qobject_cast<DPERowWidget*>(widget) != nullptr;
+                    // when not expanded, null children are just unseen child rows
+                    return ((!widget && !expanded) || qobject_cast<DPERowWidget*>(widget) != nullptr);
                 };
                 if (AZStd::find_if(m_domOrderedChildren.begin(), m_domOrderedChildren.end(), isDPERow) == m_domOrderedChildren.end())
                 {
@@ -1186,7 +1188,7 @@ namespace AzToolsFramework
         bool dpeEnabled = false;
         if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
         {
-            console->GetCvarValue("ed_enableDPE", dpeEnabled);
+            console->GetCvarValue(GetEnableDPECVarName(), dpeEnabled);
         }
         return dpeEnabled;
     }

@@ -222,42 +222,90 @@ namespace AzToolsFramework
         }
 
         bool succeeded = m_databaseConnection->QueryDependsOnSourceBySourceDependency(
-            sourceUuid, "%.slice",
+            sourceUuid,
             AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceOrJob,
             [&](AssetDatabase::SourceFileDependencyEntry& entry)
-        {
-            found = true;
-            dependencies.push_back(AZStd::move(entry.m_dependsOnSource));
-            return true;
-        });
+            {
+                AZStd::string dependencyName = entry.m_dependsOnSource.GetPath();
+
+                if (entry.m_dependsOnSource.IsUuid())
+                {
+                    AzToolsFramework::AssetDatabase::SourceDatabaseEntry sourceEntry;
+                    m_databaseConnection->QuerySourceBySourceGuid(
+                        entry.m_dependsOnSource.GetUuid(),
+                        [&dependencyName](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
+                        {
+                            dependencyName = entry.m_sourceName;
+                            return false;
+                        });
+                }
+
+                if (!dependencyName.ends_with(".slice"))
+                {
+                    // Since this tool is only meant to display slices, filter out non-slice dependencies
+                    return true;
+                }
+
+                found = true;
+                dependencies.push_back(AZStd::move(dependencyName));
+                return true;
+            });
         return found && succeeded;
     }
 
     bool SliceDependencyBrowserComponent::GetSliceDependendentsByRelativeAssetPath(const AZStd::string& relativePath, AZStd::vector<AZStd::string>& dependents) const
     {
         bool found = false;
-        bool succeeded = m_databaseConnection->QuerySourceDependencyByDependsOnSource(
-            relativePath.c_str(),
-            AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceOrJob,
-            [&](AssetDatabase::SourceFileDependencyEntry& entry)
+
+        auto callback = [&](AssetDatabase::SourceFileDependencyEntry& entry)
         {
             AzToolsFramework::AssetDatabase::SourceDatabaseEntry sourceEntry;
-            m_databaseConnection->QuerySourceBySourceGuid(entry.m_sourceGuid, [&sourceEntry](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
-            {
-                sourceEntry = entry;
-                return false;
-            });
+            m_databaseConnection->QuerySourceBySourceGuid(
+                entry.m_sourceGuid,
+                [&sourceEntry](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
+                {
+                    sourceEntry = entry;
+                    return false;
+                });
 
-            if(!sourceEntry.m_sourceName.ends_with(".slice"))
+            if (!sourceEntry.m_sourceName.ends_with(".slice"))
             {
-                // Filter out non-slice files
+                // Since this tool is only meant to display slices, filter out non-slice dependencies
                 return true;
             }
 
             found = true;
             dependents.push_back(AZStd::move(sourceEntry.m_sourceName));
             return true;
-        });
+        };
+
+        AzToolsFramework::AssetDatabase::SourceDatabaseEntry sourceEntry;
+        m_databaseConnection->QuerySourceBySourceName(
+            relativePath.c_str(),
+            [&sourceEntry](const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
+            {
+                sourceEntry = entry;
+                return false;
+            });
+
+        AZStd::string scanFolderPath;
+        m_databaseConnection->QueryScanFolderByScanFolderID(
+            sourceEntry.m_scanFolderPK,
+            [&scanFolderPath](const AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry& entry)
+            {
+                scanFolderPath = entry.m_scanFolder;
+                return false;
+            });
+
+        auto absolutePath = AZ::IO::Path(scanFolderPath) / sourceEntry.m_sourceName;
+
+        bool succeeded = m_databaseConnection->QuerySourceDependencyByDependsOnSource(
+            sourceEntry.m_sourceGuid,
+            sourceEntry.m_sourceName.c_str(),
+            absolutePath.FixedMaxPathStringAsPosix().c_str(),
+            AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceOrJob,
+            callback);
+
         return found && succeeded;
     }
 } // namespace AzToolsFramework

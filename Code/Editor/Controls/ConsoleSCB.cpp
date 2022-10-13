@@ -31,7 +31,11 @@
 #include "Core/QtEditorApplication.h"
 #include "Commands/CommandManager.h"
 #include "Util/Variable.h"
+#include "CvarDPE.h"
 
+#include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
+
+static void OnVariableUpdated(ICVar* pCVar);
 
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <Controls/ui_ConsoleSCB.h>
@@ -545,7 +549,7 @@ void CConsoleSCB::AddToPendingLines(const QString& text, bool bNewLine)
  * When a CVar variable is updated, we need to tell alert our console variables
  * pane so it can update the corresponding row
  */
-static void OnVariableUpdated([[maybe_unused]] int row, ICVar* pCVar)
+static void OnVariableUpdated(ICVar* pCVar)
 {
     QtViewPane* pane = QtViewPaneManager::instance()->GetPane(LyViewPane::ConsoleVariables);
     if (!pane)
@@ -601,11 +605,6 @@ static CVarBlock* VarBlockFromConsoleVars()
         default:
             assert(0);
         }
-
-        // Add our on change handler so we can update the CVariable created for
-        // the matching ICVar that has been modified
-        AZStd::function<void()> onChange = [row=i,pCVar=pCVar]() { OnVariableUpdated(row,pCVar); };
-        pCVar->AddOnChangeFunctor(onChange);
 
         pVariable->SetDescription(pCVar->GetHelp());
         pVariable->SetName(cmds[i].data());
@@ -1080,6 +1079,29 @@ void ConsoleVariableModel::ClearModifiedRows()
     m_modifiedRows.clear();
 }
 
+AZ::ConsoleCommandInvokedEvent::Handler ConsoleVariableEditor::m_commandInvokedHandler(
+    [](AZStd::string_view command,
+       const AZ::ConsoleCommandContainer&,
+       AZ::ConsoleFunctorFlags,
+       AZ::ConsoleInvokedFrom)
+    {
+        if (command == AzToolsFramework::DocumentPropertyEditor::GetEnableDPECVarName())
+        {
+            // the cvar editor pref changed, unregister the old and register the new
+            AzToolsFramework::UnregisterViewPane(LyViewPane::ConsoleVariables);
+            ConsoleVariableEditor::RegisterViewClass();
+        }
+        else
+        {
+            // find the cvar that changed and keep the ConsoleVariableEditor informed
+            auto changedCVar = GetIEditor()->GetSystem()->GetIConsole()->GetCVar(AZStd::string(command).c_str());
+            if (changedCVar)
+            {
+                OnVariableUpdated(changedCVar);
+            }
+        }
+    });
+
 ConsoleVariableEditor::ConsoleVariableEditor(QWidget* parent)
     : QWidget(parent)
     , m_tableView(new QTableView(this))
@@ -1153,11 +1175,23 @@ void ConsoleVariableEditor::SetVarBlock(CVarBlock* varBlock)
 
 void ConsoleVariableEditor::RegisterViewClass()
 {
-    AzToolsFramework::ViewPaneOptions opts;
-    opts.paneRect = QRect(100, 100, 340, 500);
-    opts.isDeletable = false;
+    if (m_commandInvokedHandler.IsConnected())
+    {
+        m_commandInvokedHandler.Disconnect();
+    }
+    m_commandInvokedHandler.Connect(AZ::Interface<AZ::IConsole>::Get()->GetConsoleCommandInvokedEvent());
 
-    AzToolsFramework::RegisterViewPane<ConsoleVariableEditor>(LyViewPane::ConsoleVariables, LyViewPane::CategoryOther, opts);
+    if (AzToolsFramework::DocumentPropertyEditor::ShouldReplaceRPE())
+    {
+        AzToolsFramework::CvarDPE::RegisterViewClass();
+    }
+    else
+    {
+        AzToolsFramework::ViewPaneOptions opts;
+        opts.paneRect = QRect(100, 100, 340, 500);
+        opts.isDeletable = false;
+        AzToolsFramework::RegisterViewPane<ConsoleVariableEditor>(LyViewPane::ConsoleVariables, LyViewPane::CategoryOther, opts);
+    }
 }
 
 /**

@@ -239,87 +239,92 @@ namespace GraphModel
         return m_id;
     }
 
+    uint32_t Node::GetMaxInputDepth() const
+    {
+        uint32_t maxInputDepth = 0;
+        AZStd::for_each(m_allSlots.begin(), m_allSlots.end(), [&](const auto& slotPair) {
+            const auto& slot = slotPair.second;
+            if (slot->GetSlotDirection() == GraphModel::SlotDirection::Input)
+            {
+                const auto& connections = slot->GetConnections();
+                AZStd::for_each(connections.begin(), connections.end(), [&](const auto& connection) {
+                    AZ_Assert(connection->GetSourceNode().get() != this, "This should never be the source node on an input connection.");
+                    AZ_Assert(connection->GetTargetNode().get() == this, "This should always be the target node on an input connection.");
+                    maxInputDepth = AZStd::max(maxInputDepth, connection->GetSourceNode()->GetMaxInputDepth() + 1);
+                });
+            }
+        });
+        return maxInputDepth;
+    }
+
+    uint32_t Node::GetMaxOutputDepth() const
+    {
+        uint32_t maxOutputDepth = 0;
+        AZStd::for_each(m_allSlots.begin(), m_allSlots.end(), [&](const auto& slotPair) {
+            const auto& slot = slotPair.second;
+            if (slot->GetSlotDirection() == GraphModel::SlotDirection::Output)
+            {
+                const auto& connections = slot->GetConnections();
+                AZStd::for_each(connections.begin(), connections.end(), [&](const auto& connection) {
+                    AZ_Assert(connection->GetSourceNode().get() == this, "This should always be the source node on an output connection.");
+                    AZ_Assert(connection->GetTargetNode().get() != this, "This should never be the target node on an output connection.");
+                    maxOutputDepth = AZStd::max(maxOutputDepth, connection->GetTargetNode()->GetMaxOutputDepth() + 1);
+                });
+            }
+        });
+        return maxOutputDepth;
+    }
+
     bool Node::HasConnections() const
     {
-        for (const auto& slotPair : GetSlots())
-        {
+        return AZStd::any_of(m_allSlots.begin(), m_allSlots.end(), [](const auto& slotPair) {
             const auto& slot = slotPair.second;
-            if (!slot->GetConnections().empty())
-            {
-                return true;
-            }
-        }
-        return false;
+            return !slot->GetConnections().empty();
+        });
     }
 
     bool Node::HasInputConnections() const
     {
-        for (const auto& slotPair : GetSlots())
-        {
+        return AZStd::any_of(m_allSlots.begin(), m_allSlots.end(), [](const auto& slotPair) {
             const auto& slot = slotPair.second;
-            if (slot->GetSlotDirection() == GraphModel::SlotDirection::Input && !slot->GetConnections().empty())
-            {
-                return true;
-            }
-        }
-        return false;
+            return slot->GetSlotDirection() == GraphModel::SlotDirection::Input && !slot->GetConnections().empty();
+        });
     }
 
     bool Node::HasOutputConnections() const
     {
-        for (const auto& slotPair : GetSlots())
-        {
+        return AZStd::any_of(m_allSlots.begin(), m_allSlots.end(), [](const auto& slotPair) {
             const auto& slot = slotPair.second;
-            if (slot->GetSlotDirection() == GraphModel::SlotDirection::Output && !slot->GetConnections().empty())
-            {
-                return true;
-            }
-        }
-        return false;
+            return slot->GetSlotDirection() == GraphModel::SlotDirection::Output && !slot->GetConnections().empty();
+        });
     }
 
     bool Node::HasInputConnectionFromNode(ConstNodePtr node) const
     {
-        if (node)
-        {
-            for (const auto& slotPair : GetSlots())
-            {
-                const auto& slot = slotPair.second;
-                if (slot->GetSlotDirection() == GraphModel::SlotDirection::Input)
-                {
-                    for (const auto& connection : slot->GetConnections())
-                    {
-                        if (connection->GetSourceNode() == node || connection->GetSourceNode()->HasInputConnectionFromNode(node))
-                        {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-        return false;
+        return AZStd::any_of(m_allSlots.begin(), m_allSlots.end(), [&](const auto& slotPair) {
+            const auto& slot = slotPair.second;
+            const auto& connections = slot->GetConnections();
+            return slot->GetSlotDirection() == GraphModel::SlotDirection::Input &&
+                AZStd::any_of(connections.begin(), connections.end(), [&](const auto& connection) {
+                    AZ_Assert(connection->GetSourceNode().get() != this, "This should never be the source node on an input connection.");
+                    AZ_Assert(connection->GetTargetNode().get() == this, "This should always be the target node on an input connection.");
+                    return connection->GetSourceNode() == node || connection->GetSourceNode()->HasInputConnectionFromNode(node);
+                });
+        });
     }
 
     bool Node::HasOutputConnectionToNode(ConstNodePtr node) const
     {
-        if (node)
-        {
-            for (const auto& slotPair : GetSlots())
-            {
-                const auto& slot = slotPair.second;
-                if (slot->GetSlotDirection() == GraphModel::SlotDirection::Output)
-                {
-                    for (const auto& connection : slot->GetConnections())
-                    {
-                        if (connection->GetTargetNode() == node || connection->GetTargetNode()->HasOutputConnectionToNode(node))
-                        {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-        return false;
+        return AZStd::any_of(m_allSlots.begin(), m_allSlots.end(), [&](const auto& slotPair) {
+            const auto& slot = slotPair.second;
+            const auto& connections = slot->GetConnections();
+            return slot->GetSlotDirection() == GraphModel::SlotDirection::Output &&
+                AZStd::any_of(connections.begin(), connections.end(), [&](const auto& connection) {
+                    AZ_Assert(connection->GetSourceNode().get() == this, "This should always be the source node on an output connection.");
+                    AZ_Assert(connection->GetTargetNode().get() != this, "This should never be the target node on an output connection.");
+                    return connection->GetTargetNode() == node || connection->GetTargetNode()->HasOutputConnectionToNode(node);
+                });
+        });
     }
 
     bool Node::Contains(ConstSlotPtr slot) const
@@ -330,12 +335,7 @@ namespace GraphModel
         }
 
         auto iter = m_allSlots.find(slot->GetSlotId());
-        if (iter != m_allSlots.end() && iter->second == slot)
-        {
-            return true;
-        }
-
-        return false;
+        return iter != m_allSlots.end() && iter->second == slot;
     }
 
     const Node::SlotDefinitionList& Node::GetSlotDefinitions() const
@@ -350,20 +350,13 @@ namespace GraphModel
 
     Node::ConstSlotMap Node::GetSlots() const
     {
-        Node::ConstSlotMap constSlots;
-        AZStd::for_each(m_allSlots.begin(), m_allSlots.end(), [&](auto pair) { constSlots.insert(pair); });
-        return constSlots;
+        return ConstSlotMap(m_allSlots.begin(), m_allSlots.end());
     }
 
     ConstSlotPtr Node::GetSlot(const SlotId& slotId) const
     {
         auto slot = m_allSlots.find(slotId);
-        if (slot != m_allSlots.end())
-        {
-            return slot->second;
-        }
-
-        return nullptr;
+        return slot != m_allSlots.end() ? slot->second : nullptr;
     }
 
     SlotPtr Node::GetSlot(const SlotId& slotId)
@@ -386,49 +379,27 @@ namespace GraphModel
 
     const Node::ExtendableSlotSet& Node::GetExtendableSlots(const SlotName& name)
     {
+        static Node::ExtendableSlotSet defaultSet;
         auto it = m_extendableSlots.find(name);
-        if (it != m_extendableSlots.end())
-        {
-            return it->second;
-        }
-        else
-        {
-            static Node::ExtendableSlotSet defaultSet;
-            return defaultSet;
-        }
+        return it != m_extendableSlots.end() ? it->second : defaultSet;
     }
 
     int Node::GetExtendableSlotCount(const SlotName& name)
     {
         auto it = m_extendableSlots.find(name);
-        if (it != m_extendableSlots.end())
-        {
-            return aznumeric_cast<int>(it->second.size());
-        }
-
-        return InvalidExtendableSlot;
+        return it != m_extendableSlots.end() ? aznumeric_cast<int>(it->second.size()) : InvalidExtendableSlot;
     }
 
     void Node::DeleteSlot(SlotPtr slot)
     {
         if (CanDeleteSlot(slot))
         {
-            SlotId slotId = slot->GetSlotId();
-
             // Remove this slot from our map tracking all slots on the node, as well as the extendable slots
-            auto allSlotsIt = m_allSlots.find(slotId);
-            if (allSlotsIt != m_allSlots.end())
-            {
-                m_allSlots.erase(allSlotsIt);
-            }
+            m_allSlots.erase(slot->GetSlotId());
             auto extendableSlotsIt = m_extendableSlots.find(slot->GetName());
             if (extendableSlotsIt != m_extendableSlots.end())
             {
-                auto slotIt = extendableSlotsIt->second.find(slot);
-                if (slotIt != extendableSlotsIt->second.end())
-                {
-                    extendableSlotsIt->second.erase(slotIt);
-                }
+                extendableSlotsIt->second.erase(slot);
             }
         }
     }

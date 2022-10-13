@@ -230,6 +230,10 @@ namespace GraphModelIntegration
         //! The specified node has been unwrapped (removed) from the wrapperNode
         virtual void OnGraphModelNodeUnwrapped(GraphModel::NodePtr /*wrapperNode*/, GraphModel::NodePtr /*node*/){};
 
+        //! Sent whenever a graph model slot value changes
+        //! \param slot The slot that was modified in the graph.
+        virtual void OnGraphModelSlotModified(GraphModel::SlotPtr slot){};
+
         //! Something in the graph has been modified
         //! \param node The node that was modified in the graph.  If this is nullptr, some metadata on the graph itself was modified
         virtual void OnGraphModelGraphModified(GraphModel::NodePtr node){};

@@ -5,14 +5,12 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <ScriptCanvas/Libraries/Libraries.h>
-#include <Data/DataMacros.h>
-#include <Data/DataTrait.h>
-#include <ScriptCanvas/Core/Attributes.h>
-
-#include <AzFramework/Entity/EntityContextBus.h>
 
 #pragma once
+
+#include <AzCore/Script/ScriptContextAttributes.h>
+#include <ScriptCanvas/Data/DataMacros.h>
+#include <ScriptCanvas/Data/DataTraitBase.h>
 
 namespace ContainerTypeReflection
 {

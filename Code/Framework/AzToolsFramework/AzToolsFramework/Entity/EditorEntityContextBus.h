@@ -34,6 +34,9 @@ namespace AzToolsFramework
         : public AZ::EBusTraits
     {
     public:
+        // This bus itself is thread safe, and function like GetEditorEntityContextId() is thread safe. But be careful
+        // with function like AddEntity, DestroyEntity - those might not be thread safe due the implementation.
+        static constexpr bool LocklessDispatch = true;
 
         virtual ~EditorEntityContextRequests() {}
 

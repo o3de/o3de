@@ -410,7 +410,7 @@ namespace AtomToolsFramework
         return AzFramework::WindowSize{aznumeric_cast<uint32_t>(width()), aznumeric_cast<uint32_t>(height())};
     }
 
-    void RenderViewportWidget::ResizeClientArea(AzFramework::WindowSize clientAreaSize)
+    void RenderViewportWidget::ResizeClientArea(AzFramework::WindowSize clientAreaSize, [[maybe_unused]] const AzFramework::WindowPosOptions& options)
     {
         const QSize targetSize = QSize{aznumeric_cast<int>(clientAreaSize.m_width), aznumeric_cast<int>(clientAreaSize.m_height)};
         resize(targetSize);
