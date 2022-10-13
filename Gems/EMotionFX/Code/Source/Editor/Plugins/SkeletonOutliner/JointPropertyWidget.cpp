@@ -22,6 +22,7 @@
 #include <QItemSelectionModel>
 #include <QBoxLayout>
 #include <QLabel>
+#include <QHeaderView>
 #include <QLineEdit>
 
 namespace EMotionFX
@@ -233,10 +234,28 @@ namespace EMotionFX
         connect(this, &QPushButton::clicked, this, &AddCollidersButton::OnCreateContextMenu);
     }
 
+    // TODO subclass ItemModel
+    enum ItemRoles
+    {
+        TypeId = Qt::UserRole + 1,
+        ConfigType = Qt::UserRole + 2
+    };
     void AddCollidersButton::OnCreateContextMenu()
     {
-        QMenu* contextMenu = new QMenu(this);
-        contextMenu->setObjectName("EMFX.AddCollidersButton.ContextMenu");
+        delete model;
+        model = new QStandardItemModel;
+        QFrame* newFrame = new QFrame{this};
+        newFrame->setWindowFlags(Qt::FramelessWindowHint | Qt::Popup);
+        newFrame->setFixedWidth(this->width());
+        newFrame->move({ this->mapToGlobal({ 0, 0 }) });
+        m_treeView = new QTreeView(newFrame);
+        m_treeView->setModel(model);
+        // hide header for dropdown-style, single-column, tree
+        m_treeView->header()->hide();
+        connect(m_treeView, &QTreeView::clicked, this, &AddCollidersButton::OnAddColliderActionTriggered);
+        m_treeView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        newFrame->setLayout(new QVBoxLayout);
+        newFrame->layout()->addWidget(m_treeView);
 
         AZStd::string actionName;
         auto sections = QList<QPair<PhysicsSetup::ColliderConfigType, QString>>{{PhysicsSetup::ColliderConfigType::Cloth, "Cloth"},
@@ -244,32 +263,49 @@ namespace EMotionFX
         for (const auto& s : sections)
         {
             auto& configType = s.first;
-            contextMenu->addSection(s.second);
+            //contextMenu->addSection(s.second);
+            auto* sectionItem = new QStandardItem{ s.second.toStdString().c_str() };
 
             for (auto& typeId : m_supportedColliderTypes)
             {
-                actionName = AZStd::string::format("Add %s %s", s.second.toStdString().c_str() ,GetNameForColliderType(typeId).c_str());
-                auto* action = contextMenu->addAction(actionName.c_str());
-                action->setProperty("typeId", typeId.ToString<AZStd::string>().c_str());
-                action->setProperty("configType", static_cast<int>(configType));
-                connect(action, &QAction::triggered, this, &AddCollidersButton::OnAddColliderActionTriggered);
+                actionName = AZStd::string::format("Add %s %s", s.second.toStdString().c_str(), GetNameForColliderType(typeId).c_str());
+                auto* item = new QStandardItem{ actionName.c_str() };
+                item->setData(typeId.ToString<AZStd::string>().c_str(), ItemRoles::TypeId);
+                item->setData(static_cast<int>(configType), ItemRoles::ConfigType);
+                sectionItem->appendRow(item);
             }
+            model->appendRow(sectionItem);
         }
-        contextMenu->addSeparator();
-        auto* action = contextMenu->addAction("Add to Ragdoll");
-        connect(action, &QAction::triggered, this, &AddCollidersButton::AddToRagdoll);
 
-        contextMenu->setFixedWidth(width());
-        contextMenu->popup(mapToGlobal(QPoint{0, height()}));
-        connect(contextMenu, &QMenu::triggered, contextMenu, &QMenu::deleteLater);
+        auto ragdollItem = new QStandardItem{ "Ragdoll" };
+        model->appendRow(ragdollItem);
+        // TODO ragdollItem.setData(  something something , somethingRagdoll )
+        // connect(newFrame, something, newFrame, QFrame::deleteLater)
+
+        newFrame->setFixedWidth(width());
+        m_treeView->expandAll();
+        newFrame->show();
     }
 
-    void AddCollidersButton::OnAddColliderActionTriggered()
+    void AddCollidersButton::OnAddColliderActionTriggered(const QModelIndex& index)
     {
-        auto* action = static_cast<QAction*>(sender());
-        auto configType = static_cast<PhysicsSetup::ColliderConfigType>(action->property("configType").toInt());
-        auto colliderType = AZ::TypeId{action->property("typeId").toString().toStdString().c_str()};
+        if (!index.isValid())
+        {
+            return;
+        }
+        if (index.data(ItemRoles::ConfigType).isNull())
+        {
+            // TODO collapse/expand
+            index.row();
+            return;
+        }
+        auto configType = static_cast<PhysicsSetup::ColliderConfigType>(index.data(ItemRoles::ConfigType).toInt());
+        auto colliderType = AZ::TypeId{index.data(ItemRoles::TypeId).toString().toStdString().c_str()};
 
+        // TODO
+        // if ( == Ragdoll)
+        // AddToRagdoll()
+        // return
         emit AddCollider(configType, colliderType);
     }
 

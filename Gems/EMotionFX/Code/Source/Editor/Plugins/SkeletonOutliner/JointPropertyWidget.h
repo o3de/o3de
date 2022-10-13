@@ -18,6 +18,8 @@
 #include <Editor/Plugins/Ragdoll/RagdollNodeWidget.h>
 #include <QPushButton>
 #endif
+#include <QTreeWidget>
+#include <QStandardItem>
 
 namespace EMStudio
 {
@@ -70,7 +72,7 @@ namespace EMotionFX
         AddCollidersButton(QWidget* parent=nullptr);
         AZStd::string GetNameForColliderType(AZ::TypeId colliderType) const;
     public slots:
-        void OnAddColliderActionTriggered();
+        void OnAddColliderActionTriggered(const QModelIndex& index);
     signals:
         void AddCollider(PhysicsSetup::ColliderConfigType configType, AZ::TypeId colliderType);
         void AddToRagdoll();
@@ -81,6 +83,9 @@ namespace EMotionFX
             azrtti_typeid<Physics::BoxShapeConfiguration>(),
             azrtti_typeid<Physics::CapsuleShapeConfiguration>(),
             azrtti_typeid<Physics::SphereShapeConfiguration>()};
+
+        QTreeView* m_treeView = nullptr;
+        QStandardItemModel* model = nullptr;
     };
 
 } // ns EmotionFX
