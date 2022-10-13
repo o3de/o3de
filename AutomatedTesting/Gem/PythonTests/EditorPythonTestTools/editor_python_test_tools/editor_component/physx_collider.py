@@ -63,8 +63,9 @@ PhysX Collider Property Tree
 """
 import azlmbr.physics as physics
 import azlmbr.math as math
+import azlmbr.legacy.general as general
 
-from editor_python_test_tools.editor_entity_utils import EditorComponent, EditorEntity
+from editor_python_test_tools.editor_entity_utils import EditorEntity
 from editor_python_test_tools.asset_utils import Asset
 from editor_python_test_tools.utils import TestHelper as helper
 from Physics.utils.physics_constants import (PHYSX_COLLIDER)
@@ -110,44 +111,112 @@ class PhysxCollider:
         DRAW_COLLIDER = 'Debug draw settings'
         SHAPE = 'Shape Configuration|Shape'
 
+    # General Properties
+    #TODO: Need to figure out how to set dropdowns for Collison Layer and Collides With
+    #TODO: Need to figure out how to set the Physics Material
+
+    def toggle_trigger(self):
+        self.component.toggle_property_switch(self.Path.TRIGGER)
+
+    def toggle_simulated(self):
+        self.component.toggle_property_switch(self.Path.SIMULATED)
+
+    def toggle_in_scene_queries(self):
+        self.component.toggle_property_switch(self.Path.IN_SCENE_QUERIES)
+
+    def set_offset(self, offset: math.Vector3):
+        self.component.set_vector3_component_property(self.Path.OFFSET, offset)
+
+    def set_rotation(self, rotation: math.Vector3):
+        self.component.set_vector3_component_property(self.Path.ROTATION, rotation)
+
+    def set_tag(self, tag: str):
+        self.component.set_component_property_value(self.Path.TAG, tag)
+
+    def set_rest_offset(self, offset: float):
+        self.component.set_component_property_value(self.Path.RESET_OFFSET, offset)
+
+    def set_contact_offset(self, offset: float):
+        self.component.set_component_property_value(self.Path.CONTACT_OFFSET, offset)
+
+    def toggle_draw_collider(self):
+        self.component.toggle_property_switch(self.Path.DRAW_COLLIDER)
+
     # Shape: Box
     def set_box_shape(self) -> None:
         self.component.set_component_property_value(self.Path.SHAPE, physics.ShapeType_Box)
 
     def set_box_dimensions(self, x: float, y: float, z: float) -> None:
+        assert self.component.is_property_visible(self.Path.Box.DIMENSIONS), \
+            f"Failure: Cannot set box dimensions when property is not visible."
+
         self.component.set_vector3_component_property(self.Path.Box.DIMENSIONS, math.Vector3(x, y, z))
 
+    # Shape: Capsule
+    def set_capsule_shape(self) -> None:
+        self.component.set_component_property_value(self.Path.SHAPE, physics.ShapeType_Capsule)
+
+    def set_capsule_height(self, height: str) -> None:
+        assert self.component.is_property_visible(self.Path.Capsule.HEIGHT), \
+            f"Failure: Cannot set capsule height when property is not visible. Set the shape to capsule first."
+
+        self.component.set_component_property_value(self.Path.Capsule.HEIGHT, height)
+
+    def set_capsule_radius(self, radius: float) -> None:
+        assert self.component.is_property_visible(self.Path.Capsule.RADIUS), \
+            f"Failure: Cannot set capsule radius when property is not visible. Set the shape to capsule first."
+
+        self.component.set_component_property_value(self.Path.Capsule.HEIGHT, radius)
+
+    # Shape: Cylinder
+    def set_cylinder_shape(self) -> None:
+        self.component.set_component_property_value(self.Path.SHAPE, physics.ShapeType_Cylinder)
+
+    def set_cylinder_subdivision(self, subdivisions: int):
+        assert self.component.is_property_visible(self.Path.Cylinder.SUBDIVISION), \
+            f"Failure: Cannot set cylinder subdivisions when property is not visible. Set the shape to cylinder first."
+
+        self.component.set_component_property_value(self.Path.Cylinder.SUBDIVISION, subdivisions)
+
+    def set_cylinder_height(self, height: float):
+        assert self.component.is_property_visible(self.Path.Cylinder.HEIGHT), \
+            f"Failure: Cannot set cylinder height when property is not visible. Set the shape to cylinder first."
+
+        self.component.set_component_property_value(self.Path.Cylinder.HEIGHT, height)
+
+    def set_cylinder_radius(self, radius: float):
+        assert self.component.is_property_visible(self.Path.Cylinder.RADIUS), \
+            f"Failure: Cannot set cylinder radius when property is not visible. Set the shape to cylinder first."
+
+        self.component.set_component_property_value(self.Path.Cylinder.RADIUS, radius)
+
     # Shape: PhysicsAsset
-    # Once we can set and check for PhysicsAsset, error checking can be performed.
     def set_physicsasset_shape(self) -> None:
-        raise NotImplementedError("GHI#<INSERT_HERE> - PhysicsAsset needs to be exposed to Python.")
+        self.component.set_component_property_value(self.Path.SHAPE, physics.ShapeType_PhysicsAsset)
 
     def set_physx_mesh_from_path(self, asset_product_path: str) -> None:
+        assert self.component.is_property_visible(self.Path.PhysicsAsset.PHYSX_MESH), \
+            f"Failure: Cannot set Physics Mesh when property is not visible."
+
         px_asset = Asset.find_asset_by_path(asset_product_path)
         self.component.set_component_property_value(self.Path.PhysicsAsset.PHYSX_MESH, px_asset.id)
 
     def set_physx_mesh_asset_scale(self, x: float, y: float, z: float) -> None:
+        assert self.component.is_property_visible(self.Path.PhysicsAsset.ASSET_SCALE), \
+            f"Failure: Cannot set Physics Mesh Asset Scale when property is not visible."
+
         position = math.Vector3(x, y, z)
         self.component.set_component_property_value(self.path.PhysicsAsset.ASSET_SCALE, position)
 
     def toggle_physics_materials_from_asset(self) -> None:
-        self.component.toggle_component_switch(self.path.PhysicsAsset.PHYSICS_MATERIALS_FROM_ASSET)
+        assert self.component.is_property_visible(self.Path.PhysicsAsset.PHYSICS_MATERIALS_FROM_ASSET), \
+            f"Failure: Cannot toggle Physics Materials From Asset when property is not visible."
 
-    def set_capsule_shape(self) -> None:
-        self.component.set_component_property_value(self.Path.SHAPE, physics.ShapeType_Capsule)
+        self.component.toggle_property_switch(self.path.PhysicsAsset.PHYSICS_MATERIALS_FROM_ASSET)
 
-    def set_cylinder_shape(self) -> None:
-        self.component.set_component_property_value(self.Path.SHAPE, physics.ShapeType_Cylinder)
-
+    # Shape: Sphere
     def set_sphere_shape(self) -> None:
         self.component.set_component_property_value(self.Path.SHAPE, physics.ShapeType_Sphere)
 
-
-
-
-
-
-
-
-
-
+    def set_sphere_radius(self, radius) -> None:
+        self.component.set_component_property_value(self.Path.Sphere.RADIUS, radius)
