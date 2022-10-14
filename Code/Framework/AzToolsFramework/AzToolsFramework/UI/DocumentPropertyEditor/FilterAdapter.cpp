@@ -600,6 +600,7 @@ namespace AZ::DocumentPropertyEditor
 
     void ValueStringFilter::SetFilterString(AZStd::string filterString)
     {
+        AZStd::to_lower(filterString.begin(), filterString.end());
         if (m_filterString != filterString)
         {
             m_filterString = AZStd::move(filterString);
