@@ -5,11 +5,12 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
+import azlmbr.math as math
 import azlmbr.bus as bus
 import azlmbr.materialeditor as materialeditor
 
 
-def get_property(document_id: azlmbr.math.Uuid, property_name: str) -> any:
+def get_property(document_id: math.Uuid, property_name: str) -> any:
     """
     Gets a property value for a given document_id and property name.
     :param document_id: The UUID of a given document file.
@@ -20,7 +21,7 @@ def get_property(document_id: azlmbr.math.Uuid, property_name: str) -> any:
 
 
 def set_property(
-        document_id: azlmbr.math.Uuid, property_name: str, value: math.Uuid or int or float or math.Color) -> None:
+        document_id: math.Uuid, property_name: str, value: math.Uuid or int or float or math.Color) -> None:
     """
     Sets a property value for a given document_id, property_name, and value.
     :param document_id: The UUID of a given document file.

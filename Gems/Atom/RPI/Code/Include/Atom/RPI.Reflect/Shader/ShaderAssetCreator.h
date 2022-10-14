@@ -37,6 +37,9 @@ namespace AZ
             //! Requires that the keys assigned to shader variants were constructed using the same layout.
             void SetShaderOptionGroupLayout(const Ptr<ShaderOptionGroupLayout>& shaderOptionGroupLayout);
 
+            //! [Optional] Sets the default value for one shader option, overriding any default that was specified in the shader code.
+            void SetShaderOptionDefaultValue(const Name& optionName, const Name& optionValue);
+
             //! Begins the shader creation for a specific RHI API.
             //! Begin must be called before the BeginAPI function is called.
             //! @param type The target RHI API type.
@@ -99,6 +102,7 @@ namespace AZ
             // construction. Additionally, prevents BeginSupervariant to be called more than once before calling EndSupervariant.
             ShaderAsset::Supervariant* m_currentSupervariant = nullptr;
 
+            ShaderOptionGroup m_defaultShaderOptionGroup;
         };
     } // namespace RPI
 } // namespace AZ

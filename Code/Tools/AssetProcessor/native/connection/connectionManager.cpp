@@ -126,6 +126,7 @@ unsigned int ConnectionManager::internalAddConnection(bool isUserConnection, qin
     connect(connection, SIGNAL(DisconnectConnection(unsigned int)), this, SIGNAL(ConnectionDisconnected(unsigned int)));
     connect(connection, SIGNAL(ConnectionDestroyed(unsigned int)), this, SLOT(RemoveConnectionFromMap(unsigned int)));
     connect(connection, SIGNAL(Error(unsigned int, QString)), this, SIGNAL(ConnectionError(unsigned int, QString)));
+    connect(connection, &Connection::ConnectionReady, this, &ConnectionManager::ConnectionReady);
 
     m_connectionMap.insert(connectionId, connection);
     Q_EMIT connectionAdded(connectionId, connection);

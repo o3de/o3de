@@ -202,10 +202,12 @@ namespace AZ
                     return false;
                 }
 
+                RPI::ShaderOptionGroup shaderOptions = *shaderItem.GetShaderOptions();
+
                 // Set all unspecified shader options to default values, so that we get the most specialized variant possible.
                 // (because FindVariantStableId treats unspecified options as a request specifically for a variant that doesn't specify those options)
                 // [GFX TODO][ATOM-3883] We should consider updating the FindVariantStableId algorithm to handle default values for us, and remove this step here.
-                RPI::ShaderOptionGroup shaderOptions = *shaderItem.GetShaderOptions();
+                // This might not be necessary anymore though, since ShaderAsset::GetDefaultShaderOptions() does this when the material type builder is creating the ShaderCollection.
                 shaderOptions.SetUnspecifiedToDefaultValues();
 
                 // [GFX_TODO][ATOM-14476]: according to this usage, we should make the shader input contract uniform across all shader variants.
@@ -256,27 +258,17 @@ namespace AZ
                     return false;
                 }
 
-                auto drawSrgLayout = shader->GetAsset()->GetDrawSrgLayout(shader->GetSupervariantIndex());
-                Data::Instance<ShaderResourceGroup> drawSrg;
-                if (drawSrgLayout)
+                Data::Instance<ShaderResourceGroup> drawSrg = shader->CreateDrawSrgForShaderVariant(shaderOptions, false);
+                if (drawSrg)
                 {
-                    // If the DrawSrg exists we must create and bind it, otherwise the CommandList will fail validation for SRG being null
-                    drawSrg = RPI::ShaderResourceGroup::Create(shader->GetAsset(), shader->GetSupervariantIndex(), drawSrgLayout->GetName());
-
-                    if (!variant.IsFullyBaked() && drawSrgLayout->HasShaderVariantKeyFallbackEntry())
-                    {
-                        drawSrg->SetShaderVariantKeyFallbackValue(shaderOptions.GetShaderVariantKeyFallbackValue());
-                    }
-
                     // Pass UvStreamTangentBitmask to the shader if the draw SRG has it.
-                    {
-                        AZ::Name shaderUvStreamTangentBitmask = AZ::Name(UvStreamTangentBitmask::SrgName);
-                        auto index = drawSrg->FindShaderInputConstantIndex(shaderUvStreamTangentBitmask);
 
-                        if (index.IsValid())
-                        {
-                            drawSrg->SetConstant(index, uvStreamTangentBitmask.GetFullTangentBitmask());
-                        }
+                    AZ::Name shaderUvStreamTangentBitmask = AZ::Name(UvStreamTangentBitmask::SrgName);
+                    auto index = drawSrg->FindShaderInputConstantIndex(shaderUvStreamTangentBitmask);
+
+                    if (index.IsValid())
+                    {
+                        drawSrg->SetConstant(index, uvStreamTangentBitmask.GetFullTangentBitmask());
                     }
 
                     drawSrg->Compile();

@@ -14,10 +14,13 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <AzCore/Debug/PerformanceCollector.h>
 
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/RPISystem.h>
 #include <Atom/RPI.Public/XR/XRRenderingInterface.h>
+
+#include "PerformanceCVarManager.h"
 
 namespace AZ
 {
@@ -37,6 +40,7 @@ namespace AZ
             , public AZ::SystemTickBus::Handler
             , public AZ::RHI::RHISystemNotificationBus::Handler
             , public XRRegisterInterface::Registrar
+            , public PerformanceCollectorOwner::Registrar
         {
         public:
             AZ_COMPONENT(RPISystemComponent, "{83E301F3-7A0C-4099-B530-9342B91B1BC0}");
@@ -66,6 +70,23 @@ namespace AZ
                         
             // RHISystemNotificationBus::Handler
             void OnDeviceRemoved(RHI::Device* device) override;
+
+            ///////////////////////////////////////////////////////////////////
+            // IPerformanceCollectorOwner overrides
+            AZ::Debug::PerformanceCollector* GetPerformanceCollector() override { return m_performanceCollector.get(); }
+            ///////////////////////////////////////////////////////////////////
+
+            ///////////////////////////////////////////////////////////////////
+            // Performance Collection
+            void InitializePerformanceCollector();
+
+            static constexpr AZStd::string_view PerformanceLogCategory = "Graphics";
+            static constexpr AZStd::string_view PerformanceSpecGraphicsSimulationTime = "Graphics Simulation Time";
+            static constexpr AZStd::string_view PerformanceSpecGraphicsRenderTime = "Graphics Render Time";
+            static constexpr AZStd::string_view PerformanceSpecEngineCpuTime = "Engine Cpu Time";
+
+            AZStd::unique_ptr<AZ::Debug::PerformanceCollector> m_performanceCollector;
+            ///////////////////////////////////////////////////////////////////
 
             RPISystem m_rpiSystem;
 
