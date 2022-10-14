@@ -128,7 +128,7 @@ namespace AZ
                 auto usesLtc = [&](const LightCommon::LightBounds& bounds) -> bool
                 {
                     LightHandle::IndexType index = m_lightData.GetIndexForData<1>(&bounds);
-                    return(m_lightData.GetData<0>(index).m_flags & QuadLightFlag::UseFastApproximation) == 0;
+                    return (m_lightData.GetData<0>(index).m_flags & QuadLightFlag::UseFastApproximation) == 0;
                 };
                 auto usesFastApproximation = [&](const LightCommon::LightBounds& bounds) -> bool
                 {
