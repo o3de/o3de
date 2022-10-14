@@ -53,6 +53,7 @@ namespace AzQtComponents
         };
 
         static void applyContainerStyle(CardHeader* header);
+        static void applySectionStyle(CardHeader* header);
 
         CardHeader(QWidget* parent = nullptr);
 

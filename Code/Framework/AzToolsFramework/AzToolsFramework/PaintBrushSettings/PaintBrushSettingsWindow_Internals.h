@@ -69,10 +69,7 @@ namespace PaintBrush
             }
 
         private:
-            void OnIntensityChanged(float intensity) override;
-            void OnOpacityChanged(float opacity) override;
-            void OnRadiusChanged(float radius) override;
-
+            void OnSettingsChanged([[maybe_unused]] const AzToolsFramework::PaintBrushSettings& newSettings) override;
 
             // RPE Support
             AzToolsFramework::ReflectedPropertyEditor* m_propertyEditor = nullptr;

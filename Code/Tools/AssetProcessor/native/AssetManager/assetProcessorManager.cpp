@@ -634,11 +634,6 @@ namespace AssetProcessor
 
         UpdateAnalysisTrackerForFile(jobEntry, AnalysisTrackerUpdateType::JobFailed);
 
-        // if its a fake "autofail job" or other reason for it not to exist in the DB, don't do anything here.
-        if (!jobEntry.m_addToDatabase)
-        {
-            return;
-        }
 
         QString absolutePathToFile = jobEntry.GetAbsoluteSourcePath();
 
@@ -658,6 +653,12 @@ namespace AssetProcessor
         }
 
         AssetProcessor::SetThreadLocalJobId(0);
+
+        // if its a fake "autofail job" or other reason for it not to exist in the DB, don't do anything here.
+        if (!jobEntry.m_addToDatabase)
+        {
+            return;
+        }
 
         // wipe the times so that it will try again next time.
         // note:  Leave the prior successful products where they are, though.

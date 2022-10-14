@@ -169,8 +169,8 @@ void AssetImporterWindow::Init()
     // Setup the overlay system, and set the root to be the root display. The root display has the browse,
     //  the Import button & the cancel button, which are handled here by the window.
     m_overlay.reset(aznew AZ::SceneAPI::UI::OverlayWidget(this));
-    m_rootDisplay.reset(aznew ImporterRootDisplay(m_serializeContext));
-    connect(m_rootDisplay.data(), &ImporterRootDisplay::UpdateClicked, this, &AssetImporterWindow::UpdateClicked);
+    m_rootDisplay.reset(aznew ImporterRootDisplayWidget(m_serializeContext));
+    connect(m_rootDisplay.data(), &ImporterRootDisplayWidget::SaveClicked, this, &AssetImporterWindow::SaveClicked);
 
     connect(m_overlay.data(), &AZ::SceneAPI::UI::OverlayWidget::LayerAdded, this, &AssetImporterWindow::OverlayLayerAdded);
     connect(m_overlay.data(), &AZ::SceneAPI::UI::OverlayWidget::LayerRemoved, this, &AssetImporterWindow::OverlayLayerRemoved);
@@ -251,6 +251,7 @@ void AssetImporterWindow::OpenFileInternal(const AZStd::string& filePath)
     QFileInfo fileInfo(filePath.c_str());
     SceneSettingsCard* card = CreateSceneSettingsCard(fileInfo.fileName(), SceneSettingsCard::Layout::Loading, SceneSettingsCard::State::Loading);
     card->SetAndStartProcessingHandler(asyncLoadHandler);
+
 }
 
 SceneSettingsCard* AssetImporterWindow::CreateSceneSettingsCard(
@@ -356,7 +357,7 @@ bool AssetImporterWindow::IsAllowedToChangeSourceFile()
     return false;
 }
 
-void AssetImporterWindow::UpdateClicked()
+void AssetImporterWindow::SaveClicked()
 {
     using namespace AZ::SceneAPI::SceneUI;
 
@@ -384,6 +385,7 @@ void AssetImporterWindow::UpdateClicked()
     m_assetImporterDocument->SaveScene(output,
         [output, this, isSourceControlActive, card](bool wasSuccessful)
         {
+            m_rootDisplay->UpdateTimeStamp(m_assetImporterDocument->GetScene()->GetManifestFilename().c_str());
             if (output->HasAnyWarnings())
             {
                 AZ_TracePrintf(AZ::SceneAPI::Utilities::WarningWindow, "%s", output->BuildWarningMessage().c_str());
@@ -598,6 +600,7 @@ void AssetImporterWindow::SetTitle(const char* filePath)
             AZStd::string fileName;
             AzFramework::StringFunc::Path::GetFileName(filePath, fileName);
             converted->setWindowTitle(QString("%1 Settings - %2").arg(extension.c_str(), fileName.c_str()));
+            m_rootDisplay->AppendUnsaveChangesToTitle(*converted);
             break;
         }
         else
@@ -625,6 +628,9 @@ void AssetImporterWindow::UpdateSceneDisplay(const AZStd::shared_ptr<AZ::SceneAP
     }
     
     m_rootDisplay->SetPythonBuilderText(m_scriptProcessorRuleFilename.c_str());
+
+    // UpdateSceneDisplay gets called both when the file is saved from this tool, as well as when it's modified externally.
+    m_rootDisplay->UpdateTimeStamp(m_assetImporterDocument->GetScene()->GetManifestFilename().c_str());
 }
 
 void AssetImporterWindow::HandleAssetLoadingCompleted()

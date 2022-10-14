@@ -802,10 +802,12 @@ void MainWindow::AddPatternRow(AZStd::string_view name, AssetBuilderSDK::AssetBu
     QObject::connect(enableChackmark, &QCheckBox::stateChanged, ui->sharedCacheTable, updateStatus);
     ui->sharedCacheTable->setCellWidget(row, aznumeric_cast<int>(PatternColumns::Enabled), enableChackmark);
     ui->sharedCacheTable->setColumnWidth(aznumeric_cast<int>(PatternColumns::Enabled), 8);
+    enableChackmark->setToolTip(tr("Temporarily disable the pattern by unchecking this box"));
 
     // Name
     auto* nameWidgetItem = new QTableWidgetItem(name.data());
     ui->sharedCacheTable->setItem(row, aznumeric_cast<int>(PatternColumns::Name), nameWidgetItem);
+    nameWidgetItem->setToolTip(tr("Name of the pattern or title name of an asset builder"));
 
     // Type combo
     auto* combo = new QComboBox();
@@ -814,10 +816,12 @@ void MainWindow::AddPatternRow(AZStd::string_view name, AssetBuilderSDK::AssetBu
     combo->addItem("Regex", QVariant(AssetBuilderPattern::PatternType::Regex));
     combo->setCurrentIndex(aznumeric_cast<int>(type));
     ui->sharedCacheTable->setCellWidget(row, aznumeric_cast<int>(PatternColumns::Type), combo);
+    combo->setToolTip(tr("Wildcard is a file wild card pattern; Regex is a regular expression pattern"));
 
     // Pattern
     auto* patternWidgetItem = new QTableWidgetItem(pattern.data());
     ui->sharedCacheTable->setItem(row, aznumeric_cast<int>(PatternColumns::Pattern), patternWidgetItem);
+    patternWidgetItem->setToolTip(tr("String pattern to match source assets"));
 
     // Remove button
     auto* button = new QPushButton();
@@ -827,6 +831,7 @@ void MainWindow::AddPatternRow(AZStd::string_view name, AssetBuilderSDK::AssetBu
     button->setStyleSheet("QPushButton { background-color: transparent; border: 0px }");
     ui->sharedCacheTable->setCellWidget(row, aznumeric_cast<int>(PatternColumns::Remove), button);
     ui->sharedCacheTable->setColumnWidth(aznumeric_cast<int>(PatternColumns::Remove), 16);
+    button->setToolTip(tr("Removes the pattern to be considered for caching"));
     QObject::connect(button, &QPushButton::clicked, this,
         [this]()
         {

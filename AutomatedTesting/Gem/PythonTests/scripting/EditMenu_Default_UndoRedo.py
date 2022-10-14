@@ -38,12 +38,12 @@ def EditMenu_Default_UndoRedo():
 
     # Preconditions
     import azlmbr.legacy.general as general
-    import editor_python_test_tools.script_canvas_tools_qt as sc_tools_qt
+    from editor_python_test_tools.QtPyO3DEEditor import QtPyO3DEEditor
 
     general.idle_enable(True)
 
     # 1) Open Script Canvas window
-    qtpy_o3de_editor = sc_tools_qt.qtpy_o3de_editor
+    qtpy_o3de_editor = QtPyO3DEEditor()
     sc_editor = qtpy_o3de_editor.open_script_canvas()
 
     # 2) Create Graph

@@ -159,7 +159,18 @@ namespace AZ::SceneAPI
                         {
                             if (azrtti_istypeof<AZ::SceneAPI::DataTypes::ITransform>(childContent.get()))
                             {
-                                nodeDataForEntity.m_transformIndex = childIndex;
+                                if (!nodeDataForEntity.m_transformIndex.IsValid())
+                                {
+                                    // The first child transform of the mesh is applied to the mesh entity
+                                    nodeDataForEntity.m_transformIndex = childIndex;
+                                }
+                                else
+                                {
+                                    // All other child transforms of the mesh represent unique entities
+                                    NodeDataForEntity newNodeDataForEntity;
+                                    newNodeDataForEntity.m_transformIndex = childIndex;
+                                    nodeDataMap.emplace(NodeDataMapEntry{ childIndex, AZStd::move(newNodeDataForEntity) });
+                                }
                             }
                             else if (azrtti_istypeof<AZ::SceneAPI::DataTypes::ICustomPropertyData>(childContent.get()))
                             {
