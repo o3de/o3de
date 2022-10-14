@@ -356,18 +356,17 @@ namespace AssetProcessor
             AZStd::unordered_map<QueueElementID, AZ::s64> historicalStats;
             auto statsFunction = [&historicalStats](AzToolsFramework::AssetDatabase::StatDatabaseEntry entry)
             {
-                static constexpr int numTokensExpected = 5;
+                static constexpr int numTokensExpected = 6;
                 AZStd::vector<AZStd::string> tokens;
                 AZ::StringFunc::Tokenize(entry.m_statName, tokens, ',');
 
                 if (tokens.size() == numTokensExpected)
                 {
-                    // TODO: Fix this
-                    //QueueElementID elementId;
-                    //elementId.SetSourceAssetReference(tokens[1].c_str());
-                    //elementId.SetJobDescriptor(tokens[2].c_str());
-                    //elementId.SetPlatform(tokens[3].c_str());
-                    //historicalStats[elementId] = entry.m_statValue;
+                    QueueElementID elementId;
+                    elementId.SetSourceAssetReference(SourceAssetReference(tokens[1].c_str(), tokens[2].c_str()));
+                    elementId.SetJobDescriptor(tokens[3].c_str());
+                    elementId.SetPlatform(tokens[4].c_str());
+                    historicalStats[elementId] = entry.m_statValue;
                     AZ_UNUSED(historicalStats);
                 }
                 else

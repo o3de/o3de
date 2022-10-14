@@ -1176,7 +1176,7 @@ namespace AssetUtilities
     AZStd::string ComputeJobLogFileName(const AssetProcessor::JobEntry& jobEntry)
     {
         return AZStd::string::format(
-            "%s-%u-%llu.log", jobEntry.m_sourceAssetReference.AbsolutePath().c_str(), jobEntry.GetHash(), jobEntry.m_jobRunKey);
+            "%s-%u-%llu.log", jobEntry.m_sourceAssetReference.RelativePath().c_str(), jobEntry.GetHash(), jobEntry.m_jobRunKey);
     }
 
     bool CreateTempRootFolder(QString startFolder, QDir& tempRoot)

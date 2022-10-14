@@ -297,7 +297,8 @@ void JobModelUnitTests::CreateDatabaseTestData()
     for (const auto& jobEntry : m_data->m_jobEntries)
     {
         AZStd::string statName = AZStd::string::format(
-            "ProcessJob,%s,%s,%s,%s",
+            "ProcessJob,%s,%s,%s,%s,%s",
+            scanFolderEntry.m_scanFolder.c_str(),
             m_data->m_sourceName.c_str(),
             jobEntry.m_jobKey.c_str(),
             jobEntry.m_platform.c_str(),
@@ -308,7 +309,7 @@ void JobModelUnitTests::CreateDatabaseTestData()
         ASSERT_TRUE(m_data->m_connection.ReplaceStat(statEntry));
     }
 
-    //! Insert an invalid stat entry (6 tokens)
-    statEntry = { "ProcessJob,apple,banana,carrot,dog,{FDAF4363-C530-476C-B382-579A43B3E2FC}", 123, 456 };
+    //! Insert an invalid stat entry (7 tokens)
+    statEntry = { "ProcessJob,apple,peach,banana,carrot,dog,{FDAF4363-C530-476C-B382-579A43B3E2FC}", 123, 456 };
     ASSERT_TRUE(m_data->m_connection.ReplaceStat(statEntry));
 }
