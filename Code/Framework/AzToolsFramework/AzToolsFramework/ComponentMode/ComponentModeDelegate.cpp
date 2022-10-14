@@ -307,19 +307,9 @@ namespace AzToolsFramework
         }
 
         bool ComponentModeDelegate::DetectLeaveComponentModeInteraction(
-            const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
+            [[maybe_unused]] const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
         {
-            if (ShouldDetectEnterLeaveComponentMode(mouseInteraction))
-            {
-                if (DoubleClickedComponent(mouseInteraction, m_handler) == DoubleClickOutcome::OffComponent)
-                {
-                    ComponentModeSystemRequestBus::Broadcast(
-                        &ComponentModeSystemRequests::EndComponentMode);
-
-                    return true;
-                }
-            }
-
+            // by default, we won't use mouse interactions to leave component mode, so we'll always return false.
             return false;
         }
 
