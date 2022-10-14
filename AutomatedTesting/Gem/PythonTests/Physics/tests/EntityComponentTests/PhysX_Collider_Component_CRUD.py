@@ -99,7 +99,7 @@ def PhysX_Collider_Component_CRUD():
         physx_collider.set_sphere_radius(0.0)
         physx_collider.set_sphere_radius(-1.0)
         physx_collider.set_sphere_radius(2.5)
-        physx_collider.set_sphere_radius(256)
+        physx_collider.set_sphere_radius(256.0)
 
         # 7) Set General Properties
         physx_collider.toggle_trigger()
@@ -114,7 +114,7 @@ def PhysX_Collider_Component_CRUD():
         physx_collider.set_offset(0.0, 0.0, 0.0)
         physx_collider.set_offset(-1.0, -1.0, -1.0)
         physx_collider.set_offset(2.5, 2.5, 2.5)
-        physx_collider.set_offset(255, 255, 255)
+        physx_collider.set_offset(256.0, 256.0, 256.0)
 
         # TODO: GHI #12633 - Figure out how to build a Quaternion
         # physx_collider.set_rotation(0.0, 0.0, 0.0)
