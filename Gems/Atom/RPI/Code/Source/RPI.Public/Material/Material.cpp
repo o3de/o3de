@@ -38,7 +38,7 @@ namespace AZ
 
         Data::Instance<Material> Material::Create(const Data::Asset<MaterialAsset>& materialAsset)
         {
-            return Data::InstanceDatabase<Material>::Instance().FindOrCreate(Data::InstanceId::CreateRandom(), materialAsset);
+            return Data::InstanceDatabase<Material>::Instance().Create(materialAsset);
         }
 
         AZ::Data::Instance<Material> Material::CreateInternal(MaterialAsset& materialAsset)
