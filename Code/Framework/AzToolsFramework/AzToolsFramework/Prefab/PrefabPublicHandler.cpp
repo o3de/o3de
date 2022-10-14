@@ -411,6 +411,8 @@ namespace AzToolsFramework
             m_instanceToTemplateInterface->GenerateDomForEntity(
                 containerEntityDomWithoutTransform, *GetEntityById(containerEntityId));
             PrefabDomPath entityAliasDomPath(m_instanceToTemplateInterface->GenerateEntityAliasPath(containerEntityId).c_str());
+
+            // Move the value to tempalte DOM and containerEntityDomWithoutTransform becomes null after the move.
             entityAliasDomPath.Set(owningTemplateDom, containerEntityDomWithoutTransform.Move());
 
             // Restore the transform data on object side.
