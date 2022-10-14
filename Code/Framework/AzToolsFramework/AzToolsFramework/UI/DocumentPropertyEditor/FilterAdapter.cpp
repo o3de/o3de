@@ -598,7 +598,7 @@ namespace AZ::DocumentPropertyEditor
     {
     }
 
-    void ValueStringFilter::SetFilterString(const AZStd::string& filterString)
+    void ValueStringFilter::SetFilterString(AZStd::string filterString)
     {
         if (m_filterString != filterString)
         {

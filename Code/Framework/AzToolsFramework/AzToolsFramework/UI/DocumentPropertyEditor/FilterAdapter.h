@@ -125,7 +125,7 @@ namespace AZ::DocumentPropertyEditor
     {
     public:
         ValueStringFilter();
-        void SetFilterString(const AZStd::string& filterString);
+        void SetFilterString(AZStd::string filterString);
 
         struct StringMatchNode : public RowFilterAdapter::MatchInfoNode
         {
