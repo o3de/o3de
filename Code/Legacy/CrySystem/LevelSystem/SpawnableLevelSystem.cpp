@@ -82,6 +82,7 @@ namespace LegacyLevelSystem
         }
 
         AzFramework::RootSpawnableNotificationBus::Handler::BusConnect();
+        AzFramework::LevelSystemLifecycleRequestBus::Handler::BusConnect();
 
         // If there were LoadLevel command invocations before the creation of the level system
         // then those invocations were queued.
@@ -105,6 +106,7 @@ namespace LegacyLevelSystem
     //------------------------------------------------------------------------
     SpawnableLevelSystem::~SpawnableLevelSystem()
     {
+        AzFramework::LevelSystemLifecycleRequestBus::Handler::BusDisconnect();
         AzFramework::RootSpawnableNotificationBus::Handler::BusDisconnect();
     }
 
@@ -116,6 +118,11 @@ namespace LegacyLevelSystem
     bool SpawnableLevelSystem::IsLevelLoaded()
     {
         return m_bLevelLoaded;
+    }
+
+    AZStd::string SpawnableLevelSystem::GetCurrentLevelName()
+    {
+        return m_bLevelLoaded ? m_lastLevelName : "";
     }
 
     const char* SpawnableLevelSystem::GetCurrentLevelName() const
@@ -237,8 +244,8 @@ namespace LegacyLevelSystem
 
         // This is a valid level, find out if any systems need to stop level loading before proceeding
         bool blockLoading = false;
-        AzFramework::LevelSystemLifecycleRequestBus::EnumerateHandlers(
-            [&blockLoading, &validLevelName](AzFramework::LevelSystemLifecycleRequests* handler)->bool
+        AzFramework::LevelLoadBlockerBus::EnumerateHandlers(
+            [&blockLoading, &validLevelName](AzFramework::LevelLoadBlockerRequests* handler) -> bool
             {
                 if (handler->ShouldBlockLevelLoading(validLevelName.c_str()))
                 {
