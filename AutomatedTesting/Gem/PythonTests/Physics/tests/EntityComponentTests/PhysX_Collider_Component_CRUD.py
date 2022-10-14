@@ -116,11 +116,10 @@ def PhysX_Collider_Component_CRUD():
         physx_collider.set_offset(2.5, 2.5, 2.5)
         physx_collider.set_offset(256.0, 256.0, 256.0)
 
-        # TODO: GHI #12633 - Figure out how to build a Quaternion
-        # physx_collider.set_rotation(0.0, 0.0, 0.0)
-        # physx_collider.set_rotation(-1.0, -1.0, -1.0)
-        # physx_collider.set_rotation(2.5, 2.5, 2.5)
-        # physx_collider.set_rotation(255.0, 255.0, 255.0)
+        physx_collider.set_rotation(0.0, 0.0, 0.0)
+        physx_collider.set_rotation(-1.0, -1.0, -1.0)
+        physx_collider.set_rotation(2.5, 2.5, 2.5)
+        physx_collider.set_rotation(255.0, 255.0, 255.0)
 
         # TODO: GHI #12634 - For some reason I can't get this to work. Says it takes an AZStd::string,
         #  but it won't take a python string or a character.

@@ -105,9 +105,9 @@ class PhysxCollider:
 
         Used to set the Physx Collider's Rotation Property.
         """
-        # TODO: GHI #12633 - Figure out how to build a Quaternion
-        assert NotImplementedError
-        self.component.set_component_property_value(self.Path.ROTATION, math.Quaternion(float(x), float(y), float(z)))
+        rotation = math.Quaternion()
+        rotation.SetFromEulerDegrees(math.Vector3(float(x), float(y), float(z)))
+        self.component.set_component_property_value(self.Path.ROTATION, rotation)
 
     def set_tag(self, tag: chr) -> None:
         """

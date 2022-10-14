@@ -44,7 +44,7 @@ class TestAutomation(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
 
     def test_PhysX_Collider_Component_CRUD(self, request, workspace, editor, launcher_platform):
-        from .tests.EntityComponentTests import PhsyX_ColliderFamily_Component_CRUD as test_module
+        from .tests.EntityComponentTests import PhysX_Collider_Component_CRUD as test_module
         self._run_test(request, workspace, editor, test_module)
 
     # Failing, PhysXTerrain
