@@ -79,6 +79,9 @@ namespace AtomToolsFramework
         m_view->SetViewToClipMatrix(viewToClipMatrix);
         m_renderPipeline->SetDefaultView(m_view);
 
+        // Don't render the pipeline until a capture request
+        m_renderPipeline->RemoveFromRenderTick();
+
         m_state.reset(new PreviewRendererIdleState(this));
 
         AZ::Interface<PreviewRendererInterface>::Register(this);

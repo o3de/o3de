@@ -485,8 +485,12 @@ namespace AZ
                 WaitAndCleanCompletionJob(m_simulationCompletion);
             }
 
-            auto taskGraphActiveInterface = AZ::Interface<AZ::TaskGraphActiveInterface>::Get();
-            m_taskGraphActive = taskGraphActiveInterface && taskGraphActiveInterface->IsTaskGraphActive();
+            // Profiling Ros Con demo, Task Graph was 2-3ms slower than Jobs
+            // Time for Jobs was ~5.5ms, maxing out at ~6.3ms
+            // Task Graph took ~7.7ms, maxing out at ~8.7ms
+            // Disabling task graph for performance reasons, to re-enable uncomment these two lines
+            // auto taskGraphActiveInterface = AZ::Interface<AZ::TaskGraphActiveInterface>::Get();
+            // m_taskGraphActive = taskGraphActiveInterface && taskGraphActiveInterface->IsTaskGraphActive();
 
             if (jobPolicy == RHI::JobPolicy::Serial)
             {
@@ -702,7 +706,10 @@ namespace AZ
                 WaitAndCleanCompletionJob(m_simulationCompletion);
             }
 
-            SceneNotificationBus::Event(GetId(), &SceneNotification::OnBeginPrepareRender);
+            {
+                AZ_PROFILE_SCOPE(RPI, "Scene: OnBeginPrepareRender");
+                SceneNotificationBus::Event(GetId(), &SceneNotification::OnBeginPrepareRender);
+            }
 
             // Get active pipelines which need to be rendered and notify them frame started
             AZStd::vector<RenderPipelinePtr> activePipelines;
