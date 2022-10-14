@@ -35,10 +35,15 @@ namespace UnitTest
             AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
 
             m_executor = aznew TaskExecutor();
+            TaskExecutor::SetInstance(m_executor); // SetInstance is a null-op if there is already a default instance set
         }
 
         void TearDown() override
         {
+            if (&TaskExecutor::Instance() == m_executor) // if this test created the default instance unset it before destroying it
+            {
+                TaskExecutor::SetInstance(nullptr);
+            }
             azdestroy(m_executor);
             AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
             AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();

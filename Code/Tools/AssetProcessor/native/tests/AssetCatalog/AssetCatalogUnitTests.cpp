@@ -502,6 +502,104 @@ namespace AssetProcessor
         ASSERT_TRUE(TestGetRelativeProductPath(fileToCheck, true, { "aaa/basefile.txt" }));
     }
 
+    struct MockConnection : AssetProcessor::ConnectionBus::Handler
+    {
+        MockConnection(int connectionId)
+        {
+            BusConnect(connectionId);
+        }
+
+        ~MockConnection()
+        {
+            BusDisconnect();
+        }
+
+        virtual size_t Send([[maybe_unused]] unsigned int serial, const AzFramework::AssetSystem::BaseAssetProcessorMessage& message)
+        {
+            auto* bulkMessage = azrtti_cast<const BulkAssetNotificationMessage*>(&message);
+
+            EXPECT_TRUE(bulkMessage);
+            EXPECT_EQ(bulkMessage->m_type, AssetNotificationMessage::AssetChanged);
+            EXPECT_GT(bulkMessage->m_messages.size(), 0);
+            m_messages += bulkMessage->m_messages.size();
+
+            return sizeof(message);
+        }
+        virtual size_t SendRaw(unsigned int /*type*/, unsigned int /*serial*/, const QByteArray& /*data*/)
+        {
+            GTEST_NONFATAL_FAILURE_("Not supported");
+            return 0;
+        }
+        virtual size_t SendPerPlatform(
+            unsigned int /*serial*/, const AzFramework::AssetSystem::BaseAssetProcessorMessage& /*message*/, const QString& /*platform*/)
+        {
+            GTEST_NONFATAL_FAILURE_("Not supported");
+            return 0;
+        }
+        virtual size_t SendRawPerPlatform(
+            unsigned int /*type*/, unsigned int /*serial*/, const QByteArray& /*data*/, const QString& /*platform*/)
+        {
+            GTEST_NONFATAL_FAILURE_("Not supported");
+            return 0;
+        }
+
+        virtual unsigned int SendRequest(
+            const AzFramework::AssetSystem::BaseAssetProcessorMessage& /*message*/, const ResponseCallback& /*callback*/)
+        {
+            GTEST_NONFATAL_FAILURE_("Not supported");
+            return 0;
+        }
+        virtual size_t SendResponse(unsigned int /*serial*/, const AzFramework::AssetSystem::BaseAssetProcessorMessage& /*message*/)
+        {
+            GTEST_NONFATAL_FAILURE_("Not supported");
+            return 0;
+        }
+        virtual void RemoveResponseHandler(unsigned int /*serial*/)
+        {
+            GTEST_NONFATAL_FAILURE_("Not supported");
+        }
+
+        size_t m_messages = 0;
+    };
+
+    TEST_F(AssetCatalogTestWithProducts, SendAssetUpdateOnConnect)
+    {
+        static constexpr int ConnId = 1;
+
+        AssetNotificationMessage message;
+        message.m_type = AssetNotificationMessage::AssetChanged;
+        message.m_data = "filea.png";
+        message.m_assetId = AZ::Data::AssetId("{4DBBC5A7-ACEE-4084-A435-9CA8AA05B01B}");
+        message.m_assetType = AZ::Data::AssetType("{01E432B8-4252-40F5-86CC-4CB554004C49}");
+        message.m_platform = "pc";
+        message.m_sizeBytes = 10;
+
+        // Add 2 assets to the catalog
+        m_data->m_assetCatalog->OnAssetMessage(message);
+
+        message.m_data = "fileb.png";
+        message.m_assetId = AZ::Data::AssetId("{29AA7E27-4A80-4443-8DFD-6FC459833BD2}");
+
+        m_data->m_assetCatalog->OnAssetMessage(message);
+
+        // Simulate a connection afterwards
+        MockConnection mockConnection(ConnId);
+        MockConnection android(ConnId + 1);
+
+        EXPECT_EQ(mockConnection.m_messages, 0);
+        EXPECT_EQ(android.m_messages, 0);
+
+        m_data->m_assetCatalog->OnConnect(ConnId, { "pc" });
+
+        // Should recieve both asset messages
+        EXPECT_EQ(mockConnection.m_messages, 2);
+
+        m_data->m_assetCatalog->OnConnect(ConnId + 1, { "android" });
+
+        EXPECT_EQ(android.m_messages, 0); // No assets for the android platform
+        EXPECT_EQ(mockConnection.m_messages, 2); // No extra messages for the pc platform
+    }
+
     class AssetCatalogTestRelativeSourcePath : public AssetCatalogTest
     {
     public:

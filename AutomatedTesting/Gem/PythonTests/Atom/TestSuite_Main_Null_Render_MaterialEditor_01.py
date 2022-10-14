@@ -27,6 +27,10 @@ class TestMaterialEditor(AtomToolsTestSuite):
 
         from Atom.tests import MaterialEditor_Atom_LaunchMaterialEditor as test_module
 
+    class MaterialEditor_Atom_BasicTests(AtomToolsBatchedTest):
+
+        from Atom.tests import MaterialEditor_Atom_BasicTests as test_module
+
     @pytest.mark.xfail
     class MaterialEditor_Atom_ExpectsTestFailure(AtomToolsBatchedTest):
 

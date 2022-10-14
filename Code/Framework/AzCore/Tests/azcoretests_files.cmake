@@ -74,6 +74,7 @@ set(FILES
     Console/LoggerSystemComponentTests.cpp
     Console/ConsoleTests.cpp
     Date/DateFormatTests.cpp
+    Debug/PerformanceCollectorTests.cpp
     Debug/Trace.cpp
     Debug.cpp
     DLL.cpp
