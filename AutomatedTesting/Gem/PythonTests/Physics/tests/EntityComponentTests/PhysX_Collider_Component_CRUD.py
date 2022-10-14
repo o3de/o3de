@@ -5,7 +5,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-def PhysX_ColliderFamily_Component_CRUD():
+def PhysX_Collider_Component_CRUD():
     """
     Summary:
     Test Does Something
@@ -175,5 +175,5 @@ def PhysX_ColliderFamily_Component_CRUD():
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
-    Report.start_test(PhysX_ColliderFamily_Component_CRUD)
+    Report.start_test(PhysX_Collider_Component_CRUD)
 
