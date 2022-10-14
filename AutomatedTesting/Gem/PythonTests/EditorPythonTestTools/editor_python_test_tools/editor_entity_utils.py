@@ -331,7 +331,6 @@ class EditorComponent:
 
         return result
 
-
     def toggle_property_switch(self, component_property_path: str) -> None:
         """
         Used to toggle a property switch
