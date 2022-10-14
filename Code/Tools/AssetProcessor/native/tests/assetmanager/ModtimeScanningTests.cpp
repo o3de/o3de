@@ -673,7 +673,7 @@ namespace UnitTests
         m_assetProcessorManager->AssessDeletedFile(absPath);
         ASSERT_TRUE(BlockUntilIdle(5000));
 
-        ASSERT_THAT(m_data->m_deletedSources, testing::UnorderedElementsAre(AssetProcessor::SourceAssetReference(tempPath.absoluteFilePath("subfolder1"), "textures/a.txt")));
+        ASSERT_THAT(m_data->m_deletedSources, testing::UnorderedElementsAre(AssetProcessor::SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1"), "textures/a.txt")));
         ASSERT_THAT(deletedFolders, testing::UnorderedElementsAre(absPath.toUtf8().constData()));
     }
 

@@ -3296,7 +3296,7 @@ TEST_F(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_SourceDe
 
 TEST_F(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_AbsolutePathIsPreserved)
 {
-    QDir tempPath(m_tempDir.path());
+    QDir tempPath(m_assetRootDir.path());
     QString absPath = tempPath.absoluteFilePath("subfolder1/a.txt");
 
     AssetProcessor::AssetProcessorManager::JobToProcessEntry job;
@@ -4236,7 +4236,7 @@ TEST_F(ChainJobDependencyTest, TestChainDependency_Multi)
         capturedDetails.clear();
     }
 
-    QDir tempPath(m_tempDir.path());
+    QDir tempPath(m_assetRootDir.path());
 
     // Run through the dependencies in reverse order
     // Each one should trigger a job for every file in front of it
