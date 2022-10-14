@@ -79,7 +79,11 @@ namespace AtomToolsFramework
         m_view->SetViewToClipMatrix(viewToClipMatrix);
         m_renderPipeline->SetDefaultView(m_view);
 
-        // Don't render the pipeline until a capture request
+        // Run the pipeline once for complete initialization, else capturing will fail
+        // Todo: Investigate why RemoveFromRenderTick doesn't work here and what initialization
+        // steps are missing in that case (could be the target image/texture doesn't get setup)
+        // Without this line, pipeline default to render every frame until a capture is triggered
+        // This resulted in a ~0.5ms performance hit every frame
         m_renderPipeline->AddToRenderTickOnce();
 
         m_state.reset(new PreviewRendererIdleState(this));
