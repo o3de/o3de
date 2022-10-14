@@ -570,6 +570,9 @@ void ApplicationManagerBase::InitConnectionManager()
     [[maybe_unused]] bool result = QObject::connect(GetAssetCatalog(), &AssetProcessor::AssetCatalog::SendAssetMessage, connectionAndChangeMessagesThreadContext, forwardMessageFunction, Qt::QueuedConnection);
     AZ_Assert(result, "Failed to connect to AssetCatalog signal");
 
+    result = QObject::connect(m_connectionManager, &ConnectionManager::ConnectionReady, GetAssetCatalog(), &AssetProcessor::AssetCatalog::OnConnect, Qt::QueuedConnection);
+    AZ_Assert(result, "Failed to connect to AssetCatalog signal");
+
     //Application manager related stuff
 
     // The AssetCatalog has to be rebuilt on connection, so we force the incoming connection messages to be serialized as they connect to the ApplicationManagerBase
