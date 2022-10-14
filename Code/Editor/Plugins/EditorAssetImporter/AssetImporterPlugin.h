@@ -23,7 +23,7 @@
 class AssetImporterWindow;
 
 //! Python interface for scene settings
-class SceneSettingsAssetImporterForPythonRequests
+class SceneSettingsAssetImporterForScriptRequests
     : public AZ::EBusTraits
 {
 public:
@@ -37,15 +37,15 @@ public:
     //! Returns the window ID of the viewpane, because Python can't have QObjects sent to it.
     virtual AZ::u64 EditImportSettings(const AZStd::string& sourceFilePath) = 0;
 };
-using SceneSettingsAssetImporterForPythonRequestBus = AZ::EBus<SceneSettingsAssetImporterForPythonRequests>;
+using SceneSettingsAssetImporterForScriptRequestBus = AZ::EBus<SceneSettingsAssetImporterForScriptRequests>;
 
-class SceneSettingsAssetImporterForPythonRequestHandler
-    : protected SceneSettingsAssetImporterForPythonRequestBus::Handler
+class SceneSettingsAssetImporterForScriptRequestHandler
+    : protected SceneSettingsAssetImporterForScriptRequestBus::Handler
 {
 public:
-    AZ_RTTI(SceneSettingsAssetImporterForPythonRequestHandler, "{C3B9DCFC-CD41-4130-B295-485905A7CECB}");
-    SceneSettingsAssetImporterForPythonRequestHandler();
-    ~SceneSettingsAssetImporterForPythonRequestHandler();
+    AZ_RTTI(SceneSettingsAssetImporterForScriptRequestHandler, "{C3B9DCFC-CD41-4130-B295-485905A7CECB}");
+    SceneSettingsAssetImporterForScriptRequestHandler();
+    ~SceneSettingsAssetImporterForScriptRequestHandler();
 
     static void Reflect(AZ::ReflectContext* context);
     AZ::u64 EditImportSettings(const AZStd::string& sourceFilePath) override;
@@ -125,5 +125,5 @@ private:
     // Context provider for the Asset Browser
     AZ::AssetBrowserContextProvider m_assetBrowserContextProvider;
     AZ::SceneSerializationHandler m_sceneSerializationHandler;
-    AZStd::shared_ptr<SceneSettingsAssetImporterForPythonRequestHandler> m_requestHandler;
+    AZStd::shared_ptr<SceneSettingsAssetImporterForScriptRequestHandler> m_requestHandler;
 };

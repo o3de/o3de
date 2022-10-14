@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <ScriptCanvas/Core/Core.h>
 #include <ScriptCanvas/Data/Data.h>
 
 namespace ScriptCanvas

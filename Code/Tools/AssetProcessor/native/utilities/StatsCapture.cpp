@@ -53,6 +53,7 @@ namespace AssetProcessor
             AZStd::unordered_map<AZStd::string, StatsEntry> m_stats;
             bool m_dumpMachineReadableStats = false;
             bool m_dumpHumanReadableStats = true;
+            bool m_dbConnectionIsOpen = false;
 
             // Make a friendly time string of the format nnHnnMhhS.xxxms
             AZStd::string FormatDuration(const duration& duration)
@@ -165,11 +166,20 @@ namespace AssetProcessor
 
         StatsCaptureImpl::StatsCaptureImpl()
         {
-            m_dbConnection.OpenDatabase();
+            m_dbConnectionIsOpen = m_dbConnection.OpenDatabase();
+            AZ_Error(
+                AssetProcessor::ConsoleChannel,
+                m_dbConnectionIsOpen,
+                "Cannot open the asset database for capturing asset processing stats.\n");
         }
 
         void StatsCaptureImpl::BeginCaptureStat(AZStd::string_view statName)
         {
+            if (!m_dbConnectionIsOpen)
+            {
+                return;
+            }
+
             StatsEntry& existingStat = m_stats[statName];
             if (existingStat.m_operationStartTime != timepoint())
             {
@@ -181,6 +191,11 @@ namespace AssetProcessor
 
         AZStd::optional<AZStd::sys_time_t> StatsCaptureImpl::EndCaptureStat(AZStd::string_view statName, bool persistToDb)
         {
+            if (!m_dbConnectionIsOpen)
+            {
+                return AZStd::optional<AZStd::sys_time_t>();
+            }
+
             StatsEntry& existingStat = m_stats[statName];
             AZStd::optional<AZStd::sys_time_t> operationDurationInMillisecond;
             if (existingStat.m_operationStartTime != timepoint())
@@ -205,6 +220,11 @@ namespace AssetProcessor
 
         void StatsCaptureImpl::Dump()
         {
+            if (!m_dbConnectionIsOpen)
+            {
+                return;
+            }
+
             timepoint startTimeStamp = AZStd::chrono::steady_clock::now();
 
             auto settingsRegistry = AZ::SettingsRegistry::Get();

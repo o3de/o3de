@@ -27,7 +27,7 @@ namespace AzFramework
     /*
      * An asset catalog keeps a registry of asset data information (file name, size, type, etc)
      */
-    class AssetCatalog 
+    class AssetCatalog
         : public AZ::Data::AssetCatalog
         , public AZ::Data::AssetCatalogRequestBus::Handler
         , private AssetSystem::NetworkAssetUpdateInterface
@@ -98,8 +98,8 @@ namespace AzFramework
 
         //////////////////////////////////////////////////////////////////////////
         // NetworkAssetUpdateInterface
-        void AssetChanged(AzFramework::AssetSystem::AssetNotificationMessage message) override;
-        void AssetRemoved(AzFramework::AssetSystem::AssetNotificationMessage message) override;
+        void AssetChanged(const AZStd::vector<AzFramework::AssetSystem::AssetNotificationMessage>& messages, bool isCatalogInitialize = false) override;
+        void AssetRemoved(const AZStd::vector<AzFramework::AssetSystem::AssetNotificationMessage>& messages) override;
         //////////////////////////////////////////////////////////////////////////
 
         static AZStd::shared_ptr<AzFramework::AssetRegistry> LoadCatalogFromFile(const char* catalogFile);

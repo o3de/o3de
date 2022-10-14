@@ -26,6 +26,7 @@
 #include <QMultiMap>
 #include <AzCore/IO/SystemFile.h>
 #include <AzToolsFramework/ToolsComponents/ToolsAssetCatalogBus.h>
+#include <native/connection/connection.h>
 #endif
 
 #include "AssetRequestHandler.h"
@@ -67,6 +68,7 @@ namespace AssetProcessor
         // incoming message from the AP
         void OnAssetMessage(AzFramework::AssetSystem::AssetNotificationMessage message);
         void OnDependencyResolved(const AZ::Data::AssetId& assetId, const AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry& entry);
+        void OnConnect(unsigned int connectionId, QStringList platforms);
 
         void SaveRegistry_Impl();
         virtual AzFramework::AssetSystem::GetUnresolvedDependencyCountsResponse HandleGetUnresolvedDependencyCountsRequest(MessageData<AzFramework::AssetSystem::GetUnresolvedDependencyCountsRequest> messageData);

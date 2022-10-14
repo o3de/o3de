@@ -44,7 +44,7 @@ namespace PaintBrush
 
             AzToolsFramework::PaintBrushSettings* settings = nullptr;
             AzToolsFramework::PaintBrushSettingsRequestBus::BroadcastResult(
-                settings, &AzToolsFramework::PaintBrushSettingsRequestBus::Events::GetSettings);
+                settings, &AzToolsFramework::PaintBrushSettingsRequestBus::Events::GetSettingsPointerForPropertyEditor);
 
             m_propertyEditor->ClearInstances();
             m_propertyEditor->AddInstance(settings, azrtti_typeid(*settings), nullptr);
@@ -67,17 +67,7 @@ namespace PaintBrush
             AzToolsFramework::PaintBrushSettingsNotificationBus::Handler::BusDisconnect();
         }
 
-        void PaintBrushSettingsWindow::OnIntensityChanged([[maybe_unused]] float intensity)
-        {
-            m_propertyEditor->InvalidateValues();
-        }
-
-        void PaintBrushSettingsWindow::OnOpacityChanged([[maybe_unused]] float opacity)
-        {
-            m_propertyEditor->InvalidateValues();
-        }
-
-        void PaintBrushSettingsWindow::OnRadiusChanged([[maybe_unused]] float radius)
+        void PaintBrushSettingsWindow::OnSettingsChanged([[maybe_unused]] const AzToolsFramework::PaintBrushSettings& newSettings)
         {
             m_propertyEditor->InvalidateValues();
         }
@@ -98,7 +88,7 @@ namespace PaintBrush
         // and this is only visible while in a painting component mode, so we don't ever need to disable the controls.
         viewOptions.isDisabledInComponentMode = false;
         // Default size of the window
-        viewOptions.paneRect = QRect(50, 50, 350, 120);
+        viewOptions.paneRect = QRect(50, 50, 350, 210);
 
         AzToolsFramework::EditorRequestBus::Broadcast(
             &AzToolsFramework::EditorRequestBus::Events::RegisterViewPane,
