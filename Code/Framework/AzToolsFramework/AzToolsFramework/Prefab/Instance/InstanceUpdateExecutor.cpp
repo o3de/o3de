@@ -173,7 +173,6 @@ namespace AzToolsFramework
 
                     EntityIdList selectedEntityIds;
                     ToolsApplicationRequestBus::BroadcastResult(selectedEntityIds, &ToolsApplicationRequests::GetSelectedEntities);
-                    PrefabDom instanceDom;
 
                     // Process all instances in the queue, capped to the batch size.
                     // Even though we potentially initialized the batch size to the queue, it's possible for the queue size to shrink
@@ -219,8 +218,11 @@ namespace AzToolsFramework
                             continue;
                         }
 
-                        // Generates instance DOM for a given instance object.
-                        if (!m_instanceDomGeneratorInterface->GenerateInstanceDom(instanceDom, *instanceToUpdate))
+                        // Generates instance DOM for a given instance object from focused or root prefab template.
+                        PrefabDom instanceDom;
+                        m_instanceDomGeneratorInterface->GenerateInstanceDom(instanceDom, *instanceToUpdate);
+
+                        if (!instanceDom.IsObject())
                         {
                             AZ_Assert(
                                 false,
