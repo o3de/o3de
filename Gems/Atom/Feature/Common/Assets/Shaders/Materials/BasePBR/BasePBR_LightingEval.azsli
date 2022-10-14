@@ -16,7 +16,7 @@
 #endif
 
 #include <Atom/Features/PBR/Lights/Lights.azsli>
-#include <Atom/Features/PBR/Lights/Ibl.azsli>
+#include <Atom/Features/PBR/Lights/IblForward.azsli>
 #include <Atom/Features/PBR/Decals.azsli>
 
 void InitializeLightingData_BasePBR(inout Surface surface, float4 screenPosition, inout LightingData lightingData)
@@ -42,7 +42,7 @@ void CalculateLighting_BasePBR(inout Surface surface, float4 screenPosition, ino
     ApplyDirectLighting(surface, lightingData, screenPosition);
 
     // Apply Image Based Lighting (IBL)
-    ApplyIBL(surface, lightingData);
+    ApplyIblForward(surface, lightingData);
 
     // Finalize Lighting
     lightingData.FinalizeLighting(surface);

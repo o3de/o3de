@@ -27,6 +27,7 @@ namespace EMotionFX
     class Transform;
     class MotionEventTable;
     class MotionData;
+    class RootMotionExtractionData;
 
     /**
      * The motion base class.
@@ -250,8 +251,13 @@ namespace EMotionFX
         MotionData* GetMotionData();
         void SetMotionData(MotionData* motionData, bool delOldFromMem=true);
 
+        //------------------------------------------------
+        void SetRootMotionExtractionData(AZStd::shared_ptr<RootMotionExtractionData> data);
+        const AZStd::shared_ptr<RootMotionExtractionData>& GetRootMotionExtractionData() const;
+
     protected:
         MotionData*                 m_motionData = nullptr; /**< The motion data, which can in theory be any data representation/compression. */
+        AZStd::shared_ptr<RootMotionExtractionData> m_rootMotionExtractionData; /**< Root motion extraction settings */
         AZStd::string               m_fileName;              /**< The filename of the motion. */
         PlayBackInfo                m_defaultPlayBackInfo;  /**< The default/fallback motion playback info which will be used when no playback info is passed to the Play() function. */
         AZStd::unique_ptr<MotionEventTable> m_eventTable;   /**< The event table, which contains all events, and will make sure events get executed. */

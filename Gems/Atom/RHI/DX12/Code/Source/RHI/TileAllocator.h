@@ -22,7 +22,7 @@ namespace AZ
         {
             //! The heap object which is evenly divided to multiple tiles
             RHI::Ptr<Heap> m_heap;
-            //! Multiple tile spans. Each tile span represents a continous number of tiles in the heap
+            //! Multiple tile spans. Each tile span represents a continuous number of tiles in the heap
             AZStd::vector<RHI::PageTileSpan> m_tileSpanList;
             //! The total amount tiles in the m_tileSpanList
             uint32_t m_totalTileCount = 0;
@@ -30,7 +30,7 @@ namespace AZ
 
          //! An allocator which can allocate multiple tiles from multiple heap pages at once.
          //! It uses a HeapAllocator to allocate heap pages.
-         //! It maintains a free list of free tiles. Each node of the list represents a set of continous tiles.
+         //! It maintains a free list of free tiles. Each node of the list represents a set of continuous tiles.
         class TileAllocator
         {
         public:
@@ -54,8 +54,12 @@ namespace AZ
 
             void Init(const Descriptor& descriptor, HeapAllocator& heapAllocator);
 
-            //! Allocate tiles. it may returen tiles from different heaps.
+            //! Allocate tiles. it may return tiles from different heaps.
             AZStd::vector<HeapTiles> Allocate(uint32_t tileCount);
+
+            //! Returns page memory allocation (in bytes) needed for required tile count.
+            //! It returns 0 if there are enough tiles available within current allocated pages.
+            size_t EvaluateMemoryAllocation(uint32_t tileCount);
 
             //! DeAllocate multiple group of tiles 
             void DeAllocate(const AZStd::vector<HeapTiles>& tiles);

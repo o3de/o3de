@@ -1,0 +1,11 @@
+{
+    "O3DE": {
+        "Atom": {
+            "RPI": {
+                "MaterialTypeBuilder": {
+                    "CreateAllPropertiesMaterial": true
+		}
+            }
+        }
+    }
+}
