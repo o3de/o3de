@@ -39,15 +39,12 @@ def PhysX_Collider_Component_CRUD():
 
     from consts.general import Strings
 
-
     # 0) Pre-conditions
     physx_mesh = os.path.join("objects", "_primitives", "_box_1x1.pxmesh")
     physx_material = os.path.join("physx", "glass.physxmaterial")
 
     TestHelper.init_idle()
     TestHelper.open_level("", "Base")
-
-
 
     with Tracer() as section_tracer:
     # 1 ) Add an Entity to manipulate
@@ -94,7 +91,7 @@ def PhysX_Collider_Component_CRUD():
         # physx_collider.set_cylinder_subdivision(-1)  # GHI #12608 - Crash if subdivision set below 3
         physx_collider.set_cylinder_subdivision(3)
         physx_collider.set_cylinder_subdivision(125)
-        #physx_collider.set_cylinder_subdivision(256)  # GHI #12608 - Crash if subdivision set above 125
+        # physx_collider.set_cylinder_subdivision(256)  # GHI #12608 - Crash if subdivision set above 125
 
     # 6) Set Sphere Shape and Child Properties
         physx_collider.set_sphere_shape()
