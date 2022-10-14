@@ -331,15 +331,21 @@ namespace UnitTest
         auto scene = CreateEmptyMockSceneWithRoot("Manifest", "//o3de/watch.folder/manifest_src_file.xml", "//o3de/watch.folder");
 #endif
         /*---------------------------------------\
+        Notes on the graph hierarchy:
+        - 3m is a node with mesh data. Proc prefab builder will create an entity for this node
+        - 4t contains the transform data for the mesh. It's a child of 3m because a node can only contain one data item.
+          Proc prefab builder will apply the data of the first child transform to the mesh entity's transform component
+        - 5t is a standalone child transform node of the mesh node. Proc prefab builder will create an entity for this node
+
                     Root
                      |
                      1
                      |
                      2t
                    /   \
-                  3m    5t
-                 /
-                4t
+                  3m    6t
+                 /  \
+                4t  5t
         \---------------------------------------*/
 
         AZ::Matrix3x4 nonIdentityMatrix = AZ::Matrix3x4::CreateScale(AZ::Vector3(10.0f));
@@ -350,10 +356,12 @@ namespace UnitTest
         auto index2 = scene->GetGraph().AddChild(index1, "2", CreateMockTransform(nonIdentityMatrix));
         auto index3 = scene->GetGraph().AddChild(index2, "3", AZStd::make_shared<AZ::SceneData::GraphData::MeshData>());
         auto index4 = scene->GetGraph().AddChild(index3, "4", CreateMockTransform(nonIdentityMatrix));
-        auto index5 = scene->GetGraph().AddChild(index2, "5", CreateMockTransform(nonIdentityMatrix));
+        auto index5 = scene->GetGraph().AddChild(index3, "5", CreateMockTransform(nonIdentityMatrix));
+        auto index6 = scene->GetGraph().AddChild(index2, "6", CreateMockTransform(nonIdentityMatrix));
 
         scene->GetGraph().MakeEndPoint(index4);
         scene->GetGraph().MakeEndPoint(index5);
+        scene->GetGraph().MakeEndPoint(index6);
 
         AssetImportRequest::ManifestAction action = AssetImportRequest::ManifestAction::ConstructDefault;
         AssetImportRequest::RequestingApplication requester = {};
@@ -379,7 +387,9 @@ namespace UnitTest
         AzToolsFramework::Prefab::Instance instance;
         ASSERT_TRUE(AzToolsFramework::Prefab::PrefabDomUtils::LoadInstanceFromPrefabDom(instance, *prefabDomRef));
         EXPECT_TRUE(IsChildOfParent(instance, "3", "2")); // Mesh entity is child of a transform entity
-        EXPECT_TRUE(IsChildOfParent(instance, "5", "2")); // Transform entity is child of another transform entity
+        EXPECT_TRUE(IsChildOfParent(instance, "6", "2")); // Transform entity is child of another transform entity
+        EXPECT_FALSE(IsChildOfParent(instance, "4", "3")); // First transform entity is not a child of the mesh entity
+        EXPECT_TRUE(IsChildOfParent(instance, "5", "3")); // Second transform entity is child of the mesh entity
     }
 
     TEST_F(PrefabBehaviorTests, PrefabBehavior_UpdateManifest_ToggleWorks)

@@ -17,6 +17,7 @@
 namespace GradientSignal
 {
     class PaintBrushUndoBuffer;
+    class ImageTileBuffer;
 
     class EditorImageGradientComponentMode
         : public AzToolsFramework::ComponentModeFramework::EditorBaseComponentMode
@@ -34,9 +35,9 @@ namespace GradientSignal
 
     protected:
         // PaintBrushNotificationBus overrides
-        void OnPaintBegin() override;
-        void OnPaintEnd() override;
-        void OnPaint(const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn) override;
+        void OnPaintStrokeBegin(float intensity, float opacity) override;
+        void OnPaintStrokeEnd() override;
+        void OnPaint(const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn, BlendFn& blendFn) override;
 
         void BeginUndoBatch();
         void EndUndoBatch();
@@ -45,6 +46,31 @@ namespace GradientSignal
         void RemoveSubModeSelectionCluster();
 
     private:
+        struct PaintStrokeData
+        {
+            //! A buffer to accumulate a single paint stroke into. This buffer is used to ensure that within a single paint stroke,
+            //! we only perform an operation on a pixel once, not multiple times.
+            //! After the paint stroke is complete, this buffer is handed off to the undo/redo batch so that we can undo/redo each stroke.
+            AZStd::unique_ptr<ImageTileBuffer> m_strokeBuffer;
+
+            //! The meters per pixel in each direction for this image gradient.
+            //! These help us query the paintbrush for exactly one world position per image pixel.
+            float m_metersPerPixelX = 0.0f;
+            float m_metersPerPixelY = 0.0f;
+
+            //! The intensity of the paint stroke (0 - 1)
+            float m_intensity = 0.0f;
+
+            //! The opacity of the paint stroke (0 - 1)
+            float m_opacity = 0.0f;
+
+            //! Track the dirty region for each paint stroke so that we can store it in the undo/redo buffer
+            //! to send with change notifications.
+            AZ::Aabb m_dirtyRegion = AZ::Aabb::CreateNull();
+        };
+
+        PaintStrokeData m_paintStrokeData;
+
         //! The entity/component that owns this paintbrush.
         AZ::EntityComponentIdPair m_ownerEntityComponentId;
 

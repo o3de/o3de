@@ -43,9 +43,11 @@ namespace AZ
             m_mtlCommandBuffer = mtlCommandBuffer;
         }
         
-        void CommandListBase::Open(id <MTLCommandEncoder> subEncoder)
+        void CommandListBase::Open(id <MTLCommandEncoder> subEncoder, id <MTLCommandBuffer> mtlCommandBuffer)
         {
+            //This commandlist will be used for parallel encoding work and hence it will be encoded.
             m_isEncoded = true;
+            m_mtlCommandBuffer = mtlCommandBuffer;
             
             //Sub Encoder can only do Graphics work
             m_encoder = subEncoder;

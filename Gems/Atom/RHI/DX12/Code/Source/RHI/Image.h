@@ -86,7 +86,7 @@ namespace AZ
             bool IsTiled() const;
             
             void SetUploadFenceValue(uint64_t fenceValue);
-            uint64_t GetUploadFenceValue();
+            uint64_t GetUploadFenceValue() const;
 
             // Describes the state of a subresource by index.
             struct SubresourceAttachmentState
@@ -111,7 +111,7 @@ namespace AZ
 
             // Return the initial state of this image (the one used when it was created).
             D3D12_RESOURCE_STATES GetInitialResourceState() const;
-            
+
         private:
             Image() = default;
 
@@ -138,6 +138,8 @@ namespace AZ
                 const RHI::ImageSubresourceRange& subresourceRange,
                 RHI::ImageSubresourceLayoutPlaced* subresourceLayouts,
                 size_t* totalSizeInBytes) const override;
+                                
+            bool IsStreamableInternal() const override;
 
             void SetDescriptor(const RHI::ImageDescriptor& descriptor) override;
             //////////////////////////////////////////////////////////////////////////
@@ -150,8 +152,14 @@ namespace AZ
             // The memory view allocated to this image.
             MemoryView m_memoryView;
 
-            // The number of bytes actually resident in cases where the image has tile mappings.
+            // The number of bytes actually resident.
+            // For tiled resources, this size is same as the memory of tiles are used for mipmaps which are resident. It would be updated every time the image's mipmap
+            // is expanded or trimmed.
+            // For committed resources, this size won't change after image is initialized. 
             size_t m_residentSizeInBytes = 0;
+
+            // The minimum resident size of this image. The size is the same as resident size when image was initialized.
+            size_t m_minimumResidentSizeInBytes = 0;
 
             AZStd::array<RHI::ImageSubresourceLayoutPlaced, RHI::Limits::Image::MipCountMax> m_subresourceLayoutsPerMipChain;
 
@@ -159,7 +167,7 @@ namespace AZ
             ImageTileLayout m_tileLayout;
 
             // The map of heap tiles allocated for each subresources
-            // Note: the tiles allocated for each subreource may come from mutiple heap pages 
+            // Note: the tiles allocated for each subresource may come from multiple heap pages 
             AZStd::unordered_map<uint32_t, AZStd::vector<HeapTiles>> m_heapTiles;
 
             // Tracking the actual mip level data uploaded. It's also used for invalidate image view. 

@@ -256,7 +256,8 @@ namespace AZ
 
             void ManifestVectorWidget::AfterPropertyModified(AzToolsFramework::InstanceDataNode* node)
             {
-                if (node && node->GetParent())
+                // The immediate parent may not have the manifest object, so check the full ancestry.
+                while (node && node->GetParent())
                 {
                     AzToolsFramework::InstanceDataNode* owner = node->GetParent();
                     const AZ::SerializeContext::ClassData* classData = owner->GetClassMetadata();
@@ -271,8 +272,10 @@ namespace AZ
                                     return object.get() == cast;
                                 }) != m_manifestVector.end(), "ManifestVectorWidget detected an update of a field it doesn't own.");
                             EmitObjectChanged(cast);
+                            return;
                         }
                     }
+                    node = node->GetParent();
                 }
             }
 

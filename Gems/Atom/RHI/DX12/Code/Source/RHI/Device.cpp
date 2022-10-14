@@ -144,7 +144,7 @@ namespace AZ
             if (options3.CopyQueueTimestampQueriesSupported)
             {
                 m_features.m_queryTypesMask[static_cast<uint32_t>(RHI::HardwareQueueClass::Copy)] = RHI::QueryTypeFlags::Timestamp;
-            }            
+            }
             m_features.m_predication = true;
             m_features.m_occlusionQueryPrecise = true;
             m_features.m_indirectCommandTier = RHI::IndirectCommandTiers::Tier2;
@@ -154,6 +154,7 @@ namespace AZ
                         
             D3D12_FEATURE_DATA_D3D12_OPTIONS options;
             GetDevice()->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, &options, sizeof(options));
+            // DX12's tile resource implementation uses undefined swizzle tile layout which only requires tier 1
             m_features.m_tiledResource = options.TiledResourcesTier >= D3D12_TILED_RESOURCES_TIER_1;
 
 #ifdef AZ_DX12_DXR_SUPPORT
