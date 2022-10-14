@@ -30,7 +30,7 @@ namespace GraphCanvas
     ////////////////////////////
     // GraphCanvasGraphicsView
     ////////////////////////////
-    
+
     GraphCanvasGraphicsView::GraphCanvasGraphicsView(QWidget* parent, bool registerShortcuts)
         : QGraphicsView(parent)
         , m_isDragSelecting(false)
@@ -283,7 +283,7 @@ namespace GraphCanvas
                 });
 
             addAction(activateBookmarkKeyAction);
-        }        
+        }
     }
 
     GraphCanvasGraphicsView::~GraphCanvasGraphicsView()
@@ -463,7 +463,7 @@ namespace GraphCanvas
             // Fit into view.
             fitInView(viewArea, Qt::AspectRatioMode::KeepAspectRatio);
 
-            ClampScaleBounds();            
+            ClampScaleBounds();
 
             ViewNotificationBus::Event(GetViewId(), &ViewNotifications::OnViewCenteredOnArea);
         }
@@ -501,7 +501,7 @@ namespace GraphCanvas
             m_queuedFocus->m_focusType = FocusQueue::FocusType::CenterOnArea;
             m_queuedFocus->m_focusRect = viewArea;
         }
-        
+
         {
             qreal originalZoom = transform().m11();
 
@@ -531,7 +531,7 @@ namespace GraphCanvas
     }
 
     void GraphCanvasGraphicsView::CenterOnStartOfChain()
-    {        
+    {
         AZStd::vector< AZ::EntityId > selectedEntities;
         SceneRequestBus::EventResult(selectedEntities, GetScene(), &SceneRequests::GetSelectedNodes);
 
@@ -633,7 +633,7 @@ namespace GraphCanvas
             graphicsView->adjustSize();
             graphicsView->updateGeometry();
             graphicsView->ensurePolished();
-            
+
             graphicsView->viewport()->adjustSize();
             graphicsView->viewport()->updateGeometry();
             graphicsView->viewport()->ensurePolished();
@@ -783,7 +783,7 @@ namespace GraphCanvas
             // There's no scene.
             return;
         }
-        
+
 
         QWheelEvent ev(
             QPoint(0, 0),
@@ -881,7 +881,7 @@ namespace GraphCanvas
 
         centerOn(m_panningAggregator);
     }
-    
+
     QRectF GraphCanvasGraphicsView::GetCompleteArea()
     {
         // Get the grid.
@@ -915,7 +915,7 @@ namespace GraphCanvas
                 completeArea = completeArea | sceneBoundingRect;
             }
         }
-        
+
         return completeArea;
     }
 
@@ -968,7 +968,7 @@ namespace GraphCanvas
 
         return area;
     }
-    
+
     void GraphCanvasGraphicsView::OnStylesChanged()
     {
         update();
@@ -978,7 +978,7 @@ namespace GraphCanvas
     {
         m_isEditing = isEditing;
     }
-    
+
     void GraphCanvasGraphicsView::keyReleaseEvent(QKeyEvent* event)
     {
         switch (event->key())
@@ -1038,7 +1038,7 @@ namespace GraphCanvas
     void GraphCanvasGraphicsView::mousePressEvent(QMouseEvent* event)
     {
         // If we already have a mouse button down, we just want to ignore it.
-        if (event->buttons() != event->button())
+        if (!event->buttons().testFlag(event->button()))
         {
             // Even if we don't handle the mouse event here, or pass it down. The context menu still occurs.
             // Just suppress the next context menu since we know it will occur when this 'ignored'
@@ -1106,7 +1106,7 @@ namespace GraphCanvas
 
         QGraphicsView::mouseMoveEvent(event);
     }
-    
+
     void GraphCanvasGraphicsView::mouseReleaseEvent(QMouseEvent* event)
     {
         if (event->button() == Qt::RightButton)
@@ -1152,7 +1152,7 @@ namespace GraphCanvas
 
         QGraphicsView::mouseReleaseEvent(event);
     }
-    
+
     void GraphCanvasGraphicsView::wheelEvent(QWheelEvent* event)
     {
         if (!(event->modifiers() & Qt::ControlModifier))
@@ -1244,7 +1244,7 @@ namespace GraphCanvas
 
         if (settingsHandler)
         {
-            m_scrollSpeed = settingsHandler->GetEdgePanningScrollSpeed();            
+            m_scrollSpeed = settingsHandler->GetEdgePanningScrollSpeed();
             m_maxZoom = settingsHandler->GetMaxZoom();
 
             ClampScaleBounds();
@@ -1282,7 +1282,7 @@ namespace GraphCanvas
                 }
             }
         }
-        
+
         AZ::EntityId existingBookmark;
         BookmarkManagerRequestBus::EventResult(existingBookmark, sceneId, &BookmarkManagerRequests::FindBookmarkForShortcut, bookmarkShortcut);
 
@@ -1290,7 +1290,7 @@ namespace GraphCanvas
         {
             AZStd::string bookmarkName;
             BookmarkRequestBus::EventResult(bookmarkName, existingBookmark, &BookmarkRequests::GetBookmarkName);
-            
+
             QMessageBox::StandardButton response = QMessageBox::StandardButton::No;
             response = QMessageBox::question(this, QString("Bookmarking Conflict"), QString("Bookmark (%1) already registered with shortcut (%2).\nProceed with action and remove previous bookmark?").arg(bookmarkName.c_str()).arg(bookmarkShortcut), QMessageBox::StandardButton::Yes|QMessageBox::No);
 
@@ -1339,7 +1339,7 @@ namespace GraphCanvas
             SceneMemberUIRequestBus::EventResult(graphicsItem, memberId, &SceneMemberUIRequests::GetRootGraphicsItem);
 
             if (graphicsItem)
-            {                
+            {
                 boundingRect |= graphicsItem->sceneBoundingRect();
             }
         }
@@ -1459,7 +1459,7 @@ namespace GraphCanvas
         xfm.setMatrix(m_viewParams.m_scale, xfm.m12(), xfm.m13(),
             xfm.m21(), m_viewParams.m_scale, xfm.m23(),
             xfm.m31(), xfm.m32(), xfm.m33());
-        setTransform(xfm);        
+        setTransform(xfm);
 
         ViewNotificationBus::Event(GetViewId(), &ViewNotifications::OnZoomChanged, m_viewParams.m_scale);
     }
@@ -1548,7 +1548,7 @@ namespace GraphCanvas
         {
             zoomLevel = qreal(1.0f);
         }
-        
+
         float zoomRepresentation = aznumeric_cast<float>(1.0f / zoomLevel);
         float modifier = AZStd::max(0.5f, zoomRepresentation);
 

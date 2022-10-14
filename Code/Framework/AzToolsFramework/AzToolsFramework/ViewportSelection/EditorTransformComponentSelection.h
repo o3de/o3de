@@ -44,6 +44,7 @@ namespace AzToolsFramework
     }
 
     class ActionManagerInterface;
+    class HotKeyManagerInterface;
     class MenuManagerInterface;
 
     class EditorVisibleEntityDataCacheInterface;
@@ -371,6 +372,7 @@ namespace AzToolsFramework
         bool m_viewportUiVisible = true; //!< Used to hide/show the viewport ui elements.
 
         ActionManagerInterface* m_actionManagerInterface = nullptr;
+        HotKeyManagerInterface* m_hotKeyManagerInterface = nullptr;
         MenuManagerInterface* m_menuManagerInterface = nullptr;
     };
 

@@ -795,6 +795,8 @@ namespace AzToolsFramework
             InstanceOptionalReference owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
             if (!owningInstance.has_value())
             {
+                AZ_Warning("Prefab", false, "GenerateUndoNodesForEntityChangeAndUpdateCache - "
+                    "The dirty entity has no owning instance.");
                 return AZ::Success();
             }
 
@@ -802,6 +804,8 @@ namespace AzToolsFramework
             if (!entity)
             {
                 m_prefabUndoCache.PurgeCache(entityId);
+                AZ_Warning("Prefab", false, "GenerateUndoNodesForEntityChangeAndUpdateCache - "
+                    "The dirty entity is invalid.");
                 return AZ::Success();
             }
 
@@ -811,15 +815,23 @@ namespace AzToolsFramework
             m_prefabUndoCache.Retrieve(entityId, beforeParentId);
 
             PrefabDom afterState;
+            m_instanceToTemplateInterface->GenerateDomForEntity(afterState, *entity);
             AZ::EntityId afterParentId;
             AZ::TransformBus::EventResult(afterParentId, entityId, &AZ::TransformBus::Events::GetParentId);
-            m_instanceToTemplateInterface->GenerateDomForEntity(afterState, *entity);
+
+            // Skip further processing if either state is not a valid JSON object.
+            if (!beforeState.IsObject() || !afterState.IsObject())
+            {
+                AZ_Warning("Prefab", false, "GenerateUndoNodesForEntityChangeAndUpdateCache - "
+                    "The before or after DOM state of the dirty entity is not a valid JSON object.");
+                return AZ::Success();
+            }
 
             PrefabDom patch;
             m_instanceToTemplateInterface->GeneratePatch(patch, beforeState, afterState);
             m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(patch, entityId);
 
-            if (patch.IsArray() && !patch.Empty() && beforeState.IsObject())
+            if (patch.IsArray() && !patch.Empty())
             {
                 bool isNewParentOwnedByDifferentInstance = false;
 

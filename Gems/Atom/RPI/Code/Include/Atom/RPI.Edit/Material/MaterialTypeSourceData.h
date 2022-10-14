@@ -15,6 +15,7 @@
 #include <Atom/RPI.Reflect/Material/MaterialVersionUpdate.h>
 #include <Atom/RPI.Edit/Material/MaterialFunctorSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialPropertyId.h>
+#include <Atom/RPI.Edit/Shader/ShaderOptionValuesSourceData.h>
 
 namespace AZ
 {
@@ -184,7 +185,7 @@ namespace AZ
                 //! This list provides a way for users to set shader option values in a 'hard-coded' way rather than connecting them to material properties.
                 //! These are optional and the list will usually be empty; most options will either get set from a material property connection,
                 //! or will use the default value from the shader. 
-                AZStd::unordered_map<Name/*shaderOption*/, Name/*value*/> m_shaderOptionValues;
+                ShaderOptionValuesSourceData m_shaderOptionValues;
             };
 
             using VersionUpdateActions = AZStd::vector<MaterialVersionUpdate::Action::ActionDefinition>;
