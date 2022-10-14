@@ -322,9 +322,9 @@ class EditorComponent:
         get_component_property_outcome = self.get_property_type_visibility()
         result = get_component_property_outcome[component_property_path][visible_key]
 
-        assert result == expected, \
+        assert (result == "Visible") == expected, \
             f"Failure: Property visibility was not {expected} for" \
-            f"'{self.get_component_name()}' : '{component_property_path}'"
+            f"{self.get_component_name()} : {component_property_path}"
 
         return result
 
@@ -341,7 +341,7 @@ class EditorComponent:
 
         end_value = self.get_component_property_value(component_property_path)
 
-        assert (start_value == end_value), \
+        assert (start_value != end_value), \
             f"Failure: Could not toggle the switch for " \
             f"{self.get_component_name()} : {component_property_path}."
 
