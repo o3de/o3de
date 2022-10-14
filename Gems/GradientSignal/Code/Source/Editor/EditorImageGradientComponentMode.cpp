@@ -133,7 +133,9 @@ namespace GradientSignal
         //! Given a tile index, get the absolute start pixel index for the upper left corner of the tile.
         PixelIndex GetStartPixelIndex(uint32_t tileIndex) const
         {
-            return PixelIndex((tileIndex % m_numTilesX) * ImageTileSize, (tileIndex / m_numTilesX) * ImageTileSize);
+            return PixelIndex(
+                aznumeric_cast<int16_t>((tileIndex % m_numTilesX) * ImageTileSize),
+                aznumeric_cast<int16_t>((tileIndex / m_numTilesX) * ImageTileSize));
         }
 
         // Given a pixel index, get the relative pixel index within the tile
@@ -161,7 +163,9 @@ namespace GradientSignal
             PixelIndex startIndex = GetStartPixelIndex(tileIndex);
             for (int16_t index = 0; index < (ImageTileSize * ImageTileSize); index++)
             {
-                pixelIndices[index] = PixelIndex(startIndex.first + (index % ImageTileSize), startIndex.second + (index / ImageTileSize));
+                pixelIndices[index] = PixelIndex(
+                    aznumeric_cast<int16_t>(startIndex.first + (index % ImageTileSize)),
+                    aznumeric_cast<int16_t>(startIndex.second + (index / ImageTileSize)));
             }
 
             AZ_Assert(imageTile->m_unmodifiedData.size() == pixelIndices.size(), "ImageTile and PixelIndices are out of sync.");
