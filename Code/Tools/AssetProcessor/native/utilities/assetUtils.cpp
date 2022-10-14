@@ -1469,12 +1469,12 @@ namespace AssetUtilities
 
             if ((static_cast<AssetBuilderSDK::ProductOutputFlags>(product.m_flags.to_ullong()) & AssetBuilderSDK::ProductOutputFlags::IntermediateAsset) == AssetBuilderSDK::ProductOutputFlags::IntermediateAsset)
             {
-                auto productSourceName = StripAssetPlatformNoCopy(product.m_productName);
-                sources.emplace_back(scanFolder.m_scanFolder.c_str(), productSourceName);
+                auto productPath = ProductPath::FromDatabasePath(product.m_productName);
+                sources.emplace_back(productPath.GetIntermediatePath().c_str());
 
                 // Note: This call is intentionally re-using the products array.  The new results will be appended to the end (via push_back).
                 // The array will not be cleared.  We're essentially using products as a queue
-                db->GetProductsBySourceName(QString(QByteArray(productSourceName.data(), static_cast<int>(productSourceName.size()))), products);
+                db->GetProductsBySourceName(productPath.GetRelativePath().c_str(), products);
                 size = products.size(); // Update the loop size since the array grew
             }
         }

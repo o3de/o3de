@@ -608,4 +608,3 @@ TEST_F(AssetUtilitiesTest, CreateDir_InvalidDir_Timeout_Valid)
 
     ASSERT_FALSE(dir.exists());
 }
-

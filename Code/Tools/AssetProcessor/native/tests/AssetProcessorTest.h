@@ -21,6 +21,13 @@
 
 namespace AssetProcessor
 {
+    struct IUnitTestAppManager
+    {
+        AZ_RTTI(IUnitTestAppManager, "{37578207-790A-4928-BD47-B9C4F4B49C3A}");
+
+        virtual PlatformConfiguration& GetConfig() = 0;
+    };
+
     // This is an utility class for Asset Processor Tests
     // Any gmock based fixture class can derived from this class and this will automatically do system allocation and teardown for you
     // It is important to note that if you are overriding Setup and Teardown functions of your fixture class than please call the base class functions.

@@ -212,15 +212,17 @@ namespace AssetProcessor
         // -- utility functions to create default state data --
 
         // Adds a scan folder to the config and to the database
-        void AddScanFolder(const ScanFolderInfo& scanFolderInfo, PlatformConfiguration& config, AssetDatabaseConnection* dbConn)
+        void AddScanFolder(ScanFolderInfo scanFolderInfo, PlatformConfiguration& config, AssetDatabaseConnection* dbConn)
         {
-            config.AddScanFolder(scanFolderInfo);
             ScanFolderDatabaseEntry newScanFolder(
                 scanFolderInfo.ScanPath().toStdString().c_str(),
                 scanFolderInfo.GetDisplayName().toStdString().c_str(),
                 scanFolderInfo.GetPortableKey().toStdString().c_str(),
                 scanFolderInfo.IsRoot());
             dbConn->SetScanFolder(newScanFolder);
+
+            scanFolderInfo.SetScanFolderID(newScanFolder.m_scanFolderID);
+            config.AddScanFolder(scanFolderInfo);
         }
 
         virtual void AddScanFolders(
@@ -818,15 +820,12 @@ namespace AssetProcessor
         };
 
         AssetCatalogTest_AssetInfo_DataMembers* m_customDataMembers = nullptr;
-        AZStd::unique_ptr<UnitTests::MockPathConversion> m_pathConversion;
 
         void SetUp() override
         {
             AssetCatalogTest::SetUp();
             m_customDataMembers = azcreate(AssetCatalogTest_AssetInfo_DataMembers, ());
             m_customDataMembers->m_subfolder1AbsolutePath = m_data->m_temporarySourceDir.absoluteFilePath("subfolder1").toStdString().c_str();
-            m_pathConversion =
-                AZStd::make_unique<UnitTests::MockPathConversion>(m_data->m_temporarySourceDir.absolutePath().toUtf8().constData());
 
             AzFramework::StringFunc::Path::Join(m_customDataMembers->m_subfolder1AbsolutePath.c_str(), m_customDataMembers->m_assetASourceRelPath.c_str(), m_customDataMembers->m_assetAFullPath);
             CreateDummyFile(QString::fromUtf8(m_customDataMembers->m_assetAFullPath.c_str()), m_customDataMembers->m_assetTestString.c_str());
@@ -850,6 +849,12 @@ namespace AssetProcessor
 
             if (expectedResult)
             {
+                EXPECT_EQ(assetInfo.m_assetId, m_customDataMembers->m_assetA);
+                EXPECT_EQ(assetInfo.m_assetType, m_customDataMembers->m_assetAType);
+                EXPECT_EQ(assetInfo.m_relativePath, expectedRelPath);
+                EXPECT_EQ(assetInfo.m_sizeBytes, m_customDataMembers->m_assetTestString.size());
+                EXPECT_EQ(rootPath, expectedRootPath);
+
                 return (assetInfo.m_assetId == m_customDataMembers->m_assetA)
                     && (assetInfo.m_assetType == m_customDataMembers->m_assetAType)
                     && (assetInfo.m_relativePath == expectedRelPath)

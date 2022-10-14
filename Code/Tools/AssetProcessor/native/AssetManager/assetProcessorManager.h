@@ -379,13 +379,11 @@ namespace AssetProcessor
                 None,
                 //! Indicates the conflict occurred because of a new intermediate overriding an existing source
                 Intermediate,
-                //! Indicates the conflict occurred because of a new source overriding an existing intermediate
-                Source
             };
 
             ConflictType m_type;
 
-            //! The file that has caused the conflict.  If ConflictType == Intermediate, this is the source, if ConflictType == Source, this is the intermediate
+            //! The file that has caused the conflict.  If ConflictType == Intermediate, this is the source
             SourceAssetReference m_conflictingFile;
         };
 
@@ -447,9 +445,11 @@ namespace AssetProcessor
         bool IsInIntermediateAssetsFolder(AZ::IO::PathView path) const;
         bool IsInIntermediateAssetsFolder(QString path) const;
 
-        ConflictResult CheckIntermediateProductConflict(bool isIntermediateProduct, const char* searchSourcePath);
+        // Checks if an intermediate product conflicts with an existing source asset
+        // searchSourcePath should be the path of the intermediate to use to search for existing sources of the same name
+        ConflictResult CheckIntermediateProductConflict(const char* searchSourcePath);
 
-        bool CheckForIntermediateAssetLoop(const SourceAssetReference& sourceAsset, AZStd::string_view productAsset);
+        bool CheckForIntermediateAssetLoop(const SourceAssetReference& sourceAsset, const SourceAssetReference& productAsset);
 
         void UpdateForCacheServer(JobDetails& jobDetails);
 

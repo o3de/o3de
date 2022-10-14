@@ -272,6 +272,12 @@ namespace UnitTests
 
             ProcessSingleStep(expectedJobCount, expectedFileCount, jobToRun, true);
 
+            if(expectAutofail)
+            {
+                ASSERT_GT(m_jobDetailsList.size(), 0);
+                EXPECT_TRUE(m_jobDetailsList[0].m_autoFail);
+            }
+
             if (i < endStage)
             {
                 auto expectedIntermediatePath = intermediatesDir / AZStd::string::format("test.stage%d", i + 1);
@@ -457,13 +463,15 @@ namespace UnitTests
         DeleteIntermediateTest(MakePath("test.stage4", false).c_str());
     }
 
-    TEST_F(IntermediateAssetTests, Override_NormalFileProcessedFirst_CausesFailure)
+    TEST_F(IntermediateAssetTests, Override_NormalFileProcessedFirst_NormalFileOutputsIntermediate_FirstStageCausesFailure)
     {
+        // Test that a file outputting an intermediate that conflicts with an existing source which outputs an intermediate fails
         using namespace AssetBuilderSDK;
 
         CreateBuilder("stage1", "*.stage1", "stage2", true, ProductOutputFlags::IntermediateAsset);
         CreateBuilder("stage2", "*.stage2", "stage3", true, ProductOutputFlags::IntermediateAsset);
         CreateBuilder("stage3", "*.stage3", "stage4", false, ProductOutputFlags::ProductAsset);
+        constexpr int NumberOfStages = 3;
 
         // Make and process a source file which matches an intermediate output name we will create later
         AZ::IO::Path scanFolderDir(m_scanfolder.m_scanFolder);
@@ -472,15 +480,92 @@ namespace UnitTests
 
         UnitTestUtils::CreateDummyFile(testFilePath.c_str(), "unit test file");
 
-        ProcessFileMultiStage(3, true, testFilePath.c_str(), 2);
+        ProcessFileMultiStage(NumberOfStages, true, testFilePath.c_str(), 2);
 
         // Now process another file which produces intermediates that conflict with the existing source file above
         // Only go to stage 1 since we're expecting a failure at that point
         ProcessFileMultiStage(1, false);
 
+        // Expect 2 jobs for the same file, 1 is the job that processed successfully and detected the problem, the 2nd is an autofail job
+        // used to actually mark the file as failed
         ASSERT_EQ(m_jobDetailsList.size(), 2);
+
+        EXPECT_FALSE(m_jobDetailsList[0].m_autoFail);
         EXPECT_TRUE(m_jobDetailsList[1].m_autoFail);
 
+        EXPECT_EQ(m_jobDetailsList[0].m_jobEntry.m_sourceAssetReference.RelativePath().Native(), "test.stage1");
+        EXPECT_EQ(m_jobDetailsList[1].m_jobEntry.m_sourceAssetReference.RelativePath().Native(), "test.stage1");
+    }
+
+    TEST_F(IntermediateAssetTests, Override_NormalFileProcessedFirst_NormalFileOutputsIntermediate_SecondStageCausesFailure)
+    {
+        // Test that an intermediate outputting an intermediate that conflicts with an existing source which outputs an intermediate fails
+        using namespace AssetBuilderSDK;
+
+        CreateBuilder("stage1", "*.stage1", "stage2", true, ProductOutputFlags::IntermediateAsset);
+        CreateBuilder("stage2", "*.stage2", "stage3", true, ProductOutputFlags::IntermediateAsset);
+        CreateBuilder("stage3", "*.stage3", "stage4", true, ProductOutputFlags::IntermediateAsset);
+        CreateBuilder("stage4", "*.stage4", "stage5", false, ProductOutputFlags::ProductAsset);
+        constexpr int NumberOfStages = 4;
+
+        // Make and process a source file which matches an intermediate output name we will create later
+        AZ::IO::Path scanFolderDir(m_scanfolder.m_scanFolder);
+        AZStd::string testFilename = "test.stage3";
+        AZStd::string testFilePath = (scanFolderDir / testFilename).AsPosix();
+
+        UnitTestUtils::CreateDummyFile(testFilePath.c_str(), "unit test file");
+
+        ProcessFileMultiStage(NumberOfStages, true, testFilePath.c_str(), 3);
+
+        // Now process another file which produces intermediates that conflict with the existing source file above
+        // Only go to stage 2 since we're expecting a failure at that point
+        ProcessFileMultiStage(2, false);
+
+        // Expect 3 jobs:
+        // 1 is the job for stage2 that was processing and detected the failure
+        // 1 is the autofail job that was created to autofail stage2
+        // 1 is the autofail job for the top level source (stage1)
+        ASSERT_EQ(m_jobDetailsList.size(), 3);
+
+        EXPECT_FALSE(m_jobDetailsList[0].m_autoFail);
+        EXPECT_TRUE(m_jobDetailsList[1].m_autoFail);
+        EXPECT_TRUE(m_jobDetailsList[2].m_autoFail);
+
+        EXPECT_EQ(m_jobDetailsList[0].m_jobEntry.m_sourceAssetReference.RelativePath().Native(), "test.stage2");
+        EXPECT_EQ(m_jobDetailsList[1].m_jobEntry.m_sourceAssetReference.RelativePath().Native(), "test.stage2");
+        EXPECT_EQ(m_jobDetailsList[2].m_jobEntry.m_sourceAssetReference.RelativePath().Native(), "test.stage1");
+    }
+
+    TEST_F(IntermediateAssetTests, Override_NormalFileProcessedFirst_NormalFileOutputsProduct_CausesFailure)
+    {
+        // Test that a source outputting an intermediate that conflicts with an existing source which outputs a product fails
+        using namespace AssetBuilderSDK;
+
+        CreateBuilder("stage1", "*.stage1", "stage2", true, ProductOutputFlags::IntermediateAsset);
+        CreateBuilder("stage2", "*.stage2", "stage3", false, ProductOutputFlags::ProductAsset);
+        constexpr int NumberOfStages = 2;
+
+        // Make and process a source file which matches an intermediate output name we will create later
+        AZ::IO::Path scanFolderDir(m_scanfolder.m_scanFolder);
+        AZStd::string testFilename = "test.stage2";
+        AZStd::string testFilePath = (scanFolderDir / testFilename).AsPosix();
+
+        UnitTestUtils::CreateDummyFile(testFilePath.c_str(), "unit test file");
+
+        ProcessFileMultiStage(NumberOfStages, true, testFilePath.c_str(), 2);
+
+        // Now process another file which produces intermediates that conflict with the existing source file above
+        // Only go to stage 1 since we're expecting a failure at that point
+        ProcessFileMultiStage(1, false);
+
+        // Expect 2 jobs for the same file, 1 is the job that processed successfully and detected the problem, the 2nd is an autofail job
+        // used to actually mark the file as failed
+        ASSERT_EQ(m_jobDetailsList.size(), 2);
+
+        EXPECT_FALSE(m_jobDetailsList[0].m_autoFail);
+        EXPECT_TRUE(m_jobDetailsList[1].m_autoFail);
+
+        EXPECT_EQ(m_jobDetailsList[0].m_jobEntry.m_sourceAssetReference.RelativePath().Native(), "test.stage1");
         EXPECT_EQ(m_jobDetailsList[1].m_jobEntry.m_sourceAssetReference.RelativePath().Native(), "test.stage1");
     }
 
@@ -570,16 +655,17 @@ namespace UnitTests
         ASSERT_FALSE(AZ::IO::SystemFile::Exists(intermediateFile.c_str()));
     }
 
-    TEST_F(IntermediateAssetTests, Override_IntermediateFileProcessedFirst_CausesFailure)
+    TEST_F(IntermediateAssetTests, Override_IntermediateFileProcessedFirst_NormalFileOutputsIntermediate_CausesFailure)
     {
         using namespace AssetBuilderSDK;
 
         CreateBuilder("stage1", "*.stage1", "stage2", true, ProductOutputFlags::IntermediateAsset);
         CreateBuilder("stage2", "*.stage2", "stage3", true, ProductOutputFlags::IntermediateAsset);
         CreateBuilder("stage3", "*.stage3", "stage4", false, ProductOutputFlags::ProductAsset);
+        constexpr int NumberOfStages = 3;
 
         // Process a file from stage1 -> stage4, this will create several intermediates
-        ProcessFileMultiStage(3, true);
+        ProcessFileMultiStage(NumberOfStages, true);
 
         // Now make a source file which is the same name as an existing intermediate and process it
         AZ::IO::Path scanFolderDir(m_scanfolder.m_scanFolder);
@@ -588,10 +674,41 @@ namespace UnitTests
 
         UnitTestUtils::CreateDummyFile(testFilePath.c_str(), "unit test file");
 
-        ProcessFileMultiStage(3, true, testFilePath.c_str(), 2, true);
+        ProcessFileMultiStage(NumberOfStages, true, testFilePath.c_str(), 2, true);
 
-        EXPECT_EQ(m_jobDetailsList.size(), 1);
+        ASSERT_EQ(m_jobDetailsList.size(), 1);
+
         EXPECT_FALSE(m_jobDetailsList[0].m_autoFail);
+        EXPECT_EQ(m_jobDetailsList[0].m_jobEntry.m_sourceAssetReference.RelativePath().Native(), "test.stage3");
+    }
+
+    TEST_F(IntermediateAssetTests, Override_IntermediateFileProcessedFirst_NormalFileOutputsProduct_CausesFailure)
+    {
+        using namespace AssetBuilderSDK;
+
+        CreateBuilder("stage1", "*.stage1", "stage2", true, ProductOutputFlags::IntermediateAsset);
+        CreateBuilder("stage2", "*.stage2", "stage3", false, ProductOutputFlags::ProductAsset);
+        constexpr int NumberOfStages = 2;
+
+        // Process a file from stage1 -> stage4, this will create several intermediates
+        ProcessFileMultiStage(NumberOfStages, true);
+
+        // Now make a source file which is the same name as an existing intermediate and process it
+        AZ::IO::Path scanFolderDir(m_scanfolder.m_scanFolder);
+        AZStd::string testFilename = "test.stage2";
+        AZStd::string testFilePath = (scanFolderDir / testFilename).AsPosix();
+
+        UnitTestUtils::CreateDummyFile(testFilePath.c_str(), "unit test file");
+
+        ProcessFileMultiStage(NumberOfStages, true, testFilePath.c_str(), 2, true);
+
+        ASSERT_EQ(m_jobDetailsList.size(), 2);
+
+        EXPECT_TRUE(m_jobDetailsList[0].m_autoFail);
+        EXPECT_FALSE(m_jobDetailsList[1].m_autoFail);
+
+        EXPECT_EQ(m_jobDetailsList[0].m_jobEntry.m_sourceAssetReference.RelativePath().Native(), "test.stage1");
+        EXPECT_EQ(m_jobDetailsList[1].m_jobEntry.m_sourceAssetReference.RelativePath().Native(), "test.stage2");
     }
 
     TEST_F(IntermediateAssetTests, DuplicateOutputs_CausesFailure)
@@ -621,7 +738,7 @@ namespace UnitTests
 
         m_assetProcessorManager->AssetProcessed(m_processedJobEntry, m_processJobResponse);
 
-        EXPECT_EQ(m_jobDetailsList.size(), 1);
+        ASSERT_EQ(m_jobDetailsList.size(), 1);
         EXPECT_TRUE(m_jobDetailsList[0].m_autoFail);
     }
 

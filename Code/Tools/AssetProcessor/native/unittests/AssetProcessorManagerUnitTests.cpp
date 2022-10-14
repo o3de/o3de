@@ -16,7 +16,7 @@
 #include "MockApplicationManager.h"
 #include "native/FileWatcher/FileWatcher.h"
 #include "native/unittests/MockConnectionHandler.h"
-
+#include <native/tests/AssetProcessorTest.h>
 #include <AzTest/AzTest.h>
 
 #include <QCoreApplication>
@@ -245,8 +245,12 @@ namespace AssetProcessor
 #endif
         }
 
+        auto* appManager = AZ::Interface<IUnitTestAppManager>::Get();
 
-        PlatformConfiguration config;
+        UNIT_TEST_EXPECT_FALSE(appManager == nullptr);
+
+        auto& config = appManager->GetConfig();
+
         config.EnablePlatform({ "pc",{ "desktop", "renderer" } }, true);
         config.EnablePlatform({ "android",{ "mobile", "renderer" } }, true);
         config.EnablePlatform({ "fandago",{ "console", "renderer" } }, false);
@@ -2289,7 +2293,12 @@ namespace AssetProcessor
 
         UNIT_TEST_EXPECT_FALSE(gameName.isEmpty());
 
-        PlatformConfiguration config;
+        auto* appManager = AZ::Interface<IUnitTestAppManager>::Get();
+
+        UNIT_TEST_EXPECT_FALSE(appManager == nullptr);
+
+        auto& config = appManager->GetConfig();
+
         config.EnablePlatform({ "pc" ,{ "desktop", "renderer" } }, true);
         AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms;
         config.PopulatePlatformsForScanFolder(platforms);
@@ -2746,7 +2755,12 @@ namespace AssetProcessor
         UNIT_TEST_EXPECT_FALSE(gameName.isEmpty());
         // should create cache folder in the root, and read everything from there.
 
-        PlatformConfiguration config;
+        auto* appManager = AZ::Interface<IUnitTestAppManager>::Get();
+
+        UNIT_TEST_EXPECT_FALSE(appManager == nullptr);
+
+        auto& config = appManager->GetConfig();
+
         config.EnablePlatform({ "pc",{ "desktop", "renderer" } }, true);
         AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms;
         config.PopulatePlatformsForScanFolder(platforms);

@@ -8,6 +8,7 @@
 #include "AssetProcessingStateDataUnitTests.h"
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
 #include "native/AssetDatabase/AssetDatabase.h"
+#include <native/tests/AssetProcessorTest.h>
 
 namespace AssetProcessingStateDataUnitTestInternal
 {
@@ -552,6 +553,13 @@ void AssetProcessingStateDataUnitTest::DataTest(AssetProcessor::AssetDatabaseCon
     //Add a scan folder
     scanFolder = ScanFolderDatabaseEntry("c:/O3DE/dev", "dev", "devkey3");
     UNIT_TEST_EXPECT_TRUE(stateData->SetScanFolder(scanFolder));
+
+    auto* appManager = AZ::Interface<AssetProcessor::IUnitTestAppManager>::Get();
+
+    UNIT_TEST_EXPECT_FALSE(appManager == nullptr);
+
+    auto& config = appManager->GetConfig();
+    config.AddScanFolder(AssetProcessor::ScanFolderInfo{scanFolder.m_scanFolder.c_str(), scanFolder.m_displayName.c_str(), scanFolder.m_portableKey.c_str(), false, true, {} , 0, scanFolder.m_scanFolderID});
 
     //Add some sources
     source = SourceDatabaseEntry(scanFolder.m_scanFolderID, "SomeSource1.tif", validSourceGuid1, "");

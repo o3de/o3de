@@ -20,12 +20,17 @@
 
 namespace AssetProcessor
 {
-    class UnitTestAppManager : public BatchApplicationManager
+    class UnitTestAppManager : public BatchApplicationManager, AZ::Interface<IUnitTestAppManager>::Registrar
     {
     public:
         explicit UnitTestAppManager(int* argc, char*** argv)
             : BatchApplicationManager(argc, argv)
         {}
+
+        PlatformConfiguration& GetConfig()
+        {
+            return *m_platformConfig;
+        }
 
         bool PrepareForTests()
         {

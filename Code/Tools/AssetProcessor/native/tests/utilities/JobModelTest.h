@@ -65,7 +65,7 @@ protected:
 
         const AZStd::string m_sourceName{ "theFile.fbx" };
         AZStd::vector<AzToolsFramework::AssetDatabase::JobDatabaseEntry> m_jobEntries;
-        UnitTests::MockPathConversion mockPathConversion;
+        UnitTests::MockPathConversion mockPathConversion{ "c:/test" };
     };
     AZStd::unique_ptr<StaticData> m_data;
     void CreateDatabaseTestData();

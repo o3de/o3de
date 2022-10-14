@@ -755,6 +755,7 @@ namespace AssetProcessor
                 assetInfo.m_assetType = assetType;
                 assetInfo.m_relativePath = sourceAsset.RelativePath().c_str();
                 assetInfo.m_sizeBytes = AZ::IO::SystemFile::Length(sourceAsset.AbsolutePath().c_str());
+                rootFilePath = sourceAsset.ScanfolderPath().c_str();
 
                 return true;
             }
