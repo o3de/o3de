@@ -41,6 +41,8 @@ def PhysX_ColliderFamily_Component_CRUD():
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import Tracer, TestHelper
 
+    from consts.general import Strings
+
 
     # 0) Pre-conditions
     physx_mesh = os.path.join("objects", "_primitives", "_box_1x1.pxmesh")
@@ -52,33 +54,124 @@ def PhysX_ColliderFamily_Component_CRUD():
 
 
     with Tracer() as section_tracer:
-        # 1 ) Add an Entity to manipulate
+    # 1 ) Add an Entity to manipulate
         phsyx_collider_entity = EditorEntity.create_editor_entity("TestEntity")
 
-        # 2) Add a PhysX Collider Component to Entity
+    # 2) Add a PhysX Collider Component to Entity
         physx_collider = PhysxCollider(phsyx_collider_entity)
 
-        # 3) Set Box Shape and Child Properties
+    # 3) Set Box Shape and Child Properties
         physx_collider.set_box_shape()
-        physx_collider.set_box_dimensions(0.0, 0.0, 0.0)
+
         physx_collider.set_box_dimensions(256.0, 256.0, 256.0)
         physx_collider.set_box_dimensions(2, 2.5, 2.5)
+        physx_collider.set_box_dimensions(0, 0.0, 0.0)
+        physx_collider.set_box_dimensions(-1.0, -10, 0.0)
 
+    # 4) Set Capsule Shape and Child Properties
+        physx_collider.set_capsule_shape()
 
-        # 4) Setting Physx Collider Shapes
+        physx_collider.set_capsule_height(0)
+        physx_collider.set_capsule_height(-1)
+        physx_collider.set_capsule_height(2.5)
+        physx_collider.set_capsule_height(256)
 
+        physx_collider.set_capsule_radius(0)
+        physx_collider.set_capsule_radius(-1.0)
+        physx_collider.set_capsule_radius(2.5)
+        physx_collider.set_capsule_radius(256)
 
+    # 5) Set Cylinder Shape and Child Properties
+        physx_collider.set_cylinder_shape()
 
-        # test_entity = EE.create_editor_entity("Test")
-        # test_component = test_entity.add_component("PhysX Collider")
-        # output = [test_component.get_property_type_visibility(), test_component.get_property_type_visibility()]
-        #
-        # print(test_component.get_property_type_visibility())
-        #
-        # path = test_component.get_component_property_value("somepath")
-        #
-        #
-        # Report.critical_result(output, False)
+        physx_collider.set_cylinder_height(0)
+        physx_collider.set_cylinder_height(-1)
+        physx_collider.set_cylinder_height(2.5)
+        physx_collider.set_cylinder_height(256)
+
+        physx_collider.set_cylinder_radius(0)
+        physx_collider.set_cylinder_radius(-1)
+        physx_collider.set_cylinder_radius(2.5)
+        physx_collider.set_cylinder_radius(256)
+
+        # physx_collider.set_cylinder_subdivision(0)  # GHI #12608 - Crash if subdivision set below 3
+        # physx_collider.set_cylinder_subdivision(-1)  # GHI #12608 - Crash if subdivision set below 3
+        physx_collider.set_cylinder_subdivision(3.0)
+        physx_collider.set_cylinder_subdivision(125)
+        #physx_collider.set_cylinder_subdivision(256)  # GHI #12608 - Crash if subdivision set above 125
+
+    # 6) Set Sphere Shape and Child Properties
+        physx_collider.set_sphere_shape()
+
+        physx_collider.set_sphere_radius(0)
+        physx_collider.set_sphere_radius(-1)
+        physx_collider.set_sphere_radius(2.5)
+        physx_collider.set_sphere_radius(256)
+
+        # 7) Set General Properties
+        physx_collider.toggle_trigger()
+        physx_collider.toggle_trigger()
+
+        physx_collider.toggle_simulated()
+        physx_collider.toggle_simulated()
+
+        physx_collider.toggle_in_scene_queries()
+        physx_collider.toggle_in_scene_queries()
+
+        physx_collider.set_offset(0, 0, 0)
+        physx_collider.set_offset(-1, -1, -1)
+        physx_collider.set_offset(2.5, 2.5, 2.5)
+        physx_collider.set_offset(255, 255, 255)
+
+        # TODO: Figure out how to build a Quaternion
+        # physx_collider.set_rotation(0, 0, 0)
+        # physx_collider.set_rotation(-1, -1, -1)
+        # physx_collider.set_rotation(2.5, 2.5, 2.5)
+        # physx_collider.set_rotation(255, 255, 255)
+
+        # TODO: For some reason I can't get this to work. Says it takes an AZStd::string,
+        #  but it won't take a python string or a character.
+        # physx_collider.set_tag(Strings.NUMBER)
+        # physx_collider.set_tag(Strings.CHARACTER)
+        # physx_collider.set_tag(Strings.ESCAPED_SPACE)
+        # physx_collider.set_tag(Strings.EMPTY_STRING)
+        # physx_collider.set_tag(Strings.ONLY_SPACE)physx_collider.set_tag(Strings.NUMBER)
+        #         # physx_collider.set_tag(Strings.CHARACTER)
+        #         # physx_collider.set_tag(Strings.ESCAPED_SPACE)
+        #         # physx_collider.set_tag(Strings.EMPTY_STRING)
+        #         # physx_collider.set_tag(Strings.ONLY_SPACE)
+
+        physx_collider.set_rest_offset(0)
+        physx_collider.set_rest_offset(-1)
+        physx_collider.set_rest_offset(2.5)
+        physx_collider.set_rest_offset(255)
+
+        physx_collider.set_contact_offset(0)
+        physx_collider.set_contact_offset(-1)
+        physx_collider.set_contact_offset(2.5)
+        physx_collider.set_contact_offset(255)
+
+        physx_collider.toggle_draw_collider()
+        physx_collider.toggle_draw_collider()
+
+        # GHI #12503 PhysX Collider Component's Physic Material field(s) return unintuitive property tree paths.
+        # physx_collider.set_physx_material_from_path(physx_material)
+
+    # 8) Set PhyicsAsset Shape and Child Properties
+        physx_collider.set_physicsasset_shape()
+        physx_collider.set_physx_mesh_from_path(physx_mesh)
+
+        physx_collider.set_physx_mesh_asset_scale(0, 0, 0)
+        physx_collider.set_physx_mesh_asset_scale(-1, -1, -1)
+        physx_collider.set_physx_mesh_asset_scale(2.5, 2.5, 2.5)
+        physx_collider.set_physx_mesh_asset_scale(255, 255, 255)
+
+        physx_collider.toggle_physics_materials_from_asset()
+        physx_collider.toggle_physics_materials_from_asset()
+
+    # 9) Delete Component
+        physx_collider.component.remove()
+
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report

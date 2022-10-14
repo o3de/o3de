@@ -108,51 +108,92 @@ class PhysxCollider:
         TAG = 'Collider Configuration|Tag'
         RESET_OFFSET = 'Collider Configuration|Rest offset'
         CONTACT_OFFSET = 'Collider Configuration|Contact offset'
-        DRAW_COLLIDER = 'Debug draw settings'
+        DRAW_COLLIDER = 'Debug draw settings|Draw collider'
         SHAPE = 'Shape Configuration|Shape'
 
     # General Properties
     #TODO: Need to figure out how to set dropdowns for Collison Layer and Collides With
 
-    def toggle_trigger(self):
+    def toggle_trigger(self) -> None:
+        """
+
+        """
         self.component.toggle_property_switch(self.Path.TRIGGER)
 
-    def toggle_simulated(self):
+    def toggle_simulated(self) -> None:
+        """
+
+        """
         self.component.toggle_property_switch(self.Path.SIMULATED)
 
-    def toggle_in_scene_queries(self):
+    def toggle_in_scene_queries(self) -> None:
+        """
+
+        """
         self.component.toggle_property_switch(self.Path.IN_SCENE_QUERIES)
 
-    def set_offset(self, x: float, y: float, z: float):
-        self.component.set_component_property_value(self.Path.OFFSET, math.Vector3(x, y, z))
+    def set_offset(self, x: float, y: float, z: float) -> None:
+        """
 
-    def set_rotation(self, x: float, y: float, z: float):
-        self.component.set_component_property_value(self.Path.ROTATION, math.Vector3(x, y, z))
+        """
+        self.component.set_component_property_value(self.Path.OFFSET, math.Vector3(float(x), float(y), float(z)))
 
-    def set_tag(self, tag: str):
-        self.component.set_component_property_value(self.Path.TAG, tag)
+    def set_rotation(self, x: float, y: float, z: float) -> None:
+        """
 
-    def set_rest_offset(self, offset: float):
+        """
+        # TODO: Figure out how to build a Quaternion
+        assert NotImplementedError
+        #self.component.set_component_property_value(self.Path.ROTATION, math.Quaternion(float(x), float(y), float(z)))
+
+    def set_tag(self, tag: chr) -> None:
+        """
+        TODO: For some reason I can't get this to work. Says it takes an AZStd::string, but it won't take one or a character.
+        """
+        assert NotImplementedError
+        # self.component.set_component_property_value(self.Path.TAG, tag)
+
+    def set_rest_offset(self, offset: float) -> None:
+        """
+
+        """
         self.component.set_component_property_value(self.Path.RESET_OFFSET, offset)
 
-    def set_contact_offset(self, offset: float):
+    def set_contact_offset(self, offset: float) -> None:
+        """
+
+        """
         self.component.set_component_property_value(self.Path.CONTACT_OFFSET, offset)
 
-    def toggle_draw_collider(self):
+    def toggle_draw_collider(self) -> None:
+        """
+
+        """
         self.component.toggle_property_switch(self.Path.DRAW_COLLIDER)
 
     def set_physx_material_from_path(self, asset_product_path: str) -> None:
-        assert self.component.is_property_visible(self.Path.PHYSX_MATERIAL_ASSET), \
-            f"Failure: Cannot set box dimensions when property is not visible."
+        """
+
+        """
+        # GHI #12503 PhysX Collider Component's Physic Material field(s) return unintuitive property tree paths.
+        assert NotImplementedError
+        # assert self.component.is_property_visible(self.Path.PHYSX_MATERIAL_ASSET), \
+        #     f"Failure: Cannot set Physx Material when property is not visible."
 
         px_material = Asset.find_asset_by_path(asset_product_path)
         self.component.set_component_property_value(self.Path.PHYSX_MATERIAL_ASSET, px_material.id)
 
     # Shape: Box
     def set_box_shape(self) -> None:
+        """
+
+        """
         self.component.set_component_property_value(self.Path.SHAPE, physics.ShapeType_Box)
 
     def set_box_dimensions(self, x: float, y: float, z: float) -> None:
+        """
+
+        """
         assert self.component.is_property_visible(self.Path.Box.DIMENSIONS), \
             f"Failure: Cannot set box dimensions when property is not visible."
 
@@ -161,15 +202,24 @@ class PhysxCollider:
 
     # Shape: Capsule
     def set_capsule_shape(self) -> None:
+        """
+
+        """
         self.component.set_component_property_value(self.Path.SHAPE, physics.ShapeType_Capsule)
 
-    def set_capsule_height(self, height: str) -> None:
+    def set_capsule_height(self, height: float) -> None:
+        """
+
+        """
         assert self.component.is_property_visible(self.Path.Capsule.HEIGHT), \
             f"Failure: Cannot set capsule height when property is not visible. Set the shape to capsule first."
 
-        self.component.set_component_property_value(self.Path.Capsule.HEIGHT, height)
+        self.component.set_component_property_value(self.Path.Capsule.HEIGHT, float(height))
 
     def set_capsule_radius(self, radius: float) -> None:
+        """
+
+        """
         assert self.component.is_property_visible(self.Path.Capsule.RADIUS), \
             f"Failure: Cannot set capsule radius when property is not visible. Set the shape to capsule first."
 
@@ -177,21 +227,33 @@ class PhysxCollider:
 
     # Shape: Cylinder
     def set_cylinder_shape(self) -> None:
+        """
+
+        """
         self.component.set_component_property_value(self.Path.SHAPE, physics.ShapeType_Cylinder)
 
     def set_cylinder_subdivision(self, subdivisions: int):
+        """
+
+        """
         assert self.component.is_property_visible(self.Path.Cylinder.SUBDIVISION), \
             f"Failure: Cannot set cylinder subdivisions when property is not visible. Set the shape to cylinder first."
 
         self.component.set_component_property_value(self.Path.Cylinder.SUBDIVISION, subdivisions)
 
     def set_cylinder_height(self, height: float):
+        """
+
+        """
         assert self.component.is_property_visible(self.Path.Cylinder.HEIGHT), \
             f"Failure: Cannot set cylinder height when property is not visible. Set the shape to cylinder first."
 
         self.component.set_component_property_value(self.Path.Cylinder.HEIGHT, float(height))
 
     def set_cylinder_radius(self, radius: float):
+        """
+
+        """
         assert self.component.is_property_visible(self.Path.Cylinder.RADIUS), \
             f"Failure: Cannot set cylinder radius when property is not visible. Set the shape to cylinder first."
 
@@ -199,9 +261,15 @@ class PhysxCollider:
 
     # Shape: PhysicsAsset
     def set_physicsasset_shape(self) -> None:
+        """
+
+        """
         self.component.set_component_property_value(self.Path.SHAPE, physics.ShapeType_PhysicsAsset)
 
     def set_physx_mesh_from_path(self, asset_product_path: str) -> None:
+        """
+
+        """
         assert self.component.is_property_visible(self.Path.PhysicsAsset.PHYSX_MESH), \
             f"Failure: Cannot set Physics Mesh when property is not visible."
 
@@ -209,6 +277,9 @@ class PhysxCollider:
         self.component.set_component_property_value(self.Path.PhysicsAsset.PHYSX_MESH, px_asset.id)
 
     def set_physx_mesh_asset_scale(self, x: float, y: float, z: float) -> None:
+        """
+
+        """
         assert self.component.is_property_visible(self.Path.PhysicsAsset.ASSET_SCALE), \
             f"Failure: Cannot set Physics Mesh Asset Scale when property is not visible."
 
@@ -216,6 +287,9 @@ class PhysxCollider:
                                                     math.Vector3(float(x), float(y), float(z)))
 
     def toggle_physics_materials_from_asset(self) -> None:
+        """
+
+        """
         assert self.component.is_property_visible(self.Path.PhysicsAsset.PHYSICS_MATERIALS_FROM_ASSET), \
             f"Failure: Cannot toggle Physics Materials From Asset when property is not visible."
 
@@ -223,7 +297,13 @@ class PhysxCollider:
 
     # Shape: Sphere
     def set_sphere_shape(self) -> None:
+        """
+
+        """
         self.component.set_component_property_value(self.Path.SHAPE, physics.ShapeType_Sphere)
 
     def set_sphere_radius(self, radius) -> None:
+        """
+
+        """
         self.component.set_component_property_value(self.Path.Sphere.RADIUS, radius)
