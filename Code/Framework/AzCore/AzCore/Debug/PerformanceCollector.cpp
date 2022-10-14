@@ -29,11 +29,6 @@ namespace AZ::Debug
         RestartPeriodicEventStamps();
     }
 
-    PerformanceCollector::~PerformanceCollector()
-    {
-
-    }
-
     bool PerformanceCollector::IsWaitingBeforeCapture()
     {
         return !m_numberOfCaptureBatches || m_isWaitingBeforeNextBatch;
@@ -53,7 +48,7 @@ namespace AZ::Debug
                 AZStd::chrono::steady_clock::time_point now = AZStd::chrono::steady_clock::now();
                 if (m_startWaitTime.time_since_epoch().count() == 0)
                 {
-                    AZ_TracePrintf(LogName, "Will Wait %lld seconds before starting batch %u...", m_waitTimeBeforeEachBatch.count(), m_numberOfCaptureBatches);
+                    AZ_TracePrintf(LogName, "Will Wait %lld seconds before starting batch %u...\n", m_waitTimeBeforeEachBatch.count(), m_numberOfCaptureBatches);
                     m_startWaitTime = now;
                 }
                 auto duration = AZStd::chrono::duration_cast<AZStd::chrono::seconds>(now - m_startWaitTime);
@@ -62,7 +57,7 @@ namespace AZ::Debug
                     return; // Do nothing. Keep waiting.
                 }
             }
-            AZ_TracePrintf(LogName, "Waited %lld seconds. Will start collecting performance numbers for %u frames at batch %u...", m_waitTimeBeforeEachBatch.count(), m_frameCountPerCaptureBatch, m_numberOfCaptureBatches);
+            AZ_TracePrintf(LogName, "Waited %lld seconds. Will start collecting performance numbers for %u frames at batch %u...\n", m_waitTimeBeforeEachBatch.count(), m_frameCountPerCaptureBatch, m_numberOfCaptureBatches);
             m_isWaitingBeforeNextBatch = false;
         }
 
@@ -92,7 +87,7 @@ namespace AZ::Debug
         {
             // This will close the file that contains performance results for all batches.
             m_eventLogger.ResetStream(nullptr);
-            AZ_TracePrintf(LogName, "Performance data output file <%s> is ready", m_outputFilePath.c_str());
+            AZ_TracePrintf(LogName, "Performance data output file <%s> is ready\n", m_outputFilePath.c_str());
         }
 
     }
@@ -134,7 +129,7 @@ namespace AZ::Debug
     {
         AZStd::vector<Statistics::NamedRunningStatistic*> statistics;
         m_statisticsManager.GetAllStatistics(statistics);
-        AZ_Warning(LogName, !statistics.empty(), "There are no statistics to report");
+        AZ_Warning(LogName, !statistics.empty(), "There are no statistics to report.");
         for (const auto statistic : statistics)
         {
             using EventObjectStorage = AZStd::fixed_vector<AZ::Metrics::EventField, 8>;
@@ -177,7 +172,7 @@ namespace AZ::Debug
 
         if (m_numberOfCaptureBatches > 0)
         {
-            AZ_Warning(LogName, false, "%s changes to control params are rejected while data is being captured", __FUNCTION__);
+            AZ_Warning(LogName, false, "%s changes to control params are rejected while data is being captured.", __FUNCTION__);
             return;
         }
 
@@ -193,7 +188,7 @@ namespace AZ::Debug
 
         if (m_numberOfCaptureBatches > 0)
         {
-            AZ_Warning(LogName, false, "%s changes to control params are rejected while data is being captured", __FUNCTION__);
+            AZ_Warning(LogName, false, "%s changes to control params are rejected while data is being captured.", __FUNCTION__);
             return;
         }
 
@@ -209,7 +204,7 @@ namespace AZ::Debug
 
         if (m_numberOfCaptureBatches > 0)
         {
-            AZ_Warning(LogName, false, "%s changes to control params are rejected while data is being captured", __FUNCTION__);
+            AZ_Warning(LogName, false, "%s changes to control params are rejected while data is being captured.", __FUNCTION__);
             return;
         }
 
@@ -227,7 +222,7 @@ namespace AZ::Debug
             CreateOutputJsonFile();
         }
         m_numberOfCaptureBatches = newValue;
-        AZ_TracePrintf(LogName, "%s updated value to %u", __FUNCTION__, m_numberOfCaptureBatches);
+        AZ_TracePrintf(LogName, "%s updated value to %u\n", __FUNCTION__, m_numberOfCaptureBatches);
     }
 
     void PerformanceCollector::CreateOutputJsonFile()

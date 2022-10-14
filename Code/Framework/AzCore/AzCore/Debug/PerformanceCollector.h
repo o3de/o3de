@@ -44,7 +44,7 @@ namespace AZ::Debug
         //! @param m_metricNames List of all the metrics that will be recorded. All metrics will be measured in Microseconds.
         //! @param onBatchCompleteCallback See comments above in OnBatchCompleteCallback declaration.
         PerformanceCollector(const AZStd::string_view logCategory, AZStd::span<const AZStd::string_view> m_metricNames, OnBatchCompleteCallback onBatchCompleteCallback);
-        ~PerformanceCollector();
+        ~PerformanceCollector() = default;
 
         static constexpr char LogName[] = "PerformanceCollector";
     
