@@ -5,69 +5,11 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-"""
-PhysX Collider Property Tree
-
-'Component Mode': ('ComponentModeDelegate', 'ShowChildrenOnly'), 
-'Collider Configuration': ('ColliderConfiguration', 'ShowChildrenOnly'),
-'Collider Configuration|Collision Layer': ('CollisionLayer', 'Visible'),
-'Collider Configuration|Collides With': ('Id', 'Visible'), 
-'Collider Configuration|Trigger': ('bool', 'Visible'),
-'Collider Configuration|Simulated': ('bool', 'Visible'),
-'Collider Configuration|In Scene Queries': ('bool', 'Visible'), 
-'Collider Configuration|Offset': ('Vector3', 'Visible'), 
-'Collider Configuration|Rotation': ('Quaternion', 'Visible'), 
-
-'Collider Configuration|': ('Physics::MaterialSlots', 'ShowChildrenOnly'), 
-']': ('Physics::MaterialSlots::MaterialSlot', 'ShowChildrenOnly'), 
-']|': ('Asset<Physics::MaterialAsset>', 'Visible'), 
-
-'Collider Configuration|Tag': ('AZStd::string', 'Visible'), 
-'Collider Configuration|Rest offset': ('float', 'Visible'), 
-'Collider Configuration|Contact offset': ('float', 'Visible'),
-'Debug draw settings': ('Collider', 'ShowChildrenOnly'), 
-'Debug draw settings|Draw collider': ('bool', 'Visible'), 
- 
-'Shape Configuration': ('EditorProxyShapeConfig', 'ShowChildrenOnly'), 
-'Shape Configuration|Subdivision level': ('unsigned char', 'NotVisible'),
-'Shape Configuration|Shape': ('unsigned char', 'Visible'),
-
---- Asset
-'Shape Configuration|Asset': ('EditorProxyAssetShapeConfig', 'Visible'),
-'Shape Configuration|Asset|Configuration': ('PhysicsAssetShapeConfiguration', 'ShowChildrenOnly'),  
-'Shape Configuration|Asset|PhysX Mesh': ('Asset<MeshAsset>', 'Visible'), 
-'Shape Configuration|Asset|Configuration|Asset Scale': ('Vector3', 'Visible'),
-'Shape Configuration|Asset|Configuration|Physics materials from asset': ('bool', 'Visible')}
-
----Capsule
-'Shape Configuration|Capsule': ('CapsuleShapeConfiguration', 'NotVisible'),  
-'Shape Configuration|Capsule|Height': ('float', 'Visible'),
-'Shape Configuration|Capsule|Radius': ('float', 'Visible'), 
- 
----Box
-'Shape Configuration|Box': ('BoxShapeConfiguration', 'NotVisible'),
-'Shape Configuration|Box|Dimensions': ('Vector3', 'Visible'), 
-
----Sphere
-'Shape Configuration|Sphere': ('SphereShapeConfiguration', 'NotVisible'), 
-'Shape Configuration|Sphere|Radius': ('float', 'Visible'), 
-
----Cylinder
-'Shape Configuration|Cylinder': ('EditorProxyCylinderShapeConfig', 'NotVisible'), 
-'Shape Configuration|Cylinder|Configuration': ('CookedMeshShapeConfiguration', 'ShowChildrenOnly'),  
-'Shape Configuration|Cylinder|Radius': ('float', 'Visible'), 
-'Shape Configuration|Cylinder|Height': ('float', 'Visible'), 
-'Shape Configuration|Cylinder|Subdivision': ('unsigned char', 'Visible'), 
-
-
-"""
 import azlmbr.physics as physics
 import azlmbr.math as math
-import azlmbr.legacy.general as general
 
 from editor_python_test_tools.editor_entity_utils import EditorEntity
 from editor_python_test_tools.asset_utils import Asset
-from editor_python_test_tools.utils import TestHelper as helper
 
 COMPONENT_NAME = "PhysX Collider"
 
@@ -116,31 +58,31 @@ class PhysxCollider:
 
     def toggle_trigger(self) -> None:
         """
-
+        Property Type, Default Visibility - ('bool', 'Visible')
         """
         self.component.toggle_property_switch(self.Path.TRIGGER)
 
     def toggle_simulated(self) -> None:
         """
-
+        Property Type, Default Visibility - ('bool', 'Visible')
         """
         self.component.toggle_property_switch(self.Path.SIMULATED)
 
     def toggle_in_scene_queries(self) -> None:
         """
-
+        Property Type, Default Visibility - ('bool', 'Visible')
         """
         self.component.toggle_property_switch(self.Path.IN_SCENE_QUERIES)
 
     def set_offset(self, x: float, y: float, z: float) -> None:
         """
-
+        Property Type, Default Visibility - ('Vector3', 'Visible')
         """
         self.component.set_component_property_value(self.Path.OFFSET, math.Vector3(float(x), float(y), float(z)))
 
     def set_rotation(self, x: float, y: float, z: float) -> None:
         """
-
+        Property Type, Default Visibility - ('Quaternion', 'Visible')
         """
         # TODO: Figure out how to build a Quaternion
         assert NotImplementedError
@@ -148,6 +90,7 @@ class PhysxCollider:
 
     def set_tag(self, tag: chr) -> None:
         """
+        Property Type, Default Visibility - ('AZStd::string', 'Visible')
         TODO: For some reason I can't get this to work. Says it takes an AZStd::string, but it won't take one or a character.
         """
         assert NotImplementedError
@@ -155,25 +98,25 @@ class PhysxCollider:
 
     def set_rest_offset(self, offset: float) -> None:
         """
-
+        Property Type, Default Visibility - ('float', 'Visible')
         """
         self.component.set_component_property_value(self.Path.RESET_OFFSET, offset)
 
     def set_contact_offset(self, offset: float) -> None:
         """
-
+        Property Type, Default Visibility - ('float', 'Visible')
         """
         self.component.set_component_property_value(self.Path.CONTACT_OFFSET, offset)
 
     def toggle_draw_collider(self) -> None:
         """
-
+        Property Type, Default Visibility - ('bool', 'Visible'),
         """
         self.component.toggle_property_switch(self.Path.DRAW_COLLIDER)
 
     def set_physx_material_from_path(self, asset_product_path: str) -> None:
         """
-
+        Property Type, Default Visibility - ('Asset<Physics::MaterialAsset>', 'Visible')
         """
         # GHI #12503 PhysX Collider Component's Physic Material field(s) return unintuitive property tree paths.
         assert NotImplementedError
@@ -186,13 +129,13 @@ class PhysxCollider:
     # Shape: Box
     def set_box_shape(self) -> None:
         """
-
+        Property Type, Default Visibility - ('BoxShapeConfiguration', 'NotVisible')
         """
         self.component.set_component_property_value(self.Path.SHAPE, physics.ShapeType_Box)
 
     def set_box_dimensions(self, x: float, y: float, z: float) -> None:
         """
-
+        Property Type, Default Visibility - ('Vector3', 'Visible')
         """
         assert self.component.is_property_visible(self.Path.Box.DIMENSIONS), \
             f"Failure: Cannot set box dimensions when property is not visible."
@@ -203,13 +146,13 @@ class PhysxCollider:
     # Shape: Capsule
     def set_capsule_shape(self) -> None:
         """
-
+        Property Type, Default Visibility - ('CapsuleShapeConfiguration', 'NotVisible')
         """
         self.component.set_component_property_value(self.Path.SHAPE, physics.ShapeType_Capsule)
 
     def set_capsule_height(self, height: float) -> None:
         """
-
+        Property Type, Default Visibility - ('float', 'Visible')
         """
         assert self.component.is_property_visible(self.Path.Capsule.HEIGHT), \
             f"Failure: Cannot set capsule height when property is not visible. Set the shape to capsule first."
@@ -218,7 +161,7 @@ class PhysxCollider:
 
     def set_capsule_radius(self, radius: float) -> None:
         """
-
+        Property Type, Default Visibility - ('float', 'Visible')
         """
         assert self.component.is_property_visible(self.Path.Capsule.RADIUS), \
             f"Failure: Cannot set capsule radius when property is not visible. Set the shape to capsule first."
@@ -228,13 +171,13 @@ class PhysxCollider:
     # Shape: Cylinder
     def set_cylinder_shape(self) -> None:
         """
-
+        Property Type, Default Visibility - ('EditorProxyCylinderShapeConfig', 'NotVisible')
         """
         self.component.set_component_property_value(self.Path.SHAPE, physics.ShapeType_Cylinder)
 
     def set_cylinder_subdivision(self, subdivisions: int):
         """
-
+        Property Type, Default Visibility - ('unsigned char', 'Visible')
         """
         assert self.component.is_property_visible(self.Path.Cylinder.SUBDIVISION), \
             f"Failure: Cannot set cylinder subdivisions when property is not visible. Set the shape to cylinder first."
@@ -243,7 +186,7 @@ class PhysxCollider:
 
     def set_cylinder_height(self, height: float):
         """
-
+        Property Type, Default Visibility - ('float', 'Visible')
         """
         assert self.component.is_property_visible(self.Path.Cylinder.HEIGHT), \
             f"Failure: Cannot set cylinder height when property is not visible. Set the shape to cylinder first."
@@ -252,7 +195,7 @@ class PhysxCollider:
 
     def set_cylinder_radius(self, radius: float):
         """
-
+        Property Type, Default Visibility - ('float', 'Visible')
         """
         assert self.component.is_property_visible(self.Path.Cylinder.RADIUS), \
             f"Failure: Cannot set cylinder radius when property is not visible. Set the shape to cylinder first."
@@ -262,13 +205,13 @@ class PhysxCollider:
     # Shape: PhysicsAsset
     def set_physicsasset_shape(self) -> None:
         """
-
+        Property Type, Default Visibility - ('PhysicsAssetShapeConfiguration', 'ShowChildrenOnly')
         """
         self.component.set_component_property_value(self.Path.SHAPE, physics.ShapeType_PhysicsAsset)
 
     def set_physx_mesh_from_path(self, asset_product_path: str) -> None:
         """
-
+        Property Type, Default Visibility - ('Asset<MeshAsset>', 'Visible')
         """
         assert self.component.is_property_visible(self.Path.PhysicsAsset.PHYSX_MESH), \
             f"Failure: Cannot set Physics Mesh when property is not visible."
@@ -278,7 +221,7 @@ class PhysxCollider:
 
     def set_physx_mesh_asset_scale(self, x: float, y: float, z: float) -> None:
         """
-
+        Property Type, Default Visibility - ('Vector3', 'Visible')
         """
         assert self.component.is_property_visible(self.Path.PhysicsAsset.ASSET_SCALE), \
             f"Failure: Cannot set Physics Mesh Asset Scale when property is not visible."
@@ -288,7 +231,7 @@ class PhysxCollider:
 
     def toggle_physics_materials_from_asset(self) -> None:
         """
-
+        Property Type, Default Visibility - ('bool', 'Visible')}
         """
         assert self.component.is_property_visible(self.Path.PhysicsAsset.PHYSICS_MATERIALS_FROM_ASSET), \
             f"Failure: Cannot toggle Physics Materials From Asset when property is not visible."
@@ -298,12 +241,12 @@ class PhysxCollider:
     # Shape: Sphere
     def set_sphere_shape(self) -> None:
         """
-
+        Property Type, Default Visibility - ('SphereShapeConfiguration', 'NotVisible')
         """
         self.component.set_component_property_value(self.Path.SHAPE, physics.ShapeType_Sphere)
 
     def set_sphere_radius(self, radius) -> None:
         """
-
+        Property Type, Default Visibility - ('float', 'Visible')
         """
         self.component.set_component_property_value(self.Path.Sphere.RADIUS, radius)

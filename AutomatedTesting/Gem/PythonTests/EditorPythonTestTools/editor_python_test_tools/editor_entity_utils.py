@@ -315,7 +315,10 @@ class EditorComponent:
 
     def is_property_visible(self, component_property_path: str, expected: bool = True) -> bool:
         """
-
+        Used to determine if a property is visible.
+        param component_property_path: String of component property. (e.g. 'Settings|Visible')
+        :param expected: The expected visibility (default True)
+        :return: None
         """
         visible_key = 1
 
@@ -331,7 +334,9 @@ class EditorComponent:
 
     def toggle_property_switch(self, component_property_path: str) -> None:
         """
-
+        Used to toggle a property switch
+        param component_property_path: String of component property. (e.g. 'Settings|Visible')
+        :return: None
         """
         start_value = self.get_component_property_value(component_property_path)
         if start_value:
