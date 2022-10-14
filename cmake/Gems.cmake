@@ -28,7 +28,7 @@ function(o3de_find_ancestor_gem_root output_gem_module_root output_gem_name sour
         # Locate the root of the gem by finding the gem.json location
         cmake_path(APPEND candidate_gem_path "gem.json" OUTPUT_VARIABLE candidate_gem_json_path)
         while(NOT EXISTS "${candidate_gem_json_path}")
-            get_property(parent_path DIRECTORY ${candidate_gem_path} PROPERTY PARENT_DIRECTORY)
+            cmake_path(GET candidate_gem_path PARENT_PATH parent_path)
 
             # If the parent directory is the same as the candidate path then the root path has been found
             cmake_path(COMPARE "${candidate_gem_path}" EQUAL "${parent_path}" reached_root_dir)
