@@ -27,6 +27,10 @@ namespace UnitTest
     {
         Q_OBJECT
 
+    public:
+        AssetProcessorServerUnitTest();
+        ~AssetProcessorServerUnitTest();
+
     public Q_SLOTS:
         void AssetProcessorConnectionStressTest();
         void ConnectionErrorForNonProxyMode(unsigned int connId, QString error);

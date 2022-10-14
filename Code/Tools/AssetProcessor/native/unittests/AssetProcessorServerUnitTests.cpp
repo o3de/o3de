@@ -42,6 +42,15 @@
 
 namespace UnitTest
 {
+    AssetProcessorServerUnitTest::AssetProcessorServerUnitTest()
+        : AssetProcessorUnitTestBase()
+    {
+    }
+
+    AssetProcessorServerUnitTest::~AssetProcessorServerUnitTest()
+    {
+    }
+
     void AssetProcessorServerUnitTest::SetUp()
     {
         AssetProcessorUnitTestBase::SetUp();

@@ -36,8 +36,11 @@ namespace UnitTest
 
     class AssetProcessorUnitTestBase
         : public UnitTest::ScopedAllocatorSetupFixture
-        , public ::testing::WithParamInterface<std::string>
     {
+    public:
+        AssetProcessorUnitTestBase();
+        ~AssetProcessorUnitTestBase();
+
     protected:
         void SetUp() override;
         void TearDown() override;

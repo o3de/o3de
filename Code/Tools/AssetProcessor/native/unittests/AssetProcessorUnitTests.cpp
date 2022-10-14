@@ -39,6 +39,15 @@ namespace UnitTest
         return true;
     }
 
+    AssetProcessorUnitTestBase::AssetProcessorUnitTestBase()
+        :UnitTest::ScopedAllocatorSetupFixture()
+    {
+    }
+
+    AssetProcessorUnitTestBase::~AssetProcessorUnitTestBase()
+    {
+    }
+
     void AssetProcessorUnitTestBase::SetUp()
     {
         UnitTest::ScopedAllocatorSetupFixture::SetUp();
