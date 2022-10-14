@@ -80,7 +80,7 @@ namespace AtomToolsFramework
         m_renderPipeline->SetDefaultView(m_view);
 
         // Don't render the pipeline until a capture request
-        m_renderPipeline->RemoveFromRenderTick();
+        m_renderPipeline->AddToRenderTickOnce();
 
         m_state.reset(new PreviewRendererIdleState(this));
 
