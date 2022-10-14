@@ -14,6 +14,7 @@
 #include <fcntl.h>
 #endif
 #include <tests/UnitTestUtilities.h>
+#include <tests/AssetProcessorTest.h>
 
 using namespace AssetProcessor;
 using namespace AzFramework::AssetSystem;
@@ -477,7 +478,7 @@ void RCcontrollerUnitTests::RunRCControllerTests()
     gotJobsInQueueCall = false;
 
     // submit same job, different run key
-    details.m_jobEntry = JobEntry(AssetProcessor::SourceAssetReference("d:/test", "/test1.txt"), AZ::Uuid("{7954065D-CFD1-4666-9E4C-3F36F417C7AC}"), { "pc" ,{ "desktop", "renderer" } }, "Test Job", 1234, 2, sourceId);
+    details.m_jobEntry = JobEntry(AssetProcessor::SourceAssetReference("d:/test", "test1.txt"), AZ::Uuid("{7954065D-CFD1-4666-9E4C-3F36F417C7AC}"), { "pc" ,{ "desktop", "renderer" } }, "Test Job", 1234, 2, sourceId);
     m_rcController.JobSubmitted(details);
     QCoreApplication::processEvents(QEventLoop::AllEvents);
     UNIT_TEST_EXPECT_FALSE(gotJobsInQueueCall);
@@ -499,6 +500,14 @@ void RCcontrollerUnitTests::RunRCControllerTests()
 
     UNIT_TEST_EXPECT_TRUE(UnitTestUtils::CreateDummyFile(fileInUsePath, "xxx"));
 
+    auto* appManager = AZ::Interface<IUnitTestAppManager>::Get();
+
+    UNIT_TEST_EXPECT_FALSE(appManager == nullptr);
+
+    auto& config = appManager->GetConfig();
+    config.AddScanFolder(
+        AssetProcessor::ScanFolderInfo{ tempPath.absoluteFilePath("subfolder4"), "subfolder4", "subfolder4", false, true, {}, 0, 3 }); // ID = 3 because this test setup already has 2 existing scanfolders
+
     QFile lockFileTest(fileInUsePath);
 #if defined(AZ_PLATFORM_WINDOWS)
     // on windows, its enough to just open the file:
@@ -513,14 +522,16 @@ void RCcontrollerUnitTests::RunRCControllerTests()
 
     AZ::Uuid uuidOfSource = AZ::Uuid("{D013122E-CF2C-4534-A87D-F82570FBC2CD}");
     MockRCJob rcJob;
-    ScanFolderInfo scanFolderInfo("samplepath", "sampledisplayname", "samplekey", false, false);
+    ScanFolderInfo scanFolderInfo("c:/samplepath", "sampledisplayname", "samplekey", false, false, {}, 0, /*ID*/ 4);
     AssetProcessor::JobDetails jobDetailsToInitWith;
-    jobDetailsToInitWith.m_jobEntry.m_sourceAssetReference = AssetProcessor::SourceAssetReference(tempPath.absoluteFilePath("subfolder4"), "needsLock.tiff");
+    jobDetailsToInitWith.m_jobEntry.m_sourceAssetReference = AssetProcessor::SourceAssetReference(fileInUsePath);
     jobDetailsToInitWith.m_jobEntry.m_platformInfo = { "pc", { "tools", "editor"} };
     jobDetailsToInitWith.m_jobEntry.m_jobKey = "Text files";
     jobDetailsToInitWith.m_jobEntry.m_sourceFileUUID = uuidOfSource;
     jobDetailsToInitWith.m_scanFolder = &scanFolderInfo;
     rcJob.Init(jobDetailsToInitWith);
+
+    config.AddScanFolder(scanFolderInfo);
 
     bool beginWork = false;
     QObject::connect(&rcJob, &RCJob::BeginWork, this, [&beginWork]()
@@ -625,11 +636,8 @@ void RCcontrollerUnitTests::RunRCControllerTests()
 
     jobdetailsB.m_critical = true; //make jobB critical so that it will be analyzed first even though we want JobA to run first
 
-    AssetBuilderSDK::SourceFileDependency sourceFileBDependency;
-    sourceFileBDependency.m_sourceFileDependencyPath = "fileB.txt";
-
     AssetBuilderSDK::SourceFileDependency sourceFileADependency;
-    sourceFileADependency.m_sourceFileDependencyPath = "fileA.txt";
+    sourceFileADependency.m_sourceFileDependencyPath = (AZ::IO::Path(scanFolderInfo.ScanPath().toUtf8().constData()) / "fileA.txt").Native();
 
     // Make job B has an order job dependency on Job A
     AssetBuilderSDK::JobDependency jobDependencyA("TestJobA", "pc", AssetBuilderSDK::JobDependencyType::Order, sourceFileADependency);
@@ -710,7 +718,8 @@ void RCcontrollerUnitTests::RunRCControllerTests()
     jobdetailsC.m_jobEntry.m_builderGuid = builderUuid;
 
     AssetBuilderSDK::SourceFileDependency sourceFileCDependency;
-    sourceFileCDependency.m_sourceFileDependencyPath = "fileC.txt";
+    sourceFileCDependency.m_sourceFileDependencyPath =
+        (AZ::IO::Path(scanFolderInfo.ScanPath().toUtf8().constData()) / "fileC.txt").Native();
 
     //Setting up Job D
     JobDetails jobdetailsD;
@@ -721,7 +730,7 @@ void RCcontrollerUnitTests::RunRCControllerTests()
     jobdetailsD.m_jobEntry.m_jobKey = "TestJobD";
     jobdetailsD.m_jobEntry.m_builderGuid = builderUuid;
     AssetBuilderSDK::SourceFileDependency sourceFileDDependency;
-    sourceFileDDependency.m_sourceFileDependencyPath = "fileD.txt";
+    sourceFileDDependency.m_sourceFileDependencyPath = (AZ::IO::Path(scanFolderInfo.ScanPath().toUtf8().constData()) / "fileD.txt").Native();
 
     //creating cyclic job order dependencies i.e  JobC and JobD have order job dependency on each other
     AssetBuilderSDK::JobDependency jobDependencyC("TestJobC", "pc", AssetBuilderSDK::JobDependencyType::Order, sourceFileCDependency);
