@@ -63,7 +63,16 @@ namespace AZ
             uint64_t GetWaitFenceValueByQueue(RHI::HardwareQueueClass hardwareQueueClass) const;
             const FenceValueSet& GetWaitFences() const;
 
+            //!Queue a fence related to the transient resource for this scope
             void QueueResourceFence(ResourceFenceAction fenceAction, Fence& fence);
+            
+            //! Signal all the transient resource fences associated with this scope
+            void SignalAllResourceFences(CommandList& commandList) const;
+            void SignalAllResourceFences(id <MTLCommandBuffer> mtlCommandBuffer) const;
+            
+            //! Wait on all the transient resource fences associated with this scope
+            void WaitOnAllResourceFences(CommandList& commandList) const;
+            void WaitOnAllResourceFences(id <MTLCommandBuffer> mtlCommandBuffer) const;
         private:
             
             struct QueryPoolAttachment

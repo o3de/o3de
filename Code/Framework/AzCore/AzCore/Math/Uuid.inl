@@ -17,19 +17,39 @@
 
 namespace AZ::UuidInternal
 {
+    constexpr AZStd::byte InvalidValue = AZStd::byte(255);
+
+    // Lookup table to convert ascii values for 0-9, a-f, and A-F to hex values in the range 0-15.
+    // Lambda expression populates the CharToHexDigit lookup table at compile time(it can't be invoked at runtime)
+    // It is invoked immediately
+    inline constexpr auto CharToHexDigit = []() constexpr
+    {
+        AZStd::array<AZStd::byte, 256> charToHexTable{};
+        AZStd::fill(charToHexTable.begin(), charToHexTable.end(), InvalidValue);
+        // Fill characters '0' - '9' with the byte range of 0 - 9
+        for (size_t i = 0; i < 10; ++i)
+        {
+            charToHexTable['0' + i] = AZStd::byte(i);
+        }
+        // Fill characters 'A' - 'F' with the byte range of 10-15(for hex digits)
+        for (size_t i = 0; i < 6; ++i)
+        {
+            charToHexTable['A' + i] = AZStd::byte(10 + i);
+        }
+        // Fill characters 'a' - 'f' with the byte range of 10-15(for hex digits)
+        for (size_t i = 0; i < 6; ++i)
+        {
+            charToHexTable['a' + i] = AZStd::byte(10 + i);
+        }
+
+        return charToHexTable;
+    }
+    ();
+
     constexpr AZStd::byte GetValue(char c)
     {
-        constexpr AZStd::string_view UuidChars = "0123456789ABCDEFabcdef";
-        // CharToHexDigit is 1 more character than UuidChars array
-        constexpr auto CharToHexDigit = AZStd::to_array<AZStd::byte>({
-            AZStd::byte(0),AZStd::byte(1), AZStd::byte(2), AZStd::byte(3),
-            AZStd::byte(4), AZStd::byte(5), AZStd::byte(6), AZStd::byte(7),
-            AZStd::byte(8), AZStd::byte(9),
-            AZStd::byte(10), AZStd::byte(11), AZStd::byte(12), AZStd::byte(13), AZStd::byte(14), AZStd::byte(15),
-            AZStd::byte(10), AZStd::byte(11), AZStd::byte(12), AZStd::byte(13), AZStd::byte(14), AZStd::byte(15),
-            AZStd::numeric_limits<AZStd::byte>::max() });
-        const char* hexDigit = AZStd::ranges::find(UuidChars, c);
-        return CharToHexDigit[hexDigit - UuidChars.data()];
+        // Use a direct lookup table to convert from a valid ascii char to a 0-15 hex value
+        return CharToHexDigit[c];
     }
 }
 

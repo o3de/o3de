@@ -39,7 +39,7 @@ namespace ScriptAutomation
             return AzFramework::NativeWindow::SupportsClientAreaResizeOfDefaultWindow();
         }
 
-        void ResizeClientArea(uint32_t width, uint32_t height)
+        void ResizeClientArea(uint32_t width, uint32_t height, const AzFramework::WindowPosOptions& options)
         {
             AzFramework::NativeWindowHandle windowHandle = nullptr;
             AzFramework::WindowSystemRequestBus::BroadcastResult(
@@ -47,7 +47,7 @@ namespace ScriptAutomation
                 &AzFramework::WindowSystemRequestBus::Events::GetDefaultWindowHandle);
 
             AzFramework::WindowSize clientAreaSize = {width, height};
-            AzFramework::WindowRequestBus::Event(windowHandle, &AzFramework::WindowRequestBus::Events::ResizeClientArea, clientAreaSize);
+            AzFramework::WindowRequestBus::Event(windowHandle, &AzFramework::WindowRequestBus::Events::ResizeClientArea, clientAreaSize, options);
             AzFramework::WindowSize newWindowSize;
             AzFramework::WindowRequestBus::EventResult(newWindowSize, windowHandle, &AzFramework::WindowRequests::GetClientAreaSize);
             AZ_Error("ResizeClientArea", newWindowSize.m_width == width && newWindowSize.m_height == height,
@@ -184,7 +184,9 @@ namespace ScriptAutomation
             {
                 if (Utils::SupportsResizeClientAreaOfDefaultWindow())
                 {
-                    Utils::ResizeClientArea(width, height);
+                    AzFramework::WindowPosOptions options;
+                    options.m_ignoreScreenSizeLimit = true;
+                    Utils::ResizeClientArea(width, height, options);
                 }
                 else
                 {

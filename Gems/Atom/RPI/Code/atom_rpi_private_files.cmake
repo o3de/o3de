@@ -11,4 +11,6 @@ set(FILES
     Source/RPI.Private/Module.h
     Source/RPI.Private/RPISystemComponent.cpp
     Source/RPI.Private/RPISystemComponent.h
+    Source/RPI.Private/PerformanceCVarManager.cpp
+    Source/RPI.Private/PerformanceCVarManager.h
 )
