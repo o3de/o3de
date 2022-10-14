@@ -32,10 +32,6 @@ def PhysX_Collider_Component_CRUD():
 
     # Helper file Imports
     import os
-    import azlmbr.legacy.general as general
-
-    from editor_python_test_tools.utils import Report
-    from editor_python_test_tools.utils import TestHelper as helper
 
     from editor_python_test_tools.editor_component.physx_collider import PhysxCollider
     from editor_python_test_tools.editor_entity_utils import EditorEntity
@@ -64,47 +60,47 @@ def PhysX_Collider_Component_CRUD():
         physx_collider.set_box_shape()
 
         physx_collider.set_box_dimensions(256.0, 256.0, 256.0)
-        physx_collider.set_box_dimensions(2, 2.5, 2.5)
-        physx_collider.set_box_dimensions(0, 0.0, 0.0)
-        physx_collider.set_box_dimensions(-1.0, -10, 0.0)
+        physx_collider.set_box_dimensions(2.5, 2.5, 2.5)
+        physx_collider.set_box_dimensions(0.0, 0.0, 0.0)
+        physx_collider.set_box_dimensions(-1.0, -10, -256.0)
 
     # 4) Set Capsule Shape and Child Properties
         physx_collider.set_capsule_shape()
 
         physx_collider.set_capsule_height(0)
-        physx_collider.set_capsule_height(-1)
+        physx_collider.set_capsule_height(-1.0)
         physx_collider.set_capsule_height(2.5)
-        physx_collider.set_capsule_height(256)
+        physx_collider.set_capsule_height(256.0)
 
         physx_collider.set_capsule_radius(0)
         physx_collider.set_capsule_radius(-1.0)
         physx_collider.set_capsule_radius(2.5)
-        physx_collider.set_capsule_radius(256)
+        physx_collider.set_capsule_radius(256.0)
 
     # 5) Set Cylinder Shape and Child Properties
         physx_collider.set_cylinder_shape()
 
-        physx_collider.set_cylinder_height(0)
-        physx_collider.set_cylinder_height(-1)
+        physx_collider.set_cylinder_height(0.0)
+        physx_collider.set_cylinder_height(-1.0)
         physx_collider.set_cylinder_height(2.5)
-        physx_collider.set_cylinder_height(256)
+        physx_collider.set_cylinder_height(256.0)
 
-        physx_collider.set_cylinder_radius(0)
-        physx_collider.set_cylinder_radius(-1)
+        physx_collider.set_cylinder_radius(0.0)
+        physx_collider.set_cylinder_radius(-1.0)
         physx_collider.set_cylinder_radius(2.5)
-        physx_collider.set_cylinder_radius(256)
+        physx_collider.set_cylinder_radius(256.0)
 
         # physx_collider.set_cylinder_subdivision(0)  # GHI #12608 - Crash if subdivision set below 3
         # physx_collider.set_cylinder_subdivision(-1)  # GHI #12608 - Crash if subdivision set below 3
-        physx_collider.set_cylinder_subdivision(3.0)
+        physx_collider.set_cylinder_subdivision(3)
         physx_collider.set_cylinder_subdivision(125)
         #physx_collider.set_cylinder_subdivision(256)  # GHI #12608 - Crash if subdivision set above 125
 
     # 6) Set Sphere Shape and Child Properties
         physx_collider.set_sphere_shape()
 
-        physx_collider.set_sphere_radius(0)
-        physx_collider.set_sphere_radius(-1)
+        physx_collider.set_sphere_radius(0.0)
+        physx_collider.set_sphere_radius(-1.0)
         physx_collider.set_sphere_radius(2.5)
         physx_collider.set_sphere_radius(256)
 
@@ -118,38 +114,34 @@ def PhysX_Collider_Component_CRUD():
         physx_collider.toggle_in_scene_queries()
         physx_collider.toggle_in_scene_queries()
 
-        physx_collider.set_offset(0, 0, 0)
-        physx_collider.set_offset(-1, -1, -1)
+        physx_collider.set_offset(0.0, 0.0, 0.0)
+        physx_collider.set_offset(-1.0, -1.0, -1.0)
         physx_collider.set_offset(2.5, 2.5, 2.5)
         physx_collider.set_offset(255, 255, 255)
 
-        # TODO: Figure out how to build a Quaternion
-        # physx_collider.set_rotation(0, 0, 0)
-        # physx_collider.set_rotation(-1, -1, -1)
+        # TODO: GHI #12633 - Figure out how to build a Quaternion
+        # physx_collider.set_rotation(0.0, 0.0, 0.0)
+        # physx_collider.set_rotation(-1.0, -1.0, -1.0)
         # physx_collider.set_rotation(2.5, 2.5, 2.5)
-        # physx_collider.set_rotation(255, 255, 255)
+        # physx_collider.set_rotation(255.0, 255.0, 255.0)
 
-        # TODO: For some reason I can't get this to work. Says it takes an AZStd::string,
+        # TODO: GHI #12634 - For some reason I can't get this to work. Says it takes an AZStd::string,
         #  but it won't take a python string or a character.
         # physx_collider.set_tag(Strings.NUMBER)
         # physx_collider.set_tag(Strings.CHARACTER)
         # physx_collider.set_tag(Strings.ESCAPED_SPACE)
         # physx_collider.set_tag(Strings.EMPTY_STRING)
         # physx_collider.set_tag(Strings.ONLY_SPACE)physx_collider.set_tag(Strings.NUMBER)
-        #         # physx_collider.set_tag(Strings.CHARACTER)
-        #         # physx_collider.set_tag(Strings.ESCAPED_SPACE)
-        #         # physx_collider.set_tag(Strings.EMPTY_STRING)
-        #         # physx_collider.set_tag(Strings.ONLY_SPACE)
 
-        physx_collider.set_rest_offset(0)
-        physx_collider.set_rest_offset(-1)
+        physx_collider.set_rest_offset(0.0)
+        physx_collider.set_rest_offset(-1.0)
         physx_collider.set_rest_offset(2.5)
-        physx_collider.set_rest_offset(255)
+        physx_collider.set_rest_offset(255.0)
 
-        physx_collider.set_contact_offset(0)
-        physx_collider.set_contact_offset(-1)
+        physx_collider.set_contact_offset(0.0)
+        physx_collider.set_contact_offset(-1.0)
         physx_collider.set_contact_offset(2.5)
-        physx_collider.set_contact_offset(255)
+        physx_collider.set_contact_offset(255.0)
 
         physx_collider.toggle_draw_collider()
         physx_collider.toggle_draw_collider()
@@ -161,10 +153,10 @@ def PhysX_Collider_Component_CRUD():
         physx_collider.set_physicsasset_shape()
         physx_collider.set_physx_mesh_from_path(physx_mesh)
 
-        physx_collider.set_physx_mesh_asset_scale(0, 0, 0)
-        physx_collider.set_physx_mesh_asset_scale(-1, -1, -1)
+        physx_collider.set_physx_mesh_asset_scale(0.0, 0.0, 0.0)
+        physx_collider.set_physx_mesh_asset_scale(-1.0, -1.0, -1.0)
         physx_collider.set_physx_mesh_asset_scale(2.5, 2.5, 2.5)
-        physx_collider.set_physx_mesh_asset_scale(255, 255, 255)
+        physx_collider.set_physx_mesh_asset_scale(255.0, 255.0, 255.0)
 
         physx_collider.toggle_physics_materials_from_asset()
         physx_collider.toggle_physics_materials_from_asset()

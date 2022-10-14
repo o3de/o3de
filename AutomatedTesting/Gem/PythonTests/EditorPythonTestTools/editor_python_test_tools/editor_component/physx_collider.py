@@ -220,7 +220,7 @@ class PhysxCollider:
         """
         self.component.set_component_property_value(self.Path.SHAPE, physics.ShapeType_Cylinder)
 
-    def set_cylinder_subdivision(self, subdivisions: int):
+    def set_cylinder_subdivision(self, subdivisions: int) -> None:
         """
         Property Type, Default Visibility - ('unsigned char', 'Visible')
 
@@ -231,7 +231,7 @@ class PhysxCollider:
 
         self.component.set_component_property_value(self.Path.Cylinder.SUBDIVISION, subdivisions)
 
-    def set_cylinder_height(self, height: float):
+    def set_cylinder_height(self, height: float) -> None:
         """
         Property Type, Default Visibility - ('float', 'Visible')
 
@@ -242,7 +242,7 @@ class PhysxCollider:
 
         self.component.set_component_property_value(self.Path.Cylinder.HEIGHT, float(height))
 
-    def set_cylinder_radius(self, radius: float):
+    def set_cylinder_radius(self, radius: float) -> None:
         """
         Property Type, Default Visibility - ('float', 'Visible')
 
@@ -309,7 +309,7 @@ class PhysxCollider:
         """
         self.component.set_component_property_value(self.Path.SHAPE, physics.ShapeType_Sphere)
 
-    def set_sphere_radius(self, radius) -> None:
+    def set_sphere_radius(self, radius: float) -> None:
         """
         Property Type, Default Visibility - ('float', 'Visible')
 
