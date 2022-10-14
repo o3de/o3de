@@ -8,10 +8,10 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 def PhysX_Collider_Component_CRUD():
     """
     Summary:
-    Test Does Something
+    Creating a PhysX Collider and setting values to all properties that are supported via the Editor Context Bus.
 
     Expected Behavior:
-    Some Behavior
+    Validates that Component CRUD can be performed without crashing.
 
     PhysX Collider Components:
      - PhysX Collider
