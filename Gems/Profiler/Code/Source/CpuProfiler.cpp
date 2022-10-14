@@ -407,7 +407,7 @@ namespace Profiler
                 }
             }
         }
-        m_timeTicksPerSecond = AZStd ::GetTimeTicksPerSecond();
+        m_timeTicksPerSecond = AZStd::GetTimeTicksPerSecond();
     }
 
     void CpuProfilingStatisticsSerializer::Reflect(AZ::ReflectContext* context)
