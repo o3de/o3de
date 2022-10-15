@@ -74,10 +74,10 @@ namespace O3DE::ProjectManager
         connect(m_headerWidget, &GemCatalogHeaderWidget::UpdateGemCart, this, &GemCatalogScreen::UpdateAndShowGemCart);
         connect(m_downloadController, &DownloadController::Done, this, &GemCatalogScreen::OnGemDownloadResult);
 
-        ScreensCtrl* screensControl = qobject_cast<ScreensCtrl*>(parent);
-        if (screensControl)
+        m_screensControl = qobject_cast<ScreensCtrl*>(parent);
+        if (m_screensControl)
         {
-            ScreenWidget* createGemScreen = screensControl->FindScreen(ProjectManagerScreen::CreateGem);
+            ScreenWidget* createGemScreen = m_screensControl->FindScreen(ProjectManagerScreen::CreateGem);
             if (createGemScreen)
             {
                 connect(static_cast<CreateGem*>(createGemScreen), &CreateGem::GemCreated, this, &GemCatalogScreen::HandleGemCreated);
@@ -96,7 +96,7 @@ namespace O3DE::ProjectManager
         connect(m_gemInspector, &GemInspector::TagClicked, [=](const Tag& tag) { SelectGem(tag.id); });
         connect(m_gemInspector, &GemInspector::UpdateGem, this, &GemCatalogScreen::UpdateGem);
         connect(m_gemInspector, &GemInspector::UninstallGem, this, &GemCatalogScreen::UninstallGem);
-        connect(m_gemInspector, &GemInspector::EditGem, this, &GemCatalogScreen::HandleCreateGem);
+        connect(m_gemInspector, &GemInspector::EditGem, this, &GemCatalogScreen::HandleEditGem);
 
         QWidget* filterWidget = new QWidget(this);
         filterWidget->setFixedWidth(sidePanelWidth);
@@ -639,6 +639,21 @@ namespace O3DE::ProjectManager
     void GemCatalogScreen::HandleCreateGem()
     {
         emit ChangeScreenRequest(ProjectManagerScreen::CreateGem);
+    }
+
+    void GemCatalogScreen::HandleEditGem()
+    {
+        if (m_screensControl)
+        {
+            ScreenWidget* createGemScreen = m_screensControl->FindScreen(ProjectManagerScreen::CreateGem);
+            if (createGemScreen)
+            {
+                auto createGem = qobject_cast<CreateGem*>(createGemScreen);
+                createGem->ResetWorkflow(m_gemModel->GetGemInfo(m_gemInspector->GetCurrentModelIndex()));
+                emit ChangeScreenRequest(ProjectManagerScreen::CreateGem);
+            }
+        }
+        
     }
 
     void GemCatalogScreen::UpdateAndShowGemCart(QWidget* cartWidget)

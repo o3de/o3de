@@ -34,6 +34,8 @@ namespace O3DE::ProjectManager
         explicit CreateGem(QWidget* parent = nullptr);
         ~CreateGem() = default;
 
+        void ResetWorkflow(const GemInfo& oldGemInfo);
+
     signals:
         void GemCreated(const GemInfo& gemInfo);
 

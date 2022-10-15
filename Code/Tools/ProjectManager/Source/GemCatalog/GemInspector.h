@@ -44,6 +44,11 @@ namespace O3DE::ProjectManager
         inline constexpr static const char* s_headerColor = "#FFFFFF";
         inline constexpr static const char* s_textColor = "#DDDDDD";
 
+        QModelIndex GetCurrentModelIndex()
+        {
+            return m_curModelIndex;
+        }
+
     signals:
         void TagClicked(const Tag& tag);
         void UpdateGem(const QModelIndex& modelIndex);

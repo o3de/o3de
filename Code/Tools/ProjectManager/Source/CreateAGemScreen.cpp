@@ -483,4 +483,26 @@ namespace O3DE::ProjectManager
         }
     }
 
+    void CreateGem::ResetWorkflow(const GemInfo& oldGemInfo)
+    {
+        //details page
+        m_gemDisplayName->lineEdit()->setText(oldGemInfo.m_displayName);
+        m_gemName->lineEdit()->setText(oldGemInfo.m_name);
+        m_gemSummary->lineEdit()->setText(oldGemInfo.m_summary);
+        m_requirements->lineEdit()->setText(oldGemInfo.m_requirement);
+        m_license->lineEdit()->setText(oldGemInfo.m_licenseText);
+        m_licenseURL->lineEdit()->setText(oldGemInfo.m_licenseLink);
+        m_documentationURL->lineEdit()->setText(oldGemInfo.m_documentationLink);
+        m_gemLocation->lineEdit()->setText(oldGemInfo.m_path);
+        m_gemIconPath->lineEdit()->setText(oldGemInfo.m_iconPath);
+        m_userDefinedGemTags->setTags(oldGemInfo.m_features);
+
+        //creator details page
+        m_origin->lineEdit()->setText(oldGemInfo.m_origin);
+        m_originURL->lineEdit()->setText(oldGemInfo.m_originURL);
+        m_repositoryURL->lineEdit()->setText(oldGemInfo.m_repoUri);
+
+        //this will be ported over to a new EditGem class. There are a lot of subtle details, like removing the template selection, pre-filling gem values like type, and disabling folder editing, that are better handled on a separate class.
+    }
+
 } // namespace O3DE::ProjectManager
