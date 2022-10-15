@@ -200,14 +200,11 @@ CLevelSystem::CLevelSystem(ISystem* pSystem, const char* levelsFolder)
         });
         m_levelPackCloseHandler.Connect(*levelPakCloseEvent);
     }
-
-    AzFramework::LevelSystemLifecycleRequestBus::Handler::BusConnect();
 }
 
 //------------------------------------------------------------------------
 CLevelSystem::~CLevelSystem()
 {
-    AzFramework::LevelSystemLifecycleRequestBus::Handler::BusDisconnect();
     UnloadLevel();
 }
 

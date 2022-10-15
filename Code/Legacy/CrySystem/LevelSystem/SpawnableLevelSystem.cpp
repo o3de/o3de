@@ -82,7 +82,6 @@ namespace LegacyLevelSystem
         }
 
         AzFramework::RootSpawnableNotificationBus::Handler::BusConnect();
-        AzFramework::LevelSystemLifecycleRequestBus::Handler::BusConnect();
 
         // If there were LoadLevel command invocations before the creation of the level system
         // then those invocations were queued.
@@ -106,7 +105,6 @@ namespace LegacyLevelSystem
     //------------------------------------------------------------------------
     SpawnableLevelSystem::~SpawnableLevelSystem()
     {
-        AzFramework::LevelSystemLifecycleRequestBus::Handler::BusDisconnect();
         AzFramework::RootSpawnableNotificationBus::Handler::BusDisconnect();
     }
 
@@ -115,14 +113,9 @@ namespace LegacyLevelSystem
         delete this;
     }
 
-    bool SpawnableLevelSystem::IsLevelLoaded()
+    bool SpawnableLevelSystem::IsLevelLoaded() const
     {
         return m_bLevelLoaded;
-    }
-
-    AZStd::string SpawnableLevelSystem::GetCurrentLevelName()
-    {
-        return m_bLevelLoaded ? m_lastLevelName : "";
     }
 
     const char* SpawnableLevelSystem::GetCurrentLevelName() const
