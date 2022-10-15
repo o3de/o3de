@@ -168,7 +168,10 @@ namespace AZ
             return worklistData;
         }
 
-        constexpr size_t WorkListCapacity = 5;
+        // Any value larger than 9 triggers a crash the job creation following the message:
+        // "Allocation size (560) is too big (max: 512) for pools!"
+        // (each additional count here increases the allocation size by 48, value of 9 makes the size exactly 512)
+        constexpr size_t WorkListCapacity = 9;
         using WorkListType = AZStd::fixed_vector<AzFramework::IVisibilityScene::NodeData, WorkListCapacity>;
 
 #if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
@@ -208,34 +211,33 @@ namespace AZ
                     //Add all objects within this node to the view, without any extra culling
                     for (AzFramework::VisibilityEntry* visibleEntry : nodeData.m_entries)
                     {
+                        if (visibleEntry->m_typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_Cullable)
                         {
-                            if (visibleEntry->m_typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_Cullable)
-                            {
-                                Cullable* c = static_cast<Cullable*>(visibleEntry->m_userData);
+                            Cullable* c = static_cast<Cullable*>(visibleEntry->m_userData);
 
-                                if ((c->m_cullData.m_drawListMask & drawListMask).none() ||
-                                    c->m_cullData.m_hideFlags & viewFlags ||
-                                    c->m_cullData.m_scene != worklistData->m_scene ||       //[GFX_TODO][ATOM-13796] once the IVisibilitySystem supports multiple octree scenes, remove this
-                                    c->m_isHidden)
-                                {
-                                    continue;
-                                }
+                            if ((c->m_cullData.m_drawListMask & drawListMask).none() ||
+                                c->m_cullData.m_hideFlags & viewFlags ||
+                                c->m_cullData.m_scene != worklistData->m_scene ||       //[GFX_TODO][ATOM-13796] once the IVisibilitySystem supports multiple octree scenes, remove this
+                                c->m_isHidden)
+                            {
+                                continue;
+                            }
 
 #if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
-                                if (TestOcclusionCulling(worklistData, visibleEntry) == MaskedOcclusionCulling::CullingResult::VISIBLE)
+                            if (TestOcclusionCulling(worklistData, visibleEntry) == MaskedOcclusionCulling::CullingResult::VISIBLE)
 #endif
-                                {
-                                    // There are ways to write this without [[maybe_unused]], but they are brittle.
-                                    // For example, using #else could cause a bug where the function's parameter
-                                    // is changed in #ifdef but not in #else.
-                                    [[maybe_unused]] const uint32_t drawPacketCount=AddLodDataToView(c->m_cullData.m_boundingSphere.GetCenter(), c->m_lodData, *worklistData->m_view);
-                                    #ifdef AZ_CULL_DEBUG_ENABLED
-                                        ++numVisibleCullables;
-                                        numDrawPackets += drawPacketCount;
-                                    #endif
+                            {
+                                // There are ways to write this without [[maybe_unused]], but they are brittle.
+                                // For example, using #else could cause a bug where the function's parameter
+                                // is changed in #ifdef but not in #else.
+                                [[maybe_unused]]
+                                const uint32_t drawPacketCount = AddLodDataToView(c->m_cullData.m_boundingSphere.GetCenter(), c->m_lodData, *worklistData->m_view);
+                                c->m_isVisible = true;
 
-                                    c->m_isVisible = true;
-                                }
+                                #ifdef AZ_CULL_DEBUG_ENABLED
+                                    ++numVisibleCullables;
+                                    numDrawPackets += drawPacketCount;
+                                #endif
                             }
                         }
                     }
@@ -271,13 +273,14 @@ namespace AZ
                                     // There are ways to write this without [[maybe_unused]], but they are brittle.
                                     // For example, using #else could cause a bug where the function's parameter
                                     // is changed in #ifdef but not in #else.
-                                    [[maybe_unused]] const uint32_t drawPacketCount=AddLodDataToView(c->m_cullData.m_boundingSphere.GetCenter(), c->m_lodData, *worklistData->m_view);
+                                    [[maybe_unused]]
+                                    const uint32_t drawPacketCount = AddLodDataToView(c->m_cullData.m_boundingSphere.GetCenter(), c->m_lodData, *worklistData->m_view);
+                                    c->m_isVisible = true;
+
                                     #ifdef AZ_CULL_DEBUG_ENABLED
                                         ++numVisibleCullables;
                                         numDrawPackets += drawPacketCount;
                                     #endif
-
-                                    c->m_isVisible = true;
                                 }
                             }
                         }

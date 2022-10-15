@@ -470,8 +470,6 @@ namespace AZ
                 }
                 else if (pipelineViews.m_type == PipelineViewType::Persistent)
                 {
-                    // Reset persistent view: clean draw list mask and draw lists
-                    pipelineViews.m_views[0]->Reset();
                     pipelineViews.m_views[0]->SetPassesByDrawList(&pipelineViews.m_passesByDrawList);
                 }
             }
