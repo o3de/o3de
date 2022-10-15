@@ -20,7 +20,7 @@ namespace LegacyLevelSystem
 class SpawnableLevelSystem
         : public ILevelSystem
         , public AzFramework::RootSpawnableNotificationBus::Handler
-        , AzFramework::ILevelSystemLifecycle
+        , AzFramework::LevelSystemLifecycleInterface::Registrar
     {
     public:
         explicit SpawnableLevelSystem(ISystem* pSystem);

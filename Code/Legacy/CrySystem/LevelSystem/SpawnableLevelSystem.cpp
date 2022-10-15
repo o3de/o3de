@@ -83,10 +83,8 @@ namespace LegacyLevelSystem
 
         AzFramework::RootSpawnableNotificationBus::Handler::BusConnect();
 
-        auto registerOutcome = AzFramework::LevelSystemLifecycleInterface::Register(this);
-        AZ_Error( "SpawnableLevelSystem", registerOutcome,
-            "Failed to register the SpawnableLevelSystem with the LevelSystemLifecycleInterface: %s",
-            registerOutcome.GetError().c_str());
+        AZ_Error("SpawnableLevelSystem", AzFramework::LevelSystemLifecycleInterface::Get() == this,
+            "Failed to register the SpawnableLevelSystem with the LevelSystemLifecycleInterface.");
 
         // If there were LoadLevel command invocations before the creation of the level system
         // then those invocations were queued.
@@ -110,7 +108,6 @@ namespace LegacyLevelSystem
     //------------------------------------------------------------------------
     SpawnableLevelSystem::~SpawnableLevelSystem()
     {
-        AzFramework::LevelSystemLifecycleInterface::Unregister(this);
         AzFramework::RootSpawnableNotificationBus::Handler::BusDisconnect();
     }
 

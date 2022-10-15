@@ -201,17 +201,14 @@ CLevelSystem::CLevelSystem(ISystem* pSystem, const char* levelsFolder)
         m_levelPackCloseHandler.Connect(*levelPakCloseEvent);
     }
 
-    auto registerOutcome = AzFramework::LevelSystemLifecycleInterface::Register(this);
-    AZ_Error("LevelSystem", registerOutcome,
-        "Failed to register the LevelSystem with the LevelSystemLifecycleInterface: %s",
-        registerOutcome.GetError().c_str());
+    AZ_Error("LevelSystem", AzFramework::LevelSystemLifecycleInterface::Get() == this,
+        "Failed to register the LevelSystem with the LevelSystemLifecycleInterface.");
 }
 
 //------------------------------------------------------------------------
 CLevelSystem::~CLevelSystem()
 {
     UnloadLevel();
-    AzFramework::LevelSystemLifecycleInterface::Unregister(this);
 }
 
 //------------------------------------------------------------------------
