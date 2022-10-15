@@ -74,7 +74,7 @@ private:
 
 class CLevelSystem
     : public ILevelSystem
-    , AzFramework::LevelSystemLifecycleInterface::Registrar
+    , AzFramework::ILevelSystemLifecycle
 {
 public:
     CLevelSystem(ISystem* pSystem, const char* levelsFolder);
