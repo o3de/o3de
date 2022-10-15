@@ -72,7 +72,8 @@ set(FILES
     native/tests/SourceAssetReferenceTests.cpp
     native/unittests/AssetCacheServerUnitTests.cpp
     native/unittests/AssetProcessingStateDataUnitTests.cpp
-    native/unittests/AssetProcessingStateDataUnitTests.h
+    native/unittests/AssetProcessorUnitTests.h
+    native/unittests/AssetProcessorUnitTests.cpp
     native/unittests/AssetProcessorManagerUnitTests.cpp
     native/unittests/AssetProcessorManagerUnitTests.h
     native/unittests/AssetProcessorServerUnitTests.cpp
