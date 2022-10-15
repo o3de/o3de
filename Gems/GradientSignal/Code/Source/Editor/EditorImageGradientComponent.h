@@ -21,6 +21,12 @@
 
 namespace GradientSignal
 {
+    AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(ImageGradientAutoSaveMode, uint8_t,
+        (SaveAs, 0),
+        (AutoSave, 1),
+        (AutoSaveWithIncrementalNames, 2)
+    );
+
     // This class inherits from EditorComponentBase instead of EditorGradientComponentBase / EditorWrappedComponentBase so that
     // we can have control over where the Editor-specific parameters for image creation and editing appear in the component
     // relative to the other runtime-only settings.
@@ -80,7 +86,7 @@ namespace GradientSignal
         void EndImageModification() override;
         bool SaveImage() override;
 
-        bool GetSaveLocation(AZ::IO::Path& fullPath, AZStd::string& relativePath);
+        bool GetSaveLocation(AZ::IO::Path& fullPath, AZStd::string& relativePath, ImageGradientAutoSaveMode autoSaveMode);
         void CreateImage();
         bool SaveImageInternal(
             AZ::IO::Path& fullPath, AZStd::string& relativePath,
@@ -88,6 +94,7 @@ namespace GradientSignal
 
         AZ::u32 RefreshCreationSelectionChoice();
         bool GetImageCreationVisibility() const;
+        AZ::Crc32 GetAutoSaveVisibility() const;
         AZ::Crc32 GetImageOptionsVisibility() const;
         AZ::Crc32 GetPaintModeVisibility() const;
         bool GetImageOptionsReadOnly() const;
@@ -95,18 +102,25 @@ namespace GradientSignal
         bool RefreshImageAssetStatus();
         static bool ImageHasPendingJobs(const AZ::Data::AssetId& assetId);
 
+        void RefreshComponentModeStatus();
+        void EnableComponentMode();
+        void DisableComponentMode();
+
         bool InComponentMode() const;
+
+        AZStd::string GetImageSourcePath(const AZ::Data::AssetId& imageAssetId) const;
 
         ImageCreationOrSelection m_creationSelectionChoice = ImageCreationOrSelection::UseExistingImage;
 
         // Parameters used for creating new source image assets
         AZ::Vector2 m_outputResolution = AZ::Vector2(512.0f);
         OutputFormat m_outputFormat = OutputFormat::R32;
-        AZ::IO::Path m_outputImagePath;
+        ImageGradientAutoSaveMode m_autoSaveMode = ImageGradientAutoSaveMode::SaveAs;
 
         // Keep track of the image asset status so that we can know when it has changed.
         AZ::Data::AssetData::AssetStatus m_currentImageAssetStatus = AZ::Data::AssetData::AssetStatus::NotLoaded;
         bool m_currentImageJobsPending = false;
+        bool m_waitingForImageReload = false;
 
         AZ::u32 ConfigurationChanged();
 
@@ -125,4 +139,9 @@ namespace GradientSignal
         bool m_runtimeComponentActive = false;
 
     };
+}
+
+namespace AZ
+{
+    AZ_TYPE_INFO_SPECIALIZE(GradientSignal::ImageGradientAutoSaveMode, "{55149135-E4F5-4D43-BB05-03A898BD9EEB}");
 }

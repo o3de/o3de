@@ -20,7 +20,6 @@
 #include <GradientSignal/Ebuses/ImageGradientRequestBus.h>
 #include <GradientSignal/Ebuses/ImageGradientModificationBus.h>
 #include <GradientSignal/Util.h>
-#include <LmbrCentral/Dependency/DependencyMonitor.h>
 
 namespace GradientSignal
 {
@@ -177,8 +176,6 @@ namespace GradientSignal
         // GradientTransformNotificationBus overrides...
         void OnGradientTransformChanged(const GradientTransform& newTransform) override;
 
-        void SetupDependencies();
-
         void CreateImageModificationBuffer();
         void ClearImageModificationBuffer();
         bool ModificationBufferIsActive() const;
@@ -203,7 +200,6 @@ namespace GradientSignal
 
     private:
         ImageGradientConfig m_configuration;
-        LmbrCentral::DependencyMonitor m_dependencyMonitor;
         mutable AZStd::shared_mutex m_queryMutex;
         GradientTransform m_gradientTransform;
         ChannelToUse m_currentChannel = ChannelToUse::Red;
