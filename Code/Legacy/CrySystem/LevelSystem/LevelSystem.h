@@ -74,7 +74,7 @@ private:
 
 class CLevelSystem
     : public ILevelSystem
-    , AZ::Interface<AzFramework::ILevelSystemLifecycle>::Registrar
+    , AzFramework::LevelSystemLifecycleInterface::Registrar
 {
 public:
     CLevelSystem(ISystem* pSystem, const char* levelsFolder);
@@ -94,7 +94,7 @@ public:
     bool LoadLevel(const char* levelName) override;
     void UnloadLevel() override;
 
-    //! AzFramework::LevelSystemLifecycleRequestBus overrides.
+    //! AzFramework::LevelSystemLifecycleInterface overrides.
     //! @{
     bool IsLevelLoaded() const override { return m_bLevelLoaded; }
 

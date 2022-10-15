@@ -20,7 +20,7 @@ namespace LegacyLevelSystem
 class SpawnableLevelSystem
         : public ILevelSystem
         , public AzFramework::RootSpawnableNotificationBus::Handler
-        , AZ::Interface<AzFramework::ILevelSystemLifecycle>::Registrar
+        , AzFramework::LevelSystemLifecycleInterface::Registrar
     {
     public:
         explicit SpawnableLevelSystem(ISystem* pSystem);
@@ -49,7 +49,7 @@ class SpawnableLevelSystem
         ILevelInfo* GetLevelInfo([[maybe_unused]] const char* levelName) override;
         //! @}
 
-        //! AzFramework::LevelSystemLifecycleRequestBus overrides.
+        //! AzFramework::LevelSystemLifecycleInterface overrides.
         //! @{
         const char* GetCurrentLevelName() const override;
         bool IsLevelLoaded() const override;
