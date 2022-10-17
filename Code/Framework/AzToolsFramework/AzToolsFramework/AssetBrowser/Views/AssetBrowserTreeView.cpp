@@ -69,6 +69,7 @@ namespace AzToolsFramework
 
             AssetBrowserViewRequestBus::Handler::BusConnect();
             AssetBrowserComponentNotificationBus::Handler::BusConnect();
+            AssetBrowserInteractionNotificationBus::Handler::BusConnect();
 
             QAction* deleteAction = new QAction("Delete Action", this);
             deleteAction->setShortcut(QKeySequence::Delete);
@@ -105,6 +106,7 @@ namespace AzToolsFramework
         {
             AssetBrowserViewRequestBus::Handler::BusDisconnect();
             AssetBrowserComponentNotificationBus::Handler::BusDisconnect();
+            AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
         }
 
         void AssetBrowserTreeView::SetName(const QString& name)
@@ -878,6 +880,25 @@ namespace AzToolsFramework
                     }
                 }
             }
+        }
+
+        void AssetBrowserTreeView::AddSourceFileCreators(
+            [[maybe_unused]] const char* fullSourceFolderName,
+            [[maybe_unused]] const AZ::Uuid& sourceUUID,
+            AzToolsFramework::AssetBrowser::SourceFileCreatorList& creators)
+        {
+            creators.push_back(
+                { "Folder_Creator", "Folder", QIcon(),
+                  [&](const AZStd::string& fullSourceFolderNameInCallback, [[maybe_unused]] const AZ::Uuid& sourceUUID)
+                  {
+                    AZ::IO::Path path = fullSourceFolderNameInCallback.c_str();
+                    path /= "New Folder";
+                    if (!AZ::IO::SystemFile::Exists(path.c_str()))
+                    {
+                        AZ::IO::SystemFile::CreateDir(path.c_str());
+                    }
+                  }
+                });
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
