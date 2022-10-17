@@ -977,7 +977,7 @@ namespace AssetProcessor
         }
     }
 
-    void PlatformConfiguration::CacheIntermediateAssetsScanFolderId()
+    void PlatformConfiguration::CacheIntermediateAssetsScanFolderId() const
     {
         for (const auto& scanfolder : m_scanFolders)
         {
@@ -1241,10 +1241,13 @@ namespace AssetProcessor
 
                 // New assets can be saved in any scan folder defined except for the engine root.
                 const bool canSaveNewAssets = !isEngineRoot;
+
+                QString watchFolderPath = QString::fromUtf8(scanFolderEntry.m_watchPath.c_str());
+                watchFolderPath = AssetUtilities::NormalizeDirectoryPath(watchFolderPath);
                 AddScanFolder(ScanFolderInfo(
-                    QString::fromUtf8(scanFolderEntry.m_watchPath.c_str(), aznumeric_cast<int>(scanFolderEntry.m_watchPath.Native().size())),
-                    QString::fromUtf8(scanFolderEntry.m_scanFolderDisplayName.c_str(), aznumeric_cast<int>(scanFolderEntry.m_scanFolderDisplayName.size())),
-                    QString::fromUtf8(scanFolderEntry.m_scanFolderIdentifier.c_str(), aznumeric_cast<int>(scanFolderEntry.m_scanFolderIdentifier.size())),
+                    watchFolderPath,
+                    QString::fromUtf8(scanFolderEntry.m_scanFolderDisplayName.c_str()),
+                    QString::fromUtf8(scanFolderEntry.m_scanFolderIdentifier.c_str()),
                     isEngineRoot,
                     scanFolderEntry.m_isRecursive,
                     platforms,
@@ -1462,8 +1465,19 @@ namespace AssetProcessor
         {
             //using a bool instead of using #define UNIT_TEST because the user can also run batch processing in unittest
             m_scanFolders.push_back(source);
+
+            // since we're synthesizing folder adds, assign ascending folder ids if not provided.
+            if (source.ScanFolderID() == 0)
+            {
+                m_scanFolders.back().SetScanFolderID(m_scanFolders.size() - 1);
+            }
             return;
         }
+
+        AZ_Assert(
+            source.ScanPath() == AssetUtilities::NormalizeDirectoryPath(source.ScanPath()),
+            "AddScanFolder expects normalized name input but %s was given instead.",
+            source.ScanPath().toUtf8().constData());
 
         // Find and remove any previous matching entry, last entry wins
         auto it = std::find_if(m_scanFolders.begin(), m_scanFolders.end(), [&source](const ScanFolderInfo& info)
@@ -1573,6 +1587,9 @@ namespace AssetProcessor
         return QString();
     }
 
+    // This function is one of the most frequently called ones in the entire application
+    // and is invoked several times per file.  It can frequently become a bottleneck, so
+    // avoid doing expensive operations here, especially memory or IO operations.
     QString PlatformConfiguration::FindFirstMatchingFile(QString relativeName, bool skipIntermediateScanFolder) const
     {
         if (relativeName.isEmpty())
@@ -1582,29 +1599,42 @@ namespace AssetProcessor
 
         auto* fileStateInterface = AZ::Interface<AssetProcessor::IFileStateRequests>::Get();
 
-        QDir cacheRoot;
-        AssetUtilities::ComputeProjectCacheRoot(cacheRoot);
-
+        // Only compute the intermediate assets folder path if we are going to search for and skip it.
+       
+        if (skipIntermediateScanFolder)
+        {
+            if (m_intermediateAssetScanFolderId == -1)
+            {
+                CacheIntermediateAssetsScanFolderId();
+            }
+        }
+        
+        QString absolutePath; // avoid allocating memory repeatedly here by reusing absolutePath each scan folder.
+        absolutePath.reserve(AZ_MAX_PATH_LEN);
+        
         for (int pathIdx = 0; pathIdx < m_scanFolders.size(); ++pathIdx)
         {
-            AssetProcessor::ScanFolderInfo scanFolderInfo = m_scanFolders[pathIdx];
+            const AssetProcessor::ScanFolderInfo& scanFolderInfo = m_scanFolders[pathIdx];
 
-            if (skipIntermediateScanFolder && AssetUtilities::GetIntermediateAssetsFolder(cacheRoot.absolutePath().toUtf8().constData()) == AZ::IO::PathView(scanFolderInfo.ScanPath().toUtf8().constData()))
+            if ((skipIntermediateScanFolder) && (scanFolderInfo.ScanFolderID() == m_intermediateAssetScanFolderId))
             {
                 // There's only 1 intermediate assets folder, if we've skipped it, theres no point continuing to check every folder afterwards
                 skipIntermediateScanFolder = false;
                 continue;
             }
 
-            QString tempRelativeName(relativeName);
-
-            if ((!scanFolderInfo.RecurseSubFolders()) && (tempRelativeName.contains('/')))
+            if ((!scanFolderInfo.RecurseSubFolders()) && (relativeName.contains('/')))
             {
                 // the name is a deeper relative path, but we don't recurse this scan folder, so it can't win
                 continue;
             }
-            QDir rooted(scanFolderInfo.ScanPath());
-            QString absolutePath = rooted.absoluteFilePath(tempRelativeName);
+            // scanfolders are always absolute paths and already normalized.  We can just concatenate.
+            // Do so with minimal allocation by using resize/append, instead of operator+
+            absolutePath.resize(0);
+            absolutePath.append(scanFolderInfo.ScanPath());
+            absolutePath.append('/');
+            absolutePath.append(relativeName);
+            
             AssetProcessor::FileStateInfo fileStateInfo;
 
             if (fileStateInterface)
@@ -1763,10 +1793,9 @@ namespace AssetProcessor
     //! Given a scan folder path, get its complete info
     const AssetProcessor::ScanFolderInfo* PlatformConfiguration::GetScanFolderByPath(const QString& scanFolderPath) const
     {
-        AZ::IO::Path scanFolderPathView(scanFolderPath.toUtf8().constData());
         for (int pathIdx = 0; pathIdx < m_scanFolders.size(); ++pathIdx)
         {
-            if (AZ::IO::PathView(m_scanFolders[pathIdx].ScanPath().toUtf8().constData()) == scanFolderPathView)
+            if (m_scanFolders[pathIdx].ScanPath() == scanFolderPath)
             {
                 return &m_scanFolders[pathIdx];
             }
@@ -1800,6 +1829,8 @@ namespace AssetProcessor
 
         AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms;
         PopulatePlatformsForScanFolder(platforms);
+
+        scanfolderPath = AssetUtilities::NormalizeDirectoryPath(QString::fromUtf8(scanfolderPath.c_str())).toUtf8().constData();
 
         // By default the project scanfolder is recursive with an order of 0
         // The intermediate assets folder needs to be higher priority since its a subfolder (otherwise GetScanFolderForFile won't pick the right scanfolder)
@@ -1935,12 +1966,20 @@ namespace AssetProcessor
         QString relPath, scanFolderName;
         if (ConvertToRelativePath(fileName, relPath, scanFolderName))
         {
-            for (const ExcludeAssetRecognizer& excludeRecognizer : m_excludeAssetRecognizers)
+            return IsFileExcludedRelPath(relPath);
+        }
+
+        return false;
+    }
+
+    bool AssetProcessor::PlatformConfiguration::IsFileExcludedRelPath(QString relPath) const
+    {
+        AZ::IO::FixedMaxPathString encoded = relPath.toUtf8().constData();
+        for (const ExcludeAssetRecognizer& excludeRecognizer : m_excludeAssetRecognizers)
+        {
+            if (excludeRecognizer.m_patternMatcher.MatchesPath(encoded.c_str()))
             {
-                if (excludeRecognizer.m_patternMatcher.MatchesPath(relPath.toUtf8().constData()))
-                {
-                    return true;
-                }
+                return true;
             }
         }
 
