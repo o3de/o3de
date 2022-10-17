@@ -152,6 +152,8 @@ namespace AZ::DocumentPropertyEditor
         //! This can also be set at runtime with the `ed_debugDocumentPropertyEditorUpdates` CVar.
         static void SetDebugModeEnabled(bool enableDebugMode);
 
+        bool IsEmpty();
+
     protected:
         //! Generates the contents of this adapter. This must be an Adapter DOM node.
         //! These contents will be cached - to notify clients of changes to the structure,
