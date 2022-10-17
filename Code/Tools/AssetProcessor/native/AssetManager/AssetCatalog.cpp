@@ -1007,7 +1007,14 @@ namespace AssetProcessor
 
         if (!AzFramework::StringFunc::Path::IsRelative(sourcePath))
         {
-            sourceAsset = SourceAssetReference(sourcePath);
+            QString scanFolder;
+            QString relPath;
+
+            // Call ConvertToRelativePath first to verify the sourcePath exists in a scanfolder
+            if (m_platformConfig->ConvertToRelativePath(sourcePath, relPath, scanFolder))
+            {
+                sourceAsset = SourceAssetReference(scanFolder, relPath);
+            }
         }
         else
         {

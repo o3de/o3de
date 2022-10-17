@@ -997,6 +997,17 @@ namespace AssetProcessor
         EXPECT_TRUE(GetSourceInfoBySourcePath(false, "", AZ::Uuid::CreateNull(), "", ""));
     }
 
+    TEST_F(AssetCatalogTest_AssetInfo, Sanity_InvalidPath)
+    {
+        auto* ebus = AzToolsFramework::AssetSystemRequestBus::FindFirstHandler();
+
+        AZ::Data::AssetInfo assetInfo;
+        AZStd::string watchFolder;
+
+        EXPECT_FALSE(ebus->GetSourceInfoBySourcePath("G:/random/folder/does/not/exist.png", assetInfo, watchFolder)); // Absolute path
+        EXPECT_FALSE(ebus->GetSourceInfoBySourcePath("random/folder/does/not/exist.png", assetInfo, watchFolder)); // Relative path
+    }
+
     TEST_F(AssetCatalogTest_AssetInfo, FindAssetNotRegisteredAsSource_FindsProduct)
     {
         // Setup: Add asset to database
