@@ -54,3 +54,7 @@ if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
     set_property(GLOBAL APPEND PROPERTY LY_LAUNCHER_SERVER_PROJECTS AutomatedTesting)
 endif()
 
+# Add project to the list server projects to create the AutomatedTesting.UnifiedLauncher
+if(PAL_TRAIT_BUILD_UNIFIED_SUPPORTED)
+    set_property(GLOBAL APPEND PROPERTY LY_LAUNCHER_UNIFIED_PROJECTS AutomatedTesting)
+endif()

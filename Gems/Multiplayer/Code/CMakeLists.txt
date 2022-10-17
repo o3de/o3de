@@ -202,6 +202,7 @@ ly_add_target(
 # The "Multiplayer" target is used by clients and servers, Debug is used only on clients.
 ly_create_alias(NAME Multiplayer.Clients NAMESPACE Gem TARGETS Gem::Multiplayer.Client Gem::Multiplayer.Debug)
 ly_create_alias(NAME Multiplayer.Servers NAMESPACE Gem TARGETS Gem::Multiplayer.Server)
+ly_create_alias(NAME Multiplayer.Unified NAMESPACE Gem TARGETS Gem::Multiplayer Gem::Multiplayer.Debug)
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
