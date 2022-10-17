@@ -38,7 +38,11 @@ namespace AZ
         static void Reflect(ReflectContext* context);
 
         //! Default constructor does not initialize the matrix.
-        Transform() = default;
+        AZ_DEPRECATED(Transform() = default, "The Transform Default Constructor has been deprecated. Please use Transform::CreateUnitialized() instead.");
+
+        //! Returns a transform with uninitialized data members.
+        //! Many of the member functions are not safe to call until the data members have been initialized.
+        static Transform CreateUninitialized();
 
         Transform(AZ::Math::default_initialize_t)
             : m_rotation(AZ::Math::default_initialize)

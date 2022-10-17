@@ -23,7 +23,11 @@ namespace AZ
         static void Reflect(ReflectContext* context);
 
         //! Default constructor, components are uninitialized.
-        Quaternion() = default;
+        AZ_DEPRECATED(Quaternion() = default, "The Quaternion Default Constructor has been deprecated. Please use Quaternion::CreateUnitialized() instead.");
+
+        //! Returns a quaternion with uninitialized data members.
+        //! Many of the member functions are not safe to call until the data members have been initialized.
+        static Quaternion CreateUninitialized();
 
         // curly braces {} - zero initializes the Simd member
         AZ::Quaternion()
