@@ -692,7 +692,8 @@ namespace AssetProcessor
 
                 //notify the GUI to remove the failed job that is currently onscreen:
                 AzToolsFramework::AssetSystem::JobInfo jobInfo;
-                jobInfo.m_sourceFile = jobEntry.m_sourceAssetReference.RelativePath().c_str();
+                jobInfo.m_watchFolder = jobEntry.m_sourceAssetReference.ScanfolderPath().Native();
+                jobInfo.m_sourceFile = jobEntry.m_sourceAssetReference.RelativePath().Native();
                 jobInfo.m_platform = jobEntry.m_platformInfo.m_identifier;
                 jobInfo.m_jobKey = jobEntry.m_jobKey.toUtf8().constData();
                 Q_EMIT JobRemoved(jobInfo);
@@ -1939,7 +1940,8 @@ namespace AssetProcessor
                 }
 
                 AzToolsFramework::AssetSystem::JobInfo jobInfo;
-                jobInfo.m_sourceFile = sourceAsset.RelativePath().c_str();
+                jobInfo.m_watchFolder = sourceAsset.ScanfolderPath().Native();
+                jobInfo.m_sourceFile = sourceAsset.RelativePath().Native();
 
                 AzToolsFramework::AssetDatabase::JobDatabaseEntryContainer jobs;
                 if (m_stateData->GetJobsBySourceID(source.m_sourceID, jobs))
