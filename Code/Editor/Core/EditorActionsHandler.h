@@ -81,6 +81,7 @@ private:
     void OnDrawHelpersChanged(bool enabled) override;
     void OnGridSnappingChanged(bool enabled) override;
     void OnIconsVisibilityChanged(bool enabled) override;
+    void OnOnlyShowHelpersForSelectedEntitiesChanged(bool enabled) override;
 
     // Layouts
     void RefreshLayoutActions();

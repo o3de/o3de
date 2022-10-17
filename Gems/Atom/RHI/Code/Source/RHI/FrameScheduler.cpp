@@ -29,6 +29,7 @@
 #include <AzCore/Jobs/JobCompletion.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Task/TaskGraph.h>
+#include <AzCore/std/time.h>
 
 namespace AZ
 {

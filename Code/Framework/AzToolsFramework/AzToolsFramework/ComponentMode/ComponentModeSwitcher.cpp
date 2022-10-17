@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Component/TickBus.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeSwitcher.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
@@ -77,10 +78,7 @@ namespace AzToolsFramework::ComponentModeFramework
         auto handlerFunc = [this](ViewportUi::ButtonId buttonId)
         {
             ViewportUi::ViewportUiRequestBus::Event(
-                ViewportUi::DefaultViewportId,
-                &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton,
-                m_switcherId,
-                buttonId);
+                ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton, m_switcherId, buttonId);
 
             ActivateComponentMode(buttonId);
         };
@@ -419,24 +417,23 @@ namespace AzToolsFramework::ComponentModeFramework
     void ComponentModeSwitcher::AfterUndoRedo()
     {
         // wait one frame for the undo stack to actually be updated
-        QTimer::singleShot(
-            0,
-            nullptr,
+        AZ::TickBus::QueueFunction(
             [this]()
             {
-                auto* toolsApplicationRequests = AzToolsFramework::ToolsApplicationRequestBus::FindFirstHandler();
-                const auto& selectedEntityIds = toolsApplicationRequests->GetSelectedEntities();
-
-                if (selectedEntityIds.size() == 1)
+                if (auto* toolsApplicationRequests = AzToolsFramework::ToolsApplicationRequestBus::FindFirstHandler())
                 {
-                    bool inComponentMode;
-                    AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::BroadcastResult(
-                        inComponentMode, &ComponentModeSystemRequests::InComponentMode);
-
-                    if (!inComponentMode)
+                    const auto& selectedEntityIds = toolsApplicationRequests->GetSelectedEntities();
+                    if (selectedEntityIds.size() == 1)
                     {
-                        ClearSwitcher();
-                        UpdateSwitcherOnEntitySelectionChange(selectedEntityIds, {});
+                        bool inComponentMode = false;
+                        AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::BroadcastResult(
+                            inComponentMode, &ComponentModeSystemRequests::InComponentMode);
+
+                        if (!inComponentMode)
+                        {
+                            ClearSwitcher();
+                            UpdateSwitcherOnEntitySelectionChange(selectedEntityIds, {});
+                        }
                     }
                 }
             });

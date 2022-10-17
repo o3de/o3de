@@ -169,8 +169,9 @@ namespace AzToolsFramework
             else
             {
                 m_adapter = AZStd::make_shared<AZ::DocumentPropertyEditor::ReflectionAdapter>();
-                m_dpe = new DocumentPropertyEditor(this);
-                propertyEditor = m_dpe;
+                m_filteredWidget = new FilteredDPE(this);
+                m_dpe = m_filteredWidget->GetDPE();
+                propertyEditor = m_filteredWidget;
                 m_propertyChangeHandler = AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeEvent::Handler(
                     [this](const AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeInfo& changeInfo)
                     {
@@ -647,7 +648,7 @@ namespace AzToolsFramework
                 }
                 else
                 {
-                    m_dpe->setEnabled(false);
+                    m_filteredWidget->setEnabled(false);
                 }
             }
         }

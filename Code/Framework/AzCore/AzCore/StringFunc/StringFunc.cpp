@@ -2299,10 +2299,9 @@ namespace AZ::StringFunc
 
         void ReplaceExtension(AZStd::string& inout, const char* newExtension /* = nullptr*/)
         {
-            //treat this as a strip
-            if (!newExtension || newExtension[0] == '\0')
+            if (!newExtension)
             {
-                return;
+                newExtension = "";
             }
             AZ::IO::Path path(AZStd::move(inout));
             path.ReplaceExtension(newExtension);

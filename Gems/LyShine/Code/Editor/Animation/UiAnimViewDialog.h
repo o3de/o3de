@@ -82,6 +82,8 @@ public:
 
     const CUiAnimViewDopeSheetBase& GetUiAnimViewDopeSheet() const { return *m_wndDopeSheet; }
 
+    void EditorAboutToClose();
+
 public slots:
     void OnPlay();
 
@@ -136,11 +138,22 @@ protected slots:
 
 protected:
     void keyPressEvent(QKeyEvent* event) override;
+    void closeEvent(QCloseEvent* event) override;
+    void showEvent(QShowEvent* event) override;
 
 private slots:
     void ReadLayouts();
 
 private:
+
+    enum class ViewMode
+    {
+        TrackView = 1,
+        CurveEditor = 2,
+        Both = 3
+    };
+
+    void SetViewMode(ViewMode);
     void UpdateActions();
     void ReloadSequencesComboBox();
 
@@ -187,6 +200,7 @@ private:
     CUiAnimViewDopeSheetBase*   m_wndDopeSheet;
     QDockWidget* m_wndCurveEditorDock;
     UiAnimViewCurveEditorDialog*    m_wndCurveEditor;
+    QDockWidget* m_wndKeyPropertiesDock = nullptr; 
     CUiAnimViewKeyPropertiesDlg* m_wndKeyProperties;
     CUiAnimViewFindDlg* m_findDlg;
     QToolBar* m_mainToolBar;
@@ -220,4 +234,5 @@ private:
     std::vector<CUiAnimParamType> m_toolBarParamTypes;
 
     QHash<int, QAction*> m_actions;
+    ViewMode m_lastMode = ViewMode::TrackView;
 };

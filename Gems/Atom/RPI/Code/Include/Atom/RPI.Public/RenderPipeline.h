@@ -94,7 +94,7 @@ namespace AZ
             static RenderPipelinePtr CreateRenderPipelineFromAsset(Data::Asset<AnyAsset> pipelineAsset);
 
             static RenderPipelinePtr CreateRenderPipelineForWindow(const RenderPipelineDescriptor& desc, const WindowContext& windowContext,
-                                                                   const WindowContext::SwapChainMode swapchainMode = WindowContext::SwapChainMode::Default);
+                                                                   const ViewType viewType = ViewType::Default);
             static RenderPipelinePtr CreateRenderPipelineForWindow(Data::Asset<AnyAsset> pipelineAsset, const WindowContext& windowContext);
 
             // Data type for render pipeline's views' information
@@ -226,6 +226,9 @@ namespace AZ
             //! use RPI::PassSystemInterface::Get()->ForEachPass() function instead.
             Ptr<Pass> FindFirstPass(const AZ::Name& passName);
 
+            //! Return the view type associated with this pipeline.
+            ViewType GetViewType() const;
+
         private:
             RenderPipeline() = default;
 
@@ -325,6 +328,9 @@ namespace AZ
 
             // The descriptor used to created this render pipeline
             RenderPipelineDescriptor m_descriptor;
+
+            // View type associated with the Render Pipeline.
+            ViewType m_viewType = ViewType::Default;
         };
 
     } // namespace RPI

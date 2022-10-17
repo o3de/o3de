@@ -148,8 +148,6 @@ set(FILES
     Source/MotionEvents/MotionEventPresetsWidget.h
     Source/MotionEvents/MotionEventWidget.cpp
     Source/MotionEvents/MotionEventWidget.h
-    Source/MotionEvents/MotionEventsPlugin.cpp
-    Source/MotionEvents/MotionEventsPlugin.h
     Source/MotionSetsWindow/MotionSetManagementWindow.cpp
     Source/MotionSetsWindow/MotionSetManagementWindow.h
     Source/MotionSetsWindow/MotionSetsWindowPlugin.cpp
@@ -176,8 +174,6 @@ set(FILES
     Source/NodeWindow/NodeInfo.h
     Source/NodeWindow/NodeGroupInfo.cpp
     Source/NodeWindow/NodeGroupInfo.h
-    Source/NodeWindow/NodeWindowPlugin.cpp
-    Source/NodeWindow/NodeWindowPlugin.h
     Source/NodeWindow/SubMeshInfo.cpp
     Source/NodeWindow/SubMeshInfo.h
     Source/SceneManager/ActorPropertiesWindow.cpp

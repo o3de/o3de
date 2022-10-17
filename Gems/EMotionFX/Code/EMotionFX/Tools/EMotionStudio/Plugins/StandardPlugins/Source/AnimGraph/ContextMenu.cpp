@@ -56,7 +56,8 @@ namespace EMStudio
             const EMotionFX::AnimGraphNode* nodePrototype = static_cast<const EMotionFX::AnimGraphNode*>(objectPrototype);
 
             const QString typeString = azrtti_typeid(nodePrototype).ToString<QString>();
-            auto* node = categoryNode->CreateChildNode<BlendGraphNodePaletteTreeItem>(nodePrototype->GetPaletteName(), typeString, AnimGraphEditorId);
+            auto* node = categoryNode->CreateChildNode<BlendGraphNodePaletteTreeItem>(
+                nodePrototype->GetPaletteName(), typeString, AnimGraphEditorId, nodePrototype->GetVisualColor());
             node->SetEnabled(active);
         }
         categoryNode->SetEnabled(categoryEnabled);

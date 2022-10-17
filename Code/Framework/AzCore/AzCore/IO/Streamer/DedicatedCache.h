@@ -64,7 +64,7 @@ namespace AZ::IO
         void UpdateStatus(Status& status) const override;
 
         void UpdateCompletionEstimates(
-            AZStd::chrono::system_clock::time_point now,
+            AZStd::chrono::steady_clock::time_point now,
             AZStd::vector<FileRequest*>& internalPending,
             StreamerContext::PreparedQueue::iterator pendingBegin,
             StreamerContext::PreparedQueue::iterator pendingEnd) override;

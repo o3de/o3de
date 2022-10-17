@@ -271,6 +271,7 @@ namespace AZ
                 AZ::RHI::ResultCode result = xrSystem->CreateDevice(&xrDevicDescriptor);
                 AZ_Assert(result == RHI::ResultCode::Success, "Xr Vk device creation was not successful");
                 m_nativeDevice = xrDevicDescriptor.m_outputData.m_xrVkDevice;
+                m_context = xrDevicDescriptor.m_outputData.m_context;
                 RETURN_RESULT_IF_UNSUCCESSFUL(result);
                 m_isXrNativeDevice = true;
             }
@@ -280,18 +281,18 @@ namespace AZ
                     instance.GetContext().CreateDevice(physicalDevice.GetNativePhysicalDevice(), &deviceInfo, nullptr, &m_nativeDevice);
                 AssertSuccess(vkResult);
                 RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(vkResult));
+
+                if (!instance.GetFunctionLoader().LoadProcAddresses(
+                        &m_context, instance.GetNativeInstance(), physicalDevice.GetNativePhysicalDevice(), m_nativeDevice))
+                {
+                    AZ_Warning("Vulkan", false, "Could not initialize function loader.");
+                    return RHI::ResultCode::Fail;
+                }
             }
 
             for (const VkDeviceQueueCreateInfo& queueInfo : queueCreationInfo)
             {
                 delete[] queueInfo.pQueuePriorities;
-            }
-
-            if (!instance.GetFunctionLoader().LoadProcAddresses(
-                    &m_context, instance.GetNativeInstance(), physicalDevice.GetNativePhysicalDevice(), m_nativeDevice))
-            {
-                AZ_Warning("Vulkan", false, "Could not initialized function loader.");
-                return RHI::ResultCode::Fail;
             }
 
             //Load device features now that we have loaded all extension info
@@ -645,6 +646,8 @@ namespace AZ
 
                 presentationQueue.QueueCommand(AZStd::move(presentCommand));
                 presentationQueue.FlushCommands();
+
+                xrSystem->PostFrame();
             }
 
             m_commandQueueContext.End();
@@ -764,7 +767,7 @@ namespace AZ
         {
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(GetPhysicalDevice());
             auto timeInNano = AZStd::chrono::nanoseconds(static_cast<AZStd::chrono::nanoseconds::rep>(physicalDevice.GetDeviceLimits().timestampPeriod * gpuTimestamp));
-            return AZStd::chrono::microseconds(timeInNano);
+            return AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(timeInNano);
         }
 
         RHI::ResourceMemoryRequirements Device::GetResourceMemoryRequirements(const RHI::ImageDescriptor& descriptor)
@@ -844,6 +847,8 @@ namespace AZ
             m_limits.m_maxImageArraySize = deviceLimits.maxImageArrayLayers;
             m_limits.m_minConstantBufferViewOffset = static_cast<uint32_t>(deviceLimits.minUniformBufferOffsetAlignment);
             m_limits.m_maxIndirectDrawCount = deviceLimits.maxDrawIndirectCount;
+            m_limits.m_maxConstantBufferSize = deviceLimits.maxUniformBufferRange;
+            m_limits.m_maxBufferSize = deviceLimits.maxStorageBufferRange;
         }
 
         void Device::BuildDeviceQueueInfo(const PhysicalDevice& physicalDevice)

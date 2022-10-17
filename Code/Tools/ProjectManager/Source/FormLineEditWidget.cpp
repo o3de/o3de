@@ -13,6 +13,7 @@
 #include <QHBoxLayout>
 #include <QLineEdit>
 #include <QLabel>
+#include <QMovie>
 #include <QFrame>
 #include <QValidator>
 #include <QStyle>
@@ -30,8 +31,8 @@ namespace O3DE::ProjectManager
     {
         setObjectName("formLineEditWidget");
 
-        QVBoxLayout* mainLayout = new QVBoxLayout();
-        mainLayout->setAlignment(Qt::AlignTop);
+        m_mainLayout = new QVBoxLayout();
+        m_mainLayout->setAlignment(Qt::AlignTop);
         {
             m_frame = new QFrame(this);
             m_frame->setObjectName("formFrame");
@@ -61,20 +62,37 @@ namespace O3DE::ProjectManager
 
                 QWidget* emptyWidget = new QWidget(this);
                 m_frameLayout->addWidget(emptyWidget);
+
+                m_processingSpinnerMovie = new QMovie(":/in_progress.gif");
+                m_processingSpinner = new QLabel(this);
+                m_processingSpinner->setScaledContents(true);
+                m_processingSpinner->setMaximumSize(32, 32);
+                m_processingSpinner->setMovie(m_processingSpinnerMovie);
+                m_frameLayout->addWidget(m_processingSpinner);
+
+                m_validationErrorIcon = new QLabel(this);
+                m_validationErrorIcon->setPixmap(QIcon(":/error.svg").pixmap(32, 32));
+                m_frameLayout->addWidget(m_validationErrorIcon);
+
+                m_validationSuccessIcon = new QLabel(this);
+                m_validationSuccessIcon->setPixmap(QIcon(":/checkmark.svg").pixmap(32, 32));
+                m_frameLayout->addWidget(m_validationSuccessIcon);
+
+                SetValidationState(ValidationState::NotValidating);
             }
 
             m_frame->setLayout(m_frameLayout);
 
-            mainLayout->addWidget(m_frame);
+            m_mainLayout->addWidget(m_frame);
 
             m_errorLabel = new QLabel(this);
             m_errorLabel->setObjectName("formErrorLabel");
             m_errorLabel->setText(errorText);
             m_errorLabel->setVisible(false);
-            mainLayout->addWidget(m_errorLabel);
+            m_mainLayout->addWidget(m_errorLabel);
         }
 
-        setLayout(mainLayout);
+        setLayout(m_mainLayout);
     }
 
     FormLineEditWidget::FormLineEditWidget(const QString& labelText, const QString& valueText, QWidget* parent)
@@ -141,6 +159,38 @@ namespace O3DE::ProjectManager
     void FormLineEditWidget::setText(const QString& text)
     {
         m_lineEdit->setText(text);
+    }
+
+    void FormLineEditWidget::SetValidationState(ValidationState validationState)
+    {
+        switch (validationState)
+        {
+        case ValidationState::Validating:
+            m_processingSpinnerMovie->start();
+            m_processingSpinner->setVisible(true);
+            m_validationErrorIcon->setVisible(false);
+            m_validationSuccessIcon->setVisible(false);
+            break;
+        case ValidationState::ValidationSuccess:
+            m_processingSpinnerMovie->stop();
+            m_processingSpinner->setVisible(false);
+            m_validationErrorIcon->setVisible(false);
+            m_validationSuccessIcon->setVisible(true);
+            break;
+        case ValidationState::ValidationFailed:
+            m_processingSpinnerMovie->stop();
+            m_processingSpinner->setVisible(false);
+            m_validationErrorIcon->setVisible(true);
+            m_validationSuccessIcon->setVisible(false);
+            break;
+        case ValidationState::NotValidating:
+        default:
+            m_processingSpinnerMovie->stop();
+            m_processingSpinner->setVisible(false);
+            m_validationErrorIcon->setVisible(false);
+            m_validationSuccessIcon->setVisible(false);
+            break;
+        }
     }
 
     void FormLineEditWidget::mousePressEvent([[maybe_unused]] QMouseEvent* event)

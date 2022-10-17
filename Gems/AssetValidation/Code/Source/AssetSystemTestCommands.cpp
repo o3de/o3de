@@ -107,7 +107,7 @@ namespace AssetValidation
 
             AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets, nullptr, collectAssetsCb, nullptr);
 
-            auto start = AZStd::chrono::system_clock::now();
+            auto start = AZStd::chrono::steady_clock::now();
 
             AZStd::chrono::milliseconds runMs{ 0 };
 
@@ -126,7 +126,7 @@ namespace AssetValidation
             AZ_TracePrintf("TestChangeAssets", "Beginning run with %zu assets\n", assetList.size());
             while (!forceStop && runMs < runTime)
             {
-                runMs = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::system_clock::now() - start);
+                runMs = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - start);
                 int thisTick = aznumeric_cast<int>(runMs / changeFreq) + 1;
                 if (thisTick > lastTick)
                 {
@@ -150,7 +150,7 @@ namespace AssetValidation
                         if (randomizer.GetRandom() % 100 < changePercent)
                         {
                             ++thisChangeCount;
-                            notificationInterface->AssetChanged(thisElement.second);
+                            notificationInterface->AssetChanged({ thisElement.second });
                         }
                     }
 
@@ -185,7 +185,7 @@ void TestCreateContainers([[maybe_unused]] const AZ::ConsoleCommandContainer& so
 
         AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets, nullptr, collectAssetsCb, nullptr);
 
-        auto start = AZStd::chrono::system_clock::now();
+        auto start = AZStd::chrono::steady_clock::now();
 
         AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>> loadingContainers;
         for (const auto& thisElement : assetList)
@@ -212,7 +212,7 @@ void TestCreateContainers([[maybe_unused]] const AZ::ConsoleCommandContainer& so
                     ++containerIter;
                 }
             }
-            runMS = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::system_clock::now() - start);
+            runMS = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - start);
             if (readyContainers.size() == totalContainers)
             {
                 AZ_TracePrintf("TestCreateContainers", "All assets (%d) ready after %ld ms\n", readyContainers.size(), runMS);
@@ -266,7 +266,7 @@ void TestSingleContainer(const AZ::ConsoleCommandContainer& someStrings)
         {
             AZ_Warning("TestSingleContainer", false, "Couldn't get asset info for %s", assetId.ToString<AZStd::string>().c_str());
         }
-        auto start = AZStd::chrono::system_clock::now();
+        auto start = AZStd::chrono::steady_clock::now();
 
         auto thisContainer = AZ::Data::AssetManager::Instance().GetAsset(assetId, assetInfo.m_assetType, AZ::Data::AssetLoadBehavior::Default);
 
@@ -275,7 +275,7 @@ void TestSingleContainer(const AZ::ConsoleCommandContainer& someStrings)
 
         while(thisContainer->IsLoading() && runMS < maxWait)
         {
-            runMS = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::system_clock::now() - start);
+            runMS = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - start);
             AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(100));
         }
         if (thisContainer->IsReady())

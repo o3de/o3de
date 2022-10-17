@@ -36,16 +36,11 @@ namespace AZ
             AzFramework::WindowNotificationBus::Handler::BusConnect(nativeWindow);
             AzFramework::ViewportRequestBus::Handler::BusConnect(id);
 
-            m_onProjectionMatrixChangedHandler = MatrixChangedEvent::Handler([this](const AZ::Matrix4x4& matrix)
-            {
-                m_projectionMatrixChangedEvent.Signal(matrix);
-            });
+            m_currentPipelines.resize(MaxViewTypes);
+            m_viewChangedEvents.resize(MaxViewTypes);
 
-            m_onViewMatrixChangedHandler = MatrixChangedEvent::Handler([this](const AZ::Matrix4x4& matrix)
-            {
-                m_viewMatrixChangedEvent.Signal(matrix);
-            });
-
+            m_viewGroup = AZStd::make_shared<ViewGroup>();
+            m_viewGroup->Init(ViewGroup::Descriptor{ nullptr, nullptr });
             SetRenderScene(renderScene);
         }
 
@@ -56,11 +51,17 @@ namespace AZ
             AzFramework::WindowNotificationBus::Handler::BusDisconnect();
             AzFramework::ViewportRequestBus::Handler::BusDisconnect();
 
-            if (m_currentPipeline)
+            for (const auto& pipeline : m_currentPipelines)
             {
-                m_currentPipeline->RemoveFromRenderTick();
-                m_currentPipeline->RemoveFromScene();
+                if (pipeline)
+                {
+                    pipeline->RemoveFromRenderTick();
+                    pipeline->RemoveFromScene();
+                }
             }
+            m_currentPipelines.clear();
+            m_viewChangedEvents.clear();
+
             m_manager->UnregisterViewportContext(m_id);
             m_windowContext->Shutdown();
         }
@@ -95,13 +96,17 @@ namespace AZ
                 }
                 else
                 {
-                    // If the scene was empty, we should save the default view from this scene as default view for the context.
-                    auto renderPipeline = scene->FindRenderPipelineForWindow(m_windowContext->GetWindowHandle());
-                    if (renderPipeline)
+                    // If the scene was empty, we should save the default view from this scene as default view for the context.   
+                    for (uint32_t i = 0; i < MaxViewTypes; i++)
                     {
-                        if (AZ::RPI::ViewPtr pipelineView = renderPipeline->GetDefaultView(); pipelineView)
+                        auto renderPipeline =
+                            scene->FindRenderPipelineForWindow(m_windowContext->GetWindowHandle(), static_cast<ViewType>(i));
+                        if (renderPipeline)
                         {
-                            SetDefaultView(pipelineView);
+                            if (AZ::RPI::ViewPtr pipelineView = renderPipeline->GetDefaultView(); pipelineView)
+                            {
+                                m_viewGroup->SetView(pipelineView, static_cast<ViewType>(i));
+                            }
                         }
                     }
                 }
@@ -111,8 +116,12 @@ namespace AZ
                 {
                     SceneNotificationBus::Handler::BusConnect(m_rootScene->GetId());
                 }
-                m_currentPipeline.reset();
-                UpdatePipelineView();
+
+                for (uint32_t i = 0; i < MaxViewTypes; i++)
+                {
+                    m_currentPipelines[i].reset();
+                    UpdatePipelineView(i);
+                }
             }
 
             m_sceneChangedEvent.Signal(scene);
@@ -120,17 +129,28 @@ namespace AZ
 
         void ViewportContext::RenderTick()
         {
-            // add the current pipeline to next render tick if it's not already added.
-            if (m_currentPipeline && m_currentPipeline->GetRenderMode() != RenderPipeline::RenderMode::RenderOnce)
+            for (const auto& pipeline : m_currentPipelines)
             {
-                m_currentPipeline->AddToRenderTickOnce();
+                // add the current pipeline to next render tick if it's not already added.
+                if (pipeline && pipeline->GetRenderMode() != RenderPipeline::RenderMode::RenderOnce)
+                {
+                    pipeline->AddToRenderTickOnce();
+                }
             }
         }
 
         void ViewportContext::OnBeginPrepareRender()
         {
+            AZ_PROFILE_FUNCTION(RPI);
             ViewportContextNotificationBus::Event(GetName(), &ViewportContextNotificationBus::Events::OnRenderTick);
             ViewportContextIdNotificationBus::Event(GetId(), &ViewportContextIdNotificationBus::Events::OnRenderTick);
+        }
+
+        void ViewportContext::OnEndPrepareRender()
+        {
+            AZ_PROFILE_FUNCTION(RPI);
+            ViewportContextNotificationBus::Event(GetName(), &ViewportContextNotificationBus::Events::WaitForRender);
+            ViewportContextIdNotificationBus::Event(GetId(), &ViewportContextIdNotificationBus::Events::WaitForRender);
         }
 
         AZ::Name ViewportContext::GetName() const
@@ -140,12 +160,12 @@ namespace AZ
 
         ViewPtr ViewportContext::GetDefaultView()
         {
-            return m_defaultView;
+            return m_viewGroup->GetView();
         }
 
         ConstViewPtr ViewportContext::GetDefaultView() const
         {
-            return m_defaultView;
+            return m_viewGroup->GetView();
         }
 
         AzFramework::WindowSize ViewportContext::GetViewportSize() const
@@ -168,14 +188,14 @@ namespace AZ
             handler.Connect(m_dpiScalingFactorChangedEvent);
         }
 
-        void ViewportContext::ConnectViewMatrixChangedHandler(MatrixChangedEvent::Handler& handler)
+        void ViewportContext::ConnectViewMatrixChangedHandler(MatrixChangedEvent::Handler& handler, ViewType viewType)
         {
-            handler.Connect(m_viewMatrixChangedEvent);
+            m_viewGroup->ConnectViewMatrixChangedEvent(handler, viewType);
         }
 
-        void ViewportContext::ConnectProjectionMatrixChangedHandler(MatrixChangedEvent::Handler& handler)
+        void ViewportContext::ConnectProjectionMatrixChangedHandler(MatrixChangedEvent::Handler& handler, ViewType viewType)
         {
-            handler.Connect(m_projectionMatrixChangedEvent);
+            m_viewGroup->ConnectProjectionMatrixChangedEvent(handler, viewType);
         }
 
         void ViewportContext::ConnectSceneChangedHandler(SceneChangedEvent::Handler& handler)
@@ -190,7 +210,7 @@ namespace AZ
 
         void ViewportContext::ConnectDefaultViewChangedHandler(ViewChangedEvent::Handler& handler)
         {
-            handler.Connect(m_defaultViewChangedEvent);
+            handler.Connect(m_viewChangedEvents[DefaultViewType]);
         }
 
         void ViewportContext::ConnectAboutToBeDestroyedHandler(ViewportIdEvent::Handler& handler)
@@ -211,7 +231,7 @@ namespace AZ
         void ViewportContext::SetCameraViewMatrix(const AZ::Matrix4x4& matrix)
         {
             GetDefaultView()->SetWorldToViewMatrix(matrix);
-            m_viewMatrixChangedEvent.Signal(matrix);
+            m_viewGroup->SignalViewMatrixChangedEvent(matrix);
         }
 
         const AZ::Matrix4x4& ViewportContext::GetCameraProjectionMatrix() const
@@ -233,50 +253,60 @@ namespace AZ
         {
             const auto view = GetDefaultView();
             view->SetCameraTransform(AZ::Matrix3x4::CreateFromTransform(transform.GetOrthogonalized()));
-            m_viewMatrixChangedEvent.Signal(view->GetWorldToViewMatrix());
+            m_viewGroup->SignalViewMatrixChangedEvent(view->GetWorldToViewMatrix());
         }
 
-        void ViewportContext::SetDefaultView(ViewPtr view)
+        void ViewportContext::UpdateContextPipelineView(uint32_t viewIndex)
         {
-            if (m_defaultView != view)
+            ViewType viewType = static_cast<ViewType>(viewIndex);
+            if (auto view = m_viewGroup->GetView(viewType))
             {
-                m_onProjectionMatrixChangedHandler.Disconnect();
-                m_onViewMatrixChangedHandler.Disconnect();
+                m_viewGroup->DisconnectProjectionMatrixHandler(viewType);
+                m_viewGroup->DisconnectViewMatrixHandler(viewType);
 
-                m_defaultView = view;
-                UpdatePipelineView();
+                UpdatePipelineView(viewIndex);
 
-                m_defaultViewChangedEvent.Signal(view);
-                m_viewMatrixChangedEvent.Signal(view->GetWorldToViewMatrix());
-                m_projectionMatrixChangedEvent.Signal(view->GetViewToClipMatrix());
+                m_viewChangedEvents[viewIndex].Signal(view);
+                m_viewGroup->SignalViewMatrixChangedEvent(view->GetWorldToViewMatrix());
+                m_viewGroup->SignalProjectionMatrixChangedEvent(view->GetViewToClipMatrix());
 
-                view->ConnectWorldToViewMatrixChangedHandler(m_onViewMatrixChangedHandler);
-                view->ConnectWorldToClipMatrixChangedHandler(m_onProjectionMatrixChangedHandler);
+                m_viewGroup->ConnectViewMatrixChangedHandler(viewType);
+                m_viewGroup->ConnectProjectionMatrixChangedHandler(viewType);
             }
         }
 
-        void ViewportContext::UpdatePipelineView()
+        void ViewportContext::SetDefaultViewGroup(ViewGroupPtr viewGroup)
         {
-            if (!m_defaultView || !m_rootScene)
+            m_viewGroup = viewGroup;
+            for (uint32_t i = 0; i < MaxViewTypes; i++)
+            {
+                UpdateContextPipelineView(i);
+            }
+        }
+
+        void ViewportContext::UpdatePipelineView(uint32_t viewIndex)
+        {
+            ViewPtr pipelineView = m_viewGroup->GetView(static_cast<ViewType>(viewIndex));
+            if (!pipelineView || !m_rootScene)
             {
                 return;
             }
 
-            if (!m_currentPipeline)
+            if (!m_currentPipelines[viewIndex])
             {
-                m_currentPipeline = m_rootScene ? m_rootScene->FindRenderPipelineForWindow(m_windowContext->GetWindowHandle()) : nullptr;
-                m_currentPipelineChangedEvent.Signal(m_currentPipeline);
+                m_currentPipelines[viewIndex] = m_rootScene ? m_rootScene->FindRenderPipelineForWindow(m_windowContext->GetWindowHandle(), static_cast<ViewType>(viewIndex)) : nullptr;
+                m_currentPipelineChangedEvent.Signal(m_currentPipelines[viewIndex]);
             }
-
-            if (auto pipeline = GetCurrentPipeline())
+                
+            if (m_currentPipelines[viewIndex])
             {
-                pipeline->SetDefaultView(m_defaultView);
+                m_currentPipelines[viewIndex]->SetDefaultView(pipelineView);
             }
         }
 
         RenderPipelinePtr ViewportContext::GetCurrentPipeline()
         {
-            return m_currentPipeline;
+            return m_currentPipelines[DefaultViewType];
         }
 
         void ViewportContext::OnRenderPipelineAdded([[maybe_unused]]RenderPipelinePtr pipeline)
@@ -286,17 +316,19 @@ namespace AZ
             // in the event prioritization is added later
             if (pipeline->GetWindowHandle() == m_windowContext->GetWindowHandle())
             {
-                m_currentPipeline.reset();
-                UpdatePipelineView();
+                uint32_t viewIndex = static_cast<uint32_t>(pipeline->GetViewType());
+                m_currentPipelines[viewIndex].reset();
+                UpdatePipelineView(viewIndex);
             }
         }
 
-        void ViewportContext::OnRenderPipelineRemoved([[maybe_unused]]RenderPipeline* pipeline)
+        void ViewportContext::OnRenderPipelineRemoved(RenderPipeline* pipeline)
         {
-            if (m_currentPipeline.get() == pipeline)
+            uint32_t viewIndex = static_cast<uint32_t>(pipeline->GetViewType());
+            if (m_currentPipelines[viewIndex].get() == pipeline)
             {
-                m_currentPipeline.reset();
-                UpdatePipelineView();
+                m_currentPipelines[viewIndex].reset();
+                UpdatePipelineView(viewIndex);
             }
         }
 

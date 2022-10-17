@@ -132,6 +132,7 @@ namespace AZ
             virtual void SetUseDiffuseIbl(const DiffuseProbeGridHandle& probeGrid, bool useDiffuseIbl) = 0;
             virtual void SetMode(const DiffuseProbeGridHandle& probeGrid, DiffuseProbeGridMode mode) = 0;
             virtual void SetScrolling(const DiffuseProbeGridHandle& probeGrid, bool scrolling) = 0;
+            virtual void SetEdgeBlendIbl(const DiffuseProbeGridHandle& probeGrid, bool edgeBlendIbl) = 0;
             virtual void SetFrameUpdateCount(const DiffuseProbeGridHandle& probeGrid, uint32_t frameUpdateCount) = 0;
             virtual void SetTransparencyMode(const DiffuseProbeGridHandle& probeGrid, DiffuseProbeGridTransparencyMode transparencyMode) = 0;
             virtual void SetBakedTextures(const DiffuseProbeGridHandle& probeGrid, const DiffuseProbeGridBakedTextures& bakedTextures) = 0;

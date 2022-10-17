@@ -48,6 +48,8 @@ namespace O3DE::ProjectManager
 
         m_repoPath = new FormLineEditWidget(tr("Remote URL"), "", this);
         m_repoPath->setMinimumSize(QSize(600, 0));
+        m_repoPath->setErrorLabelText(tr("Not a valid remote template source."));
+        m_repoPath->lineEdit()->setPlaceholderText("https://github.com/o3de/example.git");
         vLayout->addWidget(m_repoPath);
 
         vLayout->addSpacing(10);
@@ -84,6 +86,7 @@ namespace O3DE::ProjectManager
             {
                 // wait for a second before attempting to validate so we're less likely to do it per keypress
                 m_inputTimer->start(1000);
+                m_repoPath->SetValidationState(FormLineEditWidget::ValidationState::Validating);
                 
             });
 
@@ -93,7 +96,12 @@ namespace O3DE::ProjectManager
     void AddRemoteTemplateDialog::ValidateURI()
     {
         // validate URI, if it's a valid repository set the add button as active
-        SetDialogReady(PythonBindingsInterface::Get()->ValidateRepository(m_repoPath->lineEdit()->text()));
+        bool validRepository = PythonBindingsInterface::Get()->ValidateRepository(m_repoPath->lineEdit()->text());
+        SetDialogReady(validRepository);
+        m_repoPath->SetValidationState(
+            validRepository ? FormLineEditWidget::ValidationState::ValidationSuccess
+                            : FormLineEditWidget::ValidationState::ValidationFailed);
+        m_repoPath->setErrorLabelVisible(!validRepository);
     }
 
     void AddRemoteTemplateDialog::AddTemplateSource()

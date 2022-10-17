@@ -111,7 +111,7 @@ namespace Multiplayer
         //! @{
         MultiplayerAgentType GetAgentType() const override;
         void InitializeMultiplayer(MultiplayerAgentType state) override;
-        bool StartHosting(uint16_t port, bool isDedicated = true) override;
+        bool StartHosting(uint16_t port = UseDefaultHostPort, bool isDedicated = true) override;
         bool Connect(const AZStd::string& remoteAddress, uint16_t port) override;
         void Terminate(AzNetworking::DisconnectReason reason) override;
         void AddClientMigrationStartEventHandler(ClientMigrationStartEvent::Handler& handler) override;
@@ -123,6 +123,7 @@ namespace Multiplayer
         void AddSessionInitHandler(SessionInitEvent::Handler& handler) override;
         void AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler) override;
         void AddLevelLoadBlockedHandler(LevelLoadBlockedEvent::Handler& handler) override;
+        void AddNoServerLevelLoadedHandler(NoServerLevelLoadedEvent::Handler& handler) override;
         void AddServerAcceptanceReceivedHandler(ServerAcceptanceReceivedEvent::Handler& handler) override;
         void SendNotifyClientMigrationEvent(AzNetworking::ConnectionId connectionId, const HostId& hostId, uint64_t userIdentifier, ClientInputId lastClientInputId, NetEntityId controlledEntityId) override;
         void SendNotifyEntityMigrationEvent(const ConstNetworkEntityHandle& entityHandle, const HostId& remoteHostId) override;
@@ -183,6 +184,8 @@ namespace Multiplayer
         NotifyClientMigrationEvent m_notifyClientMigrationEvent;
         NotifyEntityMigrationEvent m_notifyEntityMigrationEvent;
         LevelLoadBlockedEvent m_levelLoadBlockedEvent;
+        NoServerLevelLoadedEvent m_noServerLevelLoadedEvent;
+
         AZ::Event<NetEntityId>::Handler m_autonomousEntityReplicatorCreatedHandler;
 
         AZStd::queue<AZStd::string> m_pendingConnectionTickets;

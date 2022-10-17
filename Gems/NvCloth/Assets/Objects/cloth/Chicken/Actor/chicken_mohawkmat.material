@@ -1,29 +1,21 @@
 {
-    "description": "",
-    "parentMaterial": "",
-    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
     "materialTypeVersion": 5,
-    "properties": {
-        "baseColor": {
-            "color": [
-                0.1725490242242813,
-                0.0,
-                0.0,
-                1.0
-            ]
-        },
-        "emissive": {
-            "color": [
-                0.7454043626785278,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "intensity": 6.742737293243408,
-            "textureMap": "Objects/cloth/Chicken/Actor/chicken_diff.png"
-        },
-        "general": {
-            "doubleSided": true
-        }
+    "propertyValues": {
+        "baseColor.color": [
+            0.1725490242242813,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "emissive.color": [
+            0.7454043626785278,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "emissive.intensity": 6.742737293243408,
+        "emissive.textureMap": "chicken_diff.png",
+        "general.doubleSided": true
     }
 }

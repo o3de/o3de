@@ -8,10 +8,15 @@
         "title": "Experimental PBR",
         "settings": {
             "templatePaths": [
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/MaterialTemplates/ExperimentalPBR/MaterialGraphName_ForwardPass.azsl.template",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/MaterialTemplates/ExperimentalPBR/MaterialGraphName_ForwardPass.shader.template",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/MaterialTemplates/ExperimentalPBR/MaterialGraphName.materialtype.template",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/MaterialTemplates/ExperimentalPBR/MaterialGraphName.material.template"
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/MaterialTemplates/ExperimentalPBR/MaterialGraphName_Common.azsli",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/MaterialTemplates/ExperimentalPBR/MaterialGraphName_DepthPass.azsl",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/MaterialTemplates/ExperimentalPBR/MaterialGraphName_DepthPass.shader",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/MaterialTemplates/ExperimentalPBR/MaterialGraphName_ForwardPass.azsl",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/MaterialTemplates/ExperimentalPBR/MaterialGraphName_ForwardPass.shader",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/MaterialTemplates/ExperimentalPBR/MaterialGraphName_ShadowPass.azsl",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/MaterialTemplates/ExperimentalPBR/MaterialGraphName_ShadowPass.shader",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/MaterialTemplates/ExperimentalPBR/MaterialGraphName.materialtype",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/MaterialTemplates/ExperimentalPBR/MaterialGraphName.material"
             ]
         },
         "propertySlots": [

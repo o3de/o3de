@@ -40,6 +40,10 @@ namespace AZ
             void GetSupportedFileExtensions(AZStd::unordered_set<AZStd::string>& extensions) override;
             Events::LoadingResult LoadAsset(Containers::Scene& scene, const AZStd::string& path, const Uuid& guid,
                 RequestingApplication requester) override;
+            void GetPolicyName(AZStd::string& result) const override
+            {
+                result = "SceneImportRequestHandler";
+            }
 
             static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided);
 

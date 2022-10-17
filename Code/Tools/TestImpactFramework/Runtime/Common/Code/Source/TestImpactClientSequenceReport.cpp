@@ -34,7 +34,7 @@ namespace TestImpact
 
         TestRunReport::TestRunReport(
             TestSequenceResult result,
-            AZStd::chrono::high_resolution_clock::time_point startTime,
+            AZStd::chrono::steady_clock::time_point startTime,
             AZStd::chrono::milliseconds duration,
             AZStd::vector<PassingTestRun>&& passingTestRuns,
             AZStd::vector<FailingTestRun>&& failingTestRuns,
@@ -69,12 +69,12 @@ namespace TestImpact
             return m_result;
         }
 
-        AZStd::chrono::high_resolution_clock::time_point TestRunReport::GetStartTime() const
+        AZStd::chrono::steady_clock::time_point TestRunReport::GetStartTime() const
         {
             return m_startTime;
         }
 
-        AZStd::chrono::high_resolution_clock::time_point TestRunReport::GetEndTime() const
+        AZStd::chrono::steady_clock::time_point TestRunReport::GetEndTime() const
         {
             return m_startTime + m_duration;
         }
@@ -285,7 +285,7 @@ namespace TestImpact
         {
             return DraftingSequenceReportBase::GetTotalNumUnexecutedTestRuns() + m_discardedTestRunReport.GetNumUnexecutedTestRuns();
         }
-        
+
         const TestRunSelection SafeImpactAnalysisSequenceReport::GetDiscardedTestRuns() const
         {
             return m_discardedTestRuns;

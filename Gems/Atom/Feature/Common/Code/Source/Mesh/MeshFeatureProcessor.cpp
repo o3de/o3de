@@ -1001,6 +1001,26 @@ namespace AZ
                         subMesh.m_roughnessFactor = material->GetPropertyValue<float>(propertyIndex);
                     }
 
+                    // emissive color
+                    propertyIndex = material->FindPropertyIndex(AZ::Name("emissive.enable"));
+                    if (propertyIndex.IsValid())
+                    {
+                        if (material->GetPropertyValue<bool>(propertyIndex))
+                        {
+                            propertyIndex = material->FindPropertyIndex(AZ::Name("emissive.color"));
+                            if (propertyIndex.IsValid())
+                            {
+                                subMesh.m_emissiveColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
+                            }
+
+                            propertyIndex = material->FindPropertyIndex(AZ::Name("emissive.intensity"));
+                            if (propertyIndex.IsValid())
+                            {
+                                subMesh.m_emissiveColor *= material->GetPropertyValue<float>(propertyIndex);
+                            }
+                        }
+                    }
+
                     // textures
                     Data::Instance<RPI::Image> baseColorImage; // can be used for irradiance color below
                     propertyIndex = material->FindPropertyIndex(AZ::Name("baseColor.textureMap"));
@@ -1048,6 +1068,17 @@ namespace AZ
                         }
                     }
 
+                    propertyIndex = material->FindPropertyIndex(AZ::Name("emissive.textureMap"));
+                    if (propertyIndex.IsValid())
+                    {
+                        Data::Instance<RPI::Image> image = material->GetPropertyValue<Data::Instance<RPI::Image>>(propertyIndex);
+                        if (image.get())
+                        {
+                            subMesh.m_textureFlags |= RayTracingSubMeshTextureFlags::Emissive;
+                            subMesh.m_emissiveImageView = image->GetImageView();
+                        }
+                    }
+
                     // irradiance color
                     SetIrradianceData(subMesh, material, baseColorImage);
                 }
@@ -1067,17 +1098,14 @@ namespace AZ
             const Data::Instance<RPI::Material> material,
             const Data::Instance<RPI::Image> baseColorImage)
         {
-            RPI::MaterialPropertyIndex propertyIndex;
-
-            AZ::Name irradianceColorSource;
-            propertyIndex = material->FindPropertyIndex(AZ::Name("irradiance.irradianceColorSource"));
-            if (propertyIndex.IsValid())
+            RPI::MaterialPropertyIndex propertyIndex = material->FindPropertyIndex(AZ::Name("irradiance.irradianceColorSource"));
+            if (!propertyIndex.IsValid())
             {
-                uint32_t enumVal = material->GetPropertyValue<uint32_t>(propertyIndex);
-                irradianceColorSource = material->GetMaterialPropertiesLayout()
-                                                ->GetPropertyDescriptor(propertyIndex)
-                                                ->GetEnumName(enumVal);
+                return;
             }
+
+            uint32_t enumVal = material->GetPropertyValue<uint32_t>(propertyIndex);
+            AZ::Name irradianceColorSource = material->GetMaterialPropertiesLayout()->GetPropertyDescriptor(propertyIndex)->GetEnumName(enumVal);
 
             if (irradianceColorSource.IsEmpty() || irradianceColorSource == AZ::Name("Manual"))
             {

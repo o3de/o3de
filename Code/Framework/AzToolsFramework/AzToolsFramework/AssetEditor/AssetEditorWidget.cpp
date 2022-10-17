@@ -53,6 +53,7 @@ AZ_POP_DISABLE_WARNING
 
 #include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
 #include <UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
+#include <UI/DocumentPropertyEditor/FilteredDPE.h>
 
 #include <QAction>
 #include <QMenu>
@@ -137,7 +138,7 @@ namespace AzToolsFramework
 
             connect(m_tabs, &QTabWidget::tabCloseRequested, this, &AssetEditorWidget::onTabCloseButtonPressed);
             connect(m_tabs, &AzQtComponents::TabWidget::currentChanged, this, &AssetEditorWidget::currentTabChanged);
-
+            
             QWidget* statusBarWidget = new QWidget(this);
             statusBarWidget->setObjectName("AssetEditorStatusBar");
             m_statusBar->setupUi(statusBarWidget);

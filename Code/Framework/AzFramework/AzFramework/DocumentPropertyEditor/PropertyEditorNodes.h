@@ -104,6 +104,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr auto Value = AttributeDefinition<AZ::Dom::Value>("Value");
         static constexpr auto ValueType = TypeIdAttributeDefinition("ValueType");
         static constexpr auto Disabled = AttributeDefinition<bool>("Disabled");
+        static constexpr auto ValueHashed = AttributeDefinition<AZ::Uuid>("ValueHashed");
 
         //! If set to true, specifies that this PropertyEditor shouldn't be allocated its own column, but instead appended
         //! to the previous column in the layout, creating a SharedColumn that can hold many PropertyEditors.
@@ -129,6 +130,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr auto EnumType = TypeIdAttributeDefinition("EnumType");
         static constexpr auto EnumUnderlyingType = TypeIdAttributeDefinition("EnumUnderlyingType");
         static constexpr auto EnumValue = AttributeDefinition<Dom::Value>("EnumValue");
+        static constexpr auto EnumValues = EnumValuesAttributeDefinition("EnumValues");
         static constexpr auto ChangeNotify = CallbackAttributeDefinition<PropertyRefreshLevel()>("ChangeNotify");
         static constexpr auto RequestTreeUpdate = CallbackAttributeDefinition<void(PropertyRefreshLevel)>("RequestTreeUpdate");
 
