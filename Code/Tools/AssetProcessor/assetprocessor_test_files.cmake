@@ -82,7 +82,6 @@ set(FILES
     native/unittests/ConnectionUnitTests.cpp
     native/unittests/ConnectionUnitTests.h
     native/unittests/ConnectionManagerUnitTests.cpp
-    native/unittests/ConnectionManagerUnitTests.h
     native/unittests/FileWatcherUnitTests.cpp
     native/unittests/FileWatcherUnitTests.h
     native/unittests/PlatformConfigurationUnitTests.cpp
