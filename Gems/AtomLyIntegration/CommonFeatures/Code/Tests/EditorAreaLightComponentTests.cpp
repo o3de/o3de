@@ -23,6 +23,7 @@
 #include <LmbrCentral/Shape/DiskShapeComponentBus.h>
 #include <LmbrCentral/Shape/PolygonPrismShapeComponentBus.h>
 #include <LmbrCentral/Shape/QuadShapeComponentBus.h>
+#include <LmbrCentral/Shape/SphereShapeComponentBus.h>
 
 namespace UnitTest
 {
@@ -89,6 +90,12 @@ namespace UnitTest
     {
         LmbrCentral::PolygonPrismShapeComponentRequestBus::Event(
             entityId, &LmbrCentral::PolygonPrismShapeComponentRequestBus::Events::SetVertices, vertices);
+    }
+
+    static void SetSphereShapeRadius(const AZ::EntityId entityId, const float radius)
+    {
+        LmbrCentral::SphereShapeComponentRequestsBus::Event(
+            entityId, &LmbrCentral::SphereShapeComponentRequestsBus::Events::SetRadius, radius);
     }
 
     TEST_F(EditorAreaLightComponentFixture, CheckEditorAreaCapsuleLightBounds)
@@ -297,6 +304,36 @@ namespace UnitTest
 
             const AZ::Aabb aabb = AzFramework::CalculateEntityLocalBoundsUnion(entity.get());
             EXPECT_THAT(aabb, IsClose(AZ::Aabb::CreateFromMinMax(AZ::Vector3(-50.0f, -50.0f, -15.0f), AZ::Vector3(50.0f, 50.0f, 15.0f))));
+        }
+    }
+
+    TEST_F(EditorAreaLightComponentFixture, CheckEditorAreaPointSphereLightBounds)
+    {
+        // suppress warning when feature process is not created in test environment
+        UnitTest::ErrorHandler featureProcessorNotFound("Unable to find a AZ::Render::PointLightFeatureProcessorInterface on the scene.");
+
+        // sphere shape contained within attenuation sphere
+        {
+            auto entity = CreateEditorAreaLightEntity(
+                CreateAreaLightComponentConfig(AZ::Render::AreaLightComponentConfig::LightType::Sphere, 15.0f),
+                LmbrCentral::EditorSphereShapeComponentTypeId);
+
+            SetSphereShapeRadius(entity->GetId(), 5.0f);
+
+            const AZ::Aabb aabb = AzFramework::CalculateEntityLocalBoundsUnion(entity.get());
+            EXPECT_THAT(aabb, IsClose(AZ::Aabb::CreateFromMinMax(AZ::Vector3(-15.0f), AZ::Vector3(15.0f))));
+        }
+
+        // sphere shape contained within attenuation sphere
+        {
+            auto entity = CreateEditorAreaLightEntity(
+                CreateAreaLightComponentConfig(AZ::Render::AreaLightComponentConfig::LightType::Sphere, 15.0f),
+                LmbrCentral::EditorSphereShapeComponentTypeId);
+
+            SetSphereShapeRadius(entity->GetId(), 30.0f);
+
+            const AZ::Aabb aabb = AzFramework::CalculateEntityLocalBoundsUnion(entity.get());
+            EXPECT_THAT(aabb, IsClose(AZ::Aabb::CreateFromMinMax(AZ::Vector3(-30.0f), AZ::Vector3(30.0f))));
         }
     }
 } // namespace UnitTest
