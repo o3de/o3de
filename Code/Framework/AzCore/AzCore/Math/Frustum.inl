@@ -16,11 +16,6 @@ namespace AZ
         return planeId;
     }
 
-    AZ_MATH_INLINE Frustum Frustum::CreateUninitialized()
-    {
-        return Frustum();
-    }
-
     AZ_MATH_INLINE Frustum::Frustum()
     {
 #ifdef AZ_DEBUG_BUILD

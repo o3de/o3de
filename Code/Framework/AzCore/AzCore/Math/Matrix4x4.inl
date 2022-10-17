@@ -13,10 +13,6 @@
 
 namespace AZ
 {
-    AZ_MATH_INLINE Matrix4x4 Matrix4x4::CreateUninitialized()
-    {
-        return Matrix4x4();
-    }
 
     AZ_MATH_INLINE Matrix4x4::Matrix4x4(const Matrix4x4& rhs)
     {

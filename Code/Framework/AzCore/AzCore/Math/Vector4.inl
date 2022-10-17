@@ -11,10 +11,6 @@
 
 namespace AZ
 {
-    AZ_MATH_INLINE Vector4 Vector4::CreateUninitialized()
-    {
-        return Vector4();
-    }
 
     AZ_MATH_INLINE Vector4::Vector4(const Vector4& v)
         : m_value(v.m_value)

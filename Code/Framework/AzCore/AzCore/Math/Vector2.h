@@ -28,13 +28,21 @@ namespace AZ
         //! @param context reflection context
         static void Reflect(ReflectContext* context);
 
-        AZ_DEPRECATED(Vector2() = default, "The Vector2 Default Constructor has been deprecated. Please use Vector2::CreateUnitialized() instead.");
+        Vector2() = default;
 
         Vector2(const Vector2& v) = default;
 
-        //! Returns a vector with uninitialized data members.
-        //! Many of the member functions are not safe to call until the data members have been initialized.
-        static Vector2 CreateUninitialized();
+        // curly braces {} - zero initializes the Simd member
+        AZ::Vector2()
+            : m_value{}
+        {
+        }
+
+        // No initialization of the Simd member takes place here
+        // It is left in an indeterminate state
+        AZ::Vector2(AZ::Math::default_initialize_t)
+        {
+        }
 
         //! Constructs vector with all components set to the same specified value.
         explicit Vector2(float x);

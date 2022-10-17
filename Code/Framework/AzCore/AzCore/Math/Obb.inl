@@ -10,10 +10,6 @@
 
 namespace AZ
 {
-    AZ_MATH_INLINE Obb Obb::CreateUninitialized()
-    {
-        return Obb();
-    }
 
     AZ_MATH_INLINE const Vector3& Obb::GetPosition() const
     {

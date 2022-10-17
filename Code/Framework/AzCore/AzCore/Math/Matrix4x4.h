@@ -41,11 +41,11 @@ namespace AZ
         static void Reflect(ReflectContext* context);
 
         //! Default constructor does not initialize the matrix.
-        AZ_DEPRECATED(Matrix4x4() = default, "The Matrix4x4 Default Constructor has been deprecated. Please use Matrix4x4::CreateUnitialized() instead.");
+        Matrix4x4() = default;
 
-        //! Returns a 4x4 matrix with uninitialized data members.
-        //! Many of the member functions are not safe to call until the data members have been initialized.
-        static Matrix4x4 CreateUninitialized();
+        Matrix4x4(AZ::Math::default_initialize_t)
+        {
+        }
 
         Matrix4x4(const Matrix4x4& rhs);
         Matrix4x4(Simd::Vec4::FloatArgType row0, Simd::Vec4::FloatArgType row1, Simd::Vec4::FloatArgType row2, Simd::Vec4::FloatArgType row3);

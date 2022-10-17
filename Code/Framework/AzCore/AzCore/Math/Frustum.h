@@ -84,11 +84,11 @@ namespace AZ
         static void Reflect(ReflectContext* context);
 
         //! Default constructor, leaves members uninitialized for speed.
-        AZ_DEPRECATED(Frustum(), "The Frustum Default Constructor has been deprecated. Please use Frustum::CreateUnitialized() instead.");
+        Frustum() = default;
 
-        //! Returns a frustum with uninitialized data members.
-        //! Many of the member functions are not safe to call until the data members have been initialized.
-        static Frustum CreateUninitialized();
+        Frustum(AZ::Math::default_initialize_t)
+        {
+        }
 
         //! Construct a view frustum from ViewFrustumAttributes.
         //! 

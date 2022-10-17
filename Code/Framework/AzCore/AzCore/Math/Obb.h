@@ -33,11 +33,14 @@ namespace AZ
         //! @param context reflection context
         static void Reflect(ReflectContext* context);
 
-        AZ_DEPRECATED(Obb() = default, "The Obb Default Constructor has been deprecated. Please use Obb::CreateUnitialized() instead.");
+        Obb() = default;
 
-        //! Returns an oriented bounding box with uninitialized data members.
-        //! Many of the member functions are not safe to call until the data members have been initialized.
-        static Obb CreateUninitialized();
+        Obb(AZ::Math::default_initialize_t)
+            : m_position(AZ::Math::default_initialize)
+            , m_rotation(AZ::Math::default_initialize)
+            , m_halfLengths(AZ::Math::default_initialize)
+        {
+        }
 
         static Obb CreateFromPositionRotationAndHalfLengths(
             const Vector3& position, const Quaternion& rotation, const Vector3& halfLengths);

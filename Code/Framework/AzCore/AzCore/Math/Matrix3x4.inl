@@ -14,10 +14,6 @@
 
 namespace AZ
 {
-    AZ_MATH_INLINE Matrix3x4 Matrix3x4::CreateUninitialized()
-    {
-        return Matrix3x4();
-    }
 
     AZ_MATH_INLINE void ConvertTo4x4(const Simd::Vec4::FloatType* in3x4, Simd::Vec4::FloatType* out4x4)
     {

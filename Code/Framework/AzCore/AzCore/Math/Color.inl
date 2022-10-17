@@ -9,10 +9,6 @@
 
 namespace AZ
 {
-    AZ_MATH_INLINE Color Color::CreateUninitialized()
-    {
-        return Color();
-    }
 
     AZ_MATH_INLINE Color::Color(const Vector2& source)
     {

@@ -30,12 +30,20 @@ namespace AZ
         static void Reflect(ReflectContext* context);
 
         //! Default constructor, components are uninitialized.
-        AZ_DEPRECATED(Vector4() = default, "The Vector4 Default Constructor has been deprecated. Please use Vector4::CreateUnitialized() instead.");
+        Vector4() = default;
         Vector4(const Vector4& v);
 
-        //! Returns a vector with uninitialized data members.
-        //! Many of the member functions are not safe to call until the data members have been initialized.
-        static Vector4 CreateUninitialized();
+        // curly braces {} - zero initializes the Simd member
+        AZ::Vector4()
+            : m_value{}
+        {
+        }
+
+        // No initialization of the Simd member takes place here
+        // It is left in an indeterminate state
+        AZ::Vector4(AZ::Math::default_initialize_t)
+        {
+        }
 
         //! Constructs vector with all components set to the same specified value.
         explicit Vector4(float x);

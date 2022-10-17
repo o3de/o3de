@@ -10,10 +10,6 @@
 
 namespace AZ
 {
-    AZ_MATH_INLINE Aabb Aabb::CreateUninitialized()
-    {
-        return Aabb();
-    }
 
     AZ_MATH_INLINE Aabb Aabb::CreateNull()
     {

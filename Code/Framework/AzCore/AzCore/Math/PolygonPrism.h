@@ -28,12 +28,12 @@ namespace AZ
         AZ_RTTI(PolygonPrism, "{F01C8BDD-6F24-4344-8945-521A8750B30B}")
         AZ_CLASS_ALLOCATOR_DECL
 
-        AZ_DEPRECATED(PolygonPrism() = default, "The PolygonPrism Default Constructor has been deprecated. Please use PolygonPrism::CreateUnitialized() instead.");
+        PolygonPrism() = default;
         virtual ~PolygonPrism() = default;
 
-        //! Returns a polygon prism with uninitialized data members.
-        //! Many of the member functions are not safe to call until the data members have been initialized.
-        static PolygonPrism CreateUninitialized();
+        PolygonPrism(AZ::Math::default_initialize_t)
+        {
+        }
 
         //! Set the height of the polygon prism.
         void SetHeight(float height);

@@ -20,12 +20,14 @@ namespace AZ
     public:
         AZ_TYPE_INFO(Sphere, "{34BB6527-81AE-4854-99ED-D1A319DCD0A9}");
 
-        AZ_DEPRECATED(Sphere() = default, "The Sphere Default Constructor has been deprecated. Please use Sphere::CreateUnitialized() instead.");
+        Sphere() = default;
         Sphere(const Vector3& center, float radius);
 
-        //! Returns a sphere with uninitialized data members.
-        //! Many of the member functions are not safe to call until the data members have been initialized.
-        static Sphere CreateUninitialized();
+        Sphere(AZ::Math::default_initialize_t)
+            : m_center(AZ::Math::default_initialize)
+            , m_radius(0)
+        {
+        }
 
         static Sphere CreateUnitSphere();
         static Sphere CreateFromAabb(const Aabb& aabb);
