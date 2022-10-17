@@ -16,7 +16,7 @@
 #include <Vegetation/Ebuses/AreaSystemRequestBus.h>
 #include <Vegetation/Ebuses/DebugNotificationBus.h>
 
-#include "../VegetationProfiler.h"
+#include <VegetationProfiler.h>
 
 namespace Vegetation
 {
