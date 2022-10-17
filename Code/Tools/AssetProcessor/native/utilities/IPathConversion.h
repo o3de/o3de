@@ -16,6 +16,7 @@ namespace AssetProcessor
 {
     class ScanFolderInfo;
 
+    //! Interface for requesting scanfolder/relative path info for a path
     struct IPathConversion
     {
         AZ_RTTI(IPathConversion, "{8838D113-8BC0-4270-BF4D-4DFEAB628102}");

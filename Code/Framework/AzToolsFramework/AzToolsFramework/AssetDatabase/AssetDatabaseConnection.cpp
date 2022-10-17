@@ -2120,7 +2120,6 @@ namespace AzToolsFramework
             return s_querySourceBySourceguid.BindAndQuery(*m_databaseConnection, handler, &GetSourceResult, sourceGuid);
         }
 
-        // TODO: Remove this?
         bool AssetDatabaseConnection::QuerySourceBySourceName(const char* exactSourceName, sourceHandler handler)
         {
             return s_querySourceBySourcename.BindAndQuery(*m_databaseConnection, handler, &GetSourceResult, exactSourceName);
