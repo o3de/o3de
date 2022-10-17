@@ -182,6 +182,10 @@ namespace AssetProcessorMessagesTests
                 m_assetSystemComponent->Deactivate();
             }
             m_batchApplicationManager->Destroy();
+
+            m_assetCatalog.reset();
+            m_assetSystemComponent.reset();
+            m_batchApplicationManager.reset();
         }
 
         void RunNetworkRequest(AZStd::function<void()> func) const
