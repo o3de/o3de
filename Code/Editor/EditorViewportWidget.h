@@ -80,6 +80,7 @@ struct EditorViewportSettings : public AzToolsFramework::ViewportInteraction::Vi
     AZ::Vector2 DefaultEditorCameraOrientation() const override;
     bool IconsVisible() const override;
     bool HelpersVisible() const override;
+    bool OnlyShowHelpersForSelectedEntities() const override;
 };
 
 //! EditorViewportWidget window
@@ -252,16 +253,6 @@ private:
     void RenderSnapMarker();
     void RenderAll();
 
-    // Update the safe frame, safe action, safe title, and borders rectangles based on
-    // viewport size and target aspect ratio.
-    void UpdateSafeFrame();
-
-    // Draw safe frame, safe action, safe title rectangles and borders.
-    void RenderSafeFrame();
-
-    // Draw one of the safe frame rectangles with the desired color.
-    void RenderSafeFrame(const QRect& frame, float r, float g, float b, float a);
-
     // Draw a selected region if it has been selected
     void RenderSelectedRegion();
 
@@ -386,10 +377,8 @@ private:
     // Reentrancy guard for on paint events
     bool m_isOnPaint = false;
 
-    // Shapes of various safe frame helpers which can be displayed in the editor
-    QRect m_safeFrame;
-    QRect m_safeAction;
-    QRect m_safeTitle;
+    // Guard against calling UpdateVisibility multiple times a frame
+    bool m_hasUpdatedVisibility = false;
 
     // Aspect ratios available in the title bar
     CPredefinedAspectRatios m_predefinedAspectRatios;

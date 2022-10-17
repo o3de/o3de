@@ -103,7 +103,7 @@ namespace AZ
                     if (reader.Read<AZ::Edit::EnumConstant<T>>(enumPair))
                     {
                         T* enumValue = reinterpret_cast<T*>(instance);
-                        if (enumPair.m_value == *enumValue)
+                        if (static_cast<T>(enumPair.m_value) == *enumValue)
                         {
                             value = enumPair.m_description;
                             return true;

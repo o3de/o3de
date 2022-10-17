@@ -32,9 +32,9 @@ namespace AzFramework
             NetworkAssetUpdateInterface& operator=(NetworkAssetUpdateInterface&&) = delete;
 
             //! Called by the AssetProcessor when an asset in the cache has been modified.
-            virtual void AssetChanged(AzFramework::AssetSystem::AssetNotificationMessage /*message*/) = 0;
+            virtual void AssetChanged([[maybe_unused]] const AZStd::vector<AzFramework::AssetSystem::AssetNotificationMessage>& message, [[maybe_unused]] bool isCatalogInitialize = false) = 0;
             //! Called by the AssetProcessor when an asset in the cache has been removed.
-            virtual void AssetRemoved(AzFramework::AssetSystem::AssetNotificationMessage /*message*/) = 0;
+            virtual void AssetRemoved([[maybe_unused]] const AZStd::vector<AzFramework::AssetSystem::AssetNotificationMessage>& message) = 0;
 
             //! If we want to hear about assets for multiple platforms or something other than the asset platform defined at startup
             virtual AZStd::string GetSupportedPlatforms() { return {}; }

@@ -37,6 +37,7 @@ namespace LyShine
         void ResetInternal() override;
         void BuildInternal() override;
         void CreateChildPassesInternal() override;
+        void SetRenderPipeline(AZ::RPI::RenderPipeline* pipeline) override;
 
         // LyShinePassRequestBus overrides
         void RebuildRttChildren() override;
