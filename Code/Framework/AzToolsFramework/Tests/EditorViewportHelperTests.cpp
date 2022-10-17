@@ -20,20 +20,35 @@ namespace UnitTest
 {
     class EditorViewportOnlyDrawHelpersForSelectedEntityFixture
         : public ToolsApplicationFixture
-        , public AzFramework::EntityDebugDisplayEventBus::Handler
+        , public AzFramework::EntityDebugDisplayEventBus::MultiHandler
     {
     public:
         inline static constexpr AzFramework::ViewportId TestViewportId = 2468;
 
+        static bool isEntitySelected(AZ::EntityId entityId)
+        {
+            AzToolsFramework::EntityIdList entityIds;
+            AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+                entityIds, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
+
+            if (AZStd::ranges::find(entityIds, entityId) != entityIds.end())
+            {
+                return true;
+            }
+            return false;
+        }
+
         void SetUpEditorFixtureImpl() override
         {
-            AllocatorsTestFixture::SetUp();
-
             // Setup entity to use for EntityDebugDisplayEventBus and tests
-            AZ::Entity* entity = nullptr;
-            m_entityId = CreateDefaultEditorEntity("ComponentModeEntity", &entity);
+            AZ::Entity* entity1 = nullptr;
+            m_entityId = CreateDefaultEditorEntity("DebugHelpersEntity", &entity1);
 
-            AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(m_entityId);
+            AZ::Entity* entity2 = nullptr;
+            m_entityId2 = CreateDefaultEditorEntity("DebugHelpersEntity2", &entity2);
+
+            AzFramework::EntityDebugDisplayEventBus::MultiHandler::BusConnect(entity2->GetId());
+            AzFramework::EntityDebugDisplayEventBus::MultiHandler::BusConnect(entity1->GetId());
 
             // DebugDisplay to use in DisplayHelpers
             AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
@@ -53,24 +68,11 @@ namespace UnitTest
             using ::testing::_;
             using ::testing::Return;
 
-            ON_CALL(*m_entityVisibleEntityDataCacheMock, GetVisibleEntityId(_)).WillByDefault(Return(AZ::EntityId(m_entityId)));
-            ON_CALL(*m_entityVisibleEntityDataCacheMock, VisibleEntityDataCount()).WillByDefault(Return(1));
-            ON_CALL(*m_entityVisibleEntityDataCacheMock, IsVisibleEntityIconHidden(_)).WillByDefault(Return(false));
+            EXPECT_CALL(*m_entityVisibleEntityDataCacheMock, GetVisibleEntityId(_))
+                .WillOnce(Return(m_entityId))
+                .WillOnce(Return(m_entityId2));
+            ON_CALL(*m_entityVisibleEntityDataCacheMock, VisibleEntityDataCount()).WillByDefault(Return(2));
             ON_CALL(*m_entityVisibleEntityDataCacheMock, IsVisibleEntityVisible(_)).WillByDefault(Return(true));
-            ON_CALL(*m_entityVisibleEntityDataCacheMock, IsVisibleEntitySelected(_))
-                .WillByDefault(
-                    [this](size_t)
-                    {
-                        AzToolsFramework::EntityIdList entityIds;
-                        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
-                            entityIds, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
-
-                        if (AZStd::ranges::find(entityIds, m_entityId) != entityIds.end())
-                        {
-                            return true;
-                        }
-                        return false;
-                    });
         }
 
         void TearDownEditorFixtureImpl() override
@@ -79,20 +81,26 @@ namespace UnitTest
             m_viewportSettings.reset();
             m_editorHelpers.reset();
             m_entityVisibleEntityDataCacheMock.reset();
-            AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
-            AllocatorsTestFixture::TearDown();
+            AzFramework::EntityDebugDisplayEventBus::MultiHandler::BusDisconnect();
         }
 
         // EntityDebugDisplayEventBus overrides ...
         // This function is called in DisplayComponents which is responsible for drawing the helpers, if this is called it means that a
         // helper has been drawn
         void DisplayEntityViewport(const AzFramework::ViewportInfo&, AzFramework::DebugDisplayRequests&) override
-        {
+        {       
+            const AZ::EntityId entityId = *AzFramework::EntityDebugDisplayEventBus::GetCurrentBusId();
+
             m_displayEntityViewportEvent = true;
+            m_drawCount += 1;
+            m_drawnEntity = entityId;
         }
 
         AZ::EntityId m_entityId;
+        AZ::EntityId m_entityId2;
+        AZ::EntityId m_drawnEntity;
         AzFramework::DebugDisplayRequests* m_debugDisplay = nullptr;
+        int m_drawCount = 0;
         bool m_displayEntityViewportEvent = false;
         AZStd::unique_ptr<ViewportSettingsTestImpl> m_viewportSettings;
         AZStd::unique_ptr<AzToolsFramework::EditorHelpers> m_editorHelpers;
@@ -121,6 +129,7 @@ namespace UnitTest
 
         // Then the helper should be drawn
         EXPECT_TRUE(m_displayEntityViewportEvent);
+        EXPECT_EQ(m_drawCount, 2);
     }
 
     TEST_F(EditorViewportOnlyDrawHelpersForSelectedEntityFixture, DisplayDebugDrawIfSelectedEntitiesOptionDisabledAndEntityNotSelected)
@@ -140,12 +149,21 @@ namespace UnitTest
 
         // Then the helper should be drawn
         EXPECT_TRUE(m_displayEntityViewportEvent);
+        EXPECT_EQ(m_drawCount, 2);
     }
 
     TEST_F(EditorViewportOnlyDrawHelpersForSelectedEntityFixture, DoNotDisplayDebugDrawIfSelectedEntitiesOptionEnabledAndEntityNotSelected)
     {
         // Given the entity is not selected and the option to only show helpers for selected entities is true
         m_viewportSettings->m_onlyShowForSelectedEntities = true;
+
+        using ::testing::_;
+        using ::testing::Return;
+
+        // This should only be called if m_onlyShowForSelectedEntities is true
+        EXPECT_CALL(*m_entityVisibleEntityDataCacheMock, IsVisibleEntitySelected(_))
+            .WillOnce(Return(isEntitySelected(m_entityId)))
+            .WillOnce(Return(isEntitySelected(m_entityId2)));
 
         // When the draw function is called
         m_editorHelpers->DisplayHelpers(
@@ -159,6 +177,7 @@ namespace UnitTest
 
         // Then the helper should not be drawn
         EXPECT_FALSE(m_displayEntityViewportEvent);
+        EXPECT_EQ(m_drawCount, 0);
     }
 
     TEST_F(EditorViewportOnlyDrawHelpersForSelectedEntityFixture, DisplayDebugDrawIfSelectedEntitiesOptionEnabledAndEntityIsSelected)
@@ -167,6 +186,13 @@ namespace UnitTest
         const AzToolsFramework::EntityIdList entityIds = { m_entityId };
         AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
             &AzToolsFramework::ToolsApplicationRequests::SetSelectedEntities, entityIds);
+
+        using ::testing::_;
+        using ::testing::Return;
+
+        EXPECT_CALL(*m_entityVisibleEntityDataCacheMock, IsVisibleEntitySelected(_))
+            .WillOnce(Return(isEntitySelected(m_entityId)))
+            .WillOnce(Return(isEntitySelected(m_entityId2)));
 
         m_viewportSettings->m_onlyShowForSelectedEntities = true;
 
@@ -182,5 +208,40 @@ namespace UnitTest
 
         // Then the helper should be drawn
         EXPECT_TRUE(m_displayEntityViewportEvent);
+        EXPECT_EQ(m_drawCount, 1);
+        EXPECT_EQ(m_drawnEntity, m_entityId);
+    }
+
+    TEST_F(EditorViewportOnlyDrawHelpersForSelectedEntityFixture, DisplayDebugDrawIfSelectedEntitiesOptionEnabledAndEntitiesAreSelected)
+    {
+        // Given the entity is selected and the option to only show helpers for selected entities is true
+        const AzToolsFramework::EntityIdList entityIds = { m_entityId, m_entityId2 };
+        AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+            &AzToolsFramework::ToolsApplicationRequests::SetSelectedEntities, entityIds);
+
+        m_viewportSettings->m_onlyShowForSelectedEntities = true;
+
+        using ::testing::_;
+        using ::testing::Return;
+
+        EXPECT_CALL(*m_entityVisibleEntityDataCacheMock, IsVisibleEntitySelected(_))
+            .WillOnce(Return(isEntitySelected(m_entityId)))
+            .WillOnce(Return(isEntitySelected(m_entityId2)));
+
+        // When the draw function is called
+        m_editorHelpers->DisplayHelpers(
+            AzFramework::ViewportInfo{ TestViewportId },
+            m_cameraState,
+            *m_debugDisplay,
+            [](AZ::EntityId)
+            {
+                return true;
+            });
+
+        // Then the helper should be drawn
+        EXPECT_TRUE(m_displayEntityViewportEvent);
+        EXPECT_EQ(m_drawCount, 2);
+        EXPECT_EQ(m_drawnEntity, m_entityId2);
+
     }
 } // namespace UnitTest
