@@ -227,7 +227,6 @@ namespace AssetProcessor
         }
         else
         {
-            // amzn-mike TODO: Handle stat rename
             QString statKey = QString("ProcessJob,%1,%2,%3,%4,%5")
                                   .arg(jobEntry.m_sourceAssetReference.ScanfolderPath().c_str())
                                   .arg(jobEntry.m_sourceAssetReference.RelativePath().c_str())
