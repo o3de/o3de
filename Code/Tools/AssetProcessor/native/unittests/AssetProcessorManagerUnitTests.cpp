@@ -6,15 +6,6 @@
  *
  */
 
-//#include <AzCore/base.h>
-//#include <AzCore/Casting/lossy_cast.h>
-//#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-//
-//#include "MockApplicationManager.h"
-//#include "native/FileWatcher/FileWatcher.h"
-//#include "native/unittests/MockConnectionHandler.h"
-//#include <native/tests/AssetProcessorTest.h>
-
 #include <AzCore/Casting/lossy_cast.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzTest/AzTest.h>
@@ -200,7 +191,7 @@ namespace AssetProcessor
 
     namespace
     {
-        void CreateExpectFiles(const QSet<QString>& expectedFiles)
+        void CreateExpectedFiles(const QSet<QString>& expectedFiles)
         {
             for (const QString& expect : expectedFiles)
             {
@@ -234,13 +225,13 @@ namespace AssetProcessor
                 });
         }
 
-        void ComputeFingerprints(unsigned int& fingerprintForPC, unsigned int& fingerprintForANDROID, PlatformConfiguration& m_config, QString scanFolderPath, QString relPath)
+        void ComputeFingerprints(unsigned int& fingerprintForPC, unsigned int& fingerprintForANDROID, PlatformConfiguration& config, QString scanFolderPath, QString relPath)
         {
             QString extraInfoForPC;
             QString extraInfoForANDROID;
             RecognizerPointerContainer output;
             QString filePath = scanFolderPath + "/" + relPath;
-            m_config.GetMatchingRecognizers(filePath, output);
+            config.GetMatchingRecognizers(filePath, output);
             for (const AssetRecognizer* assetRecogniser : output)
             {
                 extraInfoForPC.append(assetRecogniser->m_platformSpecs.at("pc") == AssetInternalSpec::Copy ? "copy" : "skip");
@@ -273,7 +264,7 @@ namespace AssetProcessor
 
     TEST_F(AssetProcessorManagerUnitTests, SkipProcessing_FeedFilesToIgnore_NoTasksGenerated)
     {
-        MockApplicationManager  mockAppManager;
+        MockApplicationManager mockAppManager;
         mockAppManager.BusConnect();
 
         // txt recognizer
@@ -299,7 +290,7 @@ namespace AssetProcessor
         // subfolder3 is not recursive so none of these should show up in any scan or override check
         expectedFiles << m_sourceRoot.absoluteFilePath("subfolder3/aaa/basefile.txt");
         expectedFiles << m_sourceRoot.absoluteFilePath("subfolder3/uniquefile.ignore"); // only exists in subfolder3
-        CreateExpectFiles(expectedFiles);
+        CreateExpectedFiles(expectedFiles);
 
         // the following is a file which does exist but should not be processed as it is in a non-watched folder (not recursive)
         QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, m_sourceRoot.absoluteFilePath("subfolder3/aaa/basefile.txt")));
@@ -350,7 +341,7 @@ namespace AssetProcessor
 
     TEST_F(AssetProcessorManagerUnitTests, ProcessFile_FeedFileToProcess_TasksGenerated)
     {
-        MockApplicationManager  mockAppManager;
+        MockApplicationManager mockAppManager;
         mockAppManager.BusConnect();
 
         QList<QPair<unsigned int, QByteArray>> payloadList;
@@ -383,7 +374,7 @@ namespace AssetProcessor
         QString relativePathFromWatchFolder = "uniquefile.txt";
         QString watchFolderPath = m_sourceRoot.absoluteFilePath("subfolder3");
         QString absolutePath = AssetUtilities::NormalizeFilePath(watchFolderPath + "/" + relativePathFromWatchFolder);
-        CreateExpectFiles({absolutePath});
+        CreateExpectedFiles({absolutePath});
 
         QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, absolutePath));
 
@@ -1420,7 +1411,7 @@ namespace AssetProcessor
     {
         //Test the ProcessGetFullAssetPath function
 
-        MockApplicationManager  mockAppManager;
+        MockApplicationManager mockAppManager;
         mockAppManager.BusConnect();
 
         AssetRecognizer rec;
@@ -1431,7 +1422,7 @@ namespace AssetProcessor
         EXPECT_TRUE(mockAppManager.RegisterAssetRecognizerAsBuilder(rec));
         
         QString absolutePath = AssetUtilities::NormalizeFilePath(m_sourceRoot.absoluteFilePath("subfolder3/somerandomfile.random"));
-        CreateExpectFiles({absolutePath});
+        CreateExpectedFiles({absolutePath});
         QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, absolutePath));
         EXPECT_TRUE(BlockUntil(m_idling, 5000));
 
@@ -1477,7 +1468,7 @@ namespace AssetProcessor
         constexpr int expectedLegacyAssetIdCount = 2;
 #endif
 
-        MockApplicationManager  mockAppManager;
+        MockApplicationManager mockAppManager;
         mockAppManager.BusConnect();
 
         AssetRecognizer rec;
@@ -1521,7 +1512,7 @@ namespace AssetProcessor
         expectedFiles << m_sourceRoot.absoluteFilePath("subfolder2/basefile.txt");
         expectedFiles << m_sourceRoot.absoluteFilePath(subfolder3BaseFilePath);
         expectedFiles << m_sourceRoot.absoluteFilePath("subfolder3/somefile.xxx");
-        CreateExpectFiles(expectedFiles);
+        CreateExpectedFiles(expectedFiles);
 
         // set up by letting it compile basefile.txt from subfolder3:
         QString absolutePath = AssetUtilities::NormalizeFilePath(m_sourceRoot.absoluteFilePath(subfolder3BaseFilePath));
@@ -1593,7 +1584,7 @@ namespace AssetProcessor
         // ------------- setup complete, now do the test...
         // now feed it a file that has been overridden by a more important later file
         absolutePath = AssetUtilities::NormalizeFilePath(m_sourceRoot.absoluteFilePath("subfolder1/basefile.txt"));
-        CreateExpectFiles({absolutePath});
+        CreateExpectedFiles({absolutePath});
         m_changedInputResults.clear();
         m_assetMessages.clear();
         m_processResults.clear();
@@ -1738,7 +1729,7 @@ namespace AssetProcessor
 
     TEST_F(AssetProcessorManagerUnitTests, QueryAssetStatus_FeedFileToProcess_AssetStatusRetrieved)
     {
-        MockApplicationManager  mockAppManager;
+        MockApplicationManager mockAppManager;
         mockAppManager.BusConnect();
 
         AssetRecognizer rec;
@@ -1753,7 +1744,7 @@ namespace AssetProcessor
 
         QString absolutePath = m_sourceRoot.absoluteFilePath("subfolder2/folder/ship.tiff");
         absolutePath = AssetUtilities::NormalizeFilePath(absolutePath);
-        CreateExpectFiles({absolutePath});
+        CreateExpectedFiles({absolutePath});
 
         QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, absolutePath));
         EXPECT_TRUE(BlockUntil(m_idling, 5000));
@@ -1837,7 +1828,7 @@ namespace AssetProcessor
 
     TEST_F(AssetProcessorManagerUnitTests, RenameFolders_RenameSourceOrCacheFolders_AssetsReprocessedAccordingly)
     {
-        MockApplicationManager  mockAppManager;
+        MockApplicationManager mockAppManager;
         mockAppManager.BusConnect();
 
         AssetRecognizer rec;
@@ -1857,7 +1848,7 @@ namespace AssetProcessor
         // Test: Rename a source folder
         QString fileToMove1 = m_sourceRoot.absoluteFilePath("subfolder1/rename_this/somefile1.txt");
         QString fileToMove2 = m_sourceRoot.absoluteFilePath("subfolder1/rename_this/somefolder/somefile2.txt");
-        CreateExpectFiles({fileToMove1, fileToMove2});
+        CreateExpectedFiles({fileToMove1, fileToMove2});
 
         m_processResults.clear();
         // put the two files on the map:
@@ -1966,7 +1957,7 @@ namespace AssetProcessor
 
         // Test: Rename folders that did not have files in them (but had child files, this was a bug at a point)
         fileToMove1 = m_sourceRoot.absoluteFilePath("subfolder1/rename_this_secondly/somefolder/somefile2.txt");
-        CreateExpectFiles({fileToMove1});
+        CreateExpectedFiles({fileToMove1});
 
         m_processResults.clear();
         // put the two files on the map:
@@ -2022,7 +2013,7 @@ namespace AssetProcessor
 
     TEST_F(AssetProcessorManagerUnitTests, DeleteSource_RemoveFileAfterProcessing_ProductDeleted)
     {
-        MockApplicationManager  mockAppManager;
+        MockApplicationManager mockAppManager;
         mockAppManager.BusConnect();
 
         AssetRecognizer rec;
@@ -2041,7 +2032,7 @@ namespace AssetProcessor
 
         // first, set up a whole pipeline to create, notify, and consume the file:
         QString fileToMove1 = m_sourceRoot.absoluteFilePath("subfolder1/to_be_deleted/some_deleted_file.txt");
-        CreateExpectFiles({fileToMove1});
+        CreateExpectedFiles({fileToMove1});
 
         // put the two files on the map:
         QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, fileToMove1));
@@ -2101,7 +2092,7 @@ namespace AssetProcessor
         // (it needs to delete the products and it needs to notify listeners about it)
         // --------------------------------------------------------------------------------------------------
 
-        MockApplicationManager  mockAppManager;
+        MockApplicationManager mockAppManager;
         mockAppManager.BusConnect();
 
         AssetRecognizer rec;
@@ -2120,7 +2111,7 @@ namespace AssetProcessor
 
         // first, set up a whole pipeline to create, notify, and consume the file:
         QString fileToMove1 = m_sourceRoot.absoluteFilePath("subfolder1/fewer_products/test.txt");
-        CreateExpectFiles({fileToMove1});
+        CreateExpectedFiles({fileToMove1});
 
         m_processResults.clear();
         // put the two files on the map:
@@ -2238,7 +2229,7 @@ namespace AssetProcessor
 
     TEST_F(AssetProcessorManagerUnitTests, ValidateAssetBuilder_FeedFileToProcess_ProductsGenerated)
     {
-        MockApplicationManager  mockAppManager;
+        MockApplicationManager mockAppManager;
         mockAppManager.BusConnect();
 
         AssetRecognizer abt_rec1;
@@ -2256,7 +2247,7 @@ namespace AssetProcessor
         m_processResults.clear();
 
         QString absolutePath = AssetUtilities::NormalizeFilePath(m_sourceRoot.absoluteFilePath("subfolder3/uniquefile.txt"));
-        CreateExpectFiles({absolutePath});
+        CreateExpectedFiles({absolutePath});
 
         // Pass the txt file through the asset pipeline
         QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, absolutePath));
@@ -2318,7 +2309,7 @@ namespace AssetProcessor
         MockAssetBuilderInfoHandler mockAssetBuilderInfoHandler;
 
         QString sourceFile = m_sourceRoot.absoluteFilePath("subfolder1/basefile.foo");
-        CreateExpectFiles({ sourceFile });
+        CreateExpectedFiles({ sourceFile });
 
         mockAssetBuilderInfoHandler.m_numberOfJobsToCreate = 2; //Create two jobs for this file
 

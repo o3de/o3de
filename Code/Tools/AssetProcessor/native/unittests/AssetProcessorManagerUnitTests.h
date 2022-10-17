@@ -26,10 +26,8 @@ namespace AssetProcessor
         void SetUp() override;
         void TearDown() override;
 
-        //void CreateExpectFiles(const QSet<QString>& expectedFiles);
         AZStd::string AbsProductPathToRelative(const QString& absolutePath);
         void VerifyProductPaths(const JobDetails& jobDetails);
-        //void SortAssetToProcessResultList(QList<JobDetails>& processResults);
 
         QDir m_sourceRoot;
         QDir m_cacheRoot;
