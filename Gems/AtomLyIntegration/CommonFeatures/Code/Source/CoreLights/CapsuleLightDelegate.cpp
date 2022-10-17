@@ -70,7 +70,8 @@ namespace AZ::Render
         {
             const auto [radius, height] = CalculateCapsuleVisualizationDimensions();
             debugDisplay.SetColor(color);
-            debugDisplay.DrawWireCapsule(transform.GetTranslation(), transform.GetBasisZ(), radius, height);
+            debugDisplay.DrawWireCapsule(
+                transform.GetTranslation(), transform.GetBasisZ(), radius, AZ::GetMax(height - 2.0f * radius, 0.0f));
         }
     }
 
@@ -98,6 +99,8 @@ namespace AZ::Render
     Aabb CapsuleLightDelegate::GetLocalVisualizationBounds() const
     {
         const auto [radius, height] = CalculateCapsuleVisualizationDimensions();
-        return Aabb::CreateCenterRadius(Vector3::CreateZero(), GetMax(radius, height));
+        return Aabb::CreateFromMinMax(
+            AZ::Vector3(-radius, -radius, AZ::GetMin(-radius, -height * 0.5f)),
+            AZ::Vector3(radius, radius, AZ::GetMax(radius, height * 0.5f)));
     }
 } // namespace AZ::Render
