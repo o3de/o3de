@@ -222,7 +222,7 @@ namespace AZ
                 ((free_link*)currentMem)->mNext = nullptr;
             }
 
-            inline void setInvalid()
+            inline void setInvalid() volatile
             {
                 mMarker = 0;
             }
@@ -1517,6 +1517,8 @@ namespace AZ
     template<bool DebugAllocatorEnable>
     auto HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_add_block(void* mem, size_t size) -> block_header*
     {
+        memset(mem, 0, sizeof(page));
+
         // create a dummy block to avoid prev() NULL checks and allow easy block shifts
         // potentially this dummy block might grow (due to shift_block) but not more than sizeof(free_node)
         block_header* front = (block_header*)mem;
