@@ -53,7 +53,7 @@ namespace AZ
         size_type       NumAllocatedBytes() const override       { return m_numAllocatedBytes; }
 
     protected:
-        size_type m_numAllocatedBytes = 0;
+        AZStd::atomic<size_type> m_numAllocatedBytes = 0;
     };
 
     typedef AZStdAlloc<OSAllocator> OSStdAllocator;
