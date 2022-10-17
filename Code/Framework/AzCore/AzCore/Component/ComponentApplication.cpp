@@ -873,10 +873,11 @@ namespace AZ
 
     void ComponentApplication::DestroyAllocator()
     {
+        AZ::Debug::Trace::Instance().Destroy();
+
         // kill the system allocator if we created it
         if (m_isSystemAllocatorOwner)
         {
-            AZ::Debug::Trace::Instance().Destroy();
             AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
 
             m_isSystemAllocatorOwner = false;
@@ -914,6 +915,8 @@ namespace AZ
     //=========================================================================
     void ComponentApplication::CreateSystemAllocator()
     {
+        AZ::Debug::Trace::Instance().Init();
+
         if (m_descriptor.m_useExistingAllocator || AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
         {
             AZ_Assert(AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady(), "You must setup AZ::SystemAllocator instance, before you can call Create application with m_useExistingAllocator flag set to true");
@@ -923,7 +926,6 @@ namespace AZ
         {
             // Create the system allocator
             AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-            AZ::Debug::Trace::Instance().Init();
 
             AZ::Debug::AllocationRecords* records = AllocatorInstance<SystemAllocator>::Get().GetRecords();
             if (records)
