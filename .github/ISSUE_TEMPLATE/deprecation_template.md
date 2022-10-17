@@ -6,18 +6,18 @@ labels: 'kind/deprecation'
 
 ---
 
-***The list of APIs to be deprecated***
+## Deprecated APIs
 List the fully qualified APIs/types. For example, `AZ::Quaternion::SetFromEulerRadians(const Vector3&)`
 
-***Describe alternatives for each of the APIs***
+## Alternatives APIs
 List new or updated APIs to replace deprecated API. 
 For example, use 
 `Quaternion AZ::Quaternionstatic CreateFromEulerRadiansXYZ(const Vector3&)` 
 to repleace 
 `void AZ::Quaternion::SetFromEulerRadians(const Vector3&)` and `Quaternion AZ::Quaternion::ConvertEulerRadiansToQuaternion(const Vector3&)`
 
-***Describe the last release version before this deprecation***
-For example: `stabilization/2210`
+## Last Release
+Describe the last release version before this deprecation. For example: `stabilization/2210`
 
-***Additional context***
+## Additional Context
 Add some information about the reasons for the deprecations
