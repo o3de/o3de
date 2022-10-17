@@ -8,7 +8,7 @@
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/std/containers/unordered_set.h>
-
+#include <random>
 
 namespace UnitTest
 {
@@ -361,4 +361,107 @@ namespace UnitTest
         EXPECT_STREQ("Primary Converter", UuidTestInternal::TypeConverter<O3DE_UUID_TO_NONTYPE_PARAM(uuidNonSpecialized)>());
         EXPECT_STREQ("My Custom Converter", UuidTestInternal::TypeConverter<O3DE_UUID_TO_NONTYPE_PARAM(uuidSpecialized)>());
     }
+
+    // These static asserts test the UuidInternal::GetValue function
+    // Expected inputs from a Uuid
+    static_assert(AZ::UuidInternal::GetValue('0') == AZStd::byte(0));
+    static_assert(AZ::UuidInternal::GetValue('1') == AZStd::byte(1));
+    static_assert(AZ::UuidInternal::GetValue('2') == AZStd::byte(2));
+    static_assert(AZ::UuidInternal::GetValue('3') == AZStd::byte(3));
+    static_assert(AZ::UuidInternal::GetValue('4') == AZStd::byte(4));
+    static_assert(AZ::UuidInternal::GetValue('5') == AZStd::byte(5));
+    static_assert(AZ::UuidInternal::GetValue('6') == AZStd::byte(6));
+    static_assert(AZ::UuidInternal::GetValue('7') == AZStd::byte(7));
+    static_assert(AZ::UuidInternal::GetValue('8') == AZStd::byte(8));
+    static_assert(AZ::UuidInternal::GetValue('9') == AZStd::byte(9));
+    static_assert(AZ::UuidInternal::GetValue('a') == AZStd::byte(10));
+    static_assert(AZ::UuidInternal::GetValue('b') == AZStd::byte(11));
+    static_assert(AZ::UuidInternal::GetValue('c') == AZStd::byte(12));
+    static_assert(AZ::UuidInternal::GetValue('d') == AZStd::byte(13));
+    static_assert(AZ::UuidInternal::GetValue('e') == AZStd::byte(14));
+    static_assert(AZ::UuidInternal::GetValue('f') == AZStd::byte(15));
+    static_assert(AZ::UuidInternal::GetValue('A') == AZStd::byte(10));
+    static_assert(AZ::UuidInternal::GetValue('B') == AZStd::byte(11));
+    static_assert(AZ::UuidInternal::GetValue('C') == AZStd::byte(12));
+    static_assert(AZ::UuidInternal::GetValue('D') == AZStd::byte(13));
+    static_assert(AZ::UuidInternal::GetValue('E') == AZStd::byte(14));
+    static_assert(AZ::UuidInternal::GetValue('F') == AZStd::byte(15));
+
+    // Common characters in a Uuid
+    static_assert(AZ::UuidInternal::GetValue('{') == AZ::UuidInternal::InvalidValue);
+    static_assert(AZ::UuidInternal::GetValue('-') == AZ::UuidInternal::InvalidValue);
+    static_assert(AZ::UuidInternal::GetValue('}') == AZ::UuidInternal::InvalidValue);
+    static_assert(AZ::UuidInternal::GetValue(' ') == AZ::UuidInternal::InvalidValue);
+
+    // Boundary conditions with invalid Uuid characters
+    static_assert(AZ::UuidInternal::GetValue(0) == AZ::UuidInternal::InvalidValue);
+    static_assert(AZ::UuidInternal::GetValue(AZStd::numeric_limits<char>::max()) == AZ::UuidInternal::InvalidValue);
+    static_assert(AZ::UuidInternal::GetValue('0' - 1) == AZ::UuidInternal::InvalidValue);
+    static_assert(AZ::UuidInternal::GetValue('9' + 1) == AZ::UuidInternal::InvalidValue);
+    static_assert(AZ::UuidInternal::GetValue('a' - 1) == AZ::UuidInternal::InvalidValue);
+    static_assert(AZ::UuidInternal::GetValue('f' + 1) == AZ::UuidInternal::InvalidValue);
+    static_assert(AZ::UuidInternal::GetValue('A' - 1) == AZ::UuidInternal::InvalidValue);
+    static_assert(AZ::UuidInternal::GetValue('F' + 1) == AZ::UuidInternal::InvalidValue);
+
+    
+    class UuidBenchmark : public AllocatorsBenchmarkFixture
+    {
+    public:
+        void SetUp(::benchmark::State& st) override
+        {
+            AllocatorsBenchmarkFixture::SetUp(st);
+            SetUpInternal();
+        }
+
+        void SetUp(const ::benchmark::State& st) override
+        {
+            AllocatorsBenchmarkFixture::SetUp(st);
+            SetUpInternal();
+        }
+
+        void TearDown(::benchmark::State& st) override
+        {
+            TearDownInternal();
+            AllocatorsBenchmarkFixture::TearDown(st);
+        }
+
+        void TearDown(const ::benchmark::State& st) override
+        {
+            TearDownInternal();
+            AllocatorsBenchmarkFixture::TearDown(st);
+        }
+
+        void SetUpInternal()
+        {
+            std::mt19937 randomEngine(0);
+            m_uuidStrings.resize(100);
+            // Generate some random guid strings, using a random mix of guid formats
+            for (AZStd::string& uuidString : m_uuidStrings)
+            {
+                bool useBrackets = std::uniform_int_distribution<>{ 0, 1 }(randomEngine);
+                bool useDashes = std::uniform_int_distribution<>{ 0, 1 }(randomEngine);
+                uuidString = AZ::Uuid::CreateRandom().ToString<AZStd::string>(useBrackets, useDashes);
+            }
+        }
+
+        void TearDownInternal()
+        {
+            m_uuidStrings.clear();
+            m_uuidStrings.shrink_to_fit();
+        }
+
+        AZStd::vector<AZStd::string> m_uuidStrings;
+    };
+
+    BENCHMARK_DEFINE_F(UuidBenchmark, CreateString_Benchmark)(::benchmark::State& st)
+    {
+        while (st.KeepRunning())
+        {
+            for (const AZStd::string& uuidString : m_uuidStrings)
+            {
+                AZ::Uuid::CreateString(uuidString);
+            }
+        }
+    }
+    BENCHMARK_REGISTER_F(UuidBenchmark, CreateString_Benchmark)->Unit(benchmark::kNanosecond);
 }

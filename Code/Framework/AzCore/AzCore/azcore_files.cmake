@@ -82,6 +82,8 @@ set(FILES
     Debug/BudgetTracker.h
     Debug/BudgetTracker.cpp
     Debug/MemoryProfiler.h
+    Debug/PerformanceCollector.h
+    Debug/PerformanceCollector.cpp
     Debug/Profiler.cpp
     Debug/Profiler.inl
     Debug/Profiler.h

@@ -16,13 +16,62 @@
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/Memory/PoolAllocator.h>
 
+#define ENABLE_COMPILED_TASK_GRAPH_EVENT_TRACKING AZ_DEBUG_BUILD
+
 namespace AZ
 {
     class TaskGraphEvent;
     class TaskGraph;
+    class TaskExecutor;
 
     namespace Internal
     {
+        class CompiledTaskGraphTracker;
+
+        // Implement basic CompiledTaskGraph event breadcrumbs to help debug
+        // https://github.com/o3de/o3de/issues/12015
+        enum CTGEvent
+        {
+            None,
+            Allocated,
+            Deallocated,
+            Submitted,
+            Signalled,
+        };
+        class CompiledTaskGraphTracker final
+        {
+        public:
+            CompiledTaskGraphTracker(TaskExecutor* executor [[maybe_unused]])
+#ifdef ENABLE_COMPILED_TASK_GRAPH_EVENT_TRACKING
+                : m_taskExecutor(executor)
+#endif
+            {};
+#ifdef ENABLE_COMPILED_TASK_GRAPH_EVENT_TRACKING
+            void WriteEventInfo(const CompiledTaskGraph* ctg, CTGEvent eventCode, const char* identifier);
+#else
+            void WriteEventInfo(const CompiledTaskGraph* ctg [[maybe_unused]], CTGEvent eventCode [[maybe_unused]], const char* identifier [[maybe_unused]]) {};
+#endif
+
+        private:
+#ifdef ENABLE_COMPILED_TASK_GRAPH_EVENT_TRACKING
+            static constexpr uint32_t NumTrackedRecentEvents = 1024u;
+            struct CTGEventData
+            {
+                const CompiledTaskGraph* m_ctg = nullptr;
+                const char* m_parentLabel = nullptr;
+                const char* m_identifier = nullptr;
+                const char* m_threadName = nullptr;
+                uint32_t m_remainingCount = 0;
+                CTGEvent m_eventCode = CTGEvent::None;
+                bool m_retained = true;
+            };
+            TaskExecutor* m_taskExecutor = nullptr;
+            CTGEventData m_recentEvents[NumTrackedRecentEvents]; // Allocation breadcrumbs to help look for a double delete
+            uint32_t m_nextEventSlot = 0;
+            AZStd::mutex m_mutex;
+#endif
+        };
+
         class CompiledTaskGraph final
         {
         public:
@@ -42,7 +91,12 @@ namespace AZ
 
             // Indicate that a constituent task has finished and decrement a counter to determine if the
             // graph should be freed (returns the value after atomic decrement)
-            uint32_t Release();
+            uint32_t Release(CompiledTaskGraphTracker& allocationTracker);
+
+            // Debug access
+            const char* GetParentLabel() const { return m_parentLabel; }
+            bool IsRetained() const { return m_parent != nullptr; }
+            uint32_t GetRemainingCount() const { return m_remaining.load(); }
 
         private:
             friend class ::AZ::TaskGraph;
@@ -80,9 +134,12 @@ namespace AZ
 
         void Submit(Internal::Task& task);
 
+        Internal::CompiledTaskGraphTracker& GetEventTracker() {return m_eventTracker;}
+
     private:
         friend class Internal::TaskWorker;
         friend class TaskGraphEvent;
+        friend class Internal::CompiledTaskGraphTracker;
 
         Internal::TaskWorker* GetTaskWorker();
         void ReleaseGraph();
@@ -92,5 +149,9 @@ namespace AZ
         uint32_t m_threadCount = 0;
         AZStd::atomic<uint32_t> m_lastSubmission;
         AZStd::atomic<uint64_t> m_graphsRemaining;
+
+        // Implement basic CompiledTaskGraph event breadcrumbs to help debug
+        // https://github.com/o3de/o3de/issues/12015
+        Internal::CompiledTaskGraphTracker m_eventTracker;
     };
 } // namespace AZ

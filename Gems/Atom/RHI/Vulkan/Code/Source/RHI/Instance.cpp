@@ -75,7 +75,7 @@ namespace AZ
             if (!m_functionLoader->Init() ||
                 !m_functionLoader->LoadProcAddresses(&m_context, VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE))
             {
-                AZ_Warning("Vulkan", false, "Could not initialized function loader.");
+                AZ_Warning("Vulkan", false, "Could not initialize function loader.");
                 return false;
             }
 
