@@ -588,6 +588,10 @@ namespace AzToolsFramework
                                     deleteMsgBox.exec();
                                 }
                             }
+                            if (isFolder)
+                            {
+                                AZ::IO::SystemFile::DeleteDir(item->GetFullPath().c_str());
+                            }
                         }
                     }
                 }
@@ -712,6 +716,11 @@ namespace AzToolsFramework
                         this);
                     msgBox.exec();
                 }
+                if (isFolder)
+                {
+                    AZ::IO::SystemFile::DeleteDir(item->GetFullPath().c_str());
+                }
+
             }
         }
 
@@ -816,7 +825,7 @@ namespace AzToolsFramework
                                     AZ::StringFunc::Join(message, response.m_lines.begin(), response.m_lines.end(), "\n");
                                     AzQtComponents::FixedWidthMessageBox msgBox(
                                         600,
-                                        tr("Before Move Asset Information"),
+                                        tr(isFolder ? "Before Move Folder Information" : "Before Move Asset Information"),
                                         tr("The asset you are moving may be referenced in other assets."),
                                         tr("More information can be found by pressing \"Show Details...\"."),
                                         message.c_str(),
@@ -848,7 +857,7 @@ namespace AzToolsFramework
                                             AZ::StringFunc::Join(moveMessage, response.m_lines.begin(), response.m_lines.end(), "\n");
                                             AzQtComponents::FixedWidthMessageBox moveMsgBox(
                                                 600,
-                                                tr("After Move Asset Information"),
+                                                tr(isFolder ? "After Move Folder Information" : "After Move Asset Information"),
                                                 tr("The asset has been moved."),
                                                 tr("More information can be found by pressing \"Show Details...\"."),
                                                 moveMessage.c_str(),
@@ -858,6 +867,10 @@ namespace AzToolsFramework
                                                 this);
                                             moveMsgBox.exec();
                                         }
+                                    }
+                                    if (isFolder)
+                                    {
+                                        AZ::IO::SystemFile::DeleteDir(entry->GetFullPath().c_str());
                                     }
                                 }
                             }
