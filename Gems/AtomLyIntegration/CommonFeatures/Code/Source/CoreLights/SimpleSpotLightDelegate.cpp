@@ -47,14 +47,14 @@ namespace AZ::Render
         }
     }
 
-    SimpleSpotLightDelegate::SimpleSpotVisualizationDimensions SimpleSpotLightDelegate::CalculateSimpleSpotVisualizationDimensions(
+    SimpleSpotLightDelegate::ConeVisualizationDimensions SimpleSpotLightDelegate::CalculateConeVisualizationDimensions(
         const float degrees) const
     {
         const float attenuationRadius = GetConfig()->m_attenuationRadius;
         const float shutterAngleRadians = DegToRad(degrees);
         const float coneRadius = Sin(shutterAngleRadians) * attenuationRadius;
         const float coneHeight = Cos(shutterAngleRadians) * attenuationRadius;
-        return SimpleSpotVisualizationDimensions{ coneRadius, coneHeight };
+        return ConeVisualizationDimensions{ coneRadius, coneHeight };
     }
 
     void SimpleSpotLightDelegate::DrawDebugDisplay(
@@ -73,16 +73,15 @@ namespace AZ::Render
             for (uint32_t i = 0; i < numRadiusLines; ++i)
             {
                 float radiusLineAngle = float(i) / numRadiusLines * Constants::TwoPi;
-                debugDisplay.DrawLine(
-                    Vector3::CreateZero(), Vector3(Cos(radiusLineAngle) * radius, Sin(radiusLineAngle) * radius, height));
+                debugDisplay.DrawLine(Vector3::CreateZero(), Vector3(Cos(radiusLineAngle) * radius, Sin(radiusLineAngle) * radius, height));
             }
         };
 
         debugDisplay.PushMatrix(transform);
 
-        const auto innerCone = CalculateSimpleSpotVisualizationDimensions(
-            GetMin(GetConfig()->m_innerShutterAngleDegrees, GetConfig()->m_outerShutterAngleDegrees));
-        const auto outerCone = CalculateSimpleSpotVisualizationDimensions(GetConfig()->m_outerShutterAngleDegrees);
+        const auto innerCone =
+            CalculateConeVisualizationDimensions(GetMin(GetConfig()->m_innerShutterAngleDegrees, GetConfig()->m_outerShutterAngleDegrees));
+        const auto outerCone = CalculateConeVisualizationDimensions(GetConfig()->m_outerShutterAngleDegrees);
 
         const Color coneColor = isSelected ? Color::CreateOne() : Color(0.0f, 0.75f, 0.75f, 1.0f);
         DrawCone(16, innerCone.m_radius, innerCone.m_height, coneColor, 1.0f);
@@ -111,9 +110,9 @@ namespace AZ::Render
     {
         const auto [radius, height] = [this]
         {
-            const auto [innerRadius, innerHeight] = CalculateSimpleSpotVisualizationDimensions(
+            const auto [innerRadius, innerHeight] = CalculateConeVisualizationDimensions(
                 GetMin(GetConfig()->m_outerShutterAngleDegrees, GetConfig()->m_innerShutterAngleDegrees));
-            const auto [outerRadius, outerHeight] = CalculateSimpleSpotVisualizationDimensions(GetConfig()->m_outerShutterAngleDegrees);
+            const auto [outerRadius, outerHeight] = CalculateConeVisualizationDimensions(GetConfig()->m_outerShutterAngleDegrees);
             return AZStd::pair{ GetMax(innerRadius, outerRadius), GetMax(innerHeight, outerHeight) };
         }();
 

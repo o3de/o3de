@@ -49,16 +49,14 @@ namespace AZ::Render
         return m_shapeBus->GetRadius() * GetTransform().GetUniformScale();
     }
 
-    DiskLightDelegate::DiskVisualizationConeDimensions DiskLightDelegate::CalculateDiskVisualizationDimensions(const float degrees) const
+    DiskLightDelegate::ConeVisualizationDimensions DiskLightDelegate::CalculateConeVisualizationDimensions(const float degrees) const
     {
-        const float radius = GetConfig()->m_attenuationRadius;
+        const float attenuationRadius = GetConfig()->m_attenuationRadius;
         const float shapeRadius = m_shapeBus->GetRadius();
-
         const float radians = DegToRad(degrees);
-        const float coneRadius = Sin(radians) * radius;
-        const float coneHeight = Cos(radians) * radius;
-
-        return DiskVisualizationConeDimensions{ shapeRadius, shapeRadius + coneRadius, coneHeight };
+        const float coneRadius = Sin(radians) * attenuationRadius;
+        const float coneHeight = Cos(radians) * attenuationRadius;
+        return ConeVisualizationDimensions{ shapeRadius, shapeRadius + coneRadius, coneHeight };
     }
 
     Aabb DiskLightDelegate::GetLocalVisualizationBounds() const
@@ -67,15 +65,15 @@ namespace AZ::Render
         {
             if (GetConfig()->m_enableShutters)
             {
-                const auto [innerTopRadius, innerBottomRadius, innerHeight] = CalculateDiskVisualizationDimensions(
+                const auto [innerTopRadius, innerBottomRadius, innerHeight] = CalculateConeVisualizationDimensions(
                     GetMin(GetConfig()->m_outerShutterAngleDegrees, GetConfig()->m_innerShutterAngleDegrees));
                 const auto [outerTopRadius, outerBottomRadius, outerHeight] =
-                    CalculateDiskVisualizationDimensions(GetConfig()->m_outerShutterAngleDegrees);
+                    CalculateConeVisualizationDimensions(GetConfig()->m_outerShutterAngleDegrees);
                 return AZStd::pair{ GetMax(outerBottomRadius, GetMax(innerBottomRadius, GetMax(innerTopRadius, outerTopRadius))),
                                     GetMax(innerHeight, outerHeight) };
             }
 
-            const auto [topRadius, bottomRadius, height] = CalculateDiskVisualizationDimensions(DefaultConeAngleDegrees);
+            const auto [topRadius, bottomRadius, height] = CalculateConeVisualizationDimensions(DefaultConeAngleDegrees);
             return AZStd::pair{ GetMax(topRadius, bottomRadius), height };
         }();
 
@@ -114,10 +112,10 @@ namespace AZ::Render
         // With shutters enabled, draw inner and outer debug display frustums
         if (GetConfig()->m_enableShutters)
         {
-            const auto [innerTopRadius, innerBottomRadius, innerHeight] = CalculateDiskVisualizationDimensions(
+            const auto [innerTopRadius, innerBottomRadius, innerHeight] = CalculateConeVisualizationDimensions(
                 GetMin(GetConfig()->m_outerShutterAngleDegrees, GetConfig()->m_innerShutterAngleDegrees));
             const auto [outerTopRadius, outerBottomRadius, outerHeight] =
-                CalculateDiskVisualizationDimensions(GetConfig()->m_outerShutterAngleDegrees);
+                CalculateConeVisualizationDimensions(GetConfig()->m_outerShutterAngleDegrees);
 
             // Outer cone frustum 'faded' debug cone
             const uint32_t outerConeLines = 9;
@@ -127,7 +125,7 @@ namespace AZ::Render
         }
         else
         {
-            const auto [topRadius, bottomRadius, height] = CalculateDiskVisualizationDimensions(DefaultConeAngleDegrees);
+            const auto [topRadius, bottomRadius, height] = CalculateConeVisualizationDimensions(DefaultConeAngleDegrees);
             DrawConicalFrustum(innerConeLines, coneColor, 1.0f, topRadius, bottomRadius, height);
         }
 

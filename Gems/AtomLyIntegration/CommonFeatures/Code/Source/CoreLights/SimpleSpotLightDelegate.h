@@ -40,13 +40,13 @@ namespace AZ::Render
     private:
         void HandleShapeChanged() override;
 
-        struct SimpleSpotVisualizationDimensions
+        struct ConeVisualizationDimensions
         {
             float m_radius;
             float m_height;
         };
 
-        SimpleSpotVisualizationDimensions CalculateSimpleSpotVisualizationDimensions(float degrees) const;
+        ConeVisualizationDimensions CalculateConeVisualizationDimensions(float degrees) const;
     };
 
     inline float SimpleSpotLightDelegate::GetEffectiveSolidAngle() const

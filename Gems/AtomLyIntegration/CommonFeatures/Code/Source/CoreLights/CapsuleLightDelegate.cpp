@@ -103,4 +103,17 @@ namespace AZ::Render
             AZ::Vector3(-radius, -radius, AZ::GetMin(-radius, -height * 0.5f)),
             AZ::Vector3(radius, radius, AZ::GetMax(radius, height * 0.5f)));
     }
+
+    float CapsuleLightDelegate::GetEffectiveSolidAngle() const
+    {
+        return PhotometricValue::OmnidirectionalSteradians;
+    }
+
+    CapsuleLightDelegate::CapsuleVisualizationDimensions CapsuleLightDelegate::CalculateCapsuleVisualizationDimensions() const
+    {
+        // Attenuation radius shape is just a capsule with the same internal height, but a radius of the attenuation radius.
+        const float radius = GetConfig()->m_attenuationRadius;
+        const float height = m_shapeBus->GetHeight();
+        return CapsuleLightDelegate::CapsuleVisualizationDimensions{ radius, height };
+    }
 } // namespace AZ::Render

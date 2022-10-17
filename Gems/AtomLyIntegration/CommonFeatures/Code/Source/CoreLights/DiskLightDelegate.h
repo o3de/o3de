@@ -57,14 +57,14 @@ namespace AZ::Render
 
         float GetRadius() const;
 
-        struct DiskVisualizationConeDimensions
+        struct ConeVisualizationDimensions
         {
             float m_topRadius;
             float m_bottomRadius;
             float m_height;
         };
 
-        DiskVisualizationConeDimensions CalculateDiskVisualizationDimensions(float degrees) const;
+        ConeVisualizationDimensions CalculateConeVisualizationDimensions(float degrees) const;
 
         LmbrCentral::DiskShapeComponentRequests* m_shapeBus = nullptr;
     };
