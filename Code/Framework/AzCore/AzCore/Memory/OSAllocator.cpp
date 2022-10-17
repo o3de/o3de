@@ -108,9 +108,7 @@ namespace AZ
         const size_type previouslyAllocatedSize = ptr ? get_allocated_size(ptr, 1) : 0;
 #endif
 
-        // Realloc in most platforms doesnt support allocating from a nulltpr
-        pointer newPtr = ptr ? AZ_OS_REALLOC(ptr, newSize, static_cast<AZStd::size_t>(alignment))
-                             : AZ_OS_MALLOC(newSize, static_cast<AZStd::size_t>(alignment));
+        pointer newPtr = AZ_OS_REALLOC(ptr, newSize, static_cast<AZStd::size_t>(alignment));
 
 #if defined(AZ_ENABLE_TRACING)
         const size_type allocatedSize = get_allocated_size(newPtr, 1);
