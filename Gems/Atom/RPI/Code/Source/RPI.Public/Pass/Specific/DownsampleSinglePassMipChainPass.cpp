@@ -83,6 +83,8 @@ namespace AZ
             }
 
             RHI::ShaderInputNameIndex imageNameIndex("m_imageDestination");
+            RHI::ShaderInputNameIndex image6NameIndex("m_imageDestination6");
+            static constexpr uint32_t GloballyCoherentMipIndex = 6;
             for (uint32_t mipIndex = 0; mipIndex < GetMin(m_mipLevelCount, SpdMipLevelCountMax); ++mipIndex)
             {
                 RHI::ImageViewDescriptor viewDesc;
@@ -95,7 +97,14 @@ namespace AZ
                     AZ_Assert(false, "DownsampleSingelPassMipChainPass failed to create RHI::ImageView.");
                     return;
                 }
-                srg.SetImageView(imageNameIndex, imageView.get(), mipIndex);
+                if (mipIndex == GloballyCoherentMipIndex)
+                {
+                    srg.SetImageView(image6NameIndex, imageView.get());
+                }
+                else
+                {
+                    srg.SetImageView(imageNameIndex, imageView.get(), mipIndex);
+                }
                 m_imageViews[mipIndex] = imageView;
             }
 

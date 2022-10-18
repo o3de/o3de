@@ -37,7 +37,6 @@ groupshared AU1 s_spdCounter;
 groupshared AF1 s_spdIntermediateR[16][16];
 groupshared AF1 s_spdIntermediateG[16][16];
 groupshared AF1 s_spdIntermediateB[16][16];
-groupshared AF1 s_spdIntermediateA[16][16];
 
 AF4 SpdLoadSourceImage(AF2 tex, AU1 /* slice */)
 {
@@ -78,7 +77,7 @@ AF4 SpdLoadIntermediate(AU1 x, AU1 y)
     s_spdIntermediateR[x][y],
     s_spdIntermediateG[x][y],
     s_spdIntermediateB[x][y],
-    s_spdIntermediateA[x][y]);
+    0.);
 }
 
 void SpdStoreIntermediate(AU1 x, AU1 y, AF4 value)
@@ -86,7 +85,6 @@ void SpdStoreIntermediate(AU1 x, AU1 y, AF4 value)
     s_spdIntermediateR[x][y] = value.x;
     s_spdIntermediateG[x][y] = value.y;
     s_spdIntermediateB[x][y] = value.z;
-    s_spdIntermediateA[x][y] = value.w;
 }
 
 AF4 SpdReduce4(AF4 v0, AF4 v1, AF4 v2, AF4 v3)

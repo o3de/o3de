@@ -25,7 +25,7 @@
                     }
                 },
                 {
-                    "Name": "Mip6",
+                    "Name": "Mip6InputOutput",
                     "SlotType": "InputOutput",
                     "ShaderInputName": "m_imageDestination6",
                     "ScopeAttachmentUsage": "Shader"
@@ -41,24 +41,6 @@
                     }
                 }
             ],
-            "ImageAttachments": [
-                {
-                    "Name": "Mip6",
-                    "SizeSource": {
-                        "Source": {
-                            "Pass": "This",
-                            "Attachment": "MipChainInputOutput"
-                        },
-                        "Multipliers": {
-                            "WidthMultiplier": 0.015625,
-                            "HeightMultiplier": 0.015625
-                        }
-                    },
-                    "ImageDescriptor": {
-                        "Format": "R16G16B16A16_FLOAT"
-                    }
-                }
-            ],
             "BufferAttachments": [
                 {
                     "Name": "GlobalAtomic",
@@ -70,13 +52,6 @@
                 }
             ],
             "Connections": [
-                {
-                    "LocalSlot": "Mip6",
-                    "AttachmentRef": {
-                        "Pass": "This",
-                        "Attachment": "Mip6"
-                    }
-                },
                 {
                     "LocalSlot": "GlobalAtomic",
                     "AttachmentRef": {

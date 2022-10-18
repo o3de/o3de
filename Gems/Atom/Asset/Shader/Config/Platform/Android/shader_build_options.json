@@ -15,6 +15,7 @@
               // mobile because that decoration is not supported by most mobile drivers.
               , "-enable-16bit-types"
               , "-fvk-disable-depth-hint" // Disable image depth hint because it causes some crashes on mobile drivers.
+              , "-fspv-target-env=vulkan1.1"
         ]
     }
 }
