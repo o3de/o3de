@@ -424,7 +424,7 @@ namespace AZ::Render
 
     float AreaLightComponentController::GetSurfaceArea() const
     {
-        return m_lightShapeDelegate->GetSurfaceArea();
+        return m_lightShapeDelegate ? m_lightShapeDelegate->GetSurfaceArea() : 0.0f;
     }
     
     bool AreaLightComponentController::GetEnableShutters() const
@@ -608,12 +608,8 @@ namespace AZ::Render
 
     AZ::Aabb AreaLightComponentController::GetLocalVisualizationBounds() const
     {
-        if (m_lightShapeDelegate)
-        {
-            return m_lightShapeDelegate->GetLocalVisualizationBounds();
-        }
-
-        return AZ::Aabb::CreateFromPoint(AZ::Vector3::CreateZero());
+        return m_lightShapeDelegate ? m_lightShapeDelegate->GetLocalVisualizationBounds()
+                                    : AZ::Aabb::CreateFromPoint(AZ::Vector3::CreateZero());
     }
 
     void AreaLightComponentController::CreateLightShapeDelegate()
