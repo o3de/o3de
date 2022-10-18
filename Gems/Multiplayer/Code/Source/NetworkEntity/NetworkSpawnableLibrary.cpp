@@ -37,7 +37,6 @@ namespace Multiplayer
 
     void NetworkSpawnableLibrary::BuildSpawnablesList()
     {
-        AZ_Printf(__FUNCTION__, "clear");
         m_spawnables.clear();
         m_spawnablesReverseLookup.clear();
 

@@ -359,7 +359,7 @@ namespace Multiplayer
             AZ_Error("MultiplayerEditor", !prefabSystemEnabled, "PrefabEditorEntityOwnershipInterface unavailable but prefabs are enabled");
             return;
         }
-
+        
         MultiplayerEditorServerNotificationBus::Broadcast(&MultiplayerEditorServerNotificationBus::Events::OnEditorSendingLevelData);
         AZ_TracePrintf("MultiplayerEditor", "Editor is sending the editor-server the level data packet.")
 
@@ -378,7 +378,7 @@ namespace Multiplayer
             byteStream.Write(preAliasedSpawnableData.assetHint.size(), preAliasedSpawnableData.assetHint.data());
             AZ::Utils::SaveObjectToStream(byteStream, AZ::DataStream::ST_BINARY, preAliasedSpawnableData.spawnable.get(), preAliasedSpawnableData.spawnable->GetType());
         }
-
+        
         // Spawnable library needs to be rebuilt since now we have newly registered in-memory spawnable assets
         AZ::Interface<INetworkSpawnableLibrary>::Get()->BuildSpawnablesList();
 
@@ -415,7 +415,7 @@ namespace Multiplayer
     {
         PyEnterGameMode();
     }
-
+    
     bool MultiplayerEditorSystemComponent::IsInGameMode()
     {
         return PyIsInGameMode();
@@ -469,7 +469,7 @@ namespace Multiplayer
             SendEditorServerLevelDataPacket(editorNetworkInterface->GetConnectionSet().GetConnection(m_editorConnId));
         }
     }
-
+    
     void MultiplayerEditorSystemComponent::OnPreparingInMemorySpawnableFromPrefab(
         const AzFramework::Spawnable& spawnable, const AZStd::string& assetHint)
     {
