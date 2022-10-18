@@ -414,7 +414,7 @@ namespace AZ
                 instance->m_assetType = asset.GetType();
                 m_database.emplace(id, instance.get());
             }
-            return AZStd::move(instance);
+            return instance;
         }
 
         template<typename Type>
