@@ -26,17 +26,24 @@ namespace AzToolsFramework
         using BusIdType = AZ::EntityComponentIdPair;
 
         //! Returns the set of current painted values at the requested positions.
-        //! This should get called in response to receiving a PaintBrushNotificationBus::OnPaint(dirtyRegion, valueLookupFn) event
+        //! This should get called in response to receiving a PaintBrushNotificationBus::OnPaint(dirtyRegion, valueLookupFn, blendFn) event
         //! to get the specific painted values at every position the listener cares about within the dirtyRegion.
         //! @points The input world space positions to query.
-        //! @intensities [out] The output intensities of the paintbrush that have been painted at this position.
-        //! @opacity [out] The output opacities of the paintbrush that have been painted at this position.
-        //! @validFlags [out] For each position, true if this point has been painted by the paintbrush, false if not.
+        //! @validPoints [out] The output positions that are valid for this paintbrush.
+        //! @opacities [out] The output per-pixel opacities of the paintbrush that have been painted at this position (0-1 range).
         using ValueLookupFn = AZStd::function<void(
             AZStd::span<const AZ::Vector3> points,
-            AZStd::span<float> intensities,
-            AZStd::span<float> opacities,
-            AZStd::span<bool> validFlags)>;
+            AZStd::vector<AZ::Vector3>& validPoints,
+            AZStd::vector<float>& opacities)>;
+
+        //! Returns the base value blended with the paint brush intensity / opacity based on paint brush blend mode.
+        //! This should get called in response to receiving a PaintBrushNotificationBus::OnPaint(dirtyRegion, valueLookupFn, blendFn) event
+        //! to blend a base value with a paintbrush value.
+        //! @baseValue The input base value from whatever data is being painted (0-1).
+        //! @intensity The paint brush intensity at this position (0-1).
+        //! @opacity The paint brush opacity at this position (0-1).
+        //! @return The blended value from 0-1.
+        using BlendFn = AZStd::function<float(float baseValue, float intensity, float opacity)>;
 
         //! Notifies listeners that the paintbrush transform has changed,
         //! typically due to the brush moving around in world space.
@@ -56,13 +63,15 @@ namespace AzToolsFramework
         {
         }
 
-        //! Notifies listeners that painting has begun.
-        virtual void OnPaintBegin()
+        //! Notifies listeners that a paint stroke has begun.
+        //! @param intensity The intensity of the paint stroke (0-1)
+        //! @param opacity The opacity of the paint stroke (0-1)
+        virtual void OnPaintStrokeBegin([[maybe_unused]] float intensity, [[maybe_unused]] float opacity)
         {
         }
 
-        //! Notifies listeners that painting has ended.
-        virtual void OnPaintEnd()
+        //! Notifies listeners that a paint stroke has ended.
+        virtual void OnPaintStrokeEnd()
         {
         }
 
@@ -73,9 +82,13 @@ namespace AzToolsFramework
         //! 1. The paintbrush sends the OnPaint message with the AABB of the region that has changed and a paintbrush value callback.
         //! 2. The listener calls the paintbrush value callback for each position in the region that it cares about.
         //! 3. The paintbrush responds with the specific painted values for each of those positions based on the brush shape and settings.
+        //! 4. The listener uses the blendFn to blend values together using the paint brush blending method.
         //! @param dirtyArea The AABB of the area that has been painted in.
-        //! @param valueLookupFn The paintbrush value callback to use to get the intensities / opacities / valid flags for specific positions.
-        virtual void OnPaint([[maybe_unused]] const AZ::Aabb& dirtyArea, [[maybe_unused]] ValueLookupFn& valueLookupFn)
+        //! @param valueLookupFn The paintbrush value callback to use to get the intensities / opacities / valid flags for
+        //! specific positions.
+        //! @param blendFn The paintbrush callback to use to blend values together.
+        virtual void OnPaint(
+            [[maybe_unused]] const AZ::Aabb& dirtyArea, [[maybe_unused]] ValueLookupFn& valueLookupFn, [[maybe_unused]] BlendFn& blendFn)
         {
         }
     };

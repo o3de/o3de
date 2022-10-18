@@ -19,18 +19,11 @@
 
 namespace UnitTests
 {
-    bool DatabaseLocationListener::GetAssetDatabaseLocation(AZStd::string& location)
-    {
-        location = m_databaseLocation;
-        return true;
-    }
-
     void ApplicationManagerTest::SetUp()
     {
         ScopedAllocatorSetupFixture::SetUp();
         
-        AZ::IO::Path tempDir(m_tempDir.GetDirectory());
-        m_databaseLocationListener.m_databaseLocation = (tempDir / "test_database.sqlite").Native();
+        AZ::IO::Path assetRootDir(m_databaseLocationListener.GetAssetRootDir());
 
         // We need a QCoreApplication to run the event loop
         int argc = 0;
@@ -47,7 +40,7 @@ namespace UnitTests
         m_applicationManager->m_platformConfiguration->EnablePlatform(AssetBuilderSDK::PlatformInfo{ "pc", { "tag" } });
         m_applicationManager->m_platformConfiguration->PopulatePlatformsForScanFolder(platforms);
         m_applicationManager->m_platformConfiguration->AddScanFolder(
-            AssetProcessor::ScanFolderInfo{ tempDir.c_str(), "test", "test", true, true, platforms });
+            AssetProcessor::ScanFolderInfo{ assetRootDir.c_str(), "test", "test", true, true, platforms });
         
         m_apmThread = AZStd::make_unique<QThread>(nullptr);
         m_apmThread->setObjectName("APM Thread");
@@ -80,11 +73,11 @@ namespace UnitTests
 
     TEST_F(ApplicationManagerTest, FileWatcherEventsTriggered_ProperlySignalledOnCorrectThread)
     {
-        AZ::IO::Path tempDir(m_tempDir.GetDirectory());
+        AZ::IO::Path assetRootDir(m_databaseLocationListener.GetAssetRootDir());
 
-        Q_EMIT m_fileWatcher->fileAdded((tempDir / "test").c_str());
-        Q_EMIT m_fileWatcher->fileModified((tempDir / "test2").c_str());
-        Q_EMIT m_fileWatcher->fileRemoved((tempDir / "test3").c_str());
+        Q_EMIT m_fileWatcher->fileAdded((assetRootDir / "test").c_str());
+        Q_EMIT m_fileWatcher->fileModified((assetRootDir / "test2").c_str());
+        Q_EMIT m_fileWatcher->fileRemoved((assetRootDir / "test3").c_str());
         
         EXPECT_TRUE(m_mockAPM->m_events[Added].WaitAndCheck()) << "APM Added event failed";
         EXPECT_TRUE(m_mockAPM->m_events[Modified].WaitAndCheck()) << "APM Modified event failed";

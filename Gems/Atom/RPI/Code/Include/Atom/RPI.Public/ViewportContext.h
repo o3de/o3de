@@ -82,6 +82,8 @@ namespace AZ
             void OnRenderPipelineRemoved(RenderPipeline* pipeline) override;
             //! OnBeginPrepareRender is forwarded to our RenderTick notification to allow subscribers to do rendering.
             void OnBeginPrepareRender() override;
+            //! OnEndPrepareRender is forwarded to our WaitForRender notification to wait for any pending work
+            void OnEndPrepareRender() override;
 
             // WindowNotificationBus interface overrides...
             //! Used to fire a notification when our window resizes.

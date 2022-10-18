@@ -20,12 +20,6 @@
 
 namespace UnitTests
 {
-    bool TestingDatabaseLocationListener::GetAssetDatabaseLocation(AZStd::string& location)
-    {
-        location = m_databaseLocation;
-        return true;
-    }
-
     void TestingAssetProcessorManager::CheckActiveFiles(int count)
     {
         ASSERT_EQ(m_activeFiles.size(), count);
@@ -53,8 +47,7 @@ namespace UnitTests
         }
 
         // Specify the database lives in the temp directory
-        AZ::IO::Path tempDir(m_tempDir.GetDirectory());
-        m_databaseLocationListener.m_databaseLocation = (tempDir / "test_database.sqlite").Native();
+        AZ::IO::Path assetRootDir(m_databaseLocationListener.GetAssetRootDir());
 
         // We need a settings registry in order for APM to figure out the cache path
         m_settingsRegistry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
@@ -62,7 +55,7 @@ namespace UnitTests
 
         auto projectPathKey =
             AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
-        m_settingsRegistry->Set(projectPathKey, m_tempDir.GetDirectory());
+        m_settingsRegistry->Set(projectPathKey, m_databaseLocationListener.GetAssetRootDir().c_str());
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*m_settingsRegistry);
 
         // We need a QCoreApplication set up in order for QCoreApplication::processEvents to function
@@ -83,7 +76,7 @@ namespace UnitTests
         m_platformConfig->PopulatePlatformsForScanFolder(platforms);
 
         m_platformConfig->AddScanFolder(
-            AssetProcessor::ScanFolderInfo{ (tempDir / "folder").c_str(), "folder", "folder", false, true, platforms });
+            AssetProcessor::ScanFolderInfo{ (assetRootDir / "folder").c_str(), "folder", "folder", false, true, platforms });
 
         m_platformConfig->AddIntermediateScanFolder();
 
@@ -150,6 +143,9 @@ namespace UnitTests
 
         AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
         AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
+
+        m_stateData.reset();
+        m_assetProcessorManager.reset();
 
         ScopedAllocatorSetupFixture::TearDown();
     }

@@ -10,6 +10,7 @@
 #include <AzCore/Outcome/Outcome.h>
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
 #include <native/utilities/MissingDependencyScanner.h>
+#include <native/tests/MockAssetDatabaseRequestsHandler.h>
 #include <AssetDatabase/AssetDatabase.h>
 
 namespace AssetProcessor
@@ -23,11 +24,6 @@ namespace AssetProcessor
         {
             return m_dependenciesRulesMap;
         }
-    };
-    class MissingDependencyScannerTestsMockDatabaseLocationListener : public AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Handler
-    {
-    public:
-        MOCK_METHOD1(GetAssetDatabaseLocation, bool(AZStd::string&));
     };
 
     class MissingDependencyScannerTest
@@ -51,22 +47,12 @@ namespace AssetProcessor
 
             m_data = AZStd::make_unique<StaticData>();
 
-            QDir tempPath(m_data->m_tempDir.path());
-
-            m_data->m_databaseLocationListener.BusConnect();
-
-            m_data->m_databaseLocation = tempPath.absoluteFilePath("test_database.sqlite").toUtf8().constData();
-
-            ON_CALL(m_data->m_databaseLocationListener, GetAssetDatabaseLocation(_))
-                .WillByDefault(
-                    DoAll( // set the 0th argument ref (string) to the database location and return true.
-                        SetArgReferee<0>(m_data->m_databaseLocation),
-                        Return(true)));
+            QDir assetRootPath(m_data->m_databaseLocationListener.GetAssetRootDir().c_str());
 
             m_data->m_dbConn = AZStd::shared_ptr<AssetDatabaseConnection>(aznew AssetDatabaseConnection());
             m_data->m_dbConn->OpenDatabase();
 
-            m_data->m_scopedDir.Setup(tempPath.absolutePath());
+            m_data->m_scopedDir.Setup(assetRootPath.absolutePath());
         }
 
         void TearDown() override
@@ -134,15 +120,15 @@ namespace AssetProcessor
         {
             using namespace AzToolsFramework::AssetDatabase;
 
-            QDir tempPath(m_data->m_tempDir.path());
-            QString testFilePath = tempPath.absoluteFilePath("subfolder1/assetProcessorManagerTest.txt");
+            QDir assetRootPath(m_data->m_databaseLocationListener.GetAssetRootDir().c_str());
+            QString testFilePath = assetRootPath.absoluteFilePath("subfolder1/assetProcessorManagerTest.txt");
 
             AZStd::string testPlatform("pc");
             AZStd::string missingProductPath(AZStd::string::format("test/%s", missingProductName.c_str()));
             ASSERT_TRUE(UnitTestUtils::CreateDummyFile(testFilePath, missingProductName.c_str()));
 
             // Create the referenced product
-            AZ::Outcome<AZ::s64, AZStd::string> scanResult = CreateScanFolder("Test", tempPath.absoluteFilePath("subfolder1").toUtf8().constData());
+            AZ::Outcome<AZ::s64, AZStd::string> scanResult = CreateScanFolder("Test", assetRootPath.absoluteFilePath("subfolder1").toUtf8().constData());
             ASSERT_TRUE(scanResult.IsSuccess());
             AZ::s64 scanFolderIndex(scanResult.GetValue());
             AZ::Outcome<SourceAndProductInfo, AZStd::string> firstAsset = CreateSourceAndProductAsset(scanFolderIndex, "tests/1", testPlatform, missingProductPath);
@@ -168,9 +154,8 @@ namespace AssetProcessor
 
         struct StaticData
         {
-            QTemporaryDir m_tempDir;
             AZStd::string m_databaseLocation;
-            ::testing::NiceMock<MissingDependencyScannerTestsMockDatabaseLocationListener> m_databaseLocationListener;
+            MockAssetDatabaseRequestsHandler m_databaseLocationListener;
             AZStd::shared_ptr<AssetDatabaseConnection> m_dbConn;
             MissingDependencyScanner_Test m_scanner;
             UnitTestUtils::ScopedDir m_scopedDir; // Sets up FileIO instance
@@ -193,13 +178,13 @@ namespace AssetProcessor
     {
         using namespace AzToolsFramework::AssetDatabase;
 
-        QDir tempPath(m_data->m_tempDir.path());
+        QDir assetRootPath(m_data->m_databaseLocationListener.GetAssetRootDir().c_str());
 
         // Create the referenced product
         ScanFolderDatabaseEntry scanFolder;
         scanFolder.m_displayName = "Test";
         scanFolder.m_portableKey = "Test";
-        scanFolder.m_scanFolder = tempPath.absoluteFilePath("subfolder1").toUtf8().constData();
+        scanFolder.m_scanFolder = assetRootPath.absoluteFilePath("subfolder1").toUtf8().constData();
         ASSERT_TRUE(m_data->m_dbConn->SetScanFolder(scanFolder));
 
         SourceDatabaseEntry sourceEntry;
@@ -222,7 +207,7 @@ namespace AssetProcessor
         AZStd::string productReference("tests/1.product");
 
         // Create a cpp file that references the product above.
-        QString sourceFilePath = tempPath.absoluteFilePath("subfolder1/TestFile.cpp");
+        QString sourceFilePath = assetRootPath.absoluteFilePath("subfolder1/TestFile.cpp");
         AZStd::string codeSourceCode = AZStd::string::format(R"(#include <Dummy/Dummy.h>;
                                           #define PRODUCT_REFERENCE "%s")", productReference.c_str());
         ASSERT_TRUE(UnitTestUtils::CreateDummyFile(sourceFilePath, codeSourceCode.c_str()));
@@ -240,7 +225,7 @@ namespace AssetProcessor
         ASSERT_EQ(productDependency, productReference);
 
         productDependency.clear();
-        QString anotherSourceFilePath = tempPath.absoluteFilePath("subfolder1/TestFile.cpp");
+        QString anotherSourceFilePath = assetRootPath.absoluteFilePath("subfolder1/TestFile.cpp");
         codeSourceCode = AZStd::string::format(R"(#include <Dummy/Dummy.h>;
                             AZStd::string filePath("%s")", productReference.c_str());
         ASSERT_TRUE(UnitTestUtils::CreateDummyFile(anotherSourceFilePath, codeSourceCode.c_str()));

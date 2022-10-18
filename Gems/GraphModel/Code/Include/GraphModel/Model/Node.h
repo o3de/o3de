@@ -10,7 +10,6 @@
 // AZ
 #include <AzCore/Math/Crc.h>
 #include <AzCore/std/containers/map.h>
-#include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/smart_ptr/enable_shared_from_this.h>
 
@@ -68,11 +67,9 @@ namespace GraphModel
 
         using SlotDefinitionList = AZStd::vector<SlotDefinitionPtr>;
 
-        // We use a map instead of unordered_map to get consistent order in XML to make diffs more readable. Performance
-        // isn't really a concern because these maps will be rather small.
-        // But ConstSlotMap uses unordered_map because it isn't serialized.
+        // We use a map instead of unordered_map to get consistent order.
         using SlotMap = AZStd::map<SlotId, SlotPtr>;
-        using ConstSlotMap = AZStd::unordered_map<SlotId, const SlotPtr>;
+        using ConstSlotMap = AZStd::map<SlotId, const SlotPtr>;
 
         // Special case mapping for holding the extendable slots so we can keep track of their indexed
         // order as well.
@@ -117,13 +114,13 @@ namespace GraphModel
         virtual NodeType GetNodeType() const;
 
         NodeId GetId() const;
-
+        uint32_t GetMaxInputDepth() const;
+        uint32_t GetMaxOutputDepth() const;
         bool HasConnections() const;
         bool HasInputConnections() const;
         bool HasOutputConnections() const;
         bool HasInputConnectionFromNode(ConstNodePtr node) const;
         bool HasOutputConnectionToNode(ConstNodePtr node) const;
-
         bool Contains(ConstSlotPtr slot) const;
 
         //! Returns SlotDefinitions for all available Slots

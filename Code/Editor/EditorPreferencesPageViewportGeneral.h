@@ -52,7 +52,6 @@ private:
     {
         AZ_TYPE_INFO(Display, "{F0376933-FA0B-4B58-9DD9-6F6EBC7386CA}")
 
-        bool m_showSafeFrame;
         bool m_highlightSelGeom;
         bool m_highlightSelVegetation;
         bool m_highlightOnMouseOver;
