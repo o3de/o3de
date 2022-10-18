@@ -9,7 +9,6 @@
 
 #if !defined(Q_MOC_RUN)
 #include <native/unittests/AssetProcessorUnitTests.h>
-#include <native/unittests/MockConnectionHandler.h>
 #endif
 
 namespace AssetProcessor
@@ -24,12 +23,15 @@ namespace AssetProcessor
         Q_OBJECT
 
     protected:
+        AssetRequestHandlerUnitTests();
+        ~AssetRequestHandlerUnitTests();
+
         void SetUp() override;
         void TearDown() override;
 
         AZStd::unique_ptr<MockAssetRequestHandler> m_requestHandler;
 
-        AssetProcessor::MockConnectionHandler m_connection;
+        AZStd::unique_ptr<AssetProcessor::MockConnectionHandler> m_connection;
         bool m_requestedCompileGroup = false;
         bool m_requestedAssetExists = false;
         QString m_platformSet;

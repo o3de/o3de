@@ -9,6 +9,7 @@
 #include <native/AssetManager/AssetrequestHandler.h>
 
 #include <native/unittests/AssetRequestHandlerUnitTests.h>
+#include <native/unittests/MockConnectionHandler.h>
 
 #include <QCoreApplication>
 
@@ -73,11 +74,21 @@ namespace AssetProcessor
     };
 }
 
+AssetRequestHandlerUnitTests::AssetRequestHandlerUnitTests()
+    : UnitTest::AssetProcessorUnitTestBase()
+{
+}
+
+AssetRequestHandlerUnitTests::~AssetRequestHandlerUnitTests()
+{
+}
+
 void AssetRequestHandlerUnitTests::SetUp()
 {
     UnitTest::AssetProcessorUnitTestBase::SetUp();
 
     m_requestHandler = AZStd::make_unique<MockAssetRequestHandler>();
+    m_connection = AZStd::make_unique<MockConnectionHandler>();
 
     QObject::connect(m_requestHandler.get(), &AssetRequestHandler::RequestCompileGroup, this, [&](NetworkRequestID groupID, QString platform, QString searchTerm)
         {
@@ -95,12 +106,12 @@ void AssetRequestHandlerUnitTests::SetUp()
             m_searchTermSet = searchTerm;
         });
 
-    m_connection.BusConnect(1);
+    m_connection->BusConnect(1);
 }
 
 void AssetRequestHandlerUnitTests::TearDown()
 {
-    m_connection.BusDisconnect(1);
+    m_connection->BusDisconnect(1);
 
     m_requestHandler.reset();
 
@@ -141,7 +152,7 @@ TEST_F(AssetRequestHandlerUnitTests, RequestToProcessAssetNotExistInDatabaseOrQu
     QCoreApplication::processEvents(QEventLoop::AllEvents);
     EXPECT_TRUE(m_requestedCompileGroup);
     EXPECT_FALSE(m_requestedAssetExists);
-    EXPECT_FALSE(m_connection.m_sent);
+    EXPECT_FALSE(m_connection->m_sent);
     EXPECT_EQ(m_platformSet, Platform);
     EXPECT_EQ(m_requestIdSet, RequestId);
     EXPECT_EQ(m_searchTermSet, AssetName);
@@ -153,7 +164,7 @@ TEST_F(AssetRequestHandlerUnitTests, RequestToProcessAssetNotExistInDatabaseOrQu
 
     m_requestedCompileGroup = false;
     m_requestedAssetExists = false;
-    m_connection.m_sent = false;
+    m_connection->m_sent = false;
 
     // it worked so far, now synthesize a response:
     // it should result in it asking for asset exists
@@ -161,13 +172,13 @@ TEST_F(AssetRequestHandlerUnitTests, RequestToProcessAssetNotExistInDatabaseOrQu
 
     EXPECT_FALSE(m_requestedCompileGroup);
     EXPECT_TRUE(m_requestedAssetExists);
-    EXPECT_FALSE(m_connection.m_sent);
+    EXPECT_FALSE(m_connection->m_sent);
     EXPECT_EQ(m_platformSet, Platform);
     EXPECT_EQ(m_requestIdSet, RequestId);
     EXPECT_EQ(m_searchTermSet, AssetName);
     m_requestedCompileGroup = false;
     m_requestedAssetExists = false;
-    m_connection.m_sent = false;
+    m_connection->m_sent = false;
     EXPECT_EQ(m_requestHandler->GetNumOutstandingAssetRequests(), 1); // it should still be alive!
 
     // it worked so far, now synthesize a response:
@@ -177,17 +188,17 @@ TEST_F(AssetRequestHandlerUnitTests, RequestToProcessAssetNotExistInDatabaseOrQu
     // this should result in it sending:
     EXPECT_FALSE(m_requestedCompileGroup);
     EXPECT_FALSE(m_requestedAssetExists);
-    EXPECT_TRUE(m_connection.m_sent);
-    EXPECT_EQ(NetworkRequestID(1, m_connection.m_serial), RequestId);
-    EXPECT_EQ(m_connection.m_type, RequestAssetStatus::MessageType);
+    EXPECT_TRUE(m_connection->m_sent);
+    EXPECT_EQ(NetworkRequestID(1, m_connection->m_serial), RequestId);
+    EXPECT_EQ(m_connection->m_type, RequestAssetStatus::MessageType);
     m_requestedCompileGroup = false;
     m_requestedAssetExists = false;
-    m_connection.m_sent = false;
+    m_connection->m_sent = false;
     EXPECT_EQ(m_requestHandler->GetNumOutstandingAssetRequests(), 0); // it should be gone now
 
     // decode the buffer.
     ResponseAssetStatus resp;
-    EXPECT_TRUE(AZ::Utils::LoadObjectFromBufferInPlace(m_connection.m_payload.data(), m_connection.m_payload.size(), resp));
+    EXPECT_TRUE(AZ::Utils::LoadObjectFromBufferInPlace(m_connection->m_payload.data(), m_connection->m_payload.size(), resp));
     EXPECT_EQ(resp.m_assetStatus, AssetStatus_Missing);
 }
 
@@ -216,23 +227,23 @@ TEST_F(AssetRequestHandlerUnitTests, RequestToCreateCompileGroup_RequestSent_Req
     // no callbacks should be set:
     m_requestedCompileGroup = false;
     m_requestedAssetExists = false;
-    m_connection.m_sent = false;
+    m_connection->m_sent = false;
 
     EXPECT_FALSE(m_requestedCompileGroup);
     EXPECT_FALSE(m_requestedAssetExists);
-    EXPECT_FALSE(m_connection.m_sent);
+    EXPECT_FALSE(m_connection->m_sent);
 
     // test invalid group:
     m_requestHandler->OnCompileGroupFinished(NetworkRequestID(0, 0), AssetStatus_Queued);
 
     EXPECT_FALSE(m_requestedCompileGroup);
     EXPECT_FALSE(m_requestedAssetExists);
-    EXPECT_FALSE(m_connection.m_sent);
+    EXPECT_FALSE(m_connection->m_sent);
     EXPECT_EQ(m_requestHandler->GetNumOutstandingAssetRequests(), 0);
 
     m_requestHandler->OnCompileGroupFinished(m_requestIdSet, AssetStatus_Failed);
     EXPECT_EQ(m_requestHandler->GetNumOutstandingAssetRequests(), 0);
-    EXPECT_FALSE(m_connection.m_sent);
+    EXPECT_FALSE(m_connection->m_sent);
 }
 
 TEST_F(AssetRequestHandlerUnitTests, RequestToCompileAsset_RequestSent_RequestHandled)
@@ -256,7 +267,7 @@ TEST_F(AssetRequestHandlerUnitTests, RequestToCompileAsset_RequestSent_RequestHa
 
     m_requestedCompileGroup = false;
     m_requestedAssetExists = false;
-    m_connection.m_sent = false;
+    m_connection->m_sent = false;
 
     m_requestHandler->OnCompileGroupFinished(m_requestIdSet, AssetStatus_Compiled);
 
@@ -266,8 +277,8 @@ TEST_F(AssetRequestHandlerUnitTests, RequestToCompileAsset_RequestSent_RequestHa
     EXPECT_FALSE(m_requestedCompileGroup);
     EXPECT_FALSE(m_requestedAssetExists);
     EXPECT_EQ(m_requestHandler->GetNumOutstandingAssetRequests(), 0);
-    EXPECT_TRUE(m_connection.m_sent);
-    EXPECT_TRUE(AZ::Utils::LoadObjectFromBufferInPlace(m_connection.m_payload.data(), m_connection.m_payload.size(), resp));
+    EXPECT_TRUE(m_connection->m_sent);
+    EXPECT_TRUE(AZ::Utils::LoadObjectFromBufferInPlace(m_connection->m_payload.data(), m_connection->m_payload.size(), resp));
     EXPECT_EQ(resp.m_assetStatus, AssetStatus_Compiled);
 }
 
@@ -285,25 +296,25 @@ TEST_F(AssetRequestHandlerUnitTests, RequestToProcessFileOnDiskButNotInQueue_Req
 
     m_requestedCompileGroup = false;
     m_requestedAssetExists = false;
-    m_connection.m_sent = false;
+    m_connection->m_sent = false;
 
     m_requestHandler->OnCompileGroupCreated(m_requestIdSet, AssetStatus_Unknown);
     EXPECT_EQ(m_requestHandler->GetNumOutstandingAssetRequests(), 1);
     EXPECT_FALSE(m_requestedCompileGroup);
     EXPECT_TRUE(m_requestedAssetExists);
-    EXPECT_FALSE(m_connection.m_sent);
+    EXPECT_FALSE(m_connection->m_sent);
 
     m_requestedCompileGroup = false;
     m_requestedAssetExists = false;
-    m_connection.m_sent = false;
+    m_connection->m_sent = false;
     m_requestHandler->OnRequestAssetExistsResponse(m_requestIdSet, true);
     EXPECT_FALSE(m_requestedCompileGroup);
     EXPECT_FALSE(m_requestedAssetExists);
-    EXPECT_TRUE(m_connection.m_sent);
+    EXPECT_TRUE(m_connection->m_sent);
 
     // decode the buffer.
     ResponseAssetStatus resp;
-    EXPECT_TRUE(AZ::Utils::LoadObjectFromBufferInPlace(m_connection.m_payload.data(), m_connection.m_payload.size(), resp));
+    EXPECT_TRUE(AZ::Utils::LoadObjectFromBufferInPlace(m_connection->m_payload.data(), m_connection->m_payload.size(), resp));
     EXPECT_EQ(resp.m_assetStatus, AssetStatus_Compiled);
 }
 
