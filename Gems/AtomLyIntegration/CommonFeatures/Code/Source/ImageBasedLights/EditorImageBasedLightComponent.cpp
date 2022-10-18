@@ -10,6 +10,12 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
+
+AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
+#include <QApplication>
+#include <QMessageBox>
+AZ_POP_DISABLE_WARNING
 
 namespace AZ
 {
@@ -50,7 +56,9 @@ namespace AZ
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ImageBasedLightComponentConfig::m_diffuseImageAsset, "Diffuse Image", "Cubemap image asset for determining diffuse lighting")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorImageBasedLightComponent::OnDiffuseImageAssetChanged)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ImageBasedLightComponentConfig::m_specularImageAsset, "Specular Image", "Cubemap image asset for determining specular lighting")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorImageBasedLightComponent::OnSpecularImageAssetChanged)
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &ImageBasedLightComponentConfig::m_exposure, "Exposure", "Exposure in stops")
                             ->Attribute(AZ::Edit::Attributes::SoftMin, -5.0f)
                             ->Attribute(AZ::Edit::Attributes::SoftMax, 5.0f)
@@ -73,6 +81,75 @@ namespace AZ
         EditorImageBasedLightComponent::EditorImageBasedLightComponent(const ImageBasedLightComponentConfig& config)
             : BaseClass(config)
         {
+        }
+
+
+        AZ::u32 EditorImageBasedLightComponent::OnDiffuseImageAssetChanged()
+        {
+            ImageBasedLightComponentConfig& configuration = m_controller.m_configuration;
+
+            if (UpdateImageAsset(configuration.m_diffuseImageAsset, "_ibldiffuse", "Diffuse",
+                                 configuration.m_specularImageAsset, "_iblspecular", "Specular"))
+            {
+                m_controller.SetSpecularImageAsset(configuration.m_specularImageAsset);
+            }
+
+            return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
+        }
+
+        AZ::u32 EditorImageBasedLightComponent::OnSpecularImageAssetChanged()
+        {
+            ImageBasedLightComponentConfig& configuration = m_controller.m_configuration;
+
+            if (UpdateImageAsset(configuration.m_specularImageAsset, "_iblspecular", "Specular",
+                                 configuration.m_diffuseImageAsset, "_ibldiffuse", "Diffuse"))
+            {
+                m_controller.SetDiffuseImageAsset(configuration.m_diffuseImageAsset);
+            }
+
+            return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
+        }
+
+        bool EditorImageBasedLightComponent::UpdateImageAsset(
+            Data::Asset<RPI::StreamingImageAsset>& asset1,
+            const char* asset1Suffix,
+            const char* asset1Name,
+            Data::Asset<RPI::StreamingImageAsset>& asset2,
+            const char* asset2Suffix,
+            const char* asset2Name)
+        {
+            AZStd::string assetPath = asset1.GetHint();
+            AZ::Data::AssetId assetId;
+
+            if (!assetPath.empty())
+            {
+                // try to load the matching image asset by replacing the asset1 suffix with the asset2 suffix
+                AZ::StringFunc::Replace(assetPath, asset1Suffix, asset2Suffix);
+
+                assetId = AZ::RPI::AssetUtils::GetAssetIdForProductPath(assetPath.c_str(), AZ::RPI::AssetUtils::TraceLevel::None);
+                if (!assetId.IsValid())
+                {
+                    // unable to locate the matching image asset
+                    return false;
+                }
+            }
+
+            if (asset2.Get())
+            {
+                // prompt to see if the user wants to overwrite the image asset
+                AZStd::string message = AZStd::string::format("Update %s image to match the selected %s image?", asset2Name, asset1Name);
+
+                if (QMessageBox::question(QApplication::activeWindow(), "GlobalSklight", message.c_str(), QMessageBox::Yes | QMessageBox::No) == QMessageBox::No)
+                {
+                    return false;
+                }
+            }
+
+            // create the matching image asset
+            // Note: this will clear asset2 if asset1 was cleared
+            asset2.Create(assetId);
+
+            return true;
         }
 
     } // namespace Render

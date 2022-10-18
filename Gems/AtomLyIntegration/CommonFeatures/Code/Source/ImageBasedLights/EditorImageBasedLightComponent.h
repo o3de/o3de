@@ -30,6 +30,13 @@ namespace AZ
             EditorImageBasedLightComponent() = default;
             EditorImageBasedLightComponent(const ImageBasedLightComponentConfig& config);
 
+            AZ::u32 OnDiffuseImageAssetChanged();
+            AZ::u32 OnSpecularImageAssetChanged();
+
+        private:
+
+            bool UpdateImageAsset(Data::Asset<RPI::StreamingImageAsset>& asset1, const char* asset1Suffix, const char* asset1Name,
+                                  Data::Asset<RPI::StreamingImageAsset>& asset2, const char* asset2Suffix, const char* asset2Name);
         };
     } // namespace Render
 } // namespace AZ
