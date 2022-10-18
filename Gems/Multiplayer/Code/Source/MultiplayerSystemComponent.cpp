@@ -1362,6 +1362,16 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::OnRootSpawnableReady([[maybe_unused]] AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable, [[maybe_unused]] uint32_t generation)
     {
+        if (Multiplayer::GetMultiplayer()->GetAgentType() == MultiplayerAgentType::ClientServer)
+        {
+            // When hosting inside an Editor with client-server a temporary "Root.spawnable" is created.
+            // We need to register it manually so that NetBindComponent will find its reference in multiplayer components.
+            if (auto library = AZ::Interface<INetworkSpawnableLibrary>::Get())
+            {                
+                library->ProcessSpawnableAsset(rootSpawnable.GetHint(), rootSpawnable.GetId());
+            }
+        }
+
         // Spawn players waiting to be spawned. This can happen when a player connects before a level is loaded, so there isn't any player spawner components registered
         IMultiplayerSpawner* spawner = AZ::Interface<IMultiplayerSpawner>::Get();
         if (!spawner)

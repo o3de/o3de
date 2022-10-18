@@ -179,7 +179,9 @@ namespace Multiplayer
             // The component hasn't been pre-setup with NetworkEntityManager yet. Setup now.
             const AZ::Name netSpawnableName = AZ::Interface<INetworkSpawnableLibrary>::Get()->GetSpawnableNameFromAssetId(m_prefabAssetId);
 
-            AZ_Assert(!netSpawnableName.IsEmpty(),
+            // In client-server the level asset is a temporary Root.network.spawnable and isn't registered in time.
+            // But this is not needed in client-server mode.
+            AZ_Assert(GetMultiplayer()->GetAgentType() == MultiplayerAgentType::ClientServer || !netSpawnableName.IsEmpty(),
                 "Could not locate net spawnable on Init for Prefab AssetId: %s",
                 m_prefabAssetId.ToFixedString().c_str());
 
