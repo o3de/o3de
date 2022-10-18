@@ -45,10 +45,8 @@ namespace Multiplayer
 {
     using namespace AzNetworking;
 
-    AZ_CVAR(int, editorsv_servertype, 1, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
-        "0: editor will launch and connect to a dedicated server. 1: Editor starts its own client server mode.");
-
-
+    AZ_CVAR(bool, editor_clientserver, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
+        "If true, the editor will act as both the server and a client. No dedicated server will be launched.");
     AZ_CVAR(bool, editorsv_enabled, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "Whether Editor launching a local server to connect to is supported");
     AZ_CVAR(bool, editorsv_launch, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
@@ -67,7 +65,7 @@ namespace Multiplayer
         "Whether Editor should print its server's logs to the Editor console. Useful for seeing server prints, warnings, and errors without having to open up the server console or server.log file. Note: Must be set before entering the editor play mode.");
 
     AZ_CVAR_EXTERNED(uint16_t, editorsv_port);
-
+    
     //////////////////////////////////////////////////////////////////////////
     void PyEnterGameMode()
     {
@@ -110,7 +108,7 @@ namespace Multiplayer
 
         }
     }
-
+    
     void MultiplayerEditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         Automation::MultiplayerEditorAutomationHandler::Reflect(context);
@@ -198,7 +196,7 @@ namespace Multiplayer
             // Kill the configured server if it's active
             AZ::TickBus::Handler::BusDisconnect();
             m_connectionEvent.RemoveFromQueue();
-
+            
             if (m_serverProcessWatcher)
             {
                 m_serverProcessWatcher->TerminateProcess(0);
@@ -229,7 +227,7 @@ namespace Multiplayer
             // Delete the spawnables we've stored for the server
             m_preAliasedSpawnablesForServer.clear();
 
-            // Turn off debug messaging: we've exiting playmode and intentionally disconnected from the server.
+            // Turn off debug messaging: we've exiting playmode and intentionally disconnected from the server. 
             MultiplayerEditorServerNotificationBus::Broadcast(&MultiplayerEditorServerNotificationBus::Events::OnPlayModeEnd);
             break;
         }
@@ -504,7 +502,7 @@ namespace Multiplayer
             return;
         }
 
-        if (editorsv_servertype == 1)
+        if (editor_clientserver)
         {
             // Start hosting as a client-server
             const bool isDedicated = false;
@@ -525,7 +523,7 @@ namespace Multiplayer
             return;
         }
 
-        if (editorsv_servertype == 1)
+        if (editor_clientserver)
         {
             return;
         }
@@ -629,7 +627,7 @@ namespace Multiplayer
     }
     void MultiplayerEditorSystemComponent::OnStopPlayInEditorBegin()
     {
-        if (editorsv_servertype != 1)
+        if (!editor_clientserver)
         {
             return;
         }

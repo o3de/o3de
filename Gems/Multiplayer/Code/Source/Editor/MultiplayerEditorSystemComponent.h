@@ -142,7 +142,7 @@ namespace Multiplayer
             AZStd::string assetHint;
             AZ::Data::AssetId assetId;
         };
-
+        
         AZStd::vector<PreAliasedSpawnableData> m_preAliasedSpawnablesForServer;
     };
 }
