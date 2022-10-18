@@ -263,6 +263,12 @@ namespace AZ
             //! Will create child jobs under the parentJob to do the processing in parallel.
             //! Can be called in parallel (i.e. to perform culling on multiple views at the same time).
             void ProcessCullablesJobs(const Scene& scene, View& view, AZ::Job& parentJob);
+            //! Variation that accumulates visibility nodes from the octree into lists to hand off to jobs
+            void ProcessCullablesJobsNodes(const Scene& scene, View& view, AZ::Job& parentJob);
+            //! Variation that accumulates entries into lists to hand off to jobs. This yieldeds more
+            //! balanced jobs and thus better performance than the above Nodes variation.
+            //! Use the r_useEntryWorkListsForCulling CVAR to toggle between the two.
+            void ProcessCullablesJobsEntries(const Scene& scene, View& view, AZ::Job& parentJob);
 
             //! Performs render culling and lod selection for a View, then adds the visible renderpackets to that View.
             //! Must be called between BeginCulling() and EndCulling(), once for each active scene/view pair.
