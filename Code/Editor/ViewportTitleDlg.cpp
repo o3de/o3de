@@ -178,32 +178,16 @@ void CViewportTitleDlg::SetupCameraDropdownMenu()
     auto cameraSpeedActionWidget = new QWidgetAction(cameraMenu);
     auto cameraSpeedContainer = new QWidget(cameraMenu);
     auto cameraSpeedLabel = new QLabel(tr("Camera Speed"), cameraMenu);
-    m_cameraSpeed = new QComboBox(cameraMenu);
-    m_cameraSpeed->setEditable(true);
-    m_cameraSpeed->setValidator(new QDoubleValidator(m_minSpeed, m_maxSpeed, m_numDecimals, m_cameraSpeed));
-    m_cameraSpeed->installEventFilter(this);
+    m_cameraSpeed = new AzQtComponents::DoubleSpinBox(cameraMenu);
+    m_cameraSpeed->setRange(m_minSpeed, m_maxSpeed);
+    m_cameraSpeed->SetDisplayDecimals(m_numDecimals);
+    m_cameraSpeed->setValue(SandboxEditor::CameraTranslateSpeed());
 
     QHBoxLayout* cameraSpeedLayout = new QHBoxLayout;
     cameraSpeedLayout->addWidget(cameraSpeedLabel);
     cameraSpeedLayout->addWidget(m_cameraSpeed);
     cameraSpeedContainer->setLayout(cameraSpeedLayout);
     cameraSpeedActionWidget->setDefaultWidget(cameraSpeedContainer);
-
-    // Save off the move speed here since setting up the combo box can cause it to update values in the background.
-    const float cameraMoveSpeed = SandboxEditor::CameraTranslateSpeed();
-    // Populate the presets in the ComboBox
-    for (float presetValue : m_speedPresetValues)
-    {
-        m_cameraSpeed->addItem(QString().setNum(presetValue, 'f', m_numDecimals), presetValue);
-    }
-
-    auto comboBoxTextChanged = static_cast<void (QComboBox::*)(const QString&)>(&QComboBox::currentTextChanged);
-
-    SetSpeedComboBox(cameraMoveSpeed);
-    m_cameraSpeed->setInsertPolicy(QComboBox::InsertAtBottom);
-    m_cameraSpeed->setDuplicatesEnabled(false);
-    connect(m_cameraSpeed, comboBoxTextChanged, this, &CViewportTitleDlg::OnUpdateMoveSpeedText);
-    connect(m_cameraSpeed->lineEdit(), &QLineEdit::returnPressed, this, &CViewportTitleDlg::OnSpeedComboBoxEnter);
 
     cameraMenu->addAction(cameraSpeedActionWidget);
 }
@@ -1065,21 +1049,6 @@ void CViewportTitleDlg::UpdateCustomPresets(const QString& text, QStringList& cu
 
 bool CViewportTitleDlg::eventFilter(QObject* object, QEvent* event)
 {
-    if (object == m_cameraSpeed)
-    {
-        if (event->type() == QEvent::FocusIn)
-        {
-            QTimer::singleShot(
-                0, this,
-                [this]
-                {
-                    m_cameraSpeed->lineEdit()->selectAll();
-                });
-        }
-
-        return m_cameraSpeed->eventFilter(object, event);
-    }
-
     bool consumeEvent = false;
 
     // These events are forwarded from the toolbar that took ownership of our widgets
@@ -1146,38 +1115,13 @@ inline double Round(double fVal, double fStep)
     return fVal;
 }
 
-void CViewportTitleDlg::SetSpeedComboBox(double value)
-{
-    value = AZStd::clamp(Round(value, m_speedStep), m_minSpeed, m_maxSpeed);
-
-    int index = m_cameraSpeed->findData(value);
-    if (index != -1)
-    {
-        m_cameraSpeed->setCurrentIndex(index);
-    }
-    else
-    {
-        m_cameraSpeed->lineEdit()->setText(QString().setNum(value, 'f', m_numDecimals));
-    }
-}
-
-void CViewportTitleDlg::OnSpeedComboBoxEnter()
-{
-    m_cameraSpeed->clearFocus();
-}
-
-void CViewportTitleDlg::OnUpdateMoveSpeedText(const QString& text)
-{
-    SandboxEditor::SetCameraTranslateSpeed(aznumeric_cast<float>(Round(text.toDouble(), m_speedStep)));
-}
-
 void CViewportTitleDlg::CheckForCameraSpeedUpdate()
 {
     const float currentCameraMoveSpeed = SandboxEditor::CameraTranslateSpeed();
-    if (currentCameraMoveSpeed != m_prevMoveSpeed && !m_cameraSpeed->lineEdit()->hasFocus())
+    if (currentCameraMoveSpeed != m_prevMoveSpeed && !m_cameraSpeed->hasFocus())
     {
         m_prevMoveSpeed = currentCameraMoveSpeed;
-        SetSpeedComboBox(currentCameraMoveSpeed);
+        m_cameraSpeed->setValue(currentCameraMoveSpeed);
     }
 }
 
