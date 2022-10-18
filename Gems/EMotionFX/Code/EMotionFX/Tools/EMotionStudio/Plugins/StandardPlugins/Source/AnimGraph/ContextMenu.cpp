@@ -144,6 +144,7 @@ namespace EMStudio
             if (graphNode == nullptr)
             {
                 QMenu* menu = new QMenu(parentWidget);
+                menu->setAttribute(Qt::WA_DeleteOnClose);
 
                 if (actionFilter.m_copyAndPaste && actionManager.GetIsReadyForPaste() && nodeGraph->GetModelIndex().isValid())
                 {
@@ -181,8 +182,6 @@ namespace EMStudio
                             }
                     });
                 }
-
-                connect(menu, &QMenu::triggered, menu, &QMenu::deleteLater);
 
                 if (!menu->isEmpty())
                 {
