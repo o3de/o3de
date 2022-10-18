@@ -15,6 +15,8 @@
 
 namespace AZ
 {
+    class Aabb;
+
     namespace Render
     {
         class AreaLightRequests
