@@ -16,38 +16,55 @@ namespace AssetProcessor
 
         AZ_Assert(pathConversion, "IPathConversion interface is not available");
 
-        QString relativePath, scanfolderPath;
-        pathConversion->ConvertToRelativePath(absolutePath.FixedMaxPathStringAsPosix().c_str(), relativePath, scanfolderPath);
-        auto* scanFolderInfo = pathConversion->GetScanFolderForFile(scanfolderPath);
+        if(absolutePath.empty())
+        {
+            return;
+        }
 
-        AZ_Assert(scanFolderInfo, "Failed to find scanfolder for " AZ_STRING_FORMAT, AZ_STRING_ARG(absolutePath.Native()));
+        QString relativePath, scanFolderPath;
 
-        m_scanfolderId = scanFolderInfo->ScanFolderID();
-        m_absolutePath = absolutePath;
+        if(!pathConversion->ConvertToRelativePath(absolutePath.FixedMaxPathStringAsPosix().c_str(), relativePath, scanFolderPath))
+        {
+            return;
+        }
+
+        auto* scanFolderInfo = pathConversion->GetScanFolderForFile(scanFolderPath);
+
+        if(!scanFolderInfo)
+        {
+            return;
+        }
+
+        m_scanFolderPath = scanFolderPath.toUtf8().constData();
         m_relativePath = relativePath.toUtf8().constData();
-        m_scanfolderPath = scanfolderPath.toUtf8().constData();
+        m_absolutePath = absolutePath;
+        m_scanFolderId = scanFolderInfo->ScanFolderID();
 
         Normalize();
     }
 
     SourceAssetReference::SourceAssetReference(AZ::IO::PathView scanFolderPath, AZ::IO::PathView pathRelativeToScanFolder)
     {
-        AZ_Assert(!scanFolderPath.Native().empty(), "scanfolderPath is empty");
-        AZ_Assert(!pathRelativeToScanFolder.Native().empty(), "pathRelativeToScanFolder is empty");
-
-        m_scanfolderPath = scanFolderPath;
-        m_relativePath = pathRelativeToScanFolder;
-        m_absolutePath = m_scanfolderPath / m_relativePath;
-
         IPathConversion* pathConversion = AZ::Interface<IPathConversion>::Get();
 
         AZ_Assert(pathConversion, "IPathConversion interface is not available");
 
-        auto* scanFolderInfo = pathConversion->GetScanFolderForFile(m_scanfolderPath.c_str());
+        if(scanFolderPath.empty() || pathRelativeToScanFolder.empty())
+        {
+            return;
+        }
 
-        AZ_Assert(scanFolderInfo, "Failed to find scanfolder for " AZ_STRING_FORMAT, AZ_STRING_ARG(m_absolutePath.Native()));
+        auto* scanFolderInfo = pathConversion->GetScanFolderForFile(scanFolderPath.FixedMaxPathStringAsPosix().c_str());
 
-        m_scanfolderId = scanFolderInfo->ScanFolderID();
+        if(!scanFolderInfo)
+        {
+            return;
+        }
+
+        m_scanFolderPath = scanFolderPath;
+        m_relativePath = pathRelativeToScanFolder;
+        m_absolutePath = m_scanFolderPath / m_relativePath;
+        m_scanFolderId = scanFolderInfo->ScanFolderID();
 
         Normalize();
     }
@@ -74,6 +91,11 @@ namespace AssetProcessor
 
     SourceAssetReference::operator bool() const
     {
+        return IsValid();
+    }
+
+    bool SourceAssetReference::IsValid() const
+    {
         return !m_absolutePath.empty();
     }
 
@@ -87,19 +109,19 @@ namespace AssetProcessor
         return m_relativePath;
     }
 
-    AZ::IO::Path SourceAssetReference::ScanfolderPath() const
+    AZ::IO::Path SourceAssetReference::ScanFolderPath() const
     {
-        return m_scanfolderPath;
+        return m_scanFolderPath;
     }
 
-    AZ::s64 SourceAssetReference::ScanfolderId() const
+    AZ::s64 SourceAssetReference::ScanFolderId() const
     {
-        return m_scanfolderId;
+        return m_scanFolderId;
     }
 
     void SourceAssetReference::Normalize()
     {
-        m_scanfolderPath = m_scanfolderPath.LexicallyNormal().AsPosix();
+        m_scanFolderPath = m_scanFolderPath.LexicallyNormal().AsPosix();
         m_relativePath = m_relativePath.LexicallyNormal().AsPosix();
         m_absolutePath = m_absolutePath.LexicallyNormal().AsPosix();
     }

@@ -467,7 +467,7 @@ namespace AssetProcessor
         {
             UNIT_TEST_EXPECT_TRUE(processResults[checkIdx].m_jobEntry.m_computedFingerprint != 0);
             UNIT_TEST_EXPECT_TRUE(processResults[checkIdx].m_jobEntry.m_jobRunKey != 0);
-            UNIT_TEST_EXPECT_TRUE(QString(processResults[checkIdx].m_jobEntry.m_sourceAssetReference.ScanfolderPath().c_str()) == AssetUtilities::NormalizeFilePath(watchFolderPath));
+            UNIT_TEST_EXPECT_TRUE(QString(processResults[checkIdx].m_jobEntry.m_sourceAssetReference.ScanFolderPath().c_str()) == AssetUtilities::NormalizeFilePath(watchFolderPath));
             UNIT_TEST_EXPECT_TRUE(processResults[checkIdx].m_jobEntry.m_sourceAssetReference.RelativePath().Native() == "uniquefile.txt");
 
             QString platformFolder = cacheRoot.filePath(QString::fromUtf8(processResults[checkIdx].m_jobEntry.m_platformInfo.m_identifier.c_str()));
@@ -494,7 +494,7 @@ namespace AssetProcessor
                 info.m_jobKey = processResults[checkIdx].m_jobEntry.m_jobKey.toUtf8().data();
                 info.m_platform = processResults[checkIdx].m_jobEntry.m_platformInfo.m_identifier.c_str();
                 info.m_sourceFile = processResults[checkIdx].m_jobEntry.m_sourceAssetReference.RelativePath().c_str();
-                info.m_watchFolder = processResults[checkIdx].m_jobEntry.m_sourceAssetReference.ScanfolderPath().c_str();
+                info.m_watchFolder = processResults[checkIdx].m_jobEntry.m_sourceAssetReference.ScanFolderPath().c_str();
 
                 AZStd::string logFolder = AZStd::string::format("%s/%s", AssetUtilities::ComputeJobLogFolder().c_str(), AssetUtilities::ComputeJobLogFileName(info).c_str());
                 AZ::IO::HandleType logHandle;
@@ -540,7 +540,7 @@ namespace AssetProcessor
                 for (const JobDetails& details : processResults)
                 {
                     if ((QString::compare(jobInfo.m_sourceFile.c_str(), details.m_jobEntry.m_sourceAssetReference.RelativePath().c_str(), Qt::CaseSensitive) == 0) &&
-                        (QString::compare(jobInfo.m_watchFolder.c_str(), details.m_jobEntry.m_sourceAssetReference.ScanfolderPath().c_str(), Qt::CaseSensitive) ==
+                        (QString::compare(jobInfo.m_watchFolder.c_str(), details.m_jobEntry.m_sourceAssetReference.ScanFolderPath().c_str(), Qt::CaseSensitive) ==
                          0) &&
                         (QString::compare(jobInfo.m_platform.c_str(), details.m_jobEntry.m_platformInfo.m_identifier.c_str(), Qt::CaseInsensitive) == 0) &&
                         (QString::compare(jobInfo.m_jobKey.c_str(), details.m_jobEntry.m_jobKey, Qt::CaseInsensitive) == 0) &&
@@ -647,7 +647,7 @@ namespace AssetProcessor
                 for (const JobDetails& details : processResults)
                 {
                     if ((QString::compare(jobInfo.m_sourceFile.c_str(), details.m_jobEntry.m_sourceAssetReference.RelativePath().c_str(), Qt::CaseSensitive) == 0) &&
-                        (QString::compare(jobInfo.m_watchFolder.c_str(), details.m_jobEntry.m_sourceAssetReference.ScanfolderPath().c_str(), Qt::CaseSensitive) == 0) &&
+                        (QString::compare(jobInfo.m_watchFolder.c_str(), details.m_jobEntry.m_sourceAssetReference.ScanFolderPath().c_str(), Qt::CaseSensitive) == 0) &&
                         (QString::compare(jobInfo.m_platform.c_str(), details.m_jobEntry.m_platformInfo.m_identifier.c_str(), Qt::CaseInsensitive) == 0) &&
                         (QString::compare(jobInfo.m_jobKey.c_str(), details.m_jobEntry.m_jobKey, Qt::CaseInsensitive) == 0) &&
                         (jobInfo.m_builderGuid == details.m_jobEntry.m_builderGuid) &&
@@ -778,7 +778,7 @@ namespace AssetProcessor
                     const JobDetails& details = processResults[detailsIdx];
 
                     if ((QString::compare(jobInfo.m_sourceFile.c_str(), details.m_jobEntry.m_sourceAssetReference.RelativePath().c_str(), Qt::CaseSensitive) == 0) &&
-                        (QString::compare(jobInfo.m_watchFolder.c_str(), details.m_jobEntry.m_sourceAssetReference.ScanfolderPath().c_str(), Qt::CaseSensitive) == 0) &&
+                        (QString::compare(jobInfo.m_watchFolder.c_str(), details.m_jobEntry.m_sourceAssetReference.ScanFolderPath().c_str(), Qt::CaseSensitive) == 0) &&
                         (QString::compare(jobInfo.m_jobKey.c_str(), details.m_jobEntry.m_jobKey, Qt::CaseInsensitive) == 0) &&
                         (jobInfo.m_builderGuid == details.m_jobEntry.m_builderGuid) &&
                         (jobInfo.GetHash() == details.m_jobEntry.GetHash()))
@@ -915,7 +915,7 @@ namespace AssetProcessor
                 for (const JobDetails& details : processResults)
                 {
                     if ((QString::compare(jobInfo.m_sourceFile.c_str(), details.m_jobEntry.m_sourceAssetReference.RelativePath().c_str(), Qt::CaseSensitive) == 0) &&
-                        (QString::compare(jobInfo.m_watchFolder.c_str(), details.m_jobEntry.m_sourceAssetReference.ScanfolderPath().c_str(), Qt::CaseSensitive) == 0) &&
+                        (QString::compare(jobInfo.m_watchFolder.c_str(), details.m_jobEntry.m_sourceAssetReference.ScanFolderPath().c_str(), Qt::CaseSensitive) == 0) &&
                         (QString::compare(jobInfo.m_platform.c_str(), details.m_jobEntry.m_platformInfo.m_identifier.c_str(), Qt::CaseInsensitive) == 0) &&
                         (QString::compare(jobInfo.m_jobKey.c_str(), details.m_jobEntry.m_jobKey, Qt::CaseInsensitive) == 0) &&
                         (jobInfo.m_builderGuid == details.m_jobEntry.m_builderGuid) &&
@@ -1414,7 +1414,7 @@ namespace AssetProcessor
                     const JobDetails& details = processResults[detailsIdx];
 
                     if ((QString::compare(jobInfo.m_sourceFile.c_str(), details.m_jobEntry.m_sourceAssetReference.RelativePath().c_str(), Qt::CaseSensitive) == 0) &&
-                        (QString::compare(jobInfo.m_watchFolder.c_str(), details.m_jobEntry.m_sourceAssetReference.ScanfolderPath().c_str(), Qt::CaseSensitive) == 0) &&
+                        (QString::compare(jobInfo.m_watchFolder.c_str(), details.m_jobEntry.m_sourceAssetReference.ScanFolderPath().c_str(), Qt::CaseSensitive) == 0) &&
                         (QString::compare(jobInfo.m_platform.c_str(), details.m_jobEntry.m_platformInfo.m_identifier.c_str(), Qt::CaseInsensitive) == 0) &&
                         (QString::compare(jobInfo.m_jobKey.c_str(), details.m_jobEntry.m_jobKey, Qt::CaseInsensitive) == 0) &&
                         (jobInfo.m_builderGuid == details.m_jobEntry.m_builderGuid) &&

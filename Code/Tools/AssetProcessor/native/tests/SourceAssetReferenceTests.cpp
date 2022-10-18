@@ -32,8 +32,8 @@ namespace UnitTests
         EXPECT_EQ(test3.AbsolutePath(), path);
 
         EXPECT_EQ(test1.RelativePath(), "file.png");
-        EXPECT_EQ(test1.ScanfolderPath(), "c:/somepath");
-        EXPECT_EQ(test1.ScanfolderId(), 1);
+        EXPECT_EQ(test1.ScanFolderPath(), "c:/somepath");
+        EXPECT_EQ(test1.ScanFolderId(), 1);
     }
 
     TEST_F(SourceAssetReferenceTests, Construct_ScanFolderPath_Succeeds)
@@ -55,8 +55,8 @@ namespace UnitTests
         EXPECT_EQ(test3.AbsolutePath(), path);
 
         EXPECT_EQ(test1.RelativePath(), relative);
-        EXPECT_EQ(test1.ScanfolderPath(), scanfolder);
-        EXPECT_EQ(test1.ScanfolderId(), 1);
+        EXPECT_EQ(test1.ScanFolderPath(), scanfolder);
+        EXPECT_EQ(test1.ScanFolderId(), 1);
     }
 
     TEST_F(SourceAssetReferenceTests, Construct_ScanFolderId_Succeeds)
@@ -73,8 +73,8 @@ namespace UnitTests
 
         EXPECT_EQ(test1.AbsolutePath(), path);
         EXPECT_EQ(test1.RelativePath(), relative);
-        EXPECT_EQ(test1.ScanfolderPath(), scanfolder);
-        EXPECT_EQ(test1.ScanfolderId(), 1);
+        EXPECT_EQ(test1.ScanFolderPath(), scanfolder);
+        EXPECT_EQ(test1.ScanFolderId(), 1);
     }
 
     TEST_F(SourceAssetReferenceTests, Copy_Succeeds)
@@ -96,11 +96,11 @@ namespace UnitTests
         EXPECT_EQ(test1.RelativePath(), test2.RelativePath());
         EXPECT_EQ(test2.RelativePath(), test3.RelativePath());
 
-        EXPECT_EQ(test1.ScanfolderPath(), test2.ScanfolderPath());
-        EXPECT_EQ(test2.ScanfolderPath(), test3.ScanfolderPath());
+        EXPECT_EQ(test1.ScanFolderPath(), test2.ScanFolderPath());
+        EXPECT_EQ(test2.ScanFolderPath(), test3.ScanFolderPath());
 
-        EXPECT_EQ(test1.ScanfolderId(), test2.ScanfolderId());
-        EXPECT_EQ(test2.ScanfolderId(), test3.ScanfolderId());
+        EXPECT_EQ(test1.ScanFolderId(), test2.ScanFolderId());
+        EXPECT_EQ(test2.ScanFolderId(), test3.ScanFolderId());
     }
 
     TEST_F(SourceAssetReferenceTests, Move_Succeeds)
@@ -117,15 +117,15 @@ namespace UnitTests
 
         EXPECT_EQ(test2.AbsolutePath(), path);
         EXPECT_EQ(test2.RelativePath(), "file.png");
-        EXPECT_EQ(test2.ScanfolderPath(), "c:/somepath");
-        EXPECT_EQ(test2.ScanfolderId(), 1);
+        EXPECT_EQ(test2.ScanFolderPath(), "c:/somepath");
+        EXPECT_EQ(test2.ScanFolderId(), 1);
 
         auto test3(AZStd::move(test2));
 
         EXPECT_EQ(test3.AbsolutePath(), path);
         EXPECT_EQ(test3.RelativePath(), "file.png");
-        EXPECT_EQ(test3.ScanfolderPath(), "c:/somepath");
-        EXPECT_EQ(test3.ScanfolderId(), 1);
+        EXPECT_EQ(test3.ScanFolderPath(), "c:/somepath");
+        EXPECT_EQ(test3.ScanFolderId(), 1);
     }
 
     TEST_F(SourceAssetReferenceTests, BoolCheck_EmptyReference_ReturnsFalse)

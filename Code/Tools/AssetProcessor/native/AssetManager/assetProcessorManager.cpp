@@ -217,7 +217,7 @@ namespace AssetProcessor
             jobInfo.m_platform = jobEntry.m_platformInfo.m_identifier;
             jobInfo.m_builderGuid = jobEntry.m_builderGuid;
             jobInfo.m_sourceFile = jobEntry.m_sourceAssetReference.RelativePath().Native();
-            jobInfo.m_watchFolder = jobEntry.m_sourceAssetReference.ScanfolderPath().Native();
+            jobInfo.m_watchFolder = jobEntry.m_sourceAssetReference.ScanFolderPath().Native();
             jobInfo.m_jobKey = jobEntry.m_jobKey.toUtf8().constData();
             jobInfo.m_jobRunKey = jobEntry.m_jobRunKey;
             jobInfo.m_status = status;
@@ -228,7 +228,7 @@ namespace AssetProcessor
         else
         {
             QString statKey = QString("ProcessJob,%1,%2,%3,%4,%5")
-                                  .arg(jobEntry.m_sourceAssetReference.ScanfolderPath().c_str())
+                                  .arg(jobEntry.m_sourceAssetReference.ScanFolderPath().c_str())
                                   .arg(jobEntry.m_sourceAssetReference.RelativePath().c_str())
                                   .arg(jobEntry.m_jobKey)
                                   .arg(jobEntry.m_platformInfo.m_identifier.c_str())
@@ -440,7 +440,7 @@ namespace AssetProcessor
         if (!request.m_isSearchTermJobKey)
         {
             //any succeeded or failed jobs will be in the table
-            m_stateData->GetJobInfoBySourceNameScanFolderId(sourceAsset.RelativePath().c_str(), sourceAsset.ScanfolderId(), jobListDataBase);
+            m_stateData->GetJobInfoBySourceNameScanFolderId(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(), jobListDataBase);
         }
         else
         {
@@ -676,7 +676,7 @@ namespace AssetProcessor
         else
         {
             //if we didn't find a source, we make a new source
-            const ScanFolderInfo* scanFolder = m_platformConfig->GetScanFolderByPath(jobEntry.m_sourceAssetReference.ScanfolderPath().c_str());
+            const ScanFolderInfo* scanFolder = m_platformConfig->GetScanFolderByPath(jobEntry.m_sourceAssetReference.ScanFolderPath().c_str());
             if (!scanFolder)
             {
                 //can't find the scan folder this source came from!?
@@ -691,7 +691,7 @@ namespace AssetProcessor
 
                 //notify the GUI to remove the failed job that is currently onscreen:
                 AzToolsFramework::AssetSystem::JobInfo jobInfo;
-                jobInfo.m_watchFolder = jobEntry.m_sourceAssetReference.ScanfolderPath().Native();
+                jobInfo.m_watchFolder = jobEntry.m_sourceAssetReference.ScanFolderPath().Native();
                 jobInfo.m_sourceFile = jobEntry.m_sourceAssetReference.RelativePath().Native();
                 jobInfo.m_platform = jobEntry.m_platformInfo.m_identifier;
                 jobInfo.m_jobKey = jobEntry.m_jobKey.toUtf8().constData();
@@ -792,7 +792,7 @@ namespace AssetProcessor
         if (MessageInfoBus::HasHandlers())
         {
             // send a network message when not in batch mode.
-            const ScanFolderInfo* scanFolder = m_platformConfig->GetScanFolderByPath(jobEntry.m_sourceAssetReference.ScanfolderPath().c_str());
+            const ScanFolderInfo* scanFolder = m_platformConfig->GetScanFolderByPath(jobEntry.m_sourceAssetReference.ScanFolderPath().c_str());
             AzToolsFramework::AssetSystem::SourceFileNotificationMessage message(AZ::OSString(source.m_sourceName.c_str()), AZ::OSString(scanFolder->ScanPath().toUtf8().constData()), AzToolsFramework::AssetSystem::SourceFileNotificationMessage::FileFailed, source.m_sourceGuid);
             EBUS_EVENT(AssetProcessor::ConnectionBus, Send, 0, message);
             MessageInfoBus::Broadcast(&MessageInfoBusTraits::OnAssetFailed, source.m_sourceName);
@@ -1174,7 +1174,7 @@ namespace AssetProcessor
             //create/update the source record for this job
             AzToolsFramework::AssetDatabase::SourceDatabaseEntry source;
             AzToolsFramework::AssetDatabase::SourceDatabaseEntryContainer sources;
-            auto scanFolder = m_platformConfig->GetScanFolderByPath(processedAsset.m_entry.m_sourceAssetReference.ScanfolderPath().c_str());
+            auto scanFolder = m_platformConfig->GetScanFolderByPath(processedAsset.m_entry.m_sourceAssetReference.ScanFolderPath().c_str());
             if (!scanFolder)
             {
                 //can't find the scan folder this source came from!?
@@ -1906,7 +1906,7 @@ namespace AssetProcessor
         bool deleteFailure = false;
         AzToolsFramework::AssetDatabase::SourceDatabaseEntryContainer sources;
 
-        auto scanFolder = m_platformConfig->GetScanFolderByPath(sourceAsset.ScanfolderPath().c_str());
+        auto scanFolder = m_platformConfig->GetScanFolderByPath(sourceAsset.ScanFolderPath().c_str());
 
         if (m_stateData->GetSourcesBySourceNameScanFolderId(sourceAsset.RelativePath().c_str(), scanFolder->ScanFolderID(), sources))
         {
@@ -1939,7 +1939,7 @@ namespace AssetProcessor
                 }
 
                 AzToolsFramework::AssetSystem::JobInfo jobInfo;
-                jobInfo.m_watchFolder = sourceAsset.ScanfolderPath().Native();
+                jobInfo.m_watchFolder = sourceAsset.ScanFolderPath().Native();
                 jobInfo.m_sourceFile = sourceAsset.RelativePath().Native();
 
                 AzToolsFramework::AssetDatabase::JobDatabaseEntryContainer jobs;
@@ -2742,10 +2742,10 @@ namespace AssetProcessor
 
                 SourceAssetReference sourceAssetReference(examineFile.m_fileName.toUtf8().constData());
 
-                if (sourceAssetReference.AbsolutePath() == sourceAssetReference.ScanfolderPath())
+                if (sourceAssetReference.AbsolutePath() == sourceAssetReference.ScanFolderPath())
                 {
                     // We found a scanfolder, record it
-                    m_knownFolders.insert(sourceAssetReference.ScanfolderPath().c_str());
+                    m_knownFolders.insert(sourceAssetReference.ScanFolderPath().c_str());
                 }
 
 
@@ -2807,7 +2807,7 @@ namespace AssetProcessor
                         }
                         // keep track of its parent folder so that if it is deleted later we know it is a folder
                         // delete and not a file delete.
-                        AddKnownFoldersRecursivelyForFile(normalizedPath, sourceAssetReference.ScanfolderPath().c_str());
+                        AddKnownFoldersRecursivelyForFile(normalizedPath, sourceAssetReference.ScanFolderPath().c_str());
 
                         if (normalizedPath.toUtf8().length() > normalizedPath.length())
                         {
@@ -2838,7 +2838,7 @@ namespace AssetProcessor
                     else
                     {
                         // if its a folder that was added or modified, we need to keep track of that too.
-                        AddKnownFoldersRecursivelyForFile(normalizedPath, sourceAssetReference.ScanfolderPath().c_str());
+                        AddKnownFoldersRecursivelyForFile(normalizedPath, sourceAssetReference.ScanFolderPath().c_str());
                         // we actually need to scan this folder now...
                         CheckCreatedSourceFolder(normalizedPath);
                         continue;
@@ -2878,7 +2878,7 @@ namespace AssetProcessor
                 }
                 else
                 {
-                    overrider = m_platformConfig->GetOverridingFile(sourceAssetReference.RelativePath().c_str(), sourceAssetReference.ScanfolderPath().c_str());
+                    overrider = m_platformConfig->GetOverridingFile(sourceAssetReference.RelativePath().c_str(), sourceAssetReference.ScanFolderPath().c_str());
                 }
 
                 if (!overrider.isEmpty())
@@ -3913,7 +3913,7 @@ namespace AssetProcessor
                     // if we succeeded, we can erase any jobs that had failed createjobs last time for this builder:
                     AzToolsFramework::AssetSystem::JobInfo jobInfo;
                     jobInfo.m_sourceFile = sourceAsset.RelativePath().Native();
-                    jobInfo.m_watchFolder = sourceAsset.ScanfolderPath().Native();
+                    jobInfo.m_watchFolder = sourceAsset.ScanFolderPath().Native();
                     jobInfo.m_platform = "all";
                     jobInfo.m_jobKey = AZStd::string::format("CreateJobs_%s", builderInfo.m_busId.ToString<AZStd::string>().c_str());
                     Q_EMIT JobRemoved(jobInfo);

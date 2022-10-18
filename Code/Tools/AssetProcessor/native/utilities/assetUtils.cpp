@@ -1437,13 +1437,13 @@ namespace AssetUtilities
         if (!topLevelSource)
         {
             AzToolsFramework::AssetDatabase::SourceDatabaseEntryContainer source;
-            db->GetSourcesBySourceNameScanFolderId(sourceAsset.RelativePath().c_str(), sourceAsset.ScanfolderId(), source);
+            db->GetSourcesBySourceNameScanFolderId(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(), source);
 
             AZ_Assert(
                 source.size() <= 1,
                 "Should find exactly 1 source for the given path (%s) and scanfolder (%d).  Found %d",
                 sourceAsset.RelativePath().c_str(),
-                sourceAsset.ScanfolderId(),
+                sourceAsset.ScanFolderId(),
                 source.size());
 
             if(source.empty())

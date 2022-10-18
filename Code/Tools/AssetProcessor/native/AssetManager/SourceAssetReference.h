@@ -16,6 +16,7 @@
 
 namespace AssetProcessor
 {
+    //! Represents a reference to a single source asset on disk
     class SourceAssetReference
     {
     public:
@@ -59,18 +60,19 @@ namespace AssetProcessor
         bool operator>(const SourceAssetReference& other) const;
         explicit operator bool() const;
 
+        bool IsValid() const;
         AZ::IO::Path AbsolutePath() const;
         AZ::IO::Path RelativePath() const;
-        AZ::IO::Path ScanfolderPath() const;
-        AZ::s64 ScanfolderId() const;
+        AZ::IO::Path ScanFolderPath() const;
+        AZ::s64 ScanFolderId() const;
 
     private:
         void Normalize();
 
         AZ::IO::Path m_absolutePath;
         AZ::IO::Path m_relativePath;
-        AZ::IO::Path m_scanfolderPath;
-        AZ::s64 m_scanfolderId{};
+        AZ::IO::Path m_scanFolderPath;
+        AZ::s64 m_scanFolderId{};
     };
 }
 

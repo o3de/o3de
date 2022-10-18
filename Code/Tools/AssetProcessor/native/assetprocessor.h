@@ -136,7 +136,7 @@ namespace AssetProcessor
 
         AZ::u32 GetHash() const
         {
-            AZ::Crc32 crc(m_sourceAssetReference.ScanfolderPath().c_str());
+            AZ::Crc32 crc(m_sourceAssetReference.ScanFolderPath().c_str());
             crc.Add(m_sourceAssetReference.RelativePath().c_str());
             crc.Add(m_platformInfo.m_identifier.c_str());
             crc.Add(m_jobKey.toUtf8().constData());

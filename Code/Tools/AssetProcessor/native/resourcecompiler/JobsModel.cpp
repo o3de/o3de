@@ -210,7 +210,7 @@ namespace AssetProcessor
             AssetJobLogResponse jobLogResponse;
             auto* cachedJobInfo = getItem(index.row());
             jobInfo.m_sourceFile = cachedJobInfo->m_elementId.GetSourceAssetReference().RelativePath().Native();
-            jobInfo.m_watchFolder = cachedJobInfo->m_elementId.GetSourceAssetReference().ScanfolderPath().Native();
+            jobInfo.m_watchFolder = cachedJobInfo->m_elementId.GetSourceAssetReference().ScanFolderPath().Native();
             jobInfo.m_platform = cachedJobInfo->m_elementId.GetPlatform().toUtf8().data();
             jobInfo.m_jobKey = cachedJobInfo->m_elementId.GetJobDescriptor().toUtf8().data();
             jobInfo.m_builderGuid = cachedJobInfo->m_builderGuid;
@@ -260,7 +260,7 @@ namespace AssetProcessor
             AzToolsFramework::AssetSystem::JobInfo jobInfo;
             CachedJobInfo* cachedJobInfo = getItem(index.row());
             jobInfo.m_sourceFile = cachedJobInfo->m_elementId.GetSourceAssetReference().RelativePath().Native();
-            jobInfo.m_watchFolder = cachedJobInfo->m_elementId.GetSourceAssetReference().ScanfolderPath().Native();
+            jobInfo.m_watchFolder = cachedJobInfo->m_elementId.GetSourceAssetReference().ScanFolderPath().Native();
             jobInfo.m_platform = cachedJobInfo->m_elementId.GetPlatform().toUtf8().data();
             jobInfo.m_jobKey = cachedJobInfo->m_elementId.GetJobDescriptor().toUtf8().data();
             jobInfo.m_builderGuid = cachedJobInfo->m_builderGuid;

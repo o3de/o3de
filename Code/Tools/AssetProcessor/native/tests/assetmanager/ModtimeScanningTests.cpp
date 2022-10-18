@@ -290,7 +290,7 @@ namespace UnitTests
 
         AzToolsFramework::AssetDatabase::FileDatabaseEntry fileEntry;
 
-        m_assetProcessorManager->m_stateData->GetFileByFileNameAndScanFolderId(sourcePath.RelativePath().c_str(), sourcePath.ScanfolderId(), fileEntry);
+        m_assetProcessorManager->m_stateData->GetFileByFileNameAndScanFolderId(sourcePath.RelativePath().c_str(), sourcePath.ScanFolderId(), fileEntry);
 
         ASSERT_NE(fileEntry.m_modTime, timestamp);
         uint64_t existingTimestamp = fileEntry.m_modTime;
@@ -305,7 +305,7 @@ namespace UnitTests
 
         ExpectNoWork();
 
-        m_assetProcessorManager->m_stateData->GetFileByFileNameAndScanFolderId(sourcePath.RelativePath().c_str(), sourcePath.ScanfolderId(), fileEntry);
+        m_assetProcessorManager->m_stateData->GetFileByFileNameAndScanFolderId(sourcePath.RelativePath().c_str(), sourcePath.ScanFolderId(), fileEntry);
 
         // The timestamp should be updated even though nothing processed
         ASSERT_NE(fileEntry.m_modTime, existingTimestamp);

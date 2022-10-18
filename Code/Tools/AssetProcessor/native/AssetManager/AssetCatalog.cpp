@@ -781,7 +781,7 @@ namespace AssetProcessor
         {
             SourceAssetReference sourceAsset;
             bool result = GetAssetInfoByIdOnly(assetId, platformName, assetInfo, sourceAsset);
-            rootFilePath = sourceAsset.ScanfolderPath().c_str();
+            rootFilePath = sourceAsset.ScanFolderPath().c_str();
             return result;
         }
 
@@ -803,7 +803,7 @@ namespace AssetProcessor
                 assetInfo.m_assetType = assetType;
                 assetInfo.m_relativePath = sourceAsset.RelativePath().c_str();
                 assetInfo.m_sizeBytes = AZ::IO::SystemFile::Length(sourceAsset.AbsolutePath().c_str());
-                rootFilePath = sourceAsset.ScanfolderPath().c_str();
+                rootFilePath = sourceAsset.ScanFolderPath().c_str();
 
                 return true;
             }
@@ -1041,7 +1041,7 @@ namespace AssetProcessor
             AZStd::lock_guard<AZStd::mutex> lock(m_databaseMutex);
             AzToolsFramework::AssetDatabase::SourceDatabaseEntryContainer returnedSources;
 
-            if (m_db->GetSourcesBySourceNameScanFolderId(sourceAsset.RelativePath().c_str(), sourceAsset.ScanfolderId(), returnedSources))
+            if (m_db->GetSourcesBySourceNameScanFolderId(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(), returnedSources))
             {
                 if (!returnedSources.empty())
                 {
@@ -1078,7 +1078,7 @@ namespace AssetProcessor
             }
         }
 
-        watchFolder = sourceAsset.ScanfolderPath().c_str();
+        watchFolder = sourceAsset.ScanFolderPath().c_str();
 
         // Source file isn't in the database yet, see if its in the job queue
         if (GetQueuedAssetInfoByRelativeSourceName(sourceAsset, assetInfo))
@@ -1097,7 +1097,7 @@ namespace AssetProcessor
 
         if (GetSourceFileInfoFromAssetId(partialId, sourceAsset))
         {
-            watchFolder = sourceAsset.ScanfolderPath().c_str();
+            watchFolder = sourceAsset.ScanFolderPath().c_str();
 
             assetInfo.m_assetId = partialId;
             assetInfo.m_assetType = AZ::Uuid::CreateNull(); // most source files don't have a type!

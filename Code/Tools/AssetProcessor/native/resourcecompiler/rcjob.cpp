@@ -236,7 +236,7 @@ namespace AssetProcessor
         processJobRequest.m_builderGuid = GetBuilderGuid();
         processJobRequest.m_sourceFile = GetJobEntry().m_sourceAssetReference.RelativePath().c_str();
         processJobRequest.m_sourceFileUUID = GetInputFileUuid();
-        processJobRequest.m_watchFolder = GetJobEntry().m_sourceAssetReference.ScanfolderPath().c_str();
+        processJobRequest.m_watchFolder = GetJobEntry().m_sourceAssetReference.ScanFolderPath().c_str();
         processJobRequest.m_fullPath = GetJobEntry().GetAbsoluteSourcePath().toUtf8().data();
         processJobRequest.m_jobId = GetJobEntry().m_jobRunKey;
     }

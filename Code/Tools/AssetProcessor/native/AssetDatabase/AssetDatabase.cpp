@@ -1980,7 +1980,7 @@ namespace AssetProcessor
     bool AssetDatabaseConnection::GetJobsBySourceName(const SourceAssetReference& sourceAsset, JobDatabaseEntryContainer& container, AZ::Uuid builderGuid, QString jobKey, QString platform, JobStatus status)
     {
         bool found = false;
-        bool succeeded = QuerySourceBySourceNameScanFolderID(sourceAsset.RelativePath().c_str(), sourceAsset.ScanfolderId(),
+        bool succeeded = QuerySourceBySourceNameScanFolderID(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(),
             [&](SourceDatabaseEntry& source)
         {
             succeeded = QueryJobBySourceID(source.m_sourceID,
