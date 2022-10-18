@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <AzToolsFramework/Prefab/PrefabUndo.h>
-#include <AzToolsFramework/Prefab/PrefabUndoAddEntity.h>
+#include <AzToolsFramework/Prefab/Undo/PrefabUndo.h>
+#include <AzToolsFramework/Prefab/Undo/PrefabUndoAddEntity.h>
 
 namespace AzToolsFramework
 {
@@ -28,19 +28,19 @@ namespace AzToolsFramework
                 PrefabDom linkPatches, UndoSystem::URSequencePoint* undoBatch);
 
             //! Helper function for adding an entity to a prefab template with undo-redo support.
-            //! @param parentEntityInfo Data needed for creating patches to update the target parent entity of the new entity.
-            //! @param newEntityInfo Data needed for creating patches to add the new entity.
+            //! @param parentEntity The target parent entity of the newly added entity.
+            //! @param newEntity The new entity to be added.
+            //! @param focusedTemplateId The id of the focused prefab template under which the new entity and updated parent entity DOM will live.
+            //! @param focusedToOwningInstancePath The relative path from focused prefab instance to owning prefab instance.
             //! @param cachedInstanceDom The cached instance DOM that was last used.
-            //! @param templateId The id of the prefab template under which the new entity DOM will live.
             //! @param undoBatch The undo batch node to register the add-entity undo node to.
-            //! @param entityAliasPathPrefix The optional entity alias path prefix which will be added into patches if given.
             void AddEntity(
-                PrefabUndoAddEntity::ParentEntityInfo parentEntityInfo,
-                PrefabUndoAddEntity::NewEntityInfo newEntityInfo,
+                const AZ::Entity& parentEntity,
+                const AZ::Entity& newEntity,
+                TemplateId focusedTemplateId,
+                const AZStd::string& focusedToOwningInstancePath,
                 PrefabDomReference cachedInstanceDom,
-                TemplateId templateId,
-                UndoSystem::URSequencePoint* undoBatch,
-                AZStd::string entityAliasPathPrefix = "");
+                UndoSystem::URSequencePoint* undoBatch);
 
             //! Helper function for removing entities to a prefab template with undo-redo support.
             //! @param entityDomAndPathList The list of pairs of entity DOM before removal and its alias path in template.

@@ -8,7 +8,7 @@
 #include <Prefab/PrefabTestDomUtils.h>
 #include <Prefab/PrefabTestUndoFixture.h>
 
-#include <Prefab/PrefabUndo.h>
+#include <Prefab/Undo/PrefabUndo.h>
 
 #include <Prefab/PrefabTestComponent.h>
 

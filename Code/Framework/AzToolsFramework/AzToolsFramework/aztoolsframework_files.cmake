@@ -802,12 +802,6 @@ set(FILES
     Prefab/PrefabPublicRequestBus.h
     Prefab/PrefabPublicRequestHandler.h
     Prefab/PrefabPublicRequestHandler.cpp
-    Prefab/PrefabUndo.h
-    Prefab/PrefabUndo.cpp
-    Prefab/PrefabUndoAddEntity.h
-    Prefab/PrefabUndoAddEntity.cpp
-    Prefab/PrefabUndoBase.h
-    Prefab/PrefabUndoBase.cpp
     Prefab/PrefabUndoCache.cpp
     Prefab/PrefabUndoCache.h
     Prefab/PrefabUndoHelpers.cpp
@@ -848,6 +842,12 @@ set(FILES
     Prefab/Spawnable/SpawnableUtils.cpp
     Prefab/Template/Template.h
     Prefab/Template/Template.cpp
+    Prefab/Undo/PrefabUndo.h
+    Prefab/Undo/PrefabUndo.cpp
+    Prefab/Undo/PrefabUndoAddEntity.h
+    Prefab/Undo/PrefabUndoAddEntity.cpp
+    Prefab/Undo/PrefabUndoBase.h
+    Prefab/Undo/PrefabUndoBase.cpp
     UI/Outliner/EntityOutlinerDisplayOptionsMenu.h
     UI/Outliner/EntityOutlinerDisplayOptionsMenu.cpp
     UI/Outliner/EntityOutlinerTreeView.hxx

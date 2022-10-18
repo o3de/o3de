@@ -14,7 +14,7 @@
 
 #include <AzFramework/Components/TransformComponent.h>
 
-#include <Prefab/PrefabUndo.h>
+#include <Prefab/Undo/PrefabUndo.h>
 
 namespace UnitTest
 {

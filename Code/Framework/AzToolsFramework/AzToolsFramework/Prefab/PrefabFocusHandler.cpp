@@ -435,8 +435,7 @@ namespace AzToolsFramework::Prefab
             AZStd::string prefix = PrefabInstanceUtils::GetRelativePathFromClimbedInstances(
                 ++climbUpResult.m_climbedInstances.crbegin(), climbUpResult.m_climbedInstances.crend());
 
-            AZStd::string entityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(entityId, AZStd::move(prefix));
-            m_instanceToTemplateInterface->AppendEntityAliasPathToPatchPaths(providedPatch, AZStd::move(entityAliasPath));
+            m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(providedPatch, entityId, AZStd::move(prefix));
             return climbUpResult.m_climbedInstances.back()->GetLinkId();
         }
         else

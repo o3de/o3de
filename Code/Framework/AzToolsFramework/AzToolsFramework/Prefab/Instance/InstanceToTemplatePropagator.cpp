@@ -112,7 +112,7 @@ namespace AzToolsFramework
             return PatchTemplate(providedPatch, templateId);
         }
 
-        AZStd::string InstanceToTemplatePropagator::GenerateEntityAliasPath(AZ::EntityId entityId, AZStd::string prefix)
+        AZStd::string InstanceToTemplatePropagator::GenerateEntityAliasPath(AZ::EntityId entityId)
         {
             InstanceOptionalReference owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
             if (!owningInstance.has_value())
@@ -122,9 +122,8 @@ namespace AzToolsFramework
             }
 
             // create the prefix for the update - choosing between container and regular entities
-            AZStd::string entityAliasPath = prefix + "/";
-
-            bool isContainerEntity = entityId == owningInstance->get().GetContainerEntityId();
+            AZStd::string entityAliasPath = "/";
+            const bool isContainerEntity = entityId == owningInstance->get().GetContainerEntityId();
             if (isContainerEntity)
             {
                 entityAliasPath += PrefabDomUtils::ContainerEntityName;
@@ -139,12 +138,12 @@ namespace AzToolsFramework
             return AZStd::move(entityAliasPath);
         }
 
-        void InstanceToTemplatePropagator::AppendEntityAliasToPatchPaths(PrefabDom& providedPatch, AZ::EntityId entityId, AZStd::string prefix)
+        void InstanceToTemplatePropagator::AppendEntityAliasToPatchPaths(PrefabDom& providedPatch, AZ::EntityId entityId, const AZStd::string& prefix)
         {
             AppendEntityAliasPathToPatchPaths(providedPatch, prefix + GenerateEntityAliasPath(entityId));
         }
 
-        void InstanceToTemplatePropagator::AppendEntityAliasPathToPatchPaths(PrefabDom& providedPatch, AZStd::string entityAliasPath)
+        void InstanceToTemplatePropagator::AppendEntityAliasPathToPatchPaths(PrefabDom& providedPatch, const AZStd::string& entityAliasPath)
         {
             if (!providedPatch.IsArray())
             {

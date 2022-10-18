@@ -7,7 +7,7 @@
  */
 
 #include <AzCore/Interface/Interface.h>
-#include <Prefab/PrefabUndo.h>
+#include <Prefab/Undo/PrefabUndo.h>
 
 namespace AzToolsFramework
 {

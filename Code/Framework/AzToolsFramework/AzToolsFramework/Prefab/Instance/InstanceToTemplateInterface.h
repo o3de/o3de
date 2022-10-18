@@ -25,10 +25,10 @@ namespace AzToolsFramework
             AZ_RTTI(InstanceToTemplateInterface, "{9EF54D0F-0951-40B6-91AB-2EB55A322692}");
             virtual ~InstanceToTemplateInterface() = default;
 
-            //! Generates a prefabdom for the entity in its current state and places the result in generatedDom
+            //! Generates a prefab dom for the entity in its current state and places the result in generatedDom
             virtual bool GenerateDomForEntity(PrefabDom& generatedEntityDom, const AZ::Entity& entity) = 0;
 
-            //! Generates a prefabdom for the instance in its current state and places the result in generatedDom
+            //! Generates a prefab dom for the instance in its current state and places the result in generatedDom
             virtual bool GenerateDomForInstance(PrefabDom& generatedInstanceDom, const Instance& instance) = 0;
 
             //! Generates a patch using serialization system and places the result in generatedPatch
@@ -44,10 +44,10 @@ namespace AzToolsFramework
             //! Generates a string matching the path to the entity alias corresponding to the entity id.
             //! @param entityId The entity id to use for generating alias path
             //! @return The string matching the path to the entity alias
-            virtual AZStd::string GenerateEntityAliasPath(AZ::EntityId entityId, AZStd::string prefix = "") = 0;
+            virtual AZStd::string GenerateEntityAliasPath(AZ::EntityId entityId) = 0;
 
-            virtual void AppendEntityAliasToPatchPaths(PrefabDom& providedPatch, AZ::EntityId entityId, AZStd::string prefix = "") = 0;
-            virtual void AppendEntityAliasPathToPatchPaths(PrefabDom& providedPatch, AZStd::string entityAliasPath) = 0;
+            virtual void AppendEntityAliasToPatchPaths(PrefabDom& providedPatch, AZ::EntityId entityId, const AZStd::string& prefix = "") = 0;
+            virtual void AppendEntityAliasPathToPatchPaths(PrefabDom& providedPatch, const AZStd::string& entityAliasPath) = 0;
 
             //! Updates the template links (updating instances) for the given template and triggers propagation on its instances.
             //! @param providedPatch The patch to apply to the template.

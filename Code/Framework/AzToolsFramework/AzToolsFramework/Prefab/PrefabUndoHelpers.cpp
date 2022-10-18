@@ -52,21 +52,21 @@ namespace AzToolsFramework
             }
 
             void AddEntity(
-                PrefabUndoAddEntity::ParentEntityInfo parentEntityInfo,
-                PrefabUndoAddEntity::NewEntityInfo newEntityInfo,
+                const AZ::Entity& parentEntity,
+                const AZ::Entity& newEntity,
+                TemplateId focusedTemplateId,
+                const AZStd::string& focusedToOwningInstancePath,
                 PrefabDomReference cachedInstanceDom,
-                TemplateId templateId,
-                UndoSystem::URSequencePoint* undoBatch,
-                AZStd::string entityAliasPathPrefix)
+                UndoSystem::URSequencePoint* undoBatch)
             {
                 PrefabUndoAddEntity* addEntityUndoState = aznew PrefabUndoAddEntity("Undo Adding Entity");
                 addEntityUndoState->SetParent(undoBatch);
                 addEntityUndoState->Capture(
-                    AZStd::move(parentEntityInfo),
-                    AZStd::move(newEntityInfo),
-                    cachedInstanceDom,
-                    templateId,
-                    entityAliasPathPrefix);
+                    parentEntity,
+                    newEntity,
+                    focusedTemplateId,
+                    focusedToOwningInstancePath,
+                    cachedInstanceDom);
                 addEntityUndoState->Redo();
             }
 
