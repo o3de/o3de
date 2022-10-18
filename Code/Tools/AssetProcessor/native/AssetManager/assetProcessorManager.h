@@ -490,7 +490,7 @@ namespace AssetProcessor
         AZStd::multimap<AZStd::string, AZ::u64> m_jobKeyToJobRunKeyMap;
 
         using SourceUUIDToSourceInfoMap = AZStd::unordered_map<AZ::Uuid, SourceAssetReference>;
-        SourceUUIDToSourceInfoMap m_sourceUUIDToSourceInfoMap; // contains UUID -> SourceAssetReference
+        SourceUUIDToSourceInfoMap m_sourceUUIDToSourceInfoMap; // contains Source Asset UUID -> SourceAssetReference
         AZStd::mutex m_sourceUUIDToSourceInfoMapMutex;
 
         QString m_normalizedCacheRootPath;

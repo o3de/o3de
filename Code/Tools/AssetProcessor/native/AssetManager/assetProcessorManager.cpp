@@ -208,7 +208,7 @@ namespace AssetProcessor
         //this function just adds an removes to a maps to speed up job status, we don't actually write
         //to the database until it either succeeds or fails
         AZ::Uuid sourceUUID = AssetUtilities::CreateSafeSourceUUIDFromName(jobEntry.m_sourceAssetReference.RelativePath().c_str());
-        AZ::Uuid legacySourceUUID = AssetUtilities::CreateSafeSourceUUIDFromName(jobEntry.m_sourceAssetReference.RelativePath().c_str(), false); // legacy source uuid
+        AZ::Uuid legacySourceUUID = AssetUtilities::CreateSafeSourceUUIDFromName(jobEntry.m_sourceAssetReference.RelativePath().c_str(), false); // legacy source uuid format (case-sensitive version)
 
         if (status == JobStatus::Queued)
         {

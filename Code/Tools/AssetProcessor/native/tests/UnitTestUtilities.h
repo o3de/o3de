@@ -12,7 +12,6 @@
 #include <utilities/assetUtils.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Interface/Interface.h>
-#include <AzCore/Math/Uuid.h>
 #include <gmock/gmock.h>
 
 namespace UnitTests

@@ -67,6 +67,11 @@ namespace AssetProcessor
         return m_absolutePath < other.m_absolutePath;
     }
 
+    bool SourceAssetReference::operator>(const SourceAssetReference& other) const
+    {
+        return m_absolutePath > other.m_absolutePath;
+    }
+
     SourceAssetReference::operator bool() const
     {
         return !m_absolutePath.empty();

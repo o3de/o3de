@@ -15,7 +15,7 @@ namespace UnitTests
 {
     using SourceAssetReferenceTests = ::UnitTest::ScopedAllocatorSetupFixture;
 
-    TEST_F(SourceAssetReferenceTests, ConstructBasic)
+    TEST_F(SourceAssetReferenceTests, Construct_AbsolutePath_Succeeds)
     {
         using namespace AssetProcessor;
 
@@ -36,7 +36,7 @@ namespace UnitTests
         EXPECT_EQ(test1.ScanfolderId(), 1);
     }
 
-    TEST_F(SourceAssetReferenceTests, ConstructScanFolderPath)
+    TEST_F(SourceAssetReferenceTests, Construct_ScanFolderPath_Succeeds)
     {
         using namespace AssetProcessor;
 
@@ -59,7 +59,7 @@ namespace UnitTests
         EXPECT_EQ(test1.ScanfolderId(), 1);
     }
 
-    TEST_F(SourceAssetReferenceTests, ConstructScanFolderId)
+    TEST_F(SourceAssetReferenceTests, Construct_ScanFolderId_Succeeds)
     {
         using namespace AssetProcessor;
 
@@ -77,7 +77,7 @@ namespace UnitTests
         EXPECT_EQ(test1.ScanfolderId(), 1);
     }
 
-    TEST_F(SourceAssetReferenceTests, Copy)
+    TEST_F(SourceAssetReferenceTests, Copy_Succeeds)
     {
         using namespace AssetProcessor;
 
@@ -103,7 +103,7 @@ namespace UnitTests
         EXPECT_EQ(test2.ScanfolderId(), test3.ScanfolderId());
     }
 
-    TEST_F(SourceAssetReferenceTests, Move)
+    TEST_F(SourceAssetReferenceTests, Move_Succeeds)
     {
         using namespace AssetProcessor;
 
@@ -128,7 +128,7 @@ namespace UnitTests
         EXPECT_EQ(test3.ScanfolderId(), 1);
     }
 
-    TEST_F(SourceAssetReferenceTests, BoolCheckNegative)
+    TEST_F(SourceAssetReferenceTests, BoolCheck_EmptyReference_ReturnsFalse)
     {
         using namespace AssetProcessor;
 
@@ -137,7 +137,7 @@ namespace UnitTests
         EXPECT_FALSE(test);
     }
 
-    TEST_F(SourceAssetReferenceTests, BoolCheckPositive)
+    TEST_F(SourceAssetReferenceTests, BoolCheck_ValidReference_ReturnsTrue)
     {
         using namespace AssetProcessor;
 
@@ -150,7 +150,7 @@ namespace UnitTests
         EXPECT_TRUE(test);
     }
 
-    TEST_F(SourceAssetReferenceTests, Equality)
+    TEST_F(SourceAssetReferenceTests, SamePaths_AreEqual)
     {
         using namespace AssetProcessor;
 
@@ -160,10 +160,20 @@ namespace UnitTests
 
         SourceAssetReference test1{ path };
         SourceAssetReference test2{ path };
-        SourceAssetReference test3{ "c:/somepath/file2.png" };
 
         EXPECT_EQ(test1, test2);
-        EXPECT_NE(test1, test3);
+    }
+
+    TEST_F(SourceAssetReferenceTests, DifferentPaths_AreNotEqual)
+    {
+        using namespace AssetProcessor;
+
+        MockPathConversion mockPathConversion;
+
+        SourceAssetReference test1{ "c:/somepath/file.png" };
+        SourceAssetReference test2{ "c:/somepath/file2.png" };
+
+        EXPECT_NE(test1, test2);
     }
 
     TEST_F(SourceAssetReferenceTests, Comparison)
@@ -172,11 +182,10 @@ namespace UnitTests
 
         MockPathConversion mockPathConversion;
 
-        constexpr const char* path = "c:/somepath/file1.png";
-
-        SourceAssetReference test1{ path };
+        SourceAssetReference test1{ "c:/somepath/file1.png" };
         SourceAssetReference test2{ "c:/somepath/file2.png" };
 
         EXPECT_LT(test1, test2);
+        EXPECT_GT(test2, test1);
     }
 }

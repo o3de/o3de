@@ -56,6 +56,7 @@ namespace AssetProcessor
         bool operator==(const SourceAssetReference& other) const;
         bool operator!=(const SourceAssetReference& other) const;
         bool operator<(const SourceAssetReference& other) const;
+        bool operator>(const SourceAssetReference& other) const;
         explicit operator bool() const;
 
         AZ::IO::Path AbsolutePath() const;
