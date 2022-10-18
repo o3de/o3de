@@ -184,11 +184,11 @@ namespace AssetProcessor
         AZStd::mutex m_databaseMutex;
 
         AZStd::mutex m_sourceUUIDToSourceNameMapMutex;
-        using SourceUUIDToSourceNameMap = AZStd::unordered_map<AZ::Uuid, SourceAssetReference>;
-        using SourceNameToSourceUuidMap = AZStd::unordered_map<SourceAssetReference, AZ::Uuid>;
+        using SourceUUIDToSourceAssetMap = AZStd::unordered_map<AZ::Uuid, SourceAssetReference>;
+        using SourceAssetToSourceUuidMap = AZStd::unordered_map<SourceAssetReference, AZ::Uuid>;
 
-        SourceUUIDToSourceNameMap m_sourceUUIDToSourceNameMap; // map of uuids to source file names for assets that are currently in the processing queue
-        SourceNameToSourceUuidMap m_sourceNameToSourceUUIDMap;
+        SourceUUIDToSourceAssetMap m_sourceUUIDToSourceAssetMap; // map of uuids to SourceAssetReferences for assets that are currently in the processing queue
+        SourceAssetToSourceUuidMap m_sourceAssetToSourceUUIDMap; // map of SourceAssetReferences to UUIDs for assets that are currently in the processing queue
 
         QMutex m_registriesMutex;
         QHash<QString, AzFramework::AssetRegistry> m_registries; // per platform.

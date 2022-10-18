@@ -641,26 +641,26 @@ namespace AssetProcessor
     {
         AZStd::lock_guard<AZStd::mutex> lock(m_sourceUUIDToSourceNameMapMutex);
 
-        m_sourceUUIDToSourceNameMap.insert({ sourceUuid, sourceAsset });
+        m_sourceUUIDToSourceAssetMap.insert({ sourceUuid, sourceAsset });
 
         //adding legacy source uuid as well
-        m_sourceUUIDToSourceNameMap.insert({ legacyUuid, sourceAsset });
+        m_sourceUUIDToSourceAssetMap.insert({ legacyUuid, sourceAsset });
 
-        m_sourceNameToSourceUUIDMap.insert({ sourceAsset, sourceUuid });
+        m_sourceAssetToSourceUUIDMap.insert({ sourceAsset, sourceUuid });
     }
 
     void AssetCatalog::OnSourceFinished(AZ::Uuid sourceUuid, AZ::Uuid legacyUuid)
     {
         AZStd::lock_guard<AZStd::mutex> lock(m_sourceUUIDToSourceNameMapMutex);
 
-        auto found = m_sourceUUIDToSourceNameMap.find(sourceUuid);
-        if (found != m_sourceUUIDToSourceNameMap.end())
+        auto found = m_sourceUUIDToSourceAssetMap.find(sourceUuid);
+        if (found != m_sourceUUIDToSourceAssetMap.end())
         {
-            m_sourceNameToSourceUUIDMap.erase(found->second);
+            m_sourceAssetToSourceUUIDMap.erase(found->second);
         }
 
-        m_sourceUUIDToSourceNameMap.erase(sourceUuid);
-        m_sourceUUIDToSourceNameMap.erase(legacyUuid);
+        m_sourceUUIDToSourceAssetMap.erase(sourceUuid);
+        m_sourceUUIDToSourceAssetMap.erase(legacyUuid);
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -1572,8 +1572,8 @@ namespace AssetProcessor
         {
             AZStd::lock_guard<AZStd::mutex> lock(m_sourceUUIDToSourceNameMapMutex);
 
-            auto foundSource = m_sourceUUIDToSourceNameMap.find(guid);
-            if (foundSource != m_sourceUUIDToSourceNameMap.end())
+            auto foundSource = m_sourceUUIDToSourceAssetMap.find(guid);
+            if (foundSource != m_sourceUUIDToSourceAssetMap.end())
             {
                 sourceAsset = foundSource->second;
 
@@ -1593,8 +1593,8 @@ namespace AssetProcessor
         {
             AZStd::lock_guard<AZStd::mutex> lock(m_sourceUUIDToSourceNameMapMutex);
 
-            auto foundSourceUUID = m_sourceNameToSourceUUIDMap.find(sourceAsset);
-            if (foundSourceUUID != m_sourceNameToSourceUUIDMap.end())
+            auto foundSourceUUID = m_sourceAssetToSourceUUIDMap.find(sourceAsset);
+            if (foundSourceUUID != m_sourceAssetToSourceUUIDMap.end())
             {
                 assetInfo.m_relativePath = sourceAsset.RelativePath().c_str();
                 assetInfo.m_assetId = foundSourceUUID->second;

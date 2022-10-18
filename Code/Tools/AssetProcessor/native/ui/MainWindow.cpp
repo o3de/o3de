@@ -1841,7 +1841,7 @@ void MainWindow::ShowJobLogContextMenu(const QPoint& pos)
 
 static QString FindAbsoluteFilePath(const AssetProcessor::CachedJobInfo* cachedJobInfo)
 {
-    return cachedJobInfo->m_elementId.GetSourceAssetReference().AbsolutePath().c_str();
+    return cachedJobInfo ? cachedJobInfo->m_elementId.GetSourceAssetReference().AbsolutePath().c_str() : QString{};
 };
 
 static void SendShowInAssetBrowserResponse(const QString& filePath, ConnectionManager* connectionManager, unsigned int connectionId, QByteArray data)
