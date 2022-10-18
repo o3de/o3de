@@ -23,8 +23,6 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/sort.h>
 
-#pragma optimize("", off)
-
 AZ_CVAR(bool, bg_AssertNetBindOnDeactivationWithoutMarkForRemoval, false, nullptr, AZ::ConsoleFunctorFlags::Null,
     "If true, assert when a multiplayer entity is deactivated without first calling MarkForRemoval from NetworkEntityManager.");
 
@@ -163,6 +161,8 @@ namespace Multiplayer
 
     NetBindComponent::NetBindComponent()
         : m_handleLocalServerRpcMessageEventHandle([this](NetworkEntityRpcMessage& message) { HandleLocalServerRpcMessage(message); })
+        , m_handleLocalAutonomousToAuthorityRpcMessageEventHandle([this](NetworkEntityRpcMessage& message) { HandleLocalAutonomousToAuthorityRpcMessage(message); })
+        , m_handleLocalAuthorityToClientRpcMessageEventHandle([this](NetworkEntityRpcMessage& message) { HandleLocalAuthorityToClientRpcMessage(message); })
         , m_handleMarkedDirty([this]() { HandleMarkedDirty(); })
         , m_handleNotifyChanges([this]() { NotifyLocalChanges(); })
         , m_handleEntityStateEvent([this](AZ::Entity::State oldState, AZ::Entity::State newState) { OnEntityStateEvent(oldState, newState); })
@@ -195,7 +195,12 @@ namespace Multiplayer
         m_needsToBeStopped = true;
         if (m_netEntityRole == NetEntityRole::Authority)
         {
-            m_handleLocalServerRpcMessageEventHandle.Connect(m_sendServertoAuthorityRpcEvent);
+            m_handleLocalServerRpcMessageEventHandle.Connect(m_sendServerToAuthorityRpcEvent);
+            if (Multiplayer::GetMultiplayer()->GetAgentType() == MultiplayerAgentType::ClientServer)
+            {
+                m_handleLocalAutonomousToAuthorityRpcMessageEventHandle.Connect(m_sendAutonomousToAuthorityRpcEvent);
+                m_handleLocalAuthorityToClientRpcMessageEventHandle.Connect(m_sendAuthorityToClientRpcEvent);
+            }
         }
         if (HasController())
         {
@@ -216,6 +221,8 @@ namespace Multiplayer
                 GetEntity() ? GetEntity()->GetName().c_str() : "null");
         }
         m_handleLocalServerRpcMessageEventHandle.Disconnect();
+        m_handleLocalAutonomousToAuthorityRpcMessageEventHandle.Disconnect();
+        m_handleLocalAuthorityToClientRpcMessageEventHandle.Disconnect();
         if (HasController())
         {
             GetNetworkEntityManager()->NotifyControllersDeactivated(m_netEntityHandle, EntityIsMigrating::False);
@@ -505,7 +512,7 @@ namespace Multiplayer
 
     RpcSendEvent& NetBindComponent::GetSendServerToAuthorityRpcEvent()
     {
-        return m_sendServertoAuthorityRpcEvent;
+        return m_sendServerToAuthorityRpcEvent;
     }
 
     RpcSendEvent& NetBindComponent::GetSendAutonomousToAuthorityRpcEvent()
@@ -741,7 +748,7 @@ namespace Multiplayer
         DetermineInputOrdering();
         if (GetNetEntityRole() == NetEntityRole::Authority)
         {
-            m_handleLocalServerRpcMessageEventHandle.Connect(m_sendServertoAuthorityRpcEvent);
+            m_handleLocalServerRpcMessageEventHandle.Connect(m_sendServerToAuthorityRpcEvent);
         }
         GetNetworkEntityManager()->NotifyControllersActivated(m_netEntityHandle, entityIsMigrating);
     }
@@ -802,6 +809,18 @@ namespace Multiplayer
         GetNetworkEntityManager()->HandleLocalRpcMessage(message);
     }
 
+    void NetBindComponent::HandleLocalAutonomousToAuthorityRpcMessage(NetworkEntityRpcMessage& message)
+    {
+        message.SetRpcDeliveryType(RpcDeliveryType::AutonomousToAuthority);
+        GetNetworkEntityManager()->HandleLocalRpcMessage(message);
+    }
+
+    void NetBindComponent::HandleLocalAuthorityToClientRpcMessage(NetworkEntityRpcMessage& message)
+    {
+        message.SetRpcDeliveryType(RpcDeliveryType::AuthorityToClient);
+        GetNetworkEntityManager()->HandleLocalRpcMessage(message);
+    }
+
     void NetBindComponent::DetermineInputOrdering()
     {
         AZ_Assert(HasController(), "Incorrect network role for input processing");
@@ -859,5 +878,3 @@ namespace Multiplayer
         }
     }
 }
-
-#pragma optimize("", on)
