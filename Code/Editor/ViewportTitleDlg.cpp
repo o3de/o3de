@@ -97,7 +97,7 @@ CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
     layout->addWidget(container);
     container->setObjectName("ViewportTitleDlgContainer");
 
-    m_prevMoveSpeed = 0;
+    m_prevMoveSpeedScale = 0;
 
     m_pViewPane = nullptr;
     GetIEditor()->RegisterNotifyListener(this);
@@ -177,18 +177,19 @@ void CViewportTitleDlg::SetupCameraDropdownMenu()
 
     auto cameraSpeedActionWidget = new QWidgetAction(cameraMenu);
     auto cameraSpeedContainer = new QWidget(cameraMenu);
-    auto cameraSpeedLabel = new QLabel(tr("Camera Speed"), cameraMenu);
+    auto cameraSpeedLabel = new QLabel(tr("Camera Speed Scale"), cameraMenu);
     m_cameraSpeed = new AzQtComponents::DoubleSpinBox(cameraMenu);
-    m_cameraSpeed->setRange(m_minSpeed, m_maxSpeed);
+    m_cameraSpeed->setRange(m_minSpeedScale, m_maxSpeedScale);
     m_cameraSpeed->SetDisplayDecimals(m_numDecimals);
-    m_cameraSpeed->setValue(SandboxEditor::CameraTranslateSpeed());
+    m_cameraSpeed->setSingleStep(m_speedScaleStep);
+    m_cameraSpeed->setValue(SandboxEditor::CameraSpeedScale());
 
     QObject::connect(
         m_cameraSpeed,
         QOverload<double>::of(&AzQtComponents::DoubleSpinBox::valueChanged),
         [](const double value)
         {
-            SandboxEditor::SetCameraTranslateSpeed(aznumeric_cast<float>(value));
+            SandboxEditor::SetCameraSpeedScale(aznumeric_cast<float>(value));
         });
 
     QHBoxLayout* cameraSpeedLayout = new QHBoxLayout;
@@ -1125,11 +1126,11 @@ inline double Round(double fVal, double fStep)
 
 void CViewportTitleDlg::CheckForCameraSpeedUpdate()
 {
-    const float currentCameraMoveSpeed = SandboxEditor::CameraTranslateSpeed();
-    if (currentCameraMoveSpeed != m_prevMoveSpeed && !m_cameraSpeed->hasFocus())
+    const float currentCameraSpeedScale = SandboxEditor::CameraSpeedScale();
+    if (currentCameraSpeedScale != m_prevMoveSpeedScale && !m_cameraSpeed->hasFocus())
     {
-        m_prevMoveSpeed = currentCameraMoveSpeed;
-        m_cameraSpeed->setValue(currentCameraMoveSpeed);
+        m_prevMoveSpeedScale = currentCameraSpeedScale;
+        m_cameraSpeed->setValue(currentCameraSpeedScale);
     }
 }
 

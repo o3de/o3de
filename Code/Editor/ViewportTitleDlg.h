@@ -99,12 +99,12 @@ protected:
     QStringList m_customFOVPresets;
     QStringList m_customAspectRatioPresets;
 
-    float m_prevMoveSpeed;
+    float m_prevMoveSpeedScale;
 
     // Speed combobox/lineEdit settings
-    double m_minSpeed = 0.01;
-    double m_maxSpeed = 100.0;
-    double m_speedStep = 0.001;
+    double m_minSpeedScale = 0.001;
+    double m_maxSpeedScale = 10.0;
+    double m_speedScaleStep = 0.01;
     int m_numDecimals = 3;
 
     double m_fieldWidthMultiplier = 1.8;
