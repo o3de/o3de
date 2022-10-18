@@ -83,16 +83,6 @@ namespace AzToolsFramework
                 newEntityDom, newEntityAliasPath);
         }
 
-        void PrefabUndoAddEntity::Undo()
-        {
-            m_instanceToTemplateInterface->PatchTemplate(m_undoPatch, m_templateId);
-        }
-
-        void PrefabUndoAddEntity::Redo()
-        {
-            m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId);
-        }
-
         void PrefabUndoAddEntity::GenerateUpdateParentEntityUndoPatches(
             const PrefabDom& parentEntityDomAfterAddingEntity,
             const AZStd::string& parentEntityAliasPath)

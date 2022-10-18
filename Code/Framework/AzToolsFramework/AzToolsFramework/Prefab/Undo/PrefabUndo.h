@@ -30,6 +30,8 @@ namespace AzToolsFramework
                 const PrefabDom& endState,
                 TemplateId templateId);
 
+            using PrefabUndoBase::Redo;
+
             void Redo(InstanceOptionalConstReference instance);
         };
         

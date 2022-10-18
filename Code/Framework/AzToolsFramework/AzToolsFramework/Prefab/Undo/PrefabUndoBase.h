@@ -21,7 +21,7 @@ namespace AzToolsFramework
         public:
             explicit PrefabUndoBase(const AZStd::string& undoOperationName);
 
-            bool Changed() const override { return m_changed; }
+            bool Changed() const override;
 
             void Undo() override;
             void Redo() override;
