@@ -52,7 +52,7 @@ namespace AZ
         {
             SrgInitParams initParams{ supervariantIndex, srgName };
             auto anyInitParams = AZStd::any(initParams);
-            return Data::InstanceDatabase<ShaderResourceGroup>::Instance().FindOrCreate(shaderAsset, &anyInitParams);
+            return Data::InstanceDatabase<ShaderResourceGroup>::Instance().Create(shaderAsset, &anyInitParams);
         }
 
         Data::Instance<ShaderResourceGroup> ShaderResourceGroup::CreateInternal(ShaderAsset& shaderAsset, const AZStd::any* anySrgInitParams)
