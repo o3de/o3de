@@ -12,7 +12,7 @@ List the fully qualified APIs/types. For example, `AZ::Quaternion::SetFromEulerR
 ## Alternatives APIs
 List new or updated APIs to replace deprecated API. 
 For example, use 
-`Quaternion AZ::Quaternionstatic CreateFromEulerRadiansXYZ(const Vector3&)` 
+`Quaternion AZ::Quaternion::CreateFromEulerRadiansXYZ(const Vector3&)` 
 to repleace 
 `void AZ::Quaternion::SetFromEulerRadians(const Vector3&)` and `Quaternion AZ::Quaternion::ConvertEulerRadiansToQuaternion(const Vector3&)`
 
