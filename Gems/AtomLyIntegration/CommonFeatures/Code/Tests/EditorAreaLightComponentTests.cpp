@@ -336,4 +336,19 @@ namespace UnitTest
             EXPECT_THAT(aabb, IsClose(AZ::Aabb::CreateFromMinMax(AZ::Vector3(-30.0f), AZ::Vector3(30.0f))));
         }
     }
-} // namespace UnitTest
+
+    TEST_F(EditorAreaLightComponentFixture, CheckEditorAreaSimplePointLightBounds)
+    {
+        // suppress warning when feature process is not created in test environment
+        UnitTest::ErrorHandler featureProcessorNotFound("Unable to find a AZ::Render::SimplePointLightFeatureProcessorInterface on the scene.");
+
+        {
+            auto entity = CreateEditorAreaLightEntity(
+                CreateAreaLightComponentConfig(AZ::Render::AreaLightComponentConfig::LightType::SimplePoint, 15.0f),
+                LmbrCentral::EditorSphereShapeComponentTypeId);
+
+            const AZ::Aabb aabb = AzFramework::CalculateEntityLocalBoundsUnion(entity.get());
+            EXPECT_THAT(aabb, IsClose(AZ::Aabb::CreateFromMinMax(AZ::Vector3(-15.0f), AZ::Vector3(15.0f))));
+        }
+    }
+    } // namespace UnitTest
