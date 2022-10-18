@@ -78,7 +78,7 @@ WelcomeScreenDialog::WelcomeScreenDialog(QWidget* pParent)
     {
         projectPreviewPath = ":/WelcomeScreenDialog/DefaultProjectImage.png";
     }
-    
+
     ui->activeProjectIcon->setPixmap(
         AzQtComponents::ScalePixmapForScreenDpi(
             QPixmap(projectPreviewPath),
@@ -99,8 +99,8 @@ WelcomeScreenDialog::WelcomeScreenDialog(QWidget* pParent)
     ui->recentLevelTable->setIconSize(QSize(20, 20));
     installEventFilter(this);
 
-    auto projectName = AZ::Utils::GetProjectName();
-    ui->currentProjectName->setText(projectName.c_str());
+    auto projectDisplayName = AZ::Utils::GetProjectDisplayName();
+    ui->currentProjectName->setText(projectDisplayName.c_str());
 
     ui->newLevelButton->setDefault(true);
 

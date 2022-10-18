@@ -170,6 +170,7 @@ protected:
 
     AZStd::unique_ptr<AssetProcessorManager_Test> m_assetProcessorManager;
     AZStd::unique_ptr<AssetProcessor::MockApplicationManager> m_mockApplicationManager;
+    AssetProcessor::MockAssetDatabaseRequestsHandler m_databaseLocationListener;
     AZStd::unique_ptr<AssetProcessor::PlatformConfiguration> m_config;
     QString m_gameName;
     QDir m_normalizedCacheRootDir;
@@ -184,7 +185,6 @@ protected:
     struct StaticData
     {
         AZStd::string m_databaseLocation;
-        AssetProcessor::MockAssetDatabaseRequestsHandler m_databaseLocationListener;
         AZ::Entity* m_jobManagerEntity{};
         AZ::ComponentDescriptor* m_descriptor{};
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
