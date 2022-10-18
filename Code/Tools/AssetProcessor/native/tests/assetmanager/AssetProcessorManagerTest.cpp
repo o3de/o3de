@@ -100,7 +100,7 @@ void AssetProcessorManagerTest::SetUp()
 
     AssetUtilities::ResetAssetRoot();
 
-    m_assetRootDir = QDir(m_data->m_databaseLocationListener.GetAssetRootDir().c_str());
+    m_assetRootDir = QDir(m_databaseLocationListener.GetAssetRootDir().c_str());
     m_scopeDir = AZStd::make_unique<UnitTestUtils::ScopedDir>();
     m_scopeDir->Setup(m_assetRootDir.path());
 

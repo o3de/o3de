@@ -88,7 +88,8 @@ namespace Multiplayer
     AZ_CVAR(AZ::CVarFixedString, sv_map, "", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The map the server should load");
     AZ_CVAR(ProtocolType, sv_protocol, ProtocolType::Udp, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "This flag controls whether we use TCP or UDP for game networking");
     AZ_CVAR(bool, sv_isDedicated, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether the host command creates an independent or client hosted server");
-    AZ_CVAR(bool, sv_isTransient, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether a dedicated server shuts down if all existing connections disconnect.");
+    AZ_CVAR(bool, sv_isTransient, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "[DEPRECATED: use sv_terminateOnPlayerExit instead] Whether a dedicated server shuts down if all existing connections disconnect.");
+    AZ_CVAR(bool, sv_terminateOnPlayerExit, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether a dedicated server shuts down if all existing connections disconnect.");
     AZ_CVAR(AZ::TimeMs, sv_serverSendRateMs, AZ::TimeMs{ 50 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Minimum number of milliseconds between each network update");
     AZ_CVAR(float, cl_renderTickBlendBase, 0.15f, nullptr, AZ::ConsoleFunctorFlags::Null,
         "The base used for blending between network updates, 0.1 will be quite linear, 0.2 or 0.3 will "
@@ -971,8 +972,8 @@ namespace Multiplayer
         }
 
         // Signal to session management when there are no remaining players in a dedicated server for potential cleanup
-        // We avoid this for client server as the host itself is a user and non-transient dedicated servers
-        if (sv_isTransient && m_agentType == MultiplayerAgentType::DedicatedServer && connection->GetConnectionRole() == ConnectionRole::Acceptor)
+        // We avoid this for client server as the host itself is a user and dedicated servers that do not terminate when all players have exited
+        if (sv_terminateOnPlayerExit && m_agentType == MultiplayerAgentType::DedicatedServer && connection->GetConnectionRole() == ConnectionRole::Acceptor)
         {   
             if (m_networkInterface->GetConnectionSet().GetActiveConnectionCount() == 0)
             {

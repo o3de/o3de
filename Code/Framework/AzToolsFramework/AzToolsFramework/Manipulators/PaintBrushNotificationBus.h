@@ -30,20 +30,18 @@ namespace AzToolsFramework
         //! to get the specific painted values at every position the listener cares about within the dirtyRegion.
         //! @points The input world space positions to query.
         //! @validPoints [out] The output positions that are valid for this paintbrush.
-        //! @intensities [out] The output intensities of the paintbrush that have been painted at this position.
-        //! @opacity [out] The output opacities of the paintbrush that have been painted at this position.
+        //! @opacities [out] The output per-pixel opacities of the paintbrush that have been painted at this position (0-1 range).
         using ValueLookupFn = AZStd::function<void(
             AZStd::span<const AZ::Vector3> points,
             AZStd::vector<AZ::Vector3>& validPoints,
-            AZStd::vector<float>& intensities,
             AZStd::vector<float>& opacities)>;
 
         //! Returns the base value blended with the paint brush intensity / opacity based on paint brush blend mode.
         //! This should get called in response to receiving a PaintBrushNotificationBus::OnPaint(dirtyRegion, valueLookupFn, blendFn) event
         //! to blend a base value with a paintbrush value.
-        //! @baseValue The input base value from whatever data is being painted. This should be 0-1.
-        //! @intensity The paint brush intensity at this position.
-        //! @opacity The paint brush opacity at this position.
+        //! @baseValue The input base value from whatever data is being painted (0-1).
+        //! @intensity The paint brush intensity at this position (0-1).
+        //! @opacity The paint brush opacity at this position (0-1).
         //! @return The blended value from 0-1.
         using BlendFn = AZStd::function<float(float baseValue, float intensity, float opacity)>;
 
@@ -65,13 +63,15 @@ namespace AzToolsFramework
         {
         }
 
-        //! Notifies listeners that painting has begun.
-        virtual void OnPaintBegin()
+        //! Notifies listeners that a paint stroke has begun.
+        //! @param intensity The intensity of the paint stroke (0-1)
+        //! @param opacity The opacity of the paint stroke (0-1)
+        virtual void OnPaintStrokeBegin([[maybe_unused]] float intensity, [[maybe_unused]] float opacity)
         {
         }
 
-        //! Notifies listeners that painting has ended.
-        virtual void OnPaintEnd()
+        //! Notifies listeners that a paint stroke has ended.
+        virtual void OnPaintStrokeEnd()
         {
         }
 

@@ -50,7 +50,7 @@ namespace AZ::Date
         return GetFilenameCompatibleFormatWithMilliseconds(utcTimestamp, AZStd::chrono::utc_clock::now());
     }
 
-    bool GetFilenameCompatibleBasicFormatNowWithMicroseconds(Iso8601TimestampString& utcTimestamp)
+    bool GetFilenameCompatibleFormatNowWithMicroseconds(Iso8601TimestampString& utcTimestamp)
     {
         return GetFilenameCompatibleFormatWithMicroseconds(utcTimestamp, AZStd::chrono::utc_clock::now());
     }
