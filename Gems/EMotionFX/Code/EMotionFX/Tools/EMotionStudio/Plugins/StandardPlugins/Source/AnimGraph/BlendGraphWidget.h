@@ -50,13 +50,18 @@ namespace EMStudio
     class BlendGraphNodePaletteTreeItem : public GraphCanvas::IconDecoratedNodePaletteTreeItem
     {
     public:
-        BlendGraphNodePaletteTreeItem(AZStd::string_view name, const QString& typeString, GraphCanvas::EditorId editorId);
+        BlendGraphNodePaletteTreeItem(AZStd::string_view name, const QString& typeString, GraphCanvas::EditorId editorId, const AZ::Color& color);
         BlendGraphMimeEvent* CreateMimeEvent() const override;
 
         void SetTypeString(const QString& typeString);
         QString GetTypeString() const;
+
+    protected:
+        QVariant OnData(const QModelIndex& index, int role) const override;
+
     private:
         QString m_typeString;
+        QPixmap m_colorPixmap;
     };
 
     class BlendGraphWidget

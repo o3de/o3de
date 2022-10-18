@@ -30,7 +30,7 @@ namespace AzFramework
         NativeWindowHandle GetWindowHandle() const override;
         void SetWindowTitle(const AZStd::string& title) override;
 
-        void ResizeClientArea( WindowSize clientAreaSize ) override;
+        void ResizeClientArea(WindowSize clientAreaSize, const WindowPosOptions& options) override;
         bool SupportsClientAreaResize() const override { return true; }
         bool GetFullScreenState() const override;
         void SetFullScreenState(bool fullScreenState) override;
@@ -103,7 +103,7 @@ namespace AzFramework
         m_nativeWindow.title = m_windowTitle;
     }
 
-    void NativeWindowImpl_Darwin::ResizeClientArea( WindowSize clientAreaSize )
+    void NativeWindowImpl_Darwin::ResizeClientArea(WindowSize clientAreaSize, [[maybe_unused]] const WindowPosOptions& options)
     {
         NSRect contentRect = [m_nativeWindow contentLayoutRect];
         if (clientAreaSize.m_width != NSWidth(contentRect) || clientAreaSize.m_height != NSHeight(contentRect))

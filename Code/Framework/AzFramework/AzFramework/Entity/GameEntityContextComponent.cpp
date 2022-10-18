@@ -311,7 +311,7 @@ namespace AzFramework
                                     spawnableEntitiesInterface->DespawnEntity(currentEntity->GetId(), entitySpawnTicket);
                                 }
                             });
-                        return;
+                        continue;
                     }
                 }
 

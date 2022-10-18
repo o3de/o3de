@@ -131,7 +131,6 @@ SEditorSettings::SEditorSettings()
     viewports.bSync2DViews = false;
     viewports.fDefaultAspectRatio = 800.0f / 600.0f;
     
-    viewports.bShowSafeFrame = false;
     viewports.bHighlightSelectedGeometry = false;
     viewports.bHighlightSelectedVegetation = true;
     viewports.bHighlightMouseOverGeometry = true;
@@ -472,7 +471,6 @@ void SEditorSettings::Save(bool isEditorClosing)
     SaveValue("Settings", "AlwaysShowRadiuses", viewports.bAlwaysShowRadiuses);
     SaveValue("Settings", "Sync2DViews", viewports.bSync2DViews);
     SaveValue("Settings", "AspectRatio", viewports.fDefaultAspectRatio);
-    SaveValue("Settings", "ShowSafeFrame", viewports.bShowSafeFrame);
     SaveValue("Settings", "HighlightSelectedGeometry", viewports.bHighlightSelectedGeometry);
     SaveValue("Settings", "HighlightSelectedVegetation", viewports.bHighlightSelectedVegetation);
     SaveValue("Settings", "HighlightMouseOverGeometry", viewports.bHighlightMouseOverGeometry);
@@ -667,7 +665,6 @@ void SEditorSettings::Load()
     LoadValue("Settings", "AlwaysShowRadiuses", viewports.bAlwaysShowRadiuses);
     LoadValue("Settings", "Sync2DViews", viewports.bSync2DViews);
     LoadValue("Settings", "AspectRatio", viewports.fDefaultAspectRatio);
-    LoadValue("Settings", "ShowSafeFrame", viewports.bShowSafeFrame);
     LoadValue("Settings", "HighlightSelectedGeometry", viewports.bHighlightSelectedGeometry);
     LoadValue("Settings", "HighlightSelectedVegetation", viewports.bHighlightSelectedVegetation);
     LoadValue("Settings", "HighlightMouseOverGeometry", viewports.bHighlightMouseOverGeometry);
