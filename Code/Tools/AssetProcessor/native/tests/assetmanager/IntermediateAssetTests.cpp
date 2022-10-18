@@ -374,6 +374,13 @@ namespace UnitTests
         EXPECT_TRUE(m_jobDetailsList[1].m_autoFail);
 
         EXPECT_EQ(m_jobDetailsList[1].m_jobEntry.m_databaseSourceName, "test.stage1");
+
+        m_assetProcessorManager->AssessDeletedFile(MakePath("test.stage1", true).c_str());
+        RunFile(0);
+
+        m_assetProcessorManager->CheckFilesToExamine(0);
+        m_assetProcessorManager->CheckActiveFiles(0);
+        m_assetProcessorManager->CheckJobEntries(0);
     }
 
     TEST_F(IntermediateAssetTests, CopyJob_Works)
