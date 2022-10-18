@@ -30,16 +30,12 @@ namespace AzToolsFramework
             //! Helper function for adding an entity to a prefab template with undo-redo support.
             //! @param parentEntity The target parent entity of the newly added entity.
             //! @param newEntity The new entity to be added.
-            //! @param focusedTemplateId The id of the focused prefab template under which the new entity and updated parent entity DOM will live.
-            //! @param focusedToOwningInstancePath The relative path from focused prefab instance to owning prefab instance.
-            //! @param cachedInstanceDom The cached instance DOM that was last used.
+            //! @param focusedInstance The current focused prefab instance, and under its template the new entity and updated parent entity DOM will live.
             //! @param undoBatch The undo batch node to register the add-entity undo node to.
             void AddEntity(
                 const AZ::Entity& parentEntity,
                 const AZ::Entity& newEntity,
-                TemplateId focusedTemplateId,
-                const AZStd::string& focusedToOwningInstancePath,
-                PrefabDomReference cachedInstanceDom,
+                Instance& focusedInstance,
                 UndoSystem::URSequencePoint* undoBatch);
 
             //! Helper function for removing entities to a prefab template with undo-redo support.

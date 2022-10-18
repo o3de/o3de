@@ -78,7 +78,7 @@ namespace UnitTest
         m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
 
         // verify template updated correctly
-        //instantiate second instance for checking if propogation works
+        //instantiate second instance for checking if propagation works
         AZStd::unique_ptr<Instance> secondInstance = m_prefabSystemComponent->InstantiatePrefab(
             templateId, AZStd::nullopt,
             [](const AzToolsFramework::EntityList& entities)

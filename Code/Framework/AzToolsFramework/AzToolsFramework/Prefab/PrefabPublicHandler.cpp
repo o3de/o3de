@@ -702,26 +702,14 @@ namespace AzToolsFramework
                 return AZ::Failure<AZStd::string>("Parent entity cannot be found while adding an entity.");
             }
 
-            // Climb up the instance hierarchy from the owning instance until it hits the focused prefab instance.
-            InstanceClimbUpResult climbUpResult = m_prefabFocusHandler.ClimbUpToFocusedOrRootInstanceFromEntity(parentId);
-            if (!climbUpResult.m_isTargetInstanceReached)
+            InstanceOptionalReference focusedInstance =
+                m_prefabFocusHandler.GetFocusedPrefabInstance(editorEntityContextId);
+            if (!focusedInstance.has_value())
             {
-                return AZ::Failure(AZStd::string::format(
-                    "Parent entity (id: '%llu') is not owned by a descendant of the focused prefab instance.",
-                    static_cast<AZ::u64>(parentId)));
+                return AZ::Failure<AZStd::string>("Can't find current focused prefab instance.");
             }
 
-            // Add entity and update parent entity.
-            AZStd::string focusedToOwningInstancePath = PrefabInstanceUtils::GetRelativePathFromClimbedInstances(climbUpResult.m_climbedInstances);
-            TemplateId focusedTemplateId = m_prefabFocusHandler.GetFocusedPrefabTemplateId(editorEntityContextId);
-
-            PrefabUndoHelpers::AddEntity(
-                *parentEntity,
-                *entity,
-                focusedTemplateId,
-                focusedToOwningInstancePath,
-                entityOwningInstance.GetCachedInstanceDom(),
-                undoBatch.GetUndoBatch());
+            PrefabUndoHelpers::AddEntity(*parentEntity, *entity, focusedInstance->get(), undoBatch.GetUndoBatch());
 
             // Select the new entity (and deselect others).
             AzToolsFramework::EntityIdList selection = { entityId };

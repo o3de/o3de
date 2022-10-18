@@ -23,6 +23,9 @@ namespace AzToolsFramework
 
             bool Changed() const override { return m_changed; }
 
+            void Undo() override;
+            void Redo() override;
+
         protected:
             TemplateId m_templateId;
 

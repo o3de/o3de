@@ -21,5 +21,20 @@ namespace AzToolsFramework
             m_instanceToTemplateInterface = AZ::Interface<InstanceToTemplateInterface>::Get();
             AZ_Assert(m_instanceToTemplateInterface, "Failed to grab instance to template interface");
         }
+
+        bool PrefabUndoBase::Changed() const
+        {
+            return m_changed;
+        }
+
+        void PrefabUndoBase::Undo()
+        {
+            m_instanceToTemplateInterface->PatchTemplate(m_undoPatch, m_templateId);
+        }
+
+        void PrefabUndoBase::Redo()
+        {
+            m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId);
+        }
     }
 }

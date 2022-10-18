@@ -15,6 +15,7 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
+        class InstanceEntityMapperInterface;
         class PrefabSystemComponentInterface;
 
         //! Undo class for handling addition of an entity to a prefab template.
@@ -27,15 +28,12 @@ namespace AzToolsFramework
 
             explicit PrefabUndoAddEntity(const AZStd::string& undoOperationName);
 
+            // The function help generate undo/redo patches for adding the a new entity under a target parent entity,
+            // where both entities are under the current focused prefab instance.
             void Capture(
                 const AZ::Entity& parentEntity,
                 const AZ::Entity& newEntity,
-                TemplateId focusedTemplateId,
-                const AZStd::string& focusedToOwningInstancePath,
-                PrefabDomReference cachedInstanceDom);
-
-            void Undo() override;
-            void Redo() override;
+                Instance& focusedInstance);
 
         private:
             void GenerateUpdateParentEntityUndoPatches(
@@ -46,6 +44,15 @@ namespace AzToolsFramework
                 const PrefabDom& newEntityDom,
                 const AZStd::string& newEntityAliasPath);
 
+            void UpdateCachedOwningInstanceDOM(
+                PrefabDomReference cachedOwningInstanceDom,
+                const PrefabDom& entityDom,
+                const AZStd::string& entityAliasPath);
+
+            AZStd::string GenerateFocusedToOwningInstanceRelativePath(
+                const Instance& focusedInstance, const Instance& owningInstance);
+
+            InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
         };
     }

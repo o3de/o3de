@@ -30,8 +30,6 @@ namespace AzToolsFramework
                 const PrefabDom& endState,
                 TemplateId templateId);
 
-            void Undo() override;
-            void Redo() override;
             void Redo(InstanceOptionalConstReference instance);
         };
         
@@ -44,9 +42,6 @@ namespace AzToolsFramework
 
             void Capture(const AZStd::vector<AZStd::pair<const PrefabDomValue*, AZStd::string>>& entityDomAndPathList,
                 TemplateId templateId);
-
-            void Undo() override;
-            void Redo() override;
         };
 
         //! Undo class for handling update of an entity to a prefab template.

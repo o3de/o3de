@@ -31,16 +31,6 @@ namespace AzToolsFramework
             m_instanceToTemplateInterface->GeneratePatch(m_undoPatch, endState, initialState);
         }
 
-        void PrefabUndoInstance::Undo()
-        {
-            m_instanceToTemplateInterface->PatchTemplate(m_undoPatch, m_templateId);
-        }
-
-        void PrefabUndoInstance::Redo()
-        {
-            m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId);
-        }
-
         void PrefabUndoInstance::Redo(InstanceOptionalConstReference instance)
         {
             m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, instance);
@@ -88,16 +78,6 @@ namespace AzToolsFramework
                     m_undoPatch.PushBack(undoPatch.Move(), m_undoPatch.GetAllocator());
                 }
             }
-        }
-
-        void PrefabUndoRemoveEntities::Undo()
-        {
-            m_instanceToTemplateInterface->PatchTemplate(m_undoPatch, m_templateId);
-        }
-
-        void PrefabUndoRemoveEntities::Redo()
-        {
-            m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId);
         }
 
         // PrefabUndoEntityUpdate

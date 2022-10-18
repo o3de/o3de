@@ -54,19 +54,12 @@ namespace AzToolsFramework
             void AddEntity(
                 const AZ::Entity& parentEntity,
                 const AZ::Entity& newEntity,
-                TemplateId focusedTemplateId,
-                const AZStd::string& focusedToOwningInstancePath,
-                PrefabDomReference cachedInstanceDom,
+                Instance& focusedInstance,
                 UndoSystem::URSequencePoint* undoBatch)
             {
                 PrefabUndoAddEntity* addEntityUndoState = aznew PrefabUndoAddEntity("Undo Adding Entity");
                 addEntityUndoState->SetParent(undoBatch);
-                addEntityUndoState->Capture(
-                    parentEntity,
-                    newEntity,
-                    focusedTemplateId,
-                    focusedToOwningInstancePath,
-                    cachedInstanceDom);
+                addEntityUndoState->Capture(parentEntity, newEntity, focusedInstance);
                 addEntityUndoState->Redo();
             }
 
