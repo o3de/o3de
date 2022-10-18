@@ -183,6 +183,14 @@ void CViewportTitleDlg::SetupCameraDropdownMenu()
     m_cameraSpeed->SetDisplayDecimals(m_numDecimals);
     m_cameraSpeed->setValue(SandboxEditor::CameraTranslateSpeed());
 
+    QObject::connect(
+        m_cameraSpeed,
+        QOverload<double>::of(&AzQtComponents::DoubleSpinBox::valueChanged),
+        [](const double value)
+        {
+            SandboxEditor::SetCameraTranslateSpeed(aznumeric_cast<float>(value));
+        });
+
     QHBoxLayout* cameraSpeedLayout = new QHBoxLayout;
     cameraSpeedLayout->addWidget(cameraSpeedLabel);
     cameraSpeedLayout->addWidget(m_cameraSpeed);
