@@ -26,6 +26,7 @@
 #include <Atom/RPI.Edit/Common/JsonReportingHelper.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Edit/Common/JsonUtils.h>
+#include <Atom/RPI.Edit/Shader/ShaderUtils.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
 
@@ -50,30 +51,7 @@ namespace AZ
 
             Outcome<RPI::ShaderSourceData, AZStd::string> LoadShaderDataJson(const AZStd::string& fullPathToJsonFile)
             {
-                RPI::ShaderSourceData shaderSourceData;
-
-                AZ::Outcome<rapidjson::Document, AZStd::string> loadOutcome =
-                    JsonSerializationUtils::ReadJsonFile(fullPathToJsonFile, AZ::RPI::JsonUtils::DefaultMaxFileSize);
-
-                if (!loadOutcome.IsSuccess())
-                {
-                    return Failure(loadOutcome.GetError());
-                }
-
-                rapidjson::Document document = loadOutcome.TakeValue();
-
-                JsonDeserializerSettings settings;
-                RPI::JsonReportingHelper reportingHelper;
-                reportingHelper.Attach(settings);
-
-                JsonSerialization::Load(shaderSourceData, document, settings);
-
-                if (reportingHelper.WarningsReported() || reportingHelper.ErrorsReported())
-                {
-                    return AZ::Failure(reportingHelper.GetErrorMessage());
-                }
-
-                return AZ::Success(shaderSourceData);
+                return AZ::RPI::ShaderUtils::LoadShaderDataJson(fullPathToJsonFile);
             }
 
             void GetAbsolutePathToAzslFile(const AZStd::string& shaderSourceFileFullPath, AZStd::string specifiedShaderPathAndName, AZStd::string& absoluteAzslPath)
@@ -108,7 +86,7 @@ namespace AZ
                 const AZStd::string& shaderSourceFileFullPath,
                 RPI::ShaderSourceData& sourceAsset)
             {
-                auto shaderAssetSourceFileParseOutput = ShaderBuilderUtility::LoadShaderDataJson(shaderSourceFileFullPath);
+                auto shaderAssetSourceFileParseOutput = LoadShaderDataJson(shaderSourceFileFullPath);
                 if (!shaderAssetSourceFileParseOutput.IsSuccess())
                 {
                     AZ_Error(builderName, false, "Failed to load/parse Shader Descriptor JSON: %s", shaderAssetSourceFileParseOutput.GetError().c_str());
@@ -118,7 +96,7 @@ namespace AZ
 
                 AZStd::shared_ptr<ShaderFiles> files(new ShaderFiles);
                 const AZStd::string& specifiedAzslName = sourceAsset.m_source;
-                ShaderBuilderUtility::GetAbsolutePathToAzslFile(shaderSourceFileFullPath, specifiedAzslName, files->m_azslSourceFullPath);
+                GetAbsolutePathToAzslFile(shaderSourceFileFullPath, specifiedAzslName, files->m_azslSourceFullPath);
 
                 // specifiedAzslName may have a relative path on it so need to strip it
                 AzFramework::StringFunc::Path::GetFileName(specifiedAzslName.c_str(), files->m_azslFileName);
@@ -847,7 +825,7 @@ namespace AZ
 
             IncludedFilesParser::IncludedFilesParser()
             {
-                AZStd::regex regex(R"(#\s*include\s+[<|"]([\w|/|\\|\.|-]+)[>|"])", AZStd::regex::ECMAScript);
+                AZStd::regex regex(R"(#\s*include\s+[<|"]([\w|/|\\|\.|\-|\:]+)[>|"])", AZStd::regex::ECMAScript);
                 m_includeRegex.swap(regex);
             }
 

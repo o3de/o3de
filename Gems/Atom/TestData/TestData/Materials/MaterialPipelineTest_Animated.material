@@ -1,0 +1,16 @@
+{
+    "materialType": "@projectroot@/Cache/Intermediate Assets/testdata/materials/types/materialpipelinetest_animated_final.materialtype",
+    "materialTypeVersion": 3,
+    "propertyValues": {
+        "settings.amplitude": 0.009999999776482582,
+        "settings.animationSpeed": 2.0,
+        "settings.color": [
+            1.0,
+            0.20444037020206451,
+            0.20444037020206451,
+            1.0
+        ],
+        "settings.frequency": 5.0,
+        "settings.roughness": 0.8600000143051147
+    }
+}

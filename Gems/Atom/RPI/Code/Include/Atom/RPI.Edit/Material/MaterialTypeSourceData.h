@@ -228,6 +228,10 @@ namespace AZ
             
             VersionUpdates m_versionUpdates;
 
+            // This path must be reachable as a #include statement in other azsl files.
+            // TODO: See if there's a way we can make this path be relative to the .materialtype file instead.
+            AZStd::string m_materialShaderCode;
+
             //! A list of shader variants that are always used at runtime; they cannot be turned off
             AZStd::vector<ShaderVariantReferenceData> m_shaderCollection;
 
@@ -304,6 +308,11 @@ namespace AZ
             //! If the data was loaded from an old format file (i.e. where "groups" and "properties" were separate sections),
             //! this converts to the new format where properties are listed inside property groups.
             bool ConvertToNewDataFormat();
+
+            //! The material type can be formatted in an abstract way. Instead of listing all the specific shaders to be used, it only provides a few snippets of material-specific shader code.
+            //! In this case, the MaterialTypeBuilder will automatically stitch the material shader code together with code for each of the available render pipelines, and produce a
+            //! new intermediate material type that is not abstract, for further processing. CreateMaterialTypeAsset() can only be used on a non-abstract MaterialTypeSourceData.
+            bool IsAbstractFormat() const;
 
         private:
                 

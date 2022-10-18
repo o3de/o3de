@@ -190,6 +190,8 @@ namespace AZ
             }
             combinedFile += (arguments.m_addSuffixToFileName ? "." + AZStd::string{ arguments.m_addSuffixToFileName } : "") + ".prepend";
 
+            AzFramework::StringFunc::Path::Normalize(combinedFile);
+
             if (arguments.m_destinationStringOpt)
             {
                 *arguments.m_destinationStringOpt = prependFileLoadResult.GetValue().c_str();

@@ -1,0 +1,123 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+// These setting used to be in ShaderQualityOptions.azsli as a basic/limited solution for multiple pipelines.
+// TODO, instead of UNIFIED_FORWARD_OUTPUT, fork ForwardPassOutput.azsli
+#define UNIFIED_FORWARD_OUTPUT          1
+#define FORCE_IBL_IN_FORWARD_PASS       1
+#define ENABLE_AREA_LIGHT_VALIDATION    0
+// #define ENABLE_AREA_LIGHTS           0
+#define MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE 1
+#define OUTPUT_DEPTH 0
+#define FORCE_OPAQUE 1
+#define OUTPUT_SUBSURFACE 0
+#define ENABLE_TRANSMISSION 0
+#define ENABLE_SHADER_DEBUGGING 1
+#define ENABLE_CLEAR_COAT 0
+
+#include <viewsrg.srgi>
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
+#include <Atom/Features/PBR/AlphaUtils.azsli>
+#include <Atom/Features/SrgSemantics.azsli>
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
+
+#include "../../../Shaders/Materials/BasePBR/BasePBR_SurfaceData.azsli"
+#include "../../../Shaders/Materials/BasePBR/BasePBR_LightingData.azsli"
+#include "../../../Shaders/Materials/BasePBR/BasePBR_LightingBrdf.azsli"
+#include "../../../Shaders/Materials/BasePBR/BasePBR_LightingEval.azsli"
+
+struct VsInput
+{
+    float3 position : POSITION;
+    float3 normal : NORMAL;
+    float4 tangent : TANGENT; 
+    float3 bitangent : BITANGENT; 
+};
+
+struct VsOutput
+{
+    precise linear centroid float4 position : SV_Position;
+    float3 normal: NORMAL;
+    float3 tangent : TANGENT; 
+    float3 bitangent : BITANGENT; 
+    float3 worldPosition : UV0;
+};
+
+void MaterialFunction_AdjustLocalPosition(inout float3 localPosition);
+void MaterialFunction_AdjustWorldPosition(inout float3 worldPosition);
+void MaterialFunction_AdjustSurface(inout Surface outSurface);
+
+// Define EvaluateVertexGeometry used in LowEndForwardPassVertexAndPixel.azsli
+VsOutput EvaluateVertexGeometry(VsInput IN)
+{
+    VsOutput output;
+ 
+    MaterialFunction_AdjustLocalPosition(IN.position);
+
+    float3 worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(IN.position, 1.0)).xyz;
+ 
+    MaterialFunction_AdjustWorldPosition(worldPosition);
+
+    output.worldPosition = worldPosition;
+    output.position = mul(ViewSrg::m_viewProjectionMatrix, float4(worldPosition, 1.0));
+    
+    output.tangent = IN.tangent.xyz;
+    output.bitangent = IN.bitangent;
+    output.normal = IN.normal;
+
+    return output;
+}
+
+class PixelGeometryData
+{
+    float3 positionWS;
+    float3 vertexNormal;
+
+    // TODO: LowEndForwardPassVertexAndPixel.azsli should not force this naming and array
+    float3 tangents[1];
+    float3 bitangents[1];
+
+    bool isFrontFace;
+};
+
+// Define EvaluatePixelGeometry used in LowEndForwardPassVertexAndPixel.azsli
+PixelGeometryData EvaluatePixelGeometry(VsOutput IN, bool isFrontFace)
+{
+    PixelGeometryData geoData;
+    geoData.positionWS = IN.worldPosition;
+    geoData.vertexNormal = normalize(IN.normal);
+    geoData.tangents[0] = IN.tangent;
+    geoData.bitangents[0] = IN.bitangent;
+    geoData.isFrontFace = isFrontFace;
+    return geoData;
+}
+
+Surface EvaluateSurface(PixelGeometryData geoData)
+{
+    Surface surface;
+    surface.position = geoData.positionWS.xyz;
+    surface.vertexNormal = geoData.vertexNormal;
+
+    // These are the values we expect MaterialFunction_EvaluateSurface to potentially replace.
+    surface.normal = surface.vertexNormal;
+    surface.roughnessLinear = 0.0;
+    float3 baseColor = float3(0.5, 0.5, 0.5);
+    float metallic = 0.0;
+    float specularF0Factor = 0.5f;
+    surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
+
+    MaterialFunction_AdjustSurface(surface);
+    
+    surface.CalculateRoughnessA();
+
+    return surface;
+}
+
+#include <Atom/Features/Pipeline/Forward/LowEndForwardPassVertexAndPixel.azsli>

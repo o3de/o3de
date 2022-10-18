@@ -7,6 +7,7 @@
  */
 
 #include "MaterialBuilder.h"
+#include "MaterialTypeBuilder.h"
 #include <Material/MaterialBuilderUtils.h>
 
 #include <Atom/RPI.Edit/Material/MaterialUtils.h>
@@ -99,6 +100,7 @@ namespace AZ
 
             const char* const materialTypeField = "materialType";
             const char* const parentMaterialField = "parentMaterial";
+            const char* parentJobKey = JobKey;
 
             if (materialJson.IsObject() && materialJson.HasMember(materialTypeField) && materialJson[materialTypeField].IsString())
             {
@@ -113,13 +115,14 @@ namespace AZ
             if (parentMaterialPath.empty())
             {
                 parentMaterialPath = materialTypePath;
+                parentJobKey = MaterialTypeBuilder::FinalMaterialTypeJobKey;
             }
 
             // Register dependency on the parent material source file so we can load it and use it's data to build this variant material.
             // Note, we don't need a direct dependency on the material type because the parent material will depend on it.
             MaterialBuilderUtils::AddPossibleDependencies(request.m_sourceFile,
                 parentMaterialPath,
-                JobKey,
+                parentJobKey,
                 outputJobDescriptor.m_jobDependencyList,
                 response.m_sourceFileDependencyList,
                 false,

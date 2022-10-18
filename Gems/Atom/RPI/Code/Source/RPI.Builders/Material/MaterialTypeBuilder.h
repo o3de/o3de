@@ -10,19 +10,23 @@
 
 #include <AssetBuilderSDK/AssetBuilderBusses.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
+#include <Atom/RPI.Edit/Material/MaterialPipelineSourceData.h>
 #include <AzCore/JSON/document.h>
 
 namespace AZ
 {
     namespace RPI
     {
+        class MaterialTypeSourceData;
+
         class MaterialTypeBuilder final
             : public AssetBuilderSDK::AssetBuilderCommandBus::Handler
         {
         public:
             AZ_TYPE_INFO(MaterialTypeBuilder, "{0D2D104F-9CC6-456E-88D9-24BCDA6C0465}");
 
-            static const char* JobKey;
+            static const char* MaterialPipelineJobKey;
+            static const char* FinalMaterialTypeJobKey;
 
             MaterialTypeBuilder() = default;
             ~MaterialTypeBuilder();
@@ -39,6 +43,13 @@ namespace AZ
 
         private:
 
+            void CreatePipelineJobs(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response, const MaterialTypeSourceData& materialTypeSourceData) const;
+            void CreateFinalJobs(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response, const MaterialTypeSourceData& materialTypeSourceData) const;
+            void ProcessPipelineJob(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const;
+            void ProcessFinalJob(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const;
+
+            AZStd::string GetMaterialPipelineName(const AZStd::string& materialPipelineFile) const;
+
             enum class MaterialTypeProductSubId : u32
             {
                 MaterialTypeAsset = 0,
@@ -47,8 +58,12 @@ namespace AZ
 
             bool ShouldOutputAllPropertiesMaterial() const;
             AZStd::string GetBuilderSettingsFingerprint() const;
+
+            void LoadMaterialPipelines();
             
             bool m_isShuttingDown = false;
+
+            AZStd::map<AZStd::string/*path*/, MaterialPipelineSourceData> m_materialPipelines;
         };
 
     } // namespace RPI

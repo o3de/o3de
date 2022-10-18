@@ -1,0 +1,41 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <viewsrg.srgi>
+
+struct VSInput
+{
+    float3 m_position : POSITION;
+};
+ 
+struct VSDepthOutput
+{
+    precise float4 m_position : SV_Position;
+};
+
+void MaterialFunction_AdjustLocalPosition(inout float3 localPosition);
+void MaterialFunction_AdjustWorldPosition(inout float3 worldPosition);
+
+VSDepthOutput DepthPassVS(VSInput IN)
+{
+    VSDepthOutput OUT;
+ 
+    MaterialFunction_AdjustLocalPosition(IN.m_position);
+
+    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
+    float3 worldPosition = mul(objectToWorld, float4(IN.m_position, 1.0)).xyz;
+    
+    MaterialFunction_AdjustWorldPosition(worldPosition);
+
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(worldPosition, 1.0));
+
+    return OUT;
+}
+
+

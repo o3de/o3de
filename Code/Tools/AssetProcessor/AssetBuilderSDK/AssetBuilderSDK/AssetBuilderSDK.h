@@ -473,7 +473,7 @@ namespace AssetBuilderSDK
         static void Reflect(AZ::ReflectContext* context);
 
         /** Use this to set the platform identifier.  it knows when it needs to retroactively compute
-        * the old m_platform flag when that code is enabled.
+        * the old m_platform flag when that code is enabled. Use CommonPlatformName for platform-agnostic jobs.
         */
         void SetPlatformIdentifier(const char* platformIdentifier);
         const AZStd::string& GetPlatformIdentifier() const;
@@ -643,7 +643,7 @@ namespace AssetBuilderSDK
         // Indicates this JobProduct is a product asset which should be output to the cache.  This is the default.
         // Currently it is not supported to use this with IntermediateAsset since the Common platform is required for IntermediateAsset and not yet supported for ProductAsset.
         ProductAsset = 1,
-        IntermediateAsset = 2 // Indicates this JobProduct is an intermediate asset which should be output to the intermediate asset folder.  Must be used with the Common platform.
+        IntermediateAsset = 2 // Indicates this JobProduct is an intermediate asset which should be output to the intermediate asset folder.  Must be used with the "common" platform (see CommonPlatformName).
     };
 
     bool IsProductOutputFlagSet(const AzToolsFramework::AssetDatabase::ProductDatabaseEntry& product, ProductOutputFlags flag);
