@@ -26,8 +26,8 @@ class Tests:
         "Material asset color changed successfully.",
         "P0: Failed to change the color values of a material asset file.")
     undo_material_asset_color_change = (
-        "Material asset color reverted back to its initial color successfully.",
-        "P0: Failed to revert material asset color back to its initial color.")
+        "Material asset color change was reverted using undo.",
+        "P0: Failed to undo material asset color change.")
     redo_material_asset_color_change = (
         "Material asset color changed again successfully using redo.",
         "P0: Failed to change material asset color again using redo.")
@@ -115,7 +115,9 @@ def MaterialEditor_BasicFunctionalityChecks_AllChecksPass():
         document_id = atom_tools_utils.open_document(os.path.join(test_data_path, test_material_1))
         initial_color = material_editor_utils.get_property(document_id, base_color_property_name)
         expected_color = math.Color(0.25, 0.25, 0.25, 1.0)
+        atom_tools_utils.begin_edit(document_id)
         material_editor_utils.set_property(document_id, base_color_property_name, expected_color)
+        atom_tools_utils.end_edit(document_id)
         Report.result(
             Tests.changed_material_asset_color,
             material_editor_utils.get_property(document_id, base_color_property_name) == expected_color)
