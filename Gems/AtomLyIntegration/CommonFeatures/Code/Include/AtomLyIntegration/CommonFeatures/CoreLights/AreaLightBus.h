@@ -28,13 +28,13 @@ namespace AZ
 
             virtual ~AreaLightRequests() {}
 
-            //! Gets an area light's color. This value is indepedent from its intensity.
+            //! Gets an area light's color. This value is independent from its intensity.
             virtual const Color& GetColor() const = 0;
 
-            //! Sets an area light's color. This value is indepedent from its intensity.
+            //! Sets an area light's color. This value is independent from its intensity.
             virtual void SetColor(const Color& color) = 0;
 
-            //! Gets an area light's intensity. This value is indepedent from its color.
+            //! Gets an area light's intensity. This value is independent from its color.
             virtual float GetIntensity() const = 0;
 
             //! Gets whether an area light emits light in both directions from a 2D surface. Only applies to 2D shape types.
@@ -52,17 +52,17 @@ namespace AZ
             //! Gets an area light's photometric type.
             virtual PhotometricUnit GetIntensityMode() const = 0;
 
-            //! Sets an area light's intensity and intensity mode. This value is indepedent from its color.
+            //! Sets an area light's intensity and intensity mode. This value is independent from its color.
             virtual void SetIntensity(float intensity, PhotometricUnit intensityMode) = 0;
 
-            //! Sets an area light's intensity. This value is indepedent from its color.
+            //! Sets an area light's intensity. This value is independent from its color.
             //! Assumes no change in the current photometric unit of the intensity.
             virtual void SetIntensity(float intensity) = 0;
 
             //! Gets the distance at which the area light will no longer affect lighting.
             virtual float GetAttenuationRadius() const = 0;
 
-            //! Set the distance and which an area light will no longer affect lighitng. Setting this forces the RadiusCalculation to Explicit mode.
+            //! Set the distance and which an area light will no longer affect lighting. Setting this forces the RadiusCalculation to Explicit mode.
             virtual void SetAttenuationRadius(float radius) = 0;
 
             /*
@@ -73,6 +73,9 @@ namespace AZ
 
             //! Sets the photometric unit to the one provided and converts the intensity to the photometric unit so actual light intensity remains constant.
             virtual void ConvertToIntensityMode(PhotometricUnit intensityMode) = 0;
+
+            //! Gets the surface area of the shape.
+            virtual float GetSurfaceArea() const = 0;
 
             // Shutters
 

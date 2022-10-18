@@ -31,7 +31,7 @@ namespace AZ::Render
     {
         // Calculate the radius at which the irradiance will be equal to cutoffIntensity.
         float intensity = GetPhotometricValue().GetCombinedIntensity(PhotometricUnit::Lumen);
-        return sqrt(intensity / lightThreshold);
+        return Sqrt(intensity / lightThreshold);
     }
 
     float SimpleSpotLightDelegate::GetSurfaceArea() const

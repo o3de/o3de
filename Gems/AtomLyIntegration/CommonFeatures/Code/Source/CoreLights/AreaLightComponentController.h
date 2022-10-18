@@ -66,6 +66,7 @@ namespace AZ
             void SetAttenuationRadius(float radius) override;
             void SetAttenuationRadiusMode(LightAttenuationRadiusMode attenuationRadiusMode) override;
             void ConvertToIntensityMode(PhotometricUnit intensityMode) override;
+            float GetSurfaceArea() const override;
 
             bool GetEnableShutters() const override;
             void SetEnableShutters(bool enabled) override;

@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include <AzCore/Component/TransformBus.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
 #include <Atom/Feature/CoreLights/ShadowConstants.h>
+#include <AzCore/Component/TransformBus.h>
 
 namespace AzFramework
 {
@@ -21,6 +21,7 @@ namespace AZ
 {
     class Color;
     class Transform;
+    class Aabb;
 
     namespace Render
     {
@@ -28,7 +29,7 @@ namespace AZ
         class LightDelegateInterface
         {
         public:
-            virtual ~LightDelegateInterface() {};
+            virtual ~LightDelegateInterface() = default;
 
             //! Sets the area light component config so delegates don't have to cache the same data locally.
             virtual void SetConfig(const AreaLightComponentConfig* config) = 0;
@@ -48,12 +49,14 @@ namespace AZ
             virtual float GetEffectiveSolidAngle() const = 0;
             //! Sets if this shape is double-sided (only applicable for 2d shapes).
             virtual void SetLightEmitsBothDirections([[maybe_unused]] bool lightEmitsBothDirections) = 0;
-            //! Sets if this light uses linearly transformed cosines (false) or a faster approximation (true). Only applicable for shapes that support LTC.
+            //! Sets if this light uses linearly transformed cosines (false) or a faster approximation (true). Only applicable for shapes
+            //! that support LTC.
             virtual void SetUseFastApproximation([[maybe_unused]] bool useFastApproximation) = 0;
             //! Calculates the attenuation radius for this light type based on a threshold value.
             virtual float CalculateAttenuationRadius(float lightThreshold) const = 0;
             //! Handle any additional debug display drawing for beyond what the shape already provides.
-            virtual void DrawDebugDisplay(const Transform& transform, const Color& color, AzFramework::DebugDisplayRequests& debugDisplay, bool isSelected) const = 0;
+            virtual void DrawDebugDisplay(
+                const Transform& transform, const Color& color, AzFramework::DebugDisplayRequests& debugDisplay, bool isSelected) const = 0;
             //! Turns the visibility of this light on/off.
             virtual void SetVisibility(bool visibility) = 0;
 
@@ -83,7 +86,7 @@ namespace AZ
             virtual void SetNormalShadowBias(float bias) = 0;
 
             // Global Illumination
-            
+
             //! Sets if the light should affect diffuse global illumination.
             virtual void SetAffectsGI(bool affectsGI) = 0;
             //! Sets the multiplier on the contribution to diffuse global illumination.

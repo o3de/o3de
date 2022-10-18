@@ -113,7 +113,8 @@ namespace AZ::Render
     {
         // Attenuation radius shape is just a capsule with the same internal height, but a radius of the attenuation radius.
         const float radius = GetConfig()->m_attenuationRadius;
-        const float height = m_shapeBus->GetHeight();
+        const float scale = GetTransform().GetUniformScale();
+        const float height = m_shapeBus->GetHeight() * scale;
         return CapsuleLightDelegate::CapsuleVisualizationDimensions{ radius, height };
     }
 } // namespace AZ::Render

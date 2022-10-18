@@ -152,6 +152,29 @@ namespace UnitTest
         }
     }
 
+    TEST_F(EditorAreaLightComponentFixture, CheckEditorAreaCapsuleLightSurfaceArea)
+    {
+        // suppress warning when feature process is not created in test environment
+        UnitTest::ErrorHandler featureProcessorNotFound("Unable to find a AZ::Render::CapsuleLightFeatureProcessorInterface on the scene.");
+
+        auto entity = CreateEditorAreaLightEntity(
+            CreateAreaLightComponentConfig(AZ::Render::AreaLightComponentConfig::LightType::Capsule, 10.0f),
+            LmbrCentral::EditorCapsuleShapeComponentTypeId);
+
+        // note: radius will be 10.0 after scale is applied
+        SetCapsuleShapeHeightAndRadius(entity->GetId(), 20.0f, 5.0f);
+        AZ::TransformBus::Event(entity->GetId(), &AZ::TransformBus::Events::SetLocalUniformScale, 2.0f);
+
+        // 4.0f * Pi * radius * radius - both caps make a sphere
+        // 2.0f * Pi * radius * innerHeight - cylindrical area of capsule
+        float lightDelegateSurfaceArea = 0.0f;
+        AZ::Render::AreaLightRequestBus::EventResult(
+            lightDelegateSurfaceArea, entity->GetId(), &AZ::Render::AreaLightRequestBus::Events::GetSurfaceArea);
+
+        using ::testing::FloatNear;
+        EXPECT_THAT(lightDelegateSurfaceArea, FloatNear(2513.27412287f, AZ::Constants::FloatEpsilon));
+    }
+
     TEST_F(EditorAreaLightComponentFixture, CheckEditorAreaSpotDiskLightBounds)
     {
         // suppress warning when feature process is not created in test environment
@@ -337,10 +360,33 @@ namespace UnitTest
         }
     }
 
+    TEST_F(EditorAreaLightComponentFixture, CheckEditorAreaPointSphereLightSurfaceArea)
+    {
+        // suppress warning when feature process is not created in test environment
+        UnitTest::ErrorHandler featureProcessorNotFound("Unable to find a AZ::Render::PointLightFeatureProcessorInterface on the scene.");
+
+        auto entity = CreateEditorAreaLightEntity(
+            CreateAreaLightComponentConfig(AZ::Render::AreaLightComponentConfig::LightType::Sphere, 10.0f),
+            LmbrCentral::EditorSphereShapeComponentTypeId);
+
+        // note: radius will be 10.0 after scale is applied
+        SetSphereShapeRadius(entity->GetId(), 5.0f);
+        AZ::TransformBus::Event(entity->GetId(), &AZ::TransformBus::Events::SetLocalUniformScale, 2.0f);
+
+        // 4.0f * Pi * radius * radius
+        float lightDelegateSurfaceArea = 0.0f;
+        AZ::Render::AreaLightRequestBus::EventResult(
+            lightDelegateSurfaceArea, entity->GetId(), &AZ::Render::AreaLightRequestBus::Events::GetSurfaceArea);
+
+        using ::testing::FloatNear;
+        EXPECT_THAT(lightDelegateSurfaceArea, FloatNear(1256.6370614f, AZ::Constants::FloatEpsilon));
+    }
+
     TEST_F(EditorAreaLightComponentFixture, CheckEditorAreaSimplePointLightBounds)
     {
         // suppress warning when feature process is not created in test environment
-        UnitTest::ErrorHandler featureProcessorNotFound("Unable to find a AZ::Render::SimplePointLightFeatureProcessorInterface on the scene.");
+        UnitTest::ErrorHandler featureProcessorNotFound(
+            "Unable to find a AZ::Render::SimplePointLightFeatureProcessorInterface on the scene.");
 
         {
             auto entity = CreateEditorAreaLightEntity(
@@ -351,4 +397,4 @@ namespace UnitTest
             EXPECT_THAT(aabb, IsClose(AZ::Aabb::CreateFromMinMax(AZ::Vector3(-15.0f), AZ::Vector3(15.0f))));
         }
     }
-    } // namespace UnitTest
+} // namespace UnitTest

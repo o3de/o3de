@@ -421,6 +421,11 @@ namespace AZ::Render
             m_configuration.m_intensity = m_lightShapeDelegate->SetPhotometricUnit(intensityMode);
         }
     }
+
+    float AreaLightComponentController::GetSurfaceArea() const
+    {
+        return m_lightShapeDelegate->GetSurfaceArea();
+    }
     
     bool AreaLightComponentController::GetEnableShutters() const
     {
