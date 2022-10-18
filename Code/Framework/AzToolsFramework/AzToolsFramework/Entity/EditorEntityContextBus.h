@@ -184,7 +184,7 @@ namespace AzToolsFramework
         virtual void OnStartPlayInEditor() {}
 
         //! Fired when the editor begins coming out of 'Simulation' mode.
-        virtual void OnStopPlayInEditorBegin(){}
+        virtual void OnStopPlayInEditorBegin() {}
 
         //! Fired when the editor comes out of 'Simulation' mode
         virtual void OnStopPlayInEditor() {}

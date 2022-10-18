@@ -469,7 +469,7 @@ namespace Multiplayer
             SendEditorServerLevelDataPacket(editorNetworkInterface->GetConnectionSet().GetConnection(m_editorConnId));
         }
     }
-    
+
     void MultiplayerEditorSystemComponent::OnPreparingInMemorySpawnableFromPrefab(
         const AzFramework::Spawnable& spawnable, const AZStd::string& assetHint)
     {
@@ -480,7 +480,7 @@ namespace Multiplayer
         {
             return;
         }
-
+        
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         AZ_Assert(serializeContext, "Failed to retrieve application serialization context.")
