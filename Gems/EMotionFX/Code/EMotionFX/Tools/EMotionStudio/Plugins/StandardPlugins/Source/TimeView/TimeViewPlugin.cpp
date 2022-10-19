@@ -243,34 +243,38 @@ namespace EMStudio
         // Create the motion event properties widget.
         m_motionEventWidget = new MotionEventWidget();
         m_motionEventWidget->hide();
-        connect(this, &TimeViewPlugin::SelectionChanged, this, [=]
-            {
-                if (!m_motionEventWidget)
-                {
-                    return;
-                }
-
-                UpdateSelection();
-                if (GetNumSelectedEvents() != 1)
-                {
-                    m_motionEventWidget->ReInit();
-                    m_motionEventWidget->hide();
-                    EMStudio::InspectorRequestBus::Broadcast(&EMStudio::InspectorRequestBus::Events::Clear); // This also gets called when just switching a motion
-                }
-                else
-                {
-                    EventSelectionItem selectionItem = GetSelectedEvent(0);
-                    m_motionEventWidget->ReInit(selectionItem.m_motion, selectionItem.GetMotionEvent());
-                    EMStudio::InspectorRequestBus::Broadcast(&EMStudio::InspectorRequestBus::Events::UpdateWithHeader,
-                        "Motion Event",
-                        MotionEventWidget::s_headerIcon,
-                        m_motionEventWidget);
-                }
-            });
+        connect(m_motionEventWidget, &MotionEventWidget::eventDataChanged, this, &TimeViewPlugin::onRefreshSelection);
+        connect(this, &TimeViewPlugin::SelectionChanged, this, &TimeViewPlugin::onRefreshSelection);
 
         return true;
     }
 
+    void TimeViewPlugin::onRefreshSelection()
+    {
+        if (!m_motionEventWidget)
+        {
+            return;
+        }
+
+        UpdateSelection();
+        if (GetNumSelectedEvents() != 1)
+        {
+            m_motionEventWidget->ReInit();
+            m_motionEventWidget->hide();
+            EMStudio::InspectorRequestBus::Broadcast(
+                &EMStudio::InspectorRequestBus::Events::Clear); // This also gets called when just switching a motion
+        }
+        else
+        {
+            EventSelectionItem selectionItem = GetSelectedEvent(0);
+            m_motionEventWidget->ReInit(selectionItem.m_motion, selectionItem.GetMotionEvent());
+            EMStudio::InspectorRequestBus::Broadcast(
+                &EMStudio::InspectorRequestBus::Events::UpdateWithHeader,
+                "Motion Event",
+                MotionEventWidget::s_headerIcon,
+                m_motionEventWidget);
+        }
+    }
 
     // add a new track
     void TimeViewPlugin::AddTrack(TimeTrack* track)
@@ -278,7 +282,6 @@ namespace EMStudio
         m_tracks.emplace_back(track);
         SetRedrawFlag();
     }
-
 
     // delete all tracks
     void TimeViewPlugin::RemoveAllTracks()

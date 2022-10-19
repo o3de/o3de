@@ -11,6 +11,7 @@
 #if !defined(Q_MOC_RUN)
 #include "../StandardPluginsConfig.h"
 #include <QWidget>
+#include <EMotionFX/Source/Event.h>
 #endif
 
 namespace EMotionFX
@@ -37,10 +38,14 @@ namespace EMStudio
         void ReInit(EMotionFX::Motion* motion = nullptr, EMotionFX::MotionEvent* motionEvent = nullptr);
 
         static constexpr const char* s_headerIcon = ":/EMotionFX/ActorComponent.svg";
+    
+    Q_SIGNALS:
+        void eventDataChanged();
 
     private:
         void Init();
 
         MotionEventEditor* m_editor = nullptr;
+        EMotionFX::Event::EventDataChangeEvent::Handler m_changeEventHandler;
     };
 } // namespace EMStudio

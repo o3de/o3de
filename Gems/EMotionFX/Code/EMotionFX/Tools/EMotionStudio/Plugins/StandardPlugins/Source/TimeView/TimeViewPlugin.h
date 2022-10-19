@@ -182,6 +182,7 @@ namespace EMStudio
         void MotionEventTrackChanged(size_t eventNr, float startTime, float endTime, const char* oldTrackName, const char* newTrackName)            { UnselectAllElements(); CommandSystem::CommandHelperMotionEventTrackChanged(eventNr, startTime, endTime, oldTrackName, newTrackName); }
         void OnManualTimeChange(float timeValue);
         void toggleMotionEventPresetsPane();
+        void onRefreshSelection();
 
     signals:
         void SelectionChanged();

@@ -9,6 +9,7 @@
 #include <Editor/InspectorBus.h>
 #include "MotionEventWidget.h"
 #include "MotionEventEditor.h"
+#include <EMotionFX/Source/MotionEvent.h>
 #include <QVBoxLayout>
 
 namespace EMStudio
@@ -19,6 +20,9 @@ namespace EMStudio
         : QWidget(parent)
         , m_editor(new MotionEventEditor())
     {
+        m_changeEventHandler = EMotionFX::Event::EventDataChangeEvent::Handler([&]() {
+            Q_EMIT eventDataChanged();
+        });
         Init();
         ReInit();
     }
@@ -36,9 +40,13 @@ namespace EMStudio
         layout->addWidget(m_editor, 0, Qt::AlignTop);
     }
 
-
     void MotionEventWidget::ReInit(EMotionFX::Motion* motion, EMotionFX::MotionEvent* motionEvent)
     {
+        m_changeEventHandler.Disconnect();
+        if (motionEvent)
+        {
+            motionEvent->SetEventDataChangeEvent(m_changeEventHandler);
+        }
         m_editor->SetMotionEvent(motion, motionEvent);
     }
 } // namespace EMStudio

@@ -65,21 +65,30 @@ namespace EMotionFX
     void Event::AppendEventData(EventDataPtr&& newData)
     {
         m_eventDatas.emplace_back(AZStd::move(newData));
+        m_eventContainer.m_eventDatasChangeEvent.Signal();
     }
 
     void Event::RemoveEventData(size_t index)
     {
         m_eventDatas.erase(AZStd::next(m_eventDatas.begin(), index));
+        m_eventContainer.m_eventDatasChangeEvent.Signal();
     }
 
     void Event::SetEventData(size_t index, EventDataPtr&& newData)
     {
         m_eventDatas[index] = AZStd::move(newData);
+        m_eventContainer.m_eventDatasChangeEvent.Signal();
     }
 
     void Event::InsertEventData(size_t index, EventDataPtr&& newData)
     {
         m_eventDatas.emplace(AZStd::next(m_eventDatas.begin(), index), AZStd::move(newData));
+        m_eventContainer.m_eventDatasChangeEvent.Signal();
+    }
+
+    void Event::SetEventDataChangeEvent(Event::EventDataChangeEvent::Handler& handler)
+    {
+        handler.Connect(m_eventContainer.m_eventDatasChangeEvent);
     }
 
 } // end namespace EMotionFX

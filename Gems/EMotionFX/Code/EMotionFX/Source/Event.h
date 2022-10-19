@@ -11,6 +11,7 @@
 #include "EventData.h"
 
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzCore/EBus/Event.h>
 
 namespace AZ
 {
@@ -25,6 +26,8 @@ namespace EMotionFX
     class EMFX_API Event
     {
     public:
+        using EventDataChangeEvent = AZ::Event<>;
+
         AZ_RTTI(Event, "{67549E9F-8E3F-4336-BDB8-716AFCBD4985}");
         AZ_CLASS_ALLOCATOR_DECL
 
@@ -42,7 +45,21 @@ namespace EMotionFX
         void SetEventData(size_t index, EventDataPtr&& newData);
         void InsertEventData(size_t index, EventDataPtr&& newData);
 
+        void SetEventDataChangeEvent(Event::EventDataChangeEvent::Handler& handler);
     protected:
+        struct EventContainer {
+            EventContainer() = default;
+             
+            // event container is not copyable 
+            EventContainer(const EventContainer&) {}
+            EventContainer& operator=(const EventContainer&) {
+                return *this;
+            }
+
+            EventDataChangeEvent m_eventDatasChangeEvent;
+        };
+
         EventDataSet m_eventDatas;
+        EventContainer m_eventContainer;
     };
 } // end namespace EMotionFX
