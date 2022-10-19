@@ -2842,7 +2842,7 @@ namespace AssetProcessor
                 QString overrider;
                 if (examineFile.m_isDelete)
                 {
-                    if (IsInIntermediateAssetsFolder(sourceAssetReference.AbsolutePath()))
+                    if (IsInIntermediateAssetsFolder(normalizedPath))
                     {
                         // This delete is likely the result of attempting to stop a source -> intermediate loop
                         // In any case, intermediate files don't participate in the override system, so ignore this file and move on
