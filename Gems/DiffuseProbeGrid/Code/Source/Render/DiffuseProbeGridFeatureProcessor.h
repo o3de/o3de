@@ -137,7 +137,7 @@ namespace AZ
             
             // FeatureProcessor overrides
             void AddRenderPasses(RPI::RenderPipeline* renderPipeline) override;
-
+            
             void AddPassRequest(RPI::RenderPipeline* renderPipeline, const char* passRequestAssetFilePath, const char* insertionPointPassName);
             void UpdatePipelineStates();
             void UpdatePasses();
