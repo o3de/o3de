@@ -26,7 +26,9 @@ namespace Multiplayer
     public:
         static constexpr int MaxMessageLength = 256;
         static constexpr float ScrimAlpha = 0.6f;
-        static constexpr AZ::TimeMs CenterViewportDebugToastTime = AZ::TimeMs{ 4000 }; // Milliseconds toast is up on screen
+
+        static constexpr AZ::TimeMs CenterViewportDebugToastTimePerWord = AZ::TimeMs{ 300 }; // Consider reading speed to be 200 words per minute (300 ms)
+        static constexpr AZ::TimeMs CenterViewportDebugToastTimePrefix = AZ::TimeMs{ 2000 }; // Give viewers 2.0 seconds to notice the toast
         static constexpr AZ::TimeMs CenterViewportDebugToastTimeFade = AZ::TimeMs{ 1000 }; // Milliseconds toast takes to fade out
 
         // Messaging for client during editor play mode
@@ -57,6 +59,8 @@ namespace Multiplayer
         // Toast Messages
         static constexpr char CenterViewportToastTitle[] = "Multiplayer Alert";
         static constexpr char OnBlockedLevelLoadMessage[] = "Blocked level load; see log for details.";
+        static constexpr char OnNoServerLevelLoadedMessageClientSide[] = "Server accept message did not provide a level.\nEnsure server has level loaded before connecting.";
+        static constexpr char OnNoServerLevelLoadedMessageServerSide[] = "A client has connected, but we're not in a level.\nPlease load a valid multiplayer level before accepting clients.";
 
         AZ_COMPONENT(MultiplayerConnectionViewportMessageSystemComponent, "{7600cfcf-e380-4876-aa90-8120e57205e9}");
 
@@ -93,6 +97,9 @@ namespace Multiplayer
         //! @{
         void OnBlockedLevelLoad();
         LevelLoadBlockedEvent::Handler m_levelLoadBlockedHandler = LevelLoadBlockedEvent::Handler([this](){OnBlockedLevelLoad();});
+
+        void OnNoServerLevelLoadedEvent();
+        NoServerLevelLoadedEvent::Handler m_noServerLevelLoadedHandler = NoServerLevelLoadedEvent::Handler([this](){OnNoServerLevelLoadedEvent();});
         //! @}
 
         void DrawConnectionStatus(AzNetworking::ConnectionState connectionState, const AzNetworking::IpAddress& hostAddress);
@@ -101,6 +108,13 @@ namespace Multiplayer
         // Render a scrim (a gentle background shading) to create contrast in order that the debug text in the foreground is readable.
         // Make scrim most pronounced from the center of the screen and fade out towards the top and bottom on the screen.
         void DrawScrim(float alphaMultiplier = 1.0f) const;
+
+        // Draws a message in the center of the viewport
+        // @param title text is displayed over the message
+        // @param title color is color of the title. Generally yellow or red (in the case of an error)
+        // @param message to display
+        // @param alpha value of the message (useful for fading out the message over time)
+        void DrawCenterViewportMessage(const char* title, const AZ::Color& titleColor, const char* message, float alpha);
 
         AZStd::fixed_string<MaxMessageLength> m_centerViewportDebugText;
         AZ::Color m_centerViewportDebugTextColor = AZ::Colors::Yellow;

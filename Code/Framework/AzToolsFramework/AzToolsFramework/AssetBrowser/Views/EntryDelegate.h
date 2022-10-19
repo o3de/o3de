@@ -37,6 +37,7 @@ namespace AzToolsFramework
         };
 
         class AssetBrowserFilterModel;
+        class AssetBrowserTreeView;
 
         //! EntryDelegate draws a single item in AssetBrowser.
         class EntryDelegate
@@ -49,11 +50,13 @@ namespace AzToolsFramework
 
             QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
             void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+            QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
             //! Set whether to show source control icons, this is still temporary mainly to support existing functionality of material browser
             void SetShowSourceControlIcons(bool showSourceControl);
 
         protected:
             int m_iconSize;
+            AssetBrowserTreeView* m_treeView;
             bool m_showSourceControl = false;
             //! Draw a thumbnail and return its width
             int DrawThumbnail(QPainter* painter, const QPoint& point, const QSize& size, Thumbnailer::SharedThumbnailKey thumbnailKey) const;

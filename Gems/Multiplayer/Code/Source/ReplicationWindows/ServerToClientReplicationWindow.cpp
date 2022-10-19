@@ -170,6 +170,7 @@ namespace Multiplayer
         {
             if (entityHandle.Exists())
             {
+                AZ_Assert(entityHandle.GetNetBindComponent()->IsNetEntityRoleAuthority(), "Encountered forced relevant entity that is not in an authority role");
                 m_replicationSet[entityHandle] = { NetEntityRole::Client, 1.0f }; // Always replicate entities with forced relevancy
             }
         }

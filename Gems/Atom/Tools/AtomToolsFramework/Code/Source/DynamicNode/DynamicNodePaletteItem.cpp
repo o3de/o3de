@@ -10,6 +10,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <GraphCanvas/Utils/GraphUtils.h>
 #include <GraphModel/GraphModelBus.h>
 #include <GraphModel/Model/Common.h>
 
@@ -43,6 +44,9 @@ namespace AtomToolsFramework
         {
             if (auto node = AZStd::make_shared<DynamicNode>(graph, m_toolId, m_configId))
             {
+                // Handle undo/redo adding a single node. This will need to be done at a higher level for multiple nodes.
+                GraphCanvas::ScopedGraphUndoBatch undoBatch(graphCanvasSceneId);
+
                 GraphModelIntegration::GraphControllerRequestBus::Event(
                     graphCanvasSceneId, &GraphModelIntegration::GraphControllerRequests::AddNode, node, dropPosition);
                 return true;

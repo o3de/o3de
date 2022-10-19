@@ -156,6 +156,7 @@ namespace EMStudio
             QIcon(":/EMotionFX/List.svg"),
             tr("Show/hide navigation pane"),
             this);
+        m_actions[NAVIGATION_NAVPANETOGGLE]->setCheckable(true);
         connect(m_actions[NAVIGATION_NAVPANETOGGLE], &QAction::triggered, this, &BlendGraphViewWidget::ToggleNavigationPane);
 
         m_actions[NAVIGATION_OPEN_SELECTED] = new QAction(
@@ -414,6 +415,9 @@ namespace EMStudio
         QList<int> sizes = { this->width(), 0 };
         m_viewportSplitter->setSizes(sizes);
         m_viewportStack.addWidget(m_viewportSplitter);
+        connect(m_viewportSplitter, &QSplitter::splitterMoved,
+                this,
+                [=]{m_actions[NAVIGATION_NAVPANETOGGLE]->setChecked(m_viewportSplitter->sizes().at(1) > 0 );});
 
         UpdateNavigation();
         UpdateAnimGraphOptions();
@@ -769,6 +773,7 @@ namespace EMStudio
             sizes[1] = 0;
         }
         m_viewportSplitter->setSizes(sizes);
+        m_actions[NAVIGATION_NAVPANETOGGLE]->setChecked(m_viewportSplitter->sizes().at(1) > 0 );
     }
 
     // toggle playspeed viz

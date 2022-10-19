@@ -271,6 +271,7 @@ namespace AZ
                 AZ::RHI::ResultCode result = xrSystem->CreateDevice(&xrDevicDescriptor);
                 AZ_Assert(result == RHI::ResultCode::Success, "Xr Vk device creation was not successful");
                 m_nativeDevice = xrDevicDescriptor.m_outputData.m_xrVkDevice;
+                m_context = xrDevicDescriptor.m_outputData.m_context;
                 RETURN_RESULT_IF_UNSUCCESSFUL(result);
                 m_isXrNativeDevice = true;
             }
@@ -280,18 +281,18 @@ namespace AZ
                     instance.GetContext().CreateDevice(physicalDevice.GetNativePhysicalDevice(), &deviceInfo, nullptr, &m_nativeDevice);
                 AssertSuccess(vkResult);
                 RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(vkResult));
+
+                if (!instance.GetFunctionLoader().LoadProcAddresses(
+                        &m_context, instance.GetNativeInstance(), physicalDevice.GetNativePhysicalDevice(), m_nativeDevice))
+                {
+                    AZ_Warning("Vulkan", false, "Could not initialize function loader.");
+                    return RHI::ResultCode::Fail;
+                }
             }
 
             for (const VkDeviceQueueCreateInfo& queueInfo : queueCreationInfo)
             {
                 delete[] queueInfo.pQueuePriorities;
-            }
-
-            if (!instance.GetFunctionLoader().LoadProcAddresses(
-                    &m_context, instance.GetNativeInstance(), physicalDevice.GetNativePhysicalDevice(), m_nativeDevice))
-            {
-                AZ_Warning("Vulkan", false, "Could not initialized function loader.");
-                return RHI::ResultCode::Fail;
             }
 
             //Load device features now that we have loaded all extension info
@@ -645,6 +646,8 @@ namespace AZ
 
                 presentationQueue.QueueCommand(AZStd::move(presentCommand));
                 presentationQueue.FlushCommands();
+
+                xrSystem->PostFrame();
             }
 
             m_commandQueueContext.End();

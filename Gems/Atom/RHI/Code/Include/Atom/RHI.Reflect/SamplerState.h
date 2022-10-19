@@ -10,6 +10,7 @@
 #include <Atom/RHI.Reflect/Base.h>
 #include <Atom/RHI.Reflect/Limits.h>
 #include <Atom/RHI.Reflect/ShaderStages.h>
+#include <AzCore/Preprocessor/Enum.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/Utils/TypeHash.h>
 
@@ -19,32 +20,28 @@ namespace AZ
 
     namespace RHI
     {            
-        enum class FilterMode : uint32_t
-        {
-            Point = 0,
+        AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(FilterMode, uint32_t,
+            Point,
             Linear
-        };
+        );
 
-        enum class ReductionType : uint32_t
-        {
-            Filter = 0,  /// Performs filtering on samples.
+        AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(ReductionType, uint32_t,
+            Filter,      /// Performs filtering on samples.
             Comparison,  /// Performs comparison of samples using the supplied comparison function.
             Minimum,     /// Returns minimum of samples.
             Maximum      /// Returns maximum of samples.
-        };
+        );
 
-        enum class AddressMode : uint32_t
-        {
-            Wrap = 0,
+        AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(AddressMode, uint32_t,
+            Wrap,
             Mirror,
             Clamp,
             Border,
             MirrorOnce
-        };
+        );
 
-        enum class ComparisonFunc : uint32_t
-        {
-            Never = 0,
+        AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(ComparisonFunc, uint32_t,
+            Never,
             Less,
             Equal,
             LessEqual,
@@ -53,20 +50,13 @@ namespace AZ
             GreaterEqual,
             Always,
             Invalid
-        };
+        );
 
-        enum class BorderColor : uint32_t
-        {
-            OpaqueBlack = 0,
+        AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(BorderColor, uint32_t,
+            OpaqueBlack,
             TransparentBlack,
             OpaqueWhite
-        };
-
-        const char* ToString(FilterMode     filterMode);
-        const char* ToString(ReductionType  reductionType);
-        const char* ToString(AddressMode    addressMode);
-        const char* ToString(ComparisonFunc comparisonFunc);
-        const char* ToString(BorderColor    borderColor);
+        );
 
         void ReflectSamplerStateEnums(ReflectContext* context);
 
