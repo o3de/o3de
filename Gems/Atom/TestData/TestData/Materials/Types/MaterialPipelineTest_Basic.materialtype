@@ -1,5 +1,5 @@
 {
-    "description": "Testing the concept of an intermediate material type builder.",
+    "description": "This material type demonstrates how to use the material pipeline system.",
     "version": 3,
     "propertyLayout": {
         "propertyGroups": [
@@ -45,7 +45,7 @@
             }
         ]
     },
-    "materialShaderCode": "Atom/TestData/TestData/Materials/Types/MaterialPipelineTest_Basic.azsli",
+    "materialShaderCode": "./MaterialPipelineTest_Basic.azsli",
     "functors": [
     ]
 }

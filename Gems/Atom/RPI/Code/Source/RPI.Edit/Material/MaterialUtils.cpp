@@ -141,7 +141,6 @@ namespace AZ
                 }
             }
 
-
             AZ::Outcome<MaterialPipelineSourceData> LoadMaterialPipelineSourceData(const AZStd::string& filePath, rapidjson::Document* document, ImportedJsonFiles* importedFiles)
             {
                 return LoadJsonSourceDataWithImports<MaterialPipelineSourceData>(filePath, document, importedFiles);

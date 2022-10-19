@@ -1,5 +1,5 @@
 {
-    "description": "Testing the concept of an intermediate material type builder.",
+    "description": "This material type demonstrates how to use the material pipeline system to customize the vertex shader stage.",
     "version": 3,
     "propertyLayout": {
         "propertyGroups": [
@@ -81,7 +81,7 @@
             }
         ]
     },
-    "materialShaderCode": "Atom/TestData/TestData/Materials/Types/MaterialPipelineTest_Animated.azsli",
+    "materialShaderCode": "./MaterialPipelineTest_Animated.azsli",
     "functors": [
     ]
 }

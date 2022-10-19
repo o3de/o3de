@@ -1,5 +1,5 @@
 {
-    "materialType": "@projectroot@/Cache/Intermediate Assets/testdata/materials/types/materialpipelinetest_animated_final.materialtype",
+    "materialType": "@projectroot@/Cache/Intermediate Assets/testdata/materials/types/materialpipelinetest_animated_generated.materialtype",
     "materialTypeVersion": 3,
     "propertyValues": {
         "settings.amplitude": 0.009999999776482582,

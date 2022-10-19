@@ -20,6 +20,8 @@ struct VertexOutput
     float4 m_position : SV_Position;
 };
 
+// Any of these functions can optionally be implemented by the .materialtype's "materialShaderCode".
+// Otherwise the material type build pipeline will stub them out.
 void MaterialFunction_AdjustLocalPosition(inout float3 localPosition);
 void MaterialFunction_AdjustWorldPosition(inout float3 worldPosition);
 

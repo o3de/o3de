@@ -190,6 +190,7 @@ namespace AZ
             }
             combinedFile += (arguments.m_addSuffixToFileName ? "." + AZStd::string{ arguments.m_addSuffixToFileName } : "") + ".prepend";
 
+            // Make sure the slashes face the right way, so when this command line shows up in a log, the user can easily copy and paste the path.
             AzFramework::StringFunc::Path::Normalize(combinedFile);
 
             if (arguments.m_destinationStringOpt)

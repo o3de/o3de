@@ -28,7 +28,13 @@ namespace AZ
         class MaterialFunctorSourceDataHolder;
         class JsonMaterialPropertySerializer;
 
-        //! This is a simple data structure for serializing in/out material type source files.
+        //! This is a simple data structure for serializing in/out .materialtype source files.
+        //! The .materialtype file has two slightly different formats.
+        //! A) It can use an "abstract" format (see IsAbstractFormat) that provides only material-specific shader code.
+        //!    The MaterialTypeBuilder will automatically adapt the material type to work in any render pipeline (Forward+, Deferred, VR, etc.),
+        //!    by pairing it with the available material pipelines (see MaterialPipelineSourceData).
+        //! B) It can use a "direct" format that provides a complete list of the specific shaders that will be used for rendering.
+        //!    This circumvents the material pipeline system, and the author is responsible for adapting the material type to any desired render pipelines.
         //! Note that there may be a mixture of public and private members, as we are gradually introducing a proper API.
         class MaterialTypeSourceData final
         {
@@ -228,12 +234,13 @@ namespace AZ
             
             VersionUpdates m_versionUpdates;
 
-            // This path must be reachable as a #include statement in other azsl files.
-            // TODO: See if there's a way we can make this path be relative to the .materialtype file instead.
-            AZStd::string m_materialShaderCode;
-
-            //! A list of shader variants that are always used at runtime; they cannot be turned off
+            //! A list of specific shaders that will be used to render the material.
             AZStd::vector<ShaderVariantReferenceData> m_shaderCollection;
+
+            //! This indicates a .azsli file that contains only material-specific shader code.
+            //! The build system will automatically combine this code with material pipeline shader code
+            //! for use in each available render pipeline.
+            AZStd::string m_materialShaderCode;
 
             //! Material functors provide custom logic and calculations to configure shaders, render states, and more. See MaterialFunctor.h for details.
             AZStd::vector<Ptr<MaterialFunctorSourceDataHolder>> m_materialFunctorSourceData;

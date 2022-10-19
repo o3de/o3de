@@ -6,7 +6,6 @@
  *
  */
  
-#define MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE 1
 #define OUTPUT_DEPTH 0
 #define FORCE_OPAQUE 1
 #define OUTPUT_SUBSURFACE 0
@@ -22,6 +21,7 @@
 #include <Atom/Features/SrgSemantics.azsli>
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
 
+// TODO: It a future iteration, the material pipeline will support multiple lighting models instead of just one.
 #include "../../../Shaders/Materials/BasePBR/BasePBR_SurfaceData.azsli"
 #include "../../../Shaders/Materials/BasePBR/BasePBR_LightingData.azsli"
 #include "../../../Shaders/Materials/BasePBR/BasePBR_LightingBrdf.azsli"
@@ -44,11 +44,13 @@ struct VsOutput
     float3 worldPosition : UV0;
 };
 
+// Any of these functions can optionally be implemented by the .materialtype's "materialShaderCode".
+// Otherwise the material type build pipeline will stub them out.
 void MaterialFunction_AdjustLocalPosition(inout float3 localPosition);
 void MaterialFunction_AdjustWorldPosition(inout float3 worldPosition);
 void MaterialFunction_AdjustSurface(inout Surface outSurface);
 
-// Define EvaluateVertexGeometry used in ForwardPassVertexAndPixel.azsli
+
 VsOutput EvaluateVertexGeometry(VsInput IN)
 {
     VsOutput output;
@@ -73,15 +75,14 @@ class PixelGeometryData
 {
     float3 positionWS;
     float3 vertexNormal;
-
-    // TODO: ForwardPassVertexAndPixel.azsli should not force this naming and array
+    
+    // TODO: Material pipeline should eventually support a configurable number of UV streams 
     float3 tangents[1];
     float3 bitangents[1];
 
     bool isFrontFace;
 };
 
-// Define EvaluatePixelGeometry used in ForwardPassVertexAndPixel.azsli
 PixelGeometryData EvaluatePixelGeometry(VsOutput IN, bool isFrontFace)
 {
     PixelGeometryData geoData;
@@ -115,3 +116,5 @@ Surface EvaluateSurface(PixelGeometryData geoData)
 }
 
 #include <Atom/Features/Pipeline/Forward/ForwardPassVertexAndPixel.azsli>
+
+#define MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE 1
