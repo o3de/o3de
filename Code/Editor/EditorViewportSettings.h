@@ -72,6 +72,7 @@ namespace SandboxEditor
     SANDBOX_API void SetCameraSpeedScale(float speedScale);
 
     SANDBOX_API float CameraTranslateSpeed();
+    SANDBOX_API float CameraTranslateSpeedScaled();
     SANDBOX_API void SetCameraTranslateSpeed(float speed);
 
     SANDBOX_API float CameraBoostMultiplier();
@@ -81,9 +82,11 @@ namespace SandboxEditor
     SANDBOX_API void SetCameraRotateSpeed(float speed);
 
     SANDBOX_API float CameraScrollSpeed();
+    SANDBOX_API float CameraScrollSpeedScaled();
     SANDBOX_API void SetCameraScrollSpeed(float speed);
 
     SANDBOX_API float CameraDollyMotionSpeed();
+    SANDBOX_API float CameraDollyMotionSpeedScaled();
     SANDBOX_API void SetCameraDollyMotionSpeed(float speed);
 
     SANDBOX_API bool CameraOrbitYawRotationInverted();
@@ -96,6 +99,7 @@ namespace SandboxEditor
     SANDBOX_API void SetCameraPanInvertedY(bool inverted);
 
     SANDBOX_API float CameraPanSpeed();
+    SANDBOX_API float CameraPanSpeedScaled();
     SANDBOX_API void SetCameraPanSpeed(float speed);
 
     SANDBOX_API float CameraRotateSmoothness();

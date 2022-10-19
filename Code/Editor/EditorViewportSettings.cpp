@@ -292,7 +292,12 @@ namespace SandboxEditor
 
     float CameraTranslateSpeed()
     {
-        return aznumeric_cast<float>(AzToolsFramework::GetRegistry(CameraTranslateSpeedSetting, 10.0)) * CameraSpeedScale();
+        return aznumeric_cast<float>(AzToolsFramework::GetRegistry(CameraTranslateSpeedSetting, 10.0));
+    }
+
+    float CameraTranslateSpeedScaled()
+    {
+        return CameraTranslateSpeed() * CameraSpeedScale();
     }
 
     void SetCameraTranslateSpeed(const float speed)
@@ -322,7 +327,12 @@ namespace SandboxEditor
 
     float CameraScrollSpeed()
     {
-        return aznumeric_cast<float>(AzToolsFramework::GetRegistry(CameraScrollSpeedSetting, 0.02)) * CameraSpeedScale();
+        return aznumeric_cast<float>(AzToolsFramework::GetRegistry(CameraScrollSpeedSetting, 0.02));
+    }
+
+    float CameraScrollSpeedScaled()
+    {
+        return CameraScrollSpeed() * CameraSpeedScale();
     }
 
     void SetCameraScrollSpeed(const float speed)
@@ -332,7 +342,12 @@ namespace SandboxEditor
 
     float CameraDollyMotionSpeed()
     {
-        return aznumeric_cast<float>(AzToolsFramework::GetRegistry(CameraDollyMotionSpeedSetting, 0.01)) * CameraSpeedScale();
+        return aznumeric_cast<float>(AzToolsFramework::GetRegistry(CameraDollyMotionSpeedSetting, 0.01));
+    }
+
+    float CameraDollyMotionSpeedScaled()
+    {
+        return CameraDollyMotionSpeed() * CameraSpeedScale();
     }
 
     void SetCameraDollyMotionSpeed(const float speed)
@@ -372,7 +387,12 @@ namespace SandboxEditor
 
     float CameraPanSpeed()
     {
-        return aznumeric_cast<float>(AzToolsFramework::GetRegistry(CameraPanSpeedSetting, 0.01)) * CameraSpeedScale();
+        return aznumeric_cast<float>(AzToolsFramework::GetRegistry(CameraPanSpeedSetting, 0.01));
+    }
+
+    float CameraPanSpeedScaled()
+    {
+        return CameraPanSpeed() * CameraSpeedScale();
     }
 
     void SetCameraPanSpeed(float speed)
