@@ -193,7 +193,6 @@ void RCcontrollerUnitTests::PrepareCompileGroupTests(bool& gotCreated, bool& got
 void RCcontrollerUnitTests::Reset()
 {
     m_rcController->m_RCJobListModel.m_jobs.clear();
-    m_rcController->m_RCJobListModel.m_jobs.clear();
     m_rcController->m_RCJobListModel.m_jobsInFlight.clear();
     m_rcController->m_RCJobListModel.m_jobsInQueueLookup.clear();
 
@@ -278,7 +277,7 @@ TEST_F(RCcontrollerUnitTests, TestRCJobListModel_AddJobEntries_Succeeds)
     PrepareRCJobListModelTest();
 
     int returnedCount = m_rcJobListModel->rowCount(QModelIndex());
-    int expectedCount = 5; // finished ones should be removed, so it shouldn't show up
+    int expectedCount = 5; // Finished jobs should be removed, so they shouldn't show up
 
     ASSERT_EQ(returnedCount, expectedCount) << AZStd::string::format("RCJobListModel has %d elements, which is invalid. Expected %d", returnedCount, expectedCount).c_str();
 
@@ -826,7 +825,9 @@ TEST_F(RCcontrollerUnitTests, TestRCController_FeedJobsWithCyclicDependencies_Al
         jobDetailsToInitWithInsideScope.m_jobEntry.m_jobKey = "Text files";
         jobDetailsToInitWithInsideScope.m_jobEntry.m_sourceFileUUID = AZ::Uuid("{D013122E-CF2C-4534-A87D-F82570FBC2CD}");
         rcJobAddAndDelete.Init(jobDetailsToInitWithInsideScope);
+
         m_rcJobListModel->addNewJob(&rcJobAddAndDelete);
+
         // verify that job was added
         EXPECT_EQ(m_rcJobListModel->itemCount(), prevJobCount + 1);
         m_rcController->RemoveJobsBySource("someFile0.txt");
