@@ -81,10 +81,11 @@ namespace Terrain
         void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
 
         // AZ::RPI::SceneNotificationBus overrides...
-        void OnRenderPipelineChanged(AZ::RPI::RenderPipeline* pipeline, AZ::RPI::SceneNotification::RenderPipelineChangeType changeType) override;
+        void OnRenderPipelineAdded(AZ::RPI::RenderPipelinePtr pipeline) override;
+        void OnRenderPipelinePassesChanged(AZ::RPI::RenderPipeline* renderPipeline) override;
         
         // AZ::RPI::FeatureProcessor overrides...
-        void AddRenderPasses(AZ::RPI::RenderPipeline* renderPipeline) override;
+        void ApplyRenderPipelineChange(AZ::RPI::RenderPipeline* renderPipeline) override;
 
         void Initialize();
 

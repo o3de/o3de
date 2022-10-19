@@ -679,16 +679,22 @@ namespace AZ
             AZ_Error("ReflectionProbeFeatureProcessor", srgLayout != nullptr, "Failed to find ObjectSrg layout from shader [%s]", filePath);
         }
 
-        void ReflectionProbeFeatureProcessor::OnRenderPipelineChanged(RPI::RenderPipeline* renderPipeline,
-            RPI::SceneNotification::RenderPipelineChangeType changeType)
+        void ReflectionProbeFeatureProcessor::OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline)
         {
-            if (changeType == RPI::SceneNotification::RenderPipelineChangeType::PassChanged)
+            for (auto& reflectionProbe : m_reflectionProbes)
             {
-                for (auto& reflectionProbe : m_reflectionProbes)
-                {
-                    reflectionProbe->OnRenderPipelinePassesChanged(renderPipeline);
-                }
+                reflectionProbe->OnRenderPipelinePassesChanged(renderPipeline);
             }
+            m_needUpdatePipelineStates = true;
+        }
+
+        void ReflectionProbeFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
+        {
+            m_needUpdatePipelineStates = true;
+        }
+
+        void ReflectionProbeFeatureProcessor::OnRenderPipelineRemoved([[maybe_unused]] RPI::RenderPipeline* pipeline)
+        {
             m_needUpdatePipelineStates = true;
         }
 

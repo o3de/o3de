@@ -301,29 +301,26 @@ namespace AZ
             return m_currentPipelines[DefaultViewType];
         }
 
-        void ViewportContext::OnRenderPipelineChanged(RenderPipeline* pipeline,
-            SceneNotification::RenderPipelineChangeType changeType)
+        void ViewportContext::OnRenderPipelineAdded([[maybe_unused]]RenderPipelinePtr pipeline)
         {
-            if (changeType == RPI::SceneNotification::RenderPipelineChangeType::Added)
+            // If the pipeline is registered to our window, reset our current pipeline and do a lookup
+            // Currently, Scene just stores pipelines sequentially in a vector, but we'll attempt to be safe
+            // in the event prioritization is added later
+            if (pipeline->GetWindowHandle() == m_windowContext->GetWindowHandle())
             {
-                // If the pipeline is registered to our window, reset our current pipeline and do a lookup
-                // Currently, Scene just stores pipelines sequentially in a vector, but we'll attempt to be safe
-                // in the event prioritization is added later
-                if (pipeline->GetWindowHandle() == m_windowContext->GetWindowHandle())
-                {
-                    uint32_t viewIndex = static_cast<uint32_t>(pipeline->GetViewType());
-                    m_currentPipelines[viewIndex].reset();
-                    UpdatePipelineView(viewIndex);
-                }
+                uint32_t viewIndex = static_cast<uint32_t>(pipeline->GetViewType());
+                m_currentPipelines[viewIndex].reset();
+                UpdatePipelineView(viewIndex);
             }
-            else if (changeType == RPI::SceneNotification::RenderPipelineChangeType::Removed)
+        }
+
+        void ViewportContext::OnRenderPipelineRemoved(RenderPipeline* pipeline)
+        {
+            uint32_t viewIndex = static_cast<uint32_t>(pipeline->GetViewType());
+            if (m_currentPipelines[viewIndex].get() == pipeline)
             {
-                 uint32_t viewIndex = static_cast<uint32_t>(pipeline->GetViewType());
-                if (m_currentPipelines[viewIndex].get() == pipeline)
-                {
-                    m_currentPipelines[viewIndex].reset();
-                    UpdatePipelineView(viewIndex);
-                }
+                m_currentPipelines[viewIndex].reset();
+                UpdatePipelineView(viewIndex);
             }
         }
 

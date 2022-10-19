@@ -106,7 +106,7 @@ namespace AZ
                 HairGlobalSettingsRequestBus::Handler::BusDisconnect();
             }
 
-            void HairFeatureProcessor::AddRenderPasses(RPI::RenderPipeline* renderPipeline)
+            void HairFeatureProcessor::ApplyRenderPipelineChange(RPI::RenderPipeline* renderPipeline)
             {
                 AddHairParentPass(renderPipeline);
             }
@@ -369,34 +369,44 @@ namespace AZ
                 return success;
             }
 
-            void HairFeatureProcessor::OnRenderPipelineChanged(RPI::RenderPipeline* renderPipeline,
-                RPI::SceneNotification::RenderPipelineChangeType changeType)
+            void HairFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr renderPipeline)
             {
-                if (changeType == RPI::SceneNotification::RenderPipelineChangeType::Added
-                    || changeType == RPI::SceneNotification::RenderPipelineChangeType::PassChanged)
+                // Proceed only if this is the main pipeline that contains the parent pass
+                if (!HasHairParentPass(renderPipeline.get()))
                 {
-                    // Proceed only if this is the main pipeline that contains the parent pass
-                    if (!HasHairParentPass(renderPipeline))
-                    {
-                        return;
-                    }
-
-                    Init(renderPipeline);
-
-                    // Mark for all passes to evacuate their render data and recreate it.
-                    m_forceRebuildRenderData = true;
+                    return;
                 }
-                else if (changeType == RPI::SceneNotification::RenderPipelineChangeType::Removed)
+
+                Init(renderPipeline.get());
+
+                // Mark for all passes to evacuate their render data and recreate it.
+                m_forceRebuildRenderData = true;
+            }
+
+            void HairFeatureProcessor::OnRenderPipelineRemoved([[maybe_unused]] RPI::RenderPipeline* renderPipeline)
+            {
+                // Proceed only if this is the main pipeline that contains the parent pass
+                if (!HasHairParentPass(renderPipeline))
                 {
-                    // Proceed only if this is the main pipeline that contains the parent pass
-                    if (!HasHairParentPass(renderPipeline))
-                    {
-                        return;
-                    }
-
-                    m_renderPipeline = nullptr;
-                    ClearPasses();
+                    return;
                 }
+
+                m_renderPipeline = nullptr;
+                ClearPasses();
+            }
+
+            void HairFeatureProcessor::OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline)
+            {
+                // Proceed only if this is the main pipeline that contains the parent pass
+                if (!HasHairParentPass(renderPipeline))
+                {
+                    return;
+                }
+
+                Init(renderPipeline);
+
+                // Mark for all passes to evacuate their render data and recreate it.
+                m_forceRebuildRenderData = true;
             }
 
             bool HairFeatureProcessor::Init(RPI::RenderPipeline* renderPipeline)

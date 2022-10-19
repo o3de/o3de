@@ -157,12 +157,14 @@ namespace Terrain
         m_rebuildSectors = true;
     }
 
-    void TerrainMeshManager::OnRenderPipelineChanged([[maybe_unused]] AZ::RPI::RenderPipeline* pipeline, AZ::RPI::SceneNotification::RenderPipelineChangeType changeType)
+    void TerrainMeshManager::OnRenderPipelineAdded([[maybe_unused]] AZ::RPI::RenderPipelinePtr pipeline)
     {
-        if (changeType == RenderPipelineChangeType::Added || changeType == RenderPipelineChangeType::PassChanged)
-        {
-            m_rebuildDrawPackets = true;
-        }
+        m_rebuildDrawPackets = true;
+    }
+
+    void TerrainMeshManager::OnRenderPipelinePassesChanged([[maybe_unused]] AZ::RPI::RenderPipeline* renderPipeline)
+    {
+        m_rebuildDrawPackets = true;
     }
 
     void TerrainMeshManager::Update(const AZ::RPI::ViewPtr mainView, AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg)

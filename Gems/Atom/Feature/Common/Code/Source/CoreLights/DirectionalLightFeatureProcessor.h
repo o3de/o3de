@@ -254,7 +254,9 @@ namespace AZ
 
         private:
             // RPI::SceneNotificationBus::Handler overrides...
-            void OnRenderPipelineChanged(AZ::RPI::RenderPipeline* pipeline, RPI::SceneNotification::RenderPipelineChangeType changeType) override;
+            void OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline) override;
+            void OnRenderPipelineRemoved(RPI::RenderPipeline* pipeline) override;
+            void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline) override;
             void OnRenderPipelinePersistentViewChanged(RPI::RenderPipeline* renderPipeline, RPI::PipelineViewTag viewTag, RPI::ViewPtr newView, RPI::ViewPtr previousView) override;
 
             //! This prepare for change of render pipelines and camera views.

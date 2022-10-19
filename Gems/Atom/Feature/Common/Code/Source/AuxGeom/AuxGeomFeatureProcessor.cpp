@@ -157,9 +157,15 @@ namespace AZ
             m_fixedShapeProcessor->SetUpdatePipelineStates();
         }
 
-        void AuxGeomFeatureProcessor::OnRenderPipelineChanged([[maybe_unused]] RPI::RenderPipeline* pipeline, RPI::SceneNotification::RenderPipelineChangeType changeType)
+        void AuxGeomFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
         {
             OnSceneRenderPipelinesChanged();
         }
+
+        void AuxGeomFeatureProcessor::OnRenderPipelineRemoved([[maybe_unused]] RPI::RenderPipeline* pipeline)
+        {
+            OnSceneRenderPipelinesChanged();
+        }
+
     } // namespace Render
 } // namespace AZ

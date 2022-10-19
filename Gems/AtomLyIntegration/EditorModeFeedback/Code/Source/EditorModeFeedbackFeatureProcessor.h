@@ -33,12 +33,14 @@ namespace AZ
             // FeatureProcessor overrides ...
             void Activate() override;
             void Deactivate() override;
-            void AddRenderPasses(RPI::RenderPipeline* renderPipeline) override;
+            void ApplyRenderPipelineChange(RPI::RenderPipeline* renderPipeline) override;
             void Render(const RenderPacket& packet) override;
             void Simulate(const SimulatePacket& packet) override;
 
             // RPI::SceneNotificationBus overrides ...
-            void OnRenderPipelineChanged(AZ::RPI::RenderPipeline* pipeline, AZ::RPI::SceneNotification::RenderPipelineChangeType changeType) override;
+            void OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline) override;
+            void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline) override;
+            void OnRenderPipelineRemoved(RPI::RenderPipeline* pipeline) override;
 
             // AZ::TickBus overrides ...
             void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;

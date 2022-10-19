@@ -198,7 +198,8 @@ namespace AZ
             MeshFeatureProcessor(const MeshFeatureProcessor&) = delete;
 
             // RPI::SceneNotificationBus::Handler overrides...
-            void OnRenderPipelineChanged(AZ::RPI::RenderPipeline* pipeline, RPI::SceneNotification::RenderPipelineChangeType changeType) override;
+            void OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline) override;
+            void OnRenderPipelineRemoved(RPI::RenderPipeline* pipeline) override;
                         
             AZStd::concurrency_checker m_meshDataChecker;
             StableDynamicArray<ModelDataInstance> m_modelData;

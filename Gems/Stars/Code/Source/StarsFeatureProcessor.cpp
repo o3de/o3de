@@ -195,42 +195,39 @@ namespace AZ::Render
         m_updateShaderConstants = true;
     }
 
-    void StarsFeatureProcessor::OnRenderPipelineChanged([[maybe_unused]] AZ::RPI::RenderPipeline* renderPipeline,
-        AZ::RPI::SceneNotification::RenderPipelineChangeType changeType)
+    void StarsFeatureProcessor::OnRenderPipelineAdded([[maybe_unused]] RPI::RenderPipelinePtr renderPipeline)
     {
-        if (changeType == AZ::RPI::SceneNotification::RenderPipelineChangeType::Added)
+        if(!m_meshPipelineState)
         {
-            if(!m_meshPipelineState)
-            {
-                m_meshPipelineState = aznew RPI::PipelineStateForDraw;
-                m_meshPipelineState->Init(m_shader);
+            m_meshPipelineState = aznew RPI::PipelineStateForDraw;
+            m_meshPipelineState->Init(m_shader);
 
 
-                RHI::InputStreamLayoutBuilder layoutBuilder;
-                layoutBuilder.AddBuffer()
-                    ->Channel("POSITION", RHI::Format::R32G32B32_FLOAT)
-                    ->Channel("COLOR", RHI::Format::R8G8B8A8_UNORM);
-                layoutBuilder.SetTopology(RHI::PrimitiveTopology::TriangleList);
-                auto inputStreamLayout = layoutBuilder.End();
+            RHI::InputStreamLayoutBuilder layoutBuilder;
+            layoutBuilder.AddBuffer()
+                ->Channel("POSITION", RHI::Format::R32G32B32_FLOAT)
+                ->Channel("COLOR", RHI::Format::R8G8B8A8_UNORM);
+            layoutBuilder.SetTopology(RHI::PrimitiveTopology::TriangleList);
+            auto inputStreamLayout = layoutBuilder.End();
 
-                m_meshPipelineState->SetInputStreamLayout(inputStreamLayout);
-                m_meshPipelineState->SetOutputFromScene(GetParentScene());
-                m_meshPipelineState->Finalize();
+            m_meshPipelineState->SetInputStreamLayout(inputStreamLayout);
+            m_meshPipelineState->SetOutputFromScene(GetParentScene());
+            m_meshPipelineState->Finalize();
 
-                UpdateDrawPacket();
-                UpdateBackgroundClearColor();
-            }
+            UpdateDrawPacket();
+            UpdateBackgroundClearColor();
         }
-        else if (changeType == AZ::RPI::SceneNotification::RenderPipelineChangeType::PassChanged)
-        {
-            if(m_meshPipelineState)
-            {
-                m_meshPipelineState->SetOutputFromScene(GetParentScene());
-                m_meshPipelineState->Finalize();
+    }
 
-                UpdateDrawPacket();
-                UpdateBackgroundClearColor();
-            }
+    void StarsFeatureProcessor::OnRenderPipelinePassesChanged([[maybe_unused]] RPI::RenderPipeline* renderPipeline)
+    {
+        if(m_meshPipelineState)
+        {
+            m_meshPipelineState->SetOutputFromScene(GetParentScene());
+            m_meshPipelineState->Finalize();
+
+            UpdateDrawPacket();
+            UpdateBackgroundClearColor();
         }
     }
 

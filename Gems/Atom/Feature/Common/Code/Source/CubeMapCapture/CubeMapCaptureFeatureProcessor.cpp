@@ -123,15 +123,11 @@ namespace AZ
             cubeMapCapture->SetRelativePath(relativePath);
         }
 
-        void CubeMapCaptureFeatureProcessor::OnRenderPipelineChanged(RPI::RenderPipeline* renderPipeline,
-                RPI::SceneNotification::RenderPipelineChangeType changeType)
+        void CubeMapCaptureFeatureProcessor::OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline)
         {
-            if (changeType == RPI::SceneNotification::RenderPipelineChangeType::PassChanged)
+            for (auto& cubeMapCapture : m_cubeMapCaptures)
             {
-                for (auto& cubeMapCapture : m_cubeMapCaptures)
-                {
-                    cubeMapCapture->OnRenderPipelinePassesChanged(renderPipeline);
-                }
+                cubeMapCapture->OnRenderPipelinePassesChanged(renderPipeline);
             }
         }
     } // namespace Render

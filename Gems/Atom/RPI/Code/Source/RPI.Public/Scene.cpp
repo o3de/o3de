@@ -323,7 +323,7 @@ namespace AZ
 
         void Scene::TryApplyRenderPipelineChanges(RenderPipeline* pipeline)
         {
-            // return directly if the pipeline doesn't allow modification or it was already modified by scene
+            // return directly if the pipeline doesn't allow modification or it was already modifed by scene
             if (!pipeline->m_descriptor.m_allowModification || pipeline->m_wasModifiedByScene)
             {
                 return;
@@ -332,7 +332,6 @@ namespace AZ
             pipeline->m_wasModifiedByScene = true;
             for (auto& fp : m_featureProcessors)
             {
-                fp->AddRenderPasses(pipeline);
                 fp->ApplyRenderPipelineChange(pipeline);
             }
             pipeline->ProcessQueuedPassChanges();
@@ -374,7 +373,6 @@ namespace AZ
             RebuildPipelineStatesLookup();
 
             SceneNotificationBus::Event(m_id, &SceneNotification::OnRenderPipelineAdded, pipeline);
-            SceneNotificationBus::Event(m_id, &SceneNotification::OnRenderPipelineChanged, pipeline.get(), SceneNotification::RenderPipelineChangeType::Added);
         }
         
         void Scene::RemoveRenderPipeline(const RenderPipelineId& pipelineId)
@@ -397,11 +395,6 @@ namespace AZ
                     m_pipelines.erase(it);
                     
                     SceneNotificationBus::Event(m_id, &SceneNotification::OnRenderPipelineRemoved, pipelineToRemove.get());
-                    SceneNotificationBus::Event(
-                        m_id,
-                        &SceneNotification::OnRenderPipelineChanged,
-                        pipelineToRemove.get(),
-                        SceneNotification::RenderPipelineChangeType::Removed);
 
                     // If the default pipeline was removed, set to the first one in the list
                     if (m_defaultPipeline == nullptr && m_pipelines.size() > 0)

@@ -646,22 +646,23 @@ namespace AZ
             m_lightBufferNeedsUpdate = true;
         }
 
-        void DirectionalLightFeatureProcessor::OnRenderPipelineChanged([[maybe_unused]] RPI::RenderPipeline* pipeline,
-            RPI::SceneNotification::RenderPipelineChangeType changeType)
+        void DirectionalLightFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
         {
-            if (changeType == RPI::SceneNotification::RenderPipelineChangeType::Added
-                || changeType == RPI::SceneNotification::RenderPipelineChangeType::PassChanged)
+            PrepareForChangingRenderPipelineAndCameraView();
+        }
+
+        void DirectionalLightFeatureProcessor::OnRenderPipelineRemoved(RPI::RenderPipeline* pipeline)
+        {
+            if (m_cascadedShadowmapsPasses.find(pipeline->GetId()) != m_cascadedShadowmapsPasses.end() ||
+                m_esmShadowmapsPasses.find(pipeline->GetId()) != m_esmShadowmapsPasses.end())
             {
                 PrepareForChangingRenderPipelineAndCameraView();
             }
-            else if (changeType == RPI::SceneNotification::RenderPipelineChangeType::Removed)
-            {
-                if (m_cascadedShadowmapsPasses.find(pipeline->GetId()) != m_cascadedShadowmapsPasses.end()
-                    || m_esmShadowmapsPasses.find(pipeline->GetId()) != m_esmShadowmapsPasses.end())
-                {
-                    PrepareForChangingRenderPipelineAndCameraView();
-                }
-            }
+        }
+
+        void DirectionalLightFeatureProcessor::OnRenderPipelinePassesChanged(RPI::RenderPipeline*)
+        {
+            PrepareForChangingRenderPipelineAndCameraView();
         }
 
         void DirectionalLightFeatureProcessor::OnRenderPipelinePersistentViewChanged(RPI::RenderPipeline* pipeline, RPI::PipelineViewTag, RPI::ViewPtr, RPI::ViewPtr)

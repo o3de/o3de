@@ -61,26 +61,37 @@ namespace AZ
             DisableSceneNotification();
         }
 
-        void EditorModeFeatureProcessor::OnRenderPipelineChanged(RPI::RenderPipeline* renderPipeline,
-            RPI::SceneNotification::RenderPipelineChangeType changeType)
+        void EditorModeFeatureProcessor::OnRenderPipelineRemoved(RPI::RenderPipeline* pipeline)
         {
             if (!m_editorStatePassSystem)
             {
                 return;
             }
 
-            if (changeType == RPI::SceneNotification::RenderPipelineChangeType::Added
-                || changeType == RPI::SceneNotification::RenderPipelineChangeType::PassChanged)
-            {
-                m_editorStatePassSystem->ConfigureStatePassesForPipeline(renderPipeline);
-            }
-            else if (changeType == RPI::SceneNotification::RenderPipelineChangeType::Removed)
-            {
-                m_editorStatePassSystem->RemoveStatePassesForPipeline(renderPipeline);
-            }
+            m_editorStatePassSystem->RemoveStatePassesForPipeline(pipeline);
         }
 
-        void EditorModeFeatureProcessor::AddRenderPasses(RPI::RenderPipeline* renderPipeline)
+        void EditorModeFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
+        {
+            if (!m_editorStatePassSystem)
+            {
+                return;
+            }
+
+            m_editorStatePassSystem->ConfigureStatePassesForPipeline(pipeline.get());
+        }
+
+        void EditorModeFeatureProcessor::OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline)
+        {
+            if (!m_editorStatePassSystem)
+            {
+                return;
+            }
+
+            m_editorStatePassSystem->ConfigureStatePassesForPipeline(renderPipeline);
+        }
+
+        void EditorModeFeatureProcessor::ApplyRenderPipelineChange(RPI::RenderPipeline* renderPipeline)
         {
             if (!m_editorStatePassSystem)
             {

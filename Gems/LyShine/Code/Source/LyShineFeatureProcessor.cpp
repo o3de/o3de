@@ -27,7 +27,21 @@ namespace LyShine
         }
     }
 
-    void LyShineFeatureProcessor::AddRenderPasses(AZ::RPI::RenderPipeline* renderPipeline)
+    void LyShineFeatureProcessor::Activate()
+    {
+        EnableSceneNotification();
+    }
+
+    void LyShineFeatureProcessor::Deactivate()
+    {        
+        DisableSceneNotification();
+    }
+
+    void LyShineFeatureProcessor::OnRenderPipelinePassesChanged([[maybe_unused]] AZ::RPI::RenderPipeline* renderPipeline)
+    {
+    }
+
+    void LyShineFeatureProcessor::ApplyRenderPipelineChange(AZ::RPI::RenderPipeline* renderPipeline)
     {
         // Get the pass request to create LyShine parent pass from the asset
         const char* passRequestAssetFilePath = "Passes/LyShinePassRequest.azasset";

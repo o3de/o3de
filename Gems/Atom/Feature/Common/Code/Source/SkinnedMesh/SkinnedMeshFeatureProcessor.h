@@ -51,7 +51,8 @@ namespace AZ
             void OnRenderEnd() override;
 
             // RPI::SceneNotificationBus overrides ...
-            void OnRenderPipelineChanged(RPI::RenderPipeline* renderPipeline, RPI::SceneNotification::RenderPipelineChangeType changeType) override;
+            void OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline) override;
+            void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline) override;
             void OnBeginPrepareRender() override;
 
             // SkinnedMeshFeatureProcessorInterface overrides ...

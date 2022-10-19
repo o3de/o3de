@@ -518,8 +518,12 @@ namespace AZ
             m_forceRebuildDrawPackets = true;
         }
 
-        void MeshFeatureProcessor::OnRenderPipelineChanged([[maybe_unused]] RPI::RenderPipeline* pipeline,
-            [[maybe_unused]] RPI::SceneNotification::RenderPipelineChangeType changeType)
+        void MeshFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
+        {
+            m_forceRebuildDrawPackets = true;;
+        }
+
+        void MeshFeatureProcessor::OnRenderPipelineRemoved([[maybe_unused]] RPI::RenderPipeline* pipeline)
         {
             m_forceRebuildDrawPackets = true;
         }

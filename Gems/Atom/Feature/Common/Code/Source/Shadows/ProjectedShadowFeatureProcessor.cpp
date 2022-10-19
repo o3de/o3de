@@ -300,9 +300,18 @@ namespace AZ::Render
 
         UpdateShadowView(shadowProperty);
     }
-        
-    void ProjectedShadowFeatureProcessor::OnRenderPipelineChanged(RPI::RenderPipeline* /*renderPipeline*/,
-            RPI::SceneNotification::RenderPipelineChangeType /*changeType*/)
+
+    void ProjectedShadowFeatureProcessor::OnRenderPipelinePassesChanged(RPI::RenderPipeline* /*renderPipeline*/)
+    {
+        CachePasses();
+    }
+
+    void ProjectedShadowFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr /*renderPipeline*/)
+    {
+        CachePasses();
+    }
+
+    void ProjectedShadowFeatureProcessor::OnRenderPipelineRemoved( RPI::RenderPipeline* /*renderPipeline*/)
     {
         CachePasses();
     }
