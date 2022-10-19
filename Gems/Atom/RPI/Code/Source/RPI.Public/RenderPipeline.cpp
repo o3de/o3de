@@ -424,6 +424,8 @@ namespace AZ
                 if (m_scene)
                 {
                     SceneNotificationBus::Event(m_scene->GetId(), &SceneNotification::OnRenderPipelinePassesChanged, this);
+                    SceneNotificationBus::Event(m_scene->GetId(), &SceneNotification::OnRenderPipelineChanged, this,
+                        SceneNotification::RenderPipelineChangeType::PassChanged);
 
                     // Pipeline state lookup
                     if (PipelineStateLookupNeedsRebuild(m_pipelinePassChanges))
