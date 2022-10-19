@@ -224,8 +224,9 @@ namespace EMStudio
         // set the focus policy
         setFocusPolicy(Qt::ClickFocus);
 
-        // create parameter create/edit widget
-        m_parameterCreateEditWidget = new ParameterCreateEditWidget(m_plugin, this);
+        // create parameter create/edit widget, no parent because we don't want to show
+        // it. Inspector will show this widget when instructed
+        m_parameterCreateEditWidget = new ParameterCreateEditWidget(m_plugin, nullptr);
 
         // Force reinitialize in case e.g. a parameter got added or removed.
         connect(&m_plugin->GetAnimGraphModel(), &AnimGraphModel::ParametersChanged, [this](EMotionFX::AnimGraph* animGraph)
