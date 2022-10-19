@@ -21,7 +21,8 @@ namespace AssetProcessor
         , public UnitTest::AssetProcessorUnitTestBase
     {
         Q_OBJECT
-
+    public:
+        ~AssetRequestHandlerUnitTests();
     protected:
         void SetUp() override;
         void TearDown() override;

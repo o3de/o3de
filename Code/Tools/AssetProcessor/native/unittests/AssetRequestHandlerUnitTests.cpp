@@ -74,6 +74,10 @@ namespace AssetProcessor
     };
 }
 
+AssetRequestHandlerUnitTests::~AssetRequestHandlerUnitTests()
+{
+}
+
 void AssetRequestHandlerUnitTests::SetUp()
 {
     UnitTest::AssetProcessorUnitTestBase::SetUp();
