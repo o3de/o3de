@@ -1641,11 +1641,16 @@ namespace AssetProcessor
 
         sortAssetToProcessResultList(processResults);
 
-#if defined(AZ_PLATFORM_LINUX)
-        // On Linux, because of we cannot change the case of the source file, the job fingerprint is not updated due the case-switch so
-        // there will be actually nothing to process
-        UNIT_TEST_EXPECT_TRUE(processResults.size() == 0);
-#else
+        // On Linux, because we cannot change the case of the source file, the job fingerprint is not updated due the case-switch.
+        // The reason the fingerprint for subfolder3/basefile.txt and subfolder2/basefile.txt are the same ON LINUX is because the
+        // fingerprint of the file includes the filename (also both files have the same contents).  Additionally, when this test is set up,
+        // subfolder3BaseFilePath ON LINUX is set to basefile.txt whereas it is set to BaseFile.txt on windows.  That is why the hash is the
+        // same only for linux but different for other platforms. Note that if this test breaks on linux, it can be debugged on windows by
+        // setting subfolder3BaseFilePath = basefile.txt on windows.
+        // We still expect linux to produce the same result as other platforms however because we no longer query sources using just the relative path.
+        // This means the override file which has not been processed yet MUST be processed, regardless of whether it just happens to have the same fingerprint
+        // on linux.
+
         // --------- same result as above ----------
         UNIT_TEST_EXPECT_TRUE(processResults.size() == 4); // 2 each for pc and android,since we have two recognizer for .txt file
         UNIT_TEST_EXPECT_TRUE(processResults[0].m_jobEntry.m_platformInfo.m_identifier == processResults[1].m_jobEntry.m_platformInfo.m_identifier);
@@ -1663,7 +1668,7 @@ namespace AssetProcessor
             verifyProductPaths(processResults[checkIdx]);
             UNIT_TEST_EXPECT_TRUE(processResults[checkIdx].m_jobEntry.m_computedFingerprint != 0);
         }
-#endif // defined(AZ_PLATFORM_LINUX)
+
         relativePathFromWatchFolder = "somefile.xxx";
         watchFolderPath = tempPath.absoluteFilePath("subfolder3");
         absolutePath = watchFolderPath + "/" + relativePathFromWatchFolder;
