@@ -267,7 +267,11 @@ namespace LmbrCentral
         }
 
         // transform to world space
-        return m_currentTransform.TransformPoint(AZ::Vector3(x, y, z));
+        AZ::Transform worldTransformWithoutScale = m_currentTransform;
+        const float entityScale = worldTransformWithoutScale.ExtractUniformScale();
+        const AZ::Vector3 scaledTranslationOffset = entityScale * m_currentNonUniformScale * m_boxShapeConfig.m_translationOffset;
+
+        return worldTransformWithoutScale.TransformPoint(AZ::Vector3(x, y, z) + scaledTranslationOffset);
     }
 
     AZ::Vector3 BoxShape::GetTranslationOffset()

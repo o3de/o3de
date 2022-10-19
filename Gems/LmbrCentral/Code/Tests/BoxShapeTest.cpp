@@ -214,6 +214,33 @@ namespace UnitTest
         EXPECT_TRUE(allRandomPointsInVolume);
     }
 
+    TEST_F(BoxShapeTest, UniformRealDistributionRandomPointsAreInAABBWithNonUniformScaleAndEntityScale)
+    {
+        AZ::Entity entity;
+        AZ::Transform transform = AZ::Transform::CreateTranslation(AZ::Vector3(0.5f, -3.0f, 4.0f));
+        transform.SetUniformScale(2.0f);
+        const AZ::Vector3 dimensions(2.5f, 1.8f, 0.9f);
+        const AZ::Vector3 nonUniformScale(0.6f, 0.5f, 0.2f);
+        CreateBoxWithNonUniformScale(transform, nonUniformScale, dimensions, entity);
+
+        const bool allRandomPointsInVolume = RandomPointsAreInBox(entity, AZ::RandomDistributionType::UniformReal);
+        EXPECT_TRUE(allRandomPointsInVolume);
+    }
+
+    TEST_F(BoxShapeTest, UniformRealDistributionRandomPointsAreInOBBWithNonUniformScaleAndEntityScale)
+    {
+        AZ::Entity entity;
+        AZ::Transform transform =
+            AZ::Transform::CreateFromQuaternionAndTranslation(AZ::Quaternion(0.52f, 0.08f, 0.56f, 0.64f), AZ::Vector3(-2.0f, 1.0f, -2.0f));
+        transform.SetUniformScale(1.5f);
+        const AZ::Vector3 dimensions(3.2f, 2.6f, 1.3f);
+        const AZ::Vector3 nonUniformScale(0.7f, 0.3f, 0.6f);
+        CreateBoxWithNonUniformScale(transform, nonUniformScale, dimensions, entity);
+
+        const bool allRandomPointsInVolume = RandomPointsAreInBox(entity, AZ::RandomDistributionType::UniformReal);
+        EXPECT_TRUE(allRandomPointsInVolume);
+    }
+
     TEST_F(BoxShapeTest, GetRayIntersectBoxSuccess1)
     {
         AZ::Entity entity;
