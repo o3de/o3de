@@ -211,25 +211,28 @@ namespace AzToolsFramework
                         currentWidget = static_cast<size_t>(layoutIndex + sharedWidgetIndex);
                         attributes = GetRow()->GetAttributes(currentWidget);
                         // Save the alignment of the last widget in the shared column with an alignment attribute
-                        switch (attributes->m_alignment)
+                        if (attributes)
                         {
-                        case AZ::Dpe::Nodes::PropertyEditor::Align::AlignLeft:
-                            startSpacer = false;
-                            endSpacer = true;
-                            break;
-                        case AZ::Dpe::Nodes::PropertyEditor::Align::AlignCenter:
-                            startSpacer = true;
-                            endSpacer = true;
-                            break;
-                        case AZ::Dpe::Nodes::PropertyEditor::Align::AlignRight:
-                            startSpacer = true;
-                            endSpacer = false;
-                            break;
+                            switch (attributes->m_alignment)
+                            {
+                            case AZ::Dpe::Nodes::PropertyEditor::Align::AlignLeft:
+                                startSpacer = false;
+                                endSpacer = true;
+                                break;
+                            case AZ::Dpe::Nodes::PropertyEditor::Align::AlignCenter:
+                                startSpacer = true;
+                                endSpacer = true;
+                                break;
+                            case AZ::Dpe::Nodes::PropertyEditor::Align::AlignRight:
+                                startSpacer = true;
+                                endSpacer = false;
+                                break;
+                            }
                         }
                         sharedColumnLayout->addItem(itemAt(layoutIndex + sharedWidgetIndex));
 
                         // If a widget should only take up its minimum width, do not stretch it
-                        if (attributes->m_minimumWidth)
+                        if (attributes && attributes->m_minimumWidth)
                         {
                             minWidthCount++;
                         }
@@ -281,17 +284,20 @@ namespace AzToolsFramework
                     {
                         itemGeometry.setLeft(itemGeometry.right() + 1);
                         itemGeometry.setRight(itemGeometry.left() + perItemWidth);
-                        switch (attributes->m_alignment)
+                        if (attributes)
                         {
-                        case AZ::Dpe::Nodes::PropertyEditor::Align::AlignLeft:
-                            itemAt(layoutIndex)->setAlignment(Qt::AlignLeft);
-                            break;
-                        case AZ::Dpe::Nodes::PropertyEditor::Align::AlignCenter:
-                            itemAt(layoutIndex)->setAlignment(Qt::AlignCenter);
-                            break;
-                        case AZ::Dpe::Nodes::PropertyEditor::Align::AlignRight:
-                            itemAt(layoutIndex)->setAlignment(Qt::AlignRight);
-                            break;
+                            switch (attributes->m_alignment)
+                            {
+                            case AZ::Dpe::Nodes::PropertyEditor::Align::AlignLeft:
+                                itemAt(layoutIndex)->setAlignment(Qt::AlignLeft);
+                                break;
+                            case AZ::Dpe::Nodes::PropertyEditor::Align::AlignCenter:
+                                itemAt(layoutIndex)->setAlignment(Qt::AlignCenter);
+                                break;
+                            case AZ::Dpe::Nodes::PropertyEditor::Align::AlignRight:
+                                itemAt(layoutIndex)->setAlignment(Qt::AlignRight);
+                                break;
+                            }
                         }
                         itemAt(layoutIndex)->setGeometry(itemGeometry);
                     }
@@ -665,7 +671,7 @@ namespace AzToolsFramework
         }
         else
         {
-            return new AttributeInfo;
+            return nullptr;
         }
     }
 
@@ -853,6 +859,7 @@ namespace AzToolsFramework
                     else
                     {
                         // handler is the same, set the existing handler with the new value
+                        SetPropertyEditorAttributes(childIndex, valueAtSubPath);
                         foundEntry->second.hanlderInterface->SetValueFromDom(valueAtSubPath);
                     }
                 }
