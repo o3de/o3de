@@ -20,6 +20,7 @@ def InstantiatePrefab_ContainingNestedEntitiesAndNestedPrefabs():
     from pathlib import Path
 
     import azlmbr.legacy.general as general
+    import azlmbr.math as math
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.prefab_utils import Prefab
@@ -32,7 +33,7 @@ def InstantiatePrefab_ContainingNestedEntitiesAndNestedPrefabs():
     FILE_NAME_OF_PREFAB_WITH_NESTED_ENTITIES_AND_NESTED_PREFABS = Path(__file__).stem + '_new_prefab'
     NESTED_PREFABS_TEST_ENTITY_NAME = 'TestEntity'
     PHYSX_COLLIDER_NAME = 'PhysX Collider'
-    CREATION_POSITION = azlmbr.math.Vector3(100.0, 100.0, 100.0)
+    CREATION_POSITION = math.Vector3(100.0, 100.0, 100.0)
     NUM_NESTED_ENTITIES_LEVELS = 3
     NUM_NESTED_PREFABS_LEVELS = 3
 
