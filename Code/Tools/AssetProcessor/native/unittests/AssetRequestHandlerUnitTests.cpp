@@ -6,7 +6,7 @@
  *
  */
 
-#include <native/AssetManager/AssetrequestHandler.h>
+#include <native/AssetManager/AssetRequestHandler.h>
 
 #include <native/unittests/AssetRequestHandlerUnitTests.h>
 #include <native/unittests/MockConnectionHandler.h>
@@ -72,15 +72,6 @@ namespace AssetProcessor
             return m_deleteFenceFileResult;
         }
     };
-}
-
-AssetRequestHandlerUnitTests::AssetRequestHandlerUnitTests()
-    : UnitTest::AssetProcessorUnitTestBase()
-{
-}
-
-AssetRequestHandlerUnitTests::~AssetRequestHandlerUnitTests()
-{
 }
 
 void AssetRequestHandlerUnitTests::SetUp()

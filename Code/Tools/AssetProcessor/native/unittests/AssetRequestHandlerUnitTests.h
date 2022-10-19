@@ -23,9 +23,6 @@ namespace AssetProcessor
         Q_OBJECT
 
     protected:
-        AssetRequestHandlerUnitTests();
-        ~AssetRequestHandlerUnitTests();
-
         void SetUp() override;
         void TearDown() override;
 
