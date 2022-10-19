@@ -28,7 +28,11 @@ namespace AZ
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<EditorImageBasedLightComponent, BaseClass>()
-                    ->Version(1, ConvertToEditorRenderComponentAdapter<1>);
+                    ->Version(2, ConvertToEditorRenderComponentAdapter<1>)
+                    ->Field("diffuseImageAsset", &EditorImageBasedLightComponent::m_diffuseImageAsset)
+                    ->Field("specularImageAsset", &EditorImageBasedLightComponent::m_specularImageAsset)
+                    ->Field("exposure", &EditorImageBasedLightComponent::m_exposure)
+                    ;
 
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
@@ -41,6 +45,16 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/atom/global-skylight-ibl/")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorImageBasedLightComponent::m_diffuseImageAsset, "Diffuse Image", "Cubemap image asset for determining diffuse lighting")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorImageBasedLightComponent::OnDiffuseImageAssetChanged)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorImageBasedLightComponent::m_specularImageAsset, "Specular Image", "Cubemap image asset for determining specular lighting")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorImageBasedLightComponent::OnSpecularImageAssetChanged)
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &EditorImageBasedLightComponent::m_exposure, "Exposure", "Exposure in stops")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorImageBasedLightComponent::OnExposureChanged)
+                            ->Attribute(AZ::Edit::Attributes::SoftMin, -5.0f)
+                            ->Attribute(AZ::Edit::Attributes::SoftMax, 5.0f)
+                            ->Attribute(AZ::Edit::Attributes::Min, -20.0f)
+                            ->Attribute(AZ::Edit::Attributes::Max, 20.0f)
                         ;
 
                     editContext->Class<ImageBasedLightComponentController>(
@@ -49,21 +63,6 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ImageBasedLightComponentController::m_configuration, "Configuration", "")
                             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                        ;
-
-                    editContext->Class<ImageBasedLightComponentConfig>(
-                        "ImageBasedLightComponentConfig", "")
-                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                            ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &ImageBasedLightComponentConfig::m_diffuseImageAsset, "Diffuse Image", "Cubemap image asset for determining diffuse lighting")
-                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorImageBasedLightComponent::OnDiffuseImageAssetChanged)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &ImageBasedLightComponentConfig::m_specularImageAsset, "Specular Image", "Cubemap image asset for determining specular lighting")
-                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorImageBasedLightComponent::OnSpecularImageAssetChanged)
-                        ->DataElement(AZ::Edit::UIHandlers::Slider, &ImageBasedLightComponentConfig::m_exposure, "Exposure", "Exposure in stops")
-                            ->Attribute(AZ::Edit::Attributes::SoftMin, -5.0f)
-                            ->Attribute(AZ::Edit::Attributes::SoftMax, 5.0f)
-                            ->Attribute(AZ::Edit::Attributes::Min, -20.0f)
-                            ->Attribute(AZ::Edit::Attributes::Max, 20.0f)
                         ;
                 }
             }
@@ -83,15 +82,25 @@ namespace AZ
         {
         }
 
+        void EditorImageBasedLightComponent::Activate()
+        {
+            BaseClass::Activate();
+
+            ImageBasedLightComponentConfig& configuration = m_controller.m_configuration;
+
+            m_diffuseImageAsset = configuration.m_diffuseImageAsset;
+            m_specularImageAsset = configuration.m_specularImageAsset;
+            m_exposure = configuration.m_exposure;
+        }
 
         AZ::u32 EditorImageBasedLightComponent::OnDiffuseImageAssetChanged()
         {
-            ImageBasedLightComponentConfig& configuration = m_controller.m_configuration;
+            m_controller.SetDiffuseImageAsset(m_diffuseImageAsset);
 
-            if (UpdateImageAsset(configuration.m_diffuseImageAsset, "_ibldiffuse", "Diffuse",
-                                 configuration.m_specularImageAsset, "_iblspecular", "Specular"))
+            if (UpdateImageAsset(m_diffuseImageAsset, "_ibldiffuse", "Diffuse",
+                                 m_specularImageAsset, "_iblspecular", "Specular"))
             {
-                m_controller.SetSpecularImageAsset(configuration.m_specularImageAsset);
+                m_controller.SetSpecularImageAsset(m_specularImageAsset);
             }
 
             return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
@@ -99,12 +108,12 @@ namespace AZ
 
         AZ::u32 EditorImageBasedLightComponent::OnSpecularImageAssetChanged()
         {
-            ImageBasedLightComponentConfig& configuration = m_controller.m_configuration;
+            m_controller.SetSpecularImageAsset(m_specularImageAsset);
 
-            if (UpdateImageAsset(configuration.m_specularImageAsset, "_iblspecular", "Specular",
-                                 configuration.m_diffuseImageAsset, "_ibldiffuse", "Diffuse"))
+            if (UpdateImageAsset(m_specularImageAsset, "_iblspecular", "Specular",
+                                 m_diffuseImageAsset, "_ibldiffuse", "Diffuse"))
             {
-                m_controller.SetDiffuseImageAsset(configuration.m_diffuseImageAsset);
+                m_controller.SetDiffuseImageAsset(m_diffuseImageAsset);
             }
 
             return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
@@ -118,12 +127,21 @@ namespace AZ
             const char* asset2Suffix,
             const char* asset2Name)
         {
-            AZStd::string assetPath = asset1.GetHint();
-            AZ::Data::AssetId assetId;
+            AZStd::string assetPath;
+            if (asset1.GetId().IsValid())
+            {
+                // retrieve the file path for asset1
+                AZ::Data::AssetInfo assetInfo;
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequests::GetAssetInfoById, asset1.GetId());
+                AZ_Assert(assetInfo.m_assetId == asset1.GetId(), "Failed to retrieve AssetInfo for image asset");
 
+                assetPath = assetInfo.m_relativePath;
+            }
+
+            AZ::Data::AssetId assetId;
             if (!assetPath.empty())
             {
-                // try to load the matching image asset by replacing the asset1 suffix with the asset2 suffix
+                // try to load the matching image asset by replacing the asset1 suffix with the asset2 suffix in the file path
                 AZ::StringFunc::Replace(assetPath, asset1Suffix, asset2Suffix);
 
                 assetId = AZ::RPI::AssetUtils::GetAssetIdForProductPath(assetPath.c_str(), AZ::RPI::AssetUtils::TraceLevel::None);
@@ -134,12 +152,12 @@ namespace AZ
                 }
             }
 
-            if (asset2.Get())
+            if (asset2.GetId().IsValid())
             {
                 // prompt to see if the user wants to overwrite the image asset
                 AZStd::string message = AZStd::string::format("Update %s image to match the selected %s image?", asset2Name, asset1Name);
 
-                if (QMessageBox::question(QApplication::activeWindow(), "GlobalSklight", message.c_str(), QMessageBox::Yes | QMessageBox::No) == QMessageBox::No)
+                if (QMessageBox::question(QApplication::activeWindow(), "Global Skylight", message.c_str(), QMessageBox::Yes | QMessageBox::No) == QMessageBox::No)
                 {
                     return false;
                 }
@@ -150,6 +168,13 @@ namespace AZ
             asset2.Create(assetId);
 
             return true;
+        }
+
+        AZ::u32 EditorImageBasedLightComponent::OnExposureChanged()
+        {
+            m_controller.SetExposure(m_exposure);
+
+            return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
         }
 
     } // namespace Render
