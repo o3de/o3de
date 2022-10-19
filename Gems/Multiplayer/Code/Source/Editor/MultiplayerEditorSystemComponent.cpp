@@ -506,7 +506,7 @@ namespace Multiplayer
         {
             // Start hosting as a client-server
             const bool isDedicated = false;
-            AZ::Interface<IMultiplayer>::Get()->StartHosting(33450, isDedicated);
+            AZ::Interface<IMultiplayer>::Get()->StartHosting(editorsv_port, isDedicated);
             return;
         }
 
@@ -627,7 +627,7 @@ namespace Multiplayer
     }
     void MultiplayerEditorSystemComponent::OnStopPlayInEditorBegin()
     {
-        if (!editor_clientserver)
+        if (GetMultiplayer()->GetAgentType() != MultiplayerAgentType::ClientServer || !editor_clientserver)
         {
             return;
         }
