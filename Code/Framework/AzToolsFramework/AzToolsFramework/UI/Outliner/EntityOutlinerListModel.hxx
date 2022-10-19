@@ -202,6 +202,7 @@ namespace AzToolsFramework
 
         bool m_autoExpandEnabled = true;
         bool m_layoutResetQueued = false;
+        bool m_supressNextSelectEntity = false;
 
         AZStd::string m_filterString;
         AZStd::vector<ComponentTypeValue> m_componentFilters;
