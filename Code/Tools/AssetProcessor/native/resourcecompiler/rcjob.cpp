@@ -518,7 +518,9 @@ namespace AssetProcessor
 
                         QFileInfo fileInfo(builderParams.m_processJobRequest.m_sourceFile.c_str());
                         builderParams.m_serverKey = QString("%1_%2_%3_%4")
-                            .arg(fileInfo.completeBaseName(), builderParams.m_processJobRequest.m_jobDescription.m_jobKey.c_str(), builderParams.m_processJobRequest.m_platformInfo.m_identifier.c_str())
+                            .arg(fileInfo.completeBaseName(),
+                                 builderParams.m_processJobRequest.m_jobDescription.m_jobKey.c_str(),
+                                 builderParams.m_processJobRequest.m_platformInfo.m_identifier.c_str())
                             .arg(builderParams.m_rcJob->GetOriginalFingerprint());
                         bool operationResult = false;
                         if (assetServerMode == AssetServerMode::Server)
