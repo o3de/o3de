@@ -19,12 +19,15 @@ void FileWatcherUnitTest::SetUp()
     UnitTest::AssetProcessorUnitTestBase::SetUp();
 
     m_assetRootPath = QString(m_assetDatabaseRequestsHandler->GetAssetRootDir().c_str());
-    m_fileWatcher.AddFolderWatch(m_assetRootPath);
-    m_fileWatcher.StartWatching();
+    m_fileWatcher = AZStd::make_unique<FileWatcher>();
+    m_fileWatcher->AddFolderWatch(m_assetRootPath);
+    m_fileWatcher->StartWatching();
 }
 
 void FileWatcherUnitTest::TearDown()
 {
+    m_fileWatcher.reset();
+
     UnitTest::AssetProcessorUnitTestBase::TearDown();
 }
 
@@ -37,7 +40,7 @@ TEST_F(FileWatcherUnitTest, WatchFileCreation_CreateSingleFile_FileChangeFound)
 {
     // test a single file create/write
     bool foundFile = false;
-    auto connection = QObject::connect(&m_fileWatcher, &FileWatcher::fileAdded, this, [&](QString filename)
+    auto connection = QObject::connect(m_fileWatcher.get(), &FileWatcher::fileAdded, this, [&](QString filename)
         {
             AZ_TracePrintf(AssetProcessor::DebugChannel, "Single file test Found asset: %s.\n", filename.toUtf8().data());
             foundFile = true;
@@ -74,7 +77,7 @@ TEST_F(FileWatcherUnitTest, WatchFileCreation_CreateMultipleFiles_FileChangesFou
     const unsigned long maxFiles = 1000;
     QSet<QString> outstandingFiles;
 
-    auto connection = QObject::connect(&m_fileWatcher, &FileWatcher::fileAdded, this, [&](QString filename)
+    auto connection = QObject::connect(m_fileWatcher.get(), &FileWatcher::fileAdded, this, [&](QString filename)
         {
             outstandingFiles.remove(filename);
         });
@@ -129,7 +132,7 @@ TEST_F(FileWatcherUnitTest, WatchFileCreation_CreateMultipleFiles_FileChangesFou
 TEST_F(FileWatcherUnitTest, WatchFileDeletion_RemoveTestAsset_FileChangeFound)
 {
     bool foundFile = false;
-    auto connection = QObject::connect(&m_fileWatcher, &FileWatcher::fileRemoved, this, [&](QString filename)
+    auto connection = QObject::connect(m_fileWatcher.get(), &FileWatcher::fileRemoved, this, [&](QString filename)
         {
             AZ_TracePrintf(AssetProcessor::DebugChannel, "Deleted asset: %s...\n", filename.toUtf8().data());
             foundFile = true;
@@ -166,7 +169,7 @@ TEST_F(FileWatcherUnitTest, WatchFileRelocation_RenameTestAsset_FileChangeFound)
     {
         bool fileAddCalled = false;
         QString fileAddName;
-        auto connectionAdd = QObject::connect(&m_fileWatcher, &FileWatcher::fileAdded, this, [&](QString filename)
+        auto connectionAdd = QObject::connect(m_fileWatcher.get(), &FileWatcher::fileAdded, this, [&](QString filename)
         {
             fileAddCalled = true;
             fileAddName = filename;
@@ -174,7 +177,7 @@ TEST_F(FileWatcherUnitTest, WatchFileRelocation_RenameTestAsset_FileChangeFound)
 
         bool fileRemoveCalled = false;
         QString fileRemoveName;
-        auto connectionRemove = QObject::connect(&m_fileWatcher, &FileWatcher::fileRemoved, this, [&](QString filename)
+        auto connectionRemove = QObject::connect(m_fileWatcher.get(), &FileWatcher::fileRemoved, this, [&](QString filename)
         {
             fileRemoveCalled = true;
             fileRemoveName = filename;
@@ -182,7 +185,7 @@ TEST_F(FileWatcherUnitTest, WatchFileRelocation_RenameTestAsset_FileChangeFound)
 
         QStringList fileModifiedNames;
         bool fileModifiedCalled = false;
-        auto connectionModified = QObject::connect(&m_fileWatcher, &FileWatcher::fileModified, this, [&](QString filename)
+        auto connectionModified = QObject::connect(m_fileWatcher.get(), &FileWatcher::fileModified, this, [&](QString filename)
         {
             fileModifiedCalled = true;
             fileModifiedNames.append(filename);

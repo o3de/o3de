@@ -21,6 +21,6 @@ public:
     void TearDown() override;
 
 protected:
-    FileWatcher m_fileWatcher;
+    AZStd::unique_ptr<FileWatcher> m_fileWatcher;
     QString m_assetRootPath;
 };
