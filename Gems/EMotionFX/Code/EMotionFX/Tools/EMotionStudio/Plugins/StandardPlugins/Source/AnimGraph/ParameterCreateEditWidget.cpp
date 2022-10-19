@@ -35,7 +35,7 @@ namespace EMStudio
         , m_valueParameterEditor(nullptr)
     {
         setObjectName("ParameterCreateEditWidget");
-        setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
+        setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 
         m_createButton = new QPushButton("Create", this);
         m_createButton->setObjectName("EMFX.ParameterCreateEditWidget.CreateApplyButton");
