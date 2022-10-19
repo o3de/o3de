@@ -8,15 +8,16 @@
 
 #include <AzTest/AzTest.h>
 
+#include <AZTestShared/Math/MathTestHelpers.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/Math/Random.h>
-#include <AzFramework/Components/TransformComponent.h>
-#include <AzFramework/Components/NonUniformScaleComponent.h>
-#include <Shape/BoxShapeComponent.h>
+#include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/UnitTest/TestTypes.h>
-#include <AZTestShared/Math/MathTestHelpers.h>
+#include <AzFramework/Components/NonUniformScaleComponent.h>
+#include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/UnitTest/TestDebugDisplayRequests.h>
+#include <Shape/BoxShapeComponent.h>
 #include <ShapeThreadsafeTest.h>
 
 namespace UnitTest
@@ -46,10 +47,26 @@ namespace UnitTest
             m_nonUniformScaleComponentDescriptor = AZStd::unique_ptr<AZ::ComponentDescriptor>(
                 AzFramework::NonUniformScaleComponent::CreateDescriptor());
             m_nonUniformScaleComponentDescriptor->Reflect(&(*m_serializeContext));
+            m_oldSettingsRegistry = AZ::SettingsRegistry::Get();
+            if (m_oldSettingsRegistry)
+            {
+                AZ::SettingsRegistry::Unregister(m_oldSettingsRegistry);
+            }
+
+            m_settingsRegistry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
+            m_settingsRegistry->Set(LmbrCentral::ShapeComponentTranslationOffsetEnabled, true);
+            AZ::SettingsRegistry::Register(m_settingsRegistry.get());
         }
 
         void TearDown() override
         {
+            AZ::SettingsRegistry::Unregister(m_settingsRegistry.get());
+            if (m_oldSettingsRegistry)
+            {
+                AZ::SettingsRegistry::Register(m_oldSettingsRegistry);
+                m_oldSettingsRegistry = nullptr;
+            }
+            m_settingsRegistry.reset();
             m_transformComponentDescriptor.reset();
             m_boxShapeComponentDescriptor.reset();
             m_boxShapeDebugDisplayComponentDescriptor.reset();
@@ -57,6 +74,9 @@ namespace UnitTest
             m_serializeContext.reset();
             AllocatorsFixture::TearDown();
         }
+    private:
+        AZStd::unique_ptr<AZ::SettingsRegistryInterface> m_settingsRegistry;
+        AZ::SettingsRegistryInterface* m_oldSettingsRegistry = nullptr;
     };
 
     void CreateBox(const AZ::Transform& transform, const AZ::Vector3& dimensions, AZ::Entity& entity)
@@ -682,4 +702,8 @@ namespace UnitTest
         ShapeThreadsafeTest::TestShapeGetSetCallsAreThreadsafe(entity, numIterations, setDimensionFn);
     }
 
+    TEST_F(BoxShapeTest, TranslationOffsetEnabled)
+    {
+        EXPECT_TRUE(LmbrCentral::IsShapeComponentTranslationEnabled());
+    }
 }
