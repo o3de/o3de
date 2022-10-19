@@ -88,6 +88,10 @@ set(FILES
     Source/AnimGraph/StateFilterSelectionWindow.h
     Source/AnimGraph/StateGraphNode.cpp
     Source/AnimGraph/StateGraphNode.h
+    Source/AnimGraph/SolidColorIconEngine.cpp
+    Source/AnimGraph/SolidColorIconEngine.h
+    Source/AnimGraph/ZoomableLineEdit.cpp
+    Source/AnimGraph/ZoomableLineEdit.h
     Source/AnimGraph/ParameterEditor/BoolParameterEditor.cpp
     Source/AnimGraph/ParameterEditor/BoolParameterEditor.h
     Source/AnimGraph/ParameterEditor/ColorParameterEditor.cpp
