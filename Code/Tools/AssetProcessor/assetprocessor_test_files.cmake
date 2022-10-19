@@ -71,7 +71,8 @@ set(FILES
     native/tests/MockAssetDatabaseRequestsHandler.h
     native/unittests/AssetCacheServerUnitTests.cpp
     native/unittests/AssetProcessingStateDataUnitTests.cpp
-    native/unittests/AssetProcessingStateDataUnitTests.h
+    native/unittests/AssetProcessorUnitTests.h
+    native/unittests/AssetProcessorUnitTests.cpp
     native/unittests/AssetProcessorManagerUnitTests.cpp
     native/unittests/AssetProcessorManagerUnitTests.h
     native/unittests/AssetProcessorServerUnitTests.cpp
@@ -81,7 +82,6 @@ set(FILES
     native/unittests/ConnectionUnitTests.cpp
     native/unittests/ConnectionUnitTests.h
     native/unittests/ConnectionManagerUnitTests.cpp
-    native/unittests/ConnectionManagerUnitTests.h
     native/unittests/FileWatcherUnitTests.cpp
     native/unittests/FileWatcherUnitTests.h
     native/unittests/PlatformConfigurationUnitTests.cpp
