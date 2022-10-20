@@ -16,6 +16,8 @@
 #include <FormComboBoxWidget.h>
 #include <GemCatalog/GemInfo.h>
 #include <PythonBindings.h>
+#include <ScreenHeaderWidget.h>
+
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QButtonGroup)
@@ -34,7 +36,8 @@ namespace O3DE::ProjectManager
         explicit CreateGem(QWidget* parent = nullptr);
         ~CreateGem() = default;
 
-        void ResetWorkflow(const GemInfo& oldGemInfo);
+        void ClearWorkflow();
+        void ResetWorkflow(const GemInfo& oldGemInfo, bool isEditWorkflow);
 
     signals:
         void GemCreated(const GemInfo& gemInfo);
@@ -60,11 +63,20 @@ namespace O3DE::ProjectManager
         bool ValidateFormNotEmpty(FormLineEditWidget* form);
         bool ValidateRepositoryURL();
 
+        //workflow management
+        void ChangeToEditWorkflow();
+        void ChangeToCreateWorkflow();
+
+        //Edit Gem workflow
+        bool m_isEditGem = false;
+
         //Gem Setup
         QVector<TemplateInfo> m_gemTemplates;
         QButtonGroup* m_radioButtonGroup = nullptr;
         QRadioButton* m_formFolderRadioButton = nullptr;
         FormFolderBrowseEditWidget* m_gemTemplateLocation = nullptr;
+
+        ScreenHeader* m_header = nullptr;
 
         //Gem Details
         FormLineEditWidget* m_gemDisplayName = nullptr;

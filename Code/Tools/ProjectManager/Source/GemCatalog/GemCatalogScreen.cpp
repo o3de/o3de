@@ -649,7 +649,8 @@ namespace O3DE::ProjectManager
             if (createGemScreen)
             {
                 auto createGem = qobject_cast<CreateGem*>(createGemScreen);
-                createGem->ResetWorkflow(m_gemModel->GetGemInfo(m_gemInspector->GetCurrentModelIndex()));
+                createGem->ResetWorkflow(m_gemModel->GetGemInfo(m_gemInspector->GetCurrentModelIndex()),
+                                        /*isEditWorkflow = */true);
                 emit ChangeScreenRequest(ProjectManagerScreen::CreateGem);
             }
         }
