@@ -297,7 +297,7 @@ namespace LmbrCentral
         {
             ShapeComponentNotificationsBus::Event(
                 m_entityId, &ShapeComponentNotificationsBus::Events::OnShapeChanged,
-                ShapeComponentNotifications::ShapeChangeReasons::TransformChanged);
+                ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
         }
     }
 
