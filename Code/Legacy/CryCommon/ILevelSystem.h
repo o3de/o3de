@@ -72,7 +72,7 @@ struct ILevelSystem
     virtual bool IsLevelLoaded() const = 0;
 
     //! Deprecated.
-    //! @deprecated ILevelSystem is part of the legacy CryCommon module, please use AzFramework::LevelSystemLifecycleInterface::Get()->GetCurrentLevelName instead. O3DE_DEPRECATION_NOTICE(GHI-12715)
+    //! @deprecated ILevelSystem is part of the legacy CryCommon module, please use AzFramework::LevelSystemLifecycleInterface::Get()->GetCurrentLevelName instead.
     //! O3DE_DEPRECATION_NOTICE(GHI-12715)
     virtual const char* GetCurrentLevelName() const = 0;
 
