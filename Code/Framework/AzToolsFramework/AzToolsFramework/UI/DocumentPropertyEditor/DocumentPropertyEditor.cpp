@@ -365,7 +365,11 @@ namespace AzToolsFramework
             AZStd::vector<size_t> currentGroup = *groupIt;
             for (int currentGroupIndex = 0; currentGroupIndex < currentGroup.size(); currentGroupIndex++)
             {
-                if (widgetIndex == currentGroup[currentGroupIndex])
+                if (widgetIndex != currentGroup[currentGroupIndex])
+                {
+                    continue;
+                }
+                else
                 {
                     if (currentGroupIndex == currentGroup.size() - 1)
                     {
