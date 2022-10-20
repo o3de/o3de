@@ -388,9 +388,32 @@ namespace AzToolsFramework
                         currentGroup.erase(currentGroup.begin());
                         return;
                     }
-                    else
+                    //! The widget being removed is in the middle of a sharedGroup,
+                    //! Create a vector of all the widgets in the group until you reach the element to be removed from the group
+                    //! Create a new group of all the elements in the group after the element to be removed
+                    else if (currentGroupIndex != 0)
                     {
-                        //! to-do: handle case where we remove widget from the middle of a share prior group
+                        AZStd::vector<size_t> oldGroup;
+                        AZStd::vector<size_t> newGroup;
+                        bool switchGroups = false;
+                        for (int elementIt = 0; elementIt < currentGroup.size(); elementIt++)
+                        {
+                            if (elementIt == currentGroupIndex)
+                            {
+                                switchGroups = true;
+                            }
+                            if (!switchGroups)
+                            {
+                                oldGroup.emplace_back(currentGroup[elementIt]);
+                            }
+                            else
+                            {
+                                newGroup.emplace_back(currentGroup[elementIt]);
+                            }
+                        }
+                        m_sharePriorColumn.insert(groupIt + 1, newGroup);
+                        currentGroup.swap(oldGroup);
+                        return;
                     }
                 }
             }
