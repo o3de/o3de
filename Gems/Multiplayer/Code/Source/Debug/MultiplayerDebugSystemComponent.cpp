@@ -136,8 +136,7 @@ namespace Multiplayer
                     const MultiplayerAgentType multiplayerAgentType = multiplayerInterface->GetAgentType();
 
                     // Enable the host level selection menu if we're neither a host nor client, or if we are hosting, but haven't loaded a level yet.
-                    bool isLevelLoaded = false;
-                    AzFramework::LevelSystemLifecycleRequestBus::BroadcastResult(isLevelLoaded, &AzFramework::LevelSystemLifecycleRequests::IsLevelLoaded);
+                    const bool isLevelLoaded = AzFramework::LevelSystemLifecycleInterface::Get()->IsLevelLoaded();
                     const bool isHosting = multiplayerAgentType == MultiplayerAgentType::ClientServer || multiplayerAgentType == MultiplayerAgentType::DedicatedServer;
                     const bool enableHostLevelSelection = multiplayerAgentType == MultiplayerAgentType::Uninitialized || (isHosting && !isLevelLoaded);
 
