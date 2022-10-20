@@ -1224,7 +1224,6 @@ namespace AZ
 
             const AZStd::sys_time_t maxWaitTimeSeconds = 5;
             const AZStd::sys_time_t startTimeSeconds = AZStd::GetTimeNowSecond();
-            const AZStd::sys_time_t startTime = AZStd::GetTimeNowTicks();
 
             while (watcherPtr->IsProcessRunning(&exitCode))
             {
