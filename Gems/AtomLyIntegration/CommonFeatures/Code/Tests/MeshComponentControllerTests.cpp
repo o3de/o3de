@@ -92,13 +92,12 @@ namespace UnitTest
 
     TEST_F(MeshComponentControllerFixture, IntersectionNotificationBusIsNotifiedWhenMeshComponentControllerTransformIsModified)
     {
+        // suppress warning when feature process is not created in test environment
+        UnitTest::ErrorHandler featureProcessorNotFound("Unable to find a MeshFeatureProcessorInterface on the entityId.");
+
         m_entity->Deactivate();
         m_entity->CreateComponent<AZ::Render::EditorMeshComponent>();
-        // note: RPI::Scene::GetFeatureProcessorForEntity<MeshFeatureProcessorInterface>(...) returns nullptr
-        // and so m_meshFeatureProcessor is null
-        AZ_TEST_START_TRACE_SUPPRESSION;
         m_entity->Activate();
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
 
         AZ::TransformBus::Event(
             m_entity->GetId(), &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateTranslation(AZ::Vector3(1.0f, 2.0f, 3.0f)));

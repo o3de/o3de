@@ -50,7 +50,7 @@ namespace UnitTest
 
         void TeardownAllocator()
         {
-            // Don't destroy the SystemAllocator if it is not ready aand was not created by
+            // Don't destroy the SystemAllocator if it is not ready and was not created by
             // the AllocatorsBase
             if (m_ownsAllocator && AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
             {

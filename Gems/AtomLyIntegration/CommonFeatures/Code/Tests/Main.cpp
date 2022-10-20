@@ -54,7 +54,7 @@ AZTEST_EXPORT int AZ_UNIT_TEST_HOOK_NAME(int argc, char** argv)
     ::testing::InitGoogleMock(&argc, argv);
     QApplication app(argc, argv);
     AZ::Test::printUnusedParametersWarning(argc, argv);
-    AZ::Test::addTestEnvironments({ DEFAULT_UNIT_TEST_ENV, new AtomLyIntegrationHook });
+    AZ::Test::addTestEnvironments({ new AtomLyIntegrationHook });
     int result = RUN_ALL_TESTS();
     return result;
 }

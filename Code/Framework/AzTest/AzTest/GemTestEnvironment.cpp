@@ -79,6 +79,8 @@ namespace AZ
 
         void GemTestEnvironment::SetupEnvironment()
         {
+            UnitTest::TraceBusHook::SetupEnvironment();
+
             AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
 
             m_parameters = new Parameters;
@@ -161,6 +163,8 @@ namespace AZ
             m_parameters = nullptr;
 
             AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
+
+            UnitTest::TraceBusHook::TeardownEnvironment();
         }
     } // namespace Test
 } // namespace AZ
