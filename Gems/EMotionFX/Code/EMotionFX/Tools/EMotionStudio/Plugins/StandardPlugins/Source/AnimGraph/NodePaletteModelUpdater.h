@@ -40,9 +40,8 @@ namespace EMStudio
     public:
         explicit NodePaletteModelUpdater(AnimGraphPlugin* plugin);
         GraphCanvas::NodePaletteTreeItem* GetRootItem();
-        /**
-         * Rebuild the list of available/enabled nodes when a given node is focused
-         */
+
+        //! Rebuild the list of available/enabled nodes when a given node is focused
         void InitForNode(EMotionFX::AnimGraphNode* focusNode);
 
     private:
