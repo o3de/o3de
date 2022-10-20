@@ -30,11 +30,11 @@ ENTITY_STATES = {
 class Strings:
     EMPTY_STRING = ""
     ONLY_SPACE = " "
-    ESCAPED_SPACE = "\n"
+    ESCAPED_NEW_LINE = "\n"
     CHARACTER = "a"
     NUMBER = '1'
     SHORT_STRING = "ShortString"
-    STRING_WITH_SPACE = "String With Space"
+    STRING_WITH_SPACE = "String WithSpace"
     ESCAPED_STRING = "String with escapes \\ \n \b \""
     LONG_STRING = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut " \
                   "labore et dolore magna aliqua. Proin fermentum leo vel orci porta non. Nunc sed augue lacus " \
