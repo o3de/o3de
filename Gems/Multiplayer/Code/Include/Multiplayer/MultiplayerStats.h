@@ -8,12 +8,10 @@
 
 #pragma once
 
-#include <AzCore/EBus/ScheduledEvent.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Time/ITime.h>
 #include <Multiplayer/MultiplayerTypes.h>
-#include <Multiplayer/MultiplayerStatSystem.h>
 
 namespace AzNetworking
 {

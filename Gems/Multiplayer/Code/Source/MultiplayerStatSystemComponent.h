@@ -11,8 +11,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/IO/Streamer/Statistics.h>
 #include <AzCore/IO/Streamer/StreamerConfiguration.h>
-#include <AzCore/Metrics/IEventLogger.h>
-#include <Multiplayer/MultiplayerStatSystem.h>
+#include <Multiplayer/MultiplayerStatSystemInterface.h>
 
 namespace Multiplayer
 {

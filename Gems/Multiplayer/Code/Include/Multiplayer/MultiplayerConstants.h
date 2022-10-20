@@ -8,13 +8,13 @@
 
 #pragma once
 
-#include <AzCore/EBus/Event.h>
-#include <AzCore/Metrics/IEventLoggerFactory.h>
 #include <AzCore/Name/Name.h>
-#include <AzCore/RTTI/TypeSafeIntegral.h>
 #include <AzCore/std/string/fixed_string.h>
-#include <AzNetworking/ConnectionLayer/ConnectionEnums.h>
-#include <AzNetworking/Serialization/ISerializer.h>
+
+namespace AZ::Metrics
+{
+    enum class EventLoggerId : AZ::u32;
+}
 
 namespace Multiplayer
 {

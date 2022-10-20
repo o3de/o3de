@@ -6,8 +6,7 @@
  *
  */
 
-#include <AzCore/Metrics/IEventLogger.h>
-#include <AzCore/Metrics/IEventLoggerFactory.h>
+#include <Multiplayer/MultiplayerPerformanceStats.h>
 #include <Multiplayer/MultiplayerStats.h>
 
 namespace Multiplayer
@@ -129,7 +128,7 @@ namespace Multiplayer
 
     void MultiplayerStats::TickStats(AZ::TimeMs metricFrameTimeMs)
     {
-        SET_INTEGER_STAT(MultiplayerStat_EntityCount, m_entityCount);
+        SET_PERFORMANCE_STAT(MultiplayerStat_EntityCount, m_entityCount);
 
         m_totalHistoryTimeMs = metricFrameTimeMs * static_cast<AZ::TimeMs>(RingbufferSamples);
         m_recordMetricIndex = ++m_recordMetricIndex % RingbufferSamples;
@@ -260,6 +259,6 @@ namespace Multiplayer
 
     void MultiplayerStats::RecordFrameTime(AZ::TimeUs networkFrameTime)
     {
-        SET_INTEGER_STAT(MultiplayerStat_FrameTime, networkFrameTime);
+        SET_PERFORMANCE_STAT(MultiplayerStat_FrameTime, networkFrameTime);
     }
 } // namespace Multiplayer

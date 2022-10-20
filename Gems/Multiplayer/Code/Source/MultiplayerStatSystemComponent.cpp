@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Metrics/IEventLoggerFactory.h>
 #include <Source/MultiplayerStatSystemComponent.h>
 
 namespace Multiplayer
@@ -174,12 +175,12 @@ namespace Multiplayer
             }
             else
             {
-                AZLOG_WARN("A stat has already been declared using DECLARE_STAT_INT64 with id %d", uniqueStatId);
+                AZLOG_WARN("A stat has already been declared using DECLARE_PERFORMANCE_STAT with id %d", uniqueStatId);
             }
         }
         else
         {
-            AZLOG_WARN("Stat group with id %d has not been declared using DECLARE_STAT_GROUP", uniqueGroupId);
+            AZLOG_WARN("Stat group with id %d has not been declared using DECLARE_PERFORMANCE_STAT_GROUP", uniqueGroupId);
         }
     }
 
@@ -194,16 +195,12 @@ namespace Multiplayer
                 if (auto stat = group->m_stats.Find(uniqueStatId))
                 {
                     stat->m_average.PushEntry(value);
+                    return;
                 }
-                else
-                {
-                    AZLOG_WARN("SET_STAT_UINT64 was called on a stat with id %d of a non-INT64 type", uniqueStatId);
-                }
-                return;
             }
         }
 
-        AZLOG_WARN("Stat with id %d has not been declared using DECLARE_STAT_UINT64", uniqueStatId);
+        AZLOG_WARN("Stat with id %d has not been declared using DECLARE_PERFORMANCE_STAT", uniqueStatId);
     }
 
     void MultiplayerStatSystemComponent::RecordMetrics()
