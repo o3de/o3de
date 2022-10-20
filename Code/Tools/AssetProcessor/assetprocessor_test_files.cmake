@@ -90,7 +90,6 @@ set(FILES
     native/unittests/UnitTestRunner.cpp
     native/unittests/UnitTestRunner.h
     native/unittests/UtilitiesUnitTests.cpp
-    native/unittests/UtilitiesUnitTests.h
     native/unittests/AssetRequestHandlerUnitTests.cpp
     native/unittests/AssetRequestHandlerUnitTests.h
     native/unittests/MockConnectionHandler.h
