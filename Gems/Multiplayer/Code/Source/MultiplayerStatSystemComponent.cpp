@@ -6,8 +6,8 @@
  *
  */
 
-#include <AzCore/Metrics/JsonTraceEventLogger.h>
 #include <AzCore/Metrics/IEventLoggerFactory.h>
+#include <AzCore/Metrics/JsonTraceEventLogger.h>
 #include <Source/MultiplayerStatSystemComponent.h>
 
 namespace Multiplayer
