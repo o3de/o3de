@@ -733,4 +733,63 @@ namespace UnitTest
     {
         EXPECT_TRUE(LmbrCentral::IsShapeComponentTranslationEnabled());
     }
+
+    TEST_F(BoxShapeTest, UniformRealDistributionRandomPointsAreInAABBWithTranslationOffset)
+    {
+        AZ::Entity entity;
+        AZ::Transform transform = AZ::Transform::CreateTranslation(AZ::Vector3(3.0f, -1.0f, -3.0f));
+        transform.SetUniformScale(1.8f);
+        const AZ::Vector3 dimensions(2.3f, 3.2f, 1.4f);
+        const AZ::Vector3 nonUniformScale(0.2f, 0.5f, 0.2f);
+        CreateBoxWithNonUniformScale(transform, nonUniformScale, dimensions, entity);
+
+        const AZ::Vector3 translationOffset(0.5f, 0.2f, 1.3f);
+        LmbrCentral::ShapeComponentRequestsBus::Event(
+            entity.GetId(), &LmbrCentral::ShapeComponentRequestsBus::Events::SetTranslationOffset, translationOffset);
+
+        const bool allRandomPointsInVolume = RandomPointsAreInBox(entity, AZ::RandomDistributionType::UniformReal);
+        EXPECT_TRUE(allRandomPointsInVolume);
+    }
+
+    TEST_F(BoxShapeTest, UniformRealDistributionRandomPointsAreInOBBWithTranslationOffset)
+    {
+        AZ::Entity entity;
+        AZ::Transform transform =
+            AZ::Transform::CreateFromQuaternionAndTranslation(AZ::Quaternion(0.34f, 0.50f, 0.38f, 0.70f), AZ::Vector3(-2.0f, 2.0f, 4.0f));
+        transform.SetUniformScale(2.2f);
+        const AZ::Vector3 dimensions(3.1f, 0.8f, 1.5f);
+        const AZ::Vector3 nonUniformScale(0.4f, 0.1f, 0.3f);
+        CreateBoxWithNonUniformScale(transform, nonUniformScale, dimensions, entity);
+
+        const AZ::Vector3 translationOffset(-3.5f, 2.2f, -1.8f);
+        LmbrCentral::ShapeComponentRequestsBus::Event(
+            entity.GetId(), &LmbrCentral::ShapeComponentRequestsBus::Events::SetTranslationOffset, translationOffset);
+
+        const bool allRandomPointsInVolume = RandomPointsAreInBox(entity, AZ::RandomDistributionType::UniformReal);
+        EXPECT_TRUE(allRandomPointsInVolume);
+    }
+
+    TEST_F(BoxShapeTest, GetRayIntersectBoxWithTranslationOffsetJustIntersecting)
+    {
+        AZ::Entity entity;
+        AZ::Transform transform =
+            AZ::Transform::CreateFromQuaternionAndTranslation(AZ::Quaternion(0.0f, 0.0f, 0.6f, 0.8f), AZ::Vector3(-2.0f, 2.0f, -4.0f));
+        transform.SetUniformScale(3.0f);
+        const AZ::Vector3 dimensions(3.0f, 4.0f, 5.0f);
+        const AZ::Vector3 nonUniformScale(2.0f, 0.5f, 0.5f);
+        CreateBoxWithNonUniformScale(transform, nonUniformScale, dimensions, entity);
+
+        const AZ::Vector3 translationOffset(1.0f, 2.0f, 3.0f);
+        LmbrCentral::ShapeComponentRequestsBus::Event(
+            entity.GetId(), &LmbrCentral::ShapeComponentRequestsBus::Events::SetTranslationOffset, translationOffset);
+
+        bool rayHit = false;
+        float distance;
+        LmbrCentral::ShapeComponentRequestsBus::EventResult(
+            rayHit, entity.GetId(), &LmbrCentral::ShapeComponentRequests::IntersectRay,
+            AZ::Vector3(-10.0f, 8.0f, 0.0f), AZ::Vector3(1.0f, 0.0f, 0.0f), distance);
+
+        EXPECT_TRUE(rayHit);
+        EXPECT_NEAR(distance, 3.5f, 1e-2f);
+    }
 }

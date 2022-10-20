@@ -288,7 +288,7 @@ namespace LmbrCentral
             if (!m_boxShapeConfig.m_translationOffset.IsClose(translationOffset))
             {
                 m_boxShapeConfig.m_translationOffset = translationOffset;
-                m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::TransformChange);
+                m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::ShapeChange);
                 shapeChanged = true;
             }
         }
@@ -342,8 +342,8 @@ namespace LmbrCentral
         const ShapeDrawParams& shapeDrawParams, const BoxShapeConfig& boxShapeConfig,
         AzFramework::DebugDisplayRequests& debugDisplay, const AZ::Vector3& nonUniformScale)
     {
-        const AZ::Vector3 boxMin = boxShapeConfig.m_dimensions * nonUniformScale * -0.5f;
-        const AZ::Vector3 boxMax = boxShapeConfig.m_dimensions * nonUniformScale * 0.5f;
+        const AZ::Vector3 boxMin = nonUniformScale * (boxShapeConfig.m_dimensions * -0.5f + boxShapeConfig.m_translationOffset);
+        const AZ::Vector3 boxMax = nonUniformScale * (boxShapeConfig.m_dimensions * 0.5f + boxShapeConfig.m_translationOffset);
 
         if (shapeDrawParams.m_filled)
         {
