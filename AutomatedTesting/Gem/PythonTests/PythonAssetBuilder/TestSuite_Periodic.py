@@ -49,7 +49,8 @@ class TestAutomation(EditorTestSuite):
 
             # compute the file name to the .dbgsg file
             root, _ = os.path.splitext(instance.default_mat_file)
-            dbgsg_path = os.path.join(cache_folder, root + ".dbgsg").lower()
+            # The full path to the Asset Cache on Linux is not all lowercase
+            dbgsg_path = os.path.join(cache_folder, root + ".dbgsg")
             if os.path.isfile(dbgsg_path) == False:
                 raise Exception(f"Missing file {dbgsg_path}")
 
