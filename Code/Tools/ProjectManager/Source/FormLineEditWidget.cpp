@@ -31,8 +31,8 @@ namespace O3DE::ProjectManager
     {
         setObjectName("formLineEditWidget");
 
-        QVBoxLayout* mainLayout = new QVBoxLayout();
-        mainLayout->setAlignment(Qt::AlignTop);
+        m_mainLayout = new QVBoxLayout();
+        m_mainLayout->setAlignment(Qt::AlignTop);
         {
             m_frame = new QFrame(this);
             m_frame->setObjectName("formFrame");
@@ -83,16 +83,16 @@ namespace O3DE::ProjectManager
 
             m_frame->setLayout(m_frameLayout);
 
-            mainLayout->addWidget(m_frame);
+            m_mainLayout->addWidget(m_frame);
 
             m_errorLabel = new QLabel(this);
             m_errorLabel->setObjectName("formErrorLabel");
             m_errorLabel->setText(errorText);
             m_errorLabel->setVisible(false);
-            mainLayout->addWidget(m_errorLabel);
+            m_mainLayout->addWidget(m_errorLabel);
         }
 
-        setLayout(mainLayout);
+        setLayout(m_mainLayout);
     }
 
     FormLineEditWidget::FormLineEditWidget(const QString& labelText, const QString& valueText, QWidget* parent)

@@ -128,6 +128,8 @@ namespace AZ
             //! Called when the viewport is to be rendered.
             //! Add draws to this functions if they only need to be rendered to this viewport. 
             virtual void OnRenderTick(){};
+            //! Called as a sync point for any render jobs in flight
+            virtual void WaitForRender(){};
 
         protected:
             ~ViewportContextNotifications() = default;

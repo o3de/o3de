@@ -87,9 +87,9 @@ namespace UnitTest
 
         // Add another entity to the Instance and use it to update the PrefabDom of Template.
         AZ::Entity* entity2 = CreateEntity("Entity 2");
-        newInstance->AddEntity(*entity2);
         AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
             &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, AzToolsFramework::EntityList{entity2});
+        newInstance->AddEntity(*entity2);
         newTemplateEntityAliases = newInstance->GetEntityAliases();
         EXPECT_EQ(newTemplateEntityAliases.size(), 2);
 

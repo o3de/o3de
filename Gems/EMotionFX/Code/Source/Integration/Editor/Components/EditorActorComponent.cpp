@@ -219,11 +219,13 @@ namespace EMotionFX
             AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusConnect(entityId);
             AzToolsFramework::EditorVisibilityNotificationBus::Handler::BusConnect(entityId);
             AzFramework::BoundsRequestBus::Handler::BusConnect(entityId);
+            AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(GetEntityId());
         }
 
         //////////////////////////////////////////////////////////////////////////
         void EditorActorComponent::Deactivate()
         {
+            AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
             AzFramework::BoundsRequestBus::Handler::BusDisconnect();
             AzToolsFramework::EditorVisibilityNotificationBus::Handler::BusDisconnect();
             AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusDisconnect();
@@ -693,6 +695,15 @@ namespace EMotionFX
             {
                 m_renderActorInstance->OnTick(deltaTime);
                 m_renderActorInstance->UpdateBounds();
+            }
+        }
+
+        void EditorActorComponent::DisplayEntityViewport(
+            [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo,
+            [[maybe_unused]] AzFramework::DebugDisplayRequests& debugDisplay)
+        {
+            if (m_renderActorInstance)
+            {
                 m_renderActorInstance->DebugDraw(m_renderFlags);
             }
         }

@@ -136,6 +136,7 @@ namespace AZ
             void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline) override;
             void OnRenderPipelineAdded(RPI::RenderPipelinePtr renderPipeline) override;
             void OnRenderPipelineRemoved(RPI::RenderPipeline* renderPipeline) override;
+            void ApplyRenderPipelineChange(AZ::RPI::RenderPipeline* renderPipeline) override;
 
             void AddPassRequest(RPI::RenderPipeline* renderPipeline, const char* passRequestAssetFilePath, const char* insertionPointPassName);
             void UpdatePipelineStates();
