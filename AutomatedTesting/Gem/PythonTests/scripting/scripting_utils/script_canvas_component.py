@@ -94,8 +94,8 @@ class ScriptCanvasComponent:
 
         returns None
         """
-
         component_property_path = self.__make_variable_component_property_path(variable_name, variable_state)
+        print(variable_value)
         hydra.set_component_property_value(self.sc_component, component_property_path, variable_value)
 
         #validate the change

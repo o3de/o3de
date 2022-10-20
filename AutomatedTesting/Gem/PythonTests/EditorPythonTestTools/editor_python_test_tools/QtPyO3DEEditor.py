@@ -99,3 +99,13 @@ class QtPyO3DEEditor(QtPyCommon):
         hydra_entity.create_entity(position, component_list)
 
         return hydra_entity
+
+    def open_base_level(self) -> None:
+        """
+        function to open a clean slate level in editor. saves client an import requirement
+
+        returns None
+        """
+
+        hydra.open_base_level()
+

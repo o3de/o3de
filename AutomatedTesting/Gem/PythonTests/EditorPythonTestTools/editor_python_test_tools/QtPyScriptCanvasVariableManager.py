@@ -10,7 +10,7 @@ from editor_python_test_tools.utils import TestHelper as helper
 from PySide2 import QtWidgets, QtCore
 import pyside_utils
 from types import SimpleNamespace
-from consts.scripting import (VARIABLE_MANAGER_QT, VARIABLE_PALETTE_QT, ADD_BUTTON_QT, GRAPH_VARIABLES_QT)
+from consts.scripting import (VARIABLE_MANAGER_QT, VARIABLE_PALETTE_QT, ADD_BUTTON_QT, GRAPH_VARIABLES_QT, GRAPH_VARIABLES_PAGE_QT)
 from consts.general import (WAIT_TIME_SEC_1, WAIT_TIME_SEC_3)
 
 """
@@ -50,13 +50,14 @@ class QtPyScriptCanvasVariableManager():
         assert new_variable_type in VARIABLE_TYPES_DICT, \
             "Wrong type provided. new_variable_type is not a valid type"
 
-    def create_new_variable(self, new_variable_type: str) -> None:
+    def create_new_variable(self, variable_name: str, new_variable_type: str) -> QtCore.QItemSelection:
         """
         Function for adding a new variable to the variable manager's list
 
+        param variable_name: the name you want to give the new variable
         param new_variable_type: the type of variable you want to create provided as a string. Is case-sensitive!
 
-        returns: None
+        returns: Item selection reference for the newly created variable
         """
         self.__validate_new_variable(new_variable_type)
 
@@ -71,9 +72,44 @@ class QtPyScriptCanvasVariableManager():
         table_view = self.variable_manager.findChild(QtWidgets.QTableView, VARIABLE_PALETTE_QT)
         variable_entry = pyside_utils.find_child_by_pattern(table_view, new_variable_type)
 
+        # todo
+        # maybe put these 3 steps into a helper function
+        # maybe assert here ?
+
         # Click on it to create variable and wait 1 second for the UI to respond
         pyside_utils.item_view_index_mouse_click(table_view, variable_entry)
         helper.wait_for_condition(lambda: True is False, WAIT_TIME_SEC_1)
+
+        # Set the new variable's name. Wait 1 second for the UI to respond
+        graph_vars_page = self.variable_manager.findChild(QtWidgets.QWidget, GRAPH_VARIABLES_PAGE_QT)
+        line_edit = graph_vars_page.findChild(QtWidgets.QLineEdit, "")
+        line_edit.insert(variable_name)
+        helper.wait_for_condition(lambda: True is False, WAIT_TIME_SEC_1)
+
+        # Store our selection so we can return it. Clear the selection and wait 1 second for the UI to respond
+        selection_model = graph_vars_page.findChild(QtCore.QItemSelectionModel)
+        selection = selection_model.selection()
+        selection_model.clear()
+        helper.wait_for_condition(lambda: True is False, WAIT_TIME_SEC_1)
+
+        return selection
+
+    def select_variable_from_table(self, item_selection: QtCore.QItemSelection) -> None:
+        """
+        Function for selecting a variable from the table of created graph variables
+
+        params item_selection: the QtCore object reference to the variable in the table
+
+        returns None
+
+        """
+
+        graph_vars_page = self.variable_manager.findChild(QtWidgets.QWidget, GRAPH_VARIABLES_PAGE_QT)
+        selection_model = graph_vars_page.findChild(QtCore.QItemSelectionModel)
+        selection_model.select(item_selection, QtCore.QItemSelectionModel.Select)
+        helper.wait_for_condition(lambda: True is False, WAIT_TIME_SEC_1)
+
+        assert selection_model.selection() == item_selection, "Unable to select variable from variable manager table"
 
     def get_basic_variable_types(self):
         """
@@ -107,3 +143,4 @@ class QtPyScriptCanvasVariableManager():
         result = helper.wait_for_condition(lambda: expected == row_count, WAIT_TIME_SEC_3)
 
         assert result, "Variable count did not match expected value."
+

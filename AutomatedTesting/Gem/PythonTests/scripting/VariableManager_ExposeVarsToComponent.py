@@ -5,9 +5,9 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 # stub for when save file code is available
-SCRIPT_CANVAS_FILE_PATH = os.path.join(paths.projectroot, "ScriptCanvas", "test_file.scriptcanvas")
 ENTITY_NAME = "SC_Component_Variable_Entity"
 COMPONENT_LIST = ["Script Canvas"]
+VARIABLE_NAME = "Test Boolean"
 
 def VariableManager_ExposeVarsToComponent():
     """
@@ -35,23 +35,17 @@ def VariableManager_ExposeVarsToComponent():
     """
 
     # Preconditions
-    from PySide2 import QtWidgets, QtTest, QtCore
-    from editor_python_test_tools.utils import TestHelper as helper
-    from editor_python_test_tools.utils import Report
     from editor_python_test_tools.QtPyO3DEEditor import QtPyO3DEEditor
     from scripting_utils.script_canvas_component import ScriptCanvasComponent, VariableState
-    from scripting_utils.scripting_constants import (WAIT_TIME_3, SCRIPT_CANVAS_UI, VARIABLE_MANAGER_UI,
-                                                     VARIABLE_MANAGER_QT, VARIABLE_PALETTE_QT, GRAPH_VARIABLES_QT,
-                                                     ADD_BUTTON_QT, VARIABLE_TYPES)
     from editor_python_test_tools.QtPyScriptCanvasNodeInspector import BooleanCheckBoxValues
     import azlmbr.legacy.general as general
-    import pyside_utils
-    import azlmbr.math as math
+    from consts.scripting import (SCRIPT_CANVAS_TEST_FILE_PATH)
 
     general.idle_enable(True)
 
     # 1) Open Script Canvas window
     qtpy_o3de_editor = QtPyO3DEEditor()
+    qtpy_o3de_editor.open_base_level()
     sc_editor = qtpy_o3de_editor.open_script_canvas()
 
     # 2) Get the SC window, variable manager and node inspector objects
@@ -64,22 +58,32 @@ def VariableManager_ExposeVarsToComponent():
 
     # 5) Create variable of each type and change their initial value source to from component
     # The names of the variables will default to their type
-    boolean_type = VARIABLE_TYPES[0]
-    variable_manager.create_new_variable(boolean_type)
+    boolean_type = variable_manager.get_basic_variable_types().Boolean
+    selection_index = variable_manager.create_new_variable(VARIABLE_NAME, boolean_type)
+
+    # 6) Select the new variable in the variable manager so node inspector gets a target
+    variable_manager.select_variable_from_table(selection_index)
+
+    # 7) change the selected variable's intial value source to from Component (on)
     node_inspector.change_variable_initial_value_source(BooleanCheckBoxValues.On)
 
-    # 6) Save the file to disk
+    # 8) Save the file to disk
     #imagine a save file function call here
 
-    # 7) Create an entity w/ component in the O3DE editor and attach the file
+    # 8) Create an entity w/ component in the O3DE editor and attach the file
     hydra_entity = qtpy_o3de_editor.make_new_hydra_entity(ENTITY_NAME, COMPONENT_LIST)
     #do we want an entity class that can contain component types?
-    script_canvas_component = ScriptCanvasComponent(hydra_entity, SCRIPT_CANVAS_FILE_PATH)
+    script_canvas_component = ScriptCanvasComponent(hydra_entity, SCRIPT_CANVAS_TEST_FILE_PATH)
 
-    # 8) Verify the new variables are exposed properly by modifying one of them
-    #need to work on variable manager for extracting variable name
-    script_canvas_component.set_variable_value("Variable Name", VariableState.UNUSEDVARIABLE, BooleanCheckBoxValues.On)
+    # 9) Verify the new variables are exposed properly by modifying one of them
+    script_canvas_component.set_variable_value(VARIABLE_NAME, VariableState.UNUSEDVARIABLE, True)
 
 
-test = VariableManager_ExposeVarsToComponent()
-test.run_test()
+if __name__ == "__main__":
+
+    import ImportPathHelper as imports
+
+    imports.init()
+    from editor_python_test_tools.utils import Report
+
+    Report.start_test(VariableManager_ExposeVarsToComponent)
