@@ -20,3 +20,12 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
 
     class test_DeleteEntity_UnderNestedEntityHierarchy(EditorSharedTest):
         from .tests.delete_entity import DeleteEntity_UnderNestedEntityHierarchy as test_module
+
+    class test_InstantiatePrefab_LevelPrefab(EditorSharedTest):
+        from .tests.instantiate_prefab import InstantiatePrefab_LevelPrefab as test_module
+
+    class test_InstantiatePrefab_WithNestedEntities(EditorSharedTest):
+        from .tests.instantiate_prefab import InstantiatePrefab_WithNestedEntities as test_module
+
+    class test_InstantiatePrefab_WithNestedEntitiesAndNestedPrefabs(EditorSharedTest):
+        from .tests.instantiate_prefab import InstantiatePrefab_WithNestedEntitiesandNestedPrefabs as test_module
