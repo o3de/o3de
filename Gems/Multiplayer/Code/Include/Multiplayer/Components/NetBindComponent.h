@@ -214,6 +214,7 @@ namespace Multiplayer
         void HandleMarkedDirty();
         void HandleLocalServerRpcMessage(NetworkEntityRpcMessage& message);
         void HandleLocalAutonomousToAuthorityRpcMessage(NetworkEntityRpcMessage& message);
+        void HandleLocalAuthorityToAutonomousRpcMessage(NetworkEntityRpcMessage& message);
         void HandleLocalAuthorityToClientRpcMessage(NetworkEntityRpcMessage& message);
 
         void DetermineInputOrdering();
@@ -245,6 +246,7 @@ namespace Multiplayer
         AZ::Event<>           m_onRemove;
         RpcSendEvent::Handler m_handleLocalServerRpcMessageEventHandle;
         RpcSendEvent::Handler m_handleLocalAutonomousToAuthorityRpcMessageEventHandle;
+        RpcSendEvent::Handler m_handleLocalAuthorityToAutonomousRpcMessageEventHandle;
         RpcSendEvent::Handler m_handleLocalAuthorityToClientRpcMessageEventHandle;
         AZ::Event<>::Handler  m_handleMarkedDirty;
         AZ::Event<>::Handler  m_handleNotifyChanges;

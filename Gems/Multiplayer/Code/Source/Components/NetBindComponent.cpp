@@ -162,6 +162,7 @@ namespace Multiplayer
     NetBindComponent::NetBindComponent()
         : m_handleLocalServerRpcMessageEventHandle([this](NetworkEntityRpcMessage& message) { HandleLocalServerRpcMessage(message); })
         , m_handleLocalAutonomousToAuthorityRpcMessageEventHandle([this](NetworkEntityRpcMessage& message) { HandleLocalAutonomousToAuthorityRpcMessage(message); })
+        , m_handleLocalAuthorityToAutonomousRpcMessageEventHandle([this](NetworkEntityRpcMessage& message) { HandleLocalAuthorityToAutonomousRpcMessage(message); })
         , m_handleLocalAuthorityToClientRpcMessageEventHandle([this](NetworkEntityRpcMessage& message) { HandleLocalAuthorityToClientRpcMessage(message); })
         , m_handleMarkedDirty([this]() { HandleMarkedDirty(); })
         , m_handleNotifyChanges([this]() { NotifyLocalChanges(); })
@@ -200,6 +201,7 @@ namespace Multiplayer
             if (Multiplayer::GetMultiplayer()->GetAgentType() == MultiplayerAgentType::ClientServer)
             {
                 m_handleLocalAutonomousToAuthorityRpcMessageEventHandle.Connect(m_sendAutonomousToAuthorityRpcEvent);
+                m_handleLocalAuthorityToAutonomousRpcMessageEventHandle.Connect(m_sendAuthorityToAutonomousRpcEvent);
                 m_handleLocalAuthorityToClientRpcMessageEventHandle.Connect(m_sendAuthorityToClientRpcEvent);
             }
         }
@@ -813,6 +815,12 @@ namespace Multiplayer
     void NetBindComponent::HandleLocalAutonomousToAuthorityRpcMessage(NetworkEntityRpcMessage& message)
     {
         message.SetRpcDeliveryType(RpcDeliveryType::AutonomousToAuthority);
+        GetNetworkEntityManager()->HandleLocalRpcMessage(message);
+    }
+
+    void NetBindComponent::HandleLocalAuthorityToAutonomousRpcMessage(NetworkEntityRpcMessage& message)
+    {
+        message.SetRpcDeliveryType(RpcDeliveryType::AuthorityToAutonomous);
         GetNetworkEntityManager()->HandleLocalRpcMessage(message);
     }
 
