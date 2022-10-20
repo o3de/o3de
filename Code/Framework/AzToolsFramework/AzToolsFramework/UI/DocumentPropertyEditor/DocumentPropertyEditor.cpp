@@ -1025,9 +1025,6 @@ namespace AzToolsFramework
         // if we found a valid handler, grab its widget to add to the column layout
         if (handlerId)
         {
-            //auto descriptionString = AZ::Dpe::Nodes::PropertyEditor::Description.ExtractFromDomNode(domValue).value_or("");
-            //auto shouldDisable = AZ::Dpe::Nodes::PropertyEditor::Disabled.ExtractFromDomNode(domValue).value_or(false);
-
             // store, then reference the unique_ptr that will manage the handler's lifetime
             auto handler = AZ::Interface<PropertyEditorToolsSystemInterface>::Get()->CreateHandlerInstance(handlerId);
             handler->SetValueFromDom(domValue);
