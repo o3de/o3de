@@ -10,6 +10,7 @@ from PySide2 import QtWidgets
 import pyside_utils
 from editor_python_test_tools.QtPyScriptCanvasVariableManager import QtPyScriptCanvasVariableManager
 from editor_python_test_tools.QtPyScriptCanvasNodePalette import QtPyScriptCanvasNodePalette
+from editor_python_test_tools.QtPyScriptCanvasNodeInspector import QtPyScriptCanvasNodeInspector
 from consts.scripting import (SCRIPT_CANVAS_UI)
 
 
@@ -28,6 +29,8 @@ class QtPyScriptCanvasEditor():
         self.sc_editor_main_pane = self.sc_editor.findChild(QtWidgets.QMainWindow)
         self.variable_manager = QtPyScriptCanvasVariableManager(self)
         self.node_palette = QtPyScriptCanvasNodePalette(self)
+        self.node_inspector = QtPyScriptCanvasNodeInspector(self)
+
 
     def trigger_undo_action(self) -> None:
         """

@@ -15,6 +15,8 @@ from editor_python_test_tools.utils import TestHelper
 from consts.asset_editor import (ASSET_EDITOR_UI)
 from consts.scripting import (SCRIPT_CANVAS_UI)
 from consts.general import (WAIT_TIME_SEC_3)
+import azlmbr.math as math
+import editor_python_test_tools.hydra_editor_utils as hydra
 
 class Tests():
     script_canvas_editor_opened = ("Script Canvas Editor opened successfully", "Failed to open Script Canvas Editor")
@@ -90,3 +92,10 @@ class QtPyO3DEEditor(QtPyCommon):
                                                WAIT_TIME_SEC_3)
 
         assert result, "Failed to close Asset Editor"
+
+    def make_new_hydra_entity(self, entity_name: str, component_list: list, position=math.Vector3(512.0, 512.0, 32.0)) -> hydra.Entity:
+
+        hydra_entity = hydra.Entity(entity_name)
+        hydra_entity.create_entity(position, component_list)
+
+        return hydra_entity

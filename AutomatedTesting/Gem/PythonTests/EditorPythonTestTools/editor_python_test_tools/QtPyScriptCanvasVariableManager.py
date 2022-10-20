@@ -11,7 +11,7 @@ from PySide2 import QtWidgets, QtCore
 import pyside_utils
 from types import SimpleNamespace
 from consts.scripting import (VARIABLE_MANAGER_QT, VARIABLE_PALETTE_QT, ADD_BUTTON_QT, GRAPH_VARIABLES_QT)
-from consts.general import (WAIT_TIME_SEC_3)
+from consts.general import (WAIT_TIME_SEC_1, WAIT_TIME_SEC_3)
 
 """
 Basic variable types.
@@ -71,8 +71,9 @@ class QtPyScriptCanvasVariableManager():
         table_view = self.variable_manager.findChild(QtWidgets.QTableView, VARIABLE_PALETTE_QT)
         variable_entry = pyside_utils.find_child_by_pattern(table_view, new_variable_type)
 
-        # Click on it to create variable
+        # Click on it to create variable and wait 1 second for the UI to respond
         pyside_utils.item_view_index_mouse_click(table_view, variable_entry)
+        helper.wait_for_condition(lambda: True is False, WAIT_TIME_SEC_1)
 
     def get_basic_variable_types(self):
         """
