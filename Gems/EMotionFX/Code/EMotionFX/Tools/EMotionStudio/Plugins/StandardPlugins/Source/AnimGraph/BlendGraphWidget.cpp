@@ -1170,7 +1170,6 @@ namespace EMStudio
 
         // Delete all selected connections in the graph view first.
         AZStd::string commandString, sourceNodeName;
-        AZ::u32 numDeletedConnections = 0;
         const AZStd::vector<NodeConnection*> selectedConnections = GetActiveGraph()->GetSelectedNodeConnections();
         for (NodeConnection* selectedConnection : selectedConnections)
         {
@@ -1178,7 +1177,6 @@ namespace EMStudio
             if (emfxTransition)
             {
                 CommandSystem::DeleteStateTransition(&commandGroup, emfxTransition, transitionList);
-                numDeletedConnections++;
             }
             else
             {
@@ -1188,7 +1186,6 @@ namespace EMStudio
                 if (emfxConnection && emfxTargetNode)
                 {
                     CommandSystem::DeleteConnection(&commandGroup, emfxTargetNode, emfxConnection, connectionList);
-                    numDeletedConnections++;
                 }
             }
         }
