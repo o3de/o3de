@@ -11,7 +11,8 @@ import azlmbr.math as math
 from editor_python_test_tools.editor_entity_utils import EditorEntity
 from editor_python_test_tools.asset_utils import Asset
 
-COMPONENT_NAME = "PhysX Collider"
+from consts.physics import PHYSX_COLLIDER
+
 
 class PhysxCollider:
     """
@@ -21,7 +22,7 @@ class PhysxCollider:
     PhysxCollider constructor via PhysxCollider(EditorEntity).
     """
     def __init__(self, editor_entity: EditorEntity) -> None:
-        self.component = editor_entity.add_component(COMPONENT_NAME)
+        self.component = editor_entity.add_component(PHYSX_COLLIDER)
 
     class Path:
         """
