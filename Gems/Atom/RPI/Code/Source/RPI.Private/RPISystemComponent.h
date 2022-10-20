@@ -78,6 +78,11 @@ namespace AZ
 
             ///////////////////////////////////////////////////////////////////
             // Performance Collection
+
+            //! Returns "Graphics-<OS>-<RHI>" string, which will be part of the output filename.
+            //! It will make it easy to keep vulkan and dx12 results side by side.
+            AZStd::string GetLogCategory();
+
             void InitializePerformanceCollector();
 
             static constexpr AZStd::string_view PerformanceLogCategory = "Graphics";
