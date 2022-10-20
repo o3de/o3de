@@ -11,7 +11,7 @@ def PhysX_Collider_Component_CRUD():
     Creating a PhysX Collider and setting values to all properties that are supported via the Editor Context Bus.
 
     Expected Behavior:
-    Validates that Component CRUD can be performed without crashing.
+    Validates component Created, Read, Update, Delete (CRUD) and performs expected operations.
 
     PhysX Collider Components:
      - PhysX Collider
@@ -33,7 +33,7 @@ def PhysX_Collider_Component_CRUD():
     # Helper file Imports
     import os
 
-    from editor_python_test_tools.editor_component.physx_collider import PhysxCollider
+    from editor_python_test_tools.editor_component.physx_collider import EditorPhysxCollider as PhysxCollider
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import Tracer, TestHelper
 
@@ -87,8 +87,8 @@ def PhysX_Collider_Component_CRUD():
         physx_collider.set_cylinder_radius(2.5)
         physx_collider.set_cylinder_radius(256.0)
 
-        # physx_collider.set_cylinder_subdivision(0)  # GHI #12608 - Crash if subdivision set below 3
-        # physx_collider.set_cylinder_subdivision(-1)  # GHI #12608 - Crash if subdivision set below 3
+        #physx_collider.set_cylinder_subdivision(0)  # o3de/o3de#12608 - Crash if subdivision set below 3
+        # physx_collider.set_cylinder_subdivision(-1)  # o3de/o3de#12608 - Crash if subdivision set below 3
         physx_collider.set_cylinder_subdivision(3)
         physx_collider.set_cylinder_subdivision(125)
         # physx_collider.set_cylinder_subdivision(256)  # GHI #12608 - Crash if subdivision set above 125
@@ -102,11 +102,11 @@ def PhysX_Collider_Component_CRUD():
         physx_collider.set_sphere_radius(256.0)
 
         # 7) Set General Properties
-        physx_collider.toggle_trigger()
-        physx_collider.toggle_trigger()
+        physx_collider.toggle_is_trigger()
+        physx_collider.toggle_is_trigger()
 
-        physx_collider.toggle_simulated()
-        physx_collider.toggle_simulated()
+        physx_collider.toggle_is_simulated()
+        physx_collider.toggle_is_simulated()
 
         physx_collider.toggle_in_scene_queries()
         physx_collider.toggle_in_scene_queries()
@@ -121,7 +121,7 @@ def PhysX_Collider_Component_CRUD():
         physx_collider.set_rotation(2.5, 2.5, 2.5)
         physx_collider.set_rotation(255.0, 255.0, 255.0)
 
-        # TODO: GHI #12634 - For some reason I can't get this to work. Says it takes an AZStd::string,
+        # o3de/o3de#12634 - For some reason I can't get this to work. Says it takes an AZStd::string,
         #  but it won't take a python string or a character.
         # physx_collider.set_tag(Strings.NUMBER)
         # physx_collider.set_tag(Strings.CHARACTER)
@@ -142,7 +142,7 @@ def PhysX_Collider_Component_CRUD():
         physx_collider.toggle_draw_collider()
         physx_collider.toggle_draw_collider()
 
-        # GHI #12503 PhysX Collider Component's Physic Material field(s) return unintuitive property tree paths.
+        # o3de/o3de#12503 PhysX Collider Component's Physic Material field(s) return unintuitive property tree paths.
         # physx_collider.set_physx_material_from_path(physx_material)
 
     # 8) Set PhyicsAsset Shape and Child Properties
@@ -154,8 +154,8 @@ def PhysX_Collider_Component_CRUD():
         physx_collider.set_physx_mesh_asset_scale(2.5, 2.5, 2.5)
         physx_collider.set_physx_mesh_asset_scale(255.0, 255.0, 255.0)
 
-        physx_collider.toggle_physics_materials_from_asset()
-        physx_collider.toggle_physics_materials_from_asset()
+        physx_collider.toggle_use_physics_materials_from_asset()
+        physx_collider.toggle_use_physics_materials_from_asset()
 
     # 9) Delete Component
         physx_collider.component.remove()

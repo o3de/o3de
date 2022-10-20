@@ -14,19 +14,19 @@ from editor_python_test_tools.asset_utils import Asset
 from consts.physics import PHYSX_COLLIDER
 
 
-class PhysxCollider:
+class EditorPhysxCollider:
     """
-    PhysxCollider class is used to interact with the PhysXCollider Entity Componenet and its properties. This class
-        makes it easy for the user to interact with the PhysxCollider in a natural and easy-to-write/maintain way.
-    The PhysxCollider object stores a reference to an EditorComponenet and is created by passing an EditorEntity to the
-    PhysxCollider constructor via PhysxCollider(EditorEntity).
+    PhysxCollider class is used to interact with the PhysX Collider Entity Component and its properties. This class
+        makes it easy for the user to interact with the PhysX Collider in a natural and easy-to-write/maintain way.
+    The PhysxCollider object stores a reference to an EditorComponent and is created by passing an EditorEntity to the
+    PhysxCollider object constructor PhysxCollider(EditorEntity).
     """
     def __init__(self, editor_entity: EditorEntity) -> None:
         self.component = editor_entity.add_component(PHYSX_COLLIDER)
 
     class Path:
         """
-        A container class for the PropertyTree paths relevant to the Physx Collider. This tree can be returned by
+        A container class for the PropertyTree paths relevant to the PhysX Collider. This tree can be returned by
             calling self.component.get_property_type_visibility() which will also return the expected data type
             and visibility.
         """
@@ -58,7 +58,7 @@ class PhysxCollider:
         IN_SCENE_QUERIES = 'Collider Configuration|In Scene Queries'
         OFFSET = 'Collider Configuration|Offset'
         ROTATION = 'Collider Configuration|Rotation'
-        PHYSX_MATERIAL_ASSET = ']|'  # GH-12503 Needs a better property path
+        PHYSX_MATERIAL_ASSET = ']|'  # o3de/o3de#12503 Needs a better property path
         TAG = 'Collider Configuration|Tag'
         RESET_OFFSET = 'Collider Configuration|Rest offset'
         CONTACT_OFFSET = 'Collider Configuration|Contact offset'
@@ -66,21 +66,21 @@ class PhysxCollider:
         SHAPE = 'Shape Configuration|Shape'
 
     # General Properties
-    #TODO: GHI #12632 - Figure out how to set dropdowns for Collison Layer and Collides With
+    # o3de/o3de#12632 - Figure out how to set dropdowns for Collison Layer and Collides With
 
-    def toggle_trigger(self) -> None:
+    def toggle_is_trigger(self) -> None:
         """
         Property Type, Default Visibility - ('bool', 'Visible')
 
-        Used to toggle the Physx Collider's Trigger Property.
+        Used to toggle the PhysX Collider's Trigger Property.
         """
         self.component.toggle_property_switch(self.Path.TRIGGER)
 
-    def toggle_simulated(self) -> None:
+    def toggle_is_simulated(self) -> None:
         """
         Property Type, Default Visibility - ('bool', 'Visible')
 
-        Used to toggle the Physx Collider's Simulated Property.
+        Used to toggle the PhysX Collider's Simulated Property.
         """
         self.component.toggle_property_switch(self.Path.SIMULATED)
 
@@ -88,7 +88,7 @@ class PhysxCollider:
         """
         Property Type, Default Visibility - ('bool', 'Visible')
 
-        Used to toggle the Physx Collider's In Scene Queries Property.
+        Used to toggle the PhysX Collider's In Scene Queries Property.
         """
         self.component.toggle_property_switch(self.Path.IN_SCENE_QUERIES)
 
@@ -96,7 +96,7 @@ class PhysxCollider:
         """
         Property Type, Default Visibility - ('Vector3', 'Visible')
 
-        Used to set the Physx Collider's Offset Property.
+        Used to set the PhysX Collider's Offset Property.
         """
         self.component.set_component_property_value(self.Path.OFFSET, math.Vector3(float(x), float(y), float(z)))
 
@@ -104,7 +104,7 @@ class PhysxCollider:
         """
         Property Type, Default Visibility - ('Quaternion', 'Visible')
 
-        Used to set the Physx Collider's Rotation Property.
+        Used to set the PhysX Collider's Rotation Property.
         """
         rotation = math.Quaternion()
         rotation.SetFromEulerDegrees(math.Vector3(float(x), float(y), float(z)))
@@ -114,9 +114,9 @@ class PhysxCollider:
         """
         Property Type, Default Visibility - ('AZStd::string', 'Visible')
 
-        Used to set the Physx Collider's Tag Property.
+        Used to set the PhysX Collider's Tag Property.
         """
-        # TODO: GHI #12634 - For some reason I can't get this to work. Says it takes an AZStd::string, but it won't take
+        # o3de/o3de#12634 - For some reason I can't get this to work. Says it takes an AZStd::string, but it won't take
         #  one or a character.
         assert NotImplementedError
         self.component.set_component_property_value(self.Path.TAG, tag)
@@ -125,7 +125,7 @@ class PhysxCollider:
         """
         Property Type, Default Visibility - ('float', 'Visible')
 
-        Used to set the Physx Collider's Reset Offset Property.
+        Used to set the PhysX Collider's Reset Offset Property.
         """
         self.component.set_component_property_value(self.Path.RESET_OFFSET, offset)
 
@@ -133,7 +133,7 @@ class PhysxCollider:
         """
         Property Type, Default Visibility - ('float', 'Visible')
 
-        Used to set the Physx Collider's Contact Offset Property.
+        Used to set the PhysX Collider's Contact Offset Property.
         """
         self.component.set_component_property_value(self.Path.CONTACT_OFFSET, offset)
 
@@ -141,7 +141,7 @@ class PhysxCollider:
         """
         Property Type, Default Visibility - ('bool', 'Visible')
 
-        Used to toggle the Physx Collider's Draw Collider Property.
+        Used to toggle the PhysX Collider's Draw Collider Property.
         """
         self.component.toggle_property_switch(self.Path.DRAW_COLLIDER)
 
@@ -149,13 +149,13 @@ class PhysxCollider:
         """
         Property Type, Default Visibility - ('Asset<Physics::MaterialAsset>', 'Visible')
 
-        Used to set the Physx Collider's PhysX Material from a user provided asset product path. This will return an
+        Used to set the PhysX Collider's PhysX Material from a user provided asset product path. This will return an
             error if a source path is provided.
         """
-        # GHI #12503 PhysX Collider Component's Physic Material field(s) return unintuitive property tree paths.
+        # o3de/o3de#12503 PhysX Collider Component's Physic Material field(s) return unintuitive property tree paths.
         assert NotImplementedError
         assert self.component.is_property_visible(self.Path.PHYSX_MATERIAL_ASSET), \
-            f"Failure: Cannot set Physx Material when property is not visible."
+            f"Failure: Cannot set PhysX Material when property is not visible."
 
         px_material = Asset.find_asset_by_path(asset_product_path)
         self.component.set_component_property_value(self.Path.PHYSX_MATERIAL_ASSET, px_material.id)
@@ -165,7 +165,7 @@ class PhysxCollider:
         """
         Property Type, Default Visibility - ('BoxShapeConfiguration', 'NotVisible')
 
-        Used to set the Physx Collider's Shape property to Box.
+        Used to set the PhysX Collider's Shape property to Box.
         """
         self.component.set_component_property_value(self.Path.SHAPE, physics.ShapeType_Box)
 
@@ -173,7 +173,7 @@ class PhysxCollider:
         """
         Property Type, Default Visibility - ('Vector3', 'Visible')
 
-        Used to set the Physx Collider's Box Shape's dimensions.
+        Used to set the PhysX Collider's Box Shape's dimensions.
         """
         assert self.component.is_property_visible(self.Path.Box.DIMENSIONS), \
             f"Failure: Cannot set box dimensions when property is not visible."
@@ -186,7 +186,7 @@ class PhysxCollider:
         """
         Property Type, Default Visibility - ('CapsuleShapeConfiguration', 'NotVisible')
 
-        Used to set the Physx Collider's Shape property to Capsule.
+        Used to set the PhysX Collider's Shape property to Capsule.
         """
         self.component.set_component_property_value(self.Path.SHAPE, physics.ShapeType_Capsule)
 
@@ -194,7 +194,7 @@ class PhysxCollider:
         """
         Property Type, Default Visibility - ('float', 'Visible')
 
-        Used to set the Physx Collider's Capsule Shape's height.
+        Used to set the PhysX Collider's Capsule Shape's height.
         """
         assert self.component.is_property_visible(self.Path.Capsule.HEIGHT), \
             f"Failure: Cannot set capsule height when property is not visible. Set the shape to capsule first."
@@ -205,19 +205,19 @@ class PhysxCollider:
         """
         Property Type, Default Visibility - ('float', 'Visible')
 
-        Used to set the Physx Collider's Capsule Shape's radius.
+        Used to set the PhysX Collider's Capsule Shape's radius.
         """
         assert self.component.is_property_visible(self.Path.Capsule.RADIUS), \
             f"Failure: Cannot set capsule radius when property is not visible. Set the shape to capsule first."
 
-        self.component.set_component_property_value(self.Path.Capsule.HEIGHT, float(radius))
+        self.component.set_component_property_value(self.Path.Capsule.RADIUS, float(radius))
 
     # Shape: Cylinder
     def set_cylinder_shape(self) -> None:
         """
         Property Type, Default Visibility - ('EditorProxyCylinderShapeConfig', 'NotVisible')
 
-        Used to set the Physx Collider's Shape property to Cylinder.
+        Used to set the PhysX Collider's Shape property to Cylinder.
         """
         self.component.set_component_property_value(self.Path.SHAPE, physics.ShapeType_Cylinder)
 
@@ -225,7 +225,7 @@ class PhysxCollider:
         """
         Property Type, Default Visibility - ('unsigned char', 'Visible')
 
-        Used to set the Physx Collider's Cylinder Shape's subdivision. Subdivision supports int values [3-125].
+        Used to set the PhysX Collider's Cylinder Shape's subdivision. Subdivision supports int values [3-125].
         """
         assert self.component.is_property_visible(self.Path.Cylinder.SUBDIVISION), \
             f"Failure: Cannot set cylinder subdivisions when property is not visible. Set the shape to cylinder first."
@@ -236,7 +236,7 @@ class PhysxCollider:
         """
         Property Type, Default Visibility - ('float', 'Visible')
 
-        Used to set the Physx Collider's Cylinder Shape's height.
+        Used to set the PhysX Collider's Cylinder Shape's height.
         """
         assert self.component.is_property_visible(self.Path.Cylinder.HEIGHT), \
             f"Failure: Cannot set cylinder height when property is not visible. Set the shape to cylinder first."
@@ -247,7 +247,7 @@ class PhysxCollider:
         """
         Property Type, Default Visibility - ('float', 'Visible')
 
-        Used to set the Physx Collider's Cylinder Shape's radius.
+        Used to set the PhysX Collider's Cylinder Shape's radius.
         """
         assert self.component.is_property_visible(self.Path.Cylinder.RADIUS), \
             f"Failure: Cannot set cylinder radius when property is not visible. Set the shape to cylinder first."
@@ -259,7 +259,7 @@ class PhysxCollider:
         """
         Property Type, Default Visibility - ('PhysicsAssetShapeConfiguration', 'ShowChildrenOnly')
 
-        Used to set the Physx Collider's Shape property to PhysicsAsset.
+        Used to set the PhysX Collider's Shape property to PhysicsAsset.
         """
         self.component.set_component_property_value(self.Path.SHAPE, physics.ShapeType_PhysicsAsset)
 
@@ -267,7 +267,7 @@ class PhysxCollider:
         """
         Property Type, Default Visibility - ('Asset<MeshAsset>', 'Visible')
 
-        Used to set the Physx Collider's PhysicsAsset Shape's Physx Mesh from a user provided asset product path.
+        Used to set the PhysX Collider's PhysicsAsset Shape's PhysX Mesh from a user provided asset product path.
             This will return an error if a source path is provided.
         """
         assert self.component.is_property_visible(self.Path.PhysicsAsset.PHYSX_MESH), \
@@ -280,7 +280,7 @@ class PhysxCollider:
         """
         Property Type, Default Visibility - ('Vector3', 'Visible')
 
-        Used to set the Physx Collider's Physx Mesh Asset Scale.
+        Used to set the PhysX Collider's PhysX Mesh Asset Scale.
         """
         assert self.component.is_property_visible(self.Path.PhysicsAsset.ASSET_SCALE), \
             f"Failure: Cannot set Physics Mesh Asset Scale when property is not visible."
@@ -288,11 +288,11 @@ class PhysxCollider:
         self.component.set_component_property_value(self.Path.PhysicsAsset.ASSET_SCALE,
                                                     math.Vector3(float(x), float(y), float(z)))
 
-    def toggle_physics_materials_from_asset(self) -> None:
+    def toggle_use_physics_materials_from_asset(self) -> None:
         """
         Property Type, Default Visibility - ('bool', 'Visible')}
 
-        Used to toggle the Physx Collider's Physics Materials From Asset. This allows the user to toggle between
+        Used to toggle the PhysX Collider's Physics Materials From Asset. This allows the user to toggle between
             using the asset provided PhysX Materials, or to override them using the PhysX Collider's PhysX Materials
             property.
         """
@@ -306,7 +306,7 @@ class PhysxCollider:
         """
         Property Type, Default Visibility - ('SphereShapeConfiguration', 'NotVisible')
 
-        Used to set the Physx Collider's Shape property to Sphere.
+        Used to set the PhysX Collider's Shape property to Sphere.
         """
         self.component.set_component_property_value(self.Path.SHAPE, physics.ShapeType_Sphere)
 
@@ -314,6 +314,9 @@ class PhysxCollider:
         """
         Property Type, Default Visibility - ('float', 'Visible')
 
-        Used to set the Physx Collider's Sphere radius property.
+        Used to set the PhysX Collider's Sphere radius property.
         """
+        assert self.component.is_property_visible(self.Path.Sphere.RADIUS), \
+            f"Failure: Cannot toggle Shpere Radius when property is not visible."
+
         self.component.set_component_property_value(self.Path.Sphere.RADIUS, radius)
