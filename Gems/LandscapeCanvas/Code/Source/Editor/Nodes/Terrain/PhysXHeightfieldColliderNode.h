@@ -34,7 +34,7 @@ namespace LandscapeCanvas
 
         const BaseNodeType GetBaseNodeType() const override;
 
-        static const QString TITLE;
+        static const char* TITLE;
         const char* GetTitle() const override;
     };
 }

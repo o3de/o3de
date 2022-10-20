@@ -1,30 +1,22 @@
 {
-    "description": "",
-    "materialType": "Materials/Types/StandardPBR.materialtype",
-    "parentMaterial": "",
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
     "materialTypeVersion": 5,
-    "properties": {
-        "baseColor": {
-            "color": [
-                0.5,
-                0.5,
-                0.5,
-                1.0
-            ],
-            "textureMap": "Objects/cloth/Chicken/Actor/chicken_diff.png"
-        },
-        "emissive": {
-            "color": [
-                0.7454043626785278,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "intensity": 6.742737293243408,
-            "textureMap": "Objects/cloth/Chicken/Actor/chicken_diff.png"
-        },
-        "opacity": {
-            "factor": 1.0
-        }
+    "propertyValues": {
+        "baseColor.color": [
+            0.5,
+            0.5,
+            0.5,
+            1.0
+        ],
+        "baseColor.textureMap": "chicken_diff.png",
+        "emissive.color": [
+            0.7454043626785278,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "emissive.intensity": 6.742737293243408,
+        "emissive.textureMap": "chicken_diff.png",
+        "opacity.factor": 1.0
     }
 }

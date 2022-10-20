@@ -33,7 +33,7 @@ namespace Vegetation
         float m_slopeMax = 180.0f;
     };
 
-    static const AZ::Uuid SurfaceSlopeFilterComponentTypeId = "{2938AA64-9B84-4B18-A90F-25798A255B8C}";
+    inline constexpr AZ::TypeId SurfaceSlopeFilterComponentTypeId{ "{2938AA64-9B84-4B18-A90F-25798A255B8C}" };
 
     /**
     * Component implementing VegetationFilterRequestBus that accepts/rejects based on slope

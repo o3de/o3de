@@ -45,7 +45,7 @@ namespace AZ
                 m_assImpMaterial->GetTextureCount(aiTextureType_AMBIENT), m_assImpMaterial->GetTextureCount(aiTextureType_EMISSIVE));
             fingerprintString.append(extraInformation);
             AZ::Sha1 sha;
-            sha.ProcessBytes(fingerprintString.data(), fingerprintString.size());
+            sha.ProcessBytes(AZStd::as_bytes(AZStd::span(fingerprintString)));
             AZ::u32 digest[5]; //sha1 populate a 5 element array of AZ:u32
             sha.GetDigest(digest);
             return (static_cast<AZ::u64>(digest[0]) << 32) | digest[1];

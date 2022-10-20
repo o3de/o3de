@@ -498,7 +498,7 @@ namespace AZ
 
     namespace Internal
     {
-        const AZ::TypeId& GetUnderlyingTypeId(const IRttiHelper& enumRttiHelper);
+        AZ::TypeId GetUnderlyingTypeId(const IRttiHelper& enumRttiHelper);
 
         // Converts sourceAddress to targetType
         inline bool ConvertValueTo(void* sourceAddress, const IRttiHelper* sourceRtti, const AZ::Uuid& targetType, void*& targetAddress, BehaviorParameter::TempValueParameterAllocator& tempAllocator)
@@ -1230,7 +1230,7 @@ namespace AZ
         template<class Getter, class Setter>
         bool Set(Getter getter, Setter setter, BehaviorClass* currentClass, BehaviorContext* context);
 
-        const AZ::Uuid& GetTypeId() const;
+        AZ::TypeId GetTypeId() const;
 
         AZStd::string m_name;
         BehaviorMethod* m_getter;

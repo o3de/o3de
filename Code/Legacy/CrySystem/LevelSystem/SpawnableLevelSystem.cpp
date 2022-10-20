@@ -82,7 +82,9 @@ namespace LegacyLevelSystem
         }
 
         AzFramework::RootSpawnableNotificationBus::Handler::BusConnect();
-        AzFramework::LevelSystemLifecycleRequestBus::Handler::BusConnect();
+
+        AZ_Error("SpawnableLevelSystem", AzFramework::LevelSystemLifecycleInterface::Get() == this,
+            "Failed to register the SpawnableLevelSystem with the LevelSystemLifecycleInterface.");
 
         // If there were LoadLevel command invocations before the creation of the level system
         // then those invocations were queued.
@@ -106,7 +108,6 @@ namespace LegacyLevelSystem
     //------------------------------------------------------------------------
     SpawnableLevelSystem::~SpawnableLevelSystem()
     {
-        AzFramework::LevelSystemLifecycleRequestBus::Handler::BusDisconnect();
         AzFramework::RootSpawnableNotificationBus::Handler::BusDisconnect();
     }
 
@@ -115,14 +116,9 @@ namespace LegacyLevelSystem
         delete this;
     }
 
-    bool SpawnableLevelSystem::IsLevelLoaded()
+    bool SpawnableLevelSystem::IsLevelLoaded() const
     {
         return m_bLevelLoaded;
-    }
-
-    AZStd::string SpawnableLevelSystem::GetCurrentLevelName()
-    {
-        return m_bLevelLoaded ? m_lastLevelName : "";
     }
 
     const char* SpawnableLevelSystem::GetCurrentLevelName() const
@@ -210,7 +206,7 @@ namespace LegacyLevelSystem
         AZStd::string validLevelName;
         AZ::Data::AssetId rootSpawnableAssetId;
         AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-            rootSpawnableAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, levelName, nullptr, false);
+            rootSpawnableAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, levelName, AZ::Data::AssetType{}, false);
 
         if (rootSpawnableAssetId.IsValid())
         {
@@ -227,7 +223,7 @@ namespace LegacyLevelSystem
 
                 AZ::Data::AssetCatalogRequestBus::BroadcastResult(
                     rootSpawnableAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, possibleLevelAssetPath.c_str(),
-                    nullptr, false);
+                    AZ::Data::AssetType{}, false);
 
                 if (rootSpawnableAssetId.IsValid())
                 {
@@ -288,7 +284,7 @@ namespace LegacyLevelSystem
 
         AZ::Data::AssetId rootSpawnableAssetId;
         AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-            rootSpawnableAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, levelName, nullptr, false);
+            rootSpawnableAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, levelName, AZ::Data::AssetType{}, false);
         if (!rootSpawnableAssetId.IsValid())
         {
             OnLoadingError(levelName, "AssetCatalog has no entry for the requested level.");
@@ -365,6 +361,11 @@ namespace LegacyLevelSystem
 
         GetISystem()->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_LOAD_END, 0, 0);
 
+        if (auto cvar = gEnv->pConsole->GetCVar("sv_map"); cvar)
+        {
+            cvar->Set(levelName);
+        }
+
         gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_PRECACHE_START, 0, 0);
 
         return true;
@@ -375,7 +376,7 @@ namespace LegacyLevelSystem
     {
         AZ::Data::AssetId rootSpawnableAssetId;
         AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-            rootSpawnableAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, levelName, nullptr, false);
+            rootSpawnableAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, levelName, AZ::Data::AssetType{}, false);
         if (!rootSpawnableAssetId.IsValid())
         {
             // alert the listener

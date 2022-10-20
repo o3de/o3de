@@ -1,7 +1,7 @@
 {
-    "materialType": "Materials/Types/StandardMultilayerPBR.materialtype",
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardMultilayerPBR.materialtype",
     "materialTypeVersion": 3,
-    "parentMaterial": "TestData/Materials/StandardMultilayerPbrTestCases/005_UseDisplacement_With_BlendMaskTexture.material",
+    "parentMaterial": "005_UseDisplacement_With_BlendMaskTexture.material",
     "propertyValues": {
         "layer1_parallax.offset": -0.03200000151991844,
         "layer1_parallax.textureMap": "",

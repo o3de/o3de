@@ -74,7 +74,7 @@ private:
 
 class CLevelSystem
     : public ILevelSystem
-    , AzFramework::LevelSystemLifecycleRequestBus::Handler
+    , AzFramework::LevelSystemLifecycleInterface::Registrar
 {
 public:
     CLevelSystem(ISystem* pSystem, const char* levelsFolder);
@@ -93,15 +93,10 @@ public:
 
     bool LoadLevel(const char* levelName) override;
     void UnloadLevel() override;
-    bool IsLevelLoaded() override { return m_bLevelLoaded; }
-    AZStd::string GetCurrentLevelName() override
-    {
-        if (m_pCurrentLevel && m_pCurrentLevel->GetLevelInfo())
-        {
-            return m_pCurrentLevel->GetLevelInfo()->GetName();
-        }
-        return "";
-    }
+
+    //! AzFramework::LevelSystemLifecycleInterface overrides.
+    //! @{
+    bool IsLevelLoaded() const override { return m_bLevelLoaded; }
 
     const char* GetCurrentLevelName() const override
     {
@@ -111,6 +106,7 @@ public:
         }
         return "";
     }
+    //! @}
 
     // If the level load failed then we need to have a different shutdown procedure vs when a level is naturally unloaded
     void SetLevelLoadFailed(bool loadFailed) override { m_levelLoadFailed = loadFailed; }

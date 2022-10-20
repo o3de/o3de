@@ -343,7 +343,7 @@ namespace AZ
             void AddJob(AssetDatabaseJob* job);
             void RemoveJob(AssetDatabaseJob* job);
             void AddActiveStreamerRequest(AssetId assetId, AZStd::shared_ptr<AssetDataStream> readRequest);
-            void RescheduleStreamerRequest(AssetId assetId, AZStd::chrono::milliseconds newDeadline, AZ::IO::IStreamerTypes::Priority newPriority);
+            void RescheduleStreamerRequest(AssetId assetId, AZ::IO::IStreamerTypes::Deadline newDeadline, AZ::IO::IStreamerTypes::Priority newPriority);
             void RemoveActiveStreamerRequest(AssetId assetId);
             void AddBlockingRequest(AssetId assetId, WaitForAsset* blockingRequest);
             void RemoveBlockingRequest(AssetId assetId, WaitForAsset* blockingRequest);

@@ -19,10 +19,23 @@ namespace UnitTest
         EXPECT_TRUE(outcome.IsSuccess());
     }
 
-    TEST_F(ActionManagerFixture, RegisterMenuToolBar)
+    TEST_F(ActionManagerFixture, RegisterToolBarTwice)
     {
         m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
         auto outcome = m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, RegisterToolBarArea)
+    {
+        auto outcome = m_toolBarManagerInterface->RegisterToolBarArea("o3de.toolbararea.test", m_mainWindow, Qt::ToolBarArea::TopToolBarArea);
+        EXPECT_TRUE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, RegisterToolBarAreaTwice)
+    {
+        m_toolBarManagerInterface->RegisterToolBarArea("o3de.toolbararea.test", m_mainWindow, Qt::ToolBarArea::TopToolBarArea);
+        auto outcome = m_toolBarManagerInterface->RegisterToolBarArea("o3de.toolbararea.test", m_mainWindow, Qt::ToolBarArea::TopToolBarArea);
         EXPECT_FALSE(outcome.IsSuccess());
     }
 
@@ -312,6 +325,49 @@ namespace UnitTest
         EXPECT_EQ(actions[0], test1);
         EXPECT_TRUE(actions[1]->isSeparator());
         EXPECT_EQ(actions[2], test2);
+    }
+
+    TEST_F(ActionManagerFixture, AddToolBarToUnregisteredToolBarArea)
+    {
+        m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
+
+        auto outcome = m_toolBarManagerInterface->AddToolBarToToolBarArea("o3de.toolbararea.test", "o3de.toolbar.test", 42);
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, AddToolBarToToolBarArea)
+    {
+        m_toolBarManagerInterface->RegisterToolBarArea("o3de.toolbararea.test", m_mainWindow, Qt::ToolBarArea::TopToolBarArea);
+        m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
+
+        auto outcome = m_toolBarManagerInterface->AddToolBarToToolBarArea("o3de.toolbararea.test", "o3de.toolbar.test", 42);
+        EXPECT_TRUE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, AddToolBarToToolBarAreaTwice)
+    {
+        m_toolBarManagerInterface->RegisterToolBarArea("o3de.toolbararea.test", m_mainWindow, Qt::ToolBarArea::TopToolBarArea);
+        m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
+
+        m_toolBarManagerInterface->AddToolBarToToolBarArea("o3de.toolbararea.test", "o3de.toolbar.test", 42);
+        auto outcome = m_toolBarManagerInterface->AddToolBarToToolBarArea("o3de.toolbararea.test", "o3de.toolbar.test", 42);
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, VerifyToolBarInToolBarArea)
+    {
+        m_toolBarManagerInterface->RegisterToolBarArea("o3de.toolbararea.test", m_mainWindow, Qt::ToolBarArea::TopToolBarArea);
+        m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
+
+        // Add the toolbar to the toolbar area.
+        m_toolBarManagerInterface->AddToolBarToToolBarArea("o3de.toolbararea.test", "o3de.toolbar.test", 42);
+
+        // Manually trigger toolbar refresh - Editor will call this once per tick.
+        m_toolBarManagerInternalInterface->RefreshToolBarAreas();
+
+        // Verify the toolbar is now in the toolbar area.
+        QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
+        EXPECT_EQ(m_mainWindow->toolBarArea(toolBar), Qt::ToolBarArea::TopToolBarArea);
     }
 
     TEST_F(ActionManagerFixture, GetSortKeyOfActionInToolBar)

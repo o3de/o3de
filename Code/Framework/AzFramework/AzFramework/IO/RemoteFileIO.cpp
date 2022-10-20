@@ -14,6 +14,7 @@
 #ifdef REMOTEFILEIO_CACHE_FILETREE
 #include <AzCore/std/string/wildcard.h>
 #endif
+#include <AzCore/std/time.h>
 
 #include <AzFramework/Asset/AssetProcessorMessages.h>
 #include <AzFramework/Network/AssetProcessorConnection.h>

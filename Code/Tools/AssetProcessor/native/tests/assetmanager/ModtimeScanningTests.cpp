@@ -44,6 +44,10 @@ namespace UnitTests
             });
     }
 
+    void ModtimeScanningTest::PopulateDatabase()
+    {
+    }
+
     void ModtimeScanningTest::SetUp()
     {
         using namespace AssetProcessor;
@@ -261,7 +265,6 @@ namespace UnitTests
         AssetUtilities::SetUseFileHashOverride(true, true);
 
         // Enable android platform after the initial SetUp has already processed the files for pc
-        QDir tempPath(m_tempDir.path());
         AssetBuilderSDK::PlatformInfo androidPlatform("android", { "host", "renderer" });
         m_config->EnablePlatform(androidPlatform, true);
 
@@ -476,14 +479,13 @@ namespace UnitTests
     TEST_F(ModtimeScanningTest, ReprocessRequest_SourceWithDependency_BothWillProcess)
     {
         using namespace AzToolsFramework::AssetSystem;
-
-        using SourceFileDependencyEntry = AzToolsFramework::AssetDatabase::SourceFileDependencyEntry;
+        using namespace AzToolsFramework::AssetDatabase;
 
         SourceFileDependencyEntry newEntry1;
         newEntry1.m_sourceDependencyID = AzToolsFramework::AssetDatabase::InvalidEntryId;
         newEntry1.m_builderGuid = AZ::Uuid::CreateRandom();
-        newEntry1.m_source = m_data->m_absolutePath[0].toUtf8().constData();
-        newEntry1.m_dependsOnSource = m_data->m_absolutePath[1].toUtf8().constData();
+        newEntry1.m_sourceGuid = AZ::Uuid{ "{C0BD819A-F84E-4A56-A6A5-917AE3ECDE53}" };
+        newEntry1.m_dependsOnSource = PathOrUuid(m_data->m_absolutePath[1].toUtf8().constData());
         newEntry1.m_typeOfDependency = SourceFileDependencyEntry::DEP_SourceToSource;
 
         m_assetProcessorManager->RequestReprocess(m_data->m_absolutePath[0]);
@@ -626,9 +628,9 @@ namespace UnitTests
         };
 
         // Create test files
-        QDir tempPath(m_tempDir.path());
-        const auto* scanFolder1 = m_config->GetScanFolderByPath(tempPath.absoluteFilePath("subfolder1"));
-        const auto* scanFolder4 = m_config->GetScanFolderByPath(tempPath.absoluteFilePath("subfolder4"));
+        QDir assetRootPath(m_assetRootDir);
+        const auto* scanFolder1 = m_config->GetScanFolderByPath(assetRootPath.absoluteFilePath("subfolder1"));
+        const auto* scanFolder4 = m_config->GetScanFolderByPath(assetRootPath.absoluteFilePath("subfolder4"));
 
         createFileAndAddToDatabaseFunc(scanFolder1, QString("textures/a.txt"));
         createFileAndAddToDatabaseFunc(scanFolder4, QString("textures/b.txt"));
@@ -669,8 +671,8 @@ namespace UnitTests
         ExpectNoWork();
 
         // Delete one of the folders
-        QDir tempPath(m_tempDir.path());
-        QString absPath(tempPath.absoluteFilePath("subfolder1/textures"));
+        QDir assetRootPath(m_assetRootDir);
+        QString absPath(assetRootPath.absoluteFilePath("subfolder1/textures"));
         QDir(absPath).removeRecursively();
 
         AZStd::vector<AZStd::string> deletedFolders;

@@ -32,7 +32,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString DistributionFilterNode::TITLE = QObject::tr("Distribution Filter");
+    const char* DistributionFilterNode::TITLE = "Distribution Filter";
 
     DistributionFilterNode::DistributionFilterNode(GraphModel::GraphPtr graph)
         : BaseAreaFilterNode(graph)

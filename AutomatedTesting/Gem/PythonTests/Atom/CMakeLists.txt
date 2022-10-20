@@ -126,4 +126,32 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         COMPONENT
             Atom
     )
+    ly_add_pytest(
+        NAME AutomatedTesting::Atom_Main_Null_Render_MaterialCanvas
+        TEST_SUITE main
+        TEST_SERIAL
+        TIMEOUT 700
+        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Main_Null_Render_MaterialCanvas_01.py
+        RUNTIME_DEPENDENCIES
+            AssetProcessor
+            AutomatedTesting.Assets
+            MaterialCanvas
+        COMPONENT
+            Atom
+    )
+    ly_add_pytest(
+        NAME AutomatedTesting::Atom_Periodic_Null_Render_01
+        TEST_SUITE periodic
+        TEST_SERIAL
+        TIMEOUT 1200
+        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Periodic_Null_Render_01.py
+        RUNTIME_DEPENDENCIES
+            AssetProcessor
+            AutomatedTesting.Assets
+            Editor
+            MaterialCanvas
+            MaterialEditor
+        COMPONENT
+            Atom
+    )
 endif()

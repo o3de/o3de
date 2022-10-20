@@ -27,8 +27,8 @@ namespace Multiplayer
         static constexpr int MaxMessageLength = 256;
         static constexpr float ScrimAlpha = 0.6f;
 
-        static constexpr AZ::TimeMs CenterViewportDebugToastTimePerWord = AZ::TimeMs{ 240 }; // Average reading speed is 250 words per minute (240 ms)
-        static constexpr AZ::TimeMs CenterViewportDebugToastTimePrefix = AZ::TimeMs{ 1500 }; // Give viewers 1.5 seconds to notice the toast
+        static constexpr AZ::TimeMs CenterViewportDebugToastTimePerWord = AZ::TimeMs{ 300 }; // Consider reading speed to be 200 words per minute (300 ms)
+        static constexpr AZ::TimeMs CenterViewportDebugToastTimePrefix = AZ::TimeMs{ 2000 }; // Give viewers 2.0 seconds to notice the toast
         static constexpr AZ::TimeMs CenterViewportDebugToastTimeFade = AZ::TimeMs{ 1000 }; // Milliseconds toast takes to fade out
 
         // Messaging for client during editor play mode
@@ -108,6 +108,13 @@ namespace Multiplayer
         // Render a scrim (a gentle background shading) to create contrast in order that the debug text in the foreground is readable.
         // Make scrim most pronounced from the center of the screen and fade out towards the top and bottom on the screen.
         void DrawScrim(float alphaMultiplier = 1.0f) const;
+
+        // Draws a message in the center of the viewport
+        // @param title text is displayed over the message
+        // @param title color is color of the title. Generally yellow or red (in the case of an error)
+        // @param message to display
+        // @param alpha value of the message (useful for fading out the message over time)
+        void DrawCenterViewportMessage(const char* title, const AZ::Color& titleColor, const char* message, float alpha);
 
         AZStd::fixed_string<MaxMessageLength> m_centerViewportDebugText;
         AZ::Color m_centerViewportDebugTextColor = AZ::Colors::Yellow;

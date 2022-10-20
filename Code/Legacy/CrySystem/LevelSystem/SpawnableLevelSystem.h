@@ -20,7 +20,7 @@ namespace LegacyLevelSystem
 class SpawnableLevelSystem
         : public ILevelSystem
         , public AzFramework::RootSpawnableNotificationBus::Handler
-        , AzFramework::LevelSystemLifecycleRequestBus::Handler
+        , AzFramework::LevelSystemLifecycleInterface::Registrar
     {
     public:
         explicit SpawnableLevelSystem(ISystem* pSystem);
@@ -35,15 +35,11 @@ class SpawnableLevelSystem
 
         bool LoadLevel(const char* levelName) override;
         void UnloadLevel() override;
-        bool IsLevelLoaded() override;
 
         // If the level load failed then we need to have a different shutdown procedure vs when a level is naturally unloaded
         void SetLevelLoadFailed(bool loadFailed) override;
         bool GetLevelLoadFailed() override;
         AZ::Data::AssetType GetLevelAssetType() const override;
-
-        // Deprecated. Use AzFramework::LevelSystemLifecycleRequests::GetCurrentLevelName instead.
-        const char* GetCurrentLevelName() const override;
 
         // The following methods are deprecated from ILevelSystem and will be removed once slice support is removed.
         // [LYN-2376] Remove once legacy slice support is removed
@@ -52,10 +48,11 @@ class SpawnableLevelSystem
         ILevelInfo* GetLevelInfo([[maybe_unused]] int level) override;
         ILevelInfo* GetLevelInfo([[maybe_unused]] const char* levelName) override;
         //! @}
-        
-        //! AzFramework::LevelSystemLifecycleRequestBus overrides.
+
+        //! AzFramework::LevelSystemLifecycleInterface overrides.
         //! @{
-        AZStd::string GetCurrentLevelName() override;
+        const char* GetCurrentLevelName() const override;
+        bool IsLevelLoaded() const override;
         //! @}
 
     private:

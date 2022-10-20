@@ -225,7 +225,7 @@ namespace AzToolsFramework
             }
         }
 
-        const AZ::TypeId& GenericComponentWrapper::GetUnderlyingComponentType() const
+        AZ::TypeId GenericComponentWrapper::GetUnderlyingComponentType() const
         {
             if (m_template)
             {
@@ -366,7 +366,7 @@ namespace AzToolsFramework
         }
     }   // namespace Components
 
-    const AZ::Uuid& GetUnderlyingComponentType(const AZ::Component& component)
+    AZ::TypeId GetUnderlyingComponentType(const AZ::Component& component)
     {
         return component.GetUnderlyingComponentType();
     }

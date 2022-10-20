@@ -31,32 +31,40 @@ from typing import Union
 
 
 # -------------------------------------------------------------------------
-import DccScriptingInterface
-
 # global scope
+from DccScriptingInterface.azpy import _PACKAGENAME
 # we should update pkg, module and logging names to start with dccsi
-_MODULENAME = 'azpy.config_class'
+_MODULENAME = f'{_PACKAGENAME}.config_class'
 
 __all__ = ['ConfigCore']
 
 _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug(f'Initializing: {_MODULENAME}')
 
-from azpy import _PATH_DCCSIG  # root DCCsi path
+from DccScriptingInterface.azpy import PATH_DCCSIG  # root DCCsi path
 # DCCsi imports
-from azpy.env_bool import env_bool
+from DccScriptingInterface.azpy.env_bool import env_bool
+from DccScriptingInterface import add_site_dir
+from DccScriptingInterface import pathify_list
+
+# internal flag for Very verbose path logging
+GSUPPRESS_VERBOSE = False
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-# global constants here
+# constants here
 from DccScriptingInterface.constants import DCCSI_DYNAMIC_PREFIX
+from DccScriptingInterface.constants import SETTINGS_FILE_SLUG
+from DccScriptingInterface.constants import LOCAL_SETTINGS_FILE_SLUG
+from DccScriptingInterface.constants import PATH_DCCSIG_SETTINGS
+from DccScriptingInterface.constants import PATH_DCCSIG_LOCAL_SETTINGS
 
-from azpy.constants import ENVAR_PATH_DCCSIG
-from azpy.constants import ENVAR_DCCSI_SYS_PATH
-from azpy.constants import ENVAR_DCCSI_PYTHONPATH
+from DccScriptingInterface.azpy.constants import ENVAR_PATH_DCCSIG
+from DccScriptingInterface.azpy.constants import ENVAR_DCCSI_SYS_PATH
+from DccScriptingInterface.azpy.constants import ENVAR_DCCSI_PYTHONPATH
 
-_default_settings_filepath = Path('setting.local.json')
+from DccScriptingInterface.globals import *
 # -------------------------------------------------------------------------
 
 
@@ -86,6 +94,8 @@ class ConfigClass(object):
     def __init__(self,
                  config_name=None,
                  auto_set=True,
+                 settings_filepath = PATH_DCCSIG_SETTINGS,
+                 settings_local_filepath = PATH_DCCSIG_LOCAL_SETTINGS,
                  dyna_prefix: str = DCCSI_DYNAMIC_PREFIX,
                  *args, **kwargs):
         '''! The ConfigClass base class initializer.'''
@@ -96,11 +106,14 @@ class ConfigClass(object):
 
         # dynaconf, dynamic settings
         self._settings = dict()
+        self._settings_file = settings_filepath
+        self._settings_local_file = settings_local_filepath
 
         # all settings storage (if tracked)
         self._tracked_settings = dict()
 
         # special path storage
+
         self._sys_path = list()
 
         self._pythonpath = list()
@@ -135,7 +148,7 @@ class ConfigClass(object):
 
     @settings.getter
     def settings(self):
-        '''! If the class property self.auto_set is Rrue, settings.setenv() occurs
+        '''! If the class property self.auto_set is True, settings.setenv() occurs
         :return: settings, dynaconf'''
         # now standalone we can validate the config. env, settings.
         from dynaconf import settings
@@ -174,27 +187,33 @@ class ConfigClass(object):
     def sys_path(self):
         ''':Class property: for stashing PATHs for managed settings
         :return sys_path: list'''
+
         return self._sys_path
 
     @sys_path.setter
     def sys_path(self, new_list: list) -> list:
         ''':param new_list: replace entire sys_path'''
-        for path in new_list:
-            path = Path(path).resolve()
 
-            path = self.add_code_path(path,
-                                      self._sys_path,
-                                      sys_envar='PATH',
-                                      local_envar=ENVAR_DCCSI_SYS_PATH)
+        new_sys_path = list()
+        for path in new_list:
+            path = add_site_dir(path)
+            if (path.as_posix() not in new_sys_path):
+                new_sys_path.insert(0, path.as_posix())
+
+        os.environ[ENVAR_DCCSI_SYS_PATH] = os.pathsep.join(new_sys_path)
 
         dynakey = f'{self._dyna_prefix}_{ENVAR_DCCSI_SYS_PATH}'
-        os.environ[dynakey] = os.getenv(ENVAR_DCCSI_SYS_PATH)
+
+        os.environ[dynakey] = os.pathsep.join(new_sys_path)
+
+        self._sys_path = new_sys_path
 
         return self._sys_path
 
     @sys_path.getter
     def sys_path(self) -> list:
         ''':return: a list for PATH, sys.path'''
+        self._sys_path = pathify_list(self._sys_path)
         return self._sys_path
 
     @property
@@ -221,7 +240,45 @@ class ConfigClass(object):
     @pythonpath.getter
     def pythonpath(self):
         ''':return: a list for PYTHONPATH, site.addsitedir()'''
+        self._pythonpath = pathify_list(self._pythonpath)
         return self._pythonpath
+
+    @property
+    def settings_filepath(self):
+        ''':Class property: filepath for exporting settings, default settings.json'''
+        return self._settings_file
+
+    @settings_filepath.setter
+    def settings_filepath(self,
+                          filepath: Union[str, Path] = PATH_DCCSIG_SETTINGS) -> Path:
+        ''':param new_dict: sets the default filepath for this config to
+        export settings, default settings.json'''
+        self._settings_file = Path(filepath).resolve()
+        return self._settings_file
+
+    @settings_filepath.getter
+    def settings_filepath(self) -> Path:
+        ''':return: settings_filepath, default settings.json'''
+        return self._settings_file
+
+    @property
+    def settings_local_filepath(self):
+        ''':Class property: filepath for exporting settings,
+        default settings.local.json'''
+        return self._settings_local_file
+
+    @settings_local_filepath.setter
+    def settings_local_filepath(self,
+                                filepath: Union[str, Path] = PATH_DCCSIG_LOCAL_SETTINGS) -> Path:
+        ''':param new_dict: sets the default filepath for this config to
+        export settings, settings.local.json'''
+        self._settings_local_file = Path(filepath).resolve()
+        return self._settings_local_file
+
+    @settings_local_filepath.getter
+    def settings_local_filepath(self):
+        ''':return: settings_local_filepath, settings.local.json'''
+        return self._settings_local_file
     # ---------------------------------------------------------------------
 
     # --method-set---------------------------------------------------------
@@ -234,7 +291,7 @@ class ConfigClass(object):
 
     def add_code_path(self,
                       path: Path,
-                      path_list: list,
+                      path_list: list = None,
                       sys_envar: str = 'PATH',
                       local_envar: str = ENVAR_DCCSI_SYS_PATH,
                       addsitedir: bool = False) -> Path:
@@ -242,19 +299,16 @@ class ConfigClass(object):
         @param path: the path to add
         @ return: returns the path
         '''
-        path = Path(path).resolve()  # ensure Path
+
+        if path_list is None:
+            path_list = self.sys_path
+
+        path = add_site_dir(path)
 
         # store and track here for settings export
         path_list.append(path)  # keep path objects
 
-        # set it on the PATH
-        self.add_path_to_envar(path, sys_envar)
-
-        # set in our managed setting
-        self.add_path_to_envar(path, local_envar, True)
-
-        if addsitedir:
-            site.addsitedir(path.as_posix())
+        environ = self.add_path_to_envar(path, envar=sys_envar)
 
         return path
 
@@ -280,7 +334,8 @@ class ConfigClass(object):
                     check_envar: bool = True,
                     set_envar: bool = False,
                     set_sys_path: bool = False,
-                    set_pythonpath: bool = False):
+                    set_pythonpath: bool = False,
+                    posix_path: bool = True):
         '''! adds a settings with various configurable options
 
         @param key: the key (str) for the setting/envar
@@ -327,10 +382,7 @@ class ConfigClass(object):
             This uses the site.addsitedir() approach to add sire access
             @see self.add_path_list_to_addsitedir()
         '''
-
-        if isinstance(value, Path) or set_sys_path or set_pythonpath:
-            value = Path(value).resolve()
-
+        # check for existing value first
         if check_envar:
             if isinstance(value, bool):
                 # this checks and returns value as bool
@@ -339,21 +391,25 @@ class ConfigClass(object):
                 # if the envar is set, it will override the input value!
                 value = os.getenv(key, value)
 
+        if isinstance(value, Path) or set_sys_path or set_pythonpath:
+            value = Path(value).resolve()
+            if posix_path:
+                value = value.as_posix() # ensure unix style
+
         # these managed lists are handled when settings are retreived
         if set_sys_path:
             value = self.add_code_path(value,
                                        self.sys_path,
                                        sys_envar='PATH',
                                        local_envar=ENVAR_DCCSI_SYS_PATH)
-            value = os.getenv(ENVAR_DCCSI_SYS_PATH)
+            #value = os.getenv(ENVAR_DCCSI_SYS_PATH)
 
         if set_pythonpath:
             value = self.add_code_path(value,
                                        self.pythonpath,
                                        sys_envar='PYTHONPATH',
                                        local_envar=ENVAR_DCCSI_PYTHONPATH)
-
-            value = os.getenv(ENVAR_DCCSI_PYTHONPATH)
+            #value = os.getenv(ENVAR_DCCSI_PYTHONPATH)
 
         if set_envar:
             value = self.set_envar(key, value)
@@ -366,9 +422,9 @@ class ConfigClass(object):
 
     # ---------------------------------------------------------------------
     def add_path_to_envar(self,
-                          path: Path,
+                          path: Union[str, Path],
                           envar: str = 'PATH',
-                          suppress: bool = False):
+                          suppress: bool = GSUPPRESS_VERBOSE):
         '''! add path to a path-type envar like PATH or PYTHONPATH
 
         @param path: path to add to the envar
@@ -379,25 +435,32 @@ class ConfigClass(object):
         # ensure and resolve path object
         path = Path(path).resolve()
 
-        # get or default to empty
-        if envar in os.environ:
-            _ENVAR = os.getenv(envar, "< NOT SET >")
-        else:
-            os.environ[envar] = ''  # create empty
-            _ENVAR = os.getenv(envar)
-
-        # this is separated (split) into a list
-        known_pathlist = _ENVAR.split(os.pathsep)
-
         if not path.exists() and not suppress:
-            _LOGGER.debug(f'envar:{envar}, adding path: {path}')
-            _LOGGER.warning(f'path.exists()={path.exists()}, path: {path.as_posix()}')
+            _LOGGER.debug(f'path.exists()={path.exists()}, path: {path.as_posix()}')
 
-        if (path.as_posix() not in known_pathlist):
-            os.environ[envar] = path.as_posix() + os.pathsep + os.environ[envar]
-            # adding directly to sys.path apparently doesn't work for
-            # .dll locations like Qt this pattern by extending the ENVAR
-            # seems to work correctly which why this pattern is used.
+        _envar = os.getenv(envar)
+
+        if _envar:
+            os.environ[envar] = ''
+
+            # (split) into a list
+            known_pathlist = _envar.split(os.pathsep)
+            known_pathlist = [i for i in known_pathlist if i] # remove ""
+            known_pathlist = pathify_list(known_pathlist)
+
+            if (path not in known_pathlist):
+                known_pathlist.insert(0, path)
+                if not suppress:
+                    _LOGGER.debug(f'envar:{envar}, adding path: {path}')
+
+            for path in known_pathlist:
+                os.environ[envar] = path.as_posix() + os.pathsep + os.environ[envar]
+                # adding directly to sys.path apparently doesn't work for
+                # .dll locations like Qt this pattern by extending the ENVAR
+                # seems to work correctly which why this pattern is used.
+
+        else:
+            os.environ[envar] = path.as_posix()
 
         return os.environ[envar]
 
@@ -405,7 +468,7 @@ class ConfigClass(object):
     def add_pathlist_to_envar(self,
                               path_list: list,
                               envar: str = 'PATH',
-                              suppress: bool = True):
+                              suppress: bool = GSUPPRESS_VERBOSE):
         """!
         Take in a list of Path objects to add to system ENVAR (like PATH).
         This method explicitly adds the paths to the system ENVAR.
@@ -419,14 +482,39 @@ class ConfigClass(object):
             return None
         else:
             for path in path_list:
-                path = Path(path).resolve()
                 self.add_path_to_envar(path, envar, suppress)
 
             return os.environ[envar]
 
     # -----------------------------------------------------------------
+    def get_config_settings(self,
+                            prefix: str = DCCSI_DYNAMIC_PREFIX):
+
+        # all ConfigClass objects that export settings, will generate this
+        # value. When inspecting settings we will always know that local
+        # settings have been aggregated and include local settings.
+        self.add_setting('DCCSI_LOCAL_SETTINGS', True)
+
+        self.add_pathlist_to_envar(self.sys_path,
+                                   f'{prefix}_{ENVAR_DCCSI_SYS_PATH}',
+                                   True)
+
+        self.add_pathlist_to_envar(self.pythonpath,
+                                   f'{prefix}_{ENVAR_DCCSI_PYTHONPATH}',
+                                   True)
+
+        from dynaconf import settings
+
+        self.settings = settings
+
+        if self.auto_set:
+            self.settings.setenv()
+
+        return self.settings
+
+    # -----------------------------------------------------------------
     def export_settings(self,
-                        settings_filepath: Path = _default_settings_filepath,
+                        settings_filepath: Union[str, Path] = None,
                         prefix: str = DCCSI_DYNAMIC_PREFIX,
                         set_env: bool = True,
                         use_dynabox: bool = False,
@@ -456,7 +544,7 @@ class ConfigClass(object):
 
         @param merge: whether existing file should be merged with new data
 
-        @param log_settings: ouptus settings contents to logging
+        @param log_settings: outputs settings contents to logging
 
         The default is to write: < dccsi >/settings.local.json
 
@@ -470,10 +558,10 @@ class ConfigClass(object):
 
         That will find and execute the local config and aggregate
         settings from the following:
-            config.py
-            settings.py
-            settings.json
-            settings.local.json
+            config.py (walks to find)
+            settings.py (in the same folder as config.py)
+            settings.json (in the same folder as config.py)
+            settings.local.json (in the same folder as config.py)
 
         We do not commit settings.local.json to source control,
         effectively it can be created and used as a local stash of the
@@ -484,22 +572,12 @@ class ConfigClass(object):
         # and pre-check the settings.local.json to report warnings
         # this can easily cause a bad error that is deep and hard to debug
 
-        # all ConfigClass objects that export settings, will generate this
-        # value. When inspecting settings we will always know that local
-        # settings have been aggregated and include local settings.
-        self.add_setting('DCCSI_LOCAL_SETTINGS', True)
+        if settings_filepath is None:
+            settings_filepath = self.settings_local_filepath
 
-        self.add_pathlist_to_envar(self.sys_path,
-                                   f'{prefix}_{ENVAR_DCCSI_SYS_PATH}',
-                                   True)
+        settings_filepath = Path(settings_filepath).resolve()
 
-        self.add_pathlist_to_envar(self.pythonpath,
-                                   f'{prefix}_{ENVAR_DCCSI_PYTHONPATH}',
-                                   True)
-
-        # update settings
-        if set_env:
-            self.settings.setenv()
+        self.get_config_settings()
 
         if not use_dynabox:  # this writes a prettier file with indents
             _settings_box = Box(self.settings.as_dict())
@@ -533,7 +611,6 @@ class ConfigClass(object):
                 return _settings_box
 
         return self.settings
-    # ---------------------------------------------------------------------
 # --- END -----------------------------------------------------------------
 
 
@@ -543,7 +620,7 @@ class ConfigClass(object):
 if __name__ == '__main__':
     """Run in debug perform local tests from IDE or CLI"""
 
-    from azpy.constants import STR_CROSSBAR
+    from DccScriptingInterface.azpy.constants import STR_CROSSBAR
 
     _LOGGER.info(STR_CROSSBAR)
     _LOGGER.info(f'~ {_MODULENAME}.py ... Running script as __main__')
@@ -557,14 +634,14 @@ if __name__ == '__main__':
     new_list.append('c:/foo')
     new_list.append('c:/fooey')
 
-    # lets pass that list to set out insternal sys_path storage setter
+    # lets pass that list to set our insternal sys_path storage setter
     _foo_test.sys_path = new_list
     # that will also set up the dynamic setting
     _LOGGER.info(f'_foo_test.DCCSI_SYS_PATH = {_foo_test.settings.DCCSI_SYS_PATH}')
 
     # or you could add them individually like this
     # add some paths to test special tracking
-    _foo_test.pythonpath.append(Path('c:/looey').resolve())
+    _foo_test.pythonpath.append(Path('c:/looey').as_posix())
 
     # this just returns the internal list that stores them
     _LOGGER.info(f'_foo_test.pythonpath = {_foo_test.pythonpath}')
@@ -582,6 +659,12 @@ if __name__ == '__main__':
 
     # With that call, the path will immediately be set on the envar
     _LOGGER.info(f"PYTHONPATH: {os.getenv('PYTHONPATH')}")
+
+    # if added more then once, should collapse down to one on get
+    _foo_test.pythonpath.append('c:/kablooey')
+    _LOGGER.info(f'{_foo_test.pythonpath}')
+
+    settings = _foo_test.get_config_settings()
 
     # add a envar bool
     _bool_test = _foo_test.add_setting('FOO_IS', True)
@@ -606,7 +689,7 @@ if __name__ == '__main__':
 
     _LOGGER.info(f'settings: {_foo_test.settings}')
 
-    _export_filepath = Path(_PATH_DCCSIG, '__tmp__', 'settings_export.json').resolve()
+    _export_filepath = Path(PATH_DCCSIG, '__tmp__', 'settings_export.json').resolve()
 
     _foo_test.export_settings(settings_filepath = _export_filepath,
                               log_settings = True)

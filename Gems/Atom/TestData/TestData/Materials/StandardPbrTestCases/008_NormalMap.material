@@ -1,5 +1,5 @@
 {
-    "materialType": "Materials\\Types\\StandardPBR.materialtype",
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
     "materialTypeVersion": 5,
     "propertyValues": {
         "baseColor.color": [
@@ -10,6 +10,6 @@
         ],
         "normal.factor": 0.75,
         "normal.flipY": true,
-        "normal.textureMap": "TestData/Textures/TextureHaven/4k_castle_brick_02_red/4k_castle_brick_02_red_normal.png"
+        "normal.textureMap": "../../Textures/TextureHaven/4k_castle_brick_02_red/4k_castle_brick_02_red_normal.png"
     }
 }

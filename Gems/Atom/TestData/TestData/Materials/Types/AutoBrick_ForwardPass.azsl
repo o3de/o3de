@@ -7,22 +7,23 @@
  */
 
 #include <viewsrg.srgi>
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include "AutoBrick_Common.azsli"
 #include <Atom/Features/PBR/AlphaUtils.azsli>
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
-#include <Atom/Features/PBR/ForwardPassSrg.azsli>
-#include <Atom/Features/PBR/ForwardPassOutput.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli>
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
 #include <Atom/Features/ParallaxMapping.azsli>
 #include <Atom/Features/PBR/Lighting/StandardLighting.azsli>
+#include <Atom/Features/PBR/Lights/IblForward.azsli>
 #include <Atom/Features/PBR/Decals.azsli>
 
 struct VSInput
 {
     float3 m_position : POSITION;
     float3 m_normal : NORMAL;
-    float4 m_tangent : TANGENT; 
-    float3 m_bitangent : BITANGENT; 
+    float4 m_tangent : TANGENT;
     float2 m_uv : UV0;
 };
 
@@ -30,13 +31,10 @@ struct VSOutput
 {
     precise linear centroid float4 m_position : SV_Position;
     float3 m_normal: NORMAL;
-    float3 m_tangent : TANGENT; 
-    float3 m_bitangent : BITANGENT; 
+    float4 m_tangent : TANGENT;
     float3 m_worldPosition : UV0;
     float2 m_uv : UV1;
 };
-
-#include <Atom/Features/Vertex/VertexHelper.azsli>
 
 VSOutput AutoBrick_ForwardPassVS(VSInput IN)
 {
@@ -46,7 +44,10 @@ VSOutput AutoBrick_ForwardPassVS(VSInput IN)
  
     OUT.m_uv = IN.m_uv;
 
-    VertexHelper(IN, OUT, worldPosition);
+    OUT.m_worldPosition = worldPosition;
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(OUT.m_worldPosition, 1.0));
+    OUT.m_normal = IN.m_normal;
+    OUT.m_tangent = IN.m_tangent;
 
     return OUT;
 }
@@ -126,6 +127,12 @@ DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
 
 ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
 {
+    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
+    float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
+
+    float3 vertexNormal, vertexTangent, vertexBitangent;
+    ConstructTBN(IN.m_normal, IN.m_tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
+
     float3x3 identityUvMatrix = 
         { 1,0,0,
           0,1,0,
@@ -137,9 +144,9 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
                                                       depthOffset,
                                                       IN.m_uv,
                                                       ViewSrg::m_worldPosition.xyz - IN.m_worldPosition, 
-                                                      IN.m_tangent,
-                                                      IN.m_bitangent,
-                                                      IN.m_normal,
+                                                      vertexTangent,
+                                                      vertexBitangent,
+                                                      vertexNormal,
                                                       identityUvMatrix);
     
     IN.m_uv += tangentOffset.m_offsetTS.xy;
@@ -160,7 +167,7 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
     float surfaceDepth;
     float3 surfaceNormal;
     GetSurfaceShape(IN.m_uv, surfaceDepth, surfaceNormal);
-    const float3 normal = TangentSpaceToWorld(surfaceNormal, normalize(IN.m_normal), normalize(IN.m_tangent), normalize(IN.m_bitangent));
+    const float3 surfaceNormalWorld = TangentSpaceToWorld(surfaceNormal, vertexNormal, vertexTangent, vertexBitangent);
     
     // ------- Surface -------
 
@@ -168,7 +175,7 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
     
     // Position, Normal, Roughness
     surface.position = IN.m_worldPosition.xyz;
-    surface.normal = normalize(normal);
+    surface.normal = normalize(surfaceNormalWorld);
     surface.vertexNormal = surfaceNormal;
     surface.roughnessLinear = 1.0f;
     surface.CalculateRoughnessA();
@@ -207,7 +214,7 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
     ApplyDirectLighting(surface, lightingData, IN.m_position);
 
     // Apply Image Based Lighting (IBL)
-    ApplyIBL(surface, lightingData);
+    ApplyIblForward(surface, lightingData);
 
     // Finalize Lighting
     lightingData.FinalizeLighting();
@@ -227,5 +234,4 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
 
     return OUT;
 }
- 
 

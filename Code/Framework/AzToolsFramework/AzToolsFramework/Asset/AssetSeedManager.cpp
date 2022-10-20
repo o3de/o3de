@@ -592,7 +592,7 @@ namespace AzToolsFramework
                             continue;
                         }
 
-                        hash.ProcessBytes(buffer.data(), buffer.size());
+                        hash.ProcessBytes(AZStd::as_bytes(AZStd::span(buffer)));
                         hash.GetDigest(digestArray);
 
                         for (int idx = 0; idx < digest.size(); idx++)

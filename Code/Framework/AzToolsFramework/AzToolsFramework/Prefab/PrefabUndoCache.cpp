@@ -69,17 +69,15 @@ namespace AzToolsFramework
                 return;
             }
 
-            PrefabDom oldData;
             AZ::EntityId oldParentId;
-            Retrieve(entityId, oldData, oldParentId);
+            Retrieve(entityId, oldParentId);
 
             UpdateCache(entityId);
 
-            PrefabDom newData;
             AZ::EntityId newParentId;
-            Retrieve(entityId, newData, newParentId);
+            Retrieve(entityId, newParentId);
 
-            if (newData != oldData || oldParentId != newParentId)
+            if (oldParentId != newParentId)
             {
                 // display a useful message
                 AZ::Entity* entity = nullptr;
@@ -105,7 +103,7 @@ namespace AzToolsFramework
             // Clear out newly generated data and
             // replace with original data to ensure debug mode has the same data as profile/release
             // in the event of the consistency check failing.
-            m_entitySavedStates[entityId] = {AZStd::move(oldData), oldParentId};
+            m_parentEntityCache[entityId] = oldParentId;
 
 #endif // ENABLE_UNDOCACHE_CONSISTENCY_CHECKS
         }
@@ -140,43 +138,40 @@ namespace AzToolsFramework
             AZ::TransformBus::EventResult(parentId, entityId, &AZ::TransformBus::Events::GetParentId);
 
             // Capture it
-            PrefabDom entityDom;
-            m_instanceToTemplateInterface->GenerateDomForEntity(entityDom, *entity);
-            m_entitySavedStates[entityId] = {AZStd::move(entityDom), parentId};
+            m_parentEntityCache[entityId] = parentId;
 
-            AZLOG("Prefab Undo", "Correctly updated cache for entity of id %llu (%s)", static_cast<AZ::u64>(entityId), entity->GetName().c_str());
+            AZLOG("Prefab Undo", "Correctly cached parent id for entity id %llu (%s)", static_cast<AZ::u64>(entityId), entity->GetName().c_str());
 
             return;
         }
 
         void PrefabUndoCache::PurgeCache(const AZ::EntityId& entityId)
         {
-            m_entitySavedStates.erase(entityId);
+            m_parentEntityCache.erase(entityId);
         }
 
-        bool PrefabUndoCache::Retrieve(const AZ::EntityId& entityId, PrefabDom& outDom, AZ::EntityId& parentId)
+        bool PrefabUndoCache::Retrieve(const AZ::EntityId& entityId, AZ::EntityId& parentId)
         {
-            auto it = m_entitySavedStates.find(entityId);
+            auto it = m_parentEntityCache.find(entityId);
 
-            if (it == m_entitySavedStates.end())
+            if (it == m_parentEntityCache.end())
             {
                 return false;
             }
 
-            outDom = AZStd::move(m_entitySavedStates[entityId].dom);
-            parentId = m_entitySavedStates[entityId].parentId;
-            m_entitySavedStates.erase(entityId);
+            parentId = m_parentEntityCache[entityId];
+            m_parentEntityCache.erase(entityId);
             return true;
         }
 
-        void PrefabUndoCache::Store(const AZ::EntityId& entityId, PrefabDom&& dom, const AZ::EntityId& parentId)
+        void PrefabUndoCache::Store(const AZ::EntityId& entityId, const AZ::EntityId& parentId)
         {
-            m_entitySavedStates[entityId] = {AZStd::move(dom), parentId};
+            m_parentEntityCache[entityId] = parentId;
         }
 
         void PrefabUndoCache::Clear()
         {
-            m_entitySavedStates.clear();
+            m_parentEntityCache.clear();
         }
 
     } // namespace Prefab

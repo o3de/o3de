@@ -80,8 +80,8 @@ namespace Camera
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection);
         if (serializeContext)
         {
-            serializeContext->ClassDeprecate("CameraComponent", "{A0C21E18-F759-4E72-AF26-7A36FC59E477}", &ClassConverters::DeprecateCameraComponentWithoutEditor);
-            serializeContext->ClassDeprecate("CameraComponent", "{E409F5C0-9919-4CA5-9488-1FE8A041768E}", &UpdateGameCameraComponentToUseController);
+            serializeContext->ClassDeprecate("CameraComponent", AZ::Uuid("{A0C21E18-F759-4E72-AF26-7A36FC59E477}"), &ClassConverters::DeprecateCameraComponentWithoutEditor);
+            serializeContext->ClassDeprecate("CameraComponent", AZ::Uuid("{E409F5C0-9919-4CA5-9488-1FE8A041768E}"), &UpdateGameCameraComponentToUseController);
             serializeContext->Class<CameraComponent, CameraComponentBase>()
                 ->Version(0)
             ;

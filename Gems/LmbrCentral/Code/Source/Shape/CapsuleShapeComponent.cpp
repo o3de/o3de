@@ -120,7 +120,7 @@ namespace LmbrCentral
             // Deprecate: CapsuleColliderConfiguration -> CapsuleShapeConfig
             serializeContext->ClassDeprecate(
                 "CapsuleColliderConfiguration",
-                "{902BCDA9-C9E5-429C-991B-74C241ED2889}",
+                AZ::Uuid("{902BCDA9-C9E5-429C-991B-74C241ED2889}"),
                 &ClassConverters::DeprecateCapsuleColliderConfiguration)
                 ;
 
@@ -165,7 +165,7 @@ namespace LmbrCentral
             // Deprecate: CapsuleColliderComponent -> CapsuleShapeComponent
             serializeContext->ClassDeprecate(
                 "CapsuleColliderComponent",
-                "{D1F746A9-FC24-48E4-88DE-5B3122CB6DE7}",
+                AZ::Uuid("{D1F746A9-FC24-48E4-88DE-5B3122CB6DE7}"),
                 &ClassConverters::DeprecateCapsuleColliderComponent
                 );
 

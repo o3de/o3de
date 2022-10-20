@@ -67,6 +67,11 @@ namespace GraphModelIntegration
 
         GraphModel::ConnectionPtr AddConnection(GraphModel::SlotPtr sourceSlot, GraphModel::SlotPtr targetSlot) override;
         GraphModel::ConnectionPtr AddConnectionBySlotId(GraphModel::NodePtr sourceNode, GraphModel::SlotId sourceSlotId, GraphModel::NodePtr targetNode, GraphModel::SlotId targetSlotId) override;
+        bool AreSlotsConnected(
+            GraphModel::NodePtr sourceNode,
+            GraphModel::SlotId sourceSlotId,
+            GraphModel::NodePtr targetNode,
+            GraphModel::SlotId targetSlotId) const override;
         bool RemoveConnection(GraphModel::ConnectionPtr connection) override;
         GraphModel::SlotId ExtendSlot(GraphModel::NodePtr node, GraphModel::SlotName slotName) override;
 
@@ -136,7 +141,6 @@ namespace GraphModelIntegration
         // GraphCanvas::SceneNotificationBus, connections
         void OnNodeAdded(const AZ::EntityId& nodeUiId, bool isPaste) override;
         void OnNodeRemoved(const AZ::EntityId& nodeUiId) override;
-        void PreOnNodeRemoved(const AZ::EntityId& nodeUiId) override;
         void OnConnectionRemoved(const AZ::EntityId& connectionUiId) override;
         void OnEntitiesSerialized(GraphCanvas::GraphSerialization& serializationTarget) override;
         void OnEntitiesDeserialized(const GraphCanvas::GraphSerialization& serializationSource) override;
@@ -169,7 +173,6 @@ namespace GraphModelIntegration
         AZStd::string GetDataTypeString(const AZ::Uuid& typeId) override;
 
         //! This is where we find all of the graph metadata (like node positions, comments, etc) and store it in the node graph for serialization
-        // CJS TODO: Use this instead of the above undo functions
         void OnSaveDataDirtied(const AZ::EntityId& savedElement) override;
 
         void OnRemoveUnusedNodes() override {}

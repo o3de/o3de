@@ -37,6 +37,7 @@
 #include <AzQtComponents/DPEDebugViewStandalone/ExampleAdapter.h>
 #include <AzToolsFramework/UI/DPEDebugViewer/DPEDebugWindow.h>
 
+#include <AzToolsFramework/UI/DocumentPropertyEditor/FilteredDPE.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyHandlerWidget.h>
@@ -61,13 +62,23 @@ namespace DPEDebugView
         AZ_TYPE_INFO(TestContainer, "{86586583-A58F-45FD-BB6E-C3E9C76DDA38}");
         AZ_CLASS_ALLOCATOR(TestContainer, AZ::SystemAllocator, 0);
 
-        enum class EnumType : AZ::u8
+        enum class EnumType : AZ::s16
         {
             Value1 = 1,
             Value2 = 2,
-            ValueZ = 10,
+            ValueZ = -10,
             NotReflected = 0xFF
         };
+
+        AZStd::vector<AZ::Edit::EnumConstant<EnumType>> GetEnumValues() const
+        {
+            AZStd::vector<AZ::Edit::EnumConstant<EnumType>> values;
+            values.emplace_back(EnumType::Value1, "Value 1");
+            values.emplace_back(EnumType::Value2, "Value 2");
+            values.emplace_back(EnumType::ValueZ, "Value Z");
+            values.emplace_back(EnumType::NotReflected, "Not Reflected (set from EnumValues)");
+            return values;
+        }
 
         int m_simpleInt = 5;
         double m_doubleSlider = 3.25;
@@ -111,11 +122,6 @@ namespace DPEDebugView
 
                 if (auto editContext = serializeContext->GetEditContext())
                 {
-                    editContext->Enum<EnumType>("EnumType", "")
-                        ->Value("Value1", EnumType::Value1)
-                        ->Value("Value2", EnumType::Value2)
-                        ->Value("ValueZ", EnumType::ValueZ);
-
                     editContext->Class<TestContainer>("TestContainer", "")
                         ->UIElement(AZ::Edit::UIHandlers::Button, "")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &Button1)
@@ -147,6 +153,7 @@ namespace DPEDebugView
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_entityIdMap, "unordered_map<EntityId, Number>", "")
                         ->ClassElement(AZ::Edit::ClassElements::Group, "")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_enumValue, "enum (no multi-edit)", "")
+                        ->Attribute(AZ::Edit::Attributes::EnumValues, &TestContainer::GetEnumValues)
                         ->Attribute(AZ::Edit::Attributes::AcceptsMultiEdit, false)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_entityId, "entityId", "")
                         ->UIElement(AZ::Edit::UIHandlers::Button, "")
@@ -237,12 +244,9 @@ int main(int argc, char** argv)
     QPointer<AzToolsFramework::DPEDebugWindow> debugViewer = new AzToolsFramework::DPEDebugWindow(nullptr);
 
     // create a real DPE to track the same adapter selected for the debug tool
-    QPointer<AzToolsFramework::DocumentPropertyEditor> dpeInstance = new AzToolsFramework::DocumentPropertyEditor(nullptr);
-    dpeInstance->setAttribute(Qt::WA_DeleteOnClose);
-    dpeInstance->SetSpawnDebugView(false); // don't allow this DPE to spawn debug views, as we've made our own
+    QPointer<AzToolsFramework::FilteredDPE> filteredDPE = new AzToolsFramework::FilteredDPE(nullptr);
     QObject::connect(
-        debugViewer.data(), &AzToolsFramework::DPEDebugWindow::AdapterChanged, dpeInstance,
-        &AzToolsFramework::DocumentPropertyEditor::SetAdapter);
+        debugViewer.data(), &AzToolsFramework::DPEDebugWindow::AdapterChanged, filteredDPE, &AzToolsFramework::FilteredDPE::SetAdapter);
 
     debugViewer->AddAdapterToList("Reflection Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::ReflectionAdapter>(&testContainer, azrtti_typeid<DPEDebugView::TestContainer>()));
     debugViewer->AddAdapterToList("CVar Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::CvarAdapter>());
@@ -250,7 +254,7 @@ int main(int argc, char** argv)
     debugViewer->AddAdapterToList("Settings Registry Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::SettingsRegistryAdapter>());
 
     debugViewer->show();
-    dpeInstance->show();
+    filteredDPE->show();
 
     return qtApp.exec();
 }

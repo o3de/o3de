@@ -681,7 +681,16 @@ def get_registered(engine_name: str = None,
                             return project_path
 
     elif isinstance(gem_name, str):
-        gems = get_all_gems(project_path)
+        gems = []
+        if project_path:
+            gems = get_all_gems(project_path)
+        else:
+            # If project_path is not supplied
+            # query all registered projects
+            for registered_project_path in get_all_projects():
+                gems.extend(get_all_gems(registered_project_path))
+            gems = list(dict.fromkeys(gems))
+
         for gem_path in gems:
             gem_path = pathlib.Path(gem_path).resolve()
             gem_json = gem_path / 'gem.json'
@@ -699,7 +708,16 @@ def get_registered(engine_name: str = None,
                             return gem_path
 
     elif isinstance(template_name, str):
-        templates = get_all_templates(project_path)
+        templates = []
+        if project_path:
+            templates = get_all_templates(project_path)
+        else:
+            # If project_path is not supplied
+            # query all registered projects
+            for registered_project_path in get_all_projects():
+                templates.extend(get_all_templates(registered_project_path))
+            templates = list(dict.fromkeys(templates))
+
         for template_path in templates:
             template_path = pathlib.Path(template_path).resolve()
             template_json = template_path / 'template.json'

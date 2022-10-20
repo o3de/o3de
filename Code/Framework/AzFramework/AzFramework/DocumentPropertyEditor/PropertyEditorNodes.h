@@ -104,11 +104,17 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr auto Value = AttributeDefinition<AZ::Dom::Value>("Value");
         static constexpr auto ValueType = TypeIdAttributeDefinition("ValueType");
         static constexpr auto Disabled = AttributeDefinition<bool>("Disabled");
+        static constexpr auto ValueHashed = AttributeDefinition<AZ::Uuid>("ValueHashed");
 
         //! If set to true, specifies that this PropertyEditor shouldn't be allocated its own column, but instead appended
         //! to the previous column in the layout, creating a SharedColumn that can hold many PropertyEditors.
         //! Useful for things like the "add container entry" button.
         static constexpr auto SharePriorColumn = AttributeDefinition<bool>("SharePriorColumn");
+
+        //! DEPENDENT attribute - must be used inside a SharedColumn.
+        //! If set to true, specifies that this PropertyEditor should only take up as much space as its minimum width.
+        //! Useful for placing things like "add container entry" and "remove all elements" next to each other
+        static constexpr auto UseMinimumWidth = AttributeDefinition<bool>("SharePriorColumn");
 
         //! Specifies the alignment options for a PropertyEditor that has the Alignment attribute.
         enum class Align : AZ::u8
@@ -124,6 +130,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr auto EnumType = TypeIdAttributeDefinition("EnumType");
         static constexpr auto EnumUnderlyingType = TypeIdAttributeDefinition("EnumUnderlyingType");
         static constexpr auto EnumValue = AttributeDefinition<Dom::Value>("EnumValue");
+        static constexpr auto EnumValues = EnumValuesAttributeDefinition("EnumValues");
         static constexpr auto ChangeNotify = CallbackAttributeDefinition<PropertyRefreshLevel()>("ChangeNotify");
         static constexpr auto RequestTreeUpdate = CallbackAttributeDefinition<void(PropertyRefreshLevel)>("RequestTreeUpdate");
 

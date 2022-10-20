@@ -46,7 +46,7 @@ namespace AssetProcessor
 
     protected:
         void CreateStatements() override;
-        bool PostOpenDatabase() override;
+        bool PostOpenDatabase(bool ignoreFutureAssetDBVersionError) override;
         //////////////////////////////////////////////////////////////////////////
 
     public:
@@ -171,11 +171,16 @@ namespace AssetProcessor
         // The following functions are all search functions (as opposed to the above functions which fetch or operate on specific rows)
         // They tend to take a "Type of Dependency" filter - you can use DEP_Any to query all kinds of dependencies.
         /// Given a source file, what does it DEPEND ON?
-        bool GetDependsOnSourceBySource(const char* source, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency typeOfDependency, AzToolsFramework::AssetDatabase::SourceFileDependencyEntryContainer& container);
+        bool GetDependsOnSourceBySource(AZ::Uuid sourceUuid, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency typeOfDependency, AzToolsFramework::AssetDatabase::SourceFileDependencyEntryContainer& container);
         /// Given a source file and a builder UUID, does it DEPEND ON?
-        bool GetSourceFileDependenciesByBuilderGUIDAndSource(const AZ::Uuid& builderGuid, const char* source, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency typeOfDependency, AzToolsFramework::AssetDatabase::SourceFileDependencyEntryContainer& container);
+        bool GetSourceFileDependenciesByBuilderGUIDAndSource(const AZ::Uuid& builderGuid, AZ::Uuid sourceGuid, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency typeOfDependency, AzToolsFramework::AssetDatabase::SourceFileDependencyEntryContainer& container);
         /// Given a source file, what depends ON IT? ('reverse dependency')
-        bool GetSourceFileDependenciesByDependsOnSource(const QString& dependsOnSource, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency typeOfDependency, AzToolsFramework::AssetDatabase::SourceFileDependencyEntryContainer& container);
+        bool GetSourceFileDependenciesByDependsOnSource(
+            AZ::Uuid sourceGuid,
+            const char* sourceName,
+            const char* absolutePath,
+            AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency typeOfDependency,
+            AzToolsFramework::AssetDatabase::SourceFileDependencyEntryContainer& container);
 
         // --------------------- Legacy SUBID table -------------------
         bool CreateOrUpdateLegacySubID(AzToolsFramework::AssetDatabase::LegacySubIDsEntry& entry);  // create or overwrite operation.

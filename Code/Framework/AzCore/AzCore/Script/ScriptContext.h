@@ -633,7 +633,8 @@ namespace AZ
     template<class T>
     inline bool ScriptDataContext::IsClass(int index) const
     {
-        return AZ::Internal::LuaIsClass(m_nativeContext, m_startVariableIndex + index, &AzTypeInfo<T>::Uuid());
+        constexpr auto uuidValue{ AzTypeInfo<T>::Uuid() };
+        return AZ::Internal::LuaIsClass(m_nativeContext, m_startVariableIndex + index, &uuidValue);
     }
     template<class T>
     inline bool ScriptDataContext::ReadArg(int index, T& valueRef) const

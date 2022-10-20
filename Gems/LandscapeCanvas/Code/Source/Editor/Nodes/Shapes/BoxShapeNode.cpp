@@ -28,7 +28,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString BoxShapeNode::TITLE = QObject::tr("Box Shape");
+    const char* BoxShapeNode::TITLE = "Box Shape";
 
     BoxShapeNode::BoxShapeNode(GraphModel::GraphPtr graph)
         : BaseShapeNode(graph)

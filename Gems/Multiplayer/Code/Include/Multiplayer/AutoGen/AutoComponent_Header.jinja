@@ -478,7 +478,7 @@ namespace {{ Component.attrib['Namespace'] }}
         {{ AutoComponentMacros.DeclareRpcEvents(Component, 'Authority', 'Autonomous')|indent(8) }}
     };
 
-    static const AZ::Uuid s_{{ LowerFirst(ComponentName) }}ConcreteUuid = "{{ (ComponentName) | createHashGuid }}";
+    inline constexpr AZ::Uuid s_{{ LowerFirst(ComponentName) }}ConcreteUuid{ "{{ (ComponentName) | createHashGuid }}" };
     class {{ ComponentBaseName }}{% if not ComponentDerived %} final{% endif %}{{ "" }}
         : public Multiplayer::MultiplayerComponent
     {

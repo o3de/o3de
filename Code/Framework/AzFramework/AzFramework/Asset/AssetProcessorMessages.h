@@ -41,10 +41,10 @@ namespace AzFramework
         bool UnpackMessage(const Buffer& buffer, Message& message)
         {
             AZ::IO::ByteContainerStream<const Buffer> byteStream(&buffer);
-            
+
             // load object from stream but note here that we do not allow any errors to occur since this is a message that is supposed
             // to be sent between matching server/client versions.
-            
+
             return AZ::Utils::LoadObjectFromStreamInPlace(byteStream, nullptr, message.RTTI_GetType(), &message, AZ::ObjectStream::FilterDescriptor(&AZ::Data::AssetFilterNoAssetLoading, AZ::ObjectStream::FILTERFLAG_STRICT));
         }
 
@@ -58,7 +58,7 @@ namespace AzFramework
             virtual unsigned int GetMessageType() const = 0;
             static void Reflect(AZ::ReflectContext* context);
             //! Some asset messages might require that the requests be evaluated by the asset processor only after the OS has send it a file notification regarding that asset,
-            //! Otherwise there could be a race condition and the asset request could be processed before the asset processor gets the file notification.To prevent this we create a fence file 
+            //! Otherwise there could be a race condition and the asset request could be processed before the asset processor gets the file notification.To prevent this we create a fence file
             //! and only evaluate the request after the asset processor picks up that fence file.We call this fencing.
             bool RequireFencing() const;
         private:
@@ -110,7 +110,7 @@ namespace AzFramework
             ResponsePing() = default;
             unsigned int GetMessageType() const override;
         };
-       
+
         //////////////////////////////////////////////////////////////////////////
         //!  Request the status of an asset or force one to compile
         class RequestAssetStatus
@@ -133,11 +133,11 @@ namespace AzFramework
             unsigned int GetMessageType() const override;
 
             AZ::OSString m_searchTerm; // some generic search term - can be parts of a name, or full name, of source file or product
-            AZ::Data::AssetId m_assetId; 
+            AZ::Data::AssetId m_assetId;
             bool m_isStatusRequest = false; // if this is true, it will only query status.  if false it will actually compile it.
             int m_searchType{ SearchType::Default };
         };
-        
+
         //! this will be sent in response to the RequestAssetStatus request
         class ResponseAssetStatus
             : public BaseAssetProcessorMessage
@@ -209,7 +209,7 @@ namespace AzFramework
             int m_numberOfPendingJobs; // number of copy jobs that are still pending
             bool m_isAssetProcessorReady = false;
         };
-        
+
         //////////////////////////////////////////////////////////////////////////
         struct GetUnresolvedDependencyCountsRequest
             : BaseAssetProcessorMessage
@@ -333,7 +333,7 @@ namespace AzFramework
             static void Reflect(AZ::ReflectContext* context);
 
             static constexpr unsigned int MessageType = AZ_CRC("AssetSystem::GetFullSourcePathFromRelativeProductPath", 0x08057afe);
-            
+
             GetFullSourcePathFromRelativeProductPathRequest() = default;
             GetFullSourcePathFromRelativeProductPathRequest(const AZ::OSString& relativeProductPath);
             unsigned int GetMessageType() const override;
@@ -376,7 +376,7 @@ namespace AzFramework
             * @param assetType This parameter is optional but could help detect problems with incorrect asset types being assigned to products.
             */
             explicit SourceAssetInfoRequest(const AZ::Data::AssetId& assetId, const AZ::Data::AssetType& assetType = AZ::Data::s_invalidAssetType);
-            
+
             //! You can also make a request with the relative or absolute path to the asset instead.  This always returns the source path.
             explicit SourceAssetInfoRequest(const char* assetPath);
 
@@ -626,6 +626,24 @@ namespace AzFramework
             AZStd::vector<AZ::Data::AssetId> m_legacyAssetIds; // if this asset was referred to by other legacy assetIds in the past, then they will be included here.
             AZ::Data::AssetType m_assetType = AZ::Data::s_invalidAssetType;
             AZStd::vector<AZ::Data::ProductDependency> m_dependencies;
+        };
+
+        //! Bulk message for sending updates for multiple assets all at once.
+        //! All updates must be of the same type and for the same platform.  The only supported types are AssetChanged and AssetRemoved.
+        class BulkAssetNotificationMessage
+            : public BaseAssetProcessorMessage
+        {
+        public:
+            AZ_CLASS_ALLOCATOR(BulkAssetNotificationMessage, AZ::OSAllocator, 0);
+            AZ_RTTI(BulkAssetNotificationMessage, "{D0BDFFA1-2E5A-4F37-A38D-26521ECAF812}", BaseAssetProcessorMessage);
+            static void Reflect(AZ::ReflectContext* context);
+            static constexpr unsigned int MessageType = AZ_CRC_CE("AssetProcessorManager::BulkAssetNotification"); // 1942440592U 0x73C74A90
+
+            BulkAssetNotificationMessage() = default;
+            unsigned int GetMessageType() const override;
+
+            AssetNotificationMessage::NotificationType m_type;
+            AZStd::vector<AssetNotificationMessage> m_messages;
         };
 
         // SaveAssetCatalogRequest
@@ -1254,6 +1272,48 @@ namespace AzFramework
             FolderList m_folderList;
         };
 
+        class AssetChangeReportRequest
+            : public BaseAssetProcessorMessage
+        {
+        public:
+            AZ_CLASS_ALLOCATOR(AssetChangeReportRequest, AZ::OSAllocator, 0);
+            AZ_RTTI(AssetChangeReportRequest, "{EF108E73-08F7-4CBC-A808-61A2EC544A6E}", BaseAssetProcessorMessage);
+            static void Reflect(AZ::ReflectContext* context);
+            static constexpr unsigned int MessageType = AZ_CRC_CE("AssetSystem::AssetChangeReport");
+
+            enum ChangeType
+            {
+                CheckMove,
+                Move,
+                CheckDelete,
+                Delete
+            };
+
+            // The default constructor is only required for the SerializeContext.
+            AssetChangeReportRequest() = default;
+            AssetChangeReportRequest(const AZ::OSString& fromPath, const AZ::OSString& toPath, ChangeType changeType = ChangeType::Move);
+            unsigned int GetMessageType() const override;
+
+            AZ::OSString m_fromPath;
+            AZ::OSString m_toPath;
+            ChangeType m_type;
+        };
+
+        class AssetChangeReportResponse
+            : public BaseAssetProcessorMessage
+        {
+        public:
+            AZ_CLASS_ALLOCATOR(AssetChangeReportResponse, AZ::OSAllocator, 0);
+            AZ_RTTI(AssetChangeReportResponse, "{C18891A7-794D-4270-93AE-7D0C2ECABB5C}", BaseAssetProcessorMessage);
+            static void Reflect(AZ::ReflectContext* context);
+
+            // The default constructor is only required for the SerializeContext.
+            AssetChangeReportResponse() = default;
+            AssetChangeReportResponse(AZStd::vector<AZStd::string> lines);
+            unsigned int GetMessageType() const override;
+
+            AZStd::vector<AZStd::string> m_lines;
+        };
 
     } // namespace AssetSystem
 } // namespace AzFramework

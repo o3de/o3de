@@ -66,4 +66,5 @@ set(ENABLED_GEMS
     ScriptAutomation
     DiffuseProbeGrid
     PythonCoverage
+    RemoteTools
 )

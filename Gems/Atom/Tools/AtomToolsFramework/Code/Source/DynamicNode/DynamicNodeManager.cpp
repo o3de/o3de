@@ -50,12 +50,13 @@ namespace AtomToolsFramework
     void DynamicNodeManager::LoadConfigFiles(const AZStd::string& extension)
     {
         // Load and register all discovered dynamic node configuration
-        for (AZStd::string configPath : GetPathsInSourceFoldersMatchingWildcard(AZStd::string::format("*.%s", extension.c_str())))
+        for (const auto& configPath : GetPathsInSourceFoldersMatchingWildcard(AZStd::string::format("*.%s", extension.c_str())))
         {
             DynamicNodeConfig config;
             if (config.Load(configPath))
             {
-                AZ_TracePrintf("DynamicNodeManager", "DynamicNodeConfig \"%s\" loaded.\n", configPath.c_str());
+                AZ_TracePrintf_IfTrue(
+                    "DynamicNodeManager", IsNodeConfigLoggingEnabled(), "DynamicNodeConfig \"%s\" loaded.\n", configPath.c_str());
                 RegisterConfig(config);
             }
         }
@@ -63,7 +64,8 @@ namespace AtomToolsFramework
 
     bool DynamicNodeManager::RegisterConfig(const DynamicNodeConfig& config)
     {
-        AZ_TracePrintf("DynamicNodeManager", "DynamicNodeConfig \"%s\" registering.\n", config.m_id.ToFixedString().c_str());
+        AZ_TracePrintf_IfTrue(
+            "DynamicNodeManager", IsNodeConfigLoggingEnabled(), "DynamicNodeConfig \"%s\" registering.\n", config.m_id.ToFixedString().c_str());
 
         if (!ValidateSlotConfigVec(config.m_id, config.m_inputSlots) ||
             !ValidateSlotConfigVec(config.m_id, config.m_outputSlots) ||
@@ -73,8 +75,16 @@ namespace AtomToolsFramework
             return false;
         }
 
+        if (m_nodeConfigMap.find(config.m_id) != m_nodeConfigMap.end())
+        {
+            AZ_Error("DynamicNodeManager", false, "DynamicNodeConfig with id \"%s\" is already registered.", config.m_id.ToFixedString().c_str());
+            return false;
+        }
+
         m_nodeConfigMap[config.m_id] = config;
-        AZ_TracePrintf("DynamicNodeManager", "DynamicNodeConfig \"%s\" registered.\n", config.m_id.ToFixedString().c_str());
+
+        AZ_TracePrintf_IfTrue(
+            "DynamicNodeManager", IsNodeConfigLoggingEnabled(), "DynamicNodeConfig \"%s\" registered.\n", config.m_id.ToFixedString().c_str());
         return true;
     }
 
@@ -118,6 +128,23 @@ namespace AtomToolsFramework
 
         GraphModelIntegration::AddCommonNodePaletteUtilities(rootItem, m_toolId);
         return rootItem;
+    }
+
+    void DynamicNodeManager::RegisterEditDataForSetting(const AZStd::string& settingName, const AZ::Edit::ElementData& editData)
+    {
+        m_editDataForSettingName[settingName] = editData;
+    }
+
+    const AZ::Edit::ElementData* DynamicNodeManager::GetEditDataForSetting(const AZStd::string& settingName) const
+    {
+        for (const auto& editDataPair : m_editDataForSettingName)
+        {
+            if (AZ::StringFunc::Equal(editDataPair.first, settingName))
+            {
+                return &editDataPair.second;
+            }
+        }
+        return nullptr;
     }
 
     bool DynamicNodeManager::ValidateSlotConfig(
@@ -176,5 +203,10 @@ namespace AtomToolsFramework
         }
 
         return true;
+    }
+
+    bool DynamicNodeManager::IsNodeConfigLoggingEnabled() const
+    {
+        return GetSettingsValue("/O3DE/AtomToolsFramework/DynamicNodeManager/NodeConfigLoggingEnabled", false);
     }
 } // namespace AtomToolsFramework

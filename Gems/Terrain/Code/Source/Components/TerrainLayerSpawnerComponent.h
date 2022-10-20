@@ -53,7 +53,7 @@ namespace Terrain
         bool m_useGroundPlane = true;
     };
 
-    static const AZ::Uuid TerrainLayerSpawnerComponentTypeId = "{3848605F-A4EA-478C-B710-84AB8DCA9EC5}";
+    inline constexpr AZ::TypeId TerrainLayerSpawnerComponentTypeId{ "{3848605F-A4EA-478C-B710-84AB8DCA9EC5}" };
 
     class TerrainLayerSpawnerComponent
         : public AZ::Component

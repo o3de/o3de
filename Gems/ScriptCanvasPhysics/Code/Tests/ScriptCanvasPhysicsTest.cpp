@@ -126,6 +126,7 @@ namespace ScriptCanvasPhysicsTests
             [[maybe_unused]] AzPhysics::SceneEvents::OnSceneGravityChangedEvent::Handler& handler) override {}
 
         MOCK_METHOD1(GetSceneHandle, AzPhysics::SceneHandle(const AZStd::string& sceneName));
+        MOCK_METHOD1(GetScene, AzPhysics::Scene*(AzPhysics::SceneHandle));
         MOCK_CONST_METHOD1(IsEnabled, bool(AzPhysics::SceneHandle sceneHandle));
         MOCK_METHOD2(AddSimulatedBody, AzPhysics::SimulatedBodyHandle(AzPhysics::SceneHandle sceneHandle, const AzPhysics::SimulatedBodyConfiguration* simulatedBodyConfig));
         MOCK_METHOD2(AddSimulatedBodies, AzPhysics::SimulatedBodyHandleList(AzPhysics::SceneHandle sceneHandle, const AzPhysics::SimulatedBodyConfigurationList& simulatedBodyConfigs));
@@ -175,6 +176,7 @@ namespace ScriptCanvasPhysicsTests
         MOCK_METHOD2(SetLocalPose, void(const AZ::Vector3& offset, const AZ::Quaternion& rotation));
         MOCK_CONST_METHOD0(GetLocalPose, AZStd::pair<AZ::Vector3, AZ::Quaternion>());
         MOCK_METHOD0(GetNativePointer, void*());
+        MOCK_CONST_METHOD0(GetNativePointer, const void*());
         MOCK_CONST_METHOD0(GetTag, AZ::Crc32());
         MOCK_METHOD1(AttachedToActor, void(void* actor));
         MOCK_METHOD0(DetachedFromActor, void());

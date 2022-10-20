@@ -41,6 +41,7 @@ namespace GradientSignal
             Average,
             Normal,
             Overlay,
+            Screen
         };
 
         bool m_enabled = true;
@@ -67,7 +68,7 @@ namespace GradientSignal
         void OnLayerAdded();
     };
 
-    static const AZ::Uuid MixedGradientComponentTypeId = "{BB461301-D8FD-431C-9E4A-BEC6A878297C}";
+    inline constexpr AZ::TypeId MixedGradientComponentTypeId{ "{BB461301-D8FD-431C-9E4A-BEC6A878297C}" };
 
     /**
     * performs operations to combine multiple gradients
@@ -119,6 +120,8 @@ namespace GradientSignal
                 return currentUnpremultiplied;
             case MixedGradientLayer::MixingOperation::Multiply:
                 return prevValue * currentUnpremultiplied;
+            case MixedGradientLayer::MixingOperation::Screen:
+                return 1.0f - ((1.0f - prevValue) * (1.0f - currentUnpremultiplied));
             case MixedGradientLayer::MixingOperation::Add:
                 return prevValue + currentUnpremultiplied;
             case MixedGradientLayer::MixingOperation::Subtract:

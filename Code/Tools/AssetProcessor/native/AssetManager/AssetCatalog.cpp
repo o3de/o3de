@@ -589,6 +589,54 @@ namespace AssetProcessor
         m_catalogIsDirty = true;
     }
 
+    void AssetCatalog::OnConnect(unsigned int connectionId, QStringList platforms)
+    {
+        // Send out a message for each asset to make sure the connected tools are aware of the existence of all previously built assets
+        // since the assetcatalog might not have been written out to disk previously.
+        for (QString platform : platforms)
+        {
+            QMutexLocker locker(&m_registriesMutex);
+            auto itr = m_registries.find(platform);
+
+            if (itr == m_registries.end())
+            {
+                continue;
+            }
+
+            const auto& currentRegistry = *itr;
+
+            AzFramework::AssetSystem::BulkAssetNotificationMessage bulkMessage;
+
+            bulkMessage.m_messages.reserve(currentRegistry.m_assetIdToInfo.size());
+            bulkMessage.m_type = AzFramework::AssetSystem::AssetNotificationMessage::AssetChanged;
+
+            for (const auto& assetInfo : currentRegistry.m_assetIdToInfo)
+            {
+                AzFramework::AssetSystem::AssetNotificationMessage message(
+                    assetInfo.second.m_relativePath.c_str(),
+                    AzFramework::AssetSystem::AssetNotificationMessage::AssetChanged,
+                    assetInfo.second.m_assetType,
+                    platform.toUtf8().constData());
+
+                message.m_assetId = assetInfo.second.m_assetId;
+                message.m_sizeBytes = assetInfo.second.m_sizeBytes;
+                message.m_dependencies = AZStd::move(currentRegistry.GetAssetDependencies(assetInfo.second.m_assetId));
+
+                const auto& legacyIds =
+                    m_registries[platform].GetLegacyMappingSubsetFromRealIds(AZStd::vector<AZ::Data::AssetId>{ assetInfo.second.m_assetId });
+
+                for (auto& legacyId : legacyIds)
+                {
+                    message.m_legacyAssetIds.emplace_back(legacyId.first);
+                }
+
+                bulkMessage.m_messages.push_back(AZStd::move(message));
+            }
+
+            AssetProcessor::ConnectionBus::Event(connectionId, &AssetProcessor::ConnectionBus::Events::Send, 0, bulkMessage);
+        }
+    }
+
     void AssetCatalog::OnSourceQueued(AZ::Uuid sourceUuid, AZ::Uuid legacyUuid, QString rootPath, QString relativeFilePath)
     {
         AZStd::lock_guard<AZStd::mutex> lock(m_sourceUUIDToSourceNameMapMutex);

@@ -20,6 +20,12 @@ namespace O3DE::ProjectManager
         Q_OBJECT
 
     public:
+        explicit FormBrowseEditWidget(
+            const QString& labelText,
+            const QString& valueText,
+            const QString& placeholderText,
+            const QString& errorText,
+            QWidget* parent = nullptr);
         explicit FormBrowseEditWidget(const QString& labelText, const QString& valueText = "", QWidget* parent = nullptr);
         explicit FormBrowseEditWidget(const QString& labelText = "", QWidget* parent = nullptr);
         ~FormBrowseEditWidget() = default;

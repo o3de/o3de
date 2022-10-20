@@ -48,7 +48,7 @@ namespace O3DE::ProjectManager
         AZ::Outcome<GemInfo> GetGemInfo(const QString& path, const QString& projectPath = {}) override;
         AZ::Outcome<QVector<GemInfo>, AZStd::string> GetEngineGemInfos() override;
         AZ::Outcome<QVector<GemInfo>, AZStd::string> GetAllGemInfos(const QString& projectPath) override;
-        AZ::Outcome<QVector<AZStd::string>, AZStd::string> GetEnabledGemNames(const QString& projectPath) override;
+        AZ::Outcome<QVector<AZStd::string>, AZStd::string> GetEnabledGemNames(const QString& projectPath) const override;
         AZ::Outcome<void, AZStd::string> RegisterGem(const QString& gemPath, const QString& projectPath = {}) override;
         AZ::Outcome<void, AZStd::string> UnregisterGem(const QString& gemPath, const QString& projectPath = {}) override;
 
@@ -74,17 +74,18 @@ namespace O3DE::ProjectManager
         AZ::Outcome<QVector<GemInfo>, AZStd::string> GetGemInfosForRepo(const QString& repoUri) override;
         AZ::Outcome<QVector<GemInfo>, AZStd::string> GetGemInfosForAllRepos() override;
         DetailedOutcome DownloadGem(
-            const QString& gemName, std::function<void(int, int)> gemProgressCallback, bool force = false) override;
+            const QString& gemName, const QString& path, std::function<void(int, int)> gemProgressCallback, bool force = false) override;
         DetailedOutcome DownloadProject(
-            const QString& projectName, std::function<void(int, int)> projectProgressCallback, bool force = false) override;
+            const QString& projectName, const QString& path, std::function<void(int, int)> projectProgressCallback, bool force = false) override;
         DetailedOutcome DownloadTemplate(
-            const QString& templateName, std::function<void(int, int)> templateProgressCallback, bool force = false) override;
+            const QString& templateName, const QString& path, std::function<void(int, int)> templateProgressCallback, bool force = false) override;
         void CancelDownload() override;
         bool IsGemUpdateAvaliable(const QString& gemName, const QString& lastUpdated) override;
 
         // Templates
         AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplates() override;
-        AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplatesForAllRepos() override;
+        AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplatesForRepo(const QString& repoUri) const override;
+        AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplatesForAllRepos() const override;
         AZ::Outcome<QVector<TemplateInfo>> GetGemTemplates() override;
 
         void AddErrorString(AZStd::string errorString) override;
@@ -102,8 +103,8 @@ namespace O3DE::ProjectManager
         GemInfo GemInfoFromPath(pybind11::handle path, pybind11::handle pyProjectPath);
         GemRepoInfo GetGemRepoInfo(pybind11::handle repoUri);
         ProjectInfo ProjectInfoFromPath(pybind11::handle path);
-        ProjectTemplateInfo ProjectTemplateInfoFromPath(pybind11::handle path);
-        TemplateInfo TemplateInfoFromPath(pybind11::handle path);
+        ProjectTemplateInfo ProjectTemplateInfoFromPath(pybind11::handle path) const;
+        TemplateInfo TemplateInfoFromPath(pybind11::handle path) const;
         AZ::Outcome<void, AZStd::string> GemRegistration(const QString& gemPath, const QString& projectPath, bool remove = false);
         bool StopPython();
         IPythonBindings::ErrorPair GetErrorPair();

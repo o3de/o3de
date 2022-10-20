@@ -376,3 +376,26 @@ class TestPrintRegistration:
                 patch('o3de.print_registration.get_project_path', return_value=project_path) as get_project_path_patch:
             result = print_registration._run_register_show(test_args)
             assert result == 0
+
+    # No --verbose for the -project-engine-name option doesn't produce more output.
+    @pytest.mark.parametrize("arg_option, project_path, expected_result", [
+        pytest.param("--project-engine-name", None, 1),
+        pytest.param("--project-engine-name", pathlib.Path("D:/MinimalProject"), 0),
+    ])
+    def test_print_external_subdirectories_registration(self, arg_option, project_path, expected_result):
+        parser = argparse.ArgumentParser()
+
+        # Register the registration script subparsers with the current argument parser
+        print_registration.add_parser_args(parser)
+        arg_list = [arg_option]
+        if project_path:
+            arg_list += ['--project-path', project_path.as_posix()]
+        test_args = parser.parse_args(arg_list)
+
+        with patch('o3de.manifest.load_o3de_manifest', side_effect=self.load_manifest_json) as load_manifest_patch, \
+                patch('o3de.manifest.save_o3de_manifest', return_value=True) as save_manifest_patch, \
+                patch('o3de.manifest.get_project_json_data',
+                      side_effect=self.get_project_json_data) as get_project_json_patch, \
+                patch('o3de.print_registration.get_project_path', return_value=project_path) as get_project_path_patch:
+            result = print_registration._run_register_show(test_args)
+            assert result == expected_result
