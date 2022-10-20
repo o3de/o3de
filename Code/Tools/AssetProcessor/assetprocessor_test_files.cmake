@@ -85,7 +85,6 @@ set(FILES
     native/unittests/FileWatcherUnitTests.cpp
     native/unittests/FileWatcherUnitTests.h
     native/unittests/PlatformConfigurationUnitTests.cpp
-    native/unittests/PlatformConfigurationUnitTests.h
     native/unittests/RCcontrollerUnitTests.cpp
     native/unittests/RCcontrollerUnitTests.h
     native/unittests/UnitTestRunner.cpp
