@@ -9,20 +9,21 @@ Holds constants used across both hydra and non-hydra scripts.
 
 """
 PhysX Components
+
+These are on the deprecation path to be relocated to their associated Componenet Behaviors Classes 
+    (see editor_python_test_tools\physx_collider.py for an example)
 """
 PHYSX_SHAPE_COLLIDER = "PhysX Shape Collider"
 
 """
 Shape Components
+
+These are on the deprecation path to be relocated to their associated Componenet Behaviors Classes 
+    (see editor_python_test_tools\physx_collider.py for an example)
 """
-BOX_SHAPE_COMPONENT = "Box Shape"
-CAPSULE_SHAPE_COMPONENT = "Capsule Shape"
-CYLINDER_SHAPE_COMPONENT = "Cylinder Shape"
-POLYGON_PRISM_SHAPE_COMPONENT = "Polygon Prism Shape"
-QUAD_SHAPE_COMPONENT = "Quad Shape"
-SPHERE_SHAPE_COMPONENT = "Sphere Shape"
-
-
-
-
-
+SHAPE_COMPONENT_BOX = "Box Shape"
+SHAPE_COMPONENT_CAPSULE = "Capsule Shape"
+SHAPE_COMPONENT_CYLINDER = "Cylinder Shape"
+SHAPE_COMPONENT_POLYGON_PRISM = "Polygon Prism Shape"
+SHAPE_COMPONENT_QUAD_SHAPE = "Quad Shape"
+SHAPE_COMPONENT_SPHERE = "Sphere Shape"
