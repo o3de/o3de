@@ -97,7 +97,7 @@ namespace AZ::Render
         }
     }
 
-    void SkyAtmosphereFeatureProcessor::OnRenderPipelineChanged(RPI::RenderPipeline* /*pipeline*/,
+    void SkyAtmosphereFeatureProcessor::OnRenderPipelineChanged([[maybe_unused]] RPI::RenderPipeline* pipeline,
         RPI::SceneNotification::RenderPipelineChangeType changeType)
     {
         CachePasses();

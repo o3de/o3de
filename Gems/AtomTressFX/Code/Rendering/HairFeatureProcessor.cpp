@@ -372,15 +372,15 @@ namespace AZ
             void HairFeatureProcessor::OnRenderPipelineChanged(RPI::RenderPipeline* renderPipeline,
                 RPI::SceneNotification::RenderPipelineChangeType changeType)
             {
+                // Proceed only if this is the main pipeline that contains the parent pass
+                if (!HasHairParentPass(renderPipeline))
+                {
+                    return;
+                }
+
                 if (changeType == RPI::SceneNotification::RenderPipelineChangeType::Added
                     || changeType == RPI::SceneNotification::RenderPipelineChangeType::PassChanged)
                 {
-                    // Proceed only if this is the main pipeline that contains the parent pass
-                    if (!HasHairParentPass(renderPipeline))
-                    {
-                        return;
-                    }
-
                     Init(renderPipeline);
 
                     // Mark for all passes to evacuate their render data and recreate it.
@@ -388,12 +388,6 @@ namespace AZ
                 }
                 else if (changeType == RPI::SceneNotification::RenderPipelineChangeType::Removed)
                 {
-                    // Proceed only if this is the main pipeline that contains the parent pass
-                    if (!HasHairParentPass(renderPipeline))
-                    {
-                        return;
-                    }
-
                     m_renderPipeline = nullptr;
                     ClearPasses();
                 }

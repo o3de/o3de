@@ -157,7 +157,8 @@ namespace AZ
             m_fixedShapeProcessor->SetUpdatePipelineStates();
         }
 
-        void AuxGeomFeatureProcessor::OnRenderPipelineChanged(RPI::RenderPipeline*, RPI::SceneNotification::RenderPipelineChangeType)
+        void AuxGeomFeatureProcessor::OnRenderPipelineChanged([[maybe_unused]] RPI::RenderPipeline* pipeline,
+            [[maybe_unused]] RPI::SceneNotification::RenderPipelineChangeType changeType)
         {
             OnSceneRenderPipelinesChanged();
         }

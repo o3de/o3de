@@ -301,8 +301,8 @@ namespace AZ::Render
         UpdateShadowView(shadowProperty);
     }
         
-    void ProjectedShadowFeatureProcessor::OnRenderPipelineChanged(RPI::RenderPipeline* /*renderPipeline*/,
-            RPI::SceneNotification::RenderPipelineChangeType /*changeType*/)
+    void ProjectedShadowFeatureProcessor::OnRenderPipelineChanged([[maybe_unused]] RPI::RenderPipeline* renderPipeline,
+            [[maybe_unused]] RPI::SceneNotification::RenderPipelineChangeType changeType)
     {
         CachePasses();
     }
