@@ -97,7 +97,7 @@ namespace AzToolsFramework
         void SetValueFromDom(const AZ::Dom::Value& domArray);
         void SetAttributesFromDom(const AZ::Dom::Value& domArray);
 
-        void SetPropertyEditorAttributes(size_t domIndex, const AZ::Dom::Value& domArray);
+        void SetPropertyEditorAttributes(size_t domIndex, const AZ::Dom::Value& domArray, QWidget* childWidget);
         void RemoveAttributes(size_t domIndex);
         void ClearAttributes();
 
@@ -143,6 +143,8 @@ namespace AzToolsFramework
             AZ::Dpe::Nodes::PropertyEditor::Align m_alignment = AZ::Dpe::Nodes::PropertyEditor::Align::UseDefaultAlignment;
             bool m_sharePriorColumn = false;
             bool m_minimumWidth = false;
+            AZStd::string_view m_descriptionString = "";
+            bool m_shouldDisable = false;
         };
         AZStd::unordered_map<size_t, AttributeInfo*> m_domOrderToAttributeInfo;
         AttributeInfo* GetAttributes(size_t domIndex);
