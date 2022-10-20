@@ -37,41 +37,34 @@ struct VsInput
     float3 position : POSITION;
     float3 normal : NORMAL;
     float4 tangent : TANGENT; 
-    float3 bitangent : BITANGENT; 
 };
 
 struct VsOutput
 {
     precise linear centroid float4 position : SV_Position;
     float3 normal: NORMAL;
-    float3 tangent : TANGENT; 
-    float3 bitangent : BITANGENT; 
+    float4 tangent : TANGENT; 
     float3 worldPosition : UV0;
 };
 
-// Any of these functions can optionally be implemented by the .materialtype's "materialShaderCode".
-// Otherwise the material type build pipeline will stub them out.
-void MaterialFunction_AdjustLocalPosition(inout float3 localPosition);
-void MaterialFunction_AdjustWorldPosition(inout float3 worldPosition);
-void MaterialFunction_AdjustSurface(inout Surface outSurface);
-
+#define MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE 1
+#include <Atom/RPI/MaterialPipelineCallbacks.azsli>
 
 VsOutput EvaluateVertexGeometry(VsInput IN)
 {
-    VsOutput output;
- 
-    MaterialFunction_AdjustLocalPosition(IN.position);
+    VertexData adjustableVertexData;
+    adjustableVertexData.InitializeToZero();
+    adjustableVertexData.positionWS = LocalSpaceToWorldSpace(IN.position);
+    adjustableVertexData.normalLS = IN.normal;
+    adjustableVertexData.tangentLS = IN.tangent;
 
-    float3 worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(IN.position, 1.0)).xyz;
- 
-    MaterialFunction_AdjustWorldPosition(worldPosition);
-
-    output.worldPosition = worldPosition;
-    output.position = mul(ViewSrg::m_viewProjectionMatrix, float4(worldPosition, 1.0));
+    MaterialFunction_AdjustVertexData(IN.position, adjustableVertexData);
     
-    output.tangent = IN.tangent.xyz;
-    output.bitangent = IN.bitangent;
-    output.normal = IN.normal;
+    VsOutput output;
+    output.worldPosition = adjustableVertexData.positionWS;
+    output.position = mul(ViewSrg::m_viewProjectionMatrix, float4(output.worldPosition, 1.0));
+    output.normal = adjustableVertexData.normalLS;
+    output.tangent = adjustableVertexData.tangentLS;
 
     return output;
 }
@@ -90,11 +83,17 @@ class PixelGeometryData
 
 PixelGeometryData EvaluatePixelGeometry(VsOutput IN, bool isFrontFace)
 {
+    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
+    float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
+
+    float3 vertexNormal, vertexTangent, vertexBitangent;
+    ConstructTBN(IN.normal, IN.tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
+
     PixelGeometryData geoData;
     geoData.positionWS = IN.worldPosition;
-    geoData.vertexNormal = normalize(IN.normal);
-    geoData.tangents[0] = IN.tangent;
-    geoData.bitangents[0] = IN.bitangent;
+    geoData.vertexNormal = vertexNormal;
+    geoData.tangents[0] = vertexTangent;
+    geoData.bitangents[0] = vertexBitangent;
     geoData.isFrontFace = isFrontFace;
     return geoData;
 }
@@ -122,4 +121,3 @@ Surface EvaluateSurface(PixelGeometryData geoData)
 
 #include <Atom/Features/Pipeline/Forward/LowEndForwardPassVertexAndPixel.azsli>
 
-#define MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE 1

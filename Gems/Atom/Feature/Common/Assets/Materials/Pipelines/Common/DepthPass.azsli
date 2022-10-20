@@ -19,24 +19,19 @@ struct VSDepthOutput
     precise float4 m_position : SV_Position;
 };
 
-// Any of these functions can optionally be implemented by the .materialtype's "materialShaderCode".
-// Otherwise the material type build pipeline will stub them out.
-void MaterialFunction_AdjustLocalPosition(inout float3 localPosition);
-void MaterialFunction_AdjustWorldPosition(inout float3 worldPosition);
+#define MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE 0
+#include <Atom/RPI/MaterialPipelineCallbacks.azsli>
 
 VSDepthOutput DepthPassVS(VSInput IN)
 {
-    VSDepthOutput OUT;
- 
-    MaterialFunction_AdjustLocalPosition(IN.m_position);
+    VertexData adjustableVertexData;
+    adjustableVertexData.InitializeToZero();
+    adjustableVertexData.positionWS = LocalSpaceToWorldSpace(IN.m_position);
 
-    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
-    float3 worldPosition = mul(objectToWorld, float4(IN.m_position, 1.0)).xyz;
+    MaterialFunction_AdjustVertexData(IN.m_position, adjustableVertexData);
     
-    MaterialFunction_AdjustWorldPosition(worldPosition);
-
-    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(worldPosition, 1.0));
-
+    VSDepthOutput OUT;
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(adjustableVertexData.positionWS, 1.0));
     return OUT;
 }
 

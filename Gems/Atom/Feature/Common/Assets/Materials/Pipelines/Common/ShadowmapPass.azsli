@@ -20,23 +20,18 @@ struct VertexOutput
     float4 m_position : SV_Position;
 };
 
-// Any of these functions can optionally be implemented by the .materialtype's "materialShaderCode".
-// Otherwise the material type build pipeline will stub them out.
-void MaterialFunction_AdjustLocalPosition(inout float3 localPosition);
-void MaterialFunction_AdjustWorldPosition(inout float3 worldPosition);
+#define MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE 0
+#include <Atom/RPI/MaterialPipelineCallbacks.azsli>
 
-VertexOutput MainVS(VertexInput input)
+VertexOutput MainVS(VertexInput IN)
 {
-    const float4x4 worldMatrix = ObjectSrg::GetWorldMatrix();
-    VertexOutput output;
+    VertexData adjustableVertexData;
+    adjustableVertexData.InitializeToZero();
+    adjustableVertexData.positionWS = LocalSpaceToWorldSpace(IN.m_position);
+
+    MaterialFunction_AdjustVertexData(IN.m_position, adjustableVertexData);
     
-    MaterialFunction_AdjustLocalPosition(input.m_position);
-
-    float3 worldPosition = mul(worldMatrix, float4(input.m_position, 1.0)).xyz;
-    
-    MaterialFunction_AdjustWorldPosition(worldPosition);
-
-    output.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(worldPosition, 1.0));
-
-    return output;
+    VertexOutput OUT;
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(adjustableVertexData.positionWS, 1.0));
+    return OUT;
 }

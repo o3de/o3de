@@ -442,20 +442,15 @@ namespace AZ
                 // and all other functions will be stubbed out.
                 generatedAzsl +=
                     " \n"
-                    "#if !MaterialFunction_AdjustLocalPosition_DEFINED                                       \n"
-                    "    void MaterialFunction_AdjustLocalPosition(inout float3 localPosition) {}            \n"
-                    "    #define MaterialFunction_AdjustLocalPosition_DEFINED 1                              \n"
-                    "#endif                                                                                  \n"
-                    "                                                                                        \n"
-                    "#if !MaterialFunction_AdjustWorldPosition_DEFINED                                       \n"
-                    "    void MaterialFunction_AdjustWorldPosition(inout float3 worldPosition) {}            \n"
-                    "    #define MaterialFunction_AdjustWorldPosition_DEFINED 1                              \n"
-                    "#endif                                                                                  \n"
-                    "                                                                                        \n"
-                    "#if !MaterialFunction_AdjustSurface_DEFINED && MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE  \n"
-                    "    void MaterialFunction_AdjustSurface(inout Surface outSurface) {}                    \n"
-                    "    #define MaterialFunction_AdjustSurface_DEFINED 1                                    \n"
-                    "#endif                                                                                  \n"
+                    "#if !MaterialFunction_AdjustVertexData_DEFINED                                                    \n"
+                    "    void MaterialFunction_AdjustVertexData(in float3 positionLS, inout VertexData vertexData) {}  \n"
+                    "    #define MaterialFunction_AdjustVertexData_DEFINED 1                                           \n"
+                    "#endif                                                                                            \n"
+                    "                                                                                                  \n"
+                    "#if !MaterialFunction_AdjustSurface_DEFINED && MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE            \n"
+                    "    void MaterialFunction_AdjustSurface(inout Surface outSurface) {}                              \n"
+                    "    #define MaterialFunction_AdjustSurface_DEFINED 1                                              \n"
+                    "#endif                                                                                            \n"
                     ;
 
                 AZ::IO::Path shaderName = shaderTemplate.m_shader;

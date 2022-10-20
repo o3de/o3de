@@ -11,15 +11,17 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
     float m_frequency;
 }
 
-void MaterialFunction_AdjustLocalPosition(inout float3 localPosition)
+void MaterialFunction_AdjustVertexData(in float3 positionLS, inout VertexData vertexData)
 {
-    float amount = sin(3.14159 * 2 * (SceneSrg::m_time * MaterialSrg::m_animationSpeed + (localPosition.x + localPosition.y + localPosition.z) * MaterialSrg::m_frequency)) * MaterialSrg::m_amplitude;
+    float amount = sin(3.14159 * 2 * (SceneSrg::m_time * MaterialSrg::m_animationSpeed + (positionLS.x + positionLS.y + positionLS.z) * MaterialSrg::m_frequency)) * MaterialSrg::m_amplitude;
 
-    float3 dir = normalize(localPosition);
+    float3 dir = normalize(positionLS);
 
-    localPosition += dir * amount;
+    positionLS += dir * amount;
+
+    vertexData.positionWS = LocalSpaceToWorldSpace(positionLS);
 }
-#define MaterialFunction_AdjustLocalPosition_DEFINED 1
+#define MaterialFunction_AdjustVertexData_DEFINED 1
 
 #if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE
 
