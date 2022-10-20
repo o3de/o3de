@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 
-def InstantiatePrefab_ContainingNestedEntitiesAndNestedPrefabs():
+def InstantiatePrefab_WithNestedEntitiesAndNestedPrefabs():
     """
     Test description:
     - Creates linear nested entities.
@@ -50,7 +50,7 @@ def InstantiatePrefab_ContainingNestedEntitiesAndNestedPrefabs():
     # Creates new nested prefabs at the root level
     # Asserts if creation didn't succeed
     entity_to_nest = EditorEntity.create_editor_entity_at(CREATION_POSITION, name=NESTED_PREFABS_TEST_ENTITY_NAME)
-    assert entity_to_nest.id.IsValid(), "Couldn't create TestEntity"
+    assert entity_to_nest.id.IsValid(), f"Couldn't create {NESTED_PREFABS_TEST_ENTITY_NAME}"
     entity_to_nest.add_component(PHYSX_COLLIDER_NAME)
     assert entity_to_nest.has_component(PHYSX_COLLIDER_NAME), f"Failed to add a {PHYSX_COLLIDER_NAME}"
     _, nested_prefab_instances = prefab_test_utils.create_linear_nested_prefabs(
@@ -107,4 +107,4 @@ def InstantiatePrefab_ContainingNestedEntitiesAndNestedPrefabs():
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
 
-    Report.start_test(InstantiatePrefab_ContainingNestedEntitiesAndNestedPrefabs)
+    Report.start_test(InstantiatePrefab_WithNestedEntitiesAndNestedPrefabs)
