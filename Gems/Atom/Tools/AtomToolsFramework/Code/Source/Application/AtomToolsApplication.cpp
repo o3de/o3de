@@ -123,6 +123,9 @@ namespace AtomToolsFramework
                 "exit", &AtomToolsApplication::PyExit, nullptr,
                 "Exit application. Primarily used for auto-testing."));
             addGeneral(behaviorContext->Method(
+                "crash", &AtomToolsApplication::PyCrash, nullptr,
+                "Crashes the application, useful for testing crash reporting and other automation tools."));
+            addGeneral(behaviorContext->Method(
                 "test_output", &AtomToolsApplication::PyTestOutput, nullptr,
                 "Report test information."));
         }
@@ -247,7 +250,7 @@ namespace AtomToolsFramework
 
         // This will only save modified registry settings that match the following filters
         const AZStd::vector<AZStd::string> filters = {
-            "/O3DE/AtomToolsFramework", AZStd::string::format("/O3DE/Atom/%s", m_targetName.c_str()) }; 
+            "/O3DE/AtomToolsFramework", "/O3DE/Atom/Tools", AZStd::string::format("/O3DE/Atom/%s", m_targetName.c_str()) }; 
 
         SaveSettingsToFile(settingsFilePath, filters);
 
@@ -268,7 +271,7 @@ namespace AtomToolsFramework
 
     void AtomToolsApplication::RunMainLoop()
     {
-        // Start initial command line processing and application update as part of the Qt event loop 
+        // Start initial command line processing and application update as part of the Qt event loop
         QTimer::singleShot(0, this, [this]() { OnIdle(); ProcessCommandLine(m_commandLine); });
         exec();
     }
@@ -350,7 +353,7 @@ namespace AtomToolsFramework
             AzFramework::AssetSystem::AssetStatus status = AzFramework::AssetSystem::AssetStatus_Unknown;
             AzFramework::AssetSystemRequestBus::BroadcastResult(
                 status, &AzFramework::AssetSystemRequestBus::Events::CompileAssetSync, assetFilters);
-            if (status != AzFramework::AssetSystem::AssetStatus_Compiled)
+            if (status != AzFramework::AssetSystem::AssetStatus_Compiled && status != AzFramework::AssetSystem::AssetStatus_Unknown)
             {
                 failedAssets.append(assetFilters.c_str());
             }
@@ -683,6 +686,11 @@ namespace AtomToolsFramework
     void AtomToolsApplication::PyExit()
     {
         AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
+    }
+
+    void AtomToolsApplication::PyCrash()
+    {
+        AZ_Crash();
     }
 
     void AtomToolsApplication::PyTestOutput(const AZStd::string& output)

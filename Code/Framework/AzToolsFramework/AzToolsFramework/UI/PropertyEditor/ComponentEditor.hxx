@@ -15,6 +15,8 @@
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzQtComponents/Components/Widgets/Card.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/DPEComponentAdapter.h>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/FilterAdapter.h>
 
 #include <QFrame>
 #include <QIcon>
@@ -35,7 +37,7 @@ namespace AZ
 
     namespace DocumentPropertyEditor
     {
-        class ReflectionAdapter;
+        class ComponentAdapter;
     }
 }
 
@@ -66,6 +68,8 @@ namespace AzToolsFramework
         void AddNotifications();
         void ClearNotifications();
 
+        bool HasContents();
+        void SetFilterString(AZStd::string filterString);
         void InvalidateAll(const char* filter = nullptr);
         void QueuePropertyEditorInvalidation(PropertyModificationRefreshLevel refreshLevel);
         void CancelQueuedRefresh();
@@ -142,7 +146,8 @@ namespace AzToolsFramework
 
         ReflectedPropertyEditor* m_propertyEditor = nullptr;
 
-        AZStd::shared_ptr<AZ::DocumentPropertyEditor::ReflectionAdapter> m_adapter;
+        AZStd::shared_ptr<AZ::DocumentPropertyEditor::ComponentAdapter> m_adapter;
+        AZStd::shared_ptr<AZ::DocumentPropertyEditor::ValueStringFilter> m_filterAdapter;
         DocumentPropertyEditor* m_dpe = nullptr;
 
         AZ::SerializeContext* m_serializeContext = nullptr;

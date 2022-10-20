@@ -221,11 +221,18 @@ namespace GraphModelIntegration
         //! A connection has been removed from the scene.
         virtual void OnGraphModelConnectionRemoved(GraphModel::ConnectionPtr /*connection*/){};
 
+        //! The specified node is about to be wrapped (embedded) onto the wrapperNode
+        virtual void PreOnGraphModelNodeWrapped([[maybe_unused]] GraphModel::NodePtr wrapperNode, [[maybe_unused]] GraphModel::NodePtr node) {};
+
         //! The specified node has been wrapped (embedded) onto the wrapperNode
         virtual void OnGraphModelNodeWrapped(GraphModel::NodePtr /*wrapperNode*/, GraphModel::NodePtr /*node*/){};
 
         //! The specified node has been unwrapped (removed) from the wrapperNode
         virtual void OnGraphModelNodeUnwrapped(GraphModel::NodePtr /*wrapperNode*/, GraphModel::NodePtr /*node*/){};
+
+        //! Sent whenever a graph model slot value changes
+        //! \param slot The slot that was modified in the graph.
+        virtual void OnGraphModelSlotModified(GraphModel::SlotPtr slot){};
 
         //! Something in the graph has been modified
         //! \param node The node that was modified in the graph.  If this is nullptr, some metadata on the graph itself was modified

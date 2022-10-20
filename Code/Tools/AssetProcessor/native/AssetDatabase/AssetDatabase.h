@@ -46,7 +46,7 @@ namespace AssetProcessor
 
     protected:
         void CreateStatements() override;
-        bool PostOpenDatabase() override;
+        bool PostOpenDatabase(bool ignoreFutureAssetDBVersionError) override;
         //////////////////////////////////////////////////////////////////////////
 
     public:
@@ -175,7 +175,12 @@ namespace AssetProcessor
         /// Given a source file and a builder UUID, does it DEPEND ON?
         bool GetSourceFileDependenciesByBuilderGUIDAndSource(const AZ::Uuid& builderGuid, AZ::Uuid sourceGuid, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency typeOfDependency, AzToolsFramework::AssetDatabase::SourceFileDependencyEntryContainer& container);
         /// Given a source file, what depends ON IT? ('reverse dependency')
-        bool GetSourceFileDependenciesByDependsOnSource(const QString& dependsOnSource, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency typeOfDependency, AzToolsFramework::AssetDatabase::SourceFileDependencyEntryContainer& container);
+        bool GetSourceFileDependenciesByDependsOnSource(
+            AZ::Uuid sourceGuid,
+            const char* sourceName,
+            const char* absolutePath,
+            AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency typeOfDependency,
+            AzToolsFramework::AssetDatabase::SourceFileDependencyEntryContainer& container);
 
         // --------------------- Legacy SUBID table -------------------
         bool CreateOrUpdateLegacySubID(AzToolsFramework::AssetDatabase::LegacySubIDsEntry& entry);  // create or overwrite operation.

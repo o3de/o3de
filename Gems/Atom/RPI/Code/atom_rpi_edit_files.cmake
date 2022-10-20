@@ -29,6 +29,7 @@ set(FILES
     Include/Atom/RPI.Edit/Material/MaterialFunctorSourceDataRegistration.h
     Include/Atom/RPI.Edit/Material/MaterialUtils.h
     Include/Atom/RPI.Edit/ResourcePool/ResourcePoolSourceData.h
+    Include/Atom/RPI.Edit/Shader/ShaderOptionValuesSourceData.h
     Include/Atom/RPI.Edit/Shader/ShaderSourceData.h
     Include/Atom/RPI.Edit/Shader/ShaderVariantListSourceData.h
     Include/Atom/RPI.Edit/Shader/ShaderVariantAssetCreator.h

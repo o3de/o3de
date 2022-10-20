@@ -702,7 +702,10 @@ namespace AZ
                 WaitAndCleanCompletionJob(m_simulationCompletion);
             }
 
-            SceneNotificationBus::Event(GetId(), &SceneNotification::OnBeginPrepareRender);
+            {
+                AZ_PROFILE_SCOPE(RPI, "Scene: OnBeginPrepareRender");
+                SceneNotificationBus::Event(GetId(), &SceneNotification::OnBeginPrepareRender);
+            }
 
             // Get active pipelines which need to be rendered and notify them frame started
             AZStd::vector<RenderPipelinePtr> activePipelines;
@@ -1052,11 +1055,11 @@ namespace AZ
             m_pipelineStatesLookupNeedsRebuild = false;
         }
 
-        RenderPipelinePtr Scene::FindRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle)
+        RenderPipelinePtr Scene::FindRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle, ViewType viewType)
         {
             for (auto renderPipeline : m_pipelines)
             {
-                if (renderPipeline->GetWindowHandle() == windowHandle)
+                if (renderPipeline->GetWindowHandle() == windowHandle && renderPipeline->GetViewType() == viewType)
                 {
                     return renderPipeline;
                 }

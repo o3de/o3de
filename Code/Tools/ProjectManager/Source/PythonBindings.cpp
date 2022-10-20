@@ -665,7 +665,7 @@ namespace O3DE::ProjectManager
         return AZ::Success(AZStd::move(gems));
     }
 
-    AZ::Outcome<QVector<AZStd::string>, AZStd::string> PythonBindings::GetEnabledGemNames(const QString& projectPath)
+    AZ::Outcome<QVector<AZStd::string>, AZStd::string> PythonBindings::GetEnabledGemNames(const QString& projectPath) const
     {
         // Retrieve the path to the cmake file that lists the enabled gems.
         pybind11::str enabledGemsFilename;
@@ -838,7 +838,7 @@ namespace O3DE::ProjectManager
         }
     }
 
-    AZ::Outcome<GemInfo> PythonBindings::CreateGem(const QString& templatePath, const GemInfo& gemInfo, bool registerGem)
+    AZ::Outcome<GemInfo> PythonBindings::CreateGem(const QString& templatePath, const GemInfo& gemInfo, bool registerGem/*=true*/)
     {
         using namespace pybind11::literals;
 
@@ -863,7 +863,7 @@ namespace O3DE::ProjectManager
                     "icon_path"_a = QString_To_Py_Path(gemInfo.m_iconPath),
                     "documentation_url"_a = QString_To_Py_String(gemInfo.m_documentationLink),
                     "repo_uri"_a = QString_To_Py_String(gemInfo.m_repoUri),
-                    "no_register"_a = registerGem)
+                    "no_register"_a = !registerGem)
                     ;
                 if (createGemResult.cast<int>() == 0)
                 {
@@ -878,6 +878,8 @@ namespace O3DE::ProjectManager
         }
         else
         {
+            //Make sure directory link is a normalized path that can be rendered in "View Directory" dialog
+            gemInfoResult.m_directoryLink = QDir::cleanPath(gemInfoResult.m_directoryLink);
             return AZ::Success(AZStd::move(gemInfoResult));
         }
     }
@@ -1191,7 +1193,7 @@ namespace O3DE::ProjectManager
         return AZ::Success();
     }
 
-    ProjectTemplateInfo PythonBindings::ProjectTemplateInfoFromPath(pybind11::handle path)
+    ProjectTemplateInfo PythonBindings::ProjectTemplateInfoFromPath(pybind11::handle path) const
     {
         ProjectTemplateInfo templateInfo(TemplateInfoFromPath(path));
         if (templateInfo.IsValid())
@@ -1215,7 +1217,7 @@ namespace O3DE::ProjectManager
         return templateInfo;
     }
 
-    TemplateInfo PythonBindings::TemplateInfoFromPath(pybind11::handle path)
+    TemplateInfo PythonBindings::TemplateInfoFromPath(pybind11::handle path) const
     {
         TemplateInfo templateInfo;
         templateInfo.m_path = Py_To_String(path);
@@ -1305,7 +1307,41 @@ namespace O3DE::ProjectManager
         }
     }
 
-    AZ::Outcome<QVector<ProjectTemplateInfo>> PythonBindings::GetProjectTemplatesForAllRepos()
+    AZ::Outcome<QVector<ProjectTemplateInfo>> PythonBindings::GetProjectTemplatesForRepo(const QString& repoUri) const
+    {
+        QVector<ProjectTemplateInfo> templates;
+
+        bool result = ExecuteWithLock(
+            [&]
+            {
+                using namespace pybind11::literals;
+
+                auto templatePaths = m_repo.attr("get_template_json_paths_from_cached_repo")(
+                    "repo_uri"_a = QString_To_Py_String(repoUri)
+                    );
+
+                if (pybind11::isinstance<pybind11::set>(templatePaths))
+                {
+                    for (auto path : templatePaths)
+                    {
+                        ProjectTemplateInfo remoteTemplate = ProjectTemplateInfoFromPath(path);
+                        remoteTemplate.m_isRemote = true;
+                        templates.push_back(remoteTemplate);
+                    }
+                }
+            });
+
+        if (!result)
+        {
+            return AZ::Failure();
+        }
+        else
+        {
+            return AZ::Success(AZStd::move(templates));
+        }
+    }
+
+    AZ::Outcome<QVector<ProjectTemplateInfo>> PythonBindings::GetProjectTemplatesForAllRepos() const
     {
         QVector<ProjectTemplateInfo> templates;
 
@@ -1444,7 +1480,6 @@ namespace O3DE::ProjectManager
             try
             {
                 // required
-                gemRepoInfo.m_repoUri = Py_To_String(data["repo_uri"]);
                 gemRepoInfo.m_name = Py_To_String(data["repo_name"]);
                 gemRepoInfo.m_origin = Py_To_String(data["origin"]);
 

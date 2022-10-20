@@ -19,19 +19,4 @@ namespace AZStd
     {
         return AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(AZStd::chrono::utc_clock::now().time_since_epoch()).count();
     }
-
-    bool GetUTCTimestampSecondsNow(UTCTimestampString& utcTimestamp)
-    {
-        return GetUTCTimestampSeconds(utcTimestamp, AZStd::chrono::utc_clock::now());
-    }
-
-    bool GetUTCTimestampMillisecondsNow(UTCTimestampString& utcTimestamp)
-    {
-        return GetUTCTimestampMicroseconds(utcTimestamp, AZStd::chrono::utc_clock::now());
-    }
-
-    bool GetUTCTimestampMicrosecondsNow(UTCTimestampString& utcTimestamp)
-    {
-        return GetUTCTimestampMicroseconds(utcTimestamp, AZStd::chrono::utc_clock::now());
-    }
 }

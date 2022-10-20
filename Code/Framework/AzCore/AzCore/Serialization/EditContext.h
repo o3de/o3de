@@ -819,16 +819,15 @@ namespace AZ
         {
             AZ_TYPE_INFO(EnumConstant, "{4CDFEE70-7271-4B27-833B-F8F72AA64C40}");
 
-            typedef typename AZStd::RemoveEnum<EnumType>::type UnderlyingType;
-
             EnumConstant() {}
-            EnumConstant(EnumType first, const char* description)
+            EnumConstant(EnumType first, AZStd::string_view description)
+                : m_value(static_cast<AZ::u64>(first))
+                , m_description(description)
             {
-                m_value = static_cast<UnderlyingType>(first);
-                m_description = description;
             }
 
-            UnderlyingType m_value;
+            // Store using a u64 under the hood so this can be safely cast to any valid enum-range value
+            AZ::u64 m_value;
             AZStd::string m_description;
         };
 

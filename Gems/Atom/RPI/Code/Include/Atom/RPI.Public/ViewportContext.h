@@ -13,6 +13,8 @@
 #include <Atom/RPI.Public/WindowContext.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/SceneBus.h>
+#include <Atom/RPI.Public/ViewGroup.h>
+#include <Atom/RPI.Public/ViewProviderBus.h>
 
 namespace AZ
 {
@@ -80,6 +82,8 @@ namespace AZ
             void OnRenderPipelineRemoved(RenderPipeline* pipeline) override;
             //! OnBeginPrepareRender is forwarded to our RenderTick notification to allow subscribers to do rendering.
             void OnBeginPrepareRender() override;
+            //! OnEndPrepareRender is forwarded to our WaitForRender notification to wait for any pending work
+            void OnEndPrepareRender() override;
 
             // WindowNotificationBus interface overrides...
             //! Used to fire a notification when our window resizes.
@@ -98,9 +102,9 @@ namespace AZ
             void ConnectDpiScalingFactorChangedHandler(ScalarChangedEvent::Handler& handler);
 
             //! Notifies consumers when the view matrix has changed.
-            void ConnectViewMatrixChangedHandler(MatrixChangedEvent::Handler& handler);
+            void ConnectViewMatrixChangedHandler(MatrixChangedEvent::Handler& handler, ViewType viewType = ViewType::Default);
             //! Notifies consumers when the projection matrix has changed.
-            void ConnectProjectionMatrixChangedHandler(MatrixChangedEvent::Handler& handler);
+            void ConnectProjectionMatrixChangedHandler(MatrixChangedEvent::Handler& handler, ViewType viewType = ViewType::Default);
 
             using SceneChangedEvent = AZ::Event<ScenePtr>;
             //! Notifies consumers when the render scene has changed.
@@ -128,30 +132,33 @@ namespace AZ
             void SetCameraTransform(const AZ::Transform& transform) override;
 
         private:
+
             // Used by the manager to set the current default camera.
-            void SetDefaultView(ViewPtr view);
+            void UpdateContextPipelineView(uint32_t viewIndex);
+            void SetDefaultViewGroup(ViewGroupPtr viewGroup);
+
             // Ensures our render pipeline's default camera matches ours.
-            void UpdatePipelineView();
+            void UpdatePipelineView(uint32_t viewIndex);
 
             ScenePtr m_rootScene;
             WindowContextSharedPtr m_windowContext;
-            ViewPtr m_defaultView;
+            ViewGroupPtr m_viewGroup;
+
             AzFramework::WindowSize m_viewportSize;
             float m_viewportDpiScaleFactor = 1.0f;
 
             SizeChangedEvent m_sizeChangedEvent;
             ScalarChangedEvent m_dpiScalingFactorChangedEvent;
-            MatrixChangedEvent m_viewMatrixChangedEvent;
-            MatrixChangedEvent::Handler m_onViewMatrixChangedHandler;
-            MatrixChangedEvent m_projectionMatrixChangedEvent;
-            MatrixChangedEvent::Handler m_onProjectionMatrixChangedHandler;
+            
             SceneChangedEvent m_sceneChangedEvent;
             PipelineChangedEvent m_currentPipelineChangedEvent;
-            ViewChangedEvent m_defaultViewChangedEvent;
+
+            AZStd::vector<ViewChangedEvent> m_viewChangedEvents;
+
             ViewportIdEvent m_aboutToBeDestroyedEvent;
 
-            ViewportContextManager* m_manager;
-            RenderPipelinePtr m_currentPipeline;
+            ViewportContextManager* m_manager = nullptr;
+            AZStd::fixed_vector<RenderPipelinePtr, MaxViewTypes> m_currentPipelines;
             Name m_name;
             AzFramework::ViewportId m_id;
 

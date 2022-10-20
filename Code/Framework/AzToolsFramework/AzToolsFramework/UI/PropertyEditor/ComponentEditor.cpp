@@ -150,9 +150,11 @@ namespace AzToolsFramework
         if (DocumentPropertyEditor::ShouldReplaceRPE())
         {
             // Instantiate the DPE without the RPE
-            m_adapter = AZStd::make_shared<AZ::DocumentPropertyEditor::ReflectionAdapter>();
+            m_adapter = AZStd::make_shared<AZ::DocumentPropertyEditor::ComponentAdapter>();
+            m_filterAdapter = AZStd::make_shared<AZ::DocumentPropertyEditor::ValueStringFilter>();
             m_dpe = new DocumentPropertyEditor(this);
-            m_dpe->SetAdapter(m_adapter);
+            m_filterAdapter->SetSourceAdapter(m_adapter);
+            m_dpe->SetAdapter(m_filterAdapter);
             setContentWidget(m_dpe);
         }
         else
@@ -198,7 +200,7 @@ namespace AzToolsFramework
 
         if (DocumentPropertyEditor::ShouldReplaceRPE())
         {
-            m_adapter->SetValue(componentInstance, instanceTypeId);
+            m_adapter->SetComponent(componentInstance);
         }
         else
         {
@@ -518,6 +520,31 @@ namespace AzToolsFramework
         }
 
         return combinedPendingComponentInfo;
+    }
+
+    bool ComponentEditor::HasContents()
+    {
+        if (m_dpe)
+        {
+            return !m_filterAdapter->IsEmpty();
+        }
+        else
+        {
+            return (!GetPropertyEditor()->HasFilteredOutNodes() || GetPropertyEditor()->HasVisibleNodes());
+        }
+    }
+
+    void ComponentEditor::SetFilterString(AZStd::string filterString)
+    {
+        if (m_dpe)
+        {
+            m_filterAdapter->SetFilterString(filterString);
+        }
+        else
+        {
+            GetPropertyEditor()->SetFilterString(filterString);
+        }
+        GetHeader()->SetFilterString(filterString);
     }
 
     void ComponentEditor::InvalidateAll(const char* filter)

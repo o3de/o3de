@@ -42,7 +42,7 @@
                 ],
                 "settings": {
                     "materialInputs": [
-                        "SLOTTYPE NODEINPUTID;"
+                        "SLOTSTANDARDSRGMEMBER"
                     ]
                 }
             }
@@ -57,7 +57,7 @@
                 ],
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::NODEINPUTID;"
+                        "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::NODEID_inValue;"
                     ]
                 }
             }

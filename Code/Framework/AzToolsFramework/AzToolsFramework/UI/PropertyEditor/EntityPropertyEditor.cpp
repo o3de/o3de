@@ -1745,7 +1745,7 @@ namespace AzToolsFramework
                 componentEditor->mockDisabledState(true);
             }
 
-            if (!componentEditor->GetPropertyEditor()->HasFilteredOutNodes() || componentEditor->GetPropertyEditor()->HasVisibleNodes())
+            if (componentEditor->HasContents())
             {
                 for (AZ::Component* componentInstance : componentInstances)
                 {
@@ -4566,6 +4566,12 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::dragEnterEvent(QDragEnterEvent* event)
     {
+        if (m_selectionContainsReadOnlyEntity)
+        {
+            event->ignore();
+            return;
+        }
+
         if (UpdateDrag(event->pos(), event->mouseButtons(), event->mimeData()))
         {
             event->accept();
@@ -4578,6 +4584,12 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::dragMoveEvent(QDragMoveEvent* event)
     {
+        if (m_selectionContainsReadOnlyEntity)
+        {
+            event->ignore();
+            return;
+        }
+
         if (UpdateDrag(event->pos(), event->mouseButtons(), event->mimeData()))
         {
             event->accept();
@@ -4820,6 +4832,11 @@ namespace AzToolsFramework
         if (m_isAlreadyQueuedRefresh)
         {
             return false; // can't drop while tree is rebuilding itself!
+        }
+
+        if (m_selectionContainsReadOnlyEntity)
+        {
+            return false;
         }
 
         const QRect globalRect(globalPos, globalPos);
@@ -5660,8 +5677,7 @@ namespace AzToolsFramework
 
         for (auto componentEditor : m_componentEditors)
         {
-            componentEditor->GetPropertyEditor()->SetFilterString(m_filterString);
-            componentEditor->GetHeader()->SetFilterString(m_filterString);
+            componentEditor->SetFilterString(m_filterString);
         }
 
         UpdateContents();

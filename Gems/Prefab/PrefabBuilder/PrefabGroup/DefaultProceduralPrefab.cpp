@@ -90,8 +90,10 @@ namespace AZ::SceneAPI
 
         // compute the filenames of the scene file
         AZStd::string relativeSourcePath = scene.GetSourceFilename();
-        // the watch folder and forward slash is used in the asset hint path of the file
         AZStd::string watchFolder = scene.GetWatchFolder() + "/";
+        // the watch folder and forward slash is used in the asset hint path of the file
+        AZ::StringFunc::Replace(relativeSourcePath, "\\", "/");
+        AZ::StringFunc::Replace(watchFolder, "\\", "/");
         AZ::StringFunc::Replace(relativeSourcePath, watchFolder.c_str(), "");
         AZ::StringFunc::Replace(relativeSourcePath, ".", "_");
         AZStd::string filenameOnly{ relativeSourcePath };
@@ -157,7 +159,18 @@ namespace AZ::SceneAPI
                         {
                             if (azrtti_istypeof<AZ::SceneAPI::DataTypes::ITransform>(childContent.get()))
                             {
-                                nodeDataForEntity.m_transformIndex = childIndex;
+                                if (!nodeDataForEntity.m_transformIndex.IsValid())
+                                {
+                                    // The first child transform of the mesh is applied to the mesh entity
+                                    nodeDataForEntity.m_transformIndex = childIndex;
+                                }
+                                else
+                                {
+                                    // All other child transforms of the mesh represent unique entities
+                                    NodeDataForEntity newNodeDataForEntity;
+                                    newNodeDataForEntity.m_transformIndex = childIndex;
+                                    nodeDataMap.emplace(NodeDataMapEntry{ childIndex, AZStd::move(newNodeDataForEntity) });
+                                }
                             }
                             else if (azrtti_istypeof<AZ::SceneAPI::DataTypes::ICustomPropertyData>(childContent.get()))
                             {
@@ -332,6 +345,9 @@ namespace AZ::SceneAPI
             }
         }
         meshGroup->OverrideId(meshSubId);
+
+        // tag this mesh group as a "default mesh group" using this rule
+        meshGroup->GetRuleContainer().AddRule(AZStd::make_shared<AZ::SceneAPI::SceneData::ProceduralMeshGroupRule>());
 
         // this clears out the mesh coordinates each mesh group will be rotated and translated
         // using the attached scene graph node

@@ -17,6 +17,8 @@ class QWidget;
 
 namespace AzToolsFramework
 {
+    using ActionManagerGetterResult = AZ::Outcome<AZStd::string, AZStd::string>;
+
     class EditorAction;
 
     //! ActionManagerInternalInterface
@@ -62,6 +64,10 @@ namespace AzToolsFramework
         //! @param widgetActionIdentifier The identifier for the widget action to retrieve.
         //! @return A raw pointer to the QWidget, or nullptr if the action could not be found.
         virtual QWidget* GenerateWidgetFromWidgetAction(const AZStd::string& widgetActionIdentifier) = 0;
+
+        //! Update all actions that are parented to a specific action context.
+        //! @param actionContextIdentifier The action context identifier for the context to update all actions for.
+        virtual void UpdateAllActionsInActionContext(const AZStd::string& actionContextIdentifier) = 0;
     };
 
 } // namespace AzToolsFramework

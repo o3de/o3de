@@ -173,6 +173,14 @@ namespace PhysX
                 &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay
                 , AzToolsFramework::Refresh_EntireTree);
         }
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::EnableLimits)
+        {
+            m_angularLimit.m_standardLimitConfig.m_isLimited = value;
+        }
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::EnableSoftLimits)
+        {
+            m_angularLimit.m_standardLimitConfig.m_isSoftLimit = value;
+        }
     }
 
     void EditorHingeJointComponent::SetLinearValue(const AZStd::string& parameterName, float value)

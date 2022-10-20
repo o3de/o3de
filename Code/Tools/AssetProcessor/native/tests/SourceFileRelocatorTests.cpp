@@ -98,16 +98,16 @@ namespace UnitTests
                 false, true, platforms, 0, m_data->m_scanFolder2.m_scanFolderID);
             m_data->m_platformConfig.AddScanFolder(scanFolder2);
 
-            SourceDatabaseEntry sourceFile1 = { m_data->m_scanFolder1.m_scanFolderID, "subfolder1/somefile.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
-            SourceDatabaseEntry sourceFile2 = { m_data->m_scanFolder1.m_scanFolderID, "subfolder1/otherfile.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
-            SourceDatabaseEntry sourceFile3 = { m_data->m_scanFolder2.m_scanFolderID, "otherfile.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
-            SourceDatabaseEntry sourceFile4 = { m_data->m_scanFolder2.m_scanFolderID, "a/b/c/d/otherfile.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
-            SourceDatabaseEntry sourceFile5 = { m_data->m_scanFolder1.m_scanFolderID, "duplicate/file1.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
-            SourceDatabaseEntry sourceFile6 = { m_data->m_scanFolder2.m_scanFolderID, "duplicate/file1.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
-            SourceDatabaseEntry sourceFile7 = { m_data->m_scanFolder1.m_scanFolderID, "subfolder2/file.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
-            SourceDatabaseEntry sourceFile8 = { m_data->m_scanFolder1.m_scanFolderID, "test.txt", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
-            SourceDatabaseEntry sourceFile9 = { m_data->m_scanFolder1.m_scanFolderID, "duplicate/folder/file1.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
-            SourceDatabaseEntry sourceFile10 = { m_data->m_scanFolder1.m_scanFolderID, "folder/file.foo", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
+            SourceDatabaseEntry sourceFile1{ m_data->m_scanFolder1.m_scanFolderID, "subfolder1/somefile.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
+            SourceDatabaseEntry sourceFile2{ m_data->m_scanFolder1.m_scanFolderID, "subfolder1/otherfile.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
+            SourceDatabaseEntry sourceFile3{ m_data->m_scanFolder2.m_scanFolderID, "otherfile.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
+            SourceDatabaseEntry sourceFile4{ m_data->m_scanFolder2.m_scanFolderID, "a/b/c/d/otherfile.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
+            SourceDatabaseEntry sourceFile5{ m_data->m_scanFolder1.m_scanFolderID, "duplicate/file1.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
+            SourceDatabaseEntry sourceFile6{ m_data->m_scanFolder2.m_scanFolderID, "duplicate/file1.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
+            SourceDatabaseEntry sourceFile7{ m_data->m_scanFolder1.m_scanFolderID, "subfolder2/file.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
+            SourceDatabaseEntry sourceFile8{ m_data->m_scanFolder1.m_scanFolderID, "test.txt", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
+            SourceDatabaseEntry sourceFile9{ m_data->m_scanFolder1.m_scanFolderID, "duplicate/folder/file1.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
+            SourceDatabaseEntry sourceFile10{ m_data->m_scanFolder1.m_scanFolderID, "folder/file.foo", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
             ASSERT_TRUE(m_data->m_connection->SetSource(sourceFile1));
             ASSERT_TRUE(m_data->m_connection->SetSource(sourceFile2));
             ASSERT_TRUE(m_data->m_connection->SetSource(sourceFile3));
@@ -119,8 +119,8 @@ namespace UnitTests
             ASSERT_TRUE(m_data->m_connection->SetSource(sourceFile9));
             ASSERT_TRUE(m_data->m_connection->SetSource(sourceFile10));
 
-            SourceFileDependencyEntry dependency1{ AZ::Uuid::CreateRandom(), m_data->m_dependency1Uuid, "subfolder1/otherfile.tif", SourceFileDependencyEntry::TypeOfDependency::DEP_SourceToSource, false, "" };
-            SourceFileDependencyEntry dependency2{ AZ::Uuid::CreateRandom(), m_data->m_dependency2Uuid, "otherfile.tif", SourceFileDependencyEntry::TypeOfDependency::DEP_JobToJob, false, "" };
+            SourceFileDependencyEntry dependency1{ AZ::Uuid::CreateRandom(), m_data->m_dependency1Uuid, PathOrUuid("subfolder1/otherfile.tif"), SourceFileDependencyEntry::TypeOfDependency::DEP_SourceToSource, false, "" };
+            SourceFileDependencyEntry dependency2{ AZ::Uuid::CreateRandom(), m_data->m_dependency2Uuid, PathOrUuid("otherfile.tif"), SourceFileDependencyEntry::TypeOfDependency::DEP_JobToJob, false, "" };
             ASSERT_TRUE(m_data->m_connection->SetSourceFileDependency(dependency1));
             ASSERT_TRUE(m_data->m_connection->SetSourceFileDependency(dependency2));
 

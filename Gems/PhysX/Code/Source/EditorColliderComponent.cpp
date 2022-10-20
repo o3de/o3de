@@ -1464,6 +1464,12 @@ namespace PhysX
 
     void EditorColliderComponent::SetCylinderRadius(float radius)
     {
+        if (radius <= 0.0f)
+        {
+            AZ_Error("PhysX", false, "SetCylinderRadius: radius must be greater than zero.");
+            return;
+        }
+
         m_shapeConfiguration.m_cylinder.m_radius = radius;
         UpdateCylinderCookedMesh();
         CreateStaticEditorCollider();
@@ -1476,6 +1482,12 @@ namespace PhysX
 
     void EditorColliderComponent::SetCylinderHeight(float height)
     {
+        if (height <= 0.0f)
+        {
+            AZ_Error("PhysX", false, "SetCylinderHeight: height must be greater than zero.");
+            return;
+        }
+
         m_shapeConfiguration.m_cylinder.m_height = height;
         UpdateCylinderCookedMesh();
         CreateStaticEditorCollider();
@@ -1525,11 +1537,23 @@ namespace PhysX
         const AZ::u8 subdivisionCount = m_shapeConfiguration.m_cylinder.m_subdivisionCount;
         const float height = m_shapeConfiguration.m_cylinder.m_height;
         const float radius = m_shapeConfiguration.m_cylinder.m_radius;
+
+        if (height <= 0.0f)
+        {
+            AZ_Error("PhysX", false, "Cylinder height must be greater than zero. Entity: %s", GetEntity()->GetName().c_str());
+            return;
+        }
+
+        if (radius <= 0.0f)
+        {
+            AZ_Error("PhysX", false, "Cylinder radius must be greater than zero. Entity: %s", GetEntity()->GetName().c_str());
+            return;
+        }
+
         Utils::Geometry::PointList samplePoints = Utils::CreatePointsAtFrustumExtents(height, radius, radius, subdivisionCount).value();
 
         const AZ::Vector3 scale = m_shapeConfiguration.m_cylinder.m_configuration.m_scale;
-        m_shapeConfiguration.m_cylinder.m_configuration
-            = Utils::CreatePxCookedMeshConfiguration(samplePoints, scale).value();
+        m_shapeConfiguration.m_cylinder.m_configuration = Utils::CreatePxCookedMeshConfiguration(samplePoints, scale).value();
     }
 
     void EditorColliderComponentDescriptor::Reflect(AZ::ReflectContext* reflection) const

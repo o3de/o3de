@@ -11,31 +11,57 @@
 #include <Atom/RPI.Public/Image/ImageSystem.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Public/Image/StreamingImagePool.h>
-#include <Atom/RPI.Public/Image/DefaultStreamingImageController.h>
 
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
+#include <Atom/RHI.Reflect/ImagePoolDescriptor.h>
 #include <Atom/RPI.Reflect/Image/AttachmentImageAssetCreator.h>
 #include <Atom/RPI.Reflect/Image/ImageMipChainAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAssetHandler.h>
 #include <Atom/RPI.Reflect/Image/StreamingImagePoolAssetCreator.h>
 #include <Atom/RPI.Reflect/ResourcePoolAssetCreator.h>
 
-#include <Atom/RHI.Reflect/ImagePoolDescriptor.h>
 #include <Atom/RHI/ImagePool.h>
-
 #include <Atom/RHI/RHISystemInterface.h>
 
 #include <AtomCore/Instance/InstanceDatabase.h>
 
-#include <AzCore/Interface/Interface.h>
-#include <AzCore/Interface/Interface.h>
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Console/IConsole.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Math/Color.h>
 
 AZ_DECLARE_BUDGET(RPI);
 
 namespace AZ
 {
+
+    namespace
+    {
+        void cvar_r_streamingImagePoolBudgetMb_Changed(const size_t& value)
+        {
+            if (auto* imageSystem = RPI::ImageSystemInterface::Get())
+            {
+                Data::Instance<RPI::StreamingImagePool> pool = imageSystem->GetSystemStreamingPool();
+                size_t newBudget = value * 1024 * 1024;
+                [[maybe_unused]] bool success = pool->SetMemoryBudget(newBudget);
+                AZ_Warning("StreamingImagePool", success, "Can't update StreamingImagePool's memory budget to %uM", value);
+            }
+        }
+
+        void cvar_r_streamingImageMipBias_Changed(const int16_t& value)
+        {
+            if (auto* imageSystem = RPI::ImageSystemInterface::Get())
+            {
+                Data::Instance<RPI::StreamingImagePool> pool = imageSystem->GetSystemStreamingPool();
+                pool->SetMipBias(value);
+            }
+        }
+    }
+
+    // cvars for changing streaming image pool budget and setup mip bias of streaming controller
+    AZ_CVAR(size_t, r_streamingImagePoolBudgetMb, 0, cvar_r_streamingImagePoolBudgetMb_Changed, ConsoleFunctorFlags::Null, "Change gpu memory budget for the RPI system streaming image pool");
+    AZ_CVAR(int16_t, r_streamingImageMipBias, 0, cvar_r_streamingImageMipBias_Changed, ConsoleFunctorFlags::Null, "Set a mipmap bias for all streamable images created from the system streaming image pool");
+
     namespace RPI
     {
         ImageSystemInterface* ImageSystemInterface::Get()
@@ -51,7 +77,6 @@ namespace AZ
             StreamingImageAsset::Reflect(context);
             StreamingImagePoolAsset::Reflect(context);
             StreamingImageControllerAsset::Reflect(context);
-            DefaultStreamingImageControllerAsset::Reflect(context);
             AttachmentImageAsset::Reflect(context);
         }
 
@@ -62,9 +87,6 @@ namespace AZ
             assetHandlers.emplace_back(MakeAssetHandler<ImageMipChainAssetHandler>());
             assetHandlers.emplace_back(MakeAssetHandler<StreamingImageAssetHandler>());
             assetHandlers.emplace_back(MakeAssetHandler<StreamingImagePoolAssetHandler>());
-            assetHandlers.emplace_back(MakeAssetHandler<BuiltInAssetHandler>(
-                azrtti_typeid<DefaultStreamingImageControllerAsset>(),
-                []() { return aznew DefaultStreamingImageControllerAsset(); }));
         }
 
         void ImageSystem::Init(const ImageSystemDescriptor& desc)
@@ -128,17 +150,6 @@ namespace AZ
                 Data::InstanceDatabase<StreamingImagePool>::Create(azrtti_typeid<StreamingImagePoolAsset>(), handler);
             }
 
-            // Register streaming image controller instance database.
-            {
-                Data::InstanceHandler<StreamingImageController> handler;
-                handler.m_createFunction = DefaultStreamingImageController::CreateInternal;
-                Data::InstanceDatabase<StreamingImageController>::Create(azrtti_typeid<StreamingImageControllerAsset>(), handler);
-            }
-
-            m_defaultStreamingImageControllerAsset = 
-                Data::AssetManager::Instance().CreateAsset<DefaultStreamingImageControllerAsset>(
-                    DefaultStreamingImageControllerAsset::BuiltInAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
-
             CreateDefaultResources(desc);
 
             Interface<ImageSystemInterface>::Register(this);
@@ -154,17 +165,14 @@ namespace AZ
             }
             Interface<ImageSystemInterface>::Unregister(this);
 
-            m_defaultStreamingImageControllerAsset.Release();
             m_systemImages.clear();
             m_systemStreamingPool = nullptr;
             m_systemAttachmentPool = nullptr;
-            m_assetStreamingPool = nullptr;
 
             Data::InstanceDatabase<AttachmentImage>::Destroy();
             Data::InstanceDatabase<AttachmentImagePool>::Destroy();
             Data::InstanceDatabase<StreamingImage>::Destroy();
             Data::InstanceDatabase<StreamingImagePool>::Destroy();
-            Data::InstanceDatabase<StreamingImageController>::Destroy();
 
             m_activeStreamingPools.clear();
             m_initialized = false;
@@ -188,7 +196,7 @@ namespace AZ
         
         const Data::Instance<StreamingImagePool>& ImageSystem::GetStreamingPool() const
         {
-            return m_assetStreamingPool;
+            return GetSystemStreamingPool();
         }
 
         const Data::Instance<AttachmentImagePool>& ImageSystem::GetSystemAttachmentPool() const
@@ -284,7 +292,6 @@ namespace AZ
 
             const SystemImagePoolDescriptor systemStreamingPoolDescriptor{ desc.m_systemStreamingImagePoolSize, "ImageSystem::SystemStreamingImagePool" };
             const SystemImagePoolDescriptor systemAttachmentPoolDescriptor{desc.m_systemAttachmentImagePoolSize, "ImageSystem::AttachmentImagePool" };
-            const SystemImagePoolDescriptor assetStreamingPoolDescriptor{ desc.m_assetStreamingImagePoolSize, "ImageSystem::AssetStreamingImagePool" };
 
             // Create the system streaming pool
             {
@@ -296,7 +303,6 @@ namespace AZ
                 StreamingImagePoolAssetCreator poolAssetCreator;
                 poolAssetCreator.Begin(systemStreamingPoolDescriptor.m_assetId);
                 poolAssetCreator.SetPoolDescriptor(AZStd::move(imagePoolDescriptor));
-                poolAssetCreator.SetControllerAsset(m_defaultStreamingImageControllerAsset);
                 poolAssetCreator.SetPoolName(systemStreamingPoolDescriptor.m_name);
                 [[maybe_unused]] const bool created = poolAssetCreator.End(poolAsset);
                 AZ_Assert(created, "Failed to build streaming image pool");
@@ -304,23 +310,6 @@ namespace AZ
                 m_systemStreamingPool = StreamingImagePool::FindOrCreate(poolAsset);
             }
 
-            // Create the streaming pool for streaming image from asset
-            {
-                AZStd::unique_ptr<RHI::StreamingImagePoolDescriptor> imagePoolDescriptor = AZStd::make_unique<RHI::StreamingImagePoolDescriptor>();
-                imagePoolDescriptor->m_budgetInBytes = assetStreamingPoolDescriptor.m_budgetInBytes;
-
-                Data::Asset<StreamingImagePoolAsset> poolAsset;
-
-                StreamingImagePoolAssetCreator poolAssetCreator;
-                poolAssetCreator.Begin(assetStreamingPoolDescriptor.m_assetId);
-                poolAssetCreator.SetPoolDescriptor(AZStd::move(imagePoolDescriptor));
-                poolAssetCreator.SetControllerAsset(m_defaultStreamingImageControllerAsset);
-                poolAssetCreator.SetPoolName(assetStreamingPoolDescriptor.m_name);
-                [[maybe_unused]] const bool created = poolAssetCreator.End(poolAsset);
-                AZ_Assert(created, "Failed to build streaming image pool for assets");
-
-                m_assetStreamingPool = StreamingImagePool::FindOrCreate(poolAsset);
-            }
             // Create the system attachment pool.
             {
                 AZStd::unique_ptr<RHI::ImagePoolDescriptor> imagePoolDescriptor = AZStd::make_unique<RHI::ImagePoolDescriptor>();

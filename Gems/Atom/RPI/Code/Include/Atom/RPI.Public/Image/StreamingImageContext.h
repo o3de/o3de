@@ -61,11 +61,9 @@ namespace AZ
             // Tracks whether the context was queued for an expansion update.
             AZStd::atomic_bool m_queuedForMipExpand = {false};
 
-            // Tracks whether the context was queued for a mip target reset.
-            AZStd::atomic_bool m_queuedForMipTargetReset = {false};
-
-            // Tracks the requested target mip level.
-            AZStd::atomic_uint16_t m_mipLevelTarget = {RHI::Limits::Image::MipCountMax};
+            // Tracks the desired target mip level. Default to 0 which is the mip level with highest detail.
+            // User may use StreamingImage::SetTargetMip() function to set the target mip level for the image
+            AZStd::atomic_uint16_t m_mipLevelTarget = {0};
 
             // Tracks the last timestamp the image was requested.
             AZStd::atomic_size_t m_lastAccessTimestamp = {0};
