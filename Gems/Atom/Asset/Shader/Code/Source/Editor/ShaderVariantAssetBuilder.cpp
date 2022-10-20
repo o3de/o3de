@@ -62,6 +62,7 @@ namespace AZ
     namespace ShaderBuilder
     {
         static constexpr char ShaderVariantAssetBuilderName[] = "ShaderVariantAssetBuilder";
+        static constexpr char RgaExePath[] = "/_deps/rga-src/rga.exe";
 
         //! Adds source file dependencies for every place a referenced file may appear, and detects if one of
         //! those possible paths resolves to the expected file.
@@ -1140,10 +1141,138 @@ namespace AZ
                 }
             }
 
+            if (shaderVariantInfo.m_enableRegisterAnalysis && strcmp(creationContext.m_shaderPlatformInterface.GetAPIName().GetCStr(), "vulkan") == 0)
+            {
+                AZ::IO::FixedMaxPath projectBuildPath = AZ::Utils::GetExecutableDirectory();
+                projectBuildPath = projectBuildPath.RemoveFilename(); // profile
+                projectBuildPath = projectBuildPath.RemoveFilename(); // bin
+
+                AZStd::string spirvPath;
+                AZStd::string spirvFile = AZStd::string::format(
+                    "%s_vulkan_%u.spirv.bin", creationContext.m_shaderStemNamePrefix.c_str(), shaderVariantInfo.m_stableId);
+                AZ::StringFunc::Path::Join(creationContext.m_tempDirPath.c_str(), spirvFile.c_str(), spirvPath, true, true);
+
+                AZStd::string rgaCommand = AZStd::string::format(
+                    "-s vk-spv-offline --isa ./disassem_%u.txt --livereg ./livereg_%u.txt --asic %s",
+                    shaderVariantInfo.m_stableId,
+                    shaderVariantInfo.m_stableId,
+                    shaderVariantInfo.m_asic.c_str());
+
+                AZStd::string command = AZStd::string::format("%s%s %s %s", projectBuildPath.c_str(), RgaExePath, rgaCommand.c_str(), spirvPath.c_str());
+                AZ_TracePrintf(ShaderVariantAssetBuilderName, "Rga command %s", command.c_str());
+
+                AZStd::string failMessage;
+                if (!LaunchRadeonGPUAnalyzer(command, creationContext.m_tempDirPath, failMessage))
+                {
+                    return AZ::Failure(failMessage);
+                }
+
+                // add rga output to the by product list
+                outputByproducts->m_intermediatePaths.insert(AZStd::string::format("./%s_disassem_%u_frag.txt",shaderVariantInfo.m_asic.c_str(), shaderVariantInfo.m_stableId));
+                outputByproducts->m_intermediatePaths.insert(AZStd::string::format("./%s_livereg_%u_frag.txt", shaderVariantInfo.m_asic.c_str(),shaderVariantInfo.m_stableId));
+            }
+            
+
             Data::Asset<RPI::ShaderVariantAsset> shaderVariantAsset;
             variantCreator.End(shaderVariantAsset);
             return AZ::Success(AZStd::move(shaderVariantAsset));
         }
 
+        bool ShaderVariantAssetBuilder::LaunchRadeonGPUAnalyzer(AZStd::string& command, const AZStd::string& workingDirectory, AZStd::string& failMessage)
+        {
+            AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
+            processLaunchInfo.m_commandlineParameters.emplace<AZStd::string>(command);
+            processLaunchInfo.m_workingDirectory = workingDirectory;
+            processLaunchInfo.m_showWindow = false;
+            AzFramework::ProcessWatcher* watcher =
+                AzFramework::ProcessWatcher::LaunchProcess(processLaunchInfo, AzFramework::COMMUNICATOR_TYPE_STDINOUT);
+            if (!watcher)
+            {
+                failMessage = AZStd::string("Rga executable can not be launched");
+                return false;
+            }
+
+            AZStd::unique_ptr<AzFramework::ProcessWatcher> watcherPtr = AZStd::unique_ptr<AzFramework::ProcessWatcher>(watcher);
+
+            AZStd::string errorMessages;
+            AZStd::string outputMessages;
+            auto pumpOuputStreams = [&watcherPtr, &errorMessages, &outputMessages]()
+            {
+                auto communicator = watcherPtr->GetCommunicator();
+
+                // Instead of collecting all the output in a giant string, it would be better to report
+                // the chunks of messages as they arrive, but this should be good enough for now.
+                if (auto byteCount = communicator->PeekError())
+                {
+                    AZStd::string chunk;
+                    chunk.resize(byteCount);
+                    communicator->ReadError(chunk.data(), byteCount);
+                    errorMessages += chunk;
+                }
+
+                if (auto byteCount = communicator->PeekOutput())
+                {
+                    AZStd::string chunk;
+                    chunk.resize(byteCount);
+                    communicator->ReadOutput(chunk.data(), byteCount);
+                    outputMessages += chunk;
+                }
+            };
+
+            uint32_t exitCode = 0;
+            bool timedOut = false;
+
+            const AZStd::sys_time_t maxWaitTimeSeconds = 5;
+            const AZStd::sys_time_t startTimeSeconds = AZStd::GetTimeNowSecond();
+            const AZStd::sys_time_t startTime = AZStd::GetTimeNowTicks();
+
+            while (watcherPtr->IsProcessRunning(&exitCode))
+            {
+                const AZStd::sys_time_t currentTimeSeconds = AZStd::GetTimeNowSecond();
+                if (currentTimeSeconds - startTimeSeconds > maxWaitTimeSeconds)
+                {
+                    timedOut = true;
+                    static const uint32_t TimeOutExitCode = 121;
+                    exitCode = TimeOutExitCode;
+                    watcherPtr->TerminateProcess(TimeOutExitCode);
+                    break;
+                }
+                else
+                {
+                    pumpOuputStreams();
+                }
+            }
+
+            AZ_Assert(!watcherPtr->IsProcessRunning(), "Rga execution failed to terminate");
+
+            // Pump one last time to make sure the streams have been flushed
+            pumpOuputStreams();
+
+            if (timedOut)
+            {
+                failMessage = AZStd::string("Rga takes too long to finish");
+                return false;
+            }
+
+            if (exitCode != 0)
+            {
+                failMessage = AZStd::string::format("Rga process failed, exit code %u", exitCode);
+                return false;
+            }
+
+            if (!errorMessages.empty())
+            {
+                failMessage = AZStd::string::format("Rga report error message %s", errorMessages.c_str());
+                return false;
+            }
+
+            if (!outputMessages.empty() && outputMessages.contains("Error"))
+            {
+                failMessage = AZStd::string::format("Rga report error message %s", outputMessages.c_str());
+                return false;
+            }
+
+            return true;
+        }
     } // ShaderBuilder
 } // AZ
