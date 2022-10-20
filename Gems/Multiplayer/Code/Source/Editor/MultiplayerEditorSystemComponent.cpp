@@ -45,10 +45,10 @@ namespace Multiplayer
 {
     using namespace AzNetworking;
 
-    AZ_CVAR(bool, editor_clientserver, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
-        "If true, the editor will act as both the server and a client. No dedicated server will be launched.");
     AZ_CVAR(bool, editorsv_enabled, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "Whether Editor launching a local server to connect to is supported");
+    AZ_CVAR(bool, editorsv_clientserver, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
+        "If true, the editor will act as both the server and a client. No dedicated server will be launched.");
     AZ_CVAR(bool, editorsv_launch, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "Whether Editor should launch a server when the server address is localhost");
     AZ_CVAR(AZ::CVarFixedString, editorsv_process, "", nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
@@ -502,7 +502,7 @@ namespace Multiplayer
             return;
         }
 
-        if (editor_clientserver)
+        if (editorsv_clientserver)
         {
             // Start hosting as a client-server
             const bool isDedicated = false;
@@ -523,7 +523,7 @@ namespace Multiplayer
             return;
         }
 
-        if (editor_clientserver)
+        if (editorsv_clientserver)
         {
             return;
         }
@@ -627,7 +627,7 @@ namespace Multiplayer
     }
     void MultiplayerEditorSystemComponent::OnStopPlayInEditorBegin()
     {
-        if (GetMultiplayer()->GetAgentType() != MultiplayerAgentType::ClientServer || !editor_clientserver)
+        if (GetMultiplayer()->GetAgentType() != MultiplayerAgentType::ClientServer || !editorsv_clientserver)
         {
             return;
         }
