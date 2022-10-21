@@ -9,8 +9,7 @@
 #pragma once
 
 #include "ILevelSystem.h"
-#include <AzCore/Console/IConsole.h>
-#include <AzFramework/Archive/IArchive.h>
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Spawnable/RootSpawnableInterface.h>
 #include <CryCommon/TimeValue.h>
 
