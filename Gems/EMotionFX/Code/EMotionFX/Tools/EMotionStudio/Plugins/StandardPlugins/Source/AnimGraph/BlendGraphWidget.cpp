@@ -186,7 +186,7 @@ namespace EMStudio
                 if (auto* blendGraphEvent = azrtti_cast<BlendGraphMimeEvent*>(graphCanvasEvent))
                 {
                     const QPoint nudgedPosition = { localPos.x(), localPos.y() + offset };
-                    offset += 10;
+                    offset += s_snapCellSize;
                     CreateNodeFromMimeEvent(blendGraphEvent, nudgedPosition);
                 }
             }
