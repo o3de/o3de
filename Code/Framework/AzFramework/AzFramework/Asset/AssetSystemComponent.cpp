@@ -84,7 +84,7 @@ namespace AzFramework
                 AzFramework::AssetSystem::NetworkAssetUpdateInterface* notificationInterface = AZ::Interface<AzFramework::AssetSystem::NetworkAssetUpdateInterface>::Get();
                 if (notificationInterface)
                 {
-                    notificationInterface->AssetChanged(message);
+                    notificationInterface->AssetChanged({ message });
                 }
             }
             break;
@@ -98,7 +98,7 @@ namespace AzFramework
                 AzFramework::AssetSystem::NetworkAssetUpdateInterface* notificationInterface = AZ::Interface<AzFramework::AssetSystem::NetworkAssetUpdateInterface>::Get();
                 if (notificationInterface)
                 {
-                    notificationInterface->AssetRemoved(message);
+                    notificationInterface->AssetRemoved({ message });
                 }
             }
             break;
@@ -158,7 +158,7 @@ namespace AzFramework
 
             EnableSocketConnection();
 
-            m_cbHandle = m_socketConn->AddMessageHandler(AZ_CRC("AssetProcessorManager::AssetNotification", 0xd6191df5),
+            m_cbHandle = m_socketConn->AddMessageHandler(AssetNotificationMessage::MessageType,
                 [context](unsigned int typeId, unsigned int /*serial*/, const void* data, unsigned int dataLength)
             {
                 if (dataLength)
@@ -166,6 +166,58 @@ namespace AzFramework
                     OnAssetSystemMessage(typeId, data, dataLength, context);
                 }
             });
+
+            m_bulkMessageHandle = m_socketConn->AddMessageHandler(
+                BulkAssetNotificationMessage::MessageType,
+                [context](unsigned int /*typeId*/, unsigned int /*serial*/, const void* data, unsigned int dataLength)
+                {
+                    if (dataLength)
+                    {
+                        BulkAssetNotificationMessage bulkMessage;
+
+                        // note that we forbid asset loading and we set STRICT mode.  These messages are all the kind of message that is
+                        // supposed to be transmitted between the same version of software, and are created at runtime, not loaded from
+                        // disk, so they should not contain errors - if they do, it requires investigation.
+                        if (!AZ::Utils::LoadObjectFromBufferInPlace(
+                                data,
+                                dataLength,
+                                bulkMessage,
+                                context,
+                                AZ::ObjectStream::FilterDescriptor(
+                                    &AZ::Data::AssetFilterNoAssetLoading, AZ::ObjectStream::FILTERFLAG_STRICT)))
+                        {
+                            AZ_WarningOnce(
+                                "AssetSystem",
+                                false,
+                                "BulkAssetNotificationMessage received but unable to deserialize it.  Is AssetProcessor.exe up to date?");
+                            return;
+                        }
+
+                        AzFramework::AssetSystem::NetworkAssetUpdateInterface* notificationInterface =
+                            AZ::Interface<AzFramework::AssetSystem::NetworkAssetUpdateInterface>::Get();
+
+                        if (!notificationInterface)
+                        {
+                            return;
+                        }
+
+                        switch(bulkMessage.m_type)
+                        {
+                        case AssetNotificationMessage::AssetChanged:
+                            notificationInterface->AssetChanged(bulkMessage.m_messages, true);
+                            break;
+                        case AssetNotificationMessage::AssetRemoved:
+                            notificationInterface->AssetRemoved(bulkMessage.m_messages);
+                            break;
+                        default:
+                            AZ_Warning(
+                                "AssetSystem",
+                                false,
+                                "BulkAssetNotificationMessage received with invalid/unsupported type %d",
+                                int(bulkMessage.m_type));
+                        }
+                    }
+                });
 
             AssetSystemRequestBus::Handler::BusConnect();
             AZ::SystemTickBus::Handler::BusConnect();
@@ -179,7 +231,8 @@ namespace AzFramework
 
             AZ::SystemTickBus::Handler::BusDisconnect();
             AssetSystemRequestBus::Handler::BusDisconnect();
-            m_socketConn->RemoveMessageHandler(AZ_CRC("AssetProcessorManager::AssetNotification", 0xd6191df5), m_cbHandle);
+            m_socketConn->RemoveMessageHandler(AssetNotificationMessage::MessageType, m_cbHandle);
+            m_socketConn->RemoveMessageHandler(BulkAssetNotificationMessage::MessageType, m_bulkMessageHandle);
             m_socketConn->Disconnect(true);
 
             DisableSocketConnection();
@@ -267,6 +320,7 @@ namespace AzFramework
             SaveAssetCatalogResponse::Reflect(context);
 
             AssetNotificationMessage::Reflect(context);
+            BulkAssetNotificationMessage::Reflect(context);
             AssetSeedListReflector::Reflect(context);
             SeedInfo::Reflect(context);
             AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);

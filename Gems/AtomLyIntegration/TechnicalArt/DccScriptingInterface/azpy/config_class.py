@@ -269,7 +269,7 @@ class ConfigClass(object):
 
     @settings_local_filepath.setter
     def settings_local_filepath(self,
-                          filepath: Union[str, Path] = PATH_DCCSIG_LOCAL_SETTINGS) -> Path:
+                                filepath: Union[str, Path] = PATH_DCCSIG_LOCAL_SETTINGS) -> Path:
         ''':param new_dict: sets the default filepath for this config to
         export settings, settings.local.json'''
         self._settings_local_file = Path(filepath).resolve()
@@ -334,7 +334,8 @@ class ConfigClass(object):
                     check_envar: bool = True,
                     set_envar: bool = False,
                     set_sys_path: bool = False,
-                    set_pythonpath: bool = False):
+                    set_pythonpath: bool = False,
+                    posix_path: bool = True):
         '''! adds a settings with various configurable options
 
         @param key: the key (str) for the setting/envar
@@ -392,6 +393,8 @@ class ConfigClass(object):
 
         if isinstance(value, Path) or set_sys_path or set_pythonpath:
             value = Path(value).resolve()
+            if posix_path:
+                value = value.as_posix() # ensure unix style
 
         # these managed lists are handled when settings are retreived
         if set_sys_path:
@@ -608,7 +611,6 @@ class ConfigClass(object):
                 return _settings_box
 
         return self.settings
-    # ---------------------------------------------------------------------
 # --- END -----------------------------------------------------------------
 
 

@@ -36,38 +36,83 @@ namespace AzToolsFramework
         PaintBrushSettingsRequestBus::Handler::BusDisconnect();
     }
 
-    PaintBrushSettings* PaintBrushSettingsSystemComponent::GetSettings(void)
+    PaintBrushSettings* PaintBrushSettingsSystemComponent::GetSettingsPointerForPropertyEditor()
     {
         return &m_settings;
     }
 
-    float PaintBrushSettingsSystemComponent::GetRadius() const
+    PaintBrushSettings PaintBrushSettingsSystemComponent::GetSettings() const
     {
-        return m_settings.GetRadius();
+        return m_settings;
     }
 
-    float PaintBrushSettingsSystemComponent::GetIntensity() const
+    float PaintBrushSettingsSystemComponent::GetSize() const
     {
-        return m_settings.GetIntensity();
+        return m_settings.GetSize();
     }
 
-    float PaintBrushSettingsSystemComponent::GetOpacity() const
+    float PaintBrushSettingsSystemComponent::GetIntensityPercent() const
     {
-        return m_settings.GetOpacity();
+        return m_settings.GetIntensityPercent();
     }
 
-    void PaintBrushSettingsSystemComponent::SetRadius(float radius)
+    float PaintBrushSettingsSystemComponent::GetOpacityPercent() const
     {
-        m_settings.SetRadius(radius);
+        return m_settings.GetOpacityPercent();
     }
 
-    void PaintBrushSettingsSystemComponent::SetIntensity(float intensity)
+    float PaintBrushSettingsSystemComponent::GetHardnessPercent() const
     {
-        m_settings.SetIntensity(intensity);
+        return m_settings.GetHardnessPercent();
     }
 
-    void PaintBrushSettingsSystemComponent::SetOpacity(float opacity)
+    float PaintBrushSettingsSystemComponent::GetFlowPercent() const
     {
-        m_settings.SetOpacity(opacity);
+        return m_settings.GetFlowPercent();
+    }
+
+    float PaintBrushSettingsSystemComponent::GetDistancePercent() const
+    {
+        return m_settings.GetDistancePercent();
+    }
+
+    PaintBrushBlendMode PaintBrushSettingsSystemComponent::GetBlendMode() const
+    {
+        return m_settings.GetBlendMode();
+    }
+
+    void PaintBrushSettingsSystemComponent::SetSize(float size)
+    {
+        m_settings.SetSize(size);
+    }
+
+    void PaintBrushSettingsSystemComponent::SetIntensityPercent(float intensityPercent)
+    {
+        m_settings.SetIntensityPercent(intensityPercent);
+    }
+
+    void PaintBrushSettingsSystemComponent::SetOpacityPercent(float opacityPercent)
+    {
+        m_settings.SetOpacityPercent(opacityPercent);
+    }
+
+    void PaintBrushSettingsSystemComponent::SetHardnessPercent(float hardnessPercent)
+    {
+        m_settings.SetHardnessPercent(hardnessPercent);
+    }
+
+    void PaintBrushSettingsSystemComponent::SetFlowPercent(float flowPercent)
+    {
+        m_settings.SetFlowPercent(flowPercent);
+    }
+
+    void PaintBrushSettingsSystemComponent::SetDistancePercent(float distancePercent)
+    {
+        m_settings.SetDistancePercent(distancePercent);
+    }
+
+    void PaintBrushSettingsSystemComponent::SetBlendMode(PaintBrushBlendMode blendMode)
+    {
+        m_settings.SetBlendMode(blendMode);
     }
 } // namespace AzToolsFramework

@@ -744,6 +744,11 @@ namespace AZ
 
                 } // end for the supervariant
 
+                for (auto& [shaderOptionName, value] : shaderSourceData.m_shaderOptionValues)
+                {
+                    shaderAssetCreator.SetShaderOptionDefaultValue(shaderOptionName, value);
+                }
+
                 buildArgsManager.PopArgumentScope(); // Pop  .shader arguments
                 buildArgsManager.PopArgumentScope(); // Pop rhi api arguments.
                 shaderAssetCreator.EndAPI();

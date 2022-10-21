@@ -828,6 +828,7 @@ namespace EMotionFX
         RegisterChunkProcessor(aznew ChunkProcessorMotionSubMotions());
         RegisterChunkProcessor(aznew ChunkProcessorMotionMorphSubMotions());
         RegisterChunkProcessor(aznew ChunkProcessorMotionData());
+        RegisterChunkProcessor(aznew ChunkProcessorRootMotionExtraction());
 
         // node map
         RegisterChunkProcessor(aznew ChunkProcessorNodeMap());

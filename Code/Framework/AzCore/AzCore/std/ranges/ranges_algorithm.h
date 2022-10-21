@@ -1559,6 +1559,21 @@ namespace AZStd::ranges
 
     namespace Internal
     {
+        template<class I, class O, class = void>
+        constexpr bool can_use_memcpy = false;
+
+        // memcpy can be used instead of copy assignment
+        // when both the input and output iter_value_t are the same,
+        // the output iterator is trivially copyable
+        // and both iterators are contiguous
+        template<class I, class O>
+        constexpr bool can_use_memcpy<I, O, enable_if_t<
+            same_as<iter_value_t<I>, iter_value_t<O>>
+            && is_trivially_copyable_v<iter_value_t<O>>
+            && contiguous_iterator<I>
+            && contiguous_iterator<O>
+            >> = true;
+
         struct copy_fn
         {
             template<class I, class S, class O>
@@ -1570,9 +1585,38 @@ namespace AZStd::ranges
                 bool_constant<indirectly_copyable<I, O>>
                 >, copy_result<I, O>>
             {
-                for (; first != last; ++first, ++result)
+                if constexpr (can_use_memcpy<I, O>)
                 {
-                    *result = *first;
+                    const size_t numElements = ranges::distance(first, last);
+                    // Specialized copy for contiguous iterators which are trivially copyable
+                    if (numElements > 0)
+                    {
+#if az_has_builtin_memcpy
+                        __builtin_memcpy(to_address(result), to_address(first), numElements * sizeof(iter_value_t<I>));
+#else
+                        if (az_builtin_is_constant_evaluated())
+                        {
+                            for (; first != last; ++first, ++result)
+                            {
+                                *result = *first;
+                            }
+                        }
+                        else
+                        {
+                            AZ_Assert(to_address(result) < to_address(first) || to_address(result) >= to_address(first) + numElements,
+                                "AZStd::ranges::copy results in memory overlap. AZStd::ranges::copy_backward should be used instead");
+                            ::memcpy(to_address(result), to_address(first), numElements * sizeof(iter_value_t<I>));
+                            ranges::advance(result, numElements);
+                        }
+#endif
+                    }
+                }
+                else
+                {
+                    for (; first != last; ++first, ++result)
+                    {
+                        *result = *first;
+                    }
                 }
 
                 return { AZStd::move(last), AZStd::move(result) };
@@ -1638,9 +1682,35 @@ namespace AZStd::ranges
                 bool_constant<indirectly_copyable<I, O>>
                 >, copy_n_result<I, O>>
             {
-                for (; n > 0; --n, ++first, ++result)
+                if constexpr (can_use_memcpy<I, O>)
                 {
-                    *result = *first;
+                    // Specialized copy for contiguous iterators which are trivially copyable
+#if az_has_builtin_memcpy
+                    __builtin_memcpy(to_address(result), to_address(first), n * sizeof(iter_value_t<I>));
+#else
+                    if (az_builtin_is_constant_evaluated())
+                    {
+                        for (; n > 0; --n, ++first, ++result)
+                        {
+                            *result = *first;
+                        }
+                    }
+                    else
+                    {
+                        AZ_Assert(to_address(result) < to_address(first) || to_address(result) >= to_address(first) + n,
+                            "AZStd::ranges::copy_n results in memory overlap. AZStd::ranges::copy_backward should be used instead");
+                        ::memcpy(to_address(result), to_address(first), n * sizeof(iter_value_t<I>));
+                        ranges::advance(first, n);
+                        ranges::advance(result, n);
+                    }
+#endif
+                }
+                else
+                {
+                    for (; n > 0; --n, ++first, ++result)
+                    {
+                        *result = *first;
+                    }
                 }
 
                 return { AZStd::move(first), AZStd::move(result) };
@@ -1658,9 +1728,38 @@ namespace AZStd::ranges
                 bool_constant<indirectly_copyable<I1, O>>
                 >, copy_backward_result<I1, O>>
             {
-                for (I1 iter{ last }; iter != first;)
+                if constexpr (can_use_memcpy<I1, O>)
                 {
-                    *--result = *--iter;
+                    // Specialized copy for contiguous iterators which are trivially copyable
+                    if (const size_t numElements = ranges::distance(first, last); numElements > 0)
+                    {
+#if az_has_builtin_memmove
+                        result -= numElements;
+                        __builtin_memmove(to_address(result), to_address(first), numElements * sizeof(iter_value_t<I1>));
+#else
+                        if (az_builtin_is_constant_evaluated())
+                        {
+                            for (I1 iter{ last }; iter != first;)
+                            {
+                                *--result = *--iter;
+                            }
+                        }
+                        else
+                        {
+                            result -= numElements;
+                            AZ_Assert(to_address(result) + numElements <= to_address(first) || to_address(result) + numElements > to_address(first) + numElements,
+                                "AZStd::ranges::copy_backward results in memory overlap. AZStd::ranges::copy should be used instead");
+                            ::memmove(to_address(result), to_address(first), numElements * sizeof(iter_value_t<I1>));
+                        }
+#endif
+                    }
+                }
+                else
+                {
+                    for (I1 iter{ last }; iter != first;)
+                    {
+                        *--result = *--iter;
+                    }
                 }
 
                 return { AZStd::move(last), AZStd::move(result) };
@@ -1698,7 +1797,7 @@ namespace AZStd::ranges
         struct move_fn
         {
             template<class I, class S, class O>
-                constexpr auto operator()(I first, S last, O result) const
+            constexpr auto operator()(I first, S last, O result) const
                 -> enable_if_t<conjunction_v<
                 bool_constant<input_iterator<I>>,
                 bool_constant<sentinel_for<S, I>>,
@@ -1706,12 +1805,41 @@ namespace AZStd::ranges
                 bool_constant<indirectly_movable<I, O>>
                 >, move_result<I, O>>
             {
-                for (; first != last; ++first, ++result)
+                if constexpr (can_use_memcpy<I, O>)
                 {
-                    *result = AZStd::ranges::iter_move(first);
+                    const size_t numElements = ranges::distance(first, last);
+                    // Specialized copy for contiguous iterators which are trivially copyable
+                    if (numElements > 0)
+                    {
+#if az_has_builtin_memcpy
+                        __builtin_memcpy(to_address(result), to_address(first), numElements * sizeof(iter_value_t<I>));
+#else
+                        if (az_builtin_is_constant_evaluated())
+                        {
+                            for (; first != last; ++first, ++result)
+                            {
+                                *result = AZStd::ranges::iter_move(first);
+                            }
+                        }
+                        else
+                        {
+                            AZ_Assert(to_address(result) < to_address(first) || to_address(result) >= to_address(first) + numElements,
+                                "AZStd::ranges::copy results in memory overlap. AZStd::ranges::copy_backward should be used instead");
+                            ::memcpy(to_address(result), to_address(first), numElements * sizeof(iter_value_t<I>));
+                            ranges::advance(result, numElements);
+                        }
+#endif
+                    }
+                }
+                else
+                {
+                    for (; first != last; ++first, ++result)
+                    {
+                        *result = AZStd::ranges::iter_move(first);
+                    }
                 }
 
-                return { AZStd::move(first), AZStd::move(result) };
+                return { AZStd::move(last), AZStd::move(result) };
             }
 
             template<class R, class O>
@@ -1737,9 +1865,38 @@ namespace AZStd::ranges
                 bool_constant<indirectly_movable<I1, O>>
                 >, move_backward_result<I1, O>>
             {
-                for (I1 iter{ last }; iter != first;)
+                if constexpr (can_use_memcpy<I1, O>)
                 {
-                    *--result = AZStd::ranges::iter_move(--iter);
+                    // Specialized copy for contiguous iterators which are trivially copyable
+                    if (const size_t numElements = ranges::distance(first, last); numElements > 0)
+                    {
+#if az_has_builtin_memmove
+                        result -= numElements;
+                        __builtin_memmove(to_address(result), to_address(first), numElements * sizeof(iter_value_t<I1>));
+#else
+                        if (az_builtin_is_constant_evaluated())
+                        {
+                            for (I1 iter{ last }; iter != first;)
+                            {
+                                *--result = AZStd::ranges::iter_move(--iter);
+                            }
+                        }
+                        else
+                        {
+                            result -= numElements;
+                            AZ_Assert(to_address(result) + numElements <= to_address(first) || to_address(result) + numElements > to_address(first) + numElements,
+                                "AZStd::ranges::copy_backward results in memory overlap. AZStd::ranges::copy should be used instead");
+                            ::memmove(to_address(result), to_address(first), numElements * sizeof(iter_value_t<I1>));
+                        }
+#endif
+                    }
+                }
+                else
+                {
+                    for (I1 iter{ last }; iter != first;)
+                    {
+                        *--result = AZStd::ranges::iter_move(--iter);
+                    }
                 }
 
                 return { AZStd::move(last), AZStd::move(result) };

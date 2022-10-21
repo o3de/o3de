@@ -63,6 +63,7 @@ namespace AZ
             ImageSubresourceRange subresourceRange;
             subresourceRange.m_mipSliceMin = static_cast<uint16_t>(GetResidentMipLevel());
             GetSubresourceLayouts(subresourceRange, nullptr, &imageStats->m_sizeInBytes);
+            imageStats->m_minimumSizeInBytes = imageStats->m_minimumSizeInBytes;
         }
     
         Ptr<ImageView> Image::GetImageView(const ImageViewDescriptor& imageViewDescriptor)
@@ -83,6 +84,11 @@ namespace AZ
             hash = TypeHash64(m_residentMipLevel, hash);
             hash = TypeHash64(m_aspectFlags, hash);
             return hash;
+        }
+
+        bool Image::IsStreamable() const
+        {
+            return IsStreamableInternal();
         }
     }
 }

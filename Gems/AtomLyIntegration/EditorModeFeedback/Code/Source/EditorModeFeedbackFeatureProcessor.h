@@ -13,6 +13,7 @@
 
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
+#include <AzCore/Component/TickBus.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
 namespace AZ
@@ -22,6 +23,7 @@ namespace AZ
         //! Feature processor for Editor Mode Feedback visual effect system.
         class EditorModeFeatureProcessor
             : public RPI::FeatureProcessor
+            , private AZ::TickBus::Handler
         {
         public:
             AZ_RTTI(AZ::Render::EditorModeFeatureProcessor, "{78D40D57-F564-4ECD-B9F5-D8C9784B15D0}", AZ::RPI::FeatureProcessor);
@@ -39,6 +41,9 @@ namespace AZ
             void OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline) override;
             void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline) override;
             void OnRenderPipelineRemoved(RPI::RenderPipeline* pipeline) override;
+
+            // AZ::TickBus overrides ...
+            void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
         private:
             //! The pass system for the editor state feedback effects.

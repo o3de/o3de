@@ -48,6 +48,7 @@ _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH}')
 # last two parents
 from DccScriptingInterface import add_site_dir
 
+from DccScriptingInterface import STR_CROSSBAR
 from DccScriptingInterface import SETTINGS_FILE_SLUG
 from DccScriptingInterface import LOCAL_SETTINGS_FILE_SLUG
 
@@ -56,13 +57,10 @@ from DccScriptingInterface.Tools.DCC import PATH_DCCSI_TOOLS_DCC
 
 from DccScriptingInterface.globals import *
 
-_DCCSI_TOOLS_BLENDER_PATH = Path(_MODULE_PATH.parent)
-add_site_dir(_DCCSI_TOOLS_BLENDER_PATH.as_posix())
-
-# our dccsi location for substance designer <DCCsi>\Tools\DCC\Blender
+# our dccsi location for <DCCsi>\Tools\DCC\Blender
 ENVAR_PATH_DCCSI_TOOLS_DCC_BLENDER = "PATH_DCCSI_TOOLS_DCC_BLENDER"
 
-# the path to this < dccsi >/Tools/IDE pkg
+# the path to this < dccsi >/Tools/DCC pkg
 PATH_DCCSI_TOOLS_DCC_BLENDER = Path(_MODULE_PATH.parent)
 PATH_DCCSI_TOOLS_DCC_BLENDER = Path(os.getenv(ENVAR_PATH_DCCSI_TOOLS_DCC_BLENDER,
                                               PATH_DCCSI_TOOLS_DCC_BLENDER.as_posix()))
@@ -70,17 +68,13 @@ add_site_dir(PATH_DCCSI_TOOLS_DCC_BLENDER.as_posix())
 _LOGGER.debug(f'{ENVAR_PATH_DCCSI_TOOLS_DCC_BLENDER}: {PATH_DCCSI_TOOLS_DCC_BLENDER}')
 _LOGGER.debug(STR_CROSSBAR)
 
-# pulled from constants
 PATH_DCCSI_TOOLS_DCC_BLENDER = _MODULE_PATH.parent
 PATH_DCCSI_TOOLS_DCC = PATH_DCCSI_TOOLS_DCC_BLENDER.parent
 PATH_DCCSI_TOOLS = PATH_DCCSI_TOOLS_DCC.parent
 
-# from dynaconf import LazySettings
-
 PATH_DCCSI_TOOLS_DCC_BLENDER_SETTINGS = PATH_DCCSI_TOOLS_DCC_BLENDER.joinpath(SETTINGS_FILE_SLUG).resolve()
 PATH_DCCSI_TOOLS_DCC_BLENDER_LOCAL_SETTINGS = PATH_DCCSI_TOOLS_DCC_BLENDER.joinpath(LOCAL_SETTINGS_FILE_SLUG).resolve()
 
-# put these here so we don't have to init config to get them
 # default version
 ENVAR_DCCSI_BLENDER_VERSION = "DCCSI_BLENDER_VERSION"
 SLUG_DCCSI_BLENDER_VERSION = "3.1"
@@ -102,6 +96,8 @@ SLUG_DCCSI_BLENDER_BOOTSTRAP = "bootstrap.py"
 ENVAR_PATH_DCCSI_BLENDER_BOOTSTRAP = "PATH_DCCSI_BLENDER_BOOTSTRAP"
 PATH_DCCSI_BLENDER_BOOTSTRAP = f'{PATH_DCCSI_TOOLS_DCC_BLENDER_SCRIPTS}\\{SLUG_DCCSI_BLENDER_BOOTSTRAP}'
 
+# This code is here as it relates to setting up default settings
+# for dynaconf, it's not currently used but may re-enable in next PR
 
 # settings = LazySettings(
 #     SETTINGS_FILE_FOR_DYNACONF=PATH_DCCSI_TOOLS_DCC_BLENDER_SETTINGS.as_posix(),
@@ -110,23 +106,4 @@ PATH_DCCSI_BLENDER_BOOTSTRAP = f'{PATH_DCCSI_TOOLS_DCC_BLENDER_SCRIPTS}\\{SLUG_D
 #
 # # need to create a json validator for settings.local.json
 # settings.setenv()
-# -------------------------------------------------------------------------
-
-
-# -------------------------------------------------------------------------
-# suggestion would be to turn this into a method to reduce boilerplate
-# but where to put it that makes sense?
-if DCCSI_DEV_MODE:
-    _LOGGER.debug(f'Testing Imports from {_PACKAGENAME}')
-
-    # If in dev mode and test is flagged this will force imports of __all__
-    # although slower and verbose, this can help detect cyclical import
-    # failure and other issues
-
-    # the DCCSI_TESTS flag needs to be properly added in .bat env
-    if DCCSI_TESTS:
-        from DccScriptingInterface.azpy import test_imports
-        test_imports(_all=__all__,
-                     _pkg=_PACKAGENAME,
-                     _logger=_LOGGER)
 # -------------------------------------------------------------------------

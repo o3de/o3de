@@ -633,11 +633,6 @@ namespace AssetProcessor
 
         UpdateAnalysisTrackerForFile(jobEntry, AnalysisTrackerUpdateType::JobFailed);
 
-        // if its a fake "autofail job" or other reason for it not to exist in the DB, don't do anything here.
-        if (!jobEntry.m_addToDatabase)
-        {
-            return;
-        }
 
         QString absolutePathToFile = jobEntry.GetAbsoluteSourcePath();
 
@@ -657,6 +652,12 @@ namespace AssetProcessor
         }
 
         AssetProcessor::SetThreadLocalJobId(0);
+
+        // if its a fake "autofail job" or other reason for it not to exist in the DB, don't do anything here.
+        if (!jobEntry.m_addToDatabase)
+        {
+            return;
+        }
 
         // wipe the times so that it will try again next time.
         // note:  Leave the prior successful products where they are, though.
@@ -2984,7 +2985,7 @@ namespace AssetProcessor
             {
                 // schedule additional updates
                 m_alreadyScheduledUpdate = true;
-                QTimer::singleShot(1, this, SLOT(ScheduleNextUpdate()));
+                QTimer::singleShot(0, this, SLOT(ScheduleNextUpdate()));
             }
             else if (numWorkRemainingNow == 0)  // if there are only jobs to process later remaining
             {
@@ -3104,7 +3105,7 @@ namespace AssetProcessor
         if (!m_alreadyScheduledUpdate)
         {
             m_alreadyScheduledUpdate = true;
-            QTimer::singleShot(1, this, SLOT(ScheduleNextUpdate()));
+            QTimer::singleShot(0, this, SLOT(ScheduleNextUpdate()));
         }
     }
 
@@ -3456,7 +3457,7 @@ namespace AssetProcessor
         {
             // schedule additional updates
             m_alreadyScheduledUpdate = true;
-            QTimer::singleShot(1, this, SLOT(ScheduleNextUpdate()));
+            QTimer::singleShot(0, this, SLOT(ScheduleNextUpdate()));
         }
     }
 

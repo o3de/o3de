@@ -46,6 +46,18 @@ namespace AZ
             if (ValidateIsReady())
             {
                 m_asset->m_shaderOptionGroupLayout = shaderOptionGroupLayout;
+                m_defaultShaderOptionGroup = ShaderOptionGroup{shaderOptionGroupLayout};
+            }
+        }
+
+        void ShaderAssetCreator::SetShaderOptionDefaultValue(const Name& optionName, const Name& optionValue)
+        {
+            if (ValidateIsReady())
+            {
+                if (!m_defaultShaderOptionGroup.SetValue(optionName, optionValue))
+                {
+                    ReportError("Could not set shader option '%s'.", optionName.GetCStr());
+                }
             }
         }
 
@@ -376,6 +388,8 @@ namespace AZ
                 ReportError("Failed to finalize the ShaderAsset.");
                 return false;
             }
+
+            m_asset->m_defaultShaderOptionValueOverrides = m_defaultShaderOptionGroup.GetShaderVariantId();
 
             m_asset->SetReady();
 

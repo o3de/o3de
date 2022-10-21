@@ -10,6 +10,7 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <Atom/RPI.Edit/Shader/ShaderOptionValuesSourceData.h>
 
 namespace AZ
 {
@@ -38,7 +39,7 @@ namespace AZ
                 // See ShaderVariantStableId.
                 AZ::u32 m_stableId = 0;
 
-                AZStd::unordered_map<AZStd::string/*optionName*/, AZStd::string/*valueName*/> m_options;
+                ShaderOptionValuesSourceData m_options;
             };
 
             AZStd::string m_shaderFilePath; // .shader file.

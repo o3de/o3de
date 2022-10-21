@@ -201,14 +201,7 @@ namespace AZ
 
         void FactoryManagerSystemComponent::UpdateValidationModeFromCommandline()
         {
-#if defined(_RELEASE)
-            m_validationMode = ValidationMode::Disabled;
-#else
-            if (auto commandLineValidation = AZ::RHI::ReadValidationModeFromCommandArgs())
-            {
-                m_validationMode = *commandLineValidation;
-            }
-#endif        
+            m_validationMode = AZ::RHI::ReadValidationMode();
         }
 
     } // namespace RHI

@@ -277,6 +277,7 @@ namespace EMotionFX
             LmbrCentral::AttachmentComponentNotificationBus::Handler::BusConnect(entityId);
             AzFramework::CharacterPhysicsDataRequestBus::Handler::BusConnect(entityId);
             AzFramework::RagdollPhysicsNotificationBus::Handler::BusConnect(entityId);
+            AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(entityId);
 
             if (cfg.m_attachmentTarget.IsValid())
             {
@@ -287,6 +288,7 @@ namespace EMotionFX
         //////////////////////////////////////////////////////////////////////////
         void ActorComponent::Deactivate()
         {
+            AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
             AzFramework::RagdollPhysicsNotificationBus::Handler::BusDisconnect();
             AzFramework::CharacterPhysicsDataRequestBus::Handler::BusDisconnect();
             m_sceneFinishSimHandler.Disconnect();
@@ -601,14 +603,22 @@ namespace EMotionFX
                     const bool updateTransforms = AZ::RHI::CheckBitsAny(m_configuration.m_renderFlags, s_requireUpdateTransforms);
                     m_actorInstance->SetIsVisible(isInCameraFrustum && updateTransforms);
                 }
-
-                m_renderActorInstance->DebugDraw(m_configuration.m_renderFlags);
             }
         }
 
         int ActorComponent::GetTickOrder()
         {
             return AZ::TICK_PRE_RENDER;
+        }
+
+        void ActorComponent::DisplayEntityViewport(
+            [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo,
+            [[maybe_unused]] AzFramework::DebugDisplayRequests& debugDisplay)
+        {
+            if (m_renderActorInstance)
+            {
+                m_renderActorInstance->DebugDraw(m_configuration.m_renderFlags);
+            }
         }
 
         //////////////////////////////////////////////////////////////////////////
