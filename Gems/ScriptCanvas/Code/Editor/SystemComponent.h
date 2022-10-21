@@ -27,6 +27,7 @@
 #include <Editor/View/Windows/Tools/UpgradeTool/Model.h>
 #include <ScriptCanvas/Bus/ScriptCanvasBus.h>
 #include <ScriptCanvas/Bus/ScriptCanvasExecutionBus.h>
+#include <Editor/Include/ScriptCanvas/Components/NodeReplacementSystem.h>
 
 namespace ScriptCanvasEditor
 {
@@ -123,5 +124,6 @@ namespace ScriptCanvasEditor
         bool m_isGarbageCollectRequested = true;
 
         ScriptCanvasBuilder::DataSystem m_dataSystem;
+        NodeReplacementSystem m_nodeReplacementSystem;
     };
 }
