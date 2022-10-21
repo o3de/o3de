@@ -103,7 +103,7 @@ namespace AzFramework
         m_nativeWindow.title = m_windowTitle;
     }
 
-    void NativeWindowImpl_Darwin::ResizeClientArea(WindowSize clientAreaSize, bool ignoreScreenSizeLimit)
+    void NativeWindowImpl_Darwin::ResizeClientArea(WindowSize clientAreaSize, [[maybe_unused]] const WindowPosOptions& options)
     {
         NSRect contentRect = [m_nativeWindow contentLayoutRect];
         if (clientAreaSize.m_width != NSWidth(contentRect) || clientAreaSize.m_height != NSHeight(contentRect))

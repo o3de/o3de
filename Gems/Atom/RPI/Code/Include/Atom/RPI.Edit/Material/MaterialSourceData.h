@@ -107,9 +107,6 @@ namespace AZ
                 bool elevateWarnings = true,
                 AZStd::unordered_set<AZStd::string>* sourceDependencies = nullptr) const;
 
-            //! Inspects the content of the MaterialPropertyValue to see if it is a string that appears to be an image file path.
-            static bool LooksLikeImageFileReference(const MaterialPropertyValue& value);
-
         private:
 
             void ApplyPropertiesToAssetCreator(

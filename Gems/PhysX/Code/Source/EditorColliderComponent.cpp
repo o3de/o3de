@@ -62,6 +62,8 @@ namespace PhysX
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyCylinderShapeConfig::m_subdivisionCount,
                         "Subdivision", "Cylinder subdivision count.")
+                        ->Attribute(AZ::Edit::Attributes::Min, Utils::MinFrustumSubdivisions)
+                        ->Attribute(AZ::Edit::Attributes::Max, Utils::MaxFrustumSubdivisions)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyCylinderShapeConfig::m_height, "Height", "Cylinder height.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyCylinderShapeConfig::m_radius, "Radius", "Cylinder radius.")
                     ;
@@ -1500,7 +1502,16 @@ namespace PhysX
 
     void EditorColliderComponent::SetCylinderSubdivisionCount(AZ::u8 subdivisionCount)
     {
-        m_shapeConfiguration.m_cylinder.m_subdivisionCount = subdivisionCount;
+        const AZ::u8 clampedSubdivisionCount = AZ::GetClamp(subdivisionCount, Utils::MinFrustumSubdivisions, Utils::MaxFrustumSubdivisions);
+        AZ_Warning(
+            "PhysX",
+            clampedSubdivisionCount == subdivisionCount,
+            "Requested cylinder subdivision count %d clamped into allowed range (%d - %d). Entity: %s",
+            subdivisionCount,
+            Utils::MinFrustumSubdivisions,
+            Utils::MaxFrustumSubdivisions,
+            GetEntity()->GetName().c_str());
+        m_shapeConfiguration.m_cylinder.m_subdivisionCount = clampedSubdivisionCount;
         UpdateCylinderCookedMesh();
         CreateStaticEditorCollider();
     }

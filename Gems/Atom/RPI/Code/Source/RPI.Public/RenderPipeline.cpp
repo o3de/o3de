@@ -424,6 +424,8 @@ namespace AZ
                 if (m_scene)
                 {
                     SceneNotificationBus::Event(m_scene->GetId(), &SceneNotification::OnRenderPipelinePassesChanged, this);
+                    SceneNotificationBus::Event(m_scene->GetId(), &SceneNotification::OnRenderPipelineChanged, this,
+                        SceneNotification::RenderPipelineChangeType::PassChanged);
 
                     // Pipeline state lookup
                     if (PipelineStateLookupNeedsRebuild(m_pipelinePassChanges))
@@ -488,6 +490,7 @@ namespace AZ
 
         void RenderPipeline::PassSystemFrameBegin(Pass::FramePrepareParams params)
         {
+            AZ_PROFILE_FUNCTION(RPI);
             if (GetRenderMode() != RenderPipeline::RenderMode::NoRender)
             {
                 m_passTree.m_rootPass->FrameBegin(params);
@@ -496,6 +499,7 @@ namespace AZ
 
         void RenderPipeline::PassSystemFrameEnd()
         {
+            AZ_PROFILE_FUNCTION(RPI);
             if (GetRenderMode() != RenderPipeline::RenderMode::NoRender)
             {
                 m_passTree.m_rootPass->FrameEnd();

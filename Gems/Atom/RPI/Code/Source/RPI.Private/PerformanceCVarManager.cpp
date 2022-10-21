@@ -118,5 +118,11 @@ namespace AZ
             ConsoleFunctorFlags::DontReplicate,
             "Number of frames in which performance will be measured per batch.");
 
+        AZ_CVAR(bool, r_metricsQuitUponCompletion,
+            false, // If true the application will quit when Number Of Capture Batches reaches 0.
+            nullptr,
+            ConsoleFunctorFlags::DontReplicate,
+            "If true the application will quit when Number Of Capture Batches reaches 0.");
+
     } // namespace RPI
 } // namespace AZ

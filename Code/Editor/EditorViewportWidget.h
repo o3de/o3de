@@ -377,6 +377,9 @@ private:
     // Reentrancy guard for on paint events
     bool m_isOnPaint = false;
 
+    // Guard against calling UpdateVisibility multiple times a frame
+    bool m_hasUpdatedVisibility = false;
+
     // Aspect ratios available in the title bar
     CPredefinedAspectRatios m_predefinedAspectRatios;
 

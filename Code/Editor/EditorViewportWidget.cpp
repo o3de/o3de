@@ -469,6 +469,7 @@ void EditorViewportWidget::Update()
         }
     }
 
+    if(!m_hasUpdatedVisibility)
     {
         auto start = std::chrono::steady_clock::now();
 
@@ -480,6 +481,8 @@ void EditorViewportWidget::Update()
             std::chrono::duration<double> diff = stop - start;
             AZ_Printf("Visibility", "FindVisibleEntities (new) - Duration: %f", diff);
         }
+
+        m_hasUpdatedVisibility = true;
     }
 
     QtViewport::Update();
@@ -618,6 +621,10 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
 
 void EditorViewportWidget::OnBeginPrepareRender()
 {
+    AZ_PROFILE_FUNCTION(Editor);
+
+    m_hasUpdatedVisibility = false;
+
     if (!m_debugDisplay)
     {
         AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;

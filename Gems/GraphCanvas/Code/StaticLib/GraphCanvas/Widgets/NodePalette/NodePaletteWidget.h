@@ -168,7 +168,7 @@ namespace GraphCanvas
         NodePaletteTreeDelegate* m_itemDelegate;
 
         EditorId m_editorId;
-        GraphCanvasMimeEvent* m_contextMenuCreateEvent;
+        AZStd::unique_ptr<GraphCanvasMimeEvent> m_contextMenuCreateEvent;
 
         QTimer        m_filterTimer;
         NodePaletteSortFilterProxyModel* m_model;
