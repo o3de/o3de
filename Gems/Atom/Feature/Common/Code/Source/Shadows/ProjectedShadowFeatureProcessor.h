@@ -86,9 +86,7 @@ namespace AZ::Render
         static constexpr float MinimumFieldOfView = 0.001f;
 
         // RPI::SceneNotificationBus::Handler overrides...
-        void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline) override;
-        void OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline) override;
-        void OnRenderPipelineRemoved(RPI::RenderPipeline* pipeline) override;
+        void OnRenderPipelineChanged(AZ::RPI::RenderPipeline* pipeline, RPI::SceneNotification::RenderPipelineChangeType changeType) override;
         
         // Shadow specific functions
         void UpdateShadowView(ShadowProperty& shadowProperty);

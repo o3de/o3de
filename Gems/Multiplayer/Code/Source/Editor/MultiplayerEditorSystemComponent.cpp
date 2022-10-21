@@ -47,6 +47,8 @@ namespace Multiplayer
 
     AZ_CVAR(bool, editorsv_enabled, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "Whether Editor launching a local server to connect to is supported");
+    AZ_CVAR(bool, editorsv_clientserver, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
+        "If true, the editor will act as both the server and a client. No dedicated server will be launched.");
     AZ_CVAR(bool, editorsv_launch, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "Whether Editor should launch a server when the server address is localhost");
     AZ_CVAR(AZ::CVarFixedString, editorsv_process, "", nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
@@ -211,7 +213,7 @@ namespace Multiplayer
             {
                 editorNetworkInterface->Disconnect(m_editorConnId, AzNetworking::DisconnectReason::TerminatedByClient);
             }
-            if (auto console = AZ::Interface<AZ::IConsole>::Get(); console)
+            if (const auto console = AZ::Interface<AZ::IConsole>::Get())
             {
                 console->PerformCommand("disconnect");
             }
@@ -288,7 +290,7 @@ namespace Multiplayer
         if (!FindServerLauncher(serverPath))
         {
             return false;
-        }        
+        }
 
         // Start the configured server if it's available
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
@@ -502,6 +504,14 @@ namespace Multiplayer
             return;
         }
 
+        if (editorsv_clientserver)
+        {
+            // Start hosting as a client-server
+            const bool isDedicated = false;
+            AZ::Interface<IMultiplayer>::Get()->StartHosting(editorsv_port, isDedicated);
+            return;
+        }
+
         AZ_Assert(m_preAliasedSpawnablesForServer.empty(), "MultiplayerEditorSystemComponent already has pre-aliased spawnables! Please update code to clean-up the table between entering and existing play mode.")
         AzToolsFramework::Prefab::PrefabToInMemorySpawnableNotificationBus::Handler::BusConnect();
     }
@@ -512,6 +522,11 @@ namespace Multiplayer
         if (!editorsv_enabled || !mpTools)
         {
             // Early out if Editor server is not enabled.
+            return;
+        }
+
+        if (editorsv_clientserver)
+        {
             return;
         }
 
@@ -612,4 +627,16 @@ namespace Multiplayer
             AZ::ComponentTypeList{ azrtti_typeid<NetBindComponent>(), azrtti_typeid<NetworkTransformComponent>() }
         );
     }
+    void MultiplayerEditorSystemComponent::OnStopPlayInEditorBegin()
+    {
+        if (GetMultiplayer()->GetAgentType() != MultiplayerAgentType::ClientServer || !editorsv_clientserver)
+        {
+            return;
+        }
+
+        // Make sure the client-server stops before the editor leaves play mode.
+        // Otherwise network entities will be left hanging around.
+        AZ::Interface<IMultiplayer>::Get()->Terminate(DisconnectReason::TerminatedByUser);
+    }
+
 } // namespace Multiplayer
