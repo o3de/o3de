@@ -35,6 +35,7 @@
 #include <BuilderComponent.h>
 #include <Common/AnyAssetBuilder.h>
 #include <Material/MaterialBuilder.h>
+#include <Material/MaterialTypeBuilder.h>
 #include <ResourcePool/ResourcePoolBuilder.h>
 #include <Pass/PassBuilder.h>
 
@@ -78,6 +79,7 @@ namespace AZ
         {
             // Register asset workers
             m_assetWorkers.emplace_back(MakeAssetBuilder<MaterialBuilder>());
+            m_assetWorkers.emplace_back(MakeAssetBuilder<MaterialTypeBuilder>());
             m_assetWorkers.emplace_back(MakeAssetBuilder<ResourcePoolBuilder>());
             m_assetWorkers.emplace_back(MakeAssetBuilder<AnyAssetBuilder>());
             m_assetWorkers.emplace_back(MakeAssetBuilder<PassBuilder>());

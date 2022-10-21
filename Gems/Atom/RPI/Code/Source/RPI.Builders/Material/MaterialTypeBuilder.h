@@ -9,25 +9,23 @@
 #pragma once
 
 #include <AssetBuilderSDK/AssetBuilderBusses.h>
-#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
-#include <Atom/RPI.Edit/Material/MaterialSourceData.h>
 #include <AzCore/JSON/document.h>
 
 namespace AZ
 {
     namespace RPI
     {
-        class MaterialBuilder final
+        class MaterialTypeBuilder final
             : public AssetBuilderSDK::AssetBuilderCommandBus::Handler
         {
         public:
-            AZ_TYPE_INFO(MaterialBuilder, "{861C0937-7671-40DC-8E44-6D432ABB9932}");
+            AZ_TYPE_INFO(MaterialTypeBuilder, "{0D2D104F-9CC6-456E-88D9-24BCDA6C0465}");
 
             static const char* JobKey;
 
-            MaterialBuilder() = default;
-            ~MaterialBuilder();
+            MaterialTypeBuilder() = default;
+            ~MaterialTypeBuilder();
 
             // Asset Builder Callback Functions
             void CreateJobs(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response) const;
@@ -41,8 +39,13 @@ namespace AZ
 
         private:
 
-            AZ::Data::Asset<MaterialAsset> CreateMaterialAsset(AZStd::string_view materialSourceFilePath, const rapidjson::Value& json) const;
-            bool ShouldReportMaterialAssetWarningsAsErrors() const;
+            enum class MaterialTypeProductSubId : u32
+            {
+                MaterialTypeAsset = 0,
+                AllPropertiesMaterialSourceFile = 1
+            };
+
+            bool ShouldOutputAllPropertiesMaterial() const;
             AZStd::string GetBuilderSettingsFingerprint() const;
             
             bool m_isShuttingDown = false;
