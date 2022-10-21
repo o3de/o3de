@@ -112,6 +112,9 @@ void CPythonScriptsDialog::ScanFolderForScripts(QString path, QStringList& scrip
 //////////////////////////////////////////////////////////////////////////
 CPythonScriptsDialog::~CPythonScriptsDialog()
 {
+    // Clear the filter before closing to workaround an issue with the QSortFilterProxyModel.
+    // It appears to delete any matching items itself, resulting in an attempt to delete an item twice.
+    ui->treeView->SetSearchFilter("");
 }
 
 //////////////////////////////////////////////////////////////////////////

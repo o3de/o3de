@@ -204,24 +204,11 @@ namespace AZ
                 }
             }
 
-            bool BuildersShouldFinalizeMaterialAssets()
+            bool LooksLikeImageFileReference(const MaterialPropertyValue& value)
             {
-                // Disable this registry setting to improve iteration times when making changes to widely used shaders and material types,
-                // like standard PBR, that require a large number of model assets to be reprocessed by the AP. Disabling finalization will
-                // also disable build dependencies between materials and material types. Without those dependencies in place, loading and
-                // reloading material assets will require special handling because typical asset notifications will not be sent when
-                // dependencies are changed. Before, this option was disabled by default because of the long iteration times, but caused hot
-                // reload problems so we enabled it again. We should explore options for handling dependencies on standard PBR differently
-                // at the model builder level, and hopefully improve the iteration times that way. In that case, we should come back and
-                // remove the deferred-finalize option entirely.
-                bool shouldFinalize = true;
-
-                if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
-                {
-                    settingsRegistry->Get(shouldFinalize, "/O3DE/Atom/RPI/MaterialBuilder/FinalizeMaterialAssets");
-                }
-
-                return shouldFinalize;
+                // If the source value type is a string, there are two possible property types: Image and Enum. If there is a "." in
+                // the string (for the extension) we can assume it's an Image file path.
+                return value.Is<AZStd::string>() && AzFramework::StringFunc::Contains(value.GetValue<AZStd::string>(), ".");
             }
         }
     }
