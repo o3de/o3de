@@ -642,7 +642,8 @@ namespace O3DE::ProjectManager
 
         m_gemIconPath->lineEdit()->setText(oldGemInfo.m_iconPath);
 
-        //before settings the tags field, find a tag that includes the gem name, and remove it
+        //Gem name is included in tags. Since the user can override this by setting the name field
+        //we should remove it from the tag list to prevent unintended consequences
         QStringList tagsToEdit = oldGemInfo.m_features;
         tagsToEdit.removeAll(oldGemInfo.m_name);
         m_userDefinedGemTags->setTags(tagsToEdit);
