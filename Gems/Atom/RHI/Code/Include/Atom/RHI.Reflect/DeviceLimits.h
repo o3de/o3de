@@ -41,10 +41,10 @@ namespace AZ
             uint32_t m_maxIndirectDispatchCount = 1;
 
             /// The maximum size in bytes of a constant buffer (BufferBindFlags::Constant).
-            uint32_t m_maxConstantBufferSize = 0;
+            uint64_t m_maxConstantBufferSize = 0;
 
             /// The maximum size in bytes of a buffer (BufferBindFlags::ShaderRead, BufferBindFlags::ShaderWrite or BufferBindFlags::ShaderReadWrite).
-            uint32_t m_maxBufferSize = 0;
+            uint64_t m_maxBufferSize = 0;
 
             /// Additional limits here.
         };

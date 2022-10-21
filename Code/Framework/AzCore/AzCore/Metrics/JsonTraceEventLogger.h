@@ -84,6 +84,9 @@ namespace AZ::Metrics
         //! Complete the JSON document by adding the ending ']' bracket
         bool Complete(AZ::IO::GenericStream& stream);
 
+        //! Start the JSON document by adding the opening '[' bracket
+        bool Start(AZ::IO::GenericStream& stream);
+
     protected:
         AZStd::mutex m_flushToStreamMutex;
         AZStd::unique_ptr<AZ::IO::GenericStream> m_stream;

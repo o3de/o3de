@@ -78,7 +78,7 @@ public: \
     static const char* GetDescription() { return "{{ macros.GetAttributeAsString(Class.attrib, 'Description') }}"; } \
     ScriptCanvas::NodePropertyInterface* GetPropertyInterface(AZ::Crc32 propertyId) override; \
     bool IsActive() const override { return false; } \
-{{ nodemacro.PopulateMemberVariables(Class) }}{{ nodemacro.ExecutionInDeclarations(Class) }}{{ nodemacro.ExecutionOutDeclarations(Class) }}/* end #define SCRIPTCANVAS_NODE_{{className}} */
+{{ nodemacro.PopulateMemberVariables(Class) }}{{ nodemacro.ExecutionInDeclarations(Class) }}{{ nodemacro.ExecutionOutDeclarations(Class) }}{{ nodemacro.CopyConstructor(Class) }}/* end #define SCRIPTCANVAS_NODE_{{className}} */
 
 {% if className is defined -%}
 {% set nodeableNodeName = nodeableClassName + 'Node' %}

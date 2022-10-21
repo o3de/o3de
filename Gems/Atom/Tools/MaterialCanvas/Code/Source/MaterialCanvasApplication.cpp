@@ -6,6 +6,7 @@
  *
  */
 
+#include <Atom/RHI.Reflect/SamplerState.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RPI.Edit/Shader/ShaderSourceData.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
@@ -34,6 +35,7 @@ void InitMaterialCanvasResources()
     Q_INIT_RESOURCE(MaterialCanvas);
     Q_INIT_RESOURCE(InspectorWidget);
     Q_INIT_RESOURCE(AtomToolsAssetBrowser);
+    Q_INIT_RESOURCE(GraphView);
 }
 
 namespace MaterialCanvas
@@ -100,6 +102,7 @@ namespace MaterialCanvas
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("color"), AZ::Color::CreateOne(), "color"),
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("string"), AZStd::string{}, "string"),
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("image"), AZ::Data::Asset<AZ::RPI::StreamingImageAsset>{}, "image"),
+            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("sampler"), AZ::RHI::SamplerState{}, "sampler"),
         });
 
         // Registering custom property handlers for dynamic node configuration settings. The settings are just a map of string data.
@@ -114,7 +117,7 @@ namespace MaterialCanvas
         editData.m_elementId = AZ_CRC_CE("FilePathString");
         AtomToolsFramework::AddEditDataAttribute(editData, AZ_CRC_CE("Title"), AZStd::string("Template File"));
         AtomToolsFramework::AddEditDataAttribute(editData, AZ_CRC_CE("Extensions"),
-            AZStd::vector<AZStd::string>{ "azsl.template", "azsli.template", "material.template", "materialtype.template", "shader.template" });
+            AZStd::vector<AZStd::string>{ "azsl", "azsli", "material", "materialtype", "shader" });
         m_dynamicNodeManager->RegisterEditDataForSetting("templatePaths", editData);
 
         editData = {};
@@ -133,7 +136,7 @@ namespace MaterialCanvas
 
         // This configuration data is passed through the main window and graph views to setup translation data, styling, and node palettes
         AtomToolsFramework::GraphViewConfig graphViewConfig;
-        graphViewConfig.m_translationPath = "@products@/translation/materialcanvas_en_us.qm";
+        graphViewConfig.m_translationPath = "@products@/materialcanvas/translation/materialcanvas_en_us.qm";
         graphViewConfig.m_styleManagerPath = "MaterialCanvas/StyleSheet/materialcanvas_style.json";
         graphViewConfig.m_nodeMimeType = "MaterialCanvas/node-palette-mime-event";
         graphViewConfig.m_nodeSaveIdentifier = "MaterialCanvas/ContextMenu";
@@ -184,7 +187,7 @@ namespace MaterialCanvas
         // and will display a label widget that directs users to the property inspector.
         documentTypeInfo = AtomToolsFramework::AtomToolsAnyDocument::BuildDocumentTypeInfo(
             "Shader Source Data",
-            { "shader", "shader.template" },
+            { "shader" },
             AZStd::any(AZ::RPI::ShaderSourceData()),
             AZ::RPI::ShaderSourceData::TYPEINFO_Uuid()); // Supplying ID because it is not included in the JSON file
 

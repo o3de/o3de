@@ -611,9 +611,9 @@ class AtomComponentProperties:
         """
         properties = {
             'name': 'Global Skylight (IBL)',
-            'Diffuse Image': 'Controller|Configuration|Diffuse Image',
-            'Specular Image': 'Controller|Configuration|Specular Image',
-            'Exposure': 'Controller|Configuration|Exposure',
+            'Diffuse Image': 'Diffuse Image',
+            'Specular Image': 'Specular Image',
+            'Exposure': 'Exposure',
         }
         return properties[property]
 

@@ -716,6 +716,8 @@ namespace GraphModelIntegration
     GraphModel::NodePtrList GraphController::GetNodesFromGraphNodeIds(const AZStd::vector<GraphCanvas::NodeId>& nodeIds)
     {
         GraphModel::NodePtrList nodeList;
+        nodeList.reserve(nodeIds.size());
+
         for (auto nodeId : nodeIds)
         {
             if (GraphModel::NodePtr nodePtr = m_elementMap.Find<GraphModel::Node>(nodeId))

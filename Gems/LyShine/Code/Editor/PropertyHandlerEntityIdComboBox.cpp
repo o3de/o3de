@@ -46,10 +46,10 @@ void PropertyHandlerEntityIdComboBox::ConsumeAttribute(PropertyEntityIdComboBoxC
     {
         AZStd::pair<AZ::EntityId, AZStd::string>  guiEnumValue;
         AZStd::pair<AZ::EntityId, AZStd::string>  enumValue;
-        AZ::Edit::EnumConstant<AZ::EntityId> enumConstant;
-        if (attrValue->Read<AZ::Edit::EnumConstant<AZ::EntityId>>(enumConstant))
+        AZ::Edit::EnumConstant<AZ::u64> enumConstant;
+        if (attrValue->Read<AZ::Edit::EnumConstant<AZ::u64>>(enumConstant))
         {
-            guiEnumValue.first = enumConstant.m_value;
+            guiEnumValue.first = AZ::EntityId(enumConstant.m_value);
             guiEnumValue.second = enumConstant.m_description;
             GUI->addEnumValue(guiEnumValue);
         }
@@ -81,13 +81,13 @@ void PropertyHandlerEntityIdComboBox::ConsumeAttribute(PropertyEntityIdComboBoxC
     {
         AZStd::vector<AZStd::pair<AZ::EntityId, AZStd::string>>  guiEnumValues;
         AZStd::vector<AZStd::pair<AZ::EntityId, AZStd::string> > enumValues;
-        AZStd::vector<AZ::Edit::EnumConstant<AZ::EntityId>> enumConstantValues;
-        if (attrValue->Read<AZStd::vector<AZ::Edit::EnumConstant<AZ::EntityId>>>(enumConstantValues))
+        AZStd::vector<AZ::Edit::EnumConstant<AZ::u64>> enumConstantValues;
+        if (attrValue->Read<AZStd::vector<AZ::Edit::EnumConstant<AZ::u64>>>(enumConstantValues))
         {
-            for (const AZ::Edit::EnumConstant<AZ::EntityId>& constantValue : enumConstantValues)
+            for (const AZ::Edit::EnumConstant<AZ::u64>& constantValue : enumConstantValues)
             {
                 auto& enumValue = guiEnumValues.emplace_back();
-                enumValue.first = constantValue.m_value;
+                enumValue.first = AZ::EntityId(constantValue.m_value);
                 enumValue.second = constantValue.m_description;
             }
 

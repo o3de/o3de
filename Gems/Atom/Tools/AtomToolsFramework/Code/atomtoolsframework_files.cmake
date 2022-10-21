@@ -98,6 +98,8 @@ set(FILES
     Include/AtomToolsFramework/GraphView/GraphView.h
     Include/AtomToolsFramework/GraphView/GraphViewConfig.h
     Source/GraphView/GraphView.cpp
+    Source/GraphView/GraphView.qrc
+    Source/GraphView/GraphView.qss
 
     Include/AtomToolsFramework/Inspector/InspectorGroupHeaderWidget.h
     Include/AtomToolsFramework/Inspector/InspectorGroupWidget.h

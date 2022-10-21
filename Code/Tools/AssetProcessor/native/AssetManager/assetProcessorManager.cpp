@@ -633,11 +633,6 @@ namespace AssetProcessor
 
         UpdateAnalysisTrackerForFile(jobEntry, AnalysisTrackerUpdateType::JobFailed);
 
-        // if its a fake "autofail job" or other reason for it not to exist in the DB, don't do anything here.
-        if (!jobEntry.m_addToDatabase)
-        {
-            return;
-        }
 
         QString absolutePathToFile = jobEntry.GetAbsoluteSourcePath();
 
@@ -657,6 +652,12 @@ namespace AssetProcessor
         }
 
         AssetProcessor::SetThreadLocalJobId(0);
+
+        // if its a fake "autofail job" or other reason for it not to exist in the DB, don't do anything here.
+        if (!jobEntry.m_addToDatabase)
+        {
+            return;
+        }
 
         // wipe the times so that it will try again next time.
         // note:  Leave the prior successful products where they are, though.
@@ -2841,30 +2842,35 @@ namespace AssetProcessor
                 QString overrider;
                 if (examineFile.m_isDelete)
                 {
-                    // if we delete it, check if its revealed by an underlying file:
-                    overrider = m_platformConfig->FindFirstMatchingFile(databasePathToFile);
-
-                    if (!overrider.isEmpty()) // override found!
+                    // Only look for an override if this is not an intermediate asset
+                    // Intermediate assets don't participate in the override system, so just process as-is without looking for an override
+                    if (!IsInIntermediateAssetsFolder(normalizedPath))
                     {
-                        if (overrider.compare(normalizedPath, Qt::CaseInsensitive) == 0)
+                        // if we delete it, check if its revealed by an underlying file:
+                        overrider = m_platformConfig->FindFirstMatchingFile(databasePathToFile);
+
+                        if (!overrider.isEmpty()) // override found!
                         {
-                            // if the overrider is the same file, it means that a file was deleted, then reappeared.
-                            // if that happened there will be a message in the notification queue for that file reappearing, there
-                            // is no need to add a double here.
-                            overrider.clear();
-                        }
-                        else
-                        {
-                            // on the other hand, if we found a file it means that a deleted file revealed a file that
-                            // was previously overridden by it.
-                            // Because the deleted file may have "revealed" a file with different case,
-                            // we have to actually correct its case here.  This is rare, so it should be reasonable
-                            // to call the expensive function to discover correct case.
-                            QString pathRelativeToScanFolder;
-                            QString scanFolderPath;
-                            m_platformConfig->ConvertToRelativePath(overrider, pathRelativeToScanFolder, scanFolderPath);
-                            AssetUtilities::UpdateToCorrectCase(scanFolderPath, pathRelativeToScanFolder);
-                            overrider = QDir(scanFolderPath).absoluteFilePath(pathRelativeToScanFolder);
+                            if (overrider.compare(normalizedPath, Qt::CaseInsensitive) == 0)
+                            {
+                                // if the overrider is the same file, it means that a file was deleted, then reappeared.
+                                // if that happened there will be a message in the notification queue for that file reappearing, there
+                                // is no need to add a double here.
+                                overrider.clear();
+                            }
+                            else
+                            {
+                                // on the other hand, if we found a file it means that a deleted file revealed a file that
+                                // was previously overridden by it.
+                                // Because the deleted file may have "revealed" a file with different case,
+                                // we have to actually correct its case here.  This is rare, so it should be reasonable
+                                // to call the expensive function to discover correct case.
+                                QString pathRelativeToScanFolder;
+                                QString scanFolderPath;
+                                m_platformConfig->ConvertToRelativePath(overrider, pathRelativeToScanFolder, scanFolderPath);
+                                AssetUtilities::UpdateToCorrectCase(scanFolderPath, pathRelativeToScanFolder);
+                                overrider = QDir(scanFolderPath).absoluteFilePath(pathRelativeToScanFolder);
+                            }
                         }
                     }
                 }

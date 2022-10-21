@@ -34,6 +34,7 @@ namespace AzToolsFramework
     constexpr inline AZ::Crc32 ViewportUiVisible = AZ_CRC_CE("org.o3de.action.editortransform.viewportuivisible");
     constexpr inline AZ::Crc32 Helpers = AZ_CRC_CE("org.o3de.action.editor.helpers");
     constexpr inline AZ::Crc32 Icons = AZ_CRC_CE("org.o3de.action.editor.icons");
+    constexpr inline AZ::Crc32 OnlyShowHelpersForSelectedEntitiesAction = AZ_CRC_CE("org.o3de.action.editor.onlyshowselectedentitieshelpers");
     //@}
 
     namespace ComponentModeFramework

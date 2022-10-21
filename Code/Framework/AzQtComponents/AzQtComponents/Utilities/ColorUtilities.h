@@ -28,6 +28,9 @@ namespace AzQtComponents
     AZ_QT_COMPONENTS_API QBrush MakeAlphaBrush(const AZ::Color& color, float gamma = 1.0f);
 
     AZ_QT_COMPONENTS_API bool AreClose(const AZ::Color& left, const AZ::Color& right);
+
+    AZ_QT_COMPONENTS_API QString MakePropertyDisplayStringInts(const QColor& color, bool includeAlphaChannel);
+    AZ_QT_COMPONENTS_API QString MakePropertyDisplayStringFloats(const QColor& color, bool includeAlphaChannel);
 };
 
 
