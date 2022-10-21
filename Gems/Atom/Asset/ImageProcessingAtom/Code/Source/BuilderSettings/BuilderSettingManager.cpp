@@ -557,6 +557,14 @@ namespace ImageProcessingAtom
                     AZ_Warning(LogWindow, false, "File mask '%s' is invalid. It must contain only a single '%c' character.", filemask.c_str(), FileMaskDelimiter);
                     continue;
                 }
+                else if (filemask.find(AZ_FILESYSTEM_EXTENSION_SEPARATOR) != AZStd::string::npos)
+                {
+                    AZ_Warning(LogWindow, false,
+                        "File mask '%s' is invalid. It must not contain a file extension separator ('%c').",
+                        filemask.c_str(),
+                        AZ_FILESYSTEM_EXTENSION_SEPARATOR);
+                    continue;
+                }
 
                 extraString += (filemask + preset.m_name.GetCStr());
 
@@ -599,7 +607,14 @@ namespace ImageProcessingAtom
         size_t lastUnderScore = fileName.find_last_of(FileMaskDelimiter);
         if (lastUnderScore != AZStd::string::npos)
         {
-            return fileName.substr(lastUnderScore);
+            // If the complete file name contains multiple extension separators ('.'), the GetFileName() call above will
+            // return all of the extensions except the last as the file name, and only the last is stripped off as the extension.
+            // For example, 'name_filemask.something.extension' will have the '.extension' removed, leaving us
+            // with 'name_filemask.something'. We would like to ignore *all* extensions when comparing file masks, so look for
+            // the extension separator and only use the portion of the name from the underscore to the period.
+            // i.e. use '_filemask', and ignore '.something'.
+            size_t firstExtensionChar = fileName.find(AZ_FILESYSTEM_EXTENSION_SEPARATOR, lastUnderScore);
+            return fileName.substr(lastUnderScore, firstExtensionChar - lastUnderScore);
         }
 
         return AZStd::string();
