@@ -35,6 +35,8 @@
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
+#include <AzFramework/Process/ProcessCommunicator.h>
+#include <AzFramework/Process/ProcessWatcher.h>
 
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/JSON/document.h>
@@ -1141,16 +1143,15 @@ namespace AZ
                 }
             }
 
-            if (shaderVariantInfo.m_enableRegisterAnalysis && strcmp(creationContext.m_shaderPlatformInterface.GetAPIName().GetCStr(), "vulkan") == 0)
+            if (shaderVariantInfo.m_enableRegisterAnalysis && creationContext.m_shaderPlatformInterface.GetAPIName().GetStringView() == "vulkan")
             {
                 AZ::IO::FixedMaxPath projectBuildPath = AZ::Utils::GetExecutableDirectory();
                 projectBuildPath = projectBuildPath.RemoveFilename(); // profile
                 projectBuildPath = projectBuildPath.RemoveFilename(); // bin
 
-                AZStd::string spirvPath;
-                AZStd::string spirvFile = AZStd::string::format(
+                AZ::IO::FixedMaxPath spirvPath(AZStd::string_view(creationContext.m_tempDirPath));
+                spirvPath /= AZ::IO::FixedMaxPathString::format(
                     "%s_vulkan_%u.spirv.bin", creationContext.m_shaderStemNamePrefix.c_str(), shaderVariantInfo.m_stableId);
-                AZ::StringFunc::Path::Join(creationContext.m_tempDirPath.c_str(), spirvFile.c_str(), spirvPath, true, true);
 
                 AZStd::string rgaCommand = AZStd::string::format(
                     "-s vk-spv-offline --isa ./disassem_%u.txt --livereg ./livereg_%u.txt --asic %s",
@@ -1159,29 +1160,30 @@ namespace AZ
                     shaderVariantInfo.m_asic.c_str());
 
                 AZStd::string command = AZStd::string::format("%s%s %s %s", projectBuildPath.c_str(), RgaExePath, rgaCommand.c_str(), spirvPath.c_str());
-                AZ_TracePrintf(ShaderVariantAssetBuilderName, "Rga command %s", command.c_str());
+                AZ_TracePrintf(ShaderVariantAssetBuilderName, "Rga command %s\n", command.c_str());
 
+                AZStd::vector<AZStd::string> fullCommand;
+                fullCommand.push_back(command);
                 AZStd::string failMessage;
-                if (!LaunchRadeonGPUAnalyzer(command, creationContext.m_tempDirPath, failMessage))
+                if (!LaunchRadeonGPUAnalyzer(fullCommand, creationContext.m_tempDirPath, failMessage))
                 {
                     return AZ::Failure(failMessage);
                 }
 
                 // add rga output to the by product list
-                outputByproducts->m_intermediatePaths.insert(AZStd::string::format("./%s_disassem_%u_frag.txt",shaderVariantInfo.m_asic.c_str(), shaderVariantInfo.m_stableId));
-                outputByproducts->m_intermediatePaths.insert(AZStd::string::format("./%s_livereg_%u_frag.txt", shaderVariantInfo.m_asic.c_str(),shaderVariantInfo.m_stableId));
+                outputByproducts->m_intermediatePaths.insert(AZStd::string::format("./%s_disassem_%u_frag.txt", shaderVariantInfo.m_asic.c_str(), shaderVariantInfo.m_stableId));
+                outputByproducts->m_intermediatePaths.insert(AZStd::string::format("./%s_livereg_%u_frag.txt", shaderVariantInfo.m_asic.c_str(), shaderVariantInfo.m_stableId));
             }
-            
 
             Data::Asset<RPI::ShaderVariantAsset> shaderVariantAsset;
             variantCreator.End(shaderVariantAsset);
             return AZ::Success(AZStd::move(shaderVariantAsset));
         }
 
-        bool ShaderVariantAssetBuilder::LaunchRadeonGPUAnalyzer(AZStd::string& command, const AZStd::string& workingDirectory, AZStd::string& failMessage)
+        bool ShaderVariantAssetBuilder::LaunchRadeonGPUAnalyzer(AZStd::vector<AZStd::string> command, const AZStd::string& workingDirectory, AZStd::string& failMessage)
         {
             AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
-            processLaunchInfo.m_commandlineParameters.emplace<AZStd::string>(command);
+            processLaunchInfo.m_commandlineParameters.emplace<AZStd::vector<AZStd::string>>(AZStd::move(command));
             processLaunchInfo.m_workingDirectory = workingDirectory;
             processLaunchInfo.m_showWindow = false;
             AzFramework::ProcessWatcher* watcher =

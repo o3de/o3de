@@ -13,7 +13,7 @@ if (NOT FETCHED_RGA)
     )
 
     FetchContent_MakeAvailable(RGA)
-    message("rga.exe will be store in ${rga_SOURCE_DIR}")
+    message("rga.exe will be stored in ${rga_SOURCE_DIR}")
 
     set(FETCHED_RGA ON)
 endif()
