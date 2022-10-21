@@ -71,6 +71,7 @@ namespace AzToolsFramework
             AddedFlagsColumnToProductTable,
             AddedStatsTable,
             ChangedSourceDependencySourceColumn,
+            SplitMaterialBuilderAndMaterialAssetBuilder,
             //Add all new versions before this
             DatabaseVersionCount,
             LatestVersion = DatabaseVersionCount - 1

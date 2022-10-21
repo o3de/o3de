@@ -117,7 +117,7 @@ namespace AZ
                 {
                     // GFX TODO - investigate window creation being part of the GameApplication.
 
-                    auto projectTitle = AZ::Utils::GetProjectName();
+                    auto projectTitle = AZ::Utils::GetProjectDisplayName();
 
                     m_nativeWindow = AZStd::make_unique<AzFramework::NativeWindow>(projectTitle.c_str(), AzFramework::WindowGeometry(0, 0, 1920, 1080));
                     AZ_Assert(m_nativeWindow, "Failed to create the game window\n");
@@ -199,7 +199,7 @@ namespace AZ
                     AZ::NativeUI::NativeUIRequestBus::Broadcast(
                         &AZ::NativeUI::NativeUIRequestBus::Events::DisplayOkDialog, "O3DE Fatal Error", msgBoxMessage.c_str(), false);
                     AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
-                                        
+
                     return;
                 }
 
@@ -259,7 +259,7 @@ namespace AZ
                 // Listen to window notification so we can request exit application when window closes
                 AzFramework::WindowNotificationBus::Handler::BusConnect(GetDefaultWindowHandle());
             }
-            
+
             AZ::RPI::ScenePtr BootstrapSystemComponent::GetOrCreateAtomSceneFromAzScene(AzFramework::Scene* scene)
             {
                 // Get or create a weak pointer to our scene

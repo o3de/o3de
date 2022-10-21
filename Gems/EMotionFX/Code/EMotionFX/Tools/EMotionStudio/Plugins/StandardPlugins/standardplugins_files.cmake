@@ -68,6 +68,8 @@ set(FILES
     Source/AnimGraph/NodeGraphWidget.h
     Source/AnimGraph/NodeGroupWindow.cpp
     Source/AnimGraph/NodeGroupWindow.h
+    Source/AnimGraph/NodePaletteModelUpdater.h
+    Source/AnimGraph/NodePaletteModelUpdater.cpp
     Source/AnimGraph/NodePaletteWidget.cpp
     Source/AnimGraph/NodePaletteWidget.h
     Source/AnimGraph/ParameterCreateEditDialog.cpp
