@@ -10,9 +10,9 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditorSettings.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/IPropertyEditor.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyHandlerWidget.h>
-#include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditorSettings.h>
 
 #include <QHBoxLayout>
 #include <QScrollArea>
@@ -21,6 +21,11 @@
 
 class QCheckBox;
 class QTimer;
+
+namespace AzQtComponents
+{
+    class ElidingLabel;
+};
 
 namespace AzToolsFramework
 {
@@ -36,17 +41,20 @@ namespace AzToolsFramework
         // todo: look into caching and QLayoutItem::invalidate()
     public:
         DPELayout(int depth, QWidget* parentWidget = nullptr);
+        void Init(int depth, QWidget* parentWidget = nullptr);
+        void Clear();
         virtual ~DPELayout();
+
         void SetExpanderShown(bool shouldShow);
         void SetExpanded(bool expanded);
         bool IsExpanded() const;
+
         void SharePriorColumn(QWidget* previousWidget);
         void SetSharePrior(bool sharePrior);
         bool ShouldSharePrior();
         int SharedWidgetCount();
         void WidgetAlignment(QWidget* alignedWidget, Qt::Alignment widgetAlignment);
         void AddMinimumWidthWidget(QWidget* widget);
-
 
         // QLayout overrides
         void invalidate() override;
@@ -72,7 +80,7 @@ namespace AzToolsFramework
 
         //! Vector containing pairs of widgets and integers, where each pair in the vector represents a unique shared column layout.
         //! Each widget in a pair will be the first widget in the shared column,
-        //! while the integer in a pair represents the number of widgets in the shared column. 
+        //! while the integer in a pair represents the number of widgets in the shared column.
         AZStd::vector<AZStd::pair<QWidget*, int>> m_sharePriorColumn;
 
         //! Map containing all widgets that have special alignment.
@@ -99,9 +107,10 @@ namespace AzToolsFramework
 
     public:
         explicit DPERowWidget(int depth, DPERowWidget* parentRow);
+        void Init(int depth, DPERowWidget* parentRow);
+        void Clear(); //!< destroy all layout contents and clear DOM children
         ~DPERowWidget();
 
-        void Clear(); //!< destroy all layout contents and clear DOM children
         void AddChildFromDomValue(const AZ::Dom::Value& childValue, size_t domIndex);
 
         //! clears and repopulates all children from a given DOM array
@@ -111,7 +120,7 @@ namespace AzToolsFramework
         //! handles a patch operation at the given path, or delegates to a child that will
         void HandleOperationAtPath(const AZ::Dom::PatchOperation& domOperation, size_t pathIndex = 0);
 
-        //! returns the last descendent of this row in its own layout
+        //! returns the last descendant of this row in its own layout
         DPERowWidget* GetLastDescendantInLayout();
 
         void SetExpanded(bool expanded, bool recurseToChildRows = false);
@@ -195,12 +204,36 @@ namespace AzToolsFramework
         // but can be overridden here
         void SetSpawnDebugView(bool shouldSpawn);
 
-        static constexpr const char* GetEnableDPECVarName() { return "ed_enableDPE"; }
+        static constexpr const char* GetEnableDPECVarName()
+        {
+            return "ed_enableDPE";
+        }
         static bool ShouldReplaceRPE();
 
         AZStd::vector<size_t> GetPathToRoot(DPERowWidget* row) const;
         bool IsRecursiveExpansionOngoing() const;
         void SetRecursiveExpansionOngoing(bool isExpanding);
+
+        // shared pool of recycled widgets
+        struct RecycledWidgets
+        {
+            ~RecycledWidgets();
+
+            DPERowWidget* GetRow(int depth, DPERowWidget* parentRow);
+            void RecycleRow(DPERowWidget* recycledRow);
+            AzQtComponents::ElidingLabel* GetLabel(const QString& text, QWidget* parent);
+            void RecycleLabel(AzQtComponents::ElidingLabel* recycledLabel);
+
+            static void DetachAndHide(QWidget* widget);
+
+            AZStd::vector<DPERowWidget*> m_recycledRows;
+            AZStd::vector<AzQtComponents::ElidingLabel*> m_recycledLabels;
+        };
+
+        static AZStd::shared_ptr<RecycledWidgets> GetWidgetPool()
+        {
+            return s_recycledList.lock();
+        }
 
     public slots:
         //! set the DOM adapter for this DPE to inspect
@@ -231,5 +264,11 @@ namespace AzToolsFramework
         QTimer* m_handlerCleanupTimer;
         AZStd::vector<AZStd::unique_ptr<PropertyHandlerWidgetInterface>> m_unusedHandlers;
         DPERowWidget* m_rootNode = nullptr;
+
+        // keep a list of frequently used widgets that can be recycled for efficiency without
+        // incurring the cost of creating and destroying them, and share this list (and its ownership) between
+        // all instances of DocumentPropertyWidgets. Keep a weak_pointer for each new DPE to initialize their shared reference
+        AZStd::shared_ptr<RecycledWidgets> m_recycledList;
+        static AZStd::weak_ptr<RecycledWidgets> s_recycledList;
     };
 } // namespace AzToolsFramework
