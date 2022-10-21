@@ -39,6 +39,7 @@
 
 #include <cmath>
 #include <AzCore/Debug/Profiler.h>
+#include <Multiplayer/MultiplayerPerformanceStats.h>
 
 AZ_DEFINE_BUDGET(MULTIPLAYER);
 

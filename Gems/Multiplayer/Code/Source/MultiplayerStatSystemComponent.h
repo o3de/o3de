@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <AzCore/EBus/ScheduledEvent.h>
 #include <AzCore/IO/Streamer/Statistics.h>
 #include <AzCore/IO/Streamer/StreamerConfiguration.h>
 #include <Multiplayer/MultiplayerStatSystemInterface.h>

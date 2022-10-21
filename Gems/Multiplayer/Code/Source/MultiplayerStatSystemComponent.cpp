@@ -6,8 +6,11 @@
  *
  */
 
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Metrics/IEventLoggerFactory.h>
 #include <AzCore/Metrics/JsonTraceEventLogger.h>
+#include <AzCore/Utils/Utils.h>
+#include <Multiplayer/IMultiplayer.h>
 #include <Source/MultiplayerStatSystemComponent.h>
 
 namespace Multiplayer
