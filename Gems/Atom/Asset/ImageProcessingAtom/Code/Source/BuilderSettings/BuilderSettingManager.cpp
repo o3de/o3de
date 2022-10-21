@@ -598,14 +598,13 @@ namespace ImageProcessingAtom
     AZStd::string BuilderSettingManager::GetFileMask(AZStd::string_view imageFilePath) const
     {
         //get file name
-        AZStd::string fileName;
         QString lowerFileName = imageFilePath.data();
         lowerFileName = lowerFileName.toLower();
 
         // If the complete file name contains multiple extension separators ('.'), only use the base name before the first separator
         // for the file mask. For example, 'name_filemask.something.extension' will only use 'name_filemask', producing a result
         // of '_filemask' that is returned from this method.
-        fileName = QFileInfo(lowerFileName).baseName().toUtf8();
+        AZStd::string fileName(QFileInfo(lowerFileName).baseName().toUtf8());
 
         //get the substring from last '_'
         size_t lastUnderScore = fileName.find_last_of(FileMaskDelimiter);
