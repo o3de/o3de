@@ -320,6 +320,7 @@ namespace O3DE::ProjectManager
             m_register = pybind11::module::import("o3de.register");
             m_manifest = pybind11::module::import("o3de.manifest");
             m_engineTemplate = pybind11::module::import("o3de.engine_template");
+            m_gemProperties = pybind11::module::import("o3de.gem_properties");
             m_engineProperties = pybind11::module::import("o3de.engine_properties");
             m_enableGemProject = pybind11::module::import("o3de.enable_gem");
             m_disableGemProject = pybind11::module::import("o3de.disable_gem");
@@ -873,6 +874,74 @@ namespace O3DE::ProjectManager
             });
 
         if (!result || !gemInfoResult.IsValid())
+        {
+            return AZ::Failure();
+        }
+        else
+        {
+            //Make sure directory link is a normalized path that can be rendered in "View Directory" dialog
+            gemInfoResult.m_directoryLink = QDir::cleanPath(gemInfoResult.m_directoryLink);
+            return AZ::Success(AZStd::move(gemInfoResult));
+        }
+    }
+
+    AZ::Outcome<GemInfo> PythonBindings::EditGem(const GemInfo& oldGemInfo, const GemInfo& newGemInfo)
+    {
+        using namespace pybind11::literals;
+
+        QStringList newList;
+
+        for(auto feature : newGemInfo.m_features)
+        {
+            if(!oldGemInfo.m_features.contains(feature))
+            {
+                //this must have been added by the user
+                newList << feature;
+            }
+        }
+
+        QStringList removeList;
+
+        for (auto feature : oldGemInfo.m_features)
+        {
+            if(!newGemInfo.m_features.contains(feature))
+            {
+                //this must have been removed by the user
+                removeList << feature;
+            }
+        }
+
+        GemInfo gemInfoResult;
+        bool result = ExecuteWithLock(
+            [&]
+            {
+                auto gemPath = QString_To_Py_Path(oldGemInfo.m_path);
+
+                auto editGemResult = m_gemProperties.attr("edit_gem_props")(
+                    "gem_path"_a = gemPath,
+                    "gem_name"_a = QString_To_Py_String(oldGemInfo.m_name),
+                    "new_name"_a = QString_To_Py_String(newGemInfo.m_name),
+                    "new_display"_a = QString_To_Py_String(newGemInfo.m_displayName),
+                    "new_origin"_a = QString_To_Py_String(newGemInfo.m_origin),
+                    "new_type"_a = pybind11::none(), //For the Project manager, it does not make sense to change the type of a gem once it's created
+                    "new_summary"_a = QString_To_Py_String(newGemInfo.m_summary),
+                    "new_icon"_a = QString_To_Py_String(newGemInfo.m_iconPath),
+                    "new_requirements"_a = QString_To_Py_String(newGemInfo.m_requirement),
+                    "new_documentation_url"_a = QString_To_Py_String(newGemInfo.m_documentationLink),
+                    "new_license"_a = QString_To_Py_String(newGemInfo.m_licenseText),
+                    "new_license_url"_a = QString_To_Py_String(newGemInfo.m_licenseLink),
+                    "new_tags"_a = QString_To_Py_String(newList.join(" ")),  //the python code seems to interpret these lists as space separated
+                    "remove_tags"_a = QString_To_Py_String(removeList.join(" ")),
+                    "replace_tags"_a = pybind11::none())
+                    ;
+                
+                if (editGemResult.cast<int>() == 0)
+                {
+                    gemInfoResult = GemInfoFromPath(gemPath, pybind11::none());
+                }
+            });
+        
+        if(!result || !gemInfoResult.IsValid())
         {
             return AZ::Failure();
         }

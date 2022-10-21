@@ -80,7 +80,9 @@ namespace O3DE::ProjectManager
             ScreenWidget* createGemScreen = m_screensControl->FindScreen(ProjectManagerScreen::CreateGem);
             if (createGemScreen)
             {
-                connect(static_cast<CreateGem*>(createGemScreen), &CreateGem::GemCreated, this, &GemCatalogScreen::HandleGemCreated);
+                CreateGem* createGem = static_cast<CreateGem*>(createGemScreen);
+                connect(createGem, &CreateGem::GemCreated, this, &GemCatalogScreen::HandleGemCreated);
+                connect(createGem, &CreateGem::GemEdited, this, &GemCatalogScreen::HandleGemEdited);
             }
         }
 
@@ -735,6 +737,21 @@ namespace O3DE::ProjectManager
 
         // create Toast Notification for project gem catalog
         QString notification = tr("%1 has been created.").arg(gemInfo.m_displayName);
+        ShowStandardToastNotification(notification);
+    }
+
+    void GemCatalogScreen::HandleGemEdited(const GemInfo& newGemInfo)
+    {
+        // This signal only occurs upon successful completion of editing a gem. As such, the gemInfo is assumed to be valid
+
+        // make sure to update the current model index in the gem catalog model
+        m_gemModel->RemoveGem(m_gemInspector->GetCurrentModelIndex());
+        m_gemModel->AddGem(newGemInfo);
+
+        //gem inspector needs to have its selection updated to the newly added gem
+        SelectGem(newGemInfo.m_name);
+
+        QString notification = tr("%1 was edited.").arg(newGemInfo.m_displayName);
         ShowStandardToastNotification(notification);
     }
 

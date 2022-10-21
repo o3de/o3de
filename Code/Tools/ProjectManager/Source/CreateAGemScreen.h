@@ -41,6 +41,7 @@ namespace O3DE::ProjectManager
 
     signals:
         void GemCreated(const GemInfo& gemInfo);
+        void GemEdited(const GemInfo& newGemInfo);
 
     private slots:
         void HandleBackButton();
@@ -69,6 +70,7 @@ namespace O3DE::ProjectManager
 
         //Edit Gem workflow
         bool m_isEditGem = false;
+        GemInfo m_oldGemInfo;
 
         //Gem Setup
         QVector<TemplateInfo> m_gemTemplates;

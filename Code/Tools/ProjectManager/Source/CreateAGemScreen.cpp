@@ -510,7 +510,27 @@ namespace O3DE::ProjectManager
 
                 if (m_isEditGem)
                 {
-                    //TODO: create new edit route
+                    //during editing, we remove the gem name tag to prevent the user accidentally altering it
+                    //so add it back here before submission
+                    if(!m_createGemInfo.m_features.contains(m_createGemInfo.m_name))
+                    {
+                        m_createGemInfo.m_features << m_createGemInfo.m_name;
+                    }
+
+                    auto result = PythonBindingsInterface::Get()->EditGem(m_oldGemInfo, m_createGemInfo);
+                    if(result.IsSuccess())
+                    {
+                        ClearWorkflow();
+                        emit GemEdited(result.GetValue<GemInfo>());
+                        emit GoToPreviousScreenRequest();
+                    }
+                    else
+                    {
+                        QMessageBox::critical(
+                            this,
+                            tr("Failed to edit gem"),
+                            tr("The gem failed to be edited"));
+                    }
                 }
                 else
                 {
@@ -576,7 +596,6 @@ namespace O3DE::ProjectManager
 
     void CreateGem::ChangeToCreateWorkflow()
     {
-        //TODO: revert to create gem UI
         m_header->setSubTitle(tr("Create a new gem"));
 
         //we ensure that we are using all pages
@@ -622,7 +641,11 @@ namespace O3DE::ProjectManager
         m_gemLocation->setErrorLabelVisible(false);
 
         m_gemIconPath->lineEdit()->setText(oldGemInfo.m_iconPath);
-        m_userDefinedGemTags->setTags(oldGemInfo.m_features);
+
+        //before settings the tags field, find a tag that includes the gem name, and remove it
+        QStringList tagsToEdit = oldGemInfo.m_features;
+        tagsToEdit.removeAll(oldGemInfo.m_name);
+        m_userDefinedGemTags->setTags(tagsToEdit);
 
         //creator details page
         m_origin->lineEdit()->setText(oldGemInfo.m_origin);
@@ -636,14 +659,12 @@ namespace O3DE::ProjectManager
         if(isEditWorkflow)
         {
             ChangeToEditWorkflow();
+            m_oldGemInfo = oldGemInfo;
         }
-        
-        //this will be ported over to a new EditGem class. There are a lot of subtle details, like removing the template selection, pre-filling gem values like type, and disabling folder editing, that are better handled on a separate class.
     }
 
     void CreateGem::ChangeToEditWorkflow()
     {
-        //TODO: change to the edit gem UI
         m_header->setSubTitle(tr("Edit gem"));
 
         //we will only have two pages: details page and creator details page
@@ -664,7 +685,6 @@ namespace O3DE::ProjectManager
 
         //there exists an edge case where backing out from an old create gem workflow fails to update next button title
         m_nextButton->setText(tr("Next"));
-
     }
 
 } // namespace O3DE::ProjectManager
