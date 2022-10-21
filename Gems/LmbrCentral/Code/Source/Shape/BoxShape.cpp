@@ -281,8 +281,12 @@ namespace LmbrCentral
 
     void BoxShape::SetTranslationOffset(const AZ::Vector3& translationOffset)
     {
-        bool shapeChanged = false;
+        if (!IsShapeComponentTranslationEnabled())
+        {
+            return;
+        }
 
+        bool shapeChanged = false;
         {
             AZStd::unique_lock lock(m_mutex);
             if (!m_boxShapeConfig.m_translationOffset.IsClose(translationOffset))
