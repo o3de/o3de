@@ -11,6 +11,7 @@
 #include "../Include/SandboxAPI.h"
 #include <CryCommon/LegacyAllocator.h>
 #include <set>
+#include <AzCore/std/containers/vector.h>
 
 #include <QStringList>
 
