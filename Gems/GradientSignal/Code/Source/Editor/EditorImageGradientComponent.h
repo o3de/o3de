@@ -109,6 +109,7 @@ namespace GradientSignal
         bool InComponentMode() const;
 
         AZStd::string GetImageSourcePath(const AZ::Data::AssetId& imageAssetId) const;
+        AZ::IO::Path GetIncrementingAutoSavePath(const AZ::IO::Path& currentPath) const;
 
         ImageCreationOrSelection m_creationSelectionChoice = ImageCreationOrSelection::UseExistingImage;
 

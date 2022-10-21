@@ -529,6 +529,70 @@ namespace GradientSignal
         return m_componentModeDelegate.AddedToComponentMode();
     }
 
+    AZ::IO::Path EditorImageGradientComponent::GetIncrementingAutoSavePath(const AZ::IO::Path& currentPath) const
+    {
+        // Given a path for a source texture, this will return a new path with an incremented version number on the end.
+        // If the input path doesn't have a version number yet, it will get one added.
+        // Ex:
+        // 'Assets/Gradients/MyGradient_gsi.tif' -> 'Assets/Gradients/MyGradient_gsi.0000.tif'
+        // 'Assets/Gradients/MyGradient_gsi.0005.tif' -> 'Assets/Gradients/MyGradient_gsi.0006.tif'
+
+        // We'll use 4 digits as our minimum version number size. We use this to add leading 0s so that alpha-sorting of the
+        // numbers still puts them in the right order. For example, we'll get 08, 09, 10 instead of 0, 1, 10, 2. This does
+        // mean that the alpha-sorting will look wrong if we hit 5 digits, but it's a readability tradeoff.
+        constexpr int NumVersionDigits = 4;
+
+        // Store a copy of the filename in a string so that we can modify it below.
+        AZStd::string baseFileName = currentPath.Stem().Native();
+
+        size_t foundDotChar = baseFileName.find_last_of(AZ_FILESYSTEM_EXTENSION_SEPARATOR);
+        uint32_t versionNumber = 0;
+
+        // If the base name ends with '.####' (4 or more digits), then we'll treat that as our auto version number.
+        // We'll read in the existing number, strip it, and increment it.
+        if (foundDotChar <= (baseFileName.length() - NumVersionDigits - 1))
+        {
+            bool foundVersionNumber = true;
+            uint32_t tempVersionNumber = 0;
+
+            for (size_t digitChar = foundDotChar + 1; digitChar < baseFileName.length(); digitChar++)
+            {
+                // If any character after the . isn't a digit, then this isn't a valid version number, so leave it alone.
+                // (Ex: "image_gsi.o3de")
+                if (!isdigit(baseFileName.at(digitChar)))
+                {
+                    foundVersionNumber = false;
+                    break;
+                }
+
+                // Convert the version number that we've found one character at a time.
+                tempVersionNumber = (tempVersionNumber * 10) + (baseFileName.at(digitChar) - '0');
+            }
+
+            // If we found a valid version number, auto-increment it by one and strip off the previous one.
+            // We'll re-add the new incremented version number back on at the end.
+            if (foundVersionNumber)
+            {
+                versionNumber = tempVersionNumber + 1;
+                baseFileName = baseFileName.substr(0, foundDotChar);
+            }
+        }
+
+        // Create a new string of the form <filename>.####
+        // For example, "entity1_gsi.tif" should become "entity1_gsi.0000.tif"
+        AZStd::string newFilename = AZStd::string::format(
+            AZ_STRING_FORMAT "%c%0*d" AZ_STRING_FORMAT,
+            AZ_STRING_ARG(baseFileName),
+            AZ_FILESYSTEM_EXTENSION_SEPARATOR,
+            NumVersionDigits, versionNumber,
+            AZ_STRING_ARG(currentPath.Extension().Native()));
+
+        AZ::IO::Path newPath = currentPath;
+        newPath.ReplaceFilename(AZ::IO::Path(newFilename));
+        return newPath;
+    }
+
+
     bool EditorImageGradientComponent::GetSaveLocation(
         AZ::IO::Path& fullPath, AZStd::string& relativePath, ImageGradientAutoSaveMode autoSaveMode)
     {
@@ -546,56 +610,11 @@ namespace GradientSignal
             promptForSaveName = !m_promptedForSaveLocation;
             break;
         case ImageGradientAutoSaveMode::AutoSaveWithIncrementalNames:
-            {
-                // We'll use 4 digits as our minimum
-                constexpr int NumVersionDigits = 4;
-                constexpr const char VersionFormatString[] = "%04d." AZ_STRING_FORMAT;
+            fullPath = GetIncrementingAutoSavePath(fullPath);
+            absoluteSaveFilePath = QString(fullPath.Native().c_str());
 
-                // Store a copy of the filename in a string so that we can modify it below.
-                AZStd::string fileName = fullPath.Filename().Native();
-
-                size_t foundDotChar = fileName.find_first_of('.');
-                uint32_t versionNumber = 0;
-
-                if (foundDotChar != AZStd::string::npos)
-                {
-                    // If the base name starts with '####.' (4 or more digits), then we'll treat that as our auto version number.
-                    // We'll read in the existing number, strip it, and increment it.
-                    if (foundDotChar >= NumVersionDigits)
-                    {
-                        bool foundVersionNumber = true;
-                        uint32_t tempVersionNumber = 0;
-
-                        for (size_t digitChar = 0; digitChar < foundDotChar; digitChar++)
-                        {
-                            if (!isdigit(fileName.at(digitChar)))
-                            {
-                                foundVersionNumber = false;
-                                break;
-                            }
-
-                            tempVersionNumber = (tempVersionNumber * 10) + (fileName.at(digitChar) - '0');
-                        }
-
-                        if (foundVersionNumber)
-                        {
-                            versionNumber = tempVersionNumber + 1;
-                            fileName = fileName.substr(foundDotChar + 1);
-                        }
-                    }
-                }
-
-                // Create a new string of the form ####.<filename>
-                // For example, "entity1_gsi.tif" should become "0000.entity1_gsi.tif"
-                AZStd::string newFilename = AZStd::string::format(VersionFormatString, versionNumber, AZ_STRING_ARG(fileName));
-                fullPath.ReplaceFilename(AZ::IO::Path(newFilename));
-                absoluteSaveFilePath = QString(fullPath.Native().c_str());
-                promptForSaveName = false;
-
-                // TODO: Check to see if the name already exists and prompt for overwrite if it does.
-                {
-                }
-            }
+            // Only prompt if our auto-generated name matches an existing file.
+            promptForSaveName = AZ::IO::SystemFile::Exists(fullPath.Native().c_str());
             break;
         }
 
