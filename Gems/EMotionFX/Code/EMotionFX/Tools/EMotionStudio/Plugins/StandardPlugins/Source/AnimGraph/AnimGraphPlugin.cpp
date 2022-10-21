@@ -42,6 +42,7 @@
 #include <EMotionStudio/EMStudioSDK/Source/SaveChangedFilesManager.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphActionManager.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphModel.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendGraphWidget.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/NavigationHistory.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterEditor/ParameterEditorFactory.h>
 #include <MysticQt/Source/DialogStack.h>
@@ -338,6 +339,7 @@ namespace EMStudio
     void AnimGraphPlugin::Reflect(AZ::ReflectContext* context)
     {
         AnimGraphOptions::Reflect(context);
+        BlendGraphMimeEvent::Reflect(context);
         ParameterEditorFactory::ReflectParameterEditorTypes(context);
     }
 
