@@ -73,14 +73,13 @@ namespace AzToolsFramework
 
             // Preemptively updates the cached DOM to prevent reloading instance DOM.
             PrefabDomReference cachedOwningInstanceDom = owningInstance.GetCachedInstanceDom();
-            AZ_Assert(cachedOwningInstanceDom.has_value(),
-                "Can't find cached DOM of parent entity's owning instance. "
-                "Parent entity id: '%llu'.", static_cast<AZ::u64>(parentEntityId));
-
-            UpdateCachedOwningInstanceDOM(cachedOwningInstanceDom,
-                parentEntityDomAfterAddingEntity, parentEntityAliasPath);
-            UpdateCachedOwningInstanceDOM(cachedOwningInstanceDom,
-                newEntityDom, newEntityAliasPath);
+            if (cachedOwningInstanceDom.has_value())
+            {
+                UpdateCachedOwningInstanceDOM(cachedOwningInstanceDom,
+                    parentEntityDomAfterAddingEntity, parentEntityAliasPath);
+                UpdateCachedOwningInstanceDOM(cachedOwningInstanceDom,
+                    newEntityDom, newEntityAliasPath);
+            }
         }
 
         void PrefabUndoAddEntity::GenerateUpdateParentEntityUndoPatches(
