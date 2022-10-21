@@ -77,9 +77,7 @@ namespace AZ
 
             // SceneNotificationBus interface overrides...
             //! Ensures our default view remains set when our scene's render pipelines are modified.
-            void OnRenderPipelineAdded(RenderPipelinePtr pipeline) override;
-            //! Ensures our default view remains set when our scene's render pipelines are modified.
-            void OnRenderPipelineRemoved(RenderPipeline* pipeline) override;
+            void OnRenderPipelineChanged(RenderPipeline* pipeline, SceneNotification::RenderPipelineChangeType changeType) override;
             //! OnBeginPrepareRender is forwarded to our RenderTick notification to allow subscribers to do rendering.
             void OnBeginPrepareRender() override;
             //! OnEndPrepareRender is forwarded to our WaitForRender notification to wait for any pending work
