@@ -97,21 +97,15 @@ namespace AZ::Render
         }
     }
 
-    void SkyAtmosphereFeatureProcessor::OnRenderPipelinePassesChanged([[maybe_unused]]RPI::RenderPipeline* renderPipeline)
+    void SkyAtmosphereFeatureProcessor::OnRenderPipelineChanged([[maybe_unused]] RPI::RenderPipeline* pipeline,
+        RPI::SceneNotification::RenderPipelineChangeType changeType)
     {
         CachePasses();
-        UpdateBackgroundClearColor();
-    }
-
-    void SkyAtmosphereFeatureProcessor::OnRenderPipelineAdded([[maybe_unused]]RPI::RenderPipelinePtr renderPipeline)
-    {
-        CachePasses();
-        UpdateBackgroundClearColor();
-    }
-
-    void SkyAtmosphereFeatureProcessor::OnRenderPipelineRemoved([[maybe_unused]] RPI::RenderPipeline* renderPipeline)
-    {
-        CachePasses();
+        if (changeType == RPI::SceneNotification::RenderPipelineChangeType::Added
+            || changeType == RPI::SceneNotification::RenderPipelineChangeType::PassChanged)
+        {
+            UpdateBackgroundClearColor();
+        }
     }
     
     void SkyAtmosphereFeatureProcessor::CachePasses()
