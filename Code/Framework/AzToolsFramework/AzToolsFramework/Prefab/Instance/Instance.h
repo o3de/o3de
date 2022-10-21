@@ -98,17 +98,21 @@ namespace AzToolsFramework
             //! @param context reflection context.
             static void Reflect(AZ::ReflectContext* context);
 
-            //! Getter and setter for template id.
-            //! @{
+            //! Gets template id.
+            //! @return Template id of the instance.
             TemplateId GetTemplateId() const;
-            void SetTemplateId(TemplateId templateId);
-            //! @}
 
-            //! Getter and setter for template source path.
-            //! @{
+            //! Sets template id.
+            //! @param templateId Template id to be set.
+            void SetTemplateId(TemplateId templateId);
+
+            //! Gets template source path.
+            //! @return Template source path of the instance.
             const AZ::IO::Path& GetTemplateSourcePath() const;
+
+            //! Sets template id.
+            //! @param sourcePath Template source path to be set.
             void SetTemplateSourcePath(AZ::IO::Path sourcePath);
-            //! @}
 
             //! Sets container entity name.
             //! @param containerName New container entity name to be set.
@@ -179,8 +183,8 @@ namespace AzToolsFramework
             size_t GetEntityAliasCount() const;
 
             //! Gets the entities or entity ids in the Instance DOM.
+            //! A callback can be provided to manipulates the entities.
             //! Note: These are non-recursive operations.
-            //! @param callback A user provided callback that manipulates the entities.
             //! @{
             void GetEntityIds(const AZStd::function<bool(AZ::EntityId)>& callback) const;
             void GetEntityIdToAlias(const AZStd::function<bool(AZ::EntityId, EntityAliasView)>& callback) const;
@@ -189,8 +193,8 @@ namespace AzToolsFramework
             //! @}
 
             //! Gets the entity ids for all entities in hierarchy in the Instance DOM.
+            //! A callback can be provided to manipulates the entities.
             //! Note: These are recursive operations that trace all nested instances.
-            //! @param callback A user provided callback that manipulates the entities.
             //! @{
             void GetAllEntityIdsInHierarchy(const AZStd::function<bool(AZ::EntityId)>& callback) const;
             void GetAllEntitiesInHierarchy(const AZStd::function<bool(AZStd::unique_ptr<AZ::Entity>&)>& callback);
@@ -202,20 +206,20 @@ namespace AzToolsFramework
             //! @param callback A user provided callback that manipulates the nested instances.
             void GetNestedInstances(const AZStd::function<void(AZStd::unique_ptr<Instance>&)>& callback);
 
-            //! Gets the alias for a given EnitityId in the Instance DOM.
-            //! @return entityAlias via optional
+            //! Gets the entity alias for a given entity id in the Instance DOM.
+            //! @{
             EntityAliasOptionalReference GetEntityAlias(AZ::EntityId id);
             EntityAliasView GetEntityAlias(AZ::EntityId id) const;
+            //! @}
 
             //! Searches for the entity in this instance and its nested instances.
-            //! @return The instance that owns the entity and the alias under which the entity is known.
-            //! If the entity isn't found then the instance will be null and the alias empty.
+            //! If the entity isn't found then the returned instance will be null and the alias will be empty.
+            //! @{
             AZStd::pair<Instance*, EntityAliasView> FindInstanceAndAlias(AZ::EntityId entity);
             AZStd::pair<const Instance*, EntityAliasView> FindInstanceAndAlias(AZ::EntityId entity) const;
+            //! @}
 
             //! Gets entity by a user provided entity alias.
-            //! @param alias Entity alias used to retrieve the entity.
-            //! @return Entity optional reference, nullopt if entity alias not found.
             //! @{
             EntityOptionalReference GetEntity(const EntityAlias& alias);
             EntityOptionalConstReference GetEntity(const EntityAlias& alias) const;
@@ -232,9 +236,11 @@ namespace AzToolsFramework
             AZ::EntityId GetEntityIdFromAliasPath(AliasPathView relativeAliasPath) const;
 
             //! Retrieves the instance pointer and entity id from an alias path that's relative to this instance.
-            //! @return A pair with the Instance and entity id. The Instance is set to null and entityId is set to invalid if not found.
+            //! It returns a pair with the Instance and entity id. The Instance is set to null and entityId is set to invalid if not found.
+            //! @{
             AZStd::pair<Instance*, AZ::EntityId> GetInstanceAndEntityIdFromAliasPath(AliasPathView relativeAliasPath);
             AZStd::pair<const Instance*, AZ::EntityId> GetInstanceAndEntityIdFromAliasPath(AliasPathView relativeAliasPath) const;
+            //! @}
 
             //! Gets the aliases of all the nested instances, which are sourced by the template with the given id.
             //! @param templateId The source template id of the nested instances.
@@ -245,18 +251,18 @@ namespace AzToolsFramework
             void ActivateContainerEntity();
 
             //! Finds a nested instance non-recursively by instance alias.
-            //! @param nestedInstanceAlias The nested instance alias for lookup.
-            //! @return Optional reference to the nested instance, nullopt if not found.
             //! @{
             InstanceOptionalReference FindNestedInstance(const InstanceAlias& nestedInstanceAlias);
             InstanceOptionalConstReference FindNestedInstance(const InstanceAlias& nestedInstanceAlias) const;
             //! @}
 
-            //! Getter and setter for link id.
-            //! @{
+            //! Sets link id.
+            //! @param linkId Link id to be set.
             void SetLinkId(LinkId linkId);
+            
+            //! Gets link id.
+            //! @return Link id of the instance.
             LinkId GetLinkId() const;
-            //! @}
 
             //! Query functions for parent instance.
             //! @{
