@@ -49,8 +49,6 @@ namespace AssetProcessor
 
             m_platformConfig.reset(new AssetProcessor::PlatformConfiguration);
 
-            m_platformConfig->AddScanFolder(AssetProcessor::ScanFolderInfo{ "c:/somerandomfolder", "scanfolder", "scanfolder", true, true, {} , 0, 1});
-            m_platformConfig->AddScanFolder(AssetProcessor::ScanFolderInfo{ "d:/test", "scanfolder2", "scanfolder2", true, true, {} , 0, 2});
 
             m_connectionManager.reset(new ConnectionManager(m_platformConfig.get()));
             RegisterObjectForQuit(m_connectionManager.get());
