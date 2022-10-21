@@ -173,7 +173,7 @@ namespace EMotionFX
             }
 
             // Default to the first mesh group until we get a way to choose it via the scene settings (ATOM-13590).
-            AZ_Error("EMotionFX", atomModelAssets.size() <= 1, "Ambigious mesh for actor asset. More than one mesh group found. Defaulting to the first one.");
+            AZ_Warning("EMotionFX", atomModelAssets.size() <= 1, "Ambiguous mesh for actor asset. More than one mesh group found. Defaulting to the first one.");
             if (!atomModelAssets.empty())
             {
                 const AZ::SceneAPI::Events::ExportProduct& meshProduct = atomModelAssets[0];
