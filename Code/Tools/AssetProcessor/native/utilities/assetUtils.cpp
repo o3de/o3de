@@ -832,7 +832,9 @@ namespace AssetUtilities
 
         // we can skip this step in the cases where cleanPath will do it for us:
         if (QDir::separator() == QLatin1Char('/'))
+        {
             returnString.replace(QLatin1Char('\\'), QLatin1Char('/'));
+        }
 
         // cleanPath to remove/resolve .. and . and any extra slashes, and remove any trailing slashes.
         returnString = QDir::cleanPath(returnString);
