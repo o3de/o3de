@@ -22,21 +22,6 @@ namespace AZStd
     };
 }
 
-#define AZ_DEFINE_TYPE_SAFE_INTEGRAL_TOSTRING(TYPE_NAME, BASE_NAME) \
-    namespace AZStd \
-    { \
-        inline void to_string(AZStd::string& str, const TYPE_NAME& value) \
-        { \
-            str = to_string(static_cast<BASE_NAME>(value)); \
-        } \
-        inline AZStd::string to_string(const TYPE_NAME& val) \
-        { \
-            AZStd::string str; \
-            to_string(str, val); \
-            return str; \
-        } \
-    }
-
 //! This implements a type-safe integral class.
 //! The usage of an enum class prevents any potential negative performance impact that might occur with a wrapping struct.
 //! Usage: AZ_TYPE_SAFE_INTEGRAL(TypeSafeClassName, int8_t/uint8_t/int16_t/uint16_t/int32_t/uint32_t/int64_t/uint64_t);
@@ -46,6 +31,24 @@ namespace AZStd
     AZ_DEFINE_ENUM_ARITHMETIC_OPERATORS(TYPE_NAME)                                                                                                  \
     AZ_DEFINE_ENUM_RELATIONAL_OPERATORS(TYPE_NAME)                                                                                                  \
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(TYPE_NAME)
+
+//! This implements AZStd to_string methods for a type safe integral alias.
+//! This must be placed in global scope (not in a namespace) and the TYPE_NAME should be fully qualified.
+//! Usage: AZ_TYPE_SAFE_INTEGRAL_TOSTRING(TypeSafeClassName, int8_t/uint8_t/int16_t/uint16_t/int32_t/uint32_t/int64_t/uint64_t);
+#define AZ_TYPE_SAFE_INTEGRAL_TOSTRING(TYPE_NAME, BASE_NAME)                                                                               \
+    namespace AZStd                                                                                                                        \
+    {                                                                                                                                      \
+        inline void to_string(AZStd::string& str, const TYPE_NAME& value)                                                                  \
+        {                                                                                                                                  \
+            str = to_string(static_cast<BASE_NAME>(value));                                                                                \
+        }                                                                                                                                  \
+        inline AZStd::string to_string(const TYPE_NAME& val)                                                                               \
+        {                                                                                                                                  \
+            AZStd::string str;                                                                                                             \
+            to_string(str, val);                                                                                                           \
+            return str;                                                                                                                    \
+        }                                                                                                                                  \
+    }
 
 //! This implements cvar binding methods for a type safe integral alias.
 //! This must be placed in global scope (not in a namespace) and the TYPE_NAME should be fully qualified.
