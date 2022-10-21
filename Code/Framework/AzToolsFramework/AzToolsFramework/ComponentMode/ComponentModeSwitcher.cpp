@@ -482,5 +482,3 @@ namespace AzToolsFramework::ComponentModeFramework
         }
     }
 } // namespace AzToolsFramework::ComponentModeFramework
-#pragma optimize("", on)
-#pragma inline_depth()
