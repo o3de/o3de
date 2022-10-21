@@ -40,13 +40,6 @@ set(FILES
     Include/ScriptCanvas/Core/SlotMetadata.cpp
     Include/ScriptCanvas/Core/SubgraphInterface.cpp
     Include/ScriptCanvas/Core/SubgraphInterfaceUtility.cpp
-    Include/ScriptCanvas/Translation/GraphToLua.cpp
-    Include/ScriptCanvas/Translation/GraphToLuaUtility.cpp
-    Include/ScriptCanvas/Translation/GraphToX.cpp
-    Include/ScriptCanvas/Translation/Translation.cpp
-    Include/ScriptCanvas/Translation/TranslationContext.cpp
-    Include/ScriptCanvas/Translation/TranslationResult.cpp
-    Include/ScriptCanvas/Translation/TranslationUtilities.cpp
     Include/ScriptCanvas/Core/Contracts/ConnectionLimitContract.cpp
     Include/ScriptCanvas/Core/Contracts/ContractRTTI.cpp
     Include/ScriptCanvas/Core/Contracts/DisallowReentrantExecutionContract.cpp
@@ -61,6 +54,8 @@ set(FILES
     Include/ScriptCanvas/Data/BehaviorContextObjectPtr.cpp
     Include/ScriptCanvas/Data/Data.cpp
     Include/ScriptCanvas/Data/DataRegistry.cpp
+    Include/ScriptCanvas/Data/DataTrait.cpp
+    Include/ScriptCanvas/Data/PropertyTraits.cpp
     Include/ScriptCanvas/Deprecated/VariableDatumBase.cpp
     Include/ScriptCanvas/Deprecated/VariableDatum.cpp
     Include/ScriptCanvas/Deprecated/VariableHelpers.cpp
@@ -204,8 +199,13 @@ set(FILES
     Include/ScriptCanvas/Serialization/BehaviorContextObjectSerializer.cpp
     Include/ScriptCanvas/Serialization/DatumSerializer.cpp
     Include/ScriptCanvas/Serialization/RuntimeVariableSerializer.cpp
-    Include/ScriptCanvas/Data/DataTrait.cpp
-    Include/ScriptCanvas/Data/PropertyTraits.cpp
+    Include/ScriptCanvas/Translation/GraphToLua.cpp
+    Include/ScriptCanvas/Translation/GraphToLuaUtility.cpp
+    Include/ScriptCanvas/Translation/GraphToX.cpp
+    Include/ScriptCanvas/Translation/Translation.cpp
+    Include/ScriptCanvas/Translation/TranslationContext.cpp
+    Include/ScriptCanvas/Translation/TranslationResult.cpp
+    Include/ScriptCanvas/Translation/TranslationUtilities.cpp
     Include/ScriptCanvas/Variable/GraphVariable.cpp
     Include/ScriptCanvas/Variable/GraphVariableManagerComponent.cpp
     Include/ScriptCanvas/Variable/VariableCore.cpp
@@ -215,5 +215,4 @@ set(FILES
     Include/ScriptCanvas/Utils/VersionConverters.cpp
     Include/ScriptCanvas/Utils/VersioningUtils.cpp
     Include/ScriptCanvas/Utils/BehaviorContextUtils.cpp
-    Include/ScriptCanvas/Utils/ReplacementUtils.cpp
 )

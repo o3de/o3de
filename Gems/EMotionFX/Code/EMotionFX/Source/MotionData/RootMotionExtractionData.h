@@ -12,6 +12,8 @@
 
 namespace EMotionFX
 {
+    class Actor;
+
     // Root motion extraction data is a collection of export settings used to extract hip/pelvis animation to root bone.
     class RootMotionExtractionData
     {
@@ -28,6 +30,7 @@ namespace EMotionFX
         virtual ~RootMotionExtractionData() = default;
         static void Reflect(AZ::ReflectContext* context);
         AZ::Crc32 GetVisibilitySmoothEnabled() const;
+        void FindBestMatchedJoints(const Actor* actor);
 
         bool m_transitionZeroXAxis = false;
         bool m_transitionZeroYAxis = false;

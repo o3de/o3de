@@ -17,6 +17,7 @@ QT_FORWARD_DECLARE_CLASS(QLabel)
 QT_FORWARD_DECLARE_CLASS(QFrame)
 QT_FORWARD_DECLARE_CLASS(QMovie)
 QT_FORWARD_DECLARE_CLASS(QHBoxLayout)
+QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
 QT_FORWARD_DECLARE_CLASS(QMouseEvent)
 
 namespace AzQtComponents
@@ -66,6 +67,7 @@ namespace O3DE::ProjectManager
         QFrame* m_frame = nullptr;
         QHBoxLayout* m_frameLayout = nullptr;
         AzQtComponents::StyledLineEdit* m_lineEdit = nullptr;
+        QVBoxLayout* m_mainLayout = nullptr;
 
         //Validation icons
         QMovie* m_processingSpinnerMovie = nullptr;
@@ -73,6 +75,7 @@ namespace O3DE::ProjectManager
         QLabel* m_validationErrorIcon = nullptr;
         QLabel* m_validationSuccessIcon = nullptr;
         ValidationState m_validationState = ValidationState::NotValidating;
+        void refreshStyle();
 
     private slots:
         void flavorChanged();
@@ -81,7 +84,6 @@ namespace O3DE::ProjectManager
 
     private:
         void mousePressEvent(QMouseEvent* event) override;
-
-        void refreshStyle();
+        
     };
 } // namespace O3DE::ProjectManager

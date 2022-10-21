@@ -121,11 +121,7 @@ namespace AZ
 
             // Load Draw SRG
             // this is necessary since the shader may have options, which require a default draw SRG
-            const auto drawSrgLayout = m_shader->FindShaderResourceGroupLayout(SrgBindingSlot::Draw);
-            if (drawSrgLayout)
-            {
-                m_drawShaderResourceGroup = ShaderResourceGroup::Create(shaderAsset, m_shader->GetSupervariantIndex(), drawSrgLayout->GetName());
-            }
+            m_drawShaderResourceGroup = m_shader->CreateDefaultDrawSrg();
 
             // Store stencil reference value for the draw call
             m_stencilRef = passData->m_stencilRef;
@@ -156,10 +152,7 @@ namespace AZ
 
             RHI::PipelineStateDescriptorForDraw pipelineStateDescriptor;
 
-            // [GFX TODO][ATOM-872] The pass should be able to drive the shader variant
-            // This is a pattern that should be established somewhere.
-            auto shaderVariant = m_shader->GetVariant(m_shaderVariantStableId);
-            shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
+            m_shader->GetDefaultVariant().ConfigurePipelineState(pipelineStateDescriptor);
 
             pipelineStateDescriptor.m_renderAttachmentConfiguration = GetRenderAttachmentConfiguration();
             pipelineStateDescriptor.m_renderStates.m_multisampleState = GetMultisampleState();

@@ -72,11 +72,8 @@ namespace AZ
                 const AZStd::string_view* acceptedFieldNames, uint32_t acceptedFieldNameCount,
                 const rapidjson::Value& object, JsonDeserializerContext& context, JsonSerializationResult::ResultCode& result);
 
-            //! Materials assets can either be finalized during asset-processing time or when materials are loaded at runtime.
-            //! Finalizing during asset processing reduces load times and obfuscates the material data.
-            //! Waiting to finalize at load time reduces dependencies on the material type data, resulting in fewer asset rebuilds and less time spent processing assets.
-            //! Removing the dependency on the material type data will require special handling of material type asset dependencies when loading and reloading materials.
-            bool BuildersShouldFinalizeMaterialAssets();
+            //! Inspects the content of the MaterialPropertyValue to see if it is a string that appears to be an image file path.
+            bool LooksLikeImageFileReference(const MaterialPropertyValue& value);
         }
     }
 }
