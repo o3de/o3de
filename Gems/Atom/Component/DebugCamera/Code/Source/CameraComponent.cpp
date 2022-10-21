@@ -83,7 +83,6 @@ namespace AZ
             m_cameraView->CreateMainView(viewName);
             m_cameraView->CreateStereoscopicViews(viewName);
 
-            //Create stereoscopic view if XR system is active
             m_xrSystem = RPI::RPISystemInterface::Get()->GetXRSystem();
             if (m_xrSystem)
             {
