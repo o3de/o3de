@@ -110,6 +110,8 @@ namespace AzToolsFramework
             void SetTemplateSourcePath(AZ::IO::Path sourcePath);
             //! @}
 
+            //! Sets container entity name.
+            //! @param containerName New container entity name to be set.
             void SetContainerEntityName(AZStd::string containerName);
 
             //! Adds entity to the instance.
