@@ -166,7 +166,7 @@ namespace AZ
             {
                 if (m_debugCtx->m_debugDraw && (m_view->GetName() == m_debugCtx->m_currentViewSelectionName))
                 {
-                    AuxGeomFeatureProcessorInterface::GetDrawQueueForScene(worklistData->m_scene);
+                    AuxGeomFeatureProcessorInterface::GetDrawQueueForScene(m_scene);
                 }
                 return nullptr;
             }
@@ -290,7 +290,7 @@ namespace AZ
                             if (worklistData->m_debugCtx->m_drawBoundingBoxes)
                             {
                                 auxGeomPtr->DrawObb(c->m_cullData.m_boundingObb, Matrix3x4::Identity(),
-                                    nodeIsContainedInFrustum ? Colors::Lime : Colors::Yellow, AuxGeomDraw::DrawStyle::Line);
+                                    parentNodeContainedInFrustum ? Colors::Lime : Colors::Yellow, AuxGeomDraw::DrawStyle::Line);
                             }
 
                             if (worklistData->m_debugCtx->m_drawBoundingSpheres)
