@@ -59,7 +59,7 @@ ly_add_target(
 # clients and servers use the above Gem module.
 ly_create_alias(NAME Blast.Servers NAMESPACE Gem TARGETS Gem::Blast)
 ly_create_alias(NAME Blast.Clients NAMESPACE Gem TARGETS Gem::Blast)
-
+ly_create_alias(NAME Blast.Unified NAMESPACE Gem TARGETS Gem::Blast)
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
 

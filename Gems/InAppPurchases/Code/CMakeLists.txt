@@ -43,5 +43,6 @@ ly_add_target(
 # Load the above "Gem::InAppPurchases" module in all app types
 ly_create_alias(NAME InAppPurchases.Clients  NAMESPACE Gem TARGETS Gem::InAppPurchases)
 ly_create_alias(NAME InAppPurchases.Servers  NAMESPACE Gem TARGETS Gem::InAppPurchases)
+ly_create_alias(NAME InAppPurchases.Unified  NAMESPACE Gem TARGETS Gem::InAppPurchases)
 ly_create_alias(NAME InAppPurchases.Builders NAMESPACE Gem TARGETS Gem::InAppPurchases)
 ly_create_alias(NAME InAppPurchases.Tools    NAMESPACE Gem TARGETS Gem::InAppPurchases)
