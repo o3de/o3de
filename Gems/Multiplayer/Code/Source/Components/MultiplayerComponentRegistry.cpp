@@ -79,6 +79,17 @@ namespace Multiplayer
         return m_componentVersionHash;
     }
 
+    AZStd::vector<ComponentVersionMessageData> MultiplayerComponentRegistry::BuildComponentVersionData() const
+    {
+        AZStd::vector<ComponentVersionMessageData> componentVersions;
+        for (const auto& componentData : m_componentData)
+        {
+            componentVersions.emplace_back(componentData.second.m_componentName, componentData.second.m_versionHash);
+        }
+
+        return componentVersions;
+    }
+
     void MultiplayerComponentRegistry::Reset()
     {
         m_componentData.clear();

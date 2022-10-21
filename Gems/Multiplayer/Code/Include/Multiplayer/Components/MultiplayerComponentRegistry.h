@@ -71,6 +71,8 @@ namespace Multiplayer
         //! @return a 64-bit hash value representing of all of the multiplayer components
         AZ::HashValue64 GetMultiplayerComponentVersionHash();
 
+        AZStd::vector<ComponentVersionMessageData> BuildComponentVersionData() const;
+
         //! This releases all owned memory, should only be called during multiplayer shutdown.
         void Reset();
 

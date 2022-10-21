@@ -587,6 +587,16 @@ namespace Multiplayer
                 return true;
             }
         }
+
+        // Make sure the client that's trying to connect has the same multiplayer components
+        if (GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHash() != packet.GetMultiplayerComponentVersionHash())
+        {
+            //MultiplayerPackets::SyncComponentMismatch multiplayerComponentData;
+            //multiplayerComponentData.ModifyComponentVersions() = GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHash()
+            //connection->SendReliablePacket();
+            return true;
+        }
+
         reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->SetProviderTicket(packet.GetTicket().c_str());
 
         // Hosts will handle spawning for a player on connect
@@ -631,7 +641,6 @@ namespace Multiplayer
             }
         }
 
-        bool multiplayerComponentsMismatch = GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHash() != packet.GetMultiplayerComponentVersionHash();
         if (static_cast<AZ::CVarFixedString>(sv_map).empty())
         {
             AZLOG_WARN("Server does not have a multiplayer level loaded! Make sure the server has a level loaded before accepting clients.");
@@ -641,7 +650,7 @@ namespace Multiplayer
             return true;
         }
 
-        if (connection->SendReliablePacket(MultiplayerPackets::Accept(sv_map, multiplayerComponentsMismatch)))
+        if (connection->SendReliablePacket(MultiplayerPackets::Accept(sv_map)))
         {
             reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->SetDidHandshake(true);
             if (packet.GetTemporaryUserId() == 0)
@@ -834,8 +843,12 @@ namespace Multiplayer
     bool MultiplayerSystemComponent::HandleRequest(
         [[maybe_unused]] IConnection* connection,
         [[maybe_unused]] const IPacketHeader& packetHeader,
-        [[maybe_unused]] MultiplayerPackets::SyncComponentMismatch& packet)
+        MultiplayerPackets::SyncComponentMismatch& packet)
     {
+        for(const auto multiplayerComponentData : packet.GetComponentVersions())
+        {
+            multiplayerComponentData.m_componentName;
+        }
         return true;
     }
 

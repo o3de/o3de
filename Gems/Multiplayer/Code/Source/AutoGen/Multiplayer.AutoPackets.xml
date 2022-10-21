@@ -16,7 +16,6 @@
 
     <Packet Name="Accept" HandshakePacket="true" Desc="Server accept packet">
         <Member Type="Multiplayer::LongNetworkString" Name="map" />
-        <Member Type="bool" Name="hasMultiplayerComponentMismatch" />
     </Packet>
 
     <Packet Name="SyncComponentMismatch" Desc="Sends a vector of multiplayer components with their name and version hashes in order to compare which components exactly are mismatched.">
@@ -27,7 +26,7 @@
       <Member Type="bool" Name="readyForEntityUpdates" />
     </Packet>
 
-    <Packet Name="SyncConsole" Desc="Packet for synchornizing cvars between hosts">
+    <Packet Name="SyncConsole" Desc="Packet for synchronizing cvars between hosts">
         <Member Type="Multiplayer::LongNetworkString" Name="commandSet" Container="Vector" Count="32" />
     </Packet>
 
