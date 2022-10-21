@@ -17,6 +17,7 @@ namespace UnitTest
     using namespace PrefabTestUtils;
 
     using CreatePrefabUndoAddEntityNodeResult = AZ::Outcome<PrefabUndoAddEntity, AZStd::string>;
+    using InstanceList = AZStd::vector<AZStd::reference_wrapper<Instance>>;
 
     class PrefabUndoAddEntityTestFixture
         : public PrefabTestFixture
@@ -43,24 +44,46 @@ namespace UnitTest
             const AZStd::string& undoAddEntityOperationName = "Undo Adding Entity");
 
         void ValidateNewEntityUnderInstance(
-            AZStd::vector<AZStd::unique_ptr<Instance>>& instances,
+            InstanceList& instances,
+            const EntityAlias& newEntityAlias, const AZStd::string& newEntityName,
+            size_t expectedEntityCount);
+
+        void ValidateNewEntityUnderInstance(
+            Instance& instance,
             const EntityAlias& newEntityAlias, const AZStd::string& newEntityName,
             size_t expectedEntityCount);
 
         void ValidateNewEntityUnderParentEntity(
-            AZStd::vector<AZStd::unique_ptr<Instance>>& instances,
+            InstanceList& instances,
             const EntityAlias& parentEntityAlias, const AZStd::string& parentEntityName,
             const EntityAlias& newEntityAlias, const AZStd::string& newEntityName,
             size_t expectedEntityCount);
 
-        void ValidateNewEntityNotUnderInstance(
-            AZStd::vector<AZStd::unique_ptr<Instance>>& instances,
+        void ValidateNewEntityUnderParentEntity(
+            Instance& instance,
+            const EntityAlias& parentEntityAlias, const AZStd::string& parentEntityName,
+            const EntityAlias& newEntityAlias, const AZStd::string& newEntityName,
+            size_t expectedEntityCount);
+
+        void ValidateNewEntityNotUnderParentEntity(
+            InstanceList& instances,
+            const EntityAlias& parentEntityAlias, const AZStd::string& parentEntityName,
             const EntityAlias& newEntityAlias,
             size_t expectedEntityCount);
 
         void ValidateNewEntityNotUnderParentEntity(
-            AZStd::vector<AZStd::unique_ptr<Instance>>& instances,
+            Instance& instance,
             const EntityAlias& parentEntityAlias, const AZStd::string& parentEntityName,
+            const EntityAlias& newEntityAlias,
+            size_t expectedEntityCount);
+
+        void ValidateNewEntityNotUnderInstance(
+            InstanceList& instances,
+            const EntityAlias& newEntityAlias,
+            size_t expectedEntityCount);
+
+        void ValidateNewEntityNotUnderInstance(
+            Instance& instance,
             const EntityAlias& newEntityAlias,
             size_t expectedEntityCount);
 
