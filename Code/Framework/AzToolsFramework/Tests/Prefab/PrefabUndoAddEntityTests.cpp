@@ -22,23 +22,28 @@ namespace UnitTest
     TEST_F(PrefabUndoAddEntityTests, PrefabUndoAddEntity_AddEntityUnderFocusedInstance)
     {
         // Create a car instance as our current focused instance.
-        AZStd::unique_ptr<Instance> focusedCarInstance =
+        AZStd::unique_ptr<Instance> focusedCarInstancePtr =
             m_prefabSystemComponent->CreatePrefab({}, {}, "test/path");
-        ASSERT_TRUE(focusedCarInstance);
+        ASSERT_TRUE(focusedCarInstancePtr);
+        Instance& focusedCarInstance = *focusedCarInstancePtr;
 
         // Create another car instance to later help verify if propagation works.
-        AZStd::unique_ptr<Instance> secondCarInstance =
-            m_prefabSystemComponent->InstantiatePrefab(focusedCarInstance->GetTemplateId());
-        ASSERT_TRUE(secondCarInstance);
+        AZStd::unique_ptr<Instance> secondCarInstancePtr =
+            m_prefabSystemComponent->InstantiatePrefab(focusedCarInstance.GetTemplateId());
+        ASSERT_TRUE(secondCarInstancePtr);
+
+        auto carinstances = MakeInstanceList(
+            AZStd::move(focusedCarInstancePtr),
+            AZStd::move(secondCarInstancePtr));
 
         // Create a car entity and add it under our car instance.
         const AZStd::string carEntityName = "Car";
-        const EntityAlias carEntityAlias = CreateEntity(carEntityName, *focusedCarInstance);
+        const EntityAlias carEntityAlias = CreateEntity(carEntityName, focusedCarInstance);
         ASSERT_FALSE(carEntityAlias.empty());
 
         // Create undo/redo node for adding the car entity under the car instance.
         auto createUndoAddCarEntityNodeResult = CreatePrefabUndoAddEntityNode(
-            *focusedCarInstance, carEntityAlias, *focusedCarInstance, "Undo Adding Car Entity");
+            focusedCarInstance, carEntityAlias, focusedCarInstance, "Undo Adding Car Entity");
         ASSERT_TRUE(createUndoAddCarEntityNodeResult.IsSuccess());
         PrefabUndoAddEntity undoAddCarEntityNode = createUndoAddCarEntityNodeResult.TakeValue();
 
@@ -48,21 +53,18 @@ namespace UnitTest
         undoAddCarEntityNode.Redo();
         PropagateAllTemplateChanges();
         
-        ValidateNewEntityUnderInstance(*focusedCarInstance,
+        ValidateNewEntityUnderInstance(carinstances,
             carEntityAlias, carEntityName,
             ++expectedEntityCount);
-        ValidateNewEntityUnderInstance(*secondCarInstance,
-            carEntityAlias, carEntityName,
-            expectedEntityCount);
 
         // Create an axis entity and add it under the car entity.
         const AZStd::string axisEntityName = "Axis";
-        const EntityAlias axisEntityAlias = CreateEntity(axisEntityName, *focusedCarInstance, carEntityAlias);
+        const EntityAlias axisEntityAlias = CreateEntity(axisEntityName, focusedCarInstance, carEntityAlias);
         ASSERT_FALSE(axisEntityAlias.empty());
 
         // Create undo/redo node for adding the axis entity under the car entity.
         auto createUndoAddAxisEntityNodeResult = CreatePrefabUndoAddEntityNode(
-            *focusedCarInstance, carEntityAlias, axisEntityAlias, *focusedCarInstance, "Undo Adding Axis Entity");
+            focusedCarInstance, carEntityAlias, axisEntityAlias, focusedCarInstance, "Undo Adding Axis Entity");
         ASSERT_TRUE(createUndoAddAxisEntityNodeResult.IsSuccess());
         PrefabUndoAddEntity undoAddAxisEntityNode = createUndoAddAxisEntityNodeResult.TakeValue();
 
@@ -70,23 +72,19 @@ namespace UnitTest
         undoAddAxisEntityNode.Redo();
         PropagateAllTemplateChanges();
 
-        ValidateNewEntityUnderParentEntity(*focusedCarInstance,
+        ValidateNewEntityUnderParentEntity(carinstances,
             carEntityAlias, carEntityName,
             axisEntityAlias, axisEntityName,
             ++expectedEntityCount);
-        ValidateNewEntityUnderParentEntity(*secondCarInstance,
-            carEntityAlias, carEntityName,
-            axisEntityAlias, axisEntityName,
-            expectedEntityCount);
 
         // Create a wheel entity and add it under the axis entity.
         const AZStd::string wheelEntityName = "Wheel";
-        const EntityAlias wheelEntityAlias = CreateEntity(wheelEntityName, *focusedCarInstance, axisEntityAlias);
+        const EntityAlias wheelEntityAlias = CreateEntity(wheelEntityName, focusedCarInstance, axisEntityAlias);
         ASSERT_FALSE(wheelEntityAlias.empty());
 
         // Create undo/redo node for adding the wheel entity under the axis entity.
         auto createUndoAddWheelEntityNodeResult = CreatePrefabUndoAddEntityNode(
-            *focusedCarInstance, axisEntityAlias, wheelEntityAlias, *focusedCarInstance, "Undo Adding Wheel Entity");
+            focusedCarInstance, axisEntityAlias, wheelEntityAlias, focusedCarInstance, "Undo Adding Wheel Entity");
         ASSERT_TRUE(createUndoAddWheelEntityNodeResult.IsSuccess());
         PrefabUndoAddEntity undoAddWheelEntityNode = createUndoAddWheelEntityNodeResult.TakeValue();
 
@@ -94,51 +92,36 @@ namespace UnitTest
         undoAddWheelEntityNode.Redo();
         PropagateAllTemplateChanges();
 
-        ValidateNewEntityUnderParentEntity(*focusedCarInstance,
+        ValidateNewEntityUnderParentEntity(carinstances,
             axisEntityAlias, axisEntityName,
             wheelEntityAlias, wheelEntityName,
             ++expectedEntityCount);
-        ValidateNewEntityUnderParentEntity(*secondCarInstance,
-            axisEntityAlias, axisEntityName,
-            wheelEntityAlias, wheelEntityName,
-            expectedEntityCount);
 
         // Undo adding the wheel entity under the axis entity.
         undoAddWheelEntityNode.Undo();
         PropagateAllTemplateChanges();
 
-        ValidateNewEntityNotUnderParentEntity(*focusedCarInstance,
+        ValidateNewEntityNotUnderParentEntity(carinstances,
             axisEntityAlias, axisEntityName,
             wheelEntityAlias, 
             --expectedEntityCount);
-        ValidateNewEntityNotUnderParentEntity(*secondCarInstance,
-            axisEntityAlias, axisEntityName,
-            wheelEntityAlias, 
-            expectedEntityCount);
 
         // Undo adding the axis entity under the car entity.
         undoAddAxisEntityNode.Undo();
         PropagateAllTemplateChanges();
 
-        ValidateNewEntityNotUnderParentEntity(*focusedCarInstance,
+        ValidateNewEntityNotUnderParentEntity(carinstances,
             carEntityAlias, carEntityName,
             axisEntityAlias,
             --expectedEntityCount);
-        ValidateNewEntityNotUnderParentEntity(*secondCarInstance,
-            carEntityAlias, carEntityName,
-            axisEntityAlias,
-            expectedEntityCount);
 
         // Undo adding the car entity under the car instance.
         undoAddCarEntityNode.Undo();
         PropagateAllTemplateChanges();
 
-        ValidateNewEntityNotUnderInstance(*focusedCarInstance,
+        ValidateNewEntityNotUnderInstance(carinstances,
             carEntityAlias,
             --expectedEntityCount);
-        ValidateNewEntityNotUnderInstance(*secondCarInstance,
-            carEntityAlias, 
-            expectedEntityCount);
 
         // Redo all adding entity operations.
         undoAddCarEntityNode.Redo();
@@ -152,13 +135,9 @@ namespace UnitTest
         undoAddWheelEntityNode.Redo();
         PropagateAllTemplateChanges();
 
-        ValidateNewEntityUnderParentEntity(*focusedCarInstance,
+        ValidateNewEntityUnderParentEntity(carinstances,
             axisEntityAlias, axisEntityName,
             wheelEntityAlias, wheelEntityName,
             ++expectedEntityCount);
-        ValidateNewEntityUnderParentEntity(*secondCarInstance,
-            axisEntityAlias, axisEntityName,
-            wheelEntityAlias, wheelEntityName,
-            expectedEntityCount);
     }
 }

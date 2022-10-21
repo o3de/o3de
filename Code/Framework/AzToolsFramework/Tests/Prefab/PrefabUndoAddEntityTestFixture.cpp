@@ -127,32 +127,40 @@ namespace UnitTest
     }
 
     void PrefabUndoAddEntityTestFixture::ValidateNewEntityUnderInstance(
-        Instance& instance,
+        AZStd::vector<AZStd::unique_ptr<Instance>>& instances,
         const EntityAlias& newEntityAlias, const AZStd::string& newEntityName,
         size_t expectedEntityCount)
     {
-        auto getContainerEntityRefResult = instance.GetContainerEntity();
-        ASSERT_TRUE(getContainerEntityRefResult.has_value());
-        auto& containerEntity = getContainerEntityRefResult->get();
+        for (auto& instancePtr : instances)
+        {
+            Instance& instance = *instancePtr;
+            auto getContainerEntityRefResult = instance.GetContainerEntity();
+            ASSERT_TRUE(getContainerEntityRefResult.has_value());
+            auto& containerEntity = getContainerEntityRefResult->get();
 
-        ValidateNewEntityUnderParentEntity(
-            instance, containerEntity, newEntityAlias, newEntityName, expectedEntityCount);
+            ValidateNewEntityUnderParentEntity(
+                instance, containerEntity, newEntityAlias, newEntityName, expectedEntityCount);
+        }
     }
 
     void PrefabUndoAddEntityTestFixture::ValidateNewEntityUnderParentEntity(
-        Instance& instance,
+        AZStd::vector<AZStd::unique_ptr<Instance>>& instances,
         const EntityAlias& parentEntityAlias, const AZStd::string& parentEntityName,
         const EntityAlias& newEntityAlias, const AZStd::string& newEntityName,
         size_t expectedEntityCount)
     {
-        auto getParentEntityRefResult = instance.GetEntity(parentEntityAlias);
-        ASSERT_TRUE(getParentEntityRefResult.has_value());
+        for (auto& instancePtr : instances)
+        {
+            Instance& instance = *instancePtr;
+            auto getParentEntityRefResult = instance.GetEntity(parentEntityAlias);
+            ASSERT_TRUE(getParentEntityRefResult.has_value());
 
-        AZ::Entity& parentEntity = getParentEntityRefResult->get();
-        EXPECT_TRUE(parentEntity.GetName() == parentEntityName);
+            AZ::Entity& parentEntity = getParentEntityRefResult->get();
+            EXPECT_TRUE(parentEntity.GetName() == parentEntityName);
 
-        ValidateNewEntityUnderParentEntity(
-            instance, parentEntity, newEntityAlias, newEntityName, expectedEntityCount);
+            ValidateNewEntityUnderParentEntity(
+                instance, parentEntity, newEntityAlias, newEntityName, expectedEntityCount);
+        }
     }
 
     void PrefabUndoAddEntityTestFixture::ValidateNewEntityUnderParentEntity(
@@ -181,30 +189,38 @@ namespace UnitTest
     }
 
     void PrefabUndoAddEntityTestFixture::ValidateNewEntityNotUnderInstance(
-        Instance& instance,
+        AZStd::vector<AZStd::unique_ptr<Instance>>& instances,
         const EntityAlias& newEntityAlias,
         size_t expectedEntityCount)
     {
-        auto getContainerEntityRefResult = instance.GetContainerEntity();
-        ASSERT_TRUE(getContainerEntityRefResult.has_value());
-        auto& containerEntity = getContainerEntityRefResult->get();
+        for (auto& instancePtr : instances)
+        {
+            Instance& instance = *instancePtr;
+            auto getContainerEntityRefResult = instance.GetContainerEntity();
+            ASSERT_TRUE(getContainerEntityRefResult.has_value());
+            auto& containerEntity = getContainerEntityRefResult->get();
 
-        ValidateNewEntityNotUnderParentEntity(instance, containerEntity, newEntityAlias, expectedEntityCount);
+            ValidateNewEntityNotUnderParentEntity(instance, containerEntity, newEntityAlias, expectedEntityCount);
+        }
     }
 
     void PrefabUndoAddEntityTestFixture::ValidateNewEntityNotUnderParentEntity(
-        Instance& instance,
+        AZStd::vector<AZStd::unique_ptr<Instance>>& instances,
         const EntityAlias& parentEntityAlias, const AZStd::string& parentEntityName,
         const EntityAlias& newEntityAlias,
         size_t expectedEntityCount)
     {
-        auto getParentEntityRefResult = instance.GetEntity(parentEntityAlias);
-        ASSERT_TRUE(getParentEntityRefResult.has_value());
+        for (auto& instancePtr : instances)
+        {
+            Instance& instance = *instancePtr;
+            auto getParentEntityRefResult = instance.GetEntity(parentEntityAlias);
+            ASSERT_TRUE(getParentEntityRefResult.has_value());
 
-        AZ::Entity& parentEntity = getParentEntityRefResult->get();
-        EXPECT_TRUE(parentEntity.GetName() == parentEntityName);
+            AZ::Entity& parentEntity = getParentEntityRefResult->get();
+            EXPECT_TRUE(parentEntity.GetName() == parentEntityName);
 
-        ValidateNewEntityNotUnderParentEntity(instance, parentEntity, newEntityAlias, expectedEntityCount);
+            ValidateNewEntityNotUnderParentEntity(instance, parentEntity, newEntityAlias, expectedEntityCount);
+        }
     }
 
     void PrefabUndoAddEntityTestFixture::ValidateNewEntityNotUnderParentEntity(

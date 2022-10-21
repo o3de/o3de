@@ -43,23 +43,23 @@ namespace UnitTest
             const AZStd::string& undoAddEntityOperationName = "Undo Adding Entity");
 
         void ValidateNewEntityUnderInstance(
-            Instance& owningInstance,
+            AZStd::vector<AZStd::unique_ptr<Instance>>& instances,
             const EntityAlias& newEntityAlias, const AZStd::string& newEntityName,
             size_t expectedEntityCount);
 
         void ValidateNewEntityUnderParentEntity(
-            Instance& owningInstance,
+            AZStd::vector<AZStd::unique_ptr<Instance>>& instances,
             const EntityAlias& parentEntityAlias, const AZStd::string& parentEntityName,
             const EntityAlias& newEntityAlias, const AZStd::string& newEntityName,
             size_t expectedEntityCount);
 
         void ValidateNewEntityNotUnderInstance(
-            Instance& instance,
+            AZStd::vector<AZStd::unique_ptr<Instance>>& instances,
             const EntityAlias& newEntityAlias,
             size_t expectedEntityCount);
 
         void ValidateNewEntityNotUnderParentEntity(
-            Instance& instance,
+            AZStd::vector<AZStd::unique_ptr<Instance>>& instances,
             const EntityAlias& parentEntityAlias, const AZStd::string& parentEntityName,
             const EntityAlias& newEntityAlias,
             size_t expectedEntityCount);
