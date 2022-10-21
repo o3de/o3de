@@ -72,7 +72,7 @@ namespace GradientSignal
 
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ImageGradientConfig::m_channelToUse,
                         "Channel To Use", "The channel to use from the image.")
-                        ->EnumAttribute(ChannelToUse::Red, "Red (default)")
+                        ->EnumAttribute(ChannelToUse::Red, "Red")
                         ->EnumAttribute(ChannelToUse::Green, "Green")
                         ->EnumAttribute(ChannelToUse::Blue, "Blue")
                         ->EnumAttribute(ChannelToUse::Alpha, "Alpha")
@@ -87,7 +87,7 @@ namespace GradientSignal
 
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ImageGradientConfig::m_customScaleType,
                         "Custom Scale", "Choose a type of scaling to be applied to the image data.")
-                        ->EnumAttribute(CustomScaleType::None, "None (default)")
+                        ->EnumAttribute(CustomScaleType::None, "None")
                         ->EnumAttribute(CustomScaleType::Auto, "Auto")
                         ->EnumAttribute(CustomScaleType::Manual, "Manual")
                         // Refresh the entire tree on scaling changes, because it will show/hide the scale ranges for Manual scaling.
@@ -132,7 +132,7 @@ namespace GradientSignal
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorImageGradientComponent::m_autoSaveMode, "Save Mode",
                         "When editing an image, this selects whether to manually prompt for the save location, auto-save on every edit, "
                         "or auto-save with incrementing file names on every edit.")
-                        ->EnumAttribute(ImageGradientAutoSaveMode::SaveAs, "Save As... (default)")
+                        ->EnumAttribute(ImageGradientAutoSaveMode::SaveAs, "Save As...")
                         ->EnumAttribute(ImageGradientAutoSaveMode::AutoSave, "Auto Save")
                         ->EnumAttribute(ImageGradientAutoSaveMode::AutoSaveWithIncrementalNames, "Auto Save With Incrementing Names")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &EditorImageGradientComponent::GetAutoSaveVisibility)
@@ -541,8 +541,9 @@ namespace GradientSignal
             promptForSaveName = true;
             break;
         case ImageGradientAutoSaveMode::AutoSave:
-            // Just use the current path that we have, don't prompt for a new one.
-            promptForSaveName = false;
+            // If the user has never been prompted for a save location during this Editor run, make sure they're prompted at least once.
+            // If they have been prompted, then skip the prompt and just overwrite the existing location.
+            promptForSaveName = !m_promptedForSaveLocation;
             break;
         case ImageGradientAutoSaveMode::AutoSaveWithIncrementalNames:
             {
@@ -610,6 +611,10 @@ namespace GradientSignal
         {
             return false;
         }
+
+        // If we prompted for a save name and didn't cancel out with an empty path, track that we've prompted the user so that we don't
+        // do it again for autosave.
+        m_promptedForSaveLocation = m_promptedForSaveLocation || promptForSaveName;
 
         const auto absoluteSaveFilePathUtf8 = absoluteSaveFilePath.toUtf8();
         const auto absoluteSaveFilePathCStr = absoluteSaveFilePathUtf8.constData();

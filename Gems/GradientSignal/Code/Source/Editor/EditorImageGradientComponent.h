@@ -115,7 +115,7 @@ namespace GradientSignal
         // Parameters used for creating new source image assets
         AZ::Vector2 m_outputResolution = AZ::Vector2(512.0f);
         OutputFormat m_outputFormat = OutputFormat::R32;
-        ImageGradientAutoSaveMode m_autoSaveMode = ImageGradientAutoSaveMode::SaveAs;
+        ImageGradientAutoSaveMode m_autoSaveMode = ImageGradientAutoSaveMode::AutoSave;
 
         // Keep track of the image asset status so that we can know when it has changed.
         AZ::Data::AssetData::AssetStatus m_currentImageAssetStatus = AZ::Data::AssetData::AssetStatus::NotLoaded;
@@ -138,6 +138,14 @@ namespace GradientSignal
         bool m_visible = true;
         bool m_runtimeComponentActive = false;
 
+        //! Track whether or not we've prompted the user for an image save location at least once since this component was created.
+        //! This is intentionally not serialized so that every user is prompted at least once per editor run for autosaves. This choice
+        //! prioritizes data safety over lower friction - it's too easy for autosave to overwrite data accidentally, so we want the user
+        //! to specifically choose a save location at least once before overwriting without prompts.
+        //! We could serialize the flag so that the user only selects a location once per component, instead of once per component per
+        //! Editor run, but that serialized flag would be shared with other users, so we would have other users editing the same image
+        //! that never get prompted and might overwrite data by mistake.
+        bool m_promptedForSaveLocation = false;
     };
 }
 
