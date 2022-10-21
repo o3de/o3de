@@ -161,14 +161,14 @@ namespace AZ
 
         AZ_MATH_INLINE bool Overlaps(const Frustum& frustum, const Sphere& sphere)
         {
-            for (Frustum::PlaneId planeId = Frustum::PlaneId::Near; planeId < Frustum::PlaneId::MAX; ++planeId)
+        for (Frustum::PlaneId planeId = Frustum::PlaneId::Near; planeId < Frustum::PlaneId::MAX; ++planeId)
+        {
+            if (frustum.GetPlane(planeId).GetPointDist(sphere.GetCenter()) + sphere.GetRadius() < 0.0f)
             {
-                if (frustum.GetPlane(planeId).GetPointDist(sphere.GetCenter()) + sphere.GetRadius() < 0.0f)
-                {
-                    return false;
-                }
+                return false;
             }
-            return true;
+        }
+        return true;
         }
 
         AZ_MATH_INLINE bool Overlaps(const Frustum& frustum, const Aabb& aabb)
@@ -229,6 +229,105 @@ namespace AZ
             return closestPointOnCapsuleAxis.GetDistanceSq(sphere.GetCenter()) <= radiusSum * radiusSum;
         }
 
+        AZ_MATH_INLINE bool Overlaps(const Aabb& aabb, const Capsule& capsule)
+        {
+            return Overlaps(capsule, aabb);
+        }
+
+        AZ_MATH_INLINE bool Overlaps(const Capsule& capsule, const Aabb& aabb)
+        {
+            // First attempt a cheap rejection by comparing to the aabb's sphere.
+            Vector3 aabbSphereCenter;
+            float aabbSphereRadius;
+            aabb.GetAsSphere(aabbSphereCenter, aabbSphereRadius);
+            Sphere aabbSphere(aabbSphereCenter, aabbSphereRadius);
+            if (!Overlaps(capsule, aabbSphere))
+            {
+                return false;
+            }
+
+            // Now do the more expensive test. The idea is to start with the end points of the capsule then
+            // - Clamp the points with the aabb
+            // - Find the closest points on the line segment to the clamped points.
+            // - If the distance between the clamped point and the line segment point is less than the radius, then we know it intersects.
+            // - Generate new clamped points from the points on the line segment for next iteration.
+            // - If the two clamped points are equal to each other, or either of the new clamped points is equivalent to the previous clamped points,
+            //   then we know we've already found the closest point possible on the aabb, so fail because previous distance check failed.
+            // - Loop with new clamped points.
+
+            float capsuleRadiusSq = capsule.GetRadius() * capsule.GetRadius();
+            const Vector3& capsuleStart = capsule.GetFirstHemisphereCenter();
+            const Vector3& capsuleEnd = capsule.GetSecondHemisphereCenter();
+            const Vector3 capsuleSegment = capsuleEnd - capsuleStart;
+            if (capsuleSegment.IsClose(AZ::Vector3::CreateZero()))
+            {
+                // capsule is nearly a sphere, and already failed sphere check above.
+                return false;
+            }
+            const float segmentLengthSquared = capsuleSegment.Dot(capsuleSegment);
+            const float rcpSegmentLengthSquared = 1.0f / segmentLengthSquared;
+
+            Vector3 segmentPoint1 = capsule.GetFirstHemisphereCenter();
+            Vector3 segmentPoint2 = capsule.GetSecondHemisphereCenter();
+
+            Vector3 clampedPoint1 = segmentPoint1.GetClamp(aabb.GetMin(), aabb.GetMax());
+            Vector3 clampedPoint2 = segmentPoint2.GetClamp(aabb.GetMin(), aabb.GetMax());
+
+            // Simplified from Intersect::ClosestPointSegment with certain parts pre-calculated, no need to return proportion.
+            auto getClosestPointOnCapsule = [&](const Vector3& point) -> Vector3
+            {
+                float proportion = (point - capsuleStart).Dot(capsuleSegment);
+                if (proportion <= 0.0f)
+                {
+                    return capsuleStart;
+                }
+                if (proportion >= segmentLengthSquared)
+                {
+                    return capsuleEnd;
+                }
+                return capsuleStart + (proportion * capsuleSegment * rcpSegmentLengthSquared);
+            };
+
+            constexpr uint32_t MaxIterations = 16;
+            for (uint32_t i = 0; i < MaxIterations; ++i)
+            {
+                // Check point 1
+                Vector3 closestPointOnCapsuleAxis1 = getClosestPointOnCapsule(clampedPoint1);
+                if (clampedPoint1.GetDistanceSq(closestPointOnCapsuleAxis1) < capsuleRadiusSq)
+                {
+                    return true;
+                }
+
+                // Check point 2
+                Vector3 closestPointOnCapsuleAxis2 = getClosestPointOnCapsule(clampedPoint2);
+                if (clampedPoint2.GetDistanceSq(closestPointOnCapsuleAxis2) < capsuleRadiusSq)
+                {
+                    return true;
+                }
+
+                // If the points are the same, and previous tests failed, then this is the best point, but it's too far away.
+                if (clampedPoint1.IsClose(clampedPoint2))
+                {
+                    return false;
+                }
+
+                // Choose better points.
+                Vector3 newclampedPoint1 = closestPointOnCapsuleAxis1.GetClamp(aabb.GetMin(), aabb.GetMax());
+                Vector3 newclampedPoint2 = closestPointOnCapsuleAxis2.GetClamp(aabb.GetMin(), aabb.GetMax());
+
+                if (newclampedPoint1.IsClose(clampedPoint1) || newclampedPoint2.IsClose(clampedPoint2))
+                {
+                    // Capsule is parallel to AABB or beyond the end points and failing above tests, so it must be outside the capsule.
+                    return false;
+                }
+
+                clampedPoint1 = newclampedPoint1;
+                clampedPoint2 = newclampedPoint2;
+            }
+
+            return true; // prefer false positive
+        }
+
         AZ_MATH_INLINE bool Contains(const Aabb& aabb1, const Aabb& aabb2)
         {
             return aabb1.Contains(aabb2);
@@ -256,7 +355,7 @@ namespace AZ
         AZ_MATH_INLINE bool Contains(const Sphere& sphere1, const Sphere& sphere2)
         {
             const float radiusDiff = sphere1.GetRadius() - sphere2.GetRadius();
-            return sphere1.GetCenter().GetDistanceSq(sphere2.GetCenter()) <= (radiusDiff * radiusDiff);
+            return sphere1.GetCenter().GetDistanceSq(sphere2.GetCenter()) <= (radiusDiff * radiusDiff) * AZ::GetSign(radiusDiff);
         }
 
         AZ_MATH_INLINE bool Contains(const Hemisphere& hemisphere, const Aabb& aabb)
@@ -307,6 +406,51 @@ namespace AZ
             for (Frustum::PlaneId planeId = Frustum::PlaneId::Near; planeId < Frustum::PlaneId::MAX; ++planeId)
             {
                 if (frustum.GetPlane(planeId).GetPointDist(point) < 0.0f)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        AZ_MATH_INLINE bool Contains(const Capsule& capsule, const Sphere& sphere)
+        {
+            float proportion;
+            Vector3 closestPointOnCapsuleAxis;
+            Intersect::ClosestPointSegment(sphere.GetCenter(), capsule.GetFirstHemisphereCenter(), capsule.GetSecondHemisphereCenter(), proportion, closestPointOnCapsuleAxis);
+            return Contains(Sphere(closestPointOnCapsuleAxis, capsule.GetRadius()), sphere);
+        }
+
+        AZ_MATH_INLINE bool Contains(const Capsule& capsule, const Aabb& aabb)
+        {
+            AZ::Vector3 aabbSphereCenter;
+            float aabbSphereRadius;
+            aabb.GetAsSphere(aabbSphereCenter, aabbSphereRadius);
+            AZ::Sphere aabbSphere(aabbSphereCenter, aabbSphereRadius);
+
+            if (Contains(capsule, aabbSphere))
+            {
+                return true;
+            }
+            else if (!Overlaps(capsule, aabbSphere))
+            {
+                return false;
+            }
+
+            // Unable to determine with fast sphere based checks, so check each point in the aabb.
+            for (const AZ::Vector3& aabbPoint :
+                {
+                    aabb.GetMin(),
+                    aabb.GetMax(),
+                    AZ::Vector3(aabb.GetMin().GetX(), aabb.GetMin().GetY(), aabb.GetMax().GetZ()),
+                    AZ::Vector3(aabb.GetMin().GetX(), aabb.GetMax().GetY(), aabb.GetMin().GetZ()),
+                    AZ::Vector3(aabb.GetMin().GetX(), aabb.GetMax().GetY(), aabb.GetMax().GetZ()),
+                    AZ::Vector3(aabb.GetMax().GetX(), aabb.GetMin().GetY(), aabb.GetMin().GetZ()),
+                    AZ::Vector3(aabb.GetMax().GetX(), aabb.GetMin().GetY(), aabb.GetMax().GetZ()),
+                    AZ::Vector3(aabb.GetMax().GetX(), aabb.GetMax().GetY(), aabb.GetMin().GetZ()),
+                })
+            {
+                if (!capsule.Contains(aabbPoint))
                 {
                     return false;
                 }

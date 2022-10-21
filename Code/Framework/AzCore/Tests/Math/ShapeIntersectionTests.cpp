@@ -890,4 +890,136 @@ namespace UnitTest
         EXPECT_FALSE(AZ::ShapeIntersection::Contains(hemisphere3, unitAabb));
     }
 
+    TEST(MATH_ShapeIntersection, CapsuleOverlapsAabb)
+    {
+        const AZ::Aabb unitAabb = AZ::Aabb::CreateCenterHalfExtents(AZ::Vector3::CreateZero(), AZ::Vector3::CreateOne());
+        AZ::Capsule capsule;
+
+        // Clear overlap (both shapes pass through origin)
+        capsule = AZ::Capsule(AZ::Vector3(-1.0f, 0.0f, 0.0f), AZ::Vector3(1.0f, 0.0f, 0.0f), 1.0f);
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(capsule, unitAabb));
+
+        // Clear no overlap
+        capsule = AZ::Capsule(AZ::Vector3(-10.0f, 0.0f, 0.0f), AZ::Vector3(-9.0, 0.0f, 0.0f), 1.0f);
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(capsule, unitAabb));
+
+        // Large capsule vs small aabb tests
+
+        // aabb completely contained in capsule
+        capsule = AZ::Capsule(AZ::Vector3(-10.0f, 0.0f, 0.0f), AZ::Vector3(10.0, 0.0f, 0.0f), 5.0f);
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(capsule, unitAabb));
+
+        // aabb near cap, slightly overlapping
+        capsule = AZ::Capsule(AZ::Vector3(-10.0f, 0.0f, 0.0f), AZ::Vector3(-5.9f, 0.0f, 0.0f), 5.0f);
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(capsule, unitAabb));
+        
+        // aabb near cap, but not overlapping
+        capsule = AZ::Capsule(AZ::Vector3(-10.0f, 0.0f, 0.0f), AZ::Vector3(-6.1f, 0.0f, 0.0f), 5.0f);
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(capsule, unitAabb));
+
+        // aabb near side, slightly overlapping
+        capsule = AZ::Capsule(AZ::Vector3(-10.0f, 5.9f, 0.0f), AZ::Vector3(10.0f, 5.9f, 0.0f), 5.0f);
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(capsule, unitAabb));
+
+        // aabb near side, not overlapping
+        capsule = AZ::Capsule(AZ::Vector3(-10.0f, 6.1f, 0.0f), AZ::Vector3(10.0f, 6.1f, 0.0f), 5.0f);
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(capsule, unitAabb));
+
+        // aabb diagonal, overlapping
+        capsule = AZ::Capsule(AZ::Vector3(-8.0f, -5.0f, 0.0f), AZ::Vector3(5.0f, 8.0f, 0.0f), 0.8f);
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(capsule, unitAabb));
+
+        // aabb diagonal, not overlapping
+        capsule = AZ::Capsule(AZ::Vector3(-8.0f, -5.0f, 0.0f), AZ::Vector3(5.0f, 8.0f, 0.0f), 0.7f);
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(capsule, unitAabb));
+    }
+
+    TEST(MATH_ShapeIntersection, CapsuleOverlapsCapsule)
+    {
+        AZ::Capsule capsule;
+        AZ::Capsule longCapsule = AZ::Capsule(AZ::Vector3(-10.0f, 0.0f, 0.0f), AZ::Vector3(10.0f, 0.0f, 0.0f), 1.0f);
+        AZ::Capsule shortCapsule = AZ::Capsule(AZ::Vector3(-0.5f, 0.0f, 0.0f), AZ::Vector3(0.5f, 0.0f, 0.0f), 1.0f);
+
+        // capsule overlaps self
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(longCapsule, longCapsule));
+
+        // narrow perpendicular capsule miss
+        capsule = AZ::Capsule(AZ::Vector3(0.0f, -10.0f, 2.0f), AZ::Vector3(0.0f, 10.0f, 2.0f), 0.5f);
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(capsule, longCapsule));
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(capsule, shortCapsule));
+
+        // narrow perpendicular capsule hit
+        capsule = AZ::Capsule(AZ::Vector3(0.0f, -10.0f, 1.4f), AZ::Vector3(0.0f, 10.0f, 1.4f), 0.5f);
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(capsule, longCapsule));
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(capsule, shortCapsule));
+
+        // wide perpendicular capsule miss
+        capsule = AZ::Capsule(AZ::Vector3(0.0f, -10.0f, 6.1f), AZ::Vector3(0.0f, 10.0f, 6.1), 5.0f);
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(capsule, longCapsule));
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(capsule, shortCapsule));
+
+        // wide perpendicular capsule hit
+        capsule = AZ::Capsule(AZ::Vector3(0.0f, -10.0f, 5.9f), AZ::Vector3(0.0f, 10.0f, 5.9f), 5.0f);
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(capsule, longCapsule));
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(capsule, shortCapsule));
+
+        // diagonal capsules
+        {
+            AZ::Capsule capsule1 = AZ::Capsule(AZ::Vector3(-10.0f, -10.0f, 0.0f), AZ::Vector3(10.0f, 10.0f, 0.0f), 1.0f);
+            AZ::Capsule capsule2 = AZ::Capsule(AZ::Vector3(10.0f, -10.0f, 1.0f), AZ::Vector3(-10.0f, 10.0f, 1.0f), 1.0f);
+            EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(capsule1, capsule2));
+
+            AZ::Capsule capsule3 = AZ::Capsule(AZ::Vector3(-10.0f, -10.0f, 0.0f), AZ::Vector3(10.0f, 10.0f, 0.0f), 2.0f);
+            AZ::Capsule capsule4 = AZ::Capsule(AZ::Vector3(10.0f, -10.0f, 4.1f), AZ::Vector3(-10.0f, 10.0f, 4.1f), 2.0f);
+            EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(capsule3, capsule4));
+        }
+
+        // parallel capsules, end point intersection
+        {
+            AZ::Capsule capsule1 = AZ::Capsule(AZ::Vector3(-10.0f, 0.0, 0.0f), AZ::Vector3(-1.0f, 0.0f, 0.0f), 1.1f);
+            AZ::Capsule capsule2 = AZ::Capsule(AZ::Vector3(1.0f, 0.0, 0.0f), AZ::Vector3(10.0f, 0.0f, 0.0f), 1.1f);
+            EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(capsule1, capsule2));
+
+            AZ::Capsule capsule3 = AZ::Capsule(AZ::Vector3(-10.0f, 0.0, 0.0f), AZ::Vector3(-1.0f, 0.0f, 0.0f), 0.9f);
+            AZ::Capsule capsule4 = AZ::Capsule(AZ::Vector3(1.0f, 0.0, 0.0f), AZ::Vector3(10.0f, 0.0f, 0.0f), 0.9f);
+            EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(capsule3, capsule4));
+        }
+    }
+
+    TEST(MATH_ShapeIntersection, CapsuleContainsSphere)
+    {
+        AZ::Capsule capsule = AZ::Capsule(AZ::Vector3(-10.0f, 0.0f, 0.0f), AZ::Vector3(10.0f, 0.0f, 0.0f), 1.0f);
+
+        AZ::Sphere sphere = AZ::Sphere(AZ::Vector3(0.0f, 0.0f, 0.0f), 1.0f);
+        EXPECT_TRUE(AZ::ShapeIntersection::Contains(capsule, sphere));
+
+        sphere = AZ::Sphere(AZ::Vector3(-10.0f, 0.0f, 0.0f), 0.5f);
+        EXPECT_TRUE(AZ::ShapeIntersection::Contains(capsule, sphere));
+
+        sphere = AZ::Sphere(AZ::Vector3(10.0f, 0.0f, 0.0f), 1.5f);
+        EXPECT_FALSE(AZ::ShapeIntersection::Contains(capsule, sphere));
+
+        sphere = AZ::Sphere(AZ::Vector3(10.0f, 10.0f, 0.0f), 0.5f);
+        EXPECT_FALSE(AZ::ShapeIntersection::Contains(capsule, sphere));
+    }
+
+    TEST(MATH_ShapeIntersection, CapsuleContainsAabb)
+    {
+        AZ::Capsule capsule = AZ::Capsule(AZ::Vector3(-1.0f, 0.0f, 0.0f), AZ::Vector3(1.0f, 0.0f, 0.0f), 2.0f);
+        AZ::Aabb unitAabb = AZ::Aabb::CreateCenterHalfExtents(AZ::Vector3::CreateZero(), AZ::Vector3::CreateOne());
+
+        EXPECT_TRUE(AZ::ShapeIntersection::Contains(capsule, unitAabb));
+
+        capsule = AZ::Capsule(AZ::Vector3(-1.0f, 0.0f, 0.0f), AZ::Vector3(1.0f, 0.0f, 0.0f), 1.0f);
+        EXPECT_FALSE(AZ::ShapeIntersection::Contains(capsule, unitAabb));
+
+        // long thin aabb inside long capsule
+        capsule = AZ::Capsule(AZ::Vector3(-10.0f, 0.0f, 0.0f), AZ::Vector3(10.0f, 0.0f, 0.0f), 2.0f);
+        AZ::Aabb longAabb = AZ::Aabb::CreateCenterHalfExtents(AZ::Vector3::CreateZero(), AZ::Vector3(10.0f, 1.0f, 1.0f));
+        EXPECT_TRUE(AZ::ShapeIntersection::Contains(capsule, longAabb));
+
+        longAabb = AZ::Aabb::CreateCenterHalfExtents(AZ::Vector3::CreateZero(), AZ::Vector3(11.0f, 1.0f, 10.0f));
+        EXPECT_FALSE(AZ::ShapeIntersection::Contains(capsule, longAabb));
+    }
+
 } // namespace UnitTest

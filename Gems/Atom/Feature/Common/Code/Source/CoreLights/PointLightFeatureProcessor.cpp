@@ -13,6 +13,7 @@
 
 #include <Atom/Feature/CoreLights/CoreLightsConstants.h>
 #include <Atom/Feature/CoreLights/LightCommon.h>
+#include <Atom/Feature/Mesh/MeshCommon.h>
 #include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 
 #include <Atom/RHI/Factory.h>
@@ -149,11 +150,11 @@ namespace AZ
                 };
 
                 // Mark meshes that have point lights without shadow using only the light flag.
-                LightCommon::MarkMeshesWithLightType(GetParentScene(), AZStd::span(m_lightData.GetDataVector<1>()), m_lightMeshFlag.GetIndex(), noShadow);
+                MeshCommon::MarkMeshesWithFlag(GetParentScene(), AZStd::span(m_lightData.GetDataVector<1>()), m_lightMeshFlag.GetIndex(), noShadow);
 
                 // Mark meshes that have point lights with shadow using a combination of light and shadow flags.
                 uint32_t lightAndShadow = m_lightMeshFlag.GetIndex() | m_shadowMeshFlag.GetIndex();
-                LightCommon::MarkMeshesWithLightType(GetParentScene(), AZStd::span(m_lightData.GetDataVector<1>()), lightAndShadow, hasShadow);
+                MeshCommon::MarkMeshesWithFlag(GetParentScene(), AZStd::span(m_lightData.GetDataVector<1>()), lightAndShadow, hasShadow);
             }
         }
 

@@ -125,19 +125,19 @@ namespace AZ
 
             if (r_enablePerMeshShaderOptionFlags)
             {
-                auto usesLtc = [&](const LightCommon::LightBounds& bounds) -> bool
+                auto usesLtc = [&](const MeshCommon::BoundsVariant& bounds) -> bool
                 {
                     LightHandle::IndexType index = m_lightData.GetIndexForData<1>(&bounds);
                     return(m_lightData.GetData<0>(index).m_flags & QuadLightFlag::UseFastApproximation) == 0;
                 };
-                auto usesFastApproximation = [&](const LightCommon::LightBounds& bounds) -> bool
+                auto usesFastApproximation = [&](const MeshCommon::BoundsVariant& bounds) -> bool
                 {
                     LightHandle::IndexType index = m_lightData.GetIndexForData<1>(&bounds);
                     return(m_lightData.GetData<0>(index).m_flags & QuadLightFlag::UseFastApproximation) > 0;
                 };
 
-                LightCommon::MarkMeshesWithLightType(GetParentScene(), AZStd::span(m_lightData.GetDataVector<1>()), m_lightLtcMeshFlag.GetIndex(), usesLtc);
-                LightCommon::MarkMeshesWithLightType(GetParentScene(), AZStd::span(m_lightData.GetDataVector<1>()), m_lightApproxMeshFlag.GetIndex(), usesFastApproximation);
+                MeshCommon::MarkMeshesWithFlag(GetParentScene(), AZStd::span(m_lightData.GetDataVector<1>()), m_lightLtcMeshFlag.GetIndex(), usesLtc);
+                MeshCommon::MarkMeshesWithFlag(GetParentScene(), AZStd::span(m_lightData.GetDataVector<1>()), m_lightApproxMeshFlag.GetIndex(), usesFastApproximation);
             }
         }
 
@@ -273,8 +273,8 @@ namespace AZ
 
         void QuadLightFeatureProcessor::UpdateBounds(LightHandle handle)
         {
-            QuadLightData data = m_lightData.GetData<0>(handle.GetIndex());
-            LightCommon::LightBounds bounds = m_lightData.GetData<1>(handle.GetIndex());
+            const QuadLightData& data = m_lightData.GetData<0>(handle.GetIndex());
+            MeshCommon::BoundsVariant& bounds = m_lightData.GetData<1>(handle.GetIndex());
 
             AZ::Vector3 position = AZ::Vector3::CreateFromFloat3(data.m_position.data());
             float radius = LightCommon::GetRadiusFromInvRadiusSquared(data.m_invAttenuationRadiusSquared);

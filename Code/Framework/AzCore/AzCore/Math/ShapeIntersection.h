@@ -48,6 +48,8 @@ namespace AZ
         bool Overlaps(const Capsule& capsule1, const Capsule& capsule2);
         bool Overlaps(const Capsule& capsule, const Obb& obb);
         bool Overlaps(const Capsule& capsule, const Sphere& sphere);
+        bool Overlaps(const Capsule& capsule, const Aabb& aabb);
+        bool Overlaps(const Capsule& aabb, const Aabb& capsule);
         bool Overlaps(const Obb& obb1, const Obb& obb2);
         bool Overlaps(const Obb& obb, const Capsule& capsule);
         bool Overlaps(const Obb& obb, const Sphere& sphere);
@@ -61,6 +63,8 @@ namespace AZ
         bool Contains(const Sphere& sphere,  const Vector3& point);
         bool Contains(const Sphere& sphere1, const Sphere& sphere2);
         bool Contains(const Hemisphere& hemisphere, const Aabb& aabb);
+        bool Contains(const Capsule& capsule, const Sphere& sphere);
+        bool Contains(const Capsule& capsule, const Aabb& aabb);
         bool Contains(const Frustum& frustum,  const Aabb& aabb);
         bool Contains(const Frustum& frustum,  const Sphere& sphere);
         bool Contains(const Frustum& frustum,  const Vector3& point);

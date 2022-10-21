@@ -22,7 +22,6 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 
-
 #include <AzCore/std/containers/variant.h>
 
 namespace AZ
@@ -153,21 +152,21 @@ namespace AZ
                 };
 
                 // Filter lambdas
-                auto hasShadow = [&](const LightCommon::LightBounds& bounds) -> bool
+                auto hasShadow = [&](const MeshCommon::BoundsVariant& bounds) -> bool
                 {
                     return indexHasShadow(m_lightData.GetIndexForData<1>(&bounds));
                 };
-                auto noShadow = [&](const LightCommon::LightBounds& bounds) -> bool
+                auto noShadow = [&](const MeshCommon::BoundsVariant& bounds) -> bool
                 {
                     return !indexHasShadow(m_lightData.GetIndexForData<1>(&bounds));
                 };
 
                 // Mark meshes that have point lights without shadow using only the light flag.
-                LightCommon::MarkMeshesWithLightType(GetParentScene(), AZStd::span(m_lightData.GetDataVector<1>()), m_lightMeshFlag.GetIndex(), noShadow);
+                MeshCommon::MarkMeshesWithFlag(GetParentScene(), AZStd::span(m_lightData.GetDataVector<1>()), m_lightMeshFlag.GetIndex(), noShadow);
 
                 // Mark meshes that have point lights with shadow using a combination of light and shadow flags.
                 uint32_t lightAndShadow = m_lightMeshFlag.GetIndex() | m_shadowMeshFlag.GetIndex();
-                LightCommon::MarkMeshesWithLightType(GetParentScene(), AZStd::span(m_lightData.GetDataVector<1>()), lightAndShadow, hasShadow);
+                MeshCommon::MarkMeshesWithFlag(GetParentScene(), AZStd::span(m_lightData.GetDataVector<1>()), lightAndShadow, hasShadow);
             }
         }
 
@@ -475,7 +474,7 @@ namespace AZ
             if (data.m_cosOuterConeAngle < CosFrustumHemisphereVolumeCrossoverAngle)
             {
                 // Wide angle, use a hemisphere for bounds instead of frustum
-                LightCommon::LightBounds& bounds = m_lightData.GetData<1>(handle.GetIndex());
+                MeshCommon::BoundsVariant& bounds = m_lightData.GetData<1>(handle.GetIndex());
                 bounds.emplace<Hemisphere>(Hemisphere(position, radius, normal));
             }
             else

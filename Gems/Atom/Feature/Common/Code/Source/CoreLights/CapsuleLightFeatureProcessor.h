@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AzCore/Math/Sphere.h>
+#include <AzCore/Math/Capsule.h>
 #include <Atom/Feature/CoreLights/CapsuleLightFeatureProcessorInterface.h>
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
 #include <Atom/Feature/Utils/MultiIndexedDataVector.h>
@@ -60,7 +60,7 @@ namespace AZ
 
             static constexpr const char* FeatureProcessorName = "CapsuleLightFeatureProcessor";
 
-            MultiIndexedDataVector<CapsuleLightData, AZ::Sphere> m_lightData;
+            MultiIndexedDataVector<CapsuleLightData, AZ::Capsule> m_lightData;
             GpuBufferHandler m_lightBufferHandler;
             RHI::Handle<uint32_t> m_lightMeshFlag;
             bool m_deviceBufferNeedsUpdate = false;

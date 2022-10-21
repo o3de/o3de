@@ -13,6 +13,7 @@
 
 #include <Atom/Feature/CoreLights/CoreLightsConstants.h>
 #include <Atom/Feature/CoreLights/LightCommon.h>
+#include <Atom/Feature/Mesh/MeshCommon.h>
 #include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 
 #include <Atom/RHI/Factory.h>
@@ -119,7 +120,7 @@ namespace AZ
 
             if (r_enablePerMeshShaderOptionFlags)
             {
-                LightCommon::MarkMeshesWithLightType(GetParentScene(), AZStd::span(m_lightData.GetDataVector<1>()), m_lightMeshFlag.GetIndex());
+                MeshCommon::MarkMeshesWithFlag(GetParentScene(), AZStd::span(m_lightData.GetDataVector<1>()), m_lightMeshFlag.GetIndex());
             }
         }
 
@@ -235,15 +236,15 @@ namespace AZ
         {
             CapsuleLightData& capsuleData = m_lightData.GetData<0>(handle.GetIndex());
 
-            // Center of bounds sphere is midpoint between start and end points of capsule.
-            AZ::Sphere& bounds = m_lightData.GetData<1>(handle.GetIndex());
             AZ::Vector3 startPoint = AZ::Vector3::CreateFromFloat3(capsuleData.m_startPoint.data());
             AZ::Vector3 direction = AZ::Vector3::CreateFromFloat3(capsuleData.m_direction.data());
-            bounds.SetCenter(startPoint + direction * capsuleData.m_length * 0.5);
-
-            // Calculate bounds of sphere that contains entire capsule.
+            AZ::Vector3 endPoint = startPoint + direction * capsuleData.m_length;
             float attenuationRadius = LightCommon::GetRadiusFromInvRadiusSquared(capsuleData.m_invAttenuationRadiusSquared);
-            bounds.SetRadius(attenuationRadius + capsuleData.m_length * 0.5f);
+
+            AZ::Capsule& bounds = m_lightData.GetData<1>(handle.GetIndex());
+            bounds.SetFirstHemisphereCenter(startPoint);
+            bounds.SetSecondHemisphereCenter(endPoint);
+            bounds.SetRadius(attenuationRadius);
         }
 
     } // namespace Render

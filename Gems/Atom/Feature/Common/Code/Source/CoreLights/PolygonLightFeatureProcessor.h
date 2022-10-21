@@ -10,6 +10,7 @@
 
 #include <Atom/Feature/CoreLights/LightCommon.h>
 #include <Atom/Feature/CoreLights/PolygonLightFeatureProcessorInterface.h>
+#include <Atom/Feature/Mesh/MeshCommon.h>
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
 #include <Atom/Feature/Utils/MultiIndexedDataVector.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
@@ -72,7 +73,7 @@ namespace AZ
             };
 
             using PolygonPoints = AZStd::array<LightPosition, MaxPolygonPoints>;
-            using PolygonLightDataVector = MultiIndexedDataVector<PolygonLightData, PolygonPoints, LightCommon::LightBounds>;
+            using PolygonLightDataVector = MultiIndexedDataVector<PolygonLightData, PolygonPoints, MeshCommon::BoundsVariant>;
 
             // Recalculates the start / end indices of the points for this polygon if it recently moved in memory.
             void EvaluateStartEndIndices(PolygonLightDataVector::IndexType index);

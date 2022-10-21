@@ -157,7 +157,7 @@ namespace AZ::Render
 
         if (r_enablePerMeshShaderOptionFlags)
         {
-            LightCommon::MarkMeshesWithLightType(GetParentScene(), AZStd::span(m_lightData.GetDataVector<2>()), m_lightMeshFlag.GetIndex());
+            MeshCommon::MarkMeshesWithFlag(GetParentScene(), AZStd::span(m_lightData.GetDataVector<2>()), m_lightMeshFlag.GetIndex());
         }
     }
 
@@ -272,8 +272,7 @@ namespace AZ::Render
     void PolygonLightFeatureProcessor::UpdateBounds(LightHandle handle)
     {
         PolygonLightData data = m_lightData.GetData<0>(handle.GetIndex());
-        m_lightData.GetData<1>(handle.GetIndex());
-        LightCommon::LightBounds bounds = m_lightData.GetData<2>(handle.GetIndex());
+        MeshCommon::BoundsVariant bounds = m_lightData.GetData<2>(handle.GetIndex());
 
         AZ::Vector3 position = AZ::Vector3::CreateFromFloat3(data.m_position.data());
         float radius = LightCommon::GetRadiusFromInvRadiusSquared(abs(data.m_invAttenuationRadiusSquared));

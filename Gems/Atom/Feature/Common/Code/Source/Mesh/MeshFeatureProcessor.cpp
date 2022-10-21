@@ -61,6 +61,16 @@ namespace AZ
             };
             RPI::ShaderSystemInterface::Get()->Connect(m_handleGlobalShaderOptionUpdate);
             EnableSceneNotification();
+
+            // Must read cvar from AZ::Console due to static variable in multiple libraries, see ghi-5537
+            bool enablePerMeshShaderOptionFlagsCvar = false;
+            if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+            {
+                console->GetCvarValue("r_enablePerMeshShaderOptionFlags", enablePerMeshShaderOptionFlagsCvar);
+
+                // push the cvars value so anything in this dll can access it directly.
+                console->PerformCommand(AZStd::string::format("r_enablePerMeshShaderOptionFlags %s", enablePerMeshShaderOptionFlagsCvar ? "true" : "false").c_str());
+            }
         }
 
         void MeshFeatureProcessor::Deactivate()
@@ -166,14 +176,7 @@ namespace AZ
         {
             m_meshDataChecker.soft_lock();
 
-            // Must read cvar from AZ::Console due to static variable in multiple libraries, see ghi-5537
-            bool enablePerMeshShaderOptionFlagsCvar = false;
-            if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
-            {
-                console->GetCvarValue("r_enablePerMeshShaderOptionFlags", enablePerMeshShaderOptionFlagsCvar);
-            }
-
-            if (m_enablePerMeshShaderOptionFlags && !enablePerMeshShaderOptionFlagsCvar)
+            if (!r_enablePerMeshShaderOptionFlags && m_enablePerMeshShaderOptionFlags)
             {
                 // Per mesh shader option flags was on, but now turned off, so reset all the shader options.
                 for (auto& model : m_modelData)
@@ -182,17 +185,23 @@ namespace AZ
                     {
                         for (RPI::MeshDrawPacket& drawPacket : drawPacketList)
                         {
-                            model.m_cullable.m_flags = 0;
-                            drawPacket.ClearShaderOptions();
+                            m_flagRegistry->VisitTags(
+                                [&](AZ::Name shaderOption, [[maybe_unused]] FlagRegistry::TagType tag)
+                                {
+                                    drawPacket.UnsetShaderOption(shaderOption);
+                                }
+                            );
                             drawPacket.Update(*GetParentScene(), true);
                         }
                     }
+                    model.m_cullable.m_flags = 0;
+                    model.m_cullable.m_prevFlags = 0;
                     model.m_cullableNeedsRebuild = true;
                     model.BuildCullable();
                 }
             }
 
-            m_enablePerMeshShaderOptionFlags = enablePerMeshShaderOptionFlagsCvar;
+            m_enablePerMeshShaderOptionFlags = r_enablePerMeshShaderOptionFlags;
 
             if (m_enablePerMeshShaderOptionFlags)
             {
@@ -206,7 +215,7 @@ namespace AZ
                             for (RPI::MeshDrawPacket& drawPacket : drawPacketList)
                             {
                                 m_flagRegistry->VisitTags(
-                                    [&](AZ::Name shaderOption, Render::MeshFeatureProcessor::FlagRegistry::TagType tag)
+                                    [&](AZ::Name shaderOption, FlagRegistry::TagType tag)
                                     {
                                         bool shaderOptionValue = (model.m_cullable.m_flags & tag.GetIndex()) > 0;
                                         drawPacket.SetShaderOption(shaderOption, AZ::RPI::ShaderOptionValue(shaderOptionValue));
