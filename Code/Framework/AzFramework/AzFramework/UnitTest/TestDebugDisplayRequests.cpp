@@ -114,4 +114,21 @@ namespace UnitTest
             m_transforms.pop();
         }
     }
+
+    AZ::Matrix3x4 TestDebugDisplayRequests::PopPremultipliedMatrix()
+    {
+        if (m_transforms.size() == 1)
+        {
+            AZ_Error("TestDebugDisplayRequest", false, "Invalid call to PopPremultipliedMatrix when no matrices were pushed.");
+            return AZ::Matrix3x4::CreateIdentity();
+        }
+        AZ::Matrix3x4 matrix = AZ::Matrix3x4::CreateFromTransform(m_transforms.top());
+        m_transforms.pop();
+        return matrix;
+    }
+
+    void TestDebugDisplayRequests::PushPremultipliedMatrix(const AZ::Matrix3x4& matrix)
+    {
+        m_transforms.push(AZ::Transform::CreateFromMatrix3x4(matrix));
+    }
 } // namespace UnitTest

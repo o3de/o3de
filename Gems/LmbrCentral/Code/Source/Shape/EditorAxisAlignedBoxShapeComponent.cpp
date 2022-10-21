@@ -172,3 +172,4 @@ namespace LmbrCentral
         return AZ::Vector3(m_aaboxShape.GetCurrentTransform().GetUniformScale());
     }
 } // namespace LmbrCentral
+

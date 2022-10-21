@@ -6,7 +6,8 @@
  *
  */
 
-#include <ShapeOffsetFixture.h>
+#include <ShapeTestUtils.h>
+#include <AzCore/Component/Entity.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 
 namespace UnitTest
@@ -33,5 +34,13 @@ namespace UnitTest
             m_oldSettingsRegistry = nullptr;
         }
         m_settingsRegistry.reset();
+    }
+
+    bool IsPointInside(const AZ::Entity& entity, const AZ::Vector3& point)
+    {
+        bool inside;
+        LmbrCentral::ShapeComponentRequestsBus::EventResult(
+            inside, entity.GetId(), &LmbrCentral::ShapeComponentRequests::IsPointInside, point);
+        return inside;
     }
 } // namespace UnitTest

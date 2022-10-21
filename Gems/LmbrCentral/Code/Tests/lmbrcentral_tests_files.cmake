@@ -26,8 +26,8 @@ set(FILES
     ReferenceShapeTests.cpp
     ShapeThreadsafeTest.cpp
     ShapeThreadsafeTest.h
-    ShapeOffsetFixture.cpp
-    ShapeOffsetFixture.h
+    ShapeTestUtils.cpp
+    ShapeTestUtils.h
     ../Source/LmbrCentral.cpp
     ../Source/Ai/NavigationComponent.cpp
     ../Source/Scripting/SpawnerComponent.cpp

@@ -16,7 +16,7 @@
 #include <AzFramework/UnitTest/TestDebugDisplayRequests.h>
 #include <AzTest/AzTest.h>
 #include <Shape/BoxShapeComponent.h>
-#include <ShapeOffsetFixture.h>
+#include <ShapeTestUtils.h>
 #include <ShapeThreadsafeTest.h>
 
 namespace UnitTest
@@ -541,14 +541,6 @@ namespace UnitTest
         EXPECT_THAT(aabb.GetMax(), IsClose(AZ::Vector3(1.5f, 1.7f, 0.1f)));
     }
 
-    bool IsPointInside(const AZ::Entity& entity, const AZ::Vector3& point)
-    {
-        bool inside;
-        LmbrCentral::ShapeComponentRequestsBus::EventResult(
-            inside, entity.GetId(), &LmbrCentral::ShapeComponentRequests::IsPointInside, point);
-        return inside;
-    }
-
     // point inside scaled
     TEST_F(BoxShapeTest, IsPointInside1)
     {
@@ -1004,9 +996,6 @@ namespace UnitTest
         const AZStd::vector<AZ::Vector3>& points = testDebugDisplayRequests.GetPoints();
         const AZ::Aabb debugDrawAabb = points.size() > 0 ? AZ::Aabb::CreatePoints(points.data(), points.size()) : AZ::Aabb::CreateNull();
 
-        AZ::Aabb shapeAabb = AZ::Aabb::CreateNull();
-        LmbrCentral::ShapeComponentRequestsBus::EventResult(
-            shapeAabb, entity.GetId(), &LmbrCentral::ShapeComponentRequests::GetEncompassingAabb);
         EXPECT_THAT(debugDrawAabb.GetMin(), IsClose(AZ::Vector3(10.36f, -11.4f, 19.848f)));
         EXPECT_THAT(debugDrawAabb.GetMax(), IsClose(AZ::Vector3(15.352f, -0.6f, 29.736f)));
     }

@@ -47,6 +47,8 @@ namespace UnitTest
         void DrawLines(const AZStd::vector<AZ::Vector3>& lines, const AZ::Color& color) override;
         void PushMatrix(const AZ::Transform& tm) override;
         void PopMatrix() override;
+        void PushPremultipliedMatrix(const AZ::Matrix3x4& matrix) override;
+        AZ::Matrix3x4 PopPremultipliedMatrix() override;
     private:
         void DrawPoints(const AZStd::vector<AZ::Vector3>& points);
         AZStd::vector<AZ::Vector3> m_points;
