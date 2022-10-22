@@ -62,7 +62,7 @@ public:
     virtual ~CFolderTreeCtrl();
 
     void Configure(const AZStd::vector<QString>& folders, const QString& fileNameSpec,
-        const QString& rootName, bool bDisableMonitor = false, bool bFlatTree = true);
+        const QString& rootName, bool bEnabledMonitor = true, bool bFlatTree = true);
 
     QString GetPath(QStandardItem* item) const;
     bool IsFolder(QStandardItem* item) const;
@@ -107,7 +107,7 @@ protected:
     void Edit(const QString& path);
     void ShowInExplorer(const QString& path);
 
-    bool m_bDisableMonitor = false;
+    bool m_bEnableMonitor = false;
     bool m_bFlatStyle = false;
     QString m_fileNameSpec = "";
     AZStd::vector<QString> m_folders = {};

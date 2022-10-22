@@ -16,7 +16,8 @@
 #include <QStandardItemModel>
 
 #include <AzCore/std/algorithm.h>
-// AzQtComponents
+#include <AzCore/IO/SystemFile.h>
+
 #include <AzQtComponents/Utilities/DesktopUtilities.h> // for AzQtComponents::ShowFileOnDesktop
 
 //////////////////////////////////////////////////////////////////////////
@@ -38,7 +39,7 @@ CFolderTreeCtrl::CFolderTreeCtrl(QWidget* parent)
 }
 
 void CFolderTreeCtrl::Configure(
-    const AZStd::vector<QString>& folders, const QString& fileNameSpec, const QString& rootName, bool bDisableMonitor, bool bFlatTree)
+    const AZStd::vector<QString>& folders, const QString& fileNameSpec, const QString& rootName, bool bEnabledMonitor, bool bFlatTree)
 {
     m_folders.clear();
     AZStd::ranges::copy_if(
@@ -46,7 +47,7 @@ void CFolderTreeCtrl::Configure(
         AZStd::back_inserter(m_folders),
         [](const auto& path)
         {
-            if (CFileUtil::PathExists(path) || Path::IsFolder(path.toLocal8Bit().constData()))
+            if (AZ::IO::SystemFile::Exists(path.toLocal8Bit().constData()) || AZ::IO::SystemFile::IsDirectory(path.toLocal8Bit().constData()))
             {
                 return true;
             }
@@ -59,7 +60,7 @@ void CFolderTreeCtrl::Configure(
 
     m_fileNameSpec = fileNameSpec;
     m_rootName = rootName;
-    m_bDisableMonitor = bDisableMonitor;
+    m_bEnableMonitor = bEnabledMonitor;
     m_bFlatStyle = bFlatTree;
 
     if (m_rootTreeItem)
@@ -81,7 +82,7 @@ void CFolderTreeCtrl::Configure(
         }
     }
 
-    if (!m_bDisableMonitor)
+    if (m_bEnableMonitor)
     {
         CFileChangeMonitor::Instance()->Subscribe(this);
     }
@@ -114,7 +115,7 @@ bool CFolderTreeCtrl::IsFile(QStandardItem* item) const
 CFolderTreeCtrl::~CFolderTreeCtrl()
 {
     // Unsubscribe from file change notifications
-    if (!m_bDisableMonitor)
+    if (m_bEnableMonitor)
     {
         CFileChangeMonitor::Instance()->Unsubscribe(this);
     }
