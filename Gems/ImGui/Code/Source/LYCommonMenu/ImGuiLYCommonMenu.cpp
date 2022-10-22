@@ -303,16 +303,16 @@ namespace ImGui
 
                 // View Maps ( pending valid ILevelSystem )
                 auto lvlSystem = (gEnv && gEnv->pSystem) ? gEnv->pSystem->GetILevelSystem() : nullptr;
-                if (lvlSystem && LevelSystemLifecycleInterface::Get() && ImGui::BeginMenu("Levels"))
+                if (lvlSystem && AzFramework::LevelSystemLifecycleInterface::Get() && ImGui::BeginMenu("Levels"))
                 {
-                    if (LevelSystemLifecycleInterface::Get()->IsLevelLoaded())
+                    if (AzFramework::LevelSystemLifecycleInterface::Get()->IsLevelLoaded())
                     {
                         ImGui::TextColored(ImGui::Colors::s_PlainLabelColor, "Current Level: ");
                         ImGui::SameLine();
                         ImGui::TextColored(
                             ImGui::Colors::s_NiceLabelColor,
                             "%s",
-                            LevelSystemLifecycleInterface::Get()->GetCurrentLevelName());
+                            AzFramework::LevelSystemLifecycleInterface::Get()->GetCurrentLevelName());
                     }
 
                     bool usePrefabSystemForLevels = false;
