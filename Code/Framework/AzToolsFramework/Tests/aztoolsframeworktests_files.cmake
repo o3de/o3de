@@ -93,6 +93,9 @@ set(FILES
     Prefab/PrefabFocus/PrefabFocusTests.cpp
     Prefab/MockPrefabFileIOActionValidator.cpp
     Prefab/MockPrefabFileIOActionValidator.h
+    Prefab/Overrides/PrefabOverridePublicInterfaceTests.cpp
+    Prefab/Overrides/PrefabOverrideTestFixture.cpp
+    Prefab/Overrides/PrefabOverrideTestFixture.h
     Prefab/PrefabDeleteTests.cpp
     Prefab/PrefabDuplicateTests.cpp
     Prefab/PrefabEntityAliasTests.cpp
