@@ -19,7 +19,8 @@
     </Packet>
 
     <Packet Name="SyncComponentMismatch" Desc="Sends a vector of multiplayer components with their name and version hashes in order to compare which components exactly are mismatched.">
-        <Member Type="Multiplayer::ComponentVersionMessageData" Name="componentVersions" Container="Vector" Count="Multiplayer::MaxComponentVersionHashes"/>
+        <Member Type="Multiplayer::ComponentVersionMessageData" Name="componentVersions" Container="Vector" Count="Multiplayer::MaxComponentVersionDataPerPacket"/>
+        <Member Type="uint32_t" Name="totalComponentCount"/>
     </Packet>
 
     <Packet Name="ReadyForEntityUpdates" Desc="Client confirming it is ready to receive entity updates">

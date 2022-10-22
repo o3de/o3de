@@ -589,11 +589,32 @@ namespace Multiplayer
         }
 
         // Make sure the client that's trying to connect has the same multiplayer components
-        if (GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHash() != packet.GetMultiplayerComponentVersionHash())
+        if (GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHolisticHash() !=
+            packet.GetMultiplayerComponentVersionHash())
         {
-            //MultiplayerPackets::SyncComponentMismatch multiplayerComponentData;
-            //multiplayerComponentData.ModifyComponentVersions() = GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHash()
-            //connection->SendReliablePacket();
+            // There's a multiplayer component mismatch. Send the server's component information back to the client so they can compare.
+            MultiplayerPackets::SyncComponentMismatch componentMismatchPacket;
+            const uint32_t totalMultiplayerComponentCount = aznumeric_cast<uint32_t>(GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHashes().size());
+            componentMismatchPacket.SetTotalComponentCount(totalMultiplayerComponentCount);
+
+            for (const auto& multiplayerComponentData : GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHashes())
+            {
+                componentMismatchPacket.ModifyComponentVersions().emplace_back(multiplayerComponentData.first, multiplayerComponentData.second);
+
+                if (componentMismatchPacket.GetComponentVersions().full())
+                {
+                    // we've hit the packet limit, send the current packet, and begin filling up another
+                    connection->SendReliablePacket(componentMismatchPacket);
+                    componentMismatchPacket.ModifyComponentVersions().clear();
+                }
+            }
+
+            // Send any remaining multiplayer component version data
+            if (!componentMismatchPacket.GetComponentVersions().empty())
+            {
+                connection->SendReliablePacket(componentMismatchPacket);
+            }
+
             return true;
         }
 
@@ -845,10 +866,83 @@ namespace Multiplayer
         [[maybe_unused]] const IPacketHeader& packetHeader,
         MultiplayerPackets::SyncComponentMismatch& packet)
     {
-        for(const auto multiplayerComponentData : packet.GetComponentVersions())
+        const auto nameDictionary = AZ::Interface<AZ::NameDictionary>::Get();
+        if (nameDictionary == nullptr)
         {
-            multiplayerComponentData.m_componentName;
+            AZLOG_ERROR("MultiplayerSystemComponent::SyncComponentMismatch failed. Cannot access the NameDictionary so we can't find multiplayer component names.");
+            return true;
         }
+
+        // If this is the first packet containing component version data from this connection id, start a new vector for tracking the data
+        if (!m_connectedAppsComponentVersions.contains(connection->GetConnectionId()))
+        {
+            m_connectedAppsComponentVersions[connection->GetConnectionId()] = AZStd::vector<ComponentVersionMessageData>();
+        }
+
+        for (const auto& packetComponentData : m_connectedAppsComponentVersions[connection->GetConnectionId()])
+        {
+            m_connectedAppsComponentVersions[connection->GetConnectionId()].push_back(packetComponentData);
+        }
+
+        if (m_connectedAppsComponentVersions[connection->GetConnectionId()].size() != packet.GetTotalComponentCount())
+        {
+            // There's more component version data to receive from this connection
+            return true;
+        }
+
+        // We've received all the component data from this connection
+        // Iterate over each component and see what's been added, missing, or modified
+        for (const auto& theirComponent : m_connectedAppsComponentVersions[connection->GetConnectionId()])
+        {
+            // Check for modified components
+            AZ::HashValue64 localComponentHash;
+            if (GetMultiplayerComponentRegistry()->FindMultiplayerComponentVersionHash(
+                    theirComponent.m_componentName, localComponentHash))
+            {
+                
+                if (theirComponent.m_componentVersionHash != localComponentHash)
+                {
+                    AZLOG_ERROR(
+                        "Multiplayer component mismatch! %s has a different version hash. Please make sure both client and server have "
+                        "matching multiplayer components.",
+                        nameDictionary->FindName(theirComponent.m_componentName.GetHash()).GetCStr());
+                }
+            }
+            else
+            {
+                // Connection has an added component
+                AZLOG_ERROR(
+                    "Multiplayer component mismatch! We're missing a component with version hash %x. To find the missing component, go to "
+                    "the other machine and look for an auto-component with s_versionHash %x",
+                    theirComponent.m_componentVersionHash,
+                    theirComponent.m_componentVersionHash);
+            }
+
+            theirComponent.m_componentName;
+        }
+
+        // Iterate over our components and see if we the connection is missing a component we have
+        const AZStd::vector<ComponentVersionMessageData>& connectedAppComponents =
+            m_connectedAppsComponentVersions[connection->GetConnectionId()];
+        for (const auto& ourComponent : GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHashes())
+        {
+            AZ::Name ourComponentName = ourComponent.first;
+
+            bool theyHaveComponent = AZStd::find_if(
+                connectedAppComponents.begin(),
+                connectedAppComponents.end(),
+                [&ourComponentName](const ComponentVersionMessageData& theirComponent)
+                {
+                    return ourComponentName == theirComponent.m_componentName;
+                });
+
+            if (!theyHaveComponent)
+            {
+                const char* componentName = nameDictionary->FindName(ourComponentName.GetHash()).GetCStr();
+                AZLOG_ERROR("Multiplayer component mismatch! Connected application is missing %s!", componentName);
+            }
+        }
+
         return true;
     }
 
@@ -878,7 +972,7 @@ namespace Multiplayer
                 0,
                 m_temporaryUserIdentifier,
                 providerTicket.c_str(),
-                GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHash()));
+                GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHolisticHash()));
         }
         else
         {

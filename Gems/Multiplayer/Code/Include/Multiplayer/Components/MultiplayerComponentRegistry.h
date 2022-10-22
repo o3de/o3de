@@ -69,9 +69,14 @@ namespace Multiplayer
 
         //! Returns the combined hashes of all the multiplayer components creating a single holistic version hash that can be compared between the server and client app.
         //! @return a 64-bit hash value representing of all of the multiplayer components
-        AZ::HashValue64 GetMultiplayerComponentVersionHash();
+        AZ::HashValue64 GetMultiplayerComponentVersionHolisticHash() const;
 
-        AZStd::vector<ComponentVersionMessageData> BuildComponentVersionData() const;
+        const AZStd::unordered_map<AZ::Name, AZ::HashValue64>& GetMultiplayerComponentVersionHashes() const
+        {
+            return m_componentVersionHashes;
+        }
+
+        bool FindMultiplayerComponentVersionHash(const AZ::Name& multiplayerComponentName, AZ::HashValue64& hash) const;
 
         //! This releases all owned memory, should only be called during multiplayer shutdown.
         void Reset();
@@ -80,5 +85,6 @@ namespace Multiplayer
         NetComponentId m_nextNetComponentId = NetComponentId{ 0 };
         AZStd::unordered_map<NetComponentId, ComponentData> m_componentData;
         AZ::HashValue64 m_componentVersionHash = AZ::HashValue64{ 0 };
+        AZStd::unordered_map<AZ::Name, AZ::HashValue64> m_componentVersionHashes;
     };
 }

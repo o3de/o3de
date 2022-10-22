@@ -218,6 +218,8 @@ namespace Multiplayer
         AZStd::vector<PlayerWaitingToBeSpawned> m_playersWaitingToBeSpawned;
         bool m_blockClientLoadLevel = true;
 
+        AZStd::unordered_map<AzNetworking::ConnectionId, AZStd::vector<ComponentVersionMessageData>> m_connectedAppsComponentVersions;
+
 #if !defined(AZ_RELEASE_BUILD)
         MultiplayerEditorConnection m_editorConnectionListener;
 #endif
