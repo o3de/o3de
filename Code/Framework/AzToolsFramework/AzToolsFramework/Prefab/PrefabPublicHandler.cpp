@@ -6,7 +6,6 @@
  *
  */
 
-#pragma optimize("", off)
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/JSON/stringbuffer.h>
 #include <AzCore/JSON/writer.h>
@@ -2235,4 +2234,3 @@ namespace AzToolsFramework
 
     } // namespace Prefab
 } // namespace AzToolsFramework
-#pragma optimize("", on)
