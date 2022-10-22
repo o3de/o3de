@@ -32,7 +32,7 @@ namespace AzFramework
         void Deactivate() override;
         NativeWindowHandle GetWindowHandle() const override;
         void SetWindowTitle(const AZStd::string& title) override;
-        void ResizeClientArea(WindowSize clientAreaSize) override;
+        void ResizeClientArea(WindowSize clientAreaSize, const WindowPosOptions& options) override;
         bool SupportsClientAreaResize() const override;
         uint32_t GetDisplayRefreshRate() const override;
 

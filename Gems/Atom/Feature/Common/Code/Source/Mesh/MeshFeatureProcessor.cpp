@@ -518,12 +518,8 @@ namespace AZ
             m_forceRebuildDrawPackets = true;
         }
 
-        void MeshFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
-        {
-            m_forceRebuildDrawPackets = true;;
-        }
-
-        void MeshFeatureProcessor::OnRenderPipelineRemoved([[maybe_unused]] RPI::RenderPipeline* pipeline)
+        void MeshFeatureProcessor::OnRenderPipelineChanged([[maybe_unused]] RPI::RenderPipeline* pipeline,
+            [[maybe_unused]] RPI::SceneNotification::RenderPipelineChangeType changeType)
         {
             m_forceRebuildDrawPackets = true;
         }
@@ -1001,6 +997,26 @@ namespace AZ
                         subMesh.m_roughnessFactor = material->GetPropertyValue<float>(propertyIndex);
                     }
 
+                    // emissive color
+                    propertyIndex = material->FindPropertyIndex(AZ::Name("emissive.enable"));
+                    if (propertyIndex.IsValid())
+                    {
+                        if (material->GetPropertyValue<bool>(propertyIndex))
+                        {
+                            propertyIndex = material->FindPropertyIndex(AZ::Name("emissive.color"));
+                            if (propertyIndex.IsValid())
+                            {
+                                subMesh.m_emissiveColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
+                            }
+
+                            propertyIndex = material->FindPropertyIndex(AZ::Name("emissive.intensity"));
+                            if (propertyIndex.IsValid())
+                            {
+                                subMesh.m_emissiveColor *= material->GetPropertyValue<float>(propertyIndex);
+                            }
+                        }
+                    }
+
                     // textures
                     Data::Instance<RPI::Image> baseColorImage; // can be used for irradiance color below
                     propertyIndex = material->FindPropertyIndex(AZ::Name("baseColor.textureMap"));
@@ -1045,6 +1061,17 @@ namespace AZ
                         {
                             subMesh.m_textureFlags |= RayTracingSubMeshTextureFlags::Roughness;
                             subMesh.m_roughnessImageView = image->GetImageView();
+                        }
+                    }
+
+                    propertyIndex = material->FindPropertyIndex(AZ::Name("emissive.textureMap"));
+                    if (propertyIndex.IsValid())
+                    {
+                        Data::Instance<RPI::Image> image = material->GetPropertyValue<Data::Instance<RPI::Image>>(propertyIndex);
+                        if (image.get())
+                        {
+                            subMesh.m_textureFlags |= RayTracingSubMeshTextureFlags::Emissive;
+                            subMesh.m_emissiveImageView = image->GetImageView();
                         }
                     }
 

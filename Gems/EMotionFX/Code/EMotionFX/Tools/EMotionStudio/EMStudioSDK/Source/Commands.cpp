@@ -23,6 +23,7 @@
 
 #include <SceneAPIExt/Rules/ActorPhysicsSetupRule.h>
 #include <SceneAPIExt/Rules/SimulatedObjectSetupRule.h>
+#include <SceneAPIExt/Rules/RootMotionExtractionRule.h>
 #include <SceneAPIExt/Rules/MetaDataRule.h>
 #include <SceneAPIExt/Rules/MotionMetaDataRule.h>
 #include <SceneAPIExt/Groups/MotionGroup.h>
@@ -319,6 +320,20 @@ namespace EMStudio
                 // Add motion meta data.
                 auto motionMetaData = AZStd::make_shared<EMotionFX::Pipeline::Rule::MotionMetaData>(motion->GetMotionExtractionFlags(), motion->GetEventTable());
                 EMotionFX::Pipeline::Rule::SaveToGroup<EMotionFX::Pipeline::Rule::MotionMetaDataRule, AZStd::shared_ptr<EMotionFX::Pipeline::Rule::MotionMetaData>>(*scene, group, motionMetaData);
+
+                // Save RootMotionExtractionRule
+                if (auto rootMotionData = motion->GetRootMotionExtractionData())
+                {
+                    EMotionFX::Pipeline::Rule::SaveToGroup<
+                        EMotionFX::Pipeline::Rule::RootMotionExtractionRule,
+                        AZStd::shared_ptr<EMotionFX::RootMotionExtractionData>>(*scene, group, rootMotionData);
+                }
+                else
+                {
+                    EMotionFX::Pipeline::Rule::RemoveRuleFromGroup<
+                        EMotionFX::Pipeline::Rule::RootMotionExtractionRule,
+                        AZStd::shared_ptr<EMotionFX::RootMotionExtractionData>>(*scene, group);
+                }
             }
         }
 

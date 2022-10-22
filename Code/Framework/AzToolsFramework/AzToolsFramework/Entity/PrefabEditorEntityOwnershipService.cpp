@@ -9,11 +9,11 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Script/ScriptSystemBus.h>
-#include <AzCore/Serialization/Utils.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Spawnable/RootSpawnableInterface.h>
+#include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipService.h>
@@ -486,8 +486,20 @@ namespace AzToolsFramework
                 // (load asset) -> (notify) -> (init) -> (activate)
                 AZ::Data::AssetManager::Instance().DispatchEvents();
 
-                m_playInEditorData.m_entities.Reset(createRootSpawnableResult.GetValue());
-                m_playInEditorData.m_entities.SpawnAllEntities();
+                AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable = createRootSpawnableResult.GetValue();
+                m_playInEditorData.m_entities.Reset(rootSpawnable);
+
+                AzFramework::SpawnAllEntitiesOptionalArgs optionalArgs;
+                auto spawnCompleteCB = [rootSpawnable](
+                                           [[maybe_unused]] AzFramework::EntitySpawnTicket::Id ticketId,
+                                           [[maybe_unused]] AzFramework::SpawnableConstEntityContainerView view)
+                {
+                    AzFramework::RootSpawnableNotificationBus::Broadcast(
+                        &AzFramework::RootSpawnableNotificationBus::Events::OnRootSpawnableReady, rootSpawnable, 0);
+                };
+
+                optionalArgs.m_completionCallback = AZStd::move(spawnCompleteCB);
+                m_playInEditorData.m_entities.SpawnAllEntities(AZStd::move(optionalArgs));
 
                 // This is a workaround until the replacement for GameEntityContext is done
                 AzFramework::GameEntityContextEventBus::Broadcast(

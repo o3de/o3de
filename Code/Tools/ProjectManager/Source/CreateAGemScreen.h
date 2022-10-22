@@ -12,6 +12,7 @@
 #include <ScreenWidget.h>
 #include <FormFolderBrowseEditWidget.h>
 #include <FormLineEditWidget.h>
+#include <FormLineEditTagsWidget.h>
 #include <FormComboBoxWidget.h>
 #include <GemCatalog/GemInfo.h>
 #include <PythonBindings.h>
@@ -70,7 +71,7 @@ namespace O3DE::ProjectManager
         FormLineEditWidget* m_requirements = nullptr;
         FormLineEditWidget* m_license = nullptr;
         FormLineEditWidget* m_licenseURL = nullptr;
-        FormLineEditWidget* m_userDefinedGemTags = nullptr;
+        FormLineEditTagsWidget* m_userDefinedGemTags = nullptr;
         FormFolderBrowseEditWidget* m_gemLocation = nullptr;
         FormLineEditWidget* m_gemIconPath = nullptr;
         FormLineEditWidget* m_documentationURL = nullptr;

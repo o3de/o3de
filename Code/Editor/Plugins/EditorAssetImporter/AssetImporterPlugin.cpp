@@ -9,6 +9,7 @@
 #include <AssetImporterPlugin.h>
 #include <AssetImporterWindow.h>
 #include <AzCore/Component/ComponentApplication.h>
+#include <ImporterRootDisplay.h>
 #include <QtViewPaneManager.h>
 #include <SceneAPI/SceneCore/Events/AssetImportRequest.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
@@ -42,14 +43,15 @@ AssetImporterPlugin::AssetImporterPlugin(IEditor* editor)
     if (AZ::ReflectionEnvironment::GetReflectionManager())
     {
         AZ::ReflectionEnvironment::GetReflectionManager()->Reflect(
-            SceneSettingsAssetImporterForPythonRequestHandler::RTTI_Type(),
+            SceneSettingsAssetImporterForScriptRequestHandler::RTTI_Type(),
             [](AZ::ReflectContext* context)
             {
-                SceneSettingsAssetImporterForPythonRequestHandler::Reflect(context);
+                SceneSettingsAssetImporterForScriptRequestHandler::Reflect(context);
+                SceneSettingsRootDisplayScriptRequestHandler::Reflect(context);
             });
     }
 
-    m_requestHandler = AZStd::make_shared<SceneSettingsAssetImporterForPythonRequestHandler>();
+    m_requestHandler = AZStd::make_shared<SceneSettingsAssetImporterForScriptRequestHandler>();
 }
 
 void AssetImporterPlugin::Release()
@@ -117,33 +119,33 @@ QMainWindow* AssetImporterPlugin::EditImportSettings(const AZStd::string& source
     return assetImporterWindow;
 }
 
-SceneSettingsAssetImporterForPythonRequestHandler::SceneSettingsAssetImporterForPythonRequestHandler()
+SceneSettingsAssetImporterForScriptRequestHandler::SceneSettingsAssetImporterForScriptRequestHandler()
 {
-    SceneSettingsAssetImporterForPythonRequestBus::Handler::BusConnect();
+    SceneSettingsAssetImporterForScriptRequestBus::Handler::BusConnect();
 }
 
-SceneSettingsAssetImporterForPythonRequestHandler ::~SceneSettingsAssetImporterForPythonRequestHandler()
+SceneSettingsAssetImporterForScriptRequestHandler ::~SceneSettingsAssetImporterForScriptRequestHandler()
 {
-    SceneSettingsAssetImporterForPythonRequestBus::Handler::BusDisconnect();
+    SceneSettingsAssetImporterForScriptRequestBus::Handler::BusDisconnect();
 }
 
-void SceneSettingsAssetImporterForPythonRequestHandler::Reflect(AZ::ReflectContext* context)
+void SceneSettingsAssetImporterForScriptRequestHandler::Reflect(AZ::ReflectContext* context)
 {
     if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
     {
-        serialize->Class<SceneSettingsAssetImporterForPythonRequestHandler>()->Version(0);
+        serialize->Class<SceneSettingsAssetImporterForScriptRequestHandler>()->Version(0);
     }
 
     if (AZ::BehaviorContext* behavior = azrtti_cast<AZ::BehaviorContext*>(context))
     {
-        behavior->EBus<SceneSettingsAssetImporterForPythonRequestBus>("SceneSettingsAssetImporterForPythonRequestBus")
+        behavior->EBus<SceneSettingsAssetImporterForScriptRequestBus>("SceneSettingsAssetImporterForScriptRequestBus")
             ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
             ->Attribute(AZ::Script::Attributes::Module, "qt")
-            ->Event("EditImportSettings", &SceneSettingsAssetImporterForPythonRequestBus::Events::EditImportSettings);
+            ->Event("EditImportSettings", &SceneSettingsAssetImporterForScriptRequestBus::Events::EditImportSettings);
     }
 }
 
-AZ::u64 SceneSettingsAssetImporterForPythonRequestHandler::EditImportSettings(const AZStd::string& sourceFilePath)
+AZ::u64 SceneSettingsAssetImporterForScriptRequestHandler::EditImportSettings(const AZStd::string& sourceFilePath)
 {
     QMainWindow* importSettingsWindow = AssetImporterPlugin::GetInstance()->EditImportSettings(sourceFilePath);
 

@@ -21,6 +21,7 @@
 #include <EMotionFX/Source/Node.h>
 #include <EMotionFX/Source/TransformData.h>
 #include <EMotionFX/Source/MotionData/MotionData.h>
+#include <EMotionFX/Source/MotionData/RootMotionExtractionData.h>
 
 namespace EMotionFX
 {
@@ -334,5 +335,15 @@ namespace EMotionFX
             delete m_motionData;
         }
         m_motionData = motionData;
+    }
+
+    void Motion::SetRootMotionExtractionData(AZStd::shared_ptr<RootMotionExtractionData> data)
+    {
+        m_rootMotionExtractionData = AZStd::move(data);
+    }
+
+    const AZStd::shared_ptr<RootMotionExtractionData>& Motion::GetRootMotionExtractionData() const
+    {
+        return m_rootMotionExtractionData;
     }
 } // namespace EMotionFX
