@@ -278,12 +278,12 @@ AZ_TYPE_SAFE_INTEGRAL_SERIALIZEBINDING(Multiplayer::RpcIndex);
 AZ_TYPE_SAFE_INTEGRAL_SERIALIZEBINDING(Multiplayer::ClientInputId);
 AZ_TYPE_SAFE_INTEGRAL_SERIALIZEBINDING(Multiplayer::HostFrameId);
 
-AZ_TYPE_SAFE_INTEGRAL_TOSTRING(Multiplayer::NetEntityId, uint64_t);
-AZ_TYPE_SAFE_INTEGRAL_TOSTRING(Multiplayer::NetComponentId, uint16_t);
-AZ_TYPE_SAFE_INTEGRAL_TOSTRING(Multiplayer::PropertyIndex, uint16_t);
-AZ_TYPE_SAFE_INTEGRAL_TOSTRING(Multiplayer::RpcIndex, uint16_t);
-AZ_TYPE_SAFE_INTEGRAL_TOSTRING(Multiplayer::ClientInputId, uint16_t);
-AZ_TYPE_SAFE_INTEGRAL_TOSTRING(Multiplayer::HostFrameId, uint32_t);
+AZ_TYPE_SAFE_INTEGRAL_TOSTRING(Multiplayer::NetEntityId);
+AZ_TYPE_SAFE_INTEGRAL_TOSTRING(Multiplayer::NetComponentId);
+AZ_TYPE_SAFE_INTEGRAL_TOSTRING(Multiplayer::PropertyIndex);
+AZ_TYPE_SAFE_INTEGRAL_TOSTRING(Multiplayer::RpcIndex);
+AZ_TYPE_SAFE_INTEGRAL_TOSTRING(Multiplayer::ClientInputId);
+AZ_TYPE_SAFE_INTEGRAL_TOSTRING(Multiplayer::HostFrameId);
 
 namespace AZ
 {
