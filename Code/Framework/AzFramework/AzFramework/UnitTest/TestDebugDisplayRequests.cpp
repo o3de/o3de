@@ -98,6 +98,27 @@ namespace UnitTest
         DrawPoints(lines);
     }
 
+    void TestDebugDisplayRequests::DrawWireSphere(const AZ::Vector3& pos, float radius)
+    {
+        AZStd::vector<AZ::Vector3> points;
+        const int numSlices = 16;
+        const int numAngularDivisions = 16;
+        points.reserve(numSlices * numAngularDivisions);
+        for (int sliceIndex = 0; sliceIndex < numSlices; sliceIndex++)
+        {
+            const float theta = (static_cast<float>(sliceIndex) + 0.5f) / static_cast<float>(numSlices) * AZ::Constants::Pi;
+            float sinTheta;
+            float cosTheta;
+            AZ::SinCos(theta, sinTheta, cosTheta);
+            for (int angularIndex = 0; angularIndex < numAngularDivisions; angularIndex++)
+            {
+                const float phi = static_cast<float>(angularIndex) / static_cast<float>(numAngularDivisions) * AZ::Constants::TwoPi;
+                points.push_back(pos + radius * AZ::Vector3(sinTheta * AZ::Sin(phi), sinTheta * AZ::Cos(phi), cosTheta));
+            }
+        }
+        DrawPoints(points);
+    }
+
     void TestDebugDisplayRequests::PushMatrix(const AZ::Transform& tm)
     {
         m_transforms.push(m_transforms.top() * tm);
