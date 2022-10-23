@@ -39,6 +39,7 @@
 
 #include <cmath>
 #include <AzCore/Debug/Profiler.h>
+#include <Multiplayer/MultiplayerPerformanceStats.h>
 
 AZ_DEFINE_BUDGET(MULTIPLAYER);
 
@@ -96,7 +97,7 @@ namespace Multiplayer
         "slow down quicker and may be better suited to connections with highly variable latency");
     AZ_CVAR(bool, bg_multiplayerDebugDraw, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Enables debug draw for the multiplayer gem");
     AZ_CVAR(bool, cl_connect_onstartup, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether to call connect as soon as the Multiplayer SystemComponent is activated.");
-
+    
     void MultiplayerSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         NetworkSpawnable::Reflect(context);
@@ -196,6 +197,7 @@ namespace Multiplayer
     void MultiplayerSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         required.push_back(AZ_CRC_CE("NetworkingService"));
+        required.push_back(AZ_CRC_CE("MultiplayerStatSystemComponent"));
     }
 
     void MultiplayerSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -228,6 +230,10 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::Activate()
     {
+        DECLARE_PERFORMANCE_STAT_GROUP(MultiplayerGroup_Networking, "Networking");
+        DECLARE_PERFORMANCE_STAT(MultiplayerGroup_Networking, MultiplayerStat_EntityCount, "NumEntities");
+        DECLARE_PERFORMANCE_STAT(MultiplayerGroup_Networking, MultiplayerStat_FrameTime, "FrameTimeUs");
+
         AzFramework::RootSpawnableNotificationBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
         SessionNotificationBus::Handler::BusConnect();
@@ -422,6 +428,8 @@ namespace Multiplayer
     {
         AZ_PROFILE_SCOPE(MULTIPLAYER, "MultiplayerSystemComponent: OnTick");
 
+        const AZStd::chrono::steady_clock::time_point startMultiplayerTickTime = AZStd::chrono::steady_clock::now();
+
         if (bg_multiplayerDebugDraw)
         {
             m_networkEntityManager.DebugDraw();
@@ -514,6 +522,10 @@ namespace Multiplayer
             AZ_PROFILE_SCOPE(MULTIPLAYER, "MultiplayerSystemComponent: OnTick - SendReliablePackets");
             m_networkInterface->GetConnectionSet().VisitConnections(visitor);
         }
+
+        const auto duration =
+            AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(AZStd::chrono::steady_clock::now() - startMultiplayerTickTime);
+        stats.RecordFrameTime(AZ::TimeUs{ duration.count() });
     }
 
     int MultiplayerSystemComponent::GetTickOrder()
@@ -1055,6 +1067,11 @@ namespace Multiplayer
             }
         }
         AZLOG_INFO("Multiplayer operating in %s mode", GetEnumString(m_agentType));
+
+        if (auto* statSystem = AZ::Interface<IMultiplayerStatSystem>::Get())
+        {
+            statSystem->Register();
+        }
     }
 
     void MultiplayerSystemComponent::AddClientMigrationStartEventHandler(ClientMigrationStartEvent::Handler& handler)
