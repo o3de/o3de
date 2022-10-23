@@ -62,7 +62,11 @@ namespace UnitTest
         }
     };
 
-    void CreateBox(const AZ::Transform& transform, const AZ::Vector3& dimensions, AZ::Entity& entity)
+    void CreateBox(
+        AZ::Entity& entity,
+        const AZ::Transform& transform,
+        const AZ::Vector3& dimensions,
+        const AZ::Vector3& translationOffset = AZ::Vector3::CreateZero())
     {
         entity.CreateComponent<LmbrCentral::BoxShapeComponent>();
         entity.CreateComponent<LmbrCentral::BoxShapeDebugDisplayComponent>();
@@ -72,11 +76,18 @@ namespace UnitTest
         entity.Activate();
 
         AZ::TransformBus::Event(entity.GetId(), &AZ::TransformBus::Events::SetWorldTM, transform);
-        LmbrCentral::BoxShapeComponentRequestsBus::Event(entity.GetId(), &LmbrCentral::BoxShapeComponentRequestsBus::Events::SetBoxDimensions, dimensions);
+        LmbrCentral::BoxShapeComponentRequestsBus::Event(
+            entity.GetId(), &LmbrCentral::BoxShapeComponentRequestsBus::Events::SetBoxDimensions, dimensions);
+        LmbrCentral::ShapeComponentRequestsBus::Event(
+            entity.GetId(), &LmbrCentral::ShapeComponentRequestsBus::Events::SetTranslationOffset, translationOffset);
     }
 
-    void CreateBoxWithNonUniformScale(const AZ::Transform& transform, const AZ::Vector3& nonUniformScale,
-        const AZ::Vector3& dimensions, AZ::Entity& entity)
+    void CreateBoxWithNonUniformScale(
+        AZ::Entity& entity,
+        const AZ::Transform& transform,
+        const AZ::Vector3& nonUniformScale,
+        const AZ::Vector3& dimensions,
+        const AZ::Vector3& translationOffset = AZ::Vector3::CreateZero())
     {
         entity.CreateComponent<LmbrCentral::BoxShapeComponent>();
         entity.CreateComponent<LmbrCentral::BoxShapeDebugDisplayComponent>();
@@ -87,13 +98,16 @@ namespace UnitTest
         entity.Activate();
 
         AZ::TransformBus::Event(entity.GetId(), &AZ::TransformBus::Events::SetWorldTM, transform);
-        LmbrCentral::BoxShapeComponentRequestsBus::Event(entity.GetId(), &LmbrCentral::BoxShapeComponentRequestsBus::Events::SetBoxDimensions, dimensions);
+        LmbrCentral::BoxShapeComponentRequestsBus::Event(
+            entity.GetId(), &LmbrCentral::BoxShapeComponentRequestsBus::Events::SetBoxDimensions, dimensions);
+        LmbrCentral::ShapeComponentRequestsBus::Event(
+            entity.GetId(), &LmbrCentral::ShapeComponentRequestsBus::Events::SetTranslationOffset, translationOffset);
         AZ::NonUniformScaleRequestBus::Event(entity.GetId(), &AZ::NonUniformScaleRequests::SetScale, nonUniformScale);
     }
 
     void CreateDefaultBox(const AZ::Transform& transform, AZ::Entity& entity)
     {
-        CreateBox(transform, AZ::Vector3(10.0f, 10.0f, 10.0f), entity);
+        CreateBox(entity, transform, AZ::Vector3(10.0f, 10.0f, 10.0f));
     }
 
     bool RandomPointsAreInBox(const AZ::Entity& entity, const AZ::RandomDistributionType distributionType)
@@ -178,7 +192,7 @@ namespace UnitTest
         const AZ::Transform transform = AZ::Transform::CreateTranslation(AZ::Vector3(2.0f, 6.0f, -3.0f));
         const AZ::Vector3 dimensions(2.4f, 1.2f, 0.6f);
         const AZ::Vector3 nonUniformScale(0.2f, 0.3f, 0.1f);
-        CreateBoxWithNonUniformScale(transform, nonUniformScale, dimensions, entity);
+        CreateBoxWithNonUniformScale(entity, transform, nonUniformScale, dimensions);
 
         const bool allRandomPointsInVolume = RandomPointsAreInBox(entity, AZ::RandomDistributionType::UniformReal);
         EXPECT_TRUE(allRandomPointsInVolume);
@@ -191,7 +205,7 @@ namespace UnitTest
             AZ::Quaternion(0.48f, 0.60f, 0.0f, 0.64f), AZ::Vector3(2.0f, 6.0f, -3.0f));
         const AZ::Vector3 dimensions(1.5f, 2.2f, 1.6f);
         const AZ::Vector3 nonUniformScale(0.4f, 0.1f, 0.3f);
-        CreateBoxWithNonUniformScale(transform, nonUniformScale, dimensions, entity);
+        CreateBoxWithNonUniformScale(entity, transform, nonUniformScale, dimensions);
 
         const bool allRandomPointsInVolume = RandomPointsAreInBox(entity, AZ::RandomDistributionType::UniformReal);
         EXPECT_TRUE(allRandomPointsInVolume);
@@ -204,7 +218,7 @@ namespace UnitTest
         transform.SetUniformScale(2.0f);
         const AZ::Vector3 dimensions(2.5f, 1.8f, 0.9f);
         const AZ::Vector3 nonUniformScale(0.6f, 0.5f, 0.2f);
-        CreateBoxWithNonUniformScale(transform, nonUniformScale, dimensions, entity);
+        CreateBoxWithNonUniformScale(entity, transform, nonUniformScale, dimensions);
 
         const bool allRandomPointsInVolume = RandomPointsAreInBox(entity, AZ::RandomDistributionType::UniformReal);
         EXPECT_TRUE(allRandomPointsInVolume);
@@ -218,7 +232,7 @@ namespace UnitTest
         transform.SetUniformScale(1.5f);
         const AZ::Vector3 dimensions(3.2f, 2.6f, 1.3f);
         const AZ::Vector3 nonUniformScale(0.7f, 0.3f, 0.6f);
-        CreateBoxWithNonUniformScale(transform, nonUniformScale, dimensions, entity);
+        CreateBoxWithNonUniformScale(entity, transform, nonUniformScale, dimensions);
 
         const bool allRandomPointsInVolume = RandomPointsAreInBox(entity, AZ::RandomDistributionType::UniformReal);
         EXPECT_TRUE(allRandomPointsInVolume);
@@ -228,9 +242,9 @@ namespace UnitTest
     {
         AZ::Entity entity;
         CreateBox(
-            AZ::Transform::CreateTranslation(AZ::Vector3(0.0f, 0.0f, 5.0f)) *
-            AZ::Transform::CreateRotationZ(AZ::Constants::QuarterPi),
-            AZ::Vector3(1.0f), entity);
+            entity,
+            AZ::Transform::CreateTranslation(AZ::Vector3(0.0f, 0.0f, 5.0f)) * AZ::Transform::CreateRotationZ(AZ::Constants::QuarterPi),
+            AZ::Vector3(1.0f));
 
         bool rayHit = false;
         float distance;
@@ -246,10 +260,13 @@ namespace UnitTest
     TEST_F(BoxShapeTest, GetRayIntersectBoxSuccess2)
     {
         AZ::Entity entity;
-        CreateBox(AZ::Transform::CreateFromQuaternionAndTranslation(
-            AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisX(), AZ::Constants::HalfPi) *
-            AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisZ(), AZ::Constants::QuarterPi), AZ::Vector3(-10.0f, -10.0f, -10.0f)),
-            AZ::Vector3(4.0f, 4.0f, 2.0f), entity);
+        CreateBox(
+            entity,
+            AZ::Transform::CreateFromQuaternionAndTranslation(
+                AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisX(), AZ::Constants::HalfPi) *
+                    AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisZ(), AZ::Constants::QuarterPi),
+                AZ::Vector3(-10.0f, -10.0f, -10.0f)),
+            AZ::Vector3(4.0f, 4.0f, 2.0f));
 
         bool rayHit = false;
         float distance;
@@ -266,9 +283,10 @@ namespace UnitTest
     TEST_F(BoxShapeTest, GetRayIntersectBoxSuccess3)
     {
         AZ::Entity entity;
-        CreateBox(AZ::Transform::CreateFromQuaternionAndTranslation(
-            AZ::Quaternion::CreateIdentity(), AZ::Vector3(100.0f, 100.0f, 0.0f)),
-            AZ::Vector3(5.0f, 5.0f, 5.0f), entity);
+        CreateBox(
+            entity,
+            AZ::Transform::CreateFromQuaternionAndTranslation(AZ::Quaternion::CreateIdentity(), AZ::Vector3(100.0f, 100.0f, 0.0f)),
+            AZ::Vector3(5.0f, 5.0f, 5.0f));
 
         bool rayHit = false;
         float distance;
@@ -285,11 +303,11 @@ namespace UnitTest
     {
         AZ::Entity entity;
         CreateBox(
+            entity,
             AZ::Transform::CreateFromQuaternionAndTranslation(
-                AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisY(), AZ::Constants::QuarterPi),
-                AZ::Vector3(0.0f, 0.0f, 5.0f)) *
-            AZ::Transform::CreateUniformScale(3.0f),
-            AZ::Vector3(2.0f, 4.0f, 1.0f), entity);
+                AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisY(), AZ::Constants::QuarterPi), AZ::Vector3(0.0f, 0.0f, 5.0f)) *
+                AZ::Transform::CreateUniformScale(3.0f),
+            AZ::Vector3(2.0f, 4.0f, 1.0f));
 
         bool rayHit = false;
         float distance;
@@ -304,9 +322,10 @@ namespace UnitTest
     TEST_F(BoxShapeTest, GetRayIntersectBoxFailure)
     {
         AZ::Entity entity;
-        CreateBox(AZ::Transform::CreateFromQuaternionAndTranslation(
-            AZ::Quaternion::CreateIdentity(), AZ::Vector3(0.0f, -10.0f, 0.0f)),
-            AZ::Vector3(2.0f, 6.0f, 4.0f), entity);
+        CreateBox(
+            entity,
+            AZ::Transform::CreateFromQuaternionAndTranslation(AZ::Quaternion::CreateIdentity(), AZ::Vector3(0.0f, -10.0f, 0.0f)),
+            AZ::Vector3(2.0f, 6.0f, 4.0f));
 
         bool rayHit = false;
         float distance;
@@ -324,7 +343,7 @@ namespace UnitTest
         transform.MultiplyByUniformScale(0.5f);
         const AZ::Vector3 dimensions(2.2f, 1.8f, 0.4f);
         const AZ::Vector3 nonUniformScale(0.2f, 2.6f, 1.2f);
-        CreateBoxWithNonUniformScale(transform, dimensions, nonUniformScale, entity);
+        CreateBoxWithNonUniformScale(entity, transform, dimensions, nonUniformScale);
 
         // should just miss the box
         bool rayHit = false;
@@ -369,7 +388,7 @@ namespace UnitTest
         transform.MultiplyByUniformScale(1.5f);
         const AZ::Vector3 dimensions(1.2f, 0.7f, 2.1f);
         const AZ::Vector3 nonUniformScale(0.8f, 0.6f, 0.7f);
-        CreateBoxWithNonUniformScale(transform, dimensions, nonUniformScale, entity);
+        CreateBoxWithNonUniformScale(entity, transform, dimensions, nonUniformScale);
 
         // should just miss the box
         bool rayHit = false;
@@ -393,7 +412,7 @@ namespace UnitTest
     {
         // not rotated - AABB input
         AZ::Entity entity;
-        CreateBox(AZ::Transform::CreateIdentity(), AZ::Vector3(1.5f, 3.5f, 5.5f), entity);
+        CreateBox(entity, AZ::Transform::CreateIdentity(), AZ::Vector3(1.5f, 3.5f, 5.5f));
 
         AZ::Aabb aabb;
         LmbrCentral::ShapeComponentRequestsBus::EventResult(
@@ -424,10 +443,13 @@ namespace UnitTest
     {
         // rotated - OBB input
         AZ::Entity entity;
-        CreateBox(AZ::Transform::CreateFromQuaternionAndTranslation(
-            AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisX(), AZ::Constants::QuarterPi) *
-            AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisY(), AZ::Constants::QuarterPi), AZ::Vector3(0.0f, 0.0f, 0.0f)),
-            AZ::Vector3(2.0f, 5.0f, 1.0f), entity);
+        CreateBox(
+            entity,
+            AZ::Transform::CreateFromQuaternionAndTranslation(
+                AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisX(), AZ::Constants::QuarterPi) *
+                    AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisY(), AZ::Constants::QuarterPi),
+                AZ::Vector3(0.0f, 0.0f, 0.0f)),
+            AZ::Vector3(2.0f, 5.0f, 1.0f));
 
         AZ::Aabb aabb;
         LmbrCentral::ShapeComponentRequestsBus::EventResult(
@@ -441,8 +463,7 @@ namespace UnitTest
     {
         // not rotated - AABB input
         AZ::Entity entity;
-        CreateBox(AZ::Transform::CreateTranslation(
-            AZ::Vector3(100.0f, 70.0f, 30.0f)), AZ::Vector3(1.8f, 3.5f, 5.2f), entity);
+        CreateBox(entity, AZ::Transform::CreateTranslation(AZ::Vector3(100.0f, 70.0f, 30.0f)), AZ::Vector3(1.8f, 3.5f, 5.2f));
 
         AZ::Aabb aabb;
         LmbrCentral::ShapeComponentRequestsBus::EventResult(
@@ -456,11 +477,11 @@ namespace UnitTest
     {
         AZ::Entity entity;
         CreateBox(
+            entity,
             AZ::Transform::CreateFromQuaternionAndTranslation(
-                AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisY(), AZ::Constants::QuarterPi),
-                AZ::Vector3::CreateZero()) *
-            AZ::Transform::CreateUniformScale(3.0f),
-            AZ::Vector3(2.0f, 4.0f, 1.0f), entity);
+                AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisY(), AZ::Constants::QuarterPi), AZ::Vector3::CreateZero()) *
+                AZ::Transform::CreateUniformScale(3.0f),
+            AZ::Vector3(2.0f, 4.0f, 1.0f));
 
         AZ::Aabb aabb;
         LmbrCentral::ShapeComponentRequestsBus::EventResult(
@@ -477,7 +498,7 @@ namespace UnitTest
             AZ::Quaternion(0.08f, 0.44f, 0.16f, 0.88f), AZ::Vector3(1.0f, 2.0f, 3.0f));
         const AZ::Vector3 nonUniformScale(0.5f, 1.2f, 2.0f);
         const AZ::Vector3 boxDimensions(2.4f, 2.0f, 4.8f);
-        CreateBoxWithNonUniformScale(transform, nonUniformScale, boxDimensions, entity);
+        CreateBoxWithNonUniformScale(entity, transform, nonUniformScale, boxDimensions);
 
         AZ::Aabb aabb;
         LmbrCentral::ShapeComponentRequestsBus::EventResult(
@@ -491,7 +512,7 @@ namespace UnitTest
     {
         // not rotated - AABB input
         AZ::Entity entity;
-        CreateBox(AZ::Transform::CreateIdentity(), AZ::Vector3(1.5f, 3.5f, 5.5f), entity);
+        CreateBox(entity, AZ::Transform::CreateIdentity(), AZ::Vector3(1.5f, 3.5f, 5.5f));
 
         AZ::Transform transformOut;
         AZ::Aabb aabb;
@@ -510,7 +531,7 @@ namespace UnitTest
             AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisX(), AZ::Constants::QuarterPi) * AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisY(), AZ::Constants::QuarterPi),
             AZ::Vector3(9.0f, 11.0f, 13.0f));
         transformIn.MultiplyByUniformScale(3.0f);
-        CreateBox(transformIn, AZ::Vector3(1.5f, 3.5f, 5.5f), entity);
+        CreateBox(entity, transformIn, AZ::Vector3(1.5f, 3.5f, 5.5f));
 
         AZ::Transform transformOut;
         AZ::Aabb aabb;
@@ -529,7 +550,7 @@ namespace UnitTest
         transformIn.MultiplyByUniformScale(2.0f);
         const AZ::Vector3 nonUniformScale(1.5f, 2.0f, 0.4f);
         const AZ::Vector3 boxDimensions(2.0f, 1.7f, 0.5f);
-        CreateBoxWithNonUniformScale(transformIn, nonUniformScale, boxDimensions, entity);
+        CreateBoxWithNonUniformScale(entity, transformIn, nonUniformScale, boxDimensions);
 
         AZ::Transform transformOut;
         AZ::Aabb aabb;
@@ -546,11 +567,12 @@ namespace UnitTest
     {
         AZ::Entity entity;
         CreateBox(
+            entity,
             AZ::Transform::CreateFromQuaternionAndTranslation(
                 AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisZ(), AZ::Constants::QuarterPi),
                 AZ::Vector3(23.0f, 12.0f, 40.0f)) *
-            AZ::Transform::CreateUniformScale(3.0f),
-            AZ::Vector3(2.0f, 6.0f, 3.5f), entity);
+                AZ::Transform::CreateUniformScale(3.0f),
+            AZ::Vector3(2.0f, 6.0f, 3.5f));
 
         // test some pairs of nearby points which should be just either side of the surface of the box
         EXPECT_TRUE(IsPointInside(entity, AZ::Vector3(28.0f, 5.0f, 36.0f)));
@@ -566,11 +588,10 @@ namespace UnitTest
     {
         AZ::Entity entity;
         CreateBox(
-            AZ::Transform::CreateTranslation(AZ::Vector3(23.0f, 12.0f, 40.0f)) *
-            AZ::Transform::CreateRotationX(-AZ::Constants::QuarterPi) *
-            AZ::Transform::CreateRotationZ(AZ::Constants::QuarterPi) *
-            AZ::Transform::CreateUniformScale(2.0f),
-            AZ::Vector3(4.0f, 7.0f, 3.5f), entity);
+            entity,
+            AZ::Transform::CreateTranslation(AZ::Vector3(23.0f, 12.0f, 40.0f)) * AZ::Transform::CreateRotationX(-AZ::Constants::QuarterPi) *
+                AZ::Transform::CreateRotationZ(AZ::Constants::QuarterPi) * AZ::Transform::CreateUniformScale(2.0f),
+            AZ::Vector3(4.0f, 7.0f, 3.5f));
 
         // test some pairs of nearby points which should be just either side of the surface of the box
         EXPECT_TRUE(IsPointInside(entity, AZ::Vector3(16.0f, 16.0f, 40.0f)));
@@ -588,7 +609,7 @@ namespace UnitTest
             AZ::Quaternion(0.26f, 0.74f, 0.22f, 0.58f), AZ::Vector3(12.0f, -16.0f, 3.0f));
         const AZ::Vector3 nonUniformScale(0.5f, 2.0f, 3.0f);
         const AZ::Vector3 boxDimensions(4.0f, 3.0f, 7.0f);
-        CreateBoxWithNonUniformScale(transform, nonUniformScale, boxDimensions, entity);
+        CreateBoxWithNonUniformScale(entity, transform, nonUniformScale, boxDimensions);
 
         // test some pairs of nearby points which should be just either side of the surface of the box
         EXPECT_TRUE(IsPointInside(entity, AZ::Vector3(2.0f, -16.0f, 6.0f)));
@@ -604,10 +625,10 @@ namespace UnitTest
     {
         AZ::Entity entity;
         CreateBox(
-            AZ::Transform::CreateTranslation(AZ::Vector3(10.0f, 37.0f, 32.0f)) *
-            AZ::Transform::CreateRotationZ(AZ::Constants::QuarterPi) *
-            AZ::Transform::CreateUniformScale(2.0f),
-            AZ::Vector3(6.0f, 1.0f, 5.0f), entity);
+            entity,
+            AZ::Transform::CreateTranslation(AZ::Vector3(10.0f, 37.0f, 32.0f)) * AZ::Transform::CreateRotationZ(AZ::Constants::QuarterPi) *
+                AZ::Transform::CreateUniformScale(2.0f),
+            AZ::Vector3(6.0f, 1.0f, 5.0f));
 
         float distance;
         LmbrCentral::ShapeComponentRequestsBus::EventResult(
@@ -621,11 +642,10 @@ namespace UnitTest
     {
         AZ::Entity entity;
         CreateBox(
-            AZ::Transform::CreateTranslation(AZ::Vector3(10.0f, 37.0f, 32.0f)) *
-            AZ::Transform::CreateRotationX(AZ::Constants::HalfPi) *
-            AZ::Transform::CreateRotationY(AZ::Constants::HalfPi) *
-            AZ::Transform::CreateUniformScale(0.5f),
-            AZ::Vector3(24.0f, 4.0f, 20.0f), entity);
+            entity,
+            AZ::Transform::CreateTranslation(AZ::Vector3(10.0f, 37.0f, 32.0f)) * AZ::Transform::CreateRotationX(AZ::Constants::HalfPi) *
+                AZ::Transform::CreateRotationY(AZ::Constants::HalfPi) * AZ::Transform::CreateUniformScale(0.5f),
+            AZ::Vector3(24.0f, 4.0f, 20.0f));
 
         float distance;
         LmbrCentral::ShapeComponentRequestsBus::EventResult(
@@ -642,7 +662,7 @@ namespace UnitTest
         transform.MultiplyByUniformScale(2.0f);
         const AZ::Vector3 dimensions(2.0f, 3.0f, 1.5f);
         const AZ::Vector3 nonUniformScale(1.4f, 2.2f, 0.8f);
-        CreateBoxWithNonUniformScale(transform, nonUniformScale, dimensions, entity);
+        CreateBoxWithNonUniformScale(entity, transform, nonUniformScale, dimensions);
 
         float distance = AZ::Constants::FloatMax;
         LmbrCentral::ShapeComponentRequestsBus::EventResult(
@@ -659,7 +679,7 @@ namespace UnitTest
         transform.MultiplyByUniformScale(2.0f);
         const AZ::Vector3 dimensions(1.2f, 0.8f, 1.7f);
         const AZ::Vector3 nonUniformScale(2.4f, 1.3f, 1.8f);
-        CreateBoxWithNonUniformScale(transform, nonUniformScale, dimensions, entity);
+        CreateBoxWithNonUniformScale(entity, transform, nonUniformScale, dimensions);
 
         UnitTest::TestDebugDisplayRequests testDebugDisplayRequests;
 
@@ -684,8 +704,9 @@ namespace UnitTest
         // Create our box centered at 0 with our height and starting XY dimensions.
         AZ::Entity entity;
         CreateBox(
+            entity,
             AZ::Transform::CreateTranslation(AZ::Vector3::CreateZero()),
-            AZ::Vector3(ShapeThreadsafeTest::MinDimension, ShapeThreadsafeTest::MinDimension, ShapeThreadsafeTest::ShapeHeight), entity);
+            AZ::Vector3(ShapeThreadsafeTest::MinDimension, ShapeThreadsafeTest::MinDimension, ShapeThreadsafeTest::ShapeHeight));
 
         // Define the function for setting unimportant dimensions on the shape while queries take place.
         auto setDimensionFn = [](AZ::EntityId shapeEntityId, float minDimension, uint32_t dimensionVariance, float height)
@@ -716,11 +737,8 @@ namespace UnitTest
         transform.SetUniformScale(1.8f);
         const AZ::Vector3 dimensions(2.3f, 3.2f, 1.4f);
         const AZ::Vector3 nonUniformScale(0.2f, 0.5f, 0.2f);
-        CreateBoxWithNonUniformScale(transform, nonUniformScale, dimensions, entity);
-
         const AZ::Vector3 translationOffset(0.5f, 0.2f, 1.3f);
-        LmbrCentral::ShapeComponentRequestsBus::Event(
-            entity.GetId(), &LmbrCentral::ShapeComponentRequestsBus::Events::SetTranslationOffset, translationOffset);
+        CreateBoxWithNonUniformScale(entity, transform, nonUniformScale, dimensions, translationOffset);
 
         const bool allRandomPointsInVolume = RandomPointsAreInBox(entity, AZ::RandomDistributionType::UniformReal);
         EXPECT_TRUE(allRandomPointsInVolume);
@@ -734,11 +752,8 @@ namespace UnitTest
         transform.SetUniformScale(2.2f);
         const AZ::Vector3 dimensions(3.1f, 0.8f, 1.5f);
         const AZ::Vector3 nonUniformScale(0.4f, 0.1f, 0.3f);
-        CreateBoxWithNonUniformScale(transform, nonUniformScale, dimensions, entity);
-
         const AZ::Vector3 translationOffset(-3.5f, 2.2f, -1.8f);
-        LmbrCentral::ShapeComponentRequestsBus::Event(
-            entity.GetId(), &LmbrCentral::ShapeComponentRequestsBus::Events::SetTranslationOffset, translationOffset);
+        CreateBoxWithNonUniformScale(entity, transform, nonUniformScale, dimensions, translationOffset);
 
         const bool allRandomPointsInVolume = RandomPointsAreInBox(entity, AZ::RandomDistributionType::UniformReal);
         EXPECT_TRUE(allRandomPointsInVolume);
@@ -752,11 +767,8 @@ namespace UnitTest
         transform.SetUniformScale(3.0f);
         const AZ::Vector3 dimensions(3.0f, 4.0f, 5.0f);
         const AZ::Vector3 nonUniformScale(2.0f, 0.5f, 0.5f);
-        CreateBoxWithNonUniformScale(transform, nonUniformScale, dimensions, entity);
-
         const AZ::Vector3 translationOffset(1.0f, 2.0f, 3.0f);
-        LmbrCentral::ShapeComponentRequestsBus::Event(
-            entity.GetId(), &LmbrCentral::ShapeComponentRequestsBus::Events::SetTranslationOffset, translationOffset);
+        CreateBoxWithNonUniformScale(entity, transform, nonUniformScale, dimensions, translationOffset);
 
         bool rayHit = false;
         float distance;
@@ -776,11 +788,8 @@ namespace UnitTest
         transform.SetUniformScale(3.0f);
         const AZ::Vector3 dimensions(3.0f, 4.0f, 5.0f);
         const AZ::Vector3 nonUniformScale(2.0f, 0.5f, 0.5f);
-        CreateBoxWithNonUniformScale(transform, nonUniformScale, dimensions, entity);
-
         const AZ::Vector3 translationOffset(1.0f, 2.0f, 3.0f);
-        LmbrCentral::ShapeComponentRequestsBus::Event(
-            entity.GetId(), &LmbrCentral::ShapeComponentRequestsBus::Events::SetTranslationOffset, translationOffset);
+        CreateBoxWithNonUniformScale(entity, transform, nonUniformScale, dimensions, translationOffset);
 
         bool rayHit = false;
         float distance;
@@ -799,11 +808,8 @@ namespace UnitTest
         transform.SetUniformScale(2.5f);
         const AZ::Vector3 nonUniformScale(0.8f, 2.2f, 0.5f);
         const AZ::Vector3 boxDimensions(3.2f, 1.6f, 4.8f);
-        CreateBoxWithNonUniformScale(transform, nonUniformScale, boxDimensions, entity);
-
         const AZ::Vector3 translationOffset(2.0f, 2.0f, 6.0f);
-        LmbrCentral::ShapeComponentRequestsBus::Event(
-            entity.GetId(), &LmbrCentral::ShapeComponentRequestsBus::Events::SetTranslationOffset, translationOffset);
+        CreateBoxWithNonUniformScale(entity, transform, nonUniformScale, boxDimensions, translationOffset);
 
         AZ::Aabb aabb;
         LmbrCentral::ShapeComponentRequestsBus::EventResult(
@@ -820,11 +826,8 @@ namespace UnitTest
         transform.SetUniformScale(1.5f);
         const AZ::Vector3 nonUniformScale(1.8f, 0.6f, 0.4f);
         const AZ::Vector3 boxDimensions(1.2f, 3.4f, 2.2f);
-        CreateBoxWithNonUniformScale(transform, nonUniformScale, boxDimensions, entity);
-
         const AZ::Vector3 translationOffset(-5.0f, -6.0f, 3.0f);
-        LmbrCentral::ShapeComponentRequestsBus::Event(
-            entity.GetId(), &LmbrCentral::ShapeComponentRequestsBus::Events::SetTranslationOffset, translationOffset);
+        CreateBoxWithNonUniformScale(entity, transform, nonUniformScale, boxDimensions, translationOffset);
 
         AZ::Aabb aabb;
         LmbrCentral::ShapeComponentRequestsBus::EventResult(
@@ -842,11 +845,8 @@ namespace UnitTest
         transform.SetUniformScale(0.7f);
         const AZ::Vector3 nonUniformScale(1.6f, 1.1f, 0.6f);
         const AZ::Vector3 boxDimensions(2.5f, 2.0f, 3.0f);
-        CreateBoxWithNonUniformScale(transform, nonUniformScale, boxDimensions, entity);
-
         const AZ::Vector3 translationOffset(-4.0f, 3.0f, -2.0f);
-        LmbrCentral::ShapeComponentRequestsBus::Event(
-            entity.GetId(), &LmbrCentral::ShapeComponentRequestsBus::Events::SetTranslationOffset, translationOffset);
+        CreateBoxWithNonUniformScale(entity, transform, nonUniformScale, boxDimensions, translationOffset);
 
         AZ::Transform transformOut;
         AZ::Aabb aabb;
@@ -865,11 +865,8 @@ namespace UnitTest
         transform.SetUniformScale(1.5f);
         const AZ::Vector3 nonUniformScale(1.2f, 0.8f, 3.6f);
         const AZ::Vector3 boxDimensions(4.0f, 2.5f, 1.0f);
-        CreateBoxWithNonUniformScale(transform, nonUniformScale, boxDimensions, entity);
-
         const AZ::Vector3 translationOffset(3.0f, 5.0f, -1.0f);
-        LmbrCentral::ShapeComponentRequestsBus::Event(
-            entity.GetId(), &LmbrCentral::ShapeComponentRequestsBus::Events::SetTranslationOffset, translationOffset);
+        CreateBoxWithNonUniformScale(entity, transform, nonUniformScale, boxDimensions, translationOffset);
 
         // test some pairs of nearby points which should be just either side of the surface of the box
         EXPECT_TRUE(IsPointInside(entity, AZ::Vector3(-0.15f, 10.4f, 4.66f)));
@@ -888,11 +885,8 @@ namespace UnitTest
         transform.SetUniformScale(1.5f);
         const AZ::Vector3 nonUniformScale(0.8f, 0.6f, 1.8f);
         const AZ::Vector3 boxDimensions(1.5f, 4.0f, 2.0f);
-        CreateBoxWithNonUniformScale(transform, nonUniformScale, boxDimensions, entity);
-
         const AZ::Vector3 translationOffset(5.0f, -1.0f, 3.0f);
-        LmbrCentral::ShapeComponentRequestsBus::Event(
-            entity.GetId(), &LmbrCentral::ShapeComponentRequestsBus::Events::SetTranslationOffset, translationOffset);
+        CreateBoxWithNonUniformScale(entity, transform, nonUniformScale, boxDimensions, translationOffset);
 
         // test some pairs of nearby points which should be just either side of the surface of the box
         EXPECT_TRUE(IsPointInside(entity, AZ::Vector3(9.11f, 3.0f, 5.0f)));
@@ -911,11 +905,8 @@ namespace UnitTest
         transform.SetUniformScale(1.5f);
         const AZ::Vector3 dimensions(2.4f, 3.0f, 0.6f);
         const AZ::Vector3 nonUniformScale(2.0f, 1.5f, 4.0f);
-        CreateBoxWithNonUniformScale(transform, nonUniformScale, dimensions, entity);
-
         const AZ::Vector3 translationOffset(2.0f, 2.0f, -3.0f);
-        LmbrCentral::ShapeComponentRequestsBus::Event(
-            entity.GetId(), &LmbrCentral::ShapeComponentRequestsBus::Events::SetTranslationOffset, translationOffset);
+        CreateBoxWithNonUniformScale(entity, transform, nonUniformScale, dimensions, translationOffset);
 
         float distance = AZ::Constants::FloatMax;
         // should be inside
@@ -946,11 +937,8 @@ namespace UnitTest
         transform.SetUniformScale(1.8f);
         const AZ::Vector3 dimensions(2.5f, 2.0f, 4.0f);
         const AZ::Vector3 nonUniformScale(4.0f, 2.0f, 0.5f);
-        CreateBoxWithNonUniformScale(transform, nonUniformScale, dimensions, entity);
-
         const AZ::Vector3 translationOffset(-5.0f, -2.0f, -1.0f);
-        LmbrCentral::ShapeComponentRequestsBus::Event(
-            entity.GetId(), &LmbrCentral::ShapeComponentRequestsBus::Events::SetTranslationOffset, translationOffset);
+        CreateBoxWithNonUniformScale(entity, transform, nonUniformScale, dimensions, translationOffset);
 
         float distance = AZ::Constants::FloatMax;
         // should be inside
@@ -982,11 +970,8 @@ namespace UnitTest
         transform.SetUniformScale(1.2f);
         const AZ::Vector3 dimensions(3.6f, 2.0f, 1.6f);
         const AZ::Vector3 nonUniformScale(2.5f, 1.0f, 5.0f);
-        CreateBoxWithNonUniformScale(transform, nonUniformScale, dimensions, entity);
-
         const AZ::Vector3 translationOffset(-4.0f, -3.0f, 5.0f);
-        LmbrCentral::ShapeComponentRequestsBus::Event(
-            entity.GetId(), &LmbrCentral::ShapeComponentRequestsBus::Events::SetTranslationOffset, translationOffset);
+        CreateBoxWithNonUniformScale(entity, transform, nonUniformScale, dimensions, translationOffset);
 
         UnitTest::TestDebugDisplayRequests testDebugDisplayRequests;
 
