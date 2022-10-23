@@ -35,23 +35,31 @@ namespace AzToolsFramework
                 const AZ::Entity& newEntity,
                 Instance& focusedInstance);
 
-        private:
-            void GenerateUpdateParentEntityUndoPatches(
-                const PrefabDom& parentEntityDomAfterAddingEntity,
-                const AZStd::string& parentEntityAliasPath);
+            void Undo() override;
+            void Redo() override;
 
-            void GenerateAddNewEntityUndoPatches(
-                const PrefabDom& newEntityDom,
-                const AZStd::string& newEntityAliasPath);
+        private:
+            void UpdateLink(PrefabDom& linkDom);
 
             void UpdateCachedOwningInstanceDOM(
                 PrefabDomReference cachedOwningInstanceDom,
                 const PrefabDom& entityDom,
                 const AZStd::string& entityAliasPath);
 
-            AZStd::string GenerateFocusedToOwningInstanceRelativePath(
-                const Instance& focusedInstance, const Instance& owningInstance);
+            void GeneratePatchesForUpdateParentEntity(
+                PrefabDom& parentEntityDomAfterAddingEntity,
+                const AZStd::string& parentEntityAliasPathForPatches,
+                const AZStd::string& parentEntityAliasPathInFocusedTemplate,
+                bool updateUndoPatchNeeded);
 
+            void GeneratePatchesForAddNewEntity(
+                PrefabDom& newEntityDom,
+                const AZStd::string& newEntityAliasPathForPatches,
+                bool updateUndoPatchNeeded);
+
+            void GeneratePatchesForLinkUpdate();
+
+            LinkReference m_link = AZStd::nullopt;
             InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
         };

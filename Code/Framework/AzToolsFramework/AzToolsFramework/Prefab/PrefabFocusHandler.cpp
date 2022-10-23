@@ -433,7 +433,7 @@ namespace AzToolsFramework::Prefab
         {
             // Skip the instance closest to the target instance.
             AZStd::string prefix = PrefabInstanceUtils::GetRelativePathFromClimbedInstances(
-                ++climbUpResult.m_climbedInstances.crbegin(), climbUpResult.m_climbedInstances.crend());
+                climbUpResult.m_climbedInstances, true);
 
             m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(providedPatch, entityId, AZStd::move(prefix));
             return climbUpResult.m_climbedInstances.back()->GetLinkId();

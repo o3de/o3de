@@ -72,17 +72,18 @@ namespace AzToolsFramework
                 return GetRelativePathFromClimbedInstances(climbedInstances);
             }
 
-            AZStd::string GetRelativePathFromClimbedInstances(const AZStd::vector<const Instance*>& climbedInstances)
-            {
-                return GetRelativePathFromClimbedInstances(climbedInstances.crbegin(), climbedInstances.crend());
-            }
-
-            AZStd::string GetRelativePathFromClimbedInstances(
-                AZStd::reverse_iterator<const Instance* const*> climbedInstancesBeginIter, AZStd::reverse_iterator<const Instance* const*> climbedInstancesEndIter)
+            AZStd::string GetRelativePathFromClimbedInstances(const AZStd::vector<const Instance*>& climbedInstances,
+                bool skipFirstClimbedInstance)
             {
                 AZStd::string relativePath = "";
+                if (climbedInstances.empty() && skipFirstClimbedInstance)
+                {
+                    return relativePath;
+                }
 
-                for (auto instanceIter = climbedInstancesBeginIter; instanceIter != climbedInstancesEndIter; ++instanceIter)
+                auto climbedInstancesBeginIter = skipFirstClimbedInstance ?
+                    ++climbedInstances.crbegin() : climbedInstances.crbegin();
+                for (auto instanceIter = climbedInstancesBeginIter; instanceIter != climbedInstances.crend(); ++instanceIter)
                 {
                     relativePath.append(PrefabDomUtils::PathStartingWithInstances);
                     relativePath.append((*instanceIter)->GetInstanceAlias());
