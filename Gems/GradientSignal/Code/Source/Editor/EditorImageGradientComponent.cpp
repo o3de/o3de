@@ -243,7 +243,6 @@ namespace GradientSignal
         RefreshImageAssetStatus();
 
         EnableComponentMode();
-        //RefreshComponentModeStatus();
     }
 
     void EditorImageGradientComponent::Deactivate()
@@ -380,10 +379,6 @@ namespace GradientSignal
         auto entityComponentIdPair = AZ::EntityComponentIdPair(GetEntityId(), GetId());
         m_componentModeDelegate.ConnectWithSingleComponentMode<EditorImageGradientComponent, EditorImageGradientComponentMode>(
             entityComponentIdPair, nullptr);
-
-        AzToolsFramework::EntityCompositionNotificationBus::Broadcast(
-            &AzToolsFramework::EntityCompositionNotificationBus::Events::OnEntityCompositionChanged,
-            AZStd::vector<AZ::EntityId>{ GetEntityId() });
     }
 
     void EditorImageGradientComponent::DisableComponentMode()
@@ -394,10 +389,6 @@ namespace GradientSignal
         }
 
         m_componentModeDelegate.Disconnect();
-
-        AzToolsFramework::EntityCompositionNotificationBus::Broadcast(
-            &AzToolsFramework::EntityCompositionNotificationBus::Events::OnEntityCompositionChanged,
-            AZStd::vector<AZ::EntityId>{ GetEntityId() });
     }
 
 
@@ -419,8 +410,6 @@ namespace GradientSignal
             AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
                 &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
         }
-
-        //RefreshComponentModeStatus();
     }
 
     AZ::u32 EditorImageGradientComponent::ConfigurationChanged()
