@@ -191,13 +191,14 @@ namespace AzToolsFramework
             const int itemCountActual = count();
             while (layoutIndex  < itemCountActual)
             {
-                QWidget* currentWidget = itemAt(layoutIndex)->widget();
+                size_t currentWidget = static_cast<size_t>(layoutIndex);
+                AzToolsFramework::DPERowWidget::AttributeInfo* attributes = GetRow()->GetAttributes(currentWidget);
 
                 //! If the current widget is the first widget of a shared column, create the shared column layout and add widgets to it
-                if (sharedVectorIndex < m_sharePriorColumn.size() && currentWidget == m_sharePriorColumn[sharedVectorIndex].first)
+                if (sharedVectorIndex < m_sharePriorColumn.size() && layoutIndex == static_cast<int>(m_sharePriorColumn[sharedVectorIndex][0]))
                 {
                     QHBoxLayout* sharedColumnLayout = new QHBoxLayout;
-                    int numItems = m_sharePriorColumn[sharedVectorIndex].second;
+                    int numItems = m_sharePriorColumn[sharedVectorIndex].size();
                     int sharedWidgetIndex = 0;
                     // values used to remember the alignment of each widget
                     bool startSpacer = false, endSpacer = false;
@@ -207,22 +208,22 @@ namespace AzToolsFramework
                     // Iterate over each item in the current shared column, adding them to a single layout
                     while (sharedWidgetIndex < numItems)
                     {
-                        currentWidget = itemAt(layoutIndex + sharedWidgetIndex)->widget();
-
+                        currentWidget = m_sharePriorColumn[sharedVectorIndex][sharedWidgetIndex];
+                        attributes = GetRow()->GetAttributes(currentWidget);
                         // Save the alignment of the last widget in the shared column with an alignment attribute
-                        if (m_widgetAlignment.contains(currentWidget))
+                        if (attributes)
                         {
-                            switch (m_widgetAlignment[currentWidget])
+                            switch (attributes->m_alignment)
                             {
-                            case Qt::AlignLeft:
+                            case AZ::Dpe::Nodes::PropertyEditor::Align::AlignLeft:
                                 startSpacer = false;
                                 endSpacer = true;
                                 break;
-                            case Qt::AlignCenter:
+                            case AZ::Dpe::Nodes::PropertyEditor::Align::AlignCenter:
                                 startSpacer = true;
                                 endSpacer = true;
                                 break;
-                            case Qt::AlignRight:
+                            case AZ::Dpe::Nodes::PropertyEditor::Align::AlignRight:
                                 startSpacer = true;
                                 endSpacer = false;
                                 break;
@@ -231,7 +232,7 @@ namespace AzToolsFramework
                         sharedColumnLayout->addItem(itemAt(layoutIndex + sharedWidgetIndex));
 
                         // If a widget should only take up its minimum width, do not stretch it
-                        if (m_minimumWidthWidgets.contains(currentWidget))
+                        if (attributes && attributes->m_minimumWidth)
                         {
                             minWidthCount++;
                         }
@@ -283,9 +284,20 @@ namespace AzToolsFramework
                     {
                         itemGeometry.setLeft(itemGeometry.right() + 1);
                         itemGeometry.setRight(itemGeometry.left() + perItemWidth);
-                        if (m_widgetAlignment.contains(currentWidget))
+                        if (attributes)
                         {
-                            itemAt(layoutIndex)->setAlignment(m_widgetAlignment[currentWidget]);
+                            switch (attributes->m_alignment)
+                            {
+                            case AZ::Dpe::Nodes::PropertyEditor::Align::AlignLeft:
+                                itemAt(layoutIndex)->setAlignment(Qt::AlignLeft);
+                                break;
+                            case AZ::Dpe::Nodes::PropertyEditor::Align::AlignCenter:
+                                itemAt(layoutIndex)->setAlignment(Qt::AlignCenter);
+                                break;
+                            case AZ::Dpe::Nodes::PropertyEditor::Align::AlignRight:
+                                itemAt(layoutIndex)->setAlignment(Qt::AlignRight);
+                                break;
+                            }
                         }
                         itemAt(layoutIndex)->setGeometry(itemGeometry);
                     }
@@ -317,6 +329,11 @@ namespace AzToolsFramework
         return dpe;
     }
 
+    AzToolsFramework::DPERowWidget* DPELayout::GetRow() const
+    {
+        return static_cast<DPERowWidget*>(parentWidget());
+    }
+
     void DPELayout::CreateExpanderWidget()
     {
         m_expanderWidget = new QCheckBox(parentWidget());
@@ -325,52 +342,97 @@ namespace AzToolsFramework
         connect(m_expanderWidget, &QCheckBox::stateChanged, this, &DPELayout::onCheckstateChanged);
     }
 
-    //! If we are currently adding to an existing shared column group, increase the number of elements in the pair by 1,
-    //! otherwise create a new pair of the first widget in the shared column, with size of 2 elements.
-    void DPELayout::SharePriorColumn(QWidget* headWidget)
+    void DPELayout::AddSharePriorColumn(size_t previousIndex, size_t widgetIndex)
     {
-        if (ShouldSharePrior())
+        // Add to an existing sharePrior group if the previous widget's index is already there, otherwise create a new group
+        if (!m_sharePriorColumn.empty() && m_sharePriorColumn.back().back() == previousIndex)
         {
-            int newWidgetCount = m_sharePriorColumn.back().second + 1;
-            m_sharePriorColumn[m_sharePriorColumn.size() - 1].second = newWidgetCount;
+            m_sharePriorColumn.back().push_back(widgetIndex);
         }
         else
         {
-            auto widgetColumnPair = AZStd::pair<QWidget*, int>(headWidget, 2);
-            m_sharePriorColumn.push_back(widgetColumnPair);
+            AZStd::vector<size_t> newEntry;
+            newEntry.push_back(previousIndex);
+            newEntry.push_back(widgetIndex);
+            m_sharePriorColumn.push_back(newEntry);
         }
     }
 
-    void DPELayout::SetSharePrior(bool sharePrior)
+    void DPELayout::RemoveSharePriorColumn(size_t widgetIndex)
     {
-        m_shouldSharePrior = sharePrior;
+        for (auto groupIt = m_sharePriorColumn.begin(); groupIt != m_sharePriorColumn.end(); ++groupIt)
+        {
+            AZStd::vector<size_t> currentGroup = *groupIt;
+            for (int currentGroupIndex = 0; currentGroupIndex < currentGroup.size(); currentGroupIndex++)
+            {
+                if (widgetIndex != currentGroup[currentGroupIndex])
+                {
+                    continue;
+                }
+                else
+                {
+                    if (currentGroupIndex == currentGroup.size() - 1)
+                    {
+                        // If we are removing from shared group of 2 or less, erase the group
+                        if (currentGroup.size() <= 2)
+                        {
+                            m_sharePriorColumn.erase(groupIt);
+                            return;
+                        }
+                        // Group size is bigger than 2 and widget is at the end of the group, so just remove it
+                        else
+                        {
+                            currentGroup.erase(currentGroup.begin() + currentGroupIndex);
+                            return;
+                        }
+                    }
+                    // If the widget is the second member of the group, remove the first widget in the group
+                    else if (currentGroupIndex == 1)
+                    {
+                        currentGroup.erase(currentGroup.begin());
+                        return;
+                    }
+                    //! The widget being removed is in the middle of a sharedGroup,
+                    //! Create a vector of all the widgets in the group until you reach the element to be removed from the group
+                    //! Create a new group of all the elements in the group after the element to be removed
+                    else if (currentGroupIndex != 0)
+                    {
+                        AZStd::vector<size_t> oldGroup;
+                        AZStd::vector<size_t> newGroup;
+                        bool switchGroups = false;
+                        for (int elementIt = 0; elementIt < currentGroup.size(); elementIt++)
+                        {
+                            if (elementIt == currentGroupIndex)
+                            {
+                                switchGroups = true;
+                            }
+                            if (!switchGroups)
+                            {
+                                oldGroup.emplace_back(currentGroup[elementIt]);
+                            }
+                            else
+                            {
+                                newGroup.emplace_back(currentGroup[elementIt]);
+                            }
+                        }
+                        m_sharePriorColumn.insert(groupIt + 1, newGroup);
+                        currentGroup.swap(oldGroup);
+                        return;
+                    }
+                }
+            }
+        }
     }
 
-    bool DPELayout::ShouldSharePrior()
-    {
-        return m_shouldSharePrior;
-    }
-
-    // Returns the total number of widgets in shared columns.
+    // Returns the total number of widgets in all shared columns.
     int DPELayout::SharedWidgetCount()
     {
         int numWidgets = 0;
-        for (int index = 0; index < m_sharePriorColumn.size(); index++)
+        for (int currentGroup = 0; currentGroup < m_sharePriorColumn.size(); currentGroup++)
         {
-            numWidgets = numWidgets + m_sharePriorColumn[index].second;
+            numWidgets = numWidgets + m_sharePriorColumn[currentGroup].size();
         }
         return numWidgets;
-    }
-
-    // Add the widget with its appropriate alignment to the widget alignment map
-    void DPELayout::WidgetAlignment(QWidget* alignedWidget, Qt::Alignment widgetAlignment)
-    {
-        m_widgetAlignment[alignedWidget] = widgetAlignment;
-    }
-
-    void DPELayout::AddMinimumWidthWidget(QWidget* widget)
-    {
-        m_minimumWidthWidgets.insert(widget);
     }
 
     DPERowWidget::DPERowWidget(int depth, DPERowWidget* parentRow)
@@ -408,6 +470,7 @@ namespace AzToolsFramework
                 dpe->ReleaseHandler(AZStd::move(propertyWidgetIter->second.hanlderInterface));
             }
             m_widgetToPropertyHandlerInfo.clear();
+            ClearAttributes();
         }
 
         // delete all remaining child widgets, this will also remove them from their layout
@@ -545,6 +608,193 @@ namespace AzToolsFramework
         m_expandByDefault = AZ::Dpe::Nodes::Row::AutoExpand.ExtractFromDomNode(domArray);
     }
 
+    void DPERowWidget::SetPropertyEditorAttributes(size_t domIndex, const AZ::Dom::Value& domArray, QWidget* childWidget)
+    {
+        // Extract all attributes from dom value
+        auto alignment = AZ::Dpe::Nodes::PropertyEditor::Alignment.ExtractFromDomNode(domArray).value_or(AZ::Dpe::Nodes::PropertyEditor::Align::UseDefaultAlignment);
+        auto sharePrior = AZ::Dpe::Nodes::PropertyEditor::SharePriorColumn.ExtractFromDomNode(domArray).value_or(false);
+        auto minimumWidth = AZ::Dpe::Nodes::PropertyEditor::UseMinimumWidth.ExtractFromDomNode(domArray).value_or(false);
+        auto descriptionString = AZ::Dpe::Nodes::PropertyEditor::Description.ExtractFromDomNode(domArray).value_or("");
+        auto shouldDisable = AZ::Dpe::Nodes::PropertyEditor::Disabled.ExtractFromDomNode(domArray).value_or(false);
+
+        // Check for a widget in the previous column
+        int priorColumnIndex = -1;
+        for (int searchIndex = static_cast<int>(domIndex) - 1; (priorColumnIndex == -1 && searchIndex >= 0); --searchIndex)
+        {
+            priorColumnIndex = m_columnLayout->indexOf(m_domOrderedChildren[searchIndex]);
+        }
+
+        auto foundEntry = m_domOrderToAttributeInfo.find(domIndex);
+
+        // If there is no existing attribute entry in the map, try to create a new one
+        if (foundEntry == m_domOrderToAttributeInfo.end())
+        {
+            bool validAttribute = false;
+            AttributeInfo* newAttribute = new AttributeInfo;
+
+            // Check Alignment
+            if (alignment != AZ::Dpe::Nodes::PropertyEditor::Align::UseDefaultAlignment)
+            {
+                newAttribute->m_alignment = alignment;
+                validAttribute = true;
+            }
+
+            // Check SharePrior
+            if (sharePrior)
+            {
+                AZ_Assert(priorColumnIndex != -1, "Tried to share column with an out of bounds index!");
+                if (priorColumnIndex != -1)
+                {
+                    m_columnLayout->AddSharePriorColumn(priorColumnIndex, domIndex);
+                    newAttribute->m_sharePriorColumn = true;
+                    validAttribute = true;
+                }
+            }
+            // Check MinimumWidth
+            if (minimumWidth)
+            {
+                newAttribute->m_minimumWidth = true;
+                validAttribute = true;
+            }
+
+            //Check DescriptionString
+            if (!descriptionString.empty())
+            {
+                if (toolTip().isEmpty())
+                {
+                    setToolTip(QString::fromUtf8(descriptionString.data(), aznumeric_cast<int>(descriptionString.size())));
+                }
+                if (childWidget->toolTip().isEmpty())
+                {
+                    setToolTip(QString::fromUtf8(descriptionString.data(), aznumeric_cast<int>(descriptionString.size())));
+                }
+                newAttribute->m_descriptionString = descriptionString;
+                validAttribute = true;
+            }
+
+            // Check Disabled
+            if (shouldDisable)
+            {
+                childWidget->setEnabled(false);
+                validAttribute = true;
+            }
+
+            // If there are any valid attributes, add the new entry to the map
+            if (validAttribute)
+            {
+                m_domOrderToAttributeInfo[domIndex] = newAttribute;
+            }
+
+        }
+
+        // If an attribute entry already exists at this index, either update it or remove it
+        else if (foundEntry != m_domOrderToAttributeInfo.end())
+        {
+            // If none of the extracted attributes are valid, delete the attribute entry at this index
+            if (alignment == AZ::Dpe::Nodes::PropertyEditor::Align::UseDefaultAlignment && !sharePrior && !minimumWidth && descriptionString.empty() && !shouldDisable)
+            {
+                m_columnLayout->RemoveSharePriorColumn(domIndex);
+                m_domOrderToAttributeInfo.erase(foundEntry);
+            }
+            // At least one attribute is valid, check if we need to update the existing attribute entry
+            else
+            {
+                // Check Alignment
+                if (alignment != foundEntry->second->m_alignment)
+                {
+                    foundEntry->second->m_alignment = alignment;
+                }
+
+                // Check SharePrior
+                if (sharePrior && !foundEntry->second->m_sharePriorColumn)
+                {
+                    AZ_Assert(priorColumnIndex != -1, "Tried to share column with an out of bounds index!")
+                    if (priorColumnIndex != -1)
+                    {
+                        m_columnLayout->AddSharePriorColumn(priorColumnIndex, domIndex);
+                        foundEntry->second->m_sharePriorColumn = true;
+                    }
+                }
+                else if (!sharePrior && foundEntry->second->m_sharePriorColumn)
+                {
+                    m_columnLayout->RemoveSharePriorColumn(domIndex);
+                    foundEntry->second->m_sharePriorColumn = false;
+                }
+
+                //Check MinimumWidth
+                if (minimumWidth != foundEntry->second->m_minimumWidth)
+                {
+                    foundEntry->second->m_minimumWidth = minimumWidth;
+                }
+
+                // Check DescriptionString
+                if (descriptionString.empty() && !foundEntry->second->m_descriptionString.empty())
+                {
+                    if (!toolTip().isEmpty())
+                    {
+                        setToolTip(QString());
+                    }
+                    if (!childWidget->toolTip().isEmpty())
+                    {
+                        childWidget->setToolTip(QString());
+                    }
+                    foundEntry->second->m_descriptionString = "";
+                }
+                else if (!descriptionString.empty() && foundEntry->second->m_descriptionString.empty())
+                {
+                    if (toolTip().isEmpty())
+                    {
+                        setToolTip(QString::fromUtf8(descriptionString.data(), aznumeric_cast<int>(descriptionString.size())));
+                    }
+                    if (childWidget->toolTip().isEmpty())
+                    {
+                        childWidget->setToolTip(QString::fromUtf8(descriptionString.data(), aznumeric_cast<int>(descriptionString.size())));
+                    }
+                    foundEntry->second->m_descriptionString = descriptionString;
+                }
+
+                // Check Disabled
+                if (shouldDisable != foundEntry->second->m_shouldDisable)
+                {
+                    foundEntry->second->m_shouldDisable = shouldDisable;
+                }
+            }
+        }
+    }
+
+    AzToolsFramework::DPERowWidget::AttributeInfo* DPERowWidget::GetAttributes(size_t domIndex)
+    {
+        auto foundEntry = m_domOrderToAttributeInfo.find(domIndex);
+        if (foundEntry != m_domOrderToAttributeInfo.end())
+        {
+            return foundEntry->second;
+        }
+        else
+        {
+            return nullptr;
+        }
+    }
+
+    void DPERowWidget::RemoveAttributes(size_t domIndex)
+    {
+        auto foundEntry = m_domOrderToAttributeInfo.find(domIndex);
+        if (foundEntry != m_domOrderToAttributeInfo.end())
+        {
+            m_domOrderToAttributeInfo.erase(foundEntry);
+            m_columnLayout->RemoveSharePriorColumn(domIndex);
+        }
+    }
+
+    void DPERowWidget::ClearAttributes()
+    {
+        m_domOrderToAttributeInfo.clear();
+        for (AZStd::vector<size_t> sharedGroup : m_columnLayout->m_sharePriorColumn)
+        {
+            sharedGroup.clear();
+        }
+        m_columnLayout->m_sharePriorColumn.clear();
+    }
+
     void DPERowWidget::HandleOperationAtPath(const AZ::Dom::PatchOperation& domOperation, size_t pathIndex)
     {
         const auto& fullPath = domOperation.GetDestinationPath();
@@ -597,6 +847,7 @@ namespace AzToolsFramework
                 {
                     GetDPE()->ReleaseHandler(AZStd::move(foundEntry->second.hanlderInterface));
                     m_widgetToPropertyHandlerInfo.erase(foundEntry);
+                    RemoveAttributes(childIndex);
                     childWidget->hide();
                     m_columnLayout->removeWidget(childWidget);
                     childWidget->setParent(nullptr);
@@ -696,6 +947,7 @@ namespace AzToolsFramework
                         // CreateWidgetForHandler will add a new entry to m_widgetToPropertyHandlerInfo, kill the old entry
                         GetDPE()->ReleaseHandler(AZStd::move(foundEntry->second.hanlderInterface));
                         m_widgetToPropertyHandlerInfo.erase(foundEntry);
+                        m_columnLayout->RemoveSharePriorColumn(childIndex);
                         childWidget->hide();
                         m_columnLayout->removeWidget(childWidget);
 
@@ -707,6 +959,7 @@ namespace AzToolsFramework
                     else
                     {
                         // handler is the same, set the existing handler with the new value
+                        SetPropertyEditorAttributes(childIndex, valueAtSubPath, childWidget);
                         foundEntry->second.hanlderInterface->SetValueFromDom(valueAtSubPath);
                     }
                 }
@@ -723,7 +976,7 @@ namespace AzToolsFramework
             }
         }
     }
-
+    
     DocumentPropertyEditor* DPERowWidget::GetDPE() const
     {
         DocumentPropertyEditor* theDPE = nullptr;
@@ -736,7 +989,7 @@ namespace AzToolsFramework
         AZ_Assert(theDPE, "the top level widget in any DPE hierarchy must be the DocumentPropertyEditor itself!");
         return theDPE;
     }
-
+    
     void DPERowWidget::AddDomChildWidget(size_t domIndex, QWidget* childWidget)
     {
         const bool validIndex = (domIndex <= m_domOrderedChildren.size());
@@ -762,45 +1015,7 @@ namespace AzToolsFramework
             priorColumnIndex = m_columnLayout->indexOf(m_domOrderedChildren[searchIndex]);
         }
 
-        // if the alignment attribute is present, add the widget with its appropriate alignment to the column layout
-        auto alignment = AZ::Dpe::Nodes::PropertyEditor::Alignment.ExtractFromDomNode(domValue);
-        if (alignment.has_value())
-        {
-            Qt::Alignment widgetAlignment;
-            switch (alignment.value())
-            {
-            case AZ::Dpe::Nodes::PropertyEditor::Align::AlignLeft:
-                widgetAlignment = Qt::AlignLeft;
-                break;
-            case AZ::Dpe::Nodes::PropertyEditor::Align::AlignCenter:
-                widgetAlignment = Qt::AlignCenter;
-                break;
-            case AZ::Dpe::Nodes::PropertyEditor::Align::AlignRight:
-                widgetAlignment = Qt::AlignRight;
-                break;
-            }
-            m_columnLayout->WidgetAlignment(columnWidget, widgetAlignment);
-        }
-
-        //! If the sharePrior attribute is present, add the previous widget to the column layout.
-        //! Set the SharePrior boolean so we know to create a new shared column layout, or add to an existing one
-        auto sharePrior = AZ::Dpe::Nodes::PropertyEditor::SharePriorColumn.ExtractFromDomNode(domValue).value_or(false);
-        if (sharePrior)
-        {
-            m_columnLayout->SharePriorColumn(m_columnLayout->itemAt(priorColumnIndex)->widget());
-            m_columnLayout->SetSharePrior(true);
-        }
-        else
-        {
-            m_columnLayout->SetSharePrior(false);
-        }
-
-        // If the UseMinimumWidth attribute is present, add the widget to set of widgets using their minimum width
-        auto minimumWidth = AZ::Dpe::Nodes::PropertyEditor::UseMinimumWidth.ExtractFromDomNode(domValue);
-        if (minimumWidth.has_value() && minimumWidth.value())
-        {
-            m_columnLayout->AddMinimumWidthWidget(columnWidget);
-        }
+        SetPropertyEditorAttributes(domIndex, domValue, columnWidget);
 
         // insert after the found index; even if nothing were found and priorIndex is -1,
         // insert one after it, at position 0
@@ -814,27 +1029,11 @@ namespace AzToolsFramework
         // if we found a valid handler, grab its widget to add to the column layout
         if (handlerId)
         {
-            auto descriptionString = AZ::Dpe::Nodes::PropertyEditor::Description.ExtractFromDomNode(domValue).value_or("");
-            auto shouldDisable = AZ::Dpe::Nodes::PropertyEditor::Disabled.ExtractFromDomNode(domValue).value_or(false);
-
-            // if this row doesn't already have a tooltip, use the first valid
-            // tooltip from a child PropertyEditor (like the RPE)
-            if (!descriptionString.empty() && toolTip().isEmpty())
-            {
-                setToolTip(QString::fromUtf8(descriptionString.data(), aznumeric_cast<int>(descriptionString.size())));
-            }
-
             // store, then reference the unique_ptr that will manage the handler's lifetime
             auto handler = AZ::Interface<PropertyEditorToolsSystemInterface>::Get()->CreateHandlerInstance(handlerId);
             handler->SetValueFromDom(domValue);
             createdWidget = handler->GetWidget();
-            createdWidget->setEnabled(!shouldDisable);
-
-            // only set the widget's tooltip if it doesn't already have its own
-            if (!descriptionString.empty() && createdWidget->toolTip().isEmpty())
-            {
-                createdWidget->setToolTip(QString::fromUtf8(descriptionString.data(), aznumeric_cast<int>(descriptionString.size())));
-            }
+            createdWidget->setEnabled(true);
             m_widgetToPropertyHandlerInfo[createdWidget] = { handlerId, AZStd::move(handler) };
         }
         return createdWidget;
