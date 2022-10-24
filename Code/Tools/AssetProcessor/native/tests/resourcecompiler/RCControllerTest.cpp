@@ -7,17 +7,14 @@
  */
 
 #include "RCControllerTest.h"
-
-
 #include "native/resourcecompiler/rccontroller.h"
-#include "AzCore/std/parallel/binary_semaphore.h"
 
 TEST_F(RCcontrollerTest, CompileGroupCreatedWithUnknownStatusForFailedJobs)
 {
-    //Strategy Add a failed job to the job queue list and than ask the rc controller to request compile, it should emit unknown status  
+    //Strategy Add a failed job to the job queue list and than ask the rc controller to request compile, it should emit unknown status
     using namespace AssetProcessor;
-    // we have to initialize this to something other than Assetstatus_Unknown here because later on we will be testing the value of assetstatus  
-    AzFramework::AssetSystem::AssetStatus assetStatus = AzFramework::AssetSystem::AssetStatus_Failed; 
+    // we have to initialize this to something other than Assetstatus_Unknown here because later on we will be testing the value of assetstatus
+    AzFramework::AssetSystem::AssetStatus assetStatus = AzFramework::AssetSystem::AssetStatus_Failed;
     RCController rcController;
     QObject::connect(&rcController, &RCController::CompileGroupCreated,
         [&assetStatus]([[maybe_unused]] AssetProcessor::NetworkRequestID groupID, AzFramework::AssetSystem::AssetStatus status)
@@ -28,7 +25,7 @@ TEST_F(RCcontrollerTest, CompileGroupCreatedWithUnknownStatusForFailedJobs)
     RCJobListModel* rcJobListModel = rcController.GetQueueModel();
     RCJob* job = new RCJob(rcJobListModel);
     AssetProcessor::JobDetails jobDetails;
-    jobDetails.m_jobEntry.m_pathRelativeToWatchFolder = jobDetails.m_jobEntry.m_databaseSourceName = "somepath/failed.dds";
+    jobDetails.m_jobEntry.m_sourceAssetReference = AssetProcessor::SourceAssetReference("c:/somepath/failed.dds");
     jobDetails.m_jobEntry.m_platformInfo = { "pc", {"desktop", "renderer"} };
     jobDetails.m_jobEntry.m_jobKey = "Compile Stuff";
     job->SetState(RCJob::failed);
@@ -68,7 +65,7 @@ public:
             RCJob* job = new RCJob(m_rcJobListModel);
             AssetProcessor::JobDetails jobDetails;
             jobDetails.m_jobEntry.m_computedFingerprint = 1;
-            jobDetails.m_jobEntry.m_pathRelativeToWatchFolder = jobDetails.m_jobEntry.m_databaseSourceName = "somepath/failed.dds";
+            jobDetails.m_jobEntry.m_sourceAssetReference = AssetProcessor::SourceAssetReference("c:/somepath/failed.dds");
             jobDetails.m_jobEntry.m_platformInfo = { "ios",{ "mobile", "renderer" } };
             jobDetails.m_jobEntry.m_jobRunKey = 1;
             jobDetails.m_jobEntry.m_jobKey = "tiff";
@@ -82,7 +79,7 @@ public:
             // note that Init() is a move operation.  we cannot reuse jobDetails.
             AssetProcessor::JobDetails jobDetails;
             jobDetails.m_jobEntry.m_computedFingerprint = 1;
-            jobDetails.m_jobEntry.m_pathRelativeToWatchFolder = jobDetails.m_jobEntry.m_databaseSourceName = "somepath/failed.dds";
+            jobDetails.m_jobEntry.m_sourceAssetReference = AssetProcessor::SourceAssetReference("c:/somepath/failed.dds");
             jobDetails.m_jobEntry.m_platformInfo = { "pc",{ "desktop", "renderer" } };
             jobDetails.m_jobEntry.m_jobRunKey = 2;
             jobDetails.m_jobEntry.m_jobKey = "tiff";
@@ -112,7 +109,7 @@ TEST_F(RCcontrollerTest_Cancellation, JobSubmitted_SameFingerprint_DoesNotCancel
     {
         AssetProcessor::JobDetails jobDetails;
         jobDetails.m_jobEntry.m_computedFingerprint = 1; // same as above in SetUp
-        jobDetails.m_jobEntry.m_pathRelativeToWatchFolder = jobDetails.m_jobEntry.m_databaseSourceName = "somepath/failed.dds";
+        jobDetails.m_jobEntry.m_sourceAssetReference = AssetProcessor::SourceAssetReference("c:/somepath/failed.dds");
         jobDetails.m_jobEntry.m_platformInfo = { "pc",{ "desktop", "renderer" } };
         jobDetails.m_jobEntry.m_jobKey = "tiff";
         jobDetails.m_jobEntry.m_jobRunKey = 3;
@@ -133,7 +130,7 @@ TEST_F(RCcontrollerTest_Cancellation, JobSubmitted_DifferentFingerprint_CancelsT
     {
         AssetProcessor::JobDetails jobDetails;
         jobDetails.m_jobEntry.m_computedFingerprint = 2; // different from setup.
-        jobDetails.m_jobEntry.m_pathRelativeToWatchFolder = jobDetails.m_jobEntry.m_databaseSourceName = "somepath/failed.dds";
+        jobDetails.m_jobEntry.m_sourceAssetReference = AssetProcessor::SourceAssetReference("c:/somepath/failed.dds");
         jobDetails.m_jobEntry.m_platformInfo = { "pc",{ "desktop", "renderer" } };
         jobDetails.m_jobEntry.m_jobKey = "tiff";
         jobDetails.m_jobEntry.m_jobRunKey = 3;
@@ -197,7 +194,7 @@ void RCcontrollerTest_Simple::SubmitJob()
     {
         AssetProcessor::JobDetails jobDetails;
         jobDetails.m_jobEntry.m_computedFingerprint = 123;
-        jobDetails.m_jobEntry.m_pathRelativeToWatchFolder = jobDetails.m_jobEntry.m_databaseSourceName = "somepath/a.dds";
+        jobDetails.m_jobEntry.m_sourceAssetReference = AssetProcessor::SourceAssetReference("c:/somepath/a.dds");
         jobDetails.m_jobEntry.m_platformInfo = { "pc",{ "desktop", "renderer" } };
         jobDetails.m_jobEntry.m_jobKey = "tiff";
         jobDetails.m_jobEntry.m_jobRunKey = 3;
@@ -223,7 +220,7 @@ void RCcontrollerTest_Simple::SubmitJob()
 TEST_F(RCcontrollerTest_Simple, DISABLED_SameJobIsCompletedMultipleTimes_CompletesWithoutError)
 {
     using namespace AssetProcessor;
-    
+
     AZStd::vector<JobEntry> jobEntries;
     QObject::connect(m_rcController.get(), &RCController::FileCompiled, [&jobEntries](JobEntry entry, AssetBuilderSDK::ProcessJobResponse response)
     {
