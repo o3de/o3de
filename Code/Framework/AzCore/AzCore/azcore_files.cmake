@@ -407,6 +407,7 @@ set(FILES
     Memory/HeapSchema.h
     Memory/HphaSchema.cpp
     Memory/HphaSchema.h
+    Memory/InstancePool.h
     Memory/IAllocator.cpp
     Memory/IAllocator.h
     Memory/MallocSchema.cpp

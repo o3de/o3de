@@ -9,6 +9,7 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <AzCore/Memory/InstancePool.h>
 #include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditorSettings.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/IPropertyEditor.h>
@@ -270,5 +271,12 @@ namespace AzToolsFramework
         // all instances of DocumentPropertyWidgets. Keep a weak_pointer for each new DPE to initialize their shared reference
         AZStd::shared_ptr<RecycledWidgets> m_recycledList;
         static AZStd::weak_ptr<RecycledWidgets> s_recycledList;
+
+        AZStd::shared_ptr<AZ::InstancePool<DPERowWidget>> m_rowPool;
     };
 } // namespace AzToolsFramework
+
+namespace AZ
+{
+    AZ_TYPE_INFO_SPECIALIZE(AzToolsFramework::DPERowWidget, "{C457A594-6E19-4674-A617-3CC09CF7E532}");
+}

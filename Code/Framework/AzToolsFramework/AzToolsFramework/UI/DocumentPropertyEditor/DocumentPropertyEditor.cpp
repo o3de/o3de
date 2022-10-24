@@ -1060,6 +1060,8 @@ namespace AzToolsFramework
             m_recycledList = AZStd::make_shared<RecycledWidgets>();
             s_recycledList = m_recycledList;
         }
+
+        m_rowPool = static_cast<AZ::PoolManager*>(AZ::Interface<AZ::PoolManagerInterface>::Get())->GetPool<DPERowWidget>();
     }
 
     DocumentPropertyEditor::~DocumentPropertyEditor()
