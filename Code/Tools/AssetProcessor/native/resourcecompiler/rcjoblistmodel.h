@@ -93,7 +93,7 @@ namespace AssetProcessor
         int GetIndexOfProcessingJob(const QueueElementID& elementId);
 
         ///! EraseJobs expects the database name of the source file.
-        void EraseJobs(QString sourceFileDatabaseName, AZStd::vector<RCJob*>& pendingJobs);
+        void EraseJobs(const SourceAssetReference& sourceAssetReference, AZStd::vector<RCJob*>& pendingJobs);
 
     private:
 

@@ -10,6 +10,7 @@
 #pragma once
 
 #include "ILevelSystem.h"
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Archive/IArchive.h>
 #include <CryCommon/TimeValue.h>
 
@@ -73,6 +74,7 @@ private:
 
 class CLevelSystem
     : public ILevelSystem
+    , AzFramework::LevelSystemLifecycleInterface::Registrar
 {
 public:
     CLevelSystem(ISystem* pSystem, const char* levelsFolder);
@@ -91,7 +93,11 @@ public:
 
     bool LoadLevel(const char* levelName) override;
     void UnloadLevel() override;
-    bool IsLevelLoaded() override { return m_bLevelLoaded; }
+
+    //! AzFramework::LevelSystemLifecycleInterface overrides.
+    //! @{
+    bool IsLevelLoaded() const override { return m_bLevelLoaded; }
+
     const char* GetCurrentLevelName() const override
     {
         if (m_pCurrentLevel && m_pCurrentLevel->GetLevelInfo())
@@ -100,6 +106,7 @@ public:
         }
         return "";
     }
+    //! @}
 
     // If the level load failed then we need to have a different shutdown procedure vs when a level is naturally unloaded
     void SetLevelLoadFailed(bool loadFailed) override { m_levelLoadFailed = loadFailed; }

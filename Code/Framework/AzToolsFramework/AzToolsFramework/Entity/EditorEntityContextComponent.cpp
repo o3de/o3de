@@ -517,6 +517,7 @@ namespace AzToolsFramework
     void EditorEntityContextComponent::StopPlayInEditor()
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
+        EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::OnStopPlayInEditorBegin);
 
         m_isRunningGame = false;
 
