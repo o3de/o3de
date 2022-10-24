@@ -44,6 +44,8 @@ namespace AssetProcessor
                 return QVariant();
             }
             return m_extension;
+        case aznumeric_cast<int>(AssetTreeColumns::AssetCount):
+            return QVariant();
         default:
             AZ_Warning("AssetProcessor", false, "Unhandled AssetTree column %d", column);
             break;
@@ -73,6 +75,7 @@ namespace AssetProcessor
     AssetTreeItem* AssetTreeItem::CreateChild(AZStd::shared_ptr<AssetTreeItemData> data)
     {
         m_childItems.emplace_back(new AssetTreeItem(data, m_errorIcon, m_folderIcon, m_fileIcon, this));
+
         return m_childItems.back().get();
     }
 
@@ -124,11 +127,35 @@ namespace AssetProcessor
         return m_data->GetColumnCount();
     }
 
+    int AssetTreeItem::ComputeTotalAssetCount()
+    {
+        m_totalAssetCount = 0;
+
+        for (const auto& child : m_childItems)
+        {
+            if (!child->m_data->m_isFolder)
+            {
+                ++m_totalAssetCount;
+            }
+            else
+            {
+                m_totalAssetCount += child->ComputeTotalAssetCount();
+            }
+        }
+
+        return m_totalAssetCount;
+    }
+
     QVariant AssetTreeItem::GetDataForColumn(int column) const
     {
         if (column < 0 || column >= GetColumnCount() || !m_data)
         {
             return QVariant();
+        }
+
+        if(column == aznumeric_cast<int>(AssetTreeColumns::AssetCount) && m_data->m_isFolder)
+        {
+            return m_totalAssetCount;
         }
 
         return m_data->GetDataForColumn(column);

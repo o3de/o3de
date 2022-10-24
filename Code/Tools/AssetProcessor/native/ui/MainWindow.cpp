@@ -386,7 +386,7 @@ void MainWindow::Activate()
         this, writeJobFilterSettings);
 
     // Asset view
-    m_sourceAssetTreeFilterModel = new AssetProcessor::SourceAssetTreeFilterModel(this);
+    m_sourceAssetTreeFilterModel = new AssetProcessor::AssetTreeFilterModel(this);
     m_sourceModel = new AssetProcessor::SourceAssetTreeModel(m_sharedDbConnection, this);
     m_sourceModel->Reset();
     m_sourceAssetTreeFilterModel->setSourceModel(m_sourceModel);

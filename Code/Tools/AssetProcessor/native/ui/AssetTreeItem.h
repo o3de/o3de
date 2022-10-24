@@ -43,6 +43,7 @@ namespace AssetProcessor
     {
         Name,
         Extension,
+        AssetCount,
         Max
     };
 
@@ -72,6 +73,9 @@ namespace AssetProcessor
 
         AZStd::shared_ptr<AssetTreeItemData> GetData() const { return m_data; }
 
+        //! Recursively computes the total number of assets under this directory
+        int ComputeTotalAssetCount();
+
     private:
         AZStd::vector<AZStd::unique_ptr<AssetTreeItem>> m_childItems;
         AZStd::shared_ptr<AssetTreeItemData> m_data;
@@ -79,5 +83,6 @@ namespace AssetProcessor
         QIcon m_errorIcon;
         QIcon m_folderIcon;
         QIcon m_fileIcon;
+        int m_totalAssetCount = 0;
     };
 }

@@ -69,11 +69,11 @@ namespace AssetProcessor
                         "this warning, report an issue on GitHub with O3DE version number.",
                         stat.m_statName.c_str(),
                         numTokensExpected,
-                        tokens.size()); 
+                        tokens.size());
                 }
                 return true;
             });
- 
+
         if (!m_intermediateAssets)
         {
             // AddOrUpdateEntry will remove intermediate assets if they shouldn't be included in this tree.
@@ -235,6 +235,8 @@ namespace AssetProcessor
         {
             endInsertRows();
         }
+
+        m_root->ComputeTotalAssetCount();
     }
 
     void SourceAssetTreeModel::OnSourceFileChanged(const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)

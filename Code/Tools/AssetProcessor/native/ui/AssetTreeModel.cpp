@@ -137,6 +137,8 @@ namespace AssetProcessor
                 return tr("Name");
             case static_cast<int>(AssetTreeColumns::Extension):
                 return tr("Extension");
+            case static_cast<int>(AssetTreeColumns::AssetCount):
+                return tr("# Assets");
             default:
                 AZ_Warning("AssetProcessor", false, "Unhandled AssetTree section %d", section);
                 break;

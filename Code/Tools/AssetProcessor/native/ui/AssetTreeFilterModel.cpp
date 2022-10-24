@@ -8,6 +8,8 @@
 
 #include "AssetTreeFilterModel.h"
 
+#include <QCollator>
+
 #include "AssetTreeItem.h"
 
 namespace AssetProcessor
@@ -133,8 +135,11 @@ namespace AssetProcessor
 
         QVariant leftData = sourceModel()->data(left);
         QVariant rightData = sourceModel()->data(right);
+        QCollator collator;
+        collator.setCaseSensitivity(Qt::CaseInsensitive);
+        collator.setNumericMode(true);
 
-        return rightData.toString() < leftData.toString();
+        return collator.compare(leftData.toString(), rightData.toString()) < 0;
     }
 
     void AssetTreeFilterModel::ForceModelIndexVisible(const QModelIndex& sourceIndex)
