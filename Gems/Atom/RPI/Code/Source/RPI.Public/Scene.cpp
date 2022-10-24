@@ -589,7 +589,7 @@ namespace AZ
                     processCullablesTG.AddTask(processCullablesDescriptor, [this, &viewPtr, &processCullablesTGEvent]()
                         {
                             AZ::TaskGraph subTaskGraph{ "ProcessCullables Subgraph" };
-                            m_cullingScene->ProcessCullablesTG(*this, *viewPtr, subTaskGraph);
+                            m_cullingScene->ProcessCullablesTG(*this, *viewPtr, subTaskGraph, processCullablesTGEvent);
                             if (!subTaskGraph.IsEmpty())
                             {
                                 subTaskGraph.Detach();
@@ -602,7 +602,7 @@ namespace AZ
             {
                 for (ViewPtr& viewPtr : m_renderPacket.m_views)
                 {
-                    m_cullingScene->ProcessCullablesTG(*this, *viewPtr, processCullablesTG);
+                    m_cullingScene->ProcessCullablesTG(*this, *viewPtr, processCullablesTG, processCullablesTGEvent);
                 }
             }
             bool processCullablesHasWork = !processCullablesTG.IsEmpty();
