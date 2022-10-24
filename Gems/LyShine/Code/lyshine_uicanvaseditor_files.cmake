@@ -92,6 +92,8 @@ set(FILES
     Editor/HierarchyMenu.h
     Editor/HierarchyWidget.cpp
     Editor/HierarchyWidget.h
+    Editor/LyShineEditorSettings.cpp
+    Editor/LyShineEditorSettings.h
     Editor/MainToolbar.cpp
     Editor/MainToolbar.h
     Editor/ModeToolbar.cpp

@@ -7,6 +7,7 @@
  */
 #include "EditorCommon.h"
 #include "AlignToolbarSection.h"
+#include "LyShineEditorSettings.h"
 
 ModeToolbar::ModeToolbar(EditorWindow* parent)
     : QToolBar("Mode Toolbar", parent)
@@ -70,7 +71,7 @@ void ModeToolbar::AddModes(EditorWindow* parent)
         QObject::connect(action,
             &QAction::triggered,
             this,
-            [ this, parent, action ]([[maybe_unused]] bool checked)
+            [ this, action ]([[maybe_unused]] bool checked)
             {
                 if (m_previousAction == action)
                 {
@@ -78,7 +79,7 @@ void ModeToolbar::AddModes(EditorWindow* parent)
                     return;
                 }
 
-                parent->GetViewport()->GetViewportInteraction()->SetMode((ViewportInteraction::InteractionMode)action->data().toInt());
+                LyShine::SetInteractionMode((ViewportInteraction::InteractionMode)action->data().toInt());
 
                 m_previousAction = action;
             });

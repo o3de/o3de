@@ -22,6 +22,7 @@
 #include <Util/PathUtil.h>
 #include "EditorDefs.h"
 #include "ErrorDialog.h"
+#include "LyShineEditorSettings.h"
 #include "Settings.h"
 #include "AnchorPresets.h"
 #include "PivotPresets.h"
@@ -1305,8 +1306,8 @@ void EditorWindow::SaveActiveCanvasEditState()
         // Save viewport state
         canvasEditState.m_canvasViewportMatrixProps = m_viewport->GetViewportInteraction()->GetCanvasViewportMatrixProps();
         canvasEditState.m_shouldScaleToFitOnViewportResize = m_viewport->GetViewportInteraction()->ShouldScaleToFitOnViewportResize();
-        canvasEditState.m_viewportInteractionMode = m_viewport->GetViewportInteraction()->GetMode();
-        canvasEditState.m_viewportCoordinateSystem = m_viewport->GetViewportInteraction()->GetCoordinateSystem();
+        canvasEditState.m_viewportInteractionMode = LyShine::GetInteractionMode();
+        canvasEditState.m_viewportCoordinateSystem = LyShine::GetCoordinateSystem();
 
         // Save hierarchy state
         const QTreeWidgetItemRawPtrQList& selection = m_hierarchy->selectedItems();
@@ -1340,8 +1341,8 @@ void EditorWindow::RestoreActiveCanvasEditState()
             {
                 m_viewport->GetViewportInteraction()->CenterCanvasInViewport();
             }
-            m_viewport->GetViewportInteraction()->SetCoordinateSystem(canvasEditState.m_viewportCoordinateSystem);
-            m_viewport->GetViewportInteraction()->SetMode(canvasEditState.m_viewportInteractionMode);
+            LyShine::SetInteractionMode(canvasEditState.m_viewportInteractionMode);
+            LyShine::SetCoordinateSystem(canvasEditState.m_viewportCoordinateSystem);
 
             // Restore hierarchy state
             HierarchyHelpers::SetSelectedItems(m_hierarchy, &canvasEditState.m_selectedElements);

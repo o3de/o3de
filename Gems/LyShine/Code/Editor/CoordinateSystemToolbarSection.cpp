@@ -8,6 +8,7 @@
 #include "EditorCommon.h"
 #include <LyShine/Bus/UiEditorCanvasBus.h>
 #include "CanvasHelpers.h"
+#include "LyShineEditorSettings.h"
 
 #include <QComboBox>
 #include <QCheckBox>
@@ -16,9 +17,7 @@ namespace
 {
     void SetCoordinateSystemFromCombobox(EditorWindow* editorWindow, QComboBox* combobox, int newIndex)
     {
-        ViewportInteraction::CoordinateSystem s = (ViewportInteraction::CoordinateSystem)combobox->itemData(newIndex).toInt();
-
-        editorWindow->GetViewport()->GetViewportInteraction()->SetCoordinateSystem(s);
+        LyShine::SetCoordinateSystem(static_cast<ViewportInteraction::CoordinateSystem>(combobox->itemData(newIndex).toInt()));
     }
 } // anonymous namespace.
 

@@ -12,6 +12,7 @@
 
 #include <QObject>
 
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Math/Vector2.h>
 #endif
 
@@ -111,19 +112,14 @@ public: // member functions
         GUIDE,
         NONE
     };
-
-    void SetMode(InteractionMode mode);
     InteractionMode GetMode() const;
-
     InteractionType GetInteractionType() const;
+    CoordinateSystem GetCoordinateSystem() const;
 
     AZ::Entity* GetActiveElement() const;
     const AZ::EntityId& GetActiveElementId() const;
 
     ViewportHelpers::SelectedAnchors GetGrabbedAnchors() const;
-
-    void SetCoordinateSystem(CoordinateSystem s);
-    CoordinateSystem GetCoordinateSystem() const;
 
     void InitializeToolbars();
 
@@ -175,6 +171,9 @@ public: // member functions
 private: // types
 
 private: // member functions
+
+    void UpdateInteractionMode();
+    void UpdateCoordinateSystem();
 
     //! Update the interaction type based on where the cursor is right now
     void UpdateInteractionType(const AZ::Vector2& mousePosition,
@@ -294,6 +293,7 @@ private: // data
     bool m_activeGuideIsVertical = false;
     int m_activeGuideIndex = 0;
 
+    AZ::SettingsRegistryInterface::NotifyEventHandler m_settingNotificationHandler;
     SerializeHelpers::SerializedEntryList m_selectedEntitiesUndoState;  //! This can be eliminated once the dragInteractions all use ViewportDragInteraction
 };
 

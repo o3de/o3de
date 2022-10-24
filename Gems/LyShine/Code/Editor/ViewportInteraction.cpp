@@ -13,91 +13,29 @@
 #include "AlignToolbarSection.h"
 #include "ViewportMoveInteraction.h"
 #include "ViewportMoveGuideInteraction.h"
+#include "LyShineEditorSettings.h"
 #include <LyShine/UiComponentTypes.h>
 #include <LyShine/Bus/UiEditorCanvasBus.h>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzQtComponents/Components/Widgets/ToolBar.h>
 
 #include <QKeyEvent>
 #include <QMouseEvent>
 #include <QToolButton>
 #include <QTextDocumentFragment>
-#include <QSettings>
 
 #include <Editor/Resource.h>
 #include <Editor/Util/EditorUtils.h>
 
-static const float g_elementEdgeForgiveness = 10.0f;
-
-// The square of the minimum corner-to-corner distance for an area selection
-static const float g_minAreaSelectionDistance2 = 100.0f;
-
-#define UICANVASEDITOR_SETTINGS_VIEWPORTINTERACTION_INTERACTION_MODE_KEY         "ViewportWidget::m_interactionMode"
-#define UICANVASEDITOR_SETTINGS_VIEWPORTINTERACTION_INTERACTION_MODE_DEFAULT     ( ViewportInteraction::InteractionMode::SELECTION )
-
-#define UICANVASEDITOR_SETTINGS_VIEWPORTINTERACTION_COORDINATE_SYSTEM_KEY         "ViewportWidget::m_coordinateSystem"
-#define UICANVASEDITOR_SETTINGS_VIEWPORTINTERACTION_COORDINATE_SYSTEM_DEFAULT     ( ViewportInteraction::CoordinateSystem::LOCAL )
-
-namespace
+namespace 
 {
-    const float defaultCanvasToViewportScaleIncrement = 0.20f;
+    constexpr float defaultCanvasToViewportScaleIncrement = 0.20f;
+    constexpr float g_elementEdgeForgiveness = 10.0f;
+    // The square of the minimum corner-to-corner distance for an area selection
+    constexpr float g_minAreaSelectionDistance2 = 100.0f;
+}
 
-    ViewportInteraction::InteractionMode PersistentGetInteractionMode()
-    {
-        QSettings settings(QSettings::IniFormat, QSettings::UserScope, AZ_QCOREAPPLICATION_SETTINGS_ORGANIZATION_NAME);
-
-        settings.beginGroup(UICANVASEDITOR_NAME_SHORT);
-
-        int defaultMode = static_cast<int>(UICANVASEDITOR_SETTINGS_VIEWPORTINTERACTION_INTERACTION_MODE_DEFAULT);
-        int result = settings.value(
-                UICANVASEDITOR_SETTINGS_VIEWPORTINTERACTION_INTERACTION_MODE_KEY,
-                defaultMode).toInt();
-
-        settings.endGroup();
-
-        return static_cast<ViewportInteraction::InteractionMode>(result);
-    }
-
-    void PersistentSetInteractionMode(ViewportInteraction::InteractionMode mode)
-    {
-        QSettings settings(QSettings::IniFormat, QSettings::UserScope, AZ_QCOREAPPLICATION_SETTINGS_ORGANIZATION_NAME);
-
-        settings.beginGroup(UICANVASEDITOR_NAME_SHORT);
-
-        settings.setValue(UICANVASEDITOR_SETTINGS_VIEWPORTINTERACTION_INTERACTION_MODE_KEY,
-            static_cast<int>(mode));
-
-        settings.endGroup();
-    }
-
-    ViewportInteraction::CoordinateSystem PersistentGetCoordinateSystem()
-    {
-        QSettings settings(QSettings::IniFormat, QSettings::UserScope, AZ_QCOREAPPLICATION_SETTINGS_ORGANIZATION_NAME);
-
-        settings.beginGroup(UICANVASEDITOR_NAME_SHORT);
-
-        int defaultSystem = static_cast<int>(UICANVASEDITOR_SETTINGS_VIEWPORTINTERACTION_COORDINATE_SYSTEM_DEFAULT);
-        int result = settings.value(
-                UICANVASEDITOR_SETTINGS_VIEWPORTINTERACTION_COORDINATE_SYSTEM_KEY,
-                defaultSystem).toInt();
-
-        settings.endGroup();
-
-        return static_cast<ViewportInteraction::CoordinateSystem>(result);
-    }
-
-    void PersistentSetCoordinateSystem(ViewportInteraction::CoordinateSystem coordinateSystem)
-    {
-        QSettings settings(QSettings::IniFormat, QSettings::UserScope, AZ_QCOREAPPLICATION_SETTINGS_ORGANIZATION_NAME);
-
-        settings.beginGroup(UICANVASEDITOR_NAME_SHORT);
-
-        settings.setValue(UICANVASEDITOR_SETTINGS_VIEWPORTINTERACTION_COORDINATE_SYSTEM_KEY,
-            static_cast<int>(coordinateSystem));
-
-        settings.endGroup();
-    }
-} // anonymous namespace.
 
 class ViewportInteractionExpanderWatcher
     : public QObject
@@ -164,9 +102,9 @@ ViewportInteraction::ViewportInteraction(EditorWindow* editorWindow)
     , m_activeElementId()
     , m_anchorWhole(new ViewportIcon("Editor/Icons/Viewport/Anchor_Whole.tif"))
     , m_pivotIcon(new ViewportIcon("Editor/Icons/Viewport/Pivot.tif"))
-    , m_interactionMode(PersistentGetInteractionMode())
+    , m_interactionMode(LyShine::GetInteractionMode())
     , m_interactionType(InteractionType::NONE)
-    , m_coordinateSystem(PersistentGetCoordinateSystem())
+    , m_coordinateSystem(LyShine::GetCoordinateSystem())
     , m_spaceBarIsActive(false)
     , m_leftButtonIsActive(false)
     , m_middleButtonIsActive(false)
@@ -191,6 +129,20 @@ ViewportInteraction::ViewportInteraction(EditorWindow* editorWindow)
     , m_dragInteraction(nullptr)
     , m_expanderWatcher(new ViewportInteractionExpanderWatcher(this))
 {
+    using AZ::SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual;
+    if (auto* registry = AZ::SettingsRegistry::Get())
+    {
+        m_settingNotificationHandler = registry->RegisterNotifier([&](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs) {
+            if (IsPathAncestorDescendantOrEqual(LyShine::InteractionModeSetting, notifyEventArgs.m_jsonKeyPath))
+            {
+                UpdateInteractionMode();
+            }
+            if (IsPathAncestorDescendantOrEqual(LyShine::CoordinateSystemSetting, notifyEventArgs.m_jsonKeyPath))
+            {
+                UpdateCoordinateSystem();
+            }
+        });
+    }
     m_cursorRotate = CMFCUtils::LoadCursor(IDC_POINTER_OBJECT_ROTATE);
 }
 
@@ -235,8 +187,9 @@ void ViewportInteraction::Nudge(NudgeDirection direction, NudgeSpeed speed)
 void ViewportInteraction::StartObjectPickMode()
 {
     // Temporarily set the viewport interaction mode to "Selection" and disable the toolbar
-    m_interactionModeBeforePickMode = GetMode();
-    SetMode(InteractionMode::SELECTION);
+    m_interactionModeBeforePickMode = LyShine::GetInteractionMode();
+    LyShine::SetInteractionMode(InteractionMode::SELECTION);
+    
     m_editorWindow->GetModeToolbar()->setEnabled(false);
 
     InvalidateHoverElement();
@@ -249,7 +202,7 @@ void ViewportInteraction::StopObjectPickMode()
     bool mousePressed = GetLeftButtonIsActive();
 
     m_editorWindow->GetModeToolbar()->setEnabled(true);
-    SetMode(m_interactionModeBeforePickMode);
+    LyShine::SetInteractionMode(m_interactionModeBeforePickMode);
 
     SetCursorStr("");
 
@@ -795,11 +748,10 @@ bool ViewportInteraction::KeyReleaseEvent(QKeyEvent* ev)
     return false;
 }
 
-void ViewportInteraction::SetMode(InteractionMode m)
+void ViewportInteraction::UpdateInteractionMode()
 {
     ClearInteraction();
-    m_interactionMode = m;
-    PersistentSetInteractionMode(m_interactionMode);
+    m_interactionMode = LyShine::GetInteractionMode();
     m_editorWindow->GetModeToolbar()->SetCheckedItem(static_cast<int>(m_interactionMode));
     m_editorWindow->GetModeToolbar()->GetAlignToolbarSection()->SetIsVisible(
         m_interactionMode == InteractionMode::MOVE || m_interactionMode == InteractionMode::ANCHOR);
@@ -807,20 +759,9 @@ void ViewportInteraction::SetMode(InteractionMode m)
     m_editorWindow->GetViewport()->Refresh();
 }
 
-ViewportInteraction::InteractionMode ViewportInteraction::GetMode() const
+void ViewportInteraction::UpdateCoordinateSystem()
 {
-    return m_interactionMode;
-}
-
-ViewportInteraction::InteractionType ViewportInteraction::GetInteractionType() const
-{
-    return m_interactionType;
-}
-
-void ViewportInteraction::SetCoordinateSystem(CoordinateSystem s)
-{
-    m_coordinateSystem = s;
-    PersistentSetCoordinateSystem(s);
+    m_coordinateSystem = LyShine::GetCoordinateSystem();
     m_editorWindow->GetCoordinateSystemToolbarSection()->SetCurrentIndex(static_cast<int>(m_coordinateSystem));
     m_editorWindow->GetViewport()->Refresh();
 }
@@ -829,6 +770,17 @@ ViewportInteraction::CoordinateSystem ViewportInteraction::GetCoordinateSystem()
 {
     return m_coordinateSystem;
 }
+
+ViewportInteraction::InteractionType ViewportInteraction::GetInteractionType() const
+{
+    return m_interactionType;
+}
+
+ViewportInteraction::InteractionMode ViewportInteraction::GetMode() const
+{
+    return m_interactionMode;
+}
+
 
 void ViewportInteraction::InitializeToolbars()
 {
