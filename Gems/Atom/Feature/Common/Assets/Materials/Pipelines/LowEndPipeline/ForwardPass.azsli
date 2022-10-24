@@ -26,7 +26,7 @@
 #include <Atom/Features/SrgSemantics.azsli>
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
 
-// TODO: It a future iteration, the material pipeline will support multiple lighting models instead of just one.
+// TODO: In a future iteration, the material pipeline will support multiple lighting models instead of just one.
 #include "../../../Shaders/Materials/BasePBR/BasePBR_SurfaceData.azsli"
 #include "../../../Shaders/Materials/BasePBR/BasePBR_LightingData.azsli"
 #include "../../../Shaders/Materials/BasePBR/BasePBR_LightingBrdf.azsli"
