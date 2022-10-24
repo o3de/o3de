@@ -195,7 +195,7 @@ namespace AssetProcessor
             // This item already exists, refresh the related data.
             productItemData->m_databaseInfo = product;
             CheckForUnresolvedIssues(productItemData);
-            
+
             QModelIndex existingIndexStart = createIndex(existingEntry->second->GetRow(), 0, existingEntry->second);
             QModelIndex existingIndexEnd = createIndex(existingEntry->second->GetRow(), existingEntry->second->GetColumnCount() - 1, existingEntry->second);
             Q_ASSERT(checkIndex(existingIndexStart));
@@ -270,6 +270,8 @@ namespace AssetProcessor
         {
             endInsertRows();
         }
+
+        m_root->ComputeTotalAssetCount();
     }
 
     void ProductAssetTreeModel::CheckForUnresolvedIssues(AZStd::shared_ptr<ProductAssetTreeItemData> productItemData)
