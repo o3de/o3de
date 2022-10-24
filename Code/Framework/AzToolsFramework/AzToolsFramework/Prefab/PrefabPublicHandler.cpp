@@ -229,36 +229,53 @@ namespace AzToolsFramework
                         "(A null instance is returned)."));
                 }
 
+                // Note that changes to the new template DOM do not require undo/redo support. In other words, an undo after this operation
+                // will not change the newly created template DOM. This helps keep in-memory template in sync with in-disk prefab.
+
                 newContainerEntityId = instanceToCreate->get().GetContainerEntityId();
+                AZ::Entity* newContainerEntity = GetEntityById(newContainerEntityId);
                 const TemplateId newInstanceTemplateId = instanceToCreate->get().GetTemplateId();
+                PrefabDom& newInstanceTemplateDom = m_prefabSystemComponentInterface->FindTemplateDom(newInstanceTemplateId);
+
+                // Update and patch the container entity DOM in template with new components.
+                PrefabDom newContainerEntityDomWithComponents(&(newInstanceTemplateDom.GetAllocator()));
+                m_instanceToTemplateInterface->GenerateDomForEntity(newContainerEntityDomWithComponents, *newContainerEntity);
+                PrefabDomPath newContainerEntityAliasDomPath(m_instanceToTemplateInterface->GenerateEntityAliasPath(newContainerEntityId).c_str());
+                newContainerEntityAliasDomPath.Set(newInstanceTemplateDom, newContainerEntityDomWithComponents.Move());
 
                 // Apply the correct transform to the container for the new instance, and store the patch for use when creating the link.
                 PrefabDom linkPatches = ApplyContainerTransformAndGeneratePatch(newContainerEntityId, commonRootEntityId,
                     containerEntityTranslation, containerEntityRotation);
 
+                // Capture the container entity DOM with parent data in transform.
+                // This DOM will be used later to generate patches for child sort update and they should not contain transform data differences.
+                PrefabDom newContainerEntityDomInitialStateWithTransform;
+                m_instanceToTemplateInterface->GenerateDomForEntity(newContainerEntityDomInitialStateWithTransform, *newContainerEntity);
+
                 // Parent the non-container top level entities to the new container entity.
-                // Parenting the top level container entities will be done during the creation of links.
+                // It also patches the entity DOMs to the new template without undo/redo support.
                 EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::SetForceAddEntitiesToBackFlag, true);
                 for (AZ::Entity* topLevelEntity : topLevelEntities)
                 {
-                    if (!IsInstanceContainerEntity(topLevelEntity->GetId()))
+                    const AZ::EntityId topLevelEntityId = topLevelEntity->GetId();
+
+                    // Note: Parenting the top level container entities will be done during the creation of links.
+                    if (!IsInstanceContainerEntity(topLevelEntityId))
                     {
-                        AZ::TransformBus::Event(topLevelEntity->GetId(), &AZ::TransformBus::Events::SetParent, newContainerEntityId);
+                        AZ::TransformBus::Event(topLevelEntityId, &AZ::TransformBus::Events::SetParent, newContainerEntityId);
+
+                        // Update the entity DOM with the latest transform data.
+                        PrefabDom topLevelContainerEntityDomWithParentInTransform(&(newInstanceTemplateDom.GetAllocator()));
+                        m_instanceToTemplateInterface->GenerateDomForEntity(
+                            topLevelContainerEntityDomWithParentInTransform, *topLevelEntity);
+
+                        PrefabDomPath entityAliasDomPath(m_instanceToTemplateInterface->GenerateEntityAliasPath(topLevelEntityId).c_str());
+                        entityAliasDomPath.Set(newInstanceTemplateDom, topLevelContainerEntityDomWithParentInTransform.Move());
                     }
                 }
                 EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::SetForceAddEntitiesToBackFlag, false);
 
-                // Update the template of the instance since the entities are modified since the template creation.
-                PrefabDom serializedInstance;
-                m_instanceToTemplateInterface->GenerateDomForInstance(serializedInstance, instanceToCreate->get());
-                if (!serializedInstance.IsObject())
-                {
-                    return AZ::Failure(AZStd::string("Could not update the new prefab template from the new instance. "
-                        "The serialized instance DOM is not a valid JSON object."));
-                }
-                m_prefabSystemComponentInterface->UpdatePrefabTemplate(newInstanceTemplateId, serializedInstance);
-
-                // Set up links between the created prefab instance and its nested instances.
+                // Set up links between the created prefab instance and its nested instances without undo/redo support.
                 instanceToCreate->get().GetNestedInstances([&](AZStd::unique_ptr<Instance>& nestedInstance) {
                     AZ_Assert(nestedInstance, "Invalid nested instance found in the new prefab created.");
 
@@ -303,13 +320,20 @@ namespace AzToolsFramework
                     }
                 });
 
-                // Update container entity in prefab template with new child information and reset transform information.
-                UpdateContainerEntityAndResetTransformInTemplate(newContainerEntityId);
+                // Patch the new template with child sort array update without undo/redo support.
+                PrefabDom newContainerEntityDomWithTransformAndChildSortOrder;
+                m_instanceToTemplateInterface->GenerateDomForEntity(newContainerEntityDomWithTransformAndChildSortOrder, *newContainerEntity);
 
-                // Create a link between the new prefab template and its parent template.
+                PrefabDom childSortOrderUpdatePatches;
+                m_instanceToTemplateInterface->GeneratePatch(childSortOrderUpdatePatches,
+                    newContainerEntityDomInitialStateWithTransform, newContainerEntityDomWithTransformAndChildSortOrder);
+                m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(childSortOrderUpdatePatches, newContainerEntityId);
+                m_instanceToTemplateInterface->PatchTemplate(childSortOrderUpdatePatches, newInstanceTemplateId);
+
+                // Create a link between the new prefab template and its parent template with undo/redo support.
                 CreateLink(instanceToCreate->get(), commonRootInstanceTemplateId, undoBatch.GetUndoBatch(), AZStd::move(linkPatches));
 
-                // Update common parent entity DOM with the new prefab instance as child.
+                // Update common parent entity DOM with the new prefab instance as child with undo/redo support.
                 PrefabDom commonRootEntityDomAfterCreatingPrefab;                
                 m_instanceToTemplateInterface->GenerateDomForEntity(commonRootEntityDomAfterCreatingPrefab, *commonRootEntity);
 
@@ -388,36 +412,6 @@ namespace AzToolsFramework
             m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(patch, containerEntityId);
 
             return AZStd::move(patch);
-        }
-
-        void PrefabPublicHandler::UpdateContainerEntityAndResetTransformInTemplate(const AZ::EntityId containerEntityId)
-        {
-            InstanceOptionalReference owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(containerEntityId);
-            AZ_Assert(owningInstance.has_value(), "PrefabPublicHandler::UpdateContainerEntityAndResetTransformInTemplate - "
-                "Could not find the owning instance of the container entity id.");
-
-            // Before updating we reset the transform data, so the transform data will be excluded in template.
-            AZ::EntityId parentEntityIdBeforeReset;
-            AZ::TransformBus::EventResult(parentEntityIdBeforeReset, containerEntityId, &AZ::TransformBus::Events::GetParentId);
-
-            AZ::Transform localTransformBeforeReset = AZ::Transform::CreateIdentity();
-            AZ::TransformBus::EventResult(localTransformBeforeReset, containerEntityId, &AZ::TransformBus::Events::GetLocalTM);
-
-            AZ::TransformBus::Event(containerEntityId, &AZ::TransformBus::Events::SetParent, AZ::EntityId());
-            AZ::TransformBus::Event(containerEntityId, &AZ::TransformBus::Events::SetLocalTM, AZ::Transform::CreateIdentity());
-
-            PrefabDom& owningTemplateDom = m_prefabSystemComponentInterface->FindTemplateDom(owningInstance->get().GetTemplateId());
-            PrefabDom containerEntityDomWithoutTransform(&(owningTemplateDom.GetAllocator()));
-            m_instanceToTemplateInterface->GenerateDomForEntity(
-                containerEntityDomWithoutTransform, *GetEntityById(containerEntityId));
-            PrefabDomPath entityAliasDomPath(m_instanceToTemplateInterface->GenerateEntityAliasPath(containerEntityId).c_str());
-
-            // Move the value to tempalte DOM and containerEntityDomWithoutTransform becomes null after the move.
-            entityAliasDomPath.Set(owningTemplateDom, containerEntityDomWithoutTransform.Move());
-
-            // Restore the transform data on object side.
-            AZ::TransformBus::Event(containerEntityId, &AZ::TransformBus::Events::SetParent, parentEntityIdBeforeReset);
-            AZ::TransformBus::Event(containerEntityId, &AZ::TransformBus::Events::SetLocalTM, localTransformBeforeReset);
         }
 
         InstantiatePrefabResult PrefabPublicHandler::InstantiatePrefab(

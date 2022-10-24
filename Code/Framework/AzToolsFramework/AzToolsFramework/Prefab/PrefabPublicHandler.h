@@ -130,13 +130,6 @@ namespace AzToolsFramework
             PrefabDom ApplyContainerTransformAndGeneratePatch(AZ::EntityId containerEntityId, AZ::EntityId parentEntityId,
                 const AZ::Vector3& translation, const AZ::Quaternion& rotation);
 
-            //! Updates container entity DOM in prefab template.
-            //! This function updates the owning template with a generated new container entity DOM from serialization that is
-            //! with reset transform information. It doesn't support undo/redo.
-            //! 
-            //! \param containerEntityId The entity id for the container entity that the function generates DOM from.
-            void UpdateContainerEntityAndResetTransformInTemplate(const AZ::EntityId containerEntityId);
-
             /**
              * Creates a link between the templates of an instance and its parent.
              * 
