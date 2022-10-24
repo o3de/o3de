@@ -7,7 +7,7 @@
  */
 
 // These setting used to be in ShaderQualityOptions.azsli as a basic/limited solution for multiple pipelines.
-// TODO, instead of UNIFIED_FORWARD_OUTPUT, fork ForwardPassOutput.azsli
+// TODO(MaterialPipeline), instead of UNIFIED_FORWARD_OUTPUT, fork ForwardPassOutput.azsli
 #define UNIFIED_FORWARD_OUTPUT          1
 #define FORCE_IBL_IN_FORWARD_PASS       1
 #define ENABLE_AREA_LIGHT_VALIDATION    0
@@ -26,7 +26,7 @@
 #include <Atom/Features/SrgSemantics.azsli>
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
 
-// TODO: In a future iteration, the material pipeline will support multiple lighting models instead of just one.
+// TODO(MaterialPipeline): In a future iteration, the material pipeline will support multiple lighting models instead of just one.
 #include "../../../Shaders/Materials/BasePBR/BasePBR_SurfaceData.azsli"
 #include "../../../Shaders/Materials/BasePBR/BasePBR_LightingData.azsli"
 #include "../../../Shaders/Materials/BasePBR/BasePBR_LightingBrdf.azsli"
@@ -74,7 +74,7 @@ class PixelGeometryData
     float3 positionWS;
     float3 vertexNormal;
 
-    // TODO: Material pipeline should eventually support a configurable number of UV streams 
+    // TODO(MaterialPipeline): Material pipeline should eventually support a configurable number of UV streams 
     float3 tangents[1];
     float3 bitangents[1];
 

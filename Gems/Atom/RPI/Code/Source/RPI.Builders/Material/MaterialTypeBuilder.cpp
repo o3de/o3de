@@ -360,7 +360,7 @@ namespace AZ
                 {
                     const AZStd::string materialPipelineName = materialPipelineFilePath.Stem().Native();
 
-                    // TODO: Eventually we'll use a script and inputs from the material type to decide which shader templates need to be used
+                    // TODO(MaterialPipeline): Eventually we'll use a script and inputs from the material type to decide which shader templates need to be used
                     for (const MaterialPipelineSourceData::ShaderTemplate& shaderTemplate : materialPipeline.m_shaderTemplates)
                     {
                         // We need to normalize the content of the ShaderTemplate structure since it will be used as the key in the map.
@@ -429,6 +429,8 @@ namespace AZ
                 }
                 else
                 {
+                    // AZ_Assert, not AZ_Error, because it shouldn't be possible to get here since the loop that filled
+                    // shaderTemplateReferences should always put at least one pipeline in the list.
                     AZ_Assert(false, "There should be at least one material pipeline referencing the shader");
                     return;
                 }
@@ -532,7 +534,7 @@ namespace AZ
             outputMaterialTypeFilePath /= AZStd::string::format("%s_generated.materialtype", materialTypeName.c_str());
 
             AZ_Assert(!materialType.IsAbstractFormat(),
-                "The output material type must not use the abstract format, this will likely causing the '%s' job to run in an infinite loop.", PipelineStageJobKey);
+                "The output material type must not use the abstract format, this will likely cause the '%s' job to run in an infinite loop.", PipelineStageJobKey);
 
             if (JsonUtils::SaveObjectToFile(outputMaterialTypeFilePath.String(), materialType))
             {

@@ -18,8 +18,7 @@
 // The actual vertex stage inputs and outputs will vary between shaders. If any of these fields isn't needed
 // by a given shader, then the material pipeline will initialize them to 0 and will not use them.
 // This way, the material type implementation of the callback function can read and set any of these values
-// without caring whether they are actually used. If the value is not used then any extra code will
-// by optimized-away by the shader compiler's dead-code-elimination.
+// without caring whether they are actually used.
 //
 // The content of this struct can be expanded as needed to support new material pipeline requirements.
 //
@@ -29,7 +28,7 @@
 // For example, the comment below about skipping bitangent is not ideal, as that makes some specialized assumptions.
 // It's a work in progress.
 //
-// TODO: There is a bit of complexity around how to expose and manipulate local space vs world space vectors.
+// TODO(MaterialPipeline): There is a bit of complexity around how to expose and manipulate local space vs world space vectors.
 //       We want to allow the material type to operate in either local space or world space without having to do
 //       repeated transformations which would be inefficient. There are a few ways we could accomplish this, but
 //       right now I'm thinking we might want to allow modification in two different phases with two different structs: 

@@ -40,7 +40,7 @@ namespace UnitTest
 
         AZ::ShaderBuilder::ShaderBuilderUtility::IncludedFilesParser includedFilesParser;
         auto fileList = includedFilesParser.ParseStringAndGetIncludedFiles(haystack);
-        //EXPECT_EQ(fileList.size(), 5);
+        EXPECT_EQ(fileList.size(), 7);
 
         auto it = AZStd::find(fileList.begin(), fileList.end(), "valid_file1.azsli");
         EXPECT_TRUE(it != fileList.end());
