@@ -661,7 +661,7 @@ namespace AzToolsFramework
                 }
             }
 
-            auto createPrefabOutcome = s_prefabPublicInterface->CreatePrefabInDisk(selectedEntities, prefabFilePath.data());
+            auto createPrefabOutcome = s_prefabPublicInterface->CreatePrefabAndSaveTemplateInDisk(selectedEntities, prefabFilePath.data());
 
             if (!createPrefabOutcome.IsSuccess())
             {

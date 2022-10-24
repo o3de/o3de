@@ -364,9 +364,9 @@ namespace AzToolsFramework
             return AZ::Success(newContainerEntityId);
         }
 
-        CreatePrefabResult PrefabPublicHandler::CreatePrefabInDisk(const EntityIdList& entityIds, AZ::IO::PathView filePath)
+        CreatePrefabResult PrefabPublicHandler::CreatePrefabAndSaveTemplateInDisk(const EntityIdList& entityIds, AZ::IO::PathView filePath)
         {
-            AZ_Assert(filePath.IsAbsolute(), "CreatePrefabInDisk requires an absolute file path.");
+            AZ_Assert(filePath.IsAbsolute(), "CreatePrefabAndSaveTemplateInDisk requires an absolute file path.");
 
             auto result = CreatePrefabInMemory(entityIds, filePath);
             if (result.IsSuccess())
@@ -377,9 +377,8 @@ namespace AzToolsFramework
                 if (!m_prefabLoaderInterface->SaveTemplateToFile(templateId, filePath))
                 {
                     AZStd::string_view filePathString(filePath);
-                    return AZ::Failure(AZStd::string::format(
-                        "Could not save the newly created prefab to file path %.*s - internal error ",
-                        AZ_STRING_ARG(filePathString)));
+                    return AZ::Failure(AZStd::string::format("CreatePrefabAndSaveTemplateInDisk - "
+                        "Could not save the newly created prefab to file path %.*s - internal error ", AZ_STRING_ARG(filePathString)));
                 }
             }
             
