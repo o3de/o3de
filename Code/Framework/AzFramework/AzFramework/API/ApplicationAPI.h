@@ -189,19 +189,36 @@ namespace AzFramework
         virtual void OnApplicationAboutToStop() {}
     };
 
-    class LevelSystemLifecycleRequests
+    class LevelLoadBlockerRequests
         : public AZ::EBusTraits
     {
     public:
-        // Bus Configuration
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
 
-        // Gives handlers the opportunity to block the loadlevel command.
-        // Return true to stop loading.
+        //! Gives handlers the opportunity to block the loadlevel command.
+        //! There can be multiple handlers for this bus; if any one of them return true the loadlevel command will be stopped.
+        //! @return Return true to stop loading.
         virtual bool ShouldBlockLevelLoading([[maybe_unused]]const char* levelName) { return false; }
     };
-    using LevelSystemLifecycleRequestBus = AZ::EBus<LevelSystemLifecycleRequests>;
+    using LevelLoadBlockerBus = AZ::EBus<LevelLoadBlockerRequests>;
+
+    class ILevelSystemLifecycle
+    {
+    public:
+        AZ_TYPE_INFO(ILevelSystemLifecycle, "{BDF3616A-4725-4B5D-AB71-34DFCDF9C5B0}");
+        virtual ~ILevelSystemLifecycle() = default;
+
+        //! Returns the name of the currently loaded level.
+        //! Note: for spawnable level system, this is the cache folder path to the level asset. Example: levels/mylevel/mylevel.spawnable
+        //! @return Level name or empty string if no level loaded.
+        virtual const char* GetCurrentLevelName() const = 0;
+
+        //! Checks if a level is loaded
+        //! @return true if a level is loaded; otherwise false.
+        virtual bool IsLevelLoaded() const = 0;
+    };
+    using LevelSystemLifecycleInterface = AZ::Interface<ILevelSystemLifecycle>;
 
     class LevelSystemLifecycleNotifications
         : public AZ::EBusTraits
