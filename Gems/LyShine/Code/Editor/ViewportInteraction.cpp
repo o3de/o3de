@@ -986,7 +986,7 @@ void ViewportInteraction::SetCanvasZoomPercent(float percent)
 void ViewportInteraction::SetCanvasToViewportScale(float newScale, Vec2i* optionalPivotPoint)
 {
     // only allow setting the viewport scale if current window is active
-    // OnTick for ViewportWidget is need to re-evaluate the layout but does not update if window loses focus
+    // OnTick for ViewportWidget is needed to reevaluate the layout, but does not happen when the window loses focus
     if (!m_editorWindow->isActiveWindow())
     {
         return;
