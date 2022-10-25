@@ -444,8 +444,8 @@ namespace AtomToolsFramework
             const AZStd::string& timeoutValue = commandLine.GetSwitchValue(timeoputSwitchName, 0);
             const uint32_t timeoutInMs = atoi(timeoutValue.c_str());
             AZ_Printf(m_targetName.c_str(), "Timeout scheduled, shutting down in %u ms", timeoutInMs);
-            QTimer::singleShot(timeoutInMs, this, [this]{
-                AZ_Printf(m_targetName.c_str(), "Timeout reached, shutting down");
+            QTimer::singleShot(timeoutInMs, this, [targetName = m_targetName]{
+                AZ_Printf(targetName.c_str(), "Timeout reached, shutting down");
                 AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
             });
         }
