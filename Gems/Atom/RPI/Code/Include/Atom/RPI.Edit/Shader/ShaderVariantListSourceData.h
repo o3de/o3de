@@ -45,6 +45,7 @@ namespace AZ
                 // Output register analysis data
                 // RGA did support DX12, but some how it couldn't build our hlsl
                 // So for now we only use vulkan offline mode
+                // To activate it, set EnableAnalysis to true in your shader variant in .shadervariantlist
                 bool m_enableRegisterAnalysis = false;
 
                 // The GPU target to use on register analysis

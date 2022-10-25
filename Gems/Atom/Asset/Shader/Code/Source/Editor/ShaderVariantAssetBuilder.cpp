@@ -1256,7 +1256,7 @@ namespace AZ
 
             if (timedOut)
             {
-                failMessage = AZStd::string("Rga takes too long to finish");
+                failMessage = AZStd::string("Rga execution timed out");
                 return false;
             }
 
