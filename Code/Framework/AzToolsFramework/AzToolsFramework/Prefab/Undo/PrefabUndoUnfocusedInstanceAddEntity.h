@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <Prefab/PrefabDomUtils.h>
-#include <Prefab/Undo/PrefabUndoUpdateLinkBase.h>
+#include <AzToolsFramework/Prefab/PrefabDomUtils.h>
+#include <AzToolsFramework/Prefab/Undo/PrefabUndoUpdateLinkBase.h>
 
 namespace AzToolsFramework
 {

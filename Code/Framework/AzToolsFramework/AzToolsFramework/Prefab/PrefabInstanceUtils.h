@@ -49,11 +49,11 @@ namespace AzToolsFramework
 
             //! Generates a relative path from a list of climbed instances.
             //! @param climbedInstances The list of climbed instances from bottom to top.
-            //! @param skipFirstClimbedInstance A flag to determine if returned path should include the first instance of climbedInstances.
+            //! @param skipTopClimbedInstance A flag to determine if returned path should include the top instance of climbedInstances.
             //! @return The relative path string.
             AZStd::string GetRelativePathFromClimbedInstances(
                 const AZStd::vector<const Instance*>& climbedInstances,
-                bool skipFirstClimbedInstance = false);
+                bool skipTopClimbedInstance = false);
 
             //! Checks if the child instance is a descendant of the parent instance.
             //! @param childInstance The given child instance.

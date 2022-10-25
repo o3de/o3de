@@ -8,8 +8,8 @@
 
 #pragma once
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
-#include <Prefab/Undo/PrefabUndoBase.h>
-#include <Prefab/Undo/PrefabUndoUpdateLinkBase.h>
+#include <AzToolsFramework/Prefab/Undo/PrefabUndoBase.h>
+#include <AzToolsFramework/Prefab/Undo/PrefabUndoUpdateLinkBase.h>
 
 //for link undo
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>

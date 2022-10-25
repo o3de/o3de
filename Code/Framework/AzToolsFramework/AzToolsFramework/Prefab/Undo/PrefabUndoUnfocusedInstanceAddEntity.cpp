@@ -9,8 +9,8 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzToolsFramework/Prefab/PrefabInstanceUtils.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
-#include <Prefab/Undo/PrefabUndoUnfocusedInstanceAddEntity.h>
-#include <Prefab/Undo/PrefabUndoUtils.h>
+#include <AzToolsFramework/Prefab/Undo/PrefabUndoUnfocusedInstanceAddEntity.h>
+#include <AzToolsFramework/Prefab/Undo/PrefabUndoUtils.h>
 
 namespace AzToolsFramework
 {
@@ -47,7 +47,7 @@ namespace AzToolsFramework
             AZ_Assert(climbUpResult.m_isTargetInstanceReached,
                 "Owning prefab instance should be owned by a descendant of the focused prefab instance.");
 
-            LinkId linkId = climbUpResult.m_climbedInstances.back()->GetLinkId();
+            const LinkId linkId = climbUpResult.m_climbedInstances.back()->GetLinkId();
             SetLink(linkId);
 
             const AZStd::string entityAliasPathPrefixForPatch =

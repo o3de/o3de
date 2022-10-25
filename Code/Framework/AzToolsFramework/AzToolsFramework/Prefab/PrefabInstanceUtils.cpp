@@ -73,15 +73,15 @@ namespace AzToolsFramework
             }
 
             AZStd::string GetRelativePathFromClimbedInstances(const AZStd::vector<const Instance*>& climbedInstances,
-                bool skipFirstClimbedInstance)
+                bool skipTopClimbedInstance)
             {
                 AZStd::string relativePath = "";
-                if (climbedInstances.empty() && skipFirstClimbedInstance)
+                if (climbedInstances.empty() && skipTopClimbedInstance)
                 {
                     return relativePath;
                 }
 
-                auto climbedInstancesBeginIter = skipFirstClimbedInstance ?
+                auto climbedInstancesBeginIter = skipTopClimbedInstance ?
                     ++climbedInstances.crbegin() : climbedInstances.crbegin();
                 for (auto instanceIter = climbedInstancesBeginIter; instanceIter != climbedInstances.crend(); ++instanceIter)
                 {

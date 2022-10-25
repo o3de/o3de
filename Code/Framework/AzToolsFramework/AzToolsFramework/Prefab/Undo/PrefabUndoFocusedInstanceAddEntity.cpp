@@ -8,8 +8,8 @@
 
 #include <AzCore/Interface/Interface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
-#include <Prefab/Undo/PrefabUndoFocusedInstanceAddEntity.h>
-#include <Prefab/Undo/PrefabUndoUtils.h>
+#include <AzToolsFramework/Prefab/Undo/PrefabUndoFocusedInstanceAddEntity.h>
+#include <AzToolsFramework/Prefab/Undo/PrefabUndoUtils.h>
 
 namespace AzToolsFramework
 {

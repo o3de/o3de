@@ -6,8 +6,8 @@
  *
  */
 
-#include <Prefab/PrefabDomUtils.h>
-#include <Prefab/Undo/PrefabUndo.h>
+#include <AzToolsFramework/Prefab/PrefabDomUtils.h>
+#include <AzToolsFramework/Prefab/Undo/PrefabUndo.h>
 
 namespace AzToolsFramework
 {
