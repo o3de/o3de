@@ -638,6 +638,7 @@ namespace EMStudio
 
         m_lockSelection = false;
 
+        UpdateSelectionArrays();
         UpdateAttributesForParameterWidgets();
         UpdateInterface();
     }
