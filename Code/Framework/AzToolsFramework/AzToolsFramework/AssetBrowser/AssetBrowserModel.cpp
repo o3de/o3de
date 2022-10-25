@@ -225,10 +225,46 @@ namespace AzToolsFramework
                 AssetBrowserEntry* item = static_cast<AssetBrowserEntry*>(index.internalPointer());
                 if (item && (item->RTTI_IsTypeOf(ProductAssetBrowserEntry::RTTI_Type()) || item->RTTI_IsTypeOf(SourceAssetBrowserEntry::RTTI_Type())))
                 {
-                    return Qt::ItemIsDragEnabled | defaultFlags;
+                    return Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | defaultFlags;
                 }
             }
-            return defaultFlags;
+            return Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | defaultFlags;
+        }
+
+        QStringList AssetBrowserModel::mimeTypes() const
+        {
+            QStringList list = QAbstractItemModel::mimeTypes();
+            list.append(AssetBrowserEntry::GetMimeType());
+            return list;
+        }
+
+        bool AssetBrowserModel::canDropMimeData(
+            const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) const
+        {
+            Q_UNUSED(data);
+            Q_UNUSED(action);
+            Q_UNUSED(row);
+            Q_UNUSED(column);
+            Q_UNUSED(parent);
+
+            return true;
+        }
+
+        bool AssetBrowserModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent)
+        {
+            if (!canDropMimeData(data, action, row, column, parent))
+                return false;
+
+            if (action == Qt::IgnoreAction)
+                return true;
+
+            return QAbstractItemModel::dropMimeData(data, action, row, column, parent);
+
+        }
+
+        Qt::DropActions AssetBrowserModel::supportedDropActions() const
+        {
+            return Qt::CopyAction | Qt::MoveAction;
         }
 
         QMimeData* AssetBrowserModel::mimeData(const QModelIndexList& indexes) const

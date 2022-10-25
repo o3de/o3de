@@ -59,7 +59,11 @@ namespace AzToolsFramework
             setSortingEnabled(true);
             setItemDelegate(m_delegate);
             header()->hide();
-
+            setSelectionMode(QAbstractItemView::ExtendedSelection);
+            setDragEnabled(true);
+            setAcceptDrops(true);
+            setDragDropMode(QAbstractItemView::DragDrop);
+            setDropIndicatorShown(true);
             setContextMenuPolicy(Qt::CustomContextMenu);
 
             setMouseTracking(true);
@@ -107,6 +111,12 @@ namespace AzToolsFramework
             AssetBrowserViewRequestBus::Handler::BusDisconnect();
             AssetBrowserComponentNotificationBus::Handler::BusDisconnect();
             AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
+        }
+
+        void AssetBrowserTreeView::dragEnterEvent(QDragEnterEvent* event)
+        {
+            // this is needed to actually reach the drop event function
+            event->acceptProposedAction();
         }
 
         void AssetBrowserTreeView::SetName(const QString& name)
