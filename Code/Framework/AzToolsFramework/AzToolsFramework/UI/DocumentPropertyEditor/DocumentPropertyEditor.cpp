@@ -156,7 +156,7 @@ namespace AzToolsFramework
 
         //! Treat all widgets in a shared column as one item.
         //! Sum all the widgets, but remove all shared widgets other than the first widget of each shared column.
-        int itemCount = count() - SharedWidgetCount() + static_cast<int>(m_sharePriorColumn.size());
+        const int itemCount = count() - SharedWidgetCount() + static_cast<int>(m_sharePriorColumn.size());
 
         if (itemCount > 0)
         {
