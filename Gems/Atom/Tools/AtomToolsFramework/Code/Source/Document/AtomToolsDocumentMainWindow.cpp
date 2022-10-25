@@ -377,7 +377,11 @@ namespace AtomToolsFramework
         // This should automatically clear the active document
         connect(m_tabWidget, &QTabWidget::currentChanged, this, [this]() {
             const AZ::Uuid documentId = GetCurrentDocumentId();
-            AtomToolsDocumentNotificationBus::Event(m_toolId,&AtomToolsDocumentNotificationBus::Events::OnDocumentOpened, documentId);
+            AtomToolsDocumentNotificationBus::Event(m_toolId, &AtomToolsDocumentNotificationBus::Events::OnDocumentOpened, documentId);
+            if (auto viewWidget = m_tabWidget->currentWidget())
+            {
+                viewWidget->setFocus();
+            }
         });
 
         connect(m_tabWidget, &QTabWidget::tabCloseRequested, this, [this]() {
@@ -500,9 +504,13 @@ namespace AtomToolsFramework
         // We are not blocking signals here because we want closing tabs to close the document and automatically select the next document.
         if (const int tabIndex = GetDocumentTabIndex(documentId); tabIndex >= 0)
         {
+            // removeTab does not destroy the widget contained in a tab. It must be manually deleted. 
+            auto viewWidget = m_tabWidget->widget(tabIndex);
             m_tabWidget->removeTab(tabIndex);
             m_tabWidget->setVisible(m_tabWidget->count() > 0);
             m_tabWidget->repaint();
+            delete viewWidget;
+
             QueueUpdateMenus(true);
         }
     }
@@ -652,7 +660,13 @@ namespace AtomToolsFramework
     {
         bool canClose = true;
         AtomToolsDocumentSystemRequestBus::EventResult(canClose, m_toolId, &AtomToolsDocumentSystemRequestBus::Events::CloseAllDocuments);
-        closeEvent->setAccepted(canClose);
+        if (!canClose)
+        {
+            closeEvent->ignore();
+            return;
+        }
+
+        closeEvent->accept();
         Base::closeEvent(closeEvent);
     }
 
