@@ -581,25 +581,13 @@ namespace GradientSignal
 
     void ImageGradientComponent::Get4x4Neighborhood(uint32_t x, uint32_t y, AZStd::array<AZStd::array<float, 4>, 4>& values) const
     {
-        values[0][0] = GetClampedValue(x - 1, y - 1);
-        values[1][0] = GetClampedValue(x + 0, y - 1);
-        values[2][0] = GetClampedValue(x + 1, y - 1);
-        values[3][0] = GetClampedValue(x + 2, y - 1);
-
-        values[0][1] = GetClampedValue(x - 1, y + 0);
-        values[1][1] = GetClampedValue(x + 0, y + 0);
-        values[2][1] = GetClampedValue(x + 1, y + 0);
-        values[3][1] = GetClampedValue(x + 2, y + 0);
-
-        values[0][2] = GetClampedValue(x - 1, y + 1);
-        values[1][2] = GetClampedValue(x + 0, y + 1);
-        values[2][2] = GetClampedValue(x + 1, y + 1);
-        values[3][2] = GetClampedValue(x + 2, y + 1);
-
-        values[0][3] = GetClampedValue(x - 1, y + 2);
-        values[1][3] = GetClampedValue(x + 0, y + 2);
-        values[2][3] = GetClampedValue(x + 1, y + 2);
-        values[3][3] = GetClampedValue(x + 2, y + 2);
+        for (int32_t yIndex = 0; yIndex < 4; ++yIndex)
+        {
+            for (int32_t xIndex = 0; xIndex < 4; ++xIndex)
+            {
+                values[xIndex][yIndex] = GetClampedValue(x + xIndex - 1, y + yIndex - 1);
+            }
+        }
     }
 
     float ImageGradientComponent::GetValueForSamplingType(SamplingType samplingType, AZ::u32 x0, AZ::u32 y0, float pixelX, float pixelY) const
