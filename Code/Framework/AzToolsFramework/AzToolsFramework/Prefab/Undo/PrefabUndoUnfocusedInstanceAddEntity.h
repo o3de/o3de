@@ -29,7 +29,8 @@ namespace AzToolsFramework
             explicit PrefabUndoUnfocusedInstanceAddEntity(const AZStd::string& undoOperationName);
 
             // The function help generate undo/redo patches for adding the a new entity under a target parent entity,
-            // where both entities are under the current focused prefab instance.
+            // where both entities are under the given owning prefab instance, and the owning instance is a descendant
+            // of the current focused instance.
             void Capture(
                 const AZ::Entity& parentEntity,
                 const AZ::Entity& newEntity,
