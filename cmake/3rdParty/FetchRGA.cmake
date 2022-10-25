@@ -6,12 +6,19 @@ message(STATUS "started FetchRGA")
 
 if (NOT FETCHED_RGA)
     include(FetchContent)
-    FetchContent_Declare(
-        RGA
-        URL https://github.com/GPUOpen-Tools/radeon_gpu_analyzer/releases/download/2.6.2/rga-windows-x64-2.6.2.zip
-        DOWNLOAD_EXTRACT_TIMESTAMP true
-    )
-
+    if (WIN32)
+        FetchContent_Declare(
+            RGA
+            URL https://github.com/GPUOpen-Tools/radeon_gpu_analyzer/releases/download/2.6.2/rga-windows-x64-2.6.2.zip
+            DOWNLOAD_EXTRACT_TIMESTAMP true
+        )
+    else()
+        FetchContent_Declare(
+            RGA
+            URL https://github.com/GPUOpen-Tools/radeon_gpu_analyzer/releases/download/2.6.2/rga-linux-2.6.2.tgz
+            DOWNLOAD_EXTRACT_TIMESTAMP true
+        )
+    endif()
     FetchContent_MakeAvailable(RGA)
     message("rga.exe will be stored in ${rga_SOURCE_DIR}")
 

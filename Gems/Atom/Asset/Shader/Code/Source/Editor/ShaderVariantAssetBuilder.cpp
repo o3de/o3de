@@ -64,7 +64,12 @@ namespace AZ
     namespace ShaderBuilder
     {
         static constexpr char ShaderVariantAssetBuilderName[] = "ShaderVariantAssetBuilder";
-        static constexpr char RgaExePath[] = "/_deps/rga-src/rga.exe";
+#ifdef _WIN32
+        static constexpr char RgaPath[] = "/_deps/rga-src/rga.exe";
+#else
+        static constexpr char RgaPath[] = "/_deps/rga-src/rga";
+#endif
+        
 
         //! Adds source file dependencies for every place a referenced file may appear, and detects if one of
         //! those possible paths resolves to the expected file.
@@ -1159,7 +1164,7 @@ namespace AZ
                     shaderVariantInfo.m_stableId,
                     shaderVariantInfo.m_asic.c_str());
 
-                AZStd::string command = AZStd::string::format("%s%s %s %s", projectBuildPath.c_str(), RgaExePath, rgaCommand.c_str(), spirvPath.c_str());
+                AZStd::string command = AZStd::string::format("%s%s %s %s", projectBuildPath.c_str(), RgaPath, rgaCommand.c_str(), spirvPath.c_str());
                 AZ_TracePrintf(ShaderVariantAssetBuilderName, "Rga command %s\n", command.c_str());
 
                 AZStd::vector<AZStd::string> fullCommand;
