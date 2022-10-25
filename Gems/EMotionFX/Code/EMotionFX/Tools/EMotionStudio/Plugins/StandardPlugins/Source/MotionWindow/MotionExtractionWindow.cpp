@@ -479,7 +479,7 @@ namespace EMStudio
             else
             {
                 auto curMotionRootExtractionData =
-                    firstMotionRootExtractionData? AZStd::make_shared<EMotionFX::RootMotionExtractionData>(*firstMotionRootExtractionData) : nullptr;
+                    firstMotionRootExtractionData ? AZStd::make_shared<EMotionFX::RootMotionExtractionData>(*firstMotionRootExtractionData) : nullptr;
                 curMotion->SetRootMotionExtractionData(curMotionRootExtractionData);
             }
             GetMainWindow()->GetFileManager()->SaveMotion(curMotion->GetID());
