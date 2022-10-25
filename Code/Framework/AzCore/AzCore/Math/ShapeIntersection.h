@@ -49,7 +49,7 @@ namespace AZ
         bool Overlaps(const Capsule& capsule, const Obb& obb);
         bool Overlaps(const Capsule& capsule, const Sphere& sphere);
         bool Overlaps(const Capsule& capsule, const Aabb& aabb);
-        bool Overlaps(const Capsule& aabb, const Aabb& capsule);
+        bool Overlaps(const Aabb& aabb, const Capsule& capsule);
         bool Overlaps(const Obb& obb1, const Obb& obb2);
         bool Overlaps(const Obb& obb, const Capsule& capsule);
         bool Overlaps(const Obb& obb, const Sphere& sphere);

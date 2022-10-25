@@ -161,14 +161,14 @@ namespace AZ
 
         AZ_MATH_INLINE bool Overlaps(const Frustum& frustum, const Sphere& sphere)
         {
-        for (Frustum::PlaneId planeId = Frustum::PlaneId::Near; planeId < Frustum::PlaneId::MAX; ++planeId)
-        {
-            if (frustum.GetPlane(planeId).GetPointDist(sphere.GetCenter()) + sphere.GetRadius() < 0.0f)
+            for (Frustum::PlaneId planeId = Frustum::PlaneId::Near; planeId < Frustum::PlaneId::MAX; ++planeId)
             {
-                return false;
+                if (frustum.GetPlane(planeId).GetPointDist(sphere.GetCenter()) + sphere.GetRadius() < 0.0f)
+                {
+                    return false;
+                }
             }
-        }
-        return true;
+            return true;
         }
 
         AZ_MATH_INLINE bool Overlaps(const Frustum& frustum, const Aabb& aabb)
@@ -267,11 +267,8 @@ namespace AZ
             const float segmentLengthSquared = capsuleSegment.Dot(capsuleSegment);
             const float rcpSegmentLengthSquared = 1.0f / segmentLengthSquared;
 
-            Vector3 segmentPoint1 = capsule.GetFirstHemisphereCenter();
-            Vector3 segmentPoint2 = capsule.GetSecondHemisphereCenter();
-
-            Vector3 clampedPoint1 = segmentPoint1.GetClamp(aabb.GetMin(), aabb.GetMax());
-            Vector3 clampedPoint2 = segmentPoint2.GetClamp(aabb.GetMin(), aabb.GetMax());
+            Vector3 clampedPoint1 = capsuleStart.GetClamp(aabb.GetMin(), aabb.GetMax());
+            Vector3 clampedPoint2 = capsuleEnd.GetClamp(aabb.GetMin(), aabb.GetMax());
 
             // Simplified from Intersect::ClosestPointSegment with certain parts pre-calculated, no need to return proportion.
             auto getClosestPointOnCapsule = [&](const Vector3& point) -> Vector3
