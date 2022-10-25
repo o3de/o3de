@@ -27,7 +27,6 @@ namespace AzToolsFramework
             Instance& owningInstance,
             Instance& focusedInstance)
         {
-            m_templateId = focusedInstance.GetTemplateId();
             const AZ::EntityId parentEntityId = parentEntity.GetId();
             const AZ::EntityId newEntityId = newEntity.GetId();
 

@@ -37,6 +37,7 @@ namespace AzToolsFramework
             m_link = m_prefabSystemComponentInterface->FindLink(linkId);
             AZ_Assert(m_link.has_value(), "Link with id '%llu' not found",
                 static_cast<AZ::u64>(linkId));
+            m_templateId = m_link->get().GetTargetTemplateId();
         }
 
         void PrefabUndoUpdateLinkBase::GenerateUndoUpdateLinkPatches(const PrefabDom& linkedInstancePatch)
