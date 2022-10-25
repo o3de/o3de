@@ -13,6 +13,7 @@
 #include <Atom/RPI.Public/MeshDrawPacket.h>
 #include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
 #include <Atom/Feature/Material/MaterialAssignment.h>
+#include <Atom/Feature/Material/MaterialAssignmentBus.h>
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
 #include <Atom/Feature/Mesh/ModelReloaderSystemInterface.h>
 #include <RayTracing/RayTracingFeatureProcessor.h>
@@ -31,6 +32,7 @@ namespace AZ
         class RayTracingFeatureProcessor;
 
         class ModelDataInstance
+            : public MaterialAssignmentNotificationBus::MultiHandler
         {
             friend class MeshFeatureProcessor;
             friend class MeshLoader;
@@ -88,7 +90,10 @@ namespace AZ
             void UpdateObjectSrg();
             bool MaterialRequiresForwardPassIblSpecular(Data::Instance<RPI::Material> material) const;
             void SetVisible(bool isVisible);
-            
+
+            // MaterialAssignmentNotificationBus overrides
+            void OnRebuildMaterialInstance() override;
+
             RPI::MeshDrawPacketLods m_drawPacketListsByLod;
 
             RPI::Cullable m_cullable;
