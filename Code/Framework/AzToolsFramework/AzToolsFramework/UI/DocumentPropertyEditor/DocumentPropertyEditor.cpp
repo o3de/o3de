@@ -156,7 +156,7 @@ namespace AzToolsFramework
 
         //! Treat all widgets in a shared column as one item.
         //! Sum all the widgets, but remove all shared widgets other than the first widget of each shared column.
-        int itemCount = count() - SharedWidgetCount() + (int)m_sharePriorColumn.size();
+        int itemCount = count() - SharedWidgetCount() + static_cast<int>(m_sharePriorColumn.size());
 
         if (itemCount > 0)
         {
@@ -198,7 +198,7 @@ namespace AzToolsFramework
                 if (sharedVectorIndex < m_sharePriorColumn.size() && layoutIndex == static_cast<int>(m_sharePriorColumn[sharedVectorIndex][0]))
                 {
                     QHBoxLayout* sharedColumnLayout = new QHBoxLayout;
-                    int numItems = m_sharePriorColumn[sharedVectorIndex].size();
+                    const int numItems = static_cast<int>(m_sharePriorColumn[sharedVectorIndex].size());
                     int sharedWidgetIndex = 0;
                     // values used to remember the alignment of each widget
                     bool startSpacer = false, endSpacer = false;
@@ -430,7 +430,7 @@ namespace AzToolsFramework
         int numWidgets = 0;
         for (int currentGroup = 0; currentGroup < m_sharePriorColumn.size(); currentGroup++)
         {
-            numWidgets = numWidgets + m_sharePriorColumn[currentGroup].size();
+            numWidgets = numWidgets + static_cast<int>(m_sharePriorColumn[currentGroup].size());
         }
         return numWidgets;
     }
