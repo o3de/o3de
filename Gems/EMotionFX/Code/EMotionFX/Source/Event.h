@@ -32,6 +32,9 @@ namespace EMotionFX
         AZ_CLASS_ALLOCATOR_DECL
 
         Event() = default;
+
+        Event(const Event& event);
+        Event(Event&& event);
         explicit Event(EventDataPtr&& data);
         explicit Event(EventDataSet&& datas);
         virtual ~Event() = default;
@@ -46,20 +49,14 @@ namespace EMotionFX
         void InsertEventData(size_t index, EventDataPtr&& newData);
 
         void SetEventDataChangeEvent(Event::EventDataChangeEvent::Handler& handler);
-    protected:
-        struct EventContainer {
-            EventContainer() = default;
-             
-            // event container is not copyable 
-            EventContainer(const EventContainer&) {}
-            EventContainer& operator=(const EventContainer&) {
-                return *this;
-            }
 
-            EventDataChangeEvent m_eventDatasChangeEvent;
-        };
+        Event& operator=(const Event& other);
+
+        Event& operator=(Event&& other);
+
+    protected:
 
         EventDataSet m_eventDatas;
-        EventContainer m_eventContainer;
+        EventDataChangeEvent m_eventDatasChangeEvent;
     };
 } // end namespace EMotionFX

@@ -59,6 +59,8 @@ namespace EMotionFX
         AZ_CLASS_ALLOCATOR_DECL
 
         MotionEvent();
+        MotionEvent(const MotionEvent& event);
+        MotionEvent(MotionEvent&& event);
 
         /**
          * Creates a tick event
@@ -95,6 +97,10 @@ namespace EMotionFX
          * @param data The list of values to emit when the event is triggered
          */
         MotionEvent(float startTimeValue, float endTimeValue, EventDataSet&& datas);
+
+        MotionEvent& operator=(const MotionEvent& other);
+        
+        MotionEvent& operator=(MotionEvent&& other);
 
         static void Reflect(AZ::ReflectContext* context);
 

@@ -16,6 +16,17 @@ namespace EMotionFX
 {
     AZ_CLASS_ALLOCATOR_IMPL(Event, MotionEventAllocator, 0)
 
+    Event::Event(const Event& data)
+        : m_eventDatas(data.m_eventDatas)
+    {
+    }
+
+    Event::Event(Event&& event)
+        : m_eventDatas(AZStd::move(event.m_eventDatas)),
+          m_eventDatasChangeEvent(AZStd::move(event.m_eventDatasChangeEvent))
+    {
+    }
+
     Event::Event(EventDataPtr&& data)
         : m_eventDatas{ AZStd::move(data) }
     {
@@ -24,6 +35,18 @@ namespace EMotionFX
     Event::Event(EventDataSet&& datas)
         : m_eventDatas(AZStd::move(datas))
     {
+    }
+    
+    Event& Event::operator=(const Event& other) 
+    {
+        m_eventDatas = other.m_eventDatas;
+        return *this;
+    }
+
+    Event& Event::operator=(Event&& other) 
+    {
+        m_eventDatas = AZStd::move(other.m_eventDatas);
+        return *this;
     }
 
     void Event::Reflect(AZ::ReflectContext* context)
@@ -65,30 +88,30 @@ namespace EMotionFX
     void Event::AppendEventData(EventDataPtr&& newData)
     {
         m_eventDatas.emplace_back(AZStd::move(newData));
-        m_eventContainer.m_eventDatasChangeEvent.Signal();
+        m_eventDatasChangeEvent.Signal();
     }
 
     void Event::RemoveEventData(size_t index)
     {
         m_eventDatas.erase(AZStd::next(m_eventDatas.begin(), index));
-        m_eventContainer.m_eventDatasChangeEvent.Signal();
+        m_eventDatasChangeEvent.Signal();
     }
 
     void Event::SetEventData(size_t index, EventDataPtr&& newData)
     {
         m_eventDatas[index] = AZStd::move(newData);
-        m_eventContainer.m_eventDatasChangeEvent.Signal();
+        m_eventDatasChangeEvent.Signal();
     }
 
     void Event::InsertEventData(size_t index, EventDataPtr&& newData)
     {
         m_eventDatas.emplace(AZStd::next(m_eventDatas.begin(), index), AZStd::move(newData));
-        m_eventContainer.m_eventDatasChangeEvent.Signal();
+        m_eventDatasChangeEvent.Signal();
     }
 
     void Event::SetEventDataChangeEvent(Event::EventDataChangeEvent::Handler& handler)
     {
-        handler.Connect(m_eventContainer.m_eventDatasChangeEvent);
+        handler.Connect(m_eventDatasChangeEvent);
     }
 
 } // end namespace EMotionFX

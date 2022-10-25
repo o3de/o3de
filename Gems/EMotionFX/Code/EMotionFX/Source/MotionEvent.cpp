@@ -30,6 +30,23 @@ namespace EMotionFX
     {
     }
 
+    MotionEvent::MotionEvent(const MotionEvent& event):
+        Event(event),
+        m_startTime(event.m_startTime),
+        m_endTime(event.m_endTime),
+        m_isSyncEvent(event.m_isSyncEvent)
+    {
+
+    }
+    MotionEvent::MotionEvent(MotionEvent&& event):
+        Event(event),
+        m_startTime(event.m_startTime),
+        m_endTime(event.m_endTime),
+        m_isSyncEvent(event.m_isSyncEvent)
+    {
+        
+    }
+
     MotionEvent::MotionEvent(float timeValue, EventDataPtr&& data)
         : Event(AZStd::move(data))
         , m_startTime(timeValue)
@@ -60,6 +77,24 @@ namespace EMotionFX
         , m_endTime(endTimeValue)
         , m_isSyncEvent(false)
     {
+    }
+
+    MotionEvent& MotionEvent::operator=(const MotionEvent& other)
+    {
+        Event::operator=(other);
+        m_startTime = other.m_startTime;
+        m_endTime = other.m_endTime;
+        m_isSyncEvent = other.m_isSyncEvent;
+        return *this;
+    }
+
+    MotionEvent& MotionEvent::operator=(MotionEvent&& other)
+    {
+        Event::operator=(other);
+        m_startTime = other.m_startTime;
+        m_endTime = other.m_endTime;
+        m_isSyncEvent = other.m_isSyncEvent;
+        return *this;
     }
 
     void MotionEvent::Reflect(AZ::ReflectContext* context)

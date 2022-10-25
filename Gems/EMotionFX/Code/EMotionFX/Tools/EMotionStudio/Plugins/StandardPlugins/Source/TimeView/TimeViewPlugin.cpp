@@ -243,13 +243,13 @@ namespace EMStudio
         // Create the motion event properties widget.
         m_motionEventWidget = new MotionEventWidget();
         m_motionEventWidget->hide();
-        connect(m_motionEventWidget, &MotionEventWidget::eventDataChanged, this, &TimeViewPlugin::onRefreshSelection);
-        connect(this, &TimeViewPlugin::SelectionChanged, this, &TimeViewPlugin::onRefreshSelection);
+        connect(m_motionEventWidget, &MotionEventWidget::eventDataChanged, this, &TimeViewPlugin::OnRefreshSelection);
+        connect(this, &TimeViewPlugin::SelectionChanged, this, &TimeViewPlugin::OnRefreshSelection);
 
         return true;
     }
 
-    void TimeViewPlugin::onRefreshSelection()
+    void TimeViewPlugin::OnRefreshSelection()
     {
         if (!m_motionEventWidget)
         {
