@@ -13,12 +13,12 @@
 
 namespace LyShine
 {
-    static constexpr AZStd::string_view InteractionModeSetting = "/O3DE/Preferences/Editor/LyShine/InteractionMode";
-    static constexpr AZStd::string_view CoordinateSystemSetting = "/O3DE/Preferences/Editor/LyShine/CoordinateSystem";
-    
+    inline constexpr AZStd::string_view InteractionModeSetting = "/O3DE/Preferences/Editor/LyShine/InteractionMode";
+    inline constexpr AZStd::string_view CoordinateSystemSetting = "/O3DE/Preferences/Editor/LyShine/CoordinateSystem";
+
     ViewportInteraction::InteractionMode GetInteractionMode();
     void SetInteractionMode(ViewportInteraction::InteractionMode mode);
 
     ViewportInteraction::CoordinateSystem GetCoordinateSystem();
     void SetCoordinateSystem(ViewportInteraction::CoordinateSystem length);
-}
+} // namespace LyShine

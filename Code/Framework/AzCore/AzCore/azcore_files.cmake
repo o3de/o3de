@@ -619,6 +619,7 @@ set(FILES
     Settings/SettingsRegistryOriginTracker.h
     Settings/SettingsRegistryScriptUtils.cpp
     Settings/SettingsRegistryScriptUtils.h
+    Settings/SettingRegisteryUtility.h
     Settings/SettingsRegistryVisitorUtils.cpp
     Settings/SettingsRegistryVisitorUtils.h
     Slice/SliceAsset.cpp

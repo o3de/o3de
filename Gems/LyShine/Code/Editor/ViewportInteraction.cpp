@@ -132,16 +132,18 @@ ViewportInteraction::ViewportInteraction(EditorWindow* editorWindow)
     using AZ::SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual;
     if (auto* registry = AZ::SettingsRegistry::Get())
     {
-        m_settingNotificationHandler = registry->RegisterNotifier([&](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs) {
-            if (IsPathAncestorDescendantOrEqual(LyShine::InteractionModeSetting, notifyEventArgs.m_jsonKeyPath))
+        m_settingNotificationHandler = registry->RegisterNotifier(
+            [&](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
             {
-                UpdateInteractionMode();
-            }
-            if (IsPathAncestorDescendantOrEqual(LyShine::CoordinateSystemSetting, notifyEventArgs.m_jsonKeyPath))
-            {
-                UpdateCoordinateSystem();
-            }
-        });
+                if (IsPathAncestorDescendantOrEqual(LyShine::InteractionModeSetting, notifyEventArgs.m_jsonKeyPath))
+                {
+                    UpdateInteractionMode();
+                }
+                if (IsPathAncestorDescendantOrEqual(LyShine::CoordinateSystemSetting, notifyEventArgs.m_jsonKeyPath))
+                {
+                    UpdateCoordinateSystem();
+                }
+            });
     }
     m_cursorRotate = CMFCUtils::LoadCursor(IDC_POINTER_OBJECT_ROTATE);
 }
