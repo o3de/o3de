@@ -35,12 +35,6 @@ namespace AzToolsFramework
                 const AZ::Entity& newEntity,
                 Instance& owningInstance,
                 Instance& focusedInstance);
-
-        private:
-            void GeneratePatchesForUpdateParentEntity(
-                PrefabDom& parentEntityDomAfterAddingEntity,
-                const AZStd::string& parentEntityAliasPathForPatches,
-                const AZStd::string& parentEntityAliasPathInFocusedTemplate);
         };
     }
 }

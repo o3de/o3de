@@ -31,52 +31,61 @@ namespace AzToolsFramework
             const AZ::EntityId parentEntityId = parentEntity.GetId();
             const AZ::EntityId newEntityId = newEntity.GetId();
 
-            AZStd::string parentEntityAliasPath =
+            const AZStd::string parentEntityAliasPath =
                 m_instanceToTemplateInterface->GenerateEntityAliasPath(parentEntityId);
             AZ_Assert(!parentEntityAliasPath.empty(),
                 "Alias path of parent entity with id '%llu' shouldn't be empty.",
                 static_cast<AZ::u64>(parentEntityId));
 
-            AZStd::string newEntityAliasPath =
+            const AZStd::string newEntityAliasPath =
                 m_instanceToTemplateInterface->GenerateEntityAliasPath(newEntityId);
             AZ_Assert(!newEntityAliasPath.empty(),
                 "Alias path of new entity with id '%llu' shouldn't be empty.",
                 static_cast<AZ::u64>(newEntityId));
 
-            // Paths
             InstanceClimbUpResult climbUpResult =
                 PrefabInstanceUtils::ClimbUpToTargetOrRootInstance(owningInstance, &focusedInstance);
             AZ_Assert(climbUpResult.m_isTargetInstanceReached,
                 "Owning prefab instance should be owned by a descendant of the focused prefab instance.");
 
             LinkId linkId = climbUpResult.m_climbedInstances.back()->GetLinkId();
-            m_link = m_prefabSystemComponentInterface->FindLink(linkId);
-            AZ_Assert(m_link.has_value(), "Link with id '%llu' not found",
-                static_cast<AZ::u64>(linkId));
+            SetLink(linkId);
 
-            const AZStd::string entityAliasPathPrefixForPatches =
+            const AZStd::string entityAliasPathPrefixForPatch =
                 PrefabInstanceUtils::GetRelativePathFromClimbedInstances(climbUpResult.m_climbedInstances, true);
 
-            const AZStd::string parentEntityAliasPathForPatches =
-                entityAliasPathPrefixForPatches + parentEntityAliasPath;
-
-            const AZStd::string newEntityAliasPathForPatches =
-                entityAliasPathPrefixForPatches + newEntityAliasPath;
+            const AZStd::string parentEntityAliasPathForPatch =
+                entityAliasPathPrefixForPatch + parentEntityAliasPath;
 
             const AZStd::string parentEntityAliasPathInFocusedTemplate =
                 PrefabDomUtils::PathStartingWithInstances +
                 climbUpResult.m_climbedInstances.back()->GetInstanceAlias() +
-                parentEntityAliasPathForPatches;
+                parentEntityAliasPathForPatch;
 
             PrefabDom parentEntityDomAfterAddingEntity;
             m_instanceToTemplateInterface->GenerateDomForEntity(parentEntityDomAfterAddingEntity, parentEntity);
-            GeneratePatchesForUpdateParentEntity(parentEntityDomAfterAddingEntity,
-                parentEntityAliasPathForPatches,
-                parentEntityAliasPathInFocusedTemplate);
+
+            PrefabDom& focusedTemplateDom =
+                m_prefabSystemComponentInterface->FindTemplateDom(m_templateId);
+            PrefabDomPath entityPathInFocusedTemplate(parentEntityAliasPathInFocusedTemplate.c_str());
+            // This scope is added to limit their usage and ensure DOM is not modified when it is being used.
+            {
+                // DOM value pointers can't be relied upon if the original DOM gets modified after pointer creation.
+                const PrefabDomValue* parentEntityDomInFocusedTemplate = entityPathInFocusedTemplate.Get(focusedTemplateDom);
+                AZ_Assert(parentEntityDomInFocusedTemplate,
+                    "Could not load parent entity's DOM from the focused template's DOM. "
+                    "Focused template id: '%llu'.", static_cast<AZ::u64>(m_templateId));
+
+                PrefabUndoUtils::GenerateUpdateEntityPatch(m_redoPatch,
+                    *parentEntityDomInFocusedTemplate, parentEntityDomAfterAddingEntity, parentEntityAliasPathForPatch);
+            }
+
+            const AZStd::string newEntityAliasPathForPatch =
+                entityAliasPathPrefixForPatch + newEntityAliasPath;
 
             PrefabDom newEntityDom;
             m_instanceToTemplateInterface->GenerateDomForEntity(newEntityDom, newEntity);
-            PrefabUndoUtils::GenerateAddEntityPatch(m_redoPatch, newEntityDom, newEntityAliasPathForPatches);
+            PrefabUndoUtils::GenerateAddEntityPatch(m_redoPatch, newEntityDom, newEntityAliasPathForPatch);
 
             GenerateUndoUpdateLinkPatches(m_redoPatch);
             
@@ -89,32 +98,6 @@ namespace AzToolsFramework
                 PrefabUndoUtils::UpdateCachedOwningInstanceDom(cachedOwningInstanceDom,
                     newEntityDom, newEntityAliasPath);
             }
-        }
-
-        void PrefabUndoUnfocusedInstanceAddEntity::GeneratePatchesForUpdateParentEntity(
-            PrefabDom& parentEntityDomAfterAddingEntity,
-            const AZStd::string& parentEntityAliasPathForPatches,
-            const AZStd::string& parentEntityAliasPathInFocusedTemplate)
-        {
-            PrefabDom& focusedTemplateDom =
-                m_prefabSystemComponentInterface->FindTemplateDom(m_templateId);
-
-            PrefabDomPath entityPathInFocusedTemplate(parentEntityAliasPathInFocusedTemplate.c_str());
-
-            // This scope is added to limit their usage and ensure DOM is not modified when it is being used.
-            {
-                // DOM value pointers can't be relied upon if the original DOM gets modified after pointer creation.
-                const PrefabDomValue* parentEntityDomInFocusedTemplate = entityPathInFocusedTemplate.Get(focusedTemplateDom);
-                AZ_Assert(parentEntityDomInFocusedTemplate,
-                    "Could not load parent entity's DOM from the focused template's DOM. "
-                    "Focused template id: '%llu'.", static_cast<AZ::u64>(m_templateId));
-
-                m_instanceToTemplateInterface->GeneratePatch(m_redoPatch,
-                    *parentEntityDomInFocusedTemplate, parentEntityDomAfterAddingEntity);
-            }
-
-            m_instanceToTemplateInterface->AppendEntityAliasPathToPatchPaths(m_redoPatch,
-                parentEntityAliasPathForPatches);
         }
     }
 }

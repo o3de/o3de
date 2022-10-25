@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/std/string/string.h>
 #include <AzToolsFramework/Prefab/PrefabDomTypes.h>
 
 namespace AzToolsFramework
@@ -24,6 +25,12 @@ namespace AzToolsFramework
             void GenerateRemoveEntityPatch(
                 PrefabDom& patch,
                 const AZStd::string& targetEntityAliasPath);
+
+            void GenerateUpdateEntityPatch(
+                PrefabDom& patch,
+                const PrefabDomValue& entityDomBeforeUpdate,
+                const PrefabDomValue& entityDomAfterUpdate,
+                const AZStd::string& entityAliasPathForPatches);
 
             void UpdateCachedOwningInstanceDom(
                 PrefabDomReference cachedOwningInstanceDom,

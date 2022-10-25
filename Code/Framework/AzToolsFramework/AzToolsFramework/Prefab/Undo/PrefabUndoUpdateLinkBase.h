@@ -31,6 +31,7 @@ namespace AzToolsFramework
             void Redo() override;
 
         protected:
+            void SetLink(LinkId linkId);
             void GenerateUndoUpdateLinkPatches(PrefabDom& linkedInstancePatch);
             void UpdateLink(PrefabDom& linkDom);
 

@@ -32,6 +32,13 @@ namespace AzToolsFramework
             UpdateLink(m_redoPatch);
         }
 
+        void PrefabUndoUpdateLinkBase::SetLink(LinkId linkId)
+        {
+            m_link = m_prefabSystemComponentInterface->FindLink(linkId);
+            AZ_Assert(m_link.has_value(), "Link with id '%llu' not found",
+                static_cast<AZ::u64>(linkId));
+        }
+
         void PrefabUndoUpdateLinkBase::GenerateUndoUpdateLinkPatches(PrefabDom& linkedInstancePatch)
         {
             AZ_Assert(m_link.has_value(), "Link not found");

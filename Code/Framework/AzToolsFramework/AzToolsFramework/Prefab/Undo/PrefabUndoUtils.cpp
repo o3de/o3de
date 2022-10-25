@@ -6,6 +6,8 @@
  *
  */
 
+#include <AzCore/Interface/Interface.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceToTemplateInterface.h>
 #include <Prefab/Undo/PrefabUndoUtils.h>
 
 namespace AzToolsFramework
@@ -19,6 +21,8 @@ namespace AzToolsFramework
                 PrefabDom& newEntityDom,
                 const AZStd::string& newEntityAliasPath)
             {
+                AZ_Assert(patch.IsArray(), "Provided patch should be an array object DOM value.");
+
                 PrefabDomValue addNewEntityPatch(rapidjson::kObjectType);
                 rapidjson::Value path = rapidjson::Value(newEntityAliasPath.data(),
                     aznumeric_caster(newEntityAliasPath.length()), patch.GetAllocator());
@@ -54,6 +58,22 @@ namespace AzToolsFramework
 
                 // Update the cached instance DOM corresponding to the entity so that the same modified entity isn't reloaded again.
                 entityPathInDom.Set(cachedOwningInstanceDom->get(), AZStd::move(endStateCopy));
+            }
+
+            void GenerateUpdateEntityPatch(
+                PrefabDom& patch,
+                const PrefabDomValue& entityDomBeforeUpdate,
+                const PrefabDomValue& entityDomAfterUpdate,
+                const AZStd::string& entityAliasPathForPatches)
+            {
+                auto instanceToTemplateInterface = AZ::Interface<InstanceToTemplateInterface>::Get();
+                AZ_Assert(instanceToTemplateInterface, "Could not get InstanceToTemplateInterface.");
+
+                instanceToTemplateInterface->GeneratePatch(patch,
+                    entityDomBeforeUpdate, entityDomAfterUpdate);
+
+                instanceToTemplateInterface->AppendEntityAliasPathToPatchPaths(patch,
+                    entityAliasPathForPatches);
             }
         } // namespace PrefabUndoUtils
     } // namespace Prefab

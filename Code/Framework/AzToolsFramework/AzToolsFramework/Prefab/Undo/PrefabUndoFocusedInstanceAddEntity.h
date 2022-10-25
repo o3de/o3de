@@ -36,12 +36,6 @@ namespace AzToolsFramework
                 Instance& focusedInstance);
 
         private:
-            void GeneratePatchesForUpdateParentEntity(
-                PrefabDom& parentEntityDomAfterAddingEntity,
-                const AZStd::string& parentEntityAliasPath);
-
-            LinkReference m_link = AZStd::nullopt;
-            InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
         };
     }
