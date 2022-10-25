@@ -39,7 +39,7 @@ namespace AzToolsFramework
                 static_cast<AZ::u64>(linkId));
         }
 
-        void PrefabUndoUpdateLinkBase::GenerateUndoUpdateLinkPatches(PrefabDom& linkedInstancePatch)
+        void PrefabUndoUpdateLinkBase::GenerateUndoUpdateLinkPatches(const PrefabDom& linkedInstancePatch)
         {
             AZ_Assert(m_link.has_value(), "Link not found");
 
@@ -92,7 +92,7 @@ namespace AzToolsFramework
             }
         }
 
-        void PrefabUndoUpdateLinkBase::UpdateLink(PrefabDom& linkDom)
+        void PrefabUndoUpdateLinkBase::UpdateLink(const PrefabDom& linkDom)
         {
             AZ_Assert(m_link.has_value(), "Link not found");
 

@@ -273,108 +273,24 @@ namespace AzToolsFramework
             const PrefabDom& patch,
             const LinkId linkId)
         {
-            m_linkId = linkId;
-
-            //acquire link and existing values
-            LinkReference link = m_prefabSystemComponentInterface->FindLink(m_linkId);
-            if (link == AZStd::nullopt)
-            {
-                AZ_Error("Prefab", false, "PrefabUndoLinkUpdate: Link not found");
-                return;
-            }
-
-            if (link.has_value())
-            {
-                m_linkDomPrevious.CopyFrom(link->get().GetLinkDom(), m_linkDomPrevious.GetAllocator());
-            }
-
-            //get source templateDom
-            TemplateReference sourceTemplate = m_prefabSystemComponentInterface->FindTemplate(link->get().GetSourceTemplateId());
-
-            if (sourceTemplate == AZStd::nullopt)
-            {
-                AZ_Error("Prefab", false, "PrefabUndoLinkUpdate: Source template not found");
-                return;
-            }
-
-            PrefabDom& sourceDom = sourceTemplate->get().GetPrefabDom();
-
-            //use instance pointer to reach position
-            PrefabDomValueReference instanceDomRef = link->get().GetLinkedInstanceDom();
-
-            //copy the target instance the link is pointing to
-            PrefabDom instanceDom;
-            instanceDom.CopyFrom(instanceDomRef->get(), instanceDom.GetAllocator());
-
-            //apply the patch to the template within the target
-            [[maybe_unused]] AZ::JsonSerializationResult::ResultCode result = PrefabDomUtils::ApplyPatches(instanceDom, instanceDom.GetAllocator(), patch);
-
-            AZ_Warning(
-                "Prefab",
-                (result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::Skipped) &&
-                (result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::PartialSkip),
-                "Some of the patches are not successfully applied:\n%s.", PrefabDomUtils::PrefabDomValueToString(patch).c_str());
-
-            // Remove the link ids if present in the doms. We don't want any overrides to be created on top of linkIds because
-            // linkIds are not persistent and will be created dynamically when prefabs are loaded into the editor.
-            instanceDom.RemoveMember(PrefabDomUtils::LinkIdName);
-            sourceDom.RemoveMember(PrefabDomUtils::LinkIdName);
-
-            //we use this to diff our copy against the vanilla template (source template)
-            PrefabDom patchLink;
-            m_instanceToTemplateInterface->GeneratePatch(patchLink, sourceDom, instanceDom);
-
-            // Create a copy of patchLink by providing the allocator of m_linkDomNext so that the patch doesn't become invalid when
-            // the patch goes out of scope in this function.
-            PrefabDom patchLinkCopy;
-            patchLinkCopy.CopyFrom(patchLink, m_linkDomNext.GetAllocator());
-
-            m_linkDomNext.CopyFrom(m_linkDomPrevious, m_linkDomNext.GetAllocator());
-            auto patchesIter = m_linkDomNext.FindMember(PrefabDomUtils::PatchesName);
-
-            if (patchesIter == m_linkDomNext.MemberEnd())
-            {
-                m_linkDomNext.AddMember(
-                    rapidjson::GenericStringRef(PrefabDomUtils::PatchesName), AZStd::move(patchLinkCopy), m_linkDomNext.GetAllocator());
-            }
-            else
-            {
-                patchesIter->value = AZStd::move(patchLinkCopy.GetArray());
-            }
-        }
-
-        void PrefabUndoLinkUpdate::Undo()
-        {
-            UpdateLink(m_linkDomPrevious);
-        }
-
-        void PrefabUndoLinkUpdate::Redo()
-        {
-            UpdateLink(m_linkDomNext);
+            SetLink(linkId);
+            GenerateUndoUpdateLinkPatches(patch);
         }
 
         void PrefabUndoLinkUpdate::Redo(InstanceOptionalConstReference instanceToExclude)
         {
-            UpdateLink(m_linkDomNext, instanceToExclude);
+            UpdateLink(m_redoPatch, instanceToExclude);
         }
 
         void PrefabUndoLinkUpdate::UpdateLink(PrefabDom& linkDom, InstanceOptionalConstReference instanceToExclude)
         {
-            LinkReference link = m_prefabSystemComponentInterface->FindLink(m_linkId);
-            if (link == AZStd::nullopt)
-            {
-                AZ_Error("Prefab", false, "PrefabUndoLinkUpdate: Link not found");
-                return;
-            }
+            AZ_Assert(m_link.has_value(), "Link not found");
 
-            link->get().SetLinkDom(linkDom);
+            m_link->get().SetLinkDom(linkDom);
+            m_link->get().UpdateTarget();
 
-            //propagate the link changes
-            link->get().UpdateTarget();
-            m_prefabSystemComponentInterface->PropagateTemplateChanges(link->get().GetTargetTemplateId(), instanceToExclude);
-
-            //mark as dirty
-            m_prefabSystemComponentInterface->SetTemplateDirtyFlag(link->get().GetTargetTemplateId(), true);
+            m_prefabSystemComponentInterface->PropagateTemplateChanges(m_templateId, instanceToExclude);
+            m_prefabSystemComponentInterface->SetTemplateDirtyFlag(m_templateId, true);
         }
     }
 }

@@ -32,8 +32,8 @@ namespace AzToolsFramework
 
         protected:
             void SetLink(LinkId linkId);
-            void GenerateUndoUpdateLinkPatches(PrefabDom& linkedInstancePatch);
-            void UpdateLink(PrefabDom& linkDom);
+            void GenerateUndoUpdateLinkPatches(const PrefabDom& linkedInstancePatch);
+            void UpdateLink(const PrefabDom& linkDom);
 
             LinkReference m_link = AZStd::nullopt;
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
