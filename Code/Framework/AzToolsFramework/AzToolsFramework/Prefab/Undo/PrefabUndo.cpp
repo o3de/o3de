@@ -260,13 +260,8 @@ namespace AzToolsFramework
 
         //PrefabUndoLinkUpdate
         PrefabUndoLinkUpdate::PrefabUndoLinkUpdate(const AZStd::string& undoOperationName)
-            : PrefabUndoBase(undoOperationName)
-            , m_linkId(InvalidLinkId)
-            , m_linkDomNext(PrefabDom())
-            , m_linkDomPrevious(PrefabDom())
+            : PrefabUndoUpdateLinkBase(undoOperationName)
         {
-            m_prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
-            AZ_Assert(m_instanceToTemplateInterface, "Failed to grab interface");
         }
 
         void PrefabUndoLinkUpdate::Capture(
