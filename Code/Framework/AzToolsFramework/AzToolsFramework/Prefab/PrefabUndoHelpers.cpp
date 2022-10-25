@@ -6,9 +6,11 @@
  *
  */
 
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabUndoHelpers.h>
-#include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/Prefab/Undo/PrefabUndoFocusedInstanceAddEntity.h>
+#include <AzToolsFramework/Prefab/Undo/PrefabUndoUnfocusedInstanceAddEntity.h>
 
 namespace AzToolsFramework
 {
@@ -54,13 +56,27 @@ namespace AzToolsFramework
             void AddEntity(
                 const AZ::Entity& parentEntity,
                 const AZ::Entity& newEntity,
+                Instance& owningInstance,
                 Instance& focusedInstance,
                 UndoSystem::URSequencePoint* undoBatch)
             {
-                PrefabUndoAddEntity* addEntityUndoState = aznew PrefabUndoAddEntity("Undo Adding Entity");
-                addEntityUndoState->SetParent(undoBatch);
-                addEntityUndoState->Capture(parentEntity, newEntity, focusedInstance);
-                addEntityUndoState->Redo();
+                if (&owningInstance == &focusedInstance)
+                {
+                    PrefabUndoFocusedInstanceAddEntity* addEntityUndoState =
+                        aznew PrefabUndoFocusedInstanceAddEntity("Undo Adding Entity");
+                    addEntityUndoState->SetParent(undoBatch);
+                    addEntityUndoState->Capture(parentEntity, newEntity, focusedInstance);
+                    addEntityUndoState->Redo();
+                }
+                else
+                {
+                    PrefabUndoUnfocusedInstanceAddEntity* addEntityUndoState =
+                        aznew PrefabUndoUnfocusedInstanceAddEntity("Undo Adding Entity");
+                    addEntityUndoState->SetParent(undoBatch);
+                    addEntityUndoState->Capture(parentEntity, newEntity, owningInstance, focusedInstance);
+                    addEntityUndoState->Redo();
+                }
+                
             }
 
             void RemoveEntities(

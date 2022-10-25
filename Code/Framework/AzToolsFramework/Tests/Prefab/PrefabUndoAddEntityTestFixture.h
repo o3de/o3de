@@ -9,14 +9,18 @@
 #pragma once
 
 #include <Prefab/PrefabTestFixture.h>
-#include <Prefab/Undo/PrefabUndoAddEntity.h>
+#include <Prefab/Undo/PrefabUndoFocusedInstanceAddEntity.h>
+#include <Prefab/Undo/PrefabUndoUnfocusedInstanceAddEntity.h>
 
 namespace UnitTest
 {
     using namespace AzToolsFramework::Prefab;
     using namespace PrefabTestUtils;
 
-    using CreatePrefabUndoAddEntityNodeResult = AZ::Outcome<PrefabUndoAddEntity, AZStd::string>;
+    using CreateFocusedInstanceAddEntityUndoNodeResult =
+        AZ::Outcome<PrefabUndoFocusedInstanceAddEntity, AZStd::string>;
+    using CreateUnfocusedInstanceAddEntityUndoNodeResult =
+        AZ::Outcome<PrefabUndoUnfocusedInstanceAddEntity, AZStd::string>;
     using InstanceList = AZStd::vector<AZStd::reference_wrapper<Instance>>;
 
     class PrefabUndoAddEntityTestFixture
@@ -31,15 +35,25 @@ namespace UnitTest
         EntityAlias CreateEntity(const AZStd::string& entityName,
             Instance& owningInstance, const EntityAlias& parentEntityAlias);
 
-        CreatePrefabUndoAddEntityNodeResult CreatePrefabUndoAddEntityNode(
-            Instance& owningInstance,
+        CreateFocusedInstanceAddEntityUndoNodeResult CreateFocusedInstanceAddEntityUndoNode(
             const EntityAlias& newEntityAlias,
             Instance& focusedInstance,
             const AZStd::string& undoAddEntityOperationName = "Undo Adding Entity");
 
-        CreatePrefabUndoAddEntityNodeResult CreatePrefabUndoAddEntityNode(
-            Instance& owningInstance,
+        CreateFocusedInstanceAddEntityUndoNodeResult CreateFocusedInstanceAddEntityUndoNode(
             const EntityAlias& parentEntityAlias, const EntityAlias& newEntityAlias,
+            Instance& focusedInstance,
+            const AZStd::string& undoAddEntityOperationName = "Undo Adding Entity");
+
+        CreateUnfocusedInstanceAddEntityUndoNodeResult CreateUnfocusedInstanceAddEntityUndoNode(
+            const EntityAlias& newEntityAlias,
+            Instance& owningInstance,
+            Instance& focusedInstance,
+            const AZStd::string& undoAddEntityOperationName = "Undo Adding Entity");
+
+        CreateUnfocusedInstanceAddEntityUndoNodeResult CreateUnfocusedInstanceAddEntityUndoNode(
+            const EntityAlias& parentEntityAlias, const EntityAlias& newEntityAlias,
+            Instance& owningInstance,
             Instance& focusedInstance,
             const AZStd::string& undoAddEntityOperationName = "Undo Adding Entity");
 
@@ -91,8 +105,14 @@ namespace UnitTest
         EntityAlias CreateEntity(const AZStd::string& entityName,
             Instance& owningInstance, const AZ::Entity& parentEntity);
 
-        CreatePrefabUndoAddEntityNodeResult CreatePrefabUndoAddEntityNode(
+        CreateFocusedInstanceAddEntityUndoNodeResult CreateFocusedInstanceAddEntityUndoNode(
             const AZ::Entity& parentEntity, const AZ::Entity& newEntity,
+            Instance& focusedInstance,
+            const AZStd::string& undoAddEntityOperationName = "Undo Adding Entity");
+
+        CreateUnfocusedInstanceAddEntityUndoNodeResult CreateUnfocusedInstanceAddEntityUndoNode(
+            const AZ::Entity& parentEntity, const AZ::Entity& newEntity,
+            Instance& owningInstance,
             Instance& focusedInstance,
             const AZStd::string& undoAddEntityOperationName = "Undo Adding Entity");
 
@@ -107,5 +127,8 @@ namespace UnitTest
             const AZ::Entity& parentEntity,
             const EntityAlias& newEntityAlias,
             size_t expectedEntityCount);
+
+        AZ::Entity& GetEntityFromOwningInstance(const EntityAlias& entityAlias,
+            Instance& owningInstance);
     };
 }

@@ -9,7 +9,6 @@
 #pragma once
 
 #include <AzToolsFramework/Prefab/Undo/PrefabUndo.h>
-#include <AzToolsFramework/Prefab/Undo/PrefabUndoAddEntity.h>
 
 namespace AzToolsFramework
 {
@@ -30,11 +29,13 @@ namespace AzToolsFramework
             //! Helper function for adding an entity to a prefab template with undo-redo support.
             //! @param parentEntity The target parent entity of the newly added entity.
             //! @param newEntity The new entity to be added.
-            //! @param focusedInstance The current focused prefab instance, and under its template the new entity and updated parent entity DOM will live.
+            //! @param owningInstance The owning prefab instance of both parentEntity and newEntity.
+            //! @param focusedInstance The current focused prefab instance.
             //! @param undoBatch The undo batch node to register the add-entity undo node to.
             void AddEntity(
                 const AZ::Entity& parentEntity,
                 const AZ::Entity& newEntity,
+                Instance& owningInstance,
                 Instance& focusedInstance,
                 UndoSystem::URSequencePoint* undoBatch);
 

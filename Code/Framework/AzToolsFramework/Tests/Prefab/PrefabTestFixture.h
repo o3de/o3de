@@ -58,11 +58,6 @@ namespace UnitTest
         void CreateRootPrefab();
         void InitializeRootPrefab();
         AZ::Entity* CreateEntity(const AZStd::string& entityName, bool shouldActivate = true);
-        /*AZ::Entity* CreateEntity(const AZStd::string& entityName,
-            Instance& owningInstance, bool shouldActivate = true);
-        AZ::Entity* CreateEntity(const AZStd::string& entityName,
-            Instance& owningInstance, AZ::Entity* parentEntity, bool shouldActivate = true);*/
-
         AZ::EntityId CreateEntityUnderRootPrefab(AZStd::string name, AZ::EntityId parentId = AZ::EntityId());
         void PropagateAllTemplateChanges();
 

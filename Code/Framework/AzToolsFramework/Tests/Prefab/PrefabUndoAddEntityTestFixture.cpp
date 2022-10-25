@@ -42,14 +42,7 @@ namespace UnitTest
     EntityAlias PrefabUndoAddEntityTestFixture::CreateEntity(const AZStd::string& entityName,
         Instance& owningInstance, const EntityAlias& parentEntityAlias)
     {
-        auto getParentEntityRefResult = owningInstance.GetEntity(parentEntityAlias);
-        if (!getParentEntityRefResult.has_value())
-        {
-            return "";
-        }
-
-        AZ::Entity& parentEntity = getParentEntityRefResult->get();
-
+        AZ::Entity& parentEntity = GetEntityFromOwningInstance(parentEntityAlias, owningInstance);
         return CreateEntity(entityName, owningInstance, parentEntity);
     }
 
@@ -80,57 +73,74 @@ namespace UnitTest
         return newEntityAlias;
     }
 
-    CreatePrefabUndoAddEntityNodeResult PrefabUndoAddEntityTestFixture::CreatePrefabUndoAddEntityNode(
+    CreateFocusedInstanceAddEntityUndoNodeResult PrefabUndoAddEntityTestFixture::CreateFocusedInstanceAddEntityUndoNode(
         const AZ::Entity& parentEntity, const AZ::Entity& newEntity, Instance& focusedInstance,
         const AZStd::string& undoAddEntityOperationName)
     {
-        PrefabUndoAddEntity undoAddEntityNode(undoAddEntityOperationName);
+        PrefabUndoFocusedInstanceAddEntity undoAddEntityNode(undoAddEntityOperationName);
         undoAddEntityNode.Capture(parentEntity, newEntity, focusedInstance);
-
         return AZ::Success(AZStd::move(undoAddEntityNode));
     }
 
-    CreatePrefabUndoAddEntityNodeResult PrefabUndoAddEntityTestFixture::CreatePrefabUndoAddEntityNode(
-        Instance& owningInstance, const EntityAlias& newEntityAlias, Instance& focusedInstance,
+    CreateFocusedInstanceAddEntityUndoNodeResult PrefabUndoAddEntityTestFixture::CreateFocusedInstanceAddEntityUndoNode(
+        const EntityAlias& newEntityAlias, Instance& focusedInstance,
         const AZStd::string& undoAddEntityOperationName)
     {
-        auto getNewEntityRefResult = owningInstance.GetEntity(newEntityAlias);
-        if (!getNewEntityRefResult.has_value())
-        {
-            return AZ::Failure(AZStd::string("Can't find new entity in instance."));
-        }
-
-        AZ::Entity& newEntity = getNewEntityRefResult->get();
-
-        return CreatePrefabUndoAddEntityNode(
-            owningInstance.GetContainerEntity()->get(), newEntity,
+        AZ::Entity& newEntity = GetEntityFromOwningInstance(newEntityAlias, focusedInstance);
+        return CreateFocusedInstanceAddEntityUndoNode(
+            focusedInstance.GetContainerEntity()->get(), newEntity,
             focusedInstance,
             undoAddEntityOperationName);
     }
 
-    CreatePrefabUndoAddEntityNodeResult PrefabUndoAddEntityTestFixture::CreatePrefabUndoAddEntityNode(
-        Instance& owningInstance,
+    CreateFocusedInstanceAddEntityUndoNodeResult PrefabUndoAddEntityTestFixture::CreateFocusedInstanceAddEntityUndoNode(
         const EntityAlias& parentEntityAlias, const EntityAlias& newEntityAlias,
         Instance& focusedInstance,
         const AZStd::string& undoAddEntityOperationName)
     {
-        auto getParentEntityRefResult = owningInstance.GetEntity(parentEntityAlias);
-        if (!getParentEntityRefResult.has_value())
-        {
-            return AZ::Failure(AZStd::string("Can't find parent entity in instance."));
-        }
-
-        auto getNewEntityRefResult = owningInstance.GetEntity(newEntityAlias);
-        if (!getNewEntityRefResult.has_value())
-        {
-            return AZ::Failure(AZStd::string("Can't find new entity in instance."));
-        }
-
-        AZ::Entity& parentEntity = getParentEntityRefResult->get();
-        AZ::Entity& newEntity = getNewEntityRefResult->get();
-
-        return CreatePrefabUndoAddEntityNode(
+        AZ::Entity& parentEntity = GetEntityFromOwningInstance(parentEntityAlias, focusedInstance);
+        AZ::Entity& newEntity = GetEntityFromOwningInstance(newEntityAlias, focusedInstance);
+        return CreateFocusedInstanceAddEntityUndoNode(
             parentEntity, newEntity,
+            focusedInstance,
+            undoAddEntityOperationName);
+    }
+
+    CreateUnfocusedInstanceAddEntityUndoNodeResult PrefabUndoAddEntityTestFixture::CreateUnfocusedInstanceAddEntityUndoNode(
+        const AZ::Entity& parentEntity, const AZ::Entity& newEntity,
+        Instance& owningInstance, Instance& focusedInstance,
+        const AZStd::string& undoAddEntityOperationName)
+    {
+        PrefabUndoUnfocusedInstanceAddEntity undoAddEntityNode(undoAddEntityOperationName);
+        undoAddEntityNode.Capture(parentEntity, newEntity, owningInstance, focusedInstance);
+        return AZ::Success(AZStd::move(undoAddEntityNode));
+    }
+
+    CreateUnfocusedInstanceAddEntityUndoNodeResult PrefabUndoAddEntityTestFixture::CreateUnfocusedInstanceAddEntityUndoNode(
+        const EntityAlias& newEntityAlias,
+        Instance& owningInstance,
+        Instance& focusedInstance,
+        const AZStd::string& undoAddEntityOperationName)
+    {
+        AZ::Entity& newEntity = GetEntityFromOwningInstance(newEntityAlias, owningInstance);
+        return CreateUnfocusedInstanceAddEntityUndoNode(
+            owningInstance.GetContainerEntity()->get(), newEntity,
+            owningInstance,
+            focusedInstance,
+            undoAddEntityOperationName);
+    }
+
+    CreateUnfocusedInstanceAddEntityUndoNodeResult PrefabUndoAddEntityTestFixture::CreateUnfocusedInstanceAddEntityUndoNode(
+        const EntityAlias& parentEntityAlias, const EntityAlias& newEntityAlias,
+        Instance& owningInstance,
+        Instance& focusedInstance,
+        const AZStd::string& undoAddEntityOperationName)
+    {
+        AZ::Entity& parentEntity = GetEntityFromOwningInstance(parentEntityAlias, owningInstance);
+        AZ::Entity& newEntity = GetEntityFromOwningInstance(newEntityAlias, owningInstance);
+        return CreateUnfocusedInstanceAddEntityUndoNode(
+            parentEntity, newEntity,
+            owningInstance,
             focusedInstance,
             undoAddEntityOperationName);
     }
@@ -294,5 +304,13 @@ namespace UnitTest
         }
 
         EXPECT_EQ(instance.GetEntityAliasCount(), expectedEntityCount);
+    }
+
+    AZ::Entity& PrefabUndoAddEntityTestFixture::GetEntityFromOwningInstance(const EntityAlias& entityAlias,
+        Instance& owningInstance)
+    {
+        auto getEntityRefResult = owningInstance.GetEntity(entityAlias);
+        AZ_Assert(getEntityRefResult.has_value(), "Entity not found in instance.");
+        return getEntityRefResult->get();
     }
 }

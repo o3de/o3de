@@ -844,10 +844,16 @@ set(FILES
     Prefab/Template/Template.cpp
     Prefab/Undo/PrefabUndo.h
     Prefab/Undo/PrefabUndo.cpp
-    Prefab/Undo/PrefabUndoAddEntity.h
-    Prefab/Undo/PrefabUndoAddEntity.cpp
     Prefab/Undo/PrefabUndoBase.h
     Prefab/Undo/PrefabUndoBase.cpp
+    Prefab/Undo/PrefabUndoFocusedInstanceAddEntity.h
+    Prefab/Undo/PrefabUndoFocusedInstanceAddEntity.cpp
+    Prefab/Undo/PrefabUndoUnfocusedInstanceAddEntity.h
+    Prefab/Undo/PrefabUndoUnfocusedInstanceAddEntity.cpp
+    Prefab/Undo/PrefabUndoUpdateLinkBase.h
+    Prefab/Undo/PrefabUndoUpdateLinkBase.cpp
+    Prefab/Undo/PrefabUndoUtils.h
+    Prefab/Undo/PrefabUndoUtils.cpp
     UI/Outliner/EntityOutlinerDisplayOptionsMenu.h
     UI/Outliner/EntityOutlinerDisplayOptionsMenu.cpp
     UI/Outliner/EntityOutlinerTreeView.hxx

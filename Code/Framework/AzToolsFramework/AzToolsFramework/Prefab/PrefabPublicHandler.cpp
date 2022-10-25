@@ -709,7 +709,8 @@ namespace AzToolsFramework
                 return AZ::Failure<AZStd::string>("Can't find current focused prefab instance.");
             }
 
-            PrefabUndoHelpers::AddEntity(*parentEntity, *entity, focusedInstance->get(), undoBatch.GetUndoBatch());
+            PrefabUndoHelpers::AddEntity(*parentEntity, *entity,
+                entityOwningInstance, focusedInstance->get(), undoBatch.GetUndoBatch());
 
             // Select the new entity (and deselect others).
             AzToolsFramework::EntityIdList selection = { entityId };
