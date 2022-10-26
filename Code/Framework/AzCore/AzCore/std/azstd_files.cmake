@@ -169,6 +169,7 @@ set(FILES
     string/alphanum.cpp
     string/alphanum.h
     string/conversions.h
+    string/fixed_string.cpp
     string/fixed_string.h
     string/fixed_string.inl
     string/memorytoascii.h

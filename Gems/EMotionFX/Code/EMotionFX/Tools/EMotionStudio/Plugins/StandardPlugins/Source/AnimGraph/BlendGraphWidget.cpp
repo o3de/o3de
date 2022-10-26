@@ -35,6 +35,7 @@
 #include <MysticQt/Source/KeyboardShortcutManager.h>
 #include <MCore/Source/LogManager.h>
 #include <GraphCanvas/Widgets/GraphCanvasTreeItem.h>
+#include <GraphCanvas/Widgets/GraphCanvasMimeContainer.h>
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/NodePaletteTreeItem.h>
 // qt includes
 #include <QDropEvent>
@@ -46,8 +47,20 @@
 
 namespace EMStudio
 {
-    BlendGraphMimeEvent::BlendGraphMimeEvent(QString typeString, QString namePrefix)
-        : GraphCanvas::GraphCanvasMimeEvent(), m_typeString(typeString), m_namePrefix(namePrefix)
+    void BlendGraphMimeEvent::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<BlendGraphMimeEvent, GraphCanvas::GraphCanvasMimeEvent>()
+                ->Version(0)
+                ->Field("typeString", &BlendGraphMimeEvent::m_typeString)
+                ->Field("namePrefix", &BlendGraphMimeEvent::m_namePrefix);
+        }
+    }
+    BlendGraphMimeEvent::BlendGraphMimeEvent(AZStd::string_view typeString, AZStd::string_view namePrefix)
+        : GraphCanvas::GraphCanvasMimeEvent()
+        , m_typeString(typeString)
+        , m_namePrefix(namePrefix)
     {
     }
 
@@ -62,19 +75,19 @@ namespace EMStudio
         return false;
     }
 
-    QString BlendGraphMimeEvent::GetTypeString() const
+    AZStd::string BlendGraphMimeEvent::GetTypeString() const
     {
         return m_typeString;
     }
 
-    QString BlendGraphMimeEvent::GetNamePrefix() const
+    AZStd::string BlendGraphMimeEvent::GetNamePrefix() const
     {
         return m_namePrefix;
     }
 
     BlendGraphNodePaletteTreeItem::BlendGraphNodePaletteTreeItem(
-        AZStd::string_view name, const QString& typeString, GraphCanvas::EditorId editorId, const AZ::Color& color)
-        : GraphCanvas::IconDecoratedNodePaletteTreeItem(name, editorId)
+        const AZStd::string_view name, const QString& typeString, GraphCanvas::EditorId editorId, const AZ::Color& color)
+        : GraphCanvas::DraggableNodePaletteTreeItem(name, editorId)
         , m_typeString(typeString)
     {
         // Draw a pixmap with the provided color to use as an icon adjacent to the name text
@@ -109,12 +122,12 @@ namespace EMStudio
         {
             return QVariant(m_colorPixmap);
         }
-        return NodePaletteTreeItem::OnData(index, role);
+        return GraphCanvas::DraggableNodePaletteTreeItem::OnData(index, role);
     }
 
     BlendGraphMimeEvent* BlendGraphNodePaletteTreeItem::CreateMimeEvent() const
     {
-        return IsEnabled() ? new BlendGraphMimeEvent(m_typeString, GetName()) : nullptr;
+        return IsEnabled() ? new BlendGraphMimeEvent(FromQtString(m_typeString), FromQtString(GetName())) : nullptr;
     }
 
     // constructor
@@ -155,6 +168,30 @@ namespace EMStudio
             return;
         }
 
+        // calculate the drop position
+        QPoint localPos = LocalToGlobal(event->pos());
+
+        // Dragged from node palette
+        if (event->mimeData()->hasFormat(BlendGraphMimeEvent::BlendGraphMimeEventType))
+        {
+            GraphCanvas::GraphCanvasMimeContainer mimeContainer;
+            const QByteArray mimeDataBuffer = event->mimeData()->data(BlendGraphMimeEvent::BlendGraphMimeEventType);
+            mimeContainer.FromBuffer(mimeDataBuffer.constData(), mimeDataBuffer.size());
+
+            // When adding multiple nodes together, position them a bit differently
+            // so they don't end up on top of each other looking like only one was added
+            int offset = 0;
+            for (GraphCanvas::GraphCanvasMimeEvent* graphCanvasEvent : mimeContainer.m_mimeEvents)
+            {
+                if (auto* blendGraphEvent = azrtti_cast<BlendGraphMimeEvent*>(graphCanvasEvent))
+                {
+                    const QPoint nudgedPosition = { localPos.x(), localPos.y() + offset };
+                    offset += s_snapCellSize;
+                    CreateNodeFromMimeEvent(blendGraphEvent, nudgedPosition);
+                }
+            }
+        }
+
         // only accept copy actions
         if (event->dropAction() != Qt::CopyAction || event->mimeData()->hasText() == false)
         {
@@ -166,8 +203,6 @@ namespace EMStudio
         AZStd::string dropText = FromQtString(event->mimeData()->text());
         MCore::CommandLine commandLine(dropText.c_str());
 
-        // calculate the drop position
-        QPoint offset = LocalToGlobal(event->pos());
         QModelIndex targetModelIndex;
         if (GetActiveGraph())
         {
@@ -207,10 +242,10 @@ namespace EMStudio
                         if (targetModelIndex.isValid())
                         {
                             EMotionFX::AnimGraphNode* currentNode = targetModelIndex.data(AnimGraphModel::ROLE_NODE_POINTER).value<EMotionFX::AnimGraphNode*>();
-                            CommandSystem::CreateAnimGraphNode(&commandGroup, currentNode->GetAnimGraph(), AZ::Uuid::CreateName("BlendTreeMotionNode"), "Motion", currentNode, offset.x(), offset.y(), serializedMotionNode.GetValue());
+                            CommandSystem::CreateAnimGraphNode(&commandGroup, currentNode->GetAnimGraph(), AZ::Uuid::CreateName("BlendTreeMotionNode"), "Motion", currentNode, localPos.x(), localPos.y(), serializedMotionNode.GetValue());
 
                             // setup the offset for the next motion
-                            offset.setY(offset.y() + 60);
+                            localPos.setY(localPos.y() + 60);
                         }
                     }
                 }
@@ -278,10 +313,10 @@ namespace EMStudio
                         if (serializedContent.IsSuccess())
                         {
                             EMotionFX::AnimGraphNode* currentNode = targetModelIndex.data(AnimGraphModel::ROLE_NODE_POINTER).value<EMotionFX::AnimGraphNode*>();
-                            CommandSystem::CreateAnimGraphNode(&commandGroup, currentNode->GetAnimGraph(), azrtti_typeid<EMotionFX::AnimGraphMotionNode>(), "Motion", currentNode, offset.x(), offset.y(), serializedContent.GetValue());
+                            CommandSystem::CreateAnimGraphNode(&commandGroup, currentNode->GetAnimGraph(), azrtti_typeid<EMotionFX::AnimGraphMotionNode>(), "Motion", currentNode, localPos.x(), localPos.y(), serializedContent.GetValue());
 
                             // setup the offset for the next motion
-                            offset.setY(offset.y() + 60);
+                            localPos.setY(localPos.y() + 60);
                         }
                     }
                     else
@@ -316,43 +351,18 @@ namespace EMStudio
                         AZ::Outcome<AZStd::string> serializedMotionNode = MCore::ReflectionSerializer::Serialize(&tempMotionNode);
                         if (serializedMotionNode.IsSuccess())
                         {
-                            EMotionFX::AnimGraphNode* currentNode = targetModelIndex.data(AnimGraphModel::ROLE_NODE_POINTER).value<EMotionFX::AnimGraphNode*>();
-                            CommandSystem::CreateAnimGraphNode(&commandGroup, currentNode->GetAnimGraph(), azrtti_typeid<EMotionFX::AnimGraphMotionNode>(), "Motion", currentNode, offset.x(), offset.y(), serializedMotionNode.GetValue());
+                            EMotionFX::AnimGraphNode* currentNode = targetModelIndex.data(AnimGraphModel::ROLE_NODE_POINTER)
+                                .value<EMotionFX::AnimGraphNode*>();
+                            CommandSystem::CreateAnimGraphNode(&commandGroup, currentNode->GetAnimGraph(),
+                                azrtti_typeid<EMotionFX::AnimGraphMotionNode>(), "Motion", currentNode, localPos.x(), localPos.y(),
+                                serializedMotionNode.GetValue());
 
                             // setup the offset for the next motion
-                            offset.setY(offset.y() + 60);
+                            localPos.setY(localPos.y() + 60);
                         }
                     }
                 }
             }
-        }
-        // default handling, we're drag & dropping from the palette window
-        else
-        {
-            AZStd::vector<AZStd::string> parts;
-            AzFramework::StringFunc::Tokenize(dropText.c_str(), parts, ";", false, true);
-            if (parts.size() != 3)
-            {
-                MCore::LogError("BlendGraphWidget::dropEvent() - Incorrect syntax using drop data '%s'", FromQtString(event->mimeData()->text()).c_str());
-                event->ignore();
-                return;
-            }
-
-            AZStd::string commandString;
-            AZStd::string resultString;
-            EMotionFX::AnimGraphNode* currentNode = targetModelIndex.data(AnimGraphModel::ROLE_NODE_POINTER).value<EMotionFX::AnimGraphNode*>();
-            if (!currentNode)
-            {
-                event->ignore();
-                return;
-            }
-
-            // build the name prefix
-            AZStd::string& namePrefix = parts[2];
-            AzFramework::StringFunc::Strip(namePrefix, MCore::CharacterConstants::space, true /* case sensitive */);
-
-            const AZ::TypeId typeId = AZ::TypeId::CreateString(parts[1].c_str(), parts[1].size());
-            CommandSystem::CreateAnimGraphNode(&commandGroup, currentNode->GetAnimGraph(), typeId, namePrefix, currentNode, offset.x(), offset.y());
         }
 
         if (!commandGroup.IsEmpty())
@@ -368,8 +378,15 @@ namespace EMStudio
     }
 
 
-    bool BlendGraphWidget::OnEnterDropEvent(QDragEnterEvent* event, EMotionFX::AnimGraphNode* currentNode, NodeGraph* activeGraph)
+    bool BlendGraphWidget::OnEnterDropEvent(QDragEnterEvent* event, EMotionFX::AnimGraphNode* currentNode)
     {
+        if (event->mimeData()->hasFormat(BlendGraphMimeEvent::BlendGraphMimeEventType))
+        {
+            // If it's coming from node palette it should be legal to add because node palette
+            // filters for only the permitted ones
+            return true;
+        }
+
         if (event->mimeData()->hasText() == false)
         {
             return false;
@@ -395,69 +412,7 @@ namespace EMStudio
             {
                 return true;
             }
-
-            return false;
         }
-
-        AZStd::vector<AZStd::string> parts;
-        AzFramework::StringFunc::Tokenize(dropText.c_str(), parts, MCore::CharacterConstants::semiColon, true /* keep empty strings */, true /* keep space strings */);
-
-        if (parts.size() != 3)
-        {
-            //MCore::LogError("BlendGraphWidget::dropEvent() - Incorrect syntax using drop data '%s'", FromQtString(event->mimeData()->text()).AsChar());
-            return false;
-        }
-
-        if (parts[0].find("EMotionFX::AnimGraphNode") != 0)
-        {
-            return false;
-        }
-
-        // check if the dropped node is a state machine node
-        bool canActAsState = false;
-        const AZ::TypeId typeId = AZ::TypeId::CreateString(parts[1].c_str(), parts[1].size());
-        if (!typeId.IsNull())
-        {
-            EMotionFX::AnimGraphObject* registeredObject = EMotionFX::AnimGraphObjectFactory::Create(typeId);
-            MCORE_ASSERT(azrtti_istypeof<EMotionFX::AnimGraphNode>(registeredObject));
-
-            EMotionFX::AnimGraphNode* registeredNode = static_cast<EMotionFX::AnimGraphNode*>(registeredObject);
-            if (registeredNode->GetCanActAsState())
-            {
-                canActAsState = true;
-            }
-
-            delete registeredObject;
-        }
-
-        // in case the current node is nullptr and the active graph is a valid graph it means we are showing the root graph
-        if (currentNode == nullptr)
-        {
-            if (activeGraph)
-            {
-                // only state machine nodes are allowed in the root graph
-                if (canActAsState)
-                {
-                    return true;
-                }
-            }
-        }
-        else
-        {
-            // check if we need to prevent dropping of non-state machine nodes
-            if (azrtti_typeid(currentNode) == azrtti_typeid<EMotionFX::AnimGraphStateMachine>())
-            {
-                if (canActAsState)
-                {
-                    return true;
-                }
-            }
-            else
-            {
-                return true;
-            }
-        }
-
         return false;
     }
 
@@ -469,7 +424,7 @@ namespace EMStudio
         if (GetActiveGraph())
         {
             EMotionFX::AnimGraphNode* currentNode = GetActiveGraph()->GetModelIndex().data(AnimGraphModel::ROLE_NODE_POINTER).value<EMotionFX::AnimGraphNode*>();
-            bool acceptEnterEvent = OnEnterDropEvent(event, currentNode, GetActiveGraph());
+            bool acceptEnterEvent = OnEnterDropEvent(event, currentNode);
 
             if (acceptEnterEvent)
             {
@@ -498,27 +453,32 @@ namespace EMStudio
 
     void BlendGraphWidget::OnContextMenuCreateNode(const BlendGraphMimeEvent* event)
     {
+        // calculate the position
+        const QPoint offset = SnapLocalToGrid(LocalToGlobal(m_contextMenuEventMousePos));
+        CreateNodeFromMimeEvent(event, offset);
+    }
+
+    void BlendGraphWidget::CreateNodeFromMimeEvent(const BlendGraphMimeEvent* event, const QPoint& location )
+    {
         NodeGraph* nodeGraph = GetActiveGraph();
         if (!nodeGraph || !event)
         {
             return;
         }
 
-        // calculate the position
-        const QPoint offset = SnapLocalToGrid(LocalToGlobal(m_contextMenuEventMousePos));
-
-        const AZStd::string typeString = FromQtString(event->GetTypeString());
+        const AZStd::string typeString = event->GetTypeString();
         if(typeString.empty())
         {
             return;
         }
-        AZStd::string namePrefix = FromQtString(event->GetNamePrefix());
+        AZStd::string namePrefix = event->GetNamePrefix();
         AzFramework::StringFunc::Strip(namePrefix, MCore::CharacterConstants::space, true /* case sensitive */);
         const AZ::TypeId typeId = AZ::TypeId::CreateString(typeString.c_str(), typeString.size());
 
         const QModelIndex modelIndex = nodeGraph->GetModelIndex();
         EMotionFX::AnimGraphNode* currentNode = modelIndex.data(AnimGraphModel::ROLE_NODE_POINTER).value<EMotionFX::AnimGraphNode*>();
-        CommandSystem::CreateAnimGraphNode(/*commandGroup=*/nullptr, currentNode->GetAnimGraph(), typeId, namePrefix, currentNode, offset.x(), offset.y());
+        CommandSystem::CreateAnimGraphNode(
+            /*commandGroup=*/nullptr, currentNode->GetAnimGraph(), typeId, namePrefix, currentNode, location.x(), location.y());
     }
 
     bool BlendGraphWidget::CheckIfIsStateMachine()
@@ -1170,7 +1130,6 @@ namespace EMStudio
 
         // Delete all selected connections in the graph view first.
         AZStd::string commandString, sourceNodeName;
-        AZ::u32 numDeletedConnections = 0;
         const AZStd::vector<NodeConnection*> selectedConnections = GetActiveGraph()->GetSelectedNodeConnections();
         for (NodeConnection* selectedConnection : selectedConnections)
         {
@@ -1178,7 +1137,6 @@ namespace EMStudio
             if (emfxTransition)
             {
                 CommandSystem::DeleteStateTransition(&commandGroup, emfxTransition, transitionList);
-                numDeletedConnections++;
             }
             else
             {
@@ -1188,7 +1146,6 @@ namespace EMStudio
                 if (emfxConnection && emfxTargetNode)
                 {
                     CommandSystem::DeleteConnection(&commandGroup, emfxTargetNode, emfxConnection, connectionList);
-                    numDeletedConnections++;
                 }
             }
         }
