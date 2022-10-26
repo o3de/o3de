@@ -990,6 +990,7 @@ namespace Multiplayer
             if (m_networkInterface->GetConnectionSet().GetActiveConnectionCount() == 0)
             {
                 Terminate(DisconnectReason::TerminatedByServer);
+                AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
             }
         }
     }
@@ -1001,6 +1002,8 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::InitializeMultiplayer(MultiplayerAgentType multiplayerType)
     {
+        m_lastReplicatedHostFrameId = HostFrameId{0};
+
         if (m_agentType == multiplayerType)
         {
             return;

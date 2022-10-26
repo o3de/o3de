@@ -50,8 +50,9 @@ namespace AtomToolsFramework
                     if (documentType.IsSupportedExtensionToOpen(entries.front()->GetFullPath()))
                     {
                         menu->addAction(QObject::tr("Open"), [entries, this]() {
-                            AtomToolsDocumentSystemRequestBus::Event(
-                                m_toolId, &AtomToolsDocumentSystemRequestBus::Events::OpenDocument, entries.front()->GetFullPath());
+                            AZ::SystemTickBus::QueueFunction([toolId = m_toolId, path = entries.front()->GetFullPath()]() {
+                                AtomToolsDocumentSystemRequestBus::Event(toolId, &AtomToolsDocumentSystemRequestBus::Events::OpenDocument, path);
+                            });
                         });
                         handledOpen = true;
                         break;

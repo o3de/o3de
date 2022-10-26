@@ -195,7 +195,7 @@ namespace AtomToolsFramework
         if (!m_updateMenus)
         {
             m_updateMenus = true;
-            QTimer::singleShot(0, [this]() {
+            QTimer::singleShot(0, this, [this]() {
                 if (m_rebuildMenus)
                 {
                     // Clearing all actions that were added directly to the menu bar
@@ -203,14 +203,14 @@ namespace AtomToolsFramework
 
                     // Instead of destroying and recreating the menu bar, destroying the individual child menus to prevent the UI from
                     // popping when the menu bar is recreated
-                    auto menus = menuBar()->findChildren<QMenu*>(QString(), Qt::FindDirectChildrenOnly);
-                    for (auto menu : menus)
+                    for (auto menu : menuBar()->findChildren<QMenu*>(QString(), Qt::FindDirectChildrenOnly))
                     {
                         delete menu;
                     }
 
                     AtomToolsMainMenuRequestBus::Event(m_toolId, &AtomToolsMainMenuRequestBus::Events::CreateMenus, menuBar());
                 }
+
                 AtomToolsMainMenuRequestBus::Event(m_toolId, &AtomToolsMainMenuRequestBus::Events::UpdateMenus, menuBar());
                 m_updateMenus = false;
                 m_rebuildMenus = false;
