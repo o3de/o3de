@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScriptCanvas Include="Source/Nodes/Nodeables/IfNetRoleNodeable.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<Class Name="IfNetRoleNodeable"
+	       QualifiedName="ScriptCanvasMultiplayer::IfNetRoleNodeable"
+	       PreferredClassName="IfNetRole"
+	       Category="Multiplayer"
+	       Description="An execution flow gate that continues to the path based on the network role of a given entity.">
+
+		<In Name="In" Description="Input signal"/>
+
+		<Out Name="Client" Description="Signaled if the entity has a Client network role."/>
+		<Out Name="Autonomous" Type="ScriptCanvas::Data::StringType" />
+		<Out Name="Authority" Type="ScriptCanvas::Data::StringType" />
+		<Out Name="Server" Type="ScriptCanvas::Data::StringType"/>
+		<Out Name="Unknown" Type="ScriptCanvas::Data::StringType"/>
+
+		<Property Name="Condition"
+		          Description="A multiplayer entity"
+		          Type="AZ::EntityId"
+		          IsInput="True"
+		          IsOutput="False" />
+
+	</Class>
+</ScriptCanvas>
