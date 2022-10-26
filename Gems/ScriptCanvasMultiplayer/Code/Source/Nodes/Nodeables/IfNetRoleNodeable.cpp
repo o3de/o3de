@@ -13,7 +13,7 @@
 
 namespace ScriptCanvasMultiplayer
 {
-    void IfNetRoleNodeable::In(AZ::EntityId multiplayerEntity)
+    void IfNetRoleNodeable::In(AZ::EntityId MultiplayerEntity)
     {
         if (!Multiplayer::GetMultiplayer())
         {
@@ -28,7 +28,7 @@ namespace ScriptCanvasMultiplayer
             return;
         }
 
-        const Multiplayer::NetEntityId netEntityId = networkEntityManager->GetNetEntityIdById(multiplayerEntity);
+        const Multiplayer::NetEntityId netEntityId = networkEntityManager->GetNetEntityIdById(MultiplayerEntity);
         const Multiplayer::ConstNetworkEntityHandle handle = networkEntityManager->GetEntity(netEntityId);
         
         if (handle.Exists())
