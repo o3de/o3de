@@ -49,13 +49,6 @@ namespace AzToolsFramework
         void PrefabUndoUpdateLink::Capture(const PrefabDom& linkedInstancePatch, LinkId linkId)
         {
             SetLink(linkId);
-            Capture(linkedInstancePatch);
-        }
-
-        void PrefabUndoUpdateLink::Capture(const PrefabDom& linkedInstancePatch)
-        {
-            AZ_Assert(m_link.has_value(),
-                "PrefabUndoUpdateLink::Capture - m_link is still invalid");
 
             //Cache current link DOM for undo link update.
             m_undoPatch.CopyFrom(m_link->get().GetLinkDom(), m_undoPatch.GetAllocator());

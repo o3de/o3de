@@ -47,9 +47,6 @@ namespace AzToolsFramework
             AZ_Assert(climbUpResult.m_isTargetInstanceReached,
                 "Owning prefab instance should be owned by a descendant of the focused prefab instance.");
 
-            const LinkId linkId = climbUpResult.m_climbedInstances.back()->GetLinkId();
-            PrefabUndoUpdateLink::SetLink(linkId);
-
             const AZStd::string entityAliasPathPrefixForPatch =
                 PrefabInstanceUtils::GetRelativePathFromClimbedInstances(climbUpResult.m_climbedInstances, true);
 
@@ -64,8 +61,9 @@ namespace AzToolsFramework
             PrefabDom parentEntityDomAfterAddingEntity;
             m_instanceToTemplateInterface->GenerateDomForEntity(parentEntityDomAfterAddingEntity, parentEntity);
 
+            TemplateId focusedTemplateId = focusedInstance.GetTemplateId();
             PrefabDom& focusedTemplateDom =
-                m_prefabSystemComponentInterface->FindTemplateDom(m_templateId);
+                m_prefabSystemComponentInterface->FindTemplateDom(focusedTemplateId);
             PrefabDomPath entityPathInFocusedTemplate(parentEntityAliasPathInFocusedTemplate.c_str());
             // This scope is added to limit their usage and ensure DOM is not modified when it is being used.
             {
@@ -73,7 +71,7 @@ namespace AzToolsFramework
                 const PrefabDomValue* parentEntityDomInFocusedTemplate = entityPathInFocusedTemplate.Get(focusedTemplateDom);
                 AZ_Assert(parentEntityDomInFocusedTemplate,
                     "Could not load parent entity's DOM from the focused template's DOM. "
-                    "Focused template id: '%llu'.", static_cast<AZ::u64>(m_templateId));
+                    "Focused template id: '%llu'.", static_cast<AZ::u64>(focusedTemplateId));
 
                 PrefabUndoUtils::GenerateUpdateEntityPatch(m_redoPatch,
                     *parentEntityDomInFocusedTemplate, parentEntityDomAfterAddingEntity, parentEntityAliasPathForPatch);
@@ -86,7 +84,8 @@ namespace AzToolsFramework
             m_instanceToTemplateInterface->GenerateDomForEntity(newEntityDom, newEntity);
             PrefabUndoUtils::GenerateAddEntityPatch(m_redoPatch, newEntityDom, newEntityAliasPathForPatch);
 
-            PrefabUndoUpdateLink::Capture(m_redoPatch);
+            const LinkId linkId = climbUpResult.m_climbedInstances.back()->GetLinkId();
+            PrefabUndoUpdateLink::Capture(m_redoPatch, linkId);
             
             // Preemptively updates the cached DOM to prevent reloading instance DOM.
             PrefabDomReference cachedOwningInstanceDom = owningInstance.GetCachedInstanceDom();

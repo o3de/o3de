@@ -30,12 +30,10 @@ namespace AzToolsFramework
             void Undo() override;
             void Redo() override;
 
-            void Capture(const PrefabDom& linkedInstancePatch);
             void Capture(const PrefabDom& linkedInstancePatch, LinkId linkId);
 
-            void SetLink(LinkId linkId);
-
         protected:
+            void SetLink(LinkId linkId);
             void UpdateLink(const PrefabDom& linkDom);
 
             LinkReference m_link = AZStd::nullopt;
