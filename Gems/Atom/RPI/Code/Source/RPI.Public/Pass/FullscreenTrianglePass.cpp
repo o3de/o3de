@@ -121,7 +121,8 @@ namespace AZ
 
             // Load Draw SRG
             // this is necessary since the shader may have options, which require a default draw SRG
-            m_drawShaderResourceGroup = m_shader->CreateDefaultDrawSrg();
+            const bool compileDrawSrg = false; // The SRG will be compiled in CompileResources()
+            m_drawShaderResourceGroup = m_shader->CreateDefaultDrawSrg(compileDrawSrg);
 
             // Store stencil reference value for the draw call
             m_stencilRef = passData->m_stencilRef;

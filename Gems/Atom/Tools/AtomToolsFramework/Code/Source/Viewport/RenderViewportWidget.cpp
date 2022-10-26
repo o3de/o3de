@@ -15,6 +15,7 @@
 #include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
 #include <AzCore/Math/MathUtils.h>
+#include <AzCore/Console/IConsole.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/Bootstrap/BootstrapRequestBus.h>
 
@@ -455,7 +456,12 @@ namespace AtomToolsFramework
 
     uint32_t RenderViewportWidget::GetSyncInterval() const
     {
-        return 1;
+        uint32_t vsyncInterval = 1;
+        if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+        {
+            console->GetCvarValue("vsync_interval", vsyncInterval);
+        }
+        return vsyncInterval;
     }
 
     // Editor ignores requests to change the sync interval
