@@ -3,7 +3,7 @@
 <ScriptCanvas Include="Source/Nodes/Nodeables/IfNetRoleNodeable.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<Class Name="IfNetRoleNodeable"
 	       QualifiedName="ScriptCanvasMultiplayer::IfNetRoleNodeable"
-	       PreferredClassName="If Multiplayer Role"
+	       PreferredClassName="If Entity Multiplayer Role"
 	       Category="Multiplayer"
 	       Description="An execution flow gate that continues to the path based on the network role of a given entity.">
 
