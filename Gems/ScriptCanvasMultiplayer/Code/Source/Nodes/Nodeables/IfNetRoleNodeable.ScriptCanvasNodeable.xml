@@ -14,7 +14,7 @@
             <Branch Name="If Autonomous Role" Description="An entity with an autonomous role is controlled by the local player and exists on a client" DisplayGroup="In" />
             <Branch Name="If Authority Role" Description="An entity with an authority role is owned by a server and exists on the server" DisplayGroup="In" />
             <Branch Name="If Server Role" Description="An entity with a server role is a view of an entity that is controlled by another server" DisplayGroup="In" />
-            <Branch Name="If Unknown Role" Description="A non-multiplayer entity, that is either missing NetBindComponent or the application is not in a multiplayer mode" DisplayGroup="In" />
+            <Branch Name="If Invalid Role" Description="A non-multiplayer entity, that is either missing NetBindComponent or the application is not in a multiplayer mode" DisplayGroup="In" />
         </Input>
     </Class>
 </ScriptCanvas>

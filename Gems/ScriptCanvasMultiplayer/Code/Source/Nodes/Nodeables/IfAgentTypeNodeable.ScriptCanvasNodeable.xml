@@ -11,7 +11,7 @@
             <Branch Name="If Client Type" Description="A Client connected to either a server or host." DisplayGroup="In" />
             <Branch Name="If ClientServer Type" Description="A Client that also hosts and is the authority of the session" DisplayGroup="In" />
             <Branch Name="If DedicatedServer Type" Description="A Dedicated Server which does not locally host any clients" DisplayGroup="In" />
-            <Branch Name="If Not Multiplayer" Description="Not in any multiplayer mode" DisplayGroup="In" />
+            <Branch Name="If Singleplayer" Description="The application is in single player mode" DisplayGroup="In" />
         </Input>
     </Class>
 </ScriptCanvas>

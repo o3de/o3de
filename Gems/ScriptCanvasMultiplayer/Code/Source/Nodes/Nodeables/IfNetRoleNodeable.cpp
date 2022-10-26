@@ -17,14 +17,14 @@ namespace ScriptCanvasMultiplayer
     {
         if (!Multiplayer::GetMultiplayer())
         {
-            CallIfUnknownRole();
+            CallIfInvalidRole();
             return;
         }
 
         const Multiplayer::INetworkEntityManager* networkEntityManager = Multiplayer::GetMultiplayer()->GetNetworkEntityManager();
         if (!networkEntityManager)
         {
-            CallIfUnknownRole();
+            CallIfInvalidRole();
             return;
         }
 
@@ -40,7 +40,7 @@ namespace ScriptCanvasMultiplayer
                 switch (role)
                 {
                 case Multiplayer::NetEntityRole::InvalidRole:
-                    CallIfUnknownRole();
+                    CallIfInvalidRole();
                     break;
                 case Multiplayer::NetEntityRole::Client:
                     CallIfClientRole();
@@ -59,7 +59,7 @@ namespace ScriptCanvasMultiplayer
         }
         else
         {
-            CallIfUnknownRole();
+            CallIfInvalidRole();
         }
     }
 } // namespace ScriptCanvasMultiplayer

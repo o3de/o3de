@@ -17,7 +17,7 @@ namespace ScriptCanvasMultiplayer
         const auto multiplayer = Multiplayer::GetMultiplayer();
         if (!multiplayer)
         {
-            CallIfNotMultiplayer();
+            CallIfSingleplayer();
             return;
         }
 
@@ -26,7 +26,7 @@ namespace ScriptCanvasMultiplayer
         switch (type)
         {
         case Multiplayer::MultiplayerAgentType::Uninitialized:
-            CallIfNotMultiplayer();
+            CallIfSingleplayer();
             break;
         case Multiplayer::MultiplayerAgentType::Client:
             CallIfClientType();
