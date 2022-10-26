@@ -8,44 +8,54 @@
 
 #include <AzCore/Interface/Interface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
-#include <AzToolsFramework/Prefab/Undo/PrefabUndoUpdateLinkBase.h>
+#include <AzToolsFramework/Prefab/Undo/PrefabUndoUpdateLink.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoUtils.h>
 
 namespace AzToolsFramework
 {
     namespace Prefab
     {
-        PrefabUndoUpdateLinkBase::PrefabUndoUpdateLinkBase(const AZStd::string& undoOperationName)
+        PrefabUndoUpdateLink::PrefabUndoUpdateLink(const AZStd::string& undoOperationName)
             : PrefabUndoBase(undoOperationName)
         {
             m_prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
             AZ_Assert(m_prefabSystemComponentInterface,
-                "PrefabUndoUpdateLinkBase - Failed to grab PrefabSystemComponentInterface");
+                "PrefabUndoUpdateLink - Failed to grab PrefabSystemComponentInterface");
         }
 
-        void PrefabUndoUpdateLinkBase::Undo()
+        void PrefabUndoUpdateLink::Undo()
         {
             UpdateLink(m_undoPatch);
         }
 
-        void PrefabUndoUpdateLinkBase::Redo()
+        void PrefabUndoUpdateLink::Redo()
         {
             UpdateLink(m_redoPatch);
         }
 
-        void PrefabUndoUpdateLinkBase::SetLink(LinkId linkId)
+        void PrefabUndoUpdateLink::SetLink(LinkId linkId)
         {
             m_link = m_prefabSystemComponentInterface->FindLink(linkId);
             AZ_Assert(m_link.has_value(),
-                "PrefabUndoUpdateLinkBase::SetLink - Link with id '%llu' not found",
+                "PrefabUndoUpdateLink::Capture - Link with id '%llu' not found",
                 static_cast<AZ::u64>(linkId));
+
             m_templateId = m_link->get().GetTargetTemplateId();
+            AZ_Assert(m_templateId != InvalidTemplateId,
+                "PrefabUndoUpdateLink::Capture - Link with id '%llu' contains incorrect target template id",
+                static_cast<AZ::u64>(linkId));
         }
 
-        void PrefabUndoUpdateLinkBase::GenerateUndoUpdateLinkPatches(const PrefabDom& linkedInstancePatch)
+        void PrefabUndoUpdateLink::Capture(const PrefabDom& linkedInstancePatch, LinkId linkId)
+        {
+            SetLink(linkId);
+            Capture(linkedInstancePatch);
+        }
+
+        void PrefabUndoUpdateLink::Capture(const PrefabDom& linkedInstancePatch)
         {
             AZ_Assert(m_link.has_value(),
-                "PrefabUndoUpdateLinkBase::GenerateUndoUpdateLinkPatches - m_link is still invalid");
+                "PrefabUndoUpdateLink::Capture - m_link is still invalid");
 
             //Cache current link DOM for undo link update.
             m_undoPatch.CopyFrom(m_link->get().GetLinkDom(), m_undoPatch.GetAllocator());
@@ -54,13 +64,13 @@ namespace AzToolsFramework
             TemplateId sourceTemplateId = m_link->get().GetSourceTemplateId();
             TemplateReference sourceTemplate = m_prefabSystemComponentInterface->FindTemplate(sourceTemplateId);
             AZ_Assert(sourceTemplate.has_value(),
-                "PrefabUndoUpdateLinkBase::GenerateUndoUpdateLinkPatches - Source template not found");
+                "PrefabUndoUpdateLink::GenerateUndoUpdateLinkPatches - Source template not found");
             PrefabDom& sourceDom = sourceTemplate->get().GetPrefabDom();
 
             //Get DOM of instance that the link points to.
             PrefabDomValueReference instanceDomRef = m_link->get().GetLinkedInstanceDom();
             AZ_Assert(instanceDomRef.has_value(),
-                "PrefabUndoUpdateLinkBase::GenerateUndoUpdateLinkPatches -Linked Instance DOM not found");
+                "PrefabUndoUpdateLink::GenerateUndoUpdateLinkPatches -Linked Instance DOM not found");
             PrefabDom instanceDom;
             instanceDom.CopyFrom(instanceDomRef->get(), instanceDom.GetAllocator());
 
@@ -98,10 +108,10 @@ namespace AzToolsFramework
             }
         }
 
-        void PrefabUndoUpdateLinkBase::UpdateLink(const PrefabDom& linkDom)
+        void PrefabUndoUpdateLink::UpdateLink(const PrefabDom& linkDom)
         {
             AZ_Assert(m_link.has_value(),
-                "PrefabUndoUpdateLinkBase::UpdateLink - m_link is still invalid");
+                "PrefabUndoUpdateLink::UpdateLink - m_link is still invalid");
 
             m_link->get().SetLinkDom(linkDom);
             m_link->get().UpdateTarget();

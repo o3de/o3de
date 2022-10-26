@@ -257,35 +257,5 @@ namespace AzToolsFramework
         {
             m_prefabSystemComponentInterface->RemoveLink(m_linkId);
         }
-
-        //PrefabUndoLinkUpdate
-        PrefabUndoLinkUpdate::PrefabUndoLinkUpdate(const AZStd::string& undoOperationName)
-            : PrefabUndoUpdateLinkBase(undoOperationName)
-        {
-        }
-
-        void PrefabUndoLinkUpdate::Capture(
-            const PrefabDom& patch,
-            const LinkId linkId)
-        {
-            SetLink(linkId);
-            GenerateUndoUpdateLinkPatches(patch);
-        }
-
-        void PrefabUndoLinkUpdate::Redo(InstanceOptionalConstReference instanceToExclude)
-        {
-            UpdateLink(m_redoPatch, instanceToExclude);
-        }
-
-        void PrefabUndoLinkUpdate::UpdateLink(PrefabDom& linkDom, InstanceOptionalConstReference instanceToExclude)
-        {
-            AZ_Assert(m_link.has_value(), "Link not found");
-
-            m_link->get().SetLinkDom(linkDom);
-            m_link->get().UpdateTarget();
-
-            m_prefabSystemComponentInterface->PropagateTemplateChanges(m_templateId, instanceToExclude);
-            m_prefabSystemComponentInterface->SetTemplateDirtyFlag(m_templateId, true);
-        }
     }
 }

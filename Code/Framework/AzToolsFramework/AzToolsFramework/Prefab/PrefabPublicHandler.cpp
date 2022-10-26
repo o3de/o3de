@@ -32,6 +32,7 @@
 #include <AzToolsFramework/Prefab/PrefabPublicHandler.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndo.h>
+#include <AzToolsFramework/Prefab/Undo/PrefabUndoUpdateLink.h>
 #include <AzToolsFramework/Prefab/PrefabUndoHelpers.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <AzToolsFramework/Entity/EditorEntitySortComponent.h>
@@ -274,7 +275,7 @@ namespace AzToolsFramework
 
                         // We won't parent this undo node to the undo batch so that the newly created template and link will remain
                         // unaffected by undo actions. This is needed so that any future instantiations of the template will work.
-                        PrefabUndoLinkUpdate linkUpdate = PrefabUndoLinkUpdate(AZStd::to_string(static_cast<AZ::u64>(nestedInstanceContainerEntityId)));
+                        PrefabUndoUpdateLink linkUpdate = PrefabUndoUpdateLink(AZStd::to_string(static_cast<AZ::u64>(nestedInstanceContainerEntityId)));
                         linkUpdate.Capture(reparentPatch, nestedInstance->GetLinkId());
                         linkUpdate.Redo();
                     }
@@ -867,7 +868,7 @@ namespace AzToolsFramework
             UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, const PrefabDom& patch, const LinkId linkId)
         {
             // Save these changes as patches to the link
-            PrefabUndoLinkUpdate* linkUpdate = aznew PrefabUndoLinkUpdate(AZStd::to_string(static_cast<AZ::u64>(entityId)));
+            PrefabUndoUpdateLink* linkUpdate = aznew PrefabUndoUpdateLink(AZStd::to_string(static_cast<AZ::u64>(entityId)));
             linkUpdate->SetParent(undoBatch);
             linkUpdate->Capture(patch, linkId);
             linkUpdate->Redo();

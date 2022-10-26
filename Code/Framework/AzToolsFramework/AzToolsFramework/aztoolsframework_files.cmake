@@ -850,8 +850,8 @@ set(FILES
     Prefab/Undo/PrefabUndoAddEntityAsOverride.cpp
     Prefab/Undo/PrefabUndoBase.h
     Prefab/Undo/PrefabUndoBase.cpp
-    Prefab/Undo/PrefabUndoUpdateLinkBase.h
-    Prefab/Undo/PrefabUndoUpdateLinkBase.cpp
+    Prefab/Undo/PrefabUndoUpdateLink.h
+    Prefab/Undo/PrefabUndoUpdateLink.cpp
     Prefab/Undo/PrefabUndoUtils.h
     Prefab/Undo/PrefabUndoUtils.cpp
     UI/Outliner/EntityOutlinerDisplayOptionsMenu.h

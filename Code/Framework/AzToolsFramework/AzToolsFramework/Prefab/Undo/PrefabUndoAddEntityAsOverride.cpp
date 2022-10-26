@@ -17,7 +17,7 @@ namespace AzToolsFramework
     namespace Prefab
     {
         PrefabUndoAddEntityAsOverride::PrefabUndoAddEntityAsOverride(const AZStd::string& undoOperationName)
-            : PrefabUndoUpdateLinkBase(undoOperationName)
+            : PrefabUndoUpdateLink(undoOperationName)
         {
         }
 
@@ -48,7 +48,7 @@ namespace AzToolsFramework
                 "Owning prefab instance should be owned by a descendant of the focused prefab instance.");
 
             const LinkId linkId = climbUpResult.m_climbedInstances.back()->GetLinkId();
-            SetLink(linkId);
+            PrefabUndoUpdateLink::SetLink(linkId);
 
             const AZStd::string entityAliasPathPrefixForPatch =
                 PrefabInstanceUtils::GetRelativePathFromClimbedInstances(climbUpResult.m_climbedInstances, true);
@@ -86,7 +86,7 @@ namespace AzToolsFramework
             m_instanceToTemplateInterface->GenerateDomForEntity(newEntityDom, newEntity);
             PrefabUndoUtils::GenerateAddEntityPatch(m_redoPatch, newEntityDom, newEntityAliasPathForPatch);
 
-            GenerateUndoUpdateLinkPatches(m_redoPatch);
+            PrefabUndoUpdateLink::Capture(m_redoPatch);
             
             // Preemptively updates the cached DOM to prevent reloading instance DOM.
             PrefabDomReference cachedOwningInstanceDom = owningInstance.GetCachedInstanceDom();

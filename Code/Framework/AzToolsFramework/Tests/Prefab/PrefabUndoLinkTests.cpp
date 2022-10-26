@@ -9,6 +9,7 @@
 #include <Prefab/PrefabTestUndoFixture.h>
 
 #include <Prefab/Undo/PrefabUndo.h>
+#include <Prefab/Undo/PrefabUndoUpdateLink.h>
 
 #include <Prefab/PrefabTestComponent.h>
 
@@ -232,7 +233,7 @@ namespace UnitTest
         m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(updatePatch, nestedContainerEntityId);
 
         //create the update link undo/redo node
-        PrefabUndoLinkUpdate undoLinkUpdateNode("Undo Link Update");
+        PrefabUndoUpdateLink undoLinkUpdateNode("Undo Link Update");
         undoLinkUpdateNode.Capture(updatePatch, linkId);
         undoLinkUpdateNode.Redo();
         m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
@@ -309,7 +310,7 @@ namespace UnitTest
         m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(updatePatchIntField, nestedContainerEntityId);
 
         //create the update link undo/redo node
-        PrefabUndoLinkUpdate undoIntFieldNode("Undo Link Update");
+        PrefabUndoUpdateLink undoIntFieldNode("Undo Link Update");
         undoIntFieldNode.Capture(updatePatchIntField, linkId);
         undoIntFieldNode.Redo();
         m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();

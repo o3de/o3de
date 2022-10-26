@@ -9,7 +9,6 @@
 #pragma once
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoBase.h>
-#include <AzToolsFramework/Prefab/Undo/PrefabUndoUpdateLinkBase.h>
 
 //for link undo
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
@@ -111,25 +110,6 @@ namespace AzToolsFramework
             LinkStatus m_linkStatus;
 
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
-        };
-
-        class PrefabUndoLinkUpdate
-            : public PrefabUndoUpdateLinkBase
-        {
-        public:
-            explicit PrefabUndoLinkUpdate(const AZStd::string& undoOperationName);
-
-            //capture for add/remove
-            void Capture(
-                const PrefabDom& patch,
-                const LinkId linkId = InvalidLinkId);
-
-            using PrefabUndoUpdateLinkBase::Redo;
-            //! Overload to allow to apply the change, but prevent instanceToExclude from being refreshed.
-            void Redo(InstanceOptionalConstReference instanceToExclude);
-
-        private:
-            void UpdateLink(PrefabDom& linkDom, InstanceOptionalConstReference instanceToExclude = AZStd::nullopt);
         };
     }
 }

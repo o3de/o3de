@@ -18,21 +18,24 @@ namespace AzToolsFramework
         class InstanceEntityMapperInterface;
         class PrefabSystemComponentInterface;
 
-        class PrefabUndoUpdateLinkBase
+        class PrefabUndoUpdateLink
             : public PrefabUndoBase
         {
         public:
-            AZ_RTTI(PrefabUndoUpdateLinkBase, "{9D2488FA-E0C4-408A-9494-4E0624E95820}", PrefabUndoBase);
-            AZ_CLASS_ALLOCATOR(PrefabUndoUpdateLinkBase, AZ::SystemAllocator, 0);
+            AZ_RTTI(PrefabUndoUpdateLink, "{9D2488FA-E0C4-408A-9494-4E0624E95820}", PrefabUndoBase);
+            AZ_CLASS_ALLOCATOR(PrefabUndoUpdateLink, AZ::SystemAllocator, 0);
 
-            explicit PrefabUndoUpdateLinkBase(const AZStd::string& undoOperationName);
+            explicit PrefabUndoUpdateLink(const AZStd::string& undoOperationName);
 
             void Undo() override;
             void Redo() override;
 
-        protected:
+            void Capture(const PrefabDom& linkedInstancePatch);
+            void Capture(const PrefabDom& linkedInstancePatch, LinkId linkId);
+
             void SetLink(LinkId linkId);
-            void GenerateUndoUpdateLinkPatches(const PrefabDom& linkedInstancePatch);
+
+        protected:
             void UpdateLink(const PrefabDom& linkDom);
 
             LinkReference m_link = AZStd::nullopt;
