@@ -30,7 +30,7 @@ namespace AssetProcessor
     public Q_SLOTS:
         void OnBuilderAdded(AZ::Uuid builderId, AZStd::shared_ptr<const AssetProcessor::Builder> builder);
         void OnBuilderRemoved(AZ::Uuid builderId);
-        void OnStatusUpdate(AZ::Uuid builderId, bool process, bool connection, bool busy);
+        void OnStatusUpdate(AZ::Uuid builderId, bool process, bool connection, bool busy, QString file);
 
     Q_SIGNALS:
         void UtilizationUpdate(int builderCount, int busyCount);
@@ -38,14 +38,16 @@ namespace AssetProcessor
     public:
         int rowCount(const QModelIndex& parent) const override;
         QVariant data(const QModelIndex& index, int role) const override;
+        void ShowFilename(bool show);
 
     private:
-        void DoUpdate(AZ::Uuid builderId, bool process, bool connection, bool busy);
+        void DoUpdate(AZ::Uuid builderId, bool process, bool connection, bool busy, QString file);
 
-        using BuilderInfo = AZStd::tuple<AZ::Uuid, bool, bool, bool>;
+        using BuilderInfo = AZStd::tuple<AZ::Uuid, bool, bool, bool, QString>;
 
         AZStd::vector<BuilderInfo> m_builders;
         QTimer m_debounceTimer;
         AZStd::unordered_map<AZ::Uuid, BuilderInfo> m_pendingUpdates;
+        bool m_showFilename = false;
     };
 } // namespace AssetProcessor

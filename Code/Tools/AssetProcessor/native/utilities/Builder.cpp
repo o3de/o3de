@@ -110,9 +110,9 @@ namespace AssetProcessor
         return m_uuid.ToString<AZStd::string>(false, false);
     }
 
-    void Builder::SendStatusUpdate() const
+    void Builder::SendStatusUpdate(QString file) const
     {
-        Q_EMIT StatusUpdate(m_uuid, IsRunning(), IsConnected(), m_busy);
+        Q_EMIT StatusUpdate(m_uuid, IsRunning(), IsConnected(), !file.isEmpty(), file);
     }
 
     void Builder::PumpCommunicator() const

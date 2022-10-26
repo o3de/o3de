@@ -26,14 +26,12 @@ namespace AssetProcessor
                 , m_sourceFile(sourceFile)
                 , m_task(task)
             {
-                m_builder.SendStatusUpdate();
                 AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Request started builder [%s] task (%s) %s \n",
                     m_builder.UuidString().c_str(), m_task.c_str(), m_sourceFile.c_str());
             }
 
             ~BuildTracker()
             {
-                m_builder.SendStatusUpdate();
                 AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Request stopped builder [%s] task (%s) %s \n",
                     m_builder.UuidString().c_str(), m_task.c_str(), m_sourceFile.c_str());
             }
@@ -47,6 +45,8 @@ namespace AssetProcessor
         [[maybe_unused]] AZ::u32 type;
         QByteArray data;
         AZStd::binary_semaphore wait;
+
+        SendStatusUpdate(request.m_sourceFile.c_str());
 
         unsigned int serial;
         AssetProcessor::ConnectionBus::EventResult(serial, m_connectionId, &AssetProcessor::ConnectionBusTraits::SendRequest, netRequest, [&](AZ::u32 msgType, QByteArray msgData)

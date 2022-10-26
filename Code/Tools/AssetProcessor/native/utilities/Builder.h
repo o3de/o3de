@@ -81,10 +81,10 @@ namespace AssetProcessor
             AssetBuilderSDK::JobCancelListener* jobCancelListener = nullptr,
             AZStd::string tempFolderPath = AZStd::string()) const;
 
-        void SendStatusUpdate() const;
+        void SendStatusUpdate(QString file = "") const;
 
     Q_SIGNALS:
-        void StatusUpdate(AZ::Uuid builderId, bool processRunning, bool connected, bool busy) const;
+        void StatusUpdate(AZ::Uuid builderId, bool processRunning, bool connected, bool busy, QString file) const;
 
     protected:
         //! Blocks waiting for the builder to establish a connection

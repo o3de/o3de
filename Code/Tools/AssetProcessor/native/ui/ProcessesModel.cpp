@@ -25,11 +25,11 @@ namespace AssetProcessor
 
                 for (const auto& [id, update] : swapped)
                 {
-                    const auto& [uuid, process, connection, busy] = update;
+                    const auto& [uuid, process, connection, busy, file] = update;
 
                     if (!uuid.IsNull())
                     {
-                        DoUpdate(uuid, process, connection, busy);
+                        DoUpdate(uuid, process, connection, busy, file);
                     }
                 }
             });
@@ -39,7 +39,7 @@ namespace AssetProcessor
     {
         Q_EMIT beginInsertRows(QModelIndex(), m_builders.size(), m_builders.size());
 
-        m_builders.emplace_back(uuid, false, false, false);
+        m_builders.emplace_back(uuid, false, false, false, "");
         connect(builder.get(), &AssetProcessor::Builder::StatusUpdate, this, &ProcessesModel::OnStatusUpdate, Qt::QueuedConnection);
 
         Q_EMIT endInsertRows();
@@ -64,7 +64,7 @@ namespace AssetProcessor
         }
     }
 
-    void ProcessesModel::DoUpdate(AZ::Uuid builderId, bool process, bool connection, bool busy)
+    void ProcessesModel::DoUpdate(AZ::Uuid builderId, bool process, bool connection, bool busy, QString file)
     {
         auto itr = AZStd::find_if(
             m_builders.begin(),
@@ -77,11 +77,12 @@ namespace AssetProcessor
         if (itr != m_builders.end())
         {
             auto rowNumber = AZStd::distance(m_builders.begin(), itr);
-            auto& [builderUuid, builderProcess, builderConnection, builderBusy] = *itr;
+            auto& [builderUuid, builderProcess, builderConnection, builderBusy, builderFile] = *itr;
 
             builderProcess = process;
             builderConnection = connection;
             builderBusy = busy;
+            builderFile = file;
 
             Q_EMIT dataChanged(index(rowNumber, 0), index(rowNumber, 0));
         }
@@ -97,15 +98,15 @@ namespace AssetProcessor
         Q_EMIT UtilizationUpdate(m_builders.size(), numberBusyBuilders);
     }
 
-    void ProcessesModel::OnStatusUpdate(AZ::Uuid builderId, bool process, bool connection, bool busy)
+    void ProcessesModel::OnStatusUpdate(AZ::Uuid builderId, bool process, bool connection, bool busy, QString file)
     {
         if (m_debounceTimer.isActive())
         {
-            m_pendingUpdates[builderId] = { builderId, process, connection, busy };
+            m_pendingUpdates[builderId] = { builderId, process, connection, busy, file };
             return;
         }
 
-        DoUpdate(builderId, process, connection, busy);
+        DoUpdate(builderId, process, connection, busy, file);
         m_debounceTimer.start(200);
     }
 
@@ -126,11 +127,12 @@ namespace AssetProcessor
             return QVariant();
         }
 
-        auto& [uuid, process, connection, busy] = m_builders.at(index.row());
+        auto& [uuid, process, connection, busy, file] = m_builders.at(index.row());
 
         if (role == Qt::DisplayRole)
         {
-            QString status = busy ? "Busy" : connection ? "Idle" : "Boot";
+            QString status = busy ? (m_showFilename ? file : "Busy") : connection ? "Idle" : "Boot";
+
             return QStringLiteral("#%1 %2").arg(index.row(), 2, 10, QLatin1Char('0')).arg(status);
         }
 
@@ -154,5 +156,10 @@ namespace AssetProcessor
         }
 
         return QVariant();
+    }
+
+    void ProcessesModel::ShowFilename(bool show)
+    {
+        m_showFilename = show;
     }
 } // namespace AssetProcessor

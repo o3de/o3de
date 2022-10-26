@@ -685,6 +685,18 @@ void MainWindow::SetupProcessesTab()
         ui->processUtilization->setText(QStringLiteral("Utilization: %1% (%2/%3)").arg(utilization, 0, 'f', 0).arg(busyCount).arg(builderCount));
         ui->utilizationBar->setValue(int(utilization));
     });
+
+    QObject::connect(ui->processesGrid, &QRadioButton::toggled, [this](bool)
+    {
+        ui->processList->setViewMode(QListView::IconMode);
+        m_processesModel->ShowFilename(false);
+    });
+
+    QObject::connect(ui->processesDetails, &QRadioButton::toggled, [this](bool)
+    {
+        ui->processList->setViewMode(QListView::ListMode);
+        m_processesModel->ShowFilename(true);
+    });
 }
 
 void MainWindow::SetupAssetServerTab()
