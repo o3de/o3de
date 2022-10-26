@@ -12,7 +12,7 @@
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/StandardPluginsConfig.h>
 #include <MCore/Source/StandardHeaders.h>
-#include <QDialog>
+#include <QWidget>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QComboBox)
@@ -28,12 +28,12 @@ namespace EMStudio
     class AnimGraphPlugin;
     class ValueParameterEditor;
 
-    class ParameterCreateEditDialog
-        : public QDialog
+    class ParameterCreateEditWidget
+        : public QWidget
         , private AzToolsFramework::IPropertyEditorNotify
     {
         Q_OBJECT
-        MCORE_MEMORYOBJECTCATEGORY(ParameterCreateEditDialog, EMFX_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS_ANIMGRAPH);
+        MCORE_MEMORYOBJECTCATEGORY(ParameterCreateEditWidget, EMFX_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS_ANIMGRAPH);
 
     public:
         enum
@@ -43,10 +43,10 @@ namespace EMStudio
             VALUE_MAXIMUM = 2
         };
 
-        ParameterCreateEditDialog(AnimGraphPlugin* plugin, QWidget* parent, const EMotionFX::Parameter* editParameter = nullptr);
-        ~ParameterCreateEditDialog();
+        ParameterCreateEditWidget(AnimGraphPlugin* plugin, QWidget* parent);
+        ~ParameterCreateEditWidget();
 
-        void Init();
+        void Reinit(const EMotionFX::Parameter* editParameter = nullptr);
 
         const AZStd::unique_ptr<EMotionFX::Parameter>& GetParameter() const { return m_parameter; }
 
@@ -55,6 +55,9 @@ namespace EMStudio
     protected slots:
         void OnValueTypeChange(int valueType);
         void OnValidate();
+
+    Q_SIGNALS:
+        void accept();
 
     private:
         void InitDynamicInterface(const AZ::TypeId& typeID);
@@ -68,6 +71,7 @@ namespace EMStudio
 
     private:
         AnimGraphPlugin*                    m_plugin;
+        QLabel*                             m_valueTypeLabel;
         QComboBox*                          m_valueTypeCombo;
         QFrame*                             m_previewFrame;
         AzToolsFramework::ReflectedPropertyEditor* m_previewWidget;
@@ -78,6 +82,6 @@ namespace EMStudio
         AZStd::unique_ptr<EMotionFX::Parameter> m_parameter;
         AZStd::string                       m_originalName;
 
-        static int                          s_parameterEditorMinWidth;
+        static const int                    s_parameterEditorMinWidth;
     };
 } // namespace EMStudio
