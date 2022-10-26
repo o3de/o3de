@@ -153,6 +153,12 @@ namespace AssetProcessor
         m_builderDebugOutput[builderId].m_assetsProcessed.push_back(sourceAsset);
     }
 
+    void BuilderManager::ConnectForStatusUpdate(QObject* object)
+    {
+        QObject::connect(&m_builderList, SIGNAL(BuilderAdded(AZ::Uuid, AZStd::shared_ptr<const AssetProcessor::Builder>)), object, SLOT(OnBuilderAdded(AZ::Uuid, AZStd::shared_ptr<const AssetProcessor::Builder>)), Qt::QueuedConnection);
+        QObject::connect(&m_builderList, SIGNAL(BuilderRemoved(AZ::Uuid)), object, SLOT(OnBuilderRemoved(AZ::Uuid)), Qt::QueuedConnection);
+    }
+
     BuilderRef BuilderManager::GetBuilder(BuilderPurpose purpose)
     {
         AZStd::shared_ptr<Builder> newBuilder;

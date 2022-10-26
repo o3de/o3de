@@ -22,12 +22,14 @@ namespace AssetProcessor
                 return;
             }
 
-            m_createJobsBuilder = AZStd::move(builder);
+            m_createJobsBuilder = builder;
         }
         else
         {
             m_builders.emplace(builder->GetUuid(), builder);
         }
+
+        Q_EMIT BuilderAdded(builder->GetUuid(), builder);
     }
 
     AZStd::shared_ptr<Builder> BuilderList::Find(AZ::Uuid uuid)
@@ -85,6 +87,7 @@ namespace AssetProcessor
                     return BuilderRef(builder);
                 }
 
+                Q_EMIT BuilderRemoved(itr->first);
                 itr = m_builders.erase(itr);
             }
             else
@@ -123,6 +126,7 @@ namespace AssetProcessor
                 {
                     uuidString = builder->UuidString();
                     builder->m_connectionId = 0;
+                    Q_EMIT BuilderRemoved(itr->first);
                     m_builders.erase(itr);
 
                     return uuidString;
@@ -141,6 +145,7 @@ namespace AssetProcessor
         }
         else
         {
+            Q_EMIT BuilderRemoved(uuid);
             m_builders.erase(uuid);
         }
     }

@@ -7,11 +7,13 @@
  */
 #pragma once
 
+#if !defined(Q_MOC_RUN)
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <utilities/assetUtils.h>
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzFramework/Process/ProcessCommunicatorTracePrinter.h>
+#endif
 
 namespace AssetProcessor
 {
@@ -35,11 +37,13 @@ namespace AssetProcessor
     };
 
     //! Wrapper for managing a single builder process and sending job requests to it
-    class Builder
+    class Builder : public QObject
     {
         friend class BuilderManager;
         friend struct BuilderRef;
         friend class BuilderList;
+
+        Q_OBJECT
 
     public:
         Builder(const AssetUtilities::QuitListener& quitListener, AZ::Uuid uuid)
@@ -62,16 +66,9 @@ namespace AssetProcessor
         //! Returns true if the builder exe has established a connection
         bool IsConnected() const;
 
-        //! Blocks waiting for the builder to establish a connection
-        AZ::Outcome<void, AZStd::string> WaitForConnection();
-
         AZ::u32 GetConnectionId() const;
         AZ::Uuid GetUuid() const;
         AZStd::string UuidString() const;
-
-        void PumpCommunicator() const;
-        void FlushCommunicator() const;
-        void TerminateProcess(AZ::u32 exitCode) const;
 
         //! Sends the job over to the builder and blocks until the response is received or the builder crashes/times out
         template<typename TNetRequest, typename TNetResponse, typename TRequest, typename TResponse>
@@ -84,7 +81,19 @@ namespace AssetProcessor
             AssetBuilderSDK::JobCancelListener* jobCancelListener = nullptr,
             AZStd::string tempFolderPath = AZStd::string()) const;
 
+        void SendStatusUpdate() const;
+
+    Q_SIGNALS:
+        void StatusUpdate(AZ::Uuid builderId, bool processRunning, bool connected, bool busy) const;
+
     protected:
+        //! Blocks waiting for the builder to establish a connection
+        AZ::Outcome<void, AZStd::string> WaitForConnection();
+
+        void PumpCommunicator() const;
+        void FlushCommunicator() const;
+        void TerminateProcess(AZ::u32 exitCode) const;
+
         //! Starts the builder process and waits for it to connect
         virtual AZ::Outcome<void, AZStd::string> Start(BuilderPurpose purpose);
 

@@ -70,6 +70,8 @@ set(FILES
     native/ui/SourceAssetTreeModel.cpp
     native/ui/SourceAssetTreeFilterModel.h
     native/ui/SourceAssetTreeFilterModel.cpp
+    native/ui/ProcessesModel.h
+    native/ui/ProcessesModel.cpp
     native/utilities/GUIApplicationServer.cpp
     native/utilities/GUIApplicationServer.h
     native/utilities/GUIApplicationManager.cpp

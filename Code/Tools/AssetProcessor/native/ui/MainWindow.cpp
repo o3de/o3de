@@ -239,6 +239,7 @@ void MainWindow::Activate()
     ui->buttonList->addTab(QStringLiteral("Logs"));
     ui->buttonList->addTab(QStringLiteral("Connections"));
     ui->buttonList->addTab(QStringLiteral("Builders"));
+    ui->buttonList->addTab(QStringLiteral("Processes"));
     ui->buttonList->addTab(QStringLiteral("Tools"));
     ui->buttonList->addTab(QStringLiteral("Shared Cache"));
 
@@ -579,6 +580,8 @@ void MainWindow::Activate()
     // Tools tab:
     connect(ui->fullScanButton, &QPushButton::clicked, this, &MainWindow::OnRescanButtonClicked);
 
+    SetupProcessesTab();
+
     // Note: the settings can't be used in ::MainWindow(), because the application name
     // hasn't been set up and therefore the settings will load from somewhere different than later
     // on.
@@ -662,6 +665,26 @@ namespace MainWindowInternal
         Pattern = 3,
         Remove = 4
     };
+}
+
+void MainWindow::SetupProcessesTab()
+{
+    m_processesModel = new AssetProcessor::ProcessesModel();
+    auto* manager = AZ::Interface<AssetProcessor::IBuilderManagerStatus>::Get();
+
+    if(manager)
+    {
+        AZ::Interface<AssetProcessor::IBuilderManagerStatus>::Get()->ConnectForStatusUpdate(m_processesModel);
+    }
+
+    ui->processList->setModel(m_processesModel);
+
+    QObject::connect(m_processesModel, &AssetProcessor::ProcessesModel::UtilizationUpdate, [this](int builderCount, int busyCount)
+    {
+        float utilization = busyCount / float(builderCount) * 100.0f;
+        ui->processUtilization->setText(QStringLiteral("Utilization: %1% (%2/%3)").arg(utilization, 0, 'f', 0).arg(busyCount).arg(builderCount));
+        ui->utilizationBar->setValue(int(utilization));
+    });
 }
 
 void MainWindow::SetupAssetServerTab()

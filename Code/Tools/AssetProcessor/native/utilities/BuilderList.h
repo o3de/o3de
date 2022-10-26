@@ -7,15 +7,19 @@
  */
 #pragma once
 
+#if !defined(Q_MOC_RUN)
 #include <AzCore/std/string/string.h>
 #include <utilities/Builder.h>
+#include <QObject>
+#endif
 
 namespace AssetProcessor
 {
     //! Helper class that keeps track of the Builders and manages reserving a builder specifically for CreateJobs
     //! This class is not inherently thread-safe and must be locked before any access
-    class BuilderList
+    class BuilderList : public QObject
     {
+        Q_OBJECT
     public:
         BuilderList() = default;
 
@@ -27,6 +31,10 @@ namespace AssetProcessor
         void PumpIdleBuilders();
 
         AZ_DISABLE_COPY_MOVE(BuilderList);
+
+    Q_SIGNALS:
+        void BuilderAdded(AZ::Uuid builderId, AZStd::shared_ptr<const AssetProcessor::Builder> builder);
+        void BuilderRemoved(AZ::Uuid builderId);
 
     protected:
         AZStd::unordered_map<AZ::Uuid, AZStd::shared_ptr<Builder>> m_builders;

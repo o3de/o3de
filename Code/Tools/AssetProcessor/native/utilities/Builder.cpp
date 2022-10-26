@@ -64,6 +64,7 @@ namespace AssetProcessor
 
             if (result)
             {
+                SendStatusUpdate();
                 return AZ::Success();
             }
 
@@ -109,6 +110,11 @@ namespace AssetProcessor
         return m_uuid.ToString<AZStd::string>(false, false);
     }
 
+    void Builder::SendStatusUpdate() const
+    {
+        Q_EMIT StatusUpdate(m_uuid, IsRunning(), IsConnected(), m_busy);
+    }
+
     void Builder::PumpCommunicator() const
     {
         if (m_tracePrinter)
@@ -137,6 +143,8 @@ namespace AssetProcessor
 
     AZ::Outcome<void, AZStd::string> Builder::Start(BuilderPurpose purpose)
     {
+        SendStatusUpdate();
+
         // Get the current BinXXX folder based on the current running AP
         QString applicationDir = QCoreApplication::instance()->applicationDirPath();
 
@@ -156,6 +164,8 @@ namespace AssetProcessor
         const AZStd::vector<AZStd::string> params = BuildParams("resident", buildersFolder.c_str(), UuidString(), "", "", purpose);
 
         m_processWatcher = LaunchProcess(fullExePathString.c_str(), params);
+
+        SendStatusUpdate();
 
         if (!m_processWatcher)
         {
@@ -367,6 +377,7 @@ namespace AssetProcessor
             AZ_Warning("BuilderRef", m_builder->m_busy, "Builder reference is valid but is already set to not busy");
 
             m_builder->m_busy = false;
+            m_builder->SendStatusUpdate();
             m_builder = nullptr;
         }
     }

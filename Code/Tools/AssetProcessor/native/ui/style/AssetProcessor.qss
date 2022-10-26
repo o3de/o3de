@@ -212,3 +212,23 @@ QWidget#SharedCachePage {
     background-color: rgba(34, 34, 34, 0.5);
     border: none;
 }
+
+QListView#processList {
+    font-family: "Courier New", Courier, monospace;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+QListView#processList::item {
+    outline: 0 !important;
+    min-height: 32px;
+    border: 1px solid grey;
+    padding: 4px;
+    border-radius: 0;
+}
+
+QListView#processList::item:hover,
+QListView#processList::item:disabled:hover,
+QListView#processList::item:hover:!active {
+    background: transparent;
+}

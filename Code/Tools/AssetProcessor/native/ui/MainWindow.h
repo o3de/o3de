@@ -20,6 +20,7 @@
 #include <native/utilities/AssetUtilEBusHelper.h>
 #include <native/utilities/PlatformConfiguration.h>
 #include <native/ui/CacheServerData.h>
+#include <native/ui/ProcessesModel.h>
 #endif
 
 namespace AzToolsFramework
@@ -40,6 +41,7 @@ class QSettings;
 
 namespace AssetProcessor
 {
+    class Builder;
     class AssetTreeFilterModel;
     class JobSortFilterProxyModel;
     class JobsModel;
@@ -78,7 +80,9 @@ public:
         Logs,
         Connections,
         Builders,
-        Tools
+        Processes,
+        Tools,
+        SharedCache,
     };
 
     struct Config
@@ -171,6 +175,8 @@ private:
     AssetProcessor::BuilderInfoMetricsSortModel* m_builderInfoMetricsSort = nullptr;
     AssetProcessor::CacheServerData m_cacheServerData;
 
+    AssetProcessor::ProcessesModel* m_processesModel = nullptr;
+
     void SetContextLogDetails(const QMap<QString, QString>& details);
     void ClearContextLogDetails();
 
@@ -234,6 +240,7 @@ private:
     /// Fires off one final refresh before invalidating the filter refresh timer.
     void ShutdownAssetTabFilterRefresh();
 
+    void SetupProcessesTab();
     void SetupAssetServerTab();
     void AddPatternRow(AZStd::string_view name, AssetBuilderSDK::AssetBuilderPattern::PatternType type, AZStd::string_view pattern, bool enable);
     void AssembleAssetPatterns();

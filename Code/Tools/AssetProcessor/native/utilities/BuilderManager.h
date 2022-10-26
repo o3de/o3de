@@ -45,6 +45,14 @@ namespace AssetProcessor
 
     using BuilderManagerBus = AZ::EBus<BuilderManagerBusTraits>;
 
+    struct IBuilderManagerStatus
+    {
+        AZ_RTTI(IBuilderManagerStatus, "{E2CEA738-52EF-44F1-8014-D8F6152DA69D}");
+
+        ~IBuilderManagerStatus() = default;
+        virtual void ConnectForStatusUpdate(QObject* object) = 0;
+    };
+
     class BuilderDebugOutput
     {
     public:
@@ -54,19 +62,23 @@ namespace AssetProcessor
     //! Manages the builder pool
     class BuilderManager
         : public BuilderManagerBus::Handler
+        , public AZ::Interface<IBuilderManagerStatus>::Registrar
     {
     public:
         explicit BuilderManager(ConnectionManager* connectionManager);
-        ~BuilderManager();
+        ~BuilderManager() override;
 
         // Disable copy
         AZ_DISABLE_COPY_MOVE(BuilderManager);
 
         void ConnectionLost(AZ::u32 connId);
 
-        //BuilderManagerBus
+        // BuilderManagerBus
         BuilderRef GetBuilder(BuilderPurpose purpose) override;
         void AddAssetToBuilderProcessedList(const AZ::Uuid& builderId, const AZStd::string& sourceAsset) override;
+
+        // IBuilderManagerStatus
+        void ConnectForStatusUpdate(QObject* object) override;
 
     protected:
 
