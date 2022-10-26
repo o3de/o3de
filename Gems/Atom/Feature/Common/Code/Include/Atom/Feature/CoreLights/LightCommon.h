@@ -8,11 +8,13 @@
 
 #pragma once
 
+#include <AzCore/Math/Internal/MathTypes.h>
+
 namespace AZ::Render::LightCommon
 {
     inline float GetRadiusFromInvRadiusSquared(float invRadiusSqaured)
     {
-        return (invRadiusSqaured <= 0.0f) ? 1.0f : sqrt(1.0f / invRadiusSqaured);
+        return (invRadiusSqaured <= 0.0f) ? 1.0f : Sqrt(1.0f / invRadiusSqaured);
     }
 
 } // namespace AZ::Render::LightCommon
