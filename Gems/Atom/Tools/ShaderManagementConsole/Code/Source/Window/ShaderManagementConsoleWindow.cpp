@@ -61,10 +61,10 @@ namespace ShaderManagementConsole
         
         QMessageBox msgBox;
         msgBox.setText("Where do you want to save the list?");
-        QPushButton* projectBtn = msgBox.addButton(QObject::tr("Save to project"), QMessageBox::YesRole);
-        QPushButton* engineBtn = msgBox.addButton(QObject::tr("Save to engine"), QMessageBox::NoRole);
-        QPushButton* cancelBtn = msgBox.addButton(QObject::tr("Cancel"), QMessageBox::RejectRole);
-        int ret = msgBox.exec();
+        QPushButton* projectBtn = msgBox.addButton(QObject::tr("Save to project"), QMessageBox::ActionRole);
+        QPushButton* engineBtn = msgBox.addButton(QObject::tr("Save to engine"), QMessageBox::ActionRole);
+        msgBox.addButton(QObject::tr("Cancel"), QMessageBox::RejectRole);
+        msgBox.exec();
 
         AZ::IO::Path result;
         if (msgBox.clickedButton() == projectBtn)
@@ -94,10 +94,6 @@ namespace ShaderManagementConsole
         {
             shaderFullPath.ReplaceExtension("shadervariantlist");
             result = shaderFullPath;
-        }
-        else if (msgBox.clickedButton() == cancelBtn || ret == QMessageBox::Close)
-        {
-            result = "";
         }
 
         return result.Native();
