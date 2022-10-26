@@ -72,7 +72,7 @@ namespace AZ
             ConstViewPtr GetDefaultView() const;
 
             //! Gets the stereoscopic view associated with this ViewportContext.
-            //! Alternatively, use AZ::RPI::ViewportContextRequests::Get()->GetCurrentViewGroup()->GetView(AZ::RPI::ViewType::XrLeft|XrRight).
+            //! Alternatively, use AZ::RPI::ViewportContextRequests::Get()->GetCurrentViewGroup()->GetView(AZ::RPI::ViewType).
             ViewPtr GetStereoscopicView(AZ::RPI::ViewType viewType);
             ConstViewPtr GetStereoscopicView(AZ::RPI::ViewType viewType) const;
 
