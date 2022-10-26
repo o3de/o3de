@@ -226,6 +226,7 @@ QListView#processList {
 QListView#processList::item {
     border: 1px solid grey;
     border-radius: 0;
+    padding: 0 4px
 }
 
 QListView#processList::item:hover,
