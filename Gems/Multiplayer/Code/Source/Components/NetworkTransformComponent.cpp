@@ -197,4 +197,11 @@ namespace Multiplayer
             }
         }
     }
+
+    void NetworkTransformComponentController::HandleMultiplayerTeleport(
+        [[maybe_unused]] AzNetworking::IConnection* invokingConnection, const AZ::Vector3& teleportToPosition)
+    {
+        GetEntity()->GetTransform()->SetWorldTranslation(teleportToPosition);
+        ModifyResetCount()++;
+    }
 }
