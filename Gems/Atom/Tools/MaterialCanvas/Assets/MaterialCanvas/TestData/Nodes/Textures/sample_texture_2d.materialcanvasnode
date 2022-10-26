@@ -45,6 +45,7 @@
                 "supportedDataTypes": [
                     "image"
                 ],
+                "supportsEditingOnNode": false,
                 "settings": {
                     "materialInputs": [
                         "SLOTSTANDARDSRGMEMBER"
@@ -58,6 +59,7 @@
                 "supportedDataTypes": [
                     "sampler"
                 ],
+                "supportsEditingOnNode": false,
                 "settings": {
                     "materialInputs": [
                         "SLOTSTANDARDSRGMEMBER"
@@ -77,13 +79,6 @@
                     "float4",
                     "color"
                 ],
-                "defaultValue": {
-                    "$type": "Vector2",
-                    "Value": [
-                        0.0,
-                        0.0
-                    ]
-                },
                 "settings": {
                     "instructions": [
                         "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"

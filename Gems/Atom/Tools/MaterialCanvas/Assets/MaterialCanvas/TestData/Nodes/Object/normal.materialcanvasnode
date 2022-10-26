@@ -19,6 +19,45 @@
                         "SLOTTYPE NODEID_SLOTNAME = O3DE_MC_NORMAL;"
                     ]
                 }
+            },
+            {
+                "name": "outX",
+                "displayName": "X",
+                "description": "X",
+                "supportedDataTypes": [
+                    "float"
+                ],
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE NODEID_SLOTNAME = O3DE_MC_NORMAL.x;"
+                    ]
+                }
+            },
+            {
+                "name": "outY",
+                "displayName": "Y",
+                "description": "Y",
+                "supportedDataTypes": [
+                    "float"
+                ],
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE NODEID_SLOTNAME = O3DE_MC_NORMAL.y;"
+                    ]
+                }
+            },
+            {
+                "name": "outZ",
+                "displayName": "Z",
+                "description": "Z",
+                "supportedDataTypes": [
+                    "float"
+                ],
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE NODEID_SLOTNAME = O3DE_MC_NORMAL.z;"
+                    ]
+                }
             }
         ]
     }
