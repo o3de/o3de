@@ -42,9 +42,7 @@ namespace AZ::Render
     private:
 
         //! RPI::SceneNotificationBus::Handler
-        void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline) override;
-        void OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline) override;
-        void OnRenderPipelineRemoved(RPI::RenderPipeline* pipeline) override;
+        void OnRenderPipelineChanged(AZ::RPI::RenderPipeline* pipeline, RPI::SceneNotification::RenderPipelineChangeType changeType) override;
         
         void InitializeAtmosphere(AtmosphereId id);
         void UpdateBackgroundClearColor();

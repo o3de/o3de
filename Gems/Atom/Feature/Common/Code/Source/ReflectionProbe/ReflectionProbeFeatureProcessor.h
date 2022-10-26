@@ -81,9 +81,7 @@ namespace AZ
                 RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout, RHI::DrawListTag& drawListTag);
 
             // RPI::SceneNotificationBus::Handler overrides
-            void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline) override;
-            void OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline) override;
-            void OnRenderPipelineRemoved(RPI::RenderPipeline* pipeline) override;
+            void OnRenderPipelineChanged(AZ::RPI::RenderPipeline* pipeline, RPI::SceneNotification::RenderPipelineChangeType changeType) override;
 
             void UpdatePipelineStates();
 

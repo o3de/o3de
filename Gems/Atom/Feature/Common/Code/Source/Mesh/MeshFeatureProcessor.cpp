@@ -518,12 +518,8 @@ namespace AZ
             m_forceRebuildDrawPackets = true;
         }
 
-        void MeshFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
-        {
-            m_forceRebuildDrawPackets = true;;
-        }
-
-        void MeshFeatureProcessor::OnRenderPipelineRemoved([[maybe_unused]] RPI::RenderPipeline* pipeline)
+        void MeshFeatureProcessor::OnRenderPipelineChanged([[maybe_unused]] RPI::RenderPipeline* pipeline,
+            [[maybe_unused]] RPI::SceneNotification::RenderPipelineChangeType changeType)
         {
             m_forceRebuildDrawPackets = true;
         }
@@ -671,6 +667,15 @@ namespace AZ
         {
             m_scene->GetCullingScene()->UnregisterCullable(m_cullable);
 
+            for (const auto& materialAssignment : m_materialAssignments)
+            {
+                const AZ::Data::Instance<RPI::Material>& materialInstance = materialAssignment.second.m_materialInstance;
+                if (materialInstance.get())
+                {
+                    MaterialAssignmentNotificationBus::MultiHandler::BusDisconnect(materialInstance->GetAssetId());
+                }
+            }
+
             RemoveRayTracingData();
 
             m_drawPacketListsByLod.clear();
@@ -695,6 +700,15 @@ namespace AZ
                 RHI::ShaderInputNameIndex objectIdIndex = "m_objectId";
                 objectSrg->SetConstant(objectIdIndex, m_objectId.GetIndex());
                 objectIdIndex.AssertValid();
+            }
+
+            for (const auto& materialAssignment : m_materialAssignments)
+            {
+                const AZ::Data::Instance<RPI::Material>& materialInstance = materialAssignment.second.m_materialInstance;
+                if (materialInstance.get())
+                {
+                    MaterialAssignmentNotificationBus::MultiHandler::BusConnect(materialInstance->GetAssetId());
+                }
             }
 
             if (m_visible && m_descriptor.m_isRayTracingEnabled)
@@ -799,6 +813,8 @@ namespace AZ
 
         void ModelDataInstance::SetRayTracingData()
         {
+            RemoveRayTracingData();
+
             if (!m_model)
             {
                 return;
@@ -1495,6 +1511,14 @@ namespace AZ
         {
             m_visible = isVisible;
             m_cullable.m_isHidden = !isVisible;
+        }
+
+        void ModelDataInstance::OnRebuildMaterialInstance()
+        {
+            if (m_visible && m_descriptor.m_isRayTracingEnabled)
+            {
+                SetRayTracingData();
+            }
         }
     } // namespace Render
 } // namespace AZ
