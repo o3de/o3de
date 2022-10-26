@@ -52,7 +52,7 @@ namespace AZ::Render
 
         void BindLUTs();
         void BuildShaderData();
-        bool NeedsShaderDataRebuild();
+        bool NeedsShaderDataRebuild() const;
         bool LutParamsEqual(const SkyAtmosphereParams& lhs, const SkyAtmosphereParams& rhs) const;
         void UpdatePassData();
 

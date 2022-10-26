@@ -201,7 +201,7 @@ namespace AZ::Render
         }
     }
 
-    bool SkyAtmospherePass::NeedsShaderDataRebuild()
+    bool SkyAtmospherePass::NeedsShaderDataRebuild() const
     {
         if (m_children.empty())
         {
