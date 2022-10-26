@@ -21,8 +21,5 @@ namespace ScriptCanvasMultiplayer
         : public ScriptCanvas::Nodeable
     {
         SCRIPTCANVAS_NODE(IfNetRoleNodeable);
-    public:
-
-        void IsNetRole(AZ::EntityId entityId);
     };
 } // namespace ScriptCanvasMultiplayer

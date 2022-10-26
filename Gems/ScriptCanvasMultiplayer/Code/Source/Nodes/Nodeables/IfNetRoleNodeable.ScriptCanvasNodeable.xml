@@ -3,23 +3,18 @@
 <ScriptCanvas Include="Source/Nodes/Nodeables/IfNetRoleNodeable.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<Class Name="IfNetRoleNodeable"
 	       QualifiedName="ScriptCanvasMultiplayer::IfNetRoleNodeable"
-	       PreferredClassName="IfNetRole"
+	       PreferredClassName="If Multiplayer Role"
 	       Category="Multiplayer"
 	       Description="An execution flow gate that continues to the path based on the network role of a given entity.">
 
-		<In Name="In" Description="Input signal"/>
+		<Input Name="In" Description="Branches on multiplayer role" DisplayGroup="Branches On Multiplayer Role">
+			<Parameter Name="multiplayer Entity" Type="AZ::EntityId" Description="An entity with Net Bind component" />
 
-		<Out Name="Client" Description="Signaled if the entity has a Client network role."/>
-		<Out Name="Autonomous" Type="ScriptCanvas::Data::StringType" />
-		<Out Name="Authority" Type="ScriptCanvas::Data::StringType" />
-		<Out Name="Server" Type="ScriptCanvas::Data::StringType"/>
-		<Out Name="Unknown" Type="ScriptCanvas::Data::StringType"/>
-
-		<Property Name="Condition"
-		          Description="A multiplayer entity"
-		          Type="AZ::EntityId"
-		          IsInput="True"
-		          IsOutput="False" />
-
+			<Branch Name="If Client Role" DisplayGroup="Branches On Multiplayer Role" />
+			<Branch Name="If Autonomous Role" DisplayGroup="Branches On Multiplayer Role" />
+			<Branch Name="If Authority Role" DisplayGroup="Branches On Multiplayer Role" />
+			<Branch Name="If Server Role" DisplayGroup="Branches On Multiplayer Role" />
+			<Branch Name="If Unknown Role" Description="Returned when multiplayer isn't configured" DisplayGroup="Branches On Multiplayer Role" />
+		</Input>
 	</Class>
 </ScriptCanvas>

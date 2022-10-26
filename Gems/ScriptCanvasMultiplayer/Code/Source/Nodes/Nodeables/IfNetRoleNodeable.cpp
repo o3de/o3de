@@ -13,22 +13,22 @@
 
 namespace ScriptCanvasMultiplayer
 {
-    void IfNetRoleNodeable::IsNetRole(AZ::EntityId entityId)
+    void IfNetRoleNodeable::In(AZ::EntityId multiplayerEntity)
     {
         if (!Multiplayer::GetMultiplayer())
         {
-            ExecutionOut(4);
+            CallIfUnknownRole();
             return;
         }
 
         const Multiplayer::INetworkEntityManager* networkEntityManager = Multiplayer::GetMultiplayer()->GetNetworkEntityManager();
         if (!networkEntityManager)
         {
-            ExecutionOut(4);
+            CallIfUnknownRole();
             return;
         }
 
-        const Multiplayer::NetEntityId netEntityId = networkEntityManager->GetNetEntityIdById(entityId);
+        const Multiplayer::NetEntityId netEntityId = networkEntityManager->GetNetEntityIdById(multiplayerEntity);
         const Multiplayer::ConstNetworkEntityHandle handle = networkEntityManager->GetEntity(netEntityId);
         
         if (handle.Exists())
@@ -40,26 +40,26 @@ namespace ScriptCanvasMultiplayer
                 switch (role)
                 {
                 case Multiplayer::NetEntityRole::InvalidRole:
-                    ExecutionOut(4);
+                    CallIfUnknownRole();
                     break;
                 case Multiplayer::NetEntityRole::Client:
-                    ExecutionOut(0);
+                    CallIfClientRole();
                     break;
                 case Multiplayer::NetEntityRole::Autonomous:
-                    ExecutionOut(1);
+                    CallIfAutonomousRole();
                     break;
                 case Multiplayer::NetEntityRole::Server:
-                    ExecutionOut(2);
+                    CallIfServerRole();
                     break;
                 case Multiplayer::NetEntityRole::Authority:
-                    ExecutionOut(3);
+                    CallIfAuthorityRole();
                     break;
                 }
             }
         }
         else
         {
-            ExecutionOut(4);
+            CallIfUnknownRole();
         }
     }
 } // namespace ScriptCanvasMultiplayer
