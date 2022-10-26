@@ -237,7 +237,7 @@ namespace O3DE::ProjectManager
             else
             {
                 m_gemsToRegisterWithProject.insert(directory);
-                AZ::Outcome<GemInfo, void> gemInfoResult = PythonBindingsInterface::Get()->GetGemInfo(directory);
+                AZ::Outcome<GemInfo> gemInfoResult = PythonBindingsInterface::Get()->GetGemInfo(directory);
                 if (gemInfoResult)
                 {
                     // We added this local gem so set it's status to downloaded
