@@ -8,21 +8,21 @@
 
 #include <AzCore/Interface/Interface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
-#include <AzToolsFramework/Prefab/Undo/PrefabUndoFocusedInstanceAddEntity.h>
+#include <AzToolsFramework/Prefab/Undo/PrefabUndoAddEntity.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoUtils.h>
 
 namespace AzToolsFramework
 {
     namespace Prefab
     {
-        PrefabUndoFocusedInstanceAddEntity::PrefabUndoFocusedInstanceAddEntity(const AZStd::string& undoOperationName)
+        PrefabUndoAddEntity::PrefabUndoAddEntity(const AZStd::string& undoOperationName)
             : PrefabUndoBase(undoOperationName)
         {
             m_prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
             AZ_Assert(m_prefabSystemComponentInterface, "Failed to grab PrefabSystemComponentInterface");
         }
 
-        void PrefabUndoFocusedInstanceAddEntity::Capture(
+        void PrefabUndoAddEntity::Capture(
             const AZ::Entity& parentEntity,
             const AZ::Entity& newEntity,
             Instance& focusedInstance)

@@ -9,8 +9,8 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabUndoHelpers.h>
-#include <AzToolsFramework/Prefab/Undo/PrefabUndoFocusedInstanceAddEntity.h>
-#include <AzToolsFramework/Prefab/Undo/PrefabUndoUnfocusedInstanceAddEntity.h>
+#include <AzToolsFramework/Prefab/Undo/PrefabUndoAddEntity.h>
+#include <AzToolsFramework/Prefab/Undo/PrefabUndoAddEntityAsOverride.h>
 
 namespace AzToolsFramework
 {
@@ -62,16 +62,16 @@ namespace AzToolsFramework
             {
                 if (&owningInstance == &focusedInstance)
                 {
-                    PrefabUndoFocusedInstanceAddEntity* addEntityUndoState =
-                        aznew PrefabUndoFocusedInstanceAddEntity("Undo Adding Entity");
+                    PrefabUndoAddEntity* addEntityUndoState =
+                        aznew PrefabUndoAddEntity("Undo Adding Entity");
                     addEntityUndoState->SetParent(undoBatch);
                     addEntityUndoState->Capture(parentEntity, newEntity, focusedInstance);
                     addEntityUndoState->Redo();
                 }
                 else
                 {
-                    PrefabUndoUnfocusedInstanceAddEntity* addEntityUndoState =
-                        aznew PrefabUndoUnfocusedInstanceAddEntity("Undo Adding Entity");
+                    PrefabUndoAddEntityAsOverride* addEntityUndoState =
+                        aznew PrefabUndoAddEntityAsOverride("Undo Adding Entity");
                     addEntityUndoState->SetParent(undoBatch);
                     addEntityUndoState->Capture(parentEntity, newEntity, owningInstance, focusedInstance);
                     addEntityUndoState->Redo();

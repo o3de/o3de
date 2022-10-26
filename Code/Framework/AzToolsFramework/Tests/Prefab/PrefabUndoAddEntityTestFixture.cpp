@@ -73,64 +73,64 @@ namespace UnitTest
         return newEntityAlias;
     }
 
-    CreateFocusedInstanceAddEntityUndoNodeResult PrefabUndoAddEntityTestFixture::CreateFocusedInstanceAddEntityUndoNode(
+    CreatePrefabUndoAddEntityNodeResult PrefabUndoAddEntityTestFixture::CreatePrefabUndoAddEntityNode(
         const AZ::Entity& parentEntity, const AZ::Entity& newEntity, Instance& focusedInstance,
         const AZStd::string& undoAddEntityOperationName)
     {
-        PrefabUndoFocusedInstanceAddEntity undoAddEntityNode(undoAddEntityOperationName);
+        PrefabUndoAddEntity undoAddEntityNode(undoAddEntityOperationName);
         undoAddEntityNode.Capture(parentEntity, newEntity, focusedInstance);
         return AZ::Success(AZStd::move(undoAddEntityNode));
     }
 
-    CreateFocusedInstanceAddEntityUndoNodeResult PrefabUndoAddEntityTestFixture::CreateFocusedInstanceAddEntityUndoNode(
+    CreatePrefabUndoAddEntityNodeResult PrefabUndoAddEntityTestFixture::CreatePrefabUndoAddEntityNode(
         const EntityAlias& newEntityAlias, Instance& focusedInstance,
         const AZStd::string& undoAddEntityOperationName)
     {
         AZ::Entity& newEntity = GetEntityFromOwningInstance(newEntityAlias, focusedInstance);
-        return CreateFocusedInstanceAddEntityUndoNode(
+        return CreatePrefabUndoAddEntityNode(
             focusedInstance.GetContainerEntity()->get(), newEntity,
             focusedInstance,
             undoAddEntityOperationName);
     }
 
-    CreateFocusedInstanceAddEntityUndoNodeResult PrefabUndoAddEntityTestFixture::CreateFocusedInstanceAddEntityUndoNode(
+    CreatePrefabUndoAddEntityNodeResult PrefabUndoAddEntityTestFixture::CreatePrefabUndoAddEntityNode(
         const EntityAlias& parentEntityAlias, const EntityAlias& newEntityAlias,
         Instance& focusedInstance,
         const AZStd::string& undoAddEntityOperationName)
     {
         AZ::Entity& parentEntity = GetEntityFromOwningInstance(parentEntityAlias, focusedInstance);
         AZ::Entity& newEntity = GetEntityFromOwningInstance(newEntityAlias, focusedInstance);
-        return CreateFocusedInstanceAddEntityUndoNode(
+        return CreatePrefabUndoAddEntityNode(
             parentEntity, newEntity,
             focusedInstance,
             undoAddEntityOperationName);
     }
 
-    CreateUnfocusedInstanceAddEntityUndoNodeResult PrefabUndoAddEntityTestFixture::CreateUnfocusedInstanceAddEntityUndoNode(
+    CreatePrefabUndoAddEntityAsOverrideNodeResult PrefabUndoAddEntityTestFixture::CreatePrefabUndoAddEntityAsOverrideNode(
         const AZ::Entity& parentEntity, const AZ::Entity& newEntity,
         Instance& owningInstance, Instance& focusedInstance,
         const AZStd::string& undoAddEntityOperationName)
     {
-        PrefabUndoUnfocusedInstanceAddEntity undoAddEntityNode(undoAddEntityOperationName);
+        PrefabUndoAddEntityAsOverride undoAddEntityNode(undoAddEntityOperationName);
         undoAddEntityNode.Capture(parentEntity, newEntity, owningInstance, focusedInstance);
         return AZ::Success(AZStd::move(undoAddEntityNode));
     }
 
-    CreateUnfocusedInstanceAddEntityUndoNodeResult PrefabUndoAddEntityTestFixture::CreateUnfocusedInstanceAddEntityUndoNode(
+    CreatePrefabUndoAddEntityAsOverrideNodeResult PrefabUndoAddEntityTestFixture::CreatePrefabUndoAddEntityAsOverrideNode(
         const EntityAlias& newEntityAlias,
         Instance& owningInstance,
         Instance& focusedInstance,
         const AZStd::string& undoAddEntityOperationName)
     {
         AZ::Entity& newEntity = GetEntityFromOwningInstance(newEntityAlias, owningInstance);
-        return CreateUnfocusedInstanceAddEntityUndoNode(
+        return CreatePrefabUndoAddEntityAsOverrideNode(
             owningInstance.GetContainerEntity()->get(), newEntity,
             owningInstance,
             focusedInstance,
             undoAddEntityOperationName);
     }
 
-    CreateUnfocusedInstanceAddEntityUndoNodeResult PrefabUndoAddEntityTestFixture::CreateUnfocusedInstanceAddEntityUndoNode(
+    CreatePrefabUndoAddEntityAsOverrideNodeResult PrefabUndoAddEntityTestFixture::CreatePrefabUndoAddEntityAsOverrideNode(
         const EntityAlias& parentEntityAlias, const EntityAlias& newEntityAlias,
         Instance& owningInstance,
         Instance& focusedInstance,
@@ -138,7 +138,7 @@ namespace UnitTest
     {
         AZ::Entity& parentEntity = GetEntityFromOwningInstance(parentEntityAlias, owningInstance);
         AZ::Entity& newEntity = GetEntityFromOwningInstance(newEntityAlias, owningInstance);
-        return CreateUnfocusedInstanceAddEntityUndoNode(
+        return CreatePrefabUndoAddEntityAsOverrideNode(
             parentEntity, newEntity,
             owningInstance,
             focusedInstance,

@@ -34,10 +34,10 @@ namespace UnitTest
         ASSERT_FALSE(carEntityAlias.empty());
 
         // Create undo/redo node for adding the car entity under the car instance.
-        auto createUndoAddCarEntityNodeResult = CreateFocusedInstanceAddEntityUndoNode(
+        auto createUndoAddCarEntityNodeResult = CreatePrefabUndoAddEntityNode(
             carEntityAlias, focusedCarInstance, "Undo Adding Car Entity");
         ASSERT_TRUE(createUndoAddCarEntityNodeResult.IsSuccess());
-        PrefabUndoFocusedInstanceAddEntity undoAddCarEntityNode = createUndoAddCarEntityNodeResult.TakeValue();
+        PrefabUndoAddEntity undoAddCarEntityNode = createUndoAddCarEntityNodeResult.TakeValue();
 
         size_t expectedEntityCount = 0;
 
@@ -53,10 +53,10 @@ namespace UnitTest
         ASSERT_FALSE(axisEntityAlias.empty());
 
         // Create undo/redo node for adding the axis entity under the car entity.
-        auto createUndoAddAxisEntityNodeResult = CreateFocusedInstanceAddEntityUndoNode(
+        auto createUndoAddAxisEntityNodeResult = CreatePrefabUndoAddEntityNode(
             carEntityAlias, axisEntityAlias, focusedCarInstance, "Undo Adding Axis Entity");
         ASSERT_TRUE(createUndoAddAxisEntityNodeResult.IsSuccess());
-        PrefabUndoFocusedInstanceAddEntity undoAddAxisEntityNode = createUndoAddAxisEntityNodeResult.TakeValue();
+        PrefabUndoAddEntity undoAddAxisEntityNode = createUndoAddAxisEntityNodeResult.TakeValue();
 
         // Adding the axis entity under the car entity by redoing with our undo node and doing template propagation.
         undoAddAxisEntityNode.Redo();
@@ -71,10 +71,10 @@ namespace UnitTest
         ASSERT_FALSE(wheelEntityAlias.empty());
 
         // Create undo/redo node for adding the wheel entity under the axis entity.
-        auto createUndoAddWheelEntityNodeResult = CreateFocusedInstanceAddEntityUndoNode(
+        auto createUndoAddWheelEntityNodeResult = CreatePrefabUndoAddEntityNode(
             axisEntityAlias, wheelEntityAlias, focusedCarInstance, "Undo Adding Wheel Entity");
         ASSERT_TRUE(createUndoAddWheelEntityNodeResult.IsSuccess());
-        PrefabUndoFocusedInstanceAddEntity undoAddWheelEntityNode = createUndoAddWheelEntityNodeResult.TakeValue();
+        PrefabUndoAddEntity undoAddWheelEntityNode = createUndoAddWheelEntityNodeResult.TakeValue();
 
         // Adding the wheel entity under the axis entity by redoing with our undo node and doing template propagation.
         undoAddWheelEntityNode.Redo();
@@ -156,10 +156,10 @@ namespace UnitTest
         ASSERT_FALSE(leftWheelEntityAlias.empty());
 
         // Create undo/redo node for adding the left wheel entity under the left wheel instance.
-        auto createUndoAddLeftWheelEntityNodeResult = CreateUnfocusedInstanceAddEntityUndoNode(
+        auto createUndoAddLeftWheelEntityNodeResult = CreatePrefabUndoAddEntityAsOverrideNode(
             leftWheelEntityAlias, leftWheelInstance, focusedCarInstance, "Undo Adding Left Wheel Entity");
         ASSERT_TRUE(createUndoAddLeftWheelEntityNodeResult.IsSuccess());
-        PrefabUndoUnfocusedInstanceAddEntity undoAddLeftWheelEntityNode = createUndoAddLeftWheelEntityNodeResult.TakeValue();
+        PrefabUndoAddEntityAsOverride undoAddLeftWheelEntityNode = createUndoAddLeftWheelEntityNodeResult.TakeValue();
 
         size_t expectedLeftWheelInstanceEntityCount = 0;
         size_t expectedRightWheelInstanceEntityCount = 0;
@@ -193,10 +193,10 @@ namespace UnitTest
         ASSERT_FALSE(tireEntityAlias.empty());
 
         // Create undo/redo node for adding the tire entity under the left wheel entity.
-        auto createUndoAddTireEntityNodeResult = CreateUnfocusedInstanceAddEntityUndoNode(
+        auto createUndoAddTireEntityNodeResult = CreatePrefabUndoAddEntityAsOverrideNode(
             leftWheelEntityAlias, tireEntityAlias, leftWheelInstance, focusedCarInstance, "Undo Adding Tire Entity");
         ASSERT_TRUE(createUndoAddTireEntityNodeResult.IsSuccess());
-        PrefabUndoUnfocusedInstanceAddEntity undoAddTireEntityNode = createUndoAddTireEntityNodeResult.TakeValue();
+        PrefabUndoAddEntityAsOverride undoAddTireEntityNode = createUndoAddTireEntityNodeResult.TakeValue();
 
         // Adding the tire entity under the left wheel entity by redoing with our undo node and doing template propagation.
         undoAddTireEntityNode.Redo();
@@ -213,10 +213,10 @@ namespace UnitTest
         ASSERT_FALSE(frameEntityAlias.empty());
 
         // Create undo/redo node for adding the frame entity under the left wheel entity.
-        auto createUndoAddFrameEntityNodeResult = CreateUnfocusedInstanceAddEntityUndoNode(
+        auto createUndoAddFrameEntityNodeResult = CreatePrefabUndoAddEntityAsOverrideNode(
             leftWheelEntityAlias, frameEntityAlias, leftWheelInstance, focusedCarInstance, "Undo Adding Frame Entity");
         ASSERT_TRUE(createUndoAddFrameEntityNodeResult.IsSuccess());
-        PrefabUndoUnfocusedInstanceAddEntity undoAddFrameEntityNode = createUndoAddFrameEntityNodeResult.TakeValue();
+        PrefabUndoAddEntityAsOverride undoAddFrameEntityNode = createUndoAddFrameEntityNodeResult.TakeValue();
 
         // Adding the tire entity under the left wheel entity by redoing with our undo node and doing template propagation.
         undoAddFrameEntityNode.Redo();
@@ -233,10 +233,10 @@ namespace UnitTest
         ASSERT_FALSE(nailEntityAlias.empty());
 
         // Create undo/redo node for adding the nail entity under the tire entity.
-        auto createUndoAddNailEntityNodeResult = CreateUnfocusedInstanceAddEntityUndoNode(
+        auto createUndoAddNailEntityNodeResult = CreatePrefabUndoAddEntityAsOverrideNode(
             tireEntityAlias, nailEntityAlias, leftWheelInstance, focusedCarInstance, "Undo Adding Nail Entity");
         ASSERT_TRUE(createUndoAddNailEntityNodeResult.IsSuccess());
-        PrefabUndoUnfocusedInstanceAddEntity undoAddNailEntityNode = createUndoAddNailEntityNodeResult.TakeValue();
+        PrefabUndoAddEntityAsOverride undoAddNailEntityNode = createUndoAddNailEntityNodeResult.TakeValue();
 
         // Adding the tire entity under the left wheel entity by redoing with our undo node and doing template propagation.
         undoAddNailEntityNode.Redo();
@@ -311,10 +311,10 @@ namespace UnitTest
         ASSERT_FALSE(rightWheelEntityAlias.empty());
 
         // Create undo/redo node for adding the right wheel entity under the right wheel instance.
-        auto createUndoAddRightWheelEntityNodeResult = CreateUnfocusedInstanceAddEntityUndoNode(
+        auto createUndoAddRightWheelEntityNodeResult = CreatePrefabUndoAddEntityAsOverrideNode(
             rightWheelEntityAlias, rightWheelInstance, focusedCarInstance, "Undo Adding Right Wheel Entity");
         ASSERT_TRUE(createUndoAddRightWheelEntityNodeResult.IsSuccess());
-        PrefabUndoUnfocusedInstanceAddEntity undoAddRightWheelEntityNode = createUndoAddRightWheelEntityNodeResult.TakeValue();
+        PrefabUndoAddEntityAsOverride undoAddRightWheelEntityNode = createUndoAddRightWheelEntityNodeResult.TakeValue();
 
         // Adding the right wheel entity under the right wheel instance by redoing with our undo node and doing template propagation.
         undoAddRightWheelEntityNode.Redo();

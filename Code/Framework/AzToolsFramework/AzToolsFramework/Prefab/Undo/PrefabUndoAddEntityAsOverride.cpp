@@ -9,19 +9,19 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzToolsFramework/Prefab/PrefabInstanceUtils.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
-#include <AzToolsFramework/Prefab/Undo/PrefabUndoUnfocusedInstanceAddEntity.h>
+#include <AzToolsFramework/Prefab/Undo/PrefabUndoAddEntityAsOverride.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoUtils.h>
 
 namespace AzToolsFramework
 {
     namespace Prefab
     {
-        PrefabUndoUnfocusedInstanceAddEntity::PrefabUndoUnfocusedInstanceAddEntity(const AZStd::string& undoOperationName)
+        PrefabUndoAddEntityAsOverride::PrefabUndoAddEntityAsOverride(const AZStd::string& undoOperationName)
             : PrefabUndoUpdateLinkBase(undoOperationName)
         {
         }
 
-        void PrefabUndoUnfocusedInstanceAddEntity::Capture(
+        void PrefabUndoAddEntityAsOverride::Capture(
             const AZ::Entity& parentEntity,
             const AZ::Entity& newEntity,
             Instance& owningInstance,

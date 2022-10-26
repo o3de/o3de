@@ -18,15 +18,15 @@ namespace AzToolsFramework
         class InstanceEntityMapperInterface;
         class PrefabSystemComponentInterface;
 
-        //! Undo class for handling addition of an entity to an instance which is a descendant of focused instance.
-        class PrefabUndoUnfocusedInstanceAddEntity
+        //! Undo class for handling addition of an entity to an instance as override of focused instance.
+        class PrefabUndoAddEntityAsOverride
             : public PrefabUndoUpdateLinkBase
         {
         public:
-            AZ_RTTI(PrefabUndoUnfocusedInstanceAddEntity, "{45CD5DB2-7A78-45A0-AC85-D2F48F90CA1E}", PrefabUndoUpdateLinkBase);
-            AZ_CLASS_ALLOCATOR(PrefabUndoUnfocusedInstanceAddEntity, AZ::SystemAllocator, 0);
+            AZ_RTTI(PrefabUndoAddEntityAsOverride, "{45CD5DB2-7A78-45A0-AC85-D2F48F90CA1E}", PrefabUndoUpdateLinkBase);
+            AZ_CLASS_ALLOCATOR(PrefabUndoAddEntityAsOverride, AZ::SystemAllocator, 0);
 
-            explicit PrefabUndoUnfocusedInstanceAddEntity(const AZStd::string& undoOperationName);
+            explicit PrefabUndoAddEntityAsOverride(const AZStd::string& undoOperationName);
 
             // The function help generate undo/redo patches for adding the a new entity under a target parent entity,
             // where both entities are under the given owning prefab instance, and the owning instance is a descendant
