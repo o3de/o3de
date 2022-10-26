@@ -1024,12 +1024,14 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('ly_test_tools.launchers.launcher_helper.create_atom_tools_launcher')
     def test_SetupTest_AtomExe_SetsExecutable(self, mock_create_atom, mock_create_editor, mock_prepare_ap, 
                                               mock_kill_processes):
+        mock_workspace = mock.MagicMock()
+        mock_exe = 'mock_atom_exe'
         mock_test_suite = ly_test_tools.o3de.multi_test_framework.MultiTestSuite()
-        mock_test_suite.atom_tools_executable_name = 'mock_atom_exe'
+        mock_test_suite.atom_tools_executable_name = mock_exe
         mock_test_suite.executable = mock.MagicMock()
 
-        mock_test_suite._setup_test(mock.MagicMock(), mock.MagicMock())
-        assert mock_create_atom.called
+        mock_test_suite._setup_test(mock_workspace, mock.MagicMock())
+        mock_create_atom.assert_called_once_with(mock_workspace, mock_exe)
         assert not mock_create_editor.called
         assert mock_prepare_ap.called
         assert mock_kill_processes.called

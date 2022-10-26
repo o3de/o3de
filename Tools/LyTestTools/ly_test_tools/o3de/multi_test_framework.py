@@ -914,7 +914,7 @@ class MultiTestSuite(object):
 
         results = self._exec_multitest(
             request, workspace, self.executable, 1, self.log_name, test_spec_list, extra_cmdline_args)
-        self._test_reporting(collected_test_data, results, workspace, BatchedTest)
+        self._test_reporting(collected_test_data, [results], workspace, BatchedTest)
 
     #####################
     # ParallelTest Code #
