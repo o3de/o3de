@@ -42,7 +42,6 @@ namespace AzToolsFramework
         EntryDelegate::EntryDelegate(QWidget* parent)
             : QStyledItemDelegate(parent)
             , m_iconSize(qApp->style()->pixelMetric(QStyle::PM_SmallIconSize))
-            , m_treeView(static_cast<AssetBrowserTreeView*>(parent))
         {
         }
 
@@ -60,10 +59,14 @@ namespace AzToolsFramework
 
         QWidget* EntryDelegate::createEditor(QWidget* parent, [[ maybe_unused]] const QStyleOptionViewItem& option, [[maybe_unused]] const QModelIndex& index) const
         {
-            QLineEdit* widget = static_cast<QLineEdit*>(QStyledItemDelegate::createEditor(parent, option, index));
-            connect(widget, &QLineEdit::editingFinished, this, [this, widget](){
-                m_treeView->AfterRename(widget->text());
-                });
+            QWidget* widget = QStyledItemDelegate::createEditor(parent, option, index);
+            if (auto* lineEdit = qobject_cast<QLineEdit*>(widget))
+            {
+                connect(lineEdit,&QLineEdit::editingFinished, this, [&, lineEdit]()
+                    {
+                        Q_EMIT RenameEntry(lineEdit->text());
+                    });
+            }
             return widget;
         }
 
