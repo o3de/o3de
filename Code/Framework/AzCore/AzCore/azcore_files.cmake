@@ -143,6 +143,8 @@ set(FILES
     EBus/Internal/Handlers.h
     EBus/Internal/StoragePolicies.h
     Interface/Interface.h
+    IO/BufferedSystemFileStream.h
+    IO/BufferedSystemFileStream.cpp
     IO/ByteContainerStream.h
     IO/CompressionBus.h
     IO/CompressionBus.cpp
