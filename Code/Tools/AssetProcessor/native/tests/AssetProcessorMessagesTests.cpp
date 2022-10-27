@@ -172,7 +172,7 @@ namespace AssetProcessorMessagesTests
 
                 QObject::connect(m_batchApplicationManager->m_connectionManager.get(), &ConnectionManager::ReadyToQuit, &eventLoop, &QEventLoop::quit);
 
-                m_batchApplicationManager->m_connectionManager->QuitRequested();
+                QMetaObject::invokeMethod(m_batchApplicationManager->m_connectionManager.get(), "QuitRequested", Qt::QueuedConnection);
 
                 eventLoop.exec();
             }
