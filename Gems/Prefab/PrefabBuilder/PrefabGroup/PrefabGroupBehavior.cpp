@@ -203,7 +203,7 @@ namespace AZ::SceneAPI::Behaviors
 
         if (!manifestUpdates)
         {
-            return Events::ProcessingResult::Failure;
+            return Events::ProcessingResult::Ignored;
         }
 
         // update manifest if there were no errors
