@@ -460,7 +460,6 @@ set(FILES
     NativeUI/NativeUISystemComponent.h
     NativeUI/NativeUIRequests.h
     Outcome/Outcome.h
-    Outcome/Internal/OutcomeStorage.h
     Outcome/Internal/OutcomeImpl.h
     Platform.cpp
     Platform.h
