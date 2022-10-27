@@ -1286,6 +1286,13 @@ namespace {{ Component.attrib['Namespace'] }}
         {
             serializeContext->Class<{{ ComponentName }}NetworkInput>()
                 ->Version(1)
+{%                  set ScriptableNetInputNames = [] %}
+{%                  call (netInput) AutoComponentMacros.ParseNetworkInputsExposedToScript(Component) %}
+{%                      set ScriptableNetInputNames = ScriptableNetInputNames.append(netInput.attrib['Name']) %}
+{%                  endcall %}
+{%                  for param_name in ScriptableNetInputNames %}
+                ->Field("{{ param_name }}", &{{ ComponentName }}NetworkInput::m_{{ LowerFirst(param_name) }})
+{%                  endfor %}
                 ;
         }
 
@@ -1294,11 +1301,7 @@ namespace {{ Component.attrib['Namespace'] }}
         {
             behaviorContext->Class<{{ ComponentName }}NetworkInput>("{{ ComponentName }}NetworkInput")
                 ->Attribute(AZ::Script::Attributes::Module, "{{ LowerFirst(Component.attrib['Namespace']) }}")
-                ->Attribute(AZ::Script::Attributes::Category, "{{ UpperFirst(Component.attrib['Namespace']) }}")
-{%                  set ScriptableNetInputNames = [] %}
-{%                  call (netInput) AutoComponentMacros.ParseNetworkInputsExposedToScript(Component) %}
-{%                      set ScriptableNetInputNames = ScriptableNetInputNames.append(netInput.attrib['Name']) %}
-{%                  endcall %}
+                ->Attribute(AZ::Script::Attributes::Category, "{{ UpperFirst(Component.attrib['Namespace']) }} {{ ComponentName }}")
                     ->Method("CreateFromValues", &Construct{{ ComponentName }}NetworkInput, { { {% for param_name in ScriptableNetInputNames %}{"{{ LowerFirst(param_name) }}"}{% if not loop.last %}, {% endif %}{% endfor -%} } })
 
 {%                  for param_name in ScriptableNetInputNames %}
@@ -1309,7 +1312,7 @@ namespace {{ Component.attrib['Namespace'] }}
             behaviorContext->EBus<{{ ComponentName }}RequestBus>("{{ ComponentName }}BusHandler")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Module, "{{ LowerFirst(Component.attrib['Namespace']) }}")
-                ->Attribute(AZ::Script::Attributes::Category, "{{ UpperFirst(Component.attrib['Namespace']) }}")
+                ->Attribute(AZ::Script::Attributes::Category, "{{ UpperFirst(Component.attrib['Namespace']) }} {{ ComponentName }}")
                     ->Handler<{{ ComponentName }}BusHandler>()
                 ;
         }
