@@ -166,7 +166,7 @@ namespace AssetProcessor
             case ColumnStatus:
             {
                 CachedJobInfo* jobInfo = getItem(index.row());
-                return GetStatusInString(jobInfo->m_jobState, jobInfo->m_warningCount, jobInfo->m_errorCount);
+                return GetStatusInString(jobInfo->m_jobState, jobInfo->m_warningCount, jobInfo->m_errorCount, jobInfo->m_escalation, jobInfo->m_critical);
             }
             case ColumnSource:
                 return getItem(index.row())->m_elementId.GetSourceAssetReference().RelativePath().c_str();
@@ -304,7 +304,7 @@ namespace AssetProcessor
         base.append(input);
     }
 
-    QString JobsModel::GetStatusInString(const AzToolsFramework::AssetSystem::JobStatus& state, AZ::u32 warningCount, AZ::u32 errorCount)
+    QString JobsModel::GetStatusInString(const AzToolsFramework::AssetSystem::JobStatus& state, AZ::u32 warningCount, AZ::u32 errorCount, int escalation, bool critical)
     {
         using namespace AzToolsFramework::AssetSystem;
 
@@ -335,7 +335,13 @@ namespace AssetProcessor
                 return message;
             }
             case JobStatus::InProgress:
-                return tr("InProgress");
+                QString message = tr("InProgress");
+                QString extra;
+
+                Append(message, critical ? "Critical" : "", " ");
+                Append(message, escalation != 0 ? QStringLiteral("(%1)").arg(escalation) : "", " ");
+
+                return message;
         }
 
         return QString();
@@ -478,7 +484,7 @@ namespace AssetProcessor
         return index(iter.value(), 0, QModelIndex());
     }
 
-    void JobsModel::OnJobStatusChanged(JobEntry entry, AzToolsFramework::AssetSystem::JobStatus status)
+    void JobsModel::OnJobStatusChanged(JobEntry entry, AzToolsFramework::AssetSystem::JobStatus status, int escalation, bool critical)
     {
         QueueElementID elementId(entry.m_sourceAssetReference, entry.m_platformInfo.m_identifier.c_str(), entry.m_jobKey);
         CachedJobInfo* jobInfo = nullptr;
@@ -499,6 +505,8 @@ namespace AssetProcessor
             jobInfo->m_jobState = status;
             jobInfo->m_warningCount = jobDiagnosticInfo.m_warningCount;
             jobInfo->m_errorCount = jobDiagnosticInfo.m_errorCount;
+            jobInfo->m_escalation = escalation;
+            jobInfo->m_critical = critical;
             jobIndex = aznumeric_caster(m_cachedJobs.size());
             beginInsertRows(QModelIndex(), jobIndex, jobIndex);
             m_cachedJobs.push_back(jobInfo);
@@ -514,6 +522,8 @@ namespace AssetProcessor
             jobInfo->m_builderGuid = entry.m_builderGuid;
             jobInfo->m_warningCount = jobDiagnosticInfo.m_warningCount;
             jobInfo->m_errorCount = jobDiagnosticInfo.m_errorCount;
+            jobInfo->m_escalation = escalation;
+            jobInfo->m_critical = critical;
             if (jobInfo->m_jobState == AzToolsFramework::AssetSystem::JobStatus::Completed || jobInfo->m_jobState == AzToolsFramework::AssetSystem::JobStatus::Failed)
             {
                 jobInfo->m_completedTime = QDateTime::currentDateTime();

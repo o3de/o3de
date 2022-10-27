@@ -359,7 +359,7 @@ void MainWindow::Activate()
     const auto category = tr("Status");
     for (const auto& status : statuses)
     {
-        ui->jobFilteredSearchWidget->AddTypeFilter(category, JobsModel::GetStatusInString(status, 0, 0),
+        ui->jobFilteredSearchWidget->AddTypeFilter(category, JobsModel::GetStatusInString(status, 0, 0, 0, false),
             QVariant::fromValue(status));
     }
 

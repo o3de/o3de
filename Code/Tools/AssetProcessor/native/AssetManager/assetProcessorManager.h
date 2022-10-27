@@ -290,7 +290,7 @@ namespace AssetProcessor
         virtual void AssessDeletedFile(QString filePath);
         void OnAssetScannerStatusChange(AssetProcessor::AssetScanningStatus status);
         void FinishAssetScan();
-        void OnJobStatusChanged(JobEntry jobEntry, JobStatus status);
+        void OnJobStatusChanged(JobEntry jobEntry, JobStatus status, int escalation, bool critical);
 
         void CheckAssetProcessorIdleState();
 

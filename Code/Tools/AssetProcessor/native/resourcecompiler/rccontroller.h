@@ -67,7 +67,7 @@ namespace AssetProcessor
 
         ///! JobStarted will notify with a path name relative to the watch folder it was found in (not the database sourcename column)
         void JobStarted(QString inputFile, QString platform);
-        void JobStatusChanged(JobEntry entry, AzToolsFramework::AssetSystem::JobStatus status);
+        void JobStatusChanged(JobEntry entry, AzToolsFramework::AssetSystem::JobStatus status, int escalation, bool critical);
         void JobsInQueuePerPlatform(QString platform, int jobs);
         void ActiveJobsCountChanged(unsigned int jobs); // This is the count of jobs which are either queued or inflight
 

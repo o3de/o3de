@@ -71,7 +71,7 @@ namespace AssetProcessor
         // Mark as "being processed" by moving to Processing list
         m_RCJobListModel.markAsProcessing(rcJob);
         m_RCJobListModel.markAsStarted(rcJob);
-        Q_EMIT JobStatusChanged(rcJob->GetJobEntry(), AzToolsFramework::AssetSystem::JobStatus::InProgress);
+        Q_EMIT JobStatusChanged(rcJob->GetJobEntry(), AzToolsFramework::AssetSystem::JobStatus::InProgress, rcJob->JobEscalation(), rcJob->IsCritical());
         rcJob->Start();
         Q_EMIT JobStarted(rcJob->GetJobEntry().m_sourceAssetReference.RelativePath().c_str(), QString::fromUtf8(rcJob->GetPlatformInfo().m_identifier.c_str()));
     }
@@ -131,12 +131,14 @@ namespace AssetProcessor
         else if (rcJob->GetState() != RCJob::completed)
         {
             Q_EMIT FileFailed(rcJob->GetJobEntry());
-            Q_EMIT JobStatusChanged(rcJob->GetJobEntry(), AzToolsFramework::AssetSystem::JobStatus::Failed);
+            Q_EMIT JobStatusChanged(
+                rcJob->GetJobEntry(), AzToolsFramework::AssetSystem::JobStatus::Failed, rcJob->JobEscalation(), rcJob->IsCritical());
         }
         else
         {
             Q_EMIT FileCompiled(rcJob->GetJobEntry(), AZStd::move(rcJob->GetProcessJobResponse()));
-            Q_EMIT JobStatusChanged(rcJob->GetJobEntry(), AzToolsFramework::AssetSystem::JobStatus::Completed);
+            Q_EMIT JobStatusChanged(
+                rcJob->GetJobEntry(), AzToolsFramework::AssetSystem::JobStatus::Completed, rcJob->JobEscalation(), rcJob->IsCritical());
         }
 
         // Move to Completed list which will mark as "completed"
@@ -253,7 +255,8 @@ namespace AssetProcessor
             m_jobsCountPerPlatform[platformName] = 1;
         }
         Q_EMIT JobsInQueuePerPlatform(platformName, m_jobsCountPerPlatform[platformName]);
-        Q_EMIT JobStatusChanged(rcJob->GetJobEntry(), AzToolsFramework::AssetSystem::JobStatus::Queued);
+        Q_EMIT JobStatusChanged(
+            rcJob->GetJobEntry(), AzToolsFramework::AssetSystem::JobStatus::Queued, rcJob->JobEscalation(), rcJob->IsCritical());
 
         if (!m_dispatchingPaused)
         {

@@ -45,6 +45,8 @@ namespace AssetProcessor
         unsigned int m_jobRunKey;
         AZ::Uuid m_builderGuid;
         QTime m_processDuration;
+        int m_escalation{};
+        bool m_critical{};
     };
     /**
     * The JobsModel class contains list of jobs from both the Database and the RCController
@@ -84,14 +86,14 @@ namespace AssetProcessor
         QVariant data(const QModelIndex& index, int role) const override;
         int itemCount() const;
         CachedJobInfo* getItem(int index) const;
-        static QString GetStatusInString(const AzToolsFramework::AssetSystem::JobStatus& state, AZ::u32 warningCount, AZ::u32 errorCount);
+        static QString GetStatusInString(const AzToolsFramework::AssetSystem::JobStatus& state, AZ::u32 warningCount, AZ::u32 errorCount, int escalation, bool critical);
         void PopulateJobsFromDatabase();
 
         QModelIndex GetJobFromProduct(const AzToolsFramework::AssetDatabase::ProductDatabaseEntry& productEntry, AzToolsFramework::AssetDatabase::AssetDatabaseConnection& assetDatabaseConnection);
         QModelIndex GetJobFromSourceAndJobInfo(const SourceAssetReference& source, const AZStd::string& platform, const AZStd::string& jobKey);
 
 public Q_SLOTS:
-        void OnJobStatusChanged(JobEntry entry, AzToolsFramework::AssetSystem::JobStatus status);
+        void OnJobStatusChanged(JobEntry entry, AzToolsFramework::AssetSystem::JobStatus status, int escalation, bool critical);
         void OnJobProcessDurationChanged(JobEntry jobEntry, int durationMs);
         void OnJobRemoved(AzToolsFramework::AssetSystem::JobInfo jobInfo);
         void OnSourceRemoved(const SourceAssetReference& sourceAsset);

@@ -203,7 +203,7 @@ namespace AssetProcessor
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // JOB STATUS REQUEST HANDLING
-    void AssetProcessorManager::OnJobStatusChanged(JobEntry jobEntry, JobStatus status)
+    void AssetProcessorManager::OnJobStatusChanged(JobEntry jobEntry, JobStatus status, int /*escalation*/, bool /*critical*/)
     {
         //this function just adds an removes to a maps to speed up job status, we don't actually write
         //to the database until it either succeeds or fails
@@ -612,7 +612,7 @@ namespace AssetProcessor
         // note that this isn't a failure - the job just isn't there anymore.
         UpdateAnalysisTrackerForFile(jobEntry, AnalysisTrackerUpdateType::JobFinished);
 
-        OnJobStatusChanged(jobEntry, JobStatus::Failed);
+        OnJobStatusChanged(jobEntry, JobStatus::Failed, 0, false);
 
         // we know that things have changed at this point; ensure that we check for idle
         QueueIdleCheck();
@@ -798,7 +798,7 @@ namespace AssetProcessor
             MessageInfoBus::Broadcast(&MessageInfoBusTraits::OnAssetFailed, source.m_sourceName);
         }
 
-        OnJobStatusChanged(jobEntry, JobStatus::Failed);
+        OnJobStatusChanged(jobEntry, JobStatus::Failed, 0, false);
 
         // note that we always print out the failed job status here in both batch and GUI mode.
         AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Failed %s, (%s)... \n",
@@ -1516,7 +1516,7 @@ namespace AssetProcessor
             // notify the system about inputs:
             Q_EMIT InputAssetProcessed(fullSourcePath, QString(processedAsset.m_entry.m_platformInfo.m_identifier.c_str()));
             Q_EMIT AddedToCatalog(processedAsset.m_entry);
-            OnJobStatusChanged(processedAsset.m_entry, JobStatus::Completed);
+            OnJobStatusChanged(processedAsset.m_entry, JobStatus::Completed, 0, false);
 
             // notify the analysis tracking system of our success (each processed entry is one job)
             // do this after the various checks above and database updates, so that the finalization step can take it all into account if it needs to.

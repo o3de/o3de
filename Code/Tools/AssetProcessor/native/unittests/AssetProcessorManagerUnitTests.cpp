@@ -605,7 +605,7 @@ namespace AssetProcessor
         // now indicate the job has started.
         for (const JobDetails& details : processResults)
         {
-            apm.OnJobStatusChanged(details.m_jobEntry, JobStatus::InProgress);
+            apm.OnJobStatusChanged(details.m_jobEntry, JobStatus::InProgress, 0, false);
         }
         QCoreApplication::processEvents(QEventLoop::AllEvents);
 

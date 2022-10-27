@@ -261,7 +261,7 @@ TEST_F(AssetProcessorManagerTest, UnitTestForGettingJobInfoBySourceUUIDSuccess)
     EXPECT_STRCASEEQ(relFileName.toUtf8().data(), response.m_jobList[0].m_sourceFile.c_str());
 
 
-    m_assetProcessorManager->OnJobStatusChanged(entry, JobStatus::Queued);
+    m_assetProcessorManager->OnJobStatusChanged(entry, JobStatus::Queued, 0, false);
 
     response.m_isSuccess = false;
     response.m_jobList.clear();
@@ -411,8 +411,8 @@ TEST_F(AssetProcessorManagerTest, UnitTestForCancelledJob)
     bool sourceFound = false;
 
     //Checking the response of the APM when we cancel a job in progress
-    m_assetProcessorManager->OnJobStatusChanged(entry, JobStatus::Queued);
-    m_assetProcessorManager->OnJobStatusChanged(entry, JobStatus::InProgress);
+    m_assetProcessorManager->OnJobStatusChanged(entry, JobStatus::Queued, 0, false);
+    m_assetProcessorManager->OnJobStatusChanged(entry, JobStatus::InProgress, 0, false);
     ASSERT_TRUE(m_assetProcessorManager->CheckJobKeyToJobRunKeyMap(entry.m_jobKey.toUtf8().data()));
     m_assetProcessorManager->AssetCancelled(entry);
     ASSERT_FALSE(m_assetProcessorManager->CheckJobKeyToJobRunKeyMap(entry.m_jobKey.toUtf8().data()));
