@@ -34,13 +34,23 @@
                     "m_inputDataSlots": [
                         {
                             "Key": {
+                                "m_name": "inAlpha"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "float",
+                                    "Value": 1.0
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
                                 "m_name": "inBaseColor"
                             },
                             "Value": {
                                 "m_value": {
-                                    "$type": "Vector4",
+                                    "$type": "Vector3",
                                     "Value": [
-                                        1.0,
                                         1.0,
                                         1.0,
                                         1.0
@@ -54,12 +64,11 @@
                             },
                             "Value": {
                                 "m_value": {
-                                    "$type": "Vector4",
+                                    "$type": "Vector3",
                                     "Value": [
                                         0.0,
                                         0.0,
-                                        0.0,
-                                        1.0
+                                        0.0
                                     ]
                                 }
                             }
@@ -81,12 +90,11 @@
                             },
                             "Value": {
                                 "m_value": {
-                                    "$type": "Vector4",
+                                    "$type": "Vector3",
                                     "Value": [
                                         0.0,
                                         0.0,
-                                        0.0,
-                                        1.0
+                                        0.0
                                     ]
                                 }
                             }
@@ -271,7 +279,7 @@
                 "m_sourceEndpoint": [
                     14,
                     {
-                        "m_name": "outValue"
+                        "m_name": "outUV"
                     }
                 ],
                 "m_targetEndpoint": [
@@ -571,7 +579,7 @@
                                 "$type": "GeometrySaveData",
                                 "Position": [
                                     240.0,
-                                    -80.0
+                                    -120.0
                                 ]
                             },
                             "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
@@ -598,8 +606,8 @@
                             "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
                                 "$type": "GeometrySaveData",
                                 "Position": [
-                                    480.0,
-                                    -120.0
+                                    420.0,
+                                    -380.0
                                 ]
                             },
                             "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
@@ -626,8 +634,8 @@
                             "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
                                 "$type": "GeometrySaveData",
                                 "Position": [
-                                    160.0,
-                                    -340.0
+                                    100.0,
+                                    -380.0
                                 ]
                             },
                             "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
@@ -654,8 +662,8 @@
                             "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
                                 "$type": "GeometrySaveData",
                                 "Position": [
-                                    -200.0,
-                                    -300.0
+                                    -60.0,
+                                    -380.0
                                 ]
                             },
                             "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {

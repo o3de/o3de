@@ -8,9 +8,9 @@
         "title": "Position",
         "outputSlots": [
             {
-                "name": "outValue",
-                "displayName": "Value",
-                "description": "Value",
+                "name": "outPosition",
+                "displayName": "Position",
+                "description": "Position",
                 "supportedDataTypes": [
                     "float3"
                 ],

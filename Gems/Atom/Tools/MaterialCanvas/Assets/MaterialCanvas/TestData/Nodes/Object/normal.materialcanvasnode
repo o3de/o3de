@@ -8,9 +8,9 @@
         "title": "Normal",
         "outputSlots": [
             {
-                "name": "outValue",
-                "displayName": "Value",
-                "description": "Value",
+                "name": "outNormal",
+                "displayName": "Normal",
+                "description": "Normal",
                 "supportedDataTypes": [
                     "float3"
                 ],

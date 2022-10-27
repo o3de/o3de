@@ -24,13 +24,23 @@
                     "m_inputDataSlots": [
                         {
                             "Key": {
+                                "m_name": "inAlpha"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "float",
+                                    "Value": 1.0
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
                                 "m_name": "inBaseColor"
                             },
                             "Value": {
                                 "m_value": {
-                                    "$type": "Vector4",
+                                    "$type": "Vector3",
                                     "Value": [
-                                        1.0,
                                         1.0,
                                         1.0,
                                         1.0
@@ -44,12 +54,11 @@
                             },
                             "Value": {
                                 "m_value": {
-                                    "$type": "Vector4",
+                                    "$type": "Vector3",
                                     "Value": [
                                         0.0,
                                         0.0,
-                                        0.0,
-                                        1.0
+                                        0.0
                                     ]
                                 }
                             }
@@ -71,12 +80,11 @@
                             },
                             "Value": {
                                 "m_value": {
-                                    "$type": "Vector4",
+                                    "$type": "Vector3",
                                     "Value": [
                                         0.0,
                                         0.0,
-                                        0.0,
-                                        1.0
+                                        0.0
                                     ]
                                 }
                             }
@@ -247,7 +255,7 @@
                 "m_sourceEndpoint": [
                     5,
                     {
-                        "m_name": "outValue"
+                        "m_name": "outUV"
                     }
                 ],
                 "m_targetEndpoint": [
@@ -386,7 +394,7 @@
                             "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
                                 "$type": "GeometrySaveData",
                                 "Position": [
-                                    -480.0,
+                                    -340.0,
                                     -180.0
                                 ]
                             },
