@@ -105,7 +105,7 @@ namespace AssetProcessorMessagesTests
             ASSERT_EQ(status, ApplicationManager::BeforeRunStatus::Status_Success);
 
             m_batchApplicationManager->m_platformConfiguration = new PlatformConfiguration();
-            
+
             AZStd::vector<ApplicationManagerBase::APCommandLineSwitch> commandLineInfo;
             m_batchApplicationManager->InitAssetProcessorManager(commandLineInfo);
 
@@ -123,7 +123,7 @@ namespace AssetProcessorMessagesTests
 
             m_batchApplicationManager->m_fileWatcher->StartWatching();
 
-            QObject::connect(m_batchApplicationManager->m_connectionManager, &ConnectionManager::ConnectionError, [](unsigned /*connId*/, QString error)
+            QObject::connect(m_batchApplicationManager->m_connectionManager.get(), &ConnectionManager::ConnectionError, [](unsigned /*connId*/, QString error)
                 {
                     AZ_Error("ConnectionManager", false, "%s", error.toUtf8().constData());
                 });
@@ -170,7 +170,7 @@ namespace AssetProcessorMessagesTests
             {
                 QEventLoop eventLoop;
 
-                QObject::connect(m_batchApplicationManager->m_connectionManager, &ConnectionManager::ReadyToQuit, &eventLoop, &QEventLoop::quit);
+                QObject::connect(m_batchApplicationManager->m_connectionManager.get(), &ConnectionManager::ReadyToQuit, &eventLoop, &QEventLoop::quit);
 
                 m_batchApplicationManager->m_connectionManager->QuitRequested();
 

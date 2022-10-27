@@ -194,7 +194,7 @@ protected:
     bool CheckReprocessFileList();
 
     ApplicationServer* m_applicationServer = nullptr;
-    ConnectionManager* m_connectionManager = nullptr;
+    AZStd::unique_ptr<ConnectionManager> m_connectionManager = nullptr;
 
     // keep track of the critical loading point where we are loading other dlls so the error messages can be better.
     bool m_isCurrentlyLoadingGems = false;

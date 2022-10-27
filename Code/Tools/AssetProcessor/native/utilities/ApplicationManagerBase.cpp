@@ -124,7 +124,7 @@ AssetProcessor::PlatformConfiguration* ApplicationManagerBase::GetPlatformConfig
 
 ConnectionManager* ApplicationManagerBase::GetConnectionManager() const
 {
-    return m_connectionManager;
+    return m_connectionManager.get();
 }
 
 ApplicationServer* ApplicationManagerBase::GetApplicationServer() const
@@ -557,7 +557,15 @@ void ApplicationManagerBase::InitConnectionManager()
     using namespace AzFramework::AssetSystem;
     using namespace AzToolsFramework::AssetSystem;
 
-    m_connectionManager = new ConnectionManager();
+    AssetProcessor::ThreadController<ConnectionManager>* connectionManagerHelper =
+        new AssetProcessor::ThreadController<ConnectionManager>();
+
+    addRunningThread(connectionManagerHelper);
+    m_connectionManager.reset(connectionManagerHelper->initialize(
+        []()
+        {
+            return new ConnectionManager();
+        }));
 
     QObject* connectionAndChangeMessagesThreadContext = this;
 
@@ -570,13 +578,13 @@ void ApplicationManagerBase::InitConnectionManager()
     [[maybe_unused]] bool result = QObject::connect(GetAssetCatalog(), &AssetProcessor::AssetCatalog::SendAssetMessage, connectionAndChangeMessagesThreadContext, forwardMessageFunction, Qt::QueuedConnection);
     AZ_Assert(result, "Failed to connect to AssetCatalog signal");
 
-    result = QObject::connect(m_connectionManager, &ConnectionManager::ConnectionReady, GetAssetCatalog(), &AssetProcessor::AssetCatalog::OnConnect, Qt::QueuedConnection);
+    result = QObject::connect(m_connectionManager.get(), &ConnectionManager::ConnectionReady, GetAssetCatalog(), &AssetProcessor::AssetCatalog::OnConnect, Qt::QueuedConnection);
     AZ_Assert(result, "Failed to connect to AssetCatalog signal");
 
     //Application manager related stuff
 
     // The AssetCatalog has to be rebuilt on connection, so we force the incoming connection messages to be serialized as they connect to the ApplicationManagerBase
-    result = QObject::connect(m_applicationServer, &ApplicationServer::newIncomingConnection, m_connectionManager, &ConnectionManager::NewConnection, Qt::QueuedConnection);
+    result = QObject::connect(m_applicationServer, &ApplicationServer::newIncomingConnection, m_connectionManager.get(), &ConnectionManager::NewConnection, Qt::QueuedConnection);
 
     AZ_Assert(result, "Failed to connect to ApplicationServer signal");
 
@@ -613,7 +621,7 @@ void ApplicationManagerBase::InitConnectionManager()
             );
     AZ_Assert(result, "Failed to connect to RCController signal");
 
-    result = QObject::connect(GetRCController(), &AssetProcessor::RCController::JobsInQueuePerPlatform, this,
+    result = QObject::connect(GetRCController(), &AssetProcessor::RCController::JobsInQueuePerPlatform, m_connectionManager.get(),
             [](QString platform, int count)
             {
                 AssetNotificationMessage message(QByteArray::number(count).constData(), AssetNotificationMessage::JobCount, AZ::Data::s_invalidAssetType, platform.toUtf8().constData());
@@ -750,7 +758,6 @@ void ApplicationManagerBase::DestroyConnectionManager()
 {
     if (m_connectionManager)
     {
-        delete m_connectionManager;
         m_connectionManager = nullptr;
     }
 }
@@ -1258,9 +1265,9 @@ void ApplicationManagerBase::CheckForIdle()
 void ApplicationManagerBase::InitBuilderManager()
 {
     AZ_Assert(m_connectionManager != nullptr, "ConnectionManager must be started before the builder manager");
-    m_builderManager = new AssetProcessor::BuilderManager(m_connectionManager);
+    m_builderManager = new AssetProcessor::BuilderManager(m_connectionManager.get());
 
-    QObject::connect(m_connectionManager, &ConnectionManager::ConnectionDisconnected, this, [this](unsigned int connId)
+    QObject::connect(m_connectionManager.get(), &ConnectionManager::ConnectionDisconnected, this, [this](unsigned int connId)
         {
             m_builderManager->ConnectionLost(connId);
         });
@@ -1468,7 +1475,7 @@ bool ApplicationManagerBase::Activate()
     // and we stop listening for new incoming connections during shutdown
     RegisterObjectForQuit(m_applicationServer, true);
     RegisterObjectForQuit(m_fileProcessor.get());
-    RegisterObjectForQuit(m_connectionManager);
+    RegisterObjectForQuit(m_connectionManager.get());
     RegisterObjectForQuit(m_assetProcessorManager);
     RegisterObjectForQuit(m_rcController);
 
@@ -1596,7 +1603,7 @@ static void HandleConditionalRetry(const AssetProcessor::BuilderRunJobOutcome& r
             builderRef.release();
 
             AssetProcessor::BuilderManagerBus::BroadcastResult(builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder, purpose);
-            
+
             if (builderRef)
             {
                 AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Lost connection to builder %s. Retrying with a new builder %s (Attempt %d with %d second delay)",
@@ -1724,7 +1731,7 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
                     {
                         return; // exit early if you're shutting down!
                     }
-                    
+
                     retryCount++;
                     result = builderRef->RunJob<AssetBuilder::ProcessJobNetRequest, AssetBuilder::ProcessJobNetResponse>(
                         request, response, s_MaximumProcessJobsTimeSeconds, "process", "", &jobCancelListener, request.m_tempDirPath);
