@@ -22,7 +22,7 @@
 #include <EMotionStudio/EMStudioSDK/Source/ResetSettingsDialog.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterWindow.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterCreateEditDialog.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterCreateEditWidget.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendGraphViewWidget.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MotionSetsWindow/MotionSetsWindowPlugin.h>
 

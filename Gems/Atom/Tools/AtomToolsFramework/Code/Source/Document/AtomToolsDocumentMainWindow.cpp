@@ -82,8 +82,8 @@ namespace AtomToolsFramework
         BuildCreateMenu(insertPostion);
         BuildOpenMenu(insertPostion);
 
-        m_menuOpenRecent = new QMenu("Open Recent", this);
-        connect(m_menuOpenRecent, &QMenu::aboutToShow, this, [this]() {
+        m_menuOpenRecent = new QMenu("Open Recent", menuBar);
+        connect(m_menuOpenRecent, &QMenu::aboutToShow, menuBar, [this]() {
             UpdateRecentFileMenu();
         });
         m_menuFile->insertMenu(insertPostion, m_menuOpenRecent);
@@ -748,12 +748,13 @@ namespace AtomToolsFramework
 
     template<typename Functor>
     QAction* AtomToolsDocumentMainWindow::CreateActionAtPosition(
-        QMenu* parent, QAction* position, const QString& text, Functor functor, const QKeySequence& shortcut)
+        QMenu* menu, QAction* position, const QString& name, Functor fn, const QKeySequence& shortcut)
     {
-        QAction* action = new QAction(text, parent);
+        QAction* action = new QAction(name, menu);
         action->setShortcut(shortcut);
-        connect(action, &QAction::triggered, parent, functor);
-        parent->insertAction(position, action);
+        action->setShortcutContext(Qt::WindowShortcut);
+        QObject::connect(action, &QAction::triggered, menu, fn);
+        menu->insertAction(position, action);
         return action;
     }
 } // namespace AtomToolsFramework
