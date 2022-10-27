@@ -38,7 +38,6 @@ namespace AzToolsFramework
             setSortingEnabled(false);
             setItemDelegate(m_delegate);
             setRootIsDecorated(false);
-            connect(m_delegate, &EntryDelegate::RenameEntry, this, &AssetBrowserTableView::SetName);
 
             //Styling the header aligning text to the left and using a bold font.
             header()->setDefaultAlignment(Qt::AlignLeft);
