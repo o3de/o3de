@@ -6,7 +6,6 @@
  *
  */
 
-#include <AzCore/Math/Sfmt.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzToolsFramework/ViewportUi/Button.h>
 #include <AzToolsFramework/ViewportUi/ButtonGroup.h>
@@ -332,7 +331,7 @@ namespace AzToolsFramework::ViewportUi
 
     ClusterId ViewportUiManager::RegisterNewCluster(AZStd::shared_ptr<Internal::ButtonGroup>& buttonGroup)
     {
-        ClusterId newId = ClusterId(AZ::Sfmt::GetInstance().Rand64());
+        ClusterId newId = ClusterId(++m_currentId);
         m_clusterButtonGroups.insert({ newId, buttonGroup });
 
         return newId;
@@ -340,7 +339,7 @@ namespace AzToolsFramework::ViewportUi
 
     SwitcherId ViewportUiManager::RegisterNewSwitcher(AZStd::shared_ptr<Internal::ButtonGroup>& buttonGroup)
     {
-        SwitcherId newId = SwitcherId(AZ::Sfmt::GetInstance().Rand64());
+        SwitcherId newId = SwitcherId(++m_currentId);
         m_switcherButtonGroups.insert({ newId, buttonGroup });
 
         return newId;
@@ -348,7 +347,7 @@ namespace AzToolsFramework::ViewportUi
 
     TextFieldId ViewportUiManager::RegisterNewTextField(AZStd::shared_ptr<Internal::TextField>& textField)
     {
-        TextFieldId newId = TextFieldId(AZ::Sfmt::GetInstance().Rand64());
+        TextFieldId newId = TextFieldId(++m_currentId);
         textField->m_textFieldId = newId;
         m_textFields.insert({ newId, textField });
 

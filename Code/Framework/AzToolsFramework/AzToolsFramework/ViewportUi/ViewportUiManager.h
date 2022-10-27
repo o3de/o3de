@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/base.h>
 #include <AzToolsFramework/ViewportUi/Button.h>
 #include <AzToolsFramework/ViewportUi/TextField.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiDisplay.h>
@@ -91,5 +92,7 @@ namespace AzToolsFramework::ViewportUi
         void UpdateSwitcherButtonGroupUi(Internal::ButtonGroup* buttonGroup);
         //! Update the corresponding ui element for the given text field.
         void UpdateTextFieldUi(Internal::TextField* textField);
+
+        AZ::u64 m_currentId = 0;
     };
 } // namespace AzToolsFramework::ViewportUi
