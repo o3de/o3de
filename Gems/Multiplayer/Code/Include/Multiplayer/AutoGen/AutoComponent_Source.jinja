@@ -1305,7 +1305,17 @@ namespace {{ Component.attrib['Namespace'] }}
                     ->Method("CreateFromValues", &Construct{{ ComponentName }}NetworkInput, { { {% for param_name in ScriptableNetInputNames %}{"{{ LowerFirst(param_name) }}"}{% if not loop.last %}, {% endif %}{% endfor -%} } })
 
 {%                  for param_name in ScriptableNetInputNames %}
-                    ->Property("{{ param_name }}", BehaviorValueProperty(&{{ ComponentName }}NetworkInput::m_{{ LowerFirst(param_name) }}))
+                    ->Method("Get{{ param_name }}", [](const {{ ComponentName }}NetworkInput& input)
+                    {
+                        return input.m_{{ LowerFirst(param_name) }};
+                    })
+                    ->Method("Set{{ param_name }}", []({{ ComponentName }}NetworkInput& input,
+                            decltype({{ ComponentName }}NetworkInput::m_{{ LowerFirst(param_name) }}) {{ LowerFirst(param_name) }})
+                    {
+                        input.m_{{ LowerFirst(param_name) }} = {{ LowerFirst(param_name) }};
+                        return input;
+                    })
+                    
 {%                  endfor %}
             ;
 
