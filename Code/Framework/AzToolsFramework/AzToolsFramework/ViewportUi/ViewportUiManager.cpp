@@ -50,6 +50,16 @@ namespace AzToolsFramework::ViewportUi
         }
     }
 
+    void ViewportUiManager::SetClusterDisableButton(ClusterId clusterId, ButtonId buttonId, bool disabled)
+    {
+        if (auto clusterIt = m_clusterButtonGroups.find(clusterId); clusterIt != m_clusterButtonGroups.end())
+        {
+            auto& cluster = clusterIt->second;
+            cluster->SetDisabledButton(buttonId, disabled);
+            UpdateButtonGroupUi(cluster.get());
+        }
+    }
+
     void ViewportUiManager::ClearClusterActiveButton(ClusterId clusterId)
     {
         if (auto clusterIt = m_clusterButtonGroups.find(clusterId); clusterIt != m_clusterButtonGroups.end())
@@ -67,6 +77,16 @@ namespace AzToolsFramework::ViewportUi
             auto switcher = switcherIt->second;
             switcher->SetHighlightedButton(buttonId);
             m_viewportUi->SetSwitcherActiveButton(switcher->GetViewportUiElementId(), buttonId);
+            UpdateSwitcherButtonGroupUi(switcher.get());
+        }
+    }
+
+    void ViewportUiManager::SetSwitcherDisableButton(SwitcherId switcherId, ButtonId buttonId, bool disabled)
+    {
+        if (auto switcherIt = m_switcherButtonGroups.find(switcherId); switcherIt != m_switcherButtonGroups.end())
+        {
+            auto switcher = switcherIt->second;
+            switcher->SetDisabledButton(buttonId, disabled);
             UpdateSwitcherButtonGroupUi(switcher.get());
         }
     }
