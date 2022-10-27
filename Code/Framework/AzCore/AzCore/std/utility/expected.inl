@@ -89,7 +89,7 @@ namespace AZStd
         : base_type{ in_place }
     {}
 
-    //! Non-explicit expected<U, G> copy conversion constructor
+    //! expected<U, G> copy conversion constructor
     template<class T, class E>
     template<class U, class G, class>
     constexpr expected<T, E>::expected(const expected<U, G>& rhs)
@@ -109,33 +109,8 @@ namespace AZStd
         this->m_hasValue = rhs.has_value();
     }
 
-    //! Explicit expected<U, G> copy conversion constructor
-    //! NOTE: Has the exact same implementation as above.
-    //! Because C++20 is not supported, conditional explicit support is not available
-    template<class T, class E>
-    template<class U, class G, enable_if_t<
-        (!is_convertible_v<add_lvalue_reference_t<const U>, T> || !is_convertible_v<const G&, E>)
-        && ((is_void_v<T>&& is_void_v<U>) || is_constructible_v<T, add_lvalue_reference_t<const U>>)
-        && is_constructible_v<E, const G&>
-        && Internal::not_convertible_or_constructible_from_other_std_expected_v<T, E, U, G>>*>
-    constexpr expected<T, E>::expected(const expected<U, G>& rhs)
-    {
-        if (rhs.has_value())
-        {
-            if constexpr (!is_void_v<T>)
-            {
-                construct_at(addressof(this->m_storage.m_value), AZStd::forward<const U&>(rhs.value()));
-            }
-        }
-        else
-        {
-            construct_at(addressof(this->m_storage.m_unexpected), AZStd::forward<const G&>(rhs.error()));
-        }
 
-        this->m_hasValue = rhs.has_value();
-    }
-
-    //! Non-explicit expected<U, G> move conversion constructor
+    //! expected<U, G> move conversion constructor
     template<class T, class E>
     template<class U, class G, class>
     constexpr expected<T, E>::expected(expected<U, G>&& rhs)
@@ -155,33 +130,7 @@ namespace AZStd
         this->m_hasValue = rhs.has_value();
     }
 
-    //! Explicit expected<U, G> move conversion constructor
-    //! NOTE: Has the exact same implementation as above.
-    //! Because C++20 is not supported, conditional explicit support is not available
-    template<class T, class E>
-    template<class U, class G, enable_if_t<
-        (!is_convertible_v<U, T> || !is_convertible_v<G, E>)
-        && ((is_void_v<T>&& is_void_v<U>) || is_constructible_v<T, U>)
-        && is_constructible_v<E, G>
-        && Internal::not_convertible_or_constructible_from_other_std_expected_v<T, E, U, G>>*>
-    constexpr expected<T, E>::expected(expected<U, G>&& rhs)
-    {
-        if (rhs.has_value())
-        {
-            if constexpr (!is_void_v<T>)
-            {
-                construct_at(addressof(this->m_storage.m_value), AZStd::forward<U>(rhs.value()));
-            }
-        }
-        else
-        {
-            construct_at(addressof(this->m_storage.m_unexpected), AZStd::forward<G>(rhs.error()));
-        }
-
-        this->m_hasValue = rhs.has_value();
-    }
-
-    //! Non-explicit value direct initialization constructor
+    //! value direct initialization constructor
     template<class T, class E>
     template<class U, class>
     constexpr expected<T, E>::expected(U&& rhs)
@@ -189,53 +138,18 @@ namespace AZStd
     {
     }
 
-    //! Explicit value direct initialization constructor
-    //! NOTE: Has the exact same implementation as above.
-    //! Because C++20 is not supported, conditional explicit support is not available
+    //! error unexpected<G> copy constructor
     template<class T, class E>
-    template<class U, enable_if_t<!is_void_v<T> && !is_convertible_v<U, T>
-    && !is_same_v<remove_cvref_t<U>, in_place_t>
-        && !is_same_v<expected<T, E>, remove_cvref_t<U>>
-        && !Internal::is_std_unexpected_specialization_v<remove_cvref_t<U>>
-        && is_constructible_v<T, U> >*>
-    constexpr expected<T, E>::expected(U&& rhs)
-        : base_type{ in_place, AZStd::forward<U>(rhs) }
-    {
-    }
-
-    //! Non-explicit error unexpected<G> copy constructor
-    template<class T, class E>
-    template< class G, class>
+    template<class G, class>
     constexpr expected<T, E>::expected(const unexpected<G>& rhs)
         : base_type{ unexpect, AZStd::forward<const G&>(rhs.error()) }
     {
     }
 
-    //! Explicit error unexpected<G> copy constructor
-    //! NOTE: Has the exact same implementation as above.
-    //! Because C++20 is not supported, conditional explicit support is not available
-    template<class T, class E>
-    template< class G, enable_if_t<!is_convertible_v<const G&, E>
-        && is_constructible_v<E, const G&> >*>
-    constexpr expected<T, E>::expected(const unexpected<G>& rhs)
-        : base_type{ unexpect, AZStd::forward<const G&>(rhs.error()) }
-    {
-    }
 
-    //! Non-explicit error unexpected<G> move constructor
+    //! error unexpected<G> move constructor
     template<class T, class E>
     template< class G, class>
-    constexpr expected<T, E>::expected(unexpected<G>&& rhs)
-        : base_type{ unexpect, AZStd::forward<G>(rhs.error()) }
-    {
-    }
-
-    //! Explicit error unexpected<G> move constructor
-    //! NOTE: Has the exact same implementation as above.
-    //! Because C++20 is not supported, conditional explicit support is not available
-    template<class T, class E>
-    template< class G, enable_if_t<!is_convertible_v<G, E>
-        && is_constructible_v<E, G> >*>
     constexpr expected<T, E>::expected(unexpected<G>&& rhs)
         : base_type{ unexpect, AZStd::forward<G>(rhs.error()) }
     {
@@ -278,13 +192,8 @@ namespace AZStd
     }
 
     template<class T, class E>
-    template<class U>
-    constexpr auto expected<T, E>::operator=(U&& value) -> enable_if_t<!is_void_v<T>
-        && !is_same_v<expected, remove_cvref_t<U>>
-        && !Internal::is_std_unexpected_specialization_v<remove_cvref_t<U>>
-        && is_constructible_v<T, U>
-        && is_assignable_v<add_lvalue_reference_t<T>, U>,
-        expected&>
+    template<class U, class>
+    constexpr auto expected<T, E>::operator=(U&& value) -> expected&
     {
         if (has_value())
         {
@@ -360,9 +269,9 @@ namespace AZStd
     //! expected emplace
     template<class T, class E>
     template<class... Args>
-    constexpr auto expected<T, E>::emplace(Args&&... args) noexcept -> enable_if_t<!is_void_v<T>
-        && is_constructible_v<T, Args...>, add_lvalue_reference_t<T>>
+    constexpr decltype(auto) expected<T, E>::emplace(Args&&... args) noexcept
     {
+        static_assert(!is_void_v<T> && is_constructible_v<T, Args...>);
         if (has_value())
         {
             AZStd::destroy_at(addressof(this->m_storage.m_value));
@@ -378,9 +287,9 @@ namespace AZStd
 
     template<class T, class E>
     template<class U, class... Args>
-    constexpr auto expected<T, E>::emplace(initializer_list<U> il, Args&&... args) noexcept -> enable_if_t<!is_void_v<T>
-        && is_constructible_v<T, initializer_list<U>&, Args...>, add_lvalue_reference_t<T>>
+    constexpr decltype(auto) expected<T, E>::emplace(initializer_list<U> il, Args&&... args) noexcept
     {
+        static_assert(!is_void_v<T>&& is_constructible_v<T, initializer_list<U>&, Args...>);
         if (has_value())
         {
             AZStd::destroy_at(addressof(this->m_storage.m_value));
