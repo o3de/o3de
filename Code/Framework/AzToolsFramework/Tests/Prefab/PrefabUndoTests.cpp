@@ -6,15 +6,13 @@
  *
  */
 
-#include <Prefab/PrefabTestDomUtils.h>
-#include <Prefab/PrefabTestFixture.h>
-
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
-
 #include <AzFramework/Components/TransformComponent.h>
+#include <AzToolsFramework/Prefab/Undo/PrefabUndo.h>
 
-#include <Prefab/Undo/PrefabUndo.h>
+#include <Prefab/PrefabTestDomUtils.h>
+#include <Prefab/PrefabTestFixture.h>
 
 namespace UnitTest
 {

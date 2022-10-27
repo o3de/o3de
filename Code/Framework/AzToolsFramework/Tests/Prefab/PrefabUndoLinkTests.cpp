@@ -5,13 +5,12 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Prefab/PrefabTestDomUtils.h>
-#include <Prefab/PrefabTestUndoFixture.h>
-
-#include <Prefab/Undo/PrefabUndo.h>
-#include <Prefab/Undo/PrefabUndoUpdateLink.h>
+#include <AzToolsFramework/Prefab/Undo/PrefabUndo.h>
+#include <AzToolsFramework/Prefab/Undo/PrefabUndoUpdateLink.h>
 
 #include <Prefab/PrefabTestComponent.h>
+#include <Prefab/PrefabTestDomUtils.h>
+#include <Prefab/PrefabTestUndoFixture.h>
 
 namespace UnitTest
 {
