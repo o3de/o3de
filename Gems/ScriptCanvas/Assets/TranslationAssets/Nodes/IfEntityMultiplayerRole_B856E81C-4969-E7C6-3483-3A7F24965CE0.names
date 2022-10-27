@@ -14,7 +14,7 @@
                     "base": "Input_In_0",
                     "details": {
                         "name": "In",
-                        "tooltip": "Branches on multiplayer role"
+                        "tooltip": "Branches on multiplayer role."
                     }
                 },
                 {
@@ -51,7 +51,7 @@
                     "base": "Output_If Unknown Role_4",
                     "details": {
                         "name": "If Unknown Role",
-                        "tooltip": "Returned when multiplayer isn't configured"
+                        "tooltip": "Returned when multiplayer isn't configured."
                     }
                 }
             ]
