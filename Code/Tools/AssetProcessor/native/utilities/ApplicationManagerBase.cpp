@@ -592,7 +592,7 @@ void ApplicationManagerBase::InitConnectionManager()
     result = QObject::connect(GetRCController(), &AssetProcessor::RCController::JobStatusChanged, GetAssetProcessorManager(), &AssetProcessor::AssetProcessorManager::OnJobStatusChanged);
     AZ_Assert(result, "Failed to connect to RCController signal");
 
-    result = QObject::connect(GetRCController(), &AssetProcessor::RCController::JobStarted, this,
+    result = QObject::connect(GetRCController(), &AssetProcessor::RCController::JobStarted, m_connectionManager.get(),
             [](QString inputFile, QString platform)
             {
                 QString msg = QCoreApplication::translate("O3DE Asset Processor", "Processing %1 (%2)...\n", "%1 is the name of the file, and %2 is the platform to process it for").arg(inputFile, platform);
@@ -603,7 +603,7 @@ void ApplicationManagerBase::InitConnectionManager()
             );
     AZ_Assert(result, "Failed to connect to RCController signal");
 
-    result = QObject::connect(GetRCController(), &AssetProcessor::RCController::FileCompiled, this,
+    result = QObject::connect(GetRCController(), &AssetProcessor::RCController::FileCompiled, m_connectionManager.get(),
             [](AssetProcessor::JobEntry entry, AssetBuilderSDK::ProcessJobResponse /*response*/)
             {
                 AssetNotificationMessage message(entry.m_sourceAssetReference.RelativePath().c_str(), AssetNotificationMessage::JobCompleted, AZ::Data::s_invalidAssetType, entry.m_platformInfo.m_identifier.c_str());
@@ -612,7 +612,7 @@ void ApplicationManagerBase::InitConnectionManager()
             );
     AZ_Assert(result, "Failed to connect to RCController signal");
 
-    result = QObject::connect(GetRCController(), &AssetProcessor::RCController::FileFailed, this,
+    result = QObject::connect(GetRCController(), &AssetProcessor::RCController::FileFailed, m_connectionManager.get(),
             [](AssetProcessor::JobEntry entry)
             {
                 AssetNotificationMessage message(entry.m_sourceAssetReference.RelativePath().c_str(), AssetNotificationMessage::JobFailed, AZ::Data::s_invalidAssetType, entry.m_platformInfo.m_identifier.c_str());
