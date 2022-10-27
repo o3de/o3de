@@ -103,8 +103,7 @@ namespace AzToolsFramework
 
             // Create a copy of linkPatch by providing the allocator of m_redoPatch so that the patch doesn't become invalid when
             // the patch goes out of scope in this function. 
-            // Implement a better way to create m_redoPatch instead of copying from m_undoPatch to m_redoPatch since we need 'Source'
-            // information copied.
+            // Copy from m_undoPatch to m_redoPatch since we need 'Source' information copied.
             PrefabDom linkPatchCopy;
             linkPatchCopy.CopyFrom(linkPatch, m_redoPatch.GetAllocator());
             m_redoPatch.CopyFrom(m_undoPatch, m_redoPatch.GetAllocator());
