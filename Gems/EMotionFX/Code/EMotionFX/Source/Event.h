@@ -39,6 +39,9 @@ namespace EMotionFX
         explicit Event(EventDataSet&& datas);
         virtual ~Event() = default;
 
+        Event& operator=(const Event& other);
+        Event& operator=(Event&& other);
+
         static void Reflect(AZ::ReflectContext* context);
 
         const EventDataSet& GetEventDatas() const;
@@ -48,11 +51,7 @@ namespace EMotionFX
         void SetEventData(size_t index, EventDataPtr&& newData);
         void InsertEventData(size_t index, EventDataPtr&& newData);
 
-        void SetEventDataChangeEvent(Event::EventDataChangeEvent::Handler& handler);
-
-        Event& operator=(const Event& other);
-
-        Event& operator=(Event&& other);
+        void RegisterEventDataChangeEvent(Event::EventDataChangeEvent::Handler& handler);
 
     protected:
 

@@ -80,6 +80,7 @@ set(FILES
     Tests/ColliderCommandTests.cpp
     Tests/EMotionFXTest.cpp
     Tests/EmotionFXMathLibTests.cpp
+    Tests/EventTest.cpp
     Tests/EventManagerTests.cpp
     Tests/JackGraphFixture.h
     Tests/JackGraphFixture.cpp

@@ -45,6 +45,7 @@ namespace EMotionFX
 
     Event& Event::operator=(Event&& other) 
     {
+        m_eventDatasChangeEvent = AZStd::move(other.m_eventDatasChangeEvent);
         m_eventDatas = AZStd::move(other.m_eventDatas);
         return *this;
     }
@@ -109,7 +110,7 @@ namespace EMotionFX
         m_eventDatasChangeEvent.Signal();
     }
 
-    void Event::SetEventDataChangeEvent(Event::EventDataChangeEvent::Handler& handler)
+    void Event::RegisterEventDataChangeEvent(Event::EventDataChangeEvent::Handler& handler)
     {
         handler.Connect(m_eventDatasChangeEvent);
     }

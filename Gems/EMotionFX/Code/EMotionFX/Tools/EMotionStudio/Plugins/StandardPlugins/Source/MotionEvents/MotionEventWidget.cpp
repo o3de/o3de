@@ -45,7 +45,7 @@ namespace EMStudio
         m_changeEventHandler.Disconnect();
         if (motionEvent)
         {
-            motionEvent->SetEventDataChangeEvent(m_changeEventHandler);
+            motionEvent->RegisterEventDataChangeEvent(m_changeEventHandler);
         }
         m_editor->SetMotionEvent(motion, motionEvent);
     }

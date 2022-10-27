@@ -39,7 +39,7 @@ namespace EMotionFX
 
     }
     MotionEvent::MotionEvent(MotionEvent&& event):
-        Event(event),
+        Event(AZStd::move(event)),
         m_startTime(event.m_startTime),
         m_endTime(event.m_endTime),
         m_isSyncEvent(event.m_isSyncEvent)
@@ -90,7 +90,7 @@ namespace EMotionFX
 
     MotionEvent& MotionEvent::operator=(MotionEvent&& other)
     {
-        Event::operator=(other);
+        Event::operator=(AZStd::move(other));
         m_startTime = other.m_startTime;
         m_endTime = other.m_endTime;
         m_isSyncEvent = other.m_isSyncEvent;

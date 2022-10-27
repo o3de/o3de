@@ -99,7 +99,7 @@ namespace EMotionFX
         MotionEvent(float startTimeValue, float endTimeValue, EventDataSet&& datas);
 
         MotionEvent& operator=(const MotionEvent& other);
-        
+
         MotionEvent& operator=(MotionEvent&& other);
 
         static void Reflect(AZ::ReflectContext* context);
