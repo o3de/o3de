@@ -8,6 +8,7 @@
 
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Components/TransformComponent.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
 #include <Integration/ActorComponentBus.h>
 #include <Integration/Components/ActorComponent.h>
@@ -37,6 +38,7 @@
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.h>
+#include <Source/Integration/Editor/Components/EditorActorComponent.h>
 
 namespace EMStudio
 {
@@ -204,9 +206,7 @@ namespace EMStudio
         if (!m_actorEntities.empty())
         {
             // Find the actor instance and calculate the center from aabb.
-            EMotionFX::Integration::ActorComponent* actorComponent =
-                m_actorEntities[0]->FindComponent<EMotionFX::Integration::ActorComponent>();
-            EMotionFX::ActorInstance* actorInstance = actorComponent->GetActorInstance();
+            EMotionFX::ActorInstance* actorInstance = FindFirstActorInstance();
             if (actorInstance)
             {
                 result = actorInstance->GetAabb().GetCenter();
@@ -221,12 +221,19 @@ namespace EMStudio
         for (AZ::Entity* entity : m_actorEntities)
         {
             EMotionFX::Integration::ActorComponent* actorComponent = entity->FindComponent<EMotionFX::Integration::ActorComponent>();
-            if (!actorComponent)
+            if (actorComponent)
             {
-                AZ_Assert(false, "Found entity without actor component in the actor entity list.");
-                continue;
+                actorComponent->SetRenderFlag(renderFlags);
             }
-            actorComponent->SetRenderFlag(renderFlags);
+            else
+            {
+                EMotionFX::Integration::EditorActorComponent* editorActorComponent =
+                    entity->FindComponent<EMotionFX::Integration::EditorActorComponent>();
+                if (editorActorComponent)
+                {
+                    editorActorComponent->SetRenderFlag(renderFlags);
+                }
+            }
         }
     }
 
@@ -345,22 +352,60 @@ namespace EMStudio
 
     AZ::Entity* AnimViewportRenderer::CreateActorEntity(AZ::Data::Asset<EMotionFX::Integration::ActorAsset> actorAsset)
     {
-        AZ::Entity* actorEntity = m_entityContext->CreateEntity(actorAsset->GetActor()->GetName());
-        actorEntity->CreateComponent(azrtti_typeid<EMotionFX::Integration::ActorComponent>());
-        actorEntity->CreateComponent(AZ::Render::MaterialComponentTypeId);
-        actorEntity->CreateComponent(azrtti_typeid<AzFramework::TransformComponent>());
-        actorEntity->Init();
-        actorEntity->Activate();
+        AZ::Entity* actorEntity = nullptr;
 
-        EMotionFX::Integration::ActorComponent* actorComponent = actorEntity->FindComponent<EMotionFX::Integration::ActorComponent>();
-        actorComponent->SetActorAsset(actorAsset);
+        // Hack: Find entity belongs to main editor, copy it.
+        AZ::EntityId mainEditorEntityId = AZ::EntityId();
+        size_t numInstances = EMotionFX::GetActorManager().GetNumActorInstances();
+        for (size_t i = 0; i < numInstances; ++i)
+        {
+            EMotionFX::ActorInstance* instance = EMotionFX::GetActorManager().GetActorInstance(i);
+            if (instance->GetActor() == actorAsset->GetActor())
+            {
+                mainEditorEntityId = instance->GetEntityId();
+            }
+        }
 
-        // Since this entity belongs to the animation editor, we need to set the isOwnByRuntime flag to false.
-        actorComponent->GetActorInstance()->SetIsOwnedByRuntime(false);
+        uint32 actorInstanceId = 0;
+        if (mainEditorEntityId.IsValid())
+        {
+            //AZ::SerializeContext* serializeContext = nullptr;
+            //AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+            AZ::Entity* mainEditorEntity = nullptr;
+            //AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult();
+            AZ::ComponentApplicationBus::BroadcastResult(
+                mainEditorEntity, &AZ::ComponentApplicationBus::Events::FindEntity, mainEditorEntityId);
+            if (mainEditorEntity)
+            {
+                actorEntity = m_entityContext->CloneEntity(*mainEditorEntity);
+                actorEntity->Init();
+                actorEntity->Activate();
+                EMotionFX::Integration::EditorActorComponent* actorComponent = actorEntity->FindComponent<EMotionFX::Integration::EditorActorComponent>();
+                actorInstanceId = actorComponent->GetActorInstance()->GetID();
+            }
+        }
+
+        if (!actorEntity)
+        {
+            actorEntity = m_entityContext->CreateEntity(actorAsset->GetActor()->GetName());
+            actorEntity->CreateComponent(azrtti_typeid<EMotionFX::Integration::ActorComponent>());
+            actorEntity->CreateComponent(AZ::Render::MaterialComponentTypeId);
+            actorEntity->CreateComponent(azrtti_typeid<AzFramework::TransformComponent>());
+            actorEntity->Init();
+            actorEntity->Activate();
+
+            EMotionFX::Integration::ActorComponent* actorComponent = actorEntity->FindComponent<EMotionFX::Integration::ActorComponent>();
+            actorInstanceId = actorComponent->GetActorInstance()->GetID();
+            actorComponent->SetActorAsset(actorAsset);
+
+            // Since this entity belongs to the animation editor, we need to set the isOwnByRuntime flag to false.
+            actorComponent->GetActorInstance()->SetIsOwnedByRuntime(false);
+        }
+
         // Selet the actor instance in the command manager after it has been created.
         AZStd::string outResult;
         EMStudioManager::GetInstance()->GetCommandManager()->ExecuteCommandInsideCommand(
-            AZStd::string::format("Select -actorInstanceID %i", actorComponent->GetActorInstance()->GetID()).c_str(), outResult);
+            AZStd::string::format("Select -actorInstanceID %i", actorInstanceId).c_str(), outResult);
 
         return actorEntity;
     }
@@ -401,5 +446,29 @@ namespace EMStudio
     const AZStd::vector<AZ::Entity*>& AnimViewportRenderer::GetActorEntities() const
     {
         return m_actorEntities;
+    }
+
+    EMotionFX::ActorInstance* AnimViewportRenderer::FindFirstActorInstance() const
+    {
+        if (m_actorEntities.empty())
+        {
+            return nullptr;
+        }
+
+        AZ::Entity* entity = m_actorEntities[0];
+        EMotionFX::Integration::ActorComponent* actorComponent = entity->FindComponent<EMotionFX::Integration::ActorComponent>();
+        if (actorComponent)
+        {
+            return actorComponent->GetActorInstance();
+        }
+
+        EMotionFX::Integration::EditorActorComponent* editorActorComponent =
+            entity->FindComponent<EMotionFX::Integration::EditorActorComponent>();
+        if (editorActorComponent)
+        {
+            return editorActorComponent->GetActorInstance();
+        }
+
+        return nullptr;
     }
 } // namespace EMStudio

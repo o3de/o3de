@@ -83,6 +83,7 @@ namespace EMStudio
         AZ::Entity* CreateActorEntity(AZ::Data::Asset<EMotionFX::Integration::ActorAsset> actorAsset);
 
         AZ::Entity* FindActorEntity(AZ::Data::Asset<EMotionFX::Integration::ActorAsset> actorAsset) const;
+        EMotionFX::ActorInstance* FindFirstActorInstance() const;
         void SetLightingPreset(const AZ::Render::LightingPreset* preset);
 
         AZStd::shared_ptr<AZ::RPI::WindowContext> m_windowContext;

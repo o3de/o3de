@@ -14,6 +14,9 @@
                             "AZ::Render::SkyBoxFeatureProcessor",
                             "AZ::Render::TransformServiceFeatureProcessor",
                             "AZ::Render::AuxGeomFeatureProcessor",
+							
+							// Only temp
+							"AZ::Render::Hair::HairFeatureProcessor",
 
                             // These FPs can be removed once the LightCullingPass issue [ATOM-17812] is addressed 
                             "AZ::Render::SimplePointLightFeatureProcessor",
