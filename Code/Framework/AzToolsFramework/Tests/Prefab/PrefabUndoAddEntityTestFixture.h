@@ -18,10 +18,6 @@ namespace UnitTest
     using namespace AzToolsFramework::Prefab;
     using namespace PrefabTestUtils;
 
-    using CreatePrefabUndoAddEntityNodeResult =
-        AZ::Outcome<PrefabUndoAddEntity, AZStd::string>;
-    using CreatePrefabUndoAddEntityAsOverrideNodeResult =
-        AZ::Outcome<PrefabUndoAddEntityAsOverride, AZStd::string>;
     using InstanceList = AZStd::vector<AZStd::reference_wrapper<Instance>>;
 
     class PrefabUndoAddEntityTestFixture
@@ -36,41 +32,21 @@ namespace UnitTest
         EntityAlias CreateEntity(const AZStd::string& entityName,
             Instance& owningInstance, const EntityAlias& parentEntityAlias);
 
-        CreatePrefabUndoAddEntityNodeResult CreatePrefabUndoAddEntityNode(
+        PrefabUndoAddEntity CreatePrefabUndoAddEntityNode(
             const EntityAlias& newEntityAlias,
             Instance& focusedInstance,
-            const AZStd::string& undoAddEntityOperationName = "Undo Adding Entity");
+            const AZStd::string& undoAddEntityOperationName,
+            const EntityAlias& parentEntityAlias = "");
 
-        CreatePrefabUndoAddEntityNodeResult CreatePrefabUndoAddEntityNode(
-            const EntityAlias& parentEntityAlias, const EntityAlias& newEntityAlias,
-            Instance& focusedInstance,
-            const AZStd::string& undoAddEntityOperationName = "Undo Adding Entity");
-
-        CreatePrefabUndoAddEntityAsOverrideNodeResult CreatePrefabUndoAddEntityAsOverrideNode(
+        PrefabUndoAddEntityAsOverride CreatePrefabUndoAddEntityAsOverrideNode(
             const EntityAlias& newEntityAlias,
             Instance& owningInstance,
             Instance& focusedInstance,
-            const AZStd::string& undoAddEntityOperationName = "Undo Adding Entity");
-
-        CreatePrefabUndoAddEntityAsOverrideNodeResult CreatePrefabUndoAddEntityAsOverrideNode(
-            const EntityAlias& parentEntityAlias, const EntityAlias& newEntityAlias,
-            Instance& owningInstance,
-            Instance& focusedInstance,
-            const AZStd::string& undoAddEntityOperationName = "Undo Adding Entity");
-
-        void ValidateNewEntityUnderInstance(
-            InstanceList& instances,
-            const EntityAlias& newEntityAlias, const AZStd::string& newEntityName,
-            size_t expectedEntityCount);
+            const AZStd::string& undoAddEntityOperationName,
+            const EntityAlias& parentEntityAlias = "");
 
         void ValidateNewEntityUnderInstance(
             Instance& instance,
-            const EntityAlias& newEntityAlias, const AZStd::string& newEntityName,
-            size_t expectedEntityCount);
-
-        void ValidateNewEntityUnderParentEntity(
-            InstanceList& instances,
-            const EntityAlias& parentEntityAlias, const AZStd::string& parentEntityName,
             const EntityAlias& newEntityAlias, const AZStd::string& newEntityName,
             size_t expectedEntityCount);
 
@@ -81,19 +57,8 @@ namespace UnitTest
             size_t expectedEntityCount);
 
         void ValidateNewEntityNotUnderParentEntity(
-            InstanceList& instances,
-            const EntityAlias& parentEntityAlias, const AZStd::string& parentEntityName,
-            const EntityAlias& newEntityAlias,
-            size_t expectedEntityCount);
-
-        void ValidateNewEntityNotUnderParentEntity(
             Instance& instance,
             const EntityAlias& parentEntityAlias, const AZStd::string& parentEntityName,
-            const EntityAlias& newEntityAlias,
-            size_t expectedEntityCount);
-
-        void ValidateNewEntityNotUnderInstance(
-            InstanceList& instances,
             const EntityAlias& newEntityAlias,
             size_t expectedEntityCount);
 
@@ -105,17 +70,6 @@ namespace UnitTest
     private:
         EntityAlias CreateEntity(const AZStd::string& entityName,
             Instance& owningInstance, const AZ::Entity& parentEntity);
-
-        CreatePrefabUndoAddEntityNodeResult CreatePrefabUndoAddEntityNode(
-            const AZ::Entity& parentEntity, const AZ::Entity& newEntity,
-            Instance& focusedInstance,
-            const AZStd::string& undoAddEntityOperationName = "Undo Adding Entity");
-
-        CreatePrefabUndoAddEntityAsOverrideNodeResult CreatePrefabUndoAddEntityAsOverrideNode(
-            const AZ::Entity& parentEntity, const AZ::Entity& newEntity,
-            Instance& owningInstance,
-            Instance& focusedInstance,
-            const AZStd::string& undoAddEntityOperationName = "Undo Adding Entity");
 
         void ValidateNewEntityUnderParentEntity(
             Instance& instance,

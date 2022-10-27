@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Interface/Interface.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceToTemplateInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoAddEntity.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoUtils.h>
@@ -18,8 +19,6 @@ namespace AzToolsFramework
         PrefabUndoAddEntity::PrefabUndoAddEntity(const AZStd::string& undoOperationName)
             : PrefabUndoBase(undoOperationName)
         {
-            m_prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
-            AZ_Assert(m_prefabSystemComponentInterface, "Failed to grab PrefabSystemComponentInterface");
         }
 
         void PrefabUndoAddEntity::Capture(
@@ -65,8 +64,8 @@ namespace AzToolsFramework
 
             PrefabDom newEntityDom;
             m_instanceToTemplateInterface->GenerateDomForEntity(newEntityDom, newEntity);
-            PrefabUndoUtils::GenerateAddEntityPatch(m_redoPatch, newEntityDom, newEntityAliasPath);
-            PrefabUndoUtils::GenerateRemoveEntityPatch(m_undoPatch, newEntityAliasPath);
+            PrefabUndoUtils::AppendAddEntityPatch(m_redoPatch, newEntityDom, newEntityAliasPath);
+            PrefabUndoUtils::AppendRemoveEntityPatch(m_undoPatch, newEntityAliasPath);
 
             // Preemptively updates the cached DOM to prevent reloading instance DOM.
             PrefabDomReference cachedOwningInstanceDom = focusedInstance.GetCachedInstanceDom();

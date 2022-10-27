@@ -9,12 +9,14 @@
 #pragma once
 #include <AzToolsFramework/Undo/UndoSystem.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
-#include <AzToolsFramework/Prefab/Instance/InstanceToTemplateInterface.h>
 
 namespace AzToolsFramework
 {
     namespace Prefab
     {
+        class InstanceToTemplateInterface;
+        class PrefabSystemComponentInterface;
+
         class PrefabUndoBase
             : public UndoSystem::URSequencePoint
         {
@@ -26,6 +28,9 @@ namespace AzToolsFramework
             void Undo() override;
             void Redo() override;
 
+            //! Overload to allow to apply the change, but prevent instanceToExclude from being refreshed.
+            void virtual Redo(InstanceOptionalConstReference instanceToExclude);
+
         protected:
             TemplateId m_templateId;
 
@@ -33,6 +38,7 @@ namespace AzToolsFramework
             PrefabDom m_undoPatch;
 
             InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
+            PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
 
             bool m_changed;
         };

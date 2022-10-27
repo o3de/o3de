@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Interface/Interface.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceToTemplateInterface.h>
 #include <AzToolsFramework/Prefab/PrefabInstanceUtils.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoAddEntityAsOverride.h>
@@ -82,7 +83,7 @@ namespace AzToolsFramework
 
             PrefabDom newEntityDom;
             m_instanceToTemplateInterface->GenerateDomForEntity(newEntityDom, newEntity);
-            PrefabUndoUtils::GenerateAddEntityPatch(m_redoPatch, newEntityDom, newEntityAliasPathForPatch);
+            PrefabUndoUtils::AppendAddEntityPatch(m_redoPatch, newEntityDom, newEntityAliasPathForPatch);
 
             const LinkId linkId = climbUpResult.m_climbedInstances.back()->GetLinkId();
             PrefabUndoUpdateLink::Capture(m_redoPatch, linkId);

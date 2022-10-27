@@ -30,14 +30,17 @@ namespace AzToolsFramework
             void Undo() override;
             void Redo() override;
 
+            //! Overload to allow to apply the change, but prevent instanceToExclude from being refreshed.
+            void Redo(InstanceOptionalConstReference instanceToExclude) override;
+
             void Capture(const PrefabDom& linkedInstancePatch, LinkId linkId);
 
         protected:
             void SetLink(LinkId linkId);
-            void UpdateLink(const PrefabDom& linkDom);
+            void UpdateLink(const PrefabDom& linkDom,
+                InstanceOptionalConstReference instanceToExclude = AZStd::nullopt);
 
             LinkReference m_link = AZStd::nullopt;
-            PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
         };
     }
 }

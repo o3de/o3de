@@ -6,7 +6,9 @@
  *
  */
 
+#include <AzToolsFramework/Prefab/Instance/InstanceToTemplateInterface.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
+#include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndo.h>
 
 namespace AzToolsFramework
@@ -29,11 +31,6 @@ namespace AzToolsFramework
 
             m_instanceToTemplateInterface->GeneratePatch(m_redoPatch, initialState, endState);
             m_instanceToTemplateInterface->GeneratePatch(m_undoPatch, endState, initialState);
-        }
-
-        void PrefabUndoInstance::Redo(InstanceOptionalConstReference instance)
-        {
-            m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, instance);
         }
 
         // PrefabUndoRemoveEntities
@@ -146,13 +143,7 @@ namespace AzToolsFramework
 
         void PrefabUndoEntityUpdate::Redo()
         {
-            [[maybe_unused]] bool isPatchApplicationSuccessful =
-                m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId);
-
-            AZ_Error(
-                "Prefab", isPatchApplicationSuccessful,
-                "Applying the redo patch on the entity with alias '%s' in template with id '%llu' was unsuccessful", m_entityAlias.c_str(),
-                m_templateId);
+            Redo(AZStd::nullopt);
         }
 
         void PrefabUndoEntityUpdate::Redo(InstanceOptionalConstReference instance)
@@ -176,8 +167,6 @@ namespace AzToolsFramework
             , m_linkPatches(PrefabDom())
             , m_linkStatus(LinkStatus::LINKSTATUS)
         {
-            m_prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
-            AZ_Assert(m_instanceToTemplateInterface, "Failed to grab interface");
         }
 
         void PrefabUndoInstanceLink::Capture(
@@ -226,6 +215,11 @@ namespace AzToolsFramework
 
         void PrefabUndoInstanceLink::Redo()
         {
+            Redo(AZStd::nullopt);
+        }
+
+        void PrefabUndoInstanceLink::Redo(InstanceOptionalConstReference instanceToExclude)
+        {
             switch (m_linkStatus)
             {
             case LinkStatus::ADD:
@@ -240,7 +234,7 @@ namespace AzToolsFramework
                 break;
             }
 
-            m_prefabSystemComponentInterface->PropagateTemplateChanges(m_targetId);
+            m_prefabSystemComponentInterface->PropagateTemplateChanges(m_targetId, instanceToExclude);
         }
 
         LinkId PrefabUndoInstanceLink::GetLinkId()

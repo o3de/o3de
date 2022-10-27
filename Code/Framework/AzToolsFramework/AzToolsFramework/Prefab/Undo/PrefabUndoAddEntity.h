@@ -15,9 +15,6 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
-        class InstanceEntityMapperInterface;
-        class PrefabSystemComponentInterface;
-
         //! Undo class for handling addition of an entity to a prefab instance.
         class PrefabUndoAddEntity
             : public PrefabUndoBase
@@ -34,9 +31,6 @@ namespace AzToolsFramework
                 const AZ::Entity& parentEntity,
                 const AZ::Entity& newEntity,
                 Instance& focusedInstance);
-
-        private:
-            PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
         };
     }
 }

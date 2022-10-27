@@ -7,7 +7,9 @@
  */
 
 #include <AzCore/Interface/Interface.h>
-#include <Prefab/Undo/PrefabUndo.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceToTemplateInterface.h>
+#include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
+#include <AzToolsFramework/Prefab/Undo/PrefabUndoBase.h>
 
 namespace AzToolsFramework
 {
@@ -20,6 +22,9 @@ namespace AzToolsFramework
         {
             m_instanceToTemplateInterface = AZ::Interface<InstanceToTemplateInterface>::Get();
             AZ_Assert(m_instanceToTemplateInterface, "Failed to grab instance to template interface");
+
+            m_prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
+            AZ_Assert(m_prefabSystemComponentInterface, "Failed to grab prefab system component interface");
         }
 
         bool PrefabUndoBase::Changed() const
@@ -29,12 +34,27 @@ namespace AzToolsFramework
 
         void PrefabUndoBase::Undo()
         {
-            m_instanceToTemplateInterface->PatchTemplate(m_undoPatch, m_templateId);
+            [[maybe_unused]] bool isPatchApplicationSuccessful =
+                m_instanceToTemplateInterface->PatchTemplate(m_undoPatch, m_templateId);
+
+            AZ_Error(
+                "Prefab", isPatchApplicationSuccessful,
+                "Applying the undo patch to template with id '%llu' was unsuccessful", m_templateId);
         }
 
         void PrefabUndoBase::Redo()
         {
-            m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId);
+            Redo(AZStd::nullopt);
+        }
+
+        void PrefabUndoBase::Redo(InstanceOptionalConstReference instanceToExclude)
+        {
+            [[maybe_unused]] bool isPatchApplicationSuccessful =
+                m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, instanceToExclude);
+
+            AZ_Error(
+                "Prefab", isPatchApplicationSuccessful,
+                "Applying the redo patch to template with id '%llu' was unsuccessful", m_templateId);
         }
     }
 }

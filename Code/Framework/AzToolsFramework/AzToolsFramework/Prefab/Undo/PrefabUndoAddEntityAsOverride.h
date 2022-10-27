@@ -28,8 +28,6 @@ namespace AzToolsFramework
 
             explicit PrefabUndoAddEntityAsOverride(const AZStd::string& undoOperationName);
 
-            using PrefabUndoUpdateLink::Capture;
-
             // The function help generate undo/redo patches for adding the a new entity under a target parent entity,
             // where both entities are under the given owning prefab instance, and the owning instance is a descendant
             // of the current focused instance.

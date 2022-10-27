@@ -16,9 +16,9 @@ namespace AzToolsFramework
     {
         namespace PrefabUndoUtils
         {
-            void GenerateAddEntityPatch(
+            void AppendAddEntityPatch(
                 PrefabDom& patch,
-                PrefabDom& newEntityDom,
+                const PrefabDomValue& newEntityDom,
                 const AZStd::string& newEntityAliasPath)
             {
                 AZ_Assert(patch.IsArray(), "Provided patch should be an array object DOM value.");
@@ -34,10 +34,12 @@ namespace AzToolsFramework
                 patch.PushBack(addNewEntityPatch.Move(), patch.GetAllocator());
             }
 
-            void GenerateRemoveEntityPatch(
+            void AppendRemoveEntityPatch(
                 PrefabDom& patch,
                 const AZStd::string& targetEntityAliasPath)
             {
+                AZ_Assert(patch.IsArray(), "Provided patch should be an array object DOM value.");
+
                 PrefabDomValue removeTargetEntityPatch(rapidjson::kObjectType);
                 rapidjson::Value path = rapidjson::Value(targetEntityAliasPath.data(),
                     aznumeric_caster(targetEntityAliasPath.length()), patch.GetAllocator());
@@ -48,7 +50,7 @@ namespace AzToolsFramework
 
             void UpdateCachedOwningInstanceDom(
                 PrefabDomReference cachedOwningInstanceDom,
-                const PrefabDom& entityDom,
+                const PrefabDomValue& entityDom,
                 const AZStd::string& entityAliasPath)
             {
                 // Create a copy of the DOM of the end state so that it shares the lifecycle of the cached DOM.

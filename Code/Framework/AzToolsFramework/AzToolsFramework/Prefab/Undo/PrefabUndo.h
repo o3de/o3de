@@ -11,7 +11,6 @@
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoBase.h>
 
 //for link undo
-#include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Link/Link.h>
 
 namespace AzToolsFramework
@@ -29,10 +28,6 @@ namespace AzToolsFramework
                 const PrefabDom& initialState,
                 const PrefabDom& endState,
                 TemplateId templateId);
-
-            using PrefabUndoBase::Redo;
-
-            void Redo(InstanceOptionalConstReference instance);
         };
         
         //! Undo class for handling deletion of entities to a prefab template.
@@ -60,8 +55,9 @@ namespace AzToolsFramework
 
             void Undo() override;
             void Redo() override;
+
             //! Overload to allow to apply the change, but prevent instanceToExclude from being refreshed.
-            void Redo(InstanceOptionalConstReference instanceToExclude);
+            void Redo(InstanceOptionalConstReference instanceToExclude) override;
 
         private:
             InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
@@ -93,6 +89,9 @@ namespace AzToolsFramework
             void Undo() override;
             void Redo() override;
 
+            //! Overload to allow to apply the change, but prevent instanceToExclude from being refreshed.
+            void Redo(InstanceOptionalConstReference instanceToExclude) override;
+
             LinkId GetLinkId();
 
         private:
@@ -108,8 +107,6 @@ namespace AzToolsFramework
             LinkId m_linkId;
             PrefabDom m_linkPatches;  //data for delete/update
             LinkStatus m_linkStatus;
-
-            PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
         };
     }
 }
