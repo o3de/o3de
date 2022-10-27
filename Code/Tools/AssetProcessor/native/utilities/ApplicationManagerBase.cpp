@@ -567,7 +567,7 @@ void ApplicationManagerBase::InitConnectionManager()
             return new ConnectionManager();
         }));
 
-    QObject* connectionAndChangeMessagesThreadContext = this;
+    QObject* connectionAndChangeMessagesThreadContext = m_connectionManager.get();
 
     // AssetProcessor Manager related stuff
     auto forwardMessageFunction = [](AzFramework::AssetSystem::AssetNotificationMessage message)
