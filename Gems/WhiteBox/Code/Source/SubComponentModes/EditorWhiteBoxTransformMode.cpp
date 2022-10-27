@@ -592,7 +592,7 @@ namespace WhiteBox
 
         auto mouseMoveHandlerFn =
             [entityComponentIdPair = m_entityComponentIdPair,
-             transformSelection = m_whiteBoxSelection](const auto& action)
+             transformSelection = m_whiteBoxSelection](const auto& action, bool isUniform)
         {
             WhiteBoxMesh* whiteBox = nullptr;
             EditorWhiteBoxComponentRequestBus::EventResult(
@@ -602,9 +602,9 @@ namespace WhiteBox
             {
                 const AZ::Vector3 vertexLocalPosition =
                     (transformSelection->m_vertexPositions[vertexIndex++] - transformSelection->m_localPosition);
-                const AZ::Vector3 vertexPosition =
-                    (vertexLocalPosition * (AZ::Vector3::CreateOne() + (action.m_start.m_sign * action.LocalScaleOffset()))) +
-                    transformSelection->m_localPosition;
+                const AZ::Vector3 manipulatorScale = (AZ::Vector3::CreateOne() + (action.m_start.m_sign * 
+                    (isUniform ? AZ::Vector3(action.LocalScaleOffset().GetZ()) : action.LocalScaleOffset()))); 
+                const AZ::Vector3 vertexPosition = (vertexLocalPosition * manipulatorScale) + transformSelection->m_localPosition;
                 Api::SetVertexPosition(*whiteBox, vertexHandle, vertexPosition);
             }
 
@@ -616,23 +616,25 @@ namespace WhiteBox
 
         auto mouseUpHandlerFn =
             [mouseMoveHandlerFn, entityComponentIdPair = m_entityComponentIdPair,
-             transformSelection = m_whiteBoxSelection](const auto& action)
+             transformSelection = m_whiteBoxSelection](const auto& action, bool isUniform)
         {
             WhiteBoxMesh* whiteBox = nullptr;
             EditorWhiteBoxComponentRequestBus::EventResult(
                 whiteBox, entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
 
-            mouseMoveHandlerFn(action);
+            mouseMoveHandlerFn(action, isUniform);
             transformSelection->m_vertexPositions = Api::VertexPositions(*whiteBox, transformSelection->m_vertexHandles);
 
             EditorWhiteBoxComponentRequestBus::Event(entityComponentIdPair, &EditorWhiteBoxComponentRequests::SerializeWhiteBox);
         };
 
-        scaleManipulators->InstallAxisMouseMoveCallback(mouseMoveHandlerFn);
-        scaleManipulators->InstallUniformMouseMoveCallback(mouseMoveHandlerFn);
+        using namespace AZStd::placeholders;
+        scaleManipulators->InstallAxisMouseMoveCallback(AZStd::bind(mouseMoveHandlerFn, _1, false));
+        scaleManipulators->InstallAxisLeftMouseUpCallback(AZStd::bind(mouseUpHandlerFn, _1, false));
 
-        scaleManipulators->InstallAxisLeftMouseUpCallback(mouseUpHandlerFn);
-        scaleManipulators->InstallUniformLeftMouseUpCallback(mouseUpHandlerFn);
+
+        scaleManipulators->InstallUniformMouseMoveCallback(AZStd::bind(mouseMoveHandlerFn, _1, true));
+        scaleManipulators->InstallUniformLeftMouseUpCallback(AZStd::bind(mouseUpHandlerFn, _1, true));
 
         scaleManipulators->Register(AzToolsFramework::g_mainManipulatorManagerId);
         m_manipulator = AZStd::move(scaleManipulators);
