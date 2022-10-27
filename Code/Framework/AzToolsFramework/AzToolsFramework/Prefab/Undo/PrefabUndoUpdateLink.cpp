@@ -89,12 +89,7 @@ namespace AzToolsFramework
 
             // Remove the link ids if present in the DOMs. We don't want any overrides to be created on top of linkIds because
             // linkIds are not persistent and will be created dynamically when prefabs are loaded into the editor.
-            if (instanceDom.HasMember(PrefabDomUtils::LinkIdName))
-            {
-                AZ_Warning("Prefab", false, "Linked instance DOM from link with id '%llu' shouldn't contains key 'LinkId'",
-                    static_cast<AZ::u64>(linkId));
-                instanceDom.RemoveMember(PrefabDomUtils::LinkIdName);
-            }
+            instanceDom.RemoveMember(PrefabDomUtils::LinkIdName);
             if (sourceDom.HasMember(PrefabDomUtils::LinkIdName))
             {
                 AZ_Warning("Prefab", false, "Source template from link with id '%llu' shouldn't contains key 'LinkId'",
@@ -107,8 +102,9 @@ namespace AzToolsFramework
             m_instanceToTemplateInterface->GeneratePatch(linkPatch, sourceDom, instanceDom);
 
             // Create a copy of linkPatch by providing the allocator of m_redoPatch so that the patch doesn't become invalid when
-            // the patch goes out of scope in this function.
-            // Todo: Implement a better way to create m_redoPatch instead of copying m_undoPatch to m_redoPatch.
+            // the patch goes out of scope in this function. 
+            // Implement a better way to create m_redoPatch instead of copying from m_undoPatch to m_redoPatch since we need 'Source'
+            // information copied.
             PrefabDom linkPatchCopy;
             linkPatchCopy.CopyFrom(linkPatch, m_redoPatch.GetAllocator());
             m_redoPatch.CopyFrom(m_undoPatch, m_redoPatch.GetAllocator());
