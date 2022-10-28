@@ -62,9 +62,14 @@ namespace AzToolsFramework
             QWidget* widget = QStyledItemDelegate::createEditor(parent, option, index);
             if (auto* lineEdit = qobject_cast<QLineEdit*>(widget))
             {
-                connect(lineEdit,&QLineEdit::editingFinished, this, [&, lineEdit]()
+                connect(lineEdit, &QLineEdit::editingFinished,
+                    this, [this]()
                     {
-                        Q_EMIT RenameEntry(lineEdit->text());
+                        auto sendingLineEdit = qobject_cast<QLineEdit*>(sender());
+                        if (sendingLineEdit)
+                        {
+                            emit RenameEntry(sendingLineEdit->text());
+                        }
                     });
             }
             return widget;

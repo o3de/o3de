@@ -57,6 +57,9 @@ namespace AzToolsFramework
         Q_SIGNALS:
             void RenameEntry(const QString& value) const;
 
+        signals:
+            void RenameEntry(const QString& value) const;
+
         protected:
             int m_iconSize;
             bool m_showSourceControl = false;
