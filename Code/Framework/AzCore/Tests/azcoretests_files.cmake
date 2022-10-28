@@ -30,6 +30,7 @@ set(FILES
     AZStd/ChronoTests.cpp
     AZStd/DequeAndSimilar.cpp
     AZStd/Examples.cpp
+    AZStd/ExpectedTests.cpp
     AZStd/FunctionalBasic.cpp
     AZStd/FunctorsBind.cpp
     AZStd/Hashed.cpp
@@ -115,6 +116,7 @@ set(FILES
     Math/CrcTestsCompileTimeLiterals.h
     Math/FrustumTests.cpp
     Math/FrustumPerformanceTests.cpp
+    Math/HemisphereTests.cpp
     Math/IntersectionPerformanceTests.cpp
     Math/IntersectionTestHelpers.cpp
     Math/IntersectionTestHelpers.h

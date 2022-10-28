@@ -240,7 +240,6 @@ namespace AZ
 
                     if ((c->m_cullData.m_drawListMask & worklistData->m_view->GetDrawListMask()).none() ||
                         c->m_cullData.m_hideFlags & worklistData->m_view->GetUsageFlags() ||
-                        c->m_cullData.m_scene != worklistData->m_scene ||       //[GFX_TODO][ATOM-13796] once the IVisibilitySystem supports multiple octree scenes, remove this
                         c->m_isHidden)
                     {
                         continue;
@@ -793,10 +792,7 @@ namespace AZ
         void CullingScene::Activate(const Scene* parentScene)
         {
             m_parentScene = parentScene;
-
-            AZ_Assert(m_visScene == nullptr, "IVisibilityScene already created for this RPI::Scene");
-            AZ::Name visSceneName(AZStd::string::format("RenderCullScene[%s]", m_parentScene->GetName().GetCStr()));
-            m_visScene = AZ::Interface<AzFramework::IVisibilitySystem>::Get()->CreateVisibilityScene(visSceneName);
+            m_visScene = parentScene->GetVisibilityScene();
 
             m_taskGraphActive = AZ::Interface<AZ::TaskGraphActiveInterface>::Get();
 
@@ -810,11 +806,7 @@ namespace AZ
 #ifdef AZ_CULL_DEBUG_ENABLED
             AZ_Assert(CountObjectsInScene() == 0, "All culling entries must be removed from the scene before shutdown.");
 #endif
-            if (m_visScene)
-            {
-                AZ::Interface<AzFramework::IVisibilitySystem>::Get()->DestroyVisibilityScene(m_visScene);
-                m_visScene = nullptr;
-            }
+            m_visScene = nullptr;
         }
 
         void CullingScene::BeginCullingTaskGraph(const AZStd::vector<ViewPtr>& views)
@@ -928,17 +920,13 @@ namespace AZ
         {
             size_t numObjects = 0;
             m_visScene->EnumerateNoCull(
-                [this, &numObjects](const AzFramework::IVisibilityScene::NodeData& nodeData)
+                [&numObjects](const AzFramework::IVisibilityScene::NodeData& nodeData)
                 {
                     for (AzFramework::VisibilityEntry* visibleEntry : nodeData.m_entries)
                     {
                         if (visibleEntry->m_typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_Cullable)
                         {
-                            Cullable* c = static_cast<Cullable*>(visibleEntry->m_userData);
-                            if (c->m_cullData.m_scene == m_parentScene)       //[GFX_TODO][ATOM-13796] once the IVisibilitySystem supports multiple octree scenes, remove this
-                            {
-                                ++numObjects;
-                            }
+                            ++numObjects;
                         }
                     }
                 }

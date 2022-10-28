@@ -50,8 +50,9 @@ namespace AtomToolsFramework
             {
                 if (documentType.IsSupportedExtensionToOpen(absolutePath))
                 {
-                    AtomToolsDocumentSystemRequestBus::Event(
-                        m_toolId, &AtomToolsDocumentSystemRequestBus::Events::OpenDocument, absolutePath);
+                    AZ::SystemTickBus::QueueFunction([toolId = m_toolId, absolutePath]() {
+                        AtomToolsDocumentSystemRequestBus::Event(toolId, &AtomToolsDocumentSystemRequestBus::Events::OpenDocument, absolutePath);
+                    });
                     return;
                 }
             }
@@ -81,8 +82,8 @@ namespace AtomToolsFramework
         BuildCreateMenu(insertPostion);
         BuildOpenMenu(insertPostion);
 
-        m_menuOpenRecent = new QMenu("Open Recent", this);
-        connect(m_menuOpenRecent, &QMenu::aboutToShow, this, [this]() {
+        m_menuOpenRecent = new QMenu("Open Recent", menuBar);
+        connect(m_menuOpenRecent, &QMenu::aboutToShow, menuBar, [this]() {
             UpdateRecentFileMenu();
         });
         m_menuFile->insertMenu(insertPostion, m_menuOpenRecent);
@@ -348,10 +349,12 @@ namespace AtomToolsFramework
                     // Open all files selected in the dialog
                     const auto& paths =
                         GetOpenFilePathsFromDialog({}, documentType.m_supportedExtensionsToOpen, documentType.m_documentTypeName, true);
-                    for (const auto& path : paths)
-                    {
-                        AtomToolsDocumentSystemRequestBus::Event(toolId, &AtomToolsDocumentSystemRequestBus::Events::OpenDocument, path);
-                    }
+                    AZ::SystemTickBus::QueueFunction([toolId, paths]() {
+                        for (const auto& path : paths)
+                        {
+                            AtomToolsDocumentSystemRequestBus::Event(toolId, &AtomToolsDocumentSystemRequestBus::Events::OpenDocument, path);
+                        }
+                    });
                 }, isFirstDocumentTypeAdded ? QKeySequence::Open : QKeySequence());
                 isFirstDocumentTypeAdded = false;
             }
@@ -410,15 +413,17 @@ namespace AtomToolsFramework
             if (QFile::exists(path.c_str()))
             {
                 m_menuOpenRecent->addAction(tr("&%1: %2").arg(m_menuOpenRecent->actions().size()).arg(path.c_str()), [this, path]() {
-                    AtomToolsDocumentSystemRequestBus::Event(m_toolId, &AtomToolsDocumentSystemRequestBus::Events::OpenDocument, path);
+                    // Deferring execution with timer to not corrupt menu after document is opened.
+                    AZ::SystemTickBus::QueueFunction([toolId = m_toolId, path]() {
+                        AtomToolsDocumentSystemRequestBus::Event(toolId, &AtomToolsDocumentSystemRequestBus::Events::OpenDocument, path);
+                    });
                 });
             }
         }
 
         m_menuOpenRecent->addAction(tr("Clear Recent Files"), [this]() {
-            QTimer::singleShot(0, this, [this]() {
-                AtomToolsDocumentSystemRequestBus::Event(
-                    m_toolId, &AtomToolsDocumentSystemRequestBus::Handler::ClearRecentFilePaths);
+            AZ::SystemTickBus::QueueFunction([toolId = m_toolId]() {
+                AtomToolsDocumentSystemRequestBus::Event(toolId, &AtomToolsDocumentSystemRequestBus::Handler::ClearRecentFilePaths);
             });
         });
     }
@@ -711,6 +716,7 @@ namespace AtomToolsFramework
         // If supported document files are dragged into the main window client area attempt to open them
         if (centralWidget() && centralWidget()->geometry().contains(event->pos()))
         {
+            AZStd::vector<AZStd::string> acceptedPaths;
             for (const AZStd::string& path : GetPathsFromMimeData(event->mimeData()))
             {
                 DocumentTypeInfoVector documentTypes;
@@ -720,10 +726,20 @@ namespace AtomToolsFramework
                 {
                     if (documentType.IsSupportedExtensionToOpen(path))
                     {
-                        AtomToolsDocumentSystemRequestBus::Event(m_toolId, &AtomToolsDocumentSystemRequestBus::Events::OpenDocument, path);
-                        event->acceptProposedAction();
+                        acceptedPaths.push_back(path);
                     }
                 }
+            }
+
+            if (!acceptedPaths.empty())
+            {
+                AZ::SystemTickBus::QueueFunction([toolId = m_toolId, acceptedPaths]() {
+                    for (const AZStd::string& path : acceptedPaths)
+                    {
+                        AtomToolsDocumentSystemRequestBus::Event(toolId, &AtomToolsDocumentSystemRequestBus::Events::OpenDocument, path);
+                    }
+                });
+                event->acceptProposedAction();
             }
         }
 
@@ -732,12 +748,13 @@ namespace AtomToolsFramework
 
     template<typename Functor>
     QAction* AtomToolsDocumentMainWindow::CreateActionAtPosition(
-        QMenu* parent, QAction* position, const QString& text, Functor functor, const QKeySequence& shortcut)
+        QMenu* menu, QAction* position, const QString& name, Functor fn, const QKeySequence& shortcut)
     {
-        QAction* action = new QAction(text, parent);
+        QAction* action = new QAction(name, menu);
         action->setShortcut(shortcut);
-        connect(action, &QAction::triggered, parent, functor);
-        parent->insertAction(position, action);
+        action->setShortcutContext(Qt::WindowShortcut);
+        QObject::connect(action, &QAction::triggered, menu, fn);
+        menu->insertAction(position, action);
         return action;
     }
 } // namespace AtomToolsFramework
