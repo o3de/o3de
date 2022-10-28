@@ -54,9 +54,6 @@ namespace AzToolsFramework
             //! Set whether to show source control icons, this is still temporary mainly to support existing functionality of material browser
             void SetShowSourceControlIcons(bool showSourceControl);
         
-        Q_SIGNALS:
-            void RenameEntry(const QString& value) const;
-
         signals:
             void RenameEntry(const QString& value) const;
 

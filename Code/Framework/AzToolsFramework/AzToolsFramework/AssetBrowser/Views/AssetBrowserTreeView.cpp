@@ -62,8 +62,6 @@ namespace AzToolsFramework
 
             header()->hide();
 
-            connect(m_delegate, &EntryDelegate::RenameEntry, this, &AssetBrowserTreeView::AfterRename);
-
             setContextMenuPolicy(Qt::CustomContextMenu);
 
             setMouseTracking(true);
