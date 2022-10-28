@@ -97,9 +97,6 @@ namespace AZ::DocumentPropertyEditor
         void UpdateMatchState(MatchInfoNode* rowState);
         void UpdateMatchDescendants(MatchInfoNode* startNode); //!< calls UpdateMatchState on the subtree starting at startNode
 
-        //! returns the first path in the ancestry of sourcePath that is of type Row, including self
-        Dom::Path GetRowPath(const Dom::Path& sourcePath) const;
-
         /*! this increases every time the source Adapter changes or resets to keep track of which
          *  node updates are new */
         unsigned int m_updateFrame = 0;

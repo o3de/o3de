@@ -27,6 +27,9 @@ namespace AZ::DocumentPropertyEditor
         static bool IsRow(const Dom::Value& domValue);
         bool IsRow(const Dom::Path& sourcePath) const;
         
+        //! returns the first path in the ancestry of sourcePath that is of type Row, including self
+        Dom::Path GetRowPath(const Dom::Path& sourcePath) const;
+
         DocumentAdapter::ResetEvent::Handler m_resetHandler;
         ChangedEvent::Handler m_changedHandler;
         MessageEvent::Handler m_domMessageHandler;

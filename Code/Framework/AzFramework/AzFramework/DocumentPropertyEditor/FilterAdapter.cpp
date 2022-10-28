@@ -529,20 +529,4 @@ namespace AZ::DocumentPropertyEditor
             }
         }
     }
-
-    Dom::Path RowFilterAdapter::GetRowPath(const Dom::Path& sourcePath) const
-    {
-        Dom::Path rowPath;
-        const auto& contents = m_sourceAdapter->GetContents();
-        const auto* currDomValue = &contents;
-        for (const auto& pathEntry : sourcePath)
-        {
-            currDomValue = &(*currDomValue)[pathEntry];
-            if (IsRow(*currDomValue))
-            {
-                rowPath.Push(pathEntry);
-            }
-        }
-        return rowPath;
-    }
 } // namespace AZ::DocumentPropertyEditor
