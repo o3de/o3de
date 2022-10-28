@@ -1046,7 +1046,7 @@ namespace UnitTest
 
 
 
-    TEST_F(AssetJobsFloodTest, DISABLED_ContainerCoreTest_BasicDependencyManagement_Success)
+    TEST_F(AssetJobsFloodTest, ContainerCoreTest_BasicDependencyManagement_Success)
     {
         m_assetHandlerAndCatalog->AssetCatalogRequestBus::Handler::BusConnect();
         // Setup has already created/destroyed assets

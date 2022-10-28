@@ -169,6 +169,7 @@ set(FILES
     string/alphanum.cpp
     string/alphanum.h
     string/conversions.h
+    string/fixed_string.cpp
     string/fixed_string.h
     string/fixed_string.inl
     string/memorytoascii.h
@@ -263,6 +264,10 @@ set(FILES
     utility/as_const.h
     utility/charconv.h
     utility/declval.h
+    utility/expected.h
+    utility/expected.inl
+    utility/expected_internal.h
+    utility/expected_internal.inl
     utility/move.h
     utility/to_underlying.h
 )

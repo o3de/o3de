@@ -19,7 +19,7 @@
 #include <QApplication>
 #include <QComboBox>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/NodeGroupWindow.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterCreateEditDialog.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterCreateEditWidget.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterEditor/ParameterEditorFactory.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterEditor/ValueParameterEditor.h>
 #include <EMotionFX/Source/AnimGraphNodeGroup.h>
@@ -99,11 +99,11 @@ namespace EMotionFX
         ASSERT_TRUE(parameterWindow) << "Anim graph parameter window is invalid.";
 
         parameterWindow->SelectParameters({ "Group0" });
-        parameterWindow->OnEditButton();
+        parameterWindow->OnEditSelected();
 
-        auto groupEditWidget = static_cast<EMStudio::ParameterCreateEditDialog*>(FindTopLevelWidget("ParameterCreateEditDialog"));
+        auto groupEditWidget = static_cast<EMStudio::ParameterCreateEditWidget*>(FindTopLevelWidget("ParameterCreateEditWidget"));
         ASSERT_NE(groupEditWidget, nullptr) << "Cannot find anim graph group edit dialog";
-        auto propertyEditor = groupEditWidget->findChild<AzToolsFramework::ReflectedPropertyEditor*>("EMFX.ParameterCreateEditDialog.ReflectedPropertyEditor.ParameterEditorWidget");
+        auto propertyEditor = groupEditWidget->findChild<AzToolsFramework::ReflectedPropertyEditor*>("EMFX.ParameterCreateEditWidget.ReflectedPropertyEditor.ParameterEditorWidget");
 
         // Get list of all PropertyRowWidgets (and their InstanceDataNodes)
         const WidgetMap& list = propertyEditor->GetWidgets();

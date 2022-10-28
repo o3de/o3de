@@ -37,7 +37,6 @@ namespace AZ::Render
     
     void SkyAtmosphereFeatureProcessor::Activate()
     {
-        CachePasses();
         EnableSceneNotification();
     }
     
@@ -97,28 +96,11 @@ namespace AZ::Render
         }
     }
 
-    void SkyAtmosphereFeatureProcessor::OnRenderPipelinePassesChanged([[maybe_unused]]RPI::RenderPipeline* renderPipeline)
-    {
-        CachePasses();
-        UpdateBackgroundClearColor();
-    }
-
-    void SkyAtmosphereFeatureProcessor::OnRenderPipelineAdded([[maybe_unused]]RPI::RenderPipelinePtr renderPipeline)
-    {
-        CachePasses();
-        UpdateBackgroundClearColor();
-    }
-
-    void SkyAtmosphereFeatureProcessor::OnRenderPipelineRemoved([[maybe_unused]] RPI::RenderPipeline* renderPipeline)
-    {
-        CachePasses();
-    }
-    
-    void SkyAtmosphereFeatureProcessor::CachePasses()
+    void SkyAtmosphereFeatureProcessor::AddRenderPasses(RPI::RenderPipeline* renderPipeline)
     {
         m_skyAtmosphereParentPasses.clear();
 
-        RPI::PassFilter passFilter = RPI::PassFilter::CreateWithTemplateName(Name("SkyAtmosphereParentTemplate"), GetParentScene());
+        RPI::PassFilter passFilter = RPI::PassFilter::CreateWithTemplateName(Name("SkyAtmosphereParentTemplate"), renderPipeline);
         RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
             {
                 SkyAtmosphereParentPass* parentPass = static_cast<SkyAtmosphereParentPass*>(pass);
@@ -135,6 +117,16 @@ namespace AZ::Render
             {
                 InitializeAtmosphere(atmosphere.m_id);
             }
+        }
+    }
+
+    void SkyAtmosphereFeatureProcessor::OnRenderPipelineChanged([[maybe_unused]] RPI::RenderPipeline* pipeline,
+        RPI::SceneNotification::RenderPipelineChangeType changeType)
+    {
+        if (changeType == RPI::SceneNotification::RenderPipelineChangeType::Added
+            || changeType == RPI::SceneNotification::RenderPipelineChangeType::PassChanged)
+        {
+            UpdateBackgroundClearColor();
         }
     }
     

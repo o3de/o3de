@@ -30,6 +30,7 @@ set(FILES
     AZStd/ChronoTests.cpp
     AZStd/DequeAndSimilar.cpp
     AZStd/Examples.cpp
+    AZStd/ExpectedTests.cpp
     AZStd/FunctionalBasic.cpp
     AZStd/FunctorsBind.cpp
     AZStd/Hashed.cpp

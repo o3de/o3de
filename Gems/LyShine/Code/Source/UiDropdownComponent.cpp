@@ -826,12 +826,6 @@ AZ::Outcome<void, AZStd::string> UiDropdownComponent::ValidatePotentialExpandedP
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-AZ::FailureValue<AZStd::string> FailureMessage(AZStd::string message)
-{
-    return AZ::Failure(AZStd::string(message));
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
 bool UiDropdownComponent::HandleReleasedCommon(const AZ::Vector2& point)
 {
     if (m_isHandlingEvents)
