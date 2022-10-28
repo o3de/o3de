@@ -173,19 +173,20 @@ void CViewportTitleDlg::SetupCameraDropdownMenu()
     QAction* gotoPositionAction = new QAction("Go to position", cameraMenu);
     connect(gotoPositionAction, &QAction::triggered, this, &CViewportTitleDlg::OnBnClickedGotoPosition);
     cameraMenu->addAction(gotoPositionAction);
+
     cameraMenu->addSeparator();
 
     auto cameraSpeedActionWidget = new QWidgetAction(cameraMenu);
     auto cameraSpeedContainer = new QWidget(cameraMenu);
     auto cameraSpeedLabel = new QLabel(tr("Camera Speed Scale"), cameraMenu);
-    m_cameraSpeed = new AzQtComponents::DoubleSpinBox(cameraMenu);
-    m_cameraSpeed->setRange(m_minSpeedScale, m_maxSpeedScale);
-    m_cameraSpeed->SetDisplayDecimals(m_numDecimals);
-    m_cameraSpeed->setSingleStep(m_speedScaleStep);
-    m_cameraSpeed->setValue(SandboxEditor::CameraSpeedScale());
+    m_cameraSpinBox = new AzQtComponents::DoubleSpinBox();
+    m_cameraSpinBox->setRange(m_speedScaleMin, m_speedScaleMax);
+    m_cameraSpinBox->SetDisplayDecimals(m_speedScaleDecimalCount);
+    m_cameraSpinBox->setSingleStep(m_speedScaleStep);
+    m_cameraSpinBox->setValue(SandboxEditor::CameraSpeedScale());
 
     QObject::connect(
-        m_cameraSpeed,
+        m_cameraSpinBox,
         QOverload<double>::of(&AzQtComponents::DoubleSpinBox::valueChanged),
         [](const double value)
         {
@@ -194,7 +195,7 @@ void CViewportTitleDlg::SetupCameraDropdownMenu()
 
     QHBoxLayout* cameraSpeedLayout = new QHBoxLayout;
     cameraSpeedLayout->addWidget(cameraSpeedLabel);
-    cameraSpeedLayout->addWidget(m_cameraSpeed);
+    cameraSpeedLayout->addWidget(m_cameraSpinBox);
     cameraSpeedContainer->setLayout(cameraSpeedLayout);
     cameraSpeedActionWidget->setDefaultWidget(cameraSpeedContainer);
 
@@ -436,7 +437,7 @@ void CViewportTitleDlg::OnInitDialog()
     QFontMetrics metrics({});
     int width = aznumeric_cast<int>(metrics.boundingRect("-9999.99").width() * m_fieldWidthMultiplier);
 
-    m_cameraSpeed->setFixedWidth(width);
+    m_cameraSpinBox->setFixedWidth(width);
 
     bool isPrefabSystemEnabled = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
@@ -1127,10 +1128,10 @@ inline double Round(double fVal, double fStep)
 void CViewportTitleDlg::CheckForCameraSpeedUpdate()
 {
     const float currentCameraSpeedScale = SandboxEditor::CameraSpeedScale();
-    if (currentCameraSpeedScale != m_prevMoveSpeedScale && !m_cameraSpeed->hasFocus())
+    if (currentCameraSpeedScale != m_prevMoveSpeedScale && !m_cameraSpinBox->hasFocus())
     {
         m_prevMoveSpeedScale = currentCameraSpeedScale;
-        m_cameraSpeed->setValue(currentCameraSpeedScale);
+        m_cameraSpinBox->setValue(currentCameraSpeedScale);
     }
 }
 
