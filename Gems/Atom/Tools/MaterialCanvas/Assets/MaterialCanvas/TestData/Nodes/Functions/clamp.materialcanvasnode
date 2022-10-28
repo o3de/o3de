@@ -1,4 +1,4 @@
-\{
+{
     "Type": "JsonSerialization",
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
