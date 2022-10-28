@@ -34,6 +34,7 @@
 #include <AzFramework/DocumentPropertyEditor/CvarAdapter.h>
 #include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
 #include <AzFramework/DocumentPropertyEditor/SettingsRegistryAdapter.h>
+#include <AzFramework/DocumentPropertyEditor/ValueStringSort.h>
 #include <AzQtComponents/DPEDebugViewStandalone/ExampleAdapter.h>
 #include <AzToolsFramework/UI/DPEDebugViewer/DPEDebugWindow.h>
 
@@ -248,8 +249,13 @@ int main(int argc, char** argv)
     QObject::connect(
         debugViewer.data(), &AzToolsFramework::DPEDebugWindow::AdapterChanged, filteredDPE, &AzToolsFramework::FilteredDPE::SetAdapter);
 
+    auto cvarAdapter = AZStd::make_shared<AZ::DocumentPropertyEditor::CvarAdapter>();
+    auto sortFilter = AZStd::make_shared<AZ::DocumentPropertyEditor::ValueStringSort>();
+
+    sortFilter->SetSourceAdapter(cvarAdapter);
+
+    debugViewer->AddAdapterToList("CVar Adapter", sortFilter);
     debugViewer->AddAdapterToList("Reflection Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::ReflectionAdapter>(&testContainer, azrtti_typeid<DPEDebugView::TestContainer>()));
-    debugViewer->AddAdapterToList("CVar Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::CvarAdapter>());
     debugViewer->AddAdapterToList("Example Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::ExampleAdapter>());
     debugViewer->AddAdapterToList("Settings Registry Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::SettingsRegistryAdapter>());
 
