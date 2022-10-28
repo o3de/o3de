@@ -61,10 +61,20 @@ namespace AZ
             //! renamed via AZ::RPI::ViewportContextRequests::Get()->RenameViewportContext(...).
             AZ::Name GetName() const;
 
+            //! Gets the view group associated with this ViewportContext.
+            //! Alternatively, use AZ::RPI::ViewportContextRequests::Get()->GetCurrentViewGroup().
+            ViewGroupPtr GetViewGroup();
+            ConstViewGroupPtr GetViewGroup() const;
+
             //! Gets the default view associated with this ViewportContext.
-            //! Alternatively, use  AZ::RPI::ViewportContextRequests::Get()->GetCurrentView().
+            //! Alternatively, use AZ::RPI::ViewportContextRequests::Get()->GetCurrentViewGroup()->GetView().
             ViewPtr GetDefaultView();
             ConstViewPtr GetDefaultView() const;
+
+            //! Gets the stereoscopic view associated with this ViewportContext.
+            //! Alternatively, use AZ::RPI::ViewportContextRequests::Get()->GetCurrentViewGroup()->GetView(AZ::RPI::ViewType).
+            ViewPtr GetStereoscopicView(AZ::RPI::ViewType viewType);
+            ConstViewPtr GetStereoscopicView(AZ::RPI::ViewType viewType) const;
 
             //! Gets the current size of the viewport.
             //! This value is cached and updated on-demand, so may be efficiently queried.
@@ -133,7 +143,7 @@ namespace AZ
 
             // Used by the manager to set the current default camera.
             void UpdateContextPipelineView(uint32_t viewIndex);
-            void SetDefaultViewGroup(ViewGroupPtr viewGroup);
+            void SetViewGroup(ViewGroupPtr viewGroup);
 
             // Ensures our render pipeline's default camera matches ours.
             void UpdatePipelineView(uint32_t viewIndex);
