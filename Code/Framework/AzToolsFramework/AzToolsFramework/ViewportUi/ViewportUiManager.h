@@ -93,6 +93,6 @@ namespace AzToolsFramework::ViewportUi
         //! Update the corresponding ui element for the given text field.
         void UpdateTextFieldUi(Internal::TextField* textField);
 
-        AZ::u64 m_currentId = 0;
+        AZ::u64 m_nextViewportUiElementId = 0;
     };
 } // namespace AzToolsFramework::ViewportUi
