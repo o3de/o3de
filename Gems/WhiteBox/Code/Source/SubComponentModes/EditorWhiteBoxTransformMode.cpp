@@ -608,8 +608,20 @@ namespace WhiteBox
             {
                 const AZ::Vector3 vertexLocalPosition =
                     (transformSelection->m_vertexPositions[vertexIndex++] - transformSelection->m_localPosition);
-                const AZ::Vector3 manipulatorScale = (AZ::Vector3::CreateOne() + (action.m_start.m_sign * 
-                    (scaleType == ScaleType::Uniform ? AZ::Vector3(action.LocalScaleOffset().GetZ()) : action.LocalScaleOffset()))); 
+                const AZ::Vector3 scale = [&action, &scaleType]
+                {
+                    switch (scaleType)
+                    {
+                    case ScaleType::Uniform:
+                        return AZ::Vector3(action.LocalScaleOffset().GetZ());
+                    case ScaleType::NonUniform:
+                        return action.LocalScaleOffset();
+                    default:
+                        break;
+                    }
+                    return AZ::Vector3();
+                }();
+                const AZ::Vector3 manipulatorScale = AZ::Vector3::CreateOne() + (action.m_start.m_sign * scale);
                 const AZ::Vector3 vertexPosition = (vertexLocalPosition * manipulatorScale) + transformSelection->m_localPosition;
                 Api::SetVertexPosition(*whiteBox, vertexHandle, vertexPosition);
             }
