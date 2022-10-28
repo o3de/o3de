@@ -3,9 +3,9 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
-        "id": "{CE1EF97A-5BFE-4459-8967-53878C7F074F}",
+        "id": "{0CEDEE3B-0A53-438D-9876-38F867C55483}",
         "category": "Material Inputs",
-        "title": "Float3 Input",
+        "title": "Float3x3 Input",
         "propertySlots": [
             {
                 "name": "inGroup",
@@ -34,12 +34,62 @@
                 "supportsEditingOnNode": false
             },
             {
-                "name": "inValue",
-                "displayName": "Value",
-                "description": "Value",
+                "name": "inRow1",
+                "displayName": "Row1",
+                "description": "Row1",
                 "supportedDataTypes": [
                     "float3"
                 ],
+                "defaultValue": {
+                    "$type": "Vector3",
+                    "Value": [
+                        1.0,
+                        0.0,
+                        0.0
+                    ]
+                },
+                "settings": {
+                    "materialInputs": [
+                        "SLOTSTANDARDSRGMEMBER"
+                    ]
+                }
+            },
+            {
+                "name": "inRow2",
+                "displayName": "Row2",
+                "description": "Row2",
+                "supportedDataTypes": [
+                    "float3"
+                ],
+                "defaultValue": {
+                    "$type": "Vector3",
+                    "Value": [
+                        0.0,
+                        1.0,
+                        0.0
+                    ]
+                },
+                "settings": {
+                    "materialInputs": [
+                        "SLOTSTANDARDSRGMEMBER"
+                    ]
+                }
+            },
+            {
+                "name": "inRow3",
+                "displayName": "Row3",
+                "description": "Row3",
+                "supportedDataTypes": [
+                    "float3"
+                ],
+                "defaultValue": {
+                    "$type": "Vector3",
+                    "Value": [
+                        0.0,
+                        0.0,
+                        1.0
+                    ]
+                },
                 "settings": {
                     "materialInputs": [
                         "SLOTSTANDARDSRGMEMBER"
@@ -53,50 +103,11 @@
                 "displayName": "Value",
                 "description": "Value",
                 "supportedDataTypes": [
-                    "float3"
+                    "float3x3"
                 ],
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::NODEID_inValue;"
-                    ]
-                }
-            },
-            {
-                "name": "outX",
-                "displayName": "X",
-                "description": "X",
-                "supportedDataTypes": [
-                    "float"
-                ],
-                "settings": {
-                    "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::NODEID_inValue.x;"
-                    ]
-                }
-            },
-            {
-                "name": "outY",
-                "displayName": "Y",
-                "description": "Y",
-                "supportedDataTypes": [
-                    "float"
-                ],
-                "settings": {
-                    "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::NODEID_inValue.y;"
-                    ]
-                }
-            },
-            {
-                "name": "outZ",
-                "displayName": "Z",
-                "description": "Z",
-                "supportedDataTypes": [
-                    "float"
-                ],
-                "settings": {
-                    "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::NODEID_inValue.z;"
+                        "SLOTTYPE NODEID_SLOTNAME = float3x3(MaterialSrg::NODEID_inRow1, MaterialSrg::NODEID_inRow2, MaterialSrg::NODEID_inRow3);"
                     ]
                 }
             }
