@@ -11,6 +11,11 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/string/string.h>
 
+namespace AZ
+{
+    class EntityId;
+}
+
 namespace ScriptCanvas
 {
     class Node;

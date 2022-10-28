@@ -9,6 +9,7 @@
 #include "NodeReplacementSystem.h"
 
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Component/EntityId.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryVisitorUtils.h>
