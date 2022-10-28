@@ -230,8 +230,10 @@ void CViewportTitleDlg::SetupCameraDropdownMenu()
             SandboxEditor::SetCameraSpeedScale(aznumeric_cast<float>(value));
         });
 
+    // the padding to give to the layout to align with the QAction entries in the list
+    const int CameraSpeedLayoutPadding = 16;
     QHBoxLayout* cameraSpeedLayout = new QHBoxLayout;
-    cameraSpeedLayout->setContentsMargins(QMargins(16, 0, 16, 0));
+    cameraSpeedLayout->setContentsMargins(QMargins(CameraSpeedLayoutPadding, 0, CameraSpeedLayoutPadding, 0));
     cameraSpeedLayout->addWidget(cameraSpeedLabel);
     cameraSpeedLayout->addWidget(m_cameraSpinBox);
     cameraSpeedContainer->setLayout(cameraSpeedLayout);
