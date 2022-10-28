@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Math/Sphere.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
 #include <Atom/Feature/CoreLights/SimplePointLightFeatureProcessorInterface.h>
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
@@ -20,21 +21,6 @@ namespace AZ
 
     namespace Render
     {
-
-        struct SimplePointLightData
-        {
-            AZStd::array<float, 3> m_position = { { 0.0f, 0.0f, 0.0f } };
-            float m_invAttenuationRadiusSquared = 0.0f; // Inverse of the distance at which this light no longer has an effect, squared. Also used for falloff calculations.
-
-            AZStd::array<float, 3> m_rgbIntensity = { { 0.0f, 0.0f, 0.0f } };
-            float m_affectsGIFactor = 1.0f;
-
-            bool m_affectsGI = true;
-            float m_padding0 = 0.0f;
-            float m_padding1 = 0.0f;
-            float m_padding2 = 0.0f;
-        };
-
         class SimplePointLightFeatureProcessor final
             : public SimplePointLightFeatureProcessorInterface
         {
@@ -42,6 +28,20 @@ namespace AZ
             AZ_RTTI(AZ::Render::SimplePointLightFeatureProcessor, "{310CE42A-FAD1-4778-ABF5-0DE04AC92246}", AZ::Render::SimplePointLightFeatureProcessorInterface);
 
             static void Reflect(AZ::ReflectContext* context);
+
+            struct ShaderData
+            {
+                AZStd::array<float, 3> m_position = { { 0.0f, 0.0f, 0.0f } };
+                float m_invAttenuationRadiusSquared = 0.0f; // Inverse of the distance at which this light no longer has an effect, squared. Also used for falloff calculations.
+
+                AZStd::array<float, 3> m_rgbIntensity = { { 0.0f, 0.0f, 0.0f } };
+                float m_affectsGIFactor = 1.0f;
+
+                bool m_affectsGI = true;
+                float m_padding0 = 0.0f;
+                float m_padding1 = 0.0f;
+                float m_padding2 = 0.0f;
+            };
 
             SimplePointLightFeatureProcessor();
             virtual ~SimplePointLightFeatureProcessor() = default;
@@ -62,7 +62,7 @@ namespace AZ
             void SetAffectsGI(LightHandle handle, bool affectsGI) override;
             void SetAffectsGIFactor(LightHandle handle, float affectsGIFactor) override;
 
-            const Data::Instance<RPI::Buffer>  GetLightBuffer() const;
+            const Data::Instance<RPI::Buffer> GetLightBuffer() const;
             uint32_t GetLightCount()const;
 
         private:
@@ -70,9 +70,11 @@ namespace AZ
 
             static constexpr const char* FeatureProcessorName = "SimplePointLightFeatureProcessor";
 
-            IndexedDataVector<SimplePointLightData> m_pointLightData;
+            using LightContainer = IndexedDataVector<ShaderData>;
+            LightContainer m_lightData;
             GpuBufferHandler m_lightBufferHandler;
             bool m_deviceBufferNeedsUpdate = false;
+
         };
     } // namespace Render
 } // namespace AZ
