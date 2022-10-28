@@ -23,8 +23,6 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/sort.h>
 
-#pragma optimize("", off)
-
 AZ_CVAR(bool, bg_AssertNetBindOnDeactivationWithoutMarkForRemoval, false, nullptr, AZ::ConsoleFunctorFlags::Null,
     "If true, assert when a multiplayer entity is deactivated without first calling MarkForRemoval from NetworkEntityManager.");
 
@@ -889,5 +887,3 @@ namespace Multiplayer
         }
     }
 }
-
-#pragma optimize("", on)
