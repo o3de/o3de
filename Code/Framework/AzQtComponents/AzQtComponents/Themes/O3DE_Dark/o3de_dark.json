@@ -1,0 +1,185 @@
+{
+	"theme_id": "o3de_dark",
+	"theme_name": "O3DE Dark Theme (Default)",
+	"theme_description": "The default O3DE dark theme we all know and love.",
+	"theme_base": "",
+	"theme_properties":
+	{
+		"BackgroundColor": "#444444",
+		"SecondaryBackgroundColor": "#323232",
+		"Color": "#FFFFFF",
+		"FontFamily": "OpenSans",
+		"FontSize": 12,
+		"Separator":
+		{
+			"Color": "#111111",
+			"HoveredColor": "#1E70EB"
+		},
+		"Window":
+		{
+			"BackgroundColor": "#111111",
+			"BorderColor": "#000000",
+			"CloseButtonHoveredBackgroundColor": "#B80D1C"
+		},
+		"Menu":
+		{
+			"BackgroundColor": "#222222",
+			"SeparatorColor": "#444444",
+			"Item":
+			{
+				"Selected":
+				{
+					"BackgroundColor": "#444444"
+				},
+				"Disabled":
+				{
+					"Color": "#555555"
+				}
+			}
+		},
+		"Button":
+		{
+			"Frame":
+			{
+				"Height": 24,
+				"Radius": 4,
+				"Margin": 8
+			},
+			"":
+			{
+				"":
+				{
+					"BackgroundGradientStartColor": "#777777",
+					"BackgroundGradientEndColor": "#666666",
+					"Color": "#FFFFFF"
+				},
+				"Hovered":
+				{
+					"BackgroundGradientStartColor": "#888888",
+					"BackgroundGradientEndColor": "#777777",
+					"Color": "#FFFFFF"
+				},
+				"Disabled":
+				{
+					"BackgroundGradientStartColor": "#666666",
+					"BackgroundGradientEndColor": "#666666",
+					"Color": "#BBBBBB"
+				},
+				"Focused":
+				{
+					"BorderThickness": 1,
+					"BorderColor": "#4B8CEF"
+				},
+				"Sunken":
+				{
+					"BackgroundGradientStartColor": "#444444",
+					"BackgroundGradientEndColor": "#444444"
+				}
+			},
+			"Primary":
+			{
+				"":
+				{
+					"BackgroundGradientStartColor": "#0095F2",
+					"BackgroundGradientEndColor": "#1E70EB",
+					"BorderThickness": 1,
+					"BorderColor": "#3D000000",
+					"Color": "#FFFFFF"
+				},
+				"Hovered":
+				{
+					"BackgroundGradientStartColor": "#4ABAFF",
+					"BackgroundGradientEndColor": "#94D2FF",
+					"Color": "#FFFFFF"
+				},
+				"Disabled":
+				{
+					"BackgroundGradientStartColor": "#2A4875",
+					"BackgroundGradientEndColor": "#2A4875",
+					"BorderThickness": 1,
+					"BorderColor": "#3D000000",
+					"Color": "#999999"
+				},
+				"Focused":
+				{
+					"BorderThickness": 1,
+					"BorderColor": "#4B8CEF"
+				},
+				"Sunken":
+				{
+					"BackgroundGradientStartColor": "#1E70EB",
+					"BackgroundGradientEndColor": "#1E70EB"
+				}
+			},
+			"Border":
+			{
+				"":
+				{
+					"Thickness": 1,
+					"Color": "#3D000000"
+				},
+				"Disabled":
+				{
+					"Thickness": 1,
+					"Color": "#3D000000"
+				},
+				"Focused":
+				{
+					"Thickness": 1,
+					"Color": "#4B8CEF"
+				}
+			},
+			"Icon":
+			{
+				"Size": 16,
+				"Margin": 1,
+				"MenuIndicatorIcon": ":/stylesheet/img/UI20/menu-indicator.svg",
+				"MenuIndicatorWidth": 10,
+				"CheckedStateBackgroundColor": "#1E70EB",
+				"":
+				{
+					"Color": "#FFFFFF"
+				},
+				"Active":
+				{
+					"Color": "#94D2FF"
+				},
+				"Disabled":
+				{
+					"Color": "#999999"
+				},
+				"Selected":
+				{
+					"Color": "#FFFFFF"
+				}
+			},
+			"SmallIcon":
+			{
+				"Width": 24,
+				"Arrow":
+				{
+					"Width": 10,
+					"":
+					{
+						"Color": "#FFFFFF"
+					},
+					"Disabled":
+					{
+						"Color": "#BBBBBB"
+					}
+				}
+			},
+			"Dropdown":
+			{
+				"IndicatorArrowDown": ":/stylesheet/img/UI20/dropdown-button-arrow.svg",
+				"MenuIndicatorWidth": 16,
+				"MenuIndicatorPadding": 4
+			}
+		},
+		"Input":
+		{
+			"BackgroundColor": "#CCCCCC",
+			"BorderColor": "#e9e9e9"
+		}
+	}
+}

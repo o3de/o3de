@@ -5,16 +5,16 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <AzCore/Debug/Trace.h>
+
 #include <AzQtComponents/Components/StylesheetPreprocessor.h>
-#include <QtCore/QObject>
-#include <QtCore/QJsonDocument>
-#include <QtCore/QJsonObject>
+#include <AzQtComponents/Components/StyleManagerInterface.h>
+
+#include <QObject>
 #include <QRegularExpression>
 
 namespace
 {
-    const char* cStylesheetVariablesKey = "StylesheetVariables";
+    const char* cStylesheetVariablesKey = "theme_properties";
 }
 
 namespace AzQtComponents
@@ -28,29 +28,10 @@ namespace AzQtComponents
     {
     }
 
-    void StylesheetPreprocessor::ClearVariables()
+    void StylesheetPreprocessor::Initialize()
     {
-        m_namedVariables.clear();
-        m_cachedColors.clear();
-    }
-
-    void StylesheetPreprocessor::ReadVariables(const QString& jsonString)
-    {
-        QJsonDocument doc = QJsonDocument::fromJson(jsonString.toUtf8());
-        QJsonObject rootObject = doc.object();
-
-        //load in the stylesheet variables
-        if (rootObject.contains(cStylesheetVariablesKey))
-        {
-            QJsonObject variablesObject = rootObject.value(cStylesheetVariablesKey).toObject();
-            for (const QString& key : variablesObject.keys())
-            {
-                m_namedVariables[key] = variablesObject[key].toString();
-
-                // clear any cached colors of the same key, so that they get recached on next fetch
-                m_cachedColors.remove(key);
-            }
-        }
+        m_styleManagerInterface = AZ::Interface<StyleManagerInterface>::Get();
+        AZ_Assert(m_styleManagerInterface, "StylesheetPreprocessor - could not get StyleManagerInterface on StylesheetPreprocessor initialization.");
     }
 
     QString StylesheetPreprocessor::ProcessStyleSheet(const QString& stylesheetData)
@@ -62,6 +43,7 @@ namespace AzQtComponents
 
         ParseState state = ParseState::Normal;
         QString out;
+        // TODO - change varName to AZStd::string?
         QString varName;
 
         auto i = stylesheetData.cbegin();
@@ -72,7 +54,7 @@ namespace AzQtComponents
                 char c = i->toLatin1();
                 switch (c)
                 {
-                case '@':
+                case '$':
                     i++;
                     state = ParseState::Variable;
                     break;
@@ -80,7 +62,6 @@ namespace AzQtComponents
                     out.append(*i);
                     i++;
                 }
-                ;
             }
 
             while (state == ParseState::Variable && i != stylesheetData.end())
@@ -96,7 +77,7 @@ namespace AzQtComponents
                 else
                 {
                     //We are finished with reading the current varName
-                    out.append(GetValueByName(varName));
+                    out.append(QString(m_styleManagerInterface->GetStylePropertyAsString(varName.toStdString().c_str())));
                     varName.clear();
                     out.append(*i);
                     i++;
@@ -107,74 +88,6 @@ namespace AzQtComponents
         }
 
         return out;
-    }
-
-
-    QString StylesheetPreprocessor::GetValueByName(const QString& name)
-    {
-        if (m_namedVariables.contains(name))
-        {
-            return m_namedVariables.value(name);
-        }
-        else
-        {
-            return QString("");
-        }
-    }
-
-    const QColor& StylesheetPreprocessor::GetColorByName(const QString& name)
-    {
-        if (m_cachedColors.contains(name))
-        {
-            return m_cachedColors[name];
-        }
-
-        if (m_namedVariables.contains(name))
-        {
-            QColor color;
-            QString colorName(m_namedVariables.value(name));
-
-            [[maybe_unused]] bool colorSet = false;
-            if (QColor::isValidColor(colorName))
-            {
-                color.setNamedColor(colorName);
-                colorSet = true;
-            }
-            else if (colorName.startsWith("rgb"))
-            {
-                QRegularExpression expression("\\((.+)\\)");
-                QRegularExpressionMatch matches(expression.match(colorName));
-
-                if (matches.hasMatch())
-                {
-                    QStringList colorComponents = matches.captured(1).split(',', Qt::SkipEmptyParts);
-                    if (colorComponents.count() <= 4)
-                    {
-                        if (colorComponents.count() == 3)
-                        {
-                            colorComponents.push_back("255");
-                        }
-
-                        color.setRgb(
-                            colorComponents[0].trimmed().toInt(),
-                            colorComponents[1].trimmed().toInt(),
-                            colorComponents[2].trimmed().toInt(),
-                            colorComponents[3].trimmed().toInt()
-                        );
-
-                        colorSet = true;
-                    }
-                }
-            }
-
-            AZ_Assert(colorSet, "Invalid color format specified for %s", name.toUtf8().data());
-            m_cachedColors[name] = color;
-
-            return m_cachedColors[name];
-        }
-
-        static QColor defaultColor;
-        return defaultColor;
     }
 
 } // namespace AzQtComponents

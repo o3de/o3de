@@ -10,6 +10,7 @@
 
 #include <AzQtComponents/Components/ConfigHelpers.h>
 #include <AzQtComponents/Components/Style.h>
+#include <AzQtComponents/Components/StyleManagerInterface.h>
 #include <AzQtComponents/Components/Widgets/PushButton.h>
 
 #include <QDialogButtonBox>
@@ -54,7 +55,177 @@ bool buttonHasMenu(Button* button)
     return false;
 }
 
-bool PushButton::polish(Style* style, QWidget* widget, const PushButton::Config& config)
+void PushButton::initialize()
+{
+    auto styleManagerInterface = AZ::Interface<StyleManagerInterface>::Get();
+    AZ_Assert(styleManagerInterface, "ToolButton - could not get StyleManagerInterface on ToolButton initialization.");
+
+    if (styleManagerInterface->IsStylePropertyDefined("ButtonFrameHeight"))
+    {
+        s_buttonFrameHeight = styleManagerInterface->GetStylePropertyAsInteger("ButtonFrameHeight");
+    }
+    if (styleManagerInterface->IsStylePropertyDefined("ButtonFrameRadius"))
+    {
+        s_buttonFrameRadius = styleManagerInterface->GetStylePropertyAsInteger("ButtonFrameRadius");
+    }
+    if (styleManagerInterface->IsStylePropertyDefined("ButtonFrameMargin"))
+    {
+        s_buttonFrameMargin = styleManagerInterface->GetStylePropertyAsInteger("ButtonFrameMargin");
+    }
+
+    if (styleManagerInterface->IsStylePropertyDefined("ButtonFrameHeight"))
+    {
+        s_buttonFrameHeight = styleManagerInterface->GetStylePropertyAsInteger("ButtonFrameHeight");
+    }
+    if (styleManagerInterface->IsStylePropertyDefined("ButtonFrameRadius"))
+    {
+        s_buttonFrameRadius = styleManagerInterface->GetStylePropertyAsInteger("ButtonFrameRadius");
+    }
+    if (styleManagerInterface->IsStylePropertyDefined("ButtonFrameMargin"))
+    {
+        s_buttonFrameMargin = styleManagerInterface->GetStylePropertyAsInteger("ButtonFrameMargin");
+    }
+
+    if (styleManagerInterface->IsStylePropertyDefined("ButtonSmallIconArrowColor"))
+    {
+        s_buttonSmallIconEnabledArrowColor = styleManagerInterface->GetStylePropertyAsColor("ButtonSmallIconArrowColor");
+    }
+    if (styleManagerInterface->IsStylePropertyDefined("ButtonSmallIconArrowDisabledColor"))
+    {
+        s_buttonSmallIconDisabledArrowColor = styleManagerInterface->GetStylePropertyAsColor("ButtonSmallIconArrowDisabledColor");
+    }
+    if (styleManagerInterface->IsStylePropertyDefined("ButtonSmallIconWidth"))
+    {
+        s_buttonSmallIconWidth = styleManagerInterface->GetStylePropertyAsInteger("ButtonSmallIconWidth");
+    }
+    if (styleManagerInterface->IsStylePropertyDefined("ButtonSmallIconArrowWidth"))
+    {
+        s_buttonSmallIconArrowWidth = styleManagerInterface->GetStylePropertyAsInteger("ButtonSmallIconArrowWidth");
+    }
+
+    if (styleManagerInterface->IsStylePropertyDefined("ButtonPrimaryDisabledBackgroundGradientStartColor"))
+    {
+        s_buttonPrimaryColorDisabledStart = styleManagerInterface->GetStylePropertyAsColor("ButtonPrimaryDisabledBackgroundGradientStartColor");
+    }
+    if (styleManagerInterface->IsStylePropertyDefined("ButtonPrimaryDisabledBackgroundGradientEndColor"))
+    {
+        s_buttonPrimaryColorDisabledEnd = styleManagerInterface->GetStylePropertyAsColor("ButtonPrimaryDisabledBackgroundGradientEndColor");
+    }
+    if (styleManagerInterface->IsStylePropertyDefined("ButtonPrimarySunkenBackgroundGradientStartColor"))
+    {
+        s_buttonPrimaryColorSunkenStart = styleManagerInterface->GetStylePropertyAsColor("ButtonPrimarySunkenBackgroundGradientStartColor");
+    }
+    if (styleManagerInterface->IsStylePropertyDefined("ButtonPrimarySunkenBackgroundGradientEndColor"))
+    {
+        s_buttonPrimaryColorSunkenEnd = styleManagerInterface->GetStylePropertyAsColor("ButtonPrimarySunkenBackgroundGradientEndColor");
+    }
+    if (styleManagerInterface->IsStylePropertyDefined("ButtonPrimaryHoveredBackgroundGradientStartColor"))
+    {
+        s_buttonPrimaryColorHoveredStart = styleManagerInterface->GetStylePropertyAsColor("ButtonPrimaryHoveredBackgroundGradientStartColor");
+    }
+    if (styleManagerInterface->IsStylePropertyDefined("ButtonPrimaryHoveredBackgroundGradientEndColor"))
+    {
+        s_buttonPrimaryColorHoveredEnd = styleManagerInterface->GetStylePropertyAsColor("ButtonPrimaryHoveredBackgroundGradientEndColor");
+    }
+    if (styleManagerInterface->IsStylePropertyDefined("ButtonPrimaryBackgroundGradientStartColor"))
+    {
+        s_buttonPrimaryColorNormalStart = styleManagerInterface->GetStylePropertyAsColor("ButtonPrimaryBackgroundGradientStartColor");
+    }
+    if (styleManagerInterface->IsStylePropertyDefined("ButtonPrimaryBackgroundGradientEndColor"))
+    {
+        s_buttonPrimaryColorNormalEnd = styleManagerInterface->GetStylePropertyAsColor("ButtonPrimaryBackgroundGradientEndColor");
+    }
+
+    if (styleManagerInterface->IsStylePropertyDefined("ButtonDisabledBackgroundGradientStartColor"))
+    {
+        s_buttonColorDisabledStart = styleManagerInterface->GetStylePropertyAsColor("ButtonDisabledBackgroundGradientStartColor");
+    }
+    if (styleManagerInterface->IsStylePropertyDefined("ButtonDisabledBackgroundGradientEndColor"))
+    {
+        s_buttonColorDisabledEnd = styleManagerInterface->GetStylePropertyAsColor("ButtonDisabledBackgroundGradientEndColor");
+    }
+    if (styleManagerInterface->IsStylePropertyDefined("ButtonSunkenBackgroundGradientStartColor"))
+    {
+        s_buttonColorSunkenStart = styleManagerInterface->GetStylePropertyAsColor("ButtonSunkenBackgroundGradientStartColor");
+    }
+    if (styleManagerInterface->IsStylePropertyDefined("ButtonSunkenBackgroundGradientEndColor"))
+    {
+        s_buttonColorSunkenEnd = styleManagerInterface->GetStylePropertyAsColor("ButtonSunkenBackgroundGradientEndColor");
+    }
+    if (styleManagerInterface->IsStylePropertyDefined("ButtonHoveredBackgroundGradientStartColor"))
+    {
+        s_buttonColorHoveredStart = styleManagerInterface->GetStylePropertyAsColor("ButtonHoveredBackgroundGradientStartColor");
+    }
+    if (styleManagerInterface->IsStylePropertyDefined("ButtonHoveredBackgroundGradientEndColor"))
+    {
+        s_buttonColorHoveredEnd = styleManagerInterface->GetStylePropertyAsColor("ButtonHoveredBackgroundGradientEndColor");
+    }
+    if (styleManagerInterface->IsStylePropertyDefined("ButtonBackgroundGradientStartColor"))
+    {
+        s_buttonColorNormalStart = styleManagerInterface->GetStylePropertyAsColor("ButtonBackgroundGradientStartColor");
+    }
+    if (styleManagerInterface->IsStylePropertyDefined("ButtonBackgroundGradientEndColor"))
+    {
+        s_buttonColorNormalEnd = styleManagerInterface->GetStylePropertyAsColor("ButtonBackgroundGradientEndColor");
+    }
+
+    if (styleManagerInterface->IsStylePropertyDefined("ButtonBorderThickness"))
+    {
+        s_buttonBorderThickness = styleManagerInterface->GetStylePropertyAsInteger("ButtonBorderThickness");
+    }
+    if (styleManagerInterface->IsStylePropertyDefined("ButtonBorderColor"))
+    {
+        s_buttonBorderColor = styleManagerInterface->GetStylePropertyAsColor("ButtonBorderColor");
+    }
+    if (styleManagerInterface->IsStylePropertyDefined("ButtonBorderDisabledThickness"))
+    {
+        s_buttonBorderDisabledThickness = styleManagerInterface->GetStylePropertyAsInteger("ButtonBorderDisabledThickness");
+    }
+    if (styleManagerInterface->IsStylePropertyDefined("ButtonBorderDisabledColor"))
+    {
+        s_buttonBorderDisabledColor = styleManagerInterface->GetStylePropertyAsColor("ButtonBorderDisabledColor");
+    }
+    if (styleManagerInterface->IsStylePropertyDefined("ButtonBorderFocusedThickness"))
+    {
+        s_buttonBorderFocusedThickness = styleManagerInterface->GetStylePropertyAsInteger("ButtonBorderFocusedThickness");
+    }
+    if (styleManagerInterface->IsStylePropertyDefined("ButtonBorderFocusedColor"))
+    {
+        s_buttonBorderFocusedColor = styleManagerInterface->GetStylePropertyAsColor("ButtonBorderFocusedColor");
+    }
+
+    if (styleManagerInterface->IsStylePropertyDefined("ButtonIconColor"))
+    {
+        s_buttonIconColor = styleManagerInterface->GetStylePropertyAsColor("ButtonIconColor");
+    }
+    if (styleManagerInterface->IsStylePropertyDefined("ButtonIconActiveColor"))
+    {
+        s_buttonIconActiveColor = styleManagerInterface->GetStylePropertyAsColor("ButtonIconActiveColor");
+    }
+    if (styleManagerInterface->IsStylePropertyDefined("ButtonIconDisabledColor"))
+    {
+        s_buttonIconDisabledColor = styleManagerInterface->GetStylePropertyAsColor("ButtonIconDisabledColor");
+    }
+    if (styleManagerInterface->IsStylePropertyDefined("ButtonIconSelectedColor"))
+    {
+        s_buttonIconSelectedColor = styleManagerInterface->GetStylePropertyAsColor("ButtonIconSelectedColor");
+    }
+
+    if (styleManagerInterface->IsStylePropertyDefined("ButtonDropdownIndicatorArrowDown"))
+    {
+        s_buttonDropdownIndicatorArrowDown = styleManagerInterface->GetStylePropertyAsString("ButtonDropdownIndicatorArrowDown");
+    }
+    if (styleManagerInterface->IsStylePropertyDefined("ButtonDropdownMenuIndicatorWidth"))
+    {
+        s_buttonDropdownMenuIndicatorWidth = styleManagerInterface->GetStylePropertyAsInteger("ButtonDropdownMenuIndicatorWidth");
+    }
+    if (styleManagerInterface->IsStylePropertyDefined("ButtonDropdownMenuIndicatorPadding"))
+    {
+        s_buttonDropdownMenuIndicatorPadding = styleManagerInterface->GetStylePropertyAsInteger("ButtonDropdownMenuIndicatorPadding");
+    }
+}
+
+bool PushButton::polish(Style* style, QWidget* widget)
 {
     QToolButton* toolButton = qobject_cast<QToolButton*>(widget);
     QPushButton* pushButton = qobject_cast<QPushButton*>(widget);
@@ -98,7 +269,7 @@ bool PushButton::polish(Style* style, QWidget* widget, const PushButton::Config&
         widget->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
 
         bool hasMenu = buttonHasMenu(toolButton) || buttonHasMenu(pushButton);
-        widget->setMaximumSize(config.smallIcon.width + (hasMenu ? config.smallIcon.arrowWidth : 0), config.smallIcon.frame.height);
+        widget->setMaximumSize(s_buttonSmallIconWidth + (hasMenu ? s_buttonSmallIconArrowWidth : 0), s_buttonFrameHeight);
 
         style->repolishOnSettingsChange(widget);
 
@@ -106,50 +277,50 @@ bool PushButton::polish(Style* style, QWidget* widget, const PushButton::Config&
     }
     else if (pushButton != nullptr)
     {
-        widget->setMaximumHeight(config.defaultFrame.height);
+        widget->setMaximumHeight(s_buttonFrameHeight);
         return true;
     }
 
     return false;
 }
 
-int PushButton::buttonMargin(const Style* style, const QStyleOption* option, const QWidget* widget, const PushButton::Config& config)
+int PushButton::buttonMargin(const Style* style, const QStyleOption* option, const QWidget* widget)
 {
     Q_UNUSED(option);
 
     if (style->hasClass(widget, g_smallIconClass))
     {
-        return config.smallIcon.frame.margin;
+        return s_buttonFrameMargin;
     }
 
     int margin = -1;
     const QPushButton* pushButton = qobject_cast<const QPushButton*>(widget);
     if (pushButton && !pushButton->isFlat())
     {
-        margin = config.defaultFrame.margin;
+        margin = s_buttonFrameMargin;
     }
 
     return margin;
 }
 
-QSize PushButton::sizeFromContents(const Style* style, QStyle::ContentsType type, const QStyleOption* option, const QSize& size, const QWidget* widget, const PushButton::Config& config)
+QSize PushButton::sizeFromContents(const Style* style, QStyle::ContentsType type, const QStyleOption* option, const QSize& size, const QWidget* widget)
 {
     QSize sz = style->QProxyStyle::sizeFromContents(type, option, size, widget);
 
     const QPushButton* pushButton = qobject_cast<const QPushButton*>(widget);
     if (style->hasClass(widget, g_smallIconClass))
     {
-        sz.setHeight(config.smallIcon.frame.height);
+        sz.setHeight(s_buttonFrameHeight);
     }
     else if (pushButton && !pushButton->isFlat())
     {
-        sz.setHeight(config.defaultFrame.height);
+        sz.setHeight(s_buttonFrameHeight);
     }
 
     return sz;
 }
 
-int PushButton::menuButtonIndicatorWidth(const Style* style, const QStyleOption* option, const QWidget* widget, const Config& config)
+int PushButton::menuButtonIndicatorWidth(const Style* style, const QStyleOption* option, const QWidget* widget)
 {
     Q_UNUSED(style);
     Q_UNUSED(option);
@@ -157,12 +328,12 @@ int PushButton::menuButtonIndicatorWidth(const Style* style, const QStyleOption*
     int size = -1;
     if (qobject_cast<const QPushButton*>(widget))
     {
-        size = config.dropdownButton.menuIndicatorWidth;
+        size = s_buttonDropdownMenuIndicatorWidth;
     }
     return size;
 }
 
-bool PushButton::drawPushButtonBevel(const Style* style, const QStyleOption* option, QPainter* painter, const QWidget* widget, const PushButton::Config& config)
+bool PushButton::drawPushButtonBevel(const Style* style, const QStyleOption* option, QPainter* painter, const QWidget* widget)
 {
     Q_UNUSED(style);
 
@@ -174,28 +345,27 @@ bool PushButton::drawPushButtonBevel(const Style* style, const QStyleOption* opt
 
     const auto* buttonOption = qstyleoption_cast<const QStyleOptionButton*>(option);
     const bool isDisabled = !(option->state & QStyle::State_Enabled);
-    Border border = isDisabled ? config.disabledBorder : config.defaultBorder;
+    QColor borderColor = isDisabled ? s_buttonBorderDisabledColor : s_buttonBorderColor;
+    int borderThickness = isDisabled ? s_buttonBorderDisabledThickness : s_buttonBorderThickness;
 
     if (!button->isFlat())
     {
         QRectF r = option->rect.adjusted(0, 0, -1, -1);
 
-        bool isSmallIconButton = style->hasClass(widget, g_smallIconClass);
-
         QColor gradientStartColor;
         QColor gradientEndColor;
 
         const bool isPrimary = (style->hasClass(widget, g_primaryClass));
-
-        selectColors(option, isPrimary ? config.primary : config.secondary, isDisabled, gradientStartColor, gradientEndColor);
+        selectColors(option, isPrimary, isDisabled, gradientStartColor, gradientEndColor);
 
         if (option->state & QStyle::State_HasFocus)
         {
-            border = config.focusedBorder;
+            borderColor = s_buttonBorderFocusedColor;
+            borderThickness = s_buttonBorderFocusedThickness;
         }
 
-        float radius = isSmallIconButton ? aznumeric_cast<float>(config.smallIcon.frame.radius) : aznumeric_cast<float>(config.defaultFrame.radius);
-        drawFilledFrame(painter, r, gradientStartColor, gradientEndColor, border, radius);
+        float radius = s_buttonFrameRadius;
+        drawFilledFrame(painter, r, gradientStartColor, gradientEndColor, borderColor, borderThickness, radius);
     }
 
     if (buttonOption->features & QStyleOptionButton::HasMenu)
@@ -204,7 +374,7 @@ bool PushButton::drawPushButtonBevel(const Style* style, const QStyleOption* opt
         QRect arrowRect(0, 0, mbi, mbi);
         QRect contentRect = option->rect.adjusted(0, 0, -1, -1); // As above
         arrowRect.moveCenter(contentRect.center());
-        arrowRect.moveRight(contentRect.right() - (config.dropdownButton.menuIndicatorPadding + border.thickness));
+        arrowRect.moveRight(contentRect.right() - (s_buttonDropdownMenuIndicatorPadding + borderThickness));
 
         QStyleOptionButton downArrow = *buttonOption;
         downArrow.rect = arrowRect;
@@ -214,20 +384,20 @@ bool PushButton::drawPushButtonBevel(const Style* style, const QStyleOption* opt
     return true;
 }
 
-bool PushButton::drawToolButton(const Style* style, const QStyleOptionComplex* option, QPainter* painter, const QWidget* widget, const PushButton::Config& config)
+bool PushButton::drawToolButton(const Style* style, const QStyleOptionComplex* option, QPainter* painter, const QWidget* widget)
 {
     if (style->hasClass(widget, g_smallIconClass))
     {
-        drawSmallIconButton(style, option, painter, widget, config);
+        drawSmallIconButton(style, option, painter, widget);
         return true;
     }
 
     const bool drawFrame = false;
-    drawSmallIconButton(style, option, painter, widget, config, drawFrame);
+    drawSmallIconButton(style, option, painter, widget, drawFrame);
     return true;
 }
 
-bool PushButton::drawIndicatorArrowDown(const Style* style, const QStyleOption* option, QPainter* painter, const QWidget* widget, const Config& config)
+bool PushButton::drawIndicatorArrowDown(const Style* style, const QStyleOption* option, QPainter* painter, const QWidget* widget)
 {
     auto pushButton = qobject_cast<const QPushButton*>(widget);
     if (!pushButton)
@@ -245,13 +415,13 @@ bool PushButton::drawIndicatorArrowDown(const Style* style, const QStyleOption* 
                         ? QIcon::Normal
                         : QIcon::Disabled;
 
-    const auto pixmap = style->generatedIconPixmap(mode, config.dropdownButton.indicatorArrowDown, option);
+    const auto pixmap = style->generatedIconPixmap(mode, s_buttonDropdownIndicatorArrowDown, option);
     painter->drawPixmap(option->rect, pixmap, pixmap.rect());
 
     return true;
 }
 
-bool PushButton::drawPushButtonFocusRect(const Style* /*style*/, const QStyleOption* /*option*/, QPainter* /*painter*/, const QWidget* widget, const PushButton::Config& /*config*/)
+bool PushButton::drawPushButtonFocusRect(const Style* /*style*/, const QStyleOption* /*option*/, QPainter* /*painter*/, const QWidget* widget)
 {
     const auto* button = qobject_cast<const QPushButton*>(widget);
     if (!button)
@@ -264,7 +434,7 @@ bool PushButton::drawPushButtonFocusRect(const Style* /*style*/, const QStyleOpt
     return true;
 }
 
-QPixmap PushButton::generatedIconPixmap(QIcon::Mode iconMode, const QPixmap& pixmap, const QStyleOption* option, const Config& config)
+QPixmap PushButton::generatedIconPixmap(QIcon::Mode iconMode, const QPixmap& pixmap, const QStyleOption* option)
 {
     Q_UNUSED(option);
 
@@ -278,17 +448,17 @@ QPixmap PushButton::generatedIconPixmap(QIcon::Mode iconMode, const QPixmap& pix
     {
         case QIcon::Disabled:
         {
-            color = config.iconButton.disabledColor;
+            color = s_buttonIconDisabledColor;
             break;
         }
         case QIcon::Active:
         {
-            color = config.iconButton.activeColor;
+            color = s_buttonIconActiveColor;
             break;
         }
         case QIcon::Selected:
         {
-            color = config.iconButton.selectedColor;
+            color = s_buttonIconSelectedColor;
             break;
         }
         default:
@@ -314,147 +484,7 @@ QPixmap PushButton::generatedIconPixmap(QIcon::Mode iconMode, const QPixmap& pix
     return QPixmap::fromImage(image);
 }
 
-static void ReadFrame(QSettings& settings, const QString& name, PushButton::Frame& frame)
-{
-    settings.beginGroup(name);
-    ConfigHelpers::read<int>(settings, QStringLiteral("Height"), frame.height);
-    ConfigHelpers::read<int>(settings, QStringLiteral("Radius"), frame.radius);
-    ConfigHelpers::read<int>(settings, QStringLiteral("Margin"), frame.margin);
-    settings.endGroup();
-}
-
-static void ReadGradient(QSettings& settings, const QString& name, PushButton::Gradient& gradient)
-{
-    settings.beginGroup(name);
-    ConfigHelpers::read<QColor>(settings, QStringLiteral("Start"), gradient.start);
-    ConfigHelpers::read<QColor>(settings, QStringLiteral("End"), gradient.end);
-    settings.endGroup();
-}
-
-static void ReadButtonColorSet(QSettings& settings, const QString& name, PushButton::ColorSet& colorSet)
-{
-    settings.beginGroup(name);
-    ReadGradient(settings, QStringLiteral("Disabled"), colorSet.disabled);
-    ReadGradient(settings, QStringLiteral("Sunken"), colorSet.sunken);
-    ReadGradient(settings, QStringLiteral("Hovered"), colorSet.hovered);
-    ReadGradient(settings, QStringLiteral("Normal"), colorSet.normal);
-    settings.endGroup();
-}
-
-static void ReadBorder(QSettings& settings, const QString& name, PushButton::Border& border)
-{
-    settings.beginGroup(name);
-    ConfigHelpers::read<int>(settings, QStringLiteral("Thickness"), border.thickness);
-    ConfigHelpers::read<QColor>(settings, QStringLiteral("Color"), border.color);
-    settings.endGroup();
-}
-
-static void ReadSmallIcon(QSettings& settings, const QString& name, PushButton::SmallIcon& smallIcon)
-{
-    settings.beginGroup(name);
-    ReadFrame(settings, "Frame", smallIcon.frame);
-    ConfigHelpers::read<QColor>(settings, QStringLiteral("EnabledArrowColor"), smallIcon.enabledArrowColor);
-    ConfigHelpers::read<QColor>(settings, QStringLiteral("DisabledArrowColor"), smallIcon.disabledArrowColor);
-    ConfigHelpers::read<int>(settings, QStringLiteral("Width"), smallIcon.width);
-    ConfigHelpers::read<int>(settings, QStringLiteral("ArrowWidth"), smallIcon.arrowWidth);
-    settings.endGroup();
-}
-
-static void ReadIconButton(QSettings& settings, const QString& name, PushButton::IconButton& iconButton)
-{
-    ConfigHelpers::GroupGuard group(&settings, name);
-    ConfigHelpers::read<QColor>(settings, QStringLiteral("ActiveColor"), iconButton.activeColor);
-    ConfigHelpers::read<QColor>(settings, QStringLiteral("DisabledColor"), iconButton.disabledColor);
-    ConfigHelpers::read<QColor>(settings, QStringLiteral("SelectedColor"), iconButton.selectedColor);
-}
-
-static void ReadDropdownButton(QSettings& settings, const QString& name, PushButton::DropdownButton& dropdownButton)
-{
-    ConfigHelpers::GroupGuard group(&settings, name);
-    ConfigHelpers::read<QPixmap>(settings, QStringLiteral("IndicatorArrowDown"), dropdownButton.indicatorArrowDown);
-    ConfigHelpers::read<int>(settings, QStringLiteral("MenuIndicatorWidth"), dropdownButton.menuIndicatorWidth);
-    ConfigHelpers::read<int>(settings, QStringLiteral("MenuIndicatorPadding"), dropdownButton.menuIndicatorPadding);
-}
-
-PushButton::Config PushButton::loadConfig(QSettings& settings)
-{
-    Config config = defaultConfig();
-
-    ReadButtonColorSet(settings, QStringLiteral("PrimaryColorSet"), config.primary);
-    ReadButtonColorSet(settings, QStringLiteral("SecondaryColorSet"), config.secondary);
-
-    ReadBorder(settings, QStringLiteral("Border"), config.defaultBorder);
-    ReadBorder(settings, QStringLiteral("DisabledBorder"), config.disabledBorder);
-    ReadBorder(settings, QStringLiteral("FocusedBorder"), config.focusedBorder);
-    ReadFrame(settings, QStringLiteral("DefaultFrame"), config.defaultFrame);
-    ReadSmallIcon(settings, QStringLiteral("SmallIcon"), config.smallIcon);
-    ReadIconButton(settings, QStringLiteral("IconButton"), config.iconButton);
-    ReadDropdownButton(settings, QStringLiteral("DropdownButton"), config.dropdownButton);
-
-    return config;
-}
-
-PushButton::Config PushButton::defaultConfig()
-{
-    Config config;
-
-    config.primary.disabled.start = QColor("#978DAA");
-    config.primary.disabled.end = QColor("#978DAA");
-
-    config.primary.sunken.start = QColor("#4D2F7B");
-    config.primary.sunken.end = QColor("#4D2F7B");
-
-    config.primary.hovered.start = QColor("#9F7BD7");
-    config.primary.hovered.end = QColor("#8B6EBA");
-
-    config.primary.normal.start = QColor("#8156CF");
-    config.primary.normal.end = QColor("#6441A4");
-
-    config.secondary.disabled.start = QColor("#666666");
-    config.secondary.disabled.end = QColor("#666666");
-
-    config.secondary.sunken.start = QColor("#444444");
-    config.secondary.sunken.end = QColor("#444444");
-
-    config.secondary.hovered.start = QColor("#888888");
-    config.secondary.hovered.end = QColor("#777777");
-
-    config.secondary.normal.start = QColor("#777777");
-    config.secondary.normal.end = QColor("#666666");
-
-    config.defaultBorder.thickness = 1;
-    config.defaultBorder.color = QColor("#000000");
-
-    config.disabledBorder.thickness = config.defaultBorder.thickness;
-    config.disabledBorder.color = QColor("#222222");
-
-    config.focusedBorder.thickness = 2;
-    config.focusedBorder.color = QColor("#C8ABFF");
-
-    config.defaultFrame.height = 32;
-    config.defaultFrame.radius = 4;
-    config.defaultFrame.margin = 4;
-
-    config.smallIcon.frame.height = 24;
-    config.smallIcon.frame.radius = 2;
-    config.smallIcon.frame.margin = 4;
-    config.smallIcon.enabledArrowColor = QColor("#FFFFFF");
-    config.smallIcon.disabledArrowColor = QColor("#BBBBBB");
-    config.smallIcon.width = 24;
-    config.smallIcon.arrowWidth = 10;
-
-    config.iconButton.activeColor = QColor("#94D2FF");
-    config.iconButton.disabledColor = QColor("#999999");
-    config.iconButton.selectedColor = QColor("#FFFFFF");
-
-    config.dropdownButton.indicatorArrowDown = QPixmap(QStringLiteral(":/stylesheet/img/UI20/dropdown-button-arrow.svg"));
-    config.dropdownButton.menuIndicatorWidth = 16;
-    config.dropdownButton.menuIndicatorPadding = 4;
-
-    return config;
-}
-
-void PushButton::drawSmallIconButton(const Style* style, const QStyleOption* option, QPainter* painter, const QWidget* widget, const PushButton::Config& config, bool drawFrame)
+void PushButton::drawSmallIconButton(const Style* style, const QStyleOption* option, QPainter* painter, const QWidget* widget, bool drawFrame)
 {
     // Draws the icon and the arrow drop down together, as per the spec, which calls for no separating borders
     // between the icon and the arrow.
@@ -504,41 +534,41 @@ void PushButton::drawSmallIconButton(const Style* style, const QStyleOption* opt
 
         if (drawFrame)
         {
-            drawSmallIconFrame(style, option, totalArea, painter, config);
+            drawSmallIconFrame(style, option, totalArea, painter);
         }
 
-        drawSmallIconLabel(style, buttonOption, bflags, buttonArea, painter, widget, config);
+        drawSmallIconLabel(style, buttonOption, bflags, buttonArea, painter, widget);
 
-        drawSmallIconArrow(style, buttonOption, mflags, menuArea, painter, widget, config);
+        drawSmallIconArrow(style, buttonOption, mflags, menuArea, painter, widget);
     }
 }
 
-void PushButton::drawSmallIconFrame(const Style* style, const QStyleOption* option, const QRect& frame, QPainter* painter, const PushButton::Config& config)
+void PushButton::drawSmallIconFrame(const Style* style, const QStyleOption* option, const QRect& frame, QPainter* painter)
 {
     Q_UNUSED(style);
 
     bool isDisabled = !(option->state & QStyle::State_Enabled);
 
-    PushButton::Border border = isDisabled ? config.disabledBorder : config.defaultBorder;
+    QColor borderColor = isDisabled ? s_buttonBorderDisabledColor : s_buttonBorderColor;
+    int borderThickness = isDisabled ? s_buttonBorderDisabledThickness : s_buttonBorderThickness;
 
     if (option->state & QStyle::State_HasFocus)
     {
-        border = config.focusedBorder;
+        borderColor = s_buttonBorderFocusedColor;
+        borderThickness = s_buttonBorderFocusedThickness;
     }
 
     QColor gradientStartColor;
     QColor gradientEndColor;
 
-    selectColors(option, config.secondary, isDisabled, gradientStartColor, gradientEndColor);
+    selectColors(option, false, isDisabled, gradientStartColor, gradientEndColor);
 
-    float radius = aznumeric_cast<float>(config.smallIcon.frame.radius);
-    drawFilledFrame(painter, frame, gradientStartColor, gradientEndColor, border, radius);
+    float radius = aznumeric_cast<float>(s_buttonFrameRadius);
+    drawFilledFrame(painter, frame, gradientStartColor, gradientEndColor, borderColor, borderThickness, radius);
 }
 
-void PushButton::drawSmallIconLabel(const Style* style, const QStyleOptionToolButton* buttonOption, QStyle::State state, const QRect& buttonArea, QPainter* painter, const QWidget* widget, const PushButton::Config& config)
+void PushButton::drawSmallIconLabel(const Style* style, const QStyleOptionToolButton* buttonOption, QStyle::State state, const QRect& buttonArea, QPainter* painter, const QWidget* widget)
 {
-    Q_UNUSED(config);
-
     QStyleOptionToolButton label = *buttonOption;
     label.state = state;
     int fw = style->pixelMetric(QStyle::PM_DefaultFrameWidth, buttonOption, widget);
@@ -643,9 +673,8 @@ static void drawArrow(const Style* style, const QStyleOptionToolButton* buttonOp
     painter->restore();
 }
 
-void PushButton::drawSmallIconArrow(const Style* style, const QStyleOptionToolButton* buttonOption, QStyle::State state, const QRect& inputArea, QPainter* painter, const QWidget* widget, const PushButton::Config& config)
+void PushButton::drawSmallIconArrow(const Style* style, const QStyleOptionToolButton* buttonOption, QStyle::State state, const QRect& inputArea, QPainter* painter, const QWidget* widget)
 {
-    Q_UNUSED(config);
     Q_UNUSED(widget);
     Q_UNUSED(style);
 
@@ -653,7 +682,7 @@ void PushButton::drawSmallIconArrow(const Style* style, const QStyleOptionToolBu
     QRect menuArea = inputArea;
 
     bool isDisabled = !(state & QStyle::State_Enabled);
-    QColor color = isDisabled ? config.smallIcon.disabledArrowColor : config.smallIcon.enabledArrowColor;
+    QColor color = isDisabled ? s_buttonSmallIconDisabledArrowColor : s_buttonSmallIconEnabledArrowColor;
 
     bool paintArrow = false;
     if (buttonOption->subControls & QStyle::SC_ToolButtonMenu)
@@ -674,13 +703,20 @@ void PushButton::drawSmallIconArrow(const Style* style, const QStyleOptionToolBu
     }
 }
 
-void PushButton::drawFilledFrame(QPainter* painter, const QRectF& rect, const QColor& gradientStartColor, const QColor& gradientEndColor, const PushButton::Border& border, float radius)
+void PushButton::drawFilledFrame(
+    QPainter* painter,
+    const QRectF& rect,
+    const QColor& gradientStartColor,
+    const QColor& gradientEndColor,
+    const QColor& borderColor,
+    const int borderThickness,
+    float radius)
 {
     painter->save();
 
     QPainterPath path;
     painter->setRenderHint(QPainter::Antialiasing);
-    QPen pen(border.color, border.thickness);
+    QPen pen(borderColor, borderThickness);
     pen.setCosmetic(true);
     painter->setPen(pen);
     painter->setBrush(Qt::NoBrush);
@@ -696,27 +732,54 @@ void PushButton::drawFilledFrame(QPainter* painter, const QRectF& rect, const QC
     painter->restore();
 }
 
-void PushButton::selectColors(const QStyleOption* option, const PushButton::ColorSet& colorSet, bool isDisabled, QColor& gradientStartColor, QColor& gradientEndColor)
+void PushButton::selectColors(
+    const QStyleOption* option, bool isPrimary, bool isDisabled, QColor& gradientStartColor, QColor& gradientEndColor)
 {
-    if (isDisabled)
+    if (isPrimary)
     {
-        gradientStartColor = colorSet.disabled.start;
-        gradientEndColor = colorSet.disabled.end;
-    }
-    else if (option->state & QStyle::State_Sunken)
-    {
-        gradientStartColor = colorSet.sunken.start;
-        gradientEndColor = colorSet.sunken.end;
-    }
-    else if (option->state & QStyle::State_MouseOver)
-    {
-        gradientStartColor = colorSet.hovered.start;
-        gradientEndColor = colorSet.hovered.end;
+        if (isDisabled)
+        {
+            gradientStartColor = s_buttonPrimaryColorDisabledStart;
+            gradientEndColor = s_buttonPrimaryColorDisabledEnd;
+        }
+        else if (option->state & QStyle::State_Sunken)
+        {
+            gradientStartColor = s_buttonPrimaryColorSunkenStart;
+            gradientEndColor = s_buttonPrimaryColorSunkenEnd;
+        }
+        else if (option->state & QStyle::State_MouseOver)
+        {
+            gradientStartColor = s_buttonPrimaryColorHoveredStart;
+            gradientEndColor = s_buttonPrimaryColorHoveredEnd;
+        }
+        else
+        {
+            gradientStartColor = s_buttonPrimaryColorNormalStart;
+            gradientEndColor = s_buttonPrimaryColorNormalEnd;
+        }
     }
     else
     {
-        gradientStartColor = colorSet.normal.start;
-        gradientEndColor = colorSet.normal.end;
+        if (isDisabled)
+        {
+            gradientStartColor = s_buttonColorDisabledStart;
+            gradientEndColor = s_buttonColorDisabledEnd;
+        }
+        else if (option->state & QStyle::State_Sunken)
+        {
+            gradientStartColor = s_buttonColorSunkenStart;
+            gradientEndColor = s_buttonColorSunkenEnd;
+        }
+        else if (option->state & QStyle::State_MouseOver)
+        {
+            gradientStartColor = s_buttonColorHoveredStart;
+            gradientEndColor = s_buttonColorHoveredEnd;
+        }
+        else
+        {
+            gradientStartColor = s_buttonColorNormalStart;
+            gradientEndColor = s_buttonColorNormalEnd;
+        }
     }
 }
 

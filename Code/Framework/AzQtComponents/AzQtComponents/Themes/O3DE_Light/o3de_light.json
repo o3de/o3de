@@ -1,0 +1,157 @@
+{
+	"theme_id": "o3de_light",
+	"theme_name": "O3DE Light Theme (Default)",
+	"theme_description": "A sample O3DE light theme if you like your monitor to light up your face in meetings.",
+	"theme_base": "",
+	"theme_properties":
+	{
+		"BackgroundColor": "#CCCCCC",
+		"SecondaryBackgroundColor": "#DDDDDD",
+		"Color": "#000000",
+		"FontFamily": "OpenSans",
+		"FontSize": "12px",
+		"Separator":
+		{
+			"Color": "#A2A2A2",
+			"HoveredColor": "#1E70EB"
+		},
+		"Window":
+		{
+			"BackgroundColor": "#888888",
+			"BorderColor": "#999999",
+			"CloseButtonHoveredBackgroundColor": "#666666"
+		},
+		"Menu":
+		{
+			"BackgroundColor": "#CCCCCC",
+			"SeparatorColor": "#DDDDDD",
+			"Item":
+			{
+				"Selected":
+				{
+					"BackgroundColor": "#CCCCCC"
+				},
+				"Disabled":
+				{
+					"Color": "#AAAAAA"
+				}
+			}
+		},
+		"Button":
+		{
+			"Frame":
+			{
+				"Height": 24,
+				"Radius": 4,
+				"Margin": 8
+			},
+			"":
+			{
+				"":
+				{
+					"Color": "#FFFFFF"
+				},
+				"Hovered":
+				{
+					"Color": "#FFFFFF"
+				},
+				"Disabled":
+				{
+					"Color": "#BBBBBB"
+				},
+				"Focused":
+				{
+					"BorderThickness": 1,
+					"BorderColor": "#4B8CEF"
+				}
+			},
+			"Primary":
+			{
+				"":
+				{
+					"BackgroundGradientStartColor": "#0095F2",
+					"BackgroundGradientEndColor": "#1E70EB",
+					"BorderThickness": 1,
+					"BorderColor": "#3D000000",
+					"Color": "#FFFFFF"
+				},
+				"Hovered":
+				{
+					"BackgroundGradientStartColor": "#4ABAFF",
+					"BackgroundGradientEndColor": "#94D2FF",
+					"Color": "#FFFFFF"
+				},
+				"Disabled":
+				{
+					"BackgroundGradientStartColor": "#2A4875",
+					"BackgroundGradientEndColor": "#2A4875",
+					"BorderThickness": 1,
+					"BorderColor": "#3D000000",
+					"Color": "#999999"
+				},
+				"Focused":
+				{
+					"BorderThickness": 1,
+					"BorderColor": "#4B8CEF"
+				},
+				"Sunken":
+				{
+					"BackgroundGradientStartColor": "#1E70EB",
+					"BackgroundGradientEndColor": "#1E70EB"
+				}
+			},
+			"Icon":
+			{
+				"Size": 16,
+				"Margin": 1,
+				"MenuIndicatorIcon": ":/stylesheet/img/UI20/menu-indicator.svg",
+				"MenuIndicatorWidth": 10,
+				"CheckedStateBackgroundColor": "#1E70EB",
+				"":
+				{
+					"Color": "#666666"
+				},
+				"Active":
+				{
+					"Color": "#94D2FF"
+				},
+				"Disabled":
+				{
+					"Color": "#999999"
+				},
+				"Selected":
+				{
+					"Color": "#FFFFFF"
+				}
+			},
+			"SmallIcon":
+			{
+				"Width": 24,
+				"Arrow":
+				{
+					"Width": 10,
+					"":
+					{
+						"Color": "#FFFFFF"
+					},
+					"Disabled":
+					{
+						"Color": "#BBBBBB"
+					}
+				}
+			},
+			"Dropdown":
+			{
+				
+				"IndicatorArrowDown": ":/stylesheet/img/UI20/dropdown-button-arrow.svg",
+				"MenuIndicatorWidth": 16,
+				"MenuIndicatorPadding": 4
+			}
+		},
+		"Input":
+		{
+			"BackgroundColor": "#FFFFFF",
+			"BorderColor": "#e9e9e9"
+		}
+	}
+}

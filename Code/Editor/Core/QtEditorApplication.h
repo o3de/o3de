@@ -80,8 +80,6 @@ namespace Editor
         // IEditorNotifyListener:
         void OnEditorNotifyEvent(EEditorNotifyEvent event) override;
 
-        const QColor& GetColorByName(const QString& colorName);
-
         void EnableOnIdle(bool enable = true);
         bool OnIdleEnabled() const;
 
